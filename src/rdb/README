@@ -1,0 +1,86 @@
+                                                   \  /
+.---------------------------------------------------*
+|                   ___                             | \
+|  ___________    _| _/____  ____.  ___             |
+|  \_  __ \_  \ / __ |\__  \ |  __\/ __\            |
+|   |  | \/ __ V /_/ | / __ V   | \  __/            |
+|   |__| (____ /____ |(____ /___|  \___\            |
+|        ___     __          ___ _  _____ _____     |
+|        \_ |__ |__|___   __| _/__|/ ____\ ____\    |
+|         | _  \| |    \ /  _ ||  \   __\   __\     |
+|         | \_> \ |  |  / <_/ ||  ||  |  |  |       |
+|         |___  /_|__|  \_____||__||__|  |__|       |
+|             \/      |_/                           |
+|                                                   |
+`-----[ Freely bindiffing binaries since 2007 ]-----'
+
+                                                              --pancake
+
+
+Radare Database Differ aka rbdiff
+---------------------------------
+
+A tool suite to find binary differences between binaries from raw
+byte level to assembly and assembly code analysis for various platforms
+using the radare framework.
+
+
+Step 1: Generate RDBs
+-------
+
+  Generate a radare database for each binary from an IDB using IDA:
+
+   $ ida -A -Sida2rdb.idc program0.idb
+   $ ida -A -Sida2rdb.idc program1.idb
+
+
+Step 2: Diff both RDBs
+-------
+
+  Now you'll have program0.rdb and program1.rdb which are database dumps
+  of IDA in my own format. These two databases are stored in memory and
+  generates 
+
+  $ rbdiff program0.rdb program1.rdb > program01.txt
+
+
+Step 3: State of the art
+-------
+
+  rbdiff supports multiple output formats
+
+Algorithm
+---------
+Rulez:
+======
+
+// user comments
+MakeRptCmt      (0X8048F42,     "get the index for the array of stuff");
+// ida comments
+MakeComm        (0X8048E9D,     "size_t");
+// function names
+MakeName        (0X8066B70,     "close");
+// functions
+MakeFunction    (0X80489FC,0X8048A02);
+// user function names
+MakeNameEx(0X80491D2, "ciaociao", SN_LOCAL);
+// frame and local variables
+MakeFrame(0X8049E54, 0X18, 4, 0X0);
+MakeLocal(0X8049E54, 0X804A025, "[bp-0X8]", "gid");
+MakeLocal(0X8049E54, 0X804A025, "[bp-0X4]", "uid");
+
+
+// segments
+SegCreate(0X80489EC,0X8048CFC,0X1,1,5,2);
+SegRename(0X80489EC,".plt");
+SegClass (0X80489EC,"CODE");
+SegDefReg(0x80489EC,"ds",0x4);
+SetSegmentType(0X80489EC,2);
+
+
+////////////////////////////////////// ARM TIpzz /////////////////////////
+stmfd sp!, {r4-r7,lr}     -> [alt-p] set sizeof saved regs to 0x10
+sub sp,sp,#0x24           -> [alt-p] set sizeof locals to 0x24
+                          -> [alt-k] set sp diff to -0x10-0x24
+
+       ... [sp,#4]       'k'  set to stack var

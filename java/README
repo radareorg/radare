@@ -1,0 +1,5 @@
+DESCRIPTION
+
+  This is a radare-like API for Java5.
+
+  It allows you to write Java programs to handle binary files.

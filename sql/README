@@ -1,0 +1,13 @@
+sql and radare
+==============
+
+Radare can make use of a SQL database to store and manage information about the process.
+
+The main idea is to have a (shared?) database where multiple users can work together
+sharing label, comments and more information between multiple radare sessions when
+debugging a process.
+
+These tables should be generated on a sqlite (at the moment) database.
+
+This is just a proof of concept, so, I don't expect having sql support for radare
+until 0.9 or more.

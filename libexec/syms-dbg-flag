@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+#
+# Dump a radare script that flags all symbols at it's _MEMORY_ offset.
+#
+# author: pancake
+#
+
+my $target = $ARGV[0];
+
+if (( $target eq "" ) || ( $target eq "-h" )) {
+	print STDERR "Usage: rsc syms-dbg-flag [file] > file.syms.flags\n";
+	exit 1;
+}
+
+my @syms = split(/\n/,qx(rsc syms $target));
+print ":f _here_\n";
+for my $i (0 .. @syms) {
+	my ($addr, $name) = split(/ /,$syms[$i]);
+	$name =~ s/@.*//g;
+	next if ($name eq "");
+	printf ":f sym_$name @ $addr\n:\n";
+}
+print ":s _here_ && f -_here_\n";
+print STDERR @syms." symbols added.\n";

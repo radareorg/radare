@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Shows the base address of an ELF binary
+#
+# --pancake
+#
+
+if [ -z "$1" ]; then
+	echo "Usage: elf-base-addr [elf-program]"
+	exit 1
+fi
+
+readelf -l $1 | grep LOAD | column -t | awk '{print $3}'

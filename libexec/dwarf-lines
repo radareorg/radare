@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+$file=shift;
+die "Usage: rsc dwarf-lines (file) >> file.rdb\n" unless ($file);
+
+
+$|=1;
+my @lines=split(/\n/,`dwarfdump -l $file`);
+for my $line (@lines) {
+	next unless($line=~/^\//);
+	$line=~/(.*):/; my $file=$1;
+	$line=~/\[\ *(\d*),/; my $cline=$1;
+	$line=~/0x([a-f0-9]*)/; my $addr="0x$1";
+	#print "$file\t$cline\n";
+	my $code=`nl $file| grep -e ' $cline' |head -n 1`;
+	print "$addr\tcomment\t$code";
+}
+

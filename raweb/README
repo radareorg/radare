@@ -1,0 +1,32 @@
+
+  RaWeb // Web Frontend For Radare
+  ================================
+
+
+Installation steps:
+
+(1) Generate the backend for a file:
+
+  $ perl raweb.pl /bin/ls
+
+(2) Now copy the index.php file into the new 'ls' directory.
+
+  $ cp index.php ls/
+
+(3) Edit index.php, and define the '$target' variable to point to the
+    program name. In this case 'ls'.
+
+  $ vim ls/index.php
+
+(4) Copy the directory to the htdocs to make it visible via web:
+
+  $ mv ls /home/www/
+
+(5) Connect to your repository:
+
+  $ elinks http://localhost/ls/
+
+(6) Have fun!
+
+
+                                                         --pancake

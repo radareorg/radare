@@ -1,0 +1,16 @@
+#!/bin/sh
+export MAIN_DIALOG='<vbox>
+<text>
+  <label>Seek to offset</label>
+</text>
+<hbox>
+  <entry>
+    <variable>OFFSET</variable>
+  </entry>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>'
+
+eval `rsc gtkdialog`
+echo ":s $OFFSET"

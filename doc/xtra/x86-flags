@@ -1,0 +1,39 @@
+// http://lorca.act.uji.es/e08/ayudas/intel/80386.HTM
+
+CR0
+31 PG Paging Enabled   Only in protected mode so PE=1
+04 ET Extension Type   287 or 387 copro?
+03 TS Task Switched)   the FPU state may be other than expected
+02 EM Emulate Copro    all fpu instructions causes an exception 7 (no copro available)
+01 MP Monitor Copro    related to TS. determines if WAIT generates exception
+00 PE ProtectionEnable 
+ 
+
+EFLAGS
+17 VM Virtual Mode)    Virtual 8086 Mode
+16 RF Resume Flag)     Recovered from exception (force ignore exception)
+14 NT Nested Task)     iret opcode checks NT flag to know if ret to task or switch task
+13 IO Input/Output     
+12 PL Priviledge Level - show 
+11 OF Overflow Flag)   Operation result does not fit on target operand
+10 DF Direction Flag)  (ascendente/descendente).
+09 IF Interrupt Flag)  Indicador de interrupciones: puesto a 1 están permitidas.
+08 TF Trap Flag)       Indicador de atrape (ejecución paso a paso).
+07 SF Sign Flag)       Indicador de resultado o comparación negativa.
+06 ZF Zero Flag)       Indicador de resultado 0 o comparación igual.
+04 AF Auxiliary Flag)  Para ajuste en operaciones BCD.
+02 PF Parity Flag)     Number is odd
+00 CF Carry Flag)      The rest of addition or so
+
+RF (Resume Flag, bit 16): Este indicador se utiliza junto con los registros de depuración. Se verifica en las fronteras de instrucciones antes del procesamiento de los puntos de parada (breakpoints). Cuando RF vale 1, hace que se ignoren las faltas (hechos que ocasionan una excepción) de depuración. RF se pone automáticamente a cero luego de ejecutar correctamente cualquier instrucción (no se señalan faltas) excepto las instrucciones IRET y POPF y en los cambios de tarea causados por la ejecución de JMP, CALL  e INT. Estas instrucciones ponen RF al valor especificado por la imagen almacenada en memoria. Por ejemplo, al final de la rutina de servicio de los puntos de parada, la instrucción IRET puede extraer de la pila una imagen de EFlags que tiene RF = 1 y resumir la ejecución del programa en la dirección del punto de parada sin generar otra falta de punto de parada en el mismo lugar.
+
+NT (Nested Task, bit 14): Este indicador se aplica al modo protegido. NT se pone a uno para indicar que la ejecución de la tarea está anidada dentro de otra tarea. Si está a uno, indica que el segmento de estado de la tarea (TSS) de la tarea anidada tiene un puntero válido al TSS de la tarea previa. Este bit se pone a cero o uno mediante transferencias de control a otras tareas. La instrucción IRET verifica el valor de NT para determinar si debe realizar un retorno dentro de la misma tarea  o si debe hacer un cambio de tarea. Un POPF o IRET  afectará el valor de este indicador de acuerdo a la imagen que estaba en la pila, en cualquier nivel de privilegio.
+
+IOPL (Input/Output Privilege Level, bits 13-12): Este campo de dos bits se aplica al modo protegido. IOPL indica el CPL (Current Privilege Level) numéricamente máximo (esto es, con menor nivel de privilegio) permitido para realizar instrucciones de entrada/salida sin generar una excepción 13 (Violación general de protección) o consultar el mapa de bits de permiso de E/S  (este mapa está ubicado en el segmento de estado de tarea (TSS) con el nuevo formato que provee el 80386). Además indica el máximo valor de CPL  que permite el cambio del indicador IF (indicador de habilitación del pin INTR) cuando se ejecuta POPF e IRET. Estas dos últimas instrucciones sólo pueden alterar IOPL cuando CPL  = 0. Los cambios de tarea siempre alteran el campo IOPL, cuando la nueva imagen de los indicadores se cargan desde el TSS de la nueva tarea.
+
+Special registers:
+==================
+ GDT - global descriptor table
+ IDT - interrupt descriptor table
+ LDT - local descriptor table
+ TSS - state segment of the task

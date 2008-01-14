@@ -1,0 +1,215 @@
+.Dd January 27, 2007
+.Dt RADARE 1
+.Os
+.Sh NAME
+.Nm radare
+.Nd Advanced commandline hexadecimal editor
+.Sh SYNOPSIS
+.Nm radare
+.Op Fl S Ar minlen
+.Op Fl s Ar seek
+.Op Fl b Ar size
+.Op Fl l Ar plugin
+.Op Fl LchnvuVw
+.Ar target-file
+.Sh DESCRIPTION
+radare is a commandline hexadecimal editor.
+.Pp
+This software package contains another utilities related to the hex and asm world. Read the 'see also' section for more information.
+.Pp
+Radare have four modes: 'pipe', 'strings', 'shell' and 'visual'.
+.Pp
+The 'pipe' mode is used for exoscripts. Scripts that use radare as a processing tool for returning values. You can enter this mode by dropping verbosity using the '-v' flag.
+.Pp
+The 'strings' mode is used to strip strings from a binary file. You can enter this mode by using the '-S' flag. This flag requires an numeric argument describing the minimum length for a valid string. This mode shows the offset, the string type (unicode (U), ascii (A)) and the related string. The unicode support is really poor at the moment.
+.Pp
+The 'shell' mode is the normal one. This mode allows you to enter commands to the radare shell.
+.Pp
+The 'visual' mode is a submode of the shell mode activated by the 'Visual' command (or 'V'). This command allows you to move around the file using the 'hjkl' keys. Type '?' for help and ':' for entering shell mode commands (vi style).
+.Pp
+.Bl -tag -width Fl
+.It Fl S Ar minlen
+Enters into the 'strings' mode, and defines a minimum length required for the strings.
+.Pp
+.It Fl s Ar offset
+Start at a certain offset inside the file.
+.Pp
+.It Fl b Ar size
+Define the size of the working data block (default 512, 4096 could be useful for filesystems).
+.It Fl c
+Enable the ANSI color scheme.
+.It Fl l Ar plugin
+Links radare against the desired plugin. Read about io plugins for more information. See -L
+.It Fl L
+List all available plugins embedded inside radare.
+.It Fl n
+Do not load ~/.radarerc or ./radarerc
+.It Fl u
+Unknown size. Avoid limit when seeking. Useful for devices or attaching to processes.
+.It Fl v
+Drops verbosity. Useful flag for scripts, to use radare in pipe mode.
+.It Fl V
+Show version information and exits.
+.It Fl w
+Opens the target file in write mode. In write mode changes are made inmediately. So take care because no commit command exist.
+.It Fl h
+Show help message
+.El
+.Sh SHELL
+The command line interface of radare have multiple commands to be entered. Type '?' for help.
+.Pp
+The readline extension allows you to autocomplete commands and arguments. Numberic argument can be converted into hexadecimal or decimal bases by using the 'tab' key. For example: $ s 10<tab> $ s 0xa
+.Pp
+.Bl -tag -width Fl
+.It b [size]
+(b) Change blocksize.
+.It c [count]
+(c) Maximum number of results to be returned by the search engine.
+.It d [file]
+(dump) Dump data block contents to a named file. The inverse command is 'Poke'
+.It e [0|1]
+(endian) Changes environment endian into little (0) or big (1).
+.It f [-[name]
+(flag) This command allows you to manage flags. Flags are bookmarks around the file. The search engine store the results as flags. You can list flags by typing 'f' or 'flag' without arguments. 'flag name' sets a new flag using the current environment settings (seek, block size). By prefixing a name with the '-' character you will be able to remove a named flag.
+.It i
+(info) Shows radare's environment information (file, endian, count, mode, size, block size, seek, limit, ...)
+.It l [offset]
+(limit) Defines a virtual limit for underlying operations at certain offset.
+.It m [s] [d]
+(m) moves 's' bytes from the current block to the 'd' destination offset. This command requires the write mode to be enabled. Run radare with '-w' flag or type '%WRITE_MODE 1' into the shell.
+.It o [file]
+(open) opens a file in the mode defined by the %WRITE_MODE environment variable closing the current working file.
+.It p[f] [n]
+(pa, pb, pc, pd, po, pr, ps, pu, px, pX) Prints 'n' bytes in the 'f' print format. Available print formats are documented in the 'print format' section.
+.It P [file]
+(Poke) Poke data from the selected file to the current data block. This is the inverse command of 'd' aka 'dump'.
+.It r [size]
+(resize) Changes the size of the file by truncating or extending the file padding zeros at the end.
+.It s [+-]off
+Seeks to an absolute or relative (using the '+' or '-' prefixes) offset. The 'off' argument can be a numeric value or a flag name. (Read 'f' command for more information).
+.It v[f]
+(vb, vf, vi, vl, vL, vo, vs, vS, vt, vT, vq, vW, vw, vx) Visualizes the initial bytes of the current block. Visual formats can be listed by typing 'v'. This command is useful for data structure interpretations because you can interpret 4 bytes as an integer, float, long, unix or dos timestamp, etc...
+.It V
+(Visual) Enters into the visual mode. Use the 'q' key to exit this mode.
+.It w[x] str
+(w, wx) Write a formatted string or an hexadecimal space separated string. For example: '$ w foo\\x90' or '$ wx 90 90 90'
+.It x [len]
+(x) eXamine current block. This is an alias for the 'px' command. To be gdb friendly.
+.It . [file]
+(.) Interpret a file as a radare command scripting file. A simple example can be found in 'libexec/elf-entry-point'. You can read 'libexec/elf-flag-header' too. This script creates a flag for each field of an elf header.
+.It [-+]off
+Alias of 'seek [+-]off'.
+.It [<] [>]
+Move data block window to the previous ('<') aligned block offset or the next one ('>').
+.It / str
+Searchs a string from the current offset until the end of file or 'limit' if defined (see 'l' command). To enter a hexadecimal string you can type '\\x01\\x02\\x03...'.
+.It ! cmd
+Runs a commandline shell program.
+.It %[E] [v]
+(%EDITOR, %OBJDUMP, %PAGER, ..) The '%' command allows you to see the values of the environment variables that affects to radare. You can show a variable value by typing it's name prefixed by '%'. f.e: '%PAGER'. To define a value append the value to the '%'variable name. f.e: '%PAGER less'.
+.It #[hash]
+(#sha1, #crc32, #md5) Shows the value of the hash of the current data block.
+.It q
+(quit) Quits the program.
+.El
+.Sh VISUAL
+Visual mode allows you to move around the data with 'hjkl' arrows. The '0' and 'G' command are used to go at the first of the file or at the end. 'H' 'L' keys are used to move two bytes forward or backward (double 'h', 'l'). 'J' and 'K' keys are used to seek one block forward or backward.
+.Bl -tag -width Fl
+.It < >
+Go seek to the previous or next offset aligned to a multiple of the data block size (use the :b command to read the value).
+.It p
+The 'p' command allows you to circle around the different available print mode formats (binary, hexadecimal, disassembler, octal, url, shellcode, c array, ...)
+.It [+-*/]
+The basic math ops keys are used to change the size of the working data block. Use '+' and '-' to increase and decrease the size by 1 byte. And '*' and '/' to add or substract one row of bytes (screen depend).
+.It d
+Disassembles current data block using the %OBJDUMP environment variable and paging it using %PAGER environment. Is recommended to use 'cat' as a pager into the visual mode (for usability).
+.It i
+Inserts a string at the current offset.
+.It s #
+Seeks to the offset pointed by the search result number '#'. (Names are .search0, .search1, ...)
+.It :
+The double-dot sign is used to temporally enter into the command line interface and use the desired radare shell commands. f.e: $ Visual :!ls.
+.El
+.Sh PRINT FORMAT
+Print formats are used by the 'p' command and some of them used too by the 'v' command. I've tagged as 'V' and 'P' flags between parentesis to mark what print formats for the 'view'(v?) and the 'print'(p?) commands.
+.Pp
+To use one or another print format type 'p' to list available print formats. If you type 'pb' it will print the current data block in binary form. The same happends with the 'v' (view) command.
+.Pp
+The view command is affected by the value of the endian (read 'e' command for more information).
+.Pp
+.Bl -tag -width Fl
+.It b
+[VP] Binary format
+.It o
+[VP] Octal format
+.It x
+[VP] Hexadecimal value. The view command also have (vx, vw, vW, wq) commands for visualizing one, two, four or eight bytes in hexadecimal (endian affected).
+.It f
+[V-] Floating point value (4 first bytes)
+.It i
+[V-] Integer value (4 first bytes)
+.It l
+[V-] long (4 bytes)
+.It L
+[V-] long long (8 bytes)
+.It o
+[V-] octal value (1 byte)
+.It s
+[V-] ascii string (until \0)
+.It t
+[V-] UNIX timestamp (4 bytes, probably 8 in the future)
+.It T
+[V-] DOS timestamp (4 bytes)
+.It c
+[-P] C array format (unsigned char buffer[ (block size) ] = { 0x90, 0x90, ... };
+.It a
+[-P] Shows the current block as if it was a shellcode in hexadecimal.
+.It r
+[-P] Prints out the current data block to stdout.
+.It u
+[-P] URL encoding format f.ex:  '$ pu' -> %4c%69%63...
+.It s
+[-P] ascii..nosenose son tto suposicions de moment
+.It d
+[-P] ascii..nosenose son tto suposicions de moment
+fg
+.El
+.Sh MOVEMENT
+To move around the file you can use the hjkl in visual mode or the 'seek' command in the command line interface.
+.Pp
+To move around the blocks you can use the '<' '>' commands to align your current seek to a block size multiple. Same keys for the visual mode.
+.Pp
+You can seek to a relative offset by prefixing your offset by the '+' or '-' characters. For example: $ seek +10
+.Pp
+.Sh ENVIRONMENT
+.Ar EDITOR
+default editor to be used for /ascii/ data block edition.
+.Pp
+.Ar OBJDUMP
+path to 'objdump' executable (useful for disassembling other architectures) By default is 'objdump -m i386 --target=binary -D'
+.Pp
+.Ar HITCMD
+a radare command to be executed after a search hit has been found.
+.Pp
+.Ar PRINTCMD
+user command to be used to visualize the data block. This external visor is used by the 'pU' radare command.
+.Pp
+.Ar VISUALCMD
+command to be used as an IDE environment interpreting a set of commands or a radare script. In commandline mode this command is executed before printing the prompt. In visual mode it is a separated view.
+.Pp
+.Ar PAGER
+pager to be used for disassembling.
+.Sh SEE ALSO
+.Pp
+.Xr bindiff(1) ,
+.Xr hasher(1) ,
+.Xr rabin(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr rfile(1) ,
+.Xr bug(1) ,
+.Xr xc(1) ,
+.Xr xrefs(1)
+.Sh AUTHORS
+.Pp
+pancake <pancake@youterm.com>

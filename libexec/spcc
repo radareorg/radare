@@ -1,0 +1,115 @@
+#!/usr/bin/env perl
+#
+#
+#
+
+if ($ARGV[0] eq "" || $ARGV[0] eq "-h") {
+	print "spcc - structure parser c compiler\n";
+	print "Usage: spcc [-ht] [file.spc] ([gcc-flags])\n";
+	exit 0 
+}
+
+if ( $ARGV[0] eq "-t" ) {
+	print <<EOF
+/*-- test.spc --*/
+struct foo {
+	int id;
+	void *next;
+	void *prev;
+};
+
+void parse(struct spcc *spcc, uchar *buffer) {
+	struct foo tmp;
+	memcpy(&tmp, buffer, sizeof(struct foo));
+	printf(\"id: %d\\nnext: %p\\nprev: %p\\n\",
+		tmp.id, tmp.next, tmp.prev);
+}
+EOF
+;
+	exit 0;
+}
+
+my $file = $ARGV[0];
+shift @ARGV;
+my $cflags=$ENV{"CFLAGS"}." ".$ENV{"LDFLAGS"}." ".join(' ',@ARGV);
+
+open FD, ">/tmp/spcc.c" or die "Cannot open /tmp/spcc.c";
+print FD <<EOF
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#define uchar unsigned char
+// TODO Support for 32/64 bits here
+#define OFF_FMTx "%x"
+#define OFF_FMTd "%d"
+
+struct spcc {
+	char *filename;
+	int offset;
+};
+
+off_t get_offset (char *arg)
+{
+        int i;
+        off_t ret = 0;
+
+        for(i=0;arg[i]==' ';i++);
+        for(;arg[i]=='\\\\';i++); i++;
+
+        if (arg[i] == 'x')
+                sscanf(arg, OFF_FMTx, &ret);
+        else
+                sscanf(arg, OFF_FMTd, &ret);
+
+        return ret;
+}
+EOF
+;
+print FD qx(cat $file);
+print FD <<EOF
+int main(int argc, char **argv)
+{
+	struct spcc spcc;
+	char *buffer;
+	size_t len;
+	int fd;
+
+	if (argc < 2 || !strcmp(argv[1], "-h")) {
+		printf("Usage: %s [file] [[offset]]\\n", argv[0]);
+		return 1;
+	}
+
+	spcc.filename = argv[1];
+	if (argc>2) 	spcc.offset = get_offset(argv[2]);
+	else		spcc.offset = 0;
+
+	fd = open(spcc.filename, O_RDONLY);
+	if (fd == -1) {
+		printf("Cannot open '%s'\\n", spcc.filename);
+		return 1;
+	}
+
+	len = lseek (fd, 0, SEEK_END);
+
+	buffer = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+	if (((int)buffer) == -1) {
+		printf("Cannot mmap file.\\n");
+		close(fd);
+		return 1;
+	}
+	parse(&spcc, buffer+spcc.offset);
+
+	close(fd);
+	return 0;
+}
+EOF
+;
+close FD;
+
+$ENV{"CC"}="gcc" if ($ENV{"CC"} eq "");
+system($ENV{"CC"}." $cflags /tmp/spcc.c");

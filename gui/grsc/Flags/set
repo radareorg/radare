@@ -1,0 +1,20 @@
+#!/bin/sh
+export MAIN_DIALOG='<vbox>
+<text>
+  <label>Give me a name for this flag</label>
+</text>
+<hbox>
+  <entry>
+    <variable>STRING</variable>
+  </entry>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>'
+
+eval `gtkdialog --program MAIN_DIALOG`
+if [ -n "$STRING" ]; then
+	echo ":f $STRING"
+else
+	echo "flag-set: no name" >/dev/stderr
+fi

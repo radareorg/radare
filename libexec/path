@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+
+if [ -z $1 ]; then
+	echo "Usage: rsc path [file]"
+	exit 1
+fi
+
+for a in `echo $PATH | sed -e 's,:, ,'`; do
+	if [ -x "$a/$1" ]; then
+		echo "$a/$1"
+		exit 0
+	fi
+done
+
+exit 1

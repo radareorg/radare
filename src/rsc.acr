@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# radare scripts wrapper
+#
+# For example:
+# 
+# $ rsc read /bin/ls 0x100 10
+# $ bindiff a b | rsc bdcolor 3
+#
+# --author pancake
+
+SCRIPTS="@LIBEXECDIR@/radare/"
+HOMESCRIPTS="~/.radare/scripts/"
+COMMAND="$1"
+
+show_help() {
+	echo "Usage: rsc [-l] [script] [-h]"
+}
+
+[ "${COMMAND}" = "-h" ] && show_help && exit 0
+
+if [ "${COMMAND}" = "-l" ] ; then
+	[ -d ${HOMESCRIPTS} ] && cd ${HOMESCRIPTS} && ls
+	cd ${SCRIPTS} && ls 
+	exit 0
+fi
+
+if [ -z "${COMMAND}" ]; then
+	show_help
+	echo
+	echo "* Available scripts:"
+	[ -d ${HOMESCRIPTS} ] && cd ${HOMESCRIPTS} && ls
+	cd ${SCRIPTS} && ls
+	exit 0
+
+fi
+
+if [ -e "${HOMESCRIPTS}/${COMMAND}" ]; then
+	DIR=${HOMESCRIPTS}
+else
+	if [ -e "${SCRIPTS}/${COMMAND}" ]; then
+		DIR=${SCRIPTS}
+	else
+		show_help
+	fi
+fi
+
+shift
+perl ${DIR}/${COMMAND} "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8"

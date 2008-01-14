@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Version: 0.1
+Created-By: pancake <pancake@phreaker.net>
+Main-Class: org.nopcode.pancake.radare.demos.Find

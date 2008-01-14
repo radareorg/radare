@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# Commandline assembler tool for radare
+#
+# --author pancake
+
+CODE="$1"
+
+CODE=`echo ${CODE} | sed -e 's,;,\n,g'`
+
+FILE="/tmp/.asm.$RANDOM"
+
+[ "$1" = "-h" ] && CODE=""
+if [ -z "${CODE}" ]; then
+	echo "Usage: rsc asm [-|'movl \$0x14b0, %eax']" > /dev/stderr
+	echo "NASM=0,1              ; use nasm or gas" > /dev/stderr
+	echo "AASM=0,1              ; use aasm or gas (aasm by default)" > /dev/stderr
+	echo "ARCH=intel,arm,java   ; intel by default" > /dev/stderr
+	echo "CURSOR=0x804800       ; base address" > /dev/stderr
+	exit 0
+fi
+
+[ -z "${AASM}" ] && AASM="1"
+
+# JAVA
+if [ "${ARCH}" = "java" ]; then
+	javasm -a "$CODE"
+	exit 0
+fi
+
+# ARM
+if [ "${ARCH}" = "arm" ]; then
+	if [ "${AASM}" = "1" ]; then
+		echo "${CODE}" >> ${FILE}
+		armasm -x - ${FILE}
+		rm -f ${FILE}
+		echo
+		exit 0
+	else
+		NASM=0
+	fi
+fi
+
+# Intel NASM is used by default
+[ -z "$NASM" ] && NASM=1
+if [ -z "`rsc path nasm`" ]; then
+	NASM=0
+fi
+
+ORG="0x0"
+if [ -n "${CURSOR}" ]; then
+	ORG="${CURSOR}"
+fi
+
+if [ 1 = ${NASM} ]; then
+	FILE="$FILE.asm"
+	printf "BITS 32\nSECTION .text\nORG ${ORG}\nglobal _start\n\n_start:\n" > $FILE
+
+	if [ "${CODE}" = "-" ]; then
+		cat >> $FILE
+	else
+		echo "${CODE}" >> $FILE
+	fi
+
+	nasm -o $FILE.o $FILE
+	if [ ! $? = 0 ]; then
+		exit 1
+	fi
+
+	echo ":pX && q" | radare -nv ${FILE}.o
+	rm -f $FILE $FILE.o
+else
+	FILE="${FILE}.s"
+	if [ "$SYNTAX" = "intel" ]; then
+		echo .intel_syntax noprefix > $FILE
+	else
+		: > $FILE
+	fi
+
+	if [ "${CODE}" = "-" ]; then
+		cat >> $FILE
+	else
+		echo "$1" >> $FILE
+	fi
+
+	as $FILE -o $FILE.o
+
+
+	if [ -e $FILE.o ]; then
+		objdump -wd $FILE.o | perl -ne 'if(/\d:\t/) { /\t(.*)\t/; print join(" ", split(" ",$1))." " ;}'
+		echo
+		rm -f $FILE $FILE.o
+	else
+		exit 1
+	fi
+fi
+
+exit 0

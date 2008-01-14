@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Dump elf header in C format
+#
+printf "pc\nquit" | radare -vb 52 -s 0 /bin/ls

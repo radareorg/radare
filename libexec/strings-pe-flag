@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# author: pof <eslack.org>
+# perl port: pancake <youterm.com>
+#
+
+die "Usage: rsc strings-pe-flag [file] ([minlen]) ([offset])\n" unless(@ARGV);
+
+my $file=$ARGV[0];
+my $minlen=$ARGV[1];
+my $offset=$ARGV[2];
+$offset=0 unless($offset);
+$minlen=3 unless($minlen);
+#my @strings=split('\n', `radare -S2 -s 100 $file 2>&1`);
+my @strings=split('\n', `strings -tx -n2 $file`);
+my @foo=split(' ', `objdump -h $file | grep '.rdata'`);
+@foo=split(' ', `objdump -h $file | grep '.rodata'`) if ($#foo==0);
+my $mem="0x".$foo[4];
+my $disk="0x".$foo[5];
+my $count=0;
+
+print ":f _here_\n";
+
+for my $i (0 .. $#strings) {
+	$strings[$i]=~s/^\ *//;
+	$strings[$i]=~/([^\ ]*) (.*)$/;
+	my $addr = $1;
+	#my $type = $2;
+	my $str  = $2;
+	my $cow;
+	eval ("\$cow = 0x$addr-$disk+$mem+$offset\n");
+	$str=~tr/\ \-\>\<\`\t\|\@"/.__________./;
+	$str=~s/\.*//g;
+	$str=substr($str, 0,27);
+	if ($str=~/%/ || length($str)>$minlen) {
+		print ":fn \"$str\" @ 0x".sprintf "%08x\n", $cow;
+		$count++;
+	}
+}
+
+print ":s _here_\n:f -_here_\n";
+print STDERR "$count strings added.\n";

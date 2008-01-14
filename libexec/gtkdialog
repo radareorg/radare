@@ -1,0 +1,2 @@
+#!/bin/sh
+gtkdialog --program MAIN_PROGRAM 2>/dev/null | grep -v "bad image"

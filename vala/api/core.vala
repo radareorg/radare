@@ -1,0 +1,97 @@
+using GLib;
+
+public class Radare.Core : Object
+{
+	public static string VERSION = "0.8.8";
+	private static bool isinit = false;
+
+/*
+	public static block_size {
+		get {
+		}
+		set {
+		}
+	}
+*/
+
+	private static void _init_() {
+		radare_init();
+		plugin_init();
+		prepare_environment("");
+		isinit = true;
+	}
+
+	construct {
+		_init_();
+	}
+
+	public static string# command(string command)
+	{
+		return pipe_command_to_string(command);
+	}
+
+	public static int cmd(string command)
+	{
+		return radare_command(command,0);
+	}
+
+	public static bool open(string file, bool write_mode)
+	{
+		if (!isinit) _init_();
+		int ret = _radare_open(file, write_mode?1:0);
+		return (ret == 0);
+	}
+
+	public static bool seek(ulong offset)
+	{
+		bool ret = radare_seek(offset, 0);
+		radare_read(0);
+		return ret;
+	}
+
+	/**
+	 * Returns the delta byte of the current block
+	 */
+	public static uchar get(int delta)
+	{
+		return radare_get(delta);
+	}
+
+	public static void close()
+	{
+		radare_close();
+	}
+}
+
+[Import()]
+public static string# pipe_command_to_string(string command);
+
+[Import()]
+public static int radare_command(string command, int arg);
+
+[Import()]
+public static int system(string str);
+
+[Import()]
+public static int radare_init();
+
+[Import()]
+public static int plugin_init();
+
+[Import()]
+public static void radare_read(int next);
+
+[Import()]
+public static int radare_close();
+
+[Import()]
+public static int _radare_open(string file, int allow_write);
+
+[Import()]
+public static void prepare_environment(string str);
+
+[Import()]
+public static bool radare_seek(ulong offset, int which);
+
+[Import()]
+public static uchar radare_get(int delta);

@@ -1,0 +1,73 @@
+.Dd January 6, 2007
+.Dt XREFS 1
+.Os
+.Sh NAME
+.Nm xrefs
+.Nd Find crossed assembly references
+.Sh SYNOPSIS
+.Nm xrefs
+.Op Fl vqVhe
+.Op Fl a Ar arch
+.Op Fl f Ar from
+.Op Fl t Ar to
+.Op Fl r Ar range
+.Op Fl s Ar size
+.Op Fl d Ar offset
+.Op Fl X Ar offset
+.Op file
+.Op offset
+.Sh DESCRIPTION
+This program is part of the radare project.
+.Pp
+Find crossed references to a certain offset on x86, arm and powerpc binaries. It supports options for swaping endiannes.
+.Pp
+This program can't autodetect xrefs done by registers or data pointers. Only relative ones in jumps or calls.
+.Pp
+Xrefs autodetects the binary architecture parsing the ELF or PE headers found in the target file.
+.Bl -tag -width Fl
+.It Fl v
+Verbose mode. Useful for debugging.
+.It Fl q
+Quite mode. Useful for scripting. Shows the resulting offset number.
+.It Fl V
+Show version information and exits.
+.It Fl e
+Use big endian instead of little endian when searching the related offsets. It's automatically defined by the '-a' flag when choosing the target architecture.
+.It Fl a Ar arch
+Selects the architecture to be used. Available options: 'x86', 'arm' and 'ppc'.
+.It Fl f Ar from
+Start looking for related offsets at a certain seek inside the file.
+.It Fl t Ar to
+Finish xrefs search at a certain offset of the target file.
+.It Fl r Ar range
+Cut range of valid xrefs. This flag can be used instead of the '-f' and '-t' flags.
+.It Fl s Ar size
+Define the size of the offset variable. (4 bytes for x86 and 3 for arm and powerpc). This value is automatically defined by the '-a' flag.
+.It Fl d Ar offset
+Sets a negative delta offset as padding. This is normally the size of the jump/call opcode.
+.It Fl X Ar offset
+Print out debugging information at a certain offset. This flag is for debugging purposes only. See '-v'
+.It Fl h
+Show usage help message.
+.El
+.Sh HACKING
+This program has been written with poor extensibility in mind. So it can probably be buggy on other architectures using them from the commandline. Feel free to send your parches, tips and ideas.
+.Pp
+This program has been tested on firmwares, bootloaders, ELF and PE binaries on x86, ppc and arm architectures.
+.Pp
+You can use the '-X' and '-v' flags for debugging the xrefs search engine.
+.Sh SEE ALSO
+.Pp
+.Xr bindiff(1) ,
+.Xr hasher(1) ,
+.Xr radare(1) ,
+.Xr rfile(1) ,
+.Xr rabin(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr bug(1) ,
+.Xr xc(1)
+.Sh AUTHORS
+.Pp
+pancake <pancake@youterm.com>
+.Pp

@@ -1,0 +1,9 @@
+#!/bin/sh
+if [ -z "$DPID" ]; then
+	echo ":!echo $DPID > /tmp/dpid"
+fi
+DPID=`cat /tmp/dpid`
+if [ -z "$DPID" ]; then
+	echo Oops > /dev/stderr
+fi
+kill -STOP $DPID

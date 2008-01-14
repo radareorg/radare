@@ -1,0 +1,56 @@
+#!/bin/sh
+FILES=""
+for a in eax ebx ecx edx esp ebp esi edi eip eflags ; do
+FILES="$FILES <item>$a</item>"
+done
+export MAIN_DIALOG="<vbox>
+<text>
+  <label> Select register</label>
+</text>
+<hbox>
+  <text>
+    <label>Register</label>
+  </text>
+  <combobox>
+    <variable>REGISTER</variable>
+    $FILES
+  </combobox>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>"
+
+FOO=`rsc gtkdialog`
+echo $REGISTER> /dev/stderr
+eval $FOO
+echo ":? $REGISTER > /tmp/.axa"
+NUM=`cat /tmp/.axa`
+[ -z "$NUM" ] && NUM=0
+echo $NUM > /dev/stderr
+
+export MAIN_DIALOG="<vbox>
+<text>
+  <label>Change register value</label>
+</text>
+<hbox>
+  <text>
+    <label>Register</label>
+  </text>
+  <entry>
+    <variable>VALUE</variable>
+    <default>$NUM</default>
+  </entry>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>"
+
+FOO=`rsc gtkdialog`
+echo "$MAIN_DIALOG)" > /dev/stderr
+echo
+echo $FOO > /dev/stderr
+echo ":!set $REG $VALUE"
+echo
+echo ":s $LABEL"
+echo
+rm -f /tmp/.axa

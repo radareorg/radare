@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# dump all file offsets and symbol names of a binary file
+#
+
+TARGET="$1"
+[ -z "$TARGET" ] && TARGET="-h"
+if [ "$TARGET" = "-h" ]; then
+	echo "Usage: rsc syms [file]\n"
+	exit 1
+fi
+objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'

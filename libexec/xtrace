@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Execution trace logger script for GDB
+#
+# --author pancake <pancake@youterm.com>
+#
+
+PROGRAM="$1"
+BREAKPOINT="$2"
+
+if [ -z "$PROGRAM" ]; then
+	echo "Usage: xtrace [program] [pc-addr]"
+	exit 1
+fi
+
+if [ -z "${BREAKPOINT}" ]; then
+	BREAKPOINT=`readelf -h ${PROGRAM} | grep Entry | awk '{print $4}'`
+	if [ -z "${BREAKPOINT}" ]; then
+		echo "ERROR: Cannot determine breakpoint.\n";
+		exit 1
+	fi
+fi
+
+TMP=`mktemp -t gdb.XXXXXX`
+cat > ${TMP} <<EOF
+set height 0
+break *${BREAKPOINT}
+run
+while(1)
+	stepi
+	disassemble \$eip \$eip+1
+end
+quit
+EOF
+
+shift ; shift
+gdb -batch -n -q -x ${TMP} "${PROGRAM}" $@ | grep : | grep -v Dump
+
+rm ${TMP}

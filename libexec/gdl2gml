@@ -1,0 +1,131 @@
+#!/usr/bin/env perl -w
+=head1 NAME
+
+gdl2gml - gdl to gml format converter
+
+=head1 SYNOPSIS
+
+gdl2gml - gdl to gml format converter
+
+=head1 ABSTRACT
+
+gdl2gml provides a stdin/stdout interface to convert GDL (wingraph) files
+to the GML format (importable via yEd for.example).
+
+It can be easily modified to support more output formats.
+
+  Usage:
+  $ cat input.gdl | perl gdl2gml > output.gml
+
+=head1 AUTHOR
+
+pancake <pancake@youterm.com>
+
+=cut
+
+my $node_title;
+my $node_label;
+sub null_handler {}
+my $handler = \&null_handler;
+
+die qx(pod2text gdl2gml) if ($ARGV[0] eq "-h");
+
+sub node_label_handler {
+	my ( $str ) = @_;
+	if ( $str=~/}/ ) {
+		$str    =~ s/}//g;
+		$id     = $node_title;
+		$text   = $node_label;
+		$text   =~ s/:/:\n/;
+		$width  = 7 * qx(echo "$text"|wc -L);
+		$height = 20 * qx(echo "$text"|wc -l);
+print <<EOF
+	node
+	[
+		id $id
+		label "$id"
+		graphics
+		[
+			w	$width
+			h	$height
+			type	"rectangle"
+			fill	"#FFCC00"
+			outline	"#000000"
+		]
+		LabelGraphics
+		[
+			text "$text"
+			fontSize	13
+			fontName	"Dialog"
+			alignment	"left"
+			anchor	"c"
+		]
+	]
+EOF
+;
+		$handler = \&null_handler;
+	}
+	$node_label .= $str;
+}
+
+sub node_handler {
+	my ( $str ) = @_;
+	$str=~/title: "(.*)" label: "(.*)$/;
+	if (defined($1)) {
+		( $node_title, $node_label ) = ( $1, $2 );
+		$handler = \&node_label_handler;
+	}
+}
+
+sub edge_handler {
+	my ( $str ) = @_;
+
+	$str =~ / sourcename: "(.*)" targetname: "(.*)" label: "(.*)"/;
+	$str =~ / sourcename: "(.*)" targetname: "(.*)"/ unless (defined($1));
+	# NOTE: looks like true is false and false is true!
+	$color = ($3 eq "true")? "#ff0000":"#00ff00" if (defined($3));
+	print <<EOF
+	edge
+	[
+		source $1
+		target $2
+		graphics
+		[
+			fill	"$color"
+			targetArrow	"standard"
+		]
+	]
+EOF
+	if (defined($1));
+}
+
+# main #
+
+print <<EOF
+Creator "gdl2gml"
+Version "0.2"
+graph
+[
+	hierarchic	1
+	label	""
+	directed	1
+EOF
+;
+
+while ( <STDIN> ) {
+	s/\r//g;
+	s/\14..//g;
+	s/\\"/&quot;/g;
+	s/\/\/.*//g;
+
+	SWITCH: {
+		$handler = \&node_handler
+		and last SWITCH if ( /node: {/ );
+		$handler = \&edge_handler
+		and last SWITCH if ( /edge: {/ );
+	}
+	
+	&$handler($_);
+}
+
+print "]\n";

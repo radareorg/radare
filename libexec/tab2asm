@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+#
+# example:
+#  $ rsc bin2tab /bin/ls | rsc tab2asm
+
+my @lines=();
+while(<STDIN>) {
+	$line=$_;
+	chomp($line);
+	my ($addr, $label, $code) = split(/\t/, $line);
+	my %foo = (
+		"address" => $addr,
+		"label"   => $label,
+		"opcode"  => $code
+	);
+	push(@lines, \%foo);
+}
+
+for my $i (0 .. @lines) {
+	unless ($lines[$i]{"label"}=~/\+/) {
+		print $lines[$i]{"label"}.":\n"
+			unless ($lines[$i]{"label"} eq "");
+	} else {
+		print "  ".$lines[$i]{"opcode"}."\n";
+	}
+}

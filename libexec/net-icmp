@@ -1,0 +1,25 @@
+#!/bin/sh
+#; This ICMP header can be aligned where you want becouse it is relative :)
+#; author: sha0
+
+cat <<EOF
+s here
+b 8
+f icmp.type
+
+s +8
+b 8
+f icmp.code
+
+s +8
+b 16
+f icmp.chksum
+
+s +16
+b 32
+f icmp.unused
+
+s +32
+b 64
+f icmp.datagram 
+EOF

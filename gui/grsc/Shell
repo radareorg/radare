@@ -1,0 +1,2 @@
+#!/bin/sh
+while : ; do radare /dev/null ; echo "..." ; sleep 1 ; done

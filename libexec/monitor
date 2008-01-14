@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+#
+# monitorization client for radare
+#               pancake <youterm.com>
+#
+
+
+sub slurpit {
+        my ($file) = @_;
+       #print "<<slurp: $file\n";
+        return undef unless (-f $file);
+        open F, "<$file" || return undef;
+        my $ret=""; while(<F>) { $ret.=$_; }
+        close F;
+        return $ret;
+}
+
+my $f=$ARGV[0];
+my $MONITOR_PATH=$ENV{HOME}."/.radare/monitor/";
+
+if ($ARGV[0] eq "-l") {
+	opendir DH, $MONITOR_PATH || die "cannot open";
+	my $i=0;
+	while(($file=readdir(DH))) {
+		next if ($file=~/^\./);
+		print "$i\t$file\t".slurpit("$MONITOR_PATH/$file")."\n";
+		$i++;
+	}
+	closedir DH;
+	exit(0);
+}
+if ($ARGV[0] eq "-r") {
+	unlink("$MONITOR_PATH/".$ARGV[1]);
+	unlink("$MONITOR_PATH/".$ARGV[1].".txt");
+	print "Monitor '".$ARGV[1]."' removed\n";
+	exit(0);
+}
+if ($ARGV[0] eq "-R") {
+	system("rm -rf $MONITOR_PATH/*");
+	print "All monitors removed\n";
+	exit(0);
+}
+
+
+if ($ARGV[0] eq "") {
+	print "Usage: rsc monitor [-lr] [name] [command]\n";
+	print "  -l        list all running monitors\n";
+	print "  -r [name] remove a specific monitor\n";
+	print "  -R        removes all monitors\n";
+	exit(0);
+} elsif ($ARGV[1] ne "") {
+	open FD, ">$MONITOR_PATH/".$ARGV[0] || die "cannot open";
+	shift(@ARGV);
+	chomp(my $str = join (' ', @ARGV));
+	print FD "$str\n";
+	close FD;
+	exit(0);
+}
+
+if ((!($f=~/\.txt/)) && (-f "$MONITOR_PATH/$f")) {
+	my $buf2 = "";
+	while(1) {
+		sleep(1);
+		my $buf = slurpit($MONITOR_PATH."/$f.txt");
+		if ($buf ne $buf2) {
+			$buf2 = $buf;
+			print "\e[0;0H\e[2J$buf";
+		}
+	}
+} else {
+	print STDERR "Cannot open $MONITOR_PATH/$f.txt\n";
+}

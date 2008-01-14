@@ -1,0 +1,261 @@
+#!/usr/bin/env perl
+#
+# TracELF - Command line binary disassembly tool
+#
+# author: pancake <pancake@youtermm.com>
+#
+$|=1;
+
+die "Usage: tracelf.sh [target] [offset] [length]\n"
+.   "For DOT: tracelf.sh .. > file.dot && dot -Tpng file.dot\n"
+unless $ARGV[1];
+
+my $target=$ARGV[0];
+my $offset=$ARGV[1];
+my $length=$ARGV[2];
+my $length=300 unless $length;
+my $recursive=0;
+my $shell=1;
+my $graph=0;
+my $g="\e[32m";
+my $r="\e[31m";
+my $y="\e[35m";
+my $w="\e[0m";
+my $t="\e[36m";
+
+my @calltrace = ();
+
+sub disassemble
+{
+	my $target, $offset, $length = @_;
+
+	eval "\$offset=$offset;";
+	push @calltrace, sprintf "%08x", $offset;
+
+	my $bytes  = `echo pX | radare -s $offset -b $length -v $target`;
+	my @lines  = split /\n/, `sh /usr/libexec/radare/dasm "$bytes"`;
+	my $size   = $#lines;
+	my @jumps  = ();
+	my @calls  = ();
+	my $pushed = 0;
+	print "$g; Path:$w ";
+	for my $i (0 .. @calltrace) {
+		print "> ".$calltrace[$i]." ";
+	}
+	print "\n";
+
+_just_print:
+	unless ($graph) {
+		print "Disassembling $length bytes at $offset\n";
+		print "\n";
+		print ".----[ offset ]-----+----[ bytes ]----+----[ opcodes ]-----------\n";
+	}
+	for($i=0;$i<=$#lines;$i++) {
+		my ($off, $line)=split(/:/,$lines[$i]);
+		$bytes=substr($line,1,15);
+		$opcode=substr($line, 23,30);
+		$off=~s/^\ *//g;
+		eval("\$rof=$offset+0x$off;"); # real offset
+
+		if (-e "$target.comments") {
+			unless ($graph) {
+				$str=sprintf("%08x",$rof);
+				print "$g";
+				system("grep -e \"^;-- $str\" '$target.comments' | sed -e 's,$str,,g'");
+				print "$w";
+			}
+		}
+		
+		# CALL
+		if ($lines[$i]=~/call (.*)/) {
+			#sprintf $foo, "0x%x
+			unless ($graph) {
+				eval "\$foo=$offset+int($1);" unless ($1=~/\*/);
+				printf "$t; call ".($#calls+1)." to 0x%x$w\n",$foo;
+			}
+			unless ($pushed) {
+				push @calls, $foo;
+			}
+		}
+		# JMP
+		if ($lines[$i]=~/jmp (.*)/) {
+			unless ($graph) {
+				eval "\$foo=$offset+int($1);" unless ($1=~/\*/);
+				printf "$t; jmp ".($#jumps+1)." to 0x%x$w\n",int($foo);
+			}
+			#printf "JMP TO 0x%x\n",$foo;
+			unless ($pushed) {
+				push @jumps, $foo;
+			}
+		}
+		# CBR
+		if(($lines[$i]=~/(ja) (.*)/)
+		|| ($lines[$i]=~/(jz) (.*)/)
+		|| ($lines[$i]=~/(jnz) (.*)/)
+		|| ($lines[$i]=~/(je) (.*)/)
+		|| ($lines[$i]=~/(jne) (.*)/)
+		|| ($lines[$i]=~/(jb) (.*)/)) {
+			eval "\$foo=$offset+int($2);" unless ($1=~/\*/);
+			unless ($pushed) {
+				push @jumps, $foo;
+			}
+			unless($graph) {
+				printf "$t; $1 ".($#jumps+1)." to 0x%x$w\n",$foo;
+			}
+		}
+
+		unless ($graph) {
+			printf("%08x  ",$rof);
+			printf("$r%04x$w ",$off);
+			print("     | $y$bytes$w | $opcode\n");
+		}
+
+		# RET
+		if ($lines[$i]=~/ret/) {
+			$size=$i;
+			last;
+		}
+	}
+	$calls=$#calls+1;
+	$jumps=$#jumps+1;
+	$pushed=1;
+
+	sub show_report {
+		# Report:
+		print "\n$g; ----------[ report ]---------$w\n";
+		$str = sprintf("%08x ;-label- ", $offset);
+		chomp(my $label=`grep -e '$str' '$target.comments' 2>/dev/null`);
+		printf "$g; Offset: $offset (%08x)\n", $offset;
+		print "$g; Label:$w $label\n" if ($label ne "");
+		print "$g; Path:$w ";
+		for($i=0; $i<=($#calltrace); $i++) {
+			print "> ".$calltrace[$i]." ";
+		}
+		print "\n";
+		print "$g; Lines:$w ".($#lines+1);
+		print "$g  Size:$w $size";
+		print "$g  Calls:$w $calls\n";
+		for($i=0;$i<$calls;$i++) {
+			printf "$g;$w   c $i  ->  0x%x\n",$calls[$i];
+	#		if ($calls[$i]!=0) {
+	#			disassemble($target,$calls[$i],$length);
+	#		}
+		}
+		print "$g; Jumps:$w $jumps\n";
+		for($i=0;$i<$jumps;$i++) {
+			printf "$g;$w   j $i  ->  0x%x\n",$jumps[$i];
+	#		if ($jumps[$i]!=0) {
+	#			disassemble($target,$jumps[$i],$length);
+	#		}
+		}
+	}
+	
+	show_report() unless($graph);
+
+	if ($graph) {
+		for($i=0;$i<$jumps;$i++) {
+			eval("\$str=$jumps[$i];");
+			printf("x%08x->x%08x;\n",$offset, $jumps[$i]);
+			disassemble($target,int($str), $length);
+		}
+		for($i=0;$i<$calls;$i++) {
+			eval("\$str=$calls[$i];");
+			printf("x%08x->x%08x;\n",$offset, $calls[$i]);
+			disassemble($target,$str, $length);
+		}
+	}
+
+	if ($shell) {
+		while(1) {
+			print "\ntracelf> ";
+			my $myline=<STDIN>;
+			next if ($myline=~/;/);
+			($opcode, $id)=split(/ /,$myline);
+			chomp($id);
+			if ($opcode=~/j/) {
+				disassemble($target,$jumps[int($id)],$length);
+			} elsif ($opcode=~/t/) {
+				print "Call trace:\n";
+				for($i=$#calltrace;$i>=0;$i--) {
+					print "-> ".$calltrace[$i]."\n";
+				}
+			} elsif ($opcode=~/c/) {
+				disassemble($target,$calls[int($id)],$length);
+			} elsif ($opcode=~/b/) {
+				disassemble($target,$offset,$id);
+			} elsif ($opcode=~/d/) {
+				goto _just_print;
+				#disassemble($target,$offset,$length);
+			} elsif ($opcode=~/i/) {
+				show_report();
+			} elsif ($opcode=~/r/) {
+				last;
+			} elsif ($opcode=~/~/) {
+				# ignore, just a comment
+			} elsif ($opcode=~/l/) {
+				if ($id eq "") {
+					system("grep -e ';-label-' '$target.comments'");
+				} else {
+					print "Current seek labeled as $id";
+					open FD, ">>$target.comments" or die("Cannot open $target.comments");
+					$str = sprintf("0x%08x ;-label- $id\n", $offset);
+					print FD $str; #"$offset ;-label- $id\n";
+					close FD;
+				}
+			} elsif ($opcode=~/s/) {
+				chomp(my $seek=`grep -e ';-label- $id' '$target.comments'| cut -d ' ' -f 1`);
+				if ($seek ne "") {
+					print "Label found.\n";
+					eval("\$id=$seek;");
+				}
+				print "Seeking to $id\n";
+				disassemble($target,$id,$length);
+			} elsif ($opcode=~/e/) {
+				system("vim $target.comments");
+			} elsif ($opcode=~/#/) {
+				open FD, ">>$target.comments" or die("Cannot open $target.comments");
+				print "End comment with '.':\n";
+				while(1) {
+					chomp(my $line=<STDIN>);
+					last if ($line eq ".");
+					last if ($line eq "");
+					print FD ";-- $id $line\n";
+				}
+				close FD;
+			} elsif ($opcode=~/\?/) {
+				print "j num     jumps\n";
+				print "c num     calls to #\n";
+				print "b size    change block size\n";
+				print "r         return from call\n";
+				print "e         edit comments\n";
+				print "i         show info report\n";
+				print "d         disassembly again\n";
+				print "s offset  seek to offset or label\n";
+				print "l name    label\n";
+				print "# offset  add comment for offset\n";
+				print "q       quit\n";
+			} elsif ($opcode=~/q/) {
+				exit(1);
+			} else {
+				print "Invalid command\n";
+			}
+		}
+#		goto _just_print;
+print ".. ^^U\n";
+		print "Path: ";
+		for($i=0; $i<=($#calltrace); $i++) {
+			print $calltrace[$i]." ";
+		}
+	}
+
+	$me=pop @calltrace;
+	print "Seek $me\n";
+}
+
+if ($graph) {
+	print "digraph G {\n";
+}
+disassemble($target,$offset,$length);
+if ($graph) {
+	print "}\n";
+}

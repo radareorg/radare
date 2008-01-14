@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+#
+# author: pof <eslack.org>
+# perl port: pancake <youterm.com>
+#
+
+die "Usage: rsc syms-pe-flag.pl [file] ([offset])\n" unless(@ARGV);
+
+my $file=$ARGV[0];
+my $offset=$ARGV[1];
+$offset="0x400c00" unless($offset);
+my @strings=split('\n', `rsc syms $file`);
+
+print ":f _here_\n";
+
+for my $i (0 .. $#strings) {
+	$strings[$i]=~/^([^\ ]*) (.*)$/;
+	my $addr = $1;
+	my $str  = $2;
+	my $cow;
+	eval ("\$cow = $addr-$offset\n");
+	$str=~s/\@.*$//g;
+	$str=~tr/\ \-\>\<\`\t\|\@"/.__________./;
+	$str=substr($str, 0, 27);
+	printf ":fn sym$str @ 0x%08x\n", $cow;
+}
+
+print ":s _here_\n:f -_here_\n";
+print STDERR $#strings." symbols added.\n";

@@ -1,0 +1,13 @@
+Rabin
+=====
+
+The radare binary header analyzer.
+
+TODO
+----
+ * support MZ, PE, ELF, Java CLASS binaries
+   -e shows entrypoints one per line
+   -r flag makes show the output in radare format
+   -l show linked libraries
+   -i show imports (symbols imported from libraries)
+   -s show program symbols and address

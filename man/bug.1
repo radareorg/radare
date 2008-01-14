@@ -1,0 +1,56 @@
+.Dd January 14, 2007
+.Dt BUG 1
+.Os
+.Sh NAME
+.Nm bug
+.Nd Simple bug/todo tracker for the command line
+.Sh SYNOPSIS
+.Nm bug
+.Op add
+.Op del
+.Op edit
+.Op view
+.Op list
+.Op create
+.Op project
+.Op -h
+.Op args
+.Sh DESCRIPTION
+This tool allows you to track the bugs and todo lists of your project.
+
+  $ export BUG_PROJECT=$PWD/BUG.DB
+  $ bug create
+  $ bug add
+.Bl -tag -width Fl
+.It add
+Adds a new bug report to the BUG_PROJECT database. Use EDITOR.
+.It del [id]
+Deletes the bug report with 'id'.
+.It edit [id]
+Edits the bug report with 'id'.
+.It view
+Show the contents of a bug report.
+.It list
+Lists all bug report entries.
+.It create
+Initializes the BUG_PROJECT file (create if does not exist).
+.It project
+Shows the path to the BUG_PROJECT database file.
+.It Fl h
+Show usage help message.
+.El
+.Sh SEE ALSO
+.Pp
+.Xr bindiff(1) ,
+.Xr hasher(1) ,
+.Xr radare(1) ,
+.Xr rabin(1) ,
+.Xr rfile(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr xc(1) ,
+.Xr xrefs(1)
+.Sh AUTHORS
+.Pp
+Lluis Batlle i Rosell
+.Pp

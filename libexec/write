@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+TARGET="$1"
+OFFSET="$2"
+DATA="$3"
+
+[ "${TARGET}" = "-h" ] && DATA=""
+if [ -z "${DATA}" ]; then
+	echo "Usage: write [file] [offset] '[90 90 90]'"
+	exit 1
+fi
+
+RESULT=`
+echo "
+seek $OFFSET
+wx $DATA
+quit
+" | radare -vw "${TARGET}" 
+`
+
+if [ -z "${RESULT}" ]; then
+echo "failed"
+else
+echo $RESULT
+fi
+

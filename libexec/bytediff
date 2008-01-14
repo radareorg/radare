@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+#
+# bindiff like utility for radare
+#
+# This implementation checks only byte differences. Doesn't
+# takes care about offsets. (Faster than bindiff). Useful
+# for really big files where bindiff gets saturated.
+#
+# --pancake
+
+my $a = $ARGV[0];
+my $b = $ARGV[1];
+die "Usage: rsc bytediff [file] [file]\n"
+	if ($a eq "" || $b eq "" || $a eq "-h");
+
+my $sa = (stat $a)[7];
+my $sb = (stat $b)[7];
+print STDERR "Warning: files have different size.\n" if ($sa != $sb);
+
+open A, "<$a" or die "Cannot open $a.";
+open B, "<$b" or die "Cannot open $b.";
+
+for my $offset (0 .. $sa) {
+	read A, $ba, 1 or last;
+	read B, $bb, 1 or last;
+	$ba = ord($ba);
+	$bb = ord($bb);
+	if ($ba != $bb) {
+		printf "%02x\t|  %02x\n", $ba, $bb;
+	} else {
+		printf "%02x\t   %02x\n", $ba, $bb;
+	}
+}
+
+close A;
+close B;
+

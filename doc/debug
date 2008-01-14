@@ -1,0 +1,73 @@
+/* THIS DOCUMENTATION IS DEPRECATED */
+
+Debugging with radare and libps2fd
+==================================
+
+The radare project has implemented a wrapper library for debugging
+programs or processes using a basic file descriptor interface for
+reading the memory image and system() for sending commands to it.
+
+If you want to interrupt the running process to gain control over
+the radare shell press ^Z and type 'fg'. You can also throw a SIGTRAP
+signal to the child process.
+
+Example demo:
+=============
+
+$ rsc radaredbg /bin/ls
+
+## Load on memory symbols of the current running program
+##
+> .!rsc syms-dbg-flag
+
+
+## Put a breakpoint
+##
+> !help
+libps2fd debugger commands:
+  run             - load and start execution
+  load            - load a program in memory
+  cont            - continue until 
+  contsc          - continue until next syscall
+  regs            - show registers information
+  step            - step one instruction
+  stepall         - step all instructions
+  break [offset]  - put a breakpoint at offset
+
+
+## Put a breakpoint
+##
+> flag sym___libc_start_main@plt
+Flag hooked at 0x0000000008049898 with size   32 named 'sym___libc_start_main@plt'.
+> !break 0x08049898
+> !cont
+
+
+## Disassemble the sym__init from the process memory
+##
+[0xFFFFFFFF]> seek sym__init
+[0x08049500]> b 0x16
+[0x08049500]> pd
+   0:   55                      push   %ebp
+   1:   89 e5                   mov    %esp,%ebp
+   3:   83 ec 08                sub    $0x8,%esp
+   6:   e8 59 06 00 00          call   0x664
+   b:   e8 b0 06 00 00          call   0x6c0
+  10:   e8 cb d4 00 00          call   0xd4e0
+  15:   c9                      leave
+  16:   c3                      ret
+
+
+## Show registers
+##
+> !regs
+Registers:
+  eax = 0xffffffff => 0xb7f5340d (-1208667123)
+  ebx = 0xb7f55ff4
+  ecx = 0xbfa06e94
+  edx = 0xb7f49290
+  ebp = 0x00000000
+  esi = 0x00000001
+  edi = 0x08049b40
+  eip = 0x08049899
+  esp = 0xbfa06e6c

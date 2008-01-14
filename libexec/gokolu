@@ -1,0 +1,92 @@
+#!/usr/bin/perl 
+#-------------------------------------------#
+# String Carver and Identifier for Binaries # using G**gle Code Search
+# ----------------------------------------- #
+#                                           #
+# Date: 2k7-12-20                 --pancake # youterm.com
+#-------------------------------------------#
+
+use strict;
+
+# user vars
+my $curl = defined($ENV{"CURL"})?$ENV{"CURL"}:"curl -A firefox";
+my $sleep = defined($ENV{"SLEEP"})?$ENV{"SLEEP"}:"0";
+my $maxlen = 40;
+
+print "The Go*g*e Kode Lurker v0.1\n";
+die " `-> Usage: Gokolu [file] [grep-string] (env CURL, SLEEP)\n"
+	unless (defined($ARGV[0]));
+
+my $file=$ARGV[0];
+my $grep = (defined($ARGV[1]))?"|grep -e '$ARGV[1]'":"";
+my $basefile = `basename $file`;
+my @strings = split(/\n/, `radare -vS 8 $file | sort | uniq $grep`);
+
+for my $str (@strings) {
+	my ( $moo );
+	$str=~s/"//g;
+	chomp($str);
+	next if (length($str)>$maxlen);
+	$moo = query_string($basefile, $str);
+	print "=> $str\n$moo" if ($moo);
+	sleep($sleep) if ($sleep>0);
+}
+
+0;
+
+sub query_string {
+	my ( $basefile, $str ) = @_;
+	$str =~ s/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg; # URL Encoding
+	my $url = "http://www.google.com/codesearch?as_q=%22$str%22&as_case=y&hl=en";
+	my $most = 0;
+	my $n = 0;
+	my ($ok, $ok2) = ("","");
+	my @lines = `$curl -s "$url"`;
+	for my $line (@lines) {
+		if ($line=~/first">([^<]*)/) {
+			my $file = $1;
+			$line=~/(\d+) identical/;
+			$n = $1;
+			if ($n>=$most) {
+				$most = $n;
+				$ok2 = $ok;
+				$ok = sprintf "%3d $file\n", $n;
+			}
+		}
+	}
+	return "$ok$ok2";
+}
+
+__END__
+
+=head1 NAME
+
+Gokolu - Binary string identification with google code search
+
+=head1 SYNOPSIS
+
+Gokolu find all strings into a binary and tries to figure the source
+of these strings using Google Code Search.
+
+=head1 DESCRIPTION
+
+It's useful for reverse engineering stripped-statically linked binaries
+to resolve all the library dependencies.
+
+This program is just a PoC. The interface with google code search is just
+raw html parsing and you can easily flood google and be banned. So take
+care and set SLEEP variable to a proper value.
+
+$ SLEEP=5 perl Gokolu.pl food.exe > food.txt
+
+=head1 TODO
+
+Output results of the tool are not very human friendly.
+
+Support other kind of backends for string searching into sources
+
+=head1 AUTHOR
+
+pancake <youterm.com>
+
+=cut

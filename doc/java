@@ -1,0 +1,9 @@
+
+$ java radare
+
+Radare comes with a java package that implements the functionality
+of the commandline radare program in Java Bytecode.
+
+Using this API you can create programs to disassemble binaries
+from any architecture (using objdump), dump hexadecimal blocks,
+make searchs, etc.

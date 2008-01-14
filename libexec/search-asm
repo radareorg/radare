@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Thanks sha0 for the idea
+#
+# --pancake
+#
+# > .!rsc search-asm 'jmp *%eax'
+#
+printf "/x "
+eval "rsc asm '$1'"
+echo

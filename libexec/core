@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+	echo "Usage: rsc core [pid]"
+else
+	PID=$1
+	CORE="core.$PID.$RANDOM"
+	CMDFILE="/tmp/.core-gen.$RANDOM"
+	echo "generate-core-file $CORE
+	quit" > $CMDFILE
+	gdb -x $CMDFILE /proc/$PID/exe $PID 2>&1 >/dev/null
+	rm -f $CMDFILE
+	echo $CORE
+fi

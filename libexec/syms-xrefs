@@ -1,0 +1,34 @@
+#!/usr/bin/env perl
+#
+# Show possible inverse references to symbols of a binary.
+#
+# author: pancake <pancake@youterm.com>
+#
+
+$target = $ARGV[0];
+if ($target eq "") {
+	print "Usage: symxrefs [a.out] [arch]\n";
+	exit 1;
+}
+$arch = $ARGV[1];
+if ($arch eq "") {
+	system("./xrefs -a help");
+	exit 1;
+}
+
+@syms = split(/\n/,`objdump -d $target | grep '>:' | awk '{print "0x"\$1}'`);
+@nams = split(/\n/,`objdump -d $target | grep '>:' | awk '{print \$2}' | cut -c 2-`);
+
+for($i=0;$i<=$#syms;$i++) {
+	# XXX why 0x1000000.. ?
+	eval("\$off = ".$syms[$i]." - 0x10000000;");
+
+	@xrefs = split(/\n/,`./xrefs -q -a $arch $target $off`);
+	if ($#xrefs!=-1) {
+		printf "0x%x : ".$nams[$i]." {\n", $off;
+		for($j=0;$j<=$#xrefs;$j++) {
+			print "  ".$xrefs[$j]."\n";
+		}
+		print "}\n";
+	}
+}

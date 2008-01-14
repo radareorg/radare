@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+#
+# bin2tab
+#
+# tries to standarize the objdump output format into
+# a tab separated format.
+#
+## WARNING #
+#
+# Looks like objdump has changed the output format between 2.15 and 2.16.
+# Thanks GNU again. damn!
+#
+## WARNING #
+#
+#
+# --author pancake
+#
+
+my $target = $ARGV[0];
+die "Usage: rsc bin2tab [elf-program]\n"
+	if ($target eq "" || $target eq "-h");
+
+my $strip   = 1;
+$strip      = 0 if (`file $target|grep 'not strip'`);
+$strip      = 0; # XXX
+my $objdump="objdump";
+$objdump=$ENV{"OBJDUMP"} if (defined($ENV{"OBJDUMP"}));
+my $base    = 0;
+chomp($base = `rsc elf-base-addr $target|head -n 1`) if ($strip);
+
+sub cleanup {
+	my ($str) = @_;
+	$str =~s/\s.*//g;
+	$str =~ s/<//g;
+	$str =~ s/>//g;
+	return $str;
+}
+
+open FD, "$objdump --prefix-addresses -wd $target|" or die "Cannot objdump file.";
+while(<FD>) {
+	my $line = $_;
+	if ($line=~/Disassembly of section (.*)/) {
+		$section=$1;
+		$section=~s/.$//;
+		$getnextaddr=1;
+		next;
+	}
+	$base = substr($line,0,10) if ($getnextaddr);
+	$getnextaddr=0;
+	next if ($line=~/file format/ || $line=~/^$/);
+	next if ($line=~/^\t/);
+	next if ($line=~/^\//);
+	$line=~s/^\s*//g;
+	my $addr = substr($line, 0, 8);
+	$addr = substr($line, 2, 9) if ($line=~/^0x/);
+	$line=~/<(.*)>/;
+	my $label=$1;
+	$line=~/^.*> (.*)/;
+	my $data=$1;
+	if ($strip) {
+		my $delta=0;
+		eval("\$delta=0x$addr-$base;\n");
+		if ($delta) {
+			$label = sprintf("$section+0x%x", $delta);
+		} else {
+			$label = $section;
+		}
+		$data = substr($line, 11);
+		chomp($data);
+	} else {
+		$data  =~ s/<.*//g if ($label=~/\+/);
+		$data  =~ s/>//g;
+	}
+	$label = cleanup($label);
+	$data  =~s/<.*$//g;
+	$data  =~s/0x//g;
+	print "$addr\t$label\t$data\n";
+}
+close FD;

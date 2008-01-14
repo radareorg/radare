@@ -1,0 +1,164 @@
+#!/usr/bin/env perl
+# intel:  http://lorca.act.uji.es/e08/ayudas/intel/INST8088.HTM
+# arm :   http://infopad.eecs.berkeley.edu/research/pico_radio/Test_Bed/Hardware/Documentation/ARM/ARM_Instruction_Set.pdf
+# 
+
+my %ops=(
+	"sar" => "arithmetic right shift",
+	"sal" => "arithmetic left shift",
+	"shl" => "logic left shift (0 padding)",
+	"shr" => "logic right shift (0 padding)",
+	"inc" => "register++",
+	"dec" => "register--",
+	"xlat"=> "al = [ebx+al]",
+	"lahf"=> "AH = SF:ZF:X:AF:X:PF:X:CF",
+	"sahf"=> "eflags(SF:ZF:X:AF:X:PF:X:CF) = AX",
+	"lea" => "load efective address",
+	"rol" => "rotate bits left",
+	"ror" => "rotate bits right",
+	"rcl" => "rotate bits left (with CF)",
+	"rcr" => "rotate bits right (with CF)",
+	"add" => "adds src and dst, stores result on dst",
+	"and" => "binary and operation between src and dst, stores result on dst",
+	"xor" => "exclusive or x^=y (x86) or x = y ^ z (arm)",
+	"sub" => "substract src and dst, stores result on dst",
+	"jmp" => "changes eip to another position",
+	"call"=> "calls a subroutine, pushes eip into stack (esp)",
+	"push"=> "pushes the argument to stack (esp)",
+	"pop" => "pops last element of stack and stores the result in argument",
+	"mov" => "moves data from src to dst",
+	"nop" => "does nothing (nop [eax] (0F 1X XX) performs a memory read and nops)",
+	"movsb"=>"ES:[edi] = (byte)DS:[esi] (esi++, edi++)",
+	"movsw"=>"ES:[edi] = (word)DS:[esi] (esi+=2, edi+=2)",
+	"movsd"=>"ES:[edi] = (dword)DS:[esi] (esi+=4, edi+=4)",
+	"lodsb"=>"al = (byte)DS:[esi] (esi++)",
+	"lodsw"=>"ax = (word)DS:[esi] (esi+=2)",
+	"stosb"=>"ES:[edi] = al (edi++)",
+	"cmpsb"=>"cmp DS:[SI], ES:[edi] (esi++, edi++)",
+	"scasb"=>"cmp al, ES:[edi] (edi++)",
+	"scasw"=>"cmp ax, ES:[edi] (edi+=2)",
+	"rep" => "repeats next instruction ECX times",
+	"ret" => "return from subroutine. pop 4 bytes from esp and jump there.",
+	"clc" => "eflags[CF] = 0",
+	"stc" => "eflags[CF] = 1",
+	"cld" => "elfags[DF] = 0",
+	"std" => "elfags[DF] = 1",
+	"cli" => "elfags[IF] = 0",
+	"sti" => "elfags[IF] = 1",
+	"hlt" => "stop process until external interrupt received",
+	"wait"=> "stop process execution until TEST pin activated",
+	"lock" => "instruction prefix to setup the LOCK pin",
+	"retn" =>"ret* to the same code segment",
+	"retf" =>"ret* to other code segment",
+	"test" =>"set eflags after comparing two registers (AF, CF, OF, PF, SF, ZF)",
+	"jcxz" =>"Jump if ecx = 0",
+	"loop" =>"if (ecx-- == 0) jmp ..",
+	"loopz"=>"if (ecx-- == 0 && eflags[ZF] == 1) jmp ..",
+	"into" =>"interrupt if eflags[OF]=1",
+	"iret" => "return from interrupt",
+# i387
+	"fdiv" => "floating divide",
+	"fdivp" => "floating divide and pop",
+	"fdivr" => "floating divide reversed",
+	"fdivrp" => "floating divide reversed and pop",
+	"fidiv" => "integer divide",
+	"fidivr" => "integer divide reserved",
+	"feni" => "enable interrupts",
+	"fneni" => "enable interrupts, no wait",
+	"ffree" => "free register",
+	"fiadd" => "integer add",
+	"ficom" => "integer compare",
+	"ficomp" => "integer compare and pop",
+	"fild" => "load integer",
+	"fimul" => "integer multiply",
+	"fabs" => "absolute value",
+	"fadd" => "floating point add",
+	"faddp" => "floating point add and pop",
+	"fbld" => "load bcd",
+	"fbstp" => "store bcd and pop",
+	"fchs" => "change sign",
+	"fclex" => "clear exceptions",
+	"fnclex" => "clear exceptions, no wait",
+	"fcom" => "floating point compare",
+	"fcomp" => "floating point compare and pop",
+	"fcompp" => "floating point compare and pop twice",
+	"fcos" => "floating point cosine",
+	"finit" => "initialize fpu",
+	"fninit" => "initialize fpu, no wait",
+	"fist" => "store integer",
+	"fistp" => "store integer and pop",
+	"fisub" => "integer substract",
+	"fisubr" => "integer susbtract reversed",
+	"fld" => "floatint point load",
+	"fldz" => "load constant onto stack 0.0f",
+	"fld1" => "load constant onto stack 1.0f",
+	"fldl2e" => "load constant onto stack, logarithm base 2 (e)",
+	"fldl2t" => "load constant onto stack, logarithm base 2 (10)",
+	"fldlg2" => "load constant onto stack, logarithm base 10 (2)",
+	"fldln2" => "load constant onto stack, natural logarithm (2)",
+	"fldpi" => "load constant onto stack, 3.14159..",
+	"fldcw" => "load control word",
+	"fldenv" => "load environment state",
+	"fmul" => "floating point multiply",
+	"fmulp" => "floating point multiply and pop",
+	"fnop" => "no operation",
+	"fincstp" => "increment floating point stack pointer (%foo)",
+	"fdecstp" => "decrement floating point stack pointer (%foo)",
+	"fdisi" => "disable interrupts",
+	"fndisi" => "disable interrupts, no wait",
+# ARM
+	"b"   => "branches the program counter to dst (pc aka r15)",
+	"bl"  => "branches and link, similar to call in i386, set lr(r14) = pc, changes pc (r15) )",
+	"bx"  => "branches and exchanges cpu mode to 16 bits (thumb mode)",
+	"bxj" => "branches and exchanges cpu mode to Jazzele (jumps to a bytecode vector)",
+	"beq" => "branches if equal (see 'b')",
+	"bne" => "branches if not equal (see 'b')",
+	"cmp" => "compares two registers",
+	"str" => "stores (TODO)",
+	"ldr" => "load to register(TODO)",
+# PPC
+	"sc" => "Syscall - see svc for supervisor call on powerpc",
+	"bctr" => "Branch to counter register",
+	"bcctr" => "Conditional branch to counter register",
+	"svc" => "The svc instruction generates a supervisor call interrupt and places
+bits 16-31 of the svc instruction into bits 0-15 of the
+Count Register (CR) and bits 16-31 of the Machine State
+Register (MSR) into bits 16-31 of the CR.
+
+Consider the following when using the svc instruction:
+
+    * If the SVC Absolute bit (SA) is set to 0, the instruction fetch
+      and execution continues at one of the 128 offsets, b'1'|| LEV ||b'00000',
+      to the base effective address (EA) indicated by the setting of the IP bit
+      of the MSR. FL1 and FL2 fields could be used for passing data to the SVC
+      routine but are ignored by hardware.
+
+    * If the SVC Absolute bit (SA) is set to 1, then instruction fetch and
+      execution continues at the offset, x'1FE0', to the base EA indicated by
+      the setting of the IP bit of the MSR.
+
+    * If the Link bit (LK) is set to 1, the EA of the instruction following the
+      svc instruction is placed in the Link Register.
+
+    Notes:
+      1. To ensure correct operation, an svc instruction must be preceded by an
+         unconditional branch or a CR instruction. If a useful instruction cannot
+         be scheduled as specified, use a no-op version of the cror instruction
+         with the following syntax:
+
+       cror BT,BA,BB      No-op when BT = BA = BB
+
+      2. The svc instruction has the same op code as the sc (System Call) instruction."
+);
+
+if ( $ARGV[0] eq "" ) {
+	print "Usage: rsc adict [-l] [opcode]\n";
+	print "  example: $ rsc adict 'nop'\n";
+	exit 0;
+}
+
+if ($ops{$ARGV[0]}) {
+	print $ARGV[0]."   ".$ops{$ARGV[0]}."\n";
+} else {
+	print "unknown opcode\n";
+}

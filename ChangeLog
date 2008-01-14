@@ -1,0 +1,3409 @@
+---- version 0.9.1 ----
+
+0: c0056b87
+author: pancake@dazo
+date: 20071225-23:27:45
+
+  * 0.9.1 release
+  * Update changelog
+  * Fix configure --with-vala
+  * Fix gdb --without-debugger build
+
+
+0: 2897d4d3
+author: pancake@dazo
+date: 20071225-21:32:21
+
+  * Make grava widget be happy with keyboard
+    - no need to use the mouse or wheel
+    - now the nodes can be selected and moved with hjkl and arrows
+      - i'll enhace the keyboard accesibility for working with graphs
+    - fix pan speed by using graph.zoom
+  * Fix build of libewf by adapting it to the new config
+  * Code cleanup and syntax indentation for aasm the arm disassembler
+    - i have to contact the author to join efforts
+    - needs more work
+  * Fix java code analysis to work with asm.split
+    - the arm code analysis doesnt works
+    - more x86 unknown jumps handled
+  * Make cfg.endian be happy with udisarm()
+
+
+1: 2ae86588
+author: pancake@bare
+date: 20071224-04:14:27
+
+  * Make the debugger view configurable with
+    dbg.regs, dbg.stack, dbg.stacksize, dbg.stackreg, dbg.bt
+    - line number of disassembly are not yet supported
+  * Move scripting commands (;ones) to eval command
+    - commands are stored inside the 'core.' namespace
+    - asigning a value you can active the callback
+      > eval core.echo = hello world
+      > eval core.cmp  = eip, 0x8048458
+      > eval core.je   = 0x8048500
+  * Better graphing algorithm
+    - Full of nasty hacks
+    - But it have a better dispose for small graphs
+  * Cleaner help message without env stuff
+  * Finally fix the code block length in graphs :DD
+  * Dissasemlby configured with:
+    asm.split  : draw split lines after each jump
+    asm.offset : show offset of opcode
+    asm.bytes  : show bytes owned by the opcode
+  * Add more unknown jumps into the x86 code analyzer
+  * prefix with 'rabin_' all rabin sauce
+
+
+2: 03c74d8f
+author: pancake@bare
+date: 20071223-22:22:34
+
+  * Massive code refactoring to use the new config paradigm
+    - most of radare is now configured via 'eval' command or -e
+    - cleaner code
+    - goto command has been removed in pro to use scr.x and scr.y
+    - lot of environment vars has been deprecated
+    - ':' verbosity ghost has appeared again
+    - disassembly and graphs configurable via eval too
+  * Make readline be happy with eval() for config vars autocompletion
+    - eval strings ended with '.' are considered for listing
+  * Fix the visual rotate views to take avoid dups
+
+
+3: 7735d328
+author: pancake@bare
+date: 20071223-07:58:28
+
+  * Initial import of the new model for the key/value configuration
+    - Accessible with -e
+    - endian command has been removed
+    - eval command has replaced the 'e'!
+      - evaluates a key/value string to change config values
+    - code adaptation to use this new model
+      - needs more work
+  * Show warn message when 'w' in visual mode.
+  * Fix syscall trace printout
+  * 'c' command removed too accessible via 'eval cfg.count=3'
+  * %COLOR and family has been replaced for cfg.color and similar
+    %ARCH asm.arch, %SYNTAX asm.syntax
+    - needs documentation when code finished
+    - creates a tree-like key/value hash for configuration
+  * Fix udis() length disassembly
+    - Let the graphs be happy :D
+  * Moar new commands in readline
+  * Add '-i' to interpret a file
+  * syn-pseudo push too
+
+
+4: 42afa88e
+author: pancake@bare
+date: 20071223-01:58:03
+
+  * Make zoom and pan work and be happy with the grava widget
+    - now graphs are fully statically navigable
+    - window is opened at 600x400 by default
+    TODO: next step is to make them interact with the debugger and the core
+    TODO: add a toolbar for the pG command
+  * Make stripstring (-S) functionality happy with concatenated ascii strings
+    foo\0bar\0...
+  * Talk about rabin in README
+  * Reset thread list when reloading a binary
+  * Fix double init environment in radare_open
+  * Fix the loss of -s and -b when loading into the debugger
+  * Make '-x' finally happy in config.mode
+  * Some more readline commands added
+  * Make !fd known about symlinks
+  * Initial import of gokolu
+    - The google code lurker which tries to determine which projects and source
+      files are used into a firmware or binary (for example)
+  * New manpage for rabin
+    - Update all manpages to welcome rabin
+
+
+5: 7046953a
+author: pancake@bare
+date: 20071222-20:29:23
+
+  * New backtrace engine.
+    - Can be fooled.
+    - Filters per user code
+    - Show related map section
+  * Show new backtrace in default debugger view in visualcmd
+  * stepu - step over user code only
+    - F7 in visual mode
+    - 's' key performs 'step'
+  * set default block size for debugger to 200
+  * Add debugger command '!st' (stack analysis)
+    - experimental backtrace implementation
+  * Find flag references on 32 bit mov's in syn-pseudo
+  * Fix grava graphs drag and zoom
+  * TODO:
+    - Add rabin -b to get base address (0x8048000)
+    - Fix -r flag of rabin (output in radare format)
+
+
+6: 64949555
+author: pancake@dazo
+date: 20071220-04:01:12
+
+  * New keybindings for the visual mode:
+    - 'z' : toggles the zoom from/to the whole size or block
+           - will support 
+    - 'Z' : resets the information of the zoom structure
+  * Initial import of the 'pO' command
+  * Some more bugs has been closed thanks to pof and elektranox!
+  * Better layout algorithm for Grava
+    - more complete example of a graph generated by C
+  * Autodetect valac, no need to use --with-vala
+
+
+7: ed638132
+author: pancake@dazo
+date: 20071219-22:27:53
+
+  * Move all plugins to src/plugins
+  * Remove libaff2fd plugin
+  * Add intel16/32/64 combobox in GUI
+  * Some new goodies in TODO
+
+
+8: 05d90ee4
+author: pancake@dazo
+date: 20071219-22:05:44
+
+  * Initial import of the gxemul plugin
+  * Some silent fixups for building usb sniffer under *BSD
+
+
+9: d2fc073b
+author: pancake@dazo
+date: 20071218-04:43:27
+
+  * More warning cleanup from elektranox work
+  * Fix memory aligned reads with ptrace using patan's ReadMem
+
+
+10: 69d3df1a
+author: pancake@dazo
+date: 20071217-03:00:44
+
+  * Initial import of the winedbg:// io plugin
+    - allows to debug w32 programs using winedbg on *nix systems
+    - memory reads are not aligned. some bugs with that
+    - lot of debugger commands are missing, but step and regs
+  * Add rabin into the Makefile build
+    - Rabin now supports PE headers for entrypoint and checksum
+  * Massive warning cleanup Thanks elektranox!
+    - Some bugs have been fixed (mostly spurious segfaults)
+  * Silently fix a segfault in disarm
+  * Silently fix some bugs in src/hist.c
+
+
+11: f9405ce8
+author: pancake@dazo
+date: 20071216-23:50:53
+
+  * Up configure to 0.9.1
+  * Import of 64bit patches from elektranox
+  * New command "./s *" to flag all strings as str_<str_reference>
+
+
+12: d8a79acc
+author: pancake@dazo
+date: 20071216-22:55:57
+
+  * Initial real support for python-radare
+    _print r.cmd("x")
+    _.entrypoint.py
+  * valgrind fixes for the hist.c storage
+  * Make pw, pW, pQ work properly again print_color_byte casts to byte!
+    - do not colorize these commands
+  
+
+
+13: 33550dd5
+author: pancake@dazo
+date: 20071214-04:36:45
+
+  * Initial import of the 0.8.8 w32 installation scripts
+    - Not yet working for 0.9.1.
+
+
+14: 5744258f
+author: pancake@dazo
+date: 20071214-04:18:31
+
+  * Major makefile cleanup.
+    - Centralize most static stuff to config.mk.acr
+    - Remove lot of Makefile.acr
+  * Add colorization for intel syntax
+    - TODO: also for att
+  * Fix posix on cygwin to support 64 offsets.
+    - Not yet tested
+
+---- version 0.9 ----
+
+0: 17bd6666
+author: pancake@dazo
+date: 20071212-22:56:35
+
+  * radare 0.9 released
+  - Fix double free in vala/grava
+  - Minor hidden fixups in print and ewf
+  - Silently update Changelog and sync with old git repo
+
+
+1: b85db356
+author: pancake@pluna
+date: 20071213-00:04:23
+
+  * Lot of code cleanup
+    - Fix build on NetBSD
+    - Remove lot of warnings
+    - Some bugs fixed by removing warnings
+  * Needs more love
+
+
+2: ffb0ef03
+author: pancake@dazo
+date: 20071212-02:02:21
+
+  * Initial support for els:// URIs for libewf to open
+    splitted ewf images (.E01,.E02,..)
+    - So just type: ls *.E* > list.els
+  * Fix flag-offset-printf in visual mode
+    - Fix flag-offset fixup to work everywhere, not onl dbg
+
+
+3: bbce2489
+author: pancake@dazo
+date: 20071210-21:54:16
+
+  * Initial import of the libewf plugin
+    - support to open EnCase(R) forensic disk images in read/readwrite mode
+    - add proper checks in configure.acr
+    - show header information like case number, stored hash, etc..
+  * Some hidden changes for rabin and arm
+
+
+4: ca37b89a
+author: pancake@dazo
+date: 20071210-02:28:31
+
+  * Initial import of rabin (radare binary header helper)
+    - understands ELF format
+    - show imports, exports, entrypoints, sections, etc..
+  * Initial import of dosdebug snip..
+
+
+5: b8008bb1
+author: pancake@dazo
+date: 20071209-11:25:07
+
+  * Initial port of the debugger layer for x86-64
+    - It builds and steps. but not much more
+  * Add %ARCH intel16, intel32 and intel64 keywords
+  * Add some fpu goodness (show x87 regs)
+    - more opcodes in 'rsc adict' (assembly dictionary)
+  * Minor code cleanup in dbg/system
+  
+
+
+6: be449ba2
+author: pancake@dazo
+date: 20071206-05:33:48
+
+  * Macroize the plugin.c code.
+  * Fix minor nasm related bug
+
+
+7: 595caad1
+author: pancake@dazo
+date: 20071206-02:20:11
+
+  * Initial implementation of the 'pG' command
+    - Opens a Gtk Window using the Grava Vala API
+    - Add zoom and rotate support to Grava.Widget
+    - Works from the debugger or a file
+    - Colorizing nodes seems to segfault sometimes, disabled atm.
+    - Hook 'mouse wheel' to zoom into the graph
+  * Initial import of the Grava api
+    - Add --with-vala ./configure flag
+    - enabled pG command
+  * Initial import of the HISTORY file
+  * syn-pseudo.c : make 'ret' be 'ret' and not just a set of dashes
+    - Cleaner udis() output for Grava
+  * New stuff to think in TODO...
+  * Add ARCH=java support to rsc asm
+    - Fix rsc asm when no 'nasm' is installed
+    - New command 'rsc path' like whereis or type, but portable
+  * Fix cannot open weirdness
+    - rename struct config to struct config_t
+    - Restore entire config_t structure when opening a new file is impossible
+    - Exit if we are opening our first file and it fails
+  * Fix pipe_command_to_string function to work with files and pprintf
+    - slower, but it works(R) - should be fixed before 1.0 ;)
+  * pprintf the flags.c file
+  * Add missing print commands to help:
+    - pb, po, pc, pC, pG
+  
+  NOTE: I NEED INTERNET YAAAH
+
+
+8: 712a6234
+author: pancake@dazo
+date: 20071204-00:30:16
+
+  * Fix and full initial implementation of monitors for the gui and the shell
+    - does not properly supports multiple sessions for the same user
+    - does not uses inotify or so
+    - works from the gui
+    - 'rsc monitor' command has been fixed (rsc makes monitor take too many args)
+  * Lot of silent patches in previous commit
+
+
+9: ef0d8e0b
+author: pancake@dazo
+date: 20071130-04:08:19
+
+  * Fix Step/StepOver commands in gui
+  * hist_get, hist_get_i (the same for _set[_i]
+  * move radare_move to radare.
+  * More code cleanup
+  * Add jz, jnz, ja, jb, echo, list, reset commands in the ';' mode
+  * Add get/set for variables in ';'-way
+  * Rename goto to jmp
+  * Silent nightly fixes
+
+
+10: 59b9aba9
+author: pancake@dazo
+date: 20071130-01:55:01
+
+  * Fix build for ARM
+  * Fix re-build problem caused by the utils.x hack
+    - Fixed with another hack
+
+
+11: 73716594
+author: pancake@pluna
+date: 20071130-03:08:26
+
+  * Make the rdbdiff build happy again
+  * Hard refactoring of utils.c
+  * Add -DRADARE_CORE to make utils.c usable outside the core
+  * Code cleanup
+  * Simplify msdos date code. cleaner to read
+
+
+12: bb0252fa
+author: pancake@dazo
+date: 20071129-04:10:04
+
+  * Fix short jumps output that didn't get the flag offset string
+  * Make mroe use of pprintf inside the disassembly module
+  * Implement ;cmp comment-command (to be used with ;jz, ...
+  * Add get_cmp to compare two strings
+  * Fix color register print
+  * Extend the use of eprintf!
+  * Remove commands.[c,h]. Moved to cmds.[c,h]
+  * Code cleanup
+  * Verbose mode is now only changed by % command
+  * Make hexstr2binstr get 2 parameters
+  * Rename hiztory to hist_*
+
+
+13: 73f558be
+author: pancake@dazo
+date: 20071128-02:33:21
+
+  * Initial working version of the code analysis (pC command)
+  * Remove debug stuff
+  * Some opcodes like 0x75 (jz) are not yet supported, only calls and jmps
+  * Silently fix the loss of ticks with flags_setenv()
+
+
+14: db68ff9d
+author: th0rpe@pluna
+date: 20071127-15:12:35
+
+  * software breakpoints fixed on bsd
+
+
+15: d3e89b36
+author: pancake@dazo
+date: 20071124-16:15:10
+
+  * Initial import of the code analysis module
+    * Accessible via pC command (print Code analysis)
+    * Does not currently works properly
+    * The structures and required code is done (need fixups)
+    * Supports:
+      - x86
+      - arm (Thanks esteve!)
+      - java
+  * Import z0mbies length disassembler in C
+  * Fix some makefile problems
+  * Silently fix the breakpoints stuff on GNU/Linux (Thanks th0rpe!)
+  
+
+
+16: 5266a5f2
+author: pancake@pluna
+date: 20071122-03:29:54
+
+  * Initial import of the x86 code analysis module (not yet tested)
+  * Fixtures for the debugger breakpoints on *BSD
+  * Make more use of eprintf and pprintf
+
+
+17: fa71260c
+author: pancake@dazo
+date: 20071121-05:05:45
+
+  * Add !syms command to silently call .!rsc syms-dbg-flag $FILE
+    - this command flags all symbols of the program
+  * Make the flags (fd command) be available from the disassembly.
+  * Fix string_flag_offset. (make it buffered and more checks)
+  * src/dbg depends on src/ now
+
+
+18: 7d7e8630
+author: pancake@dazo
+date: 20071120-06:03:26
+
+  * Initial import of the monitoring stuff
+    - New rsc command:
+      - rsc monitor [name] [command]
+    - Each prompt runs all commands in ~/.radare/monitor/*[^txt]
+    - Improve the print to stdout functionality (pprintf)
+    - Needs more work! statistics and optimization
+  * The gui have a 'File -> New monitor' menu entry
+    - Not yet working
+  * Major code cleanup thanks to -pedantic -gnu99
+  * Fix some minor bugs
+  * Fix build of vala frontend (continue crashing!)
+  * Silently fix a null pointer when EOF ocurred in visual
+    mode with readline
+
+
+19: 5d136c2b
+author: pancake@dazo
+date: 20071114-01:00:53
+
+  * Important updates and fixups for the graphical frontend
+    - More integrated with debugger
+    - Simplify the gui (less buttons on toolbar and menus)
+    - Add %ARCH combobox
+    - reorder print modes combobox
+  * Add contextual menu to seek, and set breakpoints (atm)
+  * Support to change the font:
+  
+    $ gradare -f "Sans Bold 12"
+
+
+20: b1f21a8d
+author: pancake@dazo
+date: 20071113-02:37:30
+
+  * Hard file hirearchy reorganization
+    - Still needs more work on cleaning makefiles and moving source files and functions
+    - But is on the way
+  * libps2dbg has been moved to src/dbg
+    - About separated src/arch and src/dbg/arch..
+    - This will help for a better integration between the debugger and code analyzer
+  * Add dwarf-lines libexec script :? uh oh I thought it was there
+    - api/asm.vala was missing too :O
+  * Silently fix the !wp command help
+    - Make it more coherent with the rest of radare (flags and output format)
+    - Remove !wpl command
+    - Registers mark renamed from 'r' to '%'. So instead of reax, you should type %eax :)
+
+
+21: a572cbe0
+author: pancake@pluna
+date: 20071112-14:44:13
+
+  * Major file system reorgonization.
+    - Needs more work (the debugger and rest of plugins should inherit a single directory.
+    - move all the architecture dependant stuff to src/arch/<arch>
+    - the debugger should be moved to src/dbg ?
+    - move rdbdiff to src/rdb (will be used from radare core)
+  * Chop libudis86 unnecessary files.
+    - moved to src/arch/x86/udis86
+
+
+22: 3b5995ec
+author: pancake@dazo
+date: 20071111-15:49:35
+
+  * Fixups and enhacements for the bindiffing engine
+    - better output
+    - find code blocks with same name
+    - XXX does not yet supports xrefs and comments :/ 
+  * Some minor changes and fixups for the watchpoint debugger command
+    - TODO it needs more changes. it's not much user friendly atm
+
+
+23: 455697de
+author: pancake@dazo
+date: 20071108-20:51:06
+
+  * Initial import of the conditional expressions for watchpoints
+    - new deprecated command "wtrace"
+    - wp allows registers and memory expressions
+
+
+24: 63b12064
+author: pancake@dazo
+date: 20071105-14:14:09
+
+  * Integrate the java asm/disasm with radare core
+    - Lot of fixups.
+      - The class header needs more love
+    - New command: "javasm"
+      - allows inline assembly and disassembly (ala rsc)
+  * Reorder code from utils.c to io.c
+  * Add RDBDIR environ var
+    $ echo "%RDBDIR ~/.radare/rdb >> ~/.radarerc
+  * Implement %TRACEFILE
+  * Implement software breakpoints for ARM
+    - wrap hardware ones via software
+    - not yet tested
+  * Add oregs for ARM
+    - Initial coloritzation for arm registers using oregs
+  * Autocomplete %ARCH with arm,intel and java
+  * Autocomplete Comment command
+  * Add nlines for all disassembler functions
+  
+  * FUTURE * integration with the arm debugger for Jazzele!
+
+
+25: 6c17e8a0
+author: pancake@dazo
+date: 20071103-18:35:53
+
+  * Initial import of javasm - my own minimalistic java assembler/disassembler
+
+
+26: 6fa50b1d
+author: pancake@dazo
+date: 20071103-10:59:44
+
+  * Initial import of the thread handling patch from th0rpe
+    - now we can catch events from all the childs
+    - update thread list on dispatch_wait! (arch_pc() should be called for each process)
+    - store address in thread list
+    - add parent thread to the list too
+  * Silent fixup of thr thread list with correct EIP
+
+
+27: 45c8e320
+author: pancake@dazo
+date: 20071102-19:44:16
+
+  * Lot of silent enhacements for the ARM port
+    - disassembly endian fixup
+    - debugger is now working
+    - implement the arch_syscall function
+    - fix some disassembly of disarm (guided by ida and objdump)
+  * Silently add some shellcodes to rasc
+  * Add TRACECMD environ to !trace command
+  * Silently fix makefiles.acr :O
+  * Pseudo-silently integration of the libgdb2fd
+    - Fix build and implement a VERY basic protocol api
+    - not yet usable
+    - added to the plugin list and accessible via
+  
+      $ gdbserver localhost:9999 /bin/ls
+      ...
+      $ radare gdb://localhost:9999
+
+
+28: c5aa87db
+author: pancake@dazo
+date: 20071101-15:19:19
+
+  * add ptrace_syscall - a wrapper for all hosted syscalls
+    - atm open/close/dup2/lseek/tkill/gettid are supported.
+    - would be nice to mix this with syscallproxy
+    - all code in fd.c is now using the ptrace_syscall()
+  * Add pids_ptrace_all to ptrace() all sons of a child (forks and so..useful?)
+  * Initial support for handling threads (clone(2)) on Linux platform
+  * Use internal pstree() instead of the system one (needs /proc)
+  * Fix BEP=main (still have a step(1) bug :?)
+  * Add !th command to handle threads (lot of work needed!!)
+  * Fix segfault in !fd arg parsing
+
+
+29: 0a2ab6bc
+author: pancake@dazo
+date: 20071031-22:51:48
+
+  * Initial import of aasm renamed as armasm
+    - minimalistic ARM based assembler
+    - integrated with 'rsc asm' using the ARCH environment variable
+  * Add 'c'ancel option when closing the debugger
+  * Sanitize some code to be more serious :) 
+  * msync() pages before dumping and after restoring
+  * Fix !maps parser
+  * Add eprintf...avoid fprintf(stderr!
+  * Add (if __WIN32__) on the plugin initialization
+  * Finally fix the stupid chdir bug in !dump/!restore
+
+
+30: 9f72e22f
+author: pancake@pluna
+date: 20071030-18:34:24
+
+  * More documentation for the x86 Adict (Assembly Dictionary) (rsc adict 'opcode')
+  * Support directory name for dumps and restores
+  * Also dump FLAG_USRCODE memory regions (not only REGION_WRITE)
+  * Initial import of doc/xtra/x86-flags (CPU FLAGS documentation)
+
+
+31: 90209dbf
+author: pancake@dazo
+date: 20071029-02:07:56
+
+  * Fix readme to fit reality
+  * Update configure version to 0.9
+  * Add dump/restore process status (maps, stack and registers)
+  * Move debug_dr to i386.c
+  * Add some more missing vala files
+  * Fix /proc/pid/maps parser
+  * Code cleanup
+
+
+32: 7b1dcdb1
+author: pancake@dazo
+date: 20071028-23:32:06
+
+  * Autodetect radare version in debian.sh
+  * Minor fixups cygwin and 0.8.8 release
+  * Fix sysproxy build
+  * Add new shellcode for w32 (test both of them)
+  * Some fixups on w32 plugin
+  * Add some missing vala files
+
+
+---- version 0.8.8 ----
+
+0: 01485543
+author: pancake@dazo
+date: 20071027-21:45:49
+
+  ** 0.8.8 SPURIOUS RELEASE! **
+  
+   * Fix build on ARM
+   * Add syscall tables for netbsd
+   * Add syscall.h from netbsd and freebsd in doc/xtra
+   * Add seteuid, setegid, and pseudo suid directives in rdb
+   * Add colors in visual help
+   * Make F10 refresh after achieve user code
+   * Show 'cannot determine user code' when no maps found
+
+
+1: 67644ff1
+author: pancake@dazo
+date: 20071027-20:57:40
+
+  * Initial import of dead sql stuff
+
+
+2: b7df1975
+author: pancake@dazo
+date: 20071027-20:30:34
+
+  * Add manpage for rasc.1
+  * Fix contu old_pc bug
+  * Prefix register values before stepping
+  * Add -E to rasc to define a enumeration (00 01 02 03...)
+    - Useful to locate the place to fit the return address
+
+
+3: 5a8f5889
+author: pancake@dazo
+date: 20071027-19:15:24
+
+  * Add soft step over reps when tracing or continue until user code
+  * Add continue until user code (!contu)
+  * Add !info* (radare-ized command)
+  * Load !maps and !info* when loading the binary
+  * Add !trace command with debug levels (only traces user code)
+    0  no output
+    1  show addresses
+    2  address and disassembly
+    3  address, disassembly and registers
+  * Make debug_step be conscient of breakpoints returning 0 or 1 
+  * Sort and colorize debugger help messaage
+  * Add rows argument to udis()
+  * Add -a flag to rasc to defint the return address and the offset
+    to place this address.
+  * Cleaner !maps output
+  * Add jmp $$ hack
+  * Autodetect infinite loops and silently optimize !contu
+
+
+4: 07c38db1
+author: pancake@pl2
+date: 20071023-15:21:30
+
+  * Fix a Solaris issue related to alarm(2)
+  * Take care about solaris to link against -lsocket or not
+  * Add cursor and colors for the ARM disassembler
+  * Fix flickering when cursor is used
+  * Handle lines in ASHC on visual mode
+  * Add metadata for ARM
+  * Fix cursor movement inside udisarm
+  * Minor fixups for Vala
+
+
+5: a4ee730c
+author: pancake@pl2
+date: 20071023-02:45:29
+
+  * Make search show number of hits and progressbar (cleaner)
+  * Add support to search widechar strings (/w foo)
+  * Deprecate the old search.c
+
+
+6: a8b7f1f6
+author: pancake@pl2
+date: 20071022-04:36:14
+
+  * More work on the Vala front
+    - Add console and shell working tabs with
+      - no "load script" functionality yet
+    - initial radgets format
+    - Initial interaction with radare
+    - fixups on radare thanks to vala (fix open initialization)
+
+
+7: db808f6c
+author: pancake@pl2
+date: 20071022-01:26:40
+
+  * Merge of the mprotect patches for the debugger. Thanks th0rpe!
+  * Implement contu command
+
+
+8: d29bf5f1
+author: pancake@dazo
+date: 20071021-17:40:01
+
+  * Initial import of disarm. A GPL ARM disassembler
+    - Some modifications to make't build on ubuntu-gcc-4.1
+  * Silently add changes and fixups for the Vala frontend
+  * Support ARCH environ to use udis86 or disarm with pD
+
+
+9: 6205df66
+author: pancake@dazo
+date: 20071021-14:25:18
+
+  * Initial import of the Vala frontend
+    - Initial implementation of the Radare Vala API
+  * Fixups for the debugger layer
+    - allow to recover from fatal signals and so (do not reload!)
+  * Non verbose functionality fixed in the debugger
+    - use getv() to get VERBOSE environ.
+    - In the future this lib will die coz will be compiled together with radare
+
+
+10: deac1f27
+author: pancake@dazo
+date: 20071020-16:31:35
+
+  * Add print_syscall for better understanding of !contsc
+    - TODO: !contsc 4 - continue until syscall 4 is called
+    - arguments of the syscall are showed (not yet processed with pA)
+    - an associated radare command may help
+  * Fix build of debugger on ARM (for the new engine)
+    - port is already incomplete and untested
+  * Fix --without-udis86 (useful for crosscompiling out of intel)
+  * Initialize $RDB file when debugging
+    - Load chdir, chroot, setuid, setgid variables from it
+    - Use !vim $RDB to change the values
+    - Use !load to reload the changes and restart the process
+
+
+11: 7a9a3692
+author: pancake@dazo
+date: 20071020-06:09:35
+
+  * Initial import of the mprotect() code injector - Thanks th0rpe!
+    - !contu command has been added (no code yet)
+  * Load chdir, chroot, setuid, setgid directives from rdb file
+  * Fix bp tip when using BEP (no eip relocation after soft bp)
+  * Use F6 for !contsc and F10 for !contu
+
+
+12: aee21481
+author: pancake@dazo
+date: 20071020-04:46:02
+
+  * Initial support for contsc syscall identification for linux-x86 
+    - Works like an interactive strace
+    - Continue until certain sycall does not yet works (work on)
+      > !contsc 4  ; continue until syscall(4)
+    - Bind to <F10> key in visual mode
+  * Fix BEP buggy conditional check
+  * 
+
+
+13: cdfc3c28
+author: panda@panda0
+date: 20071019-15:52:49
+
+  * Fixups from FreeBSD.
+    - Initial debugger support
+    - Fully compilation
+    - ktrace has been disabled (fktrace is netbsd only?)
+
+
+14: 7b994283
+author: pancake@pl2
+date: 20071018-04:10:49
+
+  * Remove load:// from ptrace. useless dupped unused deprecated!
+  * Add description field on every plugin
+    - Available from 'radare -L'.
+  * Silently fix the build for NetBSD. (The new debugger does not works yet)
+  * Silently fix line counter for udis
+
+
+15: 833e81d1
+author: pancake@pl2
+date: 20071018-03:21:07
+
+  * Fix build for TCC (The Tiny C Compiler)
+  * Fix some ugly pointer bugs thanks to tcc
+  * The 64 bit mode works on 32 bits by offsetting it by 0x1 0000 0000 
+    - this value is converted into seek 0xFFFFFFFF, but it is in reality
+      the 0x100000000 position. You can relatively seek from there, so
+      searchs and so should work for large files (512M?).
+  * Fix compiler dependent things like defining variable size in local
+    frames defining the size with a variable name. TCC does not predicts
+    this size in realtime. Use malloc instead. Less optimal, but functional
+  * Make sysproxy flaggable by configure (--with-sysproxy)
+  * Fix anoying problem with the plugin handling list. This will allow us
+    to easily add new plugins with the '-l' flag. So it will be able to
+    dynamically load IO plugins from .so or .dll
+  * Silendly add the new -l flag for adding plugins (not yet working, just
+    initial code)
+  * Reduce LOCs removing stupid comments and checks. Clean some warnings
+  * Silendly add the -V flag to rasc
+
+
+16: 6145dc43
+author: pancake@dazo
+date: 20071016-20:06:39
+
+  * Add -X to execute shellcodes
+  * Initial on-the-fly patching of shellcodes to change port, addr and cmd (not yet stable)
+  * Add some new shellcodes into the pool
+
+
+17: c88c5fe6
+author: pancake@dazo
+date: 20071015-02:09:11
+
+  * Moar harcoded shellcodes!
+  * support for C output format (-c), (-x for hexa)
+  * -ANC [n] used for setting prefixes and sufixes.
+  * Initial support to modify parts of the shellcodes
+    - Use environment variables
+  * Lot of fixups and enhacements in rasc
+
+
+18: 4415e5f5
+author: pancake@dazo
+date: 20071014-16:51:54
+
+  * Initial import of the syscall proxy IO plugin
+    * only for linux-x86 atm. little buggy
+    * No syscallproxy ptrace support yet
+    - ./configure --with-sysproxy
+    - alice$ rasc -l 9999
+    - bob$ radare sysproxy://alice:9999/bin/ls
+  * TODO: use syscallproxy together with bitbull (the shellcode loder from pluf&ripe)
+  * Move socket_fgets to a safer place (it uses stupid config.fd) - bad movement
+
+
+19: 25098245
+author: pancake@dazo
+date: 20071014-03:21:11
+
+  * Initial import of some hardcoded shellcodes into rasc
+  * Make 'rasc' work as expected ;)
+  * Bring new ideas from some empty beer bottles
+    - syscall proxy can be used as a radare plugin for remote debugging and so
+  * Silently fix a bug in the debugger which disables steps after end of process
+
+
+20: 93dcb3cd
+author: pancake@dazo
+date: 20071013-14:25:59
+
+  * Export %CURSOR envvar
+  * Keep last_print_format after writing
+  * Make 'rsc asm' happy with %CURSOR. This is, relative jumps are now done by default
+  * Enhace the nasm support by not exporting an elf file
+  * Fix the 'a' keybinding in the visual mode
+  * Important fixups on the command parsing.
+    - Now is possible to create your own oneliner debugger like this:
+      > %PRINTCMD .!regs* && pD @ eip
+      > pp
+  * PRINT and VISUAL cmds does not alter the last_print_format
+  * More stuff to stderr to avoid noise
+  * Add 'y' and 'Y' commands into the shell
+
+
+21: b07363de
+author: pancake@dazo
+date: 20071012-15:17:24
+
+  * Add ranging with the cursor mode (select = HJKL, move = hjkl)
+    - Range selection works also in the disassembly print mode, so
+      you can yank (aka copy) and Yankee (aka paste) easily
+  * Notify when not in write mode in visual mode
+  * Fix showed bytes in udis print format
+  * Add yank and paste commands in visual mode (y,Y)
+  * ';' command is working again and now supports cursor!
+
+
+22: 8fc6a24c
+author: pancake@dazo
+date: 20071012-02:28:23
+
+  * Add BEP for the debugger (break entrypoint to entry, loader, main or offset)
+    - Environment variable BEP
+    - For example:
+       $ BEP=main radare dbg:///bin/ls
+  * Add debug_until() helper for debug_load()+bep
+  * Make visual mode cleaner
+  * Support for Fx in visual mode (ollydbg-like keybindings)
+  * Initial implementation of the /cursor mode/
+    - radare_write, 'w' and 'W' are now happy again
+  * Key '%' in visual mode shows radare environment
+  * Lot of minor fixups
+  * Make CLRSCr famous again
+  * Ninja hack to make comments work on debugger
+
+
+23: 58d1da82
+author: pancake@dazo
+date: 20071011-03:17:20
+
+  * Make -x work again
+  * Minor code cleanup
+
+
+24: b901a450
+author: pancake@dazo
+date: 20071001-01:14:24
+
+  * th0rpe fixups for the debugger side
+  * Add th0rpe patch to make breakpoints persistent between debug sessions
+  * Make the terminal height fit only in visual mode (config.visual)
+  * Add '-f' flag to the block size to file size
+
+
+25: ebc53d1e
+author: pancake@dazo
+date: 20070929-08:19:54
+
+  * Initial merge of the th0rpe changes on the debugging architecture
+    for better handling of breakpoints and so
+    - Not everything is working yet
+    - There are some bugs that must be fixed asap
+    - Code refactoring
+    - Finds available hw breakpoints or use software ones
+  * Remove !stepbp command (useless)
+  * Optimize the perl integration ( do not use temporally files out
+    of the debugger :/..must think on ):
+  * Add command_to_string function to get the stdout data as a string
+  * Some fixups on the radare_command() parser
+  * Add :pD and :pd commands (remove trailing memory addresses and so)
+  * Initial call to the events interface (not yet tested)
+  * Add '!bp?' help command
+  * Some alien experiments with the swig interface (maybe its not a good solution?)
+  * pstree replaced on linux
+
+
+26: 362c521a
+author: pancake@dazo
+date: 20070928-22:21:35
+
+  * Initial import of the events() support for ptrace linux
+  * Fix multiple pipes bug | | | ..
+  * Verbose 'w?' help
+  * Cleaner visual keybindings
+
+
+27: c5490ac8
+author: pancake@dazo
+date: 20070928-01:42:59
+
+  * Initial import of the w32:// io layer to wrap CreateFile, WriteFile, ReadFile, ..
+  * Some cleanup on the ARM debugger side, but it needs more love
+  * Add 4 new breakpoints for ARM :D
+  * Cleanup the arch/debug includes and function definition
+  * Code cleanup for the signal stuff
+  * Fix warnings in fd.c
+
+
+28: da1f50ab
+author: pancake@dazo
+date: 20070924-08:15:48
+
+  * Make rsc asm happy with nasm and gas (NASM=0 or NASM=1)
+  * Make stripstr work inside the debugger.
+    - Integrated with /s [match] search command
+  * Cleaner help messages for radare help
+  * Add help message for 'f' command (f?)
+  * Add '!hack <number>' command to the debugger
+  * Add 'A' key in visual mode to Add a debugger hack.
+       0 - nop one opcode\n");
+       1 - negate jump (jz->jnz , ja->jbe, ..)\n");
+       2 - force jmp (only for { 0f, 0x80-0x8f })\n");
+       3 - insert jmp (TODO)\n");
+       4 - insert call (TODO)\n");
+       5 - add ret\n");
+       6 - add ret with eax=0\n");
+       7 - negate zero flag (TODO)\n");
+
+
+29: ea076b48
+author: pancake@dazo
+date: 20070924-05:22:04
+
+  * Fix !skip command (Make use of the killabyte inst_length code)
+  * Initial try for the load:// prefix
+  * Do not build libps2fd anymore. its br0ken (-fPIC is crappy)
+  * Add insn_length() - reading from R_EIP(reg)
+  * Add '!fd' command to manage filedescriptors
+    - open
+    - dup2
+    - lseek
+    - close
+    - list
+
+
+30: 96f8a87f
+author: pancake@dazo
+date: 20070923-21:39:33
+
+  * Beutify the flag list output
+  * Support to remove breakpoints fixed "!bp -0x804970"
+  * Rename rsc proc-map to maps
+    - Fix the maps load on the debugger
+    - Fix multiple sections with the same name problem
+  * Add function arch_get_entrypoint()
+    - radare stores the ld.so entrypoint and the program's entrypoint
+    - see !info fmi
+  * Add some prctl() stuff
+  * Add isalive() function to kill(ps.pid,0)
+  * Fix detection of dead process
+  * Reload breakpoints when the program restarts
+  * Make info command recursive when config.debug
+    - show delta flag offset too
+  * Add some LD_ envvars for better debugging
+  * Rename 'i' and 'I' keys to 'w' and 'W' in visual mode
+  * Make the 'wait' flag of visual commands functional
+  * Better fit of the rotate print modes in visual
+  * Add 'C' key in visual mode to continue
+  * Fix getenv("TMP") problem in make_tmp_file()
+  * Split radare_command() into radare_command_raw()
+    - Fix memory leaks
+    - Fix problems with non-verbose flag
+    - Fix problem with history
+    - Add support to work as vi [repeat][command]. F.ex: 33x
+  * Fix udis86 disassembly output 
+    - no relative addresses
+    - No color for u->pc (more readable)
+    - uppercase hexa addresses for calls
+    - avoid nested stack frame in disassembly
+  * Cleanup for the debugger command parsing code
+
+
+31: 88e3939f
+author: pancake@dazo
+date: 20070922-01:27:39
+
+  * Store and colorize the debugger register values on x86
+  * Lot of awesome fixups on the pD command (udis86) with syn-pseudo
+    - Fix impertinent segfault
+    - Colorization of opcodes by type
+    - Fix some negative values to be shown as -0xHHH
+    - cleaner floating point representation
+    - Add marks depending on the type of the opcode (jmp, call, ret, loop, ...)
+  * Add '!oregs' command to show the last registers captured
+    TODO: Need timestamp!!!
+  * Cleaner look&feel for the visual mode
+  * New keybindings for visual+debugger
+    - 'B' - set a breakpoint
+    - 'W' - set a watchpoint
+  * Add support for repeating commands in visual mode
+    Type 33s to make 33 steps :)
+  * Add 'c' keybindings into the visual mode to toggle config.color
+  * Finally fix the 'pA' command (recursivity overflow)
+
+
+32: bb020c44
+author: pancake@dazo
+date: 20070919-03:22:48
+
+  * Initial import of the !dr command for the debugger.
+    - Allows to manipulate the DR registers to set read, write and
+      execution watchpoints via DR and CR registers.
+  
+  * Fix udis disassembly segmentation faults by avoiding intel disasm
+  * Fix height in udis (pD)
+  
+
+
+33: e054c04a
+author: pancake@dazo
+date: 20070918-02:46:33
+
+  * Initial import of the entropy calculation for the hasher tool.
+  
+    $ hasher -qva entropy my-target
+  
+                                        - Thanks anonymous gnome!!
+
+
+34: d10ddd34
+author: pancake@dazo
+date: 20070916-07:57:23
+
+  * Initial import of the not-yet-working !mmap command for debugger
+  * Initial import of the not-yet-working implementation for watchpoints
+  * Make !stepall command stop after loading the program
+  * Avoid progress bar in !stepall
+  * Thanks elektranox for fix up some warnings and minor fixups
+
+
+35: f3a59927
+author: pancake@dazo
+date: 20070916-03:26:55
+
+  * Add support to change the hosts signal handlers (!signal SIGHUP 0x8048000)
+  * Add doc/xtra documentation
+  * XXX debug_inject does not works :/
+
+
+36: ae9b551a
+author: pancake@dazo
+date: 20070916-02:26:25
+
+  * Remove the monitor stuff. Will be replaced by stdmixer:
+    - http://vicerveza.homeunix.net/~viric/soft/stdinmix/
+
+
+37: 747b1813
+author: pancake@dazo
+date: 20070915-09:24:42
+
+  * Add 'undo' command. (allows, list, reset and redo)
+  * Add 'u' and 'U' commands to the visual mode (needs more work)
+  * Define 'if (config.color)' as 'C'. Cleaner code :)
+  * Fix some email headers
+  * Fix 'w' command help messages
+  * '?' command now shows the result in different bases
+  * Fix HARD bug that makes hex strings ended with 'b' to become trash
+  * Fix hex2int insanity bug
+  * Beuty the write command in debugger mode
+  * Make pD in VISUALCMD fit on screen properly
+  * c and C commands (for adding code comments) are replaced by ; and ,
+  * Major code cleanup, some bugs found and fixed (no warnings)
+  * Cleaned up lot of nested stackframes
+  * Fix memory leak in visual.c when readding commands from readline
+  * Fix *CMD insanity ( FMT_USER -> FMT_PRINT )
+  * Fix 'px' header
+  * Add 'pp' to print %PRINTCMD
+  * Remove 'P'oke command. Replaced by 'wf' (write from file)
+  * Close all fds before execv in debugger
+
+
+38: a02654e0
+author: pancake@dazo
+date: 20070915-04:28:58
+
+  * Fixtures for the licensing headers to add th0rpe
+  * Limit pc output to screen height
+
+
+39: 1d42ccc2
+author: pancake@dazo
+date: 20070915-03:58:11
+
+  * Initial import of the !alloc, !free and !imap commands for the debugger
+    - Allows to allocate memory on the target process
+  * Usability fixups for the debugger mode
+
+
+40: e421a271
+author: pancake@dazo
+date: 20070913-01:01:13
+
+  * Store and show entrypoint with !info
+  * Use entrypoint address to inject code
+  * Make write-mode by default in debugger mode
+  * Fix tsearch bug (unitialized variable)
+  * Make search work in debugger mode
+
+
+41: 7ca9a5b0
+author: pancake@dazo
+date: 20070912-21:21:49
+
+  * Initial import of the signal command for the debugger
+  * Thanks ora8!
+
+
+42: 255efb66
+author: pancake@dazo
+date: 20070912-21:17:57
+
+  * build problem for the gui fixed (from 0.8.6 :(
+  * rfile-foreach fixups
+  * Thanks! elektranox!
+
+
+43: 5cbfaaa3
+author: pancake@dazo
+date: 20070909-21:05:09
+
+  * Initial implementation of the FPU pseudocode
+  * Some FPU documentation done..must read more to give better support
+  * Add support for ENCODINGs to the -S functionality to strip strings from a blob.
+    - Use the environment ENCODING to set this
+  * Some minor compilation fixups has been fixed silently
+
+
+44: 5b333340
+author: pancake@dazo
+date: 20070908-21:33:14
+
+  * Initial import of the hamming distance calculation for hasher tool
+  * Some minor changes on the monitor code.
+
+
+45: 2ff7169b
+author: pancake@dazo
+date: 20070902-23:38:58
+
+  * More fixups and enhacements for the pseudo disassembly
+  * Initial import of the 'monitor' code. Not yet usable, just the base
+    - This implies a new cmdline flag '-m [port]'
+  * Cleanup the pseudo code switch table with oneliners
+  * Fix one byte overflow that makes pD segfault
+  * Add and fix inline comments and labels on 'pD' command
+    - This is a provisional code, requires rethink and recodink
+  * Add UDISAS into the visual print cycle mode
+  * Add 'pstree' command to the debugger
+    - must be rewritten from scratch
+    - nowadays it systems() to the pstree command
+  * Oops. ps.offset must -1 by default
+  * Lot of fixups on the initialization order to fix debugger load and so
+  * Make config.verbose happy again
+  * Avoid |head -n 10 everytime, so udis86 doesn't needs pipes
+
+
+46: f6cfb1fe
+author: pancake@dazo
+date: 20070901-22:38:22
+
+  * Initial import of the udis86 library
+  * Add new print mode 'pD' with colors, labels and primitive comments support
+  * Integrate udis86 into the acr build process
+  * You can disable it with --without-udis86 configure flag
+  * Emulate the inc/dec values in disassembly with pD (useful for walking thru the flow)
+  * More colors on the debugger and disassembly
+  * Some off_t fixes from the tcc compiler
+  * 'c' key adds a comment in visual mode
+  * 'C' key edits the comments file
+  * New command 'C' to edit to add comments for the pD command (more will come)
+  * Some useless updates on 'rasc'
+
+---- version 0.8.6 ----
+
+47: 524e0c0c
+author: pancake@dazo
+date: 20070827-01:36:57
+
+  * 0.8.6 release
+  * Initial import of the syscall-proxy and shellcode helper tool 'rasc'
+  * Get si.si_errno when receiving a signal from the child
+  * Fix the config.count in tsearch (finally!)
+
+
+48: a119b6fc
+author: pancake@dazo
+date: 20070827-00:11:59
+
+  * One step more to finally achieve breakpoints on arm
+  * In visual mode show the row size in the status bar
+  * Fix the up/down keys using a new global variable 'inc'
+  * Make CSTR fit on screen in visual mode
+
+
+49: 1173b3a4
+author: pancake@pluna
+date: 20070823-01:27:31
+
+  * Fixes on dbg for NetBSD (build)
+  * Show eflags on BSD too (portability problem fixed)
+  * Implement a 'ktrace' command for *BSD (wrong and broken concept)
+  * Fix some old emails
+
+
+50: 2ffe543a
+author: pancake@dazo
+date: 20070821-21:27:41
+
+  * Initial import of bin2xml
+  * Fix bin2txt. Make it work again (at least for me xD)
+    Thx wzzx for light me
+  * Show nice message of 'progress' while bin2txting
+  * Make ffftoneg happy with parenthesis
+
+
+51: d6549eb8
+author: pancake@dazo
+date: 20070821-04:19:28
+
+  * Remove fit-dump command, useless! now everything is dynamic and soft like a creame
+  * Handle height as terminal change event to redraw and fit contents
+  * Add config.visual (useful sometimes). needs make clean to avoid segfaults!
+  * Fix typo in cmds.c (file->oneliner)
+  * Use config.height (default 23) in multiple print modes (yay!)
+  * Fix '|' usage on comments, !shell scapes and _scripting
+  * Fix help usage of command '_'
+
+
+52: 10971863
+author: pancake@dazo
+date: 20070821-03:05:28
+
+  * Up to 0.8.6! OMG There are motherfucking snakes on radare!
+  * Initial import of the toy code for embedding python into radare (epython.c)
+  * Add --with-python flag in ./configure
+  * Add config.lang accesible via '#!perl' or '#!python'.
+  * Now you can run python inside radare just type:
+  
+    > #!python
+    > _ print "Hello World"
+  
+  * Next stuff will be to implement the Radare module to provide
+    a decent api for python to manage radare.
+
+
+53: f12ca246
+author: pancake@dazo
+date: 20070820-23:43:29
+
+  * Yay: Now we have ;goto and ;loop <n> commands to move around history.
+    This looks like a turing machine ;)
+  * config.h has changed. make clean is recommended to avoid segfaults
+  * Labels are now defined with ';<label-name>:' for example:
+  
+    > ;show-var:
+  
+  * Add label_get and label_show functions. this is all done from history.c
+    so they can be static.
+  * Add '!l' command to list all labels
+  * Loop break (;break)
+  * Add '!+' and '!-' commands to enable/disable execution (history.c)
+  * Add ';hdump <file>' and ';hload <file>' to dump/load session history
+    This can be used to load scripts
+  * TODO: conditionals with jumps
+  
+
+
+54: 2ffa5757
+author: pancake@dazo
+date: 20070820-22:33:09
+
+  * Fix the %COLUMNS weirdness. Use winsize structures.
+    On visual mode an alarm is scheduled to automatically resize
+    the terminal providing a better look and feel
+  * Make HEXB fit better on %COLUMNS
+  * Autodetect when radare is working with non terminal output (serial console)
+    This is useful when you want to log a radare session easily.
+  
+    $ radare /bin/ls | tee log.file
+  
+    This way %COLUMNS are forced to be 80 at startup. You can redefine this
+    by hand if you want :)
+  * Split the drawing part from the input code. This way I can throw it from the alarm
+  * Add history.c with lot of hiztory_ functions. This is a wrapper for the libreadline
+    one, allowing you to emulate the history functionality in a better way without
+    the need of libreadline.
+  * This is dupped info, so in the future I plan to completely replace libreadline,
+    or at least provide a minimalistic version if you want to link against libreadline,
+    this will be good for the BSD family that uses libedit or so
+  * Hijack '!h' command to show the history list
+  * Reorder all print modes for nicer readibility (still shitty)
+  * Colorize the rest of print modes. Maybe I should test it more and define new color
+    palettes.
+  
+  
+
+
+55: 42d92df3
+author: pancake@dazo
+date: 20070816-05:59:52
+
+  * Add arch_ret() and arch_call() functions to the debugger
+  * Should be enought to build debugger-side code execution.
+    Now i need breakpoint callbacks :) but this requires a better
+    breakpoint infrastructure..will look on it
+  * Add a nicer implementation of 'stepover' for x86 only atm, 
+    but should build fine on arm
+
+
+56: d081415d
+author: pancake@dazo
+date: 20070813-13:02:09
+
+  * Add 'stepo' command into the debugger
+  * TODO: make stepo work over 'rep'z
+  * Some minor VTE testing issues (needs more work)
+  * Bind '!stepo' in visual mode with 'S' key
+  * Rename 's' as 'f' to seek to flag, and make 's' single step.
+
+
+57: 47a0190f
+author: pancake@dazo
+date: 20070813-00:45:09
+
+  * Add a graceful message after injecting code on child process
+  * Add menubar to gradare
+  * Lot of new keybindings for opening files/processes or programs
+  * All important widgets focusable via keyboard:
+    ^L -> uri widget, useful to launch commands
+    ^K -> view combobox (hex, disasm..)
+    ^J -> focus vte terminal
+    ^N -> focus actions widget
+  * Allow to change the toolbar (large, small or disabled) (^T)
+  * Add "about" entry in Help menu
+
+
+---- version 0.8.4 ----
+
+58: ea092a8d
+author: pancake@dazo
+date: 20070812-17:23:45
+
+  * Upgrade to 0.8.4
+  * Lot of fixups for the debugging layer
+  * Colorize the command prompt when -c (%COLOR 1)
+  * Call io_write instead of write() to write (fixes segfault on debugger mode)
+  * Default syntax is 'intel'
+  * Fix the open() inside radare command (kill process to avoid stacked zombies)
+  * Add get_pc() and set_pc() commands to ease debugger development
+  * Add 'jmp' command into debugger
+  * Add command 'inject' to execute in-place code (rsc start2bin)
+  * Fix 'step' after breakpoint
+  * Export flags as environment variables when io_system()
+    This way, the debugger can get the flags. Cool for breakpointing :)
+    > !bp sym_main
+  * Rip signals when stepping, continuing, etc.. not only 'run'
+  * make get_offset() be happy on the debugger side by reading flag_XXX envvars
+
+
+59: 5549b74f
+author: pancake@dazo
+date: 20070812-05:29:20
+
+  * New print command 'pA' (analyze data block)
+  * Setup system-endian when debugging
+  * "EOF" now is muted when no verbosity
+  * update environment after setting a variable
+
+
+60: 7164031d
+author: pancake@dazo
+date: 20070807-07:33:05
+
+  * Initial import of dbg-report script
+  * Fix a division by zero bug in get_math()
+  * Load syms-dbg-flag when debugging a process
+  * Add 'pids' command in libps2dbg
+
+
+61: ffe801ce
+author: pancake@dazo
+date: 20070807-02:07:58
+
+  * First after defcon commit
+  * some fixups for the FreeBSD debugger
+  * implement fpregs for freebsd and linux
+  * fix segfault on debugger when opening a nonprocess file from debugger mode
+  * show pbar with |/-\
+  * PT_DUMPCORE only for NetBSD
+  * warn about the -CONT to stop execution of a debugged process
+  * Lot of new items in TODO (not all injected)
+  
+
+---- version 0.8.2 ----
+
+0: ce85b2ca
+author: pancake@dazo
+date: 20070722-12:29:21
+
+  * 0.8.2 release
+
+
+0: 92db8afa
+author: pancake@dazo
+date: 20070722-03:39:12
+
+  * Add new commands to gradare for the debugger (step, ...)
+  * New commands for the gui: 'seek to flag', 'change register value'
+    and 'show status of the debugged process'
+  * wrap gtkdialog with rsc gtkdialog to avoid gtk error messages
+  * Make 'changed' event of the combobox in gradare work again
+  * Add keybindings ^L and ^K to focus entry and combo
+  * Add 'debugger' view in gradare combo
+  * Make %SYNTAX intel work again
+  * Add 'proc-map' rsc script and use it from the radare debugger
+    to flag the memory map of a process
+  * Query the user to dettach or kill when exiting the radare debugger
+  * Export DPID environment (debugger process id)
+  * Add '!maps' and '!status' commands to the debugger
+  * Documentate the pseudo-debugger command 'kill'
+  * Some 'last_print_format' bugs fixed
+  * Call io_close() instead of close()
+  * Bind '!' command of the visual mode to show the debugger's help
+
+
+1: 656b9c33
+author: pancake@dazo
+date: 20070721-04:12:03
+
+  * Beutify the eflags debugger interface and be more userfriendly
+  * Allow set the eflags (I flag is always on because of the trap!)
+  * Fix another verbosity issue in debugger mode
+
+
+2: 47c2908a
+author: pancake@dazo
+date: 20070721-03:24:42
+
+  * Show eflags in the debugger for x86
+  * More verbosity fixups
+  * Some changes on the radare_command internals. Some bugs already exist
+  * Add 'S' key in visual mode for the debug mode to step
+  * Add experimental 'w' key to fit dumps into screen
+  * Show 'invalid keystroke' when hardcoded. avoid user misstakes!
+  * Ignore SIGALRM at startup, to avoid crying searchs
+  * Cleaner debugger startup messages
+  * Fix the \x1b problem in the first command readed in the debugger. -strange-
+
+
+3: dea54b1b
+author: pancake@dazo
+date: 20070714-17:14:31
+
+  * Add 'set' command to set a value to register
+  * Implement arch_set_register for x86 and ARM
+  * Add -B flag to change the virtual base address
+  * Make -s and -x work again
+  * -v now works as a toggable, reduce loc
+  * Major code cleanup (no warnings alive)
+  * Clear remote.c warnings
+  * Rename 'gamma' to 'gamme' in xrefs.c (avoid compiler warns)
+  * Fix verbosity -> verbose transition
+
+
+4: 366f5a46
+author: pancake@dazo
+date: 20070628-23:50:28
+
+  * Add md4 support
+
+
+5: fe528e35
+author: pancake@dazo
+date: 20070609-12:32:13
+
+  * also export and use VERBOSE environ
+  * Rename verbosity to verbose (more coherent)
+
+
+6: fd93a539
+author: pancake@pluna
+date: 20070526-22:30:32
+
+  * Initial import of the web frontend for radare. Aka raweb!
+
+
+7: 9a6f53bd
+author: pancake@dazo
+date: 20070522-03:02:11
+
+  * Add 'extended' chars in stripstr with -c
+
+
+8: bd1fe83f
+author: pancake@dazo
+date: 20070520-04:49:01
+
+  * Fixups for maemo debian package
+  * Available at http://radare.nopcode.org/get/
+  * pd shows 'fd' only in verbose mode
+  * Oops. fix configure to match 0.8.1
+
+
+9: 26dc7b33
+author: pancake@dazo
+date: 20070520-03:02:26
+
+  * minor cleanup for syms-flag
+  * add 'fd' command. ugly syntax, but powerful. FD stands for Flag Delta
+    The flag delta command prints a flag name plus the offset in hexa:
+    f.e:
+       sym_main+0x32
+  * always 'fd' before a disasm. very useful! 
+
+
+10: 530d4f4d
+author: pancake@dazo
+date: 20070512-18:54:20
+
+  * Initial import of the tcp remote plugin
+  * It supports connect://host:port/file and listen://:port layouts
+  * Also supports nested URIs like:
+  
+    $ radare connect://192.168.0.33:9999/dbg:///bin/ls
+  
+  * This command will remotelly debug the /bin/ls program on the remote
+    side. This way you can crossdebug applications via TCP (from to x86/arm atm).
+  * endian_memcpy moved from print.c to utils.c
+
+
+11: 4d40efca
+author: pancake@dazo
+date: 20070507-23:37:28
+
+  * Make the build happy again for libps2fd. i686 => i386
+  * Recicle variable 'i' in tsearch.c
+  * Fix anoying bug in search (config.interrupt was not reseted!)
+
+---- version 0.8 ----
+
+/* GIT */
+
+
+commit 73db9d5dacda8f3a623e081a173762689b2fb4e8
+Author: pancake <foo@porticoluna>
+Date:   Sat Apr 7 18:31:40 2007 +0200
+
+    * Fix include order in tsearch that breaks the search callback
+    * Add the TARGET ACR environ to the output of -V
+
+commit 258a62859f42a84dea6074fe1c026cdd65b68ae6
+Author: pancake <pancake@dazo>
+Date:   Sat Apr 7 11:32:31 2007 +0200
+
+    * Major warning cleanup
+    * '%' show %SEARCH[0] and %MASK[0] too
+    * Autocomplete %SEARCH[0] for usability
+
+commit b096305cee785e79f180a8c3654103f4a7e46751
+Author: pancake <pancake@dazo>
+Date:   Sat Apr 7 11:11:20 2007 +0200
+
+    * Oops nasty bug in makefile .c -> .o
+    * PR168 --without-readline fixed
+    * PR168 trailing \n removed for nonreadline keybindings in visual mode
+
+commit 8b8adbb05f9754dae79c233b4416459e26b7b688
+Author: pancake <pancake@dazo>
+Date:   Sat Apr 7 01:31:58 2007 +0200
+
+    * Unignore --without-readline
+
+commit b3cadef4b2f9af73293718a332d91bb27ebf20f6
+Author: pancake <pancake@dazo>
+Date:   Sat Apr 7 01:13:27 2007 +0200
+
+    * Initial import of the new binparser search engine (Thanks to esteve)
+    
+      The internals of the search engine has been changed completely, but the
+      external command line interface remains backward compatible except for
+      the removal of the buggy GNU regular expressions support. Mask searchs
+      are not yet supported.
+    
+    * Autocomplete %SEARCH[
+    * Support for multiple searchs in paralel
+    * Support for binary regular-expressions-like syntax
+    * Implemented a token grammar file format for storing search blocks in files (/.)
+
+commit 0119516169025aed2b5166c855f1bd9c6488dda6
+Author: pancake <pancake@dazo>
+Date:   Thu Apr 5 03:13:05 2007 +0200
+
+    * Final implementation of do_open for resize and write
+    * Fix dupped NEWLINE definition (invalid include order) in config.c
+    * Exterminate all xrefs and hasher warnings
+    * Split yesno() checks into a separate function. avoid c&p
+
+commit edc3fb817aded4117894fc388ad6aeae3c9e7be1
+Author: pancake <pancake@dazo>
+Date:   Thu Apr 5 02:41:12 2007 +0200
+
+    * Add and handle %XREFS environment variable
+    * Some more testing cleanup for do_open() good for fixing the ro/rw weirdness
+    * Fix some warnings/bugs in visual.c (Thanks gcc!)
+
+commit 2be2bb1809fc567dd25f33c8c6878d6055d77f85
+Author: pancake <pancake@dazo>
+Date:   Thu Apr 5 02:27:20 2007 +0200
+
+    * Use get_math for 'm'ove command
+    * Auto-resize when file growed by 'm'. Closes bug ticket 113
+    * Split do_open() to a separate function
+    * Fix 'a' key typo in help of visual mode
+
+commit 4c19ff7b239c83fa2849946246c406fafdcae297
+Author: pancake <pancake@dazo>
+Date:   Thu Apr 5 00:24:51 2007 +0200
+
+    * Support for wide write (ww) and wide print (pZ)
+
+commit 000413136418c53247ebc85428da39585c56e861
+Author: pancake <pancake@dazo>
+Date:   Wed Apr 4 23:28:56 2007 +0200
+
+    * Add FMT_SHORT and FMT_TIME_FTIME (Thanks to parki!)
+    * Support for dumping to files with spaces (Thanks parki!)
+    * Long and LongLong endian support
+    * Add bold ansi colors definitions
+    * Support for interpreting environment variables (.%)
+    * Use termios_init variable for safer terminal_set_raw usage
+    * install libexec/core too
+
+commit 2be22f8933881f019ac852f806cd9c16409e48cd
+Author: pancake <pancake@dazo>
+Date:   Tue Apr 3 23:48:32 2007 +0200
+
+    * Better support for backtracing
+
+commit f513661c1bfa891a64c314a58fc88fe60678452d
+Author: pancake <foo@porticoluna>
+Date:   Tue Apr 3 21:48:28 2007 +0200
+
+    * Oops, some nasty bugs in the gotoxy implementation.
+    * More missing INILINE
+    * Minor xrefs code cleanup
+
+commit 9ea35e0e5ba3f31eba1152fbf6b6026f06c82aa0
+Author: pancake <pancake@dazo>
+Date:   Tue Apr 3 15:36:09 2007 +0200
+
+    * Initial import of the debug_backtrace() command (needs more work)
+    * Fix strtok() bug that makes glibc segfault. STUPID ONE!
+
+commit 5c416d21fdb7708f807cde87e4a07867faab42c5
+Author: pancake <pancake@dazo>
+Date:   Tue Apr 3 14:12:49 2007 +0200
+
+    * Support for relative gotoxies (close ticket n-163)
+    * Support for %TMP environ, not yet done everywhere, but at least inside radare O:)
+    * Fix some \n -> NEWLINE in data_print
+    * up press_any_key fun to make gcc3 happy
+
+commit 5f6befe16987823a1bd1a7b96bce5eb2c752eb42
+Author: pancake <pancake@dazo>
+Date:   Sun Apr 1 03:57:46 2007 +0200
+
+    * Fix xrefs on x86
+    * Integrate external xrefs in visual mode 'x' key
+
+commit d090973f3cbea9f9933b0a54555eea7222804859
+Author: pancake <pancake@dazo>
+Date:   Sun Apr 1 02:56:07 2007 +0200
+
+    * Better to use get_math
+
+commit 71104bbb7acaed1d5ca47db3ebc7994a70a464c6
+Author: pancake <pancake@dazo>
+Date:   Sun Apr 1 02:55:07 2007 +0200
+
+    * Autocomplete xor and xorpair
+    * Numeric argument for print commands is now handled by get_offset
+
+commit 4c37d7c6c3af71a23286d6afc6aedda02217ec1c
+Author: pancake <pancake@dazo>
+Date:   Sun Apr 1 02:32:44 2007 +0200
+
+    * Fix /dev/mem hashing
+    * WARN about hashing from stdin: the first block is 4096 bytes :/
+
+commit d522f875a78acacbc9b1683456c0cd3869dd9cce
+Author: pancake <pancake@dazo>
+Date:   Sun Apr 1 02:04:53 2007 +0200
+
+    * Implementation of xor and xorpair algorithms in hasher
+    * Minor code cleanup for libps2fd
+
+commit 45d87c1c831bcabc614d8beeb775606b8cdf213f
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 25 17:40:38 2007 +0200
+
+    * radaredbg now handled loading programs in $PWD (aka ^./)
+    * initial import of the gerardo intel opcode measurer
+    * lot of fixups and hackarounds for the breakpoint and tracing commands
+    * step commands are buggy in front of breakpoints (needs more work)
+    * new command "stepbp" step all opcodes until found a breakpoint (aka pre-cont)
+    * split waitpid code into a separate function to handle signals and breakopints restore
+    * :.!regs* only executed in debugger mode
+    * initial import of the signal handling code
+    * initial import of bps.c
+    * initial import of the Gerardo's i386 instruction measurer
+
+commit 588f6463446ff3c64b912bc9be265ae04a5b9b3d
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 25 00:20:06 2007 +0100
+
+    * Fix hex seeks ended with 'b'
+    * pretty print format for arm cpu registers
+    * info must start with INILINE
+
+commit 1e3880aeb9d7539ea11aad65fd4ec12e821fd90a
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 24 09:47:06 2007 +0100
+
+    * Initial draft for code-injerktion as an external tool
+    * write in debug finally working again. masking must be implemented
+    * use PTRACE_KILL when we want to close the child. not kill()
+    * allow to open multiple pids without closing the radare session
+    * align help messages with two leading spaces
+
+commit 2521bac327e413dc052fa9cdde66a12dad17a028
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 24 08:55:49 2007 +0100
+
+    * Up to 0.7.5-git (debugger centered release)
+    * make radare know if is working as a debugger or not
+    * cleaner !regs command output
+    * print out process and cpu status when "" command has been typed
+    * fix debug_close missing symbol
+    * implement debug_write_at as a possible temporally hack
+    * !step command now accepts a numeric argument to define how many steps you want to do
+    * initial skeleton for more flow control commands (stepret and contfork), not yet implemented.
+    * implement the !detach command for detaching radare of the parasited program
+    * '!s' is an alias for '!step'
+    * control color configuration using the %COLOR environment variable
+    * cleaner code in dump, now the disassembly is faster
+    * fix lot of NEWLINE -> INILINE stuff for better GUI experience
+    * fix hexb print mode header
+
+commit a269a0ac1cd06d2d2e5c2e9ba8d115ce36621787
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 24 05:51:38 2007 +0100
+
+    * new command in visual mode 'a' (insert assembly)
+    * get_offset now gets octal and binary values (???o and ???b respectively)
+    * fix some read(1)->press_any_key in visual
+    * minor cleanup of crc16 code
+
+commit 7b0100d8fb2019f3efe181a7c3304a1e85571bde
+Author: pancake <pancake@dazo>
+Date:   Wed Mar 21 13:57:40 2007 +0100
+
+    * Oops, maket work :) it's not working on BSD yet
+
+commit 4da4f27aa0f06545688c02994fe22acceb09c2c0
+Author: User <foo@porticoluna.org>
+Date:   Wed Mar 21 11:20:34 2007 +0100
+
+    * Initial import of the rsc core utility (Thanks virik//xscript)
+
+commit 3ae45ad59196b562cf1718a990bba407d9a280e3
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 04:58:32 2007 +0100
+
+    * Oops!
+
+commit 4806aa1517494922a3d613b00df7c950fd004735
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 04:55:14 2007 +0100
+
+    * More configuration and acr related fixups
+
+commit 06ed5ce415567b90113961b2465164f9c6f2221d
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 04:45:54 2007 +0100
+
+    * Fix build on non-glibc systems of libfdsniff
+    * Make mrproper more effective
+
+commit 266c581cda03ef65a7b9f0700be6ac6fc81d9c05
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 04:38:46 2007 +0100
+
+    * Up to 0.7.2
+    * Fixtures from acr 0.6
+    * autodetect target architecture for the debugger layer
+
+commit 11ccfb181338721638fb5777c41b99a5b661a047
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 04:00:15 2007 +0100
+
+    * Documentate -n in radare manpage
+    * Documentate -s in xc manpage
+    * 'g'oto integration for the info command
+    * 'g'oto integration for various print formats
+    * Fix the print rotation in visual mode
+
+commit cf3282786abcbd28e855d9136d26f8c31a20530e
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 18 03:35:49 2007 +0100
+
+    * More 'g' command fixups on different print modes
+    * Beutify the :px command output
+    * Fix some memory access bugs in visual commands and visual keybindings
+    * Split visual_bind_key into a separate function
+    * Add -s flag to xc. f.example: $ xc -s 33 44 55 11 99 33
+    * Help for -e and -s flags for xc
+    * Better endian support for xc
+
+commit 05df50815b4104bd6829781e8511331f3a986d1c
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 17 16:53:41 2007 +0100
+
+    * Initial working and tested version of the debugger support on ARM
+    * xc.o and xrefs.o must be removed too!
+    * add '#crc16' command autocompletion
+
+commit baaf439e2c2c7a84453b244552b578d6237e8cc5
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 17 15:16:48 2007 +0100
+
+    * Initial implementation of the ARM debugger stuff.. needs more work
+    * Fix non-verbose print binary command ':pb'
+    * Fix print mode rotation in visual mode
+    * Show print mode in visual mode header
+    * Better UI for the keybinding assignment in visual mode
+
+commit 47da9e51f7512cc6a48ef9b650e8caecb970e7c3
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 16 02:43:36 2007 +0100
+
+    * Fix 'file has growed' bug
+
+commit 80f8154ca3fa54fbb80ca5cb22bb3f6e4235833a
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 16 02:29:24 2007 +0100
+
+    * Add 'I' command into the visual help message
+
+commit fbd612746fea6e94471d2c3d3fffd2e2b98361d8
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 16 02:28:14 2007 +0100
+
+    * data_print doesn't takes care about file size
+    * The above fix, make fix an ugly stuff in the 'w' commands
+    * Implement a new command in visual mode 'I' (input hexa string)
+
+commit 5313277191bd584b2a3608f631493171d62ef38d
+Author: pancake <pancake@dazo>
+Date:   Tue Mar 13 23:52:19 2007 +0100
+
+    * Add environment variable called "SNFBYTES" for limiting the
+      hexdump of the sniffer
+    * README intentionally left blank O:)
+
+commit 31f00ab9a70f251aec996aad26d9ff8f6dac4f93
+Author: pancake <pancake@dazo>
+Date:   Tue Mar 13 15:05:34 2007 +0100
+
+    * Fix underflow bug in radare_set_block_size_i
+
+commit f9736409007a973cbb1dca4ff428a26a896031f3
+Author: pancake <pancake@dazo>
+Date:   Mon Mar 12 01:04:53 2007 +0100
+
+    * Add support for crc16
+    * Fix hex as bin confusion in 'xc'
+    * Add '-f' flag to hasher
+
+commit 7a98b24cdbf170ac6c07bb441b6799ec2deea453
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 11 13:04:55 2007 +0100
+
+    * More fixups on the debugging layer
+    * Write on process is br0ken. needs more workage
+    * Code cleanup in libps2fd
+    * command '=' removed
+    * Do not file grow when unksize is set
+    * Fill with 0xff when can't read
+
+commit d8b3ca611d62801dceb9d62697f8bd0f5940c24a
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 11 00:43:24 2007 +0100
+
+    * Better support for breakpoints
+    * Fix really ugly bug in get_math
+    * Add 'detach' command to debugger
+    * 'break' renamed to 'bp'
+    * do not include <usb.h> in libfdsniff!
+    * completely removed the config.interpreter var
+    * add -n flag (do not interpret ~/.radarerc and ./radarerc)
+    * interpret ~/.radarerc and ./radarerc on startup
+
+commit ac7dfc67ff7ab61f74614daef8023527fa49fa0e
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 10 06:34:22 2007 +0100
+
+    * add a second argument to radare_command function to specify
+      if we want to log or not the command.
+    * This new argument makes the 'config.interpreter' variable useless
+    * Fixes on the add_history readline usage
+    * Fixes for the && concatenation
+
+commit 2afdab6030028a0d4dab4e325c23bcc4ab6f32d0
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 10 06:19:50 2007 +0100
+
+    * Implement command concatenation with the '&&' token.
+
+commit 2086e7a79b044daebd0fa89978777586b924b82e
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 10 05:13:20 2007 +0100
+
+    * add 'b' command to the visual help and drop the 'g' one.
+    * implement the b? command in visual mode
+    * do not dup predefined keybindings.
+
+commit 83d129181e9573bec1a935938b8811ee2ebe8f58
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 10 04:26:09 2007 +0100
+
+    * Fix multiple bindiff problem (Thanks pof!)
+    * Implement the 'g' (aka goto) command
+    * Implement support for asigning keybindings in visual mode (key 'b')
+    * Fix really ugly bug in @ + get_math() stuff
+
+commit 30a176a86fd6bafed76678d11d4a27e0343baff3
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 9 18:28:50 2007 +0100
+
+    * Fix terminal_set_raw problem in visual mode
+    * Minor code cleanup in data_print func
+    * 'pc' command wrapped to COLUMNS (Thanks esteve!)
+    * Ignore build problems of libfdsniff
+
+commit 0b7a939e00ed8fd88f39031d4090ef2302dc378a
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 9 01:04:53 2007 +0100
+
+    * Oops
+
+commit 9fe07087751b7ec09e35697df1d6d70f6caf8b95
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 9 01:03:06 2007 +0100
+
+    * Fix installation problem when no libusb found
+    * Acr-ize the libusbsniff makefile
+
+commit 816eca8ab959af205b325592c2a9d71e5140ef48
+Author: pancake <pancake@dazo>
+Date:   Fri Mar 9 00:48:06 2007 +0100
+
+    * Implement a progressbar in the search engine
+    * Fix 'b' command for block sizes < 10
+    * Major cleanup of the search engine code
+    * Minor optimitzations and fixups for the search engine
+    * Fix hit flag names (eflags vs nflags)
+    * Use config.interrupt instead of dupped SIGINT handling
+    * Repeat last search working again
+    * Restore seek when the search has gone
+
+commit 184e9ef9afeafb34415be68e43bc6221410efcef
+Author: pancake <pancake@dazo>
+Date:   Wed Mar 7 15:18:12 2007 +0100
+
+    * --without-perl -> --with-perl (fixes build on fucking Debian)
+    * Cleaner output for the lib*sniff libraries
+    * config.device -> config.file
+    * Fix 1 byte underflow in radare_command (Thanks gerardo!)
+    * Remove dupped condition (Thanks gerardo again!)
+    * Add config.interrupted boolean
+    * Use config.interrupted in flag_list, must be used everywhere! (search and so)
+    * Fix add_history for non-verbose commands
+
+commit ed6443c182beaf08fcb0c3ab9028c2a7f76737ee
+Author: pancake <pancake@dazo>
+Date:   Tue Mar 6 02:06:33 2007 +0100
+
+    * lib{fd,usb}sniff hexdump to stderr
+    * Completely replaced the 'v' command by 'p'
+    * Loopize ONCE commands and notice endian affected printouts
+    * Show BLOCK and ENDIAN environs
+    * Fix verbosity illness when interpreting
+    * PRINTCMD aka pU is a radare command. not a dump+process
+    * nice '--press any key--' message in visual mode
+
+commit 9a59aacf94b81df097c13b8831eaa6e86dc134c5
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 19:13:28 2007 +0100
+
+    * Oops. do not install libaff2fd if does not exists
+    * radare -V now shows endianness, register size and compiled features info
+    * Fix x->c on the short help message
+
+commit 9097e9a2748be479544e433567d13b779c17263e
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 18:57:31 2007 +0100
+
+    * Centralize hexdump of data bytes in hexdump.c
+    * Add license headers in lib{usb,fd}sniff
+    * fix read hook bug in libfdsniff
+    * Major code cleanup in both sniffing libraries
+
+commit 1dee5c5ce74d1084d1bf365aaf2482e11a38a622
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 07:42:02 2007 +0100
+
+    * Initial PoC for the AFFLIB support
+    * Support for 'K', 'M' and 'G' suffixes for get_offset()
+    * Some fixups on the algo_par in hasher
+
+commit eee43378ccf9830d4582db29c9ea065b3fec046c
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 06:02:34 2007 +0100
+
+    * debugger handles ^Z for interrupt the child process
+    * cleaner coder
+    * fix search hits flag definitions and reduce code
+
+commit 8d95e35af68484d23e05048fabaadfa4cd13924e
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 05:45:46 2007 +0100
+
+    * Implement a new algo in hasher 'par' aka parity bit
+    * Add some missing print commands in autocompletion
+    * Better centralization of search_hits
+    * resize command supports '*' argument
+    * More code cleanup
+
+commit 807da48025dc7099ca8fca89f0d47ac21a9af457
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 04:39:05 2007 +0100
+
+    * Move hasher to src/hasher/ cleaner code separation
+    * Up to 0.7.2-git
+    * fix some include weirdness
+    * Use get_offset in getopt()
+    * Remove the hook-system PoC
+    * Drop some unused variables
+    * Better autocompletion for '!' command
+
+commit 4fad099d27c9f6315803018691c678d125a970bb
+Author: pancake <pancake@dazo>
+Date:   Sun Mar 4 02:30:47 2007 +0100
+
+    * Implement get_color_for() to reduce print_color_byte() LoC
+    * Implement colorization for the binary format
+    * Autocompletion for the debugger commands
+    * Minor code cleanup
+
+commit 1f36a2ea78867104edaf77a936d0eb0494d22b8f
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 3 18:36:32 2007 +0100
+
+    * Remove the '-x' flag. Use pipes!
+    * Documentation for the -c flag
+    * Fix eperl build on debian
+    * Minor gcc warning cleanup
+
+commit 76041c97d444b77861e8b32904256cdfd55d44db
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 3 04:48:18 2007 +0100
+
+    * Implement support for Jpegs in rsc/Display. Thanks to esteve!
+
+commit 5842c7c3187525b2c497d2629554c7a30e16f74f
+Author: pancake <pancake@dazo>
+Date:   Sat Mar 3 04:20:48 2007 +0100
+
+    * Initial import of libfdsniff inside libusbsniff directory must rename
+    * Initial support for ansi colors (-c) needs rebuild
+    * Configurable colors in print.h modifying the COLOR_?? defines
+    * Some 'v' commands moved to 'p', take care!
+    * Move format/print stuff from cmds.c to print.c
+    * Centralized print byte and print address functions
+
+commit c29cc0bb3b25e9a7c45a2d38b7a86dceb5acf1a6
+Author: pancake <pancake@dazo>
+Date:   Wed Feb 28 00:04:15 2007 +0100
+
+    * Fixups on the libusbsniff
+    * print result buffer on reads (64 vs 192)
+    * capture usb_set_altinterface too
+    * handle return values
+    * cleaner output char strings
+    * new makefile target "clean"
+
+commit 51d13701bb32f25511918ce8d8057803ed918f88
+Author: pancake <pancake@dazo>
+Date:   Tue Feb 27 01:21:34 2007 +0100
+
+    * '?' alias for 'help' in libps2fd
+    * do not history everything!! interpreted stuff doesn't need to be stored
+    * Cleaner 'seek' command output.
+
+commit c557813ca88d60308ab1a331d582d5704326fba9
+Author: pancake <pancake@dazo>
+Date:   Tue Feb 27 00:10:10 2007 +0100
+
+    * Initial import of the embedded perl scripting
+    * Add --without-usb-sniffer and --without-perl flags to configure
+    * Fix some acr related bugs
+    * Oops, missing readline autocompletion for '/m'
+
+commit 2a74c7dd3f46fce0d2532ed8e2b7df4ea0e482e3
+Author: pancake <pancake@dazo>
+Date:   Mon Feb 26 00:27:26 2007 +0100
+
+    * End of the ACR weekend chaos
+
+commit 98cc50a8d6a9997ad6fdfc87c3e2bbcf065bb9a3
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 25 20:25:35 2007 +0100
+
+    * Fix the .! command to be compatible with the debugging layer (this can probably break something) needs testing
+    * Refixes for the acr stuff
+    * default VISUALCMD for radaredbg is ".!regs*"
+    * radaredbg starts radare with -w and -u flags
+    * show pid information on load
+    * new debugger command 'info'
+    * fix chomp flag names and better flag name filter
+    * Fix the verbosity lossage under certain conditions
+
+commit e71ef1b3bcda386f4f2a8fedf29bbf076f7d294c
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 25 08:20:30 2007 +0100
+
+    * Oops. acr is b0rken. recover old working version
+    * radare_command should return bool
+
+commit 819077d8e0e2f53d335e6c7c70a404a9fbb1e80d
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 25 04:50:23 2007 +0100
+
+    * Initial import of libusbsniff
+    * acr fixups for sunos awk stuff
+    * Do not segfault in !load debugger layer
+    * Catch @CC@ in src/Makefile
+    * Minor code cleanup
+    * insert command in visual mode shows an error msg in ro
+
+commit b91b91e9d894cd6840367e2d88ce7453a578260b
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 24 19:48:34 2007 +0100
+
+    * Implement masked removal of flags 'f -foo*'
+    * Major cleanup of the gui build warnings
+    * Minor fixups in radare
+    * Remove flag_array_clear("foo"), replaced with flag_clear("foo*")
+
+commit 15df9d7e9ad711a175d5c35eef668f2f42b413e4
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 24 18:40:48 2007 +0100
+
+    * Fixes for the flagging array management
+    * Remove search hits after each new search
+
+commit 277fe96e3ee730991aacaf3c5878d16d45871781
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 24 07:38:47 2007 +0100
+
+    * Implement `, and | commands.
+    * Enhace the doc/shell document
+    * Minor simplification of net-tcp. Needs testing
+    * Flags database is buggy, minor fixups
+
+commit f570772edaa976154ba758d80e11a36e0681aafe
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 23 00:56:04 2007 +0100
+
+    * Initial import of networking rsc scripts (net-icmp, net-tcp, net-udp) -- thx sha0
+    * Initial import of raw pixmap visualization with image-magick (Display) -- thx esteve
+    * 'px' command has appeared again
+    * Initial fixups for the environment pwnage to reduce the number of commands -- thx esteve
+    * SYNTAX is att by default (env_init)
+    * Fix flag redefinition bug (thx sha0 for the advisory)
+    * Cosmetic hexadecimal stuff: Data is lowercase and Offsets are uppercase
+    * :pX command does not shows the space chars between hex pairs
+    * OFF_FMT now is "0x%014", this should show a 0x prefix everywhere we use an OFFset
+
+commit 419bca9b1f9ec0eadf357efbd789a07951f9059c
+Author: pancake <pancake@dazo>
+Date:   Mon Feb 19 01:06:34 2007 +0100
+
+    * Implement %HITCMD
+    * Support for unsetting environ variables (use '-' or '(null)')
+    * vb replaced by :pb 1
+    * vx replaced by :px 1
+
+commit c165b4f2a316ab35672a85ea9d87c5c5a7c7ebbf
+Author: pancake <pancake@dazo>
+Date:   Mon Feb 19 00:25:25 2007 +0100
+
+    * Create ~/.radare/toolbar on startup
+    * Check for vte in ACR
+    * Disable gtk if no gtkdialog program found
+    * Missing .El in manpages
+
+commit 838f0842e9f998377a02fbb8d0ebdf789986d8f4
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 18 03:39:03 2007 +0100
+
+    * Major gui improvements
+    * Implement binary mask for the search engine (/m) (Thanks esteve)
+    * Implement the %HITCMD functionality
+    * Lot of new grsc commands
+    * New command 'bytediff'
+    * Fix some variable initialization bugs
+    * acr-ize the GUI build (new flag --without-gui)
+    * gradare supports a personal toolbar (~/.radare/toolbar)
+    * fix a bug when no output when parsing the execution of a command (.!)
+    * integrat gradare with acr to be used system-wide
+    * install grsc scripts into libexec/gradare/*
+    * fix write command (non-verbose mode does not needs 'y')
+    * Oops, fix some bugs in environ
+
+commit 86359f720d929bd7317cdd361b993da2e7c181d0
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 17 17:05:09 2007 +0100
+
+    * New radare shell for the gui
+    * Support for intex syntax in objdump use '%SYNTAX intel'
+    * Allow flags to be quite
+    * Fix 'pd' command in debugging mode
+    * search hits renamed to hit[%d]
+
+commit 633dc4f5752bcccd9036e41656b441f8e54638d8
+Author: pancake <pancake@dazo>
+Date:   Wed Feb 14 02:31:33 2007 +0100
+
+    * More work on libps2fd, major fixups. Needs more work.
+    * Add "unload" command for the debugger.
+
+commit 2719397bf97d3a2629f8738a0d6dd57827a15f76
+Author: pancake <pancake@pl2>
+Date:   Tue Feb 13 14:31:12 2007 +0100
+
+    * Implement support for ptrace_attach (pid:// URI)
+    * debug:// URI is too long. Changed to dbg://
+    * Fix some bugs that makes build unhappy on Ubuntu
+
+commit 725dc742fa5f24c791987a980a3a899c1537bb09
+Author: pancake <pancake@dazo>
+Date:   Tue Feb 13 00:56:33 2007 +0100
+
+    * Add search-asm rsc script (thanks sha0)
+    * Minor syntax cleanup and stupid stuff (nothing has really changed)
+
+commit 03ca0266ba03b05b73e6e1a0b975f80c2ab0601b
+Author: pancake <pancake@dazo>
+Date:   Mon Feb 12 02:14:00 2007 +0100
+
+    * Initial integration of gradare actions in the GUI
+
+commit 09dee979e9ff8e427c4a4076c162e8b632ec0c31
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 10 21:33:29 2007 +0100
+
+    * Initial ARM support for tab2gml
+    * Add debugging, help and nocalls-trace support for tab2gml
+
+commit 91e23fc4d64e7945eb1f2fc50495740a79dc2ddb
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 10 06:32:05 2007 +0100
+
+    * Initial idea for libgdb2fd
+    * Oops in xc! not yet!
+
+commit e68c82e5f0958b5786e2691ae4ff59cc7924fc97
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 10 06:28:37 2007 +0100
+
+    * Some important improvements into the gtk frontend
+    * Initial per cpu splitage for the debugging layer
+    * xc is going to be inside radare now
+    * Avoid noisy 10240 limit for the block size
+    * $BYTES only exported when required
+
+commit 603e45753d8c0105b337f15f7a1ba1f5e9a50c5d
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 10 03:29:58 2007 +0100
+
+    * Implement mathematical gramatics for seeks
+    * flags output for registers in libps2fd
+    * Temporally offset for single commands suffixing with '@'<addr>
+    * get_offset handles flags too
+
+commit 8461506726ec81c657c4d7f43ecc35219213fb4b
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 9 20:33:26 2007 +0100
+
+    * Minor code cleanup
+
+commit f6c2f6465a9cc21e611361ff92049c42201b69e7
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 9 20:11:36 2007 +0100
+
+    * Initial implementation of %VISUALCMD allows to run commands before the prompt
+    * 'D' key removes the current flag in visual mode
+    * Replace 'S' command with 'i * > file'. KiSS!
+    * eyecandier info command output
+    * accept user-defined block size in all print commands.
+    * Add FMT_VISUAL in the print cycle of the visual mode
+    * ':' prefix command allows to avoid verbose stuff
+
+commit 0e67dd7a8f187836751ec1dbfe136ee17596c430
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 9 00:39:16 2007 +0100
+
+    * New %VISUALCMD environ. it's the visual print mode.
+    * %VISUALCMD works as a prompt callback too
+    * %VISUALCMD can contain ':' prefixed to be a single command
+    * Split radare_interpreter and radare_prompt
+    * Split radare.c into cmds.c
+    * Minor cleanup of error and warning messages
+    * intro and backspace aliases 'j' and 'k'
+
+commit cc790f6fe658fdc1c1c2eaa3f235fb1ff8fb8290
+Author: pancake <pancake@dazo>
+Date:   Thu Feb 8 20:11:42 2007 +0100
+
+    * Import the binary support patch for 'xc'. Thanks xscript for the contrib!
+    * Update xc manpage
+    * OFFSET environ not properly defined
+    * Avoid creation of conflictive flags (non printable chars and starting with '+0-9'
+      (Thanks esteve for this tip!)
+    * Script commands not stored in history
+    * flag '*' command, now uses 64 bit
+    * Minor fixup in data_print for strange length cases
+
+commit 7acf061e57ade6e3162960ab7b6df2b53fc251e6
+Author: pancake <pancake@dazo>
+Date:   Tue Feb 6 15:08:41 2007 +0100
+
+    * Up to 0.7.0-git
+    * Fix a nasty bug in hexstr2bin
+    * Check correct syntax for 'wx' command.
+    * xc can convert bin stdin to hex pairs to stdout
+
+commit 853b1d845e3ef538518ef97b7be77635d0c32695
+Author: User <foo@porticoluna.org>
+Date:   Mon Feb 5 16:24:09 2007 +0100
+
+    * Implement support for hashing from stdin. Use '-' as filename.
+
+commit c82211e427e08f243bdbb6ef59aa8475aae449bf
+Author: pancake <pancake@dazo>
+Date:   Mon Feb 5 16:23:36 2007 +0100
+
+    * Poke command now happy with 'count' (thx esteve)
+    * 'count' as alias of 'c'.
+    * Cosmetic fixups in radare_write and radare_poke operations
+    * Minor checkups in libexec/move
+    * rsc now handles more than 4 args (buggy stuff)
+
+commit 04b635807bfd94755c7cb12ce266f092822d090d
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 4 06:58:26 2007 +0100
+
+    * Arrow keys and re/av.pag keys working in visual mode
+    * xcs octal values now can be prefixed with '0' (fex: 023)
+
+commit bae7fa6f14839ffabade531d7c68fa5cc6bd1a2a
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 4 05:31:16 2007 +0100
+
+    * Remove 'EDITOR' and 'PAGER' environment variables
+    * ENDIAN environ is not "little" or "big" (not 0, 1)
+    * Minor cosmetic fixups for the previous commit
+    * disassembly keystroke in visual mode now pauses
+
+commit e2cd50160e8fee6986326063c691dfa2d68ba4d7
+Author: pancake <pancake@dazo>
+Date:   Sun Feb 4 05:19:40 2007 +0100
+
+    * Documentation for the radare shell environment variables
+    * Documentation for script interpretation
+    * rfile-foreach happy with ansi
+    * write command now uses the 'count' variable.
+    * Minor cleanup
+    * Fix exoscripting pipe insanity when using libreadline
+    * search engine looks like working again. Testers required
+    * split into a new function the regexp search
+    * search messages going to stderr
+    * New '[' and ']' commands for changing the terminal width.
+    * Initial simplification tests for the console width handling
+
+commit fdf511aeb9b0025ef1d9ad537012cd1054b4fd35
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 3 04:58:55 2007 +0100
+
+    * Some abi changes. requires make clean.
+    * Implement eta and progress bar in rfile-foreach utility
+    * Make libps2fd happy with gentoo. Needs more work
+    * Add -u flag (unknown file size)
+    * Fix block size < 0 bug in visual mode
+    * Allow to change the terminal width using '[' and ']' keys.
+    * rfile doesn't have to show me the $EME!
+    * make radare be lseek aware
+    * 'P' command is the inverse of 'p' in visual mode.
+    * Visual mode is now displayed at top of the terminal
+
+commit ce85d83cb696a3e7b42c6b258a1a122bbc60c2ed
+Author: pancake <pancake@dazo>
+Date:   Sat Feb 3 03:27:47 2007 +0100
+
+    * Initial import of the flag documentation
+    * Fix ugly bug in 'wx' command. Working again. Thanks esteve!
+    * Some fixups and enhacements for the 'flag' command
+    * Show escapped caracters using 'px' command. useful for 'w'
+    * Fix hex2int conversion warning messages
+
+commit a34afc066ca21ddbb5490e9a8468c783b384fd2e
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 2 21:20:21 2007 +0100
+
+    * bin2tab and tab2gml working nice with 2.16 and all kind of binaries.
+    * Oops. missing system.h in previous commit
+
+commit eccacf0bbe0e86ad4b2216f27d70265e5451e20b
+Author: pancake <pancake@dazo>
+Date:   Fri Feb 2 20:39:17 2007 +0100
+
+    * Fixups on documentation for the new commands
+    * bin2tab and tab2gml now completely fixed for non-stripped binaries
+    * Some minor fixups for the debugging layer
+    * Minor beuty for help
+
+commit a40ee4444c52e23ddfbc0c95abe942379e04e0a0
+Author: pancake <pancake@dazo>
+Date:   Sun Jan 28 18:58:07 2007 +0100
+
+    * Minor cleanup of next/prev aligned block
+    * Also install *tab* rsc libexec scripts
+
+commit dc6abd221ce80a419d8010f302ccfe85d5a011c7
+Author: pancake <pancake@dazo>
+Date:   Sun Jan 28 05:20:46 2007 +0100
+
+    * Initial import of bin -> tab -> gml utilities for graphing binaries
+
+commit 89637e87d20b6e33039f4d7ad93aaba90e7def76
+Author: pancake <pancake@dazo>
+Date:   Sun Jan 28 00:47:30 2007 +0100
+
+    * Prepare environment for .! command
+    * Support for >>>> and <<< times command.
+
+commit 4b959261e73e48cec4072c28c27f36823cdc8936
+Author: pancake <pancake@dazo>
+Date:   Sat Jan 27 23:57:15 2007 +0100
+
+    * RADARE_PRINT renamed to PRINTCMD
+    * Add --without-readline configure flag
+    * asm and dasm rsc commands now use random temporally file names (fixes race condition)
+    * Prepare environment before command execution
+    * Major cleanup of RADARE_ environment variables. Delegated to rsc
+    * Externalize the make_tmp_file() functionality
+
+commit ac373dfc25a277434ca8e43aefaa653729c2bf8d
+Author: pancake <pancake@dazo>
+Date:   Sat Jan 27 14:41:22 2007 +0100
+
+    * Add --with-java configure flag
+    * Strip down the changelog file
+    * Make java stuff be able to build/install
+    * Major rsc scripts renaming
+    * Some minor fixups for some rsc scripts
+
+commit 5e71e2d2fbcfde4edfa8668fabf641ceb243b84d
+Author: pancake <pancake@dazo>
+Date:   Sat Jan 27 03:19:27 2007 +0000
+
+    * Major code syntax cleanup
+    * Drop RADARE_MAGIC and RADARE_SCRIPTS. kissize
+    * rsc command now supports ~/.radare/scripts too
+    * Minor modularization of xrefs
+
+commit e329b0f975470c6bfc55670a96b3abcc50d4b7e1
+Author: pancake <pancake@dazo>
+Date:   Thu Jan 25 18:38:24 2007 +0000
+
+    * Add some x86-64 fixups. Thanks wzzx! (needs more testing before release)
+
+commit 671fbfeb11da7beb0816e6a421906a93772c2a74
+Author: User <foo@porticoluna.org>
+Date:   Thu Jan 25 10:42:12 2007 +0100
+
+    * Initial import of the ffftoneg script
+    * Show negative commented values on 0xffff bin2txt output
+    * bin2txt now uses $OBJDUMP environ and fixes the md5 bin path
+
+commit baaee8ebff1c76dad7dab41920fb8933a13a6f42
+Author: pancake <pancake@dazo>
+Date:   Thu Jan 25 02:25:07 2007 +0000
+
+    * Implement the .! command
+    * Fix flag command (no read before caching)
+    * beutify the flag output format
+
+commit 4866b6c55a05fc3c551d6d7572c9b9237de65b09
+Author: pancake <pancake@dazo>
+Date:   Wed Jan 24 23:01:02 2007 +0000
+
+    * Fix no-readline build
+
+commit fabca8d154eeac28782e7a797b92e8ca38cf5aea
+Author: pancake <pancake@dazo>
+Date:   Wed Jan 24 21:53:33 2007 +0000
+
+    * Fix some configuration tips (gnu-readline+debugger related)
+    * Some notes of the debugger on bsd and gentoo-gnu-linux
+    * Add new flag --with-debugger that enables the build of the libps2fd
+
+commit 31549ae5d676caa4b595145801a6d9a744713598
+Author: pancake <pancake@dazo>
+Date:   Tue Jan 23 17:24:02 2007 +0000
+
+    * Oops(2) missing Makefile for libps2fd makes build unhappy
+
+commit 9c6ac40eb5140ebcd68d7b80ea242743a0758a7c
+Author: pancake <pancake@pl2>
+Date:   Tue Jan 23 00:03:03 2007 +0100
+
+    * Oops. missing Makefile.acr in previous commit
+    * New debugger command "pid"
+    * Some minor fixups on doc and code for the debugger
+
+commit 5945ddd74b6346ed9f2e03e860291500f1442c55
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 21:15:18 2007 +0100
+
+    * Minor cosmetic changes
+    * Start thinking on a better design for breakpoints
+
+commit 6519bb9b689297d36781be6a54c1a65a2d40581a
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 18:09:08 2007 +0100
+
+    * rfile not supports ~/.radare/magic/ database too
+    * change rfile argument order (magic file is optional now)
+    * mrproper must clean all files generated by acr
+    * debian.sh happy with libexec (avoid install wrong files)
+    * findrawsyms fixed (perl -> rsc)
+    * spcc now prints a template example with -t
+    * pU command is now launched from dump_and_process (FMT_USER)
+    * Minor memory leak fixed
+    * fix 'bsize' command. arg0 && for each loop
+    * Add -V to hasher
+    * hasher short help message fixed
+
+commit 9a8eee0c830ea1b06d0de0edc7e8f1f5dfac29fd
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 16:27:36 2007 +0100
+
+    * Wrapper for the write() command
+    * Help message for debugger is in previous commit
+
+commit befadaf119ab9729bd9b902b1dd6e2d4075ced26
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 16:20:51 2007 +0100
+
+    * debian.sh cleanup to avoid manual changes
+    * debug_write() implementation
+    * basic breakpoint implementation for libps2fd
+    * minor debugger code cleanup
+    * use breakpoints inthe demo
+
+commit 6748b130a15d20cd099945b0a72870735ad3f96a
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 05:25:03 2007 +0100
+
+    * Fix some minor bugs. double free still there.
+    * Add syms-dbg-flag to map symbols of running processes
+    * Beutify the error messages of radare when working with unbounded files
+
+commit 79cfe1a8aa31b94dab38b0ad9705f4454937cf32
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 04:37:25 2007 +0100
+
+    * Initial import of the debian package builder
+
+commit 22b9c42378322320aa6c953d000e9b025a75b0ec
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 03:47:46 2007 +0100
+
+    * Initial import of radaredbg: the debugging frontend for radare
+    * Update version to 0.6.7
+    * Oops on previous commit
+
+commit 968c7cc9c8b8f8ccf77b335447b5b9c61975f602
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 21 03:32:03 2007 +0100
+
+    * Initial import of the ps2fd library. (debugging support for radare)
+    *
+
+commit 3002cce48a2eab8e4d01098289ce95e00b5d4022
+Author: pancake <pancake@pl2>
+Date:   Sat Jan 20 16:44:21 2007 +0100
+
+    * Initial implementation of the wrapped line parser for pipe support
+    * Pipes allows me to remove commands like 'dump'. Use 'pr > file' instead
+    * Implement language wrappers for user-defined data block parsers
+    * spcc = structure parser for C. Implemented as an 'rsc' command
+    * Documentation for the new readline command parser. (doc/shell)
+    * Fix syms-flag utility.
+    * Remove config.input variable everywhere!
+    * New print format FMT_USER available from 'pU' using the %RADARE_PRINT environ
+
+commit 48cb49f7fa6193358ade1524a74a6d4d1e327ea9
+Author: User <foo@porticoluna.org>
+Date:   Wed Jan 17 17:04:09 2007 +0100
+
+    * Implement the 'S' command aka StoreState for easy load/store projects
+    * Documentate the way to flag symbols in doc/elf-tutorial
+    * libexec/syms is now happy with -h. Avoid automatic a.out handler
+    * Status info 'i' command dups the write_mode variable. Shorter columns
+    * New rsc helper commands: syms-flag and elf-base-addr
+
+commit d15e14f0396d182dcace42fcdfa2b9e47e334b2c
+Author: User <foo@porticoluna.org>
+Date:   Tue Jan 16 22:28:16 2007 +0100
+
+    * Implement next/prev keys for moving between flags in visual mode
+    * Autocomplete the 'm' command as 'move'
+    * Autocomplete the 's' command as 'seek'
+    * The move command can only be used in write mode
+    * Kissize and fix the '<' and '>' commands
+    * Restore config.seek when the search is finished
+    * Show flag name (if exists in current offset) in visual mode
+    * Avoid redraw screen when invalid key is pressed.
+
+commit 6529032ef6fcc13095d4d81c8ae1f88f130f079b
+Author: User <foo@porticoluna.org>
+Date:   Tue Jan 16 18:08:54 2007 +0100
+
+    * support for octal-hexa conversions in 'xc'.
+    * split search stuff from radare.c to search.c
+    * 'b' command is now autocompleted as 'bsize'
+    * uchar[1] -> uchar fixup on visual.c
+    * initial map-struct documentation (requires rfile changes)
+
+commit 05fcf465acc747bac1b538a9de5d1bc28d520a49
+Author: User <foo@porticoluna.org>
+Date:   Tue Jan 16 11:06:46 2007 +0100
+
+    * Search engine is now happy with -v
+    * Cleanup warnings in xrefs.c
+    * Implement ~/.radare_history stuff (thx pof)
+    * Fix get_offset stack noise. (inititalize ret = 0) (thx viric)
+    * Up to 0.6.6
+
+commit 58b2ff91b10b27c04e89b3f223448f000f804edd
+Author: pancake <pancake@pl2>
+Date:   Sun Jan 14 03:39:58 2007 +0100
+
+    * Create and install bug manpage
+    * Minor eyecandy rsc scripts fixups
+
+commit d2fa9216de74e5e5e016302890c4da4472035b81
+Author: pancake <pancake@pl2>
+Date:   Sat Jan 13 22:42:31 2007 +0100
+
+    * Initial import of the gdl2gml utility
+    * Initial import of rfile-foreach, for file-like carving
+    * Some minor syntax upgrades on perl scripts
+    * Fix rfile to be used by rfile-foreach
+    * Fixup for tracelf. Happy with the share/scripts -> libexec movement (oops)
+
+commit b3d53cabe6b845a7aa967b82b3b1813fc4443346
+Author: pancake <pancake@pl2>
+Date:   Mon Jan 8 02:22:09 2007 +0100
+
+    * Initial import of the viriks 'bug' utility for bugtracking.
+    * Help fixed on read and write commands.
+    * Fix make clean (xc and xrefs not removed)
+
+commit f3245c0605ab6928a4c0dc862665118e741ce891
+Author: pancake <pancake@bare>
+Date:   Sat Jan 6 18:45:47 2007 +0100
+
+    * Write out and install the rest of manpages
+    * Minor fixups in bindiff and bdcolor
+    * Standarize no-args help message in radare and hasher
+    * Make rfile happy at a desired offset
+    * Move print-related stuff to print.o
+
+commit 3703b96f6fff46381e14b17a370091fcb34df47f
+Author: pancake <pancake@mal>
+Date:   Sat Jan 6 06:08:45 2007 +0100
+
+    * Use $libexecdir/radare instead of $datadir/radare/scripts
+    * Initial import of the major part of the radare manpage
+    * Drop usable command from the command line interface (scroll sux)
+    * Force a certain environment
+    * Fix 'open' in read-write to avoid problems when
+
+commit 1c86527cfe677654d797efa7fd13fc44325d4341
+Author: pancake <pancake@mal>
+Date:   Thu Jan 4 18:41:19 2007 +0100
+
+    * Initial working stuff for the bindiff utility
+    * Rename bdiff to objdiff to avoid missinterpretations
+    * Fix Makefiles to install xrefs, xc and bindiff
+    * Add 'bdcolor' script to colorize bindiff output
+
+commit 8d7c9aa20db8798f278f3eee59e85226c2eb0012
+Author: pancake <pancake@mal.localdomain>
+Date:   Wed Jan 3 00:13:32 2007 +0100
+
+    * Import of the offline workage at 23c3
+    * Initial import of xrefs and xc utilities
+    * New rsc helper utilities: add, syms and symxrefs
+
+commit abb1b864b195e77a8399700361475f917873442b
+Author: pancake <pancake@pl2>
+Date:   Fri Dec 8 02:53:03 2006 +0100
+
+    * include termios.h to use struct winsize
+    * add some missing readline autocompletion commands
+    * note for future libedit support
+    * check build on gnusolaris, netbsd, freebsd, bluewall and ubuntu
+    * acr 0.5.2 fixups for portability
+
+commit ea93b20c361b8b0ce1bf9e4803b71eb18f9ff8fb
+Author: pancake <pancake@pl2>
+Date:   Thu Dec 7 02:04:35 2006 +0100
+
+    * initial import of the java-radare API
+    * seek to flag as a keystroke callback
+    * better use of internal conversion functions (code cleanup)
+    * fixes for char -> unsigned char
+    * fix build on BSD systems (do the cleanup)
+
+commit 1dcb3cc6d995e990396b349a0fc9da0891c1e84c
+Author: pancake <pancake@pl2>
+Date:   Wed Nov 29 00:09:28 2006 +0100
+
+    * cleaner dump output string
+    * radare_dump_and_process moved to utils.c
+    * array-based format cycling of visual mode
+    * disassembly is now a print format (pd)
+    * cleanup for radare cmdline flags (drop -n and -W)
+    * beutify README and initial manpage skel
+    * more kisses: drop '(' command (math)
+
+commit e59789d068d478b344e46226f2b9e235422565bc
+Author: pancake <pancake@pl2>
+Date:   Tue Nov 28 22:03:12 2006 +0100
+
+    * kissize some output strings to make pipes happy
+    * cleanup major hasher code and help
+    * write string command now escapes \x hexa strings too
+    * make hasher happy again
+    * add more security checks in the hasher header
+    * KiSS: Drop the networking stuff. Use 'nc -c 'radare file' -l -p 9999' instead
+
+commit 126a841a5235ac56f60653a25d76787d1da34966
+Author: pancake <pancake@pl2>
+Date:   Tue Nov 28 18:29:40 2006 +0100
+
+    * refix xtrace script for better cmdline experience
+    * show_help_message moved to commands.c
+    * initial implementation of the command infracture for visual mode.
+    * support for file creation with -w
+    * initial implementation
+    * fix 32 bit endian swap overflow
+
+commit 85d4df7e8fc9e7260ffa9c7a246afa1dfb97e762
+Author: pancake <pancake@pl2>
+Date:   Mon Nov 27 20:34:09 2006 +0100
+
+    * Add '<' and '>' commands for the visual mode
+    * Real import of the xtrace rsc command
+    * Better syntax indentation for readline.c
+
+commit 11823b93dd56c3049193304418727f13414e63eb
+Author: pancake <pancake@pl2>
+Date:   Mon Nov 27 01:58:08 2006 +0100
+
+    * Initial import of xtrace
+    * drop script filename extensions
+    * Some minor fixups on sockets
+
+commit 34d9a4da957a771b07449d26eaa3b8f729eb8eaa
+Author: pancake <pancake@pl2>
+Date:   Sun Nov 26 13:38:17 2006 +0100
+
+    * Fixups for the rsc caller for non-shell scripts.
+    * Fix pX command.
+    * Initial import of read.sh
+
+commit cc59d74b8eea0bb384a704b2732720aefee125ce
+Author: pancake <pancake@pl2>
+Date:   Fri Nov 24 00:49:10 2006 +0100
+
+    * minor fixups on asm.sh
+    * initial import of rsc and rfile commands to ease magic and scripts usage.
+    * initial import of 'write.sh' script
+
+commit cb02cefb1d46806736c14c13551247e72767450e
+Author: pancake <pancake@pl2>
+Date:   Wed Nov 22 01:55:29 2006 +0100
+
+    * initial import of 'write.sh' script
+    * '*' command has been deprecated in pro to '!echo' usage
+    * 'm' command in visual mode magics the current block
+
+commit 6a122cd991f238c3f3ea73ad5c1b4694767423cb
+Author: pancake <pancake@pl2>
+Date:   Sun Nov 19 16:32:52 2006 +0100
+
+    * import scripts/ objdump-output-beutifier.pl and make_symbolmap.sh
+    * shellcode printage 'FMT_ASHC'
+    * readline autocompletion for boolean values
+    * move visual stuff to visual.*
+    * 'flag -' command clears all flags.
+    * environ is now prefixed as '%' instead of '$'
+    * fix unlimited files support (f.e: /dev/mem)
+    * add octal dump printage
+    * drop '-e' flag from hasher
+    * move config stuff to config.*
+
+commit b7eaed270432be1d139cfb9c4d6cbea3caf56d3b
+Author: pancake <foo@porticoluna>
+Date:   Tue Nov 14 23:32:30 2006 +0100
+
+    * fix search engine again (n)
+    * better regexp support for searches
+
+commit 3e4a47feef2bc79f1d65ce5036d9ce9eb02f0a1c
+Author: pancake <pancake@pl2>
+Date:   Sat Nov 11 12:08:09 2006 +0100
+
+    * add 'i' insert mode for visual mode
+    * initial regexp support for searches
+    * fix help messages for Poke, ps and flag commands
+    * integrate environ as default configuration layout
+    * flag list now shows the index
+    * allow to remove/clear flags using the '-' prefix
+    * add '$' command for environment handling
+
+commit 20322118b1ee2fbb36661c00c35807a2aaf50365
+Author: pancake <pancake@pl2>
+Date:   Fri Nov 10 18:46:02 2006 +0100
+
+    * fixed -v (drop verbose) writes.
+    * fix some memory allocation bugs provided by the readline history
+    * avoid integer overflow bug
+    * fix relative seeks
+
+commit 3181c43ccfc51df2f2b318718104666701b2d9fb
+Author: pancake <pancake@pl2>
+Date:   Tue Nov 7 02:27:53 2006 +0100
+
+    * Fix small bug in configure script
+    * drop verbosity on searches for better cmdline sensation
+    * initial import of 'findrawsyms' and 'symdump'
+
+commit ae04121a6b4a5db012873d780adfd8698a12699d
+Author: pancake <pancake@pl2>
+Date:   Sun Nov 5 15:02:53 2006 +0100
+
+    * Some fixups on tracelf, add support for script comments (';')
+    * Add minor disassembly documentation.
+    * OWN->PWN typo fixup in README x"D
+
+commit 9d503fb708744db49f900e81387b9a7920581480
+Author: pancake <pancake@pl2>
+Date:   Sun Nov 5 14:19:28 2006 +0100
+
+    * More workage on tracelf.
+
+commit 7e99e843dfa74874312a71c40f6a34dbf337e9cb
+Author: pancake <pancake@pl2>
+Date:   Sun Nov 5 04:08:29 2006 +0100
+
+    * initial import of scripts/tracelf.pl
+    * add 'pX' print format (hexadecimal string) (c&p friendly)
+
+commit 7c0255f45a7eb7d46076c0ceae4dda252112a3c2
+Author: pancake <pancake@pl2>
+Date:   Sat Nov 4 18:17:49 2006 +0100
+
+    * Install scripts, magic and documentation stuff too
+    * Use PAGER and RADARE_SCRIPTS env for better disassembly pleasure.
+
+commit b6f9601aef64c2348e4ea9f3cef25a384d600c00
+Author: pancake <pancake@pl2>
+Date:   Sat Nov 4 16:43:48 2006 +0100
+
+    * take care on out of band searches, got ^C inside internal loop too.
+    * 'H' and 'L' keys in visual mode allows you to move by words (2 bytes)
+
+commit c3806887e852e73e66143ccadf0f65bc22bfa31a
+Author: pancake <pancake@pl2>
+Date:   Sat Nov 4 16:12:38 2006 +0100
+
+    * fixes for file size = -1 (/dev/mem for example)
+    * 'p' key inside visual mode changes between bin,hex,string modes
+    * fix zero-div bug in hasher
+    * new command called "Poke" (inverse dump)
+
+commit a9936f77f23c5e9c7e9d8ba2dde751e4ba4c795d
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 29 15:23:02 2006 +0100
+
+    * visual search between search results 's#' (0-9)
+    * flag search results
+    * fix 32-64 bit off_t stuff using OFF_FMT defines
+    * Add help message and stdin asm read for asm.sh
+
+commit 92502d09a7406122f11b521b05c7c84f3e7caff4
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 29 03:43:21 2006 +0100
+
+    * add 'G' key and help message to the visual mode
+    * avoid segfaults when opening large files
+    * fix 32/64 bits bug, start sanitize process via cpp
+
+commit 4368f128bfd884ebc37ee2e9a698341b7c8fa10a
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 29 02:17:00 2006 +0100
+
+    * enforce disassembly features inside the visual mode
+    * alias for limit, resize, endian, flag, seek and help
+    * cleanup starting spaces
+    * some fixes on input parsing for short and long command names
+    * implement '(' command for math ops
+    * implement visual help
+
+commit ebbfd47fa738917b5b77f121217abca040a17a73
+Author: pancake <pancake@pl2>
+Date:   Sat Oct 28 20:36:50 2006 +0200
+
+    * Up to 0.4
+    * 's' aliased as 'seek'
+
+commit 41b004205d938d343b2b344aceaafd013198dc2b
+Author: pancake <pancake@pl2>
+Date:   Sat Oct 28 20:26:30 2006 +0200
+
+    * Major warn cleanup
+    * Initial import of the Visual mode
+    *
+
+commit 58be5b4c7f03281f5cf027488e14cf4e662c176d
+Author: pancake <pancake@pl2>
+Date:   Sat Oct 28 04:48:29 2006 +0200
+
+    * Support for binary printint and viewing (to hubble ;)
+    * Fix bug in decimal endian (drop 'vd' in pro to 'vi')
+    * 'd' command is now aliased as 'd*' like 'dump'
+
+commit d7ba6a53f2790f7b646e020af2d81cda5ec3bd1f
+Author: pancake <pancake@pl2>
+Date:   Thu Oct 26 18:29:27 2006 +0200
+
+    * Initial import of the bdiff tool
+    * Initial workage on file magic db
+
+commit b8313c85ba0fef2f46af7cce1ff99b3f0cf31081
+Author: pancake <foo@porticoluna>
+Date:   Tue Oct 24 12:52:30 2006 +0200
+
+    * Woops, looks like something is wrong, in relative offsets. must be fixed
+
+commit 2db20de3805ae4234b088a1f63a899e3efb6a3f4
+Author: pancake <foo@porticoluna>
+Date:   Tue Oct 24 12:18:11 2006 +0200
+
+    * Store and show a piece of each flagged data in hexa
+
+commit cf6cd2f170958bb931c4cbbdcd33c6986f776b00
+Author: pancake <pancake@pl2>
+Date:   Mon Oct 23 00:00:11 2006 +0200
+
+    * Add flagable ELF header script
+    * More flag-related fixups. valgrind says:
+    
+      valgrind: the 'impossible' happened:
+         Killed by fatal signal
+
+commit 62c491adb962ea098fdd73088bcd22a54e6bbfcb
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 22 18:35:05 2006 +0200
+
+    * Initial import of the flags stuff
+    * Autocomplete offsets with flag names too
+    * Some fixups on read/seek stuff broken yesterday O:)
+
+commit 357f8e3786e72471315406f8ffd821b0095dc5ae
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 22 05:02:31 2006 +0200
+
+    * Fix the -b -s -x conjunction for command line dumps
+    * Add a simple example (elf-dump-header) for cmdline dumps
+
+commit 7de6ce80b1202c861d013e28d4d7a3a0efa08c0a
+Author: pancake <pancake@pl2>
+Date:   Sat Oct 21 20:36:50 2006 +0200
+
+    * Initial readline() support
+    * Some fixups for cmdline entries
+    * Upgrade version to 0.3.3
+    * Fix minor acr bugs
+
+commit acfd11f986cd57a2df96990bd878ea55314ac5f0
+Author: pancake <pancake@pl2>
+Date:   Sun Oct 1 17:05:44 2006 +0200
+
+    * add -V flag (version information)
+    * implement the -S flag(strings like with utf16 and verbose output)(mmap only)
+    * print HEXB header before data_print (-v drops't)
+
+commit bb0e03814ae5168065dcfbc319a9d02cb5d18d62
+Author: pancake <pancake@pl2>
+Date:   Mon Aug 28 15:15:07 2006 +0200
+
+    * Merge changes from the pluna repository.
+    * Implement a hex pair string conversor. (/x)
+
+commit 3ac65fa3841ef7b5d247c88b1024372e1fa03b20
+Author: pancake <pancake@pl2>
+Date:   Sun Aug 27 20:59:04 2006 +0200
+
+    * Some more fixups and code cleanup
+
+commit 19156bc7caae5b24ed8b24f81a3fa0defcf0b83a
+Author: pancake <pancake@pl2>
+Date:   Sun Aug 27 02:04:51 2006 +0200
+
+    * Fix search engine with binary string support
+
+commit 8b98463474e43d85427ef1b8b599f1d08d628d6b
+Author: pancake <pancake@pl2>
+Date:   Mon Jul 10 23:42:09 2006 +0200
+
+    * add command to interpret external files '.'
+    * add '-v' flag to drop verbosity
+    * echo echo command '*'
+    * flag some prints as verbose to match -v flag
+
+commit 009093e9708bc5072cda7e9cfb8be2ec3a848921
+Author: pancake <pancake@pl2>
+Date:   Mon Jul 10 21:20:11 2006 +0200
+
+    * Fix 'write' command for hexa strings.
+    * Add support for comments ';' (useful for scripts)
+
+commit 43102b60303bb1e14634f495b3a037c398682717
+Author: foo <pancake@pluna>
+Date:   Sun Jun 4 02:35:32 2006 +0200
+
+    * Add 'URL' encoding for the 'print' command.
+
+commit bfedb08ecb1b92caafb221eacac1b257e4687ca4
+Author: foo <pancake@pluna>
+Date:   Fri Jun 2 11:30:05 2006 +0200
+
+    * call radare_read when seeking
+    * warn when no whitespace after the 's' command.
+
+commit 4bee7bf0481266e9ed55eeeec37e4da5c898cf76
+Author: pancake <pancake@pl2>
+Date:   Fri Jun 2 01:31:57 2006 +0200
+
+    * Bump version to 0.2.8
+    * Whoops, I was using a very old and buggy acr.
+
+commit a21b509a1d6fce5e1477fb2781eb6c2427b20b49
+Author: pancake <pancake@pl2>
+Date:   Fri Jun 2 01:00:24 2006 +0200
+
+    * Initial import of the asm/dasm scripts
+
+commit ba4e27033c9fb313d8b0eaa5040cfab72ed7af5b
+Author: foo <pancake@pluna>
+Date:   Thu Jun 1 20:31:08 2006 +0200
+
+    * Fix data_print in HEX mode for odd sizes
+
+commit 66ccff70578d3146d472b5ea98a45f2ba090292d
+Author: foo <pancake@pluna>
+Date:   Thu Jun 1 00:39:55 2006 +0200
+
+    * Fix limits to <0
+
+commit cf971873ef654f5febbbd765caf2393fa2a56996
+Author: foo <pancake@pluna>
+Date:   Thu Jun 1 00:05:56 2006 +0200
+
+    * Add FMT_CSRC print format
+    * Fix a more logical way to use the 'p' command.
+
+commit 758e771092e72e74409f226834153f0092e7d624
+Author: pancake <pancake@pl2>
+Date:   Wed May 31 00:50:24 2006 +0200
+
+    * Implement hasher inside radare.
+    * Add some notes about hasher.
+
+commit 15c63521ee108195cd483252004a1e6a8534c36b
+Author: pancake <pancake@pl2>
+Date:   Wed May 31 00:10:22 2006 +0200
+
+    * Implement unix and dos timestamps viewers
+    * Fix 'd' command, that was buggy after the reformat.
+    * Initial recoding for the search (strike 3)
+
+commit a9af966d904d7a87ddaa06eb3e912cf1b25ea995
+Author: foo <pancake@pluna>
+Date:   Wed May 17 13:31:59 2006 +0200
+
+    * Implementation of 'm' command.
+    * Fix 'wx' command
+    * QuadWord and Dword views for 'v' command.
+    * Drop the '/' separator for most commands.
+    * Some minor internal fixups.
+    * Drop '-y' flag. So it's senseless.
+
+commit e2951ff6267afab63b96c99d3fc22cb283475ad6
+Author: foo <pancake@pluna>
+Date:   Wed May 17 00:19:10 2006 +0200
+
+    * Re-implementation of write command with hexa and string support.
+
+commit 9aed1c0d225feada9b5c9472a9d2e9105b6f56d6
+Author: foo <foo@porticoluna>
+Date:   Tue May 16 00:18:51 2006 +0200
+
+    * Fix offsets and seeks in hasher (now is working)
+    * Fix the offset stuff in radare
+    * Rename mode_t -> print_mode_t
+    * Fix block size when resizing
+    * Add '-s' seek flag to radare
+    * Limit boundaries for seeks (>0)
+
+commit 9fb8d4441e0e8598834efa0b99c644af5db8688c
+Author: pancake <pancake@pl2>
+Date:   Sun May 14 16:54:18 2006 +0200
+
+    * Implement -x on radare
+    * Implement -s on hasher
+    * Up to 0.2.6
+
+commit 57b273b4043fd5702c88e5945dd5bbf7c9316f1e
+Author: pancake <pancake@pl2>
+Date:   Sun May 14 15:07:16 2006 +0200
+
+    * Initial support of SHA1 support for hasher.
+
+commit aafe6a6adcd3f8e6f8f4efc25deb0122bb8fbd19
+Author: pancake@pl2-netbsd <pancake@phreaker.net>
+Date:   Sun May 14 04:14:11 2006 +0200
+
+    * Endian-aware hash file
+    * Add crc32 support to the hasher
+    * Offset and length support
+    * Add '-o' to view the contents of a hash file
+    * New header for hash-files with MAGIC
+
+commit eaa28c600ad9f530823a673e6ad171db242ca5a3
+Author: xscript <xscript@gmx.net>
+Date:   Sat May 13 02:03:35 2006 +0200
+
+    * Non-working ultra code refactoring
+
+commit f866ea999a53589cc4943750aee26fecf69b8d78
+Author: pancake <pancake@pl2>
+Date:   Mon May 8 23:40:40 2006 +0200
+
+    * Fix the 64bit-endian fight against GLIBC
+    * Force the use of a 64 bit POSIX-OS. ( byebye w32! )
+
+commit cb7bd107f1d8c83e97c6a5c5840a085124e2b2d1
+Author: pancake <pancake@pl2>
+Date:   Sat May 6 16:19:25 2006 +0200
+
+    * Fix 64 bit endian problems.
+    * Too huge changelog to describe
+
+commit d3ad8f7e318a9d774471807a00a30db3f31619b1
+Author: foo <foo@porticoluna>
+Date:   Wed May 3 15:08:41 2006 +0200
+
+    * Adopt a portable strategy for the GNU dprintf()
+
+commit 534e2091e0aa99dea84a21731a5754c9ac270c5c
+Author: pancake <pancake@pl2>
+Date:   Wed May 3 00:56:20 2006 +0200
+
+    Upgrade to 0.2.2
+    * TCP remoting finished and working.
+    * CafeBabe.sh script example is now working.
+    * Implement -q and -L for command line scripts.
+
+commit 351201986f0b7b447702445d3234301deccacb5e
+Author: pancake <pancake@pl2>
+Date:   Mon May 1 04:10:50 2006 +0200
+
+    * Initial import of the remote scripting
+
+commit 38298ca8e705205b0fdac89d6f37af2ee9e699bc
+Author: pancake <pancake@pl2>
+Date:   Mon May 1 04:09:47 2006 +0200
+
+    * Add 'v' (view) command
+    * Manage endiannes
+    * Initial remote TCP support
+
+commit 69c395b8475688a308795e1a607265d8976a0c39
+Author: pancake <pancake@pl2>
+Date:   Mon May 1 03:55:41 2006 +0200
+
+    * Check for endiannes in ACR
+
+commit fdfb4ebfd8464a63a75b003b8ba4a4e392afc122
+Author: root <root@pl2.(none)>
+Date:   Thu Apr 13 00:45:07 2006 +0200
+
+    * Fix distfile generation ignoring .git files
+
+commit 829ca4d578f33669c7c3af5ef09f6175ebc6c111
+Author: root <root@pl2.(none)>
+Date:   Wed Apr 12 16:56:44 2006 +0200
+
+    * Initial import of radare into the git.
+
+/* older hand-made history */
+
+0.1.2
+        - Add 'hasher' utility
+        - Fix perms of the creation files
+        - Drop '-f' flag from radare
+        - Fix segfault on small files
+
+0.1 - initial release
+

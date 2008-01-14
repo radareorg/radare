@@ -1,0 +1,43 @@
+.Dd January 6, 2007
+.Dt BINDIFF 1
+.Os
+.Sh NAME
+.Nm bindiff
+.Nd Binary diff utility
+.Sh SYNOPSIS
+.Nm bindiff
+.Op Fl h
+.Op a-file
+.Op b-file
+.Sh DESCRIPTION
+This program is part of the radare project.
+.Pp
+This command allows you to view the differences between two binary files.
+.Pp
+Default output is probably not human readable, but is fine for scripting. For a colorized and verbose output you can use the 'bdcolor' radare script via rsc(1).
+.Pp
+$ bindiff /bin/ls /bin/ls.orig | rsc bdcolor 3
+.Pp
+The bdcolor output shows a 4-5 column output showing the a-file and b-file offsets. The byte contained in the afile and bfile offsets and an optional column containing a pipe character that determines the difference.
+.Pp
+<     File 'B' does not contains the context bytes of the 'A' file.
+.Pp
+>     File 'B' contains new bytes compared to the 'A' file.
+.Pp
+|     File 'B' has changed one byte compared to the 'A' file.
+.Pp
+.Sh SEE ALSO
+.Pp
+.Xr hasher(1) ,
+.Xr radare(1) ,
+.Xr rabin(1) ,
+.Xr rfile(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr xc(1) ,
+.Xr bug(1) ,
+.Xr xrefs(1)
+.Sh AUTHORS
+.Pp
+pancake <pancake@youterm.com>
+.Pp

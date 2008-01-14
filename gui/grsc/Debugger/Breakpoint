@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+#
+# pancake <pancake@youterm.com>
+#
+export MAIN_DIALOG='<vbox>
+<text>
+  <label>Address for breakpoint</label>
+</text>
+<hbox>
+  <entry>
+    <variable>BP</variable>
+  </entry>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>'
+
+eval `gtkdialog --program MAIN_DIALOG`
+if [ -n "$BP" ]; then
+	echo ":!break $BP"
+	exit
+fi

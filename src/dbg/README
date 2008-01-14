@@ -1,0 +1,21 @@
+Process to Filedescriptor library
+=================================
+
+This library allows you to open processes like if they where plain files
+and debug them via the system() interface.
+
+Use ./configure --with-debugger to build this library layer.
+
+
+Proposed syntax for process file handling
+=========================================
+
+  dbg:///bin/ls
+  pid://19433
+  w32dbg://c:\windows\notepad.exe
+
+
+KNOWN BUGS
+==========
+ATM there's no BSD or non-x86 port. So, i'm implementing an abstraction
+layer to provide this support.

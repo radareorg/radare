@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+TARGET="$1"
+OFFSET="$2"
+LENGTH="$3"
+
+[ "${TARGET}" = "-h" ] && LENGTH=""
+if [ -z "${LENGTH}" ]; then
+	echo "Usage: read [file] [offset] [length]"
+	exit 1
+fi
+
+echo "
+seek $OFFSET
+b $LENGTH
+pX
+quit
+" | radare -v "${TARGET}"

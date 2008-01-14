@@ -1,0 +1,122 @@
+include ../config.mk
+
+OBJ=main.o radare.o stripstr.o readline.o tsearch.o undo.o io.o
+OBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
+OBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o
+
+OBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o
+
+# plugins
+
+OBJ+=plugins/haret.o plugins/winedbg.o plugins/gxemul.o plugins/remote.o
+OBJ+=plugins/gdb.o plugins/posix.o
+
+# hand made maemo stuff
+
+MAEMO_OBJ=/usr/lib/libreadline.a /usr/lib/libtermcap.a
+
+OBJ+=hasher/entropy.o
+
+# arch
+
+OBJ+=arch/arm/code.o
+OBJ+=arch/ppc/code.o
+OBJ+=arch/x86/code.o
+OBJ+=arch/x86/dislen.o
+OBJ+=arch/java/code.o
+OBJ+=arch/ppc/ppc_disasm.o
+OBJ+=arch/m68k/m68k_disasm.o
+OBJ+=rdb/rdb.o rdb/rdbdiff.o
+OBJ+=hasher/crc16.o aes-find.o
+
+OBJ+=arch/arm/disarm.o arch/java/javasm.o
+OBJ+=${RADARE_OBJ}
+
+OBJ2+=arch/x86/udis86/*.o
+
+##DEBUGGER##
+include dbg/objects.mk
+OBJ+=plugins/debug.o
+OBJ2+=${psOBJ} 
+TARGETS+=libdbg 
+##DEBUGGER##
+
+##SYSPROXY##
+OBJ2+=../rasc/sysproxy.o ../rasc/syscall-linux.o ../rasc/rpc.o
+CFLAGS+=-DSYSPROXY
+##SYSPROXY##
+
+CFLAGS+=-DHAVE_PERL=${HAVE_PERL} -DHAVE_PYTHON=${HAVE_PYTHON}
+CFLAGS+=-DHAVE_LIB_READLINE=${HAVE_LIB_READLINE} -DDATADIR=\"${DATADIR}\" -DLIBEXECDIR=\"${LIBEXECDIR}\"
+CFLAGS+=-DSIZEOF_OFF_T=${SIZEOF_OFF_T} -DDEBUGGER=${DEBUGGER} -DTARGET=\"${TARGET}\" -DRADARE_CORE -DHAVE_LIB_EWF=${HAVE_LIB_EWF}
+LDFLAGS+=${DL_LIBS}
+
+##VALA##
+CFLAGS+=-I../vala/grava/ `pkg-config --cflags gtk+-2.0` -DVALA
+LDFLAGS+=`pkg-config --libs gtk+-2.0`
+OBJ2+=../vala/grava/*.o
+OBJ+=grava.o
+TARGETS+=valagrava
+##VALA##
+
+##HAVE_PERL##
+OBJ+=eperl.o
+CFLAGS+=`perl -MExtUtils::Embed -e ccopts`
+# NOTE: umf..-lncurses is only needed on debian?
+RADARE_LDFLAGS+=`perl -MExtUtils::Embed -e ldopts` -lncurses
+##HAVE_PERL##
+
+##HAVE_PYTHON##
+OBJ+=epython.o
+CFLAGS+=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
+# NOTE: umf..-lncurses is only needed on debian?
+RADARE_LDFLAGS+=-lpython2.4
+##HAVE_PYTHON##
+
+.PHONY: all pre radare radare-hash radare-xc javasm radare-xrefs clean
+
+all: ${TARGETS} udis86 armasm pre radare librdb radare-hash radare-xc radare-xrefs javasm
+	@true
+
+vala:
+	cd ../vala/ && ${MAKE} all
+
+valagrava:
+	cd ../vala/grava/ && ${MAKE} radare
+
+pre:
+	-rm -f utils.o
+
+libdbg:
+	cd dbg && ${MAKE} all
+
+librdb:
+	cd rdb && ${MAKE} all
+
+udis86:
+	cd arch/x86/udis86 && ${MAKE} all
+
+radare: ${OBJ}
+	${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare ${OBJ} ${OBJ2}
+
+javasm:
+	${CC} -DJAVA_ASM_MAIN arch/java/javasm.c -g -o javasm
+
+armasm:
+	cd arch/arm/aasm && ${MAKE} all
+
+radare-hash:
+	-cd hasher && ${MAKE} all
+
+radare-xc: xc.o
+	${CC} ${CFLAGS} ${LDFLAGS} -o xc xc.o
+	@#ln -fs radare xc # ???
+
+radare-xrefs: xrefs.o
+	${CC} ${CFLAGS} ${LDFLAGS} -o xrefs xrefs.o
+
+clean:
+	-cd arch/arm/aasm && ${MAKE} clean
+	${MAKE} -C hasher clean
+	-${MAKE} -C arch/x86/udis86 clean
+	-rm -rf xc.o xrefs.o ${OBJ} ${BIN} xrefs xc a.out

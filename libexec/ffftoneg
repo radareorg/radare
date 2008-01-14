@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+#
+# Comment out 0xffff* values . useful for piping the objdump output
+#
+
+while (($str = <STDIN>)) {
+	$str=~s/\(.*//g;
+	if ($str=~/0xffff/) {
+		chomp($str);
+		$str=~/(0xffff.*)/;
+		$num=`xc $1`;
+		$str.="  ; $num";
+	}
+	print "$str";
+}

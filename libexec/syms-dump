@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+#
+# Symbol dumper
+#
+# Dumps binary strings of the symbols of a library.
+#
+
+$|=1;
+my $file=$ARGV[0];
+my $limit=$ARGV[1];
+my $delta=$ARGV[2];
+my $offset=0;
+my $count=int($limit)-1; # byte counter
+
+if ( $file eq "") {
+	print "Usage: symdump [elf] [limit-bytes] [delta-offset]\n";
+	exit(1);
+}
+
+open FD, "objdump -wd $file|" or die "Cannot exec objdump -wd $file\n";
+while(<FD>) {
+	if (/.*\ <(.*)>:/) {
+		$name=$1;
+		print "$name: ";
+		while(<FD>) {
+			chomp($_);
+			last if ((/>:/)||(/section/));
+			$str=substr($_,9,18);
+			$str=~s/\t//g;
+			$str=~s/\ \ /\ /g;
+			$str=~s/\n//g;
+			@bytes=split(/ /,$str);
+			foreach $i (0 .. $#bytes) {
+				$offset++;
+				next if ($offset<=$delta);
+				print $bytes[$i]." ";
+				$count--;
+				last if ($count==0);
+			}
+			last if ($count==0);
+		}
+		print "\n";
+	}
+	$offset=0;
+	$count=int($limit);
+}
+close FD;
+
+exit(0);

@@ -1,0 +1,340 @@
+
+  ___________ _____  ______   _____
+  \___   ___/ _==_ \'   ._ \/ _==_ \
+    \'   '//        \   '   \       \  for radare
+     \___/ \________/.______/_______/
+
+
+===========================================================
+
++ EH - event handling (event type + source pid)
+  using linked list.h
+* RDB TO GML
+
+* support size of pointer with [xxx] get_offset expressions
+  - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
+  - also make use of cfg.endian
+
+---------------------------
+* enable echo when showing prompt (back from debugger) (stty echo)
+* Support to ignore signals
+  - i dont want to take care about SIGPIPE or SIGALRM anytime
+* new flag type: temporal 
+  - they will not survive a project save
+
+w32 Debugger
+============
+* No /w32 directory -> in makfeil
+* implement !maps
+* pid:// doesn't works
+* al premer ':' en visual mode no mostra prompt :?!?
+
+Project use
+===========
+* Open/Save project
+* store/restore all flags, comments and so into rdb. comment command? save, open
+
+Bugs
+====
+* s <unexistant-flag> -> do not seek
+* !ret should use !bt if possible
+* In visual mode the 'w' doesn't allows to erase chars (backspace..)
+   - pipecmd2str must use a buffered pprintf.
+     more optimal, no need to dump to tmp files
+
+* new graph view
+  - birdfly mode -
+  * only calls are followed
+  * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
+* C -> eval asm.comment=hello world
+* analitzar fletxetes en el code block actual
+  - mirar blocks de codi ficara linea ascii art
+  - poder escollir totes les fletxes a lesqerra o 2 panels amb '|'
+
+* import esteve's object injector
+
+
+Rabin
+=====
+* elf-section-headers -> loggejar shelf stuff
+  - pillar base address al vol ( rabin -b)
+* add full PE support to rabin
+* integrated with radare debugger /code analyer
+* Make radare -S be happy with rabin. find only in data sections
+
+Search
+======
+* Move %SEARCH into vars for eval!
+* ease keyword list searcihng (search.keywords_file?)
+  - comma separated, range , eval is not enought.. 
+* Fix search progress bar and hits view (cleaner :!!)
+* new search engine allowing AES and RSA key (so...predefined algos for signature searches)
+  - must think on! - entropia = 1 en un block (tots numeros primers)
+
+Core
+====
+* function hooker in C (dbg.hooker)      
+  - some C macros or so to create a .so and LD_PRELOAD't
+  - if static...should inject trampolines to our code.
+* add cfg.insert (make user write operations insert or overwrite)
+* inverse dump of blocks (ripe mode) (show stack graph in ascii art?)
+* support to append data (without getting out of the block_size) (or so..)
+* make plugin commands be mapped into namespaces
+* add cursor.pos, cursor.range eval vars
+* move !hack inside the core
+  - accessible outside the debugger
+  - be interactive when called with no args
+  - or add !hacki for interactive way
+* Multiple rdb load
+  - allow to map into flags, etc..
+  - efficient use of flags, labels and comments
+* optimized flag storing algorithm (a bit slower for >5000 strings)
+  * flag namespaces (comment, label, symbol, ...)
+  * marcar blocks amb cursor i asignar un alias o nom (flag)
+    - flags must have start and end
+    - flags/comments/labels/dwarf
+    - optimized linked list usage
+* Hexpair aliases:
+  - Alias foo = w 00 02 30 40 51 it can be used in a inverse way:
+  - for a disasembler or data analyzer (pA)
+  - load from file.
+    90 : nop
+    1020 : invalid
+    8048000 : base address
+* Add views/states/.. (S (switch) command) (open multiple files)
+  - A view is just a stored copy of the config_t structure
+  - and store different states for the same file
+  - think on how to allocate new states (linked list of config_t structs)
+  - S
+    0 /bin/ls 0x0000000 ; comment
+    1 /bin/ls 0x0000123 ; comment2
+  - S [number]
+
+Rasm
+====
+* Add .db, .byte, .dw, .dd directives or so, .string
+  - make them usable from the assembler (labels and so too)
+* -f, load opcodes from file
+* Ignore stuff after ';'
+  - wA -> write using rsc asm
+
+Visual
+======
+* ease monitor access from the visual (xterm or so) (run inside dvtm?)
+* Debugger view (a key to change pure asm mode to debugger view)
+* fix ranged zooms
+* count the number of lines in backtrace and substract them to make the visual
+* add scrolling acceleration. (cfg.accel or so)
+
+Hasher
+======
+* Refactor code -> no dupped code
+  - sum*charpos, hash sha0, md2, crc64, hmac, network-hashes
+
+Tracer
+======
+* make !dump incremental
+  - support to enable full dump (with hashing for reducing sizes)
+  - ultra slow ? i should analyze code to enhace this
+* cmd.trace -> command to execute when tracing
+  - trace.log should be parsed insiide radare visual
+    (next/next-->prev...)
+  - trace extra regs info: (show bytes where they point)
+    eax 0x8048484 bytes...
+  - blank line means a trace step
+  - program_t -> asign name and color
+    -> useful to merge graphs of code analysis and code execution
+  - if comments have a '{' indent disasemly to the right and '}' to the left
+  - allow to monitor register values and memory pointers
+    - for example:
+     > :x 200 @ [eax]+33
+  - flag monitring
+* tracepoints
+  - allow to execute a command (!dump?)
+    - follow some variables
+* trace graph
+  - debug.c -> implement a while(debug_step()) loop to arch_aop() each instruction
+    and draw a graph until a breakpoint or ^C
+  - creates a program_t graphable with vala
+  - can be diffed with rdbdiff
+
+FileDescriptors
+===============
+* read/write from/to child filedescriptor
+* sniff filedescriptor (dumping to file or socket)
+
+Debugger
+========
+* show flag name+offset in bp list
+* al atacharse a un proces deixa <pid>.rdb hauria de ser <program.pid>.rdb?
+* debug_new() -> alloc new glib object or so
+  - allows multiple ps structures to be loaded
+  - needs refactoring?
+    - maybe only change a pointer. setCurrentProcess() or so
+
+	Debugger d = new Debugger("/bin/ls");
+	Debugger d2 = new Debugger("/bin/true");
+	d.setCurrentProcess();
+	d.breakpoint(0x8048930);
+	d.continue();
+
+* code injector for accessing non GP registers like mmx,
+   fp, etc and other's section segments. (%ss, ..)
+  off_t value = get_reg_inline("m0");
+  - store a struct containing 
+	char * register_name;
+	uchar *shellcode
+  - all shellcodes must be coded and injected in the same way
+* show esp-ebp of stack at top (or mark a range)
+  - show stack offsets
+  - max size of stack
+  - colorize esb-ebp with temp cursor or so
+* threading stuff for ptrace is broken. try to make the ada crackme
+  http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
+* show esp-ebp !!! stackframe is important everywhere! ??
+* !contu <addr> doesn't works!
+* implement process freze and bootup
+* own elf loader (avoid system one)
+* amd64 -> x86-64 -> alias ( BSD64 is broken )
+* add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
+  int3 SIGTRAP
+  bad opcode (ILL)
+  signal
+  div
+* use pthread to list threads and control them
+* load libraries on the child process
+* breakpoint callbacks:
+  A hook to an api can be emulated from the debugger, no need to inject
+  code everywhere, just BP and change regs
+* add dosdebug:// to debug dosemu-based applications
+* import of qemu:// plugin to connect to qemus :D
+ - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
+* use 'tm' (terminal mixer) to run the target debugged program
+   - allows multiple interactives consoles over the program,
+     keeping the debugger window clean
+   - we need to know the pid of the child process of tm.
+   - maybe a debug flag to tm would be nice - i will talk to the author
+   - must be hardcoded inside the core
+ - handle ^C properly , to allow to stop the process with any signal
+* make libgdb2fd work
+* Allow to run shellcodes on debugged process.
+  (autodetect .s or raw binary)
+  - read shellcode from a file 
+    should support .c or .s or raw or elf _start
+
+Code analyzer
+=============
+* colorize comments
+* handle relative references to code and data
+* recursively block_split
+* make code.c autodetect traps like cc or jmp $$
+* Implement libcaca/aalib backend for grava! :D
+* xrefs does not works for string references
+  - make xrefs support base address
+  - integrate xrefs into the core (debugger needs love too!)
+* grava window with toolbar in a separate file
+* grava -> toggle node body visibility with a key (smarter graphs
+
+Gui
+===
+* GUI: contextual popup menu allows to change font size
+
+Flags
+=====
+* comments per flag
+* Create namespaces for flags
+  - sym.bla, string.foo, ...
+
+Random
+======
+* Update manpages
+* output of rsc help should start with ';'
+* pfd -> print flag +0x0 for the current block?
+  - move with cursor between them
+* rsc bdcolor doesnt works fine only shows first appearance??!
+  - or is this a bytediff-bindiff problem!??!
+* Implement a boolean bindiff based on symdiffing (uses dwarf)
+* make monitors work with inotify and glib events or so
+
+Scripting
+=========
+* make ;cmp, ;je, ;jne commands work properly
+* add parrot support. enhace perl/python
+
+===========================================================
+
+TOTHINK
+=======
+* Allow '@' at comments ??
+  - (must fix the visual entry) so it is not a raw command. it is a user input!
+
+* performance counters:
+   - inject code into the child process
+   - mmap to backup code from the hooked functions
+   - each hooked function should do something like:
+       [mmap_addr+func_off]++;
+   - these counters can be resetted
+   - the mmap is only defined once
+   - show statistics of time range and the count of times a function
+     has been called.
+ - timers:
+   - inject code into the child process to define from-to zones
+   - these from-to zones have an mmap address assigned
+   - uses rdtsc to get time
+
+	// 'from' hook
+     push eax
+     rdtsc
+     mov [mmap_addr+my_func], eax
+     pop eax
+
+	// 'to' hook
+     push eax
+     rdtsc
+     mov [mmap_addr+my_func+4], eax
+     pop eax
+
+   - statistics will show the time spend to run a determined piece of code
+
+ - add software watchpoints with stepall (register and memory changes control)
+ - log EIP, LABEL, OPCODE, REGISTERS CHANGED or whatever
+ - fer un binpatch a traves del contexte del asm que sigui muahah
+ - rasc : send file and execute (pitbull inside!)
+  - use it for the fuzzer framework
+
+* DWARF DUMP !!! 
+  * add 'list' gdb -like command
+  * http://reality.sgiweb.org/davea/dwarf.html
+
+BSD_SYSCALL_PTRACE:
+===================
+
+.global foo
+foo:
+        mov $2, %ebx
+        mov $1, %eax
+        push %ebx
+        push %eax
+        int $0x80
+
+
+libraries
+=========
+libsal   -> implements a layer on top of radare for SAL (or parrot?) (or nekovm?)
+libiconv -> encoding support
+libmagic -> better integration with magic stuff (atm use external magic dbs) (obsd magic)
+libdwarf -> supports dwarf stuff and so
+
+
+TODO LIST
+=========
+* ._ command not supported .. ? of course not!
+* use #pragma once?
+* bash autocompletion script for rsc and rfile
+* base64 conversion, fixer and so
+* charsets support (search strings in utf8, etc)
+* implement 'commit' command. delayed write operations with bindiff output
+* undo write and more things
+* support for undo (stacked ops)
+
+* total world domination

@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# author: pancake <pancake@youterm.com>
+#
+
+FILE=$1
+
+if [ -z "$FILE" ]; then
+	echo "Usage: start2bin [program|source.S]"
+	exit 1
+fi
+
+if [ "`echo $FILE|grep -e '\.S$' -e '\.s$'`" ]; then
+	gcc -fPIC -nostdlib $FILE -o /tmp/a.out
+	FILE="/tmp/a.out"
+fi
+
+if [ -x "$FILE" ]; then
+	strip $FILE
+	echo `objdump -d $FILE | cut  -f 2| grep -v :`
+else
+	echo "Oops. not a valid target file";
+	exit 1
+fi

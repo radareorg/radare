@@ -1,0 +1,29 @@
+Code injection with radare
+==========================
+
+This directory contains different assembly snippets designed
+to be injected into child processes to manipulate their
+behaviour, get information or take control.
+
+Most of them contain are written between 'pusha/popa'
+enclosures to avoid register manipulation after the code
+injection and make the child process happy when running
+again after the operation.
+
+Remove the pusha/popa opcodes to modify the process registers
+after the code injection. Bear in mind that 'pusha/popa' only
+stores/restores the general purpose registers, and this can
+be br0ken if you make use of the fp, xmm, registers ..
+
+You should use the 'rsc start2bin' program to generate an
+hexpair line of bytes containing the opcodes contained in
+the _start symbol.
+
+These snippet codes can be used as shellcodes for exploit
+development. So, feel free to modify them, create new ones
+and send to me these codes to make this collection bigger
+supporting multiple architectures and operating systems :)
+
+NOTE: I recommend you to use metasploit or any other software
+designed to generate shellcodes for your exploits. radare
+doesn't intends to replace them.

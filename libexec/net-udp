@@ -1,0 +1,25 @@
+#!/bin/sh
+#; This UDP header can be aligned where you want becouse it is relative :)
+#; author: sha0
+
+cat <<EOF
+s here
+b 16
+f udp.sourceport
+
+s +16
+b 16
+f udp.destport
+
+s here
+b 16
+f udp.length
+
+s +16
+b 16
+f udp.chksum
+
+s +16
+b 64
+f udp.data
+EOF

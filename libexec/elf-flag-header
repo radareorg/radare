@@ -1,0 +1,40 @@
+s 0
+f here
+
+s here
+b 4
+f elf.magic
+
+s here
+b 16
+f elf.ident
+
+s 16
+b 2
+f elf.type
+
+s 18
+b 2
+f elf.machine
+
+s 20
+b 4
+f elf.version
+
+s 24
+b 4
+f elf.entry
+
+s 28
+b 4
+f elf.phoff
+
+s 32
+b 4
+f elf.shoff
+
+s 36
+b 4
+f elf.flags
+
+s here

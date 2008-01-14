@@ -1,0 +1,23 @@
+Vala frontend for radare
+------------------------
+
+This directory contains a native frontend for radare written
+in Vala[1] to provide an object oriented and userfriendly API
+for easily interfacing to the radare core.
+
+The API will support all the internal and external commands
+handled by radare, so it will be possible to write plugins
+and wizards with the user in mind.
+
+Dependencies required are the same for building radare but adding:
+
+ - Vala >= 0.1.4
+ - Gtk+-2.0
+ - Vte
+
+
+Comments are appreciated.
+
+                                                   --pancake
+
+[1] http://live.gnome.org/Vala

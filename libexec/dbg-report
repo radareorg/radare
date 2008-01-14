@@ -1,0 +1,33 @@
+#!/bin/sh
+cat <<_EOF_
+!echo == Debug report
+!printf "Date: "
+!date
+!info
+!echo Registers:
+!regs
+!fpregs
+!echo Backtrace:
+!bt
+!echo Maps:
+!maps
+!echo Status:
+!status
+!echo Current eip disassembly
+pd 100@eip
+!echo Stack
+px 120@esp
+!echo Data pointed by registers
+!echo EAX
+px 120@eax
+!echo EBX
+px 120@ebx
+!echo ECX
+px 120@ecx
+!echo EDX
+px 120@edx
+!echo ESI
+px 120@esi
+!echo EDI
+px 120@edi
+_EOF_

@@ -1,0 +1,196 @@
+radare shell syntax
+===================
+
+radare implements an own pipe support that allows us to redirect
+the stdout data printed by a command to a file, concatenate command
+strings and pipe to shell programs with '|'.
+
+You can also drop the verbosity by prefixing your command with ':'.
+
+It's possible to make a temporal seek to execute certain command. This
+is defined with the '@' character. Let's go!
+
+This approach allows us to reduce the number of commands required
+to be implemented, so most of them can be replaced with unix-like
+approaches.
+
+
+pipes to files   >
+==================
+
+For example. To dump the current data block to a file:
+
+  $ radare /bin/ls
+  > s 0x273
+  > b 0x200
+  > pr > /tmp/xxx
+
+NOTE: This command will dump the 0x200 bytes of the 0x273 offset
+of the /bin/ls file into /tmp/xxx.
+
+Ok, now we can get some better usage of the radare shell syntax and
+simplify the previous three lines into a single one:
+
+  $ radare /bin/ls
+  > pr 0x200 @ 0x273 > /tmp/xxx
+
+This is a simple example about how to use the '@' character.
+
+
+
+pipes to shell commands
+=======================
+
+You can use the '|' to pipe the output of a command to a shell program.
+This feature is really useful for handling large lists of hits using
+less or grep.
+
+This is an simple example of use:
+
+  $ radare /bin/ls
+  > / lib | less
+
+  This radare command will search for the string 'lib' and pipe the results
+  to the input of less. You can easily page long list of items.
+
+
+Another example of use may be a search filter:
+
+  $ radare /bin/ls
+  > b 30
+  > ps
+  > :/ lib
+  > f | grep main
+
+  This radare session is probably a little more complex. Let's see:
+
+  b 30             changes the block size to 30
+  ps               change the default print mode to 'string'
+  :/ lib           silently searchs for the string 'lib'
+  f | grep main    lists all flags grepping the ones containing 'main'
+
+
+  Let's see the output:
+
+   > :/ lib
+   0x155
+   0x9F5
+   0xA31
+   0xD42
+
+   > f
+   000 0x0000000000000155   30        hit[0] lib/ld-linux.so.2\x0\x0\x4\x0\x0\x0\x10...
+   001 0x00000000000009f5   30        hit[1] librt.so.1\x0clock_gettime\x0_Jv_R
+   002 0x0000000000000a31   30        hit[2] libc.so.6\x0strcpy\x0ioctl\x0stdout\x0
+   003 0x0000000000000d42   30        hit[3] libc_start_main\x0strlen\x0strchr\x0
+
+   > f | grep main
+   003 0x0000000000000d42   30        hit[3] libc_start_main\x0strlen\x0strchr\x0
+
+
+
+escaped commands   `
+====================
+
+You can also concatenate strings. This allows us to read the contents
+of a certain offset and use it's contents as an address to seek:
+
+  $ rsc radaredbg ./a.out
+  > .!rsc syms-dbg-flag ./a.out > /dev/null
+  > !breakpoint sym__main
+  > !run
+  > .!regs*
+  > :pX 4 @ 0x`:pX 4 @ esp-0x1c
+
+The initial commands are related to the debugger layer, read doc/debug
+for more information.
+
+What's really intersting here, is the last command. Let's dissect!
+
+   :pX 4 @ 0x `:pX 4 @ esp-0x1c
+   ----------  ----------------
+     cmd 1          cmd 2
+
+   Radare will execute 'cmd 2' and concatenate its stdout to the
+   input user command.
+
+   ----------
+   :pX 4 @ 0x
+   ----------
+     :      drop verbosity
+     pX     show hex output (dropping verbosity no spaces between
+            hexpairs will appear)
+     4      number of bytes to print (smaller than block_size)
+     @      temporally seek to..
+     0x     hexadecimal prefix for receiving the second command
+
+
+   ----------------
+   :pX 4 @ esp-0x1c
+   ----------------
+      ""    the same as above
+      esp   the register value (flag defined by '.!regs*' command)
+      -     substracts 0x1c to %esp
+
+
+    The resulting command should look like:
+    
+    > :pX 4 @ 0x80489382
+     
+
+
+Environment variables
+=====================
+
+There'r some environment variables exported by radare to allow to
+get passively information from radare. These variables are:
+
+ FILE      contents the file name
+ SIZE      file size in base 10
+ ENDIAN    "big" or "little"
+ OFFSET    current offset in base 10
+ BSIZE     block size
+ BYTES     hex pair bytes string of the current block
+ BLOCK     path to the temporally file name where the current
+           block is dumped.
+
+
+This means that you can do things like that:
+
+ > !echo $FILE $SIZE
+
+ > !file ${BLOCK}
+
+ > !rsc read ${BLOCK} ${SIZE}
+
+
+Interpreting scripts
+====================
+
+Sometimes you'll need to interpret a script of radare. This is done
+with the '.' command. It works pretty similar to the 'source' shell
+command or the :r command in vim.
+
+Executing a script:
+
+ $ cat script | radare -v /bin/ls
+
+
+The same as above using the radare shell:
+
+ $ radare /bin/ls
+ > . script
+
+
+Interpreting the output of a program as radare commands:
+
+ > .!rsc syms-flag /bin/ls
+
+
+
+FUTURE STUFF:
+=============
+
+# = char for comments, ignore the rest of the line
+`` = replace string with the command execution
+\n = command separator, support for ';' command separator

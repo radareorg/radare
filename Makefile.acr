@@ -1,0 +1,129 @@
+VPATH=./.
+ROOT?=/
+include config.mk
+
+VPATH=${ROOT}@VPATH@
+BINDIR=${ROOT}@BINDIR@
+DATADIR=${ROOT}@DATADIR@
+MANDIR=${ROOT}@MANDIR@
+LIBDIR=${ROOT}@LIBDIR@
+LIBEXECDIR=${ROOT}@LIBEXECDIR@
+VERSION=@VERSION@
+INSTALL_DIR=@INSTALL_DIR@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_LIB=@INSTALL_LIB@
+INSTALL_DATA=@INSTALL_DATA@
+INSTALL_MAN=@INSTALL_MAN@
+INSTALL_SCRIPT=@INSTALL_SCRIPT@
+
+.PHONY: all clean mrproper install deinstall
+
+all: radare
+	cd libusbsniff && ${MAKE} all
+	cd src/rabin && ${MAKE} all
+	cd src/rasm && ${MAKE} all
+##GUI##
+	cd gui && ${MAKE} all
+##GUI##
+
+# Use ^X^O and ^N / ^P in vim
+omni:
+	exuberant-ctags **/*.c **/*.h
+
+radare:
+	cd rasc && ${MAKE} all
+	cd src && ${MAKE} all
+
+clean:
+	cd rasc && ${MAKE} clean
+	cd gui && ${MAKE} clean
+	cd src && ${MAKE} clean
+	cd src/dbg && ${MAKE} clean
+	cd java && ${MAKE} clean
+
+arm: all
+	mkdir -p pkg
+	${MAKE} install ROOT=pkg/
+	mkdir -p pkg/usr/lib
+	-cp /usr/lib/libreadline.so.5 pkg/usr/lib
+	-cp /usr/lib/libtermcap.so.2.0.8 pkg/usr/lib
+	cd pkg && tar czvf ../radare-${VERSION}-arm.tar.gz *
+
+mrproper: clean
+	-rm -f src/Makefile Makefile
+	#-rm -f src/hasher/Makefile libexec/radaredbg src/rsc src/rfile
+	#-rm -f gui/Makefile java/Makefile libafflib/Makefile
+	-rm -f .sw* `find | grep a.out`
+
+dist: mrproper
+	cd .. && mv radare radare-${VERSION}
+	-cd .. && tar czvf radare-${VERSION}.tar.gz \
+	`find radare-${VERSION} -type f|grep -v git`
+	cd .. && mv radare-${VERSION} radare
+
+install:
+	mkdir -p ${BINDIR} ${MANDIR}/man1 ${DATADIR}/radare/ ${DATADIR}/doc/radare ${LIBEXECDIR}/radare
+	${INSTALL_PROGRAM} src/radare ${BINDIR}
+	${INSTALL_PROGRAM} src/javasm ${BINDIR}
+	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
+	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
+	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}
+	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${DATADIR}/radare/
+	${INSTALL_PROGRAM} rasc/rasc ${BINDIR}
+	${INSTALL_PROGRAM} src/hasher/hasher ${BINDIR}
+	${INSTALL_PROGRAM} src/xc ${BINDIR}
+	mkdir -p ${LIBDIR}
+	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
+##DEBUGGER##
+#	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}
+##DEBUGGER##
+##USBSNF##
+	${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
+##USBSNF##
+	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
+	${INSTALL_SCRIPT} src/bug ${BINDIR}
+	${INSTALL_SCRIPT} src/rsc ${BINDIR}
+	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
+	${INSTALL_SCRIPT} src/bindiff ${BINDIR}
+	${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
+	${INSTALL_SCRIPT} src/rfile ${BINDIR}
+	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/hasher.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/bug.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/xc.1 ${MANDIR}/man1/
+	${INSTALL_DIR} ${DATADIR}/radare/
+	${INSTALL_DIR} ${DATADIR}/radare/magic
+	${INSTALL_DATA} magic/* ${DATADIR}/radare/magic/
+	${INSTALL_DIR} ${DATADIR}/doc/radare
+	-${INSTALL_DATA} doc/* ${DATADIR}/doc/radare/
+	${INSTALL_DIR} ${DATADIR}/doc/radare/xtra
+	${INSTALL_DATA} doc/xtra/* ${DATADIR}/doc/radare/xtra
+	cd libexec && ${MAKE} install ROOT=${ROOT}
+##GUI##
+	cd gui && ${MAKE} install ROOT=${ROOT}
+##GUI##
+
+deinstall:
+	-rm -f ${BINDIR}/gradare
+	-rm -f ${BINDIR}/radare
+	-rm -f ${BINDIR}/hasher
+	-rm -f ${BINDIR}/xc
+	-rm -f ${BINDIR}/xrefs
+	-rm -f ${BINDIR}/bindiff
+	-rm -f ${BINDIR}/bug
+	-rm -f ${BINDIR}/rsc
+	-rm -f ${BINDIR}/rfile
+	-rm -f ${BINDIR}/rabin
+	-rm -f ${LIBDIR}/libps2fd.so
+	-rm -f ${LIBDIR}/libaff2fd.so
+	-rm -f ${LIBDIR}/libusbsniff.so
+	-rm -rf ${DATADIR}/radare
+	-rm -rf ${DATADIR}/doc/radare
+	-rm -rf ${LIBEXECDIR}/gradare/
+	-rm -rf ${LIBEXECDIR}/radare/

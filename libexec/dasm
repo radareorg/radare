@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Command line disassembler.
+#
+# author : pancake <pancake@youterm.com>
+#
+
+# TODO: use real and secure temporally files
+
+CODE="$1"
+[ -z "$OBJDUMP" ] && OBJDUMP="objdump"
+
+if [ "$SYNTAX" = "intel" ]; then
+	OBJDUMP="$OBJDUMP -M intel"
+fi
+
+FILE="/tmp/.dasm.$RANDOM"
+[ "$1" = "-h" ] && CODE=""
+if [ "$CODE" = '-' ]; then
+	cat > $FILE
+	cat $FILE | xxd -i > $FILE.o
+	echo ".byte `echo \`cat $FILE.o\``" | sed -e 's,\n,,g' > $FILE.s
+else
+	if [ -z "${CODE}" ]; then
+		echo "Usage: rsc dasm [-|\"90 90 90 90\"]"
+		echo "environment:"
+		echo "  SYNTAX: att or intel"
+		echo "  OBJDUMP  path to objdump program"
+		exit 0;
+	fi
+	FOO=""
+	for A in ${CODE}; do
+		FOO="${FOO}, 0x$A";
+	done
+	FOO=`echo ${FOO} | sed -e 's,\,,,'`
+	echo ".byte ${FOO}" > $FILE.s
+fi
+
+as $FILE.s -o $FILE.x
+${OBJDUMP} -d $FILE.x | perl -ne 'print if (/.:\t/);'
+rm -f $FILE $FILE.s $FILE.x $FILE.o

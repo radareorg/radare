@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Move large ammount of bytes
+#
+# Thanks esteve! ;)
+#
+# TODO: Create destination file if it does not exists
+#
+# --pancake
+#
+
+A=$1
+Aseek=$2
+B=$3
+Bseek=$4
+Len=$5
+
+[ -z "$Bseek" ] && A="-h"
+[ -z "$A" ] && A="-h"
+if [ "$A" = "-h" ]; then
+	echo "Usage: rsc move [src-file] [seek] [dst-file] [seek] [[length]]"
+	exit 1
+fi
+
+[ "`echo $Aseek | grep 0x`" ] && Aseek=`xc $Aseek`
+[ "`echo $Bseek | grep 0x`" ] && Bseek=`xc $Bseek`
+
+chk() {
+	if [ ! -e "$2" ]; then
+		echo "$1 file not found.";
+		exit 1
+	fi
+}
+
+chk "source" "$A"
+chk "destination" "$B"
+
+B2="$B"
+if [ "$A" = "$B" ]; then
+	B2=".$B.$RANDOM"
+	cp $B $B2
+fi
+
+Count=""; [ -n "$Len" ] && Count="count=${Len}"
+dd if=${A} of=${B2} bs=1 skip=${Aseek} seek=${Bseek} ${Count} conv=notrunc
+
+[ "$A" = "$B" ] && mv $B2 $B

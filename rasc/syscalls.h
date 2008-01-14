@@ -1,0 +1,12 @@
+int sys_close(int d);
+int sys_dup2(int o, int n);
+int sys_execve(char *f, char **argv, char **env);
+int sys_accept(int s, char *b, int *len);
+int sys_listen(int s, int b);
+int sys_setsockopt(int s, int l, int optn, char *optval, int optlen);
+int sys_bind(int s, char *b, int len);
+int sys_socket(int af, int f, int proto);
+int sys_lseek(int af, int f, int proto);
+int sys_read(int fd, char *b, int len);
+int sys_open(char *f, int flags, int  mode);
+int sys_write(int fd, char *buf, int len);

@@ -1,0 +1,355 @@
+#!/usr/bin/env perl
+#
+# tab-separated assembly file to gml graph converter
+#
+# This program finds xrefs and draws an execution flow
+# of a tab separated disassembly of a binary.
+#
+# ATM this is only for x86, but can be easily modified
+# to support other architectures.
+#
+# TODO: group nodes by symbol
+#
+#
+# --author pancake
+#
+# example:
+#  $ rsc bin2tab /bin/ls | rsc tab2gml [-c] [arch] > /tmp/ls.gml
+#
+
+my $arch;
+my $tracecalls = 1;
+my $debug = 0;
+
+if ($ARGV[0] eq "-d") {
+	$debug=1;
+	$arch ||= $ARGV[1];
+}
+
+if ($ARGV[0] eq "-c") {
+	$tracecalls=0;
+	$arch ||= $ARGV[1];
+}
+$arch ||= $ARGV[0] || "i386";
+
+if ($arch eq "-h") {
+	print "Usage: rsc tab2gml [-h] [-c|-d] [arch]\n";
+	print "  -h   help message\n";
+	print "  -c   do not trace calls\n";
+	print "  -d   debug mode\n";
+	print "Supported architectures: arm i386\n";
+	exit 0;
+}
+
+if ($arch ne "i386" && $arch ne "arm") {
+	print "Supported architectures: arm i386\n";
+	exit 1;
+}
+
+print STDERR "using archictecture: $arch\n";
+print STDERR "tab2gml reading tab assembly from stdin...\n";
+
+sub wc_rows
+{
+	my ($body)=@_;
+	return qx(echo "$body"|wc -l);
+}
+
+sub wc_columns
+{
+	my ($body) = @_;
+	my $len    = 0;
+	@lines     = split(/\n/,$body);
+	for my $i (0 .. @lines) {
+		my $strlen = length($lines[i]);
+		$len=$strlen if ($strlen>$len);
+	}
+	return $len;
+}
+
+sub get_offset
+{
+	my ($off) = @_;
+	$off=~s/^\s*//; chomp($off);
+	$off=~s/^..// if ($off=~/^0x/);
+	$off=~s/^..// if ($off=~/^0x/);
+	return $off if ($off=~/\*/);
+	return sprintf("%08x", eval("0x$off"));
+}
+
+my @lines=();
+my $old_label;
+while(<STDIN>) {
+	chomp($line=$_);
+	my ($addr, $label, $code, $delta) = split(/\t/, $line);
+	my %foo = (
+		"address" => sprintf("%08x", eval("0x$addr")),
+		"label"   => $label,
+		"opcode"  => "$code $delta",
+		"eob"     => 0,
+		"xrefs"   => "");
+	$label=~/(.*)\+.*/; $lab = $1;
+	$foo{"eob"} = 1 if ($lab eq "");
+	$foo{"opcode"}=~s/\s*$//g;
+	if ($debug) {
+		print "\n".$foo{"label"}.":\n" if ($foo{"eob"} == 1);
+		print "  ".$foo{"opcode"}."\n"; # \t\t ; ".$foo{"label"}."\n";
+	}
+
+	push(@lines, \%foo);
+}
+
+exit(0) if ($debug);
+
+# 
+my $mode=1;
+$mode=0 if ($lines[0]{"address"}=~/^0/);
+
+# per arch
+sub get_jump_i386 {
+	my ($str)=@_;
+	if ($str=~/^jmp (.*)/) { return get_offset($1); }
+	return undef;
+}
+sub get_cjmp_i386 {
+	my ($str)=@_;
+	if ($str=~/^je (.*)/
+	||  $str=~/^jz (.*)/
+	||  $str=~/^ja (.*)/
+	||  $str=~/^jb (.*)/
+	||  $str=~/^jl (.*)/
+	||  $str=~/^jg (.*)/
+	||  $str=~/^jle (.*)/
+	||  $str=~/^jge (.*)/
+	||  $str=~/^jbe (.*)/
+	||  $str=~/^jne (.*)/
+	||  $str=~/^jnz (.*)/) {
+		return get_offset($1);
+	}
+	return undef;
+}
+sub get_call_i386 {
+	my ($str)=@_;
+	if ($str=~/^call (.*)/) { return get_offset($1); }
+	return undef;
+}
+sub get_cret_i386 {
+	my ($str)=@_;
+	if ($str=~/^ret/) { return 1; }
+	return undef;
+}
+
+### ARM
+# XXX: Umf arm is too many polymorfic
+# TODO: Handle mov pc, <addr> -> branch
+sub get_jump_arm {
+	my ($str)=@_;
+	if ($str=~/^b\ (.*)/) { return get_offset($1); }
+	return undef;
+}
+sub get_cjmp_arm {
+	my ($str)=@_;
+	if ($str=~/^bne (.*)/
+	||  $str=~/^bhi (.*)/
+	||  $str=~/^bcc (.*)/
+	||  $str=~/^bpl (.*)/
+	||  $str=~/^bx (.*)/
+	||  $str=~/^bxeq (.*)/
+	||  $str=~/^beq (.*)/) {
+		return get_offset($1);
+	}
+	return undef;
+}
+sub get_call_arm {
+	my ($str)=@_;
+	return undef unless ($tracecalls);
+	if ($str=~/^bl (.*)/) { return get_offset($1); }
+	return undef;
+}
+sub get_cret_arm {
+	my ($str)=@_;
+	if ($str=~/mov/) {
+		return 1 if ($str=~/ip, lr/);
+	}
+	return undef;
+}
+# -----8<-----------
+
+my $get_jump = \&get_jump_i386;
+my $get_cjmp = \&get_cjmp_i386;
+my $get_call = \&get_call_i386;
+my $get_cret = \&get_cret_i386;
+
+if ($arch eq "i386") {
+	$get_jump = \&get_jump_i386;
+	$get_cjmp = \&get_cjmp_i386;
+	$get_call = \&get_call_i386;
+	$get_cret = \&get_cret_i386;
+} elsif ($arch eq "arm") {
+	$get_jump = \&get_jump_arm;
+	$get_cjmp = \&get_cjmp_arm;
+	$get_call = \&get_call_arm;
+	$get_cret = \&get_cret_arm;
+}
+
+my $getnextoffset=0; for my $i (0 .. @lines) {
+	if ($getnextoffset) {
+		$off=$lines[$i]{"address"};
+		$off=~s/^\s*//g;
+		$lines[($i-1)]{"false"} = $off; #sprintf("%08x", "0x$off");
+		$lines[$i]{"label"} = "ptr_".$lines[($i-1)]{"address"};
+		#$lines[$i]}   = $lines[$i]{"label"};
+		$getnextoffset=0;
+	}
+
+	my $op = $lines[$i]{"opcode"};
+	my $jump = &$get_jump($op);
+	if (defined($jump)) {
+		$lines[$i]{"true"} = $jmp;
+		$lines[$i]{"eob"}  = 1;
+	} else {
+		my $cjmp = &$get_cjmp($op);
+		if (defined($cjmp)) {
+			$lines[$i]{"true"} = $cjmp;
+			$lines[$i]{"eob"}  = 1;
+			$getnextoffset     = 1;
+		} else {
+			my $call = &$get_call($op);
+			if (defined($call)) {
+				$lines[$i]{"true"} = $call;
+				$lines[$i]{"eob"}  = 1;
+				$getnextoffset     = 1;
+				next;
+			} else {
+				my $cret = &$get_cret($op);
+				if (defined($cret)) {
+					$lines[$i]{"eob"}=1;
+					next;
+				}
+			}
+		}
+	}
+
+	# store xrefs
+	my $t = $lines[$i]{"true"};
+	if ($t ne "") {
+		for my $i (0 .. @lines) {
+			my $a = $lines[$i]{"address"};
+			#print "xrefs $a $t\n";
+			$lines[$i]{"xrefs"}.="$a " if ($a eq $t);
+		}
+	}
+}
+
+my @blocks=();
+my $n = 0;
+for my $i (0 .. @lines) {
+	if ($lines[$i]{"label"}=~/\+/) {
+		$blocks[$n]{"body"}   .= "  ".$lines[$i]{"opcode"}."\n";
+	} else {
+		$blocks[$n]{"label"}   = $lines[$i]{"label"};
+		$blocks[$n]{"address"} = $lines[$i]{"address"};
+		$blocks[$n]{"body"}    = "  ".$lines[$i]{"opcode"}."\n";
+	}
+	if ($lines[$i]{"true"} ne "") {
+		$blocks[$n]{"true"}    = $lines[$i]{"true"};
+	}
+	if ($lines[$i]{"false"} ne "") {
+		$blocks[$n]{"false"}   = $lines[$i]{"false"};
+	}
+	$n++ if ($lines[$i]{"eob"});
+}
+
+#
+# OUTPUT
+#
+print <<EOF
+Creator "radare"
+Version "0.7.0"
+graph
+[
+	hierarchic	1
+	label	""
+	directed	1
+EOF
+;
+for my $i (0 .. @blocks) {
+	next if ($blocks[$i]{"label"} eq "");
+	my $label   = $blocks[$i]{"label"};
+	#my $address = $blocks[$i]{"address"};
+	my $address = sprintf("%08x", eval "0x".$blocks[$i]{"address"});
+	my $label   = $blocks[$i]{"label"};
+	my $body    = "0x".$address.":  ; $label\n".$blocks[$i]{"body"};
+	my $w       =  7 * wc_columns($body);
+	my $h       = 18 * wc_rows($body);
+	print <<EOF
+	node
+	[
+		id	"$address"
+		label	"$label"
+		graphics
+		[
+			x       128.0
+			y       119.0
+			w       $w
+			h       $h
+			type    "roundrectangle"
+			fill    "#FFCC00"
+			outline "#000000"
+		]
+		LabelGraphics
+		[
+			text    "$body"
+			fontSize        13
+			fontName        "Dialog"
+			alignment	"left"
+			anchor  "c"
+		]
+	]
+EOF
+;
+}
+
+## EDGES
+for my $i (0 .. @blocks) {
+	next if ($blocks[$i]{"label"} eq "");
+	$id      = $i;
+	$label   = $blocks[$i]{"label"};
+	$address = get_offset($blocks[$i]{"address"}); #sprintf("%08x", eval "0x".$blocks[$i]{"address"});
+	$true = get_offset($blocks[$i]{"true"}); #sprintf("%08x", eval "0x".$blocks[$i]{"address"});
+	$false = get_offset($blocks[$i]{"false"}); #sprintf("%08x", eval "0x".$blocks[$i]{"address"});
+	#$true    = sprintf("%08x", eval "0x".$blocks[$i]{"true"});
+	$true    =~s/ //g;
+	#$false   = sprintf("%08x", eval "0x".$blocks[$i]{"false"});
+	if ($true ne "00000000") {
+	print <<EOF
+	edge
+	[
+		source	"$address"
+		target	"$true"
+		graphics
+		[
+			fill	"#00ff00"
+			targetArrow	"standard"
+		]
+	]
+EOF
+;
+	}
+	if ($false ne "00000000") {
+	print <<EOF
+	edge
+	[
+		source	"$address"
+		target	"$false"
+		graphics
+		[
+			fill	"#ff0000"
+			targetArrow	"standard"
+		]
+	]
+EOF
+;
+	}
+}
+print "]\n";

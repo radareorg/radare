@@ -1,0 +1,562 @@
+/*
+ * Copyright (C) 2006, 2007
+ *       pancake <youterm.com>
+ *
+ * radare is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * radare is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with radare; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
+#include "main.h"
+#include "radare.h"
+#include "utils.h"
+#include "config.h"
+#include "list.h"
+#include "readline.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+struct config_t config;
+
+int rdb_init()
+{
+	int fd = -1;
+	char *rdbdir;
+	char *rdbfile;
+	char *str =
+		"# RDB (radare database) file\n"
+		"chdir=\nchroot=\nsetuid=\nsetgid=\n";
+
+	rdbdir = config_get("dir.rdb");
+	if (rdbdir)
+		chdir(rdbdir);
+
+	rdbfile = config_get("file.rdb");
+	if (!strnull(rdbfile))
+		fd = open(rdbfile, O_APPEND|O_RDWR, 0644);
+	if (fd == -1) {
+		fd = open(rdbfile, O_CREAT|O_APPEND|O_RDWR, 0644);
+		if (fd != -1 )
+			write(fd, (const void *)str, strlen(str));
+		else {
+			eprintf("Cannot open '%s' for writting.\n", rdbfile);
+			return -1;
+		}
+	}
+	close(fd);
+
+	return open(rdbfile, O_CREAT|O_APPEND|O_RDWR, 0644);
+}
+
+
+
+static void config_old_init()
+{
+	config.mode        = MODE_SHELL;
+	config.endian      = 1;
+	config.noscript    = 0;
+	config.script      = NULL;
+	config.baddr       = 0;
+	config.seek        = 0;
+	config.debug       = 0;
+	config.color	   = 0;
+	config.unksize     = 0;
+	config.ene         = 10;
+	config.width       = terminal_get_columns();
+	config.last_seek   = 0;
+	config.file        = NULL;
+	config.block_size  = DEFAULT_BLOCK_SIZE;
+	config.cursor      = 0;
+	config.ocursor     = -1;
+	config.block       = (unsigned char *)malloc(config.block_size);
+	config.verbose     = 1;
+	config.interrupted = 1;
+	config.visual      = 0;
+	config.lang        = 0;
+	config.fd          = -1;
+	config.zoom.size   = config.size;
+	config.zoom.from   = 0;
+	config.zoom.enabled= 0;
+	config.zoom.piece  = config.size/config.block_size;
+#if HAVE_PERL
+	config.lang        = LANG_PERL;
+#endif
+#if HAVE_PYTHON
+	config.lang        = LANG_PYTHON;
+#endif
+	INIT_LIST_HEAD(&config.rdbs);
+}
+
+/* new stuff : radare config 2.0 */
+
+struct config_new_t config_new;
+
+struct config_node_t *config_node_new(char *name, char *value)
+{
+	struct config_node_t *node;
+
+	node = (struct config_node_t *)malloc(sizeof(struct config_node_t));
+	node->name = strdup(name);
+	node->hash = strhash(name);
+	node->value = value?strdup(value):strdup("");
+	node->flags = CN_RW | CN_STR;
+	node->i_value = 0;
+	node->callback = NULL;
+	INIT_LIST_HEAD(&(node->list));
+
+	return node;
+}
+
+void config_list(char *str)
+{
+	struct list_head *i;
+	int len = 0;
+
+	if (str&&str[0]) {
+		str = strclean(str);
+		len = strlen(str);
+	}
+
+	list_for_each(i, &(config_new.nodes)) {
+		struct config_node_t *bt = list_entry(i, struct config_node_t, list);
+		if (str) {
+			if (strncmp(str, bt->name,len) == 0)
+				pprintf("%s = %s\n", bt->name, bt->value);
+		} else {
+			pprintf("%s = %s\n", bt->name, bt->value);
+		}
+	}
+}
+
+struct config_node_t *config_node_get(char *name)
+{
+	struct list_head *i;
+	int hash = strhash(name);
+
+	list_for_each_prev(i, &(config_new.nodes)) {
+		struct config_node_t *bt = list_entry(i, struct config_node_t, list);
+		if (bt->hash == hash)
+			return bt;
+	}
+
+	return NULL;
+}
+
+const char *config_get(const char *name)
+{
+	struct config_node_t *node;
+
+	node = config_node_get(name);
+	if (node) {
+		if (node->flags & CN_BOOL)
+			return !strcmp("true", node->value) || !strcmp("1", node->value);
+		return node->value;
+	}
+
+	return NULL;
+}
+
+off_t config_get_i(const char *name)
+{
+	struct config_node_t *node;
+
+	node = config_node_get(name);
+	if (node) {
+		if (node->i_value != 0)
+			return node->i_value;
+		return (off_t)get_math(node->value);
+	}
+
+	return NULL;
+}
+
+struct config_node_t *config_set(const char *name, const char *value)
+{
+	struct config_node_t *node;
+
+	node = config_node_get(name);
+
+	if (node) {
+		if (node->flags & CN_RO) {
+			eprintf("(read only)\n");
+			return node;
+		}
+		free(node->value);
+		if (node->flags & CN_BOOL) {
+			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
+			node->i_value = b;
+			node->value = strdup(b?"true":"false");
+		} else {
+			if (value == NULL) {
+				node->value = strdup("");
+				node->i_value = 0;
+			} else {
+				node->value = strdup(value);
+				if (strchr(value, '/'))
+					node->i_value = get_offset(value);
+				else	node->i_value = get_math(value);
+			}
+		}
+	} else {
+		if (config_new.lock) {
+			eprintf("(locked: no new keys can be created)");
+		} else {
+			node = config_node_new(name, value);
+			if (value)
+			if (!strcmp(value,"true")||!strcmp(value,"false"))
+				node->flags|=CN_BOOL;
+			list_add_tail(&(node->list), &(config_new.nodes));
+		}
+	}
+
+	if (node&&node->callback)
+	 	node->callback(node);
+
+	return node;
+}
+
+int config_rm(const char *name)
+{
+	struct config_node_t *node;
+
+	node = config_node_get(name);
+
+	if (node)
+		pprintf("TODO: remove: not yet implemented\n");
+	else
+		pprintf("node not found\n");
+
+	return 0;
+}
+
+struct config_node_t *config_set_i(const char *name, const off_t i)
+{
+	char buf[128];
+	struct config_node_t *node;
+
+	node = config_node_get(name);
+
+	if (node) {
+		if (node->flags & CN_RO)
+			return;
+		free(node->value);
+		sprintf(buf, "%ld", i); //0x%08lx", i);
+		node->value = strdup(buf);
+		node->i_value = i;
+	} else {
+		if (config_new.lock) {
+			eprintf("(locked: no new keys can be created)");
+		} else {
+			sprintf(buf, "%d", (unsigned int)i);//OFF_FMTd, (off_t) i);
+			node = config_node_new(name, buf);
+			node->flags = CN_RW | CN_OFFT;
+			node->i_value = i;
+			list_add_tail(&(node->list), &(config_new.nodes));
+		}
+	}
+
+	if (node&&node->callback)
+	 	node->callback(node);
+
+	return node;
+}
+
+void config_eval(char *str)
+{
+	char *ptr,*a,*b;
+	char *name;
+
+	if (str == NULL)
+		return;
+	name = strdup(str);
+
+	str = strclean(name);
+
+	if (str && (str[0]=='\0'||!strcmp(str, "help"))) {
+		config_list(NULL);
+		return;
+	}
+
+	if (str[0]=='-') {
+		config_rm(str+1);
+		return;
+	}
+
+	ptr = strchr(str, '=');
+	if (ptr) {
+		/* set */
+		ptr[0]='\0';
+		a = strclean(name);
+		b = strclean(ptr+1);
+		config_set(a, b);
+		
+	//	pprintf("%s=%s\n", a, b); //config_get(a));
+	} else {
+		char *foo = strclean(name);
+		if (foo[strlen(foo)-1]=='.') {
+			/* list */
+			config_list(name);
+		} else {
+			/* get */
+			char * str = config_get(foo);
+			
+			pprintf("%s\n", (str==1)?"true":(str==0)?"false":str);
+		}
+	}
+
+	free(name);
+}
+
+int config_zoombyte_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (!strcmp(node->value, "first")) {
+		// ok
+	} else
+	if (!strcmp(node->value, "entropy")) {
+		// ok
+	} else {
+		free(node->value);
+		node->value = strdup("first");
+	}
+}
+
+int config_core_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (!strcmp(node->name, "core.jmp")) {
+		hist_goto(node->value);
+	} else
+	if (!strcmp(node->name, "core.echo")) {
+		pprintf("[echo] %s\n", node->value);
+	} else
+	if (!strcmp(node->name, "core.cmp")) {
+		hist_cmp(node->value);
+	} else
+	if (!strcmp(node->name, "core.load")) {
+		hist_load(node->value);
+	} else
+	if (!strcmp(node->name, "core.dump")) {
+		hist_dump(node->value);
+	} else
+	if (!strcmp(node->name, "core.list")) {
+		hist_show();
+	} else
+	if (!strcmp(node->name, "core.reset")) {
+		hist_reset();
+	} else
+	if (!strcmp(node->name, "core.je")) {
+		hist_cgoto(node->value, OP_JE);
+	} else
+	if (!strcmp(node->name, "core.jne")) {
+		hist_cgoto(node->value, OP_JNE);
+	} else
+	if (!strcmp(node->name, "core.ja")) {
+		hist_cgoto(node->value, OP_JA);
+	} else
+	if (!strcmp(node->name, "core.jb")) {
+		hist_cgoto(node->value, OP_JB);
+	} else
+	if (!strcmp(node->name, "core.loop")) {
+		hist_loop(node->value);
+	} else
+	if (!strcmp(node->name, "core.break")) {
+		// ignored
+		//hist_break();
+	} else
+	if (!strcmp(node->name, "core.label")) {
+		hist_add_label(node->value);
+	}
+	// TODO needs more work
+}
+
+int config_arch_callback(void *data)
+{
+	arch_set_callbacks();
+}
+
+int config_wmode_callback(void *data)
+{
+	//struct config_node_t *node = data;
+
+	// XXX: strange magic conditional
+	if (config.file && !config.debug && config_new.lock)
+		radare_open(0);
+
+	return 1;
+}
+
+int config_color_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (node && node->i_value)
+		config.color = (int)node->i_value;
+	return 1;
+}
+
+int config_baddr_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (node && node->i_value)
+		config.baddr = (off_t)node->i_value;
+	return 1;
+}
+
+int config_bsize_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (node->i_value)
+		radare_set_block_size_i(node->i_value);
+/*
+	else
+		pprintf("(ignored)");
+*/
+	// TODO more work
+}
+
+void config_lock(int l)
+{
+	config_new.lock = l;
+}
+
+void config_init()
+{
+	struct config_node_t *node;
+
+	config_old_init();
+
+	config_new.n_nodes = 0;
+	config_new.lock = 0;
+	INIT_LIST_HEAD(&(config_new.nodes));
+
+	/* enter keys */
+	node = config_set("asm.arch", "intel");
+	node->callback = &config_arch_callback;
+	config_set("asm.syntax", "pseudo");
+	config_set("asm.xrefs", "xrefs");
+	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
+	config_set("asm.offset", "true"); // show offset
+	config_set("asm.bytes", "true"); // show hex bytes
+	config_set("asm.lines", "true"); // show left ref lines
+	config_set("asm.comments", "true"); // show comments in disassembly
+	config_set("asm.split", "true"); // split code blocks
+	config_set("asm.size", "false"); // opcode size
+
+	config_set("cmd.user", "");
+	config_set("cmd.visual", "");
+	config_set("cmd.hit", "");
+	config_set("cmd.bp", "");
+
+	config_set("file.identify", "false");
+	config_set("file.type", "");
+	config_set("file.flag", "false");
+	config_set("file.entrypoint", "");
+	config_set("file.rdb", "");
+	config_set_i("file.size", 0);
+	node = config_set_i("file.baddr", 0);
+	node->callback = &config_baddr_callback;
+
+	config_set("cfg.noscript", "false");
+	config_set("cfg.encoding", "ascii"); // cp850
+	config_set("cfg.verbose", "true");
+	config_set("cfg.endian", "false");
+	node = config_set("cfg.write", "false");
+	node->callback = &config_wmode_callback;
+	config_set("cfg.limit", "0");
+	config_set("cfg.rdbdir", "TODO");
+	node = config_set("cfg.color", (config.color)?"true":"false");
+	node->callback = &config_color_callback;
+	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
+	config_set_i("cfg.count", 0);
+
+	/* enter callback keys */
+	node = config_set_i("cfg.bsize", 512);
+	node->callback = &config_bsize_callback;
+
+	config_set("dbg.syms", "true");
+	config_set("dbg.maps", "true");
+	config_set("dbg.strings", "false");
+	config_set("dbg.stop", "false");
+	config_set("dbg.tracebt", "false");
+	config_set("dbg.contscbt", "true");
+	config_set("dbg.regs", "true");
+	config_set("dbg.stack", "true");
+	config_set("dbg.vstack", "true");
+	config_set_i("dbg.stacksize", 66);
+	config_set("dbg.stackreg", "esp");
+	config_set("dbg.bt", "false");
+	config_set("dbg.fullbt", "false"); // user backtrace or lib+user backtrace
+	config_set("dbg.bttype", "default"); // default, st and orig or so!
+	config_set("dbg.bptype", "hard"); // only soft vs hard
+	config_set("dbg.tracefile", "trace.log");
+	config_set("dbg.bep", "loader"); // loader, main
+
+	config_set("dir.home", getenv("HOME"));
+	config_set("dir.monitor", getenv("MONITORPATH"));
+	config_set("dir.rdb", ""); // ~/.radare/rdb/
+	config_set("dir.tmp", "/tmp/");
+
+	config_set("graph.render", "cairo"); // aalib/ncurses/text
+	config_set("graph.callblocks", "false");
+	config_set("graph.jmpblocks", "true");
+	config_set("graph.offset", "true");
+	config_set_i("graph.depth", 7);
+
+	node = config_set_i("zoom.from", 0);
+	node = config_set_i("zoom.size", config.size);
+	node = config_set("zoom.byte", "first");
+	node->callback = &config_zoombyte_callback;
+
+	config_set_i("scr.width", config.width);
+	config_set_i("scr.height", config.height);
+
+	/* core commands */
+	node = config_set("core.echo", "(echo a message)");
+	node->callback = &config_core_callback;
+	node = config_set("core.jmp", "(jump to label)");
+	node->callback = &config_core_callback;
+	node = config_set("core.je", "(conditional jump)");
+	node->callback = &config_core_callback;
+	node = config_set("core.jne", "(conditional jump)");
+	node->callback = &config_core_callback;
+	node = config_set("core.ja", "(conditional jump)");
+	node->callback = &config_core_callback;
+	node = config_set("core.jb", "(conditional jump)");
+	node->callback = &config_core_callback;
+	node = config_set("core.cmp", "(compares two comma separated flags)");
+	node->callback = &config_core_callback;
+	node = config_set("core.loop", "(loop n times to label (core.loop = 3,foo))");
+	node->callback = &config_core_callback;
+	node = config_set("core.label", "(create a new label)");
+	node->callback = &config_core_callback;
+	node = config_set("core.break", "(breaks a loop)");
+	node->callback = &config_core_callback;
+	node = config_set("core.list", "(list the code)");
+	node->callback = &config_core_callback;
+	node = config_set("core.load", "(loads code from a file)");
+	node->callback = &config_core_callback;
+	node = config_set("core.dump", "(dumps the to a file)");
+	node->callback = &config_core_callback;
+	node = config_set("core.reset", "(resets code)");
+	node->callback = &config_core_callback;
+
+	/* lock */
+	config_lock(1);
+}

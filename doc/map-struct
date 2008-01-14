@@ -1,0 +1,101 @@
+mapping data structures on binary data
+======================================
+
+Sometimes you need to interpret a data structure found on a piece
+of a binary file. Radare make use of libmagic to achieve this.
+
+In visual mode you can press the 'm' key to interpret the current
+data block by the 'rfile' wrapper.
+
+How to write a magic database file for mapping binary structures?
+NOTE: Read the file(1) manpage fmi.
+
+The magic file syntax is not very readable and probably ugly to write,
+so, radare provides a user-defined way to create C and perl descriptors
+for data blocks. This is explained later in this paper.
+
+Magic files follow this basic structure:
+
+0         type  match  output
+>offset   type  match  output
+>>offset  type  match  output
+>>offset  type  match  output
+(...)
+
+The '>' tree is only followed if the previous '>' level matches. So you
+can provide on a single file a multiple switch/case hirearchy for multiple
+filetypes or data structures.
+
+This format does not support include-like directives, so you must provide
+define all the magic files using the -m flag.
+
+
+
+Structure parser language wrappers
+==================================
+radare implements some language wrappers to create parsers for binary
+structures using C or perl.
+
+You can create an 'spc' file (structure parser in C language) to create
+a data block parser to be called from radare using the pU mode (user-defined
+print command).
+
+This command is defined by the user with the %PRINTCMD environment
+variable.
+
+Here's a little example:
+------------------------
+
+$ cat test.spc
+
+struct foo {
+	int id;
+	void *next;
+	void *prev;
+};
+
+void parse(struct spcc *spcc, uchar *buffer) {
+	struct foo tmp;
+	memcpy(&tmp, buffer, sizeof(struct foo));
+	printf("id: %d\nnext: %p\nprev: %p\n",
+		tmp.id, tmp.next, tmp.prev);
+}
+
+----
+
+This is our structure parser. A simple double-linked list of integers viewer.
+
+$ rsc spcc
+
+spcc - structure parser c compiler
+Usage: spcc [file.spc] ([gcc-flags])
+
+$ rsc spcc test.spc -o test
+
+$ ./test
+Usage: ./test [file] [offset]
+
+
+----
+
+Now we can use this structure parser as a user defined print command:
+
+$ export PRINTCMD=$PWD/test
+$ radare /tmp/target-file
+
+> s 0x400
+> pU
+id: 678326121
+next: 0x72616863
+prev: 0x74732a20
+
+
+
+Playing with the visual mode
+============================
+
+We can use the user-defined print command inside the visual mode and
+walk between the flags interpreting each data block with our own parser.
+
+Use the 'f' and 'F' key to move around the flags in visual mode and
+change the print format using the 'p' key.

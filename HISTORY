@@ -1,0 +1,33 @@
+radare started in 2006 aiming to write an hexadecimal editor capable
+to find data on large volume disks to recover a file from an HFS+
+partition.
+
+Lot of things has changed since then. The project has grown to try to
+provide a complete framework for working with binary files.
+
+The framework can be understood as a reverse engineering tool, but it
+is in essence an assembler/disaseembler, debugger, code analyzer for
+arm, java and intel, audit tool, data recoverer, usb sniffer, process
+tracer, forensics..
+
+                                                           --pancake
+
+Here's a little timeline of the radare release history:
+
+0.9.2 - 2008-01-XX
+0.9.1 - 2007-12-25
+0.9.0 - 2007-12-13
+0.8.8 - 2007-10-27
+0.8.6 - 2007-08-27
+0.8.2 - 2007-07-22
+0.8.0 - 2007-04-28
+0.7.2 - 2007-03-18
+0.6.8 - 2007-02-05
+0.6.4 - 2007-01-14
+0.6.2 - 2007-01-07
+0.4.0 - 2006-10-28
+0.3.3 - 2006-10-21
+0.2.8 - 2006-06-02
+0.2.6 - 2006-05-14
+0.2.2 - 2006-05-03
+0.1.0 - 2006-02-12

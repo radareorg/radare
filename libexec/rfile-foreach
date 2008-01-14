@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+#
+# Apply a 'file' for every offset inside the target file
+#
+# author: pancake
+#
+
+die "Usage: rsc rfile-foreach [-h] [target-file] [start-offset]\n"
+	unless $ARGV[0] and $ARGV[0] ne "-h";
+
+sub get_time {
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+	return $sec+$min*60+$hour*360;
+}
+
+sub get_eta {
+	my ($now, $now2, $i, $size) = @_;
+
+#10  ($now2-$now)
+#$size-$i  x
+
+	return (($size-$i)*($now2-$now))/10;
+}
+
+my $size = (stat $ARGV[0])[7];
+my $offset = $ARGV[1]?$ARGV[1]:0;
+my $eta = 0;
+
+print "size $size\n";
+$now = get_time();
+for my $i ($offset .. $size) {
+	$str = qx(rfile $ARGV[0] $i);
+	$now2 = get_time() unless ($i%10);
+	printf "\n0x%08x $str\n", $i unless $str=~/data$/;
+	$teta = get_eta($now, $now2, $i, $size) unless ($i%10);
+	$eta = $teta if ($teta != 0);
+	$now = $now2 unless ($i%10);
+	printf STDERR "\e[2K  %d/%d   eta: $eta secs \r", $i, $size;
+}

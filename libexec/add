@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# TODO: check Fx - not yet supported
+#
+
+if [ -z "$2" ]; then
+	echo "Usage: add [value] [value]"
+	exit 1
+fi
+xc $((`xc $1` + `xc $2`))

@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# author: pof <eslack.org>
+# perl port: pancake <youterm.com>
+#
+
+die "Usage: rsc strings-flag [file] ([minlen]) ([offset])\n" unless(@ARGV);
+
+my $file=$ARGV[0];
+my $minlen=$ARGV[1];
+my $offset=$ARGV[2];
+$minlen=3 unless($minlen);
+my @strings=split('\n', `strings -tx -n2 $file`);
+my @foo=split('\n', `rabin -e $file`);
+my @foomem=split(' ', $foo[0]);
+my @foodsk=split(' ', $foo[1]);
+my $mem=`xc $foomem[0]`;
+my $disk=`xc $foodsk[0]`;
+my $count=0;
+$offset=$mem-$disk unless($offset);
+
+print ":f _here_\n";
+
+for my $i (0 .. $#strings) {
+	$strings[$i]=~s/^\ *//;
+	$strings[$i]=~/([^\ ]*) (.*)$/;
+	my $addr = $1;
+	#my $type = $2;
+	my $str  = $2;
+	my $cow;
+	eval ("\$cow = 0x$addr+$offset\n");
+	$str=~tr/\ \-\>\<\`\t\|\@"/.__________./;
+	$str=~s/\.*//g;
+	$str=substr($str, 0,27);
+	if ($str=~/%/ || length($str)>$minlen) {
+		print ":fn \"$str\" @ 0x".sprintf "%08x\n", $cow;
+		$count++;
+	}
+}
+
+print ":s _here_\n:f -_here_\n";
+print STDERR "$count strings added.\n";

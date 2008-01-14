@@ -1,0 +1,20 @@
+# Usage: file -m <this-file> <elf-file>
+#
+# magic stuff for elfs
+
+# ELF magic ID
+0 string \x7fELF (ELF)
+
+# Machine
+>0x12 short 2  (machine 'sparc)
+>0x12 short 3  (machine 'i386)
+>0x12 short 4  (machine '68k)
+>0x12 short 8  (machine 'mips)
+>0x12 short 20 (machine 'powerpc)
+>0x12 short x  (machine 'machine)
+
+# Entry point
+>>0x18 lelong !0 (entry %x)
+
+# ELF header size
+#>>>0x22 short !0 (ehsize %p)

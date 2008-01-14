@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# objdiff: objdump-based diff utility
+#
+# author: pancake <pancake@youterm.com>
+#
+# TODO
+#  Diff for binary sections of a file
+#  perl rewrite?
+#  diffize by symbols, not globally
+#  colorization (ATM use Git-color)
+#  getoptize
+#
+
+A=$1
+B=$2
+[ "$A" = "-h" ] && B=""
+if [ -z "$B" ]; then
+	echo "Usage: rsc objdiff [bin1] [bin2]"
+	exit 1
+fi
+
+do_disasmdiff() {
+	A=$1
+	B=$2
+	TA=`printf $A | sed -e s,/,.,g`
+	TA="/tmp/$TA.objdump";
+	TB=`printf $B | sed -e s,/,.,g`
+	TB="/tmp/$TB.objdump"
+	objdump -d $A > $TA
+	objdump -d $B > $TB
+	diff -u $TA $TB
+	rm -f $TA $TB
+}
+
+do_disasmdiff $A $B
+
+exit 0

@@ -1,0 +1,98 @@
+PKGNAME radare
+VERSION 0.9.3
+CONTACT pancake ; pancake@youterm.com
+
+LANG_C!
+
+CHECK_ENDIAN
+USE_DL
+
+SOLARIS = 0 ;
+IFEQ HOST_OS sunos ; { SOLARIS = 1 ; }
+IFEQ HOST_OS solaris ; { SOLARIS = 1 ; }
+
+(( Check for the GNU readline library ))
+ARG_WITHOUT READLINE readline disables the readline support ;
+CHKFNC readline rl_completion_matches
+RADARE_LDFLAGS = '' ;
+HAVE_LIB_READLINE = 0 ;
+IF HAVE_RL_COMPLETION_MATCHES {
+	HAVE_LIB_READLINE = 1 ;
+        RADARE_LDFLAGS = -lreadline ;
+}
+IFNOT READLINE { HAVE_LIB_READLINE = 0 ; }
+
+(( usb sniffer ))
+CHKINC usb.h
+ARG_WITHOUT USBSNF usb-sniffer disables the build of the libusb sniffer ;
+IFNOT HAVE_USB_H { USBSNF = 0 ; }
+
+(( acr option flags ))
+ARG_WITH DEBUGGER debugger enables the debugging layer ;
+ARG_WITH JAVA java builds the java api ;
+
+ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
+
+ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
+CHKPRG VALAC valac
+IFEQ VALAC valac ; {
+	WITH_VALA = 0 ;
+	VALA = 0 ;
+	ECHO No valac found ;
+}
+
+(( Check off_t size ))
+_CFLAGS = $CFLAGS ;
+CFLAGS += -include /usr/include/sys/types.h
+          -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 ;
+SIZEOF_OFF_T = 1 ;
+SIZEOF off_t ;
+CFLAGS = $_CFLAGS ;
+
+CHKLIB ewf
+
+
+(( PERL ))
+LANG_PERL
+CHECK_PERL_MODULE ExtUtils::Embed
+ARG_WITH HAVE_PERL perl build with embedded perl extension ;
+IFNOT HAVE_PM_EXTUTILSEMBED { HAVE_PERL = 0 ; }
+
+(( PYTHON ))
+LANG_PYTHON
+ARG_WITH HAVE_PYTHON python build with embedded python extension ;
+
+(( GUI ))
+ARG_WITHOUT GUI gui radare without the gtk frontend ;
+CHKPRG GTKDIALOG gtkdialog
+(( IFEQ GTKDIALOG gtkdialog ; GUI = 0 ; ))
+IFEQ GTKDIALOG gtkdialog ; {
+	ECHO You will need gtkdialog for the gui ;
+}
+PKGCFG GTK_FLAGS GTK_LIBS gtk+-2.0
+IFNULL GTK_FLAGS { GUI = 0 ; }
+PKGCFG VTE_FLAGS VTE_LIBS vte
+IFNULL VTE_FLAGS { GUI = 0 ; }
+
+REPORT GUI VALA JAVA USBSNF SYSPROXY HAVE_PERL HAVE_PYTHON DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+
+(( subdirectories ))
+SUBDIRS . ./config.mk src src/rsc src/rfile ;
+
+(( end-of-file ))
+
+((
+  ERR = 0 ;
+  IFNOTEQ SIZEOF_OFF_T 8 ; ERR = 1 ;
+  DIE ERR Radare requires a 64 bit POSIX OS to work properly ;
+))
+
+((
+    libedit not yet supported. Sorry netbsd :"
+ 
+	CHKLIB edit+curses
+	IF HAVE_LIB_EDIT_AND_CURSES {
+		LDFLAGS += -ledit -lcurses ;
+		HAVE_LIB_READLINE = 1 ;
+	}
+))

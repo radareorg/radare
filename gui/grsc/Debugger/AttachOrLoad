@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+#
+# pancake <pancake@youterm.com>
+#
+export MAIN_DIALOG='<vbox>
+<text>
+  <label>Target PID or file to debug?</label>
+</text>
+<hbox>
+  <entry>
+    <variable>PID</variable>
+  </entry>
+<button ok></button>
+<button cancel></button>
+</hbox>
+</vbox>'
+
+eval `gtkdialog --program MAIN_DIALOG`
+if [ -n "$PID" ]; then
+	echo ":!rsc radaredbg $PID"
+	echo ":s 0x8048000"
+	exit
+fi

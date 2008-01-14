@@ -1,0 +1,71 @@
+Graph library for Vala
+======================
+
+This is free library to draw and handle graphs using Cairo (embeddable
+as a Gtk widget).
+
+LICENSE: GPLv3
+
+  gtk_signal_connect (GTK_OBJECT (drawing_area), "motion_notify_event",
+                      (GtkSignalFunc) motion_notify_event, NULL);
+
+  gtk_signal_connect (GTK_OBJECT (drawing_area), "button_press_event",
+                      (GtkSignalFunc) button_press_event, NULL);
+
+  static gint motion_notify_event (GtkWidget *widget, GdkEventMotion *event) {
+  int x, y;
+  GdkModifierType state;
+
+  if (event->is_hint)
+    gdk_window_get_pointer (event->window, &x, &y, &state);
+  else
+    {
+      x = event->x;
+      y = event->y;
+      state = event->state;
+    }
+    
+  if (state & GDK_BUTTON1_MASK && pixmap != NULL)
+    draw_brush (widget, x, y);
+  
+  return TRUE;
+  }
+
+  gtk_widget_set_events (drawing_area, GDK_EXPOSURE_MASK
+                         | GDK_LEAVE_NOTIFY_MASK
+                         | GDK_BUTTON_PRESS_MASK
+                         | GDK_POINTER_MOTION_MASK
+                         | GDK_POINTER_MOTION_HINT_MASK);
+
+
+Main classes:
+=============
+ Node    Represents a node in the graph
+ Edge    Links two nodes
+ Graph   Stores a list of nodes and edges
+ Layout  Tells how the nodes should be disposed
+
+
+
+TODO:
+ - use double buffer
+ - dijkstra algorithm to find the shortest path between two nodes
+   - returns a list of nodes
+ - add weight or cost to edges and nodes
+   - alter shortest path by cost
+ - set initial placement to start layouting
+ - gravity vector
+   - direction and force (separation between nodes)
+ - group nodes
+ - create a copy of an object
+ - output restrictions
+   - canvas size (bounding box)
+   - sphere of action
+ - get root nodes (no iterate all the trees)
+ - repulsion level
+   - The value determines repulsion through the inverse power of the
+     distance between two nodes, i.e., smaller values lead to slowly
+     degrading repulsion, whereas greater values simulate local
+     repulsion only. Notice the increasing localness of mutual node
+     repulsion for increasing factors.
+

@@ -1,0 +1,234 @@
+; Directives
+equ	F8000000		; <31-28> = F is directive flag
+org	F8010000		; <27> indicates can redefine label
+origin	F8010000		; <26> indicates can define non-label
+align	F8020000
+record	F8030000
+structure F8030000
+struct	F8030000
+rec_align	F8040000
+struct_align	F8040000
+
+alias	F8100000		; Encodes size of operation
+byte	F8110000
+halfword F8120000
+half	F8120000
+word	F8140000
+double	F8180000
+doubleword F8180000
+
+rn	F4000000
+cn	F4010000
+cp	F4020000
+
+defb	F0000000
+dcb	F0000000
+defh	F0010000
+dcw	F0010000
+defw	F0020000
+dcd	F0020000
+defs	F0030000
+export	F0040000
+include	F0050000
+get	F0050000
+literal	F0060000
+literals F0060000
+pool	F0060000
+ltorg	F0060000
+arch	F0070000
+architecture F0070000
+entry	F0080000
+arm	F0090000
+thumb	F00A0000
+set	F00B0000
+define	F00B0000
+if	F00C0000
+endif	F00D0000
+fi	F00D0000
+else	F00E0000
+
+nop	00000000		; <31> indicates "just condition F"
+undef	40100000		; <30> indicates "all conditions"
+undefined 40100000
+
+and	40017000		; <27-20> op code
+eor	40217000		; <19-16> token category
+sub	40417000		; <15>    possibly variable length
+rsb	40617000		; <14-12> operand field flags
+add	40817000		; <11>    Fxxxxxxx `always' instruction
+adc	40A17000		; <8>	  Thumb instruction
+sbc	40C17000		; <5-0>   instruction set versions
+rsc	40E17000
+tst	41113000
+teq	41313000
+cmp	41513000
+cmn	41713000
+orr	41817000
+mov	41A15000
+bic	41C17000
+mvn	41E15000
+
+mul	40021000
+mla	40221000
+smull	40C21001
+smlal	40E21001
+umull	40821001
+umlal	40A21001
+
+swp	41022000
+clz	4162000E		; Note - no suffix
+
+str	44030000
+ldr	44138000
+
+b	4A040000
+bl	4B040000
+
+swi	4F050000		; Miscellaneous
+bx	41251006
+bkpt	0125200E
+blx	4005300E
+pld	0455483E
+push	49255000		; Aliases - newly allowed
+pop	48B55000
+
+stm	48060000
+ldm	48160000
+
+mrs	41070000
+msr	41270000
+
+adr	42080000
+adr1	42080000
+adr2	42089000
+adr3	4208A000
+adr4	4208B000
+adrl	42088000		; Variable length version
+;adrl	42089000
+
+str	40090002		; Half word load/store
+ldr	40198002
+
+cdp	4E0A0000		; Conditional
+cdp2	0E0A080E		; Unconditional (<11> => formerly "NV")
+
+mcr	4E0A1000
+mcr2	0E0A180E
+mrc	4E1A1000
+mrc2	0E1A180E
+
+mcrr	4C4A203E
+mrrc	4C5A203E
+
+ldc	4C1B0000
+ldc2	0C1B0800
+stc	4C0B0000
+stc2	0C0B0800
+
+str	400C003E		; STRD
+ldr	400C103E		; LDRD
+
+andx	420DF000		; Potentially synthesized sequences
+eorx	422DF000
+subx	424DF000
+rsbx	426DF000
+addx	428DF000
+adcx	42ADF000
+sbcx	42CDF000
+rscx	42EDF000
+orrx	438DF000
+movx	43ADD000
+bicx	43CDF000
+
+qadd	4102301E
+qdadd	4142301E
+qsub	4122301E
+qdsub	4162301E
+
+smlabb	4102801E
+smlatb	4102901E
+smlabt	4102A01E
+smlatt	4102B01E
+smlalbb	4142801E
+smlaltb	4142901E
+smlalbt	4142A01E
+smlaltt	4142B01E
+smulbb	4162801E
+smultb	4162901E
+smulbt	4162A01E
+smultt	4162B01E
+smulwb	4122901E
+smulwt	4122B01E
+smlawb	4122801E
+smlawt	4122A01E
+
+
+adc	00500100		; Thumb mnemonics
+and	00000100
+bic	00E00100
+cmn	00B00100
+eor	00100100
+mul	00D00100
+mvn	00F00100
+neg	00900100
+orr	00C00100
+ror	00700100
+sbc	00600100
+tst	00800100
+
+asr	00210100
+lsl	00010100
+lsr	00110100
+
+add	00020100
+sub	00120100
+
+mov	00030100
+cmp	00130100
+
+b	00E40100
+bal	00E40100
+beq	00040100
+bne	00140100
+bcs	00240100
+bhs	00240100
+bcc	00340100
+blo	00340100
+bmi	00440100
+bpl	00540100
+bvs	00640100
+bvc	00740100
+bhi	00840100
+bls	00940100
+bge	00A40100
+blt	00B40100
+bgt	00C40100
+ble	00D40100
+
+bx	00050100
+bl	00068100	; Marked as "variable length" because
+blx	00168100	; BLX may vary and BL is `long' => unpleasant
+
+swi	0DF70100
+bkpt	0BE70100
+
+nop	00080100
+undef	00180100
+undefined 00180100
+
+str	02095100	; <14>   [Rn, #]
+strb	00294100	; <13>   [SP, #]
+strh	01194100	; <12>   [PC, #]
+ldr	0249F100	;        [Rn, Rm] always allowed
+ldrb	00694100	; <22-20> are op_code <11> & <10-9> when used
+ldrh	01594100	; <25-24> are size
+ldrsb	00390100	; Note: <15> indicates variable length
+ldrsh	01790100	;  (i.e. "LDR R0, =nn" case)
+
+stmia	0C0A0100
+ldmia	0C8A0100
+push	0B4A0100
+pop	0BCA0100
+
+adr	000B0100
+adr1	000B0100

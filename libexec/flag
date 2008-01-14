@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# author: pof <eslack.org>
+#
+
+if [ -z $1 ]; then
+	echo "Usage: flag [file]">/dev/stderr
+	exit 1
+fi
+
+FILE=$1
+file $FILE |grep " PE " >/dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+	echo "Adding strings & symbol flags for PE $FILE" >/dev/stderr
+	rsc syms-pe-flag ${FILE}
+	rsc strings-pe-flag ${FILE}
+else
+	echo "Adding strings & symbol flags for $FILE" >/dev/stderr
+	## are we being called from debugger??
+	if [ -n "$DPID" ]; then
+		rsc syms-dbg-flag ${FILE}
+	else
+		rsc syms-flag ${FILE}
+	fi
+	rsc strings-flag ${FILE}
+fi
+
+echo "s entrypoint"

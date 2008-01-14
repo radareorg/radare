@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+#
+# Find raw syms on binary files
+#
+# author: pancake <pancake@youterm.com>
+#
+
+$|      = 1;
+$lib    = $ARGV[0];
+$target = $ARGV[1];
+
+open FD, "(rsc syms-dump $lib 30 2)|" or die "blob";
+while(<FD>) {
+	my($name, $bytes)=split(/:/,$_);
+	$result=`echo \"/x $bytes\" | radare -vb 40 $target`;
+	print "$name: $bytes\n$result" if ($result=~/00/);
+}
+close FD;

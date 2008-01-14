@@ -1,0 +1,73 @@
+===========
+THE X86 FPU
+===========
+http://webster.cs.ucr.edu/AoA/Windows/HTML/RealArithmetic.html
+http://www.website.masmforum.com/tutorials/fptute/fpuchap7.htm
+
+90 0 NOP
+73 1 JNB
+74 1 JE
+75 1 JNZ
+77 1 JA
+7D 1 JGE
+EB 1 JMP
+E8 4 CALL
+C3 1 RETN
+
+
+FPU:
+====
+  13 registers
+  0-7 floating
+  8   control
+  9   status
+  10  tag
+  11  instruction pointer
+  12  data pointer
+
+control register
+================
+                           C3   C2   C0
+     If ST(0) > source      0    0    0
+     If ST(0) < source      0    0    1
+     If ST(0) = source      1    0    0
+     If ST(0) ? source      1    1    1
+
+
+  Rounding control
+  ----------------
+  Bits 10 and 11 provide rounding control according to the following values:
+  The "00" setting is the default.
+  Bits 10 & 11 Function
+  00 To nearest or even
+  01 Round down
+  10 Round up
+  11 Truncate 
+
+  Precision Control
+  -----------------
+  Bits 8 & 9
+  00 24 bits
+  01 Reserved
+  10 53 bits
+  11 64 bits
+
+fp opcodes
+==========
+  FCOM        COMpare ST(0) to a floating point value
+  FCOMI       COMpare ST(0) to ST(i) and set CPU flags
+  FCOMIP      COMpare ST(0) to ST(i) and set CPU flags and Pop ST(0)
+  FCOMP       COMpare ST(0) to a floating point value and Pop ST(0)
+  FCOMPP      COMpare ST(0) to ST(1) and Pop both registers
+  FICOM       COMpare ST(0) to an integer value
+  FICOMP      COMpare ST(0) to an integer value and Pop ST(0)
+  FTST        TeST ST(0) by comparing it to +0.0
+  FUCOM       Unordered COMpare ST(0) to a floating point value
+  FUCOMI      Unordered COMpare ST(0) to ST(i) and set CPU flags
+  FUCOMIP     Unordered COMpare ST(0) to ST(i) and set CPU flags and Pop ST(0)
+  FUCOMP      Unordered COMpare ST(0) to a floating point value and Pop ST(0)
+  FUCOMPP     Unordered COMpare ST(0) to ST(1) and Pop both registers
+  FXAM        eXAMine the content of ST(0)
+  FWAIT       sync cpu with fpu
+  SAHF        transfer de condition codes to the cpu's flag register (for je, jne..)
+  FSTSW ax    copy the Status Word containing the result to AX

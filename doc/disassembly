@@ -1,0 +1,22 @@
+ =======================================
+|                                       |
+| Disassembling with radare and friends |
+|                                       |
+ =======================================
+
+**
+You can disassembly from commandline by typing this:
+
+----
+LENGTH=100
+OFFSET=0x300
+sh scripts/dasm.sh "`echo pX | radare -s ${OFFSET} -b ${LENGTH} -v /bin`"
+----
+
+
+**
+There's a shell environment that uses this command for better extasis pwnage.
+
+----
+scripts/tracelf.pl 
+----

@@ -1,0 +1,79 @@
+#!/bin/sh
+#; This TCP header can be aligned where you want becouse it is relative :)
+#;
+#; author: sha0
+
+cat <<EOF
+; s here
+b 16
+f tcp.sourceport
+
+; s +16
+b 16
+f tcp.destport @ +16
+
+; s +16
+b 32
+f tcp.seqnum @ +32
+
+; s +32
+b 32
+f tcp.acknum @ +64
+
+; s +32
+b 4
+f tcp.offset @ +96
+
+; s +4
+b 6
+f tcp.reserved @ +100
+
+; s +6
+b 1
+f tcp.urg @ +106
+
+; s +1
+b 1
+f tcp.ack @ +107
+
+; s +1
+b 1
+f tcp.psh @ +108
+
+; s +1
+b 1
+f tcp.rst @ +109
+
+; s +1
+b 1
+f tcp.syn @ +110
+
+; s +1
+b 1
+f tcp.fin @ +111
+
+; s +1
+b 16
+f tcp.window @ +127
+
+; s +16
+b 16
+f tcp.chksum @ +143
+
+; s +16
+b 16
+f tcp.urgptr @ +159
+
+; s +16
+b 24
+f tcp.options @ +175
+
+; s +24
+b 8
+f tcp.padding @ +199
+
+; s +8
+b 32
+f tcp.data @ +207
+
+EOF

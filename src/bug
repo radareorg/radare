@@ -1,0 +1,358 @@
+#!/bin/bash
+# (encoding: UTF-8)
+#
+# Simple Bug / ToDo tracker for the command line.
+#  (Instructions below the license)
+# LICENSE
+# Copyright (C) 2006 Lluís Batlle i Rossell
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Instructions:
+#  1. Your $BUG_PROJECT should point to a file. It will be the database you'll
+#     be using. Use an absolute path. It may be, for instance, "~/todo.bug"
+#
+#  Having the $BUG_PROJECT set:
+#  1. Create the database:
+#      bug create
+#  2. Add an issue
+#      bug add
+#     Use integers for the priorities. Higher -> more priority.
+#     Use any words you prefer for the state
+#     Don't break the number of lines until "-- Description --". Write
+#     multilines only below that label.
+#  3. List the issues (all but description, priority sorted)
+#      bug list [ | grep as_you_wish ]
+#  4. View an issue
+#      bug view <ID>
+#  5. Edit an issue
+#      bug edit <ID>
+#     Change the state, the priority, add data as long as you fix it, ...
+#     When I consider an issue is fulfilled, I negate its priority.
+#  6. Delete an issue
+#      bug delete <ID>
+#     Do that whenever you will not need the issue anymore.
+#
+#
+# Contributions:
+# --------------
+#
+# pancake <pancake@youterm.com>
+#   - drop bashisms
+#   - implement -h flag
+#   - error messages to stderr
+#   - more checks and help on BUG_PROJECT environ
+#
+# TODO:
+#   Support for an array of bug report files ?? readonly
+#   Check BUG_PROJECT file format before processing
+#
+
+PNAME=`basename "$0"`
+CMD="$1"
+
+if [ -z "$EDITOR" ]; then
+	EDITOR=vim
+fi
+
+function usage
+{
+	echo "Usage: $PNAME [ add | list | view | edit | delete | create | project ]"
+}
+
+function create
+{
+	if [ ! -f "$BUG_PROJECT" ]; then
+		echo 0 > "$BUG_PROJECT"
+		return 0
+	else
+		echo "The project exists. Please remove the file before create." 2>&1
+		return 1
+	fi
+}
+
+function getnext
+{
+	head -n 1 "$BUG_PROJECT"
+}
+
+function updatenext
+{
+	NEXT=$1
+	ed $BUG_PROJECT >&/dev/null << END
+1
+c
+$NEXT
+.
+w
+q
+END
+
+}
+
+function trim
+{
+	sed 's/^ *//g; s/ *$//g'
+}
+function trimlastdbNL
+{
+	sed 's/\\n$//g'
+}
+
+function noNL
+{
+	tr -d "\\n"
+}
+
+function string2db
+{
+	noNL | trim | sed 's/\t/\\t/g'
+}
+
+function text2db
+{
+	sed 's/\t/\\t/g ; s/$/\\/g' | tr "\\n" n
+}
+
+function db2text
+{
+	sed 's/\\t/\t/g ; s/\\n/\n/g'
+}
+
+function addfile
+{	
+	ID=`grep "^Id:" $1 | head -n 1 | cut -d : -f 2- | string2db`
+	SUBJECT=`grep "^Subject:" $1 | head -n 1 | cut -d : -f 2- | string2db`
+	STATE=`grep "^State:" $1 | head -n 1 | cut -d : -f 2- | string2db`
+	PRIORITY=`grep "^Priority:" $1 | head -n 1 | cut -d : -f 2- | string2db`
+
+	if [ -z "$PRIORITY" ]; then
+		echo "Error in ticket: subject or priority." > /dev/stderr
+		return 1
+	fi
+
+	if [ -z "$SUBJECT" ]; then
+		echo "Error in ticket: subject or priority." > /dev/stderr
+		return 1
+	fi
+
+	LINES=`cat $1 | wc -l`
+
+	# Substract Id, Subject, State and Priority
+	#TOTAIL=$(( LINES - 5 ))
+	let TOTAIL=LINES-5
+	DESCRIPTION=`tail -n $TOTAIL $1 | text2db | trimlastdbNL`
+
+	echo "$ID	$PRIORITY	$STATE	$SUBJECT	$DESCRIPTION" >> $BUG_PROJECT
+
+	# Update the next ID number
+	NEXT=`getnext`
+	if [ $NEXT -gt $ID ]; then
+		updatenext $((NEXT + 1))
+	else
+		updatenext $((ID + 1))
+	fi
+		
+	return 0
+}
+
+function list
+{
+	echo "Id	Prior.	State	Subject"
+	catlist | cut -f 1,2,3,4 | sort -n -r -k 2
+}
+
+function view
+{
+	ID=$1
+
+	LINE=`catlist | grep "^$ID	"`
+
+	if [ -n "$LINE" ]; then
+		PRIORITY=`echo "$LINE" | cut -f 2`
+		STATE=`echo "$LINE" | cut -f 3`
+		SUBJECT=`echo "$LINE" | cut -f 4`
+		DESCRIPTION=`echo "$LINE" | cut -f 5`
+
+		echo "Id: $ID" | db2text
+		echo "Priority: $PRIORITY" | db2text
+		echo "State: $STATE" | db2text
+		echo "Subject: $SUBJECT" | db2text
+		echo "-- Description below --"
+		echo "$DESCRIPTION" | db2text
+		return 0
+	else
+		echo "Id not found." 2>&1
+		return 1
+	fi
+}
+
+function catlist
+{
+	LINES=`cat $BUG_PROJECT | wc -l`
+	let TOTAIL=LINES-1
+	#TOTAIL=$(( LINES - 1 ))
+	tail -n $TOTAIL $BUG_PROJECT | grep -v "^#"
+}
+
+function searchline
+{	
+	ID=$1
+
+	LINE=`cat $BUG_PROJECT | grep -n "^$ID	" | cut -d : -f 1`
+	if [ -n "$LINE" ]; then
+		echo $LINE
+		return 0
+	else
+		return 1
+	fi
+}
+
+function delete
+{
+	ID=$1
+	LINE=`searchline $ID`
+	if [ $? -eq 0 ]; then
+		ed $BUG_PROJECT >&/dev/null << END
+$LINE
+d
+w
+q
+END
+	else
+		echo "Id not found." 2>&1
+	fi
+}
+
+function edit
+{
+	ID=$1
+
+	# Get a random file
+	FILE="/tmp/$RANDOM.txt"
+	while [ -f "$FILE" ]; do
+		FILE="/tmp/$RANDOM.txt"
+	done
+
+	view $ID > $FILE
+
+	if [ $? -eq 0 ]; then
+		MD5=`md5sum "$FILE"`
+
+		"$EDITOR" "$FILE"
+
+		MD5_bis=`md5sum "$FILE"`
+
+		if [ "$MD5" != "$MD5_bis" ]; then
+			delete $ID
+			addfile "$FILE" && rm "$FILE"
+		else
+			echo "File not changed. Not changing the ticket."
+			rm "$FILE"
+		fi
+	else
+		echo "Id not found."
+		rm "$FILE"
+	fi
+}
+
+function add
+{	
+	# Get a random file
+	FILE="/tmp/$RANDOM.txt"
+	while [ -f "$FILE" ]; do
+		FILE="/tmp/$RANDOM.txt"
+	done
+	
+	ID=`getnext`
+
+	cat > "$FILE" << TEMPLATE
+Id: $ID
+Priority: <0-20>
+State: <open|reply|todo|closed>
+Subject: 
+-- Description below --
+TEMPLATE
+	MD5=`md5sum "$FILE"`
+
+	"$EDITOR" "$FILE"
+
+	MD5_bis=`md5sum "$FILE"`
+	
+	if [ "$MD5" != "$MD5_bis" ]; then
+		addfile "$FILE" && rm "$FILE"
+	else
+		echo "File not changed. Not adding a ticket."
+		rm "$FILE"
+	fi
+
+}
+
+if [ -z "$BUG_PROJECT" ]; then
+	echo "\$BUG_PROJECT is not set."
+	exit 1
+fi
+
+if [ ! "`echo $BUG_PROJECT | cut -c 1`" = "/" ]; then
+	echo "Do not use relative paths in BUG_PROJECT environ."
+	exit 1
+fi
+
+if [ ! "$CMD" = "create" ]; then
+if [ ! -f "$BUG_PROJECT" ]; then
+	echo "BUG_PROJECT file does not exist. Type 'bug create'"
+	exit 0
+fi
+fi
+
+if [ -z "$CMD" ]; then
+	usage
+	exit 1
+fi
+
+case "$CMD" in
+	-h)
+		echo "Usage: bug [[alvpe] [del] [create]] [args]"
+		exit 1
+		;;
+	a*)
+		add || exit 1
+		;;
+	l*)
+		list || exit 1
+		;;
+	v*)
+		view $2 || exit 1
+		;;
+	p*)
+		echo Project: $BUG_PROJECT
+		;;
+	del*)
+		delete $2 || exit 1
+		;;
+	create)
+		create || exit 1
+		;;
+	e*)
+		edit $2 || exit 1
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac
+exit 0
+
+# vim:ts=8:sw=8:noet

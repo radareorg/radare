@@ -1,0 +1,56 @@
+Flags tutorial
+==============
+
+
+Flags are used for bookmarking data with radare.
+
+Each bookmark store this information:
+ - name
+ - data
+ - size
+ - offset
+ - print format
+
+
+So, the possible actions are:
+
+> seek 0x100
+> flag my_first_flag
+flag 'my_first_flag' at 0x0000000000000100 and size 512
+
+
+This is your first flag! :D
+
+You can list all your flags using the 'flag' command
+without any argument.
+
+> flag
+000 0x0000000000000100  512             my_first_flag x  78 94 05 08 2c 00 00 00 00..
+
+
+As you can see, it stores the print format and shows you the
+contents of the block.
+
+It's useful to know how to use the '*' argument, that allows
+you to print all flags in radare script format.
+
+> flag *
+s 0x100
+b 0x200
+f my_first_flag
+
+
+You can redirect this output to a file for storing some flags,
+edit them, remove all current flags and import them:
+
+> flag * > /tmp/flags
+> !vim /tmp/flags
+> flag -*
+> . /tmp/flags
+
+
+I've used the '-' prefix for ordening flag to remove a flag
+named '*', this is an alias for all defined flags. But you 
+can type the flag name instead:
+
+> flag -my_first_flag

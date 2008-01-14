@@ -1,0 +1,197 @@
+#!/usr/bin/env perl
+#
+# Reverse Engineering tool that parses a binary
+# supported by objdump and prints out a report
+# analysis.
+#
+# A txt2bin tool should be written, or at least
+# a context from the assembly code
+#
+# Usage:
+#   $ SYNTAX=intel rsc bin2txt /bin/ls > ls.txt
+#
+# author: pancake
+#
+# TODO: Support for arm and powerpc
+# TODO: Find lost calls and unaligned ones (follow them)
+#
+my $VERSION = "0.1";
+
+use warnings;
+use strict;
+
+my $syntax = $ENV{"SYNTAX"};
+$syntax="att" unless ($syntax);
+my $objdump = $ENV{"OBJDUMP"};
+$objdump="objdump" unless ($objdump);
+my $target = $ARGV[0];
+$target = "-h" unless ($target);
+if ($target eq "-h") {
+	print "Usage: bin2txt [a.out] > a.out.txt\n";
+	print "Environment: OBJDUMP SYNTAX\n";
+	exit 1;
+}
+unless (-f $target) {
+	print "Cannot find $target.\n";
+	exit 1;
+}
+
+# TODO USE HASHER
+# hasher -a md5 -qvf $file
+my $md5bin="md5sum";
+$md5bin="md5" if (`md5 -x 2>/dev/null`);
+chomp (my $md5 = qx($md5bin $target));
+$md5=~/([a-z0-9]*)/; $md5 = $1;
+chomp(my $date = qx(date));
+my $size=(lstat($target))[7];
+
+print "<radarexml>\n";
+
+print " <generator name=\"bin2xml\" version=\"$VERSION\" />\n";
+print " <metadata>\n";
+print "  <filename>$target</filename>\n";
+print "  <size>$size</size>\n";
+print "  <md5>$md5</md5>\n";
+print "  <date>$date</date>\n"; # XXX (`date` is br0ken)
+
+###########
+# base address
+###########
+
+my $str = qx(readelf -e $target |grep PHDR | sed -e 's,  , ,g');
+while($str=~/\ \ /) { $str=~s/\ \ /\ /g; }
+my ($magic, $one, $two, $tri)=split(/ /,$str);
+my $baddr;
+eval("\$baddr=$tri-$two;");
+#printf("BASE ADDRESS: _%08x\n", $baddr);
+print "  <base address=\"$baddr\" />\n";
+print " </metadata>\n";
+
+###########
+# elf header
+###########
+my $entry;
+print "<header type=\"elf\">\n";
+print " <readelf>\n";
+#system("readelf -h $target");
+open(PD, "readelf -h $target|") or die("brbrb");
+while(<PD>) {
+	my $arg = $_;
+	my ($key,$value)=split(/:/);
+	unless ($value) {
+		$arg=~/_(^\ )* <(.*)>/;
+		$key = $1;
+		$value = $2;
+	}
+	
+	if ($key=~/Entry point/) {
+		$entry = $value;
+		chomp($entry);
+	}
+	if ($value=~/0x/) {
+		$value=~s/0x/_0/;
+#		$value=~tr/[a-z]/[A-Z]/;
+	}
+	print "$key: $value";
+}
+close(PD);
+print " </readelf>\n";
+
+my $entry_seek;
+eval("\$entry_seek=$entry-$baddr");
+print " <entry>$entry_seek</entry>\n";
+print "</header>\n\n";
+
+
+###########
+# elf sections
+###########
+
+my $od = sprintf ".bin2txt.%08x", rand 0xffffffff;
+my $od2 = sprintf ".bin2txt.%08x", rand 0xffffffff;
+system("$objdump -M $syntax -wd $target > $od");
+
+if (0) {
+my @sections_offset = split(' ', qx(cat $od | grep '<.' | grep '>:' | sed -e 's,:,,g' -e 's,^\ ,0,g' -e 's,\t, ,g'));
+
+print "\nELF sections: {{{\n";
+my $i;
+for($i=0;$i<$#sections_offset;$i+=2) {
+	#$sections_offset[$i]=~tr/[a-z]/[A-Z]/;
+	my $section_offset = $sections_offset[$i];
+	$sections_offset[$i+1]=~s/[\<\>]//g;
+	my $section_name   = $sections_offset[$i+1];
+	next if ($section_name=~/plt/);
+	printf(" _$section_offset $section_name\n", $section_offset);
+}
+print "}}}\n";
+
+###########
+# PLT
+###########
+print "ELF PLT: {{{\n";
+for($i=0;$i<$#sections_offset;$i+=2) {
+	my $section_offset = $sections_offset[$i];
+	my $section_name   = $sections_offset[$i+1];
+	next unless ($section_name=~/plt/);
+	printf(" _$section_offset $section_name\n", $section_offset);
+}
+print "}}}\n";
+
+
+###########
+# code entries
+###########
+
+my @entries=split(' ',`cat $od | grep -e jmp -e call | grep -v '>:' | sed -e 's,:,,g' -e 's,^\ ,0,g' -e 's,\t, ,g' -e 's,^,0x,g' | cut -d ' ' -f 1 | xargs printf "%08x\n"|uniq`);
+
+# add program syms
+my @entries2=split("\n",`cat $od | grep '>:'`);
+foreach $entry (@entries2) {
+	push @entries, (split('<',$entry))[0];
+}
+
+print "<labels>\n";
+foreach $entry (@entries) {
+	my $ref = qx(cat $od | grep $entry);
+	$ref=~s/$entry//;
+	$ref=~s/<//;
+	$ref=~s/>://;
+	chomp($ref);
+	print " <label name=\"_$entry\">$ref</label>\n";
+	#print " _$entry : $ref\n";
+}
+print "</labels>\n\n";
+
+} # if(0)
+###############
+# disassembly #
+###############
+
+print "<disassembly>\n";
+
+# XXX x86 only here
+my $jmpout = "perl -ne 'print; print \";--\\n\" if (/>:/||/jmp/||/call/||/ret/||/je /||/jne /||/jz /||/jnz /||/jbe /||/ja /||/jb /||/jae /||/jle /);'";
+
+system("cat $od | sed -e 's,^\ ,_0,g' -e 's,^0,_0,g' -e 's, 804, _0804,g' | $jmpout | rsc ffftoneg > $od2");
+my $log = 0;
+open FD, "<$od2";
+while(<FD>) {
+	if (/^;--/) {
+		$log^=1;
+		if ($log) {
+			print "<block>\n";
+		} else {
+			print "</block>\n";
+		}
+		next;
+	}
+	s/</&lt;/g;
+	s/>/&gt;/g;
+	print if ($log);
+}
+close FD;
+print "</disassembly>\n";
+print "</radarexml>\n";
+
+unlink ($od);

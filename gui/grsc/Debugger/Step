@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+#
+# --pancake
+#
+echo s
+#echo "
+#:!clear
+#:!step
+#:!regs* > /tmp/regs
+#:. /tmp/regs
+#:px 40 @ eip
+#:pd 40 @ eip
+#"

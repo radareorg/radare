@@ -1,0 +1,216 @@
+---------------------------------------
+
+radare -- elf tutorial
+author -- pancake
+
+---------------------------------------
+
+_00_ Introduction
+
+  This tutorial explains how to work with ELF files using radare.
+  I recommend you to use vim to read this document. Use '#' to
+  jump between the index.
+
+  _001_ The easy way
+  _01_  Get entry point
+  _010_ " using some magic
+  _02_  Seek to entry point and disassemble some bytes
+  _03_  Visual disassembling
+  _04_  Extracting string and offsets
+
+
+
+_001_ The easy way
+
+  Open the ELF file with radare and type these commands:
+
+   $ radare /bin/ls
+   > ! rsc syms-flag /bin/ls > /tmp/ls.syms.flags
+   > . /tmp/ls.syms.flags
+
+  At this moment you have one flag for each symbol of the ELF file.
+  You can store the radare state into a file using the 'S' command:
+
+   > S ~/.radare/bin.ls
+
+  You can 'seek' to a desired flag easily now:
+
+   > b 0x40           ; blocksize to 0x40 bytes (avoid long disasms)
+   > seek main        ; seek to main symbol
+   > pd               ; go disassemble
+
+
+
+_01_ Get entry point
+
+  We can find the entry point using the scripts/elf-flag-header:
+
+  $ ./radare /bin/ls
+  open '/bin/ls'
+  File size: 77832
+  
+  [0x0000000000000000] > . ../scripts/elf-flag-header 
+  Interpreting file: '../scripts/elf-flag-header'
+  Flag hooked at 0x0000000000000000 with size  512 named 'here'.
+  Flag hooked at 0x0000000000000000 with size    4 named 'elf.magic'.
+  Flag hooked at 0x0000000000000000 with size   16 named 'elf.ident'.
+  Flag hooked at 0x0000000000000010 with size    2 named 'elf.type'.
+  Flag hooked at 0x0000000000000012 with size    2 named 'elf.machine'.
+  Flag hooked at 0x0000000000000014 with size    4 named 'elf.version'.
+  Flag hooked at 0x0000000000000018 with size    4 named 'elf.entry'.
+  Flag hooked at 0x000000000000001c with size    4 named 'elf.phoff'.
+  Flag hooked at 0x0000000000000020 with size    4 named 'elf.shoff'.
+  Flag hooked at 0x0000000000000024 with size    4 named 'elf.flags'.
+  
+  [0x0000000000000000] > flag
+  0x0000000000000000   512           here  7f 45 4c 46 01 01 01 00 00 00 ...
+  0x0000000000000000     4      elf.magic  7f 45 4c 46 
+  0x0000000000000000    16      elf.ident  7f 45 4c 46 01 01 01 00 00 00 ...
+  0x0000000000000010     2       elf.type  02 00 
+  0x0000000000000012     2    elf.machine  03 00 
+  0x0000000000000014     4    elf.version  01 00 00 00 
+  0x0000000000000018     4      elf.entry  40 9b 04 08 
+  0x000000000000001c     4      elf.phoff  34 00 00 00 
+  0x0000000000000020     4      elf.shoff  d0 2b 01 00 
+  0x0000000000000024     4      elf.flags  00 00 00 00 
+  
+  [0x0000000000000000] > seek elf.entry
+  
+  [0x0000000000000018] > endian 0
+  Endian is: little
+  
+  [0x0000000000000018] > vW
+  08049B40
+
+
+
+_010_ Get entry point using magic
+
+  radare comes with a collection of magic databases to feed 'file' (libmagic).
+  You can use this program to calculate the base address faster.
+
+  $ file -m magic/elf /bin/ls | sed -e 's,),)\n,g'
+  /bin/ls: (ELF)
+   (machine 'i386)
+   (machine 'machine)
+   (entry 0x8049b40)
+  , for GNU/Linux 2.6.0, dynamically linked (uses shared libs)
+  , for GNU/Linux 2.6.0, stripped
+
+
+  The same in the radare shell:
+  [0x0000000000000000] >!file -m magic/elf /bin/ls|sed -e 's,),)\n,g'|grep entry
+   (entry 0x8049b40)
+
+
+
+_02_ Seek to the entry point and disas
+
+  We must find the offset of the entry point inside the file (not in memory),
+  so, we must substract the base address to the entry point:
+
+   0x8049B40 - 0x8048000 = 0x1B40 = 6976
+
+  [0x0000000000000018] > (0x8049B40-0x8048000)
+  6976
+
+  [0x0000000000000018] > !printf "%x" 6976
+  1b40
+  
+  [0x0000000000000018] > seek 6976
+  Current offset = 0x0000000000001B40 (6976)
+
+  [0x0000000000001B40] > b 512
+
+  [0x0000000000001B40] > d /tmp/text
+  Dump file: '/tmp/text'
+  Dumping block 0x0000000000001B40
+  Block size = 512 (0x200)
+  Limit/length = 512
+  *OK file dumped.
+
+  [0x0000000000001B40] > !cat /tmp/text | sh ../scripts/dasm.sh - | head -n 10
+   0:   31 ed                   xor    %ebp,%ebp
+   2:   5e                      pop    %esi
+   3:   89 e1                   mov    %esp,%ecx
+   5:   83 e4 f0                and    $0xfffffff0,%esp
+   8:   50                      push   %eax
+   9:   54                      push   %esp
+   a:   52                      push   %edx
+   b:   68 30 69 05 08          push   $0x8056930
+  10:   68 40 69 05 08          push   $0x8056940
+  15:   51                      push   %ecx
+
+
+_03_ Visual disassembling
+
+  BTW we can use the visual mode for all these stuff. So, you can press the 'd'
+  key to disassemble the current block, and simulate jumps. 
+
+  Going into visual mode...
+
+  [0x0000000000001B40] > Visual
+
+  (.. inside visual mode ..)
+
+  d         ; disassemble current block
+  :+ 0x12   ; change %eip
+  d         ; dump again
+
+
+_04_ Extracting strings and offsets
+
+  To get the strings and respective offsets just type:
+
+  $ radare -S 5 /bin/ls
+
+  0x00000134 A /lib/ld-linux.so.2
+  0x00000b79 U librt.so.1clock_gettime_Jv_RegisterClasses__gmon_start__libacl.so
+  1acl_entriesacl_get_fileacl_set_fileacl_delete_def_file_init_finiacl_from_texa
+  cl_freeacl_extended_filelibselinux.so.1lgetfileconfreeconlibc.so.6strcpyioctlt
+  doutreaddir64__strtoull_internalsigemptysetmemmovegetopt_long__fpendinggetgrgd
+  getenviswcntrlqsortmemcpyreadlink__overflowmbrtowcmallocisattyoptarg_obstack_e
+  wchunk__strtoul_internalmempcpysigaddsetlocaleconvabort__stack_chk_failchmodiw
+  printstrrchr__ctype_tolower_loc_obstack_begincalloc__ctype_get_mb_cur_maxfput_
+  unlockeddcgettextoptindfnmatchmktimesignaldirfdstrcollstrncmpstrncpywcwidthrel
+  locsigaction__xstat64gettimeofdaylocaltimememsetopendir__assert_failstrcmpgetw
+  uidgetpwnamsprintffclosesetlocalestderrerrorsigismember__lxstat64__ctype_b_lof
+  flush_unlockedstrftimefwrite_unlockedtcgetpgrp__errno_locationbindtextdomaingt
+  grnam_setjmp__ctype_toupper_loc_IO_stdin_usedstrverscmp__libc_start_mainstrles
+  trchrclosedir__fxstat64vfprintfraisesigprocmaskmbsinit__cxa_atexit_edata__bsss
+  tart_endGLIBC_2.2ACL_1.0GLIBC_2.4GLIBC_2.2.3GLIBC_2.1.3GLIBC_2.3GLIBC_2.1GLIB_
+  2.0
+  0x00001b48 A PTRh0i
+  (...)
+  0x0000ea48 A Try `%s --help' for more information.
+  0x0000ea70 A Usage: %s [OPTION]... [FILE]...
+  0x0000ea94 A List information about the FILEs (the current directory by defaul
+  0x0000ead9 A Sort entries alphabetically if none of -cftuSUX nor --sort.
+  0x0000eb18 A Mandatory arguments to long options are mandatory for short optio
+  0x0000eb64 A   -a, --all                  do not ignore entries starting with
+  0x0000eba7 A   -A, --almost-all           do not list implied . and ..
+  0x0000ebe1 A       --author               with -l, print the author of each fi
+  0x0000ec25 A   -b, --escape               print octal escapes for nongraphic c
+  (..)
+  0x000103ed A SIZE may be (or may be an integer optionally followed by) one of
+  0x00010439 A kB 1000, K 1024, MB 1000*1000, M 1024*1024, and so on for G, T, P
+  0x00010489 A By default, color is not used to distinguish types of files.  The
+  0x000104cf A equivalent to using --color=none.  Using the --color option witho
+  0x00010517 A optional WHEN argument is equivalent to using --color=always.  Wi
+  0x0001055b A --color=auto, color codes are output only if standard output is c
+  0x000105a5 A to a terminal (tty).  The environment variable LS_COLORS can infl
+  0x000105f0 A colors, and can be set easily by the dircolors command.
+  0x0001062d A Exit status is 0 if OK, 1 if minor problems, 2 if serious trouble
+  0x00010674 A sizeof (struct dev_ino) <= __extension__ ({ struct obstack const
+  0x00010704 U cannot determine device and inode of %s%s: not listing already-li
+  0x00010758 A ignoring invalid value of environment variable QUOTING_STYLE: %s
+  0x0001079c A ignoring invalid width in environment variable COLUMNS: %s
+  0x000107d8 A ignoring invalid tab size in environment variable TABSIZE: %s
+  0x00010818 A the --kilobytes option is deprecated; use -k instead
+  0x00010850 U abcdfghiklmnopqrstuvw:xABCDFGHI:LNQRST:UX1Zunparsable value for
+  0x000108d8 A hash_get_n_entries (active_dir_set) == 0
+  0x00010904 U dereference-command-line-symlink-to-dir
+  0x0001092d A Report bugs to <%s>.
+  (...)
+
+

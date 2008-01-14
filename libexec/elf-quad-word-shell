@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Radare is also shell-friendly :)
+#
+
+echo "!printf \"This is an elf quad word: \"
+vW
+s 0
+!printf \"In ascii: \"
+vs
+q" | radare -v /bin/ls

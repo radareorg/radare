@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+#
+# Colorization functionality for radare's bindiff
+#
+# licens: GPL (>=2)
+# author:  pancake <pancake@youterm.com>
+#
+# Usage: $ rsc bdcolor [context-size]
+#
+
+my $color_add = "\e[42m";  # > addition
+my $color_sub = "\e[41m";  # < substract
+my $color_rep = "\e[44m";  # | replace
+my $context   = $ARGV[0];  # context size
+my $ctxcnt    = -1;        # context counter
+my @buffer    = ();        # buffer to store context strings
+my $offa      = $offb = 0; # offset for file A and file B
+my $odiff     = 0;         # old diff value
+
+$context=-1 if ($context eq "");
+
+if ($context eq "-h") {
+	print "Usage: rsc bdcolor [context-size]\n";
+	exit 0;
+}
+
+while($line=<STDIN>) {
+	chomp $line;
+	$line=~s/\t/ /g;
+	$a=$b=$c="  ";
+	$diff=1;
+	if ($line=~/\|/) {
+		$line=~tr/|/ /;
+		$line=~/(\w*)\s*(\w*)/;
+		$a="\e[44m$1\e[0m";
+		$b=" |";
+		$c="\e[44m$2\e[0m";
+		$offa++;
+		$offb++;
+	} elsif ($line=~/>/) {
+		$line=~s/(\s|>)*//g;
+		$c="\e[42m$line\e[0m";
+		$b=" >";
+		$offb++;
+		$color="\e[42m";
+	} elsif ($line=~/</) {
+		$line=~s/(\s|<)*//g;
+		$a="\e[41m$line\e[0m";
+		$b="< ";
+		$offa++;
+	} else {
+		$line=~/(\w*)\s*(\w*)/;
+		$a=$1;
+		$c=$2;
+		$offa++;
+		$offb++;
+		$diff=0; # no differences here.
+	}
+
+	$line=~/(\w*)\s*(\w*)/;
+	if ("$a$c" eq "    ") { $a=$1; $c=$2; }
+
+	$str = sprintf "%08x $a  $b   $c\e[0m %08x\n",
+		$offa-1, $offb-1;
+
+	if ($context>=0) {
+		if ($diff) {
+			if ($odiff==$diff) {
+		 		# print out initial context
+				if ($ctxcnt!=$context) {
+					print "--\n";
+					foreach $buf (@buffer)
+					{ print $buf; }
+				}
+				$ctxcnt = $context;
+				print $str;
+			} else {
+				# limit buffer to context size
+				shift @buffer if ($#buffer>=$context);
+				push @buffer, $str;
+			}
+		} else {
+			# print out end context
+			print $str if ($ctxcnt-->0);
+			# limit buffer to context size
+			shift @buffer if ($#buffer>=$context);
+			push @buffer, $str;
+		}
+		$odiff = $diff;
+	} else {
+		print $str;
+	}
+}
