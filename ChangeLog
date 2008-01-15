@@ -1,3 +1,408 @@
+------ switch to mercurial ---------
+
+0: 14bb6af7
+author: pancake@dazo
+date: 20080114-02:25:58
+
+  * Up configure stuff to 0.9.3
+
+
+1: bdac2a6c
+author: pancake@dazo
+date: 20080114-02:20:37
+
+  * Oops. missing "gokolu" in make install
+  * Disassembly now can be analyzed in realtime to get an ascii-art
+    lines following the jumps and calls.
+  * More stuff interruptable with ^C
+  * Some x86 code cleanup
+  * New grava layout for testing...needs more love
+  * New config stuff:
+    asm.size = show number of bytes of the opcode
+    asm.lines = show line references for jumps and calls
+    graph.jmpblocks = split blocks by jumps or not
+
+----- version 0.9.3 -------
+
+2: b50238cf
+author: pancake@dazo
+date: 20080112-21:11:48
+
+  * 0.9.2 release!
+  * Update to the latest pof's strings-<pe>-flag rsc scripts
+  * Some minor hidden build fixups
+  * Fix debugger build on netbsd
+
+
+3: bc9615c1
+author: pancake@dazo
+date: 20080112-06:06:10
+
+  * Awesome optimization of the cairo stuff for graphs
+    Featuring:
+    - No flickering!
+    - Less repaints
+    - space and 'u' to (up and down screen)
+  * Tab in grava moves and centers around the graph
+  * Make "Focus" callback work :D
+  * Pan when moving nodes with keyboard
+  * Fix valac related stuff build
+  * Add cmd.bp for command breakpoints
+
+
+4: 4c3c801a
+author: pancake@dazo
+date: 20080111-01:37:58
+
+  * Add missing hash.h
+  * Add .c files generated with vala 0.1.6 (one dep less, make w32 build easier!)
+    - add target 'novala' and use it by default
+  * Add more java opcodes into rasm
+    - Add support to 'push reg'
+  * Add support for handling address contained by pointers in memory:
+    > fd @ [0x804d800] ; will read 4 bytes at this address and show label
+  * Better add/remove flagging stuff for breakpoints with F2
+    - brreakpoints are full of bugs. needs more love
+  * Be toggle_breakpoint functionality
+  * Allow to remove flags by their address
+  * Properly calculate the increment for 'j' (down movement) in udis and so
+
+
+5: be5dde94
+author: pancake@dazo
+date: 20080110-08:20:36
+
+  * Fix rsc asm (-f was not working correctly)
+  * Add timestamp for oregs (code can be reduced)
+  * Flag breakpoints (clear by addr is maybe not working)
+  * Standarize and propagate the use of radare_controlc/end()
+    - Disassembly, searchs, etc.. can be canceled (most long processes)
+  * Setenv KEYWORD for cmd.hit
+
+6: b9ea2cfa
+author: pancake@dazo
+date: 20080108-23:30:52
+
+  * Integrate rasm into the core.
+    - New 'wa' command to write assembly for x86, ppc, arm, java
+  * Some readline autocompletions added
+
+
+7: 83974e9b
+author: pancake@dazo
+date: 20080108-21:35:31
+
+  * Add sha256, sha384, sha512 to hasher
+    - Avoid empty line after -a all
+  * Add some powerpc opcodes for rasm
+    - fix return value handling
+
+
+8: 2161db7f
+author: pancake@dazo
+date: 20080108-03:09:59
+
+  * Initial import of rasm:
+    - The radare patch-oriented multi-architecture assembler
+    - complete support for x86
+    - add basic support for arm, and templates for java and ppc
+    - needs more work. this is just an initial implementation
+    - can be easily integrated with the core (own assembler)
+  * Move posix.o to plugins/
+  * Fix debian.sh to make happy scratchbox again
+    - Build and release a beta testing 0.9.2b debian package for maemo
+  * Oops strings-pe-flag does not exist
+  * Cleanup of the debugger layer
+    - some minor refactoring
+    - src/dbg/os.h - represents the debugger interface
+    - all plugins has a new debug_t pointer inside its plugin_t structure
+      - this way we can implement new debuggers as plugins
+  * Remove config.x/y . Faster console access (bah!)
+  * Command 'B' deprecated by eval file.baddr
+  * Fix -qv flags weirdness in hasher
+  * Fix Linux-ARM build of the debugger
+  * 
+
+
+9: ec8e29e7
+author: pancake@dazo
+date: 20080107-02:39:44
+
+  * Make the graph interactive by using the popup menu
+    - allow to walk between calls
+    - follow work will be an entry text
+    - draw infinite hangs with lace edges
+  * Do not destroy old windows..allows stacked navigation
+    - the gui should go in this direction :)
+
+
+10: 5a59cf59
+author: pancake@dazo
+date: 20080107-00:11:22
+
+  * Remove config.count and use cfg.count eval
+  * Fix ARM code analysis and disassembler
+    - Thanks esteve for the flow analysis (arch_arm_aop) code!
+    - Colorize disassembly and graph 'calls'
+    - show label references in arm branches
+    - fix conditional branches printage
+    - s/\r\n/\n/ in disarm.c
+
+11: f886dc3f
+author: pancake@dazo
+date: 20080106-18:22:03
+
+  * Make hasher work inside the debugger
+  * Add '-A' and '-a all' to perform all algorithms at a time
+    - Some code cleanup for hasher
+  * Remove dbg.second
+    - Add dbg.vstack
+
+
+12: a55f3023
+author: pancake@dazo
+date: 20080106-04:47:20
+
+  * Fixes for w32 debuger build
+    - Sync with *nix stuff. Dual build passed!
+    - Some code cleanup and so
+  * Some hidden fixups
+    - Make debugger visual show the stack with addresses
+    - Fix flag references for jumps (!!!)
+
+
+13: 908ce9b1
+author: pancake@dazo
+date: 20080106-04:13:58
+
+  * Fixups for the debugger layer on *nix
+    - tested on netbsd and gnu/linux
+    - 32/64 bit bug appeared in erroneous merge
+    - split split argv from string
+    - add plugins/debug.o properly
+  * Lot of warning cleanup and minor bug fixups
+    - More casting
+    - Lot of func definitions in dot hacs
+    - Fix cursor color reset when no color enabled
+    - Needs moar work
+  * Add dbg.tracebt to show backtrace when tracing
+    - The same for cfg.contscbt (continue until syscall)
+
+
+14: 8a1cc999
+author: pancake@dazo
+date: 20080106-02:15:21
+
+  * Merge of the th0rpe w32 debug plugin
+    - Refactoring of the debugger architecture
+    - Tested on cygwin and linux
+    - Needs more work
+  * Some minor changes in graphs
+
+
+15: 906665f3
+author: pancake@dazo
+date: 20080102-03:34:34
+
+  * Initial integration of the powerpc code analysis module
+    - Lot of fixups from the previous version
+    - PowerPC code graphs looks cleaner atm (needs more work)
+  * Fix get_offset (hex with spaces) number parsing (? 0x300 + 0x33 is now ok)
+  * Limit number of lines when disassembling
+  * Make powerpc disassembly handle endianness with cfg.endian
+  * Make javasm know that Mach-O bins also have a 0xcafebabe header
+  * Make zoom factor of the graph more soft
+  * Add bctr and bcctr ppc opcodes to rsc adict
+  * Add strings-pe-flag in make install
+  * Port strings-pe-flag and syms-pe-flag to perl
+    - Much faster.
+    - This reminds me that radare -S must be happy with rabin
+      to find strings only in data sections and so
+  * Add '?' math eval command to '?' help.
+  * Set arch_callback (code analysis) as hook for asm.arch
+    - Also for cfg.color
+
+16: c52bebc7
+author: pancake@dazo
+date: 20080101-17:54:34
+
+  * Welcome 2008 :)
+  * PowerPC stuff:
+    - Initial import of the powerpc code analysis (gogo Wii!)
+    - Add 'sc' and 'svc' to rsc adict (
+    - Endian support for ppc disassembly
+  * Fix bin to hex conversion for XC (big oops)
+  * Fix config.write (old->new) weirdness)
+  * Fix short jump code analysis (addr+2)
+  * Silently fix the -i flag init order bug
+  * Disasembly out of visual mode shows entire code block
+    extended to ARM and ppc
+
+
+17: 1b32953e
+author: pancake@dazo
+date: 20071231-22:00:12
+
+  * Make eval cfg.write work with a callback (otf change)
+  * Fix intel 'eb' (short jump) opcode code analysis
+  * Split print_color stuff
+  * Some updates and fixups for the grava
+    - limit smaller zoom
+    - add load_graph_at callback
+    - add const ZOOM_FACTOR
+    - the context menu only popups when a node is selected
+
+
+18: 2005f9f3
+author: pancake@dazo
+date: 20071231-05:07:08
+
+  * Initial import of strings-pe-flag (thx pof)
+    - should be merged with strings-flag...
+  * Silently make all rsc commands to show help to stderr
+    and just show the results (N syms/strings added)
+  * file.identify=false by default
+  * Add file.flag to flag all syms and strings (false by default)
+  * Silently fix the verbose insanity when .!
+  * Colorize graph lines depending on calls or jumps (only x86)
+    - Change some colors
+    - make single clicks on nodes refresh the graph and colorize node border
+  * Make nodes be conscient about the calls found inside
+    - also for xrefs (but not yet implemented)
+  * Initial import of 'rsc flag' command (thx pof again ;)
+    - flags all string and symbols of a binary inside or
+      outside the debugger and jumps to sym_main
+
+
+19: 2ae1f6f9
+author: pancake@dazo
+date: 20071230-23:31:23
+
+  * Initial import of the AES expanded key search algorithm from Victor Muñoz
+    - the poc and snippet was presented at CCC 24c3 Congress at Berlin 2007
+    - Thanks for the code snippet! Great work!
+    - /a command - should change?
+    - TODO: implement the same for RSA keys
+  * New strhash algorithm without small string collisions
+    - Re-add the core.loop config key
+
+20: d6e851e8
+author: pancake@dazo
+date: 20071230-21:03:04
+
+  * Update strings-flag by pof fixing stuff for non-elf files
+  * Initial import of the syms-pe-flag (for PE files)
+    - will be merged with syms-flag in the future
+  * Silently fix a segfault when /x 8383383838
+    - (no spaces between hexpairs)
+  * Lot of hardcore fixups (CAFFEINE WORKZ)
+    - missing main.h includezz (32-64 problems)
+     - fixes config_set off_t problems (baddr and so :D)
+    - some valgrind fixups
+  * Initial working version of the 'R' command
+    - all graphs are stored in memory
+    - supports listing, removing, graphing and loding from file
+    - support diffing between program_t's
+  * Move all grava stuff to src/grava.c
+  * Export BADDR and ARCH as envvars
+  * Store the program_t entrypoint and split program_new and program_open
+  * Make the disassembly be raw outside the visual mode
+    - allows to dump the whole file
+  
+
+
+21: d653f73a
+author: pancake@dazo
+date: 20071230-07:38:51
+
+  * Implement 'fn' command to flag new
+    - useful for rsc strings-flag
+    - adapt the rest of radare to make flag_set receive 3 args
+  * Make print command changes not affect in visual mode
+  * Clean and sort TODO
+  * Some minor code cleanup
+  * Hiddenly import an initial draw of the RDB management command 'R'
+
+
+22: 15d9a6e6
+author: pancake@dazo
+date: 20071230-06:09:59
+
+  * Initial import of the powerpc and m68k disassemblers
+    http://devnull.owl.de/~frank/Disassembler_e.html
+    * The 68k disasembler is buggy and segfaults
+    - have to contact with http://sun.hasenbraten.de/~frank/
+    - vdasm and so looks really cool :D
+  * Silently add a 'calls' linked list inside the block_t
+  
+
+
+23: d94d3986
+author: pancake@dazo
+date: 20071230-04:26:15
+
+  * Up configure to 0.9.2 O:)
+  * Some fixups of strings-flag by pof
+  * Add graph.offset to show/hide offset of opcodes in graph
+  * Fix graph node output (cleaner to read)
+  * Use dbg.maps, dbg.syms and dbg.strings
+  * Make syms-flag work as strings-flag (nice shot ;)
+  * Fix the cfg.verbose weirdness (make rsc asm work again ..)
+  * Fix graph depth calculation. (lower values for depth will work now)
+  * Add graph.callblocks to choose if you want calls split code blocks or not
+    - ida like graphs ;)
+    - needs more work .. like storing all call offsets into a linked list
+      to be accessible by the gui and so..
+  * Fix block_split branches (not tested)
+  * Make label be considered when determining the node width
+  * The 'unknown filetype' string is only showed in verbose mode
+
+
+24: 26fc4a05
+author: pancake@dazo
+date: 20071229-16:33:43
+
+  * Updated syms-*flag stuff
+  * Add strings-flag 
+  * Add graph.callblocks
+    - Thanks pof for this commit!
+
+
+25: a65fbfe6
+author: pancake@dazo
+date: 20071228-16:38:32
+
+  * Make the gui combo of arch be happy with eval
+  * Lot of warning stuff cleared - thanks ora8!
+  * Clean list.h ... linux does some nasty stuff!
+  * Fix backtrace stuff - integrate the new one.
+  * backtrace configurable via eval.bttype
+  * Add dbg.second .. uhm not tested maybe buggy
+
+
+26: c3d6832b
+author: pancake@dazo
+date: 20071228-02:26:06
+
+  * Fix !maps stuff for debugger and pid:// (thx brainstorm for reporting)
+    - needs some work.. hackaton soon!
+  * Fix most of the base address stuff
+  * Colorize interrupts and above/below or equal jumps
+
+
+27: 4836f6bd
+author: pancake@dazo
+date: 20071226-23:12:36
+
+  * Clean TODO file
+  * Initial import of the rabin identify inside the core
+    - file.identify = true
+    - jumps to entrypoint, identifies base addres and sets asm.arch
+    - add file.type
+    - some minor fixups for the baddr
+  * Really *hacky* commit. Not for real use
+
+
 ---- version 0.9.1 ----
 
 0: c0056b87

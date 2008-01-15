@@ -73,6 +73,7 @@ static void config_old_init()
 	config.debug       = 0;
 	config.color	   = 0;
 	config.unksize     = 0;
+	config.buf         = 0; // output buffered
 	config.ene         = 10;
 	config.width       = terminal_get_columns();
 	config.last_seek   = 0;
@@ -418,6 +419,13 @@ int config_baddr_callback(void *data)
 	return 1;
 }
 
+int config_scrbuf_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	config.buf = node->i_value;
+}
+
 int config_bsize_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -524,6 +532,8 @@ void config_init()
 	node = config_set("zoom.byte", "first");
 	node->callback = &config_zoombyte_callback;
 
+	node = config_set("scr.buf", "false");
+	node->callback = &config_scrbuf_callback;
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);
 

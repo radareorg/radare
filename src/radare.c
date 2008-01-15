@@ -119,6 +119,8 @@ int radare_command_raw(char *tmp, int log)
 	char file[1024], str[1024];
 	char *input, *oinput;
 	char *next = NULL;
+//fprintf(stderr, "run:(%s)\n", tmp);
+//fflush(stderr);
 
 	if (tmp == NULL || tmp[0]=='\0')
 		return 0;
@@ -287,11 +289,14 @@ int radare_command_raw(char *tmp, int log)
 	}
 	
 	if (next && next[1]=='&') {
+		int ret;
 		next[0] = '&';
 		for(next=next+2;*next==' ';next=next+1);
 
 		free(oinput);
-		return radare_command(next, 0);
+		ret = radare_command(next, 0);
+		pprintf_flush();
+		return ret; 
 	}
 
 	free(oinput);
@@ -325,8 +330,8 @@ int radare_command(char *tmp, int log)
 		radare_command(":.!regs*", 0);
 
 		if (config_get("dbg.stack")) {
-			C printf(C_RED"Stack:\n"C_RESET);
-			else printf("Stack:\n");
+			C pprintf(C_RED"Stack:\n"C_RESET);
+			else pprintf("Stack:\n");
 			sprintf(buf, "%spx %d @ %s",
 				(config_get("dbg.vstack"))?"":":",
 				(int)config_get_i("dbg.stacksize"),
@@ -336,8 +341,8 @@ int radare_command(char *tmp, int log)
 		}
 
 		if (config_get("dbg.regs")) {
-			C printf(C_RED"Registers:\n"C_RESET);
-			else printf("Registers:\n");
+			C pprintf(C_RED"Registers:\n"C_RESET);
+			else pprintf("Registers:\n");
 			radare_command("!regs", 0);
 		}
 
@@ -345,18 +350,18 @@ int radare_command(char *tmp, int log)
 		config_set("cfg.verbose", "true");
 		if (config_get("dbg.bt")) {
 			if (config_get("dbg.fullbt")) {
-				C printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
-				else printf("Full Backtrace:\n");
+				C pprintf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
+				else pprintf("Full Backtrace:\n");
 				radare_command(":!bt", 0);
 			} else {
-				C printf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
-				else printf("User Backtrace:\n");
+				C pprintf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
+				else pprintf("User Backtrace:\n");
 				radare_command("!bt", 0);
 			}
 		}
 
-		C printf(C_RED"Disassembly:\n"C_RESET);
-		else printf("Disassembly:\n");
+		C pprintf(C_RED"Disassembly:\n"C_RESET);
+		else pprintf("Disassembly:\n");
 
 		radare_command("s eip", 0);
 		config.height-=14;
@@ -365,13 +370,12 @@ int radare_command(char *tmp, int log)
 		/* TODO: chose pd or pD by eval */
 		if (config.visual)
 			radare_command("pD", 0);
-		else
-			radare_command("pD 50", 0);
+		else	radare_command("pD 50", 0);
 		//radare_command("pd 100", 0);
-
 
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
+		config.height+=14;
 		return 0;
 	}
 
@@ -423,6 +427,7 @@ int radare_interpret(char *file)
 		len = strlen(buf);
 		if (len>0) buf[strlen(buf)-1]='\0';
 		radare_command(buf, 0);
+		pprintf_flush();
 		hist_add(buf, 0);
 		config.verbose = 0;
 		config_set("cfg.verbose", "false");
@@ -536,7 +541,9 @@ void radare_prompt_command()
 									file[i]='\0';
 							}
 							radare_command(file, 0);
+							//pprintf_flush();
 						}
+						pprintf_flush();
 						if (_print_fd != 1) // XXX stdout
 							close(_print_fd);
 						fclose(fd);
@@ -851,6 +858,7 @@ int radare_go()
 				radare_command(".!regs*", 0);
 			update_environment();
 			radare_sync();
+			pprintf_flush();
 		} while( radare_prompt() );
 	} while ( io_close(config.fd) );
 
@@ -863,6 +871,7 @@ int std = 0;
 int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 {
 	int fd = make_tmp_file(tmp);
+	pprintf_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmp);
 		tmpoff = config.seek;
@@ -874,6 +883,7 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 	if (cmd[0])
 		radare_command(cmd, 0);
 
+	pprintf_flush();
 	fflush(stdout);
 	fflush(stderr);
 	close(fd);

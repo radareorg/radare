@@ -106,55 +106,66 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 	if (!list)
 		return;
 
-	printf(" ");
+	pstrcat(" ");
 	list_for_each(pos, &(list->list)) {
 		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
 		if (config.interrupted)
 			break;
 
 		if (addr == ref->to) {
-			printf("+");
+			if (ref->from > ref->to)
+				pstrcat(".");
+			else
+				pstrcat("'");
 			ch = '-';
 		} else
 		if (addr == ref->from) {
-			printf("+");
+			if (ref->from > ref->to)
+				pstrcat("'");
+			else
+				pstrcat(".");
 			ch = '=';
 		} else {
 			if (ref->from < ref->to) {
+				/* down */
+				pstrcat(C_BYELLOW);
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
-						printf("(");
+						pstrcat("(");
 					else
-					//if (0==addr%10)
-					//	printf("v");
-				//	else
-						printf("|");
+						pstrcat("|");
 				} else
-					printf("%c",ch);
+					C {if (ch=='-')
+						pprintf(C_WHITE"-");
+					else if (ch=='=')
+						pprintf(C_BYELLOW"=");
+					else pprintf("%c",ch);
+					} else pprintf("%c",ch);
 			} else {
+				C pstrcat(C_BWHITE);
+				/* up */
 				if (addr < ref->from && addr > ref->to) {
 					if (ch=='-'||ch=='=')
-						printf("(");
-					else
-				//	if (0==addr%10)
-				//		printf("^");
-				//	else
-						printf("|");
+						pstrcat("(");
+					else // ^
+						pstrcat("|");
 				} else {
-					printf("%c",ch);
+					pprintf("%c",ch);
 				}
 			}
 		}
 	}
 
-	if (ch=='-')
-		printf("-> ");
-	else
-	if (ch=='=')
-		printf("=< ");
-	else	printf("   ");
+	if (ch=='-') {
+		C pstrcat(C_WHITE"-> ");
+		else pstrcat("-> ");
+	} else
+	if (ch=='=') {
+		C pstrcat(C_YELLOW"=< ");
+		else pstrcat("=< ");
+	} else	pstrcat("   ");
 
-	fflush(stdout);
+	C pprintf(C_RESET);
 }
 
 /* code analyze */
@@ -372,11 +383,10 @@ int radare_analyze(off_t seek, int size)
 					pprintf("(%d)\n", nume);
 				else {
 					C pprintf(C_TURQOISE);
-					fflush(stdout);
 					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
 					radare_command(cmd, 0);
 
-					pprintf("     ");
+					pstrcat("     ");
 					radare_analyze((config.endian)?num:nume, -1);
 
 					config.seek = seek;
@@ -392,7 +402,7 @@ int radare_analyze(off_t seek, int size)
 	/* restore */
 	config.seek = tmp;
 	radare_read(0);
-	pprintf("\n");
+	pstrcat("\n");
 	config.verbose = v;
 
 	return 0;

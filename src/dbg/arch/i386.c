@@ -204,14 +204,14 @@ int debug_dr(char *cmd)
 
 	switch(cmd[0]) {
 	case '?':
-		printf("Usage: !dr[type] [args]\n");
-		printf("  dr                   - show DR registers\n");
-		printf("  dr-                  - reset DR registers\n");
-		printf("  drr [addr]           - set a read watchpoint\n");
-		printf("  drw [addr]           - set a write watchpoint\n");
-		printf("  drx [addr]           - set an execution watchpoint\n");
-		printf("  dr[0-3][rwx] [addr]  - set a rwx wp at a certain DR reg\n");
-		printf("Use addr=0 to undefine a DR watchpoint\n");
+		eprintf("Usage: !dr[type] [args]\n"
+		"  dr                   - show DR registers\n"
+		"  dr-                  - reset DR registers\n"
+		"  drr [addr]           - set a read watchpoint\n"
+		"  drw [addr]           - set a write watchpoint\n"
+		"  drx [addr]           - set an execution watchpoint\n"
+		"  dr[0-3][rwx] [addr]  - set a rwx wp at a certain DR reg\n"
+		"Use addr=0 to undefine a DR watchpoint\n");
 		break;
 	case '\0':
 	case ' ': //list
@@ -224,7 +224,7 @@ int debug_dr(char *cmd)
 	case 'w': // 
 	case 'x': // breakpoint
 		if (!ptr) {
-			printf("Usage: !drb [address]\n");
+			eprintf("Usage: !drb [address]\n");
 			return -1;
 		}
 		addr = get_math(ptr+1);
@@ -885,7 +885,7 @@ int arch_print_registers(int rad, const char *mask)
 
 	if (mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
-		printf("%s\n", oregs_timestamp);
+		pprintf("%s\n", oregs_timestamp);
 	} else {
 		ret = debug_getregs(ps.tid, &regs);
 		if (ret < 0) {
@@ -906,6 +906,7 @@ int arch_print_registers(int rad, const char *mask)
 		pprintf("f edi @ 0x%x\n", (int)R_EDI(regs));
 		pprintf("f eip @ 0x%x\n", (int)R_EIP(regs));
 		pprintf("f esp @ 0x%x\n", (int)R_ESP(regs));
+		pprintf_flush();
 	} else {
 		if (color) {
 			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("\e[35m");
@@ -975,7 +976,6 @@ int arch_set_register(char *reg, char *value)
 
 	if (ps.opened == 0)
 		return 0;
-
 
         ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) return 1;
@@ -1419,7 +1419,7 @@ int arch_mprotect(char *addr, unsigned int size, int perms)
 
 	return ret;
 #else
-	printf("Not supported on this OS\n");
+	eprintf("Not supported on this OS\n");
 	return -1;
 #endif
 }
@@ -1673,7 +1673,7 @@ void arch_view_bt(struct list_head *sf)
                 sf_e = list_entry(pos, struct sf_t, next);
 		label[0] = '\0';
 		string_flag_offset(&label, sf_e->ret_addr);
-		printf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
+		pprintf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
 			i++, (uint)sf_e->ret_addr,
 			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);
 	}

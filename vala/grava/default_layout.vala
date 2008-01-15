@@ -119,13 +119,12 @@ public class Grava.DefaultLayout : Grava.Layout
 		}
 		foreach(weak Node node in graph.nodes) {
 			if (!node.visible) continue;
-			foreach(weak Edge edge in edges) {
+			foreach(weak Edge edge in graph.edges) {
 				if (edge.orig == node ) {
 					if (edge.dest.y < node.y)
 						node.y = edge.dest.y-(node.h-y_offset)*3;
 				}
-				//	do {
-				//		overlaps = false;
+			}
 		}
 /*
 primer incremento les x mentres vaig guardant el totalx

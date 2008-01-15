@@ -198,7 +198,7 @@ void radare_dump_and_process(int type, int size)
 	int x,y;
 
 	if (objdump == NULL) {
-		printf("OBJDUMP not defined. Use 'objdump -m i386 --target=binary -D f.ex.'.\n");
+		eprintf("OBJDUMP not defined. Use 'objdump -m i386 --target=binary -D f.ex.'.\n");
 		return;
 	}
 
@@ -260,11 +260,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	if (buf == NULL)
 		return;
 
-	x = config_get_i("scr.x");
-	y = config_get_i("scr.y");
-	if (x&&y)
-		printf("\e[%d;%dH", y, x);
-
 	if (len <= 0) len = config.block_size;
 
 	switch(print_fmt) {
@@ -323,7 +318,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		break;
 	case FMT_SHORT: {
 		short *s;
-		INILINE;
 		for(i=0;i<len;i+=sizeof(short)) {
 			endian_memcpy(buffer, buf+i, sizeof(short));
 			s = (short *)buffer;
@@ -332,7 +326,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		} } break;
 	case FMT_FLOAT: {
 		float *f;
-		INILINE;
 		for(i=0;i<len;i+=sizeof(float)) {
 			endian_memcpy(buffer, buf+i, sizeof(float));
 			f = (float *)buffer;
@@ -341,7 +334,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		} } break;
 	case FMT_INT: {
 		int *iv;
-		INILINE;
 		for(i=0;i<len;i+=sizeof(int)) {
 			endian_memcpy(buffer, buf+i, sizeof(int));
 			iv = (int *)buffer;
@@ -373,7 +365,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	case FMT_TIME_DOS: {
 		unsigned char _time[2];
 		unsigned char _date[2];
-		INILINE;
 		for(i=0;i<len;i+=4) {
 			endian_memcpy(_time, config.block+i, 2);
 			endian_memcpy(_date, config.block+i+2, 2);

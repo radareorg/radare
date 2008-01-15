@@ -37,6 +37,7 @@ struct config_t {
 	int debug;
 	int assume_yes;
 	int endian;
+	int buf; // scr.buf
 	/* modes */
 	int visual;
 	int cursor_mode; // visual like toggle

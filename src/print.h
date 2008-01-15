@@ -5,10 +5,10 @@
 
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
-#define PRINT_BIN(x) D printf("%d%d%d%d %d%d%d%d  ",\
+#define PRINT_BIN(x) D pprintf("%d%d%d%d %d%d%d%d  ",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0); else \
-printf("%d%d%d%d%d%d%d%d",\
+pprintf("%d%d%d%d%d%d%d%d",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0);
 extern int dec;
@@ -16,7 +16,8 @@ extern int dec;
 //#define INILINE D { int i; if(config.x) printf("\r"); for(i=1;i<config.x;i++) printf(" "); } 
 #define INILINE
 #undef NEWLINE
-#define NEWLINE fflush(stdout); write(_print_fd,"\n", 1);
+#define NEWLINE pprintf_newline();
+//fflush(stdout); write(_print_fd,"\n", 1);
 //#define NEWLINE D { int i; fflush(stdout); write(_print_fd,"\n", 1); for(i=1;i<config.x;i++) write(_print_fd," ", 1); } else { fflush(stdout); write(_print_fd, "\n", 1); }
 #define ANSINL  "\e[%d;%dH"
 

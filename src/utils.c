@@ -111,6 +111,39 @@ int pprint_fd(int fd)
 	return _print_fd = fd;
 }
 
+static int pprintf_buffer_len = 0;
+static char *pprintf_buffer = NULL;
+
+void palloc(int moar)
+{
+	if (pprintf_buffer == NULL) {
+		pprintf_buffer_len = moar+1024;
+		pprintf_buffer = (char *)malloc(pprintf_buffer_len);
+		pprintf_buffer[0]='\0';
+	} else
+	if (moar + strlen(pprintf_buffer)>pprintf_buffer_len) {
+		pprintf_buffer = (char *)realloc(pprintf_buffer, pprintf_buffer_len+moar+strlen(pprintf_buffer)+1);
+	}
+}
+
+
+void pprintf_flush()
+{
+	if (pprintf_buffer && pprintf_buffer[0]) {
+		write(_print_fd, pprintf_buffer, strlen(pprintf_buffer));
+		pprintf_buffer[0] = '\0';
+	}
+}
+
+void pprintf_newline()
+{
+	pprintf("\n");
+#if RADARE_CORE
+	if (!config.buf)
+		pprintf_flush();
+#endif
+}
+
 // XXX cannot print longer than 4K
 // no buffering
 void pprintf(const char *format, ...)
@@ -120,10 +153,28 @@ void pprintf(const char *format, ...)
 
 	va_start(ap, format);
 
-	vsnprintf(buf, 4095, format, ap);
-	write(_print_fd, buf, strlen(buf));
+	buf[0]='\0';
+	if (vsnprintf(buf, 4095, format, ap)<0)
+		buf[0]='\0';
+
+	palloc(strlen(buf)+1000);
+	strcat(pprintf_buffer, buf);
+//eprintf("STR(%s)\n", buf);
+
+#if 0
+#if RADARE_CORE
+	if (!config.buf)
+		pprintf_flush();
+#endif
+#endif
 
 	va_end(ap);
+}
+
+void pstrcat(const char *str)
+{
+	palloc(strlen(str));
+	strcat(pprintf_buffer, str);
 }
 
 void eprintf(const char *format, ...)

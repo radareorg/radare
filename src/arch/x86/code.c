@@ -153,7 +153,7 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 			aop->jump   = addr+bo+2; //(unsigned long)((bytes+1)+5);
 			aop->fail   = addr+2;
 			aop->eob    = 1;
-			return 5;
+			return 2;
 		}
 		break;
 	//default:
