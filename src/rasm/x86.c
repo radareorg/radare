@@ -35,6 +35,10 @@ int rasm_x86(off_t offset, char *str, unsigned char *data)
 		data[0]='\xc3';
 		return 1;
 	} else
+	if (!strcmp(op, "ret0")) {
+		memcpy(data, "\x31\xc0\xc3", 3);
+		return 3;
+	} else
 	if (!strcmp(op, "trap")) {
 		data[0]='\xcc';
 		return 1;

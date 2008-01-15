@@ -101,13 +101,17 @@ void code_lines_free(struct list_head *list)
 void code_lines_print(struct reflines_t *list, off_t addr)
 {
 	struct list_head *pos;
+	int foo = config_get_i("asm.linestyle");
 	char ch = ' ';
 
 	if (!list)
 		return;
 
 	pstrcat(" ");
-	list_for_each(pos, &(list->list)) {
+	//list_for_each_prev(pos, &(list->list)) {
+	// list_for_each
+#define head &(list->list)
+	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
 		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
 		if (config.interrupted)
 			break;
@@ -128,18 +132,19 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 		} else {
 			if (ref->from < ref->to) {
 				/* down */
-				pstrcat(C_BYELLOW);
+				C pstrcat(C_BYELLOW);
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
 						pstrcat("(");
 					else
 						pstrcat("|");
 				} else
-					C {if (ch=='-')
-						pprintf(C_WHITE"-");
-					else if (ch=='=')
-						pprintf(C_BYELLOW"=");
-					else pprintf("%c",ch);
+					C {
+						if (ch=='-')
+							pprintf(C_WHITE"-");
+						else if (ch=='=')
+							pprintf(C_BYELLOW"=");
+						else pprintf("%c",ch);
 					} else pprintf("%c",ch);
 			} else {
 				C pstrcat(C_BWHITE);

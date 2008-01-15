@@ -41,6 +41,7 @@ int rasm_show_list()
  " pop eax      - pop into a register\n"
  " int 0x80     - system call interrupt\n"
  " ret          - return from subroutine\n"
+ " ret0         - return 0 from subroutine\n"
  " hang         - hang (infinite loop\n"
  " mov eax, 33  - asign a value to a register\n");
 	return 0;

@@ -116,32 +116,34 @@ void udis_init()
 
 	if (!strcmp(ptr, "intel16")) {
 		ud_set_mode(&ud_obj, 16);
-	} else
+	} else {
 		if((!strcmp(ptr, "intel"))
 				|| (!strcmp(ptr, "intel32"))) {
 			ud_set_mode(&ud_obj, 32);
-		} else
+		} else {
 			if (!strcmp(ptr, "intel64")) {
 				ud_set_mode(&ud_obj, 64);
 			} else
 				ud_set_mode(&ud_obj, 32);
+		}
+	}
 
-			udis86_color = config.color;
+	udis86_color = config.color;
 
-			/* set syntax */
-			ud_set_syntax(&ud_obj, UD_SYN_INTEL);
-			if (syn) {
-				if (!strcmp(syn,"pseudo")) 
-					ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
-				else
-					if (!strcmp(syn,"att")) 
-						ud_set_syntax(&ud_obj, UD_SYN_ATT);
-			}
+	/* set syntax */
+	ud_set_syntax(&ud_obj, UD_SYN_INTEL);
+	if (syn) {
+		if (!strcmp(syn,"pseudo")) 
+			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
+		else
+			if (!strcmp(syn,"att")) 
+				ud_set_syntax(&ud_obj, UD_SYN_ATT);
+	}
 
 #ifdef _WIN32
-			_setmode(_fileno(stdin), _O_BINARY);
+	_setmode(_fileno(stdin), _O_BINARY);
 #endif  
-			ud_set_input_hook(&ud_obj, input_hook_x);
+	ud_set_input_hook(&ud_obj, input_hook_x);
 }
 
 void udis(int len, int rows)
@@ -156,6 +158,7 @@ void udis(int len, int rows)
 	int show_offset;
 	int show_splits;
 	int show_lines;
+	int nbytes = 12;
 	int show_size = config_get("asm.size");
 	off_t myinc = 0;
 	struct reflines_t *reflines = NULL;
@@ -177,6 +180,10 @@ void udis(int len, int rows)
 	show_offset = config_get("asm.offset");
 	show_splits = config_get("asm.split");
 	show_lines = config_get("asm.lines");
+	nbytes = (int)config_get_i("asm.nbytes");
+
+	if (nbytes>8 ||nbytes<0)
+		nbytes = 8;
 	if (show_lines)
 		reflines = code_lines_init();
 
@@ -209,14 +216,23 @@ void udis(int len, int rows)
 					pprintf("0x%08X ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 				}
 			}
-	if (show_size)
-pprintf("%d ", dislen(config.block+seek));
+			if (show_size)
+				pprintf("%d ", dislen(config.block+seek));
 
 			if (show_bytes) {
-				for(i=0;i<myinc; i++)
+				int max = nbytes;
+				int cur = myinc;
+				if (cur + 1> nbytes)
+					cur = nbytes - 1;
+
+				for(i=0;i<cur; i++)
 					print_color_byte_i(seek+i, "%02x", config.block[seek+i]); //ud_obj.insn_hexcode[i]);
-				for(i=(12-myinc)*2;i>0;i--)
+				if (cur !=myinc)
+					max--;
+				for(i=(max-cur)*2;i>0;i--)
 					pprintf(" ");
+				if (cur != myinc)
+					pprintf(". ");
 			}
 
 			hex1 = ud_insn_hex(&ud_obj);

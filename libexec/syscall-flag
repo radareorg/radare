@@ -1,0 +1,236 @@
+#!/bin/sh
+#
+# author: pof <eslack.org>
+#
+
+FILE=$1
+TMPF=/tmp/tmpfile.$$
+
+if [ -z $FILE ]; then
+	echo "Usage: rsc syscall-flag FILENAME" >/dev/stderr
+	exit 1
+fi
+
+mem=`rabin -e $FILE |grep "memory$" |cut -f 1 -d " "`
+dsk=`rabin -e $FILE |grep "disk$" |cut -f 1 -d " "`
+
+objdump -d $FILE |grep -4 "int    \$0x80" |egrep "(int|eax)" > $TMPF
+len=`cat $TMPF |wc -l`
+cont=0
+echo $len
+for f in `seq 1 $len` ; do
+
+	LINE=`cat $TMPF |head -n $f |tail -n 1`
+	offset=`echo $LINE |cut -f 1 -d ":" |sed -e "s/^/0x/g"`
+	if [ -z "$DPID" ]; then
+		## calculate right offset when doing static analisys
+		offset=$(( `xc $offset` - $mem + $dsk ))
+	fi
+	call=`echo $LINE |awk '{print $3}'`
+	case "$call" in
+		"00") CALL="LINUX_sys_setup[sys_ni_syscall]" ;;
+		"01") CALL="LINUX_sys_exit" ;;
+		"02") CALL="LINUX_sys_fork" ;;
+		"03") CALL="LINUX_sys_read" ;;
+		"04") CALL="LINUX_sys_write" ;;
+		"05") CALL="LINUX_sys_open" ;;
+		"06") CALL="LINUX_sys_close" ;;
+		"07") CALL="LINUX_sys_waitpid" ;;
+		"00") CALL="LINUX_sys_creat" ;;
+		"00") CALL="LINUX_sys_link" ;;
+		"0a") CALL="LINUX_sys_unlink" ;;
+		"0b") CALL="LINUX_sys_execve" ;;
+		"0c") CALL="LINUX_sys_chdir" ;;
+		"0d") CALL="LINUX_sys_time" ;;
+		"0e") CALL="LINUX_sys_mknod" ;;
+		"0f") CALL="LINUX_sys_chmod" ;;
+		"10") CALL="LINUX_sys_lchown" ;;
+		"11") CALL="LINUX_sys_break[sys_ni_syscall]" ;;
+		"12") CALL="LINUX_sys_oldstat[sys_stat]" ;;
+		"13") CALL="LINUX_sys_lseek" ;;
+		"14") CALL="LINUX_sys_getpid" ;;
+		"15") CALL="LINUX_sys_mount" ;;
+		"16") CALL="LINUX_sys_umount[sys_oldumount]" ;;
+		"17") CALL="LINUX_sys_setuid" ;;
+		"18") CALL="LINUX_sys_getuid" ;;
+		"19") CALL="LINUX_sys_stime" ;;
+		"1a") CALL="LINUX_sys_ptrace" ;;
+		"1b") CALL="LINUX_sys_alarm" ;;
+		"1c") CALL="LINUX_sys_oldfstat[sys_fstat]" ;;
+		"1d") CALL="LINUX_sys_pause" ;;
+		"1e") CALL="LINUX_sys_utime" ;;
+		"1f") CALL="LINUX_sys_stty[sys_ni_syscall]" ;;
+		"20") CALL="LINUX_sys_gtty[sys_ni_syscall]" ;;
+		"21") CALL="LINUX_sys_access" ;;
+		"22") CALL="LINUX_sys_nice" ;;
+		"23") CALL="LINUX_sys_ftime[sys_ni_syscall]" ;;
+		"24") CALL="LINUX_sys_sync" ;;
+		"25") CALL="LINUX_sys_kill" ;;
+		"26") CALL="LINUX_sys_rename" ;;
+		"27") CALL="LINUX_sys_mkdir" ;;
+		"28") CALL="LINUX_sys_rmdir" ;;
+		"29") CALL="LINUX_sys_dup" ;;
+		"2a") CALL="LINUX_sys_pipe" ;;
+		"2b") CALL="LINUX_sys_times" ;;
+		"2c") CALL="LINUX_sys_prof[sys_ni_syscall]" ;;
+		"2d") CALL="LINUX_sys_brk" ;;
+		"2e") CALL="LINUX_sys_setgid" ;;
+		"2f") CALL="LINUX_sys_getgid" ;;
+		"30") CALL="LINUX_sys_signal" ;;
+		"31") CALL="LINUX_sys_geteuid" ;;
+		"32") CALL="LINUX_sys_getegid" ;;
+		"33") CALL="LINUX_sys_acct" ;;
+		"34") CALL="LINUX_sys_umount2[sys_umount]" ;;
+		"35") CALL="LINUX_sys_lock[sys_ni_syscall]" ;;
+		"36") CALL="LINUX_sys_ioctl" ;;
+		"37") CALL="LINUX_sys_fcntl" ;;
+		"38") CALL="LINUX_sys_mpx[sys_ni_syscall]" ;;
+		"39") CALL="LINUX_sys_setpgid" ;;
+		"3a") CALL="LINUX_sys_ulimit[sys_ni_syscall]" ;;
+		"3b") CALL="LINUX_sys_oldolduname" ;;
+		"3c") CALL="LINUX_sys_umask" ;;
+		"3d") CALL="LINUX_sys_chroot" ;;
+		"3e") CALL="LINUX_sys_ustat" ;;
+		"3f") CALL="LINUX_sys_dup2" ;;
+		"40") CALL="LINUX_sys_getppid" ;;
+		"41") CALL="LINUX_sys_getpgrp" ;;
+		"42") CALL="LINUX_sys_setsid" ;;
+		"43") CALL="LINUX_sys_sigaction" ;;
+		"44") CALL="LINUX_sys_sgetmask" ;;
+		"45") CALL="LINUX_sys_ssetmask" ;;
+		"46") CALL="LINUX_sys_setreuid" ;;
+		"47") CALL="LINUX_sys_setregid" ;;
+		"48") CALL="LINUX_sys_sigsuspend" ;;
+		"49") CALL="LINUX_sys_sigpending" ;;
+		"4a") CALL="LINUX_sys_sethostname" ;;
+		"4b") CALL="LINUX_sys_setrlimit" ;;
+		"4c") CALL="LINUX_sys_getrlimit" ;;
+		"4d") CALL="LINUX_sys_getrusage" ;;
+		"4e") CALL="LINUX_sys_gettimeofday" ;;
+		"4f") CALL="LINUX_sys_settimeofday" ;;
+		"50") CALL="LINUX_sys_getgroups" ;;
+		"51") CALL="LINUX_sys_setgroups" ;;
+		"52") CALL="LINUX_sys_select[old_select]" ;;
+		"53") CALL="LINUX_sys_symlink" ;;
+		"54") CALL="LINUX_sys_oldlstat[sys_lstat]" ;;
+		"55") CALL="LINUX_sys_readlink" ;;
+		"56") CALL="LINUX_sys_uselib" ;;
+		"57") CALL="LINUX_sys_swapon" ;;
+		"58") CALL="LINUX_sys_reboot" ;;
+		"59") CALL="LINUX_sys_readdir[old_readdir]" ;;
+		"5a") CALL="LINUX_sys_mmap[old_mmap]" ;;
+		"5b") CALL="LINUX_sys_munmap" ;;
+		"5c") CALL="LINUX_sys_truncate" ;;
+		"5d") CALL="LINUX_sys_ftruncate" ;;
+		"5e") CALL="LINUX_sys_fchmod" ;;
+		"5f") CALL="LINUX_sys_fchown" ;;
+		"60") CALL="LINUX_sys_getpriority" ;;
+		"61") CALL="LINUX_sys_setpriority" ;;
+		"62") CALL="LINUX_sys_profil[sys_ni_syscall]" ;;
+		"63") CALL="LINUX_sys_statfs" ;;
+		"64") CALL="LINUX_sys_fstatfs" ;;
+		"65") CALL="LINUX_sys_ioperm" ;;
+		"66") CALL="LINUX_sys_socketcall" ;;
+		"67") CALL="LINUX_sys_syslog" ;;
+		"68") CALL="LINUX_sys_setitimer" ;;
+		"69") CALL="LINUX_sys_getitimer" ;;
+		"6a") CALL="LINUX_sys_stat[sys_newstat]" ;;
+		"6b") CALL="LINUX_sys_lstat[sys_newlstat]" ;;
+		"6c") CALL="LINUX_sys_fstat[sys_newfstat]" ;;
+		"6d") CALL="LINUX_sys_olduname[sys_uname]" ;;
+		"6e") CALL="LINUX_sys_iopl" ;;
+		"6f") CALL="LINUX_sys_vhangup" ;;
+		"70") CALL="LINUX_sys_idle" ;;
+		"71") CALL="LINUX_sys_vm86old" ;;
+		"72") CALL="LINUX_sys_wait4" ;;
+		"73") CALL="LINUX_sys_swapoff" ;;
+		"74") CALL="LINUX_sys_sysinfo" ;;
+		"75") CALL="LINUX_sys_ipc" ;;
+		"76") CALL="LINUX_sys_fsync" ;;
+		"77") CALL="LINUX_sys_sigreturn" ;;
+		"78") CALL="LINUX_sys_clone" ;;
+		"79") CALL="LINUX_sys_setdomainname" ;;
+		"7a") CALL="LINUX_sys_uname[sys_newuname]" ;;
+		"7b") CALL="LINUX_sys_modify_ldt" ;;
+		"7c") CALL="LINUX_sys_adjtimex" ;;
+		"7d") CALL="LINUX_sys_mprotect" ;;
+		"7e") CALL="LINUX_sys_sigprocmask" ;;
+		"7f") CALL="LINUX_sys_create_module" ;;
+		#"80") CALL="LINUX_sys_init_module" ;;
+		"81") CALL="LINUX_sys_delete_module" ;;
+		"82") CALL="LINUX_sys_get_kernel_syms" ;;
+		"83") CALL="LINUX_sys_quotactl" ;;
+		"84") CALL="LINUX_sys_getpgid" ;;
+		"85") CALL="LINUX_sys_fchdir" ;;
+		"86") CALL="LINUX_sys_bdflush" ;;
+		"87") CALL="LINUX_sys_sysfs" ;;
+		"88") CALL="LINUX_sys_personality" ;;
+		"89") CALL="LINUX_sys_afs_syscall[sys_ni_syscall]" ;;
+		"8a") CALL="LINUX_sys_setfsuid" ;;
+		"8b") CALL="LINUX_sys_setfsgid" ;;
+		"8c") CALL="LINUX_sys__llseek[sys_lseek]" ;;
+		"8d") CALL="LINUX_sys_getdents" ;;
+		"8e") CALL="LINUX_sys__newselect[sys_select]" ;;
+		"8f") CALL="LINUX_sys_flock" ;;
+		"90") CALL="LINUX_sys_msync" ;;
+		"91") CALL="LINUX_sys_readv" ;;
+		"92") CALL="LINUX_sys_writev" ;;
+		"93") CALL="LINUX_sys_getsid" ;;
+		"94") CALL="LINUX_sys_fdatasync" ;;
+		"95") CALL="LINUX_sys__sysctl[sys_sysctl]" ;;
+		"96") CALL="LINUX_sys_mlock" ;;
+		"97") CALL="LINUX_sys_munlock" ;;
+		"98") CALL="LINUX_sys_mlockall" ;;
+		"99") CALL="LINUX_sys_munlockall" ;;
+		"9a") CALL="LINUX_sys_sched_setparam" ;;
+		"9b") CALL="LINUX_sys_sched_getparam" ;;
+		"9c") CALL="LINUX_sys_sched_setscheduler" ;;
+		"9d") CALL="LINUX_sys_sched_getscheduler" ;;
+		"9e") CALL="LINUX_sys_sched_yield" ;;
+		"9f") CALL="LINUX_sys_sched_get_priority_max" ;;
+		"a0") CALL="LINUX_sys_sched_get_priority_min" ;;
+		"a1") CALL="LINUX_sys_sched_rr_get_interval" ;;
+		"a2") CALL="LINUX_sys_nanosleep" ;;
+		"a3") CALL="LINUX_sys_mremap" ;;
+		"a4") CALL="LINUX_sys_setresuid" ;;
+		"a5") CALL="LINUX_sys_getresuid" ;;
+		"a6") CALL="LINUX_sys_vm86" ;;
+		"a7") CALL="LINUX_sys_query_module" ;;
+		"a8") CALL="LINUX_sys_poll" ;;
+		"a9") CALL="LINUX_sys_nfsservctl" ;;
+		"aa") CALL="LINUX_sys_setresgid" ;;
+		"ab") CALL="LINUX_sys_getresgid" ;;
+		"ac") CALL="LINUX_sys_prctl" ;;
+		"ad") CALL="LINUX_sys_rt_sigreturn" ;;
+		"ae") CALL="LINUX_sys_rt_sigaction" ;;
+		"af") CALL="LINUX_sys_rt_sigprocmask" ;;
+		"b0") CALL="LINUX_sys_rt_sigpending" ;;
+		"b1") CALL="LINUX_sys_rt_sigtimedwait" ;;
+		"b2") CALL="LINUX_sys_rt_sigqueueinfo" ;;
+		"b3") CALL="LINUX_sys_rt_sigsuspend" ;;
+		"b4") CALL="LINUX_sys_pread" ;;
+		"b5") CALL="LINUX_sys_pwrite" ;;
+		"b6") CALL="LINUX_sys_chown" ;;
+		"b7") CALL="LINUX_sys_getcwd" ;;
+		"b8") CALL="LINUX_sys_capget" ;;
+		"b9") CALL="LINUX_sys_capset" ;;
+		"ba") CALL="LINUX_sys_sigaltstack" ;;
+		"bb") CALL="LINUX_sys_sendfile" ;;
+		"bc") CALL="LINUX_sys_getpmsg[sys_ni_syscall]" ;;
+		"bd") CALL="LINUX_sys_putpmsg[sys_ni_syscall]" ;;
+		"be") CALL="LINUX_sys_vfork" ;;
+
+		"80")
+			pre=`echo $LINE |awk '{print $2}'`
+			if [ "$pre" = "cd" ]; then
+				echo ":fn $CALL @ $offset" 
+				cont=$(( $cont + 1 ))
+			else
+				CALL="LINUX_sys_init_module"
+			fi
+		;;
+	esac
+done
+
+rm -f $TMPF
+echo "$cont syscalls added." > /dev/stderr

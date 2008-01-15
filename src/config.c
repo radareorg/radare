@@ -461,8 +461,10 @@ void config_init()
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
+	config_set_i("asm.nbytes", 10); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
+	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
 	config_set("asm.split", "true"); // split code blocks
 	config_set("asm.size", "false"); // opcode size

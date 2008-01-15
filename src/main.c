@@ -89,7 +89,8 @@ int main(int argc, char **argv, char **envp)
 				sizeof(off_t)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
 				(HAVE_PERL)?  "perl "  :"",
 				(HAVE_PYTHON)?"python ":"",
-				(DEBUGGER)?   "dbg"    :"");
+				(DEBUGGER)?   "dbg "   :"",
+				(HAVE_VALAC)? "vala"   :"");
 			return 0;
 		case 'u':
 			config.unksize = 1;
