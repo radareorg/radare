@@ -9,7 +9,29 @@
 
 + EH - event handling (event type + source pid)
   using linked list.h
+* wa doesnt handle file resize
+* show 'single chars' in disassembly
+* inv -> make offsets take sense
+  - make cursor bytes take sense too
+* dinamic block size defined by:
+  - height of screen
+  - <tags> (set inigial and end binary tags)
+    - allow to move forward/backward between 'bintags'
+* wtrace
+  - rename to stepw
+* cfg.dbgbsize (default block size for debugger)
+* breakpoints
+  - command
+  - log (trace)
+  - enabled
 * RDB TO GML
+* tracejar lq toqui una addr de mem
+  - colorejar les parts de codi tracejades
+  - marcar una columna mes al disasm
+* zoom
+  - use stego before
+* keybinding assignment dosnt workz
+* bucles als grafos
 
 * support size of pointer with [xxx] get_offset expressions
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
@@ -52,6 +74,7 @@ Bugs
   - poder escollir totes les fletxes a lesqerra o 2 panels amb '|'
 
 * import esteve's object injector
+* rename Y to yy
 
 
 Rabin

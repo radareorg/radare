@@ -102,19 +102,43 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
+	int bar = config_get("asm.linesout");
+	int cow= 0;
 	char ch = ' ';
 
 	if (!list)
 		return;
 
 	pstrcat(" ");
-	//list_for_each_prev(pos, &(list->list)) {
-	// list_for_each
 #define head &(list->list)
 	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
 		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
 		if (config.interrupted)
 			break;
+
+		if (addr == ref->to)
+			cow = 1;
+		if (addr == ref->from)
+			cow = 2;
+
+		if (!bar) {
+			if (ref->to < config.seek || ref->to > config.seek + config.block_size) {
+				if (addr > ref->from && addr < ref->to )
+					pprintf(" ");
+				else
+				if (addr > ref->to && addr < ref->from )
+					pprintf(" ");
+				else
+				if (addr < ref->from && addr > ref->to)
+					if (cow == 1) pprintf("-");
+					else
+					if (cow == 2) pprintf("=");
+					else pprintf(" ");
+				else
+				pprintf("%c", ch);
+				continue;
+			}
+		}
 
 		if (addr == ref->to) {
 			if (ref->from > ref->to)
@@ -132,7 +156,7 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 		} else {
 			if (ref->from < ref->to) {
 				/* down */
-				C pstrcat(C_BYELLOW);
+				C pstrcat(C_YELLOW);
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
 						pstrcat("(");
@@ -143,11 +167,11 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 						if (ch=='-')
 							pprintf(C_WHITE"-");
 						else if (ch=='=')
-							pprintf(C_BYELLOW"=");
+							pprintf(C_YELLOW"=");
 						else pprintf("%c",ch);
 					} else pprintf("%c",ch);
 			} else {
-				C pstrcat(C_BWHITE);
+				C pstrcat(C_WHITE);
 				/* up */
 				if (addr < ref->from && addr > ref->to) {
 					if (ch=='-'||ch=='=')
@@ -161,14 +185,21 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 		}
 	}
 
-	if (ch=='-') {
-		C pstrcat(C_WHITE"-> ");
-		else pstrcat("-> ");
-	} else
-	if (ch=='=') {
-		C pstrcat(C_YELLOW"=< ");
-		else pstrcat("=< ");
-	} else	pstrcat("   ");
+	if (bar) {
+		if (cow==1) {
+			C pstrcat(C_WHITE"-> ");
+			else pstrcat("-> ");
+		} else
+		if (cow == 2) {
+			C pstrcat(C_YELLOW"=< ");
+			else pstrcat("=< ");
+		} else	pstrcat("   ");
+	} else {
+		if (cow==1) pstrcat(" > ");
+		else
+		if (cow==2) pstrcat(" < ");
+		else pstrcat("   ");
+	} 
 
 	C pprintf(C_RESET);
 }

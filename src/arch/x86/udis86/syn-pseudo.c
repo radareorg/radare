@@ -4,6 +4,11 @@
  * Copyright (c) 2002, 2003, 2004 Vivek Mohan <vivek@sig9.com>
  * All rights reserved. See (LICENSE)
  * -----------------------------------------------------------------------------
+ *
+ * syn-pseudo.c
+ * 
+ * Copyright (c) 2007, 2008
+ * Modification of the original source from Vivek Mohan by pancake <youterm.com>
  */
 
 #include <stdlib.h>

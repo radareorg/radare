@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -138,13 +138,13 @@ cmd_t cmds[] = {
 	{ "!contu"       , ARG_NULL, ARG_NULL   } , 
 	{ "!contsc"      , ARG_NULL     , ARG_NULL   } , 
 	{ "!contfork"    , ARG_NULL, ARG_NULL   } , 
-	{ "!regs"        , ARG_NULL     , ARG_NULL   } , 
 	{ "!syms"        , ARG_NULL     , ARG_NULL   } , 
 	{ "!pstree"       , ARG_NULL     , ARG_NULL   } , 
 	{ "!pid"       , ARG_NULL     , ARG_NULL   } , 
 	{ "!maps"        , ARG_NULL     , ARG_NULL   } , 
 	{ "!regs"        , ARG_NULL     , ARG_NULL   } , 
 	{ "!regs*"       , ARG_NULL     , ARG_NULL   } , 
+	{ "!lregs"       , ARG_NULL     , ARG_NULL   } , 
 	{ "!oregs"       , ARG_NULL     , ARG_NULL   } , 
 	{ "!bp"          , ARG_NUMBER   , ARG_NULL   } , 
 	{ "!wp"          , ARG_NUMBER   , ARG_NULL   } , 
@@ -179,6 +179,9 @@ cmd_t cmds[] = {
 	{ "./s *"        , ARG_NULL     , ARG_NULL   } , 
 	{ "open"         , ARG_FILENAME , ARG_NULL   } , 
 	{ "p"            , ARG_NULL     , ARG_NULL   } , 
+	{ "pIx"          , ARG_NUMBER   , ARG_NULL   } ,
+	{ "pIX"          , ARG_NUMBER   , ARG_NULL   } ,
+	{ "pIo"          , ARG_NUMBER   , ARG_NULL   } ,
 	{ "pa"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "pb"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "pc"           , ARG_NUMBER   , ARG_NULL   } , 
@@ -203,7 +206,12 @@ cmd_t cmds[] = {
 	{ "pl"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "pL"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "P"            , ARG_NULL     , ARG_NULL   } , 
-	{ "u"            , ARG_NULL     , ARG_NULL   } , 
+	{ "undo"         , ARG_NULL     , ARG_NULL   } , 
+	{ "ulist"        , ARG_NULL     , ARG_NULL   } , 
+	{ "uu"           , ARG_NULL     , ARG_NULL   } , 
+	{ "u?"           , ARG_NULL     , ARG_NULL   } , 
+	{ "u!"           , ARG_NULL     , ARG_NULL   } , 
+	{ "u*"           , ARG_NULL     , ARG_NULL   } , 
 	{ "#!perl"       , ARG_NULL     , ARG_NULL   } , 
 	{ "#!python"     , ARG_NULL     , ARG_NULL   } , 
 	{ "#all"         , ARG_NULL     , ARG_NULL   } , 

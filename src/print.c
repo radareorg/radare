@@ -247,8 +247,9 @@ void radare_dump_and_process(int type, int size)
  */
 void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
 {
-	int tmp, i = 0, j = 0;
+	int tmp, i, j;
 	unsigned char buffer[4];
+	unsigned char *bufi; // inverted buffer
 	int lines = 0;
 	int x,y;
 	// code anal
@@ -259,6 +260,13 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	last_print_format = print_fmt;
 	if (buf == NULL)
 		return;
+
+	if (mode & FMT_INV) {
+		bufi = (unsigned char *)malloc(len);
+		for(i=0;i<len;i++)
+			bufi[i] = buf[len-i-1];
+		buf = bufi;
+	}
 
 	if (len <= 0) len = config.block_size;
 
@@ -282,7 +290,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		break;
 	case FMT_CODE: {
 		char cmd[1024];
-		int i = 0;
 		prg = code_analyze(config.seek+config.baddr, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		list_for_each(head, &(prg->blocks)) {
@@ -431,10 +438,10 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		lines = 0;
                 for(i = 0; i < len; i++) {
 			V if (lines>config.height-4)
-					return;
+					break;
                         if (!(i%inc)) {
 				if (++lines>config.height-4) 
-					return;
+					break;
 				NEWLINE; pprintf(".byte ");
 			}
 			print_color_byte_i(i, "0x%02x", config.block[i]);
@@ -455,14 +462,14 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 				NEWLINE; 
 				V if (++j+5>config.height)
 					D if ((i/inc)+5 > config.height )
-						return;
+						break;
 			}
 		}
 		pprintf(" };\n");
 		break;
 	case FMT_BIN:
 		if (config.width<30)
-			return;
+			break;
 		inc = (int)((config.width-17)/11);
 		D {
 			INILINE;
@@ -478,7 +485,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			C pprintf(C_RESET);
 		}
 		for(i=0; i<len; i++) {
-			V if ((i/inc)+5>config.height) return;
+			V if ((i/inc)+5>config.height) break;
 			D print_addr(seek+i+config.baddr);
 			for(j = i+inc; i<j && i<len; i++) {
 				C pprintf(get_color_for(buf[i]));
@@ -508,7 +515,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			NEWLINE;
 		}
 		for(i=0;i<len;i++) {
-			V if ((i/inc)+6>config.height) return;
+			V if ((i/inc)+6>config.height) break;
 			D print_addr(seek+i+config.baddr);
 			tmp = i;
 			for(j=i+inc;i<j && i<len;i++) {
@@ -586,7 +593,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		off_t ptr = config.zoom.from;
 	
 		if (!mode)
-			return;
+			break;
 
 		config.zoom.piece = config.size / config.block_size ;
 		print_fmt = FMT_HEXB;
@@ -605,12 +612,11 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			io_lseek(config.fd, ptr, SEEK_SET);
 			io_read(config.fd, buf, sz);
 			switch(mode[0]) {
+			case 'p': // % printable chars
+				config.block[i] = (unsigned char)2.55*hash_pcprint(buf, sz);
+				break;
 			case 'e': // entropy
-				/*
- 				 * TODO: add hashser inside core!
-				 * config.block[i] = (int)get_px(buf, 
-				 */
-				config.block[i] = (unsigned char)hash_entropy(buf, config.zoom.piece);
+				config.block[i] = (unsigned char)hash_entropy(buf, sz);
 				break;
 			//case 'f': // first
 			default:
@@ -690,6 +696,9 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	default:
 		eprintf("Don't know how to print %d\n", print_fmt);
 	}
+
+	if (mode & FMT_INV)
+		free(bufi);
 
 	fflush(stdout);
 }

@@ -17,17 +17,16 @@ extern int dec;
 #define INILINE
 #undef NEWLINE
 #define NEWLINE pprintf_newline();
-//fflush(stdout); write(_print_fd,"\n", 1);
-//#define NEWLINE D { int i; fflush(stdout); write(_print_fd,"\n", 1); for(i=1;i<config.x;i++) write(_print_fd," ", 1); } else { fflush(stdout); write(_print_fd, "\n", 1); }
-#define ANSINL  "\e[%d;%dH"
 
+/* inverted print block */
+#define FMT_INV 0x8000
 typedef enum {
 	FMT_ERR   = -1,
 	FMT_BIN,  FMT_FLOAT,  FMT_INT,   FMT_LONG,  FMT_LLONG,     FMT_OCT,
 	FMT_RAW,  FMT_ASC,    FMT_URLE,  FMT_CSTR,  FMT_TIME_UNIX, FMT_TIME_DOS,
 	FMT_TIME_FTIME,       FMT_HEXQ,  FMT_HEXD,  FMT_HEXW,      FMT_HEXB,
 	FMT_HEXBS,FMT_REGEXP, FMT_SHORT, FMT_VISUAL,FMT_ASHC,      FMT_DISAS, FMT_UDIS,
-	FMT_PRINT, FMT_ASCP,   FMT_ASC0,  FMT_WASC0, FMT_DBG,       FMT_ANAL, FMT_CODE,
+	FMT_PRINT, FMT_ASCP,  FMT_ASC0,  FMT_WASC0, FMT_DBG,       FMT_ANAL, FMT_CODE,
 	FMT_CODEGRAPH, FMT_ZOOM
 } print_fmt_t;
 

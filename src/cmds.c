@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  * Copyright (C) 2006 Lluis Vilanova <xscript@gmx.net>
  *
@@ -123,8 +123,8 @@ command_t commands[] = {
 	COMMAND('V', "",               "Visual  go visual mode", visual),
 	COMMAND('w', "[x] [string]",   "write   write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine the same as p/x", examine),
-	COMMAND('y', " [length]",      "yank    copy n bytes from cursor to clipboard", yank),
-	COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
+	COMMAND('y', "[y] [length]",   "yank    copy n bytes from cursor to clipboard (yy=paste)", yank),
+	//COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
 	COMMAND('.', "[!cmd]|[ file]", "script  interpret a commands script", interpret),
 	COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
 	COMMAND('-', "[size]",         "prev    go to previous block (-= block_size)", prev),
@@ -531,6 +531,12 @@ CMD_DECL(print)
 	case '?':
 		format_show_help( fmt );
 		break;
+	case 'I':
+		fmt = format_get(input[1], fmt);
+		if (fmt == FMT_ERR)
+			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
+		else	radare_print(input+2, fmt, formats[fmt].mode|FMT_INV);
+		break;
 	default:
 		fmt = format_get(input[0], fmt);
 		if (fmt == FMT_ERR)
@@ -664,17 +670,28 @@ CMD_DECL(flag)
 CMD_DECL(undoseek)
 {
 	switch(input[0]) {
-	case '?':
+	case 'n':
+		undo_seek();
+	case '*':
+	case 'l':
 		undo_list();
 		break;
 	case '!':
+	case '-':
 		undo_reset();
 		break;
 	case 'u':
 		undo_redo();
 		break;
+	case '?':
 	default:
-		undo_seek();
+		pprintf(
+		"un   undo seek\n"
+		"uu   redo\n"
+		"u*   list all seeks done\n"
+		"u!   reset seek history\n"
+		"u?   help this help\n");
+		break;
 	}
 }
 
@@ -703,14 +720,8 @@ CMD_DECL(seek)
 		}
 
 		if (new_off<0) new_off = 0;
-#if 0
-		else
-		if ((config.size!=-1) && (new_off>config.size+config.baddr))
-			new_off = config.size+config.baddr;
-#endif
 		if (radare_seek(new_off, whence) < 0)
 			eprintf("Couldn't seek: %s\n", strerror(errno));
-		//else	D printf(OFF_FMT"\n", (off_t)config.seek);
 		undo_push();
 	} else {
 		if (text[0]!='\0')
@@ -772,6 +783,12 @@ CMD_DECL(write)
 		}
 		radare_poke(input+2);
 		break;
+	case 'A': {
+		unsigned char data[1024];
+		snprintf(data, 1023, "wx `!rsc asm '%s'", input + 2);
+		radare_command(data, 0);
+		}
+		break;
 	case 'a': {
 		// TODO: use config.cursor here
 		unsigned char data[256];
@@ -791,6 +808,7 @@ CMD_DECL(write)
 			eprintf("Please. use 'wx 00 11 22'\n");
 			return;
 		}
+eprintf("write\n");
 		ret = radare_write(input+2, WMODE_HEX);
 		break;
 	case 'w':
@@ -806,11 +824,12 @@ CMD_DECL(write)
 	case '?':
 		eprintf(
 		"Usage: w[?|w|x|f] [argument]\n"
-		"  w  [string]  - write plain with escaped chars string\n"
-		"  wa [opcode]  - write one opcode assembled using asm.arch\n"
-		"  ww [string]  - write wide chars (interlace 00s in string)\n"
-		"  wx [hexpair] - write hexpair string\n"
-		"  wf [file]    - write contents of file at current seek\n");
+		"  w  [string]   - write plain with escaped chars string\n"
+		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
+		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
+		"  ww [string]   - write wide chars (interlace 00s in string)\n"
+		"  wx [hexpair]  - write hexpair string\n"
+		"  wf [file]     - write contents of file at current seek\n");
 		break;
 	default:
 		eprintf("Usage: w[?|w|x|f] [argument]\n");
@@ -1020,9 +1039,8 @@ CMD_DECL(help)
 {
 	if (strlen(input)>0) {
 		off_t res = get_math(input);
-		printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
-		PRINT_BIN(res);
-		NEWLINE;
+		pprintf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+		PRINT_BIN(res); NEWLINE;
 	}
 	else show_help_message();
 }

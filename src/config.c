@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -59,8 +59,6 @@ int rdb_init()
 
 	return open(rdbfile, O_CREAT|O_APPEND|O_RDWR, 0644);
 }
-
-
 
 static void config_old_init()
 {
@@ -329,6 +327,12 @@ int config_zoombyte_callback(void *data)
 	} else
 	if (!strcmp(node->value, "entropy")) {
 		// ok
+	} else
+	if (!strcmp(node->value, "print")) {
+		// ok
+	} else
+	if (!strcmp(node->value, "printable")) {
+		// ok
 	} else {
 		free(node->value);
 		node->value = strdup("first");
@@ -464,27 +468,36 @@ void config_init()
 	config_set_i("asm.nbytes", 10); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
+	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
-	config_set("asm.split", "true"); // split code blocks
+	config_set("asm.split", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
 
 	config_set("cmd.user", "");
 	config_set("cmd.visual", "");
 	config_set("cmd.hit", "");
+	config_set("cmd.prompt", "");
+	config_set("cmd.vprompt", "");
 	config_set("cmd.bp", "");
 
 	config_set("file.identify", "false");
 	config_set("file.type", "");
 	config_set("file.flag", "false");
+	config_set("file.trace", "trace.log");
 	config_set("file.entrypoint", "");
 	config_set("file.rdb", "");
 	config_set_i("file.size", 0);
 	node = config_set_i("file.baddr", 0);
 	node->callback = &config_baddr_callback;
 
+	config_set("trace.bt", "false");
+	config_set("trace.sleep", "0");
+	config_set("trace.smart", "true");
+
 	config_set("cfg.noscript", "false");
 	config_set("cfg.encoding", "ascii"); // cp850
+	config_set_i("cfg.delta", 1024); // cp850
 	config_set("cfg.verbose", "true");
 	config_set("cfg.endian", "false");
 	node = config_set("cfg.write", "false");
@@ -504,7 +517,6 @@ void config_init()
 	config_set("dbg.maps", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
-	config_set("dbg.tracebt", "false");
 	config_set("dbg.contscbt", "true");
 	config_set("dbg.regs", "true");
 	config_set("dbg.stack", "true");
@@ -515,7 +527,6 @@ void config_init()
 	config_set("dbg.fullbt", "false"); // user backtrace or lib+user backtrace
 	config_set("dbg.bttype", "default"); // default, st and orig or so!
 	config_set("dbg.bptype", "hard"); // only soft vs hard
-	config_set("dbg.tracefile", "trace.log");
 	config_set("dbg.bep", "loader"); // loader, main
 
 	config_set("dir.home", getenv("HOME"));

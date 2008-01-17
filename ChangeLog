@@ -22,7 +22,7 @@ date: 20080114-02:20:37
     asm.lines = show line references for jumps and calls
     graph.jmpblocks = split blocks by jumps or not
 
------ version 0.9.3 -------
+----- version 0.9.2 -------
 
 2: b50238cf
 author: pancake@dazo

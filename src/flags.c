@@ -130,6 +130,7 @@ char *flag_name_by_offset(off_t offset)
 int string_flag_offset(char *buf, unsigned long long seek)
 {
 	unsigned int i;
+	int delta = (int)config_get_i("cfg.delta");
 	rad_flag_t *ref = NULL;
 
 	buf[0]='\0';
@@ -154,7 +155,7 @@ int string_flag_offset(char *buf, unsigned long long seek)
 		if (ul == 0)
 			sprintf(buf, "%s", ref->name);
 		else
-		if (ul >-0xffff && ul<0xffff)
+		if (ul >-delta && ul<delta)
 			sprintf(buf, "%s+0x%lx", ref->name, ul);
 		return 1;
 	}

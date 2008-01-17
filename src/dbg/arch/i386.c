@@ -885,7 +885,8 @@ int arch_print_registers(int rad, const char *mask)
 
 	if (mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
-		pprintf("%s\n", oregs_timestamp);
+		if (oregs_timestamp[0])
+			pprintf("%s\n", oregs_timestamp);
 	} else {
 		ret = debug_getregs(ps.tid, &regs);
 		if (ret < 0) {
@@ -893,10 +894,15 @@ int arch_print_registers(int rad, const char *mask)
 			return 1;
 		}
 	}
+
+	if (rad)
+		rad = 1;
+	if (mask[0]=='l')
+		rad = 2;
 	
-	if (rad) {
+	if (rad == 1) {
 		//pprintf("\n"); // stupid trick
-		pprintf("f eax_orig @ 0x%x\n", (int)R_OEAX(regs));
+		pprintf("f oeax @ 0x%x\n", (int)R_OEAX(regs));
 		pprintf("f eax @ 0x%x\n", (int)R_EAX(regs));
 		pprintf("f ebx @ 0x%x\n", (int)R_EBX(regs));
 		pprintf("f ecx @ 0x%x\n", (int)R_ECX(regs));
@@ -904,9 +910,24 @@ int arch_print_registers(int rad, const char *mask)
 		pprintf("f ebp @ 0x%x\n", (int)R_EBP(regs));
 		pprintf("f esi @ 0x%x\n", (int)R_ESI(regs));
 		pprintf("f edi @ 0x%x\n", (int)R_EDI(regs));
+		pprintf("f oeip @ 0x%x\n", (int)R_EIP(oregs));
 		pprintf("f eip @ 0x%x\n", (int)R_EIP(regs));
+		pprintf("f oesp @ 0x%x\n", (int)R_ESP(oregs));
 		pprintf("f esp @ 0x%x\n", (int)R_ESP(regs));
 		pprintf_flush();
+
+	} else
+	if (rad == 2) {
+			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
+			if (R_EBX(regs)!=R_EBX(oregs)) pprintf("ebx = 0x%08x (0x%08x) ", R_EBX(regs), R_EBX(oregs));
+			if (R_ECX(regs)!=R_ECX(oregs)) pprintf("ecx = 0x%08x (0x%08x) ", R_ECX(regs), R_ECX(oregs));
+			if (R_EDX(regs)!=R_EDX(oregs)) pprintf("edx = 0x%08x (0x%08x) ", R_EDX(regs), R_EDX(oregs));
+			if (R_ESI(regs)!=R_ESI(oregs)) pprintf("esi = 0x%08x (0x%08x) ", R_ESI(regs), R_ESI(oregs));
+			if (R_EDI(regs)!=R_EDI(oregs)) pprintf("edi = 0x%08x (0x%08x) ", R_EDI(regs), R_EDI(oregs));
+			if (R_EBP(regs)!=R_EBP(oregs)) pprintf("ebp = 0x%08x (0x%08x) ", R_EBP(regs), R_EBP(oregs));
+			if (R_ESP(regs)!=R_ESP(oregs)) pprintf("esp = 0x%08x (0x%08x) ", R_ESP(regs), R_ESP(oregs));
+			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) pprintf("eflags = 0x%04x (0x%04x)", R_EFLAGS(regs), R_EFLAGS(oregs));
+			NEWLINE;
 	} else {
 		if (color) {
 			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("\e[35m");
@@ -924,14 +945,13 @@ int arch_print_registers(int rad, const char *mask)
 			pprintf("    oeax   0x%08x\e[0m\n",   R_OEAX(regs));
 			if (R_ECX(regs)!=R_ECX(oregs)) pprintf("\e[35m");
 			pprintf("  ecx  0x%08x\e[0m", R_ECX(regs));
-			if (R_ESP(regs)!=R_ESP(oregs)) printf("\e[35m");
+			if (R_ESP(regs)!=R_ESP(oregs)) pprintf("\e[35m");
 			pprintf("    esp  0x%08x\e[0m", R_ESP(regs));
 			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) pprintf("\e[35m");
-			//pprintf("    eflags 0x%04x  ", R_EFLAGS(regs));
 			pprintf("    eflags 0x%04x  \n", R_EFLAGS(regs));
-			if (R_EDX(regs)!=R_EDX(oregs)) printf("\e[35m");
+			if (R_EDX(regs)!=R_EDX(oregs)) pprintf("\e[35m");
 			pprintf("  edx  0x%08x\e[0m", R_EDX(regs));
-			if (R_EBP(regs)!=R_EBP(oregs)) printf("\e[35m");
+			if (R_EBP(regs)!=R_EBP(oregs)) pprintf("\e[35m");
 			pprintf("    ebp  0x%08x\e[0m    ", R_EBP(regs));
 			
 			dump_eflags(R_EFLAGS(regs));
@@ -947,13 +967,13 @@ int arch_print_registers(int rad, const char *mask)
 			dump_eflags(R_EFLAGS(regs));
 		}
 
-		if (memcmp(&nregs,&regs, sizeof(regs_t))) {
-			getHTTPDate(&oregs_timestamp);
-			memcpy(&oregs, &nregs, sizeof(regs_t));
-			memcpy(&nregs, &regs, sizeof(regs_t));
-		} else {
-			memcpy(&nregs, &regs, sizeof(regs_t));
-		}
+	}
+	if (memcmp(&nregs,&regs, sizeof(regs_t))) {
+		getHTTPDate(&oregs_timestamp);
+		memcpy(&oregs, &nregs, sizeof(regs_t));
+		memcpy(&nregs, &regs, sizeof(regs_t));
+	} else {
+		memcpy(&nregs, &regs, sizeof(regs_t));
 	}
 
 	return 0;

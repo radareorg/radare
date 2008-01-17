@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -149,6 +149,7 @@ int stripstr_iterate(const unsigned char *buf, int i, off_t offset, char *match)
 			if ((!match) || (match && strstr(str, match)) ){
 				D pprintf("0x%08x %c %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', str);
 				else pprintf("%s\n", str);
+				pprintf_flush();
 			}
 		}
 		matches = 0;

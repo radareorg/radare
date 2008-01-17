@@ -13,7 +13,6 @@ extern const char hex[16];
 #define TMPFILE_MAX 50
 #define BUFLEN 4096
 #define CMPMIN(a,b) (a<b? a : b)
-#define ANSINLARGS config.y, config.x
 
 void eprintf(const char *format, ...);
 void pprintf(const char *format, ...);

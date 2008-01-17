@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -69,10 +69,10 @@ void undo_list()
 {
 	int i;
 	if (undos_idx<1)
-		printf("-no seeks yet-\n");
+		printf("-no seeks done-\n");
 	else
 	for(i=undos_idx-1;i!=0;i--) {
-		printf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
+		pprintf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
 		NEWLINE;
 	}
 }

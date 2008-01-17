@@ -18,11 +18,25 @@
  *
  */
 
+/* returns 0-100 */
+int hash_pcprint(unsigned char *buffer, int len)
+{
+	unsigned char *end = buffer + len;
+	int n = 0;
+
+	for(;buffer<end; buffer = buffer + 1)
+		if (is_printable(buffer[0]))
+			n++;
+
+	return ((100*n)/len);
+}
+
 int hash_par(unsigned char *buffer, int len)
 {
-	unsigned int i, ones=0;
-	for(i=0;i<len;i++) {
-		unsigned char x = buffer[i];
+	unsigned char *end;
+	unsigned int ones = 0;
+	for(;buffer<end; buffer = buffer + 1) {
+		#define x buffer[0]
 		ones += ((x&128)?1:0) + ((x&64)?1:0) + ((x&32)?1:0) + ((x&16)?1:0) +
 			((x&8)?1:0) + ((x&4)?1:0) + ((x&2)?1:0) + ((x&1)?1:0);
 	}

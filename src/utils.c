@@ -512,7 +512,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 	unsigned int len = 0, j = 0;
 
 	for (ptr = in; ;ptr = ptr + 1) {
-		if (ptr[0]==':' || ptr[0]==0x52 || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r')
+		if (ptr[0]==':' || ptr[0]==0x52 || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r' || ptr[0]== ' ')
 			continue;
 		if (j==2) {
 			if (j>0) {
@@ -528,7 +528,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 
 		d = c;
 		if (hex2int(&c, ptr[0])) {
-			eprintf("binstr: Invalid hexa string at char '0x%02x'.\n", ptr[0]);
+			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
 			return 0;
 		}
 		c |= d;

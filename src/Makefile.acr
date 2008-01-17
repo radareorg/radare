@@ -15,7 +15,7 @@ OBJ+=plugins/gdb.o plugins/posix.o
 
 MAEMO_OBJ=/usr/lib/libreadline.a /usr/lib/libtermcap.a
 
-OBJ+=hasher/entropy.o
+OBJ+=hasher/entropy.o hasher/hash.o
 
 # arch
 
@@ -75,7 +75,9 @@ RADARE_LDFLAGS+=-lpython2.4
 
 .PHONY: all pre radare radare-hash radare-xc javasm radare-xrefs clean
 
-all: ${TARGETS} udis86 armasm pre radare librdb radare-hash radare-xc radare-xrefs javasm
+all: ${TARGETS} udis86 armasm \
+	lsbstego pre radare librdb radare-hash \
+	radare-xc radare-xrefs javasm
 	@true
 
 vala:
@@ -101,6 +103,9 @@ radare: ${OBJ}
 
 javasm:
 	${CC} -DJAVA_ASM_MAIN arch/java/javasm.c -g -o javasm
+
+lsbstego: lsbstego.o
+	${CC} lsbstego.o -g -o lsbstego
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all

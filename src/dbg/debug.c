@@ -49,6 +49,15 @@
 #include "thread.h"
 #include "signal.h"
 
+void debug_dumpcore()
+{
+#if __NetBSD__
+	ptrace(PT_DUMPCORE, ps.pid, NULL, 0);
+#else
+	eprintf("Not supported for this platform\n");
+#endif
+}
+
 int debug_syms()
 {
 	// XXX: native implementation
@@ -1049,6 +1058,16 @@ int debug_fpregisters(int rad)
 	return arch_print_fpregisters(rad, "");
 }
 
+int debug_dregisters(int rad)
+{
+	if (!ps.opened) {
+		eprintf(":regs No program loaded.\n");
+		return 1;
+	}
+
+	return arch_print_registers(rad, "line");
+}
+
 int debug_oregisters(int rad)
 {
 	if (!ps.opened) {
@@ -1072,7 +1091,10 @@ int debug_registers(int rad)
 int debug_trace(char *input)
 {
 	int c = 0;
-	int tbt = (int)config_get("dbg.tracebt");
+	// TODO: file.trace ???
+	int tbt = (int)config_get("trace.bt");
+	long slip = (int)config_get_i("trace.sleep");
+	int smart = (int)config_get("trace.smart");
 	int level = atoi(input+1);
 	unsigned long pc;
 
@@ -1082,7 +1104,7 @@ int debug_trace(char *input)
 		printf("  1  show addresses\n");
 		printf("  2  address and disassembly\n");
 		printf("  3  address, disassembly and registers\n");
-		printf("  > eval dbg.tracebt = true\n");
+		printf("  > eval dbg.tracebt = true ; show backtrace\n");
 		return 0;
 	}
 
@@ -1090,40 +1112,48 @@ int debug_trace(char *input)
 	if (level == 0 && input[0]!='0')
 		level=2;
 
-	signal(SIGINT, &signal_step);
-	stepping_in_progress = 1;
+	radare_controlc();
 
-	while(stepping_in_progress && ps.opened && debug_step(1)) {
-		switch(level) {
-		case 0:
-			break;
-		case 1:
-			printf("0x%08x\n", arch_pc());
-			break;
-		case 2:
-		case 3:
-		default:
-			pc = arch_pc();
-			if (is_usercode(pc)) {
-				radare_seek((off_t)pc, SEEK_SET);
-				radare_read(0);
-				udis(10,1);
-				if (level == 3) {
-					debug_registers(0);
-					pprintf("\n");
+	while(!config.interrupted && ps.opened && debug_step(1)) {
+		if (smart) {
+			pprintf("[-] 0x%08x\n", arch_pc());
+			radare_command("s eip && f -eip", 0);
+			disassemble(20, 2);
+			radare_command("!dregs", 0);
+		} else {
+			switch(level) {
+			case 0:
+				break;
+			case 1:
+				pprintf("0x%08x\n", arch_pc());
+				break;
+			case 2:
+			case 3:
+			default:
+				pc = arch_pc();
+				if (is_usercode(pc)) {
+					radare_seek((off_t)pc, SEEK_SET);
+					radare_read(0);
+					udis(10,1);
+					if (level == 3) {
+						debug_registers(0);
+						pprintf("\n");
+					}
+					if (tbt) {
+						// XXX must be internal call
+						radare_command("!bt", 0);
+					}
 				}
-				if (tbt) {
-					// XXX must be internal call
-					radare_command("!bt", 0);
-				}
+				fflush(stdout);
+				break;
 			}
-			fflush(stdout);
-			break;
 		}
+		pprintf_flush();
+		if (slip)
+			sleep(slip);
 	}
 
-	stepping_in_progress = 0;
-	signal(SIGINT, SIG_IGN);
+	radare_controlc_end();
 
 	if (ps.opened==0)
 		debug_load();

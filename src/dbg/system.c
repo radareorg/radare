@@ -26,40 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if 0
-static inline off_t get_offset(const char *arg)
-{
-	int i;
-	char *ptr;
-	char var[1024];
-	off_t ret = (off_t)0;
-
-	snprintf(var, 1000, "flag_%s", arg);
-	ptr = getenv(var);
-	if (ptr)
-		arg = ptr;
-
-	for(i=0;arg[i]==' ';i++);
-	for(;arg[i]=='\\';i++); i++;
-
-	if (arg[i] == 'x')
-		sscanf(arg, OFF_FMTx, &ret);
-	else
-		sscanf(arg, OFF_FMTd, &ret);
-
-	return ret;
-}
-#endif
-
-void debug_dumpcore()
-{
-#if __NetBSD__
-	ptrace(PT_DUMPCORE, ps.pid, NULL, 0);
-#else
-	eprintf("Not supported for this platform\n");
-#endif
-}
-
 #define GETCOLOR int color = getv("COLOR");
 #define TITLE if (color) printf("\e[36m");
 #define TITLE_END if (color) printf("\e[0m");
@@ -131,7 +97,7 @@ int help_message()
 	TITLE
 	printf(" Registers\n");
 	TITLE_END
-	printf("  [o|fp]regs[*]   show registers (o=old, fp=fpu, *=radare)\n");
+	printf("  [o|d|fp]regs[*] show registers (o=old, d=diff, fp=fpu, *=radare)\n");
 	printf("  oregs[*]        show old registers information (* for radare)\n");
 	printf("  set [reg] [val] set a value for a register\n");
 #if __i386__
@@ -208,6 +174,7 @@ static struct commads_t {
 	{ "cont", CB_NOARGS, &debug_cont },
 	{ "regs", CB_ASTERISK, &debug_registers },
 	{ "oregs", CB_ASTERISK, &debug_oregisters },
+	{ "dregs", CB_ASTERISK, &debug_dregisters },
 	{ "fpregs", CB_NORMAL, &debug_fpregisters },
 #if __NetBSD__ || __OpenBSD__ || __Darwin__ || __MacOSX__
 	{ "ktrace", CB_NOARGS, &debug_ktrace },

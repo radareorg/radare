@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ CMD_DECL(stepu_in_dbg);
 CMD_DECL(stepo_in_dbg);
 CMD_DECL(xrefs_here);
 CMD_DECL(seek0);
+CMD_DECL(invert);
 CMD_DECL(add_comment);
 CMD_DECL(show_environ);
 CMD_DECL(edit_comment);
@@ -81,6 +82,7 @@ command_t keystrokes[] = {
 	COMMAND('=', 0, "insert assembly hack", insert_assembly_hack),
 	COMMAND('x', 1, "show xrefs of the current offset", xrefs_here),
 	COMMAND('i', 1, "show information", status),
+	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
 	COMMAND('w', 1, "write string", insert_string),
@@ -97,8 +99,9 @@ struct binding {
 	unsigned char key;
 	char *cmd;
 };
-int nbds = 0;
-struct binding *bds = NULL;
+static int nbds = 0;
+static struct binding *bds = NULL;
+static int inv = 0;
 
 void press_any_key()
 {
@@ -108,6 +111,13 @@ void press_any_key()
 	pprintf_flush();
 	read(0, &key, 1);
 	pstrcat("\e[2J\e[0;0H");
+}
+
+CMD_DECL(invert)
+{
+	if (inv)
+		inv = 0;
+	else	inv = FMT_INV;
 }
 
 CMD_DECL(show_environ)
@@ -182,7 +192,9 @@ CMD_DECL(add_comment)
 
 CMD_DECL(seek0)
 {
-       config.seek = 0;
+	if (config.cursor_mode)
+		config.cursor = 0;
+	else	config.seek = 0;
 }
 
 unsigned char *yank_buffer = NULL;
@@ -194,6 +206,10 @@ CMD_DECL(yank)
 	char *ptr = strchr(input, ' ');
 	if (ptr == NULL)
 		ptr = input;
+	if (ptr[0]=='y') {
+		cmd_yank_paste(input);
+		return;
+	}
 
 	free(yank_buffer);
 	yank_buffer_size = get_math(ptr);
@@ -320,13 +336,15 @@ CMD_DECL(seek_to_flag)
 
 CMD_DECL(seek_to_end)
 {
-	config.seek = config.size - config.block_size;
+	if (config.cursor_mode)
+		config.cursor = config.block_size - 1;
+	else	config.seek = config.size - config.block_size;
 }
 
 CMD_DECL(insert_assembly_rsc)
 {
 	if (!config_get("cfg.write")) {
-		fprintf(stderr, "Sorry, but you're not in read-write mode\n");
+		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
 		return;
 	}
@@ -334,7 +352,7 @@ CMD_DECL(insert_assembly_rsc)
 	printf("write assembly (end with ^d):\n");
 	fflush(stdout);
 	terminal_set_raw(0);
-	radare_command("wx `!rsc asm -", 0);
+	radare_command("wA -", 0);
 	terminal_set_raw(1);
 }
 
@@ -376,8 +394,6 @@ CMD_DECL(insert_assembly_hack)
 		printf(" 0 - nop one opcode\n");
 		printf(" 1 - negate jump (jz->jnz , ja->jbe, ..)\n");
 		printf(" 2 - force jmp (only for { 0f, 0x80-0x8f })\n");
-		printf(" 3 - insert jmp (TODO)\n");
-		printf(" 4 - insert call (TODO)\n");
 		printf(" 5 - add ret\n");
 		printf(" 6 - add ret with eax=0\n");
 		printf(" 7 - negate zero flag (TODO)\n");
@@ -549,6 +565,7 @@ void visual_show_help()
 	"b[k][cmd]  binds key 'k' to the specified command\n"
 	"D          delete current flag\n"
 	"m          applies rfile magic on this block\n"
+	"I          invert block (same as pIx or so)\n"
 	"y,Y        yank and Yankee aliases for copy and paste\n"
 	"f,F        go next, previous flag\n"
 	"h,j,k,l    scroll view to left, down, up, right.\n"
@@ -662,10 +679,8 @@ return 0;
 
 void visual_draw_screen()
 {
-	char *color;
+	char *ptr;
 	char buf[256];
-
-	color = config_get("cfg.color");
 
 	/* printage */
 	switch (last_print_format) {
@@ -686,15 +701,23 @@ void visual_draw_screen()
 		terminal_set_raw(1);
 	}
 	string_flag_offset(buf, config.seek);
-	pprintf("\e[0;0H[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s ] %s            \n",
+	pprintf("\e[0;0H[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor,
 		get_print_format_name(last_print_format),
+		(inv)?"inv ":"",
 		buf);
 
+	ptr = config_get("cmd.vprompt");
+	if (ptr&&ptr[0]) {
+		int tmp = last_print_format;
+		radare_command_raw(ptr, 0);
+		last_print_format = tmp;
+	}
+
 	radare_seek(config.seek, SEEK_SET);
-	radare_print("", last_print_format, MD_BLOCK);
+	radare_print("", last_print_format, MD_BLOCK|inv);
 	fflush(stdout);
 	pprintf_flush();
 }
@@ -704,6 +727,7 @@ static void ringring()
 	int h   = config.height;
 	int now = terminal_get_columns();
 
+	// TODO: use config.width here
 	if (!getenv("COLUMNS"))
 	if (now!=config.width || h!=config.height ) {
 		config.width = now;
@@ -912,7 +936,7 @@ CMD_DECL(visual)
 			terminal_set_raw(1);
 			if (line[0])
 				press_any_key();
-			//pstrcat("\e[2J\e[0;0H");
+			pstrcat("\e[2J\e[0;0H");
 			continue;
 		case 'b':
 			visual_bind_key();

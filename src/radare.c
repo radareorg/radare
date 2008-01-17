@@ -187,31 +187,6 @@ int radare_command_raw(char *tmp, int log)
 
 		unlink(file);
 	} else {
-		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
-			/* inline pipe */
-			piped = strchr(input, '`');
-			if (piped) {
-				int len;
-				char tmp[128];
-				char filebuf[4096];
-				piped[0]='\0';
-
-				pipe_stdout_to_tmp_file(tmp, piped+1);
-				fd = open(tmp, O_RDONLY);
-				if (fd == -1) {
-					perror("open");
-					free(oinput);
-					return 0;
-				}
-
-				len = read(fd, filebuf, 1024);
-				len += strlen(input) + 2;
-
-				input = realloc(input, len);
-				strcat(input, filebuf);
-				//piped[0]='`';
-			}
-
 			/* pipe */
 			piped = strchr(input, '|');
 			if (piped) {
@@ -225,9 +200,39 @@ int radare_command_raw(char *tmp, int log)
 				free(oinput);
 				return 1;
 			}
+		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
+			/* inline pipe */
+			piped = strchr(input, '`');
+			if (piped) {
+				int len;
+				int dif = input - oinput;
+				char tmp[128];
+				char filebuf[4096];
+				piped[0]='\0';
+
+				pipe_stdout_to_tmp_file(tmp, piped+1);
+				fd = open(tmp, O_RDONLY);
+				if (fd == -1) {
+					perror("open");
+					free(oinput);
+					return 0;
+				}
+
+				memset(filebuf, '\0', 2048);
+				len = read(fd, filebuf, 1024);
+				if (len<1) {
+					eprintf("cannot read?\n");
+					return 0;
+				}
+				len += strlen(input) + 5;
+				free(oinput);
+				input = oinput = malloc(len);
+				sprintf(oinput, "wx %s", filebuf);
+			}
+
 			/* temporally offset */
 			eof2 = strchr(input, '@');
-			if (eof2) {
+			if (eof2 && input && input[0]!='e') {
 				char *ptr = eof2+1;
 				eof2[0] = '\0';
 				tmpoff = config.seek;
@@ -314,6 +319,7 @@ int radare_command(char *tmp, int log)
 	if((log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
 		return 0;
 
+
 	// TODO : move to a dbg specific func outside here
 	if (config.debug && tmp && tmp[0]=='\0') {
 		radare_read(0);
@@ -327,6 +333,7 @@ int radare_command(char *tmp, int log)
 		p = last_print_format;
 
 		terminal_get_real_columns();
+		/* update flag registers */
 		radare_command(":.!regs*", 0);
 
 		if (config_get("dbg.stack")) {
@@ -503,6 +510,17 @@ void radare_prompt_command()
 	int tmp; /* preserve print format */
 	struct dirent *de;
 
+	/* user defined command */
+	ptr = config_get("cmd.prompt");
+	if (ptr&&ptr[0]) {
+		int tmp = last_print_format;
+		radare_command_raw(ptr, 0);
+		last_print_format = tmp;
+	}
+
+	if (config.debug)
+		radare_command(".!regs*", 0);
+
 	/* run the commands found in the monitor path directory */
 	*path='\0';
 	if ( (ptr = config_get("dir.monitor")) ) {
@@ -541,7 +559,6 @@ void radare_prompt_command()
 									file[i]='\0';
 							}
 							radare_command(file, 0);
-							//pprintf_flush();
 						}
 						pprintf_flush();
 						if (_print_fd != 1) // XXX stdout
@@ -609,7 +626,6 @@ int radare_prompt()
 
 		if (feof(stdin))
 			return 0;
-
 		radare_command(input, 1);
 
 		/* end of command */
@@ -827,7 +843,7 @@ int radare_go()
 			eprintf("Loading strings...press ^C when tired\n");
 			radare_command(".!rsc strings-flag $FILE", 0);
 		}
-		radare_set_block_size_i(200); // 48 bytes only by default in debugger
+		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("cfg.write", "true"); /* write mode enabled for the debugger */
 		config_set("cfg.verbose", "true"); /* write mode enabled for the debugger */
 		config.verbose = 1; // ?
