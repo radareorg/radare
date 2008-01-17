@@ -24,6 +24,7 @@ int debug_syms();
 int debug_system(const char *command);
 int debug_cont();
 int debug_contu();
+int debug_contuh();
 int debug_contsc();
 int debug_contscp();
 int debug_registers(int rad);

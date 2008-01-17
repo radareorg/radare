@@ -18,6 +18,12 @@
  *
  */
 
+static inline int is_printable (int c)
+{
+        if (c<' '||c>'~') return 0;
+        return 1;
+}
+
 /* returns 0-100 */
 int hash_pcprint(unsigned char *buffer, int len)
 {

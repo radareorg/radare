@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -83,6 +83,7 @@ int help_message()
 	printf("  stepret         continue until ret (TODO)\n");
 	printf("  cont            continue until bp, eof\n");
 	printf("  contu ([addr])  continue until user code, bp, eof (or addr if defined)\n");
+	printf("  contuh          continue until here (loop analysis)\n");
 	printf("  contsc          continue until next syscall\n");
 	printf("  contfork        continue until fork\n");
 #if __NetBSD__ || __OpenBSD__ || __Darwin__ || __MacOSX__
@@ -171,6 +172,7 @@ static struct commads_t {
 	{ "contsc", CB_NORMAL, &debug_contsc },
 	{ "contfork", CB_NOARGS, &debug_contfork },
 	{ "contu", CB_NOARGS, &debug_contu },
+	{ "contuh", CB_NOARGS, &debug_contuh },
 	{ "cont", CB_NOARGS, &debug_cont },
 	{ "regs", CB_ASTERISK, &debug_registers },
 	{ "oregs", CB_ASTERISK, &debug_oregisters },

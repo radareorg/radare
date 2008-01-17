@@ -583,6 +583,7 @@ void visual_show_help()
 	"F1         commands help\n"
 	"F2         set breakpoint (execute)\n"
 	"F3         set watchpoint (read)\n"
+	"F4         continue until here (!contuh)\n"
 	"F6         continue until syscall (!contsc)\n"
 	"F7         step in debugger user code (!step)\n"
 	"F8         step over in debugger (!stepo)\n"
@@ -827,6 +828,10 @@ CMD_DECL(visual)
 					radare_command(line,0);
 					terminal_set_raw(1);
 					press_any_key();
+					CLRSCR();
+					continue;
+				case 4: // F4 - watchpoint
+					radare_command("!contuh", 0);
 					CLRSCR();
 					continue;
 #endif

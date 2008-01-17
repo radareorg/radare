@@ -9,6 +9,56 @@
 
 + EH - event handling (event type + source pid)
   using linked list.h
+* flags
+  - symbol-flags must be source-sorted (i must be able to list all syms of a lib or so)
+  - rabin -something?
+* dwarf-addr2line integration
+* head handling (glibc at least)...too much work i think
+* add wii pluyin
+// asm plugin interface //
+* implement a dword array with all functions
+ - first one must be a name resolver
+* tracecc
+  - copy the program code on another buffer
+  - overwrite all code with 0xcc
+  - not portable, coz arm mixes data and code
+  - continue until breakpoints
+* analize input/output of function calls
+  - bp enter
+  - bp exit
+  - useful to reverse packer VMs
+* totes les funcions internes ficarles en un punter accesible dsd els plugins
+  - hardcoded addres or passed to the plugin_init
+  - pass &config pointer
+  - pass &core pointer
+* print hexpairs without spaces :pX
+* !contuh -> continue until _here_
+   - F4 in ollydbg
+   - useful to analize loopz
+   - should set a bp out of the loop manually
+* linked list of !hacks
+   - add 'hack' plugin type
+* implement move data inside the core
+* implement insert data inda core
+* record radare commands
+  - all commands executed within a recording time are stored on a single script file
+  - you can later repeat it or edit
+
+/k keyword
+/k0 keyword
+/k1 keyword2
+/km0 keyword0-binarymask
+
+* !trace [N] -> trace N instructions
+* MSB stego
+* Show FPU stack contents
+* exception frame information (try { ... } catch stuff)
+* ram dump driver for w32
+* switch table decompilation
+* virtual machine decompilation -> helpers for debugging soft VM opcodes (new user-defined archs)
+* implement bindiff in the core
+  - Allow to bindiff two data blocks or repeated data blocks (src,dst,len)
+  - use the pattern finding algorithm
 * wa doesnt handle file resize
 * show 'single chars' in disassembly
 * inv -> make offsets take sense

@@ -1373,6 +1373,17 @@ int print_syscall()
 	return arch_print_syscall();
 }
 
+int debug_contuh(char *arg)
+{
+	off_t off = arch_pc();
+	int bp;
+	debug_step(1);
+	bp = debug_set_bp(NULL, off, BP_SOFT);
+	debug_cont();
+	restore_bp();
+	debug_rm_bp_num(bp);
+}
+
 int debug_contsc(char *arg)
 {
 	int ret;
@@ -1395,6 +1406,7 @@ int debug_contsc(char *arg)
 		/* print status */
 		debug_print_wait(NULL);
 		ret = print_syscall();
+		/// XXX this code skips breakpoints!!
 
 		// Oops detect cadavers here
 		if (!ps.opened)
