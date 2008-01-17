@@ -1,0 +1,107 @@
+Wii plugin for radare
+=====================                                  --pancake
+
+
+  * NOTE * This paper is just a draft.         * NOTE *
+  * NOTE * Implementation is under development * NOTE *
+
+
+Introduction:
+=============
+
+  This plugin allows radare to connect to a Wii directly using
+  the USB Gecko gadget and using the libftd2xx for the USB
+  communication.
+
+  The server side of radare must run in Wii (or gamecube?).
+
+  Here's the obligatory ascii art:
+
+
+       ,------ Usb Gecko -------.
+      V                         |
+      '                         V    ..      Laptop running
+    .-G.  Wii console             .-' +\        radare on
+    |' "'.       ___           .-'     \\   GNU/Linux or w32
+    |  '.,'     /   \          \<    R  \\
+    |    || <- |  o._|          \\     .-').
+    '.  :||     \__\/            \\ .-'.-'_'|-.
+      \ |||                       'o_-.-':'   ."
+       \|.'     RadareWiiDaemon     '=_'   .-' 
+                                       "--'
+
+  1) Boot the RadareWiiDaemon DOL into the Wii
+
+  2) Connect the USB Gecko to the Wii and the terminal
+
+  3) Start radare from dah shell:
+
+     > open the ram
+     $ radare wii://ram
+
+     > open video ram (can perform screenshots :)
+     $ radare wii://vram
+
+     > open the nand for reading and writing
+     $ radare -w wii://nand
+
+     > start debugger
+     $ radare wii://dbg
+
+
+
+Internally:
+===========
+
+ Source is found at src/plugins/wii directory.
+
+ Native wii code is under the ppc/ directory.
+  - code for read/write nand
+  - code to manage usb communications
+
+ UsbGecko uses the libftd2xx library to get a serial
+ console via usb to the gadget from the pc.
+
+ This library is proprietary. But there are blobs:
+
+    http://www.ftdichip.com/Drivers/D2XX/Linux/libftd2xx0.4.13.tar.gz
+
+ This is the userland 'driver' for communicating with the gecko card
+ and get a serial line.
+
+ Wii plugin uses the Gecko api that uses the FTd2xx driver
+
+      ======                        ======
+      Client                        Wii(R)
+      ======                        ======
+
+  +--------------+           +------------------+
+  |  Wii plugin  |           |  RadareWiiDaemon | -- remote protocol
+  +--------------+           +------------------+
+  |  Gecko API   |           |       Wii(R)     |
+  +--------------+           +------------------+
+  |   FTd2xx     |           |    Gecko card    |
+  +--------------+           +------------------+
+         |                            |
+         '-----------[ usb ]----------'
+
+ The radre wii daemon is a piece of code that is compiled into a
+ DOL binary that can be booted via CD and USB.
+
+ The daemon waits for commands commands in the protocol specified
+ in remote.c, that allows to wrap all basic IO and system() via
+ serial line (socket, serial port, usb, etc..)
+
+ Would be really cool if we were able to handle the native Gecko commands,
+ but seems there is no specification for this protocol and only GeckoTool
+ can be used ...
+
+
+
+Current state
+=============
+
+  Not yet working, just a big puzzle of little pieces.
+
+
+Feel free to contribute!

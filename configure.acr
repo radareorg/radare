@@ -30,6 +30,7 @@ IFNOT HAVE_USB_H { USBSNF = 0 ; }
 (( acr option flags ))
 ARG_WITH DEBUGGER debugger enables the debugging layer ;
 ARG_WITH JAVA java builds the java api ;
+ARG_WITH WII wii builds the wii plugin for usbgecko ;
 
 ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
@@ -74,7 +75,7 @@ IFNULL GTK_FLAGS { GUI = 0 ; }
 PKGCFG VTE_FLAGS VTE_LIBS vte
 IFNULL VTE_FLAGS { GUI = 0 ; }
 
-REPORT GUI VALA JAVA USBSNF SYSPROXY HAVE_PERL HAVE_PYTHON DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+REPORT GUI WII VALA JAVA USBSNF SYSPROXY HAVE_PERL HAVE_PYTHON DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
 SUBDIRS . ./config.mk src src/rsc src/rfile ;

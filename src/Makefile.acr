@@ -41,6 +41,10 @@ OBJ2+=${psOBJ}
 TARGETS+=libdbg 
 ##DEBUGGER##
 
+##WII##
+OBJ+=plugins/wii/wii.o
+##WII##
+
 ##SYSPROXY##
 OBJ2+=../rasc/sysproxy.o ../rasc/syscall-linux.o ../rasc/rpc.o
 CFLAGS+=-DSYSPROXY
