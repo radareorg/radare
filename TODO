@@ -32,6 +32,7 @@
   - use stego before
 * keybinding assignment dosnt workz
 * bucles als grafos
+* trace.libcode = trace libcode or not?
 
 * support size of pointer with [xxx] get_offset expressions
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]

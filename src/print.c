@@ -34,37 +34,39 @@ float hash_entropy(char *data, size_t size);
 int inc = 16;
 int dec = 16;
 format_info_t formats[] = {
-	{ 'b', FMT_BIN,        MD_BLOCK,  "binary",                 "N bytes",    "entire block" },
-	{ 'o', FMT_OCT,        MD_BLOCK,  "octal",                  "N bytes",    "entire block" },
-	{ 'O', FMT_ZOOM,       MD_BLOCK,  "Whole file overview",    "entire file", "entire block" },
-	{ 'c', FMT_CSTR,       MD_BLOCK,  "C format",               "N bytes",    "entire block" },
-	{ 'C', FMT_CODE,       MD_BLOCK,  "Code Analysis",          "N bytes",    "entire block" },
-	{ 'G', FMT_CODEGRAPH,  MD_BLOCK,  "Code Analysis Graph",    "N bytes",    "entire block" },
 	{ 'a', FMT_ASHC,       MD_BLOCK,  "asm shellcode",          NULL,         "entire block" },
 	{ 'A', FMT_ANAL,       MD_BLOCK,  "analyze data",           NULL,         "entire block" },
-	{ 'r', FMT_RAW,        MD_BLOCK,  "raw ascii",              NULL,         "entire block" },
-	{ 'u', FMT_URLE,       MD_BLOCK,  "URL encoding",           NULL,         "entire block" },
-	{ 'p', FMT_PRINT,      MD_BLOCK,  ".%PRINTCMD",             NULL,         "entire block" },
-	{ 'v', FMT_VISUAL,     MD_BLOCK,  ".%VISUALCMD",            NULL,         "entire block" },
-	{ 's', FMT_ASC,        MD_BLOCK,  "ascii",                  NULL,         "entire block" },
-	{ 'S', FMT_ASCP,       MD_BLOCK,  "ascii printable",        NULL,         "entire block" },
-	{ 'z', FMT_ASC0,       MD_BLOCK,  "ascii null terminated",  NULL,         "until \\0" },
-	{ 'Z', FMT_WASC0,      MD_BLOCK,  "wide ascii null end",    NULL,         "until \\0" },
-	{ 'd', FMT_DISAS,      MD_BLOCK,  "(asm.objdump) disassembly",  "bsize bytes", "entire block" },
-	{ 'D', FMT_UDIS,       MD_BLOCK,  "(asm.arch) disassembler",   "bsize bytes", "entire block" },
-	{ 'X', FMT_HEXBS,      MD_BLOCK,  "hexadecimal string",	   "N byte", 	  "entire block" },
-	{ 'x', FMT_HEXB,       MD_BLOCK,  "hexadecimal byte pairs","N byte", 	  "entire block" },
-	{ 't', FMT_TIME_UNIX,  MD_BLOCK,  "unix timestamp",        "4 bytes",	  "(endian)"},
-	{ 'T', FMT_TIME_DOS,   MD_BLOCK,  "dos timestamp",         "4 bytes",	  "(endian)"},
+	{ 'b', FMT_BIN,        MD_BLOCK,  "binary",                 "N bytes",    "entire block" },
+	{ 'B', FMT_LSB,        MD_BLOCK,  "LSB Stego analysis",     "N bytes",    "entire block" },
+	{ 'c', FMT_CSTR,       MD_BLOCK,  "C format",               "N bytes",    "entire block" },
+	{ 'C', FMT_CODE,       MD_BLOCK,  "Code Analysis",          "N bytes",    "entire block" },
+	{ 'h', FMT_SHORT,      MD_BLOCK,  "short",                 "2 bytes",     "(endian)"},
+	{ 'd', FMT_DISAS,      MD_BLOCK,  "asm.objdump disassembly",  "bsize bytes", "entire block" },
+	{ 'D', FMT_UDIS,       MD_BLOCK,  "asm.arch disassembler",   "bsize bytes", "entire block" },
 	{ 'f', FMT_FLOAT,      MD_BLOCK,  "float",                 "4 bytes",     "(endian)"},
 	{ 'F', FMT_TIME_FTIME, MD_BLOCK,  "windows filetime",      "8 bytes",     "(endian)"},
-	{ 'h', FMT_SHORT,      MD_BLOCK,  "short",                 "2 bytes",     "(endian)"},
+	{ 'G', FMT_CODEGRAPH,  MD_BLOCK,  "Code Analysis Graph",    "N bytes",    "entire block" },
 	{ 'i', FMT_INT,        MD_BLOCK,  "integer",               "4 bytes",     "(endian)"},
 	{ 'l', FMT_LONG,       MD_BLOCK,  "long",                  "4 bytes",     "(endian)"},
 	{ 'L', FMT_LLONG,      MD_BLOCK,  "long long",             "8 bytes",     "(endian)"},
+	{ 'o', FMT_OCT,        MD_BLOCK,  "octal",                  "N bytes",    "entire block" },
+	{ 'O', FMT_ZOOM,       MD_BLOCK,  "Zoom out view",          "entire file", "entire block" },
+	{ 'p', FMT_PRINT,      MD_BLOCK,  "cmd.prompt",              NULL,         "entire block" },
 	{ 'q', FMT_HEXQ,       MD_BLOCK,  "hexadecimal quad-word", "8 bytes",	  "(endian)"},
-	{ 'W', FMT_HEXD,       MD_BLOCK,  "hexadecimal dword",     "4 bytes",     "(endian)"},
+	{ 'r', FMT_RAW,        MD_BLOCK,  "raw ascii",              NULL,         "entire block" },
+	{ 's', FMT_ASC,        MD_BLOCK,  "ascii",                  NULL,         "entire block" },
+	{ 'S', FMT_ASCP,       MD_BLOCK,  "ascii printable",        NULL,         "entire block" },
+	{ 't', FMT_TIME_UNIX,  MD_BLOCK,  "unix timestamp",        "4 bytes",	  "(endian)"},
+	{ 'T', FMT_TIME_DOS,   MD_BLOCK,  "dos timestamp",         "4 bytes",	  "(endian)"},
+	{ 'u', FMT_URLE,       MD_BLOCK,  "URL encoding",           NULL,         "entire block" },
+	{ 'U', FMT_USER,       MD_BLOCK,  "executes cmd.user",      NULL,         "entire block" },
+	{ 'v', FMT_VISUAL,     MD_BLOCK,  "executes cmd.vprompt",            NULL,         "entire block" },
 	{ 'w', FMT_HEXW,       MD_BLOCK,  "hexadecimal word",      "2 bytes",	  "(endian)"},
+	{ 'W', FMT_HEXD,       MD_BLOCK,  "hexadecimal dword",     "4 bytes",     "(endian)"},
+	{ 'x', FMT_HEXB,       MD_BLOCK,  "hexadecimal byte pairs","N byte", 	  "entire block" },
+	{ 'X', FMT_HEXBS,      MD_BLOCK,  "hexadecimal string",	   "N byte", 	  "entire block" },
+	{ 'z', FMT_ASC0,       MD_BLOCK,  "ascii null terminated",  NULL,         "until \\0" },
+	{ 'Z', FMT_WASC0,      MD_BLOCK,  "wide ascii null end",    NULL,         "until \\0" },
 	{ 0, 0, 0, NULL }
 };
 
@@ -359,6 +361,42 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			D { NEWLINE; } else pprintf(" ");
 		} }
 		break;
+	case FMT_LSB: {
+		int length = len;
+		int bit, byte = 0;
+		char dbyte;
+		int lsb = 0;
+		/* original code from lsbstego.c of Roman Medina */
+		for ( byte = 0 ; byte < length ; )
+		{
+			dbyte = 0;
+
+			for (bit = 0; bit <= 7; bit++, byte++)
+			{
+				// TODO handle inverse (backward)
+
+				/* Obtain Least Significant Bit */
+				lsb = config.block[byte] & 1;
+
+				/* Add lsb to decrypted message */
+				#if 0
+				if (downward)
+					dbyte = dbyte | lsb << (7-bit) ;
+				else
+				#endif
+					dbyte = dbyte | lsb << bit ;
+			}
+
+			if (is_printable(dbyte))
+				pprintf ("%c", dbyte);
+		}
+		NEWLINE;
+		} break;
+	case FMT_USER: {
+		const char *ptr = config_get("cmd.user");
+		if (ptr && ptr[0])
+			radare_command(ptr, 0);
+		} break;
 	case FMT_LLONG: {
 		long long *ll;
 		INILINE;
@@ -546,7 +584,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		NEWLINE;
 		break;
 	case FMT_ASC0:
-		printf("%s", buf);
+		pprintf("%s", buf);
 		NEWLINE;
 		break;
 	case FMT_ASC:

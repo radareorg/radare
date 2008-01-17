@@ -808,7 +808,6 @@ CMD_DECL(write)
 			eprintf("Please. use 'wx 00 11 22'\n");
 			return;
 		}
-eprintf("write\n");
 		ret = radare_write(input+2, WMODE_HEX);
 		break;
 	case 'w':

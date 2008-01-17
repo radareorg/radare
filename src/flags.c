@@ -44,6 +44,7 @@ void flag_help()
 	"  f -sym_*     ; remove all flags starting with 'sym_'\n");
 }
 
+// TODO: implement bubble sort with cache
 rad_flag_t *flag_get_i(int id)
 {
 	int i,j = 0;
@@ -67,6 +68,9 @@ rad_flag_t *flag_get(const char *name)
 	register int i;
 
 	if (name == NULL)
+		return NULL;
+
+	if (name[0]>='0'&& name[0]<='9')
 		return NULL;
 
 	for(i=0;i<nflags;i++)
