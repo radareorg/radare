@@ -638,33 +638,21 @@ CMD_DECL(flag)
 	for(;*text&&iswhitespace(*text);text=text+1);
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';
 
-	if (input[0]=='?') {
-		flag_help();
-		return;
-	}
-	if (input[0]=='d') {
-		print_flag_offset(config.seek);
-		NEWLINE;
-		return;
-	}
-
-	if (text[0]=='\0') {
-		flag_list(text);
-		return;
-	}
-	if (text[0]=='-') {
-		flag_clear(text+1);
-		return;
-	}
-
-	ret = flag_set(text, config.seek, input[0]=='n');
-	D if (ret) {
-		if (!config.debug)
-			eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
-	} else {
-		flags_setenv();
-		eprintf("flag '%s' at "OFF_FMT" and size %d\n",
-			text, config.seek, config.block_size);
+	if (input[0]=='?') { flag_help(); } else
+	if (input[0]=='d') { print_flag_offset(config.seek); NEWLINE; } else
+	if (text[0]=='\0') { flag_list(text); } else
+	if (text[0]=='*') { flag_set("*",0,0); } else
+	if (text[0]=='-') { flag_clear(text+1); }
+	else {
+		ret = flag_set(text, config.seek, input[0]=='n');
+		D if (ret) {
+			if (!config.debug)
+				eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
+		} else {
+			flags_setenv();
+			eprintf("flag '%s' at "OFF_FMT" and size %d\n",
+				text, config.seek, config.block_size);
+		}
 	}
 }
 

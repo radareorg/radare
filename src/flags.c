@@ -342,7 +342,7 @@ int flag_set(const char *name, off_t addr, int dup)
 			for(i=0; i<nflags; i++) {
 				if (flag_is_empty(flags[i]))
 					continue;
-				pprintf("b 0x"OFF_FMTx"\n", flags[i]->length);
+			//	pprintf("b 0x"OFF_FMTx"\n", flags[i]->length);
 				pprintf("f %s @ 0x"OFF_FMTx"\n",
 					flags[i]->name, flags[i]->offset);
 			}

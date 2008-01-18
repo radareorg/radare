@@ -82,7 +82,7 @@ install:
 #	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}
 ##DEBUGGER##
 ##USBSNF##
-	${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
+	-${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
 ##USBSNF##
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
 	${INSTALL_SCRIPT} src/bug ${BINDIR}

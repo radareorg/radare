@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -18,13 +18,22 @@
  *
  */
 
+#include "rasc.h"
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include "rasc.h"
 #include <unistd.h>
+
+#if __UNIX__
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
+#if __WINDOWS__
+#include <windows.h>
+#endif
 
 #define BLOCK 4096
 int execute = 0;

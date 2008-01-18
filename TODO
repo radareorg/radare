@@ -9,6 +9,7 @@
 
 + EH - event handling (event type + source pid)
   using linked list.h
+* set ncols in lines
 * flags
   - symbol-flags must be source-sorted (i must be able to list all syms of a lib or so)
   - rabin -something?

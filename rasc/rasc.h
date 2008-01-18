@@ -1,3 +1,11 @@
+#undef __UNIX__
+#undef __WINDOWS__
+#if __WIN32__ || __CYGWIN__ || MINGW32
+#define __WINDOWS__ 1
+#else
+#define __UNIX__ 1
+#endif
+
 #include <stdio.h>
 
 struct shellcode_t {
