@@ -18,6 +18,7 @@
  *
  */
 
+#include "../libps2fd.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,7 +30,6 @@
 #include <asm/ptrace.h>
 #include <sys/procfs.h>
 #include <sys/syscall.h>
-#include "../libps2fd.h"
 
 long long arch_syscall(int pid, int sc, ...)
 {

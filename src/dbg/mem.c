@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       th0rpe <nopcode.org>
+ *       pancake <youterm.com>
  *
  * radare is part of the radare project
  *
@@ -24,7 +25,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#if __UNIX__
 #include <sys/mman.h>
+#endif
 #include "../main.h"
 #include "../utils.h"
 #include "../list.h"
@@ -311,7 +314,9 @@ void page_restore(const char *dir)
 			}
 			fread(buf, mr->size, 1, fd);
 			debug_write_at(ps.tid, buf, mr->size, mr->ini);
+#if __UNIX__
 			msync((long int*)mr->ini, mr->size, MS_SYNC);
+#endif
 			fclose(fd);
 			free(buf);
 		}
@@ -333,7 +338,11 @@ void page_dumper(const char *dir)
 			eprintf("No '/' permitted here.\n");
 			return;
 		}
+#if __WINDOWS__
+		if ( ( mkdir(dir) == -1) ||( chdir(dir) == -1)) {
+#else
 		if ( ( mkdir(dir, 0755) == -1) ||( chdir(dir) == -1)) {
+#endif
 			eprintf("No '/' permitted here.\n");
 			return;
 		}
@@ -355,7 +364,9 @@ void page_dumper(const char *dir)
 				eprintf("Oops. cannot open\n");
 				continue;
 			}
+#if __UNIX__
 			msync((long int*) mr->ini, mr->size, MS_SYNC);
+#endif
 			debug_read_at(ps.tid, buf, mr->size, mr->ini);
 			fwrite(buf,mr->size, 1, fd);
 			fclose(fd);

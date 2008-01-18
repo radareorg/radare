@@ -13,6 +13,12 @@ OBJ+=plugins/gdb.o plugins/posix.o
 
 # hand made maemo stuff
 
+W32LIBS=
+##W32##
+OBJ+=plugins/w32.o w32utils.o
+W32LIBS=-lwsock32
+##W32##
+
 MAEMO_OBJ=/usr/lib/libreadline.a /usr/lib/libtermcap.a
 
 OBJ+=hasher/entropy.o hasher/hash.o
@@ -51,7 +57,7 @@ CFLAGS+=-DSYSPROXY
 ##SYSPROXY##
 
 CFLAGS+=-DHAVE_PERL=${HAVE_PERL} -DHAVE_PYTHON=${HAVE_PYTHON} -DHAVE_VALAC=${HAVE_VALAC}
-CFLAGS+=-DHAVE_LIB_READLINE=${HAVE_LIB_READLINE} -DDATADIR=\"${DATADIR}\" -DLIBEXECDIR=\"${LIBEXECDIR}\"
+CFLAGS+=-DHAVE_LIB_READLINE=${HAVE_LIB_READLINE} -DLIBEXECDIR=\"${LIBEXECDIR}\"
 CFLAGS+=-DSIZEOF_OFF_T=${SIZEOF_OFF_T} -DDEBUGGER=${DEBUGGER} -DTARGET=\"${TARGET}\" -DRADARE_CORE -DHAVE_LIB_EWF=${HAVE_LIB_EWF}
 LDFLAGS+=${DL_LIBS}
 
@@ -76,6 +82,10 @@ CFLAGS+=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
 # NOTE: umf..-lncurses is only needed on debian?
 RADARE_LDFLAGS+=-lpython2.4
 ##HAVE_PYTHON##
+
+##W32##
+JAVASM_STUFF=w32utils.o -lwsock32
+##W32##
 
 .PHONY: all pre radare radare-hash radare-xc javasm radare-xrefs clean
 
@@ -103,13 +113,14 @@ udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
 radare: ${OBJ}
-	${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare ${OBJ} ${OBJ2}
+	${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
 
 javasm:
-	${CC} -DJAVA_ASM_MAIN arch/java/javasm.c -g -o javasm
+	-${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
+
 
 lsbstego: lsbstego.o
-	${CC} lsbstego.o -g -o lsbstego
+	${CC} lsbstego.o -g -o lsbstego${BINSFX}
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all
@@ -118,14 +129,18 @@ radare-hash:
 	-cd hasher && ${MAKE} all
 
 radare-xc: xc.o
-	${CC} ${CFLAGS} ${LDFLAGS} -o xc xc.o
+	${CC} ${CFLAGS} ${LDFLAGS} -o xc${BINSFX} xc.o
 	@#ln -fs radare xc # ???
 
 radare-xrefs: xrefs.o
-	${CC} ${CFLAGS} ${LDFLAGS} -o xrefs xrefs.o
+	${CC} ${CFLAGS} ${LDFLAGS} -o xrefs${BINSFX} xrefs.o
 
 clean:
+	-rm -f *.o
 	-cd arch/arm/aasm && ${MAKE} clean
-	${MAKE} -C hasher clean
+	-${MAKE} -C hasher clean
+	-${MAKE} -C rdb clean
+	-${MAKE} -C rabin clean
+	-${MAKE} -C rasm clean
 	-${MAKE} -C arch/x86/udis86 clean
-	-rm -rf xc.o xrefs.o ${OBJ} ${BIN} xrefs xc a.out
+	-rm -rf xc.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} xc${BINSFX} a.out a.exe

@@ -280,6 +280,6 @@ extern void ud_translate_intel(struct ud* u)
 	gen_operand(u, &u->operand[2], u->c3);
   }
 if (udis86_color)
-	pprintf("\e[0m");
+	printf("\e[0m");
 
 }

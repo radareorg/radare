@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -23,7 +23,6 @@
 
 //#if __i386__
 #include "../libps2fd.h"
-#include "../main.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -31,7 +30,7 @@
 #include <sys/types.h>
 
 #include <unistd.h>
-#if (__WIN32__ || __CYGWIN__)
+#if __WINDOWS__
 /* do nothing */
 #else
 #include <sys/syscall.h>
@@ -57,7 +56,7 @@ struct regs_off roff[] = {
 	{"edi", R_EDI_OFF},
 	{"eip", R_EIP_OFF},
 
-#if (__WIN32__ || __CYGWIN__)	
+#if __WINDOWS__
 	{"dr0", R_DR0_OFF},
 	{"dr1", R_DR1_OFF},
 	{"dr2", R_DR2_OFF},
@@ -605,7 +604,7 @@ int arch_call(char *arg)
 }
 
 
-#if (__WIN32__ || __CYGWIN__)
+#if __WINDOWS__
 int arch_print_fpregisters(int rad, const char *mask)
 {
 	eprintf("not work yet");		
@@ -805,9 +804,10 @@ int arch_print_syscall()
 }
 
 #include <time.h>
-#include <sys/utsname.h>
 void getHTTPDate(char *DATE)
 {
+#if __UNIX__
+#include <sys/utsname.h>
 	struct tm curt; /* current time */
 	time_t l;
 	char week_day[4], month[4];
@@ -868,6 +868,10 @@ void getHTTPDate(char *DATE)
 			week_day, curt.tm_mday, month, 
 			curt.tm_year + 1900, curt.tm_hour, 
 			curt.tm_min, curt.tm_sec);
+#else
+	DATE[0]='\0';
+
+#endif
 }
 
 static char oregs_timestamp[128];

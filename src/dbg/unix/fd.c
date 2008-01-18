@@ -23,6 +23,7 @@
 #include "../libps2fd.h"
 #include "../mem.h"
 #include "../arch/i386.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,20 +31,25 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <dirent.h>
-#include <sys/wait.h>
 #include <sys/types.h>
-#include <sys/ptrace.h>
+#include <dirent.h>
+
+#if __UNIX__
+#include <sys/wait.h>
 #include <sys/syscall.h>
+#include <sys/ptrace.h>
+#endif
+
 #if __linux__
 #include <sys/prctl.h>
 #endif
-#include <sys/stat.h>
 
 off_t debug_fd_seek(int pid, int fd, off_t addr, int whence)
 {
-	off_t ret;
+	off_t ret = 0;
+#if __UNIX__
 	ret = arch_syscall(pid, SYS_lseek, fd, addr, whence);
+#endif
 	//printf("seek(%d,%d,%d)->%06x\n", fd, (int)addr, whence, ret);
 	return ret;
 }
@@ -83,12 +89,20 @@ int debug_fd_list(int pid)
 
 int debug_fd_dup2(int pid, int oldfd, int newfd)
 {
+#if __UNIX__
 	return arch_syscall(pid, SYS_dup2, oldfd, newfd);
+#else
+#warning Implement fd debugger stuff for w32
+	return -1;
+#endif
 }
 
 int debug_fd_open(int pid, char *file, int mode)
 {
+#if __UNIX__
 	return arch_syscall(pid, SYS_open, file, mode);
+#endif
+	return -1;
 #if 0
 #if __i386__
         regs_t   reg, reg_saved;
@@ -152,5 +166,8 @@ int debug_fd_open(int pid, char *file, int mode)
 
 int debug_fd_close(int pid, int fd)
 {
+#if __UNIX__
 	return arch_syscall(pid, SYS_close, 'i', fd);
+#endif
+	return 0;
 }

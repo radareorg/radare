@@ -5,6 +5,7 @@ HAVE_VALAC=@HAVE_VALAC@
 CFLAGS=@CFLAGS@
 LDFLAGS=@LDFLAGS@
 JAVAC=javac -source 1.5 -Xlint:unchecked
+W32=@W32@
 
 CFLAGS+=-Wall
 # TODO move these stuff to config.h.acr
@@ -18,6 +19,13 @@ RADARE_OBJ+=plugins/ewf.o
 RADARE_LDFLAGS+=-lewf
 ##HAVE_LIB_EWF##
 
+BINSFX=
+DL_LIBS=@DL_LIBS@
+##W32##
+BINSFX=.exe
+DL_LIBS=
+##W32##
+
 ##SYSPROXY##
 CFLAGS+=-DSYSPROXY 
 SYSPROXY_OBJ+=sysproxy.o rpc.o syscall.S syscall-linux.o
@@ -30,7 +38,6 @@ RADARE_LDFLAGS+=-lsocket
 CPU=@TARGET_CPU@
 TARGET=@TARGET@
 SOLARIS=@SOLARIS@
-DL_LIBS=@DL_LIBS@
 
 DEBUGGER=@DEBUGGER@
 SYSPROXY=@SYSPROXY@

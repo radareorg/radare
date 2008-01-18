@@ -56,7 +56,7 @@ void debug_init_calls()
 		       	"GetThreadId");
 
 	if(win32_detach == NULL || win32_openthread == NULL ||
-	   win32_dbgbreak == NULL || win32_getthreadid) {
+	   win32_dbgbreak == NULL || win32_getthreadid == NULL) {
 		print_lasterr(__FUNCTION__);
 		exit(1);
 	}

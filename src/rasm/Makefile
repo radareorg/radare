@@ -1,8 +1,8 @@
 include ../../config.mk
-OBJ=rasm.o x86.o arm.o java.o ppc.o main.o
+OBJ=rasm.o x86.o arm.o java.o ppc.o main.o ../w32utils.o
 
 all: ${OBJ}
-	gcc ${OBJ} -o rasm ../utils.o
+	${CC} ${OBJ} -o rasm${BINSFX} ../utils.o
 
 clean:
-	-rm -f ${OBJ} rasm
+	-rm -f ${OBJ} rasm${BINSFX}

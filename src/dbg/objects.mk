@@ -7,7 +7,7 @@ CPU=i386
 endif
 
 
-ifeq ($(OS),Windows_NT) 
+ifeq ($(W32),1)
 psOBJ= dbg/win32/utils.o dbg/win32/debug.o
 psOBJ+= dbg/win32/fd.o dbg/win32/signal.o
 psOBJ+=dbg/arch/${CPU}-hack.o

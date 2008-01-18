@@ -20,7 +20,6 @@
  */
 
 #include "../libps2fd.h"
-#include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
 #include "../signal.h"
@@ -35,6 +34,20 @@ struct {
   {0, NULL, "Unknown signal"}
 };
 
-void print_sigh(char *signame, unsigned long handler)
+void debug_print_sigh(char *signame, unsigned long handler)
 {
+        switch (handler) {
+        case (long)SIG_DFL:
+                printf("%-10s (DEFAULT)\n", signame);
+                break;
+        case  (long)SIG_IGN:
+                printf("%-10s (IGNORE)\n", signame);
+                break;
+        case    -1:
+                printf("%-10s (ERROR)\n", signame);
+                break;
+        default:
+                printf("%-10s (0x%x)\n", signame, (unsigned int)handler);
+        }
 }
+

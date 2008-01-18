@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@youterm.com>
+ * Copyright (C) 2007, 2008
+ *       pancake <youterm.com>
  *
  * 'xrefs' is part of the radare project.
  *
@@ -90,8 +90,10 @@ match value ffffffad (ffffad) at offset 0x454
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#if __UNIX__
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#endif
 
 /* XXX: ufly hack : override radare version number */
 #if defined(VERSION)
@@ -355,11 +357,16 @@ int main(int argc, char **argv)
 	offset = get_offset(argv[optind+1]);
 
 	sa = file_size_fd(src) - size;
+#if __UNIX__
 	ma = mmap(NULL, sa, PROT_READ, MAP_SHARED, src, 0);
 	if (sa < 0x50) {
 		fprintf(stderr, "Minimum length is 0x50 bytes.\n");
 		return 1;
 	}
+#endif
+#if __WINDOWS__
+	fprintf(stderr, "Not yet implemented\n");
+#endif
 
 	/* configure environment */
 	sysendian = get_system_endian();

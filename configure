@@ -21,6 +21,7 @@ USBSNF=1
 DEBUGGER=0
 JAVA=0
 WII=0
+W32=0
 SYSPROXY=0
 VALA=1
 HAVE_PERL=0
@@ -147,6 +148,7 @@ printf "\nOptional Features:
   --with-debugger        enables the debugging layer 
   --with-java            builds the java api 
   --with-wii             builds the wii plugin for usbgecko 
+  --enable-w32           enables the build of w32 version of the framework (mingw32) 
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-perl            build with embedded perl extension 
@@ -197,7 +199,7 @@ echo "LANGS:     c perl python"
 echo "REQUIRED:  libdl"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
-echo "FLAGS:     --without-readline --without-usb-sniffer --with-debugger --with-java --with-wii --with-sysproxy --without-vala --with-perl --with-python --without-gui"
+echo "FLAGS:     --without-readline --without-usb-sniffer --with-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-perl --with-python --without-gui"
 	exit 0
 	;;
 "--cache-file") 
@@ -244,6 +246,7 @@ echo "FLAGS:     --without-readline --without-usb-sniffer --with-debugger --with
 "--with-debugger") DEBUGGER="1"; ;;
 "--with-java") JAVA="1"; ;;
 "--with-wii") WII="1"; ;;
+"--enable-w32") W32="1"; ;;
 "--with-sysproxy") SYSPROXY="1"; ;;
 "--without-vala") VALA="0"; ;;
 "--with-perl") HAVE_PERL="1"; ;;
@@ -263,7 +266,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII SYSPROXY VALA HAVE_VALAC VALAC WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF PERL HAVE_LANG_PERL HAVE_PM_EXTUTILSEMBED HAVE_PERL PYTHON HAVE_LANG_PYTHON HAVE_PYTHON GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY VALA HAVE_VALAC VALAC WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF PERL HAVE_LANG_PERL HAVE_PM_EXTUTILSEMBED HAVE_PERL PYTHON HAVE_LANG_PYTHON HAVE_PYTHON GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE"
 
 create_environ
 

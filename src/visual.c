@@ -25,10 +25,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <sys/stat.h>
+#if __UNIX__
+#include <termios.h>
 #include <sys/ioctl.h>
-#include "main.h"
+#endif
 #include "utils.h"
 #include "cmds.h"
 #include "dbg/arch/arch.h"
@@ -736,7 +737,9 @@ static void ringring()
 		visual_draw_screen();
 	}
 
+#if __UNIX__
 	go_alarm(ringring);
+#endif
 }
 
 static int repeat=0;
@@ -755,7 +758,9 @@ CMD_DECL(visual)
 		bds = (struct binding *)malloc(sizeof(struct binding));
 
 	unsetenv("COLUMNS");
+#if __UNIX__
 	go_alarm(ringring);
+#endif
 	config.visual = 1;
 
 	CLRSCR();
@@ -1131,7 +1136,9 @@ CMD_DECL(visual)
 		case 'Q':
 		case 'q':
 			setenv("VISUAL", "0", 1);
+#if __UNIX__
 			go_alarm(SIG_IGN);
+#endif
 			goto __visual_exit;
 		default:
 			if (!keystroke_run(key)) {

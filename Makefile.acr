@@ -35,9 +35,10 @@ radare:
 	cd src && ${MAKE} all
 
 clean:
-	cd rasc && ${MAKE} clean
-	cd gui && ${MAKE} clean
 	cd src && ${MAKE} clean
+	cd rasc && ${MAKE} clean
+	cd src/rabin && ${MAKE} clean
+	cd gui && ${MAKE} clean
 	cd src/dbg && ${MAKE} clean
 	cd java && ${MAKE} clean
 

@@ -6,7 +6,13 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "../../../main.h"
+#if __WINDOWS__
+#include <windows.h>
+#endif
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "types.h"
 #include "input.h"
 #include "opcmap.h"

@@ -1,13 +1,14 @@
 #ifndef _INCLUDE_LIBPS2FD_H_
 #define _INCLUDE_LIBPS2FD_H_
 
-#define _FILE_OFFSET_BITS 64
-#define _GNU_SOURCE
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
+#include "../main.h"
 
-#if (__WIN32__ | __CYGWIN__)
+#if __WINDOWS__
+
+#define PROT_READ 1
+#define PROT_WRITE 2
+#define PROT_EXEC 4
+
 #include <windows.h>
 #include <winbase.h>
 typedef struct {
@@ -54,6 +55,7 @@ typedef struct {
 #include <sys/ptrace.h>
 
 #endif
+
 #if __linux__
 #include <asm/ptrace.h>
 #endif
@@ -88,7 +90,7 @@ typedef struct {
   #define regs_t struct user_regs_struct
  #endif
 
-#elif (__WIN32__ | __CYGWIN__)
+#elif __WINDOWS__
   #define regs_t CONTEXTO
 #else
   /* bsd 32 bits */
@@ -137,6 +139,9 @@ typedef struct {
   #define regs_t struct user_regs_struct
 #endif
 #endif
+#if __WINDOWS__
+#define siginfo_t int
+#endif
 
 struct wait_state {
 	int event;
@@ -174,7 +179,7 @@ struct ps {
 	char *args;
 	char *argv[256];
 
-#if (__WIN32__ | __CYGWIN__)
+#if __WINDOWS__
 	PROCESS_INFORMATION pi;
 	#define WIN32_PI(f)	ps.pi.f
 #endif

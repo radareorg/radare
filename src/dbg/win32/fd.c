@@ -28,7 +28,6 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 

@@ -1,5 +1,8 @@
 include ../../config.mk
 
-all:
+all: rabin.o
 	#gcc ia4d*
-	gcc rabin.c ${DL_LIBS} -o rabin
+	${CC} rabin.o ${DL_LIBS} -o rabin${BINSFX}
+
+clean:
+	-rm -f rabin.o rabin${BINSFX}

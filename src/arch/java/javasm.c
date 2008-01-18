@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  *
  */
 
+#include "../../main.h"
+#if __UNIX__
+#include <arpa/inet.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdarg.h>
-#include <arpa/inet.h>
 
 /* alphabetically sorted */
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
@@ -596,20 +599,20 @@ int hexpair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 	return (int)c;
 }
 
-// returns length, alters arg
-int hexstr2binstr(unsigned char *arg) // 0A 3B 4E A0
+/* char buf[1024]; int len = hexstr2binstr("0a 33 45", buf); */
+int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 {
-	unsigned char *ptr;
+	const char *ptr;
 	unsigned char  c = '\0';
 	unsigned char  d = '\0';
 	unsigned int len = 0, j = 0;
 
-	for (ptr = arg; ;ptr = ptr + 1) {
-		if (ptr[0]==0x52 || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r')
+	for (ptr = in; ;ptr = ptr + 1) {
+		if (ptr[0]==':' || ptr[0]==0x52 || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r' || ptr[0]== ' ')
 			continue;
-		if (ptr[0]==' ' || j==2) {
+		if (j==2) {
 			if (j>0) {
-				arg[len] = c;
+				out[len] = c;
 				len++;
 				c = j = 0;
 			}
@@ -621,7 +624,7 @@ int hexstr2binstr(unsigned char *arg) // 0A 3B 4E A0
 
 		d = c;
 		if (hex2int(&c, ptr[0])) {
-			eprintf("binstr: Invalid hexa string at char '0x%02x'.\n", ptr[0]);
+			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
 			return 0;
 		}
 		c |= d;
@@ -655,7 +658,7 @@ int main(int argc, char **argv)
 			printf("\n");
 			return 0;
 		case 'd':
-			len = hexstr2binstr(optarg);
+			len = hexstr2binstr(optarg, optarg);
 			for(i=0;i<len;i+=j) {
 				j = java_disasm(optarg+i, output);
 				if (j>0) {

@@ -22,19 +22,20 @@
 #include "main.h"
 #include "radare.h"
 #include "rdb/rdb.h"
+#if __UNIX__
 #include <sys/ioctl.h>
+#include <regex.h>
+#include <termios.h>
+#include <netdb.h>
+#endif
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <regex.h>
-#include <termios.h>
 #include <sys/stat.h>
-#include <netdb.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
-#include "main.h"
 #include "search.h"
 #include "utils.h"
 #include "plugin.h"
@@ -749,22 +750,22 @@ CMD_DECL(status)
 #endif
 
 	INILINE;
-	printf(" file    %s",   config.file); NEWLINE;
-	printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
-	printf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
-	printf(" debug   %d",   config.debug); NEWLINE;
-	printf(" endian  %d   \t %s",   config.endian, config.endian?"big":"little"); NEWLINE;
+	pprintf(" file    %s",   config.file); NEWLINE;
+	pprintf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
+	pprintf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
+	pprintf(" debug   %d",   config.debug); NEWLINE;
+	pprintf(" endian  %d   \t %s",   config.endian, config.endian?"big":"little"); NEWLINE;
 //	printf(" count   %d   \t 0x%x", config.count, config.count); NEWLINE;
-	printf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
-	printf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
-	printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
+	pprintf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
+	pprintf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
+	pprintf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
 		(off_t)config.seek, (off_t)config.seek); NEWLINE;
-	printf(" delta   "); 
+	pprintf(" delta   "); 
 	fflush(stdout);
 	print_flag_offset(config.seek);
-	printf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
+	pprintf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
 		(off_t)config.size, (off_t)config.size); NEWLINE;
-	printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
+	pprintf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
 		(off_t)config.limit, (off_t)config.limit); NEWLINE;
 
 	if (config.debug)

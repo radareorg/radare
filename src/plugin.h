@@ -3,7 +3,6 @@
 
 #include "main.h"
 #include "utils.h"
-#include <dlfcn.h>
 
 #define FIND_FD(x) int i=0; if ( x ==-1 ) return -1; for(i=0; plugins[i].name && !plugins[i].handle_fd( x ); i++);
 #define FIND_OPEN(y) int i=0; for(i=0; plugins[i].name && !plugins[i].handle_open( y ); i++);

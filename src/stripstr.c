@@ -24,11 +24,13 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include "main.h"
 #include "utils.h"
+#if __UNIX__
+#include <sys/mman.h>
+#endif
 
 enum {
 	ENCODING_ASCII = 0,
@@ -199,6 +201,7 @@ int stripstr_from_file(const char *filename, int mini, off_t seek)
 
 	encoding = resolve_encoding(config_get("cfg.encoding"));
 
+#if __UNIX__
 	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
 	if (((int)buf) == -1 ) {
 		perror("mmap");
@@ -212,6 +215,10 @@ int stripstr_from_file(const char *filename, int mini, off_t seek)
 		stripstr_iterate(buf, i, i, NULL);
 	
 	munmap(buf, len); 
+#endif
+#if __WINDOWS__
+	eprintf("Not yet implemented\n");
+#endif
 	close(fd);
 
 	return 0;

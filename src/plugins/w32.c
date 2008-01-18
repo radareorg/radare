@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
  */
 
 #include <windows.h>
-#include "main.h"
-#include "plugin.h"
+#include "../main.h"
+#include "../plugin.h"
 
 static HANDLE hFile = NULL;
 static int w32_fd = -1;

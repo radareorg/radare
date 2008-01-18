@@ -51,16 +51,14 @@ int debug_close(int fd)
 				return -2;
 			case 'y': case 'Y': case '\n': case '\r':
 				/* TODO: w32 stuff here */
-#if __WIN32__ || __CYGWIN__
-#else
+#if __UNIX__
 				ptrace(PTRACE_KILL, ps.pid, 0, 0);
 				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
-#endif
 				kill(ps.pid, SIGKILL);
+#endif
 			case 'n': case 'N':
 				/* TODO: w32 stuff here */
-#if __WIND32__ || __CYGWIN__
-#else
+#if __UNIX__
 				ptrace(PTRACE_CONT, ps.pid, 0, 0);
 				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  *
  */
 
+#include "../main.h"
 #include <stdio.h>
-#include <dlfcn.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#if __UNIX__
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <dlfcn.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -125,6 +128,7 @@ void rabin_show_entrypoint()
 
 unsigned long addr_for_lib(char *name)
 {
+#if __UNIX__
 	unsigned long *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
 		dlclose(addr);
@@ -133,6 +137,8 @@ unsigned long addr_for_lib(char *name)
 		printf("cannot open '%s' library\n", name);
 		return 0;
 	}
+#endif
+	return 0;
 }
 
 void rabin_show_symbols()

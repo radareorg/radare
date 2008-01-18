@@ -35,7 +35,6 @@ DESCRIPTION
   complete graphical frontend.
 
 
-
 FEATURES
 
    rasc
@@ -173,6 +172,28 @@ FEATURES
   - full signalling control of the target process
   - /proc/pid/maps info support
   - ollydbg-like keybindings (F7 step , F9 continue, ...)
+
+
+BUILD
+
+ Mingw32:
+
+  $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui --with-debugger
+  $ make
+
+ Desktop GNU/Linux:
+
+  $ ./configure --prefix=/usr --with-debugger --with-sysproxy
+
+ BSD boxes:
+
+  $ CFLAGS=-I/usr/pkg/include LDFLAGS=-Wl,-R/usr/pkg/lib ./configure --prefix=/usr/pkg --with-debugger
+
+ Other unixes
+
+  $ ./configure --prefix=/usr --with-
+
+
 
 
 

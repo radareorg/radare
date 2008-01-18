@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007,2008
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -20,6 +20,9 @@
 
 #include "main.h"
 #include "plugin.h"
+#if __UNIX__
+#include <dlfcn.h>
+#endif
 
 plugin_t plugins[10];
 plugin_t plugins_backup[10];
@@ -50,6 +53,7 @@ plugin_t *plugin_registry(const char *file)
 		buf[0]='\0';
 	strcat(buf, ".so");
 
+#if __UNIX__
 	/* open library */
 	hd = (void *)dlopen(buf, RTLD_LAZY);
 	if (hd == NULL) {
@@ -59,6 +63,11 @@ plugin_t *plugin_registry(const char *file)
 
 	p = (plugin_t *)malloc(sizeof(plugin_t));
 	p = dlsym(p->handle, "posix_plugin");
+#endif
+#if __WINDOWS__
+	eprintf("TODO\n");
+	return NULL;
+#endif
 
 	sprintf(buf, "%s_plugin", file);
 	plugins[i] = *p;
@@ -89,13 +98,18 @@ void plugin_init()
 	/* load libraries in current directory */
 	/* load libraries in -l path */
 	plugins[0] = haret_plugin;
-#if __WIN32__
+#if __WINDOWS__
 	plugins[1] = w32_plugin;
 	plugins[2] = remote_plugin;
+  #if DEBUGGER
 	plugins[3] = debug_plugin;
 	plugins[4] = posix_plugin;
 	(debug_plugin.init)();
 	last = 4;
+  #else
+	plugins[3] = posix_plugin;
+	last = 3;
+  #endif
 #else
    #if DEBUGGER
 	plugins[1] = debug_plugin;

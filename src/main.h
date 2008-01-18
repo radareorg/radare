@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -34,5 +34,13 @@
 #include "flags.h"
 #include "utils.h"
 #include "plugin.h"
+
+#undef __UNIX__
+#undef __WINDOWS__
+#if __WIN32__ || __CYGWIN__ || MINGW32
+#define __WINDOWS__ 1
+#else
+#define __UNIX__ 1
+#endif
 
 #endif

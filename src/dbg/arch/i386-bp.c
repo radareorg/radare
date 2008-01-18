@@ -22,18 +22,14 @@
  */
 
 #include "../libps2fd.h"
+#include "../debug.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#if 0
-#if ( __WIN32__ || __CYGWIN__ )
-/* nothing */
-#else
+#if __UNIX__
 #include <sys/ptrace.h>
 #endif
-#endif
-
 
 #include <x86/udis86/types.h>
 #include <x86/udis86/extern.h>
@@ -65,7 +61,7 @@ static int dr_set (int reg, unsigned long val)
 
 	return ret;
 }
-#elif (__WIN32__ || __CYGWIN__)
+#elif __WINDOWS__
 
 inline static unsigned long dr_get(int reg)
 {

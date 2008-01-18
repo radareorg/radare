@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -20,8 +20,10 @@
  */
 
 #include "libps2fd.h"
+#if __UNIX__
 #include <sys/wait.h>
 #include <signal.h>
+#endif
 #include <stdio.h>
 #include "signal.h"
 

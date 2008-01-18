@@ -3,7 +3,7 @@ CFLAGS+=-DDATADIR=\"${DATADIR}\"
 AOBJ=aasm.o utils.o elf.o
 
 all: ${AOBJ}
-	gcc ${AOBJ} -o armasm
+	${CC} ${AOBJ} -o armasm
 
 clean:
 	rm ${AOBJ} armasm

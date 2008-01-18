@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -24,7 +24,6 @@
 #define TRACE printf("%s:%d\n", __FILE__, __LINE__);
 
 #include "libps2fd.h"
-#include "../main.h"
 #include "../config.h"
 #include "../code.h"
 #include <stdio.h>
@@ -36,9 +35,10 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#if __UNIX__
 #include <sys/wait.h>
+#endif
 #include <sys/types.h>
-#include <sys/mman.h>
 #if __linux__
 #include <sys/prctl.h>
 #include <linux/ptrace.h>
@@ -208,7 +208,9 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 						if (ptr[1])
 						printf("chdir(%s)\n", ptr+1);
 						chdir(ptr+1);
-					} else
+					}
+#if __UNIX__
+					else
 					if (!strcmp(buf, "chroot")) {
 						if (ptr[1])
 						printf("chroot(%s)\n", ptr+1);
@@ -239,6 +241,7 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 							// system("sudo chmod 4755 "+ ps.file);
 						}
 					}
+#endif
 				}
 			}
 			fclose(fd);
@@ -730,8 +733,10 @@ int debug_load()
 int debug_unload()
 {
 	ps.opened = 0;
+#if __UNIX__
 	if (ps.tid != 0)
 		kill(ps.tid, SIGKILL);
+#endif
 	return 0; //for warning message
 }
 
@@ -1508,6 +1513,7 @@ int debug_pids()
 	int n = 0;
 	char cmdline[1025];
 
+#if __UNIX__
 	// TODO: use ptrace to get cmdline from esp like tuxi does
 	for(i=2;i<999999;i++) {
 		switch( kill(i, 0) ) {
@@ -1529,6 +1535,7 @@ int debug_pids()
 //			break;
 		}
 	}
+#endif
 	return n;
 }
 
@@ -1582,7 +1589,7 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 	char *c = (char *)regs;
 	*(unsigned long *)(c + off) = val;	
 
-#if (__WIN32__||__CYGWIN__)
+#if __WINDOWS__
 	regs->ContextFlags = CONTEXT_FULL;
 #endif
 	debug_setregs(ps.tid, regs);

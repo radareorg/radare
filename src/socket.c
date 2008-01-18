@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -20,17 +20,31 @@
 
 #include "main.h"
 #include "socket.h"
+#if __WINDOWS__
+#include <windows.h>
+#endif
+#if __UNIX__
 #include <netinet/in.h>
-#include <sys/types.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#endif
+#include <sys/types.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 
 #define BUFFER_SIZE 4096
+
+int socket_write(int fd, unsigned char *buf, int len)
+{
+#if __UNIX__
+	return write(fd, buf, strlen(buf));
+#else
+	return send(fd, buf, strlen(buf), 0);
+#endif
+}
 
 void socket_printf(int fd, const char *fmt, ...)
 {
@@ -46,8 +60,9 @@ void socket_printf(int fd, const char *fmt, ...)
 	dprintf(fd, fmt, ap); 
 #else
 	snprintf(buf,BUFFER_SIZE,fmt,ap); 
-	write(fd, buf, strlen(buf));
+	socket_write(fd, buf, strlen(buf));
 #endif
+	
 	va_end(ap);
 }
 
@@ -57,6 +72,17 @@ int socket_connect(char *host, int port)
 	struct hostent *he;
 	int s;
 
+#if __WINDOWS__
+	WSADATA wsadata;
+	if (WSAStartup(MAKEWORD(1,1), &wsadata) == SOCKET_ERROR) {
+		eprintf("Error creating socket.");
+		return -1;
+	}
+#endif
+
+#if __UNIX__
+	signal(SIGPIPE, SIG_IGN);
+#endif
 	s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1)
 		return -1;
@@ -70,7 +96,7 @@ int socket_connect(char *host, int port)
 	sa.sin_addr = *((struct in_addr *)he->h_addr);
 	sa.sin_port = htons( port );
 
-	if (connect(s, (const struct sockaddr*)&sa, (socklen_t)sizeof(struct sockaddr)))
+	if (connect(s, (const struct sockaddr*)&sa, sizeof(struct sockaddr)))
 		return -1;
 
 	return s;
@@ -108,24 +134,41 @@ int socket_listen(int port)
 	return s;
 }
 
+int socket_close(int fd)
+{
+#if __UNIX__
+	shutdown(config.fd, SHUT_RDWR);
+	close(config.fd);
+#else
+	WSACleanup();
+	closesocket(config.fd);
+#endif
+}
+
+int socket_read(int fd, unsigned char *buf, int len)
+{
+#if __UNIX__
+	return read(config.fd, buf, len);
+#else
+	return recv(config.fd, buf, len, 0);
+#endif
+}
+
 int socket_fgets(char *buf,  int size)
 {
 	int i = 0;
 	int ret = 0;
 
 	if (config.fd == -1) {
-		close(config.fd);
-		D printf("byebye\n");
-		exit(0);
+		socket_close(config.fd);
+		eprintf("bytebye\n");
+		return -1;
 	}
 
-	signal(SIGPIPE, SIG_IGN);
-
 	while(i<size) {
-		ret = read(config.fd, buf+i, 1);
+		ret = socket_read(config.fd, buf+i, 1);
 		if (ret<=0 ) {
-			shutdown(config.fd, SHUT_RDWR);
-			close(config.fd);
+			socket_close(config.fd);
 			config.fd = -1;
 		}
 		/*if (buf[i]==4) { // ^D

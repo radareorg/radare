@@ -22,16 +22,20 @@
  */
 
 #include "main.h"
+
+#if __UNIX__
 #include <sys/ioctl.h>
+#include <regex.h>
+#include <termios.h>
+#include <sys/wait.h>
+#include <netdb.h>
+#endif
+
 #include <stdio.h>
 #include <dirent.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <regex.h>
-#include <termios.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <netdb.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -60,14 +64,19 @@ static int radare_interrupt(int sig)
 void radare_controlc()
 {
 	config.interrupted = 0;
+#if __UNIX__
 	signal(SIGINT, radare_interrupt);
+#endif
+
 }
 
 void radare_controlc_end()
 {
 	config.interrupted = 0;
+#if __UNIX__
 	signal(SIGINT, NULL);
 	signal(SIGALRM, SIG_IGN);
+#endif
 }
 
 unsigned char radare_get(int delta)
@@ -161,7 +170,7 @@ int radare_command_raw(char *tmp, int log)
 		pipe_stdout_to_tmp_file(file, input+1);
 		f = open(file, O_RDONLY);
 		if (f == -1) {
-			printf("Cannot open.\n");
+			eprintf("radare_command_raw: Cannot open.\n");
 			free(oinput);
 			return 0;
 		}

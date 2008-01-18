@@ -1,11 +1,12 @@
 # Makefile - libudis86
 #
 #
+include ../../../../config.mk
 
 top_srcdir      = ..
 srcdir          = .
 CC             ?= gcc
-CFLAGS          = -g -O2 -Wall -O2
+CFLAGS          ?= -g -O2 -Wall -O2
 LIBS            = 
 INSTALL         = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}

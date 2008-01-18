@@ -21,8 +21,10 @@
 #include "../plugin.h"
 #include "../utils.h"
 #include "../socket.h"
+#if __UNIX__
 #include <netinet/in.h>
 #include <signal.h>
+#endif
 #include <string.h>
 
 enum {
@@ -266,7 +268,9 @@ int remote_open(const char *pathname, int flags, mode_t mode)
 			eprintf("Cannot listen here. Try listen://:9999\n");
 			return -1;
 		}
+#if __UNIX__
 		signal(SIGINT, exit); // ???
+#endif
 		printf("Listening at port %d\n", p);
 		return remote_handle_client( socket_listen(p) );
 	}

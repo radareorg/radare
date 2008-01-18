@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -34,15 +34,17 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <sys/wait.h>
 #include <sys/types.h>
+#if __UNIX__
+#include <sys/wait.h>
+#include <fcntl.h>
 #include <sys/mman.h>
+#endif
 #if __linux__
 #include <sys/prctl.h>
 #include <linux/ptrace.h>

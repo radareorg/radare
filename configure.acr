@@ -31,6 +31,7 @@ IFNOT HAVE_USB_H { USBSNF = 0 ; }
 ARG_WITH DEBUGGER debugger enables the debugging layer ;
 ARG_WITH JAVA java builds the java api ;
 ARG_WITH WII wii builds the wii plugin for usbgecko ;
+ARG_ENABLE W32 w32 enables the build of w32 version of the framework (mingw32) ;
 
 ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 

@@ -20,7 +20,9 @@
  */
 
 #include "../libps2fd.h"
+#if __UNIX__
 #include <sys/wait.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include "../signal.h"
@@ -83,7 +85,6 @@ struct {
 
 void debug_print_sigh(char *signame, unsigned long handler)
 {
-
 	switch (handler) {
 	case (long)SIG_DFL:
 		printf("%-10s (DEFAULT)\n", signame);

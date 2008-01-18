@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007
+ * Copyright (C) 2006, 2007, 2008
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -23,15 +23,18 @@
 #include "utils.h"
 #include "plugin.h"
 #include "config.h"
-#include <termios.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <fcntl.h>
+
+#if __UNIX__
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#endif
 
 const char hex[16] = "0123456789ABCDEF";
 
@@ -215,6 +218,7 @@ int terminal_get_columns()
 
 int terminal_get_real_columns()
 {
+#if __UNIX__
         struct winsize win;
 
         if (ioctl(1, TIOCGWINSZ, &win)) {
@@ -227,6 +231,9 @@ int terminal_get_real_columns()
 #endif
 
         return win.ws_col;
+#else
+	return 80;
+#endif
 }
 
 #ifdef RADARE_CORE
@@ -281,11 +288,14 @@ void progressbar(int pc)
  * If you doesn't use this order you'll probably loss your terminal properties.
  *
  */
+#if __UNIX__
 static struct termios tio_old, tio_new;
+#endif
 static int termios_init = 0;
 
 void terminal_set_raw(int b)
 {
+#if __UNIX__
 	if (b) {
 		if (termios_init == 0) {
 			tcgetattr(0, &tio_old);
@@ -300,7 +310,9 @@ void terminal_set_raw(int b)
 		tcsetattr(0, TCSANOW, &tio_new);
 	} else
 		tcsetattr(0, TCSANOW, &tio_old);
-
+#else
+	/* TODO : W32 */
+#endif
 	fflush(stdout);
 }
 

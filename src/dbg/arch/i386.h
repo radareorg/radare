@@ -5,9 +5,17 @@
 #error Do not include i386.h directly!
 #endif
 
+/* ensure */
+#undef __UNIX__
+#undef __WINDOWS__
+#if __WIN32__ || __CYGWIN__ || MINGW32
+#define __WINDOWS__ 1
+#else
+#define __UNIX__ 1
+#endif
 
-#if __CYGWIN__ || __WIN32__
-/* no def? ..strange uh */
+#if __CYGWIN__
+/* no def for cygwin? ..strange uh */
 #else
 #define offsetof(TYPE, MEMBER) ((unsigned long) &((TYPE *)0)->MEMBER)
 #endif
@@ -75,7 +83,7 @@ void dr_init();
 
 #endif
 
-#elif (__WIN32__ | __CYGWIN__)
+#elif __WINDOWS__
 #include <windows.h>
 
 #define R_EIP(x) x.Eip

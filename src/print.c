@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -23,7 +23,9 @@
 #include "plugin.h"
 #include "rdb/rdb.h"
 #include "list.h"
+#if __UNIX__
 #include <termios.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -253,7 +255,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	unsigned char buffer[4];
 	unsigned char *bufi; // inverted buffer
 	int lines = 0;
-	int x,y;
 	// code anal
 	struct program_t *prg;
 	struct block_t *b0;
@@ -419,13 +420,13 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	case FMT_TIME_UNIX: {
 		time_t t;
 		char datestr[256];
-		char *datefmt;
+		const char *datefmt;
 		INILINE;
 		for(i=0;i<len;i+=4) {
 			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
 			//printf("%s", (char *)ctime((const time_t*)&t));
 			datefmt = config_get("cfg.datefmt");
-			
+
 			if (datefmt&&datefmt[0])
 				tmp = strftime(datestr,256,datefmt,
 					(const struct tm*)gmtime((const time_t*)&t));

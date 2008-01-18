@@ -86,7 +86,8 @@
  * made).
  */
 #if !defined(BYTE_ORDER) || (BYTE_ORDER != LITTLE_ENDIAN && BYTE_ORDER != BIG_ENDIAN)
-#error Define BYTE_ORDER to be equal to either LITTLE_ENDIAN or BIG_ENDIAN
+#warning Define BYTE_ORDER to be equal to either LITTLE_ENDIAN or BIG_ENDIAN
+#define BYTE_ORDER BIG_ENDIAN
 #endif
 
 /*

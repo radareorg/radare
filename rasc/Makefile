@@ -5,7 +5,7 @@ OBJ=shellcodes.o test.o rasc.o ${SYSPROXY_OBJ}
 OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
 
 all: ${OBJ}
-	${CC} -o rasc ${OBJ}
+	${CC} -o rasc${BINSFX} ${OBJ}
 
 _test_sp: ${OBJ2}
 	${CC} -o test_sp test_sp.o rpc.o syscall-linux.o
@@ -17,4 +17,4 @@ test:
 	${CC} -o dump_sh dump_sh.c syscall.S -DLISTENER_TCP
 
 clean:
-	-rm -f *.o dump_sh srv test_sp rasc
+	-rm -f *.o dump_sh srv test_sp rasc *.exe

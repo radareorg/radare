@@ -1,7 +1,7 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#if (__WIN32__ || __CYGWIN__)
+#if __WINDOWS__
 #include <windows.h>
 #endif
 
@@ -16,7 +16,7 @@ typedef struct {
 	int tid;
 	int status;
 	unsigned long addr;
-#if (__WIN32__ || __CYGWIN__)
+#if __WINDOWS__
 	HANDLE ht;	
 #endif
 	struct list_head list;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <@youterm.com>
  *       esteve <@pof.eslack.org>
  *
@@ -30,7 +30,9 @@
 void search_alarm()
 {
 	progressbar((int)(config.seek*100/config.size));  // slowdowns 170%
+#if __UNIX__
 	go_alarm(search_alarm);
+#endif
 }
 
 // TODO: handle Control-C
@@ -115,11 +117,16 @@ int radare_tsearch_file(char *file)
 		return 0;
 
 	nhit = 0;
+#if __UNIX__
 	D go_alarm(search_alarm);
+#endif
 	for(radare_read(0);!config.interrupted;radare_read(1))
 		for(i=0;i<config.block_size;i++)
 			update_tlist(t, config.block[i], config.seek+i);
+
+#if __UNIX__
 	D go_alarm(SIG_IGN);
+#endif
 	binparser_free(t);
 
 	radare_seek(tmp, SEEK_SET);
@@ -175,7 +182,9 @@ int radare_tsearch(char *range)
 		}
 	}
 
+#if __UNIX__
 	go_alarm(search_alarm);
+#endif
 	for(radare_read(0);!config.interrupted;i = radare_read(1)) {
 	//	if (!i) break;
 		if (config.limit && config.seek >= config.limit) break;
@@ -185,7 +194,9 @@ int radare_tsearch(char *range)
 	}
 	binparser_free(t);
 	config.interrupted = 0;
+#if __UNIX__
 	go_alarm(SIG_IGN);
+#endif
 
 	D if (config.interrupted)
 		printf("\nStopped at 0x"OFF_FMTx"\n", config.seek);

@@ -56,6 +56,7 @@ struct reflines_t *code_lines_init()
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 	struct reflines_t *list2;
+	int bar = config_get("asm.linesout");
 	unsigned char *ptr = config.block;
 	unsigned char *end = config.block + config.block_size;
 	struct aop_t aop;
@@ -77,6 +78,14 @@ struct reflines_t *code_lines_init()
 			case AOP_TYPE_CALL:
 			case AOP_TYPE_CJMP:
 			case AOP_TYPE_JMP:
+				if (!bar) {
+					/* skip outside lines */
+					if (aop.jump > config.seek+config.block_size)
+						goto __next;
+					/* skip outside lines */
+					if (aop.jump < config.seek-30)
+						goto __next;
+				}
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 				list2->from = config.seek + bsz;
 				list2->to = aop.jump;
@@ -85,6 +94,7 @@ struct reflines_t *code_lines_init()
 				break;
 			}
 		}
+	__next:
 		ptr = ptr + sz;
 		bsz += sz;
 	}
@@ -102,7 +112,6 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
-	int bar = config_get("asm.linesout");
 	int cow= 0;
 	char ch = ' ';
 
@@ -120,25 +129,6 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 			cow = 1;
 		if (addr == ref->from)
 			cow = 2;
-
-		if (!bar) {
-			if (ref->to < config.seek || ref->to > config.seek + config.block_size) {
-				if (addr > ref->from && addr < ref->to )
-					pprintf(" ");
-				else
-				if (addr > ref->to && addr < ref->from )
-					pprintf(" ");
-				else
-				if (addr < ref->from && addr > ref->to)
-					if (cow == 1) pprintf("-");
-					else
-					if (cow == 2) pprintf("=");
-					else pprintf(" ");
-				else
-				pprintf("%c", ch);
-				continue;
-			}
-		}
 
 		if (addr == ref->to) {
 			if (ref->from > ref->to)
@@ -184,22 +174,10 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 			}
 		}
 	}
-
-	if (bar) {
-		if (cow==1) {
-			C pstrcat(C_WHITE"-> ");
-			else pstrcat("-> ");
-		} else
-		if (cow == 2) {
-			C pstrcat(C_YELLOW"=< ");
-			else pstrcat("=< ");
-		} else	pstrcat("   ");
-	} else {
-		if (cow==1) pstrcat(" > ");
-		else
-		if (cow==2) pstrcat(" < ");
-		else pstrcat("   ");
-	} 
+	if (cow==1) pstrcat("-> ");
+	else
+	if (cow==2) pstrcat("=< ");
+	else pstrcat("   ");
 
 	C pprintf(C_RESET);
 }

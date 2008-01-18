@@ -1,8 +1,10 @@
+include ../../config.mk
+
 BIN=rdbdiff
-OBJ=main.o rdb.o rdbdiff.o ../hasher/crc16.o  ../utils.o
+OBJ=main.o rdb.o rdbdiff.o ../hasher/crc16.o  ../utils.o ../w32utils.o
 #../utils.o
 CC?=gcc
-CFLAGS+=-DRDBDIFF -g
+CFLAGS+=-DRDBDIFF
 
 ##UDIS86##
 OBJ+=../arch/x86/udis86/*.o
@@ -15,4 +17,7 @@ pre:
 	-rm -f ../utils.o
 
 all_orig: ${OBJ}
-	${CC} -g ${OBJ} -o ${BIN}
+	${CC} -g ${OBJ} -o ${BIN}${BINSFX}
+
+clean:
+	-rm -f *.o ${BIN}${BINSFX}

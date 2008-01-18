@@ -19,4 +19,4 @@ all: ${OBJ}
 #	${CC} ${LDFLAGS} @DL_LIBS@ libps2fd.o ${OBJ} -shared -o ${LIBPRE}
 
 clean:
-	-rm -f ptrace.o ${OBJ} ${LIB} ${LIBPRE} demo
+	-rm -f ptrace.o ${OBJ} ${LIB} ${LIBPRE} demo dbg/unix/*.o dbg/win32/*.o
