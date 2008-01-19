@@ -118,6 +118,7 @@ command_t commands[] = {
 	COMMAND('o', " [file]",        "open    open file", open),
 	COMMAND('p', "[fmt] [len]",    "print   print data block", print),
 	COMMAND('r', " [size]",        "resize  resize or query the file size", resize),
+	COMMAND('P', "[so][i [file]]", "Project project Open, Save, Info", project),
 	COMMAND('R', "[act] ([arg])",  "RDB     rdb operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek    seek to absolute/relative expression", seek),
 	COMMAND('u', "[!|?|u]",        "undo    undo seek (! = reset, ? = list, u = redo)", undoseek),
@@ -146,6 +147,35 @@ CMD_DECL(config_eval)
 	int i = 0;
 	for(i=0;input[i]&&input[i]!=' ';i++);
 	config_eval(input+i);
+}
+
+CMD_DECL(project)
+{
+	char *arg = input + 2;
+
+	switch(input[0]) {
+	case 'o':
+		if (input[1])
+			project_open(arg);
+		else	project_open(config_get("file.project"));
+		break;
+	case 's':
+		if (input[1])
+			project_save(arg);
+		else	project_save(config_get("file.project"));
+		break;
+	case 'i':
+		if (input[1])
+			project_info(arg);
+		else	project_info(config_get("file.project"));
+		break;
+	default:
+		pprintf(
+		" Po [file]  open project\n"
+		" Ps [file]  save project\n"
+		" Pi [file]  info\n");
+		break;
+	}
 }
 
 CMD_DECL(rdb)
@@ -455,23 +485,35 @@ CMD_DECL(comment)
 	char *text = input;
 	char *rdbfile = config_get("file.rdb");
 
-	for(;*text&&!iswhitespace(*text);text=text+1);
-	for(;*text&&iswhitespace(*text);text=text+1);
+	// XXX should not exist or so?
+	//for(;*text&&!iswhitespace(*text);text=text+1);
+	//for(;*text&&iswhitespace(*text);text=text+1);
 
+	if (text[0]) {
+		struct list_head *foo;
+		metadata_comment_add(config.seek, text);
+	} else {
+		metadata_comment_list();
+	}
+#if 0
 	if (rdbfile&&text[0]!='\0'&&text[0]!=' ') {
+#if 0
 		fd = open(rdbfile,O_APPEND|O_RDWR);
 		if (fd == -1)
 			fd = rdb_init();
 		if (fd == -1)
 			return;
+#endif
 		sprintf(buf, "comment="OFF_FMT" %s\n", config.seek, text);
-		write(fd, buf, strlen(buf));
-		close(fd);
+		list_add_tail(foo, &comments);
+	//	write(fd, buf, strlen(buf));
+	//	close(fd);
 	} else {
 		char *env = getenv("EDITOR");
 		sprintf(buf, "%s %s",(env)?env:"vim", rdbfile);
 		system(buf);
 	}
+#endif
 }
 
 #if 0
@@ -546,14 +588,35 @@ CMD_DECL(print)
 	}
 }
 
-static void radare_exit()
+void radare_exit()
 {
-	if ( io_close(config.fd) != -2 ) {
+	char *ptr;
+	int ret;
+	char ch;
+
+	ret = io_close(config.fd);
+
+	if ( ret == 0) {
 		#if HAVE_LIB_READLINE
 		rad_readline_finish();
 		#endif
-		exit(0);
+
+		/* save project : user confirmation */
+		ptr = config_get("file.project");
+
+		if (ptr && ptr[0] ) {
+			terminal_set_raw(1);
+			printf("Save project? (Y/n) ");
+			fflush(stdout);
+			read(0,&ch, 1);
+			write(1, &ch, 1);
+			write(1, "\n", 1);
+			if (ch != 'n') 
+				project_save(ptr);
+			terminal_set_raw(0);
+		}
 	}
+	exit(0);
 }
 
 CMD_DECL(quit)

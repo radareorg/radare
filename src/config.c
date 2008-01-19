@@ -38,6 +38,8 @@ int rdb_init()
 	char *str =
 		"# RDB (radare database) file\n"
 		"chdir=\nchroot=\nsetuid=\nsetgid=\n";
+/* FUCKY! */
+// just set project name (cfg.project)
 
 	rdbdir = config_get("dir.rdb");
 	if (rdbdir)
@@ -300,8 +302,6 @@ void config_eval(char *str)
 		a = strclean(name);
 		b = strclean(ptr+1);
 		config_set(a, b);
-		
-	//	pprintf("%s=%s\n", a, b); //config_get(a));
 	} else {
 		char *foo = strclean(name);
 		if (foo[strlen(foo)-1]=='.') {
@@ -347,7 +347,7 @@ int config_core_callback(void *data)
 		hist_goto(node->value);
 	} else
 	if (!strcmp(node->name, "core.echo")) {
-		pprintf("[echo] %s\n", node->value);
+		pprintf("%s\n", node->value);
 	} else
 	if (!strcmp(node->name, "core.cmp")) {
 		hist_cmp(node->value);
@@ -471,6 +471,7 @@ void config_init()
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
+	config_set_i("asm.cmtmargin", 2); // show comments in disassembly
 	config_set("asm.split", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
 
@@ -485,6 +486,7 @@ void config_init()
 	config_set("file.type", "");
 	config_set("file.flag", "false");
 	config_set("file.trace", "trace.log");
+	config_set("file.project", "");
 	config_set("file.entrypoint", "");
 	config_set("file.rdb", "");
 	config_set_i("file.size", 0);
@@ -494,6 +496,7 @@ void config_init()
 	config_set("trace.bt", "false");
 	config_set("trace.sleep", "0");
 	config_set("trace.smart", "true");
+	config_set("trace.cmtregs", "false");
 
 	config_set("cfg.noscript", "false");
 	config_set("cfg.encoding", "ascii"); // cp850
@@ -513,11 +516,16 @@ void config_init()
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 
+	config_set_i("dbg.setuid", "");
+	config_set_i("dbg.setgid", "");
+
 	config_set("dbg.syms", "true");
 	config_set("dbg.maps", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
 	config_set("dbg.contscbt", "true");
+	config_set("dbg.chdir", ".");
+	config_set("dbg.chroot", "/");
 	config_set("dbg.regs", "true");
 	config_set("dbg.stack", "true");
 	config_set("dbg.vstack", "true");
@@ -582,4 +590,5 @@ void config_init()
 
 	/* lock */
 	config_lock(1);
+	metadata_comment_init(1);
 }

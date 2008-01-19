@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -28,8 +28,73 @@
 /* http://devnull.owl.de/~frank/Disassembler_e.html */
 #include "arch/ppc/ppc_disasm.h"
 #include "arch/m68k/m68k_disasm.h"
+#include "list.h"
 
 static int lines = 0;
+
+struct list_head comments;
+
+void metadata_comment_add(off_t offset, const char *str)
+{
+	struct comment_t *cmt = (struct comment_t *)
+		malloc(sizeof(struct comment_t));
+	cmt->offset = offset;
+	cmt->comment = strdup(str);
+	if (cmt->comment[strlen(cmt->comment)-1]=='\n')
+		cmt->comment[strlen(cmt->comment)-1]='\0';
+	list_add_tail(&(cmt->list), &(comments));
+}
+
+void metadata_comment_del(off_t offset)
+{
+}
+
+char *metadata_comment_list()
+{
+	struct list_head *pos;
+	list_for_each(pos, &comments) {
+		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		pprintf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
+	}
+}
+
+char *metadata_comment_get(off_t offset)
+{
+	struct list_head *pos;
+	char *str = NULL;
+	int cmtmargin = (int)config_get_i("asm.cmtmargin");
+	char null[128];
+
+	memset(null,' ',126);
+	null[126]='\0';
+	if (cmtmargin<0) cmtmargin=0; else
+	// TODO: use screen width here
+	if (cmtmargin>80) cmtmargin=80;
+	null[cmtmargin] = '\0';
+
+	list_for_each(pos, &comments) {
+		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		if (cmt->offset == offset) {
+			if (str == NULL) {
+				str = malloc(1024);
+				str[0]='\0';
+			} else {
+				str = realloc(str, cmtmargin+strlen(str)+strlen(cmt->comment)+128);
+			}
+			strcat(str, null);
+			strcat(str, "; ");
+			strcat(str, cmt->comment);
+			strcat(str, "\n");
+			lines++;
+		}
+	}
+	return str;
+}
+
+void metadata_comment_init(int new)
+{
+	INIT_LIST_HEAD(&(comments));
+}
 
 static int print_metadata(int delta)
 {
@@ -39,19 +104,28 @@ static int print_metadata(int delta)
 	char *ptr,*ptr2;
 	char buf[4096];
 	char *rdbfile;
+	int i;
 	off_t offset = (off_t)config.seek + (off_t)delta; //(off_t)ud_insn_off(&ud_obj);
 	//	off_t seek = config.baddr + (off_t)delta; //ud_insn_off(&ud_obj);
 
+// config.baddr everywhere???
 	D {} else return 0;
 	ptr = flag_name_by_offset( offset );
 	if (ptr[0]) {
 		C	pprintf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
-				config.baddr+config.seek+delta,ptr); //ud_insn_off(&ud_obj), ptr);
+				config.baddr+offset, ptr);
 		else	pprintf(OFF_FMTs" %s:\n",
-				config.baddr+config.seek+delta, ptr); //ud_insn_off(&ud_obj), ptr);
+				config.baddr+offset, ptr);
 		lines++;
 	}
 
+	ptr = metadata_comment_get(offset);
+	if (ptr && ptr[0]) {
+		C 	pprintf(C_MAGENTA"%s"C_RESET, ptr);
+		else 	pprintf("%s", ptr);
+		free(ptr);
+	}
+#if 0
 	/* comments */
 	rdbfile = config_get("file.rdb");
 	fd = fopen(rdbfile,"r");
@@ -74,7 +148,7 @@ static int print_metadata(int delta)
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
 			if (offset == off) {
-				INILINE;
+				for(i=0;i<cmtmargin;i++) pstrcat(" ");
 				C 	pprintf(C_BWHITE"  ; %s"C_RESET, ptr2);
 				else 	pprintf("  ; %s", ptr2);
 				NEWLINE;
@@ -84,6 +158,7 @@ static int print_metadata(int delta)
 	}
 	fclose(fd);
 	INILINE;
+#endif
 
 	return lines;
 }
@@ -165,7 +240,6 @@ void udis(int len, int rows)
 
 	len*=2; // uh?!
 
-	udis_init();
 	length = len;
 	ud_idx = 0;
 	inc = 0;
@@ -173,6 +247,7 @@ void udis(int len, int rows)
 	if (rows<0)
 		rows = 1;
 
+	udis_init();
 	/* disassembly loop */
 	ud_obj.pc = config.seek;
 	delta = 0;

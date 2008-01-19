@@ -21,6 +21,13 @@ enum {
 	OP_JB
 };
 
+#include "list.h"
+extern struct list_head comments;
+struct comment_t {
+	off_t offset;
+	char *comment;
+	struct list_head list;
+};
 
 #undef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
@@ -52,6 +59,12 @@ enum {
 #define LANG_PYTHON 2
 
 int java_disasm(unsigned char *bytes, char *output);
+
+void metadata_comment_add(off_t offset, const char *str);
+void metadata_comment_del(off_t offset);
+char *metadata_comment_list();
+char *metadata_comment_get(off_t offset);
+void metadata_comment_init(int new);
 
 #define uchar unsigned char
 extern int fixed_width;
@@ -104,6 +117,7 @@ CMD_DECL(seek);
 CMD_DECL(undoseek);
 CMD_DECL(status);
 CMD_DECL(rdb);
+CMD_DECL(project);
 CMD_DECL(yank);
 CMD_DECL(yank_paste);
 CMD_DECL(visual);

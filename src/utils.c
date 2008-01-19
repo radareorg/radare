@@ -117,6 +117,12 @@ int pprint_fd(int fd)
 static int pprintf_buffer_len = 0;
 static char *pprintf_buffer = NULL;
 
+// TODO : rename pprintf to console or so
+char *pprintf_get()
+{
+	return pprintf_buffer;
+}
+
 void palloc(int moar)
 {
 	if (pprintf_buffer == NULL) {

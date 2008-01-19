@@ -918,8 +918,6 @@ int arch_print_registers(int rad, const char *mask)
 		pprintf("f eip @ 0x%x\n", (int)R_EIP(regs));
 		pprintf("f oesp @ 0x%x\n", (int)R_ESP(oregs));
 		pprintf("f esp @ 0x%x\n", (int)R_ESP(regs));
-		pprintf_flush();
-
 	} else
 	if (rad == 2) {
 			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
@@ -959,7 +957,6 @@ int arch_print_registers(int rad, const char *mask)
 			pprintf("    ebp  0x%08x\e[0m    ", R_EBP(regs));
 			
 			dump_eflags(R_EFLAGS(regs));
-			fflush(stdout);
 //#if __linux__
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
 //#endif

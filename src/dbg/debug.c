@@ -150,6 +150,7 @@ int debug_print_maps(char *arg)
 void debug_environment()
 {
 	FILE *fd;
+	int p;
 	char buf[1204];
 	char *ptr;
 	// TODO proper environment handle
@@ -192,61 +193,15 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	// signal q rebra el fill si el pare mor
 	prctl(PR_SET_PDEATHSIG, SIGKILL, 0,0,0);
 #endif
-
-	/* parse rdb environment */
-	ptr = config_get("file.rdb");
-	if (ptr != NULL) {
-		fd = fopen(ptr, "r");
-		if (fd != NULL) {
-			while(!feof(fd)) {
-				fgets(buf, 1024, fd);
-				if (feof(fd)) break;
-				buf[strlen(buf)-1]='\0';
-				if (ptr = strchr(buf,'=')) {
-					ptr[0] = '\0';
-					if (!strcmp(buf, "chdir")) {
-						if (ptr[1])
-						printf("chdir(%s)\n", ptr+1);
-						chdir(ptr+1);
-					}
-#if __UNIX__
-					else
-					if (!strcmp(buf, "chroot")) {
-						if (ptr[1])
-						printf("chroot(%s)\n", ptr+1);
-						chroot(ptr+1);
-					} else
-					if (!strcmp(buf, "setuid")) {
-						if (ptr[1])
-						printf("setuid(%s)\n", ptr+1);
-						setuid(get_offset(ptr+1));
-					} else
-					if (!strcmp(buf, "seteuid")) {
-						if (ptr[1])
-						printf("seteuid(%s)\n", ptr+1);
-						seteuid(get_offset(ptr+1));
-					} else
-					if (!strcmp(buf, "setgid")) {
-						if (ptr[1])
-						printf("setgid(%s)\n", ptr+1);
-						setgid(get_offset(ptr+1));
-					} else
-					if (!strcmp(buf, "setegid")) {
-						if (ptr[1])
-						printf("setegid(%s)\n", ptr+1);
-						setegid(get_offset(ptr+1));
-					} else
-					if (!strcmp(buf, "suid")) {
-						if (atoi(ptr+1)) {
-							// system("sudo chmod 4755 "+ ps.file);
-						}
-					}
-#endif
-				}
-			}
-			fclose(fd);
-		}
-	}
+	ptr = config_get("dbg.chdir");
+	if (!strnull(ptr)) chdir(p);
+	ptr = config_get("dbg.chroot");
+	if(!strnull(ptr)) chroot(ptr);
+	ptr = config_get("dbg.setuid");
+	if (!strnull(ptr)) setuid(atoi(ptr));
+	ptr = config_get("dbg.setgid");
+	if (!strnull(ptr)) setgid(atoi(ptr));
+	// TODO: add suid bin chmod 4755 ${FILE}
 }
 
 
@@ -940,6 +895,7 @@ int debug_step(int times)
 	unsigned long pc, off;
 	unsigned long old_pc = 0;
 	char *tracefile;
+	char *flagregs;
 
 	if (!ps.opened) {
 		eprintf("No program loaded.\n");
@@ -956,6 +912,7 @@ int debug_step(int times)
 	if (ps.verbose) {
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			debug_steps();
+			ps.steps++;
 			debug_dispatch_wait();
 		}
 		debug_print_wait("step");
@@ -984,13 +941,32 @@ int debug_step(int times)
 					debug_rm_bp_addr(pc);
 				} else {
 					debug_steps();
+					ps.steps++;
 					debug_dispatch_wait();
 				}
 			} else {
 				debug_steps();
+				ps.steps++;
 				debug_dispatch_wait();
 			}
-			tracefile = config_get("dbg.tracefile");
+
+			flagregs = config_get("trace.cmtregs");
+			if (flagregs) {
+				char buf[1024];
+				char *ptr;
+			//	radare_command("!dregs", 0);
+				config_set("scr.buf", "true");
+				arch_print_registers(0, "line");
+				ptr = pprintf_get();
+				if(ptr[0])ptr[strlen(ptr)-1]='\0';
+				sprintf(buf, "C %d %s @ 0x%08x",
+					ps.steps, ptr, (unsigned long)arch_pc());
+				config_set("scr.buf", "false"); // XXX
+				radare_command(buf, 0);
+				ptr[0]='\0'; // reset buffer
+			}
+
+			tracefile = config_get("file.trace");
 			if (tracefile) {
 				int fd = open(tracefile, O_WRONLY|O_APPEND);
 				if (fd == -1)

@@ -29,6 +29,7 @@ static void help_show_message()
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
 	"  -i [script]      interpret radare script\n"
+	"  -P [project]     load metadata from project file\n"
 //	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
 	"  -f               set block size to fit file size\n"
@@ -45,12 +46,13 @@ static void help_show_message()
 
 int main(int argc, char **argv, char **envp)
 {
-	int c;
+	int c, ret;
+	char *ptr, ch;
 
 	environ = envp;
 	radare_init();
  
-	while ((c = getopt(argc, argv, "fs:hb:wLvS:uVcnxi:e:")) != -1)
+	while ((c = getopt(argc, argv, "fs:hb:wLvS:uVcnxi:e:P:")) != -1)
 	{
 		switch( c ) {
 		case 'i':
@@ -64,6 +66,9 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'n':
 			config.noscript = 1;
+			break;
+		case 'P':
+			config_set("file.project", optarg);
 			break;
 		case 'w':
 			config_set("cfg.write", "true");

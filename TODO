@@ -9,17 +9,31 @@
 
 + EH - event handling (event type + source pid)
   using linked list.h
+* trace calls
+* search.flag
+* search.verbose
+* search.algorithm
+  - armfuncsearch
+  - aes
+  - x86funcsearch
+  - from file formatted as search db
+  - carver (find from-to,maxlen, ...)
+  - plugin
+* List viewer (get offset as index fr cursor, right view shows the
+  contents of th selected offset
+* on linux check randomize va space and warn user comments and bps will be wrong!
+  
 * set ncols in lines
 * flags
   - symbol-flags must be source-sorted (i must be able to list all syms of a lib or so)
   - rabin -something?
 * dwarf-addr2line integration
 * head handling (glibc at least)...too much work i think
-* add wii pluyin
 // asm plugin interface //
 * implement a dword array with all functions
  - first one must be a name resolver
 * tracecc
+  - useful to walk to user code
   - copy the program code on another buffer
   - overwrite all code with 0xcc
   - not portable, coz arm mixes data and code
@@ -33,10 +47,6 @@
   - pass &config pointer
   - pass &core pointer
 * print hexpairs without spaces :pX
-* !contuh -> continue until _here_
-   - F4 in ollydbg
-   - useful to analize loopz
-   - should set a bp out of the loop manually
 * linked list of !hacks
    - add 'hack' plugin type
 * implement move data inside the core

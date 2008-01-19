@@ -128,8 +128,6 @@ int radare_command_raw(char *tmp, int log)
 	char file[1024], str[1024];
 	char *input, *oinput;
 	char *next = NULL;
-//fprintf(stderr, "run:(%s)\n", tmp);
-//fflush(stderr);
 
 	if (tmp == NULL || tmp[0]=='\0')
 		return 0;
@@ -196,19 +194,19 @@ int radare_command_raw(char *tmp, int log)
 
 		unlink(file);
 	} else {
-			/* pipe */
-			piped = strchr(input, '|');
-			if (piped) {
-				char tmp[1024];
-				char cmd[1024];
-				piped[0]='\0';
-				pipe_stdout_to_tmp_file(tmp, input);
-				snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
-				io_system(cmd);
-				unlink(tmp);
-				free(oinput);
-				return 1;
-			}
+		/* pipe */
+		piped = strchr(input, '|');
+		if (piped) {
+			char tmp[1024];
+			char cmd[1024];
+			piped[0]='\0';
+			pipe_stdout_to_tmp_file(tmp, input);
+			snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
+			io_system(cmd);
+			unlink(tmp);
+			free(oinput);
+			return 1;
+		}
 		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			/* inline pipe */
 			piped = strchr(input, '`');
@@ -481,7 +479,7 @@ void radare_move(char *arg)
 	off_t src = config.seek;
 
 	if (!config_get("cfg.write")) {
-		eprintf("You'r not in read-write mode.\n");
+		eprintf("You are not in read-write mode.\n");
 		return;
 	}
 
@@ -633,12 +631,11 @@ int radare_prompt()
 		fgets(input, BUFLEN-1, stdin);
 		input[strlen(input)-1] = '\0';
 
+#if __UNIX__
 		if (feof(stdin))
 			return 0;
+#endif
 		radare_command(input, 1);
-
-		/* end of command */
-		//write(1,"\0", 1);
 #if HAVE_LIB_READLINE
 	}
 #endif
@@ -705,6 +702,10 @@ int radare_open(int rst)
 
 	D if (wm)
 		eprintf("warning: Opening file in read-write mode\n");
+
+	ptr = config_get("file.project");
+	if (ptr)
+		project_open(ptr);
 
 	config.fd = io_open(config.file, fd_mode, 0);
 
@@ -799,7 +800,7 @@ int radare_go()
 	radare_controlc_end();
 
 	if (config.file == NULL) {
-		eprintf("radare [-fhnuLvVwc] [-s off] [-b sz] [-S len] [-i file] [-e key=val] [file]\n");
+		eprintf("radare [-fhnuLvVwc] [-s off] [-b sz] [-S len] [-i file] [-P prj] [-e key=val] [file]\n");
 		return 1;
 	}
 
@@ -864,13 +865,12 @@ int radare_go()
 		exit(0);
 	}
 
-	//if (config.debug == 1) {
 	if (io_isdbg(config.fd)) {
 		radare_command(":.!regs*", 0);
 		radare_command(".!info*", 0);
 		radare_command(":.!maps*", 0);
 		radare_command("s eip", 0);
-	} //else radare_command("s entrypoint",0);
+	}
 
 	if (config.script)
 		radare_interpret(config.script);

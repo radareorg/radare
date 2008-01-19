@@ -444,7 +444,7 @@ int java_classdump(const char *file)
 		cf.major[1],cf.major[0],
 		cf.minor[1],cf.minor[0]);
 	cf.cp_count = ntohs(cf.cp_count);
-	if (cf.major[0]==cf.major[1]==0) {
+	if (cf.major[0]==cf.major[1] && cf.major[0]==0) {
 		fprintf(stderr, "Oops. this is a Mach-O\n");
 		return 0;
 	}
