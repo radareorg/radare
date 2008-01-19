@@ -12,7 +12,8 @@
 * trace calls
 * search.flag
 * search.verbose
-* search.algorithm
+* /a algorithm defined by search.algorithm
+ it flags if search.flag
   - armfuncsearch
   - aes
   - x86funcsearch
@@ -22,6 +23,36 @@
 * List viewer (get offset as index fr cursor, right view shows the
   contents of th selected offset
 * on linux check randomize va space and warn user comments and bps will be wrong!
+* RDBs stored into Projects
+  project.rdb = false ; store or not
+  use [delimiters] to embed rdbs inside rps
+
+* dump file to filedescriptor of the child
+  child.chdir
+  child.chroot
+  child.stdin = |rasc -A 99999
+  child.stdout = output.txt
+  child.stderr = stderr.txt
+
+* add tracing column to indicate a char with color or so
+ - define colors for traces.
+ - store traces on linked list and optimize to blocks later
+
+* invert pel disasm
+
+* graphs:
+  - show comments in a separated toggleable box:
+
+   +-------------+
+   | 0x0804483   |-----------.
+   +-------------+           |
+   | mov eax, 3  | sys_write |
+   | int 0x80    |           |
+   +-------------+-----------'
+
+  - line clicking must be supported!
+  - avoid out of context bytes
+
   
 * set ncols in lines
 * flags

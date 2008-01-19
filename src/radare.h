@@ -21,7 +21,15 @@ enum {
 	OP_JB
 };
 
+#define _FILE_OFFSET_BITS 64
+#define _GNU_SOURCE
+
 #include "list.h"
+#include <sys/types.h>
+#include <fcntl.h>
+#include "cmds.h"
+#include "print.h"
+
 extern struct list_head comments;
 struct comment_t {
 	off_t offset;
@@ -31,10 +39,6 @@ struct comment_t {
 
 #undef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
-
-#include <fcntl.h>
-#include "cmds.h"
-#include "print.h"
 
 #if SIZEOF_OFF_T == 8
 #ifdef OFF_FMT
