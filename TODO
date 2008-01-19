@@ -7,15 +7,24 @@
 
 ===========================================================
 
++ key to seek to cursor
 + EH - event handling (event type + source pid)
   using linked list.h
-* trace calls
+  * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
+    int3 SIGTRAP
+    bad opcode (ILL)
+    signal
+    div
+* allow to specify what you want to see when tracing (cmd.cmttrace) ?
+  - is not oneliner
+* trace call amb jump lines (draw a sequence of vectors)
 * search.flag
 * search.verbose
 * /a algorithm defined by search.algorithm
  it flags if search.flag
   - armfuncsearch
   - aes
+  - token [from] [to] (dinamic block size)
   - x86funcsearch
   - from file formatted as search db
   - carver (find from-to,maxlen, ...)
@@ -28,8 +37,6 @@
   use [delimiters] to embed rdbs inside rps
 
 * dump file to filedescriptor of the child
-  child.chdir
-  child.chroot
   child.stdin = |rasc -A 99999
   child.stdout = output.txt
   child.stderr = stderr.txt
@@ -73,13 +80,13 @@
   - bp enter
   - bp exit
   - useful to reverse packer VMs
+  - see what changes in register and memory
 * totes les funcions internes ficarles en un punter accesible dsd els plugins
   - hardcoded addres or passed to the plugin_init
   - pass &config pointer
   - pass &core pointer
 * print hexpairs without spaces :pX
-* linked list of !hacks
-   - add 'hack' plugin type
+* add 'hack' plugin type
 * implement move data inside the core
 * implement insert data inda core
 * record radare commands
@@ -121,7 +128,7 @@
   - colorejar les parts de codi tracejades
   - marcar una columna mes al disasm
 * zoom
-  - use stego before
+  - use stego+printablechars before 
 * keybinding assignment dosnt workz
 * bucles als grafos
 * trace.libcode = trace libcode or not?
@@ -131,7 +138,7 @@
   - also make use of cfg.endian
 
 ---------------------------
-* enable echo when showing prompt (back from debugger) (stty echo)
+* enable terminal echo when showing prompt (back from debugger) (stty echo)
 * Support to ignore signals
   - i dont want to take care about SIGPIPE or SIGALRM anytime
 * new flag type: temporal 
@@ -197,10 +204,6 @@ Core
 * support to append data (without getting out of the block_size) (or so..)
 * make plugin commands be mapped into namespaces
 * add cursor.pos, cursor.range eval vars
-* move !hack inside the core
-  - accessible outside the debugger
-  - be interactive when called with no args
-  - or add !hacki for interactive way
 * Multiple rdb load
   - allow to map into flags, etc..
   - efficient use of flags, labels and comments
@@ -251,6 +254,7 @@ Tracer
 ======
 * make !dump incremental
   - support to enable full dump (with hashing for reducing sizes)
+  - bindiffing
   - ultra slow ? i should analyze code to enhace this
 * cmd.trace -> command to execute when tracing
   - trace.log should be parsed insiide radare visual
@@ -312,11 +316,6 @@ Debugger
 * implement process freze and bootup
 * own elf loader (avoid system one)
 * amd64 -> x86-64 -> alias ( BSD64 is broken )
-* add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
-  int3 SIGTRAP
-  bad opcode (ILL)
-  signal
-  div
 * use pthread to list threads and control them
 * load libraries on the child process
 * breakpoint callbacks:

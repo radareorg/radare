@@ -6,14 +6,20 @@ FILES+=gdl2gml make_symbolmap.sh objdiff objdump-output-beatifier.pl start2bin
 FILES+=read rfile-foreach spcc syms-dump syms syms-dbg-flag maps adict monitor
 FILES+=syms-flag syms-xrefs elf-trace write xtrace ffftoneg core gtkdialog
 FILES+=bin2tab tab2asm tab2gml move bytediff Display net-tcp net-udp net-icmp
-FILES+=strings-flag syms-pe-flag flag gokolu
+FILES+=strings-flag syms-pe-flag flag gokolu bin2xml search-asm strings-flag
+FILES+=strings-pe-flag syscall-flag dwarf-lines
 ##DEBUGGER##
 FILES+=radaredbg
 ##DEBUGGER##
 
-
 all:
 	@echo nothing here
+
+list:
+	@for a in ${FILES}; do echo $$a; done
+
+miss:
+	@perl miss.pl
 
 install:
 	${INSTALL_DIR} ${LIBEXECDIR}

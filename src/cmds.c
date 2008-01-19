@@ -108,6 +108,7 @@ command_t commands[] = {
 	//COMMAND('B', " [baseaddr]",    "baddr   change virtual base address", baddr),
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
 	COMMAND('C', " [str]",         "comment adds a comment at the current position", comment),
+	COMMAND('H', " [cmd]",         "performs a hack", hack),
 	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
 	COMMAND('e', " key=value",     "eval    evaluates a configuration expression", config_eval),
 	COMMAND('f', "[d|-][name]",    "flag    flag the current offset (f? for help)", flag),
@@ -175,6 +176,15 @@ CMD_DECL(project)
 		" Ps [file]  save project\n"
 		" Pi [file]  info\n");
 		break;
+	}
+}
+
+CMD_DECL(hack)
+{
+	if (strnull(input)) {
+		radare_hack_help();
+	} else {
+		radare_hack(input);
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -19,6 +19,23 @@
  */
 
 #include "main.h"
+
+int radare_read_at(off_t offset, unsigned char *data, int len)
+{
+	off_t cur = config.seek;
+	radare_seek(offset,SEEK_SET);
+	io_read(config.fd, data, len);
+	radare_seek(cur, SEEK_SET);
+}
+
+int radare_write_at(off_t offset, unsigned char *data, int len)
+{
+	off_t cur = config.seek;
+	radare_seek(offset,SEEK_SET);
+	io_write(config.fd, data, len);
+	radare_seek(cur, SEEK_SET);
+	radare_read(0);
+}
 
 int radare_write(char *arg, int mode)
 {

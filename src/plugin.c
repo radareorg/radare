@@ -181,6 +181,10 @@ off_t io_lseek(int fd, off_t offset, int whence)
 
 ssize_t io_write(int fd, const void *buf, size_t count)
 {
+	if (!config_get("cfg.write")) {
+		eprintf("Not in write mode\n");
+		return -1;
+	}
 	FIND_FD(fd)
 		IF_HANDLED(fd, write)
 			return plugins[i].write(fd, buf, count);

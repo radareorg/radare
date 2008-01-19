@@ -516,16 +516,16 @@ void config_init()
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 
-	config_set_i("dbg.setuid", "");
-	config_set_i("dbg.setgid", "");
+	config_set_i("child.setuid", "");
+	config_set_i("child.setgid", "");
+	config_set("child.chdir", ".");
+	config_set("child.chroot", "/");
 
 	config_set("dbg.syms", "true");
 	config_set("dbg.maps", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
 	config_set("dbg.contscbt", "true");
-	config_set("dbg.chdir", ".");
-	config_set("dbg.chroot", "/");
 	config_set("dbg.regs", "true");
 	config_set("dbg.stack", "true");
 	config_set("dbg.vstack", "true");
@@ -591,4 +591,5 @@ void config_init()
 	/* lock */
 	config_lock(1);
 	metadata_comment_init(1);
+	radare_hack_init();
 }

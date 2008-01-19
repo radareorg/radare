@@ -28,7 +28,7 @@ int project_save(char *file)
 	rad_flag_t *flag;
 	int i;
 	
-	if (file== NULL||file[0]=='\0')
+	if (strnull(file))
 		return 0;
 
 	// TODO: check if exists
@@ -43,10 +43,10 @@ int project_save(char *file)
 	fprintf(fd, "#RP# Radare Project\n#\n");
 	// TODO: store timestamp
 	// TODO: all this stuff must be renamed as eval vars or so
-	fprintf(fd, "chdir=%s\n", config_get("dbg.chdir"));
-	fprintf(fd, "chroot=%s\n", config_get("dbg.chroot"));
-	fprintf(fd, "setuid=%s\n", config_get("dbg.setuid"));
-	fprintf(fd, "setgid=%s\n", config_get("dbg.setgid"));
+	fprintf(fd, "chdir=%s\n", config_get("child.chdir"));
+	fprintf(fd, "chroot=%s\n", config_get("child.chroot"));
+	fprintf(fd, "setuid=%s\n", config_get("child.setuid"));
+	fprintf(fd, "setgid=%s\n", config_get("child.setgid"));
 	fprintf(fd, "# Flags\n");
         for (i=0;(flag = flag_get_i(i)); i++)
 		fprintf(fd, "flag=0x"OFF_FMTx" %s\n", flag->offset, flag->name);
@@ -70,6 +70,9 @@ int project_open(char *file)
 	char buf[1025];
 	int len;
 	char *ptr, *ptr2;
+
+	if (strnull(file))
+		return 0;
 
 	fd = fopen(file, "r");
 	if (fd == NULL) {
@@ -98,16 +101,16 @@ int project_open(char *file)
 		if (!ptr) continue;
 		ptr[0]='\0'; ptr = ptr + 1;
 		if (!strcmp(buf, "chdir")) {
-			config_set("dbg.chdir", ptr);
+			config_set("child.chdir", ptr);
 		} else
 		if (!strcmp(buf, "chroot")) {
-			config_set("dbg.chroot", ptr);
+			config_set("child.chroot", ptr);
 		} else
 		if (!strcmp(buf, "setuid")) {
-			config_set("dbg.setuid", ptr);
+			config_set("child.setuid", ptr);
 		} else
 		if (!strcmp(buf, "setgid")) {
-			config_set("dbg.setgid", ptr);
+			config_set("child.setgid", ptr);
 		} else
 		if (!strcmp(buf, "flag")) {
 			ptr2=strchr(ptr, ' ');

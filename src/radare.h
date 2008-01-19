@@ -104,6 +104,7 @@ int aes_key_test(unsigned char *buf);
 CMD_DECL(gotoxy);
 CMD_DECL(baddr);
 CMD_DECL(seek0);
+CMD_DECL(hack);
 CMD_DECL(store);
 CMD_DECL(blocksize);
 CMD_DECL(count);

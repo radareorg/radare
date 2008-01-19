@@ -209,6 +209,7 @@ cmd_t cmds[] = {
 	{ "Rm"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "Rg"           , ARG_NUMBER   , ARG_NULL   } , 
 	{ "Rd"           , ARG_NUMBER   , ARG_NULL   } , 
+	{ "Hack"         , ARG_NUMBER,   ARG_NULL   } , 
 	{ "P"            , ARG_NULL     , ARG_NULL   } , 
 	{ "Ps"           , ARG_FILENAME , ARG_NULL   } , 
 	{ "Po"           , ARG_FILENAME , ARG_NULL   } , 

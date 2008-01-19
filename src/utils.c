@@ -626,7 +626,7 @@ char *strclean(char *str)
 
 int strnull(const char *str)
 {
-	return (str && str[0]);
+	return (!str || !str[0]);
 }
 
 int strhash(char *str)
