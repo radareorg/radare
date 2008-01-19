@@ -517,7 +517,9 @@ void config_init()
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 
-	config_set_i("child.setuid", "");
+	config_set("child.stdin", "");
+	config_set("child.stdout", "");
+	config_set("child.stderr", "");
 	config_set_i("child.setgid", "");
 	config_set("child.chdir", ".");
 	config_set("child.chroot", "/");

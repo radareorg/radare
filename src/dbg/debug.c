@@ -147,6 +147,22 @@ int debug_print_maps(char *arg)
 	return -1;
 }
 
+int hijack_fd(int fd, const char *file)
+{
+	int f;
+
+	if (strnull(file)||fd==-1)
+		return 0;
+
+	f = open(file, fd?O_RDWR:O_RDONLY);
+	// TODO handle pipes to programs
+	if (f == -1) {
+		eprintf("Cannot open child.stdin '%s'\n", file);
+	}
+	close(fd);
+	dup2(f, 0);
+}
+
 void debug_environment()
 {
 	FILE *fd;
@@ -193,17 +209,19 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	// signal q rebra el fill si el pare mor
 	prctl(PR_SET_PDEATHSIG, SIGKILL, 0,0,0);
 #endif
-	ptr = config_get("dbg.chdir");
+	ptr = config_get("child.chdir");
 	if (!strnull(ptr)) chdir(p);
-	ptr = config_get("dbg.chroot");
+	ptr = config_get("child.chroot");
 	if(!strnull(ptr)) chroot(ptr);
-	ptr = config_get("dbg.setuid");
+	ptr = config_get("child.setuid");
 	if (!strnull(ptr)) setuid(atoi(ptr));
-	ptr = config_get("dbg.setgid");
+	ptr = config_get("child.setgid");
 	if (!strnull(ptr)) setgid(atoi(ptr));
 	// TODO: add suid bin chmod 4755 ${FILE}
+	hijack_fd(0, config_get("child.stdin"));
+	hijack_fd(1, config_get("child.stdout"));
+	hijack_fd(2, config_get("child.stderr"));
 }
-
 
 void debug_reload_bps()
 {

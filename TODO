@@ -31,6 +31,7 @@
   - plugin
 * List viewer (get offset as index fr cursor, right view shows the
   contents of th selected offset
+  - browse linked list
 * on linux check randomize va space and warn user comments and bps will be wrong!
 * RDBs stored into Projects
   project.rdb = false ; store or not
@@ -150,11 +151,6 @@ w32 Debugger
 * implement !maps
 * pid:// doesn't works
 * al premer ':' en visual mode no mostra prompt :?!?
-
-Project use
-===========
-* Open/Save project
-* store/restore all flags, comments and so into rdb. comment command? save, open
 
 Bugs
 ====

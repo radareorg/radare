@@ -12,7 +12,8 @@ for my $line (@lines) {
 	$line=~/\[\ *(\d*),/; my $cline=$1;
 	$line=~/0x([a-f0-9]*)/; my $addr="0x$1";
 	#print "$file\t$cline\n";
-	my $code=`nl $file| grep -e ' $cline' |head -n 1`;
-	print "$addr\tcomment\t$code";
+	chomp(my $code=`nl $file| grep -e ' $cline' |head -n 1`);
+	$code=~s/@//g;
+	print "C $code @ $addr\n" if ($code);
 }
 
