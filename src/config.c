@@ -472,6 +472,7 @@ void config_init()
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
 	config_set_i("asm.cmtmargin", 2); // show comments in disassembly
+	config_set_i("asm.cmtlines", 0); // show comments in disassembly
 	config_set("asm.split", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
 

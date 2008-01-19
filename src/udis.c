@@ -63,6 +63,7 @@ char *metadata_comment_get(off_t offset)
 	struct list_head *pos;
 	char *str = NULL;
 	int cmtmargin = (int)config_get_i("asm.cmtmargin");
+	int cmtlines = config_get_i("asm.cmtlines");
 	char null[128];
 
 	memset(null,' ',126);
@@ -71,10 +72,29 @@ char *metadata_comment_get(off_t offset)
 	// TODO: use screen width here
 	if (cmtmargin>80) cmtmargin=80;
 	null[cmtmargin] = '\0';
+	if (cmtlines<0)
+		cmtlines=0;
+
+	if (cmtlines) {
+		int i = 0;
+		list_for_each(pos, &comments) {
+			struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+			if (cmt->offset == offset) {
+				i++;
+			}
+		}
+		if (i>cmtlines) {
+			cmtlines = i-cmtlines;
+		}
+	}
 
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
 		if (cmt->offset == offset) {
+			if (cmtlines) {
+				cmtlines--;
+				continue; // skip comment lines
+			}
 			if (str == NULL) {
 				str = malloc(1024);
 				str[0]='\0';
