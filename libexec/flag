@@ -9,21 +9,27 @@ if [ -z $1 ]; then
 fi
 
 FILE=$1
-file $FILE |grep " PE " >/dev/null 2>&1
+type=`file $FILE |awk '{print $2}'`
 
-if [ $? -eq 0 ]; then
-	echo "Adding strings & symbol flags for PE $FILE" >/dev/stderr
-	rsc syms-pe-flag ${FILE}
-	rsc strings-pe-flag ${FILE}
-else
-	echo "Adding strings & symbol flags for $FILE" >/dev/stderr
-	## are we being called from debugger??
-	if [ -n "$DPID" ]; then
-		rsc syms-dbg-flag ${FILE}
-	else
-		rsc syms-flag ${FILE}
-	fi
-	rsc strings-flag ${FILE}
-fi
+echo "Automagically flagging $FILE" >/dev/stderr
+
+case "$type" in
+
+	"PE")
+		rsc syms-pe-flag ${FILE}
+		rsc strings-pe-flag ${FILE}
+	;;
+
+	"ELF")
+		## are we being called from debugger??
+		if [ -n "$DPID" ]; then
+			rsc syms-dbg-flag ${FILE}
+		else
+			rsc syms-flag ${FILE}
+		fi
+		rsc strings-flag ${FILE}
+		rsc syscall-flag ${FILE}
+	;;
+esac
 
 echo "s entrypoint"

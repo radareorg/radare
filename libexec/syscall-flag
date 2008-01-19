@@ -17,15 +17,11 @@ dsk=`rabin -e $FILE |grep "disk$" |cut -f 1 -d " "`
 objdump -d $FILE |grep -4 "int    \$0x80" |egrep "(int|eax)" > $TMPF
 len=`cat $TMPF |wc -l`
 cont=0
-echo $len
 for f in `seq 1 $len` ; do
 
 	LINE=`cat $TMPF |head -n $f |tail -n 1`
 	offset=`echo $LINE |cut -f 1 -d ":" |sed -e "s/^/0x/g"`
-	if [ -z "$DPID" ]; then
-		## calculate right offset when doing static analisys
-		offset=$(( `xc $offset` - $mem + $dsk ))
-	fi
+	offset=$(( $offset - $mem + $dsk ))
 	call=`echo $LINE |awk '{print $3}'`
 	case "$call" in
 		"00") CALL="LINUX_sys_setup[sys_ni_syscall]" ;;
