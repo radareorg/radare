@@ -25,24 +25,30 @@
 
 #if __WINDOWS__
 #include <windows.h>
+
+static char buf[1024];
+
 char *getenv(const char *str)
 {
-	return NULL;
+	GetEnvironmentVariable(str, &buf, 1023);
+	return &buf;
 }
 
 int unsetenv(const char *foo)
 {
+	SetEnvironmentVariable(foo, NULL);
 	return 0;
 }
 
 int setenv(const char *foo, const char *bar)
 {
+	SetEnvironmentVariable(foo, bar);
 	return 0;
 }
 
 int fork()
 {
-	fprintf(stderr, "Cannot fork\n");
+	eprintf("fork: not available for w32\n");
 }
 
 int sleep(int s)

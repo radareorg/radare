@@ -1,5 +1,0 @@
-4
-0	10	open	Search engine is broken	\nThe search engine sometimes returns buggy results depending on the block size.
-1	0	todo	Allow to 'undo' seek movements.	\nWould be good to have a way to go to the previous seek.\n\nStoring a seek history would be great, so it can be possible\nto move forward and backward into the timeline.
-2	0	todo	flag namespaces	\nImplementing flag folders or namespaces can be useful for\nmanaging different lists of results or massive list of flags.
-3	5	todo	go next/prev flag	\nIn visual mode is really useful to move around the flags, so. why\nnot have two keys for moving around the flags?\n\noutput can show if you're in a flag.\n\nFlags must support longer descriptions and format type.

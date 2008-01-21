@@ -110,7 +110,7 @@ void press_any_key()
 
 	D pprintf("\n--press any key--\n");
 	pprintf_flush();
-	read(0, &key, 1);
+	cons_readchar();
 	pstrcat("\e[2J\e[0;0H");
 }
 
@@ -324,7 +324,7 @@ CMD_DECL(seek_to_flag)
 	unsigned char key;
 
 	flag_list("");
-	read(0, &key, 1);
+	key = cons_readchar();
 
 	if (key>='0' && key<='9') {
 		flg = flag_get_i(key-'0');
@@ -401,7 +401,7 @@ CMD_DECL(insert_assembly_hack)
 	}
 	
 	buf[0]='\0';
-	read(0,buf, 1);
+	buf[0]=cons_readchar();
 	buf[1]='\0';
 	arch_hack(buf);
 	CLRSCR();
@@ -607,7 +607,7 @@ void visual_bind_key()
 
 	printf("Press a key to bind (? for listing): ");
 	fflush(stdout);
-	read(0, &key, 1);
+	key = cons_readchar();
 	if (!is_printable(key)) {
 		fprintf(stderr, "\n\nInvalid keystroke\n");
 		press_any_key();
@@ -720,6 +720,7 @@ void visual_draw_screen()
 
 	radare_seek(config.seek, SEEK_SET);
 	radare_print("", last_print_format, MD_BLOCK|inv);
+
 	fflush(stdout);
 	pprintf_flush();
 }
@@ -777,17 +778,17 @@ CMD_DECL(visual)
 
 	__go_read_a_key:
 		/* user input */
-		read(0, &key, 1);
+		key = cons_readchar();
 
 		switch(key) {
 		case 27:
-			read(0, &key, 1);
+			key = cons_readchar();
 			switch(key) {
 			case 0x1b:
 				key = 'q';
 				break;
 			case 0x4f: // Fx
-				read(0, &key, 1);
+				key = cons_readchar();
 				key-=0x4f;
 				if (config.debug)
 				switch(key) {
@@ -843,7 +844,7 @@ CMD_DECL(visual)
 				}
 				break;
 			case 0x5b:
-				read(0, &key, 1);
+				key = cons_readchar();
 				switch(key) {
 				case 0x35: key='K'; break; // re.pag
 				case 0x36: key='J'; break; // av.pag
@@ -853,7 +854,7 @@ CMD_DECL(visual)
 				case 0x44: key='h'; break; // left
 				case 0x31: // Fn
 				case 0x32:
-					read(0, &key, 1);
+					key = cons_readchar();
 					switch(key) {
 					case 0x37: // F6
 						radare_command("!contsc", 0);
@@ -872,10 +873,10 @@ CMD_DECL(visual)
 						continue;
 					}
 				case 0x3b:
-					read(0, &key, 1);
+					key = cons_readchar();
 					switch(key) {
 					case 50:
-						read(0, &key, 1);
+						key = cons_readchar();
 						switch(key) {
 						case 65: key='K'; break;
 						case 66: key='J'; break;
@@ -889,22 +890,22 @@ CMD_DECL(visual)
 						continue;
 					default:
 						printf("50 unknown key %d\n", key);
-						read(0,&key,1);
+						key = cons_readchar();
 					} break;
 				default:
 					printf("0x5b unknown key 0x%x\n", key);
-					read(0,&key,1);
+					key = cons_readchar();
 					break;
 				}
 				break;
 			default:
 				printf("27 unknown key 0x%x\n", key);
-				read(0,&key,1);
+				key = cons_readchar();
 				break;
 			}
 			break;
 		case 0x7f:
-			read(0, &key, 1);
+			key = cons_readchar();
 			if (key >='0' && key <= '9')  {
 				if (config.size != -1) {
 					int pc = key-'0';
@@ -1023,7 +1024,7 @@ CMD_DECL(visual)
 				if (config.block_size >= (config.size-config.seek))
 					CLRSCR();
 				continue;
-			}
+			} else CLRSCR();
 		case ' ':
 			if (last_print_format == FMT_DISAS)
 				config.seek += 4;
@@ -1057,6 +1058,7 @@ CMD_DECL(visual)
 				if (last_print_format == FMT_DISAS)
 					config.seek -= 4;
 				else	config.seek -= config.block_size;
+				CLRSCR();
 			}
 			if (config.seek<0) config.seek = 0; // TODO: double check?
 			if (config.block_size >= (config.size-config.seek))
@@ -1156,10 +1158,12 @@ CMD_DECL(visual)
 
 		if (config.seek<0)
 			config.seek = 0;
+#if 0
 		if (repeat>1) {
 			pstrcat("\e[2J");
 			radare_sync();
 		}
+#endif
 		}
 		repeat = 0;
 		repeat_weight=1;

@@ -516,10 +516,12 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			pprintf("   offset");
 			for(i=0;i<inc;i++)
 				pprintf("       +0x%x",i);
+#if 0
 			NEWLINE;
 			pprintf("----------+");
 			for(i=0;i<inc;i++)
 				pprintf("-----------");
+#endif
 			NEWLINE;
 			C pprintf(C_RESET);
 		}
@@ -545,12 +547,14 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 				pprintf("+%02x ",i);
 			for(i=0;i<inc;i++)
 				pprintf("%c",hex[i%16]);
+#if 0
 			NEWLINE; pprintf("----------+");
 			for(i=0;i<inc;i++)
 				pprintf("----");
 			for(i=0;i<inc;i++)
 				pprintf("-");
 			C pprintf(C_RESET);
+#endif
 			NEWLINE;
 		}
 		for(i=0;i<len;i++) {
@@ -673,7 +677,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		if (inc%2) inc++;
 		D if ( print_fmt == FMT_HEXB ) {
 			C pprintf(COLOR_HD);
-			INILINE;
 			pprintf("   offset  ");
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;
@@ -684,6 +687,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 				for(j=i; j>15; j-=15) j--;
 				pprintf("%c", hex[j]);
 			}
+#if 0
 			NEWLINE;
 			pprintf(".--------+");
 			for (i=0; i<inc; i++)
@@ -693,6 +697,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			for (i=0; i<inc; i++)
 				pprintf("-");
 			pprintf("-");
+#endif
 			NEWLINE;
 	//		C pprintf("\e[0m");
 		}

@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_PRINT_H_
 #define _INCLUDE_PRINT_H_
 
-#define CLRSCR() write(1, "\e[2J\e[0;0H", 10)
+#define CLRSCR() pstrcat("\e[2J\e[0;0H");
 
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);

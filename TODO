@@ -144,6 +144,7 @@
 * enable terminal echo when showing prompt (back from debugger) (stty echo)
 * Support to ignore signals
   - i dont want to take care about SIGPIPE or SIGALRM anytime
+  - do not sigalarm in visual
 * new flag type: temporal 
   - they will not survive a project save
 

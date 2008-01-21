@@ -429,7 +429,7 @@ eprintf("%d ->%d (0x%x)\n",pid, (int)sz, (long)addr);
 
 	if (last)
 	{
-		lr = ptrace(PTRACE_PEEKDATA,pid,&((long *)addr)[x]) ;
+		lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)addr)[x], 0) ;
 
 		/* Y despues me quejo que lisp tiene muchos parentesis... */
 		if ((lr == -1 && errno) ||

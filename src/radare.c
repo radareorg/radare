@@ -307,7 +307,7 @@ int radare_command_raw(char *tmp, int log)
 
 		free(oinput);
 		ret = radare_command(next, 0);
-		pprintf_flush();
+	//	pprintf_flush();
 		return ret; 
 	}
 
@@ -326,7 +326,6 @@ int radare_command(char *tmp, int log)
 	if((log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
 		return 0;
 
-
 	// TODO : move to a dbg specific func outside here
 	if (config.debug && tmp && tmp[0]=='\0') {
 		radare_read(0);
@@ -340,19 +339,21 @@ int radare_command(char *tmp, int log)
 		p = last_print_format;
 
 		terminal_get_real_columns();
-		/* update flag registers */
-		radare_command(":.!regs*", 0);
+
+		/* NOT REQUIRED update flag registers NOT REQUIRED */
+		//radare_command(":.!regs*", 0);
 
 		if (config_get("dbg.stack")) {
 			C pprintf(C_RED"Stack:\n"C_RESET);
 			else pprintf("Stack:\n");
 			sprintf(buf, "%spx %d @ %s",
-				(config_get("dbg.vstack"))?"":":",
+				(config_get("dbg.vstack"))?":":"",
 				(int)config_get_i("dbg.stacksize"),
 				config_get("dbg.stackreg"));
 			radare_command("%COLUMNS 80", 0);
 			radare_command(buf, 0); //":px 66@esp", 0);
 		}
+
 
 		if (config_get("dbg.regs")) {
 			C pprintf(C_RED"Registers:\n"C_RESET);
@@ -390,6 +391,7 @@ int radare_command(char *tmp, int log)
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
 		config.height+=14;
+		pprintf_flush();
 		return 0;
 	}
 
@@ -441,7 +443,7 @@ int radare_interpret(char *file)
 		len = strlen(buf);
 		if (len>0) buf[strlen(buf)-1]='\0';
 		radare_command(buf, 0);
-		pprintf_flush();
+		//pprintf_flush();
 		hist_add(buf, 0);
 		config.verbose = 0;
 		config_set("cfg.verbose", "false");
@@ -567,7 +569,7 @@ void radare_prompt_command()
 							}
 							radare_command(file, 0);
 						}
-						pprintf_flush();
+		//				pprintf_flush();
 						if (_print_fd != 1) // XXX stdout
 							close(_print_fd);
 						fclose(fd);
@@ -883,7 +885,7 @@ int radare_go()
 				radare_command(".!regs*", 0);
 			update_environment();
 			radare_sync();
-			pprintf_flush();
+			//pprintf_flush();
 		} while( radare_prompt() );
 	} while ( io_close(config.fd) );
 
