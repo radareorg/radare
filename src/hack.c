@@ -21,6 +21,7 @@
  */
 
 #include "main.h"
+#include "code.h"
 #include "utils.h"
 #include "print.h"
 #include <stdio.h>
@@ -55,15 +56,25 @@ int radare_hack_help()
 
 static int hack_nop()
 {
+	struct aop_t aop;
 	char buf[1024];
 	int i, len;
 	int delta = (config.cursor_mode)?config.cursor:0;
+
+	if (!config_get("cfg.write"))
+		return 0;
 	//debug_getregs(ps.tid, &reg);
 	//debug_read_at(ps.tid, buf, 16, R_EIP(reg));
 	radare_read_at(config.seek+delta, buf, 16);
-	len = instLength(buf, 16, 0);
-	for(i=0;i<len;i++)
-		buf[i]=0x90;
+	len = arch_aop(config.seek+delta, buf, &aop);
+	if (!strcmp(arch, "x86")) {
+		for(i=0;i<len;i++)
+			buf[i]=0x90;
+	} else {
+		// TODO real multiarch
+		for(i=0;i<len;i++)
+			buf[i]=0x00;
+	}
 	//debug_write_at(ps.tid, buf, 16, R_EIP(reg));
 	radare_write_at( config.seek+delta, buf, 4);
 	return 0;
@@ -73,6 +84,8 @@ static int hack_negjmp()
 {
 	int delta = (config.cursor_mode)?config.cursor:0;
 	char *buf = config.block+delta;
+	if (!config_get("cfg.write"))
+		return 0;
 
 // TODO: multiarch!
 	eprintf("warning: x86 only atm.\n");
@@ -143,6 +156,8 @@ static int hack_forcejmp()
 //	debug_read_at(ps.tid, buf, 5, R_EIP(reg));
 	char buf[128];
 	int delta = (config.cursor_mode)?config.cursor:0;
+	if (!config_get("cfg.write"))
+		return 0;
 
 	eprintf("warning: x86 only atm.\n");
 

@@ -1,8 +1,10 @@
 #!/usr/bin/perl
+#
+# author: pancake<youterm.com>
+#
 
 $file=shift;
 die "Usage: rsc dwarf-lines (file) >> file.rdb\n" unless ($file);
-
 
 $|=1;
 my @lines=split(/\n/,`dwarfdump -l $file`);
@@ -14,6 +16,8 @@ for my $line (@lines) {
 	#print "$file\t$cline\n";
 	chomp(my $code=`nl $file| grep -e ' $cline' |head -n 1`);
 	$code=~s/@//g;
+	$code=~s/>//g;
+	$code=~s/|//g;
 	print "C $code @ $addr\n" if ($code);
 }
 

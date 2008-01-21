@@ -322,6 +322,24 @@ void terminal_set_raw(int b)
 	fflush(stdout);
 }
 
+#if RADARE_CORE
+	// TODO get [ prefix: (size of ptr), use cfg.endian
+	//  4[0x300] = dword[0x300]
+	//  d[0x300] ...
+	//  b[0x300]
+	// eval cfg.endian
+	//unsigned char *ptr = &newa;
+unsigned long get_pointer(off_t addr)
+{
+	unsigned long newa;
+	off_t sk = config.seek;
+	radare_seek(addr, SEEK_SET);
+	io_read(config.fd, &newa, 4);
+	radare_seek(sk, SEEK_SET);
+	return newa;
+}
+#endif
+
 /* Converts a string to off_t type. off_t jmp = get_offset("0x123456"); */
 off_t get_offset(char *orig)
 {
@@ -333,6 +351,9 @@ off_t get_offset(char *orig)
 	rad_flag_t *flag;
 	char *ptr = 0;
 #endif
+	if (orig==NULL||orig[0]=='\0')
+		return 0;
+
 	strncpy(arg, orig, 1023);
 
 	for(;*arg==' ';arg=arg+1);
@@ -341,21 +362,9 @@ off_t get_offset(char *orig)
 
 #ifdef RADARE_CORE
 	ptr = strchr(arg, '[');
-	if (ptr) {
-		unsigned long newa;
-		// TODO get [ prefix: (size of ptr), use cfg.endian
-		//  4[0x300] = dword[0x300]
-		//  d[0x300] ...
-		//  b[0x300]
-		// eval cfg.endian
-		//unsigned char *ptr = &newa;
-		off_t sk = config.seek;
-		off_t uh = get_offset(ptr+1);
-		radare_seek(uh, SEEK_SET);
-		io_read(config.fd, &newa, 4);
-		radare_seek(sk, SEEK_SET);
-		return newa;
-	}
+	if (ptr)
+		return get_pointer(get_offset(ptr+1));
+
 	ret = config_get_i(arg);
 	if (((int)ret) != 0)
 		return ret;
@@ -425,23 +434,43 @@ off_t get_math(const char* text)
 	int  sign     = 1;
 	char op       = 0;
 	char oop      = 0;
-	char *txt, *tmp;
+	char *txt, *txt2, *tmp;
 	char *ptr     = NULL;
+	char *end;
 
+	if (text==NULL||text[0]=='\0')
+		return 0;
+
+#if RADARE_CORE
+	txt2=strdup(text);
+#endif
 	for(txt = strdup(text); txt[0]==' ' && txt[0]; strcpy(txt, txt+1));
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
 
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
-		tmp = mytok(ptr, "+-*/", &op);
+		tmp = mytok(ptr, "+-*/[", &op);
 		switch(oop) {
+#ifdef RADARE_CORE
+		case '[': end = strchr(txt2+(ptr-txt+1),']');
+			// todo. support nested lol
+			if (end) {
+				end[0]='\0';
+				new_off += get_pointer(get_math(txt2+(ptr-txt)));
+				end[0]=']';
+				ptr = ptr + (end-txt2);
+			} else {
+				eprintf("Unbalanced ']' (%s)\n", ptr);
+			}
+			break;
+#endif
 		case '+': new_off += get_offset(ptr); break;
 		case '-': new_off -= get_offset(ptr); break;
-		case '/':	t = get_offset(ptr);
-				if (t == 0) {
-					printf("Division by zero?\n");
-					break;
-				} else new_off /= t; break;
+		case '/': t = get_offset(ptr);
+			if (t == 0) {
+				printf("Division by zero?\n");
+				break;
+			} else new_off /= t; break;
 		case '*': new_off *= get_offset(ptr); break;
 		default : new_off  = get_offset(ptr); break;
 		}
@@ -450,6 +479,9 @@ off_t get_math(const char* text)
 		oop=op;
 	}
 	free(txt);
+#if RADARE_CORE
+	free(txt2);
+#endif
 
 	return new_off;
 }

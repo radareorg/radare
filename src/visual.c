@@ -88,7 +88,7 @@ command_t keystrokes[] = {
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
 	COMMAND('w', 1, "write string", insert_string),
 	COMMAND('W', 1, "write hex string", insert_hexa_string),
-	COMMAND('f', 0, "seek to flag", seek_to_flag),
+	//COMMAND('f', 0, "seek to flag", seek_to_flag),
 	COMMAND('%', 0, "show radare environment", show_environ),
 	/* debugger */
         COMMAND('s', 0, "step into the debugger", step_in_dbg),
@@ -1069,10 +1069,10 @@ CMD_DECL(visual)
 			undo_redo();
 			break;
 		case 'f': { rad_flag_t *flag = flag_get_next(1);
-			if (flag) config.seek = flag->offset; }
+			if (flag) config.seek = flag->offset; else flag_get_next(-0xfffff); }
 			break;
 		case 'F': { rad_flag_t *flag = flag_get_next(-1);
-			if (flag) config.seek = flag->offset; }
+			if (flag) config.seek = flag->offset; else flag_get_next(-0xfffff); }
 			break;
 		case 'D':
 			name = flag_name_by_offset(config.seek);

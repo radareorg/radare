@@ -87,7 +87,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	if (count && nhit >= count)
 		return 1;
 
-	sprintf(flag_name, "hit%d[%d]", i, nhit++);
+	sprintf(flag_name, "hit%d_%d", i, nhit++);
 	//config.seek = where;
 	radare_seek(where, SEEK_SET);
 	radare_read(0);

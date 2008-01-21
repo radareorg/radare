@@ -481,7 +481,6 @@ typedef struct dis_buffer dis_buffer_t;
 #define DB_STGY_ANY 0  /*@@@*/
 
 /* common Unix typedefs used in m68k_disasm.c */
-typedef char boolean_t;
 #if !defined(_SYS_TYPES_H)
 typedef unsigned char u_char;
 typedef unsigned short u_short;

@@ -211,12 +211,14 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 #endif
 	ptr = config_get("child.chdir");
 	if (!strnull(ptr)) chdir(p);
+#if __UNIX__
 	ptr = config_get("child.chroot");
 	if(!strnull(ptr)) chroot(ptr);
 	ptr = config_get("child.setuid");
 	if (!strnull(ptr)) setuid(atoi(ptr));
 	ptr = config_get("child.setgid");
 	if (!strnull(ptr)) setgid(atoi(ptr));
+#endif
 	// TODO: add suid bin chmod 4755 ${FILE}
 	hijack_fd(0, config_get("child.stdin"));
 	hijack_fd(1, config_get("child.stdout"));

@@ -439,8 +439,6 @@ CMD_DECL(envvar)
 		printf("%%OFFSET      %s\n", getenv("OFFSET"));
 		printf("%%CURSOR      %s\n", getenv("CURSOR"));
 		printf("%%BSIZE       %s\n", getenv("BSIZE"));
-		printf("%%SEARCH[0]   %s\n", getenv("SEARCH[0]"));
-		printf("%%MASK[0]     %s\n", getenv("MASK[0]"));
 		return;
 	} else
 	if (text[0]=='?') {
@@ -836,8 +834,13 @@ CMD_DECL(status)
 CMD_DECL(write)
 {
 	int ret;
+	unsigned long off;
 
 	switch (input[0]) {
+	case 'd':
+		off = (unsigned long) get_offset(input);
+		io_write(config.fd, &off, 4);
+		break;
 	case 'f':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wf [file]'\n");
@@ -888,6 +891,7 @@ CMD_DECL(write)
 		"  w  [string]   - write plain with escaped chars string\n"
 		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
 		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
+		"  wd [offset]   - writes a doubleword from a math expression\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
 		"  wf [file]     - write contents of file at current seek\n");
@@ -980,9 +984,11 @@ CMD_DECL(next_align)
 print_fmt_t last_search_fmt = FMT_ASC;
 
 CMD_DECL(search) {
+	char buf[128];
 	char *input2 = (char *)strdup(input);
 	char *text   = input2;
 	int  len,i = 0,j = 0;
+	char *ptr;
 
 	switch(text[0]) {
 	case '\0':
@@ -992,12 +998,39 @@ CMD_DECL(search) {
 		" /. [file]      ; search using the token file rules\n"
 		" /s [string]    ; strip strings matching optional string\n"
 		" /x A0 B0 43    ; hex byte pair binary search.\n"
-		" /m FF 0F       ; Binary mask for search\n"
+		" /k# keyword    ; keyword # to search\n"
+		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
 		" /a             ; Find expanded AES keys from current seek(*)\n"
 		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /r 0,2-10      ; launch range searches 0-10\n"
 		" /l             ; list all search tokens (%%SEARCH[%%d])\n"
 		" //             ; repeat last search\n");
+		break;
+	case 'k':
+		if (text[1]=='?') {
+			eprintf("/k[number] [keyword]\n");
+			break;
+		}
+		i = atoi(text+1);
+		ptr = strchr(text, ' ');
+		if (ptr) {
+			sprintf(buf, "SEARCH[%d]", i);
+			setenv(buf, ptr+1, 1);
+		} else {
+			extern char **environ;
+			for(i=0;environ[i];i++) {
+				if (!memcmp(environ[i], "SEARCH[", 7)) {
+					int j = atoi(environ[i]+7);
+					sprintf(buf, "SEARCH[%d]", j);
+					ptr = getenv(buf);
+					if (ptr) {
+						printf("keyword %d %s\n", j, ptr);
+					} else {
+						printf("keyword %d (no keyword)\n", i);
+					}
+				}
+			}
+		}
 		break;
 	case 'a':
 		radare_search_aes();
