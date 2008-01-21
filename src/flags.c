@@ -81,6 +81,7 @@ rad_flag_t *flag_get(const char *name)
 }
 
 static int flag_ptr = -1;
+
 rad_flag_t *flag_get_next(int delta)
 {
 	rad_flag_t *flag = flag_get_i(flag_ptr+delta);
@@ -90,6 +91,12 @@ rad_flag_t *flag_get_next(int delta)
 	if (flag_ptr > nflags ) flag_ptr = nflags;
 
 	return flag;
+}
+
+rad_flag_t *flag_get_reset()
+{
+	flag_ptr = 0;
+	return flag_get_next(flag_ptr);
 }
 
 /* deprecated ?!?! */

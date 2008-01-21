@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* search flag names take sense with keyword number!! not just index in array of search
+  - pretty output
 + key to seek to cursor
 + EH - event handling (event type + source pid)
   using linked list.h

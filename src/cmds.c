@@ -983,6 +983,7 @@ CMD_DECL(next_align)
 
 print_fmt_t last_search_fmt = FMT_ASC;
 
+// TODO: show /k && /m together
 CMD_DECL(search) {
 	char buf[128];
 	char *input2 = (char *)strdup(input);
@@ -1003,8 +1004,31 @@ CMD_DECL(search) {
 		" /a             ; Find expanded AES keys from current seek(*)\n"
 		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /r 0,2-10      ; launch range searches 0-10\n"
-		" /l             ; list all search tokens (%%SEARCH[%%d])\n"
 		" //             ; repeat last search\n");
+		break;
+	case 'm':
+		if (text[1]=='?') {
+			eprintf("/k[number] [keyword]\n");
+			break;
+		}
+		i = atoi(text+1);
+		ptr = strchr(text, ' ');
+		if (ptr) {
+			sprintf(buf, "MASK[%d]", i);
+			setenv(buf, ptr+1, 1);
+		} else {
+			extern char **environ;
+			for(i=0;environ[i];i++) {
+				if (!memcmp(environ[i], "MASK[", 5)) {
+					int j = atoi(environ[i]+5);
+					sprintf(buf, "MASK[%d]", j);
+					ptr = getenv(buf);
+					if (ptr)
+						pprintf("%d %s\n", j, ptr);
+					else    pprintf("%d (no mask)\n", i);
+				}
+			}
+		}
 		break;
 	case 'k':
 		if (text[1]=='?') {
@@ -1024,9 +1048,9 @@ CMD_DECL(search) {
 					sprintf(buf, "SEARCH[%d]", j);
 					ptr = getenv(buf);
 					if (ptr) {
-						printf("keyword %d %s\n", j, ptr);
+						pprintf("%02d %s\n", j, ptr);
 					} else {
-						printf("keyword %d (no keyword)\n", i);
+						pprintf("%02d (no keyword)\n", i);
 					}
 				}
 			}
@@ -1057,24 +1081,27 @@ CMD_DECL(search) {
 	case '/':
 		radare_tsearch("0");
 		break;
-	case ' ':
-		setenv("SEARCH[0]", text+1, 1);
-		radare_tsearch("0");
-		break;
-	case 'm':
-		if ( strlen ( (char *) text ) > 2 )
-			setenv("MASK[0]", text+2, 1);
-		else	unsetenv("MASK[0]");
-		break;
-	case 'l':
-		for(i=0;environ[i];i++) {
-			char *eq = strchr(environ[i], '=');
-			if (!eq) continue;
-			eq[0]='\0';
-			if ((strstr(environ[i], "SEARCH["))
-			||  (strstr(environ[i], "MASK[")))
-				printf("%%%s %s\n", environ[i], eq+1);
-			eq[0]='=';
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	case ' ': {
+		char buf[128];
+		char *ptr = strchr(text, ' ');
+		int idx = atoi(text);
+		sprintf(buf, "SEARCH[%d]", idx);
+		if (ptr == NULL)
+			ptr = text+1;
+		else ptr = ptr +1;
+		setenv(buf, ptr, 1);
+		sprintf(buf, "%d", idx);
+		radare_tsearch(buf);
 		} break;
 	case '-':
 		for(i=0;environ[i];i++) {

@@ -398,7 +398,59 @@ int debug_read_at(pid_t pid, void *addr, int length, off_t at)
 #endif
 }
 
-int putdata(pid_t child, long addr, char *data, int len)
+ssize_t WriteMem(int pid, unsigned long addr, size_t sz, const unsigned char *buff)
+{
+        unsigned long words = sz / sizeof(long) ;
+        unsigned long last = (sz % sizeof(long))*CHAR_BIT ;
+        unsigned long x, lr ;
+        ssize_t ret ;
+	char buf[4];
+	long *word=&buf;
+
+/*
+        En los fuentes del kernel se encuentra un #ifdef para activar el soporte de escritura por procFS.
+        Por razones de seguridad se encuentra deshabilitado, pero nunca esta de mas intentar ;)
+*/
+#if 0
+	word = ptrace(PTRACE_PEEKDATA, pid, (void *)addr, (void *)buf);
+	if (word==-1)
+		word = ptrace(PTRACE_PEEKTEXT, pid, (void *)addr, (void *)buf);
+	buf[0]=buff[0];
+	ptrace(PTRACE_POKEDATA, (pid_t)pid, (void *)addr, (void *)buf);
+	ptrace(PTRACE_POKETEXT, pid, (void *)addr, (void *)buf);
+	return sz;
+#endif
+eprintf("%d ->%d (0x%x)\n",pid, (int)sz, (long)addr);
+
+
+	for(x=0;x<words;x++)
+		if (ptrace(PTRACE_POKEDATA,pid,&((long *)addr)[x],((long *)buff)[x]))
+			goto err ;
+
+	if (last)
+	{
+		lr = ptrace(PTRACE_PEEKDATA,pid,&((long *)addr)[x]) ;
+
+		/* Y despues me quejo que lisp tiene muchos parentesis... */
+		if ((lr == -1 && errno) ||
+		    (
+			ptrace(PTRACE_POKEDATA,pid,&((long *)addr)[x],(lr&(-1L<<last)) |
+			(((long *)buff)[x]&(~(-1L<<last))))
+		    )
+		   )
+                goto err;
+	}
+
+	return sz ;
+
+        err:
+                return --x * sizeof(long) ;
+
+        //return ret ;
+}
+
+
+int putdata(pid_t child, unsigned long addr, char *data, int len)
 {
 	char val_aux[sizeof(long)];
 	char val_res[sizeof(long)];
@@ -409,6 +461,8 @@ int putdata(pid_t child, long addr, char *data, int len)
 
 	if(len <= 0)
 		return 0;
+/* todo align in memory */
+	eprintf("one\n");
 
 	for(;pos < last; pos += sizeof(long), val++) {
 		if(ptrace(PTRACE_POKEDATA, child, pos, *val) == -1) {
@@ -447,7 +501,8 @@ int putdata(pid_t child, long addr, char *data, int len)
 
 int debug_write_at(pid_t pid, void *data, int length, off_t addr)
 {
-	return putdata(pid,addr, data, length);
+//	return putdata(pid,(unsigned long)addr, data, length);
+	return WriteMem(pid, (unsigned long)addr, length, data);
 }
 
 inline int debug_getregs(pid_t pid, regs_t *reg)

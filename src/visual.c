@@ -1068,11 +1068,15 @@ CMD_DECL(visual)
 		case 'U':
 			undo_redo();
 			break;
-		case 'f': { rad_flag_t *flag = flag_get_next(1);
-			if (flag) config.seek = flag->offset; else flag_get_next(-0xfffff); }
+		case 'f': { int i;
+			rad_flag_t *flag = flag_get_next(1);
+			if (!flag) flag = flag_get_next(-1);
+			if (!flag) flag = flag_get_reset();
+			if (flag) config.seek = flag->offset; }
 			break;
 		case 'F': { rad_flag_t *flag = flag_get_next(-1);
-			if (flag) config.seek = flag->offset; else flag_get_next(-0xfffff); }
+			if (!flag) flag = flag_get_reset();
+			if (flag) config.seek = flag->offset; }
 			break;
 		case 'D':
 			name = flag_name_by_offset(config.seek);

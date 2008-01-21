@@ -730,7 +730,7 @@ int debug_read(pid_t pid, void *addr, int length)
 
 int debug_write(pid_t pid, void *data, int length)
 {
-	return debug_write_at(pid, ps.offset, (unsigned char *)data, length);
+	return debug_write_at(pid, data, length, ps.offset);
 }
 
 int debug_skip(int times)

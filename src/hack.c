@@ -60,6 +60,7 @@ static int hack_nop()
 	char buf[1024];
 	int i, len;
 	int delta = (config.cursor_mode)?config.cursor:0;
+	char *arch = config_get("asm.arch");
 
 	if (!config_get("cfg.write"))
 		return 0;
