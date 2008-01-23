@@ -34,13 +34,29 @@ void core_load_graph_at(void *widget, char *str)
 {
 	struct program_t *prg;
 	off_t off = get_offset(str);
-	printf("Loading graph... (%s)\n", str);
+	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 	grava_program_graph(prg);
 }
+
+static void core_load_graph_entry(void *widget, GtkWidget *obj)
+{
+	const char *str = gtk_entry_get_text(obj);
+	struct program_t *prg;
+	off_t off = get_offset(str);
+
+	eprintf("Loading graph... (%s)\n", str);
+	radare_seek(off, SEEK_SET);
+	//gtk_widget_destroy(w);
+	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+	list_add_tail(&prg->list, &config.rdbs);
+	grava_program_graph(prg);
+}
+static void core_load_graph_entry2(void *widget, void *foo, GtkWidget *obj)
+{ core_load_graph_entry(widget, obj); }
 
 void core_load_graph_at_label(const char *str)
 {
@@ -85,14 +101,15 @@ void grava_program_graph(struct program_t *prg)
 	g_signal_connect_object (grava, "load-graph-at", ((GCallback) core_load_graph_at), grava, 0);
 	vbox = gtk_vbox_new(FALSE, 1);
 
-#if 0
 	entry = gtk_entry_new();
 	hbox = gtk_hbox_new(FALSE, 2);
 	go = gtk_button_new_with_label("Go");
+	g_signal_connect_object(entry,"activate",((GCallback) core_load_graph_entry), entry, 0); 
+	g_signal_connect_object(go,"activate",((GCallback) core_load_graph_entry), entry, 0); 
+	g_signal_connect_object(go,"button-release-event",((GCallback) core_load_graph_entry2), entry, 0); 
 	gtk_container_add(GTK_CONTAINER(hbox), entry);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(go), FALSE, FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 2);
-#endif
 
 	gtk_container_add(GTK_CONTAINER(w), vbox);
 	gtk_container_add(GTK_CONTAINER(vbox), grava_widget_get_widget(grava));

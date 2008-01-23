@@ -67,7 +67,6 @@
 =============================================================
 
   
-* zoom nflags per block in zoom
 * make graphs does not follow flagged calls :D
 * detachable pG window (uh?)
   - add entry bar

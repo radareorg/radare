@@ -322,7 +322,10 @@ int config_zoombyte_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (!strcmp(node->value, "first")) {
+	if (!strcmp(node->value, "head")) {
+		// ok
+	} else
+	if (!strcmp(node->value, "flags")) {
 		// ok
 	} else
 	if (!strcmp(node->value, "entropy")) {
@@ -335,7 +338,7 @@ int config_zoombyte_callback(void *data)
 		// ok
 	} else {
 		free(node->value);
-		node->value = strdup("first");
+		node->value = strdup("head");
 	}
 }
 
@@ -557,7 +560,7 @@ void config_init()
 
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.size", config.size);
-	node = config_set("zoom.byte", "first");
+	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
 	node = config_set("scr.buf", "false");

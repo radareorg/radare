@@ -99,6 +99,16 @@ rad_flag_t *flag_get_reset()
 	return flag_get_next(flag_ptr);
 }
 
+int flags_between(off_t from, off_t to)
+{
+	int i,n=0;
+	for(i=0;i<nflags;i++) {
+		if (flags[i]->offset > from && flags[i]->offset < to)
+			n++;
+	}
+	return n;
+}
+
 /* deprecated ?!?! */
 void flags_setenv()
 {

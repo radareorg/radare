@@ -655,6 +655,9 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			io_lseek(config.fd, ptr, SEEK_SET);
 			io_read(config.fd, buf, sz);
 			switch(mode[0]) {
+			case 'f': // flags
+				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
+				break;
 			case 'p': // % printable chars
 				config.block[i] = (unsigned char)2.55*hash_pcprint(buf, sz);
 				break;
@@ -662,6 +665,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 				config.block[i] = (unsigned char)hash_entropy(buf, sz);
 				break;
 			//case 'f': // first
+			//case 'h':
 			default:
 				config.block[i] = buf[0];
 				break;
