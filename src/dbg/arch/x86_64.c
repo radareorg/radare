@@ -32,8 +32,6 @@
 
 #if __x86_64__
 
-#define ull unsigned long long
-
 #include "../libps2fd.h"
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -253,7 +251,7 @@ int arch_is_jump(unsigned char *buf)
 
 off_t arch_get_entrypoint()
 {
-	unsigned long long addr;
+	ull addr;
 	debug_read_at(ps.tid, &addr, 4, 0x8048018);
 	return (off_t)addr;
 }
@@ -281,16 +279,16 @@ int arch_dump_registers()
 		fprintf(stderr, "Cannot open\n");
 		return 0;
 	}
-	fprintf(fd, "eax 0x%08x\n", (uint)R_RAX(regs));
-	fprintf(fd, "ebx 0x%08x\n", (uint)R_RBX(regs));
-	fprintf(fd, "ecx 0x%08x\n", (uint)R_RCX(regs));
-	fprintf(fd, "edx 0x%08x\n", (uint)R_RDX(regs));
-	fprintf(fd, "ebp 0x%08x\n", (uint)R_RBP(regs));
-	fprintf(fd, "esi 0x%08x\n", (uint)R_RSI(regs));
-	fprintf(fd, "edi 0x%08x\n", (uint)R_RDI(regs));
-	fprintf(fd, "rip 0x%08x\n", (uint)R_RIP(regs));
-	fprintf(fd, "esp 0x%08x\n", (uint)R_RSP(regs));
-	fprintf(fd, "efl 0x%08x\n", (uint)R_RFLAGS(regs));
+	fprintf(fd, "eax 0x%llx\n", (long long)R_RAX(regs));
+	fprintf(fd, "ebx 0x%llx\n", (long long)R_RBX(regs));
+	fprintf(fd, "ecx 0x%llx\n", (long long)R_RCX(regs));
+	fprintf(fd, "edx 0x%llx\n", (long long)R_RDX(regs));
+	fprintf(fd, "ebp 0x%llx\n", (long long)R_RBP(regs));
+	fprintf(fd, "esi 0x%llx\n", (long long)R_RSI(regs));
+	fprintf(fd, "edi 0x%llx\n", (long long)R_RDI(regs));
+	fprintf(fd, "rip 0x%llx\n", (long long)R_RIP(regs));
+	fprintf(fd, "esp 0x%llx\n", (long long)R_RSP(regs));
+	fprintf(fd, "efl 0x%llx\n", (long long)R_RFLAGS(regs));
 	fclose(fd);
 
 #if 0
@@ -315,7 +313,7 @@ int arch_restore_registers()
 	FILE *fd;
 	char buf[1024];
 	char reg[10];
-	unsigned int val;
+	long long val;
 	regs_t regs;
 
 	printf("Restoring CPU from cpustate.dump...\n");
@@ -377,8 +375,8 @@ int arch_backtrace()
 	%ebp+4 points to ret
 	*/
 	int ret, i;
-	unsigned long long ptr;
-	unsigned long long ebp2;
+	ull ptr;
+	ull ebp2;
 	regs_t regs;
 	unsigned char buf[4];
 
@@ -392,7 +390,7 @@ int arch_backtrace()
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
 	||  !memcmp(buf, "\x89\xe5\x57", 3)) { /* push %ebp ; mov %esp, %ebp */
 		debug_read_at(ps.tid, &ptr, 4, R_RSP(regs));
-		pprintf("#0 0x%08x %s", (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		pprintf("#0 0x%08llx %s", (ull)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ptr;
 	}
 
@@ -400,7 +398,7 @@ int arch_backtrace()
 		debug_read_at(ps.tid, &ebp2, 4, R_RBP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_RBP(regs)+4);
 		if (ptr == 0x0 || R_RBP(regs) == 0x0) break;
-		pprintf("#%d 0x%08x %s\n", i, (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		pprintf("#%d 0x%08llx %s\n", i, (ull)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ebp2;
 	}
 	return i;
@@ -454,7 +452,7 @@ int arch_call(char *arg)
 {
 	int ret;
 	regs_t regs;
-	unsigned long addr;
+	ull addr;
 
 	if (ps.opened == 0)
 		return 0;
@@ -687,42 +685,42 @@ int arch_print_registers(int rad, const char *mask)
 	
 	if (rad) {
 		pprintf("\n"); // XXX stupid trick
-		pprintf("f eax_orig @ 0x%x\n", (int)R_REAX(regs));
-		pprintf("f eax @ 0x%x\n", (int)R_RAX(regs));
-		pprintf("f ebx @ 0x%x\n", (int)R_RBX(regs));
-		pprintf("f ecx @ 0x%x\n", (int)R_RCX(regs));
-		pprintf("f edx @ 0x%x\n", (int)R_RDX(regs));
-		pprintf("f ebp @ 0x%x\n", (int)R_RBP(regs));
-		pprintf("f esi @ 0x%x\n", (int)R_RSI(regs));
-		pprintf("f edi @ 0x%x\n", (int)R_RDI(regs));
-		pprintf("f eip @ 0x%x\n", (int)R_RIP(regs));
-		pprintf("f esp @ 0x%x\n", (int)R_RSP(regs));
+		pprintf("f eax_orig @ 0x%llx\n", (long)R_REAX(regs));
+		pprintf("f eax @ 0x%llx\n", (long)R_RAX(regs));
+		pprintf("f ebx @ 0x%llx\n", (long)R_RBX(regs));
+		pprintf("f ecx @ 0x%llx\n", (long)R_RCX(regs));
+		pprintf("f edx @ 0x%llx\n", (long)R_RDX(regs));
+		pprintf("f ebp @ 0x%llx\n", (long)R_RBP(regs));
+		pprintf("f esi @ 0x%llx\n", (long)R_RSI(regs));
+		pprintf("f edi @ 0x%llx\n", (long)R_RDI(regs));
+		pprintf("f eip @ 0x%llx\n", (long)R_RIP(regs));
+		pprintf("f esp @ 0x%llx\n", (long)R_RSP(regs));
 	} else {
 		if (color) {
 			if (R_RAX(regs)!=R_RAX(oregs)) pprintf("\e[35m");
 			else pprintf("\e[0m");
-			pprintf("  rax  0x%08x\e[0m", R_RAX(regs));
+			pprintf("  rax  0x%08llx\e[0m", (long long)R_RAX(regs));
 			if (R_RSI(regs)!=R_RSI(oregs)) pprintf("\e[35m");
-			pprintf("    rsi  0x%08x\e[0m", R_RSI(regs));
+			pprintf("    rsi  0x%08llx\e[0m", (long long)R_RSI(regs));
 			if (R_RIP(regs)!=R_RIP(oregs)) pprintf("\e[35m");
-			pprintf("    rip    0x%08x\e[0m\n",  (ull) R_RIP(regs));
+			pprintf("    rip    0x%08llx\e[0m\n",  (ull) R_RIP(regs));
 			if (R_RBX(regs)!=R_RBX(oregs)) pprintf("\e[35m");
-			pprintf("  rbx  0x%08x\e[0m", R_RBX(regs));
+			pprintf("  rbx  0x%08llx\e[0m", (long long)R_RBX(regs));
 			if (R_RDI(regs)!=R_RDI(oregs)) pprintf("\e[35m");
-			pprintf("    rdi  0x%08x\e[0m", R_RDI(regs));
+			pprintf("    rdi  0x%08llx\e[0m", (long long)R_RDI(regs));
 			if (R_REAX(regs)!=R_REAX(oregs)) pprintf("\e[35m");
-			pprintf("    orax   0x%08x\e[0m\n",   R_REAX(regs));
+			pprintf("    orax   0x%08llx\e[0m\n",   (long long)R_REAX(regs));
 			if (R_RCX(regs)!=R_RCX(oregs)) pprintf("\e[35m");
-			pprintf("  rcx  0x%08x\e[0m", R_RCX(regs));
+			pprintf("  rcx  0x%08llx\e[0m", (long long)R_RCX(regs));
 			if (R_RSP(regs)!=R_RSP(oregs)) printf("\e[35m");
-			pprintf("    rsp  0x%08x\e[0m", R_RSP(regs));
+			pprintf("    rsp  0x%08llx\e[0m", (long long)R_RSP(regs));
 			if (R_RFLAGS(regs)!=R_RFLAGS(oregs)) pprintf("\e[35m");
 			//pprintf("    eflags 0x%04x  ", R_RFLAGS(regs));
-			pprintf("    eflags 0x%04x  \n", R_RFLAGS(regs));
+			pprintf("    eflags 0x%04llx  \n", (long long)R_RFLAGS(regs));
 			if (R_RDX(regs)!=R_RDX(oregs)) printf("\e[35m");
-			pprintf("  edx  0x%08x\e[0m", R_RDX(regs));
+			pprintf("  edx  0x%08llx\e[0m", (long long)R_RDX(regs));
 			if (R_RBP(regs)!=R_RBP(oregs)) printf("\e[35m");
-			pprintf("    rbp  0x%08x\e[0m    ", R_RBP(regs));
+			pprintf("    rbp  0x%08llx\e[0m    ",(long long) R_RBP(regs));
 			
 			dump_eflags(R_RFLAGS(regs));
 			fflush(stdout);
@@ -730,10 +728,10 @@ int arch_print_registers(int rad, const char *mask)
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
 //#endif
 		} else {
-			pprintf("  rax  0x%08x    rsi  0x%08x    rip    0x%08x\n",   R_RAX(regs), (int)R_RSI(regs), R_RIP(regs));
-			pprintf("  rbx  0x%08x    rdi  0x%08x    orax   0x%08x\n",   R_RBX(regs), R_RDI(regs), R_REAX(regs));
-			pprintf("  rcx  0x%08x    rsp  0x%08x    eflags 0x%04x\n",   R_RCX(regs), (int)R_RSP(regs), R_RFLAGS(regs));
-			pprintf("  rdx  0x%08x    rbp  0x%08x    ", (int)R_RDX(regs), (int)R_RBP(regs));
+			pprintf("  rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (long long)R_RAX(regs), (long long)R_RSI(regs), (long long)R_RIP(regs));
+			pprintf("  rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (long long)R_RBX(regs), R_RDI(regs), (long long)R_REAX(regs));
+			pprintf("  rcx  0x%08llx    rsp  0x%08llx    eflags 0x%04x\n",   (long long)R_RCX(regs), (long long)R_RSP(regs), (long long)R_RFLAGS(regs));
+			pprintf("  rdx  0x%08llx    rbp  0x%08llx    ", (long long)R_RDX(regs), (long long)R_RBP(regs));
 			dump_eflags(R_RFLAGS(regs));
 		}
 
@@ -748,13 +746,13 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
-long get_value(char *str)
+long long get_value(char *str)
 {
-	long tmp;
+	long long tmp;
 
 	if (str[0]&&str[1]=='x')
-		sscanf(str, "0x%x",  (unsigned int*)&tmp);
-	else	tmp = atol(str);
+		sscanf(str, "0x%llx",  (ull *)&tmp);
+	else	tmp = atoll(str);
 	return tmp;
 }
 
@@ -961,7 +959,7 @@ $
         /* restore registers */
         debug_setregs(ps.tid, &reg_saved);
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 
@@ -1026,7 +1024,7 @@ void *arch_alloc_page(int size, int *rsize)
 
 	return ret;
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 } 
@@ -1046,7 +1044,7 @@ void *arch_dealloc_page(void *addr, int size)
 
 	/* mumap call */
         R_RAX(reg) = 0x5b;
-	R_RBX(reg) = (long)addr;
+	R_RBX(reg) = (long long) addr;
         R_RCX(reg) = (size + PAGE_SIZE - 1) & PAGE_MASK;
 
         /* write syscall interrupt code */
@@ -1084,7 +1082,7 @@ void *arch_dealloc_page(void *addr, int size)
 
 	return ret;
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 }
@@ -1139,7 +1137,7 @@ void *arch_get_sighandler(int signum)
 
 	return ret;
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 }
@@ -1184,7 +1182,7 @@ int arch_mprotect(char *addr, unsigned int size, int perms)
         R_RAX(reg) = 0x7d;
         R_RCX(reg) = size;
         R_RDX(reg) = perms;
-        R_RBX(reg) = (long int) addr;
+        R_RBX(reg) = (long long) addr;
 
         R_RIP(reg) = R_RSP(reg) - 4;
 
@@ -1219,7 +1217,7 @@ int arch_mprotect(char *addr, unsigned int size, int perms)
 
 	return ret;
 #else
-	printf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return -1;
 #endif
 }
@@ -1282,7 +1280,7 @@ void *arch_set_sighandler(int signum, off_t handler)
 
 	return ret;
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 }
@@ -1291,13 +1289,13 @@ void *arch_set_sighandler(int signum, off_t handler)
 /* I SHOULD USE THE AOP INTERFACE */
 // XXX must handle current seek
 // XXX must say if this is a forced jump or a conditional one
-int arch_is_jmp(const unsigned char *cmd, unsigned long *addr)
+int arch_is_jmp(const unsigned char *cmd, ull *addr)
 {
 	switch(cmd[0]) {
 	case 0xe9: // jmp
 	case 0xea: // far jmp
 	case 0xeb: // jmp 8
-		*addr = (unsigned long)(cmd+1)+5;
+		*addr = (long long)(cmd+1)+5;
 		return 5;
 	}
 	/* conditional jump */
@@ -1333,6 +1331,135 @@ int arch_is_stepoverable(const unsigned char *cmd)
 		return 5;
 	
 	return arch_is_soft_stepoverable((char*)cmd);
+}
+
+#warning "FIXMI XXX (TM): following code is a party..."
+ull get_ret_sf(ull rsp, ull *ret_pos)
+{
+	ull pos;
+	ull val;
+	unsigned char aux;
+
+	pos = rsp;
+	/* read double-words on stack segment */
+	while(debug_read_at(ps.tid, &val, sizeof(unsigned long), pos) 
+		 ==
+		 sizeof(unsigned long)) {
+
+		/* FIXME: check call instruction more correctly */
+		/* find call bytecodes */
+
+		if(is_code(val) && (
+	     	   (debug_read_at(ps.tid, &aux, sizeof(char), val - 7)
+		    == sizeof(char) && aux == 0x65) /* far call */ || 
+		   (debug_read_at(ps.tid, &aux, sizeof(char), val - 5)
+		    == sizeof(char) && aux == 0xe8) /* call */ ||
+		   (debug_read_at(ps.tid, &aux, sizeof(char), val - 3)
+		    == sizeof(char) && aux == 0xff) )) /* near call */  {
+			//printf("val: 0x%x pos: 0x%x\n", val, pos); 
+			*ret_pos = pos;
+			return val;
+		} 
+
+		pos += sizeof(unsigned long);
+	} 
+
+	*ret_pos = 0;
+	return 0;
+}
+
+void next_sf(struct list_head *list, ull rsp)
+{
+	ull ret_pos, ret;
+	struct sf_t  *sf;
+
+	/* get return address of stack frame and return position */
+	ret = get_ret_sf(rsp, &ret_pos);
+
+	/* nothing else! */
+	if(ret == 0)
+		return;
+
+	/* fill stack frame structure */
+	sf = (struct sf_t *)malloc(sizeof(struct sf_t));
+	if(!sf) {
+		perror(":error malloc stack frame");
+		return;
+	}
+
+	sf->ret_addr = ret;
+	sf->ebp = 0;
+	sf->vars_sz = ret_pos - rsp;
+	sf->sz =  ret_pos - rsp + sizeof(ull);
+
+	/* get next stack frame */
+	next_sf(list, ret_pos + sizeof(ull));
+
+	/* add stack frame */
+	list_add(&sf->next, list);
+}
+
+struct list_head *arch_bt()
+{
+	struct list_head *bt_list;
+
+	/* initialize backtrace list */
+	bt_list = (struct list_head *)malloc(sizeof(struct list_head));
+	if(!bt_list) {
+		perror(":error malloc backtrace list");
+		return NULL;
+	}
+
+	INIT_LIST_HEAD(bt_list);
+
+	/* init mapped regions */
+	debug_init_maps(1);
+
+	/* get stack frames */
+	next_sf(bt_list, R_RSP(WS(regs)));
+
+	return bt_list;
+}
+
+int arch_stackanal()
+{
+#warning "FIXMI XXX (TM): I prefered to leave this function void in favor of humand kind."
+}
+
+ull get_reg(char *reg)
+{
+	int i;
+
+	for(i = 0;  roff[i].reg != 0; i++) 
+		if(!strncmp(roff[i].reg, reg, strlen(roff[i].reg)))
+			return i;
+
+	return -1;
+}
+
+void arch_view_bt(struct list_head *sf)
+{
+#warning "FIXMI XXX (TM): Would be so nice to have some code inside my short life."
+}
+
+void free_bt(struct list_head *sf)
+{
+   struct list_head *p, *aux;
+   struct sf_t *sf_e;
+
+   p = sf->next;
+
+   while(p && p != sf)
+    {
+	aux = p->next;
+
+	sf_e = list_entry(p, struct sf_t, next);
+        free(sf_e);
+
+        p = aux;
+    }
+
+   free(sf);
 }
 
 #endif

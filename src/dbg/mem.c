@@ -264,7 +264,7 @@ void print_maps_regions(int rad)
 				name[i] = ch;
 			}
 			name[i]='\0';
-			printf("f section_%s @ 0x%08x\n", name, mr->ini);
+			pprintf("f section_%s @ 0x%08llx\n", name, (unsigned long long)mr->ini);
 		} else {
 			perms[0] = (mr->perms & REGION_READ)?  'r' : '-';
 			perms[1] = (mr->perms & REGION_WRITE)? 'w' : '-';
@@ -272,8 +272,9 @@ void print_maps_regions(int rad)
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
 			perms[4] = 0;
 
-			printf("0x%.8x - 0x%.8x %s 0x%.8x %s\n",
-				 mr->ini, mr->end, perms, mr->size, mr->bin);
+			pprintf("0x%.8llx - 0x%.8llx %s 0x%.8llx %s\n",
+				 (unsigned long long)mr->ini, (unsigned long long)mr->end, perms,
+				(unsigned long long)mr->size, (unsigned long long)mr->bin);
 		}
 	}
 }
@@ -287,11 +288,11 @@ void page_restore(const char *dir)
 	if (dir&&*dir) {
 		dir = dir + 1;
 		if (strchr(dir,'/')) {
-			printf("No '/' permitted here.\n");
+			eprintf("No '/' permitted here.\n");
 			return;
 		}
 		if ( chdir(dir) == -1 ) {
-			printf("Cannot chdir to '%s'\n", dir);
+			eprintf("Cannot chdir to '%s'\n", dir);
 			return;
 		}
 	}
@@ -303,7 +304,8 @@ void page_restore(const char *dir)
 
 		if ( mr->perms & REGION_WRITE ) {
 			printf("Restoring from %08X-%08X.dump  ; 0x%.8x  %s\n",
-				 mr->ini, mr->end, mr->size, mr->bin);
+				 (long long)mr->ini, (long long)mr->end,
+				 (long long) mr->size, (long long)mr->bin);
 
 			buf = (char*)malloc(mr->size);
 			sprintf(buf, "%08X-%08X.dump", mr->ini, mr->end);
@@ -354,11 +356,12 @@ void page_dumper(const char *dir)
 				sizeof(MAP_REG));
 
 		if ( mr->perms & REGION_WRITE || mr->flags & FLAG_USERCODE ) {
-			printf("Dumping %08X-%08X.dump  ; 0x%.8x  %s\n",
-				 mr->ini, mr->end, mr->size, mr->bin);
+			printf("Dumping %08llX-%08llX.dump  ; 0x%.8x  %s\n",
+				 (long long)mr->ini, (long long)mr->end,
+				 (long long) mr->size, (long long)mr->bin);
 
 			buf = (char*)malloc(mr->size);
-			sprintf(buf, "%08X-%08X.dump", mr->ini, mr->end);
+			sprintf(buf, "%08llX-%08llX.dump", (long long)mr->ini, (long long)mr->end);
 			fd = fopen(buf, "wb");
 			if (fd == NULL) {
 				eprintf("Oops. cannot open\n");

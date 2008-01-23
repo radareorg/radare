@@ -488,14 +488,9 @@ CMD_DECL(blocksize)
 
 CMD_DECL(comment)
 {
-	int fd;
+		pprintf_flush();
 	char buf[1024];
 	char *text = input;
-	char *rdbfile = config_get("file.rdb");
-
-	// XXX should not exist or so?
-	//for(;*text&&!iswhitespace(*text);text=text+1);
-	//for(;*text&&iswhitespace(*text);text=text+1);
 
 	if (text[0]) {
 		struct list_head *foo;
@@ -503,25 +498,6 @@ CMD_DECL(comment)
 	} else {
 		metadata_comment_list();
 	}
-#if 0
-	if (rdbfile&&text[0]!='\0'&&text[0]!=' ') {
-#if 0
-		fd = open(rdbfile,O_APPEND|O_RDWR);
-		if (fd == -1)
-			fd = rdb_init();
-		if (fd == -1)
-			return;
-#endif
-		sprintf(buf, "comment="OFF_FMT" %s\n", config.seek, text);
-		list_add_tail(foo, &comments);
-	//	write(fd, buf, strlen(buf));
-	//	close(fd);
-	} else {
-		char *env = getenv("EDITOR");
-		sprintf(buf, "%s %s",(env)?env:"vim", rdbfile);
-		system(buf);
-	}
-#endif
 }
 
 #if 0

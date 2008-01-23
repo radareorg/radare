@@ -1,4 +1,6 @@
 //x86_64.c
+#define ull unsigned long long
+
 long long arch_syscall(int pid, int sc, ...);
 int debug_dr(char *cmd);
 int arch_is_jump(unsigned char *buf);
@@ -16,7 +18,7 @@ int arch_call(char *arg);
 int arch_print_fpregisters(int rad, const char *mask);
 int arch_print_syscall();
 int arch_print_registers(int rad, const char *mask);
-long get_value(char *str);
+long long get_value(char *str);
 int arch_set_register(char *reg, char *value);
 int arch_continue();
 void *arch_mmap(int fd, int size, off_t addr);
@@ -25,7 +27,7 @@ void *arch_dealloc_page(void *addr, int size);
 void *arch_get_sighandler(int signum);
 int arch_mprotect(char *addr, unsigned int size, int perms);
 void *arch_set_sighandler(int signum, off_t handler);
-int arch_is_jmp(const unsigned char *cmd, unsigned long *addr);
+int arch_is_jmp(const unsigned char *cmd, ull *addr);
 int arch_is_call(const char *cmd);
 int arch_is_soft_stepoverable(const char *cmd);
 int arch_is_stepoverable(const unsigned char *cmd);

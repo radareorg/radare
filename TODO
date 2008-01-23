@@ -7,8 +7,74 @@
 
 ===========================================================
 
+* Do not use the char '(' in asm.lines. just use - or =
+
+* Function frames:
+  - powerpc ; frame size > 56b and multiple of 8
+
+  mflr  r0              ; move retaddr to r0
+  stw   r0,8(sp)        ; save r0 in stack
+  stwu  sp, -frame(sp)  ; setup new frame
+  ...
+  lwz   r0, frame(sp)+8 ; return address to r0
+  addic sp,sp,frame     ; remove frame
+  mtlr  r0              ; restore return
+  blr                   ; return
+
+ - intel (GNU)
+
+  push ebp         55
+  mov ebp, esp     89 e5
+  sub esp, 0x28    83 ec 28
+  ...
+  leave            c9
+  ret              c3
+
+ - intel (MS)
+
+  sub esp, 0x25c   81 ec (5c 02 00 00)
+  ...
+  add esp, 0x25c   81 c4 (5c 02 00 00)
+  ret              c3
+
+ - intel (MS2)
+
+ mov edi, edi      8b ff
+ push ebp          55
+ mov ebp, esp      8b ec
+ push esi
+
+ pop esi
+ pop ebp
+ retn 8 ; esp+=8 && ret
+
+ - arm
+
+  mov R12, SP
+  stmfd SP!, {R11, R12, LR, PC}
+  sub R11, R12, #4
+  (stack size: sub SP,SP,#0xC)
+  (return stuff:
+    ldr R3, =0xcacacafe
+    mov R0, R3)
+  ldmfd SP, { R11, SP, PC }
+
+  mov R12, SP
+  stmfd SP!, {R11, R12, LR, PC}
+  sub R11, R12, #4
+  ldmfd SP, { R11, SP, PC }
+
+=============================================================
+
+  
+* zoom nflags per block in zoom
+* make graphs does not follow flagged calls :D
+* detachable pG window (uh?)
+  - add entry bar
 * search flag names take sense with keyword number!! not just index in array of search
   - pretty output
+* asm.comments does not work? or wtf?
+  - remove comments with cursor
 + key to seek to cursor
 + EH - event handling (event type + source pid)
   using linked list.h
@@ -101,7 +167,6 @@
 /k1 keyword2
 /km0 keyword0-binarymask
 
-* !trace [N] -> trace N instructions
 * MSB stego
 * Show FPU stack contents
 * exception frame information (try { ... } catch stuff)
@@ -171,9 +236,7 @@ Bugs
 * analitzar fletxetes en el code block actual
   - mirar blocks de codi ficara linea ascii art
   - poder escollir totes les fletxes a lesqerra o 2 panels amb '|'
-
 * import esteve's object injector
-* rename Y to yy
 
 
 Rabin

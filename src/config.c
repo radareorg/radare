@@ -459,7 +459,11 @@ void config_init()
 	INIT_LIST_HEAD(&(config_new.nodes));
 
 	/* enter keys */
+#if __x86_64__
+	node = config_set("asm.arch", "intel64");
+#else
 	node = config_set("asm.arch", "intel");
+#endif
 	node->callback = &config_arch_callback;
 	config_set("asm.syntax", "pseudo");
 	config_set("asm.xrefs", "xrefs");

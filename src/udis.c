@@ -306,9 +306,9 @@ void udis(int len, int rows)
 
 			if (show_offset) {
 				C {
-					pprintf(C_GREEN"0x%08X "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+					pprintf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 				} else {
-					pprintf("0x%08X ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+					pprintf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 				}
 			}
 			if (show_size)

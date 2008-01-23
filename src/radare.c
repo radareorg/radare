@@ -596,6 +596,7 @@ int radare_prompt()
 	/* run the visual command */
 	if ( (ptr = config_get("cmd.visual")) && ptr[0])
 		radare_command( ptr, 0 );
+	pprintf_flush();
 	radare_prompt_command();
 
 	C	sprintf(prompt, C_YELLOW"["OFF_FMT"]> "C_RESET,

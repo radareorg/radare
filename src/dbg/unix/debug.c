@@ -129,8 +129,8 @@ int debug_print_wait(char *act)
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
-			eprintf("=== %s: (%d) stop at 0x%x(%s)\n",
-				act, ps.tid, (unsigned int)arch_pc(), //WS_PC() is not portable
+			eprintf("=== %s: (%d) stop at 0x"OFF_FMTx"(%s)\n",
+				act, ps.tid, (void *)arch_pc(), //WS_PC() is not portable
 				sig_to_name(WS_SI(si_signo)));
 		}
 	}
@@ -337,11 +337,11 @@ int debug_detach(int pid)
 /* copied from patan */
 extern int errno;
 
-static int ReadMem(int pid, unsigned long addr, size_t sz, void *buff)
+static int ReadMem(int pid, long long addr, size_t sz, void *buff)
 {
 	unsigned long words = sz / sizeof(long) ;
 	unsigned long last = sz % sizeof(long) ;
-	unsigned long x, lr ;
+	long x, lr ;
 	int ret ;
 
 	for(x=0;x<words;x++) {
@@ -372,7 +372,7 @@ err:
 #define ALIGN_SIZE 4096
 int debug_read_at(pid_t pid, void *addr, int length, off_t at)
 {
-	return ReadMem(pid, (unsigned long)at, length, addr);
+	return ReadMem(pid, (long long)at, length, addr);
 #if 0
 	long dword;
         int len, i = length;
@@ -398,11 +398,11 @@ int debug_read_at(pid_t pid, void *addr, int length, off_t at)
 #endif
 }
 
-ssize_t WriteMem(int pid, unsigned long addr, size_t sz, const unsigned char *buff)
+ssize_t WriteMem(int pid, long long addr, size_t sz, const unsigned char *buff)
 {
-        unsigned long words = sz / sizeof(long) ;
-        unsigned long last = (sz % sizeof(long))*CHAR_BIT ;
-        unsigned long x, lr ;
+        long long words = sz / sizeof(long) ;
+        long long last = (sz % sizeof(long))*CHAR_BIT ;
+        long long x, lr ;
         ssize_t ret ;
 	char buf[4];
 	long *word=&buf;
@@ -420,7 +420,7 @@ ssize_t WriteMem(int pid, unsigned long addr, size_t sz, const unsigned char *bu
 	ptrace(PTRACE_POKETEXT, pid, (void *)addr, (void *)buf);
 	return sz;
 #endif
-eprintf("%d ->%d (0x%x)\n",pid, (int)sz, (long)addr);
+//eprintf("%d ->%d (0x%x)\n",pid, (int)sz, (long)addr);
 
 
 	for(x=0;x<words;x++)
@@ -462,7 +462,7 @@ int putdata(pid_t child, unsigned long addr, char *data, int len)
 	if(len <= 0)
 		return 0;
 /* todo align in memory */
-	eprintf("one\n");
+//	eprintf("one\n");
 
 	for(;pos < last; pos += sizeof(long), val++) {
 		if(ptrace(PTRACE_POKEDATA, child, pos, *val) == -1) {
@@ -502,7 +502,7 @@ int putdata(pid_t child, unsigned long addr, char *data, int len)
 int debug_write_at(pid_t pid, void *data, int length, off_t addr)
 {
 //	return putdata(pid,(unsigned long)addr, data, length);
-	return WriteMem(pid, (unsigned long)addr, length, data);
+	return WriteMem(pid, (long long)addr, length, data);
 }
 
 inline int debug_getregs(pid_t pid, regs_t *reg)
@@ -552,7 +552,6 @@ inline int debug_steps()
 {
 	return ptrace(PTRACE_SINGLESTEP, ps.tid, PTRACE_PC, 0);
 }
-
 
 int debug_dispatch_wait()
 {

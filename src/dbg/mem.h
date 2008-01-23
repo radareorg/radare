@@ -16,7 +16,7 @@ typedef struct {
 
 	char *tag;
 	char *addr;
-	int size;
+	unsigned long size;
 
 	struct list_head list;
 
@@ -29,7 +29,7 @@ typedef struct {
 	unsigned long perms, perms_orig;
 	int flags;
 	char *bin;
-	int size;
+	unsigned long size;
 
 	struct list_head list;
 
