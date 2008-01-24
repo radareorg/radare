@@ -9,6 +9,19 @@
 
 * Do not use the char '(' in asm.lines. just use - or =
 
+* Define function parameters to addresses (format, size)
+  4s4s2s = void foo(char *str
+
+  - print formatted data
+  - show function signature before the jump or call
+  - analyze stack with this
+  pF 4s4s2s @ ebp
+
+* roll/funroll code
+* compare memory
+  cx 40 89 @ eip && s 10
+  cf foo.tmp @ eip
+
 * Function frames:
   - powerpc ; frame size > 56b and multiple of 8
 

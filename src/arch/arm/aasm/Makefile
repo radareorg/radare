@@ -2,8 +2,15 @@ include ../../../../config.mk
 CFLAGS+=-DDATADIR=\"${DATADIR}\"
 AOBJ=aasm.o utils.o elf.o
 
+.SUFFIXES: .c .o
+.c.o:
+	${E} 'Compiling $<'
+	${Q}$(CC) -c $(CFLAGS) -o $@ $<
+
 all: ${AOBJ}
-	${CC} ${AOBJ} -o armasm
+	${E} 'Linking armasm'
+	${Q}${CC} ${AOBJ} -o armasm
 
 clean:
-	rm ${AOBJ} armasm
+	${E} 'Cleaning src/arch/arm/aasm'
+	${Q}rm -f ${AOBJ} armasm

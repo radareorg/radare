@@ -2,6 +2,8 @@
 #
 #
 
+include ../../../../config.mk
+
 LDFLAGS += -r
 CFLAGS += -Wall -O2
 UD_STANDALONE ?= ud_standalone.o
@@ -9,7 +11,8 @@ UD_STANDALONE ?= ud_standalone.o
 .PHONY: clean
 .SUFFIXES: .c .o
 .c.o:
-	$(CC) -c $(CFLAGS) -D__UD_STANDALONE__ -o $@ $<
+	${E} 'Compiling $<'
+	${Q}$(CC) -c $(CFLAGS) -D__UD_STANDALONE__ -o $@ $<
 
 OBJS =	mnemonics.o \
 	opcmap.o \
@@ -21,6 +24,8 @@ OBJS =	mnemonics.o \
 	udis86.o
 
 $(UD_STANDALONE): clean $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $@
+	${E} 'Linking $@'
+	${Q}$(LD) $(LDFLAGS) $(OBJS) -o $@
 clean:
-	$(RM) -f $(OBJS) $(UD_STANDALONE)
+	${E} 'Cleaning src/arch/x86/udis86'
+	${Q}$(RM) -f $(OBJS) $(UD_STANDALONE)

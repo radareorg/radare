@@ -89,10 +89,19 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 .PHONY: all pre radare radare-hash radare-xc javasm radare-xrefs clean
 
+.SUFFIXES: .c .o
+.c.o:
+	${E} 'Compiling $<'
+	${Q}$(CC) -c $(CFLAGS) -o $@ $<
+
 all: ${TARGETS} udis86 armasm \
 	lsbstego pre radare librdb radare-hash \
 	radare-xc radare-xrefs javasm
 	@true
+
+${OBJS}: %.o: %.c
+	${E} 'Compiling $<'
+	${Q}${CC} ${CFLAGS} -c -o $@ $<
 
 vala:
 	cd ../vala/ && ${MAKE} all
@@ -113,14 +122,17 @@ udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
 radare: ${OBJ}
-	${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
+	${E} 'Linking radare'
+	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
 
 javasm:
-	-${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
+	${E} 'Linking javasm'
+	-${Q}${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
 
 
 lsbstego: lsbstego.o
-	${CC} lsbstego.o -g -o lsbstego${BINSFX}
+	${E} 'Linking lsbstego'
+	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all
@@ -129,18 +141,21 @@ radare-hash:
 	-cd hasher && ${MAKE} all
 
 radare-xc: xc.o
-	${CC} ${CFLAGS} ${LDFLAGS} -o xc${BINSFX} xc.o
+	${E} 'Linking xc'
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xc${BINSFX} xc.o
 	@#ln -fs radare xc # ???
 
 radare-xrefs: xrefs.o
-	${CC} ${CFLAGS} ${LDFLAGS} -o xrefs${BINSFX} xrefs.o
+	${E} 'Linking xrefs'
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xrefs${BINSFX} xrefs.o
 
 clean:
-	-rm -f *.o
-	-cd arch/arm/aasm && ${MAKE} clean
-	-${MAKE} -C hasher clean
-	-${MAKE} -C rdb clean
-	-${MAKE} -C rabin clean
-	-${MAKE} -C rasm clean
-	-${MAKE} -C arch/x86/udis86 clean
-	-rm -rf xc.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} xc${BINSFX} a.out a.exe
+	${E} 'Cleaning src'
+	-${Q}rm -f *.o
+	-${Q}cd arch/arm/aasm && ${MAKE} clean
+	-${Q}${MAKE} -C hasher clean
+	-${Q}${MAKE} -C rdb clean
+	-${Q}${MAKE} -C rabin clean
+	-${Q}${MAKE} -C rasm clean
+	-${Q}${MAKE} -C arch/x86/udis86 clean
+	-${Q}rm -rf xc.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} xc${BINSFX} a.out a.exe
