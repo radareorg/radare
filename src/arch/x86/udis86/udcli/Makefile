@@ -26,12 +26,21 @@ RM		= rm
 OBJS =	udcli.o ../libudis86.a
 
 udcli: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o udcli
+	${E} 'Linking udcli'
+	${Q}$(CC) $(CFLAGS) $(OBJS) -o udcli
+
 install: udcli
-	$(INSTALL_PROGRAM) $(srcdir)/udcli $(INSTALLROOT)$(bindir)/udcli
+	${E} 'Installing udcli'
+	${Q}$(INSTALL_PROGRAM) $(srcdir)/udcli $(INSTALLROOT)$(bindir)/udcli
+
 uninstall:
-	$(RM) -f $(INSTALLROOT)$(bindir)/udcli
+	${E} 'Uninstall udcli'
+	${Q}$(RM) -f $(INSTALLROOT)$(bindir)/udcli
+
 clean:
-	$(RM) -f core $(srcdir)/*.o $(srcdir)/udcli
+	${E} 'Cleaning src/arch/x86/udis86/udcli'
+	${Q}$(RM) -f core $(srcdir)/*.o $(srcdir)/udcli
+
 distclean: clean
-	$(RM) -f udcli config.h Makefile *~
+	${E} 'Distcleaning src/arch/x86/udis86/udcli'
+	${Q}$(RM) -f udcli config.h Makefile *~

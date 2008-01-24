@@ -9,15 +9,22 @@ LDFLAGS+=${GTK_LIBS} ${VTE_LIBS}
 BIN=gradare
 
 all: ${OBJ}
-	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} -o ${BIN}
+	${E} 'Linking ${BIN}'
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} -o ${BIN}
+
+${OBJ}: %.o: %.c
+	${E} 'Compiling $<'
+	${Q}${CC} ${CFLAGS} -c -o $@ $<
 
 install:
-	${INSTALL_DIR} ${PREFIX}/bin
-	${INSTALL_PROGRAM} ${BIN} ${PREFIX}/bin
-	-rm -rf ${LIBEXECDIR}/gradare/*
-	mkdir -p ${LIBEXECDIR}/gradare/
-	cp -rf grsc/* ${LIBEXECDIR}/gradare/
-	chmod +x ${LIBEXECDIR}/gradare/Shell
+	${E} 'Installing gradare'
+	${Q}${INSTALL_DIR} ${PREFIX}/bin
+	${Q}${INSTALL_PROGRAM} ${BIN} ${PREFIX}/bin
+	-${Q}rm -rf ${LIBEXECDIR}/gradare/*
+	${Q}mkdir -p ${LIBEXECDIR}/gradare/
+	${Q}cp -rf grsc/* ${LIBEXECDIR}/gradare/
+	${Q}chmod +x ${LIBEXECDIR}/gradare/Shell
 
 clean:
-	-rm -f ${OBJ} ${BIN}
+	${E} 'Cleaning gui'
+	-${Q}rm -f ${OBJ} ${BIN}
