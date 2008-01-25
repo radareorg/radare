@@ -38,9 +38,8 @@ int help_message()
 	printf(" Information\n");
 	TITLE_END
 	printf("  info            show debugger and process status\n");
-	printf("  pstree          shows the childrens tree\n");
-	printf("  pid             show pid of the ptraced process\n");
-	printf("  pids            show the pids of all the attachable processes\n");
+	printf("  pid [tid]       show pid of the debug process, current tid and childs, or set tid.\n");
+	//printf("  pids            show the pids of all the attachable processes\n"); // ??!?
 	printf("  status          show the contents of /proc/pid/status\n");
 	printf("  signal          show signals handler\n");
 	printf("  maps[*]         flags the current memory maps (.!rsc maps)\n");
@@ -155,7 +154,7 @@ static struct commads_t {
 	{ "restore", CB_SPACE, &page_restore },
 	{ "status",   CB_NOARGS, &debug_status },
 	{ "pids", CB_NOARGS , &debug_pids },
-	{ "pstree", CB_NOARGS, &debug_pstree },
+	{ "pid", CB_NOARGS, &debug_pstree },
 	{ "attach", CB_INT, &debug_attach },
 	{ "skip", CB_INT, &debug_skip },
 	{ "detach", CB_NOARGS, &debug_detach },
@@ -212,9 +211,6 @@ int debug_system(const char *command)
 	}
 
 	/* aliases */
-	if (!strcmp(command, "pid"))
-		printf("%d\n", ps.pid);
-	else
 	if (!strcmp(command, "s"))
 		return debug_step(1);
 	else

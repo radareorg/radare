@@ -102,6 +102,10 @@ inline int debug_attach(pid_t pid)
 		ps.pid = pid;
 		/* set active tid */
 		ps.tid = debug_load_threads();
+		if (ps.tid<0) { // no default active thread
+			eprintf("No default active thread. Taking root as default.\n");
+			ps.tid = ps.pid;
+		}
 		return 0;
 	}
 	eprintf("Cannot attach\n");
@@ -146,12 +150,9 @@ int debug_load_threads()
 			if(th_i->ht == NULL)
 				goto err_load_th;
 
-
 			ret = te32.th32ThreadID;
 			add_th(th_i);
-
 		}
-
 	} while(Thread32Next(th, &te32));
 
 err_load_th:	
