@@ -95,6 +95,7 @@ int help_message()
 	printf("  wp[m|?] [expr]  put a watchpoint (wp? for help) (wpm for monitor)\n");
 	printf("  wtrace          watchpoint trace\n");
 	printf("  bp [addr]       put a breakpoint at addr (no arg = list)\n");
+	printf("  ie              ignore events\n");
 	TITLE
 	printf(" Registers\n");
 	TITLE_END
@@ -141,6 +142,7 @@ static struct commads_t {
 	{ "st",  CB_NORMAL, &arch_stackanal },
 	{ "fd",  CB_NORMAL, &debug_fd },
 	{ "th",  CB_NORMAL, &debug_th },
+	{ "ie",  CB_NORMAL, &debug_ie },
 	{ "hack",  CB_SPACE, &arch_hack },
 	{ "maps", CB_NORMAL, &debug_print_maps },
 	{ "syms", CB_NORMAL, &debug_syms },

@@ -100,7 +100,7 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 	FILE *fd;
 	DIR *dh = opendir("/proc/");
 
-	if (dh == NULL)
+	if (pid == 0 || dh == NULL)
 		return 0;
 
 	while((file=readdir(dh)) ) {

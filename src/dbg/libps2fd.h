@@ -153,6 +153,7 @@ struct wait_state {
 struct ps {
 	int fd;         /* related metadata */
 	int verbose;
+	pid_t opid;
 	pid_t pid;
 	pid_t tid;
 	char *filename;

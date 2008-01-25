@@ -110,7 +110,9 @@ int debug_ktrace()
 
 int debug_pstree()
 {
-	printf(" + %d\n", ps.tid);
+	printf(" pid : %d\n", ps.pid);
+	pids_sons_of_r(ps.pid,0,0);
+	printf(" tid : %d\n", ps.tid);
 	pids_sons_of_r(ps.tid,0,0);
 	return 0;
 }
@@ -129,8 +131,8 @@ int debug_print_wait(char *act)
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
-			eprintf("=== %s: (%d) stop at 0x"OFF_FMTx"(%s)\n",
-				act, ps.tid, (void *)arch_pc(), //WS_PC() is not portable
+			eprintf("=== %s: tid: %d signal: %d stop at 0x%llx (%s)\n",
+				act, ps.tid, WS_SI(si_signo), (unsigned long long)arch_pc(), //WS_PC() is not portable
 				sig_to_name(WS_SI(si_signo)));
 		}
 	}
@@ -562,7 +564,7 @@ int debug_dispatch_wait()
 	struct bp_t	*bp;
 	TH_INFO		*th;
 	pid_t tid = 0;
-	int ret;
+	int ret = 0;
 
 	WS(event) = UNKNOWN_EVENT;
 
@@ -577,8 +579,20 @@ int debug_dispatch_wait()
 		if ( ( th = get_th(ps.tid) ) ) {
 			ps.th_active = th;
 			TH_ADDR(th, arch_pc());
-		} else
-			eprintf(":warning unknown thread %d\n", ps.tid);
+		} else {
+			eprintf("pid: %d. new process created!\n"
+			" - Use !pstree to list, and !th to change current pid (tid)\n", ps.tid);
+			if(!(th = init_th(tid, status))) { // STOPPED?
+				perror("init_th");
+				return -1;
+			}
+			th->tid = ps.tid;
+			th->addr = arch_pc();
+			add_th(th);
+			ps.th_active = ps.tid;
+
+			ret = 1;
+		}
 	} else
 		ps.th_active = 0;
 
@@ -597,7 +611,6 @@ int debug_dispatch_wait()
 			WS_SI(si_signo) == 0 /* bsd */
 #endif
 			) {
-
 #if __linux__ && !__x86_64__
 				/* linux threads support */
 				if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {

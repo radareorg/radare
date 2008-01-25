@@ -480,6 +480,7 @@ char *strclean(char *str)
 	return str;
 }
 
+
 int strnull(const char *str)
 {
 	return (!str || !str[0]);

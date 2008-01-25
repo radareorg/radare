@@ -52,7 +52,7 @@
 void debug_dumpcore()
 {
 #if __NetBSD__
-	ptrace(PT_DUMPCORE, ps.pid, NULL, 0);
+	ptrace(PT_DUMPCORE, ps.tid, NULL, 0);
 #else
 	eprintf("Not supported for this platform\n");
 #endif
@@ -389,6 +389,10 @@ int debug_wtrace()
         return 0;
 }
 
+int debug_ie(char *input)
+{
+	pprintf("Ie! (%s)\n", input);
+}
 
 int debug_until(char *addr)
 {
@@ -568,6 +572,7 @@ int debug_info(char *arg)
 	} else {
 		pprintf(" filename %s\n", ps.filename);
 
+		pprintf(" pid         %d\n", ps.pid);
 		sprintf(buf, "/proc/%d/cmdline", ps.pid);
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
@@ -577,7 +582,14 @@ int debug_info(char *arg)
 		}
 
 		// TODO is all this stuff necesary?
-		pprintf(" pid         %d\n", ps.pid);
+		pprintf(" tid(current)%d\n", ps.tid);
+		sprintf(buf, "/proc/%d/cmdline", ps.tid);
+		if ((fd = open(buf, O_RDONLY)) !=-1) {
+			memset(buf,'\0',4096);
+			read(fd, buf, 4095);
+			pprintf(" cmdline  %s\n", buf);
+			close(fd);
+		}
 		pprintf(" dbg.bep     %s\n", config_get("dbg.bep"));
 		pprintf(" entry       0x%08x\n", ps.entrypoint);
 		pprintf(" ldentry     0x%08x\n", ps.ldentry);
@@ -592,6 +604,16 @@ int debug_info(char *arg)
 
 int debug_th(char *cmd)
 {
+	int newpid = atoi(cmd);
+	if (newpid !=0) {
+		ps.tid = newpid;
+	}
+	if (strchr(cmd,'?')) {
+		eprintf("Usage: th [pid]\n");
+		eprintf("- Change current thread\n");
+		eprintf("- Use !pstree to see other processes\n");
+		return 0;
+	} 
 	return th_list();
 }
 
@@ -730,7 +752,7 @@ int debug_read(pid_t pid, void *addr, int length)
 
 int debug_write(pid_t pid, void *data, int length)
 {
-	return debug_write_at(pid, data, length, ps.offset);
+	return debug_write_at(ps.tid, data, length, ps.offset);
 }
 
 int debug_skip(int times)
@@ -1495,7 +1517,7 @@ int debug_cont()
 		/* launch continue */
 		debug_contp(ps.tid);
 
-	} while(debug_dispatch_wait() == 1 && debug_contp(ps.pid) != -1);
+	} while(debug_dispatch_wait() == 1 && debug_contp(ps.tid) != -1);
 
 	/* print status */
 	debug_print_wait("cont");
@@ -1651,7 +1673,7 @@ int debug_run()
 	if (ps.opened) {
 		if (getv())
 			eprintf("To cleanly stop the execution, type: "
-				       "\"^Z kill -STOP %d && fg\"\n", ps.pid);
+				       "\"^Z kill -STOP %d && fg\"\n", ps.tid);
 		return debug_cont();
 	}
 

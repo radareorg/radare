@@ -46,13 +46,14 @@ int name_to_sig(char *signame)
 	return -1;
 }
 
+static char *nullstr="";
 char *sig_to_name(int sig)
 {
 	int i;
 	for(i=0;signals[i].name;i++)
 		if (sig == signals[i].sig)
 			return signals[i].name;
-	return NULL;
+	return nullstr;
 }
 
 char *sig_to_desc(int sig)

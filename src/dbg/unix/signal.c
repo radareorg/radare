@@ -53,10 +53,10 @@ struct {
   { SIGCONT, "SIGCONT", "Continued"},
   { SIGCHLD, "SIGCHLD", "Child status changed"},
   { SIGTTIN, "SIGTTIN", "Stopped (tty input)"},
+  { SIGTTOU, "SIGTTOU",    "Stopped (tty output)"},
+  { SIGIO,   "SIGIO",    "I/O possible"},
 #if 0
-  { "SIGTTOU",    "Stopped (tty output)"},
-  {"SIGIO",    "I/O possible"},
-  {"SIGXCPU",  "CPU time limit exceeded"},
+  { "SIGXCPU",  "CPU time limit exceeded"},
   {"SIGXFSZ",  "File size limit exceeded"},
   {"SIGVTALRM","Virtual timer expired"},
   {"SIGPROF", "Profiling timer expired"},
