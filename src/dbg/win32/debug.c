@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008
  *       th0rpe <nopcode.org>
+ *       pancake <youterm.com>
  *
  * radare is part of the radare project
  *
@@ -34,7 +35,8 @@ BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 static BOOL WINAPI (*win32_detach)(DWORD);
 static HANDLE WINAPI (*win32_openthread)(DWORD, BOOL, DWORD);
 static HANDLE WINAPI (*win32_dbgbreak)(HANDLE);
-static DWORD WINAPI (*win32_getthreadid)(HANDLE);
+static DWORD WINAPI (*win32_getthreadid)(HANDLE); // Vista
+static DWORD WINAPI (*win32_getprocessid)(HANDLE); // XP
 
 /* mark step flag (DEPRECATED) */
 static int single_step;
@@ -43,21 +45,22 @@ static int exit_wait;
 
 void debug_init_calls()
 {
-	win32_detach = GetProcAddress(GetModuleHandle("kernel32"),
-		       	"DebugActiveProcessStop");
+	win32_detach = GetProcAddress(GetModuleHandle("kernel32"), "DebugActiveProcessStop");
+	win32_openthread = GetProcAddress(GetModuleHandle("kernel32"), "OpenThread");
+	win32_dbgbreak = GetProcAddress(GetModuleHandle("kernel32"), "DebugBreakProcess");
+	// only windows vista :(
+	win32_getthreadid = GetProcAddress(GetModuleHandle("kernel32"), "GetThreadId");
+	// from xp1
+	win32_getprocessid = GetProcAddress(GetModuleHandle("kernel32"), "GetProcessId");
 
-	win32_openthread = GetProcAddress(GetModuleHandle("kernel32"),
-		       	"OpenThread");
-
-	win32_dbgbreak = GetProcAddress(GetModuleHandle("kernel32"),
-		       	"DebugBreakProcess");
-
-	win32_getthreadid = GetProcAddress(GetModuleHandle("kernel32"),
-		       	"GetThreadId");
-
-	if(win32_detach == NULL || win32_openthread == NULL ||
-	   win32_dbgbreak == NULL || win32_getthreadid == NULL) {
-		print_lasterr(__FUNCTION__);
+	if(win32_detach == NULL || win32_openthread == NULL || win32_dbgbreak == NULL) {
+		// OOPS!
+		eprintf("debug_init_calls:\n"
+			"DebugActiveProcessStop: 0x%x\n"
+			"OpenThread: 0x%x\n"
+			"DebugBreakProcess: 0x%x\n"
+			"GetThreadId: 0x%x\n",
+			win32_detach, win32_openthread, win32_dbgbreak, win32_getthreadid);
 		exit(1);
 	}
 }
@@ -86,7 +89,12 @@ static HANDLE tid2handler(pid_t tid)
 
 inline static int handler2tid(HANDLE h)
 {
-	return win32_getthreadid(h);
+	if (win32_getthreadid != NULL) // >= Windows Vista
+		return win32_getthreadid(h);
+	return ps.tid;
+	if (win32_getprocessid != NULL) // >= Windows XP1
+		return win32_getprocessid(h);
+	return (int)h; // XXX broken
 }
 
 inline static int handler2pid(HANDLE h)
@@ -122,7 +130,7 @@ int debug_load_threads()
 	HANDLE th;
 	THREADENTRY32 te32;
 	TH_INFO *th_i;
-	int ret;
+	int ret = 0;
 
 	ret = -1;
 	te32.dwSize = sizeof(THREADENTRY32);
@@ -520,91 +528,67 @@ int debug_dispatch_wait()
 		code = de.dwDebugEventCode;
 
 		switch(code) {
+		case CREATE_PROCESS_DEBUG_EVENT:
+			eprintf("(%d) created process (%d:0x%x)\n",
+				    ps.tid, 
+				    handler2tid(de.u.CreateProcessInfo.
+					    hProcess),
+				 de.u.CreateProcessInfo.lpStartAddress);
 
-			case CREATE_PROCESS_DEBUG_EVENT:
-				eprintf("(%d) created process (%d:0x%x)\n",
-					    ps.tid, 
-					    handler2tid(de.u.CreateProcessInfo.
-						    hProcess),
-					 de.u.CreateProcessInfo.lpStartAddress);
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case EXIT_PROCESS_DEBUG_EVENT:
+			eprintf("\n\n______________[ process finished ]_______________\n\n");
+			ps.opened = 0;
+			debug_load();
+			next_event = 0;
+			break;
+		case CREATE_THREAD_DEBUG_EVENT:
+			eprintf("(%d) created thread (0x%x)\n",
+				    ps.tid, 
+				    de.u.CreateThread.lpStartAddress);
 
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case EXIT_THREAD_DEBUG_EVENT:
+			eprintf("EXIT_THREAD\n");
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case LOAD_DLL_DEBUG_EVENT:
+			eprintf("(%d) Loading %s library at 0x%x\n",
+				ps.tid,
+				"",
+				de.u.LoadDll.lpBaseOfDll);
 
-			case EXIT_PROCESS_DEBUG_EVENT:
-
-				eprintf("\n\n______________[ process "
-					"finished ]_______________\n\n");
-
-				ps.opened = 0;
-				debug_load();
-				next_event = 0;
-				break;
-
-			case CREATE_THREAD_DEBUG_EVENT:
-
-				eprintf("(%d) created thread (0x%x)\n",
-					    ps.tid, 
-					    de.u.CreateThread.lpStartAddress);
-
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
-
-			case EXIT_THREAD_DEBUG_EVENT:
-
-				eprintf("EXIT_THREAD\n");
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
-
-			case LOAD_DLL_DEBUG_EVENT:
-
-
-
-				eprintf("(%d) Loading %s library at 0x%x\n",
-					ps.tid,
-					"",
-					de.u.LoadDll.lpBaseOfDll);
-
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
-
-			case UNLOAD_DLL_DEBUG_EVENT:
-
-				eprintf("UNLOAD_DLL\n");
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
-
-			case OUTPUT_DEBUG_STRING_EVENT:
-
-				eprintf("OUTPUT_DBUG_STING\n");
-				debug_contp(ps.tid);
-				next_event = 1;
-				break;
-
-			case RIP_EVENT:
-
-				eprintf("RIP_EVENT\n");
-				debug_contp(ps.tid);
-				next_event = 1;
-
-				break;
-			case EXCEPTION_DEBUG_EVENT:
-
-				next_event = debug_exception_event(
-				de.u.Exception.ExceptionRecord.ExceptionCode);
-				break;
-
-			default:
-
-			print_lasterr(__FUNCTION__);
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case UNLOAD_DLL_DEBUG_EVENT:
+			eprintf("UNLOAD_DLL\n");
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case OUTPUT_DEBUG_STRING_EVENT:
+			eprintf("OUTPUT_DBUG_STING\n");
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case RIP_EVENT:
+			eprintf("RIP_EVENT\n");
+			debug_contp(ps.tid);
+			next_event = 1;
+			break;
+		case EXCEPTION_DEBUG_EVENT:
+			next_event = debug_exception_event(
+			de.u.Exception.ExceptionRecord.ExceptionCode);
+			break;
+		default:
+			eprintf("Unknown event: %d\n", code);
 			return -1;
 		}
-
 	} while(next_event);
 
 	return 0;

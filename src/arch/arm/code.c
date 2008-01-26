@@ -43,66 +43,38 @@ unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
 int anal_is_B  ( int inst )
 {
 	if  ( ( inst & ARM_BRANCH_I_MASK  ) == ARM_BRANCH_I )
-	{
 		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	 return 0;
 }
 
 int anal_is_BL  ( int inst )
 {
 	
 	if ( anal_is_B(inst) && ( inst & ARM_BRANCH_LINK ) == ARM_BRANCH_LINK  )
-	{
 		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 
 int anal_is_return ( int inst )
 {
 	if ( ( inst & ( ARM_DTM_I_MASK | ARM_DTM_LOAD  | ( 1 << 15 ) ) ) == ( ARM_DTM_I | ARM_DTM_LOAD  | ( 1 << 15 ) )  )
-	{
-
 		return 1;
-	}
-	else 
-	{
-		return 0;
-	}
-
+	return 0;
 }
-
 
 int anal_is_unkjmp ( int inst )
 {
 	if ( (inst & ( ARM_DTX_I_MASK | ARM_DTX_LOAD  | ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ) )
-	{
 		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 int anal_is_condAL ( int inst )
 {
 	if ( ( inst &ARM_COND_MASK ) == ARM_COND_AL )
-	{
 		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 int anal_is_exitpoint ( int inst )

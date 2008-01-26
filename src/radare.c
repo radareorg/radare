@@ -402,6 +402,7 @@ int radare_command(char *tmp, int log)
 			return radare_command(hist_get_i(p), 0);
 	}
 	hist_add(tmp, log);
+	dl_hist_add(tmp);
 	if (config.skip) return 0;
 
 	if (tmp[0] == ':') {
@@ -584,6 +585,7 @@ void radare_prompt_command()
 	}
 }
 
+extern char *dl_prompt;
 int radare_prompt()
 {
 	char input[BUFLEN];
@@ -630,9 +632,11 @@ int radare_prompt()
 		if (ptr && ptr[0]) free(ptr);
 	} else {
 #endif
-		D { printf(prompt); fflush(stdout); }
-		fgets(input, BUFLEN-1, stdin);
-		input[strlen(input)-1] = '\0';
+		//D { printf(prompt); fflush(stdout); }
+		dl_prompt = &prompt;
+		cons_fgets(input, BUFLEN-1);
+		//fgets(input, BUFLEN-1, stdin);
+		//input[strlen(input)-1] = '\0';
 
 #if __UNIX__
 		if (feof(stdin))
@@ -687,12 +691,15 @@ int radare_open(int rst)
 	char buf[4096];
 	char buf2[255];
 	struct config_t ocfg;
-	int wm = config_get("cfg.write");
+	int wm;
 	int fd_mode = wm?O_RDWR:O_RDONLY;
 	off_t seek_orig = config.seek;
 
-	memcpy(&ocfg, &config, sizeof(struct config_t));
+	if (config.file == NULL)
+		return;
 
+	wm = config_get("cfg.write");
+	memcpy(&ocfg, &config, sizeof(struct config_t));
 	prepare_environment("");
 
 	ptr = strrchr(config.file,'/');

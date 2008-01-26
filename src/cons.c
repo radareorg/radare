@@ -26,6 +26,9 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #endif
+#if __WINDOWS__
+#include <windows.h>
+#endif
 
 int _print_fd = 1;
 
@@ -33,6 +36,7 @@ int cons_readchar()
 {
 	char buf[2];
 #if __WINDOWS__
+	DWORD out;
 	BOOL ret;
 	LPDWORD mode;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
@@ -54,6 +58,18 @@ int pprint_fd(int fd)
 	if (_print_fd == 0)
 		return fd;
 	return _print_fd = fd;
+}
+
+int cons_fgets(char *buf, int len)
+{
+	char *ptr;
+
+	ptr = dl_readline();
+	if (!ptr)
+		return 0;
+	strncpy(buf, ptr, len);
+
+	return strlen(buf);
 }
 
 static int pprintf_buffer_len = 0;

@@ -107,6 +107,7 @@ command_t commands[] = {
 	COMMAND('b', " [blocksize]",   "bsize   change the block size", blocksize),
 	//COMMAND('B', " [baseaddr]",    "baddr   change virtual base address", baddr),
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
+	COMMAND('c', "[f file] [bytes]","compare compare block with given value", compare),
 	COMMAND('C', " [str]",         "comment adds a comment at the current position", comment),
 	COMMAND('H', " [cmd]",         "performs a hack", hack),
 	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
@@ -807,6 +808,47 @@ CMD_DECL(status)
 		io_system("info");
 }
 
+CMD_DECL(compare)
+{
+	int ret;
+	unsigned long off;
+
+	switch (input[0]) {
+	case 'd':
+		off = (unsigned long) get_offset(input);
+//		io_write(config.fd, &off, 4);
+		break;
+	case 'f':
+		if (input[1]!=' ') {
+			eprintf("Please. use 'wf [file]'\n");
+			return;
+		}
+	eprintf("unimplemented\n");
+		break;
+	case 'x':
+		if (input[1]!=' ') {
+			eprintf("Please. use 'wx 00 11 22'\n");
+			return;
+		}
+	eprintf("unimplemented\n");
+		break;
+	case ' ':
+		ret = radare_write(input+1, WMODE_STRING);
+		break;
+	case '?':
+		eprintf(
+		"Usage: w[?|w|x|f] [argument]\n"
+		"  c  [string]   - write plain with escaped chars string\n"
+		"  cd [offset]   - writes a doubleword from a math expression\n"
+		"  cx [hexpair]  - write hexpair string\n"
+		"  cf [file]     - write contents of file at current seek\n");
+		break;
+	default:
+		eprintf("Usage: c[?|d|x|f] [argument]\n");
+		return;
+	}
+}
+
 CMD_DECL(write)
 {
 	int ret;
@@ -873,7 +915,7 @@ CMD_DECL(write)
 		"  wf [file]     - write contents of file at current seek\n");
 		break;
 	default:
-		eprintf("Usage: w[?|w|x|f] [argument]\n");
+		eprintf("Usage: w[?|a|A|d|w|x|f] [argument]\n");
 		return;
 	}
 }

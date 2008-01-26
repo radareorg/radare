@@ -117,4 +117,12 @@ struct bp_t
 	int len;
 };
 
+struct event_t {
+	char *name;
+	int id;
+	int ignored;
+};
+
+struct event_t events[];
+
 #endif

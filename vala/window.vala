@@ -6,9 +6,9 @@ public class RadareGUI.MainWindow : Window
         public static Statusbar statusbar;
         public List left_list;
         public List right_list;
-	public Shell shell;
+	public Terminal shell;
 	public Visor visor;
-	public Console con;
+	public Terminal con;
 	private Panel panel;
 
         construct
@@ -31,9 +31,9 @@ public class RadareGUI.MainWindow : Window
 			Gtk.main_quit();
 		};
 
-		shell = new Shell();
+		shell = new Terminal();
 		visor = new Visor();
-		con   = new Console();
+		con   = new Terminal();
 
 		VBox root = new VBox(false, 0);
 		root.pack_start(menu(), false, false, 0);
@@ -45,8 +45,8 @@ public class RadareGUI.MainWindow : Window
 
 		Notebook nb = new Notebook();
 		nb.append_page(visor.get(), new Label("Visor"));
-		nb.append_page(con.get(), new Label("Console"));
-		nb.append_page(shell.get(), new Label("Shell"));
+		nb.append_page(con.get(), new Label("Terminal"));
+		nb.append_page(shell.get(), new Label("Terminal"));
 		nb.append_page(comments(), new Label("Database"));
 		vb.add(nb);
 
@@ -104,6 +104,14 @@ public class RadareGUI.MainWindow : Window
 			m.append(mo);
 		root_menu = new MenuItem.with_label("Edit");
 		root_menu.set_submenu(m);
+
+		/* Help menu */
+		m = new Menu();
+			mo = new MenuItem.with_label("About");
+			m.append(mo);
+		root_menu = new MenuItem.with_label("Help");
+		root_menu.set_submenu(m);
+
 		bar.append(root_menu);
 
 		return bar;

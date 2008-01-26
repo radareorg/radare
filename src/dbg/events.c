@@ -45,6 +45,50 @@
 #include "mem.h"
 #include "arch/i386.h"
 
+struct event_t events[] = {
+	{ "stop", 19, 0 },
+	{ "trap", 5,  0 },
+	{ "pipe", 13,  0 },
+	{ "alarm", 14, 0 },
+	{ "fpe", 8, 0},
+	{ "ill", 4, 0},
+	{ NULL, 0, 0 }
+};
+
+void event_ignore_list()
+{
+	int i;
+	for(i=0;events[i].name;i++) {
+		pprintf(" %d %s\n", events[i].ignored, events[i].name);
+	}
+}
+
+int event_set_ignored(char *name, int ignored)
+{
+	int i;
+	for(i=0;events[i].name;i++) {
+		if (!strcmp(events[i].name, name)) {
+			events[i].ignored = ignored;
+			return 1;
+		}
+	}
+	eprintf("No event named '%s'.\n", name);
+	return 0;
+}
+
+int event_is_ignored(int id)
+{
+	int i;
+	for(i=0;events[i].name;i++) {
+		if (events[i].id == id) {
+			if (events[i].ignored)
+				return 1;
+			else	return 0;
+		}
+	}
+	return 1;
+}
+
 int events_init()
 {
 	int flags;

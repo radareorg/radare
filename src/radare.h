@@ -111,6 +111,7 @@ CMD_DECL(count);
 CMD_DECL(comment);
 CMD_DECL(show_info);
 CMD_DECL(envvar);
+CMD_DECL(compare);
 CMD_DECL(dump);
 CMD_DECL(endianess);
 CMD_DECL(limit);

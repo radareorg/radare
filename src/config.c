@@ -457,6 +457,7 @@ void config_init()
 
 	config_old_init();
 
+	dl_init();
 	config_new.n_nodes = 0;
 	config_new.lock = 0;
 	INIT_LIST_HEAD(&(config_new.nodes));

@@ -117,7 +117,7 @@ cmd_t cmds[] = {
 	{ "!free", ARG_NULL     , ARG_NULL   } , 
 	{ "!dump"        , ARG_NULL     , ARG_NULL   } , 
 	{ "!fd"     , ARG_NUMBER , ARG_FILENAME } , 
-	{ "!th"     , ARG_NULL     , ARG_NULL   } , 
+	{ "!ie"     , ARG_NULL     , ARG_NULL   } , 
 	{ "!th"     , ARG_NULL     , ARG_NULL   } , 
 	{ "!restore"     , ARG_NULL     , ARG_NULL   } , 
 	{ "!load"        , ARG_NULL     , ARG_NULL   } , 

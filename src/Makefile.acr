@@ -2,7 +2,7 @@ include ../config.mk
 
 OBJ=main.o radare.o stripstr.o readline.o tsearch.o undo.o io.o cons.o
 OBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
-OBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o project.o hack.o
+OBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o project.o hack.o dietline.o
 
 OBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o
 

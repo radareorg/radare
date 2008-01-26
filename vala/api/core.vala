@@ -38,7 +38,7 @@ public class Radare.Core : Object
 	public static bool open(string file, bool write_mode)
 	{
 		if (!isinit) _init_();
-		int ret = _radare_open(file, write_mode?1:0);
+		int ret = radare_open(file, write_mode?1:0);
 		return (ret == 0);
 	}
 
@@ -85,7 +85,7 @@ public static void radare_read(int next);
 public static int radare_close();
 
 [Import()]
-public static int _radare_open(string file, int allow_write);
+public static int radare_open(string file, int allow_write);
 
 [Import()]
 public static void prepare_environment(string str);

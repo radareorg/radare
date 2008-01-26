@@ -58,6 +58,7 @@ void debug_dumpcore()
 #endif
 }
 
+
 int debug_syms()
 {
 	// XXX: native implementation
@@ -301,8 +302,6 @@ int is_code(unsigned long pc)
 	return 0;
 }
 
-
-
 int is_usercode(unsigned long pc)
 {
 	struct list_head *pos;
@@ -359,6 +358,7 @@ int debug_contu()
 
 	return 0;	
 }
+
 int debug_wtrace()
 {
 	int ret;
@@ -391,7 +391,23 @@ int debug_wtrace()
 
 int debug_ie(char *input)
 {
-	pprintf("Ie! (%s)\n", input);
+	if (!input)
+		return;
+
+	if (strchr(input, '?')) {
+		eprintf(
+		"Usage: !ie [-]<event>\n"
+		" - enables or disabled the 'ignore over an event\n");
+		return 0;
+	}
+	while(input[0]==' ') input = input+1;
+
+	if (strnull(input)) {
+		event_ignore_list();
+		return 0;
+	}
+
+	event_set_ignored(input+(input[0]=='-'), input[0]!='-');
 }
 
 int debug_until(char *addr)
