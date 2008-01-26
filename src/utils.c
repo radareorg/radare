@@ -378,6 +378,7 @@ int hexpair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 }
 
 /* char buf[1024]; int len = hexstr2binstr("0a 33 45", buf); */
+// XXX control out bytes
 int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 {
 	const char *ptr;

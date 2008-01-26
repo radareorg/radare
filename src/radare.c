@@ -247,6 +247,7 @@ int radare_command_raw(char *tmp, int log)
 				if (*ptr=='+'||*ptr=='-')
 					config.seek = config.seek + get_math(ptr);
 				else	config.seek = get_math(ptr);
+				radare_read(0);
 			}
 
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
@@ -800,6 +801,18 @@ int radare_open(int rst)
 	config.zoom.piece  = config.size/config.block_size;
 
 	return 0;
+}
+
+int radare_compare(unsigned char *f, unsigned char *d, int len)
+{
+	int i,eq = 0;
+
+	for(i=0;i<len;i++)
+		if (f[i]==d[i])
+			eq++;
+
+	eprintf("Compare %d/%d equal bytes\n", eq, len);
+	return len-eq;
 }
 
 int radare_go()

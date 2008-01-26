@@ -79,6 +79,7 @@ int event_set_ignored(char *name, int ignored)
 int event_is_ignored(int id)
 {
 	int i;
+printf("chk(%d)\n", id);
 	for(i=0;events[i].name;i++) {
 		if (events[i].id == id) {
 			if (events[i].ignored)
@@ -86,7 +87,7 @@ int event_is_ignored(int id)
 			else	return 0;
 		}
 	}
-	return 1;
+	return 0;
 }
 
 int events_init()

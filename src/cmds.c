@@ -811,29 +811,44 @@ CMD_DECL(status)
 CMD_DECL(compare)
 {
 	int ret;
-	unsigned long off;
+	FILE *fd;
+	unsigned int off;
+	unsigned char *buf;
 
+	//radare_read(0);
 	switch (input[0]) {
 	case 'd':
-		off = (unsigned long) get_offset(input);
-//		io_write(config.fd, &off, 4);
+		off = (unsigned int) get_offset(input+1);
+		radare_compare(&off, config.block, 4);
 		break;
 	case 'f':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wf [file]'\n");
 			return;
 		}
-	eprintf("unimplemented\n");
+		fd = fopen(input+1,"r");
+		if (fd == NULL) {
+			eprintf("Cannot open file\n");
+			return 0;
+		}
+		buf = (char *)malloc(config.block_size);
+		fread(buf, config.block_size, 1, fd);
+		fclose(fd);
+		radare_compare(buf, config.block, config.block_size);
+		free(buf);
 		break;
 	case 'x':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wx 00 11 22'\n");
 			return;
 		}
-	eprintf("unimplemented\n");
+		buf = (unsigned char *)malloc(strlen(input+2));
+		ret = hexstr2binstr(input+2, buf);
+		radare_compare(buf, config.block, ret);
+		free(buf);
 		break;
 	case ' ':
-		ret = radare_write(input+1, WMODE_STRING);
+		radare_compare(input+1,config.block, strlen(input+1)+1);
 		break;
 	case '?':
 		eprintf(

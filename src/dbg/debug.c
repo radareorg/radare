@@ -58,7 +58,6 @@ void debug_dumpcore()
 #endif
 }
 
-
 int debug_syms()
 {
 	// XXX: native implementation
@@ -397,7 +396,7 @@ int debug_ie(char *input)
 	if (strchr(input, '?')) {
 		eprintf(
 		"Usage: !ie [-]<event>\n"
-		" - enables or disabled the 'ignore over an event\n");
+		" - enables or disables the 'ignore event' \n");
 		return 0;
 	}
 	while(input[0]==' ') input = input+1;

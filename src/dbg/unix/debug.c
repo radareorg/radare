@@ -610,6 +610,11 @@ int debug_dispatch_wait()
 		debug_load();
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
+
+	if (event_is_ignored(WS_SI(si_signo))) {
+		eprintf("signal %d ignored\n",WS_SI(si_signo));
+		return 1;
+	}
 			// 0 is for bsd?
 			if(
 #if __linux__
