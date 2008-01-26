@@ -20,7 +20,14 @@
 
 /* dietline is a lighweight and portable library similar to GNU readline */
 
+
+#if RADARE_CORE
 #include "main.h"
+#else
+static void terminal_set_raw(int b);
+#define __UNIX__ 1
+#endif
+
 
 #include <string.h>
 #include <stdio.h>

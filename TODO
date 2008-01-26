@@ -17,10 +17,10 @@
   - analyze stack with this
   pF 4s4s2s @ ebp
 
+* Create linked list of hit0[0] and hit1[0] , etc..
+  define block size by hit1[0]-hit0[0]
+
 * roll/funroll code
-* compare memory
-  cx 40 89 @ eip && s 10
-  cf foo.tmp @ eip
 
 * Function frames:
   - powerpc ; frame size > 56b and multiple of 8
