@@ -105,7 +105,7 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 		aop->fail   = 0L;
 		break;
 	case 0xFF:
-		if (bytes[0]>=0x50 && bytes[1]<=0x6f) {
+		if (bytes[1]>=0x50 && bytes[1]<=0x6f) {
 			aop->type = AOP_TYPE_UJMP;
 			aop->eob    = 1;
 		} else

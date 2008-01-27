@@ -59,19 +59,106 @@ public class Grava.DefaultLayout : Grava.Layout
 	public override void run(Graph graph)
 	{
 		this.graph = graph;
+		double last_y;
+		SList<Node> paint_nodes;
+		int i, inorig, indst ,k;
+		Node n,p, destn;
+		Edge e;
+		bool found;
 		////return; // HAHAHA
 
 		// reset all node positions
+
+		last_y = 50;
+
+		// Tots vertical, un sota l'altr ordenats per base addr
 		foreach(weak Node node in graph.nodes) {
-			if (graph.selected == null)
-				graph.selected = node;
 			if (!node.visible) continue;
 			// reset node positions
 			node.x = 50;
-			node.y = 50;
 			node.fit();
+			node.y = last_y ;
+			last_y = node.y + node.h + 10 ;
+			stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
 		}
 		
+		// Per cada node. Segueixo la condició certa, tots els nodes que estiguin
+		// entre el node que estic mirant i el de la condicio certa els desplaço a la dreta.
+		// Tambe  apropo  el node desti a l'origen.
+		//
+		// Entre el node que miro i el desti vol dir que la x sigui la mateixa.
+
+		for( i = 0 ; i < graph.nodes.length() ; i ++ ) 
+		{
+			n = graph.nodes.nth_data ( i );
+
+			/// busco l'edge verd d'aquest node
+			found = false;
+			foreach(weak Edge edge in graph.edges) {
+				if (edge.orig == n ) {
+					if (edge.jmpcnd == true )
+					{
+						stdout.printf ( "0x%x ----> 0x%x\n",edge.orig.baseaddr ,edge.dest.baseaddr );
+						destn = edge.dest;
+						found = true;
+						break;
+					}
+				}
+			}
+
+			/// n es el node origen.
+			/// destn es el node desti
+			///
+		
+			last_y = n.y + n.h + 10 ;
+
+			// Si la base del node origen es < que le desti .
+			// sempre anem avall.
+			//
+			if ( (found == true ) && ( n.baseaddr < destn.baseaddr ) ) 
+			{
+				/// Busco el node mes ample.
+				///
+				double maxw = 0;
+				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) 
+				{
+					p = graph.nodes.nth_data ( k );
+					if ( (p.x == n.x) && ( p.w > maxw ) )
+					{
+						maxw = p.w;
+					}	
+				}
+				/// Desplaço
+				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) 
+				{
+					p = graph.nodes.nth_data ( k );
+					
+					stdout.printf ( "Displacing 0x%x\n", p.baseaddr );
+				
+					// El node estava entre el node origen i el desti
+					if ( p.x == n.x )
+					{
+						p.x += ( maxw + 10 );
+					}	
+				
+					/// Es ja el node desti.
+					if ( p == destn ) 
+					{
+						stdout.printf ( "AT 0x%x\n", p.baseaddr );
+						destn.x = n.x; 
+						destn.y = n.y + n.h + 30;
+						break;
+					}
+	
+				}
+			}
+
+	
+		}
+
+
+		return;
+
 		walkChild(graph.selected, 5);
 		//walkChild(graph.selected); //
 		foreach(weak Node node in graph.nodes) {

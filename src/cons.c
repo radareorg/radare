@@ -60,6 +60,38 @@ int pprint_fd(int fd)
 	return _print_fd = fd;
 }
 
+#if __WINDOWS__
+void gotoxy(int x, int y)
+{
+        static HANDLE hStdout = NULL;
+        COORD coord;
+
+        coord.X = x;
+        coord.Y = y;
+
+        if(!hStdout)
+                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        SetConsoleCursorPosition(hStdout,coord);
+}
+
+void clrscr(void)
+{
+        static HANDLE hStdout = NULL;
+        static CONSOLE_SCREEN_BUFFER_INFO csbi;
+        const COORD startCoords = {0,0};
+        DWORD dummy;
+
+        if(!hStdout) {
+                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+                GetConsoleScreenBufferInfo(hStdout,&csbi);
+        }
+
+        FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
+        gotoxy(0,0);
+}
+#endif
+
 int cons_fgets(char *buf, int len)
 {
 	char *ptr;

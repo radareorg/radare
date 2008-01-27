@@ -21,6 +21,7 @@ using GLib;
 public class Grava.Node : GLib.Object
 {
 	public HashTable<string,string> data;
+	public uint baseaddr;
 	public SList<string> calls;
 	public SList<string> xrefs;
 	public bool visible;
@@ -35,6 +36,7 @@ public class Grava.Node : GLib.Object
 		data     = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);
 		calls    = new SList<string>();
 		xrefs    = new SList<string>();
+		baseaddr = 0;
 		x        = y = 0;
 		w        = 150;
 		h        = 200;

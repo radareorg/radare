@@ -239,7 +239,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
-	bsz+=sz;
+	//bsz+=sz;
 	config.seek = tmp;
 
 	blk = block_get_new(prg, oseek);

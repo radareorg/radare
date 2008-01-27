@@ -82,7 +82,7 @@ void grava_program_graph(struct program_t *prg)
 	char title[256], name[128];
 	GtkWidget *vbox, *hbox, *go;
 	GravaNode *node, *node2;
-	GravaNode *edge;
+	GravaEdge *edge;
 	/* create widget */
 	if (!gtk_is_init)
 		gtk_init(NULL,NULL);
@@ -143,6 +143,7 @@ void grava_program_graph(struct program_t *prg)
 		string_flag_offset(cmd, b0->addr);
 		cmd[127]='\0'; // XXX ugly string recycle hack
 		sprintf(cmd+128, "0x%08lX  %s", b0->addr, cmd);
+		node->baseaddr = b0->addr;
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
@@ -176,6 +177,7 @@ void grava_program_graph(struct program_t *prg)
 					//grava_node_set(node2, "color", "green");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "green");
+					edge->jmpcnd = 1; // true
 					grava_graph_add_edge(grava->graph, edge);
 					break;
 				}
@@ -192,6 +194,7 @@ void grava_program_graph(struct program_t *prg)
 					//grava_node_set(node2, "color", "red");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "red");
+					edge->jmpcnd = 0; // false
 					grava_graph_add_edge(grava->graph, edge);
 					break;
 				}
