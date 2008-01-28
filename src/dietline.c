@@ -78,8 +78,7 @@ static int dl_readchar()
 		return -1;
 	SetConsoleMode(h, mode);
 #else
-	if (read(0,buf,1)==-1)
-		return -1;
+	return read(0, buf, 1);
 #endif
 	return buf[0];
 }
@@ -199,6 +198,7 @@ char *dl_readline(int argc, char **argv)
 	int columns = 78;
 
 	dl_buffer_idx = dl_buffer_len = 0;
+	dl_buffer[0]='\0';
 
 	if (dl_disable) {
 		dl_buffer[0]='\0';
@@ -212,6 +212,11 @@ char *dl_readline(int argc, char **argv)
 
 	printf("%s", dl_prompt);
 	fflush(stdout);
+
+#if __UNIX__
+	if (feof(stdin))
+		return NULL;
+#endif
 
 	while(1) {
 		if (dl_echo) {
@@ -391,7 +396,9 @@ char *dl_readline(int argc, char **argv)
 
 _end:
 	terminal_set_raw(0);
-	write(1,"\n",1);
+	printf("\r%s%s\n", dl_prompt, dl_buffer);
+	fflush(stdout);
+	//write(1,"\n",1);
 	return dl_buffer;
 }
 

@@ -120,7 +120,7 @@ void grava_program_graph(struct program_t *prg)
 		config_set("asm.offset", "true");
 	else 	config_set("asm.offset", "false");
 	config_set("asm.bytes", "false");
-	config_set("cfg.color", "false");
+	config_set("scr.color", "false");
 	config_set("asm.lines", "false");
 	config.color = 0;
 
@@ -209,7 +209,7 @@ void grava_program_graph(struct program_t *prg)
 
 	// oops. tihs is not for real!
 	config_set("cfg.verbose", "true");
-	config_set("cfg.color", "true");
+	config_set("scr.color", "true");
 	config_set("asm.offset", "true");
 	config_set("asm.bytes", "true");
 	config_set("asm.lines", "true");

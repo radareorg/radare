@@ -69,31 +69,45 @@ void radare_search_aes()
 	config.block_size = bsize;
 }
 
+static const char *search_cmdhit = NULL;
+static int search_count = 0;
+static int search_flag = 1;
+static int search_verbose = 0;
+char *search_last_keyword = NULL;
+
 static int nhit = 0;
 static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long long where)
 {
 	char flag_name[128];
-	const char *cmd = config_get("cmd.hit");
-	int count = config_get_i("cfg.count");
-
 	off_t off = config.seek;
-	if (cmd && cmd[0]!='\0') {
-		char *cmdhit = strdup(cmd);
-		setenv("KEYWORD", last_tsearch, 1);
+
+	if (search_cmdhit && search_cmdhit[0]!='\0') {
+		char *cmdhit = strdup(search_cmdhit);
+		setenv("KEYWORD", search_last_keyword, 1); // XXX this is not last-keyword!! must array this!
 		radare_command(cmdhit, 0);
 		free(cmdhit);
 	}
 
-	if (count && nhit >= count)
+	if (search_count && nhit >= search_count)
 		return 1;
 
 	sprintf(flag_name, "hit%d_%d", i, nhit++);
 	//config.seek = where;
 	radare_seek(where, SEEK_SET);
 	radare_read(0);
-	flag_set(flag_name, config.seek, 0);
+	if (search_flag)
+		flag_set(flag_name, config.seek, 0);
 	config.seek = off;
-	printf("\r%d", nhit);
+	if (search_verbose) {
+		char *ptr = config.block; //+(where-config.seek)-3;
+		printf("%03d  0x%08llx  ", nhit, where);
+		for(i=0;i<20;i++) {
+			if (is_printable(ptr[i]))
+				printf("%c", ptr[i]);
+		}
+		printf("\n");
+	} else
+		printf("\r%d", nhit);
 #if 0
 	D { printf("\e[K"OFF_FMTs" '%s' ", (off_t)where, flag_name);
 	    data_print((off_t)where, config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
@@ -105,9 +119,8 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	return 0;
 }
 
-char *last_tsearch = NULL;
 
-int radare_tsearch_file(char *file)
+int search_from_file(char *file)
 {
 	int i;
 	off_t tmp = config.seek;
@@ -134,7 +147,7 @@ int radare_tsearch_file(char *file)
 	return 1;
 }
 
-int radare_tsearch(char *range)
+int search_range(char *range)
 {
 	int len, i,j;
 	char str[128];
@@ -143,10 +156,17 @@ int radare_tsearch(char *range)
 	off_t tmp = config.seek;
 	int f0 = 0;
 
+
 	if (range == NULL)
 		return 0;
-	free(last_tsearch);
-	last_tsearch = strdup(range);
+	free(search_last_keyword);
+	search_last_keyword = strdup(range);
+
+	// init stuff
+	search_cmdhit = config_get("cmd.hit");
+	search_count = (int)config_get_i("cfg.count");
+	search_flag = (int)config_get("search.flag");
+	search_verbose = (int)config_get("search.verbose");
 
 	nhit = 0;
 	t = binparse_new();
@@ -202,7 +222,8 @@ int radare_tsearch(char *range)
 		printf("\nStopped at 0x"OFF_FMTx"\n", config.seek);
 
 	radare_seek(tmp, SEEK_SET);
-	printf("\n");
+	if (!search_verbose)
+		printf("\n");
 
 	return 1;
 }

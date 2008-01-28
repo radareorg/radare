@@ -7,6 +7,10 @@
 
 ===========================================================
 
+* StreamViewer
+ * search for head and foot
+  - for each head finds a foot and defines block size
+
 * Do not use the char '(' in asm.lines. just use - or =
 
 * Define function parameters to addresses (format, size)
@@ -19,6 +23,9 @@
 
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
+
+* refactor
+  - rename pprintf_buffer to cons_buffer
 
 * roll/funroll code
 
@@ -91,10 +98,6 @@
 + EH - event handling (event type + source pid)
   using linked list.h
   * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
-    int3 SIGTRAP
-    bad opcode (ILL)
-    signal
-    div
 * allow to specify what you want to see when tracing (cmd.cmttrace) ?
   - is not oneliner
 * trace call amb jump lines (draw a sequence of vectors)

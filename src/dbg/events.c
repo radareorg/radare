@@ -26,9 +26,44 @@
    clone, execve, cleaner SIGTRAP implementation etc..
  */
 
+#include "libps2fd.h"
+
+void event_ignore_list()
+{
+	int i;
+	for(i=0;events[i].name;i++)
+		pprintf(" %d %s\n", events[i].ignored, events[i].name);
+}
+
+int event_set_ignored(char *name, int ignored)
+{
+	int i;
+	for(i=0;events[i].name;i++) {
+		if (!strcmp(events[i].name, name)) {
+			events[i].ignored = ignored;
+			return 1;
+		}
+	}
+	eprintf("No event named '%s'.\n", name);
+	return 0;
+}
+
+int event_is_ignored(int id)
+{
+	int i;
+//printf("chk(%d)\n", id);
+	for(i=0;events[i].name;i++) {
+		if (events[i].id == id) {
+			if (events[i].ignored)
+				return 1;
+			else	return 0;
+		}
+	}
+	return 0;
+}
+
 #if __linux__
 
-#include "libps2fd.h"
 #include <linux/ptrace.h> // PTRACE_O_*
 #include <stdio.h>
 #include <unistd.h>
@@ -55,40 +90,6 @@ struct event_t events[] = {
 	{ NULL, 0, 0 }
 };
 
-void event_ignore_list()
-{
-	int i;
-	for(i=0;events[i].name;i++) {
-		pprintf(" %d %s\n", events[i].ignored, events[i].name);
-	}
-}
-
-int event_set_ignored(char *name, int ignored)
-{
-	int i;
-	for(i=0;events[i].name;i++) {
-		if (!strcmp(events[i].name, name)) {
-			events[i].ignored = ignored;
-			return 1;
-		}
-	}
-	eprintf("No event named '%s'.\n", name);
-	return 0;
-}
-
-int event_is_ignored(int id)
-{
-	int i;
-printf("chk(%d)\n", id);
-	for(i=0;events[i].name;i++) {
-		if (events[i].id == id) {
-			if (events[i].ignored)
-				return 1;
-			else	return 0;
-		}
-	}
-	return 0;
-}
 
 int events_init()
 {

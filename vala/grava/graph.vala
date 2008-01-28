@@ -59,10 +59,36 @@ public class Grava.Graph : GLib.Object
 		layout.run(this);
 	}
 
+	// esteve modificat perque insereixi a la llista ordenat per baseaddr.
+	// volia fer servir node.sort, pero no m'ha sortit...
 	public void add_node (Node n)
 	{
+		int count;
+		Node p;
+		bool ins;
+		int len = nodes.length();
 		n.fit();
-		nodes.append(n);
+		
+		//stdout.printf ( "ADD NODE %d, addr: 0x%x\n", nodes.length() , n.baseaddr );
+
+		ins = false;
+		for ( count = 0 ; count <  len ; count ++ )  
+		{
+			p = nodes.nth_data ( count );
+			//stdout.printf ("adding node base at %x , this is %x\n", p.baseaddr, n.baseaddr );
+
+			/// el node que estic mirant ja te la base address mes gran que jo. Inserto a l'anterior.
+			if ( p.baseaddr >= n.baseaddr )
+			{
+				ins=true;
+				nodes.insert ( n , count   );
+				break;
+			}
+		}
+		if (  ins == false )
+		{
+			nodes.append(n);
+		}
 	}
 
 	public void add_edge (Edge e)

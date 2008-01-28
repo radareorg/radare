@@ -1096,7 +1096,7 @@ CMD_DECL(search) {
 		radare_strsearch(strchr(text,' '));
 		break;
 	case 'r':
-		radare_tsearch(text+2);
+		search_range(text+2);
 		break;
 	case 'w':
 		free(input2);
@@ -1109,10 +1109,10 @@ CMD_DECL(search) {
 		}
 		radare_command("f -hit0*", 0);
 		setenv("SEARCH[0]", input2, 1);
-		radare_tsearch("0");
+		search_range("0");
 		break;
 	case '/':
-		radare_tsearch("0");
+		search_range("0");
 		break;
 	case '0':
 	case '1':
@@ -1134,7 +1134,7 @@ CMD_DECL(search) {
 		else ptr = ptr +1;
 		setenv(buf, ptr, 1);
 		sprintf(buf, "%d", idx);
-		radare_tsearch(buf);
+		search_range(buf);
 		} break;
 	case '-':
 		for(i=0;environ[i];i++) {
@@ -1147,7 +1147,7 @@ CMD_DECL(search) {
 			else	eq[0]='=';
 		} break;
 	case '.':
-		radare_tsearch_file(text+2);
+		search_from_file(text+2);
 		break;
 	case 'x':
 		free(input2);
@@ -1172,11 +1172,11 @@ CMD_DECL(search) {
 		}
 		radare_command("f -hit0*", 0);
 		setenv("SEARCH[0]", input2, 1);
-		radare_tsearch("0");
+		search_range("0");
 		break;
 	default:
 		setenv("SEARCH[0]", text, 1);
-		radare_tsearch("0");
+		search_range("0");
 		break;
 	}
 	free(input2);

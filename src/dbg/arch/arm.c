@@ -321,7 +321,7 @@ int arch_print_registers(int rad, const char *mask)
 	int ret, regno;
 	elf_gregset_t regs;
 	int color = 0;
-	char *c = config_get("cfg.color");
+	char *c = config_get("scr.color");
 	if (c&&*c=='1')color=1;
 
 	/* Get the thread id for the ptrace call.  */

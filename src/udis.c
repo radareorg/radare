@@ -374,7 +374,7 @@ void udisarm(int len, int rows)
 	int show_lines = config_get("asm.lines");
 	int show_size = config_get("asm.size");
 	struct reflines_t *reflines = NULL;
-	color = config_get("cfg.color");
+	color = config_get("scr.color");
 
 	if (show_lines)
 		reflines = code_lines_init();

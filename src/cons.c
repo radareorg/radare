@@ -60,6 +60,26 @@ int pprint_fd(int fd)
 	return _print_fd = fd;
 }
 
+void cons_clear(void)
+{
+#if __WINDOWS__
+        static HANDLE hStdout = NULL;
+        static CONSOLE_SCREEN_BUFFER_INFO csbi;
+        const COORD startCoords = {0,0};
+        DWORD dummy;
+
+        if(!hStdout) {
+                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+                GetConsoleScreenBufferInfo(hStdout,&csbi);
+        }
+
+        FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
+        gotoxy(0,0);
+#else
+	write(1, "\e[2J", 4);
+#endif
+}
+
 #if __WINDOWS__
 void gotoxy(int x, int y)
 {
@@ -75,21 +95,110 @@ void gotoxy(int x, int y)
         SetConsoleCursorPosition(hStdout,coord);
 }
 
-void clrscr(void)
+int cons_w32_print(unsigned char *ptr)
 {
-        static HANDLE hStdout = NULL;
-        static CONSOLE_SCREEN_BUFFER_INFO csbi;
-        const COORD startCoords = {0,0};
-        DWORD dummy;
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	int esc = 0;
+	unsigned char *str = ptr;
+	int len = 0;
+	int inv = 0;
 
-        if(!hStdout) {
-                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-                GetConsoleScreenBufferInfo(hStdout,&csbi);
-        }
-
-        FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
-        gotoxy(0,0);
+	for (;ptr[0]; ptr = ptr + 1) {
+		if (ptr[0] == 0x1b) {
+			esc = 1;
+			write(1, str, ptr-str);
+			str = ptr + 1;
+			continue;
+		}
+		if (esc == 1) {
+			// \e[2J
+			if (ptr[0] != '[') {
+				eprintf("Oops invalid escape char\n");
+				esc = 0;
+				str = ptr + 1;
+				continue;
+			}
+			esc = 2;
+			continue;
+		} else 
+		if (esc == 2) {
+			if (ptr[0]=='2'&&ptr[1]=='J') {
+				ptr = ptr +1;
+				cons_clear();
+				esc = 0;
+				str = ptr;
+				continue;
+			} else
+			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
+				ptr = ptr + 4;
+				gotoxy(0,0);
+				esc = 0;
+				str = ptr;
+				continue;
+			} else
+			if (ptr[0]=='0'&&ptr[1]=='m') {
+				SetConsoleTextAttribute(hConsole, 1|2|4|8);
+				ptr = ptr + 1;
+				str = ptr + 1;
+				inv = 0;
+				esc = 0;
+				continue;
+				// reset color
+			} else
+			if (ptr[0]=='7'&&ptr[1]=='m') {
+				SetConsoleTextAttribute(hConsole, 128);
+				inv = 128;
+				ptr = ptr + 1;
+				str = ptr + 1;
+				esc = 0;
+				continue;
+				// reset color
+			} else
+			if (ptr[0]=='3' && ptr[2]=='m') {
+				// http://www.betarun.com/Pages/ConsoleColor/
+				switch(ptr[1]) {
+				case '0': // BLACK
+					SetConsoleTextAttribute(hConsole, 0|inv);
+					break;
+				case '1': // RED
+					SetConsoleTextAttribute(hConsole, 4|inv);
+					break;
+				case '2': // GREEN
+					SetConsoleTextAttribute(hConsole, 2|inv);
+					break;
+				case '3': // YELLOW
+					SetConsoleTextAttribute(hConsole, 2|4|inv);
+					break;
+				case '4': // BLUE
+					SetConsoleTextAttribute(hConsole, 1|inv);
+					break;
+				case '5': // MAGENTA
+					SetConsoleTextAttribute(hConsole, 1|4|inv);
+					break;
+				case '6': // TURQOISE
+					SetConsoleTextAttribute(hConsole, 1|2|8|inv);
+					break;
+				case '7': // WHITE
+					SetConsoleTextAttribute(hConsole, 1|2|4|inv);
+					break;
+				case '8': // GRAY
+					SetConsoleTextAttribute(hConsole, 8|inv);
+					break;
+				case '9': // ???
+					break;
+				}
+				ptr = ptr + 3;
+				str = ptr;
+				esc = 0;
+				continue;
+			}
+		} 
+		len++;
+	}
+	write(1, str, ptr-str);
+	return len;
 }
+
 #endif
 
 int cons_fgets(char *buf, int len)
@@ -97,8 +206,8 @@ int cons_fgets(char *buf, int len)
 	char *ptr;
 
 	ptr = dl_readline();
-	if (!ptr)
-		return 0;
+	if (ptr == NULL)
+		return -1;
 	strncpy(buf, ptr, len);
 
 	return strlen(buf);
@@ -130,6 +239,11 @@ void pprintf_flush()
 {
 	//eprintf("Flush\n");
 	if (pprintf_buffer && pprintf_buffer[0]) {
+#if __WINDOWS__
+		if (_print_fd == 1)
+			cons_w32_print(pprintf_buffer);
+		else
+#endif
 		write(_print_fd, pprintf_buffer, strlen(pprintf_buffer));
 		pprintf_buffer[0] = '\0';
 	}
@@ -196,6 +310,8 @@ int terminal_get_real_columns()
 #else
 	return 80;
 #endif
+	config.width = 78;
+	config.height = 24;
 }
 
 #ifdef RADARE_CORE

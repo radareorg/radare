@@ -587,12 +587,13 @@ void radare_prompt_command()
 }
 
 extern char *dl_prompt;
+extern int dl_disable;
 int radare_prompt()
 {
 	char input[BUFLEN];
 	const char *ptr;
 	char prompt[1024]; // XXX avoid 1024 limit
-	int t;
+	int t, ret;
 
 	config.interrupted = 0;
 
@@ -602,10 +603,16 @@ int radare_prompt()
 	pprintf_flush();
 	radare_prompt_command();
 
+#if __UNIX__
 	C	sprintf(prompt, C_YELLOW"["OFF_FMT"]> "C_RESET,
 			(offtx)config.seek+config.baddr); 
-	else	sprintf(prompt, "["OFF_FMT"]> ",
+	else
+	sprintf(prompt, "["OFF_FMT"]> ",
 			(offtx)config.seek+config.baddr); 
+#else
+	sprintf(prompt, "["OFF_FMT"]> ",
+			(offtx)config.seek+config.baddr); 
+#endif
 
 	memset(input, 0, BUFLEN);
 
@@ -635,14 +642,11 @@ int radare_prompt()
 #endif
 		//D { printf(prompt); fflush(stdout); }
 		dl_prompt = &prompt;
-		cons_fgets(input, BUFLEN-1);
-		//fgets(input, BUFLEN-1, stdin);
-		//input[strlen(input)-1] = '\0';
-
-#if __UNIX__
-		if (feof(stdin))
-			return 0;
-#endif
+		dl_disable=1;
+		ret = cons_fgets(input, BUFLEN-1);
+		dl_disable=0;
+		if (ret == -1)
+			exit(0);
 		radare_command(input, 1);
 #if HAVE_LIB_READLINE
 	}

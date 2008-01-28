@@ -135,5 +135,5 @@ void update_environment()
 	if (config.width<10)config.width=10;
 	config_set_i("scr.width", config.width);
 
-	config.color = config_get("cfg.color");
+	config.color = config_get("scr.color");
 }

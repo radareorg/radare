@@ -34,7 +34,7 @@ static void help_show_message()
 	"  -e [key=val]     evaluates a configuration string\n"
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
-	"  -c               same as -e cfg.color=true\n"
+	"  -c               same as -e scr.color=true\n"
 	"  -w               open file in read-write mode\n"
 	"  -x               dump block in hexa and exit\n"
 	"  -n               do not load ~/.radarerc and ./radarerc\n"
@@ -62,7 +62,7 @@ int main(int argc, char **argv, char **envp)
 			config.block_size = 0;
 			break;
 		case 'c':
-			config_set("cfg.color", "true");
+			config_set("scr.color", "true");
 			break;
 		case 'n':
 			config.noscript = 1;

@@ -218,7 +218,21 @@ int debug_contfork(int tid) { eprintf("not work yet\n"); return -1; }
 int debug_init_maps(int rest) { eprintf("debug_init_maps : not work yet\n"); return -1; }
 int debug_contscp() { eprintf("not work yet\n"); return -1; }
 int debug_status() { eprintf("not work yet\n"); return -1; }
-int debug_pstree() { eprintf("not work yet\n"); return -1; }
+
+int debug_pstree(char *input)
+{ 
+	int tid = atoi(input);
+	if (tid != 0) {
+		ps.tid = tid;
+		eprintf("Current selected thread id (pid): %d\n", ps.tid);
+		// XXX check if exists or so
+	}
+
+	printf(" pid : %d\n", ps.pid);
+	printf(" tid : %d\n", ps.tid);
+
+	eprintf("more work to do\n"); return -1; 
+}
 
 int debug_fork_and_attach()
 {

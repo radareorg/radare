@@ -58,6 +58,10 @@ struct comment_t {
 #define offtd int
 #define offtx unsigned int
 #endif
+#if __WINDOWS__
+#undef off_t
+#define off_t unsigned long long
+#endif
 
 #define LANG_PERL 1
 #define LANG_PYTHON 2

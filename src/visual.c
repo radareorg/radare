@@ -500,7 +500,7 @@ CMD_DECL(rotate_print_format)
 			break;
 
 	last_print_format = modes[(i==VMODES)?0:i+1];
-	CLRSCR();
+	cons_clear();
 }
 
 char *get_print_format_name(int j)
@@ -522,7 +522,7 @@ CMD_DECL(rotate_print_format_prev)
 		if (modes[i] == last_print_format)
 			break;
 	last_print_format = modes[(i==VMODES)?0:(i==0)?VMODES-2:i-1];
-	CLRSCR();
+	cons_clear();
 }
 
 int keystroke_run(unsigned char key) {
@@ -695,7 +695,7 @@ void visual_draw_screen()
 		break;
 	default:
 		if (!config.cursor_mode)
-			CLRSCR();
+			cons_clear();
 	}
 	if (!getenv("COLUMNS")) {
 		terminal_set_raw(0);
@@ -703,7 +703,14 @@ void visual_draw_screen()
 		terminal_set_raw(1);
 	}
 	string_flag_offset(buf, config.seek);
-	pprintf("\e[0;0H[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
+#if __WINDOWS__
+	//cons_clear();
+	gotoxy(0,0);
+	//NEWLINE;
+#else
+	pstrcat("\e[0;0H");
+#endif
+	pprintf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor,
@@ -719,6 +726,8 @@ void visual_draw_screen()
 	}
 
 	radare_seek(config.seek, SEEK_SET);
+#if __WINDOWS__
+#endif
 	radare_print("", last_print_format, MD_BLOCK|inv);
 
 	fflush(stdout);
@@ -755,6 +764,9 @@ CMD_DECL(visual)
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
+	if (config.height<1)
+		config_set_i("scr.height", 24);
+
 	if (bds == NULL)
 		bds = (struct binding *)malloc(sizeof(struct binding));
 
@@ -764,7 +776,7 @@ CMD_DECL(visual)
 #endif
 	config.visual = 1;
 
-	CLRSCR();
+	cons_clear();
 	terminal_set_raw(1);
 	while(1) {
 		dec = inc;
@@ -793,10 +805,10 @@ CMD_DECL(visual)
 				if (config.debug)
 				switch(key) {
 				case 1: // F1 -help
-					CLRSCR();
+					cons_clear();
 					radare_command("!help", 0);
 					press_any_key();
-					CLRSCR();
+					cons_clear();
 					continue;
 #if DEBUGGER
 				/* debugger */
@@ -834,11 +846,11 @@ CMD_DECL(visual)
 					radare_command(line,0);
 					terminal_set_raw(1);
 					press_any_key();
-					CLRSCR();
+					cons_clear();
 					continue;
 				case 4: // F4 - watchpoint
 					radare_command("!contuh", 0);
-					CLRSCR();
+					cons_clear();
 					continue;
 #endif
 				}
@@ -964,7 +976,7 @@ CMD_DECL(visual)
 		case 'C':
 			config.color^=1;
 			sprintf(line, "%d", config.color);
-			config_set("cfg.color", line);
+			config_set("scr.color", line);
 			break;
 		case 'c':
 			config.cursor_mode ^= 1;
@@ -1011,7 +1023,7 @@ CMD_DECL(visual)
 			} else {
 				config.seek += inc;
 				if (config.block_size >= (config.size-config.seek))
-					CLRSCR();
+					cons_clear();
 			}
 			break;
 		case 'J':
@@ -1022,7 +1034,7 @@ CMD_DECL(visual)
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
 				if (config.block_size >= (config.size-config.seek))
-					CLRSCR();
+					cons_clear();
 				continue;
 			} else CLRSCR();
 		case ' ':
@@ -1044,7 +1056,7 @@ CMD_DECL(visual)
 			} else {
 				config.seek -= dec;
 				if (config.block_size >= (config.size-config.seek))
-					CLRSCR();
+					cons_clear();
 			}
 			break;
 		case 'K':
@@ -1058,11 +1070,11 @@ CMD_DECL(visual)
 				if (last_print_format == FMT_DISAS)
 					config.seek -= 4;
 				else	config.seek -= config.block_size;
-				CLRSCR();
+				cons_clear();
 			}
 			if (config.seek<0) config.seek = 0; // TODO: double check?
 			if (config.block_size >= (config.size-config.seek))
-				CLRSCR();
+				cons_clear();
 			break;
 		case 'u':
 			undo_seek();
@@ -1129,7 +1141,7 @@ CMD_DECL(visual)
 			pstrcat("\e[2J\e[0;0H");
 			break;
 		case '!':
-			CLRSCR();
+			cons_clear();
 			radare_command("!help", 0);
 			press_any_key();
 			break;

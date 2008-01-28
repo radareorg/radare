@@ -882,7 +882,7 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-	int color = config_get("cfg.color");
+	int color = config_get("scr.color");
 
 	if (ps.opened == 0)
 		return 0;

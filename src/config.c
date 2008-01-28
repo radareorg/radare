@@ -197,7 +197,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		free(node->value);
 		if (node->flags & CN_BOOL) {
 			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
-			node->i_value = b;
+			node->i_value = (off_t)b;
 			node->value = strdup(b?"true":"false");
 		} else {
 			if (value == NULL) {
@@ -426,6 +426,15 @@ int config_baddr_callback(void *data)
 	return 1;
 }
 
+int config_scrheight(void *data)
+{
+	struct config_node_t *node = data;
+	config.height = node->i_value;
+	if (config.height<1)
+		config.height = 24;
+	return 1;
+}
+
 int config_scrbuf_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -491,6 +500,9 @@ void config_init()
 	config_set("cmd.vprompt", "");
 	config_set("cmd.bp", "");
 
+	config_set("search.flag", "true");
+	config_set("search.verbose", "true");
+
 	config_set("file.identify", "false");
 	config_set("file.type", "");
 	config_set("file.flag", "false");
@@ -516,7 +528,7 @@ void config_init()
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
 	config_set("cfg.rdbdir", "TODO");
-	node = config_set("cfg.color", (config.color)?"true":"false");
+	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);
@@ -567,7 +579,8 @@ void config_init()
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
 	config_set_i("scr.width", config.width);
-	config_set_i("scr.height", config.height);
+	node = config_set_i("scr.height", config.height);
+	node->callback = &config_scrheight;
 
 	/* core commands */
 	node = config_set("core.echo", "(echo a message)");
