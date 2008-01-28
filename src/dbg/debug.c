@@ -582,36 +582,36 @@ int debug_info(char *arg)
 	char buf[4096];
 
 	if (strchr(arg,'*')) {
-		pprintf("f entry @ 0x%08x\n", ps.entrypoint);
-		//pprintf("f bep @ %s\n", config_get("dbg.bep"));
+		cons_printf("f entry @ 0x%08x\n", ps.entrypoint);
+		//cons_printf("f bep @ %s\n", config_get("dbg.bep"));
 	} else {
-		pprintf(" filename %s\n", ps.filename);
+		cons_printf(" filename %s\n", ps.filename);
 
-		pprintf(" pid         %d\n", ps.pid);
+		cons_printf(" pid         %d\n", ps.pid);
 		sprintf(buf, "/proc/%d/cmdline", ps.pid);
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
 			read(fd, buf, 4095);
-			pprintf(" cmdline  %s\n", buf);
+			cons_printf(" cmdline  %s\n", buf);
 			close(fd);
 		}
 
 		// TODO is all this stuff necesary?
-		pprintf(" tid(current)%d\n", ps.tid);
+		cons_printf(" tid(current)%d\n", ps.tid);
 		sprintf(buf, "/proc/%d/cmdline", ps.tid);
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
 			read(fd, buf, 4095);
-			pprintf(" cmdline  %s\n", buf);
+			cons_printf(" cmdline  %s\n", buf);
 			close(fd);
 		}
-		pprintf(" dbg.bep     %s\n", config_get("dbg.bep"));
-		pprintf(" entry       0x%08x\n", ps.entrypoint);
-		pprintf(" ldentry     0x%08x\n", ps.ldentry);
-		pprintf(" opened      %d\n", ps.opened);
-		pprintf(" steps       %d\n", ps.steps);
-		pprintf(" offset      0x%llx\n", ps.offset);
-		pprintf(" isbpaddr    %d\n", ps.isbpaddr);
+		cons_printf(" dbg.bep     %s\n", config_get("dbg.bep"));
+		cons_printf(" entry       0x%08x\n", ps.entrypoint);
+		cons_printf(" ldentry     0x%08x\n", ps.ldentry);
+		cons_printf(" opened      %d\n", ps.opened);
+		cons_printf(" steps       %d\n", ps.steps);
+		cons_printf(" offset      0x%llx\n", ps.offset);
+		cons_printf(" isbpaddr    %d\n", ps.isbpaddr);
 	}
 
 	return 0;
@@ -640,7 +640,7 @@ int debug_fd(char *cmd)
 	int whence = 0;
 
 	if (cmd[0]=='?') {
-		pprintf("Usage: !fd[s|d] [-#] [file | host:port]\n"
+		cons_printf("Usage: !fd[s|d] [-#] [file | host:port]\n"
 		"  !fd                   ; list filedescriptors\n"
 		"  !fdd 2 7              ; dup2(2, 7)\n"
 		"  !fds 3 0x840          ; seek filedescriptor\n"
@@ -915,7 +915,7 @@ int debug_stepu()
 
 	stepping_in_progress = 0;
 	signal(SIGINT, SIG_IGN);
-//	pprintf("%d instructions executed\n", i);
+//	cons_printf("%d instructions executed\n", i);
 
 	return 0;
 }
@@ -1014,7 +1014,7 @@ int debug_step(int times)
 			//	radare_command("!dregs", 0);
 				config_set("scr.buf", "true");
 				arch_print_registers(0, "line");
-				ptr = pprintf_get();
+				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
 				sprintf(buf, "C %d %s @ 0x%08x",
 					ps.steps, ptr, (unsigned long)arch_pc());
@@ -1154,7 +1154,7 @@ int debug_trace(char *input)
 
 	while(!config.interrupted && ps.opened && debug_step(1)) {
 		if (smart) {
-			pprintf("[-] 0x%08x\n", arch_pc());
+			cons_printf("[-] 0x%08x\n", arch_pc());
 			radare_command("s eip && f -eip", 0);
 			disassemble(20, 2);
 			radare_command("!dregs", 0);
@@ -1163,7 +1163,7 @@ int debug_trace(char *input)
 			case 0:
 				break;
 			case 1:
-				pprintf("0x%08x\n", arch_pc());
+				cons_printf("0x%08x\n", arch_pc());
 				break;
 			case 2:
 			case 3:
@@ -1175,7 +1175,7 @@ int debug_trace(char *input)
 					udis(10,1);
 					if (level == 3) {
 						debug_registers(0);
-						pprintf("\n");
+						cons_printf("\n");
 					}
 					if (tbt) {
 						// XXX must be internal call
@@ -1186,7 +1186,7 @@ int debug_trace(char *input)
 				break;
 			}
 		}
-		pprintf_flush();
+		cons_flush();
 		if (slip)
 			sleep(slip);
 	}
@@ -1272,7 +1272,7 @@ int debug_wp(const char *str)
 		break;
 	/* print watchpoints */
 	case '?':
-		pprintf("Usage: !wp[?|*] ([expression|-idx])\n"
+		cons_printf("Usage: !wp[?|*] ([expression|-idx])\n"
 		"  !wp           list all watchpoints\n"
 		"  !wp*          remove all watchpoints\n"
 		"  !wp -#        removes watchpoint number\n"
@@ -1304,7 +1304,7 @@ int debug_wp(const char *str)
 
 					ps.wps[i].str_cond = strdup(str);
 					ps.wps_n++;
-					pprintf("%d: %s\n", i, str);
+					cons_printf("%d: %s\n", i, str);
 					break;
 				}
 			}
@@ -1331,7 +1331,7 @@ int debug_bp(const char *str)
 		bptype = BP_HARD;
 		break;
 	case '?':
-		pprintf("Usage: !bp[?|s|h|*] ([addr|-addr])\n"
+		cons_printf("Usage: !bp[?|s|h|*] ([addr|-addr])\n"
 		"  !bp [addr]    add a breakpoint\n"
 		"  !bp -[addr]   remove a breakpoint\n"
 		"  !bp*          remove all breakpoints\n"

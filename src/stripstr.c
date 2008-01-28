@@ -146,12 +146,12 @@ int stripstr_iterate(const unsigned char *buf, int i, off_t offset, char *match)
 					} else break;
 				} while(1);
 
-				pprintf("f %s @ 0x%08x\n", msg, (unsigned int)offset-matches);
+				cons_printf("f %s @ 0x%08x\n", msg, (unsigned int)offset-matches);
 			} else
 			if ((!match) || (match && strstr(str, match)) ){
-				D pprintf("0x%08x %c %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', str);
-				else pprintf("%s\n", str);
-				pprintf_flush();
+				D cons_printf("0x%08x %c %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', str);
+				else cons_printf("%s\n", str);
+				cons_flush();
 			}
 		}
 		matches = 0;

@@ -399,13 +399,13 @@ int arch_stackanal()
 	if (ret < 0) return 1;
 
 	// TODO: implement [stack] map uptrace method too
-	pprintf("esp backtrace\n");
+	cons_printf("esp backtrace\n");
 	for(i=0;i<0xffff;i++) {
 		unsigned long addr = (unsigned long)ptr;
 		debug_read_at(ps.tid, &ebp2, 4, R_ESP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_ESP(regs)+4);
 //		if (ptr == 0xffffffff || R_ESP(regs) == 0x0) break;
-//pprintf("%d %08x\n", i, addr);
+//cons_printf("%d %08x\n", i, addr);
 
 		{
 			struct list_head *pos;
@@ -427,13 +427,13 @@ int arch_stackanal()
 						name[j] = ch;
 					}
 					name[j]='\0';
-					pprintf("[%08x] 0x%08x [%s] %s\n",
+					cons_printf("[%08x] 0x%08x [%s] %s\n",
 						R_ESP(regs), addr, name, flag_name_by_offset((off_t)addr));
 					break;
 				}
 			}
 		}
-		//pprintf("#%d 0x%08x %s\n", i, addr, flag_name_by_offset((off_t)ptr));
+		//cons_printf("#%d 0x%08x %s\n", i, addr, flag_name_by_offset((off_t)ptr));
 		R_ESP(regs) = R_ESP(regs)+4;
 	}
 	return i;
@@ -449,7 +449,7 @@ int arch_stackanal()
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
 	||  !memcmp(buf, "\x89\xe5\x57", 3)) { /* push %ebp ; mov %esp, %ebp */
 		debug_read_at(ps.tid, &ptr, 4, R_ESP(regs));
-		pprintf("#0 0x%08x %s", (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#0 0x%08x %s", (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
 		R_EBP(regs) = ptr;
 	}
 
@@ -457,7 +457,7 @@ int arch_stackanal()
 		debug_read_at(ps.tid, &ebp2, 4, R_EBP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_EBP(regs)+4);
 		if (ptr == 0x0 || R_EBP(regs) == 0x0) break;
-		pprintf("#%d 0x%08x %s\n", i, (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#%d 0x%08x %s\n", i, (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
 		R_EBP(regs) = ebp2;
 #endif
 
@@ -521,10 +521,10 @@ int arch_backtrace()
 			/* print out */
 			D {
 				if (c=='u')
-				pprintf("[esp+%04x] %c 0x%08x [%s] %s\n",
+				cons_printf("[esp+%04x] %c 0x%08x [%s] %s\n",
 					esp-R_ESP(regs), c, ebp2, name, flagname);
 			} else {
-				pprintf("[esp+%04x] %c 0x%08x [%s] %s\n",
+				cons_printf("[esp+%04x] %c 0x%08x [%s] %s\n",
 					esp-R_ESP(regs), c, ebp2, name, flagname);
 			}
 		}
@@ -535,7 +535,7 @@ int arch_backtrace()
 
 void dump_eflags(const int eflags)
 {
-    pprintf("%c%c%c%c%c%c%c%c%c%c%c ",
+    cons_printf("%c%c%c%c%c%c%c%c%c%c%c ",
 	   eflags & (1 <<  0) ? 'C' : 'c',
 	   eflags & (1 <<  2) ? 'P' : 'p',
 	   eflags & (1 <<  4) ? 'A' : 'a',
@@ -547,7 +547,7 @@ void dump_eflags(const int eflags)
 	   eflags & (1 << 11) ? 'O' : 'o',
 	   eflags & (1 << 16) ? 'R' : 'r',
 	   ((eflags >> 12) & 3) + '0');
-    pprintf("(%s%s%s%s%s%s%s%s%s%s)\n",
+    cons_printf("(%s%s%s%s%s%s%s%s%s%s)\n",
 	   eflags & (1 <<  0) ? "C" : "",
 	   eflags & (1 <<  2) ? "P" : "",
 	   eflags & (1 <<  4) ? "A" : "",
@@ -636,14 +636,14 @@ int arch_print_fpregisters(int rad, const char *mask)
 	printf("  foo 0x%lx  ; stack\n", regs.foo);
 	printf("  fos 0x%lx\n", regs.fos);
 	for(i=0;i<20;i++)
-		pprintf("  st%d %Lf\n", i, regs.st_space[i]);
+		cons_printf("  st%d %Lf\n", i, regs.st_space[i]);
 #else
 	ret = ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void *)sizeof(regs_t));
 	for(i=0;i<8;i++)
 #if __NetBSD__
-		pprintf("  st%d %f\n", i, regs.__data[i]); // XXX Fill this in with real info.
+		cons_printf("  st%d %f\n", i, regs.__data[i]); // XXX Fill this in with real info.
 #else
-		pprintf("  st%d %f\n", i, regs.fpr_env[i]);
+		cons_printf("  st%d %f\n", i, regs.fpr_env[i]);
 #endif
 #endif
 
@@ -782,21 +782,21 @@ int arch_print_syscall()
 		perror("getregs");
 		return -1;
 	}
-	pprintf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
+	cons_printf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
 
 	for(i=0;ptr[i].num;i++) {
 		if (R_OEAX(regs) == ptr[i].num) {
-			pprintf("%s ( ", ptr[i].name);
+			cons_printf("%s ( ", ptr[i].name);
 			j = ptr[i].args;
-			if (j>0) pprintf("0x%08x ", R_EBX(regs));
-			if (j>1) pprintf("0x%08x ", R_ECX(regs));
-			if (j>2) pprintf("0x%08x ", R_EDX(regs));
-			if (j>3) pprintf("0x%08x ", R_ESI(regs));
-			if (j>4) pprintf("0x%08x ", R_EDI(regs));
+			if (j>0) cons_printf("0x%08x ", R_EBX(regs));
+			if (j>1) cons_printf("0x%08x ", R_ECX(regs));
+			if (j>2) cons_printf("0x%08x ", R_EDX(regs));
+			if (j>3) cons_printf("0x%08x ", R_ESI(regs));
+			if (j>4) cons_printf("0x%08x ", R_EDI(regs));
 			break;
 		}
 	}
-	pprintf(") = 0x%08x\n", R_EAX(regs));
+	cons_printf(") = 0x%08x\n", R_EAX(regs));
 	return (int)R_OEAX(regs);
 #else
 	return -1;
@@ -890,7 +890,7 @@ int arch_print_registers(int rad, const char *mask)
 	if (mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 		if (oregs_timestamp[0])
-			pprintf("%s\n", oregs_timestamp);
+			cons_printf("%s\n", oregs_timestamp);
 	} else {
 		ret = debug_getregs(ps.tid, &regs);
 		if (ret < 0) {
@@ -905,66 +905,66 @@ int arch_print_registers(int rad, const char *mask)
 		rad = 2;
 	
 	if (rad == 1) {
-		//pprintf("\n"); // stupid trick
-		pprintf("f oeax @ 0x%x\n", (int)R_OEAX(regs));
-		pprintf("f eax @ 0x%x\n", (int)R_EAX(regs));
-		pprintf("f ebx @ 0x%x\n", (int)R_EBX(regs));
-		pprintf("f ecx @ 0x%x\n", (int)R_ECX(regs));
-		pprintf("f edx @ 0x%x\n", (int)R_EDX(regs));
-		pprintf("f ebp @ 0x%x\n", (int)R_EBP(regs));
-		pprintf("f esi @ 0x%x\n", (int)R_ESI(regs));
-		pprintf("f edi @ 0x%x\n", (int)R_EDI(regs));
-		pprintf("f oeip @ 0x%x\n", (int)R_EIP(oregs));
-		pprintf("f eip @ 0x%x\n", (int)R_EIP(regs));
-		pprintf("f oesp @ 0x%x\n", (int)R_ESP(oregs));
-		pprintf("f esp @ 0x%x\n", (int)R_ESP(regs));
+		//cons_printf("\n"); // stupid trick
+		cons_printf("f oeax @ 0x%x\n", (int)R_OEAX(regs));
+		cons_printf("f eax @ 0x%x\n", (int)R_EAX(regs));
+		cons_printf("f ebx @ 0x%x\n", (int)R_EBX(regs));
+		cons_printf("f ecx @ 0x%x\n", (int)R_ECX(regs));
+		cons_printf("f edx @ 0x%x\n", (int)R_EDX(regs));
+		cons_printf("f ebp @ 0x%x\n", (int)R_EBP(regs));
+		cons_printf("f esi @ 0x%x\n", (int)R_ESI(regs));
+		cons_printf("f edi @ 0x%x\n", (int)R_EDI(regs));
+		cons_printf("f oeip @ 0x%x\n", (int)R_EIP(oregs));
+		cons_printf("f eip @ 0x%x\n", (int)R_EIP(regs));
+		cons_printf("f oesp @ 0x%x\n", (int)R_ESP(oregs));
+		cons_printf("f esp @ 0x%x\n", (int)R_ESP(regs));
 	} else
 	if (rad == 2) {
-			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
-			if (R_EBX(regs)!=R_EBX(oregs)) pprintf("ebx = 0x%08x (0x%08x) ", R_EBX(regs), R_EBX(oregs));
-			if (R_ECX(regs)!=R_ECX(oregs)) pprintf("ecx = 0x%08x (0x%08x) ", R_ECX(regs), R_ECX(oregs));
-			if (R_EDX(regs)!=R_EDX(oregs)) pprintf("edx = 0x%08x (0x%08x) ", R_EDX(regs), R_EDX(oregs));
-			if (R_ESI(regs)!=R_ESI(oregs)) pprintf("esi = 0x%08x (0x%08x) ", R_ESI(regs), R_ESI(oregs));
-			if (R_EDI(regs)!=R_EDI(oregs)) pprintf("edi = 0x%08x (0x%08x) ", R_EDI(regs), R_EDI(oregs));
-			if (R_EBP(regs)!=R_EBP(oregs)) pprintf("ebp = 0x%08x (0x%08x) ", R_EBP(regs), R_EBP(oregs));
-			if (R_ESP(regs)!=R_ESP(oregs)) pprintf("esp = 0x%08x (0x%08x) ", R_ESP(regs), R_ESP(oregs));
-			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) pprintf("eflags = 0x%04x (0x%04x)", R_EFLAGS(regs), R_EFLAGS(oregs));
+			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
+			if (R_EBX(regs)!=R_EBX(oregs)) cons_printf("ebx = 0x%08x (0x%08x) ", R_EBX(regs), R_EBX(oregs));
+			if (R_ECX(regs)!=R_ECX(oregs)) cons_printf("ecx = 0x%08x (0x%08x) ", R_ECX(regs), R_ECX(oregs));
+			if (R_EDX(regs)!=R_EDX(oregs)) cons_printf("edx = 0x%08x (0x%08x) ", R_EDX(regs), R_EDX(oregs));
+			if (R_ESI(regs)!=R_ESI(oregs)) cons_printf("esi = 0x%08x (0x%08x) ", R_ESI(regs), R_ESI(oregs));
+			if (R_EDI(regs)!=R_EDI(oregs)) cons_printf("edi = 0x%08x (0x%08x) ", R_EDI(regs), R_EDI(oregs));
+			if (R_EBP(regs)!=R_EBP(oregs)) cons_printf("ebp = 0x%08x (0x%08x) ", R_EBP(regs), R_EBP(oregs));
+			if (R_ESP(regs)!=R_ESP(oregs)) cons_printf("esp = 0x%08x (0x%08x) ", R_ESP(regs), R_ESP(oregs));
+			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) cons_printf("eflags = 0x%04x (0x%04x)", R_EFLAGS(regs), R_EFLAGS(oregs));
 			NEWLINE;
 	} else {
 		if (color) {
-			if (R_EAX(regs)!=R_EAX(oregs)) pprintf("\e[35m");
-			else pprintf("\e[0m");
-			pprintf("  eax  0x%08x\e[0m", R_EAX(regs));
-			if (R_ESI(regs)!=R_ESI(oregs)) pprintf("\e[35m");
-			pprintf("    esi  0x%08x\e[0m", R_ESI(regs));
-			if (R_EIP(regs)!=R_EIP(oregs)) pprintf("\e[35m");
-			pprintf("    eip    0x%08x\e[0m\n",  R_EIP(regs));
-			if (R_EBX(regs)!=R_EBX(oregs)) pprintf("\e[35m");
-			pprintf("  ebx  0x%08x\e[0m", R_EBX(regs));
-			if (R_EDI(regs)!=R_EDI(oregs)) pprintf("\e[35m");
-			pprintf("    edi  0x%08x\e[0m", R_EDI(regs));
-			if (R_OEAX(regs)!=R_OEAX(oregs)) pprintf("\e[35m");
-			pprintf("    oeax   0x%08x\e[0m\n",   R_OEAX(regs));
-			if (R_ECX(regs)!=R_ECX(oregs)) pprintf("\e[35m");
-			pprintf("  ecx  0x%08x\e[0m", R_ECX(regs));
-			if (R_ESP(regs)!=R_ESP(oregs)) pprintf("\e[35m");
-			pprintf("    esp  0x%08x\e[0m", R_ESP(regs));
-			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) pprintf("\e[35m");
-			pprintf("    eflags 0x%04x  \n", R_EFLAGS(regs));
-			if (R_EDX(regs)!=R_EDX(oregs)) pprintf("\e[35m");
-			pprintf("  edx  0x%08x\e[0m", R_EDX(regs));
-			if (R_EBP(regs)!=R_EBP(oregs)) pprintf("\e[35m");
-			pprintf("    ebp  0x%08x\e[0m    ", R_EBP(regs));
+			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("\e[35m");
+			else cons_printf("\e[0m");
+			cons_printf("  eax  0x%08x\e[0m", R_EAX(regs));
+			if (R_ESI(regs)!=R_ESI(oregs)) cons_printf("\e[35m");
+			cons_printf("    esi  0x%08x\e[0m", R_ESI(regs));
+			if (R_EIP(regs)!=R_EIP(oregs)) cons_printf("\e[35m");
+			cons_printf("    eip    0x%08x\e[0m\n",  R_EIP(regs));
+			if (R_EBX(regs)!=R_EBX(oregs)) cons_printf("\e[35m");
+			cons_printf("  ebx  0x%08x\e[0m", R_EBX(regs));
+			if (R_EDI(regs)!=R_EDI(oregs)) cons_printf("\e[35m");
+			cons_printf("    edi  0x%08x\e[0m", R_EDI(regs));
+			if (R_OEAX(regs)!=R_OEAX(oregs)) cons_printf("\e[35m");
+			cons_printf("    oeax   0x%08x\e[0m\n",   R_OEAX(regs));
+			if (R_ECX(regs)!=R_ECX(oregs)) cons_printf("\e[35m");
+			cons_printf("  ecx  0x%08x\e[0m", R_ECX(regs));
+			if (R_ESP(regs)!=R_ESP(oregs)) cons_printf("\e[35m");
+			cons_printf("    esp  0x%08x\e[0m", R_ESP(regs));
+			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) cons_printf("\e[35m");
+			cons_printf("    eflags 0x%04x  \n", R_EFLAGS(regs));
+			if (R_EDX(regs)!=R_EDX(oregs)) cons_printf("\e[35m");
+			cons_printf("  edx  0x%08x\e[0m", R_EDX(regs));
+			if (R_EBP(regs)!=R_EBP(oregs)) cons_printf("\e[35m");
+			cons_printf("    ebp  0x%08x\e[0m    ", R_EBP(regs));
 			
 			dump_eflags(R_EFLAGS(regs));
 //#if __linux__
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
 //#endif
 		} else {
-			pprintf("  eax  0x%08x    esi  0x%08x    eip    0x%08x\n",   R_EAX(regs), (int)R_ESI(regs), R_EIP(regs));
-			pprintf("  ebx  0x%08x    edi  0x%08x    oeax   0x%08x\n",   R_EBX(regs), R_EDI(regs), R_OEAX(regs));
-			pprintf("  ecx  0x%08x    esp  0x%08x    eflags 0x%04x\n",   R_ECX(regs), (int)R_ESP(regs), R_EFLAGS(regs));
-			pprintf("  edx  0x%08x    ebp  0x%08x    ", (int)R_EDX(regs), (int)R_EBP(regs));
+			cons_printf("  eax  0x%08x    esi  0x%08x    eip    0x%08x\n",   R_EAX(regs), (int)R_ESI(regs), R_EIP(regs));
+			cons_printf("  ebx  0x%08x    edi  0x%08x    oeax   0x%08x\n",   R_EBX(regs), R_EDI(regs), R_OEAX(regs));
+			cons_printf("  ecx  0x%08x    esp  0x%08x    eflags 0x%04x\n",   R_ECX(regs), (int)R_ESP(regs), R_EFLAGS(regs));
+			cons_printf("  edx  0x%08x    ebp  0x%08x    ", (int)R_EDX(regs), (int)R_EBP(regs));
 			dump_eflags(R_EFLAGS(regs));
 		}
 
@@ -1694,7 +1694,7 @@ void arch_view_bt(struct list_head *sf)
                 sf_e = list_entry(pos, struct sf_t, next);
 		label[0] = '\0';
 		string_flag_offset(&label, sf_e->ret_addr);
-		pprintf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
+		cons_printf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
 			i++, (uint)sf_e->ret_addr,
 			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);
 	}

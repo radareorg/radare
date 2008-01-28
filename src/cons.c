@@ -53,12 +53,28 @@ int cons_readchar()
 	return buf[0];
 }
 
-int pprint_fd(int fd)
+int cons_set_fd(int fd)
 {
 	if (_print_fd == 0)
 		return fd;
 	return _print_fd = fd;
 }
+
+#if __WINDOWS__
+void gotoxy(int x, int y)
+{
+        static HANDLE hStdout = NULL;
+        COORD coord;
+
+        coord.X = x;
+        coord.Y = y;
+
+        if(!hStdout)
+                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        SetConsoleCursorPosition(hStdout,coord);
+}
+#endif
 
 void cons_clear(void)
 {
@@ -81,20 +97,6 @@ void cons_clear(void)
 }
 
 #if __WINDOWS__
-void gotoxy(int x, int y)
-{
-        static HANDLE hStdout = NULL;
-        COORD coord;
-
-        coord.X = x;
-        coord.Y = y;
-
-        if(!hStdout)
-                hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        SetConsoleCursorPosition(hStdout,coord);
-}
-
 int cons_w32_print(unsigned char *ptr)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -213,52 +215,42 @@ int cons_fgets(char *buf, int len)
 	return strlen(buf);
 }
 
-static int pprintf_buffer_len = 0;
-static char *pprintf_buffer = NULL;
+static int cons_buffer_len = 0;
+static char *cons_buffer = NULL;
 
-// TODO : rename pprintf to console or so
-char *pprintf_get()
+char *cons_get_buffer()
 {
-	return pprintf_buffer;
+	return cons_buffer;
 }
 
 void palloc(int moar)
 {
-	if (pprintf_buffer == NULL) {
-		pprintf_buffer_len = moar+1024;
-		pprintf_buffer = (char *)malloc(pprintf_buffer_len);
-		pprintf_buffer[0]='\0';
+	if (cons_buffer == NULL) {
+		cons_buffer_len = moar+1024;
+		cons_buffer = (char *)malloc(cons_buffer_len);
+		cons_buffer[0]='\0';
 	} else
-	if (moar + strlen(pprintf_buffer)>pprintf_buffer_len) {
-		pprintf_buffer = (char *)realloc(pprintf_buffer,
-			pprintf_buffer_len+moar+strlen(pprintf_buffer)+1);
+	if (moar + strlen(cons_buffer)>cons_buffer_len) {
+		cons_buffer = (char *)realloc(cons_buffer,
+			cons_buffer_len+moar+strlen(cons_buffer)+1);
 	}
 }
 
-void pprintf_flush()
+void cons_flush()
 {
 	//eprintf("Flush\n");
-	if (pprintf_buffer && pprintf_buffer[0]) {
+	if (cons_buffer && cons_buffer[0]) {
 #if __WINDOWS__
 		if (_print_fd == 1)
-			cons_w32_print(pprintf_buffer);
+			cons_w32_print(cons_buffer);
 		else
 #endif
-		write(_print_fd, pprintf_buffer, strlen(pprintf_buffer));
-		pprintf_buffer[0] = '\0';
+		write(_print_fd, cons_buffer, strlen(cons_buffer));
+		cons_buffer[0] = '\0';
 	}
 }
 
-void pprintf_newline()
-{
-	pprintf("\n");
-#if RADARE_CORE
-	if (!config.buf)
-		pprintf_flush();
-#endif
-}
-
-void pprintf(const char *format, ...)
+void cons_printf(const char *format, ...)
 {
 	char buf[4096];
 	va_list ap;
@@ -270,15 +262,25 @@ void pprintf(const char *format, ...)
 		buf[0]='\0';
 
 	palloc(strlen(buf)+1000);
-	strcat(pprintf_buffer, buf);
+	strcat(cons_buffer, buf);
 
 	va_end(ap);
 }
 
-void pstrcat(const char *str)
+void cons_newline()
+{
+	cons_printf("\n");
+#if RADARE_CORE
+	if (!config.buf)
+		cons_flush();
+#endif
+}
+
+
+void cons_strcat(const char *str)
 {
 	palloc(strlen(str));
-	strcat(pprintf_buffer, str);
+	strcat(cons_buffer, str);
 }
 
 int terminal_get_columns()

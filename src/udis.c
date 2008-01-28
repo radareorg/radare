@@ -54,7 +54,7 @@ char *metadata_comment_list()
 	struct list_head *pos;
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		pprintf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
+		cons_printf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
 	}
 }
 
@@ -132,17 +132,17 @@ static int print_metadata(int delta)
 	D {} else return 0;
 	ptr = flag_name_by_offset( offset );
 	if (ptr[0]) {
-		C	pprintf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
+		C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
 				config.baddr+offset, ptr);
-		else	pprintf(OFF_FMTs" %s:\n",
+		else	cons_printf(OFF_FMTs" %s:\n",
 				config.baddr+offset, ptr);
 		lines++;
 	}
 
 	ptr = metadata_comment_get(offset);
 	if (ptr && ptr[0]) {
-		C 	pprintf(C_MAGENTA"%s"C_RESET, ptr);
-		else 	pprintf("%s", ptr);
+		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
+		else 	cons_printf("%s", ptr);
 		free(ptr);
 	}
 #if 0
@@ -169,8 +169,8 @@ static int print_metadata(int delta)
 			off = get_offset(ptr);
 			if (offset == off) {
 				for(i=0;i<cmtmargin;i++) pstrcat(" ");
-				C 	pprintf(C_BWHITE"  ; %s"C_RESET, ptr2);
-				else 	pprintf("  ; %s", ptr2);
+				C 	cons_printf(C_BWHITE"  ; %s"C_RESET, ptr2);
+				else 	cons_printf("  ; %s", ptr2);
 				NEWLINE;
 				lines++;
 			}
@@ -306,13 +306,13 @@ void udis(int len, int rows)
 
 			if (show_offset) {
 				C {
-					pprintf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+					cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 				} else {
-					pprintf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+					cons_printf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 				}
 			}
 			if (show_size)
-				pprintf("%d ", dislen(config.block+seek));
+				cons_printf("%d ", dislen(config.block+seek));
 
 			if (show_bytes) {
 				int max = nbytes;
@@ -325,38 +325,38 @@ void udis(int len, int rows)
 				if (cur !=myinc)
 					max--;
 				for(i=(max-cur)*2;i>0;i--)
-					pprintf(" ");
+					cons_printf(" ");
 				if (cur != myinc)
-					pprintf(". ");
+					cons_printf(". ");
 			}
 
 			hex1 = ud_insn_hex(&ud_obj);
 			hex2 = hex1 + 16;
 			c = hex1[16];
 			hex1[16] = 0;
-			pprintf("%-24s", ud_insn_asm(&ud_obj));
+			cons_printf("%-24s", ud_insn_asm(&ud_obj));
 
 			hex1[16] = c;
 			if (strlen(hex1) > 24) {
-				C pprintf(C_RED);
-				pprintf("\n");
+				C cons_printf(C_RED);
+				cons_printf("\n");
 				if (o_do_off)
-					pprintf("%15s .. ", "");
-				pprintf("%-16s", hex2);
+					cons_printf("%15s .. ", "");
+				cons_printf("%-16s", hex2);
 			}
-			C pprintf(C_RESET);
+			C cons_printf(C_RESET);
 
 			if (show_splits) {
 				struct aop_t aop;
 				arch_x86_aop((unsigned long)seek, (const unsigned char *)config.block+bytes-myinc, &aop);
 				if (aop.jump||aop.eob) {
 					NEWLINE
-					pprintf("; ------------------------------------ ");
+					cons_printf("; ------------------------------------ ");
 					lines++;
 				}
 			}
 		} 
-		else pprintf("%s", ud_insn_asm(&ud_obj));
+		else cons_printf("%s", ud_insn_asm(&ud_obj));
 		seek+=myinc;
 		NEWLINE;
 		if (rows && rows == lines)
@@ -394,12 +394,12 @@ void udisarm(int len, int rows)
 		if (show_lines)
 			code_lines_print(reflines, config.baddr+config.seek+i);
 		if (show_offset) {
-			C pprintf(C_GREEN);
-			pprintf("0x%08llX ", config.baddr+ config.seek+i);
-			C pprintf(C_RESET);
+			C cons_printf(C_GREEN);
+			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
+			C cons_printf(C_RESET);
 		}
 		if (show_size)
-			pprintf("4 ");
+			cons_printf("4 ");
 		if (show_bytes) {
 			if (endian) {
 				print_color_byte_i(i, "%02x", config.block[i]);
@@ -413,14 +413,14 @@ void udisarm(int len, int rows)
 				print_color_byte_i(i, "%02x", config.block[i]);
 			}
 		}
-		pprintf("    %s", disarm(ins, (int)(config.seek+i)));
-		C pprintf(C_RESET);
+		cons_printf("    %s", disarm(ins, (int)(config.seek+i)));
+		C cons_printf(C_RESET);
 		if (show_split) {
 			struct aop_t aop;
 			arch_arm_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
 			if (aop.jump||aop.eob) {
 				NEWLINE
-				pprintf("; ------------------------------------ ");
+				cons_printf("; ------------------------------------ ");
 				lines++;
 			}
 		}
@@ -463,12 +463,12 @@ void ppc_disassemble(int len, int rows)
 		if (show_lines)
 			code_lines_print(reflines, config.baddr+config.seek+i);
 		if (show_offset) {
-			C pprintf(C_GREEN);
-			pprintf("0x%08llX ", config.baddr+ config.seek+i);
-			C pprintf(C_RESET);
+			C cons_printf(C_GREEN);
+			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
+			C cons_printf(C_RESET);
 		}
 		if (show_size)
-			pprintf("4 ");
+			cons_printf("4 ");
 		if (show_bytes) {
 			if (endian) {
 				print_color_byte_i(i+3, "%02x", config.block[i+3]);
@@ -485,14 +485,14 @@ void ppc_disassemble(int len, int rows)
 		dp.iaddr = config.baddr + config.seek + i;
 		dp.instr = config.block + i;
 		PPC_Disassemble(&dp, endian);
-		pprintf("    %s %s", opcode, operands);
-		C pprintf(C_RESET);
+		cons_printf("    %s %s", opcode, operands);
+		C cons_printf(C_RESET);
 		if (show_split) {
 			struct aop_t aop;
 			arch_ppc_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
 			if (aop.jump||aop.eob) {
 				NEWLINE
-					pprintf("; ------------------------------------ ");
+					cons_printf("; ------------------------------------ ");
 				lines++;
 			}
 		}
@@ -534,9 +534,9 @@ void m68k_disassemble(int len, int rows)
 		if (show_lines)
 			code_lines_print(reflines, config.baddr+config.seek +i);
 		if (show_offset) {
-			C pprintf(C_GREEN);
-			pprintf("0x%08llX ", config.baddr+ config.seek+i);
-			C pprintf(C_RESET);
+			C cons_printf(C_GREEN);
+			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
+			C cons_printf(C_RESET);
 		}
 		if (show_bytes) {
 			print_color_byte_i(i, "%02x", config.block[i]);
@@ -548,14 +548,14 @@ void m68k_disassemble(int len, int rows)
 		dp.instr = config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
     		M68k_Disassemble(&dp);
-		pprintf("    %s %s", opcode, operands);
-		C pprintf(C_RESET);
+		cons_printf("    %s %s", opcode, operands);
+		C cons_printf(C_RESET);
 		if (show_split) {
 			struct aop_t aop;
 			arch_arm_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
 			if (aop.jump||aop.eob) {
 				NEWLINE
-					pprintf("; ------------------------------------ ");
+					cons_printf("; ------------------------------------ ");
 				lines++;
 			}
 		}
@@ -591,11 +591,11 @@ void java_disassemble(int len, int rows)
 			code_lines_print(reflines, config.baddr+config.seek+i);
 		l = java_disasm(config.block+i, output);
 		if (show_size)
-			pprintf("%d ", l);
+			cons_printf("%d ", l);
 		if (show_offset) {
-			C pprintf(C_GREEN);
-			pprintf("0x%08llX ", config.baddr + config.seek+i); // TODO: use baddr too!
-			C pprintf(C_RESET);
+			C cons_printf(C_GREEN);
+			cons_printf("0x%08llX ", config.baddr + config.seek+i); // TODO: use baddr too!
+			C cons_printf(C_RESET);
 		}
 		if (config.cursor_mode) {
 			if (config.cursor == i)
@@ -608,23 +608,23 @@ void java_disassemble(int len, int rows)
 				for (j = 0;j<l;j++)
 					print_color_byte_i(i+j,   "%02x", config.block[i+j]);
 				for (j = l ;j<5;j++)
-					pprintf("  ");
+					cons_printf("  ");
 			}
-			pprintf("    %s", output);
+			cons_printf("    %s", output);
 			i += l;
 		} else {
 			print_color_byte_i(i,   "%02x", config.block[i]);
 
-			pprintf("            ???");
+			cons_printf("            ???");
 			i++; // skip wrong byte
 		}
-		C pprintf(C_RESET);
+		C cons_printf(C_RESET);
 		NEWLINE;
 		if (show_split) {
 			struct aop_t aop;
 			arch_java_aop((unsigned long)config.seek+oi, (const unsigned char *)config.block+oi, &aop);
 			if (aop.jump||aop.eob) {
-				pprintf("; ------------------------------------ ");
+				cons_printf("; ------------------------------------ ");
 				lines++;
 				NEWLINE
 			}

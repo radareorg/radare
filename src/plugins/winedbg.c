@@ -134,7 +134,7 @@ int winedbg_system(const char *cmd)
 		winedbg_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "help")) {
-		pprintf("WineDbg help\n"
+		cons_printf("WineDbg help\n"
 		" !step [N]     steps one or N instructions\n"
 		" !regs[*]      show or flag registers\n"
 		" !!cmd         execute a winedbg command\n"
@@ -166,20 +166,20 @@ int winedbg_system(const char *cmd)
 		socket_fgets(tmp, 128);
 		sscanf(tmp, " ESI:%08x EDI:%08x", &esi, &edi);
 		if (cmd[4]=='*') {
-			pprintf("f eip @ 0x%08x\n", eip);
-			pprintf("f esp @ 0x%08x\n", esp);
-			pprintf("f ebp @ 0x%08x\n", ebp);
-			pprintf("f esi @ 0x%08x\n", esi);
-			pprintf("f edi @ 0x%08x\n", edi);
-			pprintf("f eax @ 0x%08x\n", eax);
-			pprintf("f ebx @ 0x%08x\n", ebx);
-			pprintf("f ecx @ 0x%08x\n", ecx);
-			pprintf("f edx @ 0x%08x\n", edx);
-			pprintf("f eflags @ 0x%08x\n", eflags );
+			cons_printf("f eip @ 0x%08x\n", eip);
+			cons_printf("f esp @ 0x%08x\n", esp);
+			cons_printf("f ebp @ 0x%08x\n", ebp);
+			cons_printf("f esi @ 0x%08x\n", esi);
+			cons_printf("f edi @ 0x%08x\n", edi);
+			cons_printf("f eax @ 0x%08x\n", eax);
+			cons_printf("f ebx @ 0x%08x\n", ebx);
+			cons_printf("f ecx @ 0x%08x\n", ecx);
+			cons_printf("f edx @ 0x%08x\n", edx);
+			cons_printf("f eflags @ 0x%08x\n", eflags );
 		} else {
-			pprintf(" eip = 0x%08x  eax = 0x%08x\n", eip, eax);
-			pprintf(" esp = 0x%08x  ebx = 0x%08x\n", esp, ebx);
-			pprintf(" ebp = 0x%08x  ecx = 0x%08x\n", ebp, ecx);
+			cons_printf(" eip = 0x%08x  eax = 0x%08x\n", eip, eax);
+			cons_printf(" esp = 0x%08x  ebx = 0x%08x\n", esp, ebx);
+			cons_printf(" ebp = 0x%08x  ecx = 0x%08x\n", ebp, ecx);
 		}
 		winedbg_wait_until_prompt(0);
 	}

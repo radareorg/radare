@@ -1,14 +1,14 @@
 #ifndef _INCLUDE_PRINT_H_
 #define _INCLUDE_PRINT_H_
 
-#define CLRSCR() pstrcat("\e[2J\e[0;0H");
+#define CLRSCR() cons_strcat("\e[2J\e[0;0H");
 
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
-#define PRINT_BIN(x) D pprintf("%d%d%d%d %d%d%d%d  ",\
+#define PRINT_BIN(x) D cons_printf("%d%d%d%d %d%d%d%d  ",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0); else \
-pprintf("%d%d%d%d%d%d%d%d",\
+cons_printf("%d%d%d%d%d%d%d%d",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0);
 extern int dec;
@@ -16,7 +16,7 @@ extern int dec;
 //#define INILINE D { int i; if(config.x) printf("\r"); for(i=1;i<config.x;i++) printf(" "); } 
 #define INILINE
 #undef NEWLINE
-#define NEWLINE pprintf_newline();
+#define NEWLINE cons_newline();
 
 /* inverted print block */
 #define FMT_INV 0x8000

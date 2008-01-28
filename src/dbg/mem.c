@@ -264,7 +264,7 @@ void print_maps_regions(int rad)
 				name[i] = ch;
 			}
 			name[i]='\0';
-			pprintf("f section_%s @ 0x%08llx\n", name, (unsigned long long)mr->ini);
+			cons_printf("f section_%s @ 0x%08llx\n", name, (unsigned long long)mr->ini);
 		} else {
 			perms[0] = (mr->perms & REGION_READ)?  'r' : '-';
 			perms[1] = (mr->perms & REGION_WRITE)? 'w' : '-';
@@ -272,7 +272,7 @@ void print_maps_regions(int rad)
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
 			perms[4] = 0;
 
-			pprintf("0x%.8llx - 0x%.8llx %s 0x%.8llx %s\n",
+			cons_printf("0x%.8llx - 0x%.8llx %s 0x%.8llx %s\n",
 				 (unsigned long long)mr->ini, (unsigned long long)mr->end, perms,
 				(unsigned long long)mr->size, (unsigned long long)mr->bin);
 		}

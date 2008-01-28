@@ -95,8 +95,8 @@ print_fmt_t format_get (char fmt, print_mode_t mode)
 // TODO: implement getenv("RCOLORS");
 void print_addr(off_t off)
 {
-	C	pprintf(COLOR_AD""OFF_FMT""C_RESET" ", off);
-	else	pprintf(OFF_FMT" ", off);
+	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET" ", off);
+	else	cons_printf(OFF_FMT" ", off);
 }
 
 char *get_color_for(int c)
@@ -115,9 +115,9 @@ void print_color_byte(char *str, int c)
 	C {	strcpy(cash, get_color_for(c));
 		strcat(cash, str);
 		strcat(cash, C_RESET);
-		pprintf(cash, (unsigned char)c);
+		cons_printf(cash, (unsigned char)c);
 	} else
-		pprintf(str, c);
+		cons_printf(str, c);
 }
 
 void cursor_precolor(int i)
@@ -126,12 +126,12 @@ void cursor_precolor(int i)
 		if (config.ocursor != -1) {
 			if ((i >= config.ocursor && i <= config.cursor)
 			||  (i <= config.ocursor && i >= config.cursor)) {
-				pprintf("\e[7m");
+				cons_strcat("\e[7m");
 				return;
 			}
 		} else {
 			if (i == config.cursor) {
-				pprintf("\e[7m");
+				cons_strcat("\e[7m");
 				return;
 			}
 		}
@@ -145,16 +145,16 @@ void print_color_byte_i(int i, char *str, int c)
 		if (config.ocursor != -1) {
 			if ((i >= config.ocursor && i <= config.cursor)
 			||  (i <= config.ocursor && i >= config.cursor)) {
-				pprintf("\e[7m");
+				cons_strcat("\e[7m");
 				print_color_byte(str, c);
-				pprintf("\e[0m");
+				cons_strcat("\e[0m");
 				return;
 			}
 		} else {
 			if (i == config.cursor) {
-				pprintf("\e[7m");
+				cons_strcat("\e[7m");
 				print_color_byte(str, c);
-				pprintf("\e[0m");
+				cons_strcat("\e[0m");
 				return;
 			}
 		}
@@ -172,7 +172,7 @@ void print_color_byte_is(int i, char *str, char *c)
 			strcpy(cash, "\e[7m");
 			strcat(cash, str);
 			strcat(cash, C_RESET);
-			pprintf(cash, c);
+			cons_printf(cash, c);
 		} else
 			print_color_byte_i(i, str, 0);
 	} else
@@ -183,12 +183,12 @@ void format_show_help (print_mode_t mode)
 {
 	format_info_t *fi;
 	
-	pprintf("Available formats:\n");
+	cons_printf("Available formats:\n");
 	for (fi = formats; fi->id != 0; fi++)
 	if (fi->mode & mode) {
 		if (mode == MD_ONCE)
-			pprintf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo);
-		else	pprintf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeb);
+			cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo);
+		else	cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeb);
 	}
 }
 
@@ -216,8 +216,9 @@ void radare_dump_and_process(int type, int size)
 		break;
 	case DUMP_DISASM:
 		D radare_command("fd", 0);
-		x = config_get_i("scr.x");
-		y = config_get_i("scr.y");
+#if 0
+		//x = config_get_i("scr.x");
+		//y = config_get_i("scr.y");
 		if (x&&y)
 		sprintf(cmd,"%s %s %s | head -n %d | Y=%d W=%d awk 'BEGIN{W=ENVIRON[\"W\"];"
 			"Y=ENVIRON[\"Y\"];E=\"\x1B\";ORS=\"\";print \"\" E \"[\" Y \";"
@@ -226,6 +227,7 @@ void radare_dump_and_process(int type, int size)
 			objdump, (syntax&&syntax[0]=='i')?"-M intel":"",file,
 			config.visual?config.height:200, y, config.width, x,x);
 		else
+#endif
 		sprintf(cmd, "%s %s %s | head -n %d | awk '{if (/.:\\t/)print;}'", 
 			objdump, (syntax&&syntax[0]=='i')?"-M intel":"",file, 
 			config.visual?config.height:200);
@@ -298,18 +300,18 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		list_for_each(head, &(prg->blocks)) {
 			b0 = list_entry(head, struct block_t, list);
 			D {
-				pprintf("0x%08x (%d) -> ", b0->addr, b0->n_bytes);
+				cons_printf("0x%08x (%d) -> ", b0->addr, b0->n_bytes);
 				if (b0->tnext)
-					pprintf("0x%08x", b0->tnext);
+					cons_printf("0x%08x", b0->tnext);
 				if (b0->fnext)
-					pprintf(", 0x%08x", b0->fnext);
-				pprintf("\n");
+					cons_printf(", 0x%08x", b0->fnext);
+				cons_printf("\n");
 				sprintf(cmd, "pD %d @ 0x%08x", b0->n_bytes+1, (unsigned int)b0->addr);
 				radare_command(cmd, 0);
-				pprintf("\n\n");
+				cons_printf("\n\n");
 			} else {
-				pprintf("b %d\n", b0->n_bytes);
-				pprintf("f blk_%08X @ 0x%08x\n", b0->addr, b0->addr);
+				cons_printf("b %d\n", b0->n_bytes);
+				cons_printf("f blk_%08X @ 0x%08x\n", b0->addr, b0->addr);
 			}
 			i++;
 		}
@@ -359,7 +361,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			l = (long *)buffer;
 			print_color_byte("%ld", *l);
 			//printf("%ld", *l);
-			D { NEWLINE; } else pprintf(" ");
+			D { NEWLINE; } else cons_printf(" ");
 		} }
 		break;
 	case FMT_LSB: {
@@ -389,7 +391,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			}
 
 			if (is_printable(dbyte))
-				pprintf ("%c", dbyte);
+				cons_printf ("%c", dbyte);
 		}
 		NEWLINE;
 		} break;
@@ -404,8 +406,8 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		for(i=0;i<len;i+=sizeof(long long)) {
 			endian_memcpy(buffer, config.block+i, sizeof(long long));
  			ll = (long long *)buffer;
-			pprintf("%lld", *ll);
-			D { NEWLINE; } else pprintf(" ");
+			cons_printf("%lld", *ll);
+			D { NEWLINE; } else cons_printf(" ");
 		} } break;
 	/*   DATES   */
 	case FMT_TIME_DOS: {
@@ -433,7 +435,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			else 	tmp = strftime(datestr,256,"%d:%m:%Y %H:%M:%S %z",
 					(const struct tm*)gmtime((const time_t*)&t));
 			// TODO colorize depending on the distance between dates
-			if (tmp) pprintf("%s",datestr); else printf("*failed*");
+			if (tmp) cons_printf("%s",datestr); else printf("*failed*");
 			NEWLINE;
 		} } break;
 	case FMT_TIME_FTIME: {
@@ -453,7 +455,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 					(const struct tm*)gmtime((const time_t*)&t));
 			else 	tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z",
 					(const struct tm*)gmtime((const time_t*)&t));
-			if (tmp) pprintf("%s", datestr); else pprintf("*failed*");
+			if (tmp) cons_printf("%s", datestr); else cons_printf("*failed*");
 			NEWLINE;
 		} } break;
 	case FMT_RAW:
@@ -472,7 +474,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		break;
 	case FMT_ASHC:
 		INILINE;
-                pprintf("shellcode:");
+                cons_printf("shellcode:");
 		inc = config.width/7;
 		lines = 0;
                 for(i = 0; i < len; i++) {
@@ -481,22 +483,22 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
                         if (!(i%inc)) {
 				if (++lines>config.height-4) 
 					break;
-				NEWLINE; pprintf(".byte ");
+				NEWLINE; cons_printf(".byte ");
 			}
 			print_color_byte_i(i, "0x%02x", config.block[i]);
-                        if (((i+1)%inc) && i+1<len) pprintf(", ");
+                        if (((i+1)%inc) && i+1<len) cons_printf(", ");
                 }
 		NEWLINE;
-                pprintf("shellcode_len = . - shellcode"); NEWLINE;
+                cons_printf("shellcode_len = . - shellcode"); NEWLINE;
                 break;
 	case FMT_CSTR:
 		D { INILINE; }
 		inc = config.width/6;
-		pprintf("#define _BUFFER_SIZE %d", len); NEWLINE;
-		pprintf("unsigned char buffer[_BUFFER_SIZE] = {"); NEWLINE;
+		cons_printf("#define _BUFFER_SIZE %d", len); NEWLINE;
+		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); NEWLINE;
 		for(j = i = 0; i < len;) {
 			print_color_byte_i(i, "0x%02x", config.block[i]);
-			if (++i<len)  pprintf(", ");
+			if (++i<len)  cons_printf(", ");
 			if (!(i%inc)) {
 				NEWLINE; 
 				V if (++j+5>config.height)
@@ -504,7 +506,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 						break;
 			}
 		}
-		pprintf(" };\n");
+		cons_printf(" };\n");
 		break;
 	case FMT_BIN:
 		if (config.width<30)
@@ -512,27 +514,27 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		inc = (int)((config.width-17)/11);
 		D {
 			INILINE;
-			C pprintf(COLOR_HD);
-			pprintf("   offset");
+			C cons_printf(COLOR_HD);
+			cons_printf("   offset");
 			for(i=0;i<inc;i++)
-				pprintf("       +0x%x",i);
+				cons_printf("       +0x%x",i);
 #if 0
 			NEWLINE;
-			pprintf("----------+");
+			cons_printf("----------+");
 			for(i=0;i<inc;i++)
-				pprintf("-----------");
+				cons_printf("-----------");
 #endif
 			NEWLINE;
-			C pprintf(C_RESET);
+			C cons_printf(C_RESET);
 		}
 		for(i=0; i<len; i++) {
 			V if ((i/inc)+5>config.height) break;
 			D print_addr(seek+i+config.baddr);
 			for(j = i+inc; i<j && i<len; i++) {
-				C pprintf(get_color_for(buf[i]));
+				C cons_printf(get_color_for(buf[i]));
 				cursor_precolor(i);
 				PRINT_BIN(buf[i]);
-				C pprintf(C_RESET);
+				C cons_printf(C_RESET);
 			}
 			i--;
 			D { NEWLINE; }
@@ -541,19 +543,19 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	case FMT_OCT:
 		inc = (int)((config.width)/6);
 		D {
-			C pprintf(COLOR_HD);
-			pprintf("  offset   ");
+			C cons_printf(COLOR_HD);
+			cons_printf("  offset   ");
 			for(i=0;i<inc;i++)
-				pprintf("+%02x ",i);
+				cons_printf("+%02x ",i);
 			for(i=0;i<inc;i++)
-				pprintf("%c",hex[i%16]);
+				cons_printf("%c",hex[i%16]);
 #if 0
-			NEWLINE; pprintf("----------+");
+			NEWLINE; cons_printf("----------+");
 			for(i=0;i<inc;i++)
-				pprintf("----");
+				cons_printf("----");
 			for(i=0;i<inc;i++)
-				pprintf("-");
-			C pprintf(C_RESET);
+				cons_printf("-");
+			C cons_printf(C_RESET);
 #endif
 			NEWLINE;
 		}
@@ -563,12 +565,12 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			tmp = i;
 			for(j=i+inc;i<j && i<len;i++) {
 				print_color_byte_i(i, "%03o", (int)buf[i]);
-				pprintf(" ");
+				cons_printf(" ");
 			}
 			i = tmp;
 			for(j=i+inc;i<j && i<len;i++)
 				if (j >= len)
-					pprintf("  ");
+					cons_printf("  ");
 				else
 				if ( is_printable(buf[i]) )
 					print_color_byte_i(i, "%c", buf[i]);
@@ -589,14 +591,14 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		NEWLINE;
 		break;
 	case FMT_ASC0:
-		pprintf("%s", buf);
+		cons_printf("%s", buf);
 		NEWLINE;
 		break;
 	case FMT_ASC:
 		for(i=0;i<len;i++)
 			if ( !is_printable(buf[i]) )
 				print_color_byte_i(i, "\\x%02x", buf[i]);
-			else	pprintf("%c", buf[i]);
+			else	cons_printf("%c", buf[i]);
 		NEWLINE;
 		break;
 	case FMT_HEXQ: {
@@ -605,7 +607,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			endian_memcpy(buffer, buf+i, 8);
 			sh = (long long int*)&buffer;
 			print_color_byte_i(i, "%016llx ", (long long int)sh[0]);
-			pprintf("0x%016llx ", (long long int)sh[0]);
+			cons_printf("0x%016llx ", (long long int)sh[0]);
 			D {NEWLINE;}
 		} D{}else NEWLINE;
 		} break;
@@ -615,7 +617,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			endian_memcpy(buffer, buf+i, 4);
 			sh = (unsigned int *)buffer;
 			//print_color_byte_i(i, "%08x ", sh[0]);
-			pprintf("0x%08x ", sh[0]);
+			cons_printf("0x%08x ", sh[0]);
 			D { NEWLINE; }
 		} D{}else NEWLINE;
 		} break;
@@ -625,7 +627,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			endian_memcpy(buffer, buf+i, 2); //sizeof(short));
 			sh = (unsigned short *)&buffer;
 			//print_color_byte_i(i, "%04x ", sh[0]);
-			pprintf("0x%04x", sh[0]);
+			cons_printf("0x%04x", sh[0]);
 			D { NEWLINE; }
 		}  D{}else NEWLINE;
 		} break;
@@ -680,30 +682,30 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 		else inc = 2+(int)((config.width)/4);
 		if (inc%2) inc++;
 		D if ( print_fmt == FMT_HEXB ) {
-			C pprintf(COLOR_HD);
-			pprintf("   offset  ");
+			C cons_printf(COLOR_HD);
+			cons_printf("   offset  ");
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;
-				pprintf(" %c", hex[j]);
-				if (j%2) pprintf(" ");
+				cons_printf(" %c", hex[j]);
+				if (j%2) cons_printf(" ");
 			}
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;
-				pprintf("%c", hex[j]);
+				cons_printf("%c", hex[j]);
 			}
 #if 0
 			NEWLINE;
-			pprintf(".--------+");
+			cons_printf(".--------+");
 			for (i=0; i<inc; i++)
-				pprintf((i%2)?"---":"--");
+				cons_printf((i%2)?"---":"--");
 
-			pprintf("+");
+			cons_printf("+");
 			for (i=0; i<inc; i++)
-				pprintf("-");
-			pprintf("-");
+				cons_printf("-");
+			cons_printf("-");
 #endif
 			NEWLINE;
-	//		C pprintf("\e[0m");
+	//		C cons_printf("\e[0m");
 		}
 		for(i=0; i<len; i+=inc) {
 			V if ((i/inc)+5>config.height) return;
@@ -716,20 +718,20 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			for(j=i;j<i+inc;j++) {
 				if (print_fmt==FMT_HEXB) {
 					if (j>=len) {
-						pprintf("  ");
-						if (j%2) pprintf(" ");
+						cons_printf("  ");
+						if (j%2) cons_printf(" ");
 						continue;
 					}
 				} else if (j>=len) break;
 				print_color_byte_i(j, "%02x", (unsigned char)buf[j]);
 
-				if (print_fmt == FMT_HEXBS || j%2) pprintf(" ");
+				if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
 			}
 
 			if (print_fmt == FMT_HEXB) {
 				for(j=i; j<i+inc; j++) {
 					if (j >= len)
-						pprintf(" ");
+						cons_printf(" ");
 					else
 					if ( is_printable(buf[j]) )
 						print_color_byte_i(j, "%c", buf[j]);

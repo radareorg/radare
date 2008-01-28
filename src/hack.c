@@ -49,7 +49,7 @@ int radare_hack_help()
 
 	list_for_each(pos, &hacks) {
 		struct hack_t *h= list_entry(pos, struct comment_t, list);
-		pprintf("%02d %s\t%s\n", i++, h->name, h->desc);
+		cons_printf("%02d %s\t%s\n", i++, h->name, h->desc);
 	}
 	return 0;
 }

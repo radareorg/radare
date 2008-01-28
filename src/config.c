@@ -134,9 +134,9 @@ void config_list(char *str)
 		struct config_node_t *bt = list_entry(i, struct config_node_t, list);
 		if (str) {
 			if (strncmp(str, bt->name,len) == 0)
-				pprintf("%s = %s\n", bt->name, bt->value);
+				cons_printf("%s = %s\n", bt->name, bt->value);
 		} else {
-			pprintf("%s = %s\n", bt->name, bt->value);
+			cons_printf("%s = %s\n", bt->name, bt->value);
 		}
 	}
 }
@@ -235,9 +235,9 @@ int config_rm(const char *name)
 	node = config_node_get(name);
 
 	if (node)
-		pprintf("TODO: remove: not yet implemented\n");
+		cons_printf("TODO: remove: not yet implemented\n");
 	else
-		pprintf("node not found\n");
+		cons_printf("node not found\n");
 
 	return 0;
 }
@@ -311,7 +311,7 @@ void config_eval(char *str)
 			/* get */
 			char * str = config_get(foo);
 			
-			pprintf("%s\n", (str==1)?"true":(str==0)?"false":str);
+			cons_printf("%s\n", (str==1)?"true":(str==0)?"false":str);
 		}
 	}
 
@@ -350,7 +350,7 @@ int config_core_callback(void *data)
 		hist_goto(node->value);
 	} else
 	if (!strcmp(node->name, "core.echo")) {
-		pprintf("%s\n", node->value);
+		cons_printf("%s\n", node->value);
 	} else
 	if (!strcmp(node->name, "core.cmp")) {
 		hist_cmp(node->value);
@@ -450,7 +450,7 @@ int config_bsize_callback(void *data)
 		radare_set_block_size_i(node->i_value);
 /*
 	else
-		pprintf("(ignored)");
+		cons_printf("(ignored)");
 */
 	// TODO more work
 }

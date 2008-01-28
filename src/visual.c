@@ -108,10 +108,10 @@ void press_any_key()
 {
 	int key;
 
-	D pprintf("\n--press any key--\n");
-	pprintf_flush();
+	D cons_printf("\n--press any key--\n");
+	cons_flush();
 	cons_readchar();
-	pstrcat("\e[2J\e[0;0H");
+	cons_strcat("\e[2J\e[0;0H");
 }
 
 CMD_DECL(invert)
@@ -546,11 +546,11 @@ int keystroke_run(unsigned char key) {
 void visual_show_help()
 {
 #warning TODO: use 0123456789 as % places of the file ? :D that looks cool, or predefined seekz
-	pstrcat("\e[2J\e[0;0H\n");
+	cons_strcat("\e[2J\e[0;0H\n");
 	TITLE
-	pprintf("Visual keybindings:\n");
+	cons_printf("Visual keybindings:\n");
 	TITLE_END
-	pprintf(
+	cons_printf(
 	":          radare command (vi like)\n"
 	";          edit or add comment\n"
 	"g,G        seek to beggining or end of file\n"
@@ -577,9 +577,9 @@ void visual_show_help()
 	"q          exits visual mode\n");
 	if (config.debug) {
 	TITLE
-	pprintf("\nDebugger keybindings:\n");
+	cons_printf("\nDebugger keybindings:\n");
 	TITLE_END
-	pprintf(
+	cons_printf(
 	"!          show debugger commands help\n"
 	"F1         commands help\n"
 	"F2         set breakpoint (execute)\n"
@@ -592,7 +592,7 @@ void visual_show_help()
 	"F10        continue until user code (!contu)\n"
 	);
 	}
-	pprintf_flush();
+	cons_flush();
 }
 
 // XXX Does not support Fx..is this ok?
@@ -637,10 +637,10 @@ void visual_bind_key()
 		return;
 	}
 
-	pprintf("\nradare command: ");
+	cons_printf("\nradare command: ");
 	fflush(stdin);
 	fflush(stdout);
-	pprintf_flush();
+	cons_flush();
 	terminal_set_raw(0);
 	buf[0]='\0';
 
@@ -676,7 +676,7 @@ return 0;
 		bds[n].key = key;
 		bds[n].cmd = strdup(buf);
 	} 
-	pprintf_flush();
+	cons_flush();
 }
 
 void visual_draw_screen()
@@ -708,9 +708,9 @@ void visual_draw_screen()
 	gotoxy(0,0);
 	//NEWLINE;
 #else
-	pstrcat("\e[0;0H");
+	cons_strcat("\e[0;0H");
 #endif
-	pprintf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
+	cons_printf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor,
@@ -731,7 +731,7 @@ void visual_draw_screen()
 	radare_print("", last_print_format, MD_BLOCK|inv);
 
 	fflush(stdout);
-	pprintf_flush();
+	cons_flush();
 }
 
 static void ringring()
@@ -959,7 +959,7 @@ CMD_DECL(visual)
 			terminal_set_raw(1);
 			if (line[0])
 				press_any_key();
-			pstrcat("\e[2J\e[0;0H");
+			cons_strcat("\e[2J\e[0;0H");
 			continue;
 		case 'b':
 			visual_bind_key();
@@ -1000,7 +1000,7 @@ CMD_DECL(visual)
 			else cols = atoi(c);
 			sprintf(buf, "%d", cols+((key==']')?4:-4));
 			setenv("COLUMNS", buf,1);
-			pstrcat("\e[2J\e[0;0H");
+			cons_strcat("\e[2J\e[0;0H");
 			fflush(stdout);
 			break; }
 		case 'L':
@@ -1131,14 +1131,14 @@ CMD_DECL(visual)
 			break;
 		case '/':
 			radare_set_block_size_i(config.block_size-inc);
-			pstrcat("\e[2J\e[0;0H");
+			cons_strcat("\e[2J\e[0;0H");
 			break;
 		case '+':
 			radare_set_block_size_i(config.block_size+1);
 			break;
 		case '-':
 			radare_set_block_size_i(config.block_size-1);
-			pstrcat("\e[2J\e[0;0H");
+			cons_strcat("\e[2J\e[0;0H");
 			break;
 		case '!':
 			cons_clear();
@@ -1172,7 +1172,7 @@ CMD_DECL(visual)
 			config.seek = 0;
 #if 0
 		if (repeat>1) {
-			pstrcat("\e[2J");
+			cons_strcat("\e[2J");
 			radare_sync();
 		}
 #endif

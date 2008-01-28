@@ -118,7 +118,7 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 	if (!list)
 		return;
 
-	pstrcat(" ");
+	cons_strcat(" ");
 #define head &(list->list)
 	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
 		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
@@ -132,54 +132,54 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 
 		if (addr == ref->to) {
 			if (ref->from > ref->to)
-				pstrcat(".");
+				cons_strcat(".");
 			else
-				pstrcat("'");
+				cons_strcat("'");
 			ch = '-';
 		} else
 		if (addr == ref->from) {
 			if (ref->from > ref->to)
-				pstrcat("'");
+				cons_strcat("'");
 			else
-				pstrcat(".");
+				cons_strcat(".");
 			ch = '=';
 		} else {
 			if (ref->from < ref->to) {
 				/* down */
-				C pstrcat(C_YELLOW);
+				C cons_strcat(C_YELLOW);
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
-						pstrcat("(");
+						cons_strcat("(");
 					else
-						pstrcat("|");
+						cons_strcat("|");
 				} else
 					C {
 						if (ch=='-')
-							pprintf(C_WHITE"-");
+							cons_printf(C_WHITE"-");
 						else if (ch=='=')
-							pprintf(C_YELLOW"=");
-						else pprintf("%c",ch);
-					} else pprintf("%c",ch);
+							cons_printf(C_YELLOW"=");
+						else cons_printf("%c",ch);
+					} else cons_printf("%c",ch);
 			} else {
-				C pstrcat(C_WHITE);
+				C cons_strcat(C_WHITE);
 				/* up */
 				if (addr < ref->from && addr > ref->to) {
 					if (ch=='-'||ch=='=')
-						pstrcat("(");
+						cons_strcat("(");
 					else // ^
-						pstrcat("|");
+						cons_strcat("|");
 				} else {
-					pprintf("%c",ch);
+					cons_printf("%c",ch);
 				}
 			}
 		}
 	}
-	if (cow==1) pstrcat("-> ");
+	if (cow==1) cons_strcat("-> ");
 	else
-	if (cow==2) pstrcat("=< ");
-	else pstrcat("   ");
+	if (cow==2) cons_strcat("=< ");
+	else cons_strcat("   ");
 
-	C pprintf(C_RESET);
+	C cons_printf(C_RESET);
 }
 
 /* code analyze */
@@ -246,7 +246,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 
 #if 0
 	if (aop.type == AOP_TYPE_UNK) {
-		pprintf("Oopppsz!\n");
+		cons_printf("Oopppsz!\n");
 		return 0;
 	}
 #endif
@@ -346,8 +346,8 @@ int radare_analyze(off_t seek, int size)
 		if (str_i>2) {
 			str[str_i] = '\0';
 			print_addr((off_t)(seek+i-str_i));
-			C	pprintf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
-			else	pprintf("string \"%s\"\n", str);
+			C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
+			else	cons_printf("string \"%s\"\n", str);
 			word_i = 0;
 			str_i=0;
 			continue;
@@ -371,41 +371,41 @@ int radare_analyze(off_t seek, int size)
 
 			if (num == 0) {
 				print_addr(seek+i-3);
-				C pprintf(C_YELLOW"(NULL)"C_RESET"\n");
-				else pprintf("(NULL)\n");
+				C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
+				else cons_printf("(NULL)\n");
 			} else if (num == -1) {
 				/* ignore -1 */
 				//print_addr(seek+i-3);
-				//pprintf("0xffffffff (-1)\n");
+				//cons_printf("0xffffffff (-1)\n");
 			} else {
 				print_addr(seek+i-3);
 				C {
 					if (config.endian)
-					pprintf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
+					cons_printf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
 						num, nume);
 					else
-					pprintf("int be=0x%08x le="C_YELLOW"0x%08x"C_RESET" ",
+					cons_printf("int be=0x%08x le="C_YELLOW"0x%08x"C_RESET" ",
 						num, nume);
 				} else
-					pprintf("int be=0x%08x le=0x%08x ",
+					cons_printf("int be=0x%08x le=0x%08x ",
 						num, nume);
 
 				if (num>-0xfffff && num<0xfffff)
-					pprintf("(%d)\n", num);
+					cons_printf("(%d)\n", num);
 				else
 				if (nume>-0xfffff && nume<0xfffff)
-					pprintf("(%d)\n", nume);
+					cons_printf("(%d)\n", nume);
 				else {
-					C pprintf(C_TURQOISE);
+					C cons_printf(C_TURQOISE);
 					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
 					radare_command(cmd, 0);
 
-					pstrcat("     ");
+					cons_strcat("     ");
 					radare_analyze((config.endian)?num:nume, -1);
 
 					config.seek = seek;
 					radare_read(0);
-					C pprintf(C_RESET);
+					C cons_printf(C_RESET);
 				}
 			}
 			if (count)
@@ -416,7 +416,7 @@ int radare_analyze(off_t seek, int size)
 	/* restore */
 	config.seek = tmp;
 	radare_read(0);
-	pstrcat("\n");
+	cons_strcat("\n");
 	config.verbose = v;
 
 	return 0;

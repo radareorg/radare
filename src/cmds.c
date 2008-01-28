@@ -172,7 +172,7 @@ CMD_DECL(project)
 		else	project_info(config_get("file.project"));
 		break;
 	default:
-		pprintf(
+		cons_printf(
 		" Po [file]  open project\n"
 		" Ps [file]  save project\n"
 		" Pi [file]  info\n");
@@ -218,7 +218,7 @@ CMD_DECL(rdb)
 		list_for_each(pos, &config.rdbs) {
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			fflush(stdout);
-			pprintf("%d 0x%08x %s\n", i, (unsigned long long)mr->entry, mr->name);
+			cons_printf("%d 0x%08x %s\n", i, (unsigned long long)mr->entry, mr->name);
 			i++;
 		}
 		return;
@@ -456,7 +456,7 @@ CMD_DECL(envvar)
 		char *tmp = getenv(text2);
 		if (tmp) {
 			text[0]='\0';
-			pprintf("%s\n", tmp);
+			cons_printf("%s\n", tmp);
 			free(text2);
 		} else 	{ NEWLINE; }
 		return;
@@ -471,10 +471,10 @@ CMD_DECL(envvar)
 	if ((!memcmp(ptr,"-", 2))
 	|| (!memcmp(ptr,"(null)", 5))) {
 		unsetenv(text2);
-		//D pprintf("%%%s=(null)\n", text2);
+		//D cons_printf("%%%s=(null)\n", text2);
 	} else {
 		setenv(text2, ptr, 1);
-		//D pprintf("%%%s='%s'\n", text2, ptr);
+		//D cons_printf("%%%s='%s'\n", text2, ptr);
 	}
 	ptro[0]=' ';
 
@@ -489,7 +489,7 @@ CMD_DECL(blocksize)
 
 CMD_DECL(comment)
 {
-		pprintf_flush();
+		cons_flush();
 	char buf[1024];
 	char *text = input;
 
@@ -722,7 +722,7 @@ CMD_DECL(undoseek)
 		break;
 	case '?':
 	default:
-		pprintf(
+		cons_printf(
 		"un   undo seek\n"
 		"uu   redo\n"
 		"u*   list all seeks done\n"
@@ -786,22 +786,22 @@ CMD_DECL(status)
 #endif
 
 	INILINE;
-	pprintf(" file    %s",   config.file); NEWLINE;
-	pprintf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
-	pprintf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
-	pprintf(" debug   %d",   config.debug); NEWLINE;
-	pprintf(" endian  %d   \t %s",   config.endian, config.endian?"big":"little"); NEWLINE;
+	cons_printf(" file    %s",   config.file); NEWLINE;
+	cons_printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
+	cons_printf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
+	cons_printf(" debug   %d",   config.debug); NEWLINE;
+	cons_printf(" endian  %d   \t %s",   config.endian, config.endian?"big":"little"); NEWLINE;
 //	printf(" count   %d   \t 0x%x", config.count, config.count); NEWLINE;
-	pprintf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
-	pprintf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
-	pprintf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
+	cons_printf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
+	cons_printf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
+	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
 		(off_t)config.seek, (off_t)config.seek); NEWLINE;
-	pprintf(" delta   "); 
+	cons_printf(" delta   "); 
 	fflush(stdout);
 	print_flag_offset(config.seek);
-	pprintf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
+	cons_printf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
 		(off_t)config.size, (off_t)config.size); NEWLINE;
-	pprintf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
+	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
 		(off_t)config.limit, (off_t)config.limit); NEWLINE;
 
 	if (config.debug)
@@ -1057,8 +1057,8 @@ CMD_DECL(search) {
 					sprintf(buf, "MASK[%d]", j);
 					ptr = getenv(buf);
 					if (ptr)
-						pprintf("%d %s\n", j, ptr);
-					else    pprintf("%d (no mask)\n", i);
+						cons_printf("%d %s\n", j, ptr);
+					else    cons_printf("%d (no mask)\n", i);
 				}
 			}
 		}
@@ -1081,9 +1081,9 @@ CMD_DECL(search) {
 					sprintf(buf, "SEARCH[%d]", j);
 					ptr = getenv(buf);
 					if (ptr) {
-						pprintf("%02d %s\n", j, ptr);
+						cons_printf("%02d %s\n", j, ptr);
 					} else {
-						pprintf("%02d (no keyword)\n", i);
+						cons_printf("%02d (no keyword)\n", i);
 					}
 				}
 			}
@@ -1193,7 +1193,7 @@ CMD_DECL(help)
 {
 	if (strlen(input)>0) {
 		off_t res = get_math(input);
-		pprintf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+		cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
 		PRINT_BIN(res); NEWLINE;
 	}
 	else show_help_message();

@@ -32,7 +32,7 @@ void event_ignore_list()
 {
 	int i;
 	for(i=0;events[i].name;i++)
-		pprintf(" %d %s\n", events[i].ignored, events[i].name);
+		cons_printf(" %d %s\n", events[i].ignored, events[i].name);
 }
 
 int event_set_ignored(char *name, int ignored)

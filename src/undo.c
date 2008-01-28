@@ -72,7 +72,7 @@ void undo_list()
 		printf("-no seeks done-\n");
 	else
 	for(i=undos_idx-1;i!=0;i--) {
-		pprintf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
+		cons_printf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
 		NEWLINE;
 	}
 }

@@ -189,7 +189,7 @@ void print_flag_offset(off_t seek)
 	char buf[1024];
 
 	if (string_flag_offset(buf, seek) )
-		pprintf("%s", buf);
+		cons_printf("%s", buf);
 }
 
 
@@ -224,29 +224,29 @@ void flag_list(char *arg)
 		if (flag_is_empty(flags[i]))
 			continue;
 
-		pprintf("%03d 0x%08llx %3lld %s",
+		cons_printf("%03d 0x%08llx %3lld %s",
 			i, flags[i]->offset, flags[i]->length, flags[i]->name);
 		NEWLINE;
 
 #if 0
 		switch(flags[i]->format) {
 		case FMT_OCT:
-			pprintf("o ");
+			cons_printf("o ");
 			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				pprintf("0%02o ", flags[i]->data[j]);
+				cons_printf("0%02o ", flags[i]->data[j]);
 			if (flags[i]->length>6)
-				pprintf("..");
+				cons_printf("..");
 
-			pprintf("\n");
+			cons_printf("\n");
 			break;
 		case FMT_INT:
-			pprintf("i ");
+			cons_printf("i ");
 			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				pprintf("%d ", flags[i]->data[j]);
+				cons_printf("%d ", flags[i]->data[j]);
 			if (flags[i]->length>6)
-				pprintf("..");
+				cons_printf("..");
 
-			pprintf("\n");
+			cons_printf("\n");
 			break;
 		case FMT_ASC:
 			tmp = (char *)malloc(flags[i]->length+1);
@@ -257,24 +257,24 @@ void flag_list(char *arg)
 			memcpy(tmp, flags[i]->data, flags[i]->length);
 			for(j=0;j<maxlen&&j<flags[i]->length;j++) {
 				if ( !is_printable(flags[i]->data[j]) )
-					pprintf("\\x%x", flags[i]->data[j]);
-				else	pprintf("%c", flags[i]->data[j]);
+					cons_printf("\\x%x", flags[i]->data[j]);
+				else	cons_printf("%c", flags[i]->data[j]);
 			}
-			pprintf("\n");
+			cons_printf("\n");
 			free(tmp);
 			break;
 		case FMT_RAW:
-			pprintf("s ");
+			cons_printf("s ");
 			fwrite(flags[i]->data, 1, flags[i]->length, stdout);
-			pprintf("\n");
+			cons_printf("\n");
 			break;
 		default:
 			j = (config.width-55)/3;
 			if (maxlen>j)
 				maxlen=j;
 			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				pprintf(" %02x", flags[i]->data[j]);
-			pprintf("..\n");
+				cons_printf(" %02x", flags[i]->data[j]);
+			cons_printf("..\n");
 		}
 #endif
 	}
@@ -359,8 +359,8 @@ int flag_set(const char *name, off_t addr, int dup)
 			for(i=0; i<nflags; i++) {
 				if (flag_is_empty(flags[i]))
 					continue;
-			//	pprintf("b 0x"OFF_FMTx"\n", flags[i]->length);
-				pprintf("f %s @ 0x"OFF_FMTx"\n",
+			//	cons_printf("b 0x"OFF_FMTx"\n", flags[i]->length);
+				cons_printf("f %s @ 0x"OFF_FMTx"\n",
 					flags[i]->name, flags[i]->offset);
 			}
 			return 2;

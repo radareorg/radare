@@ -308,7 +308,7 @@ int radare_command_raw(char *tmp, int log)
 
 		free(oinput);
 		ret = radare_command(next, 0);
-	//	pprintf_flush();
+	//	cons_flush();
 		return ret; 
 	}
 
@@ -345,8 +345,8 @@ int radare_command(char *tmp, int log)
 		//radare_command(":.!regs*", 0);
 
 		if (config_get("dbg.stack")) {
-			C pprintf(C_RED"Stack:\n"C_RESET);
-			else pprintf("Stack:\n");
+			C cons_printf(C_RED"Stack:\n"C_RESET);
+			else cons_printf("Stack:\n");
 			sprintf(buf, "%spx %d @ %s",
 				(config_get("dbg.vstack"))?":":"",
 				(int)config_get_i("dbg.stacksize"),
@@ -357,8 +357,8 @@ int radare_command(char *tmp, int log)
 
 
 		if (config_get("dbg.regs")) {
-			C pprintf(C_RED"Registers:\n"C_RESET);
-			else pprintf("Registers:\n");
+			C cons_printf(C_RED"Registers:\n"C_RESET);
+			else cons_printf("Registers:\n");
 			radare_command("!regs", 0);
 		}
 
@@ -366,18 +366,18 @@ int radare_command(char *tmp, int log)
 		config_set("cfg.verbose", "true");
 		if (config_get("dbg.bt")) {
 			if (config_get("dbg.fullbt")) {
-				C pprintf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
-				else pprintf("Full Backtrace:\n");
+				C cons_printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
+				else cons_printf("Full Backtrace:\n");
 				radare_command(":!bt", 0);
 			} else {
-				C pprintf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
-				else pprintf("User Backtrace:\n");
+				C cons_printf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
+				else cons_printf("User Backtrace:\n");
 				radare_command("!bt", 0);
 			}
 		}
 
-		C pprintf(C_RED"Disassembly:\n"C_RESET);
-		else pprintf("Disassembly:\n");
+		C cons_printf(C_RED"Disassembly:\n"C_RESET);
+		else cons_printf("Disassembly:\n");
 
 		radare_command("s eip", 0);
 		config.height-=14;
@@ -392,7 +392,7 @@ int radare_command(char *tmp, int log)
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
 		config.height+=14;
-		pprintf_flush();
+		cons_flush();
 		return 0;
 	}
 
@@ -445,7 +445,7 @@ int radare_interpret(char *file)
 		len = strlen(buf);
 		if (len>0) buf[strlen(buf)-1]='\0';
 		radare_command(buf, 0);
-		//pprintf_flush();
+		//cons_flush();
 		hist_add(buf, 0);
 		config.verbose = 0;
 		config_set("cfg.verbose", "false");
@@ -571,7 +571,7 @@ void radare_prompt_command()
 							}
 							radare_command(file, 0);
 						}
-		//				pprintf_flush();
+		//				cons_flush();
 						if (_print_fd != 1) // XXX stdout
 							close(_print_fd);
 						fclose(fd);
@@ -600,7 +600,7 @@ int radare_prompt()
 	/* run the visual command */
 	if ( (ptr = config_get("cmd.visual")) && ptr[0])
 		radare_command( ptr, 0 );
-	pprintf_flush();
+	cons_flush();
 	radare_prompt_command();
 
 #if __UNIX__
@@ -639,16 +639,16 @@ int radare_prompt()
 		}
 		if (ptr && ptr[0]) free(ptr);
 	} else {
+		dl_disable=1;
 #endif
 		//D { printf(prompt); fflush(stdout); }
 		dl_prompt = &prompt;
-		dl_disable=1;
 		ret = cons_fgets(input, BUFLEN-1);
-		dl_disable=0;
 		if (ret == -1)
 			exit(0);
 		radare_command(input, 1);
 #if HAVE_LIB_READLINE
+		dl_disable=0;
 	}
 #endif
 	
@@ -909,7 +909,7 @@ int radare_go()
 				radare_command(".!regs*", 0);
 			update_environment();
 			radare_sync();
-			//pprintf_flush();
+			//cons_flush();
 		} while( radare_prompt() );
 	} while ( io_close(config.fd) );
 
@@ -922,7 +922,7 @@ int std = 0;
 int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 {
 	int fd = make_tmp_file(tmp);
-	pprintf_flush();
+	cons_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmp);
 		tmpoff = config.seek;
@@ -934,7 +934,7 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 	if (cmd[0])
 		radare_command(cmd, 0);
 
-	pprintf_flush();
+	cons_flush();
 	fflush(stdout);
 	fflush(stderr);
 	close(fd);
@@ -956,7 +956,7 @@ char *pipe_command_to_string(char *cmd)
 	buf = (char *)malloc(size);
 	memset(buf, '\0', size);
 	fd = make_tmp_file(msg);
-	pprint_fd(fd);
+	cons_set_fd(fd);
 
 	radare_command(cmd, 0);
 	

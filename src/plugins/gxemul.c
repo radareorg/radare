@@ -142,7 +142,7 @@ int gxemul_system(const char *cmd)
 		gxemul_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "help")) {
-		pprintf("GxEmul Debugger help\n"
+		cons_printf("GxEmul Debugger help\n"
 		" !step [N]     steps one or N instructions\n"
 		" !regs[*]      show or flag registers\n"
 		" !!cmd         execute a gxemul command\n"
@@ -176,19 +176,19 @@ int gxemul_system(const char *cmd)
 		socket_fgets(tmp, 128);
 		sscanf(tmp, "cpu0:  ip = 0x%08x sp = %08x  lr = %08x", &r[12], &r[13], &r[14]);
 		if (cmd[4]=='*') {
-			pprintf("f eip @ 0x%08x\n", r[15]);
-			pprintf("f esp @ 0x%08x\n", r[13]);
-			pprintf("f lr  @ 0x%08x\n", r[14]);
+			cons_printf("f eip @ 0x%08x\n", r[15]);
+			cons_printf("f esp @ 0x%08x\n", r[13]);
+			cons_printf("f lr  @ 0x%08x\n", r[14]);
 			for(i=0;i<13;i++)
-				pprintf("f r%d @ 0x%08x\n", i, r[i]);
+				cons_printf("f r%d @ 0x%08x\n", i, r[i]);
 		} else {
-			pprintf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", r[0], r[4], r[8]);
-			pprintf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", r[1], r[5], r[9]);
-			pprintf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", r[2], r[6], r[10]);
-			pprintf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", r[3], r[7], r[11]);
-			pprintf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", r[17], r[14]);
-			pprintf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", r[12], r[15]);
-			pprintf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", r[13], r[16]);
+			cons_printf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", r[0], r[4], r[8]);
+			cons_printf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", r[1], r[5], r[9]);
+			cons_printf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", r[2], r[6], r[10]);
+			cons_printf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", r[3], r[7], r[11]);
+			cons_printf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", r[17], r[14]);
+			cons_printf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", r[12], r[15]);
+			cons_printf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", r[13], r[16]);
 		}
 		gxemul_wait_until_prompt(0);
 	}

@@ -95,7 +95,7 @@ int hist_cmp(char *label)
 	
 	cpu_cmp = get_cmp(buf, ptr);
 	
-	//pprintf("%d\n", cpu_cmp);
+	//cons_printf("%d\n", cpu_cmp);
 	
 	return 1;
 }
@@ -120,8 +120,8 @@ int hist_get(char *label)
 {
 	rad_flag_t *flag = flag_get(label);
 	if (flag) {
-		pprintf("0x%x\n", flag->offset);
-	} else  pprintf("(uh?)\n");
+		cons_printf("0x%x\n", flag->offset);
+	} else  cons_printf("(uh?)\n");
 	return 0;
 }
 
@@ -190,7 +190,7 @@ int hist_loop(char *label)
 
 void comment_help()
 {
-	pprintf(
+	cons_printf(
 	" ;set eax, 0x33 - sets a value for a flag\n"
 	" ;get eax       - sets a value for a flag\n");
 }
