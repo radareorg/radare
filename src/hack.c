@@ -37,7 +37,7 @@ struct hack_t {
 	const char *name;
 	const char *desc;
 	int (*callback)();
-	struct list_head *list;
+	struct list_head list;
 };
 
 struct list_head hacks;

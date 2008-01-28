@@ -212,7 +212,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		}
 	} else {
 		if (config_new.lock) {
-			eprintf("(locked: no new keys can be created)");
+			eprintf("(config-locked: '%s' no new keys can be created)\n", name);
 		} else {
 			node = config_node_new(name, value);
 			if (value)

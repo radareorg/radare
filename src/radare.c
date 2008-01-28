@@ -696,14 +696,13 @@ int radare_open(int rst)
 	char buf[4096];
 	char buf2[255];
 	struct config_t ocfg;
-	int wm;
+	int wm = config_get("cfg.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
 	off_t seek_orig = config.seek;
 
 	if (config.file == NULL)
 		return;
 
-	wm = config_get("cfg.write");
 	memcpy(&ocfg, &config, sizeof(struct config_t));
 	prepare_environment("");
 
