@@ -48,7 +48,7 @@ int setenv(const char *foo, const char *bar)
 
 int fork()
 {
-	eprintf("fork: not available for w32\n");
+	fprintf(stderr, "fork: not available for w32\n");
 }
 
 int sleep(int s)
