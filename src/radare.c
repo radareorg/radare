@@ -173,7 +173,7 @@ int radare_command_raw(char *tmp, int log)
 			free(oinput);
 			return 0;
 		}
-		for(;;) {
+		for(;!config.interrupted;) {
 			int v = config_get("cfg.verbose");
 			str[0]='\0';
 			for(i=0;i<1000;i++) {
@@ -439,7 +439,7 @@ int radare_interpret(char *file)
 	if (fd == NULL)
 		return 0;
 
-	while(!feof(fd)) {
+	while(!feof(fd) && !config.interrupted) {
 		buf[0]='\0';
 		fgets(buf, 1024, fd);
 		if (buf[0]=='\0') break;
@@ -847,6 +847,8 @@ int radare_go()
 #if HAVE_LIB_READLINE
 	D rad_readline_init();
 #endif
+	radare_controlc();
+
 	if (!config.noscript) {
 		char path[1024];
 		int t = config_get("cfg.verbose");
@@ -903,6 +905,8 @@ int radare_go()
 		radare_interpret(config.script);
 
 	config_set("cfg.verbose", t?"true":"false");
+
+	radare_controlc_end();
 
 	do {
 		do {

@@ -7,8 +7,13 @@
 
 ===========================================================
 
+* alphabetically sort eval vars
+(gdb) break ptrace if $r3 == 31
 * dbg.vstepkey = step or stepu, chooses the 's' action.
   - step over non-user code?
+* graph.body=asm,flags,symcalls,description, trace execution data
+  - block descriptor (if regs traced, or so show info)
+* add graph.color // default color for new nodes 
 * StreamViewer
  * search for head and foot
   - for each head finds a foot and defines block size
