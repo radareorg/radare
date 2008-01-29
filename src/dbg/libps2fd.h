@@ -68,9 +68,6 @@ typedef struct {
 #include "arch/arm.h"
 #endif
 
-#include "debug.h"
-#include "../utils.h"
-#include "../list.h"
 
 #ifndef OFF_FMT
 #define OFF_FMT "0x%08x"
@@ -126,6 +123,9 @@ typedef struct {
 
 #include "thread.h"
 #include "wp.h"
+#include "debug.h"
+#include "../utils.h"
+#include "../list.h"
 
 #define MAX_BPS	15
 

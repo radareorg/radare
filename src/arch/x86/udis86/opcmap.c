@@ -2998,6 +2998,10 @@ void ud_search_map(register struct ud* u)
 	search_2byte_insn(u);
   else	search_1byte_insn(u);
 
+  // XXX this segfaults on arm sometimes :???
+  // if (u->mapen <0x1000) oops skip segfault!
+  if (u->mapen<0x1000)
+	  return 0;
   u->mnemonic = u->mapen->mnemonic;
 }
 

@@ -213,6 +213,6 @@ void grava_program_graph(struct program_t *prg)
 	config_set("asm.offset", "true");
 	config_set("asm.bytes", "true");
 	config_set("asm.lines", "true");
-	pprint_fd(1);
+	cons_set_fd(1);
 }
 #endif

@@ -1,21 +1,27 @@
 #ifndef _INCLUDE_UTILS_H_
 #define _INCLUDE_UTILS_H_
 
-#include <sys/types.h>
+#include "main.h"
 #include "radare.h"
-#include "print.h"
+//#include "print.h"
+
 
 #define uint unsigned int
 
 int _print_fd;
+
 extern const char hex[16];
+extern off_t tmpoff;
+extern int std;
+extern char **environ;
+extern char *last_tsearch;
 
 #define TMPFILE_MAX 50
 #define BUFLEN 4096
 #define CMPMIN(a,b) (a<b? a : b)
 
 void eprintf(const char *format, ...);
-void pprintf(const char *format, ...);
+void cons_printf(const char *format, ...);
 char *estrdup(char *ptr, char *string);
 
 enum {
@@ -49,10 +55,6 @@ enum {
 	} \
 }
 
-extern off_t tmpoff;
-extern int std;
-extern char **environ;
-extern char *last_tsearch;
 void radare_dump(char *arg, int size);
 void radare_dump_and_process(int type, int size);
 int pipe_stdout_to_tmp_file(char *tmp, char *cmd);

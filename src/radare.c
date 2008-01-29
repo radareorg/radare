@@ -49,6 +49,10 @@
 #include "readline.h"
 #include "flags.h"
 
+off_t tmpoff = -1;
+int std = 0;
+
+
 void radare_init()
 {
 	config_init();
@@ -915,9 +919,6 @@ int radare_go()
 
 	return 0;
 }
-
-off_t tmpoff = -1;
-int std = 0;
 
 int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 {

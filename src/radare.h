@@ -49,7 +49,7 @@ struct comment_t {
 #define OFF_FMTx "%llX"
 #define OFF_FMTd "%lld"
 #define offtd long long
-#define offtx unsigned long long
+#define offtx long long
 #else
 #define OFF_FMT "%08X"
 #define OFF_FMTx "%X"

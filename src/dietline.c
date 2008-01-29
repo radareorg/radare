@@ -78,7 +78,7 @@ static int dl_readchar()
 		return -1;
 	SetConsoleMode(h, mode);
 #else
-	return read(0, buf, 1);
+	read(0, buf, 1);
 #endif
 	return buf[0];
 }

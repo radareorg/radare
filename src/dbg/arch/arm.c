@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * libps2fd is free software; you can redistribute it and/or modify
@@ -320,9 +320,7 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret, regno;
 	elf_gregset_t regs;
-	int color = 0;
-	char *c = config_get("scr.color");
-	if (c&&*c=='1')color=1;
+	int color = config_get("scr.color");
 
 	/* Get the thread id for the ptrace call.  */
 	//tid = GET_THREAD_ID (inferior_ptid);
@@ -338,50 +336,88 @@ int arch_print_registers(int rad, const char *mask)
 	}
 
 	if (rad) {
-		pprintf("f r0_orig @ 0x%x\n", regs[17]);
-		pprintf("f r0  @ 0x%x\n", regs[0]);
-		pprintf("f r1  @ 0x%x\n", regs[1]);
-		pprintf("f r2  @ 0x%x\n", regs[2]);
-		pprintf("f r3  @ 0x%x\n", regs[3]);
-		pprintf("f r4  @ 0x%x\n", regs[4]);
-		pprintf("f r5  @ 0x%x\n", regs[5]);
-		pprintf("f r6  @ 0x%x\n", regs[6]);
-		pprintf("f r7  @ 0x%x\n", regs[7]);
-		pprintf("f r8  @ 0x%x\n", regs[8]);
-		pprintf("f r9  @ 0x%x\n", regs[9]);
-		pprintf("f r10 @ 0x%x\n", regs[10]);
-		pprintf("f r11 @ 0x%x ; fp\n", regs[11]);
-		pprintf("f r12 @ 0x%x ; ip\n", regs[12]);
-		pprintf("f r13 @ 0x%x ; sp\n", regs[13]);
-		pprintf("f esp @ 0x%x\n", regs[13]);
-		pprintf("f r14 @ 0x%x ; lr\n", regs[14]);
-		pprintf("f r15 @ 0x%x ; pc\n", regs[15]);
-		pprintf("f eip @ 0x%x\n", regs[15]);
-		pprintf("f r16 @ 0x%x ; cpsr\n", regs[16]);
+		cons_printf("f r0_orig @ 0x%x\n", regs[17]);
+		cons_printf("f r0  @ 0x%x\n", regs[0]);
+		cons_printf("f r1  @ 0x%x\n", regs[1]);
+		cons_printf("f r2  @ 0x%x\n", regs[2]);
+		cons_printf("f r3  @ 0x%x\n", regs[3]);
+		cons_printf("f r4  @ 0x%x\n", regs[4]);
+		cons_printf("f r5  @ 0x%x\n", regs[5]);
+		cons_printf("f r6  @ 0x%x\n", regs[6]);
+		cons_printf("f r7  @ 0x%x\n", regs[7]);
+		cons_printf("f r8  @ 0x%x\n", regs[8]);
+		cons_printf("f r9  @ 0x%x\n", regs[9]);
+		cons_printf("f r10 @ 0x%x\n", regs[10]);
+		cons_printf("f r11 @ 0x%x ; fp\n", regs[11]);
+		cons_printf("f r12 @ 0x%x ; ip\n", regs[12]);
+		cons_printf("f r13 @ 0x%x ; sp\n", regs[13]);
+		cons_printf("f esp @ 0x%x\n", regs[13]);
+		cons_printf("f r14 @ 0x%x ; lr\n", regs[14]);
+		cons_printf("f r15 @ 0x%x ; pc\n", regs[15]);
+		cons_printf("f eip @ 0x%x\n", regs[15]);
+		cons_printf("f r16 @ 0x%x ; cpsr\n", regs[16]);
 	} else {
 		if (color) {
-			if (regs[0]!=oregs[0]) pprintf("\e[35m");
-			pprintf("  r0  0x%08x\e[0m", regs[0]);
-			if (regs[1]!=oregs[1]) pprintf("\e[35m");
-			pprintf("  r1  0x%08x\e[0m", regs[1]);
-			if (regs[2]!=oregs[2]) pprintf("\e[35m");
-			pprintf("  r2  0x%08x\e[0m", regs[2]);
-#if 0
-			pprintf("  r0 0x%08x   r5 0x%08x   r10 0x%08x    pc %08x\n", regs[0], regs[4], regs[8]);
-			pprintf("  r1 0x%08x   r6 0x%08x    fp 0x%08x  cpsr %08x\n", regs[1], regs[5], regs[9]);
-			pprintf("  r2 0x%08x   r7 0x%08x    ip 0x%08x\n", regs[2], regs[6], regs[10]);
-			pprintf("  r3 0x%08x   r8 0x%08x    sp 0x%08x\n", regs[3], regs[7], regs[11]);
-			pprintf("  r4 0x%08x   r9 0x%08x    lr 0x%08x\n", regs[17], regs[14]);
-#endif
-// TODO		
+			if (regs[0]!=oregs[0]) cons_strcat("\e[35m");
+			cons_printf("  r0  0x%08x\e[0m", regs[0]);
+			if (regs[5]!=oregs[5]) cons_strcat("\e[35m");
+			cons_printf("  r5  0x%08x\e[0m", regs[5]);
+			if (regs[9]!=oregs[9]) cons_strcat("\e[35m");
+			cons_printf("  r9  0x%08x\e[0m", regs[9]);
+			if (regs[13]!=oregs[13]) cons_strcat("\e[35m");
+			cons_printf(" r13  0x%08x\e[0m\n", regs[13]);
+			//
+			if (regs[1]!=oregs[1]) cons_strcat("\e[35m");
+			cons_printf("  r1  0x%08x\e[0m", regs[1]);
+			if (regs[6]!=oregs[6]) cons_strcat("\e[35m");
+			cons_printf("  r6  0x%08x\e[0m", regs[6]);
+			if (regs[10]!=oregs[10]) cons_strcat("\e[35m");
+			cons_printf(" r10  0x%08x\e[0m", regs[10]);
+			if (regs[14]!=oregs[14]) cons_strcat("\e[35m");
+			cons_printf(" r14  0x%08x\e[0m\n", regs[14]);
+			//
+			if (regs[2]!=oregs[2]) cons_strcat("\e[35m");
+			cons_printf("  r2  0x%08x\e[0m", regs[2]);
+			if (regs[7]!=oregs[7]) cons_strcat("\e[35m");
+			cons_printf("  r7  0x%08x\e[0m", regs[7]);
+			if (regs[11]!=oregs[11]) cons_strcat("\e[35m");
+			cons_printf(" r11  0x%08x\e[0m", regs[11]);
+			if (regs[15]!=oregs[15]) cons_strcat("\e[35m");
+			cons_printf(" r15  0x%08x\e[0m\n", regs[15]);
+			//
+			if (regs[3]!=oregs[3]) cons_strcat("\e[35m");
+			cons_printf("  r3  0x%08x\e[0m", regs[3]);
+			if (regs[8]!=oregs[8]) cons_strcat("\e[35m");
+			cons_printf("  r8  0x%08x\e[0m", regs[8]);
+			if (regs[12]!=oregs[12]) cons_strcat("\e[35m");
+			cons_printf(" r12  0x%08x\e[0m", regs[12]);
+			if (regs[16]!=oregs[16]) cons_strcat("\e[35m");
+			cons_printf(" r16  0x%08x\e[0m\n", regs[16]);
+			//
+			if (regs[4]!=oregs[4]) cons_strcat("\e[35m");
+			cons_printf("  r4  0x%08x\e[0m", regs[4]);
+
+			if (regs[11]!=oregs[11]) cons_strcat("\e[35m");
+			cons_printf("  fp=r11\e[0m");
+			if (regs[12]!=oregs[12]) cons_strcat("\e[35m");
+			cons_printf("  ip=r12\e[0m");
+			if (regs[13]!=oregs[13]) cons_strcat("\e[35m");
+			cons_printf("  sp=r13\e[0m");
+			if (regs[14]!=oregs[14]) cons_strcat("\e[35m");
+			cons_printf("  lr=r14\e[0m");
+			if (regs[15]!=oregs[15]) cons_strcat("\e[35m");
+			cons_printf("  pc=r15\e[0m");
+			if (regs[16]!=oregs[16]) cons_strcat("\e[35m");
+			cons_printf("  cpsr=r16\e[0m\n");
 		} else {
-			pprintf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", regs[0], regs[4], regs[8]);
-			pprintf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", regs[1], regs[5], regs[9]);
-			pprintf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", regs[2], regs[6], regs[10]);
-			pprintf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", regs[3], regs[7], regs[11]);
-			pprintf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", regs[17], regs[14]);
-			pprintf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", regs[12], regs[15]);
-			pprintf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", regs[13], regs[16]);
+// TODO		
+			cons_printf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", regs[0], regs[4], regs[8]);
+			cons_printf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", regs[1], regs[5], regs[9]);
+			cons_printf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", regs[2], regs[6], regs[10]);
+			cons_printf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", regs[3], regs[7], regs[11]);
+			cons_printf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", regs[17], regs[14]);
+			cons_printf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", regs[12], regs[15]);
+			cons_printf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", regs[13], regs[16]);
 		}
 	}
 

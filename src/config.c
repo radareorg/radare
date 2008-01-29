@@ -475,7 +475,11 @@ void config_init()
 #if __x86_64__
 	node = config_set("asm.arch", "intel64");
 #else
+#if __arm__
+	node = config_set("asm.arch", "arm");
+#else
 	node = config_set("asm.arch", "intel");
+#endif
 #endif
 	node->callback = &config_arch_callback;
 	config_set("asm.syntax", "pseudo");

@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_DEBUG_H_
 #define _INCLUDE_DEBUG_H_
 
-#include "libps2fd.h"
-#include "os.h"
+//#include "libps2fd.h"
+//#include "os.h"
 
 // arch/ dir
 #include "arch/arch.h"
@@ -19,7 +19,7 @@ int debug_run();
 int debug_bp(const char *addr);
 int debug_wp(const char *expr);
 int debug_wtrace();
-//int debug_detach();
+int debug_detach();
 int debug_syms();
 int debug_system(const char *command);
 int debug_cont();
@@ -28,6 +28,7 @@ int debug_contu();
 int debug_contuh();
 int debug_contsc();
 int debug_contscp();
+int debug_contfork();
 int debug_registers(int rad);
 int debug_oregisters(int rad);
 int debug_dregisters(int rad);

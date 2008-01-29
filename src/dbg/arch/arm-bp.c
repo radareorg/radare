@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * libps2fd is part of the radare project
@@ -111,11 +111,12 @@ int get_len_ins(char *buf, int len)
 
 int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 {
-	char *breakpoint = arm_bps[2]; /* ARM LITTLE ENDIAN */
+	int endian = config_get("cfg.endian");
+	char *breakpoint = arm_bps[endian&1];
 
 	debug_read_at(ps.tid, bp->data, 16, addr);
 	bp->len = get_len_ins(bp->data, 16);
-	debug_write_at(ps.tid, &breakpoint, 4, addr);
+	debug_write_at(ps.tid, breakpoint, 4, addr);
 
 	return 0;
 }
@@ -137,8 +138,9 @@ inline int arch_bp_hw_disable(struct bp_t *bp)
 
 inline int arch_bp_soft_enable(struct bp_t *bp)
 {
-	char *breakpoint = arm_bps[2]; /* ARM LITTLE ENDIAN */
-	debug_write_at(ps.tid, &breakpoint, bp->len, bp->addr);
+	int endian = config_get("cfg.endian");
+	char *breakpoint = arm_bps[endian&1];
+	debug_write_at(ps.tid, breakpoint, bp->len, bp->addr);
 }
 
 inline int arch_bp_soft_disable(struct bp_t *bp)
@@ -157,11 +159,11 @@ inline void arch_restore_bp(struct bp_t *bp)
 	debug_setregs(ps.tid, &regs);
 	debug_steps();
 
-	dispatch_wait();
+	debug_dispatch_wait();
 
 	debug_getregs(ps.tid, &regs);
 
-	arch_bp_soft_enable(bp);
+	//arch_bp_soft_enable(bp);
 }
 
 // XXX this func is dupped! should not be here (read i386-bp.c
