@@ -185,12 +185,11 @@ int radare_strsearch(char *str)
 	return 0;
 }
 
-int stripstr_from_file(const char *filename, int mini, off_t seek)
+int stripstr_from_file(const char *filename, int min, off_t seek)
 {
-	int fd = open(filename, O_RDONLY);
+	int i, fd = open(filename, O_RDONLY);
 	unsigned char *buf;
 	size_t len;
-	off_t i;
 
 	if (fd == -1) {
 		eprintf("Cannot open target file.\n");
@@ -210,7 +209,6 @@ int stripstr_from_file(const char *filename, int mini, off_t seek)
 	if (min == 0)
 		min = 5;
 
-	min = mini;
 	for(i = (size_t)seek; i < len; i++)
 		stripstr_iterate(buf, i, i, NULL);
 	

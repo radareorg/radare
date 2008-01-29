@@ -109,7 +109,6 @@ public class Grava.DefaultLayout : Grava.Layout
 			/// n es el node origen.
 			/// destn es el node desti
 			///
-		
 			last_y = n.y + n.h + 10 ;
 
 			// Si la base del node origen es < que le desti .

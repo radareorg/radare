@@ -398,35 +398,44 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("  r4  0x%08x\e[0m", regs[4]);
 
 			if (regs[11]!=oregs[11]) cons_strcat("\e[35m");
-			cons_printf("  fp=r11\e[0m");
+			cons_strcat("  fp=r11\e[0m");
 			if (regs[12]!=oregs[12]) cons_strcat("\e[35m");
-			cons_printf("  ip=r12\e[0m");
+			cons_strcat("  ip=r12\e[0m");
 			if (regs[13]!=oregs[13]) cons_strcat("\e[35m");
-			cons_printf("  sp=r13\e[0m");
+			cons_strcat("  sp=r13\e[0m");
 			if (regs[14]!=oregs[14]) cons_strcat("\e[35m");
-			cons_printf("  lr=r14\e[0m");
+			cons_strcat("  lr=r14\e[0m");
 			if (regs[15]!=oregs[15]) cons_strcat("\e[35m");
-			cons_printf("  pc=r15\e[0m");
+			cons_strcat("  pc=r15\e[0m");
 			if (regs[16]!=oregs[16]) cons_strcat("\e[35m");
-			cons_printf("  cpsr=r16\e[0m\n");
+			cons_strcat("  cpsr=r16\e[0m\n");
 		} else {
-// TODO		
-			cons_printf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", regs[0], regs[4], regs[8]);
-			cons_printf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", regs[1], regs[5], regs[9]);
-			cons_printf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", regs[2], regs[6], regs[10]);
-			cons_printf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", regs[3], regs[7], regs[11]);
-			cons_printf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", regs[17], regs[14]);
-			cons_printf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", regs[12], regs[15]);
-			cons_printf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", regs[13], regs[16]);
+			cons_printf("  r0 0x%08x   r5 0x%08x   r9 0x%08x  r13 0x%08x\n", regs[0], regs[5], regs[9], regs[13]);
+			cons_printf("  r1 0x%08x   r6 0x%08x  r10 0x%08x  r14 0x%08x\n", regs[1], regs[6], regs[10], regs[14]);
+			cons_printf("  r2 0x%08x   r7 0x%08x  r11 0x%08x  r15 0x%08x\n", regs[2], regs[7], regs[11], regs[15]);
+			cons_printf("  r3 0x%08x   r8 0x%08x  r12 0x%08x  r16 0x%08x\n", regs[3], regs[8], regs[12], regs[16]);
+			cons_printf("  r4 0x%08x   ", regs[4]);
+
+			if (regs[11]!=oregs[11]) cons_strcat("[ fp=r11 ]");
+			else cons_strcat("  fp=r11");
+			if (regs[12]!=oregs[12]) cons_strcat("[ ip=r12 ]");
+			else cons_strcat("  ip=r12");
+			if (regs[13]!=oregs[13]) cons_strcat("[ sp=r13 ]");
+			else cons_strcat("  sp=r13");
+			if (regs[14]!=oregs[14]) cons_strcat("[ lr=r14 ]");
+			cons_strcat("  lr=r14");
+			if (regs[15]!=oregs[15]) cons_strcat("[ pc=r15 ]");
+			cons_strcat("  pc=r15");
+			if (regs[16]!=oregs[16]) cons_strcat("[ cpsr=r16 ]\n");
+			cons_strcat("  cpsr=r16\n");
 		}
 	}
 
 	if (memcmp(&cregs,&regs, sizeof(elf_gregset_t))) {
 		memcpy(&oregs, &cregs, sizeof(elf_gregset_t));
 		memcpy(&cregs, &regs, sizeof(elf_gregset_t));
-	} else {
+	} else
 		memcpy(&cregs, &regs, sizeof(elf_gregset_t));
-	}
 
 	return 0;
 }
@@ -494,7 +503,8 @@ void *arch_set_sighandler(int signum, off_t handler)
 off_t arch_get_entrypoint()
 {
 	unsigned long long addr;
-	debug_read_at(ps.tid, &addr, 4, 0x8048018);
+	// 0x8018 is not portable. make this var definable
+	debug_read_at(ps.tid, &addr, 4, 0x8018);
 	return (off_t)addr;
 }
 

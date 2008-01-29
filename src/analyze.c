@@ -196,7 +196,8 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks = config_get("graph.callblocks");
 	int jmpblocks = config_get("graph.jmpblocks");
-
+	struct block_t *blf;
+	
 	// too deep! chop branch here!
 	if (depth<=0)
 		return 0;
@@ -216,6 +217,17 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	ret = radare_read(0);
 
 	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
+		/// Miro si l'adreca on soc es base d'algun bloc
+		blf = block_get ( prg , config.seek+bsz );
+
+		if ( blf != NULL )
+		{	
+			printf ("Address %x already analed\n", config.seek+bsz );
+			aop.eob = 1;
+			aop.jump = config.seek+bsz;
+			break;
+		}
+
 		if (config.interrupted)
 			break;
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
@@ -262,7 +274,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	oseek = seek;
 
 	/* walk childs */
-	if (blk->tnext)
+	if (blk->tnext && (blf == 0) )
 		code_analyze_r(prg, (unsigned long)blk->tnext, depth-1);
 	if (blk->fnext)
 		code_analyze_r(prg, (unsigned long)blk->fnext, depth-1);

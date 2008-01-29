@@ -153,6 +153,7 @@ clean:
 	${E} 'Cleaning src'
 	-${Q}rm -f *.o
 	-${Q}cd arch/arm/aasm && ${MAKE} clean
+	-${Q}rm -f dbg/arch/*.o
 	-${Q}${MAKE} -C hasher clean
 	-${Q}${MAKE} -C rdb clean
 	-${Q}${MAKE} -C rabin clean

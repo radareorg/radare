@@ -40,10 +40,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
-#include "main.h"
 #include "search.h"
 #include "plugin.h"
-#include "utils.h"
 #include "config.h"
 #include "cmds.h"
 #include "readline.h"
@@ -51,7 +49,6 @@
 
 off_t tmpoff = -1;
 int std = 0;
-
 
 void radare_init()
 {

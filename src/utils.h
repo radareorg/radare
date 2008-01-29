@@ -11,7 +11,7 @@
 int _print_fd;
 
 extern const char hex[16];
-extern off_t tmpoff;
+//extern off_t tmpoff;
 extern int std;
 extern char **environ;
 extern char *last_tsearch;

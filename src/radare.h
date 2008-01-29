@@ -23,6 +23,10 @@ enum {
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
+#if __WINDOWS__
+#undef off_t
+#define off_t long long
+#endif
 
 #include "list.h"
 #include <sys/types.h>
@@ -58,10 +62,7 @@ struct comment_t {
 #define offtd int
 #define offtx unsigned int
 #endif
-#if __WINDOWS__
-#undef off_t
-#define off_t unsigned long long
-#endif
+
 
 #define LANG_PERL 1
 #define LANG_PYTHON 2
