@@ -30,7 +30,7 @@ static void help_show_message()
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
 	"  -i [script]      interpret radare script\n"
 	"  -P [project]     load metadata from project file\n"
-//	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
+	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
@@ -52,7 +52,7 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
  
-	while ((c = getopt(argc, argv, "fs:hb:wLvS:uVcnxi:e:P:")) != -1)
+	while ((c = getopt(argc, argv, "l:fs:hb:wLvS:uVcnxi:e:P:")) != -1)
 	{
 		switch( c ) {
 		case 'i':
@@ -77,11 +77,9 @@ int main(int argc, char **argv, char **envp)
 			config.seek = (off_t)get_offset(optarg);
 			if (config.seek < 0) config.seek = (off_t)0;
 			break;
-#if 0
 		case 'l':
 			plugin_registry(optarg);
 			break;
-#endif
 		case 'L':
 			return plugin_list();
 		case 'b':

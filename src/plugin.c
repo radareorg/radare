@@ -34,7 +34,8 @@ plugin_t *plugin_registry(const char *file)
 	void *hd;
 	char *ptr;
 	plugin_t *p;
-	char buf[256];
+	int *ip;
+	char buf[4096];
 
 	if (strlen(file)>254) {
 		eprintf("Invalid plugin name\n");
@@ -47,22 +48,63 @@ plugin_t *plugin_registry(const char *file)
 	/* construct file name */
 	// TODO: Support own library path (envvar too)
 	// XXX .dll on w32
-	strcpy(buf, file);
+	buf[0]='\0';
+#if 0
+	if (file[0]!='/') {
+		buf[4000]='\0';
+		getwd(buf);
+		if (buf[4000]!='\0') {
+			eprintf("Dont oflowme nauh!\n");
+			exit(1);
+		}
+		strcat(buf,"/");
+	}
+#endif
+strcat(buf, "./");
+
+	strcat(buf, file);
 	if (  (ptr = strstr(buf,".so"))
 	   || (ptr = strstr(buf,".dll")))
-		buf[0]='\0';
+		ptr[0]='\0';
 	strcat(buf, ".so");
 
 #if __UNIX__
 	/* open library */
-	hd = (void *)dlopen(buf, RTLD_LAZY);
+	hd = (void *)dlopen(buf, RTLD_NOW); //LAZY);
 	if (hd == NULL) {
-		printf("Cannot open %s\n", buf);
+		eprintf("Cannot open plugin '%s'.\n(%s)\n", buf,dlerror());
 		return NULL;
 	}
 
-	p = (plugin_t *)malloc(sizeof(plugin_t));
-	p = dlsym(p->handle, "posix_plugin");
+	dlerror(); // clear error buffer
+	p = dlsym(hd, "radare_plugin_type");
+	if (p == NULL) {
+		eprintf("cannot find 'radare_plugin_type' symbol.\n(%s)\n", dlerror());
+		dlclose(hd);
+		return NULL;
+	}
+	ip = p;
+	switch(((int)(*ip))) {
+	case PLUGIN_TYPE_IO:
+		p = (plugin_t *)malloc(sizeof(plugin_t));
+		p = dlsym(hd, "radare_plugin");
+		break;
+	case PLUGIN_TYPE_HACK: {
+		struct plugin_hack_t *pl = dlsym(hd, "radare_plugin");
+		struct hack_t *hack;
+		if (pl == NULL) {
+			eprintf("error: Cannot find symbol 'radare_plugin' in %s\n", buf);
+			return NULL;
+		}
+		hack = radare_hack_new(pl->name, pl->desc, pl->callback);
+		list_add_tail(&(hack->list), &(hacks));
+		pl->config = &config;
+		return NULL;
+		} break;
+	default:
+		eprintf("Unknown plugin type '%d'\n", (int)p);
+		return NULL;
+	}
 #endif
 #if __WINDOWS__
 	eprintf("TODO\n");

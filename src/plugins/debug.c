@@ -21,7 +21,7 @@
 #include "../dbg/libps2fd.h"
 #include "../plugin.h"
 
-struct ps ps;
+struct debug_t ps;
 
 struct debug_t debug_debugt;
 

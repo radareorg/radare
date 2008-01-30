@@ -3,14 +3,31 @@
 
 #include "main.h"
 #include "utils.h"
+#include "dbg/libps2fd.h"
 
 #define FIND_FD(x) int i=0; if ( x ==-1 ) return -1; for(i=0; plugins[i].name && !plugins[i].handle_fd( x ); i++);
 #define FIND_OPEN(y) int i=0; for(i=0; plugins[i].name && !plugins[i].handle_open( y ); i++);
 #define IF_HANDLED(x,y) if (( x != -1) && (plugins[i].name != NULL) && plugins[i].y )
 
-typedef struct debug_t {
-	/* TODO: add function pointers in dbg/os.h here */
-} debug_t;
+struct plugin_hack_t {
+	const char *name;
+	const char *desc;
+	int (*callback)();
+	struct config_t *config;
+	struct debug_t *ps;
+};
+
+struct hack_t {
+	const char *name;
+	const char *desc;
+	int (*callback)();
+	struct list_head list;
+};
+
+enum {
+	PLUGIN_TYPE_IO = 0,
+	PLUGIN_TYPE_HACK = 1
+};
 
 typedef struct plugin_t {
 	void *handle;

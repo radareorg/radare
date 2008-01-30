@@ -532,12 +532,9 @@ void config_init()
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
 	config_set("cfg.rdbdir", "TODO");
-	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);
-
-	/* enter callback keys */
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 
@@ -569,17 +566,19 @@ void config_init()
 	config_set("dir.rdb", ""); // ~/.radare/rdb/
 	config_set("dir.tmp", "/tmp/");
 
-	config_set("graph.render", "cairo"); // aalib/ncurses/text
+	config_set("graph.color", "magic");
 	config_set("graph.callblocks", "false");
+	config_set_i("graph.depth", 7);
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.offset", "true");
-	config_set_i("graph.depth", 7);
+	config_set("graph.render", "cairo"); // aalib/ncurses/text
 
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.size", config.size);
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
+	node = config_set("scr.color", (config.color)?"true":"false");
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
 	config_set_i("scr.width", config.width);

@@ -827,7 +827,7 @@ int radare_go()
 	radare_controlc_end();
 
 	if (config.file == NULL) {
-		eprintf("radare [-fhnuLvVwc] [-s off] [-b sz] [-S len] [-i file] [-P prj] [-e key=val] [file]\n");
+		eprintf("radare [-fhnuLvVwc] [-s #] [-b #] [-S #] [-i f] [-P f] [-e k=v] [file]\n");
 		return 1;
 	}
 

@@ -33,13 +33,6 @@ TODO:
 	printf(" 7 - negate zero flag (TODO)\n");
 #endif
 
-struct hack_t {
-	const char *name;
-	const char *desc;
-	int (*callback)();
-	struct list_head list;
-};
-
 struct list_head hacks;
 
 int radare_hack_help()

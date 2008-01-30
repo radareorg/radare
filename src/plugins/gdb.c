@@ -23,7 +23,7 @@
 //#include "../dbg/debug.h"
 #include "gdb.h"
 
-//struct ps ps;
+//struct debug_t ps;
 struct gdbps gdbps;
 
 /* mod255 algorithm */

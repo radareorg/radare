@@ -78,7 +78,7 @@ public class Grava.DefaultLayout : Grava.Layout
 			node.x = 50;
 			node.fit();
 			node.y = last_y ;
-			last_y = node.y + node.h + 10 ;
+			last_y = node.y + node.h + 20 ;
 			stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
 		}
 		
@@ -145,7 +145,7 @@ public class Grava.DefaultLayout : Grava.Layout
 					{
 						stdout.printf ( "AT 0x%x\n", p.baseaddr );
 						destn.x = n.x; 
-						destn.y = n.y + n.h + 30;
+						destn.y = n.y + n.h + 50;
 						break;
 					}
 	

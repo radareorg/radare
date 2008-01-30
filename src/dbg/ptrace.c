@@ -21,7 +21,7 @@
 #include "libps2fd.h"
 #include "../plugin.h"
 
-struct ps ps;
+struct debug_t ps;
 
 ssize_t ptrace_write(int fd, const void *buf, size_t count)
 {

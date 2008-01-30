@@ -34,6 +34,7 @@ enum {
 #include "cmds.h"
 #include "print.h"
 
+extern struct list_head hacks;
 extern struct list_head comments;
 struct comment_t {
 	off_t offset;

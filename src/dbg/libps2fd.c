@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <pancake@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <sys/types.h>
 #include <sys/ptrace.h>
 
-struct ps ps;
+struct debug_t ps;
 
 static void libps2fd_init() __attribute__ ((constructor));
 static void libps2fd_init()

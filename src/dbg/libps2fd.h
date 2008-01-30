@@ -1,7 +1,14 @@
+#include "../main.h"
+
+#include "thread.h"
+#include "wp.h"
+#include "debug.h"
+#include "../utils.h"
+#include "../list.h"
+
 #ifndef _INCLUDE_LIBPS2FD_H_
 #define _INCLUDE_LIBPS2FD_H_
 
-#include "../main.h"
 
 #if __WINDOWS__
 
@@ -155,12 +162,6 @@ typedef struct {
 #define PTRACE_SINGLESTEP PT_STEP
 #endif
 
-#include "thread.h"
-#include "wp.h"
-#include "debug.h"
-#include "../utils.h"
-#include "../list.h"
-
 #define MAX_BPS	15
 
 #define WS(w) (ps.ws.w)
@@ -184,7 +185,7 @@ struct wait_state {
 	siginfo_t si;
 };
 
-struct ps {
+struct debug_t {
 	int fd;         /* related metadata */
 	int verbose;
 	pid_t opid;
@@ -222,7 +223,6 @@ struct ps {
 
 void *mmap_tagged_page(char *file, off_t addr, off_t size);
 
-extern struct ps ps;
 
 int       (*__open)   (const char *pathname, int flags, mode_t mode);
 int       (*__open64) (const char *pathname, int flags, mode_t mode);
@@ -235,5 +235,6 @@ off_t     (*__lseek)  (int fildes, off_t offset, int whence);
 off_t     (*__lseek64)(int fildes, off_t offset, int whence);
 off_t     (*___llseek)(int fildes, off_t offset, int whence);
 int *     (*__system) (const char *command);
+extern struct debug_t ps;
 
 #endif
