@@ -33,7 +33,7 @@ public class Grava.Renderer
 		if (edge.orig.y+edge.orig.h<(edge.dest.y)) {//-edge.dest.h)) {
 			/* up to bottom */
 			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+edge.orig.h);
-			  dx = edge.dest.x-edge.orig.x; // + edge.orig.w/2; //-edge.orig.x;
+			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/2) + edge.dest.w/2; //-edge.orig.x;
 			  dy = edge.dest.y-edge.orig.y - edge.orig.h;
 			ctx.move_to(30,30);
 			line(ctx, 0,0, dx, dy);
@@ -41,7 +41,8 @@ public class Grava.Renderer
 			/* bottom to up */
 			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+edge.orig.h);
 			ctx.move_to(0, 0);
-			  dx = edge.dest.x-edge.orig.x;
+			  //dx = edge.dest.x-edge.orig.x;
+			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/2) + edge.dest.w/2; //-edge.orig.x;
 			  dy = edge.dest.y-edge.orig.y- edge.orig.h; // or 80 or so depending if > or < ???
 			double ox = dx;
 			if (ox == 0){ ox = 150; }
@@ -97,13 +98,27 @@ public class Grava.Renderer
 		ctx.set_line_width (1);
 		ctx.translate (node.x, node.y);
 
-		//ctx.set_source_rgba (1, 1, 1, 0.7);
+//		ctx.set_source_rgb (1, 1, 1);
+		ctx.set_source_rgb (0.8, 0.8, 0.8);
+/*#if 0
+		if (node.calls.length() >0) 
+			set_color(ctx, "red");
+		else
+		set_color(ctx, "blue");
+#endif
+*/
 		set_color(ctx, node.data);
 		square (ctx, node.w, node.h);
 		ctx.fill();
 
 		/* title rectangle */
-		ctx.set_source_rgb (0.8, 0.8, 0.8);
+		if (node.calls.length() ==1) 
+			ctx.set_source_rgba (0.2, 0.2, 0.4, 0.7);
+		else
+		if (node.calls.length() >0) 
+			ctx.set_source_rgba (0.3, 0.3, 1, 0.7);
+		else
+			ctx.set_source_rgba (0.8,0.8,0.8, 0.7);
 		square (ctx, node.w, 15);
 		ctx.fill ();
 		line(ctx, 0, 15, node.w, 0);
@@ -144,8 +159,8 @@ public class Grava.Renderer
 		//set_color(ctx, node.data);
 		/* box square */
 		if (Graph.selected == node) {
-			ctx.set_source_rgba (0.9, 0.1, 0.1, 0.7);
-			ctx.set_line_width (5);
+			ctx.set_source_rgba (1, 0.8, 0.0, 0.9);
+			ctx.set_line_width (6);
 		} else {
 			ctx.set_source_rgba (0.2, 0.2, 0.2, 0.4);
 			ctx.set_line_width (1);

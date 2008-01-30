@@ -43,9 +43,11 @@
 #define __UNIX__ 1
 #endif
 
+#if 0
 #if __WINDOWS__
 #undef off_t
 #define off_t long long
+#endif
 #endif
 
 #endif

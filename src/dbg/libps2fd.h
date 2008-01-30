@@ -1,14 +1,15 @@
 #include "../main.h"
 
-#include "thread.h"
-#include "wp.h"
-#include "debug.h"
-#include "../utils.h"
-#include "../list.h"
-
 #ifndef _INCLUDE_LIBPS2FD_H_
 #define _INCLUDE_LIBPS2FD_H_
 
+#undef __UNIX__
+#undef __WINDOWS__
+#if __WIN32__ || __CYGWIN__ || MINGW32
+#define __WINDOWS__ 1
+#else
+#define __UNIX__ 1
+#endif
 
 #if __WINDOWS__
 
@@ -74,6 +75,13 @@ typedef struct {
 #else
 #include "arch/arm.h"
 #endif
+
+
+#include "thread.h"
+#include "wp.h"
+#include "debug.h"
+#include "../utils.h"
+#include "../list.h"
 
 
 #ifndef OFF_FMT

@@ -23,9 +23,11 @@ enum {
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
+#if 0
 #if __WINDOWS__
 #undef off_t
 #define off_t long long
+#endif
 #endif
 
 #include "list.h"

@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_DEBUG_H_
 #define _INCLUDE_DEBUG_H_
 
-//#include "libps2fd.h"
-//#include "os.h"
+#include "libps2fd.h"
+#include "os.h"
 
 // arch/ dir
 #include "arch/arch.h"
