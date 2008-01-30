@@ -99,6 +99,9 @@ strcat(buf, "./");
 		hack = radare_hack_new(pl->name, pl->desc, pl->callback);
 		list_add_tail(&(hack->list), &(hacks));
 		pl->config = &config;
+#if DEBUGGER
+		pl->ps = &ps;
+#endif
 		return NULL;
 		} break;
 	default:

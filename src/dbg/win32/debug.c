@@ -509,7 +509,7 @@ int debug_dispatch_wait()
 		while(WaitForDebugEvent(&de, 0) == 0) {
 
 			/* interrupible call */
-			usleep(1000);
+			//usleep(1000);
 
 			if(exit_wait) {
 

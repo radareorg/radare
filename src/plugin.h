@@ -14,7 +14,9 @@ struct plugin_hack_t {
 	const char *desc;
 	int (*callback)();
 	struct config_t *config;
+#if DEBUGGER
 	struct debug_t *ps;
+#endif
 };
 
 struct hack_t {

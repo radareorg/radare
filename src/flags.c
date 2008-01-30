@@ -141,9 +141,13 @@ char *flag_name_by_offset(off_t offset)
 	int i;
 	rad_flag_t *flag;
 
-        for (i=0;(flag = flag_get_i(i)); i++)
+	for(i=0; i<nflags; i++) {
+		if (flags[i]->name[0]=='\0')
+			continue;
+		flag = flags[i];
 		if (flag->offset == offset)
 			return flag->name;
+	}
 
 	return nullstr;
 }
