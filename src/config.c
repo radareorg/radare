@@ -489,6 +489,7 @@ void config_init()
 	config_set_i("asm.nbytes", 10); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
+	config_set("asm.trace", "true"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
@@ -521,6 +522,7 @@ void config_init()
 	config_set("trace.bt", "false");
 	config_set("trace.sleep", "0");
 	config_set("trace.smart", "true");
+	config_set("trace.log", "true");
 	config_set("trace.cmtregs", "false");
 
 	config_set("cfg.noscript", "false");
@@ -563,11 +565,13 @@ void config_init()
 
 	config_set("dir.home", getenv("HOME"));
 	config_set("dir.monitor", getenv("MONITORPATH"));
+	config_set("dir.plugins", "");
 	config_set("dir.rdb", ""); // ~/.radare/rdb/
 	config_set("dir.tmp", "/tmp/");
 
 	config_set("graph.color", "magic");
 	config_set("graph.callblocks", "false");
+	config_set("graph.flagblocks", "true");
 	config_set_i("graph.depth", 7);
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.offset", "true");
@@ -619,4 +623,5 @@ void config_init()
 	config_lock(1);
 	metadata_comment_init(1);
 	radare_hack_init();
+	trace_init();
 }

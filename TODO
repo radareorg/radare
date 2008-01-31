@@ -7,6 +7,10 @@
 
 ===========================================================
 
+* print disasembly by trace from an starting address
+* store more info in trace (output of command)
+* save traces to file
+* colorize traces in vala graphs
 * alphabetically sort eval vars
 (gdb) break ptrace if $r3 == 31
 * dbg.vstepkey = step or stepu, chooses the 's' action.

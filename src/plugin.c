@@ -46,9 +46,10 @@ plugin_t *plugin_registry(const char *file)
 	for(i=0; i<10 && plugins[i].name; i++);i--;
 
 	/* construct file name */
-	// TODO: Support own library path (envvar too)
-	// XXX .dll on w32
-	buf[0]='\0';
+	ip = config_get("dir.plugins");
+	if (ip) {
+		strcpy(buf, ip);
+	} else buf[0]='\0';
 #if 0
 	if (file[0]!='/') {
 		buf[4000]='\0';
@@ -60,12 +61,12 @@ plugin_t *plugin_registry(const char *file)
 		strcat(buf,"/");
 	}
 #endif
-strcat(buf, "./");
 
 	strcat(buf, file);
 	if (  (ptr = strstr(buf,".so"))
 	   || (ptr = strstr(buf,".dll")))
 		ptr[0]='\0';
+	// XXX .dll on w32
 	strcat(buf, ".so");
 
 #if __UNIX__

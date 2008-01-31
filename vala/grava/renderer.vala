@@ -63,7 +63,7 @@ public class Grava.Renderer
 		set_color_str(ctx, color);
 	}
 
-	public static void set_color_str(weak Context ctx, string color)
+	public static bool set_color_str(weak Context ctx, string color)
 	{
 		if (color != null) {
 			if (color == "black")
@@ -87,6 +87,8 @@ public class Grava.Renderer
 				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
 		} else
 			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+
+		return (color!=null);
 	}
 
 	public static void draw_node(weak Context ctx, weak Node node)
@@ -108,10 +110,14 @@ public class Grava.Renderer
 #endif
 */
 		set_color(ctx, node.data);
+		set_color_str(ctx, node.data.lookup("bgcolor"));
 		square (ctx, node.w, node.h);
 		ctx.fill();
 
 		/* title rectangle */
+		if (node.data.lookup("color"))
+			set_color_str(ctx, node.data.lookup("color"));
+		else
 		if (node.calls.length() ==1) 
 			ctx.set_source_rgba (0.2, 0.2, 0.4, 0.7);
 		else

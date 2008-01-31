@@ -23,6 +23,7 @@
 
 #define TRACE printf("%s:%d\n", __FILE__, __LINE__);
 
+#include "../radare.h"
 #include "libps2fd.h"
 #include "../config.h"
 #include "../code.h"
@@ -65,9 +66,6 @@ int debug_syms()
 	return 0; //for warning message
 }
 
-// TODO: move to ps structure
-int stepping_in_progress = 0;
-
 // TODO : helper
 int getv()
 {
@@ -78,14 +76,6 @@ int getv()
 		return 1;
 	return 0;
 #endif
-}
-
-void signal_step(int sig) // XXX sig does nothing?!?!
-{
-	stepping_in_progress = 0;
-	eprintf("\n\n");
-	fflush(stderr);
-	signal(SIGINT, SIG_IGN);
 }
 
 /// XXX looks wrong
@@ -326,34 +316,32 @@ int debug_stepret()
 	struct aop_t aop;
 
 	/* make steps until esp = oesp and [eip] == 0xc3 */
-	signal(SIGINT, &signal_step);
-	stepping_in_progress = 1;
-	while(stepping_in_progress && ps.opened && debug_stepo()) {
+	radare_controlc();
+	while(!config.interrupted && ps.opened && debug_stepo()) {
 		debug_read_at(ps.tid, bytes, 4, arch_pc());
 		arch_aop((unsigned long) arch_pc(), bytes, &aop);
 		if (aop.type == AOP_TYPE_RET)
 			break;
 	}
-	stepping_in_progress = 0;
-	signal(SIGINT, SIG_IGN);
+	radare_controlc_end();
 
 	return 0;
 }
 
 int debug_contu()
 {
-	signal(SIGINT, &signal_step);
-	stepping_in_progress = 1;
+	radare_controlc();
 
 	ps.verbose = 0;
-	while(stepping_in_progress && ps.opened && debug_step(1)) {
+	while(!config.interrupted && ps.opened && debug_step(1)) {
 		if (is_usercode(arch_pc()))
 			return 0;
 	}
+	radare_controlc_end();
 	ps.verbose = 1;
 
-	stepping_in_progress = 0;
-	signal(SIGINT, SIG_IGN);
+	if (config_get("trace.log"))
+		trace_add(arch_pc());
 
 	return 0;	
 }
@@ -368,11 +356,10 @@ int debug_wtrace()
 		return 0;
 	}
 
-        signal(SIGINT, &signal_step);
-        stepping_in_progress = 1;
+	radare_controlc();
 
         ps.verbose = 0;
-        while(stepping_in_progress && ps.opened && debug_step(1)) {
+        while(!config.interrupted && ps.opened && debug_step(1)) {
 		ret = wp_matched();
 		if(ret >= 0) {
 			printf("watchpoint %d matched at 0x%x\n",
@@ -382,8 +369,7 @@ int debug_wtrace()
         }
         ps.verbose = 1;
 
-        stepping_in_progress = 0;
-        signal(SIGINT, SIG_IGN);
+	radare_controlc_end();
 
         return 0;
 }
@@ -458,7 +444,8 @@ int debug_until(char *addr)
 			debug_cont();
 			debug_rm_bp_num(bp_pos);
 			restore_bp();
-		}
+		} else
+			eprintf("Cannot find main analyzing the entrypoint. Try harder.\n");
 	}
 
 	if (config_get("dbg.syms"))
@@ -500,10 +487,6 @@ Dump of assembler code for function mmap:
 
 	if(!args)
 		return debug_alloc_status();
-	if (!args) {
-		eprintf("Usage: !mmap [file] [address] ([size])\n");
-		return 0;
-	}
 
 	if ((arg = strchr(file, ' '))) {
 		arg[0]='\0';
@@ -704,7 +687,6 @@ int debug_load()
 {
 	int ret;
 	char pids[128];
-	stepping_in_progress = 0;
 
 	if (ps.pid!=0) {
 		/* TODO: check if pid is still running */
@@ -789,6 +771,7 @@ int debug_skip(int times)
 	}
 #else
 #warning TODO: debug_skip()
+	eprintf("TODO\n");
 #endif
 	return 0;
 }
@@ -905,16 +888,18 @@ int debug_stepu()
 	int i;
 
 	// TODO handle ^C
-	signal(SIGINT, &signal_step);
-	stepping_in_progress = 1;
+	radare_controlc();
 
 	do {
 		debug_step(1);
+		ps.steps++;
+		pc = arch_pc();
 		i++;
-	} while (stepping_in_progress && !is_usercode(arch_pc()));
+	} while (!config.interrupted && !is_usercode(pc) );
 
-	stepping_in_progress = 0;
-	signal(SIGINT, SIG_IGN);
+	if (config_get("trace.log"))
+		trace_add(pc);
+	radare_controlc_end();
 //	cons_printf("%d instructions executed\n", i);
 
 	return 0;
@@ -922,7 +907,7 @@ int debug_stepu()
 
 int debug_stepo()
 {
-	unsigned long pc = arch_pc(); //WS_PC();
+	off_t pc = arch_pc(); //WS_PC();
 	unsigned char cmd[4];
 	int skip;
 	int bp_pos;
@@ -930,10 +915,11 @@ int debug_stepo()
 	debug_read_at(ps.tid, cmd, 4, (off_t)pc);
 
 	if ((skip = arch_is_stepoverable(cmd))) {
-		pc+=skip;
+		if (config_get("trace.log"))
+			trace_add(pc);
 
 		///  XXX  BP_SOFT with restore_bp doesnt restores EIP correctly
-		bp_pos = debug_set_bp(NULL, pc, BP_HARD);
+		bp_pos = debug_set_bp(NULL, pc+skip, BP_HARD);
 
 		debug_cont();
 		debug_rm_bp_num(bp_pos);
@@ -943,14 +929,17 @@ int debug_stepo()
 	} else
 		debug_step(1);
 
+	if (config_get("trace.log"))
+		trace_add(arch_pc());
+
 	return 0;
 }
 
 int debug_step(int times)
 {
 	char opcode[4];
-	unsigned long pc, off;
-	unsigned long old_pc = 0;
+	off_t pc, off;
+	off_t old_pc = 0;
 	char *tracefile;
 	char *flagregs;
 
@@ -969,7 +958,6 @@ int debug_step(int times)
 	if (ps.verbose) {
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			debug_steps();
-			ps.steps++;
 			debug_dispatch_wait();
 		}
 		debug_print_wait("step");
@@ -977,6 +965,9 @@ int debug_step(int times)
 		/* accelerate soft stepoverables */
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			pc = arch_pc();
+			if (config_get("trace.log"))
+				trace_add(arch_pc());
+
 			if (pc == old_pc) {
 				debug_read_at(ps.tid, opcode, 4, (off_t)pc);
 				// determine infinite loop
@@ -987,20 +978,18 @@ int debug_step(int times)
 					return 0;
 				}
 			#endif
-				if (off=arch_is_soft_stepoverable(opcode)) {
-					pc += off;
+			}
+
+			if (off=arch_is_soft_stepoverable(opcode)) {
+				pc += off;
 			#if __i386__
-					debug_set_bp(NULL, pc, BP_HARD);
+				debug_set_bp(NULL, pc, BP_HARD);
 			#else
-					debug_set_bp(NULL, pc, BP_SOFT);
+				debug_set_bp(NULL, pc, BP_SOFT);
 			#endif
-					debug_cont();
-					debug_rm_bp_addr(pc);
-				} else {
-					debug_steps();
-					ps.steps++;
-					debug_dispatch_wait();
-				}
+				debug_cont();
+				debug_rm_bp_addr(pc);
+				ps.steps++;
 			} else {
 				debug_steps();
 				ps.steps++;
@@ -1034,30 +1023,14 @@ int debug_step(int times)
 					//pprint_fd(fd);
 					sprintf(buf, "0x%08llx ", (off_t)pc);
 					write(fd, buf, strlen(buf));
-					//pprint_fd(1);
-#if 0
-					int t = config.verbose;
-					int o = dup(1);
-					close(1);
-					dup2(fd, 1); // output to file
-					//config.verbose = 0;
-
-					disassemble(16, 10); // udis.c
-					fflush(stdout);
-					write(1,"\n", 1);
-
-					dup2(o, 1);
-					config.verbose = t;
-
-					close(6667);
-#endif
 					close(fd);
 				}
 			}
 			old_pc = pc;
 		}
-		return 1;
 	}
+	trace_add(pc);
+	ps.steps++;
 
 	return (WS(event) != BP_EVENT);
 }

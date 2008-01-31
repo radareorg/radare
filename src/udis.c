@@ -253,6 +253,7 @@ void udis(int len, int rows)
 	int show_offset;
 	int show_splits;
 	int show_lines;
+	int show_traces;
 	int nbytes = 12;
 	int show_size = config_get("asm.size");
 	off_t myinc = 0;
@@ -275,6 +276,7 @@ void udis(int len, int rows)
 	show_offset = config_get("asm.offset");
 	show_splits = config_get("asm.split");
 	show_lines = config_get("asm.lines");
+	show_traces = config_get("asm.trace");
 	nbytes = (int)config_get_i("asm.nbytes");
 
 	if (nbytes>8 ||nbytes<0)
@@ -313,6 +315,11 @@ void udis(int len, int rows)
 			}
 			if (show_size)
 				cons_printf("%d ", dislen(config.block+seek));
+			if (show_traces) {
+				cons_printf("%02d %02d ",
+					trace_count(config.baddr + ud_insn_off(&ud_obj)),
+					trace_times(config.baddr + ud_insn_off(&ud_obj)));
+			}
 
 			if (show_bytes) {
 				int max = nbytes;

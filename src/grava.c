@@ -9,7 +9,6 @@
  *
  * radare is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- :x
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -81,6 +80,7 @@ void grava_program_graph(struct program_t *prg)
 	struct xref_t *c0;
 	off_t here = config.seek;
 	char title[256], name[128];
+	int graph_flagblocks = config_get("graph.flagblocks");
 
 	GtkWidget *vbox, *hbox, *go;
 	GravaNode *node, *node2;
@@ -131,6 +131,17 @@ void grava_program_graph(struct program_t *prg)
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 
+		/* label */
+		// TODO: support for real labelling stuff
+		string_flag_offset(cmd, b0->addr);
+		cmd[127]='\0'; // XXX ugly string recycle hack
+		sprintf(cmd+128, "0x%08lX  %s", b0->addr, cmd);
+		if (cmd) {
+			if (!graph_flagblocks)
+				continue;
+			grava_node_set(node, "color", "red");
+		}
+
 		node = grava_node_new();
 
 		/* add call references for this node */
@@ -140,11 +151,6 @@ void grava_program_graph(struct program_t *prg)
 			grava_node_add_call(node, c0->addr);
 		}
 
-		/* label */
-		// TODO: support for real labelling stuff
-		string_flag_offset(cmd, b0->addr);
-		cmd[127]='\0'; // XXX ugly string recycle hack
-		sprintf(cmd+128, "0x%08lX  %s", b0->addr, cmd);
 		node->baseaddr = b0->addr;
 		grava_node_set(node, "label", cmd+128);
 

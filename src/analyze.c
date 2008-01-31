@@ -174,9 +174,14 @@ void code_lines_print(struct reflines_t *list, off_t addr)
 			}
 		}
 	}
-	if (cow==1) cons_strcat("-> ");
-	else
-	if (cow==2) cons_strcat("=< ");
+	if (cow==1) { 
+		C cons_strcat(C_RED"-> "C_RESET);
+		else cons_strcat("-> ");
+	} else
+	if (cow==2) {
+		C cons_strcat(C_GREEN"=< "C_RESET);
+		else cons_strcat("=< ");
+	}
 	else cons_strcat("   ");
 
 	C cons_printf(C_RESET);

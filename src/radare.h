@@ -31,13 +31,29 @@ enum {
 #endif
 
 #include "list.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include "cmds.h"
 #include "print.h"
 
 extern struct list_head hacks;
+extern struct list_head traces;
 extern struct list_head comments;
+
+int trace_count(off_t addr);
+int trace_times(off_t addr);
+int trace_add(off_t addr);
+void trace_init();
+
+struct trace_t {
+	off_t addr;
+	int times;
+	int count;
+	struct list_head list;
+};
+
 struct comment_t {
 	off_t offset;
 	char *comment;

@@ -58,6 +58,7 @@ CMD_DECL(edit_comment);
 CMD_DECL(yank);
 CMD_DECL(yank_paste);
 CMD_DECL(zoom);
+CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 
 #if 0
@@ -77,6 +78,7 @@ command_t keystrokes[] = {
 	COMMAND('p', 0, "change to next print format", rotate_print_format),
 	COMMAND('P', 0, "change to previous print format", rotate_print_format_prev),
 	COMMAND('a', 0, "insert assembly", insert_assembly),
+	COMMAND('t', 0, "simulate trace cursor position", trace),
 	COMMAND('A', 0, "insert assembly", insert_assembly_rsc),
 	COMMAND('y', 0, "yank (copy selected block to clipboard)", yank),
 	COMMAND('Y', 0, "Yankee (paste clipboard here)", yank_paste),
@@ -134,6 +136,13 @@ CMD_DECL(zoom_reset)
 	config.zoom.from = 0;
 	config.zoom.size = config.size;
 	config.zoom.piece = config.zoom.size/config.block_size;
+}
+
+CMD_DECL(trace)
+{
+	if (config.cursor_mode)
+		trace_add(config.seek+config.cursor);
+	else	trace_add(get_offset("eip"));
 }
 
 CMD_DECL(zoom)
@@ -306,6 +315,7 @@ CMD_DECL(step_in_dbg)
 	} else
 		radare_command("!step", 0);
 	radare_sync();
+	//trace_add(get_offset("eip"));
 }
 
 CMD_DECL(stepo_in_dbg)

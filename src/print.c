@@ -254,6 +254,7 @@ void radare_dump_and_process(int type, int size)
 void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
 {
 	int tmp, i, j;
+	int zoom = 0;
 	unsigned char buffer[4];
 	unsigned char *bufi; // inverted buffer
 	int lines = 0;
@@ -639,6 +640,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	
 		if (!mode)
 			break;
+		zoom = 1;
 
 		config.zoom.piece = config.size / config.block_size ;
 		print_fmt = FMT_HEXB;
@@ -666,7 +668,6 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 			case 'e': // entropy
 				config.block[i] = (unsigned char)hash_entropy(buf, sz);
 				break;
-			//case 'f': // first
 			//case 'h':
 			default:
 				config.block[i] = buf[0];
@@ -693,27 +694,15 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 				for(j=i; j>15; j-=15) j--;
 				cons_printf("%c", hex[j]);
 			}
-#if 0
 			NEWLINE;
-			cons_printf(".--------+");
-			for (i=0; i<inc; i++)
-				cons_printf((i%2)?"---":"--");
-
-			cons_printf("+");
-			for (i=0; i<inc; i++)
-				cons_printf("-");
-			cons_printf("-");
-#endif
-			NEWLINE;
-	//		C cons_printf("\e[0m");
 		}
 		for(i=0; i<len; i+=inc) {
 			V if ((i/inc)+5>config.height) return;
 			D { if ( print_fmt == FMT_HEXB )
-				print_addr(seek+i+config.baddr);
-			} else {
-				INILINE; 
-			}
+				if (zoom) print_addr(seek+(config.zoom.piece*i));
+				else print_addr(seek+i+config.baddr);
+				
+			} else { INILINE; }
 
 			for(j=i;j<i+inc;j++) {
 				if (print_fmt==FMT_HEXB) {
