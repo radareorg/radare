@@ -63,6 +63,7 @@ int program_serialize(struct program_t *program, char *file);
 struct block_t *block_new(unsigned long addr);
 struct block_t *block_get(struct program_t *program, unsigned long addr);
 struct block_t *block_get_new(struct program_t *program, unsigned long addr);
+struct block_t *block_split_new(struct program_t *program, unsigned long addr);
 int block_set_framesize(struct program_t *program, unsigned long addr, int size);
 int block_set_name(struct program_t *program, unsigned long addr, char *name);
 int block_add_xref(struct program_t *program, unsigned long addr, unsigned long from);

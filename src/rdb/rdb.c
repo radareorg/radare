@@ -157,6 +157,39 @@ struct block_t *block_get(struct program_t *program, unsigned long addr)
 	return NULL;
 }
 
+struct block_t *block_split_new(struct program_t *program, unsigned long addr)
+{
+	struct list_head *i;
+	struct block_t *bta;
+	unsigned int oldb;
+	list_for_each_prev(i, &(program->blocks)) {
+		struct block_t *bt = list_entry(i, struct block_t, list);
+		if (( addr >= bt->addr )&& (addr < (bt->addr+(unsigned long)bt->n_bytes) ) )
+		{
+			printf ("addr: %x , %x-%x\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes));
+			oldb = bt->n_bytes;
+
+			bt->n_bytes = addr - bt->addr  ;
+			bta = block_get_new ( program, addr );
+			bta->n_bytes = oldb - bt->n_bytes ;
+
+			bta->tnext = bt->tnext;
+			bta->fnext = bt->fnext;
+			bt->tnext = addr;
+			bt->fnext = 0;
+
+			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
+			printf ("addr: %x , %x-%x, [%d]\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes),(int)bta -> n_bytes);
+			bta->bytes = (char*) malloc (bta -> n_bytes);
+			memcpy ( bta->bytes,  bt->bytes + bt->n_bytes, bta -> n_bytes);
+			printf ("byte!\n");
+			return bta;
+		}
+	}
+	return NULL;
+}
+
+
 struct block_t *block_get_new(struct program_t *program, unsigned long addr)
 {
 	struct block_t *bt;

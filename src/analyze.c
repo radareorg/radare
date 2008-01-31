@@ -219,7 +219,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
 		/// Miro si l'adreca on soc es base d'algun bloc
 		blf = block_get ( prg , config.seek+bsz );
-
+		
 		if ( blf != NULL )
 		{	
 			printf ("Address %x already analed\n", config.seek+bsz );
@@ -227,6 +227,18 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 			aop.jump = config.seek+bsz;
 			break;
 		}
+		blf = block_split_new ( prg, config.seek+bsz  );
+		if ( blf != NULL )
+		{		
+			printf ("--Address %x already analed\n", config.seek+bsz );
+			
+			bsz = blf->n_bytes;
+			aop.eob = 1;
+			aop.jump = blf->tnext;
+			aop.fail = blf->fnext;
+			break;
+		}		
+		
 
 		if (config.interrupted)
 			break;
@@ -248,6 +260,8 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 			block_add_call(prg, oseek, aop.jump);
 		}
 
+	
+		
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
@@ -263,6 +277,9 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	}
 #endif
 	blk->bytes = (unsigned char *)malloc(bsz);
+
+	if ( bsz == 0 )
+		printf ("AAAA %x \n", config.seek+bsz);
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;
@@ -276,7 +293,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	/* walk childs */
 	if (blk->tnext && (blf == 0) )
 		code_analyze_r(prg, (unsigned long)blk->tnext, depth-1);
-	if (blk->fnext)
+	if (blk->fnext  )
 		code_analyze_r(prg, (unsigned long)blk->fnext, depth-1);
 	bsz = 0;
 

@@ -9,7 +9,7 @@
  *
  * radare is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ :x
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -79,7 +79,9 @@ void grava_program_graph(struct program_t *prg)
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xref_t *c0;
+	off_t here = config.seek;
 	char title[256], name[128];
+
 	GtkWidget *vbox, *hbox, *go;
 	GravaNode *node, *node2;
 	GravaEdge *edge;
@@ -214,5 +216,6 @@ void grava_program_graph(struct program_t *prg)
 	config_set("asm.bytes", "true");
 	config_set("asm.lines", "true");
 	cons_set_fd(1);
+	config.seek = here;
 }
 #endif
