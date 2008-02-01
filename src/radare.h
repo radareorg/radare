@@ -51,6 +51,7 @@ struct trace_t {
 	off_t addr;
 	int times;
 	int count;
+	struct timeval tm;
 	struct list_head list;
 };
 
@@ -99,13 +100,14 @@ extern int fixed_width;
 extern int inc;
 void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size);
 int radare_go();
+void radare_exit();
 void radare_prompt_command();
 void radare_sync();
 int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t print_fmt);
 int stripstr_from_file(const char *filename, int min, off_t seek);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(char *str);
-int radare_command(char *input, int log);
+int radare_cmd(char *input, int log);
 int radare_interpret(char *file);
 void radare_controlc();
 void radare_controlc_end();

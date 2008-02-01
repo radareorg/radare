@@ -70,7 +70,7 @@ void print_msdos_date(unsigned char _time[2], unsigned char _date[2]);
 off_t radare_seek(off_t offset, int whence);
 int is_printable (int c);
 void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode);
-void data_print (off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode);
+void data_print (off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode);
 int hex2int (unsigned char *val, unsigned char c);
 int get_cmp(const char *str0, const char *str1);
 int terminal_get_real_columns();

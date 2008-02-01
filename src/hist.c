@@ -137,7 +137,7 @@ int hist_goto(char *label)
 	for(;i<size;i++,n++) {
 		if (!strstr(hist+i, "core.break"))
 			break;
-		radare_command(hist+i, 0);
+		radare_cmd(hist+i, 0);
 		i+=strlen(hist+i);
 	}
 	emulating = 0;

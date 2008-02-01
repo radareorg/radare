@@ -51,6 +51,7 @@ format_info_t formats[] = {
 	{ 'i', FMT_INT,        MD_BLOCK,  "integer",               "4 bytes",     "(endian)"},
 	{ 'l', FMT_LONG,       MD_BLOCK,  "long",                  "4 bytes",     "(endian)"},
 	{ 'L', FMT_LLONG,      MD_BLOCK,  "long long",             "8 bytes",     "(endian)"},
+	{ 'm', FMT_MEMORY,     MD_BLOCK,  "print memory structure", "0xHHHH",        "fun args"},
 	{ 'o', FMT_OCT,        MD_BLOCK,  "octal",                  "N bytes",    "entire block" },
 	{ 'O', FMT_ZOOM,       MD_BLOCK,  "Zoom out view",          "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      MD_BLOCK,  "cmd.prompt",              NULL,         "entire block" },
@@ -215,7 +216,7 @@ void radare_dump_and_process(int type, int size)
 		sprintf(cmd, "rfile '%s'", file);
 		break;
 	case DUMP_DISASM:
-		D radare_command("fd", 0);
+		D radare_cmd("fd", 0);
 #if 0
 		//x = config_get_i("scr.x");
 		//y = config_get_i("scr.y");
@@ -251,12 +252,14 @@ void radare_dump_and_process(int type, int size)
  * /TODO: don't use config.<...> (this should be completely parametrized)
  * /TODO: normalize output command
  */
-void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
+void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
 {
 	int tmp, i, j;
 	int zoom = 0;
-	unsigned char buffer[4];
+	unsigned char buffer[256];
 	unsigned char *bufi; // inverted buffer
+	unsigned long addr;
+	int endian = config_get("cfg.endian");
 	int lines = 0;
 	// code anal
 	struct program_t *prg;
@@ -283,13 +286,117 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	case FMT_PRINT:
 		INILINE;
 		i = last_print_format;
-		radare_command( config_get("cmd.print"),0);
+		radare_cmd( config_get("cmd.print"),0);
 		last_print_format = i;
 		break;
 	case FMT_VISUAL:
 		i = last_print_format;
-		radare_command( config_get("cmd.visual"),0);
+		radare_cmd( config_get("cmd.visual"),0);
 		last_print_format = i;
+		break;
+	case FMT_MEMORY:
+		i = j = 0;
+		// TODO: support skip n char  f.ex: pm i(3)s
+		// TODO: automatic add comment C `pmxzx ??
+		if (arg)
+		for(;i<len&&*arg;arg=arg+1) {
+			if (endian)
+				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
+			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
+
+			if (*arg == '*') {
+				radare_read_at((off_t)addr, buffer, 4);
+				memcpy(&addr, buffer, 4);
+				continue;
+			}
+
+			switch(*arg) {
+			case 'e': // tmp swap endian
+				endian ^=1;
+				continue;
+			case 'n': // enable newline
+				j ^= 1;
+				continue;
+			case '.': // skip char
+				i++;
+				continue;
+			case '?': // help
+				cons_reset();
+				cons_printf(
+				"Usage: pm [format]\n"
+				" e - temporally swap endian\n"
+				" n - perform \\n after format\n"
+				" b - one byte \n"
+				" i - %%d integer value (4 byets)\n"
+				" w - word (16 bit hexa)\n"
+				" q - quadword (8 bytes)\n"
+				" x - 0x%%08x hexadecimal value\n"
+				" z - \\0 terminated string\n"
+				" Z - \\0 terminated wide string\n"
+				" s - pointer to string\n"
+				" * - next char is pointer\n"
+				" . - skip 1 byte\n");
+				i=len; // exit
+				continue;
+			case 'q':
+				D cons_printf("0x%08x  ", config.seek+i);
+				cons_printf("(qword)");
+				i+=8;
+				break;
+			case 'b':
+				D cons_printf("0x%08x ", config.seek+i);
+				cons_printf("%d ; 0x%02x ; '%c' ", buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
+				i++;
+				break;
+			case 'i':
+				D cons_printf("0x%08x ", config.seek+i);
+				cons_printf("%d", addr);
+				i+=4;
+				break;
+			case 'x':
+				D cons_printf("0x%08x ", config.seek+i);
+				cons_printf("0x%08x ", addr);
+				i+=4;
+				break;
+			case 'w': // word (16 bits)
+				D cons_printf("0x%08x ", config.seek+i);
+				if (endian)
+					 addr = (*(buf+i))<<8  | (*(buf+i+1));
+				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
+				cons_printf("0x%04x ", addr);
+				break;
+			case 'z': // zero terminated string
+				D cons_printf("0x%08x  ", config.seek+i);
+				for(;buf[i]&&i<len;i++) {
+					if (is_printable(buf[i]))
+						cons_printf("%c", buf[i]);
+					else cons_strcat(".");
+				}
+				cons_strcat(" ");
+				break;
+			case 'Z': // zero terminated wide string
+				D cons_printf("0x%08x  ", config.seek+i);
+				for(;buf[i]&&i<len;i+=2) {
+					if (is_printable(buf[i]))
+						cons_printf("%c", buf[i]);
+					else cons_strcat(".");
+				}
+				cons_strcat(" ");
+				break;
+			case 's':
+				D cons_printf("0x%08x  ", config.seek+i);
+				memset(buffer, '\0', 255);
+				radare_read_at((off_t)addr, buffer, 248);
+				D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
+				cons_printf("%s ", buffer);
+				i+=4;
+				break;
+			default:
+				continue;
+			}
+			D cons_printf("\n");
+		}
+		D {} else cons_printf("\n");
 		break;
 	case FMT_DISAS:
 		radare_dump_and_process( DUMP_DISASM, len);
@@ -308,7 +415,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 					cons_printf(", 0x%08x", b0->fnext);
 				cons_printf("\n");
 				sprintf(cmd, "pD %d @ 0x%08x", b0->n_bytes+1, (unsigned int)b0->addr);
-				radare_command(cmd, 0);
+				radare_cmd(cmd, 0);
 				cons_printf("\n\n");
 			} else {
 				cons_printf("b %d\n", b0->n_bytes);
@@ -399,7 +506,7 @@ void data_print(off_t seek, unsigned char *buf, int len, print_fmt_t print_fmt, 
 	case FMT_USER: {
 		const char *ptr = config_get("cmd.user");
 		if (ptr && ptr[0])
-			radare_command(ptr, 0);
+			radare_cmd(ptr, 0);
 		} break;
 	case FMT_LLONG: {
 		long long *ll;
@@ -771,5 +878,5 @@ void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode)
 		return;
 	}
 
-	data_print(config.seek, config.block, bs, print_fmt, mode);
+	data_print(config.seek, arg, config.block, bs, print_fmt, mode);
 }

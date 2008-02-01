@@ -126,7 +126,7 @@ CMD_DECL(invert)
 CMD_DECL(show_environ)
 {
 	CLRSCR();
-	radare_command("%", 0);
+	radare_cmd("%", 0);
 	press_any_key();
 	CLRSCR();
 }
@@ -156,7 +156,7 @@ CMD_DECL(zoom)
 		config.cursor = config.block_size * config.seek/config.size;
 	//	config.cursor_mode = 1;
 		config.zoom.size = config.block_size;
-		radare_command("pO", 0);
+		radare_cmd("pO", 0);
 	} else {
 		if (config.cursor_mode && ( config.ocursor != -1)) {
 			config.zoom.from = config.cursor * config.zoom.piece;
@@ -166,11 +166,11 @@ CMD_DECL(zoom)
 			config.zoom.piece = (config.zoom.size-config.zoom.from)/config.block_size;
 			config.zoom.enabled = 1;
 			config.seek = config.zoom.from;
-			radare_command("pO", 0);
+			radare_cmd("pO", 0);
 		} else {
 			if (config.cursor_mode)
 				config.seek = config.zoom.from + config.cursor * config.zoom.piece;
-			radare_command("x", 0);
+			radare_cmd("x", 0);
 		}
 		/* reset cursor */
 		config.cursor_mode = 0;
@@ -196,7 +196,7 @@ CMD_DECL(add_comment)
 		strcat(buf, ptr);
 	}
 	terminal_set_raw(1);
-	radare_command(buf,0);
+	radare_cmd(buf,0);
 	CLRSCR();
 }
 
@@ -302,7 +302,7 @@ CMD_DECL(stepu_in_dbg)
 		eprintf("Stepping to user code. wait a while...\n");
 		//eprintf("TODO: should take care about the backtrace and use...\n");
 		fflush(stderr);
-		radare_command("!stepu", 0);
+		radare_cmd("!stepu", 0);
 	}
 	radare_sync();
 }
@@ -313,7 +313,7 @@ CMD_DECL(step_in_dbg)
 		eprintf("not in debugger\n");
 		press_any_key();
 	} else
-		radare_command("!step", 0);
+		radare_cmd("!step", 0);
 	radare_sync();
 	//trace_add(get_offset("eip"));
 }
@@ -324,7 +324,7 @@ CMD_DECL(stepo_in_dbg)
 		eprintf("not in debugger\n");
 		press_any_key();
 	} else
-		radare_command("!stepo", 0);
+		radare_cmd("!stepo", 0);
 	radare_sync();
 }
 
@@ -363,7 +363,7 @@ CMD_DECL(insert_assembly_rsc)
 	printf("write assembly (end with ^d):\n");
 	fflush(stdout);
 	terminal_set_raw(0);
-	radare_command("wA -", 0);
+	radare_cmd("wA -", 0);
 	terminal_set_raw(1);
 }
 
@@ -385,7 +385,7 @@ CMD_DECL(insert_assembly)
 	fgets(buf+3, 120, stdin);
 	if(buf[3]) {
 		buf[strlen(buf)-1]='\0';
-		radare_command(buf, 0);
+		radare_cmd(buf, 0);
 	} else {
 		eprintf("ignored\n");
 	}
@@ -399,7 +399,7 @@ CMD_DECL(insert_assembly_hack)
 #if DEBUGGER
 	char buf[16];
 	if (config.debug) {
-		radare_command("!hack", 0);
+		radare_cmd("!hack", 0);
 	} else {
 		/* for non debugger -- all of them must be available !! */
 		printf(" 0 - nop one opcode\n");
@@ -731,7 +731,7 @@ void visual_draw_screen()
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {
 		int tmp = last_print_format;
-		radare_command_raw(ptr, 0);
+		radare_cmd_raw(ptr, 0);
 		last_print_format = tmp;
 	}
 
@@ -794,7 +794,7 @@ CMD_DECL(visual)
 		update_environment();
 		radare_sync();
 		if (config.debug)
-			radare_command(".!regs*", 0);
+			radare_cmd(".!regs*", 0);
 		radare_prompt_command();
 		visual_draw_screen();
 
@@ -816,7 +816,7 @@ CMD_DECL(visual)
 				switch(key) {
 				case 1: // F1 -help
 					cons_clear();
-					radare_command("!help", 0);
+					radare_cmd("!help", 0);
 					press_any_key();
 					cons_clear();
 					continue;
@@ -840,7 +840,7 @@ CMD_DECL(visual)
 					fgets(line+4, sizeof(line), stdin);
 					line[strlen(line)-1]='\0';
 */
-					radare_command(line,0);
+					radare_cmd(line,0);
 		}
 //					press_any_key();
 		//			terminal_set_raw(1);
@@ -853,13 +853,13 @@ CMD_DECL(visual)
 					strcpy(line, "!drw ");
 					fgets(line+5, sizeof(line), stdin);
 					line[strlen(line)-1]='\0';
-					radare_command(line,0);
+					radare_cmd(line,0);
 					terminal_set_raw(1);
 					press_any_key();
 					cons_clear();
 					continue;
 				case 4: // F4 - watchpoint
-					radare_command("!contuh", 0);
+					radare_cmd("!contuh", 0);
 					cons_clear();
 					continue;
 #endif
@@ -879,7 +879,7 @@ CMD_DECL(visual)
 					key = cons_readchar();
 					switch(key) {
 					case 0x37: // F6
-						radare_command("!contsc", 0);
+						radare_cmd("!contsc", 0);
 						break;
 					case 0x38: // F7
 						if (config.debug)
@@ -891,7 +891,7 @@ CMD_DECL(visual)
 						continue;
 					case 0x30: // F9
 						if (config.debug)
-							radare_command("!cont", 0);
+							radare_cmd("!cont", 0);
 						continue;
 					}
 				case 0x3b:
@@ -908,7 +908,7 @@ CMD_DECL(visual)
 						break;
 					case 126: // F10
 						D printf("Walking until user code...\n");
-						radare_command("!contu", 0);
+						radare_cmd("!contu", 0);
 						continue;
 					default:
 						printf("50 unknown key %d\n", key);
@@ -954,7 +954,7 @@ CMD_DECL(visual)
 			ptr = readline(VISUAL_PROMPT);
 			if (ptr) {
 				strncpy(line, ptr, sizeof(line));
-				radare_command(line, 1);
+				radare_cmd(line, 1);
 				//commands_parse(line);
 				free(ptr);
 			}
@@ -963,7 +963,7 @@ CMD_DECL(visual)
 			fflush(stdout);
 			fgets(line, sizeof(line)-1, stdin);
 			line[strlen(line)-1]='\0';
-			radare_command(line, 1);
+			radare_cmd(line, 1);
 #endif
 			last_print_format = lpf;
 			terminal_set_raw(1);
@@ -1152,7 +1152,7 @@ CMD_DECL(visual)
 			break;
 		case '!':
 			cons_clear();
-			radare_command("!help", 0);
+			radare_cmd("!help", 0);
 			press_any_key();
 			break;
 		case '?':
@@ -1173,7 +1173,7 @@ CMD_DECL(visual)
 				int i;
 				for(i=0;i<nbds;i++)
 					if (bds[i].key == key)
-						radare_command(bds[i].cmd, 0);
+						radare_cmd(bds[i].cmd, 0);
 				goto __go_read_a_key;
 			}
 		}

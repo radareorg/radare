@@ -119,7 +119,7 @@ void radare_sync()
 	}
 }
 
-int radare_command_raw(char *tmp, int log)
+int radare_cmd_raw(char *tmp, int log)
 {
 	int i,f;
 	int fd = 0;
@@ -158,7 +158,7 @@ int radare_command_raw(char *tmp, int log)
 	if ((input[0]=='.') && (input[1]=='%')) {
 		char *cmd = getenv(input+2);
 		if (cmd)
-			radare_command(cmd, 0);
+			radare_cmd(cmd, 0);
 		free(oinput);
 		return 1;
 	}
@@ -169,7 +169,7 @@ int radare_command_raw(char *tmp, int log)
 		pipe_stdout_to_tmp_file(file, input+1);
 		f = open(file, O_RDONLY);
 		if (f == -1) {
-			eprintf("radare_command_raw: Cannot open.\n");
+			eprintf("radare_cmd_raw: Cannot open.\n");
 			free(oinput);
 			return 0;
 		}
@@ -188,7 +188,7 @@ int radare_command_raw(char *tmp, int log)
 			}
 			if (i==-1) break;
 			if (str[0])
-				radare_command(str, 0);
+				radare_cmd(str, 0);
 			config_set_i("cfg.verbose", 1);
 		}
 		close(f);
@@ -308,7 +308,7 @@ int radare_command_raw(char *tmp, int log)
 		for(next=next+2;*next==' ';next=next+1);
 
 		free(oinput);
-		ret = radare_command(next, 0);
+		ret = radare_cmd(next, 0);
 	//	cons_flush();
 		return ret; 
 	}
@@ -317,7 +317,7 @@ int radare_command_raw(char *tmp, int log)
 	return 0; /* error */
 }
 
-int radare_command(char *tmp, int log)
+int radare_cmd(char *tmp, int log)
 {
 	const char *ptr;
 	int repeat;
@@ -334,7 +334,7 @@ int radare_command(char *tmp, int log)
 		ptr = config_get("cmd.visual");
 		if (!strnull(ptr)) {
 			char *ptrcmd = strdup(ptr);
-			radare_command_raw(ptrcmd, 0);
+			radare_cmd_raw(ptrcmd, 0);
 			free(ptrcmd);
 		}
 		config_set("cfg.verbose", "false");
@@ -343,7 +343,7 @@ int radare_command(char *tmp, int log)
 		terminal_get_real_columns();
 
 		/* NOT REQUIRED update flag registers NOT REQUIRED */
-		//radare_command(":.!regs*", 0);
+		//radare_cmd(":.!regs*", 0);
 
 		if (config_get("dbg.stack")) {
 			C cons_printf(C_RED"Stack:\n"C_RESET);
@@ -352,15 +352,15 @@ int radare_command(char *tmp, int log)
 				(config_get("dbg.vstack"))?":":"",
 				(int)config_get_i("dbg.stacksize"),
 				config_get("dbg.stackreg"));
-			radare_command("%COLUMNS 80", 0);
-			radare_command(buf, 0); //":px 66@esp", 0);
+			radare_cmd("%COLUMNS 80", 0);
+			radare_cmd(buf, 0); //":px 66@esp", 0);
 		}
 
 
 		if (config_get("dbg.regs")) {
 			C cons_printf(C_RED"Registers:\n"C_RESET);
 			else cons_printf("Registers:\n");
-			radare_command("!regs", 0);
+			radare_cmd("!regs", 0);
 		}
 
 		//config.verbose = 1; //t;
@@ -369,26 +369,26 @@ int radare_command(char *tmp, int log)
 			if (config_get("dbg.fullbt")) {
 				C cons_printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
 				else cons_printf("Full Backtrace:\n");
-				radare_command(":!bt", 0);
+				radare_cmd(":!bt", 0);
 			} else {
 				C cons_printf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
 				else cons_printf("User Backtrace:\n");
-				radare_command("!bt", 0);
+				radare_cmd("!bt", 0);
 			}
 		}
 
 		C cons_printf(C_RED"Disassembly:\n"C_RESET);
 		else cons_printf("Disassembly:\n");
 
-		radare_command("s eip", 0);
+		radare_cmd("s eip", 0);
 		config.height-=14;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */
 		if (config.visual)
-			radare_command("pD", 0);
-		else	radare_command("pD 50", 0);
-		//radare_command("pd 100", 0);
+			radare_cmd("pD", 0);
+		else	radare_cmd("pD 50", 0);
+		//radare_cmd("pd 100", 0);
 
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
@@ -401,7 +401,7 @@ int radare_command(char *tmp, int log)
 	if (tmp[0]=='!') {
 		p = atoi(tmp+1);
 		if (tmp[0]=='0'||p>0)
-			return radare_command(hist_get_i(p), 0);
+			return radare_cmd(hist_get_i(p), 0);
 	}
 	hist_add(tmp, log);
 	dl_hist_add(tmp);
@@ -421,7 +421,7 @@ int radare_command(char *tmp, int log)
 		tmp=tmp+1;
 
 	for(i=0;i<repeat;i++)
-		radare_command_raw(tmp, log);
+		radare_cmd_raw(tmp, log);
 
 	return 0;
 }
@@ -445,7 +445,7 @@ int radare_interpret(char *file)
 		if (buf[0]=='\0') break;
 		len = strlen(buf);
 		if (len>0) buf[strlen(buf)-1]='\0';
-		radare_command(buf, 0);
+		radare_cmd(buf, 0);
 		//cons_flush();
 		hist_add(buf, 0);
 		config.verbose = 0;
@@ -526,12 +526,12 @@ void radare_prompt_command()
 	ptr = config_get("cmd.prompt");
 	if (ptr&&ptr[0]) {
 		int tmp = last_print_format;
-		radare_command_raw(ptr, 0);
+		radare_cmd_raw(ptr, 0);
 		last_print_format = tmp;
 	}
 
 	if (config.debug)
-		radare_command(".!regs*", 0);
+		radare_cmd(".!regs*", 0);
 
 	/* run the commands found in the monitor path directory */
 	*path='\0';
@@ -570,7 +570,7 @@ void radare_prompt_command()
 								if (file[i]==' ')
 									file[i]='\0';
 							}
-							radare_command(file, 0);
+							radare_cmd(file, 0);
 						}
 		//				cons_flush();
 						if (_print_fd != 1) // XXX stdout
@@ -600,7 +600,7 @@ int radare_prompt()
 
 	/* run the visual command */
 	if ( (ptr = config_get("cmd.visual")) && ptr[0])
-		radare_command( ptr, 0 );
+		radare_cmd( ptr, 0 );
 	cons_flush();
 	radare_prompt_command();
 
@@ -631,11 +631,11 @@ int radare_prompt()
 			fixed_width = 0;
 			config.width = terminal_get_columns();
 			//rl_get_screen_size(NULL, &config.width);
-			radare_command(input, 1);
+			radare_cmd(input, 1);
 		} else { // dinamic width
 			fixed_width = 1;
 			config.width=-config.width;	
-			radare_command(input, 1);
+			radare_cmd(input, 1);
 			config.width=-config.width;	
 		}
 		if (ptr && ptr[0]) free(ptr);
@@ -647,7 +647,7 @@ int radare_prompt()
 		ret = cons_fgets(input, BUFLEN-1);
 		if (ret == -1)
 			exit(0);
-		radare_command(input, 1);
+		radare_cmd(input, 1);
 #if HAVE_LIB_READLINE
 		dl_disable=0;
 	}
@@ -840,7 +840,7 @@ int radare_go()
 
 	/* hexdump mode (-x) */
 	if (config.mode == MODE_HEXDUMP) {
-		radare_command("x", 0);
+		radare_cmd("x", 0);
 		return 0;
 	}
 
@@ -864,23 +864,23 @@ int radare_go()
 
 	/* flag all syms and strings */
 	if (config_get("file.flag"))
-		radare_command(".!rsc flag $FILE", 0);
+		radare_cmd(".!rsc flag $FILE", 0);
 
 	switch(config.debug) { // old config.debug value
 	case 1:
 		t = config.verbose;
 		config.verbose = 0;
 		config.endian = !LIL_ENDIAN;
-		radare_command(":.!regs*", 0);
-		radare_command("s eip", 0);
+		radare_cmd(":.!regs*", 0);
+		radare_cmd("s eip", 0);
 		/* load everything */
 		if (config_get("dbg.syms"))
-			radare_command("!syms", 0);
+			radare_cmd("!syms", 0);
 		if (config_get("dbg.maps"))
-			radare_command("!maps", 0);
+			radare_cmd("!maps", 0);
 		if (config_get("dbg.strings")) {
 			eprintf("Loading strings...press ^C when tired\n");
-			radare_command(".!rsc strings-flag $FILE", 0);
+			radare_cmd(".!rsc strings-flag $FILE", 0);
 		}
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("cfg.write", "true"); /* write mode enabled for the debugger */
@@ -890,15 +890,15 @@ int radare_go()
 	case 2:
 		radare_seek(config.seek, SEEK_SET);
 		radare_read(0);
-		data_print(config.seek, config.block, config.block_size, FMT_HEXB, 0);
+		data_print(config.seek, "", config.block, config.block_size, FMT_HEXB, 0);
 		exit(0);
 	}
 
 	if (io_isdbg(config.fd)) {
-		radare_command(":.!regs*", 0);
-		radare_command(".!info*", 0);
-		radare_command(":.!maps*", 0);
-		radare_command("s eip", 0);
+		radare_cmd(":.!regs*", 0);
+		radare_cmd(".!info*", 0);
+		radare_cmd(":.!maps*", 0);
+		radare_cmd("s eip", 0);
 	}
 
 	if (config.script)
@@ -911,7 +911,7 @@ int radare_go()
 	do {
 		do {
 			if (config.debug)
-				radare_command(".!regs*", 0);
+				radare_cmd(".!regs*", 0);
 			update_environment();
 			radare_sync();
 			//cons_flush();
@@ -934,7 +934,7 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 	dup2(fd, 1);
 
 	if (cmd[0])
-		radare_command(cmd, 0);
+		radare_cmd(cmd, 0);
 
 	cons_flush();
 	fflush(stdout);
@@ -960,7 +960,7 @@ char *pipe_command_to_string(char *cmd)
 	fd = make_tmp_file(msg);
 	cons_set_fd(fd);
 
-	radare_command(cmd, 0);
+	radare_cmd(cmd, 0);
 	
 	close(fd);
 
@@ -1026,7 +1026,7 @@ char *pipe_command_to_string(char *cmd)
 		// fill
 		close(0); // no stdin
 		dup2(io[1], 1); // stdout to pipe
-		radare_command(cmd, 0);
+		radare_cmd(cmd, 0);
 	//	io_system(cmd);
 	//	execv(argv[0], argv);
 	//	perror("execv");
@@ -1065,7 +1065,7 @@ char *pipe_command_to_string(char *cmd)
 	if (!(pid = fork())) {
 		close(1);
 		dup2(pee[1], 1);
-		radare_command(cmd, 0);
+		radare_cmd(cmd, 0);
 		fflush(stdout);
 		fflush(stderr);
 		exit(0);

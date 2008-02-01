@@ -84,7 +84,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	if (search_cmdhit && search_cmdhit[0]!='\0') {
 		char *cmdhit = strdup(search_cmdhit);
 		setenv("KEYWORD", search_last_keyword, 1); // XXX this is not last-keyword!! must array this!
-		radare_command(cmdhit, 0);
+		radare_cmd(cmdhit, 0);
 		free(cmdhit);
 	}
 
@@ -110,7 +110,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 		printf("\r%d", nhit);
 #if 0
 	D { printf("\e[K"OFF_FMTs" '%s' ", (off_t)where, flag_name);
-	    data_print((off_t)where, config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
+	    data_print((off_t)where, "", config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
 	} else printf("0x"OFF_FMTx" ", where); // TODO : print data_dump?
 #endif
 

@@ -207,7 +207,7 @@ int radare_hack(const char *cmd)
 
 	eprintf("warning: does not yet works inside debugger\n");
 	list_for_each(pos, &hacks) {
-		struct hack_t *h= list_entry(pos, struct comment_t, list);
+		struct hack_t *h = list_entry(pos, struct comment_t, list);
 		if (num) {
 			 if  (i==num) {
 				h->callback();

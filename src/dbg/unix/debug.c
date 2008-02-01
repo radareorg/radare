@@ -133,7 +133,7 @@ int debug_print_wait(char *act)
 		eprintf("%s: breakpoint stop (0x%x)\n", act, WS(bp)->addr);
 		cmd = config_get("cmd.bp");
 		if (cmd&&cmd[0])
-			radare_command(cmd, 0);
+			radare_cmd(cmd, 0);
 		break;
 	default:
 		if(WS(event) != EXIT_EVENT ) {

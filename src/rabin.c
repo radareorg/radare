@@ -103,7 +103,7 @@ int rabin_load()
 
 	config_set_i("file.entrypoint", entry);
 	flag_set("entrypoint", entry, 0);
-	radare_command("s entrypoint",0);
+	radare_cmd("s entrypoint",0);
 
 	/* add autodetection stuff here */
 	switch(header) {

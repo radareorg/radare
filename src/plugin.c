@@ -27,6 +27,36 @@
 plugin_t plugins[10];
 plugin_t plugins_backup[10];
 int plugin_init_flag = 0;
+/* core functions */
+struct core_t {
+	void *ptr;
+	char *name;
+	char *args;
+};
+
+static struct core_t core[]={
+	{ .ptr = &radare_cmd,  .name = "radare_cmd",  .args = "zi" },
+	{ .ptr = &radare_exit, .name = "radare_exit", .args = "" },
+	{ .ptr = &radare_open, .name = "radare_open", .args = "i" },
+	{ .ptr = &radare_sync, .name = "radare_sync", .args = "" },
+	{ NULL,NULL,NULL}
+};
+
+void *radare_resolve(char *name)
+{
+	int i,j = (int)name;
+	if (j>0 && j<255) {
+		// get by index
+		for(i=0;core[i].ptr&&i<j;i++)
+			if (i == j)
+				return core[i].ptr;
+		return NULL;
+	}
+	for(i=0;core[i].ptr;i++)
+		if (!strcmp(core[i].name, name))
+			return core[i].ptr;
+	return NULL;
+}
 
 plugin_t *plugin_registry(const char *file)
 {
@@ -99,6 +129,7 @@ plugin_t *plugin_registry(const char *file)
 		}
 		hack = radare_hack_new(pl->name, pl->desc, pl->callback);
 		list_add_tail(&(hack->list), &(hacks));
+		pl->resolve = (void *)&radare_resolve;
 		pl->config = &config;
 #if DEBUGGER
 		pl->ps = &ps;

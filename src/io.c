@@ -22,10 +22,12 @@
 
 int radare_read_at(off_t offset, unsigned char *data, int len)
 {
+	int ret;
 	off_t cur = config.seek;
 	radare_seek(offset,SEEK_SET);
-	io_read(config.fd, data, len);
+	ret = io_read(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
+	return ret;
 }
 
 int radare_write_at(off_t offset, unsigned char *data, int len)
@@ -93,7 +95,7 @@ int radare_write(char *arg, int mode)
 	}
 
 #if 0
-	D data_print(seek, (unsigned char *)str, len, FMT_HEXB, MD_ALWAYS);
+	D data_print(seek, "", (unsigned char *)str, len, FMT_HEXB, MD_ALWAYS);
 	if (yesno('n', "Write this %d bytes buffer %d times (aka %d)? (y/N)",
 	                (int)len, (int)times, (int)(len*times)))
 	{
@@ -149,7 +151,7 @@ void radare_poke(char *arg)
 		ret = io_read(fd, buf, config.block_size);
 
 		D { printf("\n");
-		data_print(config.seek, (unsigned char *)buf, ret, FMT_HEXB, MD_ALWAYS);
+		data_print(config.seek, "", (unsigned char *)buf, ret, FMT_HEXB, MD_ALWAYS);
 		printf("\nPoke %d bytes from %s %d times? (y/N)",
 			config.block_size, arg, times); fflush(stdout);
 		terminal_set_raw(1); read(0, &key, 1); printf("\n");

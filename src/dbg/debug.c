@@ -62,7 +62,7 @@ void debug_dumpcore()
 int debug_syms()
 {
 	// XXX: native implementation
-	radare_command(".!rsc syms-dbg-flag ${FILE}", 0);
+	radare_cmd(".!rsc syms-dbg-flag ${FILE}", 0);
 	return 0; //for warning message
 }
 
@@ -1000,7 +1000,7 @@ int debug_step(int times)
 			if (flagregs) {
 				char buf[1024];
 				char *ptr;
-			//	radare_command("!dregs", 0);
+			//	radare_cmd("!dregs", 0);
 				config_set("scr.buf", "true");
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
@@ -1008,7 +1008,7 @@ int debug_step(int times)
 				sprintf(buf, "C %d %s @ 0x%08x",
 					ps.steps, ptr, (unsigned long)arch_pc());
 				config_set("scr.buf", "false"); // XXX
-				radare_command(buf, 0);
+				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer
 			}
 
@@ -1128,9 +1128,9 @@ int debug_trace(char *input)
 	while(!config.interrupted && ps.opened && debug_step(1)) {
 		if (smart) {
 			cons_printf("[-] 0x%08x\n", arch_pc());
-			radare_command("s eip && f -eip", 0);
+			radare_cmd("s eip && f -eip", 0);
 			disassemble(20, 2);
-			radare_command("!dregs", 0);
+			radare_cmd("!dregs", 0);
 		} else {
 			switch(level) {
 			case 0:
@@ -1152,7 +1152,7 @@ int debug_trace(char *input)
 					}
 					if (tbt) {
 						// XXX must be internal call
-						radare_command("!bt", 0);
+						radare_cmd("!bt", 0);
 					}
 				}
 				fflush(stdout);
@@ -1425,7 +1425,7 @@ int debug_contsc(char *arg)
 	} while (ret != -1 && arg[0] && num != ret );
 
 	if (config_get("dbg.contscbt"))
-		radare_command("!bt", 0);
+		radare_cmd("!bt", 0);
 
 	return 1;
 }

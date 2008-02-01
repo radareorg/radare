@@ -218,6 +218,13 @@ int cons_fgets(char *buf, int len)
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
 
+void cons_reset()
+{
+	if (cons_buffer)
+		cons_buffer[0]='\0';
+	cons_buffer_len = 0;
+}
+
 char *cons_get_buffer()
 {
 	return cons_buffer;

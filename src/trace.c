@@ -66,22 +66,34 @@ int trace_index(off_t addr)
 	}
 	return idx;
 }
+
 int trace_add(off_t addr)
 {
 	struct trace_t *t;
 	struct list_head *pos;
 
-	list_for_each(pos, &traces) {
-		t = list_entry(pos, struct trace_t, list);
-		if (t->addr == addr) {
-			t->count = ++n_traces;
-			return ++(t->times);
+	if (config_get("trace.dup")) {
+		/* update times counter */
+		list_for_each(pos, &traces) {
+			t = list_entry(pos, struct trace_t, list);
+			if (t->addr == addr)
+				++(t->times);
+		}
+	} else {
+		list_for_each(pos, &traces) {
+			t = list_entry(pos, struct trace_t, list);
+			if (t->addr == addr) {
+				t->count = ++n_traces;
+				gettimeofday(&(t->tm), NULL);
+				return ++(t->times);
+			}
 		}
 	}
 
 	t = (struct trace_t *)malloc(sizeof(struct trace_t));
 	t->addr = addr;
 	t->times = 1;
+	gettimeofday(&(t->tm), NULL);
 	t->count = ++n_traces;
 	list_add_tail(&(t->list), &traces);
 

@@ -13,6 +13,7 @@ struct plugin_hack_t {
 	const char *name;
 	const char *desc;
 	int (*callback)();
+	void *(*resolve)(char *);
 	struct config_t *config;
 #if DEBUGGER
 	struct debug_t *ps;

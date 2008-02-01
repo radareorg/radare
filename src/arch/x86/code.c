@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007
  *       pancake <youterm.com>
+ *       esteve <eslack.org>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +94,7 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 	case 0xeb: // short jmp 
 		aop->type   = AOP_TYPE_JMP;
 		aop->length = 2;
-		aop->jump   = addr+(unsigned long)((bytes[1]))+2;
+		aop->jump   = addr+((unsigned long)((char)bytes[1])+2);
 		aop->fail   = 0L;
 		aop->eob    = 1;
 		break;

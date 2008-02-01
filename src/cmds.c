@@ -336,7 +336,7 @@ CMD_DECL(hash)
 	// XXX doesnt works with dbg:///
 	// XXX use real temporal file instead of /tmp/xx
 	if (config.debug) {
-		radare_command("pr > /tmp/xx", 0);
+		radare_cmd("pr > /tmp/xx", 0);
 		snprintf(buf, 1000, "hasher -fa '%s' '/tmp/xx'", input);
 	} else
 	snprintf(buf, 1000, "hasher -a '%s' -S "OFF_FMTd" -L '"OFF_FMTd"' '%s' | head -n 1", 
@@ -884,7 +884,7 @@ CMD_DECL(write)
 	case 'A': {
 		unsigned char data[1024];
 		snprintf(data, 1023, "wx `!rsc asm '%s'", input + 2);
-		radare_command(data, 0);
+		radare_cmd(data, 0);
 		}
 		break;
 	case 'a': {
@@ -1107,7 +1107,7 @@ CMD_DECL(search) {
 			input2[j+1]='\0';
 			strcat(input2,"\\x00");
 		}
-		radare_command("f -hit0*", 0);
+		radare_cmd("f -hit0*", 0);
 		setenv("SEARCH[0]", input2, 1);
 		search_range("0");
 		break;
@@ -1170,7 +1170,7 @@ CMD_DECL(search) {
 				strcat(input2, buf);
 			}
 		}
-		radare_command("f -hit0*", 0);
+		radare_cmd("f -hit0*", 0);
 		setenv("SEARCH[0]", input2, 1);
 		search_range("0");
 		break;

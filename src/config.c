@@ -523,6 +523,7 @@ void config_init()
 	config_set("trace.sleep", "0");
 	config_set("trace.smart", "true");
 	config_set("trace.log", "true");
+	config_set("trace.dup", "false");
 	config_set("trace.cmtregs", "false");
 
 	config_set("cfg.noscript", "false");

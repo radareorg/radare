@@ -432,7 +432,7 @@ int radare_analyze(off_t seek, int size)
 				else {
 					C cons_printf(C_TURQOISE);
 					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
-					radare_command(cmd, 0);
+					radare_cmd(cmd, 0);
 
 					cons_strcat("     ");
 					radare_analyze((config.endian)?num:nume, -1);

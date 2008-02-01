@@ -6,8 +6,24 @@
 
 
 ===========================================================
-
+ 
+* drop python/perl plugins
+  - implement them as plugins
+* executable offsets
+  - execute a command on a certain offset
+  - show funtion frames and arguments on the fly
+  - automatize unpacks and so
+* Implement 'gui hack' command for 'GUI plugins'.
+  - implement start/pause/continue/stop/reload button for a pid
+* store timestamp in trace nodes
+* frontend for hasher (Vala api for hashing)
+* timeline of a tarce |----------------|
+  - allow to view frame windows inside the timeline
+* random trace peeker
+  - takes traces from the process while running every N usecs
 * print disasembly by trace from an starting address
+  * roll/funroll code
+  - pD 100 | sort
 * store more info in trace (output of command)
 * save traces to file
 * colorize traces in vala graphs
@@ -18,6 +34,7 @@
 * graph.body=asm,flags,symcalls,description, trace execution data
   - block descriptor (if regs traced, or so show info)
 * add graph.color // default color for new nodes 
+
 * StreamViewer
  * search for head and foot
   - for each head finds a foot and defines block size
@@ -35,10 +52,6 @@
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 
-* refactor
-  - rename pprintf_buffer to cons_buffer
-
-* roll/funroll code
 
 * Function frames:
   - powerpc ; frame size > 56b and multiple of 8
@@ -96,7 +109,6 @@
   ldmfd SP, { R11, SP, PC }
 
 =============================================================
-
   
 * make graphs does not follow flagged calls :D
 * detachable pG window (uh?)
@@ -112,8 +124,6 @@
 * allow to specify what you want to see when tracing (cmd.cmttrace) ?
   - is not oneliner
 * trace call amb jump lines (draw a sequence of vectors)
-* search.flag
-* search.verbose
 * /a algorithm defined by search.algorithm
  it flags if search.flag
   - armfuncsearch
@@ -125,7 +135,7 @@
   - plugin
 * List viewer (get offset as index fr cursor, right view shows the
   contents of th selected offset
-  - browse linked list
+  - linked list browser
 * on linux check randomize va space and warn user comments and bps will be wrong!
 * RDBs stored into Projects
   project.rdb = false ; store or not
