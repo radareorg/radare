@@ -1,4 +1,22 @@
 /* Reverse Engineered LibUSB-Gecko library */
+/*
+ *  radare - Open Free Fiasco Firmware Flasher
+ *  Copyright (C) 2007  pancake <pancake@youterm.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 
 /*
 
@@ -89,7 +107,7 @@ int grecko_open()
 		}
 	}
 
-        printf("found %s (%04x:%04x)\n", it_device.name,
+        printf("Found %s (%04x:%04x)\n", it_device.name,
 		it_device.vendor_id, it_device.product_id);
 
 	sleep(1); // take breath
@@ -137,7 +155,7 @@ void grecko_continue()
 int grecko_write(unsigned long addr, unsigned char *buf, int bsize)
 {
 	unsigned char data[8];
-	unsigned char *ptr = &addr;
+	unsigned char *ptr = (unsigned char*) &addr;
 	int i, size = bsize - bsize%4;
 
 	grecko_send_command(3);
@@ -145,7 +163,7 @@ int grecko_write(unsigned long addr, unsigned char *buf, int bsize)
 	for(i=0; i<size; i+=4) {
 		data[0]=ptr[3]; data[1]=ptr[2]; data[2]=ptr[1]; data[3]=ptr[0];
 		data[4]=buf[i]; data[5]=buf[i+1]; data[6]=buf[i+2]; data[7]=buf[i+3];
-		usb_bulk_write(dev, ep, &data, 8, timeout);
+		usb_bulk_write(dev, ep, (unsigned char *)&data, 8, timeout);
 	}
 
 	return size; // may be different than bsize
@@ -172,16 +190,15 @@ void grecko_getregs()
 
 		= 40 registers :D
 	*/
-	
 }
 
 int grecko_bp(unsigned long addr, int type)
 {
-	unsigned char *ptr = &addr;
+	unsigned char *ptr = (unsigned char *)&addr;
 
 	addr -= (addr%4) + type;
 	grecko_send_command(10);
 	addr = htonl(addr);
 
-	return usb_bulk_write(dev, ep, &addr, 4, timeout);
+	return usb_bulk_write(dev, ep, (unsigned char *)&addr, 4, timeout);
 }
