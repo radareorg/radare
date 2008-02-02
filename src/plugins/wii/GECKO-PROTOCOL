@@ -1,0 +1,133 @@
+
+
+                  __--~.
+               .-'_ ,' |
+            .'     \   |
+           / | |>   ) /
+           \ |     /." _   _   _   _   _
+         .-^_| |\  \  |_| | \ |_| |_/ /_
+         \/   -| '. ' | | |_/ | | | \ \_
+
+                            pwn them all
+
+
+UsbGeckoProtocol
+----------------
+
+
+// radare must auto add some value to all operations...
+// if (addr<0x8000000) addr+=0x8000000 :)
+
+Start game:
+
+ - command  13
+
+Freeze
+
+ - command  06
+
+Unfreeze
+
+ - command  07
+
+Write pawah
+ > wx 01 02 03 04 @ 0x80003000
+ - command  03
+ - argument 80 00 30 00 01 02 03 04
+
+Disas 80003100
+
+ - command  31
+ - argument 80 00 31 00
+ - gets 31 60 + 62 bytes of data
+ - gets 31 60 + 38 bytes of data
+ - total are 100 bytes
+
+ Get 0x68 bytes from the device:                                                                           
+
+  31 60 7C 08 02 A6 3C 60 80 00 90 01 00 04 94 21    1`|..¦<`....!
+  FF F8 A0 03 30 E4 70 00 0E EF 2C 00 0E EF 40 82    ÿø .0äp..ï,..ï@                       
+  00 14 38 60 00 00 38 80 00 00 38 A0 00 00 48 00    ..8`..8..8 ..H.                       
+  C4 15 80 01 00 0C 38 21 00 08 7C 08 03 A6 4E 80    Ä....8!..|..¦N                        
+  31 60 00 20 38 00 00 01 98 0D 84 98 4E 80 00 20    1`. 8....N. 
+  88 6D 84 98 4E 80 00 20 48 00 01 5D 48 00 02 A9    mN. H..]H..©
+  38 00 FF FF 94 21 FF F8                            8.ÿÿ!ÿø
+
+Get registers:
+
+ - command  30
+
+ 008459: Bulk or Interrupt Transfer (UP), 01.02.2008 22:19:47.9843750 +0.0312500                           
+ Pipe Handle: 0x84c0536c (Endpoint Address: 0x81)                                                          
+ Get 0xa6 bytes from the device:                                                                           
+                                                                                                           
+                                                                                                           
+  31 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      1`..............                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+
+  31 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      1`..............                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+
+  31 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      1`..............                    
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                      ................                    
+  00 00 00 00 00 00                                                    ......    
+
+
+// exec breakpoint
+> !bpx @ 0x80003000
+
+ - command  10
+ - argument 80 00 30 03 
+
+
+// read breakpoint
+> !bpr @ 0x80002000
+
+ - command  09
+ - argument 80 00 20 05
+
+
+// write breakpoint
+> !bpw @ 0x80001000
+
+ - command  09
+ - argument 80 00 10 06
+
+// dump 4100-5100
+
+ - command 04
+ - argument 80 00 41 00 80 00 51 00
+
+ Get 0x1086 bytes from the device:                                                                         
+  31 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00                   1`..............                       
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                   ................                       
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                   ................                       
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                   ................                       
+  31 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00                   1`..............        
+  ...
+
+ num bytes:  0x1000 = 4096 bytes
+ block size: 2 head + 62 data bytes
+ total to read = 0x1086 = 62 * 66 blocks + 4 bytes
+
+// screenshot
+
+ - command 11
+ - receive 0xffdb
+ - receive 0x40
+ - receive 0xf7c0
+ - receive 0xf7c0
+ - receive 0x18
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xffd8
+ - receive 0xda64

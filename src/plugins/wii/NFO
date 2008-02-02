@@ -1,6 +1,35 @@
+Wii Memory map
+==============
 
 Cached memory:
   0x80000000 - 0x817fffff
 
 Uncached memory:
   0xc0000000 - 0xc17fffff
+
+
+
+Cached memory access
+--------------------
+
+ Write:             Read:
+
+  ( Memory )         ( Memory ) --.
+      ^                        ..lag..
+      |              ( Cache ) <--'
+   ( Cache ) <-.         |           ; always read nice value
+               |         v
+    ( You )----'      ( You )
+
+
+Uncached memory access
+--------------------
+
+ Write:             Read:
+
+  ( Memory ) <-.    ( Memory ) --.
+               |               ..lag..
+               |     ( Cache ) <--'
+   ( Cache )   |         |           ; gets old value
+               |         v           ; if read before lag
+    ( You )----'      ( You )

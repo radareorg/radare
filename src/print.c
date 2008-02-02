@@ -266,6 +266,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 	struct block_t *b0;
 	struct list_head *head;
 
+
 	last_print_format = print_fmt;
 	if (buf == NULL)
 		return;
@@ -278,6 +279,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 	}
 
 	if (len <= 0) len = config.block_size;
+	radare_controlc();
 
 	switch(print_fmt) {
 	case FMT_ANAL:
@@ -299,7 +301,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		// TODO: support skip n char  f.ex: pm i(3)s
 		// TODO: automatic add comment C `pmxzx ??
 		if (arg)
-		for(;i<len&&*arg;arg=arg+1) {
+		for(;!config.interrupted && i<len&&*arg;arg=arg+1) {
 			if (endian)
 				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
@@ -438,7 +440,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		break;
 	case FMT_SHORT: {
 		short *s;
-		for(i=0;i<len;i+=sizeof(short)) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(short)) {
 			endian_memcpy(buffer, buf+i, sizeof(short));
 			s = (short *)buffer;
 			print_color_byte("%hd", s[0]);
@@ -446,7 +448,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		} } break;
 	case FMT_FLOAT: {
 		float *f;
-		for(i=0;i<len;i+=sizeof(float)) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(float)) {
 			endian_memcpy(buffer, buf+i, sizeof(float));
 			f = (float *)buffer;
 			print_color_byte("%f", f[0]);
@@ -454,7 +456,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		} } break;
 	case FMT_INT: {
 		int *iv;
-		for(i=0;i<len;i+=sizeof(int)) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(int)) {
 			endian_memcpy(buffer, buf+i, sizeof(int));
 			iv = (int *)buffer;
 			print_color_byte("%d", iv[0]);
@@ -464,7 +466,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		int i;
 		long *l;
 		INILINE;
-		for(i=0;i<len;i+=sizeof(long)) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(long)) {
 			endian_memcpy(buffer, config.block+i, sizeof(long));
 			l = (long *)buffer;
 			print_color_byte("%ld", *l);
@@ -511,7 +513,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 	case FMT_LLONG: {
 		long long *ll;
 		INILINE;
-		for(i=0;i<len;i+=sizeof(long long)) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(long long)) {
 			endian_memcpy(buffer, config.block+i, sizeof(long long));
  			ll = (long long *)buffer;
 			cons_printf("%lld", *ll);
@@ -521,7 +523,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 	case FMT_TIME_DOS: {
 		unsigned char _time[2];
 		unsigned char _date[2];
-		for(i=0;i<len;i+=4) {
+		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy(_time, config.block+i, 2);
 			endian_memcpy(_date, config.block+i+2, 2);
 			print_msdos_date(_time, _date);
@@ -532,7 +534,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		char datestr[256];
 		const char *datefmt;
 		INILINE;
-		for(i=0;i<len;i+=4) {
+		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
 			//printf("%s", (char *)ctime((const time_t*)&t));
 			datefmt = config_get("cfg.datefmt");
@@ -552,7 +554,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		char datestr[256];
 		const char *datefmt;
 		INILINE;
-		for(i=0;i<len;i+=8) {
+		for(i=0;!config.interrupted && i<len;i+=8) {
 			endian_memcpy((unsigned char*)&l, config.block+i, sizeof(unsigned long long));
 			l /= 10000000; // 100ns to s
 			l = (l > L ? l-L : 0); // isValidUnixTime?
@@ -585,7 +587,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
                 cons_printf("shellcode:");
 		inc = config.width/7;
 		lines = 0;
-                for(i = 0; i < len; i++) {
+                for(i = 0; !config.interrupted && i < len; i++) {
 			V if (lines>config.height-4)
 					break;
                         if (!(i%inc)) {
@@ -604,7 +606,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		inc = config.width/6;
 		cons_printf("#define _BUFFER_SIZE %d", len); NEWLINE;
 		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); NEWLINE;
-		for(j = i = 0; i < len;) {
+		for(j = i = 0; !config.interrupted && i < len;) {
 			print_color_byte_i(i, "0x%02x", config.block[i]);
 			if (++i<len)  cons_printf(", ");
 			if (!(i%inc)) {
@@ -635,7 +637,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 			NEWLINE;
 			C cons_printf(C_RESET);
 		}
-		for(i=0; i<len; i++) {
+		for(i=0; !config.interrupted && i<len; i++) {
 			V if ((i/inc)+5>config.height) break;
 			D print_addr(seek+i+config.baddr);
 			for(j = i+inc; i<j && i<len; i++) {
@@ -667,7 +669,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 #endif
 			NEWLINE;
 		}
-		for(i=0;i<len;i++) {
+		for(i=0;!config.interrupted && i<len;i++) {
 			V if ((i/inc)+6>config.height) break;
 			D print_addr(seek+i+config.baddr);
 			tmp = i;
@@ -688,13 +690,13 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		}
 		break;
 	case FMT_ASCP:
-		for(i=0;i<len;i++)
+		for(i=0;!config.interrupted && i<len;i++)
 			if ( is_printable(buf[i]) )
 				print_color_byte_i(i, "%c", buf[i]);
 		NEWLINE;
 		break;
 	case FMT_WASC0:
-		for(i=0;i<len && (buf[i]&&!buf[i+1]);i+=2)
+		for(i=0;!config.interrupted && i<len && (buf[i]&&!buf[i+1]);i+=2)
 			print_color_byte_i(i, "%c", buf[i]);
 		NEWLINE;
 		break;
@@ -703,7 +705,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		NEWLINE;
 		break;
 	case FMT_ASC:
-		for(i=0;i<len;i++)
+		for(i=0;!config.interrupted && i<len;i++)
 			if ( !is_printable(buf[i]) )
 				print_color_byte_i(i, "\\x%02x", buf[i]);
 			else	cons_printf("%c", buf[i]);
@@ -711,7 +713,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		break;
 	case FMT_HEXQ: {
 		long long int *sh;
-		for(i=0;i<len;i+=8) {
+		for(i=0;!config.interrupted && i<len;i+=8) {
 			endian_memcpy(buffer, buf+i, 8);
 			sh = (long long int*)&buffer;
 			print_color_byte_i(i, "%016llx ", (long long int)sh[0]);
@@ -721,7 +723,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		} break;
 	case FMT_HEXD: {
 		unsigned int *sh;
-		for(i=0;i<len;i+=4) {
+		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy(buffer, buf+i, 4);
 			sh = (unsigned int *)buffer;
 			//print_color_byte_i(i, "%08x ", sh[0]);
@@ -731,7 +733,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		} break;
 	case FMT_HEXW: {
 		unsigned short *sh;
-		for(i=0;i<len;i+=2) {
+		for(i=0;!config.interrupted&&i<len;i+=2) {
 			endian_memcpy(buffer, buf+i, 2); //sizeof(short));
 			sh = (unsigned short *)&buffer;
 			//print_color_byte_i(i, "%04x ", sh[0]);
@@ -762,7 +764,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 			buf = (char *)malloc(10);
 			break;
 		}
-		for(i=0;i<config.block_size;i++) {
+		for(i=0;!config.interrupted && i<len;i++) {
 			io_lseek(config.fd, ptr, SEEK_SET);
 			io_read(config.fd, buf, sz);
 			switch(mode[0]) {
@@ -803,8 +805,8 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 			}
 			NEWLINE;
 		}
-		for(i=0; i<len; i+=inc) {
-			V if ((i/inc)+5>config.height) return;
+		for(i=0; !config.interrupted && i<len; i+=inc) {
+			V if ((i/inc)+5>config.height) break;
 			D { if ( print_fmt == FMT_HEXB )
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);
@@ -847,6 +849,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		free(bufi);
 
 	fflush(stdout);
+	radare_controlc_end();
 }
 
 /** Read the device and print a block

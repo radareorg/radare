@@ -75,7 +75,7 @@ void radare_controlc_end()
 {
 	config.interrupted = 0;
 #if __UNIX__
-	signal(SIGINT, NULL);
+	signal(SIGINT, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 #endif
 }

@@ -283,6 +283,7 @@ void udis(int len, int rows)
 		nbytes = 8;
 	if (show_lines)
 		reflines = code_lines_init();
+	radare_controlc();
 
 	while (!config.interrupted && ud_disassemble(&ud_obj)) {
 		if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
@@ -369,6 +370,7 @@ void udis(int len, int rows)
 		if (rows && rows == lines)
 			return;
 	}
+	radare_controlc_end();
 }
 
 extern int color;
