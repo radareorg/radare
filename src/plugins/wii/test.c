@@ -1,7 +1,8 @@
 /* Reverse Engineered LibUSB-Gecko library */
+
 /*
- *  radare - Open Free Fiasco Firmware Flasher
- *  Copyright (C) 2007  pancake <pancake@youterm.com>
+ *  radare (.nopcode.org)
+ *  Copyright (C) 2008  pancake <pancake@youterm.com>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
