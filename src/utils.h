@@ -11,7 +11,7 @@
 int _print_fd;
 
 extern const char hex[16];
-//extern off_t tmpoff;
+//extern u64 tmpoff;
 extern int std;
 extern char **environ;
 extern char *last_tsearch;
@@ -63,14 +63,14 @@ int make_tmp_file(char *str);
 void progressbar(int pc);
 void terminal_set_raw(int b);
 int radare_read(int next);
-off_t get_offset (char *arg);
+u64 get_offset (char *arg);
 char *lstrchr(char *str, char chr);
-off_t get_math(const char* text);
+u64 get_math(const char* text);
 void print_msdos_date(unsigned char _time[2], unsigned char _date[2]);
-off_t radare_seek(off_t offset, int whence);
+u64 radare_seek(u64 offset, int whence);
 int is_printable (int c);
 void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode);
-void data_print (off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode);
+void data_print (u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode);
 int hex2int (unsigned char *val, unsigned char c);
 int get_cmp(const char *str0, const char *str1);
 int terminal_get_real_columns();

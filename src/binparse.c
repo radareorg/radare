@@ -381,7 +381,7 @@ int binparse_add(tokenizer *t, char *string, char *mask)
 	return n;
 }
 
-void update_tlist(tokenizer* t, unsigned char inchar, off_t where )
+void update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 {
 	unsigned char cmin;
 	unsigned char cmax;

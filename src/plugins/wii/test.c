@@ -31,6 +31,7 @@ int cc() {
 int main(int argc, char **argv)
 {
 	int c;
+	char buf[0x100];
 	/* open usb device */
 	if (grecko_open()<0) {
 		printf("Is usbgecko connected and detected? try re-plug in another hole ;)\n");
@@ -40,9 +41,12 @@ int main(int argc, char **argv)
 	/* load game */
 	grecko_load();
 
+	// hangs the console :(
 	printf("press intro to start zapping!\n");
 	read(0,&c,1);
 	signal(SIGINT, (void *)cc);
+
+	grecko_read(0x80003100, &buf, 0x100);
 
 	while (1) {
 		/* freeze */

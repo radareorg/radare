@@ -94,7 +94,7 @@ print_fmt_t format_get (char fmt, print_mode_t mode)
 }
 
 // TODO: implement getenv("RCOLORS");
-void print_addr(off_t off)
+void print_addr(u64 off)
 {
 	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET" ", off);
 	else	cons_printf(OFF_FMT" ", off);
@@ -252,7 +252,7 @@ void radare_dump_and_process(int type, int size)
  * /TODO: don't use config.<...> (this should be completely parametrized)
  * /TODO: normalize output command
  */
-void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
+void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
 {
 	int tmp, i, j;
 	int zoom = 0;
@@ -307,7 +307,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
 
 			if (*arg == '*') {
-				radare_read_at((off_t)addr, buffer, 4);
+				radare_read_at((u64)addr, buffer, 4);
 				memcpy(&addr, buffer, 4);
 				continue;
 			}
@@ -388,7 +388,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 			case 's':
 				D cons_printf("0x%08x  ", config.seek+i);
 				memset(buffer, '\0', 255);
-				radare_read_at((off_t)addr, buffer, 248);
+				radare_read_at((u64)addr, buffer, 248);
 				D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
 				cons_printf("%s ", buffer);
 				i+=4;
@@ -745,7 +745,7 @@ void data_print(off_t seek, char *arg, unsigned char *buf, int len, print_fmt_t 
 		char *buf = NULL;
 		unsigned long sz = 4;
 		const char *mode = config_get("zoom.byte");
-		off_t ptr = config.zoom.from;
+		u64 ptr = config.zoom.from;
 	
 		if (!mode)
 			break;

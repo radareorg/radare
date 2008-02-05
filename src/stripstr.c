@@ -86,7 +86,7 @@ static int is_encoded(unsigned char c)
 	return 0;
 }
 
-int stripstr_iterate(const unsigned char *buf, int i, off_t offset, char *match)
+int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 {
 	rad_flag_t *flag;
 	static int unicode = 0;
@@ -162,10 +162,10 @@ int stripstr_iterate(const unsigned char *buf, int i, off_t offset, char *match)
 
 int radare_strsearch(char *str)
 {
-	off_t i;
+	u64 i;
 	int j, ret;
-	off_t seek = config.seek;
-	off_t size = config.size;
+	u64 seek = config.seek;
+	u64 size = config.size;
 
 	min = 5;
 
@@ -185,7 +185,7 @@ int radare_strsearch(char *str)
 	return 0;
 }
 
-int stripstr_from_file(const char *filename, int min, off_t seek)
+int stripstr_from_file(const char *filename, int min, u64 seek)
 {
 	int i, fd = open(filename, O_RDONLY);
 	unsigned char *buf;

@@ -262,9 +262,9 @@ CMD_DECL(yank_paste)
 	} else {
 		if (config_get("cfg.write")) {
 			char *ptr = strchr(input, ' ');
-			off_t sz;
+			u64 sz;
 			int off = 0;
-			off_t old = config.seek;
+			u64 old = config.seek;
 			sz = get_math(ptr?ptr:input);
 			if (sz == 0)
 				sz = yank_buffer_size;
@@ -825,7 +825,7 @@ CMD_DECL(visual)
 				case 2: // F2 - breakpoint
 {
 	struct bp_t *bp;
-	off_t addr = config.seek + (config.cursor_mode?config.cursor:0);
+	u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
 		//			terminal_set_raw(0);
 		//			printf("Breakpoint at: ");
 					//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));

@@ -38,8 +38,8 @@ void search_alarm()
 // TODO: handle Control-C
 void radare_search_aes()
 {
-	off_t oseek  = config.seek;
-	off_t limit  = config.size;
+	u64 oseek  = config.seek;
+	u64 limit  = config.size;
 	size_t bsize = config.block_size;
 	int found = 0;
 	int i;
@@ -79,7 +79,7 @@ static int nhit = 0;
 static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long long where)
 {
 	char flag_name[128];
-	off_t off = config.seek;
+	u64 off = config.seek;
 
 	if (search_cmdhit && search_cmdhit[0]!='\0') {
 		char *cmdhit = strdup(search_cmdhit);
@@ -109,8 +109,8 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	} else
 		printf("\r%d", nhit);
 #if 0
-	D { printf("\e[K"OFF_FMTs" '%s' ", (off_t)where, flag_name);
-	    data_print((off_t)where, "", config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
+	D { printf("\e[K"OFF_FMTs" '%s' ", (u64)where, flag_name);
+	    data_print((u64)where, "", config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
 	} else printf("0x"OFF_FMTx" ", where); // TODO : print data_dump?
 #endif
 
@@ -123,7 +123,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 int search_from_file(char *file)
 {
 	int i;
-	off_t tmp = config.seek;
+	u64 tmp = config.seek;
 	tokenizer *t = binparse_new_from_file(file);
 
 	if (t == NULL)
@@ -153,7 +153,7 @@ int search_range(char *range)
 	char str[128];
 	int num = -1, num2 = -1;
 	tokenizer *t;
-	off_t tmp = config.seek;
+	u64 tmp = config.seek;
 	int f0 = 0;
 
 

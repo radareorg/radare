@@ -2,9 +2,9 @@ using GLib;
 
 public class Radare.Disassembler
 {
-	public static string# INTEL { get { return "intel"; } }
-	public static string# ARM   { get { return "arm"; } }
-	public static string# JAVA  { get { return "java"; } }
+	public string# INTEL = "intel";
+	public string# ARM = "arm";
+	public string# JAVA = "java";
 
 	public static weak string arch()
 	{

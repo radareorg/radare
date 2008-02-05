@@ -108,7 +108,7 @@ void code_lines_free(struct list_head *list)
 	free(list);
 }
 
-void code_lines_print(struct reflines_t *list, off_t addr)
+void code_lines_print(struct reflines_t *list, u64 addr)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
@@ -194,7 +194,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	struct aop_t aop;
 	struct block_t *blk;
 	unsigned long oseek = seek;
-	off_t tmp = config.seek;
+	u64 tmp = config.seek;
 	unsigned int sz = 0, ret;
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
@@ -307,7 +307,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	return 0;
 }
 
-struct program_t *code_analyze(off_t seek, int depth)
+struct program_t *code_analyze(u64 seek, int depth)
 {
 	struct program_t *prg = program_new(NULL);
 	prg->entry = config.seek;
@@ -346,7 +346,7 @@ TODO: use maps here! must be mixed with flags and so
 
 #endif
 
-int radare_analyze(off_t seek, int size)
+int radare_analyze(u64 seek, int size)
 {
 	char cmd[1024];
 	int num;
@@ -357,7 +357,7 @@ int radare_analyze(off_t seek, int size)
 	int str_i=0;
 	unsigned char word[128];
 	int word_i=0;
-	off_t tmp = config.seek;
+	u64 tmp = config.seek;
 	int v = config.verbose;
 	config.verbose = 0;
 
@@ -379,7 +379,7 @@ int radare_analyze(off_t seek, int size)
 		}
 		if (str_i>2) {
 			str[str_i] = '\0';
-			print_addr((off_t)(seek+i-str_i));
+			print_addr((u64)(seek+i-str_i));
 			C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
 			else	cons_printf("string \"%s\"\n", str);
 			word_i = 0;

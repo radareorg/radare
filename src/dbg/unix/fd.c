@@ -44,9 +44,9 @@
 #include <sys/prctl.h>
 #endif
 
-off_t debug_fd_seek(int pid, int fd, off_t addr, int whence)
+u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 {
-	off_t ret = 0;
+	u64 ret = 0;
 #if __UNIX__
 	ret = arch_syscall(pid, SYS_lseek, fd, addr, whence);
 #endif
@@ -106,7 +106,7 @@ int debug_fd_open(int pid, char *file, int mode)
 #if 0
 #if __i386__
         regs_t   reg, reg_saved;
-	off_t	file_addr;
+	u64	file_addr;
         int     status;
 	char	bak[128];
         void*   ret = (void *)-1;

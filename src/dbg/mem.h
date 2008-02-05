@@ -36,7 +36,7 @@ typedef struct {
 } MAP_REG;
 
 void *dealloc_page(void *addr);
-void *mmap_tagged_page(char *file, off_t addr, off_t size);
+void *mmap_tagged_page(char *file, u64 addr, u64 size);
 void *alloc_tagged_page(char *tag, int size);
 inline void *alloc_page(int size);
 inline void add_regmap(MAP_REG *mr);

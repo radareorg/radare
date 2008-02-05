@@ -380,7 +380,7 @@ err:
 }
 
 #define ALIGN_SIZE 4096
-int debug_read_at(pid_t pid, void *addr, int length, off_t at)
+int debug_read_at(pid_t pid, void *addr, int length, u64 at)
 {
 	return ReadMem(pid, (long long)at, length, addr);
 #if 0
@@ -509,7 +509,7 @@ int putdata(pid_t child, unsigned long addr, char *data, int len)
 	return 0;
 }
 
-int debug_write_at(pid_t pid, void *data, int length, off_t addr)
+int debug_write_at(pid_t pid, void *data, int length, u64 addr)
 {
 //	return putdata(pid,(unsigned long)addr, data, length);
 	return WriteMem(pid, (long long)addr, length, data);

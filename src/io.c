@@ -20,19 +20,19 @@
 
 #include "main.h"
 
-int radare_read_at(off_t offset, unsigned char *data, int len)
+int radare_read_at(u64 offset, unsigned char *data, int len)
 {
 	int ret;
-	off_t cur = config.seek;
+	u64 cur = config.seek;
 	radare_seek(offset,SEEK_SET);
 	ret = io_read(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
 	return ret;
 }
 
-int radare_write_at(off_t offset, unsigned char *data, int len)
+int radare_write_at(u64 offset, unsigned char *data, int len)
 {
-	off_t cur = config.seek;
+	u64 cur = config.seek;
 	radare_seek(offset,SEEK_SET);
 	io_write(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
@@ -42,8 +42,8 @@ int radare_write_at(off_t offset, unsigned char *data, int len)
 int radare_write(char *arg, int mode)
 {
 	int fmt = last_print_format;
-	off_t oseek = config.seek;
-	off_t seek = config.seek;
+	u64 oseek = config.seek;
+	u64 seek = config.seek;
 	int times = config_get_i("cfg.count");
 	int i,bytes = 0;
 	int len   = 0;
@@ -130,7 +130,7 @@ void radare_poke(char *arg)
 	char key;
 	int otimes, times = config_get_i("cfg.count");
 	char *buf = NULL;
-	off_t ret = 0;
+	u64 ret = 0;
 
 	if (times<1)
 		times = 1;
@@ -192,7 +192,7 @@ void radare_poke(char *arg)
 void radare_dump(char *arg, int size)
 {
 	int fd;
-	off_t ret = 0;
+	u64 ret = 0;
 
 	if (arg[0]=='\0') {
 		eprintf("Usage: dump [filename]\n");
@@ -214,12 +214,12 @@ void radare_dump(char *arg, int size)
 	}
 }
 
-off_t radare_seek(off_t offset, int whence)
+u64 radare_seek(u64 offset, int whence)
 {
-	off_t seek = 0;
+	u64 seek = 0;
 
 	if (offset==-1)
-		return (off_t)-1;
+		return (u64)-1;
 
 	if (whence == SEEK_SET && config.baddr && offset>=config.size && offset >= config.baddr)
 		offset-=config.baddr;

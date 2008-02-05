@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-off_t debug_lseek(int fildes, off_t offset, int whence)
+u64 debug_lseek(int fildes, u64 offset, int whence)
 {
 	if (ps.opened && ps.fd == fildes)
 		switch(whence) {
@@ -33,12 +33,12 @@ off_t debug_lseek(int fildes, off_t offset, int whence)
 				ps.offset = offset;
 			return ps.offset;
 		case SEEK_CUR:
-			ps.offset = (off_t)((unsigned long long)ps.offset+(unsigned long long)offset);
+			ps.offset = (u64)((unsigned long long)ps.offset+(unsigned long long)offset);
 			return ps.offset;
 		case SEEK_END:
-			return ps.offset = (off_t)((unsigned long long)(-1));
+			return ps.offset = (u64)((unsigned long long)(-1));
 		default:
-			return (off_t)(unsigned long long)-1;
+			return (u64)(unsigned long long)-1;
 		}
 
 	return __lseek(fildes, offset, whence);

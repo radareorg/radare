@@ -115,7 +115,7 @@ public class Grava.Renderer
 		ctx.fill();
 
 		/* title rectangle */
-		if (node.data.lookup("color"))
+		if (node.data.lookup("color")!=null)
 			set_color_str(ctx, node.data.lookup("color"));
 		else
 		if (node.calls.length() ==1) 

@@ -29,7 +29,7 @@ tokenizer* binparse_new_from_file(char *file);
 int binparse_get_mask_list ( char* mask , char* maskout );
 int binparse_add_search(tokenizer *t, int id);
 int binparser_free(tokenizer* ptokenizer);
-void update_tlist( tokenizer*  ptok, unsigned char inchar, off_t where);
+void update_tlist( tokenizer*  ptok, unsigned char inchar, u64 where);
 void print_tokenizer( tokenizer*  ptokenizer) ;
 char* fd_readline( int fd, char* line, int maxsize );
 int indent_count( int fd ) ;

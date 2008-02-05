@@ -41,6 +41,8 @@ clean:
 	${Q}cd gui && ${MAKE} clean
 	${Q}cd src/dbg && ${MAKE} clean
 	${Q}cd java && ${MAKE} clean
+	${Q}cd vala/ && ${MAKE} clean
+	${Q}cd vala/grava && ${MAKE} clean
 
 arm: all
 	mkdir -p pkg

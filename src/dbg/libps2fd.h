@@ -209,10 +209,10 @@ struct debug_t {
 	unsigned int mem_sz;
 	unsigned int map_regs_sz;
 	int bps_n;      /*/ breakpoints count */
-	off_t offset;
-	off_t ldentry;
-	off_t entrypoint;
-	off_t pc;       /*/ program counter */
+	u64 offset;
+	u64 ldentry;
+	u64 entrypoint;
+	u64 pc;       /*/ program counter */
 	int isbpaddr;
 	int opened;
 	int steps;
@@ -229,7 +229,7 @@ struct debug_t {
 #endif
 };
 
-void *mmap_tagged_page(char *file, off_t addr, off_t size);
+void *mmap_tagged_page(char *file, u64 addr, u64 size);
 
 
 int       (*__open)   (const char *pathname, int flags, mode_t mode);
@@ -239,9 +239,9 @@ ssize_t   (*__read)   (int fd, void *buf, size_t count);
 ssize_t   (*__read64) (int fd, void *buf, size_t count);
 ssize_t   (*__write)  (int fd, const void *buf, size_t count);
 ssize_t   (*__write64)(int fd, const void *buf, size_t count);
-off_t     (*__lseek)  (int fildes, off_t offset, int whence);
-off_t     (*__lseek64)(int fildes, off_t offset, int whence);
-off_t     (*___llseek)(int fildes, off_t offset, int whence);
+u64     (*__lseek)  (int fildes, u64 offset, int whence);
+u64     (*__lseek64)(int fildes, u64 offset, int whence);
+u64     (*___llseek)(int fildes, u64 offset, int whence);
 int *     (*__system) (const char *command);
 extern struct debug_t ps;
 

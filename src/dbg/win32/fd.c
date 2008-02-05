@@ -30,8 +30,9 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "../../main.h"
 
-off_t debug_fd_seek(int pid, int fd, off_t addr, int whence)
+u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 {
 	return 0;
 }

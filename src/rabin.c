@@ -30,7 +30,7 @@ enum {
 
 static unsigned int pebase;
 
-off_t rabin_entrypoint(int filetype)
+u64 rabin_entrypoint(int filetype)
 {
 	unsigned long addr = 0;
 	unsigned long base = 0;
@@ -59,7 +59,7 @@ off_t rabin_entrypoint(int filetype)
 			eprintf("entry in memory\n", base+addr);
 
 			io_lseek(config.fd, 0, SEEK_SET);
-			return (off_t)(addr)-0xc00;
+			return (u64)(addr)-0xc00;
 	}
 	return 0;
 }
@@ -94,7 +94,7 @@ int rabin_identify_header()
 int rabin_load()
 {
 	int header = rabin_identify_header();
-	off_t entry = rabin_entrypoint(header);
+	u64 entry = rabin_entrypoint(header);
 
 	if (header == FILETYPE_UNK) {
 		config_set("file.type", "unk");
@@ -110,7 +110,7 @@ int rabin_load()
 		case FILETYPE_ELF:
 			config_set("file.type", "elf");
 			//config_set_i("file.baddr", 0x8048000);
-			config_set_i("file.baddr", (off_t)0x8048000); // XXX doesnt works! :(
+			config_set_i("file.baddr", (u64)0x8048000); // XXX doesnt works! :(
 			config.baddr = 0x8048000;
 			break;
 		case FILETYPE_MZ:

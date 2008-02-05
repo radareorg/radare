@@ -153,10 +153,10 @@ void progressbar(int pc)
 //  b[0x300]
 // eval cfg.endian
 //unsigned char *ptr = &newa;
-unsigned long get_pointer(off_t addr)
+unsigned long get_pointer(u64 addr)
 {
 	unsigned long newa;
-	off_t sk = config.seek;
+	u64 sk = config.seek;
 	radare_seek(addr, SEEK_SET);
 	io_read(config.fd, &newa, 4);
 	radare_seek(sk, SEEK_SET);
@@ -164,12 +164,12 @@ unsigned long get_pointer(off_t addr)
 }
 #endif
 
-/* Converts a string to off_t type. off_t jmp = get_offset("0x123456"); */
-off_t get_offset(char *orig)
+/* Converts a string to u64 type. u64 jmp = get_offset("0x123456"); */
+u64 get_offset(char *orig)
 {
 	char arga[1024];
 	char *arg = (char *)&arga;
-	off_t ret = 0;
+	u64 ret = 0;
 	int i, j;
 #ifdef RADARE_CORE
 	rad_flag_t *flag;
@@ -252,9 +252,9 @@ char *mytok(char *ptr, char *delim, char *backup)
 	return ptr;
 }
 
-off_t get_math(const char* text)
+u64 get_math(const char* text)
 {
-	off_t t, new_off = 0;
+	u64 t, new_off = 0;
 	int  sign     = 1;
 	char op       = 0;
 	char oop      = 0;
@@ -313,7 +313,7 @@ off_t get_math(const char* text)
 /* int byte = hexpair2bin("A0"); */
 int get_cmp(const char *str0, const char *str1)
 {
-	off_t a,b;
+	u64 a,b;
 	a = get_math(str0);
 	b = get_math(str1);
 	return (int)(a-b);

@@ -4,6 +4,12 @@
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
 
+// basic data types
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned int u32;
+typedef unsigned long long u64;
+
 #ifndef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
 #endif
@@ -23,17 +29,12 @@ enum {
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
-#if 0
-#if __WINDOWS__
-#undef off_t
-#define off_t long long
-#endif
-#endif
 
 #include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include "cmds.h"
 #include "print.h"
@@ -42,13 +43,13 @@ extern struct list_head hacks;
 extern struct list_head traces;
 extern struct list_head comments;
 
-int trace_count(off_t addr);
-int trace_times(off_t addr);
-int trace_add(off_t addr);
+int trace_count(u64 addr);
+int trace_times(u64 addr);
+int trace_add(u64 addr);
 void trace_init();
 
 struct trace_t {
-	off_t addr;
+	u64 addr;
 	int times;
 	int count;
 	struct timeval tm;
@@ -56,7 +57,7 @@ struct trace_t {
 };
 
 struct comment_t {
-	off_t offset;
+	u64 offset;
 	char *comment;
 	struct list_head list;
 };
@@ -89,10 +90,10 @@ struct comment_t {
 
 int java_disasm(unsigned char *bytes, char *output);
 
-void metadata_comment_add(off_t offset, const char *str);
-void metadata_comment_del(off_t offset);
+void metadata_comment_add(u64 offset, const char *str);
+void metadata_comment_del(u64 offset);
 char *metadata_comment_list();
-char *metadata_comment_get(off_t offset);
+char *metadata_comment_get(u64 offset);
 void metadata_comment_init(int new);
 
 #define uchar unsigned char
@@ -104,7 +105,7 @@ void radare_exit();
 void radare_prompt_command();
 void radare_sync();
 int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t print_fmt);
-int stripstr_from_file(const char *filename, int min, off_t seek);
+int stripstr_from_file(const char *filename, int min, u64 seek);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(char *str);
 int radare_cmd(char *input, int log);

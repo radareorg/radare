@@ -34,7 +34,7 @@ static int lines = 0;
 
 struct list_head comments;
 
-void metadata_comment_add(off_t offset, const char *str)
+void metadata_comment_add(u64 offset, const char *str)
 {
 	struct comment_t *cmt = (struct comment_t *)
 		malloc(sizeof(struct comment_t));
@@ -45,7 +45,7 @@ void metadata_comment_add(off_t offset, const char *str)
 	list_add_tail(&(cmt->list), &(comments));
 }
 
-void metadata_comment_del(off_t offset)
+void metadata_comment_del(u64 offset)
 {
 }
 
@@ -58,7 +58,7 @@ char *metadata_comment_list()
 	}
 }
 
-char *metadata_comment_get(off_t offset)
+char *metadata_comment_get(u64 offset)
 {
 	struct list_head *pos;
 	char *str = NULL;
@@ -120,13 +120,13 @@ static int print_metadata(int delta)
 {
 	FILE *fd;
 	int lines = 0;
-	off_t off = 0;
+	u64 off = 0;
 	char *ptr,*ptr2;
 	char buf[4096];
 	char *rdbfile;
 	int i;
-	off_t offset = (off_t)config.seek + (off_t)delta; //(off_t)ud_insn_off(&ud_obj);
-	//	off_t seek = config.baddr + (off_t)delta; //ud_insn_off(&ud_obj);
+	u64 offset = (u64)config.seek + (u64)delta; //(u64)ud_insn_off(&ud_obj);
+	//	u64 seek = config.baddr + (u64)delta; //ud_insn_off(&ud_obj);
 
 // config.baddr everywhere???
 	D {} else return 0;
@@ -256,7 +256,7 @@ void udis(int len, int rows)
 	int show_traces;
 	int nbytes = 12;
 	int show_size = config_get("asm.size");
-	off_t myinc = 0;
+	u64 myinc = 0;
 	struct reflines_t *reflines = NULL;
 
 	len*=2; // uh?!

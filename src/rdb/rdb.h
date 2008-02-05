@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/types.h>
+#include "../radare.h"
 #include "../list.h"
 
 // TODO: rename to ref_t or addr_t or something like that
@@ -71,6 +72,6 @@ int block_set_comment(struct program_t *program, unsigned long addr, char *comme
 int block_set_bytes(struct program_t *program, unsigned long addr, char *hexpairs);
 
 // XXX
-struct program_t *code_analyze(off_t seek, int depth);
+struct program_t *code_analyze(u64 seek, int depth);
 
 #endif

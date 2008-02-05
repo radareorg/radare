@@ -74,8 +74,8 @@ int main(int argc, char **argv, char **envp)
 			config_set("cfg.write", "true");
 			break;
 		case 's':
-			config.seek = (off_t)get_offset(optarg);
-			if (config.seek < 0) config.seek = (off_t)0;
+			config.seek = (u64)get_offset(optarg);
+			if (config.seek < 0) config.seek = (u64)0;
 			break;
 		case 'l':
 			plugin_registry(optarg);
@@ -89,7 +89,7 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'V':
 			printf("radare %s %dbit on %s%dbit "TARGET" %s%s%s%s\n", VERSION,
-				sizeof(off_t)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
+				sizeof(u64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
 				(HAVE_PERL)?  "perl "  :"",
 				(HAVE_PYTHON)?"python ":"",
 				(DEBUGGER)?   "dbg "   :"",
@@ -126,7 +126,7 @@ int main(int argc, char **argv, char **envp)
 		eprintf("warning: Only the first file has been opened.\n");
 
 	if (config.mode == MODE_STRINGS)
-		return stripstr_from_file(config.file, config.ene, (off_t)config.seek);
+		return stripstr_from_file(config.file, config.ene, (u64)config.seek);
 
 	return radare_go();
 }

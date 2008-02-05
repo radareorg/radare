@@ -58,12 +58,12 @@ void prepare_environment(char *line)
 
 	setenv("ARCH",   config_get("asm.arch"), 1);
 	setenv("NASM",   "1",      1);
-	sprintf(offset,  OFF_FMTd, (off_t)config.seek);
+	sprintf(offset,  OFF_FMTd, (u64)config.seek);
 	setenv("OFFSET", offset,   1);
 	if (config.cursor_mode)
-		sprintf(offset,  OFF_FMTd, (off_t)config.seek+config.cursor);
+		sprintf(offset,  OFF_FMTd, (u64)config.seek+config.cursor);
 	setenv("CURSOR", offset,   1);
-	sprintf(offset,  "%d", (int)config_get_i("file.baddr")); //(off_t)config.baddr);
+	sprintf(offset,  "%d", (int)config_get_i("file.baddr")); //(u64)config.baddr);
 	setenv("BADDR",  offset,   1);
 	sprintf(offset,  "%d",     config.color);
 	setenv("COLOR",  offset,   1);

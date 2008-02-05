@@ -146,6 +146,7 @@ public class Grava.Widget : GLib.Object {
 		}
 
 		da.queue_draw_area(0,0,5000,2000);
+		return false;
 	}
 
 	private bool key_press (ScrolledWindow sw, Gdk.Event ev)

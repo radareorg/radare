@@ -26,7 +26,7 @@
 struct watchpoint_t {
 	int type;
 	int action;
-	off_t address;
+	u64 address;
 	int len;
 	char *value;
 	struct list_head list;

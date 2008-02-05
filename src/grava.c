@@ -32,7 +32,7 @@ void grava_program_graph(struct program_t *prg);
 void core_load_graph_at(void *widget, char *str)
 {
 	struct program_t *prg;
-	off_t off = get_offset(str);
+	u64 off = get_offset(str);
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
@@ -45,7 +45,7 @@ static void core_load_graph_entry(void *widget, GtkWidget *obj)
 {
 	const char *str = gtk_entry_get_text(obj);
 	struct program_t *prg;
-	off_t off = get_offset(str);
+	u64 off = get_offset(str);
 
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
@@ -78,7 +78,7 @@ void grava_program_graph(struct program_t *prg)
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xref_t *c0;
-	off_t here = config.seek;
+	u64 here = config.seek;
 	char title[256], name[128];
 	int graph_flagblocks = config_get("graph.flagblocks");
 
@@ -131,6 +131,8 @@ void grava_program_graph(struct program_t *prg)
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 
+		node = grava_node_new();
+
 		/* label */
 		// TODO: support for real labelling stuff
 		string_flag_offset(cmd, b0->addr);
@@ -142,7 +144,6 @@ void grava_program_graph(struct program_t *prg)
 			grava_node_set(node, "color", "red");
 		}
 
-		node = grava_node_new();
 
 		/* add call references for this node */
 		// XXX avoid dupped calls
@@ -151,7 +152,7 @@ void grava_program_graph(struct program_t *prg)
 			grava_node_add_call(node, c0->addr);
 		}
 
-		node->baseaddr = b0->addr;
+		node->baseaddr = (unsigned long)b0->addr;
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
@@ -179,7 +180,7 @@ void grava_program_graph(struct program_t *prg)
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->tnext == b1->addr) {
-					printf("T %08x\n", b0->tnext);
+					printf("T %08llx\n", b0->tnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "green");
@@ -196,7 +197,7 @@ void grava_program_graph(struct program_t *prg)
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->fnext == b1->addr) {
-					printf("F %08x\n", b0->fnext);
+					printf("F %08llx\n", b0->fnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "red");

@@ -340,7 +340,7 @@ CMD_DECL(hash)
 		snprintf(buf, 1000, "hasher -fa '%s' '/tmp/xx'", input);
 	} else
 	snprintf(buf, 1000, "hasher -a '%s' -S "OFF_FMTd" -L '"OFF_FMTd"' '%s' | head -n 1", 
-		input, (off_t)config.seek, (off_t)config.block_size, config.file);
+		input, (u64)config.seek, (u64)config.block_size, config.file);
 
 	io_system(buf);
 
@@ -612,7 +612,7 @@ CMD_DECL(quit)
 static void radare_resize(char *arg)
 {
 	int fd_mode = O_RDONLY;
-	off_t size  = get_math(arg);
+	u64 size  = get_math(arg);
 
 	// XXX move this check into a only one function for all write-mode functions
 	// or just define them as write-only. and activate/deactivate them from
@@ -672,7 +672,7 @@ CMD_DECL(resize)
 
 	if (text[0] == '\0') {
 		D printf("Size: "OFF_FMTd" (0x"OFF_FMTx")\n",
-			(off_t) config.size, (off_t) config.size);
+			(u64) config.size, (u64) config.size);
 	} else	radare_resize(text);
 }
 
@@ -734,7 +734,7 @@ CMD_DECL(undoseek)
 
 CMD_DECL(seek)
 {
-	off_t new_off = 0;
+	u64 new_off = 0;
 	char *input2  = strdup(input);
 	char *text    = input2;
 	int whence    = SEEK_SET;
@@ -763,7 +763,7 @@ CMD_DECL(seek)
 	} else {
 		if (text[0]!='\0')
 			eprintf("Whitespace expected after 's'.\n");
-		else	D printf(OFF_FMT"\n", (off_t)config.seek);
+		else	D printf(OFF_FMT"\n", (u64)config.seek);
 	}
 
 	radare_read(0);
@@ -795,14 +795,14 @@ CMD_DECL(status)
 	cons_printf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
 	cons_printf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
-		(off_t)config.seek, (off_t)config.seek); NEWLINE;
+		(u64)config.seek, (u64)config.seek); NEWLINE;
 	cons_printf(" delta   "); 
 	fflush(stdout);
 	print_flag_offset(config.seek);
 	cons_printf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
-		(off_t)config.size, (off_t)config.size); NEWLINE;
+		(u64)config.size, (u64)config.size); NEWLINE;
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
-		(off_t)config.limit, (off_t)config.limit); NEWLINE;
+		(u64)config.limit, (u64)config.limit); NEWLINE;
 
 	if (config.debug)
 		io_system("info");
@@ -894,7 +894,7 @@ CMD_DECL(write)
 		if (ret<1)
 			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
 		else {
-			off_t tmp = config.seek;
+			u64 tmp = config.seek;
 			radare_seek(config.seek, SEEK_SET);
 			io_write(config.fd, data, ret);
 			radare_seek(tmp, SEEK_SET);
@@ -952,7 +952,7 @@ CMD_DECL(examine)
 
 CMD_DECL(prev)
 {
-	off_t off;
+	u64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
 	else
@@ -971,7 +971,7 @@ CMD_DECL(prev)
 
 CMD_DECL(next)
 {
-	off_t off;
+	u64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
 	else
@@ -1192,7 +1192,7 @@ CMD_DECL(shell)
 CMD_DECL(help)
 {
 	if (strlen(input)>0) {
-		off_t res = get_math(input);
+		u64 res = get_math(input);
 		cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
 		PRINT_BIN(res); NEWLINE;
 	}

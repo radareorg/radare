@@ -248,7 +248,7 @@ ssize_t io_read(int fd, void *buf, size_t count)
 	return -1;
 }
 
-off_t io_lseek(int fd, off_t offset, int whence)
+u64 io_lseek(int fd, u64 offset, int whence)
 {
 	FIND_FD(fd)
 		IF_HANDLED(fd, read)

@@ -137,6 +137,17 @@ void grecko_send_command(unsigned char cmd)
 
 void grecko_load()
 {
+	char buf[10];
+
+	usb_control_msg(dev, 0, 0, 0, 0, buf, 0, 2000);
+
+	buf[1]=2;buf[0]=0;
+	usb_control_msg(dev, 0, 5, 0, 0, buf, 2, 2000);
+	usb_control_msg(dev, 0, 0, 1, 0, buf, 0, 2000);
+	usb_control_msg(dev, 0, 0, 1, 0, buf, 0, 2000);
+	usb_control_msg(dev, 0, 0, 1, 0, buf, 0, 2000);
+	usb_control_msg(dev, 0, 0, 2, 0, buf, 0, 2000);
+
 	grecko_send_command(13);
 }
 
@@ -169,9 +180,35 @@ int grecko_write(unsigned long addr, unsigned char *buf, int bsize)
 	return size; // may be different than bsize
 }
 
+static unsigned char readbuf[4096];
+
 int grecko_read(unsigned long addr, unsigned char *buf, int size)
 {
+	unsigned char data[8];
+	unsigned long addr2 = addr+size;
+	unsigned char *ptr = (unsigned char*) &addr;
+	int i, ret;
+
+	addr = htonl(addr - (addr%4));
+	addr2 = htonl(addr2 - (addr2%4));
+
+	/* read command */
 	grecko_send_command(4);
+
+	/* memory offsets */
+	memcpy(data, addr, 4);
+	memcpy(data, addr2, 4);
+	usb_bulk_write(dev, ep, (unsigned char *)&data, 8, timeout);
+
+	/* data read */
+	ret = usb_bulk_read(dev, ep, (unsigned char *)buf, 4096, timeout);
+	if (ret < 0)
+		return -1;
+	for(i=0;i<ret;i++) {
+		printf("%02x ", readbuf[i]);
+	}
+
+	return ret;
 }
 
 void grecko_getregs()

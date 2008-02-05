@@ -22,7 +22,7 @@
 #include "radare.h"
 
 #define UNDOS 64
-static off_t undos[UNDOS];
+static u64 undos[UNDOS];
 static int undos_idx = 0;
 static int undos_lim = 0;
 

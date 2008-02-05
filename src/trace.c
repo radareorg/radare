@@ -32,7 +32,7 @@ struct list_head traces;
 static unsigned int n_traces = 0;
 
 // num of traces for an address
-int trace_times(off_t addr)
+int trace_times(u64 addr)
 {
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
@@ -43,7 +43,7 @@ int trace_times(off_t addr)
 	return 0;
 }
 
-int trace_count(off_t addr)
+int trace_count(u64 addr)
 {
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
@@ -54,7 +54,7 @@ int trace_count(off_t addr)
 	return 0;
 }
 
-int trace_index(off_t addr)
+int trace_index(u64 addr)
 {
 	int idx = -1;
 	struct list_head *pos;
@@ -67,7 +67,7 @@ int trace_index(off_t addr)
 	return idx;
 }
 
-int trace_add(off_t addr)
+int trace_add(u64 addr)
 {
 	struct trace_t *t;
 	struct list_head *pos;

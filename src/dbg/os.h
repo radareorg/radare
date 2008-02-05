@@ -29,11 +29,11 @@ int debug_dispatch_wait();
 void debug_print_sigh(char *signame, unsigned long handler);
 
 /* basic io */
-int debug_read_at(pid_t tid, void *buff, int len, off_t addr);
-int debug_write_at(pid_t tid, void *buff, int len, off_t addr);
+int debug_read_at(pid_t tid, void *buff, int len, u64 addr);
+int debug_write_at(pid_t tid, void *buff, int len, u64 addr);
 
 /* file descriptors */
-off_t debug_fd_seek(int pid, int fd, off_t addr, int whence);
+u64 debug_fd_seek(int pid, int fd, u64 addr, int whence);
 int debug_fd_list(int pid);
 int debug_fd_dup2(int pid, int oldfd, int newfd);
 int debug_fd_open(int pid, char *file, int mode);

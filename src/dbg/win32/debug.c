@@ -304,7 +304,7 @@ err_fork:
 	return 0;
 }
 
-int debug_read_at(pid_t tid, void *buff, int len, off_t addr)
+int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	int ret_len = 0;
 
@@ -321,7 +321,7 @@ int debug_read_at(pid_t tid, void *buff, int len, off_t addr)
 	return ret_len;
 }
 
-int debug_write_at(pid_t tid, void *buff, int len, off_t addr)
+int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	int ret_len = -1;
 	DWORD old;

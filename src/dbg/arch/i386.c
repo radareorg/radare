@@ -85,7 +85,7 @@ unsigned long get_reg(char *reg)
 
 long long arch_syscall(int pid, int sc, ...)
 {
-        long long ret = (off_t)-1;
+        long long ret = (u64)-1;
 #if __linux__
 	va_list ap;
         regs_t   reg, reg_saved;
@@ -146,7 +146,7 @@ long long arch_syscall(int pid, int sc, ...)
 		break;
 	case SYS_lseek:
 		R_EBX(reg) = va_arg(ap, int);
-		R_ECX(reg) = va_arg(ap, off_t);
+		R_ECX(reg) = va_arg(ap, u64);
 		R_EDX(reg) = va_arg(ap, int);
 		break;
 	default:
@@ -173,7 +173,7 @@ long long arch_syscall(int pid, int sc, ...)
         	debug_getregs(ps.tid, &reg);
 
         	/* read allocated address */
-        	ret = (off_t)R_EAX(reg);
+        	ret = (u64)R_EAX(reg);
 		if (((long long)ret)<0) ret=0;
 	}
 
@@ -194,7 +194,7 @@ long long arch_syscall(int pid, int sc, ...)
 int debug_dr(char *cmd)
 {
 	char *ptr = strchr(cmd, ' ');
-	off_t addr;
+	u64 addr;
 	int reg = -1;
 
 	if (cmd[0]>='0'&&cmd[0]<='3') {
@@ -257,14 +257,14 @@ int arch_is_jump(unsigned char *buf)
 	return 0;
 }
 
-off_t arch_get_entrypoint()
+u64 arch_get_entrypoint()
 {
 	unsigned long long addr;
 	debug_read_at(ps.tid, &addr, 4, 0x8048018);
-	return (off_t)addr;
+	return (u64)addr;
 }
 
-int arch_jmp(off_t ptr)
+int arch_jmp(u64 ptr)
 {
 	regs_t regs;
 	int ret;
@@ -374,11 +374,11 @@ int arch_inject(unsigned char *data, int size)
 	return 0;
 }
 
-off_t arch_pc()
+u64 arch_pc()
 {
 	regs_t regs;
 	debug_getregs(ps.tid, &regs);
-	return (off_t)R_EIP(regs);
+	return (u64)R_EIP(regs);
 }
 
 // XXX make it 
@@ -429,12 +429,12 @@ int arch_stackanal()
 					}
 					name[j]='\0';
 					cons_printf("[%08x] 0x%08x [%s] %s\n",
-						R_ESP(regs), addr, name, flag_name_by_offset((off_t)addr));
+						R_ESP(regs), addr, name, flag_name_by_offset((u64)addr));
 					break;
 				}
 			}
 		}
-		//cons_printf("#%d 0x%08x %s\n", i, addr, flag_name_by_offset((off_t)ptr));
+		//cons_printf("#%d 0x%08x %s\n", i, addr, flag_name_by_offset((u64)ptr));
 		R_ESP(regs) = R_ESP(regs)+4;
 	}
 	return i;
@@ -450,7 +450,7 @@ int arch_stackanal()
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
 	||  !memcmp(buf, "\x89\xe5\x57", 3)) { /* push %ebp ; mov %esp, %ebp */
 		debug_read_at(ps.tid, &ptr, 4, R_ESP(regs));
-		cons_printf("#0 0x%08x %s", (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#0 0x%08x %s", (unsigned long)ptr, flag_name_by_offset((u64)ptr));
 		R_EBP(regs) = ptr;
 	}
 
@@ -458,7 +458,7 @@ int arch_stackanal()
 		debug_read_at(ps.tid, &ebp2, 4, R_EBP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_EBP(regs)+4);
 		if (ptr == 0x0 || R_EBP(regs) == 0x0) break;
-		cons_printf("#%d 0x%08x %s\n", i, (unsigned long)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#%d 0x%08x %s\n", i, (unsigned long)ptr, flag_name_by_offset((u64)ptr));
 		R_EBP(regs) = ebp2;
 #endif
 
@@ -1059,7 +1059,7 @@ int arch_continue()
 	return debug_contp(ps.tid); /* ptrace(PTRACE_CONT, ps.tid, R_EIP(regs), (void *)0); */
 }
 
-void *arch_mmap(int fd, int size, off_t addr) //int *rsize)
+void *arch_mmap(int fd, int size, u64 addr) //int *rsize)
 {
 /*
 #include <sys/types.h>
@@ -1368,7 +1368,7 @@ void *arch_get_sighandler(int signum)
 
 // XXX this code demonstrate how buggy is debug_inject
 #if 0
-void signal_set(int signum, off_t address)
+void signal_set(int signum, u64 address)
 {
 	int i;
 	unsigned char shellcode[18];
@@ -1446,7 +1446,7 @@ int arch_mprotect(char *addr, unsigned int size, int perms)
 #endif
 }
 
-void *arch_set_sighandler(int signum, off_t handler)
+void *arch_set_sighandler(int signum, u64 handler)
 {
 #ifdef __linux__
         regs_t   reg, reg_saved;

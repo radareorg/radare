@@ -169,7 +169,7 @@ const char *config_get(const char *name)
 	return NULL;
 }
 
-off_t config_get_i(const char *name)
+u64 config_get_i(const char *name)
 {
 	struct config_node_t *node;
 
@@ -177,7 +177,7 @@ off_t config_get_i(const char *name)
 	if (node) {
 		if (node->i_value != 0)
 			return node->i_value;
-		return (off_t)get_math(node->value);
+		return (u64)get_math(node->value);
 	}
 
 	return NULL;
@@ -197,7 +197,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		free(node->value);
 		if (node->flags & CN_BOOL) {
 			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
-			node->i_value = (off_t)b;
+			node->i_value = (u64)b;
 			node->value = strdup(b?"true":"false");
 		} else {
 			if (value == NULL) {
@@ -242,7 +242,7 @@ int config_rm(const char *name)
 	return 0;
 }
 
-struct config_node_t *config_set_i(const char *name, const off_t i)
+struct config_node_t *config_set_i(const char *name, const u64 i)
 {
 	char buf[128];
 	struct config_node_t *node;
@@ -260,7 +260,7 @@ struct config_node_t *config_set_i(const char *name, const off_t i)
 		if (config_new.lock) {
 			eprintf("(locked: no new keys can be created)");
 		} else {
-			sprintf(buf, "%d", (unsigned int)i);//OFF_FMTd, (off_t) i);
+			sprintf(buf, "%d", (unsigned int)i);//OFF_FMTd, (u64) i);
 			node = config_node_new(name, buf);
 			node->flags = CN_RW | CN_OFFT;
 			node->i_value = i;
@@ -422,7 +422,7 @@ int config_baddr_callback(void *data)
 	struct config_node_t *node = data;
 
 	if (node && node->i_value)
-		config.baddr = (off_t)node->i_value;
+		config.baddr = (u64)node->i_value;
 	return 1;
 }
 

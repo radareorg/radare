@@ -21,9 +21,9 @@ enum mode_t {
 };
 
 struct zoom_t {
-	off_t size; // full file size
-	off_t from; // start (default is 0)
-	off_t piece; // piece size (config.size/block_size)
+	u64 size; // full file size
+	u64 from; // start (default is 0)
+	u64 piece; // piece size (config.size/block_size)
 	int enabled;
 };
 
@@ -54,11 +54,11 @@ struct config_t {
 	size_t block_size; // size of the data block
 	size_t cursor; // position of the cursor inside the block
 	size_t ocursor; // position of the cursor inside the block
-	off_t size;
-	off_t baddr;
-	off_t seek;
-	off_t last_seek;
-	off_t limit;
+	u64 size;
+	u64 baddr;
+	u64 seek;
+	u64 last_seek;
+	u64 limit;
 	struct zoom_t zoom;
 	struct list_head rdbs; // linked list with all opened rdbs
 };
@@ -88,7 +88,7 @@ struct config_node_t {
 	int hash; /* hash of the name - optimized search */
 	int flags;
 	char *value;
-	off_t i_value;
+	u64 i_value;
 	int (*callback)(void *data);
 	struct list_head list;
 };
@@ -104,10 +104,10 @@ void config_lock(int l);
 int config_bsize_callback(void *data);
 int config_zoombyte_callback(void *data);
 void config_eval(char *str);
-struct config_node_t *config_set_i(const char *name, const off_t i);
+struct config_node_t *config_set_i(const char *name, const u64 i);
 int config_rm(const char *name);
 struct config_node_t *config_set(const char *name, const char *value);
-off_t config_get_i(const char *name);
+u64 config_get_i(const char *name);
 const char *config_get(const char *name);
 void config_list(char *str);
 struct config_node_t *config_node_get(char *name);

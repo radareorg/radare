@@ -62,7 +62,7 @@ void *dealloc_page(void *addr)
 	return 0;
 }
 
-void *mmap_tagged_page(char *file, off_t addr, off_t size)
+void *mmap_tagged_page(char *file, u64 addr, u64 size)
 {
 	int rsize = size;
 	int fd;
@@ -81,7 +81,7 @@ void *mmap_tagged_page(char *file, off_t addr, off_t size)
 
 	addr = (int)arch_mmap(fd, addr, rsize);
 
-	if(addr == (off_t)-1) {
+	if(addr == (u64)-1) {
 		fprintf(stderr, "host_mmap:error\n");
 		close(fd);
 		return 0;
@@ -93,7 +93,7 @@ void *mmap_tagged_page(char *file, off_t addr, off_t size)
 		return 0;
 	}
 
-	// XXX off_t for 64 bits!
+	// XXX u64 for 64 bits!
 	mm->addr = (unsigned long) addr;
 	mm->size = rsize;
 

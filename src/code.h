@@ -41,8 +41,8 @@ struct aop_t {
 #include "list.h"
 
 struct reflines_t {
-	off_t from;
-	off_t to;
+	u64 from;
+	u64 to;
 	int index;
 	struct list_head list;
 };

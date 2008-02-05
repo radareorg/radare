@@ -47,7 +47,7 @@
 #include "readline.h"
 #include "flags.h"
 
-off_t tmpoff = -1;
+u64 tmpoff = -1;
 int std = 0;
 
 void radare_init()
@@ -479,9 +479,9 @@ void radare_move(char *arg)
 {
 	unsigned char *buf;
 	char *str = strchr(arg, ' ');
-	off_t len =  0;
-	off_t pos = -1;
-	off_t src = config.seek;
+	u64 len =  0;
+	u64 pos = -1;
+	u64 src = config.seek;
 
 	if (!config_get("cfg.write")) {
 		eprintf("You are not in read-write mode.\n");
@@ -699,7 +699,7 @@ int radare_open(int rst)
 	struct config_t ocfg;
 	int wm = config_get("cfg.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
-	off_t seek_orig = config.seek;
+	u64 seek_orig = config.seek;
 
 	if (config.file == NULL)
 		return;
@@ -767,8 +767,8 @@ int radare_open(int rst)
 		config.file = strstr(config.file, "://") + 3;
 	}
 
-	config.size = io_lseek(config.fd, (off_t)0, SEEK_END);
-	io_lseek(config.fd, (off_t)seek_orig, SEEK_SET);
+	config.size = io_lseek(config.fd, (u64)0, SEEK_END);
+	io_lseek(config.fd, (u64)seek_orig, SEEK_SET);
 
 	if (config.size == -1 || config.unksize) {
 		config.size  = -1;
@@ -821,7 +821,7 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 
 int radare_go()
 {
-	off_t tmp;
+	u64 tmp;
 	int t = (int)config_get("cfg.verbose");
 
 	radare_controlc_end();

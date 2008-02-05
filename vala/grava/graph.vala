@@ -66,7 +66,7 @@ public class Grava.Graph : GLib.Object
 		int count;
 		Node p;
 		bool ins;
-		int len = nodes.length();
+		uint len = nodes.length();
 		n.fit();
 		
 		//stdout.printf ( "ADD NODE %d, addr: 0x%x\n", nodes.length() , n.baseaddr );
