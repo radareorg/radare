@@ -191,7 +191,7 @@ int winedbg_close(int fd)
 	return close(fd);
 }
 
-off_t winedbg_lseek(int fildes, off_t offset, int whence)
+u64 winedbg_lseek(int fildes, u64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

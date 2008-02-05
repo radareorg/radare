@@ -41,12 +41,16 @@ int posix_close(int fd)
 	return close(fd);
 }
 
-off_t posix_lseek(int fildes, off_t offset, int whence)
+u64 posix_lseek(int fildes, u64 offset, int whence)
 {
-#if __cygwin__ || __linux__
-	return lseek64(fildes,offset,whence);
+#if __WINDOWS__ 
+	return _lseek(fildes,(long)offset,whence);
 #else
-	return lseek(fildes,offset,whence);
+#if __linux__
+	return lseek64(fildes,(off_t)offset,whence);
+#else
+	return lseek(fildes,(off_t)offset,whence);
+#endif
 #endif
 }
 

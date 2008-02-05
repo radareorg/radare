@@ -28,7 +28,7 @@ ARG_WITHOUT USBSNF usb-sniffer disables the build of the libusb sniffer ;
 IFNOT HAVE_USB_H { USBSNF = 0 ; }
 
 (( acr option flags ))
-ARG_WITH DEBUGGER debugger enables the debugging layer ;
+ARG_WITHOUT DEBUGGER debugger disables the debugger layer ;
 ARG_WITH JAVA java builds the java api ;
 ARG_WITH WII wii builds the wii plugin for usbgecko ;
 ARG_ENABLE W32 w32 enables the build of w32 version of the framework (mingw32) ;

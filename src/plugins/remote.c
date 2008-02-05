@@ -284,7 +284,7 @@ int remote_close(int fd)
 	return close(remote_fd);
 }
 
-off_t remote_lseek(int fildes, off_t offset, int whence)
+u64 remote_lseek(int fildes, u64 offset, int whence)
 {
 	uchar tmp[1+4+1];
 	unsigned int size = (int)offset;

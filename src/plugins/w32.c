@@ -26,8 +26,10 @@ static HANDLE hFile = NULL;
 static int w32_fd = -1;
 #define W32_FD 0x29a29a
 
-void DisplayError(char *pszAPI)
+static void DisplayError(char *pszAPI)
 {
+#if 0
+// only for debugging
 	LPVOID lpvMessageBuffer;
 	CHAR szPrintBuffer[512];
 	DWORD nCharsWritten;
@@ -50,6 +52,7 @@ void DisplayError(char *pszAPI)
 
 	LocalFree(lpvMessageBuffer);
 	//ExitProcess(GetLastError());
+#endif
 }
 
 
@@ -123,10 +126,10 @@ int w32_close(int fd)
 	return close(fd);
 }
 
-off_t w32_lseek(int fildes, off_t offset, int whence)
+u64 w32_lseek(int fildes, u64 offset, int whence)
 {
 	int mode = 0;
-	off_t off;
+	u64 off;
 
 	if (fildes == w32_fd) {
 		switch(whence) {

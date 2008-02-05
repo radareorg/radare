@@ -13,9 +13,10 @@ void my_hack(char *input)
 
 	/* radare_cmd call example */
 	r = radare_plugin.resolve("radare_cmd");
-	if (r != NULL)
+	if (r != NULL) {
+		r("b 20", 0);
 		r("x", 0);
-	else	printf("Cannot resolve 'radare_cmd' symbol\n");
+	} else	printf("Cannot resolve 'radare_cmd' symbol\n");
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

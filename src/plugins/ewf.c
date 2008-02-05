@@ -59,7 +59,7 @@ int ewf_open(const char *pathname, int flags, mode_t mode)
 
 	if (!memcmp(pathname, "els://", 6)) {
 		FILE *fd = fopen(pathname+6, "r");
-		off_t len;
+		u64 len;
 		char *buf;
 
 		if (fd == NULL)
@@ -136,9 +136,9 @@ int ewf_close(int fd)
 	return -1;
 }
 
-off_t ewf_lseek(int fildes, off_t offset, int whence)
+u64 ewf_lseek(int fildes, u64 offset, int whence)
 {
-	off_t off;
+	u64 off;
 
 	if (fildes == ewf_fd) {
 		switch(whence) {

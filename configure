@@ -18,7 +18,7 @@ control_c() {
 trap control_c 2
 READLINE=1
 USBSNF=1
-DEBUGGER=0
+DEBUGGER=1
 JAVA=0
 WII=0
 W32=0
@@ -145,7 +145,7 @@ EOF2
 printf "\nOptional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
-  --with-debugger        enables the debugging layer 
+  --without-debugger     disables the debugger layer 
   --with-java            builds the java api 
   --with-wii             builds the wii plugin for usbgecko 
   --enable-w32           enables the build of w32 version of the framework (mingw32) 
@@ -199,7 +199,7 @@ echo "LANGS:     c perl python"
 echo "REQUIRED:  libdl"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
-echo "FLAGS:     --without-readline --without-usb-sniffer --with-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-perl --with-python --without-gui"
+echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-perl --with-python --without-gui"
 	exit 0
 	;;
 "--cache-file") 
@@ -243,7 +243,7 @@ echo "FLAGS:     --without-readline --without-usb-sniffer --with-debugger --with
 
 "--without-readline") READLINE="0"; ;;
 "--without-usb-sniffer") USBSNF="0"; ;;
-"--with-debugger") DEBUGGER="1"; ;;
+"--without-debugger") DEBUGGER="0"; ;;
 "--with-java") JAVA="1"; ;;
 "--with-wii") WII="1"; ;;
 "--enable-w32") W32="1"; ;;
