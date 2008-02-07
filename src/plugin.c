@@ -66,6 +66,9 @@ plugin_t *plugin_registry(const char *file)
 	plugin_t *p;
 	int *ip;
 	char buf[4096];
+#if __WINDOWS__
+	HMODULE h;
+#endif
 
 	if (strlen(file)>254) {
 		eprintf("Invalid plugin name\n");
@@ -96,15 +99,23 @@ plugin_t *plugin_registry(const char *file)
 	if (  (ptr = strstr(buf,".so"))
 	   || (ptr = strstr(buf,".dll")))
 		ptr[0]='\0';
-	// XXX .dll on w32
+
 #if __WINDOWS__
 	strcat(buf, ".dll");
+	h = LoadLibrary(buf);
+	if (h == NULL) {
+		eprintf("Cannot open library (%s)\n", buf);
+		return NULL;
+	}
+
+	p = GetProcAddress(h, "radare_plugin_type");
+	if (p == NULL) {
+		eprintf("cannot find 'radare_plugin_type' symbol.\n(%s)\n", dlerror());
+		return NULL;
+	}
 #else
 	// TODO: support dynlib and so
 	strcat(buf, ".so");
-#endif
-
-#if __UNIX__
 	/* open library */
 	hd = (void *)dlopen(buf, RTLD_NOW); //LAZY);
 	if (hd == NULL) {
@@ -119,14 +130,23 @@ plugin_t *plugin_registry(const char *file)
 		dlclose(hd);
 		return NULL;
 	}
+#endif
 	ip = p;
 	switch(((int)(*ip))) {
 	case PLUGIN_TYPE_IO:
 		p = (plugin_t *)malloc(sizeof(plugin_t));
+		#if __WINDOWS__
+		p = GetProcAddress(h, "radare_plugin");
+		#else
 		p = dlsym(hd, "radare_plugin");
+		#endif
 		break;
 	case PLUGIN_TYPE_HACK: {
+		#if __WINDOWS__
+		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
+		#else
 		struct plugin_hack_t *pl = dlsym(hd, "radare_plugin");
+		#endif
 		struct hack_t *hack;
 		if (pl == NULL) {
 			eprintf("error: Cannot find symbol 'radare_plugin' in %s\n", buf);
@@ -145,59 +165,16 @@ plugin_t *plugin_registry(const char *file)
 		eprintf("Unknown plugin type '%d'\n", (int)p);
 		return NULL;
 	}
-#endif
-// TODO: avoid dup
-#if __WINDOWS__
-	{
-		HMODULE h = LoadLibrary(buf);
-		if (h == NULL) {
-			eprintf("Cannot open library (%s)\n", buf);
-			return NULL;
-		}
-		p = GetProcAddress(h, "radare_plugin_type");
-		if (p == NULL) {
-			eprintf("cannot find 'radare_plugin_type' symbol.\n");
-			// XXX close library?
-			return NULL;
-		}
-		ip = p;
-		switch(((int)(*ip))) {
-		case PLUGIN_TYPE_IO:
-			p = (plugin_t *)malloc(sizeof(plugin_t));
-			p = GetProcAddress(h, "radare_plugin");
-			break;
-		case PLUGIN_TYPE_HACK: {
-			struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
-			struct hack_t *hack;
-			if (pl == NULL) {
-				eprintf("error: Cannot find symbol 'radare_plugin' in %s\n", buf);
-				return NULL;
-			}
-			hack = radare_hack_new(pl->name, pl->desc, pl->callback);
-			list_add_tail(&(hack->list), &(hacks));
-			pl->resolve = (void *)&radare_resolve;
-			pl->config = &config;
-#if DEBUGGER
-			pl->ps = &ps;
-#endif
-			return NULL;
-			} break;
-		default:
-			eprintf("Unknown plugin type '%d'\n", (int)p);
-			return NULL;
-		}
-	}
-	return NULL;
-#endif
 
 	sprintf(buf, "%s_plugin", file);
 	plugins[i] = *p;
-	//dlclose(hd); // TODO XXX NOT HERE! MUST BE STORED IN posix_plugin structure
 	plugins[i+1] = posix_plugin;
 	printf("plugin registered??\n");
 
 	return p;
 }
+
+// TODO: plugin_close() ?
 
 int plugin_list()
 {

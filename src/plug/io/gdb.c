@@ -18,8 +18,8 @@
  *
  */
 
-#include "../plugin.h"
-#include "../socket.h"
+#include <plugin.h>
+#include <socket.h>
 //#include "../dbg/debug.h"
 #include "gdb.h"
 

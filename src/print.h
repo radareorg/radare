@@ -2,6 +2,7 @@
 #define _INCLUDE_PRINT_H_
 
 #define CLRSCR() cons_strcat("\e[2J\e[0;0H");
+char *cons_get_buffer();
 
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);

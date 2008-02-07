@@ -132,12 +132,14 @@ int radare_cmd_raw(char *tmp, int log)
 
 	if (tmp == NULL || tmp[0]=='\0')
 		return 0;
+
 	tmp = strclean(tmp);
 
 	if (strchr(tmp,'\n')) {
 		eprintf("Multiline command not yet supported\n");
 		return 0;
 	}
+
 	oinput = strdup(tmp);
 	input = oinput;
 
@@ -154,46 +156,52 @@ int radare_cmd_raw(char *tmp, int log)
 		if (next) next[0]='\0';
 	}
 
-	/* interpret the value of an environment variable */
-	if ((input[0]=='.') && (input[1]=='%')) {
-		char *cmd = getenv(input+2);
-		if (cmd)
-			radare_cmd(cmd, 0);
-		free(oinput);
-		return 1;
-	}
-
-	// TODO: move to radare_interpret_shell or so
 	/* interpret stdout of a process executed */
-	if ((input[0]=='.') && (input[1]!=' ')) {
-		pipe_stdout_to_tmp_file(file, input+1);
-		f = open(file, O_RDONLY);
-		if (f == -1) {
-			eprintf("radare_cmd_raw: Cannot open.\n");
+	if (input[0]=='.')
+	{
+		switch(input[1]) {
+		case '%': {
+			char *cmd = getenv(input+2);
+			if (cmd)
+				radare_cmd(cmd, 0);
 			free(oinput);
-			return 0;
-		}
-		for(;!config.interrupted;) {
-			int v = config_get("cfg.verbose");
-			str[0]='\0';
-			for(i=0;i<1000;i++) {
-				if (read(f, &str[i], 1)<=0) {
-					i = -1;
-					break;
-				}
-				if (str[i]=='\n') {
-					str[i]='\0';
-					break;
-				}
+			return 1;
 			}
-			if (i==-1) break;
-			if (str[0])
-				radare_cmd(str, 0);
-			config_set_i("cfg.verbose", 1);
-		}
-		close(f);
+		case ' ':
+			cons_printf("oops\n");
+			break;
+		default:
+			pipe_stdout_to_tmp_file(file, input+1);
+			f = open(file, O_RDONLY);
+			if (f == -1) {
+				eprintf("radare_cmd_raw: Cannot open.\n");
+				free(oinput);
+				return 0;
+			}
+			for(;!config.interrupted;) {
+				int v = config_get("cfg.verbose");
+				str[0]='\0';
+				for(i=0;i<1000;i++) {
+					if (read(f, &str[i], 1)<=0) {
+						i = -1;
+						break;
+					}
+					if (str[i]=='\n') {
+						str[i]='\0';
+						break;
+					}
+				}
+				if (i==-1) break;
+				if (str[0])
+					radare_cmd(str, 0);
+				config_set_i("cfg.verbose", 1);
+			}
+			close(f);
 
-		unlink(file);
+			unlink(file);
+			break;
+		}
+	/* other commands */
 	} else {
 		/* pipe */
 		piped = strchr(input, '|');
@@ -315,6 +323,16 @@ int radare_cmd_raw(char *tmp, int log)
 
 	free(oinput);
 	return 0; /* error */
+}
+
+char *radare_cmd_str(const char *cmd)
+{
+	char *buf;
+	cons_flush();
+	radare_cmd(cmd, 0);
+	buf = strdup(cons_get_buffer);
+	cons_reset();
+	return buf;
 }
 
 int radare_cmd(char *tmp, int log)
@@ -948,6 +966,7 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 
 #define BLOCK 1024
 
+// innecessary
 char *pipe_command_to_string(char *cmd)
 {
 	char *buf = NULL;

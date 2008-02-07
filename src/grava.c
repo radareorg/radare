@@ -23,9 +23,9 @@
 #include "node.h"
 #include "edge.h"
 
-static GravaWidget *grava;
-static GtkWindow *w;
-static GtkWidget *entry;
+static GravaWidget *grava=NULL;
+static GtkWindow *w=NULL;
+static GtkWidget *entry=NULL;
 
 void grava_program_graph(struct program_t *prg);
 
@@ -41,13 +41,24 @@ void core_load_graph_at(void *widget, char *str)
 	grava_program_graph(prg);
 }
 
+static int new_window = 0;
+
 static void core_load_graph_entry(void *widget, GtkWidget *obj)
 {
 	const char *str = gtk_entry_get_text(obj);
 	struct program_t *prg;
 	u64 off = get_offset(str);
 
-	eprintf("Loading graph... (%s)\n", str);
+	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
+	if (off == 0 && str[0]!='0') {
+		/* run command */
+		radare_cmd(str, 0);
+		if (config.debug) {
+			radare_cmd(".!regs*", 0);
+			//radare_cmd("s eip", 0);
+		}
+		off = config.seek;
+	}
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
@@ -85,36 +96,43 @@ void grava_program_graph(struct program_t *prg)
 	GtkWidget *vbox, *hbox, *go;
 	GravaNode *node, *node2;
 	GravaEdge *edge;
+
+	new_window = config_get("graph.window") || w == NULL;
+
 	/* create widget */
 	if (!gtk_is_init)
-		gtk_init(NULL,NULL);
+		gtk_init(NULL, NULL);
 
-	/* add window */
-	w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	string_flag_offset(name, config.seek);
-	sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
-	gtk_window_set_title(GTK_WINDOW(w), title);
-	g_signal_connect (w, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+	if (new_window) {
+		grava  = grava_widget_new();
+		g_signal_connect_object (grava, "load-graph-at", ((GCallback) core_load_graph_at), grava, 0);
 
-	/* TODO: add control widgets */
+		/* add window */
+		w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		string_flag_offset(name, config.seek);
+		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
+		gtk_window_set_title(GTK_WINDOW(w), title);
+		g_signal_connect (w, "destroy", G_CALLBACK (gtk_main_quit), NULL);
 
-	/* add grava widget */
-	grava  = grava_widget_new();
-	g_signal_connect_object (grava, "load-graph-at", ((GCallback) core_load_graph_at), grava, 0);
-	vbox = gtk_vbox_new(FALSE, 1);
+		/* TODO: add more control widgets */
+	
+		vbox = gtk_vbox_new(FALSE, 1);
+		entry = gtk_entry_new();
+		hbox = gtk_hbox_new(FALSE, 2);
+		go = gtk_button_new_with_label("Go");
+		g_signal_connect_object(entry,"activate",((GCallback) core_load_graph_entry), entry, 0); 
+		g_signal_connect_object(go,"activate",((GCallback) core_load_graph_entry), entry, 0); 
+		g_signal_connect_object(go,"button-release-event",((GCallback) core_load_graph_entry2), entry, 0); 
+		gtk_container_add(GTK_CONTAINER(hbox), entry);
+		gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(go), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 2);
 
-	entry = gtk_entry_new();
-	hbox = gtk_hbox_new(FALSE, 2);
-	go = gtk_button_new_with_label("Go");
-	g_signal_connect_object(entry,"activate",((GCallback) core_load_graph_entry), entry, 0); 
-	g_signal_connect_object(go,"activate",((GCallback) core_load_graph_entry), entry, 0); 
-	g_signal_connect_object(go,"button-release-event",((GCallback) core_load_graph_entry2), entry, 0); 
-	gtk_container_add(GTK_CONTAINER(hbox), entry);
-	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(go), FALSE, FALSE, 2);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 2);
+		gtk_container_add(GTK_CONTAINER(w), vbox);
+		gtk_container_add(GTK_CONTAINER(vbox), grava_widget_get_widget(grava));
 
-	gtk_container_add(GTK_CONTAINER(w), vbox);
-	gtk_container_add(GTK_CONTAINER(vbox), grava_widget_get_widget(grava));
+	} else {
+		grava_graph_reset(grava->graph);
+	}
 
 	/* analyze code */
 	config_set("asm.offset", "false");
@@ -122,8 +140,9 @@ void grava_program_graph(struct program_t *prg)
 		config_set("asm.offset", "true");
 	else 	config_set("asm.offset", "false");
 	config_set("asm.bytes", "false");
+	config_set("asm.trace", "false");
 	config_set("scr.color", "false");
-	config_set("asm.lines", "false");
+//	config_set("asm.lines", "false");
 	config.color = 0;
 
 	/* add nodes */
@@ -144,6 +163,9 @@ void grava_program_graph(struct program_t *prg)
 			grava_node_set(node, "color", "red");
 		}
 
+		// traced nodes are turquoise
+		if (trace_times(b0->addr)>0)
+			grava_node_set(node, "bgcolor", "turqoise");
 
 		/* add call references for this node */
 		// XXX avoid dupped calls
@@ -160,6 +182,7 @@ void grava_program_graph(struct program_t *prg)
 		config.seek = b0->addr;
 		radare_read(0);
 		ptr =  pipe_command_to_string(cmd);
+		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
 		grava_node_set(node, "body", ptr);
 		printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
 		free(ptr);
@@ -211,15 +234,21 @@ void grava_program_graph(struct program_t *prg)
 		}
 	}
 	program_free(prg);
+
 	grava_graph_update(grava->graph);
-	gtk_widget_show_all(GTK_WIDGET(w));
-	gtk_window_resize(GTK_WINDOW(w), 600,400);
-	gtk_main();
+
+	if (new_window) {
+		gtk_widget_show_all(GTK_WIDGET(w));
+		gtk_window_resize(GTK_WINDOW(w), 600,400);
+		gtk_main();
+	}
+	grava_widget_draw(grava);
 
 	// oops. tihs is not for real!
 	config_set("cfg.verbose", "true");
 	config_set("scr.color", "true");
 	config_set("asm.offset", "true");
+	config_set("asm.trace", "true");
 	config_set("asm.bytes", "true");
 	config_set("asm.lines", "true");
 	cons_set_fd(1);

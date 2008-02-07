@@ -18,9 +18,9 @@
  *
  */
 
-#include "../main.h"
-#include "../plugin.h"
-#include "../socket.h"
+#include <radare.h>
+#include <plugin.h>
+#include <socket.h>
 
 static int haret_fd = -1;
 

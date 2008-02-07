@@ -18,8 +18,8 @@
  *
  */
 
-#include "../main.h"
-#include "../plugin.h"
+#include <main.h>
+#include <plugin.h>
 
 ssize_t posix_write(int fd, const void *buf, size_t count)
 {

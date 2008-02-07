@@ -863,7 +863,7 @@ void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode)
 	int bs;
 
 	if (radare_read(0) < 0) {
-		eprintf("Error reading: %s\n", strerror(errno));
+		//eprintf("Error reading: %s\n", strerror(errno));
 		return;
 	}
 

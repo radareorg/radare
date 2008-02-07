@@ -353,14 +353,19 @@ public class Grava.Widget : GLib.Object {
 
 	private bool expose (DrawingArea da, Gdk.Event ev)
 	{
+		draw();
+
+//		da.queue_draw_area(0,0,100,100);
+		return true;
+	}
+
+	public void draw()
+	{
 		Context ctx = Gdk.cairo_create(da.window);
 		if (graph.zoom < 0.2)
 			graph.zoom = 0.2;
 
 		graph.draw(ctx);
-
-//		da.queue_draw_area(0,0,100,100);
-		return true;
 	}
 
 /*

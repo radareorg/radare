@@ -18,9 +18,9 @@
  *
  */
 
-#include "../main.h"
+#include <main.h>
+#include <plugin.h>
 #include <libewf.h>
-#include "../plugin.h"
 
 #define EWF_FD 0x19b19b
 static int ewf_fd = -1;

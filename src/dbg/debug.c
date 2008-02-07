@@ -341,7 +341,7 @@ int debug_contu()
 	ps.verbose = 1;
 
 	if (config_get("trace.log"))
-		trace_add(arch_pc());
+		trace_add((u64)arch_pc());
 
 	return 0;	
 }
@@ -898,7 +898,7 @@ int debug_stepu()
 	} while (!config.interrupted && !is_usercode(pc) );
 
 	if (config_get("trace.log"))
-		trace_add(pc);
+		trace_add((u64)pc);
 	radare_controlc_end();
 //	cons_printf("%d instructions executed\n", i);
 
@@ -916,7 +916,7 @@ int debug_stepo()
 
 	if ((skip = arch_is_stepoverable(cmd))) {
 		if (config_get("trace.log"))
-			trace_add(pc);
+			trace_add((u64)pc);
 
 		///  XXX  BP_SOFT with restore_bp doesnt restores EIP correctly
 		bp_pos = debug_set_bp(NULL, pc+skip, BP_HARD);
@@ -930,7 +930,7 @@ int debug_stepo()
 		debug_step(1);
 
 	if (config_get("trace.log"))
-		trace_add(arch_pc());
+		trace_add((u64)arch_pc());
 
 	return 0;
 }
@@ -966,7 +966,7 @@ int debug_step(int times)
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			pc = arch_pc();
 			if (config_get("trace.log"))
-				trace_add(arch_pc());
+				trace_add((u64)arch_pc());
 
 			if (pc == old_pc) {
 				debug_read_at(ps.tid, opcode, 4, (off_t)pc);
@@ -1029,7 +1029,7 @@ int debug_step(int times)
 			old_pc = pc;
 		}
 	}
-	trace_add(pc);
+	trace_add((u64)pc);
 	ps.steps++;
 
 	return (WS(event) != BP_EVENT);

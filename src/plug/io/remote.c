@@ -18,9 +18,9 @@
  *
  */
 
-#include "../plugin.h"
-#include "../utils.h"
-#include "../socket.h"
+#include <plugin.h>
+#include <utils.h>
+#include <socket.h>
 #if __UNIX__
 #include <netinet/in.h>
 #include <signal.h>

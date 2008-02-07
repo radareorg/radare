@@ -18,9 +18,9 @@
  *
  */
 
-#include "../main.h"
-#include "../plugin.h"
-#include "../socket.h"
+#include <radare.h>
+#include <plugin.h>
+#include <socket.h>
 
 // TODO handle SIGINT to stop socket blocks
 

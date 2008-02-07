@@ -23,6 +23,7 @@ public class Grava.DefaultLayout : Grava.Layout
 	public double y_offset = 100;
 	public double x_offset = 50;
 	private weak Graph graph;
+	private static bool d = false; // debug output
 
 	private void treenodes(weak Node n)
 	{
@@ -79,11 +80,11 @@ public class Grava.DefaultLayout : Grava.Layout
 			node.fit();
 			node.y = last_y ;
 			last_y = node.y + node.h + 50 ;
-			stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
+			if(d)stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
 		}
 		
-		// Per cada node. Segueixo la condició certa, tots els nodes que estiguin
-		// entre el node que estic mirant i el de la condicio certa els desplaço a la dreta.
+		// Per cada node. Segueixo la condiciÃ³ certa, tots els nodes que estiguin
+		// entre el node que estic mirant i el de la condicio certa els desplaÃ§o a la dreta.
 		// Tambe  apropo  el node desti a l'origen.
 		//
 		// Entre el node que miro i el desti vol dir que la x sigui la mateixa.
@@ -98,7 +99,7 @@ public class Grava.DefaultLayout : Grava.Layout
 				if (edge.orig == n ) {
 					if (edge.jmpcnd == true )
 					{
-						stdout.printf ( "0x%x ----> 0x%x\n",edge.orig.baseaddr ,edge.dest.baseaddr );
+						if(d)stdout.printf ( "0x%x ----> 0x%x\n",edge.orig.baseaddr ,edge.dest.baseaddr );
 						destn = edge.dest;
 						found = true;
 						break;
@@ -127,12 +128,12 @@ public class Grava.DefaultLayout : Grava.Layout
 						maxw = p.w;
 					}	
 				}
-				/// Desplaço
+				/// DesplaÃ§o
 				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) 
 				{
 					p = graph.nodes.nth_data ( k );
 					
-					stdout.printf ( "Displacing 0x%x\n", p.baseaddr );
+					if(d)stdout.printf ( "Displacing 0x%x\n", p.baseaddr );
 				
 					// El node estava entre el node origen i el desti
 					if ( p.x == n.x )
@@ -143,7 +144,7 @@ public class Grava.DefaultLayout : Grava.Layout
 					/// Es ja el node desti.
 					if ( p == destn ) 
 					{
-						stdout.printf ( "AT 0x%x\n", p.baseaddr );
+						if(d)stdout.printf ( "AT 0x%x\n", p.baseaddr );
 						destn.x = n.x; 
 						destn.y = n.y + n.h + 50;
 						break;
@@ -158,6 +159,7 @@ public class Grava.DefaultLayout : Grava.Layout
 
 		return;
 
+/*
 		walkChild(graph.selected, 5);
 		//walkChild(graph.selected); //
 		foreach(weak Node node in graph.nodes) {
@@ -212,10 +214,10 @@ public class Grava.DefaultLayout : Grava.Layout
 				}
 			}
 		}
-/*
 primer incremento les x mentres vaig guardant el totalx
 guardo en una llista enlla,cada tots els nodos q he mogut
 els recorro again i els delpla,co a lesqerra lo que toquin
 */
 	}
 }
+

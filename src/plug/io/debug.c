@@ -18,8 +18,8 @@
  *
  */
 
-#include "../dbg/libps2fd.h"
-#include "../plugin.h"
+#include <plugin.h>
+#include <dbg/libps2fd.h>
 
 struct debug_t ps;
 

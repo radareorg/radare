@@ -5,16 +5,17 @@ OBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
 OBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o project.o hack.o
 OBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
 
-# plugins
+# plug/io
 
-OBJ+=plugins/haret.o plugins/winedbg.o plugins/gxemul.o plugins/remote.o
-OBJ+=plugins/gdb.o plugins/posix.o
+OBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
+OBJ+=plug/io/gdb.o plug/io/posix.o
+CFLAGS+=-I.
 
 # hand made maemo stuff
 
 W32LIBS=
 ##W32##
-OBJ+=plugins/w32.o w32utils.o
+OBJ+=plug/io/w32.o w32utils.o
 W32LIBS=-lwsock32
 ##W32##
 
@@ -41,13 +42,13 @@ OBJ2+=arch/x86/udis86/*.o
 
 ##DEBUGGER##
 include dbg/objects.mk
-OBJ+=plugins/debug.o
+OBJ+=plug/io/debug.o
 OBJ2+=${psOBJ} 
 TARGETS+=libdbg 
 ##DEBUGGER##
 
 ##WII##
-OBJ+=plugins/wii/wii.o
+OBJ+=plug/io/wii/wii.o
 ##WII##
 
 ##SYSPROXY##

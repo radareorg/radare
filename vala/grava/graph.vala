@@ -37,6 +37,12 @@ public class Grava.Graph : GLib.Object
 		layout = new DefaultLayout();
 	}
 
+	public void reset() {
+		nodes  = new SList<Node>();
+		edges  = new SList<Edge>();
+		layout = new DefaultLayout();
+	}
+
 	public void select_next()
 	{
 		foreach(weak Node node in nodes) {
