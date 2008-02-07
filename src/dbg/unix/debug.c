@@ -55,7 +55,7 @@
 static int stepping_in_progress = 0;
 
 
-#if __NetBSD__ || __OpenBSD__ || __Darwin__ || __MacOSX__
+#if __NetBSD__ || __OpenBSD__ || __APPLE__
 
 #include <sys/param.h>
 #include <sys/resource.h>

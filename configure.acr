@@ -8,8 +8,22 @@ CHECK_ENDIAN
 USE_DL
 
 SOLARIS = 0 ;
+DARWIN = 0 ;
 IFEQ HOST_OS sunos ; { SOLARIS = 1 ; }
 IFEQ HOST_OS solaris ; { SOLARIS = 1 ; }
+IFEQ HOST_OS darwin ; { 
+	DARWIN = 1 ; 
+	SHARED_EXT = dylib ;
+	SHARED_CFLAGS = -dynamiclib ;
+}{
+	SHARED_EXT = so ;
+	SHARED_CFLAGS = -fPIC -shared ;
+}
+IFEQ HOST_OS mingw ; { WINDOWS = 1 ; }
+IFEQ WINDOWS 1 ; {
+	SHARED_EXT = dll ;
+}
+
 
 (( Check for the GNU readline library ))
 ARG_WITHOUT READLINE readline disables the readline support ;

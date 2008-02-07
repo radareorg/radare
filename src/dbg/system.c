@@ -85,7 +85,7 @@ int help_message()
 	printf("  contuh          continue until here (loop analysis)\n");
 	printf("  contsc          continue until next syscall\n");
 	printf("  contfork        continue until fork\n");
-#if __NetBSD__ || __OpenBSD__ || __Darwin__ || __MacOSX__
+#if __NetBSD__ || __OpenBSD__ || __APPLE__
 	printf("  ktrace          follow app until ktrace event occurs\n");
 #endif
 	TITLE
@@ -179,7 +179,7 @@ static struct commads_t {
 	{ "oregs", CB_ASTERISK, &debug_oregisters },
 	{ "dregs", CB_ASTERISK, &debug_dregisters },
 	{ "fpregs", CB_NORMAL, &debug_fpregisters },
-#if __NetBSD__ || __OpenBSD__ || __Darwin__ || __MacOSX__
+#if __NetBSD__ || __OpenBSD__ || __APPLE__
 	{ "ktrace", CB_NOARGS, &debug_ktrace },
 #endif
 #if __i386__

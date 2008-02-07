@@ -104,6 +104,9 @@ typedef struct {
 
 #elif __WINDOWS__
   #define regs_t CONTEXTO
+#elif __APPLE__
+#include <mach/i386/_structs.h>
+#define regs_t _STRUCT_X86_THREAD_STATE32
 #else
   /* bsd 32 bits */
   #include <machine/reg.h>
@@ -154,7 +157,7 @@ typedef struct {
 #endif
 #endif
 
-#if __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __DARWIN__
+#if __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __APPLE__
 #define PTRACE_KILL PT_KILL
 #define PTRACE_DETACH PT_DETACH
 #define PTRACE_TRACEME PT_TRACE_ME

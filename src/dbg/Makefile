@@ -3,14 +3,14 @@ CFLAGS+=-I ../arch/
 include objects.mk
 FOO=$(subst dbg/,,${psOBJ})
 OBJ+=${FOO}
-LIB=ptrace.so
+LIB=ptrace.${SHARED_EXT}
 #LIBPRE=libps2fd.so
 
 #all: ptrace.o ${OBJ}
 #	${CC} ${LDFLAGS} ptrace.o ${OBJ} -shared -o ${LIB}
 
 all: ${OBJ}
-	#${CC} ${LDFLAGS} ${OBJ} -shared -o ${LIB}
+	#${CC} ${LDFLAGS} ${OBJ} ${SHARED_CFLAGS} -o ${LIB}
 
 # why?
 #  ..I should rewrite this stuff..
