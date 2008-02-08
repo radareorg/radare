@@ -124,6 +124,6 @@ struct event_t {
 	int ignored;
 };
 
-struct event_t events[];
+extern struct event_t events[];
 
 #endif

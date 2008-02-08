@@ -103,7 +103,7 @@ int flags_between(u64 from, u64 to)
 {
 	int i,n=0;
 	for(i=0;i<nflags;i++) {
-		if (flags[i]->offset > from && flags[i]->offset < to)
+		if (flags[i]->offset >= from && flags[i]->offset <= to)
 			n++;
 	}
 	return n;
@@ -152,7 +152,7 @@ char *flag_name_by_offset(u64 offset)
 	return nullstr;
 }
 
-int string_flag_offset(char *buf, unsigned long long seek)
+int string_flag_offset(char *buf, u64 seek)
 {
 	unsigned int i;
 	int delta = (int)config_get_i("cfg.delta");

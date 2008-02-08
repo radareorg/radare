@@ -20,7 +20,6 @@ using GLib;
 using Cairo;
 using Gtk;
 using Gdk;
-using Grava;
 
 public class Grava.Widget : GLib.Object {
 	const int SIZE = 30;
@@ -32,6 +31,7 @@ public class Grava.Widget : GLib.Object {
 	Menu menu;
 
 	public signal void load_graph_at(string addr);
+	public signal void bp_at(string addr);
 //	public signal void focus_at(string addr);
 
 	public Gtk.Widget get_widget()
@@ -245,7 +245,7 @@ public class Grava.Widget : GLib.Object {
 		//imi = new ImageMenuItem.with_label("Focus");
 		imi = new ImageMenuItem.from_stock("gtk-zoom-in", null);
 		imi.activate += imi => {
-			stdout.printf("Focus!\n");
+			stdout.printf("go in!\n");
 			Widget.focus_at_label(Graph.selected.get("label"));
 			//MenuItem mi = menu.get_active();
 			//load_graph_at(((Label)imi.child).get_text()); //"0x400");
@@ -255,7 +255,8 @@ public class Grava.Widget : GLib.Object {
 
 		imi = new ImageMenuItem.with_label("Breakpoint here");
 		imi.activate += imi => {
-			stdout.printf("Focus!\n");
+			stdout.printf("add bp!\n");
+			Widget.bp_at(Graph.selected.get("label"));
 		};
 		menu.append(imi);
 
@@ -377,6 +378,10 @@ public class Grava.Widget : GLib.Object {
         [Import]
         [CCode (cname="core_load_graph_at_label")]
         public static void focus_at_label(string addr);
+
+        [Import]
+        [CCode (cname="mygrava_bp_at")]
+        public static void bp_at(string addr);
 /*
         [Import]
         [CCode (cname="core_load_graph_at")]

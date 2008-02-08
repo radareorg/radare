@@ -71,7 +71,7 @@ public class Grava.Renderer
 				ctx.set_source_rgba (0.0, 0.0, 0.0, 0.7);
 			else
 			if (color == "white")
-				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.8);
 			else
 			if (color == "green")
 				ctx.set_source_rgba (0.1, 0.7, 0.1, 0.8);
@@ -86,11 +86,14 @@ public class Grava.Renderer
 				ctx.set_source_rgba (0.2, 0.5, 0.9, 0.8);
 			else
 			if (color == "yellow")
-				ctx.set_source_rgba (0.7, 0.7, 0.0, 0.8);
+				ctx.set_source_rgba (0.9, 0.9, 0.0, 0.6);
+			else
+			if (color == "gray")
+				ctx.set_source_rgba (0.8, 0.8, 0.8, 0.8);
 			else
 				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
 		} else
-			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.6);
 
 		return (color!=null);
 	}
@@ -128,12 +131,12 @@ public class Grava.Renderer
 		if (node.calls.length() >0) 
 			ctx.set_source_rgba (0.3, 0.3, 1, 0.7);
 		else
-			ctx.set_source_rgba (0.8,0.8,0.8, 0.7);
+			ctx.set_source_rgba (0.8,0.8,0.8, 0.8);
 		square (ctx, node.w, 15);
 		ctx.fill ();
 		line(ctx, 0, 15, node.w, 0);
 
-		ctx.select_font_face("Courier", 
+		ctx.select_font_face("Verdana", //Courier", 
 			FontSlant.NORMAL,
 			FontWeight.BOLD);
 		ctx.set_font_size(10);

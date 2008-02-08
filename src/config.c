@@ -577,7 +577,6 @@ void config_init()
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.offset", "true");
 	config_set("graph.render", "cairo"); // aalib/ncurses/text
-	config_set("graph.window", "false");
 
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.size", config.size);

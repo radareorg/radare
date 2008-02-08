@@ -23,31 +23,78 @@
 #include "node.h"
 #include "edge.h"
 
-static GravaWidget *grava=NULL;
-static GtkWindow *w=NULL;
-static GtkWidget *entry=NULL;
+struct mygrava_window {
+	GtkWidget *vbox, *hbox;
+	GtkWindow *w;
+	GtkWidget *entry;
+	GtkWidget *back;
+	GtkWidget *go;
+	GtkWidget *bnew;
+	GravaWidget *grava;
+};
 
-void grava_program_graph(struct program_t *prg);
+void grava_program_graph(struct program_t *prg, struct mygrava_window *);
+static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 
-void core_load_graph_at(void *widget, char *str)
+void core_load_graph_at(GravaWidget *widget, char *str)
 {
 	struct program_t *prg;
 	u64 off = get_offset(str);
+
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
-	grava_program_graph(prg);
+	grava_program_graph(prg, NULL);
+}
+
+void mygrava_bp_at(GravaWidget *widget, char *str)
+{
+	struct program_t *prg;
+	char buf[1024];
+	u64 off = get_offset(str);
+	sprintf(buf, "!bp 0x%08llx", off);
+	radare_cmd(buf, 0);
+	eprintf("Breakpoint at (%08llx) added.\n", off);
 }
 
 static int new_window = 0;
 
-static void core_load_graph_entry(void *widget, GtkWidget *obj)
+static void mygrava_new_window(void *widget, gpointer obj)//GtkWidget *obj)
 {
-	const char *str = gtk_entry_get_text(obj);
+	new_window = 1;
+printf("mygrava_new -> %08x\n", obj);
+	core_load_graph_entry(widget,obj);
+	new_window = 0;
+}
+static void mygrava_new_window2(void *widget, void *foo, void *obj) //GtkWidget *obj)
+{ mygrava_new_window(widget, obj); }
+
+static void mygrava_back(void *widget, GtkWidget *obj)
+{
+	radare_cmd("undo", 0);
+	core_load_graph_entry(widget,obj);
+}
+static void mygrava_back2(void *widget, void *foo, void *obj) //GtkWidget *obj)
+{ mygrava_back(widget, obj); }
+
+static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
+{
+	const char *str;
 	struct program_t *prg;
-	u64 off = get_offset(str);
+	struct mygrava_window *w = obj;
+	u64 off;
+
+eprintf("load_graph_at %08x\n", w);
+	if (w)
+		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
+	else {
+		eprintf("NullObj\n");
+		return;
+	}
+
+	off = get_offset(str);
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -63,8 +110,10 @@ static void core_load_graph_entry(void *widget, GtkWidget *obj)
 	//gtk_widget_destroy(w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
-	grava_program_graph(prg);
+
+	grava_program_graph(prg, w);
 }
+
 static void core_load_graph_entry2(void *widget, void *foo, GtkWidget *obj)
 { core_load_graph_entry(widget, obj); }
 
@@ -79,8 +128,9 @@ void core_load_graph_at_label(const char *str)
 	core_load_graph_at(NULL, buf);
 }
 
+int first = 1;
 
-void grava_program_graph(struct program_t *prg)
+void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	char cmd[1024];
 	static int gtk_is_init = 0;
@@ -93,45 +143,65 @@ void grava_program_graph(struct program_t *prg)
 	char title[256], name[128];
 	int graph_flagblocks = config_get("graph.flagblocks");
 
-	GtkWidget *vbox, *hbox, *go;
 	GravaNode *node, *node2;
 	GravaEdge *edge;
 
-	new_window = config_get("graph.window") || w == NULL;
-
 	/* create widget */
-	if (!gtk_is_init)
+	if (!gtk_is_init) {
 		gtk_init(NULL, NULL);
+		gtk_is_init = 1;
+		new_window = 1;
+	}
 
-	if (new_window) {
-		grava  = grava_widget_new();
-		g_signal_connect_object (grava, "load-graph-at", ((GCallback) core_load_graph_at), grava, 0);
+	if (win==NULL || new_window) {
+		win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
+		memset(win, '\0', sizeof(struct mygrava_window));
+
+		win->grava  = grava_widget_new();
+		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
+		g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
 
 		/* add window */
-		w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		string_flag_offset(name, config.seek);
 		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
-		gtk_window_set_title(GTK_WINDOW(w), title);
-		g_signal_connect (w, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+		gtk_window_set_title(GTK_WINDOW(win->w), title);
+		g_signal_connect (win->w, "destroy", G_CALLBACK (gtk_main_quit), win->w);
 
 		/* TODO: add more control widgets */
-	
-		vbox = gtk_vbox_new(FALSE, 1);
-		entry = gtk_entry_new();
-		hbox = gtk_hbox_new(FALSE, 2);
-		go = gtk_button_new_with_label("Go");
-		g_signal_connect_object(entry,"activate",((GCallback) core_load_graph_entry), entry, 0); 
-		g_signal_connect_object(go,"activate",((GCallback) core_load_graph_entry), entry, 0); 
-		g_signal_connect_object(go,"button-release-event",((GCallback) core_load_graph_entry2), entry, 0); 
-		gtk_container_add(GTK_CONTAINER(hbox), entry);
-		gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(go), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 2);
+		win->vbox = gtk_vbox_new(FALSE, 1);
+		win->entry = gtk_entry_new();
 
-		gtk_container_add(GTK_CONTAINER(w), vbox);
-		gtk_container_add(GTK_CONTAINER(vbox), grava_widget_get_widget(grava));
+		/* new button */
+		win->bnew = gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->bnew), gtk_image_new_from_stock ("gtk-new", GTK_ICON_SIZE_BUTTON));
 
+		g_signal_connect(win->bnew,"activate",((GCallback) mygrava_new_window), (gpointer)win); 
+		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_new_window2), (gpointer)win); 
+		//win->back = gtk_button_new_from_stock("gtk-undo"); //go-back");
+		//g_signal_connect(win->back,"activate",((GCallback) mygrava_back), win->entry); 
+		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_back2), win); 
+		win->hbox = gtk_hbox_new(FALSE, 2);
+		win->go = gtk_button_new_from_stock("gtk-jump-to");
+		/* go button */
+		win->go= gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->go), gtk_image_new_from_stock ("gtk-media-play", GTK_ICON_SIZE_BUTTON));
+		g_signal_connect(win->entry,"activate",((GCallback) core_load_graph_entry), win); 
+		g_signal_connect(win->go,"activate",((GCallback) core_load_graph_entry), win); 
+		g_signal_connect(win->go,"button-release-event",((GCallback) core_load_graph_entry2), win);
+
+		//gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->back), FALSE, FALSE, 2);
+		gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
+
+		// TODO: Add asm.arch combobox from gradare
+
+		gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
+		gtk_container_add(GTK_CONTAINER(win->vbox), grava_widget_get_widget(win->grava));
 	} else {
-		grava_graph_reset(grava->graph);
+		grava_graph_reset(win->grava->graph);
 	}
 
 	/* analyze code */
@@ -167,6 +237,9 @@ void grava_program_graph(struct program_t *prg)
 		if (trace_times(b0->addr)>0)
 			grava_node_set(node, "bgcolor", "turqoise");
 
+		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
+			grava_node_set(node, "bgcolor", "yellow");
+
 		/* add call references for this node */
 		// XXX avoid dupped calls
 		list_for_each(head2, &(b0->calls)) {
@@ -187,7 +260,7 @@ void grava_program_graph(struct program_t *prg)
 		printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
 		free(ptr);
 
-		grava_graph_add_node(grava->graph, node);
+		grava_graph_add_node(win->grava->graph, node);
 		b0->data = node;
 		i++;
 	}
@@ -210,7 +283,7 @@ void grava_program_graph(struct program_t *prg)
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "green");
 					edge->jmpcnd = 1; // true
-					grava_graph_add_edge(grava->graph, edge);
+					grava_graph_add_edge(win->grava->graph, edge);
 					break;
 				}
 			}
@@ -227,7 +300,7 @@ void grava_program_graph(struct program_t *prg)
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "red");
 					edge->jmpcnd = 0; // false
-					grava_graph_add_edge(grava->graph, edge);
+					grava_graph_add_edge(win->grava->graph, edge);
 					break;
 				}
 			}
@@ -235,15 +308,17 @@ void grava_program_graph(struct program_t *prg)
 	}
 	program_free(prg);
 
-	grava_graph_update(grava->graph);
+	grava_graph_update(win->grava->graph);
 
 	if (new_window) {
-		gtk_widget_show_all(GTK_WIDGET(w));
-		gtk_window_resize(GTK_WINDOW(w), 600,400);
-		gtk_main();
+		gtk_widget_show_all(GTK_WIDGET(win->w));
+		gtk_window_resize(GTK_WINDOW(win->w), 600,400);
 	}
-	grava_widget_draw(grava);
 
+	grava_widget_draw(win->grava);
+
+	new_window = 0;
+	gtk_main();
 	// oops. tihs is not for real!
 	config_set("cfg.verbose", "true");
 	config_set("scr.color", "true");
@@ -253,5 +328,8 @@ void grava_program_graph(struct program_t *prg)
 	config_set("asm.lines", "true");
 	cons_set_fd(1);
 	config.seek = here;
+		gtk_is_init = 0;
+		new_window = 0;
+	
 }
 #endif

@@ -163,19 +163,21 @@ public class Grava.Graph : GLib.Object
 	{
 //		ctx.set_operator (Cairo.Operator.SOURCE);
 	// XXX THIS FLICKERS! MUST USE DOUBLE BUFFER
+		if (ctx == null)
+			return;
 		ctx.set_source_rgba(1, 1, 1, 1);
 		ctx.translate( panx, pany);
 		ctx.scale( zoom, zoom );
 		ctx.rotate( angle );
 	
 		ctx.paint ();
-		foreach(weak Node node in nodes) {
-			if (node.visible)
-				Renderer.draw_node(ctx, node);
-		}
 		foreach(weak Edge edge in edges ) {
 			if (edge.visible)
 				Renderer.draw_edge(ctx, edge);
+		}
+		foreach(weak Node node in nodes) {
+			if (node.visible)
+				Renderer.draw_node(ctx, node);
 		}
 
 		// TODO: double buffering

@@ -430,7 +430,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 #if VALA
 		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
-		grava_program_graph(prg);
+		grava_program_graph(prg, NULL);
 #else
 		eprintf("Compiled without valac/gtk/cairo\n");
 #endif
