@@ -36,8 +36,9 @@ struct mygrava_window {
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 
-void core_load_graph_at(GravaWidget *widget, char *str)
+void core_load_graph_at(void *obj, const char *str)
 {
+	GravaWidget *widget = obj;
 	struct program_t *prg;
 	u64 off = get_offset(str);
 
@@ -49,14 +50,14 @@ void core_load_graph_at(GravaWidget *widget, char *str)
 	grava_program_graph(prg, NULL);
 }
 
-void mygrava_bp_at(GravaWidget *widget, char *str)
+void mygrava_bp_at(void *unk, const char *str)
 {
 	struct program_t *prg;
 	char buf[1024];
 	u64 off = get_offset(str);
-	sprintf(buf, "!bp 0x%08llx", off);
+	sprintf(buf, "!bp %s", str); //0x%08llx", off);
 	radare_cmd(buf, 0);
-	eprintf("Breakpoint at (%08llx) added.\n", off);
+	eprintf("Breakpoint at (%08llx) (%s) added.\n", off, str);
 }
 
 static int new_window = 0;
@@ -65,7 +66,7 @@ static void mygrava_new_window(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	new_window = 1;
 printf("mygrava_new -> %08x\n", obj);
-	core_load_graph_entry(widget,obj);
+	core_load_graph_entry(widget, obj);
 	new_window = 0;
 }
 static void mygrava_new_window2(void *widget, void *foo, void *obj) //GtkWidget *obj)
@@ -117,7 +118,7 @@ eprintf("load_graph_at %08x\n", w);
 static void core_load_graph_entry2(void *widget, void *foo, GtkWidget *obj)
 { core_load_graph_entry(widget, obj); }
 
-void core_load_graph_at_label(const char *str)
+void core_load_graph_at_label(void *foo, const char *str)
 {
 	char buf[256];
 	char *ptr;
