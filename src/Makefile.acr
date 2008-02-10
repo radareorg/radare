@@ -69,20 +69,6 @@ OBJ+=grava.o
 TARGETS+=valagrava
 ##VALA##
 
-##HAVE_PERL##
-OBJ+=eperl.o
-CFLAGS+=`perl -MExtUtils::Embed -e ccopts`
-# NOTE: umf..-lncurses is only needed on debian?
-RADARE_LDFLAGS+=`perl -MExtUtils::Embed -e ldopts` -lncurses
-##HAVE_PERL##
-
-##HAVE_PYTHON##
-OBJ+=epython.o
-CFLAGS+=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
-# NOTE: umf..-lncurses is only needed on debian?
-RADARE_LDFLAGS+=-lpython2.4
-##HAVE_PYTHON##
-
 ##W32##
 JAVASM_STUFF=w32utils.o -lwsock32
 ##W32##

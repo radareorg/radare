@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@youterm.com>
+ * Copyright (C) 2007, 2008
+ *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,13 @@
  *
  */
 
-#include "main.h"
-#if HAVE_PYTHON
+#include <plugin.h>
+#include <main.h>
 #include <Python.h>
 #include <structmember.h>
+extern int radare_plugin_type;
+extern struct plugin_hack_t radare_plugin;
+static int (*r)(char *cmd, int log);
 #define RADARE_MODULE
 
 static PyObject * PyRadare_Exec(PyObject *self, PyObject *args)
@@ -98,7 +101,6 @@ Radare_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
     return (PyObject *)self;
 }
-
 
 static PyObject *
 Radare_name(Radare* self)
@@ -298,4 +300,21 @@ int epython_eval(char *line)
 	}
 	return 0;
 }
-#endif
+
+void python_cmd(char *input)
+{
+	r = radare_plugin.resolve("radare_cmd");
+	epython_init();
+	Py_Initialize();
+	init_radare_module();
+	PyRun_SimpleString("import r");
+	PyRun_SimpleString(input);
+	epython_destroy();
+}
+
+int radare_plugin_type = PLUGIN_TYPE_HACK;
+struct plugin_hack_t radare_plugin = {
+	.name = "python",
+	.desc = "python plugin",
+	.callback = &python_cmd
+};

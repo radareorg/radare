@@ -35,8 +35,9 @@ struct core_t {
 };
 
 static struct core_t core[]={
-	{ .ptr = &radare_cmd,  .name = "radare_cmd",  .args = "zi" },
-	{ .ptr = &radare_exit, .name = "radare_exit", .args = "" },
+	{ .ptr = &radare_cmd,      .name = "radare_cmd",      .args = "zi" },
+	//{ .ptr = &radare_cmd_str,  .name = "radare_cmd_str",  .args = "z" },
+	{ .ptr = &radare_exit,     .name = "radare_exit",     .args = "" },
 	{ .ptr = &radare_open, .name = "radare_open", .args = "i" },
 	{ .ptr = &radare_sync, .name = "radare_sync", .args = "" },
 	{ NULL,NULL,NULL}

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@youterm.com>
+ * Copyright (C) 2007, 2008
+ *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,23 @@
  *
  */
 
+#include "plugin.h"
 #include "main.h"
-#include "radare.h"
-#include "utils.h"
-#include "eperl.h"
+#include <radare.h>
+#include <utils.h>
+#include <EXTERN.h>
+#include <XSUB.h>
+#include <perl.h>
 
-#if HAVE_PERL
+extern PerlInterpreter *my_perl;
+extern void xs_init (pTHX);
+static int (*r)(char *cmd, int log);
+extern int radare_plugin_type;
+extern struct plugin_hack_t radare_plugin;
+void perl_cmd(char *input);
+void eperl_init();
+void eperl_destroy();
+
 PerlInterpreter *my_perl = NULL;
 
 void radare_perl(pTHX_ CV* cv)
@@ -34,6 +45,7 @@ void radare_perl(pTHX_ CV* cv)
 	char buf[1024];
 	dXSARGS;
 
+#if 0
 	if (!config.debug) {
 		char *str;
 		cmd = sv_pv(ST(0));
@@ -69,33 +81,63 @@ void radare_perl(pTHX_ CV* cv)
 			fclose(fd);
 		}
 		unlink(file);
+	}
+#endif
+	char str[1024];
+	strcpy(str, "error");
 		str[strlen(str)-1]='\0';
 
 		ST(0) = newSVpvn(str, strlen(str));
 
 		XSRETURN(1);
-	}
 }
 
 void xs_init(pTHX)
 {
 	newXS("r", radare_perl, __FILE__);
 }
-#endif
 
 void eperl_init()
 {
-#if HAVE_PERL
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
-#endif
 }
 
 void eperl_destroy()
 {
-#if HAVE_PERL
 	perl_destruct(my_perl);
 	perl_free(my_perl);
 	my_perl = NULL;
+}
+
+void perl_cmd(char *input)
+{
+
+	r = radare_plugin.resolve("radare_cmd");
+
+	eperl_init();
+ //               ptr = strdup(input);
+//                cmd[2] = ptr;
+                eperl_init();
+                perl_parse(my_perl, xs_init, 3, input, (char **)NULL);
+                perl_run(my_perl);
+                eperl_destroy();
+ //               free(ptr);
+
+
+#if 0
+	if (r != NULL) {
+		r("b 20", 0);
+		r("x", 0);
+	} else	printf("Cannot resolve 'radare_cmd' symbol\n");
 #endif
 }
+
+int radare_plugin_type = PLUGIN_TYPE_HACK;
+struct plugin_hack_t radare_plugin = {
+	.name = "perl",
+	.desc = "perl plugin",
+	.callback = &perl_cmd
+};
+
+main() { printf("i'm a plugin!\n"); }

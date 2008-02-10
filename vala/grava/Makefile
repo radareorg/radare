@@ -6,9 +6,9 @@ all:
 	valac -g cmain.c --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
 
 radare:
-	-[ "${HAVE_VALAC}" = 1 ] && valac -c -g --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
+	[ "${HAVE_VALAC}" = 1 ] && valac -c -g --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
 	# only for releases (not development)
-	-${CC} `pkg-config gtk+-2.0 cairo --cflags --libs` *.c -o a.out
+	${CC} `pkg-config gtk+-2.0 cairo --cflags --libs` *.c -o a.out
 	
 
 c:

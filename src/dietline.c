@@ -25,6 +25,7 @@
 #include "main.h"
 #else
 static void terminal_set_raw(int b);
+static int terminal_get_real_columns();
 #define __UNIX__ 1
 #endif
 
@@ -36,6 +37,7 @@ static void terminal_set_raw(int b);
 #if __WINDOWS__
 #include <windows.h>
 #else
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <signal.h>
 #endif
@@ -195,7 +197,7 @@ char *dl_readline(int argc, char **argv)
 {
 	int buf[10];
 	int i, opt, len = 0;
-	int columns = 78;
+	int columns = terminal_get_real_columns()-2;
 
 	dl_buffer_idx = dl_buffer_len = 0;
 	dl_buffer[0]='\0';
@@ -234,7 +236,9 @@ char *dl_readline(int argc, char **argv)
 
 		dl_buffer[dl_buffer_len]='\0';
 		buf[0] = dl_readchar();
-
+		
+//		printf("\e[K\r");
+		columns = terminal_get_real_columns()-2;
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
@@ -425,6 +429,21 @@ static void terminal_set_raw(int b)
 #endif
 }
 
+static int terminal_get_real_columns()
+{
+#if __WINDOWS__
+        return 78;
+#endif
+        struct winsize win;
+
+        if (ioctl(1, TIOCGWINSZ, &win)) {
+                /* default values */
+//                win.ws_col = 80;
+ //               win.ws_row = 23;
+        }
+
+        return win.ws_col;
+}
 
 int main(int argc, char **argv)
 {
