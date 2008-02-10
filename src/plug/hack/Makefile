@@ -7,7 +7,7 @@ PERL_LDFLAGS=`perl -MExtUtils::Embed -e ldopts` -lncurses
 PY_CFLAGS=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
 PY_LDFLAGS=-lpython2.4
 
-CFLAGS+=-I../..
+CFLAGS+=-I../.. -g
 
 all: purl puthon
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SHARED_EXT}

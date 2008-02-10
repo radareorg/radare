@@ -109,6 +109,7 @@ int stripstr_from_file(const char *filename, int min, u64 seek);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(char *str);
 int radare_cmd(char *input, int log);
+char *radare_cmd_str(const char *cmd);
 int radare_interpret(char *file);
 void radare_controlc();
 void radare_controlc_end();

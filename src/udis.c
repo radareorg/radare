@@ -258,6 +258,7 @@ void udis(int len, int rows)
 	int show_size = config_get("asm.size");
 	u64 myinc = 0;
 	struct reflines_t *reflines = NULL;
+	char *follow; 
 
 	len*=2; // uh?!
 

@@ -28,7 +28,7 @@
 
 extern PerlInterpreter *my_perl;
 extern void xs_init (pTHX);
-static int (*r)(char *cmd, int log);
+static char *(*rs)(const char *cmd);
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 void perl_cmd(char *input);
@@ -45,6 +45,12 @@ void radare_perl(pTHX_ CV* cv)
 	char buf[1024];
 	dXSARGS;
 
+	char *str;
+	cmd = sv_pv(ST(0));
+	str = rs(cmd); //pipe_command_to_string(cmd);
+	ST(0) = newSVpvn(str, strlen(str));
+	free(str);
+	XSRETURN(1);
 #if 0
 	if (!config.debug) {
 		char *str;
@@ -83,13 +89,6 @@ void radare_perl(pTHX_ CV* cv)
 		unlink(file);
 	}
 #endif
-	char str[1024];
-	strcpy(str, "error");
-		str[strlen(str)-1]='\0';
-
-		ST(0) = newSVpvn(str, strlen(str));
-
-		XSRETURN(1);
 }
 
 void xs_init(pTHX)
@@ -112,25 +111,34 @@ void eperl_destroy()
 
 void perl_cmd(char *input)
 {
+	char str[1025];
+	char *ptr ;
+	static int perl_is_init=0;
+	rs = radare_plugin.resolve("radare_cmd_str");
 
-	r = radare_plugin.resolve("radare_cmd");
+	if (rs==NULL) {
+		printf("Cannot resolve radare_cmd_str symbol\n");
+		return;
+	}
 
-	eperl_init();
- //               ptr = strdup(input);
-//                cmd[2] = ptr;
-                eperl_init();
-                perl_parse(my_perl, xs_init, 3, input, (char **)NULL);
-                perl_run(my_perl);
-                eperl_destroy();
- //               free(ptr);
+	if (!perl_is_init)
+		eperl_init();
 
+	if (my_perl == NULL) {
+		printf("Cannot init perl module\n");
+		return;
+	}
+	perl_is_init = 1;
 
-#if 0
-	if (r != NULL) {
-		r("b 20", 0);
-		r("x", 0);
-	} else	printf("Cannot resolve 'radare_cmd' symbol\n");
-#endif
+	printf("perl> ");
+	fflush(stdout);
+	fgets(str, 1024, stdin);
+	ptr = strdup(str);
+
+	perl_parse(my_perl, xs_init, 1, ptr, (char **)NULL);
+	perl_run(my_perl);
+	eperl_destroy();
+	free(str);
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

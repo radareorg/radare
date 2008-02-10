@@ -196,26 +196,34 @@ int radare_hack(const char *cmd)
 	struct list_head *pos;
 	int num = 0;
 	char *ptr = strchr(cmd, ' ');
+	char *arg;
+	char *end;
 
 	if (ptr) {
 		ptr = ptr + 1;
 		num = atoi(ptr);
 	}
+	arg = ptr;
+	end = strchr(ptr, ' ');
+	if (end) {
+		end[0]='\0';
+		arg = end +1;
+	} else
+		arg = arg+strlen(arg);
 
 	if ((!num && !ptr) || (strnull(cmd)))
 		return radare_hack_help();
 
-	eprintf("warning: does not yet works inside debugger\n");
 	list_for_each(pos, &hacks) {
 		struct hack_t *h = list_entry(pos, struct comment_t, list);
 		if (num) {
 			 if  (i==num) {
-				h->callback();
+				h->callback(arg);
 				return 0;
 			}
 		} else {
 			if (!strcmp(ptr, h->name)) {
-				h->callback();
+				h->callback(arg); //ptr+strlen(h->name));
 				return 0;
 			}
 		}

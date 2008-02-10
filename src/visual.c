@@ -798,6 +798,16 @@ CMD_DECL(visual)
 		radare_prompt_command();
 		visual_draw_screen();
 
+		if (last_print_format == FMT_UDIS) {
+		char *follow = config_get("asm.follow");	
+		if (follow&&follow[0]) {
+			u64 addr = get_offset(follow);
+			if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
+				radare_seek(addr, SEEK_SET);
+		}
+		}
+
+
 	__go_read_a_key:
 		/* user input */
 		key = cons_readchar();

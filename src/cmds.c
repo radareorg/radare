@@ -581,6 +581,8 @@ void radare_exit()
 
 	ret = io_close(config.fd);
 
+	if (ret==-2)
+		return;
 	if ( ret == 0) {
 		#if HAVE_LIB_READLINE
 		rad_readline_finish();

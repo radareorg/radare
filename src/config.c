@@ -483,6 +483,7 @@ void config_init()
 #endif
 	node->callback = &config_arch_callback;
 	config_set("asm.syntax", "pseudo");
+	node = config_set("asm.follow", "");
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
@@ -589,6 +590,7 @@ void config_init()
 	config_set_i("scr.width", config.width);
 	node = config_set_i("scr.height", config.height);
 	node->callback = &config_scrheight;
+#if 0
 
 	/* core commands */
 	node = config_set("core.echo", "(echo a message)");
@@ -619,6 +621,7 @@ void config_init()
 	node->callback = &config_core_callback;
 	node = config_set("core.reset", "(resets code)");
 	node->callback = &config_core_callback;
+#endif
 
 	/* lock */
 	config_lock(1);

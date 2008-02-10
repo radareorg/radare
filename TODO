@@ -7,8 +7,9 @@
 
 ===========================================================
  
-* drop python/perl plugins
-  - implement them as plugins
+* grava widget gui show cur seek in title
+* '<' and '>' commands converted in prefix modifiers
+
 * executable offsets
   - execute a command on a certain offset
   - show funtion frames and arguments on the fly

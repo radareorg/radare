@@ -14,7 +14,7 @@
 struct plugin_hack_t {
 	const char *name;
 	const char *desc;
-	int (*callback)();
+	int (*callback)(char *str);
 	int (*init)();
 	void *(*resolve)(char *);
 	struct config_t *config;
@@ -26,7 +26,7 @@ struct plugin_hack_t {
 struct hack_t {
 	const char *name;
 	const char *desc;
-	int (*callback)();
+	int (*callback)(char *input);
 	struct list_head list;
 };
 
