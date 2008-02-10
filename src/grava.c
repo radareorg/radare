@@ -30,6 +30,7 @@ struct mygrava_window {
 	GtkWidget *back;
 	GtkWidget *go;
 	GtkWidget *bnew;
+	GtkWidget *close;
 	GravaWidget *grava;
 };
 
@@ -61,6 +62,15 @@ void mygrava_bp_at(void *unk, const char *str)
 }
 
 static int new_window = 0;
+
+static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
+{
+	struct mygrava_window *w = obj;
+	gtk_widget_destroy(w->w);
+	gtk_main_quit();
+}
+static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
+{ mygrava_close(widget, obj); }
 
 static void mygrava_new_window(void *widget, gpointer obj)//GtkWidget *obj)
 {
@@ -167,7 +177,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		string_flag_offset(name, config.seek);
 		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
 		gtk_window_set_title(GTK_WINDOW(win->w), title);
-		g_signal_connect (win->w, "destroy", G_CALLBACK (gtk_main_quit), win->w);
+		g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
 
 		/* TODO: add more control widgets */
 		win->vbox = gtk_vbox_new(FALSE, 1);
@@ -177,8 +187,13 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		win->bnew = gtk_button_new_with_mnemonic("");
 		gtk_button_set_image (GTK_BUTTON (win->bnew), gtk_image_new_from_stock ("gtk-new", GTK_ICON_SIZE_BUTTON));
 
+		win->close = gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->close), gtk_image_new_from_stock ("gtk-close", GTK_ICON_SIZE_BUTTON));
+
 		g_signal_connect(win->bnew,"activate",((GCallback) mygrava_new_window), (gpointer)win); 
 		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_new_window2), (gpointer)win); 
+		g_signal_connect(win->close,"activate",((GCallback) mygrava_close), (gpointer)win); 
+		g_signal_connect(win->close,"button-release-event",((GCallback) mygrava_close2), (gpointer)win); 
 		//win->back = gtk_button_new_from_stock("gtk-undo"); //go-back");
 		//g_signal_connect(win->back,"activate",((GCallback) mygrava_back), win->entry); 
 		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_back2), win); 
@@ -195,6 +210,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
 
 		// TODO: Add asm.arch combobox from gradare
