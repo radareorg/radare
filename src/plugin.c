@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include <dirent.h>
 #include "plugin.h"
 #if __UNIX__
 #include <dlfcn.h>
@@ -57,6 +58,18 @@ void *radare_resolve(char *name)
 		if (!strcmp(core[i].name, name))
 			return core[i].ptr;
 	return NULL;
+}
+
+int is_plugin(const char *str)
+{
+// TODO: use SHARED_EXT
+#if __WINDOWS__
+	if (strstr(str, ".dll"))
+		return 1;
+#endif
+	if (strstr(str, ".so"))
+		return 1;
+	return 0;
 }
 
 plugin_t *plugin_registry(const char *file)
@@ -185,6 +198,28 @@ int plugin_list()
 	return i;
 }
 
+/* load plugins from dir.plugins */
+void plugin_load()
+{
+	char *str = config_get("dir.plugins");
+	// add hack plugins if dir.plugins defined
+	if (!strnull(str)) {
+		DIR *fd = opendir(str);
+		struct dirent *de;
+		if (fd == NULL) {
+			eprintf("Cannot open dir.plugins '%s'\n", str);
+			return;
+		}
+		while(de = readdir(fd)) {
+			if (de->d_name[0] && de->d_name[0]!='.' && is_plugin(de->d_name)) {
+				plugin_registry(de->d_name);
+			}
+		}
+		closedir(fd);
+		return 0;
+	}
+}
+
 void plugin_init()
 {
 	int last = 0;
@@ -238,6 +273,8 @@ void plugin_init()
 	plugins[last+1] = gxemul_plugin;
 	plugins[last+2] = posix_plugin;
 	last += 3;
+
+	radare_hack_init();
 }
 
 int io_system(const char *command)

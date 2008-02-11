@@ -567,7 +567,7 @@ void config_init()
 
 	config_set("dir.home", getenv("HOME"));
 	config_set("dir.monitor", getenv("MONITORPATH"));
-	config_set("dir.plugins", "");
+	config_set("dir.plugins", LIBDIR"/radare/");
 	config_set("dir.rdb", ""); // ~/.radare/rdb/
 	config_set("dir.tmp", "/tmp/");
 

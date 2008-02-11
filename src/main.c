@@ -88,10 +88,8 @@ int main(int argc, char **argv, char **envp)
 			config_set_i("cfg.bsize", config.block_size);
 			break;
 		case 'V':
-			printf("radare %s %dbit on %s%dbit "TARGET" %s%s%s%s\n", VERSION,
+			printf("radare %s %dbit on %s%dbit "TARGET" %s%s\n", VERSION,
 				sizeof(u64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
-				(HAVE_PERL)?  "perl "  :"",
-				(HAVE_PYTHON)?"python ":"",
 				(DEBUGGER)?   "dbg "   :"",
 				(HAVE_VALAC)? "vala"   :"");
 			return 0;
@@ -127,6 +125,8 @@ int main(int argc, char **argv, char **envp)
 
 	if (config.mode == MODE_STRINGS)
 		return stripstr_from_file(config.file, config.ene, (u64)config.seek);
+
+	plugin_load(); // from dir.plugins
 
 	return radare_go();
 }

@@ -79,6 +79,9 @@ install:
 	${INSTALL_PROGRAM} src/hasher/hasher ${BINDIR}
 	${INSTALL_PROGRAM} src/xc ${BINDIR}
 	mkdir -p ${LIBDIR}
+	# install plugins
+	mkdir -p ${LIBDIR}/radare
+	-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
 #	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}

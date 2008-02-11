@@ -180,7 +180,9 @@ struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)())
 
 int radare_hack_init()
 {
+	static int init = 0;
 	struct hack_t *hack;
+	if (init)return;init=1;
 	INIT_LIST_HEAD(&hacks);
 	hack = radare_hack_new("no", "nop one opcode", &hack_nop);
 	list_add_tail(&(hack->list), &(hacks));

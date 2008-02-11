@@ -18,6 +18,11 @@
  *
  */
 
+// TODO: port to list.h
+// TODO: automatic bubble sort by addr - faster indexing
+// TODO: support cursor indexing (index inside flag list)
+// TODO: store data and show (flag.data) in last_print_format
+
 #include "radare.h"
 #include "flags.h"
 #include "utils.h"
@@ -217,12 +222,6 @@ int flag_is_empty(rad_flag_t *flag)
 void flag_list(char *arg)
 {
 	int i;
-#if 0
-	register int i, j;
-	int maxlen = config.width/10;
-	char *tmp;
-#endif
-
 	for(i=0; i<nflags; i++) {
 		if (config.interrupted) break;
 		if (flag_is_empty(flags[i]))
@@ -232,55 +231,7 @@ void flag_list(char *arg)
 			i, flags[i]->offset, flags[i]->length, flags[i]->name);
 		NEWLINE;
 
-#if 0
-		switch(flags[i]->format) {
-		case FMT_OCT:
-			cons_printf("o ");
-			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				cons_printf("0%02o ", flags[i]->data[j]);
-			if (flags[i]->length>6)
-				cons_printf("..");
-
-			cons_printf("\n");
-			break;
-		case FMT_INT:
-			cons_printf("i ");
-			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				cons_printf("%d ", flags[i]->data[j]);
-			if (flags[i]->length>6)
-				cons_printf("..");
-
-			cons_printf("\n");
-			break;
-		case FMT_ASC:
-			tmp = (char *)malloc(flags[i]->length+1);
-			j = (config.width-55)/4;
-			if (maxlen>j)
-				maxlen=j;
-
-			memcpy(tmp, flags[i]->data, flags[i]->length);
-			for(j=0;j<maxlen&&j<flags[i]->length;j++) {
-				if ( !is_printable(flags[i]->data[j]) )
-					cons_printf("\\x%x", flags[i]->data[j]);
-				else	cons_printf("%c", flags[i]->data[j]);
-			}
-			cons_printf("\n");
-			free(tmp);
-			break;
-		case FMT_RAW:
-			cons_printf("s ");
-			fwrite(flags[i]->data, 1, flags[i]->length, stdout);
-			cons_printf("\n");
-			break;
-		default:
-			j = (config.width-55)/3;
-			if (maxlen>j)
-				maxlen=j;
-			for(j=0;j<maxlen && j<flags[i]->length;j++)
-				cons_printf(" %02x", flags[i]->data[j]);
-			cons_printf("..\n");
-		}
-#endif
+	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
 }
 
