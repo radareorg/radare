@@ -189,8 +189,8 @@ int cons_w32_print(unsigned char *ptr)
 				case '9': // ???
 					break;
 				}
-				ptr = ptr + 3;
-				str = ptr;
+				ptr = ptr + 1;
+				str = ptr + 2;
 				esc = 0;
 				continue;
 			}

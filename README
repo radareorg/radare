@@ -202,14 +202,9 @@ BUILD
 
  Other unixes
 
-  $ ./configure --prefix=/usr --with-
+  $ ./configure --prefix=/usr --without-vala --without-gui
 
 
-
-
-
-				  Lo importante es aprender a desaprender como
-				  se deshacen las cosas. -- La bola de cristal
 
                        -- Dedicated to the girl I have loved, hated and loved.
 

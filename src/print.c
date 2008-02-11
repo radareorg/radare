@@ -55,6 +55,7 @@ format_info_t formats[] = {
 	{ 'o', FMT_OCT,        MD_BLOCK,  "octal",                  "N bytes",    "entire block" },
 	{ 'O', FMT_ZOOM,       MD_BLOCK,  "Zoom out view",          "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      MD_BLOCK,  "cmd.prompt",              NULL,         "entire block" },
+	{ '%', FMT_PERCENT,    MD_BLOCK,  "print scrollbar of seek", NULL,         "entire file" },
 	{ 'q', FMT_HEXQ,       MD_BLOCK,  "hexadecimal quad-word", "8 bytes",	  "(endian)"},
 	{ 'r', FMT_RAW,        MD_BLOCK,  "raw ascii",              NULL,         "entire block" },
 	{ 's', FMT_ASC,        MD_BLOCK,  "ascii",                  NULL,         "entire block" },
@@ -282,6 +283,26 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	radare_controlc();
 
 	switch(print_fmt) {
+	case FMT_PERCENT: {
+			int w = config.width-4;
+			u64 s = config.size;
+			u64 piece;
+			if (s==-1)
+				s = 0x100000000;
+			piece = s/w;
+			cons_printf("[");
+			for(i=0;i<w;i++) {
+				if (config.seek > piece*i && config.seek < (piece*(i+1)))
+					cons_strcat("#");
+				else
+				if (flags_between(piece*i, piece*(i+1)))
+					cons_strcat(".");
+				else
+					cons_strcat("_");
+			}
+			cons_strcat("]\n");
+		}
+		break;
 	case FMT_ANAL:
 		radare_analyze(seek, len);
 		break;
@@ -745,15 +766,16 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		char *buf = NULL;
 		unsigned long sz = 4;
 		const char *mode = config_get("zoom.byte");
-		u64 ptr = config.zoom.from;
+		u64 ptr = config_get_i("zoom.from");
 	
 		if (!mode)
 			break;
 		zoom = 1;
+		// XXX config.seek = ptr;
 
 		config.zoom.piece = config.size / config.block_size ;
 		print_fmt = FMT_HEXB;
-		buf = (char *)malloc(config.zoom.piece+10);
+		//buf = (char *)malloc(config.zoom.piece+10);
 
 		switch(mode[0]) {
 		case 'e':
@@ -761,11 +783,12 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			sz = (unsigned long)config.zoom.piece;
 			break;
 		default:
-			buf = (char *)malloc(10);
+			buf = (char *)malloc(len<<1);
 			break;
 		}
 		for(i=0;!config.interrupted && i<len;i++) {
 			io_lseek(config.fd, ptr, SEEK_SET);
+			buf[0]='\xff';
 			io_read(config.fd, buf, sz);
 			switch(mode[0]) {
 			case 'f': // flags
@@ -823,7 +846,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				} else if (j>=len) break;
 				print_color_byte_i(j, "%02x", (unsigned char)buf[j]);
 
-				if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
+				D if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
 			}
 
 			if (print_fmt == FMT_HEXB) {

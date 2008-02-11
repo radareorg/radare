@@ -52,77 +52,77 @@ int fdout, fdin;
 static int check_pid(int pid);
 
 #define GETCOLOR int color = getv("COLOR");
-#define TITLE if (color) printf("\e[36m");
-#define TITLE_END if (color) printf("\e[0m");
+#define TITLE if (color) cons_printf("\e[36m");
+#define TITLE_END if (color) cons_printf("\e[0m");
 
 int help_message()
 {
 	GETCOLOR
-	printf("Usage: :!<cmd> (args)\n");
+	cons_printf("Usage: :!<cmd> (args)\n");
 	TITLE
-	printf(" Information\n");
+	cons_printf(" Information\n");
 	TITLE_END
 #if 0
 	printf("  info            show debugger and process status\n");
 	printf("  status          show the contents of /proc/pid/status\n");
 	printf("  pids            show the pids of all the attachable processes\n");
 #endif
-	printf("  bt              backtrace stack frames\n");
-	printf("  maps[*]         flag ldt\n");
-	printf("  syms            flags all syms of the debugged program\n");
-	printf("  fd[?][-#] [arg] file descriptors (fd? for help)\n");
-	printf("  th[?]           threads control command\n");
+	cons_printf("  bt              backtrace stack frames\n");
+	cons_printf("  maps[*]         flag ldt\n");
+	cons_printf("  syms            flags all syms of the debugged program\n");
+	cons_printf("  fd[?][-#] [arg] file descriptors (fd? for help)\n");
+	cons_printf("  th[?]           threads control command\n");
 	TITLE
-	printf(" Memory allocation\n");
+	cons_printf(" Memory allocation\n");
 	TITLE_END
-	printf("  alloc [N]       allocates N bytes (no args = list regions)\n");
-	printf("  mmap [F] [off]  mmaps a file into a memory region\n");
-	printf("  free            free allocated memory regions\n");
-	printf("  imap            map input stream to a memory region (DEPRECATED)\n");
+	cons_printf("  alloc [N]       allocates N bytes (no args = list regions)\n");
+	cons_printf("  mmap [F] [off]  mmaps a file into a memory region\n");
+	cons_printf("  free            free allocated memory regions\n");
+	cons_printf("  imap            map input stream to a memory region (DEPRECATED)\n");
 	TITLE
-	printf(" Loader\n");
+	cons_printf(" Loader\n");
 	TITLE_END
-	printf("  run             load and start execution\n");
-	printf("  load            load a program in memory\n");
-	printf("  unload          unload a program or kill\n");
-	printf("  kill [-S] [pid] sends a signal to a process\n");
-	printf("  attach [pid]    attach target pid\n");
-	printf("  detach          detach debugged process\n");
+	cons_printf("  run             load and start execution\n");
+	cons_printf("  load            load a program in memory\n");
+	cons_printf("  unload          unload a program or kill\n");
+	cons_printf("  kill [-S] [pid] sends a signal to a process\n");
+	cons_printf("  attach [pid]    attach target pid\n");
+	cons_printf("  detach          detach debugged process\n");
 	TITLE
-	printf(" Flow Control\n");
+	cons_printf(" Flow Control\n");
 	TITLE_END
-	printf("  jmp [addr]      force program counter\n");
-	printf("  call [addr]     enters a subroutine\n");
-	printf("  ret             emulates a return from subroutine\n");
-	printf("  step [N]        (s) step (N=1) instruction(s)\n");
-	printf("  stepo           (so) step over calls and repz\n");
-	printf("  trace [N]       trace until bp or eof at N debug level\n");
-	printf("  wtrace          trace until a watchpoint is matched\n");
-	printf("  stepret         continue until ret (TODO)\n");
-	printf("  cont            continue until bp, eof\n");
-	printf("  contu ([addr])  continue until user code, bp, eof (or addr if defined)\n");
-	printf("  contsc          continue until next syscall\n");
-	printf("  contfork        continue until fork\n");
+	cons_printf("  jmp [addr]      force program counter\n");
+	cons_printf("  call [addr]     enters a subroutine\n");
+	cons_printf("  ret             emulates a return from subroutine\n");
+	cons_printf("  step [N]        (s) step (N=1) instruction(s)\n");
+	cons_printf("  stepo           (so) step over calls and repz\n");
+	cons_printf("  trace [N]       trace until bp or eof at N debug level\n");
+	cons_printf("  wtrace          trace until a watchpoint is matched\n");
+	cons_printf("  stepret         continue until ret (TODO)\n");
+	cons_printf("  cont            continue until bp, eof\n");
+	cons_printf("  contu ([addr])  continue until user code, bp, eof (or addr if defined)\n");
+	cons_printf("  contsc          continue until next syscall\n");
+	cons_printf("  contfork        continue until fork\n");
 	TITLE
-	printf(" Breakpoints\n");
+	cons_printf(" Breakpoints\n");
 	TITLE_END
-	printf("  bp [addr]       put a breakpoint at addr (no arg = list)\n");
+	cons_printf("  bp [addr]       put a breakpoint at addr (no arg = list)\n");
 	TITLE
-	printf(" Registers\n");
+	cons_printf(" Registers\n");
 	TITLE_END
-	printf("  [o]regs[*]      show registers (o=old, *=radare)\n");
-	printf("  oregs[*]        show old registers information (* for radare)\n");
-	printf("  set [reg] [val] set a value for a register\n");
+	cons_printf("  [o]regs[*]      show registers (o=old, *=radare)\n");
+	cons_printf("  oregs[*]        show old registers information (* for radare)\n");
+	cons_printf("  set [reg] [val] set a value for a register\n");
 #if __i386__
-	printf("  dr[rwx-]        DR registers control (dr? for help) (x86 only)\n");
+	cons_printf("  dr[rwx-]        DR registers control (dr? for help) (x86 only)\n");
 #endif
 	TITLE
-	printf(" Actions\n");
+	cons_printf(" Actions\n");
 	TITLE_END
-	printf("  dump [N]        dump pages (and registers) to disk\n");
-	printf("  restore [N]     restore pages (and registers) from disk\n");
-	printf("  hack [N]        Make a hack.\n");
-	printf("  inject [bin]    inject code inside child process\n");
+	cons_printf("  dump [N]        dump pages (and registers) to disk\n");
+	cons_printf("  restore [N]     restore pages (and registers) from disk\n");
+	cons_printf("  hack [N]        Make a hack.\n");
+	cons_printf("  inject [bin]    inject code inside child process\n");
 
 	return 0;
 }

@@ -110,7 +110,10 @@ int debug_ktrace()
 
 int debug_pstree(char *input)
 {
-	int tid = atoi(input);
+	int tid = 0;
+
+	if (input)
+		tid = atoi(input);
 	if (tid != 0) {
 		ps.tid = tid;
 		eprintf("Current selected thread id (pid): %d\n", ps.tid);

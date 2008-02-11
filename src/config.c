@@ -42,7 +42,7 @@ int rdb_init()
 // just set project name (cfg.project)
 
 	rdbdir = config_get("dir.rdb");
-	if (rdbdir)
+	if (rdbdir&&rdbdir[0])
 		chdir(rdbdir);
 
 	rdbfile = config_get("file.rdb");
@@ -503,7 +503,7 @@ void config_init()
 	config_set("cmd.visual", "");
 	config_set("cmd.hit", "");
 	config_set("cmd.prompt", "");
-	config_set("cmd.vprompt", "");
+	config_set("cmd.vprompt", "p%");
 	config_set("cmd.bp", "");
 
 	config_set("search.flag", "true");

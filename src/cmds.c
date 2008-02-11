@@ -137,7 +137,7 @@ command_t commands[] = {
 	COMMAND('>', "",               "nexta   go next aligned block", next_align),
 	COMMAND('/', "[?] [str]",      "search  find matching strings", search),
 	COMMAND('!', "[command]",      "system  execute a shell command", shell), 
-	COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
+	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
 	COMMAND('#', "[hash|!lang]",   "hash    hash current block (#? or #!perl)", hash),
 	COMMAND('?', "",               "help    show the help message", help),
 	COMMAND('q', "",               "quit    close radare shell", quit),

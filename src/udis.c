@@ -252,6 +252,7 @@ void udis(int len, int rows)
 	int show_bytes;
 	int show_offset;
 	int show_splits;
+	int show_comments;
 	int show_lines;
 	int show_traces;
 	int nbytes = 12;
@@ -278,6 +279,7 @@ void udis(int len, int rows)
 	show_splits = config_get("asm.split");
 	show_lines = config_get("asm.lines");
 	show_traces = config_get("asm.trace");
+	show_comments = config_get("asm.comments");
 	nbytes = (int)config_get_i("asm.nbytes");
 
 	if (nbytes>8 ||nbytes<0)
@@ -303,7 +305,9 @@ void udis(int len, int rows)
 
 		INILINE;
 		D { 
-			lines+=print_metadata(seek);
+			if (show_comments)
+				lines+=print_metadata(seek);
+
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
 				code_lines_print(reflines, config.baddr+ud_insn_off(&ud_obj));
@@ -518,6 +522,7 @@ void m68k_disassemble(int len, int rows)
 	int show_offset = config_get("asm.offset");
 	int show_split  = config_get("asm.split");
 	int show_lines = config_get("asm.lines");
+	int show_comments = config_get("asm.comments");
 	char opcode[10];
 	char operands[24];
   	struct DisasmPara_68k dp;

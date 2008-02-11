@@ -19,8 +19,8 @@
  */
 
 #include <windows.h>
-#include "../main.h"
-#include "../plugin.h"
+#include <main.h>
+#include <plugin.h>
 
 static HANDLE hFile = NULL;
 static int w32_fd = -1;

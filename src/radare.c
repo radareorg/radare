@@ -167,15 +167,50 @@ int radare_cmd_raw(char *tmp, int log)
 			free(oinput);
 			return 1;
 			}
-		case ' ':
-			cons_printf("oops\n");
+		case '?':
+			cons_printf(
+			"Usage [.][command| file]\n"
+			"- Interpret radare commands from file or command\n"
+			"  > .!regs*\n"
+			"  > . /tmp/flags-saved\n");
+			break;
+		case ' ': {
+			char buf[1024];
+			FILE *fd = fopen(input+2,"r");
+			if (fd) {
+				while(!feof(fd)) {
+					buf[0]='\0';
+					fgets(buf, 1000, fd);
+					if (buf[0]!='\0')
+						radare_cmd(buf, 0);
+				}
+				fclose(fd);
+			} else
+				cons_printf("oops (%s)\n", input+2);
+			}
 			break;
 		default:
+			/* hack to parse .!regs* on w32 */
+			/* maybe everything but debug commands must be in this way */
+			if (strstr(input,"regs")) {
+				char *str = radare_cmd_str(input+1);
+				char *st = str;
+				for(i=0;str[i];i++) {
+					if (str[i]=='\n') {
+						str[i++]='\0';
+						radare_cmd(st, 0);
+						st = str+i;
+					}
+				}
+				config_set_i("cfg.verbose", 1);
+				return;
+			}
 			pipe_stdout_to_tmp_file(file, input+1);
 			f = open(file, O_RDONLY);
 			if (f == -1) {
 				eprintf("radare_cmd_raw: Cannot open.\n");
 				free(oinput);
+				config_set_i("cfg.verbose", 1);
 				return 0;
 			}
 			for(;!config.interrupted;) {
@@ -330,7 +365,7 @@ char *radare_cmd_str(const char *cmd)
 	char *buf;
 	cons_flush();
 	radare_cmd(cmd, 0);
-	buf = strdup(cons_get_buffer);
+	buf = strdup(cons_get_buffer());
 	cons_reset();
 	return buf;
 }
@@ -370,7 +405,6 @@ int radare_cmd(char *tmp, int log)
 				(config_get("dbg.vstack"))?":":"",
 				(int)config_get_i("dbg.stacksize"),
 				config_get("dbg.stackreg"));
-			radare_cmd("%COLUMNS 80", 0);
 			radare_cmd(buf, 0); //":px 66@esp", 0);
 		}
 
@@ -566,8 +600,7 @@ void radare_prompt_command()
 		dir = opendir(path);
 		if (dir) {
 			while((de = readdir(dir))) {
-				if (de->d_name[0] != '.'
-				&& !strstr(de->d_name, ".txt")) {
+				if (de->d_name[0] != '.' && !strstr(de->d_name, ".txt")) {
 					sprintf(file, "%s/%s", path, de->d_name);
 					fd = fopen(file, "r");
 					if (fd) {

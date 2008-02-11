@@ -111,7 +111,7 @@ plugin_t *plugin_registry(const char *file)
 
 	p = GetProcAddress(h, "radare_plugin_type");
 	if (p == NULL) {
-		eprintf("cannot find 'radare_plugin_type' symbol.\n(%s)\n", dlerror());
+		eprintf("cannot find 'radare_plugin_type' symbol.\n");
 		return NULL;
 	}
 #else

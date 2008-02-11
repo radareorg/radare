@@ -7,26 +7,36 @@
 
 ===========================================================
  
+* rename !wp to !tp ?
+* zoom segfaults
+* persistent nodes in graph
+
+* blue or black background for metadata in udis -> nicer for w32 and white screens
+  - use global palete in eval variable
+  - scr.palete = 1732367 -> when printing colors are peeked from this palete
 * grava widget gui show cur seek in title
 * '<' and '>' commands converted in prefix modifiers
-
+* cursor doesnt works in w32 console ??
 * executable offsets
   - execute a command on a certain offset
   - show funtion frames and arguments on the fly
   - automatize unpacks and so
 * Implement 'gui hack' command for 'GUI plugins'.
   - implement start/pause/continue/stop/reload button for a pid
-* store timestamp in trace nodes
 * frontend for hasher (Vala api for hashing)
-* timeline of a tarce |----------------|
+* timeline of a trace |----------------|
   - allow to view frame windows inside the timeline
+  - extended 'f' and 'F' keys mode
+  * List viewer (get offset as index fr cursor, right view shows the
+    contents of th selected offset
+    - linked list browser
 * random trace peeker
   - takes traces from the process while running every N usecs
 * print disasembly by trace from an starting address
   * roll/funroll code
   - pD 100 | sort
+  - true jumps are done, false ones are ignored
 * store more info in trace (output of command)
-* save traces to file
 * colorize traces in vala graphs
 * alphabetically sort eval vars
 (gdb) break ptrace if $r3 == 31
@@ -53,67 +63,6 @@
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 
-
-* Function frames:
-  - powerpc ; frame size > 56b and multiple of 8
-
-  mflr  r0              ; move retaddr to r0
-  stw   r0,8(sp)        ; save r0 in stack
-  stwu  sp, -frame(sp)  ; setup new frame
-  ...
-  lwz   r0, frame(sp)+8 ; return address to r0
-  addic sp,sp,frame     ; remove frame
-  mtlr  r0              ; restore return
-  blr                   ; return
-
- - intel (GNU)
-
-  push ebp         55
-  mov ebp, esp     89 e5
-  sub esp, 0x28    83 ec 28
-  ...
-  leave            c9
-  ret              c3
-
- - intel (MS)
-
-  sub esp, 0x25c   81 ec (5c 02 00 00)
-  ...
-  add esp, 0x25c   81 c4 (5c 02 00 00)
-  ret              c3
-
- - intel (MS2)
-
- mov edi, edi      8b ff
- push ebp          55
- mov ebp, esp      8b ec
- push esi
-
- pop esi
- pop ebp
- retn 8 ; esp+=8 && ret
-
- - arm
-
-  mov R12, SP
-  stmfd SP!, {R11, R12, LR, PC}
-  sub R11, R12, #4
-  (stack size: sub SP,SP,#0xC)
-  (return stuff:
-    ldr R3, =0xcacacafe
-    mov R0, R3)
-  ldmfd SP, { R11, SP, PC }
-
-  mov R12, SP
-  stmfd SP!, {R11, R12, LR, PC}
-  sub R11, R12, #4
-  ldmfd SP, { R11, SP, PC }
-
-=============================================================
-  
-* make graphs does not follow flagged calls :D
-* detachable pG window (uh?)
-  - add entry bar
 * search flag names take sense with keyword number!! not just index in array of search
   - pretty output
 * asm.comments does not work? or wtf?
@@ -134,9 +83,6 @@
   - from file formatted as search db
   - carver (find from-to,maxlen, ...)
   - plugin
-* List viewer (get offset as index fr cursor, right view shows the
-  contents of th selected offset
-  - linked list browser
 * on linux check randomize va space and warn user comments and bps will be wrong!
 * RDBs stored into Projects
   project.rdb = false ; store or not
@@ -187,34 +133,25 @@
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
-* totes les funcions internes ficarles en un punter accesible dsd els plugins
-  - hardcoded addres or passed to the plugin_init
-  - pass &config pointer
-  - pass &core pointer
-* print hexpairs without spaces :pX
-* add 'hack' plugin type
 * implement move data inside the core
 * implement insert data inda core
+
 * record radare commands
   - all commands executed within a recording time are stored on a single script file
   - you can later repeat it or edit
 
-/k keyword
-/k0 keyword
-/k1 keyword2
-/km0 keyword0-binarymask
-
 * MSB stego
 * Show FPU stack contents
+
 * exception frame information (try { ... } catch stuff)
 * ram dump driver for w32
+
 * switch table decompilation
 * virtual machine decompilation -> helpers for debugging soft VM opcodes (new user-defined archs)
 * implement bindiff in the core
   - Allow to bindiff two data blocks or repeated data blocks (src,dst,len)
   - use the pattern finding algorithm
 * wa doesnt handle file resize
-* show 'single chars' in disassembly
 * inv -> make offsets take sense
   - make cursor bytes take sense too
 * dinamic block size defined by:
@@ -223,30 +160,24 @@
     - allow to move forward/backward between 'bintags'
 * wtrace
   - rename to stepw
+  - trace using !wp or so? wtrace until reached wp?
 * cfg.dbgbsize (default block size for debugger)
 * breakpoints
   - command
   - log (trace)
   - enabled
 * RDB TO GML
-* tracejar lq toqui una addr de mem
-  - colorejar les parts de codi tracejades
-  - marcar una columna mes al disasm
-* zoom
-  - use stego+printablechars before 
 * keybinding assignment dosnt workz
-* bucles als grafos
+* circle to group looped code blocks in graph view
 * trace.libcode = trace libcode or not?
+  - automatic stepu 
 
 * support size of pointer with [xxx] get_offset expressions
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
   - also make use of cfg.endian
 
 ---------------------------
-* enable terminal echo when showing prompt (back from debugger) (stty echo)
-* Support to ignore signals
-  - i dont want to take care about SIGPIPE or SIGALRM anytime
-  - do not sigalarm in visual
+* do not sigalarm in visual
 * new flag type: temporal 
   - they will not survive a project save
 
@@ -255,24 +186,16 @@ w32 Debugger
 * No /w32 directory -> in makfeil
 * implement !maps
 * pid:// doesn't works
-* al premer ':' en visual mode no mostra prompt :?!?
 
 Bugs
 ====
 * s <unexistant-flag> -> do not seek
 * !ret should use !bt if possible
 * In visual mode the 'w' doesn't allows to erase chars (backspace..)
-   - pipecmd2str must use a buffered pprintf.
-     more optimal, no need to dump to tmp files
-
+   - pipecmd2str must use radare_cmd_str
 * new graph view
-  - birdfly mode -
-  * only calls are followed
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
 * C -> eval asm.comment=hello world
-* analitzar fletxetes en el code block actual
-  - mirar blocks de codi ficara linea ascii art
-  - poder escollir totes les fletxes a lesqerra o 2 panels amb '|'
 * import esteve's object injector
 
 
@@ -282,14 +205,15 @@ Rabin
   - pillar base address al vol ( rabin -b)
 * add full PE support to rabin
 * integrated with radare debugger /code analyer
-* Make radare -S be happy with rabin. find only in data sections
+* Move radare -S into rabin to find strings in data sections only
+  - like gnu strings with bfd does
 
 Search
 ======
-* Move %SEARCH into vars for eval!
 * ease keyword list searcihng (search.keywords_file?)
   - comma separated, range , eval is not enought.. 
 * Fix search progress bar and hits view (cleaner :!!)
+  - output configure by search.
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
   - must think on! - entropia = 1 en un block (tots numeros primers)
 
@@ -302,12 +226,12 @@ Core
 * inverse dump of blocks (ripe mode) (show stack graph in ascii art?)
 * support to append data (without getting out of the block_size) (or so..)
 * make plugin commands be mapped into namespaces
-* add cursor.pos, cursor.range eval vars
+* add scr.cursor scr.cursor_range evals
 * Multiple rdb load
   - allow to map into flags, etc..
   - efficient use of flags, labels and comments
 * optimized flag storing algorithm (a bit slower for >5000 strings)
-  * flag namespaces (comment, label, symbol, ...)
+  * flag namespaces (comment, label, symbol, ...) sym. cmt. ...
   * marcar blocks amb cursor i asignar un alias o nom (flag)
     - flags must have start and end
     - flags/comments/labels/dwarf
@@ -333,14 +257,14 @@ Rasm
 * Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
 * -f, load opcodes from file
-* Ignore stuff after ';'
-  - wA -> write using rsc asm
+* assemble from file
+* add directives
+* Must ignore stuff after ';'
 
 Visual
 ======
 * ease monitor access from the visual (xterm or so) (run inside dvtm?)
 * Debugger view (a key to change pure asm mode to debugger view)
-* fix ranged zooms
 * count the number of lines in backtrace and substract them to make the visual
 * add scrolling acceleration. (cfg.accel or so)
 
@@ -384,7 +308,6 @@ FileDescriptors
 
 Debugger
 ========
-* show flag name+offset in bp list
 * al atacharse a un proces deixa <pid>.rdb hauria de ser <program.pid>.rdb?
 * debug_new() -> alloc new glib object or so
   - allows multiple ps structures to be loaded
@@ -404,13 +327,13 @@ Debugger
 	char * register_name;
 	uchar *shellcode
   - all shellcodes must be coded and injected in the same way
+* show esp-ebp !!! stackframe is important everywhere! ??
 * show esp-ebp of stack at top (or mark a range)
   - show stack offsets
   - max size of stack
   - colorize esb-ebp with temp cursor or so
 * threading stuff for ptrace is broken. try to make the ada crackme
   http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
-* show esp-ebp !!! stackframe is important everywhere! ??
 * !contu <addr> doesn't works!
 * implement process freze and bootup
 * own elf loader (avoid system one)
@@ -418,6 +341,7 @@ Debugger
 * use pthread to list threads and control them
 * load libraries on the child process
 * breakpoint callbacks:
+ - integrated with !wp too
   A hook to an api can be emulated from the debugger, no need to inject
   code everywhere, just BP and change regs
 * add dosdebug:// to debug dosemu-based applications
@@ -438,7 +362,6 @@ Debugger
 
 Code analyzer
 =============
-* colorize comments
 * handle relative references to code and data
 * recursively block_split
 * make code.c autodetect traps like cc or jmp $$
@@ -446,6 +369,11 @@ Code analyzer
 * xrefs does not works for string references
   - make xrefs support base address
   - integrate xrefs into the core (debugger needs love too!)
+  [ xref struct ] ; basic jump table
+   - u64 from
+   - u64 to   -> nothing more :)
+  - only for valid analyzed code .. uh?
+  - data xrefs is not detected here. uh?
 * grava window with toolbar in a separate file
 * grava -> toggle node body visibility with a key (smarter graphs
 
@@ -463,8 +391,6 @@ Random
 ======
 * Update manpages
 * output of rsc help should start with ';'
-* pfd -> print flag +0x0 for the current block?
-  - move with cursor between them
 * rsc bdcolor doesnt works fine only shows first appearance??!
   - or is this a bytediff-bindiff problem!??!
 * Implement a boolean bindiff based on symdiffing (uses dwarf)
@@ -511,7 +437,6 @@ TOTHINK
    - statistics will show the time spend to run a determined piece of code
 
  - add software watchpoints with stepall (register and memory changes control)
- - log EIP, LABEL, OPCODE, REGISTERS CHANGED or whatever
  - fer un binpatch a traves del contexte del asm que sigui muahah
  - rasc : send file and execute (pitbull inside!)
   - use it for the fuzzer framework

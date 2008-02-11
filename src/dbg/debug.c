@@ -400,7 +400,7 @@ int debug_until(char *addr)
 	int bp_pos;
 	unsigned long ptr;
 	char buf[12];
-	off_t off;
+	u64 off;
 
 	if (!addr)
 		return 0;
@@ -427,7 +427,7 @@ int debug_until(char *addr)
 		debug_read_at(ps.tid, buf, 12, arch_pc());
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
-			off = (off_t)ptr;
+			off = (u64)ptr;
 			bp_pos = debug_set_bp(NULL, off, BP_SOFT);
 			debug_cont();
 			debug_rm_bp_num(bp_pos);
@@ -437,7 +437,7 @@ int debug_until(char *addr)
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
 			debug_read_at(ps.tid, &addr, 4, arch_pc()+0x16);
-			off = (off_t)addr;
+			off = (u64)addr;
 			bp_pos = debug_set_bp(NULL, addr, BP_SOFT);
 			printf("main at: 0x%x\n", addr);
 			debug_step(1);
@@ -458,8 +458,8 @@ int debug_mmap(char *args)
 {
 	char *arg;
 	char *file = args + 1;
-	off_t addr;
-	off_t size;
+	u64 addr;
+	u64 size;
 #if 0
 Dump of assembler code for function mmap:
 0xb7ec0110 <mmap+0>:    push   %ebp
@@ -609,7 +609,7 @@ int debug_th(char *cmd)
 	if (strchr(cmd,'?')) {
 		eprintf("Usage: th [pid]\n");
 		eprintf("- Change current thread\n");
-		eprintf("- Use !pstree to see other processes\n");
+		eprintf("- Use !pid to see other processes\n");
 		return 0;
 	} 
 	return th_list();
@@ -849,7 +849,7 @@ int debug_signal(char *args)
 	char *signame;
 	char *arg;
 	unsigned long handler;
-	off_t address;
+	u64 address;
 
 	if (!ps.opened) {
 		eprintf(":signal No program loaded.\n");
@@ -907,12 +907,12 @@ int debug_stepu()
 
 int debug_stepo()
 {
-	off_t pc = arch_pc(); //WS_PC();
+	u64 pc = arch_pc(); //WS_PC();
 	unsigned char cmd[4];
 	int skip;
 	int bp_pos;
 
-	debug_read_at(ps.tid, cmd, 4, (off_t)pc);
+	debug_read_at(ps.tid, cmd, 4, (u64)pc);
 
 	if ((skip = arch_is_stepoverable(cmd))) {
 		if (config_get("trace.log"))
@@ -938,8 +938,8 @@ int debug_stepo()
 int debug_step(int times)
 {
 	char opcode[4];
-	off_t pc, off;
-	off_t old_pc = 0;
+	u64 pc, off;
+	u64 old_pc = 0;
 	char *tracefile;
 	char *flagregs;
 
@@ -969,7 +969,7 @@ int debug_step(int times)
 				trace_add((u64)arch_pc());
 
 			if (pc == old_pc) {
-				debug_read_at(ps.tid, opcode, 4, (off_t)pc);
+				debug_read_at(ps.tid, opcode, 4, (u64)pc);
 				// determine infinite loop
 			#if __i386__
 				// XXX this is not nice!
@@ -1021,7 +1021,7 @@ int debug_step(int times)
 					char buf[1024];
 // XXX dbg.tracefile doesnt works as expected :(
 					//pprint_fd(fd);
-					sprintf(buf, "0x%08llx ", (off_t)pc);
+					sprintf(buf, "0x%08llx ", (u64)pc);
 					write(fd, buf, strlen(buf));
 					close(fd);
 				}
@@ -1143,7 +1143,7 @@ int debug_trace(char *input)
 			default:
 				pc = arch_pc();
 				if (is_usercode(pc)) {
-					radare_seek((off_t)pc, SEEK_SET);
+					radare_seek((u64)pc, SEEK_SET);
 					radare_read(0);
 					udis(10,1);
 					if (level == 3) {
@@ -1174,6 +1174,7 @@ int debug_trace(char *input)
 
 void debug_print_bps()
 {
+	char str[512];
 	int bps;
 	int i;
 
@@ -1182,9 +1183,10 @@ void debug_print_bps()
 		bps = ps.bps_n;
 		for(i = 0; i < MAX_BPS && bps > 0; i++) {
 			if(ps.bps[i].addr > 0) { 
+				string_flag_offset(str, ps.bps[i].addr);
 				if(ps.bps[i].hw)
-					eprintf("   at 0x%08x HARD\n", ps.bps[i].addr); 
-				else	eprintf("   at 0x%08x SOFT\n", ps.bps[i].addr);
+					eprintf(" 0x%08x HARD %s\n", ps.bps[i].addr, str); 
+				else	eprintf(" 0x%08x SOFT %s\n", ps.bps[i].addr, str);
 				bps--;	
 			}
 		}
@@ -1386,7 +1388,7 @@ int print_syscall()
 
 int debug_contuh(char *arg)
 {
-	off_t off = arch_pc();
+	u64 off = arch_pc();
 	int bp;
 	debug_step(1);
 	bp = debug_set_bp(NULL, off, BP_SOFT);
@@ -1447,21 +1449,21 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 
 	ptr = (char *)malloc(sz);
 	// backup code
-	debug_read_at(ps.tid, ptr, sz, (off_t)ps.entrypoint);
+	debug_read_at(ps.tid, ptr, sz, (u64)ps.entrypoint);
 	// inject shellcode
-	debug_write_at(ps.tid, fil, sz, (off_t)ps.entrypoint);
+	debug_write_at(ps.tid, fil, sz, (u64)ps.entrypoint);
 	// execute it
 	arch_jmp(ps.entrypoint);
 	debug_cont();
 	// restore
 	arch_jmp(eip);
-	debug_write_at(ps.tid, ptr, sz, (off_t)eip);
+	debug_write_at(ps.tid, ptr, sz, (u64)eip);
 	free(ptr);
 }
 
 int debug_inject(char *file)
 {
-	off_t sz = (off_t)0;
+	u64 sz = (u64)0;
 	int fd = open(file, O_RDONLY);
 	unsigned char *fil = NULL;
 
@@ -1470,9 +1472,9 @@ int debug_inject(char *file)
 		return 0;
 	}
 
-//	sz = (off_t)
-	lseek(fd, (off_t)0, SEEK_END) + (off_t)4;
-	lseek(fd, (off_t)0, SEEK_SET);
+//	sz = (u64)
+	lseek(fd, (u64)0, SEEK_END) + (u64)4;
+	lseek(fd, (u64)0, SEEK_SET);
 	if (sz>0xffff) {
 		eprintf("File too big\n");
 		close(fd);
@@ -1570,7 +1572,7 @@ int debug_rm_bp(unsigned long addr, int type)
 	if(ret < 0)
 		return ret;
 
-	flag_clear_by_addr((off_t)addr); //"breakpoint", addr, 1);
+	flag_clear_by_addr((u64)addr); //"breakpoint", addr, 1);
 
 	bp->addr = 0;
 	ps.bps_n--;
@@ -1580,7 +1582,7 @@ int debug_rm_bp(unsigned long addr, int type)
 
 int inline debug_rm_bp_num(int num)
 {
-#warning XXX THIS IS BUGGY! num != addr, off_t != int !!
+#warning XXX THIS IS BUGGY! num != addr, u64 != int !!
 	return debug_rm_bp(num, 1);
 }
 

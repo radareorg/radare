@@ -18,7 +18,6 @@
  *
  */
 
-#include "main.h"
 #include "radare.h"
 #include "flags.h"
 #include "utils.h"
@@ -99,6 +98,7 @@ rad_flag_t *flag_get_reset()
 	return flag_get_next(flag_ptr);
 }
 
+// TODO : use flag size
 int flags_between(u64 from, u64 to)
 {
 	int i,n=0;

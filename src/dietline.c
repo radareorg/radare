@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006, 2008
- *       pancake <pancake@youterm.com>
+ *       pancake <youterm.com>
  *
  * dietline is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,11 +76,16 @@ static int dl_readchar()
 	GetConsoleMode(h, &mode);
 	SetConsoleMode(h, 0); // RAW
 	ret = ReadConsole(h, buf,1, &out, NULL);
-	if (!ret)
+	if (!ret) {
+		// wine hack-around
+		if (read(0,buf,1) == 1)
+			return buf[0];
 		return -1;
+	}
 	SetConsoleMode(h, mode);
 #else
-	read(0, buf, 1);
+	if (read(0, buf, 1) < 1)
+		return -1;
 #endif
 	return buf[0];
 }
@@ -242,6 +247,9 @@ char *dl_readline(int argc, char **argv)
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
+			case -1:
+			case 0:
+				return NULL;
 			case 1: // ^A
 				dl_buffer_idx = 0;
 				break;
@@ -258,12 +266,6 @@ char *dl_readline(int argc, char **argv)
 					terminal_set_raw(0);
 					return NULL;
 				}
-				break;
-			case 10:
-				// ^J
-				break;
-			case 11:
-				// ^K
 				break;
 			case 19: // ^S -- backspace
 				dl_buffer_idx = dl_buffer_idx?dl_buffer_idx-1:0;

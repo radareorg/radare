@@ -550,8 +550,8 @@ int keystroke_run(unsigned char key) {
 	return 0;
 }
 
-#define TITLE if (config.color) printf("\e[36m");
-#define TITLE_END if (config.color) printf("\e[0m");
+#define TITLE if (config.color) cons_printf("\e[36m");
+#define TITLE_END if (config.color) cons_printf("\e[0m");
 
 void visual_show_help()
 {

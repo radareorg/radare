@@ -36,7 +36,11 @@ u64 debug_lseek(int fildes, u64 offset, int whence)
 			ps.offset = (u64)((unsigned long long)ps.offset+(unsigned long long)offset);
 			return ps.offset;
 		case SEEK_END:
+#if __x86_64__
 			return ps.offset = (u64)((unsigned long long)(-1));
+#else
+			return ps.offset = 0xffffffff;
+#endif
 		default:
 			return (u64)(unsigned long long)-1;
 		}

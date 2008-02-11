@@ -27,8 +27,8 @@
 #include <string.h>
 
 #define GETCOLOR int color = getv("COLOR");
-#define TITLE if (color) printf("\e[36m");
-#define TITLE_END if (color) printf("\e[0m");
+#define TITLE if (color) cons_printf("\e[36m");
+#define TITLE_END if (color) cons_printf("\e[0m");
 
 int help_message()
 {
@@ -154,7 +154,7 @@ static struct commads_t {
 	{ "restore", CB_SPACE, &page_restore },
 	{ "status",   CB_NOARGS, &debug_status },
 	{ "pids", CB_NOARGS , &debug_pids },
-	{ "pid", CB_NOARGS, &debug_pstree },
+	{ "pid", CB_SPACE, &debug_pstree },
 	{ "attach", CB_INT, &debug_attach },
 	{ "skip", CB_INT, &debug_skip },
 	{ "detach", CB_NOARGS, &debug_detach },

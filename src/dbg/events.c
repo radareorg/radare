@@ -28,6 +28,15 @@
 
 #include "libps2fd.h"
 
+struct event_t events[] = {
+	{ "stop", 19, 0 },
+	{ "trap", 5,  0 },
+	{ "pipe", 13,  0 },
+	{ "alarm", 14, 0 },
+	{ "fpe", 8, 0},
+	{ "ill", 4, 0},
+	{ NULL, 0, 0 }
+};
 void event_ignore_list()
 {
 	int i;
@@ -80,15 +89,6 @@ int event_is_ignored(int id)
 #include "mem.h"
 #include "arch/i386.h"
 
-struct event_t events[] = {
-	{ "stop", 19, 0 },
-	{ "trap", 5,  0 },
-	{ "pipe", 13,  0 },
-	{ "alarm", 14, 0 },
-	{ "fpe", 8, 0},
-	{ "ill", 4, 0},
-	{ NULL, 0, 0 }
-};
 
 
 int events_init()

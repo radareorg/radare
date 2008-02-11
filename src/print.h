@@ -28,7 +28,7 @@ typedef enum {
 	FMT_TIME_FTIME,       FMT_HEXQ,  FMT_HEXD,  FMT_HEXW,      FMT_HEXB,
 	FMT_HEXBS,FMT_REGEXP, FMT_SHORT, FMT_VISUAL,FMT_ASHC,      FMT_DISAS, FMT_UDIS,
 	FMT_PRINT, FMT_ASCP,  FMT_ASC0,  FMT_WASC0, FMT_DBG,       FMT_ANAL, FMT_CODE,
-	FMT_CODEGRAPH, FMT_ZOOM, FMT_USER, FMT_LSB, FMT_MEMORY
+	FMT_CODEGRAPH, FMT_ZOOM, FMT_USER, FMT_LSB, FMT_MEMORY,    FMT_PERCENT
 } print_fmt_t;
 
 /* plain colors */
@@ -61,6 +61,7 @@ typedef enum {
 #define COLOR_7F C_MAGENTA
 #define COLOR_PR C_YELLOW
 #define COLOR_HD C_GREEN
+// addresses
 #define COLOR_AD C_GREEN
 
 /** Print capabilities for formats */
