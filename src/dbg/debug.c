@@ -200,7 +200,7 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	prctl(PR_SET_PDEATHSIG, SIGKILL, 0,0,0);
 #endif
 	ptr = config_get("child.chdir");
-	if (!strnull(ptr)) chdir(p);
+	if (!strnull(ptr)) chdir(ptr);
 #if __UNIX__
 	ptr = config_get("child.chroot");
 	if(!strnull(ptr)) chroot(ptr);
@@ -937,7 +937,7 @@ int debug_stepo()
 
 int debug_step(int times)
 {
-	char opcode[4];
+	unsigned char opcode[4];
 	u64 pc, off;
 	u64 old_pc = 0;
 	char *tracefile;

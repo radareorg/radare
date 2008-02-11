@@ -47,7 +47,7 @@ int radare_hack_help()
 	return 0;
 }
 
-static int hack_nop()
+static int hack_nop(char *lold)
 {
 	struct aop_t aop;
 	char buf[1024];
@@ -74,7 +74,7 @@ static int hack_nop()
 	return 0;
 }
 
-static int hack_negjmp()
+static int hack_negjmp(char *lold)
 {
 	int delta = (config.cursor_mode)?config.cursor:0;
 	char *buf = config.block+delta;
@@ -144,7 +144,7 @@ static int hack_negjmp()
 	return 0;
 }
 
-static int hack_forcejmp()
+static int hack_forcejmp(char *lold)
 {
 //	debug_getregs(ps.tid, &reg);
 //	debug_read_at(ps.tid, buf, 5, R_EIP(reg));
@@ -170,10 +170,9 @@ static int hack_forcejmp()
 
 struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)())
 {
-	struct hack_t *hack;
-	hack = (struct hack_t *)malloc(sizeof(struct hack_t));
-	hack->name = strdup(name);
-	hack->desc = strdup(desc);
+	struct hack_t *hack = (struct hack_t *)malloc(sizeof(struct hack_t));
+	hack->name = name?strdup(name):NULL;
+	hack->desc = desc?strdup(desc):NULL;
 	hack->callback = callback;
 	return hack;
 }

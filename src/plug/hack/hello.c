@@ -5,7 +5,7 @@
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 
-void my_hack(char *input)
+int my_hack(char *input)
 {
 	int (*r)(char *cmd, int log);
 
@@ -25,5 +25,3 @@ struct plugin_hack_t radare_plugin = {
 	.desc = "Hello hack example",
 	.callback = &my_hack
 };
-
-main() { printf("i'm a plugin!\n"); }

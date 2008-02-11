@@ -121,16 +121,17 @@ void radare_sync()
 
 int radare_cmd_raw(char *tmp, int log)
 {
-	int i,f;
-	int fd = 0;
+	FILE *fd;
+	int i,f,fdi = 0;
 	char *eof;
 	char *eof2;
 	char *piped;
-	char file[1024], str[1024];
+	char file[1024], buf[1024];
 	char *input, *oinput;
+	char *str, *st;
 	char *next = NULL;
 
-	if (tmp == NULL || tmp[0]=='\0')
+	if (strnull(tmp))
 		return 0;
 
 	tmp = strclean(tmp);
@@ -140,8 +141,7 @@ int radare_cmd_raw(char *tmp, int log)
 		return 0;
 	}
 
-	oinput = strdup(tmp);
-	input = oinput;
+	input = oinput = strdup(tmp);
 
 	if (input[0] == ':') {
 		config.verbose = ((int)config_get("cfg.verbose"))^1;
@@ -174,9 +174,8 @@ int radare_cmd_raw(char *tmp, int log)
 			"  > .!regs*\n"
 			"  > . /tmp/flags-saved\n");
 			break;
-		case ' ': {
-			char buf[1024];
-			FILE *fd = fopen(input+2,"r");
+		case ' ':
+			fd = fopen(input+2,"r");
 			if (fd) {
 				while(!feof(fd)) {
 					buf[0]='\0';
@@ -187,48 +186,48 @@ int radare_cmd_raw(char *tmp, int log)
 				fclose(fd);
 			} else
 				cons_printf("oops (%s)\n", input+2);
-			}
 			break;
 		default:
 			/* hack to parse .!regs* on w32 */
 			/* maybe everything but debug commands must be in this way */
 			if (strstr(input,"regs")) {
-				char *str = radare_cmd_str(input+1);
-				char *st = str;
-				for(i=0;str[i];i++) {
+				str = radare_cmd_str(input+1);
+				st = str;
+				for(i=0;str && str[i];i++) {
 					if (str[i]=='\n') {
-						str[i++]='\0';
+						str[i]='\0';
 						radare_cmd(st, 0);
-						st = str+i;
+						st = str+i+1;
 					}
 				}
 				config_set_i("cfg.verbose", 1);
+				free(oinput);
 				return;
 			}
 			pipe_stdout_to_tmp_file(file, input+1);
 			f = open(file, O_RDONLY);
 			if (f == -1) {
 				eprintf("radare_cmd_raw: Cannot open.\n");
-				free(oinput);
 				config_set_i("cfg.verbose", 1);
+				free(oinput);
 				return 0;
 			}
 			for(;!config.interrupted;) {
 				int v = config_get("cfg.verbose");
-				str[0]='\0';
+				buf[0]='\0';
 				for(i=0;i<1000;i++) {
-					if (read(f, &str[i], 1)<=0) {
+					if (read(f, &buf[i], 1)<=0) {
 						i = -1;
 						break;
 					}
-					if (str[i]=='\n') {
-						str[i]='\0';
+					if (buf[i]=='\n') {
+						buf[i]='\0';
 						break;
 					}
 				}
 				if (i==-1) break;
-				if (str[0])
-					radare_cmd(str, 0);
+				if (buf[0])
+					radare_cmd(buf, 0);
 				config_set_i("cfg.verbose", 1);
 			}
 			close(f);
@@ -262,15 +261,15 @@ int radare_cmd_raw(char *tmp, int log)
 				piped[0]='\0';
 
 				pipe_stdout_to_tmp_file(tmp, piped+1);
-				fd = open(tmp, O_RDONLY);
-				if (fd == -1) {
+				fdi = open(tmp, O_RDONLY);
+				if (fdi == -1) {
 					perror("open");
 					free(oinput);
 					return 0;
 				}
 
 				memset(filebuf, '\0', 2048);
-				len = read(fd, filebuf, 1024);
+				len = read(fdi, filebuf, 1024);
 				if (len<1) {
 					eprintf("cannot read?\n");
 					return 0;
@@ -332,7 +331,7 @@ int radare_cmd_raw(char *tmp, int log)
 			if (eof[0]=='\n') eof[0]=' ';
 		commands_parse(input);
 
-		if (fd!=0) {
+		if (fdi!=0) {
 			fflush(stdout);
 			close(fd);
 			dup2(std, 1);
@@ -350,7 +349,7 @@ int radare_cmd_raw(char *tmp, int log)
 		next[0] = '&';
 		for(next=next+2;*next==' ';next=next+1);
 
-		free(oinput);
+		//free(oinput);
 		ret = radare_cmd(next, 0);
 	//	cons_flush();
 		return ret; 
@@ -365,7 +364,9 @@ char *radare_cmd_str(const char *cmd)
 	char *buf;
 	cons_flush();
 	radare_cmd(cmd, 0);
-	buf = strdup(cons_get_buffer());
+	buf = cons_get_buffer();
+	if (buf)
+		buf = strdup(buf);
 	cons_reset();
 	return buf;
 }
@@ -466,7 +467,8 @@ int radare_cmd(char *tmp, int log)
 	}
 
 	/* repeat stuff */
-	repeat = atoi(tmp);
+	if (tmp)
+		repeat = atoi(tmp);
 	if (repeat<1)
 		repeat = 1;
 	for(;tmp&&(tmp[0]>='0'&&tmp[0]<='9');)

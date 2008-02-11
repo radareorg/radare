@@ -104,18 +104,18 @@ static void config_old_init()
 
 struct config_new_t config_new;
 
-struct config_node_t *config_node_new(char *name, char *value)
+struct config_node_t* config_node_new(const char *name, const char *value)
 {
-	struct config_node_t *node;
+	struct config_node_t *node = 
+		(struct config_node_t *)malloc(sizeof(struct config_node_t));
 
-	node = (struct config_node_t *)malloc(sizeof(struct config_node_t));
+	INIT_LIST_HEAD(&(node->list));
 	node->name = strdup(name);
 	node->hash = strhash(name);
 	node->value = value?strdup(value):strdup("");
 	node->flags = CN_RW | CN_STR;
 	node->i_value = 0;
 	node->callback = NULL;
-	INIT_LIST_HEAD(&(node->list));
 
 	return node;
 }

@@ -7,9 +7,10 @@
 
 ===========================================================
  
-* rename !wp to !tp ?
 * zoom segfaults
+* trace on !wp
 * persistent nodes in graph
+* clean valgrind stuff
 
 * blue or black background for metadata in udis -> nicer for w32 and white screens
   - use global palete in eval variable

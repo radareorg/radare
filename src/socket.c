@@ -46,6 +46,25 @@ int socket_write(int fd, unsigned char *buf, int len)
 #endif
 }
 
+/* waits secs until new data is received.     */
+/* returns -1 on error, 0 is false, 1 is true */
+int socket_ready(int fd, int secs)
+{
+	fd_set rfds;
+	struct timeval tv;
+	int retval;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	tv.tv_sec = secs;
+	tv.tv_usec = 0;
+
+	retval = select(1, &rfds, NULL, NULL, &tv);
+	if (retval==-1)
+		return -1;
+	return FD_ISSET(0, &rfds);
+}
+
 void socket_printf(int fd, const char *fmt, ...)
 {
 #if !__linux__

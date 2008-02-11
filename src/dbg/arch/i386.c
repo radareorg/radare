@@ -82,7 +82,6 @@ unsigned long get_reg(char *reg)
 	return -1;
 }
 
-
 long long arch_syscall(int pid, int sc, ...)
 {
         long long ret = (u64)-1;
@@ -1538,6 +1537,8 @@ int arch_is_call(const unsigned char *cmd)
 
 int arch_is_soft_stepoverable(const unsigned char *cmd)
 {
+	if (cmd==NULL)
+		return 0;
 	if (cmd[0]==0xf3) // repz
 		return 2;
 
