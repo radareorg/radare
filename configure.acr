@@ -51,6 +51,11 @@ ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
+CHKVER vala-1.0 0.1.6
+IFNOT HAVE_VALA_1_0_VERSION_0_1_6 {
+	ECHO Needs vala 0.1.6 at least ;
+	VALAC = '' ;
+}
 IFEQ VALAC valac ; {
 	WITH_VALA = 0 ;
 	VALA = 0 ;
@@ -68,15 +73,16 @@ CFLAGS = $_CFLAGS ;
 CHKLIB ewf
 
 
-(( PERL ))
+(( PERL 
 LANG_PERL
 CHECK_PERL_MODULE ExtUtils::Embed
 ARG_WITH HAVE_PERL perl build with embedded perl extension ;
 IFNOT HAVE_PM_EXTUTILSEMBED { HAVE_PERL = 0 ; }
 
-(( PYTHON ))
+PYTHON
 LANG_PYTHON
 ARG_WITH HAVE_PYTHON python build with embedded python extension ;
+))
 
 (( GUI ))
 ARG_WITHOUT GUI gui radare without the gtk frontend ;
@@ -96,7 +102,7 @@ IFNOT GUI {
 	ECHO Vala build disabled, no gtk-dev found ;
 }
 
-REPORT GUI WII VALA JAVA USBSNF SYSPROXY HAVE_PERL HAVE_PYTHON DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+REPORT GUI WII VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
 SUBDIRS . ./config.mk src src/rsc src/rfile ;

@@ -24,6 +24,7 @@
 #include <windows.h>
 #endif
 #if __UNIX__
+#include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -85,6 +86,61 @@ void socket_printf(int fd, const char *fmt, ...)
 	va_end(ap);
 }
 
+#if __UNIX__
+int socket_unix_connect(char *file)
+{
+	struct sockaddr_un addr;
+	int sock;
+
+	sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (sock <0)
+		return -1;
+	// TODO: set socket options
+	addr.sun_family = AF_UNIX;
+	strncpy (addr.sun_path, file, sizeof(addr.sun_path));
+
+	if (bind (sock, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
+		close(sock);
+		return -1;
+	}
+
+	if (connect(sock, (struct sockaddr *)&addr, sizeof(addr))==-1) {
+		close(sock);
+		return -1;
+	}
+
+	return sock;
+}
+
+int socket_unix_listen(const char *file)
+{
+	struct sockaddr_un unix_name;
+	int sock;
+
+	sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (sock <0)
+		return -1;
+	// TODO: set socket options
+	unix_name.sun_family = AF_UNIX;
+	strncpy (unix_name.sun_path, file, sizeof(unix_name.sun_path));
+
+	/* just to make sure there is no other socket file */
+	unlink (unix_name.sun_path);
+
+	if (bind (sock, (struct sockaddr *) &unix_name, sizeof (unix_name)) < 0)
+		return -1;
+
+	/* change permissions */
+	if (chmod (unix_name.sun_path, 0700) != 0)
+		return -1;
+
+	if (listen(sock, 1))
+		return -1;
+	
+	return sock;
+}
+#endif
+
 int socket_connect(char *host, int port)
 {
 	struct sockaddr_in sa;
@@ -120,6 +176,7 @@ int socket_connect(char *host, int port)
 
 	return s;
 }
+
 
 int socket_listen(int port)
 {
@@ -205,4 +262,3 @@ int socket_fgets(char *buf,  int size)
 
 	return ret;
 }
-

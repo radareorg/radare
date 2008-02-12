@@ -24,8 +24,6 @@ WII=0
 W32=0
 SYSPROXY=0
 VALA=1
-HAVE_PERL=0
-HAVE_PYTHON=0
 GUI=1
 split_host() {
 S="$"
@@ -151,8 +149,6 @@ printf "\nOptional Features:
   --enable-w32           enables the build of w32 version of the framework (mingw32) 
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
-  --with-perl            build with embedded perl extension 
-  --with-python          build with embedded python extension 
   --without-gui          radare without the gtk frontend \n"
 printf "\nSome influential environment variables:
   CC          C compiler command
@@ -171,7 +167,6 @@ take_environ() {
 : ${SH:=/bin/sh}
 : ${CPP:=cpp}
 : ${CC:=gcc}
-: ${PERL:=perl}
 : ${PREFIX:=/usr/local/}
 }
 
@@ -195,11 +190,11 @@ case $flag in
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
 echo "VERSION:   0.9.3"
-echo "LANGS:     c perl python"
-echo "REQUIRED:  libdl"
+echo "LANGS:     c"
+echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.1.6"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
-echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-perl --with-python --without-gui"
+echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --without-gui"
 	exit 0
 	;;
 "--cache-file") 
@@ -249,8 +244,6 @@ echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --w
 "--enable-w32") W32="1"; ;;
 "--with-sysproxy") SYSPROXY="1"; ;;
 "--without-vala") VALA="0"; ;;
-"--with-perl") HAVE_PERL="1"; ;;
-"--with-python") HAVE_PYTHON="1"; ;;
 "--without-gui") GUI="0"; ;;
 *) if [ "$value" ]; then eval "`echo $flag2=$value`" ; 
 else echo ; echo "WARNING: Unknown flag '$flag'." >&2 ; echo ; fi ;;
@@ -266,7 +259,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY VALA HAVE_VALAC VALAC WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF PERL HAVE_LANG_PERL HAVE_PM_EXTUTILSEMBED HAVE_PERL PYTHON HAVE_LANG_PYTHON HAVE_PYTHON GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_1_6 WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA"
 
 create_environ
 
@@ -278,7 +271,8 @@ echo "checking target system type... ${TARGET}"
 split_host BUILD HOST TARGET
 echo "checking for working directories... ${WODIS}"
 echo "using prefix '${PREFIX}'"
-ACR_RMFILES=" test.c a.out a.exe test.pl"
+ACR_RMFILES=" test.c a.out a.exe"
+
 
 
 
@@ -408,6 +402,14 @@ else
  HAVE_VALAC=0
  VALAC=valac
  echo no ; fi
+HAVE_VALA_1_0_VERSION_0_1_6=0
+printf "checking version of library vala-1.0 >= 0.1.6... "
+pkg-config --atleast-version=0.1.6 vala-1.0 >/dev/null 2>&1
+if [ $? = 0 ]; then HAVE_VALA_1_0_VERSION_0_1_6=1 ; echo ok; else
+echo "no" ; fi
+if [ "$HAVE_VALA_1_0_VERSION_0_1_6" = "0" ]; then
+echo "   Needs vala 0.1.6 at least" >&2 
+export VALAC=""; fi
 if [ "$VALAC" = "valac" ]; then
 export WITH_VALA="0"
 export VALA="0"
@@ -447,33 +449,6 @@ else
 	echo no  ; fi }
 check_library HAVE_LIB_EWF ewf 0
 
-printf "checking for perl... "
-HAVE_LANG_PERL=0
-${PERL} -e '' 2>&1 > /dev/null
-if [ $? = 0 ]; then
-  echo ok ; HAVE_LANG_PERL=1 ; else
-  echo no  ; fi
-printf "checking for 'ExtUtils::Embed' perl module ... "
-perl -mExtUtils::Embed -e '' 2>/dev/null
-if [ $? = 0 ]; then
-	HAVE_PM_EXTUTILSEMBED=1
-	echo ok
-else
-	HAVE_PM_EXTUTILSEMBED=0
-	echo no
- fi
-if [ "$HAVE_PM_EXTUTILSEMBED" = "0" ]; then
-export HAVE_PERL="0"; fi
-printf "checking for python... "
-HAVE_LANG_PYTHON=0
-for A in `echo ${PATH} | sed -e 's,:, ,g'` ; do
-PYTHON=`ls ${A}/python* 2>/dev/null`
-if [ "${PYTHON}" ]; then
- PYTHON=`echo ${PYTHON} | awk '{print $1; }'`
- echo ${PYTHON} ; HAVE_LANG_PYTHON=1 ; break ; fi
-done
-if [ -z "${PYTHON}" ]; then
-echo no ; fi
 printf "checking for gtkdialog... "
 if [ -x "${GTKDIALOG}" ]; then
 FIND=${GTKDIALOG}
@@ -560,7 +535,7 @@ done
 do_remove
 echo
 echo "Final report:"
-for A in  GUI WII VALA JAVA USBSNF SYSPROXY HAVE_PERL HAVE_PYTHON DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ; do # REPORT
+for A in  GUI WII VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ; do # REPORT
 eval VAL="\$${A}"
 [ -z "${VAL}" ] && VAL="(null)"
 echo " - ${A} = ${VAL}"
