@@ -720,10 +720,10 @@ void visual_draw_screen()
 #else
 	cons_strcat("\e[0;0H");
 #endif
-	cons_printf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d) %s %s] %s            \n",
+	cons_printf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d sz=%d) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
-		config.cursor,
+		config.cursor, config.cursor-config.ocursor,
 		get_print_format_name(last_print_format),
 		(inv)?"inv ":"",
 		buf);

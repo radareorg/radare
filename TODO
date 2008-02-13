@@ -7,6 +7,12 @@
 
 ===========================================================
  
+* cons_buffer processor
+  -> replace a string for another one.
+     0x4804800 -> ELF_BASE
+  -> like flags but everywhere!1 :D
+
+* colorize flagged bytes in hexdump
 * zoom segfaults
 * trace on !wp
 * persistent nodes in graph

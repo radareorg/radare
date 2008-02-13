@@ -519,6 +519,7 @@ void config_init()
 	config_set("file.project", "");
 	config_set("file.entrypoint", "");
 	config_set("file.rdb", "");
+	config_set("file.scrfilter", "");
 	config_set_i("file.size", 0);
 	node = config_set_i("file.baddr", 0);
 	node->callback = &config_baddr_callback;

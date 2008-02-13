@@ -245,8 +245,31 @@ void palloc(int moar)
 
 void cons_flush()
 {
-	//eprintf("Flush\n");
-	if (cons_buffer && cons_buffer[0]) {
+	FILE *fd;
+	char *ptr;
+	char buf[1024];
+
+	if (!strnull(cons_buffer)) {
+		char *file = config_get("file.scrfilter");
+		if (!strnull(file)) {
+			fd = fopen(file, "r");
+			if (fd) {
+				while(!feof(fd)) {
+					buf[0]='\0';
+					fgets(buf, 1020, fd);
+					if (buf[0]) {
+						buf[strlen(buf)-1]='\0';
+						char *ptr = strchr(buf, '\t');;
+						if (ptr) {
+							ptr[0]='\0'; ptr = ptr +1;
+							cons_buffer = strsub(cons_buffer, buf, ptr, 1);
+							cons_buffer_len = strlen(cons_buffer);
+						}
+					}
+				}
+				fclose(fd);
+			}
+		}
 #if __WINDOWS__
 		if (_print_fd == 1)
 			cons_w32_print(cons_buffer);
