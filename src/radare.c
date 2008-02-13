@@ -101,6 +101,10 @@ void radare_sync()
 	if (config.debug||config.unksize)
 		return;
 
+	/* enlarge your integer overflows */
+	if (config.seek>0xfffffffffffffff)
+		config.seek = 0;
+
 	if (config.size!=-1) {
 		if (config.block_size > config.size)
 			radare_set_block_size_i(config.size);
@@ -433,7 +437,12 @@ int radare_cmd(char *tmp, int log)
 		C cons_printf(C_RED"Disassembly:\n"C_RESET);
 		else cons_printf("Disassembly:\n");
 
-		radare_cmd("s eip", 0);
+		//radare_cmd("s eip", 0);
+		{
+			u64 pc = flag_get_addr("eip");
+			if (pc<config.seek || pc > config.seek+config.block_size)
+				radare_cmd("s eip",0);
+		}		
 		config.height-=14;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;

@@ -900,7 +900,7 @@ void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode)
 		bs = config.limit - config.seek;
 
 	if (config.limit && config.seek >= config.limit) {
-		D eprintf("End of file reached.\n");
+		//D eprintf("End of file reached.\n");
 		return;
 	}
 

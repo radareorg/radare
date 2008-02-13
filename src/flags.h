@@ -19,6 +19,7 @@ typedef struct {
 void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
+u64 flag_get_addr(const char *name);
 rad_flag_t *flag_get(const char *name);
 rad_flag_t *flag_get_i(int id);
 rad_flag_t *flag_get_next();

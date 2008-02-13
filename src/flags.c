@@ -84,6 +84,15 @@ rad_flag_t *flag_get(const char *name)
 	return NULL;
 }
 
+u64 flag_get_addr(const char *name)
+{
+	rad_flag_t *foo = flag_get(name);
+	if (foo)
+		return foo->offset;
+	return 0;
+}
+
+
 static int flag_ptr = -1;
 
 rad_flag_t *flag_get_next(int delta)

@@ -490,7 +490,7 @@ void config_init()
 	config_set_i("asm.nbytes", 10); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
-	config_set("asm.trace", "true"); // trace counter
+	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly

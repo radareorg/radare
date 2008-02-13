@@ -762,6 +762,7 @@ static void ringring()
 #endif
 }
 
+static int do_repeat=0;
 static int repeat=0;
 static int repeat_weight=1;
 
@@ -774,6 +775,9 @@ CMD_DECL(visual)
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
+
+	undo_push();
+
 	if (config.height<1)
 		config_set_i("scr.height", 24);
 
@@ -946,17 +950,29 @@ CMD_DECL(visual)
 			}
 			break;
 		}
+
 		/* command repeat */
 		if (key>'0'&&key<='9') {
-			repeat*=10;
-			repeat+=(key-'0');
-			continue;
+			if (do_repeat) {
+				repeat*=10;
+				repeat+=(key-'0');
+				continue;
+			} else {
+				udis_jump(key-'0'-1);
+				last_print_format = FMT_UDIS;
+				continue;
+			}
 		}
 
 		if (repeat==0)repeat=1;
 		//else repeat-=1;
 		for (i=0;i<repeat;i++) {
 		switch(key) {
+		case 'r':
+			repeat--;
+			do_repeat =1;
+			break;
+			
 		case ':':
 			terminal_set_raw(0);
 			lpf = last_print_format;
@@ -1092,7 +1108,6 @@ CMD_DECL(visual)
 				else	config.seek -= config.block_size;
 				cons_clear();
 			}
-			if (config.seek<0) config.seek = 0; // TODO: double check?
 			if (config.block_size >= (config.size-config.seek))
 				cons_clear();
 			break;
@@ -1197,6 +1212,7 @@ CMD_DECL(visual)
 		}
 #endif
 		}
+		do_repeat = 0;
 		repeat = 0;
 		repeat_weight=1;
 	}

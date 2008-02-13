@@ -260,6 +260,9 @@ u64 radare_seek(u64 offset, int whence)
 		config.seek = seek;
 	else	config.seek+= offset;
 
+	if (config.seek <0)
+		config.seek = 0;
+
 	io_lseek(config.fd, config.seek, SEEK_SET);
 
 	return seek;

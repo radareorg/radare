@@ -241,8 +241,22 @@ void udis_init()
 	ud_set_input_hook(&ud_obj, input_hook_x);
 }
 
+static int jump_n = 0;
+static u64 jumps[10]; // only 10 jumps allowed
+
+void udis_jump(int n)
+{
+	if (n<jump_n) {
+		radare_seek(jumps[n], SEEK_SET);
+		config.seek = jumps [n];
+		radare_read(0);
+		undo_push();
+	}
+}
+
 void udis(int len, int rows)
 {
+	struct aop_t aop;
 	char* hex1, *hex2;
 	char c;
 	int i,delta;
@@ -260,6 +274,7 @@ void udis(int len, int rows)
 	u64 myinc = 0;
 	struct reflines_t *reflines = NULL;
 	char *follow; 
+	jump_n = 0;
 
 	len*=2; // uh?!
 
@@ -313,11 +328,8 @@ void udis(int len, int rows)
 				code_lines_print(reflines, config.baddr+ud_insn_off(&ud_obj));
 
 			if (show_offset) {
-				C {
-					cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
-				} else {
-					cons_printf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
-				}
+				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+				else cons_printf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
 			}
 			if (show_size)
 				cons_printf("%d ", dislen(config.block+seek));
@@ -326,7 +338,6 @@ void udis(int len, int rows)
 					trace_count(config.baddr + ud_insn_off(&ud_obj)),
 					trace_times(config.baddr + ud_insn_off(&ud_obj)));
 			}
-
 			if (show_bytes) {
 				int max = nbytes;
 				int cur = myinc;
@@ -342,13 +353,11 @@ void udis(int len, int rows)
 				if (cur != myinc)
 					cons_printf(". ");
 			}
-
 			hex1 = ud_insn_hex(&ud_obj);
 			hex2 = hex1 + 16;
 			c = hex1[16];
 			hex1[16] = 0;
 			cons_printf("%-24s", ud_insn_asm(&ud_obj));
-
 			hex1[16] = c;
 			if (strlen(hex1) > 24) {
 				C cons_printf(C_RED);
@@ -359,9 +368,15 @@ void udis(int len, int rows)
 			}
 			C cons_printf(C_RESET);
 
+			arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes-myinc, &aop);
+			if (aop.jump) {
+				if (++jump_n<10) {
+					jumps[jump_n-1] = aop.jump;
+					cons_printf("\e[0m   [%d] (0x%llx)", jump_n,jumps[jump_n-1]);
+				}
+			}
+
 			if (show_splits) {
-				struct aop_t aop;
-				arch_x86_aop((unsigned long)seek, (const unsigned char *)config.block+bytes-myinc, &aop);
 				if (aop.jump||aop.eob) {
 					NEWLINE
 					cons_printf("; ------------------------------------ ");
