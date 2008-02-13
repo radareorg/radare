@@ -338,6 +338,9 @@ void udis(int len, int rows)
 					trace_count(config.baddr + ud_insn_off(&ud_obj)),
 					trace_times(config.baddr + ud_insn_off(&ud_obj)));
 			}
+			if (is_cursor(seek+i, myinc)) {
+				cons_printf("*");
+			} else  cons_printf(" ");
 			if (show_bytes) {
 				int max = nbytes;
 				int cur = myinc;
@@ -372,7 +375,7 @@ void udis(int len, int rows)
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
-					cons_printf("\e[0m   [%d] (0x%llx)", jump_n,jumps[jump_n-1]);
+					cons_printf("\e[0m   [%d]", jump_n,jumps[jump_n-1]);
 				}
 			}
 

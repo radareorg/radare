@@ -328,6 +328,9 @@ int config_zoombyte_callback(void *data)
 	if (!strcmp(node->value, "flags")) {
 		// ok
 	} else
+	if (!strcmp(node->value, "FF")) {
+		// ok
+	} else
 	if (!strcmp(node->value, "entropy")) {
 		// ok
 	} else

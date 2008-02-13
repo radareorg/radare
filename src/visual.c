@@ -793,6 +793,7 @@ CMD_DECL(visual)
 	cons_clear();
 	terminal_set_raw(1);
 	while(1) {
+		if (inc<1) inc = 1;
 		dec = inc;
 		setenv("VISUAL", "1", 1);
 		update_environment();
@@ -964,6 +965,7 @@ CMD_DECL(visual)
 			}
 		}
 
+		if (inc<1)inc=1;
 		if (repeat==0)repeat=1;
 		//else repeat-=1;
 		for (i=0;i<repeat;i++) {

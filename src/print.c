@@ -122,63 +122,32 @@ void print_color_byte(char *str, int c)
 		cons_printf(str, c);
 }
 
-void cursor_precolor(int i)
+int is_cursor(int from, int len)
 {
-	if (config.cursor_mode) {
+	int end = from+len;
+	if (config.cursor_mode == 0)
+		return 0;
+
+	for(;from<end;from++) {
 		if (config.ocursor != -1) {
-			if ((i >= config.ocursor && i <= config.cursor)
-			||  (i <= config.ocursor && i >= config.cursor)) {
-				cons_strcat("\e[7m");
-				return;
-			}
-		} else {
-			if (i == config.cursor) {
-				cons_strcat("\e[7m");
-				return;
-			}
-		}
+			if ((from >= config.ocursor && from <= config.cursor)
+			||  (from <= config.ocursor && from >= config.cursor))
+				return 1;
+		} else
+		if  (from == config.cursor)
+			return 1;
 	}
-	return;
+	return 0;
 }
 
 void print_color_byte_i(int i, char *str, int c)
 {
-	if (config.cursor_mode) {
-		if (config.ocursor != -1) {
-			if ((i >= config.ocursor && i <= config.cursor)
-			||  (i <= config.ocursor && i >= config.cursor)) {
-				cons_strcat("\e[7m");
-				print_color_byte(str, c);
-				cons_strcat("\e[0m");
-				return;
-			}
-		} else {
-			if (i == config.cursor) {
-				cons_strcat("\e[7m");
-				print_color_byte(str, c);
-				cons_strcat("\e[0m");
-				return;
-			}
-		}
-	}
-	print_color_byte(str, c);
-	return;
-}
-
-void print_color_byte_is(int i, char *str, char *c)
-{
-	char cash[128];
-
-	if (config.cursor_mode) {
-		if (i == config.cursor) {
-			strcpy(cash, "\e[7m");
-			strcat(cash, str);
-			strcat(cash, C_RESET);
-			cons_printf(cash, c);
-		} else
-			print_color_byte_i(i, str, 0);
+	if (is_cursor(i,1)) {
+		cons_strcat("\e[7m");
+		print_color_byte(str, c);
+		cons_strcat("\e[0m");
 	} else
-		print_color_byte_i(i, str, 0);
+	print_color_byte(str, c);
 }
 
 void format_show_help (print_mode_t mode)
@@ -663,7 +632,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			D print_addr(seek+i+config.baddr);
 			for(j = i+inc; i<j && i<len; i++) {
 				C cons_printf(get_color_for(buf[i]));
-				cursor_precolor(i);
+				if (is_cursor(i,1))
+					cons_strcat("\e[7m");
 				PRINT_BIN(buf[i]);
 				C cons_printf(C_RESET);
 			}
@@ -763,7 +733,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		}  D{}else NEWLINE;
 		} break;
 	case FMT_ZOOM: {
-		char *buf = NULL;
+		unsigned char *buf = NULL;
 		unsigned long sz = 4;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
@@ -791,6 +761,12 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			buf[0]='\xff';
 			io_read(config.fd, buf, sz);
 			switch(mode[0]) {
+			case 'F': // 0xFF
+				config.block[i] = 0;
+				for(j=0;j<sz;j++)
+					if (buf[j]==0xff)
+						config.block[i]++;
+				break;
 			case 'f': // flags
 				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
 				break;
