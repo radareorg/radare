@@ -492,6 +492,8 @@ CMD_DECL(comment)
 	char buf[1024];
 	char *text = input;
 
+	while(text[0]==' ')
+		text = text + 1 ;
 	cons_flush();
 	if (text[0]) {
 		if (text[0]=='?')

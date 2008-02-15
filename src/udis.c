@@ -58,13 +58,16 @@ void metadata_comment_del(u64 offset, const char *str)
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
 		if (off) {
-			if (off == cmt->offset)
+			if (off == cmt->offset) {
 				list_del(pos);
+				return;
+			}
 		} else {
-			if (cmt->offset == offset)
+			if (cmt->offset == offset) {
 				list_del(pos);
+				return;
+			}
 		}
-		cons_printf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
 	}
 }
 
