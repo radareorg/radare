@@ -7,10 +7,13 @@
 
 ===========================================================
  
-* cons_buffer processor
-  -> replace a string for another one.
-     0x4804800 -> ELF_BASE
-  -> like flags but everywhere!1 :D
+* pm must have a format to show a buffer in hexpairs (just some bytes) (refs to flags too!)
+
+* udis disassembly is a bit weird with values + and -
+  - makes the reading a bit difficult (if higher bit set, use negative value)
+  f.example:
+      0x0804D169  8985f0fdffff      [ebp-0x210] = eax
+      0x0804D16F  8d85f4fdffff      lea eax, [ebp+0xfffffdf4] ; should be -524
 
 * colorize flagged bytes in hexdump
 * zoom segfaults

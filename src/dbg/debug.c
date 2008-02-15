@@ -123,6 +123,10 @@ int debug_init()
 	// init_dr();
 #endif
 	debug_os_init();
+#if __linux__
+	system("if [ \"`cat /proc/sys/kernel/randomize_va_space`\" = 1 ]; then echo Warning: sysctl -w kernel.randomize_va_space=0; fi");
+#endif
+
 
 	return 0; //for warning message
 }

@@ -552,6 +552,7 @@ void config_init()
 	config_set_i("child.setgid", "");
 	config_set("child.chdir", ".");
 	config_set("child.chroot", "/");
+	config_set("child.setuid", "");
 
 	config_set("dbg.syms", "true");
 	config_set("dbg.maps", "true");

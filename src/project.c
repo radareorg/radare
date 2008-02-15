@@ -40,6 +40,7 @@ int project_save(char *file)
 		return 0;
 	}
 
+	fprintf(fd, "eval=file.scrfilter\t%s\n", config_get("file.scrfilter"));
 	fprintf(fd, "#RP# Radare Project\n#\n");
 	// TODO: store timestamp
 	// TODO: all this stuff must be renamed as eval vars or so
@@ -100,6 +101,12 @@ int project_open(char *file)
 		ptr = strchr(buf, '=');
 		if (!ptr) continue;
 		ptr[0]='\0'; ptr = ptr + 1;
+		if (!strcmp(buf, "eval")) {
+			char *p = strchr(ptr, '\t');
+			if (p) p[0]='\0';
+			else break;
+			config_set(ptr, p+1);
+		} else
 		if (!strcmp(buf, "chdir")) {
 			config_set("child.chdir", ptr);
 		} else

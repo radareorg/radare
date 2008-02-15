@@ -36,8 +36,13 @@ struct list_head comments;
 
 void metadata_comment_add(u64 offset, const char *str)
 {
-	struct comment_t *cmt = (struct comment_t *)
-		malloc(sizeof(struct comment_t));
+	struct comment_t *cmt;
+
+	/* no null comments */
+	if (strnull(str))
+		return;
+
+	cmt = (struct comment_t *) malloc(sizeof(struct comment_t));
 	cmt->offset = offset;
 	cmt->comment = strdup(str);
 	if (cmt->comment[strlen(cmt->comment)-1]=='\n')
@@ -45,8 +50,22 @@ void metadata_comment_add(u64 offset, const char *str)
 	list_add_tail(&(cmt->list), &(comments));
 }
 
-void metadata_comment_del(u64 offset)
+void metadata_comment_del(u64 offset, const char *str)
 {
+	struct list_head *pos;
+	u64 off = get_math(str);
+
+	list_for_each(pos, &comments) {
+		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		if (off) {
+			if (off == cmt->offset)
+				list_del(pos);
+		} else {
+			if (cmt->offset == offset)
+				list_del(pos);
+		}
+		cons_printf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
+	}
 }
 
 char *metadata_comment_list()

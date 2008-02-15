@@ -489,13 +489,19 @@ CMD_DECL(blocksize)
 
 CMD_DECL(comment)
 {
-		cons_flush();
 	char buf[1024];
 	char *text = input;
 
+	cons_flush();
 	if (text[0]) {
-		struct list_head *foo;
-		metadata_comment_add(config.seek, text);
+		if (text[0]=='?')
+			cons_printf("Usage: C [-addr|comment] @ address\n"
+				"adds or removes comments for disassembly\n");
+		else
+		if (text[0]=='-')
+			metadata_comment_del(config.seek, text+1);
+		else
+			metadata_comment_add(config.seek, text);
 	} else {
 		metadata_comment_list();
 	}

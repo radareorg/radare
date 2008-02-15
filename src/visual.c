@@ -105,6 +105,7 @@ struct binding {
 static int nbds = 0;
 static struct binding *bds = NULL;
 static int inv = 0;
+static u64 mark = 0;
 
 void press_any_key()
 {
@@ -563,6 +564,7 @@ void visual_show_help()
 	cons_printf(
 	":          radare command (vi like)\n"
 	";          edit or add comment\n"
+	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
 	"g,G        seek to beggining or end of file\n"
 	"<>         seek block aligned\n"
 	"+-*/       +1, -1, +width, -width -> block size\n"
@@ -720,13 +722,12 @@ void visual_draw_screen()
 #else
 	cons_strcat("\e[0;0H");
 #endif
-	cons_printf("[ "OFF_FMTs" (inc=%d, bs=%d, cur=%d sz=%d) %s %s] %s            \n",
+	cons_printf("[ 0x%llx (inc=%d, bs=%d, cur=%d sz=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor, config.cursor-config.ocursor,
-		get_print_format_name(last_print_format),
-		(inv)?"inv ":"",
-		buf);
+		mark, get_print_format_name(last_print_format),
+		(inv)?"inv ":"", buf);
 
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {
@@ -999,6 +1000,23 @@ CMD_DECL(visual)
 				press_any_key();
 			cons_strcat("\e[2J\e[0;0H");
 			continue;
+		case ',':
+			if (config.seek == mark)
+				mark = 0;
+			else	mark = config.seek + ((config.cursor_mode)?config.cursor:0);
+			break;
+		case '.':
+			if (mark==0) {
+				u64 u = get_offset("eip");	
+				if (u!=0) {
+					undo_push();
+					radare_seek(u, SEEK_SET);
+				}
+			} else {
+				undo_push();
+				radare_seek(mark, SEEK_SET);
+			}
+			break;
 		case 'b':
 			visual_bind_key();
 			break;
