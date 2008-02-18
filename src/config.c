@@ -420,6 +420,16 @@ int config_color_callback(void *data)
 	return 1;
 }
 
+int config_asm_dwarf(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (node && node->value)
+		config_set("cmd.asm","!rsc dwarf-addr ${FILE} ${HERE}");
+	else	config_set("cmd.asm", "");
+	return 1;
+}
+
 int config_baddr_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -485,6 +495,8 @@ void config_init()
 #endif
 #endif
 	node->callback = &config_arch_callback;
+	node = config_set("asm.dwarf", "true"); // must be false by deflaut
+	node->callback = &config_asm_dwarf;
 	config_set("asm.syntax", "pseudo");
 	node = config_set("asm.follow", "");
 	config_set("asm.xrefs", "xrefs");
@@ -495,6 +507,7 @@ void config_init()
 	config_set("asm.flags", "true"); // show hex bytes
 	config_set("asm.flagsline", "false"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
+	config_set_i("asm.nlines", 6); // show left ref lines
 	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
@@ -504,6 +517,7 @@ void config_init()
 	config_set("asm.split", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
 
+	config_set("cmd.asm", "");
 	config_set("cmd.user", "");
 	config_set("cmd.visual", "");
 	config_set("cmd.hit", "");

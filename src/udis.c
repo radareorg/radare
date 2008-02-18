@@ -65,12 +65,21 @@ void metadata_comment_del(u64 offset, const char *str)
 
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		if (!pos)
+			return;
 		if (off) {
 			if (off == cmt->offset) {
 				list_del(pos);
+				if (str[0]=='*')
+					metadata_comment_del(offset, str);
 				return;
 			}
 		} else {
+			if (str[0]=='*') {
+				list_del(pos);
+				if (str[0]=='*')
+					metadata_comment_del(offset, str);
+			} else
 			if (cmt->offset == offset) {
 				list_del(pos);
 				return;
@@ -272,10 +281,11 @@ void udis_arch(int arch, int len, int rows)
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
-	char *follow; 
+	char *follow, *cmd_asm;
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
 
+	cmd_asm = config_get("cmd.asm");
 	show_size = config_get("asm.size");
 	show_bytes = config_get("asm.bytes");
 	show_offset = config_get("asm.offset");
@@ -321,6 +331,13 @@ void udis_arch(int arch, int len, int rows)
 		if (arch != ARCH_X86 && endian) {
 			endian_memcpy(b, config.block+bytes, 4);
 		} else  memcpy(b, config.block+bytes, 32);
+
+		if (cmd_asm&& cmd_asm[0]) {
+			char buf[1024];
+			sprintf(buf, "%lld", seek);
+			setenv("HERE", buf, 1);
+			radare_cmd(cmd_asm, 0);
+		}
 
 		switch(arch) {
 			case ARCH_X86:

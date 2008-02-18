@@ -55,6 +55,7 @@
 * graph.body=asm,flags,symcalls,description, trace execution data
   - block descriptor (if regs traced, or so show info)
 * add graph.color // default color for new nodes 
+* add scr.cursor scr.cursor_range evals
 
 * StreamViewer
  * search for head and foot
@@ -62,22 +63,12 @@
 
 * Do not use the char '(' in asm.lines. just use - or =
 
-* Define function parameters to addresses (format, size)
-  4s4s2s = void foo(char *str
-
-  - print formatted data
-  - show function signature before the jump or call
-  - analyze stack with this
-  pF 4s4s2s @ ebp
-
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 
 * search flag names take sense with keyword number!! not just index in array of search
   - pretty output
-* asm.comments does not work? or wtf?
-  - remove comments with cursor
-+ key to seek to cursor
+* remove comments with cursor
 + EH - event handling (event type + source pid)
   using linked list.h
   * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
@@ -93,7 +84,6 @@
   - from file formatted as search db
   - carver (find from-to,maxlen, ...)
   - plugin
-* on linux check randomize va space and warn user comments and bps will be wrong!
 * RDBs stored into Projects
   project.rdb = false ; store or not
   use [delimiters] to embed rdbs inside rps
@@ -102,10 +92,7 @@
   child.stdin = |rasc -A 99999
   child.stdout = output.txt
   child.stderr = stderr.txt
-
-* add tracing column to indicate a char with color or so
- - define colors for traces.
- - store traces on linked list and optimize to blocks later
+  - done, but doesnot works
 
 * invert pel disasm
 
@@ -122,12 +109,9 @@
   - line clicking must be supported!
   - avoid out of context bytes
 
-  
-* set ncols in lines
 * flags
   - symbol-flags must be source-sorted (i must be able to list all syms of a lib or so)
   - rabin -something?
-* dwarf-addr2line integration
 * head handling (glibc at least)...too much work i think
 // asm plugin interface //
 * implement a dword array with all functions
@@ -143,7 +127,6 @@
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
-* implement move data inside the core
 * implement insert data inda core
 
 * record radare commands
@@ -205,7 +188,6 @@ Bugs
    - pipecmd2str must use radare_cmd_str
 * new graph view
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
-* C -> eval asm.comment=hello world
 * import esteve's object injector
 
 
@@ -236,10 +218,8 @@ Core
 * inverse dump of blocks (ripe mode) (show stack graph in ascii art?)
 * support to append data (without getting out of the block_size) (or so..)
 * make plugin commands be mapped into namespaces
-* add scr.cursor scr.cursor_range evals
 * Multiple rdb load
   - allow to map into flags, etc..
-  - efficient use of flags, labels and comments
 * optimized flag storing algorithm (a bit slower for >5000 strings)
   * flag namespaces (comment, label, symbol, ...) sym. cmt. ...
   * marcar blocks amb cursor i asignar un alias o nom (flag)
@@ -248,6 +228,7 @@ Core
     - optimized linked list usage
 * Hexpair aliases:
   - Alias foo = w 00 02 30 40 51 it can be used in a inverse way:
+    - maybe a file.scrfilter?!? Uh?
   - for a disasembler or data analyzer (pA)
   - load from file.
     90 : nop
@@ -274,7 +255,6 @@ Rasm
 Visual
 ======
 * ease monitor access from the visual (xterm or so) (run inside dvtm?)
-* Debugger view (a key to change pure asm mode to debugger view)
 * count the number of lines in backtrace and substract them to make the visual
 * add scrolling acceleration. (cfg.accel or so)
 
@@ -446,6 +426,7 @@ TOTHINK
 
    - statistics will show the time spend to run a determined piece of code
 
+* implement move data inside the core (yank?)
  - add software watchpoints with stepall (register and memory changes control)
  - fer un binpatch a traves del contexte del asm que sigui muahah
  - rasc : send file and execute (pitbull inside!)

@@ -163,6 +163,7 @@ int radare_cmd_raw(char *tmp, int log)
 	/* interpret stdout of a process executed */
 	if (input[0]=='.')
 	{
+		radare_controlc();
 		switch(input[1]) {
 		case '%': {
 			char *cmd = getenv(input+2);
@@ -239,6 +240,7 @@ int radare_cmd_raw(char *tmp, int log)
 			unlink(file);
 			break;
 		}
+		radare_controlc_end();
 	/* other commands */
 	} else {
 		/* pipe */

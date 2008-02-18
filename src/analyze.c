@@ -155,6 +155,7 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
+	int bar = config_get_i("asm.nlines");
 	int cow= 0;
 	char ch = ' ';
 
@@ -163,6 +164,13 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 
 	cons_strcat(" ");
 #define head &(list->list)
+	if (bar) {
+		int count = 0;
+		for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev)
+			count++;
+		for (;count<bar;count++)
+			cons_strcat(" ");
+	}
 	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
 		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
 		if (config.interrupted)

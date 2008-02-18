@@ -144,13 +144,19 @@ int hijack_fd(int fd, const char *file)
 	if (strnull(file)||fd==-1)
 		return 0;
 
-	f = open(file, fd?O_RDWR:O_RDONLY);
+	f = open(file, (fd?O_RDWR:O_RDONLY)|O_SYNC);
 	// TODO handle pipes to programs
+	// does not works
 	if (f == -1) {
-		eprintf("Cannot open child.stdin '%s'\n", file);
+		f = open(file, (fd?O_RDWR:O_RDONLY)|O_SYNC|O_CREAT ,0644);
+		if (f == -1) {
+			eprintf("Cannot open child.uh '%s'\n", file);
+			return -1;
+		}
 	}
 	close(fd);
 	dup2(f, 0);
+	return f;
 }
 
 void debug_environment()
