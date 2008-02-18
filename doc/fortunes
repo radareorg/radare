@@ -58,3 +58,5 @@ Change the UID of the debugged process with child.uid (requires root)
 Enable full backtrace with dbg.fullbt
 Manually modify the DRX registers of the child process with '!dr' command
 What do you want to debug today?
+Sniff your favorite libusb-based application with LD_PRELOAD=/usr/lib/libusbsniff.so ./your-program
+Use '!rsc spcc' to parse structures in memory using C programs

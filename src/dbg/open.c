@@ -104,18 +104,15 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	/* wait state */
 	WS(event)   = UNKNOWN_EVENT;
 
-	D {
-		if (ps.is_file)
-			eprintf("Program '%s' loaded.\n", ps.filename);
-		else
-			eprintf("Attached to pid '%d'.\n", atoi(ps.filename));
-	}
+	D { if (ps.is_file)
+		eprintf("Program '%s' loaded.\n", ps.filename);
+	else
+		eprintf("Attached to pid '%d'.\n", atoi(ps.filename)); }
 
 #if __linux__
 	system("if [ \"`cat /proc/sys/kernel/randomize_va_space`\" = 1 ]; then"
 		" echo Warning: sysctl -w kernel.randomize_va_space=0; fi");
 #endif
-
 
 	return ps.fd;
 }

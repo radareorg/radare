@@ -46,8 +46,7 @@ static void help_show_message()
 
 int main(int argc, char **argv, char **envp)
 {
-	int c, ret;
-	char *ptr, ch;
+	int c;
 
 	environ = envp;
 	radare_init();

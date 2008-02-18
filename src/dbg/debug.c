@@ -144,11 +144,11 @@ int hijack_fd(int fd, const char *file)
 	if (strnull(file)||fd==-1)
 		return 0;
 
-	f = open(file, (fd?O_RDWR:O_RDONLY)|O_SYNC);
+	f = open(file, (fd?O_RDWR:O_RDONLY));
 	// TODO handle pipes to programs
 	// does not works
 	if (f == -1) {
-		f = open(file, (fd?O_RDWR:O_RDONLY)|O_SYNC|O_CREAT ,0644);
+		f = open(file, (fd?O_RDWR:O_RDONLY)|O_CREAT ,0644);
 		if (f == -1) {
 			eprintf("Cannot open child.uh '%s'\n", file);
 			return -1;

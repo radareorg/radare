@@ -791,7 +791,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			NEWLINE;
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {
-			V if ((i/inc)+5>config.height) break;
+			V if ((i/inc)+4>config.height) break;
 			D { if ( print_fmt == FMT_HEXB )
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);

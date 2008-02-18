@@ -125,7 +125,11 @@ void radare_sync()
 
 void radare_fortunes()
 {
-	char *str = slurp(DATADIR"/doc/radare/fortunes");
+#if __WINDOWS__
+	char *str = slurp("doc/fortunes");
+#else
+	char *str = slurp(DOCDIR"/fortunes");
+#endif
 	int lines = 0;
 	char *ptr;
 	int i;
@@ -133,12 +137,12 @@ void radare_fortunes()
 	struct timeval tv;
 
 	gettimeofday(&tv,NULL);
-	srandom(getpid()+tv.tv_usec);
+	srand(getpid()+tv.tv_usec);
 	if (str) {
 		for(i=0;str[i];i++)
 			if (str[i]=='\n')
 				lines++;
-		lines = (random()%lines);
+		lines = (rand()%lines);
 		for(i=0;str[i]&&lines;i++)
 			if (str[i]=='\n')
 				lines--;

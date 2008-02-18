@@ -38,6 +38,7 @@
 #undef __UNIX__
 #undef __WINDOWS__
 #if __WIN32__ || __CYGWIN__ || MINGW32
+#include <windows.h>
 #define __WINDOWS__ 1
 #else
 #define __UNIX__ 1
