@@ -1,0 +1,429 @@
+<html><head><title>Dalvik VM Dex File Format</title></head><body>
+	<center><h1>Dex File Format</h1></center>
+	<center><a href="http://retrodev.com/index.html">Home</a> <a href="http://retrodev.com/segacd.html">Sega CD</a> <a href="http://retrodev.com/slo.html">SLO</a> <a href="http://retrodev.com/transfer.html">Transfer</a> <a href="http://retrodev.com/convscd.html">ConvSCD</a></center>
+	<hr>
+	<table border="0" cellpadding="0" cellspacing="10">
+	<tbody><tr>
+	<td>
+	
+	<p></p><h3>Introduction</h3>If
+you've been paying attention to the tech news lately you might have
+heard about a little something called Android from Google. Android is a
+new mobile phone platform based on Linux and Java, but unlike other
+Java platforms Android uses a non-standard JVM called Dalvik. While
+Google has promised to release much (all?) of Android under an open
+source license, they haven't done so yet and they also haven't released
+any documentation on this new VM. Being somewhat impatient, I've taken
+it upon myself to do some reverse engineering and put together some
+documentation of my own. This page documents the Dex file format that
+compiled programs get translated into for use on the Dalvik VM. I hope
+to write some documentation on the VM itself in the near future.<p></p>
+	
+	<p></p><h3>File Header</h3>
+		Dex files start with a simple header with some checksums and offsets to other structures<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>8</td>
+				<td>'Magic' value: "dex\n009\0"</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>Checksum</td>
+			</tr>
+			<tr>
+				<td>0xC</td>
+				<td>20</td>
+				<td>SHA-1 Signature</td>
+			</tr>
+			<tr>
+				<td>0x20</td>
+				<td>4</td>
+				<td>Length of file in bytes</td>
+			</tr>
+			<tr>
+				<td>0x24</td>
+				<td>4</td>
+				<td>Length of header in bytes (currently always 0x5C)</td>
+			</tr>
+			<tr>
+				<td>0x28</td>
+				<td>8</td>
+				<td>Padding (reserved for future use?)</td>
+			</tr>
+			<tr>
+				<td>0x30</td>
+				<td>4</td>
+				<td>Number of strings in the string table</td>
+			</tr>
+			<tr>
+				<td>0x34</td>
+				<td>4</td>
+				<td>Absolute offset of the string table</td>
+			</tr>
+			<tr>
+				<td>0x38</td>
+				<td>4</td>
+				<td>Not sure. String related</td>
+			</tr>
+			<tr>
+				<td>0x3C</td>
+				<td>4</td>
+				<td>Number of classes in the class list</td>
+			</tr>
+			<tr>
+				<td>0x40</td>
+				<td>4</td>
+				<td>Absolute offset of the class list</td>
+			</tr>
+			<tr>
+				<td>0x44</td>
+				<td>4</td>
+				<td>Number of fields in the field table</td>
+			</tr>
+			<tr>
+				<td>0x48</td>
+				<td>4</td>
+				<td>Absolute offset of the field table</td>
+			</tr>
+			<tr>
+				<td>0x4C</td>
+				<td>4</td>
+				<td>Number of methods in the method table</td>
+			</tr>
+			<tr>
+				<td>0x50</td>
+				<td>4</td>
+				<td>Absolute offset of the method table</td>
+			</tr>
+			<tr>
+				<td>0x54</td>
+				<td>4</td>
+				<td>Number of class definitions in the class definition table</td>
+			</tr>
+			<tr>
+				<td>0x58</td>
+				<td>4</td>
+				<td>Absolute offset of the class definition table</td>
+			</tr>
+		</tbody></table><br>
+		<strong>Notes:</strong>
+All non-string fields are stored in little-endian format. It would
+appear that the checksum and signature fields are assumed to be zero
+when calculating the checksum and signature. <p></p>
+	<p>
+		</p><h3>String Table</h3> This table stores the
+length and offsets for every string in the Dex file including string
+constants, class names, variable names and more. Each entry has the
+following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Absolute offset of the string data</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>Length of the string (not including the null-terminator)</td>
+			</tr>
+		</tbody></table><br>
+		<b>Notes:</b> Although the length of the string is stored in this table. All strings also have C-style null-terminators
+	<p></p>
+	<p>
+		</p><h3>Class List</h3>
+		A list of all classes referenced or conatined in this dex file. Each entry has the following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>String index of the name of the class</td>
+			</tr>
+		</tbody></table>
+	<p></p>
+	<p>
+		</p><h3>Field Table</h3>
+		A table of fields of all classes defined in this dex file. Each entry has the following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Class index of the class this field belongs to</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>String index of the field name</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>String index of the field type descriptor</td>
+			</tr>
+		</tbody></table>
+	<p></p>
+	<p>
+		</p><h3>Method Table</h3>
+		A table of methods of all classes defined in this dex file. Each entry has the following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Class index of the class this field belongs to</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>String index of the method name</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>String index of the method type descriptor</td>
+			</tr>
+		</tbody></table>
+		
+	<p></p>
+	<p>
+		</p><h3>Class Definition Table</h3>
+A table of class definitions for all classes either defined in this dex
+file or has a method or field accessed by code in this dex file. Each
+entry has the following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Class index</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>Access Flags (not 100% sure what this is for, I think it has to do with private/protected/public status)</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>Index of superclass</td>
+			</tr>
+			<tr>
+				<td>0xC</td>
+				<td>4</td>
+				<td>Absolute offset of interface list</td>
+			</tr>
+			<tr>
+				<td>0x10</td>
+				<td>4</td>
+				<td>Absolute offset of static field list</td>
+			</tr>
+			<tr>
+				<td>0x14</td>
+				<td>4</td>
+				<td>Absolute offset of instance field list</td>
+			</tr>
+			<tr>
+				<td>0x18</td>
+				<td>4</td>
+				<td>Absolute offset of direct method list</td>
+			</tr>
+			<tr>
+				<td>0x1C</td>
+				<td>4</td>
+				<td>Absolute offset of virtual method list</td>
+			</tr>
+		</tbody></table><br>
+		<b>Notes:</b>
+Any of the list offset fields can be NULL in which case the class
+doesn't have any elements of that type. Not every class in the class
+list will necessarily have an entry in the class definition table. <p></p>
+	<p>
+		</p><h3>Field List</h3> Stores data for
+pre-initialized fields in a class. The list is formed of a 32-bit
+integer containing the number of entries followed by the entries
+themselves. Each field has an entry with the following format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>8</td>
+				<td>Index of string or object constant or literal "primitive" constant</td>
+			</tr>
+		</tbody></table><br>
+		<b>Notes:</b> If the field does not have a pre-initialized value it will be filled with 0 for primitive types and -1 for object types.
+	<p></p>
+	<p>
+		</p><h3>Method List</h3>
+A list of methods for a particular class. Begins with a 32-bit integer
+that contains the number of items in the list followed by entries in
+the following format. <table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Method index</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>Access flags (not 100% sure what this is for, I think it has to do with private/protected/public status)</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>Throws list off (no idea what this is)</td>
+			</tr>
+			<tr>
+				<td>0xC</td>
+				<td>4</td>
+				<td>Absolute offset of header for code that implements the method</td>
+			</tr>
+		</tbody></table>
+	<p></p>
+	<p>
+		</p><h3>Code Header</h3>
+		This header contains information about the code that implements a method.<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>2</td>
+				<td>Number of registers used by this method</td>
+			</tr><tr>
+			</tr><tr>
+				<td>0x2</td>
+				<td>2</td>
+				<td>Number of inputs this method takes (includes "this" pointer for non-static methods)</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>2</td>
+				<td>Output size? (presumably the size of whatever object the method returns)</td>
+			</tr>
+			<tr>
+				<td>0x6</td>
+				<td>2</td>
+				<td>Padding</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>String index of the source file name this method is implemented in</td>
+			</tr>
+			<tr>
+				<td>0xC</td>
+				<td>4</td>
+				<td>Absolute offset of the actual code that implements this method</td>
+			</tr>
+			<tr>
+				<td>0x10</td>
+				<td>4</td>
+				<td>Absolute offset of the list of exceptions this method can throw (not 100% sure)</td>
+			</tr>
+			<tr>
+				<td>0x14</td>
+				<td>4</td>
+				<td>Absolute offset of the list of address and line number pairs for debugging purposes</td>
+			</tr>
+			<tr>
+				<td>0x1C</td>
+				<td>4</td>
+				<td>Absolute offset of the local variable list of this method (includes arguments to the method and "this")</td>
+			</tr>
+		</tbody></table><br>
+		<b>Notes:</b>
+The code offset field actually points to a 32-bit integer that contains
+the number of 16-bit words in the instruction stream. The actual VM
+instructions follow this integer. <p></p>
+	<p>
+		</p><h3>Local Variable List</h3> A list of local
+variables for a particular method. Begins with a 32-bit integer that
+contains the number of items in the list. Each entry has the following
+format:<br>
+		<table border="1" cellpadding="4">
+			<tbody><tr>
+				<th>Offset</th>
+				<th>Size</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>0x0</td>
+				<td>4</td>
+				<td>Start (not a clue)</td>
+			</tr>
+			<tr>
+				<td>0x4</td>
+				<td>4</td>
+				<td>End (not a clue)</td>
+			</tr>
+			<tr>
+				<td>0x8</td>
+				<td>4</td>
+				<td>String index of variable name</td>
+			</tr>
+			<tr>
+				<td>0xC</td>
+				<td>4</td>
+				<td>String index of variable type descriptor</td>
+			</tr>
+			<tr>
+				<td>0x10</td>
+				<td>4</td>
+				<td>Register number this variable will be stored in (not 100% sure)</td>
+			</tr>
+		</tbody></table><br>
+		<b>Notes:</b> This list will include local variables that are arguments to the method as well as the "this" variable for non-static methods.
+	<p></p>
+	<p>
+		</p><h3>ToDo</h3>
+		Add documentation on Position list and constant objects for pre-initialized fields.
+	<p></p>
+	<p>
+		</p><h3>Questions</h3>
+		If you have any questions about this document feel free to send me an e-mail at pavone (AT) retrodev (DOT) com or <a href="mailto:mask_of_destiny@hotmail.com">mask_of_destiny@hotmail.com/</a>.
+	<p></p>
+	</td>
+	</tr>
+	</tbody></table>
+</body></html>

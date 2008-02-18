@@ -39,6 +39,7 @@ unsigned int eflags = 0;
 void flag_help()
 {
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
+	"  fortune      ; show fortune message! :D\n"
 	"  fd           ; print flag delta offset\n"
 	"  fn name      ; flag new name (ignores dupped names)\n"
 	"  f sym_main   ; flag current offset as sym_main\n"

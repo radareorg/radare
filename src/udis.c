@@ -388,8 +388,8 @@ void udis_arch(int arch, int len, int rows)
 				code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 
 			if (show_offset) {
-				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));//config.baddr + ud_insn_off(&ud_obj)));
-				else cons_printf("0x%08llX ", (unsigned long long)(seek)); //config.baddr + ud_insn_off(&ud_obj)));
+				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
 			/* size */
 			if (show_size)
@@ -506,17 +506,28 @@ void udis_arch(int arch, int len, int rows)
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
-					cons_printf("\e[0m   [%d]", jump_n,jumps[jump_n-1]);
+					cons_printf("   [%d]", jump_n,jumps[jump_n-1]);
 				}
 			}
 
 			if (show_splits) {
+				char buf[1024];
 				if (aop.jump||aop.eob) {
 					NEWLINE;
-					if (show_lines)
-						code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
+					//if (show_lines)
+					//	code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
+					lines--;
+						if (rows && rows == lines)
+							return;
+						if (show_lines)
+							code_lines_print(reflines, seek);
+						if (show_offset) {
+							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+							else cons_printf("0x%08llX ", (unsigned long long)(seek));
+						}
+						sprintf(buf, "%%%ds ", show_nbytes);
+						cons_printf(buf,"");
 					cons_printf("; ------------------------------------ ");
-					lines++;
 				}
 			}
 		} else {

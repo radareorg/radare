@@ -1,0 +1,60 @@
+Do you want to perform more than one search at a time? '> /k0 keyword1', '> /k1 keyword2' and '> /r 0-1'
+Debugger commands are prefixed with '!' because they are accessed via the io plugin system() hook
+Isn't your disassembly pretty enought? Try changing values with 'eval asm.'
+Did you setup your ~/.radarerc today?
+You can mark an offset in visual mode with the cursor and the ',' key. Later press '.' to go back
+You can debug a program from the graph view (pG command) using standard radare commands
+Before entering a 'call' you can identify the arguments passed to it using the 'pm xxi' command
+Use the '[' and ']' keys in visual mode to adjust the screen width (scr.width)
+Choose your architecture by typing: 'eval asm.arch=ppc' (or arm, java, m68k, intel, intel16 or intel64)
+Move between your search hits in visual mode using the 'f' and 'F' keys
+Run embedded python scripts with the python hack plugin. ('H python <filename>' command)
+Save your projects with 'Ps <project-filename>' and restore then with 'Po <project-filename>'
+RADARE CUMS WITH ABSOLUTELY NO WARRANTY
+Enable asm.trace to see the tracing information inside the disassembly
+Change the registers of the child process in this way: '!set eax 0x333'
+Manipulate the filedescriptors of the child with '!fd'
+Trace until system calls with !contsc
+Remotely open files or debug processes with radare listen://:9999/dbg:///bin/ls
+Check your IO plugins with radare -L
+Find cross-reference in raw binaries using external 'xrefs' tool.
+Change the size of the file with the 'r' (resize) command
+Calculate checksums for the current block with the commands starting with '#' (#md5, #crc32, #all, ..)
+Use +,-,*,/ to change the size of the block
+In visual mode you can also enter radare command pressing the ':' key (like vi does)
+If you want to open the file in read-write mode use -w flag or -e cfg.write=true
+Print the contents of the current block with the 'p' command
+Command layout is: <repeat><command><bytes>@<offset>.\  For example: 3x20@0x33 will show 3 hexdumps of 20 bytes at 0x33
+You can "copy/paste" bytes using the cursor in visual mode 'c' and using the 'y' and 'Y' keys
+Move around the bytes with hjkl! Arrow keys are not portable and are less productive to use
+Seek at relative offsets with 'seek +<offset>' or 'seek -<offset>'
+Invert the block bytes using the 'I' key in visual mode
+Switch between print modes using the 'p' and 'P' keys in visual mode
+Add comments using the ';' key in visual mode or the 'C' command from the radare shell
+Assemble opcodes with the 'a' and 'A' keys in visual mode which are hooks for the wa and wA commands
+Find expanded AES keys in memory with /a command
+Find wide-char strings with /w <string> command
+Enable ascii-art jump lines in disassembly with asm.lines. asm.linesout and asm.linestyle may interest you too
+Control the signal handlers of the child process with the '!signal' command
+Get a free shell with 'rasc -i x86.linux.binsh -X'
+Interpret your own radare scripts with '. <path-to-your-script>'. Similar to the bash source alias command.
+Most of commands accept an '?' as suffix. Use it to understand how they work :)
+Find hexpairs with '/x a0 cc 33'
+Walk inside your seek history with the 'u' command (undo)
+Use hasher to calculate hashes of portion blocks of a file
+Use zoom.byte=entropy and press 'z' in visual mode to zoom out to see the entropy of the whole file
+Use zoom.byte=printable in zoom mode (z key in visual mode) to find strings
+Set colors to your screen with 'eval scr.color=true'
+Trace the register changes when debugging with trace.cmtregs
+Move the comments to the right changing their margin with eval asm.cmtmargin
+Execute a command on the visual prompt with cmd.vprompt
+Reduce the delta where flag resolving by address is used with cfg.delta
+Disable these messages with eval cfg.fortunes=false in your ~/.radarerc
+Show offsets in graphs with 'eval graph.offset = true'
+Follow a flag in disassembly view (avoids to disasemble out of the visibility of the flag) with asm.follow
+Execute a command every time a breakpoint is hitted with 'eval cmd.bp = !my-program'
+Disassemble in intel syntax with eval asm.syntax = intel
+Change the UID of the debugged process with child.uid (requires root)
+Enable full backtrace with dbg.fullbt
+Manually modify the DRX registers of the child process with '!dr' command
+What do you want to debug today?

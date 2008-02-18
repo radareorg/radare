@@ -8,6 +8,8 @@
 ===========================================================
  
 * pm must have a format to show a buffer in hexpairs (just some bytes) (refs to flags too!)
+* asm.splitbranches -> split branches or only ret?
+* identify nodes with 'ret'
 
 * udis disassembly is a bit weird with values + and -
   - makes the reading a bit difficult (if higher bit set, use negative value)
@@ -20,7 +22,8 @@
 * trace on !wp
 * persistent nodes in graph
 * clean valgrind stuff
-
+* fr <old-name> <new-name>
+  - flag rename
 * blue or black background for metadata in udis -> nicer for w32 and white screens
   - use global palete in eval variable
   - scr.palete = 1732367 -> when printing colors are peeked from this palete

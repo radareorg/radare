@@ -697,6 +697,7 @@ CMD_DECL(flag)
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';
 
 	if (input[0]=='?') { flag_help(); } else
+	if (input[0]=='o') { radare_fortunes(); } else
 	if (input[0]=='d') { print_flag_offset(config.seek); NEWLINE; } else
 	if (text[0]=='\0') { flag_list(text); } else
 	if (text[0]=='*') { flag_set("*",0,0); } else

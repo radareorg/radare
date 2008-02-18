@@ -956,6 +956,7 @@ CMD_DECL(visual)
 				repeat+=(key-'0');
 				continue;
 			} else {
+				undo_push();
 				udis_jump(key-'0'-1);
 				last_print_format = FMT_UDIS;
 				continue;

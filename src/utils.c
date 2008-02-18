@@ -63,6 +63,23 @@ char *lstrchr(char *str, char chr)
 	return NULL;
 }
 
+char *slurp(char *str)
+{
+	char *ret;	
+	u64 sz;
+	FILE *fd = fopen(str, "r");
+	if (fd == NULL)
+		return NULL;
+	fseek(fd, 0,SEEK_END);
+	sz = ftell(fd);
+	fseek(fd, 0,SEEK_SET);
+	ret = (char *)malloc(sz+1);
+	fread(ret, sz, 1, fd);
+	ret[sz]='\0';
+	fclose(fd);
+	return ret;
+}
+
 void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size)
 {
 #if RADARE_CORE

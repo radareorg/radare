@@ -123,6 +123,32 @@ void radare_sync()
 	}
 }
 
+void radare_fortunes()
+{
+	char *str = slurp(DATADIR"/doc/radare/fortunes");
+	int lines = 0;
+	char *ptr;
+	int i;
+	int ran;
+	struct timeval tv;
+
+	gettimeofday(&tv,NULL);
+	srandom(getpid()+tv.tv_usec);
+	if (str) {
+		for(i=0;str[i];i++)
+			if (str[i]=='\n')
+				lines++;
+		lines = (random()%lines);
+		for(i=0;str[i]&&lines;i++)
+			if (str[i]=='\n')
+				lines--;
+		ptr = str+i;
+		for(i=0;ptr[i];i++) if (ptr[i]=='\n') { ptr[i]='\0'; break; }
+		printf("Message of the day:\n  %s\n", ptr);
+		free(str);
+	}
+}
+
 int radare_cmd_raw(char *tmp, int log)
 {
 	FILE *fd;
@@ -926,6 +952,9 @@ int radare_go()
 		radare_interpret(path);
 		config_set("cfg.verbose", t?"true":"false");
 	}
+
+	if (config_get("cfg.verbose") && config_get("cfg.fortunes"))
+		radare_fortunes();
 
 	/* load rabin stuff here */
 	if (config_get("file.identify"))

@@ -559,6 +559,7 @@ void config_init()
 	node->callback = &config_color_callback;
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);
+	config_set("cfg.fortunes", "true");
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 
