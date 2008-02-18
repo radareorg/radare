@@ -618,12 +618,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			cons_printf("   offset");
 			for(i=0;i<inc;i++)
 				cons_printf("       +0x%x",i);
-#if 0
-			NEWLINE;
-			cons_printf("----------+");
-			for(i=0;i<inc;i++)
-				cons_printf("-----------");
-#endif
 			NEWLINE;
 			C cons_printf(C_RESET);
 		}
@@ -650,14 +644,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				cons_printf("+%02x ",i);
 			for(i=0;i<inc;i++)
 				cons_printf("%c",hex[i%16]);
-#if 0
-			NEWLINE; cons_printf("----------+");
-			for(i=0;i<inc;i++)
-				cons_printf("----");
-			for(i=0;i<inc;i++)
-				cons_printf("-");
-			C cons_printf(C_RESET);
-#endif
 			NEWLINE;
 		}
 		for(i=0;!config.interrupted && i<len;i++) {
@@ -692,8 +678,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		NEWLINE;
 		break;
 	case FMT_ASC0:
-		cons_printf("%s", buf);
-		NEWLINE;
+		cons_printf("%s\n", buf);
 		break;
 	case FMT_ASC:
 		for(i=0;!config.interrupted && i<len;i++)

@@ -716,16 +716,14 @@ void visual_draw_screen()
 	}
 	string_flag_offset(buf, config.seek);
 #if __WINDOWS__
-	//cons_clear();
 	gotoxy(0,0);
-	//NEWLINE;
 #else
 	cons_strcat("\e[0;0H");
 #endif
 	cons_printf("[ 0x%llx (inc=%d, bs=%d, cur=%d sz=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
-		config.cursor, config.cursor-config.ocursor,
+		config.cursor, (config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
 
@@ -737,8 +735,6 @@ void visual_draw_screen()
 	}
 
 	radare_seek(config.seek, SEEK_SET);
-#if __WINDOWS__
-#endif
 	radare_print("", last_print_format, MD_BLOCK|inv);
 
 	fflush(stdout);
@@ -967,8 +963,9 @@ CMD_DECL(visual)
 		}
 
 		if (inc<1)inc=1;
-		if (repeat==0)repeat=1;
+		if (repeat==1)repeat=0;
 		//else repeat-=1;
+		repeat=1;
 		for (i=0;i<repeat;i++) {
 		switch(key) {
 		case 'r':

@@ -490,8 +490,10 @@ void config_init()
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
-	config_set_i("asm.nbytes", 10); // show hex bytes
+	config_set_i("asm.nbytes", 8); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
+	config_set("asm.flags", "true"); // show hex bytes
+	config_set("asm.flagsline", "false"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
 	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines

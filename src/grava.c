@@ -34,6 +34,10 @@ struct mygrava_window {
 	GravaWidget *grava;
 };
 
+static struct mygrava_window *last_window;
+static int new_window = 0;
+	static int n_windows = 0;
+
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 
@@ -48,7 +52,8 @@ void core_load_graph_at(void *obj, const char *str)
 	//gtk_widget_destroy(w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
-	grava_program_graph(prg, NULL);
+	new_window = 1;
+	grava_program_graph(prg, last_window);
 }
 
 void mygrava_bp_at(void *unk, const char *str)
@@ -61,12 +66,15 @@ void mygrava_bp_at(void *unk, const char *str)
 	eprintf("Breakpoint at (%08llx) (%s) added.\n", off, str);
 }
 
-static int new_window = 0;
 
 static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	struct mygrava_window *w = obj;
 	gtk_widget_destroy(w->w);
+printf("mygrava_close()\n");
+n_windows--;
+if (n_windows<0)
+n_windows = 0;
 	gtk_main_quit();
 }
 static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
@@ -122,6 +130,7 @@ eprintf("load_graph_at %08x\n", w);
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 
+	last_window = w;
 	grava_program_graph(prg, w);
 }
 
@@ -167,6 +176,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	if (win==NULL || new_window) {
 		win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
 		memset(win, '\0', sizeof(struct mygrava_window));
+		last_window = win;
 
 		win->grava  = grava_widget_new();
 		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
@@ -229,7 +239,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	config_set("asm.bytes", "false");
 	config_set("asm.trace", "false");
 	config_set("scr.color", "false");
-//	config_set("asm.lines", "false");
+	config_set("asm.lines", "false");
 	config.color = 0;
 
 	/* add nodes */
@@ -334,6 +344,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 	grava_widget_draw(win->grava);
 
+	if (n_windows++)
+		return;
 	new_window = 0;
 	gtk_main();
 	// oops. tihs is not for real!
@@ -345,8 +357,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	config_set("asm.lines", "true");
 	cons_set_fd(1);
 	config.seek = here;
-		gtk_is_init = 0;
-		new_window = 0;
-	
+	gtk_is_init = 0;
+	new_window = 0;
 }
 #endif

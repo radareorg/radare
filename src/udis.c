@@ -18,9 +18,6 @@
  *
  */
 
-/* TODO: make the disassembly stuff more generic, avoid code dupz */
-
-
 #include "main.h"
 #include "code.h"
 #include "flags.h"
@@ -30,9 +27,20 @@
 #include "arch/m68k/m68k_disasm.h"
 #include "list.h"
 
+enum {
+	ARCH_X86 = 0,
+	ARCH_ARM = 1,
+	ARCH_PPC = 2,
+	ARCH_M68K = 3,
+	ARCH_JAVA = 4
+};
+
 static int lines = 0;
 
+static struct reflines_t *reflines = NULL;
 struct list_head comments;
+
+/* -- metadata -- */
 
 void metadata_comment_add(u64 offset, const char *str)
 {
@@ -91,8 +99,8 @@ char *metadata_comment_get(u64 offset)
 	memset(null,' ',126);
 	null[126]='\0';
 	if (cmtmargin<0) cmtmargin=0; else
-	// TODO: use screen width here
-	if (cmtmargin>80) cmtmargin=80;
+		// TODO: use screen width here
+		if (cmtmargin>80) cmtmargin=80;
 	null[cmtmargin] = '\0';
 	if (cmtlines<0)
 		cmtlines=0;
@@ -138,7 +146,7 @@ void metadata_comment_init(int new)
 	INIT_LIST_HEAD(&(comments));
 }
 
-static int print_metadata(int delta)
+static int metadata_print(int delta)
 {
 	FILE *fd;
 	int lines = 0;
@@ -146,61 +154,35 @@ static int print_metadata(int delta)
 	char *ptr,*ptr2;
 	char buf[4096];
 	char *rdbfile;
+	int show_lines = config_get("asm.lines");
+	int show_flagsline = config_get("asm.flagsline");
 	int i;
 	u64 offset = (u64)config.seek + (u64)delta; //(u64)ud_insn_off(&ud_obj);
 	//	u64 seek = config.baddr + (u64)delta; //ud_insn_off(&ud_obj);
 
-// config.baddr everywhere???
+	// config.baddr everywhere???
 	D {} else return 0;
-	ptr = flag_name_by_offset( offset );
-	if (ptr[0]) {
-		C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
-				config.baddr+offset, ptr);
-		else	cons_printf(OFF_FMTs" %s:\n",
-				config.baddr+offset, ptr);
-		lines++;
+	if (show_flagsline) {
+		ptr = flag_name_by_offset( offset );
+		if (ptr[0]) {
+			if (show_lines&&reflines)
+				code_lines_print2(reflines, config.baddr+config.seek +i);
+			C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
+					config.baddr+offset, ptr);
+			else	cons_printf(OFF_FMTs" %s:\n",
+					config.baddr+offset, ptr);
+			lines++;
+		}
 	}
 
 	ptr = metadata_comment_get(offset);
 	if (ptr && ptr[0]) {
+		if (show_lines&&reflines)
+			code_lines_print2(reflines, config.baddr+config.seek +i);
 		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
 		else 	cons_printf("%s", ptr);
 		free(ptr);
 	}
-#if 0
-	/* comments */
-	rdbfile = config_get("file.rdb");
-	fd = fopen(rdbfile,"r");
-	if (fd == NULL)
-		return lines;	
-
-	while(!config.interrupted && !feof(fd)) {
-		buf[0]='\0';
-		fgets(buf, 1023, fd);
-		if (buf[0]=='\0'||feof(fd)) break;
-		buf[strlen(buf)-1]='\0';
-
-		ptr = strchr(buf, '=');
-		if (!ptr) continue;
-		ptr[0]='\0'; ptr = ptr + 1;
-
-		if (!strcmp(buf, "comment")) {
-			ptr2 = strchr(ptr, ' ');
-			if (!ptr2) continue;
-			ptr2[0]='\0'; ptr2=ptr2+1;
-			off = get_offset(ptr);
-			if (offset == off) {
-				for(i=0;i<cmtmargin;i++) pstrcat(" ");
-				C 	cons_printf(C_BWHITE"  ; %s"C_RESET, ptr2);
-				else 	cons_printf("  ; %s", ptr2);
-				NEWLINE;
-				lines++;
-			}
-		}
-	}
-	fclose(fd);
-	INILINE;
-#endif
 
 	return lines;
 }
@@ -276,59 +258,97 @@ void udis_jump(int n)
 	}
 }
 
-void udis(int len, int rows)
+/* -- disassemble -- */
+
+extern int color;
+void udis_arch(int arch, int len, int rows)
 {
 	struct aop_t aop;
 	char* hex1, *hex2;
 	char c;
 	int i,delta;
-	int seek = 0;
+	u64 seek = 0;
 	int lines = 0;
 	int bytes = 0;
-	int show_bytes;
-	int show_offset;
-	int show_splits;
-	int show_comments;
-	int show_lines;
-	int show_traces;
-	int nbytes = 12;
-	int show_size = config_get("asm.size");
 	u64 myinc = 0;
-	struct reflines_t *reflines = NULL;
+	unsigned char b[32];
 	char *follow; 
-	jump_n = 0;
+	int endian;
+	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
+
+	show_size = config_get("asm.size");
+	show_bytes = config_get("asm.bytes");
+	show_offset = config_get("asm.offset");
+	show_splits = config_get("asm.split");
+	show_flags = config_get("asm.flags");
+	show_lines = config_get("asm.lines");
+	show_traces = config_get("asm.trace");
+	show_comments = config_get("asm.comments");
+	show_nbytes = (int)config_get_i("asm.nbytes");
+	endian = config_get("cfg.endian");
+	color = config_get("scr.color");
 
 	len*=2; // uh?!
-
+	jump_n = 0;
 	length = len;
 	ud_idx = 0;
+	delta = 0;
 	inc = 0;
 
 	if (rows<0)
 		rows = 1;
 
-	udis_init();
-	/* disassembly loop */
-	ud_obj.pc = config.seek;
-	delta = 0;
-	show_bytes = config_get("asm.bytes");
-	show_offset = config_get("asm.offset");
-	show_splits = config_get("asm.split");
-	show_lines = config_get("asm.lines");
-	show_traces = config_get("asm.trace");
-	show_comments = config_get("asm.comments");
-	nbytes = (int)config_get_i("asm.nbytes");
+	if (arch == ARCH_X86) {
+		udis_init();
+		/* disassembly loop */
+		ud_obj.pc = config.seek;
+	}
 
-	if (nbytes>8 ||nbytes<0)
-		nbytes = 8;
+	if (show_nbytes>16 ||show_nbytes<0)
+		show_nbytes = 16;
+
+	reflines = NULL;
 	if (show_lines)
 		reflines = code_lines_init();
 	radare_controlc();
 
-	while (!config.interrupted && ud_disassemble(&ud_obj)) {
+	while (!config.interrupted) {
+		seek = config.baddr +config.seek+bytes;
 		if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
-			return;
-		myinc = ud_insn_len(&ud_obj);
+			break;
+		// XXX code analyssi doesnt works with endian here!!!1
+		// TAKE CARE TAKE CARE TAKE CARE TAKE CARE TAKE CARE
+		if (arch != ARCH_X86 && endian) {
+			endian_memcpy(b, config.block+bytes, 4);
+		} else  memcpy(b, config.block+bytes, 32);
+
+		switch(arch) {
+			case ARCH_X86:
+				if (ud_disassemble(&ud_obj)<1)
+					return;
+				arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
+				myinc = ud_insn_len(&ud_obj);
+				break;
+			case ARCH_ARM:
+				arch_arm_aop(seek, (const unsigned char *)b, &aop); //config.block+bytes, &aop);
+				myinc = 4;
+				break;
+			case ARCH_JAVA:
+				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
+				myinc = aop.length;
+				break;
+			case ARCH_PPC:
+				arch_ppc_aop(seek, (const unsigned char *)b, &aop);
+				myinc = aop.length;
+				break;
+			default:
+				// Uh?
+				myinc = 4;
+				break;
+				// TODO
+		}
+		if (myinc<1)
+			myinc =1;
 		if (config.cursor_mode) {
 			if (config.cursor == bytes)
 				inc = myinc;
@@ -336,41 +356,68 @@ void udis(int len, int rows)
 			if (inc == 0)
 				inc = myinc;
 		length-=myinc;
-		bytes+=myinc;
 		if (length<=0)
-			return;
+			break;
 
 		INILINE;
 		D { 
 			if (show_comments)
-				lines+=print_metadata(seek);
+				lines+=metadata_print(bytes);
+			if (rows && rows == lines)
+				return;
 
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
-				code_lines_print(reflines, config.baddr+ud_insn_off(&ud_obj));
+				code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 
 			if (show_offset) {
-				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
-				else cons_printf("0x%08llX ", (unsigned long long)(config.baddr + ud_insn_off(&ud_obj)));
+				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));//config.baddr + ud_insn_off(&ud_obj)));
+				else cons_printf("0x%08llX ", (unsigned long long)(seek)); //config.baddr + ud_insn_off(&ud_obj)));
 			}
+			/* size */
 			if (show_size)
-				cons_printf("%d ", dislen(config.block+seek));
-			if (show_traces) {
-				cons_printf("%02d %02d ",
-					trace_count(config.baddr + ud_insn_off(&ud_obj)),
-					trace_times(config.baddr + ud_insn_off(&ud_obj)));
+				cons_printf("%d ", aop.length); //dislen(config.block+seek));
+			/* trac information */
+			if (show_traces)
+				cons_printf("%02d %02d ", trace_count(seek), trace_times(seek));
+
+			if (show_flags) {
+				char buf[1024];
+				char *flag = flag_name_by_offset(seek);
+				sprintf(buf, "%%%ds", show_nbytes);
+				if (flag) {
+					if (strlen(flag)>show_nbytes) {
+						cons_printf(buf, flag);
+						NEWLINE;
+						lines--;
+						if (rows && rows == lines)
+							return;
+						//cons_printf("    ");
+						if (show_lines)
+							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
+						if (show_offset) {
+							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));//config.baddr + ud_insn_off(&ud_obj)));
+							else cons_printf("0x%08llX ", (unsigned long long)(seek)); //config.baddr + ud_insn_off(&ud_obj)));
+						}
+						
+						cons_printf("        ");
+					} else {
+						cons_printf(buf, flag);
+					}
+				} else cons_printf(buf,"");
 			}
-			if (is_cursor(seek+i, myinc)) {
+			/* cursor and bytes */
+			if (is_cursor(bytes, myinc)) {
 				cons_printf("*");
 			} else  cons_printf(" ");
 			if (show_bytes) {
-				int max = nbytes;
+				int max = show_nbytes;
 				int cur = myinc;
-				if (cur + 1> nbytes)
-					cur = nbytes - 1;
+				if (cur + 1> show_nbytes)
+					cur = show_nbytes - 1;
 
 				for(i=0;i<cur; i++)
-					print_color_byte_i(seek+i, "%02x", config.block[seek+i]); //ud_obj.insn_hexcode[i]);
+					print_color_byte_i(bytes+i, "%02x", b[i]); //config.block[bytes+i]); //ud_obj.insn_hexcode[i]);
 				if (cur !=myinc)
 					max--;
 				for(i=(max-cur)*2;i>0;i--)
@@ -378,22 +425,60 @@ void udis(int len, int rows)
 				if (cur != myinc)
 					cons_printf(". ");
 			}
-			hex1 = ud_insn_hex(&ud_obj);
-			hex2 = hex1 + 16;
-			c = hex1[16];
-			hex1[16] = 0;
-			cons_printf("%-24s", ud_insn_asm(&ud_obj));
-			hex1[16] = c;
-			if (strlen(hex1) > 24) {
-				C cons_printf(C_RED);
-				cons_printf("\n");
-				if (o_do_off)
-					cons_printf("%15s .. ", "");
-				cons_printf("%-16s", hex2);
+			switch(arch) {
+				case ARCH_X86:
+					hex1 = ud_insn_hex(&ud_obj);
+					hex2 = hex1 + 16;
+					c = hex1[16];
+					hex1[16] = 0;
+					cons_printf("%-24s", ud_insn_asm(&ud_obj));
+					hex1[16] = c;
+					if (strlen(hex1) > 24) {
+						C cons_printf(C_RED);
+						cons_printf("\n");
+						if (o_do_off)
+							cons_printf("%15s .. ", "");
+						cons_printf("%-16s", hex2);
+					}
+					break;
+				case ARCH_ARM: {
+						       unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+						       cons_printf("  %s", disarm(ins, (unsigned int)seek));
+					       } break;
+				case ARCH_PPC: {
+						       char opcode[128];
+						       char operands[128];
+						       struct DisasmPara_PPC dp;
+						       /* initialize DisasmPara */
+						       dp.opcode = opcode;
+						       dp.operands = operands;
+						       dp.iaddr = seek; //config.baddr + config.seek + i;
+						       dp.instr = b; //config.block + i;
+						       PPC_Disassemble(&dp, endian);
+						       cons_printf("  %s %s", opcode, operands);
+					       } break;
+				case ARCH_JAVA: {
+							char output[128];
+							if (java_disasm(b, output)!=-1)
+								cons_printf(" %s", output);
+							else cons_strcat(" ???");
+						} break;
+				case ARCH_M68K: {
+							char opcode[128];
+							char operands[128];
+							struct DisasmPara_PPC dp;
+							/* initialize DisasmPara */
+							dp.opcode = opcode;
+							dp.operands = operands;
+							dp.iaddr = seek; //config.baddr + config.seek + i;
+							dp.instr = b; //config.block + i;
+							// XXX read vda68k: this fun returns something... size of opcode?
+							M68k_Disassemble(&dp);
+							cons_printf("  %s %s", opcode, operands);
+						} break;
 			}
 			C cons_printf(C_RESET);
 
-			arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes-myinc, &aop);
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
@@ -403,289 +488,30 @@ void udis(int len, int rows)
 
 			if (show_splits) {
 				if (aop.jump||aop.eob) {
-					NEWLINE
+					NEWLINE;
+					if (show_lines)
+						code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 					cons_printf("; ------------------------------------ ");
 					lines++;
 				}
 			}
-		} 
-		else cons_printf("%s", ud_insn_asm(&ud_obj));
+		} else {
+			switch(arch) {
+				case ARCH_X86:
+					cons_printf("%s", ud_insn_asm(&ud_obj));
+					break;
+				case ARCH_ARM:
+					break;
+			}
+		}
 		seek+=myinc;
 		NEWLINE;
 		if (rows && rows == lines)
-			return;
+			break;
+		bytes+=myinc;
 	}
 	radare_controlc_end();
-}
 
-extern int color;
-void udisarm(int len, int rows)
-{
-	int i, endian;
-	int show_bytes = config_get("asm.bytes");
-	int show_offset = config_get("asm.offset");
-	int show_split = config_get("asm.split");
-	int show_lines = config_get("asm.lines");
-	int show_size = config_get("asm.size");
-	struct reflines_t *reflines = NULL;
-	color = config_get("scr.color");
-
-	if (show_lines)
-		reflines = code_lines_init();
-
-	inc = 4; // TODO : global var. should live inside config.inc!!
-	lines = 0;
-	endian = config_get("cfg.endian");
-	for(i=0;!config.interrupted && i<=len;i+=4) {
-		unsigned long ins;
-		if ( (config.visual) && (++lines>=(config.height-2)))
-			return;
-		if (endian)
-			ins = (config.block[i]<<24)+ (config.block[i+1]<<16)+ (config.block[i+2]<<8)+ (config.block[i+3]);
-		else	ins = (config.block[i+3]<<24)+ (config.block[i+2]<<16)+ (config.block[i+1]<<8)+ (config.block[i+0]);
-		INILINE;
-		lines+=print_metadata(i);
-		if (show_lines)
-			code_lines_print(reflines, config.baddr+config.seek+i);
-		if (show_offset) {
-			C cons_printf(C_GREEN);
-			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
-			C cons_printf(C_RESET);
-		}
-		if (show_size)
-			cons_printf("4 ");
-		if (show_bytes) {
-			if (endian) {
-				print_color_byte_i(i, "%02x", config.block[i]);
-				print_color_byte_i(i+1, "%02x", config.block[i+1]);
-				print_color_byte_i(i+2, "%02x", config.block[i+2]);
-				print_color_byte_i(i+3, "%02x", config.block[i+3]);
-			} else {
-				print_color_byte_i(i+3, "%02x", config.block[i+3]);
-				print_color_byte_i(i+2, "%02x", config.block[i+2]);
-				print_color_byte_i(i+1, "%02x", config.block[i+1]);
-				print_color_byte_i(i, "%02x", config.block[i]);
-			}
-		}
-		cons_printf("    %s", disarm(ins, (int)(config.seek+i)));
-		C cons_printf(C_RESET);
-		if (show_split) {
-			struct aop_t aop;
-			arch_arm_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
-			if (aop.jump||aop.eob) {
-				NEWLINE
-				cons_printf("; ------------------------------------ ");
-				lines++;
-			}
-		}
-		NEWLINE;
-	}
-	code_lines_free(reflines);
-}
-
-void ppc_disassemble(int len, int rows)
-{
-	int i, endian;
-	int show_bytes  = config_get("asm.bytes");
-	int show_offset = config_get("asm.offset");
-	int show_split  = config_get("asm.split");
-	int show_lines = config_get("asm.lines");
-	int show_size = config_get("asm.size");
-	char opcode[10];
-	char operands[24];
-	struct DisasmPara_PPC dp;
-	struct reflines_t *reflines = NULL;
-
-	/* initialize DisasmPara */
-	dp.opcode = opcode;
-	dp.operands = operands;
-	if (show_lines)
-		reflines = code_lines_init();
-
-	inc = 4; // TODO : global var. should live inside config.inc!!
-	lines = 0;
-	endian = config_get("cfg.endian");
-	for(i=0;!config.interrupted && i<=len;i+=4) {
-		unsigned long ins;
-		if ( (config.visual) && (++lines>=(config.height-2)))
-			return;
-		if (endian)
-			ins = (config.block[i]<<24)+ (config.block[i+1]<<16)+ (config.block[i+2]<<8)+ (config.block[i+3]);
-		else	ins = (config.block[i+3]<<24)+ (config.block[i+2]<<16)+ (config.block[i+1]<<8)+ (config.block[i+0]);
-		INILINE;
-		lines+=print_metadata(i);
-		if (show_lines)
-			code_lines_print(reflines, config.baddr+config.seek+i);
-		if (show_offset) {
-			C cons_printf(C_GREEN);
-			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
-			C cons_printf(C_RESET);
-		}
-		if (show_size)
-			cons_printf("4 ");
-		if (show_bytes) {
-			if (endian) {
-				print_color_byte_i(i+3, "%02x", config.block[i+3]);
-				print_color_byte_i(i+2, "%02x", config.block[i+2]);
-				print_color_byte_i(i+1, "%02x", config.block[i+1]);
-				print_color_byte_i(i, "%02x", config.block[i]);
-			} else {
-				print_color_byte_i(i, "%02x", config.block[i]);
-				print_color_byte_i(i+1, "%02x", config.block[i+1]);
-				print_color_byte_i(i+2, "%02x", config.block[i+2]);
-				print_color_byte_i(i+3, "%02x", config.block[i+3]);
-			}
-		}
-		dp.iaddr = config.baddr + config.seek + i;
-		dp.instr = config.block + i;
-		PPC_Disassemble(&dp, endian);
-		cons_printf("    %s %s", opcode, operands);
-		C cons_printf(C_RESET);
-		if (show_split) {
-			struct aop_t aop;
-			arch_ppc_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
-			if (aop.jump||aop.eob) {
-				NEWLINE
-					cons_printf("; ------------------------------------ ");
-				lines++;
-			}
-		}
-		NEWLINE;
-	}
-	code_lines_free(reflines);
-}
-
-void m68k_disassemble(int len, int rows)
-{
-	int i, endian;
-	int show_bytes  = config_get("asm.bytes");
-	int show_offset = config_get("asm.offset");
-	int show_split  = config_get("asm.split");
-	int show_lines = config_get("asm.lines");
-	int show_comments = config_get("asm.comments");
-	char opcode[10];
-	char operands[24];
-  	struct DisasmPara_68k dp;
-	struct reflines_t *reflines = NULL;
-
-	/* initialize DisasmPara */
-	dp.opcode = opcode;
-	dp.operands = operands;
-	if (show_lines)
-		reflines = code_lines_init();
-
-	inc = 4; // TODO : global var. should live inside config.inc!!
-	lines = 0;
-	endian = config_get("cfg.endian");
-	for(i=0;!config.interrupted && i<=len;i+=4) {
-		unsigned long ins;
-		if ( (config.visual) && (++lines>=(config.height-2)))
-			return;
-		if (endian)
-			ins = (config.block[i]<<24)+ (config.block[i+1]<<16)+ (config.block[i+2]<<8)+ (config.block[i+3]);
-		else	ins = (config.block[i+3]<<24)+ (config.block[i+2]<<16)+ (config.block[i+1]<<8)+ (config.block[i+0]);
-		INILINE;
-		lines+=print_metadata(i);
-		if (show_lines)
-			code_lines_print(reflines, config.baddr+config.seek +i);
-		if (show_offset) {
-			C cons_printf(C_GREEN);
-			cons_printf("0x%08llX ", config.baddr+ config.seek+i);
-			C cons_printf(C_RESET);
-		}
-		if (show_bytes) {
-			print_color_byte_i(i, "%02x", config.block[i]);
-			print_color_byte_i(i+1, "%02x", config.block[i+1]);
-			print_color_byte_i(i+2, "%02x", config.block[i+2]);
-			print_color_byte_i(i+3, "%02x", config.block[i+3]);
-		}
-		dp.iaddr = config.baddr + config.seek + i;
-		dp.instr = config.block + i;
-		// XXX read vda68k: this fun returns something... size of opcode?
-    		M68k_Disassemble(&dp);
-		cons_printf("    %s %s", opcode, operands);
-		C cons_printf(C_RESET);
-		if (show_split) {
-			struct aop_t aop;
-			arch_arm_aop((unsigned long)config.seek+i, (const unsigned char *)config.block+i, &aop);
-			if (aop.jump||aop.eob) {
-				NEWLINE
-					cons_printf("; ------------------------------------ ");
-				lines++;
-			}
-		}
-		NEWLINE;
-	}
-	code_lines_free(reflines);
-}
-
-void java_disassemble(int len, int rows)
-{
-	char output[1024];
-	int lines = 0;
-	int i, j, l, oi;
-	int show_bytes = config_get("asm.bytes");
-	int show_offset = config_get("asm.offset");
-	int show_split = config_get("asm.split");
-	int show_lines = config_get("asm.lines");
-	int show_size = config_get("asm.size");
-	struct reflines_t *reflines = NULL;
-
-	if (show_lines)
-		reflines = code_lines_init();
-
-	inc = -1;
-	for(i = 0; !config.interrupted && i < len;) {
-		if ((++lines>(config.height-2)))
-			return;
-		if (rows&&lines>=rows)
-			return;
-		INILINE;
-		lines+=print_metadata(i);
-		if (show_lines)
-			code_lines_print(reflines, config.baddr+config.seek+i);
-		l = java_disasm(config.block+i, output);
-		if (show_size)
-			cons_printf("%d ", l);
-		if (show_offset) {
-			C cons_printf(C_GREEN);
-			cons_printf("0x%08llX ", config.baddr + config.seek+i); // TODO: use baddr too!
-			C cons_printf(C_RESET);
-		}
-		if (config.cursor_mode) {
-			if (config.cursor == i)
-				if (inc == -1) inc = l;
-		} else
-			if (inc == -1) inc = l;
-		oi = i;
-		if (l >0) {
-			if (show_bytes) {
-				for (j = 0;j<l;j++)
-					print_color_byte_i(i+j,   "%02x", config.block[i+j]);
-				for (j = l ;j<5;j++)
-					cons_printf("  ");
-			}
-			cons_printf("    %s", output);
-			i += l;
-		} else {
-			print_color_byte_i(i,   "%02x", config.block[i]);
-
-			cons_printf("            ???");
-			i++; // skip wrong byte
-		}
-		C cons_printf(C_RESET);
-		NEWLINE;
-		if (show_split) {
-			struct aop_t aop;
-			arch_java_aop((unsigned long)config.seek+oi, (const unsigned char *)config.block+oi, &aop);
-			if (aop.jump||aop.eob) {
-				cons_printf("; ------------------------------------ ");
-				lines++;
-				NEWLINE
-			}
-		}
-	}
-	code_lines_free(reflines);
 }
 
 void disassemble(int len, int rows)
@@ -700,24 +526,21 @@ void disassemble(int len, int rows)
 	radare_controlc();
 
 	/* handles intel16, intel32, intel64 */
-	if (!memcmp(ptr, "intel", 5)) {
-		udis(len,rows);
-	} else {
-		if (!strcmp(ptr, "arm")) {
-			udisarm(len,rows);
-		} else {
-			if (!strcmp(ptr, "java")) {
-				java_disassemble(len,rows);
-			} else {
-				if (!strcmp(ptr, "ppc")) {
-					ppc_disassemble(len, rows);
-				} else {
-					if (!strcmp(ptr, "m68k"))
-						m68k_disassemble(len, rows);
-				}
-			}
-		}
-	}
+	if (!memcmp(ptr, "intel", 5))
+		udis_arch(ARCH_X86, len,rows);
+	else
+	if (!strcmp(ptr, "arm"))
+		udis_arch(ARCH_ARM, len,rows);
+	else
+	if (!strcmp(ptr, "java"))
+		udis_arch(ARCH_JAVA, len, rows);
+	else
+	if (!strcmp(ptr, "ppc"))
+		udis_arch(ARCH_PPC, len, rows);
+	else
+	if (!strcmp(ptr, "m68k"))
+		udis_arch(ARCH_M68K, len, rows);
+
 	radare_controlc_end();
 	fflush(stdout);
 }

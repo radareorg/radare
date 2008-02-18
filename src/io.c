@@ -94,26 +94,14 @@ int radare_write(char *arg, int mode)
 		config.cursor = seek;
 	}
 
-#if 0
-	D data_print(seek, "", (unsigned char *)str, len, FMT_HEXB, MD_ALWAYS);
-	if (yesno('n', "Write this %d bytes buffer %d times (aka %d)? (y/N)",
-	                (int)len, (int)times, (int)(len*times)))
-	{
-#endif
-		radare_seek(seek, SEEK_SET);
+	radare_seek(seek, SEEK_SET);
 
-		for(bytes=0;times--;)
-			bytes += io_write(config.fd, str, len);
+	for(bytes=0;times--;)
+		bytes += io_write(config.fd, str, len);
 
-		if (!config.debug)
-		if (!config.unksize && seek + len > config.size)
-			radare_open(1);
-
-#if 0
-		D eprintf("%d bytes written.\n", bytes);
-	} else
-		D eprintf("nothing changed.\n");
-#endif
+	if (!config.debug)
+	if (!config.unksize && seek + len > config.size)
+		radare_open(1);
 
 	radare_seek(oseek, SEEK_SET);
 	radare_read(0);
@@ -137,7 +125,7 @@ void radare_poke(char *arg)
 	otimes = times;
 
 	if (!config_get("cfg.write")) {
-		eprintf("You'r not in read-write mode.\n");
+		eprintf("You are not in read-write mode. Use 'eval cfg.write = true'\n");
 		return;
 	}
 

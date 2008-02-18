@@ -48,8 +48,8 @@ int dislen(BYTE* opcode0, int limit)
 	disasm_defmem = 4;
 
 retry:
-	//if (!limit--)
-	//	return 0;
+	if (!limit--)
+		return 0;
 	if (config.interrupted)
 		return 0;
 

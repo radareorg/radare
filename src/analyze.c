@@ -85,7 +85,9 @@ struct reflines_t *code_lines_init()
 					/* skip outside lines */
 					if (aop.jump < config.seek-30)
 						goto __next;
-				}
+				} else
+					if (aop.jump == 0)
+						goto __next;
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 				list2->from = config.seek + bsz;
 				list2->to = aop.jump;
@@ -106,6 +108,47 @@ void code_lines_free(struct list_head *list)
 {
 	// WTF!!1   What The Free!!
 	free(list);
+}
+void code_lines_print2(struct reflines_t *list, u64 addr)
+{
+	struct list_head *pos;
+	int foo = config_get_i("asm.linestyle");
+	int cow= 0;
+	char ch = ':';
+
+	if (!list)
+		return;
+
+	cons_strcat(" ");
+#define head &(list->list)
+	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
+		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
+		if (config.interrupted)
+			break;
+
+		if (ref->from < ref->to) {
+			/* down */
+			C cons_strcat(C_YELLOW);
+			if (addr > ref->from && addr < ref->to) {
+				cons_strcat("|");
+			} else
+				C {
+					if (ch=='-')
+						cons_printf(C_WHITE"-");
+					else if (ch=='=')
+						cons_printf(C_YELLOW"=");
+					else cons_printf("|",ch);
+				} else cons_printf(" ",ch);
+		} else
+		if (addr > ref->to && addr < ref->from) {
+			C cons_strcat(C_WHITE);
+				cons_strcat("|");
+		} else		
+			cons_strcat(" ");
+	}
+
+	cons_strcat("   ");
+	C cons_printf(C_RESET);
 }
 
 void code_lines_print(struct reflines_t *list, u64 addr)
@@ -149,7 +192,7 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 				C cons_strcat(C_YELLOW);
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
-						cons_strcat("(");
+						cons_printf("%c",ch);
 					else
 						cons_strcat("|");
 				} else

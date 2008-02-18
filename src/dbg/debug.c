@@ -123,10 +123,6 @@ int debug_init()
 	// init_dr();
 #endif
 	debug_os_init();
-#if __linux__
-	system("if [ \"`cat /proc/sys/kernel/randomize_va_space`\" = 1 ]; then echo Warning: sysctl -w kernel.randomize_va_space=0; fi");
-#endif
-
 
 	return 0; //for warning message
 }
@@ -941,7 +937,7 @@ int debug_stepo()
 
 int debug_step(int times)
 {
-	unsigned char opcode[4];
+	unsigned char opcode[32];
 	u64 pc, off;
 	u64 old_pc = 0;
 	char *tracefile;
@@ -973,7 +969,7 @@ int debug_step(int times)
 				trace_add((u64)arch_pc());
 
 			if (pc == old_pc) {
-				debug_read_at(ps.tid, opcode, 4, (u64)pc);
+				debug_read_at(ps.tid, opcode, 32, (u64)pc);
 				// determine infinite loop
 			#if __i386__
 				// XXX this is not nice!
@@ -1149,7 +1145,7 @@ int debug_trace(char *input)
 				if (is_usercode(pc)) {
 					radare_seek((u64)pc, SEEK_SET);
 					radare_read(0);
-					udis(10,1);
+					disassemble(10,1);
 					if (level == 3) {
 						debug_registers(0);
 						cons_printf("\n");

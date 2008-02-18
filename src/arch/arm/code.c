@@ -93,58 +93,39 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 
 	if ( anal_is_exitpoint ( code[i] ) )
 	{
-
 		branch_dst_addr =  disarm_branch_offset ( addr, code[i]&0x00FFFFFF ) ;
 
-		if ( anal_is_BL ( code[i] )  )
-		{
-			if ( anal_is_B ( code[i] ) )
-			{
-
+		if ( anal_is_BL ( code[i] )  ) {
+			if ( anal_is_B ( code[i] ) ) {
 				aop->type = AOP_TYPE_CALL;
 				aop->jump = branch_dst_addr;
 				aop->fail = addr + 4 ;
 				aop->eob  = 1;
-			}
-			else
-			{
-				printf ("1mirar: %x %x\n", code[i] , addr );
-				aop->type = AOP_TYPE_UJMP;
-				aop->eob = 1;
+			} else {
+				//aop->type = AOP_TYPE_UJMP;
+				//aop->eob = 1;
 				return 4;
 			}
-		}
-		else
-		{
-			if ( anal_is_B ( code[i] ) )
-			{
-				if ( anal_is_condAL (code[i] )  )
-				{
-					aop->type   = AOP_TYPE_JMP;
+		} else {
+			if ( anal_is_B ( code[i] ) ) {
+				if ( anal_is_condAL (code[i] )  ) {
+					aop->type = AOP_TYPE_JMP;
 					aop->jump = branch_dst_addr;
 					aop->eob = 1;
-
-				}
-				else
-				{
+				} else {
 					aop->type = AOP_TYPE_CJMP;
 					aop->jump = branch_dst_addr;
 					aop->fail = addr + 4;
-					aop->eob = 1;
+					aop->eob  = 1;
 				}
-
-			}
-			else
-			{
+			} else {
 				//unknown jump o return
 				aop->type = AOP_TYPE_UJMP;
 				aop->eob = 1;
 				return 4;
 			}
-
 		}
 	}
-
 
 	return 4;
 }

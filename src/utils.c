@@ -67,9 +67,9 @@ void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size)
 {
 #if RADARE_CORE
 #if LIL_ENDIAN /* little endian : x86 */
-	int endian = !config.endian;
+	int endian = !config_get("cfg.endian");
 #else /* big endian */
-	int endian = config.endian;
+	int endian = config_get("cfg.endian");
 #endif
 	endian_memcpy_e(dest, orig, size, endian);
 #else

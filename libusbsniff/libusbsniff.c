@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -129,7 +129,7 @@ int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
 	int ret;
 	fprintf(stderr, "USBSNF: usb_control_msg()\n");
 	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
-	fprintf(stderr, "USBSNF:   request_type = %d\n", requesttype);
+	fprintf(stderr, "USBSNF:   request_type = %d (%s)\n", requesttype, (requesttype==64)?"read":"write");
 	fprintf(stderr, "USBSNF:   request      = %d\n", request);
 	fprintf(stderr, "USBSNF:   value        = %d\n", value);
 	fprintf(stderr, "USBSNF:   index        = %d\n", index);

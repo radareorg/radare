@@ -5,7 +5,7 @@ The radare binary header analyzer.
 
 TODO
 ----
- * support MZ, PE, ELF, Java CLASS binaries
+ * support MZ, PE, ELF, DEX and Java CLASS binaries
    -e shows entrypoints one per line
    -r flag makes show the output in radare format
    -l show linked libraries

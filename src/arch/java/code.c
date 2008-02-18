@@ -45,6 +45,8 @@ int arch_java_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *
 		if (bytes[0] == java_ops[i].byte)
 			sz = java_ops[i].size;
 
+	aop->length = sz;
+
 	switch(bytes[0]) {
 	case 0xa9: // ret
 	case 0xb1: // return

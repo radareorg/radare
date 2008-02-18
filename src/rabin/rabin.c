@@ -39,7 +39,8 @@ enum {
 	FILETYPE_ELF,
 	FILETYPE_MZ,
 	FILETYPE_PE,
-	FILETYPE_CLASS
+	FILETYPE_CLASS,
+	FILETYPE_DEX
 };
 
 #define ACTION_UNK      0x0000
@@ -82,9 +83,21 @@ int rabin_show_help()
 
 void rabin_show_checksum()
 {
+	unsigned char buf[32];
 	unsigned long addr = 0;
 	unsigned long base = 0;
+	int i;
+
 	switch(filetype) {
+	case FILETYPE_DEX:
+		lseek(fd, 8, SEEK_SET);
+		read(fd, &addr, 4);
+		printf("Checksum: 0x%08x\n", addr);
+		read(fd, &buf, 20);
+		printf("SHA-1 Signature: ");
+		for(i=0;i<20;i++)
+			printf("%08x ", buf[i]);
+		break;
 	case FILETYPE_ELF:
 		break;
 	case FILETYPE_MZ:
@@ -143,12 +156,54 @@ unsigned long addr_for_lib(char *name)
 
 void rabin_show_symbols()
 {
+	unsigned long addr, addr2, addr3;
+	unsigned int num, idx, i;
 	char buf[1024];
 
 	switch(filetype) {
 	case FILETYPE_ELF:
 		sprintf(buf, "objdump -d '%s' | grep '>:' | sed -e 's,<,,g' -e 's,>:,,g' -e 's,^,0x,' | sort | uniq", file);
 		system(buf);
+		break;
+	case FILETYPE_DEX:
+// METHODS AND CODE OFFSETS
+		lseek(fd, 0x4c, SEEK_SET); // num of methods
+		read(fd, &num, 4);
+		lseek(fd, 0x50, SEEK_SET); // num of methods
+		read(fd, &addr, 4);
+		lseek(fd, addr, SEEK_SET);
+		for(i=0;i<num;i++) {
+			lseek(fd, (addr+i*32)+0xc, SEEK_SET);
+			read(fd, &addr2, 4);
+			lseek(fd, (addr2+0xc), 4);
+			read(fd, &addr3, 4);
+			printf("0x%08x\n", addr3);
+		}
+// CLASSES
+#if 0
+		lseek(fd, 0x40, SEEK_SET); // class list
+		read(fd, &addr, 4);
+		printf("Offset of class list: %d\n", addr);
+		lseek(fd, 0x3c, SEEK_SET); // number of classes
+		read(fd, &num, 4);
+		printf("Number of classes: %d\n", num);
+		lseek(fd, addr, SEEK_SET);
+		for(i=0;i<num;i++) {
+			read(fd, &idx, 4);
+			printf(" class name: (string-index %d)\n", idx);
+		}
+
+		/* class definition */
+		lseek(fd, 0x58, SEEK_SET); // class definition tables
+		read(fd, &addr, 4);
+		printf("Offset of class definition table: %d\n", addr);
+		lseek(fd, 0x54, SEEK_SET); // number of class definition tables
+		read(fd, &num, 4);
+		printf("Number of classes: %d\n", num);
+		lseek(fd, addr, SEEK_SET);
+		// TODO: needs to be parsed completely
+#endif
+		
 		break;
 	}
 }
@@ -157,17 +212,25 @@ void rabin_show_imports()
 {
 	char buf[1024];
 
-	//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
-	sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
-	system(buf);
+	switch(filetype) {
+	case FILETYPE_ELF:
+		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
+		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
+		system(buf);
+		break;
+	}
 }
 
 void rabin_show_exports(char *file)
 {
 	char buf[1024];
 
-	sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
-	system(buf);
+	switch(filetype) {
+	case FILETYPE_ELF:
+		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
+		system(buf);
+		break;
+	}
 }
 
 void rabin_show_sections()
@@ -192,6 +255,9 @@ int rabin_identify_header()
 
 	lseek(fd, 0, SEEK_SET);
 	read(fd, buf, 1024);
+	if (!memcmp(buf, "dex\n009\0", 8))
+		filetype = FILETYPE_DEX;
+	else
 	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4))
 		filetype = FILETYPE_ELF;
 	else
