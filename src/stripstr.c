@@ -39,7 +39,6 @@ enum {
 
 static char *encodings[3] = { "ascii", "cp850", NULL };
 static int encoding = ENCODING_ASCII; // default
-static int working = 0;
 static int min;
 
 static int resolve_encoding(const char *name)
@@ -166,15 +165,15 @@ int radare_strsearch(char *str)
 	int j, ret;
 	u64 seek = config.seek;
 	u64 size = config.size;
+	encoding = resolve_encoding(config_get("cfg.encoding"));
 
 	min = 5;
-
 	if (str) str=str+1;
 	if (size <=0)
 		size=0xbfffffff;
 
 	radare_controlc();
-	for(i = (size_t)seek; working && config.seek < size; i++) {
+	for(i = (size_t)seek; !config.interrupted && config.seek < size; i++) {
 		ret = radare_read(1);
 		if (ret == -1) break;
 		for(j=0;j<config.block_size;j++)
@@ -182,14 +181,16 @@ int radare_strsearch(char *str)
 	}
 	config.seek = seek;
 	radare_controlc_end();
+
 	return 0;
 }
 
+#if 0
 int stripstr_from_file(const char *filename, int min, u64 seek)
 {
 	int i, fd = open(filename, O_RDONLY);
 	unsigned char *buf;
-	size_t len;
+	u64 len;
 
 	if (fd == -1) {
 		eprintf("Cannot open target file.\n");
@@ -206,11 +207,13 @@ int stripstr_from_file(const char *filename, int min, u64 seek)
 		perror("mmap");
 		return 1;
 	}
-	if (min == 0)
+	if (min <1)
 		min = 5;
 
-	for(i = (size_t)seek; i < len; i++)
-		stripstr_iterate(buf, i, i, NULL);
+	radare_controlc();
+	for(i = (size_t)seek; !config.interrupted && i < len; i++)
+		stripstr_iterate(buf+i, i, i, "");
+	radare_controlc_end();
 	
 	munmap(buf, len); 
 #endif
@@ -221,3 +224,4 @@ int stripstr_from_file(const char *filename, int min, u64 seek)
 
 	return 0;
 }
+#endif

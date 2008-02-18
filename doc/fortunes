@@ -60,3 +60,4 @@ Manually modify the DRX registers of the child process with '!dr' command
 What do you want to debug today?
 Sniff your favorite libusb-based application with LD_PRELOAD=/usr/lib/libusbsniff.so ./your-program
 Use '!rsc spcc' to parse structures in memory using C programs
+Find cp850 strings with 'eval cfg.encoding=cp850' and '/s'
