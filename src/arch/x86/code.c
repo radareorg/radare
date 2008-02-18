@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *       esteve <eslack.org>
  *
@@ -61,7 +61,7 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 		} else
 		if (bytes[1]>=0x80 && bytes[1]<=0x8f) {
 			aop->type   = AOP_TYPE_CJMP;
-			aop->jump   = (unsigned long)((bytes+2)+6);
+			aop->jump   = addr+6+bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);//((unsigned long)((bytes+2))+6);
 			aop->fail   = addr+6;
 			aop->length = 6;
 			aop->eob    = 1;
@@ -87,7 +87,8 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 	case 0xe9: // jmp
 		aop->type   = AOP_TYPE_JMP;
 		aop->length = 5;
-		aop->jump   = (unsigned long)((bytes+1)+5);
+		//aop->jump   = (unsigned long)((bytes+1)+5);
+		aop->jump   = addr+5+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);//((unsigned long)((bytes+2))+6);
 		aop->fail   = 0L;
 		aop->eob    = 1;
 		break;
@@ -115,6 +116,28 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 		//	aop->length = 2;
 			aop->eob    = 1;
 		}
+		break;
+	case 0x50:
+	case 0x51:
+	case 0x52:
+	case 0x53:
+	case 0x54:
+	case 0x55:
+	case 0x56:
+	case 0x57:
+	case 0x58:
+	case 0x59:
+	case 0x5a:
+	case 0x5b:
+	case 0x5c:
+	case 0x5d:
+	case 0x5f:
+		aop->type = AOP_TYPE_UPUSH;
+		aop->ref = 0; // TODO value of register here! get_offset
+		break;
+	case 0x68:
+		aop->type = AOP_TYPE_PUSH;
+		aop->ref = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
 		break;
 #if 0
 	case0xF

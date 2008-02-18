@@ -368,11 +368,16 @@ int radare_cmd_raw(char *tmp, int log)
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
-	cons_flush();
+	//cons_flush();
+	cons_reset();
 	radare_cmd(cmd, 0);
+//printf("RUN(%s)\n", cmd);
 	buf = cons_get_buffer();
+//printf("RET(%s)\n", buf);
 	if (buf)
 		buf = strdup(buf);
+	//buf = cons_get_buffer();
+	//cons_flush();
 	cons_reset();
 	return buf;
 }
@@ -385,7 +390,7 @@ int radare_cmd(char *tmp, int log)
 	char buf[128];
 
 	/* silently skip lines begginging with 0 */
-	if((log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
+	if(tmp==NULL || (log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
 		return 0;
 
 	// TODO : move to a dbg specific func outside here

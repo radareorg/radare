@@ -196,6 +196,8 @@ int string_flag_offset(char *buf, u64 seek)
 		else
 		if (ul >-delta && ul<delta)
 			sprintf(buf, "%s+0x%lx", ref->name, ul);
+		else
+			return 0;
 		return 1;
 	}
 

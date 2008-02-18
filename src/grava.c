@@ -32,11 +32,12 @@ struct mygrava_window {
 	GtkWidget *bnew;
 	GtkWidget *close;
 	GravaWidget *grava;
+	GtkWidget *text;
 };
 
 static struct mygrava_window *last_window;
 static int new_window = 0;
-	static int n_windows = 0;
+static int n_windows = 0;
 
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
@@ -46,7 +47,14 @@ void core_load_graph_at(void *obj, const char *str)
 	GravaWidget *widget = obj;
 	struct program_t *prg;
 	u64 off = get_offset(str);
-
+#if 0
+	char *follow = config_get("asm.follow");	
+	if (follow&&follow[0]) {
+		u64 addr = get_offset(follow);
+		if (addr && (addr < off) || ((off+config.block_size)<addr))
+			off = addr; //radare_seek(addr, SEEK_SET);
+	}
+#endif
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
@@ -71,12 +79,14 @@ static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	struct mygrava_window *w = obj;
 	gtk_widget_destroy(w->w);
-printf("mygrava_close()\n");
-n_windows--;
-if (n_windows<0)
-n_windows = 0;
+	printf("mygrava_close()\n");
+	n_windows--;
+	if (n_windows<0)
+		n_windows = 0;
+	//if (!n_windows)
 	gtk_main_quit();
 }
+
 static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 { mygrava_close(widget, obj); }
 
@@ -101,11 +111,11 @@ static void mygrava_back2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 {
 	const char *str;
+	char *buf;
 	struct program_t *prg;
 	struct mygrava_window *w = obj;
 	u64 off;
 
-eprintf("load_graph_at %08x\n", w);
 	if (w)
 		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
 	else {
@@ -118,11 +128,21 @@ eprintf("load_graph_at %08x\n", w);
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
 		/* run command */
-		radare_cmd(str, 0);
-		if (config.debug) {
+		if (config.debug)
 			radare_cmd(".!regs*", 0);
-			//radare_cmd("s eip", 0);
+		//radare_cmd(str, 0);
+		//buf = radare_cmd_str(str);
+		//cons_flush();
+		radare_cmd(str,0);
+		buf = cons_get_buffer();
+		if (buf && buf[0]) {
+			printf("BUFFER(%s->%s)\n", str, buf);
+			gtk_text_buffer_set_text(gtk_text_view_get_buffer(w->text), buf, -1);
+			//gtk_text_view_set_buffer(w->text, 
+			//free(buf);
 		}
+		if (config.debug)
+			radare_cmd(".!regs*", 0);
 		off = config.seek;
 	}
 	radare_seek(off, SEEK_SET);
@@ -156,6 +176,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	static int gtk_is_init = 0;
 	char *ptr;
 	int i;
+	GtkWidget *tw,*tw2;
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xref_t *c0;
@@ -222,6 +243,15 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
+		tw = gtk_expander_new("Output buffer:");
+		win->text =  gtk_text_view_new ();
+		gtk_text_view_set_editable(win->text, 0);
+//gtk_text_buffer_new(NULL);
+		tw2 = gtk_scrolled_window_new(NULL,NULL);
+		gtk_scrolled_window_set_policy(tw2, GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		gtk_container_add(tw2, win->text);
+		gtk_container_add(tw, tw2);
+		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);
 
 		// TODO: Add asm.arch combobox from gradare
 
@@ -352,7 +382,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	config_set("cfg.verbose", "true");
 	config_set("scr.color", "true");
 	config_set("asm.offset", "true");
-	config_set("asm.trace", "true");
+	config_set("asm.trace", "false");
 	config_set("asm.bytes", "true");
 	config_set("asm.lines", "true");
 	cons_set_fd(1);

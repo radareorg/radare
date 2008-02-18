@@ -401,27 +401,29 @@ void udis_arch(int arch, int len, int rows)
 			if (show_flags) {
 				char buf[1024];
 				char *flag = flag_name_by_offset(seek);
-				sprintf(buf, "%%%ds", show_nbytes);
-				if (flag) {
+				sprintf(buf, "%%%ds:", show_nbytes);
+				if (flag && flag[0]) {
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
 						NEWLINE;
 						lines--;
 						if (rows && rows == lines)
 							return;
-						//cons_printf("    ");
 						if (show_lines)
 							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
-							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));//config.baddr + ud_insn_off(&ud_obj)));
-							else cons_printf("0x%08llX ", (unsigned long long)(seek)); //config.baddr + ud_insn_off(&ud_obj)));
+							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+							else cons_printf("0x%08llX ", (unsigned long long)(seek));
 						}
-						
-						cons_printf("        ");
+						sprintf(buf, "%%%ds ", show_nbytes);
+						cons_printf(buf,"");
 					} else {
 						cons_printf(buf, flag);
 					}
-				} else cons_printf(buf,"");
+				} else {
+					sprintf(buf, "%%%ds ", show_nbytes);
+					cons_printf(buf,"");
+				}
 			}
 			/* cursor and bytes */
 			if (is_cursor(bytes, myinc)) {
@@ -495,6 +497,11 @@ void udis_arch(int arch, int len, int rows)
 						} break;
 			}
 			C cons_printf(C_RESET);
+			if (aop.ref) {
+				char buf[1024];
+				if (string_flag_offset(buf, aop.ref))
+					cons_printf(" ; %s",buf);
+			}
 
 			if (aop.jump) {
 				if (++jump_n<10) {

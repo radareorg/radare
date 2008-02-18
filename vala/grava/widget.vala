@@ -30,8 +30,8 @@ public class Grava.Widget : GLib.Object {
 	ScrolledWindow sw;
 	Menu menu;
 
-	public signal void load_graph_at(string addr);
-	public signal void breakpoint_at(string addr);
+	public signal void load_graph_at(weak string addr);
+	public signal void breakpoint_at(weak string addr);
 //	public signal void focus_at(string addr);
 
 	public Gtk.Widget get_widget()

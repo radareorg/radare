@@ -16,6 +16,7 @@ enum {
 	AOP_TYPE_NOP,  // does nothing
 	AOP_TYPE_TRAP,  // it's a trap!
 	AOP_TYPE_SWI,  // syscall, software interrupt
+	AOP_TYPE_UPUSH, // unknown push of data into stack
 	AOP_TYPE_PUSH,  // push value into stack
 	AOP_TYPE_POP,   // pop value from stack to register
 	AOP_TYPE_ADD,
@@ -36,6 +37,7 @@ struct aop_t {
 	int eob; // end of block (boolean)
 	unsigned long jump; /* true jmp */
 	unsigned long fail; /* false jmp */
+	u64 ref; /* referente to memory */
 };
 
 #include "list.h"

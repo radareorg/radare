@@ -47,7 +47,7 @@ public class Grava.Renderer
 			  dy = edge.dest.y-edge.orig.y- edge.orig.h; // or 80 or so depending if > or < ???
 			double ox = dx;
 			if (ox == 0){ ox = 150; }
-			ctx.curve_to(0,100, ox, 120, dx, dy);
+			ctx.curve_to(dx,100, ox, 120, dx, dy);
 			ctx.stroke();
 		}
 

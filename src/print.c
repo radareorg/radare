@@ -161,6 +161,7 @@ void format_show_help (print_mode_t mode)
 			cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo);
 		else	cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeb);
 	}
+	cons_flush();
 }
 
 void radare_dump_and_process(int type, int size)

@@ -1,6 +1,6 @@
 /*
  *  Grava - General purpose graphing library for Vala
- *  Copyright (C) 2007  pancake <youterm.com>
+ *  Copyright (C) 2007,2008  pancake <youterm.com>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,13 +45,18 @@ public class Grava.Node : GLib.Object
 		selected = false;
 	}
 
-	public void set (string key, string val)
+	public void set (weak string key, weak string val)
 	{
+		if (data== null)
+			return;
+		//data     = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);
 		data.insert (key, val);
 	}
 
-	public string get (string key)
+	public string get (weak string key)
 	{
+		if (data == null)
+			return null;
 		return data.lookup(key);
 	}
 
