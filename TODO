@@ -7,6 +7,8 @@
 
 ===========================================================
  
+* Add 'pG' button in gradare
+* A key to increase/decrease the byte value under the cursor
 * pm must have a format to show a buffer in hexpairs (just some bytes) (refs to flags too!)
 * asm.splitbranches -> split branches or only ret?
 * identify nodes with 'ret'

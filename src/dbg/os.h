@@ -1,6 +1,6 @@
+#ifndef _INCLUDE_OS_H_
+#define _INCLUDE_OS_H_
 /* debugger interface for radare */
-
-/* debug.c */
 
 /* lifetime */
 void debug_init_calls();
@@ -38,3 +38,4 @@ int debug_fd_list(int pid);
 int debug_fd_dup2(int pid, int oldfd, int newfd);
 int debug_fd_open(int pid, char *file, int mode);
 int debug_fd_close(int pid, int fd);
+#endif

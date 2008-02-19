@@ -69,12 +69,6 @@ typedef struct {
 #endif
 #include <unistd.h>
 #include <signal.h>
-#include "arch/cpu.h"
-#if __i386__ || __x86_64__
-#include "arch/i386.h"
-#else
-#include "arch/arm.h"
-#endif
 
 
 #include "thread.h"
@@ -83,6 +77,14 @@ typedef struct {
 #include "../utils.h"
 #include "../list.h"
 
+#include "arch/cpu.h"
+#if __i386__ || __x86_64__
+#include "arch/i386.h"
+#else
+#include "arch/arm.h"
+#endif
+// XXX?
+//#include "os.h"
 
 #ifndef OFF_FMT
 #define OFF_FMT "0x%08x"
@@ -178,13 +180,13 @@ typedef struct {
 #define WS(w) (ps.ws.w)
 #define WS_SI(f) (ps.ws.si.f)
 
-#ifndef regs_t
+//#ifndef regs_t
 #if __arm__
   #define regs_t elf_gregset_t
-#else
-  #define regs_t struct user_regs_struct
+//#else
+//  #define regs_t struct user_regs_struct
 #endif
-#endif
+//#endif
 #if __WINDOWS__
 #define siginfo_t int
 #endif

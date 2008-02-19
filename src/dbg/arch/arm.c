@@ -18,7 +18,9 @@
  *
  */
 
+#include "../../radare.h"
 #include "../libps2fd.h"
+#include "../debug.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -40,12 +42,10 @@ long long arch_syscall(int pid, int sc, ...)
         //regs_t   reg, reg_saved;
 	elf_gregset_t reg, reg_saved;
 	int baksz = 128;
-        int     i, status;
+        int     status;
 	char	bak[128];
-	long long addr;
 	unsigned char my_syscall[4];
 	char *arg;
-	char *file;
 
 	/* get registers */
 	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &reg);
@@ -137,7 +137,7 @@ long long arch_syscall(int pid, int sc, ...)
 void arch_dump_registers()
 {
 	FILE *fd;
-	int ret, regno;
+	int ret;
 	elf_gregset_t regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
@@ -146,7 +146,7 @@ void arch_dump_registers()
 	fd = fopen("cpustate.dump", "w");
 	if (fd == NULL) {
 		fprintf(stderr, "Cannot open\n");
-		return 0;
+		return;
 	}
 	fprintf(fd, "r00 0x%08x\n", (uint)regs[0]);
 	fprintf(fd, "r01 0x%08x\n", (uint)regs[1]);
@@ -180,7 +180,7 @@ void arch_restore_registers()
 	char buf[1024];
 	char reg[10];
 	unsigned int val;
-	int key, ret;
+	int ret;
 	elf_gregset_t regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
@@ -190,7 +190,7 @@ void arch_restore_registers()
 	fd = fopen("cpustate.dump", "r");
 	if (fd == NULL) {
 		fprintf(stderr, "Cannot open cpustate.dump\n");
-		return 0;
+		return;
 	}
 
 	while(!feof(fd)) {
@@ -223,7 +223,7 @@ void arch_restore_registers()
 
 	ret = ptrace (PTRACE_SETREGS, ps.tid, 0, &regs);
 
-	return 1;
+	return;
 }
 
 int arch_mprotect(char *addr, unsigned int size, int perms)
@@ -272,7 +272,7 @@ int arch_ret()
 	return ARM_lr;
 }
 
-int arch_jmp(off_t ptr)
+int arch_jmp(u64 ptr)
 {
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
@@ -282,7 +282,7 @@ int arch_jmp(off_t ptr)
 	return 0;
 }
 
-off_t arch_pc()
+u64 arch_pc()
 {
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
@@ -318,7 +318,7 @@ elf_gregset_t oregs; // old registers
 
 int arch_print_registers(int rad, const char *mask)
 {
-	int ret, regno;
+	int ret;
 	elf_gregset_t regs;
 	int color = config_get("scr.color");
 
@@ -452,7 +452,7 @@ int arch_continue()
 }
 
 // TODO
-struct bp_t *arch_set_breakpoint(off_t addr)
+struct bp_t *arch_set_breakpoint(u64 addr)
 {
 }
 
@@ -488,7 +488,7 @@ void *arch_alloc_page(int size, int *rsize)
 {
 }
 
-void *arch_mmap(int fd, int size, off_t addr) //int *rsize)
+void *arch_mmap(int fd, int size, u64 addr) //int *rsize)
 {
 }
 
@@ -496,16 +496,16 @@ void *arch_get_sighandler(int signum)
 {
 }
 
-void *arch_set_sighandler(int signum, off_t handler)
+void *arch_set_sighandler(int signum, u64 handler)
 {
 }
 
-off_t arch_get_entrypoint()
+u64 arch_get_entrypoint()
 {
 	unsigned long long addr;
 	// 0x8018 is not portable. make this var definable
 	debug_read_at(ps.tid, &addr, 4, 0x8018);
-	return (off_t)addr;
+	return (u64)addr;
 }
 
 struct syscall_t {
@@ -599,13 +599,13 @@ struct list_head *arch_bt()
 void arch_view_bt(struct list_head *sf)
 {
 	/* ... */
-	return NULL;
+	return;
 }
 
 void free_bt(struct list_head *sf)
 {
 	/* ... */
-	return NULL;
+	return;
 }
 
 int get_reg(char *reg)

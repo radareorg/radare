@@ -1,3 +1,6 @@
+#ifndef _INCLUDE_ARM_H_
+#define _INCLUDE_ARM_H_
+
 #ifndef _INCLUDE_CPU_H_
 #error Do not include arm.h directly!
 #endif
@@ -17,4 +20,7 @@ enum {
 	ARMBP_ARM_THUMB_LE,
 	ARMBP_ARM_THUMB_BE,
 	ARMBP_LAST
-};
+} ArmBpType;
+
+//#define regs_t elf_gregset_t
+#endif
