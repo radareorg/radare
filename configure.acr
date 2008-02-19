@@ -1,5 +1,5 @@
 PKGNAME radare
-VERSION 0.9.3
+VERSION 0.9.4
 CONTACT pancake ; pancake@youterm.com
 
 LANG_C!

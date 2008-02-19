@@ -1,6 +1,4 @@
 include ../../config.mk
-#all:
-#	valac --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
 
 all:
 	valac -g cmain.c --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
@@ -10,7 +8,6 @@ radare:
 	# only for releases (not development)
 	${CC} `pkg-config gtk+-2.0 cairo --cflags --libs` *.c -o a.out
 	
-
 c:
 	valac --save-temps *.c --pkg gtk+-2.0 --pkg cairo -o a.out
 

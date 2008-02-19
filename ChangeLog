@@ -1,3 +1,966 @@
+
+---- 0.9.3 release ------------------------
+
+changeset:   69:db71dc4f0960
+tag:         tip
+user:        pancake <youterm.com>
+date:        Mon Feb 18 23:42:31 2008 +0100
+
+* 0.9.3 release
+ - Remove stripstr -S flag from the commandline (nosense)
+ - Noted in fortunes
+
+
+changeset:   68:a5507801c32e
+user:        pancake <youterm.com>
+date:        Mon Feb 18 23:18:25 2008 +0100
+
+* Fix build for w32
+  - random() -> rand(), srandom() -> srand()
+  - DATADIR cannot be defined before windows.h
+* Fix inc up/down scroll in hexdumps for even columns
+
+
+changeset:   67:70503ca83586
+user:        pancake <youterm.com>
+date:        Mon Feb 18 22:35:40 2008 +0100
+
+* Initial import of the fortunes command (fo)
+  - New file: doc/fortunes
+  - Disabled with eval cfg.fortunes = false
+* Add some dex fileformat docu
+* Prettify the ';--' split lines
+* Add slurp() in utils.
+* Fix undo_push in visual out of debugger
+
+
+changeset:   66:a4217b13df6f
+user:        pancake <youterm.com>
+date:        Mon Feb 18 18:27:48 2008 +0100
+
+* Fix two problematic code analysis bugs for x86
+  - Add AOP_TYPE_PUSH and UPUSH support for x86
+  - handle references in disassembly and show flags of pushed addresses
+* Moar fixups on the graph view
+  - Add a buggy text area with command output sausage
+  - New edge rendering
+  - Fixes some segfaults
+* Fix udis printing long flags on the flag column
+
+
+changeset:   65:d6b990ead7b7
+user:        pancake <youterm.com>
+date:        Mon Feb 18 15:25:34 2008 +0100
+
+* Initial import of dwarf-addr
+* New eval 'asm.nlines'
+  - less flickering for asm.lines :D
+* Add cmd.asm to execute a command on every opcode
+  - allow to access to $HERE environ
+* Add asm.dwarf to properly setup cmd.asm
+* Handle ^C when interpretting commands (^.)
+
+
+changeset:   64:1320787b57db
+user:        pancake <youterm.com>
+date:        Mon Feb 18 07:14:33 2008 +0100
+
+* libusbsniff decodes request type now
+* Fix arm code analyze (jump = 0 are broken jumps)
+* Add new 'faster and buggy' lines_print algo, for comments
+* Fix code analysis module for Java (aop->length not set)
+* Initial toying support for the DEX format to rabin (Android binaries)
+* Major code cleanup for udis. It needs more love.
+  - Remove lot of unused/commented code
+* Grava workaround to kill gtk_main loop when closing a window
+  - Add 'last window' hack
+* Beutify disasebmly output. Nicer for debugger
+* 'repeat' command in visual mode have been disabled
+* Show warning when your linux box have randomize_va_space
+  - But all architectures have been integrated into a single function
+* New eval flags:
+  - asm.flags     - show flags as a column in disassembly (true by default)
+  - asm.flagsline - show flags as comments (old way, disabled by default)
+
+
+changeset:   63:d04f50d6279d
+user:        pancake <youterm.com>
+date:        Fri Feb 15 03:35:27 2008 +0100
+
+* Fix deletion of comments
+  - Fix command line parse
+* Make project code interpret evaluation strings and store file.scrfilter too
+  (in previous commit)
+
+
+changeset:   62:4f25abba0d8a
+user:        pancake <youterm.com>
+date:        Fri Feb 15 03:28:48 2008 +0100
+
+* Add new keys in visual mode ',' and '.'
+  - ',' marks current cursor position
+    - if marks twice the same address the mark is set to 0
+  - '.' key seeks to the mark
+    - if mark not set jumps to flag "eip"
+  - show 'mark' in visual prompt
+* Add buggy metadata comment deletion function
+  - enhace 'C' command with help message and '-' prefix deletion
+
+
+changeset:   61:5c56c2a5ed3a
+user:        pancake <youterm.com>
+date:        Wed Feb 13 16:26:26 2008 +0100
+
+* add file.scrfilter=<filename>
+* replaces strings when flushing characters on screen
+  - really nice for the disassembler
+  - import the substr function from GNU bash
+
+
+changeset:   60:83e2db5be567
+user:        pancake <youterm.com>
+date:        Wed Feb 13 06:37:57 2008 +0100
+
+* Do not seek to eip in the debugger. Just act as in asm.follow
+  - (done in previous commit)
+* Cleanup and optimize the color byte and cursor stuff (needs more love)
+* Do not lock the cursor when scrolling in disassembly
+  - Show a star before the bytes to emulate a cursor
+  - cleaner to read, and makes the asm.bytes=0 with cursor nicer
+* Add zoom.byte=FF...counts the number of 0xFF...maybe will be better
+  to make the hex value selectable with 0xNN or so
+
+
+changeset:   59:516f2cd6cc26
+user:        pancake <youterm.com>
+date:        Wed Feb 13 06:02:42 2008 +0100
+
+* Add udis_jump()
+  - shows a number between 1 and 9
+  - these numbers are hooked to perform a seek with a single key
+  - old seek is stacked, so you can use 'u' key to go back
+* Fix integer overflow in off_t -> u64 port
+  - negative offsets are absolutely useless
+* new function flag_get_addr() (returns offset of a flag by name)
+* asm.trace to false by default
+
+
+changeset:   58:705908cbfb1e
+user:        pancake <youterm.com>
+date:        Tue Feb 12 01:21:24 2008 +0100
+
+* Implement client/server unix-socket functions
+* Check for vala >= 0.1.6 in configure.acr (Thanks esteve for the tip)
+* Remove perl and python references in configuration stage
+
+
+changeset:   57:7331552b0882
+user:        pancake <youterm.com>
+date:        Tue Feb 12 00:16:07 2008 +0100
+
+* Fix all important warns from valgrind
+  - 'lost bytes' ignored
+* Add socket_ready(fd,secs) to wait for bytes
+
+
+changeset:   56:9ebd414c88f5
+user:        pancake <youterm.com>
+date:        Mon Feb 11 14:58:37 2008 +0100
+
+* Add support to load plugins from a directory
+  - Install plugins in ${LIBDIR}/radare
+  - dir.plugins points to LIBDIR"/radare" by default
+* cleanup and todoize flags.c
+
+
+changeset:   55:406b2aa86964
+user:        pancake <youterm.com>
+date:        Mon Feb 11 13:20:37 2008 +0100
+
+* Add 'p%' print percentatge bar (ida-like navigation bar)
+  - atm only marks flags
+  - works in debugger too
+  - hooked in cmd.vprompt
+* Add doc/xtra/func-frames
+* Remove '%' command
+* Fix w32 ansi parsing
+* Fix chdir to unitialized dir
+* Fix !pid segfault
+* use u64 and cons_printf in debugger
+* Minor wine-hack fixup. uh?
+* Debugger filesize is set to 0xffffffff by default instead of -1
+* Fix '.' command.
+  - Add help message
+  - use cmd_str instead of piped_cmd for .!regs* on w32 (faster)
+* Make asm.comments work
+
+
+changeset:   54:6bf24f113b72
+user:        pancake <youterm.com>
+date:        Sun Feb 10 23:36:32 2008 +0100
+
+* Also build plugins by default (perl/python+hello)
+* New eval variable asm.follow
+  - follow in visual-disasembly view a flag
+  > eval asm.follow = eip
+* Fix plugin callback argument bug
+* Fix python plugin and some code cleanup
+  - H python <filename>
+  - use radare_cmd_str core function
+  - if no filename is given, reads from stdin
+    - shell is ended with '.' or 'quit'
+
+
+changeset:   53:e3251334f850
+user:        pancake <youterm.com>
+date:        Sun Feb 10 17:26:26 2008 +0100
+
+* Fix graph window management (mygrava_close())
+  - creation/destruction done nicely
+* Add close button, nice for dwm ;)
+
+
+changeset:   52:1ca2f6cd0fdd
+user:        pancake <youterm.com>
+date:        Sun Feb 10 17:03:32 2008 +0100
+
+* Initial extraction of perl and python from the core
+  - Re-implemented as plugins
+  - Needs more love
+  - Build stage must be cleaned up
+* Make fietline handle terminal columns properly on unix
+* Make vala build obligatory
+
+
+changeset:   51:fba4e3022335
+user:        pancake <youterm.com>
+date:        Fri Feb 08 19:30:50 2008 +0100
+
+* Oops fix build
+* Refactor of signals for the Grava widget
+* Breakpoints should work now :)
+
+
+changeset:   50:bff995e33c5b
+user:        pancake <youterm.com>
+date:        Fri Feb 08 19:12:27 2008 +0100
+
+* Make debugging in graph view much more pleasant
+  - More colors for nodes
+  - Colorize nodes with flags (useful to follow eip and so)
+  - Edges drawn at the bottom of the nodes (easy to read)
+  - Use Verdana instead of Courier (scales better)
+  - Allow to manage multiple windows properly
+  - Do not show labels in buttons in the gui (smarter)
+* Remove graph.window - handled only internally
+
+
+changeset:   49:4f6b36d63b0f
+user:        pancake <youterm.com>
+date:        Thu Feb 07 03:44:22 2008 +0100
+
+* Merge of the patches provided by Ben Byer
+  - Fix build and port of core for MacOSX
+  - Initial port of the debugger for MacOSX (does not yet works)
+
+
+changeset:   48:54c3754383d7
+user:        pancake <youterm.com>
+date:        Thu Feb 07 03:22:08 2008 +0100
+
+* Implement radare commands into the entry in graph window
+  - Allows to use the debugger inside the graph window
+  - Typing 'V' we can go back to shell and 'q' to return to graph.
+* Refactor src/plugins and src/hacks to src/plug/io src/plug/hack
+* Add graph.window eval variable
+  - opens graph in new window or not
+* off_t -> u64 fixups in hasher. Make't work nicely on w32
+* Recovered from a broken mercurial repo :"
+
+
+changeset:   47:60c652d3be57
+user:        pancake <youterm.com>
+date:        Tue Feb 05 03:46:12 2008 +0100
+
+* Implement the w32 plugin stuff
+  - Properly handle Hack plugins
+* build debugger by default in configure
+* Fix get file size problem (32-64 bit bug)
+* ewf:// should work on w32 now too
+* u64-ize the io plugins and w32 fixups
+
+
+changeset:   46:e51a9a78c62b
+user:        pancake <youterm.com>
+date:        Tue Feb 05 03:16:37 2008 +0100
+
+* Build vala fixup
+* Complete off_t -> u64 refactoring
+  - maked w32 debugger work again
+  - the .!regs* problem persists. must be fixed before release
+* Fix grava build and fix stupid segfault
+
+
+changeset:   45:873beb38fa22
+user:        pancake <youterm.com>
+date:        Sat Feb 02 06:35:24 2008 +0100
+
+* Oops. minor fixups
+
+
+changeset:   44:6286561fc40d
+user:        pancake <youterm.com>
+date:        Sat Feb 02 06:18:04 2008 +0100
+
+* Yeah! Initial usb-gecko commands working
+  - radare plugin written but not yet integrated
+  - read function needs to take care about the protocol
+* Wii plugin refactoring
+  - move console files to the proper directory
+* Add a minimal test program that uses the grecko api to
+  zap the console in freeze and unfrezze state every 2 seconds.
+  - src/plugins/wii/test
+
+
+changeset:   43:8b68c80a38a5
+user:        pancake <youterm.com>
+date:        Sat Feb 02 05:33:40 2008 +0100
+
+* Add more documentation about the Wii and the usb gecko protocol
+  - Most of commands have been reverse enginered
+     + 30 getregs
+     + 13 load
+     + 11 screenshot
+     + 10 set breakpoint (rwx)
+     +  7 continue
+     +  6 stop
+     +  4 read
+     +  3 write
+  - Initial non-working implementation with libusb called 'Grecko'
+* print command now handles ^C to stop a print processing
+  - Fix the ^C exits radare bug
+
+
+changeset:   42:f51f3ce14ff9
+user:        pancake <@youterm.com>
+date:        Fri Feb 01 01:22:33 2008 +0100
+
+* New print mode: pm (print memory format string)
+  - Allows to read function arguments in debugger
+  - Allows to parse structures in oneliners
+  - Command per offset will be implemented soon...
+ [0x00000000]> pm?
+ Usage: pm [format]
+  e - temporally swap endian
+  n - perform \n after format
+  b - one byte
+  i - %d integer value (4 byets)
+  q - quadword (8 bytes)
+  x - 0x%08x hexadecimal value
+  z - \0 terminated string
+  Z - \0 terminated wide string
+  s - pointer to string
+  * - next char is pointer
+  . - skip 1 byte
+* Fox x86/code analisys bug by esteve (short jumps)
+* Refactor radare_command to radare_cmd, radare_command_raw -> radare_cmd_raw
+* Store timestamp in traces
+* Make trace use the trace.dup configuration variable
+  - dups creates new traces when passing two times over the same address
+  - time counter will be increased for all vars if dup is not set
+* New files: .hgignore, AUTHORS
+* Add resolver function callback to the hack plugin structure
+  - Add some core function pointers to the core array
+  - Make hello world plugin example use it
+  - Allows to resolve core functions from plugins
+  - Will help to define a better core api
+  - Gtk plugins will come soon too ;)
+
+
+changeset:   41:62dcc9711b2e
+user:        pancake <@youterm.com>
+date:        Thu Jan 31 06:04:28 2008 +0100
+
+* Initial import of the tracing code. facilities to read code :)
+  - Integrated with udis disassembler
+* Colorize asm.lines arrows green/red depeding if ingoin or outgoing
+* Show printable char for byte cast intel (udis86) opcode arguments
+* More use of the radare_controlc inside the debugger
+* Add key 't' in visual mode to simulate a trace...uh?
+* Fix stepo ..uh!
+* Fix zoom hexdump offsets
+* New eval flags:
+   asm.trace <- toggle visibility of tracing bytes
+   trace.log <- should be renamed to file.traelo?
+   graph.flagblocks <- are flagged addresses blocks too?
+
+
+changeset:   40:c53ffa11f418
+user:        pancake <@youterm.com>
+date:        Thu Jan 31 03:15:22 2008 +0100
+
+* Implement block_split_new() to properly generate code graphs
+  - Thanks esteve for this random piece of code :)
+  - Splits already analized blocks and correct jumps and block sizes
+* Keep config.seek after graphing (pG)
+* Cleanup assembly plugin code
+
+
+changeset:   39:33f90f181fc0
+user:        pancake <youterm.com>
+date:        Wed Jan 30 03:57:36 2008 +0100
+
+* Fix graph edge render issue
+* Support different color for node titles dependng on the num of calls per block
+* Some minor changes for w32 (does not fixes the build)
+
+
+changeset:   38:422e89efd151
+user:        pancake <youterm.com>
+date:        Wed Jan 30 02:51:16 2008 +0100
+
+* Faster access to flags
+* Fix build of hack plugin without debugger
+* Remove /debug/ sleep() in w32 debugger
+
+
+changeset:   37:2fd6a9e27c57
+user:        pancake <youterm.com>
+date:        Wed Jan 30 02:25:53 2008 +0100
+
+* Initial working of the hack plugins with '-l' flag
+  - plugin_registry autodetects hack plugins
+  - add two example plugins for it written in C and assembly for x86
+* Add MrGadix maps implementation for w32
+  - Not working with wine, needs to be integrated
+* Shorter help message
+
+
+changeset:   36:e88272684eeb
+user:        pancake <@youterm.com>
+date:        Wed Jan 30 00:47:05 2008 +0100
+
+* Handle ^C on loading and interpreting scripts
+* Notes and tips for:
+  - debugger port to solaris
+  - memory ranges for the Wii plugin
+* Dup detach to be sure..
+
+
+changeset:   35:9d8627046aba
+user:        pancake <youterm.com>
+date:        Tue Jan 29 04:15:52 2008 +0100
+
+* Import of elektranox's syscall-flag (perl port of pof's one)
+* Fix non-color arm register printage
+* Fix arm get_entrypoint
+
+
+changeset:   34:113b946d4e66
+user:        pancake <youterm.com>
+date:        Tue Jan 29 02:32:04 2008 +0100
+
+* Make radare debugger happy with ARM
+  - Thanks to BitCarrier for the compulab dev.board :)
+  - fix build with scratchbox
+  - asm.arch=arm by default
+  - make breakpoints work and take sense of endianness
+  - beuty print color registers
+* w32 build is now broken.
+  - Working to support 64 bit offsets
+
+
+changeset:   33:c444a54c43ca
+user:        pancake@bare
+date:        Mon Jan 28 15:32:35 2008 +0100
+
+* Refactor pprintf to cons_printf
+  - Also pstrcat to cons_strcat
+  -  ...
+* Fix w32 build
+  - Fix console input
+
+
+changeset:   32:58d81f02e856
+user:        pancake@bare
+date:        Mon Jan 28 14:16:25 2008 +0100
+
+* Fix 4 byte overwrite bug. Thanks valgrind :)
+* Fix cfg.write initialization
+
+
+changeset:   31:d007672d5ba9
+user:        pancake <youterm.com>
+date:        Mon Jan 28 04:24:13 2008 +0100
+
+* Fix build of hasher for native w32
+
+
+changeset:   30:b84d99602a95
+user:        pancake <youterm.com>
+date:        Mon Jan 28 04:20:32 2008 +0100
+
+* Rename cfg.color to scr.color
+  - Make scr.height be 24 if not detected (serial port or windows console)
+* Import the patch of esteve to make the graph happy
+* Add search.flag and search.verbose
+* Basic implementation of the ANSI colors for the w32 console
+  - Make use of the helper gotoxy/clrscr functions
+* Some refactoring on the console and search related code
+  - tsearch -> search
+* Fix nonverbose mode input with dietline
+
+
+changeset:   29:ece269be2546
+user:        pancake <youterm.com>
+date:        Sun Jan 27 14:28:45 2008 +0100
+
+* exp2(x) -> pow(x,2) fix portability issue
+
+
+changeset:   28:19496d9efacf
+user:        pancake <youterm.com>
+date:        Sun Jan 27 14:26:50 2008 +0100
+
+* Import of changes done by esteve
+  - New Grava layout. needs more work but at least is readable ;D
+  - Ooops. x86 unknown jump analysis bug fixed
+  - Do not append extra bytes per block
+  - Nodes now store the base address of each block
+    - Nodes graphically sorted by base address
+  - exp2 bug appeared again (must think on..)
+* Import two helper functions for w32 console (conio like)
+
+
+changeset:   27:8da4d6e18b29
+user:        pancake <youterm.com>
+date:        Sat Jan 26 15:53:28 2008 +0100
+
+* Fix independent dietline.c build
+* Fix compare command help message
+
+
+changeset:   26:7727b5e42d11
+user:        pancake <youterm.com>
+date:        Sat Jan 26 13:37:59 2008 +0100
+
+* Add 'c' compare command. Works like 'w'
+  - add new function radare_compare()
+  - should be moved to utils and drop the radare name?
+* Add project.vala in vala/api
+* Do radare_read when '@'.
+* Initial working implementation for the !ie command
+  - allows to ignore events from the child
+  > !ie trap  ; ignores all traps procuded by the child
+  > !ie alarm ; ignores all sigalarms
+  > !ie       ; list all ignored events
+* Oops missing dietline.c in the previous commit O:)
+
+
+changeset:   25:aea0e2c734c2
+user:        pancake <youterm.com>
+date:        Sat Jan 26 04:51:40 2008 +0100
+
+*new command 030
+* Add 'c' compare command
+* Fixups for the w32 side
+  - no ansi controli in cmd ?
+  - aixo ja ha sigut vici
+* More work on the hidden-event to work on
+* Add rRadare.Confg
+  yo manyana me pongo las pilas y a ver :P
+  - Add Radare.Config
+  make vala gui build again
+ * buggy , needs review
+
+
+changeset:   24:8871cdcd4165
+user:        pancake <youterm.com>
+date:        Fri Jan 25 16:39:39 2008 +0100
+
+* Make the threading and pid selection stuff logical
+  - Now it works O:)
+  - !pstree command removed
+  - !pid <pid>
+     - list all processes
+     - you can change the current pid (tid) by giving it as arg
+  - !th <pid>
+     - list threads
+     - on *nix !th<pid> is an alias for !pid<pid>
+* Theorically fixed a problem with w32 process attach
+  - Needs testing
+* configure: Do not build vala stuff if no gtk found
+
+
+changeset:   23:87705b637437
+user:        pancake <youterm.com>
+date:        Fri Jan 25 01:30:14 2008 +0100
+
+* Fix some ps.pid/ps.tid problems
+  - Use !pstree to list processes
+  - Use !th to list threads and select current pid
+    - needs more work. Too many commands for listing/switching pids..
+* Show pid and pid with !info
+* Notice signal 19 + unknown thread as a new process created (fork)
+* Fix segfault in print_event
+* Add 'ie' stub command
+  - I'll implement this tomorrow ;P
+
+
+changeset:   22:26c870ff1664
+parent:      20:b50c9466ced5
+parent:      21:737cb79d7649
+user:        pancake <youterm.com>
+date:        Thu Jan 24 23:34:39 2008 +0100
+
+* Oops. Merge stupid branch
+
+
+changeset:   21:737cb79d7649
+parent:      19:754645ac897b
+user:        pancake <@youterm.com>
+date:        Thu Jan 24 22:29:27 2008 +0100
+
+* Import of the elektranox patch to cleanup make output
+  - Fixes some Makefile "problems"
+  - configure stuff has not been merged
+  - use this command if you want a prettier output:
+      $ gmake VERBOSE=0
+* Some more ideas in TODO
+
+
+changeset:   20:b50c9466ced5
+user:        pancake <youterm.com>
+date:        Wed Jan 23 02:50:04 2008 +0100
+
+* Implement zoom.byte = flags (show the number of flags per zoom piece)
+  - "first" zoom.byte rule renamed to "head"
+* Add an navigation entry bar on the grava window
+* Fix build of grava in non GNU systems (wtf ? exp2...)
+
+
+changeset:   19:754645ac897b
+user:        pancake <@youterm.com>
+date:        Wed Jan 23 03:39:41 2008 +0100
+
+* Initial port of the debugger to GNU/Linux intel 64 bits - Thanks Gerardo!
+  - More work will follow :)
+* Add function frame definitions for x86 (ms, gcc), arm, ppc
+* Add more opcode descriptions in rsc adict:
+  - some arm floating point instructions
+  - basic powerpc instructions
+
+
+changeset:   18:b9c6dcc633a0
+user:        pancake <@youterm.com>
+date:        Mon Jan 21 14:03:06 2008 +0100
+
+* Implement native raw console read and environ for w32
+  - All console related stuff moved to cons.c
+  - optimize console performance (less pprintf_flush())
+  - CLRSCR uses pstrcat
+  - TODO: rename all pprintf* funcs to be prefixed with cons_
+* Do not print '---' stuff in verbose dump headers
+
+
+changeset:   17:a7aabab03140
+user:        pancake <youterm.com>
+date:        Mon Jan 21 04:15:19 2008 +0100
+
+* Allow to specify the search id when searching:
+  /10 lib  ; search for 'lib' with id 10
+  /20 bar  ; search for 'bar' with id 20
+  /r 10,20 ; go searach 10 and 20 together
+* Add /m command
+  - Cleaner /k and /m output
+* Fix writemem in debugger bug (aaah!)
+  - incrustate erg0t's WriteMem function for evaluation
+* Really fix the problem of the flag movement in visual
+* Moar autocompletion and minor build fix
+
+
+changeset:   16:2cc3147cb9b5
+user:        pancake <youterm.com>
+date:        Mon Jan 21 02:58:54 2008 +0100
+
+* More charfilters for dwarf-lines (oops)
+* Add 'wd' command to write a dword in current arch
+  - in future will use cfg.endian
+* Remove %SEARCH[n] and %MASK[n]
+  - moved to /k and /m commands:
+   /k[number] [keyword] - adds a new keyword to search for
+   /k                   - list all keywords
+  - TODO:
+   /m                   - list all masks
+   /m[number] [keyword] - add binmask for keyword n
+* Fix w32 and solaris build
+* Make hack_nop portable
+* Search flags renamed to hit%d_%d instead of hit%d[%d]
+  - Fixes the problem of indexed pointer access
+* Prevent from segfaults envvar and get_offset/math
+* Make movement between flags nicer in visual mode (f,F)
+  - when the number of flags is reduced recalculates the next flag index
+* Enhaced pointer access for get_math
+  - allows to access to data from the file at a certain position
+    and use it as a numeric value.
+
+  $ radare /bin/ls
+  > ?[0x18]   ; show entrypoint of elf
+    0x8049790 ; 134518672d ; 1001113620o ; 1001 0000
+
+  Now is possible to nest operations inside a pointer access.
+  So you can do things like:
+  > x @ [data+0x20]+10
+
+
+changeset:   15:17c344b68ebf
+user:        pancake <youterm.com>
+date:        Sat Jan 19 17:34:16 2008 +0100
+
+* Fix dwarf-lines to work for the new comment stuff
+* Add child.stdin/stdout/stderr eval vars
+  - allow to dump to files, or read stdin from a file
+  - i'll add pipes support and more
+  - tm must be integrated here.
+
+
+changeset:   14:acac69cac3bb
+user:        pancake <youterm.com>
+date:        Sat Jan 19 16:18:29 2008 +0100
+
+* Add asm.cmtlines to limit the number of comments per address
+  - Thanks esteve for the idea!
+  - very useful when tracing with trace.cmtregs
+
+
+changeset:   13:40a368fd718d
+user:        pancake <youterm.com>
+date:        Sat Jan 19 16:08:18 2008 +0100
+
+* Initial import of the !hack inside the core
+  - Accessible with the 'Hack' command
+  - Does not yet works inside the debugger
+  * added radare_(read|write)_at
+* Add some missing scripts into the libexec install
+  - add make miss check into libexec
+* Rename dbg.setuid and so to:
+  - child.setuid
+  - child.setgid
+  - child.chdir
+  - child.chroot
+
+
+changeset:   12:8d3492054389
+user:        pancake <youterm.com>
+date:        Sat Jan 19 14:36:23 2008 +0100
+
+* Update flag and syscall-flag from pof
+* Add missing project.c (oops)
+
+
+changeset:   11:e737b021d53f
+user:        pancake <youterm.com>
+date:        Sat Jan 19 06:29:49 2008 +0100
+
+* Fix build and update TODO with freshly ideas zZzzZ
+
+
+changeset:   10:a98535a274e1
+user:        pancake <youterm.com>
+date:        Sat Jan 19 05:49:14 2008 +0100
+
+* Add trace.cmtregs to comment the difference of registers
+  in eip. This way you can stepover a loop and easily
+  understand what does every register.
+
+* Add command 'P' to manage radare Projects
+ - With #RP# magic and autocompletion!
+ - Ps ([file])   saves the project
+ - Po ([file])   opens a project
+ - Pi ([file])   information about the project
+
+* Add flag -P to the radare to specify a project to open:
+  - This is the same as defining the eval file.project
+
+  $ radare -P crackme01.rp dbg://./crackme01
+
+* Store all comments in memory
+  - Optimized way to retrieve comments from an address
+  - More optimizations must come
+
+* A project is a file containing
+  - flags
+  - comments
+  - debugger environment
+  - some core configuration
+  - .. more in the future
+
+* Add asm.cmtmargin - defines the left margin for comments
+* Moar eval vars:
+  - dbg.setuid
+  - dbg.setgid
+  - dbg.chdir
+  - dbg.chroot
+
+
+changeset:   9:e14be84ece6f
+user:        pancake <youterm.com>
+date:        Fri Jan 18 21:49:34 2008 +0100
+
+* Fix build to make pof happy
+- missing w32utils.c
+- ignore errors installing libusbsniff
+
+
+changeset:   8:2e7bdb781bfe
+user:        pancake <youterm.com>
+date:        Fri Jan 18 03:35:50 2008 +0100
+
+* Fix and adapt code to build natively on w32
+  - Some terminal handling and similar things are not handled yet
+  - Autodetect mingw32, cygwin and windows directives
+  - proper handle of these variables via configure not environ
+  - add --enable-w32 to enable the native w32 build
+  - adopt hacky unix signals include into w32 build
+  - some parts like mmap (stripstr and so) are not working
+* Adapt socket.c to the w32 api (wsock32.dll)
+* Move asm.linesout in analyze_init, cleaner, faster simpler :)
+* Fix info command printage
+* Clean make clean
+* Make everybody be happy with W32 and __WINDOWS__, __UNIX__
+* Add build instructions in README
+
+
+changeset:   7:79d64c7912dd
+user:        pancake <youterm.com>
+date:        Thu Jan 17 23:51:10 2008 +0100
+
+* Initial import of the Wii plugin using UsbGecko (www.usbgecko.com)
+  - Basic documentation in the README
+  - Add --with-wii configure flag
+  - Add wii specific code to handle flash and usb
+  - Plugin code inherits from the remote one
+    - uses the remote protocol using an EXI communication
+      via USB with the USB Gecko card.
+  - Lot of glue code. Needs cleanup
+  - This code does not builds yet
+
+
+changeset:   6:afcecca2678d
+user:        pancake <@youterm.com>
+date:        Thu Jan 17 22:27:48 2008 +0100
+
+* Lot of new freshly ideas into the TODO
+* Implement !contuh command (continue until here)
+  - Use F4 in visual for this
+* Fix build of hasher
+
+
+changeset:   5:47e7f43e5662
+user:        pancake <youterm.com>
+date:        Thu Jan 17 04:20:22 2008 +0100
+
+* Integrate lsbstego print mode as 'pB'
+* Alphabetically sort all commands
+* Add pU command again (using cmd.user)
+* Fix FMT_ASC0 printf->pprintf
+
+
+changeset:   4:8dca37d4f23c
+user:        pancake <youterm.com>
+date:        Thu Jan 17 02:01:26 2008 +0100
+
+* Initial import of lsbstego from RoMaNSoFt
+  - Needs integration with the core
+* New directives:
+  asm.linesout  (bool)   print lines of jumps out of block
+  cmd.prompt    (string) command to be executed before the prompt
+  cmd.vprompt   (string) command to be execute after the visual prompt
+                         - useful for embedded monitoring
+  file.trace    (file)   trace file
+  trace.bt      (bool)   show backtrace when tracing code
+  trace.sleep   (int)    sleep N seconds after every step (demo mode)
+  trace.smart   (bool)   show smart output or not
+* Register oeip flag
+  - useful to track calls and jumps when using cmd.vprompt
+  - Also export oesp
+  - rename eax_orig to oeax
+* Set cfg.bsize to 100 when debugging instead of 200
+* Add zoom.byte = (printable | print)
+  - Shows the percentage of printable chars of every block of the file
+  - useful for fast finding for string sections or so. (~ 0xc8 is text)
+* New command '!dregs' shows only the registers that has changed since
+  the previous step.
+  - Fix oregs capture
+* Add 'eval cfg.delta' to define the maximum delta offset to handle
+  for a flag to string_with_offset. Thanks pof for the idea! :D
+* Add crca.c from Victor Mun~oz
+  - Implemnts different simple crc checksums with variations
+  - Not yet used inside hasher (my needs some refactoring)
+* Add 'I' modificator to the print command to invert code block
+  - useful to read code or data in stack
+    f.ex > pIx - inverse hexdump
+         > pID - inverse disassembly
+  - 'I' key is hooked into the visual mode to toggle inverse mode
+* cursor can be moved in visual mode with 'g' and 'G' like vim does
+* Refactor of the undo command usability
+  - By default shows the help
+  - un[do] command performs an undo
+  - uu a redo
+  - u! or u- removes all undo history
+  - ul or u* shows the list of history seeks
+  - u? shows this help
+* New command 'wA' write assembly using rsc asm
+  - Fix segfaults when using '`' pipe
+* Rename command 'Y' to 'yy' (copy (y) / paste (yy)
+  - Same for undo command
+
+
+changeset:   3:84c29f110c30
+user:        pancake <@youterm.com>
+date:        Tue Jan 15 16:12:46 2008 +0100
+
+* Initial import of syscall-flag by pof
+  - Seems buggy on non-linux systems
+* Add asm.linestyle for different asm.lines algorithms
+  - Temporally hack
+* Add asm.nbytes
+  - Show only the bytes you need! (Thanks Gadix for the tip)
+  - 8 instead of 12 by default
+* Show vala-capable info in radare -V
+* Add ret0 opcode for x86 (needs to be ported
+
+
+changeset:   2:3119cbcac67e
+user:        pancake@localhost
+date:        Tue Jan 15 04:13:15 2008 +0100
+
+* Add the "dist" command for publishing snapshots
+
+
+changeset:   1:c3e0fe97e507
+user:        pancake@localhost
+date:        Tue Jan 15 03:39:38 2008 +0100
+
+* Initial implementation of the buffered print
+  (faster console output)
+  - New eval: scr.buf (false by default)
+  - Ease nested command parsing
+* Drop c code generated by vala
+  (should not exist in the repository)
+  - Fix build of vala stuff
+* Fix x86 code analysis
+  (invalid size of two byte jumps O:)
+
+
+changeset:   0:e5ae4c510c37
+user:        pancake@localhost.
+date:        Mon Jan 14 12:03:57 2008 +0100
+
+* Initial import of radare 0.9.3 into teh HG
+  - Latest pvc commit: 14bb6af7
+
+
 ------ switch to mercurial ---------
 
 0: 14bb6af7

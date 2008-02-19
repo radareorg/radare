@@ -189,16 +189,16 @@ BUILD
 
  Mingw32:
 
-  $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui --with-debugger
+  $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui
   $ make
 
  Desktop GNU/Linux:
 
-  $ ./configure --prefix=/usr --with-debugger --with-sysproxy
+  $ ./configure --prefix=/usr --with-sysproxy
 
- BSD boxes:
+ NetBSD box:
 
-  $ CFLAGS=-I/usr/pkg/include LDFLAGS=-Wl,-R/usr/pkg/lib ./configure --prefix=/usr/pkg --with-debugger
+  $ CFLAGS=-I/usr/pkg/include LDFLAGS=-Wl,-R/usr/pkg/lib ./configure --prefix=/usr/pkg
 
  Other unixes
 
