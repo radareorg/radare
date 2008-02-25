@@ -22,7 +22,12 @@ void gradare_open();
 void gradare_open_program();
 void gradare_open_process();
 void gradare_new_monitor();
+void gradare_new_graph();
+void gradare_open_project();
+void gradare_save_project();
 void gradare_help();
+void gradare_undo();
+void gradare_redo();
 void gradare_refresh();
 void toggle_toolbar();
 #endif

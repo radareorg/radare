@@ -110,7 +110,6 @@ static u64 mark = 0;
 void press_any_key()
 {
 	int key;
-
 	D cons_printf("\n--press any key--\n");
 	cons_flush();
 	cons_readchar();
@@ -833,32 +832,25 @@ CMD_DECL(visual)
 					cons_clear();
 					continue;
 #if DEBUGGER
-				/* debugger */
+					/* debugger */
 				case 2: // F2 - breakpoint
-{
-	struct bp_t *bp;
-	u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
-		//			terminal_set_raw(0);
-		//			printf("Breakpoint at: ");
-					//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
+					{
+						struct bp_t *bp;
+						u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
+						//			terminal_set_raw(0);
+						//			printf("Breakpoint at: ");
+						//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
 
-		bp = debug_get_bp(addr);
-		if (bp) {
-			debug_rm_bp(addr, 0);
-		} else {
-					sprintf(line, "!bp 0x%08x", (unsigned int)addr);
-/*
-					strcpy(line, "!bp ");
-					fgets(line+4, sizeof(line), stdin);
-					line[strlen(line)-1]='\0';
-*/
-					radare_cmd(line,0);
-		}
-//					press_any_key();
-		//			terminal_set_raw(1);
-					CLRSCR();
-					continue;
-}
+						bp = debug_get_bp(addr);
+						if (bp) {
+							debug_rm_bp(addr, 0);
+						} else {
+							sprintf(line, "!bp 0x%08x", (unsigned int)addr);
+							radare_cmd(line,0);
+						}
+						CLRSCR();
+						continue;
+					}
 				case 3: // F3 - watchpoint
 					terminal_set_raw(0);
 					printf("Watchpoint at: ");

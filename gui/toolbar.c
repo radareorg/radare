@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <@youterm.com>
+ * Copyright (C) 2007, 2008
+ *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -235,10 +235,16 @@ void gradare_shortcut( GtkWidget *widget, gpointer   data )
 int v = 0;
 void gradare_refresh()
 {
+	int i;
 	GList *list = gtk_container_get_children(GTK_CONTAINER(tool));
+
 	g_list_foreach(list, (GFunc)gtk_widget_destroy, NULL);
+	gtk_toolbar_remove_space(tool, 0);
+	gtk_toolbar_remove_space(tool, 1);
+	gtk_toolbar_remove_space(tool, 2);
+
 	tool = gradare_toolbar_new(tool);
-	vte_terminal_feed_child(VTE_TERMINAL(term), "\n", 1);
+	vte_terminal_feed_child(VTE_TERMINAL(term), "Q\nV\n", 4);
 	v = 1;
 }
 
@@ -367,11 +373,21 @@ GtkWidget *gradare_toolbar_new(GtkWidget *base)
 		GTK_TOOLBAR(toolbar), "Attach", "Attach process", "",
 		gtk_image_new_from_stock("gtk-properties", GTK_ICON_SIZE_MENU),
 		GTK_SIGNAL_FUNC(gradare_open_process), NULL);
-#if 0
+	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
+	gtk_toolbar_append_item(
+		GTK_TOOLBAR(toolbar), "Undo seek", "Undo", "",
+		gtk_image_new_from_stock("gtk-undo", GTK_ICON_SIZE_MENU),
+		GTK_SIGNAL_FUNC(gradare_undo), NULL);
+	gtk_toolbar_append_item(
+		GTK_TOOLBAR(toolbar), "Redo seek", "Redo", "",
+		gtk_image_new_from_stock("gtk-redo", GTK_ICON_SIZE_MENU),
+		GTK_SIGNAL_FUNC(gradare_redo), NULL);
+	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
 	gtk_toolbar_append_item(
 		GTK_TOOLBAR(toolbar), "Refresh toolbar", "Refresh", "",
 		gtk_image_new_from_stock("gtk-refresh", GTK_ICON_SIZE_MENU),
 		GTK_SIGNAL_FUNC(gradare_refresh), NULL);
+#if 0
 	gtk_toolbar_append_item(
 		GTK_TOOLBAR(toolbar), "Preferences", "Preferences", "",
 		gtk_image_new_from_stock("gtk-preferences", GTK_ICON_SIZE_MENU),

@@ -4,19 +4,19 @@
 void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 {
 	switch(gtk_combo_box_get_active(widget)) {
-	case 0: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel16\n\n", 14);
+	case 0: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel16\n\n", 27);
 		break;
-	case 1: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel32\n\n", 14);
+	case 1: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel32\n\n", 27);
 		break;
-	case 2: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel64\n\n", 14);
+	case 2: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = intel64\n\n", 27);
 		break;
-	case 3: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = arm\n\n", 12);
+	case 3: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = arm\n\n", 23);
 		break;
-	case 4: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = ppc\n\n", 13);
+	case 4: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = ppc\n\n", 23);
 		break;
-	case 5: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = 68k\n\n", 13);
+	case 5: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = 68k\n\n", 23);
 		break;
-	case 6: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = java\n\n", 13);
+	case 6: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = java\n\n", 24);
 		break;
 	}
 
@@ -25,6 +25,7 @@ void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 
 void print_mode_changed(GtkComboBox *widget, gpointer user_data)
 {
+	vte_terminal_feed_child(VTE_TERMINAL(term), "Q", 1);
 	switch(gtk_combo_box_get_active(widget)) {
 	case 0: vte_terminal_feed_child(VTE_TERMINAL(term), ":px\n\n", 5);
 		break;
@@ -45,6 +46,7 @@ void print_mode_changed(GtkComboBox *widget, gpointer user_data)
 	case 8: vte_terminal_feed_child(VTE_TERMINAL(term), ":pr\n\n", 5);
 		break;
 	}
+	vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
 
 	gtk_widget_grab_focus(term);
 }
@@ -81,7 +83,7 @@ GtkWidget *gradare_sidebar_new()
 
 	/* add arch combo box */
 	combo = gtk_combo_box_new_text();
-	gtk_combo_set_use_arrows( GTK_COMBO_BOX(combo),1);
+	gtk_combo_set_use_arrows( GTK_COMBO(combo),1);
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 0, "hexadecimal");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 1, "debugger");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 2, "disassembly");
@@ -92,7 +94,7 @@ GtkWidget *gradare_sidebar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 7, "hex pairs");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 8, "raw");
 
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
+	gtk_combo_box_set_active(GTK_COMBO(combo), 0);
 
 	g_signal_connect(GTK_COMBO_BOX(combo), "changed", GTK_SIGNAL_FUNC(print_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), combo, FALSE, FALSE, 0);
@@ -104,9 +106,9 @@ GtkWidget *gradare_sidebar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 1, "intel32");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 2, "intel64");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 3, "arm");
-	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 3, "ppc");
-	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 3, "68k");
-	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 4, "java");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 4, "ppc");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 5, "68k");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 6, "java");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 1);
 	g_signal_connect(GTK_COMBO_BOX(arch), "changed", GTK_SIGNAL_FUNC(arch_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), arch, FALSE, FALSE, 0);

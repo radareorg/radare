@@ -140,6 +140,21 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 
 int mon_id = 0;
 
+void gradare_save_project()
+{
+	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+}
+
+void gradare_open_project()
+{
+	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+}
+
+void gradare_new_graph()
+{
+	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+}
+
 void gradare_new_monitor()
 {
 	GtkWidget *w;

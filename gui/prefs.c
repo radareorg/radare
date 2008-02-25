@@ -36,11 +36,52 @@ gint prefs_close(void *item, GdkEvent *event, gpointer data)
 	return TRUE;
 }
 
+static GtkWidget *bytes;
+static void bytes_changed(void *foo, void *data)
+{
+	if (gtk_toggle_button_get_active(bytes)) {
+		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.bytes=1\n\n", 19);
+	} else
+		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.bytes=0\n\n", 19);
+}
+
+static GtkWidget *lines;
+static void lines_changed(void *foo, void *data)
+{
+	if (gtk_toggle_button_get_active(data)) {
+		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.lines=1\n\n", 19);
+	} else
+		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.lines=0\n\n", 19);
+}
+
+GtkWidget *prefs_disassembly()
+{
+	GtkWidget *offset;
+	GtkWidget *hbbox;
+	GtkVBox *vbox = gtk_vbox_new(FALSE, 5);
+	
+	bytes = gtk_check_button_new_with_label("Show bytes");
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bytes), FALSE, FALSE, 2); 
+ 	g_signal_connect(GTK_COMBO_BOX(bytes), "clicked", GTK_SIGNAL_FUNC(bytes_changed), bytes);
+
+
+	offset = gtk_check_button_new_with_label("Show offset");
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset), FALSE, FALSE, 2); 
+
+	lines = gtk_check_button_new_with_label("Show lines");
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lines), FALSE, FALSE, 2); 
+ 	g_signal_connect(GTK_COMBO_BOX(lines), "clicked", GTK_SIGNAL_FUNC(lines_changed), lines);
+	
+	
+	return vbox;
+}
+
 void prefs_open()
 {
 	GtkWidget *vbox;
 	GtkWidget *hbbox;
 	GtkWidget *ok, *cancel;
+	GtkWidget *nb;
 
 	if (pw_opened) {
 		puts("dry!");
@@ -56,7 +97,13 @@ void prefs_open()
 
 	vbox = gtk_vbox_new(FALSE, 5);
 	gtk_container_add(GTK_CONTAINER(pw), vbox);
-	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new("TODO O:)"), FALSE, FALSE, 5); 
+
+	nb = gtk_notebook_new();
+	gtk_notebook_append_page(nb, prefs_disassembly(), gtk_label_new("Disassembly"));
+	gtk_notebook_append_page(nb, gtk_label_new("TODO"), gtk_label_new("Global"));
+	gtk_notebook_append_page(nb, gtk_label_new("TODO"), gtk_label_new("Startup"));
+	gtk_container_add(GTK_CONTAINER(vbox), nb);
+	//gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new("TODO O:)"), FALSE, FALSE, 5); 
 
 	hbbox = gtk_hbutton_box_new();
 	gtk_container_set_border_width(GTK_CONTAINER(hbbox), 5);

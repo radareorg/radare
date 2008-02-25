@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2006
- *       pancake <pancake@phreaker.net>
+ * Copyright (C) 2006, 2007, 2008
+ *       pancake <youterm.com>
  *
  * canoe is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,16 @@ void focus_actions()
 	{ gtk_widget_grab_focus(GTK_WIDGET(catact)); }
 void focus_vte()
 	{ gtk_widget_grab_focus(GTK_WIDGET(term)); }
+
+void gradare_undo() //GtkAction *action, CanoeWindow *w)
+{
+	vte_terminal_feed_child(VTE_TERMINAL(term), "u", 1);
+}
+
+void gradare_redo() //GtkAction *action, CanoeWindow *w)
+{
+	vte_terminal_feed_child(VTE_TERMINAL(term), "U", 1);
+}
 
 void gradare_about() //GtkAction *action, CanoeWindow *w)
 {
@@ -62,19 +72,28 @@ static const gchar *ui_info =
 "      <menuitem action='Open program'/>"
 "      <menuitem action='Open process'/>"
 "      <separator />"
-"      <menuitem action='New monitor'/>"
+"      <menuitem action='Open project'/>"
+"      <menuitem action='Save project'/>"
 "      <separator />"
 "      <menuitem action='Quit'/>"
 "    </menu>"
 "    <menu action='EditMenu'>"
-"      <menuitem action='Refresh'/>"
+"      <menuitem action='Undo seek'/>"
+"      <menuitem action='Redo seek'/>"
 "      <separator />"
 "      <menuitem action='Focus input'/>"
 "      <menuitem action='Focus view'/>"
 "      <menuitem action='Focus actions'/>"
 "      <menuitem action='Focus terminal'/>"
 "      <separator />"
+"      <menuitem action='Refresh'/>"
+"      <separator />"
 "      <menuitem action='Preferences'/>"
+"    </menu>"
+"    <menu action='ViewMenu'>"
+"      <menuitem action='New monitor'/>"
+"      <separator />"
+"      <menuitem action='Code graph'/>"
 "    </menu>"
 "    <menu action='HelpMenu'>"
 "      <menuitem action='Manual'/>"
@@ -97,19 +116,40 @@ static GtkActionEntry entries[] = {
     "_Attach to process","<control>A",
     "Attachs to a running process",
     G_CALLBACK (gradare_open_process) },
-  { "New monitor", GTK_STOCK_INFO,
-    "_New monitor","<control>M",
-    "Opens a new monitor window",
-    G_CALLBACK (gradare_new_monitor) },
+  { "Open project", GTK_STOCK_OPEN,
+    "_Open project", NULL,
+    "Opens a project file",
+    G_CALLBACK (gradare_open_project) },
+  { "Save project", GTK_STOCK_SAVE,
+    "_Save project", NULL,
+    "Stores all the information to a project file",
+    G_CALLBACK (gradare_save_project) },
   { "Quit", GTK_STOCK_QUIT,
     "_Quit","<control>Q",
     "Cya!",
     G_CALLBACK (exit) },
+  { "ViewMenu", NULL, "_View" },
+  { "New monitor", GTK_STOCK_INFO,
+    "_New monitor","<control>M",
+    "Opens a new monitor window",
+    G_CALLBACK (gradare_new_monitor) },
+  { "Code graph", GTK_STOCK_INFO,
+    "_Code graph",NULL,
+    "Open a code graph window",
+    G_CALLBACK (gradare_new_graph) },
   { "EditMenu", NULL, "_Edit" },
   { "Refresh", GTK_STOCK_REFRESH,
     "_Refresh","<control>R",
     "",
     G_CALLBACK (gradare_refresh) },
+  { "Undo seek", GTK_STOCK_UNDO,
+    "_Undo seek","<control>Z",
+    "",
+    G_CALLBACK (gradare_undo) },
+  { "Redo seek", GTK_STOCK_REDO,
+    "_Redo seek","<control>Y",
+    "",
+    G_CALLBACK (gradare_undo) },
   { "Focus terminal", NULL,
     "Focus terminal","<control>J",
     "",
