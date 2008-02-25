@@ -40,7 +40,7 @@ Get a free shell with 'rasc -i x86.linux.binsh -X'
 Interpret your own radare scripts with '. <path-to-your-script>'. Similar to the bash source alias command.
 Most of commands accept an '?' as suffix. Use it to understand how they work :)
 Find hexpairs with '/x a0 cc 33'
-Walk inside your seek history with the 'u' command (undo)
+Walk inside your seek history with the 'u' command (undo), and 'U' for redo
 Use hasher to calculate hashes of portion blocks of a file
 Use zoom.byte=entropy and press 'z' in visual mode to zoom out to see the entropy of the whole file
 Use zoom.byte=printable in zoom mode (z key in visual mode) to find strings
@@ -61,3 +61,8 @@ What do you want to debug today?
 Sniff your favorite libusb-based application with LD_PRELOAD=/usr/lib/libusbsniff.so ./your-program
 Use '!rsc spcc' to parse structures in memory using C programs
 Find cp850 strings with 'eval cfg.encoding=cp850' and '/s'
+Enhace your graphs by increasing the size of the block and graph.depth eval variable
+Control the height of the terminal on serial consoles with eval scr.height
+Use eval file.identify=true and eval file.flag=true in your ~/.radarerc to get symbols, strings, .. when loading
+Disassemble unsupported architectures with external objdump defined in eval asm.objdump. Use 'pd' command.
+Emulate the base address of a file with eval file.baddr

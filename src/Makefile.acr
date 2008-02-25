@@ -110,7 +110,7 @@ librdb:
 udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
-radare: ${OBJ}
+radare: ${OBJ} radare-bdiff
 	${E} 'Linking radare'
 	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
 
@@ -125,6 +125,9 @@ lsbstego: lsbstego.o
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all
+
+radare-bdiff:
+	-cd bdiff && ${MAKE} all
 
 radare-hash:
 	-cd hasher && ${MAKE} all

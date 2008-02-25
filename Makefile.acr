@@ -76,6 +76,7 @@ dist: mrproper
 install:
 	mkdir -p ${BINDIR} ${MANDIR}/man1 ${DATADIR}/radare/ ${DATADIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
+	-${INSTALL_PROGRAM} src/bdiff/bdiff ${BINDIR}
 	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
 	${INSTALL_PROGRAM} src/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
