@@ -281,7 +281,7 @@ void udis_arch(int arch, int len, int rows)
 	char c;
 	int i,delta;
 	u64 seek = 0;
-	int lines = 2;
+	int lines = 0;
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
@@ -384,7 +384,7 @@ void udis_arch(int arch, int len, int rows)
 		D { 
 			if (show_comments)
 				lines+=metadata_print(bytes);
-			if (rows && rows == lines)
+			if (rows && rows >= lines)
 				return;
 
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
@@ -411,7 +411,7 @@ void udis_arch(int arch, int len, int rows)
 						cons_printf(buf, flag);
 						NEWLINE;
 						lines++;
-						if (rows && rows == lines)
+						if (rows && rows >= lines)
 							return;
 						if (show_lines)
 							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));

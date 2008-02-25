@@ -274,7 +274,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		}
 		break;
 	case FMT_ANAL:
-		radare_analyze(seek, len);
+		radare_analyze(seek, len, 3);
 		break;
 	case FMT_PRINT:
 		INILINE;

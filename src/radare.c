@@ -908,11 +908,17 @@ int radare_open(int rst)
 
 int radare_compare(unsigned char *f, unsigned char *d, int len)
 {
-	int i,eq = 0;
+	int i, eq = 0;
 
 	for(i=0;i<len;i++)
-		if (f[i]==d[i])
+		if (f[i]==d[i]) {
 			eq++;
+		} else {
+			D cons_printf("0x%08llx (byte=%.2d)   %02x '%c'  ->  %02x '%c'\n",
+				config.seek+i, i+1,
+				f[i], (is_printable(f[i]))?f[i]:' ',
+				d[i], (is_printable(d[i]))?d[i]:' ');
+		}
 
 	eprintf("Compare %d/%d equal bytes\n", eq, len);
 	return len-eq;

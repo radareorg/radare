@@ -87,7 +87,7 @@ extern format_info_t formats[];
 extern print_fmt_t last_print_format;
 print_fmt_t format_get (char fmt, print_mode_t mode);
 void format_show_help (print_mode_t mode);
-int radare_analyze(u64 seek, int size);
+int radare_analyze(u64 seek, int size, int level);
 void print_addr(u64 off);
 
 #endif

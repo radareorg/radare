@@ -31,9 +31,59 @@
 /* alphabetically sorted */
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
 // Jazzele: http://people.bath.ac.uk/enpsgp/nokia770/jazelle/test_jazelle5.c
+static struct classfile cf;
 
 #define USHORT(x,y) (unsigned short)(x[y+1]|(x[y]<<8))
 #define UINT(x,y) (unsigned int) ((x[y]<<24)|(x[y+1]<<16)|(x[y+2]<<8)|x[y+3])
+
+struct classfile {
+	unsigned char cafebabe[4];
+	unsigned char minor[2];
+	unsigned char major[2];
+	unsigned short cp_count;
+};
+
+struct constant_t {
+	char *name;
+	int tag;
+	int len;
+} constants[] = {
+	{ "Class", 7, 2 }, // 2 name_idx
+	{ "FieldRef", 9, 4 }, // 2 class idx, 2 name/type_idx
+	{ "MethodRef", 10, 4 }, // 2 class idx, 2 name/type_idx
+	{ "InterfaceMethodRef", 11, 4 }, // 2 class idx, 2 name/type_idx
+	{ "String", 8, 2 }, // 2 string_idx
+	{ "Integer", 3, 4 }, // 4 bytes
+	{ "Float", 4, 4 }, // 4 bytes
+	{ "Long", 5, 8 }, // 4 high 4 low
+	{ "Double", 6, 8 }, // 4 high 4 low
+	{ "NameAndType", 12, 4 }, // 4 high 4 low
+	{ "Utf8", 1, 2 }, // 2 bytes = length, N bytes string
+	{ NULL, 0, 0 }
+};
+
+struct classfile2 {
+	unsigned short access_flags;
+	unsigned short this_class;
+	unsigned short super_class;
+};
+
+struct cp_item {
+	int tag;
+	char name[255];
+	char *value;
+	unsigned char bytes[5];
+};
+
+struct cp_item *cp_items;
+struct cp_item cp_null_item; // NOTE: must be initialized for safe use
+
+static struct cp_item * get_cp(int i)
+{
+	if (i<0||i>cf.cp_count)
+		return &cp_null_item;
+	return &cp_items[i];
+}
 
 struct java_op {
 	char *name;
@@ -166,10 +216,10 @@ struct java_op {
 	{ "imul"            , 0x68 , 1 } , 
 	{ "ineg"            , 0x74 , 1 } , 
 	{ "instanceof"      , 0xc1 , 3 } , 
-	{ "invokeinterface" , 0xb9 , 5 } , 
+	{ "invokevirtual"   , 0xb6 , 3 } , 
 	{ "invokespecial"   , 0xb7 , 3 } , 
 	{ "invokestatic"    , 0xb8 , 3 } , 
-	{ "invokevirtual"   , 0xb6 , 3 } , 
+	{ "invokeinterface" , 0xb9 , 5 } , 
 	{ "ior"             , 0x80 , 1 } , 
 	{ "irem"            , 0x70 , 1 } , 
 	{ "ireturn"         , 0xac , 1 } , 
@@ -246,9 +296,50 @@ struct java_op {
 	{ NULL, 0x0, 0 }
 };
 
+static int java_resolve(int idx, char *str)
+{
+	str[0]='\0';
+	if (idx<0||idx>cf.cp_count)
+		return 1;
+	if((!strcmp(cp_items[idx].name, "MethodRef"))
+	|| (!strcmp(cp_items[idx].name, "FieldRef"))) {
+		int class = USHORT(get_cp(idx)->bytes,0);
+		int namet = USHORT(get_cp(idx)->bytes,2);
+		char *class_str = get_cp(USHORT(get_cp(class)->bytes,0)-1)->value;
+		char *namet_str = get_cp(USHORT(get_cp(class)->bytes,2)-1)->value;
+		//char *namet_str = get_cp(namet)->value;
+		sprintf(str, "%s %s", class_str, namet_str);
+	} else
+	if (!strcmp(cp_items[idx].name, "String")) {
+		sprintf(str, "\"%s\"", get_cp(USHORT(get_cp(idx)->bytes,0)-1)->value);
+	} else
+	if (!strcmp(cp_items[idx].name, "Utf8")) {
+		sprintf(str, "\"%s\"", get_cp(idx)->value);
+	} else
+		sprintf(str, "0x%04x", USHORT(get_cp(idx)->bytes,0));
+	return 0;
+}
+
 int java_print_opcode(int idx, unsigned char *bytes, char *output)
 {
-	//char opcode[128];
+	char arg[1024];
+
+	switch(java_ops[idx].byte) {
+	case 0x12:
+	case 0x13:
+	case 0x14:
+		java_resolve(bytes[0]-1, arg);
+		sprintf(output, "%s %s", java_ops[idx].name, arg);
+		return;
+	case 0xb2: // getstatic
+	case 0xb6: // invokevirtual
+	case 0xb7: // invokespecial
+	case 0xb8: // invokestatic
+	case 0xb9: // invokeinterface
+		java_resolve((int)USHORT(bytes,0)-1, arg);
+		sprintf(output, "%s %s", java_ops[idx].name, arg);
+		return;
+	}
 
 	/* process arguments */
 	switch(java_ops[idx].size) {
@@ -272,6 +363,13 @@ int java_disasm(unsigned char *bytes, char *output)
 		if (bytes[0] == java_ops[i].byte)
 			return java_print_opcode(i, bytes+1, output);
 	return -1;
+}
+static void check_eof(FILE *fd)
+{
+	if (feof(fd)) {
+		fprintf(stderr, "Unexpected eof\n");
+		exit(0);
+	}
 }
 
 int java_assemble(unsigned char *bytes, char *string)
@@ -298,38 +396,6 @@ int java_assemble(unsigned char *bytes, char *string)
 	return 0;
 }
 
-struct classfile {
-	unsigned char cafebabe[4];
-	unsigned char minor[2];
-	unsigned char major[2];
-	unsigned short cp_count;
-};
-
-struct constant_t {
-	char *name;
-	int tag;
-	int len;
-} constants[] = {
-	{ "Class", 7, 2 }, // 2 name_idx
-	{ "FieldRef", 9, 4 }, // 2 class idx, 2 name/type_idx
-	{ "MethodRef", 10, 4 }, // 2 class idx, 2 name/type_idx
-	{ "InterfaceMethodRef", 11, 4 }, // 2 class idx, 2 name/type_idx
-	{ "String", 8, 2 }, // 2 string_idx
-	{ "Integer", 3, 4 }, // 4 bytes
-	{ "Float", 4, 4 }, // 4 bytes
-	{ "Long", 5, 8 }, // 4 high 4 low
-	{ "Double", 6, 8 }, // 4 high 4 low
-	{ "NameAndType", 12, 4 }, // 4 high 4 low
-	{ "Utf8", 1, 2 }, // 2 bytes = length, N bytes string
-	{ NULL, 0, 0 }
-};
-
-struct classfile2 {
-	unsigned short access_flags;
-	unsigned short this_class;
-	unsigned short super_class;
-};
-
 #define resolve(dst,from,field,value)\
 {\
 	int i;\
@@ -342,20 +408,14 @@ struct classfile2 {
 
 unsigned short read_short(FILE *fd)
 {
-	unsigned short sh;
-	fread(&sh, sizeof(unsigned short), 1, fd);
+	unsigned short sh=0;
+
+	fread(&sh, 2,1,fd);//sizeof(unsigned short), 1, fd);
 	return ntohs(sh);
 }
 
-struct cp_item {
-	int tag;
-	char name[255];
-	char *value;
-};
 
-struct cp_item *cp_items;
-
-int attributes_walk(FILE *fd, int sz2, int fields)
+static int attributes_walk(FILE *fd, int sz2, int fields)
 {
 	char buf[99999];
 	int sz3, sz4;
@@ -364,7 +424,7 @@ int attributes_walk(FILE *fd, int sz2, int fields)
 
 	for(j=0;j<sz2;j++) {
 		fread(buf, 6, 1, fd);
-		name = cp_items[USHORT(buf,0)-1].value;
+		name = (get_cp(USHORT(buf,0)-1))->value;//cp_items[USHORT(buf,0)-1].value;
 		printf("   %2d: Name Index: %d (%s)\n", j, USHORT(buf,0), name);
 		sz3 = UINT(buf, 2);
 		if (fields) {
@@ -392,13 +452,12 @@ int attributes_walk(FILE *fd, int sz2, int fields)
 					printf("       catch_type: %d\n", USHORT(buf,6));
 				}
 				sz4 = (int)read_short(fd);
-				printf("      Attributes_count: %d\n", sz4);
+				printf("      code Attributes_count: %d\n", sz4);
 
 				if (sz4>0)
 					attributes_walk(fd, sz4, fields);
 			} else
 			if (!strcmp(name, "LineNumberTable")) {
-				fread(buf,6,1,fd);
 				sz4 = (int)read_short(fd);
 				printf("     Table Length: %d\n", sz4);
 				for(k=0;k<sz4;k++) {
@@ -423,11 +482,19 @@ int attributes_walk(FILE *fd, int sz2, int fields)
 	return 0;
 }
 
+int javasm_init()
+{
+	/* INIT JAVA DISASSEMBLER */
+	cp_null_item.tag = -1;
+	strcpy(cp_null_item.name, "(null)");
+	cp_null_item.value = strdup("(null)");
+}
+
 int java_classdump(const char *file)
 {
-	struct classfile cf;
 	struct classfile2 cf2;
 	unsigned short sz, sz2;
+	int this_class;
 	char buf[0x9999];
 	int i,j;
 	FILE *fd = fopen(file, "rb");
@@ -435,6 +502,9 @@ int java_classdump(const char *file)
 	if (fd == NULL)
 		return -1;
 
+	javasm_init();
+
+	/* start parsing */
 	fread(&cf, 10, 1, fd); //sizeof(struct classfile), 1, fd);
 	if (memcmp(cf.cafebabe, "\xCA\xFE\xBA\xBE", 4)) {
 		printf("Invalid header\n");
@@ -487,6 +557,8 @@ int java_classdump(const char *file)
 			fread(buf, c->len, 1, fd);
 		}
 
+		memcpy(cp_items[i].bytes, buf, 5);
+
 		/* parse value */
 		switch(c->tag) {
 		case 1:
@@ -496,16 +568,18 @@ int java_classdump(const char *file)
 		case 7:
 			printf("%d\n", USHORT(buf,0));
 			break;
-		case 9:
-			printf("0x%04x ", buf[0]|(buf[1]<<8));
-			printf("0x%04x\n", buf[2]|(buf[3]<<8));
-			break;
 		case 8:
-		case 10:
-			printf("string[%d]\n", (int)(buf[0]|(buf[1]<<8)));
+			printf("string ptr %d\n", USHORT(buf, 0));
+			break;
+		case 9:
+		case 11:
+		case 10: // METHOD REF
+			printf("class = %d, ", USHORT(buf,0));
+			printf("name_type = %d\n", USHORT(buf,2));
 			break;
 		case 12:
-			printf("0x%04x 0x%04x\n", UINT(buf,4), UINT(buf, 0));
+			printf("name = %d, ", USHORT(buf,0));
+			printf("descriptor = %d\n", USHORT(buf,2));
 			break;
 		default:
 			printf("%d\n", UINT(buf, 40));
@@ -513,9 +587,13 @@ int java_classdump(const char *file)
 	}
 
 	fread(&cf2, sizeof(struct classfile2), 1, fd);
+	check_eof(fd);
 	printf("Access flags: 0x%04x\n", cf2.access_flags);
-	printf("This class: %d (%s)\n", ntohs(cf2.this_class), cp_items[ntohs(cf2.this_class)-1].value); // XXX this is a double pointer !!1
-	printf("Super class: %d (%s)\n", ntohs(cf2.super_class), cp_items[ntohs(cf2.super_class)-1].value);
+	this_class = ntohs(cf2.this_class);
+	printf("This class: %d\n", cf2.this_class);
+	check_eof(fd);
+	//printf("This class: %d (%s)\n", ntohs(cf2.this_class), cp_items[ntohs(cf2.this_class)-1].value); // XXX this is a double pointer !!1
+	//printf("Super class: %d (%s)\n", ntohs(cf2.super_class), cp_items[ntohs(cf2.super_class)-1].value);
 	sz = read_short(fd);
 	printf("Interfaces count: %d\n", sz);
 	if (sz>0) {
@@ -525,16 +603,17 @@ int java_classdump(const char *file)
 			printf("TODO\n");
 		}
 	}
+fflush(stdout);
 	sz = read_short(fd);
 	printf("Fields count: %d\n", sz);
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);
 			printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
-			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), cp_items[USHORT(buf,2)-1].value);
+			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf,2)-1)->value);
 			printf("    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
 			sz2 = USHORT(buf, 6);
-			printf("    Attributes Count: %d\n", sz2);
+			printf("    field Attributes Count: %d\n", sz2);
 			attributes_walk(fd, sz2, 1);
 		}
 	}
@@ -544,11 +623,12 @@ int java_classdump(const char *file)
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);
+			check_eof(fd);
 			printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
-			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), cp_items[USHORT(buf, 2)-1].value);
-			printf("    Descriptor Index: %d (%s)\n", USHORT(buf, 4), ""); //cp_items[USHORT(buf, 4)-1].value);
+			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf, 2)-1)->value);
+			printf("    Descriptor Index: %d (%s)\n", USHORT(buf, 4), get_cp(USHORT(buf, 4)-1)->value);
 			sz2 = USHORT(buf, 6);
-			printf("    Attributes Count: %d\n", sz2);
+			printf("    method Attributes Count: %d\n", sz2);
 			attributes_walk(fd, sz2, 0);
 		}
 	}

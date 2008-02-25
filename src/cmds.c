@@ -863,7 +863,7 @@ CMD_DECL(compare)
 		break;
 	case '?':
 		eprintf(
-		"Usage: w[?|w|x|f] [argument]\n"
+		"Usage: c[?|d|x|f] [argument]\n"
 		"  c  [string]   - compares a plain with escaped chars string\n"
 		"  cd [offset]   - compare a doubleword from a math expression\n"
 		"  cx [hexpair]  - compare hexpair string\n"

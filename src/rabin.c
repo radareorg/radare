@@ -122,6 +122,8 @@ int rabin_load()
 		case FILETYPE_CLASS:
 			config_set("file.type", "class");
 			config_set("asm.arch", "java");
+			// loading class information
+			java_classdump(config.file);
 			break;
 	}
 	// TODO: autodetect arch

@@ -151,7 +151,7 @@ int r_mod=0,r_new=0,r_lost=0;
 		std::cout << "\n" ;
 	}
 
-	std::cout
+	std::cerr
 		<< "New bytes in B: " << r_new << std::endl
 		<< "Lost bytes in A: " << r_lost << std::endl
 		<< "Modified bytes: " << r_mod << std::endl;

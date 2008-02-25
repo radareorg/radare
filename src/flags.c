@@ -184,8 +184,7 @@ int flag_rename_str(char *text)
 	char *arg = text?strchr(text, ' '):NULL;
 	if (arg) {
 		arg[0]='\0';
-		cons_printf("Renameing %s\n", text);
-		flag_rename(text, arg+1);
+		cons_printf("%d flags renamed\n", flag_rename(text, arg+1));
 		arg[0]=' ';
 	} else {
 		cons_printf("Usage: fr old-name new-name\n");

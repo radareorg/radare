@@ -397,12 +397,11 @@ TODO: use maps here! must be mixed with flags and so
 
 #endif
 
-int radare_analyze(u64 seek, int size)
+int radare_analyze(u64 seek, int size, int depth)
 {
 	char cmd[1024];
-	int num;
 	int count=0;
-	int nume; // little endian
+	unsigned int num, nume; // little endian
 	int i;
 	unsigned char str[1024];
 	int str_i=0;
@@ -411,6 +410,9 @@ int radare_analyze(u64 seek, int size)
 	u64 tmp = config.seek;
 	int v = config.verbose;
 	config.verbose = 0;
+
+	if (depth<0)
+		return 0;
 
 	config.seek = seek;
 	radare_read(0);
@@ -423,6 +425,8 @@ int radare_analyze(u64 seek, int size)
 		count=1;
 	}
 	for(i=0;i<size;i++) {
+		if (config.interrupted)
+			break;
 		if (is_printable(config.block[i])) {
 			if(word_i<4) word[word_i++] = config.block[i];
 			str[str_i++] = config.block[i];
@@ -486,7 +490,7 @@ int radare_analyze(u64 seek, int size)
 					radare_cmd(cmd, 0);
 
 					cons_strcat("     ");
-					radare_analyze((config.endian)?num:nume, -1);
+					radare_analyze((config.endian)?num:nume, size, --depth);
 
 					config.seek = seek;
 					radare_read(0);
