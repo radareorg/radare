@@ -801,16 +801,17 @@ CMD_DECL(status)
 	cons_printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
 	cons_printf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
 	cons_printf(" debug   %d",   config.debug); NEWLINE;
-	cons_printf(" endian  %d   \t %s",   config.endian, config.endian?"big":"little"); NEWLINE;
+	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;
 //	printf(" count   %d   \t 0x%x", config.count, config.count); NEWLINE;
-	cons_printf(" baddr   "OFF_FMTd" \t 0x"OFF_FMTx, config.baddr, config.baddr); NEWLINE;
-	cons_printf(" bsize   %d   \t 0x%x", config.block_size, config.block_size); NEWLINE;
+	cons_printf(" baddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.baddr, config.baddr); NEWLINE;
+	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); NEWLINE;
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
 		(u64)config.seek, (u64)config.seek); NEWLINE;
-	cons_printf(" delta   "); 
+	cons_printf(" delta   %lld\n", config_get_i("cfg.delta")); 
+	cons_printf(" count   %lld\n", config_get_i("cfg.count")); 
 	fflush(stdout);
 	print_flag_offset(config.seek);
-	cons_printf("\n size    "OFF_FMTd" \t 0x"OFF_FMTx,
+	cons_printf(" size    "OFF_FMTd" \t 0x"OFF_FMTx,
 		(u64)config.size, (u64)config.size); NEWLINE;
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
 		(u64)config.limit, (u64)config.limit); NEWLINE;

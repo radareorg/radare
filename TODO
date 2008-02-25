@@ -7,11 +7,11 @@
 
 ===========================================================
 
-* ARM nop: e1a00000 ; mov r0, r0
 [0x08048034]> wx 0f f0 a0 e1
 [0x08048034]> pD 10
           0x08048034           e1a0f00f          mov pc, pc
 
+* winedbg doesnt reads the unalligned memory properly FIX IT!
 
 * mode2 for keybinding numbers for jmp/calls
   - only if jump out of view

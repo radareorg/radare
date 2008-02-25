@@ -69,8 +69,8 @@ int rasm_assemble(char *str)
 		if (endian) {
 			if (ret == 4) {
 				int tmp = data[0];
-				data[0] = data[4];
-				data[4] = tmp;
+				data[0] = data[3];
+				data[3] = tmp;
 				    tmp = data[1];
 				data[1] = data[2];
 				data[2] = tmp;

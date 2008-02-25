@@ -787,6 +787,7 @@ void radare_set_block_size(char *arg)
 		if (size<1) size = 1;
 		radare_set_block_size_i(size);
 	}
+	config_set_i("cfg.bsize", config.block_size);
 	D printf("bsize = %d\n", config.block_size);
 }
 
@@ -822,6 +823,8 @@ int radare_open(int rst)
 		project_open(ptr);
 
 	config.fd = io_open(config.file, fd_mode, 0);
+	if (config.block_size==1)
+		radare_set_block_size_i(DEFAULT_BLOCK_SIZE);
 
 	if (config.fd == -1) {
 		if (wm) {
@@ -967,7 +970,7 @@ int radare_go()
 		radare_fortunes();
 
 	/* load rabin stuff here */
-	if (config_get("file.identify"))
+	if (config_get("file.id"))
 		rabin_load();
 
 	/* flag all syms and strings */

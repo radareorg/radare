@@ -41,6 +41,10 @@ void gradare_redo() //GtkAction *action, CanoeWindow *w)
 	vte_terminal_feed_child(VTE_TERMINAL(term), "U", 1);
 }
 
+void gradare_run_script() //GtkAction *action, CanoeWindow *w)
+{
+}
+
 void gradare_about() //GtkAction *action, CanoeWindow *w)
 {
         GtkAboutDialog *gad;
@@ -74,6 +78,8 @@ static const gchar *ui_info =
 "      <separator />"
 "      <menuitem action='Open project'/>"
 "      <menuitem action='Save project'/>"
+"      <separator />"
+"      <menuitem action='Run script'/>"
 "      <separator />"
 "      <menuitem action='Quit'/>"
 "    </menu>"
@@ -124,6 +130,10 @@ static GtkActionEntry entries[] = {
     "_Save project", NULL,
     "Stores all the information to a project file",
     G_CALLBACK (gradare_save_project) },
+  { "Run script", GTK_STOCK_GO_FORWARD,
+    "_Run script", NULL,
+    "Runs a script",
+    G_CALLBACK (gradare_run_script) },
   { "Quit", GTK_STOCK_QUIT,
     "_Quit","<control>Q",
     "Cya!",

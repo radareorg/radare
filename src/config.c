@@ -402,10 +402,11 @@ int config_arch_callback(void *data)
 
 int config_wmode_callback(void *data)
 {
-	//struct config_node_t *node = data;
+	struct config_node_t *node = data;
 
+	//if (node && node->i_value)
 	// XXX: strange magic conditional
-	if (config.file && !config.debug && config_new.lock)
+	if (config.file && !config.debug) // && config_new.lock)
 		radare_open(0);
 
 	return 1;
@@ -529,7 +530,7 @@ void config_init()
 	config_set("search.flag", "true");
 	config_set("search.verbose", "true");
 
-	config_set("file.identify", "false");
+	config_set("file.id", "false");
 	config_set("file.type", "");
 	config_set("file.flag", "false");
 	config_set("file.trace", "trace.log");
@@ -557,7 +558,6 @@ void config_init()
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
 	config_set("cfg.rdbdir", "TODO");
-	node->callback = &config_color_callback;
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);
 	config_set("cfg.fortunes", "true");
@@ -608,6 +608,7 @@ void config_init()
 	node->callback = &config_zoombyte_callback;
 
 	node = config_set("scr.color", (config.color)?"true":"false");
+	node->callback = &config_color_callback;
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
 	config_set_i("scr.width", config.width);

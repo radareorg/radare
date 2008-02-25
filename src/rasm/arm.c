@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2008
  *       pancake <youterm.com>
@@ -64,7 +63,8 @@ int rasm_arm(off_t offset, char *str, unsigned char *data)
 	if (!strcmp(op, "jz")) {
 	} else
 	if (!strcmp(op, "nop")) {
-		memset(data, '\0', 4);
+		// little endian
+		memcpy(data, "\x00\x00\xa0\xe1", 4);
 	} else
 		return -1;
 
