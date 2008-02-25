@@ -100,7 +100,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	config.seek = off;
 	if (search_verbose) {
 		char *ptr = config.block; //+(where-config.seek)-3;
-		printf("%03d  0x%08llx  ", nhit, where);
+		printf("%03d  0x%08llx  %s ", nhit, where, flag_name);
 		for(i=0;i<20;i++) {
 			if (is_printable(ptr[i]))
 				printf("%c", ptr[i]);

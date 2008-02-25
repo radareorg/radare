@@ -50,6 +50,12 @@ int main(int argc, char **argv, char **envp)
 
 	environ = envp;
 	radare_init();
+
+/*
+	flag_set("foo", 0x33, 0);
+	flag_list("");
+return 0;
+*/
  
 	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:")) != -1)
 	{

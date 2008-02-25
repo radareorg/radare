@@ -146,18 +146,23 @@ void dl_free()
 /* load history from file. if file == NULL load from ~/.<prg>.history or so */
 int dl_hist_load(const char *file)
 {
+	return 0;
 }
 
 int dl_hist_save(const char *file)
 {
+	return 0;
 }
 
 /* initialize history stuff */
 int dl_init()
 {
 	dl_history = (char **)malloc(dl_histsize*sizeof(char *));
+	if (dl_history==NULL)
+		return 0;
 	memset(dl_history, '\0', dl_histsize);
 	dl_histidx = 0;
+	return 1;
 }
 
 /* test */

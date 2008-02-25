@@ -477,6 +477,7 @@ void config_init()
 {
 	struct config_node_t *node;
 
+	flags_init();
 	config_old_init();
 
 	dl_init();

@@ -100,11 +100,9 @@ static PyObject * Radare_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static PyObject * Radare_eval(Radare* self, PyObject *args)
 {
-	static PyObject *format = NULL;
 	PyObject *result;
 	char *cmd = NULL,*cmd2= NULL;
 	char str[1024];
-	PyObject *obj;
 
 	if (!	PyArg_ParseTuple(args, "s", &cmd))
 			return NULL;
@@ -130,23 +128,15 @@ printf("Setr(%s)\n", str);
 
 static PyObject * Radare_cmd(Radare* self, PyObject *args)
 {
-	static PyObject *format = NULL;
 	PyObject *result;
 	char *cmd = NULL;
-	PyObject *obj;
-
 
 	if (!	PyArg_ParseTuple(args, "s", &cmd))
 		return NULL;
-	//	if (!PyArg_ParseTuple(args, "s:cmd", cmd)) {
-	//		return NULL;
-	//	}
 
 	if (rs == NULL)
 		return NULL;
-	//result = PyString_Format(format, args);
 	result = PyString_FromString(rs(cmd));
-	///Py_DECREF(args);
 
 	return result;
 }
@@ -243,9 +233,11 @@ static PyMethodDef Radare_methods[] = {
 		Radare_new,                 /* tp_new */
 	};
 
+#if 0
 static PyMethodDef module_methods[] = {
 	{NULL}  /* Sentinel */
 };
+#endif
 
 void init_radare_module(void)
 {
@@ -272,31 +264,14 @@ int epython_init()
 	init_radare_module();
 	//Py_InitModule3("radare", Radare_methods, NULL);
 	PyRun_SimpleString("import r");
+	return 0;
 }
 
 int epython_destroy()
 {
 	// do nothing with the snake
-}
-
-#if 0
-int epython_eval(char *line)
-{
-	// XXX keep it simple!
-	if (*line=='.') {
-		FILE *fd = fopen(line+1,"r");;
-		if (fd != NULL) {
-			epython_init();
-			PyRun_SimpleFile(fd, line+1);
-			fclose(fd);
-		}
-	} else {
-		epython_init();
-		PyRun_SimpleString(line);
-	}
 	return 0;
 }
-#endif
 
 void python_cmd(char *input)
 {

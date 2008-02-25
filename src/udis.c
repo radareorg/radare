@@ -35,7 +35,7 @@ enum {
 	ARCH_JAVA = 4
 };
 
-static int lines = 0;
+//static int lines = 0;
 
 static struct reflines_t *reflines = NULL;
 struct list_head comments;
@@ -69,16 +69,21 @@ void metadata_comment_del(u64 offset, const char *str)
 			return;
 		if (off) {
 			if (off == cmt->offset) {
+				free(cmt->comment);
 				list_del(pos);
+				free(cmt);
 				if (str[0]=='*')
 					metadata_comment_del(offset, str);
+				pos = comments.next; // list_init
 				return;
 			}
 		} else {
 			if (str[0]=='*') {
+				free(cmt->comment);
 				list_del(pos);
-				if (str[0]=='*')
-					metadata_comment_del(offset, str);
+				free(cmt);
+				pos = comments.next; // list_init
+				//metadata_comment_del(offset, str);
 			} else
 			if (cmt->offset == offset) {
 				list_del(pos);
@@ -144,7 +149,6 @@ char *metadata_comment_get(u64 offset)
 			strcat(str, "; ");
 			strcat(str, cmt->comment);
 			strcat(str, "\n");
-			lines++;
 		}
 	}
 	return str;
@@ -277,7 +281,7 @@ void udis_arch(int arch, int len, int rows)
 	char c;
 	int i,delta;
 	u64 seek = 0;
-	int lines = 0;
+	int lines = 2;
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
@@ -406,7 +410,7 @@ void udis_arch(int arch, int len, int rows)
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
 						NEWLINE;
-						lines--;
+						lines++;
 						if (rows && rows == lines)
 							return;
 						if (show_lines)
@@ -516,7 +520,7 @@ void udis_arch(int arch, int len, int rows)
 					NEWLINE;
 					//if (show_lines)
 					//	code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
-					lines--;
+					lines++;
 						if (rows && rows == lines)
 							return;
 						if (show_lines)

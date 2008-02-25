@@ -480,7 +480,7 @@ int radare_cmd(char *tmp, int log)
 			if (pc<config.seek || pc > config.seek+config.block_size)
 				radare_cmd("s eip",0);
 		}		
-		config.height-=14;
+		config.height-=10;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */
@@ -1012,11 +1012,11 @@ int radare_go()
 
 	do {
 		do {
+			cons_flush();
 			if (config.debug)
 				radare_cmd(".!regs*", 0);
 			update_environment();
 			radare_sync();
-			//cons_flush();
 		} while( radare_prompt() );
 	} while ( io_close(config.fd) );
 

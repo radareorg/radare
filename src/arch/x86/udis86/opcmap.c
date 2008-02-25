@@ -3000,8 +3000,8 @@ void ud_search_map(register struct ud* u)
 
   // XXX this segfaults on arm sometimes :???
   // if (u->mapen <0x1000) oops skip segfault!
-  if (u->mapen<0x1000)
-	  return 0;
+  if (((int)u->mapen)<0x1000)
+	  return;
   u->mnemonic = u->mapen->mnemonic;
 }
 

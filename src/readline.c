@@ -320,18 +320,19 @@ char *rad_eval_matches(const char *text, int state)
 char *rad_flags_matches(const char *text, int state)
 {
 	static int i, len;
+	struct list_head *pos;
 
 	if (!state) {
 		i = 0;
 		len = strlen(text);
 	}
 
-	while(i<nflags) {
-		if (strncmp (text, flags[i]->name, len) == 0)
-			return strdup(flags[i++]->name);
-		i++;
+	list_for_each(pos, &flags) {
+		flag_t *f = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (strncmp (text, f->name, len) == 0)
+			return strdup(f->name);
 	}
-
 	return ((char *)NULL);
 }
 

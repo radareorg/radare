@@ -18,6 +18,8 @@ extern int dec;
 #define INILINE
 #undef NEWLINE
 #define NEWLINE cons_newline();
+void cons_strcat(const char *str);
+void cons_newline();
 
 /* inverted print block */
 #define FMT_INV 0x8000

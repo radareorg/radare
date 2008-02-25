@@ -189,7 +189,7 @@ u64 get_offset(char *orig)
 	u64 ret = 0;
 	int i, j;
 #ifdef RADARE_CORE
-	rad_flag_t *flag;
+	flag_t *flag;
 	char *ptr = 0;
 #endif
 	if (orig==NULL||orig[0]=='\0')

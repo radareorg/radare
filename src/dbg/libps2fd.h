@@ -250,4 +250,5 @@ u64     (*___llseek)(int fildes, u64 offset, int whence);
 int *     (*__system) (const char *command);
 extern struct debug_t ps;
 
+#include "os.h"
 #endif

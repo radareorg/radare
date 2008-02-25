@@ -231,7 +231,6 @@ CMD_DECL(rdb)
 		list_for_each(pos, &config.rdbs) {
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
-				// XXX MUST FREE!
 				list_del(&(mr->list));
 				return;
 			}
@@ -698,6 +697,7 @@ CMD_DECL(flag)
 
 	if (input[0]=='?') { flag_help(); } else
 	if (input[0]=='o') { radare_fortunes(); } else
+	if (input[0]=='r') { flag_rename_str(text); } else
 	if (input[0]=='d') { print_flag_offset(config.seek); NEWLINE; } else
 	if (text[0]=='\0') { flag_list(text); } else
 	if (text[0]=='*') { flag_set("*",0,0); } else

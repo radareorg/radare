@@ -118,7 +118,7 @@ int hist_set(char *label)
 
 int hist_get(char *label)
 {
-	rad_flag_t *flag = flag_get(label);
+	flag_t *flag = flag_get(label);
 	if (flag) {
 		cons_printf("0x%x\n", flag->offset);
 	} else  cons_printf("(uh?)\n");

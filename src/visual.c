@@ -331,7 +331,7 @@ CMD_DECL(stepo_in_dbg)
 
 CMD_DECL(seek_to_flag)
 {
-	rad_flag_t *flg;
+	flag_t *flg;
 	unsigned char key;
 
 	flag_list("");
@@ -1136,19 +1136,19 @@ CMD_DECL(visual)
 			undo_redo();
 			break;
 		case 'f': { int i;
-			rad_flag_t *flag = flag_get_next(1);
+			flag_t *flag = flag_get_next(1);
 			if (!flag) flag = flag_get_next(-1);
 			if (!flag) flag = flag_get_reset();
 			if (flag) config.seek = flag->offset; }
 			break;
-		case 'F': { rad_flag_t *flag = flag_get_next(-1);
+		case 'F': { flag_t *flag = flag_get_next(-1);
 			if (!flag) flag = flag_get_reset();
 			if (flag) config.seek = flag->offset; }
 			break;
 		case 'D':
 			name = flag_name_by_offset(config.seek);
 			if (name) {
-				rad_flag_t *next = flag_get_next(1);
+				flag_t *next = flag_get_next(1);
 				if (next)
 					config.seek = next->offset;
 				flag_clear(name);

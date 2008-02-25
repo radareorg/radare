@@ -25,7 +25,7 @@ int project_save(char *file)
 {
 	FILE *fd;
 	struct list_head *pos;
-	rad_flag_t *flag;
+	flag_t *flag;
 	int i;
 	
 	if (strnull(file))

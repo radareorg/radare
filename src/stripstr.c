@@ -87,7 +87,7 @@ static int is_encoded(unsigned char c)
 
 int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 {
-	rad_flag_t *flag;
+	flag_t *flag;
 	static int unicode = 0;
 	static int matches = 0;
 	char str[4096];

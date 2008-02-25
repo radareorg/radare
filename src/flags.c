@@ -18,7 +18,6 @@
  *
  */
 
-// TODO: port to list.h
 // TODO: automatic bubble sort by addr - faster indexing
 // TODO: support cursor indexing (index inside flag list)
 // TODO: store data and show (flag.data) in last_print_format
@@ -26,15 +25,14 @@
 #include "radare.h"
 #include "flags.h"
 #include "utils.h"
+#include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 static char *nullstr = "";
-rad_flag_t **flags  = NULL;
-unsigned int nflags = 0;
-unsigned int eflags = 0;
+struct list_head flags;
 
 void flag_help()
 {
@@ -42,6 +40,7 @@ void flag_help()
 	"  fortune      ; show fortune message! :D\n"
 	"  fd           ; print flag delta offset\n"
 	"  fn name      ; flag new name (ignores dupped names)\n"
+	"  fr old new   ; rename a flag or more with '*'\n"
 	"  f sym_main   ; flag current offset as sym_main\n"
 	"  f foo @ 0x23 ; flag 0x23 offset as foo\n"
 	"  f -sym_main  ; remove sym_main\n"
@@ -49,45 +48,46 @@ void flag_help()
 	"  f -sym_*     ; remove all flags starting with 'sym_'\n");
 }
 
-// TODO: implement bubble sort with cache
-rad_flag_t *flag_get_i(int id)
+void flags_init()
 {
-	int i,j = 0;
+	INIT_LIST_HEAD(&flags);
+}
 
+// TODO: implement bubble sort with cache?
+flag_t *flag_get_i(int id)
+{
+	struct list_head *pos;
+	int i = 0;
+
+/*
 	if ( id<0 || id>=nflags )
 		return NULL;
-
-	for(i=0;i<nflags;i++) {
-		if (flags[i]->name[0]=='\0')
-			continue;
-		if (j == id)
-			return flags[id];
-		j++;
+*/
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (i++ == id)
+			return flag;
 	}
 
 	return NULL;
 }
 
-rad_flag_t *flag_get(const char *name)
+flag_t *flag_get(const char *name)
 {
-	register int i;
-
-	if (name == NULL)
+	struct list_head *pos;
+	if (name==NULL || (name[0]>='0'&& name[0]<='9'))
 		return NULL;
-
-	if (name[0]>='0'&& name[0]<='9')
-		return NULL;
-
-	for(i=0;i<nflags;i++)
-		if (!strcmp(name, flags[i]->name))
-			return flags[i];
-
+	list_for_each_prev(pos, &flags) {
+		flag_t *flag = list_entry(pos, flag_t, list);
+		if (!strcmp(name, flag->name))
+			return flag;
+	}
 	return NULL;
 }
 
 u64 flag_get_addr(const char *name)
 {
-	rad_flag_t *foo = flag_get(name);
+	flag_t *foo = flag_get(name);
 	if (foo)
 		return foo->offset;
 	return 0;
@@ -96,18 +96,19 @@ u64 flag_get_addr(const char *name)
 
 static int flag_ptr = -1;
 
-rad_flag_t *flag_get_next(int delta)
+flag_t *flag_get_next(int delta)
 {
-	rad_flag_t *flag = flag_get_i(flag_ptr+delta);
+	flag_t *flag = flag_get_i(flag_ptr+delta);
 
-	flag_ptr += delta;
+	flag_ptr += 1;
 	if (flag_ptr < 0) flag_ptr = 0;
-	if (flag_ptr > nflags ) flag_ptr = nflags;
+	if (flag == NULL)
+		flag_ptr = 0;
 
 	return flag;
 }
 
-rad_flag_t *flag_get_reset()
+flag_t *flag_get_reset()
 {
 	flag_ptr = 0;
 	return flag_get_next(flag_ptr);
@@ -116,12 +117,80 @@ rad_flag_t *flag_get_reset()
 // TODO : use flag size
 int flags_between(u64 from, u64 to)
 {
-	int i,n=0;
-	for(i=0;i<nflags;i++) {
-		if (flags[i]->offset >= from && flags[i]->offset <= to)
+	int n=0;
+	struct list_head *pos;
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (flag->offset >= from && flag->offset <= to)
 			n++;
 	}
 	return n;
+}
+
+int strnstr(unsigned char *from, unsigned char *to, int size)
+{
+	int i;
+	for(i=0;i<size;i++)
+		if (from==NULL||to==NULL||from[i]!=to[i])
+			break;
+	return (size!=i);
+}
+
+int flag_rename(char *foo, char *bar)
+{
+	int n = 0;
+	int ini = 0;
+	int end = strlen(foo);
+	int sz = end-ini;
+	int glob_end = 0;
+	struct list_head *pos;
+
+	if (foo[0]=='*')
+		ini = 1;
+	if (foo[end-1]=='*') {
+		glob_end = 1;
+		foo[end]='\0';
+		sz--;
+		end --;
+	}
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (ini) {
+				char *str = strstr(flag->name, foo+ini);
+				if (str) {
+					str = strdup(str);
+					sprintf(flag->name, "%s%s", bar, str);
+					free(str);
+				}
+		} else
+		if (!strnstr(foo+ini, flag->name, sz)) {
+			if (glob_end) {
+				char *str = strdup(flag->name+sz);
+				sprintf(flag->name, "%s%s", bar, str);
+				free(str);
+			} else {
+				if (flag->name[end]=='\0')
+					strcpy(flag->name, bar);
+			}
+			n++;
+		}
+	}
+	return n;
+}
+
+int flag_rename_str(char *text)
+{
+	char *arg = text?strchr(text, ' '):NULL;
+	if (arg) {
+		arg[0]='\0';
+		cons_printf("Renameing %s\n", text);
+		flag_rename(text, arg+1);
+		arg[0]=' ';
+	} else {
+		cons_printf("Usage: fr old-name new-name\n");
+		cons_printf("> fr hit0_* hit_search\n");
+	}
 }
 
 /* deprecated ?!?! */
@@ -129,10 +198,11 @@ void flags_setenv()
 {
 	int i;
 	char var[1024];
-	char bar[1024];
 	char *ptr = environ[0];
+	struct list_head *pos;
 
 	for(i=0;(ptr = environ[i]);i++) {
+		if (config.interrupted) break;
 		if (!memcmp("flag_", environ[i], 5)) {
 			int len = strchr(environ[i],'=') - environ[i];
 			if (len>0) {
@@ -142,52 +212,51 @@ void flags_setenv()
 			}
 		}
 	}
-	for(i=0; i<nflags; i++) {
-		if (flag_is_empty(flags[i]))
-			continue;
-		sprintf(var, "flag_%s", flags[i]->name);
-		sprintf(bar, OFF_FMT, flags[i]->offset);
+
+#if 0
+	list_for_each(pos, &flags) {
+		if (config.interrupted) break;
+		flag_t *flag = list_entry(pos, flag_t, list);
+		sprintf(var, "flag_%s", flag->name);
+		sprintf(bar, OFF_FMT, flag->offset);
 		setenv(var, bar, 1);
 	}
+#endif
 }
 
 char *flag_name_by_offset(u64 offset)
 {
-	int i;
-	rad_flag_t *flag;
+	struct list_head *pos;
 
-	for(i=0; i<nflags; i++) {
-		if (flags[i]->name[0]=='\0')
-			continue;
-		flag = flags[i];
+	list_for_each(pos, &flags) {
+		if (config.interrupted) break;
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == offset)
 			return flag->name;
 	}
-
 	return nullstr;
 }
 
 int string_flag_offset(char *buf, u64 seek)
 {
-	unsigned int i;
 	int delta = (int)config_get_i("cfg.delta");
-	rad_flag_t *ref = NULL;
+	flag_t *ref = NULL;
+	struct list_head *pos;
 
 	buf[0]='\0';
 
-	for(i=0; i<nflags; i++) {
+	list_for_each(pos, &flags) {
 		if (config.interrupted) break;
-		if (flags[i]->offset == seek) {
-			ref = flags[i];
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (flag->offset == seek) {
+			ref = flag;
 			break;
 		}
-		if (flag_is_empty(flags[i]))
+		if (!flag->offset)
 			continue;
-		if (!flags[i]->offset)
-			continue;
-		if (flags[i]->offset && flags[i]->offset <= seek && (!ref || flags[i]->offset>ref->offset)) {
-			ref = flags[i];
-		}
+		if (flag->offset && flag->offset <= seek
+		&& (!ref || flag->offset>ref->offset))
+			ref = flag;
 	}
 
 	if (ref) {
@@ -214,16 +283,15 @@ void print_flag_offset(u64 seek)
 }
 
 
-void flag_do_empty(rad_flag_t *flag)
+void flag_do_empty(flag_t *flag)
 {
 	if (flag == NULL)
 		return;
 
-	eflags--;
 	flag->name[0]='\0';
 }
 
-int flag_is_empty(rad_flag_t *flag)
+int flag_is_empty(flag_t *flag)
 {
 	if (flag == NULL || flag->name[0]=='\0')
 		return 1;
@@ -233,36 +301,39 @@ int flag_is_empty(rad_flag_t *flag)
 
 void flag_list(char *arg)
 {
-	int i;
-	for(i=0; i<nflags; i++) {
+	int i=0;
+	struct list_head *pos;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
-		if (flag_is_empty(flags[i]))
-			continue;
 
 		cons_printf("%03d 0x%08llx %3lld %s",
-			i, flags[i]->offset, flags[i]->length, flags[i]->name);
+			i++, flag->offset, flag->length, flag->name);
 		NEWLINE;
-
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
 }
 
 void flag_clear_by_addr(u64 seek)
 {
-	register int i;
+	struct list_head *pos;
 
-	for(i=0;i<nflags;i++)
-		if (!flag_is_empty(flags[i])
-		&& flags[i]->offset == seek) {
-			flag_do_empty(flags[i]);
-			break;
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (flag->offset == seek) {
+			list_del(&flag->list);
+			pos = flags.next;
 		}
+	}
 }
 
 void flag_clear(const char *name)
 {
+	struct list_head *pos;
 	char *str, *mask;
-	register int i, l;
+	int l;
 	int found = 0;
 
 	if (name == NULL || *name == '\0')
@@ -274,20 +345,29 @@ void flag_clear(const char *name)
 	if (mask) {
 		mask[0]='\0';
 		l = strlen(str);
-		for(i = 0; i < nflags; i++)
-			if(!flag_is_empty(flags[i])
-			&& !memcmp(str, flags[i]->name, l)) {
-				flag_do_empty(flags[i]);
+		__restart:
+		list_for_each(pos, &flags) {
+			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+			if (config.interrupted) break;
+			if (!memcmp(str, flag->name, l)) {
+				list_del(&(flag->list));
+				free(flag);
 				found = 1;
+				goto __restart;
 			}
+		}
 	} else {
-		for(i=0;i<nflags;i++)
-			if (!flag_is_empty(flags[i])
-			&& !strcmp(name, flags[i]->name)) {
-				flag_do_empty(flags[i]);
+		__restart2:
+		list_for_each(pos, &flags) {
+			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+			if (config.interrupted) break;
+			if (strcmp(name, flag->name)) {
+				list_del(&(flag->list));
+				free(flag);
 				found = 1;
-				break;
+				goto __restart2;
 			}
+		}
 	}
 
 	if (!found)
@@ -317,18 +397,17 @@ int flag_valid_name(const char *name)
 
 int flag_set(const char *name, u64 addr, int dup)
 {
-	register int i;
 	const char *ptr;
-	rad_flag_t *flag = NULL;
+	flag_t *flag = NULL;
+	struct list_head *pos;
 
 	if (!dup) {
+		/* show flags as radare commands */
 		if (name[0]=='*' && name[1]=='\0') {
-			for(i=0; i<nflags; i++) {
-				if (flag_is_empty(flags[i]))
-					continue;
-			//	cons_printf("b 0x"OFF_FMTx"\n", flags[i]->length);
-				cons_printf("f %s @ 0x"OFF_FMTx"\n",
-					flags[i]->name, flags[i]->offset);
+			list_for_each(pos, &flags) {
+				flag_t *f = (flag_t *)list_entry(pos, flag_t, list);
+				if (config.interrupted) break;
+				cons_printf("f %s @ 0x"OFF_FMTx"\n", f->name, f->offset);
 			}
 			return 2;
 		} else {
@@ -346,40 +425,38 @@ int flag_set(const char *name, u64 addr, int dup)
 		}
 	}
 
-	for(i=0; i<nflags; i++) {
-		if (flag_is_empty(flags[i])) {
-			if (flag == NULL)
-				flag = flags[i];
-			continue;
-		}
-		if (!strcmp(flags[i]->name, name)) {
+	list_for_each(pos, &flags) {
+		flag_t *f = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (!strcmp(f->name, name)) {
 			if (dup) {
 				/* ignore dupped name+offset */
-				if (flags[i]->offset == addr)
+				if (flag->offset == addr)
 					return 1;
 			} else {
-				flags[i]->offset = addr;
-				flags[i]->length = config.block_size;
-				flags[i]->format = last_print_format;
-				memcpy(flags[i]->data, config.block, 
+				flag = f;
+				f->offset = addr;
+				f->length = config.block_size;
+				f->format = last_print_format;
+/*
+				memcpy(f->data, config.block, 
 					(config.block_size>sizeof(flags[i]->data))?
-					sizeof(flags[i]->data):config.block_size);
+					sizeof(f->data):config.block_size);
+
+*/
 				return 1;
 			}
 		}
 	}
 
 	if (flag == NULL) {
-		i = nflags++;
-		flags = (rad_flag_t**)realloc(flags, nflags*sizeof(rad_flag_t*));
-		flags[i] = malloc(sizeof(rad_flag_t));
-		if (flags[i]==-1)
+		flag = malloc(sizeof(flag_t));
+		list_add_tail(&(flag->list), &flags);
+		if (flag==NULL)
 			return 1;
-		flag = flags[i];
 	}
 
 	strncpy(flag->name, name, FLAG_BSIZE);
-	eflags++;
 	flag->offset = addr;
 	flag->length = config.block_size;
 	flag->format = last_print_format;
@@ -391,7 +468,7 @@ int flag_set(const char *name, u64 addr, int dup)
 		sizeof(flag->data):config.block_size);
 #endif
 
-	// TODO qsort(flags, nflags, sizeof(rad_flag_t*), flag_qsort_compare);
+	// TODO qsort(flags, nflags, sizeof(flag_t*), flag_qsort_compare);
 
 	return 0;
 }

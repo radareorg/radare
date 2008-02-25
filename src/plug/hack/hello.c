@@ -17,6 +17,7 @@ int my_hack(char *input)
 		r("b 20", 0);
 		r("x", 0);
 	} else	printf("Cannot resolve 'radare_cmd' symbol\n");
+	return 0;
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

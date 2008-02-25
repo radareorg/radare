@@ -3,6 +3,7 @@
 
 #include "radare.h"
 #include "main.h"
+#include "list.h"
 #define FLAG_BSIZE 40
 
 extern char **environ;
@@ -14,22 +15,25 @@ typedef struct {
 	u64 length;
 	print_fmt_t format;
 	unsigned char data[FLAG_BSIZE]; // only take a minor part of the data
-} rad_flag_t;
+	struct list_head list;
+} flag_t;
 
 void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
 u64 flag_get_addr(const char *name);
-rad_flag_t *flag_get(const char *name);
-rad_flag_t *flag_get_i(int id);
-rad_flag_t *flag_get_next();
-int flag_is_empty(rad_flag_t *flag);
+flag_t *flag_get(const char *name);
+flag_t *flag_get_i(int id);
+flag_t *flag_get_next();
+int flag_is_empty(flag_t *flag);
 char *flag_name_by_offset(u64 offset);
 int flag_set(const char *name, u64 addr, int dup);
 void print_flag_offset(u64 seek);
 void flags_setenv();
+void flag_list(char *arg);
 
-extern rad_flag_t **flags;
-extern unsigned int eflags; // number of existent flags
-extern unsigned int nflags; // number of elements in flag array
+//extern flag_t **flags;
+struct list_head flags;
+//extern unsigned int eflags; // number of existent flags
+//extern unsigned int nflags; // number of elements in flag array
 #endif

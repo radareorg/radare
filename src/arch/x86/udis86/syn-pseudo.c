@@ -11,6 +11,7 @@
  * Modification of the original source from Vivek Mohan by pancake <youterm.com>
  */
 
+#include "../../../radare.h"
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
@@ -137,7 +138,7 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 				char label[1024];
 				unsigned int l = (unsigned int)(op->lval.udword);
 				label[0]='\0';
-				string_flag_offset(label, (off_t)l);
+				string_flag_offset(label, (u64)l);
 				label[MAXREFLEN]='\0'; // no more than 20
 				if (label[0]!='\0')
 					mkasm(u, " ; %s", label);
@@ -152,7 +153,7 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 					{
 						char label[1024];
 						long long l = (long long)((u->pc+op->lval.sdword));
-						string_flag_offset(label, (off_t)l);
+						string_flag_offset(label, (u64)l);
 						label[MAXREFLEN]='\0'; // no more than 20
 						mkasm(u, "0x" FMT64 "X   ; %s", u->pc + op->lval.sbyte, label); 
 					}

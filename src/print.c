@@ -320,6 +320,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				" e - temporally swap endian\n"
 				" n - perform \\n after format\n"
 				" b - one byte \n"
+				" B - show 10 first bytes of buffer\n"
 				" i - %%d integer value (4 byets)\n"
 				" w - word (16 bit hexa)\n"
 				" q - quadword (8 bytes)\n"
@@ -340,6 +341,16 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				D cons_printf("0x%08x ", config.seek+i);
 				cons_printf("%d ; 0x%02x ; '%c' ", buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
 				i++;
+				break;
+			case 'B':
+				memset(buffer, '\0', 255);
+				radare_read_at((u64)addr, buffer, 248);
+				D cons_printf("0x%08x ", config.seek+i);
+				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
+				cons_strcat(" ... (");
+				for(j=0;j<10;j++) if (is_printable(buf[j])) cons_printf("%c", buf[j]);
+				cons_strcat(")");
+				i+=4;
 				break;
 			case 'i':
 				D cons_printf("0x%08x ", config.seek+i);
@@ -833,7 +844,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	if (mode & FMT_INV)
 		free(bufi);
 
-	fflush(stdout);
+	//fflush(stdout);
+	//cons_flush(); // UH?!? XXX
 	radare_controlc_end();
 }
 

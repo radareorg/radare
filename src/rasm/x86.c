@@ -183,7 +183,6 @@ int rasm_x86(off_t offset, char *str, unsigned char *data)
 	if (!strcmp(op, "jz")) {
 		off_t dst = get_math(arg);
 		unsigned long addr = dst;
-		unsigned char *ptr = &addr;
 
 		if (dst>-0x80 && dst<0x7f) {
 			dst-=2;

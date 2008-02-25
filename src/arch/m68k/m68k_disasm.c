@@ -224,7 +224,7 @@ m68k_word *M68k_Disassemble(struct DisasmPara_68k *dp)
   func = opcode_map[OPCODE_MAP(opc)];
   func(&dbuf, opc);
 
-  if (s = strchr(asm_buffer,'\t')) {
+  if ((s = strchr(asm_buffer,'\t'))) {
     *s++ = '\0';
     strcpy(dp->operands,s);
   }
