@@ -423,6 +423,12 @@ int radare_cmd(char *tmp, int log)
 	if(tmp==NULL || (log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
 		return 0;
 
+	if (config.visual) {
+		// update config.height heres
+		terminal_get_real_columns();
+		config.height -= 3;
+	}
+
 	// TODO : move to a dbg specific func outside here
 	if (config.debug && tmp && tmp[0]=='\0') {
 		radare_read(0);
@@ -435,7 +441,6 @@ int radare_cmd(char *tmp, int log)
 		config_set("cfg.verbose", "false");
 		p = last_print_format;
 
-		terminal_get_real_columns();
 
 		/* NOT REQUIRED update flag registers NOT REQUIRED */
 		//radare_cmd(":.!regs*", 0);
@@ -480,7 +485,7 @@ int radare_cmd(char *tmp, int log)
 			if (pc<config.seek || pc > config.seek+config.block_size)
 				radare_cmd("s eip",0);
 		}		
-		config.height-=10;
+		config.height-=14;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */

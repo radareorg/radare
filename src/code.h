@@ -19,6 +19,7 @@ enum {
 	AOP_TYPE_UPUSH, // unknown push of data into stack
 	AOP_TYPE_PUSH,  // push value into stack
 	AOP_TYPE_POP,   // pop value from stack to register
+	AOP_TYPE_CMP,   // copmpare something
 	AOP_TYPE_ADD,
 	AOP_TYPE_SUB,
 	AOP_TYPE_MUL,

@@ -35,7 +35,75 @@ enum {
 	ARCH_JAVA = 4
 };
 
-//static int lines = 0;
+static struct list_head data;
+
+struct data_t {
+	u64 from;
+	u64 to;
+	int type;
+	u64 size;
+	struct list_head *list;
+};
+
+void data_add(u64 off, int type)
+{
+	u64 tmp;
+	struct data_t *d;
+
+	if (type == FMT_UDIS) {
+		struct list_head *pos;
+		__reloop:
+		list_for_each(pos, &data) {
+			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+			if (off>= d->from && off<= d->to) {
+				list_del(&(d->list));
+				goto __reloop;
+			}
+		}
+		return;
+	}
+
+	d = (struct data_t *)malloc(sizeof(struct data_t));
+
+	d->from = off;
+	d->to = d->from+1;  // 1 byte if no cursor // on strings should autodetect
+	if (config.cursor_mode) {
+		d->from+=config.cursor;
+		if (config.ocursor!=-1)
+			d->to = config.seek+config.ocursor;
+		if (d->to < d->from) {
+			tmp = d->to;
+			d->to  = d->from;
+			d->from = tmp;
+		}
+	}
+	d->type = type;
+	d->size = (config.ocursor==-1)?1:config.cursor-config.ocursor+1,d->size;
+
+	list_add(&(d->list), &data);
+}
+
+int data_type(u64 offset)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (offset == d->from)
+			return d->type;
+	}
+	return 0;
+}
+
+int data_count(u64 offset)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (offset == d->from)
+			return d->size;
+	}
+	return 0;
+}
 
 static struct reflines_t *reflines = NULL;
 struct list_head comments;
@@ -123,13 +191,11 @@ char *metadata_comment_get(u64 offset)
 		int i = 0;
 		list_for_each(pos, &comments) {
 			struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-			if (cmt->offset == offset) {
+			if (cmt->offset == offset)
 				i++;
-			}
 		}
-		if (i>cmtlines) {
+		if (i>cmtlines)
 			cmtlines = i-cmtlines;
-		}
 	}
 
 	list_for_each(pos, &comments) {
@@ -157,6 +223,7 @@ char *metadata_comment_get(u64 offset)
 void metadata_comment_init(int new)
 {
 	INIT_LIST_HEAD(&(comments));
+	INIT_LIST_HEAD(&(data));
 }
 
 static int metadata_print(int delta)
@@ -190,8 +257,15 @@ static int metadata_print(int delta)
 
 	ptr = metadata_comment_get(offset);
 	if (ptr && ptr[0]) {
+		int i;
+#if 0
 		if (show_lines&&reflines)
 			code_lines_print2(reflines, config.baddr+config.seek +i);
+		C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", config.baddr+offset, ptr);
+		else	cons_printf(OFF_FMTs" %s:\n", config.baddr+offset, ptr);
+#endif
+		for(i=0;ptr[i];i++)
+			if (ptr[i]=='\n') lines++;
 		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
 		else 	cons_printf("%s", ptr);
 		free(ptr);
@@ -279,14 +353,14 @@ void udis_arch(int arch, int len, int rows)
 	struct aop_t aop;
 	char* hex1, *hex2;
 	char c;
-	int i,delta;
+	int i,idata,delta;
 	u64 seek = 0;
 	int lines = 0;
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
 	char *follow, *cmd_asm;
-	int endian;
+	int endian, height;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
 
 	cmd_asm = config_get("cmd.asm");
@@ -298,6 +372,7 @@ void udis_arch(int arch, int len, int rows)
 	show_lines = config_get("asm.lines");
 	show_traces = config_get("asm.trace");
 	show_comments = config_get("asm.comments");
+	height = config_get_i("cfg.height");
 	show_nbytes = (int)config_get_i("asm.nbytes");
 	endian = config_get("cfg.endian");
 	color = config_get("scr.color");
@@ -327,9 +402,46 @@ void udis_arch(int arch, int len, int rows)
 	radare_controlc();
 
 	while (!config.interrupted) {
+		if (bytes>=config.block_size)
+			break;
 		seek = config.baddr +config.seek+bytes;
 		if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
 			break;
+		if (rows && rows < ++lines)
+			break;
+
+		/* is this data? */
+		idata = data_count(seek);
+		if (idata>0) {
+			if (show_lines)
+				code_lines_print(reflines, seek);
+			if (show_offset) {
+				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				else cons_printf("0x%08llX ", (unsigned long long)(seek));
+			}
+			switch(data_type(seek)) {
+			default:
+			case FMT_HEXB:
+				cons_printf("  .db  ");
+				for(i=0;i<idata;i++) {
+					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
+				}
+				break;
+			case FMT_ASC0:
+				cons_strcat("  .string \"");
+				for(i=0;i<idata;i++) {
+					print_color_byte_i(bytes+i, "%c", is_printable(config.block[bytes+i])?config.block[bytes+i]:'.');
+				}
+				cons_strcat("\"");
+				break;
+			}
+			cons_newline();
+			lines++;
+			bytes+=idata;
+			continue;
+		}
+
+		/* oh nope, continue disasembling */
 		// XXX code analyssi doesnt works with endian here!!!1
 		// TAKE CARE TAKE CARE TAKE CARE TAKE CARE TAKE CARE
 		if (arch != ARCH_X86 && endian) {
@@ -413,6 +525,8 @@ void udis_arch(int arch, int len, int rows)
 						lines++;
 						if (rows && rows >= lines)
 							return;
+						if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
+							break;
 						if (show_lines)
 							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
@@ -447,6 +561,34 @@ void udis_arch(int arch, int len, int rows)
 					cons_printf(" ");
 				if (cur != myinc)
 					cons_printf(". ");
+			}
+			C switch(aop.type) {
+			case AOP_TYPE_CMP:
+				cons_strcat("\e[36m");
+				break;
+			case AOP_TYPE_REP:
+			case AOP_TYPE_JMP:
+			case AOP_TYPE_CJMP:
+			case AOP_TYPE_CALL: // green
+				cons_strcat("\e[32m");
+				break;
+			case AOP_TYPE_NOP:
+				cons_strcat("\e[35m");
+				break;
+			case AOP_TYPE_UPUSH:
+			case AOP_TYPE_PUSH:
+			case AOP_TYPE_POP: // yellow
+				cons_strcat("\e[33m");
+				break;
+			case AOP_TYPE_SWI:
+			//case AOP_TYPE_UNK:
+			case AOP_TYPE_TRAP:
+			case AOP_TYPE_UJMP: //red
+				cons_strcat("\e[31m");
+				break;
+			case AOP_TYPE_RET: // blue
+				cons_strcat("\e[34m");
+				break;
 			}
 			switch(arch) {
 				case ARCH_X86:
@@ -517,11 +659,12 @@ void udis_arch(int arch, int len, int rows)
 			if (show_splits) {
 				char buf[1024];
 				if (aop.jump||aop.eob) {
-					NEWLINE;
 					//if (show_lines)
 					//	code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
-					lines++;
-						if (rows && rows == lines)
+					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
+						lines++;
+						NEWLINE;
+						if (rows && rows >= lines)
 							return;
 						if (show_lines)
 							code_lines_print(reflines, seek);
@@ -531,7 +674,8 @@ void udis_arch(int arch, int len, int rows)
 						}
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf,"");
-					cons_printf("; ------------------------------------ ");
+						cons_printf("; ------------------------------------ ");
+					}
 				}
 			}
 		} else {
@@ -550,7 +694,6 @@ void udis_arch(int arch, int len, int rows)
 		bytes+=myinc;
 	}
 	radare_controlc_end();
-
 }
 
 void disassemble(int len, int rows)

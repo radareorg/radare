@@ -44,6 +44,9 @@ int arch_ppc_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 //printf("OPCODE IS %08x : %02x (opcode=%d) baddr = %d\n", addr, bytes[0], opcode, baddr);
 
 	switch(opcode) {
+	case 11: // cmpi
+		aop->type = AOP_TYPE_CMP;
+		break;
 	case 9: // pure branch
 		if (bytes[0] == 0x4e) {
 			// bctr

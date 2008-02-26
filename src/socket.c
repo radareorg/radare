@@ -22,6 +22,7 @@
 #include "socket.h"
 #if __WINDOWS__
 #include <windows.h>
+#include <winsock.h>
 #endif
 #if __UNIX__
 #include <sys/un.h>

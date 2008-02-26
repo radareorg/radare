@@ -145,6 +145,29 @@ CMD_DECL(trace)
 	else	trace_add(get_offset("eip"));
 }
 
+void convert_bytes()
+{
+#warning convert_bytes under development
+	int c;
+	int fmt;
+	cons_printf(
+	"c - code\n"
+	"d - data bytes\n"
+	"s - string\n");
+	cons_flush();
+	c = cons_readchar();
+	if (c != 'c' && c!='d' && c!='s')
+		return;
+	fmt = FMT_HEXB;
+	switch(c) {
+	case 'c': fmt = FMT_UDIS; break;
+	case 'd': fmt = FMT_HEXB; break;
+	case 's': fmt = FMT_ASC0; break;
+	}
+	data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+	cons_clear();
+}
+
 CMD_DECL(zoom)
 {
 	if (config.zoom.size = 0)
@@ -197,7 +220,7 @@ CMD_DECL(add_comment)
 	}
 	terminal_set_raw(1);
 	radare_cmd(buf,0);
-	CLRSCR();
+	cons_clear();
 }
 
 CMD_DECL(seek0)
@@ -573,7 +596,7 @@ void visual_show_help()
 	"f #        seek to search result 0-9\n"
 	"c          toggle cursor mode\n"
 	"C          toggle color\n"
-	"d          disassemble current block (pd)\n"
+	"d          convert cursor selected bytes in data\n"
 	"b[k][cmd]  binds key 'k' to the specified command\n"
 	"D          delete current flag\n"
 	"m          applies rfile magic on this block\n"
@@ -800,14 +823,13 @@ CMD_DECL(visual)
 		visual_draw_screen();
 
 		if (last_print_format == FMT_UDIS) {
-		char *follow = config_get("asm.follow");	
-		if (follow&&follow[0]) {
-			u64 addr = get_offset(follow);
-			if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
-				radare_seek(addr, SEEK_SET);
+			char *follow = config_get("asm.follow");	
+			if (follow&&follow[0]) {
+				u64 addr = get_offset(follow);
+				if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
+					radare_seek(addr, SEEK_SET);
+			}
 		}
-		}
-
 
 	__go_read_a_key:
 		/* user input */
@@ -1016,8 +1038,9 @@ CMD_DECL(visual)
 			press_any_key();
 			break;
 		case 'd':
-			radare_dump_and_process( DUMP_DISASM, config.block_size);
-			press_any_key();
+			convert_bytes();
+			//radare_dump_and_process( DUMP_DISASM, config.block_size);
+		//	press_any_key();
 			break;
 		case 'C':
 			config.color^=1;

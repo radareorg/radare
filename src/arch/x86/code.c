@@ -34,7 +34,7 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 
 	memset(aop, '\0', sizeof(struct aop_t));
 //printf("0x%08x %02x %02x\n", addr, (unsigned char)bytes[0], (unsigned char)bytes[1]);
-	aop->type = AOP_TYPE_NOP;
+	aop->type = AOP_TYPE_UNK;
 
 	switch(bytes[0]) {
 	case 0xf4: // hlt
@@ -50,6 +50,15 @@ int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *a
 		aop->eob    = 1;
 		break;
 	//case 0xea: // far jmp
+	// TODO moar
+	case 0x39:
+	case 0x3b:
+	case 0x3c:
+	case 0x3d:
+	case 0x85:
+		aop->type   = AOP_TYPE_CMP;
+		aop->length = 2;
+		break;
 	case 0x90:
 		aop->type   = AOP_TYPE_NOP;
 		aop->length = 1;

@@ -7,84 +7,63 @@
 
 ===========================================================
 
+(gdb) break ptrace if $r3 == 31
 [0x08048034]> wx 0f f0 a0 e1
 [0x08048034]> pD 10
           0x08048034           e1a0f00f          mov pc, pc
 
+BUGS:
+=====
+* zoom segfaults
 * winedbg doesnt reads the unalligned memory properly FIX IT!
+* java disasm is borken (seek problemz?!?!)
+* cursor doesnt works in w32 console ??
+* rsc monitor doesnt works as expected
 
-* mode2 for keybinding numbers for jmp/calls
-  - only if jump out of view
-* Add 'pG' button in gradare
-* Add toggle cursor and toggle endian in gradare
+TODO for 0.9.4
+==============
+* code data type must be saved and loaded in project
+* bindiff is buggy (gnu huh!)
+  - use bdiff
+  - integrated with bdcolor huh!
+* Lua API
+* Fixed udis loop
+  - colorize opcodes by arch_aop
+* cfg.invdelta = inverses the delta (<=1024 ..-> >=1024)
+* dump file to filedescriptor of the child doesnt works (child.stdin)
+* identify nodes with 'ret' in graph
+* identify nodes with 'cmp' in graph
 * A key to increase/decrease the byte value under the cursor
-* asm.splitbranches -> split branches or only ret?
-* identify nodes with 'ret'
-
+* support to change byte types.
+  - select a range of bytes in cursor mode
+   - press a key and define a print command on the selected bytes
+     - pz (string)
+     - pD (normal) assembly
+     - pX (hexpairs)
+     - pm (memory analysis)
+  - define command to print these bytes (pz for strings, 
+  - integrated with the disassembler
 * udis disassembly is a bit weird with values + and -
   - makes the reading a bit difficult (if higher bit set, use negative value)
   f.example:
       0x0804D169  8985f0fdffff      [ebp-0x210] = eax
       0x0804D16F  8d85f4fdffff      lea eax, [ebp+0xfffffdf4] ; should be -524
-
-* colorize flagged bytes in hexdump
-* zoom segfaults
-* trace on !wp
-* persistent nodes in graph
-* clean valgrind stuff
+* implement insert data inda core
+* graph.body=asm,flags,symcalls,description, trace execution data
 * blue or black background for metadata in udis -> nicer for w32 and white screens
   - use global palete in eval variable
   - scr.palete = 1732367 -> when printing colors are peeked from this palete
-* '<' and '>' commands converted in prefix modifiers
-* cursor doesnt works in w32 console ??
-* executable offsets
-  - execute a command on a certain offset
-  - show funtion frames and arguments on the fly
-  - automatize unpacks and so
-* Implement 'gui hack' command for 'GUI plugins'.
-  - implement start/pause/continue/stop/reload button for a pid
-* frontend for hasher (Vala api for hashing)
-* timeline of a trace |----------------|
-  - allow to view frame windows inside the timeline
-  - extended 'f' and 'F' keys mode
-  * List viewer (get offset as index fr cursor, right view shows the
-    contents of th selected offset
-    - linked list browser
-* random trace peeker
-  - takes traces from the process while running every N usecs
-* print disasembly by trace from an starting address
-  * roll/funroll code
-  - pD 100 | sort
-  - true jumps are done, false ones are ignored
-* store more info in trace (output of command)
-* colorize traces in vala graphs
-* alphabetically sort eval vars
-(gdb) break ptrace if $r3 == 31
-* dbg.vstepkey = step or stepu, chooses the 's' action.
-  - step over non-user code?
-* graph.body=asm,flags,symcalls,description, trace execution data
-  - block descriptor (if regs traced, or so show info)
-* add graph.color // default color for new nodes 
-* add scr.cursor scr.cursor_range evals
-
+* Create linked list of hit0[0] and hit1[0] , etc..
+  define block size by hit1[0]-hit0[0]
+* remove comments with cursor
 * StreamViewer
  * search for head and foot
   - for each head finds a foot and defines block size
 
-* Do not use the char '(' in asm.lines. just use - or =
 
-* Create linked list of hit0[0] and hit1[0] , etc..
-  define block size by hit1[0]-hit0[0]
-
-* search flag names take sense with keyword number!! not just index in array of search
-  - pretty output
-* remove comments with cursor
-+ EH - event handling (event type + source pid)
-  using linked list.h
-  * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
-* allow to specify what you want to see when tracing (cmd.cmttrace) ?
-  - is not oneliner
-* trace call amb jump lines (draw a sequence of vectors)
+TODO for 0.9.5
+==============
+* invert pel disasm
 * /a algorithm defined by search.algorithm
  it flags if search.flag
   - armfuncsearch
@@ -97,16 +76,29 @@
 * RDBs stored into Projects
   project.rdb = false ; store or not
   use [delimiters] to embed rdbs inside rps
+* MSB stego
 
-* dump file to filedescriptor of the child
-  child.stdin = |rasc -A 99999
-  child.stdout = output.txt
-  child.stderr = stderr.txt
-  - done, but doesnot works
 
-* invert pel disasm
 
-* graphs:
+* print disasembly by trace from an starting address
+  * roll/funroll code
+  - pD 100 | sort
+  - true jumps are done, false ones are ignored
+
+* dbg.vstepkey = step or stepu, chooses the 's' action.
+  - step over non-user code?
+  - block descriptor (if regs traced, or so show info)
+* add scr.cursor scr.cursor_range evals
+
++ EH - event handling (event type + source pid)
+  using linked list.h
+  * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
+
+* allow to specify what you want to see when tracing (cmd.cmttrace) ?
+  - is not oneliner
+
+Graphs
+======
   - show comments in a separated toggleable box:
 
    +-------------+
@@ -119,13 +111,9 @@
   - line clicking must be supported!
   - avoid out of context bytes
 
-* flags
-  - symbol-flags must be source-sorted (i must be able to list all syms of a lib or so)
-  - rabin -something?
+
+
 * head handling (glibc at least)...too much work i think
-// asm plugin interface //
-* implement a dword array with all functions
- - first one must be a name resolver
 * tracecc
   - useful to walk to user code
   - copy the program code on another buffer
@@ -137,13 +125,11 @@
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
-* implement insert data inda core
 
 * record radare commands
   - all commands executed within a recording time are stored on a single script file
   - you can later repeat it or edit
 
-* MSB stego
 * Show FPU stack contents
 
 * exception frame information (try { ... } catch stuff)
@@ -183,10 +169,10 @@
 * do not sigalarm in visual
 * new flag type: temporal 
   - they will not survive a project save
+  - they are destroyed after a timeout
 
 w32 Debugger
 ============
-* No /w32 directory -> in makfeil
 * implement !maps
 * pid:// doesn't works
 
@@ -208,12 +194,10 @@ Rabin
 * add full PE support to rabin
 * integrated with radare debugger /code analyer
 * Move radare -S into rabin to find strings in data sections only
-  - like gnu strings with bfd does
+  - like gnu strings like bfd does
 
 Search
 ======
-* ease keyword list searcihng (search.keywords_file?)
-  - comma separated, range , eval is not enought.. 
 * Fix search progress bar and hits view (cleaner :!!)
   - output configure by search.
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
@@ -236,14 +220,6 @@ Core
     - flags must have start and end
     - flags/comments/labels/dwarf
     - optimized linked list usage
-* Hexpair aliases:
-  - Alias foo = w 00 02 30 40 51 it can be used in a inverse way:
-    - maybe a file.scrfilter?!? Uh?
-  - for a disasembler or data analyzer (pA)
-  - load from file.
-    90 : nop
-    1020 : invalid
-    8048000 : base address
 * Add views/states/.. (S (switch) command) (open multiple files)
   - A view is just a stored copy of the config_t structure
   - and store different states for the same file
@@ -264,6 +240,7 @@ Rasm
 
 Visual
 ======
+* colorize background of flagged bytes in hexdump
 * ease monitor access from the visual (xterm or so) (run inside dvtm?)
 * count the number of lines in backtrace and substract them to make the visual
 * add scrolling acceleration. (cfg.accel or so)
@@ -275,6 +252,15 @@ Hasher
 
 Tracer
 ======
+* store more info in trace (output of command)
+* random trace peeker
+  - takes traces from the process while running every N usecs
+* timeline of a trace |----------------|
+  - allow to view frame windows inside the timeline
+  - extended 'f' and 'F' keys mode
+  * List viewer (get offset as index fr cursor, right view shows the
+    contents of th selected offset
+    - linked list browser
 * make !dump incremental
   - support to enable full dump (with hashing for reducing sizes)
   - bindiffing
@@ -295,6 +281,7 @@ Tracer
 * tracepoints
   - allow to execute a command (!dump?)
     - follow some variables
+* colorize traces in vala graphs
 * trace graph
   - debug.c -> implement a while(debug_step()) loop to arch_aop() each instruction
     and draw a graph until a breakpoint or ^C
@@ -308,6 +295,7 @@ FileDescriptors
 
 Debugger
 ========
+* trace on !wp
 * al atacharse a un proces deixa <pid>.rdb hauria de ser <program.pid>.rdb?
 * debug_new() -> alloc new glib object or so
   - allows multiple ps structures to be loaded
@@ -376,10 +364,18 @@ Code analyzer
   - data xrefs is not detected here. uh?
 * grava window with toolbar in a separate file
 * grava -> toggle node body visibility with a key (smarter graphs
+* persistent nodes in graph executing commands
 
 Gui
 ===
+* Implement 'gui hack' command for 'GUI plugins'.
+  - implement start/pause/continue/stop/reload button for a pid
+* frontend for hasher (Vala api for hashing)
 * GUI: contextual popup menu allows to change font size
+* the gui must listen:// and connect:// too!
+* Add 'pG' button in gradare
+* Add toggle endian in gradare
+* integrate the gui with maemo!
 
 Flags
 =====
@@ -391,22 +387,22 @@ Random
 ======
 * Update manpages
 * output of rsc help should start with ';'
-* rsc bdcolor doesnt works fine only shows first appearance??!
-  - or is this a bytediff-bindiff problem!??!
 * Implement a boolean bindiff based on symdiffing (uses dwarf)
 * make monitors work with inotify and glib events or so
 
-Scripting
-=========
-* make ;cmp, ;je, ;jne commands work properly
-* add parrot support. enhace perl/python
 
 ===========================================================
 
 TOTHINK
 =======
-* Allow '@' at comments ??
-  - (must fix the visual entry) so it is not a raw command. it is a user input!
+* Do not use the char '(' in asm.lines. just use - or =
+* mode2 for keybinding numbers for jmp/calls
+  - only if jump out of view
+* '<' and '>' commands converted in prefix modifiers
+* executable offsets
+  - execute a command on a certain offset
+  - show funtion frames and arguments on the fly
+  - automatize unpacks and so
 
 * performance counters:
    - inject code into the child process
