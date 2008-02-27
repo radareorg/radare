@@ -32,7 +32,6 @@ BUGS:
 * new graph view
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
 * import esteve's object injector
-* segfault al ficar 'Hack'
 * winedbg !cont
   help                                   quit
   break [*<addr>]                        watch *<addr>
@@ -54,7 +53,6 @@ BUGS:
   info (see 'help info' for options)
 
 * next pel debugger (next source line) -- comment uh?
-y? no treu help del yank
 * handle !! properly
 !signal has no help :O
 * status shows backtrace !?!?!

@@ -6,7 +6,7 @@ PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
 PERL_LDFLAGS=`perl -MExtUtils::Embed -e ldopts` -lncurses
 PY_CFLAGS=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
 PY_LDFLAGS=-lpython2.4
-LUA_CFLAGS=-I/usr/pkg/include -DPREFIX=${PREFIX}
+LUA_CFLAGS=-I/usr/pkg/include -DLIBDIR=${LIBDIR}
 LUA_LDFLAGS=-llua
 
 CFLAGS+=-I../.. -g
@@ -15,12 +15,12 @@ all: loa purl puthon
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SHARED_EXT}
 
 purl: perl.o
-	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.so
+	-${CC} perl.o ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.so
 
 puthon: python.o
-	-${CC} python.c ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.so
+	-${CC} python.o ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.so
 
-loa: lua.o
+loa:
 	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -o lua.so
 
 clean:

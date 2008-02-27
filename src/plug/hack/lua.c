@@ -64,7 +64,7 @@ static int lua_hack_init()
 
 	//-- load template
 	printf("Loading radare api... %s\n",
-		slurp_lua(PREFIX"/lib/radare/radare.lua")?"ok":"error");
+		slurp_lua(LIBDIR"/radare/radare.lua")?"ok":"error");
 	fflush(stdout);
 
 	lua_register(L, "radare_cmd_str", &lua_cmd_str);

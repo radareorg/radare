@@ -398,21 +398,14 @@ int radare_cmd_raw(char *tmp, int log)
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
-//printf("ARG(%s)\n", cmd);
-//fflush(stdout);
-	//cons_flush();
+	int scrbuf= config_get_i("scr.buf");
 	cons_reset();
 	config_set_i("scr.buf", 1);
 	radare_cmd(cmd, 0);
-//printf("RUN(%s)\n", cmd);
 	buf = cons_get_buffer();
-//printf("RET(%s)\n", buf);
-//fflush(stdout);
 	if (buf)
 		buf = strdup(buf);
-	//buf = cons_get_buffer();
-	//cons_flush();
-	config_set_i("scr.buf", 0);
+	config_set_i("scr.buf", scrbuf);
 	cons_reset();
 	return buf;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -36,12 +36,6 @@ int winedbg_handle_open(const char *file)
 	return 0;
 }
 
-ssize_t winedbg_write(int fd, const void *buf, size_t count)
-{
-	// TODO: not yet implemented (pfd command ?)
-        return 0;
-}
-
 
 static void winedbg_wait_until_prompt(int o)
 {
@@ -61,6 +55,15 @@ static void winedbg_wait_until_prompt(int o)
 	}
 }
 
+ssize_t winedbg_write(int fd, const void *buf, size_t count)
+{
+	// TODO: not yet implemented (pfd command ?)
+	return 0;
+	socket_printf(config.fd, "set *%08llx = <expr>\n", config.seek);
+	winedbg_wait_until_prompt(0);
+        return 0;
+}
+
 ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
 {
 	char tmp[1024];
@@ -74,7 +77,7 @@ ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
 		size+=(size-(size%16));
 
 	// XXX memory is algned!!!
-	for(i=0;i<count;i+=4) {
+	for(i=0;i<count+delta;i+=4) {
 		unsigned long *dword = buf+i;
 		unsigned long dw;
 		sprintf(tmp,"x 0x"OFF_FMTx"\n", config.seek-delta+i);
@@ -85,6 +88,7 @@ ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
 		endian_memcpy_e(dword, &dw, 4, 1);
 		winedbg_wait_until_prompt(0);
 	}
+	memcpy(buf, buf+delta, count);
 
         return count;
 }
@@ -135,12 +139,17 @@ int winedbg_system(const char *cmd)
 	} else
 	if (!strcmp(cmd, "help")) {
 		cons_printf("WineDbg help\n"
-		" !step [N]     steps one or N instructions\n"
-		" !cont         continue program execution\n"
-		" !bp <addr>    set breakpoint at address\n"
-		" !regs[*]      show or flag registers\n"
-		" !!cmd         execute a winedbg command\n"
-		" !!help        winedbg help\n");
+		" !pids            show all running processes\n"
+		" !maps            show maps information\n"
+		" !bt              list backtrace\n"
+		" !th              show threads information\n"
+		" !set [reg] [val] set a value for a register\n"
+		" !step [N]        steps one or N instructions\n"
+		" !cont            continue program execution\n"
+		" !bp <addr>       set breakpoint at address\n"
+		" !regs[*]         show or flag registers\n"
+		" !!cmd            execute a winedbg command\n"
+		" !!help           winedbg help\n");
 	} else
 	if (!memcmp(cmd, "bp ",3 )) {
 		char buf[1024];
@@ -149,9 +158,38 @@ int winedbg_system(const char *cmd)
 		socket_printf(config.fd, buf);
 		winedbg_wait_until_prompt(0);
 	} else
+	if (!memcmp(cmd, "set ", 4)) {
+		char *ptr = strchr(cmd+4,' ');
+		char buf[1024];
+
+		if (ptr == NULL) {
+			printf("Usage: !set [reg] [value]\n");
+		} else {
+			ptr[0]='\0';
+			sprintf(buf, "set $%s = %s\n", cmd+4, ptr+1);
+			socket_printf(config.fd, buf);
+			winedbg_wait_until_prompt(1);
+		}
+	} else
 	if (!strcmp(cmd, "cont")) {
 		socket_printf(config.fd, "cont\n");
-		winedbg_wait_until_prompt(0);
+		winedbg_wait_until_prompt(1);
+	} else
+	if (!strcmp(cmd, "bt")) {
+		socket_printf(config.fd, "bt\n");
+		winedbg_wait_until_prompt(1);
+	} else
+	if (!strcmp(cmd, "pids")) {
+		socket_printf(config.fd, "info process\n");
+		winedbg_wait_until_prompt(1);
+	} else
+	if (!strcmp(cmd, "th")) {
+		socket_printf(config.fd, "into thread\n");
+		winedbg_wait_until_prompt(1);
+	} else
+	if (!strcmp(cmd, "maps")) {
+		socket_printf(config.fd, "info maps\n");
+		winedbg_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "step")) {
 		socket_printf(config.fd, "stepi\n");

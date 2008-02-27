@@ -243,6 +243,12 @@ CMD_DECL(yank)
 		cmd_yank_paste(input);
 		return;
 	}
+	if (ptr[0]=='?') {
+		eprintf("Usage: y[y] [length]\n");
+		eprintf(" > y 10 @ eip   ; yanks 10 bytes from eip\n");
+		eprintf(" > yy @ edi ; write these bytes where edi points\n");
+		return;
+	}
 
 	free(yank_buffer);
 	yank_buffer_size = get_math(ptr);
@@ -265,7 +271,7 @@ CMD_DECL(yank)
 	radare_read(0);
 	yank_buffer = (unsigned char *)malloc(yank_buffer_size);
 	memcpy(yank_buffer, config.block+off, yank_buffer_size);
-	D fprintf(stderr, "%d bytes yanked. off=%d data=%02x %02x %02x...\n", yank_buffer_size,
+	D eprintf("%d bytes yanked. off=%d data=%02x %02x %02x...\n", yank_buffer_size,
 		off, yank_buffer[0], yank_buffer[1], yank_buffer[2]);
 
 	if (config.visual) {
@@ -277,7 +283,7 @@ CMD_DECL(yank)
 CMD_DECL(yank_paste)
 {
 	if (yank_buffer_size == 0) {
-		fprintf(stderr, "No buffer yanked\n");
+		eprintf("No buffer yanked\n");
 		if (config.visual) {
 			press_any_key();
 			CLRSCR();
@@ -295,7 +301,7 @@ CMD_DECL(yank_paste)
 				off = config.cursor;
 			radare_seek(old+off, SEEK_SET);
 			io_write(config.fd, yank_buffer, sz);
-			fprintf(stderr, "%d bytes yanked.\n", (int) sz);
+			eprintf("%d bytes yanked.\n", (int) sz);
 			radare_seek(old, SEEK_SET);
 			radare_read(0);
 		} else {
@@ -395,7 +401,7 @@ CMD_DECL(insert_assembly)
 	char buf[129];
 
 	if (!config_get("cfg.write")) {
-		fprintf(stderr, "Sorry, but you're not in read-write mode\n");
+		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
 		return;
 	}
@@ -643,7 +649,7 @@ void visual_bind_key()
 	fflush(stdout);
 	key = cons_readchar();
 	if (!is_printable(key)) {
-		fprintf(stderr, "\n\nInvalid keystroke\n");
+		printf("\n\nInvalid keystroke\n");
 		press_any_key();
 		return;
 	}
@@ -651,7 +657,7 @@ void visual_bind_key()
 	fflush(stdout);
 	for(i=0;keystrokes[i].sname;i++) {
 		if (key == keystrokes[i].sname) {
-			fprintf(stderr,"\n\nInvalid keystroke (handled by radare)\n");
+			printf("\n\nInvalid keystroke (handled by radare)\n");
 			press_any_key();
 			return;
 		}

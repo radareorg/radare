@@ -90,6 +90,7 @@ install:
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
 	-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
+	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
 #	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}

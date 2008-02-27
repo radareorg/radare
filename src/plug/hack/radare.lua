@@ -208,8 +208,8 @@ end
 
 -- Radare.Debugger API
 
-function Radare.Debugger.step()
-	r.cmd("!step");
+function Radare.Debugger.step(times)
+	r.cmd("!step "..times);
 	return Radare.Debugger
 end
 
