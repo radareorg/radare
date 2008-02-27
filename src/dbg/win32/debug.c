@@ -40,7 +40,6 @@ static DWORD WINAPI (*win32_getprocessid)(HANDLE); // XP
 
 /* mark step flag (DEPRECATED) */
 static int single_step;
-static int stopped_thread;
 static int exit_wait;
 
 void debug_init_calls()
@@ -70,19 +69,27 @@ static BOOL dispatch_console(DWORD type)
 {
 	switch(type) {
 		case CTRL_C_EVENT: 
+			/* stop process */
+			win32_dbgbreak(WIN32_PI(hProcess));
 			exit_wait = 1;
-			break;
+			return 1;
 
 	}
+
+	return 0;
 }
 
 static HANDLE tid2handler(pid_t tid)
 {
 	TH_INFO *th = get_th(tid);
-	if(th == NULL)
-		return NULL;
+	if(th == NULL) {
+		/* refresh thread list */
+		debug_load_threads();
 
-	//eprintf("thread handler: %d %d\n", th->tid, th->ht);
+		/* try to search thread */
+		if((th = get_th(tid)) == NULL)
+			return NULL;
+	}
 
 	return th->ht;
 }
@@ -130,7 +137,7 @@ int debug_load_threads()
 	HANDLE th;
 	THREADENTRY32 te32;
 	TH_INFO *th_i;
-	int ret = 0;
+	int ret;
 
 	ret = -1;
 	te32.dwSize = sizeof(THREADENTRY32);
@@ -139,8 +146,7 @@ int debug_load_threads()
 	if(th == INVALID_HANDLE_VALUE || !Thread32First(th, &te32))
 		goto err_load_th;
 
-	/* TODO: free all threads */
-	//free_th();
+	free_th();
 
 	do {
 		/* get all threads of process */
@@ -163,6 +169,8 @@ int debug_load_threads()
 		}
 	} while(Thread32Next(th, &te32));
 
+	ret = 0;
+
 err_load_th:	
 
 	if(ret) 
@@ -176,25 +184,12 @@ err_load_th:
 
 int debug_contp(int tid)
 {
-	int ret = 0;
-
-	if(stopped_thread) {
-
-		if(ResumeThread(tid2handler(stopped_thread)) == -1) {
-			print_lasterr(__FUNCTION__);
-			ret = -1;
-		} else{
-			stopped_thread = 0;	
-		}
-
-	} else {
-		if(ContinueDebugEvent(ps.pid, tid, DBG_CONTINUE) == 0) {
-			print_lasterr(__FUNCTION__);
-			ret = -1;
-		}
+	if(ContinueDebugEvent(ps.pid, tid, DBG_CONTINUE) == 0) {
+		print_lasterr(__FUNCTION__);
+		return -1;
 	}
 
-	return ret;
+	return 0;
 }
 
 inline int debug_steps()
@@ -418,7 +413,7 @@ int debug_print_wait(char *act)
 			/* XXX: update thread list information here !!! */
 			eprintf("=== %s: (%d) stop at 0x%x(%s)\n",
 				act, ps.tid, (unsigned int)arch_pc(), //WS_PC() is not portable
-				stopped_thread? "INT" : "UNKNOWN");
+				exit_wait? "INT" : "UNKNOWN");
 		}
 	}
 	return 0;
@@ -488,7 +483,7 @@ static int debug_exception_event(unsigned long code)
 			break;
 
 		default:
-			eprintf("exceptio 0x%x uncatched\n", code);
+			eprintf("exception 0x%x uncatched\n", code);
 
 	}
 
@@ -502,45 +497,31 @@ int debug_dispatch_wait()
 	unsigned int code;
 
 	do {
-		/* handle debug events */
-		/* TODO: exit_wait is DEPRECATED */
 		exit_wait = 0;
 
-		while(WaitForDebugEvent(&de, 0) == 0) {
-
-			/* interrupible call */
-			//usleep(1000);
-
-			if(exit_wait) {
-
-				if(SuspendThread(tid2handler(ps.tid)) == -1) {
-					print_lasterr(__FUNCTION__);
-					return -1;
-				}
-
-				stopped_thread = ps.tid;
-				exit_wait = 0;
-				return 0;
-			}
+		/* handle debug events */
+		if(WaitForDebugEvent(&de, INFINITE) == 0) {
+			print_lasterr(__FUNCTION__);
+			return -1;
 		}
-
-		/* set state */
-		WS(event) = UNKNOWN_EVENT;
 
 		/* save thread id */
 		ps.tid = de.dwThreadId;
 
-
 		/* save registers */
 		debug_getregs(ps.tid, &WS(regs));
 
-		/*
-		eprintf("get regs: %d\n", debug_getregs(ps.tid, &WS(regs)));
-		eprintf("Dr3: 0x%x\n", WS(regs).Dr3);
-		*/
-		/* get kind of event */
+		/* get exception code */
 		code = de.dwDebugEventCode;
 
+		/* Ctrl-C? */
+		if(exit_wait == 1 && code == 0x2)
+			break;
+
+		/* set state */
+		WS(event) = UNKNOWN_EVENT;
+
+		/* get kind of event */
 		switch(code) {
 		case CREATE_PROCESS_DEBUG_EVENT:
 			eprintf("(%d) created process (%d:0x%x)\n",

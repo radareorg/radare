@@ -136,9 +136,22 @@ int winedbg_system(const char *cmd)
 	if (!strcmp(cmd, "help")) {
 		cons_printf("WineDbg help\n"
 		" !step [N]     steps one or N instructions\n"
+		" !cont         continue program execution\n"
+		" !bp <addr>    set breakpoint at address\n"
 		" !regs[*]      show or flag registers\n"
 		" !!cmd         execute a winedbg command\n"
 		" !!help        winedbg help\n");
+	} else
+	if (!memcmp(cmd, "bp ",3 )) {
+		char buf[1024];
+		// TODO: Support for removal in a radare-like way
+		sprintf(buf, "break %08llx\n", get_offset(cmd+3));
+		socket_printf(config.fd, buf);
+		winedbg_wait_until_prompt(0);
+	} else
+	if (!strcmp(cmd, "cont")) {
+		socket_printf(config.fd, "cont\n");
+		winedbg_wait_until_prompt(0);
 	} else
 	if (!strcmp(cmd, "step")) {
 		socket_printf(config.fd, "stepi\n");

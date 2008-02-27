@@ -398,16 +398,21 @@ int radare_cmd_raw(char *tmp, int log)
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
+//printf("ARG(%s)\n", cmd);
+//fflush(stdout);
 	//cons_flush();
 	cons_reset();
+	config_set_i("scr.buf", 1);
 	radare_cmd(cmd, 0);
 //printf("RUN(%s)\n", cmd);
 	buf = cons_get_buffer();
 //printf("RET(%s)\n", buf);
+//fflush(stdout);
 	if (buf)
 		buf = strdup(buf);
 	//buf = cons_get_buffer();
 	//cons_flush();
+	config_set_i("scr.buf", 0);
 	cons_reset();
 	return buf;
 }
@@ -422,6 +427,9 @@ int radare_cmd(char *tmp, int log)
 	/* silently skip lines begginging with 0 */
 	if(tmp==NULL || (log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
 		return 0;
+
+	if (tmp[0]=='!'&&tmp[1]=='!')
+		return system(tmp+2);
 
 	if (config.visual) {
 		// update config.height heres

@@ -18,6 +18,7 @@
  *
  */
 
+#define RADARE_MODULE
 #include <plugin.h>
 #include <main.h>
 #include <Python.h>
@@ -25,7 +26,6 @@
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static char *(*rs)(const char *cmd) = NULL;
-#define RADARE_MODULE
 
 static PyObject * PyRadare_Exec(PyObject *self, PyObject *args)
 {

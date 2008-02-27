@@ -16,33 +16,70 @@ BUGS:
 =====
 * zoom segfaults
 * winedbg doesnt reads the unalligned memory properly FIX IT!
+* keybinding assignment dosnt workz
 * java disasm is borken (seek problemz?!?!)
+* wa doesnt handle file resize
 * cursor doesnt works in w32 console ??
 * rsc monitor doesnt works as expected
+* threading stuff for ptrace is broken. try to make the ada crackme
+  http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
+* inv -> make offsets take sense
+  - make cursor bytes take sense too
+* s <unexistant-flag> -> do not seek
+* !ret should use !bt if possible
+* In visual mode the 'w' doesn't allows to erase chars (backspace..)
+   - pipecmd2str must use radare_cmd_str
+* new graph view
+  * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
+* import esteve's object injector
+* segfault al ficar 'Hack'
+* winedbg !cont
+  help                                   quit
+  break [*<addr>]                        watch *<addr>
+  delete break bpnum                     disable bpnum
+  enable bpnum                           condition <bpnum> [<expr>]
+  finish                                 cont [N]
+  step [N]                               next [N]
+  stepi [N]                              nexti [N]
+  x <addr>                               print <expr>
+  display <expr>                         undisplay <disnum>
+  local display <expr>                   delete display <disnum>
+  enable display <disnum>                disable display <disnum>
+  bt [<tid>|all]                         frame <n>
+  up                                     down
+  list <lines>                           disassemble [<addr>][,<addr>]
+  show dir                               dir <path>
+  set <reg> = <expr>                     set *<addr> = <expr>
+  pass                                   whatis
+  info (see 'help info' for options)
+
+* next pel debugger (next source line) -- comment uh?
+y? no treu help del yank
+* handle !! properly
+!signal has no help :O
+* status shows backtrace !?!?!
 
 TODO for 0.9.4
 ==============
+* avoid dupped (NULL's) in pA command (cleaner to read)
+* filter visible flags with scr.flagfilter (strstr expression)
+* make !dump incremental
+  - support to enable full dump (with hashing for reducing sizes)
+  - bindiffing
+  - ultra slow ? i should analyze code to enhace this
 * code data type must be saved and loaded in project
 * bindiff is buggy (gnu huh!)
   - use bdiff
   - integrated with bdcolor huh!
+* support to append data (without getting out of the block_size) (or so..)
 * Lua API
 * Fixed udis loop
   - colorize opcodes by arch_aop
-* cfg.invdelta = inverses the delta (<=1024 ..-> >=1024)
+* cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
 * dump file to filedescriptor of the child doesnt works (child.stdin)
 * identify nodes with 'ret' in graph
 * identify nodes with 'cmp' in graph
 * A key to increase/decrease the byte value under the cursor
-* support to change byte types.
-  - select a range of bytes in cursor mode
-   - press a key and define a print command on the selected bytes
-     - pz (string)
-     - pD (normal) assembly
-     - pX (hexpairs)
-     - pm (memory analysis)
-  - define command to print these bytes (pz for strings, 
-  - integrated with the disassembler
 * udis disassembly is a bit weird with values + and -
   - makes the reading a bit difficult (if higher bit set, use negative value)
   f.example:
@@ -56,13 +93,11 @@ TODO for 0.9.4
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 * remove comments with cursor
-* StreamViewer
- * search for head and foot
-  - for each head finds a foot and defines block size
 
 
 TODO for 0.9.5
 ==============
+* StreamViewer
 * invert pel disasm
 * /a algorithm defined by search.algorithm
  it flags if search.flag
@@ -78,12 +113,38 @@ TODO for 0.9.5
   use [delimiters] to embed rdbs inside rps
 * MSB stego
 
+Rabin
+=====
+* elf-section-headers -> loggejar shelf stuff
+  - pillar base address al vol ( rabin -b)
+* add full PE support to rabin
+* integrated with radare debugger /code analyer
+* Move radare -S into rabin to find strings in data sections only
+  - like gnu strings like bfd does
+
+Open streams
+============
+* as io plugin?
+* config.stream=1
+$ radare /dev/ttyS0
+* should also work for network sockets or unix ones
+  socket.c must be updated!
+* configure bps and so
+* code block is filled progressively with bytes
+  readed from the filedescriptor
+* write command is used
+* needs new interactive mode ala minicom
+* useful for filedescriptor of child processes
+* also for sniffing
+* somewhat like an always-growing file :)
+* autoscrolling to the end for interactive visual
 
 
 * print disasembly by trace from an starting address
   * roll/funroll code
   - pD 100 | sort
   - true jumps are done, false ones are ignored
+  - stacked disassembly (like vim folders)
 
 * dbg.vstepkey = step or stepu, chooses the 's' action.
   - step over non-user code?
@@ -96,6 +157,7 @@ TODO for 0.9.5
 
 * allow to specify what you want to see when tracing (cmd.cmttrace) ?
   - is not oneliner
+  - analyze these comments to identify loop variables and so
 
 Graphs
 ======
@@ -111,24 +173,19 @@ Graphs
   - line clicking must be supported!
   - avoid out of context bytes
 
-
-
-* head handling (glibc at least)...too much work i think
 * tracecc
   - useful to walk to user code
   - copy the program code on another buffer
   - overwrite all code with 0xcc
   - not portable, coz arm mixes data and code
   - continue until breakpoints
+* virtual machine decompilation -> helpers for debugging soft VM opcodes (new user-defined archs)
 * analize input/output of function calls
   - bp enter
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
 
-* record radare commands
-  - all commands executed within a recording time are stored on a single script file
-  - you can later repeat it or edit
 
 * Show FPU stack contents
 
@@ -136,13 +193,9 @@ Graphs
 * ram dump driver for w32
 
 * switch table decompilation
-* virtual machine decompilation -> helpers for debugging soft VM opcodes (new user-defined archs)
 * implement bindiff in the core
   - Allow to bindiff two data blocks or repeated data blocks (src,dst,len)
   - use the pattern finding algorithm
-* wa doesnt handle file resize
-* inv -> make offsets take sense
-  - make cursor bytes take sense too
 * dinamic block size defined by:
   - height of screen
   - <tags> (set inigial and end binary tags)
@@ -156,7 +209,6 @@ Graphs
   - log (trace)
   - enabled
 * RDB TO GML
-* keybinding assignment dosnt workz
 * circle to group looped code blocks in graph view
 * trace.libcode = trace libcode or not?
   - automatic stepu 
@@ -176,28 +228,11 @@ w32 Debugger
 * implement !maps
 * pid:// doesn't works
 
-Bugs
-====
-* s <unexistant-flag> -> do not seek
-* !ret should use !bt if possible
-* In visual mode the 'w' doesn't allows to erase chars (backspace..)
-   - pipecmd2str must use radare_cmd_str
-* new graph view
-  * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
-* import esteve's object injector
-
-
-Rabin
-=====
-* elf-section-headers -> loggejar shelf stuff
-  - pillar base address al vol ( rabin -b)
-* add full PE support to rabin
-* integrated with radare debugger /code analyer
-* Move radare -S into rabin to find strings in data sections only
-  - like gnu strings like bfd does
 
 Search
 ======
+ * search for head and foot
+  - for each head finds a foot and defines block size
 * Fix search progress bar and hits view (cleaner :!!)
   - output configure by search.
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
@@ -209,9 +244,6 @@ Core
   - some C macros or so to create a .so and LD_PRELOAD't
   - if static...should inject trampolines to our code.
 * add cfg.insert (make user write operations insert or overwrite)
-* inverse dump of blocks (ripe mode) (show stack graph in ascii art?)
-* support to append data (without getting out of the block_size) (or so..)
-* make plugin commands be mapped into namespaces
 * Multiple rdb load
   - allow to map into flags, etc..
 * optimized flag storing algorithm (a bit slower for >5000 strings)
@@ -234,7 +266,6 @@ Rasm
 * Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
 * -f, load opcodes from file
-* assemble from file
 * add directives
 * Must ignore stuff after ';'
 
@@ -261,10 +292,6 @@ Tracer
   * List viewer (get offset as index fr cursor, right view shows the
     contents of th selected offset
     - linked list browser
-* make !dump incremental
-  - support to enable full dump (with hashing for reducing sizes)
-  - bindiffing
-  - ultra slow ? i should analyze code to enhace this
 * cmd.trace -> command to execute when tracing
   - trace.log should be parsed insiide radare visual
     (next/next-->prev...)
@@ -320,13 +347,9 @@ Debugger
   - show stack offsets
   - max size of stack
   - colorize esb-ebp with temp cursor or so
-* threading stuff for ptrace is broken. try to make the ada crackme
-  http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
-* !contu <addr> doesn't works!
 * implement process freze and bootup
 * own elf loader (avoid system one)
 * amd64 -> x86-64 -> alias ( BSD64 is broken )
-* use pthread to list threads and control them
 * load libraries on the child process
 * breakpoint callbacks:
  - integrated with !wp too
@@ -351,8 +374,6 @@ Debugger
 Code analyzer
 =============
 * handle relative references to code and data
-* recursively block_split
-* make code.c autodetect traps like cc or jmp $$
 * Implement libcaca/aalib backend for grava! :D
 * xrefs does not works for string references
   - make xrefs support base address
@@ -362,8 +383,6 @@ Code analyzer
    - u64 to   -> nothing more :)
   - only for valid analyzed code .. uh?
   - data xrefs is not detected here. uh?
-* grava window with toolbar in a separate file
-* grava -> toggle node body visibility with a key (smarter graphs
 * persistent nodes in graph executing commands
 
 Gui
@@ -373,15 +392,8 @@ Gui
 * frontend for hasher (Vala api for hashing)
 * GUI: contextual popup menu allows to change font size
 * the gui must listen:// and connect:// too!
-* Add 'pG' button in gradare
 * Add toggle endian in gradare
 * integrate the gui with maemo!
-
-Flags
-=====
-* comments per flag
-* Create namespaces for flags
-  - sym.bla, string.foo, ...
 
 Random
 ======
@@ -396,6 +408,9 @@ Random
 TOTHINK
 =======
 * Do not use the char '(' in asm.lines. just use - or =
+* record radare commands
+  - all commands executed within a recording time are stored on a single script file
+  - you can later repeat it or edit
 * mode2 for keybinding numbers for jmp/calls
   - only if jump out of view
 * '<' and '>' commands converted in prefix modifiers
@@ -468,9 +483,8 @@ TODO LIST
 * use #pragma once?
 * bash autocompletion script for rsc and rfile
 * base64 conversion, fixer and so
-* charsets support (search strings in utf8, etc)
+* full charsets support (search strings in utf8, etc)
 * implement 'commit' command. delayed write operations with bindiff output
 * undo write and more things
-* support for undo (stacked ops)
 
 * total world domination

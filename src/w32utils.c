@@ -21,10 +21,11 @@
  *
  */
 
-//#include "main.h"
+#include "main.h"
 
 #if __WINDOWS__
 #include <windows.h>
+#include <winsock.h>
 
 static char buf[1024];
 

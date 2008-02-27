@@ -18,10 +18,14 @@
  *
  */
 
+#define RADARE_MODULE
 #include <plugin.h>
 #include <main.h>
 #include <lua.h>
 #include <lualib.h>
+extern int radare_plugin_type;
+extern struct plugin_hack_t radare_plugin;
+static char *(*rs)(const char *cmd) = NULL;
 
 static int l_num (lua_State *L) {
 	double d = lua_tonumber(L, 1);  /* get argument */
@@ -29,22 +33,28 @@ static int l_num (lua_State *L) {
 	return 1;  /* number of results */
 }
 
-static int l_cmd (lua_State *L) {
+static int lua_cmd_str (lua_State *L) {
 	char *str;
 	char *s = lua_tostring(L, 1);  /* get argument */
-	str = radare_cmd_str(s);
-	lua_pusstring(L, str);  /* push result */
+	str = rs(s);
+	lua_pushstring(L, str);  /* push result */
+	free(str);
 	return 1;  /* number of results */
 }
 
+static lua_State *L;
 
-int main()
+static int lua_hack_init()
 {
-	lua_State *L = (lua_State*)lua_open();
+	printf("Initializing LUA vm...\n");
+	fflush(stdout);
+
+ 	L = (lua_State*)lua_open();
 	if (L==NULL) {
 		printf("Exit\n");	
 		return 0;
 	}
+
 	lua_gc(L, LUA_GCSTOP, 0);
 	luaL_openlibs(L);
 	luaopen_base(L);
@@ -52,24 +62,56 @@ int main()
 	//luaopen_io(L); // PANIC!!
 	lua_gc(L, LUA_GCRESTART, 0);
 
-	lua_register(L, "num", &l_num);
-	lua_pushcfunction(L,l_num);
-	lua_setglobal(L,"num");
+	//-- load template
+	printf("Loading radare api... %s\n",
+		slurp_lua(PREFIX"/lib/radare/radare.lua")?"ok":"error");
+	fflush(stdout);
 
-	lua_register(L, "cmd", &l_cmd);
-	lua_pushcfunction(L,l_cmd);
+	lua_register(L, "radare_cmd_str", &lua_cmd_str);
+	lua_pushcfunction(L, lua_cmd_str);
+	lua_setglobal(L,"radare_cmd_str");
+
+	// DEPRECATED: cmd = radare_cmd_str
+	lua_register(L, "cmd", &lua_cmd_str);
+	lua_pushcfunction(L,lua_cmd_str);
 	lua_setglobal(L,"cmd");
+}
 
-	{
-		char *cmd = "print \"pop\"";
-		luaL_loadbuffer(L, cmd, strlen(cmd), "");
-		lua_pcall(L,0,0,0);
-	}
-
+static int lua_hack_cya()
+{
 	lua_close(L);
 }
 
-void lua_cmd(char *input)
+static char *slurp(char *str)
+{
+	char *ret;	
+	u64 sz;
+	FILE *fd = fopen(str, "r");
+	if (fd == NULL)
+		return NULL;
+	fseek(fd, 0,SEEK_END);
+	sz = ftell(fd);
+	fseek(fd, 0,SEEK_SET);
+	ret = (char *)malloc(sz+1);
+	fread(ret, sz, 1, fd);
+	ret[sz]='\0';
+	fclose(fd);
+	return ret;
+}
+
+static int slurp_lua(char *file)
+{
+	char *str = slurp(file);
+	if (str) {
+		luaL_loadbuffer(L, str, strlen(str), "");
+		lua_pcall(L,0,0,0);
+		free(str);
+		return 1;
+	}
+	return 0;
+}
+
+void lua_hack_cmd(char *input)
 {
 	if (rs == NULL)
 		rs = radare_plugin.resolve("radare_cmd_str");
@@ -78,19 +120,13 @@ void lua_cmd(char *input)
 		printf("cannot find radare_cmd_str\n");
 		return;
 	}
+
 	lua_hack_init();
-	//Py_Initialize();
-	//init_radare_module();
-	//PyRun_SimpleString("import r");
 
 	if (input && input[0]) {
-		FILE *fd  = fopen(input, "r");
-		if (fd == NULL) {
+		if (!slurp_lua(input)) {
 			fprintf(stderr, "Cannot open '%s'\n", input);
 			fflush(stdout);
-		} else {
-		//	PyRun_SimpleFile(fd, input);
-			fclose(fd);
 		}
 	} else {
 		char str[1024];
@@ -102,15 +138,17 @@ void lua_cmd(char *input)
 			if (str[0]=='.'||feof(stdin)||!memcmp(str,"exit",4)||!memcmp(str,"quit",4)||!strcmp(str,"q"))
 				break;
 			str[strlen(str)]='\0';
-	//		PyRun_SimpleString(str);
+			luaL_loadbuffer(L, str, strlen(str), ""); // \n included
+			if ( lua_pcall(L,0,0,0) != 0 )
+				printf("Oops\n");
 		}
 	}
-	//elua_destroy();
+	lua_hack_cya();
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;
 struct plugin_hack_t radare_plugin = {
 	.name = "lua",
 	.desc = "lua plugin",
-	.callback = &lua_cmd
+	.callback = &lua_hack_cmd
 };

@@ -196,21 +196,26 @@ int radare_hack(const char *cmd)
 	int i=1;
 	struct list_head *pos;
 	int num = 0;
-	char *ptr = strchr(cmd, ' ');
+	char *ptr;
 	char *arg;
 	char *end;
 
+	if (cmd == NULL)
+		return 0;
+
+	ptr = strchr(cmd, ' ');
 	if (ptr) {
 		ptr = ptr + 1;
 		num = atoi(ptr);
+
+		arg = ptr;
+		end = strchr(ptr, ' ');
+		if (end) {
+			end[0]='\0';
+			arg = end +1;
+		} else
+			arg = arg+strlen(arg);
 	}
-	arg = ptr;
-	end = strchr(ptr, ' ');
-	if (end) {
-		end[0]='\0';
-		arg = end +1;
-	} else
-		arg = arg+strlen(arg);
 
 	if ((!num && !ptr) || (strnull(cmd)))
 		return radare_hack_help();

@@ -94,3 +94,23 @@ TH_INFO	*get_th(int tid)
 
 	return NULL;
 }
+
+void free_th()
+{
+	struct list_head *p, *aux;
+	int i;
+
+	p = (&ps.th_list)->next;
+
+	while(p && p != &(ps.th_list)) {
+		TH_INFO		*th = (TH_INFO *)((char *)p + \
+				sizeof(struct list_head) - \
+				sizeof(TH_INFO));
+
+		aux = p->next;
+		list_del(&(th->list));
+		free(th);
+		p = aux;
+	}
+}
+

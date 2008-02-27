@@ -870,7 +870,7 @@ CMD_DECL(visual)
 							sprintf(line, "!bp 0x%08x", (unsigned int)addr);
 							radare_cmd(line,0);
 						}
-						CLRSCR();
+						cons_clear();
 						continue;
 					}
 				case 3: // F3 - watchpoint
@@ -1105,7 +1105,7 @@ CMD_DECL(visual)
 				if (config.block_size >= (config.size-config.seek))
 					cons_clear();
 				continue;
-			} else CLRSCR();
+			} else cons_clear();
 		case ' ':
 			if (last_print_format == FMT_DISAS)
 				config.seek += 4;
@@ -1214,10 +1214,10 @@ CMD_DECL(visual)
 			press_any_key();
 			break;
 		case '?':
-			CLRSCR();
+			cons_clear();
 			visual_show_help();
 			press_any_key();
-			CLRSCR();
+			cons_clear();
 			break;
 		case 'Q':
 		case 'q':
