@@ -6,11 +6,17 @@
 -- define namespaces
 Radare = {}
 Radare.Print = {}
+Radare.Search = {}
+Radare.Config = {}
+Radare.Hash = {}
 Radare.Debugger = {}
 
 -- define aliases
 r = Radare
 p = Radare.Print
+c = Radare.Config
+k = Radare.Hash
+s = Radare.Search
 d = Radare.Debugger
 
 -- General use functions
@@ -251,6 +257,138 @@ end
 function Radare.Debugger.bp(address)
 	r.cmd("!bp "..address)
 	return Radare.Debugger
+end
+
+-- print stuff
+
+function Radare.Print.hex(size, address)
+	if size == nil then size = "" end
+	if address == nil then
+		return r.cmd(":pX "..size)
+	else
+		return r.cmd(":pX "..size.." @ "..address)
+	end
+end
+
+function Radare.Print.disasm(size, address)
+	if size == nil then size = "" end
+	if address == nil then
+		return r.cmd("pD "..size)
+	else
+		return r.cmd("pD "..size.." @ "..address)
+	end
+end
+
+function Radare.Print.bin(size, address) -- size has no sense here
+	if size == nil then size = "" end
+	if address == nil then
+		return r.cmd(":pb "..size)
+	else
+		return r.cmd(":pb "..size.." @ "..address)
+	end
+end
+
+function Radare.Print.string(address) -- size has no sense here
+	if address == nil then
+		return r.cmd("pz ")
+	else
+		return r.cmd("pz @ "..address)
+	end
+end
+
+function Radare.Print.oct(size,address) -- size has no sense here
+	if size == nil then size = "" end
+	if address == nil then
+		return r.cmd(":po "..size)
+	end
+	return r.cmd(":po "..size.."@ "..address)
+end
+
+-- search stuff
+
+function Radare.Search.string(string)
+	r.cmd("/ "..string)
+end
+
+function Radare.Search.hex(string)
+	r.cmd("/x "..string)
+end
+
+-- config stuff
+
+-- eval like
+function Radare.Config.set(key, val)
+	r.cmd("eval "..key.."="..val)
+	return val
+end
+
+function Radare.Config.color(value)
+	r.cmd("eval scr.color ="..value)
+	return value
+end
+
+function Radare.Config.get(key)
+	return r.cmd("eval "..key)
+end
+
+function Radare.Config.limit(sizs)
+	return r.cmd("eval cfg.limit = "..size)
+end
+
+-- crypto stuff
+
+function Radare.Hash.md5(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#md5 "..size) end
+	return r.cmd("#md5 "..size.."@"..address)
+end
+
+function Radare.Hash.crc32(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#crc32 "..size) end
+	return r.cmd("#crc32 "..size.."@"..address)
+end
+
+function Radare.Hash.md4(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#md4 "..size) end
+	return r.cmd("#md4 "..size.."@"..address)
+end
+
+function Radare.Hash.sha1(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#sha1 "..size) end
+	return r.cmd("#sha1 "..size.."@"..address)
+end
+
+function Radare.Hash.sha256(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#sha256 "..size) end
+	return r.cmd("#sha256 "..size.."@"..address)
+end
+
+function Radare.Hash.sha384(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#sha384 "..size) end
+	return r.cmd("#sha384 "..size.."@"..address)
+end
+
+function Radare.Hash.sha512(size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#sha512 "..size) end
+	return r.cmd("#sha512 "..size.."@"..address)
+end
+
+function Radare.Hash.hash(algo, size, address)
+	if size == nil then size = "" end
+	eval("#"..algo.." "..size)
+end
+
+function Radare.Hash.sha512(size, address)
+	return hash("sha512", size, address)
+	if size == nil then size = "" end
+	if address == nil then return r.cmd("#sha512 "..size) end
+	return r.cmd("#sha512 "..size.."@"..address)
 end
 
 -- change a signal handler of the child process

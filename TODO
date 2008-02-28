@@ -14,6 +14,14 @@
 
 BUGS:
 =====
+* :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
+* pf doesnt works
+* xc can get_math!
+* cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
+  - fc = flag command fc <command> @ offset
+  - do not execute twice
+* Load lua scripts from commandline
+* allow to run without opening a file (useful for batch mode)
 * zoom segfaults
 * winedbg doesnt reads the unalligned memory properly FIX IT!
 * keybinding assignment dosnt workz
@@ -235,6 +243,14 @@ Search
   - output configure by search.
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
   - must think on! - entropia = 1 en un block (tots numeros primers)
+
+Filesystem
+==========
+* emulate filesystems from a defined seek
+* can be done with losetup? not portable
+* use fuse emulation?
+* use linux kernel emulation?
+* shell with grub-like commands to extract and insert files?
 
 Core
 ====

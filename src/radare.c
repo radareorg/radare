@@ -398,7 +398,9 @@ int radare_cmd_raw(char *tmp, int log)
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
-	int scrbuf= config_get_i("scr.buf");
+	int scrbuf = config_get_i("scr.buf");
+	int cfgver = config_get_i("cfg.verbose");
+
 	cons_reset();
 	config_set_i("scr.buf", 1);
 	radare_cmd(cmd, 0);
@@ -406,7 +408,9 @@ char *radare_cmd_str(const char *cmd)
 	if (buf)
 		buf = strdup(buf);
 	config_set_i("scr.buf", scrbuf);
+	config_set_i("cfg.verbose", cfgver);
 	cons_reset();
+
 	return buf;
 }
 
@@ -1018,8 +1022,15 @@ int radare_go()
 		radare_cmd("s eip", 0);
 	}
 
-	if (config.script)
-		radare_interpret(config.script);
+	if (config.script) {
+		if (strstr(config.script, ".lua")) {
+			char buf[1024];
+			snprintf(buf, 1012, "H lua %s", config.script);
+			radare_cmd(buf, 0);
+		} else {
+			radare_interpret(config.script);
+		}
+	}
 
 	config_set("cfg.verbose", t?"true":"false");
 

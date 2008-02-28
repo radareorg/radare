@@ -8,7 +8,7 @@ OBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
 # plug/io
 
 OBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
-OBJ+=plug/io/gdb.o plug/io/posix.o
+OBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o
 CFLAGS+=-I.
 
 # hand made maemo stuff

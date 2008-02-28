@@ -29,7 +29,7 @@
 
 void search_alarm()
 {
-	progressbar((int)(config.seek*100/config.size));  // slowdowns 170%
+	progressbar((int)(config.seek/config.size*100));  // slowdowns 170%
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif

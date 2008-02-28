@@ -28,7 +28,7 @@ static void help_show_message()
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
-	"  -i [script]      interpret radare script\n"
+	"  -i [script]      interpret radare or lua script\n"
 	"  -P [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"

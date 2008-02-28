@@ -102,6 +102,7 @@ static char *slurp(char *str)
 static int slurp_lua(char *file)
 {
 	char *str = slurp(file);
+	printf("slurp(%s)\n", file);
 	if (str) {
 		luaL_loadbuffer(L, str, strlen(str), "");
 		lua_pcall(L,0,0,0);

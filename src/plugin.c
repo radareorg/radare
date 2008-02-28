@@ -250,15 +250,16 @@ void plugin_init()
 	(debug_plugin.init)();
 	//(ptrace_plugin.init)();
 	plugins[2] = gdb_plugin;
-	plugins[3] = remote_plugin;
-	last = 3;
+	plugins[3] = gdbx_plugin;
+	plugins[4] = remote_plugin;
+	last = 4;
     #if SYSPROXY
-	plugins[4] = sysproxy_plugin;
+	plugins[5] = sysproxy_plugin;
+	plugins[6] = posix_plugin;
+	last = 6;
+    #else
 	plugins[5] = posix_plugin;
 	last = 5;
-    #else
-	plugins[4] = posix_plugin;
-	last = 4;
     #endif
   #else
 	plugins[1] = posix_plugin;

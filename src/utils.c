@@ -149,18 +149,19 @@ int make_tmp_file(char *str)
 
 void progressbar(int pc)
 {
-        char *columns = getenv("COLUMNS");
-        int tmp, cols = 80;
+#if RADARE_CORE
+	int tmp, cols = config_get_i("scr.width");
+#else
+	int tmp, cols = 79;
+#endif
 
-        (pc<0)?pc=0:(pc>100)?pc=100:0;
-        printf("\e[K  %3d%% [", pc);
-        if (columns)
-                cols = atoi(columns);
-        cols-=15;
-        for(tmp=cols*pc/100;tmp;tmp--) printf("#");
-        for(tmp=cols-(cols*pc/100);tmp;tmp--) printf("-");
-        printf("]\r");
-	fflush(stdout);
+	(pc<0)?pc=0:(pc>100)?pc=100:0;
+	fprintf(stderr, "\e[K  %3d%% [", pc);
+	cols-=15;
+	for(tmp=cols*pc/100;tmp;tmp--) printf("#");
+	for(tmp=cols-(cols*pc/100);tmp;tmp--) printf("-");
+	fprintf(stderr, "]\r");
+	fflush(stderr);
 }
 
 #if RADARE_CORE
