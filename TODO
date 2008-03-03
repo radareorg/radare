@@ -8,14 +8,14 @@
 ===========================================================
 
 (gdb) break ptrace if $r3 == 31
-[0x08048034]> wx 0f f0 a0 e1
-[0x08048034]> pD 10
-          0x08048034           e1a0f00f          mov pc, pc
+make fdsniff and usbsniff generate a project file and a binary one.
+
+  fdsniff3.bin
+open filedescriptors
 
 BUGS:
 =====
 * :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
-* pf doesnt works
 * xc can get_math!
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset
@@ -67,6 +67,10 @@ BUGS:
 
 TODO for 0.9.4
 ==============
+* Indentify, parse and show the auxv_t structure
+* pA must show decimal value too
+* wtf 'undo' command shows the fking list of steps?
+  - must be silent
 * avoid dupped (NULL's) in pA command (cleaner to read)
 * filter visible flags with scr.flagfilter (strstr expression)
 * make !dump incremental

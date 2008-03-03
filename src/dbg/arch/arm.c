@@ -33,6 +33,9 @@
 #include <sys/procfs.h>
 #include <sys/syscall.h>
 
+elf_gregset_t cregs; // current registers
+elf_gregset_t oregs; // old registers
+
 long long arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
@@ -301,20 +304,22 @@ int arch_set_register(char *reg, char *value)
 	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
 
+	ret = atoi(reg+1);
+	if (ret > 17 || ret < 0) {
+		eprintf("Invalid register\n");
+	}
 	regs[atoi(reg+1)] = get_value(value);
 
 	ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
+
 	return 0;
 }
 
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	fprintf(stderr, "TODO\n");
+	eprintf("TODO\n");
 	return 0;
 }
-
-elf_gregset_t cregs; // current registers
-elf_gregset_t oregs; // old registers
 
 int arch_print_registers(int rad, const char *mask)
 {
@@ -552,6 +557,7 @@ struct syscall_t {
   { "set_thread_area", 243, 2},
   { "get_thread_area", 244, 2},
   { "exit_group", 252, 1},
+  { "accept", 254, 1},
   { NULL, 0, 0 }
 };
 

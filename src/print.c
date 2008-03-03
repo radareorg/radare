@@ -449,12 +449,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			NEWLINE;
 		} } break;
 	case FMT_FLOAT: {
-		float *f;
+		float f;
 		for(i=0;!config.interrupted && i<len;i+=sizeof(float)) {
-			endian_memcpy(buffer, buf+i, sizeof(float));
-			f = (float *)buffer;
-			print_color_byte("%f", f[0]);
-			NEWLINE;
+			endian_memcpy(&f, buf+i, sizeof(float));
+			cons_printf("%f\n", f);
 		} } break;
 	case FMT_INT: {
 		int *iv;

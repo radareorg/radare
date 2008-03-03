@@ -869,7 +869,8 @@ int radare_open(int rst)
 	|| (strstr(config.file, "pid://"))
 	|| (strstr(config.file, "winedbg://"))
 	|| (strstr(config.file, "gxemul://"))
-	|| (strstr(config.file, "gdb://")))
+	|| (strstr(config.file, "gdb://"))
+	|| (strstr(config.file, "gdbx://")))
 		config.debug = 1;
 	else	config.debug = 0;
 

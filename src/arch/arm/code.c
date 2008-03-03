@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       esteve <youterm.com>
  *       pancake <youterm.com>
  *
@@ -83,6 +83,8 @@ int anal_is_exitpoint ( int inst )
 	return ( anal_is_B ( inst )  || anal_is_return ( inst ) || anal_is_unkjmp ( inst ) );
 }
 
+extern int arm_mode;
+
 int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *aop)
 {
 	unsigned int i=0;
@@ -104,7 +106,7 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 			} else {
 				//aop->type = AOP_TYPE_UJMP;
 				//aop->eob = 1;
-				return 4;
+				return (arm_mode==16)?2:4;
 			}
 		} else {
 			if ( anal_is_B ( code[i] ) ) {
@@ -122,12 +124,12 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 				//unknown jump o return
 				aop->type = AOP_TYPE_UJMP;
 				aop->eob = 1;
-				return 4;
+				return (arm_mode==16)?2:4;
 			}
 		}
 	}
 
-	return 4;
+	return (arm_mode==16)?2:4;
 }
 
 

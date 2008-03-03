@@ -97,5 +97,6 @@ void endian_memcpy_e(unsigned char *dest, unsigned char *orig, unsigned int size
 int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
+int gnu_disarm(unsigned char *address, unsigned long seek);
 
 #endif

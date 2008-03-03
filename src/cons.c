@@ -280,6 +280,25 @@ void cons_flush()
 	}
 }
 
+/* stream is ignored */
+void cons_fprintf(FILE *stream, const char *format, ...)
+{
+	/* dupped */
+	char buf[4096];
+	va_list ap;
+
+	va_start(ap, format);
+
+	buf[0]='\0';
+	if (vsnprintf(buf, 4095, format, ap)<0)
+		buf[0]='\0';
+
+	palloc(strlen(buf)+1000);
+	strcat(cons_buffer, buf);
+
+	va_end(ap);
+}
+
 void cons_printf(const char *format, ...)
 {
 	char buf[4096];

@@ -287,7 +287,7 @@ public class Grava.Widget : GLib.Object {
 
 		menu.show_all();
 		//menu.popup(null, null, null, null, eb.button, 0);
-		menu.popup(null, null, null, null, 0, 0);
+		menu.popup(null, null, null, 0, 0);
 	}
 
 	private bool button_press (DrawingArea da, Gdk.Event event)

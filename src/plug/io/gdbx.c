@@ -71,24 +71,31 @@ ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
 	unsigned char *ptr;
 	int i,j=0,k;
 	int size = count;
-	int delta = config.seek%4;
 
 	if (size%16)
 		size+=(size-(size%16));
 
-	// XXX memory is algned!!!
-	for(i=0;i<count+delta;i+=4) {
+	for(i=0;i<count;i+=4) {
 		unsigned long *dword = buf+i;
 		unsigned long dw;
-		sprintf(tmp,"x/x 0x"OFF_FMTx"\n", config.seek-delta+i);
+		sprintf(tmp,"x/x 0x"OFF_FMTx"\n", config.seek+i);
+//eprintf(">> %s\n", tmp);
 		socket_printf(config.fd, tmp);
 		tmp[0]='\0';
 		socket_fgets(tmp, 1024);
-		sscanf(tmp, "%08x", &dw);
-		endian_memcpy_e(dword, &dw, 4, 1);
+//eprintf("<< %s\n", tmp);
+		if (strstr(tmp, "Cannot"))
+			return ((i==0)?-1:i);
+		ptr = strchr(tmp, ':');
+		if (ptr) {
+			sscanf(ptr+2, "0x%x", &dw);
+			//printf(">> value >> (%s) 0x%08x\n", ptr+2, dw);
+			endian_memcpy_e(dword, &dw, 4, 1);
+		} else {
+			memcpy(dword, "\x01\x02\x03\x04", 4);
+		}
 		gdbx_wait_until_prompt(0);
 	}
-	memcpy(buf, buf+delta, count);
 
         return count;
 }
@@ -121,8 +128,14 @@ fprintf(stderr, "Entry point: 0x%08llx\n", entry);
 			break;
 		}
 	}
-	gdbx_wait_until_prompt(0);
+	gdbx_wait_until_prompt(1);
+printf("break\n");
 	socket_printf("break *0x%08llx\n", entry);
+	gdbx_wait_until_prompt(1);
+printf("run\n");
+	socket_printf("run\n", entry);
+	gdbx_wait_until_prompt(1);
+	config.seek = entry;
 }
 
 
@@ -135,8 +148,11 @@ int gdbx_open(const char *pathname, int flags, mode_t mode)
 
 	srand(getpid());
 	port = 9000+rand()%555;
+	config.block_size = 30;
 
 	config.debug = 1;
+	config_set("cfg.debug","true");
+	eprintf("Listening at port %d (telnet me to get the program output)\n", port);
 	if (!fork()) {
 		if (!fork()) {
 			system("pkill gdb"); // XXX
@@ -170,6 +186,8 @@ int gdbx_open(const char *pathname, int flags, mode_t mode)
 int gdbx_system(const char *cmd)
 {
 	char tmp[130];
+	int i;
+
 	if (cmd[0]=='!') {
 		socket_printf(config.fd, cmd+1);
 		socket_printf(config.fd, "\n");
@@ -193,7 +211,7 @@ int gdbx_system(const char *cmd)
 	if (!memcmp(cmd, "bp ",3 )) {
 		char buf[1024];
 		// TODO: Support for removal in a radare-like way
-		sprintf(buf, "break %08llx\n", get_offset(cmd+3));
+		sprintf(buf, "break *0x%08llx\n", get_offset(cmd+3));
 		socket_printf(config.fd, buf);
 		gdbx_wait_until_prompt(0);
 	} else
@@ -212,6 +230,10 @@ int gdbx_system(const char *cmd)
 	} else
 	if (!strcmp(cmd, "cont")) {
 		socket_printf(config.fd, "cont\n");
+		gdbx_wait_until_prompt(1);
+	} else
+	if (!strcmp(cmd, "run")) {
+		socket_printf(config.fd, "run\n");
 		gdbx_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "bt")) {
@@ -235,26 +257,41 @@ int gdbx_system(const char *cmd)
 		gdbx_wait_until_prompt(0);
 	} else
 	if (!memcmp(cmd, "regs",4)) {
+		unsigned char name[128];
+		unsigned long value;
 		unsigned long eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
-		socket_printf(config.fd, "info regs\n");
+		socket_printf(config.fd, "info registers\n");
 		
-		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		//  CS:0073 SS:007b DS:007b ES:007b FS:0033 GS:003b
-		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		//  EIP:7ee95b9e ESP:0034ff20 EBP:0034ffe8 EFLAGS:00200202(   - 00      - - I1)
-		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, " EIP:%08x ESP:%08x EBP:%08x EFLAGS:%08x", &eip, &esp, &ebp, &eflags);
-		//  EAX:00000000 EBX:7eecb8a8 ECX:00000000 EDX:00000000
-		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, " EAX:%08x EBX:%08x ECX:%08x EDX:%08x", &eax, &ebx, &ecx, &edx);
-		//  ESI:7ffdf000 EDI:00403166
-		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, " ESI:%08x EDI:%08x", &esi, &edi);
+		for(i=0;;i++) {
+			tmp[0]='\0';
+			socket_read(config.fd, tmp, 1);
+			if (tmp[0]=='(') {
+				gdbx_wait_until_prompt(0);
+				break;
+			}
+fprintf(stderr, "ONE LINE MORE\n");
+fflush(stderr);
+			socket_fgets(tmp+1, 128);
+			if (strstr(tmp, "no registers")) {
+				eprintf("The program is not running\n");
+				return 0;
+			}
+			if (!memcmp(tmp, "(gdb)", 5))
+				break;
+			sscanf(tmp, "%s 0x%x", name, &value);
+			if (cmd[4]=='*') {
+				cons_printf("f %s @ 0x%08x\n", name, value);
+			} else {
+				cons_printf("%6s = 0x%08x   ", name, value);
+				if ((i%4)==3) cons_strcat("\n");
+			}
+		}
+
+		if (cmd[4]!='*')
+			cons_strcat("\n");
+		//cons_flush();
+
+#if 0
 		if (cmd[4]=='*') {
 			cons_printf("f eip @ 0x%08x\n", eip);
 			cons_printf("f esp @ 0x%08x\n", esp);
@@ -272,6 +309,7 @@ int gdbx_system(const char *cmd)
 			cons_printf(" ebp = 0x%08x  ecx = 0x%08x\n", ebp, ecx);
 		}
 		gdbx_wait_until_prompt(0);
+#endif
 	}
 	return 0;
 }

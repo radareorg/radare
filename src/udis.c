@@ -30,12 +30,15 @@
 enum {
 	ARCH_X86 = 0,
 	ARCH_ARM = 1,
-	ARCH_PPC = 2,
-	ARCH_M68K = 3,
-	ARCH_JAVA = 4
+	ARCH_ARM16 = 2,
+	ARCH_PPC = 3,
+	ARCH_M68K = 4,
+	ARCH_JAVA = 5
 };
 
 static struct list_head data;
+
+extern int force_thumb;
 
 struct data_t {
 	u64 from;
@@ -293,6 +296,7 @@ static int input_hook_x(ud_t* u)
 
 int udis86_color = 0;
 
+extern int arm_mode;
 void udis_init()
 {
 	char *syn = config_get("asm.syntax");
@@ -300,19 +304,20 @@ void udis_init()
 
 	ud_init(&ud_obj);
 
+	arm_mode = 32;
+	if (!strcmp(ptr, "arm16")) {
+		arm_mode = 16;
+	} else
 	if (!strcmp(ptr, "intel16")) {
 		ud_set_mode(&ud_obj, 16);
-	} else {
-		if((!strcmp(ptr, "intel"))
-				|| (!strcmp(ptr, "intel32"))) {
+	} else
+	if((!strcmp(ptr, "intel")) || (!strcmp(ptr, "intel32"))) {
 			ud_set_mode(&ud_obj, 32);
-		} else {
-			if (!strcmp(ptr, "intel64")) {
-				ud_set_mode(&ud_obj, 64);
-			} else
-				ud_set_mode(&ud_obj, 32);
-		}
-	}
+	} else
+	if (!strcmp(ptr, "intel64")) {
+		ud_set_mode(&ud_obj, 64);
+	} else
+		ud_set_mode(&ud_obj, 32);
 
 	udis86_color = config.color;
 
@@ -387,10 +392,18 @@ void udis_arch(int arch, int len, int rows)
 	if (rows<0)
 		rows = 1;
 
-	if (arch == ARCH_X86) {
+	switch(arch) {
+	case ARCH_X86:
 		udis_init();
-		/* disassembly loop */
 		ud_obj.pc = config.seek;
+		break;
+	case ARCH_ARM:
+		arm_mode = 32;
+		break;
+	case ARCH_ARM16:
+		arm_mode = 16;
+		force_thumb = 1;
+		break;
 	}
 
 	if (show_nbytes>16 ||show_nbytes<0)
@@ -444,9 +457,12 @@ void udis_arch(int arch, int len, int rows)
 		/* oh nope, continue disasembling */
 		// XXX code analyssi doesnt works with endian here!!!1
 		// TAKE CARE TAKE CARE TAKE CARE TAKE CARE TAKE CARE
-		if (arch != ARCH_X86 && endian) {
-			endian_memcpy(b, config.block+bytes, 4);
+		endian_memcpy_e(b, config.block+bytes, 4, endian);
+#if 0
+		if (arch != ARCH_X86 && !endian) {
+			endian_memcpy_e(b, config.block+bytes, 4, 0);
 		} else  memcpy(b, config.block+bytes, 32);
+#endif
 
 		if (cmd_asm&& cmd_asm[0]) {
 			char buf[1024];
@@ -461,6 +477,11 @@ void udis_arch(int arch, int len, int rows)
 					return;
 				arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
 				myinc = ud_insn_len(&ud_obj);
+				break;
+			case ARCH_ARM16:
+				arm_mode = 16;
+				myinc = 2;
+				arch_arm_aop(seek, (const unsigned char *)b, &aop); //config.block+bytes, &aop);
 				break;
 			case ARCH_ARM:
 				arch_arm_aop(seek, (const unsigned char *)b, &aop); //config.block+bytes, &aop);
@@ -606,9 +627,11 @@ void udis_arch(int arch, int len, int rows)
 						cons_printf("%-16s", hex2);
 					}
 					break;
+				case ARCH_ARM16:
 				case ARCH_ARM: {
-						       unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-						       cons_printf("  %s", disarm(ins, (unsigned int)seek));
+						       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+						       gnu_disarm((unsigned char*)config.block+bytes, (unsigned int)seek);
 					       } break;
 				case ARCH_PPC: {
 						       char opcode[128];
@@ -683,6 +706,7 @@ void udis_arch(int arch, int len, int rows)
 				case ARCH_X86:
 					cons_printf("%s", ud_insn_asm(&ud_obj));
 					break;
+				case ARCH_ARM16:
 				case ARCH_ARM:
 					break;
 			}
@@ -713,6 +737,9 @@ void disassemble(int len, int rows)
 	else
 	if (!strcmp(ptr, "arm"))
 		udis_arch(ARCH_ARM, len,rows);
+	else
+	if (!strcmp(ptr, "arm16"))
+		udis_arch(ARCH_ARM16, len,rows);
 	else
 	if (!strcmp(ptr, "java"))
 		udis_arch(ARCH_JAVA, len, rows);
