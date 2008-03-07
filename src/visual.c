@@ -18,6 +18,8 @@
  *
  */
 
+extern const char *dl_prompt;
+
 #include "main.h"
 #include "radare.h"
 #include "plugin.h"
@@ -691,11 +693,11 @@ void visual_bind_key()
 		free(ptr);
 	}
 	//else buf[0]='\0';
-return 0;
+	return 0;
 #else
 	buf[0]='\0';
-	fgets(buf, 1000, stdin);
-	buf[strlen(buf)-1] = '\0';
+	if (cons_fgets(buf, 1000) <0)
+		buf[0]='\0';
 #endif
 	terminal_set_raw(1);
 	if (!buf[0]) {
@@ -1006,10 +1008,11 @@ CMD_DECL(visual)
 				free(ptr);
 			}
 #else
-			printf(VISUAL_PROMPT);
-			fflush(stdout);
-			fgets(line, sizeof(line)-1, stdin);
-			line[strlen(line)-1]='\0';
+			line[0]='\0';
+			dl_prompt = ":> ";
+			if (cons_fgets(line, 1000) <0)
+				line[0]='\0';
+			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
 #endif
 			last_print_format = lpf;

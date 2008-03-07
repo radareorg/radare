@@ -130,7 +130,7 @@ command_t commands[] = {
 	COMMAND('y', "[y] [length]",   "yank    copy n bytes from cursor to clipboard (yy=paste)", yank),
 	//COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
 	COMMAND('.', "[!cmd]|[ file]", "script  interpret a commands script", interpret),
-	COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
+	//COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
 	COMMAND('-', "[size]",         "prev    go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next    go to next block (+= block_size)", next),
 	COMMAND('<', "",               "preva   go previous aligned block", prev_align),

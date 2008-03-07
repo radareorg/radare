@@ -51,9 +51,9 @@ ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
-CHKVER vala-1.0 0.1.6
-IFNOT HAVE_VALA_1_0_VERSION_0_1_6 {
-	ECHO Needs vala 0.1.6 at least ;
+CHKVER vala-1.0 0.1.7
+IFNOT HAVE_VALA_1_0_VERSION_0_1_7 {
+	ECHO Needs vala 0.1.7 at least ;
 	VALAC = '' ;
 }
 IFEQ VALAC valac ; {

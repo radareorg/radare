@@ -29,7 +29,6 @@ static int terminal_get_real_columns();
 #define __UNIX__ 1
 #endif
 
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +40,6 @@ static int terminal_get_real_columns();
 #include <termios.h>
 #include <signal.h>
 #endif
-
 
 #if __UNIX__
 static struct termios tio_old, tio_new;
@@ -105,7 +103,7 @@ int dl_hist_up()
 {
 	if (dl_histidx>0) {
 		strncpy(dl_buffer, dl_history[--dl_histidx], DL_BUFSIZE-1);
-		dl_buffer_idx=0;
+		dl_buffer_idx=
 		dl_buffer_len = strlen(dl_buffer);
 		return 1;
 	}
@@ -116,10 +114,13 @@ int dl_hist_down()
 {
 	dl_buffer_idx=0;
 	if (dl_histidx<dl_histsize) {
-		if (dl_history[dl_histidx] == NULL)
+		if (dl_history[dl_histidx] == NULL) {
+			dl_buffer[0]='\0';
+			dl_buffer_idx = dl_buffer_len = 0;
 			return 0;
+		}
 		strncpy(dl_buffer, dl_history[dl_histidx++], DL_BUFSIZE-1);
-		dl_buffer_idx=0;
+		dl_buffer_idx=
 		dl_buffer_len = strlen(dl_buffer);
 		return 1;
 	}
@@ -191,6 +192,7 @@ int dl_printchar()
 			break;
 		case 12: printf("^L\n"); break;
 		case 13: printf("intro\n"); break;
+		case 18: printf("^R\n"); break;
 		case 9: printf("tab\n"); break;
 		case 3: printf("control-c\n"); break;
 		case 0: printf("control-space\n"); break;
@@ -367,6 +369,9 @@ char *dl_readline(int argc, char **argv)
 					printf("\n");
 				}
 				fflush(stdout);
+				break;
+			case 18:
+				// TODO: SUPPORT FOR ^R (search command in history)
 				break;
 			case 13: 
 				goto _end;

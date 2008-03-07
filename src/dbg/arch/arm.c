@@ -308,7 +308,7 @@ int arch_set_register(char *reg, char *value)
 	if (ret > 17 || ret < 0) {
 		eprintf("Invalid register\n");
 	}
-	regs[atoi(reg+1)] = get_value(value);
+	regs[atoi(reg+1)] = (int)get_offset(value);
 
 	ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 

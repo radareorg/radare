@@ -26,6 +26,8 @@ OBJ+=hasher/entropy.o hasher/hash.o
 # arch
 
 OBJ+=arch/arm/code.o
+OBJ+=arch/arm/gnudisarm.o
+OBJ+=arch/arm/gnu/arm-dis.o
 OBJ+=arch/ppc/code.o
 OBJ+=arch/x86/code.o
 OBJ+=arch/x86/dislen.o

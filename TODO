@@ -10,8 +10,35 @@
 (gdb) break ptrace if $r3 == 31
 make fdsniff and usbsniff generate a project file and a binary one.
 
+
+http://ru.gentoo.neysx.org/proj/ru/qa/backtraces.xml
   fdsniff3.bin
 open filedescriptors
+
+search and replace
+ /r foo
+ /1-5 ranged search
+-> should with cmd.search or cmd.hit
+
+[MAGIC] repeat a command at every flag matching
+> wx foo @ hit*
+
+asm.offset must be for all print modes
+linesout on arm doesnt works
+
+import pdi-tool from gerardo to inject code
+
+fix dietline
+
+ARM
+===
+* arm has no backtrace
+step over doesnt works
+!! doesnt works on arm
+dbg.bep entry not working on arm
+-S flag move to rabin
+restore/dump doesnt works on arm
+when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
@@ -68,7 +95,7 @@ BUGS:
 TODO for 0.9.4
 ==============
 * Indentify, parse and show the auxv_t structure
-* pA must show decimal value too
+* pA must show decimal value too (if it is a small value) (less than 10K f.ex)
 * wtf 'undo' command shows the fking list of steps?
   - must be silent
 * avoid dupped (NULL's) in pA command (cleaner to read)
@@ -82,7 +109,6 @@ TODO for 0.9.4
   - use bdiff
   - integrated with bdcolor huh!
 * support to append data (without getting out of the block_size) (or so..)
-* Lua API
 * Fixed udis loop
   - colorize opcodes by arch_aop
 * cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
