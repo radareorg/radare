@@ -57,6 +57,39 @@ void radare_init()
 	plugin_init();
 }
 
+void radare_exit()
+{
+	char *ptr;
+	int ret;
+	char ch;
+
+	ret = radare_close();
+
+	if (ret==-2)
+		return;
+	if ( ret == 0) {
+		#if HAVE_LIB_READLINE
+		rad_readline_finish();
+		#endif
+
+		/* save project : user confirmation */
+		ptr = config_get("file.project");
+
+		if (ptr && ptr[0] ) {
+			terminal_set_raw(1);
+			printf("Save project? (Y/n) ");
+			fflush(stdout);
+			read(0,&ch, 1);
+			write(1, &ch, 1);
+			write(1, "\n", 1);
+			if (ch != 'n') 
+				project_save(ptr);
+			terminal_set_raw(0);
+		}
+	}
+	exit(0);
+}
+
 static int radare_interrupt(int sig)
 {
 	config.interrupted = 1;
@@ -91,6 +124,7 @@ unsigned char radare_get(int delta)
 
 int radare_close()
 {
+	project_close();
 	return io_close(config.fd);
 }
 
@@ -284,6 +318,7 @@ int radare_cmd_raw(char *tmp, int log)
 			io_system(cmd);
 			unlink(tmp);
 			free(oinput);
+			piped[0]='|';
 			return 1;
 		}
 		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
@@ -371,6 +406,12 @@ int radare_cmd_raw(char *tmp, int log)
 			fflush(stdout);
 			close(fd);
 			dup2(std, 1);
+		}
+
+		if (std!=0) {
+			fflush(stdout);
+			dup2(std, 1);
+			//std = 0;
 		}
 
 		/* restore seek */

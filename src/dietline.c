@@ -255,8 +255,10 @@ char *dl_readline(int argc, char **argv)
 
 		switch(buf[0]) {
 			case -1:
-			case 0:
 				return NULL;
+			case 0: // control-space
+				/* ignore atm */
+				break;
 			case 1: // ^A
 				dl_buffer_idx = 0;
 				break;
@@ -280,9 +282,13 @@ char *dl_readline(int argc, char **argv)
 			case 12: // ^L -- right
 				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
 				break;
-			case 23:
+			case 23: // ^W
 				if (dl_buffer_idx>0) {
-					for(i=dl_buffer_idx;i&&dl_buffer[i]!=' ';i--);
+					for(i=dl_buffer_idx-1;i&&dl_buffer[i]==' ';i--);
+					for(i--;i&&dl_buffer[i]!=' ';i--);
+					for(;i&&dl_buffer[i]==' ';i--);
+					if (dl_buffer[i+1]==' ')
+						i+=2;
 					strcpy(dl_buffer+i, dl_buffer+dl_buffer_idx);
 					dl_buffer_len = strlen(dl_buffer);
 					dl_buffer_idx = strlen(dl_buffer);

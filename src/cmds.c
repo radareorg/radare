@@ -580,39 +580,6 @@ CMD_DECL(print)
 	}
 }
 
-void radare_exit()
-{
-	char *ptr;
-	int ret;
-	char ch;
-
-	ret = io_close(config.fd);
-
-	if (ret==-2)
-		return;
-	if ( ret == 0) {
-		#if HAVE_LIB_READLINE
-		rad_readline_finish();
-		#endif
-
-		/* save project : user confirmation */
-		ptr = config_get("file.project");
-
-		if (ptr && ptr[0] ) {
-			terminal_set_raw(1);
-			printf("Save project? (Y/n) ");
-			fflush(stdout);
-			read(0,&ch, 1);
-			write(1, &ch, 1);
-			write(1, "\n", 1);
-			if (ch != 'n') 
-				project_save(ptr);
-			terminal_set_raw(0);
-		}
-	}
-	exit(0);
-}
-
 CMD_DECL(quit)
 {
 	radare_exit();
@@ -799,6 +766,7 @@ CMD_DECL(status)
 	INILINE;
 	cons_printf(" file    %s",   config.file); NEWLINE;
 	cons_printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
+	cons_printf(" project %s",   config_get("file.project")); NEWLINE;
 	cons_printf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
 	cons_printf(" debug   %d",   config.debug); NEWLINE;
 	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;

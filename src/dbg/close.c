@@ -33,8 +33,7 @@ int debug_close(int fd)
 
 	if (ps.opened)
 	if (fd == ps.fd) {
-		if (getv())
-			printf("Do you want to kill the process? (Y/n/c) ");
+		eprintf("Do you want to kill the process? (Y/n/c) ");
 
 		terminal_set_raw(1);
 		while(read(0,buf,1)>0) {

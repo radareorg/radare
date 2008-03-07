@@ -40,7 +40,6 @@ int project_save(char *file)
 		return 0;
 	}
 
-	fprintf(fd, "eval=file.scrfilter\t%s\n", config_get("file.scrfilter"));
 	fprintf(fd, "#RP# Radare Project\n#\n");
 	// TODO: store timestamp
 	// TODO: all this stuff must be renamed as eval vars or so
@@ -48,6 +47,9 @@ int project_save(char *file)
 	fprintf(fd, "chroot=%s\n", config_get("child.chroot"));
 	fprintf(fd, "setuid=%s\n", config_get("child.setuid"));
 	fprintf(fd, "setgid=%s\n", config_get("child.setgid"));
+	fprintf(fd, "eval=file.scrfilter\t%s\n", config_get("file.scrfilter"));
+	fprintf(fd, "eval=asm.arch\t%s\n", config_get("asm.arch"));
+	fprintf(fd, "eval=cfg.endian\t%s\n", config_get("cfg.endian"));
 	fprintf(fd, "# Flags\n");
         for (i=0;(flag = flag_get_i(i)); i++)
 		fprintf(fd, "flag=0x"OFF_FMTx" %s\n", flag->offset, flag->name);
@@ -60,9 +62,24 @@ int project_save(char *file)
 		fprintf(fd, "comment=0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
 	}
 
-	eprintf("Project '%s' saved.\n", file);
 	fclose(fd);
+
+	config_set("file.project", file);
+	cons_printf("Project '%s' saved.\n", file);
+
 	return 1;
+}
+
+int project_close()
+{
+	char *file = config_get("file.project");
+	if (!strnull(file)) {
+		if (yesno('y', "Do you want to save the '%s' project? (Y/n) ", file)) {
+			project_save(file);
+		}
+		config_set("file.project", "");
+	}
+	cons_flush();
 }
 
 int project_open(char *file)
@@ -138,10 +155,19 @@ int project_open(char *file)
 // TODO show statistics: N comments, symbols, labels, flags, etc...
 	eprintf("Project '%s' loaded\n", file);
 
+	config_set("file.project", file);
+
 	return 1;
 }
 
 int project_info(char *file)
 {
+	if (file == NULL || file[0]=='\0')
+		file = config_get("file.project");
+	if (strnull(file)) {
+		eprintf("No project opened\n");
+		return 0;
+	}
 	eprintf("project file: %s\n", file);
+	return 1;
 }
