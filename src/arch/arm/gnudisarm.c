@@ -40,17 +40,18 @@ char *gnu_disarm(unsigned char *inst, unsigned long offset)
 	str[0] = '\0';
 
 	Offset = (unsigned long)offset;
-	memcpy(bytes, inst, 2); // TODO handle thumb
+	//endian_memcpy(bytes, inst, 4); //
+	memcpy(bytes, inst, 4); // TODO handle thumb
 
 	/* prepare disassembler */
 	memset(&info,'\0', sizeof(struct disassemble_info));
 	//info.arch = ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
-	info.buffer = inst; //&bytes;
+	info.buffer = bytes; //bytes; //&bytes;
 	info.read_memory_func = &buffer_read_memory;
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
 	info.print_address_func = &print_address;
-	info.endian = config_get_i("cfg.endian");
+	info.endian = 0;//config_get_i("cfg.endian");
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 

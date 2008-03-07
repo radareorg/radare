@@ -92,6 +92,7 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 
 	unsigned int branch_dst_addr;
 	memset(aop, '\0', sizeof(struct aop_t));
+	aop->type = AOP_TYPE_UNK;
 
 	if ( anal_is_exitpoint ( code[i] ) )
 	{
@@ -149,7 +150,7 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 	| ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I
 	| ( ARM_PC << 12 ) ) ) {
 		if ( (code[i] & ARM_COND_MASK ) == ARM_COND_AL ) {
-			aop->type = AOP_TYPE_UJMP;
+			//aop->type = AOP_TYPE_UJMP;
 			aop->eob = 1;
 			return 4;
 		}

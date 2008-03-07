@@ -10,6 +10,12 @@
 (gdb) break ptrace if $r3 == 31
 make fdsniff and usbsniff generate a project file and a binary one.
 
+support for 7bit text encoding
+
+
+"pr > /tmp/file" doesnt works :("
+
+Project question when closing !! (detect changes?) (detect if project opened)
 
 http://ru.gentoo.neysx.org/proj/ru/qa/backtraces.xml
   fdsniff3.bin

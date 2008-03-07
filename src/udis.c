@@ -399,6 +399,7 @@ void udis_arch(int arch, int len, int rows)
 		break;
 	case ARCH_ARM:
 		arm_mode = 32;
+		force_thumb = 0;
 		break;
 	case ARCH_ARM16:
 		arm_mode = 16;
@@ -454,15 +455,9 @@ void udis_arch(int arch, int len, int rows)
 			continue;
 		}
 
-		/* oh nope, continue disasembling */
-		// XXX code analyssi doesnt works with endian here!!!1
-		// TAKE CARE TAKE CARE TAKE CARE TAKE CARE TAKE CARE
-		endian_memcpy_e(b, config.block+bytes, 4, endian);
-#if 0
-		if (arch != ARCH_X86 && !endian) {
-			endian_memcpy_e(b, config.block+bytes, 4, 0);
+		if (arch != ARCH_X86) {
+			endian_memcpy_e(b, config.block+bytes, 4, endian);
 		} else  memcpy(b, config.block+bytes, 32);
-#endif
 
 		if (cmd_asm&& cmd_asm[0]) {
 			char buf[1024];
@@ -481,10 +476,10 @@ void udis_arch(int arch, int len, int rows)
 			case ARCH_ARM16:
 				arm_mode = 16;
 				myinc = 2;
-				arch_arm_aop(seek, (const unsigned char *)b, &aop); //config.block+bytes, &aop);
+				arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_ARM:
-				arch_arm_aop(seek, (const unsigned char *)b, &aop); //config.block+bytes, &aop);
+				arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				myinc = 4;
 				break;
 			case ARCH_JAVA:
@@ -631,7 +626,7 @@ void udis_arch(int arch, int len, int rows)
 				case ARCH_ARM: {
 						       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
 						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-						       gnu_disarm((unsigned char*)config.block+bytes, (unsigned int)seek);
+						       gnu_disarm((unsigned char*)b, (unsigned int)seek);
 					       } break;
 				case ARCH_PPC: {
 						       char opcode[128];
@@ -675,7 +670,7 @@ void udis_arch(int arch, int len, int rows)
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
-					cons_printf("   [%d]", jump_n,jumps[jump_n-1]);
+					cons_printf("   [%d] -> 0x%x", jump_n, (unsigned int)aop.jump);
 				}
 			}
 
