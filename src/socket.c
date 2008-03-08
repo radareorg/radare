@@ -20,22 +20,26 @@
 
 #include "main.h"
 #include "socket.h"
-#if __WINDOWS__
+
+#if __WINDOWS__ || __CYGWIN__
 #include <windows.h>
 #include <winsock.h>
-#endif
-#if __UNIX__
+#elif __UNIX__
 #include <sys/un.h>
+#include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #endif
+
 #include <sys/types.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+
 
 #define BUFFER_SIZE 4096
 

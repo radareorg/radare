@@ -233,6 +233,7 @@ void plugin_init()
 	/* load libraries in -l path */
 	plugins[0] = haret_plugin;
 #if __WINDOWS__
+	extern plugin_t w32_plugin;
 	plugins[1] = w32_plugin;
 	plugins[2] = remote_plugin;
   #if DEBUGGER

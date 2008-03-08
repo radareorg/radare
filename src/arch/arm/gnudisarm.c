@@ -1,6 +1,6 @@
 /* trampoline to the gnu disassembler for arm */
 #include <radare.h>
-#include <dis-asm.h>
+#include "gnu/dis-asm.h"
 
 int arm_mode = 32;
 
@@ -10,7 +10,7 @@ unsigned long Offset = 0;
 //unsigned char *bytes = "\xe1\x2f\xff\x32";
 static unsigned char bytes[4];// = "\xe1\x2f\xff\x32";
 
-static int buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
+int buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
 {
 	memcpy (myaddr, bytes, length);
 	return 0;

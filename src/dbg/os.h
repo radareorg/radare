@@ -5,7 +5,7 @@
 /* lifetime */
 void debug_init_calls();
 int debug_init_maps(int rest);
-int debug_detach(pid_t pid);
+int debug_detach();
 int debug_load_threads();
 
 /* open */

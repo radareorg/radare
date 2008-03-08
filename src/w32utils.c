@@ -22,8 +22,9 @@
  */
 
 #include "main.h"
+#ifdef __WINDOWS__
 
-#if __WINDOWS__
+#include <sys/types.h>
 #include <windows.h>
 #include <winsock.h>
 

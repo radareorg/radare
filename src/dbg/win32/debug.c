@@ -23,12 +23,16 @@
 
 #include "../libps2fd.h"
 #include <tlhelp32.h>
-#include "utils.h"
 #include <stdio.h>
+#include <winbase.h>
+#include <psapi.h>
 
 #if __GYGWIN__
 #include <sys/errno.h>
 #endif
+
+#include "../mem.h"
+#include "utils.h"
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 
@@ -67,6 +71,7 @@ void debug_init_calls()
 /* console events handler */
 static BOOL dispatch_console(DWORD type)
 {
+
 	switch(type) {
 		case CTRL_C_EVENT: 
 			/* stop process */
@@ -111,25 +116,29 @@ inline static int handler2pid(HANDLE h)
 
 inline int debug_attach(pid_t pid) 
 {
-	OpenProcess(PROCESS_ALL_ACCESS, NULL, pid);
-	if(DebugActiveProcess(pid)) {
+	WIN32_PI(hProcess) = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
+	if(WIN32_PI(hProcess) != (HANDLE)NULL && DebugActiveProcess(pid)) {
+
 		/* set process id */
 		ps.pid = pid;
-		/* set active tid */
+
+		/* get last thread id */
 		ps.tid = debug_load_threads();
-		if (ps.tid<0) { // no default active thread
-			eprintf("No default active thread. Taking root as default.\n");
-			ps.tid = ps.pid;
-		}
+
+		/* fill PROCESS_INFORMATION struct */
+		WIN32_PI(dwProcessId) = ps.pid;
+		WIN32_PI(dwThreadId) = ps.tid;
+
 		return 0;
 	}
 	eprintf("Cannot attach\n");
 	return -1;
 }
 
-inline int debug_detach(pid_t pid)
+inline int debug_detach()
 {
-	return win32_detach(pid)? 0 : -1;
+	return win32_detach(ps.pid)? 0 : -1;
 }
 
 int debug_load_threads()
@@ -169,11 +178,9 @@ int debug_load_threads()
 		}
 	} while(Thread32Next(th, &te32));
 
-	ret = 0;
-
 err_load_th:	
 
-	if(ret) 
+	if(ret == -1) 
 		print_lasterr(__FUNCTION__);
 
 	if(th != INVALID_HANDLE_VALUE)
@@ -205,12 +212,12 @@ inline int debug_steps()
 
 	/* continue */
 	debug_contp(ps.tid);
-	 
+
+	return 0;
 }
 
 /* TODO: not work */
 int debug_contfork(int tid) { eprintf("not work yet\n"); return -1; }
-int debug_init_maps(int rest) { eprintf("debug_init_maps : not work yet\n"); return -1; }
 int debug_contscp() { eprintf("not work yet\n"); return -1; }
 int debug_status() { eprintf("not work yet\n"); return -1; }
 
@@ -287,31 +294,14 @@ err_fork:
 
 	TerminateProcess(WIN32_PI(hProcess), 1);
 	return -1;
-
-#if 0
-	/* ignore exception */
-	debug_contp(ps.tid);
-
-	/* handle new exceptions */
-	debug_dispatch_wait();
-#endif
-
-	return 0;
 }
 
 int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	int ret_len = 0;
 
-/*
-	HANDLE hp;
-	eprintf("addr: 0x%x\n", addr);
-        eprintf("Marcial len: %d\n", len);
-	eprintf("handler: 0x%x %d %d\n", hp, WIN32_PI(dwProcessId), ps.pid);
-	*/
-
 	ReadProcessMemory(WIN32_PI(hProcess), addr,
-		       	(LPVOID)buff, len, (SIZE_T *)&ret_len);
+		       	(const char *)buff, len, (SIZE_T *)&ret_len);
 
 	return ret_len;
 }
@@ -319,7 +309,6 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	int ret_len = -1;
-	DWORD old;
 
 	/* change page permissions */
 	/*
@@ -452,7 +441,7 @@ static int debug_exception_event(unsigned long code)
 		/* software breakpoint or int3 */
 		case EXCEPTION_BREAKPOINT:
 
-			bp = (struct bp_t*) arch_stopped_bp();
+			bp = (struct bp_t *) arch_stopped_bp();
 			if(bp) {
 				WS(event) = BP_EVENT;
 				WS(bp) = bp;
@@ -585,6 +574,139 @@ int debug_dispatch_wait()
 			return -1;
 		}
 	} while(next_event);
+
+	return 0;
+}
+
+static inline int CheckValidPE(unsigned char * PeHeader)
+{    	    
+	IMAGE_DOS_HEADER *dos_header = (IMAGE_DOS_HEADER *)PeHeader;
+	IMAGE_NT_HEADERS *nt_headers;
+
+	if (dos_header->e_magic==IMAGE_DOS_SIGNATURE) {
+		nt_headers = (IMAGE_NT_HEADERS *)((char *)dos_header
+				+ dos_header->e_lfanew);
+		if (nt_headers->Signature==IMAGE_NT_SIGNATURE) 
+			return 1;
+	}
+
+	return 0;
+
+}
+
+int debug_init_maps(int rest)
+{
+	SYSTEM_INFO SysInfo;
+	MEMORY_BASIC_INFORMATION mbi;
+	LPBYTE CurrentPage;
+	char *ModuleName = NULL;
+	/* DEPRECATED */
+	char PeHeader[1024];
+	MODULEINFO ModInfo;
+	IMAGE_DOS_HEADER *dos_header;
+	IMAGE_NT_HEADERS *nt_headers;
+	IMAGE_SECTION_HEADER *SectionHeader;
+	int NumSections, i;
+	SIZE_T ret_len;
+	MAP_REG *mr;
+	int n = 0;
+
+	if(ps.map_regs_sz > 0) 
+		free_regmaps(rest);
+
+	GetSystemInfo(&SysInfo);
+
+	for (CurrentPage = (LPBYTE) SysInfo.lpMinimumApplicationAddress ;
+		       	CurrentPage < (LPBYTE) SysInfo.lpMaximumApplicationAddress;) {
+
+		if (!VirtualQueryEx (WIN32_PI(hProcess),CurrentPage, &mbi, sizeof (mbi)))  {
+			eprintf("VirtualQueryEx ERROR, address = 0x%08X\n", CurrentPage );
+			return -1;
+		}
+
+		if(mbi.Type == MEM_IMAGE) {
+
+			ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
+					PeHeader, sizeof(PeHeader), &ret_len);
+
+			if(ret_len == sizeof(PeHeader) && CheckValidPE(PeHeader)) {
+
+				dos_header = (IMAGE_DOS_HEADER *)PeHeader;
+				nt_headers = (IMAGE_NT_HEADERS *)((char *)dos_header
+						+ dos_header->e_lfanew);    	    		    	
+				NumSections = nt_headers->FileHeader.NumberOfSections;    	        	        	    
+
+				SectionHeader = (IMAGE_SECTION_HEADER *) ((char *)nt_headers
+					+ sizeof(IMAGE_NT_HEADERS));
+
+				if(NumSections > 0) {
+
+					ModuleName = (char *)malloc(MAX_PATH);
+					if(!ModuleName) {
+						perror(":map_reg alloc");
+						return -1;
+					}
+
+					GetModuleBaseName(WIN32_PI(hProcess), (HMODULE) CurrentPage,
+						(LPTSTR)ModuleName, MAX_PATH);
+
+					i = 0;
+
+					do {
+
+						mr = malloc(sizeof(MAP_REG));
+						if(!mr) {
+							perror(":map_reg alloc");
+							free(ModuleName);
+							return -1;
+						}
+
+						mr->ini = SectionHeader->VirtualAddress
+							+ (unsigned long)CurrentPage;
+						mr->size = SectionHeader->Misc.VirtualSize;
+						mr->end = mr->ini + mr->size;
+						mr->perms = SectionHeader->Characteristics;
+						mr->bin = ModuleName;
+						mr->flags = 0;
+
+						add_regmap(mr);
+
+						SectionHeader++;
+						i++;
+
+					} while(i < NumSections);
+				}    	        	        	        	    
+			}
+
+			if(GetModuleInformation(WIN32_PI(hProcess), (HMODULE) CurrentPage,
+					(LPMODULEINFO) &ModInfo, sizeof(MODULEINFO)) == 0)
+				return 0;
+
+			CurrentPage += ModInfo.SizeOfImage;
+
+		} else {
+
+			mr = malloc(sizeof(MAP_REG));
+			if(!mr) {
+				perror(":map_reg alloc");
+				free(mr->bin);
+				return -1;
+			}
+
+			mr->ini = (unsigned long)CurrentPage;
+			mr->end = mr->ini + mbi.RegionSize;
+			mr->size = mbi.RegionSize;
+			mr->perms = mbi.Protect;
+			mr->bin = (char *)NULL;
+			mr->flags = 0;
+
+			add_regmap(mr);
+
+			CurrentPage +=  mbi.RegionSize; 
+		}
+
+
+	}
 
 	return 0;
 }

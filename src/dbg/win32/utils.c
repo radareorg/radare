@@ -55,7 +55,7 @@ void print_lasterr(char *str)
                        size, 
                        (va_list*)pArgs)) {
    
-        eprintf(L"Format message failed with 0x%x\n", GetLastError());
+        eprintf("Format message failed with 0x%x\n", GetLastError());
         return;
     }
 

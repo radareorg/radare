@@ -332,10 +332,10 @@ int debug_attach(int pid)
 	return 0;
 }
 
-int debug_detach(int pid)
+int debug_detach()
 {
 	// XXX tid ps.tid, ps.pid ?!?
-	ptrace(PTRACE_DETACH, pid, 0, 0);
+	ptrace(PTRACE_DETACH, ps.pid, 0, 0);
 	if (-1 == ptrace(PTRACE_DETACH, ps.tid, 0, 0))
 		perror("ptrace_dettach");
 

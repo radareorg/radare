@@ -144,12 +144,13 @@ inline void *alloc_page(int size)
 inline void add_regmap(MAP_REG *mr)
 {
 	unsigned long entry_alig = ps.entrypoint & ~(PAGE_SIZE-1);
+	
 
 	if(entry_alig >= mr->ini && entry_alig <= mr->end) {
 		mr->flags |= FLAG_USERCODE;
 		ps.bin_usrcode = mr->bin;
 
-	} else if(ps.bin_usrcode && !strcmp(ps.bin_usrcode, mr->bin)) {
+	} else if(ps.bin_usrcode && mr->bin && !strcmp(ps.bin_usrcode, mr->bin)) {
 		mr->flags |= FLAG_USERCODE;
 
 	} else if (mr->perms & REGION_EXEC) {
@@ -230,11 +231,11 @@ void free_regmaps(int rest)
 		/* restore region permissions */
 		if(rest)
 			rest_region(mr);
-#if 0
-		/* oops */
+/* oops 
 		if(mr->bin)
 			free(mr->bin);
-#endif
+			*/
+
 		free(mr);
 		p = aux;
 	}
@@ -255,16 +256,19 @@ void print_maps_regions(int rad)
 				sizeof(MAP_REG));
 
 		if (rad) {
-			strcpy(name, mr->bin);
-			for(i=0;mr->bin[i];i++) {
-				int ch = mr->bin[i];
-				if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-') {
-					ch = '_';
+			if(mr->bin) {
+				strcpy(name, mr->bin);
+				for(i=0;mr->bin[i];i++) {
+					int ch = mr->bin[i];
+					if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-') {
+						ch = '_';
+					}
+					name[i] = ch;
 				}
-				name[i] = ch;
+				name[i]='\0';
+				cons_printf("f section_%s @ 0x%08llx\n", name,
+						(unsigned long long)mr->ini);
 			}
-			name[i]='\0';
-			cons_printf("f section_%s @ 0x%08llx\n", name, (unsigned long long)mr->ini);
 		} else {
 			perms[0] = (mr->perms & REGION_READ)?  'r' : '-';
 			perms[1] = (mr->perms & REGION_WRITE)? 'w' : '-';
@@ -274,7 +278,7 @@ void print_maps_regions(int rad)
 
 			cons_printf("0x%.8llx - 0x%.8llx %s 0x%.8llx %s\n",
 				 (unsigned long long)mr->ini, (unsigned long long)mr->end, perms,
-				(unsigned long long)mr->size, (unsigned long long)mr->bin);
+				(unsigned long long)mr->size, mr->bin? mr->bin : "");
 		}
 	}
 }
@@ -340,7 +344,8 @@ void page_dumper(const char *dir)
 			eprintf("No '/' permitted here.\n");
 			return;
 		}
-#if __WINDOWS__
+
+#if __WINDOWS__ && !__CYGWIN__
 		if ( ( mkdir(dir) == -1) ||( chdir(dir) == -1)) {
 #else
 		if ( ( mkdir(dir, 0755) == -1) ||( chdir(dir) == -1)) {
