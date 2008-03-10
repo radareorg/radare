@@ -69,7 +69,7 @@ void data_add(u64 off, int type)
 	d = (struct data_t *)malloc(sizeof(struct data_t));
 
 	d->from = off;
-	d->to = d->from+1;  // 1 byte if no cursor // on strings should autodetect
+	d->to = d->from+config.block_size;  // 1 byte if no cursor // on strings should autodetect
 	if (config.cursor_mode) {
 		d->from+=config.cursor;
 		if (config.ocursor!=-1)
@@ -81,7 +81,7 @@ void data_add(u64 off, int type)
 		}
 	}
 	d->type = type;
-	d->size = (config.ocursor==-1)?1:config.cursor-config.ocursor+1,d->size;
+	d->size = (config.ocursor==-1)?(d->to-d->from):config.cursor-config.ocursor+1,d->size;
 
 	list_add(&(d->list), &data);
 }

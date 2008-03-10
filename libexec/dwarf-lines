@@ -18,6 +18,6 @@ for my $line (@lines) {
 	$code=~s/@//g;
 	$code=~s/>//g;
 	$code=~s/|//g;
-	print "C $code @ $addr\n" if ($code);
+	print "CC $code @ $addr\n" if ($code);
 }
 

@@ -35,7 +35,7 @@ struct mygrava_window {
 	GtkWidget *text;
 };
 
-static struct mygrava_window *last_window;
+static struct mygrava_window *last_window = NULL;
 static int new_window = 0;
 static int n_windows = 0;
 
@@ -61,6 +61,10 @@ void core_load_graph_at(void *obj, const char *str)
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 	new_window = 1;
+	
+	if (last_window) {
+		new_window = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(last_window));
+	} 
 	grava_program_graph(prg, last_window);
 }
 
@@ -81,10 +85,11 @@ static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
 	gtk_widget_destroy(w->w);
 	printf("mygrava_close()\n");
 	n_windows--;
+printf("N_WINDOWS: %d\n", n_windows);
 	if (n_windows<0)
 		n_windows = 0;
-	//if (!n_windows)
-	gtk_main_quit();
+	if (n_windows<1)
+		gtk_main_quit();
 }
 
 static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
@@ -93,9 +98,10 @@ static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 static void mygrava_new_window(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	new_window = 1;
-printf("mygrava_new -> %08x\n", obj);
+	printf("mygrava_new -> %08x\n", obj);
 	core_load_graph_entry(widget, obj);
 	new_window = 0;
+	n_windows++;
 }
 static void mygrava_new_window2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 { mygrava_new_window(widget, obj); }
@@ -116,9 +122,10 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 	struct mygrava_window *w = obj;
 	u64 off;
 
-	if (w)
+	if (w) {
 		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
-	else {
+		last_window = w;
+	} else {
 		eprintf("NullObj\n");
 		return;
 	}
@@ -150,7 +157,6 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 
-	last_window = w;
 	grava_program_graph(prg, w);
 }
 
@@ -374,8 +380,9 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 	grava_widget_draw(win->grava);
 
-	if (n_windows++)
+	if (n_windows)
 		return;
+	n_windows++;
 	new_window = 0;
 	gtk_main();
 	// oops. tihs is not for real!

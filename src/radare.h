@@ -136,7 +136,7 @@ CMD_DECL(hack);
 CMD_DECL(store);
 CMD_DECL(blocksize);
 CMD_DECL(count);
-CMD_DECL(comment);
+CMD_DECL(code);
 CMD_DECL(show_info);
 CMD_DECL(envvar);
 CMD_DECL(compare);

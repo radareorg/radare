@@ -107,8 +107,8 @@ command_t commands[] = {
 	COMMAND('b', " [blocksize]",   "bsize   change the block size", blocksize),
 	//COMMAND('B', " [baseaddr]",    "baddr   change virtual base address", baddr),
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
-	COMMAND('c', "[f file] [bytes]","compare compare block with given value", compare),
-	COMMAND('C', " [str]",         "comment adds a comment at the current position", comment),
+	COMMAND('c', "[f file]|[hex]","compare compare block with given value", compare),
+	COMMAND('C', "[op] [arg]",         "Code related commands (comment, conversions, ..)", code),
 	COMMAND('H', " [cmd]",         "performs a hack", hack),
 	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
 	COMMAND('e', " key=value",     "eval    evaluates a configuration expression", config_eval),
@@ -486,25 +486,51 @@ CMD_DECL(blocksize)
 	radare_set_block_size(input);
 }
 
-CMD_DECL(comment)
+CMD_DECL(code)
 {
 	char buf[1024];
 	char *text = input;
 
-	while(text[0]==' ')
-		text = text + 1 ;
-	cons_flush();
-	if (text[0]) {
-		if (text[0]=='?')
-			cons_printf("Usage: C [-addr|comment] @ address\n"
-				"adds or removes comments for disassembly\n");
-		else
-		if (text[0]=='-')
-			metadata_comment_del(config.seek, text+1);
-		else
-			metadata_comment_add(config.seek, text);
+	if (text[0]=='C') {
+		/* comment */
+		text = text+1;
+		while(text[0]==' ')
+			text = text + 1;
+		cons_flush();
+		if (text[0]) {
+			if (text[0]=='?')
+				cons_printf("Usage: C [-addr|comment] @ address\n"
+					"adds or removes comments for disassembly\n");
+			else
+			if (text[0]=='-')
+				metadata_comment_del(config.seek, text+1);
+			else
+				metadata_comment_add(config.seek, text);
+		} else {
+			metadata_comment_list();
+		}
+	} else if (text[0]=='c' ||text[0]=='d'||text[0]=='s') {
+		u64 tmp = config.block_size;
+		int fmt = FMT_HEXB;
+		int len = get_math(text +1);
+		switch(text[0]) {
+		case 'c': fmt = FMT_UDIS; break;
+		case 'd': fmt = FMT_HEXB; break;
+		case 's': fmt = FMT_ASC0; break;
+		}
+		if (len>config.block_size)
+			len = config.block_size;
+		tmp = config.block_size;
+		config.block_size =len;
+	data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+		config.block_size = tmp;
+   
 	} else {
-		metadata_comment_list();
+		cons_printf("Usage: C[op] [arg]\n"
+			"CC [-][comment] - adds a comment\n"
+			"Cc [num]     - converts num bytes to code\n"
+			"Cd [num]     - convsrts '' data bytes\n"
+			"Cs [num]     - converts '' to string\n");
 	}
 }
 

@@ -211,7 +211,7 @@ CMD_DECL(add_comment)
 	char buf[300];
 	printf("Comment: ");
 	fflush(stdout);
-	strcpy(buf, "C ");
+	strcpy(buf, "CC ");
 	terminal_set_raw(0);
 	n = read(0, buf+2, 256);
 	buf[n+1]='\0';

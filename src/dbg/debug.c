@@ -26,6 +26,7 @@
 #include "../radare.h"
 #include "libps2fd.h"
 #include "../config.h"
+#include "../print.h"
 #include "../code.h"
 #include <stdio.h>
 #include <errno.h>
@@ -161,10 +162,8 @@ int hijack_fd(int fd, const char *file)
 
 void debug_environment()
 {
-	FILE *fd;
-	int p;
-	char buf[1204];
 	char *ptr;
+
 	// TODO proper environment handle
 	if (getv()) {} //eprintf("TODO: load environment from environ.txt or so.\n");
 
@@ -890,7 +889,6 @@ int debug_signal(char *args)
 int debug_stepu()
 {
 	unsigned long pc = arch_pc(); //WS_PC();
-	unsigned char cmd[4];
 	int i;
 
 	// TODO handle ^C
@@ -979,7 +977,7 @@ int debug_step(int times)
 				// determine infinite loop
 			#if __i386__
 				// XXX this is not nice!
-				if (opcode[0]=='\xeb' && opcode[1]=='\xef') {
+				if (opcode[0]==0xeb && opcode[1]==0xef) {
 					eprintf("step: Infinite loop detected.\n");
 					return 0;
 				}
@@ -1011,7 +1009,7 @@ int debug_step(int times)
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
-				sprintf(buf, "C %d %s @ 0x%08x",
+				sprintf(buf, "CC %d %s @ 0x%08x",
 					ps.steps, ptr, (unsigned long)arch_pc());
 				config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
@@ -1107,7 +1105,6 @@ int debug_registers(int rad)
 
 int debug_trace(char *input)
 {
-	int c = 0;
 	// TODO: file.trace ???
 	int tbt = (int)config_get("trace.bt");
 	long slip = (int)config_get_i("trace.sleep");
@@ -1401,12 +1398,12 @@ int debug_contuh(char *arg)
 	debug_cont();
 	restore_bp();
 	debug_rm_bp_num(bp);
+	return 0;
 }
 
 int debug_contsc(char *arg)
 {
 	int ret;
-	int wait_val;
 	int num = (int)get_math(arg);
 
 	if (!ps.opened) {
