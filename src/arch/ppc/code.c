@@ -22,7 +22,6 @@
 
 #include "../../code.h"
 #include <string.h>
-int dislen(unsigned char* opcode0);
 
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love

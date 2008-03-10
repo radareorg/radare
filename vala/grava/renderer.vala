@@ -151,7 +151,8 @@ public class Grava.Renderer
 		string body = node.data.lookup("body");
 		if (body != null)
 		foreach(string str in body.split("\n")) {
-			ctx.move_to(5, y+=10);
+			y+=10;
+			ctx.move_to(5, y);
 			if((str.str("call ") != null)
 			|| (str.str("bl ") != null)) {
 				set_color_str(ctx, "blue");

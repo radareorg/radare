@@ -222,6 +222,8 @@ retry:
 
 	if (disasm_flag & C_MODRM)
 	{
+		if (limit<4)
+			return 0;
 		disasm_modrm = *opcode++;
 		BYTE mod = disasm_modrm & 0xC0;
 		BYTE rm  = disasm_modrm & 0x07;

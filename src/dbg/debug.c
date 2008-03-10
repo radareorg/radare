@@ -279,7 +279,7 @@ void debug_exit()
 	debug_init();
 }
 
-int is_code(unsigned long pc)
+int is_code(u64 pc)
 {
 	struct list_head *pos;
 
@@ -297,7 +297,7 @@ int is_code(unsigned long pc)
 	return 0;
 }
 
-int is_usercode(unsigned long pc)
+int is_usercode(u64 pc)
 {
 	struct list_head *pos;
 

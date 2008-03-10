@@ -314,10 +314,10 @@ int arch_dump_registers()
 	return 1;
 }
 
+int dislen(unsigned char* opcode0, int limit);
 int arch_opcode_size()
 {
-	// XXX TODO: read from current seek, etc...
-//	return instLength(unsigned char *p, int s, int mode);
+	return dislen(config.block, config.block_size);
 }
 
 int arch_restore_registers()
@@ -882,7 +882,7 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-	int color = config_get("scr.color");
+	int color = (int)config_get("scr.color");
 
 	if (ps.opened == 0)
 		return 0;
@@ -970,7 +970,7 @@ int arch_print_registers(int rad, const char *mask)
 
 	}
 	if (memcmp(&nregs,&regs, sizeof(regs_t))) {
-		getHTTPDate(&oregs_timestamp);
+		getHTTPDate((char *)&oregs_timestamp);
 		memcpy(&oregs, &nregs, sizeof(regs_t));
 		memcpy(&nregs, &regs, sizeof(regs_t));
 	} else {
@@ -985,7 +985,7 @@ long get_value(char *str)
 	long tmp;
 
 	if (str[0]&&str[1]=='x')
-		sscanf(str, "0x%x", &tmp);
+		sscanf(str, "0x%lx", &tmp);
 	else	tmp = atol(str);
 	return tmp;
 }
@@ -1058,7 +1058,7 @@ int arch_continue()
 	return debug_contp(ps.tid); /* ptrace(PTRACE_CONT, ps.tid, R_EIP(regs), (void *)0); */
 }
 
-void *arch_mmap(int fd, int size, u64 addr) //int *rsize)
+u64 arch_mmap(int fd, int size, u64 addr) //int *rsize)
 {
 /*
 #include <sys/types.h>
@@ -1186,7 +1186,7 @@ $
 	return 0;
 #endif
 
-	return (void *)addr;
+	return (u64)addr;
 } 
 
 void *arch_alloc_page(int size, int *rsize)
@@ -1695,7 +1695,7 @@ void arch_view_bt(struct list_head *sf)
 	list_for_each(pos, sf) {
                 sf_e = list_entry(pos, struct sf_t, next);
 		label[0] = '\0';
-		string_flag_offset(&label, sf_e->ret_addr);
+		string_flag_offset((char *)&label, sf_e->ret_addr);
 		cons_printf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
 			i++, (uint)sf_e->ret_addr,
 			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);

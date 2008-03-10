@@ -1,2 +1,2 @@
-all:
-	-g++ -O3 bdiff.cpp -o bdiff
+all: bdiff.o
+	-g++ -O3 bdiff.o -o bdiff

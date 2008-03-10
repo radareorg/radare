@@ -8,20 +8,21 @@ PY_CFLAGS=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
 PY_LDFLAGS=-lpython2.4
 LUA_CFLAGS=-I/usr/pkg/include -DLIBDIR=\"${LIBDIR}\"
 LUA_LDFLAGS=-llua
+CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: loa purl puthon
+all: loa puthon
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SHARED_EXT}
 
 purl:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.so
 
-puthon:
-	-${CC} python.c ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.so
+puthon: python.o
+	-${CC} python.o ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.so
 
-loa:
-	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -o lua.so
+loa: lua.o
+	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -o lua.so
 
 clean:
 	-rm -f *.${SHARED_EXT} *.o

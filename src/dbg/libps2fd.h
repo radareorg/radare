@@ -249,6 +249,8 @@ u64     (*__lseek64)(int fildes, u64 offset, int whence);
 u64     (*___llseek)(int fildes, u64 offset, int whence);
 int *     (*__system) (const char *command);
 extern struct debug_t ps;
+int is_code(u64 addr);
+int is_usercode(u64 addr);
 
 #include "os.h"
 #endif

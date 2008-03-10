@@ -304,7 +304,7 @@ static int java_resolve(int idx, char *str)
 	if((!strcmp(cp_items[idx].name, "MethodRef"))
 	|| (!strcmp(cp_items[idx].name, "FieldRef"))) {
 		int class = USHORT(get_cp(idx)->bytes,0);
-		int namet = USHORT(get_cp(idx)->bytes,2);
+		//int namet = USHORT(get_cp(idx)->bytes,2);
 		char *class_str = get_cp(USHORT(get_cp(class)->bytes,0)-1)->value;
 		char *namet_str = get_cp(USHORT(get_cp(class)->bytes,2)-1)->value;
 		//char *namet_str = get_cp(namet)->value;
@@ -330,7 +330,7 @@ int java_print_opcode(int idx, unsigned char *bytes, char *output)
 	case 0x14:
 		java_resolve(bytes[0]-1, arg);
 		sprintf(output, "%s %s", java_ops[idx].name, arg);
-		return;
+		return java_ops[idx].size;
 	case 0xb2: // getstatic
 	case 0xb6: // invokevirtual
 	case 0xb7: // invokespecial
@@ -338,7 +338,7 @@ int java_print_opcode(int idx, unsigned char *bytes, char *output)
 	case 0xb9: // invokeinterface
 		java_resolve((int)USHORT(bytes,0)-1, arg);
 		sprintf(output, "%s %s", java_ops[idx].name, arg);
-		return;
+		return java_ops[idx].size;
 	}
 
 	/* process arguments */
@@ -488,6 +488,7 @@ int javasm_init()
 	cp_null_item.tag = -1;
 	strcpy(cp_null_item.name, "(null)");
 	cp_null_item.value = strdup("(null)");
+	return 0;
 }
 
 int java_classdump(const char *file)

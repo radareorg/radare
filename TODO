@@ -48,14 +48,10 @@ BUGS:
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset
   - do not execute twice
-* Load lua scripts from commandline
 * allow to run without opening a file (useful for batch mode)
 * zoom segfaults
-* winedbg doesnt reads the unalligned memory properly FIX IT!
 * keybinding assignment dosnt workz
-* java disasm is borken (seek problemz?!?!)
 * wa doesnt handle file resize
-* cursor doesnt works in w32 console ??
 * rsc monitor doesnt works as expected
 * threading stuff for ptrace is broken. try to make the ada crackme
   http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
@@ -68,25 +64,6 @@ BUGS:
 * new graph view
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
 * import esteve's object injector
-* winedbg !cont
-  help                                   quit
-  break [*<addr>]                        watch *<addr>
-  delete break bpnum                     disable bpnum
-  enable bpnum                           condition <bpnum> [<expr>]
-  finish                                 cont [N]
-  step [N]                               next [N]
-  stepi [N]                              nexti [N]
-  x <addr>                               print <expr>
-  display <expr>                         undisplay <disnum>
-  local display <expr>                   delete display <disnum>
-  enable display <disnum>                disable display <disnum>
-  bt [<tid>|all]                         frame <n>
-  up                                     down
-  list <lines>                           disassemble [<addr>][,<addr>]
-  show dir                               dir <path>
-  set <reg> = <expr>                     set *<addr> = <expr>
-  pass                                   whatis
-  info (see 'help info' for options)
 
 * next pel debugger (next source line) -- comment uh?
 * handle !! properly
@@ -116,12 +93,6 @@ TODO for 0.9.4
 * dump file to filedescriptor of the child doesnt works (child.stdin)
 * identify nodes with 'ret' in graph
 * identify nodes with 'cmp' in graph
-* A key to increase/decrease the byte value under the cursor
-* udis disassembly is a bit weird with values + and -
-  - makes the reading a bit difficult (if higher bit set, use negative value)
-  f.example:
-      0x0804D169  8985f0fdffff      [ebp-0x210] = eax
-      0x0804D16F  8d85f4fdffff      lea eax, [ebp+0xfffffdf4] ; should be -524
 * implement insert data inda core
 * graph.body=asm,flags,symcalls,description, trace execution data
 * blue or black background for metadata in udis -> nicer for w32 and white screens

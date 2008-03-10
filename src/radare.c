@@ -317,10 +317,13 @@ int radare_cmd_raw(char *tmp, int log)
 			snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
 			io_system(cmd);
 			unlink(tmp);
-			free(oinput);
 			piped[0]='|';
+			free(oinput);
 			return 1;
 		}
+fd = 0;
+fdi = 0;
+std = 0;
 		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			/* inline pipe */
 			piped = strchr(input, '`');
@@ -402,10 +405,19 @@ int radare_cmd_raw(char *tmp, int log)
 			if (eof[0]=='\n') eof[0]=' ';
 		commands_parse(input);
 
-		if (fdi!=0) {
+		if (fdi!=-1) {
 			fflush(stdout);
-			close(fd);
+			if (std)
 			dup2(std, 1);
+			if (fdi != 0)
+				close(fdi);
+		} else
+		if (fd!=-1) {
+			fflush(stdout);
+			if (std)
+			dup2(std, 1);
+			if (fd != 0)
+				close(fd);
 		}
 
 		if (std!=0) {
@@ -1095,6 +1107,7 @@ int radare_go()
 int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 {
 	int fd = make_tmp_file(tmp);
+	int std;
 	cons_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmp);
@@ -1111,8 +1124,10 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 	fflush(stdout);
 	fflush(stderr);
 	close(fd);
-	dup2(std, 1);
-	close(std);
+	if (std!=0) {
+		dup2(std, 1);
+		close(std);
+	}
 
 	return 1;
 }

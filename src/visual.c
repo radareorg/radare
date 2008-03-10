@@ -693,7 +693,7 @@ void visual_bind_key()
 		free(ptr);
 	}
 	//else buf[0]='\0';
-	return 0;
+	return;
 #else
 	buf[0]='\0';
 	if (cons_fgets(buf, 1000) <0)
@@ -1204,18 +1204,50 @@ CMD_DECL(visual)
 				config.seek++;
 			break;
 		case '*':
-			radare_set_block_size_i(config.block_size+inc);
+			if (!config.cursor_mode) {
+				radare_set_block_size_i(config.block_size+inc);
+			}
 			break;
 		case '/':
-			radare_set_block_size_i(config.block_size-inc);
-			cons_strcat("\e[2J\e[0;0H");
+			if (!config.cursor_mode) {
+				radare_set_block_size_i(config.block_size-inc);
+				cons_strcat("\e[2J\e[0;0H");
+			}
 			break;
 		case '+':
-			radare_set_block_size_i(config.block_size+1);
+			if (config.cursor_mode) {
+				char buf[128];
+				int ch;
+				if (config.cursor>=0 && config.cursor< config.block_size) {
+					int c = config.cursor;
+					ch = config.block[config.cursor];
+					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(++ch), config.seek); //+config.cursor);
+					radare_cmd(buf, 0);
+					config.cursor = c;
+					config.ocursor = -1;
+			cons_clear();
+				}
+			} else
+				radare_set_block_size_i(config.block_size+1);
 			break;
 		case '-':
-			radare_set_block_size_i(config.block_size-1);
-			cons_strcat("\e[2J\e[0;0H");
+			if (config.cursor_mode) {
+				char buf[128];
+				int ch;
+				if (config.cursor>=0 && config.cursor< config.block_size) {
+					int c = config.cursor;
+					 ch = config.block[config.cursor];
+					eprintf("cursor %d\n", config.cursor);
+					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(--ch), config.seek); //+config.cursor);
+					radare_cmd(buf, 0);
+					config.cursor = c;
+					config.ocursor = -1;
+				}
+			cons_clear();
+			} else {
+				radare_set_block_size_i(config.block_size-1);
+				cons_strcat("\e[2J\e[0;0H");
+			}
 			break;
 		case '!':
 			cons_clear();

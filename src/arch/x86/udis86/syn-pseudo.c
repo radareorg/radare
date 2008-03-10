@@ -338,6 +338,9 @@ extern void ud_translate_pseudo(struct ud* u)
 		case UD_Ixchg:
 			CHK_ARGS2 mkasm(u, "  "); ARG_1 mkasm(u, " <=> "); ARG_2
 				break;
+		case UD_Ilea:
+			CHK_ARGS2 mkasm(u, "  "); ARG_1 mkasm(u, " (lea)= ");   ARG_2
+				break;
 		case UD_Imov:
 			CHK_ARGS2 mkasm(u, "  "); ARG_1 mkasm(u, " = ");   ARG_2
 				break;

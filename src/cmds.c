@@ -809,7 +809,7 @@ CMD_DECL(compare)
 		fd = fopen(input+1,"r");
 		if (fd == NULL) {
 			eprintf("Cannot open file\n");
-			return 0;
+			return;
 		}
 		buf = (char *)malloc(config.block_size);
 		fread(buf, config.block_size, 1, fd);

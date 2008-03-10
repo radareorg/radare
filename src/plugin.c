@@ -216,7 +216,7 @@ void plugin_load()
 			}
 		}
 		closedir(fd);
-		return 0;
+		return;
 	}
 }
 
