@@ -62,6 +62,11 @@ int dl_histidx = 0;
 int dl_autosave = 0; // TODO
 int dl_disable = 0; // TODO use fgets..no autocompletion
 
+// TODO : FULL READLINE COMPATIBILITY
+// rl_attempted_completion_function = rad_autocompletion;
+// char **rad_autocompletion(const char *text, int start, int end)
+// return  matches = rl_completion_matches (text, rad_offset_matches);
+
 static int dl_readchar()
 {
 	char buf[2];

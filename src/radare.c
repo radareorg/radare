@@ -471,7 +471,8 @@ int radare_cmd(char *tmp, int log)
 
 	if (config.visual) {
 		// update config.height heres
-		terminal_get_real_columns();
+		//terminal_get_real_columns();
+		config.height= config_get_i("scr.height");
 		config.height -= 3;
 	}
 
@@ -530,8 +531,8 @@ int radare_cmd(char *tmp, int log)
 			u64 pc = flag_get_addr("eip");
 			if (pc<config.seek || pc > config.seek+config.block_size)
 				radare_cmd("s eip",0);
-		}		
-		config.height-=14;
+		}
+		config.height-=10;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */

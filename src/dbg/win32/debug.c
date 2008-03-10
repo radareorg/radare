@@ -33,6 +33,8 @@
 
 #include "../mem.h"
 #include "utils.h"
+extern int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int);
+extern void (*gmbn)(HANDLE, HMODULE, LPTSTR, int);
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 
@@ -594,6 +596,9 @@ static inline int CheckValidPE(unsigned char * PeHeader)
 
 }
 
+void (*gmbn)(HANDLE, HMODULE, LPTSTR, int) = NULL;
+int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int) = NULL;
+
 int debug_init_maps(int rest)
 {
 	SYSTEM_INFO SysInfo;
@@ -610,6 +615,12 @@ int debug_init_maps(int rest)
 	SIZE_T ret_len;
 	MAP_REG *mr;
 	int n = 0;
+	gmbn = GetProcAddress(GetModuleHandle("psapi"), "GetModuleBaseName");
+	gmi = GetProcAddress(GetModuleHandle("psapi"), "GetModuleInformation");
+	if (gmbn == NULL || gmi == NULL) {
+		eprintf("maps: Cannot open psapi.dll?\n");
+		return -1;
+	}
 
 	if(ps.map_regs_sz > 0) 
 		free_regmaps(rest);
@@ -647,7 +658,7 @@ int debug_init_maps(int rest)
 						return -1;
 					}
 
-					GetModuleBaseName(WIN32_PI(hProcess), (HMODULE) CurrentPage,
+					gmbn(WIN32_PI(hProcess), (HMODULE) CurrentPage,
 						(LPTSTR)ModuleName, MAX_PATH);
 
 					i = 0;
@@ -678,7 +689,7 @@ int debug_init_maps(int rest)
 				}    	        	        	        	    
 			}
 
-			if(GetModuleInformation(WIN32_PI(hProcess), (HMODULE) CurrentPage,
+			if(gmi(WIN32_PI(hProcess), (HMODULE) CurrentPage,
 					(LPMODULEINFO) &ModInfo, sizeof(MODULEINFO)) == 0)
 				return 0;
 

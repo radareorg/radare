@@ -26,11 +26,10 @@ search and replace
 > wx foo @ hit*
 
 asm.offset must be for all print modes
-linesout on arm doesnt works
 
 import pdi-tool from gerardo to inject code
 
-fix dietline
+add full autocompletion support for dietline
 
 ARM
 ===

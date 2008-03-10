@@ -32,6 +32,7 @@ bool CheckValidPE(unsigned char * PeHeader);
 void (*gmbn)(HANDLE, HMODULE, LPTSTR, int) = NULL;
 void (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int) = NULL;
 
+#if 0
 int main(int argc, char *argv[])
 {
 
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
 
 	return 1;
 }
+#endif
 
 
 int debug_init_maps(int rest)
@@ -65,6 +67,8 @@ int debug_init_maps(int rest)
 	MODULEINFO ModInfo;
 	int i;
 
+	gmbn = GetProcAddress(GetModuleHandle("psapi"), "GetModuleBaseName");
+	gmi = GetProcAddress(GetModuleHandle("psapi"), "GetModuleInformation");
 
 	ModuleName = (char *) malloc(MAX_PATH);        
 
