@@ -497,17 +497,15 @@ CMD_DECL(code)
 		while(text[0]==' ')
 			text = text + 1;
 		cons_flush();
+		if (text[0]=='\0'  || text[0]=='?')
+			cons_printf("Usage: CC [-addr|comment] @ address\n"
+				"adds or removes comments for disassembly\n");
+		else
 		if (text[0]) {
-			if (text[0]=='?')
-				cons_printf("Usage: C [-addr|comment] @ address\n"
-					"adds or removes comments for disassembly\n");
-			else
 			if (text[0]=='-')
 				metadata_comment_del(config.seek, text+1);
 			else
 				metadata_comment_add(config.seek, text);
-		} else {
-			metadata_comment_list();
 		}
 	} else if (text[0]=='c' ||text[0]=='d'||text[0]=='s') {
 		u64 tmp = config.block_size;
@@ -524,13 +522,16 @@ CMD_DECL(code)
 		config.block_size =len;
 	data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
 		config.block_size = tmp;
-   
-	} else {
+	} else if (text[0]=='*') {
+		metadata_comment_list();
+		data_list();
+	 } else {
 		cons_printf("Usage: C[op] [arg]\n"
 			"CC [-][comment] - adds a comment\n"
 			"Cc [num]     - converts num bytes to code\n"
 			"Cd [num]     - convsrts '' data bytes\n"
-			"Cs [num]     - converts '' to string\n");
+			"Cs [num]     - converts '' to string\n"
+			"C*           - list metadata database\n");
 	}
 }
 

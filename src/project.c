@@ -61,6 +61,16 @@ int project_save(char *file)
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
 		fprintf(fd, "comment=0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
 	}
+	fprintf(fd, "# Code attributes\n");
+	list_for_each(pos, &data) {
+		int type = 'D';
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		switch(d->type) {
+		case FMT_HEXB: type = 'd'; break;
+		case FMT_ASC0: type = 's'; break;
+		default:       type = 'c'; break; }
+		fprintf(fd, "code=0x%llx %lld %c\n", (u64)d->from, (u64)(d->to-d->from), type);
+	}
 
 	fclose(fd);
 
@@ -76,8 +86,8 @@ int project_close()
 	if (!strnull(file)) {
 		if (yesno('y', "Do you want to save the '%s' project? (Y/n) ", file)) {
 			project_save(file);
-		}
-		config_set("file.project", "");
+		} else
+			config_set("file.project", "");
 	}
 	cons_flush();
 }
@@ -149,7 +159,20 @@ int project_open(char *file)
 				ptr2 = ptr2 + 1;
 				metadata_comment_add(get_offset(ptr), ptr2);
 			}
-		} 
+		} else
+		if (!strcmp(buf, "code")) {
+			u64 len;
+			char type;
+			u64 from;
+			ptr2=strchr(ptr, ' ');
+			if (ptr2) {
+				ptr2 = ptr2 + 1;
+				sscanf(ptr2, "0x%08llx %d %c", &from, &len, &type);
+				sprintf(buf, "C%c %lld @ 0x%08llx", type, len, from);
+				if (buf[1]!='\0')
+					radare_cmd(buf, 0);
+			}
+		}
 	}
 	fclose(fd);
 // TODO show statistics: N comments, symbols, labels, flags, etc...

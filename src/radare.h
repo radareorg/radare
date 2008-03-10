@@ -56,6 +56,16 @@ struct trace_t {
 	struct list_head list;
 };
 
+extern struct list_head data;
+struct data_t {
+	u64 from;
+	u64 to;
+	int type;
+	u64 size;
+	struct list_head *list;
+};
+
+
 struct comment_t {
 	u64 offset;
 	char *comment;

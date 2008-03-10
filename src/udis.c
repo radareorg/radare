@@ -36,18 +36,9 @@ enum {
 	ARCH_JAVA = 5
 };
 
-static struct list_head data;
+struct list_head data;
 
 extern int force_thumb;
-
-struct data_t {
-	u64 from;
-	u64 to;
-	int type;
-	u64 size;
-	struct list_head *list;
-};
-
 void data_add(u64 off, int type)
 {
 	u64 tmp;
@@ -71,6 +62,7 @@ void data_add(u64 off, int type)
 	d->from = off;
 	d->to = d->from+config.block_size;  // 1 byte if no cursor // on strings should autodetect
 	if (config.cursor_mode) {
+		d->to = d->from + 1;
 		d->from+=config.cursor;
 		if (config.ocursor!=-1)
 			d->to = config.seek+config.ocursor;
@@ -81,7 +73,9 @@ void data_add(u64 off, int type)
 		}
 	}
 	d->type = type;
-	d->size = (config.ocursor==-1)?(d->to-d->from):config.cursor-config.ocursor+1,d->size;
+	d->size = (d->to - d->from);
+	if (d->size<1)
+		d->size = 1;
 
 	list_add(&(d->list), &data);
 }
@@ -104,6 +98,20 @@ int data_count(u64 offset)
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		if (offset == d->from)
 			return d->size;
+	}
+	return 0;
+}
+
+int data_list()
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		switch(d->type) {
+		case FMT_HEXB: cons_strcat("Cd "); break;
+		case FMT_ASC0: cons_strcat("Cs "); break;
+		default:       cons_strcat("Cc "); break; }
+		cons_printf("%d @ 0x%08llx\n", d->to - d->from, d->type);
 	}
 	return 0;
 }
@@ -169,7 +177,7 @@ char *metadata_comment_list()
 	struct list_head *pos;
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		cons_printf("0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
+		cons_printf("CC %s @ 0x"OFF_FMTx"\n", cmt->comment, cmt->offset);
 	}
 }
 
