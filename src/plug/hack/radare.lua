@@ -74,6 +74,12 @@ function Radare.cmd(cmd)
 	return radare_cmd_str(cmd)
 end
 
+function Radare.iosystem(command)
+	r.cmd("!"..command)
+	-- todo handle errors here
+	return 0
+end
+
 function Radare.system(command)
 	r.cmd("!!"..command)
 	-- todo handle errors here

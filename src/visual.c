@@ -1188,6 +1188,7 @@ CMD_DECL(visual)
 					int type = data_type(config.seek+config.cursor);
 					if (type == -1 || type == DATA_FOLD_O) {
 						data_set((u64)(config.seek+config.cursor), DATA_FOLD_C);
+						cons_clear();
 					}
 				} else {
 					// create new closed folder containing selected bytes

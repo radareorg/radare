@@ -167,15 +167,16 @@ int data_count(u64 offset)
 
 int data_list()
 {
+	struct data_t *d;
 	struct list_head *pos;
 	list_for_each(pos, &data) {
-		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		d = (struct data_t *)list_entry(pos, struct data_t, list);
 		switch(d->type) {
-		case DATA_FOLD_O: cons_strcat("; fold open "); break; // TODO define names
-		case DATA_FOLD_C: cons_strcat("; fold open "); break;
-		case DATA_HEX: cons_strcat("Cd "); break;
-		case DATA_STR: cons_strcat("Cs "); break;
-		default:       cons_strcat("Cc "); break; }
+		case DATA_FOLD_O: cons_strcat("Cu "); break;
+		case DATA_FOLD_C: cons_strcat("Cf "); break;
+		case DATA_HEX:    cons_strcat("Cd "); break;
+		case DATA_STR:    cons_strcat("Cs "); break;
+		default:          cons_strcat("Cc "); break; }
 		cons_printf("%d @ 0x%08llx\n", d->to - d->from, d->type);
 	}
 	return 0;
@@ -204,11 +205,12 @@ void metadata_comment_add(u64 offset, const char *str)
 
 void metadata_comment_del(u64 offset, const char *str)
 {
+	struct comment_t *cmt;
 	struct list_head *pos;
 	u64 off = get_math(str);
 
 	list_for_each(pos, &comments) {
-		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		cmt = list_entry(pos, struct comment_t, list);
 		if (!pos)
 			return;
 		if (off) {
@@ -237,7 +239,7 @@ void metadata_comment_del(u64 offset, const char *str)
 	}
 }
 
-char *metadata_comment_list()
+void metadata_comment_list()
 {
 	struct list_head *pos;
 	list_for_each(pos, &comments) {
@@ -440,6 +442,7 @@ void udis_arch(int arch, int len, int rows)
 	char *follow, *cmd_asm;
 	int endian, height;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
+	int folder = 0; // folder level
 
 	cmd_asm = config_get("cmd.asm");
 	show_size = config_get("asm.size");
@@ -516,12 +519,18 @@ void udis_arch(int arch, int len, int rows)
 				break;
 			case DATA_FOLD_C: {
 				struct data_t *foo = data_get(seek);
-				cons_printf("  { 0x%llx-0x-%llx %lld }", foo->from, foo->to, (foo->to-foo->from));
+				cons_printf("  { 0x%llx-0x%llx %lld }", foo->from, foo->to, (foo->to-foo->from));
 				bytes+=idata;
 				} break;
 			case DATA_FOLD_O:
+				cons_strcat("\r");
+				if (show_lines)
+					code_lines_print(reflines, seek);
+				cons_strcat("           ");
+				for(i=0;i<folder;i++)cons_strcat("  ");
 				cons_strcat("  {\n");
 				lines--;
+				folder++;
 				goto __outofme;
 			case DATA_STR:
 				cons_strcat("  .string \"");
@@ -794,9 +803,12 @@ void udis_arch(int arch, int len, int rows)
 			if (show_lines)
 				code_lines_print(reflines, seek);
 			if (show_offset) {
-				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				else cons_printf("0x%08llX ", (unsigned long long)(seek));
+				cons_strcat("           ");
+				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
+			folder--;
+			for(i=0;i<folder;i++)cons_strcat("  ");
 			cons_strcat("  }");
 		}
 		seek+=myinc;

@@ -488,6 +488,13 @@ int radare_cmd(char *tmp, int log)
 		config.height -= 3;
 	}
 
+	// bypass radare commandline hack ;D
+	if (!memcmp(tmp, "[0x", 3)) {
+		char *foo = strchr(tmp, '>');
+		if (foo)
+			tmp = foo+2;
+	}
+
 	// TODO : move to a dbg specific func outside here
 	if (config.debug && tmp && tmp[0]=='\0') {
 		radare_read(0);

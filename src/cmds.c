@@ -507,31 +507,45 @@ CMD_DECL(code)
 			else
 				metadata_comment_add(config.seek, text);
 		}
-	} else if (text[0]=='c' ||text[0]=='d'||text[0]=='s') {
-		u64 tmp = config.block_size;
-		int fmt = FMT_HEXB;
-		int len = get_math(text +1);
+	} else  {
 		switch(text[0]) {
-		case 'c': fmt = FMT_UDIS; break;
-		case 'd': fmt = FMT_HEXB; break;
-		case 's': fmt = FMT_ASC0; break;
+			case 'c':
+			case 'd':
+			case 's':
+			case 'f':
+			case 'u': {
+				u64 tmp = config.block_size;
+				int fmt = FMT_HEXB;
+				int len = get_math(text +1);
+				switch(text[0]) {
+					case 'c': fmt = DATA_CODE; break;
+					case 'd': fmt = DATA_HEX; break;
+					case 's': fmt = DATA_STR; break;
+					case 'f': fmt = DATA_FOLD_C; break;
+					case 'u': fmt = DATA_FOLD_O; break;
+				}
+				if (len>config.block_size)
+					len = config.block_size;
+				tmp = config.block_size;
+				config.block_size = len;
+				data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+				config.block_size = tmp;
+			}
+				break;
+			case '*':
+				metadata_comment_list();
+				data_list();
+				break;
+			default:
+				cons_printf("Usage: C[op] [arg] <@ offset>\n"
+						"CC [-][comment] - adds a comment\n"
+						"Cc [num]     - converts num bytes to code\n"
+						"Cd [num]     - convsrts '' data bytes\n"
+						"Cs [num]     - converts '' to string\n"
+						"Cf [num]     - folds num bytes\n"
+						"Cu [num]     - unfolds num bytes\n"
+						"C*           - list metadata database\n");
 		}
-		if (len>config.block_size)
-			len = config.block_size;
-		tmp = config.block_size;
-		config.block_size =len;
-	data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
-		config.block_size = tmp;
-	} else if (text[0]=='*') {
-		metadata_comment_list();
-		data_list();
-	 } else {
-		cons_printf("Usage: C[op] [arg]\n"
-			"CC [-][comment] - adds a comment\n"
-			"Cc [num]     - converts num bytes to code\n"
-			"Cd [num]     - convsrts '' data bytes\n"
-			"Cs [num]     - converts '' to string\n"
-			"C*           - list metadata database\n");
 	}
 }
 
@@ -1192,7 +1206,9 @@ CMD_DECL(search) {
 CMD_DECL(shell)
 {
 	prepare_environment(input);
-	io_system(input);
+	if (input[0]=='!')
+		system(input+1);
+	else io_system(input);
 	destroy_environment(input);
 }
 
