@@ -39,6 +39,33 @@ enum {
 struct list_head data;
 
 extern int force_thumb;
+
+int data_set_len(u64 off, u64 len)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (off>= d->from && off< d->to) {
+			d->to = d->from+len;
+			d->size = d->to-d->from;
+			return 0;
+		}
+	}
+	return -1;
+}
+int data_set(u64 off, int type)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (off>= d->from && off< d->to) {
+			d->type = type;
+			return 0;
+		}
+	}
+	return -1;
+}
+
 void data_add(u64 off, int type)
 {
 	u64 tmp;
@@ -80,15 +107,51 @@ void data_add(u64 off, int type)
 	list_add(&(d->list), &data);
 }
 
+struct data_t *data_get(u64 offset)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (offset >= d->from && offset < d->to)
+			return d;
+	}
+	return NULL;
+}
+
+int data_type_range(u64 offset)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (offset >= d->from && offset < d->to) {
+			return d->type;
+		}
+	}
+	return -1;
+}
+
 int data_type(u64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset == d->from)
+		if (offset == d->from) {
 			return d->type;
+		}
 	}
-	return 0;
+	return -1;
+}
+
+int data_end(u64 offset)
+{
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (offset == d->to) {
+			return d->type;
+		}
+	}
+	return -1;
 }
 
 int data_count(u64 offset)
@@ -108,8 +171,10 @@ int data_list()
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		switch(d->type) {
-		case FMT_HEXB: cons_strcat("Cd "); break;
-		case FMT_ASC0: cons_strcat("Cs "); break;
+		case DATA_FOLD_O: cons_strcat("; fold open "); break; // TODO define names
+		case DATA_FOLD_C: cons_strcat("; fold open "); break;
+		case DATA_HEX: cons_strcat("Cd "); break;
+		case DATA_STR: cons_strcat("Cs "); break;
 		default:       cons_strcat("Cc "); break; }
 		cons_printf("%d @ 0x%08llx\n", d->to - d->from, d->type);
 	}
@@ -443,13 +508,22 @@ void udis_arch(int arch, int len, int rows)
 			}
 			switch(data_type(seek)) {
 			default:
-			case FMT_HEXB:
+			case DATA_HEX:
 				cons_printf("  .db  ");
 				for(i=0;i<idata;i++) {
 					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
 				}
 				break;
-			case FMT_ASC0:
+			case DATA_FOLD_C: {
+				struct data_t *foo = data_get(seek);
+				cons_printf("  { 0x%llx-0x-%llx %lld }", foo->from, foo->to, (foo->to-foo->from));
+				bytes+=idata;
+				} break;
+			case DATA_FOLD_O:
+				cons_strcat("  {\n");
+				lines--;
+				goto __outofme;
+			case DATA_STR:
 				cons_strcat("  .string \"");
 				for(i=0;i<idata;i++) {
 					print_color_byte_i(bytes+i, "%c", is_printable(config.block[bytes+i])?config.block[bytes+i]:'.');
@@ -462,6 +536,7 @@ void udis_arch(int arch, int len, int rows)
 			bytes+=idata;
 			continue;
 		}
+		__outofme:
 
 		if (arch != ARCH_X86) {
 			endian_memcpy_e(b, config.block+bytes, 4, endian);
@@ -713,6 +788,16 @@ void udis_arch(int arch, int len, int rows)
 				case ARCH_ARM:
 					break;
 			}
+		}
+		if (data_end(seek) == DATA_FOLD_O) {
+			NEWLINE;
+			if (show_lines)
+				code_lines_print(reflines, seek);
+			if (show_offset) {
+				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				else cons_printf("0x%08llX ", (unsigned long long)(seek));
+			}
+			cons_strcat("  }");
 		}
 		seek+=myinc;
 		NEWLINE;

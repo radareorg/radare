@@ -56,6 +56,15 @@ struct trace_t {
 	struct list_head list;
 };
 
+enum {
+	DATA_HEX    = FMT_HEXB, /* hex byte pairs */
+	DATA_STR    = FMT_ASC0, /* ascii string */
+	DATA_CODE   = FMT_UDIS, /* plain assembly code */
+	DATA_FOLD_O = 0x100,    /* open folder */
+	DATA_FOLD_C = 0x101,    /* closed folder */
+	DATA_EXPAND = 0x200 
+};
+
 extern struct list_head data;
 struct data_t {
 	u64 from;

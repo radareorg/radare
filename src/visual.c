@@ -1179,12 +1179,46 @@ CMD_DECL(visual)
 			}
 			break;
 		case '<':
-			config.seek-= config.block_size;
-			if (config.seek % config.block_size)
-				cmd_next_align("");
+			// fold
+			if (config.cursor_mode) {
+				// one byte = 
+				if (config.ocursor == -1) {
+					// check if current cursor seek is a function or expand
+					// unexpand function or close folder
+					int type = data_type(config.seek+config.cursor);
+					if (type == -1 || type == DATA_FOLD_O) {
+						data_set((u64)(config.seek+config.cursor), DATA_FOLD_C);
+					}
+				} else {
+					// create new closed folder containing selected bytes
+					data_add((u64)config.seek+config.cursor, DATA_FOLD_C);
+					data_set_len((u64)(config.seek+config.cursor), (u64)(config.cursor-config.ocursor+1));
+					cons_clear();
+				}
+			} else {
+				config.seek-= config.block_size;
+				if (config.seek % config.block_size)
+					cmd_next_align("");
+			}
 			break;
 		case '>':
-			config.seek += config.block_size - (config.seek % config.block_size);
+			if (config.cursor_mode) {
+				int type = data_type(config.seek+config.cursor);
+				if (type == DATA_FOLD_C) {
+					data_set(config.seek+config.cursor, DATA_FOLD_O);
+				} /* else
+				if (aop.jump) {
+					data_add(config.seek, DATA_EXPAND);
+				}
+*/
+				cons_clear();
+				
+				// unfold or expand
+				// check if current cursor position is jump -> open it
+				// check if current cursor position is a folder -> open it
+			} else {
+				config.seek += config.block_size - (config.seek % config.block_size);
+			}
 			break;
 		case 'H':
 			if (config.cursor_mode) {

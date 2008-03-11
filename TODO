@@ -7,27 +7,45 @@
 
 ===========================================================
 
-(gdb) break ptrace if $r3 == 31
-make fdsniff and usbsniff generate a project file and a binary one.
 
+0.9.4
+=====
+* :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
+asm.offset must be for all print modes
+fix w32 psapi.dll
+!signal has no help :O
+* add u64 cursor[config.block_size]; when printing
+  - useful for zoom , disasembly, code folding
+* handle !! properly
+* status shows backtrace !?!?!
+* dump/restore incremental
+* dbg.stepolibs = true ;  step over non-user code?
+* Funroll mode - stacked disassembly
+* pA must show decimal value too (if it is a small value) (less than 10K f.ex)
+* pA skip nulls
+
+
+0.9.5
+=====
 support for 7bit text encoding
+make fdsniff and usbsniff generate a project file and a binary one.
+(gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
+* xc can get_math!
+* allow to run without opening a file (useful for batch mode)
 
 
-http://ru.gentoo.neysx.org/proj/ru/qa/backtraces.xml
-  fdsniff3.bin
-open filedescriptors
 
 search and replace
  /r foo
  /1-5 ranged search
 -> should with cmd.search or cmd.hit
 
-[MAGIC] repeat a command at every flag matching
-> wx foo @ hit*
 
-asm.offset must be for all print modes
-
-import pdi-tool from gerardo to inject code
+Imports:
+========
+* import pdi-tool from gerardo to inject code
+* import esteve's object injector
+* import libdwarf
 
 add full autocompletion support for dietline
 
@@ -35,7 +53,6 @@ ARM
 ===
 * arm has no backtrace
 step over doesnt works
-!! doesnt works on arm
 dbg.bep entry not working on arm
 -S flag move to rabin
 restore/dump doesnt works on arm
@@ -43,13 +60,6 @@ when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
-* :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
-* xc can get_math!
-* cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
-  - fc = flag command fc <command> @ offset
-  - do not execute twice
-* allow to run without opening a file (useful for batch mode)
-* zoom segfaults
 * keybinding assignment dosnt workz
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
@@ -63,36 +73,17 @@ BUGS:
    - pipecmd2str must use radare_cmd_str
 * new graph view
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
-* import esteve's object injector
-
 * next pel debugger (next source line) -- comment uh?
-* handle !! properly
-!signal has no help :O
-* status shows backtrace !?!?!
 
 TODO for 0.9.4
 ==============
 * Indentify, parse and show the auxv_t structure
-* pA must show decimal value too (if it is a small value) (less than 10K f.ex)
-* wtf 'undo' command shows the fking list of steps?
-  - must be silent
-* avoid dupped (NULL's) in pA command (cleaner to read)
 * filter visible flags with scr.flagfilter (strstr expression)
-* make !dump incremental
-  - support to enable full dump (with hashing for reducing sizes)
-  - bindiffing
-  - ultra slow ? i should analyze code to enhace this
-* code data type must be saved and loaded in project
 * bindiff is buggy (gnu huh!)
   - use bdiff
   - integrated with bdcolor huh!
 * support to append data (without getting out of the block_size) (or so..)
-* Fixed udis loop
-  - colorize opcodes by arch_aop
 * cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
-* dump file to filedescriptor of the child doesnt works (child.stdin)
-* identify nodes with 'ret' in graph
-* identify nodes with 'cmp' in graph
 * implement insert data inda core
 * graph.body=asm,flags,symcalls,description, trace execution data
 * blue or black background for metadata in udis -> nicer for w32 and white screens
@@ -142,30 +133,14 @@ $ radare /dev/ttyS0
   readed from the filedescriptor
 * write command is used
 * needs new interactive mode ala minicom
-* useful for filedescriptor of child processes
+  * useful for filedescriptor of child processes
+  * somewhat like an always-growing file :)
 * also for sniffing
-* somewhat like an always-growing file :)
 * autoscrolling to the end for interactive visual
-
-
-* print disasembly by trace from an starting address
-  * roll/funroll code
-  - pD 100 | sort
-  - true jumps are done, false ones are ignored
-  - stacked disassembly (like vim folders)
-
-* dbg.vstepkey = step or stepu, chooses the 's' action.
-  - step over non-user code?
   - block descriptor (if regs traced, or so show info)
-* add scr.cursor scr.cursor_range evals
 
 + EH - event handling (event type + source pid)
-  using linked list.h
   * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
-
-* allow to specify what you want to see when tracing (cmd.cmttrace) ?
-  - is not oneliner
-  - analyze these comments to identify loop variables and so
 
 Graphs
 ======
@@ -193,7 +168,6 @@ Graphs
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
-
 
 * Show FPU stack contents
 
@@ -335,6 +309,7 @@ FileDescriptors
 ===============
 * read/write from/to child filedescriptor
 * sniff filedescriptor (dumping to file or socket)
+* open filedescriptors instead of files (always growing file)
 
 Debugger
 ========
@@ -387,6 +362,11 @@ Debugger
   - read shellcode from a file 
     should support .c or .s or raw or elf _start
 
+Graphs
+======
+* identify nodes with 'ret' in graph
+* identify nodes with 'cmp' in graph
+
 Code analyzer
 =============
 * handle relative references to code and data
@@ -423,6 +403,15 @@ Random
 
 TOTHINK
 =======
+* make !dump incremental
+  - support to enable full dump (with hashing for reducing sizes)
+  - bindiffing using bdiff
+  - ultra slow ? i should analyze code to enhace this
+[MAGIC] repeat a command at every flag matching
+> wx foo @ hit*
+* cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
+  - fc = flag command fc <command> @ offset
+  - do not execute twice
 * Do not use the char '(' in asm.lines. just use - or =
 * record radare commands
   - all commands executed within a recording time are stored on a single script file

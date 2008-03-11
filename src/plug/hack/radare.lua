@@ -8,14 +8,16 @@ Radare = {}
 Radare.Print = {}
 Radare.Search = {}
 Radare.Config = {}
+Radare.Code = {}
 Radare.Hash = {}
 Radare.Debugger = {}
 
 -- define aliases
 r = Radare
 p = Radare.Print
-c = Radare.Config
-k = Radare.Hash
+cfg = Radare.Config
+code = Radare.Code
+hash = Radare.Hash
 s = Radare.Search
 d = Radare.Debugger
 
@@ -389,6 +391,28 @@ function Radare.Hash.sha512(size, address)
 	if size == nil then size = "" end
 	if address == nil then return r.cmd("#sha512 "..size) end
 	return r.cmd("#sha512 "..size.."@"..address)
+end
+
+-- code api
+function Radare.Code.comment(offset, message)
+	-- TODO: if only offset passed, return comment string
+	r.cmd("CC "..message.." @ "..offset)
+	return Radare.Code
+end
+
+function Radare.Code.code(offset, len)
+	r.cmd("Cc "..len.." @ "..offset)
+	return Radare.Code
+end
+
+function Radare.Code.data(offset, len)
+	r.cmd("Cd "..len.." @ "..offset)
+	return Radare.Code
+end
+
+function Radare.Code.string(offset, len)
+	r.cmd("Cs "..len.." @ "..offset)
+	return Radare.Code
 end
 
 -- change a signal handler of the child process
