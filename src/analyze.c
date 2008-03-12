@@ -410,6 +410,7 @@ int radare_analyze(u64 seek, int size, int depth)
 	u64 tmp = config.seek;
 	int v = config.verbose;
 	config.verbose = 0;
+	int lastnull = 0;
 
 	if (depth<0)
 		return 0;
@@ -459,14 +460,19 @@ int radare_analyze(u64 seek, int size, int depth)
 			nume |= word[3]<<24;
 
 			if (num == 0) {
-				print_addr(seek+i-3);
-				C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
-				else cons_printf("(NULL)\n");
+				if (lastnull++ == 0) {
+					print_addr(seek+i-3);
+					C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
+					else cons_printf("(NULL)\n");
+				}
 			} else if (num == -1) {
 				/* ignore -1 */
 				//print_addr(seek+i-3);
 				//cons_printf("0xffffffff (-1)\n");
 			} else {
+				if (lastnull>1)
+					cons_printf("(last null repeated %d times)\n", lastnull);
+				lastnull = 0;
 				print_addr(seek+i-3);
 				C {
 					if (config.endian)

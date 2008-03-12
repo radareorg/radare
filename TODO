@@ -17,6 +17,7 @@ fix w32 psapi.dll
 * add u64 cursor[config.block_size]; when printing
   - useful for zoom , disasembly, code folding
 * handle !! properly
+* maemo integration
 * status shows backtrace !?!?!
 * dump/restore incremental
 * dbg.stepolibs = true ;  step over non-user code?

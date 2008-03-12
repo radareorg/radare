@@ -615,6 +615,7 @@ int debug_init_maps(int rest)
 	SIZE_T ret_len;
 	MAP_REG *mr;
 	int n = 0;
+	LoadLibrary("psapi.dll");
 	gmbn = GetProcAddress(GetModuleHandle("psapi"), "GetModuleBaseName");
 	gmi = GetProcAddress(GetModuleHandle("psapi"), "GetModuleInformation");
 	if (gmbn == NULL || gmi == NULL) {

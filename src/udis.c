@@ -813,7 +813,7 @@ void udis_arch(int arch, int len, int rows)
 		}
 		seek+=myinc;
 		NEWLINE;
-		if (rows && rows == lines)
+		if (rows && rows >= lines)
 			break;
 		bytes+=myinc;
 	}

@@ -21,6 +21,7 @@ typedef struct {
 void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
+void flag_clear_by_addr(u64 addr);
 u64 flag_get_addr(const char *name);
 flag_t *flag_get(const char *name);
 flag_t *flag_get_i(int id);

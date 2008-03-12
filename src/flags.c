@@ -318,12 +318,15 @@ void flag_clear_by_addr(u64 seek)
 {
 	struct list_head *pos;
 
+	_polla:
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
 		if (flag->offset == seek) {
 			list_del(&flag->list);
-			pos = flags.next;
+			free(flag);
+			pos = flags.prev;
+			goto _polla;
 		}
 	}
 }
@@ -351,8 +354,8 @@ void flag_clear(const char *name)
 			if (!memcmp(str, flag->name, l)) {
 				list_del(&(flag->list));
 				free(flag);
-				found = 1;
-				goto __restart;
+				pos = flags.next;
+				continue;
 			}
 		}
 	} else {
@@ -430,7 +433,7 @@ int flag_set(const char *name, u64 addr, int dup)
 		if (!strcmp(f->name, name)) {
 			if (dup) {
 				/* ignore dupped name+offset */
-				if (flag->offset == addr)
+				if (f->offset == addr)
 					return 1;
 			} else {
 				flag = f;

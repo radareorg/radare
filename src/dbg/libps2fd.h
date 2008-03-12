@@ -175,7 +175,7 @@ typedef struct {
 #define PTRACE_SINGLESTEP PT_STEP
 #endif
 
-#define MAX_BPS	15
+#define MAX_BPS	128
 
 #define WS(w) (ps.ws.w)
 #define WS_SI(f) (ps.ws.si.f)

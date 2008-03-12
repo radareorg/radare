@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       th0rpe <nopcode.org>
  *       pancake <youterm.com>
  *
@@ -156,7 +156,7 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 	if (dr_free == -1) {
 		for(i = 0; i < DR_NADDR; i++) {
 
-			if(I386_DR_VACANT(control, i)) {
+			if(dr_get(i)==0) { //I386_DR_VACANT(control, i)) {
 				dr_free = i;
 			} else {
 				/* check if exist a watchpoint

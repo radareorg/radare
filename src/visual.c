@@ -870,14 +870,17 @@ CMD_DECL(visual)
 						//			terminal_set_raw(0);
 						//			printf("Breakpoint at: ");
 						//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
-
 						bp = debug_get_bp(addr);
 						if (bp) {
-							debug_rm_bp(addr, 0);
+							sprintf(line, "!bp -0x%08x", (unsigned int)addr);
+							radare_cmd(line,0);
+							//debug_rm_bp(addr, 0);
 						} else {
 							sprintf(line, "!bp 0x%08x", (unsigned int)addr);
 							radare_cmd(line,0);
 						}
+						if (!debug_get_bp(addr))
+							flag_clear_by_addr(addr);
 						cons_clear();
 						continue;
 					}

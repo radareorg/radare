@@ -1340,9 +1340,9 @@ int debug_bp(const char *str)
 	switch(ptr[0]) {
 	case '-':
 		addr = get_offset(ptr+1);
+		flag_clear_by_addr(addr);
 		if(debug_rm_bp_addr(addr) == 0)
 			eprintf("breakpoint at 0x%x dropped\n", addr);
-		flag_clear_by_addr(addr);
 		break;
 	case '*':
 		eprintf("%i breakpoint(s) removed\n", debug_rm_bps());
@@ -1352,7 +1352,7 @@ int debug_bp(const char *str)
 		if (ptr[0]==0 || addr == 0)
 			debug_print_bps();
 		else {
-			flag_set("breakpoint", addr, 1);
+			flag_set("breakpoint", addr, 3);
 			debug_set_bp(NULL, addr, bptype);
 			eprintf("new breakpoint at 0x%lx\n", addr);
 		}
@@ -1555,18 +1555,9 @@ int debug_rm_bp(unsigned long addr, int type)
 	struct bp_t *bp;
 	int ret;
 
-	if(type == 0) {
-		bp = debug_get_bp(addr);	
-	} else {
-		if(addr < MAX_BPS)
-			bp = &ps.bps[addr];
-		else
-			bp = NULL;
-	}
-
-	if(!bp)
+	bp = debug_get_bp(addr);	
+	if (bp == NULL)
 		return -1;
-
 	if(bp->hw)
 		ret = arch_rm_bp_hw(bp);
 	else
@@ -1636,21 +1627,25 @@ int debug_set_bp(struct bp_t *bp, unsigned long addr, int type)
 			bp_free = i;
 	}
 
+	ret = -1;
 	if(type == BP_SOFT) {
 		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
 		ps.bps[bp_free].hw = 0;
 	} else if(type == BP_HARD) {
 		ret = arch_set_bp_hw(&ps.bps[bp_free], addr);
 		ps.bps[bp_free].hw = 1;
-	} else {
+	}
+	if(ret < 0) {
 		if((ret = arch_set_bp_hw(&ps.bps[bp_free], addr)) >= 0 )
 			ps.bps[bp_free].hw = 1;
 		else if((ret = arch_set_bp_soft(&ps.bps[bp_free], addr)) >= 0)
 			ps.bps[bp_free].hw = 0;
-	}
 
-	if(ret < 0)
-		return ret;
+		if(ret < 0) {
+			ps.bps[bp_free].addr = 0;
+			return ret;
+		}
+	}
 
 	ps.bps[bp_free].addr = addr;
 	if(bp)
