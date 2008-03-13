@@ -40,11 +40,23 @@ void arch_set_callbacks()
 	if (!strcmp(a, "arm")) {
 		arch_aop = &arch_arm_aop;
 	} else
+	if (!strcmp(a, "arm16")) {
+		arch_aop = &arch_arm_aop;
+	} else
 	if (!strcmp(a, "java")) {
 		arch_aop = &arch_java_aop;
 	} else
 	if (!strcmp(a, "ppc")) {
 		arch_aop = &arch_ppc_aop;
+	} else
+	if (!strcmp(a, "intel16")) {
+		arch_aop = &arch_x86_aop;
+	} else
+	if (!strcmp(a, "intel32")) {
+		arch_aop = &arch_x86_aop;
+	} else
+	if (!strcmp(a, "intel64")) {
+		arch_aop = &arch_x86_aop;
 	} else
 	if (!strcmp(a, "intel")) {
 		arch_aop = &arch_x86_aop;
@@ -484,6 +496,10 @@ int radare_analyze(u64 seek, int size, int depth)
 				} else
 					cons_printf("int be=0x%08x le=0x%08x ",
 						num, nume);
+				if (num<0xffff)
+					cons_printf("(be= %d )", num);
+				if (nume<0xffff)
+					cons_printf(", (le= %d ) ", nume);
 
 				if (num>-0xfffff && num<0xfffff)
 					cons_printf("(%d)\n", num);

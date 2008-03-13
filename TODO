@@ -11,23 +11,18 @@
 0.9.4
 =====
 * :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
-asm.offset must be for all print modes
-fix w32 psapi.dll
-!signal has no help :O
-* add u64 cursor[config.block_size]; when printing
-  - useful for zoom , disasembly, code folding
-* handle !! properly
-* maemo integration
 * status shows backtrace !?!?!
 * dump/restore incremental
 * dbg.stepolibs = true ;  step over non-user code?
-* Funroll mode - stacked disassembly
-* pA must show decimal value too (if it is a small value) (less than 10K f.ex)
-* pA skip nulls
+* remove comments with cursor
 
 
 0.9.5
 =====
+* asm.offset must be for all print modes
+* Funroll mode - stacked disassembly
+* add u64 cursor[config.block_size]; when printing
+  - useful for zoom , disasembly, code folding
 support for 7bit text encoding
 make fdsniff and usbsniff generate a project file and a binary one.
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
@@ -53,7 +48,6 @@ add full autocompletion support for dietline
 ARM
 ===
 * arm has no backtrace
-step over doesnt works
 dbg.bep entry not working on arm
 -S flag move to rabin
 restore/dump doesnt works on arm
@@ -61,6 +55,7 @@ when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
+* step over doesnt works
 * keybinding assignment dosnt workz
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
@@ -76,7 +71,8 @@ BUGS:
   * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
 * next pel debugger (next source line) -- comment uh?
 
-TODO for 0.9.4
+
+TODO for 0.9.5
 ==============
 * Indentify, parse and show the auxv_t structure
 * filter visible flags with scr.flagfilter (strstr expression)
@@ -92,11 +88,7 @@ TODO for 0.9.4
   - scr.palete = 1732367 -> when printing colors are peeked from this palete
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
-* remove comments with cursor
 
-
-TODO for 0.9.5
-==============
 * StreamViewer
 * invert pel disasm
 * /a algorithm defined by search.algorithm
@@ -206,11 +198,6 @@ Graphs
   - they will not survive a project save
   - they are destroyed after a timeout
 
-w32 Debugger
-============
-* implement !maps
-* pid:// doesn't works
-
 
 Search
 ======
@@ -265,7 +252,6 @@ Visual
 * colorize background of flagged bytes in hexdump
 * ease monitor access from the visual (xterm or so) (run inside dvtm?)
 * count the number of lines in backtrace and substract them to make the visual
-* add scrolling acceleration. (cfg.accel or so)
 
 Hasher
 ======

@@ -544,6 +544,9 @@ int radare_cmd(char *tmp, int log)
 
 		C cons_printf(C_RED"Disassembly:\n"C_RESET);
 		else cons_printf("Disassembly:\n");
+		if (config_get("dbg.reference")) {
+			radare_cmd("pR @ eip",0);
+		}
 
 		//radare_cmd("s eip", 0);
 		{

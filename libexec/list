@@ -44,9 +44,16 @@ print "$file $line\n";
 		$myline=~/([^\t]*)/;
 		my $numline = int($1);
 		if (($numline > ($line-5)) && ($numline < ($line+5))) {
-			$ch = " ";
-			$ch = "*" if ($numline == $line);
-			print " $ch $myline\n";
+			$en = ""; $ch = "  ";
+			if ($numline == $line) {
+				if ($ENV{COLOR} eq "1") {
+					$ch = "\e[47m\e[30m *";
+					$en = "\e[0m";
+				} else {
+					$ch = "*>";
+				}
+			}
+			print " $ch $myline$en\n";
 		}
 		
 	}

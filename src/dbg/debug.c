@@ -861,6 +861,11 @@ int debug_signal(char *args)
 		return 1;
 	}
 
+	if(strchr(args,'?')) {
+		cons_printf("Usage: !signal <SIGNUM> <HANDLER-ADDR>\n");
+		cons_printf(" HANDLER=0 means ignore signal\n");
+		return 0;
+	}
 	if (!args) {
 		print_sigah();
 		return 0;

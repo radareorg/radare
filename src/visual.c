@@ -798,6 +798,35 @@ static void ringring()
 static int do_repeat=0;
 static int repeat=0;
 static int repeat_weight=1;
+static int scraccel = 0;
+static int accel=1;
+
+static void check_accel(int foo)
+{
+	static suseconds_t ulast = 0;
+	static time_t last = 0;
+	struct timeval tv;
+	static int counter = 0;
+	if (!scraccel)
+		return;
+	if (!foo) {
+		last = 0;
+		return;
+	}
+	gettimeofday(&tv, NULL);
+	if (last == 0) {
+		last = tv.tv_sec;
+		ulast = tv.tv_usec;
+	} else {
+		if (last+2>tv.tv_sec) {
+			counter++;
+			if (counter >= accel*scraccel)
+				accel ++;
+		} else accel = 1;
+	}
+	last = tv.tv_sec;
+	ulast = tv.tv_usec;
+}
 
 CMD_DECL(visual)
 {
@@ -829,6 +858,7 @@ CMD_DECL(visual)
 		if (inc<1) inc = 1;
 		dec = inc;
 		setenv("VISUAL", "1", 1);
+		scraccel = config_get_i("scr.accel");
 		update_environment();
 		radare_sync();
 		if (config.debug)
@@ -1108,11 +1138,13 @@ CMD_DECL(visual)
 					config.cursor = config.block_size - 1;
 				config.ocursor = -1;
 			} else {
+				check_accel(0);
 				config.seek += inc;
 				if (config.block_size >= (config.size-config.seek))
 					cons_clear();
 			}
 			break;
+		case ' ':
 		case 'J':
 			if (config.cursor_mode) {
 				if (config.ocursor==-1)
@@ -1123,18 +1155,17 @@ CMD_DECL(visual)
 				if (config.block_size >= (config.size-config.seek))
 					cons_clear();
 				continue;
-			} else cons_clear();
-		case ' ':
-			if (last_print_format == FMT_DISAS)
-				config.seek += 4;
-			else	config.seek += config.block_size;
-
-			if (config.size!=-1)
-				if (config.seek>config.size)
-					config.seek=config.size;
+			} else {
+				check_accel(1);
+				if (last_print_format == FMT_DISAS)
+					config.seek += inc;
+				else	config.seek += config.block_size*accel;
+				cons_clear();
+			}
 			break;
 		case 0x8:
 		case 'k':
+			check_accel(0);
 			if (config.cursor_mode) {
 				if (dec > config.cursor)
 					config.cursor = 0;
@@ -1154,9 +1185,10 @@ CMD_DECL(visual)
 					config.cursor = 0;
 				else	config.cursor -= inc;
 			} else {
+				check_accel(1);
 				if (last_print_format == FMT_DISAS)
 					config.seek -= 4;
-				else	config.seek -= config.block_size;
+				else	config.seek -= config.block_size*accel;
 				cons_clear();
 			}
 			if (config.block_size >= (config.size-config.seek))
@@ -1194,7 +1226,7 @@ CMD_DECL(visual)
 				if (config.ocursor == -1) {
 					// check if current cursor seek is a function or expand
 					// unexpand function or close folder
-					int type = data_type(config.seek+config.cursor);
+					int type = data_type_range(config.seek+config.cursor);
 					if (type == -1 || type == DATA_FOLD_O) {
 						data_set((u64)(config.seek+config.cursor), DATA_FOLD_C);
 						cons_clear();
@@ -1213,7 +1245,7 @@ CMD_DECL(visual)
 			break;
 		case '>':
 			if (config.cursor_mode) {
-				int type = data_type(config.seek+config.cursor);
+				int type = data_type_range(config.seek+config.cursor);
 				if (type == DATA_FOLD_C) {
 					data_set(config.seek+config.cursor, DATA_FOLD_O);
 				} /* else

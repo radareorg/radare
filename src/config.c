@@ -513,7 +513,7 @@ void config_init()
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	config_set("asm.comments", "true"); // show comments in disassembly
-	config_set_i("asm.cmtmargin", 2); // show comments in disassembly
+	config_set_i("asm.cmtmargin", 27); // show comments in disassembly
 	config_set_i("asm.cmtlines", 0); // show comments in disassembly
 	config_set("asm.split", "true"); // split code blocks
 	config_set("asm.splitall", "false"); // split code blocks
@@ -574,6 +574,7 @@ void config_init()
 	config_set("child.setuid", "");
 
 	config_set("dbg.syms", "true");
+	config_set("dbg.reference", "true");
 	config_set("dbg.maps", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
@@ -608,6 +609,7 @@ void config_init()
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
+	config_set_i("scr.accel", 0);
 	config_set("scr.seek", "");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;

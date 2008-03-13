@@ -500,9 +500,12 @@ void udis_arch(int arch, int len, int rows)
 		if (rows && rows < ++lines)
 			break;
 
+		if (show_comments)
+			lines+=metadata_print(bytes);
 		/* is this data? */
 		idata = data_count(seek);
 		if (idata>0) {
+			struct data_t *foo = data_get(seek);
 			if (show_lines)
 				code_lines_print(reflines, seek);
 			if (show_offset) {
@@ -517,11 +520,12 @@ void udis_arch(int arch, int len, int rows)
 					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
 				}
 				break;
-			case DATA_FOLD_C: {
-				struct data_t *foo = data_get(seek);
-				cons_printf("  { 0x%llx-0x%llx %lld }", foo->from, foo->to, (foo->to-foo->from));
-				bytes+=idata;
-				} break;
+			case DATA_FOLD_C: 
+				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
+				bytes+=(foo->to-foo->from);
+				ud_idx+=(foo->size);
+				//bytes+=idata;
+				continue;
 			case DATA_FOLD_O:
 				cons_strcat("\r");
 				if (show_lines)
@@ -546,6 +550,20 @@ void udis_arch(int arch, int len, int rows)
 			continue;
 		}
 		__outofme:
+		if (data_end(seek) == DATA_FOLD_O) {
+			NEWLINE;
+			if (show_lines)
+				code_lines_print(reflines, seek);
+			if (show_offset) {
+				cons_strcat("           ");
+				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
+			}
+			folder--;
+			for(i=0;i<folder;i++)cons_strcat("  ");
+			cons_strcat("  }\n");
+			lines++;
+		}
 
 		if (arch != ARCH_X86) {
 			endian_memcpy_e(b, config.block+bytes, 4, endian);
@@ -602,8 +620,6 @@ void udis_arch(int arch, int len, int rows)
 
 		INILINE;
 		D { 
-			if (show_comments)
-				lines+=metadata_print(bytes);
 			if (rows && rows >= lines)
 				return;
 
@@ -797,19 +813,6 @@ void udis_arch(int arch, int len, int rows)
 				case ARCH_ARM:
 					break;
 			}
-		}
-		if (data_end(seek) == DATA_FOLD_O) {
-			NEWLINE;
-			if (show_lines)
-				code_lines_print(reflines, seek);
-			if (show_offset) {
-				cons_strcat("           ");
-				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
-			}
-			folder--;
-			for(i=0;i<folder;i++)cons_strcat("  ");
-			cons_strcat("  }");
 		}
 		seek+=myinc;
 		NEWLINE;
