@@ -58,6 +58,7 @@ format_info_t formats[] = {
 	{ '%', FMT_PERCENT,    MD_BLOCK,  "print scrollbar of seek", NULL,         "entire file" },
 	{ 'q', FMT_HEXQ,       MD_BLOCK,  "hexadecimal quad-word", "8 bytes",	  "(endian)"},
 	{ 'r', FMT_RAW,        MD_BLOCK,  "raw ascii",              NULL,         "entire block" },
+	{ 'R', FMT_REF,        MD_BLOCK,  "reference",              NULL,         "entire block" },
 	{ 's', FMT_ASC,        MD_BLOCK,  "ascii",                  NULL,         "entire block" },
 	{ 'S', FMT_ASCP,       MD_BLOCK,  "ascii printable",        NULL,         "entire block" },
 	{ 't', FMT_TIME_UNIX,  MD_BLOCK,  "unix timestamp",        "4 bytes",	  "(endian)"},
@@ -282,6 +283,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		radare_cmd( config_get("cmd.print"),0);
 		last_print_format = i;
 		break;
+	case FMT_REF: {
+		char buf[128];
+		sprintf(buf, "rsc list `addr2line -e $FILE 0x%llx`", config.seek);
+		system(buf);
+		} break;
 	case FMT_VISUAL:
 		i = last_print_format;
 		radare_cmd( config_get("cmd.visual"),0);

@@ -500,7 +500,6 @@ void config_init()
 	node = config_set("asm.dwarf", "true"); // must be false by deflaut
 	node->callback = &config_asm_dwarf;
 	config_set("asm.syntax", "pseudo");
-	node = config_set("asm.follow", "");
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
@@ -520,6 +519,7 @@ void config_init()
 	config_set("asm.splitall", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
 
+	config_set("asm.follow", "");
 	config_set("cmd.asm", "");
 	config_set("cmd.user", "");
 	config_set("cmd.visual", "");
@@ -608,6 +608,7 @@ void config_init()
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
+	config_set("scr.seek", "");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
 	node = config_set("scr.buf", "false");

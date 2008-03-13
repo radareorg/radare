@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+#
+# gdb list command implemented in perl with addr2line for radare
+#
+# author: pancake <@youterm.com>
+#
+
+my @path = split(/:/,$ENV{LISTPATH});
+
+sub resolve_file {
+	my $f = shift;
+
+	for my $p (@path) {
+		return "$p/$f" if ( -e "$p/$f");
+	}
+
+	my @lin = split(/\n/, `find | grep '$f\$'`);
+	for my $l (@lin) {
+		print "Found in $l\n";
+		return $l;
+	}
+	print "Not found \n";
+	return $f;
+}
+
+my $arg = shift;
+if ($arg) {
+	$arg=~/(.*):(\d*)/;
+	my $file=$1;
+	my $line=$2;
+	if ($line == 0) {
+		$file = $arg;
+		$line = shift;
+		if ($line == 0) {
+			die "No line specified\n";
+		}
+	}
+	$file = resolve_file($file)
+		unless(-f "$file");
+print "$file $line\n";
+	@lines=split(/\n/,`nl -ba "$file"`);
+
+	for my $myline (@lines) {
+		$myline=~/([^\t]*)/;
+		my $numline = int($1);
+		if (($numline > ($line-5)) && ($numline < ($line+5))) {
+			$ch = " ";
+			$ch = "*" if ($numline == $line);
+			print " $ch $myline\n";
+		}
+		
+	}
+} else {
+	die("Usage: rsc list <file>:<line>\n".
+	    "LISTPATH is used to find sources in a colon separated string\n");
+}

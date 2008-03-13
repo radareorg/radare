@@ -116,7 +116,7 @@ radare: ${OBJ} radare-bdiff
 	${E} 'Linking radare'
 	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
 
-javasm: javasm.o
+javasm: arch/java/javasm.o
 	${E} 'Linking javasm'
 	-${Q}${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
 

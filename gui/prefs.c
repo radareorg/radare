@@ -27,7 +27,10 @@ int pw_opened = 0;
 //void prefs_close(void *widget, void *data, void *user)
 gint prefs_close(void *item, GdkEvent *event, gpointer data)
 {
-	gtk_widget_destroy(GTK_WIDGET(pw));
+	if (pw) {
+		gtk_widget_hide(GTK_WIDGET(pw));
+		gtk_widget_destroy(GTK_WIDGET(pw));
+	}
 	pw_opened = 0;
 
 	if (data) {

@@ -745,6 +745,12 @@ void visual_draw_screen()
 		terminal_set_raw(1);
 	}
 	string_flag_offset(buf, config.seek);
+	ptr = config_get("scr.seek");
+	if (ptr&&ptr[0]&&last_print_format==FMT_REF) {
+		u64 off = get_math(ptr);
+		if (off != 0)
+		radare_seek(off, SEEK_SET);
+	}
 #if __WINDOWS__
 	gotoxy(0,0);
 #else

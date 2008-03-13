@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@phreaker.net>
+ * Copyright (C) 2007, 2008
+ *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,15 @@
  *
  */
 
+#define _MAEMO_ 0
+
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#if _MAEMO_
+#include <hildoh.h>
+#endif
 
 //#define FONT "-adobe-courier-bold-o-normal--18-180-75-75-m-110-iso8859-15"
 #define FONT "Sans Bold 8"
@@ -213,7 +218,12 @@ void gradare_new_monitor()
 int main(int argc, char **argv, char **envp)
 {
 	int c;
+#if _MAEMO_
+	HildonWindow *w;
+	HildonProgram *p;
+#else
 	GtkWidget *w;
+#endif
 	GtkWidget *chos;
 	GtkWidget *vbox;
 	GtkWidget *hpan;
@@ -237,18 +247,34 @@ int main(int argc, char **argv, char **envp)
 
 	gtk_init(&argc, &argv);
 	init_home_directory();
+
+	g_set_application_name("gradare");
+#if _MAEMO_
+	p = HILDON_PROGRAM(hildon_program_get_instance());
+	w = HILDON_WINDOW(hildon_window_new());
+	hildon_program_add_window(p, w);
+#else
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#endif
+
 	gtk_window_resize(GTK_WINDOW(w), 800,600);
 	gtk_window_set_title(GTK_WINDOW(w), "gradare");
 	g_signal_connect(w, "destroy", G_CALLBACK(gtk_main_quit), 0);
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(w), vbox);
+#if _MAEMO_
+	hildon_window_set_menu(w, gradare_menubar_new(w));
+#else
 	gtk_box_pack_start(GTK_BOX(vbox),
 		GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
-
+#endif
 	tool = gradare_toolbar_new(NULL);
+#if _MAEMO_
+	hildon_window_set_toolbar(w, tool);
+#else
 	gtk_box_pack_start(GTK_BOX(vbox), tool, FALSE, FALSE, 0);
+#endif
 	chos = gradare_sidebar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), chos, FALSE, FALSE, 0);
 
