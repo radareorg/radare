@@ -283,24 +283,37 @@ void print_maps_regions(int rad)
 	}
 }
 
+static int dump_num = 0;
+static char dumpdir[128];
+
 void page_restore(const char *dir)
 {
 	struct list_head *pos;
 	char *buf;
 	FILE *fd;
 
+	if (!dir||strchr(dir, '+')) {
+		dump_num--;
+		if (dump_num<0) {
+			eprintf("No dumps to restore from. Sorry\n");
+			return;
+		}
+		sprintf(dumpdir, "dump%d", dump_num);
+		dir = &dumpdir;
+	} else
 	if (dir&&*dir) {
 		dir = dir + 1;
 		if (strchr(dir,'/')) {
 			eprintf("No '/' permitted here.\n");
 			return;
 		}
-		if ( chdir(dir) == -1 ) {
-			eprintf("Cannot chdir to '%s'\n", dir);
-			return;
-		}
+	}
+	if ( chdir(dir) == -1 ) {
+		eprintf("Cannot chdir to '%s'\n", dir);
+		return;
 	}
 
+	printf("Restore directory: %s\n", dir);
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
 				sizeof(struct list_head) - \
@@ -338,22 +351,28 @@ void page_dumper(const char *dir)
 	char *buf;
 	FILE *fd;
 
+	if (!dir||strchr(dir, '+')) {
+		sprintf(dumpdir, "dump%d", dump_num);
+		dir = &dumpdir;
+		dump_num++;
+	} else
 	if (dir&&*dir) {
 		dir = dir + 1;
 		if (strchr(dir,'/')) {
 			eprintf("No '/' permitted here.\n");
 			return;
 		}
-
-#if __WINDOWS__ && !__CYGWIN__
-		if ( ( mkdir(dir) == -1) ||( chdir(dir) == -1)) {
-#else
-		if ( ( mkdir(dir, 0755) == -1) ||( chdir(dir) == -1)) {
-#endif
-			eprintf("No '/' permitted here.\n");
-			return;
-		}
 	}
+#if __WINDOWS__ && !__CYGWIN__
+	mkdir(dir);
+#else
+	mkdir(dir, 0755);
+#endif
+	if ( chdir(dir) == -1) {
+		eprintf("No '/' permitted here.\n");
+		return;
+	}
+	printf("Dump directory: %s\n", dir);
 
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
@@ -362,7 +381,7 @@ void page_dumper(const char *dir)
 
 		if ( mr->perms & REGION_WRITE || mr->flags & FLAG_USERCODE ) {
 			printf("Dumping %08llX-%08llX.dump  ; 0x%.8x  %s\n",
-				 (long long)mr->ini, (long long)mr->end,
+				 (long long) mr->ini,  (long long) mr->end,
 				 (long long) mr->size, (long long)mr->bin);
 
 			buf = (char*)malloc(mr->size);

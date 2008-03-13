@@ -671,6 +671,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				cons_printf(" ");
 			}
 			i = tmp;
+			D { 
 			for(j=i+inc;i<j && i<len;i++)
 				if (j >= len)
 					cons_printf("  ");
@@ -679,7 +680,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 					print_color_byte_i(i, "%c", buf[i]);
 				else	print_color_byte_i(i, ".", buf[i]);
 			i--;
-			D { NEWLINE; }
+			NEWLINE; }
 		}
 		break;
 	case FMT_ASCP:
@@ -823,7 +824,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				} else if (j>=len) break;
 				print_color_byte_i(j, "%02x", (unsigned char)buf[j]);
 
-				D if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
+				if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
 			}
 
 			if (print_fmt == FMT_HEXB) {

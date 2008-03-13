@@ -778,7 +778,9 @@ void udis_arch(int arch, int len, int rows)
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
-					cons_printf("   [%d] -> 0x%x", jump_n, (unsigned int)aop.jump);
+					if (arch == ARCH_X86)
+						cons_printf("   [%d]", jump_n);
+					else cons_printf("   [%d] -> 0x%x", jump_n, (unsigned int)aop.jump);
 				}
 			}
 

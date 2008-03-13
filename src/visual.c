@@ -214,14 +214,19 @@ CMD_DECL(add_comment)
 	strcpy(buf, "CC ");
 	terminal_set_raw(0);
 	n = read(0, buf+2, 256);
-	buf[n+1]='\0';
-	if (config.cursor_mode) {
-		char ptr[128];
-		sprintf(ptr, " @ +0x%x", config.cursor);
-		strcat(buf, ptr);
+	if (n<2) {
+		sprintf(buf, "CC -0x%llx", config.seek+(config.cursor_mode?config.cursor:0));
+		radare_cmd(buf,0);
+	} else {
+		buf[n+1]='\0';
+		if (config.cursor_mode) {
+			char ptr[128];
+			sprintf(ptr, " @ +0x%x", config.cursor);
+			strcat(buf, ptr);
+		}
+		terminal_set_raw(1);
+		radare_cmd(buf,0);
 	}
-	terminal_set_raw(1);
-	radare_cmd(buf,0);
 	cons_clear();
 }
 

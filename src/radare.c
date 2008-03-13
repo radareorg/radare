@@ -554,7 +554,7 @@ int radare_cmd(char *tmp, int log)
 			if (pc<config.seek || pc > config.seek+config.block_size)
 				radare_cmd("s eip",0);
 		}
-		config.height-=10;
+		config.height-=14;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */

@@ -10,11 +10,8 @@
 
 0.9.4
 =====
-* :po shows ascii bytes?!?!? should work like pX does..or :px should do (pX removed)
 * status shows backtrace !?!?!
-* dump/restore incremental
 * dbg.stepolibs = true ;  step over non-user code?
-* remove comments with cursor
 
 
 0.9.5
