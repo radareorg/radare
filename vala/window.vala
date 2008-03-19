@@ -6,9 +6,9 @@ public class RadareGUI.MainWindow : Window
         public static Statusbar statusbar;
         public List left_list;
         public List right_list;
-	public Terminal shell;
+	public Term shell;
 	public Visor visor;
-	public Terminal con;
+	public Term con;
 	private Panel panel;
 
         construct
@@ -31,9 +31,9 @@ public class RadareGUI.MainWindow : Window
 			Gtk.main_quit();
 		};
 
-		shell = new Terminal();
+		shell = new Term();
 		visor = new Visor();
-		con   = new Terminal();
+		con   = new Term();
 
 		VBox root = new VBox(false, 0);
 		root.pack_start(menu(), false, false, 0);

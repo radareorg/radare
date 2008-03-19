@@ -1,44 +1,55 @@
 # core
+crOBJ=main.o
 
-OBJ=main.o radare.o stripstr.o readline.o search.o undo.o io.o cons.o trace.o
-OBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
-OBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o project.o hack.o
-OBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
+crOBJ=radare.o stripstr.o readline.o search.o undo.o io.o cons.o trace.o
+crOBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
+crOBJ+=plugin.o socket.o analyze.o hist.o udis.o rabin.o project.o hack.o
+crOBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
 
 # plug/io
 
-OBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
-OBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o
+crOBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
+crOBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o
 
 # hasher
 
-OBJ+=hasher/entropy.o hasher/hash.o hasher/crc16.o aes-find.o
+crOBJ+=hasher/entropy.o hasher/hash.o hasher/crc16.o aes-find.o
 
 # arch
 
-OBJ+=arch/arm/code.o
-OBJ+=arch/arm/gnudisarm.o
-OBJ+=arch/arm/gnu/arm-dis.o
-OBJ+=arch/arm/disarm.o
+crOBJ+=arch/arm/code.o
+crOBJ+=arch/arm/gnudisarm.o
+crOBJ+=arch/arm/gnu/arm-dis.o
+crOBJ+=arch/arm/disarm.o
 
-OBJ+=arch/mips/code.o
-OBJ+=arch/mips/gnudismips.o
-OBJ+=arch/mips/mips-dis.o
-OBJ+=arch/mips/mips-opc.o
-OBJ+=arch/mips/mips16-opc.o
+crOBJ+=arch/mips/code.o
+crOBJ+=arch/mips/gnudismips.o
+crOBJ+=arch/mips/mips-dis.o
+crOBJ+=arch/mips/mips-opc.o
+crOBJ+=arch/mips/mips16-opc.o
 
-OBJ+=arch/ppc/code.o
-OBJ+=arch/ppc/ppc_disasm.o
+crOBJ+=arch/ppc/code.o
+crOBJ+=arch/ppc/ppc_disasm.o
 
-OBJ+=arch/x86/code.o
-OBJ+=arch/x86/dislen.o
-OBJ2+=arch/x86/udis86/*.o
+crOBJ+=arch/x86/code.o
+crOBJ+=arch/x86/dislen.o
+crOBJ+=arch/x86/udis86/decode.o
+crOBJ+=arch/x86/udis86/syn-intel.o
+crOBJ+=arch/x86/udis86/syn-att.o
+crOBJ+=arch/x86/udis86/syn-pseudo.o
+crOBJ+=arch/x86/udis86/syn.o
+crOBJ+=arch/x86/udis86/udis86.o
+crOBJ+=arch/x86/udis86/mnemonics.o
+crOBJ+=arch/x86/udis86/input.o
+crOBJ+=arch/x86/udis86/opcmap.o
 
-OBJ+=arch/java/code.o
-OBJ+=arch/java/javasm.o
+crOBJ+=arch/java/code.o
+crOBJ+=arch/java/javasm.o
 
-OBJ+=arch/m68k/m68k_disasm.o
+crOBJ+=arch/m68k/m68k_disasm.o
 
-OBJ+=rdb/rdb.o rdb/rdbdiff.o
+crOBJ+=rdb/rdb.o rdb/rdbdiff.o
 
-OBJ+=${RADARE_OBJ}
+# plugins and so
+
+crOBJ+=${RADARE_OBJ}

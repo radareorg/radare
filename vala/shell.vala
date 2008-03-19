@@ -39,7 +39,7 @@ public class RadareGUI.Shell : VBox
 	public VBox get()
 	{
 		string[] argv = new string[]{"/bin/bash", null};
-		term.fork_command("/bin/bash", argv,  null, "/", false, false, false);
+		//term.fork_command("/bin/bash", argv,  null, "/", false, false, false);
 		return this;
 	}
 

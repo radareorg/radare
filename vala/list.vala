@@ -67,8 +67,8 @@ public class RadareGUI.List : GLib.Object
   public void add(string item)
   {
 	TreeIter iter;
-	ls.append(ref iter);
-	ls.set(ref iter, 0, item);
+	ls.append(out iter);
+	ls.set(iter, 0, item);
   }
 
   public string get()
@@ -81,8 +81,8 @@ public class RadareGUI.List : GLib.Object
 
 	if (sel.count_selected_rows() == 1) {
 		String foo = new String.sized(1024);
-		sel.get_selected(ref model, ref iter);
-		tv.model.get(ref iter, 0, foo);
+		sel.get_selected(out model, out iter);
+		tv.model.get(iter, 0, foo);
 		str = foo.str;
 	}
 

@@ -2,7 +2,7 @@ using GLib;
 using Gtk;
 using Vte;
 
-public class RadareGUI.Terminal : VBox
+public class RadareGUI.Term : VBox
 {
 	Entry entry;
 	Label label;

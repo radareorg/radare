@@ -32,7 +32,7 @@ public class Radare.Core : Object
 
 	public static int cmd(string command)
 	{
-		return radare_command(command,0);
+		return radare_cmd(command, 0);
 	}
 
 	public static bool open(string file, bool write_mode)
@@ -67,10 +67,10 @@ public class Radare.Core : Object
 public static string# pipe_command_to_string(string command);
 
 [Import()]
-public static int radare_command(string command, int arg);
+public static int radare_cmd(weak string command, int arg);
 
 [Import()]
-public static int system(string str);
+public static int system(weak string str);
 
 [Import()]
 public static int radare_init();

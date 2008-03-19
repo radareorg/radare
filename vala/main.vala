@@ -18,7 +18,7 @@ public class RadareGUI.Main
 //	stdout.printf("%d\n".printf(Radare.Utils.value("0x33")));
 //r.close();
 
-	Gtk.init(out args);
+	Gtk.init(ref args);
 	MainWindow mw = new MainWindow();
 	mw.show_all();
 	Gtk.main();

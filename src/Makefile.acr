@@ -1,6 +1,10 @@
 include ../config.mk
 
 include objects.mk
+OBJ+=${crOBJ}
+
+#$(pref ../src/,${crOBJ})
+
 CFLAGS+=-I. -Iinclude
 
 # hand made maemo stuff
@@ -83,9 +87,15 @@ librdb:
 udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
-radare: ${OBJ} radare-bdiff
+radare: ${OBJ} main.o radare-bdiff
 	${E} 'Linking radare'
-	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} ${OBJ} ${OBJ2} ${W32LIBS}
+	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${W32LIBS}
+
+gui: ${OBJ}
+	${E} 'Compiling Vala GUI'
+	cd ../vala && ${MAKE} c
+	${E} 'Linking radare'
+	-${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${W32LIBS} -lvte
 
 javasm: arch/java/javasm.o
 	${E} 'Linking javasm'
