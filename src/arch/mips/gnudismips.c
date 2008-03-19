@@ -1,8 +1,8 @@
-/* trampoline to the gnu disassembler for arm */
+/* trampoline to the gnu disassembler for mips */
 #include <radare.h>
-#include "gnu/dis-asm.h"
+#include <dis-asm.h>
 
-int arm_mode = 32;
+int mips_mode = 32;
 
 static char str[128];
 extern void cons_fprintf(FILE *stream, const char *format, ...);
@@ -33,7 +33,7 @@ static int print_address(unsigned long address, struct disassemble_info *info)
 }
 
 /* Disassembler entry point */
-char *gnu_disarm(unsigned char *inst, unsigned long offset)
+char *gnu_dismips(unsigned char *inst, unsigned long offset)
 {
 	struct disassemble_info info;
 
@@ -55,7 +55,8 @@ char *gnu_disarm(unsigned char *inst, unsigned long offset)
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 
-	if (print_insn_arm(offset, &info) == -1)
+	// endian is controlled by radare
+	if (print_insn_big_mips(offset, &info) == -1)
 		cons_strcat("  (data)");
 
 	return str;

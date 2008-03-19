@@ -51,6 +51,7 @@ struct reflines_t {
 };
 
 int arch_arm_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_mips_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_java_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_ppc_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);

@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+#
+# Dump a radare script that flags all symbols at it's _FILE_ offset.
+#
+# author: pancake
+#
+
+my $target = $ARGV[0];
+
+if (( $target eq "" ) || ( $target eq "-h" )) {
+	print STDERR "Usage: rsc syms-flag [file] > file.syms.flags\n";
+	exit 1;
+}
+
+my $base = qx(rsc elf-base-addr $target | head -n 1); chomp($base);
+my @syms = split(/\n/, `rsc syms $target`);
+for my $i (0 .. @syms) {
+	my ($addr, $name) = split(/ /,$syms[$i]);
+	next if ($name eq "");
+	$name=~s/\@.*//;
+	$name=~s/-/_/;
+	eval "\$addr=$addr-$base;";
+	printf("$name: 0x%x\n", $addr);
+}

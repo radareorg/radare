@@ -46,6 +46,9 @@ void arch_set_callbacks()
 	if (!strcmp(a, "java")) {
 		arch_aop = &arch_java_aop;
 	} else
+	if (!strcmp(a, "mips")) {
+		arch_aop = &arch_mips_aop;
+	} else
 	if (!strcmp(a, "ppc")) {
 		arch_aop = &arch_ppc_aop;
 	} else

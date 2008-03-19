@@ -8,10 +8,13 @@
 ===========================================================
 
 
+* open/close projects in GUI
+
 0.9.4
 =====
 * status shows backtrace !?!?!
 * dbg.stepolibs = true ;  step over non-user code?
+* Drop the '+' for incremental dump restore
 
 
 0.9.5

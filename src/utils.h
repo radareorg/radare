@@ -98,5 +98,6 @@ int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
 int gnu_disarm(unsigned char *address, unsigned long seek);
+int gnu_dismips(unsigned char *address, unsigned long seek);
 
 #endif

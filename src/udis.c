@@ -33,7 +33,8 @@ enum {
 	ARCH_ARM16 = 2,
 	ARCH_PPC = 3,
 	ARCH_M68K = 4,
-	ARCH_JAVA = 5
+	ARCH_JAVA = 5,
+	ARCH_MIPS = 6,
 };
 
 struct list_head data;
@@ -372,6 +373,7 @@ static int input_hook_x(ud_t* u)
 int udis86_color = 0;
 
 extern int arm_mode;
+extern int mips_mode;
 void udis_init()
 {
 	char *syn = config_get("asm.syntax");
@@ -589,8 +591,10 @@ void udis_arch(int arch, int len, int rows)
 				arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_ARM:
-				arch_arm_aop(seek, (const unsigned char *)b, &aop);
-				myinc = 4;
+				myinc = arch_arm_aop(seek, (const unsigned char *)b, &aop);
+				break;
+			case ARCH_MIPS:
+				myinc = arch_mips_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_JAVA:
 				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
@@ -736,6 +740,11 @@ void udis_arch(int arch, int len, int rows)
 						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
 						       gnu_disarm((unsigned char*)b, (unsigned int)seek);
 					       } break;
+				case ARCH_MIPS: {
+						       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+						       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+					       } break;
 				case ARCH_PPC: {
 						       char opcode[128];
 						       char operands[128];
@@ -839,6 +848,9 @@ void disassemble(int len, int rows)
 	/* handles intel16, intel32, intel64 */
 	if (!memcmp(ptr, "intel", 5))
 		udis_arch(ARCH_X86, len,rows);
+	else
+	if (!strcmp(ptr, "mips"))
+		udis_arch(ARCH_MIPS, len,rows);
 	else
 	if (!strcmp(ptr, "arm"))
 		udis_arch(ARCH_ARM, len,rows);
