@@ -50,9 +50,13 @@
 #include <linux/ptrace.h>
 #endif
 #include <sys/stat.h>
+#include "../events.h"
+#include "../debug.h"
+#include "procs.h"
+
 
 // TODO: move to ps structure
-static int stepping_in_progress = 0;
+//static int stepping_in_progress = 0;
 
 
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
@@ -136,13 +140,13 @@ int debug_print_wait(char *act)
 		eprintf("%s: breakpoint stop (0x%x)\n", act, WS(bp)->addr);
 		cmd = config_get("cmd.bp");
 		if (cmd&&cmd[0])
-			radare_cmd(cmd, 0);
+			radare_cmd((char *)cmd, 0);
 		break;
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
 			eprintf("=== %s: tid: %d signal: %d stop at 0x%llx (%s)\n",
-				act, ps.tid, WS_SI(si_signo), (unsigned long long)arch_pc(), //WS_PC() is not portable
+				act, ps.tid, WS_SI(si_signo), (unsigned )arch_pc(), //WS_PC() is not portable
 				sig_to_name(WS_SI(si_signo)));
 		}
 	}
@@ -350,7 +354,7 @@ int debug_detach()
 /* copied from patan */
 extern int errno;
 
-static int ReadMem(int pid, long long addr, size_t sz, void *buff)
+static int ReadMem(int pid,  addr_t addr, size_t sz, void *buff)
 {
 	unsigned long words = sz / sizeof(long) ;
 	unsigned long last = sz % sizeof(long) ;
@@ -358,8 +362,7 @@ static int ReadMem(int pid, long long addr, size_t sz, void *buff)
 	int ret ;
 
 	for(x=0;x<words;x++) {
-		((long *)buff)[x] = debug_read_raw(pid, &((long*)addr)[x]);
-		//debug_read_raw(pid,&((long *)addr)[x]) ;
+		((long *)buff)[x] = debug_read_raw(pid, (void *)(&((long*)(long )addr)[x]));
 
 		if (((long *)buff)[x] == -1 && errno)
 			goto err;
@@ -367,7 +370,7 @@ static int ReadMem(int pid, long long addr, size_t sz, void *buff)
 
 	if (last) {
 		//lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)addr)[x],0) ;
-		lr = debug_read_raw(pid, &((long*)addr)[x]);
+		lr = debug_read_raw(pid, &((long*)(long)addr)[x]);
 
 		if (lr == -1 && errno)
 			goto err;
@@ -383,9 +386,9 @@ err:
 }
 
 #define ALIGN_SIZE 4096
-int debug_read_at(pid_t pid, void *addr, int length, u64 at)
+int debug_read_at(pid_t pid, void *buf, int length, u64 addr)
 {
-	return ReadMem(pid, (long long)at, length, addr);
+	return ReadMem(pid, (addr_t)addr, length, buf);
 #if 0
 	long dword;
         int len, i = length;
@@ -411,16 +414,16 @@ int debug_read_at(pid_t pid, void *addr, int length, u64 at)
 #endif
 }
 
-ssize_t WriteMem(int pid, long long addr, size_t sz, const unsigned char *buff)
+ssize_t WriteMem(int pid,  addr_t addr, size_t sz, const unsigned char *buff)
 {
-        long long words = sz / sizeof(long) ;
-        long long last = (sz % sizeof(long))*CHAR_BIT ;
-        long long x, lr ;
-        ssize_t ret ;
-	char buf[4];
-	long *word=&buf;
+        long words = sz / sizeof(long) ;
+        long last = (sz % sizeof(long))*CHAR_BIT ;
+        long  lr ;
+	int x;
 
 /*
+	long *word=&buf;
+	char buf[4];
         En los fuentes del kernel se encuentra un #ifdef para activar el soporte de escritura por procFS.
         Por razones de seguridad se encuentra deshabilitado, pero nunca esta de mas intentar ;)
 */
@@ -437,18 +440,18 @@ ssize_t WriteMem(int pid, long long addr, size_t sz, const unsigned char *buff)
 
 
 	for(x=0;x<words;x++)
-		if (ptrace(PTRACE_POKEDATA,pid,&((long *)addr)[x],((long *)buff)[x]))
+		if (ptrace(PTRACE_POKEDATA,pid,&((long *)(long)addr)[x],((long *)buff)[x]))
 			goto err ;
 
 	if (last)
 	{
-		lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)addr)[x], 0) ;
+		lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)(long)addr)[x], 0) ;
 
 		/* Y despues me quejo que lisp tiene muchos parentesis... */
 		if ((lr == -1 && errno) ||
 		    (
-			ptrace(PTRACE_POKEDATA,pid,&((long *)addr)[x],(lr&(-1L<<last)) |
-			(((long *)buff)[x]&(~(-1L<<last))))
+			ptrace(PTRACE_POKEDATA,pid,&((long *)(long)addr)[x],((lr&(-1L<<last)) |
+			(((long *)buff)[x]&(~(-1L<<last)))))
 		    )
 		   )
                 goto err;
@@ -515,7 +518,7 @@ int putdata(pid_t child, unsigned long addr, char *data, int len)
 int debug_write_at(pid_t pid, void *data, int length, u64 addr)
 {
 //	return putdata(pid,(unsigned long)addr, data, length);
-	return WriteMem(pid, (long long)addr, length, data);
+	return WriteMem(pid, addr, length, data);
 }
 
 inline int debug_getregs(pid_t pid, regs_t *reg)
@@ -600,7 +603,7 @@ int debug_dispatch_wait()
 			th->tid = ps.tid;
 			th->addr = arch_pc();
 			add_th(th);
-			ps.th_active = ps.tid;
+			ps.th_active = th;
 
 			ret = 1;
 		}

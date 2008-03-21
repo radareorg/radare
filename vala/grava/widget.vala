@@ -125,14 +125,15 @@ public class Grava.Widget : GLib.Object {
 		sw.add_with_viewport(vp);
 
 		load_graph_at += (obj, addr) => {
-			stdout.printf("HOWHOWHOW "+addr);
+//			stdout.printf("HOWHOWHOW "+addr);
 		};
 	}
 
 	/* capture mouse motion */
-	private bool scroll_press (DrawingArea da, Gdk.Event event)
+	private bool scroll_press (Gtk.Widget w, Gdk.Event event)
 	{
 		weak EventScroll es = ref event.scroll;
+		weak DrawingArea da = (DrawingArea)w;
 
 		switch(es.direction) {
 			case ScrollDirection.UP:
@@ -149,10 +150,11 @@ public class Grava.Widget : GLib.Object {
 		return false;
 	}
 
-	private bool key_press (ScrolledWindow sw, Gdk.Event ev)
+	private bool key_press (Gtk.Widget w, Gdk.EventKey ek)
 	{
 		bool handled = true;
-		weak EventKey ek = ref ev.key;
+		weak DrawingArea da = (DrawingArea)w;
+
 		/* */
 		//stdout.printf("Key pressed %d (%c)\n", ek.keyval,ek.keyval);
 
@@ -245,7 +247,7 @@ public class Grava.Widget : GLib.Object {
 		//imi = new ImageMenuItem.with_label("Focus");
 		imi = new ImageMenuItem.from_stock("gtk-zoom-in", null);
 		imi.activate += imi => {
-			stdout.printf("go in!\n");
+	//		stdout.printf("go in!\n");
 			Widget.focus_at_label(null, Graph.selected.get("label"));
 			//MenuItem mi = menu.get_active();
 			//load_graph_at(((Label)imi.child).get_text()); //"0x400");
@@ -255,20 +257,20 @@ public class Grava.Widget : GLib.Object {
 
 		imi = new ImageMenuItem.with_label("Breakpoint here");
 		imi.activate += imi => {
-			stdout.printf("add bp!\n");
+	//		stdout.printf("add bp!\n");
 			Widget.set_breakpoint(null, Graph.selected.get("label"));
 		};
 		menu.append(imi);
 
 		imi = new ImageMenuItem.with_label("Remove true branch");
 		imi.activate += imi => {
-			stdout.printf("Focus!\n");
+///			stdout.printf("Focus!\n");
 		};
 		menu.append(imi);
 
 		imi = new ImageMenuItem.with_label("Remove false branch");
 		imi.activate += imi => {
-			stdout.printf("Focus!\n");
+	//		stdout.printf("Focus!\n");
 		};
 		menu.append(imi);
 
@@ -290,11 +292,12 @@ public class Grava.Widget : GLib.Object {
 		menu.popup(null, null, null, 0, 0);
 	}
 
-	private bool button_press (DrawingArea da, Gdk.Event event)
+	private bool button_press (Gtk.Widget w, Gdk.Event event)
 	{
 		weak EventButton eb = ref event.button;
 		weak EventMotion em = ref event.motion; 
 		weak Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
+		weak DrawingArea da = (DrawingArea)w;
 
 		graph.selected = n;
 		if (n != null) {
@@ -311,9 +314,10 @@ public class Grava.Widget : GLib.Object {
 	private double opanx = 0;
 	private double opany = 0;
 
-	private bool motion (DrawingArea da, Gdk.Event ev)
+	private bool motion (Gtk.Widget w, Gdk.Event ev)
 	{
 		weak EventMotion em = ref ev.motion; 
+		weak DrawingArea da = (DrawingArea)w;
 
 		if (ev.type == EventType.BUTTON_RELEASE) {
 			opanx = opany = 0;
@@ -352,8 +356,9 @@ public class Grava.Widget : GLib.Object {
 		return true;
 	}
 
-	private bool expose (DrawingArea da, Gdk.Event ev)
+	private bool expose (Gtk.Widget w, Gdk.Event ev)
 	{
+		DrawingArea da = (DrawingArea)w;
 		draw();
 
 //		da.queue_draw_area(0,0,100,100);

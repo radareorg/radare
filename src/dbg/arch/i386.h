@@ -200,7 +200,6 @@ void dr_init();
 
 int instLength(unsigned char *p, int s, int mode);
 int dislen(unsigned char* opcode0, int limit);
-u64 arch_mmap(int fd, int size, u64 addr); //int *rsize)
 
 #define REG_PC eip
 #define REG_SP esp

@@ -65,10 +65,12 @@ int main_rdb_diff(char *file0, char *file1)
 	printf("%s entrypoint = 0x%08lx\n", p0->name, p0->entry);
 	printf("%s entrypoint = 0x%08lx\n", p1->name, p1->entry);
 
+#if 0
 	list_for_each_prev(i, &(p0->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
-	//	printf("%08x\n", bt->addr);
+		printf("%08x\n", bt->addr);
 	}
+#endif
    
 	block = block_get(p0, p0->entry);
 	if (block) 
@@ -78,7 +80,7 @@ int main_rdb_diff(char *file0, char *file1)
 	if (block) 
 		printf("checksum %08x\n", block->n_bytes);
 
-	return rdb_diff(p0, p1);
+	return rdb_diff(p0, p1, 0);
 }
 
 int main(int argc, char **argv)

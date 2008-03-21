@@ -34,7 +34,7 @@ public:
 	char *buff ;
 	size_t size ;
 
-	FMap::FMap(const char *file)
+	FMap(const char *file)
 	{
 		struct stat buf ;
 

@@ -58,7 +58,7 @@ int th_list()
 		TH_INFO		*th = (TH_INFO *)((char *)pos + \
 				sizeof(struct list_head) - \
 				sizeof(TH_INFO));
-		printf(" %c %d: 0x%08x state: %d\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
+		printf(" %c %d: 0x%08lx state: %d\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
 		n++;
 	}
 	return n;
@@ -98,7 +98,6 @@ TH_INFO	*get_th(int tid)
 void free_th()
 {
 	struct list_head *p, *aux;
-	int i;
 
 	p = (&ps.th_list)->next;
 

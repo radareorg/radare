@@ -273,8 +273,9 @@ void plugin_init()
 #endif
 	plugins[last] = winedbg_plugin;
 	plugins[last+1] = gxemul_plugin;
-	plugins[last+2] = posix_plugin;
-	last += 3;
+	plugins[last+2] = socket_plugin;
+	plugins[last+3] = posix_plugin;
+	last += 4;
 
 	radare_hack_init();
 }

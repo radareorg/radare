@@ -52,6 +52,7 @@ enum {
 #define ACTION_SECTIONS 0x0020 
 #define ACTION_CHECKSUM 0x0040 
 #define ACTION_BASE     0x0080
+#define ACTION_ARCH     0x0100
 #define ACTION_NOP      0x1000
 
 // TODO : move into rabin_t
@@ -85,14 +86,13 @@ void rabin_show_checksum()
 {
 	unsigned char buf[32];
 	unsigned long addr = 0;
-	unsigned long base = 0;
 	int i;
 
 	switch(filetype) {
 	case FILETYPE_DEX:
 		lseek(fd, 8, SEEK_SET);
 		read(fd, &addr, 4);
-		printf("Checksum: 0x%08x\n", addr);
+		printf("Checksum: 0x%08lx\n", addr);
 		read(fd, &buf, 20);
 		printf("SHA-1 Signature: ");
 		for(i=0;i<20;i++)
@@ -121,8 +121,8 @@ void rabin_show_entrypoint()
 	case FILETYPE_ELF:
 		lseek(fd, 0x18, SEEK_SET);
 		read(fd, &addr, 4);
-		printf("0x%08x memory\n", addr);
-		printf("0x%08x disk\n", addr - 0x8048000);
+		printf("0x%08lx memory\n", addr);
+		printf("0x%08lx disk\n", addr - 0x8048000);
 		break;
 	case FILETYPE_MZ:
 		break;
@@ -130,11 +130,11 @@ void rabin_show_entrypoint()
 		lseek(fd, pebase+0x28, SEEK_SET);
 		read(fd, &addr, 4);
 		printf("0x%08x disk offset for ep\n", pebase+0x28);
-		printf("0x%08x disk\n", addr-0xc00);
+		printf("0x%08lx disk\n", addr-0xc00);
 
 		lseek(fd, pebase+0x45, SEEK_SET);
 		read(fd, &base, 4);
-		printf("0x%08x memory\n", base+addr);
+		printf("0x%08lx memory\n", base+addr);
 		break;
 	}
 }
@@ -157,7 +157,7 @@ unsigned long addr_for_lib(char *name)
 void rabin_show_symbols()
 {
 	unsigned long addr, addr2, addr3;
-	unsigned int num, idx, i;
+	unsigned int num, i;
 	char buf[1024];
 
 	switch(filetype) {
@@ -177,7 +177,7 @@ void rabin_show_symbols()
 			read(fd, &addr2, 4);
 			lseek(fd, (addr2+0xc), 4);
 			read(fd, &addr3, 4);
-			printf("0x%08x\n", addr3);
+			printf("0x%08lx\n", addr3);
 		}
 // CLASSES
 #if 0
@@ -204,6 +204,48 @@ void rabin_show_symbols()
 		// TODO: needs to be parsed completely
 #endif
 		
+		break;
+	}
+}
+
+void rabin_show_arch()
+{
+	u32 dw;
+	u16 w;
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+		lseek(fd, 16+2, SEEK_SET);
+		read(fd, &w, 2);
+		switch(w) {
+		case 3:
+			printf("arch: x86-32\n");
+			break;
+		case 0x28:
+			printf("arch: ARM\n");
+			break;
+		default:
+			printf("arch: 0x%x (unknown)\n", w);
+			break;
+		}
+		break;
+	case FILETYPE_PE:
+		// [[0x3c]+4]
+		lseek(fd, 0x3c, SEEK_SET);
+		read(fd, &dw, 4);
+		lseek(fd, dw+4, SEEK_SET);
+		read(fd, &w, 2);
+		switch(w) {
+		case 0x1c0:
+			printf("arch: ARM\n");
+			break;
+		case 0x14c:
+			printf("arch: x86-32\n");
+			break;
+		default:
+			printf("arch: 0x%x (unknown)\n", w);
+		}
+
 		break;
 	}
 }
@@ -280,9 +322,12 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "cerlishL:ESv")) != -1)
+	while ((c = getopt(argc, argv, "acerlishL:ESv")) != -1)
 	{
 		switch( c ) {
+		case 'a':
+			action |= ACTION_ARCH;
+			break;
 		case 'b':
 			action |= ACTION_BASE;
 			break;
@@ -308,7 +353,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_LIBS;
 			break;
 		case 'L':
-			printf("0x%08x %s\n", addr_for_lib(optarg), optarg);
+			printf("0x%08lx %s\n", addr_for_lib(optarg), optarg);
 			action |= ACTION_NOP;
 			break;
 		case 'r':
@@ -338,6 +383,8 @@ int main(int argc, char **argv, char **envp)
 
 	rabin_identify_header();
 
+	if (action&ACTION_ARCH)
+		rabin_show_arch(file);
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
 	if (action&ACTION_EXPORTS)

@@ -37,6 +37,8 @@ int radare_write_at(u64 offset, unsigned char *data, int len)
 	io_write(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
 	radare_read(0);
+
+	return len;
 }
 
 int radare_write(char *arg, int mode)

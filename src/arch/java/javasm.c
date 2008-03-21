@@ -725,7 +725,7 @@ int main(int argc, char **argv)
 {
 	int c,i,j;
 	int len;
-	unsigned char buf[16];
+	unsigned char buf[1024];
 	char output[128];
 	
 	while ((c = getopt(argc, argv, "a:d:c:hV")) != -1)
@@ -739,9 +739,9 @@ int main(int argc, char **argv)
 			printf("\n");
 			return 0;
 		case 'd':
-			len = hexstr2binstr(optarg, optarg);
+			len = hexstr2binstr(optarg, buf);
 			for(i=0;i<len;i+=j) {
-				j = java_disasm(optarg+i, output);
+				j = java_disasm(buf+i, output);
 				if (j>0) {
 					printf("0x%08x   %s\n", i, output);
 				} else {

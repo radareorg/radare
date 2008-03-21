@@ -21,7 +21,7 @@
 #include "rasm.h"
 
 
-int rasm_ppc(off_t offset, char *str, unsigned char *data)
+int rasm_ppc(u64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
 	char *arg;

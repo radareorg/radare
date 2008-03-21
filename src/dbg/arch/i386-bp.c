@@ -289,7 +289,7 @@ int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 	char breakpoint = '\xCC';
 
 	debug_read_at(ps.tid, bp->data, 16, addr);
-	bp->len = get_len_ins(bp->data, 16);
+	bp->len = get_len_ins((char *)bp->data, 16);
 	debug_write_at(ps.tid, &breakpoint, 1, addr);
 
 	return 0;
@@ -326,7 +326,7 @@ inline int arch_bp_hw_disable(struct bp_t *bp)
 }
 
 
-inline void arch_restore_bp(struct bp_t *bp)
+int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
 
@@ -345,6 +345,8 @@ inline void arch_restore_bp(struct bp_t *bp)
 		debug_getregs(ps.tid, &regs);
 		arch_bp_soft_enable(bp);
 	}
+
+	return 0;
 }
 
 inline struct bp_t *arch_stopped_bp()

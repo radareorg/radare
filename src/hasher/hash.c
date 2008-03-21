@@ -18,6 +18,8 @@
  *
  */
 
+#include "../radare.h"
+
 static inline int is_printable (int c)
 {
         if (c<' '||c>'~') return 0;
@@ -25,7 +27,7 @@ static inline int is_printable (int c)
 }
 
 /* returns 0-100 */
-int hash_pcprint(unsigned char *buffer, int len)
+int hash_pcprint(unsigned char *buffer, u64 len)
 {
 	unsigned char *end = buffer + len;
 	int n = 0;
@@ -37,7 +39,7 @@ int hash_pcprint(unsigned char *buffer, int len)
 	return ((100*n)/len);
 }
 
-int hash_par(unsigned char *buffer, int len)
+int hash_par(unsigned char *buffer, u64 len)
 {
 	unsigned char *end;
 	unsigned int ones = 0;
@@ -51,7 +53,7 @@ int hash_par(unsigned char *buffer, int len)
 
 /* These functions comes from 0xFFFF */
 /* fmi: nopcode.org/0xFFFF */
-unsigned short hash_xorpair(unsigned short *b, int len)
+unsigned short hash_xorpair(unsigned short *b, u64 len)
 {
 	unsigned short result = 0;
 	for(len>>=1;len--;b=b+1)
@@ -59,7 +61,7 @@ unsigned short hash_xorpair(unsigned short *b, int len)
 	return result;
 }
 
-unsigned char hash_xor(unsigned char *b, int len)
+unsigned char hash_xor(unsigned char *b, u64 len)
 {
 	unsigned char res = 0;
 	for(;len--;b=b+1)
@@ -67,7 +69,7 @@ unsigned char hash_xor(unsigned char *b, int len)
 	return res;
 }
 
-unsigned char hash_mod255(unsigned char *b, int len)
+unsigned char hash_mod255(unsigned char *b, u64 len)
 {
 	int i, c = 0;
 	/* from gdb */

@@ -20,7 +20,7 @@
 
 #include "rasm.h"
 
-int rasm_arm(off_t offset, char *str, unsigned char *data)
+int rasm_arm(u64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
 	char *arg;
@@ -33,7 +33,7 @@ int rasm_arm(off_t offset, char *str, unsigned char *data)
 	}
 
 	if (!strcmp(op, "trap")) {
-		memset(data, "\xe7\xff\xde\xf", 4);
+		memcpy(data, "\xe7\xff\xde\xf", 4);
 		return 4;
 	} else
 	if (!strcmp(op, "int")) {
@@ -46,7 +46,7 @@ int rasm_arm(off_t offset, char *str, unsigned char *data)
 		return 4;
 	} else
 	if (!strcmp(op, "hang")) {
-		memset(data, "\xea\xfe\xff\xff", 4);
+		memcpy(data, "\xea\xfe\xff\xff", 4);
 		return 4;
 	} else
 	if (!strcmp(op, "jmp")) {

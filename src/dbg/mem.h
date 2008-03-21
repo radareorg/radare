@@ -4,6 +4,7 @@
 #include <sys/param.h>
 //#include <sys/user.h>
 #include "../list.h"
+#include "arch/arch.h"
 
 /* on BSD this does not exist */
 #ifndef PAGE_SIZE
@@ -15,7 +16,7 @@
 typedef struct {
 
 	char *tag;
-	char *addr;
+	addr_t addr;
 	unsigned long size;
 
 	struct list_head list;
@@ -24,8 +25,8 @@ typedef struct {
 
 typedef struct {
 
-	unsigned long ini;
-	unsigned long end;
+	addr_t ini;
+	addr_t end;
 	unsigned long perms, perms_orig;
 	int flags;
 	char *bin;
@@ -35,19 +36,33 @@ typedef struct {
 
 } MAP_REG;
 
-void *dealloc_page(void *addr);
-void *mmap_tagged_page(char *file, u64 addr, u64 size);
-void *alloc_tagged_page(char *tag, int size);
-inline void *alloc_page(int size);
+addr_t mmap_tagged_page(char *file, u64 addr, u64 size);
+addr_t alloc_tagged_page(char *tag, unsigned long size);
+addr_t arch_dealloc_page(addr_t addr, unsigned long size);
+inline addr_t alloc_page(int size);
 inline void add_regmap(MAP_REG *mr);
-void *dealloc_all();
+void dealloc_all();
 void print_status_alloc();
 void free_regmaps();
-void print_maps_regions();
 void up_regions(int usrcode);
 void rest_region(MAP_REG *mr);
 void page_dumper(const char *dir);
 void page_restore(const char *dir);
+addr_t dealloc_page(addr_t addr);
+addr_t mmap_tagged_page(char *file, u64 addr, u64 size);
+addr_t arch_alloc_page(unsigned long size, unsigned long *rsize);
+inline addr_t alloc_page(int size);
+inline void add_regmap(MAP_REG *mr);
+void print_status_alloc();
+void free_regmaps(int rest);
+void print_maps_regions(int rad);
+void page_restore(const char *dir);
+void page_dumper(const char *dir);
+void up_regions(int usrcode);
+void rest_region(MAP_REG *mr);
+void rest_all_regions();
+int arch_mprotect(addr_t addr, unsigned int size, int perms);
+
 
 #define REGION_NONE	0
 #define REGION_EXEC	1

@@ -50,6 +50,13 @@
 #include "mem.h"
 #include "thread.h"
 #include "signal.h"
+#include "events.h"
+#include "debug.h"
+
+int debug_set_bp(struct bp_t *bp, unsigned long addr, int type);
+int inline debug_rm_bp_num(int num);
+inline int debug_rm_bp_addr(unsigned long addr);
+int debug_alloc_status();
 
 void debug_dumpcore()
 {
@@ -131,7 +138,7 @@ int debug_init()
 int debug_print_maps(char *arg)
 {
 	if(debug_init_maps(1) == 0) {
-		print_maps_regions(strchr(arg, '*'));
+		print_maps_regions((int)strchr(arg, '*'));
 		return 0;
 	}
 
@@ -162,7 +169,7 @@ int hijack_fd(int fd, const char *file)
 
 void debug_environment()
 {
-	char *ptr;
+	const char *ptr;
 
 	// TODO proper environment handle
 	if (getv()) {} //eprintf("TODO: load environment from environ.txt or so.\n");
@@ -252,7 +259,7 @@ void debug_reload_bps()
 
 int debug_bt()
 {
-	char *type = config_get("dbg.bttype");
+	const char *type = config_get("dbg.bttype");
 	if ((type == NULL) || (!strcmp(type, "default"))) {
 		struct list_head *bt = arch_bt();
 		if(bt != NULL) {
@@ -278,7 +285,7 @@ void debug_exit()
 	debug_init();
 }
 
-int is_code(u64 pc)
+int is_code(addr_t pc)
 {
 	struct list_head *pos;
 
@@ -296,7 +303,7 @@ int is_code(u64 pc)
 	return 0;
 }
 
-int is_usercode(u64 pc)
+int is_usercode(addr_t pc)
 {
 	struct list_head *pos;
 
@@ -317,14 +324,14 @@ int is_usercode(u64 pc)
 
 int debug_stepret()
 {
-	unsigned char bytes[4];
+	char bytes[4];
 	struct aop_t aop;
 
 	/* make steps until esp = oesp and [eip] == 0xc3 */
 	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_stepo()) {
 		debug_read_at(ps.tid, bytes, 4, arch_pc());
-		arch_aop((unsigned long) arch_pc(), bytes, &aop);
+		arch_aop((u64)arch_pc(), (const u8 *)bytes, &aop);
 		if (aop.type == AOP_TYPE_RET)
 			break;
 	}
@@ -346,7 +353,7 @@ int debug_contu()
 	ps.verbose = 1;
 
 	if (config_get("trace.log"))
-		trace_add((u64)arch_pc());
+		trace_add((addr_t)arch_pc());
 
 	return 0;	
 }
@@ -368,7 +375,7 @@ int debug_wtrace()
 		ret = wp_matched();
 		if(ret >= 0) {
 			printf("watchpoint %d matched at 0x%x\n",
-				 ret, arch_pc());		
+				 ret, (unsigned int)arch_pc());		
 			break;
 		}
         }
@@ -382,7 +389,7 @@ int debug_wtrace()
 int debug_ie(char *input)
 {
 	if (!input)
-		return;
+		return 0;
 
 	if (strchr(input, '?')) {
 		eprintf(
@@ -398,6 +405,8 @@ int debug_ie(char *input)
 	}
 
 	event_set_ignored(input+(input[0]=='-'), input[0]!='-');
+
+	return 0;
 }
 
 int debug_until(char *addr)
@@ -405,7 +414,7 @@ int debug_until(char *addr)
 	int bp_pos;
 	unsigned long ptr;
 	char buf[12];
-	u64 off;
+	addr_t off;
 
 	if (!addr)
 		return 0;
@@ -432,7 +441,7 @@ int debug_until(char *addr)
 		debug_read_at(ps.tid, buf, 12, arch_pc());
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
-			off = (u64)ptr;
+			off = (addr_t)ptr;
 			bp_pos = debug_set_bp(NULL, off, BP_SOFT);
 			debug_cont();
 			debug_rm_bp_num(bp_pos);
@@ -442,7 +451,7 @@ int debug_until(char *addr)
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
 			debug_read_at(ps.tid, &addr, 4, arch_pc()+0x16);
-			off = (u64)addr;
+			off = (addr_t)addr;
 			bp_pos = debug_set_bp(NULL, addr, BP_SOFT);
 			printf("main at: 0x%x\n", addr);
 			debug_step(1);
@@ -463,8 +472,8 @@ int debug_mmap(char *args)
 {
 	char *arg;
 	char *file = args + 1;
-	u64 addr;
-	u64 size;
+	addr_t addr;
+	addr_t size;
 #if 0
 Dump of assembler code for function mmap:
 0xb7ec0110 <mmap+0>:    push   %ebp
@@ -513,7 +522,7 @@ int debug_alloc(char *args)
 {
 	int sz;
 	char *param;
-	void *addr;
+	addr_t addr;
 
 	if(!args)
 		return debug_alloc_status();
@@ -528,12 +537,12 @@ int debug_alloc(char *args)
 			return 1;
 		}
 
-		addr = (void *)alloc_page(sz);
-		if(addr == (void *)-1) {
+		addr = alloc_page(sz);
+		if(addr == (addr_t)-1) {
 			eprintf(":alloc can not alloc region!\n");
 			return 1;
 		}
-		printf("* new region allocated at: 0x%x\n", addr);
+		printf("* new region allocated at: 0x%x\n", (unsigned int)addr);
 	}
 
 	return 0;
@@ -541,7 +550,7 @@ int debug_alloc(char *args)
 
 int debug_free(char *args)
 {
-	long addr;
+	addr_t addr;
 
 	if(!args) {
 		eprintf(":free invalid address\n");
@@ -550,10 +559,10 @@ int debug_free(char *args)
 
 	addr = get_math(args + 1);
 
-	if(dealloc_page((void *)addr) == 0)
-		eprintf(":free 0x%x region not found!\n", addr);
+	if(dealloc_page(addr) == 0)
+		eprintf(":free 0x%x region not found!\n", (unsigned int)addr);
 	else
-		eprintf(":free region 0x%x\n", addr); 
+		eprintf(":free region 0x%x\n", (unsigned int)addr); 
 
 	return 0;	
 }
@@ -638,7 +647,7 @@ int debug_fd(char *cmd)
 		return 0;
 	}
 
-	if (ptr=strchr(cmd,'-')) {
+	if ((ptr=strchr(cmd,'-'))) {
 		debug_fd_close(ps.tid, atoi(ptr+1));
 	} else
 	if (cmd[0]=='s') {
@@ -667,7 +676,7 @@ int debug_fd(char *cmd)
 		else
 			debug_fd_dup2(ps.tid, atoi(ptr+1), atoi(ptr2+1));
 	} else
-	if (ptr=strchr(cmd, ' ')) {
+	if ((ptr=strchr(cmd, ' '))) {
 		ptr = ptr+1;
 		if (ptr)
 		ptr2 = strchr(ptr, ':');
@@ -724,7 +733,7 @@ int debug_load()
 	setenv("DPID", pids, 1);
 	debug_init_maps(0);
 	events_init();
-	debug_until(config_get("dbg.bep"));
+	debug_until((char *)config_get("dbg.bep"));
 
 	return ret;
 }
@@ -798,7 +807,8 @@ int debug_imap(char *args)
 
 	if (!strncmp("file://", args + 1, 7)) {
 		struct stat inf;
-		char *addr, *pos;
+		addr_t addr;
+		char *pos;
 		char buf[4096];
 		char *filename = args + 8;
 		int len;
@@ -818,13 +828,13 @@ int debug_imap(char *args)
 			goto err_map;
 		}
 
-		addr = (char *)alloc_tagged_page(args + 1, inf.st_size);
-		if(addr == (char *)-1) {
+		addr = alloc_tagged_page(args + 1, inf.st_size);
+		if(addr == (addr_t)-1) {
 			eprintf(":imap memory size %i failed\n", inf.st_size);
 			goto err_map;
 		}
 
-		pos = addr;
+		pos = (char *)(long)addr;
 		while((len = read(fd, buf, 4096)) > 4096) {
 			debug_write_at(ps.tid, buf, 4096, (long)pos);
 			pos += 4096;
@@ -853,8 +863,7 @@ int debug_signal(char *args)
 	int signum;
 	char *signame;
 	char *arg;
-	unsigned long handler;
-	u64 address;
+	addr_t address;
 
 	if (!ps.opened) {
 		eprintf(":signal No program loaded.\n");
@@ -907,7 +916,7 @@ int debug_stepu()
 	} while (!config.interrupted && !is_usercode(pc) );
 
 	if (config_get("trace.log"))
-		trace_add((u64)pc);
+		trace_add((addr_t)pc);
 	radare_controlc_end();
 //	cons_printf("%d instructions executed\n", i);
 
@@ -916,16 +925,16 @@ int debug_stepu()
 
 int debug_stepo()
 {
-	u64 pc = arch_pc(); //WS_PC();
-	unsigned char cmd[4];
+	addr_t pc = arch_pc(); //WS_PC();
+	char cmd[4];
 	int skip;
 	int bp_pos;
 
-	debug_read_at(ps.tid, cmd, 4, (u64)pc);
+	debug_read_at(ps.tid, cmd, 4, (addr_t)pc);
 
-	if ((skip = arch_is_stepoverable(cmd))) {
+	if ((skip = arch_is_stepoverable((const unsigned char *)cmd))) {
 		if (config_get("trace.log"))
-			trace_add((u64)pc);
+			trace_add((addr_t)pc);
 
 		///  XXX  BP_SOFT with restore_bp doesnt restores EIP correctly
 		bp_pos = debug_set_bp(NULL, pc+skip, BP_HARD);
@@ -939,7 +948,7 @@ int debug_stepo()
 		debug_step(1);
 
 	if (config_get("trace.log"))
-		trace_add((u64)arch_pc());
+		trace_add((addr_t)arch_pc());
 
 	return 0;
 }
@@ -947,10 +956,10 @@ int debug_stepo()
 int debug_step(int times)
 {
 	unsigned char opcode[32];
-	u64 pc, off;
-	u64 old_pc = 0;
-	char *tracefile;
-	char *flagregs;
+	addr_t pc, off;
+	addr_t old_pc = 0;
+	const char *tracefile;
+	const char *flagregs;
 
 	if (!ps.opened) {
 		eprintf("No program loaded.\n");
@@ -975,10 +984,10 @@ int debug_step(int times)
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			pc = arch_pc();
 			if (config_get("trace.log"))
-				trace_add((u64)arch_pc());
+				trace_add((addr_t)arch_pc());
 
 			if (pc == old_pc) {
-				debug_read_at(ps.tid, opcode, 32, (u64)pc);
+				debug_read_at(ps.tid, opcode, 32, (addr_t)pc);
 				// determine infinite loop
 			#if __i386__
 				// XXX this is not nice!
@@ -989,7 +998,8 @@ int debug_step(int times)
 			#endif
 			}
 
-			if (off=arch_is_soft_stepoverable(opcode)) {
+			if ((off=(addr_t)arch_is_soft_stepoverable(
+				(const unsigned char *)opcode))) {
 				pc += off;
 			#if __i386__
 				debug_set_bp(NULL, pc, BP_HARD);
@@ -1015,7 +1025,7 @@ int debug_step(int times)
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
 				sprintf(buf, "CC %d %s @ 0x%08x",
-					ps.steps, ptr, (unsigned long)arch_pc());
+					ps.steps, ptr, (unsigned int)arch_pc());
 				config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer
@@ -1030,7 +1040,7 @@ int debug_step(int times)
 					char buf[1024];
 // XXX dbg.tracefile doesnt works as expected :(
 					//pprint_fd(fd);
-					sprintf(buf, "0x%08llx ", (u64)pc);
+					sprintf(buf, "0x%08llx ", pc);
 					write(fd, buf, strlen(buf));
 					close(fd);
 				}
@@ -1038,7 +1048,7 @@ int debug_step(int times)
 			old_pc = pc;
 		}
 	}
-	trace_add((u64)pc);
+	trace_add((addr_t)pc);
 	ps.steps++;
 
 	return (WS(event) != BP_EVENT);
@@ -1151,7 +1161,7 @@ int debug_trace(char *input)
 			default:
 				pc = arch_pc();
 				if (is_usercode(pc)) {
-					radare_seek((u64)pc, SEEK_SET);
+					radare_seek((addr_t)pc, SEEK_SET);
 					radare_read(0);
 					disassemble(10,1);
 					if (level == 3) {
@@ -1230,7 +1240,7 @@ int debug_rm_bps()
 	return bps - ps.bps_n;
 }
 
-int debug_wp(const char *str)
+int debug_wp(char *str)
 {
 	int i = 0;
 
@@ -1299,9 +1309,9 @@ int debug_wp(const char *str)
 	return 0;	
 }
 
-int debug_bp(const char *str)
+int debug_bp(char *str)
 {
-	unsigned long addr;
+	addr_t addr;
 	const char *ptr = str;
 	const char *type;
 	int bptype = BP_NONE;
@@ -1367,7 +1377,7 @@ int debug_bp(const char *str)
 	return 0;
 }
 
-struct bp_t *debug_get_bp(unsigned long addr)
+struct bp_t *debug_get_bp(addr_t addr)
 {
 	int i = 0;
 
@@ -1396,7 +1406,7 @@ int print_syscall()
 
 int debug_contuh(char *arg)
 {
-	u64 off = arch_pc();
+	addr_t off = arch_pc();
 	int bp;
 	debug_step(1);
 	bp = debug_set_bp(NULL, off, BP_SOFT);
@@ -1457,21 +1467,23 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 
 	ptr = (char *)malloc(sz);
 	// backup code
-	debug_read_at(ps.tid, ptr, sz, (u64)ps.entrypoint);
+	debug_read_at(ps.tid, ptr, sz, (addr_t)ps.entrypoint);
 	// inject shellcode
-	debug_write_at(ps.tid, fil, sz, (u64)ps.entrypoint);
+	debug_write_at(ps.tid, fil, sz, (addr_t)ps.entrypoint);
 	// execute it
 	arch_jmp(ps.entrypoint);
 	debug_cont();
 	// restore
 	arch_jmp(eip);
-	debug_write_at(ps.tid, ptr, sz, (u64)eip);
+	debug_write_at(ps.tid, ptr, sz, (addr_t)eip);
 	free(ptr);
+
+	return 0;
 }
 
 int debug_inject(char *file)
 {
-	u64 sz = (u64)0;
+	addr_t sz = (addr_t)0;
 	int fd = open(file, O_RDONLY);
 	unsigned char *fil = NULL;
 
@@ -1480,16 +1492,16 @@ int debug_inject(char *file)
 		return 0;
 	}
 
-//	sz = (u64)
-	lseek(fd, (u64)0, SEEK_END) + (u64)4;
-	lseek(fd, (u64)0, SEEK_SET);
+//	sz = (addr_t)
+	lseek(fd, (addr_t)0, SEEK_END); // + (addr_t)4;
+	lseek(fd, (addr_t)0, SEEK_SET);
 	if (sz>0xffff) {
 		eprintf("File too big\n");
 		close(fd);
 		return 0;
 	}
 	// read the code
-	fil = (char *)malloc(sz);
+	fil = (unsigned char *)malloc(sz);
 	read(fd, fil, sz);
 
 	debug_inject_buffer(fil, sz);
@@ -1571,7 +1583,7 @@ int debug_rm_bp(unsigned long addr, int type)
 	if(ret < 0)
 		return ret;
 
-	flag_clear_by_addr((u64)addr); //"breakpoint", addr, 1);
+	flag_clear_by_addr((addr_t)addr); //"breakpoint", addr, 1);
 
 	bp->addr = 0;
 	ps.bps_n--;
@@ -1581,7 +1593,7 @@ int debug_rm_bp(unsigned long addr, int type)
 
 int inline debug_rm_bp_num(int num)
 {
-#warning XXX THIS IS BUGGY! num != addr, u64 != int !!
+#warning XXX THIS IS BUGGY! num != addr, addr_t != int !!
 	return debug_rm_bp(num, 1);
 }
 

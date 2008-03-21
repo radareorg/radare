@@ -26,12 +26,16 @@ u64 flag_get_addr(const char *name);
 flag_t *flag_get(const char *name);
 flag_t *flag_get_i(int id);
 flag_t *flag_get_next();
+flag_t *flag_get_reset();
+int flags_between(u64 from, u64 to);
 int flag_is_empty(flag_t *flag);
 char *flag_name_by_offset(u64 offset);
 int flag_set(const char *name, u64 addr, int dup);
 void print_flag_offset(u64 seek);
 void flags_setenv();
 void flag_list(char *arg);
+void flag_help();
+int flag_rename_str(char *text);
 
 //extern flag_t **flags;
 struct list_head flags;

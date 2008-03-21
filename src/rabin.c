@@ -40,7 +40,11 @@ u64 rabin_entrypoint(int filetype)
 			io_lseek(config.fd, 0x18, SEEK_SET);
 			io_read(config.fd, &addr, 4);
 			io_lseek(config.fd, 0, SEEK_SET);
-			return addr-0x8048000; // XXX FIX
+
+			/* FIX */
+			if (addr>0x8048000)
+				return addr-0x8048000;
+			return addr;
 			//pprintf("0x%08x memory\n", addr);
 			//pprintf("0x%08x disk\n", addr - 0x8048000);
 			break;
@@ -66,7 +70,7 @@ u64 rabin_entrypoint(int filetype)
 
 int rabin_identify_header()
 {
-	int filetype = FILETYPE_UNK;
+	int pe, filetype = FILETYPE_UNK;
 	unsigned char buf[1024];
 
 	io_lseek(config.fd, 0, SEEK_SET);
@@ -78,7 +82,7 @@ int rabin_identify_header()
 			filetype = FILETYPE_CLASS;
 		else
 			if (!memcmp(buf, "\x4d\x5a", 2)) {
-				int pe = buf[0x3c];
+				pe = buf[0x3c];
 				filetype = FILETYPE_MZ;
 				if (buf[pe]=='P' && buf[pe+1]=='E') {
 					filetype = FILETYPE_PE;
@@ -111,7 +115,11 @@ int rabin_load()
 			config_set("file.type", "elf");
 			//config_set_i("file.baddr", 0x8048000);
 			config_set_i("file.baddr", (u64)0x8048000); // XXX doesnt works! :(
+			#if __i386__
 			config.baddr = 0x8048000;
+			#else
+			config.baddr = 0x8000; // ARM
+			#endif
 			break;
 		case FILETYPE_MZ:
 			config_set("file.type", "mz");

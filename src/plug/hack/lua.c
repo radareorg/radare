@@ -44,6 +44,37 @@ static int lua_cmd_str (lua_State *L) {
 
 static lua_State *L;
 
+static char *slurp(char *str)
+{
+	char *ret;	
+	u64 sz;
+	FILE *fd = fopen(str, "r");
+	if (fd == NULL)
+		return NULL;
+	fseek(fd, 0,SEEK_END);
+	sz = ftell(fd);
+	fseek(fd, 0,SEEK_SET);
+	ret = (char *)malloc(sz+1);
+	fread(ret, sz, 1, fd);
+	ret[sz]='\0';
+	fclose(fd);
+	return ret;
+}
+
+static int slurp_lua(char *file)
+{
+	char *str = slurp(file);
+	printf("slurp(%s)\n", file);
+	if (str) {
+		luaL_loadbuffer(L, str, strlen(str), "");
+		lua_pcall(L,0,0,0);
+		free(str);
+		return 1;
+	}
+	return 0;
+}
+
+
 static int lua_hack_init()
 {
 	printf("Initializing LUA vm...\n");
@@ -80,36 +111,6 @@ static int lua_hack_init()
 static int lua_hack_cya()
 {
 	lua_close(L);
-}
-
-static char *slurp(char *str)
-{
-	char *ret;	
-	u64 sz;
-	FILE *fd = fopen(str, "r");
-	if (fd == NULL)
-		return NULL;
-	fseek(fd, 0,SEEK_END);
-	sz = ftell(fd);
-	fseek(fd, 0,SEEK_SET);
-	ret = (char *)malloc(sz+1);
-	fread(ret, sz, 1, fd);
-	ret[sz]='\0';
-	fclose(fd);
-	return ret;
-}
-
-static int slurp_lua(char *file)
-{
-	char *str = slurp(file);
-	printf("slurp(%s)\n", file);
-	if (str) {
-		luaL_loadbuffer(L, str, strlen(str), "");
-		lua_pcall(L,0,0,0);
-		free(str);
-		return 1;
-	}
-	return 0;
 }
 
 void lua_hack_cmd(char *input)

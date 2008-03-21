@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 typedef enum { false, true } bool;
 

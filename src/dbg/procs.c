@@ -29,6 +29,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+int pids_sons_of_r(int pid, int recursive, int limit);
+
 int pids_cmdline(int pid, char *cmdline)
 {
 	int fd;
@@ -70,7 +72,7 @@ int pids_ptrace_all(int pid)
 			if (fd) {
 				mola = 0;
 				fscanf(fd,"%d %s %s %d",
-					&tmp, tmp2, &tmp3, &mola);
+					&tmp, tmp2, tmp3, &mola);
 				if (mola == pid) {
 					//pids_cmdline(p, tmp2);
 					//for(i=0; i<recursive*2;i++)
@@ -111,7 +113,7 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 			if (fd) {
 				mola = 0;
 				fscanf(fd,"%d %s %s %d",
-					&tmp, tmp2, &tmp3, &mola);
+					&tmp, tmp2, tmp3, &mola);
 				if (mola == pid) {
 					pids_cmdline(p, tmp2);
 					//for(i=0; i<recursive*2;i++)

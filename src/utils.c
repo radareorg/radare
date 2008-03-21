@@ -63,10 +63,20 @@ char *lstrchr(char *str, char chr)
 	return NULL;
 }
 
+int strnstr(char *from, char *to, int size)
+{
+	int i;
+	for(i=0;i<size;i++)
+		if (from==NULL||to==NULL||from[i]!=to[i])
+			break;
+	return (size!=i);
+}
+
+
 char *slurp(char *str)
 {
 	char *ret;	
-	u64 sz;
+	long sz;
 	FILE *fd = fopen(str, "r");
 	if (fd == NULL)
 		return NULL;
@@ -80,7 +90,7 @@ char *slurp(char *str)
 	return ret;
 }
 
-void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size)
+void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
 #if LIL_ENDIAN /* little endian : x86 */
@@ -94,7 +104,7 @@ void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size)
 #endif
 }
 
-void endian_memcpy_e(unsigned char *dest, unsigned char *orig, unsigned int size, int endian)
+void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 {
 	if (endian) {
 		memcpy(dest, orig, size);
@@ -183,7 +193,7 @@ unsigned long get_pointer(u64 addr)
 #endif
 
 /* Converts a string to u64 type. u64 jmp = get_offset("0x123456"); */
-u64 get_offset(char *orig)
+u64 get_offset(const char *orig)
 {
 	char arga[1024];
 	char *arg = (char *)&arga;
@@ -276,9 +286,11 @@ u64 get_math(const char* text)
 	int  sign     = 1;
 	char op       = 0;
 	char oop      = 0;
-	char *txt, *txt2, *tmp;
+	char *txt, *tmp;
 	char *ptr     = NULL;
-	char *end;
+#if RADARE_CORE
+	char *end, *txt2;
+#endif
 
 	if (text==NULL||text[0]=='\0')
 		return 0;
@@ -498,7 +510,6 @@ char *strclean(char *str)
 	}
 	return str;
 }
-
 
 int strnull(const char *str)
 {

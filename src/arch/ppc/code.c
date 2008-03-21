@@ -20,12 +20,13 @@
 
 /* code analysis functions */
 
+#include "../../radare.h"
 #include "../../code.h"
 #include <string.h>
 
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love
-int arch_ppc_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_ppc_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	// TODO swap endian here??
 	int opcode = (bytes[0] & 0xf8) >> 3; // bytes 0-5

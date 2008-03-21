@@ -22,6 +22,7 @@ extern const char *dl_prompt;
 
 #include "main.h"
 #include "radare.h"
+#include "print.h"
 #include "plugin.h"
 #include <signal.h>
 #include <stdio.h>
@@ -32,6 +33,7 @@ extern const char *dl_prompt;
 #include <termios.h>
 #include <sys/ioctl.h>
 #endif
+#include "dbg/debug.h"
 #include "utils.h"
 #include "cmds.h"
 #include "dbg/arch/arch.h"
@@ -111,7 +113,6 @@ static u64 mark = 0;
 
 void press_any_key()
 {
-	int key;
 	D cons_printf("\n--press any key--\n");
 	cons_flush();
 	cons_readchar();
@@ -172,7 +173,7 @@ void convert_bytes()
 
 CMD_DECL(zoom)
 {
-	if (config.zoom.size = 0)
+	if (config.zoom.size == 0)
 		config.zoom.size = config.size;
 
 	CLRSCR();
@@ -728,7 +729,7 @@ void visual_bind_key()
 
 void visual_draw_screen()
 {
-	char *ptr;
+	const char *ptr;
 	char buf[256];
 
 	/* printage */
@@ -872,7 +873,7 @@ CMD_DECL(visual)
 		visual_draw_screen();
 
 		if (last_print_format == FMT_UDIS) {
-			char *follow = config_get("asm.follow");	
+			const char *follow = config_get("asm.follow");	
 			if (follow&&follow[0]) {
 				u64 addr = get_offset(follow);
 				if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
@@ -1205,7 +1206,7 @@ CMD_DECL(visual)
 		case 'U':
 			undo_redo();
 			break;
-		case 'f': { int i;
+		case 'f': {
 			flag_t *flag = flag_get_next(1);
 			if (!flag) flag = flag_get_next(-1);
 			if (!flag) flag = flag_get_reset();

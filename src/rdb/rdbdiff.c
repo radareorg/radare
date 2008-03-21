@@ -1,11 +1,13 @@
 #include "rdb.h"
+#include <stdio.h>
+#include <string.h>
 
 // WARNING!!! The RDB diffing engine lives here
 
 int rdb_diff_block(struct block_t *a, struct block_t *b)
 {
-	int i,j;
-	printf("Function '%s' differs (address = 0x%08x)\n",
+	int i;
+	printf("Function '%s' differs (address = 0x%08lx)\n",
 		b->name, b->addr);
 	if (a->framesize != b->framesize)
 		printf("   stackframe differs: %d vs %d\n", a->framesize, b->framesize);
@@ -27,7 +29,7 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 {
 	struct list_head *i, *j;
 	struct block_t *b0, *b1;
-	struct xref_t *x0, *x1;
+	//struct xref_t *x0, *x1;
 	int ignored = 0;
 	int count = 0;
 
@@ -83,7 +85,7 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 	list_for_each_prev(i, &(a->blocks)) {
 		b0 = list_entry(i, struct block_t, list);
 		if (!b0->ignored) {
-			printf("%s block 0x%08x not processed\n", a->name, b0->addr);
+			printf("%s block 0x%08lx not processed\n", a->name, b0->addr);
 //			list_for_each_prev(i, &(b0->xrefs)) {
 //				x0 = list_entry(i, struct xref_t, list);
 				//printf("  xref 0x%08x\n", x0->addr);
@@ -93,7 +95,7 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 	list_for_each_prev(i, &(b->blocks)) {
 		b0 = list_entry(i, struct block_t, list);
 		if (!b0->ignored) {
-			printf("%s block 0x%08x not processed\n", a->name, b0->addr);
+			printf("%s block 0x%08lx not processed\n", a->name, b0->addr);
 //			list_for_each_prev(i, &(b0->xrefs)) {
 //				x0 = list_entry(i, struct xref_t, list);
 				//printf("  xref 0x%08x\n", x0->addr);
@@ -108,4 +110,5 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 	//  - same xrefs
 	//  - bytediff < N% of the code
 	// TODO
+	return count;
 }

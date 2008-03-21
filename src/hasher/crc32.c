@@ -1,16 +1,15 @@
-#define false 0
-#define true 1
+#include "../radare.h"
 
-char crc_table_is_init = false;
-unsigned int crc_table[256];
+static char crc_table_is_init = 0;
+static unsigned int crc_table[256];
 
-unsigned int crc32(char *buf, long len)
+unsigned int crc32(char *buf, u64 len)
 {
 	unsigned int crc = 0;
 
 	if (!crc_table_is_init) {
 		unsigned int i, j, h = 1;
-		crc_table_is_init = true;
+		crc_table_is_init = 1;
 		crc_table[0] = 0;
 		for (i = 128; i; i >>= 1) {
 			h = (h >> 1) ^ ((h & 1) ? (int)0xedb88320 : 0);

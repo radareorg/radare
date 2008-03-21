@@ -127,7 +127,9 @@ int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t prin
 int stripstr_from_file(const char *filename, int min, u64 seek);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(char *str);
-int radare_cmd(char *input, int log);
+int radare_cmd(char *command, int log);
+int radare_cmd_raw(const char *tmp, int log);
+char *pipe_command_to_string(char *cmd);
 char *radare_cmd_str(const char *cmd);
 int radare_interpret(char *file);
 void radare_controlc();
@@ -147,6 +149,21 @@ void radare_move(char *arg);
 void disassemble(int len, int rows);
 void radare_search_aes();
 int aes_key_test(unsigned char *buf);
+
+int project_save(char *file);
+void project_close();
+int project_open(char *file);
+int project_info(const char *file);
+
+int rabin_load();
+
+int radare_hack_help();
+int radare_hack(const char *cmd);
+void rdb_help();
+void radare_fortunes();
+int radare_compare(unsigned char *f, unsigned char *d, int len);
+int search_range(char *range);
+int search_from_file(char *file);
 
 CMD_DECL(gotoxy);
 CMD_DECL(baddr);

@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "flags.h"
+#include "radare.h"
 
 int project_save(char *file)
 {
@@ -80,7 +81,7 @@ int project_save(char *file)
 	return 1;
 }
 
-int project_close()
+void project_close()
 {
 	char *file = config_get("file.project");
 	if (!strnull(file)) {
@@ -167,7 +168,7 @@ int project_open(char *file)
 			ptr2=strchr(ptr, ' ');
 			if (ptr2) {
 				ptr2 = ptr2 + 1;
-				sscanf(ptr2, "0x%08llx %d %c", &from, &len, &type);
+				sscanf(ptr2, "0x%08llx %lld %c", &from, &len, &type);
 				sprintf(buf, "C%c %lld @ 0x%08llx", type, len, from);
 				if (buf[1]!='\0')
 					radare_cmd(buf, 0);
@@ -183,7 +184,7 @@ int project_open(char *file)
 	return 1;
 }
 
-int project_info(char *file)
+int project_info(const char *file)
 {
 	if (file == NULL || file[0]=='\0')
 		file = config_get("file.project");

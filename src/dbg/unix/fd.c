@@ -44,6 +44,8 @@
 #include <sys/prctl.h>
 #endif
 
+#include "../debug.h"
+
 u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 {
 	u64 ret = 0;
@@ -68,7 +70,7 @@ int debug_fd_list(int pid)
 		printf("Cannot open /proc\n");
 		return -1;
 	}
-	while(de = readdir(dd)) {
+	while((de = readdir(dd))) {
 		if (de->d_name[0]=='.')
 			continue;
 		sprintf(path, "/proc/%d/fd/", pid);

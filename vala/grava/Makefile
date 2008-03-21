@@ -1,7 +1,7 @@
 include ../../config.mk
 
 all:
-	valac -g cmain.c --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
+	valac cmain.c --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out
 
 radare:
 	[ "${HAVE_VALAC}" = 1 ] && valac -c -g --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out

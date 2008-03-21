@@ -28,7 +28,7 @@
 #include <fcntl.h>
 
 /* code analyzer */
-int (*arch_aop)(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
+int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 // called from env_update
 void arch_set_callbacks()
@@ -71,7 +71,7 @@ struct reflines_t *code_lines_init()
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 	struct reflines_t *list2;
-	int bar = config_get("asm.linesout");
+	int bar = (int)config_get("asm.linesout");
 	unsigned char *ptr = config.block;
 	unsigned char *end = config.block + config.block_size;
 	struct aop_t aop;
@@ -128,7 +128,6 @@ void code_lines_print2(struct reflines_t *list, u64 addr)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
-	int cow= 0;
 	char ch = ':';
 
 	if (!list)
@@ -265,8 +264,8 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
 	unsigned char *ptr = (unsigned char *)&buf;
-	int callblocks = config_get("graph.callblocks");
-	int jmpblocks = config_get("graph.jmpblocks");
+	int callblocks =(int) config_get("graph.callblocks");
+	int jmpblocks = (int) config_get("graph.jmpblocks");
 	struct block_t *blf;
 	
 	// too deep! chop branch here!
@@ -293,7 +292,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 		
 		if ( blf != NULL )
 		{	
-			printf ("Address %x already analed\n", config.seek+bsz );
+			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
 			aop.jump = config.seek+bsz;
 			break;
@@ -301,7 +300,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 		blf = block_split_new ( prg, config.seek+bsz  );
 		if ( blf != NULL )
 		{		
-			printf ("--Address %x already analed\n", config.seek+bsz );
+			//printf ("--Address %llx already analed\n", config.seek+bsz );
 			
 			bsz = blf->n_bytes;
 			aop.eob = 1;
@@ -315,7 +314,7 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 			break;
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
-			eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
 			break;
 		}
 
@@ -349,8 +348,10 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 #endif
 	blk->bytes = (unsigned char *)malloc(bsz);
 
+#if 0
 	if ( bsz == 0 )
-		printf ("AAAA %x \n", config.seek+bsz);
+		printf ("AAAA %llx \n", config.seek+bsz);
+#endif
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;

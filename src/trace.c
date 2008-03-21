@@ -97,7 +97,7 @@ int trace_add(u64 addr)
 	t->count = ++n_traces;
 	list_add_tail(&(t->list), &traces);
 
-eprintf("new trace (0x%08x)\n", (unsigned long)addr);
+	//eprintf("new trace (0x%08x)\n", (unsigned long)addr);
 	return t->times;
 }
 

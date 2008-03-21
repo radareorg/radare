@@ -1,8 +1,6 @@
 #ifndef _INCLUDE_PRINT_H_
 #define _INCLUDE_PRINT_H_
 
-#define CLRSCR() cons_strcat("\e[2J\e[0;0H");
-char *cons_get_buffer();
 
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
@@ -18,6 +16,15 @@ extern int dec;
 #define INILINE
 #undef NEWLINE
 #define NEWLINE cons_newline();
+
+#define CLRSCR() cons_strcat("\e[2J\e[0;0H");
+char *cons_get_buffer();
+void cons_reset();
+void cons_clear();
+int cons_readchar();
+void cons_flush();
+int cons_fgets(char *buf, int len);
+int cons_set_fd(int fd);
 void cons_strcat(const char *str);
 void cons_newline();
 

@@ -29,6 +29,7 @@
 #include <assert.h>
 #include "parser.h"
 #include "../list.h"
+#include "../utils.h"
 
 extern struct regs_off roff[];
 extern int get_reg(char *reg);
@@ -124,7 +125,8 @@ int get_tok_value(char **c, struct tok *t)
 				return -1;
 			}
 
-			t->len = hexstr2binstr((char *)aux + 2, aux + 2);
+			t->len = hexstr2binstr((const char *)aux + 2,
+						(unsigned char *)(aux + 2));
 			memcpy(t->val, aux + 2, t->len);
 			/*
 			for(i = 0; i < t->len; i++) {

@@ -41,11 +41,6 @@ static int terminal_get_real_columns();
 #include <signal.h>
 #endif
 
-#if __UNIX__
-static struct termios tio_old, tio_new;
-#endif
-static int raw;
-
 /* line input */
 #define DL_BUFSIZE 1024
 int dl_echo = 0;
@@ -175,7 +170,6 @@ int dl_init()
 int dl_printchar()
 {
 	unsigned char buf[10];
-	int ch;
 
 	terminal_set_raw(1);
 	buf[0]=dl_readchar();

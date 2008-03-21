@@ -31,7 +31,7 @@ int rasm_show_list()
  "Architectures:\n"
  " x86, ppc, arm, java\n"
  "Opcodes:\n"
- " call [æddr]  - call to address\n"
+ " call [addr]  - call to address\n"
  " jmp [addr]   - jump to relative address\n"
  " jz  [addr]   - jump if equal\n"
  " jnz          - jump if not equal\n"
@@ -43,17 +43,112 @@ int rasm_show_list()
  " ret          - return from subroutine\n"
  " ret0         - return 0 from subroutine\n"
  " hang         - hang (infinite loop\n"
- " mov eax, 33  - asign a value to a register\n");
+ " mov eax, 33  - asign a value to a register\n"
+ "Directives:\n"
+ " .zero 23     - fill 23 zeroes\n"
+ " .org 0x8000  - offset\n");
 	return 0;
 }
 
+int rasm_file(const char *arch, u64 offset, const char *file, const char *ofile)
+{
+	char buf[1024];
+	unsigned char data[1024];
+	char *dofile;
+	int line = 1;
+	int n;
+	FILE * fd = fopen(file, "rb");
+	FILE * fo;
+	
+	if (ofile == NULL) {
+		dofile = (char *)malloc(strlen(file)+3);
+		strcpy(dofile, file);
+		strcat(dofile, ".o");
+		fo = fopen(dofile, "wb");
+	} else
+		fo = fopen(ofile, "wb");
+
+	if (fd && fo) {
+		// TODO : truncate+lseek+filluntil offset with 0 padding
+		while(!feof(fd)) {
+			buf[0]='\0';
+			fgets(buf, 1024, fd);
+			if (!buf[0])
+				break;
+			buf[strlen(buf)-1]='\0';
+			eprintf(" %03d : %s\n", line++, buf);
+			n = rasm_asm(arch, offset, buf, data);
+			if (n == -1)
+				break;
+			fwrite(data, n, 1, fo);
+		}
+		fclose(fd);
+		fclose(fo);
+		return 0;
+	}
+		
+	if (fd == NULL)
+		eprintf("Cannot open input file.\n", ofile);
+	else	fclose(fd);
+	if (fo == NULL)
+		eprintf("Cannot open output file.\n", ofile);
+	else	fclose(fo);
+
+	return 1;
+}
+
+int rasm_directive(u64 *offset, const char *str, u8 *data)
+{
+	char op[128];
+	char *arg;
+	u64 n;
+
+	strncpy(op, str, 120);
+
+	/* comments */
+ 	arg = strchr(op, ';');
+	if (arg)
+		arg[0] = '\0';
+
+ 	arg = strchr(op, ' ');
+	if (arg) {
+		arg[0] = '\0';
+		arg = arg + 1;
+	}
+
+#if TODO
+	if (!strcmp(op, ".equ")) {
+		n = get_offset(arg);
+		memset(data, '\0', n);
+		return n;
+	}
+#endif
+
+	if (!strcmp(op, ".org")) {
+		*offset = get_offset(arg);
+		return *offset;
+	}
+
+	if (!strcmp(op, ".zero")) {
+		n = get_offset(arg);
+		memset(data, '\0', n);
+		return (int)n;
+	}
+
+	return -1;
+}
+
 /* assemble */
-int rasm_asm(char *arch, off_t offset, char *str, unsigned char *data)
+int rasm_asm(const char *arch, u64 offset, const char *str, unsigned char *data)
 {
 	int ret = -1;
 
 	if (arch == NULL||str==NULL)
 		return -1;
+
+	ret = rasm_directive(&offset, str, data);
+	if (ret != -1)
+		return ret;
 
 	if (str[0]=='\0'||str[1]=='\0' || strchr(str,'?')!=NULL)
 		return rasm_show_list();
@@ -69,6 +164,9 @@ int rasm_asm(char *arch, off_t offset, char *str, unsigned char *data)
 
 	if (!strcmp(arch, "ppc"))
 		ret = rasm_ppc(offset, str, data);
+
+	if (ret == -1)
+		fprintf(stderr, "error in '%s'\n", str);
 
 	return ret;
 }

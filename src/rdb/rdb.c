@@ -6,14 +6,12 @@
 #include <stdlib.h>
 #include "rdb.h"
 
-#define RDBDIFF 0
-// XXX
-#if RDBDIFF
+#if 0
 
-off_t get_offset(char *addr)
+u64 get_offset(char *addr)
 {
-	off_t off;
-	sscanf(addr, "0x%08lx", &off);
+	u64 off;
+	sscanf(addr, "0x%08llx", &off);
 	return off;
 }
 
@@ -166,7 +164,9 @@ struct block_t *block_split_new(struct program_t *program, unsigned long addr)
 		struct block_t *bt = list_entry(i, struct block_t, list);
 		if (( addr >= bt->addr )&& (addr < (bt->addr+(unsigned long)bt->n_bytes) ) )
 		{
-			printf ("addr: %x , %x-%x\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes));
+			#if 0
+			printf ("addr: %lx , %lx-%lx\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes));
+			#endif
 			oldb = bt->n_bytes;
 
 			bt->n_bytes = addr - bt->addr  ;
@@ -178,11 +178,15 @@ struct block_t *block_split_new(struct program_t *program, unsigned long addr)
 			bt->tnext = addr;
 			bt->fnext = 0;
 
+			#if 0
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
-			printf ("addr: %x , %x-%x, [%d]\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes),(int)bta -> n_bytes);
-			bta->bytes = (char*) malloc (bta -> n_bytes);
+			printf ("addr: %lx , %lx-%lx, [%d]\n",
+				addr, bt->addr,
+				(bt->addr+(unsigned long)bt->n_bytes),
+				(int) bta->n_bytes);
+			#endif
+			bta->bytes = (unsigned char*) malloc (bta -> n_bytes);
 			memcpy ( bta->bytes,  bt->bytes + bt->n_bytes, bta -> n_bytes);
-			printf ("byte!\n");
 			return bta;
 		}
 	}

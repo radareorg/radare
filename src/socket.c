@@ -20,55 +20,79 @@
 
 #include "main.h"
 #include "socket.h"
-
-#if __WINDOWS__ || __CYGWIN__
+#if __WINDOWS__
 #include <windows.h>
-#include <winsock.h>
-#elif __UNIX__
+#endif
+#if __UNIX__
 #include <sys/un.h>
-#include <unistd.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/fcntl.h>
 #endif
-
 #include <sys/types.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-
 
 #define BUFFER_SIZE 4096
 
 int socket_write(int fd, unsigned char *buf, int len)
 {
-#if __UNIX__
-	return write(fd, buf, strlen(buf));
-#else
-	return send(fd, buf, strlen(buf), 0);
-#endif
+	int delta = 0;
+	int ret;
+	do {
+		ret = send(fd, buf+delta, len, 0);
+		if (ret == 0)
+			return -1;
+		if( ret == len)
+			return len;
+		if (ret<0)
+			break;
+		delta+=ret;
+		len-=ret;
+	} while(1);
+
+	if (ret == -1)
+		return -1;
+	return delta;
 }
 
 /* waits secs until new data is received.     */
 /* returns -1 on error, 0 is false, 1 is true */
-int socket_ready(int fd, int secs)
+int socket_ready(int fd, int secs,int usecs)
 {
+	struct pollfd fds[1];
+	fds[0].fd = fd;
+	fds[0].events = POLLIN|POLLPRI;
+	fds[0].revents = POLLNVAL|POLLHUP|POLLERR;
+	return poll(&fds, 1, secs);
+#if 0
 	fd_set rfds;
 	struct timeval tv;
 	int retval;
+	if (fd==-1)
+		return -1;
 
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
 	tv.tv_sec = secs;
-	tv.tv_usec = 0;
+	tv.tv_usec = usecs;
 
 	retval = select(1, &rfds, NULL, NULL, &tv);
 	if (retval==-1)
 		return -1;
 	return FD_ISSET(0, &rfds);
+#endif
+}
+
+void socket_block(int fd, int block)
+{
+	fcntl(fd, F_SETFL, O_NONBLOCK, !block);
 }
 
 void socket_printf(int fd, const char *fmt, ...)
@@ -104,11 +128,6 @@ int socket_unix_connect(char *file)
 	addr.sun_family = AF_UNIX;
 	strncpy (addr.sun_path, file, sizeof(addr.sun_path));
 
-	if (bind (sock, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
-		close(sock);
-		return -1;
-	}
-
 	if (connect(sock, (struct sockaddr *)&addr, sizeof(addr))==-1) {
 		close(sock);
 		return -1;
@@ -136,7 +155,7 @@ int socket_unix_listen(const char *file)
 		return -1;
 
 	/* change permissions */
-	if (chmod (unix_name.sun_path, 0700) != 0)
+	if (chmod (unix_name.sun_path, 0777) != 0)
 		return -1;
 
 	if (listen(sock, 1))
@@ -182,7 +201,6 @@ int socket_connect(char *host, int port)
 	return s;
 }
 
-
 int socket_listen(int port)
 {
 	int s;
@@ -218,52 +236,50 @@ int socket_listen(int port)
 int socket_close(int fd)
 {
 #if __UNIX__
-	shutdown(config.fd, SHUT_RDWR);
-	close(config.fd);
+	shutdown(fd, SHUT_RDWR);
+	return close(fd);
 #else
 	WSACleanup();
-	closesocket(config.fd);
+	return closesocket(fd);
 #endif
 }
 
 int socket_read(int fd, unsigned char *buf, int len)
 {
 #if __UNIX__
-	return read(config.fd, buf, len);
+	return read(fd, buf, len);
 #else
-	return recv(config.fd, buf, len, 0);
+	return recv(fd, buf, len, 0);
 #endif
 }
 
-int socket_fgets(char *buf,  int size)
+int socket_accept(int fd)
+{
+	return accept(fd, NULL, NULL);
+}
+
+int socket_fgets(int fd, char *buf,  int size)
 {
 	int i = 0;
 	int ret = 0;
 
-	if (config.fd == -1) {
-		socket_close(config.fd);
-		eprintf("bytebye\n");
+	if (fd == -1)
 		return -1;
-	}
 
-	while(i<size) {
-		ret = socket_read(config.fd, buf+i, 1);
-		if (ret<=0 ) {
-			socket_close(config.fd);
-			config.fd = -1;
+	while(i<size-1) {
+		ret = socket_read(fd, buf+i, 1);
+		if (ret==0) {
+			return -1;
 		}
-		/*if (buf[i]==4) { // ^D
-			shutdown(config.fd,SHUT_RDWR);
-			close(config.fd);
-			config.fd = -1;
-			break;
+		if (ret<0 ) {
+			socket_close(fd);
+			return -1;
 		}
-		*/
 		if (buf[i]=='\r'||buf[i]=='\n')
 			break;
 		i+=ret;
 	}
-	buf[i]='\0'; // XXX 1byte overflow
+	buf[i]='\0';
 
 	return ret;
 }

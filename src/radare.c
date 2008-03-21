@@ -46,9 +46,15 @@
 #include "cmds.h"
 #include "readline.h"
 #include "flags.h"
+#include "radare.h"
+
+#include "dietline.h"
 
 u64 tmpoff = -1;
 int std = 0;
+
+static int radare_close();
+
 
 void radare_init()
 {
@@ -59,7 +65,9 @@ void radare_init()
 
 void radare_exit()
 {
-	char *ptr;
+	const char *ptr;
+	char* pch;
+
 	int ret;
 	char ch;
 
@@ -83,17 +91,23 @@ void radare_exit()
 			write(1, &ch, 1);
 			write(1, "\n", 1);
 			if (ch != 'n') 
-				project_save(ptr);
+			{
+				pch = strdup (ptr);
+				project_save(pch);
+				free (pch);
+			}
 			terminal_set_raw(0);
 		}
 	}
 	exit(0);
 }
 
-static int radare_interrupt(int sig)
+static void radare_interrupt(int sig)
 {
 	config.interrupted = 1;
+
 }
+
 
 void radare_controlc()
 {
@@ -122,7 +136,7 @@ unsigned char radare_get(int delta)
 	return config.block[delta];
 }
 
-int radare_close()
+static int radare_close()
 {
 	project_close();
 	return io_close(config.fd);
@@ -136,7 +150,7 @@ void radare_sync()
 		return;
 
 	/* enlarge your integer overflows */
-	if (config.seek>0xfffffffffffffff)
+	if (config.seek>0xfffffffffffffffLL)
 		config.seek = 0;
 
 	if (config.size!=-1) {
@@ -167,7 +181,6 @@ void radare_fortunes()
 	int lines = 0;
 	char *ptr;
 	int i;
-	int ran;
 	struct timeval tv;
 
 	gettimeofday(&tv,NULL);
@@ -187,9 +200,10 @@ void radare_fortunes()
 	}
 }
 
-int radare_cmd_raw(char *tmp, int log)
+int radare_cmd_raw(const char *tmp, int log)
 {
-	FILE *fd;
+	int fd;
+	FILE* filef;
 	int i,f,fdi = 0;
 	char *eof;
 	char *eof2;
@@ -244,15 +258,16 @@ int radare_cmd_raw(char *tmp, int log)
 			"  > . /tmp/flags-saved\n");
 			break;
 		case ' ':
-			fd = fopen(input+2,"r");
-			if (fd) {
-				while(!feof(fd)) {
+			
+			filef = fopen(input+2,"r");
+			if (filef) {
+				while(!feof(filef)) {
 					buf[0]='\0';
-					fgets(buf, 1000, fd);
+					fgets(buf, 1000, filef);
 					if (buf[0]!='\0')
 						radare_cmd(buf, 0);
 				}
-				fclose(fd);
+				fclose(filef);
 			} else
 				cons_printf("oops (%s)\n", input+2);
 			break;
@@ -271,7 +286,7 @@ int radare_cmd_raw(char *tmp, int log)
 				}
 				config_set_i("cfg.verbose", 1);
 				free(oinput);
-				return;
+				return 0;
 			}
 			pipe_stdout_to_tmp_file(file, input+1);
 			f = open(file, O_RDONLY);
@@ -282,7 +297,6 @@ int radare_cmd_raw(char *tmp, int log)
 				return 0;
 			}
 			for(;!config.interrupted;) {
-				int v = config_get("cfg.verbose");
 				buf[0]='\0';
 				for(i=0;i<1000;i++) {
 					if (read(f, &buf[i], 1)<=0) {
@@ -329,7 +343,6 @@ std = 0;
 			piped = strchr(input, '`');
 			if (piped) {
 				int len;
-				int dif = input - oinput;
 				char tmp[128];
 				char filebuf[4096];
 				piped[0]='\0';
@@ -451,12 +464,16 @@ std = 0;
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
+	char *dcmd;
 	int scrbuf = config_get_i("scr.buf");
 	int cfgver = config_get_i("cfg.verbose");
 
 	cons_reset();
 	config_set_i("scr.buf", 1);
-	radare_cmd(cmd, 0);
+
+	dcmd = strdup ( cmd );
+	radare_cmd( dcmd, 0);
+	free ( dcmd);
 	buf = cons_get_buffer();
 	if (buf)
 		buf = strdup(buf);
@@ -467,7 +484,7 @@ char *radare_cmd_str(const char *cmd)
 	return buf;
 }
 
-int radare_cmd(char *tmp, int log)
+int radare_cmd(char *command, int log)
 {
 	const char *ptr;
 	int repeat;
@@ -475,11 +492,11 @@ int radare_cmd(char *tmp, int log)
 	char buf[128];
 
 	/* silently skip lines begginging with 0 */
-	if(tmp==NULL || (log&&tmp==NULL) || (tmp&&tmp[0]=='0'))
+	if(command==NULL || (log&&command==NULL) || (command&&command[0]=='0'))
 		return 0;
 
-	if (tmp[0]=='!'&&tmp[1]=='!')
-		return system(tmp+2);
+	if (command[0]=='!'&&command[1]=='!')
+		return system(command+2);
 
 	if (config.visual) {
 		// update config.height heres
@@ -489,14 +506,14 @@ int radare_cmd(char *tmp, int log)
 	}
 
 	// bypass radare commandline hack ;D
-	if (!memcmp(tmp, "[0x", 3)) {
-		char *foo = strchr(tmp, '>');
+	if (!memcmp(command, "[0x", 3)) {
+		char *foo = strchr(command, '>');
 		if (foo)
-			tmp = foo+2;
+			command = foo+2;
 	}
 
 	// TODO : move to a dbg specific func outside here
-	if (config.debug && tmp && tmp[0]=='\0') {
+	if (config.debug && command && command[0]=='\0') {
 		radare_read(0);
 		ptr = config_get("cmd.visual");
 		if (!strnull(ptr)) {
@@ -571,31 +588,31 @@ int radare_cmd(char *tmp, int log)
 	}
 
 	/* history stuff */
-	if (tmp[0]=='!') {
-		p = atoi(tmp+1);
-		if (tmp[0]=='0'||p>0)
+	if (command[0]=='!') {
+		p = atoi(command+1);
+		if (command[0]=='0'||p>0)
 			return radare_cmd(hist_get_i(p), 0);
 	}
-	hist_add(tmp, log);
-	dl_hist_add(tmp);
+	hist_add(command, log);
+	dl_hist_add(command);
 	if (config.skip) return 0;
 
-	if (tmp[0] == ':') {
+	if (command[0] == ':') {
 		config.verbose = ((int)config_get("cfg.verbose"))^1;
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
-		tmp = tmp+1;
+		command = command+1;
 	}
 
 	/* repeat stuff */
-	if (tmp)
-		repeat = atoi(tmp);
+	if (command)
+		repeat = atoi(command);
 	if (repeat<1)
 		repeat = 1;
-	for(;tmp&&(tmp[0]>='0'&&tmp[0]<='9');)
-		tmp=tmp+1;
+	for(;command&&(command[0]>='0'&&command[0]<='9');)
+		command=command+1;
 
 	for(i=0;i<repeat;i++)
-		radare_cmd_raw(tmp, log);
+		radare_cmd_raw(command, log);
 
 	return 0;
 }
@@ -621,7 +638,7 @@ int radare_interpret(char *file)
 		if (len>0) buf[strlen(buf)-1]='\0';
 		radare_cmd(buf, 0);
 		//cons_flush();
-		hist_add(buf, 0);
+	//	hist_add(buf, 0);
 		config.verbose = 0;
 		config_set("cfg.verbose", "false");
 	}
@@ -692,7 +709,8 @@ void radare_prompt_command()
 	int i;
 	FILE *fd;
 	char file[1024];
-	char *ptr;
+	const char *ptr;
+	char* aux;
 	int tmp; /* preserve print format */
 	struct dirent *de;
 
@@ -700,7 +718,9 @@ void radare_prompt_command()
 	ptr = config_get("cmd.prompt");
 	if (ptr&&ptr[0]) {
 		int tmp = last_print_format;
-		radare_cmd_raw(ptr, 0);
+		aux = strdup ( ptr );
+		radare_cmd_raw(aux, 0);
+		free ( aux) ;
 		last_print_format = tmp;
 	}
 
@@ -766,6 +786,7 @@ int radare_prompt()
 {
 	char input[BUFLEN];
 	const char *ptr;
+	char* aux;
 	char prompt[1024]; // XXX avoid 1024 limit
 	int t, ret;
 
@@ -773,7 +794,11 @@ int radare_prompt()
 
 	/* run the visual command */
 	if ( (ptr = config_get("cmd.visual")) && ptr[0])
-		radare_cmd( ptr, 0 );
+	{
+		aux = strdup ( ptr );
+		radare_cmd( aux, 0 );
+		free ( aux );
+	}
 	cons_flush();
 	radare_prompt_command();
 
@@ -794,11 +819,11 @@ int radare_prompt()
 
 #if HAVE_LIB_READLINE
 	D {
-		ptr = readline(prompt);
-		if (ptr == NULL)
+		aux = readline(prompt);
+		if (aux == NULL)
 			return 0;
 
-		strncpy(input, ptr, sizeof(input));
+		strncpy(input, aux, sizeof(input));
 
 		if (config.width>0) { // fixed width
 			fixed_width = 0;
@@ -811,12 +836,12 @@ int radare_prompt()
 			radare_cmd(input, 1);
 			config.width=-config.width;	
 		}
-		if (ptr && ptr[0]) free(ptr);
+		if (aux && aux[0]) free(aux);
 	} else {
 		dl_disable=1;
 #endif
 		//D { printf(prompt); fflush(stdout); }
-		dl_prompt = &prompt;
+		dl_prompt = prompt;
 		ret = cons_fgets(input, BUFLEN-1);
 		if (ret == -1)
 			exit(0);
@@ -868,15 +893,16 @@ void radare_set_block_size(char *arg)
 int radare_open(int rst)
 {
 	char *ptr;
+	const char *cptr;
 	char buf[4096];
 	char buf2[255];
 	struct config_t ocfg;
-	int wm = config_get("cfg.write");
+	int wm = (int)config_get("cfg.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
 	u64 seek_orig = config.seek;
 
 	if (config.file == NULL)
-		return;
+		return 0;
 
 	memcpy(&ocfg, &config, sizeof(struct config_t));
 	prepare_environment("");
@@ -892,10 +918,13 @@ int radare_open(int rst)
 	D if (wm)
 		eprintf("warning: Opening file in read-write mode\n");
 
-	ptr = config_get("file.project");
-	if (ptr)
+	cptr = config_get("file.project");
+	if (cptr)
+	{
+		ptr = strdup ( cptr );
 		project_open(ptr);
-
+		free ( ptr );
+	}
 	config.fd = io_open(config.file, fd_mode, 0);
 	if (config.block_size==1)
 		radare_set_block_size_i(DEFAULT_BLOCK_SIZE);
@@ -1034,7 +1063,7 @@ int radare_go()
 
 	if (!config.noscript) {
 		char path[1024];
-		int t = config_get("cfg.verbose");
+		int t = (int)config_get("cfg.verbose");
 		config.verbose = 0;
 		snprintf(path, 1000, "%s/.radarerc", config_get("dir.home"));
 		radare_interpret(path);
@@ -1046,8 +1075,9 @@ int radare_go()
 
 	/* load rabin stuff here */
 	if (config_get("file.id"))
+	{
 		rabin_load();
-
+	}
 	/* flag all syms and strings */
 	if (config_get("file.flag"))
 		radare_cmd(".!rsc flag $FILE", 0);

@@ -82,7 +82,7 @@ ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
 //eprintf(">> %s\n", tmp);
 		socket_printf(config.fd, tmp);
 		tmp[0]='\0';
-		socket_fgets(tmp, 1024);
+		socket_fgets(gdbx_fd, tmp, 1024);
 //eprintf("<< %s\n", tmp);
 		if (strstr(tmp, "Cannot"))
 			return ((i==0)?-1:i);
@@ -118,7 +118,7 @@ static void gdbx_wait_until_entrypoint()
 		case 3: if (buf == ':') off =4; break;
 		case 4: if (buf == ' ') {
 				// get entrypoint address
-				socket_fgets(entry_str, 32);
+				socket_fgets(gdbx_fd, entry_str, 32);
 				entry = get_offset(entry_str);
 fprintf(stderr, "Entry point: 0x%08llx\n", entry);
 		found=1;
@@ -271,7 +271,7 @@ int gdbx_system(const char *cmd)
 			}
 fprintf(stderr, "ONE LINE MORE\n");
 fflush(stderr);
-			socket_fgets(tmp+1, 128);
+			socket_fgets(gdbx_fd, tmp+1, 128);
 			if (strstr(tmp, "no registers")) {
 				eprintf("The program is not running\n");
 				return 0;

@@ -180,13 +180,13 @@ static char info_buffer[256];
 static int db_radix = 16;
 
 
-static u_short read16(u_short *p)
+static u_short read16(short *p)
 {
   return ((u_short)*(u_char *)p)<<8 | (u_short)*((u_char *)p+1);
 }
 
 
-static u_long read32(u_short *p)
+static u_long read32(short *p)
 {
   return ((u_long)*(u_char *)p)<<24 | ((u_long)*((u_char *)p+1))<<16 |
          ((u_long)*((u_char *)p+2))<<8 | (u_long)*((u_char *)p+3);
@@ -3061,7 +3061,7 @@ static void print_addr(dis_buffer_t *dbuf, u_long addr)
   symname = NULL;
 #endif
   if (dbuf->dp->find_symbol) {
-    if (symname = dbuf->dp->find_symbol(addr,&diff)) {
+    if (symname == dbuf->dp->find_symbol(addr,&diff)) {
       if (diff == 0)
         addstr(dbuf,symname);
       else {

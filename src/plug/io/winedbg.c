@@ -64,12 +64,10 @@ ssize_t winedbg_write(int fd, const void *buf, size_t count)
         return 0;
 }
 
-ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
+ssize_t winedbg_read(int fd, void *buf, size_t count)
 {
 	char tmp[1024];
-	unsigned char *pbuf = buf;
-	unsigned char *ptr;
-	int i,j=0,k;
+	int i;
 	int size = count;
 	int delta = config.seek%4;
 
@@ -78,14 +76,14 @@ ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
 
 	// XXX memory is algned!!!
 	for(i=0;i<count+delta;i+=4) {
-		unsigned long *dword = buf+i;
-		unsigned long dw;
+		unsigned long *dword = (unsigned long*)buf+i;
+		unsigned int dw;
 		sprintf(tmp,"x 0x"OFF_FMTx"\n", config.seek-delta+i);
 		socket_printf(config.fd, tmp);
 		tmp[0]='\0';
-		socket_fgets(tmp, 1024);
+		socket_fgets(fd, tmp, 1024);
 		sscanf(tmp, "%08x", &dw);
-		endian_memcpy_e(dword, &dw, 4, 1);
+		endian_memcpy_e((u8*)dword, (u8*)&dw, 4, 1);
 		winedbg_wait_until_prompt(0);
 	}
 	memcpy(buf, buf+delta, count);
@@ -95,9 +93,8 @@ ssize_t winedbg_read(int fd, unsigned char *buf, size_t count)
 int winedbg_open(const char *pathname, int flags, mode_t mode)
 {
 	int fd;
-	char host[128];
 	char tmp[4096];
-	int port, i;
+	int port;
 
 	srand(getpid());
 	port = 9000+rand()%555;
@@ -196,25 +193,25 @@ int winedbg_system(const char *cmd)
 		winedbg_wait_until_prompt(0);
 	} else
 	if (!memcmp(cmd, "regs",4)) {
-		unsigned long eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
+		unsigned int eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
 		socket_printf(config.fd, "info regs\n");
 		
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
+		socket_fgets(config.fd, tmp, 128);
 		//  CS:0073 SS:007b DS:007b ES:007b FS:0033 GS:003b
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
+		socket_fgets(config.fd, tmp, 128);
 		//  EIP:7ee95b9e ESP:0034ff20 EBP:0034ffe8 EFLAGS:00200202(   - 00      - - I1)
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
+		socket_fgets(config.fd, tmp, 128);
 		sscanf(tmp, " EIP:%08x ESP:%08x EBP:%08x EFLAGS:%08x", &eip, &esp, &ebp, &eflags);
 		//  EAX:00000000 EBX:7eecb8a8 ECX:00000000 EDX:00000000
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
+		socket_fgets(config.fd, tmp, 128);
 		sscanf(tmp, " EAX:%08x EBX:%08x ECX:%08x EDX:%08x", &eax, &ebx, &ecx, &edx);
 		//  ESI:7ffdf000 EDI:00403166
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
+		socket_fgets(config.fd, tmp, 128);
 		sscanf(tmp, " ESI:%08x EDI:%08x", &esi, &edi);
 		if (cmd[4]=='*') {
 			cons_printf("f eip @ 0x%08x\n", eip);

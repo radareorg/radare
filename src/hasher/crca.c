@@ -32,7 +32,7 @@ void crc_update(t_crc_ctx *ctx, unsigned char *data, unsigned int sz) {
     ctx->crc=crc;
 }
 
-void crc_final(t_crc_ctx *ctx, unsigned int *r) {
+static void crc_final(t_crc_ctx *ctx, unsigned int *r) {
     unsigned int crc;
     int i;
     

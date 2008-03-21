@@ -20,7 +20,7 @@
 
 #include "rasm.h"
 
-int rasm_x86(off_t offset, char *str, unsigned char *data)
+int rasm_x86(u64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
 	char *arg;
@@ -182,7 +182,6 @@ int rasm_x86(off_t offset, char *str, unsigned char *data)
 	} else
 	if (!strcmp(op, "jz")) {
 		off_t dst = get_math(arg);
-		unsigned long addr = dst;
 
 		if (dst>-0x80 && dst<0x7f) {
 			dst-=2;

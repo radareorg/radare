@@ -114,7 +114,7 @@ int events_init()
 int events_get()
 {
 	int ret;
-	unsigned long ret2;
+	unsigned int ret2;
 
 #if !__x86_64__
 	ret = ptrace(PTRACE_GETEVENTMSG, ps.pid, NULL, &ret2);

@@ -2,11 +2,11 @@
 #define _INCLUDE_DEBUG_H_
 
 #include "libps2fd.h"
-
-// arch/ dir
+#include "regs.h"
 #include "arch/arch.h"
 
 // debug.c
+//
 int debug_init();
 int debug_ktrace();
 void debug_exit();
@@ -15,8 +15,8 @@ int debug_load();
 int debug_read(pid_t pid, void *addr, int length);
 int debug_write(pid_t pid, void *data, int length);
 int debug_run();
-int debug_bp(const char *addr);
-int debug_wp(const char *expr);
+int debug_bp(char *addr);
+int debug_wp(char *expr);
 int debug_wtrace();
 int debug_detach();
 int debug_syms();
@@ -53,6 +53,7 @@ int debug_bt();
 int debug_info();
 int debug_signal(char *);
 //int debug_contfork();
+struct bp_t *debug_get_bp(addr_t addr);
 int debug_pstree();
 int debug_attach();
 int debug_unload();
@@ -64,11 +65,13 @@ int debug_free(char *arg);
 int debug_jmp(char *arg);
 int debug_call(char *arg);
 int debug_imap(char *arg);
-//int arch_hack(char *arg);
+int debug_waitpid(int pid, int *status);
+void debug_reload_bps();
 int debug_write_at(pid_t pid, void *data, int length, u64 addr);
 int debug_read_at(pid_t pid, void *addr, int length, u64 at);
 int inline debug_contp(int pid);
 int inline debug_steps();
+inline unsigned long debug_get_regoff(regs_t *reg, int off);
 
 
 //#include "libps2fd.h"
@@ -109,13 +112,6 @@ enum {
 	BP_SOFT
 };
 
-struct bp_t
-{
-	int hw;
-	unsigned long addr;
-	unsigned char data[512];
-	int len;
-};
 
 struct event_t {
 	char *name;
@@ -124,5 +120,7 @@ struct event_t {
 };
 
 extern struct event_t events[];
+int is_code(addr_t pc);
+
 
 #endif

@@ -10,7 +10,7 @@ static unsigned long Offset = 0;
 //unsigned char *bytes = "\xe1\x2f\xff\x32";
 static unsigned char bytes[4];// = "\xe1\x2f\xff\x32";
 
-static int buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
+static int arm_buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
 {
 	memcpy (myaddr, bytes, length);
 	return 0;
@@ -47,7 +47,7 @@ char *gnu_disarm(unsigned char *inst, unsigned long offset)
 	memset(&info,'\0', sizeof(struct disassemble_info));
 	//info.arch = ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
 	info.buffer = bytes; //bytes; //&bytes;
-	info.read_memory_func = &buffer_read_memory;
+	info.read_memory_func = &arm_buffer_read_memory;
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
 	info.print_address_func = &print_address;

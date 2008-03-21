@@ -67,28 +67,26 @@ static void gxemul_wait_until_prompt(int o)
 ssize_t gxemul_read(int fd, unsigned char *buf, size_t count)
 {
 	char tmp[1024];
-	unsigned char *pbuf = buf;
-	unsigned char *ptr;
-	int i,j=0,k;
 	int size = count;
-	int delta = config.seek%4;
+	int i;
+	//int delta = config.seek%4;
 
 	if (size%16)
 		size+=(size-(size%16));
 
 	// XXX memory is algned!!!
 	for(i=0;i<count;i+=4) {
-		unsigned long *dword = buf+i;
-		unsigned long dw, tm;
-		sprintf(tmp, "dump 0x%08x 0x%08x\n",
-			(unsigned long) config.seek+i,
-			(unsigned long) config.seek+i+4);
+		unsigned long *dword = (unsigned long*) buf+i;
+		u64 dw, tm;
+		sprintf(tmp, "dump 0x%08llx 0x%08llx\n",
+			config.seek+i,
+			config.seek+i+4);
 		socket_printf(config.fd, tmp);
 		tmp[0]='\0';
-		socket_fgets(tmp, 1024); // dup
-		socket_fgets(tmp, 1024);
-		sscanf(tmp, "0x%08x %08x", &tm, &dw);
-		endian_memcpy_e(dword, &dw, 4, 1);
+		socket_fgets(gxemul_fd, tmp, 1024); // dup
+		socket_fgets(gxemul_fd, tmp, 1024);
+		sscanf(tmp, "0x%08llx %08llx", &tm, &dw);
+		endian_memcpy_e((u8*)dword, (u8*)&dw, 4, 1);
 		gxemul_wait_until_prompt(0);
 	}
 
@@ -97,9 +95,8 @@ ssize_t gxemul_read(int fd, unsigned char *buf, size_t count)
 int gxemul_open(const char *pathname, int flags, mode_t mode)
 {
 	int fd;
-	char host[128];
 	char tmp[4096];
-	int port, i;
+	int port;
 
 	srand(getpid());
 	port = 9000+rand()%555;
@@ -155,40 +152,43 @@ int gxemul_system(const char *cmd)
 	if (!memcmp(cmd, "regs",4)) {
 		int i;
 		unsigned long r[16];
-		unsigned long cpsr; // r[16]
+		char cpsr[128]; // r[16]
 		//unsigned long eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
 		socket_printf(config.fd, "reg\n");
-		socket_fgets(tmp, 1024); // dup
+		socket_fgets(gxemul_fd, tmp, 1024); // dup
 		
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, "cpu0:  cpsr = %6s   pc = %08x", &cpsr, &r[15]);
+		socket_fgets(gxemul_fd, tmp, 128);
+		sscanf(tmp, "cpu0:  cpsr = %6s   pc = %08lx", &cpsr, &r[15]);
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, "cpu0:  r0 = 0x%08x r1 = %08x  r2 = %08x  r3 = %08x", &r[0], &r[1], &r[2], &r[3]);
+		socket_fgets(gxemul_fd, tmp, 128);
+		sscanf(tmp, "cpu0:  r0 = 0x%08lx r1 = %08lx  r2 = %08lx  r3 = %08lx",
+			&r[0], &r[1], &r[2], &r[3]);
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, "cpu0:  r4 = 0x%08x r5 = %08x  r6 = %08x  r7 = %08x", &r[4], &r[5], &r[6], &r[7]);
+		socket_fgets(gxemul_fd, tmp, 128);
+		sscanf(tmp, "cpu0:  r4 = 0x%08lx r5 = %08lx  r6 = %08lx  r7 = %08lx",
+			&r[4], &r[5], &r[6], &r[7]);
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, "cpu0:  r8 = 0x%08x r9 = %08x  sl = %08x  fp = %08x", &r[8], &r[9], &r[10], &r[11]);
+		socket_fgets(gxemul_fd, tmp, 128);
+		sscanf(tmp, "cpu0:  r8 = 0x%08lx r9 = %08lx  sl = %08lx  fp = %08lx",
+			&r[8], &r[9], &r[10], &r[11]);
 		tmp[0]='\0';
-		socket_fgets(tmp, 128);
-		sscanf(tmp, "cpu0:  ip = 0x%08x sp = %08x  lr = %08x", &r[12], &r[13], &r[14]);
+		socket_fgets(gxemul_fd, tmp, 128);
+		sscanf(tmp, "cpu0:  ip = 0x%08lx sp = %08lx  lr = %08lx", &r[12], &r[13], &r[14]);
 		if (cmd[4]=='*') {
-			cons_printf("f eip @ 0x%08x\n", r[15]);
-			cons_printf("f esp @ 0x%08x\n", r[13]);
-			cons_printf("f lr  @ 0x%08x\n", r[14]);
+			cons_printf("f eip @ 0x%08lx\n", r[15]);
+			cons_printf("f esp @ 0x%08lx\n", r[13]);
+			cons_printf("f lr  @ 0x%08lx\n", r[14]);
 			for(i=0;i<13;i++)
-				cons_printf("f r%d @ 0x%08x\n", i, r[i]);
+				cons_printf("f r%d @ 0x%08lx\n", i, r[i]);
 		} else {
-			cons_printf("  r0 0x%08x   r4 0x%08x   r8 0x%08x\n", r[0], r[4], r[8]);
-			cons_printf("  r1 0x%08x   r5 0x%08x   r9 0x%08x\n", r[1], r[5], r[9]);
-			cons_printf("  r2 0x%08x   r6 0x%08x  r10 0x%08x\n", r[2], r[6], r[10]);
-			cons_printf("  r3 0x%08x   r7 0x%08x r11(fp)0x%08x\n", r[3], r[7], r[11]);
-			cons_printf("  r0.orig   0x%08x   r14 (lr)   0x%08x\n", r[17], r[14]);
-			cons_printf("  r12 (ip)  0x%08x   r15 (pc)   0x%08x\n", r[12], r[15]);
-			cons_printf("  r13 (sp)  0x%08x   r16 (cpsr) 0x%08x\n", r[13], r[16]);
+			cons_printf("  r0 0x%08lx   r4 0x%08lx   r8 0x%08lx\n", r[0], r[4], r[8]);
+			cons_printf("  r1 0x%08lx   r5 0x%08lx   r9 0x%08lx\n", r[1], r[5], r[9]);
+			cons_printf("  r2 0x%08lx   r6 0x%08lx  r10 0x%08lx\n", r[2], r[6], r[10]);
+			cons_printf("  r3 0x%08lx   r7 0x%08lx r11(fp)0x%08lx\n", r[3], r[7], r[11]);
+			cons_printf("  r0.orig   0x%08lx   r14 (lr)   0x%08lx\n", r[17], r[14]);
+			cons_printf("  r12 (ip)  0x%08lx   r15 (pc)   0x%08lx\n", r[12], r[15]);
+			cons_printf("  r13 (sp)  0x%08lx   r16 (cpsr) 0x%08lx\n", r[13], r[16]);
 		}
 		gxemul_wait_until_prompt(0);
 	}

@@ -22,7 +22,10 @@ extern char *last_tsearch;
 
 void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
+int strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, char *string);
+char *slurp(char *str);
+
 
 enum {
 	DUMP_MAGIC,
@@ -63,7 +66,7 @@ int make_tmp_file(char *str);
 void progressbar(int pc);
 void terminal_set_raw(int b);
 int radare_read(int next);
-u64 get_offset (char *arg);
+u64 get_offset (const char *arg);
 char *lstrchr(char *str, char chr);
 u64 get_math(const char* text);
 void print_msdos_date(unsigned char _time[2], unsigned char _date[2]);
@@ -93,11 +96,13 @@ int escape_buffer(char *buf);
 int radare_tsearch(char *range);
 int radare_tsearch_file(char *file);
 int hexpair2bin(const char *arg);
-void endian_memcpy_e(unsigned char *dest, unsigned char *orig, unsigned int size, int endian);
+void endian_memcpy(u8 *dest, u8 *orig, unsigned int size);
+void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian);
 int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
 int gnu_disarm(unsigned char *address, unsigned long seek);
-int gnu_dismips(unsigned char *address, unsigned long seek);
+char *gnu_dismips(unsigned char *inst, unsigned long offset);
+
 
 #endif

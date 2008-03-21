@@ -77,7 +77,7 @@ static int hack_nop(char *lold)
 static int hack_negjmp(char *lold)
 {
 	int delta = (config.cursor_mode)?config.cursor:0;
-	char *buf = config.block+delta;
+	u8 *buf = config.block+delta;
 	if (!config_get("cfg.write"))
 		return 0;
 

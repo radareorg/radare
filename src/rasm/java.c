@@ -19,8 +19,11 @@
  */
 
 #include "rasm.h"
+#if __linux__
+#include <arpa/inet.h>
+#endif
 
-int rasm_java(off_t offset, char *str, unsigned char *data)
+int rasm_java(u64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
 	char *arg;
@@ -33,7 +36,7 @@ int rasm_java(off_t offset, char *str, unsigned char *data)
 	}
 	if (!strcmp(op, "jsr")) {
 		unsigned short so = htons((unsigned int)get_math(str));
-		unsigned char *o=&so;
+		unsigned char *o  = (unsigned char *)&so;
 		data[0]=0xb8;
 		data[1]=o[0];
 		data[2]=o[1];
@@ -41,7 +44,7 @@ int rasm_java(off_t offset, char *str, unsigned char *data)
 	} else
 	if (!strcmp(op, "jmp")) {
 		unsigned short so = htons((unsigned int)get_math(str));
-		unsigned char *o=&so;
+		unsigned char *o  = (unsigned char *)&so;
 		data[0]=0xa7;
 		data[1]=o[0];
 		data[2]=o[1];
@@ -49,7 +52,7 @@ int rasm_java(off_t offset, char *str, unsigned char *data)
 	} else
 	if (!strcmp(op, "jz")) {
 		unsigned short so = htons((unsigned int)get_math(str));
-		unsigned char *o=&so;
+		unsigned char *o  = (unsigned char *)&so;
 		data[0]=0x99;
 		data[1]=o[0];
 		data[2]=o[1];
@@ -57,7 +60,7 @@ int rasm_java(off_t offset, char *str, unsigned char *data)
 	} else
 	if (!strcmp(op, "jnz")) {
 		unsigned short so = htons((unsigned int)get_math(str));
-		unsigned char *o=&so;
+		unsigned char *o  = (unsigned char *)&so;
 		data[0]=0x9a;
 		data[1]=o[0];
 		data[2]=o[1];

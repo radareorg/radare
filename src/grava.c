@@ -44,7 +44,7 @@ static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj)
 
 void core_load_graph_at(void *obj, const char *str)
 {
-	GravaWidget *widget = obj;
+	//GravaWidget *widget = obj;
 	struct program_t *prg;
 	u64 off = get_offset(str);
 #if 0
@@ -70,7 +70,6 @@ void core_load_graph_at(void *obj, const char *str)
 
 void mygrava_bp_at(void *unk, const char *str)
 {
-	struct program_t *prg;
 	char buf[1024];
 	u64 off = get_offset(str);
 	sprintf(buf, "!bp %s", str); //0x%08llx", off);
@@ -82,7 +81,7 @@ void mygrava_bp_at(void *unk, const char *str)
 static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	struct mygrava_window *w = obj;
-	gtk_widget_destroy(w->w);
+	gtk_widget_destroy(GTK_WIDGET(w->w));
 	printf("mygrava_close()\n");
 	n_windows--;
 printf("N_WINDOWS: %d\n", n_windows);
@@ -98,7 +97,7 @@ static void mygrava_close2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 static void mygrava_new_window(void *widget, gpointer obj)//GtkWidget *obj)
 {
 	new_window = 1;
-	printf("mygrava_new -> %08x\n", obj);
+	printf("mygrava_new -> %p\n", obj);
 	core_load_graph_entry(widget, obj);
 	new_window = 0;
 	n_windows++;
@@ -140,11 +139,11 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 		//radare_cmd(str, 0);
 		//buf = radare_cmd_str(str);
 		//cons_flush();
-		radare_cmd(str,0);
+		radare_cmd(str, 0);
 		buf = cons_get_buffer();
 		if (buf && buf[0]) {
 			printf("BUFFER(%s->%s)\n", str, buf);
-			gtk_text_buffer_set_text(gtk_text_view_get_buffer(w->text), buf, -1);
+			gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(w->text)), buf, -1);
 			//gtk_text_view_set_buffer(w->text, 
 			//free(buf);
 		}
@@ -188,14 +187,17 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	struct xref_t *c0;
 	u64 here = config.seek;
 	char title[256], name[128];
-	int graph_flagblocks = config_get("graph.flagblocks");
+	int graph_flagblocks = (int)config_get("graph.flagblocks");
 
 	GravaNode *node, *node2;
 	GravaEdge *edge;
 
 	/* create widget */
 	if (!gtk_is_init) {
-		gtk_init(NULL, NULL);
+		if ( ! gtk_init_check(NULL, NULL) ) {
+			fprintf(stderr, "Oops. Cannot initialize gui\n");
+			return;
+		}
 		gtk_is_init = 1;
 		new_window = 1;
 	}
@@ -251,12 +253,12 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
 		tw = gtk_expander_new("Output buffer:");
 		win->text =  gtk_text_view_new ();
-		gtk_text_view_set_editable(win->text, 0);
+		gtk_text_view_set_editable(GTK_TEXT_VIEW(win->text), 0);
 //gtk_text_buffer_new(NULL);
 		tw2 = gtk_scrolled_window_new(NULL,NULL);
-		gtk_scrolled_window_set_policy(tw2, GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-		gtk_container_add(tw2, win->text);
-		gtk_container_add(tw, tw2);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		gtk_container_add(GTK_CONTAINER(tw2), win->text);
+		gtk_container_add(GTK_CONTAINER(tw), tw2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);
 
 		// TODO: Add asm.arch combobox from gradare
@@ -314,7 +316,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
-		sprintf(cmd, "pD %d @ 0x%08lx", b0->n_bytes-1 , (unsigned int)b0->addr);
+		sprintf(cmd, "pD %d @ 0x%08lx", b0->n_bytes-1 , b0->addr);
 		config.seek = b0->addr;
 		radare_read(0);
 		ptr =  pipe_command_to_string(cmd);
@@ -334,12 +336,12 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		b0 = list_entry(head, struct block_t, list);
 		node = b0->data;
 
-		printf("A %08x\n", b0->addr);
+		printf("A %08lx\n", b0->addr);
 		if (b0->tnext) {
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->tnext == b1->addr) {
-					printf("T %08llx\n", b0->tnext);
+					printf("T %08lx\n", b0->tnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "green");
@@ -356,7 +358,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->fnext == b1->addr) {
-					printf("F %08llx\n", b0->fnext);
+					printf("F %08lx\n", b0->fnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "red");

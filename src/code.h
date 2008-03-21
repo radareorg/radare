@@ -50,10 +50,27 @@ struct reflines_t {
 	struct list_head list;
 };
 
-int arch_arm_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_mips_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_java_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_ppc_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop);
+int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
+int arch_arm_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_x86_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_ppc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+
+struct reflines_t *code_lines_init();
+void code_lines_free(struct list_head *list);
+void code_lines_print(struct reflines_t *list, u64 addr);
+void code_lines_print2(struct reflines_t *list, u64 addr);
+
+int data_set_len(u64 off, u64 len);
+int data_set(u64 off, int type);
+void data_add(u64 off, int type);
+struct data_t *data_get(u64 offset);
+int data_type_range(u64 offset);
+int data_type(u64 offset);
+int data_end(u64 offset);
+int data_count(u64 offset);
+int data_list();
+void udis_jump(int n);
 
 #endif

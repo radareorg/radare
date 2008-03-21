@@ -70,6 +70,9 @@ int block_set_name(struct program_t *program, unsigned long addr, char *name);
 int block_add_xref(struct program_t *program, unsigned long addr, unsigned long from);
 int block_set_comment(struct program_t *program, unsigned long addr, char *comment);
 int block_set_bytes(struct program_t *program, unsigned long addr, char *hexpairs);
+int block_add_call(struct program_t *program, unsigned long addr, unsigned long dest);
+struct program_t *program_open(char *file);
+int rdb_diff(struct program_t *a, struct program_t *b, int mode);
 
 // XXX
 struct program_t *code_analyze(u64 seek, int depth);

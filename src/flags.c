@@ -127,15 +127,6 @@ int flags_between(u64 from, u64 to)
 	return n;
 }
 
-int strnstr(unsigned char *from, unsigned char *to, int size)
-{
-	int i;
-	for(i=0;i<size;i++)
-		if (from==NULL||to==NULL||from[i]!=to[i])
-			break;
-	return (size!=i);
-}
-
 int flag_rename(char *foo, char *bar)
 {
 	int n = 0;
@@ -157,12 +148,12 @@ int flag_rename(char *foo, char *bar)
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (ini) {
-				char *str = strstr(flag->name, foo+ini);
-				if (str) {
-					str = strdup(str);
-					sprintf(flag->name, "%s%s", bar, str);
-					free(str);
-				}
+			char *str = strstr(flag->name, foo+ini);
+			if (str) {
+				str = strdup(str);
+				sprintf(flag->name, "%s%s", bar, str);
+				free(str);
+			}
 		} else
 		if (!strnstr(foo+ini, flag->name, sz)) {
 			if (glob_end) {
@@ -181,15 +172,18 @@ int flag_rename(char *foo, char *bar)
 
 int flag_rename_str(char *text)
 {
+	int n;
 	char *arg = text?strchr(text, ' '):NULL;
 	if (arg) {
 		arg[0]='\0';
-		cons_printf("%d flags renamed\n", flag_rename(text, arg+1));
+		n = flag_rename(text, arg+1);
+		cons_printf("%d flags renamed\n", n);
 		arg[0]=' ';
 	} else {
 		cons_printf("Usage: fr old-name new-name\n");
 		cons_printf("> fr hit0_* hit_search\n");
 	}
+	return n;
 }
 
 /* deprecated ?!?! */
@@ -198,7 +192,6 @@ void flags_setenv()
 	int i;
 	char var[1024];
 	char *ptr = environ[0];
-	struct list_head *pos;
 
 	for(i=0;(ptr = environ[i]);i++) {
 		if (config.interrupted) break;
@@ -213,12 +206,15 @@ void flags_setenv()
 	}
 
 #if 0
-	list_for_each(pos, &flags) {
-		if (config.interrupted) break;
-		flag_t *flag = list_entry(pos, flag_t, list);
-		sprintf(var, "flag_%s", flag->name);
-		sprintf(bar, OFF_FMT, flag->offset);
-		setenv(var, bar, 1);
+	{
+		struct list_head *pos;
+		list_for_each(pos, &flags) {
+			if (config.interrupted) break;
+			flag_t *flag = list_entry(pos, flag_t, list);
+			sprintf(var, "flag_%s", flag->name);
+			sprintf(bar, OFF_FMT, flag->offset);
+			setenv(var, bar, 1);
+		}
 	}
 #endif
 }
@@ -347,7 +343,6 @@ void flag_clear(const char *name)
 	if (mask) {
 		mask[0]='\0';
 		l = strlen(str);
-		__restart:
 		list_for_each(pos, &flags) {
 			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 			if (config.interrupted) break;

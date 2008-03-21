@@ -406,7 +406,7 @@ int config_wmode_callback(void *data)
 
 	//if (node && node->i_value)
 	// XXX: strange magic conditional
-	if (config.file && !config.debug) // && config_new.lock)
+	if (config.fd != -1 && config.file && !config.debug) // && config_new.lock)
 		radare_open(0);
 
 	return 1;

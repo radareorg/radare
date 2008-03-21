@@ -104,7 +104,7 @@ int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes, int size, int timeo
 	fprintf(stderr, "USBSNF:   size         = %d\n", size);
 	fprintf(stderr, "USBSNF:   timeout      = %d\n", timeout);
 	ret = __usb_bulk_write(dev, ep, bytes, size, timeout);
-	dump_bytes(bytes, ret);
+	dump_bytes((unsigned char*)bytes, ret);
 	fprintf(stderr, "USBSNF:   return       = %d\n", ret);
 	return ret;
 }
@@ -137,12 +137,12 @@ int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
 	fprintf(stderr, "USBSNF:   timeout      = %d\n", timeout);
 
 	if (requesttype == 64) // write
-		dump_bytes(bytes, size);
+		dump_bytes((unsigned char*)bytes, size);
 
 	ret = __usb_control_msg(dev, requesttype, request, value, index, bytes, size, timeout);
 
 	if (requesttype == 192) // read
-		dump_bytes(bytes, size);
+		dump_bytes((unsigned char*)bytes, size);
 
 	fprintf(stderr, "USBSNF:   return       = %d\n", ret);
 	return ret;

@@ -20,8 +20,10 @@
  */
 
 #include "main.h"
+#include "code.h"
 #include "radare.h"
 #include "rdb/rdb.h"
+#include "rasm/rasm.h"
 #if __UNIX__
 #include <sys/ioctl.h>
 #include <regex.h>
@@ -154,22 +156,39 @@ CMD_DECL(config_eval)
 CMD_DECL(project)
 {
 	char *arg = input + 2;
-
+	char* str;
 	switch(input[0]) {
 	case 'o':
 		if (input[1])
 			project_open(arg);
-		else	project_open(config_get("file.project"));
+		else	
+		{
+			str = strdup ( config_get("file.project") );
+			project_open(str);
+			free ( str );
+		}
 		break;
 	case 's':
 		if (input[1])
 			project_save(arg);
-		else	project_save(config_get("file.project"));
+		else
+		{
+			str = strdup ( config_get("file.project") );
+			project_save(str);
+			free ( str );
+		}
 		break;
 	case 'i':
 		if (input[1])
+		{
 			project_info(arg);
-		else	project_info(config_get("file.project"));
+		}
+		else
+		{
+			str = strdup ( config_get("file.project"));
+			project_info(str);
+			free ( str );
+		}
 		break;
 	default:
 		cons_printf(
@@ -488,7 +507,6 @@ CMD_DECL(blocksize)
 
 CMD_DECL(code)
 {
-	char buf[1024];
 	char *text = input;
 
 	if (text[0]=='C') {
@@ -712,13 +730,16 @@ CMD_DECL(flag)
 	if (text[0]=='-') { flag_clear(text+1); }
 	else {
 		ret = flag_set(text, config.seek, input[0]=='n');
-		D if (ret) {
-			if (!config.debug)
-				eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
-		} else {
-			flags_setenv();
-			eprintf("flag '%s' at "OFF_FMT" and size %d\n",
-				text, config.seek, config.block_size);
+		D
+		{
+			if (ret) {
+				if (!config.debug)
+					eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
+			} else {
+				flags_setenv();
+				eprintf("flag '%s' at "OFF_FMT" and size %d\n",
+						text, config.seek, config.block_size);
+			}
 		}
 	}
 }
@@ -840,7 +861,7 @@ CMD_DECL(compare)
 	switch (input[0]) {
 	case 'd':
 		off = (unsigned int) get_offset(input+1);
-		radare_compare(&off, config.block, 4);
+		radare_compare((unsigned char*)&off, config.block, 4);
 		break;
 	case 'f':
 		if (input[1]!=' ') {
@@ -852,7 +873,7 @@ CMD_DECL(compare)
 			eprintf("Cannot open file\n");
 			return;
 		}
-		buf = (char *)malloc(config.block_size);
+		buf = (unsigned char *)malloc(config.block_size);
 		fread(buf, config.block_size, 1, fd);
 		fclose(fd);
 		radare_compare(buf, config.block, config.block_size);
@@ -869,7 +890,7 @@ CMD_DECL(compare)
 		free(buf);
 		break;
 	case ' ':
-		radare_compare(input+1,config.block, strlen(input+1)+1);
+		radare_compare((unsigned char*)input+1,config.block, strlen(input+1)+1);
 		break;
 	case '?':
 		eprintf(
@@ -903,15 +924,16 @@ CMD_DECL(write)
 		radare_poke(input+2);
 		break;
 	case 'A': {
-		unsigned char data[1024];
+		char data[1024];
 		snprintf(data, 1023, "wx `!rsc asm '%s'", input + 2);
 		radare_cmd(data, 0);
-		}
-		break;
+		} break;
 	case 'a': {
 		// TODO: use config.cursor here
 		unsigned char data[256];
-		int ret = rasm_asm(config_get("asm.arch"), config.seek, input+2, data);
+		char* aux = strdup ( config_get("asm.arch") );
+		int ret = rasm_asm(aux, config.seek, input+2, data);
+		free ( aux );
 		if (ret<1)
 			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
 		else {

@@ -24,25 +24,28 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-
 char *arch = "x86";
-off_t offset = 0;
+u64 offset = 0;
 int endian = 0;
+int verbose = 0;
 
 static int show_version()
 {
 	printf(VERSION"\n");
+	return 0;
 }
 
 static int show_helpline()
 {
-	printf( "Usage: rasm [-elV] [-s offset] [-a arch] \"opcode\"\n");
+	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] \"opcode\"\n");
 	return 0;
 }
 
 static int show_help()
 {
 	show_helpline();
+	printf("  -v           enables debug\n");
+	printf("  -f [file]    compiles assembly file to 'file'.o\n");
 	printf("  -s [offset]  offset where this opcode is suposed to be\n");
 	printf("  -a [arch]    selected architecture\n");
 	printf("  -e           use big endian\n");
@@ -53,7 +56,6 @@ static int show_help()
 }
 
 /* assemble */
-int rasm_asm(char *arch, off_t offset, char *str, unsigned char *data);
 int rasm_assemble(char *str)
 {
 	unsigned char data[256];
@@ -97,12 +99,15 @@ int main(int argc, char **argv)
 	if (argc<2)
 		return show_helpline();
 
-	while ((c = getopt(argc, argv, "a:Vs:lhe")) != -1)
+	while ((c = getopt(argc, argv, "a:Vs:lhef:v")) != -1)
 	{
 		switch( c ) {
 		case 'a':
 			arch = optarg;
 			break;
+		case 'f':
+			if (verbose) printf("Compiling %s\n", optarg);
+			return rasm_file(arch, offset, optarg, NULL);
 		case 's':
 			offset = get_offset(optarg);
 			break;
@@ -114,6 +119,9 @@ int main(int argc, char **argv)
 			return rasm_show_list();
 		case 'h':
 			return show_help();
+		case 'v':
+			verbose = 1;
+			break;
 		case 'V':
 			return show_version();
 		}

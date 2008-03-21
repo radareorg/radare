@@ -359,7 +359,7 @@ char *rad_bool_matches(const char *text, int state)
 }
 
 #define narchs 3
-static unsigned char *arches[] = {
+static char *arches[] = {
 	"arm", "intel", "java"
 };
 

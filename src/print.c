@@ -172,7 +172,6 @@ void radare_dump_and_process(int type, int size)
 	const char *objdump = config_get("asm.objdump");
 	const char *syntax  = config_get("asm.syntax");
 	int ret;
-	int x,y;
 
 	if (objdump == NULL) {
 		eprintf("OBJDUMP not defined. Use 'objdump -m i386 --target=binary -D f.ex.'.\n");
@@ -189,18 +188,6 @@ void radare_dump_and_process(int type, int size)
 		break;
 	case DUMP_DISASM:
 		D radare_cmd("fd", 0);
-#if 0
-		//x = config_get_i("scr.x");
-		//y = config_get_i("scr.y");
-		if (x&&y)
-		sprintf(cmd,"%s %s %s | head -n %d | Y=%d W=%d awk 'BEGIN{W=ENVIRON[\"W\"];"
-			"Y=ENVIRON[\"Y\"];E=\"\x1B\";ORS=\"\";print \"\" E \"[\" Y \";"
-			"%dH\";Y++}{ORS=E \"[\" Y \";%dH\";"
-			"if(/.:\\t/){print substr($_,0,W);Y++};}'",
-			objdump, (syntax&&syntax[0]=='i')?"-M intel":"",file,
-			config.visual?config.height:200, y, config.width, x,x);
-		else
-#endif
 		sprintf(cmd, "%s %s %s | head -n %d | awk '{if (/.:\\t/)print;}'", 
 			objdump, (syntax&&syntax[0]=='i')?"-M intel":"",file, 
 			config.visual?config.height:200);
@@ -231,7 +218,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	unsigned char buffer[256];
 	unsigned char *bufi; // inverted buffer
 	unsigned long addr;
-	int endian = config_get("cfg.endian");
+	int endian = (int)config_get("cfg.endian");
 	int lines = 0;
 	// code anal
 	struct program_t *prg;
@@ -259,7 +246,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 			u64 s = config.size;
 			u64 piece;
 			if (s==-1)
-				s = 0x100000000;
+				s = 0x100000000LL;
 			piece = s/w;
 			cons_printf("[");
 			for(i=0;i<w;i++) {
@@ -280,7 +267,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	case FMT_PRINT:
 		INILINE;
 		i = last_print_format;
-		radare_cmd( config_get("cmd.print"),0);
+		radare_cmd( config_get("cmd.print"), 0);
 		last_print_format = i;
 		break;
 	case FMT_REF: {
@@ -735,8 +722,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		}  D{}else NEWLINE;
 		} break;
 	case FMT_ZOOM: {
-		unsigned char *buf = NULL;
-		unsigned long sz = 4;
+		u8 *buf = NULL;
+		u64 sz = 4;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
 	
@@ -751,11 +738,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 
 		switch(mode[0]) {
 		case 'e':
-			buf = (char *)malloc(config.zoom.piece);
-			sz = (unsigned long)config.zoom.piece;
+			buf = (u8 *)malloc(config.zoom.piece);
+			sz = (u64)config.zoom.piece;
 			break;
 		default:
-			buf = (char *)malloc(len<<1);
+			buf = (u8 *)malloc(len<<1);
 			break;
 		}
 		for(i=0;!config.interrupted && i<len;i++) {

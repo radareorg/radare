@@ -21,6 +21,7 @@
 
 /* code analysis functions */
 
+#include "../../radare.h"
 #include "../../code.h"
 #include "arm.h"
 #include <stdio.h>
@@ -85,7 +86,7 @@ int anal_is_exitpoint ( int inst )
 
 extern int arm_mode;
 
-int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *aop)
+int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 {
 	unsigned int i=0;
 	unsigned int* code=codeA;
@@ -93,6 +94,8 @@ int arch_arm_aop(unsigned long addr, const unsigned char *codeA, struct aop_t *a
 	unsigned int branch_dst_addr;
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
+	fprintf(stderr, "CODE %02x %02x %02x %02x\n",
+		codeA[0], codeA[1], codeA[2], codeA[3]);
 
 	if ( anal_is_exitpoint ( code[i] ) )
 	{

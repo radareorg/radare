@@ -297,9 +297,10 @@ extern void disassembler_usage (FILE *);
    into a buffer before calling the instruction decoder.  */
 
 /* Here is a function which callers may wish to use for read_memory_func.
-   It gets bytes from a buffer.  */
+   It gets bytes from a buffer.  
 extern int buffer_read_memory
   (bfd_vma, bfd_byte *, unsigned int, struct disassemble_info *);
+  */
 
 /* This function goes with buffer_read_memory.
    It prints a message using info->fprintf_func and info->stream.  */

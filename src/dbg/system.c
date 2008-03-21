@@ -22,6 +22,7 @@
 
 #include "libps2fd.h"
 #include "debug.h"
+#include "arch/arch.h"
 #include "mem.h"
 #include <stdio.h>
 #include <string.h>
@@ -124,66 +125,68 @@ enum {
 	CB_SPACE
 };
 
+#define CB_CMD(cmd, type, function) { cmd, type, (int(*)(char *))&function } 
+
 static struct commads_t {
 	char *name;
 	int type;
 	int (*callback)(char *);
 } commands[] = {
-	{ "help", CB_NOARGS, &help_message },
-	{ "?", CB_NOARGS, &help_message },
-	{ "run", CB_NOARGS, &debug_run },
-	{ "stepo", CB_NOARGS, &debug_stepo },
-	{ "stepu", CB_NOARGS, &debug_stepu },
-	{ "step", CB_INT, &debug_step },
-	{ "stepret", CB_NOARGS, &debug_stepret },
-	{ "bp",  CB_NORMAL, &debug_bp },
-	{ "bt",  CB_NORMAL, &debug_bt },
-	{ "st",  CB_NORMAL, &arch_stackanal },
-	{ "fd",  CB_NORMAL, &debug_fd },
-	{ "th",  CB_NORMAL, &debug_th },
-	{ "ie",  CB_NORMAL, &debug_ie },
-	{ "hack",  CB_SPACE, &arch_hack },
-	{ "maps", CB_NORMAL, &debug_print_maps },
-	{ "syms", CB_NORMAL, &debug_syms },
-	{ "alloc", CB_SPACE, &debug_alloc },
-	{ "mmap", CB_SPACE, &debug_mmap },
-	{ "free", CB_SPACE, &debug_free},
-	{ "imap", CB_SPACE, &debug_imap },
-	{ "core", CB_NOARGS, &debug_dumpcore },
-	{ "dump", CB_SPACE, &page_dumper },
-	{ "restore", CB_SPACE, &page_restore },
-	{ "status",   CB_NOARGS, &debug_status },
-	{ "pids", CB_NOARGS , &debug_pids },
-	{ "pid", CB_SPACE, &debug_pstree },
-	{ "attach", CB_INT, &debug_attach },
-	{ "skip", CB_INT, &debug_skip },
-	{ "detach", CB_NOARGS, &debug_detach },
-	{ "load", CB_NOARGS, &debug_load },
-	{ "unload", CB_NOARGS, &debug_unload },
-	{ "ret", CB_NOARGS, &arch_ret },
-	{ "jmp ", CB_NORMAL, &arch_jmp },
-	{ "call ", CB_NORMAL, &arch_call },
-	{ "info", CB_NORMAL, &debug_info },
-	{ "set", CB_NORMAL, &debug_set_register },
-	{ "wp", CB_NORMAL, &debug_wp},
-	{ "inject ", CB_NORMAL, &debug_inject },
-	{ "trace", CB_NORMAL, &debug_trace },
-	{ "wtrace", CB_NOARGS, &debug_wtrace },
-	{ "signal", CB_SPACE, &debug_signal },
-	{ "contsc", CB_NORMAL, &debug_contsc },
-	{ "contfork", CB_NOARGS, &debug_contfork },
-	{ "contu", CB_NOARGS, &debug_contu },
-	{ "contuh", CB_NOARGS, &debug_contuh },
-	{ "cont", CB_NOARGS, &debug_cont },
-	{ "regs", CB_ASTERISK, &debug_registers },
-	{ "oregs", CB_ASTERISK, &debug_oregisters },
-	{ "dregs", CB_ASTERISK, &debug_dregisters },
-	{ "fpregs", CB_NORMAL, &debug_fpregisters },
+	CB_CMD( "help", CB_NOARGS, help_message ),
+	CB_CMD( "?", CB_NOARGS, help_message ),
+	CB_CMD( "run", CB_NOARGS, debug_run ),
+	CB_CMD( "stepo", CB_NOARGS, debug_stepo ),
+	CB_CMD( "stepu", CB_NOARGS, debug_stepu ),
+	CB_CMD("step", CB_INT, debug_step),
+	CB_CMD( "stepret", CB_NOARGS, debug_stepret ),
+	CB_CMD( "bp",  CB_NORMAL, debug_bp ),
+	CB_CMD( "bt",  CB_NORMAL, debug_bt ),
+	CB_CMD( "st",  CB_NORMAL, arch_stackanal ),
+	CB_CMD( "fd",  CB_NORMAL, debug_fd ),
+	CB_CMD( "th",  CB_NORMAL, debug_th ),
+	CB_CMD( "ie",  CB_NORMAL, debug_ie ),
+	CB_CMD( "hack",  CB_SPACE, arch_hack ),
+	CB_CMD( "maps", CB_NORMAL, debug_print_maps ),
+	CB_CMD( "syms", CB_NORMAL, debug_syms ),
+	CB_CMD( "alloc", CB_SPACE, debug_alloc ),
+	CB_CMD( "mmap", CB_SPACE, debug_mmap ),
+	CB_CMD( "free", CB_SPACE, debug_free ),
+	CB_CMD( "imap", CB_SPACE, debug_imap ),
+	CB_CMD( "core", CB_NOARGS, debug_dumpcore ),
+	CB_CMD( "dump", CB_SPACE, page_dumper ),
+	CB_CMD( "restore", CB_SPACE, page_restore ),
+	CB_CMD( "status",   CB_NOARGS, debug_status ),
+	CB_CMD( "pids", CB_NOARGS , debug_pids ),
+	CB_CMD( "pid", CB_SPACE, debug_pstree ),
+	CB_CMD("attach", CB_INT, debug_attach),
+	CB_CMD("skip", CB_INT, debug_skip),
+	CB_CMD( "detach", CB_NOARGS, debug_detach ),
+	CB_CMD( "load", CB_NOARGS, debug_load ),
+	CB_CMD( "unload", CB_NOARGS, debug_unload ),
+	CB_CMD( "ret", CB_NOARGS, arch_ret ),
+	CB_CMD( "jmp ", CB_NORMAL, arch_jmp ),
+	CB_CMD( "call ", CB_NORMAL, arch_call ),
+	CB_CMD( "info", CB_NORMAL, debug_info ),
+	CB_CMD( "set", CB_NORMAL, debug_set_register ),
+	CB_CMD( "wp", CB_NORMAL, debug_wp ),
+	CB_CMD( "inject ", CB_NORMAL, debug_inject ),
+	CB_CMD( "trace", CB_NORMAL, debug_trace ),
+	CB_CMD( "wtrace", CB_NOARGS, debug_wtrace ),
+	CB_CMD( "signal", CB_SPACE, debug_signal ),
+	CB_CMD( "contsc", CB_NORMAL, debug_contsc ),
+	CB_CMD( "contfork", CB_NOARGS, debug_contfork ),
+	CB_CMD( "contu", CB_NOARGS, debug_contu ),
+	CB_CMD( "contuh", CB_NOARGS, debug_contuh ),
+	CB_CMD( "cont", CB_NOARGS, debug_cont ),
+	CB_CMD( "regs", CB_ASTERISK, debug_registers ),
+	CB_CMD( "oregs", CB_ASTERISK, debug_oregisters ),
+	CB_CMD( "dregs", CB_ASTERISK, debug_dregisters ),
+	CB_CMD( "fpregs", CB_NORMAL, debug_fpregisters ),
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
-	{ "ktrace", CB_NOARGS, &debug_ktrace },
+	CB_CMD( "ktrace", CB_NOARGS, debug_ktrace ),
 #endif
 #if __i386__
-	{ "dr",  CB_NORMAL, &debug_dr },
+	CB_CMD( "dr",  CB_NORMAL, debug_dr ),
 #endif
 	{ NULL, 0 }
 };
@@ -197,13 +200,13 @@ int debug_system(const char *command)
 		if (!memcmp(command, commands[i].name, len)) {
 			switch(commands[i].type) {
 			case CB_ASTERISK:
-				return commands[i].callback((char *)strchr(command+len,'*'));
+				return commands[i].callback(strchr(command+len,'*'));
 			case CB_NORMAL:
 				return commands[i].callback((char *)command+len);
 			case CB_NOARGS:
 				return commands[i].callback(NULL);
 			case CB_SPACE:
-				return commands[i].callback((char *)strchr(command+len,' '));
+				return commands[i].callback(strchr(command+len,' '));
 			case CB_INT:
 				return commands[i].callback((char *)atoi(command+len));
 			}

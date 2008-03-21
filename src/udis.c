@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "code.h"
+#include "undo.h"
 #include "flags.h"
 #include "arch/arm/disarm.h"
 /* http://devnull.owl.de/~frank/Disassembler_e.html */
@@ -54,6 +55,7 @@ int data_set_len(u64 off, u64 len)
 	}
 	return -1;
 }
+
 int data_set(u64 off, int type)
 {
 	struct list_head *pos;
@@ -78,7 +80,7 @@ void data_add(u64 off, int type)
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 			if (off>= d->from && off<= d->to) {
-				list_del(&(d->list));
+				list_del((d->list));
 				goto __reloop;
 			}
 		}
@@ -105,7 +107,7 @@ void data_add(u64 off, int type)
 	if (d->size<1)
 		d->size = 1;
 
-	list_add(&(d->list), &data);
+	list_add((d->list), &data);
 }
 
 struct data_t *data_get(u64 offset)
@@ -307,17 +309,12 @@ void metadata_comment_init(int new)
 
 static int metadata_print(int delta)
 {
-	FILE *fd;
+	int show_lines = (int)config_get("asm.lines");
+	int show_flagsline = (int)config_get("asm.flagsline");
+	u64 offset = (u64)config.seek + (u64)delta;
 	int lines = 0;
-	u64 off = 0;
-	char *ptr,*ptr2;
-	char buf[4096];
-	char *rdbfile;
-	int show_lines = config_get("asm.lines");
-	int show_flagsline = config_get("asm.flagsline");
+	char *ptr;
 	int i;
-	u64 offset = (u64)config.seek + (u64)delta; //(u64)ud_insn_off(&ud_obj);
-	//	u64 seek = config.baddr + (u64)delta; //ud_insn_off(&ud_obj);
 
 	// config.baddr everywhere???
 	D {} else return 0;
@@ -376,8 +373,8 @@ extern int arm_mode;
 extern int mips_mode;
 void udis_init()
 {
-	char *syn = config_get("asm.syntax");
-	char *ptr = config_get("asm.arch");
+	const char *syn = config_get("asm.syntax");
+	const char *ptr = config_get("asm.arch");
 
 	ud_init(&ud_obj);
 
@@ -441,24 +438,24 @@ void udis_arch(int arch, int len, int rows)
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
-	char *follow, *cmd_asm;
+	const char *follow, *cmd_asm;
 	int endian, height;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
 	int folder = 0; // folder level
 
 	cmd_asm = config_get("cmd.asm");
-	show_size = config_get("asm.size");
-	show_bytes = config_get("asm.bytes");
-	show_offset = config_get("asm.offset");
-	show_splits = config_get("asm.split");
-	show_flags = config_get("asm.flags");
-	show_lines = config_get("asm.lines");
-	show_traces = config_get("asm.trace");
-	show_comments = config_get("asm.comments");
+	show_size =(int) config_get("asm.size");
+	show_bytes =(int) config_get("asm.bytes");
+	show_offset =(int) config_get("asm.offset");
+	show_splits =(int) config_get("asm.split");
+	show_flags =(int) config_get("asm.flags");
+	show_lines =(int) config_get("asm.lines");
+	show_traces =(int) config_get("asm.trace");
+	show_comments =(int) config_get("asm.comments");
 	height = config_get_i("cfg.height");
 	show_nbytes = (int)config_get_i("asm.nbytes");
-	endian = config_get("cfg.endian");
-	color = config_get("scr.color");
+	endian = (int) config_get("cfg.endian");
+	color = (int) config_get("scr.color");
 
 	len*=2; // uh?!
 	jump_n = 0;

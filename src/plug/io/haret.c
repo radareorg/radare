@@ -76,17 +76,17 @@ ssize_t haret_read(int fd, unsigned char *buf, size_t count)
 	//printf("LEN: %lld\n", (unsigned long long)count);
 
 	// skip echo
-	socket_fgets(tmp, 1024);
-	socket_fgets(tmp, 1024);
+	socket_fgets(fd, tmp, 1024);
+	socket_fgets(fd, tmp, 1024);
 	for(k=j=i=0;i<100;i++) {
-		socket_fgets(tmp, 1024);
+		socket_fgets(fd, tmp, 1024);
 		ptr = (unsigned char *)tmp+11;
 		ptr[36]='\0';
 		if (j+16>=size) break;
 		//printf(" READ ==> %s\n", ptr);
 		hexstr2binstr((char *)ptr, ptr);
 		memcpy(buf+j, ptr, 16);
-		socket_fgets(tmp, 1024);
+		socket_fgets(fd, tmp, 1024);
 		for(k=0;k<16;k+=4) {
 			unsigned char ch = pbuf[k+j];
 			pbuf[k+j] = pbuf[k+j+3];
@@ -125,7 +125,7 @@ int haret_open(const char *pathname, int flags, mode_t mode)
 	if (fd != -1) {
 		config.fd = fd;
 		for(i=0;i<10;i++) { // 12
-			socket_fgets(tmp, 100);
+			socket_fgets(fd, tmp, 100);
 			tmp[strlen(tmp)-1]='\0';
 			printf(";-- %s\n", tmp);
 		}

@@ -51,6 +51,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "disarm.h"
+#include "../../flags.h"
 
 static int current_offset = 0;
 int color;
@@ -90,9 +91,11 @@ static const char *opcodes[16] = {
 	"orr", "mov", "bic", "mvn"
 };
 
+#if 0
 static const char *shifts[4] = {
 	"lsl", "lsr", "asr", "ror"
 };
+#endif
 
 /* not used ? */
 static const char *condtext[16][2] = {
@@ -338,12 +341,13 @@ typedef union shiftrm {
 
 /* Working areas */
 static char workstr[DISARM_MAXSTRINGSIZE];
-static char shiftstr[DISARM_MAXSTRINGSIZE];
+//static char shiftstr[DISARM_MAXSTRINGSIZE];
 static char disasmstr[DISARM_MAXSTRINGSIZE];
 
 
 /* Functions to decode operands */
 
+#if 0
 static char *shiftrm (ShiftRm shiftdata)
 {
 
@@ -390,6 +394,7 @@ static char *shiftrm (ShiftRm shiftdata)
 	}
 	return (shiftstr);
 }
+#endif
 
 static char *cprelative (QByte Rn, QByte offset, QByte U, QByte P)
 {

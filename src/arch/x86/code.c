@@ -21,13 +21,14 @@
 
 /* code analysis functions */
 
+#include "../../radare.h"
 #include "../../code.h"
 #include <string.h>
-int dislen(unsigned char* opcode0, int limit);
+int dislen(u8* opcode0, int limit);
 
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love
-int arch_x86_aop(unsigned long addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	unsigned long *ptr = (unsigned long *)(bytes+1);
 	unsigned char *ptr2 = (unsigned char *)(bytes+1);

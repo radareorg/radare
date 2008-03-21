@@ -10,7 +10,9 @@ LIB=ptrace.${SHARED_EXT}
 #	${CC} ${LDFLAGS} ptrace.o ${OBJ} -shared -o ${LIB}
 
 all: ${OBJ}
-	#${CC} ${LDFLAGS} ${OBJ} ${SHARED_CFLAGS} -o ${LIB}
+	@-${Q}echo [src/dbg] debugger layer build done
+
+#${CC} ${LDFLAGS} ${OBJ} ${SHARED_CFLAGS} -o ${LIB}
 
 # why?
 #  ..I should rewrite this stuff..
@@ -19,5 +21,5 @@ all: ${OBJ}
 #	${CC} ${LDFLAGS} @DL_LIBS@ libps2fd.o ${OBJ} -shared -o ${LIBPRE}
 
 clean:
-	${E} 'Cleaning src/dbg'
+	${E} '[src/dbg] Cleaning ...'
 	-${Q}rm -f ptrace.o ${OBJ} ${LIB} ${LIBPRE} demo dbg/unix/*.o dbg/win32/*.o

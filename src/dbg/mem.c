@@ -33,8 +33,9 @@
 #include "../list.h"
 #include "mem.h"
 #include "string.h"
+#include "debug.h"
 
-void *dealloc_page(void *addr)
+addr_t dealloc_page(addr_t addr)
 {
 	struct list_head *pos;
 
@@ -62,7 +63,7 @@ void *dealloc_page(void *addr)
 	return 0;
 }
 
-void *mmap_tagged_page(char *file, u64 addr, u64 size)
+addr_t mmap_tagged_page(char *file, u64 addr, u64 size)
 {
 	int rsize = size;
 	int fd;
@@ -94,7 +95,7 @@ void *mmap_tagged_page(char *file, u64 addr, u64 size)
 	}
 
 	// XXX u64 for 64 bits!
-	mm->addr = (unsigned long) addr;
+	mm->addr = (addr_t) addr;
 	mm->size = rsize;
 
 	/* tag for map region */
@@ -105,15 +106,15 @@ void *mmap_tagged_page(char *file, u64 addr, u64 size)
 	ps.mem_sz += rsize;
 
 	// XXX
-	return (void *)addr;
+	return 0;
 }
 
-void *alloc_tagged_page(char *tag, int size)
+addr_t alloc_tagged_page(char *tag, unsigned long size)
 {
-	int rsize;
-	void *addr = (void *)arch_alloc_page(size, &rsize);
+	unsigned long rsize;
+	addr_t addr = arch_alloc_page(size, &rsize);
 
-	if(addr != (void *)-1) {
+	if(addr != (addr_t)-1) {
 		MAP_MEM *mm = (MAP_MEM * )malloc(sizeof(MAP_MEM));
 
 		if(mm == NULL)
@@ -136,9 +137,9 @@ void *alloc_tagged_page(char *tag, int size)
 	return addr;
 }
 
-inline void *alloc_page(int size) 
+inline addr_t alloc_page(int size) 
 {
-	return (void *)alloc_tagged_page(NULL, size);
+	return alloc_tagged_page(NULL, size);
 }
 
 inline void add_regmap(MAP_REG *mr)
@@ -162,10 +163,9 @@ inline void add_regmap(MAP_REG *mr)
     	ps.map_regs_sz++;
 }
 
-void *dealloc_all()
+void dealloc_all()
 {
    struct list_head *p, *aux;
-   int i;
    
    p = (&ps.map_mem)->next;
 
@@ -206,7 +206,7 @@ void print_status_alloc()
 				sizeof(struct list_head) - \
 				sizeof(MAP_MEM));
 
-		printf(" * address: 0x%x size: %i bytes", mm->addr, mm->size);
+		printf(" * address: 0x%08llx size: %i bytes", mm->addr, (unsigned int)mm->size);
 		if(mm->tag) 
 			printf(" tag: %s\n", mm->tag);
 		else
@@ -217,7 +217,6 @@ void print_status_alloc()
 void free_regmaps(int rest)
 {
 	struct list_head *p, *aux;
-	int i;
 
 	p = (&ps.map_reg)->next;
 
@@ -245,7 +244,7 @@ void free_regmaps(int rest)
 
 void print_maps_regions(int rad)
 {
-	int i,ch;
+	int i;
 	struct list_head *pos;
 	char name[128];
 	char perms[5];
@@ -292,14 +291,14 @@ void page_restore(const char *dir)
 	char *buf;
 	FILE *fd;
 
-	if (!dir||strchr(dir, '+')) {
+	if (strnull(dir)) {
 		dump_num--;
 		if (dump_num<0) {
 			eprintf("No dumps to restore from. Sorry\n");
 			return;
 		}
 		sprintf(dumpdir, "dump%d", dump_num);
-		dir = &dumpdir;
+		dir = dumpdir;
 	} else
 	if (dir&&*dir) {
 		dir = dir + 1;
@@ -320,12 +319,12 @@ void page_restore(const char *dir)
 				sizeof(MAP_REG));
 
 		if ( mr->perms & REGION_WRITE ) {
-			printf("Restoring from %08X-%08X.dump  ; 0x%.8x  %s\n",
-				 (long long)mr->ini, (long long)mr->end,
-				 (long long) mr->size, (long long)mr->bin);
+			printf("Restoring from %08llx-%08llX.dump  ; 0x%.8x  %s\n",
+				 mr->ini, (long long)mr->end,
+				 (unsigned int)mr->size, mr->bin);
 
 			buf = (char*)malloc(mr->size);
-			sprintf(buf, "%08X-%08X.dump", mr->ini, mr->end);
+			sprintf(buf, "%08llX-%08llX.dump", mr->ini, mr->end);
 			fd = fopen(buf, "rb");
 			if (fd == NULL) {
 				printf("Oops. cannot open\n");
@@ -334,7 +333,7 @@ void page_restore(const char *dir)
 			fread(buf, mr->size, 1, fd);
 			debug_write_at(ps.tid, buf, mr->size, mr->ini);
 #if __UNIX__
-			msync((long int*)mr->ini, mr->size, MS_SYNC);
+			msync((void *)(long)mr->ini, (size_t)mr->size, MS_SYNC);
 #endif
 			fclose(fd);
 			free(buf);
@@ -351,9 +350,9 @@ void page_dumper(const char *dir)
 	char *buf;
 	FILE *fd;
 
-	if (!dir||strchr(dir, '+')) {
+	if (strnull(dir)) {
 		sprintf(dumpdir, "dump%d", dump_num);
-		dir = &dumpdir;
+		dir = dumpdir;
 		dump_num++;
 	} else
 	if (dir&&*dir) {
@@ -381,8 +380,8 @@ void page_dumper(const char *dir)
 
 		if ( mr->perms & REGION_WRITE || mr->flags & FLAG_USERCODE ) {
 			printf("Dumping %08llX-%08llX.dump  ; 0x%.8x  %s\n",
-				 (long long) mr->ini,  (long long) mr->end,
-				 (long long) mr->size, (long long)mr->bin);
+				 mr->ini,  mr->end,
+				 (unsigned int)mr->size, mr->bin);
 
 			buf = (char*)malloc(mr->size);
 			sprintf(buf, "%08llX-%08llX.dump", (long long)mr->ini, (long long)mr->end);
@@ -392,7 +391,7 @@ void page_dumper(const char *dir)
 				continue;
 			}
 #if __UNIX__
-			msync((long int*) mr->ini, mr->size, MS_SYNC);
+			msync((void *)(unsigned long)mr->ini, (size_t)mr->size, MS_SYNC);
 #endif
 			debug_read_at(ps.tid, buf, mr->size, mr->ini);
 			fwrite(buf,mr->size, 1, fd);

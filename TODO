@@ -8,17 +8,16 @@
 ===========================================================
 
 
-* open/close projects in GUI
-
-0.9.4
-=====
-* status shows backtrace !?!?!
-* dbg.stepolibs = true ;  step over non-user code?
-* Drop the '+' for incremental dump restore
-
 
 0.9.5
 =====
+* variable block size
+  - config.block_size as default
+  - tries to find another flag after
+  cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
+* open/close projects in GUI
+* status shows backtrace !?!?!
+* dbg.stepolibs = true ;  step over non-user code?
 * asm.offset must be for all print modes
 * Funroll mode - stacked disassembly
 * add u64 cursor[config.block_size]; when printing
@@ -50,7 +49,6 @@ ARM
 * arm has no backtrace
 dbg.bep entry not working on arm
 -S flag move to rabin
-restore/dump doesnt works on arm
 when runnin to bp says invalid address (uh?)
 
 BUGS:
@@ -89,7 +87,6 @@ TODO for 0.9.5
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 
-* StreamViewer
 * invert pel disasm
 * /a algorithm defined by search.algorithm
  it flags if search.flag

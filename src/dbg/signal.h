@@ -1,6 +1,10 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
+#if __UNIX__
+#include <signal.h>
+#endif
+
 #if __WINDOWS__
 /* Fake signal functions.  */
 
@@ -66,5 +70,10 @@ struct sig {
   char *name;
   char *string;
 };
+
+void print_sigah();
+int name_to_sig(char *signame);
+char *sig_to_name(int sig);
+
 
 #endif

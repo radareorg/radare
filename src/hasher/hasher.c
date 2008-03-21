@@ -24,23 +24,20 @@
 #include <getopt.h>
 #include <signal.h>
 #include <sys/types.h>
-//#include <arpa/inet.h>
+#if __linux__
+#include <arpa/inet.h>
+#endif
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 #include "md5.h"
-#include "crc32.h"
-#include "crc16.h"
 #include "sha1.h"
 #include "sha2.h"
 #include "hash.h"
 #define eprintf(x) fprintf(stderr,x)
 
-float hash_entropy(char *data, size_t size);
-
-extern void mdfour(unsigned char *out, unsigned char *in, int n);
 extern unsigned char hamming_distances(char *buf, int len);
 
 #define HASHER_VERSION 1
@@ -144,7 +141,7 @@ struct header_t {
 	char file_name[128]; // XXX must be variable size
 } header;
 
-u64 get_offset (char *arg)
+u64 get_offset (const char *arg)
 {
 	u64 ret = 0;
 	int i;
@@ -325,7 +322,7 @@ int radare_hash_generate(char *src, char *dst)
 			printf("par:     %01x\n", hash_par(buffer+header.from, len));
 			printf("xor:     %02x\n", hash_xor(buffer+header.from, len));
 			printf("hamdist: %02x\n", hash_hamdist(buffer+header.from, len));
-			printf("xorpair: %04x\n", hash_xorpair((unsigned short *)buffer+header.from, len));
+			printf("xorpair: %04x\n", hash_xorpair((u16 *)buffer+header.from, len));
 			printf("entropy: %.2f\n", hash_entropy(buffer+header.from, len));
 			printf("mod255:  %02x\n", hash_mod255(buffer+header.from, len));
 			printf("crc16:   %04x\n", crc16(0, buffer, len));
@@ -408,7 +405,7 @@ int radare_hash_generate(char *src, char *dst)
 			} break;
 		case ALGO_CRC32: {
 			unsigned int *p = (unsigned int*) digest;
-			*p = (unsigned int)htonl(crc32((char *)(buffer + header.from), len));
+			*p = (unsigned int)htonl(crc32((buffer + header.from), len));
 			} break;
 		case ALGO_SHA1:
 			SHA1_Update(&sha1_ctx, buffer+header.from, len);
@@ -469,13 +466,13 @@ int radare_hash_generate(char *src, char *dst)
 int radare_hash_check(char *src, char *dst)
 {
 	int sd = -1, dd = -2;
-	char *buffer = malloc(header.block_size); //header.block_size];
+	u8 *buffer = (u8*)malloc(header.block_size); //header.block_size];
 	u64 ptr = 0;
 	unsigned int i, hsize;
 	int cmp;
-	unsigned int len = header.block_size;
-	unsigned char digest[256];
-	unsigned char digest_hashed[256];
+	u64 len = header.block_size;
+	u8 digest[256];
+	u8 digest_hashed[256];
 
 	if (src)
 	sd = open(src, OPEN_READ, NULL);
@@ -556,8 +553,8 @@ int radare_hash_check(char *src, char *dst)
 				break;
 			case ALGO_CRC32:
 				{
-				unsigned int *p = (unsigned int *)digest;
-				*p = (unsigned int)htonl(crc32(buffer, len));
+				u32 *p = (u32 *)digest;
+				*p = (u32)htonl(crc32(buffer, len));
 				}
 				break;
 			case ALGO_SHA1:

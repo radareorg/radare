@@ -5,7 +5,7 @@
  * Version 2. See the file COPYING for more details.
  */
 
-#include "crc16.h"
+#include "../radare.h"
 
 /** CRC table for the CRC-16. The poly is 0x8005 (x^16 + x^15 + x^2 + 1) */
 u16 const crc16_table[256] = {
@@ -56,7 +56,7 @@ static inline u16 crc16_byte(u16 crc, const u8 data)
  *
  * Returns the updated CRC value.
  */
-u16 crc16(u16 crc, u8 const *buffer, size_t len)
+u16 crc16(u16 crc, u8 const *buffer, u64 len)
 {
 	while (len--)
 		crc = crc16_byte(crc, *buffer++);

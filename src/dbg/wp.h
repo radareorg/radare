@@ -8,4 +8,7 @@ typedef struct {
 	int refs;
 }WP;
 
+int wp_matched();
+
+
 #endif
