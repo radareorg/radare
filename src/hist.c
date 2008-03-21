@@ -213,6 +213,9 @@ void hist_add(char *str, int log)
 #if HAVE_LIB_READLINE
 	if (log)
 		add_history(str);
+#else
+	if (log)
+		dl_hist_add(str);
 #endif
 	/* disabled */
 	return;

@@ -394,9 +394,9 @@ end
 
 function Radare.Hash.sha512(size, address)
 	return hash("sha512", size, address)
-	if size == nil then size = "" end
-	if address == nil then return r.cmd("#sha512 "..size) end
-	return r.cmd("#sha512 "..size.."@"..address)
+	--if size == nil then size = "" end
+	--if address == nil then return r.cmd("#sha512 "..size) end
+	--return r.cmd("#sha512 "..size.."@"..address)
 end
 
 -- code api

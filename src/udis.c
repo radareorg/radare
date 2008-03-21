@@ -107,7 +107,7 @@ void data_add(u64 off, int type)
 	if (d->size<1)
 		d->size = 1;
 
-	list_add((d->list), &data);
+	list_add(&(d->list), &data);
 }
 
 struct data_t *data_get(u64 offset)

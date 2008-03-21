@@ -594,7 +594,6 @@ int radare_cmd(char *command, int log)
 			return radare_cmd(hist_get_i(p), 0);
 	}
 	hist_add(command, log);
-	dl_hist_add(command);
 	if (config.skip) return 0;
 
 	if (command[0] == ':') {

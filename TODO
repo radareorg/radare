@@ -15,6 +15,9 @@
   - config.block_size as default
   - tries to find another flag after
   cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
+* interactive visual write mode ;D
+  - use 'w' key to toggle mode like 'c' does
+  - blinking byte at cursor
 * open/close projects in GUI
 * status shows backtrace !?!?!
 * dbg.stepolibs = true ;  step over non-user code?

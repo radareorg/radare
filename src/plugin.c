@@ -133,6 +133,7 @@ plugin_t *plugin_registry(const char *file)
 	/* open library */
 	hd = (void *)dlopen(buf, RTLD_NOW); //LAZY);
 	if (hd == NULL) {
+		perror("dlopen");
 		eprintf("Cannot open plugin '%s'.\n(%s)\n", buf,dlerror());
 		return NULL;
 	}

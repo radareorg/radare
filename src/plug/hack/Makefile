@@ -4,8 +4,8 @@ include ../../../config.mk
 	#-${CC} perl.c ${CFLAGS}˘${HARED_CFLAGS}${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SHARED_EXT}
 PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
 PERL_LDFLAGS=`perl -MExtUtils::Embed -e ldopts` -lncurses
-PY_CFLAGS=-I${PREFIX}/include/python2.4/ -I/usr/include/python2.4/
-PY_LDFLAGS=-lpython2.4
+PY_CFLAGS=-I${PREFIX}/include/python2.5/ -I/usr/include/python2.5/
+PY_LDFLAGS=-lpython2.5
 LUA_CFLAGS=-I/usr/pkg/include -DLIBDIR=\"${LIBDIR}\"
 LUA_LDFLAGS=-llua
 CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}

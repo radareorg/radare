@@ -150,8 +150,8 @@ CMD_DECL(trace)
 
 void convert_bytes()
 {
-#warning convert_bytes under development
 	int c;
+	u64 off;
 	int fmt;
 	cons_printf(
 	"c - code\n"
@@ -167,7 +167,11 @@ void convert_bytes()
 	case 'd': fmt = FMT_HEXB; break;
 	case 's': fmt = FMT_ASC0; break;
 	}
-	data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+	//data_add((u64)config.seek+config.cursor, DATA_FOLD_C);
+	off = config.seek+(config.cursor_mode?config.cursor:0);
+	data_add(off, fmt);
+	if (config.cursor_mode)
+		data_set_len(off, (u64)(config.cursor-config.ocursor+1));
 	cons_clear();
 }
 

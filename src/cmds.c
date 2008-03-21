@@ -105,22 +105,26 @@ void show_help_message()
 
 int fixed_width = 0;
 
+	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
+	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
+	//COMMAND('g', " [x,y]",         "gotoxy  move screen cursor to x,y", gotoxy),
+	//COMMAND('l', " [offset]",      "limit   set the top limit for searches", limit),
+	//COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
+	//COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
+	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
+
 command_t commands[] = {
 	COMMAND('b', " [blocksize]",   "bsize   change the block size", blocksize),
-	//COMMAND('B', " [baseaddr]",    "baddr   change virtual base address", baddr),
-	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
 	COMMAND('c', "[f file]|[hex]","compare compare block with given value", compare),
 	COMMAND('C', "[op] [arg]",         "Code related commands (comment, conversions, ..)", code),
-	COMMAND('H', " [cmd]",         "performs a hack", hack),
-	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
 	COMMAND('e', " key=value",     "eval    evaluates a configuration expression", config_eval),
 	COMMAND('f', "[d|-][name]",    "flag    flag the current offset (f? for help)", flag),
-	//COMMAND('g', " [x,y]",         "gotoxy  move screen cursor to x,y", gotoxy),
+	COMMAND('H', " [cmd]",         "performs a hack", hack),
 	COMMAND('i', "",               "info    prints status information", status),
-	//COMMAND('l', " [offset]",      "limit   set the top limit for searches", limit),
 	COMMAND('m', " [size] [dst]",  "move    copy size bytes from here to dst", move),
 	COMMAND('o', " [file]",        "open    open file", open),
 	COMMAND('p', "[fmt] [len]",    "print   print data block", print),
+	COMMAND('q', "",               "quit    close radare shell", quit),
 	COMMAND('r', " [size]",        "resize  resize or query the file size", resize),
 	COMMAND('P', "[so][i [file]]", "Project project Open, Save, Info", project),
 	COMMAND('R', "[act] ([arg])",  "RDB     rdb operations", rdb),
@@ -130,19 +134,15 @@ command_t commands[] = {
 	COMMAND('w', "[x] [string]",   "write   write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine the same as p/x", examine),
 	COMMAND('y', "[y] [length]",   "yank    copy n bytes from cursor to clipboard (yy=paste)", yank),
-	//COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
 	COMMAND('.', "[!cmd]|[ file]", "script  interpret a commands script", interpret),
-	//COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
 	COMMAND('-', "[size]",         "prev    go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next    go to next block (+= block_size)", next),
 	COMMAND('<', "",               "preva   go previous aligned block", prev_align),
 	COMMAND('>', "",               "nexta   go next aligned block", next_align),
 	COMMAND('/', "[?] [str]",      "search  find matching strings", search),
 	COMMAND('!', "[command]",      "system  execute a shell command", shell), 
-	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
 	COMMAND('#', "[hash|!lang]",   "hash    hash current block (#? or #!perl)", hash),
 	COMMAND('?', "",               "help    show the help message", help),
-	COMMAND('q', "",               "quit    close radare shell", quit),
 	COMMAND( 0, NULL, NULL, default)
 };
 

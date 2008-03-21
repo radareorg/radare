@@ -55,10 +55,13 @@ CHKVER vala-1.0 0.1.7
 IFNOT HAVE_VALA_1_0_VERSION_0_1_7 {
 	ECHO Needs vala 0.1.7 at least ;
 	VALAC = '' ;
+	VALA = 0 ;
+	GUI = 0 ;
 }
 IFEQ VALAC valac ; {
 	WITH_VALA = 0 ;
 	VALA = 0 ;
+	GUI = 0 ;
 	ECHO No valac found ;
 }
 

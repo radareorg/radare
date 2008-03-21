@@ -27,6 +27,16 @@ extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static char *(*rs)(const char *cmd) = NULL;
 
+static int report (lua_State *L, int status) {
+	const char *msg;
+	if (status) {
+		msg = lua_tostring(L, -1);
+		if (msg == NULL) msg = "(error with no message)";
+		fprintf(stderr, "status=%d, %s\n", status, msg);
+		lua_pop(L, 1);
+	}
+	return status;
+}
 static int l_num (lua_State *L) {
 	double d = lua_tonumber(L, 1);  /* get argument */
 	lua_pushnumber(L, d+1);  /* push result */
@@ -44,11 +54,11 @@ static int lua_cmd_str (lua_State *L) {
 
 static lua_State *L;
 
-static char *slurp(char *str)
+static char *myslurp(const char *file)
 {
-	char *ret;	
+	char *ret;
 	u64 sz;
-	FILE *fd = fopen(str, "r");
+	FILE *fd = fopen(file, "r");
 	if (fd == NULL)
 		return NULL;
 	fseek(fd, 0,SEEK_END);
@@ -63,17 +73,10 @@ static char *slurp(char *str)
 
 static int slurp_lua(char *file)
 {
-	char *str = slurp(file);
-	printf("slurp(%s)\n", file);
-	if (str) {
-		luaL_loadbuffer(L, str, strlen(str), "");
-		lua_pcall(L,0,0,0);
-		free(str);
+	if (report(L, luaL_loadfile(L, file)) || lua_pcall(L,0,0,0))
 		return 1;
-	}
 	return 0;
 }
-
 
 static int lua_hack_init()
 {
@@ -93,11 +96,6 @@ static int lua_hack_init()
 	//luaopen_io(L); // PANIC!!
 	lua_gc(L, LUA_GCRESTART, 0);
 
-	//-- load template
-	printf("Loading radare api... %s\n",
-		slurp_lua(LIBDIR"/radare/radare.lua")?"ok":"error");
-	fflush(stdout);
-
 	lua_register(L, "radare_cmd_str", &lua_cmd_str);
 	lua_pushcfunction(L, lua_cmd_str);
 	lua_setglobal(L,"radare_cmd_str");
@@ -106,6 +104,11 @@ static int lua_hack_init()
 	lua_register(L, "cmd", &lua_cmd_str);
 	lua_pushcfunction(L,lua_cmd_str);
 	lua_setglobal(L,"cmd");
+
+	//-- load template
+	printf("Loading radare api... %s\n",
+		slurp_lua(LIBDIR"/radare/radare.lua")?"ok":"error");
+	fflush(stdout);
 }
 
 static int lua_hack_cya()
@@ -137,7 +140,13 @@ void lua_hack_cmd(char *input)
 			fflush(stdout);
 			str[0]='\0';
 			fgets(str,1000,stdin);
-			if (str[0]=='.'||feof(stdin)||!memcmp(str,"exit",4)||!memcmp(str,"quit",4)||!strcmp(str,"q"))
+			if (str[0])
+				str[strlen(str)-1]='\0';
+			if (	str[0]=='.'
+			||	feof(stdin)
+			||	!memcmp(str,"exit",4)
+			||	!memcmp(str,"quit",4)
+			||	!strcmp(str,"q"))
 				break;
 			str[strlen(str)]='\0';
 			luaL_loadbuffer(L, str, strlen(str), ""); // \n included
