@@ -13,48 +13,7 @@
 #endif
 
 #if __WINDOWS__
-
-#define PROT_READ 1
-#define PROT_WRITE 2
-#define PROT_EXEC 4
-
-#include <windows.h>
-#include <winbase.h>
-typedef struct {
-	ULONG ContextFlags;
-
-	ULONG   Dr0;
-	ULONG   Dr1;
-	ULONG   Dr2;
-	ULONG   Dr3;
-	ULONG   Dr6;
-	ULONG   Dr7;
-
-	FLOATING_SAVE_AREA FloatSave;
-
-	ULONG   SegGs;
-	ULONG   SegFs;
-	ULONG   SegEs;
-	ULONG   SegDs;
-
-	ULONG   Edi;
-	ULONG   Esi;
-	ULONG   Ebx;
-	ULONG   Edx;
-	ULONG   Ecx;
-	ULONG   Eax;
-
-	ULONG   Ebp;
-	ULONG   Eip;
-	ULONG   SegCs;              // MUST BE SANITIZED
-	ULONG   EFlags;             // MUST BE SANITIZED
-	ULONG   Esp;
-	ULONG   SegSs;
-
-	UCHAR   ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-} CONTEXTO;
-
-#define regs_t CONTEXTO
+#include "regs.h"
 
 #else
 

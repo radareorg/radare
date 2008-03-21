@@ -813,6 +813,7 @@ static int accel=1;
 
 static void check_accel(int foo)
 {
+#if _UNIX_
 	static suseconds_t ulast = 0;
 	static time_t last = 0;
 	struct timeval tv;
@@ -836,6 +837,7 @@ static void check_accel(int foo)
 	}
 	last = tv.tv_sec;
 	ulast = tv.tv_usec;
+#endif
 }
 
 CMD_DECL(visual)

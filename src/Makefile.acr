@@ -59,7 +59,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 all: ${TARGETS} udis86 armasm \
 	lsbstego pre radare librdb radare-hash \
-	radare-xc radare-xrefs javasm plugs
+	radare-xc radare-xrefs javasm plugs _rasm _rabin
 	@true
 
 ${OBJS}: %.o: %.c
@@ -105,6 +105,12 @@ javasm: arch/java/javasm.o
 lsbstego: lsbstego.o
 	${E} 'Linking lsbstego'
 	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}
+
+_rabin:
+	cd rabin && ${MAKE} all
+
+_rasm:
+	cd rasm && ${MAKE} all
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all

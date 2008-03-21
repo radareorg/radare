@@ -1,6 +1,6 @@
 /* trampoline to the gnu disassembler for arm */
 #include <radare.h>
-#include "gnu/dis-asm.h"
+#include <dis-asm.h>
 
 int arm_mode = 32;
 

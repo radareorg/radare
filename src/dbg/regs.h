@@ -11,23 +11,65 @@
 #define OFF_FMTd "%d"
 #endif
 
-#if __i386__
-#if __linux__
- #if __x86_64__
-  /* linux 64 bits */
-  #include <sys/user.h>
-  #define regs_t struct user_regs_struct
- #else
-  /* linux 32 bits */
-  #include <sys/user.h>
-  #define regs_t struct user_regs_struct
- #endif
+#if __WINDOWS__
+#define PROT_READ 1
+#define PROT_WRITE 2
+#define PROT_EXEC 4
 
-#elif __WINDOWS__
-  #define regs_t CONTEXTO
-#elif __APPLE__
-#include <mach/i386/_structs.h>
-#define regs_t _STRUCT_X86_THREAD_STATE32
+#include <windows.h>
+#include <winbase.h>
+typedef struct {
+	ULONG ContextFlags;
+
+	ULONG   Dr0;
+	ULONG   Dr1;
+	ULONG   Dr2;
+	ULONG   Dr3;
+	ULONG   Dr6;
+	ULONG   Dr7;
+
+	FLOATING_SAVE_AREA FloatSave;
+
+	ULONG   SegGs;
+	ULONG   SegFs;
+	ULONG   SegEs;
+	ULONG   SegDs;
+
+	ULONG   Edi;
+	ULONG   Esi;
+	ULONG   Ebx;
+	ULONG   Edx;
+	ULONG   Ecx;
+	ULONG   Eax;
+
+	ULONG   Ebp;
+	ULONG   Eip;
+	ULONG   SegCs;              // MUST BE SANITIZED
+	ULONG   EFlags;             // MUST BE SANITIZED
+	ULONG   Esp;
+	ULONG   SegSs;
+
+	UCHAR   ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
+} CONTEXTO;
+
+ #define regs_t CONTEXTO
+#else
+#if __i386__
+ #if __linux__
+  #if __x86_64__
+   /* linux 64 bits */
+   #include <sys/user.h>
+   #define regs_t struct user_regs_struct
+  #else
+   /* linux 32 bits */
+   #include <sys/user.h>
+   #define regs_t struct user_regs_struct
+  #endif
+ 
+ #elif __APPLE__
+   #include <mach/i386/_structs.h>
+   #define regs_t _STRUCT_X86_THREAD_STATE32
+ #endif
 #else
   /* bsd 32 bits */
   #include <machine/reg.h>
@@ -35,6 +77,7 @@
 #endif
   /* ARM */
 #endif
+
 
   /* portable ptrace */
 #if __linux__
@@ -98,6 +141,10 @@
 
 #define WS(w) (ps.ws.w)
 #define WS_SI(f) (ps.ws.si.f)
+
+#ifndef regs_t
+#error No regs_t defined?!
+#endif
 
 //#ifndef regs_t
 #if __arm__

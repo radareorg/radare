@@ -38,6 +38,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define BUFFER_SIZE 4096
 
@@ -66,12 +67,13 @@ int socket_write(int fd, unsigned char *buf, int len)
 /* returns -1 on error, 0 is false, 1 is true */
 int socket_ready(int fd, int secs,int usecs)
 {
+#if _UNIX_
 	struct pollfd fds[1];
 	fds[0].fd = fd;
 	fds[0].events = POLLIN|POLLPRI;
 	fds[0].revents = POLLNVAL|POLLHUP|POLLERR;
 	return poll(&fds, 1, secs);
-#if 0
+#elif _WINDOWS_
 	fd_set rfds;
 	struct timeval tv;
 	int retval;
@@ -92,7 +94,9 @@ int socket_ready(int fd, int secs,int usecs)
 
 void socket_block(int fd, int block)
 {
+#if _UNIX_
 	fcntl(fd, F_SETFL, O_NONBLOCK, !block);
+#endif
 }
 
 void socket_printf(int fd, const char *fmt, ...)

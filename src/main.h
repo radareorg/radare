@@ -21,6 +21,15 @@
 #ifndef _INCLUDE_MAIN_H_
 #define _INCLUDE_MAIN_H_
 
+#undef __UNIX__
+#undef __WINDOWS__
+#if __WIN32__ || __CYGWIN__ || MINGW32
+#include <windows.h>
+#define __WINDOWS__ 1
+#else
+#define __UNIX__ 1
+#endif
+
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -35,13 +44,5 @@
 #include "utils.h"
 #include "plugin.h"
 
-#undef __UNIX__
-#undef __WINDOWS__
-#if __WIN32__ || __CYGWIN__ || MINGW32
-#include <windows.h>
-#define __WINDOWS__ 1
-#else
-#define __UNIX__ 1
-#endif
 
 #endif

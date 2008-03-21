@@ -318,7 +318,7 @@ void config_eval(char *str)
 	free(name);
 }
 
-int config_zoombyte_callback(void *data)
+static int config_zoombyte_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -345,7 +345,7 @@ int config_zoombyte_callback(void *data)
 	}
 }
 
-int config_core_callback(void *data)
+static int config_core_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -395,12 +395,12 @@ int config_core_callback(void *data)
 	// TODO needs more work
 }
 
-int config_arch_callback(void *data)
+static int config_arch_callback(void *data)
 {
 	arch_set_callbacks();
 }
 
-int config_wmode_callback(void *data)
+static int config_wmode_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -412,7 +412,7 @@ int config_wmode_callback(void *data)
 	return 1;
 }
 
-int config_color_callback(void *data)
+static int config_color_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -421,17 +421,19 @@ int config_color_callback(void *data)
 	return 1;
 }
 
+#if 0
 int config_asm_dwarf(void *data)
 {
 	struct config_node_t *node = data;
 
 	if (node && node->value)
-		config_set("cmd.asm","!rsc dwarf-addr ${FILE} ${HERE}");
+		config_set("cmd.asm", "!rsc dwarf-addr ${FILE} ${HERE}");
 	else	config_set("cmd.asm", "");
 	return 1;
 }
+#endif
 
-int config_baddr_callback(void *data)
+static int config_baddr_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -440,7 +442,7 @@ int config_baddr_callback(void *data)
 	return 1;
 }
 
-int config_scrheight(void *data)
+static int config_scrheight(void *data)
 {
 	struct config_node_t *node = data;
 	config.height = node->i_value;
@@ -449,14 +451,14 @@ int config_scrheight(void *data)
 	return 1;
 }
 
-int config_scrbuf_callback(void *data)
+static int config_scrbuf_callback(void *data)
 {
 	struct config_node_t *node = data;
 
 	config.buf = node->i_value;
 }
 
-int config_bsize_callback(void *data)
+static int config_bsize_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -497,8 +499,6 @@ void config_init()
 #endif
 #endif
 	node->callback = &config_arch_callback;
-	node = config_set("asm.dwarf", "true"); // must be false by deflaut
-	node->callback = &config_asm_dwarf;
 	config_set("asm.syntax", "pseudo");
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
@@ -565,7 +565,7 @@ void config_init()
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
 	config_set_i("cfg.vbsize", 1024);
-	config_set("cfg.vbsize_enabled", "true");
+	config_set("cfg.vbsize_enabled", "false");
 
 	config_set("child.stdin", "");
 	config_set("child.stdout", "");
@@ -576,7 +576,7 @@ void config_init()
 	config_set("child.setuid", "");
 
 	config_set("dbg.syms", "true");
-	config_set("dbg.reference", "true");
+	config_set("dbg.dwarf", "true");
 	config_set("dbg.maps", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");

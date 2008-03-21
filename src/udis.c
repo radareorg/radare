@@ -568,7 +568,7 @@ void udis_arch(int arch, int len, int rows)
 			endian_memcpy_e(b, config.block+bytes, 4, endian);
 		} else  memcpy(b, config.block+bytes, 32);
 
-		if (cmd_asm&& cmd_asm[0]) {
+		if (cmd_asm && cmd_asm[0]) {
 			char buf[1024];
 			sprintf(buf, "%lld", seek);
 			setenv("HERE", buf, 1);

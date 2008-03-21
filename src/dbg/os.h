@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_OS_H_
 #define _INCLUDE_OS_H_
 /* debugger interface for radare */
+#include "regs.h"
 
 /* lifetime */
 void debug_init_calls();
