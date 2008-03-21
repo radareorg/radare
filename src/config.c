@@ -564,6 +564,8 @@ void config_init()
 	config_set("cfg.fortunes", "true");
 	node = config_set_i("cfg.bsize", 512);
 	node->callback = &config_bsize_callback;
+	config_set_i("cfg.vbsize", 1024);
+	config_set("cfg.vbsize_enabled", "true");
 
 	config_set("child.stdin", "");
 	config_set("child.stdout", "");

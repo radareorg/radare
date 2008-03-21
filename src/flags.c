@@ -98,15 +98,46 @@ static int flag_ptr = -1;
 
 flag_t *flag_get_next(int delta)
 {
-	flag_t *flag = flag_get_i(flag_ptr+delta);
+	flag_t *nice = NULL;
+	struct list_head *pos;
 
-	flag_ptr += 1;
+	if (delta == 1) {
+		list_for_each(pos, &flags) {
+			flag_t *flag = list_entry(pos, flag_t, list);
+			if (flag->offset > config.seek)  {
+				if (nice) {
+					if (flag->offset < nice->offset)
+						nice = flag;
+				} else {
+					nice = flag;
+				}
+			}
+		}
+	} else { //if (delta == -1) {
+		list_for_each(pos, &flags) {
+			flag_t *flag = list_entry(pos, flag_t, list);
+			if (flag->offset < config.seek)  {
+				if (nice) {
+					if (flag->offset > nice->offset)
+						nice = flag;
+				} else {
+					nice = flag;
+				}
+			}
+		}
+	}
+	return nice;
+}
+/*
+
 	if (flag_ptr < 0) flag_ptr = 0;
 	if (flag == NULL)
 		flag_ptr = 0;
+	flag_ptr += delta;
 
 	return flag;
 }
+*/
 
 flag_t *flag_get_reset()
 {
@@ -358,7 +389,7 @@ void flag_clear(const char *name)
 		list_for_each(pos, &flags) {
 			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 			if (config.interrupted) break;
-			if (strcmp(name, flag->name)) {
+			if (!strcmp(name, flag->name)) {
 				list_del(&(flag->list));
 				free(flag);
 				found = 1;

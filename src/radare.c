@@ -713,6 +713,19 @@ void radare_prompt_command()
 	int tmp; /* preserve print format */
 	struct dirent *de;
 
+	if (config_get("cfg.vbsze_enabled")) {
+		struct list_head *pos;
+		u64 uh = config.seek + config_get_i("cfg.vbsize");
+		u64 old = uh;
+		list_for_each(pos, &flags) {
+			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+			if (flag->offset > config.seek && (flag->offset < old))
+				old = flag->offset;
+		}
+		if (old)
+			radare_set_block_size_i(old-config.seek);
+	}
+
 	/* user defined command */
 	ptr = config_get("cmd.prompt");
 	if (ptr&&ptr[0]) {
@@ -850,10 +863,8 @@ int radare_prompt()
 	}
 #endif
 	
-	if (input[0]!='%')  {
-		config_set("cfg.verbose", t?"true":"false");
-		config.verbose = t;
-	}
+	config_set("cfg.verbose", t?"true":"false");
+	config.verbose = t;
 	return 1;
 }
 

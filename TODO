@@ -30,7 +30,10 @@ make fdsniff and usbsniff generate a project file and a binary one.
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
 * xc can get_math!
 * allow to run without opening a file (useful for batch mode)
-
+* when loading strings from file
+  - run Cs
+  - make Cs support multiple strings at a time
+  - split .dbs with flags
 
 
 search and replace

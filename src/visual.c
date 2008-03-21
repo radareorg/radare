@@ -1212,13 +1212,13 @@ CMD_DECL(visual)
 			break;
 		case 'f': {
 			flag_t *flag = flag_get_next(1);
-			if (!flag) flag = flag_get_next(-1);
-			if (!flag) flag = flag_get_reset();
-			if (flag) config.seek = flag->offset; }
+			if (flag) { config.seek = flag->offset;
+				cons_clear(); }}
 			break;
 		case 'F': { flag_t *flag = flag_get_next(-1);
 			if (!flag) flag = flag_get_reset();
-			if (flag) config.seek = flag->offset; }
+			if (flag) { config.seek = flag->offset;
+				cons_clear(); }}
 			break;
 		case 'D':
 			name = flag_name_by_offset(config.seek);
