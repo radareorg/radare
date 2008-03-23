@@ -32,6 +32,7 @@ struct config_t {
 	int fd;
 	int width;
 	int height;
+	int lines;
 	int lang;
 	int color;
 	int debug;

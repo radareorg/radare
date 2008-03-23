@@ -19,7 +19,6 @@
  *
  */
 
-#include "../libps2fd.h"
 #include <signal.h>
 #include <stdio.h>
 #include "../signal.h"

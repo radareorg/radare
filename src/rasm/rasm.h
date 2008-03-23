@@ -1,6 +1,7 @@
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
+#include "../main.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>

@@ -8,9 +8,24 @@
 ===========================================================
 
 
+Open streams
+============
+* make pR work capturing data instead of system
+* serial console support
+  - configure bps and so
+  $ radare /dev/ttyS0
+* '<' and '>' commands converted in prefix modifiers
+* Do not use the char '(' in asm.lines. just use - or =
+* trace.libcode = trace libcode or not?
+  - dbg.steplibs = true|false ??
+  - automatic stepu 
+* also for sniffing (pcap)
+
 
 0.9.5
 =====
+* Show FPU stack contents
+* set asm.arch with rabin_arch
 * variable block size
   - config.block_size as default
   - tries to find another flag after
@@ -117,26 +132,6 @@ Rabin
 * Move radare -S into rabin to find strings in data sections only
   - like gnu strings like bfd does
 
-Open streams
-============
-* as io plugin?
-* config.stream=1
-$ radare /dev/ttyS0
-* should also work for network sockets or unix ones
-  socket.c must be updated!
-* configure bps and so
-* code block is filled progressively with bytes
-  readed from the filedescriptor
-* write command is used
-* needs new interactive mode ala minicom
-  * useful for filedescriptor of child processes
-  * somewhat like an always-growing file :)
-* also for sniffing
-* autoscrolling to the end for interactive visual
-  - block descriptor (if regs traced, or so show info)
-
-+ EH - event handling (event type + source pid)
-  * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
 
 Graphs
 ======
@@ -165,7 +160,6 @@ Graphs
   - useful to reverse packer VMs
   - see what changes in register and memory
 
-* Show FPU stack contents
 
 * exception frame information (try { ... } catch stuff)
 * ram dump driver for w32
@@ -178,6 +172,8 @@ Graphs
   - height of screen
   - <tags> (set inigial and end binary tags)
     - allow to move forward/backward between 'bintags'
++ EH - event handling (event type + source pid)
+  * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
 * wtrace
   - rename to stepw
   - trace using !wp or so? wtrace until reached wp?
@@ -188,8 +184,6 @@ Graphs
   - enabled
 * RDB TO GML
 * circle to group looped code blocks in graph view
-* trace.libcode = trace libcode or not?
-  - automatic stepu 
 
 * support size of pointer with [xxx] get_offset expressions
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
@@ -246,9 +240,6 @@ Rasm
 ====
 * Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
-* -f, load opcodes from file
-* add directives
-* Must ignore stuff after ';'
 
 Visual
 ======
@@ -299,7 +290,8 @@ FileDescriptors
 ===============
 * read/write from/to child filedescriptor
 * sniff filedescriptor (dumping to file or socket)
-* open filedescriptors instead of files (always growing file)
+ - using CONTSC ?
+ - hooks read/write/ syscalls and gets buf and so
 
 Debugger
 ========
@@ -402,13 +394,10 @@ TOTHINK
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset
   - do not execute twice
-* Do not use the char '(' in asm.lines. just use - or =
 * record radare commands
   - all commands executed within a recording time are stored on a single script file
   - you can later repeat it or edit
-* mode2 for keybinding numbers for jmp/calls
-  - only if jump out of view
-* '<' and '>' commands converted in prefix modifiers
+  - history control must be back!
 * executable offsets
   - execute a command on a certain offset
   - show funtion frames and arguments on the fly
@@ -423,6 +412,7 @@ TOTHINK
    - the mmap is only defined once
    - show statistics of time range and the count of times a function
      has been called.
+
  - timers:
    - inject code into the child process to define from-to zones
    - these from-to zones have an mmap address assigned

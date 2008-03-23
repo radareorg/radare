@@ -1,6 +1,3 @@
-#include "../main.h"
-#include "regs.h"
-
 #ifndef _INCLUDE_LIBPS2FD_H_
 #define _INCLUDE_LIBPS2FD_H_
 
@@ -12,9 +9,10 @@
 #define __UNIX__ 1
 #endif
 
-#if __WINDOWS__
+#include "../main.h"
 #include "regs.h"
 
+#if __WINDOWS__
 #else
 
 #include <stdio.h>

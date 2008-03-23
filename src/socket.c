@@ -17,12 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-
+#define USE_SOCKETS
 #include "main.h"
-#include "socket.h"
-#if __WINDOWS__
-#include <windows.h>
-#endif
+
 #if __UNIX__
 #include <sys/un.h>
 #include <netinet/in.h>
@@ -32,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #endif
+
 #include <sys/types.h>
 #include <signal.h>
 #include <stdio.h>
@@ -39,6 +37,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "socket.h"
+
 
 #define BUFFER_SIZE 4096
 

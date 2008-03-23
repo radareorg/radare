@@ -51,7 +51,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "disarm.h"
-#include "../../flags.h"
 
 static int current_offset = 0;
 int color;

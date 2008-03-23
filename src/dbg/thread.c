@@ -55,9 +55,7 @@ int th_list()
 	int n = 0;
 
 	list_for_each_prev(pos, &ps.th_list) {
-		TH_INFO		*th = (TH_INFO *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(TH_INFO));
+		TH_INFO		*th = list_entry(pos, TH_INFO, list);
 		printf(" %c %d: 0x%08lx state: %d\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
 		n++;
 	}
@@ -84,9 +82,7 @@ TH_INFO	*get_th(int tid)
 
 	list_for_each_prev(pos, &ps.th_list) {
 
-		TH_INFO		*th = (TH_INFO *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(TH_INFO));
+		TH_INFO		*th = list_entry(pos, TH_INFO, list);
 
 		if(tid == th->tid)
 			return th;
@@ -102,9 +98,7 @@ void free_th()
 	p = (&ps.th_list)->next;
 
 	while(p && p != &(ps.th_list)) {
-		TH_INFO		*th = (TH_INFO *)((char *)p + \
-				sizeof(struct list_head) - \
-				sizeof(TH_INFO));
+		TH_INFO		*th = list_entry(p, TH_INFO, list);
 
 		aux = p->next;
 		list_del(&(th->list));

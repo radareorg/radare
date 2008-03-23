@@ -23,8 +23,8 @@
 
 #define TRACE printf("%s:%d\n", __FILE__, __LINE__);
 
-#include "../radare.h"
 #include "libps2fd.h"
+#include "../radare.h"
 #include "../config.h"
 #include "../print.h"
 #include "../code.h"
@@ -34,7 +34,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #if __UNIX__
@@ -98,6 +97,7 @@ pid_t debug_waitpid(int pid, int *status)
 	return waitpid(pid, status, WUNTRACED);
 #endif
 #endif
+	return -1;
 }
 
 int debug_init()
@@ -1537,11 +1537,11 @@ int debug_cont()
 
 int debug_pids()
 {
+#if __UNIX__
 	int i, fd;
 	int n = 0;
 	char cmdline[1025];
 
-#if __UNIX__
 	// TODO: use ptrace to get cmdline from esp like tuxi does
 	for(i=2;i<999999;i++) {
 		switch( kill(i, 0) ) {
@@ -1563,8 +1563,10 @@ int debug_pids()
 //			break;
 		}
 	}
-#endif
 	return n;
+#else
+	return -1;
+#endif
 }
 
 int debug_rm_bp(unsigned long addr, int type)

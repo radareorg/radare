@@ -21,7 +21,6 @@
  *
  */
 
-#include "main.h"
 #ifdef __WINDOWS__
 
 #include <sys/types.h>

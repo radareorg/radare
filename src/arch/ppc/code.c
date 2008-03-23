@@ -20,7 +20,7 @@
 
 /* code analysis functions */
 
-#include "../../radare.h"
+#include "../../main.h"
 #include "../../code.h"
 #include <string.h>
 

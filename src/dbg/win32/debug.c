@@ -21,23 +21,33 @@
  *
  */
 
-#include "../libps2fd.h"
+#define __addr_t_defined
+
+#include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
 #include <winbase.h>
 #include <psapi.h>
 
-#if __GYGWIN__
-#include <sys/errno.h>
+#if __CYGWIN__
+
+/* CYGWIN declare only GetProcessID() 
+ * if _WIN32_WINNT >= 0x0501 
+ * */
+DWORD WINAPI GetProcessId(HANDLE);
 #endif
 
 #include "../mem.h"
+#include "../debug.h"
+#include "../thread.h"
 #include "utils.h"
-extern int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int);
-extern void (*gmbn)(HANDLE, HMODULE, LPTSTR, int);
+
+
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 
+static void (*gmbn)(HANDLE, HMODULE, LPTSTR, int);
+static int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int);
 static BOOL WINAPI (*win32_detach)(DWORD);
 static HANDLE WINAPI (*win32_openthread)(DWORD, BOOL, DWORD);
 static HANDLE WINAPI (*win32_dbgbreak)(HANDLE);
@@ -50,15 +60,40 @@ static int exit_wait;
 
 void debug_init_calls()
 {
-	win32_detach = GetProcAddress(GetModuleHandle("kernel32"), "DebugActiveProcessStop");
-	win32_openthread = GetProcAddress(GetModuleHandle("kernel32"), "OpenThread");
-	win32_dbgbreak = GetProcAddress(GetModuleHandle("kernel32"), "DebugBreakProcess");
-	// only windows vista :(
-	win32_getthreadid = GetProcAddress(GetModuleHandle("kernel32"), "GetThreadId");
-	// from xp1
-	win32_getprocessid = GetProcAddress(GetModuleHandle("kernel32"), "GetProcessId");
+	HANDLE lib;
 
-	if(win32_detach == NULL || win32_openthread == NULL || win32_dbgbreak == NULL) {
+	win32_detach = (BOOL WINAPI (*)(DWORD))
+		GetProcAddress(GetModuleHandle("kernel32"),
+				"DebugActiveProcessStop");
+
+	win32_openthread = (HANDLE WINAPI (*)(DWORD, BOOL, DWORD))
+		GetProcAddress(GetModuleHandle("kernel32"), "OpenThread");
+
+	win32_dbgbreak = (HANDLE WINAPI (*)(HANDLE))
+		GetProcAddress(GetModuleHandle("kernel32"),
+				"DebugBreakProcess");
+
+	// only windows vista :(
+	win32_getthreadid = (DWORD WINAPI (*)(HANDLE))
+		GetProcAddress(GetModuleHandle("kernel32"), "GetThreadId");
+	// from xp1
+	win32_getprocessid = (DWORD WINAPI (*)(HANDLE))  
+		GetProcAddress(GetModuleHandle("kernel32"), "GetProcessId");
+
+	lib = LoadLibrary("psapi.dll");
+
+	if(lib == NULL) {
+		eprintf("Cannot load psapi.dll!!\n");
+		exit(1);
+	}
+
+	gmbn = (void (*)(HANDLE, HMODULE, LPTSTR, int))
+		GetProcAddress(lib, "GetModuleBaseNameA");
+	gmi = (int (*)(HANDLE, HMODULE, LPMODULEINFO, int))
+		GetProcAddress(lib, "GetModuleInformation");
+
+	if(win32_detach == NULL || win32_openthread == NULL || win32_dbgbreak == NULL || 
+	   gmbn == NULL || gmi == NULL) {
 		// OOPS!
 		eprintf("debug_init_calls:\n"
 			"DebugActiveProcessStop: 0x%x\n"
@@ -183,7 +218,7 @@ int debug_load_threads()
 err_load_th:	
 
 	if(ret == -1) 
-		print_lasterr(__FUNCTION__);
+		print_lasterr((char *)__FUNCTION__);
 
 	if(th != INVALID_HANDLE_VALUE)
 		CloseHandle(th);
@@ -194,7 +229,7 @@ err_load_th:
 int debug_contp(int tid)
 {
 	if(ContinueDebugEvent(ps.pid, tid, DBG_CONTINUE) == 0) {
-		print_lasterr(__FUNCTION__);
+		print_lasterr((char *)__FUNCTION__);
 		return -1;
 	}
 
@@ -250,7 +285,7 @@ int debug_fork_and_attach()
 			CREATE_NEW_CONSOLE | DEBUG_ONLY_THIS_PROCESS,
 	       		NULL, NULL, &si, &ps.pi ) ) {
 
-		print_lasterr(__FUNCTION__);
+		print_lasterr((char *)__FUNCTION__);
 		return -1;
 	}
 
@@ -302,8 +337,8 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	int ret_len = 0;
 
-	ReadProcessMemory(WIN32_PI(hProcess), addr,
-		       	(const char *)buff, len, (SIZE_T *)&ret_len);
+	ReadProcessMemory(WIN32_PI(hProcess), (PCVOID)(ULONG)addr,
+		       	buff, len, (PDWORD)&ret_len);
 
 	return ret_len;
 }
@@ -321,7 +356,7 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 		*/
 
 	/* write memory */
-	WriteProcessMemory(WIN32_PI(hProcess), (LPVOID)addr, (LPVOID)buff,
+	WriteProcessMemory(WIN32_PI(hProcess), (LPVOID)(ULONG)addr, (LPCVOID)buff,
 		       	len, (SIZE_T *)&ret_len);
 
 	/* restore page permissions */
@@ -334,13 +369,13 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 }
 
 
-inline int debug_getregs(pid_t tid, regs_t *regs)
+int debug_getregs(pid_t tid, regs_t *regs)
 {
 	regs->ContextFlags = CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS;
 	return GetThreadContext(tid2handler(tid), regs)? 0 : -1; 
 }
 
-inline int debug_setregs(pid_t tid, regs_t *regs)
+int debug_setregs(pid_t tid, regs_t *regs)
 {
 	regs->ContextFlags = CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS;
 	return SetThreadContext(tid2handler(tid), regs)? 0 : -1;
@@ -414,7 +449,7 @@ static void debug_init_console()
 {
 	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE)dispatch_console,
 			       	TRUE ) == 0) {
-		print_lasterr(__FUNCTION__);
+		print_lasterr((char *)__FUNCTION__);
 		return;
 	}
 }
@@ -433,7 +468,7 @@ int debug_os_init()
 
 static int debug_exception_event(unsigned long code)
 {
-	struct bpt_t *bp;
+	struct bp_t *bp;
 	int next_event;
 
 	next_event = 0;
@@ -443,7 +478,7 @@ static int debug_exception_event(unsigned long code)
 		/* software breakpoint or int3 */
 		case EXCEPTION_BREAKPOINT:
 
-			bp = (struct bp_t *) arch_stopped_bp();
+			bp = arch_stopped_bp();
 			if(bp) {
 				WS(event) = BP_EVENT;
 				WS(bp) = bp;
@@ -459,7 +494,7 @@ static int debug_exception_event(unsigned long code)
 		/* hardware breakpoint or single step exception */
 		case EXCEPTION_SINGLE_STEP: 
 
-			bp = (struct bp_t*) arch_stopped_bp();
+			bp = arch_stopped_bp();
 			if(bp) {
 				WS(event) = BP_EVENT;
 				WS(bp) = bp;
@@ -492,7 +527,7 @@ int debug_dispatch_wait()
 
 		/* handle debug events */
 		if(WaitForDebugEvent(&de, INFINITE) == 0) {
-			print_lasterr(__FUNCTION__);
+			print_lasterr((char *)__FUNCTION__);
 			return -1;
 		}
 
@@ -596,8 +631,6 @@ static inline int CheckValidPE(unsigned char * PeHeader)
 
 }
 
-void (*gmbn)(HANDLE, HMODULE, LPTSTR, int) = NULL;
-int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int) = NULL;
 
 int debug_init_maps(int rest)
 {
@@ -612,19 +645,12 @@ int debug_init_maps(int rest)
 	IMAGE_NT_HEADERS *nt_headers;
 	IMAGE_SECTION_HEADER *SectionHeader;
 	int NumSections, i;
-	SIZE_T ret_len;
+	DWORD ret_len;
 	MAP_REG *mr;
-	int n = 0;
-	LoadLibrary("psapi.dll");
-	gmbn = GetProcAddress(GetModuleHandle("psapi"), "GetModuleBaseName");
-	gmi = GetProcAddress(GetModuleHandle("psapi"), "GetModuleInformation");
-	if (gmbn == NULL || gmi == NULL) {
-		eprintf("maps: Cannot open psapi.dll?\n");
-		return -1;
-	}
 
 	if(ps.map_regs_sz > 0) 
 		free_regmaps(rest);
+
 
 	GetSystemInfo(&SysInfo);
 
@@ -638,8 +664,8 @@ int debug_init_maps(int rest)
 
 		if(mbi.Type == MEM_IMAGE) {
 
-			ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
-					PeHeader, sizeof(PeHeader), &ret_len);
+			 ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
+					(LPVOID)PeHeader, sizeof(PeHeader), &ret_len);
 
 			if(ret_len == sizeof(PeHeader) && CheckValidPE(PeHeader)) {
 
@@ -666,7 +692,7 @@ int debug_init_maps(int rest)
 
 					do {
 
-						mr = malloc(sizeof(MAP_REG));
+						mr = (MAP_REG *)malloc(sizeof(MAP_REG));
 						if(!mr) {
 							perror(":map_reg alloc");
 							free(ModuleName);
@@ -683,6 +709,7 @@ int debug_init_maps(int rest)
 
 						add_regmap(mr);
 
+
 						SectionHeader++;
 						i++;
 
@@ -698,7 +725,7 @@ int debug_init_maps(int rest)
 
 		} else {
 
-			mr = malloc(sizeof(MAP_REG));
+			mr = (MAP_REG *)malloc(sizeof(MAP_REG));
 			if(!mr) {
 				perror(":map_reg alloc");
 				free(mr->bin);

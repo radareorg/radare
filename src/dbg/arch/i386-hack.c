@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-
 #include "../libps2fd.h"
 #include <stdio.h>
 #include <string.h>
@@ -27,6 +26,7 @@
 //#include <sys/ptrace.h>
 #include "../mem.h"
 #include "i386.h"
+#include "../debug.h"
 
 int arch_hack_help()
 {

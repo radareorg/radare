@@ -21,7 +21,7 @@
 // TODO: automatic bubble sort by addr - faster indexing
 // TODO: support cursor indexing (index inside flag list)
 // TODO: store data and show (flag.data) in last_print_format
-
+#include "main.h"
 #include "radare.h"
 #include "flags.h"
 #include "utils.h"

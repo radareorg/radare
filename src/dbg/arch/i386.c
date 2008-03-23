@@ -22,8 +22,8 @@
  */
 
 //#if __i386__
-#include "../../radare.h"
 #include "../libps2fd.h"
+#include "../../radare.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>

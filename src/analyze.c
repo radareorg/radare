@@ -308,7 +308,6 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 			aop.fail = blf->fnext;
 			break;
 		}		
-		
 
 		if (config.interrupted)
 			break;
@@ -329,9 +328,6 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 		case AOP_TYPE_CALL:
 			block_add_call(prg, oseek, aop.jump);
 		}
-
-	
-		
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}

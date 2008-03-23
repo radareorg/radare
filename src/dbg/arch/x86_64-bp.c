@@ -305,7 +305,7 @@ inline void arch_restore_bp(struct bp_t *bp)
 	}
 }
 
-inline struct bp_t *arch_stopped_bp()
+struct bp_t *arch_stopped_bp()
 {
 	int i;
 	int bps = ps.bps_n;

@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_FLAGS_H_
 #define _INCLUDE_FLAGS_H_
 
-#include "radare.h"
 #include "main.h"
+#include "radare.h"
 #include "list.h"
 #define FLAG_BSIZE 40
 

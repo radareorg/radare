@@ -18,8 +18,8 @@
  *
  */
 
-#include <radare.h>
 #include <plugin.h>
+#include <radare.h>
 #include <socket.h>
 
 static int haret_fd = -1;

@@ -426,6 +426,9 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
+//#define CHECK_LINES printf("%d/%d\n",lines,rows); if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
+#define CHECK_LINES if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
+
 extern int color;
 void udis_arch(int arch, int len, int rows)
 {
@@ -439,7 +442,7 @@ void udis_arch(int arch, int len, int rows)
 	u64 myinc = 0;
 	unsigned char b[32];
 	const char *follow, *cmd_asm;
-	int endian, height;
+	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
 	int folder = 0; // folder level
 
@@ -452,7 +455,6 @@ void udis_arch(int arch, int len, int rows)
 	show_lines =(int) config_get("asm.lines");
 	show_traces =(int) config_get("asm.trace");
 	show_comments =(int) config_get("asm.comments");
-	height = config_get_i("cfg.height");
 	show_nbytes = (int)config_get_i("asm.nbytes");
 	endian = (int) config_get("cfg.endian");
 	color = (int) config_get("scr.color");
@@ -464,8 +466,8 @@ void udis_arch(int arch, int len, int rows)
 	delta = 0;
 	inc = 0;
 
-	if (rows<0)
-		rows = 1;
+	if (rows<1)
+		rows = config.height + config.lines;
 
 	switch(arch) {
 	case ARCH_X86:
@@ -494,10 +496,7 @@ void udis_arch(int arch, int len, int rows)
 		if (bytes>=config.block_size)
 			break;
 		seek = config.baddr +config.seek+bytes;
-		if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
-			break;
-		if (rows && rows < ++lines)
-			break;
+		CHECK_LINES
 
 		if (show_comments)
 			lines+=metadata_print(bytes);
@@ -532,7 +531,7 @@ void udis_arch(int arch, int len, int rows)
 				cons_strcat("           ");
 				for(i=0;i<folder;i++)cons_strcat("  ");
 				cons_strcat("  {\n");
-				lines--;
+				CHECK_LINES
 				folder++;
 				goto __outofme;
 			case DATA_STR:
@@ -544,7 +543,7 @@ void udis_arch(int arch, int len, int rows)
 				break;
 			}
 			cons_newline();
-			lines++;
+			CHECK_LINES
 			bytes+=idata;
 			continue;
 		}
@@ -561,7 +560,7 @@ void udis_arch(int arch, int len, int rows)
 			folder--;
 			for(i=0;i<folder;i++)cons_strcat("  ");
 			cons_strcat("  }\n");
-			lines++;
+			CHECK_LINES
 		}
 
 		if (arch != ARCH_X86) {
@@ -618,12 +617,7 @@ void udis_arch(int arch, int len, int rows)
 		length-=myinc;
 		if (length<=0)
 			break;
-
-		INILINE;
 		D { 
-			if (rows && rows >= lines)
-				return;
-
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
 				code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
@@ -647,11 +641,7 @@ void udis_arch(int arch, int len, int rows)
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
 						NEWLINE;
-						lines++;
-						if (rows && rows >= lines)
-							return;
-						if ( (config.visual && len!=config.block_size) && (++lines>=(config.height-2)))
-							break;
+						CHECK_LINES
 						if (show_lines)
 							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
@@ -793,13 +783,8 @@ void udis_arch(int arch, int len, int rows)
 			if (show_splits) {
 				char buf[1024];
 				if (aop.jump||aop.eob) {
-					//if (show_lines)
-					//	code_lines_print2(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
-						lines++;
 						NEWLINE;
-						if (rows && rows >= lines)
-							return;
 						if (show_lines)
 							code_lines_print(reflines, seek);
 						if (show_offset) {
@@ -809,6 +794,7 @@ void udis_arch(int arch, int len, int rows)
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf,"");
 						cons_printf("; ------------------------------------ ");
+						CHECK_LINES
 					}
 				}
 			}
@@ -822,10 +808,8 @@ void udis_arch(int arch, int len, int rows)
 					break;
 			}
 		}
-		seek+=myinc;
 		NEWLINE;
-		if (rows && rows >= lines)
-			break;
+		seek+=myinc;
 		bytes+=myinc;
 	}
 	radare_controlc_end();

@@ -21,6 +21,7 @@
  *
  */
 
+
 #include "../libps2fd.h"
 #include "../debug.h"
 #include <stdio.h>
@@ -91,12 +92,16 @@ inline static int dr_set(int reg, unsigned long val)
 
 
 	debug_getregs(ps.tid, &regs);
-	debug_set_regoff(&regs, off, val);
+	debug_set_regoff(&regs, (int)off, val);
 	debug_setregs(ps.tid, &regs);
 
 	debug_getregs(ps.tid, &regs);
+	/*
 	printf("REG_RE_VAL3: 0x%x\n", regs.Dr3);
 	printf("REG_CONTROL: 0x%x\n", regs.Dr7);
+	*/
+
+	return 0;
 }
 
 #else
@@ -349,7 +354,7 @@ int arch_restore_bp(struct bp_t *bp)
 	return 0;
 }
 
-inline struct bp_t *arch_stopped_bp()
+struct bp_t *arch_stopped_bp()
 {
         int i;
 	int bps = ps.bps_n;

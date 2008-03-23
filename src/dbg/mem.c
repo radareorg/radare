@@ -41,9 +41,7 @@ addr_t dealloc_page(addr_t addr)
 
 	list_for_each_prev(pos, &ps.map_mem) {
 
-		MAP_MEM	*mm = (MAP_MEM *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_MEM));
+		MAP_MEM *mm = list_entry(pos, MAP_MEM, list);
 
 		if(mm->addr == addr) {
 		/* printf("delete addr: mm->addr: 0%x mm->size: %i\n",
@@ -171,9 +169,8 @@ void dealloc_all()
 
    while(p && p != &(ps.map_mem))
     {
-	MAP_MEM	*mm = (MAP_MEM *)((char *)p + \
-			sizeof(struct list_head) - \
-			sizeof(MAP_MEM));
+
+	MAP_MEM *mm = list_entry(p, MAP_MEM, list);
 
 	aux = p->next;
 
@@ -202,9 +199,7 @@ void print_status_alloc()
 		printf("\n");
 
 	list_for_each_prev(pos, &ps.map_mem) {
-		MAP_MEM	*mm = (MAP_MEM *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_MEM));
+		MAP_MEM *mm = list_entry(pos, MAP_MEM, list);
 
 		printf(" * address: 0x%08llx size: %i bytes", mm->addr, (unsigned int)mm->size);
 		if(mm->tag) 
@@ -221,9 +216,7 @@ void free_regmaps(int rest)
 	p = (&ps.map_reg)->next;
 
 	while(p && p != &(ps.map_reg)) {
-		MAP_REG	*mr = (MAP_REG *)((char *)p + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_REG));
+		MAP_REG *mr = list_entry(p, MAP_REG, list);
 
 		aux = p->next;
 		list_del(&(mr->list));
@@ -250,9 +243,7 @@ void print_maps_regions(int rad)
 	char perms[5];
 
 	list_for_each_prev(pos, &ps.map_reg) {
-		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_REG));
+		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 
 		if (rad) {
 			if(mr->bin) {
@@ -314,9 +305,7 @@ void page_restore(const char *dir)
 
 	printf("Restore directory: %s\n", dir);
 	list_for_each_prev(pos, &ps.map_reg) {
-		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_REG));
+		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 
 		if ( mr->perms & REGION_WRITE ) {
 			printf("Restoring from %08llx-%08llX.dump  ; 0x%.8x  %s\n",
@@ -443,9 +432,7 @@ void up_regions(int usrcode)
 	int ret;
 
 	list_for_each_prev(pos, &ps.map_reg) {
-		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
-				sizeof(struct list_head) - \
-				sizeof(MAP_REG));
+		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 
 		if(mr->flags & FLAG_NOPERM)
 			continue;

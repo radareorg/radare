@@ -21,10 +21,21 @@
 #ifndef _INCLUDE_MAIN_H_
 #define _INCLUDE_MAIN_H_
 
+#if __CYGWIN__ 
+#define __addr_t_defined
+#endif
+
+
 #undef __UNIX__
 #undef __WINDOWS__
 #if __WIN32__ || __CYGWIN__ || MINGW32
+
 #include <windows.h>
+#ifdef USE_SOCKETS
+#include <winsock.h>
+#undef USE_SOCKETS
+#endif
+
 #define __WINDOWS__ 1
 #else
 #define __UNIX__ 1

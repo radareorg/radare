@@ -21,7 +21,7 @@
 
 /* code analysis functions */
 
-#include "../../radare.h"
+#include "../../main.h"
 #include "../../code.h"
 #include <string.h>
 int dislen(u8* opcode0, int limit);

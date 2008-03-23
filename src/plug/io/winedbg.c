@@ -18,8 +18,8 @@
  *
  */
 
-#include <radare.h>
 #include <plugin.h>
+#include <radare.h>
 #include <socket.h>
 
 static int winedbg_fd = -1;

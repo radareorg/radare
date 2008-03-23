@@ -787,6 +787,7 @@ void visual_draw_screen()
 	cons_flush();
 }
 
+// autoadjust height of screen
 static void ringring()
 {
 	int h   = config.height;
@@ -849,6 +850,10 @@ CMD_DECL(visual)
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
+
+	terminal_get_real_columns();
+	config_set_i("scr.width", config.width);
+	config_set_i("scr.height", config.height);
 
 	undo_push();
 

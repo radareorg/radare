@@ -1,7 +1,6 @@
 #ifndef _INCLUDE_REGS_H_
 #define _INCLUDE_REGS_H_
 #include "../main.h"
-#include "signal.h"
 #include "thread.h"
 #include "wp.h"
 
@@ -18,42 +17,13 @@
 
 #include <windows.h>
 #include <winbase.h>
-typedef struct {
-	ULONG ContextFlags;
 
-	ULONG   Dr0;
-	ULONG   Dr1;
-	ULONG   Dr2;
-	ULONG   Dr3;
-	ULONG   Dr6;
-	ULONG   Dr7;
+#define regs_t CONTEXT
 
-	FLOATING_SAVE_AREA FloatSave;
-
-	ULONG   SegGs;
-	ULONG   SegFs;
-	ULONG   SegEs;
-	ULONG   SegDs;
-
-	ULONG   Edi;
-	ULONG   Esi;
-	ULONG   Ebx;
-	ULONG   Edx;
-	ULONG   Ecx;
-	ULONG   Eax;
-
-	ULONG   Ebp;
-	ULONG   Eip;
-	ULONG   SegCs;              // MUST BE SANITIZED
-	ULONG   EFlags;             // MUST BE SANITIZED
-	ULONG   Esp;
-	ULONG   SegSs;
-
-	UCHAR   ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-} CONTEXTO;
-
- #define regs_t CONTEXTO
 #else
+
+#include "signal.h"
+
 #if __i386__
  #if __linux__
   #if __x86_64__

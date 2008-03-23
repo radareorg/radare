@@ -18,8 +18,8 @@
  *
  */
 
-#include <radare.h>
 #include <plugin.h>
+#include <radare.h>
 #include <socket.h>
 
 // TODO handle SIGINT to stop socket blocks

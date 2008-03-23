@@ -70,6 +70,7 @@ static void config_old_init()
 	config.script      = NULL;
 	config.baddr       = 0;
 	config.seek        = 0;
+	config.lines       = 0;
 	config.debug       = 0;
 	config.color	   = 0;
 	config.unksize     = 0;

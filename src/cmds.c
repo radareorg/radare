@@ -97,9 +97,9 @@ void show_help_message()
 		cmdaux++;
 		cmdaux += sprintf(cmdaux, "%s", cmd->options);
 		cmdaux[0] = '\0';
-		printf(" %-15s %s\n", cmdstr, cmd->help);
+		printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
-	printf(" ? <expr>        calc    math expr and show result in hex,oct,dec,bin\n");
+	cons_printf(" ? <expr>          calc    math expr and show result in hex,oct,dec,bin\n");
 }
 
 
@@ -131,7 +131,7 @@ command_t commands[] = {
 	COMMAND('s', " [[+,-]pos]",    "seek    seek to absolute/relative expression", seek),
 	COMMAND('u', "[!|?|u]",        "undo    undo seek (! = reset, ? = list, u = redo)", undoseek),
 	COMMAND('V', "",               "Visual  go visual mode", visual),
-	COMMAND('w', "[x] [string]",   "write   write ascii/hexpair string here", write),
+	COMMAND('w', "[?aAdwxf] [str]", "write   write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine the same as p/x", examine),
 	COMMAND('y', "[y] [length]",   "yank    copy n bytes from cursor to clipboard (yy=paste)", yank),
 	COMMAND('.', "[!cmd]|[ file]", "script  interpret a commands script", interpret),

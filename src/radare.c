@@ -563,25 +563,23 @@ int radare_cmd(char *command, int log)
 		else cons_printf("Disassembly:\n");
 		if (config_get("dbg.dwarf"))
 			radare_cmd("pR @ eip",0);
-
-		//radare_cmd("s eip", 0);
 		{
 			u64 pc = flag_get_addr("eip");
 			if (pc<config.seek || pc > config.seek+config.block_size)
-				radare_cmd("s eip",0);
+				radare_seek(pc, SEEK_SET);
 		}
-		config.height-=14;
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */
-		if (config.visual)
+		if (config.visual) {
+			config.lines=-12;
 			radare_cmd("pD", 0);
-		else	radare_cmd("pD 50", 0);
+			config.lines = 0;
+		} else	radare_cmd("pD 50", 0);
 		//radare_cmd("pd 100", 0);
 
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
-		config.height+=14;
 		cons_flush();
 		return 0;
 	}

@@ -354,6 +354,7 @@ int terminal_get_real_columns()
 		win.ws_row = 23;
 	}
 #ifdef RADARE_CORE
+	config.width = win.ws_col;
 	config.height = win.ws_row;
 #endif
 

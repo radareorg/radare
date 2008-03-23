@@ -21,6 +21,7 @@
 
 /* code analysis functions */
 
+#include "../../main.h"
 #include "../../radare.h"
 #include "../../code.h"
 #include "arm.h"
@@ -28,11 +29,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
+static inline unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
 {
-	int add;
+	unsigned int add;
 		
-	add = (int)insoff << 2;
+	add = insoff << 2;
 	/// zero extend si el bit mes alt es 1, --> 0x02000000
 	if ( (add & 0x02000000) == 0x02000000 )
 		add = add | 0xFC000000 ;
@@ -41,14 +42,14 @@ unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
 	return add;
 }
 
-int anal_is_B  ( int inst )
+static inline int anal_is_B  ( int inst )
 {
 	if  ( ( inst & ARM_BRANCH_I_MASK  ) == ARM_BRANCH_I )
 		return 1;
 	 return 0;
 }
 
-int anal_is_BL  ( int inst )
+static inline int anal_is_BL  ( int inst )
 {
 	
 	if ( anal_is_B(inst) && ( inst & ARM_BRANCH_LINK ) == ARM_BRANCH_LINK  )
@@ -57,30 +58,29 @@ int anal_is_BL  ( int inst )
 }
 
 
-int anal_is_return ( int inst )
+static inline int anal_is_return ( int inst )
 {
 	if ( ( inst & ( ARM_DTM_I_MASK | ARM_DTM_LOAD  | ( 1 << 15 ) ) ) == ( ARM_DTM_I | ARM_DTM_LOAD  | ( 1 << 15 ) )  )
 		return 1;
 	return 0;
 }
 
-int anal_is_unkjmp ( int inst )
+static inline int anal_is_unkjmp ( int inst )
 {
 	if ( (inst & ( ARM_DTX_I_MASK | ARM_DTX_LOAD  | ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ) )
 		return 1;
 	return 0;
 }
 
-int anal_is_condAL ( int inst )
+static inline int anal_is_condAL ( int inst )
 {
 	if ( ( inst &ARM_COND_MASK ) == ARM_COND_AL )
 		return 1;
 	return 0;
 }
 
-int anal_is_exitpoint ( int inst )
+static inline int anal_is_exitpoint ( int inst )
 {
-	
 	return ( anal_is_B ( inst )  || anal_is_return ( inst ) || anal_is_unkjmp ( inst ) );
 }
 
@@ -94,8 +94,10 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 	unsigned int branch_dst_addr;
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
+#if 0
 	fprintf(stderr, "CODE %02x %02x %02x %02x\n",
 		codeA[0], codeA[1], codeA[2], codeA[3]);
+#endif
 
 	if ( anal_is_exitpoint ( code[i] ) )
 	{

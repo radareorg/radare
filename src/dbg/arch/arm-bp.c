@@ -167,7 +167,7 @@ inline void arch_restore_bp(struct bp_t *bp)
 }
 
 // XXX this func is dupped! should not be here (read i386-bp.c
-inline struct bp_t *arch_stopped_bp()
+struct bp_t *arch_stopped_bp()
 {
         int i;
 	int bps = ps.bps_n;

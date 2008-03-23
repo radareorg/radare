@@ -20,7 +20,7 @@
 
 // http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html
 
-#include "../../radare.h"
+#include "../../main.h"
 #include "../../code.h"
 #include <stdio.h>
 #include <string.h>

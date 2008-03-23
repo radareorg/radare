@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include "../../utils.h"
 
 /* XXX code repeated */
 /*
@@ -51,7 +52,7 @@ void print_lasterr(char *str)
                         pMessage, 
                        0,  // ignored
                        0,  // ignored
-                       (LPWSTR)&buffer, 
+                       (LPTSTR)&buffer, 
                        size, 
                        (va_list*)pArgs)) {
    

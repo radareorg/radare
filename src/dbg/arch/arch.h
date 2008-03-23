@@ -1,13 +1,13 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#include <sys/types.h>
 #include "../../list.h"
 #include "../../radare.h"
 #include "../../code.h"
-#include "../debug.h"
 
 typedef u64 addr_t;
+
+#include "../debug.h"
 
 /*
 #if __x86_64__
@@ -28,7 +28,7 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type);
 int arch_restore_bp(struct bp_t *bp);
 int arch_set_bp_hw(struct bp_t *bp, unsigned long addr);
 int arch_set_bp_soft(struct bp_t *bp, unsigned long addr);
-inline struct bp_t *arch_stopped_bp();
+struct bp_t *arch_stopped_bp();
 int arch_backtrace();
 int arch_stackanal();
 addr_t arch_pc();

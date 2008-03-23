@@ -53,6 +53,7 @@ ssize_t zocket_read(int fd, void *buf, size_t count)
 				memcpy(socket_buf+(int)socket_bufsz, data, sz);
 				sprintf(data, "_sockread_%d", socket_bufread++);
 				flag_set(data, socket_bufsz, 0);
+				flag_set("_sockread_last", socket_bufsz, 0);
 				socket_bufsz += sz;
 			}
 		}
@@ -119,7 +120,6 @@ int zocket_open(const char *pathname, int flags, mode_t mode)
 			// LISTEN HERE
 			return -1;
 		}
-
 #if 0
 		file   = strchr(pathname+12,'/');
 		if (file == NULL) {
@@ -127,13 +127,11 @@ int zocket_open(const char *pathname, int flags, mode_t mode)
 			return -1;
 		}
 #endif
-
 		// connect
 		socket_fd = socket_connect((char*)ptr, atoi(port+1));
 		if (socket_fd>=0)
 			printf("Connected to: %s at port %d\n", ptr, atoi(port+1));
-		else
-			printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
+		else	printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
 		socket_buf = (char *)malloc(1);
 		socket_bufsz = 0;
 		config_set("cfg.write", "true");

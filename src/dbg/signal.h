@@ -5,7 +5,7 @@
 #include <signal.h>
 #endif
 
-#if __WINDOWS__
+#if __WINDOWS__ && !__CYGWIN__
 /* Fake signal functions.  */
 
 #if 0
