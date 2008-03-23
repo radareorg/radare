@@ -59,7 +59,7 @@ int arch_ppc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);
-void code_lines_print(struct reflines_t *list, u64 addr);
+void code_lines_print(struct reflines_t *list, u64 addr, int expand);
 void code_lines_print2(struct reflines_t *list, u64 addr);
 
 int data_set_len(u64 off, u64 len);

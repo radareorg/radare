@@ -6,10 +6,12 @@ CFLAGS+=${GTK_FLAGS} ${VTE_FLAGS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --cflags`
 LDFLAGS+=${GTK_LIBS} ${VTE_LIBS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --libs`
-BIN=gradare
+BIN=gradare${BINSFX}
 
-all: ${OBJ}
+all: ${OBJ} ${BIN}
 	${E} 'Linking ${BIN}'
+
+${BIN}:
 	${Q}${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} -o ${BIN}
 
 ${OBJ}: %.o: %.c

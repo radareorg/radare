@@ -29,7 +29,9 @@ struct {
   char *name;
   char *string;
 } signals [] = {
+#if __CYGWIN__
   { SIGHUP,  "SIGHUP",  "Hangup"},
+#endif
   {0, NULL, "Unknown signal"}
 };
 

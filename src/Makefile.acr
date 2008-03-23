@@ -58,8 +58,8 @@ JAVASM_STUFF=w32utils.o -lwsock32
 	${Q}$(CC) -c $(CFLAGS) -o $@ $<
 
 all: ${TARGETS} udis86 armasm \
-	lsbstego pre radare librdb radare-hash \
-	radare-xc radare-xrefs javasm plugs _rasm _rabin
+	lsbstego pre radare${BINSFX} librdb radare-hash radare-bdiff \
+	xc${BINSFX} xrefs${BINSFX} javasm${BINSFX} plugs _rasm _rabin
 	@true
 
 ${OBJS}: %.o: %.c
@@ -87,23 +87,20 @@ librdb:
 udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
-radare: ${OBJ} main.o radare-bdiff
+radare${BINSFX}: ${OBJ} ${OBJ2} main.o
 	${E} 'Linking radare'
 	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${W32LIBS}
 
 gui: ${OBJ}
 	${E} 'Compiling Vala GUI'
 	cd ../vala && ${MAKE} c
-	${E} 'Linking radare'
 	-${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${W32LIBS} -lvte
 
-javasm: arch/java/javasm.o
-	${E} 'Linking javasm'
+javasm${BINSFX}: arch/java/javasm.o
 	-${Q}${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
 
 
-lsbstego: lsbstego.o
-	${E} 'Linking lsbstego'
+lsbstego${BINSFX}: lsbstego.o
 	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}
 
 _rabin:
@@ -121,12 +118,12 @@ radare-bdiff:
 radare-hash:
 	-cd hasher && ${MAKE} all
 
-radare-xc: xc.o
+xc${BINSFX}: xc.o
 	${E} 'Linking xc'
 	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xc${BINSFX} xc.o
 	@#ln -fs radare xc # ???
 
-radare-xrefs: xrefs.o
+xrefs${BINSFX}: xrefs.o
 	${E} 'Linking xrefs'
 	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xrefs${BINSFX} xrefs.o
 

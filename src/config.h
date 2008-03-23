@@ -102,8 +102,8 @@ struct config_new_t {
 
 void config_init();
 void config_lock(int l);
-int config_bsize_callback(void *data);
-int config_zoombyte_callback(void *data);
+//int config_bsize_callback(void *data);
+//int config_zoombyte_callback(void *data);
 void config_eval(char *str);
 struct config_node_t *config_set_i(const char *name, const u64 i);
 int config_rm(const char *name);

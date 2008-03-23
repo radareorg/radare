@@ -694,7 +694,6 @@ int debug_contfork(int tid)
 	int ret;
 
 	// XXX ignore tid
-#warning TODO
 	if (ps.opened) {
 		//arch_reset_breakpoint(1);
 		ret = ptrace(PTRACE_SYSCALL, ps.tid, 0, 0);

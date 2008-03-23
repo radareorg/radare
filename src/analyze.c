@@ -124,48 +124,8 @@ void code_lines_free(struct list_head *list)
 	// WTF!!1   What The Free!!
 	free(list);
 }
-void code_lines_print2(struct reflines_t *list, u64 addr)
-{
-	struct list_head *pos;
-	int foo = config_get_i("asm.linestyle");
-	char ch = ':';
 
-	if (!list)
-		return;
-
-	cons_strcat(" ");
-#define head &(list->list)
-	for (pos = foo?(head)->next:(head)->prev; pos != (head); pos = foo?pos->next:pos->prev) {
-		struct reflines_t *ref = list_entry(pos, struct reflines_t, list);
-		if (config.interrupted)
-			break;
-
-		if (ref->from < ref->to) {
-			/* down */
-			C cons_strcat(C_YELLOW);
-			if (addr > ref->from && addr < ref->to) {
-				cons_strcat("|");
-			} else
-				C {
-					if (ch=='-')
-						cons_printf(C_WHITE"-");
-					else if (ch=='=')
-						cons_printf(C_YELLOW"=");
-					else cons_printf("|",ch);
-				} else cons_printf(" ",ch);
-		} else
-		if (addr > ref->to && addr < ref->from) {
-			C cons_strcat(C_WHITE);
-				cons_strcat("|");
-		} else		
-			cons_strcat(" ");
-	}
-
-	cons_strcat("   ");
-	C cons_printf(C_RESET);
-}
-
-void code_lines_print(struct reflines_t *list, u64 addr)
+void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
@@ -196,18 +156,23 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 			cow = 2;
 
 		if (addr == ref->to) {
-			if (ref->from > ref->to)
-				cons_strcat(".");
-			else
-				cons_strcat("'");
-			ch = '-';
+			if (!expand) {
+				if (ref->from > ref->to)
+					cons_strcat(".");
+				else
+					cons_strcat("`");
+				ch = '-';
+			} else
+				ch = '.';
 		} else
 		if (addr == ref->from) {
-			if (ref->from > ref->to)
-				cons_strcat("'");
-			else
-				cons_strcat(".");
-			ch = '=';
+			if (!expand) {
+				if (ref->from > ref->to)
+					cons_strcat("`");
+				else
+					cons_strcat(".");
+				ch = '=';
+			}
 		} else {
 			if (ref->from < ref->to) {
 				/* down */
@@ -218,6 +183,7 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 					else
 						cons_strcat("|");
 				} else
+					if (!expand) {
 					C {
 						if (ch=='-')
 							cons_printf(C_WHITE"-");
@@ -225,6 +191,7 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 							cons_printf(C_YELLOW"=");
 						else cons_printf("%c",ch);
 					} else cons_printf("%c",ch);
+					}
 			} else {
 				C cons_strcat(C_WHITE);
 				/* up */
@@ -239,6 +206,10 @@ void code_lines_print(struct reflines_t *list, u64 addr)
 			}
 		}
 	}
+
+	if (expand) {
+		cons_strcat("   ");
+	} else
 	if (cow==1) { 
 		C cons_strcat(C_RED"-> "C_RESET);
 		else cons_strcat("-> ");

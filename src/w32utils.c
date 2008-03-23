@@ -21,7 +21,9 @@
  *
  */
 
-#ifdef __WINDOWS__
+#include "main.h"
+
+#ifdef __WINDOWS__ && !__CYGWIN__
 
 #include <sys/types.h>
 #include <windows.h>

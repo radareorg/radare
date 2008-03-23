@@ -454,7 +454,6 @@ static void debug_init_console()
 	}
 }
 
-
 int debug_os_init()
 {
 	WS(regs).ContextFlags = CONTEXT_FULL;
@@ -722,9 +721,7 @@ int debug_init_maps(int rest)
 				return 0;
 
 			CurrentPage += ModInfo.SizeOfImage;
-
 		} else {
-
 			mr = (MAP_REG *)malloc(sizeof(MAP_REG));
 			if(!mr) {
 				perror(":map_reg alloc");
@@ -743,8 +740,6 @@ int debug_init_maps(int rest)
 
 			CurrentPage +=  mbi.RegionSize; 
 		}
-
-
 	}
 
 	return 0;

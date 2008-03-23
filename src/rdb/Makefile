@@ -10,13 +10,13 @@ CFLAGS+=-DRDBDIFF
 OBJ+=../arch/x86/udis86/*.o
 ##UDIS86##
 
-all: pre all_orig
+all: pre ${BIN}${BINSFX}
 	@echo ignored by conspiracy
 
 pre:
 	-rm -f ../utils.o
 
-all_orig: ${OBJ}
+${BIN}${BINSFX}: ${OBJ}
 	${CC} -g ${OBJ} -o ${BIN}${BINSFX}
 
 clean:

@@ -322,7 +322,7 @@ static int metadata_print(int delta)
 		ptr = flag_name_by_offset( offset );
 		if (ptr[0]) {
 			if (show_lines&&reflines)
-				code_lines_print2(reflines, config.baddr+config.seek +i);
+				code_lines_print(reflines, config.baddr+config.seek+i, 1);
 			C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
 					config.baddr+offset, ptr);
 			else	cons_printf(OFF_FMTs" %s:\n",
@@ -505,7 +505,7 @@ void udis_arch(int arch, int len, int rows)
 		if (idata>0) {
 			struct data_t *foo = data_get(seek);
 			if (show_lines)
-				code_lines_print(reflines, seek);
+				code_lines_print(reflines, seek, 0);
 			if (show_offset) {
 				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 				else cons_printf("0x%08llX ", (unsigned long long)(seek));
@@ -525,12 +525,12 @@ void udis_arch(int arch, int len, int rows)
 				//bytes+=idata;
 				continue;
 			case DATA_FOLD_O:
-				cons_strcat("\r");
+				cons_strcat("\r                                       \r");
 				if (show_lines)
-					code_lines_print(reflines, seek);
+					code_lines_print(reflines, seek, 1);
 				cons_strcat("           ");
 				for(i=0;i<folder;i++)cons_strcat("  ");
-				cons_strcat("  {\n");
+					cons_strcat("  {\n");
 				CHECK_LINES
 				folder++;
 				goto __outofme;
@@ -549,9 +549,8 @@ void udis_arch(int arch, int len, int rows)
 		}
 		__outofme:
 		if (data_end(seek) == DATA_FOLD_O) {
-			NEWLINE;
 			if (show_lines)
-				code_lines_print(reflines, seek);
+				code_lines_print(reflines, seek, 1);
 			if (show_offset) {
 				cons_strcat("           ");
 				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
@@ -620,7 +619,7 @@ void udis_arch(int arch, int len, int rows)
 		D { 
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
-				code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
+				code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
 
 			if (show_offset) {
 				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
@@ -643,7 +642,7 @@ void udis_arch(int arch, int len, int rows)
 						NEWLINE;
 						CHECK_LINES
 						if (show_lines)
-							code_lines_print(reflines, seek); //config.baddr+ud_insn_off(&ud_obj));
+							code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));
@@ -786,7 +785,7 @@ void udis_arch(int arch, int len, int rows)
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
 						NEWLINE;
 						if (show_lines)
-							code_lines_print(reflines, seek);
+							code_lines_print(reflines, seek, 1);
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));
