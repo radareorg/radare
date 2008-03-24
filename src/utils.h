@@ -72,8 +72,8 @@ u64 get_math(const char* text);
 void print_msdos_date(unsigned char _time[2], unsigned char _date[2]);
 u64 radare_seek(u64 offset, int whence);
 int is_printable (int c);
-void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode);
-void data_print (u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode);
+void radare_print(char *arg, print_fmt_t print_fmt);
+void data_print (u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt);
 int hex2int (unsigned char *val, unsigned char c);
 int get_cmp(const char *str0, const char *str1);
 int terminal_get_real_columns();
@@ -89,6 +89,7 @@ enum {
 	WMODE_HEX,
 	WMODE_WSTRING
 };
+
 int radare_write(char *arg, int mode);
 //int hexstr2binstr(unsigned char *arg);
 int hexstr2binstr(const char *in, unsigned char *out);
@@ -103,6 +104,5 @@ char *strclean(char *str);
 int strnull(const char *str);
 int gnu_disarm(unsigned char *address, unsigned long seek);
 char *gnu_dismips(unsigned char *inst, unsigned long offset);
-
 
 #endif

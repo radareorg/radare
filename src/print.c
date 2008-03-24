@@ -36,43 +36,43 @@ float hash_entropy(char *data, size_t size);
 int inc = 16;
 int dec = 16;
 format_info_t formats[] = {
-	{ 'a', FMT_ASHC,       MD_BLOCK,  "asm shellcode",          NULL,         "entire block" },
-	{ 'A', FMT_ANAL,       MD_BLOCK,  "analyze data",           NULL,         "entire block" },
-	{ 'b', FMT_BIN,        MD_BLOCK,  "binary",                 "N bytes",    "entire block" },
-	{ 'B', FMT_LSB,        MD_BLOCK,  "LSB Stego analysis",     "N bytes",    "entire block" },
-	{ 'c', FMT_CSTR,       MD_BLOCK,  "C format",               "N bytes",    "entire block" },
-	{ 'C', FMT_CODE,       MD_BLOCK,  "Code Analysis",          "N bytes",    "entire block" },
-	{ 'h', FMT_SHORT,      MD_BLOCK,  "short",                 "2 bytes",     "(endian)"},
-	{ 'd', FMT_DISAS,      MD_BLOCK,  "asm.objdump disassembly",  "bsize bytes", "entire block" },
-	{ 'D', FMT_UDIS,       MD_BLOCK,  "asm.arch disassembler",   "bsize bytes", "entire block" },
-	{ 'f', FMT_FLOAT,      MD_BLOCK,  "float",                 "4 bytes",     "(endian)"},
-	{ 'F', FMT_TIME_FTIME, MD_BLOCK,  "windows filetime",      "8 bytes",     "(endian)"},
-	{ 'G', FMT_CODEGRAPH,  MD_BLOCK,  "Code Analysis Graph",    "N bytes",    "entire block" },
-	{ 'i', FMT_INT,        MD_BLOCK,  "integer",               "4 bytes",     "(endian)"},
-	{ 'l', FMT_LONG,       MD_BLOCK,  "long",                  "4 bytes",     "(endian)"},
-	{ 'L', FMT_LLONG,      MD_BLOCK,  "long long",             "8 bytes",     "(endian)"},
-	{ 'm', FMT_MEMORY,     MD_BLOCK,  "print memory structure", "0xHHHH",        "fun args"},
-	{ 'o', FMT_OCT,        MD_BLOCK,  "octal",                  "N bytes",    "entire block" },
-	{ 'O', FMT_ZOOM,       MD_BLOCK,  "Zoom out view",          "entire file", "entire block" },
-	{ 'p', FMT_PRINT,      MD_BLOCK,  "cmd.prompt",              NULL,         "entire block" },
-	{ '%', FMT_PERCENT,    MD_BLOCK,  "print scrollbar of seek", NULL,         "entire file" },
-	{ 'q', FMT_HEXQ,       MD_BLOCK,  "hexadecimal quad-word", "8 bytes",	  "(endian)"},
-	{ 'r', FMT_RAW,        MD_BLOCK,  "raw ascii",              NULL,         "entire block" },
-	{ 'R', FMT_REF,        MD_BLOCK,  "reference",              NULL,         "entire block" },
-	{ 's', FMT_ASC,        MD_BLOCK,  "ascii",                  NULL,         "entire block" },
-	{ 'S', FMT_ASCP,       MD_BLOCK,  "ascii printable",        NULL,         "entire block" },
-	{ 't', FMT_TIME_UNIX,  MD_BLOCK,  "unix timestamp",        "4 bytes",	  "(endian)"},
-	{ 'T', FMT_TIME_DOS,   MD_BLOCK,  "dos timestamp",         "4 bytes",	  "(endian)"},
-	{ 'u', FMT_URLE,       MD_BLOCK,  "URL encoding",           NULL,         "entire block" },
-	{ 'U', FMT_USER,       MD_BLOCK,  "executes cmd.user",      NULL,         "entire block" },
-	{ 'v', FMT_VISUAL,     MD_BLOCK,  "executes cmd.vprompt",            NULL,         "entire block" },
-	{ 'w', FMT_HEXW,       MD_BLOCK,  "hexadecimal word",      "2 bytes",	  "(endian)"},
-	{ 'W', FMT_HEXD,       MD_BLOCK,  "hexadecimal dword",     "4 bytes",     "(endian)"},
-	{ 'x', FMT_HEXB,       MD_BLOCK,  "hexadecimal byte pairs","N byte", 	  "entire block" },
-	{ 'X', FMT_HEXBS,      MD_BLOCK,  "hexadecimal string",	   "N byte", 	  "entire block" },
-	{ 'z', FMT_ASC0,       MD_BLOCK,  "ascii null terminated",  NULL,         "until \\0" },
-	{ 'Z', FMT_WASC0,      MD_BLOCK,  "wide ascii null end",    NULL,         "until \\0" },
-	{ 0, 0, 0, NULL }
+	{ 'a', FMT_ASHC,       "asm shellcode",          NULL,         "entire block" },
+	{ 'A', FMT_ANAL,       "analyze data",           NULL,         "entire block" },
+	{ 'b', FMT_BIN,        "binary",                 "N bytes",    "entire block" },
+	{ 'B', FMT_LSB,        "LSB Stego analysis",     "N bytes",    "entire block" },
+	{ 'c', FMT_CSTR,       "C format",               "N bytes",    "entire block" },
+	{ 'C', FMT_CODE,       "Code Analysis",          "N bytes",    "entire block" },
+	{ 'h', FMT_SHORT,      "short",                 "2 bytes",     "(endian)"},
+	{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" },
+	{ 'D', FMT_UDIS,       "asm.arch disassembler",   "bsize bytes", "entire block" },
+	{ 'f', FMT_FLOAT,      "float",                 "4 bytes",     "(endian)"},
+	{ 'F', FMT_TIME_FTIME, "windows filetime",      "8 bytes",     "(endian)"},
+	{ 'G', FMT_CODEGRAPH,  "Code Analysis Graph",    "N bytes",    "entire block" },
+	{ 'i', FMT_INT,        "integer",               "4 bytes",     "(endian)"},
+	{ 'l', FMT_LONG,       "long",                  "4 bytes",     "(endian)"},
+	{ 'L', FMT_LLONG,      "long long",             "8 bytes",     "(endian)"},
+	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",        "fun args"},
+	{ 'o', FMT_OCT,        "octal",                  "N bytes",    "entire block" },
+	{ 'O', FMT_ZOOM,       "Zoom out view",          "entire file", "entire block" },
+	{ 'p', FMT_PRINT,      "cmd.prompt",              NULL,         "entire block" },
+	{ '%', FMT_PERCENT,    "print scrollbar of seek", NULL,         "entire file" },
+	{ 'q', FMT_HEXQ,       "hexadecimal quad-word", "8 bytes",	  "(endian)"},
+	{ 'r', FMT_RAW,        "raw ascii",              NULL,         "entire block" },
+	{ 'R', FMT_REF,        "reference",              NULL,         "entire block" },
+	{ 's', FMT_ASC,        "ascii",                  NULL,         "entire block" },
+	{ 'S', FMT_ASCP,       "ascii printable",        NULL,         "entire block" },
+	{ 't', FMT_TIME_UNIX,  "unix timestamp",        "4 bytes",	  "(endian)"},
+	{ 'T', FMT_TIME_DOS,   "dos timestamp",         "4 bytes",	  "(endian)"},
+	{ 'u', FMT_URLE,       "URL encoding",           NULL,         "entire block" },
+	{ 'U', FMT_USER,       "executes cmd.user",      NULL,         "entire block" },
+	{ 'v', FMT_VISUAL,     "executes cmd.vprompt",            NULL,         "entire block" },
+	{ 'w', FMT_HEXW,       "hexadecimal word",      "2 bytes",	  "(endian)"},
+	{ 'W', FMT_HEXD,       "hexadecimal dword",     "4 bytes",     "(endian)"},
+	{ 'x', FMT_HEXB,       "hexadecimal byte pairs","N byte", 	  "entire block" },
+	{ 'X', FMT_HEXBS,      "hexadecimal string",	   "N byte", 	  "entire block" },
+	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,         "until \\0" },
+	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,         "until \\0" },
+	{ 0, 0, NULL, NULL, NULL }
 };
 
 /** Get the specified format
@@ -84,18 +84,30 @@ format_info_t formats[] = {
  *
  * /ret: the specified format
  */
-print_fmt_t format_get (char fmt, print_mode_t mode)
+print_fmt_t format_get (char fmt)
 {
 	format_info_t *fi;
 
 	for (fi = formats; fi->id != 0; fi++)
-		if ((fi->mode & mode) && fi->id == fmt)
+		if (fi->id == fmt)
 			return fi->print_fmt;
 
 	return FMT_ERR;
 }
 
-// TODO: implement getenv("RCOLORS");
+void format_show_help (print_mode_t mode)
+{
+	format_info_t *fi;
+	
+	cons_printf("Available formats:\n");
+	for (fi = formats; fi->id != 0; fi++) {
+		cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo); // sizeb?
+	}
+	cons_flush();
+}
+
+/* helpers */
+
 void print_addr(u64 off)
 {
 	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET" ", off);
@@ -104,9 +116,9 @@ void print_addr(u64 off)
 
 char *get_color_for(int c)
 {
-	if (c==0)    return COLOR_00; else
-	if (c==0xff) return COLOR_FF; else
-	if (c==0x7f) return COLOR_7F; else
+	if (c==0)    return COLOR_00;
+	if (c==0xff) return COLOR_FF;
+	if (c==0x7f) return COLOR_7F;
 	if (is_printable(c)) return COLOR_PR;
 	return "";
 }
@@ -151,20 +163,6 @@ void print_color_byte_i(int i, char *str, int c)
 	print_color_byte(str, c);
 }
 
-void format_show_help (print_mode_t mode)
-{
-	format_info_t *fi;
-	
-	cons_printf("Available formats:\n");
-	for (fi = formats; fi->id != 0; fi++)
-	if (fi->mode & mode) {
-		if (mode == MD_ONCE)
-			cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo);
-		else	cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeb);
-	}
-	cons_flush();
-}
-
 void radare_dump_and_process(int type, int size)
 {
 	char cmd[1024];
@@ -202,16 +200,14 @@ void radare_dump_and_process(int type, int size)
 
 /** Print some data.
  *
- * /seek: position of the stream
- * /buf: buffer to print
- * /len: buffer length (only used in block mode)
- * /print_fmt: print format
- * /mode: print mode
+ * seek: position of the stream
+ * buf:  buffer to print
+ * len:       buffer length (only used in block mode)
+ * fmt:  print format
+ * mode: print mode
  *
- * /TODO: don't use config.<...> (this should be completely parametrized)
- * /TODO: normalize output command
  */
-void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t print_fmt, print_mode_t mode)
+void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
 	int zoom = 0;
@@ -219,6 +215,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	unsigned char *bufi; // inverted buffer
 	unsigned long addr;
 	int endian = (int)config_get("cfg.endian");
+	int inverse = (int)config_get("cfg.inverse");
 	int lines = 0;
 	// code anal
 	struct program_t *prg;
@@ -226,11 +223,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	struct list_head *head;
 
 
-	last_print_format = print_fmt;
+	last_print_format = fmt;
 	if (buf == NULL)
 		return;
 
-	if (mode & FMT_INV) {
+	if (inverse) {
 		bufi = (unsigned char *)malloc(len);
 		for(i=0;i<len;i++)
 			bufi[i] = buf[len-i-1];
@@ -240,7 +237,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 	if (len <= 0) len = config.block_size;
 	radare_controlc();
 
-	switch(print_fmt) {
+	switch(fmt) {
 	case FMT_PERCENT: {
 			int w = config.width-4;
 			u64 s = config.size;
@@ -272,8 +269,13 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		break;
 	case FMT_REF: {
 		char buf[128];
-		sprintf(buf, "rsc list `addr2line -e $FILE 0x%llx`", config.seek);
-		system(buf);
+		char *str;
+		sprintf(buf, "!rsc list `addr2line -e $FILE 0x%llx`", config.seek);
+		str = pipe_command_to_string(buf);
+		if (str) {
+			cons_printf(str);
+			free(str);
+		}
 		} break;
 	case FMT_VISUAL:
 		i = last_print_format;
@@ -733,7 +735,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		// XXX config.seek = ptr;
 
 		config.zoom.piece = config.size / config.block_size ;
-		print_fmt = FMT_HEXB;
+		fmt = FMT_HEXB;
 		//buf = (char *)malloc(config.zoom.piece+10);
 
 		switch(mode[0]) {
@@ -779,7 +781,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		D inc = 2+(int)((config.width-14)/4);
 		else inc = 2+(int)((config.width)/4);
 		if (inc%2) inc++;
-		D if ( print_fmt == FMT_HEXB ) {
+		D if ( fmt == FMT_HEXB ) {
 			C cons_printf(COLOR_HD);
 			cons_printf("   offset  ");
 			for (i=0; i<inc; i++) {
@@ -795,14 +797,14 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {
 			V if ((i/inc)+4>config.height) break;
-			D { if ( print_fmt == FMT_HEXB )
+			D { if ( fmt == FMT_HEXB )
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);
 				
 			} else { INILINE; }
 
 			for(j=i;j<i+inc;j++) {
-				if (print_fmt==FMT_HEXB) {
+				if (fmt==FMT_HEXB) {
 					if (j>=len) {
 						cons_printf("  ");
 						if (j%2) cons_printf(" ");
@@ -811,10 +813,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				} else if (j>=len) break;
 				print_color_byte_i(j, "%02x", (unsigned char)buf[j]);
 
-				if (print_fmt == FMT_HEXBS || j%2) cons_printf(" ");
+				if (fmt == FMT_HEXBS || j%2) cons_printf(" ");
 			}
 
-			if (print_fmt == FMT_HEXB) {
+			if (fmt == FMT_HEXB) {
 				for(j=i; j<i+inc; j++) {
 					if (j >= len)
 						cons_printf(" ");
@@ -826,14 +828,14 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 				NEWLINE;
 			}
 		}
-		if (print_fmt == FMT_HEXBS) { NEWLINE; }
+		if (fmt == FMT_HEXBS) { NEWLINE; }
 		INILINE;
 		break;
 	default:
-		eprintf("Don't know how to print %d\n", print_fmt);
+		eprintf("Don't know how to print %d\n", fmt);
 	}
 
-	if (mode & FMT_INV)
+	if (inverse)
 		free(bufi);
 
 	//fflush(stdout);
@@ -843,11 +845,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t pr
 
 /** Read the device and print a block
  *
- * /arg: optional length specifier (otherwise block_size; only MD_BLOCK)
- * /print_fmt: the format for the print
- * /mode: the output mode
+ * arg: optional length specifier (otherwise block_size; only MD_BLOCK)
+ * fmt: the format for the print
+ * mode: the output mode
  */
-void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode)
+void radare_print(char *arg, print_fmt_t fmt)
 {
 	int bs;
 
@@ -870,5 +872,5 @@ void radare_print(char *arg, print_fmt_t print_fmt, print_mode_t mode)
 		return;
 	}
 
-	data_print(config.seek, arg, config.block, bs, print_fmt, mode);
+	data_print(config.seek, arg, config.block, bs, fmt);
 }

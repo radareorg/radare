@@ -626,16 +626,16 @@ CMD_DECL(print)
 		format_show_help( fmt );
 		break;
 	case 'I':
-		fmt = format_get(input[1], fmt);
+		fmt = format_get(input[1]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
-		else	radare_print(input+2, fmt, formats[fmt].mode|FMT_INV);
+		else	radare_print(input+2, fmt);
 		break;
 	default:
-		fmt = format_get(input[0], fmt);
+		fmt = format_get(input[0]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
-		else	radare_print(input+1, fmt, formats[fmt].mode);
+		else	radare_print(input+1, fmt);
 	}
 }
 
@@ -982,10 +982,10 @@ CMD_DECL(examine)
 {
 	switch(input[0]) {
 	case '\0':
-		radare_print(input, FMT_HEXB, MD_BLOCK);
+		radare_print(input, FMT_HEXB);
 		break;
 	case ' ':
-		radare_print(input+1, FMT_HEXB, MD_BLOCK);
+		radare_print(input+1, FMT_HEXB);
 		break;
 	default:
 		eprintf("Error parsing command.\n");

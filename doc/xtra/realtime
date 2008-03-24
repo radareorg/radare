@@ -1,0 +1,51 @@
+Extracted from:
+
+  http://ru.gentoo.neysx.org/proj/ru/qa/backtraces.xml
+
+Finally there is the series of "Real-Time events". They are named SIGnn
+with nn being a number greater than 31. The pthread implementation
+usually uses them to syncronise the different threads of the program, and
+thus they don't represent error conditions of any sort. It's easy to provide
+meaningless backtraces when confusing the Real-Time signals with error
+conditions. To prevent this, you can tell gdb to not stop the program when
+they are received, and instead pass them directly to the program, like in the
+following example.
+
+
+Code Listing 1.3: Running xine-ui through gdb, ignoring real-time signals.
+
+            
+
+$ gdb /usr/bin/xine
+GNU gdb 6.4
+[...]
+
+(gdb) run
+Starting program: /usr/bin/xine
+[...]
+
+Program received signal SIG33, Real-time event 33.
+[Switching to Thread 1182845264 (LWP 11543)]
+0x00002b661d87d536 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib/libpthread.so.0
+(gdb) handle SIG33 nostop noprint noignore pass
+Signal        Stop      Print   Pass to program Description
+SIG33         No        No      Yes             Real-time event 33
+(gdb) kill
+Kill the program being debugged? (y or n) y
+(gdb) run
+
+The handle command tells gdb what it should do when the given signal is
+sent to the command; in this case the flags are nostop (don't stop the
+program returning the command to the debugger), noprint (don't bother
+printing the reception of such a signal), noignore (don't ignore the signal —
+ignoring signals is dangerous, as it means discarding them without passing them
+to the program), pass (pass the signal to the debugged program).
+
+After the eventual Real-Time events are being ignored by gdb, you should
+try to reproduce the crash you want to report. If you can reproduce it
+systematically, it's quite easy. When gdb tells you that the program
+received the SIGSEGV or SIGABRT signal (or whatever else signal might represent
+the error condition for the program), you'll have to actually ask for the 
+backtrace, possibly saving it somewhere. The basic command to do that is
+bt, which is short for backtrace, which will show you the backtrace of
+the current thread (if the program is single-threaded, there's only one thread).

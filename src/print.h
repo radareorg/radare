@@ -29,7 +29,6 @@ void cons_strcat(const char *str);
 void cons_newline();
 
 /* inverted print block */
-#define FMT_INV 0x8000
 typedef enum {
 	FMT_ERR   = -1,
 	FMT_BIN,  FMT_FLOAT,  FMT_INT,   FMT_LONG,  FMT_LLONG,     FMT_OCT,
@@ -81,10 +80,10 @@ typedef enum {
 	MD_ALWAYS = 1<<3,		/* print always (once | block) */
 } print_mode_t;
 
+	//print_mode_t mode;
 typedef struct format_info {
 	char id;
 	print_fmt_t print_fmt;
-	print_mode_t mode;
 	char *name;
 	char *sizeo;
 	char *sizeb;
@@ -92,7 +91,7 @@ typedef struct format_info {
 
 extern format_info_t formats[];
 extern print_fmt_t last_print_format;
-print_fmt_t format_get (char fmt, print_mode_t mode);
+print_fmt_t format_get (char fmt);
 void format_show_help (print_mode_t mode);
 int radare_analyze(u64 seek, int size, int level);
 void print_addr(u64 off);

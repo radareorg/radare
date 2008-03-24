@@ -53,7 +53,6 @@ int main_rdb_diff(char *file0, char *file1)
 {
 	struct program_t *p0, *p1;
 	struct block_t *block;
-	struct list_head *i;
 
 	p0 = program_new(file0);
 	p1 = program_new(file1);
@@ -66,9 +65,12 @@ int main_rdb_diff(char *file0, char *file1)
 	printf("%s entrypoint = 0x%08lx\n", p1->name, p1->entry);
 
 #if 0
-	list_for_each_prev(i, &(p0->blocks)) {
-		struct block_t *bt = list_entry(i, struct block_t, list);
-		printf("%08x\n", bt->addr);
+	{
+		struct list_head *i;
+		list_for_each_prev(i, &(p0->blocks)) {
+			struct block_t *bt = list_entry(i, struct block_t, list);
+			printf("%08x\n", bt->addr);
+		}
 	}
 #endif
    

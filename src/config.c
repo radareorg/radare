@@ -556,6 +556,7 @@ void config_init()
 	config_set_i("cfg.delta", 1024); // cp850
 	config_set("cfg.verbose", "true");
 	config_set("cfg.endian", "false");
+	config_set("cfg.inverse", "false");
 	node = config_set("cfg.write", "false");
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");

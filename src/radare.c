@@ -105,9 +105,7 @@ void radare_exit()
 static void radare_interrupt(int sig)
 {
 	config.interrupted = 1;
-
 }
-
 
 void radare_controlc()
 {
@@ -115,7 +113,6 @@ void radare_controlc()
 #if __UNIX__
 	signal(SIGINT, radare_interrupt);
 #endif
-
 }
 
 void radare_controlc_end()
@@ -461,6 +458,8 @@ std = 0;
 	return 0; /* error */
 }
 
+/* XXX this is more portable and faster than the solution pipe_to_tmp_file and so */
+/* but doesnt supports system() stuff. i have to split the use of both functions */
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
@@ -1113,7 +1112,7 @@ int radare_go()
 	case 2:
 		radare_seek(config.seek, SEEK_SET);
 		radare_read(0);
-		data_print(config.seek, "", config.block, config.block_size, FMT_HEXB, 0);
+		data_print(config.seek, "", config.block, config.block_size, FMT_HEXB);
 		exit(0);
 	}
 
@@ -1151,8 +1150,17 @@ int radare_go()
 	return 0;
 }
 
-int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
+int pipe_stdout_to_tmp_file(char *tmpfile, char *cmd)
 {
+	int fd = make_tmp_file(tmpfile);
+	if (fd == -1)
+		return 0;
+	cons_set_fd(fd);
+	radare_cmd(cmd, 0);
+	cons_set_fd(1);
+	close(fd);
+	return 1;
+#if 0
 	int fd = make_tmp_file(tmp);
 	int std;
 	cons_flush();
@@ -1177,37 +1185,19 @@ int pipe_stdout_to_tmp_file(char *tmp, char *cmd)
 	}
 
 	return 1;
+#endif
 }
 
-#define BLOCK 1024
-
-// innecessary
 char *pipe_command_to_string(char *cmd)
 {
 	char *buf = NULL;
-	char msg[1024];
-	unsigned int size = BLOCK;
-	int fd;
+	char tmpfile[1024];
 
-	buf = (char *)malloc(size);
-	memset(buf, '\0', size);
-	fd = make_tmp_file(msg);
-	cons_set_fd(fd);
+	if (pipe_stdout_to_tmp_file(tmpfile, cmd)) {
+		buf = slurp(tmpfile);
+		unlink(tmpfile);
+	}
 
-	radare_cmd(cmd, 0);
-	
-	close(fd);
-
-	fd = open(msg, O_RDONLY);
-	size = (unsigned int)lseek(fd,0,SEEK_END);
-	buf = (char *)malloc(size+1);
-	memset(buf, '\0', size+1);
-	lseek(fd, 0, SEEK_SET);
-	read(fd, buf, size);
-	
-	close(fd);
-
-	unlink(msg);
 	return buf;
 }
 

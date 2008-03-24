@@ -260,12 +260,19 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
 		/// Miro si l'adreca on soc es base d'algun bloc
 		blf = block_get ( prg , config.seek+bsz );
+
+		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
+		if (sz<=0) {
+			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			break;
+		}
 		
 		if ( blf != NULL )
 		{	
 			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
 			aop.jump = config.seek+bsz;
+	bsz+=sz;
 			break;
 		}
 		blf = block_split_new ( prg, config.seek+bsz  );
@@ -282,11 +289,6 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 
 		if (config.interrupted)
 			break;
-		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
-		if (sz<=0) {
-			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
-			break;
-		}
 
 		if (!callblocks && aop.type == AOP_TYPE_CALL)
 			aop.eob = 0;
@@ -302,31 +304,17 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
-	//bsz+=sz;
 	config.seek = tmp;
 
 	blk = block_get_new(prg, oseek);
 
-#if 0
-	if (aop.type == AOP_TYPE_UNK) {
-		cons_printf("Oopppsz!\n");
-		return 0;
-	}
-#endif
+	bsz+=sz;
 	blk->bytes = (unsigned char *)malloc(bsz);
-
-#if 0
-	if ( bsz == 0 )
-		printf ("AAAA %llx \n", config.seek+bsz);
-#endif
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;
-/*
-	if (blk->tnext<config.baddr)
-		blk->tnext += config.baddr;
-*/
 	blk->fnext = aop.fail;
+
 	oseek = seek;
 
 	/* walk childs */

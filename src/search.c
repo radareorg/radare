@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-void search_alarm()
+static void search_alarm()
 {
 	progressbar((int)(config.seek/config.size*100));  // slowdowns 170%
 #if __UNIX__

@@ -93,12 +93,7 @@ char *slurp(char *str)
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
-#if LIL_ENDIAN /* little endian : x86 */
-	int endian = !config_get("cfg.endian");
-#else /* big endian */
-	int endian = config_get("cfg.endian");
-#endif
-	endian_memcpy_e(dest, orig, size, endian);
+	endian_memcpy_e(dest, orig, size, config_get("cfg.endian"));
 #else
 	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
 #endif
@@ -146,7 +141,7 @@ int make_tmp_file(char *str)
 #if RADARE_CORE
 	const char *tmp = config_get("dir.tmp");
 #else
-	char *tmp = getenv("TMP");
+	const char *tmp = getenv("TMP");
 #endif
 	sprintf(str, "%s/.radare.tmp.XXXXXX", tmp?tmp:"./");
 	fd = mkstemp(str);
@@ -162,7 +157,7 @@ void progressbar(int pc)
 #if RADARE_CORE
 	int tmp, cols = config_get_i("scr.width");
 #else
-	int tmp, cols = 79;
+	int tmp, cols = 78;
 #endif
 
 	(pc<0)?pc=0:(pc>100)?pc=100:0;
@@ -531,132 +526,40 @@ int strhash(char *str)
 
 // FROM bash::stringlib
 #define RESIZE_MALLOCED_BUFFER(str,cind,room,csize,sincr) \
-do { \
-    if ((cind) + (room) >= csize) \
-      { \
-        while ((cind) + (room) >= csize) \
-          csize += (sincr); \
-        str = realloc (str, csize); \
-      } \
-  } while (0)
+	do { \
+		if ((cind) + (room) >= csize) \
+		{ \
+			while ((cind) + (room) >= csize) \
+			csize += (sincr); \
+			str = realloc (str, csize); \
+		} \
+	} while (0)
+
 /* Replace occurrences of PAT with REP in STRING.  If GLOBAL is non-zero,
    replace all occurrences, otherwise replace only the first.
    This returns a new string; the caller should free it. */
-char *
-strsub (string, pat, rep, global)
-     char *string, *pat, *rep;
-     int global;
+
+char *strsub (char *string, char *pat, char *rep, int global)
 {
-  int patlen, templen, tempsize, repl, i;
-  char *temp, *r;
+	int patlen, templen, tempsize, repl, i;
+	char *temp, *r;
 
-  patlen = strlen (pat);
-  for (temp = (char *)NULL, i = templen = tempsize = 0, repl = 1; string[i]; )
-    {
-      if (repl && !memcmp(string + i, pat, patlen))
-        {
-          RESIZE_MALLOCED_BUFFER (temp, templen, patlen, tempsize, (patlen * 2));
-
-	  for (r = rep; *r; )
-	    temp[templen++] = *r++;
-
-	  i += patlen;
-	  repl = global != 0;
-        }
-      else
+	patlen = strlen (pat);
+	for (temp = (char *)NULL, i = templen = tempsize = 0, repl = 1; string[i]; )
 	{
-	  RESIZE_MALLOCED_BUFFER (temp, templen, 1, tempsize, 16);
-	  temp[templen++] = string[i++];
+		if (repl && !memcmp(string + i, pat, patlen)) {
+			RESIZE_MALLOCED_BUFFER (temp, templen, patlen, tempsize, (patlen * 2));
+
+			for (r = rep; *r; )
+				temp[templen++] = *r++;
+
+			i += patlen;
+			repl = global != 0;
+		} else {
+			RESIZE_MALLOCED_BUFFER (temp, templen, 1, tempsize, 16);
+			temp[templen++] = string[i++];
+		}
 	}
-    }
-  temp[templen] = 0;
-  return (temp);
+	temp[templen] = 0;
+	return (temp);
 }
-
-#if __WINDOWS__
-/* code ripped from OpenBSD */
-#if defined(LIBC_SCCS) && !defined(lint)
-/* static char sccsid[] = "from: @(#)getopt.c	8.2 (Berkeley) 4/2/94"; */
-static char *rcsid = "$Id: getopt.c,v 1.2 1998/01/21 22:27:05 billm Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-int	opterr = 1,		/* if error message should be printed */
-	optind = 1,		/* index into parent argv vector */
-	optopt,			/* character checked for validity */
-	optreset;		/* reset getopt */
-char	*optarg;		/* argument associated with option */
-
-#define	BADCH	(int)'?'
-#define	BADARG	(int)':'
-#define	EMSG	""
-
-/*
- * getopt --
- *	Parse argc/argv argument vector.
- */
-int
-getopt(nargc, nargv, ostr)
-	int nargc;
-	char * const *nargv;
-	const char *ostr;
-{
-	static char *place = EMSG;		/* option letter processing */
-	char *oli;				/* option letter list index */
-
-	if (optreset || !*place) {		/* update scanning pointer */
-		optreset = 0;
-		if (optind >= nargc || *(place = nargv[optind]) != '-') {
-			place = EMSG;
-			return (-1);
-		}
-		if (place[1] && *++place == '-') {	/* found "--" */
-			++optind;
-			place = EMSG;
-			return (-1);
-		}
-	}					/* option letter okay? */
-	if ((optopt = (int)*place++) == (int)':' ||
-	    !(oli = strchr(ostr, optopt))) {
-		/*
-		 * if the user didn't specify '-' as an option,
-		 * assume it means -1.
-		 */
-		if (optopt == (int)'-')
-			return (-1);
-		if (!*place)
-			++optind;
-		if (opterr && *ostr != ':')
-			(void)fprintf(stderr,
-			    "%s: illegal option -- %c\n", nargv[0], optopt);
-		return (BADCH);
-	}
-	if (*++oli != ':') {			/* don't need argument */
-		optarg = NULL;
-		if (!*place)
-			++optind;
-	}
-	else {					/* need an argument */
-		if (*place)			/* no white space */
-			optarg = place;
-		else if (nargc <= ++optind) {	/* no arg */
-			place = EMSG;
-			if (*ostr == ':')
-				return (BADARG);
-			if (opterr)
-				(void)fprintf(stderr,
-				    "%s: option requires an argument -- %c\n",
-				    nargv[0], optopt);
-			return (BADCH);
-		}
-	 	else				/* white space */
-			optarg = nargv[optind];
-		place = EMSG;
-		++optind;
-	}
-	return (optopt);			/* dump back option letter */
-}
-#endif

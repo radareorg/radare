@@ -141,7 +141,7 @@ void radare_poke(char *arg)
 		ret = io_read(fd, buf, config.block_size);
 
 		D { printf("\n");
-		data_print(config.seek, "", (unsigned char *)buf, ret, FMT_HEXB, MD_ALWAYS);
+		data_print(config.seek, "", (unsigned char *)buf, ret, FMT_HEXB);
 		printf("\nPoke %d bytes from %s %d times? (y/N)",
 			config.block_size, arg, times); fflush(stdout);
 		terminal_set_raw(1); read(0, &key, 1); printf("\n");

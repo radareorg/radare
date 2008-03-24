@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Diff the list of called symbols against the list of symbols
+# Useful to find unreferenced functions (by pointers or so)
+# - Mostly for developers. not reversers
+#
+# author: pancake <youterm.com>
+#
+
+FILE=$1
+if [ -z "${FILE}" ]; then
+	echo "Usage: rsc symcalls [file]"
+	echo "- diff the list of symbols against the list of called symbols"
+	echo "- creates file.syms and file.calls (use ^Z to read them)"
+	exit 0
+fi
+
+objdump -d ${FILE} |grep -e call -e jmp | perl -ne '/(<.[^>]*>)/;$a=$1;$a=~s/<//;$a=~s/>//;print "$a\n";' | grep -v '+' | grep -v '-' | sort | uniq > ${FILE}.calls
+
+rsc syms ${FILE} | awk '{print $2}' |sort | uniq > ${FILE}.syms
+
+diff -ru ${FILE}.syms ${FILE}.calls | less -r
+
+echo "Removing ${FILE}.syms ${FILE}.calls.."
+rm ${FILE}.syms ${FILE}.calls

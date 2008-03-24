@@ -10,6 +10,8 @@
 
 Open streams
 ============
+* radare pcap://"eth0/port 4000"
+* cfg.inverse must be universal!
 * make pR work capturing data instead of system
 * serial console support
   - configure bps and so

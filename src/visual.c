@@ -121,9 +121,8 @@ void press_any_key()
 
 CMD_DECL(invert)
 {
-	if (inv)
-		inv = 0;
-	else	inv = FMT_INV;
+	int inv = config_get_i("cfg.inverse")^1;
+	config_set("cfg.inverse", inv?"true":"false");
 }
 
 CMD_DECL(show_environ)
@@ -781,7 +780,7 @@ void visual_draw_screen()
 	}
 
 	radare_seek(config.seek, SEEK_SET);
-	radare_print("", last_print_format, MD_BLOCK|inv);
+	radare_print("", last_print_format);
 
 	fflush(stdout);
 	cons_flush();
