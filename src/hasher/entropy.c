@@ -11,7 +11,7 @@
 #include <math.h>
 #include "../radare.h"
 
-float get_px(u8 x, u8 *data, u64 size)
+static float get_px(u8 x, u8 *data, u64 size)
 {
         unsigned long i, count;
 
@@ -23,7 +23,7 @@ float get_px(u8 x, u8 *data, u64 size)
         return count / (float)size;
 }
 
-float hash_entropy(u8 *data, u64 size)
+float hash_entropy(const u8 *data, u64 size)
 {
         float h = 0, px, log2;
         unsigned char x;

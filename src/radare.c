@@ -99,6 +99,7 @@ void radare_exit()
 			terminal_set_raw(0);
 		}
 	}
+	dl_hist_save(".radare_history");
 	exit(0);
 }
 
@@ -1045,7 +1046,7 @@ int radare_go()
 	radare_controlc_end();
 
 	if (config.file == NULL) {
-		eprintf("radare [-fhnuLvVwc] [-s #] [-b #] [-S #] [-i f] [-P f] [-e k=v] [file]\n");
+		eprintf("radare [-cfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
 		return 1;
 	}
 

@@ -32,6 +32,7 @@ omni:
 
 radare:
 	cd rasc && ${MAKE} all
+	cd vala/grava/ && ${MAKE} radare
 	cd src && ${MAKE} all
 
 clean:

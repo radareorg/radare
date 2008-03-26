@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "utils.h"
+#include "hasher/hash.h"
 #include "plugin.h"
 #include "rdb/rdb.h"
 #include "list.h"
@@ -30,8 +31,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-
-float hash_entropy(char *data, size_t size);
 
 int inc = 16;
 int dec = 16;

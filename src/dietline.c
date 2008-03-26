@@ -50,7 +50,7 @@ static int dl_buffer_len = 0;
 static int dl_buffer_idx = 0;
 
 /* history */
-#define DL_HISTSIZE 100
+#define DL_HISTSIZE 256
 char **dl_history;
 int dl_histsize = DL_HISTSIZE;
 int dl_histidx = 0;
@@ -92,7 +92,9 @@ static int dl_readchar()
 /* history stuff */
 int dl_hist_add(const char *line)
 {
-	if (*line && dl_histidx < dl_histsize) {
+	if (dl_histidx>=dl_histsize)
+		dl_histidx = 0; // workaround
+	if (*line) { // && dl_histidx < dl_histsize) {
 		dl_history[dl_histidx++] = strdup(line);
 		return 1;
 	}
@@ -147,11 +149,47 @@ void dl_free()
 /* load history from file. if file == NULL load from ~/.<prg>.history or so */
 int dl_hist_load(const char *file)
 {
-	return 0;
+	char buf[1024];
+	FILE *fd;
+
+	snprintf(buf, 1023, "%s/%s", getenv("HOME"), file);
+	fd = fopen(buf, "r");
+	if (fd == NULL)
+		return 0;
+
+	fgets(buf, 1023, fd);
+	while (!feof(fd)) {
+		buf[strlen(buf)-1]='\0';
+		dl_hist_add(buf);
+		fgets(buf, 1023, fd);
+	}
+	fclose(fd);
+
+	return 1;
 }
 
 int dl_hist_save(const char *file)
 {
+	char buf[1024];
+	FILE *fd;
+	int i;
+
+	snprintf(buf, 1023, "%s/%s", getenv("HOME"), file);
+	fd = fopen(buf, "a");
+	if (fd == NULL)
+		return 0;
+	for(i=0;i<dl_histidx;i++) {
+		fputs(dl_history[i], fd);
+		fputs("\n", fd);
+	}
+	fclose(fd);
+	
+	return 1;
+}
+
+int dl_hist_chop(const char *file, int limit)
+{
+	/* TODO */
 	return 0;
 }
 
@@ -204,7 +242,7 @@ int dl_printchar()
 }
 
 /* main readline function */
-char *dl_readline(int argc, char **argv)
+char *dl_readline(int argc, const char **argv)
 {
 	int buf[10];
 	int i, opt, len = 0;
@@ -362,7 +400,7 @@ char *dl_readline(int argc, char **argv)
 					}
 
 				/* show options */
-				if (opt>1) {
+				if (dl_buffer_idx==0 || opt>1) {
 					printf("%s%s\n",dl_prompt,dl_buffer);
 					for(i=1;i<argc;i++) {
 						if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {

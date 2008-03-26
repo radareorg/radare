@@ -210,11 +210,10 @@ void hist_add(char *str, int log)
 
 	if (str == NULL || str[0]=='\0')
 		return;
+	if (log&&str[0]!='q')
 #if HAVE_LIB_READLINE
-	if (log)
 		add_history(str);
 #else
-	if (log)
 		dl_hist_add(str);
 #endif
 	/* disabled */
