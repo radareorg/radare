@@ -22,10 +22,13 @@
 #include "code.h"
 #include "undo.h"
 #include "flags.h"
+#include "arch/csr/dis.h"
 #include "arch/arm/disarm.h"
 /* http://devnull.owl.de/~frank/Disassembler_e.html */
 #include "arch/ppc/ppc_disasm.h"
 #include "arch/m68k/m68k_disasm.h"
+#include "arch/x86/udis86/types.h"
+#include "arch/x86/udis86/extern.h"
 #include "list.h"
 
 enum {
@@ -36,6 +39,7 @@ enum {
 	ARCH_M68K = 4,
 	ARCH_JAVA = 5,
 	ARCH_MIPS = 6,
+	ARCH_CSR = 7
 };
 
 struct list_head data;
@@ -350,8 +354,6 @@ static int metadata_print(int delta)
 	return lines;
 }
 
-#include "arch/x86/udis86/types.h"
-#include "arch/x86/udis86/extern.h"
 
 static ud_t ud_obj;
 static unsigned char o_do_off = 1;
@@ -544,7 +546,7 @@ void udis_arch(int arch, int len, int rows)
 			}
 			cons_newline();
 			CHECK_LINES
-			bytes+=idata;
+//			bytes+=idata;
 			continue;
 		}
 		__outofme:
@@ -562,9 +564,16 @@ void udis_arch(int arch, int len, int rows)
 			CHECK_LINES
 		}
 
-		if (arch != ARCH_X86) {
+		switch(arch) {
+		case ARCH_X86:
+			memcpy(b, config.block+bytes, 32);
+			break;
+		case ARCH_CSR:
+			memcpy(b, config.block+bytes, 2);
+			break;
+		default:
 			endian_memcpy_e(b, config.block+bytes, 4, endian);
-		} else  memcpy(b, config.block+bytes, 32);
+		}
 
 		if (cmd_asm && cmd_asm[0]) {
 			char buf[1024];
@@ -598,6 +607,10 @@ void udis_arch(int arch, int len, int rows)
 			case ARCH_PPC:
 				arch_ppc_aop(seek, (const unsigned char *)b, &aop);
 				myinc = aop.length;
+				break;
+			case ARCH_CSR:
+				arch_csr_aop(seek, (const unsigned char *)b, &aop);
+				myinc = 2;
 				break;
 			default:
 				// Uh?
@@ -720,17 +733,22 @@ void udis_arch(int arch, int len, int rows)
 						cons_printf("%-16s", hex2);
 					}
 					break;
+				case ARCH_CSR: {
+					if (bytes+myinc<config.block_size)
+						arch_csr_disasm((const unsigned char *)b, (u64)seek);
+					}
+					break;
 				case ARCH_ARM16:
-				case ARCH_ARM: {
-						       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-						       gnu_disarm((unsigned char*)b, (unsigned int)seek);
-					       } break;
-				case ARCH_MIPS: {
-						       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-						       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-						       gnu_dismips((unsigned char*)b, (unsigned int)seek);
-					       } break;
+				case ARCH_ARM:
+					       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+					       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+					       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+					       break;
+				case ARCH_MIPS:
+					       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+					       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+					       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+					       break;
 				case ARCH_PPC: {
 						       char opcode[128];
 						       char operands[128];
@@ -846,6 +864,9 @@ void disassemble(int len, int rows)
 	else
 	if (!strcmp(ptr, "m68k"))
 		udis_arch(ARCH_M68K, len, rows);
+	else
+	if (!strcmp(ptr, "csr"))
+		udis_arch(ARCH_CSR, len, rows);
 
 	radare_controlc_end();
 	fflush(stdout);

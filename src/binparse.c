@@ -43,14 +43,14 @@
 // --->per ordre, no pot tenir conflicte a esquerres
 //
 
-void print_tokenizer ( tokenizer* ptokenizer )
+static void print_tokenizer ( tokenizer* ptokenizer )
 {
 	int i;
 	for (i=0 ; i < ptokenizer->nlists; i++ )
 		print_tok_list(ptokenizer->tls[i]);
 }
 
-char* fd_readline ( int fd, char* line, int maxsize )
+static char* fd_readline ( int fd, char* line, int maxsize )
 {
 	int i;
 	memset(line, 0x00, maxsize); 
@@ -63,7 +63,7 @@ char* fd_readline ( int fd, char* line, int maxsize )
 }
 
 
-int indent_count( int fd )
+static int indent_count( int fd )
 {
 	int ret=0;
 	char t;
@@ -78,7 +78,8 @@ int indent_count( int fd )
 
 	return ret;
 }
-unsigned char get_num( char * str, int len )
+
+static unsigned char get_num( char * str, int len )
 {
 	char* strp;
 	int value;
@@ -96,7 +97,7 @@ unsigned char get_num( char * str, int len )
 	return (unsigned char)value ;
 }
 
-int get_range(char *str, int len, unsigned char *cbase)
+static int get_range(char *str, int len, unsigned char *cbase)
 {
 	int g;
 	unsigned char min;
@@ -112,7 +113,7 @@ int get_range(char *str, int len, unsigned char *cbase)
 	return (max-min);
 }
 
-void print_tok_list(tokenlist* toklist) 
+static void print_tok_list(tokenlist* toklist) 
 {
 	int i;
 
@@ -126,7 +127,7 @@ void print_tok_list(tokenlist* toklist)
 	printf ("\n");
 }
 
-int tok_parse (char* str, int len, token * tlist )
+static int tok_parse (char* str, int len, token * tlist )
 {
 	int i;
 	int estat;

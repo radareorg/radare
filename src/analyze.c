@@ -52,6 +52,9 @@ void arch_set_callbacks()
 	if (!strcmp(a, "ppc")) {
 		arch_aop = &arch_ppc_aop;
 	} else
+	if (!strcmp(a, "csr")) {
+		arch_aop = &arch_csr_aop;
+	} else
 	if (!strcmp(a, "intel16")) {
 		arch_aop = &arch_x86_aop;
 	} else

@@ -1,0 +1,40 @@
+CSR - xap2 cpu
+===-----------
+
+Most common bluetooth dongles have a CSR CPU called 'xap2'. They run a specific
+firmware with data and text sections with a 16 bit instruction pipeline.
+
+I have importes the 'Sobos' disassembler inside the radare core and now you
+can disassembly a bluetooth firmware in this way:
+
+
+1 - dump firmware from bluetooth dongle
+
+  $ dfutool -d hci0 archive hci0.fw
+
+
+2 - unpack firmware (split text and data sections)
+
+  * currently rabin doesn't supports this this fileformat, but you can fetch
+    the Sobos tools here:
+
+
+  ## fetch from cvs
+  $ cvs -d :pserver:anoncvs@darkircop.org:/home/cvs co bt
+  $ cd bt/firm
+  $ make
+
+  ## extract firmware pieces
+  $ ./firm -e hci0.fw
+
+  ## this command has generated text.0 and data.0 files
+
+
+3 - Open radare with csr architecture
+
+  $ radare -e asm.arch=csr text.0
+
+
+                                                               --pancake
+
+Have fun!

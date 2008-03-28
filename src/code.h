@@ -56,6 +56,7 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_x86_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_ppc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);

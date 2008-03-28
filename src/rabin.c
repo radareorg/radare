@@ -25,7 +25,8 @@ enum {
 	FILETYPE_ELF,
 	FILETYPE_MZ,
 	FILETYPE_PE,
-	FILETYPE_CLASS
+	FILETYPE_CLASS,
+	FILETYPE_CSRFW,
 };
 
 static unsigned int pebase;
@@ -36,6 +37,10 @@ u64 rabin_entrypoint(int filetype)
 	unsigned long base = 0;
 
 	switch(filetype) {
+		case FILETYPE_CSRFW:
+			eprintf("filetype: CSR firmware. Not yet supported by rabin\n");
+			return addr;
+			break;
 		case FILETYPE_ELF:
 			io_lseek(config.fd, 0x18, SEEK_SET);
 			io_read(config.fd, &addr, 4);
@@ -78,19 +83,23 @@ int rabin_identify_header()
 	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4))
 		filetype = FILETYPE_ELF;
 	else
-		if (!memcmp(buf, "\xca\xfe\xba\xbe", 4))
-			filetype = FILETYPE_CLASS;
-		else
-			if (!memcmp(buf, "\x4d\x5a", 2)) {
-				pe = buf[0x3c];
-				filetype = FILETYPE_MZ;
-				if (buf[pe]=='P' && buf[pe+1]=='E') {
-					filetype = FILETYPE_PE;
-					pebase = pe;
-				}
-			} else {
-				D eprintf("Unknown filetype\n");
+	if (!memcmp(buf, "CSR-", 4)) {
+		filetype = FILETYPE_CSRFW;
+		config_set("asm.arch", "csr");
+	} else
+	if (!memcmp(buf, "\xca\xfe\xba\xbe", 4))
+		filetype = FILETYPE_CLASS;
+	else
+		if (!memcmp(buf, "\x4d\x5a", 2)) {
+			pe = buf[0x3c];
+			filetype = FILETYPE_MZ;
+			if (buf[pe]=='P' && buf[pe+1]=='E') {
+				filetype = FILETYPE_PE;
+				pebase = pe;
 			}
+		} else {
+			D eprintf("Unknown filetype\n");
+		}
 
 	return filetype;
 }
