@@ -67,7 +67,7 @@ ${OBJS}: %.o: %.c
 	${Q}${CC} ${CFLAGS} -c -o $@ $<
 
 plugs:
-	cd plug/hack && ${MAKE} all
+	-cd plug/hack && ${MAKE} all
 
 vala:
 	cd ../vala/ && ${MAKE} all

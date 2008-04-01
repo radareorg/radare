@@ -43,6 +43,20 @@
 // --->per ordre, no pot tenir conflicte a esquerres
 //
 
+static void print_tok_list(tokenlist* toklist) 
+{
+	int i;
+
+	printf ("TOKLIST %s:\n",toklist->name);
+	for (i=0; i<toklist->numtok; i++)
+		printf ("TOK : %c , range : %d mask : %x\n",
+			toklist->tl[i].mintok,
+			toklist->tl[i].range,
+			toklist->tl[i].mask);
+	NEWLINE;
+	printf ("\n");
+}
+
 static void print_tokenizer ( tokenizer* ptokenizer )
 {
 	int i;
@@ -111,20 +125,6 @@ static int get_range(char *str, int len, unsigned char *cbase)
 	*cbase = min;
 
 	return (max-min);
-}
-
-static void print_tok_list(tokenlist* toklist) 
-{
-	int i;
-
-	printf ("TOKLIST %s:\n",toklist->name);
-	for (i=0; i<toklist->numtok; i++)
-		printf ("TOK : %c , range : %d mask : %x\n",
-			toklist->tl[i].mintok,
-			toklist->tl[i].range,
-			toklist->tl[i].mask);
-	NEWLINE;
-	printf ("\n");
 }
 
 static int tok_parse (char* str, int len, token * tlist )

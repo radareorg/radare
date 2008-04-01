@@ -19,7 +19,7 @@ INSTALL_SCRIPT=@INSTALL_SCRIPT@
 .PHONY: all clean mrproper install deinstall
 
 all: radare
-	cd libusbsniff && ${MAKE} all
+	-cd libusbsniff && ${MAKE} all
 	cd src/rabin && ${MAKE} all
 	cd src/rasm && ${MAKE} all
 ##GUI##

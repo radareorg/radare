@@ -3,8 +3,8 @@
 
 #include "../../main.h"
 
-#define uint16_t unsigned short
-#define uint32_t unsigned int
+typedef unsigned short uint16_t ; 
+typedef unsigned int uint32_t ;
 
 #define __packed __attribute__((__packed__))
 
