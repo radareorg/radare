@@ -20,7 +20,6 @@
 
 /* dietline is a lighweight and portable library similar to GNU readline */
 
-
 #if RADARE_CORE
 #include "main.h"
 #else
@@ -318,6 +317,8 @@ char *dl_readline(int argc, const char **argv)
 				break;
 			case 12: // ^L -- right
 				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
+				printf("\e[2J\e[0;0H");
+				fflush(stdout);
 				break;
 			case 23: // ^W
 				if (dl_buffer_idx>0) {
@@ -328,7 +329,7 @@ char *dl_readline(int argc, const char **argv)
 						i+=2;
 					strcpy(dl_buffer+i, dl_buffer+dl_buffer_idx);
 					dl_buffer_len = strlen(dl_buffer);
-					dl_buffer_idx = strlen(dl_buffer);
+					dl_buffer_idx = i;
 				}
 				break;
 			case 16:
@@ -462,6 +463,17 @@ _end:
 }
 
 #ifndef RADARE_CORE
+
+
+#if __UNIX__
+static struct termios tio_old, tio_new;
+#include "main.h"
+#include <stdarg.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#endif
 
 static void terminal_set_raw(int b)
 {

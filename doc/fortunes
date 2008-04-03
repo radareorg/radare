@@ -84,3 +84,4 @@ Use scr.accel to browse the file faster!
 I love the smell of bugs in the morning.
 Use the 'pR' command to see the source line related to the current seek
 Analyze socket connections with the socket plugin: $ radare socket://www.foo.com:80. Use 'w' to send data
+I like to suck nibbles and make hex

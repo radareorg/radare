@@ -39,11 +39,13 @@ CFLAGS+=-DSIZEOF_OFF_T=${SIZEOF_OFF_T} -DDEBUGGER=${DEBUGGER} -DTARGET=\"${TARGE
 LDFLAGS+=${DL_LIBS}
 
 ##VALA##
+##GUI##
 CFLAGS+=-I../vala/grava/ `pkg-config --cflags gtk+-2.0` -DVALA
 LDFLAGS+=`pkg-config --libs gtk+-2.0`
 OBJ2+=../vala/grava/*.o
 OBJ+=grava.o
 TARGETS+=valagrava
+##GUI##
 ##VALA##
 
 ##W32##

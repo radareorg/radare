@@ -214,7 +214,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (strnull(tmp))
 		return 0;
 
-	tmp = strclean(tmp);
+	//tmp = strclean(tmp);
 
 	if (strchr(tmp,'\n')) {
 		eprintf("Multiline command not yet supported\n");
@@ -874,8 +874,13 @@ void radare_set_block_size_i(size_t i)
 	free(config.block);
 	config.block = (unsigned char *)malloc(config.block_size + 4);
 	if (config.block == NULL) {
-		eprintf("Cannot allocate %d bytes\n", config.block_size+4);
-		radare_set_block_size_i(DEFAULT_BLOCK_SIZE);
+		if (i == DEFAULT_BLOCK_SIZE) {
+			eprintf("Oops malloc error\n");
+			return;
+		} else {
+			eprintf("Cannot allocate %d bytes\n", config.block_size+4);
+			radare_set_block_size_i(DEFAULT_BLOCK_SIZE);
+		}
 	}
 	radare_read(0);
 }

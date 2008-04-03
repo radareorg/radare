@@ -275,6 +275,7 @@ void plugin_init()
 	plugins[last] = winedbg_plugin;
 	plugins[last+1] = gxemul_plugin;
 	plugins[last+2] = socket_plugin;
+	//plugins[last+3] = winegdb_plugin;
 	plugins[last+3] = posix_plugin;
 	last += 4;
 

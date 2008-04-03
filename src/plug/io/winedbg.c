@@ -83,7 +83,7 @@ ssize_t winedbg_read(int fd, void *buf, size_t count)
 		tmp[0]='\0';
 		socket_fgets(fd, tmp, 1024);
 		sscanf(tmp, "%08x", &dw);
-		endian_memcpy_e((u8*)dword, (u8*)&dw, 4, 1);
+		endian_memcpy_e(buf+i, (u8*)&dw, 4, 1);
 		winedbg_wait_until_prompt(0);
 	}
 	memcpy(buf, buf+delta, count);
@@ -112,13 +112,16 @@ int winedbg_open(const char *pathname, int flags, mode_t mode)
 	
 	// waitpid and return -1 if not exist
 	fd = socket_connect("localhost", port);
-	if (fd != -1) {
-		config.fd = fd;
-		winedbg_fd = fd;
-		//winedbg_wait_until_prompt();
-	} else
-		printf("Cannot connect to remote host.\n");
-	strcpy(config.file, pathname); //+10);
+	if (fd == -1) {
+		fprintf(stderr, "Cannot connect to remote host.\n");
+		return -1;
+	}
+	config.fd = fd;
+	winedbg_fd = fd;
+	//winedbg_wait_until_prompt();
+	//free(config.file);
+	config.file = strdup(pathname);
+	//strcpy(config.file, pathname); //+10);
 	socket_printf(config.fd, "\n");
 	winedbg_wait_until_prompt(0);
 
@@ -225,9 +228,10 @@ int winedbg_system(const char *cmd)
 			cons_printf("f edx @ 0x%08x\n", edx);
 			cons_printf("f eflags @ 0x%08x\n", eflags );
 		} else {
-			cons_printf(" eip = 0x%08x  eax = 0x%08x\n", eip, eax);
-			cons_printf(" esp = 0x%08x  ebx = 0x%08x\n", esp, ebx);
-			cons_printf(" ebp = 0x%08x  ecx = 0x%08x\n", ebp, ecx);
+			cons_printf(" eip = 0x%08x  eax = 0x%08x  edx = 0x%08x\n", eip, eax, edx);
+			cons_printf(" esp = 0x%08x  ebx = 0x%08x  esi = 0x%08x\n", esp, ebx, esi);
+			cons_printf(" ebp = 0x%08x  ecx = 0x%08x  edi = 0x%08x  efl = %x\n",
+				ebp, ecx, edi, eflags);
 		}
 		winedbg_wait_until_prompt(0);
 	}

@@ -74,6 +74,12 @@ void gotoxy(int x, int y)
 
         SetConsoleCursorPosition(hStdout,coord);
 }
+#else
+
+inline void gotoxy(int x, int y)
+{
+	cons_printf("\e[0;0H");
+}
 #endif
 
 void cons_clear(void)

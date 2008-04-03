@@ -59,6 +59,7 @@ extern plugin_t haret_plugin;
 extern plugin_t remote_plugin;
 extern plugin_t socket_plugin;
 extern plugin_t winedbg_plugin;
+extern plugin_t winegdb_plugin;
 extern plugin_t gxemul_plugin;
 extern plugin_t debug_plugin;
 
