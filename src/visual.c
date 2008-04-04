@@ -34,9 +34,9 @@ extern const char *dl_prompt;
 #include <sys/ioctl.h>
 #endif
 #include "dbg/debug.h"
+#include "dbg/arch/arch.h"
 #include "utils.h"
 #include "cmds.h"
-#include "dbg/arch/arch.h"
 #include "readline.h"
 #include "flags.h"
 #include "undo.h"

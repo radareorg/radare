@@ -1,5 +1,6 @@
 #ifndef _INCLUDE_DEBUG_H_
 #define _INCLUDE_DEBUG_H_
+#if DEBUGGER
 
 #include "libps2fd.h"
 #include "regs.h"
@@ -125,4 +126,5 @@ extern struct event_t events[];
 int is_code(addr_t pc);
 
 
+#endif
 #endif

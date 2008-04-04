@@ -1,6 +1,7 @@
 #ifndef ARCH_H
 #define ARCH_H
 
+#if DEBUGGER
 #include "../../list.h"
 #include "../../radare.h"
 #include "../../code.h"
@@ -53,4 +54,5 @@ int arch_restore_registers();
 //int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 
+#endif
 #endif
