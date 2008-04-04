@@ -121,6 +121,7 @@ extern int inc;
 void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size);
 int radare_go();
 void radare_exit();
+void radare_resize(const char *arg);
 void radare_prompt_command();
 void radare_sync();
 int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t print_fmt);

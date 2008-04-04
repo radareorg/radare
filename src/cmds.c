@@ -125,8 +125,8 @@ command_t commands[] = {
 	COMMAND('o', " [file]",        "open    open file", open),
 	COMMAND('p', "[fmt] [len]",    "print   print data block", print),
 	COMMAND('q', "",               "quit    close radare shell", quit),
-	COMMAND('r', " [size]",        "resize  resize or query the file size", resize),
 	COMMAND('P', "[so][i [file]]", "Project project Open, Save, Info", project),
+	COMMAND('r', " [size|-strip]", "resize  resize or query the file size", resize),
 	COMMAND('R', "[act] ([arg])",  "RDB     rdb operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek    seek to absolute/relative expression", seek),
 	COMMAND('u', "[!|?|u]",        "undo    undo seek (! = reset, ? = list, u = redo)", undoseek),
@@ -644,55 +644,6 @@ CMD_DECL(quit)
 	radare_exit();
 }
 
-static void radare_resize(char *arg)
-{
-	int fd_mode = O_RDONLY;
-	u64 size  = get_math(arg);
-
-	// XXX move this check into a only one function for all write-mode functions
-	// or just define them as write-only. and activate/deactivate them from
-	// the readline layer.
-	if (!config_get("file.write")) {
-		eprintf("Only available for write mode. (-w)\n");
-		return;
-	}
-
-	if (config.size == -1) {
-		eprintf("Sorry, this file cannot be resized.\n");
-		return;
-	}
-	if ( arg[0] == '\0' ) {
-		D printf("Size:  "OFF_FMTd"\n", config.size);
-		D printf("Limit: "OFF_FMTd"\n", config.limit);
-		return;
-	}
-	if (arg[1]=='x') sscanf(arg, OFF_FMTx, &size);
-
-	printf("resize "OFF_FMTd" "OFF_FMTd"\n", config.size, size);
-	if (size < config.size) {
-		D printf("Truncating...\n");
-		ftruncate(config.fd, size);
-		close(config.fd);
-		if (config.limit > size)
-			config.limit = size;
-		config.size = size;
-	}
-	if (size > config.size ) {
-		char zero = '\0';
-		D printf("Expanding...\n");
-		radare_seek(size, SEEK_SET);
-		write(config.fd, &zero, 1);
-		close(config.fd);
-		config.limit = size;
-		config.size  = size;
-	}
-
-	if (config_get("file.write"))
-		fd_mode = O_RDWR;
-
-	radare_open(1);
-}
-
 CMD_DECL(resize)
 {
 	char *text = input;
@@ -702,13 +653,11 @@ CMD_DECL(resize)
 		return;
 	}
 
+	/* XXX not needed ? */
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
 
-	if (text[0] == '\0') {
-		D printf("Size: "OFF_FMTd" (0x"OFF_FMTx")\n",
-			(u64) config.size, (u64) config.size);
-	} else	radare_resize(text);
+	radare_resize(text);
 }
 
 CMD_DECL(flag)

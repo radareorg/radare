@@ -902,6 +902,79 @@ void radare_set_block_size(char *arg)
 	D printf("bsize = %d\n", config.block_size);
 }
 
+void radare_resize(const char *arg)
+{
+	int fd_mode = O_RDONLY;
+	u64 size  = get_math(arg);
+
+	// XXX move this check into a only one function for all write-mode functions
+	// or just define them as write-only. and activate/deactivate them from
+	// the readline layer.
+
+	if ( arg[0] == '\0' || arg[0] == '?') {
+		D cons_printf("Usage: r[?] [#|-#]\n");
+		D cons_printf("  positive value means resize\n");
+		D cons_printf("  negative value is used to remove N bytes from the current seek\n");
+		D cons_printf("size:  "OFF_FMTd"\n", config.size);
+		D cons_printf("limit: "OFF_FMTd"\n", config.limit);
+		return;
+	}
+
+	if (!config_get("file.write")) {
+		eprintf("Only available for write mode. (-w)\n");
+		return;
+	}
+
+	if (config.size == -1) {
+		eprintf("Sorry, this file cannot be resized.\n");
+		return;
+	}
+
+	if (arg[0]=='-') {
+		u64 rest;
+		size = -size; // be positive
+		printf("stripping %lld bytes\n", size);
+			rest = config.size - (config.seek -size);
+			if (rest > 0) {
+				char *str = malloc(rest);
+				io_lseek(config.fd, config.seek+size, SEEK_SET);
+				io_read(config.fd, str, rest);
+				io_lseek(config.fd, config.seek, SEEK_SET);
+				io_write(config.fd, str, rest);
+				free(str);
+				io_lseek(config.fd, config.seek, SEEK_SET);
+				config.size -= size;
+				ftruncate(config.fd, config.size);
+			}
+		return;
+	}
+	if (arg[1]=='x') sscanf(arg, OFF_FMTx, &size);
+
+	printf("resize "OFF_FMTd" "OFF_FMTd"\n", config.size, size);
+	if (size < config.size) {
+		D printf("Truncating...\n");
+		ftruncate(config.fd, (off_t)size);
+		close(config.fd);
+		if (config.limit > size)
+			config.limit = size;
+		config.size = size;
+	}
+	if (size > config.size ) {
+		char zero = '\0';
+		D printf("Expanding...\n");
+		radare_seek(size, SEEK_SET);
+		write(config.fd, &zero, 1);
+		close(config.fd);
+		config.limit = size;
+		config.size  = size;
+	}
+
+	if (config_get("file.write"))
+		fd_mode = O_RDWR;
+
+	radare_open(1);
+}
+
 /* XXX rst flag is ignored :O , we should pass a file name only */
 int radare_open(int rst)
 {
