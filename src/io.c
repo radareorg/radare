@@ -54,8 +54,8 @@ int radare_write(char *arg, int mode)
 	if (times<=0)
 		times = 1;
 
-	if (!config_get("cfg.write")) {
-		eprintf("Not in write mode. Type 'eval cfg.write = true'.\n");
+	if (!config_get("file.write")) {
+		eprintf("Not in write mode. Type 'eval file.write = true'.\n");
 		return 0;
 	}
 
@@ -98,6 +98,26 @@ int radare_write(char *arg, int mode)
 
 	radare_seek(seek, SEEK_SET);
 
+	if (config_get("file.insert")) {
+		u64 rest;
+		/* resize file here */
+		if (config.size == -1) {
+			eprintf("Cannot use file.insert: unknown file size\n");
+		} else {
+			/* TODO must take care about search mode for replacements */
+			/* TODO check cfg.running or so? */
+			rest = config.size - (seek + (len*times));
+			if (rest > 0) {
+				char *str = malloc(rest);
+				io_read(config.fd, str, rest);
+				io_lseek(config.fd, seek+(len*times), SEEK_SET);
+				io_write(config.fd, str, rest);
+				free(str);
+				io_lseek(config.fd, seek, SEEK_SET);
+			}
+		}
+		
+	}
 	for(bytes=0;times--;)
 		bytes += io_write(config.fd, str, len);
 
@@ -126,8 +146,8 @@ void radare_poke(char *arg)
 		times = 1;
 	otimes = times;
 
-	if (!config_get("cfg.write")) {
-		eprintf("You are not in read-write mode. Use 'eval cfg.write = true'\n");
+	if (!config_get("file.write")) {
+		eprintf("You are not in read-write mode. Use 'eval file.write = true'\n");
 		return;
 	}
 

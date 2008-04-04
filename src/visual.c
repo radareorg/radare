@@ -300,7 +300,7 @@ CMD_DECL(yank_paste)
 			CLRSCR();
 		}
 	} else {
-		if (config_get("cfg.write")) {
+		if (config_get("file.write")) {
 			char *ptr = strchr(input, ' ');
 			u64 sz;
 			int off = 0;
@@ -394,7 +394,7 @@ CMD_DECL(seek_to_end)
 
 CMD_DECL(insert_assembly_rsc)
 {
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
 		return;
@@ -411,7 +411,7 @@ CMD_DECL(insert_assembly)
 {
 	char buf[129];
 
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
 		return;
@@ -463,7 +463,7 @@ CMD_DECL(insert_string)
 	int ret, inc = 0;
 	unsigned char key;
 
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Not in write mode\n");
 		return;
 	}
@@ -492,7 +492,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	int count = 0;
 	int tmp = 0;
 
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Not in write mode.\n");
 		return;
 	}

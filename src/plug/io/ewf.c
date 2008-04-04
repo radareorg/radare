@@ -89,7 +89,7 @@ int ewf_open(const char *pathname, int flags, mode_t mode)
 	}
 	
 	ewf_h = libewf_open(&filenames, 1, 
-		(((int)config_get("cfg.write"))==0)?
+		(((int)config_get("file.write"))==0)?
 		LIBEWF_OPEN_READ_WRITE:LIBEWF_OPEN_READ);
 
 

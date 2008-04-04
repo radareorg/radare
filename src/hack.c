@@ -55,7 +55,7 @@ static int hack_nop(char *lold)
 	int delta = (config.cursor_mode)?config.cursor:0;
 	char *arch = config_get("asm.arch");
 
-	if (!config_get("cfg.write"))
+	if (!config_get("file.write"))
 		return 0;
 	//debug_getregs(ps.tid, &reg);
 	//debug_read_at(ps.tid, buf, 16, R_EIP(reg));
@@ -78,7 +78,7 @@ static int hack_negjmp(char *lold)
 {
 	int delta = (config.cursor_mode)?config.cursor:0;
 	u8 *buf = config.block+delta;
-	if (!config_get("cfg.write"))
+	if (!config_get("file.write"))
 		return 0;
 
 // TODO: multiarch!
@@ -150,7 +150,7 @@ static int hack_forcejmp(char *lold)
 //	debug_read_at(ps.tid, buf, 5, R_EIP(reg));
 	char buf[128];
 	int delta = (config.cursor_mode)?config.cursor:0;
-	if (!config_get("cfg.write"))
+	if (!config_get("file.write"))
 		return 0;
 
 	eprintf("warning: x86 only atm.\n");

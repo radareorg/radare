@@ -395,7 +395,7 @@ std = 0;
 						else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
 						if (fd == -1) {
 							eprintf("Cannot open '%s' for writing\n", file);
-							config_set("cfg.write", "false");
+							config_set("file.write", "false");
 							tmpoff = config.seek;
 							free(oinput);
 							return 1;
@@ -670,7 +670,7 @@ void radare_move(char *arg)
 	u64 pos = -1;
 	u64 src = config.seek;
 
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("You are not in read-write mode.\n");
 		return;
 	}
@@ -902,6 +902,7 @@ void radare_set_block_size(char *arg)
 	D printf("bsize = %d\n", config.block_size);
 }
 
+/* XXX rst flag is ignored :O , we should pass a file name only */
 int radare_open(int rst)
 {
 	char *ptr;
@@ -909,7 +910,7 @@ int radare_open(int rst)
 	char buf[4096];
 	char buf2[255];
 	struct config_t ocfg;
-	int wm = (int)config_get("cfg.write");
+	int wm = (int)config_get("file.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
 	u64 seek_orig = config.seek;
 
@@ -917,7 +918,6 @@ int radare_open(int rst)
 		return 0;
 
 	memcpy(&ocfg, &config, sizeof(struct config_t));
-	prepare_environment("");
 
 	ptr = strrchr(config.file,'/');
 	if (ptr == NULL) ptr = config.file; else ptr = ptr +1;
@@ -951,7 +951,7 @@ int radare_open(int rst)
 					memcpy(&config, &ocfg, sizeof(struct config_t));
 					return 1;
 				}
-				config_set("cfg.write", "false");
+				config_set("file.write", "false");
 			} else {
 				D printf("new file\n");
 			}
@@ -980,7 +980,7 @@ int radare_open(int rst)
 	else	config.debug = 0;
 
 	if (config.debug) {
-		config_set("cfg.write", "true");
+		config_set("file.write", "true");
 		rdb_init();
 		config.file = strstr(config.file, "://") + 3;
 	}
@@ -1111,7 +1111,7 @@ int radare_go()
 			radare_cmd(".!rsc strings-flag $FILE", 0);
 		}
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
-		config_set("cfg.write", "true"); /* write mode enabled for the debugger */
+		config_set("file.write", "true"); /* write mode enabled for the debugger */
 		config_set("cfg.verbose", "true"); /* write mode enabled for the debugger */
 		config.verbose = 1; // ?
 		break;

@@ -81,23 +81,26 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 	char flag_name[128];
 	u64 off = config.seek;
 
-	if (search_cmdhit && search_cmdhit[0]!='\0') {
-		char *cmdhit = strdup(search_cmdhit);
-		setenv("KEYWORD", search_last_keyword, 1); // XXX this is not last-keyword!! must array this!
-		radare_cmd(cmdhit, 0);
-		free(cmdhit);
-	}
-
 	if (search_count && nhit >= search_count)
 		return 1;
 
 	sprintf(flag_name, "hit%d_%d", i, nhit++);
 	//config.seek = where;
+
 	radare_seek(where, SEEK_SET);
 	radare_read(0);
 	if (search_flag)
-		flag_set(flag_name, config.seek, 0);
-	config.seek = off;
+		flag_set(flag_name, where, 0);
+
+	if (search_cmdhit && search_cmdhit[0]!='\0') {
+		char *cmdhit = strdup(search_cmdhit);
+		radare_seek(where, SEEK_SET);
+		setenv("KEYWORD", search_last_keyword, 1); // XXX this is not last-keyword!! must array this!
+		radare_cmd(cmdhit, 0);
+		free(cmdhit);
+	}
+
+
 	if (search_verbose) {
 		char *ptr = config.block; //+(where-config.seek)-3;
 		printf("%03d  0x%08llx  %s ", nhit, where, flag_name);
@@ -115,6 +118,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 #endif
 
 	fflush(stdout);
+	config.seek = off;
 
 	return 0;
 }

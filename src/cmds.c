@@ -652,7 +652,7 @@ static void radare_resize(char *arg)
 	// XXX move this check into a only one function for all write-mode functions
 	// or just define them as write-only. and activate/deactivate them from
 	// the readline layer.
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Only available for write mode. (-w)\n");
 		return;
 	}
@@ -687,7 +687,7 @@ static void radare_resize(char *arg)
 		config.size  = size;
 	}
 
-	if (config_get("cfg.write"))
+	if (config_get("file.write"))
 		fd_mode = O_RDWR;
 
 	radare_open(1);
@@ -829,7 +829,7 @@ CMD_DECL(status)
 	cons_printf(" file    %s",   config.file); NEWLINE;
 	cons_printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
 	cons_printf(" project %s",   config_get("file.project")); NEWLINE;
-	cons_printf(" mode    %s",   config_get("cfg.write")?"read-write":"read-only"); NEWLINE;
+	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); NEWLINE;
 	cons_printf(" debug   %d",   config.debug); NEWLINE;
 	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;
 //	printf(" count   %d   \t 0x%x", config.count, config.count); NEWLINE;

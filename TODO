@@ -12,7 +12,6 @@ Open streams
 ============
 * radare pcap://"eth0/port 4000"
 * cfg.inverse must be universal!
-* make pR work capturing data instead of system
 * serial console support
   - configure bps and so
   $ radare /dev/ttyS0
@@ -21,17 +20,27 @@ Open streams
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
   - automatic stepu 
-* also for sniffing (pcap)
+
+* support to delete chars from a place 
+  OKOK > r -20  ; remove 20 bytes
+  XXXX > w- 20  ; removes 20 bytes from current position
+  - file.insertblock=false - to not modify the whole stuff
+  - also useful to avoid truncate
+  - truncate not yet done
+  - must interact with search engine too
+
+DONE?
+=====
+* variable block size
+  - config.block_size as default
+  - tries to find another flag after
+  cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
 
 
 0.9.5
 =====
 * Show FPU stack contents
 * set asm.arch with rabin_arch
-* variable block size
-  - config.block_size as default
-  - tries to find another flag after
-  cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
 * interactive visual write mode ;D
   - use 'w' key to toggle mode like 'c' does
   - blinking byte at cursor
@@ -44,6 +53,7 @@ Open streams
   - useful for zoom , disasembly, code folding
 support for 7bit text encoding
 make fdsniff and usbsniff generate a project file and a binary one.
+
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
 * xc can get_math!
 * allow to run without opening a file (useful for batch mode)
@@ -53,9 +63,8 @@ make fdsniff and usbsniff generate a project file and a binary one.
   - split .dbs with flags
 
 
-search and replace
- /r foo
- /1-5 ranged search
+
+
 -> should with cmd.search or cmd.hit
 
 
@@ -404,6 +413,9 @@ TOTHINK
   - execute a command on a certain offset
   - show funtion frames and arguments on the fly
   - automatize unpacks and so
+change flags search and replace
+ /r foo
+ /1-5 ranged search
 
 * performance counters:
    - inject code into the child process

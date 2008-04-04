@@ -322,7 +322,7 @@ u64 io_lseek(int fd, u64 offset, int whence)
 
 ssize_t io_write(int fd, const void *buf, size_t count)
 {
-	if (!config_get("cfg.write")) {
+	if (!config_get("file.write")) {
 		eprintf("Not in write mode\n");
 		return -1;
 	}

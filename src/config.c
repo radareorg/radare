@@ -559,7 +559,8 @@ void config_init()
 	config_set("cfg.verbose", "true");
 	config_set("cfg.endian", "false");
 	config_set("cfg.inverse", "false");
-	node = config_set("cfg.write", "false");
+	config_set("file.insert", "false");
+	node = config_set("file.write", "false");
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
 	config_set("cfg.rdbdir", "TODO");

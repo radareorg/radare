@@ -134,7 +134,7 @@ int zocket_open(const char *pathname, int flags, mode_t mode)
 		else	printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
 		socket_buf = (char *)malloc(1);
 		socket_bufsz = 0;
-		config_set("cfg.write", "true");
+		config_set("file.write", "true");
 		buf[0]='\0';
 	}
 	return socket_fd;

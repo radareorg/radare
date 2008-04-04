@@ -76,7 +76,7 @@ return 0;
 			config_set("file.project", optarg);
 			break;
 		case 'w':
-			config_set("cfg.write", "true");
+			config_set("file.write", "true");
 			break;
 		case 's':
 			config.seek = (u64)get_offset(optarg);
