@@ -361,6 +361,9 @@ static int ReadMem(int pid,  addr_t addr, size_t sz, void *buff)
 	long x, lr ;
 	int ret ;
 
+	if (addr==-1)
+		return 0;
+
 	for(x=0;x<words;x++) {
 		((long *)buff)[x] = debug_read_raw(pid, (void *)(&((long*)(long )addr)[x]));
 

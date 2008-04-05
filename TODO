@@ -29,6 +29,25 @@ Open streams
   - truncate not yet done
   - must interact with search engine too
 
+/////////////////////////////////////////////////////////////////////////
+/* Fetch the thread-local storage pointer for libthread_db.  */
+ps_err_e
+ps_get_thread_area (const struct ps_prochandle *ph,
+                    lwpid_t lwpid, int idx, void **base)
+{
+  if (ptrace (PTRACE_GET_THREAD_AREA, lwpid, NULL, base) != 0)
+    return PS_ERR;
+
+  /* IDX is the bias from the thread pointer to the beginning of the
+     thread descriptor.  It has to be subtracted due to implementation
+     quirks in libthread_db.  */
+  *base = (void *) ((char *)*base - idx);
+
+  return PS_OK;
+}
+PTRACE_GET_THREAD_AREA_3264:
+/////////////////////////////////////////////////////////////////////////
+
 DONE?
 =====
 * variable block size

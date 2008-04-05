@@ -2,18 +2,18 @@
  * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
- * libps2fd is free software; you can redistribute it and/or modify
+ * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * libps2fd is distributed in the hope that it will be useful,
+ * radare is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libps2fd; if not, write to the Free Software
+ * along with radare; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
@@ -137,7 +137,7 @@ long long arch_syscall(int pid, int sc, ...)
 	return ret;
 }
 
-void arch_dump_registers()
+int arch_dump_registers()
 {
 	FILE *fd;
 	int ret;
@@ -177,7 +177,7 @@ int arch_stackanal()
 	return 0;
 }
 
-void arch_restore_registers()
+int arch_restore_registers()
 {
 	FILE *fd;
 	char buf[1024];

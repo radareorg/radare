@@ -24,6 +24,14 @@
 
 #include "signal.h"
 
+#if __mips__
+	#if __linux__
+	#include <sys/ucontext.h>
+	#include <sys/user.h>
+	#define regs_t greg_t
+	#endif
+#else
+
 #if __i386__
  #if __linux__
   #if __x86_64__
@@ -46,6 +54,8 @@
   #define regs_t struct reg
 #endif
   /* ARM */
+#endif
+
 #endif
 
 

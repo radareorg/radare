@@ -217,7 +217,6 @@ void plugin_load()
 			}
 		}
 		closedir(fd);
-		return;
 	}
 }
 
