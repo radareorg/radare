@@ -6,8 +6,8 @@ PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
 PERL_LDFLAGS=`perl -MExtUtils::Embed -e ldopts` -lncurses
 PY_CFLAGS=-I${PREFIX}/include/python2.5/ -I/usr/include/python2.5/
 PY_LDFLAGS=-lpython2.5
-LUA_CFLAGS=-I/usr/pkg/include -DLIBDIR=\"${LIBDIR}\"
-LUA_LDFLAGS=-llua
+LUA_CFLAGS=-I${PREFIX}/include/lua5.1/ -I/usr/include/lua5.1/ -DLIBDIR=\"${LIBDIR}\"
+LUA_LDFLAGS=-llua5.1
 SO=${SHARED_EXT}
 CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 

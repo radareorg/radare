@@ -25,8 +25,8 @@
 #include <dlfcn.h>
 #endif
 
-plugin_t plugins[10];
-plugin_t plugins_backup[10];
+plugin_t plugins[11];
+plugin_t plugins_backup[11];
 int plugin_init_flag = 0;
 /* core functions */
 struct core_t {
@@ -90,7 +90,7 @@ plugin_t *plugin_registry(const char *file)
 	}
 
 	/* find a place to store our child */
-	for(i=0; i<10 && plugins[i].name; i++);i--;
+	for(i=0; i<11 && plugins[i].name; i++);i--;
 
 	/* construct file name */
 	ip = config_get("dir.plugins");
@@ -194,7 +194,7 @@ plugin_t *plugin_registry(const char *file)
 int plugin_list()
 {
 	int i;
-	for(i=0;i<10 && plugins[i].name; i++)
+	for(i=0;i<11 && plugins[i].name; i++)
 		printf("%-10s  %s\n", plugins[i].name, plugins[i].desc);
 	return i;
 }
@@ -228,7 +228,7 @@ void plugin_init()
 		return;
 
 	plugin_init_flag = 1;
-	memset(&plugins,'\0', sizeof(plugin_t)*10);
+	memset(&plugins,'\0', sizeof(plugin_t)*11);
 	/* load libraries in current directory */
 	/* load libraries in -l path */
 	plugins[0] = haret_plugin;

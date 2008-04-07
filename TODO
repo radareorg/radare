@@ -21,12 +21,7 @@ Open streams
   - dbg.steplibs = true|false ??
   - automatic stepu 
 
-* support to delete chars from a place 
-  OKOK > r -20  ; remove 20 bytes
-  XXXX > w- 20  ; removes 20 bytes from current position
   - file.insertblock=false - to not modify the whole stuff
-  - also useful to avoid truncate
-  - truncate not yet done
   - must interact with search engine too
 
 /////////////////////////////////////////////////////////////////////////

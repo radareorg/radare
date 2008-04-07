@@ -55,6 +55,17 @@ int ewf_open(const char *pathname, int flags, mode_t mode)
 	const char *filenames[1024];
 	char *ptr,*optr;
 	char hash[1024];
+	size64_t media_size;
+	uint32_t bytes_per_sector;
+	uint32_t amount_of_sectors;
+	uint32_t error_granularity;
+	uint32_t amount_of_acquiry_errors;
+	int8_t compression_level;
+	int8_t media_type;
+	int8_t media_flags;
+	int8_t volume_type;
+	uint8_t compress_empty_block;
+	uint8_t format;
 	int i;
 
 	if (!memcmp(pathname, "els://", 6)) {
@@ -106,16 +117,25 @@ int ewf_open(const char *pathname, int flags, mode_t mode)
 			libewf_get_header_value_case_number(ewf_h, hash, 128);
 			eprintf("CaseNumber:       %s\n", hash);
 #endif
-			eprintf("FormatVersion:    %d\n", libewf_get_format(ewf_h));
-			eprintf("CompressionLevel: %d\n", libewf_get_compression_level(ewf_h));
-			eprintf("ErrorGranurality: %d\n", libewf_get_error_granularity(ewf_h));
-			eprintf("AmountOfSectors:  %d\n", libewf_get_amount_of_sectors(ewf_h));
-			eprintf("BytesPerSector:   %d\n", libewf_get_bytes_per_sector(ewf_h));
-			eprintf("VolumeType:       %d\n", libewf_get_volume_type(ewf_h));
-			eprintf("MediaSize:        %lld\n", libewf_get_media_size(ewf_h));
-			eprintf("MediaType:        %d\n", libewf_get_media_type(ewf_h));
-			eprintf("MediaFlags:       %d\n", libewf_get_media_flags(ewf_h));
-			libewf_get_stored_md5_hash(ewf_h, hash, 128);
+			libewf_get_format(ewf_h, &format);
+			eprintf("FormatVersion:    %d\n", format);
+			libewf_get_compression_values(ewf_h, &compression_level, &compress_empty_block);
+			eprintf("CompressionLevel: %d\n", compression_level);
+			libewf_get_error_granularity(ewf_h, &error_granularity);
+			eprintf("ErrorGranurality: %d\n", error_granularity);
+			libewf_get_amount_of_sectors(ewf_h, &amount_of_sectors);
+			eprintf("AmountOfSectors:  %d\n", amount_of_sectors);
+			libewf_get_bytes_per_sector(ewf_h, &bytes_per_sector);
+			eprintf("BytesPerSector:   %d\n", bytes_per_sector);
+			libewf_get_volume_type(ewf_h, &volume_type);
+			eprintf("VolumeType:       %d\n", volume_type);
+			libewf_get_media_size(ewf_h, &media_size);
+			eprintf("MediaSize:        %lld\n", media_size);
+			libewf_get_media_type(ewf_h, &media_type);
+			eprintf("MediaType:        %d\n", media_type);
+			libewf_get_media_flags(ewf_h, &media_flags);
+			eprintf("MediaFlags:       %d\n", media_flags);
+			libewf_get_md5_hash(ewf_h, hash, 128);
 			eprintf("CalculatedHash:   %s\n", hash);
 #if 0
 		}
@@ -138,7 +158,7 @@ int ewf_close(int fd)
 
 u64 ewf_lseek(int fildes, u64 offset, int whence)
 {
-	u64 off;
+	size64_t media_size;
 
 	if (fildes == ewf_fd) {
 		switch(whence) {
@@ -149,7 +169,8 @@ u64 ewf_lseek(int fildes, u64 offset, int whence)
 				offset += config.seek;
 				break;
 			case SEEK_END:
-				offset = libewf_get_media_size(ewf_h) - offset;
+				libewf_get_media_size(ewf_h, &media_size);
+				offset = media_size - offset;
 				break;
 		}
 		libewf_seek_offset(ewf_h, offset);
