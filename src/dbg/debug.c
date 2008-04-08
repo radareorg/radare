@@ -975,7 +975,10 @@ int debug_step(int times)
 
 	if (ps.verbose) {
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
-			debug_steps();
+			if (debug_os_steps() == -1) {
+				perror("debug_os_steps");
+				return 0;
+			}
 			debug_dispatch_wait();
 		}
 		debug_print_wait("step");
@@ -1010,7 +1013,10 @@ int debug_step(int times)
 				debug_rm_bp_addr(pc);
 				ps.steps++;
 			} else {
-				debug_steps();
+				if (debug_os_steps() == -1) {
+					perror("debug_os_steps");
+					return 0;
+				}
 				ps.steps++;
 				debug_dispatch_wait();
 			}

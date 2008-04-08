@@ -25,11 +25,13 @@
 #include "signal.h"
 
 #if __mips__
-	#if __linux__
-	#include <sys/ucontext.h>
-	#include <sys/user.h>
-	#define regs_t greg_t
-	#endif
+  #if __linux__
+  #include <sys/ucontext.h>
+  #include <sys/user.h>
+//typedef unsigned long mips64_regs_t [4096];
+//  #define regs_t mips64_regs_t
+#define regs_t mcontext_t
+  #endif
 #else
 
 #if __i386__

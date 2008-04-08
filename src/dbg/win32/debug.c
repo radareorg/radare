@@ -236,7 +236,7 @@ int debug_contp(int tid)
 	return 0;
 }
 
-inline int debug_steps()
+inline int debug_os_steps()
 {
 	regs_t regs;
 

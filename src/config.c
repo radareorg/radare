@@ -498,7 +498,11 @@ void config_init()
 #if __arm__
 	node = config_set("asm.arch", "arm");
 #else
+#if __mips__
+	node = config_set("asm.arch", "mips");
+#else
 	node = config_set("asm.arch", "intel");
+#endif
 #endif
 #endif
 	node->callback = &config_arch_callback;

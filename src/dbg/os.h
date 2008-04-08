@@ -15,7 +15,7 @@ int debug_fork_and_attach();
 
 /* flow */
 int debug_contp(int tid);
-int debug_steps();
+int debug_os_steps();
 int debug_contfork(int tid);
 int debug_contscp();
 int debug_status();

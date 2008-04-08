@@ -158,7 +158,7 @@ int arch_restore_bp(struct bp_t *bp)
 	regs[15] -= 4; // pc-=4;
 
 	debug_setregs(ps.tid, &regs);
-	debug_steps();
+	debug_os_steps();
 
 	debug_dispatch_wait();
 

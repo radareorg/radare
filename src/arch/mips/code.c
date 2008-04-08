@@ -30,7 +30,20 @@ extern int mips_mode;
 // NOTE: bytes should be at least 16 bytes?
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
+	unsigned long op;
+	memcpy(&op, bytes, 4);
 	memset(aop, '\0', sizeof(struct aop_t));
+
 	aop->type = AOP_TYPE_UNK;
+
+	switch(op) {
+	case 0x03e00008:
+	case 0x0800e003:
+		aop->type = AOP_TYPE_RET;
+		break;
+	case 0:
+		aop->type = AOP_TYPE_NOP;
+		break;
+	} 
 	return (mips_mode==16)?2:4;
 }

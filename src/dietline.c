@@ -219,6 +219,7 @@ int dl_printchar()
 			buf[0] = dl_readchar();
 			printf("unicode-%02x-%02x\n", buf[0],buf[1]);
 			break;
+		case 8: // wtf is 127?
 		case 127: printf("backspace\n"); break;
 		case 32: printf("space\n"); break;
 		case 27:
@@ -376,6 +377,8 @@ char *dl_readline(int argc, const char **argv)
 					if (dl_buffer_len<0) dl_buffer_len=0;
 					dl_buffer[dl_buffer_len]='\0';
 				}
+				if (dl_buffer_idx<0)
+					dl_buffer_idx = 0;
 				break;
 			case 9:// tab
 				/* autocomplete */

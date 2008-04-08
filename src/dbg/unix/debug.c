@@ -567,7 +567,7 @@ inline int debug_contscp()
 	return ptrace(PTRACE_SYSCALL, ps.tid, PTRACE_PC, 0);
 }
 
-inline int debug_steps()
+inline int debug_os_steps()
 {
 	return ptrace(PTRACE_SINGLESTEP, ps.tid, PTRACE_PC, 0);
 }

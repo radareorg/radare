@@ -330,7 +330,7 @@ int arch_print_registers(int rad, const char *mask)
 	/* Get the thread id for the ptrace call.  */
 	//tid = GET_THREAD_ID (inferior_ptid);
 
-	if (mask[0]=='o') { // orig
+	if (mask && mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 	} else {
 		ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);

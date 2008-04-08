@@ -337,7 +337,7 @@ int arch_restore_bp(struct bp_t *bp)
 
 	if(WS(bp)->hw) {
 		arch_bp_hw_disable(bp);
-		debug_steps();
+		debug_os_steps();
 		debug_dispatch_wait();
 		arch_bp_hw_enable(bp);
 	} else {
@@ -345,7 +345,7 @@ int arch_restore_bp(struct bp_t *bp)
 		debug_getregs(ps.tid, &regs);
 		R_EIP(regs) = R_EIP(regs) - 1;
 		debug_setregs(ps.tid, &regs);
-		debug_steps();
+		debug_os_steps();
 		debug_dispatch_wait();
 		debug_getregs(ps.tid, &regs);
 		arch_bp_soft_enable(bp);

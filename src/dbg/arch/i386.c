@@ -888,7 +888,7 @@ int arch_print_registers(int rad, const char *mask)
 	if (ps.opened == 0)
 		return 0;
 
-	if (mask[0]=='o') { // orig
+	if (mask && mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 		if (oregs_timestamp[0])
 			cons_printf("%s\n", oregs_timestamp);
@@ -902,7 +902,7 @@ int arch_print_registers(int rad, const char *mask)
 
 	if (rad)
 		rad = 1;
-	if (mask[0]=='l')
+	if (mask&&mask[0]=='l')
 		rad = 2;
 	
 	if (rad == 1) {
