@@ -38,12 +38,30 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 
 	switch(op) {
 	case 0x03e00008:
-	case 0x0800e003:
+	case 0x0800e003: // jr ra
 		aop->type = AOP_TYPE_RET;
+		break;
+	case 0x0000000d:
+	case 0x0d000000: // break
+		aop->type = AOP_TYPE_TRAP; 
 		break;
 	case 0:
 		aop->type = AOP_TYPE_NOP;
 		break;
+	default:
+		switch(bytes[3]) { // TODO handle endian ?
+		case 0xc:
+			aop->type = AOP_TYPE_SWI;
+			break;
+		case 0x9:
+		case 0x8:
+			aop->type = AOP_TYPE_UJMP;
+			break;
+		case 0x21:
+			aop->type = AOP_TYPE_PUSH; // XXX move 
+			break;
+		}
+
 	} 
 	return (mips_mode==16)?2:4;
 }

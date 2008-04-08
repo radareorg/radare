@@ -48,6 +48,7 @@ regs_t cregs; // current registers
 regs_t oregs; // old registers
 
 #define REG_RA 31 // Return address
+#define REG_K0 25 // Stack pointer
 #define REG_SP 29 // Stack pointer
 
 long long arch_syscall(int pid, int sc, ...)
@@ -201,27 +202,33 @@ int arch_ret()
 
 int arch_jmp(u64 ptr)
 {
-#if 0
-	regs_t regs;
-	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
-	if (ret < 0) return 1;
-	ARM_pc = ptr;
-	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
-	return 0;
-#endif
+	return ptrace(PTRACE_POKEUSER, ps.pid, PTRACE_PC, ptr);
 }
 
 u64 arch_pc()
 {
+	int ret;
+	regs_t regs;
+	unsigned long *llregs = &regs;
+
+	memset(&regs, '\0', sizeof(regs));
+	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+	if (ret == -1) {
+		perror("ptrace_getregs==-1\n");
+		return 0;
+	}
+	return llregs[25];
+
+#if 0
 	u32 addr;
-	int ret = ptrace (PTRACE_PEEKUSER, ps.tid, PTRACE_PC, &addr);
+	int ret = ptrace (PTRACE_PEEKUSER, ps.tid, 29, &addr);
 	if (ret == -1) {
 		printf("PEEK PC = -1\n");
 		exit(1);
 		return -1;
 	}
-
 	return addr;
+#endif
 }
 
 int arch_set_register(char *reg, char *value)
@@ -230,7 +237,6 @@ int arch_set_register(char *reg, char *value)
 	regs_t regs;
 	unsigned long *llregs = &regs;
 
-	eprintf("arch_set-register\n");
 	if (ps.opened == 0)
 		return 0;
 
@@ -275,8 +281,8 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-	u64 *llregs = &regs;
-	u64 *ollregs = &oregs;
+	unsigned long long *llregs = &regs;
+	unsigned long long *ollregs = &oregs;
 	int color = config_get("scr.color");
 
 	if (ps.opened == 0)
@@ -285,7 +291,7 @@ int arch_print_registers(int rad, const char *mask)
 	if (mask && mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 	} else {
-		ret =0 ;
+		memset(&regs, '\0', sizeof(regs));
 		ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
 		if (ret < 0) {
 			perror("ptrace_getregs");
@@ -294,7 +300,8 @@ int arch_print_registers(int rad, const char *mask)
 	}
 
 	if (rad) {
-		cons_printf("f eip @ 0x%llx\n", arch_pc());
+		cons_printf("f pc  @ 0x%llx\n", llregs[25]);
+		cons_printf("f eip @ 0x%llx\n", llregs[25]); // k0 - the context where it was pwned
 		cons_printf("f at  @ 0x%llx\n", llregs[1]);
 		cons_printf("f v0  @ 0x%llx\n", llregs[2]);
 		cons_printf("f v1  @ 0x%llx\n", llregs[3]);
@@ -326,11 +333,12 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f gp  @ 0x%llx\n", llregs[27]);
 		cons_printf("f sp  @ 0x%llx\n", llregs[28]);
 		cons_printf("f fp  @ 0x%llx ; fp\n", llregs[29]);
-		cons_printf("f esp @ 0x%llx ; fp\n", llregs[29]);
+		cons_printf("f sp @ 0x%llx\n", llregs[29]);
+		cons_printf("f esp @ 0x%llx\n", llregs[29]);
 		cons_printf("f ra  @ 0x%llx\n", llregs[30]);
 	} else {
 		if (color) {
-			cons_printf("  eip 0x%08llx\e[0m", arch_pc());
+			cons_printf("  pc  0x%08llx\e[0m", arch_pc());
 			if (llregs[2]!=ollregs[2]) cons_strcat("\e[35m");
 			cons_printf("  v0  0x%08llx\e[0m", llregs[2]);
 			if (llregs[3]!=ollregs[3]) cons_strcat("\e[35m");
@@ -339,7 +347,7 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("  v2  0x%08llx\e[0m\n", llregs[4]);
 			//
 			if (llregs[29]!=ollregs[29]) cons_strcat("\e[35m");
-			cons_printf("  esp 0x%08llx\e[0m", llregs[29]);
+			cons_printf("  sp  0x%08llx\e[0m", llregs[29]);
 			if (llregs[5]!=ollregs[5]) cons_strcat("\e[35m");
 			cons_printf("  a0  0x%08llx\e[0m", llregs[5]);
 			if (llregs[6]!=ollregs[6]) cons_strcat("\e[35m");
@@ -349,14 +357,14 @@ int arch_print_registers(int rad, const char *mask)
 			if (llregs[7]!=ollregs[7]) cons_strcat("\e[35m");
 			cons_printf("  a3  0x%08llx\e[0m\n", llregs[8]);
 			//
-			if (llregs[2]!=ollregs[2]) cons_strcat("\e[35m");
-			cons_printf("  r2  0x%08llx\e[0m", llregs[2]);
-			if (llregs[7]!=ollregs[7]) cons_strcat("\e[35m");
-			cons_printf("  r7  0x%08llx\e[0m", llregs[7]);
+			if (llregs[30]!=ollregs[30]) cons_strcat("\e[35m");
+			cons_printf("  ra  0x%08llx\e[0m", llregs[30]);
+			if (llregs[9]!=ollregs[9]) cons_strcat("\e[35m");
+			cons_printf("  t0  0x%08llx\e[0m", llregs[9]);
+			if (llregs[10]!=ollregs[10]) cons_strcat("\e[35m");
+			cons_printf("  t1  0x%08llx\e[0m", llregs[10]);
 			if (llregs[11]!=ollregs[11]) cons_strcat("\e[35m");
-			cons_printf(" r11  0x%08llx\e[0m", llregs[11]);
-			if (llregs[15]!=ollregs[15]) cons_strcat("\e[35m");
-			cons_printf(" r15  0x%08llx\e[0m\n", llregs[15]);
+			cons_printf("  t2  0x%08llx\e[0m\n", llregs[11]);
 			//
 			if (llregs[3]!=ollregs[3]) cons_strcat("\e[35m");
 			cons_printf("  r3  0x%08llx\e[0m", llregs[3]);
@@ -368,26 +376,13 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf(" r16  0x%08llx\e[0m\n", llregs[16]);
 			//
 			if (llregs[4]!=ollregs[4]) cons_strcat("\e[35m");
-			cons_printf("  r4  0x%08llx\e[0m", llregs[4]);
+			cons_printf("  ra  0x%08llx\e[0m\n", llregs[30]);
 		} else {
-			cons_printf("  r0 0x%08llx   r5 0x%08llx   r9 0x%08llx  r13 0x%08llx\n", llregs[0], llregs[5], llregs[9], llregs[13]);
-			cons_printf("  r1 0x%08llx   r6 0x%08llx  r10 0x%08llx  r14 0x%08llx\n", llregs[1], llregs[6], llregs[10], llregs[14]);
-			cons_printf("  r2 0x%08llx   r7 0x%08llx  r11 0x%08llx  r15 0x%08llx\n", llregs[2], llregs[7], llregs[11], llregs[15]);
+			cons_printf("  pc 0x%08llx   r5 0x%08llx   r9 0x%08llx  r13 0x%08llx\n", arch_pc(), llregs[5], llregs[9], llregs[13]);
+			cons_printf("  sp 0x%08llx   r6 0x%08llx  r10 0x%08llx  r14 0x%08llx\n", llregs[29], llregs[6], llregs[10], llregs[14]);
+			cons_printf("  ra 0x%08llx   r7 0x%08llx  r11 0x%08llx  r15 0x%08llx\n", llregs[30], llregs[7], llregs[11], llregs[15]);
 			cons_printf("  r3 0x%08llx   r8 0x%08llx  r12 0x%08llx  r16 0x%08llx\n", llregs[3], llregs[8], llregs[12], llregs[16]);
-			cons_printf("  r4 0x%08llx   ", llregs[4]);
-
-			if (llregs[11]!=ollregs[11]) cons_strcat("[ fp=r11 ]");
-			else cons_strcat("  fp=r11");
-			if (llregs[12]!=ollregs[12]) cons_strcat("[ ip=r12 ]");
-			else cons_strcat("  ip=r12");
-			if (llregs[13]!=ollregs[13]) cons_strcat("[ sp=r13 ]");
-			else cons_strcat("  sp=r13");
-			if (llregs[14]!=ollregs[14]) cons_strcat("[ lr=r14 ]");
-			cons_strcat("  lr=r14");
-			if (llregs[15]!=ollregs[15]) cons_strcat("[ pc=r15 ]");
-			cons_strcat("  pc=r15");
-			if (llregs[16]!=ollregs[16]) cons_strcat("[ cpsr=r16 ]\n");
-			cons_strcat("  cpsr=r16\n");
+			cons_printf("  r4 0x%08llx   \n", llregs[4]);
 		}
 	}
 
@@ -412,6 +407,9 @@ int arch_continue()
 // TODO
 struct bp_t *arch_set_breakpoint(u64 addr)
 {
+	//unsigned char bp[4]="\x00\x00\x00\x0d";
+	unsigned char bp[4]="\x0d\x00\x00\x00";
+	debug_write_at(ps.tid, bp, 4, addr);
 	return NULL;
 }
 
