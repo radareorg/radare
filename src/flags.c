@@ -485,6 +485,7 @@ int flag_set(const char *name, u64 addr, int dup)
 	}
 
 	strncpy(flag->name, name, FLAG_BSIZE);
+	flag->name[FLAG_BSIZE-1]='\0';
 	flag->offset = addr;
 	flag->length = config.block_size;
 	flag->format = last_print_format;

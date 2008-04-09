@@ -260,9 +260,9 @@ void print_maps_regions(int rad)
 						(unsigned long long)mr->ini);
 			}
 		} else {
-			perms[0] = (mr->perms & REGION_READ)?  'r' : '-';
-			perms[1] = (mr->perms & REGION_WRITE)? 'w' : '-';
-			perms[2] = (mr->perms & REGION_EXEC)?  'x' : '-';
+			perms[0] = (mr->perms & REGION_READ)?   'r' : '-';
+			perms[1] = (mr->perms & REGION_WRITE)?  'w' : '-';
+			perms[2] = (mr->perms & REGION_EXEC)?   'x' : '-';
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
 			perms[4] = 0;
 

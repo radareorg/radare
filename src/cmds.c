@@ -874,7 +874,7 @@ CMD_DECL(write)
 		break;
 	case 'A': {
 		char data[1024];
-		snprintf(data, 1023, "wx `!rsc asm '%s'", input + 2);
+		snprintf(data, 1023, "wx `!!rsc asm '%s'", input + 2);
 		radare_cmd(data, 0);
 		} break;
 	case 'a': {

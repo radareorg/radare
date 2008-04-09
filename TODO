@@ -53,6 +53,7 @@ DONE?
 
 0.9.5
 =====
+* Fix XXX hack in src/radare.c to avoid hardcoding all interpretable debugger commands :?
 * Show FPU stack contents
 * set asm.arch with rabin_arch
 * interactive visual write mode ;D

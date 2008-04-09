@@ -269,7 +269,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_REF: {
 		char buf[128];
 		char *str;
-		sprintf(buf, "!rsc list `addr2line -e $FILE 0x%llx`", config.seek);
+		sprintf(buf, "!!rsc list `addr2line -e $FILE 0x%llx`", config.seek);
 		str = pipe_command_to_string(buf);
 		if (str) {
 			cons_printf(str);

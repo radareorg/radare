@@ -968,8 +968,8 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("  edx  0x%08x    ebp  0x%08x    ", (int)R_EDX(regs), (int)R_EBP(regs));
 			dump_eflags(R_EFLAGS(regs));
 		}
-
 	}
+
 	if (memcmp(&nregs,&regs, sizeof(regs_t))) {
 		getHTTPDate((char *)&oregs_timestamp);
 		memcpy(&oregs, &nregs, sizeof(regs_t));

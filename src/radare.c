@@ -270,9 +270,11 @@ int radare_cmd_raw(const char *tmp, int log)
 				cons_printf("oops (%s)\n", input+2);
 			break;
 		default:
-			/* hack to parse .!regs* on w32 */
+			/* XXX hack to parse .!regs* on w32 */
 			/* maybe everything but debug commands must be in this way */
-			if (strstr(input,"regs")) {
+			/* radare_cmd_str doesn't handle system() output :( */
+			if( (strstr(input,"regs")) ||(strstr(input,"maps"))) {
+			//if (1) {
 				str = radare_cmd_str(input+1);
 				st = str;
 				for(i=0;str && str[i];i++) {
@@ -286,6 +288,7 @@ int radare_cmd_raw(const char *tmp, int log)
 				free(oinput);
 				return 0;
 			}
+			// this way doesnt workz
 			pipe_stdout_to_tmp_file(file, input+1);
 			f = open(file, O_RDONLY);
 			if (f == -1) {
@@ -416,6 +419,7 @@ std = 0;
 			if (eof[0]=='\n') eof[0]=' ';
 		commands_parse(input);
 
+#if 0
 		if (fdi!=-1) {
 			fflush(stdout);
 			if (std)
@@ -436,6 +440,7 @@ std = 0;
 			dup2(std, 1);
 			//std = 0;
 		}
+#endif
 
 		/* restore seek */
 		if (tmpoff != -1) {
@@ -495,8 +500,10 @@ int radare_cmd(char *command, int log)
 	if(command==NULL || (log&&command==NULL) || (command&&command[0]=='0'))
 		return 0;
 
-	if (command[0]=='!'&&command[1]=='!')
+// XXX not handled !?!?
+	if (command[0]=='!'&&command[1]=='!') {
 		return system(command+2);
+	}
 
 	if (config.visual) {
 		// update config.height heres
@@ -580,10 +587,11 @@ int radare_cmd(char *command, int log)
 
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
-		cons_flush();
+		//cons_flush();
 		return 0;
 	}
 
+// XXX to be moved to dietline.c
 	/* history stuff */
 	if (command[0]=='!') {
 		p = atoi(command+1);
@@ -591,6 +599,8 @@ int radare_cmd(char *command, int log)
 			return radare_cmd(hist_get_i(p), 0);
 	}
 	hist_add(command, log);
+// XXX ---
+
 	if (config.skip) return 0;
 
 	if (command[0] == ':') {
@@ -613,6 +623,7 @@ int radare_cmd(char *command, int log)
 	return 0;
 }
 
+/* TODO: move to cmds.c */
 int radare_interpret(char *file)
 {
 	int len;
@@ -1181,7 +1192,7 @@ int radare_go()
 			radare_cmd("!maps", 0);
 		if (config_get("dbg.strings")) {
 			eprintf("Loading strings...press ^C when tired\n");
-			radare_cmd(".!rsc strings-flag $FILE", 0);
+			radare_cmd(".!!rsc strings-flag $FILE", 0);
 		}
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("file.write", "true"); /* write mode enabled for the debugger */
@@ -1229,22 +1240,35 @@ int radare_go()
 	return 0;
 }
 
+// TODO: move to cons.c
+static int pipe_fd = -1;
 int pipe_stdout_to_tmp_file(char *tmpfile, char *cmd)
 {
-	int fd = make_tmp_file(tmpfile);
-	if (fd == -1)
-		return 0;
-	cons_set_fd(fd);
-	radare_cmd(cmd, 0);
-	cons_set_fd(1);
-	close(fd);
-	return 1;
 #if 0
-	int fd = make_tmp_file(tmp);
+	/* DOES NOT WORKS */
+	eprintf("pipe(%s)\n", cmd);
+	cons_flush();
+	if (pipe_fd == -1) {
+	eprintf("real-pipe(%s)\n", cmd);
+		pipe_fd = make_tmp_file(tmpfile);
+		if (pipe_fd == -1)
+			return 0;
+		cons_set_fd(pipe_fd);
+		radare_cmd(cmd, 0);
+		cons_set_fd(1);
+		close(pipe_fd);
+		pipe_fd = -1;
+	} else {
+		radare_cmd(cmd, 0);
+	}
+	return 1;
+#else
+	/* WORKS BUT IT IS UGLY */
+	int fd = make_tmp_file(tmpfile);
 	int std;
 	cons_flush();
 	if (fd == -1) {
-		eprintf("pipe: Cannot open '%s' for writing\n", tmp);
+		eprintf("pipe: Cannot open '%s' for writing\n", tmpfile);
 		tmpoff = config.seek;
 		return 0;
 	}

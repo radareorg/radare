@@ -69,8 +69,7 @@ void debug_dumpcore()
 int debug_syms()
 {
 	// XXX: native implementation
-	radare_cmd(".!rsc syms-dbg-flag ${FILE}", 0);
-	return 0; //for warning message
+	return radare_cmd(".!!rsc syms-dbg-flag ${FILE}", 0);
 }
 
 // TODO : helper
