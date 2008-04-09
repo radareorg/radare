@@ -137,10 +137,12 @@ int search_from_file(char *file)
 #if __UNIX__
 	D go_alarm(search_alarm);
 #endif
+	radare_controlc();
 	for(radare_read(0);!config.interrupted;radare_read(1))
 		for(i=0;i<config.block_size;i++)
 			update_tlist(t, config.block[i], config.seek+i);
 
+	radare_controlc_end();
 #if __UNIX__
 	D go_alarm(SIG_IGN);
 #endif
@@ -209,6 +211,7 @@ int search_range(char *range)
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
+	radare_controlc();
 	for(radare_read(0);!config.interrupted;i = radare_read(1)) {
 	//	if (!i) break;
 		if (config.limit && config.seek >= config.limit) break;
@@ -216,6 +219,7 @@ int search_range(char *range)
 		for(i=0;i<config.block_size;i++)
 			update_tlist(t, config.block[i], config.seek+i);
 	}
+	radare_controlc_end();
 	binparser_free(t);
 	config.interrupted = 0;
 #if __UNIX__

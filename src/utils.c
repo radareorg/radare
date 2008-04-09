@@ -163,8 +163,8 @@ void progressbar(int pc)
 	(pc<0)?pc=0:(pc>100)?pc=100:0;
 	fprintf(stderr, "\e[K  %3d%% [", pc);
 	cols-=15;
-	for(tmp=cols*pc/100;tmp;tmp--) printf("#");
-	for(tmp=cols-(cols*pc/100);tmp;tmp--) printf("-");
+	for(tmp=cols*pc/100;tmp;tmp--) fprintf(stderr,"#");
+	for(tmp=cols-(cols*pc/100);tmp;tmp--) fprintf(stderr,"-");
 	fprintf(stderr, "]\r");
 	fflush(stderr);
 }
