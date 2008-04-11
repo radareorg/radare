@@ -780,6 +780,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		D inc = 2+(int)((config.width-14)/4);
 		else inc = 2+(int)((config.width)/4);
 		if (inc%2) inc++;
+		tmp = config.cursor_mode;
 		D if ( fmt == FMT_HEXB ) {
 			C cons_printf(COLOR_HD);
 			cons_printf("   offset  ");
@@ -802,6 +803,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				
 			} else { INILINE; }
 
+			if (config.insert_mode==1)
+				config.cursor_mode = 1;
+			else 
+			if (config.insert_mode==2)
+				config.cursor_mode = 0;
 			for(j=i;j<i+inc;j++) {
 				if (fmt==FMT_HEXB) {
 					if (j>=len) {
@@ -815,6 +821,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				if (fmt == FMT_HEXBS || j%2) cons_printf(" ");
 			}
 
+			if (config.insert_mode==1)
+				config.cursor_mode = 0;
+			else 
+			if (config.insert_mode==2)
+				config.cursor_mode = 1;
 			if (fmt == FMT_HEXB) {
 				for(j=i; j<i+inc; j++) {
 					if (j >= len)
@@ -827,6 +838,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				NEWLINE;
 			}
 		}
+		config.cursor_mode = tmp;
 		if (fmt == FMT_HEXBS) { NEWLINE; }
 		INILINE;
 		break;

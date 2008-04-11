@@ -41,7 +41,8 @@ struct config_t {
 	int buf; // scr.buf
 	/* modes */
 	int visual;
-	int cursor_mode; // visual like toggle
+	int cursor_mode; // visual cursor toggle
+	int insert_mode; // visual insert toggle
 	/* ... */
 	int noscript;
 	char *script;

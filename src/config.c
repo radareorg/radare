@@ -64,6 +64,7 @@ int rdb_init()
 
 static void config_old_init()
 {
+	memset(&config, '\0', sizeof(config));
 	config.mode        = MODE_SHELL;
 	config.endian      = 1;
 	config.noscript    = 0;

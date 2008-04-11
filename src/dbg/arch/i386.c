@@ -618,6 +618,17 @@ int arch_print_fpregisters(int rad, const char *mask)
 {
 	int i, ret;
 #if __linux__
+	struct user_fpregs_struct regs;
+	ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void*)sizeof(regs_t));
+	cons_printf("fip = 0x%08x\n", regs.fip);
+	cons_printf("foo = 0x%08x\n", regs.foo);
+	for(i=0;i<8;i++) {
+		cons_printf(" st%d = %f\n", i, regs.st_space[i]);
+	}
+#endif
+
+#if 0
+#if __linux__
 	//struct user_fpregs_struct regs;
 	elf_fpregset_t regs;
 #else
@@ -645,6 +656,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 		cons_printf("  st%d %f\n", i, regs.__data[i]); // XXX Fill this in with real info.
 #else
 		cons_printf("  st%d %f\n", i, regs.fpr_env[i]);
+#endif
 #endif
 #endif
 

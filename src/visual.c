@@ -22,6 +22,7 @@ extern const char *dl_prompt;
 
 #include "main.h"
 #include "radare.h"
+#include "config.h"
 #include "print.h"
 #include "plugin.h"
 #include <signal.h>
@@ -56,6 +57,7 @@ CMD_DECL(stepo_in_dbg);
 CMD_DECL(xrefs_here);
 CMD_DECL(seek0);
 CMD_DECL(invert);
+CMD_DECL(insert);
 CMD_DECL(add_comment);
 CMD_DECL(show_environ);
 CMD_DECL(edit_comment);
@@ -88,7 +90,7 @@ command_t keystrokes[] = {
 	COMMAND('Y', 0, "Yankee (paste clipboard here)", yank_paste),
 	COMMAND('=', 0, "insert assembly hack", insert_assembly_hack),
 	COMMAND('x', 1, "show xrefs of the current offset", xrefs_here),
-	COMMAND('i', 1, "show information", status),
+	COMMAND('i', 0, "insert mode", insert),
 	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
@@ -117,6 +119,22 @@ void press_any_key()
 	cons_flush();
 	cons_readchar();
 	cons_strcat("\e[2J\e[0;0H");
+}
+
+CMD_DECL(insert)
+{
+	if (config_get("file.write")) {
+		cons_clear();
+		cons_printf("Insert mode activated.\n\nPress <esc> or 'q' to quit this mode\n");
+		cons_printf("Use <tab> to change between ascii and hex\n");
+		config.insert_mode = 1;
+		config.cursor_mode = 1;
+		last_print_format = FMT_HEXB;
+		press_any_key();
+	} else {
+		cons_printf("Not in write mode.\n");
+		press_any_key();
+	}
 }
 
 CMD_DECL(invert)
@@ -753,7 +771,11 @@ void visual_draw_screen()
 		config.width = terminal_get_columns();
 		terminal_set_raw(1);
 	}
-	string_flag_offset(buf, config.seek);
+	if (config.insert_mode) {
+		strcpy(buf, "<insert>");
+	} else {
+		string_flag_offset(buf, config.seek);
+	}
 	ptr = config_get("scr.seek");
 	if (ptr&&ptr[0]&&last_print_format==FMT_REF) {
 		u64 off = get_math(ptr);
@@ -844,6 +866,7 @@ CMD_DECL(visual)
 {
 	unsigned char key;
 	int i, lpf;
+	int nibble;
 	char *name;
 	char line[1024];
 #if HAVE_LIB_READLINE
@@ -853,6 +876,8 @@ CMD_DECL(visual)
 	terminal_get_real_columns();
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);
+
+	nibble = 1; // high first
 
 	undo_push();
 
@@ -895,6 +920,132 @@ CMD_DECL(visual)
 		/* user input */
 		key = cons_readchar();
 
+		/* insert mode . 'i' key */
+		switch(config.insert_mode) {
+		case 1:
+			if (key==0x1b) {
+				key = cons_readchar();
+				if (key==0x5b) {
+					// TODO: must also work in interactive visual write ascii mode
+					key = cons_readchar();
+					switch(key) {
+					case 0x35: key='k'; break; // re.pag
+					case 0x36: key='j'; break; // av.pag
+					case 0x41: key='k'; break; // up
+					case 0x42: key='j'; break; // down
+					case 0x43: key='l'; break; // right
+					case 0x44: key='h'; break; // left
+					case 0x3b:
+						break;
+					default:
+						key = 0;
+					}
+				}
+			}
+
+			switch(key) {
+			case 9: // TAB
+				config.insert_mode = 2;
+				nibble=1;
+				break;
+			case 'q':
+			case 0x1b: // ESC
+				config.insert_mode = 0;
+				config.cursor_mode = 0;
+				cons_clear();
+				break;
+			case 'h':
+				if (config.cursor--<1)
+					config.cursor = 0;
+				nibble=1;
+				break;
+			case 'j':
+				config.cursor+=inc;
+				if (config.cursor>=config.block_size)
+					config.cursor = config.block_size - 1;
+				nibble=1;
+				break;
+			case 'k':
+				if (((int)(config.cursor-inc))<0)
+					config.cursor = 0;
+				else config.cursor-=inc;
+				nibble=1;
+				break;
+			case 'l':
+				if (++config.cursor>=config.block_size)
+					config.cursor = config.block_size - 1;
+				nibble=1;
+				break;
+			default:
+				if ((key>='0'&&key<='9')
+				||  (key>='a'&&key<='f')
+				||  (key>='A'&&key<='F')) {
+					int lol = 0;
+					unsigned char str[2] = { key, 0};
+					sscanf(str,"%1x", &lol);
+					radare_read_at(config.seek+config.cursor, str, 1);
+					str[0] &= (nibble)?0x0f:0xf0;
+					str[0] |= lol<<(nibble*4);
+					radare_write_at(config.seek+config.cursor, str, 1);
+					
+					// TODO WRITE CHAR HERE
+					if (nibble) {
+						nibble = 0;
+					} else {
+						config.cursor++;
+						nibble = 1;
+					}
+				}
+				break;
+			}
+			if (config.cursor<0)
+				config.cursor = 0;
+#if 0
+			else
+			if (config.cursor>config.block_size);
+				config.cursor = config.block_size-1;
+#endif
+			continue;
+		case 2:
+			nibble=1;
+			switch(key) {
+			case 9:
+				config.insert_mode = 1;
+				break;
+			case 0x1b:
+				cons_readchar();
+				switch(cons_readchar()) {
+				case 0x44: //'h':
+					if (config.cursor--<1)
+						config.cursor = 0;
+					break;
+				case 0x42: //'j':
+					config.cursor+=inc;
+					if (config.cursor>=config.block_size)
+						config.cursor = config.block_size - 1;
+					break;
+				case 0x41: // 'k':
+					if (((int)(config.cursor-inc))<0)
+						config.cursor = 0;
+					else config.cursor-=inc;
+					break;
+				case 0x43: // 'l':
+					if (++config.cursor>=config.block_size)
+						config.cursor = config.block_size - 1;
+					break;
+				}
+				break;
+			default:
+				radare_write_at(config.seek+config.cursor,&key,1);
+				config.cursor++;
+				if (config.cursor>=config.block_size)
+					config.cursor = config.block_size - 1;
+				break;
+			}
+			continue;
+		}
+
+		/* normal visual mode */
 		switch(key) {
 		case 27:
 			key = cons_readchar();
@@ -1040,7 +1191,7 @@ CMD_DECL(visual)
 			}
 		}
 
-		if (inc<1)inc=1;
+		if (inc<1)inc=1; // XXX dup check?
 		if (repeat==1)repeat=0;
 		//else repeat-=1;
 		repeat=1;
@@ -1140,7 +1291,7 @@ CMD_DECL(visual)
 			if (config.cursor_mode) {
 				if (config.ocursor==-1)
 					config.ocursor = config.cursor;
-				config.cursor += 1;
+				config.cursor ++;
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
 			} else
