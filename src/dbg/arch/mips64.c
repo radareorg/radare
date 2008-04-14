@@ -207,6 +207,7 @@ int arch_jmp(u64 ptr)
 
 u64 arch_pc()
 {
+#if 0
 	int ret;
 	regs_t regs;
 	unsigned long *llregs = &regs;
@@ -218,17 +219,41 @@ u64 arch_pc()
 		return 0;
 	}
 	return llregs[25];
-
-#if 0
-	u32 addr;
-	int ret = ptrace (PTRACE_PEEKUSER, ps.tid, 29, &addr);
-	if (ret == -1) {
-		printf("PEEK PC = -1\n");
-		exit(1);
-		return -1;
-	}
-	return addr;
 #endif
+
+	u64 addr;
+	u8 buf[1024];
+	regs_t regs;
+	int i, ret; 
+	unsigned long long *llregs = &regs;
+		
+//	memset(buf, '\0', 100);
+	//ret = ptrace (PTRACE_PEEKUSER, ps.tid, 64, &buf);
+	//#define offsetof(TYPE, MEMBER) ((unsigned long) &((TYPE *)0)->MEMBER)
+	//ret = ptrace(PTRACE_GETREGS, ps.tid, struct user, u_tsize), &buf);
+	ret = ptrace(PTRACE_GETREGS, ps.tid, 0, &buf);
+	if (ret == -1)
+		return -1;
+#if 0
+		16 /* 0 - 31 are integer registers, 32 - 63 are fp registers.  */
+		17 #define FPR_BASE        32
+		18 #define PC              64
+		19 #define CAUSE           65
+		20 #define BADVADDR        66
+		21 #define MMHI            67
+		22 #define MMLO            68
+		23 #define FPC_CSR         69
+		24 #define FPC_EIR         70
+#endif
+		//eprintf("PC %08x\n", llregs[64]);
+#if 0
+	for(i=270;i<290;i++) {
+		eprintf("%02x ", buf[i]);
+	}
+#endif
+	addr = 0;
+	memcpy(&addr, buf+272, sizeof(u64));
+	return addr;
 }
 
 int arch_set_register(char *reg, char *value)
@@ -256,8 +281,15 @@ int arch_set_register(char *reg, char *value)
 
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	eprintf("TODO\n");
-	return 0;
+	u64 ptr[128];
+	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
+	if (rad)
+		for(i=0;i<32;i++)
+			cons_printf("f fp%d @ 0x%08llx\n", i, ptr[i]);
+	else
+		for(i=0;i<32;i++)
+			cons_printf("fp%d: 0x%08llx\n", i, ptr[i]);
+	return ret;
 }
 
 #if 0
@@ -277,6 +309,7 @@ reg      name    usage
 31      ra      return address
 #endif
 
+// TODO: control 63-32 fffff bits and drop them :)
 int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
@@ -300,8 +333,7 @@ int arch_print_registers(int rad, const char *mask)
 	}
 
 	if (rad) {
-		cons_printf("f pc  @ 0x%llx\n", llregs[25]);
-		cons_printf("f eip @ 0x%llx\n", llregs[25]); // k0 - the context where it was pwned
+		cons_printf("f pc  @ 0x%llx\nf eip@pc", arch_pc()); // dupgetregs
 		cons_printf("f at  @ 0x%llx\n", llregs[1]);
 		cons_printf("f v0  @ 0x%llx\n", llregs[2]);
 		cons_printf("f v1  @ 0x%llx\n", llregs[3]);
@@ -328,7 +360,7 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f s7  @ 0x%llx\n", llregs[22]);
 		cons_printf("f t8  @ 0x%llx\n", llregs[23]);
 		cons_printf("f t9  @ 0x%llx\n", llregs[24]);
-		cons_printf("f k0  @ 0x%llx\n", llregs[25]);
+		cons_printf("f k0  @ 0x%llx\n", llregs[25]); // k0 - the context where it was pwned
 		cons_printf("f k1  @ 0x%llx\n", llregs[26]);
 		cons_printf("f gp  @ 0x%llx\n", llregs[27]);
 		cons_printf("f sp  @ 0x%llx\n", llregs[28]);
@@ -378,9 +410,9 @@ int arch_print_registers(int rad, const char *mask)
 			if (llregs[4]!=ollregs[4]) cons_strcat("\e[35m");
 			cons_printf("  ra  0x%08llx\e[0m\n", llregs[30]);
 		} else {
-			cons_printf("  pc 0x%08llx   r5 0x%08llx   r9 0x%08llx  r13 0x%08llx\n", arch_pc(), llregs[5], llregs[9], llregs[13]);
-			cons_printf("  sp 0x%08llx   r6 0x%08llx  r10 0x%08llx  r14 0x%08llx\n", llregs[29], llregs[6], llregs[10], llregs[14]);
-			cons_printf("  ra 0x%08llx   r7 0x%08llx  r11 0x%08llx  r15 0x%08llx\n", llregs[30], llregs[7], llregs[11], llregs[15]);
+			cons_printf("  pc 0x%08llx   v0 0x%08llx  v1 0x%08llx  v2 0x%08llx\n", arch_pc(), llregs[5], llregs[9], llregs[13]);
+			cons_printf("  sp 0x%08llx   a0 0x%08llx  a0 0x%08llx  a2 0x%08llx\n", llregs[29], llregs[6], llregs[10], llregs[14]);
+			cons_printf("  ra 0x%08llx   t0 0x%08llx  t1 0x%08llx  t2 0x%08llx\n", llregs[30], llregs[7], llregs[11], llregs[15]);
 			cons_printf("  r3 0x%08llx   r8 0x%08llx  r12 0x%08llx  r16 0x%08llx\n", llregs[3], llregs[8], llregs[12], llregs[16]);
 			cons_printf("  r4 0x%08llx   \n", llregs[4]);
 		}

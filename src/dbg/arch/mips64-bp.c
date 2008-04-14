@@ -50,17 +50,9 @@ struct regs_off roff[] = {
 	{0, 0}
 };
 
-unsigned char *arm_bps[] = {
- "\x01\x00\x9f\xef", // le         - linux only? (undefined instruction)
- "\xef\x9f\x00\x01", // be
- "\xfe\xde\xff\xe7", // arm-le     - from a gdb patch
- "\xe7\xff\xde\xfe", // arm-be
- "\xf0\x01\xf0\xe7", // eabi-le    - undefined instruction - for all kernels
- "\xe7\xf0\x01\xf0", // eabi-be
- "\xde\x01",         // thumb-le
- "\x01\xde",         // thumb-be
- "\xfe\xdf",         // arm-thumb-le
- "\xdf\xfe"          // arm-thumb-be
+unsigned char *mips_bps[] = {
+ "\x0d\x00\x00\x00",
+ "\x00\x00\x00\x0d"
 };
 
 /*
@@ -112,7 +104,7 @@ int get_len_ins(char *buf, int len)
 int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 {
 	int endian = config_get("cfg.endian");
-	char *breakpoint = arm_bps[endian&1];
+	char *breakpoint = mips_bps[endian&1];
 
 	debug_read_at(ps.tid, bp->data, 16, addr);
 	bp->len = get_len_ins(bp->data, 16);
@@ -139,7 +131,7 @@ inline int arch_bp_hw_disable(struct bp_t *bp)
 inline int arch_bp_soft_enable(struct bp_t *bp)
 {
 	int endian = config_get("cfg.endian");
-	char *breakpoint = arm_bps[endian&1];
+	char *breakpoint = mips_bps[endian&1];
 	debug_write_at(ps.tid, breakpoint, bp->len, bp->addr);
 }
 

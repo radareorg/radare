@@ -181,7 +181,7 @@ static struct commads_t {
 	CB_CMD( "regs", CB_ASTERISK, debug_registers ),
 	CB_CMD( "oregs", CB_ASTERISK, debug_oregisters ),
 	CB_CMD( "dregs", CB_ASTERISK, debug_dregisters ),
-	CB_CMD( "fpregs", CB_NORMAL, debug_fpregisters ),
+	CB_CMD( "fpregs", CB_ASTERISK, debug_fpregisters ),
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
 	CB_CMD( "ktrace", CB_NOARGS, debug_ktrace ),
 #endif
