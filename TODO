@@ -7,6 +7,13 @@
 
 ===========================================================
 
+0.9.6:
+======
+ * add full autocompletion support for dietline
+ * support for background color
+ * blinking byte at cursor
+ * support for search and replace
+ * support for oprofile (via rsc or so)
 
 Open streams
 ============
@@ -56,9 +63,6 @@ DONE?
 * Fix XXX hack in src/radare.c to avoid hardcoding all interpretable debugger commands :?
 * Show FPU stack contents
 * set asm.arch with rabin_arch
-* interactive visual write mode ;D
-  - use 'w' key to toggle mode like 'c' does
-  - blinking byte at cursor
 * open/close projects in GUI
 * status shows backtrace !?!?!
 * dbg.stepolibs = true ;  step over non-user code?
@@ -89,7 +93,6 @@ Imports:
 * import esteve's object injector
 * import libdwarf
 
-add full autocompletion support for dietline
 
 ARM
 ===

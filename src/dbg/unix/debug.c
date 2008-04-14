@@ -145,9 +145,10 @@ int debug_print_wait(char *act)
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
-			eprintf("=== %s: tid: %d signal: %d stop at 0x%llx (%s)\n",
-				act, ps.tid, WS_SI(si_signo), (unsigned )arch_pc(), //WS_PC() is not portable
-				sig_to_name(WS_SI(si_signo)));
+			eprintf("=== %s: tid: %d signal: %d (%s). stop at 0x%08llx\n", 
+				act, ps.tid, WS_SI(si_signo),
+				sig_to_name(WS_SI(si_signo)),
+				arch_pc());
 		}
 	}
 	return 0;

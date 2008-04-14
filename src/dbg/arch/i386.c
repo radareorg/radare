@@ -374,11 +374,15 @@ int arch_inject(unsigned char *data, int size)
 	return 0;
 }
 
-addr_t arch_pc()
+u64 arch_pc()
 {
 	regs_t regs;
 	debug_getregs(ps.tid, &regs);
-	return (addr_t)R_EIP(regs);
+#if __x86_64__
+	return (u64)R_EIP(regs);
+#else
+	return (u64)R_EIP(regs)&0xffffffff;
+#endif
 }
 
 // XXX make it 
@@ -618,12 +622,29 @@ int arch_print_fpregisters(int rad, const char *mask)
 {
 	int i, ret;
 #if __linux__
-	struct user_fpregs_struct regs;
+//	struct user_fpregs_struct regs;
+	elf_fpregset_t regs;
 	ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void*)sizeof(regs_t));
 	cons_printf("fip = 0x%08x\n", regs.fip);
 	cons_printf("foo = 0x%08x\n", regs.foo);
 	for(i=0;i<8;i++) {
-		cons_printf(" st%d = %f\n", i, regs.st_space[i]);
+		long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
+		//double f;
+		//unsigned char *ptr = &regs.st_space;
+		//ptr = ptr + 28 + (i*10);
+		//memcpy(&f, ptr, sizeof(double));
+		//double f = *((double *)&((char *) regs.st_space)[i*10]);
+//		 double f = *((double *)&((char *) regs.st_space)[28+(i*10)]);
+//i387-tdep.h:#define I387_FCTRL_REGNUM   (I387_ST0_REGNUM + 8)
+//i387-tdep.h:#define I387_XMM0_REGNUM    (I387_ST0_REGNUM + 16)
+#if 0
+#if __x86_64__
+		float f = *(float*)&regs.st_space[i*2]+16-sizeof(float);
+#else
+		float f = *(float*)&regs.st_space[i*4]+16-sizeof(float); // *2 on x86_64
+#endif
+#endif
+		cons_printf(" st%d = %-+27.19lg (0x%08lx)\n", i, f, f);
 	}
 #endif
 

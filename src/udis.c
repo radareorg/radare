@@ -327,9 +327,11 @@ static int metadata_print(int delta)
 		if (ptr[0]) {
 			if (show_lines&&reflines)
 				code_lines_print(reflines, config.baddr+config.seek+i, 1);
-			C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
+			C
+				cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
 					config.baddr+offset, ptr);
-			else	cons_printf(OFF_FMTs" %s:\n",
+			else
+				cons_printf(OFF_FMTs" %s:\n",
 					config.baddr+offset, ptr);
 			lines++;
 		}
@@ -803,7 +805,7 @@ void udis_arch(int arch, int len, int rows)
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
 						NEWLINE;
 						if (show_lines)
-							code_lines_print(reflines, seek, 1);
+							code_lines_print(reflines, seek, 0);
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));
