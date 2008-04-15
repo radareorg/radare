@@ -622,6 +622,26 @@ int arch_print_fpregisters(int rad, const char *mask)
 {
 	int i, ret;
 #if __linux__
+
+#if 1
+////struct user_fxsr_struct regs ;
+struct user_fpxregs_struct regs;
+ptrace(PTRACE_GETFPXREGS, ps.tid, &regs, (void*)sizeof(regs_t));
+cons_printf("fip = 0x%08x\n", regs.fip);
+cons_printf("foo = 0x%08x\n", regs.foo);
+for(i=0;i<8;i++) {
+long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
+#if __x86_64__
+#define FADDR ((double*)&regs.st_space[i*2]+16-sizeof(double))
+#else
+#define FADDR ((double*)&regs.st_space[i*4])
+//+16-sizeof(double))
+#endif
+cons_printf(" st%d = %lg (0x%08lx)\n", i, *FADDR, *FADDR);
+}
+return 0;
+#endif
+#if 0
 //	struct user_fpregs_struct regs;
 	elf_fpregset_t regs;
 	ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void*)sizeof(regs_t));
@@ -681,6 +701,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 #endif
 #endif
 
+#endif
 	return ret;
 }
 
