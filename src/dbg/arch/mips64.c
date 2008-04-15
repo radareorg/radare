@@ -410,11 +410,20 @@ int arch_print_registers(int rad, const char *mask)
 			if (llregs[4]!=ollregs[4]) cons_strcat("\e[35m");
 			cons_printf("  ra  0x%08llx\e[0m\n", llregs[30]);
 		} else {
+#if 0
+  k0 k1
+  v0 v1 v2
+  a0 a1 a2 a3
+  pc at gp sp fp ra
+  s0 s1 s2 s3 s4 s5 s6 s7
+  t0 t1 t2 t3 t4 t5 t6 t7 t8 t9
+#endif
 			cons_printf("  pc 0x%08llx   v0 0x%08llx  v1 0x%08llx  v2 0x%08llx\n", arch_pc(), llregs[5], llregs[9], llregs[13]);
-			cons_printf("  sp 0x%08llx   a0 0x%08llx  a0 0x%08llx  a2 0x%08llx\n", llregs[29], llregs[6], llregs[10], llregs[14]);
-			cons_printf("  ra 0x%08llx   t0 0x%08llx  t1 0x%08llx  t2 0x%08llx\n", llregs[30], llregs[7], llregs[11], llregs[15]);
-			cons_printf("  r3 0x%08llx   r8 0x%08llx  r12 0x%08llx  r16 0x%08llx\n", llregs[3], llregs[8], llregs[12], llregs[16]);
-			cons_printf("  r4 0x%08llx   \n", llregs[4]);
+			cons_printf("  gp 0x%08llx   a0 0x%08llx  a0 0x%08llx  a2 0x%08llx  a3 0x%08llx\n", llregs[27], llregs[5], llregs[6], llregs[7], llregs[8]);
+			cons_printf("  gp 0x%08llx   at 0x%08llx  t0 0x%08llx  t1 0x%08llx  t2 0x%08llx\n", llregs[27], llregs[5], llregs[6], llregs[7], llregs[8]);
+			cons_printf("  sp 0x%08llx   t0 0x%08llx  t1 0x%08llx  t2 0x%08llx  t3 0x%08llx\n", llregs[30], llregs[29], llregs[11], llregs[15]);
+			cons_printf("  k0 0x%08llx   r8 0x%08llx  r12 0x%08llx  r16 0x%08llx\n", llregs[3], llregs[8], llregs[12], llregs[16]);
+			cons_printf("  k0 0x%08llx   k1 0x%08llx\n", llregs[25], llregs[26]);
 		}
 	}
 

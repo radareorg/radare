@@ -97,13 +97,12 @@ Imports:
 ARM
 ===
 * arm has no backtrace
-dbg.bep entry not working on arm
 -S flag move to rabin
 when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
-* step over doesnt works
+* step over doesnt works on arm
 * keybinding assignment dosnt workz
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected

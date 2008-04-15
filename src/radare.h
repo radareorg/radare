@@ -13,6 +13,7 @@ typedef unsigned long long u64;
 #ifndef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
 #endif
+#include "cmds.h"
 #if 0
 #if SIZEOF_OFF_T == 1
 #warning Oops. SIZEOF_OFF_T = 1 means invalid autodetection. Using 8
@@ -166,50 +167,4 @@ int radare_compare(unsigned char *f, unsigned char *d, int len);
 int search_range(char *range);
 int search_from_file(char *file);
 
-CMD_DECL(gotoxy);
-CMD_DECL(baddr);
-CMD_DECL(seek0);
-CMD_DECL(hack);
-CMD_DECL(store);
-CMD_DECL(blocksize);
-CMD_DECL(count);
-CMD_DECL(code);
-CMD_DECL(show_info);
-CMD_DECL(envvar);
-CMD_DECL(compare);
-CMD_DECL(dump);
-CMD_DECL(endianess);
-CMD_DECL(limit);
-CMD_DECL(move);
-CMD_DECL(print);
-CMD_DECL(quit);
-CMD_DECL(resize);
-CMD_DECL(seek);
-CMD_DECL(undoseek);
-CMD_DECL(status);
-CMD_DECL(rdb);
-CMD_DECL(project);
-CMD_DECL(yank);
-CMD_DECL(yank_paste);
-CMD_DECL(visual);
-CMD_DECL(write);
-CMD_DECL(examine);
-CMD_DECL(prev);
-CMD_DECL(next);
-CMD_DECL(prev_align);
-CMD_DECL(next_align);
-CMD_DECL(search);
-CMD_DECL(shell); 
-CMD_DECL(cmd);
-CMD_DECL(help);
-CMD_DECL(flag);
-CMD_DECL(interpret);
-CMD_DECL(interpret_perl);
-CMD_DECL(echo);
-CMD_DECL(open);
-CMD_DECL(math);
-CMD_DECL(width);
-CMD_DECL(hash);
-CMD_DECL(config_eval);
-CMD_DECL(default);
 #endif

@@ -117,7 +117,7 @@ command_t commands[] = {
 	COMMAND('b', " [blocksize]",   "bsize   change the block size", blocksize),
 	COMMAND('c', "[f file]|[hex]","compare compare block with given value", compare),
 	COMMAND('C', "[op] [arg]",         "Code related commands (comment, conversions, ..)", code),
-	COMMAND('e', " key=value",     "eval    evaluates a configuration expression", config_eval),
+	COMMAND('e', "[m?] key=value",     "eval    evaluates a configuration expression", config_eval),
 	COMMAND('f', "[d|-][name]",    "flag    flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "performs a hack", hack),
 	COMMAND('i', "",               "info    prints status information", status),
@@ -150,7 +150,15 @@ CMD_DECL(config_eval)
 {
 	int i = 0;
 	for(i=0;input[i]&&input[i]!=' ';i++);
-	config_eval(input+i);
+	if (input[0]=='m') {
+		CMD_CALL(menu, input);
+	} else
+	if (input[0]=='?') {
+		cons_printf("Usage: e[m] key=value\n");
+		cons_printf("   > emenu            ; opens menu for eval\n");
+		cons_printf("   > e scr.color = 1  ; sets color for terminal\n");
+	} else
+		config_eval(input+i);
 }
 
 CMD_DECL(project)
@@ -161,8 +169,7 @@ CMD_DECL(project)
 	case 'o':
 		if (input[1])
 			project_open(arg);
-		else	
-		{
+		else{
 			str = strdup ( config_get("file.project") );
 			project_open(str);
 			free ( str );
@@ -171,20 +178,16 @@ CMD_DECL(project)
 	case 's':
 		if (input[1])
 			project_save(arg);
-		else
-		{
+		else {
 			str = strdup ( config_get("file.project") );
 			project_save(str);
 			free ( str );
 		}
 		break;
 	case 'i':
-		if (input[1])
-		{
+		if (input[1]) {
 			project_info(arg);
-		}
-		else
-		{
+		} else {
 			str = strdup ( config_get("file.project"));
 			project_info(str);
 			free ( str );
@@ -197,6 +200,63 @@ CMD_DECL(project)
 		" Pi [file]  info\n");
 		break;
 	}
+}
+
+CMD_DECL(menu)
+{
+	struct list_head *i;
+	char buf[128];
+	char buf2[128];
+	char pfx[128];
+
+	pfx[0]='\0';
+	while (1) {
+			cons_printf("Menu: (q to quit)\n");
+		if (pfx[0]) {
+			cons_printf("* %s\n", pfx);
+			sprintf(buf2, "e %s. | cut -d . -f 2 | sort | awk '{print \" - \"$1\"   \t\"$2\"\t\"$3$4$5$6}'", pfx);
+			radare_cmd(buf2, 0);
+		} else {
+			radare_cmd("e | sort | cut -d . -f 1 | uniq | awk '{print \" - \"$1}'", 0);
+		}
+noprint:
+								cons_printf("> ");
+								cons_flush();
+				fgets(buf, 128, stdin);
+		if (buf[0])
+			buf[strlen(buf)-1]='\0';
+					if (strstr(buf, "..")) {
+						pfx[0] = '\0';
+						continue;
+					}
+	if (buf[0]=='q')
+		break;
+
+		if (strchr(buf, '=')) {
+			sprintf(buf2, "e %s.%s", pfx, buf);
+			radare_cmd(buf2, 0);
+		}else
+		if (!pfx[0]) {
+			strcpy(pfx, buf);
+		} else {
+			cons_printf("%s.%s = ", pfx, buf);
+			sprintf(buf2, "e %s.%s", pfx, buf);
+			radare_cmd(buf2, 0);
+			goto noprint;
+		}
+	}
+	
+	// TODO
+	// TODO: for flags mark namespaces or so
+        //       - allow to manage
+#if 0
+	list_for_each(i, &(config_new.nodes)) {
+		struct config_node_t *bt = list_entry(i, struct config_node_t, list);
+		if (str) {
+			if (strncmp(str, bt->name,len) == 0)
+		}
+	}
+#endif
 }
 
 CMD_DECL(hack)

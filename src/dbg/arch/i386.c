@@ -617,6 +617,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 }
 #else
 
+struct user_fpxregs_struct regs __attribute__((aligned(16)));
 // NO RAD FOR FPREGS (only 32&64 bit vars)
 int arch_print_fpregisters(int rad, const char *mask)
 {
@@ -624,20 +625,20 @@ int arch_print_fpregisters(int rad, const char *mask)
 #if __linux__
 
 #if 1
+
 ////struct user_fxsr_struct regs ;
-struct user_fpxregs_struct regs;
-ptrace(PTRACE_GETFPXREGS, ps.tid, &regs, (void*)sizeof(regs_t));
+ptrace(PTRACE_GETFPXREGS, ps.tid, &regs, (void*)sizeof(regs));
 cons_printf("fip = 0x%08x\n", regs.fip);
 cons_printf("foo = 0x%08x\n", regs.foo);
 for(i=0;i<8;i++) {
-long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
-#if __x86_64__
-#define FADDR ((double*)&regs.st_space[i*2]+16-sizeof(double))
-#else
-#define FADDR ((double*)&regs.st_space[i*4])
-//+16-sizeof(double))
-#endif
-cons_printf(" st%d = %lg (0x%08lx)\n", i, *FADDR, *FADDR);
+	long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
+	#if __x86_64__
+	#define FADDR ((double*)&regs.st_space[i*2]+16-sizeof(double))
+	#else
+	#define FADDR ((double*)&regs.st_space[i*4]+16-sizeof(double))
+	//+16-sizeof(double))
+	#endif
+	cons_printf(" st%d = %lg (0x%08lx)\n", i, *FADDR, *FADDR);
 }
 return 0;
 #endif

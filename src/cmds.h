@@ -36,5 +36,53 @@ typedef struct command {
 void commands_parse(const char *cmdline);
 void show_help_message();
 
+CMD_DECL(gotoxy);
+CMD_DECL(menu);
+CMD_DECL(baddr);
+CMD_DECL(seek0);
+CMD_DECL(hack);
+CMD_DECL(store);
+CMD_DECL(blocksize);
+CMD_DECL(count);
+CMD_DECL(code);
+CMD_DECL(show_info);
+CMD_DECL(envvar);
+CMD_DECL(compare);
+CMD_DECL(dump);
+CMD_DECL(endianess);
+CMD_DECL(limit);
+CMD_DECL(move);
+CMD_DECL(print);
+CMD_DECL(quit);
+CMD_DECL(resize);
+CMD_DECL(seek);
+CMD_DECL(undoseek);
+CMD_DECL(status);
+CMD_DECL(rdb);
+CMD_DECL(project);
+CMD_DECL(yank);
+CMD_DECL(yank_paste);
+CMD_DECL(visual);
+CMD_DECL(write);
+CMD_DECL(examine);
+CMD_DECL(prev);
+CMD_DECL(next);
+CMD_DECL(prev_align);
+CMD_DECL(next_align);
+CMD_DECL(search);
+CMD_DECL(shell); 
+CMD_DECL(cmd);
+CMD_DECL(help);
+CMD_DECL(flag);
+CMD_DECL(interpret);
+CMD_DECL(interpret_perl);
+CMD_DECL(echo);
+CMD_DECL(open);
+CMD_DECL(math);
+CMD_DECL(width);
+CMD_DECL(hash);
+CMD_DECL(config_eval);
+CMD_DECL(default);
+
 #endif
 /* vim:set ts=4 sw=4 tw=80 foldmethod=marker expandtab: */

@@ -230,6 +230,7 @@ int cons_fgets(char *buf, int len)
 		"#crc32",
 		"#entropy",
 		"Visual",
+		"emenu ",
 		"eval ",
 		"seek ",
 		"info ",

@@ -168,6 +168,7 @@ cmd_t cmds[] = {
 	{ "resize"       , ARG_NUMBER   , ARG_NULL   } , 
 	{ "move"         , ARG_NUMBER   , ARG_NUMBER } , 
 	{ "e"            , ARG_EVAL     , ARG_NULL   } , 
+	{ "emenu"        , ARG_EVAL     , ARG_NULL   } , 
 	{ "eval"         , ARG_EVAL     , ARG_NULL   } , 
 	{ "x"            , ARG_NULL     , ARG_NULL   } , 
 	{ "w"            , ARG_NULL     , ARG_NULL   } , 
