@@ -1,6 +1,6 @@
 /* mips.h.  Mips opcode list for GDB, the GNU debugger.
    Copyright 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005
+   2003, 2004, 2005, 2008
    Free Software Foundation, Inc.
    Contributed by Ralph Campbell and OSF
    Commented and modified by Ian Lance Taylor, Cygnus Support
@@ -472,20 +472,49 @@ struct mips_opcode
 #define INSN_MACRO                  0xffffffff
 
 /* Masks used to mark instructions to indicate which MIPS ISA level
-   they were introduced in.  ISAs, as defined below, are logical
-   ORs of these bits, indicating that they support the instructions
-   defined at the given level.  */
+   they were introduced in.  INSN_ISA_MASK masks an enumeration that
+   specifies the base ISA level(s).  The remainder of a 32-bit
+   word constructed using these macros is a bitmask of the remaining
+   INSN_* values below.  */
 
-#define INSN_ISA_MASK		  0x00000fff
-#define INSN_ISA1                 0x00000001
-#define INSN_ISA2                 0x00000002
-#define INSN_ISA3                 0x00000004
-#define INSN_ISA4                 0x00000008
-#define INSN_ISA5                 0x00000010
-#define INSN_ISA32                0x00000020
-#define INSN_ISA64                0x00000040
-#define INSN_ISA32R2              0x00000080
-#define INSN_ISA64R2              0x00000100
+#define INSN_ISA_MASK		  0x0000000ful
+
+/* We cannot start at zero due to ISA_UNKNOWN below.  */
+#define INSN_ISA1                 1
+#define INSN_ISA2                 2
+#define INSN_ISA3                 3
+#define INSN_ISA4                 4
+#define INSN_ISA5                 5
+#define INSN_ISA32                6
+#define INSN_ISA32R2              7
+#define INSN_ISA64                8
+#define INSN_ISA64R2              9
+/* Below this point the INSN_* values correspond to combinations of ISAs.
+   They are only for use in the opcodes table to indicate membership of
+   a combination of ISAs that cannot be expressed using the usual inclusion
+   ordering on the above INSN_* values.  */
+#define INSN_ISA3_32              10
+#define INSN_ISA3_32R2            11
+#define INSN_ISA4_32              12
+#define INSN_ISA4_32R2            13
+#define INSN_ISA5_32R2            14
+
+/* Given INSN_ISA* values X and Y, where X ranges over INSN_ISA1 through
+   INSN_ISA5_32R2 and Y ranges over INSN_ISA1 through INSN_ISA64R2,
+   this table describes whether at least one of the ISAs described by X
+   is/are implemented by ISA Y.  (Think of Y as the ISA level supported by
+   a particular core and X as the ISA level(s) at which a certain instruction
+   is defined.)  The ISA(s) described by X is/are implemented by Y iff
+   (mips_isa_table[(Y & INSN_ISA_MASK) - 1] >> ((X & INSN_ISA_MASK) - 1)) & 1
+   is non-zero.  */
+static const unsigned int mips_isa_table[] =
+  { 0x0001, 0x0003, 0x0607, 0x1e0f, 0x3e1f, 0x0a23, 0x3e63, 0x3ebf, 0x3fff };
+
+/* Masks used for Chip specific instructions.  */
+#define INSN_CHIP_MASK		  0xc3ff0800
+
+/* Cavium Networks Octeon instructions.  */
+#define INSN_OCTEON		  0x00000800
 
 /* Masks used for MIPS-defined ASEs.  */
 #define INSN_ASE_MASK		  0x3c00f000
@@ -497,8 +526,6 @@ struct mips_opcode
 #define INSN_MIPS16               0x00004000
 /* MIPS-3D ASE */
 #define INSN_MIPS3D               0x00008000
-
-/* Chip specific instructions.  These are bitmasks.  */
 
 /* MIPS R4650 instruction.  */
 #define INSN_4650                 0x00010000
@@ -529,21 +556,25 @@ struct mips_opcode
 #define INSN_SMARTMIPS            0x10000000
 /* DSP R2 ASE  */
 #define INSN_DSPR2                0x20000000
+/* ST Microelectronics Loongson 2E.  */
+#define INSN_LOONGSON_2E          0x40000000
+/* ST Microelectronics Loongson 2F.  */
+#define INSN_LOONGSON_2F          0x80000000
 
 /* MIPS ISA defines, use instead of hardcoding ISA level.  */
 
 #define       ISA_UNKNOWN     0               /* Gas internal use.  */
-#define       ISA_MIPS1       (INSN_ISA1)
-#define       ISA_MIPS2       (ISA_MIPS1 | INSN_ISA2)
-#define       ISA_MIPS3       (ISA_MIPS2 | INSN_ISA3)
-#define       ISA_MIPS4       (ISA_MIPS3 | INSN_ISA4)
-#define       ISA_MIPS5       (ISA_MIPS4 | INSN_ISA5)
+#define       ISA_MIPS1       INSN_ISA1
+#define       ISA_MIPS2       INSN_ISA2
+#define       ISA_MIPS3       INSN_ISA3
+#define       ISA_MIPS4       INSN_ISA4
+#define       ISA_MIPS5       INSN_ISA5
 
-#define       ISA_MIPS32      (ISA_MIPS2 | INSN_ISA32)
-#define       ISA_MIPS64      (ISA_MIPS5 | INSN_ISA32 | INSN_ISA64)
+#define       ISA_MIPS32      INSN_ISA32
+#define       ISA_MIPS64      INSN_ISA64
 
-#define       ISA_MIPS32R2    (ISA_MIPS32 | INSN_ISA32R2)
-#define       ISA_MIPS64R2    (ISA_MIPS64 | INSN_ISA32R2 | INSN_ISA64R2)
+#define       ISA_MIPS32R2    INSN_ISA32R2
+#define       ISA_MIPS64R2    INSN_ISA64R2
 
 
 /* CPU defines, use instead of hardcoding processor number. Keep this
@@ -576,6 +607,9 @@ struct mips_opcode
 #define CPU_MIPS64      64
 #define CPU_MIPS64R2	65
 #define CPU_SB1         12310201        /* octal 'SB', 01.  */
+#define CPU_LOONGSON_2E 3001
+#define CPU_LOONGSON_2F 3002
+#define CPU_OCTEON	6501
 
 /* Test for membership in an ISA including chip specific ISAs.  INSN
    is pointer to an element of the opcode table; ISA is the specified
@@ -583,7 +617,12 @@ struct mips_opcode
    test, or zero if no CPU specific ISA test is desired.  */
 
 #define OPCODE_IS_MEMBER(insn, isa, cpu)				\
-    (((insn)->membership & isa) != 0					\
+    (((isa & INSN_ISA_MASK) != 0                                        \
+      && ((insn)->membership & INSN_ISA_MASK) != 0                      \
+      && ((mips_isa_table [(isa & INSN_ISA_MASK) - 1] >>                \
+           (((insn)->membership & INSN_ISA_MASK) - 1)) & 1) != 0)       \
+     || ((isa & ~INSN_ISA_MASK)                                         \
+          & ((insn)->membership & ~INSN_ISA_MASK)) != 0                 \
      || (cpu == CPU_R4650 && ((insn)->membership & INSN_4650) != 0)	\
      || (cpu == CPU_RM7000 && ((insn)->membership & INSN_4650) != 0)	\
      || (cpu == CPU_RM9000 && ((insn)->membership & INSN_4650) != 0)	\
@@ -597,6 +636,12 @@ struct mips_opcode
      || (cpu == CPU_VR4120 && ((insn)->membership & INSN_4120) != 0)	\
      || (cpu == CPU_VR5400 && ((insn)->membership & INSN_5400) != 0)	\
      || (cpu == CPU_VR5500 && ((insn)->membership & INSN_5500) != 0)	\
+     || (cpu == CPU_LOONGSON_2E                                         \
+         && ((insn)->membership & INSN_LOONGSON_2E) != 0)               \
+     || (cpu == CPU_LOONGSON_2F                                         \
+         && ((insn)->membership & INSN_LOONGSON_2F) != 0)               \
+     || (cpu == CPU_OCTEON						\
+	 && ((insn)->membership & INSN_OCTEON) != 0)			\
      || 0)	/* Please keep this term for easier source merging.  */
 
 /* This is a list of macro expanded instructions.

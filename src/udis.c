@@ -600,7 +600,8 @@ void udis_arch(int arch, int len, int rows)
 				myinc = arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_MIPS:
-				myinc = arch_mips_aop(seek, (const unsigned char *)b, &aop);
+				arch_mips_aop(seek, (const unsigned char *)b, &aop);
+				myinc = aop.length;
 				break;
 			case ARCH_JAVA:
 				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
@@ -621,7 +622,8 @@ void udis_arch(int arch, int len, int rows)
 				// TODO
 		}
 		if (myinc<1)
-			myinc =1;
+			myinc = 1;
+
 		if (config.cursor_mode) {
 			if (config.cursor == bytes)
 				inc = myinc;
@@ -720,68 +722,68 @@ void udis_arch(int arch, int len, int rows)
 				break;
 			}
 			switch(arch) {
-				case ARCH_X86:
-					hex1 = ud_insn_hex(&ud_obj);
-					hex2 = hex1 + 16;
-					c = hex1[16];
-					hex1[16] = 0;
-					cons_printf("%-24s", ud_insn_asm(&ud_obj));
-					hex1[16] = c;
-					if (strlen(hex1) > 24) {
-						C cons_printf(C_RED);
-						cons_printf("\n");
-						if (o_do_off)
-							cons_printf("%15s .. ", "");
-						cons_printf("%-16s", hex2);
-					}
-					break;
-				case ARCH_CSR: {
-					if (bytes+myinc<config.block_size)
-						arch_csr_disasm((const unsigned char *)b, (u64)seek);
-					}
-					break;
-				case ARCH_ARM16:
-				case ARCH_ARM:
-					       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-					       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-					       gnu_disarm((unsigned char*)b, (unsigned int)seek);
-					       break;
-				case ARCH_MIPS:
-					       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-					       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-					       gnu_dismips((unsigned char*)b, (unsigned int)seek);
-					       break;
-				case ARCH_PPC: {
-						       char opcode[128];
-						       char operands[128];
-						       struct DisasmPara_PPC dp;
-						       /* initialize DisasmPara */
-						       dp.opcode = opcode;
-						       dp.operands = operands;
-						       dp.iaddr = seek; //config.baddr + config.seek + i;
-						       dp.instr = b; //config.block + i;
-						       PPC_Disassemble(&dp, endian);
-						       cons_printf("  %s %s", opcode, operands);
-					       } break;
-				case ARCH_JAVA: {
-							char output[128];
-							if (java_disasm(b, output)!=-1)
-								cons_printf(" %s", output);
-							else cons_strcat(" ???");
-						} break;
-				case ARCH_M68K: {
-							char opcode[128];
-							char operands[128];
-							struct DisasmPara_PPC dp;
-							/* initialize DisasmPara */
-							dp.opcode = opcode;
-							dp.operands = operands;
-							dp.iaddr = seek; //config.baddr + config.seek + i;
-							dp.instr = b; //config.block + i;
-							// XXX read vda68k: this fun returns something... size of opcode?
-							M68k_Disassemble(&dp);
-							cons_printf("  %s %s", opcode, operands);
-						} break;
+			case ARCH_X86:
+				hex1 = ud_insn_hex(&ud_obj);
+				hex2 = hex1 + 16;
+				c = hex1[16];
+				hex1[16] = 0;
+				cons_printf("%-24s", ud_insn_asm(&ud_obj));
+				hex1[16] = c;
+				if (strlen(hex1) > 24) {
+					C cons_printf(C_RED);
+					cons_printf("\n");
+					if (o_do_off)
+						cons_printf("%15s .. ", "");
+					cons_printf("%-16s", hex2);
+				}
+				break;
+			case ARCH_CSR: {
+				if (bytes+myinc<config.block_size)
+					arch_csr_disasm((const unsigned char *)b, (u64)seek);
+				}
+				break;
+			case ARCH_ARM16:
+			case ARCH_ARM:
+				       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+				       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+				       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+				       break;
+			case ARCH_MIPS:
+				       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+				       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+				       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+				       break;
+			case ARCH_PPC: {
+					       char opcode[128];
+					       char operands[128];
+					       struct DisasmPara_PPC dp;
+					       /* initialize DisasmPara */
+					       dp.opcode = opcode;
+					       dp.operands = operands;
+					       dp.iaddr = seek; //config.baddr + config.seek + i;
+					       dp.instr = b; //config.block + i;
+					       PPC_Disassemble(&dp, endian);
+					       cons_printf("  %s %s", opcode, operands);
+				       } break;
+			case ARCH_JAVA: {
+						char output[128];
+						if (java_disasm(b, output)!=-1)
+							cons_printf(" %s", output);
+						else cons_strcat(" ???");
+					} break;
+			case ARCH_M68K: {
+						char opcode[128];
+						char operands[128];
+						struct DisasmPara_PPC dp;
+						/* initialize DisasmPara */
+						dp.opcode = opcode;
+						dp.operands = operands;
+						dp.iaddr = seek; //config.baddr + config.seek + i;
+						dp.instr = b; //config.block + i;
+						// XXX read vda68k: this fun returns something... size of opcode?
+						M68k_Disassemble(&dp);
+						cons_printf("  %s %s", opcode, operands);
+					} break;
 			}
 			C cons_printf(C_RESET);
 			if (aop.ref) {

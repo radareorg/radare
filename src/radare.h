@@ -120,6 +120,7 @@ void metadata_comment_init(int new);
 extern int fixed_width;
 extern int inc;
 void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size);
+void radare_init();
 int radare_go();
 void radare_exit();
 void radare_resize(const char *arg);

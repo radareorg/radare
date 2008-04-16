@@ -31,6 +31,7 @@
 #define _ //printf
 extern int arm_mode;
 
+#include <stdlib.h>
 #include "dis-asm.h"
 #define FALSE 0
 #ifndef TRUE

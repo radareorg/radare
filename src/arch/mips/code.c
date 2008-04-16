@@ -88,5 +88,6 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 			}
 		}
 	} 
-	return (mips_mode==16)?2:4;
+	aop->length = (mips_mode==16)?2:4;
+	return aop->length;
 }

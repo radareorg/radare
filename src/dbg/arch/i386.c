@@ -617,92 +617,54 @@ int arch_print_fpregisters(int rad, const char *mask)
 }
 #else
 
+#if __linux__
+struct user_fxsr_struct {
+        unsigned short  cwd;
+        unsigned short  swd;
+        unsigned short  twd;
+        unsigned short  fop;
+        long    fip;
+        long    fcs;
+        long    foo;
+        long    fos;
+        long    mxcsr;
+        long    reserved;
+        long    st_space[32];   /* 8*16 bytes for each FP-reg = 128 bytes */
+        long    xmm_space[32];  /* 8*16 bytes for each XMM-reg = 128 bytes */
+        long    padding[56];
+};
+#endif
+
 struct user_fpxregs_struct regs __attribute__((aligned(16)));
+
 // NO RAD FOR FPREGS (only 32&64 bit vars)
 int arch_print_fpregisters(int rad, const char *mask)
 {
 	int i, ret;
-#if __linux__
-
-#if 1
-
-////struct user_fxsr_struct regs ;
-ptrace(PTRACE_GETFPXREGS, ps.tid, &regs, (void*)sizeof(regs));
-cons_printf("fip = 0x%08x\n", regs.fip);
-cons_printf("foo = 0x%08x\n", regs.foo);
-for(i=0;i<8;i++) {
-	long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
-	#if __x86_64__
-	#define FADDR ((double*)&regs.st_space[i*2]+16-sizeof(double))
-	#else
-	#define FADDR ((double*)&regs.st_space[i*4]+16-sizeof(double))
-	//+16-sizeof(double))
-	#endif
-	cons_printf(" st%d = %lg (0x%08lx)\n", i, *FADDR, *FADDR);
-}
-return 0;
-#endif
-#if 0
-//	struct user_fpregs_struct regs;
-	elf_fpregset_t regs;
-	ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void*)sizeof(regs_t));
-	cons_printf("fip = 0x%08x\n", regs.fip);
-	cons_printf("foo = 0x%08x\n", regs.foo);
-	for(i=0;i<8;i++) {
-		long double f = *(long double *)(((char *)regs.st_space)+28+(i*10));
-		//double f;
-		//unsigned char *ptr = &regs.st_space;
-		//ptr = ptr + 28 + (i*10);
-		//memcpy(&f, ptr, sizeof(double));
-		//double f = *((double *)&((char *) regs.st_space)[i*10]);
-//		 double f = *((double *)&((char *) regs.st_space)[28+(i*10)]);
-//i387-tdep.h:#define I387_FCTRL_REGNUM   (I387_ST0_REGNUM + 8)
-//i387-tdep.h:#define I387_XMM0_REGNUM    (I387_ST0_REGNUM + 16)
-#if 0
-#if __x86_64__
-		float f = *(float*)&regs.st_space[i*2]+16-sizeof(float);
-#else
-		float f = *(float*)&regs.st_space[i*4]+16-sizeof(float); // *2 on x86_64
-#endif
-#endif
-		cons_printf(" st%d = %-+27.19lg (0x%08lx)\n", i, f, f);
-	}
-#endif
-
-#if 0
-#if __linux__
-	//struct user_fpregs_struct regs;
-	elf_fpregset_t regs;
-#else
-	struct fpreg regs;
-#endif
+	struct user_fxsr_struct regs ;
 
 	if (ps.opened == 0)
 		return 1;
-#if __linux__
-#warning THIS CODE IS BUGGY! LINUX AND GNU SUX A LOT
-	ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, (void *)&regs);
-	printf("  cwd 0x%lx  ; control\n", regs.cwd);
-	printf("  swd 0x%lx  ; status\n", regs.swd);
-	printf("  twd 0x%lx  ; tag\n", regs.twd);
-	printf("  fip 0x%lx  ; eip of fpu opcode\n", regs.fip);
-	printf("  fcs 0x%lx\n", regs.fcs);
-	printf("  foo 0x%lx  ; stack\n", regs.foo);
-	printf("  fos 0x%lx\n", regs.fos);
-	for(i=0;i<20;i++)
-		cons_printf("  st%d %Lf\n", i, regs.st_space[i]);
-#else
-	ret = ptrace(PTRACE_GETFPREGS, ps.tid, &regs, (void *)sizeof(regs_t));
-	for(i=0;i<8;i++)
+
+	ret = ptrace(PTRACE_GETFPXREGS, ps.tid, NULL, &regs);
+
+	cons_printf("  cwd 0x%lx  ; control\n", regs.cwd);
+	cons_printf("  swd 0x%lx  ; status\n", regs.swd);
+	cons_printf("  twd 0x%lx  ; tag\n", regs.twd);
+	cons_printf("  fip 0x%lx  ; eip of fpu opcode\n", regs.fip);
+	cons_printf("  fcs 0x%lx\n", regs.fcs);
+	cons_printf("  foo 0x%lx  ; stack\n", regs.foo);
+	cons_printf("  fos 0x%lx\n", regs.fos);
+
 #if __NetBSD__
-		cons_printf("  st%d %f\n", i, regs.__data[i]); // XXX Fill this in with real info.
+#define FADDR ((double*)&regs.__data[i*4])
 #else
-		cons_printf("  st%d %f\n", i, regs.fpr_env[i]);
-#endif
-#endif
+#define FADDR ((double*)&regs.st_space[i*4])
 #endif
 
-#endif
+	for(i=0;i<8;i++)
+		cons_printf("st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+
 	return ret;
 }
 
