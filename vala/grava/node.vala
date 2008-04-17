@@ -47,16 +47,11 @@ public class Grava.Node : GLib.Object
 
 	public void set (weak string key, weak string val)
 	{
-		if (data== null)
-			return;
-		//data     = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);
 		data.insert (key, val);
 	}
 
 	public string get (weak string key)
 	{
-		if (data == null)
-			return null;
 		return data.lookup(key);
 	}
 
@@ -72,7 +67,7 @@ public class Grava.Node : GLib.Object
 		xrefs.append(str);
 	}
 
-	public bool overlaps(Node n)
+	public bool overlaps(weak Node n)
 	{
 		return (n.x >= x && n.x <= x+w && n.y <= y && n.y <= y+h);
 	}

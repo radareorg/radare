@@ -2,7 +2,7 @@ include ../../config.mk
 
 SOURCES=default_layout.vala edge.vala graph.vala layout.vala \
 	main.vala node.vala renderer.vala widget.vala
-VALAFLAGS=--pkg gtk+-2.0 --pkg cairo
+VALAFLAGS=--pkg gtk+-2.0 --pkg cairo -g
 
 all:
 	valac cmain.c --save-temps *.vala --pkg gtk+-2.0 --pkg cairo -o a.out

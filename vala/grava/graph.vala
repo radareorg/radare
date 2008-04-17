@@ -159,7 +159,7 @@ public class Grava.Graph : GLib.Object
 		return false;
 	}
 
-	public void draw(Context ctx)
+	public void draw(weak Context ctx)
 	{
 //		ctx.set_operator (Cairo.Operator.SOURCE);
 	// XXX THIS FLICKERS! MUST USE DOUBLE BUFFER
