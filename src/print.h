@@ -27,6 +27,7 @@ int cons_fgets(char *buf, int len);
 int cons_set_fd(int fd);
 void cons_strcat(const char *str);
 void cons_newline();
+int is_cursor(int from, int len);
 
 /* inverted print block */
 typedef enum {

@@ -413,7 +413,7 @@ int arch_print_registers(int rad, const char *mask)
 			PRINT_REG("t6", "", 15);
 			PRINT_REG("t7", "", 16);
 			PRINT_REG("t8", "", 23);
-			PRINT_REG("t9", "", 24);
+			PRINT_REG("t9", "\n", 24);
 		} else {
 #if 0
   k0 k1

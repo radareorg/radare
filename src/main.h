@@ -53,6 +53,7 @@
 #include "radare.h"
 #include "flags.h"
 #include "utils.h"
+#include "print.h"
 #include "plugin.h"
 
 
