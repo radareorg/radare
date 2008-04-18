@@ -618,7 +618,7 @@ int debug_dispatch_wait()
 		eprintf("\n\n______________[ process finished ]_______________\n\n");
 		ps.opened = 0;
 		kill(ps.tid, SIGKILL);
-		debug_load();
+		//debug_load();
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
 
@@ -689,7 +689,7 @@ int debug_dispatch_wait()
 	} else
 		eprintf("What?\n");
 
-	return 0; /* should stop */
+	return 0; /* XXX: should stop */
 }
 
 /* HACK: save a hardware/software breakpoint */

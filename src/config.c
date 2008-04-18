@@ -552,9 +552,10 @@ void config_init()
 	node->callback = &config_baddr_callback;
 
 	config_set("trace.bt", "false");
-	config_set("trace.sleep", "0");
-	config_set("trace.smart", "true");
-	config_set("trace.log", "true");
+	config_set_i("trace.sleep", 0);
+	config_set("trace.smart", "false");
+	config_set("trace.libs", "true");
+	config_set("trace.log", "false");
 	config_set("trace.dup", "false");
 	config_set("trace.cmtregs", "false");
 

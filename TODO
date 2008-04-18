@@ -11,9 +11,11 @@
 ======
  * add full autocompletion support for dietline
  * support for background color
+ * support for color palette
  * blinking byte at cursor
  * support for search and replace
  * support for oprofile (via rsc or so)
+ * Edit modify source references ;)
 
 Open streams
 ============
@@ -23,7 +25,6 @@ Open streams
   - configure bps and so
   $ radare /dev/ttyS0
 * '<' and '>' commands converted in prefix modifiers
-* Do not use the char '(' in asm.lines. just use - or =
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
   - automatic stepu 
@@ -422,6 +423,7 @@ TOTHINK
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset
   - do not execute twice
+* Do not use the char '(' in asm.lines. just use - or =
 * record radare commands
   - all commands executed within a recording time are stored on a single script file
   - you can later repeat it or edit

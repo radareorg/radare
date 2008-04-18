@@ -1122,8 +1122,12 @@ CMD_DECL(visual)
 						radare_cmd("!contsc", 0);
 						break;
 					case 0x38: // F7
-						if (config.debug)
+						if (config_get("trace.libs")) {
+							//CMD_NAME(step)(NULL);
+							debug_step(1);
+						} else {
 							CMD_NAME(stepu_in_dbg)(NULL);
+						}
 						continue;
 					case 0x39: // F8
 						if (config.debug)

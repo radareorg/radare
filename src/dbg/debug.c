@@ -959,6 +959,7 @@ int debug_step(int times)
 	addr_t old_pc = 0;
 	const char *tracefile;
 	const char *flagregs;
+	int ret;
 
 	if (!ps.opened) {
 		eprintf("No program loaded.\n");
@@ -978,7 +979,8 @@ int debug_step(int times)
 				perror("debug_os_steps");
 				return 0;
 			}
-			debug_dispatch_wait();
+			ret = debug_dispatch_wait();
+			//printf("DISPATH WAIT: %d\n", ret);
 		}
 		debug_print_wait("step");
 	} else {
@@ -1017,7 +1019,8 @@ int debug_step(int times)
 					return 0;
 				}
 				ps.steps++;
-				debug_dispatch_wait();
+				ret = debug_dispatch_wait();
+			//	printf("DISPATH WAIT 2: %d\n", ret);
 			}
 
 			flagregs = config_get("trace.cmtregs");
@@ -1126,9 +1129,11 @@ int debug_registers(int rad)
 int debug_trace(char *input)
 {
 	// TODO: file.trace ???
+	// TODO: show stack and backtrace only when is different
 	int tbt = (int)config_get("trace.bt");
 	long slip = (int)config_get_i("trace.sleep");
 	int smart = (int)config_get("trace.smart");
+	int tracelibs = (int)config_get("trace.libs");
 	int level = atoi(input+1);
 	unsigned long pc;
 
@@ -1138,38 +1143,55 @@ int debug_trace(char *input)
 		printf("  1  show addresses\n");
 		printf("  2  address and disassembly\n");
 		printf("  3  address, disassembly and registers\n");
-		printf("  > eval dbg.tracebt = true ; show backtrace\n");
+		printf("  4  address, disassembly and registers and stack\n");
+		printf("  > eval trace.bt = true ; to show backtrace\n");
+		printf("  > eval trace.sleep = 1 ; animated stepping\n");
 		return 0;
 	}
 
 	/* default debug level */
-	if (level == 0 && input[0]!='0')
-		level=2;
+	printf("Trace level: %d\n", level);
+	//if (level == 0 && input[0]!='0')
+	//	level = 2;
 
-	radare_controlc();
+	radare_cmd(".!regs*",0);
+	if (level>2) {
+		radare_cmd("!regs",0);
+		radare_cmd("px  64 @ esp",0);
+	}
 
 	while(!config.interrupted && ps.opened && debug_step(1)) {
+		radare_controlc();
+		radare_cmd(".!regs*", 0);
 		if (smart) {
-			cons_printf("[-] 0x%08x\n", arch_pc());
-			radare_cmd("s eip && f -eip", 0);
-			disassemble(20, 2);
+			cons_printf("[-] 0x%08llx\n", arch_pc());
 			radare_cmd("!dregs", 0);
+			radare_cmd("pD 20 @ eip", 0);
+			//disassemble(20, 2);
 		} else {
 			switch(level) {
-			case 0:
-				break;
 			case 1:
-				cons_printf("0x%08x\n", arch_pc());
+				radare_cmd("!dregs", 0);
+			case 0:
+				cons_printf("0x%08llx\n", arch_pc());
 				break;
+			case 5:
+				cons_printf("[-] 0x%08llx\n", arch_pc());
+				radare_cmd("!regs", 0);
+			case 4:
+				radare_cmd("px 64 @ esp",0);
 			case 2:
 			case 3:
+				radare_cmd("pD 20 @ eip",0);
 			default:
 				pc = arch_pc();
-				if (is_usercode(pc)) {
-					radare_seek((addr_t)pc, SEEK_SET);
-					radare_read(0);
-					disassemble(10,1);
-					if (level == 3) {
+				if (config.interrupted)
+					break;
+				if (tracelibs || is_usercode(pc)) {
+					//radare_seek((addr_t)pc, SEEK_SET);
+					//radare_read(0);
+					//disassemble(10,1);
+					if (level >= 3) {
 						debug_registers(0);
 						cons_printf("\n");
 					}
@@ -1177,14 +1199,19 @@ int debug_trace(char *input)
 						// XXX must be internal call
 						radare_cmd("!bt", 0);
 					}
+					if (config.interrupted)
+						break;
 				}
-				fflush(stdout);
 				break;
 			}
 		}
+			radare_controlc();
 		cons_flush();
-		if (slip)
+		if (slip) {
 			sleep(slip);
+		}
+			if (config.interrupted)
+				break;
 	}
 
 	radare_controlc_end();
