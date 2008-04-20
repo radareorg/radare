@@ -577,7 +577,7 @@ set_default_mips_dis_options (struct disassemble_info *info)
   /* Defaults: mipsIII/r3000 (?!), (o)32-style ("oldabi") GPR names,
      and numeric FPR, CP0 register, and HWR names.  */
   mips_isa = ISA_MIPS3;
-  mips_processor =  CPU_R3000;
+  mips_processor =  CPU_LOONGSON_2F; // R3000
   mips_gpr_names = mips_gpr_names_oldabi;
   mips_fpr_names = mips_fpr_names_numeric;
   mips_cp0_names = mips_cp0_names_numeric;
@@ -714,7 +714,7 @@ parse_mips_dis_option (const char *option, unsigned int len)
   /* Invalid option.  */
 }
 
-static void
+void
 parse_mips_dis_options (const char *options)
 {
   const char *option_end;

@@ -1802,7 +1802,6 @@ const struct mips_opcode mips_builtin_opcodes[] =
 {"fslt",    "S,T",      0x46a0003c, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2E },
 {"fsleu",   "S,T",      0x4680003e, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2E },
 {"fsle",    "S,T",      0x46a0003e, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2E },
-#if 0
 /* loongson 2f */
 {"faddu",   "D,V,T",    0x45800000, 0xffe0003f, WR_D|RD_S|RD_T|FP_D,    0, IL2F },
 {"for",     "D,V,T",    0x45a00000, 0xffe0003f, WR_D|RD_S|RD_T|FP_D,    0, IL2F },
@@ -1826,7 +1825,6 @@ const struct mips_opcode mips_builtin_opcodes[] =
 {"fslt",    "S,T",      0x46a0003c, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2F },
 {"fsleu",   "S,T",      0x4680003e, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2F },
 {"fsle",    "S,T",      0x46a0003e, 0xffe007ff, RD_S|RD_T|WR_CC|FP_D,   0, IL2F },
-#endif
 /* loongson2 paired single */
 {"add.gps",     "D,V,T",        0x45600000,     0xffe0003f,     WR_D|RD_S|RD_T|FP_D,  0, IL2E },
 {"sub.gps",     "D,V,T",        0x45600001,     0xffe0003f,     WR_D|RD_S|RD_T|FP_D,  0, IL2E },

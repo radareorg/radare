@@ -186,7 +186,7 @@ int flag_rename(char *foo, char *bar)
 				free(str);
 			}
 		} else
-		if (!strnstr(foo+ini, flag->name, sz)) {
+		if (!_strnstr(foo+ini, flag->name, sz)) {
 			if (glob_end) {
 				char *str = strdup(flag->name+sz);
 				sprintf(flag->name, "%s%s", bar, str);

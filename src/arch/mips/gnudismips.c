@@ -3,6 +3,7 @@
 #include <string.h>
 #include <radare.h>
 #include <dis-asm.h>
+#include "opcode/mips.h"
 
 int mips_mode = 32;
 
@@ -40,6 +41,7 @@ static void  print_address(bfd_vma address, struct disassemble_info *info)
 char *gnu_dismips(unsigned char *inst, unsigned long offset)
 {
 	struct disassemble_info info;
+struct mips_cpu_info *arch_info =   { "loongson2f",     0,      ISA_MIPS3,      CPU_LOONGSON_2F };
 
 	str[0] = '\0';
 
@@ -49,7 +51,7 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 
 	/* prepare disassembler */
 	memset(&info,'\0', sizeof(struct disassemble_info));
-	//info.arch = ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
+	//info.arch = CPU_LOONGSON_2F; //ARM_EXT_LOONGSON2F|ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
 	info.buffer = bytes; //bytes; //&bytes;
 	info.read_memory_func = &mips_buffer_read_memory;
 	info.symbol_at_address_func = &symbol_at_address;
@@ -58,6 +60,9 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 	info.endian = 0;//config_get_i("cfg.endian");
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
+
+	//print_mips_disassembler_options(stdout);
+	//parse_mips_dis_options("arch=loongson2f");
 
 	// endian is controlled by radare
 	if (print_insn_big_mips(offset, &info) == -1)

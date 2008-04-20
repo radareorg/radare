@@ -57,6 +57,14 @@ long long arch_syscall(int pid, int sc, ...)
 	return ret;
 }
 
+/* clear high 64 bits */
+static u64 reg(u64 reg)
+{
+	if (reg & 0xFFFFFFFF00000000LL)
+		return reg & 0xFFFFFFFF;
+	return reg;
+}
+
 int arch_dump_registers()
 {
 	FILE *fd;
@@ -72,24 +80,24 @@ int arch_dump_registers()
 		fprintf(stderr, "Cannot open\n");
 		return;
 	}
-	fprintf(fd, "r00 0x%08x\n", (uint)llregs[0]);
-	fprintf(fd, "r01 0x%08x\n", (uint)llregs[1]);
-	fprintf(fd, "r02 0x%08x\n", (uint)llregs[2]);
-	fprintf(fd, "r03 0x%08x\n", (uint)llregs[3]);
-	fprintf(fd, "r04 0x%08x\n", (uint)llregs[4]);
-	fprintf(fd, "r05 0x%08x\n", (uint)llregs[5]);
-	fprintf(fd, "r06 0x%08x\n", (uint)llregs[6]);
-	fprintf(fd, "r07 0x%08x\n", (uint)llregs[7]);
-	fprintf(fd, "r08 0x%08x\n", (uint)llregs[8]);
-	fprintf(fd, "r09 0x%08x\n", (uint)llregs[9]);
-	fprintf(fd, "r10 0x%08x\n", (uint)llregs[10]);
-	fprintf(fd, "r11 0x%08x\n", (uint)llregs[11]);
-	fprintf(fd, "r12 0x%08x\n", (uint)llregs[12]);
-	fprintf(fd, "r13 0x%08x\n", (uint)llregs[13]);
-	fprintf(fd, "r14 0x%08x\n", (uint)llregs[14]);
-	fprintf(fd, "r15 0x%08x\n", (uint)llregs[15]);
-	fprintf(fd, "r16 0x%08x\n", (uint)llregs[16]);
-	fprintf(fd, "r17 0x%08x\n", (uint)llregs[17]);
+	fprintf(fd, "r00 0x%08llx\n", reg(llregs[0]));
+	fprintf(fd, "r01 0x%08llx\n", reg(llregs[1]));
+	fprintf(fd, "r02 0x%08llx\n", reg(llregs[2]));
+	fprintf(fd, "r03 0x%08llx\n", reg(llregs[3]));
+	fprintf(fd, "r04 0x%08llx\n", reg(llregs[4]));
+	fprintf(fd, "r05 0x%08llx\n", reg(llregs[5]));
+	fprintf(fd, "r06 0x%08llx\n", reg(llregs[6]));
+	fprintf(fd, "r07 0x%08llx\n", reg(llregs[7]));
+	fprintf(fd, "r08 0x%08llx\n", reg(llregs[8]));
+	fprintf(fd, "r09 0x%08llx\n", reg(llregs[9]));
+	fprintf(fd, "r10 0x%08llx\n", reg(llregs[10]));
+	fprintf(fd, "r11 0x%08llx\n", reg(llregs[11]));
+	fprintf(fd, "r12 0x%08llx\n", reg(llregs[12]));
+	fprintf(fd, "r13 0x%08llx\n", reg(llregs[13]));
+	fprintf(fd, "r14 0x%08llx\n", reg(llregs[14]));
+	fprintf(fd, "r15 0x%08llx\n", reg(llregs[15]));
+	fprintf(fd, "r16 0x%08llx\n", reg(llregs[16]));
+	fprintf(fd, "r17 0x%08llx\n", reg(llregs[17]));
 	fclose(fd);
 }
 
@@ -333,48 +341,48 @@ int arch_print_registers(int rad, const char *mask)
 	}
 
 	if (rad) {
-		cons_printf("f pc  @ 0x%llx\nf eip@pc", arch_pc()); // dupgetregs
-		cons_printf("f at  @ 0x%llx\n", llregs[1]);
-		cons_printf("f v0  @ 0x%llx\n", llregs[2]);
-		cons_printf("f v1  @ 0x%llx\n", llregs[3]);
-		cons_printf("f v2  @ 0x%llx\n", llregs[4]);
+		cons_printf("f pc  @ 0x%llx\nf eip@pc", reg(arch_pc())); // dupgetregs
+		cons_printf("f at  @ 0x%llx\n", reg(llregs[1]));
+		cons_printf("f v0  @ 0x%llx\n", reg(llregs[2]));
+		cons_printf("f v1  @ 0x%llx\n", reg(llregs[3]));
+		cons_printf("f v2  @ 0x%llx\n", reg(llregs[4]));
 
-		cons_printf("f a0  @ 0x%llx\n", llregs[5]);
-		cons_printf("f a1  @ 0x%llx\n", llregs[6]);
-		cons_printf("f a2  @ 0x%llx\n", llregs[7]);
-		cons_printf("f a3  @ 0x%llx\n", llregs[8]);
+		cons_printf("f a0  @ 0x%llx\n", reg(llregs[5]));
+		cons_printf("f a1  @ 0x%llx\n", reg(llregs[6]));
+		cons_printf("f a2  @ 0x%llx\n", reg(llregs[7]));
+		cons_printf("f a3  @ 0x%llx\n", reg(llregs[8]));
 
-		cons_printf("f t0  @ 0x%llx\n", llregs[9]);
-		cons_printf("f t1  @ 0x%llx\n", llregs[10]);
-		cons_printf("f t2  @ 0x%llx\n", llregs[11]);
-		cons_printf("f t3  @ 0x%llx\n", llregs[12]);
-		cons_printf("f t4  @ 0x%llx\n", llregs[13]);
-		cons_printf("f t5  @ 0x%llx\n", llregs[14]);
-		cons_printf("f t6  @ 0x%llx\n", llregs[15]);
-		cons_printf("f t7  @ 0x%llx\n", llregs[16]);
-		cons_printf("f s0  @ 0x%llx\n", llregs[17]);
-		cons_printf("f s1  @ 0x%llx\n", llregs[18]);
-		cons_printf("f s2  @ 0x%llx\n", llregs[19]);
-		cons_printf("f s3  @ 0x%llx\n", llregs[20]);
-		cons_printf("f s4  @ 0x%llx\n", llregs[19]);
-		cons_printf("f s5  @ 0x%llx\n", llregs[20]);
-		cons_printf("f s6  @ 0x%llx\n", llregs[21]);
-		cons_printf("f s7  @ 0x%llx\n", llregs[22]);
-		cons_printf("f t8  @ 0x%llx\n", llregs[23]);
-		cons_printf("f t9  @ 0x%llx\n", llregs[24]);
-		cons_printf("f k0  @ 0x%llx\n", llregs[25]); // k0 - the context where it was pwned
-		cons_printf("f k1  @ 0x%llx\n", llregs[26]);
-		cons_printf("f gp  @ 0x%llx\n", llregs[27]);
-		cons_printf("f sp  @ 0x%llx\n", llregs[28]);
-		cons_printf("f fp  @ 0x%llx ; fp\n", llregs[29]);
-		cons_printf("f sp  @ 0x%llx\nf esp@sp", llregs[29]);
-		cons_printf("f ra  @ 0x%llx\n", llregs[30]);
+		cons_printf("f t0  @ 0x%llx\n", reg(llregs[9]));
+		cons_printf("f t1  @ 0x%llx\n", reg(llregs[10]));
+		cons_printf("f t2  @ 0x%llx\n", reg(llregs[11]));
+		cons_printf("f t3  @ 0x%llx\n", reg(llregs[12]));
+		cons_printf("f t4  @ 0x%llx\n", reg(llregs[13]));
+		cons_printf("f t5  @ 0x%llx\n", reg(llregs[14]));
+		cons_printf("f t6  @ 0x%llx\n", reg(llregs[15]));
+		cons_printf("f t7  @ 0x%llx\n", reg(llregs[16]));
+		cons_printf("f s0  @ 0x%llx\n", reg(llregs[17]));
+		cons_printf("f s1  @ 0x%llx\n", reg(llregs[18]));
+		cons_printf("f s2  @ 0x%llx\n", reg(llregs[19]));
+		cons_printf("f s3  @ 0x%llx\n", reg(llregs[20]));
+		cons_printf("f s4  @ 0x%llx\n", reg(llregs[19]));
+		cons_printf("f s5  @ 0x%llx\n", reg(llregs[20]));
+		cons_printf("f s6  @ 0x%llx\n", reg(llregs[21]));
+		cons_printf("f s7  @ 0x%llx\n", reg(llregs[22]));
+		cons_printf("f t8  @ 0x%llx\n", reg(llregs[23]));
+		cons_printf("f t9  @ 0x%llx\n", reg(llregs[24]));
+		cons_printf("f k0  @ 0x%llx\n", reg(llregs[25])); // k0 - the context where it was pwned
+		cons_printf("f k1  @ 0x%llx\n", reg(llregs[26]));
+		cons_printf("f gp  @ 0x%llx\n", reg(llregs[27]));
+		cons_printf("f sp  @ 0x%llx\n", reg(llregs[28]));
+		cons_printf("f fp  @ 0x%llx ; fp\n", reg(llregs[29]));
+		cons_printf("f sp  @ 0x%llx\nf esp@sp", reg(llregs[29]));
+		cons_printf("f ra  @ 0x%llx\n", reg(llregs[30]));
 	} else {
 		if (color) {
 			#define PRINT_REG(name, tail, idx) \
 				if (llregs[idx] != ollregs[idx]) \
 					cons_strcat("\e[35m"); \
-				cons_printf("  "name"  0x%08llx\e[0m"tail, llregs[idx]); 
+				cons_printf("  "name"  0x%08llx\e[0m"tail, reg(llregs[idx])); 
 			cons_printf("  pc  0x%08llx\e[0m", arch_pc());
 			PRINT_REG("ra", "", 30);
 			PRINT_REG("fp", "", 29);
@@ -434,19 +442,19 @@ int arch_print_registers(int rad, const char *mask)
      t5 t6 t7 t8 t9
 #endif
 		cons_printf(" pc 0x%08llx   ra 0x%08llx  fp 0x%08llx  gp 0x%08llx  at 0x%08llx\n",
-				 arch_pc(), llregs[30], llregs[29], llregs[27], llregs[1]);
+				 arch_pc(), reg(llregs[30]), reg(llregs[29]), reg(llregs[27]), reg(llregs[1]));
 		cons_printf(" sp 0x%08llx   a0 0x%08llx  a1 0x%08llx  a2 0x%08llx  a3 0x%08llx\n",
-				llregs[28], llregs[5], llregs[6], llregs[7], llregs[8]);
+				reg(llregs[28]), reg(llregs[5]), reg(llregs[6]), reg(llregs[7]), reg(llregs[8]));
 		cons_printf(" k0 0x%08llx   k1 0x%08llx  v0 0x%08llx  v1 0x%08llx  v2 0x%08llx\n",
-				llregs[25], llregs[26], llregs[2], llregs[3], llregs[4]);
+				reg(llregs[25]), reg(llregs[26]), reg(llregs[2]), reg(llregs[3]), reg(llregs[4]));
 		cons_printf(" s0 0x%08llx   s1 0x%08llx  s2 0x%08llx  s3 0x%08llx  s4 0x%08llx\n",
-				llregs[15], llregs[16], llregs[17], llregs[18], llregs[19]);
+				reg(llregs[15]), reg(llregs[16]), reg(llregs[17]), reg(llregs[18]), reg(llregs[19]));
 		cons_printf(" s5 0x%08llx   s6 0x%08llx  s7 0x%08llx\n", 
-				llregs[20], llregs[21], llregs[22]);
+				reg(llregs[20]), reg(llregs[21]), reg(llregs[22]));
 		cons_printf(" t0 0x%08llx   t1 0x%08llx  t2 0x%08llx  t3 0x%08llx  t4 0x%08llx\n", 
-				 llregs[9], llregs[10], llregs[11], llregs[12], llregs[13]);
+				 reg(llregs[9]), reg(llregs[10]), reg(llregs[11]), reg(llregs[12]), reg(llregs[13]));
 		cons_printf(" t5 0x%08llx   t6 0x%08llx  t7 0x%08llx  t8 0x%08llx  t9 0x%08llx\n", 
-				llregs[14], llregs[15], llregs[16], llregs[23], llregs[24]);
+				reg(llregs[14]), reg(llregs[15]), reg(llregs[16]), reg(llregs[23]), reg(llregs[24]));
 		}
 	}
 
