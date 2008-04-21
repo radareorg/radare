@@ -741,7 +741,7 @@ static int read_text(struct state *s, struct directive *d)
 
 static int read_bin(struct state *s, struct directive *d)
 {
-	int rd;
+	//int rd;
 
 	memcpy(&d->d_inst, s->s_buf, sizeof(d->d_inst));
 #if 0

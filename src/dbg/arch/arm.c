@@ -241,7 +241,7 @@ long get_value(char *str)
 	return 0;
 }
 
-int arch_is_soft_stepoverable(const char *cmd)
+int arch_is_soft_stepoverable(const unsigned char *opcode)
 {
 	return 0;
 }
@@ -493,15 +493,15 @@ void *arch_alloc_page(int size, int *rsize)
 {
 }
 
-void *arch_mmap(int fd, int size, u64 addr) //int *rsize)
+addr_t arch_mmap(int fd, int size, addr_t addr)
 {
 }
 
-void *arch_get_sighandler(int signum)
+addr_t arch_get_sighandler(int signum)
 {
 }
 
-void *arch_set_sighandler(int signum, u64 handler)
+addr_t arch_set_sighandler(int signum, u64 handler)
 {
 }
 

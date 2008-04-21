@@ -1,12 +1,16 @@
 include ../config.mk
 
+BIN=gradare${BINSFX}
 OBJ=main.o sidebar.o toolbar.o actions.o execute.o prefs.o menubar.o dialog.o
 CFLAGS+=-DPREFIX=\"${PREFIX}\" -DGRSCDIR=\"${LIBEXECDIR}/gradare\"
 CFLAGS+=${GTK_FLAGS} ${VTE_FLAGS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --cflags`
 LDFLAGS+=${GTK_LIBS} ${VTE_LIBS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --libs`
-BIN=gradare${BINSFX}
+# MAEMO STUFF
+#CFLAGS+=`pkg-config --cflags hildon-1`
+#LDFLAGS+=`pkg-config --libs hildon-1`
+
 
 all: ${OBJ} ${BIN}
 	${E} 'Linking ${BIN}'

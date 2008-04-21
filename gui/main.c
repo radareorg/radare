@@ -25,7 +25,8 @@
 #include <string.h>
 #include <getopt.h>
 #if _MAEMO_
-#include <hildoh.h>
+#include <hildon/hildon.h>
+#include <hildon/hildon-window.h>
 #endif
 
 //#define FONT "-adobe-courier-bold-o-normal--18-180-75-75-m-110-iso8859-15"
@@ -264,14 +265,15 @@ int main(int argc, char **argv, char **envp)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(w), vbox);
 #if _MAEMO_
-	hildon_window_set_menu(w, gradare_menubar_new(w));
+	hildon_window_set_menu(w, GTK_WIDGET( gradare_menubar_new(w) ));
 #else
 	gtk_box_pack_start(GTK_BOX(vbox),
 		GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
 #endif
 	tool = gradare_toolbar_new(NULL);
 #if _MAEMO_
-	hildon_window_set_toolbar(w, tool);
+	//hildon_window_set_toolbar(w, tool);
+	hildon_program_set_common_toolbar(p, tool);
 #else
 	gtk_box_pack_start(GTK_BOX(vbox), tool, FALSE, FALSE, 0);
 #endif

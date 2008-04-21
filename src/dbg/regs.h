@@ -51,9 +51,17 @@
    #define regs_t _STRUCT_X86_THREAD_STATE32
  #endif
 #else
+#if __NetBSD__ || __FreeBSD__ || __OpenBSD__
   /* bsd 32 bits */
   #include <machine/reg.h>
   #define regs_t struct reg
+#else
+#if __arm__
+  #include <sys/ucontext.h>
+  #define regs_t elf_gregset_t
+#endif
+// HUH
+#endif
 #endif
   /* ARM */
 #endif

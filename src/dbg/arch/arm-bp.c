@@ -148,7 +148,7 @@ inline int arch_bp_soft_disable(struct bp_t *bp)
 	return debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 }
 
-inline void arch_restore_bp(struct bp_t *bp)
+int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
 
