@@ -633,16 +633,17 @@ struct user_fxsr_struct {
         long    xmm_space[32];  /* 8*16 bytes for each XMM-reg = 128 bytes */
         long    padding[56];
 };
-#endif
 
 struct user_fpxregs_struct regs __attribute__((aligned(16)));
+#endif
 
-// NO RAD FOR FPREGS (only 32&64 bit vars)
+// NO RAD FOR FPREGS (only 32&64 bit vars, TODO: needs bsd port)
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	int i, ret;
-	struct user_fxsr_struct regs ;
+	int i, ret = 0;
 
+#if __linux__
+	struct user_fxsr_struct regs ;
 	if (ps.opened == 0)
 		return 1;
 
@@ -664,6 +665,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 
 	for(i=0;i<8;i++)
 		cons_printf("st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+#endif
 
 	return ret;
 }

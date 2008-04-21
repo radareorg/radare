@@ -22,7 +22,7 @@ extern char *last_tsearch;
 
 void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
-int strnstr(char *from, char *to, int size);
+int _strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, char *string);
 char *slurp(char *str);
 

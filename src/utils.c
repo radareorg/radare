@@ -63,7 +63,7 @@ char *lstrchr(char *str, char chr)
 	return NULL;
 }
 
-int strnstr(char *from, char *to, int size)
+int _strnstr(char *from, char *to, int size)
 {
 	int i;
 	for(i=0;i<size;i++)
