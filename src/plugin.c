@@ -69,6 +69,9 @@ int is_plugin(const char *str)
 #endif
 	if (strstr(str, ".so"))
 		return 1;
+// TODO __DARWIN__ ??
+	if (strstr(str, ".dylib"))
+		return 1;
 	return 0;
 }
 

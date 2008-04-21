@@ -1,7 +1,6 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-typedef u64 addr_t;
 #include "../../list.h"
 #include "../../radare.h"
 #include "../../code.h"

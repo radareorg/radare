@@ -7,6 +7,7 @@ CFLAGS=@CFLAGS@
 LDFLAGS=@LDFLAGS@
 JAVAC=javac -source 1.5 -Xlint:unchecked
 W32=@W32@
+DARWIN=@DARWIN@
 
 CFLAGS+=-Wall
 # TODO move these stuff to config.h.acr
