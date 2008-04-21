@@ -284,6 +284,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		b0 = list_entry(head, struct block_t, list);
 
 		node = grava_node_new();
+		g_object_ref(node);
 
 		/* label */
 		// TODO: support for real labelling stuff
@@ -298,10 +299,13 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
-			grava_node_set(node, "bgcolor", "turqoise");
+			grava_node_set(node, "bgcolor", "yellow");
 
+#if 0
+		// XXX this makes radare segfault with g_object_unref HUH!
 		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
 			grava_node_set(node, "bgcolor", "yellow");
+#endif
 
 		/* add call references for this node */
 		// XXX avoid dupped calls
@@ -325,6 +329,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		grava_graph_add_node(win->grava->graph, node);
 		b0->data = node;
+		g_object_unref(node);
 		i++;
 	}
 
@@ -333,6 +338,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		node = b0->data;
+		g_object_ref(node);
 
 		printf("A %08lx\n", b0->addr);
 		if (b0->tnext) {
@@ -370,6 +376,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		}
 	}
 	program_free(prg);
+	g_object_unref(node);
 
 	grava_graph_update(win->grava->graph);
 
@@ -382,6 +389,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 	if (n_windows)
 		return;
+
 	n_windows++;
 	new_window = 0;
 	gtk_main();

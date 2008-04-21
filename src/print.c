@@ -304,6 +304,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 
 	switch(fmt) {
 	case FMT_7BIT:
+		// TODO : use inverse for decoding
 		for(i=0;!config.interrupted && i<len; i++) {
 			packing_7bit_character(config.block+i, buffer);
 			cons_printf("%c", buffer[0]);
