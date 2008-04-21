@@ -9,6 +9,9 @@
 
 0.9.6:
 ======
+ * rename or remove pd command.
+   - make it work without file.wmode
+ * radare debugger for osx x86/arm
  * add full autocompletion support for dietline
  * support for background color
  * support for color palette

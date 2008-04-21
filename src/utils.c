@@ -275,6 +275,7 @@ char *mytok(char *ptr, char *delim, char *backup)
 	return ptr;
 }
 
+static int level = 0; // recursivity counter
 u64 get_math(const char* text)
 {
 	u64 t, new_off = 0;
@@ -286,6 +287,9 @@ u64 get_math(const char* text)
 #if RADARE_CORE
 	char *end, *txt2;
 #endif
+	/* AVOID STACK OVERFLOW */
+	if (level++>5)
+		return 0;
 
 	if (text==NULL||text[0]=='\0')
 		return 0;
@@ -332,6 +336,7 @@ u64 get_math(const char* text)
 	free(txt2);
 #endif
 
+	level--;
 	return new_off;
 }
 

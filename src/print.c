@@ -35,6 +35,8 @@
 int inc = 16;
 int dec = 16;
 format_info_t formats[] = {
+	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",         NULL,   "entire block" },
+//	{ '8', FMT_87BIT,       "print 8bit block in raw 7bit",         NULL,   "entire block" },
 	{ 'a', FMT_ASHC,       "asm shellcode",          NULL,         "entire block" },
 	{ 'A', FMT_ANAL,       "analyze data",           NULL,         "entire block" },
 	{ 'b', FMT_BIN,        "binary",                 "N bytes",    "entire block" },
@@ -42,7 +44,7 @@ format_info_t formats[] = {
 	{ 'c', FMT_CSTR,       "C format",               "N bytes",    "entire block" },
 	{ 'C', FMT_CODE,       "Code Analysis",          "N bytes",    "entire block" },
 	{ 'h', FMT_SHORT,      "short",                 "2 bytes",     "(endian)"},
-	{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" },
+	{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" }, // removed or renamed! XXX doesn works without file.wmode
 	{ 'D', FMT_UDIS,       "asm.arch disassembler",   "bsize bytes", "entire block" },
 	{ 'f', FMT_FLOAT,      "float",                 "4 bytes",     "(endian)"},
 	{ 'F', FMT_TIME_FTIME, "windows filetime",      "8 bytes",     "(endian)"},
@@ -197,6 +199,70 @@ void radare_dump_and_process(int type, int size)
 	unlink(file);
 }
 
+/* 7/8bit encoding for SMS from libgsmd */
+// FROM GSMD
+int packing_7bit_character(char *src, char *dest)
+{
+        int i,j = 0;
+        unsigned char ch1, ch2;
+        char tmp[2];
+        int shift = 0;
+
+        *dest = '\0';
+
+        for ( i=0; i<strlen(src); i++ ) {
+
+                ch1 = src[i] & 0x7F;
+                ch1 = ch1 >> shift;
+                ch2 = src[(i+1)] & 0x7F;
+                ch2 = ch2 << (7-shift);
+
+                ch1 = ch1 | ch2;
+
+                j = strlen(dest);
+                sprintf(tmp, "%x", (ch1 >> 4));
+                dest[j++] = tmp[0];
+                sprintf(tmp, "%x", (ch1 & 0x0F));
+                dest[j++] = tmp[0];
+                dest[j++] = '\0';
+
+                shift++;
+
+                if ( 7 == shift ) {
+                        shift = 0;
+                        i++;
+                }
+        }
+
+        return 0;
+}
+
+int unpacking_7bit_character(char *src, char *dest)
+{
+        unsigned char ch1, ch2 = '\0';
+        int i, j;
+        char buf[8];
+        int shift = 0;
+
+        *dest = '\0';
+
+        for ( i=0; i<strlen(src); i+=2 ) {
+                sprintf(buf, "%c%c", src[i], src[i+1]);
+                ch1 = strtol(buf, NULL, 16);
+
+                j = strlen(dest);
+                dest[j++] = ((ch1 & (0x7F >> shift)) << shift) | ch2;
+                dest[j++] = '\0';
+
+                ch2 = ch1 >> (7-shift);
+
+                shift++;
+        }
+
+        return 0;
+}
+
+
 /** Print some data.
  *
  * seek: position of the stream
@@ -237,6 +303,22 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	radare_controlc();
 
 	switch(fmt) {
+	case FMT_7BIT:
+		for(i=0;!config.interrupted && i<len; i++) {
+			packing_7bit_character(config.block+i, buffer);
+			cons_printf("%c", buffer[0]);
+		}
+		cons_newline();
+		break;
+#if 0
+	case FMT_87BIT:
+		for(i=0;!config.interrupted && i<len; i++) {
+			unpacking_7bit_character(config.block+i, buffer);
+			cons_printf("%c", buffer[0]);
+		}
+		cons_newline();
+		break;
+#endif
 	case FMT_PERCENT: {
 			int w = config.width-4;
 			u64 s = config.size;
