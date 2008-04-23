@@ -34,8 +34,10 @@ extern const char *dl_prompt;
 #include <termios.h>
 #include <sys/ioctl.h>
 #endif
+#if DEBUGGER
 #include "dbg/debug.h"
 #include "dbg/arch/arch.h"
+#endif
 #include "utils.h"
 #include "cmds.h"
 #include "readline.h"

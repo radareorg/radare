@@ -133,7 +133,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
 	int bar = config_get_i("asm.nlines");
-	int cow= 0;
+	int i, cow= 0;
 	char ch = ' ';
 
 	if (!list)
@@ -200,12 +200,23 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 				/* up */
 				if (addr < ref->from && addr > ref->to) {
 					if (ch=='-'||ch=='=')
-						cons_strcat("(");
+						cons_printf("%c", ch);
 					else // ^
 						cons_strcat("|");
 				} else {
 					cons_printf("%c",ch);
 				}
+			}
+		}
+		if (config_get("asm.lineswide")) { // TODO: convert to integer ?
+			switch(ch) {
+			case '=':
+			case '-':
+				cons_printf("%c", ch);
+				break;
+			default:
+				cons_printf(" ");
+				break;
 			}
 		}
 	}

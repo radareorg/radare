@@ -450,18 +450,18 @@ void udis_arch(int arch, int len, int rows)
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
 	int folder = 0; // folder level
 
-	cmd_asm = config_get("cmd.asm");
-	show_size =(int) config_get("asm.size");
-	show_bytes =(int) config_get("asm.bytes");
-	show_offset =(int) config_get("asm.offset");
-	show_splits =(int) config_get("asm.split");
-	show_flags =(int) config_get("asm.flags");
-	show_lines =(int) config_get("asm.lines");
-	show_traces =(int) config_get("asm.trace");
-	show_comments =(int) config_get("asm.comments");
-	show_nbytes = (int)config_get_i("asm.nbytes");
-	endian = (int) config_get("cfg.endian");
-	color = (int) config_get("scr.color");
+	cmd_asm       = config_get("cmd.asm");
+	show_size     = (int) config_get("asm.size");
+	show_bytes    = (int) config_get("asm.bytes");
+	show_offset   = (int) config_get("asm.offset");
+	show_splits   = (int) config_get("asm.split");
+	show_flags    = (int) config_get("asm.flags");
+	show_lines    = (int) config_get("asm.lines");
+	show_traces   = (int) config_get("asm.trace");
+	show_comments = (int) config_get("asm.comments");
+	show_nbytes   = (int) config_get_i("asm.nbytes");
+	endian        = (int) config_get("cfg.endian");
+	color         = (int) config_get("scr.color");
 
 	len*=2; // uh?!
 	jump_n = 0;
@@ -511,8 +511,9 @@ void udis_arch(int arch, int len, int rows)
 			if (show_lines)
 				code_lines_print(reflines, seek, 0);
 			if (show_offset) {
-				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				else cons_printf("0x%08llX ", (unsigned long long)(seek));
+				print_addr(seek);
+				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
 			switch(data_type(seek)) {
 			default:
@@ -639,8 +640,9 @@ void udis_arch(int arch, int len, int rows)
 				code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
 
 			if (show_offset) {
-				C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				else cons_printf("0x%08llX ", (unsigned long long)(seek));
+				print_addr(seek);
+				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
+				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
 			/* size */
 			if (show_size)

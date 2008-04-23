@@ -111,8 +111,9 @@ void format_show_help (print_mode_t mode)
 
 void print_addr(u64 off)
 {
-	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET" ", off);
-	else	cons_printf(OFF_FMT" ", off);
+	char ch = (0==(off%4))?',':' ';
+	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET"%c ", off, ch);
+	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
 
 char *get_color_for(int c)
@@ -883,7 +884,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			D { if ( fmt == FMT_HEXB )
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);
-				
 			} else { INILINE; }
 
 			if (config.insert_mode==1)

@@ -20,7 +20,9 @@
 
 #include "main.h"
 #include "utils.h"
+#if DEBUGGER
 #include "dbg/arch/arch.h"
+#endif
 
 /* spaghetti implementation */
 int var_required(char *str, char *var)

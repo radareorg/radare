@@ -55,6 +55,9 @@ int std = 0;
 
 static int radare_close();
 
+#if !DEBUGGER
+int debug_step(int x) {}
+#endif
 
 void radare_init()
 {

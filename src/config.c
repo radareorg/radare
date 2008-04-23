@@ -517,6 +517,7 @@ void config_init()
 	config_set("asm.flagsline", "false"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
 	config_set_i("asm.nlines", 6); // show left ref lines
+	config_set("asm.lineswide", "true"); // show left ref lines
 	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev

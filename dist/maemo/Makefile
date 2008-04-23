@@ -33,24 +33,24 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	mkdir $@
 	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/libexec/radare $@/usr/libexec/gradare $@/usr/share/radare $@/usr/lib $@/usr/share/radare/magic
 	cp ../../src/radare $@/usr/bin
-	cp ${PRG}/src/bug $@/usr/bin/bug
-	cp ${PRG}/src/rdb/rdbdiff $@/usr/bin/rdbdiff
-	cp ${PRG}/src/radare $@/usr/bin/radare
-	cp ${PRG}/src/bindiff $@/usr/bin/bindiff
-	cp ${PRG}/src/rabin/rabin $@/usr/bin/rabin
-	cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm
-	cp ${PRG}/rasc/rasc $@/usr/bin/rasc
-	cp ${PRG}/src/arch/arm/aasm/armasm $@/usr/bin/armasm
-	cp ${PRG}/src/rsc $@/usr/bin/rsc
-	cp ${PRG}/src/rfile $@/usr/bin/rfile
-	cp ${PRG}/src/hasher/hasher $@/usr/bin/hasher
-	cp ${PRG}/src/xc $@/usr/bin/xc
-	cp ${PRG}/src/javasm $@/usr/bin/javasm
-	cp ${PRG}/src/xrefs $@/usr/bin/xrefs
-	cp ${PRG}/gui/gradare $@/usr/bin/gradare
-	cp /usr/lib/libvte.so.9 $@/usr/lib
-	cp -rf ${PRG}/gui/grsc/* $@/usr/libexec/gradare
-	cp -rf ${PRG}/libexec/* $@/usr/libexec/radare
+	-cp ${PRG}/src/bug $@/usr/bin/bug
+	-cp ${PRG}/src/rdb/rdbdiff $@/usr/bin/rdbdiff
+	-cp ${PRG}/src/radare $@/usr/bin/radare
+	-cp ${PRG}/src/bindiff $@/usr/bin/bindiff
+	-cp ${PRG}/src/rabin/rabin $@/usr/bin/rabin
+	-cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm
+	-cp ${PRG}/rasc/rasc $@/usr/bin/rasc
+	-cp ${PRG}/src/arch/arm/aasm/armasm $@/usr/bin/armasm
+	-cp ${PRG}/src/rsc $@/usr/bin/rsc
+	-cp ${PRG}/src/rfile $@/usr/bin/rfile
+	-cp ${PRG}/src/hasher/hasher $@/usr/bin/hasher
+	-cp ${PRG}/src/xc $@/usr/bin/xc
+	-cp ${PRG}/src/javasm $@/usr/bin/javasm
+	-cp ${PRG}/src/xrefs $@/usr/bin/xrefs
+	-cp ${PRG}/gui/gradare $@/usr/bin/gradare
+	-cp /usr/lib/libvte.so.9 $@/usr/lib
+	-cp -rf ${PRG}/gui/grsc/* $@/usr/libexec/gradare
+	-cp -rf ${PRG}/libexec/* $@/usr/libexec/radare
 	-cp -rf ${PRG}/magic/* $@/usr/share/radare/magic/
 	-cp -rf ${PRG}/doc/* $@/usr/share/doc/radare/
 

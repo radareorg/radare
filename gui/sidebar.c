@@ -70,7 +70,7 @@ GtkWidget *entry;
 GtkWidget *gradare_sidebar_new()
 {
 	GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-	GtkWidget *refresh;
+	//GtkWidget *refresh;
 
 	/**
 	refresh = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
@@ -83,7 +83,7 @@ GtkWidget *gradare_sidebar_new()
 
 	/* add arch combo box */
 	combo = gtk_combo_box_new_text();
-	gtk_combo_set_use_arrows( GTK_COMBO(combo),1);
+	//gtk_combo_set_use_arrows( GTK_COMBO(combo),1);
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 0, "hexadecimal");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 1, "debugger");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 2, "disassembly");
@@ -101,7 +101,7 @@ GtkWidget *gradare_sidebar_new()
 
 	/* add arch combo box */
 	arch = gtk_combo_box_new_text();
-	gtk_combo_set_use_arrows( GTK_COMBO_BOX(arch),1);
+	//gtk_combo_set_use_arrows( GTK_COMBO_BOX(arch),1);
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 0, "intel16");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 1, "intel32");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 2, "intel64");

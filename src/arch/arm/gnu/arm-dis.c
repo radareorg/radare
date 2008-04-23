@@ -26,12 +26,14 @@
    for things we don't care about.  */
 #include "bfd.h"
 
-#define uint32_t unsigned int
 #define bfd_mach_arm_iWMMXt2 0xffffff
 #define _ //printf
 extern int arm_mode;
 
 #include <stdlib.h>
+#ifndef uint32_t
+#define uint32_t unsigned int
+#endif
 #include "dis-asm.h"
 #define FALSE 0
 #ifndef TRUE
