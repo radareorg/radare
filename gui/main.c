@@ -23,10 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#if _MAEMO_
-#include <hildon/hildon.h>
-#include <hildon/hildon-window.h>
-#endif
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 //#define FONT "-adobe-courier-bold-o-normal--18-180-75-75-m-110-iso8859-15"
 #define FONT "Sans Bold 8"
@@ -225,13 +223,6 @@ void gradare_new_monitor()
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
-#if _MAEMO_
-#include <hildon-widgets/hildon-program.h>
-#include <hildon-widgets/hildon-banner.h>
-#endif
-
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
 
 static int fs = 0;
 void toggle_fullscreen()

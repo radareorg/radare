@@ -4,6 +4,11 @@
 #include <gtk/gtk.h>
 #include <vte/vte.h>
 
+#if _MAEMO_
+#include <hildon/hildon.h>
+#include <hildon/hildon-window.h>
+#endif
+
 extern GtkWidget *term;
 extern GtkWidget *tool;
 extern GtkWidget *combo;
@@ -31,4 +36,11 @@ void gradare_redo();
 void gradare_refresh();
 void toggle_toolbar();
 void toggle_fullscreen();
+
+#if _MAEMO_
+extern HildonWindow *w;
+#else
+extern GtkWindow *w;
+#endif
+
 #endif
