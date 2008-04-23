@@ -30,4 +30,5 @@ void gradare_undo();
 void gradare_redo();
 void gradare_refresh();
 void toggle_toolbar();
+void toggle_fullscreen();
 #endif

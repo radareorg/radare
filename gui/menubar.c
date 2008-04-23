@@ -97,6 +97,7 @@ static const gchar *ui_info =
 "      <menuitem action='Preferences'/>"
 "    </menu>"
 "    <menu action='ViewMenu'>"
+"      <menuitem action='Fullscreen'/>"
 "      <menuitem action='New monitor'/>"
 "      <separator />"
 "      <menuitem action='Code graph'/>"
@@ -143,6 +144,10 @@ static GtkActionEntry entries[] = {
     "_New monitor","<control>M",
     "Opens a new monitor window",
     G_CALLBACK (gradare_new_monitor) },
+  { "Fullscreen", NULL,
+    "Toggle fullscreen",NULL,
+    "toggle fullscreen",
+    G_CALLBACK (toggle_fullscreen) },
   { "Code graph", GTK_STOCK_INFO,
     "_Code graph",NULL,
     "Open a code graph window",
@@ -215,6 +220,8 @@ GtkWidget *gradare_menubar_new(GtkWindow *w)
 
 	gtk_ui_manager_add_ui_from_string (uima, ui_info, -1, &error);
 	menu_bar = gtk_ui_manager_get_widget (uima, "/MenuBar");
+
+	gtk_widget_show_all(menu_bar);
 
 	return menu_bar;
 }

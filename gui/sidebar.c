@@ -18,6 +18,10 @@ void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 		break;
 	case 6: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = java\n\n", 24);
 		break;
+	case 7: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = mips\n\n", 24);
+		break;
+	case 8: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = csr\n\n", 23);
+		break;
 	}
 
 	gtk_widget_grab_focus(term);
@@ -109,6 +113,8 @@ GtkWidget *gradare_sidebar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 4, "ppc");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 5, "68k");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 6, "java");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 7, "mips");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 8, "csr");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 1);
 	g_signal_connect(GTK_COMBO_BOX(arch), "changed", GTK_SIGNAL_FUNC(arch_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), arch, FALSE, FALSE, 0);

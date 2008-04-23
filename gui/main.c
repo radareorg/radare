@@ -18,10 +18,9 @@
  *
  */
 
-#define _MAEMO_ 0
-
 #include "main.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #if _MAEMO_
@@ -37,6 +36,13 @@ char *filename = NULL;
 char *command = NULL;
 int is_debugger = 0;
 char *font = FONT;
+
+#if _MAEMO_
+	HildonWindow *w;
+	HildonProgram *p;
+#else
+	GtkWidget *w;
+#endif
 
 void show_help_message()
 {
@@ -172,6 +178,9 @@ void gradare_new_monitor()
 	mon->id = mon_id++;
 
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if _MAEMO_
+	hildon_program_add_window(p, w);
+#endif
 	gtk_window_resize(GTK_WINDOW(w), 600,400);
 	gtk_window_set_title(GTK_WINDOW(w), "gradare monitor");
 	// XXX memleak !!! should be passed to a destroyer function for 'mon'
@@ -216,15 +225,83 @@ void gradare_new_monitor()
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
+#if _MAEMO_
+#include <hildon-widgets/hildon-program.h>
+#include <hildon-widgets/hildon-banner.h>
+#endif
+
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
+static int fs = 0;
+void toggle_fullscreen()
+{
+	if (fs) gtk_window_unfullscreen(w);
+	else gtk_window_fullscreen(w);
+	fs^=1;
+}
+
+/* Callback for hardware keys */
+gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
+                      GtkWindow * window)
+{
+    switch (event->keyval) {
+#if 0
+    case GDK_Up:
+//        hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Up");
+	vte_terminal_feed_child(VTE_TERMINAL(term), "k", 1);
+        return TRUE;
+
+    case GDK_Down:
+ //       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Down");
+	vte_terminal_feed_child(VTE_TERMINAL(term), "j", 1);
+        return TRUE;
+
+    case GDK_Left:
+ //       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Left");
+	vte_terminal_feed_child(VTE_TERMINAL(term), "h", 1);
+        return TRUE;
+
+    case GDK_Right:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Right");
+	vte_terminal_feed_child(VTE_TERMINAL(term), "l", 1);
+        return TRUE;
+
+    case GDK_Return:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key select");
+        return TRUE;
+#endif
+
+    case GDK_F6:
+  //      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
+	toggle_fullscreen();
+        return TRUE;
+
+// TODO: FONT SIZE HERE!
+#if _MAEMO_
+    case GDK_F7:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
+        return TRUE;
+
+    case GDK_F8:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+        return TRUE;
+#endif
+
+    case GDK_Escape:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
+	gtk_window_unfullscreen(window);
+	gtk_widget_grab_focus(term);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 int main(int argc, char **argv, char **envp)
 {
 	int c;
-#if _MAEMO_
-	HildonWindow *w;
-	HildonProgram *p;
-#else
-	GtkWidget *w;
-#endif
 	GtkWidget *chos;
 	GtkWidget *vbox;
 	GtkWidget *hpan;
@@ -257,6 +334,7 @@ int main(int argc, char **argv, char **envp)
 #else
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #endif
+	g_signal_connect(G_OBJECT(w), "key_press_event", G_CALLBACK(key_press_cb), w);
 
 	gtk_window_resize(GTK_WINDOW(w), 800,600);
 	gtk_window_set_title(GTK_WINDOW(w), "gradare");
@@ -265,15 +343,16 @@ int main(int argc, char **argv, char **envp)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(w), vbox);
 #if _MAEMO_
-	hildon_window_set_menu(w, GTK_WIDGET( gradare_menubar_new(w) ));
+	hildon_window_set_menu(HILDON_WINDOW(w), GTK_WIDGET( gradare_menubar_new(w) ));
+	hildon_program_set_common_menu(HILDON_PROGRAM(p), gradare_menubar_new(w));
 #else
 	gtk_box_pack_start(GTK_BOX(vbox),
 		GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
 #endif
 	tool = gradare_toolbar_new(NULL);
 #if _MAEMO_
-	//hildon_window_set_toolbar(w, tool);
-	hildon_program_set_common_toolbar(p, tool);
+	hildon_window_add_toolbar(HILDON_WINDOW(w), GTK_TOOLBAR(tool));
+//	hildon_program_set_common_toolbar(p, tool);
 #else
 	gtk_box_pack_start(GTK_BOX(vbox), tool, FALSE, FALSE, 0);
 #endif
@@ -322,7 +401,6 @@ printf("FILE(%s)\n", filename);
 			FALSE, FALSE, FALSE);
 		vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
 		sprintf(str, "radare -b 1024 -c - %s", filename);
-sleep (1);
 		gtk_window_set_title(GTK_WINDOW(w), str);
 	} else
 		vte_terminal_fork_command(

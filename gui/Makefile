@@ -6,10 +6,13 @@ CFLAGS+=-DPREFIX=\"${PREFIX}\" -DGRSCDIR=\"${LIBEXECDIR}/gradare\"
 CFLAGS+=${GTK_FLAGS} ${VTE_FLAGS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --cflags`
 LDFLAGS+=${GTK_LIBS} ${VTE_LIBS}
+CFLAGS+=-D_MAEMO_=${MAEMO}
 #`pkg-config glib-2.0 gtk+-2.0 vte --libs`
 # MAEMO STUFF
-#CFLAGS+=`pkg-config --cflags hildon-1`
-#LDFLAGS+=`pkg-config --libs hildon-1`
+ifeq ($(MAEMO),1)
+CFLAGS+=`pkg-config --cflags hildon-1`
+LDFLAGS+=`pkg-config --libs hildon-1`
+endif
 
 
 all: ${OBJ} ${BIN}

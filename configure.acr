@@ -87,6 +87,8 @@ LANG_PYTHON
 ARG_WITH HAVE_PYTHON python build with embedded python extension ;
 ))
 
+ARG_WITH MAEMO maemo build hildon interface ;
+
 (( GUI ))
 ARG_WITHOUT GUI gui radare without the gtk frontend ;
 CHKPRG GTKDIALOG gtkdialog
@@ -105,7 +107,7 @@ IFNOT GUI {
 	ECHO Vala build disabled, no gtk-dev found ;
 }
 
-REPORT GUI WII VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+REPORT GUI WII MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
 SUBDIRS . ./config.mk src src/rsc src/rfile ;
