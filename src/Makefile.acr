@@ -5,7 +5,7 @@ OBJ+=${crOBJ}
 
 #$(pref ../src/,${crOBJ})
 
-CFLAGS+=-I. -Iinclude
+CFLAGS+=-I. -Iinclude -D_MAEMO_=${MAEMO}
 
 # hand made maemo stuff
 

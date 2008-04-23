@@ -18,6 +18,8 @@
  */
 
 #ifdef VALA
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include "main.h"
 #include "widget.h"
 #include "node.h"
@@ -172,6 +174,38 @@ void core_load_graph_at_label(void *foo, const char *str)
 }
 
 int first = 1;
+static int fs = 0;
+void grava_toggle_fullscreen(GtkWindow *w)
+{
+	if (fs) gtk_window_unfullscreen(w);
+	else gtk_window_fullscreen(w);
+	fs^=1;
+}
+
+#ifndef GRAVA_WIDGET_ZOOM_FACTOR
+#define GRAVA_WIDGET_ZOOM_FACTOR 0.3
+#endif
+
+gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygrava_window *w)
+{
+    switch (event->keyval) {
+    case GDK_F6:
+  //      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
+	grava_toggle_fullscreen(w->w);
+        return TRUE;
+#if _MAEMO_
+    case GDK_F7:
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
+	w->grava->zoom = grava->graph->zoom + (GRAVA_WIDGET_ZOOM_FACTOR);
+        return TRUE;
+
+    case GDK_F8:
+	w->grava->zoom = grava->graph->zoom - (GRAVA_WIDGET_ZOOM_FACTOR);
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+        return TRUE;
+#endif
+    }
+}
 
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
@@ -211,6 +245,10 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		/* add window */
 		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if _MAEMO_
+		hildon_program_add_window(p, win->w);
+#endif
+		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
 		string_flag_offset(name, config.seek);
 		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
 		gtk_window_set_title(GTK_WINDOW(win->w), title);

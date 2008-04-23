@@ -281,7 +281,7 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
 
     case GDK_Escape:
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
-	gtk_window_unfullscreen(window);
+	//gtk_window_unfullscreen(window);
 	gtk_widget_grab_focus(term);
         return TRUE;
     }

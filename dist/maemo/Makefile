@@ -53,5 +53,6 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp -rf ${PRG}/libexec/* $@/usr/libexec/radare
 	-cp -rf ${PRG}/magic/* $@/usr/share/radare/magic/
 	-cp -rf ${PRG}/doc/* $@/usr/share/doc/radare/
+	-chmod +x $@/usr/bin/*
 
 include deb_hand.mak

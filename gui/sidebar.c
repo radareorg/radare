@@ -115,7 +115,11 @@ GtkWidget *gradare_sidebar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 6, "java");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 7, "mips");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 8, "csr");
+#if _MAEMO_
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 3);
+#else
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 1);
+#endif
 	g_signal_connect(GTK_COMBO_BOX(arch), "changed", GTK_SIGNAL_FUNC(arch_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), arch, FALSE, FALSE, 0);
 
