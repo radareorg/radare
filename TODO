@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* Implement gtk-dialog replacement (radialog)?
+
 0.9.6:
 ======
  * rename or remove pd command.
@@ -19,6 +21,8 @@
  * support for search and replace
  * support for oprofile (via rsc or so)
  * Edit modify source references ;)
+ * Add memory breakpoints (watchpoints?)
+   - standarize interface for them (needed for osx..)
 
 Open streams
 ============
