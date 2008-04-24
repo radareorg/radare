@@ -361,12 +361,16 @@ int main(int argc, char **argv, char **envp)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(w), vbox);
 #if _MAEMO_
-	hildon_window_set_menu(HILDON_WINDOW(w), GTK_WIDGET( gradare_menubar_new(w) ));
-	hildon_program_set_common_menu(HILDON_PROGRAM(p), gradare_menubar_new(w));
+	{
+		GtkMenu *menu = GTK_MENU(gradare_menubar_new(w));
+		hildon_window_set_menu(HILDON_WINDOW(w), menu);
+		hildon_program_set_common_menu(HILDON_PROGRAM(p), menu);
+	}
 #else
 	gtk_box_pack_start(GTK_BOX(vbox),
 		GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
 #endif
+
 	tool = gradare_toolbar_new(NULL);
 #if _MAEMO_
 	hildon_window_add_toolbar(HILDON_WINDOW(w), GTK_TOOLBAR(tool));

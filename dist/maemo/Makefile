@@ -48,6 +48,7 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp ${PRG}/src/javasm $@/usr/bin/javasm
 	-cp ${PRG}/src/xrefs $@/usr/bin/xrefs
 	-cp ${PRG}/gui/gradare $@/usr/bin/gradare
+	-cp /usr/bin/gtkdialog $@/usr/bin/gtkdialog
 	-cp /usr/lib/libvte.so.9 $@/usr/lib
 	-cp -rf ${PRG}/gui/grsc/* $@/usr/libexec/gradare
 	-cp -rf ${PRG}/libexec/* $@/usr/libexec/radare

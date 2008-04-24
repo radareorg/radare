@@ -1,9 +1,11 @@
 [Desktop Entry]
 Encoding=UTF-8
-Version=0.9.4
+Version=0.9.5
 Type=Application
 Name=gradare
 Exec=/usr/bin/gradare
 Icon=terminal
 X-Window-Icon=terminal
 X-Window-Icon-Dimmed=terminal
+X-HildonDesk-ShowInToolbar=true
+Terminal=false
