@@ -1078,6 +1078,8 @@ int debug_set_register(char *args)
 	value = strchr(args, ' ');
 	if (!value) {
 		eprintf("Usage: !set [reg] [value]\n");
+		eprintf("  > !set eflags PZTI\n");
+		eprintf("  > !set r0 0x33\n");
 		return 1;
 	}
 	value[0]='\0';

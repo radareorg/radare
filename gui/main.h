@@ -39,6 +39,7 @@ void toggle_fullscreen();
 
 #if _MAEMO_
 extern HildonWindow *w;
+extern HildonProgram *p;
 #else
 extern GtkWindow *w;
 #endif

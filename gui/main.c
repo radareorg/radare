@@ -36,10 +36,10 @@ int is_debugger = 0;
 char *font = FONT;
 
 #if _MAEMO_
-	HildonWindow *w;
-	HildonProgram *p;
+	HildonWindow *w = NULL;
+	HildonProgram *p = NULL;
 #else
-	GtkWidget *w;
+	GtkWindow *w = NULL;
 #endif
 
 void show_help_message()
@@ -209,8 +209,7 @@ void gradare_new_monitor()
 	vte_terminal_set_scrollback_lines((VteTerminal*)mon->term, 3000);
 	vte_terminal_set_font_from_string_full((VteTerminal*)mon->term, font, VTE_ANTI_ALIAS_FORCE_DISABLE);
 	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
-         g_signal_connect (mon->term, "button-press-event",
-                G_CALLBACK (popup_context_menu), NULL);
+         g_signal_connect (mon->term, "button-press-event", G_CALLBACK (popup_context_menu), NULL);
 
 /*
 	vte_terminal_fork_command(
@@ -221,6 +220,22 @@ void gradare_new_monitor()
 */
 	gtk_container_add(GTK_CONTAINER(vbox), mon->term);
 	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+static int fontsize=8;
+static int fontalias=1;
+static int fontbold=0;
+static int console_font_size(int newsize)
+{
+	char buf[128];
+	if (newsize<4)
+		newsize = 4;
+	if (newsize>72)
+		newsize = 72;
+
+	sprintf(buf, "Sans %s%d", fontbold?"bold ":"", fontsize);
+	vte_terminal_set_font_from_string_full((VteTerminal*)term, buf, fontalias?VTE_ANTI_ALIAS_FORCE_DISABLE:0);
+	return newsize;
 }
 
 
@@ -271,13 +286,25 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
 // TODO: FONT SIZE HERE!
 #if _MAEMO_
     case GDK_F7:
+#else
+    case GDK_KP_Add:
+#endif
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
+	fontsize = console_font_size(++fontsize);
         return TRUE;
 
+    case GDK_F5:
+	gradare_refresh();
+	return TRUE;
+#if _MAEMO_
     case GDK_F8:
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
-        return TRUE;
+#else
+    case GDK_KP_Subtract:
 #endif
+        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+	fontsize = console_font_size(--fontsize);
+        return TRUE;
+//#endif
 
     case GDK_Escape:
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
