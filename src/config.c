@@ -502,7 +502,11 @@ void config_init()
 #if __mips__
 	node = config_set("asm.arch", "mips");
 #else
+#if __POWERPC__
+	node = config_set("asm.arch", "ppc");
+#else
 	node = config_set("asm.arch", "intel");
+#endif
 #endif
 #endif
 #endif
@@ -564,7 +568,11 @@ void config_init()
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 1024); // cp850
 	config_set("cfg.verbose", "true");
+#if LIL_ENDIAN
 	config_set("cfg.endian", "false");
+#else
+	config_set("cfg.endian", "true");
+#endif
 	config_set("cfg.inverse", "false");
 	config_set("file.insert", "false");
 	node = config_set("file.write", "false");

@@ -255,8 +255,7 @@ void plugin_init()
 	//(ptrace_plugin.init)();
 	plugins[2] = gdb_plugin;
 	plugins[3] = gdbx_plugin;
-	plugins[4] = remote_plugin;
-	last = 4;
+	last = 3;
     #if SYSPROXY
 	plugins[5] = sysproxy_plugin;
 	plugins[6] = posix_plugin;
@@ -274,12 +273,13 @@ void plugin_init()
 	plugins[last] = ewf_plugin;
 	last += 1;
 #endif
-	plugins[last] = winedbg_plugin;
-	plugins[last+1] = gxemul_plugin;
-	plugins[last+2] = socket_plugin;
+	plugins[last]   = remote_plugin;
+	plugins[last+1] = winedbg_plugin;
+	plugins[last+2] = gxemul_plugin;
+	plugins[last+3] = socket_plugin;
 	//plugins[last+3] = winegdb_plugin;
-	plugins[last+3] = posix_plugin;
-	last += 4;
+	plugins[last+4] = posix_plugin;
+	last += 5;
 
 	radare_hack_init();
 }

@@ -881,10 +881,12 @@ ppc_word *PPC_Disassemble(struct DisasmPara_PPC *dp, int endian)
   if (dp->opcode==NULL || dp->operands==NULL)
     return (NULL);  /* no buffers */
 
-	if (!endian) {
+#if LIL_ENDIAN
+if (!endian) {
   in = (in & 0xff)<<24 | (in & 0xff00)<<8 | (in & 0xff0000)>>8 |
        (in & 0xff000000)>>24;
-	}
+}
+#endif
   dp->type = PPCINSTR_OTHER;
   dp->flags = 0;
   *(dp->operands) = 0;
