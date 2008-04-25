@@ -28,7 +28,7 @@
 plugin_t plugins[11];
 plugin_t plugins_backup[11];
 int plugin_init_flag = 0;
-/* core functions */
+
 struct core_t {
 	void *ptr;
 	char *name;
@@ -37,11 +37,11 @@ struct core_t {
 
 static struct core_t core[]={
 	{ .ptr = &radare_cmd,      .name = "radare_cmd",      .args = "zi" },
-	{ .ptr = &radare_cmd_str,  .name = "radare_cmd_str",  .args = "z" },
-	{ .ptr = &radare_exit,     .name = "radare_exit",     .args = "" },
-	{ .ptr = &radare_open, .name = "radare_open", .args = "i" },
-	{ .ptr = &radare_sync, .name = "radare_sync", .args = "" },
-	{ NULL,NULL,NULL}
+	{ .ptr = &radare_cmd_str,  .name = "radare_cmd_str",  .args = "z"  },
+	{ .ptr = &radare_exit,     .name = "radare_exit",     .args = ""   },
+	{ .ptr = &radare_open,     .name = "radare_open",     .args = "i"  },
+	{ .ptr = &radare_sync,     .name = "radare_sync",     .args = ""   },
+	{ NULL, NULL, NULL }
 };
 
 void *radare_resolve(char *name)
@@ -81,7 +81,7 @@ plugin_t *plugin_registry(const char *file)
 	void *hd;
 	char *ptr;
 	plugin_t *p;
-	int *ip;
+	const char *ip;
 	char buf[4096];
 #if __WINDOWS__
 	HMODULE h;
@@ -149,7 +149,7 @@ plugin_t *plugin_registry(const char *file)
 		return NULL;
 	}
 #endif
-	ip = p;
+	ip = (const char *)p;
 	switch(((int)(*ip))) {
 	case PLUGIN_TYPE_IO:
 		p = (plugin_t *)malloc(sizeof(plugin_t));
@@ -234,52 +234,44 @@ void plugin_init()
 	memset(&plugins,'\0', sizeof(plugin_t)*11);
 	/* load libraries in current directory */
 	/* load libraries in -l path */
-	plugins[0] = haret_plugin;
+	plugins[last++] = haret_plugin;
 #if __WINDOWS__
 	extern plugin_t w32_plugin;
-	plugins[1] = w32_plugin;
-	plugins[2] = remote_plugin;
+	plugins[last++] = w32_plugin;
+	plugins[last++] = remote_plugin;
   #if DEBUGGER
-	plugins[3] = debug_plugin;
-	plugins[4] = posix_plugin;
+	plugins[last++] = debug_plugin;
+	plugins[last++] = posix_plugin;
 	(debug_plugin.init)();
-	last = 4;
   #else
-	plugins[3] = posix_plugin;
-	last = 3;
+	plugins[last++] = posix_plugin;
   #endif
 #else
    #if DEBUGGER
-	plugins[1] = debug_plugin;
+	plugins[last++] = debug_plugin;
 	(debug_plugin.init)();
 	//(ptrace_plugin.init)();
-	plugins[2] = gdb_plugin;
-	plugins[3] = gdbx_plugin;
-	last = 3;
+	plugins[last++] = gdb_plugin;
+	plugins[last++] = gdbx_plugin;
     #if SYSPROXY
-	plugins[5] = sysproxy_plugin;
-	plugins[6] = posix_plugin;
-	last = 6;
+	plugins[last++] = sysproxy_plugin;
+	plugins[last++] = posix_plugin;
     #else
-	plugins[5] = posix_plugin;
-	last = 5;
+	plugins[last++] = posix_plugin;
     #endif
   #else
-	plugins[1] = posix_plugin;
-	last = 1;
+	plugins[last++] = posix_plugin;
   #endif
 #endif
 #if HAVE_LIB_EWF
-	plugins[last] = ewf_plugin;
-	last += 1;
+	plugins[last++] = ewf_plugin;
 #endif
-	plugins[last]   = remote_plugin;
-	plugins[last+1] = winedbg_plugin;
-	plugins[last+2] = gxemul_plugin;
-	plugins[last+3] = socket_plugin;
-	//plugins[last+3] = winegdb_plugin;
-	plugins[last+4] = posix_plugin;
-	last += 5;
+	plugins[last++]   = remote_plugin;
+	plugins[last++] = winedbg_plugin;
+	plugins[last++] = gxemul_plugin;
+	plugins[last++] = socket_plugin;
+	//plugins[last++] = winegdb_plugin;
+	plugins[last++] = posix_plugin;
 
 	radare_hack_init();
 }

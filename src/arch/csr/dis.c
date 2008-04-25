@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <err.h>
+//#include <err.h>
 #include <string.h>
 //#include <assert.h>
 #define assert(x) if (!(x)) { eprintf("assert ##x##\n"); return; }
@@ -208,8 +208,10 @@ static struct label *find_label_add(struct state *s, struct directive *d)
 
 	/* add */
 	ptr = malloc(sizeof(*ptr));
-	if (!ptr)
-		err(1, "malloc()");
+	if (!ptr) {
+		perror("malloc()");
+		return NULL;
+	}
 	memset(ptr, 0, sizeof(*ptr));
 	sprintf(ptr->l_name, "0x%x", off); //L%d", s->s_labelno++);
 	ptr->l_off = off;
@@ -764,8 +766,10 @@ struct directive *next_inst(struct state *s)
 	int rd;
 
 	d = malloc(sizeof(*d));
-	if (!d)
-		err(1, "malloc()");
+	if (!d) {
+		perror("malloc()");
+		return NULL;
+	}
 	memset(d, 0, sizeof(*d));
 
 #if 0

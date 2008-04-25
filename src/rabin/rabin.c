@@ -40,7 +40,8 @@ enum {
 	FILETYPE_MZ,
 	FILETYPE_PE,
 	FILETYPE_CLASS,
-	FILETYPE_DEX
+	FILETYPE_DEX,
+	FILETYPE_MACHO
 };
 
 #define ACTION_UNK      0x0000
@@ -53,6 +54,7 @@ enum {
 #define ACTION_CHECKSUM 0x0040 
 #define ACTION_BASE     0x0080
 #define ACTION_ARCH     0x0100
+#define ACTION_FILETYPE 0x0200
 #define ACTION_NOP      0x1000
 
 // TODO : move into rabin_t
@@ -74,6 +76,7 @@ int rabin_show_help()
 " -c        checksum\n"
 " -E        exports (symbols exported)\n"
 " -s        all program symbols\n"
+" -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
@@ -245,7 +248,30 @@ void rabin_show_arch()
 		default:
 			printf("arch: 0x%x (unknown)\n", w);
 		}
+		break;
+	}
+}
 
+void rabin_show_filetype()
+{
+	switch(filetype) {
+	case FILETYPE_ELF:
+		printf("ELF\n");
+		break;
+	case FILETYPE_PE:
+		printf("PE\n");
+		break;
+	case FILETYPE_MZ:
+		printf("DOS COM\n");
+		break;
+	case FILETYPE_CLASS:
+		printf("Java class\n");
+		break;
+	case FILETYPE_DEX:
+		printf("DEX (google android)\n");
+		break;
+	case FILETYPE_MACHO:
+		printf("mach-o\n");
 		break;
 	}
 }
@@ -287,8 +313,16 @@ void rabin_show_libs()
 {
 	char buf[1024];
 
-	sprintf(buf, "strings '%s' | grep -e '^lib'", file);
-	system(buf);
+	switch(filetype) {
+	case FILETYPE_MACHO:
+		sprintf(buf, "otool -L '%s'", file);
+		system(buf);
+		break;
+	default:
+		sprintf(buf, "strings '%s' | grep -e '^lib'", file);
+		system(buf);
+		break;
+	}
 }
 
 int rabin_identify_header()
@@ -297,6 +331,12 @@ int rabin_identify_header()
 
 	lseek(fd, 0, SEEK_SET);
 	read(fd, buf, 1024);
+
+        if (!memcmp(buf, "\xCA\xFE\xBA\xBE", 4))
+		if (buf[9])
+                	filetype = FILETYPE_CLASS;
+		else	filetype = FILETYPE_MACHO;
+	else
 	if (!memcmp(buf, "dex\n009\0", 8))
 		filetype = FILETYPE_DEX;
 	else
@@ -322,7 +362,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishL:ESv")) != -1)
+	while ((c = getopt(argc, argv, "acerlishL:ESvt")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -330,6 +370,9 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'b':
 			action |= ACTION_BASE;
+			break;
+		case 't':
+			action |= ACTION_FILETYPE;
 			break;
 		case 'i':
 			action |= ACTION_IMPORTS;
@@ -383,6 +426,8 @@ int main(int argc, char **argv, char **envp)
 
 	rabin_identify_header();
 
+	if (action&ACTION_FILETYPE)
+		rabin_show_filetype();
 	if (action&ACTION_ARCH)
 		rabin_show_arch(file);
 	if (action&ACTION_ENTRY)

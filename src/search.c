@@ -208,6 +208,9 @@ int search_range(char *range)
 		}
 	}
 
+	// twice
+	radare_cmd("f -hit0_*", 0);
+	radare_cmd("f -hit0_*", 0);
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
@@ -219,15 +222,13 @@ int search_range(char *range)
 		for(i=0;i<config.block_size;i++)
 			update_tlist(t, config.block[i], config.seek+i);
 	}
-	radare_controlc_end();
 	binparser_free(t);
-	config.interrupted = 0;
 #if __UNIX__
 	go_alarm(SIG_IGN);
 #endif
-
-	D if (config.interrupted)
+	if (config.interrupted)
 		printf("\nStopped at 0x"OFF_FMTx"\n", config.seek);
+	radare_controlc_end();
 
 	radare_seek(tmp, SEEK_SET);
 	if (!search_verbose)
