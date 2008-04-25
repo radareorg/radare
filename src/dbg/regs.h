@@ -125,6 +125,8 @@
 #define PTRACE_GETFPREGS PT_GETFPREGS
 #define PTRACE_SETFPREGS PT_SETFPREGS
 #define PTRACE_SINGLESTEP PT_STEP
+  #include <machine/reg.h>
+  #define regs_t struct reg
 #endif
 
 #define MAX_BPS	128

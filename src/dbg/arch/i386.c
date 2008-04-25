@@ -1700,7 +1700,10 @@ struct list_head *arch_bt()
 	debug_init_maps(1);
 
 	/* get stack frames */
+#if __linux__
+	// XXX on BSD is broken
 	next_sf(bt_list, R_ESP(WS(regs)));
+#endif
 
 	return bt_list;
 }
