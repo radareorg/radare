@@ -264,6 +264,7 @@ int debug_fork_and_attach()
 		return 0;
 	case 0:
 		ps.pid = pid;
+		ps.tid = pid;
 		ptrace(PTRACE_TRACEME, 0, 0, 0);
 
 		if (config_get("cfg.verbose")) {
@@ -314,6 +315,7 @@ int debug_attach(int pid)
 
 	ps.opened = 1;
 	ps.pid = pid;
+	ps.tid = pid;
 	ps.steps = 1;
 
 	debug_waitpid(pid, &wait_val);
@@ -345,6 +347,7 @@ int debug_detach()
 		perror("ptrace_dettach");
 
 	ps.pid = 0;
+	ps.tid = 0;
 	ps.opened = 0;
 	ps.steps  = 0;
 
