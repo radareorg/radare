@@ -24,48 +24,42 @@
 
 #include "signal.h"
 
-#if __mips__
-  #if __linux__
-  #include <sys/ucontext.h>
-  #include <sys/user.h>
-//typedef unsigned long mips64_regs_t [4096];
-//  #define regs_t mips64_regs_t
-#define regs_t mcontext_t
-  #endif
-#else
+#if __mips__ && __linux__
+	#include <sys/ucontext.h>
+	#include <sys/user.h>
+	//typedef unsigned long mips64_regs_t [4096];
+	//  #define regs_t mips64_regs_t
+	#define regs_t mcontext_t
+#endif
 
-#if __i386__
- #if __linux__
-  #if __x86_64__
-   /* linux 64 bits */
-   #include <sys/user.h>
-   #define regs_t struct user_regs_struct
-  #else
-   /* linux 32 bits */
-   #include <sys/user.h>
-   #define regs_t struct user_regs_struct
-  #endif
+#if __x86_64__ && __linux__
+	/* linux 64 bits */
+	#include <sys/user.h>
+	#define regs_t struct user_regs_struct
+#endif
+
+#if __i386__ && __linux__
+	/* linux 32 bits */
+	#include <sys/user.h>
+	#define regs_t struct user_regs_struct
+#endif
  
- #elif __APPLE__
-   #include <mach/i386/_structs.h>
-   #define regs_t _STRUCT_X86_THREAD_STATE32
- #endif
-#else
-#if __NetBSD__ || __FreeBSD__ || __OpenBSD__
-  /* bsd 32 bits */
-  #include <machine/reg.h>
-  #define regs_t struct reg
-#else
-#if __arm__
-  #include <sys/ucontext.h>
-  #define regs_t elf_gregset_t
-#endif
-// HUH
-#endif
-#endif
-  /* ARM */
+#if __APPLE__
+	#include <mach/i386/_structs.h>
+	#define regs_t _STRUCT_X86_THREAD_STATE32
 #endif
 
+/* BSD */
+#if __NetBSD__ || __FreeBSD__ || __OpenBSD__
+	/* bsd 32 bits */
+	#include <machine/reg.h>
+	#define regs_t struct reg
+#endif
+
+#if __arm__ && __linux__
+	#include <sys/ucontext.h>
+	#define regs_t elf_gregset_t
+#endif
 #endif
 
 
@@ -127,6 +121,12 @@
 #define PTRACE_SINGLESTEP PT_STEP
   #include <machine/reg.h>
   #define regs_t struct reg
+#endif
+
+#if __x86_64__ && __linux__
+	/* linux 64 bits */
+	#include <sys/user.h>
+	#define regs_t struct user_regs_struct
 #endif
 
 #define MAX_BPS	128

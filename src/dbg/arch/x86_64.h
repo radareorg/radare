@@ -1,16 +1,19 @@
+//#include "../arch.h"
+//#include "../mem.h"
 //x86_64.c
 #define ull unsigned long long
 
+int arch_jmp(u64 ptr);
+addr_t arch_mmap(int fd, int size, addr_t addr);
 long long arch_syscall(int pid, int sc, ...);
 int debug_dr(char *cmd);
 int arch_is_jump(unsigned char *buf);
-off_t arch_get_entrypoint();
-int arch_jmp(off_t ptr);
+addr_t arch_get_entrypoint();
 int arch_dump_registers();
 int arch_opcode_size();
 int arch_restore_registers();
 int arch_inject(unsigned char *data, int size);
-off_t arch_pc();
+addr_t arch_pc();
 int arch_backtrace();
 void dump_eflags(const int eflags);
 int arch_ret();
@@ -21,16 +24,12 @@ int arch_print_registers(int rad, const char *mask);
 long long get_value(char *str);
 int arch_set_register(char *reg, char *value);
 int arch_continue();
-void *arch_mmap(int fd, int size, off_t addr);
-void *arch_alloc_page(int size, int *rsize);
-void *arch_dealloc_page(void *addr, int size);
-void *arch_get_sighandler(int signum);
-int arch_mprotect(char *addr, unsigned int size, int perms);
-void *arch_set_sighandler(int signum, off_t handler);
+//void *arch_get_sighandler(int signum);
+//int arch_mprotect(char *addr, unsigned int size, int perms);
+//void *arch_set_sighandler(int signum, off_t handler);
 int arch_is_jmp(const unsigned char *cmd, ull *addr);
 int arch_is_call(const char *cmd);
-int arch_is_soft_stepoverable(const char *cmd);
-int arch_is_stepoverable(const unsigned char *cmd);
+int arch_is_soft_stepoverable(const unsigned char *opcode);
 
 //x86_64-bp.c
 static unsigned long dr_get (int reg);
@@ -56,3 +55,5 @@ int arch_rm_bp_soft(struct bp_t *bp);
 //debug.c
 int inline debug_getregs(pid_t pid, regs_t *reg);
 int inline debug_setregs(pid_t pid, regs_t *reg);
+
+addr_t arch_alloc_page(unsigned long size, unsigned long *rsize);
