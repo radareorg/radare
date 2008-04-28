@@ -81,6 +81,8 @@ void radare_exit()
 	if ( ret == 0) {
 		#if HAVE_LIB_READLINE
 		rad_readline_finish();
+		#else
+		dl_hist_save(".radare_history");
 		#endif
 
 		/* save project : user confirmation */
@@ -102,7 +104,7 @@ void radare_exit()
 			terminal_set_raw(0);
 		}
 	}
-	dl_hist_save(".radare_history");
+	//dl_hist_save(".radare_history");
 	exit(0);
 }
 

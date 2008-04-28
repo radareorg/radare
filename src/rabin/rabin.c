@@ -298,6 +298,10 @@ void rabin_show_exports(char *file)
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
 		break;
+	case FILETYPE_MACHO:
+		sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /'", file);
+		system(buf);
+		break;
 	}
 }
 

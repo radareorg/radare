@@ -174,7 +174,7 @@ int dl_hist_save(const char *file)
 	int i;
 
 	snprintf(buf, 1023, "%s/%s", getenv("HOME"), file);
-	fd = fopen(buf, "a");
+	fd = fopen(buf, "w");
 	if (fd == NULL)
 		return 0;
 	for(i=0;i<dl_histidx;i++) {
