@@ -45,7 +45,9 @@
 #endif
  
 #if __APPLE__
+	#include <sys/ucontext.h>
 	#include <mach/i386/_structs.h>
+ 	#include <mach/mach_types.h>
 	#define regs_t _STRUCT_X86_THREAD_STATE32
 #endif
 
@@ -119,9 +121,13 @@
 #define PTRACE_GETFPREGS PT_GETFPREGS
 #define PTRACE_SETFPREGS PT_SETFPREGS
 #define PTRACE_SINGLESTEP PT_STEP
+#endif
+
+#if __FreeBSD__ || __NetBSD__ || __OpenBSD__
   #include <machine/reg.h>
   #define regs_t struct reg
 #endif
+
 
 #if __x86_64__ && __linux__
 	/* linux 64 bits */
@@ -151,14 +157,6 @@
 #include <signal.h>
 #endif
 
-struct bp_t
-{
-	int hw;
-	unsigned long addr;
-	unsigned char data[512];
-	int len;
-};
-
 struct wait_state {
 	int event;
 	struct bp_t *bp;
@@ -166,40 +164,5 @@ struct wait_state {
 	siginfo_t si;
 };
 
-struct debug_t {
-	int fd;         /* related metadata */
-	int verbose;
-	pid_t opid;
-	pid_t pid;
-	pid_t tid;
-	char *filename;
-	struct list_head th_list;	/* thread list */
-	struct list_head map_mem;	/* alloc regions */
-	struct list_head map_reg;	/* mapped regions */
-	TH_INFO	*th_active;		/* active thread */
-	WP	wps[4];			/* watchpoints */
-	int	wps_n;			/* number of watchpoints */
-	unsigned int mem_sz;
-	unsigned int map_regs_sz;
-	int bps_n;      /*/ breakpoints count */
-	u64 offset;
-	u64 ldentry;
-	u64 entrypoint;
-	u64 pc;       /*/ program counter */
-	int isbpaddr;
-	int opened;
-	int steps;
-	int is_file;
-	struct wait_state	ws;
-	struct bp_t bps[MAX_BPS];
-	char *bin_usrcode;
-	char *args;
-	char *argv[256];
-
-#if __WINDOWS__
-	PROCESS_INFORMATION pi;
-	#define WIN32_PI(f)	ps.pi.f
-#endif
-};
 
 #endif

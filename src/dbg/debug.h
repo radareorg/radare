@@ -121,6 +121,50 @@ struct event_t {
 	int ignored;
 };
 
+struct bp_t
+{
+	int hw;
+	unsigned long addr;
+	unsigned char data[512];
+	int len;
+};
+
+struct debug_t {
+	int fd;         /* related metadata */
+	int verbose;
+	pid_t opid;
+	pid_t pid;
+	pid_t tid;
+	char *filename;
+	struct list_head th_list;	/* thread list */
+	struct list_head map_mem;	/* alloc regions */
+	struct list_head map_reg;	/* mapped regions */
+	TH_INFO	*th_active;		/* active thread */
+	WP	wps[4];			/* watchpoints */
+	int	wps_n;			/* number of watchpoints */
+	unsigned int mem_sz;
+	unsigned int map_regs_sz;
+	int bps_n;      /*/ breakpoints count */
+	u64 offset;
+	u64 ldentry;
+	u64 entrypoint;
+	u64 pc;       /*/ program counter */
+	int isbpaddr;
+	int opened;
+	int steps;
+	int is_file;
+	struct wait_state	ws;
+	struct bp_t bps[MAX_BPS];
+	char *bin_usrcode;
+	char *args;
+	char *argv[256];
+
+#if __WINDOWS__
+	PROCESS_INFORMATION pi;
+	#define WIN32_PI(f)	ps.pi.f
+#endif
+};
+
 extern struct event_t events[];
 int is_code(addr_t pc);
 

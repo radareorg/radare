@@ -487,7 +487,7 @@ typedef unsigned short u_short;
 typedef unsigned int u_int;
 typedef unsigned long u_long;
 #endif
-typedef unsigned long vm_offset_t;
+typedef unsigned long vm68k_offset_t;
 typedef unsigned long db_expr_t; /*@@@*/
 typedef const char *db_sym_t;  /*@@@*/
 
