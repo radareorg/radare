@@ -11,6 +11,9 @@
 
 0.9.6:
 ======
+ * Make spcc be happy with pU (!!spcc $BLOCK $OFFSET) ?
+   - Must think a more handy way to do this
+ * Use SIGHUP to dump monitor stuff to files
  * rename or remove pd command.
    - make it work without file.wmode
  * radare debugger for osx x86/arm

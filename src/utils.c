@@ -135,14 +135,32 @@ void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 	}
 }
 
+static char tmpdir[1024];
+const char *get_tmp_dir()
+{
+	// TODO: Do not enter this function twice!
+#if __WINDOWS__
+  // http://msdn.microsoft.com/en-us/library/aa364992(VS.85).aspx
+  GetTempPath(1023, &tmpdir);
+#else
+  const char *tmp;
+  #if RADARE_CORE
+	tmp = config_get("dir.tmp");
+  #else
+	tmp = getenv("TMP");
+  #endif
+  if (tmp)
+	strcpy(tmpdir, tmp);
+  else
+	strcpy(tmpdir, "/tmp/");
+#endif
+	return &tmpdir;
+}
+
 int make_tmp_file(char *str)
 {
 	int fd;
-#if RADARE_CORE
-	const char *tmp = config_get("dir.tmp");
-#else
-	const char *tmp = getenv("TMP");
-#endif
+	const char *tmp = get_tmp_dir();
 	sprintf(str, "%s/.radare.tmp.XXXXXX", tmp?tmp:"./");
 	fd = mkstemp(str);
 	if ( fd == -1 ) {

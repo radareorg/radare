@@ -578,6 +578,7 @@ void config_init()
 	node = config_set("file.write", "false");
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
+	config_set("cfg.addrmod", "4");
 	config_set("cfg.rdbdir", "TODO");
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);
@@ -613,11 +614,18 @@ void config_init()
 	config_set("dbg.bep", "loader"); // loader, main
 
 	config_set("dir.home", getenv("HOME"));
-	config_set("dir.monitor", getenv("MONITORPATH"));
+{
+	char buf[1024];
+	char *ptr = getenv("MONITORPATH");
+	if (ptr == NULL) {
+		sprintf(buf, "%s/.radare/monitor/", getenv("HOME"));
+		ptr = &buf;
+	}
+	config_set("dir.monitor", buf);
+}
 	config_set("dir.plugins", LIBDIR"/radare/");
 	config_set("dir.rdb", ""); // ~/.radare/rdb/
-	config_set("dir.tmp", "/tmp/");
-
+	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.color", "magic");
 	config_set("graph.callblocks", "false");
 	config_set("graph.flagblocks", "true");
