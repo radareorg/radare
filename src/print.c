@@ -873,6 +873,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				cons_printf(" %c", hex[j]);
 				if (j%2) cons_printf(" ");
 			}
+			cons_printf(" ");
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;
 				cons_printf("%c", hex[j]);

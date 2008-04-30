@@ -156,8 +156,8 @@ int gdbx_open(const char *pathname, int flags, mode_t mode)
 	eprintf("Listening at port %d (telnet me to get the program output)\n", port);
 	if (!fork()) {
 		if (!fork()) {
-			system("pkill gdb"); // XXX
-			system("pkill tm"); // XXX
+			system("killall gdb"); // XXX
+			system("killall tm"); // XXX
 			sprintf(tmp, "tm -N 10 -w -n -p %d gdb --args %s", port, pathname+7);
 			system(tmp);
 			printf("(%s) has exited!\n", tmp);

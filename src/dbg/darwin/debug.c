@@ -21,7 +21,7 @@
  */
 
 
-#define USE_PTRACE 1
+#define USE_PTRACE 0
 #define __addr_t_defined
 
 #include "../mem.h"
@@ -57,16 +57,19 @@ inline int debug_detach()
 	return 0;
 }
 
-static task_t inferior_task;
+static task_t inferior_task = 0;
 static unsigned int inferior_thread_count = 0;
-exception_type_t exception_type;
-exception_data_t exception_data;
-mach_port_t exception_port; 
+static exception_type_t exception_type;
+static exception_data_t exception_data;
+static mach_port_t exception_port; 
 
 void inferior_abort_handler(int pid)
 {
 	fprintf(stderr, "Inferior received signal SIGABRT. Executing BKPT.\n");
 }
+
+#define MACH_ERROR_STRING(ret) \
+(mach_error_string (ret) ? mach_error_string (ret) : "[UNKNOWN]")
 
 int debug_attach(int pid)
 {
@@ -77,36 +80,38 @@ int debug_attach(int pid)
 	if ((err = task_for_pid(mach_task_self(), (int)pid, &inferior_task) !=
 				KERN_SUCCESS)) {
 		fprintf(stderr, "Failed to get task for pid %d: %d.\n", (int)pid, (int)err);
-		return 1;
+		fprintf(stderr, "Reason: %s\n", MACH_ERROR_STRING(err));
+		fprintf(stderr, "You probably need to add user to procmod group.\n"
+				" Or chmod g+s radare && chown root:procmod radare\n");
+		return -1;
 	}
 
 	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count)
 			!= KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get list of task's threads.\n");
-		return 1;
+		return -1;
 	}
 
 	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE,
 				&exception_port) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to create exception port.\n");
-		return 1;
+		return -1;
 	}
 	if (mach_port_insert_right(mach_task_self(), exception_port,
 				exception_port, MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to acquire insertion rights on the port.\n");
-		return 1;
+		return -1;
 	}
 	if (task_set_exception_ports(inferior_task, EXC_MASK_ALL, exception_port,
 				EXCEPTION_DEFAULT, THREAD_STATE_NONE) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to set the inferior's exception ports.\n");
-		return 1;
+		return -1;
 	}
 	return 0;
 }
 
 int debug_contp(int tid)
 {
-
 	thread_resume(inferior_threads[0]);
 	//wait_for_events();
 	return 0;
@@ -151,7 +156,6 @@ static pid_t start_inferior(int argc, char **argv)
 			fprintf(stderr, "Process with PID %d started...\n", (int)kid);
 			return kid;
 		}
-
 		return -1;
 	}
 
@@ -160,13 +164,14 @@ static pid_t start_inferior(int argc, char **argv)
 	child_args[argc] = NULL;
 
 	ptrace(PT_TRACE_ME, 0, 0, 0);
+	/* why altering these signals? */
 	signal(SIGTRAP, SIG_IGN);
 	signal(SIGABRT, inferior_abort_handler);
 
 	execvp(argv[0], child_args);
 
 	fprintf(stderr, "Failed to start inferior.\n");
-	exit(1);
+	return 0;
 }
 
 int debug_set_bp_mem(int pid, u64 addr, int len)
@@ -176,14 +181,23 @@ int debug_set_bp_mem(int pid, u64 addr, int len)
 
 int debug_fork_and_attach()
 {
-	pid_t pid;
 	char **argv = { "/bin/ls", 0 };
+	int err;
+	pid_t pid;
 	/* TODO */
 	pid = start_inferior(1, &argv);
+
+	err = debug_attach(pid);
+	if (err == -1) {
+		kill(pid, SIGKILL);
+exit(1);
+		return -1;
+	}
 
 	ps.pid = ps.tid = pid;
 	return pid;
 }
+
 extern int errno;
 
 #define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
@@ -238,7 +252,7 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 
 int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 {
-	kern_return_t err = vm_write(inferior_task, addr, (pointer_t)buff, (mach_msg_type_number_t)len);
+	kern_return_t err = vm_write(tid, addr, (pointer_t)buff, (mach_msg_type_number_t)len);
 	if (err == KERN_SUCCESS)
 		return len;
 
