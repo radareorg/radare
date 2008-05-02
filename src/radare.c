@@ -510,13 +510,6 @@ int radare_cmd(char *command, int log)
 		return system(command+2);
 	}
 
-	if (config.visual) {
-		// update config.height heres
-		//terminal_get_real_columns();
-		config.height= config_get_i("scr.height");
-		config.height -= 3;
-	}
-
 	// bypass radare commandline hack ;D
 	if (!memcmp(command, "[0x", 3)) {
 		char *foo = strchr(command, '>');
