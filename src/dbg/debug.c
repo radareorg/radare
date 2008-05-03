@@ -52,6 +52,8 @@
 #include "events.h"
 #include "debug.h"
 
+extern struct regs_off roff[];
+
 int debug_set_bp(struct bp_t *bp, unsigned long addr, int type);
 int inline debug_rm_bp_num(int num);
 inline int debug_rm_bp_addr(unsigned long addr);
@@ -517,7 +519,7 @@ Dump of assembler code for function mmap:
 	return 0;
 }
 
-int debug_alloc(char *args)
+addr_t debug_alloc(char *args)
 {
 	int sz;
 	char *param;
@@ -533,18 +535,18 @@ int debug_alloc(char *args)
 		sz = get_math(param);
 		if(sz <= 0) {
 			eprintf(":alloc invalid size\n");
-			return 1;
+			return -1;
 		}
 
 		addr = alloc_page(sz);
 		if(addr == (addr_t)-1) {
 			eprintf(":alloc can not alloc region!\n");
-			return 1;
+			return -1;
 		}
 		printf("* new region allocated at: 0x%x\n", (unsigned int)addr);
 	}
 
-	return 0;
+	return addr;
 }
 
 int debug_free(char *args)
@@ -1720,4 +1722,88 @@ int debug_run()
 
 	eprintf("No program loaded.\n");
 	return 1;
+}
+
+addr_t debug_getregister(char *input)
+{
+	char *reg;
+	int off;
+
+	if(*input == ' ')
+		reg = input + 1;
+	else
+		reg = input;
+
+	if((off = get_reg(reg)) == -1)
+		return -1;
+
+	/* TODO: debug_get_regoff must return a value addr_t */
+	return (addr_t)debug_get_regoff(&WS(regs), roff[off].off); 
+}
+
+
+/* do loop */
+int debug_loop(char *addr_str)
+{
+	int ret;
+	addr_t pc, ret_addr;
+	struct bp_t *bp;
+      
+        if(addr_str == (char *)NULL)
+		return -1;
+
+	ret_addr = get_offset(addr_str);
+	pc = arch_pc();
+
+	/* if exist a breakpoint at PC address then delete it */
+	bp = debug_get_bp(pc);
+	if(bp != (struct bp_t *)NULL)
+		debug_rm_bp_addr(pc);
+
+	/* set HW breakpoint on return address */
+	if(debug_set_bp(NULL, ret_addr, BP_HARD) < 0) {
+		eprintf("Cannot set hw on return address(0x%x)\n",
+				ret_addr);
+
+		return -1;
+	}
+
+	do {
+		/* continue execution */
+		debug_cont();
+
+		/* matched ret address or fatal exception */
+	} while(!(WS(event) == BP_EVENT && WS(bp)->addr == ret_addr) && 
+		  WS(event) != FATAL_EVENT && WS(event) != EXIT_EVENT &&
+		  WS(event) != INT_EVENT);
+
+	/* get return code */
+	switch(WS(event)) {
+		case FATAL_EVENT:
+			ret = 3;
+			break;
+
+		case EXIT_EVENT:
+			ret = 2;
+			break;
+
+		case INT_EVENT:
+			ret = 1;
+			break;
+
+		case BP_EVENT:
+			ret = 0;
+			break;
+
+		default:
+			ret = -2;
+	}
+
+	/* remove HW bp */
+	debug_rm_bp_addr(ret_addr);
+
+	/* set pc */
+	arch_set_pc(pc);
+
+	return ret;
 }

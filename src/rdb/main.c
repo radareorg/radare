@@ -18,6 +18,7 @@
  *
  */
 
+#include "../radare.h"
 #include <stdio.h>
 #include <getopt.h>
 #include "rdb.h"

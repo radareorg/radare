@@ -20,10 +20,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-
-#include "main.h"
-
-#ifdef __WINDOWS__ && !__CYGWIN__
+#ifdef __WINDOWS__ 
 
 #include <sys/types.h>
 #include <windows.h>

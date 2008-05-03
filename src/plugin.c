@@ -21,7 +21,7 @@
 #include "main.h"
 #include <dirent.h>
 #include "plugin.h"
-#if __UNIX__
+#if __UNIX__ || __CYGWIN__
 #include <dlfcn.h>
 #endif
 
@@ -63,7 +63,7 @@ void *radare_resolve(char *name)
 int is_plugin(const char *str)
 {
 // TODO: use SHARED_EXT
-#if __WINDOWS__
+#if __WINDOWS__ && !__CYGWIN__
 	if (strstr(str, ".dll"))
 		return 1;
 #endif
@@ -117,8 +117,10 @@ plugin_t *plugin_registry(const char *file)
 	   || (ptr = strstr(buf,".dll")))
 		ptr[0]='\0';
 
-#if __WINDOWS__
+#if __WINDOWS__ && !__CYGWIN__
+
 	strcat(buf, ".dll");
+
 	h = LoadLibrary(buf);
 	if (h == NULL) {
 		eprintf("Cannot open library (%s)\n", buf);
@@ -153,14 +155,14 @@ plugin_t *plugin_registry(const char *file)
 	switch(((int)(*ip))) {
 	case PLUGIN_TYPE_IO:
 		p = (plugin_t *)malloc(sizeof(plugin_t));
-		#if __WINDOWS__
+		#if __WINDOWS__ && !__CYGWIN__
 		p = GetProcAddress(h, "radare_plugin");
 		#else
 		p = dlsym(hd, "radare_plugin");
 		#endif
 		break;
 	case PLUGIN_TYPE_HACK: {
-		#if __WINDOWS__
+		#if __WINDOWS__ && !__CYGWIN__
 		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
 		#else
 		struct plugin_hack_t *pl = dlsym(hd, "radare_plugin");

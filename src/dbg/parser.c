@@ -32,7 +32,7 @@
 #include "../utils.h"
 
 extern struct regs_off roff[];
-extern int get_reg(char *reg);
+extern unsigned long get_reg(char *reg);
 
 #define ishexa(c) ((c >='0' && c <= '9') || \
 		  (tolower(c) >='a' && tolower(c) <= 'f'))

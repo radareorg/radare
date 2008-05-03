@@ -56,6 +56,7 @@ struct regs_off roff[] = {
 	{"edx", R_EDX_OFF},
 	{"esi", R_ESI_OFF},
 	{"edi", R_EDI_OFF},
+	{"esp", R_ESP_OFF},
 	{"eip", R_EIP_OFF},
 
 #if __WINDOWS__
@@ -1266,6 +1267,18 @@ addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
         debug_setregs(ps.tid, &reg_saved);
 
 	return ret;
+#elif __WINDOWS__
+	addr_t ret;
+
+	*rsize = size;
+
+	ret = (addr_t)(LONG)VirtualAllocEx(WIN32_PI(hProcess), (LPVOID)NULL,
+		       		size, MEM_COMMIT,
+				PAGE_NOCACHE | PAGE_EXECUTE_READWRITE);
+
+	return (ret != (addr_t)NULL)? ret : -1; 
+
+
 #else
 	eprintf("Not supported on this OS\n");
 	return 0;
@@ -1324,6 +1337,11 @@ addr_t arch_dealloc_page(addr_t addr, unsigned long size)
         debug_setregs(ps.tid, &reg_saved);
 
 	return ret;
+#elif __WINDOWS__
+
+	return VirtualFreeEx(WIN32_PI(hProcess), (LPVOID)(LONG)addr,
+			size, MEM_DECOMMIT);
+
 #else
 	eprintf("Not supported on this OS\n");
 	return 0;
@@ -1745,3 +1763,14 @@ void free_bt(struct list_head *sf)
 
    free(sf);
 }
+
+void arch_set_pc(addr_t pc)
+{
+	regs_t regs;
+
+	debug_getregs(ps.tid, &regs);
+	R_EIP(regs) = pc;
+	debug_setregs(ps.tid, &regs);
+}
+
+

@@ -59,7 +59,8 @@ int debug_attach();
 int debug_unload();
 int debug_inject();
 int debug_set_register(char *arg);
-int debug_alloc(char *arg);
+int debug_loop(char *addr_str);
+addr_t debug_alloc(char *arg);
 int debug_mmap(char *arg);
 int debug_free(char *arg);
 int debug_jmp(char *arg);
@@ -74,6 +75,7 @@ int inline debug_steps();
 inline unsigned long debug_get_regoff(regs_t *reg, int off);
 int debug_set_register(char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
+addr_t debug_getregister(char *reg);
 
 
 //#include "libps2fd.h"
@@ -105,6 +107,8 @@ enum {
 	UNKNOWN_EVENT,
 	BP_EVENT,
 	INT3_EVENT,
+	INT_EVENT,	/* interrupt, CTRL-C */
+	FATAL_EVENT,	/* fatal exception (access violation) */
 	EXIT_EVENT
 };
 

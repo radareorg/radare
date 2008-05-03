@@ -13,7 +13,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO} python.${SO} 
+all: hello.${SO} lua.${SO} 
 
 #perl.${SO}
 
@@ -22,9 +22,6 @@ hello.${SO}:
 
 #perl.${SO}:
 #	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SHARED_EXT}
-
-python.${SO}: python.o
-	-${CC} python.o ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.so
 
 lua.${SO}: lua.o
 	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -o lua.so

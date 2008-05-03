@@ -6,6 +6,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "../../../radare.h"
 #include "types.h"
 #include "extern.h"
 #include "opcmap.h"

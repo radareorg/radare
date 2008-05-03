@@ -3,8 +3,10 @@
 
 #include "../../main.h"
 
+#ifndef __CYGWIN__
 typedef unsigned short uint16_t ; 
 typedef unsigned int uint32_t ;
+#endif
 
 #define __packed __attribute__((__packed__))
 
