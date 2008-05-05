@@ -215,6 +215,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *input, *oinput;
 	char *str, *st;
 	char *next = NULL;
+	int ret = 0;
 
 	if (strnull(tmp))
 		return 0;
@@ -337,7 +338,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			piped[0]='\0';
 			pipe_stdout_to_tmp_file(tmp, input);
 			snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
-			io_system(cmd);
+			ret = io_system(cmd);
 			unlink(tmp);
 			piped[0]='|';
 			free(oinput);
@@ -424,7 +425,7 @@ std = 0;
 			input[strlen(input)] = '\0';
 		for(eof=input;eof[0];eof=eof+1)
 			if (eof[0]=='\n') eof[0]=' ';
-		commands_parse(input);
+		ret = commands_parse(input);
 
 #if 0
 		if (fdi!=-1) {
@@ -468,7 +469,7 @@ std = 0;
 	}
 
 	free(oinput);
-	return 0; /* error */
+	return ret; /* error */
 }
 
 /* XXX this is more portable and faster than the solution pipe_to_tmp_file and so */
@@ -502,6 +503,7 @@ int radare_cmd(char *command, int log)
 	int repeat;
 	int p,i;
 	char buf[128];
+	int ret = 0;
 
 	/* silently skip lines begginging with 0 */
 	if(command==NULL || (log&&command==NULL) || (command&&command[0]=='0'))
@@ -510,13 +512,6 @@ int radare_cmd(char *command, int log)
 // XXX not handled !?!?
 	if (command[0]=='!'&&command[1]=='!') {
 		return system(command+2);
-	}
-
-	if (config.visual) {
-		// update config.height heres
-		//terminal_get_real_columns();
-		config.height= config_get_i("scr.height");
-		config.height -= 3;
 	}
 
 	// bypass radare commandline hack ;D
@@ -625,9 +620,9 @@ int radare_cmd(char *command, int log)
 		command=command+1;
 
 	for(i=0;i<repeat;i++)
-		radare_cmd_raw(command, log);
+		ret = radare_cmd_raw(command, log);
 
-	return 0;
+	return ret;
 }
 
 /* TODO: move to cmds.c */

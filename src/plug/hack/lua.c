@@ -23,9 +23,13 @@
 #include <main.h>
 #include <lua.h>
 #include <lualib.h>
+#include "../../main.h"
+#include "../../dbg/debug.h"
+
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static char *(*rs)(const char *cmd) = NULL;
+static int (*rs_cmd)(char *cmd, int log) = NULL;
 
 static int report (lua_State *L, int status) {
 	const char *msg;
@@ -37,11 +41,14 @@ static int report (lua_State *L, int status) {
 	}
 	return status;
 }
+
+#if 0
 static int l_num (lua_State *L) {
 	double d = lua_tonumber(L, 1);  /* get argument */
 	lua_pushnumber(L, d+1);  /* push result */
 	return 1;  /* number of results */
 }
+#endif
 
 static int lua_cmd_str (lua_State *L) {
 	char *str;
@@ -52,8 +59,16 @@ static int lua_cmd_str (lua_State *L) {
 	return 1;  /* number of results */
 }
 
+static int lua_cmd (lua_State *L) {
+	char *s = lua_tostring(L, 1);  /* get argument */
+
+	lua_pushnumber(L, rs_cmd(s, 0));  /* push result */
+	return 1;  /* number of results */
+}
+
 static lua_State *L;
 
+#if 0
 static char *myslurp(const char *file)
 {
 	char *ret;
@@ -70,6 +85,8 @@ static char *myslurp(const char *file)
 	fclose(fd);
 	return ret;
 }
+
+#endif
 
 static int slurp_lua(char *file)
 {
@@ -101,19 +118,23 @@ static int lua_hack_init()
 	lua_setglobal(L,"radare_cmd_str");
 
 	// DEPRECATED: cmd = radare_cmd_str
-	lua_register(L, "cmd", &lua_cmd_str);
-	lua_pushcfunction(L,lua_cmd_str);
+	lua_register(L, "cmd", &lua_cmd);
+	lua_pushcfunction(L,lua_cmd);
 	lua_setglobal(L,"cmd");
 
 	//-- load template
 	printf("Loading radare api... %s\n",
-		slurp_lua(LIBDIR"/radare/radare.lua")?"ok":"error");
+		slurp_lua(LIBDIR"/radare/radare.lua")? "ok":"error");
 	fflush(stdout);
+
+	return 0;
 }
 
 static int lua_hack_cya()
 {
 	lua_close(L);
+
+	return 0;
 }
 
 void lua_hack_cmd(char *input)
@@ -121,8 +142,11 @@ void lua_hack_cmd(char *input)
 	if (rs == NULL)
 		rs = radare_plugin.resolve("radare_cmd_str");
 
-	if (rs == NULL) {
-		printf("cannot find radare_cmd_str\n");
+	if (rs_cmd == NULL)
+		rs_cmd = radare_plugin.resolve("radare_cmd");
+
+	if (rs == NULL || rs_cmd == NULL) {
+		printf("cannot find radare_cmd_str or radare_cmd\n");
 		return;
 	}
 

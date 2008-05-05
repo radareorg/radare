@@ -111,7 +111,7 @@ void format_show_help (print_mode_t mode)
 
 void print_addr(u64 off)
 {
-	char ch = (0==(off%4))?',':' ';
+	char ch = (0==(off%config_get_i("cfg.addrmod")))?',':' ';
 	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET"%c ", off, ch);
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
@@ -302,6 +302,13 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 
 	if (len <= 0) len = config.block_size;
 	radare_controlc();
+
+	if (config.visual) {
+		// update config.height heres
+		//terminal_get_real_columns();
+		config.height= config_get_i("scr.height");
+		config.height -= 3;
+	}
 
 	switch(fmt) {
 	case FMT_7BIT:
@@ -873,6 +880,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				cons_printf(" %c", hex[j]);
 				if (j%2) cons_printf(" ");
 			}
+			cons_printf(" ");
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;
 				cons_printf("%c", hex[j]);

@@ -434,6 +434,12 @@ int debug_print_wait(char *act)
 	case INT3_EVENT:
 		eprintf("%s: int3 stop at (0x%x)\n", act, arch_pc());
 		break;
+
+	case FATAL_EVENT:
+		eprintf("=== %s: (%d) stop at 0x%x(FATAL)\n",
+				act, ps.tid, (unsigned int)arch_pc());
+		break;
+
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
@@ -507,6 +513,15 @@ static int debug_exception_event(unsigned long code)
 
 			break;
 
+		/* fatal exceptions */
+		case EXCEPTION_ACCESS_VIOLATION:
+		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+		case EXCEPTION_INT_DIVIDE_BY_ZERO:
+		case EXCEPTION_STACK_OVERFLOW:
+			WS(event) = FATAL_EVENT;
+			break;
+
 		default:
 			eprintf("exception 0x%x uncatched\n", code);
 
@@ -540,8 +555,10 @@ int debug_dispatch_wait()
 		code = de.dwDebugEventCode;
 
 		/* Ctrl-C? */
-		if(exit_wait == 1 && code == 0x2)
+		if(exit_wait == 1 && code == 0x2) {
+			WS(event) = INT_EVENT;
 			break;
+		}
 
 		/* set state */
 		WS(event) = UNKNOWN_EVENT;

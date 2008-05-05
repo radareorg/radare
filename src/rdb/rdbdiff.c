@@ -1,3 +1,4 @@
+#include "../radare.h"
 #include "rdb.h"
 #include <stdio.h>
 #include <string.h>

@@ -85,7 +85,7 @@ ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
 		socket_fgets(gdbx_fd, tmp, 1024);
 //eprintf("<< %s\n", tmp);
 		if (strstr(tmp, "Cannot"))
-			return ((i==0)?-1:i);
+			return ((i==0)?0:i); // do not use -1:i
 		ptr = strchr(tmp, ':');
 		if (ptr) {
 			sscanf(ptr+2, "0x%x", &dw);
@@ -102,7 +102,7 @@ ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
 
 static void gdbx_wait_until_entrypoint()
 {
-	u64 entry;
+	u64 entry=0;
 	unsigned char buf;
 	char entry_str[33];
 	int off = 0;
@@ -120,7 +120,10 @@ static void gdbx_wait_until_entrypoint()
 				// get entrypoint address
 				socket_fgets(gdbx_fd, entry_str, 32);
 				entry = get_offset(entry_str);
-fprintf(stderr, "Entry point: 0x%08llx\n", entry);
+fprintf(stderr, " => Entry point: 0x%08llx\n", entry);
+#if __APPLE__
+fprintf(stderr, "\n >> Type '!bp 0x%08llx' and '!run' <<\n\n", entry);
+#endif
 		found=1;
 			} else {
 				off = 0;
@@ -128,14 +131,12 @@ fprintf(stderr, "Entry point: 0x%08llx\n", entry);
 			break;
 		}
 	}
-	gdbx_wait_until_prompt(1);
-printf("break\n");
-	socket_printf("break *0x%08llx\n", entry);
-	gdbx_wait_until_prompt(1);
-printf("run\n");
-	socket_printf("run\n", entry);
-	gdbx_wait_until_prompt(1);
-	config.seek = entry;
+	gdbx_wait_until_prompt(0);
+	if (entry != 0LL) {
+		socket_printf(config.fd, "break *0x%08llx\nrun\n", entry);
+		gdbx_wait_until_prompt(0);
+		config.seek = entry;
+	}
 }
 
 
@@ -155,8 +156,8 @@ int gdbx_open(const char *pathname, int flags, mode_t mode)
 	eprintf("Listening at port %d (telnet me to get the program output)\n", port);
 	if (!fork()) {
 		if (!fork()) {
-			system("pkill gdb"); // XXX
-			system("pkill tm"); // XXX
+			system("killall gdb"); // XXX
+			system("killall tm"); // XXX
 			sprintf(tmp, "tm -N 10 -w -n -p %d gdb --args %s", port, pathname+7);
 			system(tmp);
 			printf("(%s) has exited!\n", tmp);
@@ -188,7 +189,7 @@ int gdbx_system(const char *cmd)
 	char tmp[130];
 	int i;
 
-	if (cmd[0]=='!') {
+	if (cmd[0]=='=') {
 		socket_printf(config.fd, cmd+1);
 		socket_printf(config.fd, "\n");
 		// TODO: print out data
@@ -205,7 +206,7 @@ int gdbx_system(const char *cmd)
 		" !cont            continue program execution\n"
 		" !bp <addr>       set breakpoint at address\n"
 		" !regs[*]         show or flag registers\n"
-		" !!cmd            execute a gdbx command\n"
+		" !=cmd            execute a gdbx command\n"
 		" !!help           gdbx help\n");
 	} else
 	if (!memcmp(cmd, "bp ",3 )) {
@@ -213,6 +214,7 @@ int gdbx_system(const char *cmd)
 		// TODO: Support for removal in a radare-like way
 		sprintf(buf, "break *0x%08llx\n", get_offset(cmd+3));
 		socket_printf(config.fd, buf);
+cons_printf("breakpoint set\n");
 		gdbx_wait_until_prompt(0);
 	} else
 	if (!memcmp(cmd, "set ", 4)) {
@@ -250,6 +252,7 @@ int gdbx_system(const char *cmd)
 	} else
 	if (!strcmp(cmd, "maps")) {
 		socket_printf(config.fd, "info maps\n");
+		socket_printf(config.fd, "info regions\n");
 		gdbx_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "step")) {
@@ -264,14 +267,15 @@ int gdbx_system(const char *cmd)
 		
 		for(i=0;;i++) {
 			tmp[0]='\0';
+		do {
 			socket_read(config.fd, tmp, 1);
+		} while(tmp[0]=='\n');
 			if (tmp[0]=='(') {
 				gdbx_wait_until_prompt(0);
 				break;
 			}
-fprintf(stderr, "ONE LINE MORE\n");
-fflush(stderr);
 			socket_fgets(gdbx_fd, tmp+1, 128);
+//fprintf(stderr, " _ %s\n", tmp);
 			if (strstr(tmp, "no registers")) {
 				eprintf("The program is not running\n");
 				return 0;

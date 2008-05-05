@@ -4,6 +4,8 @@
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
 
+#define __addr_t_defined
+
 // basic data types
 typedef unsigned char u8;
 typedef unsigned short u16;

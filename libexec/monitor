@@ -1,29 +1,35 @@
 #!/usr/bin/perl
 #
 # monitorization client for radare
+#
 #               pancake <youterm.com>
 #
+# TODO: Rewrite using inotify/glib? and C
 
 
 sub slurpit {
         my ($file) = @_;
-       #print "<<slurp: $file\n";
         return undef unless (-f $file);
         open F, "<$file" || return undef;
         my $ret=""; while(<F>) { $ret.=$_; }
         close F;
+	$ret=~s/\n/, /g;
+	$ret=~s/\r//;
+	$ret=~s/\ \ //g;
         return $ret;
 }
 
 my $f=$ARGV[0];
 my $MONITOR_PATH=$ENV{HOME}."/.radare/monitor/";
+$MONITOR_PATH = $ENV{MONITORPATH}
+	if ($ENV{MONITORPATH} ne "");
 
 if ($ARGV[0] eq "-l") {
 	opendir DH, $MONITOR_PATH || die "cannot open";
 	my $i=0;
 	while(($file=readdir(DH))) {
-		next if ($file=~/^\./);
-		print "$i\t$file\t".slurpit("$MONITOR_PATH/$file")."\n";
+		next if ($file=~/^\./ || $file=~/\.txt/);
+		print("$file\t".slurpit("$MONITOR_PATH/$file")."\n");
 		$i++;
 	}
 	closedir DH;
@@ -47,6 +53,7 @@ if ($ARGV[0] eq "") {
 	print "  -l        list all running monitors\n";
 	print "  -r [name] remove a specific monitor\n";
 	print "  -R        removes all monitors\n";
+	print "Use MONITORPATH defaults to ~/.radare/monitor/\n";
 	exit(0);
 } elsif ($ARGV[1] ne "") {
 	open FD, ">$MONITOR_PATH/".$ARGV[0] || die "cannot open";

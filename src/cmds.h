@@ -25,15 +25,15 @@ typedef struct command {
     char sname;
     char *options;
     char *help;
-    void (*hook) (char *input);
+    int (*hook) (char *input);
 } command_t;
 
 #define CMD_NAME(hook) cmd_ ## hook
-#define CMD_DECL(hook) void cmd_ ## hook (char *input)
+#define CMD_DECL(hook) int cmd_ ## hook (char *input)
 #define CMD_CALL(hook,input) cmd_ ## hook(input);
 #define COMMAND(sn,opt,help,hook) {sn, (char*)opt, help, cmd_ ## hook}
 
-void commands_parse(const char *cmdline);
+int commands_parse(const char *cmdline);
 void show_help_message();
 
 CMD_DECL(gotoxy);

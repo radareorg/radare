@@ -21,12 +21,12 @@
 #include "main.h"
 #include <dirent.h>
 #include "plugin.h"
-#if __UNIX__
+#if __UNIX__ || __CYGWIN__
 #include <dlfcn.h>
 #endif
 
-plugin_t plugins[11];
-plugin_t plugins_backup[11];
+plugin_t plugins[12];
+plugin_t plugins_backup[12];
 int plugin_init_flag = 0;
 
 struct core_t {
@@ -63,7 +63,7 @@ void *radare_resolve(char *name)
 int is_plugin(const char *str)
 {
 // TODO: use SHARED_EXT
-#if __WINDOWS__
+#if __WINDOWS__ && !__CYGWIN__
 	if (strstr(str, ".dll"))
 		return 1;
 #endif
@@ -93,7 +93,7 @@ plugin_t *plugin_registry(const char *file)
 	}
 
 	/* find a place to store our child */
-	for(i=0; i<11 && plugins[i].name; i++);i--;
+	for(i=0; i<12 && plugins[i].name; i++);i--;
 
 	/* construct file name */
 	ip = config_get("dir.plugins");
@@ -117,8 +117,10 @@ plugin_t *plugin_registry(const char *file)
 	   || (ptr = strstr(buf,".dll")))
 		ptr[0]='\0';
 
-#if __WINDOWS__
+#if __WINDOWS__ && !__CYGWIN__
+
 	strcat(buf, ".dll");
+
 	h = LoadLibrary(buf);
 	if (h == NULL) {
 		eprintf("Cannot open library (%s)\n", buf);
@@ -153,14 +155,14 @@ plugin_t *plugin_registry(const char *file)
 	switch(((int)(*ip))) {
 	case PLUGIN_TYPE_IO:
 		p = (plugin_t *)malloc(sizeof(plugin_t));
-		#if __WINDOWS__
+		#if __WINDOWS__ && !__CYGWIN__
 		p = GetProcAddress(h, "radare_plugin");
 		#else
 		p = dlsym(hd, "radare_plugin");
 		#endif
 		break;
 	case PLUGIN_TYPE_HACK: {
-		#if __WINDOWS__
+		#if __WINDOWS__ && !__CYGWIN__
 		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
 		#else
 		struct plugin_hack_t *pl = dlsym(hd, "radare_plugin");
@@ -197,7 +199,7 @@ plugin_t *plugin_registry(const char *file)
 int plugin_list()
 {
 	int i;
-	for(i=0;i<11 && plugins[i].name; i++)
+	for(i=0;i<12 && plugins[i].name; i++)
 		printf("%-10s  %s\n", plugins[i].name, plugins[i].desc);
 	return i;
 }
@@ -231,7 +233,7 @@ void plugin_init()
 		return;
 
 	plugin_init_flag = 1;
-	memset(&plugins,'\0', sizeof(plugin_t)*11);
+	memset(&plugins,'\0', sizeof(plugin_t)*12);
 	/* load libraries in current directory */
 	/* load libraries in -l path */
 	plugins[last++] = haret_plugin;

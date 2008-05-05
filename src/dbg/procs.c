@@ -49,6 +49,10 @@ int pids_cmdline(int pid, char *cmdline)
 /* ptrace attaches to all sons of a pid */
 int pids_ptrace_all(int pid)
 {
+/* no ptrace for apple */
+#if __APPLE__
+	return -1;
+#else
 // XXX lot of c&p shit here lol!1
 	int p;
 	int n = 0;
@@ -87,6 +91,7 @@ int pids_ptrace_all(int pid)
 		}
 	}
 	return n;
+#endif
 }
 
 int pids_sons_of_r(int pid, int recursive, int limit)

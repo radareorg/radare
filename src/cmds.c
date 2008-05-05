@@ -54,7 +54,7 @@ extern void show_help_message();
 #define uchar unsigned char
 
 /* Call a command from the command table */
-void commands_parse (const char *_cmdline)
+int commands_parse (const char *_cmdline)
 {
 	char *cmdline = (char *)_cmdline;
 	command_t *cmd;
@@ -64,21 +64,20 @@ void commands_parse (const char *_cmdline)
 
 	// null string or comment
 	if (cmdline[0]==0||cmdline[0]==';')
-		return;
+		return 0;
 
 	if (cmdline[0]=='h') {
 		(void)show_help_message();
-		return;
+		return 0;
 	}
 
 	for (cmd = commands; cmd->sname != 0; cmd++)
 		if (cmd->sname == cmdline[0]) {
-		    (void)cmd->hook(cmdline+1);
-		    return;
+		    return cmd->hook(cmdline+1);
 		}
 
 	/* default hook */
-	(void)cmd->hook(cmdline);
+	return cmd->hook(cmdline);
 }
 
 void show_help_message()
@@ -159,6 +158,8 @@ CMD_DECL(config_eval)
 		cons_printf("   > e scr.color = 1  ; sets color for terminal\n");
 	} else
 		config_eval(input+i);
+
+	return 0;
 }
 
 CMD_DECL(project)
@@ -200,11 +201,12 @@ CMD_DECL(project)
 		" Pi [file]  info\n");
 		break;
 	}
+
+	return 0;
 }
 
 CMD_DECL(menu)
 {
-	struct list_head *i;
 	char buf[128];
 	char buf2[128];
 	char pfx[128];
@@ -245,6 +247,8 @@ noprint:
 			goto noprint;
 		}
 	}
+
+	return 0;
 	
 	// TODO
 	// TODO: for flags mark namespaces or so
@@ -266,6 +270,8 @@ CMD_DECL(hack)
 	} else {
 		radare_hack(input);
 	}
+
+	return 0;
 }
 
 CMD_DECL(rdb)
@@ -279,7 +285,7 @@ CMD_DECL(rdb)
 
 	if (input[0]=='?') {
 		rdb_help();
-		return;
+		return 0;
 	}
 	switch(input[0]) {
 	case 'm':
@@ -300,7 +306,7 @@ CMD_DECL(rdb)
 			cons_printf("%d 0x%08x %s\n", i, (unsigned long long)mr->entry, mr->name);
 			i++;
 		}
-		return;
+		return 0;
 	}
 	/* remove */
 	if (text[0]=='-') {
@@ -311,18 +317,18 @@ CMD_DECL(rdb)
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
 				list_del(&(mr->list));
-				return;
+				return 0;
 			}
 			i++;
 		}
 		eprintf("Not found\n");
-		return;
+		return 0;
 	}
 	/* open */
 	if (input[0] ==' ') {
 		struct program_t *prg = program_open(text+1); // XXX FIX stripstring and so
 		list_add_tail(&prg->list, &config.rdbs);
-		return;
+		return 0;
 	}
 	/* grefusa diffing */
 	if (input[0] =='d') {
@@ -343,7 +349,7 @@ CMD_DECL(rdb)
 		}
 
 		rdb_diff(mr0, mr1, 0);
-		return;
+		return 0;
 	}
 	/* draw graph */
 	if (input[0] =='G') {
@@ -355,7 +361,7 @@ CMD_DECL(rdb)
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
 				grava_program_graph(mr);
-				return;
+				return 0;
 			}
 			i++;
 		}
@@ -363,7 +369,7 @@ CMD_DECL(rdb)
 #else
 		eprintf("Compiled without vala-gtk\n");
 #endif
-		return;
+		return 0;
 	}
 #if 0
 
@@ -377,6 +383,7 @@ CMD_DECL(rdb)
 			text, config.seek, config.block_size);
 	}
 #endif
+	return 0;
 }
 
 CMD_DECL(baddr)
@@ -386,6 +393,8 @@ CMD_DECL(baddr)
 	if (input[i]!='\0')
 		config.baddr = get_math(input+i+1);
 	D { printf("0x"OFF_FMTx, config.baddr); NEWLINE; }
+
+	return 0;
 }
 
 CMD_DECL(hash)
@@ -409,7 +418,7 @@ CMD_DECL(hash)
 #endif
 			eprintf("Invalid interpreter. Try (perl or python).\n");
 		// TODO: check perl|python build and show proper msg
-		return;
+		return 0;
 	}
 	// XXX doesnt works with dbg:///
 	// XXX use real temporal file instead of /tmp/xx
@@ -424,6 +433,8 @@ CMD_DECL(hash)
 
 	if (config.debug)
 		unlink("/tmp/xx");
+
+	return 0;
 }
 
 CMD_DECL(interpret_perl)
@@ -447,7 +458,7 @@ CMD_DECL(interpret_perl)
 	#if !HAVE_PERL && !HAVE_PYTHON
 		eprintf("Build with no scripting support.\n");
 	#endif
-		return;
+		return 0;
 	}
 
 	switch(config.lang) {
@@ -473,6 +484,8 @@ CMD_DECL(interpret_perl)
 		eprintf("No scripting support.\n");
 		break;
 	}
+
+	return 0;
 }
 
 CMD_DECL(interpret)
@@ -489,6 +502,8 @@ CMD_DECL(interpret)
 		eprintf("error: Cannot open file '%s'\n", ptr);
 
 	free(ptro);
+
+	return 0;
 }
 
 CMD_DECL(open)
@@ -499,6 +514,8 @@ CMD_DECL(open)
 	radare_open(0);
 	//radare_go();
 	free(ptr);
+
+	return 0;
 }
 
 // XXX should be removed
@@ -518,12 +535,12 @@ CMD_DECL(envvar)
 		printf("%%OFFSET      %s\n", getenv("OFFSET"));
 		printf("%%CURSOR      %s\n", getenv("CURSOR"));
 		printf("%%BSIZE       %s\n", getenv("BSIZE"));
-		return;
+		return 0;
 	} else
 	if (text[0]=='?') {
 		printf("Get and set environment variables.\n");
 		printf("To undefine use '-' or '(null)' as argument: f.ex: %%COLUMNS (null)\n");
-		return;
+		return 0;
 	}
 
 	/* Show only one variable */
@@ -537,7 +554,7 @@ CMD_DECL(envvar)
 			cons_printf("%s\n", tmp);
 			free(text2);
 		} else 	{ NEWLINE; }
-		return;
+		return 0;
 	}
 
 	/* Set variable value */
@@ -558,11 +575,15 @@ CMD_DECL(envvar)
 
 	update_environment();
 	free(text2);
+
+	return 0;
 }
 
 CMD_DECL(blocksize)
 {
 	radare_set_block_size(input);
+
+	return 0;
 }
 
 CMD_DECL(code)
@@ -625,6 +646,8 @@ CMD_DECL(code)
 						"C*           - list metadata database\n");
 		}
 	}
+
+	return 0;
 }
 
 #if 0
@@ -649,7 +672,9 @@ CMD_DECL(endianess)
 		config.endian = atoi(text)?1:0;
 
 	D eprintf("endian = %d %s\n", config.endian, (config.endian)?"big":"little");
+	return 0;
 }
+
 
 static void radare_set_limit(char *arg)
 {
@@ -666,6 +691,8 @@ CMD_DECL(limit)
 	for(;*text&&iswhitespace(*text);text=text+1);
 
 	radare_set_limit(text);
+
+	return 0;
 }
 
 CMD_DECL(move)
@@ -674,6 +701,8 @@ CMD_DECL(move)
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
 	radare_move(text);
+
+	return 0;
 }
 
 CMD_DECL(print)
@@ -697,11 +726,14 @@ CMD_DECL(print)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
 		else	radare_print(input+1, fmt);
 	}
+
+	return 0;
 }
 
 CMD_DECL(quit)
 {
 	radare_exit();
+	return 0;
 }
 
 CMD_DECL(resize)
@@ -710,7 +742,7 @@ CMD_DECL(resize)
 
 	if (strchr(input, '*')) {
 		printf("0x"OFF_FMTx"\n", config.size);
-		return;
+		return 0;
 	}
 
 	/* XXX not needed ? */
@@ -718,6 +750,8 @@ CMD_DECL(resize)
 	for(;*text&&iswhitespace(*text);text=text+1);
 
 	radare_resize(text);
+
+	return 0;
 }
 
 CMD_DECL(flag)
@@ -751,6 +785,8 @@ CMD_DECL(flag)
 			}
 		}
 	}
+
+	return 0;
 }
 
 CMD_DECL(undoseek)
@@ -779,6 +815,8 @@ CMD_DECL(undoseek)
 		"u?   help this help\n");
 		break;
 	}
+
+	return 0;
 }
 
 CMD_DECL(seek)
@@ -818,6 +856,8 @@ CMD_DECL(seek)
 	radare_read(0);
 
 	free(input2);
+
+	return 0;
 }
 
 CMD_DECL(status)
@@ -830,7 +870,7 @@ CMD_DECL(status)
 		printf("s 0x"OFF_FMTx"\n", config.seek);
 		printf("B 0x"OFF_FMTx"\n", config.baddr);
 		printf("l 0x"OFF_FMTx"\n", config.limit);
-		return;
+		return 0;
 	}
 #endif
 
@@ -857,6 +897,8 @@ CMD_DECL(status)
 
 	if (config.debug)
 		io_system("info");
+
+	return 0;
 }
 
 CMD_DECL(compare)
@@ -875,12 +917,12 @@ CMD_DECL(compare)
 	case 'f':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wf [file]'\n");
-			return;
+			return 0;
 		}
 		fd = fopen(input+1,"r");
 		if (fd == NULL) {
 			eprintf("Cannot open file\n");
-			return;
+			return 0;
 		}
 		buf = (unsigned char *)malloc(config.block_size);
 		fread(buf, config.block_size, 1, fd);
@@ -891,7 +933,7 @@ CMD_DECL(compare)
 	case 'x':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wx 00 11 22'\n");
-			return;
+			return 0;
 		}
 		buf = (unsigned char *)malloc(strlen(input+2));
 		ret = hexstr2binstr(input+2, buf);
@@ -911,8 +953,10 @@ CMD_DECL(compare)
 		break;
 	default:
 		eprintf("Usage: c[?|d|x|f] [argument]\n");
-		return;
+		return 0;
 	}
+
+	return 0;
 }
 
 CMD_DECL(write)
@@ -928,7 +972,7 @@ CMD_DECL(write)
 	case 'f':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wf [file]'\n");
-			return;
+			return 0;
 		}
 		radare_poke(input+2);
 		break;
@@ -956,14 +1000,14 @@ CMD_DECL(write)
 	case 'x':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wx 00 11 22'\n");
-			return;
+			return 0;
 		}
 		ret = radare_write(input+2, WMODE_HEX);
 		break;
 	case 'w':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'ww string-with-scaped-hex'.\n");
-			return;
+			return 0;
 		}
 		ret = radare_write(input+2, WMODE_WSTRING);
 		break;
@@ -983,8 +1027,10 @@ CMD_DECL(write)
 		break;
 	default:
 		eprintf("Usage: w[?|a|A|d|w|x|f] [argument]\n");
-		return;
+		return 0;
 	}
+
+	return 0;
 }
 
 CMD_DECL(examine)
@@ -1000,6 +1046,8 @@ CMD_DECL(examine)
 		eprintf("Error parsing command.\n");
 		break;
 	}
+
+	return 0;
 }
 
 CMD_DECL(prev)
@@ -1019,6 +1067,8 @@ CMD_DECL(prev)
 	radare_seek(config.seek, SEEK_SET);
 
 	D printf(OFF_FMTd"\n", config.seek);
+
+	return 0;
 }
 
 CMD_DECL(next)
@@ -1035,6 +1085,8 @@ CMD_DECL(next)
 	radare_seek(config.seek, SEEK_SET);
 
 	D printf(OFF_FMTd"\n", config.seek);
+
+	return 0;
 }
 
 CMD_DECL(prev_align)
@@ -1050,6 +1102,8 @@ CMD_DECL(prev_align)
 		if ( config.seek % config.block_size )
 			CMD_CALL(next_align, "")
 	}
+
+	return 0;
 }
 
 CMD_DECL(next_align)
@@ -1064,6 +1118,8 @@ CMD_DECL(next_align)
 		}
 		config.seek += config.block_size - (config.seek % config.block_size);
 	}
+
+	return 0;
 }
 
 print_fmt_t last_search_fmt = FMT_ASC;
@@ -1232,15 +1288,23 @@ CMD_DECL(search) {
 		break;
 	}
 	free(input2);
+
+	return 0;
 }
 
 CMD_DECL(shell)
 {
+	int ret = 0;
+
 	prepare_environment(input);
 	if (input[0]=='!')
 		system(input+1);
-	else io_system(input);
+	else
+		ret = io_system(input);
+
 	destroy_environment(input);
+
+	return ret;
 }
 
 CMD_DECL(help)
@@ -1251,9 +1315,13 @@ CMD_DECL(help)
 		PRINT_BIN(res); NEWLINE;
 	}
 	else show_help_message();
+
+	return 0;
 }
 
 CMD_DECL(default)
 {
 	D eprintf("Invalid command '%s'. Try '?'.\n", input);
+
+	return 0;
 }

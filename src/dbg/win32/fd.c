@@ -20,6 +20,8 @@
  *
  */
 
+#define __addr_t_defined
+
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
