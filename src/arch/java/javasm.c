@@ -18,6 +18,8 @@
  *
  */
 
+// TODO: add radare related commands to stdout with -r (R printf..)
+
 #include "../../main.h"
 #if __UNIX__
 #include <arpa/inet.h>
@@ -32,6 +34,10 @@
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
 // Jazzele: http://people.bath.ac.uk/enpsgp/nokia770/jazelle/test_jazelle5.c
 static struct classfile cf;
+static int radare_output = 0;
+
+#define R if (radare_output)
+#define NR if (!radare_output)
 
 #define USHORT(x,y) (unsigned short)(x[y+1]|(x[y]<<8))
 #define UINT(x,y) (unsigned int) ((x[y]<<24)|(x[y+1]<<16)|(x[y+2]<<8)|x[y+3])
@@ -425,31 +431,35 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 	for(j=0;j<sz2;j++) {
 		fread(buf, 6, 1, fd);
 		name = (get_cp(USHORT(buf,0)-1))->value;//cp_items[USHORT(buf,0)-1].value;
-		printf("   %2d: Name Index: %d (%s)\n", j, USHORT(buf,0), name);
+		NR printf("   %2d: Name Index: %d (%s)\n", j, USHORT(buf,0), name);
 		sz3 = UINT(buf, 2);
 		if (fields) {
-			printf("FIELD\n");
+			NR printf("FIELD\n");
 		} else {
-			printf("     Length: %d\n", sz3); //UINT(buf, 2));
+			NR printf("     Length: %d\n", sz3); //UINT(buf, 2));
 			if (!name) {
-				printf("**ERROR ** Cannot identify attribute name into constant pool\n");
+				NR printf("**ERROR ** Cannot identify attribute name into constant pool\n");
 				continue;
 			}
 			if (!strcmp(name, "Code")) {
 				fread(buf, 8, 1, fd);
-				printf("      Max Stack: %d\n", USHORT(buf, 0));
-				printf("      Max Locals: %d\n", USHORT(buf, 2));
-				printf("      Code Length: %d\n", UINT(buf, 4));
-				printf("      Code At Offset: 0x%08lx\n", ftell(fd));
+				NR {
+					printf("      Max Stack: %d\n", USHORT(buf, 0));
+					printf("      Max Locals: %d\n", USHORT(buf, 2));
+					printf("      Code Length: %d\n", UINT(buf, 4));
+					printf("      Code At Offset: 0x%08lx\n", ftell(fd));
+				}
 				fread(buf, UINT(buf, 4), 1, fd); // READ CODE
 				sz4 = read_short(fd);
-				printf("      Exception table length: %d\n", sz4);
+				NR printf("      Exception table length: %d\n", sz4);
 				for(k=0;k<sz4;k++) {
 					fread(buf, 8, 1, fd);
-					printf("       start_pc:   0x%04x\n", USHORT(buf,0));
-					printf("       end_pc:     0x%04x\n", USHORT(buf,2));
-					printf("       handler_pc: 0x%04x\n", USHORT(buf,4));
-					printf("       catch_type: %d\n", USHORT(buf,6));
+					NR {
+						printf("       start_pc:   0x%04x\n", USHORT(buf,0));
+						printf("       end_pc:     0x%04x\n", USHORT(buf,2));
+						printf("       handler_pc: 0x%04x\n", USHORT(buf,4));
+						printf("       catch_type: %d\n", USHORT(buf,6));
+					}
 				}
 				sz4 = (int)read_short(fd);
 				printf("      code Attributes_count: %d\n", sz4);
@@ -459,11 +469,11 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 			} else
 			if (!strcmp(name, "LineNumberTable")) {
 				sz4 = (int)read_short(fd);
-				printf("     Table Length: %d\n", sz4);
+				NR printf("     Table Length: %d\n", sz4);
 				for(k=0;k<sz4;k++) {
 					fread(buf, 4, 1, fd);
-					printf("     %2d: start_pc:    0x%04x\n", k, USHORT(buf, 0));
-					printf("         line_number: %d\n", USHORT(buf, 2));
+					NR printf("     %2d: start_pc:    0x%04x\n", k, USHORT(buf, 0));
+					NR printf("         line_number: %d\n", USHORT(buf, 2));
 				}
 			} else
 			if (!strcmp(name, "ConstantValue")) {
@@ -472,9 +482,9 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 				printf("     Name Index: %d\n", USHORT(buf, 0)); // %s\n", USHORT(buf, 0), cp_items[USHORT(buf,0)-1].value);
 				printf("     AttributeLength: %d\n", UINT(buf, 2));
 	#endif
-				printf("     ConstValueIndex: %d\n", USHORT(buf, 0));
+				NR printf("     ConstValueIndex: %d\n", USHORT(buf, 0));
 			} else {
-				printf("** ERROR ** Unknown section '%s'\n", name);
+				fprintf(stderr, "** ERROR ** Unknown section '%s'\n", name);
 				exit(1);
 			}
 		}
@@ -508,12 +518,14 @@ int java_classdump(const char *file)
 	/* start parsing */
 	fread(&cf, 10, 1, fd); //sizeof(struct classfile), 1, fd);
 	if (memcmp(cf.cafebabe, "\xCA\xFE\xBA\xBE", 4)) {
-		printf("Invalid header\n");
+		fprintf(stderr, "Invalid header\n");
 		return -1;
 	}
-	printf("Version: 0x%02x%02x 0x%02x%02x\n",
-		cf.major[1],cf.major[0],
-		cf.minor[1],cf.minor[0]);
+
+	/* show class version information */
+	NR printf("Version: 0x%02x%02x 0x%02x%02x\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
+	else printf("CC version: 0x%02x%02x 0x%02x%02x @ 0\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
+
 	cf.cp_count = ntohs(cf.cp_count);
 	if (cf.major[0]==cf.major[1] && cf.major[0]==0) {
 		fprintf(stderr, "Oops. this is a Mach-O\n");
@@ -521,7 +533,7 @@ int java_classdump(const char *file)
 	}
 	
 	cf.cp_count--;
-	printf("ConstantPoolCount %d\n", cf.cp_count);
+	NR printf("ConstantPoolCount %d\n", cf.cp_count);
 	cp_items = malloc(sizeof(struct cp_item)*(cf.cp_count+1));
 	for(i=0;i<cf.cp_count;i++) {
 		struct constant_t *c;
@@ -536,10 +548,10 @@ int java_classdump(const char *file)
 			}
 		}
 		if (c == NULL) {
-			printf("Invalid tag '%d'\n", buf[0]);
+			fprintf(stderr, "Invalid tag '%d'\n", buf[0]);
 			return 0;
 		}
-		printf(" %3d %s: ", i+1, c->name);
+		NR printf(" %3d %s: ", i+1, c->name);
 
 		/* store constant pool item */
 		strcpy( cp_items[i].name, c->name);
@@ -563,73 +575,77 @@ int java_classdump(const char *file)
 		/* parse value */
 		switch(c->tag) {
 		case 1:
-			printf("%s\n", buf);
+			NR printf("%s\n", buf);
 			cp_items[i].value = strdup(buf);
 			break;
 		case 7:
-			printf("%d\n", USHORT(buf,0));
+			NR printf("%d\n", USHORT(buf,0));
 			break;
 		case 8:
-			printf("string ptr %d\n", USHORT(buf, 0));
+			NR printf("string ptr %d\n", USHORT(buf, 0));
 			break;
 		case 9:
 		case 11:
 		case 10: // METHOD REF
-			printf("class = %d, ", USHORT(buf,0));
-			printf("name_type = %d\n", USHORT(buf,2));
+			NR printf("class = %d, ", USHORT(buf,0));
+			NR printf("name_type = %d\n", USHORT(buf,2));
 			break;
 		case 12:
-			printf("name = %d, ", USHORT(buf,0));
-			printf("descriptor = %d\n", USHORT(buf,2));
+			NR printf("name = %d, ", USHORT(buf,0));
+			NR printf("descriptor = %d\n", USHORT(buf,2));
 			break;
 		default:
-			printf("%d\n", UINT(buf, 40));
+			NR printf("%d\n", UINT(buf, 40));
 		}
 	}
 
 	fread(&cf2, sizeof(struct classfile2), 1, fd);
 	check_eof(fd);
-	printf("Access flags: 0x%04x\n", cf2.access_flags);
+	NR printf("Access flags: 0x%04x\n", cf2.access_flags);
 	this_class = ntohs(cf2.this_class);
-	printf("This class: %d\n", cf2.this_class);
+	NR printf("This class: %d\n", cf2.this_class);
 	check_eof(fd);
 	//printf("This class: %d (%s)\n", ntohs(cf2.this_class), cp_items[ntohs(cf2.this_class)-1].value); // XXX this is a double pointer !!1
 	//printf("Super class: %d (%s)\n", ntohs(cf2.super_class), cp_items[ntohs(cf2.super_class)-1].value);
 	sz = read_short(fd);
-	printf("Interfaces count: %d\n", sz);
+	NR printf("Interfaces count: %d\n", sz);
 	if (sz>0) {
 		fread(buf, sz*2, 1, fd);
 		sz = read_short(fd);
 		for(i=0;i<sz;i++) {
-			printf("TODO\n");
+			fprintf(stderr, "interfaces: TODO\n");
 		}
 	}
-fflush(stdout);
+
 	sz = read_short(fd);
-	printf("Fields count: %d\n", sz);
+	NR printf("Fields count: %d\n", sz);
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);
-			printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
-			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf,2)-1)->value);
-			printf("    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
+			NR {
+				printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
+				printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf,2)-1)->value);
+				printf("    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
+			}
 			sz2 = USHORT(buf, 6);
-			printf("    field Attributes Count: %d\n", sz2);
+			NR printf("    field Attributes Count: %d\n", sz2);
 			attributes_walk(fd, sz2, 1);
 		}
 	}
 
 	sz = read_short(fd);
-	printf("Methods count: %d\n", sz);
+	NR printf("Methods count: %d\n", sz);
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);
 			check_eof(fd);
-			printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
-			printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf, 2)-1)->value);
-			printf("    Descriptor Index: %d (%s)\n", USHORT(buf, 4), get_cp(USHORT(buf, 4)-1)->value);
+			NR {
+				printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
+				printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf, 2)-1)->value);
+				printf("    Descriptor Index: %d (%s)\n", USHORT(buf, 4), get_cp(USHORT(buf, 4)-1)->value);
+			}
 			sz2 = USHORT(buf, 6);
-			printf("    method Attributes Count: %d\n", sz2);
+			NR printf("    method Attributes Count: %d\n", sz2);
 			attributes_walk(fd, sz2, 0);
 		}
 	}
@@ -731,6 +747,9 @@ int main(int argc, char **argv)
 	while ((c = getopt(argc, argv, "a:d:c:hV")) != -1)
 	{
 		switch( c ) {
+		case 'r':
+			radare_output = 1;
+			break;
 		case 'a':
 			j = java_assemble(buf, optarg);
 			for(i=0;i<j;i++) {

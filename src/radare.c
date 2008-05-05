@@ -221,9 +221,13 @@ int radare_cmd_raw(const char *tmp, int log)
 
 	//tmp = strclean(tmp);
 
-	if (strchr(tmp,'\n')) {
-		eprintf("Multiline command not yet supported\n");
-		return 0;
+	eof = strchr(tmp,'\n');
+	if (eof) {
+		*eof = '\0';
+		if (eof[1]!='\0') { // OOPS :O
+			eprintf("Multiline command not yet supported (%s)\n", tmp);
+			return 0;
+		}
 	}
 
 	input = oinput = strdup(tmp);
@@ -242,8 +246,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	}
 
 	/* interpret stdout of a process executed */
-	if (input[0]=='.')
-	{
+	if (input[0]=='.') {
 		radare_controlc();
 		switch(input[1]) {
 		case '%': {
@@ -261,7 +264,6 @@ int radare_cmd_raw(const char *tmp, int log)
 			"  > . /tmp/flags-saved\n");
 			break;
 		case ' ':
-			
 			filef = fopen(input+2,"r");
 			if (filef) {
 				while(!feof(filef)) {
@@ -845,8 +847,10 @@ int radare_prompt()
 #if HAVE_LIB_READLINE
 	D {
 		aux = readline(prompt);
-		if (aux == NULL)
+		if (aux == NULL) {
+			printf("\n");
 			return 0;
+		}
 
 		strncpy(input, aux, sizeof(input));
 
@@ -1176,9 +1180,8 @@ int radare_go()
 
 	/* load rabin stuff here */
 	if (config_get("file.id"))
-	{
 		rabin_load();
-	}
+
 	/* flag all syms and strings */
 	if (config_get("file.flag"))
 		radare_cmd(".!rsc flag $FILE", 0);

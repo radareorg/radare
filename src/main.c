@@ -23,7 +23,6 @@
 
 static void help_show_message()
 {
-	//"  -S [minlen]      extract strings inside file\n"
 	printf(
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
@@ -50,12 +49,6 @@ int main(int argc, char **argv, char **envp)
 
 	environ = envp;
 	radare_init();
-
-/*
-	flag_set("foo", 0x33, 0);
-	flag_list("");
-return 0;
-*/
  
 	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:")) != -1)
 	{
@@ -113,12 +106,6 @@ return 0;
 		case 'v':
 			config_set("cfg.verbose", "false");
 			break;
-#if 0
-		case 'S':
-			config.mode = MODE_STRINGS;
-			config.ene  = atoi(optarg);
-			break;
-#endif
 		default:
 			return 1;
 		}
@@ -129,11 +116,6 @@ return 0;
 
 	if (optind < argc)
 		eprintf("warning: Only the first file has been opened.\n");
-
-#if 0
-	if (config.mode == MODE_STRINGS)
-		return stripstr_from_file(config.file, config.ene, (u64)config.seek);
-#endif
 
 	plugin_load(); // from dir.plugins
 

@@ -141,6 +141,7 @@ int rabin_load()
 			config_set("asm.arch", "java");
 			// loading class information
 			java_classdump(config.file);
+			//radare_cmd(".!javasm -rc ${FILE}");
 			break;
 	}
 	// TODO: autodetect arch
