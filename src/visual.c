@@ -22,6 +22,7 @@ extern const char *dl_prompt;
 
 #include "main.h"
 #include "radare.h"
+#include "code.h"
 #include "config.h"
 #include "print.h"
 #include "plugin.h"
@@ -634,7 +635,7 @@ void visual_show_help()
 	"c          toggle cursor mode\n"
 	"C          toggle color\n"
 	"d          convert cursor selected bytes in data\n"
-	"b[k][cmd]  binds key 'k' to the specified command\n"
+//	"b[k][cmd]  binds key 'k' to the specified command\n"
 	"D          delete current flag\n"
 	"m          applies rfile magic on this block\n"
 	"I          invert block (same as pIx or so)\n"
@@ -722,6 +723,7 @@ void visual_bind_key()
 		free(ptr);
 	}
 	//else buf[0]='\0';
+	terminal_set_raw(1);
 	return;
 #else
 	buf[0]='\0';
@@ -1250,9 +1252,11 @@ CMD_DECL(visual)
 				radare_seek(mark, SEEK_SET);
 			}
 			break;
+#if 0
 		case 'b':
 			visual_bind_key();
 			break;
+#endif
 		case 'm':
 			printf("\nrfile magic:\n\n");
 			radare_dump_and_process( DUMP_MAGIC, config.block_size);

@@ -84,7 +84,7 @@ void data_add(u64 off, int type)
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 			if (off>= d->from && off<= d->to) {
-				list_del((d->list));
+				list_del((&d->list));
 				goto __reloop;
 			}
 		}
@@ -223,7 +223,7 @@ void metadata_comment_del(u64 offset, const char *str)
 		if (off) {
 			if (off == cmt->offset) {
 				free(cmt->comment);
-				list_del(pos);
+				list_del(&pos);
 				free(cmt);
 				if (str[0]=='*')
 					metadata_comment_del(offset, str);
@@ -233,13 +233,13 @@ void metadata_comment_del(u64 offset, const char *str)
 		} else {
 			if (str[0]=='*') {
 				free(cmt->comment);
-				list_del(pos);
+				list_del(&pos);
 				free(cmt);
 				pos = comments.next; // list_init
 				//metadata_comment_del(offset, str);
 			} else
 			if (cmt->offset == offset) {
-				list_del(pos);
+				list_del(&pos);
 				return;
 			}
 		}
@@ -516,13 +516,6 @@ void udis_arch(int arch, int len, int rows)
 				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
 			switch(data_type(seek)) {
-			default:
-			case DATA_HEX:
-				cons_printf("  .db  ");
-				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
-				}
-				break;
 			case DATA_FOLD_C: 
 				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
 				bytes+=(foo->to-foo->from);
@@ -546,10 +539,17 @@ void udis_arch(int arch, int len, int rows)
 				}
 				cons_strcat("\"");
 				break;
+			case DATA_HEX:
+			default:
+				cons_printf("  .db  ");
+				for(i=0;i<idata;i++) {
+					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
+				}
+				break;
 			}
 			cons_newline();
 			CHECK_LINES
-//			bytes+=idata;
+			bytes+=idata;
 			continue;
 		}
 		__outofme:
@@ -663,8 +663,8 @@ void udis_arch(int arch, int len, int rows)
 						if (show_lines)
 							code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
-							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-							else cons_printf("0x%08llX ", (unsigned long long)(seek));
+							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
+							else cons_printf("0x%08llX  ", (unsigned long long)(seek));
 						}
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf,"");

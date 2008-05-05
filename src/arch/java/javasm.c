@@ -367,7 +367,7 @@ int java_disasm(unsigned char *bytes, char *output)
 	int i;
 	for(i = 0;java_ops[i].name != NULL;i++)
 		if (bytes[0] == java_ops[i].byte)
-			return java_print_opcode(i, bytes+1, output);
+			return java_print_opcode(i, bytes, output);
 	return -1;
 }
 static void check_eof(FILE *fd)
@@ -485,7 +485,7 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 				NR printf("     ConstValueIndex: %d\n", USHORT(buf, 0));
 			} else {
 				fprintf(stderr, "** ERROR ** Unknown section '%s'\n", name);
-				exit(1);
+				return 1;
 			}
 		}
 	}
