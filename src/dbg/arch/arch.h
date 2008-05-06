@@ -50,7 +50,7 @@ long long arch_syscall(int pid, int sc, ...);
 int arch_dump_registers();
 int arch_restore_registers();
 void arch_set_pc(addr_t pc);
-unsigned long get_reg(char *reg);
+u64 get_reg(char *reg);
 //int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 

@@ -30,9 +30,10 @@
 #include "parser.h"
 #include "../list.h"
 #include "../utils.h"
+#include "arch/arch.h"
 
 extern struct regs_off roff[];
-extern unsigned long get_reg(char *reg);
+//extern unsigned long get_reg(char *reg);
 
 #define ishexa(c) ((c >='0' && c <= '9') || \
 		  (tolower(c) >='a' && tolower(c) <= 'f'))

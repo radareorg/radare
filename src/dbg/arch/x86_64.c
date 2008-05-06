@@ -1369,7 +1369,7 @@ int arch_stackanal()
 #warning "FIXMI XXX (TM): I prefered to leave this function void in favor of humand kind."
 }
 
-ull get_reg(char *reg)
+u64 get_reg(char *reg)
 {
 	int i;
 

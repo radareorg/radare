@@ -1803,7 +1803,8 @@ int debug_loop(char *addr_str)
 	debug_rm_bp_addr(ret_addr);
 
 	/* set pc */
-	arch_set_pc(pc);
+	//arch_set_pc(pc);
+	arch_jmp(pc);
 
 	return ret;
 }
