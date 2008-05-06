@@ -73,7 +73,7 @@ struct regs_off roff[] = {
 
 
 /* return register offset */
-unsigned long get_reg(char *reg)
+u64 get_reg(char *reg)
 {
 	int i;
 

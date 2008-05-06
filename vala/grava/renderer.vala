@@ -64,7 +64,7 @@ public class Grava.Renderer
 		set_color_str(ctx, color);
 	}
 
-	public static bool set_color_str(weak Context ctx, string color)
+	public static bool set_color_str(weak Context ctx, string? color)
 	{
 		if (color != null) {
 			if (color == "black")
@@ -148,7 +148,7 @@ public class Grava.Renderer
 
 		/* set body */
 		int y = 25;
-		string body = node.data.lookup("body");
+		string? body = node.data.lookup("body");
 		if (body != null)
 		foreach(string str in body.split("\n")) {
 			y+=10;

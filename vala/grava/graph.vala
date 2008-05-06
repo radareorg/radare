@@ -139,7 +139,7 @@ public class Grava.Graph : GLib.Object
 		return ret;
 	}
 
-	public weak Node click (double x, double y)
+	public weak Node? click (double x, double y)
 	{
 		double z = zoom;
 		foreach(weak Node node in nodes) {

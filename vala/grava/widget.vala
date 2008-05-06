@@ -132,7 +132,7 @@ public class Grava.Widget : GLib.Object {
 	/* capture mouse motion */
 	private bool scroll_press (Gtk.Widget w, Gdk.Event event)
 	{
-		weak EventScroll es = ref event.scroll;
+		weak EventScroll es = event.scroll;
 		weak DrawingArea da = (DrawingArea)w;
 
 		switch(es.direction) {
@@ -294,8 +294,8 @@ public class Grava.Widget : GLib.Object {
 
 	private bool button_press (Gtk.Widget w, Gdk.Event event)
 	{
-		weak EventButton eb = ref event.button;
-		weak EventMotion em = ref event.motion; 
+		weak EventButton eb = event.button;
+		weak EventMotion em = event.motion; 
 		weak Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
 		weak DrawingArea da = (DrawingArea)w;
 
@@ -316,7 +316,7 @@ public class Grava.Widget : GLib.Object {
 
 	private bool motion (Gtk.Widget w, Gdk.Event ev)
 	{
-		weak EventMotion em = ref ev.motion; 
+		weak EventMotion em = ev.motion; 
 		weak DrawingArea da = (DrawingArea)w;
 
 		if (ev.type == EventType.BUTTON_RELEASE) {

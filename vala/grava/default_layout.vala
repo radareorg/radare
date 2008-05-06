@@ -48,7 +48,7 @@ public class Grava.DefaultLayout : Grava.Layout
 		}
 	}
 
-	public weak Node get_parent(weak Node node)
+	public weak Node? get_parent(weak Node node)
 	{
 		foreach(weak Edge edge in graph.edges) {
 			if (edge.dest == node)
