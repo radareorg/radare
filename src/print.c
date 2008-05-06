@@ -499,11 +499,13 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			D {
 				cons_printf("0x%08x (%d) -> ", b0->addr, b0->n_bytes);
 				if (b0->tnext)
-					cons_printf("0x%08x", b0->tnext);
+					cons_printf("0x%08llx", b0->tnext);
 				if (b0->fnext)
-					cons_printf(", 0x%08x", b0->fnext);
+					cons_printf(", 0x%08llx", b0->fnext);
 				cons_printf("\n");
+			// TODO eval asm.lines=0
 				sprintf(cmd, "pD %d @ 0x%08x", b0->n_bytes+1, (unsigned int)b0->addr);
+			// TODO restore eval
 				radare_cmd(cmd, 0);
 				cons_printf("\n\n");
 			} else {

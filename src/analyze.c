@@ -239,7 +239,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 
 /* code analyze */
 
-int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
+int code_analyze_r(struct program_t *prg, u64 seek, int depth)
 {
 	struct aop_t aop;
 	struct block_t *blk;
@@ -285,14 +285,18 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 		{	
 			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
-			aop.jump = config.seek+bsz;
-	bsz+=sz;
+			aop.jump = blf->tnext; //config.seek+bsz;
+			aop.fail = blf->fnext;
+printf("%llx, %llx\n", aop.fail, aop.jump);
+	//bsz+=sz;
 			break;
 		}
+
 		blf = block_split_new ( prg, config.seek+bsz  );
 		if ( blf != NULL )
 		{		
 			//printf ("--Address %llx already analed\n", config.seek+bsz );
+printf("-- %llx, %llx\n", aop.fail, aop.jump);
 			
 			bsz = blf->n_bytes;
 			aop.eob = 1;
@@ -333,9 +337,9 @@ int code_analyze_r(struct program_t *prg, unsigned long seek, int depth)
 
 	/* walk childs */
 	if (blk->tnext && (blf == 0) )
-		code_analyze_r(prg, (unsigned long)blk->tnext, depth-1);
+		code_analyze_r(prg, blk->tnext, depth-1);
 	if (blk->fnext  )
-		code_analyze_r(prg, (unsigned long)blk->fnext, depth-1);
+		code_analyze_r(prg, blk->fnext, depth-1);
 	bsz = 0;
 
 	depth--;
@@ -354,7 +358,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 	if (prg == NULL)
 		eprintf("Cannot create program\n");
 	else
-		code_analyze_r(prg, (unsigned long)seek, depth);
+		code_analyze_r(prg, seek, depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();

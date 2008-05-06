@@ -36,8 +36,8 @@ struct aop_t {
 	int type; /* type of opcode */
 	int length; /* length in bytes of opcode */
 	int eob; // end of block (boolean)
-	unsigned long jump; /* true jmp */
-	unsigned long fail; /* false jmp */
+	u64 jump; /* true jmp */
+	u64 fail; /* false jmp */
 	u64 ref; /* referente to memory */
 };
 

@@ -486,6 +486,9 @@ void udis_arch(int arch, int len, int rows)
 		arm_mode = 16;
 		force_thumb = 1;
 		break;
+	case ARCH_JAVA:
+		endian = 1;
+		break;
 	}
 
 	if (show_nbytes>16 ||show_nbytes<0)

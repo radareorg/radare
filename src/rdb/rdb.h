@@ -33,8 +33,8 @@ struct block_t {
 	unsigned int n_xrefs;
 	struct list_head xrefs;
 	struct list_head list;
-	unsigned long tnext; // true conditional jump
-	unsigned long fnext; // false conditional jump
+	u64 tnext; // true conditional jump
+	u64 fnext; // false conditional jump
 
 	void *data; // user data
 };

@@ -126,17 +126,8 @@ struct block_t *block_new(unsigned long addr)
 	struct block_t *bt;
 
 	bt = (struct block_t *)malloc(sizeof(struct block_t));
+	memset(bt, '\0', sizeof(struct block_t));
 	bt->addr      = addr;
-	bt->name      = NULL;
-	bt->comment   = NULL;
-	bt->framesize = 0;
-	bt->checksum  = 0;
-	bt->ignored   = 0;
-	bt->n_bytes   = 0;
-	bt->n_xrefs   = 0;
-	bt->tnext     = 0;
-	bt->fnext     = 0;
-	bt->bytes     = NULL;
 	INIT_LIST_HEAD(&(bt->xrefs));
 	INIT_LIST_HEAD(&(bt->calls));
 
