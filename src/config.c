@@ -414,6 +414,15 @@ static int config_wmode_callback(void *data)
 	return 1;
 }
 
+static int config_palette_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	cons_palette_init(node->value);
+
+	return 1;
+}
+
 static int config_color_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -484,6 +493,7 @@ void config_init()
 
 	flags_init();
 	config_old_init();
+	// TODO: use from scr.palette
 
 	dl_init();
 	dl_hist_load(".radare_history");
@@ -640,6 +650,8 @@ void config_init()
 	node->callback = &config_zoombyte_callback;
 
 	config_set_i("scr.accel", 0);
+	node = config_set("scr.palette", cons_palette_default);
+	node->callback = &config_palette_callback;
 	config_set("scr.seek", "");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
@@ -683,6 +695,7 @@ void config_init()
 
 	/* lock */
 	config_lock(1);
+	cons_palette_init(config_get("scr.palette"));
 	metadata_comment_init(1);
 	radare_hack_init();
 	trace_init();

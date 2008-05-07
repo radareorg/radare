@@ -88,8 +88,9 @@ FEATURES
       - entropy
 
 
-   bindiff
+   radiff 
 
+    - integrates bdiff, bindiff, bytediff and rdbdiff into a single program
     - generates a raw binary difference between two files
     - recommended to use together with bdcolor
       $ bindiff a b | bdcolor 3

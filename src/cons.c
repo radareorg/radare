@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include "print.h"
 #include <stdarg.h>
 #if __UNIX__
 #include <termios.h>
@@ -31,6 +32,80 @@
 #endif
 
 int _print_fd = 1;
+
+const unsigned char *cons_palette_default = "362466";
+int cons_palette[CONS_PALETTE_SIZE][8] = {
+	/* PROMPT */
+	/* ADDRESS */
+	/* DEFAULT */
+	/* CHANGED */
+	/* JUMPS */
+	/* CALLS */
+	/* PUSH */
+	/* TRAP */
+	/* CMP */
+	/* RET */
+	/* METADATA */
+	/* HEADERS */
+	/* PRINTABLE */
+	/* LINES0 */
+	/* LINES1 */
+	/* LINES2 */
+	/* 00 */
+	/* 7F */
+	/* FF */
+};
+
+
+// 23 elements
+const unsigned char *cons_colors[] = {
+	C_BLACK,      // 0
+	C_GRAY,       // 1
+	C_WHITE,      // 2
+	C_RED,        // 3
+	C_MAGENTA,    // 4
+	C_BLUE,       // 5
+	C_GREEN,      // 6
+	C_YELLOW,     // 7
+	C_TURQOISE,   // 8
+	/* BOLD */
+	C_BBLACK,     // a
+	C_BGRAY,      // b
+	C_BWHITE,     // c
+	C_BRED,       // d
+	C_BMAGENTA,   // e
+	C_BBLUE,      // f
+	C_BGREEN,     // g
+	C_BYELLOW,    // h
+	C_BTURQOISE,  // i
+	/* SPECIAL */
+	C_RESET,      // r
+	C_BGBLACK,    //
+	C_BGRED,
+	NULL
+};
+
+const char *cons_get_color(int ch)
+{
+	if (ch>='0' && ch<='8')
+		return cons_colors[ch-'0'];
+	if (ch>='a' && ch<='i')
+		return cons_colors['8'-'0'+ch-'a'];
+	return C_RESET;
+}
+
+void cons_palette_init(const unsigned char *pal)
+{
+	// TODO: support complex syntax like prompt = red , etc..
+	int i,j=1;
+	for(i=0;i<CONS_PALETTE_SIZE;i++)
+		if (j && pal[i])
+			strcpy(cons_palette[i], cons_get_color(pal[i]));
+		else {
+			j = 0;
+			strcpy(cons_palette[i], C_RESET);
+		}
+}
 
 int cons_readchar()
 {

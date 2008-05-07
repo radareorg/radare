@@ -825,8 +825,8 @@ int radare_prompt()
 	radare_prompt_command();
 
 #if __UNIX__
-	C	sprintf(prompt, C_YELLOW"["OFF_FMT"]> "C_RESET,
-			(offtx)config.seek+config.baddr); 
+	C	sprintf(prompt, "%s["OFF_FMT"]> "C_RESET,
+			cons_palette[PAL_PROMPT], (offtx)config.seek+config.baddr); 
 	else
 	sprintf(prompt, "["OFF_FMT"]> ",
 			(offtx)config.seek+config.baddr); 

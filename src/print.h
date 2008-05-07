@@ -41,6 +41,28 @@ typedef enum {
 	FMT_7BIT, FMT_87BIT
 } print_fmt_t;
 
+enum {
+	PAL_PROMPT = 0,
+	PAL_ADDRESS,
+	PAL_DEFAULT,
+	PAL_CHANGED,
+	PAL_JUMP,
+	PAL_CALL,
+	PAL_PUSH,
+	PAL_TRAP,
+	PAL_CMP,
+	PAL_RET,
+	PAL_LINES0,
+	PAL_LINES1,
+	PAL_LINES2,
+	PAL_00,
+	PAL_7F,
+	PAL_FF
+};
+extern const unsigned char *cons_palette_default;
+#define CONS_PALETTE_SIZE 18
+extern int cons_palette[CONS_PALETTE_SIZE][8];
+
 /* plain colors */
 #define C_BLACK    "\e[30m"
 #define C_BGBLACK  "\e[40m"
