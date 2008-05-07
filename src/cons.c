@@ -33,7 +33,7 @@
 
 int _print_fd = 1;
 
-const unsigned char *cons_palette_default = "762466";
+const unsigned char *cons_palette_default = "7624664623783824623";
 int cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
 	/* ADDRESS */
@@ -45,8 +45,9 @@ int cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* TRAP */
 	/* CMP */
 	/* RET */
+	/* NOP */
 	/* METADATA */
-	/* HEADERS */
+	/* HEADER */
 	/* PRINTABLE */
 	/* LINES0 */
 	/* LINES1 */
@@ -57,7 +58,7 @@ int cons_palette[CONS_PALETTE_SIZE][8] = {
 };
 
 // 23 elements
-const unsigned char *cons_colors[] = {
+const unsigned char *cons_colors[CONS_COLORS_SIZE] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2

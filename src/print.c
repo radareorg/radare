@@ -112,16 +112,16 @@ void format_show_help (print_mode_t mode)
 void print_addr(u64 off)
 {
 	char ch = (0==(off%config_get_i("cfg.addrmod")))?',':' ';
-	C	cons_printf(COLOR_AD""OFF_FMT""C_RESET"%c ", off, ch);
+	C	cons_printf("%s"OFF_FMT""C_RESET"%c ", cons_palette[PAL_ADDRESS], off, ch);
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
 
 char *get_color_for(int c)
 {
-	if (c==0)    return COLOR_00;
-	if (c==0xff) return COLOR_FF;
-	if (c==0x7f) return COLOR_7F;
-	if (is_printable(c)) return COLOR_PR;
+	if (c==0)    return cons_palette[PAL_00];
+	if (c==0xff) return cons_palette[PAL_FF];
+	if (c==0x7f) return cons_palette[PAL_7F];
+	if (is_printable(c)) return cons_palette[PAL_PRINTABLE];
 	return "";
 }
 
@@ -711,12 +711,12 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		inc = (int)((config.width-17)/11);
 		D {
 			INILINE;
-			C cons_printf(COLOR_HD);
+			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset");
 			for(i=0;i<inc;i++)
 				cons_printf("       +0x%x",i);
 			NEWLINE;
-			C cons_printf(C_RESET);
+			C cons_strcat(C_RESET);
 		}
 		for(i=0; !config.interrupted && i<len; i++) {
 			V if ((i/inc)+5>config.height) break;
@@ -735,7 +735,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_OCT:
 		inc = (int)((config.width)/6);
 		D {
-			C cons_printf(COLOR_HD);
+			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("  offset   ");
 			for(i=0;i<inc;i++)
 				cons_printf("+%02x ",i);
@@ -875,7 +875,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		if (inc%2) inc++;
 		tmp = config.cursor_mode;
 		D if ( fmt == FMT_HEXB ) {
-			C cons_printf(COLOR_HD);
+			C cons_printf(cons_palette[PAL_HEADER]);
 			cons_printf("   offset  ");
 			for (i=0; i<inc; i++) {
 				for(j=i; j>15; j-=15) j--;

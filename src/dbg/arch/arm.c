@@ -614,7 +614,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-int get_reg(char *reg)
+u64 get_reg(char *reg)
 {
 	elf_gregset_t regs;
 	int ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);

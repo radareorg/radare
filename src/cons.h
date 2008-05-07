@@ -24,6 +24,7 @@
 #define C_BBLUE     "\e[1;34m"
 #define C_BGRAY     "\e[1;38m"
 /* default byte colors */
+#if 0
 #define COLOR_00 C_TURQOISE
 #define COLOR_FF C_RED
 #define COLOR_7F C_MAGENTA
@@ -31,7 +32,10 @@
 #define COLOR_HD C_GREEN
 // addresses
 #define COLOR_AD C_GREEN
+#endif
 
+#define CONS_PALETTE_SIZE 20
+#define CONS_COLORS_SIZE 21
 enum {
 	PAL_PROMPT = 0,
 	PAL_ADDRESS,
@@ -43,6 +47,10 @@ enum {
 	PAL_TRAP,
 	PAL_CMP,
 	PAL_RET,
+	PAL_NOP,
+	PAL_METADATA,
+	PAL_HEADER,
+	PAL_PRINTABLE,
 	PAL_LINES0,
 	PAL_LINES1,
 	PAL_LINES2,
@@ -51,7 +59,7 @@ enum {
 	PAL_FF
 };
 extern const unsigned char *cons_palette_default;
-#define CONS_PALETTE_SIZE 18
+const unsigned char *cons_colors[CONS_COLORS_SIZE];
 extern int cons_palette[CONS_PALETTE_SIZE][8];
 char *cons_get_buffer();
 void cons_reset();

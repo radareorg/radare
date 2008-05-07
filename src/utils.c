@@ -93,7 +93,7 @@ char *slurp(char *str)
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
-	endian_memcpy_e(dest, orig, size, config_get("cfg.endian"));
+	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.endian"));
 #else
 	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
 #endif
@@ -140,21 +140,21 @@ const char *get_tmp_dir()
 {
 	// TODO: Do not enter this function twice!
 #if __WINDOWS__
-  // http://msdn.microsoft.com/en-us/library/aa364992(VS.85).aspx
-  GetTempPath(1023, &tmpdir);
+	// http://msdn.microsoft.com/en-us/library/aa364992(VS.85).aspx
+	GetTempPath(1023, &tmpdir);
 #else
-  const char *tmp;
-  #if RADARE_CORE
+	const char *tmp;
+#if RADARE_CORE
 	tmp = config_get("dir.tmp");
-  #else
+#else
 	tmp = getenv("TMP");
-  #endif
-  if (tmp)
-	strcpy(tmpdir, tmp);
-  else
-	strcpy(tmpdir, "/tmp/");
 #endif
-	return &tmpdir;
+	if (tmp)
+		strcpy(tmpdir, tmp);
+	else
+		strcpy(tmpdir, "/tmp/");
+#endif
+	return (const char *)&tmpdir;
 }
 
 int make_tmp_file(char *str)

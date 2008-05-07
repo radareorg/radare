@@ -292,11 +292,11 @@ int arch_print_fpregisters(int rad, const char *mask)
 	u64 ptr[128];
 	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
 	if (rad)
-		for(i=0;i<32;i++)
+		for(i=0;i<32;i+=2)
 			cons_printf("f fp%d @ 0x%08llx\n", i, ptr[i]);
 	else
-		for(i=0;i<32;i++)
-			cons_printf("fp%d: 0x%08llx\n", i, ptr[i]);
+		for(i=0;i<16;i++)
+			cons_printf("fp%02d: 0x%08llx%c", i*2, ptr[i*2], (i%2)?'\n':'\t');
 	return ret;
 }
 
@@ -638,7 +638,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-int get_reg(char *reg)
+u64 get_reg(char *reg)
 {
 	regs_t regs;
 	u64 *llregs = &regs;

