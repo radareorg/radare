@@ -21,7 +21,7 @@
 #include "main.h"
 #include "code.h"
 #include "utils.h"
-#include "rdb/rdb.h"
+#include "rdb.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>

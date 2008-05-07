@@ -22,7 +22,7 @@
 #include "main.h"
 #include "code.h"
 #include "radare.h"
-#include "rdb/rdb.h"
+#include "rdb.h"
 #include "rasm/rasm.h"
 #if __UNIX__
 #include <sys/ioctl.h>
