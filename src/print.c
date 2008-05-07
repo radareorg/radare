@@ -22,7 +22,7 @@
 #include "utils.h"
 #include "hasher/hash.h"
 #include "plugin.h"
-#include "rdb/rdb.h"
+#include "rdb.h"
 #include "list.h"
 #if __UNIX__
 #include <termios.h>

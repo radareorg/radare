@@ -287,7 +287,7 @@ int code_analyze_r(struct program_t *prg, u64 seek, int depth)
 			aop.eob = 1;
 			aop.jump = blf->tnext; //config.seek+bsz;
 			aop.fail = blf->fnext;
-printf("%llx, %llx\n", aop.fail, aop.jump);
+//printf("%llx, %llx\n", aop.fail, aop.jump);
 	//bsz+=sz;
 			break;
 		}
@@ -296,11 +296,13 @@ printf("%llx, %llx\n", aop.fail, aop.jump);
 		if ( blf != NULL )
 		{		
 			//printf ("--Address %llx already analed\n", config.seek+bsz );
-printf("-- %llx, %llx\n", aop.fail, aop.jump);
+//printf("-- %llx, %llx\n", aop.fail, aop.jump);
 			
 			bsz = blf->n_bytes;
 			aop.eob = 1;
+		if (blf->tnext)
 			aop.jump = blf->tnext;
+		if (blf->fnext)
 			aop.fail = blf->fnext;
 			break;
 		}		

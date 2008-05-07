@@ -16,6 +16,11 @@ void mygrava_bp_at(void *ptr, const char *str)
 {
 }
 
+void mygrava_bp_rm_at(void *ptr, const char *str)
+{
+}
+
+
 void core_load_graph_at_label(void *ptr, const char *str)
 {
 	printf("Loading at %s\n", str);

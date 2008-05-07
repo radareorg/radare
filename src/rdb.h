@@ -5,8 +5,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/types.h>
-#include "../radare.h"
-#include "../list.h"
+#include "radare.h"
+#include "list.h"
 
 // TODO: rename to ref_t or addr_t or something like that
 struct xref_t {

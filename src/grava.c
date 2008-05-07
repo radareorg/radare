@@ -74,13 +74,22 @@ void mygrava_bp_at(void *unk, const char *str)
 {
 	char buf[1024];
 	u64 off = get_offset(str);
-	sprintf(buf, "!bp %s", str); //0x%08llx", off);
+	sprintf(buf, "!bp %s", str);
 	radare_cmd(buf, 0);
 	eprintf("Breakpoint at (%08llx) (%s) added.\n", off, str);
 }
 
+void mygrava_bp_rm_at(void *unk, const char *str)
+{
+	char buf[1024];
+	u64 off = get_offset(str);
+	sprintf(buf, "!bp -%s", str);
+	radare_cmd(buf, 0);
+	eprintf("Breakpoint at (%08llx) (%s) removed.\n", off, str);
+}
 
-static void mygrava_close(void *widget, gpointer obj)//GtkWidget *obj)
+
+static void mygrava_close(void *widget, gpointer obj)
 {
 	struct mygrava_window *w = obj;
 	gtk_widget_destroy(GTK_WIDGET(w->w));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -18,38 +18,25 @@
  *
  */
 
-#include "../radare.h"
 #include <stdio.h>
+#include <string.h>
 #include <getopt.h>
+#include "radare.h"
 #include "rdb.h"
 
-int udis86_color = 1;
-
-void show_help_message(int v)
+void radiff_help()
 {
-	printf("Usage: rdbdiff [-hV] [-i fmt] [-o fmt] [file_0] [file_1]\n");
-	if (v) {
-		printf("  -i [format]    input format (idb, rdb (default))\n");
-		printf("  -o [format]    change output format (gml, html, txt (default))\n");
-		printf("  -h             shows this help\n");
-		printf("  -V             print version information\n");
-		printf("environment:\n");
-		printf("  ARCH           set architecture (arm, java, x86 (default))\n");
-	}
-	exit(0);
+	printf("Usage: radiff [-c] [-bgeirp] [file-a] [file-b]\n");
+	printf("  -b   bytediff (faster but doesnt support displacements)\n");
+	printf("  -d   use gnu diff as backend (default)\n");
+	printf("  -e   use erg0ts bdiff (c++) as backend\n");
+	printf("  -r   use rdb diff (code analysis diff)\n");
+	printf("  -i   converts a source idc file to a rdb (radare database)\n");
+	printf("  -p   binpatching (TODO)\n");
+	exit(1);
 }
 
-void string_flag_offset(unsigned long long off, char *buf)
-{
-	buf[0]='\0';
-}
-
-void show_version()
-{
-	printf("0.1\n");
-	exit(0);
-}
-
+/* from rdbdiff_main.c */
 int main_rdb_diff(char *file0, char *file1)
 {
 	struct program_t *p0, *p1;
@@ -86,29 +73,65 @@ int main_rdb_diff(char *file0, char *file1)
 	return rdb_diff(p0, p1, 0);
 }
 
+int radiff_bindiff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "bindiff %s %s | rsc bdcolor 3", a, b);
+	return system(buf);
+}
+
+int radiff_bytediff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "rsc bytediff %s %s | rsc bdcolor 3", a, b);
+	return system(buf);
+}
+
+int radiff_ergodiff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "bdiff %s %s", a, b);
+	return system(buf);
+}
+
 int main(int argc, char **argv)
 {
 	int c;
+	int action = 'd';
+	int color = 0;
 
-	while ((c = getopt(argc, argv, "hi:o:V")) != -1)
+	while ((c = getopt(argc, argv, "bderiph")) != -1)
 	{
 		switch( c ) {
-		case 'h':
-			show_help_message(1);
-		case 'V':
-			show_version();
-			break;
-		case 'i':
-			break;
-		case 'o':
+		case 'b':
+		case 'r':
+		case 'd':
+		case 'e':
+			action = c;
 			break;
 		default:
-			show_help_message(0);
+			printf("Invalid option\n");
+		case 'h':
+			radiff_help();
+			return 0;
 		}
 	}
-
 	if ((argc-optind) != 2)
-		show_help_message(0);
+		radiff_help();
 
-	return main_rdb_diff(argv[optind], argv[optind+1]);
+	switch(action) {
+	case 0:
+		radiff_help();
+		return 1;
+	case 'e': // erg0t c++ bin diff
+		return radiff_ergodiff(argv[optind], argv[optind+1]);
+	case 'd': // gnu diff
+		return radiff_bindiff(argv[optind], argv[optind+1]);
+	case 'b': // bytediff
+		return radiff_bytediff(argv[optind], argv[optind+1]);
+	case 'r': // rdbdiff
+		return main_rdb_diff(argv[optind], argv[optind+1]);
+	}
+
+	return 0;
 }

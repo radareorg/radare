@@ -51,9 +51,9 @@ ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
-CHKVER vala-1.0 0.1.7
-IFNOT HAVE_VALA_1_0_VERSION_0_1_7 {
-	ECHO Needs vala 0.1.7 at least ;
+CHKVER vala-1.0 0.3.1
+IFNOT HAVE_VALA_1_0_VERSION_0_3_1 {
+	ECHO Needs vala 0.3.1 at least ;
 	VALAC = '' ;
 	VALA = 0 ;
 	GUI = 0 ;
@@ -104,7 +104,7 @@ IFNULL VTE_FLAGS { GUI = 0 ; }
 IFNOT GUI {
 	VALAC = 0 ;
 	HAVE_VALA = 0 ;
-	ECHO Vala build disabled, no gtk-dev found ;
+	ECHO Vala build disabled, no gtk-dev or libvte-dev found ;
 }
 
 REPORT GUI WII MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;

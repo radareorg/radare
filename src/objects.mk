@@ -52,7 +52,7 @@ crOBJ+=arch/java/javasm.o
 
 crOBJ+=arch/m68k/m68k_disasm.o
 
-crOBJ+=rdb/rdb.o rdb/rdbdiff.o
+crOBJ+=rdb.o radiff/rdbdiff.o
 
 # plugins and so
 

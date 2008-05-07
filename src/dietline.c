@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2008
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * dietline is free software; you can redistribute it and/or modify

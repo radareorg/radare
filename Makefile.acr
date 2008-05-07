@@ -79,7 +79,8 @@ dist: mrproper
 install:
 	mkdir -p ${BINDIR} ${MANDIR}/man1 ${DATADIR}/radare/ ${DATADIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
-	-${INSTALL_PROGRAM} src/bdiff/bdiff ${BINDIR}
+	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
+	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
 	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
 	${INSTALL_PROGRAM} src/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
@@ -105,14 +106,15 @@ install:
 	${INSTALL_SCRIPT} src/bug ${BINDIR}
 	${INSTALL_SCRIPT} src/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
-	${INSTALL_SCRIPT} src/bindiff ${BINDIR}
-	${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
+	${INSTALL_SCRIPT} src/radiff/radiff ${BINDIR}
+	#${INSTALL_SCRIPT} src/bindiff ${BINDIR}
+	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
 	${INSTALL_SCRIPT} src/rfile ${BINDIR}
 	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/hasher.1 ${MANDIR}/man1/
-	${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
+	#${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/bug.1 ${MANDIR}/man1/

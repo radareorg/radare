@@ -262,6 +262,12 @@ public class Grava.Widget : GLib.Object {
 		};
 		menu.append(imi);
 
+		imi = new ImageMenuItem.with_label("Remove breakpoint");
+		imi.activate += imi => {
+			Widget.unset_breakpoint(null, Graph.selected.get("label"));
+		};
+		menu.append(imi);
+
 		imi = new ImageMenuItem.with_label("Remove true branch");
 		imi.activate += imi => {
 ///			stdout.printf("Focus!\n");
@@ -387,6 +393,10 @@ public class Grava.Widget : GLib.Object {
         [Import]
         [CCode (cname="mygrava_bp_at")]
         public static void set_breakpoint(void *obj, string addr);
+
+        [Import]
+        [CCode (cname="mygrava_bp_rm_at")]
+        public static void unset_breakpoint(void *obj, string addr);
 /*
         [Import]
         [CCode (cname="core_load_graph_at")]

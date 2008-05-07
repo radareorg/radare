@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "rdb/rdb.h"
+#include "rdb.h"
 #include "list.h"
 
 #define VISUAL_PROMPT ":> "
