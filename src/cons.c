@@ -33,7 +33,7 @@
 
 int _print_fd = 1;
 
-const unsigned char *cons_palette_default = "362466";
+const unsigned char *cons_palette_default = "762466";
 int cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
 	/* ADDRESS */
@@ -55,7 +55,6 @@ int cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* 7F */
 	/* FF */
 };
-
 
 // 23 elements
 const unsigned char *cons_colors[] = {
