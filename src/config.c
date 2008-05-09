@@ -638,6 +638,7 @@ void config_init()
 	config_set("dir.rdb", ""); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.color", "magic");
+	config_set("graph.split", "false"); // split blocks // SHOULD BE TRUE, but true algo is buggy
 	config_set("graph.callblocks", "false");
 	config_set("graph.flagblocks", "true");
 	config_set_i("graph.depth", 7);

@@ -239,7 +239,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 
 /* code analyze */
 
-int code_analyze_r(struct program_t *prg, u64 seek, int depth)
+int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 {
 	struct aop_t aop;
 	struct block_t *blk;
@@ -339,9 +339,9 @@ int code_analyze_r(struct program_t *prg, u64 seek, int depth)
 
 	/* walk childs */
 	if (blk->tnext && (blf == 0) )
-		code_analyze_r(prg, blk->tnext, depth-1);
+		code_analyze_r_split(prg, blk->tnext, depth-1);
 	if (blk->fnext  )
-		code_analyze_r(prg, blk->fnext, depth-1);
+		code_analyze_r_split(prg, blk->fnext, depth-1);
 	bsz = 0;
 
 	depth--;
@@ -349,25 +349,103 @@ int code_analyze_r(struct program_t *prg, u64 seek, int depth)
 	return 0;
 }
 
+
+int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
+{
+        struct aop_t aop;
+        struct block_t *blk;
+        u64 oseek = seek;
+        off_t tmp = config.seek;
+        unsigned int sz = 0, ret;
+        int bsz = 0;// block size
+        char buf[4096]; // bytes of the code block
+        unsigned char *ptr = (unsigned char *)&buf;
+        int callblocks = config_get("graph.callblocks");
+
+        if (depth<=0)
+                return 0;
+        if (config.interrupted)
+                return 0;
+
+        /* if already analyzed skip */
+        if (block_get(prg,seek))
+                return 0;
+
+        radare_seek(tmp, SEEK_SET);
+        bsz = 0;
+        config.seek = seek;
+        radare_read(0);
+        aop.eob = 0;
+
+        ret = radare_read(0);
+
+        for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
+                if (config.interrupted)
+                        break;
+                sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
+                if (sz<=0) {
+                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+                        break;
+                }
+
+                if (!callblocks && aop.type == AOP_TYPE_CALL) {
+                        aop.eob = 0;
+                        block_add_call(prg, oseek, aop.jump);
+                }
+
+                memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
+        }
+        bsz+=sz;
+        config.seek = tmp;
+
+        blk = block_get_new(prg, oseek);
+
+        blk->bytes = (unsigned char *)malloc(bsz);
+        blk->n_bytes = bsz;
+        memcpy(blk->bytes, buf, bsz);
+        blk->tnext = aop.jump;
+        blk->fnext = aop.fail;
+        oseek = seek;
+
+        /* walk childs */
+        if (blk->tnext)
+                code_analyze_r_nosplit(prg, (unsigned long)blk->tnext, depth-1);
+        if (blk->fnext)
+                code_analyze_r_nosplit(prg, (unsigned long)blk->fnext, depth-1);
+        bsz = 0;
+
+        depth--;
+
+        return 0;
+}
+
+
+/* CALLBACK defined with graph.split which is false by default */
+int (*code_analyze_r)(struct program_t *prg, u64 seek, int depth) = &code_analyze_r_nosplit;
+
 struct program_t *code_analyze(u64 seek, int depth)
 {
 	struct program_t *prg = program_new(NULL);
 	prg->entry = config.seek;
-	
+
 	radare_controlc();
 	arch_set_callbacks();
+
+	if (config_get("graph.split"))
+		code_analyze_r = &code_analyze_r_split;
+	else	code_analyze_r = &code_analyze_r_nosplit;
 
 	if (prg == NULL)
 		eprintf("Cannot create program\n");
 	else
 		code_analyze_r(prg, seek, depth);
+		//code_analyze_r_nosplit(prg, seek, depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
 
 	return prg;
 }
-
 
 /* memory analyzer */
 
