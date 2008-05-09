@@ -85,6 +85,30 @@ const unsigned char *cons_colors[CONS_COLORS_SIZE] = {
 	NULL
 };
 
+const char *pal_names[CONS_PALETTE_SIZE]={
+	"prompt",
+	"address",
+	"default",
+	"changed",
+	"jumps",
+	"calls",
+	"push",
+	"trap",
+	"cmp",
+	"ret",
+	"nop",
+	"metadata",
+	"header",
+	"printable",
+	"lines0",
+	"lines1",
+	"lines2",
+	"00",
+	"7f",
+	"ff",
+	NULL
+};
+
 const char *cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
@@ -94,17 +118,52 @@ const char *cons_get_color(int ch)
 	return C_RESET;
 }
 
-void cons_palette_init(const unsigned char *pal)
+int cons_palette_init(const unsigned char *pal)
 {
-	// TODO: support complex syntax like prompt = red , etc..
+	int palstrlen = strlen(pal);
 	int i,j=1;
+
+	if (pal==NULL || pal[0]=='\0') {
+		cons_printf("\n=>( Targets ):");
+		for(j=0;pal_names[j]&&*pal_names[j];j++)
+			cons_printf("%s .%s\e[0m ", cons_palette[j], pal_names[j]);
+		cons_printf("\n\n=>( Colors ): "
+		"/*normal*/, " "black, = 0, " "gray, = 1, " "white, = 2, " "red, = 3, " "magenta, = 4, "
+		"blue, = 5, " "green, = 6, " "yellow, = 7, " "turqoise, = 8, " "/*bold*/, " "bblack, = a, "
+		"bgray, = b, " "bwhite, = c, " "bred, = d, " "bmagenta, = e, " "bblue, = f, " "bgreen, = g, "
+		"byellow, = h, " "bturqoise, = i, " "/*special*/, " "reset, = r\n");
+		cons_printf("\nExample: eval scr.palette = .prompt=3.address=4\n\n");
+		return 0;
+	}
+
 	for(i=0;i<CONS_PALETTE_SIZE;i++)
-		if (j && pal[i])
-			strcpy(cons_palette[i], cons_get_color(pal[i]));
-		else {
+		if (j && pal[i]) {
+			if (pal[i] == '.') { // che! action!!
+				for(j=0;pal_names[j]&&*pal_names[j];j++) {
+					int memcmp_len = palstrlen-i-1;
+					if (!pal_names[j]) break;
+					if (strlen(pal_names[j])<memcmp_len)
+						memcmp_len = strlen(pal_names[j]);
+					else continue;
+				//	printf("CHK %s,%s,%d\n", pal_names[j], pal+i, memcmp_len);
+					if (!memcmp(pal_names[j], pal+i+1, memcmp_len -1)) {
+						i+=memcmp_len+1;
+						if (pal[i] != '=') {
+							printf("oops (%c) invalid format string (%s)\n", pal[i], pal+i);
+							continue;
+						}
+				//		printf("KEYWORD FOUND = %s (value = %c)\n", pal_names[j], pal[i+1]);
+						strcpy(cons_palette[j], cons_get_color(pal[i+1]));
+					}
+				}
+			} else {
+				strcpy(cons_palette[i], cons_get_color(pal[i]));
+			}
+		} else {
 			j = 0;
 			strcpy(cons_palette[i], C_RESET);
 		}
+	return 1;
 }
 
 int cons_readchar()

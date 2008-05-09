@@ -10,6 +10,8 @@
 
 0.9.6:
 ======
+ * Support for relative addressing breakpoints
+   - show relative address to eip with asm.dynoff (think better name)
  * Make q! quit witout asking anything
  * Make spcc be happy with pU (!!spcc $BLOCK $OFFSET) ?
    - Must think a more handy way to do this

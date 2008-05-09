@@ -341,8 +341,11 @@ int debug_stepret()
 	return 0;
 }
 
-int debug_contu()
+int debug_contu(const char *input)
 {
+	if (debug_cont_until(input))
+		return 0;
+
 	radare_controlc();
 
 	ps.verbose = 0;
@@ -431,7 +434,7 @@ int debug_until(char *addr)
 	if (off != 0) {
 		eprintf("entry at: 0x%x\n", ps.entrypoint);
 		bp_pos = debug_set_bp(NULL, off, BP_SOFT);
-		debug_cont();
+		debug_cont(0);
 		debug_rm_bp_num(bp_pos);
 		restore_bp();
 	}
@@ -444,7 +447,7 @@ int debug_until(char *addr)
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
 			off = (addr_t)ptr;
 			bp_pos = debug_set_bp(NULL, off, BP_SOFT);
-			debug_cont();
+			debug_cont(0);
 			debug_rm_bp_num(bp_pos);
 			restore_bp();
 			//arch_jmp(arch_pc()-1); // XXX only x86
@@ -456,7 +459,7 @@ int debug_until(char *addr)
 			bp_pos = debug_set_bp(NULL, addr, BP_SOFT);
 			printf("main at: 0x%x\n", addr);
 			debug_step(1);
-			debug_cont();
+			debug_cont(0);
 			debug_rm_bp_num(bp_pos);
 			restore_bp();
 		} else
@@ -940,7 +943,7 @@ int debug_stepo()
 		///  XXX  BP_SOFT with restore_bp doesnt restores EIP correctly
 		bp_pos = debug_set_bp(NULL, pc+skip, BP_HARD);
 
-		debug_cont();
+		debug_cont(0);
 		debug_rm_bp_num(bp_pos);
 		
 //		restore_bp();
@@ -1012,7 +1015,7 @@ int debug_step(int times)
 			#else
 				debug_set_bp(NULL, pc, BP_SOFT);
 			#endif
-				debug_cont();
+				debug_cont(0);
 				debug_rm_bp_addr(pc);
 				ps.steps++;
 			} else {
@@ -1440,13 +1443,14 @@ int print_syscall()
 	return arch_print_syscall();
 }
 
+/* continue until here! */
 int debug_contuh(char *arg)
 {
-	addr_t off = arch_pc();
 	int bp;
+	addr_t off = arch_pc();
 	debug_step(1);
 	bp = debug_set_bp(NULL, off, BP_SOFT);
-	debug_cont();
+	debug_cont(0);
 	restore_bp();
 	debug_rm_bp_num(bp);
 	return 0;
@@ -1508,7 +1512,7 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 	debug_write_at(ps.tid, fil, sz, (addr_t)ps.entrypoint);
 	// execute it
 	arch_jmp(ps.entrypoint);
-	debug_cont();
+	debug_cont(0);
 	// restore
 	arch_jmp(eip);
 	debug_write_at(ps.tid, ptr, sz, (addr_t)eip);
@@ -1549,12 +1553,33 @@ int debug_inject(char *file)
 	return 1;
 }
 
-int debug_cont()
+/* XXX : Stops at the following opcode at this address...restore_bp() doesnt works? */
+int debug_cont_until(const char *input)
+{
+	u64 addr = input?get_math(input):0;
+//	printf("CONTUNUE UNTIL ADDRESS (%s)%08llx\n", input, addr);
+	/* continue until address */
+	if (addr != 0) {
+		struct bp_t *bp;
+		debug_step(1);
+		bp = debug_set_bp(NULL, addr, BP_HARD);
+		debug_cont(0);
+		debug_rm_bp_num(bp);
+		restore_bp();
+		return 1;
+	} 
+	return 0;
+}
+
+int debug_cont(const char *input)
 {
 	if (!ps.opened) {
 		eprintf("cont: No program loaded.\n");
 		return -1;
 	}
+
+	if (debug_cont_until(input))
+		return 0;
 
 	do { 
 		/* restore breakpoint */
@@ -1717,7 +1742,7 @@ int debug_run()
 		if (getv())
 			eprintf("To cleanly stop the execution, type: "
 				       "\"^Z kill -STOP %d && fg\"\n", ps.tid);
-		return debug_cont();
+		return debug_cont(0);
 	}
 
 	eprintf("No program loaded.\n");
@@ -1770,7 +1795,7 @@ int debug_loop(char *addr_str)
 
 	do {
 		/* continue execution */
-		debug_cont();
+		debug_cont(0);
 
 		/* matched ret address or fatal exception */
 	} while(!(WS(event) == BP_EVENT && WS(bp)->addr == ret_addr) && 

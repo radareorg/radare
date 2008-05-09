@@ -191,6 +191,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 
 	node = config_node_get(name);
 
+	// TODO: store old value anywhere or something..
 	if (node) {
 		if (node->flags & CN_RO) {
 			eprintf("(read only)\n");

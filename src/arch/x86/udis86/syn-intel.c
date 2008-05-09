@@ -153,6 +153,7 @@ extern int udis86_color;
  */
 extern void ud_translate_intel(struct ud* u)
 {
+#if 0
   /* -- prefixes -- */
 	if (udis86_color) switch(u->mnemonic) {
 		case UD_Itest:
@@ -226,6 +227,7 @@ extern void ud_translate_intel(struct ud* u)
 		default:
 			break;
 	}
+#endif
 
   /* check if P_O32 prefix is used */
   if (! P_O32(u->mapen->prefix) && u->pfx_opr) {

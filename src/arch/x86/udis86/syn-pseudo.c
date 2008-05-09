@@ -235,6 +235,7 @@ extern void ud_translate_pseudo(struct ud* u)
 {
 	struct ud_operand *op = &u->operand[0];
 
+#if 0
 	if (udis86_color) switch(u->mnemonic) {
 		case UD_Itest:
 		case UD_Icmp:
@@ -308,6 +309,7 @@ extern void ud_translate_pseudo(struct ud* u)
 		default:
 			break;
 	}
+#endif
 	/* -- prefixes -- */
 
 	if (u->pfx_lock)

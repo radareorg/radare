@@ -21,7 +21,7 @@ int debug_wtrace();
 int debug_detach();
 int debug_syms();
 int debug_system(const char *command);
-int debug_cont();
+int debug_cont(const char *input);
 int debug_ie();
 int debug_contu();
 int debug_contuh();

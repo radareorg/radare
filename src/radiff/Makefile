@@ -1,17 +1,26 @@
 include ../../config.mk
 
-OBJ=rdbdiff.o radiff.o ../utils.o ../rdb.o ../hasher/crc16.o
+OBJ=radiff.o ../rdb.o ../utils.o ../hasher/crc16.o rdbdiff.o
+BIN=radiff
+CC?=gcc
+OBJ_RDB=rdbdiff_main.o rdbdiff.o ../rdb.o ../utils.o ../hasher/crc16.o
 CFLAGS+=-I..
 
-all: _cleanmeup ${OBJ} _bdiff
-	${CC} ${LDFLAGS} ${OBJ} -o radiff
+
+all: _pre ${OBJ} _bdiff rdbdiff$(BINSFX)
+	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} -o ${BIN}
+
+_pre:
+	-rm -f ../utils.o
 
 _bdiff:
 	cd bdiff && ${MAKE} all
 
-_cleanmeup:
-	-rm -f ../utils.o
+rdbdiff${BINSFX}: ${OBJ_RDB}
+	${CC} ${LDFLAGS} -g ${OBJ_RDB} -o rdbdiff${BINSFX}
 
 clean:
 	cd bdiff && ${MAKE} clean
-	-rm -f radiff ${OBJ} *.o
+	-rm -f ${OBJ} ${BIN} rdbdiff
+
+.PHONY: bdiff all clean
