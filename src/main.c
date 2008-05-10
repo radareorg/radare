@@ -31,6 +31,7 @@ static void help_show_message()
 	"  -P [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
+	"  -d [program]     debug a program. same as --args in gdb\n"
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
 	"  -c               same as -e scr.color=true\n"
@@ -50,9 +51,29 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
  
-	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:")) != -1)
+	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:d")) != -1)
 	{
 		switch( c ) {
+#if DEBUGGER
+		case 'd':
+			{
+			// XXX : overflowable, must use strcatdup or stgh like that
+			char buf[4096];
+			char buf2[4096];
+			buf[0]='\0';
+			for(c=optind;argv[c];c++) {
+				ps.argv[c-optind] = argv[c];
+				strcat(buf, argv[c]);
+				if (argv[c+1])
+					strcat(buf, " ");
+			}
+			ps.args = strdup(buf);
+			sprintf(buf2, "dbg://%s", buf);
+			config.file = strdup(buf2);
+			plugin_load(); // from dir.plugins
+			return radare_go();
+			}
+#endif
 		case 'i':
 			config.script = optarg;
 			break;

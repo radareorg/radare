@@ -200,6 +200,7 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	setenv("LD_WARN", "true", 1);
 	setenv("LD_DEBUG", "", 1);
 	setenv("LD_VERBOSE", "", 1);
+	setenv("CK_FORK","no",1); // to debug gstreamer check test programs
 	//setenv("LD_SHOW_AUXV", "true", 1);
 	//setenv("LD_PROFILE", "/lib/libc.so.6", 1);
 
