@@ -958,6 +958,56 @@ int debug_stepo()
 	return 0;
 }
 
+int debug_stepbp(int times)
+{
+	int bp0 = -1;
+	int bp1 = -1;
+	unsigned char bytes[32];
+	struct aop_t aop,aop2;
+	int i, len,len2;
+	addr_t pc = arch_pc();
+
+	debug_read_at(ps.tid,bytes, 32, pc);
+	len = arch_aop(pc, bytes, &aop);
+
+	debug_read_at(ps.tid,bytes, 32, pc+len);
+	len2 = arch_aop(pc, bytes, &aop2);
+
+	if (times<2) {
+		if (aop.jump)
+			bp0 = debug_set_bp(NULL, aop.jump, BP_SOFT);
+		if (aop.fail)
+			bp1 = debug_set_bp(NULL, aop.fail, BP_SOFT);
+		if (bp0==-1 && bp1==-1)
+			bp0 = debug_set_bp(NULL, pc+len2, BP_SOFT);
+
+		debug_cont(0);
+		//restore_bp();
+
+		printf("%08llx %08llx %08llx\n", aop.jump, aop.fail, pc+len);
+		if (bp0!=-1)
+			debug_rm_bp_addr(aop.jump);
+			//debug_rm_bp_num(bp0);
+		if (bp1!=-1)
+			debug_rm_bp_addr(aop.fail);
+		debug_rm_bp_addr(pc+len2);
+	} else {
+		u64 ptr = pc;
+		for(i=0;i<times;i++) {
+			debug_read_at(ps.tid, bytes, 32, ptr);
+			len = arch_aop(pc, bytes, &aop);
+			ptr += len;
+		}
+		printf("Stepping %d opcodes using breakpoint at %08llx\n", ptr);
+		bp0 = debug_set_bp(NULL, ptr, BP_SOFT);
+		debug_cont(0);
+		debug_rm_bp_addr(ptr);
+	}
+		//debug_rm_bp_num(bp1);
+
+	return 0;
+}
+
 int debug_step(int times)
 {
 	unsigned char opcode[32];
@@ -966,6 +1016,10 @@ int debug_step(int times)
 	const char *tracefile;
 	const char *flagregs;
 	int ret;
+
+	/* mips step->stepbp bypass hack */
+	if (!strcmp(config_get("asm.arch"), "mips"))
+		return debug_stepbp(times);
 
 	if (!ps.opened) {
 		eprintf("No program loaded.\n");
@@ -1641,8 +1695,7 @@ int debug_rm_bp(unsigned long addr, int type)
 		return -1;
 	if(bp->hw)
 		ret = arch_rm_bp_hw(bp);
-	else
-		ret = arch_rm_bp_soft(bp);
+	else	ret = arch_rm_bp_soft(bp);
 
 	if(ret < 0)
 		return ret;
@@ -1711,6 +1764,7 @@ int debug_set_bp(struct bp_t *bp, unsigned long addr, int type)
 	ret = -1;
 	if(type == BP_SOFT) {
 		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
+		
 		ps.bps[bp_free].hw = 0;
 	} else if(type == BP_HARD) {
 		ret = arch_set_bp_hw(&ps.bps[bp_free], addr);

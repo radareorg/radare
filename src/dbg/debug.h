@@ -33,6 +33,7 @@ int debug_oregisters(int rad);
 int debug_dregisters(int rad);
 int debug_fpregisters(int rad);
 int debug_step(int times);
+int debug_stepbp(int times);
 int debug_stepo();
 void debug_dumpcore();
 int debug_stepu();
