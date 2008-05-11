@@ -969,9 +969,14 @@ int debug_stepbp(int times)
 
 	debug_read_at(ps.tid,bytes, 32, pc);
 	len = arch_aop(pc, bytes, &aop);
-
-	debug_read_at(ps.tid,bytes, 32, pc+len);
-	len2 = arch_aop(pc, bytes, &aop2);
+#if 0
+	if (aop.jump) { // autoskip nopz for mipz
+		debug_read_at(ps.tid,bytes, 32, pc+len);
+		len2 = arch_aop(pc, bytes, &aop2);
+		if (aop2.type==AOP_TYPE_NOP)
+			len+= len2;
+	}
+#endif
 
 	if (times<2) {
 		if (aop.jump)
@@ -979,7 +984,7 @@ int debug_stepbp(int times)
 		if (aop.fail)
 			bp1 = debug_set_bp(NULL, aop.fail, BP_SOFT);
 		if (bp0==-1 && bp1==-1)
-			bp0 = debug_set_bp(NULL, pc+len2, BP_SOFT);
+			bp0 = debug_set_bp(NULL, pc+len, BP_SOFT);
 
 		debug_cont(0);
 		//restore_bp();
@@ -990,7 +995,7 @@ int debug_stepbp(int times)
 			//debug_rm_bp_num(bp0);
 		if (bp1!=-1)
 			debug_rm_bp_addr(aop.fail);
-		debug_rm_bp_addr(pc+len2);
+		debug_rm_bp_addr(pc+len);
 	} else {
 		u64 ptr = pc;
 		for(i=0;i<times;i++) {

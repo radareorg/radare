@@ -35,6 +35,7 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	memset(aop, '\0', sizeof(struct aop_t));
 	//of &=0x3f;
 
+	memcpy(&op, bytes, 4);
 	aop->type = AOP_TYPE_UNK;
 
 	switch(op & 0x3f) {
