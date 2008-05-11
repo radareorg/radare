@@ -1,0 +1,18 @@
+#!/usr/bin/perl 
+# author: pancake <youterm.com>
+# date: 2008-05-11
+
+#if [ -z "$1" ]; then
+#	echo "Usage: rsc syms-extract\n"
+#	exit 1
+#fi
+
+my @a=split(/\n/,`nm -DS $ARGV[0] | grep " 00"`);
+for $i (@a) {
+	$i=~/^(.*) (.*) . (.*)$/;
+	$addr="0x".$1;
+	$length="0x".$2;
+	$name="sym_".$3;
+	print "f $name @ $addr\n";
+	print "pa $length @ $addr\n";
+}

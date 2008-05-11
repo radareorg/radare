@@ -589,7 +589,12 @@ void config_init()
 	node = config_set("file.write", "false");
 	node->callback = &config_wmode_callback;
 	config_set("cfg.limit", "0");
+#if __mips__
+	// ???
+	config_set("cfg.addrmod", "32");
+#else
 	config_set("cfg.addrmod", "4");
+#endif
 	config_set("cfg.rdbdir", "TODO");
 	config_set("cfg.datefmt", "%d:%m:%Y %H:%M:%S %z");
 	config_set_i("cfg.count", 0);

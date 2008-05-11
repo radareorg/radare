@@ -287,7 +287,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	struct program_t *prg;
 	struct block_t *b0;
 	struct list_head *head;
-
+	char *str;
 
 	last_print_format = fmt;
 	if (buf == NULL)
@@ -670,8 +670,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		NEWLINE;
 		break;
 	case FMT_ASHC:
+		str = flag_name_by_offset(seek);
+		if (!*str) str = "shellcode";
 		INILINE;
-                cons_printf("shellcode:");
+                cons_printf("%s:", str);
 		inc = config.width/7;
 		lines = 0;
                 for(i = 0; !config.interrupted && i < len; i++) {
@@ -686,7 +688,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
                         if (((i+1)%inc) && i+1<len) cons_printf(", ");
                 }
 		NEWLINE;
-                cons_printf("shellcode_len = . - shellcode"); NEWLINE;
+                cons_printf(".equ %s_len, %d", str, len); NEWLINE;
                 break;
 	case FMT_CSTR:
 		D { INILINE; }
