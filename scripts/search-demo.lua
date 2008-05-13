@@ -1,5 +1,4 @@
 print ""
-print ""
 
 print "Welcome to the debugging in LUA"
 print ""
@@ -9,19 +8,16 @@ print ""
 
 
 -- search lib and process results
-cmd("s 0")
-local res = split(cmd_str("/ lib"), "\n")
-
--- iterate search results
-for i=1, #res-1 do
-	-- split string
-	local line = split(res[i], " ")
-	print (line[3].." - "..line[1])
-	print (" => "..cmd_str("pz @ "..line[3]))
+Radare.seek(0)
+local hits = Radare.Search.string("lib")
+for i = 1, #hits do
+	print(" => "..hits[i]..": "..Radare.cmd("pz @ "..hits[i]))
 end
 
+print ""
+
 -- print("result: ("..result..")")
-cmd("eval scr.width=40")
+r.eval("scr.width", "40")
 
 -- enter commandline loop
 while true do

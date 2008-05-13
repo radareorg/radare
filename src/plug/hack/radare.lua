@@ -69,6 +69,7 @@ end
 -- split a string by a separator
 function split(text, sep)
 	sep = sep or "\n"
+	text = chomp(text)
 	local lines = {}
 	local pos = 1
 	while true do
@@ -80,10 +81,21 @@ function split(text, sep)
 	return lines
 end
 
+function chomp(text)
+	if text == nil then return "" end
+	return string.gsub(text, "\n$", "")
+end
+
 -- Radare api functions
 
+function Radare.bytes(text)
+	local res = split(Radare.cmd("pX @"..text), " ")
+	-- TODO
+	return res;
+end
+
 function Radare.cmd(cmd)
-	return radare_cmd_str(cmd)
+	return chomp(cmd_str(cmd))
 end
 
 function Radare.iosystem(command)
@@ -326,12 +338,22 @@ end
 
 -- search stuff
 
+function Radare.Search.parse(string)
+	local res = split(string,"\n")
+	local ret = {}
+	for i = 1, #res do
+		local line = split(res[i], " ")
+		ret[i] = line[3]
+	end
+	return ret;
+end
+
 function Radare.Search.string(string)
-	r.cmd("/ "..string)
+	return Radare.Search.parse(Radare.cmd("/ "..string))
 end
 
 function Radare.Search.hex(string)
-	r.cmd("/x "..string)
+	return Radare.Search.parse(Radare.cmd("/x "..string))
 end
 
 -- config stuff
