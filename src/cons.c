@@ -33,24 +33,28 @@
 
 int _print_fd = 1;
 
-const unsigned char *cons_palette_default = "7624664623783824623";
+const unsigned char *cons_palette_default = "7624 6646 2378 6824 3623";
 int cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
 	/* ADDRESS */
 	/* DEFAULT */
 	/* CHANGED */
+
 	/* JUMPS */
 	/* CALLS */
 	/* PUSH */
 	/* TRAP */
+
 	/* CMP */
 	/* RET */
 	/* NOP */
 	/* METADATA */
+
 	/* HEADER */
 	/* PRINTABLE */
 	/* LINES0 */
 	/* LINES1 */
+
 	/* LINES2 */
 	/* 00 */
 	/* 7F */
@@ -115,13 +119,13 @@ const char *cons_get_color(int ch)
 		return cons_colors[ch-'0'];
 	if (ch>='a' && ch<='i')
 		return cons_colors['8'-'0'+ch-'a'];
-	return C_RESET;
+	return NULL;
 }
 
 int cons_palette_init(const unsigned char *pal)
 {
 	int palstrlen = strlen(pal);
-	int i,j=1;
+	int i,j=1,k;
 
 	if (pal==NULL || pal[0]=='\0') {
 		cons_printf("\n=>( Targets ):");
@@ -136,7 +140,7 @@ int cons_palette_init(const unsigned char *pal)
 		return 0;
 	}
 
-	for(i=0;i<CONS_PALETTE_SIZE;i++)
+	for(i=k=0;i<CONS_PALETTE_SIZE;i++,k++)
 		if (j && pal[i]) {
 			if (pal[i] == '.') { // che! action!!
 				for(j=0;pal_names[j]&&*pal_names[j];j++) {
@@ -157,7 +161,10 @@ int cons_palette_init(const unsigned char *pal)
 					}
 				}
 			} else {
-				strcpy(cons_palette[i], cons_get_color(pal[i]));
+				char *ptr = cons_get_color(pal[i]);
+				if (ptr)
+					strcpy(cons_palette[k], ptr);
+				else k--;
 			}
 		} else {
 			j = 0;

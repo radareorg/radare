@@ -447,7 +447,7 @@ void udis_arch(int arch, int len, int rows)
 	unsigned char b[32];
 	const char *follow, *cmd_asm;
 	int endian;
-	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags;
+	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags, show_reladdr;
 	int folder = 0; // folder level
 
 	cmd_asm       = config_get("cmd.asm");
@@ -457,6 +457,7 @@ void udis_arch(int arch, int len, int rows)
 	show_splits   = (int) config_get("asm.split");
 	show_flags    = (int) config_get("asm.flags");
 	show_lines    = (int) config_get("asm.lines");
+	show_reladdr  = (int) config_get("asm.reladdr");
 	show_traces   = (int) config_get("asm.trace");
 	show_comments = (int) config_get("asm.comments");
 	show_nbytes   = (int) config_get_i("asm.nbytes");
@@ -513,10 +514,11 @@ void udis_arch(int arch, int len, int rows)
 			struct data_t *foo = data_get(seek);
 			if (show_lines)
 				code_lines_print(reflines, seek, 0);
-			if (show_offset) {
+			if (show_offset)
 				print_addr(seek);
-				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
+			if (show_reladdr) {
+				if (bytes==0) cons_printf("%08llX ", seek);
+				else cons_printf("+%7d ", bytes);
 			}
 			switch(data_type(seek)) {
 			case DATA_FOLD_C: 
@@ -529,6 +531,9 @@ void udis_arch(int arch, int len, int rows)
 				cons_strcat("\r                                       \r");
 				if (show_lines)
 					code_lines_print(reflines, seek, 1);
+				if (show_reladdr)
+					cons_printf("        ");
+				if (show_offset)
 				cons_strcat("           ");
 				for(i=0;i<folder;i++)cons_strcat("  ");
 					cons_strcat("  {\n");
@@ -647,6 +652,10 @@ void udis_arch(int arch, int len, int rows)
 				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
+			if (show_reladdr) {
+				if (bytes==0) cons_printf("%08llX ", seek);
+				else cons_printf("+%7d ", bytes);
+			}
 			/* size */
 			if (show_size)
 				cons_printf("%d ", aop.length); //dislen(config.block+seek));
@@ -669,6 +678,8 @@ void udis_arch(int arch, int len, int rows)
 							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX  ", (unsigned long long)(seek));
 						}
+						if (show_reladdr)
+							cons_printf("        ");
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf,"");
 					} else {

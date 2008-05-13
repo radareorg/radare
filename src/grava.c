@@ -31,6 +31,7 @@ struct mygrava_window {
 	GtkWidget *entry;
 	GtkWidget *back;
 	GtkWidget *go;
+	GtkWidget *fix;
 	GtkWidget *bnew;
 	GtkWidget *close;
 	GravaWidget *grava;
@@ -41,13 +42,21 @@ static struct mygrava_window *last_window = NULL;
 static int new_window = 0;
 static int n_windows = 0;
 
+struct static_nodes {
+	char *command;
+	struct list_head list;
+};
+
+struct list_head static_nodes;// = NULL;
+
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
+static void core_load_node_entry(void *widget, gpointer obj); //GtkWidget *obj);
+static struct program_t *prg = NULL; // last program code analysis
 
 void core_load_graph_at(void *obj, const char *str)
 {
 	//GravaWidget *widget = obj;
-	struct program_t *prg;
 	u64 off = get_offset(str);
 #if 0
 	char *follow = config_get("asm.follow");	
@@ -122,6 +131,36 @@ static void mygrava_back(void *widget, GtkWidget *obj)
 static void mygrava_back2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 { mygrava_back(widget, obj); }
 
+static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
+{
+	const char *str;
+	char *buf;
+	struct program_t *prg;
+	GravaNode *node;
+	struct static_nodes *snode;
+	struct mygrava_window *w = obj;
+	u64 off;
+
+	if (w) {
+		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
+		last_window = w;
+	} else {
+		eprintf("NullObj\n");
+		return;
+	}
+
+	printf("new node with : %s\n", str);
+
+	snode = malloc(sizeof(struct static_nodes));
+	snode->command = strdup(str);
+	list_add_tail(&(snode->list), &(static_nodes));
+
+	gtk_entry_set_text(GTK_ENTRY(w->entry),"");
+
+	core_load_graph_entry(widget,obj);
+
+}
+
 static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 {
 	const char *str;
@@ -171,6 +210,9 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 static void core_load_graph_entry2(void *widget, void *foo, GtkWidget *obj)
 { core_load_graph_entry(widget, obj); }
 
+static void core_load_node_entry2(void *widget, void *foo, GtkWidget *obj)
+{ core_load_node_entry(widget, obj); }
+
 void core_load_graph_at_label(void *foo, const char *str)
 {
 	char buf[256];
@@ -214,6 +256,7 @@ gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygr
         return TRUE;
 #endif
     }
+	return FALSE;
 }
 
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
@@ -241,6 +284,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		}
 		gtk_is_init = 1;
 		new_window = 1;
+		INIT_LIST_HEAD(&static_nodes);
 	}
 
 	if (win==NULL || new_window) {
@@ -256,8 +300,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if _MAEMO_
 		hildon_program_add_window(p, win->w);
-		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
 #endif
+		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
 		string_flag_offset(name, config.seek);
 		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
 		gtk_window_set_title(GTK_WINDOW(win->w), title);
@@ -283,16 +327,24 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_back2), win); 
 		win->hbox = gtk_hbox_new(FALSE, 2);
 		win->go = gtk_button_new_from_stock("gtk-jump-to");
+
 		/* go button */
-		win->go= gtk_button_new_with_mnemonic("");
+		win->go = gtk_button_new_with_mnemonic("");
 		gtk_button_set_image (GTK_BUTTON (win->go), gtk_image_new_from_stock ("gtk-media-play", GTK_ICON_SIZE_BUTTON));
 		g_signal_connect(win->entry,"activate",((GCallback) core_load_graph_entry), win); 
 		g_signal_connect(win->go,"activate",((GCallback) core_load_graph_entry), win); 
 		g_signal_connect(win->go,"button-release-event",((GCallback) core_load_graph_entry2), win);
 
+		/* fix button */
+		win->fix= gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->fix), gtk_image_new_from_stock ("gtk-media-forward", GTK_ICON_SIZE_BUTTON));
+		g_signal_connect(win->fix,"activate",((GCallback) core_load_node_entry), win); 
+		g_signal_connect(win->fix,"button-release-event",((GCallback) core_load_node_entry2), win);
+
 		//gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->back), FALSE, FALSE, 2);
 		gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->fix), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
@@ -324,6 +376,21 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	config_set("scr.color", "false");
 	config_set("asm.lines", "false");
 	config.color = 0;
+
+	/* add static nodes */
+	i = 0;
+	list_for_each_prev(head, &(static_nodes)) {
+		struct static_nodes *s0 = list_entry(head, struct static_nodes, list);
+		GravaNode *node = grava_node_new();
+		g_object_ref(node);
+		grava_node_set(node, "label", s0->command);
+		
+		ptr =  pipe_command_to_string(s0->command);
+		if (ptr)
+			grava_node_set(node, "body", ptr);
+		grava_graph_add_node(win->grava->graph, node);
+		g_object_unref(node);
+	}
 
 	/* add nodes */
 	i = 0;
@@ -371,7 +438,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		ptr =  pipe_command_to_string(cmd);
 		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
 		grava_node_set(node, "body", ptr);
-		printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
+		//printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
 		free(ptr);
 
 		grava_graph_add_node(win->grava->graph, node);

@@ -6,22 +6,23 @@
 .Nd Advanced commandline hexadecimal editor
 .Sh SYNOPSIS
 .Nm radare
-.Op Fl S Ar minlen
 .Op Fl s Ar seek
 .Op Fl b Ar size
+.Op Fl i Ar script
+.Op Fl P Ar project
+.Op Fl e Ar key=val
+.Op Fl d Ar program
 .Op Fl l Ar plugin
-.Op Fl LchnvuVw
+.Op Fl fLcwxnvVuh
 .Ar target-file
 .Sh DESCRIPTION
 radare is a commandline hexadecimal editor.
 .Pp
 This software package contains another utilities related to the hex and asm world. Read the 'see also' section for more information.
 .Pp
-Radare have four modes: 'pipe', 'strings', 'shell' and 'visual'.
+Radare have three modes: 'pipe', 'shell' and 'visual'.
 .Pp
 The 'pipe' mode is used for exoscripts. Scripts that use radare as a processing tool for returning values. You can enter this mode by dropping verbosity using the '-v' flag.
-.Pp
-The 'strings' mode is used to strip strings from a binary file. You can enter this mode by using the '-S' flag. This flag requires an numeric argument describing the minimum length for a valid string. This mode shows the offset, the string type (unicode (U), ascii (A)) and the related string. The unicode support is really poor at the moment.
 .Pp
 The 'shell' mode is the normal one. This mode allows you to enter commands to the radare shell.
 .Pp
@@ -36,6 +37,9 @@ Start at a certain offset inside the file.
 .Pp
 .It Fl b Ar size
 Define the size of the working data block (default 512, 4096 could be useful for filesystems).
+.Pp
+.It Fl i Ar script
+Interprets a script of radare commands
 .It Fl c
 Enable the ANSI color scheme.
 .It Fl l Ar plugin

@@ -362,7 +362,7 @@ int main(int argc, char **argv, char **envp)
 	gtk_container_add(GTK_CONTAINER(w), vbox);
 #if _MAEMO_
 	{
-		GtkMenu *menu = GTK_MENU(gradare_menubar_new(w));
+		GtkMenu *menu = GTK_MENU(gradare_menubar_hildon_new(w));
 		hildon_window_set_menu(HILDON_WINDOW(w), menu);
 		hildon_program_set_common_menu(HILDON_PROGRAM(p), menu);
 	}

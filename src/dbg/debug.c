@@ -1453,6 +1453,12 @@ int debug_bp(char *str)
 		if(debug_rm_bp_addr(addr) == 0)
 			eprintf("breakpoint at 0x%x dropped\n", addr);
 		break;
+	case '+': // relative from eip
+		addr = config.seek + get_offset(ptr+1);
+		flag_set("breakpoint", addr, 3);
+		debug_set_bp(NULL, addr, bptype);
+		eprintf("new breakpoint at 0x%lx\n", addr);
+		break;
 	case '*':
 		eprintf("%i breakpoint(s) removed\n", debug_rm_bps());
 		break;

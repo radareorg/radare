@@ -32,7 +32,6 @@ public class Grava.Widget : GLib.Object {
 
 	public signal void load_graph_at(weak string addr);
 	public signal void breakpoint_at(weak string addr);
-//	public signal void focus_at(string addr);
 
 	public Gtk.Widget get_widget()
 	{
@@ -40,53 +39,8 @@ public class Grava.Widget : GLib.Object {
 	}
 
 	construct {
-
-		/* initialize graph */
 		graph = new Graph();
-
-		/* example usage */
-		/* nodes
-		Node n = new Node();
-		n.set("label", "0x8048490  _start:");
-		n.set("color", "gray");
-		n.set("body",
-		"0x08048490  mov eax, 0x3842\n"+
-		"0x08048495  xor ebx, ebx\n"+
-		"0x08048497  jz 0x08048900");
-		graph.add_node(n);
-
-		Node n2 = new Node();
-		n2.set("label", "0x08048900  _sub_start:");
-		n2.set("color","gray");
-		n2.set("body",
-		"0x08048900  jmp 0x804890");
-		graph.add_node(n2);
-
-		Node n3 = new Node();
-		n3.set("label", "0x0804849b  --");
-		n3.set("color","gray");
-		n3.set("body",
-		"0x0804849b  rdtsc\n"+
-		"0x0804849c  nop\n"+
-		"            ...\n");
-		graph.add_node(n3);
-
-		// edges
-		Edge e = new Edge().with(n, n2);
-		e.set("color", "green");
-		graph.add_edge(e);
-
-		e = new Edge().with(n, n3);
-		e.set("color", "red");
-		graph.add_edge(e);
-
-		e = new Edge().with(n2, n);
-		e.set("color", "blue");
-		graph.add_edge(e);
-		 */
-
 		graph.update();
-
 		create_widgets ();
 	}
 
@@ -320,6 +274,17 @@ public class Grava.Widget : GLib.Object {
 	private double opanx = 0;
 	private double opany = 0;
 
+	private double offx = 0;
+	private double offy = 0;
+
+	private double abs(double x)
+	{
+		if (x>0)
+			return x;
+		return -x;
+	}
+
+	weak Node on = null;
 	private bool motion (Gtk.Widget w, Gdk.Event ev)
 	{
 		weak EventMotion em = ev.motion; 
@@ -330,19 +295,23 @@ public class Grava.Widget : GLib.Object {
 			return true;
 		}
 
-		weak Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
+		weak Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
+			if (n != on) {
+				offx = abs(em.x - n.x-opanx);
+				offy = abs(em.y - n.y-opany);
+				//offx-=opanx;
+				//offy-=opany;
+				on = n;
+			}
 			/* zoom view */
 			em.x-=graph.panx;
 			em.y-=graph.pany;
 			em.x/=graph.zoom; 
 			em.y/=graph.zoom;
-			n.x += (em.x - n.x) - (n.w/2);
-			n.y = em.y - (n.h/2);
-			Context ctx = Gdk.cairo_create(da.window);
-			//Renderer.draw_node ( ctx , n);
-		///	graph.draw(ctx);
-			//da.queue_draw_area(0,0,1024,768);
+
+			n.x = (em.x - (n.w/2)); // todo: use offx/y to get click original point?
+			n.y = (em.y - (n.h/2));
 			da.queue_draw_area(0,0,5000,3000);
 			Graph.selected = n;
 		} else {
@@ -366,8 +335,6 @@ public class Grava.Widget : GLib.Object {
 	{
 		DrawingArea da = (DrawingArea)w;
 		draw();
-
-//		da.queue_draw_area(0,0,100,100);
 		return true;
 	}
 
@@ -380,12 +347,6 @@ public class Grava.Widget : GLib.Object {
 		graph.draw(ctx);
 	}
 
-/*
-        [Import]
-        [CCode (cname="core_load_graph_at")]
-        public static void focus_at(string addr);
-*/
-
         [Import]
         [CCode (cname="core_load_graph_at_label")]
         public static void focus_at_label(void *obj, string addr);
@@ -397,9 +358,45 @@ public class Grava.Widget : GLib.Object {
         [Import]
         [CCode (cname="mygrava_bp_rm_at")]
         public static void unset_breakpoint(void *obj, string addr);
-/*
-        [Import]
-        [CCode (cname="core_load_graph_at")]
-        public static void core_load_graph_at(string addr);
-*/
 }
+
+		/* Usage example */
+		/* nodes
+		Node n = new Node();
+		n.set("label", "0x8048490  _start:");
+		n.set("color", "gray");
+		n.set("body",
+		"0x08048490  mov eax, 0x3842\n"+
+		"0x08048495  xor ebx, ebx\n"+
+		"0x08048497  jz 0x08048900");
+		graph.add_node(n);
+
+		Node n2 = new Node();
+		n2.set("label", "0x08048900  _sub_start:");
+		n2.set("color","gray");
+		n2.set("body",
+		"0x08048900  jmp 0x804890");
+		graph.add_node(n2);
+
+		Node n3 = new Node();
+		n3.set("label", "0x0804849b  --");
+		n3.set("color","gray");
+		n3.set("body",
+		"0x0804849b  rdtsc\n"+
+		"0x0804849c  nop\n"+
+		"            ...\n");
+		graph.add_node(n3);
+
+		// edges
+		Edge e = new Edge().with(n, n2);
+		e.set("color", "green");
+		graph.add_edge(e);
+
+		e = new Edge().with(n, n3);
+		e.set("color", "red");
+		graph.add_edge(e);
+
+		e = new Edge().with(n2, n);
+		e.set("color", "blue");
+		graph.add_edge(e);
+		 */

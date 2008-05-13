@@ -197,6 +197,26 @@ static GtkActionEntry entries[] = {
 };
 static guint n_entries = G_N_ELEMENTS (entries);
 
+GtkWidget *gradare_menubar_hildon_new(GtkWindow *w)
+{
+	GtkMenuItem *mi;
+	GtkMenu * menu = gtk_menu_new();
+
+	mi = gtk_image_menu_item_new_from_stock ("gtk-open", NULL);
+	g_signal_connect_object (mi, "activate", gradare_open, w, 0);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
+
+	mi = gtk_image_menu_item_new_from_stock ("gtk-execute", NULL);
+	g_signal_connect_object (mi, "activate", gradare_open, w, 0);
+	gtk_menu_shell_append (GTK_MENU_SHELL (gradare_open_program), GTK_WIDGET (mi));
+
+	mi = gtk_image_menu_item_new_from_stock ("gtk-quit", NULL);
+	g_signal_connect_object (mi, "activate", exit, w, 0);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
+
+	return menu;
+}
+
 GtkWidget *gradare_menubar_new(GtkWindow *w)
 {
 	GtkWidget *menu_bar;

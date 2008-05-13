@@ -526,6 +526,7 @@ void config_init()
 	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
+	config_set("asm.reladdr", "false"); // relative offset
 	config_set_i("asm.nbytes", 8); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
 	config_set("asm.flags", "true"); // show hex bytes
