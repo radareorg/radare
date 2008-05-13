@@ -53,6 +53,18 @@ function list(table)
 	return n
 end
 
+-- join strings from a table
+function join(delimiter, list)
+  local len = getn(list)
+  if len == 0 then 
+    return "" 
+  end
+  local string = list[1]
+  for i = 2, len do 
+    string = string .. delimiter .. list[i] 
+  end
+  return string
+end
 
 -- split a string by a separator
 function split(text, sep)
@@ -62,7 +74,7 @@ function split(text, sep)
 	while true do
 		local b,e = text:find(sep, pos)
 		if not b then table.insert(lines, text:sub(pos)) break end
-		table.insert(lines, text:sub(pos, b-1))
+		table.insert(lines, text:sub(pos,b-1))
 		pos = e + 1
 	end
 	return lines

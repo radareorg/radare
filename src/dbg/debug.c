@@ -1594,7 +1594,7 @@ int debug_inject(char *file)
 	unsigned char *fil = NULL;
 
 	if (fd == -1) {
-		eprintf("Cannot open '%s'\n", file);
+		eprintf("Cannot open '%s' to inject\n", file);
 		return 0;
 	}
 

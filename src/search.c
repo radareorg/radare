@@ -103,14 +103,14 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long lo
 
 	if (search_verbose) {
 		char *ptr = config.block; //+(where-config.seek)-3;
-		printf("%03d  0x%08llx  %s ", nhit, where, flag_name);
+		cons_printf("%03d  0x%08llx  %s ", nhit, where, flag_name);
 		for(i=0;i<20;i++) {
 			if (is_printable(ptr[i]))
-				printf("%c", ptr[i]);
+				cons_printf("%c", ptr[i]);
 		}
-		printf("\n");
-	} else
-		printf("\r%d", nhit);
+		cons_printf("\n");
+	} 
+	D {	fprintf(stderr, "\r%d", nhit); fflush(stderr); }
 #if 0
 	D { printf("\e[K"OFF_FMTs" '%s' ", (u64)where, flag_name);
 	    data_print((u64)where, "", config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);

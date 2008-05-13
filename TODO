@@ -29,6 +29,8 @@
  * Edit modify source references ;)
  * Add memory breakpoints (watchpoints?)
    - standarize interface for them (needed for osx..)
+ * cfg.limit must be text size by default (file size?) useful for memory searchs
+ * cfg.limit doesnt works in searchs :O
 
 Open streams
 ============

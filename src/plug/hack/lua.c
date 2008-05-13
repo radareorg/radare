@@ -90,8 +90,12 @@ static char *myslurp(const char *file)
 
 static int slurp_lua(char *file)
 {
-	if (report(L, luaL_loadfile(L, file)) || lua_pcall(L,0,0,0))
-		return 1;
+	int status = luaL_loadfile(L, file);
+	if (status)
+		return report(L,status);
+	status = lua_pcall(L,0,0,0);
+	if (status)
+		return report(L,status);
 	return 0;
 }
 
@@ -113,9 +117,9 @@ static int lua_hack_init()
 	//luaopen_io(L); // PANIC!!
 	lua_gc(L, LUA_GCRESTART, 0);
 
-	lua_register(L, "radare_cmd_str", &lua_cmd_str);
+	lua_register(L, "cmd_str", &lua_cmd_str);
 	lua_pushcfunction(L, lua_cmd_str);
-	lua_setglobal(L,"radare_cmd_str");
+	lua_setglobal(L,"cmd_str");
 
 	// DEPRECATED: cmd = radare_cmd_str
 	lua_register(L, "cmd", &lua_cmd);
@@ -124,7 +128,8 @@ static int lua_hack_init()
 
 	//-- load template
 	printf("Loading radare api... %s\n",
-		slurp_lua(LIBDIR"/radare/radare.lua")? "ok":"error");
+		slurp_lua(LIBDIR"/radare/radare.lua")?
+		"error ( "LIBDIR"/radare/radare.lua )":"ok");
 	fflush(stdout);
 
 	return 0;
@@ -153,7 +158,7 @@ void lua_hack_cmd(char *input)
 	lua_hack_init();
 
 	if (input && input[0]) {
-		if (!slurp_lua(input)) {
+		if (slurp_lua(input)) {
 			fprintf(stderr, "Cannot open '%s'\n", input);
 			fflush(stdout);
 		}
