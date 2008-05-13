@@ -422,6 +422,7 @@ int arch_print_registers(int rad, const char *mask)
 		PRINT_REG("v0", "", 2);
 		PRINT_REG("v1", "\n", 3);
 
+
 		PRINT_REG("s0", "", 16);
 		PRINT_REG("s1", "", 17);
 		PRINT_REG("s2", "", 18);
@@ -430,7 +431,10 @@ int arch_print_registers(int rad, const char *mask)
 
 		PRINT_REG("s5", "", 21);
 		PRINT_REG("s6", "", 22);
-		PRINT_REG("s7", "\n", 23);
+		PRINT_REG("s7", "", 23);
+
+		PRINT_REG("bad", "", 35);
+		PRINT_REG("cause", "\n", 37);
 
 		PRINT_REG("t0", "", 8);
 		PRINT_REG("t1", "", 9);
