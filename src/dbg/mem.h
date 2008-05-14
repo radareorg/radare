@@ -14,30 +14,26 @@
 #define MAX_MAP_SIZE (PAGE_SIZE * 8)
 
 typedef struct {
-
-	char *tag;
+	const char *tag;
 	addr_t addr;
 	unsigned long size;
 
 	struct list_head list;
-
 } MAP_MEM;
 
 typedef struct {
-
 	addr_t ini;
 	addr_t end;
 	unsigned long perms, perms_orig;
 	int flags;
-	char *bin;
+	const char *bin;
 	unsigned long size;
 
 	struct list_head list;
-
 } MAP_REG;
 
-addr_t mmap_tagged_page(char *file, u64 addr, u64 size);
-addr_t alloc_tagged_page(char *tag, unsigned long size);
+addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size);
+addr_t alloc_tagged_page(const char *tag, unsigned long size);
 addr_t arch_dealloc_page(addr_t addr, unsigned long size);
 inline addr_t alloc_page(int size);
 inline void add_regmap(MAP_REG *mr);
@@ -49,7 +45,6 @@ void rest_region(MAP_REG *mr);
 void page_dumper(const char *dir);
 void page_restore(const char *dir);
 addr_t dealloc_page(addr_t addr);
-addr_t mmap_tagged_page(char *file, u64 addr, u64 size);
 addr_t arch_alloc_page(unsigned long size, unsigned long *rsize);
 inline addr_t alloc_page(int size);
 inline void add_regmap(MAP_REG *mr);

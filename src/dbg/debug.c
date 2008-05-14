@@ -523,7 +523,7 @@ Dump of assembler code for function mmap:
 	return 0;
 }
 
-addr_t debug_alloc(char *args)
+u64 debug_alloc(char *args)
 {
 	int sz;
 	char *param;
@@ -547,7 +547,7 @@ addr_t debug_alloc(char *args)
 			eprintf(":alloc can not alloc region!\n");
 			return -1;
 		}
-		printf("* new region allocated at: 0x%x\n", (unsigned int)addr);
+		printf("0x%08lx\n", (unsigned int)addr);
 	}
 
 	return addr;

@@ -88,6 +88,11 @@ end
 
 -- Radare api functions
 
+function Radare.get(value)
+	-- TODO. convert to number
+	return cmd_str("? "..value.." | cut -d ' ' -f 1");
+end
+
 function Radare.bytes(text)
 	local res = split(Radare.cmd("pX @"..text), " ")
 	-- TODO
@@ -473,6 +478,69 @@ function Radare.Debugger.continue(address)
 		r.cmd("!cont "..address);
 	end
 	return Radare.Debugger
+end
+
+function Radare.Debugger.step(num)
+	r.cmd("!step "..num)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.step(num)
+	r.cmd("!step "..num)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.step_over()
+	r.cmd("!stepo");
+	return Radare.Debugger
+end
+
+function Radare.Debugger.step_until_user_code()
+	r.cmd("!stepu");
+	return Radare.Debugger
+end
+
+function Radare.Debugger.add_bp(addr)
+	r.cmd("!bp "..num)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.remove_bp(addr)
+	r.cmd("!bp -"..num)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.alloc(size)
+	return cmd_str("!alloc "..size)
+end
+
+function Radare.Debugger.free(addr) -- rename to dealloc?
+	return cmd_str("!free "..addr)
+end
+
+function Radare.Debugger.dump(dirname)
+	r.cmd("!dump "..dirname)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.restore(dirname)
+	r.cmd("!restore "..dirname)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.jump(addr)
+	r.cmd("!jmp "..addr)
+	return Radare.Debugger
+end
+
+function Radare.Debugger.backtrace()
+	local res = split(Radare.cmd("!bt"),"\n")
+	local ret = {}
+	for i = 1, #res do
+		local line = split(res[i], " ")
+		ret[i] = line[2]
+	end
+	return ret;
 end
 
 print "=> Type 'help()' or 'quit' to return to radare shell."

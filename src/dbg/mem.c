@@ -61,7 +61,7 @@ addr_t dealloc_page(addr_t addr)
 	return 0;
 }
 
-addr_t mmap_tagged_page(char *file, u64 addr, u64 size)
+addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 {
 	int rsize = size;
 	int fd;
@@ -107,7 +107,7 @@ addr_t mmap_tagged_page(char *file, u64 addr, u64 size)
 	return 0;
 }
 
-addr_t alloc_tagged_page(char *tag, unsigned long size)
+addr_t alloc_tagged_page(const char *tag, unsigned long size)
 {
 	unsigned long rsize;
 	addr_t addr = arch_alloc_page(size, &rsize);

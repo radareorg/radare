@@ -61,7 +61,7 @@ int debug_unload();
 int debug_inject();
 int debug_set_register(char *arg);
 int debug_loop(char *addr_str);
-addr_t debug_alloc(char *arg);
+u64 debug_alloc(char *arg);
 int debug_mmap(char *arg);
 int debug_free(char *arg);
 int debug_jmp(char *arg);
