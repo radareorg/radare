@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@phreaker.net>
+ * Copyright (C) 2007, 2008
+ *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,42 @@
 GtkWidget *pw = NULL;
 int pw_opened = 0;
 
+// TODO.add a column to specify if toggle or string one
+static struct {
+	int panel_id;
+	const char *label;
+	const char *name;
+	int value;
+} toggles[22] = {
+	{ 0, "Show bytes",  "asm.bytes",  1 },
+	{ 0, "Show offset", "asm.offset", 1 },
+	{ 0, "Show lines",  "asm.lines",  1 },
+	{ 0, "Split by rets",  "asm.split",  1 },
+	{ 0, "Split all blocks",  "asm.splitall",  0 },
+	{ 0, "Show relative address",  "asm.reladdr",  1 },
+	{ 0, "Lines out of block",  "asm.linesout",  0 },
+	{ 0, "Show comments",  "asm.comments",  1 },
+
+	{ 1, "Endian (set = big, unset little)",  "cfg.endian",  0 },
+	{ 1, "Color",  "scr.color",  1 },
+	{ 1, "Buffered output",  "scr.buf",  0 },
+	{ 1, "Inverse block",  "cfg.inverse",  0 },
+
+	{ 2, "Split code blocks",  "graph.split",  0 },
+	{ 2, "Split blocks by calls",  "graph.callblocks",  0 },
+	{ 2, "Split blocks by jumps",  "graph.jmpblocks",  1 },
+	{ 2, "Show code offsets",  "graph.offset",  0 },
+
+	{ 3, "Load symbols",  "dbg.syms",  1 },
+	{ 3, "Use DWARF",  "dbg.dwarf",  1 },
+	{ 3, "Handle memory maps",  "dbg.maps",  1 },
+	{ 3, "Show backtrace in !contsc",  "dbg.contscbt",  1 },
+	{ 3, "Show complete backtrace",  "dbg.fullbt",  0 },
+	NULL
+};
+
 //void prefs_close(void *widget, void *data, void *user)
-gint prefs_close(void *item, GdkEvent *event, gpointer data)
+static gint prefs_close(void *item, GdkEvent *event, gpointer data)
 {
 	if (pw) {
 		gtk_widget_hide(GTK_WIDGET(pw));
@@ -39,43 +73,34 @@ gint prefs_close(void *item, GdkEvent *event, gpointer data)
 	return TRUE;
 }
 
-static GtkWidget *bytes;
-static void bytes_changed(void *foo, void *data)
-{
-	if (gtk_toggle_button_get_active(bytes)) {
-		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.bytes=1\n\n", 19);
-	} else
-		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.bytes=0\n\n", 19);
-}
-
 static GtkWidget *lines;
-static void lines_changed(void *foo, void *data)
+static void toggle_changed(void *foo, void *data)
 {
-	if (gtk_toggle_button_get_active(data)) {
-		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.lines=1\n\n", 19);
-	} else
-		vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.lines=0\n\n", 19);
+	char buf[1024];
+	int i = (int)data;
+
+	toggles[i].value = gtk_toggle_button_get_active(foo);
+
+	sprintf(buf, ":eval %s=%d\n\n", toggles[i].name, toggles[i].value);
+	vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
 }
 
-GtkWidget *prefs_disassembly()
+static GtkWidget *draw_toggles_for(int panel_id)
 {
-	GtkWidget *offset;
+	GtkWidget *bytes;
 	GtkWidget *hbbox;
 	GtkVBox *vbox = gtk_vbox_new(FALSE, 5);
+	int i;
 	
-	bytes = gtk_check_button_new_with_label("Show bytes");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bytes), FALSE, FALSE, 2); 
- 	g_signal_connect(GTK_COMBO_BOX(bytes), "clicked", GTK_SIGNAL_FUNC(bytes_changed), bytes);
+	for(i=0;toggles[i].label!=NULL;i++) {
+		if (toggles[i].panel_id != panel_id)
+			continue;
+		bytes = gtk_check_button_new_with_label(toggles[i].label);
+		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bytes), FALSE, FALSE, 2); 
+		gtk_toggle_button_set_active(bytes, toggles[i].value);
+		g_signal_connect(GTK_COMBO_BOX(bytes), "clicked", GTK_SIGNAL_FUNC(toggle_changed), i);
+	}
 
-
-	offset = gtk_check_button_new_with_label("Show offset");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset), FALSE, FALSE, 2); 
-
-	lines = gtk_check_button_new_with_label("Show lines");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lines), FALSE, FALSE, 2); 
- 	g_signal_connect(GTK_COMBO_BOX(lines), "clicked", GTK_SIGNAL_FUNC(lines_changed), lines);
-	
-	
 	return vbox;
 }
 
@@ -102,9 +127,10 @@ void prefs_open()
 	gtk_container_add(GTK_CONTAINER(pw), vbox);
 
 	nb = gtk_notebook_new();
-	gtk_notebook_append_page(nb, prefs_disassembly(), gtk_label_new("Disassembly"));
-	gtk_notebook_append_page(nb, gtk_label_new("TODO"), gtk_label_new("Global"));
-	gtk_notebook_append_page(nb, gtk_label_new("TODO"), gtk_label_new("Startup"));
+	gtk_notebook_append_page(nb, draw_toggles_for(0), gtk_label_new("Disassembly"));
+	gtk_notebook_append_page(nb, draw_toggles_for(1), gtk_label_new("Global"));
+	gtk_notebook_append_page(nb, draw_toggles_for(2), gtk_label_new("Graphs"));
+	gtk_notebook_append_page(nb, draw_toggles_for(3), gtk_label_new("Debugger"));
 	gtk_container_add(GTK_CONTAINER(vbox), nb);
 	//gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new("TODO O:)"), FALSE, FALSE, 5); 
 

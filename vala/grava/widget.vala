@@ -222,6 +222,8 @@ public class Grava.Widget : GLib.Object {
 		};
 		menu.append(imi);
 
+		// TODO: add continue until here
+/*
 		imi = new ImageMenuItem.with_label("Remove true branch");
 		imi.activate += imi => {
 ///			stdout.printf("Focus!\n");
@@ -233,6 +235,7 @@ public class Grava.Widget : GLib.Object {
 	//		stdout.printf("Focus!\n");
 		};
 		menu.append(imi);
+*/
 
 		if (graph.selected != null) {
 			menu.append(new SeparatorMenuItem());

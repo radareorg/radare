@@ -81,6 +81,31 @@ void seek_to()
 	gtk_widget_destroy(menu);
 }
 
+void copy_to()
+{
+	gchar *str;
+
+	clip = gtk_widget_get_clipboard(term, 1);
+	vte_terminal_copy_clipboard(term);
+	gtk_widget_destroy(menu);
+}
+
+void breakpoint_drop()
+{
+	gchar *str;
+
+	clip = gtk_widget_get_clipboard(term, 1);
+	vte_terminal_copy_clipboard(term);
+	str = gtk_clipboard_wait_for_text(clip);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":!bp -", 6);
+	vte_terminal_feed_child(VTE_TERMINAL(term), str, strlen(str));
+	vte_terminal_feed_child(VTE_TERMINAL(term), "\n\n", 2);
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(combo)) == 1)
+		gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 2);
+
+	gtk_widget_destroy(menu);
+}
+
 void breakpoint_to()
 {
 	gchar *str;
@@ -93,6 +118,24 @@ void breakpoint_to()
 	vte_terminal_feed_child(VTE_TERMINAL(term), "\n\n", 2);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(combo)) == 1)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 2);
+
+	gtk_widget_destroy(menu);
+}
+
+void continue_until_here()
+{
+	gchar *str;
+
+	clip = gtk_widget_get_clipboard(term, 1);
+	vte_terminal_copy_clipboard(term);
+	str = gtk_clipboard_wait_for_text(clip);
+	if (str && str[0]) {
+		vte_terminal_feed_child(VTE_TERMINAL(term), ":!cont ", 7);
+		vte_terminal_feed_child(VTE_TERMINAL(term), str, strlen(str));
+		vte_terminal_feed_child(VTE_TERMINAL(term), "\n\n", 2);
+		if (gtk_combo_box_get_active(GTK_COMBO_BOX(combo)) == 1)
+			gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 2);
+	}
 
 	gtk_widget_destroy(menu);
 }
@@ -110,9 +153,26 @@ gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(seek_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", "gtk-find");
+		menu_item = gtk_image_menu_item_new_from_stock("Copy to clipboard", "gtk-copy");
+		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(copy_to), NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", "gtk-add");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+		menu_item = gtk_image_menu_item_new_from_stock("Remove breakpoint", "gtk-remove");
+		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_drop), NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+		menu_item = gtk_image_menu_item_new_from_stock("Continue until here", "gtk-next");
+		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(continue_until_here), NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
 
 		gtk_widget_show_all(menu);
 		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, NULL);
