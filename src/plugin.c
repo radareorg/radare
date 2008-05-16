@@ -60,6 +60,14 @@ void *radare_resolve(char *name)
 	return NULL;
 }
 
+int plugin_list()
+{
+	int i;
+	for(i=0;i<MAXPLUGINS && plugins[i].name; i++)
+		printf("%-10s  %s\n", plugins[i].name, plugins[i].desc);
+	return i;
+}
+
 int is_plugin(const char *str)
 {
 // TODO: use SHARED_EXT
@@ -79,6 +87,7 @@ plugin_t *plugin_registry(const char *file)
 {
 	int i;
 	void *hd;
+	static int gtk_is_init = 0;
 	char *ptr;
 	plugin_t *p;
 	const char *ip;
@@ -160,7 +169,15 @@ plugin_t *plugin_registry(const char *file)
 		#else
 		p = dlsym(hd, "radare_plugin");
 		#endif
-		break;
+	case PLUGIN_TYPE_GUI:
+		/* initialize gtk before */
+		if (!gtk_is_init) {
+			if ( ! gtk_init_check(NULL, NULL) ) {
+				fprintf(stderr, "Oops. Cannot initialize gui\n");
+				return;
+			}
+		gtk_is_init = 1;
+		}
 	case PLUGIN_TYPE_HACK: {
 		#if __WINDOWS__ && !__CYGWIN__
 		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
@@ -173,13 +190,17 @@ plugin_t *plugin_registry(const char *file)
 			return NULL;
 		}
 		hack = radare_hack_new(pl->name, pl->desc, pl->callback);
+		hack->type = ((int)(*ip));
+		hack->widget = pl->widget;
+
 		list_add_tail(&(hack->list), &(hacks));
+
 		pl->resolve = (void *)&radare_resolve;
 		pl->config = &config;
 #if DEBUGGER
 		pl->ps = &ps;
 #endif
-		return NULL;
+		//return NULL;
 		} break;
 	default:
 		eprintf("Unknown plugin type '%d'\n", (int)p);
@@ -190,19 +211,12 @@ plugin_t *plugin_registry(const char *file)
 	plugins[i] = *p;
 	plugins[i+1] = posix_plugin;
 	printf("plugin registered??\n");
-
 	return p;
+
 }
 
 // TODO: plugin_close() ?
 
-int plugin_list()
-{
-	int i;
-	for(i=0;i<MAXPLUGINS && plugins[i].name; i++)
-		printf("%-10s  %s\n", plugins[i].name, plugins[i].desc);
-	return i;
-}
 
 /* load plugins from dir.plugins */
 void plugin_load()

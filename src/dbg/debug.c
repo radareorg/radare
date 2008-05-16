@@ -1339,6 +1339,87 @@ int debug_rm_bps()
 	return bps - ps.bps_n;
 }
 
+struct mp_t {
+	u64 addr;
+	unsigned int size;
+	int perms;
+	struct list_head list;
+};
+
+static int mp_is_init = 0;
+
+struct list_head mps;
+
+// TODO: support to remove ( store old page permissions )
+// TODO: remove overlapped memory map changes
+int debug_mp(char *str)
+{
+	struct list_head *i;
+	struct mp_t *mp;
+	char buf[128];
+	char buf2[128];
+	char buf3[128];
+	char *ptr = &buf;
+	u64 addr;
+	u64 size;
+	int perms = 0;
+
+	// TODO: move this to debug_init .. must be reinit when !load is called
+	if (!mp_is_init) {
+		INIT_LIST_HEAD(&mps);
+		mp_is_init = 1;
+	}
+
+	if (str[0]=='\0') {
+		list_for_each(i, &(mps)) {
+			struct mp_t *m = list_entry(i, struct mp_t, list);
+			printf("0x%08llx %d %c%c%c\n", m->addr, m->size,
+			m->perms&4?'r':'-', m->perms&2?'w':'-', m->perms&1?'x':'-');
+		}
+		return 0;
+	}
+
+	if (strchr(str, '?')) {
+		cons_printf("Usage: !mp [rwx] [addr] [size]\n");
+		cons_printf("  > !mp       - lists all memory protection changes\n");
+		cons_printf("  > !mp --- 0x8048100 4096\n");
+		cons_printf("  > !mp rwx 0x8048100 4096\n");
+		cons_printf("- addr and size are aligned to memory (-=%4).\n");
+		return 0;
+	}
+
+	sscanf(str, "%127s %127s %127s", buf, buf2, buf3);
+	addr = get_math(buf2);
+	size = get_math(buf3);
+
+	if (addr == 0 || size == 0) {
+		printf("Invalid arguments\n");
+		return 1;
+	}
+
+	for(ptr=buf;ptr[0];ptr=ptr+1) {
+		switch(ptr[0]) {
+		case 'r': perms |=4; break;
+		case 'w': perms |=2; break;
+		case 'x': perms |=1; break;
+		}
+	}
+
+	// align to bottom
+	addr = addr - (addr%4);
+	size = size - (size%4);
+
+	mp = (struct mp_t*)malloc(sizeof(struct mp_t));
+	mp->addr  = addr;
+	mp->size  = (unsigned int)size;
+	mp->perms = perms;
+	list_add_tail(&(mp->list), &(mps));
+	
+	arch_mprotect((addr_t)mp->addr, mp->size, mp->perms);
+
+	return 0;
+}
+
 int debug_wp(char *str)
 {
 	int i = 0;
@@ -1371,7 +1452,7 @@ int debug_wp(char *str)
 		" Expression example:\n"
 		"  !wp %%eax = 0x8048393 and ( [%%edx] > 0x100 )\n");
 /*
-	TODO: implement wps (maps), wph (drx)
+	TODO: implement wps (maps), wph (drx) --  this is done with !mp  KEEP IT SIMPLE!!
 		printf("  !bps          software breakpoint\n");
 		printf("  !bph          hardware breakpoint\n");
 */
@@ -1405,7 +1486,7 @@ int debug_wp(char *str)
 		}
 	}
 
-	return 0;	
+	return 0;
 }
 
 int debug_bp(char *str)
@@ -1598,7 +1679,6 @@ int debug_inject(char *file)
 		return 0;
 	}
 
-//	sz = (addr_t)
 	lseek(fd, (addr_t)0, SEEK_END); // + (addr_t)4;
 	lseek(fd, (addr_t)0, SEEK_SET);
 	if (sz>0xffff) {
@@ -1817,19 +1897,23 @@ int debug_run()
 
 addr_t debug_getregister(char *input)
 {
-	char *reg;
+	char *reg = input;
 	int off;
+	addr_t ret;
 
+	// TODO: user streclean
 	if(*input == ' ')
 		reg = input + 1;
-	else
-		reg = input;
 
 	if((off = get_reg(reg)) == -1)
 		return -1;
 
 	/* TODO: debug_get_regoff must return a value addr_t */
-	return (addr_t)debug_get_regoff(&WS(regs), roff[off].off); 
+	ret = (addr_t)debug_get_regoff(&WS(regs), roff[off].off); 
+
+	printf("0x%08llx\n", ret);
+
+	return ret;
 }
 
 

@@ -26,7 +26,7 @@ do
 	buf_addr = string.format("0x%x", cmd("!alloc 4096"));
 
 	--get stack frame address
-	param_addr = string.format("0x%x", cmd("!regval esp") + 12);
+	param_addr = string.format("0x%x", cmd("!get esp") + 12);
 
 	-- translate to little endian 
 	lebuf_addr = "0x"..string.sub(buf_addr, 9, 10)..

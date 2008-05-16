@@ -16,6 +16,7 @@
 struct plugin_hack_t {
 	const char *name;
 	const char *desc;
+	void *widget;
 	int (*callback)(char *str);
 	int (*init)();
 	void *(*resolve)(char *);
@@ -28,19 +29,23 @@ struct plugin_hack_t {
 struct hack_t {
 	const char *name;
 	const char *desc;
+	void **widget;
+	int type;
 	int (*callback)(char *input);
 	struct list_head list;
 };
 
 enum {
 	PLUGIN_TYPE_IO = 0,
-	PLUGIN_TYPE_HACK = 1
+	PLUGIN_TYPE_HACK = 1,
+	PLUGIN_TYPE_GUI = 2
 };
 
 typedef struct plugin_t {
 	void *handle;
 	char *name;
 	char *desc;
+	void *widget;
 	int (*init)();
 	struct debug_t *debug;
 	int (*system)(const char *);

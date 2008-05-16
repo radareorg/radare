@@ -28,6 +28,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef VALA
+#include <gtk/gtk.h>
+#endif
+
 #if 0
 TODO:
 	printf(" 7 - negate zero flag (TODO)\n");
@@ -41,7 +45,7 @@ int radare_hack_help()
 	struct list_head *pos;
 
 	list_for_each(pos, &hacks) {
-		struct hack_t *h= list_entry(pos, struct comment_t, list);
+		struct hack_t *h= list_entry(pos, struct hack_t, list);
 		cons_printf("%02d %s\t%s\n", i++, h->name, h->desc);
 	}
 	return 0;
@@ -171,6 +175,7 @@ static int hack_forcejmp(char *lold)
 struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)())
 {
 	struct hack_t *hack = (struct hack_t *)malloc(sizeof(struct hack_t));
+printf("NEW HACK (%s)(%s)\n", name, desc);
 	hack->name = name?strdup(name):NULL;
 	hack->desc = desc?strdup(desc):NULL;
 	hack->callback = callback;
@@ -189,6 +194,37 @@ int radare_hack_init()
 	list_add_tail(&(hack->list), &(hacks));
 	hack = radare_hack_new("fj", "force jump", &hack_forcejmp);
 	list_add_tail(&(hack->list), &(hacks));
+}
+
+int static radare_hack_call(struct hack_t *h, const char *arg)
+{
+#ifdef VALA
+  static int gtk_is_init = 0;
+  GtkWindow *w;
+
+printf("HWIDGET:%x\n", *h->widget);
+  if (h->widget != NULL) {
+    /* initialize gtk before */
+    if (!gtk_is_init) {
+      if ( ! gtk_init_check(NULL, NULL) ) {
+        fprintf(stderr, "Oops. Cannot initialize gui\n");
+        return 1;
+      }
+      gtk_is_init = 1;
+    }
+
+    // XXX hacky :(
+    h->callback(arg);
+    w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_container_add(GTK_CONTAINER(w), *h->widget);
+    gtk_widget_show_all(GTK_WIDGET(w));
+    gtk_main();
+printf("GO MAIN! \n");
+  } else
+#endif
+    h->callback(arg);
+printf("EOF\n");
+  return 0;
 }
 
 int radare_hack(const char *cmd)
@@ -221,15 +257,15 @@ int radare_hack(const char *cmd)
 		return radare_hack_help();
 
 	list_for_each(pos, &hacks) {
-		struct hack_t *h = list_entry(pos, struct comment_t, list);
+		struct hack_t *h = list_entry(pos, struct hack_t, list);
 		if (num) {
-			 if  (i==num) {
-				h->callback(arg);
+			if  (i==num) {
+				radare_hack_call(h,arg);
 				return 0;
 			}
 		} else {
 			if (!strcmp(ptr, h->name)) {
-				h->callback(arg); //ptr+strlen(h->name));
+				radare_hack_call(h,arg);
 				return 0;
 			}
 		}

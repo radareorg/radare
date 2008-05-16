@@ -62,58 +62,59 @@ int help_message()
 	TITLE
 	printf(" Loader\n");
 	TITLE_END
-	printf("  run             load and start execution\n");
-	printf("  load            load a program in memory\n");
-	printf("  unload          unload a program or kill\n");
-	printf("  kill [-S] [pid] sends a signal to a process\n");
-	printf("  attach [pid]    attach target pid\n");
-	printf("  detach          detach debugged process\n");
+	printf(" !run              load and start execution\n");
+	printf(" !load             load a program in memory\n");
+	printf(" !unload           unload a program or kill\n");
+	printf(" !kill [-S] [pid]  sends a signal to a process\n");
+	printf(" !attach [pid]     attach target pid\n");
+	printf(" !detach           detach debugged process\n");
 	TITLE
 	printf(" Flow Control\n");
 	TITLE_END
-	printf("  jmp [addr]      force program counter\n");
-	printf("  call [addr]     enters a subroutine\n");
-	printf("  ret             emulates a return from subroutine\n");
-	printf("  skip [N]        skip (N=1) instruction(s)\n");
-	printf("  step [N]        (s) step (N=1) instruction(s)\n");
-	printf("  stepbp [N]      steps using code analysis and breakpoints\n");
-	printf("  stepu           (so) step over library code and repz\n");
-	printf("  stepo           (so) step over calls and repz\n");
-	printf("  trace [N]       trace until bp or eof at N debug level\n");
-	printf("  wtrace          trace until a watchpoint is matched\n");
-	printf("  stepret         continue until ret (TODO)\n");
-	printf("  cont            continue until bp, eof\n");
-	printf("  contu ([addr])  continue until user code, bp, eof (or addr if defined)\n");
-	printf("  contuh          continue until here (loop analysis)\n");
-	printf("  contsc          continue until next syscall\n");
-	printf("  contfork        continue until fork\n");
+	printf(" !jmp [addr]       force program counter\n");
+	printf(" !call [addr]      enters a subroutine\n");
+	printf(" !ret              emulates a return from subroutine\n");
+	printf(" !skip [N]         skip (N=1) instruction(s)\n");
+	printf(" !step [N]         (s) step (N=1) instruction(s)\n");
+	printf(" !stepbp [N]       steps using code analysis and breakpoints\n");
+	printf(" !stepu            (so) step over library code and repz\n");
+	printf(" !stepo            (so) step over calls and repz\n");
+	printf(" !trace [N]        trace until bp or eof at N debug level\n");
+	printf(" !wtrace           trace until a watchpoint is matched\n");
+	printf(" !stepret          continue until ret (TODO)\n");
+	printf(" !cont             continue until bp, eof\n");
+	printf(" !contu ([addr])   continue until user code, bp, eof (or addr if defined)\n");
+	printf(" !contuh           continue until here (loop analysis)\n");
+	printf(" !contsc           continue until next syscall\n");
+	printf(" !contfork         continue until fork\n");
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
-	printf("  ktrace          follow app until ktrace event occurs\n");
+	printf(" !ktrace           follow app until ktrace event occurs\n");
 #endif
 	TITLE
 	printf(" Breakpoints\n");
 	TITLE_END
-	printf("  wp[m|?] [expr]  put a watchpoint (wp? for help) (wpm for monitor)\n");
-	printf("  wtrace          watchpoint trace\n");
-	printf("  bp [addr]       put a breakpoint at addr (no arg = list)\n");
-	printf("  ie              ignore events\n");
+	printf(" !wtrace           watchpoint trace\n");
+	printf(" !bp [addr]        put a breakpoint at addr (no arg = list)\n");
+	printf(" !wp[m|?] [expr]   put a watchpoint (wp? for help) (wpm for monitor)\n");
+	printf(" !mp [rwx] [a] [s] change memory protections at [a]ddress with [s]ize\n");
+	printf(" !ie               ignore events\n");
 	TITLE
 	printf(" Registers\n");
 	TITLE_END
-	printf("  [o|d|fp]regs[*] show registers (o=old, d=diff, fp=fpu, *=radare)\n");
-	printf("  oregs[*]        show old registers information (* for radare)\n");
-	printf("  set [reg] [val] set a value for a register\n");
+	printf(" ![o|d|fp]regs[*]  show registers (o=old, d=diff, fp=fpu, *=radare)\n");
+	printf(" !oregs[*]         show old registers information (* for radare)\n");
+	printf(" !set [reg] [val]  set a value for a register\n");
 #if __i386__
-	printf("  dr[rwx-]        DR registers control (dr? for help) (x86 only)\n");
+	printf(" !dr[rwx-]         DR registers control (dr? for help) (x86 only)\n");
 #endif
 	TITLE
 	printf(" Actions\n");
 	TITLE_END
-	printf("  core            dump core of the process\n");
-	printf("  dump [N]        dump pages (and registers) to disk\n");
-	printf("  restore [N]     restore pages (and registers) from disk\n");
-	printf("  hack [N]        Make a hack.\n");
-	printf("  inject [bin]    inject code inside child process\n");
+	printf(" !core             dump core of the process\n");
+	printf(" !dump [N]         dump pages (and registers) to disk\n");
+	printf(" !restore [N]      restore pages (and registers) from disk\n");
+	printf(" !hack [N]         Make a hack.\n");
+	printf(" !inject [bin]     inject code inside child process\n");
 
 	return 0;
 }
@@ -161,8 +162,8 @@ static struct commads_t {
 	CB_CMD( "status"   , CB_NOARGS   , debug_status )       , 
 	CB_CMD( "pids"     , CB_NOARGS   , debug_pids )         , 
 	CB_CMD( "pid"      , CB_SPACE    , debug_pstree )       , 
-	CB_CMD("attach"    , CB_INT      , debug_attach)        , 
-	CB_CMD("skip"      , CB_INT      , debug_skip)          , 
+	CB_CMD( "attach"   , CB_INT      , debug_attach)        , 
+	CB_CMD( "skip"     , CB_INT      , debug_skip)          , 
 	CB_CMD( "detach"   , CB_NOARGS   , debug_detach )       , 
 	CB_CMD( "load"     , CB_NOARGS   , debug_load )         , 
 	CB_CMD( "unload"   , CB_NOARGS   , debug_unload )       , 
@@ -172,6 +173,7 @@ static struct commads_t {
 	CB_CMD( "info"     , CB_NORMAL   , debug_info )         , 
 	CB_CMD( "set"      , CB_NORMAL   , debug_set_register ) , 
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           , 
+	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           , 
 	CB_CMD( "inject "  , CB_NORMAL   , debug_inject )       , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        , 
 	CB_CMD( "wtrace"   , CB_NOARGS   , debug_wtrace )       , 
@@ -181,7 +183,7 @@ static struct commads_t {
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
-	CB_CMD( "regval"   , CB_NORMAL   , debug_getregister )  , 
+	CB_CMD( "get"      , CB_NORMAL   , debug_getregister )  , 
 	CB_CMD( "regs"     , CB_ASTERISK , debug_registers )    , 
 	CB_CMD( "oregs"    , CB_ASTERISK , debug_oregisters )   , 
 	CB_CMD( "dregs"    , CB_ASTERISK , debug_dregisters )   , 

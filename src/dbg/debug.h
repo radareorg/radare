@@ -17,6 +17,7 @@ int debug_write(pid_t pid, void *data, int length);
 int debug_run();
 int debug_bp(char *addr);
 int debug_wp(char *expr);
+int debug_mp(char *expr);
 int debug_wtrace();
 int debug_detach();
 int debug_syms();

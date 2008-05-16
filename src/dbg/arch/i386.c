@@ -1477,6 +1477,9 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
         debug_setregs(ps.tid, &reg_saved);
 
 	return ret;
+#elif __WINDOWS__
+	DWORD old;
+	return VirtualProtectEx(WIN32_PI(hProcess), (LPVOID)(UINT)addr, size, perms, &old); 
 #else
 	eprintf("Not supported on this OS\n");
 	return -1;
