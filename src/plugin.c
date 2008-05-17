@@ -87,7 +87,9 @@ plugin_t *plugin_registry(const char *file)
 {
 	int i;
 	void *hd;
+#ifdef VALA
 	static int gtk_is_init = 0;
+#endif
 	char *ptr;
 	plugin_t *p;
 	const char *ip;
@@ -169,6 +171,7 @@ plugin_t *plugin_registry(const char *file)
 		#else
 		p = dlsym(hd, "radare_plugin");
 		#endif
+#ifdef VALA
 	case PLUGIN_TYPE_GUI:
 		/* initialize gtk before */
 		if (!gtk_is_init) {
@@ -178,6 +181,7 @@ plugin_t *plugin_registry(const char *file)
 			}
 		gtk_is_init = 1;
 		}
+#endif
 	case PLUGIN_TYPE_HACK: {
 		#if __WINDOWS__ && !__CYGWIN__
 		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
@@ -204,13 +208,15 @@ plugin_t *plugin_registry(const char *file)
 		} break;
 	default:
 		eprintf("Unknown plugin type '%d'\n", (int)p);
+		if (((int)p) ==PLUGIN_TYPE_GUI)
+			eprintf("You need GUI to run this plugin. Sorry\n");
 		return NULL;
 	}
 
 	sprintf(buf, "%s_plugin", file);
 	plugins[i] = *p;
 	plugins[i+1] = posix_plugin;
-	printf("plugin registered??\n");
+	//printf("plugin registered??\n");
 	return p;
 
 }

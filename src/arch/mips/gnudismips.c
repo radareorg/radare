@@ -25,7 +25,7 @@ static int symbol_at_address(bfd_vma addr, struct disassemble_info * info)
 }
 
 
-void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
+static void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
 {
 
 }

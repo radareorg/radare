@@ -1339,6 +1339,7 @@ int debug_rm_bps()
 	return bps - ps.bps_n;
 }
 
+/* memory protection permissions */
 struct mp_t {
 	u64 addr;
 	unsigned int size;
@@ -1407,7 +1408,7 @@ int debug_mp(char *str)
 
 	// align to bottom
 	addr = addr - (addr%4);
-	size = size - (size%4);
+	size = size + (size-(size%4));
 
 	mp = (struct mp_t*)malloc(sizeof(struct mp_t));
 	mp->addr  = addr;
@@ -1641,18 +1642,18 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 {
 	int i;
 	unsigned long eip = arch_pc(); //WS_PC();
-	char *ptr;
+	unsigned char *ptr;
 
-	// XXX make this work on ARM
+	// XXX make this work on ARM and MIPS
 #warning debug_inject() only supports X86 architecture
-	fil[sz]=0xcc; // breakpoint on X86 (XXX broken for arm)
+	fil[sz]=0xcc; // breakpoint on X86 (XXX broken concept for non intel)
 	for(i=0;i<sz+1;i++){
 		if (!(i%5))eprintf("\n");
 		eprintf("%02x", fil[i]);
 	}
 	eprintf("\n");
 
-	ptr = (char *)malloc(sz);
+	ptr = (unsigned char *)malloc(sz);
 	// backup code
 	debug_read_at(ps.tid, ptr, sz, (addr_t)ps.entrypoint);
 	// inject shellcode

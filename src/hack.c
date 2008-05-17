@@ -175,7 +175,6 @@ static int hack_forcejmp(char *lold)
 struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)())
 {
 	struct hack_t *hack = (struct hack_t *)malloc(sizeof(struct hack_t));
-printf("NEW HACK (%s)(%s)\n", name, desc);
 	hack->name = name?strdup(name):NULL;
 	hack->desc = desc?strdup(desc):NULL;
 	hack->callback = callback;
@@ -202,7 +201,6 @@ int static radare_hack_call(struct hack_t *h, const char *arg)
   static int gtk_is_init = 0;
   GtkWindow *w;
 
-printf("HWIDGET:%x\n", *h->widget);
   if (h->widget != NULL) {
     /* initialize gtk before */
     if (!gtk_is_init) {
@@ -219,11 +217,10 @@ printf("HWIDGET:%x\n", *h->widget);
     gtk_container_add(GTK_CONTAINER(w), *h->widget);
     gtk_widget_show_all(GTK_WIDGET(w));
     gtk_main();
-printf("GO MAIN! \n");
   } else
 #endif
     h->callback(arg);
-printf("EOF\n");
+
   return 0;
 }
 

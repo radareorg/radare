@@ -32,6 +32,11 @@ crOBJ+=arch/mips/mips-dis.o
 crOBJ+=arch/mips/mips-opc.o
 crOBJ+=arch/mips/mips16-opc.o
 
+crOBJ+=arch/sparc/code.o
+crOBJ+=arch/sparc/gnudisparc.o
+crOBJ+=arch/sparc/sparc-dis.o
+crOBJ+=arch/sparc/sparc-opc.o
+
 crOBJ+=arch/ppc/code.o
 crOBJ+=arch/ppc/ppc_disasm.o
 

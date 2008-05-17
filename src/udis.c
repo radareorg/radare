@@ -39,7 +39,8 @@ enum {
 	ARCH_M68K = 4,
 	ARCH_JAVA = 5,
 	ARCH_MIPS = 6,
-	ARCH_CSR = 7
+	ARCH_SPARC = 7,
+	ARCH_CSR = 8
 };
 
 struct list_head data;
@@ -612,6 +613,12 @@ void udis_arch(int arch, int len, int rows)
 				arch_mips_aop(seek, (const unsigned char *)b, &aop);
 				myinc = aop.length;
 				break;
+#if 0
+			case ARCH_SPARC:
+				arch_sparc_aop(seek, (const unsigned char *)b, &aop);
+				myinc = aop.length;
+				break;
+#endif
 			case ARCH_JAVA:
 				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
 				myinc = aop.length;
@@ -771,6 +778,9 @@ void udis_arch(int arch, int len, int rows)
 				       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
 				       gnu_dismips((unsigned char*)b, (unsigned int)seek);
 				       break;
+			case ARCH_SPARC:
+				       gnu_disparc((unsigned char*)b, (unsigned int)seek);
+				       break;
 			case ARCH_PPC: {
 					       char opcode[128];
 					       char operands[128];
@@ -880,6 +890,9 @@ void disassemble(int len, int rows)
 	else
 	if (!strcmp(ptr, "java"))
 		udis_arch(ARCH_JAVA, len, rows);
+	else
+	if (!strcmp(ptr, "sparc"))
+		udis_arch(ARCH_SPARC, len, rows);
 	else
 	if (!strcmp(ptr, "ppc"))
 		udis_arch(ARCH_PPC, len, rows);
