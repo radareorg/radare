@@ -587,14 +587,14 @@ int debug_info(char *arg)
 		cons_printf("f entry @ 0x%08x\n", ps.entrypoint);
 		//cons_printf("f bep @ %s\n", config_get("dbg.bep"));
 	} else {
-		cons_printf(" filename %s\n", ps.filename);
+		cons_printf(" filename    %s\n", ps.filename);
 
 		cons_printf(" pid         %d\n", ps.pid);
 		sprintf(buf, "/proc/%d/cmdline", ps.pid);
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
 			read(fd, buf, 4095);
-			cons_printf(" cmdline  %s\n", buf);
+			cons_printf(" cmdline     %s\n", buf);
 			close(fd);
 		}
 
@@ -604,7 +604,7 @@ int debug_info(char *arg)
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
 			read(fd, buf, 4095);
-			cons_printf(" cmdline  %s\n", buf);
+			cons_printf(" cmdline     %s\n", buf);
 			close(fd);
 		}
 		cons_printf(" dbg.bep     %s\n", config_get("dbg.bep"));

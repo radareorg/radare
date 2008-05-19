@@ -57,7 +57,7 @@ CMD_DECL(quit);
 CMD_DECL(resize);
 CMD_DECL(seek);
 CMD_DECL(undoseek);
-CMD_DECL(status);
+CMD_DECL(info);
 CMD_DECL(rdb);
 CMD_DECL(project);
 CMD_DECL(yank);

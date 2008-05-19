@@ -1019,6 +1019,11 @@ CMD_DECL(visual)
 			case 0x1b:
 				cons_readchar();
 				switch(cons_readchar()) {
+				case 0x04:
+					config.insert_mode = 0;
+					config.cursor_mode = 0;
+					cons_clear();
+					break;
 				case 0x44: //'h':
 					if (config.cursor--<1)
 						config.cursor = 0;

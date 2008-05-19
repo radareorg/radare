@@ -111,7 +111,8 @@ void format_show_help (print_mode_t mode)
 
 void print_addr(u64 off)
 {
-	char ch = (0==(off%config_get_i("cfg.addrmod")))?',':' ';
+	int mod = config_get_i("cfg.addrmod");
+	char ch = (0==(off%(mod?mod:1)))?',':' ';
 	C	cons_printf("%s"OFF_FMT""C_RESET"%c ", cons_palette[PAL_ADDRESS], off, ch);
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }

@@ -21,6 +21,6 @@ rdbdiff${BINSFX}: ${OBJ_RDB}
 
 clean:
 	cd bdiff && ${MAKE} clean
-	-rm -f ${OBJ} ${BIN} rdbdiff
+	-rm -f ${OBJ_RDB} ${OBJ} ${BIN} rdbdiff
 
 .PHONY: bdiff all clean

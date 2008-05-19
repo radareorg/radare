@@ -619,9 +619,10 @@ int debug_dispatch_wait()
 
 	if(WIFEXITED(status)) {
 		eprintf("\n\n______________[ process finished ]_______________\n\n");
-		ps.opened = 0;
+		//ps.opened = 0;
 		kill(ps.tid, SIGKILL);
-		//debug_load();
+		debug_load();
+sleep(1);
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
 

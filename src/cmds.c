@@ -119,7 +119,7 @@ command_t commands[] = {
 	COMMAND('e', "[m?] key=value",     "eval    evaluates a configuration expression", config_eval),
 	COMMAND('f', "[d|-][name]",    "flag    flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "performs a hack", hack),
-	COMMAND('i', "",               "info    prints status information", status),
+	COMMAND('i', "",               "info    prints status information", info),
 	COMMAND('m', " [size] [dst]",  "move    copy size bytes from here to dst", move),
 	COMMAND('o', " [file]",        "open    open file", open),
 	COMMAND('p', "[fmt] [len]",    "print   print data block", print),
@@ -860,7 +860,7 @@ CMD_DECL(seek)
 	return 0;
 }
 
-CMD_DECL(status)
+CMD_DECL(info)
 {
 #if 0
 	if (strchr(input, '*')) {
@@ -888,12 +888,14 @@ CMD_DECL(status)
 		(u64)config.seek, (u64)config.seek); NEWLINE;
 	cons_printf(" delta   %lld\n", config_get_i("cfg.delta")); 
 	cons_printf(" count   %lld\n", config_get_i("cfg.count")); 
-	fflush(stdout);
-	print_flag_offset(config.seek);
+	//fflush(stdout);
+	//print_flag_offset(config.seek);
 	cons_printf(" size    "OFF_FMTd" \t 0x"OFF_FMTx,
 		(u64)config.size, (u64)config.size); NEWLINE;
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
 		(u64)config.limit, (u64)config.limit); NEWLINE;
+
+	cons_printf("Debugger:\n");
 
 	if (config.debug)
 		io_system("info");

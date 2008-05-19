@@ -13,6 +13,8 @@
 #define IF_HANDLED(x,y) if (( x != -1) && (plugins[i].name != NULL) && plugins[i].y )
 #define MAXPLUGINS 32
 
+void plugin_load();
+
 struct plugin_hack_t {
 	const char *name;
 	const char *desc;

@@ -44,6 +44,7 @@ clean:
 	${Q}cd rasc && ${MAKE} clean
 	${Q}cd src/rabin && ${MAKE} clean
 	${Q}cd gui && ${MAKE} clean
+	${Q}cd libusbsniff && ${MAKE} clean
 	${Q}cd src/dbg && ${MAKE} clean
 	${Q}cd java && ${MAKE} clean
 	${Q}cd vala/ && ${MAKE} clean
