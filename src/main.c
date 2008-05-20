@@ -31,7 +31,7 @@ static void help_show_message()
 	"  -P [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
-	"  -d [program]     debug a program. same as --args in gdb\n"
+	"  -d [program|pid] debug a program. same as --args in gdb\n"
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
 	"  -c               same as -e scr.color=true\n"
@@ -58,9 +58,19 @@ int main(int argc, char **argv, char **envp)
 		case 'd':
 			{
 			// XXX : overflowable, must use strcatdup or stgh like that
+			int pid = atoi(argv[optind]);
 			char buf[4096];
 			char buf2[4096];
 			buf[0]='\0';
+
+			/* by process-id */
+			if (pid > 0) {
+				sprintf(buf2, "pid://%d", pid);
+				plugin_load();
+				return radare_go();
+			}
+
+			/* by program path */
 			for(c=optind;argv[c];c++) {
 				ps.argv[c-optind] = argv[c];
 				strcat(buf, argv[c]);

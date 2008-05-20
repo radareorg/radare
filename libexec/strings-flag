@@ -39,4 +39,4 @@ for my $i (0 .. $#strings) {
 }
 
 print ":s _here_\n:f -_here_\n";
-print STDERR "$count strings added.\n";
+print STDERR "$count strings added.\n" if ( $ENV{"VERBOSE"} );

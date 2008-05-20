@@ -26,4 +26,4 @@ for my $i (0 .. @syms) {
 }
 print ":s _here_\n";
 print ":f -_here_\n";
-print STDERR @syms." symbols added.\n";
+print STDERR @syms." symbols added.\n" if ( $ENV{"VERBOSE"} );

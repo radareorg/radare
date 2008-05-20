@@ -401,6 +401,7 @@ GtkWidget *catact = NULL;
 
 GtkWidget *gradare_actions_new()
 {
+	GtkWidget *exp =gtk_expander_new("");
 	GtkWidget *vpan = gtk_vpaned_new();
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
 	GtkWidget *exec_button;
@@ -448,5 +449,7 @@ GtkWidget *gradare_actions_new()
 	g_signal_connect(add, "button-release-event", toolbar_add, NULL);
 	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(add), FALSE, FALSE, 0);
 
-	return vbox;
+	//return vbox;
+	gtk_container_add(exp,vbox);
+	return exp;
 }

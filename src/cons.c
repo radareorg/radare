@@ -407,7 +407,9 @@ int cons_fgets(char *buf, int len)
 		"pr > ",
 		"p? "
 	};
-	char *ptr = dl_readline(CMDS, argv);
+	char *ptr;
+	buf[0]='\0';
+	ptr = dl_readline(CMDS, argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);

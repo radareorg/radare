@@ -736,6 +736,11 @@ void radare_prompt_command()
 			radare_set_block_size_i(old-config.seek);
 	}
 
+	/* define cursor flag */
+	if (config.cursor_mode)
+		flag_set("cursor", config.cursor, 0);
+	else flag_set("cursor", 0, 0);
+
 	/* user defined command */
 	ptr = config_get("cmd.prompt");
 	if (ptr&&ptr[0]) {

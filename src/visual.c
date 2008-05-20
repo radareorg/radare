@@ -726,7 +726,6 @@ void visual_bind_key()
 	terminal_set_raw(1);
 	return;
 #else
-	buf[0]='\0';
 	if (cons_fgets(buf, 1000) <0)
 		buf[0]='\0';
 #endif
@@ -1382,15 +1381,30 @@ CMD_DECL(visual)
 		case 'U':
 			undo_redo();
 			break;
-		case 'f': {
-			flag_t *flag = flag_get_next(1);
-			if (flag) { config.seek = flag->offset;
-				cons_clear(); }}
+		case 'f':
+			if (config.cursor_mode) {
+				char name[1024];
+				eprintf("Flag name: ");
+				fflush(stderr);
+				terminal_set_raw(0);
+				cons_fgets(name, 1000);
+				terminal_set_raw(1);
+				if (name[0])
+					flag_set(name, config.baddr+ config.seek+config.cursor, 1);
+			} else {
+				flag_t *flag = flag_get_next(1);
+				if (flag) { config.seek = flag->offset;
+					cons_clear(); }
+			}
 			break;
-		case 'F': { flag_t *flag = flag_get_next(-1);
-			if (!flag) flag = flag_get_reset();
-			if (flag) { config.seek = flag->offset;
-				cons_clear(); }}
+		case 'F': 
+			if (config.cursor_mode) {
+				flag_clear_by_addr(config.seek+config.cursor);
+			} else { flag_t *flag = flag_get_next(-1);
+				if (!flag) flag = flag_get_reset();
+				if (flag) { config.seek = flag->offset;
+					cons_clear(); }
+			}
 			break;
 		case 'D':
 			name = flag_name_by_offset(config.seek);
