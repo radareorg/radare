@@ -69,8 +69,8 @@ ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
 	char tmp[1024];
 	unsigned char *pbuf = buf;
 	unsigned char *ptr;
-	int i,j=0,k;
 	int size = count;
+	int i;
 
 	if (size%16)
 		size+=(size-(size%16));
@@ -142,10 +142,9 @@ fprintf(stderr, "\n >> Type '!bp 0x%08llx' and '!run' <<\n\n", entry);
 
 int gdbx_open(const char *pathname, int flags, mode_t mode)
 {
-	int fd;
-	char host[128];
 	char tmp[4096];
-	int port, i;
+	int port;
+	int fd;
 
 	srand(getpid());
 	port = 9000+rand()%555;
@@ -262,7 +261,6 @@ cons_printf("breakpoint set\n");
 	if (!memcmp(cmd, "regs",4)) {
 		unsigned char name[128];
 		unsigned long value;
-		unsigned long eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
 		socket_printf(config.fd, "info registers\n");
 		
 		for(i=0;;i++) {
@@ -282,7 +280,7 @@ cons_printf("breakpoint set\n");
 			}
 			if (!memcmp(tmp, "(gdb)", 5))
 				break;
-			sscanf(tmp, "%s 0x%x", name, &value);
+			sscanf(tmp, "%s 0x%lx", name, &value);
 			if (cmd[4]=='*') {
 				cons_printf("f %s @ 0x%08x\n", name, value);
 			} else {

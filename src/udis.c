@@ -85,7 +85,7 @@ void data_add(u64 off, int type)
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 			if (off>= d->from && off<= d->to) {
-				list_del((&d->list));
+				list_del((&d)); //->list));
 				goto __reloop;
 			}
 		}

@@ -117,7 +117,7 @@ void print_addr(u64 off)
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
 
-char *get_color_for(int c)
+const char *get_color_for(int c)
 {
 	if (c==0)    return cons_palette[PAL_00];
 	if (c==0xff) return cons_palette[PAL_FF];

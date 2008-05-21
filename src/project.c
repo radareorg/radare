@@ -83,7 +83,7 @@ int project_save(char *file)
 
 void project_close()
 {
-	char *file = config_get("file.project");
+	const char *file = config_get("file.project");
 	if (!strnull(file)) {
 		if (yesno('y', "Do you want to save the '%s' project? (Y/n) ", file)) {
 			project_save(file);

@@ -54,10 +54,10 @@ int radare_hack_help()
 static int hack_nop(char *lold)
 {
 	struct aop_t aop;
-	char buf[1024];
+	unsigned char buf[1024];
 	int i, len;
 	int delta = (config.cursor_mode)?config.cursor:0;
-	char *arch = config_get("asm.arch");
+	const char *arch = config_get("asm.arch");
 
 	if (!config_get("file.write"))
 		return 0;

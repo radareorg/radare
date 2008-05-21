@@ -133,7 +133,7 @@ void update_environment()
 	if (ptr != NULL)
 		config.width = atoi(ptr);
 	else
-		config.width = terminal_get_columns();
+		config.width = cons_get_columns();
 	if (config.width<10)config.width=10;
 	config_set_i("scr.width", config.width);
 

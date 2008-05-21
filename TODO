@@ -10,7 +10,9 @@
 
 0.9.6:
 ======
- * add sparc disassemlber
+ * in graph redraw we must execute stuff for monitors
+ * fix autocomplete stuff for readline-flags
+ * add full autocompletion support for dietline
  * make !get work on linux with arch_get_register (currently only works on w32)
  * show labels of all jumps/calls (not only bookmarked ones)
  * refactor dbg/arch/i386 to dbg_os_foo
@@ -27,14 +29,13 @@
  * rename or remove pd command.
    - make it work without file.wmode
  * radare debugger for osx x86/arm
- * add full autocompletion support for dietline
  * support for background color
  * blinking byte at cursor
  * support for search and replace
  * support for oprofile (via rsc or so)
  * Edit modify source references ;)
- * cfg.limit must be text size by default (file size?) useful for memory searchs
- * cfg.limit doesnt works in searchs :O
+ * cfg.limit must be size of current maps section by default (file size?) useful for memory searchs
+ * add map search doing a search inside the process maps only
 
 Open streams
 ============

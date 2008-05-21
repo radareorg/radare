@@ -90,6 +90,8 @@ int socket_ready(int fd, int secs,int usecs)
 	if (retval==-1)
 		return -1;
 	return FD_ISSET(0, &rfds);
+#else
+	return 1; /* always ready if unknown */
 #endif
 }
 

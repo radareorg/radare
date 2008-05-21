@@ -266,8 +266,10 @@ void print_maps_regions(int rad)
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
 			perms[4] = 0;
 
-			cons_printf("0x%.8llx - 0x%.8llx %s 0x%.8llx %s\n",
-				 (unsigned long long)mr->ini, (unsigned long long)mr->end, perms,
+			cons_printf("0x%.8llx %c 0x%.8llx %s 0x%.8llx %s\n",
+				 (unsigned long long)mr->ini, 
+				((config.seek>mr->ini) && (config.seek < mr->end))?'*':'-',
+				(unsigned long long)mr->end, perms,
 				(unsigned long long)mr->size, mr->bin? mr->bin : "");
 		}
 	}

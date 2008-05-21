@@ -37,8 +37,5 @@ void flag_list(char *arg);
 void flag_help();
 int flag_rename_str(char *text);
 
-//extern flag_t **flags;
 struct list_head flags;
-//extern unsigned int eflags; // number of existent flags
-//extern unsigned int nflags; // number of elements in flag array
 #endif

@@ -34,7 +34,7 @@ int debug_close(int fd)
 	if (fd == ps.fd) {
 		eprintf("Do you want to kill the process? (Y/n/c) ");
 
-		terminal_set_raw(1);
+		cons_set_raw(1);
 		while(read(0,buf,1)>0) {
 			buf[1] = '\n';
 			write(1, buf, 2);
@@ -45,7 +45,7 @@ int debug_close(int fd)
 			switch(buf[0]) {
 			case 'c': case 'C':
 				eprintf("Cancelled\n");
-				terminal_set_raw(0);
+				cons_set_raw(0);
 				return -2;
 			case 'y': case 'Y': case '\n': case '\r':
 				/* TODO: w32 stuff here */
@@ -62,7 +62,7 @@ int debug_close(int fd)
 #endif
 				free(ps.filename);
 				ps.opened = 0;
-				terminal_set_raw(0);
+				cons_set_raw(0);
 				return 0;
 			}
 		}

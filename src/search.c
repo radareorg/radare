@@ -226,8 +226,10 @@ int search_range(char *range)
 #if __UNIX__
 	go_alarm(SIG_IGN);
 #endif
-	if (config.interrupted)
-		printf("\nStopped at 0x"OFF_FMTx"\n", config.seek);
+	if (config.interrupted) {
+		printf("\nStopped at 0x"OFF_FMTx" (flag search_stop)\n", config.seek);
+		flag_set("search_stop",config.seek, 0);
+	}
 	radare_controlc_end();
 
 	radare_seek(tmp, SEEK_SET);

@@ -77,7 +77,7 @@ static void config_old_init()
 	config.unksize     = 0;
 	config.buf         = 0; // output buffered
 	config.ene         = 10;
-	config.width       = terminal_get_columns();
+	config.width       = cons_get_columns();
 	config.last_seek   = 0;
 	config.file        = NULL;
 	config.block_size  = DEFAULT_BLOCK_SIZE;
@@ -398,6 +398,13 @@ static int config_core_callback(void *data)
 	// TODO needs more work
 }
 
+static int config_limit_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	config.limit = get_offset(node->value);
+}
+
 static int config_arch_callback(void *data)
 {
 	arch_set_callbacks();
@@ -589,7 +596,8 @@ void config_init()
 	config_set("file.insert", "false");
 	node = config_set("file.write", "false");
 	node->callback = &config_wmode_callback;
-	config_set("cfg.limit", "0");
+	node = config_set("cfg.limit", "0");
+	node->callback = &config_limit_callback;
 #if __mips__
 	// ???
 	config_set("cfg.addrmod", "32");

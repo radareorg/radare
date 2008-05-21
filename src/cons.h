@@ -58,9 +58,9 @@ enum {
 	PAL_7F,
 	PAL_FF
 };
-extern const unsigned char *cons_palette_default;
-const unsigned char *cons_colors[CONS_COLORS_SIZE];
-extern int cons_palette[CONS_PALETTE_SIZE][8];
+extern const char *cons_palette_default;
+const char *cons_colors[CONS_COLORS_SIZE];
+extern char cons_palette[CONS_PALETTE_SIZE][8];
 char *cons_get_buffer();
 void cons_reset();
 void cons_clear();
@@ -70,3 +70,6 @@ int cons_fgets(char *buf, int len);
 int cons_set_fd(int fd);
 void cons_strcat(const char *str);
 void cons_newline();
+void cons_set_raw(int b);
+int cons_get_real_columns();
+int cons_get_columns();

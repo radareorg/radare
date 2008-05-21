@@ -33,8 +33,8 @@
 
 int _print_fd = 1;
 
-const unsigned char *cons_palette_default = "7624 6646 2378 6824 3623";
-int cons_palette[CONS_PALETTE_SIZE][8] = {
+const char *cons_palette_default = "7624 6646 2378 6824 3623";
+char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
 	/* ADDRESS */
 	/* DEFAULT */
@@ -62,7 +62,7 @@ int cons_palette[CONS_PALETTE_SIZE][8] = {
 };
 
 // 23 elements
-const unsigned char *cons_colors[CONS_COLORS_SIZE] = {
+const char *cons_colors[CONS_COLORS_SIZE] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2
@@ -534,9 +534,9 @@ void cons_strcat(const char *str)
 	strcat(cons_buffer, str);
 }
 
-int terminal_get_columns()
+int cons_get_columns()
 {
-	int columns_i = terminal_get_real_columns();
+	int columns_i = cons_get_real_columns();
 	char buf[64];
 
 	sprintf(buf, "%d", columns_i);
@@ -545,7 +545,7 @@ int terminal_get_columns()
 	return columns_i;
 }
 
-int terminal_get_real_columns()
+int cons_get_real_columns()
 {
 #if __UNIX__
         struct winsize win;
@@ -581,9 +581,9 @@ int yesno(int def, const char *fmt, ...)
 		vfprintf(stderr, fmt, ap);
 		va_end(ap);
 		fflush(stderr);
-		terminal_set_raw(1);
+		cons_set_raw(1);
 		read(0, &key, 1); write(2, "\n", 1);
-		terminal_set_raw(0);
+		cons_set_raw(0);
 	} else
 		key = 'y';
 
@@ -593,12 +593,12 @@ int yesno(int def, const char *fmt, ...)
 
 /**
  *
- * void terminal_set_raw( [0,1] )
+ * void cons_set_raw( [0,1] )
  *
  *   Change canonicality of the terminal
  *
  * For optimization reasons, there's no initialization flag, so you need to
- * ensure that the make the first call to terminal_set_raw() with '1' and
+ * ensure that the make the first call to cons_set_raw() with '1' and
  * the next calls ^=1, so: 1, 0, 1, 0, 1, ...
  *
  * If you doesn't use this order you'll probably loss your terminal properties.
@@ -609,7 +609,7 @@ static struct termios tio_old, tio_new;
 #endif
 static int termios_init = 0;
 
-void terminal_set_raw(int b)
+void cons_set_raw(int b)
 {
 #if __UNIX__
 	if (b) {

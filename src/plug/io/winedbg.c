@@ -76,7 +76,7 @@ ssize_t winedbg_read(int fd, void *buf, size_t count)
 
 	// XXX memory is algned!!!
 	for(i=0;i<count+delta;i+=4) {
-		unsigned long *dword = (unsigned long*)buf+i;
+		//unsigned long *dword = (unsigned long*)buf+i;
 		unsigned int dw;
 		sprintf(tmp,"x 0x"OFF_FMTx"\n", config.seek-delta+i);
 		socket_printf(config.fd, tmp);

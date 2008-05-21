@@ -98,7 +98,6 @@ int main(int argc, char **argv)
 {
 	int c;
 	int action = 'd';
-	int color = 0;
 
 	while ((c = getopt(argc, argv, "bderiph")) != -1)
 	{

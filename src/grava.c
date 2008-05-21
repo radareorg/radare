@@ -134,12 +134,8 @@ static void mygrava_back2(void *widget, void *foo, void *obj) //GtkWidget *obj)
 static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
 {
 	const char *str;
-	char *buf;
-	struct program_t *prg;
-	GravaNode *node;
 	struct static_nodes *snode;
 	struct mygrava_window *w = obj;
-	u64 off;
 
 	if (w) {
 		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
@@ -459,7 +455,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->tnext == b1->addr) {
-					printf("T %08lx\n", b0->tnext);
+					printf("T %08llx\n", b0->tnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "green");
@@ -476,7 +472,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);
 				if (b0->fnext == b1->addr) {
-					printf("F %08lx\n", b0->fnext);
+					printf("F %08llx\n", b0->fnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
 					//grava_node_set(node2, "color", "red");

@@ -23,8 +23,8 @@
 #if RADARE_CORE
 #include "main.h"
 #else
-static void terminal_set_raw(int b);
-static int terminal_get_real_columns();
+static void cons_set_raw(int b);
+static int cons_get_real_columns();
 #define __UNIX__ 1
 #endif
 
@@ -208,7 +208,7 @@ int dl_printchar()
 {
 	unsigned char buf[10];
 
-	terminal_set_raw(1);
+	cons_set_raw(1);
 	buf[0]=dl_readchar();
 
 	switch(buf[0]) {
@@ -238,7 +238,7 @@ int dl_printchar()
 			break;
 	}
 
-	terminal_set_raw(0);
+	cons_set_raw(0);
 }
 
 /* main readline function */
@@ -246,7 +246,7 @@ char *dl_readline(int argc, const char **argv)
 {
 	int buf[10];
 	int i, opt, len = 0;
-	int columns = terminal_get_real_columns()-2;
+	int columns = cons_get_real_columns()-2;
 
 	dl_buffer_idx = dl_buffer_len = 0;
 	dl_buffer[0]='\0';
@@ -259,7 +259,7 @@ char *dl_readline(int argc, const char **argv)
 	}
 
 	memset(&buf,0,sizeof buf);
-	terminal_set_raw(1);
+	cons_set_raw(1);
 
 	printf("%s", dl_prompt);
 	fflush(stdout);
@@ -287,7 +287,7 @@ char *dl_readline(int argc, const char **argv)
 		buf[0] = dl_readchar();
 		
 //		printf("\e[K\r");
-		columns = terminal_get_real_columns()-2;
+		columns = cons_get_real_columns()-2;
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
@@ -309,7 +309,7 @@ char *dl_readline(int argc, const char **argv)
 			case 4: // ^D
 				printf("^D\n");
 				if (!dl_buffer[0]) { /* eof */
-					terminal_set_raw(0);
+					cons_set_raw(0);
 					return NULL;
 				}
 				break;
@@ -429,7 +429,7 @@ char *dl_readline(int argc, const char **argv)
 						printf("%*c", columns, ' ');
 						printf("\r");
 						printf("\n\n(%s)\n\n", dl_buffer);
-						terminal_set_raw(0);
+						cons_set_raw(0);
 						return dl_buffer;
 					}
 				}
@@ -458,7 +458,7 @@ char *dl_readline(int argc, const char **argv)
 	}
 
 _end:
-	terminal_set_raw(0);
+	cons_set_raw(0);
 	printf("\r%s%s\n", dl_prompt, dl_buffer);
 	fflush(stdout);
 	//write(1,"\n",1);
@@ -478,7 +478,7 @@ static struct termios tio_old, tio_new;
 #include <sys/socket.h>
 #endif
 
-static void terminal_set_raw(int b)
+static void cons_set_raw(int b)
 {
 #if __UNIX__
 	if (b) {
@@ -499,7 +499,7 @@ static void terminal_set_raw(int b)
 #endif
 }
 
-static int terminal_get_real_columns()
+static int cons_get_real_columns()
 {
 #if __WINDOWS__
         return 78;

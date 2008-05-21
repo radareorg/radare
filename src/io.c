@@ -134,7 +134,7 @@ int radare_write(char *arg, int mode)
 	return 1;
 }
 
-void radare_poke(char *arg)
+void radare_poke(const char *arg)
 {
 	int fd;
 	char key;
@@ -164,8 +164,8 @@ void radare_poke(char *arg)
 		data_print(config.seek, "", (unsigned char *)buf, ret, FMT_HEXB);
 		printf("\nPoke %d bytes from %s %d times? (y/N)",
 			config.block_size, arg, times); fflush(stdout);
-		terminal_set_raw(1); read(0, &key, 1); printf("\n");
-		terminal_set_raw(0); } else key='y';
+		cons_set_raw(1); read(0, &key, 1); printf("\n");
+		cons_set_raw(0); } else key='y';
 
 		if (key=='y' || key=='Y') {
 			memcpy(config.block, buf, ret);

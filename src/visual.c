@@ -237,7 +237,7 @@ CMD_DECL(add_comment)
 	printf("Comment: ");
 	fflush(stdout);
 	strcpy(buf, "CC ");
-	terminal_set_raw(0);
+	cons_set_raw(0);
 	n = read(0, buf+2, 256);
 	if (n<2) {
 		sprintf(buf, "CC -0x%llx", config.seek+(config.cursor_mode?config.cursor:0));
@@ -249,7 +249,7 @@ CMD_DECL(add_comment)
 			sprintf(ptr, " @ +0x%x", config.cursor);
 			strcat(buf, ptr);
 		}
-		terminal_set_raw(1);
+		cons_set_raw(1);
 		radare_cmd(buf,0);
 	}
 	cons_clear();
@@ -423,9 +423,9 @@ CMD_DECL(insert_assembly_rsc)
 
 	printf("write assembly (end with ^d):\n");
 	fflush(stdout);
-	terminal_set_raw(0);
+	cons_set_raw(0);
 	radare_cmd("wA -", 0);
-	terminal_set_raw(1);
+	cons_set_raw(1);
 }
 
 CMD_DECL(insert_assembly)
@@ -438,7 +438,7 @@ CMD_DECL(insert_assembly)
 		return;
 	}
 
-	terminal_set_raw(0);
+	cons_set_raw(0);
 	printf(":> wa ");
 	fflush(stdout);
 	buf[0]='\0';
@@ -451,7 +451,7 @@ CMD_DECL(insert_assembly)
 		eprintf("ignored\n");
 	}
 	
-	terminal_set_raw(1);
+	cons_set_raw(1);
 }
 
 #warning XXX: insert_assembly_hack must be accesible without the debugger and scriptable (outsize eip)
@@ -713,7 +713,7 @@ void visual_bind_key()
 	fflush(stdin);
 	fflush(stdout);
 	cons_flush();
-	terminal_set_raw(0);
+	cons_set_raw(0);
 	buf[0]='\0';
 
 #if HAVE_LIB_READLINE
@@ -723,13 +723,13 @@ void visual_bind_key()
 		free(ptr);
 	}
 	//else buf[0]='\0';
-	terminal_set_raw(1);
+	cons_set_raw(1);
 	return;
 #else
 	if (cons_fgets(buf, 1000) <0)
 		buf[0]='\0';
 #endif
-	terminal_set_raw(1);
+	cons_set_raw(1);
 	if (!buf[0]) {
 		printf("ignored!\n");
 		return;
@@ -770,9 +770,9 @@ void visual_draw_screen()
 			cons_clear();
 	}
 	if (!getenv("COLUMNS")) {
-		terminal_set_raw(0);
-		config.width = terminal_get_columns();
-		terminal_set_raw(1);
+		cons_set_raw(0);
+		config.width = cons_get_columns();
+		cons_set_raw(1);
 	}
 	if (config.insert_mode) {
 		strcpy(buf, "<insert>");
@@ -815,7 +815,7 @@ void visual_draw_screen()
 static void ringring()
 {
 	int h   = config.height;
-	int now = terminal_get_columns();
+	int now = cons_get_columns();
 
 	// TODO: use config.width here
 	if (!getenv("COLUMNS"))
@@ -876,7 +876,7 @@ CMD_DECL(visual)
 	char *ptr;
 #endif
 
-	terminal_get_real_columns();
+	cons_get_real_columns();
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);
 
@@ -897,7 +897,7 @@ CMD_DECL(visual)
 	config.visual = 1;
 
 	cons_clear();
-	terminal_set_raw(1);
+	cons_set_raw(1);
 	while(1) {
 		if (inc<1) inc = 1;
 		dec = inc;
@@ -1078,7 +1078,7 @@ CMD_DECL(visual)
 					{
 						struct bp_t *bp;
 						u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
-						//			terminal_set_raw(0);
+						//			cons_set_raw(0);
 						//			printf("Breakpoint at: ");
 						//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
 						bp = debug_get_bp(addr);
@@ -1096,13 +1096,13 @@ CMD_DECL(visual)
 						continue;
 					}
 				case 3: // F3 - watchpoint
-					terminal_set_raw(0);
+					cons_set_raw(0);
 					printf("Watchpoint at: ");
 					strcpy(line, "!drw ");
 					fgets(line+5, sizeof(line), stdin);
 					line[strlen(line)-1]='\0';
 					radare_cmd(line,0);
-					terminal_set_raw(1);
+					cons_set_raw(1);
 					press_any_key();
 					cons_clear();
 					continue;
@@ -1215,7 +1215,7 @@ CMD_DECL(visual)
 			break;
 			
 		case ':':
-			terminal_set_raw(0);
+			cons_set_raw(0);
 			lpf = last_print_format;
 #if HAVE_LIB_READLINE
 			ptr = readline(VISUAL_PROMPT);
@@ -1234,7 +1234,7 @@ CMD_DECL(visual)
 			radare_cmd(line, 1);
 #endif
 			last_print_format = lpf;
-			terminal_set_raw(1);
+			cons_set_raw(1);
 			if (line[0])
 				press_any_key();
 			cons_strcat("\e[2J\e[0;0H");
@@ -1386,9 +1386,9 @@ CMD_DECL(visual)
 				char name[1024];
 				eprintf("Flag name: ");
 				fflush(stderr);
-				terminal_set_raw(0);
+				cons_set_raw(0);
 				cons_fgets(name, 1000);
-				terminal_set_raw(1);
+				cons_set_raw(1);
 				if (name[0])
 					flag_set(name, config.baddr+ config.seek+config.cursor, 1);
 			} else {
@@ -1566,5 +1566,5 @@ CMD_DECL(visual)
 __visual_exit:
 	config.visual = 0;
 	config.cursor_mode = 0;
-	terminal_set_raw(0);
+	cons_set_raw(0);
 }

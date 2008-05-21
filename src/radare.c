@@ -89,7 +89,7 @@ void radare_exit()
 		ptr = config_get("file.project");
 
 		if (ptr && ptr[0] ) {
-			terminal_set_raw(1);
+			cons_set_raw(1);
 			printf("Save project? (Y/n) ");
 			fflush(stdout);
 			read(0,&ch, 1);
@@ -101,7 +101,7 @@ void radare_exit()
 				project_save(pch);
 				free (pch);
 			}
-			terminal_set_raw(0);
+			cons_set_raw(0);
 		}
 	}
 	//dl_hist_save(".radare_history");
@@ -856,7 +856,7 @@ int radare_prompt()
 
 		if (config.width>0) { // fixed width
 			fixed_width = 0;
-			config.width = terminal_get_columns();
+			config.width = cons_get_columns();
 			//rl_get_screen_size(NULL, &config.width);
 			radare_cmd(input, 1);
 		} else { // dinamic width
