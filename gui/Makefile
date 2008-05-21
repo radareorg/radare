@@ -32,7 +32,7 @@ install:
 	-${Q}rm -rf ${LIBEXECDIR}/gradare/*
 	${Q}mkdir -p ${LIBEXECDIR}/gradare/
 	${Q}cp -rf grsc/* ${LIBEXECDIR}/gradare/
-	${Q}chmod +x ${LIBEXECDIR}/gradare/Shell
+	-${Q}chmod +x ${LIBEXECDIR}/gradare/Shell
 
 clean:
 	${E} 'Cleaning gui'

@@ -7,7 +7,7 @@ print ""
 --help(Radare)
 
 
--- search lib and process results
+-- search lib and show results
 Radare.seek(0)
 local hits = Radare.Search.string("lib")
 for i = 1, #hits do

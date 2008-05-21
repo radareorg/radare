@@ -45,15 +45,15 @@ IFNOT HAVE_USB_H { USBSNF = 0 ; }
 ARG_WITHOUT DEBUGGER debugger disables the debugger layer ;
 ARG_WITH JAVA java builds the java api ;
 ARG_WITH WII wii builds the wii plugin for usbgecko ;
-ARG_ENABLE W32 w32 enables the build of w32 version of the framework (mingw32) ;
+ARG_ENABLE W32 w32 enables the build of w32 version using mingw32 ;
 
 ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
-CHKVER vala-1.0 0.3.2
-IFNOT HAVE_VALA_1_0_VERSION_0_3_2 {
-	ECHO Needs vala 0.3.2 at least ;
+CHKVER vala-1.0 0.3.3
+IFNOT HAVE_VALA_1_0_VERSION_0_3_3 {
+	ECHO Needs vala 0.3.3 at least ;
 	VALAC = '' ;
 	VALA = 0 ;
 	GUI = 0 ;

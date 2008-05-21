@@ -1,3 +1,466 @@
+=== 0.9.6 ===
+
+changeset:   186:d578e87649db
+tag:         tip
+user:        pancake@flubox
+date:        Wed May 21 13:38:16 2008 +0200
+description:
+* Oops. hildon dislikes menu items from stock :O
+  - Autocomplete menu for maemo
+
+
+changeset:   185:32d7b567a931
+user:        pancake@flubox
+date:        Wed May 21 13:08:08 2008 +0200
+description:
+* Fix build for valac 0.3.3
+  - 'weak' keyword has been removed \o/
+* Upgrade maemo scripts for a release
+* Add 'run script' in gradare menubar
+  - support radare and lua script
+* Handle maemo zoom buttons in grava window
+  - the widget needs to be redrawed after zooming
+
+
+changeset:   184:b136b6e43bfc
+user:        pancake <youterm.com>
+date:        Wed May 21 08:30:09 2008 +0200
+description:
+* Fix flag autocompletion (fixes infinit loop bug)
+* Clear some warnings
+* Make config.limit work again
+  - setup a node callback to set config.limit internally
+* Refactor terminal_ -> cons_
+* Show a '*' in !maps indicating your config.seek position
+* Flag 'search_last' when pressing ^C in search
+
+
+changeset:   183:eee7e2be5cdb
+user:        pancake <youterm.com>
+date:        Tue May 20 17:17:46 2008 +0200
+description:
+* Add missing include. I'm filling of shit this changelog lol
+
+
+changeset:   182:a695c69eb970
+user:        pancake <youterm.com>
+date:        Tue May 20 17:16:25 2008 +0200
+description:
+* Oops. sparc stuff was not added O:)
+
+
+changeset:   181:a50dd541d1e1
+user:        pancake <youterm.com>
+date:        Tue May 20 10:10:17 2008 +0200
+description:
+* Add actions menu of gradare inside a expander container
+* Make rsc-syms and rsc-strings handle $ENV{VERBOSE}
+* Make '-d' cmdline flag handle pids also (radare -d pid)
+* Define 'cursor' flag at every prompt
+* Make 'f' and 'F' keys in visual cursor mode create and destroy flags
+
+
+changeset:   180:807db6476718
+user:        pancake <youterm.com>
+date:        Mon May 19 22:08:05 2008 +0200
+description:
+* Clean all missing *.o and *.so
+* rename status->info and fix output
+* Reload process after end
+* Fix div0 problem in print_addr while mod
+
+
+changeset:   179:b2249ae64d4b
+user:        pancake <youterm.com>
+date:        Sat May 17 18:25:39 2008 +0200
+description:
+* Initial import of the SPARC disassembler (no code analysis yet)
+* Drop nasty verbose messages in plugin load
+* Merge Nibble's patch to fix build without GUI
+
+
+changeset:   178:f2e115f228c2
+user:        pancake <youterm.com>
+date:        Fri May 16 04:14:12 2008 +0200
+description:
+* Rename !regval to !get (matches !set/!get pair)
+  - make the lua fuzzer scrip happy with this change
+* Add support for changing memory page protection properties
+  - New !mp command for the debugger
+  - Stores a list of all the memory map changes done
+  - Works on linux/x86 and windows (32bits)
+  - Aligns memory and size to -=%4
+  - Supports changing rwx permissions
+* Add support for GUI hack plugins
+  - Fixes some bugs in plugin list handling
+  - Add gtk-hello.so example
+  - Needs completely rebuild of radare (change of ABI!)
+  - Initialize gtk before calling a PLUGIN_HACK_GUI one
+
+
+changeset:   177:20498e4182f9
+user:        pancake <youterm.com>
+date:        Thu May 15 10:01:19 2008 +0200
+description:
+* Refactor of gradare and grava popup menus
+  - add set/remove breakpoint
+  - add continue until here
+  - add copy to clipboard
+  - remove (add/rm node branches) menu option
+* Support for toggle options in gradare
+
+
+changeset:   176:38380e1fbfc2
+user:        pancake <youterm.com>
+date:        Thu May 15 00:30:05 2008 +0200
+description:
+* Add 'lua' and 'nop' menu entries in Hacks menu for gradare
+* Fix output of debugger !alloc command
+* Fix mmap_tagged_page (32-64bit problem)
+* Enhacements for the lua api:
+
+  - Radare.get(string)
+    use get_math() to process the string and returns the hexadecimal
+    value of it. Can be used to get register values:
+
+     local eax = Radare.get("eax")
+
+  - Radare.Debugger:
+    step, step_over, step_until_user_code, add_bp,
+    remove_bp, alloc, free, dump, restore, jump,
+    backtrace
+
+
+changeset:   175:76acf144fe84
+user:        pancake <@youterm.com>
+date:        Tue May 13 20:38:14 2008 +0200
+description:
+* Some minor enhacements for radare.lua
+  - Search api more stable
+  - add chomp string function
+  - add bytes() function
+* ubuntu uses liblua5.1.so (but the rest liblua.so)
+
+
+changeset:   174:6a96fbf71585
+user:        pancake <youterm.com>
+date:        Tue May 13 03:50:08 2008 +0200
+description:
+* Add search example in lua
+  - Add global join() method in radare.lua
+  - Search results using cons
+
+
+changeset:   173:ce081d857815
+parent:      172:53b4afa22059
+parent:      171:60ebbe6cb87a
+user:        pancake <youterm.com>
+date:        Tue May 13 02:34:18 2008 +0200
+description:
+* Oops merge!
+
+
+changeset:   172:53b4afa22059
+parent:      170:a91759d2743d
+user:        pancake <youterm.com>
+date:        Tue May 13 02:33:54 2008 +0200
+description:
+* Some scr.palette parse bugs fixed
+* Initial try for hildon popup menu
+* Minor manpage update O:)
+* Add asm.reladdr to show relative addresses in disassembly
+* Support to setup relative breakpoints from current seek
+* Add gtk-forward button in pG window to add nodes executing a command
+  - monitor nodes that are updated everytime
+  - support for fixed nodes across graph reloads
+* Initial import of Grava.Chart class
+  - Skeleton of the charting class for grava
+
+
+changeset:   171:60ebbe6cb87a
+user:        pancake <youterm.com>
+date:        Sun May 11 04:55:38 2008 -0400
+description:
+* Make mips code analysis work a bit
+  - Needs pseudo virtual machine to get branch prediction
+* Show 'bad' and 'cause' registers
+
+
+changeset:   170:a91759d2743d
+user:        pancake <youterm.com>
+date:        Sun May 11 02:26:12 2008 +0200
+description:
+* Initial import of syms-extract
+  - An rsc script to extract symbols of a program or library
+  - Ouputs radare commands using 'pa' output.
+* On mips cfg.addrmod is 32 (for pipeline alignment
+* ASHC print format (pa) now takes care about the flag in current
+  seek, and ouputs correct gas assembler output using .equ syntax
+
+
+changeset:   169:5bcde2e1e92c
+user:        pancake <youterm.com>
+date:        Sun May 11 03:54:38 2008 -0400
+description:
+* Yay ! loongson2f debugger (mips) working nicely!
+ - Fix register fetch (32, 64 bits, mips and cpu1 (fpu))
+ - Simplify register printage
+* Implement "stepbp" command for the debugger
+ - uses arch_aop to predict jumps and put a breakpoint on each
+   possible execution branch
+ - debug_step bridges to debug_stepbp for mips
+   (you will need to execute a "!stepbp 2" to step over nops)
+
+
+changeset:   168:0034f9bc8329
+user:        pancake <youterm.com>
+date:        Fri May 09 21:38:53 2008 -0400
+description:
+* Add -d to debug programs ala gdb --args
+* Setup CK_FORK = no to debug gstreamer test checks
+
+
+changeset:   167:70cc9f3a743d
+user:        pancake <@youterm.com>
+date:        Fri May 09 16:21:34 2008 +0200
+description:
+* Reimport the oldschool code_analyze_r_nosplit in analyze.c
+  - New algorithm splitting code blocks is buggy
+  - Selectable with the boolean eval 'graph.split' (false by default)
+
+
+changeset:   166:bb381f212bfc
+user:        pancake <youterm.com>
+date:        Fri May 09 03:32:52 2008 +0200
+description:
+* Fix !cont and !contu to support an argument with a memory
+  address to place a breakpoint and make radare run to there
+  - implement new debug_cont_until() function
+* Fix Makefile for radiff (oops..)
+* Remove sugar color hack from udix86 stuff
+  - not needed anymore
+  - colors now handled by scr.palette
+* Implement easier syntax for scr.palette
+  - Allows to do things like:
+    > eval scr.palette = .prompt=3.jumps=5
+
+
+changeset:   165:64bd628b96ff
+user:        pancake <@youterm.com>
+date:        Wed May 07 13:32:57 2008 +0200
+description:
+* Oops. missing makefile in src/radiff/Makefile
+* Fix warning message in bdiff.cpp
+
+
+changeset:   164:88853de4d590
+user:        pancake <youterm.com>
+date:        Wed May 07 15:25:04 2008 -0400
+description:
+* Add basic shellcode for mips-linux inside rasc.c
+* Fix segfault while using multiple color palettes
+* Add nop,metadata,header and printable palete colors
+* Fix build for arm and mips64 (get_reg int->u64)
+  - fix warns in get_tmpd_dir and endian_memcpy
+* More use of the color palette
+  - prompt color
+  - memory addresses
+  - for some headers
+  - byte types
+  - arch_aop in udis
+
+
+changeset:   163:baca922d76e4
+user:        pancake <youterm.com>
+date:        Wed May 07 04:00:09 2008 +0200
+description:
+* Some refactoring on cons.h
+* Default prompt color is yellow - oops
+
+
+changeset:   162:937599b20b79
+user:        pancake <youterm.com>
+date:        Wed May 07 03:53:02 2008 +0200
+description:
+* Initial implementation of the color palette
+  - user defined with eval scr.palette
+  - currenty you only can change the prompt color
+  - palette only works when scr.color is true
+* talk about radiff in README
+
+
+changeset:   161:743a04b71ffa
+user:        pancake <youterm.com>
+date:        Wed May 07 02:20:01 2008 +0200
+description:
+* Ooops. we need valac 0.3.2! (current svn)
+* Fix broken build
+
+
+changeset:   160:d0b0676751b0
+user:        pancake <youterm.com>
+date:        Wed May 07 02:08:27 2008 +0200
+description:
+* Initial import of radiff
+  - Teh unified bindiffing utility
+  - some refactoring of the 4 current bindiffing engines
+* Add "remove breakpoint" in contextual menu in graphs
+* Make it depend on vala 0.3.1
+  - Warn about the miss of libvte for the gui
+
+
+changeset:   159:721be76715a4
+user:        pancake <@youterm.com>
+date:        Tue May 06 18:16:13 2008 +0200
+description:
+* Fix build for vala 0.3.2
+  - handle '?' null references in some functions
+* Initial import of the bindiff.c
+* Fix build for i386. get_reg must be u64 to fit with signature
+
+
+changeset:   158:fe11900ad1d9
+user:        pancake@flutes.fluendo.lan
+date:        Tue May 06 11:18:33 2008 +0200
+description:
+* Fix build for x86-64
+  - fixes the th0rpe patch
+  - arch_set_pc -> arch_jmp
+  - get_reg must be u64
+
+
+changeset:   157:b02bf9a0a765
+user:        pancake <youterm.com>
+date:        Tue May 06 04:31:34 2008 +0200
+description:
+* Fix 32-64 bit problem in graphs
+  - Graphs and code analysis (out of lines) still broken
+  - add some printf debugging
+- use memset0 in block_new
+* force endian=1 in java udis
+
+
+changeset:   156:5b945a2bb89a
+user:        pancake <youterm.com>
+date:        Tue May 06 01:43:33 2008 +0200
+description:
+* Use big endian while file.id = 1 and class file detected
+  - do not exit if bad header parsing
+* Import nibble's initial plugin.c cleanup patch
+* Fix list_del segfault for data_add, data_del, etc..
+* Fix output udis code formatting options in visual mode
+  - fix space count after printing a flag in disassembly
+  - remove 'b' key of visual mode (not used..dont like the idea..)
+
+
+changeset:   155:f05004143197
+parent:      149:079c8b97f38e
+parent:      154:ef9686a4375e
+user:        pancake <@youterm.com>
+date:        Mon May 05 13:26:46 2008 +0200
+description:
+* Merge heads
+
+
+changeset:   154:ef9686a4375e
+user:        pancake <youterm.com>
+date:        Sat May 03 12:29:50 2008 +0200
+description:
+* Initial import of the th0rpe's fuzzer
+  - Based on new !loop debugger command and a LUA script
+  - Coded and tested on windows
+* Add fuzzer-loop.lua script
+* New lua command to return integer value instead of string
+  - regval command for debugger (needs refactoring)
+
+
+changeset:   153:5ed0a59696b8
+user:        pancake <youterm.com>
+date:        Fri May 02 13:21:06 2008 +0200
+description:
+* Apply Nibble's patches
+  - Fix plugins array overflow 11->12
+  - Fix visual height annoyance
+
+
+changeset:   152:6ed8b4df1b52
+user:        pancake <youterm.com>
+date:        Wed Apr 30 14:15:31 2008 +0200
+description:
+* Make monitor stuff work again
+  - setup proper monitor dir in config
+  - Strip \n from commandfile in -L
+  - Use MONITORPATH environ
+* cfg.addrmod defaults to 4
+  - draws a comma after each offset if mod is zero
+* Fix dir.tmp (get_tmp_dir())
+  - Get w32 directory (GetTempPath)
+
+
+changeset:   151:8860ec265e2c
+user:        pancake@stimutacs.local
+date:        Wed Apr 30 02:57:52 2008 -0700
+description:
+* Fix HEXB print mode (header misses 1 space)
+* Show warn message when cannot attach (needs procmod group to debug in 10.5)
+* Launch debug_attach after fork in darwin debugger
+* Use killall instead of pkill in gdbx plugin (osx friendly)
+
+
+changeset:   150:4792d0c2e887
+parent:      148:a2c0a3a855bd
+user:        pancake@stimutacs.local
+date:        Tue Apr 29 17:55:50 2008 -0700
+description:
+* Fix build for MacOSX 10.5.2 (Thanks Ben Byer!)
+- Initial native debugger implementation for mach/osx
+- Fixups in gdbx plugin. Make it work fine on osx66
+
+
+changeset:   149:079c8b97f38e
+user:        pancake <@youterm.com>
+date:        Mon May 05 13:25:26 2008 +0200
+description:
+* add doc/xtra/intel-opcodes --- needs merge with rsc adict
+* print \n when ^D in radare_prompt (Thanks progeny!)
+* Fix multiline error message
+* Add '-r' flag to javasm (should output radare commands instead of plain nfo)
+
+
+changeset:   148:a2c0a3a855bd
+user:        pancake <@youterm.com>
+date:        Mon Apr 28 15:40:45 2008 +0200
+description:
+* Thanks nibble for fixing the history bug in dietline
+* Thanks piem for adding 'nm' line in rabin for mach-o
+
+
+changeset:   147:b0f46d0b85ea
+user:        pancake@flutes.fluendo.lan
+date:        Mon Apr 28 13:06:16 2008 +0200
+description:
+* Fixes build on GNU/Linux - 64 bit
+  - Current state is usable, but not very nice
+
+
+changeset:   146:241aded88e0c
+user:        pancake <youterm.com>
+date:        Sun Apr 27 22:49:31 2008 +0200
+description:
+* Oops. fix really stupid bug in unix debugger
+  - Assign ps.tid = ps.pid in debug_attach
+
+
+changeset:   145:f4a17f618d42
+user:        pancake <youterm.com>
+date:        Fri Apr 25 03:37:07 2008 +0200
+description:
+* Fix entry text input command in grava.c
+* Up to 0.9.6
+  - update changelog
+
+
+
 == 0.9.5 ==
 
 changeset:   144:123af7bb0f55
