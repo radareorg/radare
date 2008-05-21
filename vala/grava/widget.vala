@@ -30,8 +30,8 @@ public class Grava.Widget : GLib.Object {
 	ScrolledWindow sw;
 	Menu menu;
 
-	public signal void load_graph_at(weak string addr);
-	public signal void breakpoint_at(weak string addr);
+	public signal void load_graph_at(string addr);
+	public signal void breakpoint_at(string addr);
 
 	public Gtk.Widget get_widget()
 	{
@@ -86,8 +86,8 @@ public class Grava.Widget : GLib.Object {
 	/* capture mouse motion */
 	private bool scroll_press (Gtk.Widget w, Gdk.Event event)
 	{
-		weak EventScroll es = event.scroll;
-		weak DrawingArea da = (DrawingArea)w;
+		EventScroll es = event.scroll;
+		DrawingArea da = (DrawingArea)w;
 
 		switch(es.direction) {
 			case ScrollDirection.UP:
@@ -107,7 +107,7 @@ public class Grava.Widget : GLib.Object {
 	private bool key_press (Gtk.Widget w, Gdk.EventKey ek)
 	{
 		bool handled = true;
-		weak DrawingArea da = (DrawingArea)w;
+		DrawingArea da = (DrawingArea)w;
 
 		/* */
 		//stdout.printf("Key pressed %d (%c)\n", ek.keyval,ek.keyval);
@@ -240,7 +240,7 @@ public class Grava.Widget : GLib.Object {
 		if (graph.selected != null) {
 			menu.append(new SeparatorMenuItem());
 
-			foreach(weak string str in graph.selected.calls) {
+			foreach(string str in graph.selected.calls) {
 				imi = new ImageMenuItem.with_label(str);
 				imi.activate += imi => {
 					//stdout.printf("FUCKME: \n"+imi.submenu_placement());
@@ -257,10 +257,10 @@ public class Grava.Widget : GLib.Object {
 
 	private bool button_press (Gtk.Widget w, Gdk.Event event)
 	{
-		weak EventButton eb = event.button;
-		weak EventMotion em = event.motion; 
-		weak Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
-		weak DrawingArea da = (DrawingArea)w;
+		EventButton eb = event.button;
+		EventMotion em = event.motion; 
+		Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
+		DrawingArea da = (DrawingArea)w;
 
 		graph.selected = n;
 		if (n != null) {
@@ -287,18 +287,18 @@ public class Grava.Widget : GLib.Object {
 		return -x;
 	}
 
-	weak Node on = null;
+	Node on = null;
 	private bool motion (Gtk.Widget w, Gdk.Event ev)
 	{
-		weak EventMotion em = ev.motion; 
-		weak DrawingArea da = (DrawingArea)w;
+		EventMotion em = ev.motion; 
+		DrawingArea da = (DrawingArea)w;
 
 		if (ev.type == EventType.BUTTON_RELEASE) {
 			opanx = opany = 0;
 			return true;
 		}
 
-		weak Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
+		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
 			if (n != on) {
 				offx = abs(em.x - n.x-opanx);

@@ -22,7 +22,7 @@ using GLib;
 
 public class Grava.Renderer
 {
-	public static void draw_edge(weak Context ctx, weak Edge edge)
+	public static void draw_edge(Context ctx, Edge edge)
 	{
 		double dx = 0;
 		double dy = 0;
@@ -58,13 +58,13 @@ public class Grava.Renderer
 		ctx.set_source_rgb (0.6, 0.6, 0.6);
 	}
 
-	public static void set_color(weak Context ctx, HashTable<string,string> ht)
+	public static void set_color(Context ctx, HashTable<string,string> ht)
 	{
-		weak string color = ht.lookup("color");
+		string color = ht.lookup("color");
 		set_color_str(ctx, color);
 	}
 
-	public static bool set_color_str(weak Context ctx, string? color)
+	public static bool set_color_str(Context ctx, string? color)
 	{
 		if (color != null) {
 			if (color == "black")
@@ -98,7 +98,7 @@ public class Grava.Renderer
 		return (color!=null);
 	}
 
-	public static void draw_node(weak Context ctx, weak Node node)
+	public static void draw_node(Context ctx, Node node)
 	{
 		ctx.save ();
 

@@ -12,7 +12,7 @@
 
 # These fields are used to build the control file.
 PACKAGE = radare
-VERSION = 0.9.5
+VERSION = 0.9.6
 ARCH = armel
 SECTION = user/shell
 PRIORITY = optional
@@ -34,9 +34,9 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/libexec/radare $@/usr/libexec/gradare $@/usr/share/radare $@/usr/lib $@/usr/share/radare/magic
 	cp ../../src/radare $@/usr/bin
 	-cp ${PRG}/src/bug $@/usr/bin/bug
-	-cp ${PRG}/src/rdb/rdbdiff $@/usr/bin/rdbdiff
+	-cp ${PRG}/src/radiff/radiff $@/usr/bin/radiff
+	-cp ${PRG}/src/radiff/bindiff $@/usr/bin/bindiff
 	-cp ${PRG}/src/radare $@/usr/bin/radare
-	-cp ${PRG}/src/bindiff $@/usr/bin/bindiff
 	-cp ${PRG}/src/rabin/rabin $@/usr/bin/rabin
 	-cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm
 	-cp ${PRG}/rasc/rasc $@/usr/bin/rasc

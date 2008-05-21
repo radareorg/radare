@@ -10,6 +10,8 @@
 
 0.9.6:
 ======
+ * Add -d to gradare also
+ * Add script editor window for lua and radare
  * in graph redraw we must execute stuff for monitors
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline

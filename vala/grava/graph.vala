@@ -55,7 +55,7 @@ public class Grava.Graph : GLib.Object
 		}
 	}
 
-	public static bool is_selected(weak Node n)
+	public static bool is_selected(Node n)
 	{
 		return n == selected;
 	}
@@ -119,7 +119,7 @@ public class Grava.Graph : GLib.Object
 		return ret;
 	}
 
-	public SList<Node> outer_nodes (weak Node n)
+	public SList<Node> outer_nodes (Node n)
 	{
 		SList<Node> ret = new SList<Node>();
 		foreach(weak Edge edge in edges) {
@@ -129,7 +129,7 @@ public class Grava.Graph : GLib.Object
 		return ret;
 	}
 
-	public SList<Node> inner_nodes (weak Node n)
+	public SList<Node> inner_nodes (Node n)
 	{
 		SList<Node> ret = new SList<Node>();
 		foreach(weak Edge edge in edges ) {
@@ -159,7 +159,7 @@ public class Grava.Graph : GLib.Object
 		return false;
 	}
 
-	public void draw(weak Context ctx)
+	public void draw(Context ctx)
 	{
 //		ctx.set_operator (Cairo.Operator.SOURCE);
 	// XXX THIS FLICKERS! MUST USE DOUBLE BUFFER

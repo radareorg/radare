@@ -43,6 +43,30 @@ void gradare_redo() //GtkAction *action, CanoeWindow *w)
 
 void gradare_run_script() //GtkAction *action, CanoeWindow *w)
 {
+	GtkWidget *fcd; 
+
+	fcd = gtk_file_chooser_dialog_new (
+		"Select script...", NULL, // parent
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+		NULL);
+
+	gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
+	if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
+	{
+		char cmd[4096];
+		char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+#if _MAEMO_
+		hildon_banner_show_information(GTK_WIDGET(w), NULL, "Running script...");
+#endif
+		if (strstr(filename, "lua"))
+			sprintf(cmd,":H lua %s\n", filename);
+		else	sprintf(cmd,":. %s\n", filename);
+		vte_terminal_feed_child(VTE_TERMINAL(term), cmd, strlen(cmd));
+	}
+
+	gtk_widget_destroy(fcd);
 }
 
 void gradare_about() //GtkAction *action, CanoeWindow *w)

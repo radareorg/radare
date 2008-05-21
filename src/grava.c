@@ -25,6 +25,12 @@
 #include "node.h"
 #include "edge.h"
 
+#if _MAEMO_
+//#include <hildon/hildon.h>
+//needs to link against
+//HildonProgram *p = NULL;
+#endif
+
 struct mygrava_window {
 	GtkWidget *vbox, *hbox;
 	GtkWindow *w;
@@ -243,11 +249,11 @@ gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygr
 #if _MAEMO_
     case GDK_F7:
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
-	w->grava->zoom = grava->graph->zoom + (GRAVA_WIDGET_ZOOM_FACTOR);
+	w->grava->graph->zoom += (GRAVA_WIDGET_ZOOM_FACTOR);
         return TRUE;
 
     case GDK_F8:
-	w->grava->zoom = grava->graph->zoom - (GRAVA_WIDGET_ZOOM_FACTOR);
+	w->grava->graph->zoom -= (GRAVA_WIDGET_ZOOM_FACTOR);
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
         return TRUE;
 #endif
@@ -294,7 +300,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		/* add window */
 		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#if _MAEMO_
+#if 0 && _MAEMO_
 		hildon_program_add_window(p, win->w);
 #endif
 		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);

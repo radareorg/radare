@@ -25,7 +25,7 @@ public class Grava.DefaultLayout : Grava.Layout
 	private weak Graph graph;
 	private static bool d = false; // debug output
 
-	private void treenodes(weak Node n)
+	private void treenodes(Node n)
 	{
 		int ox = 0;
 		SList<Node> nodes = graph.outer_nodes(n);
@@ -37,7 +37,7 @@ public class Grava.DefaultLayout : Grava.Layout
 		}
 	}
 
-	public void walkChild(weak Node node, int level)
+	public void walkChild(Node node, int level)
 	{
 		if (level<1) return ;
 		foreach(weak Edge edge in graph.edges) {
@@ -48,7 +48,7 @@ public class Grava.DefaultLayout : Grava.Layout
 		}
 	}
 
-	public weak Node? get_parent(weak Node node)
+	public weak Node? get_parent(Node node)
 	{
 		foreach(weak Edge edge in graph.edges) {
 			if (edge.dest == node)

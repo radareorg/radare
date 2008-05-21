@@ -45,12 +45,12 @@ public class Grava.Node : GLib.Object
 		selected = false;
 	}
 
-	public void set (weak string key, weak string val)
+	public void set (string key, string val)
 	{
 		data.insert (key, val);
 	}
 
-	public string get (weak string key)
+	public string get (string key)
 	{
 		return data.lookup(key);
 	}
@@ -67,7 +67,7 @@ public class Grava.Node : GLib.Object
 		xrefs.append(str);
 	}
 
-	public bool overlaps(weak Node n)
+	public bool overlaps(Node n)
 	{
 		return (n.x >= x && n.x <= x+w && n.y <= y && n.y <= y+h);
 	}

@@ -20,5 +20,5 @@ using GLib;
 
 public abstract class Grava.Layout : Object
 {
-	public virtual void run(weak Graph graph) {}
+	public virtual void run(Graph graph) {}
 }
