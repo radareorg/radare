@@ -8,9 +8,7 @@ FILES+=syms-flag syms-xrefs elf-trace write xtrace ffftoneg core gtkdialog
 FILES+=bin2tab tab2asm tab2gml move bytediff Display net-tcp net-udp net-icmp
 FILES+=strings-flag syms-pe-flag flag gokolu bin2xml search-asm strings-flag
 FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
-##DEBUGGER##
-FILES+=radaredbg
-##DEBUGGER##
+FILES+=boomerang radaredbg
 
 all:
 	@echo nothing here

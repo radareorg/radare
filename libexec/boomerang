@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Usage: !rsc boomerang $FILE $XOFFSET
+#
+# author: pancake <@youterm.com>
+#
+
+FILE=$1
+XOFFSET=$2
+VERBOSE=$4
+
+if [ -z "$XOFFSET" ]; then
+	echo "Usage: rsc boomerang [file] [offset]"
+	exit 1
+fi
+
+DIR=.boomerang-output
+mkdir -p ${DIR}
+rm -rf ${DIR}/*
+
+if [ -n "${VERBOSE}" ]; then
+	boomerang -o ${DIR} -E $XOFFSET $FILE
+	less -r ${DIR}/*/*.c
+else
+	boomerang -o ${DIR} -E $XOFFSET $FILE 2>&1 > /dev/null
+	cat ${DIR}/*/*.c
+fi
+
+rm -rf ${DIR}

@@ -60,8 +60,13 @@ void prepare_environment(char *line)
 
 	setenv("ARCH",   config_get("asm.arch"), 1);
 	setenv("NASM",   "1",      1);
+
 	sprintf(offset,  OFF_FMTd, (u64)config.seek);
 	setenv("OFFSET", offset,   1);
+
+	sprintf(offset,  "0x"OFF_FMTx, (u64)config.seek);
+	setenv("XOFFSET", offset,   1);
+
 	if (config.cursor_mode)
 		sprintf(offset,  OFF_FMTd, (u64)config.seek+config.cursor);
 	setenv("CURSOR", offset,   1);
