@@ -29,6 +29,8 @@
 #include "libiberty.h"
 #include "opintl.h"
 
+#define xmalloc malloc
+
 /* Bitmask of v9 architectures.  */
 #define MASK_V9 ((1 << SPARC_OPCODE_ARCH_V9) \
 		 | (1 << SPARC_OPCODE_ARCH_V9A) \

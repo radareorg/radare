@@ -1,6 +1,6 @@
 include ../../config.mk
 
-all: rabin
+all: rabin${BINSFX}
 
 rabin${BINSFX}: rabin.o
 	${CC} rabin.o ${DL_LIBS} -o rabin${BINSFX}

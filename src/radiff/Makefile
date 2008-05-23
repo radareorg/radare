@@ -1,9 +1,9 @@
 include ../../config.mk
 
-OBJ=radiff.o ../rdb.o ../utils.o ../hasher/crc16.o rdbdiff.o
-BIN=radiff
+OBJ=radiff.o ../rdb.o ../utils.o ../w32utils.o ../hasher/crc16.o rdbdiff.o
+BIN=radiff${BINSFX}
 CC?=gcc
-OBJ_RDB=rdbdiff_main.o rdbdiff.o ../rdb.o ../utils.o ../hasher/crc16.o
+OBJ_RDB=rdbdiff_main.o rdbdiff.o ../rdb.o ../utils.o ../w32utils.o ../hasher/crc16.o
 CFLAGS+=-I..
 
 
@@ -14,7 +14,7 @@ _pre:
 	-rm -f ../utils.o
 
 _bdiff:
-	cd bdiff && ${MAKE} all
+	-cd bdiff && ${MAKE} all
 
 rdbdiff${BINSFX}: ${OBJ_RDB}
 	${CC} ${LDFLAGS} -g ${OBJ_RDB} -o rdbdiff${BINSFX}
