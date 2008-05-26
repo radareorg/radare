@@ -1,6 +1,7 @@
-VPATH=./.
-ROOT?=/
 include config.mk
+
+ROOT?=/
+VERSION=@VERSION@
 
 VPATH=${ROOT}@VPATH@
 BINDIR=${ROOT}@BINDIR@
@@ -8,11 +9,6 @@ DATADIR=${ROOT}@DATADIR@
 MANDIR=${ROOT}@MANDIR@
 LIBDIR=${ROOT}@LIBDIR@
 LIBEXECDIR=${ROOT}@LIBEXECDIR@
-VERSION=@VERSION@
-INSTALL_DIR=@INSTALL_DIR@
-INSTALL_PROGRAM=@INSTALL_PROGRAM@
-INSTALL_LIB=@INSTALL_LIB@
-INSTALL_DATA=@INSTALL_DATA@
 INSTALL_MAN=@INSTALL_MAN@
 INSTALL_SCRIPT=@INSTALL_SCRIPT@
 
@@ -107,7 +103,8 @@ install:
 	mkdir -p ${LIBDIR}
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
-	-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
+	cd src/plug/hack/ && ${MAKE} install
+	#-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
 	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
