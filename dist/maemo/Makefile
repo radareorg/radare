@@ -55,5 +55,7 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp -rf ${PRG}/magic/* $@/usr/share/radare/magic/
 	-cp -rf ${PRG}/doc/* $@/usr/share/doc/radare/
 	-chmod +x $@/usr/bin/*
+	mkdir -p $@/usr/share/applications/hildon/
+	-cp ${PRG}/gui/gradare.desktop $@/usr/share/applications/hildon/
 
 include deb_hand.mak
