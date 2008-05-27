@@ -441,11 +441,13 @@ int main(int argc, char **argv, char **envp)
 	chos = gradare_sidebar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), chos, FALSE, FALSE, 0);
 
-	hpan = gtk_hpaned_new();
+	//hpan = gtk_hpaned_new();
+	hpan = gtk_hbox_new(FALSE, 3);
 	gtk_container_add(GTK_CONTAINER(vbox), hpan);
 
 	acti = gradare_actions_new();
-	gtk_paned_pack1(GTK_PANED(hpan), acti, TRUE, TRUE);
+	//gtk_paned_pack1(GTK_PANED(hpan), acti, TRUE, TRUE);
+	gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
 
 	term = vte_terminal_new();
 	//vte_terminal_set_background_transparent(term, TRUE);
@@ -461,7 +463,8 @@ int main(int argc, char **argv, char **envp)
                 G_CALLBACK (popup_context_menu), NULL);
 
 
-	gtk_paned_pack2(GTK_PANED(hpan), term, TRUE, TRUE);
+	//gtk_paned_pack2(GTK_PANED(hpan), term, TRUE, TRUE);
+	gtk_container_add(GTK_HBOX(hpan),term); //, term, TRUE, TRUE);
 	gtk_widget_show_all(GTK_WIDGET(w));
 
 	setenv("BEP", "entry", 1); // force debugger to stop at entry point
