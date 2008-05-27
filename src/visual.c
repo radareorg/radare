@@ -756,6 +756,7 @@ void visual_draw_screen()
 	const char *ptr;
 	char buf[256];
 
+
 	/* printage */
 	switch (last_print_format) {
 	case FMT_HEXB:
@@ -785,6 +786,9 @@ void visual_draw_screen()
 		if (off != 0)
 		radare_seek(off, SEEK_SET);
 	}
+
+	monitors_run();
+
 #if __WINDOWS__
 	gotoxy(0,0);
 #else

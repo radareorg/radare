@@ -10,7 +10,6 @@
 
 0.9.7:
 ======
- * add support for HTML cons output :D
  * flag str_
  * 'w' in cursor mode with range selected must fill the buffer
  * !signal segfaults

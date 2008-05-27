@@ -71,7 +71,8 @@ void debug_dumpcore()
 int debug_syms()
 {
 	// XXX: native implementation
-	return radare_cmd(".!!rsc syms-dbg-flag ${FILE}", 0);
+	//setenv("FILE", "", 1);
+	return radare_cmd(".!rsc syms-dbg-flag ${FILE}", 0);
 }
 
 // TODO : helper

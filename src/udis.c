@@ -447,6 +447,7 @@ void udis_arch(int arch, int len, int rows)
 	unsigned char b[32];
 	char buf[1024];
 	const char *follow, *cmd_asm;
+	int rrows = rows;
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
 	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline;
@@ -474,8 +475,8 @@ void udis_arch(int arch, int len, int rows)
 	delta = 0;
 	inc = 0;
 
-	if (rows<1)
-		rows = config.height + config.lines;
+	if (config.visual && rows<1)
+		rows = config.height - 11 - config.lines;
 
 	switch(arch) {
 	case ARCH_X86:
@@ -504,7 +505,7 @@ void udis_arch(int arch, int len, int rows)
 	radare_controlc();
 
 	while (!config.interrupted) {
-		if (rows-- == 0) break;
+		if (rrows && rrows-- == 0) break;
 		if (bytes>=config.block_size)
 			break;
 		seek = config.baddr +config.seek+bytes;
@@ -825,13 +826,16 @@ void udis_arch(int arch, int len, int rows)
 					cons_printf(" ; %s",buf);
 			}
 
-			if (aop.jump) {
+			if (show_comments && aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
 					if (string_flag_offset(buf, aop.jump))
-					cons_printf("   [%d] %s", jump_n,buf);
-					else
-					cons_printf("   [%d] 0x%08llx", jump_n, aop.jump);
+						cons_printf("  ; %d = %s", jump_n,buf);
+					else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
+				} else {
+					if (string_flag_offset(buf, aop.jump))
+						cons_printf("  ; %s", buf);
+					else cons_printf("  ; 0x%08llx", aop.jump);
 				}
 			}
 

@@ -207,8 +207,8 @@ plugin_t *plugin_registry(const char *file)
 		//return NULL;
 		} break;
 	default:
-		eprintf("Unknown plugin type '%d'\n", (int)p);
-		if (((int)p) ==PLUGIN_TYPE_GUI)
+		//eprintf("Unknown plugin type '%d'\n", (int)p);
+		if (((int)p) == PLUGIN_TYPE_GUI)
 			eprintf("You need GUI to run this plugin. Sorry\n");
 		return NULL;
 	}

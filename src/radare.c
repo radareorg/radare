@@ -580,12 +580,14 @@ int radare_cmd(char *command, int log)
 		config_set("cfg.verbose", "true");
 		config.verbose=1;
 		/* TODO: chose pd or pD by eval */
+		radare_cmd("pD", 0);
+#if 0
 		if (config.visual) {
 			config.lines=-12;
 			radare_cmd("pD", 0);
 			config.lines = 0;
-		} else	radare_cmd("pD 50", 0);
 		//radare_cmd("pd 100", 0);
+#endif
 
 		config_set("cfg.verbose", "1");
 		last_print_format = p;
@@ -713,15 +715,9 @@ void radare_move(char *arg)
 
 void radare_prompt_command()
 {
-	DIR *dir;
-	char path[1024];
-	int i;
-	FILE *fd;
-	char file[1024];
 	const char *ptr;
 	char* aux;
 	int tmp; /* preserve print format */
-	struct dirent *de;
 
 	if (config_get("cfg.vbsze_enabled")) {
 		struct list_head *pos;
@@ -753,6 +749,20 @@ void radare_prompt_command()
 
 	if (config.debug)
 		radare_cmd(".!regs*", 0);
+
+	monitors_run();
+}
+
+void monitors_run()
+{
+	char file[1024];
+	char path[1024];
+	int i;
+	FILE *fd;
+	char *ptr;
+	int tmp;
+	struct dirent *de;
+	DIR *dir;
 
 	/* run the commands found in the monitor path directory */
 	*path='\0';

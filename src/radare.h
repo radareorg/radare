@@ -122,6 +122,7 @@ void metadata_comment_init(int new);
 #define uchar unsigned char
 extern int fixed_width;
 extern int inc;
+void monitors_run();
 void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size);
 void radare_init();
 int radare_go();

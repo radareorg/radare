@@ -276,7 +276,7 @@ int cons_html_print(unsigned char *ptr)
 		if (esc == 2) {
 			if (ptr[0]=='2'&&ptr[1]=='J') {
 				ptr = ptr +1;
-				cons_clear();
+				printf("<hr />\n"); fflush(stdout);
 				esc = 0;
 				str = ptr;
 				continue;

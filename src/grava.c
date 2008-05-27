@@ -72,6 +72,7 @@ void core_load_graph_at(void *obj, const char *str)
 			off = addr; //radare_seek(addr, SEEK_SET);
 	}
 #endif
+	monitors_run();
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
