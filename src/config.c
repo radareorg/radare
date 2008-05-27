@@ -665,6 +665,7 @@ void config_init()
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
+	config_set("scr.html", "false");
 	config_set_i("scr.accel", 0);
 	node = config_set("scr.palette", cons_palette_default);
 	node->callback = &config_palette_callback;

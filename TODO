@@ -8,8 +8,15 @@
 ===========================================================
 
 
-0.9.6:
+0.9.7:
 ======
+ * add support for HTML cons output :D
+ * flag str_
+ * 'w' in cursor mode with range selected must fill the buffer
+ * !signal segfaults
+ * !fd really works? :/
+ * number keybindings doest works
+ * remove comments doesnt works properly
  * Add -d to gradare also
  * Add script editor window for lua and radare
  * in graph redraw we must execute stuff for monitors

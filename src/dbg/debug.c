@@ -1393,7 +1393,7 @@ int debug_mp(char *str)
 	addr = get_math(buf2);
 	size = get_math(buf3);
 
-	if (addr == 0 || size == 0) {
+	if (size == 0) {
 		printf("Invalid arguments\n");
 		return 1;
 	}

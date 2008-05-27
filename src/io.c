@@ -199,7 +199,7 @@ void radare_poke(const char *arg)
 	free(buf);
 }
 
-void radare_dump(char *arg, int size)
+int radare_dump(char *arg, int size)
 {
 	int fd;
 	u64 ret = 0;
@@ -207,21 +207,22 @@ void radare_dump(char *arg, int size)
 	if (arg[0]=='\0') {
 		eprintf("Usage: dump [filename]\n");
 	} else {
-		fd = open(arg, O_CREAT|O_WRONLY|O_TRUNC, 0600);
+		fd = open(arg, O_CREAT|O_WRONLY|O_TRUNC, 0644);
 		if (fd < 0) {
 			eprintf("Cannot open for write '%s'\n", arg);
-			return;
+			return 0;
 		}
 
 		if ((ret = radare_read(0)) < 0) {
 			eprintf("Error reading: %s\n", strerror(errno));
-			return;
+			return 0;
 		}
 
 		ret = io_write(fd, config.block, size);
 
 		io_close(fd);
 	}
+	return 1;
 }
 
 u64 radare_seek(u64 offset, int whence)

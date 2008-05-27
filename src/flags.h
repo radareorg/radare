@@ -29,7 +29,7 @@ flag_t *flag_get_next();
 flag_t *flag_get_reset();
 int flags_between(u64 from, u64 to);
 int flag_is_empty(flag_t *flag);
-char *flag_name_by_offset(u64 offset);
+const char *flag_name_by_offset(u64 offset);
 int flag_set(const char *name, u64 addr, int dup);
 void print_flag_offset(u64 seek);
 void flags_setenv();

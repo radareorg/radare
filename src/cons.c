@@ -243,6 +243,112 @@ void cons_clear(void)
 #endif
 }
 
+int cons_html_print(unsigned char *ptr)
+{
+	int esc = 0;
+	unsigned char *str = ptr;
+	int len = 0;
+	int inv = 0;
+	int color = 0;
+
+	for (;ptr[0]; ptr = ptr + 1) {
+		if (ptr[0] == '\n') {
+			printf("<br />");
+			fflush(stdout);
+		}
+		if (ptr[0] == 0x1b) {
+			esc = 1;
+			write(1, str, ptr-str);
+			str = ptr + 1;
+			continue;
+		}
+		if (esc == 1) {
+			// \e[2J
+			if (ptr[0] != '[') {
+				eprintf("Oops invalid escape char\n");
+				esc = 0;
+				str = ptr + 1;
+				continue;
+			}
+			esc = 2;
+			continue;
+		} else 
+		if (esc == 2) {
+			if (ptr[0]=='2'&&ptr[1]=='J') {
+				ptr = ptr +1;
+				cons_clear();
+				esc = 0;
+				str = ptr;
+				continue;
+			} else
+			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
+				ptr = ptr + 4;
+				gotoxy(0,0);
+				esc = 0;
+				str = ptr;
+				continue;
+			} else
+			if (ptr[0]=='0'&&ptr[1]=='m') {
+				ptr = ptr + 1;
+				str = ptr + 1;
+				inv = 0;
+				esc = 0;
+				continue;
+				// reset color
+			} else
+			if (ptr[0]=='7'&&ptr[1]=='m') {
+				inv = 128;
+				ptr = ptr + 1;
+				str = ptr + 1;
+				esc = 0;
+				continue;
+				// reset color
+			} else
+			if (ptr[0]=='3' && ptr[2]=='m') {
+				color = 1;
+				switch(ptr[1]) {
+				case '0': // BLACK
+					printf("<font color=black>"); fflush(stdout);
+					break;
+				case '1': // RED
+					printf("<font color=red>"); fflush(stdout);
+					break;
+				case '2': // GREEN
+					printf("<font color=green>"); fflush(stdout);
+					break;
+				case '3': // YELLOW
+					printf("<font color=yellow>"); fflush(stdout);
+					break;
+				case '4': // BLUE
+					printf("<font color=blue>"); fflush(stdout);
+					break;
+				case '5': // MAGENTA
+					printf("<font color=magenta>"); fflush(stdout);
+					break;
+				case '6': // TURQOISE
+					printf("<font color=#0ae>"); fflush(stdout);
+					break;
+				case '7': // WHITE
+					printf("<font color=white>"); fflush(stdout);
+					break;
+				case '8': // GRAY
+					printf("<font color=#777>"); fflush(stdout);
+					break;
+				case '9': // ???
+					break;
+				}
+				ptr = ptr + 1;
+				str = ptr + 2;
+				esc = 0;
+				continue;
+			}
+		} 
+		len++;
+	}
+	write(1, str, ptr-str);
+	return len;
+}
+
 #if __WINDOWS__
 int cons_w32_print(unsigned char *ptr)
 {
@@ -432,7 +538,7 @@ char *cons_get_buffer()
 	return cons_buffer;
 }
 
-void palloc(int moar)
+inline void palloc(int moar)
 {
 	if (cons_buffer == NULL) {
 		cons_buffer_len = moar+1024;
@@ -477,7 +583,10 @@ void cons_flush()
 			cons_w32_print(cons_buffer);
 		else
 #endif
-		write(_print_fd, cons_buffer, strlen(cons_buffer));
+		if (config_get("scr.html"))
+			cons_html_print(cons_buffer);
+		else
+			write(_print_fd, cons_buffer, strlen(cons_buffer));
 		cons_buffer[0] = '\0';
 	}
 }
@@ -520,7 +629,10 @@ void cons_printf(const char *format, ...)
 
 void cons_newline()
 {
-	cons_printf("\n");
+	if (config_get("scr.html"))
+		cons_printf("<br />");
+	else
+		cons_printf("\n");
 #if RADARE_CORE
 	if (!config.buf)
 		cons_flush();

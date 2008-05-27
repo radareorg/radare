@@ -250,16 +250,17 @@ void flags_setenv()
 #endif
 }
 
-char *flag_name_by_offset(u64 offset)
+const char *flag_name_by_offset(u64 offset)
 {
 	struct list_head *pos;
 
 	list_for_each(pos, &flags) {
-		if (config.interrupted) break;
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == offset)
 			return flag->name;
+		if (config.interrupted) break;
 	}
+
 	return nullstr;
 }
 

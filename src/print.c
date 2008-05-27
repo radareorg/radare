@@ -44,7 +44,8 @@ format_info_t formats[] = {
 	{ 'c', FMT_CSTR,       "C format",               "N bytes",    "entire block" },
 	{ 'C', FMT_CODE,       "Code Analysis",          "N bytes",    "entire block" },
 	{ 'h', FMT_SHORT,      "short",                 "2 bytes",     "(endian)"},
-	{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" }, // removed or renamed! XXX doesn works without file.wmode
+	//{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" }, // removed or renamed! XXX doesn works without file.wmode
+	{ 'd', FMT_DISAS,      "disassembly N opcodes",  "bsize bytes", "entire block" },
 	{ 'D', FMT_UDIS,       "asm.arch disassembler",   "bsize bytes", "entire block" },
 	{ 'f', FMT_FLOAT,      "float",                 "4 bytes",     "(endian)"},
 	{ 'F', FMT_TIME_FTIME, "windows filetime",      "8 bytes",     "(endian)"},
@@ -489,7 +490,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		D {} else cons_printf("\n");
 		break;
 	case FMT_DISAS:
-		radare_dump_and_process( DUMP_DISASM, len);
+		udis_arch(0, config.block_size, len);
+		//radare_dump_and_process( DUMP_DISASM, len);
 		break;
 	case FMT_CODE: {
 		char cmd[1024];

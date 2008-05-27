@@ -318,22 +318,21 @@ static int metadata_print(int delta)
 	int show_flagsline = (int)config_get("asm.flagsline");
 	u64 offset = (u64)config.seek + (u64)delta;
 	int lines = 0;
-	char *ptr;
+	const char *ptr;
 	int i;
 
 	// config.baddr everywhere???
 	D {} else return 0;
-	if (show_flagsline) {
+	if (config_get("asm.flags") && show_flagsline) {
 		ptr = flag_name_by_offset( offset );
-		if (ptr[0]) {
+		if (ptr && ptr[0]) {
 			if (show_lines&&reflines)
 				code_lines_print(reflines, config.baddr+config.seek+i, 1);
 			C
 				cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
 					config.baddr+offset, ptr);
 			else
-				cons_printf(OFF_FMTs" %s:\n",
-					config.baddr+offset, ptr);
+				cons_printf(OFF_FMTs" %s:\n", config.baddr+offset, ptr);
 			lines++;
 		}
 	}
@@ -446,9 +445,11 @@ void udis_arch(int arch, int len, int rows)
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
+	char buf[1024];
 	const char *follow, *cmd_asm;
 	int endian;
-	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,show_traces,show_nbytes, show_flags, show_reladdr;
+	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
+	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline;
 	int folder = 0; // folder level
 
 	cmd_asm       = config_get("cmd.asm");
@@ -457,6 +458,7 @@ void udis_arch(int arch, int len, int rows)
 	show_offset   = (int) config_get("asm.offset");
 	show_splits   = (int) config_get("asm.split");
 	show_flags    = (int) config_get("asm.flags");
+	show_flagsline= (int) config_get("asm.flagsline");
 	show_lines    = (int) config_get("asm.lines");
 	show_reladdr  = (int) config_get("asm.reladdr");
 	show_traces   = (int) config_get("asm.trace");
@@ -502,6 +504,7 @@ void udis_arch(int arch, int len, int rows)
 	radare_controlc();
 
 	while (!config.interrupted) {
+		if (rows-- == 0) break;
 		if (bytes>=config.block_size)
 			break;
 		seek = config.baddr +config.seek+bytes;
@@ -509,6 +512,7 @@ void udis_arch(int arch, int len, int rows)
 
 		if (show_comments)
 			lines+=metadata_print(bytes);
+
 		/* is this data? */
 		idata = data_count(seek);
 		if (idata>0) {
@@ -670,11 +674,12 @@ void udis_arch(int arch, int len, int rows)
 			if (show_traces)
 				cons_printf("%02d %02d ", trace_count(seek), trace_times(seek));
 
-			if (show_flags) {
+			if (show_flags && !show_flagsline) {
 				char buf[1024];
-				char *flag = flag_name_by_offset(seek);
-				sprintf(buf, "%%%ds:", show_nbytes);
+				const char *flag = flag_name_by_offset(
+					config.baddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
+					sprintf(buf, "%%%ds:", show_nbytes);
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
 						NEWLINE;
@@ -697,6 +702,7 @@ void udis_arch(int arch, int len, int rows)
 					cons_printf(buf,"");
 				}
 			}
+
 			/* cursor and bytes */
 			if (is_cursor(bytes, myinc)) {
 				cons_printf("*");
@@ -815,7 +821,6 @@ void udis_arch(int arch, int len, int rows)
 			}
 			C cons_printf(C_RESET);
 			if (aop.ref) {
-				char buf[1024];
 				if (string_flag_offset(buf, aop.ref))
 					cons_printf(" ; %s",buf);
 			}
@@ -823,9 +828,10 @@ void udis_arch(int arch, int len, int rows)
 			if (aop.jump) {
 				if (++jump_n<10) {
 					jumps[jump_n-1] = aop.jump;
-					if (arch == ARCH_X86)
-						cons_printf("   [%d]", jump_n);
-					else cons_printf("   [%d] -> 0x%x", jump_n, (unsigned int)aop.jump);
+					if (string_flag_offset(buf, aop.jump))
+					cons_printf("   [%d] %s", jump_n,buf);
+					else
+					cons_printf("   [%d] 0x%08llx", jump_n, aop.jump);
 				}
 			}
 
