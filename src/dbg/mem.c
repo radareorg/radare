@@ -24,6 +24,8 @@
 #include "libps2fd.h"
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #if __UNIX__
 #include <sys/mman.h>

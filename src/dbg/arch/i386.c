@@ -610,14 +610,6 @@ int arch_call(char *arg)
 }
 
 
-#if __WINDOWS__
-int arch_print_fpregisters(int rad, const char *mask)
-{
-	eprintf("not work yet");		
-	return 0;
-}
-#else
-
 #if __linux__
 struct user_fxsr_struct {
         unsigned short  cwd;
@@ -642,8 +634,28 @@ struct user_fpxregs_struct regs __attribute__((aligned(16)));
 int arch_print_fpregisters(int rad, const char *mask)
 {
 	int i, ret = 0;
+#if __WINDOWS__
+	eprintf("Not yet supported for this OS\n");
+#endif
+
+#if __NetBSD__ || __FreeBSD__ || __OpenBSD__
+	struct fpreg fpregs;
+/*
+struct fpreg {
+	unsigned long	fpr_env[7];
+	unsigned char	fpr_acc[8][10];
+	unsigned long	fpr_ex_sw;
+	unsigned char	fpr_pad[64];
+};
+*/
+	ret = ptrace(PT_GETFPREGS, ps.tid, NULL, &fpregs);
+	for(i=0;i<sizeof (struct fpreg); i++)
+		cons_printf("%02x");
+	cons_newline();
+#endif
 
 #if __linux__
+	int i;
 	struct user_fxsr_struct regs ;
 	if (ps.opened == 0)
 		return 1;
@@ -671,7 +683,6 @@ int arch_print_fpregisters(int rad, const char *mask)
 	return ret;
 }
 
-#endif
 
 #if __linux__
 /* syscall-linux */

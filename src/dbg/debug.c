@@ -91,12 +91,16 @@ int getv()
 /// XXX use wait4 and get rusage here!!!
 pid_t debug_waitpid(int pid, int *status)
 {
+#if __FreeBSD__
+	return waitpid(pid, status, WUNTRACED);
+#else
 #ifdef __WCLONE
 	return waitpid(pid, status, __WALL | __WCLONE | WUNTRACED);
 #ifdef __WALL
 	return waitpid(pid, status, __WALL | WUNTRACED);
 #else
 	return waitpid(pid, status, WUNTRACED);
+#endif
 #endif
 #endif
 	return -1;
@@ -548,7 +552,7 @@ u64 debug_alloc(char *args)
 			eprintf(":alloc can not alloc region!\n");
 			return -1;
 		}
-		printf("0x%08lx\n", (unsigned int)addr);
+		printf("0x%08x\n", (unsigned int)addr);
 	}
 
 	return addr;
@@ -705,7 +709,7 @@ int debug_loaduri(char *cmd)
 
 int debug_load()
 {
-	int ret;
+	int ret = 0;
 	char pids[128];
 
 	if (ps.pid!=0) {
@@ -1387,7 +1391,7 @@ int debug_mp(char *str)
 		cons_printf("  > !mp       - lists all memory protection changes\n");
 		cons_printf("  > !mp --- 0x8048100 4096\n");
 		cons_printf("  > !mp rwx 0x8048100 4096\n");
-		cons_printf("- addr and size are aligned to memory (-=%4).\n");
+		cons_printf("- addr and size are aligned to memory (-=%%4).\n");
 		return 0;
 	}
 
