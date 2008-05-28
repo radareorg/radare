@@ -68,6 +68,26 @@ void debug_dumpcore()
 #endif
 }
 
+#if 0
+// CPUID
+void get_cpuid(int op, int *a, int *b, int *c, int *d)
+{
+	__asm__ __volatile__(
+	"pushl %%ebx"
+	"cpuid\n"
+	"movl %%ebx, %%esi\n"
+	"popl %%ebx"
+	: "=a" (*a), "=S" (*b), "=c" (*c), "=d" (*d)
+	: "0" (op));
+}
+
+	get_cpuid (1, &eax, &ebx, &ecx)
+	if (edx & (1<<23)) // MMX
+	if (edx & (1<<25)) // SSE
+	if (edx & (1<<26)) // SSE2
+	if (ecx & (1))     // SSE3
+#endif
+
 int debug_syms()
 {
 	// XXX: native implementation
@@ -1985,7 +2005,6 @@ int debug_loop(char *addr_str)
 	debug_rm_bp_addr(ret_addr);
 
 	/* set pc */
-	//arch_set_pc(pc);
 	arch_jmp(pc);
 
 	return ret;

