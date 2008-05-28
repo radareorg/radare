@@ -431,7 +431,7 @@ void udis_jump(int n)
 /* -- disassemble -- */
 
 //#define CHECK_LINES printf("%d/%d\n",lines,rows); if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
-#define CHECK_LINES if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
+#define CHECK_LINES if ( config.visual && len!=config.block_size && (++lines>=rows) ) break;
 
 extern int color;
 void udis_arch(int arch, int len, int rows)
@@ -504,8 +504,9 @@ void udis_arch(int arch, int len, int rows)
 		reflines = code_lines_init();
 	radare_controlc();
 
+	if (rrows>0) rrows++;
 	while (!config.interrupted) {
-		if (rrows && rrows-- == 0) break;
+		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
 		seek = config.baddr +config.seek+bytes;

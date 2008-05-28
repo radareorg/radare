@@ -12,7 +12,6 @@
 ======
  * flag str_
  * 'w' in cursor mode with range selected must fill the buffer
- * !signal segfaults
  * !fd really works? :/
  * number keybindings doest works
  * remove comments doesnt works properly
