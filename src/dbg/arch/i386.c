@@ -641,9 +641,10 @@ struct user_fpxregs_struct regs __attribute__((aligned(16)));
 // NO RAD FOR FPREGS (only 32&64 bit vars, TODO: needs bsd port)
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	int i, ret = 0;
+	int ret = 0;
 
 #if __linux__
+	int i;
 	struct user_fxsr_struct regs ;
 	if (ps.opened == 0)
 		return 1;

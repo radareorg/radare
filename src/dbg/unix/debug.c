@@ -288,11 +288,15 @@ int debug_fork_and_attach()
 		/* dupped kill check */
 		debug_waitpid(-1, &wait_val);
 		if (WIFEXITED(wait_val)) {
+			perror("waitpid");
 			debug_exit();
 			return -1;
 		}
-		if (!is_alive(ps.pid))
+
+		if (!is_alive(ps.pid)) {
+			fprintf(stderr, "Oops the process is not alive?!?\n");
 			return -1;
+		}
 
 		/* restore breakpoints */
 		debug_reload_bps();
