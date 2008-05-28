@@ -220,7 +220,6 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (strnull(tmp))
 		return 0;
 
-	//tmp = strclean(tmp);
 
 	eof = strchr(tmp,'\n');
 	if (eof) {
@@ -232,6 +231,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	}
 
 	input = oinput = strdup(tmp);
+	input = strclean(input);
 
 	if (input[0] == ':') {
 		config.verbose = ((int)config_get("cfg.verbose"))^1;

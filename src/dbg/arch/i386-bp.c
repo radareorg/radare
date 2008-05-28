@@ -62,6 +62,40 @@ static int dr_set (int reg, unsigned long val)
 
 	return ret;
 }
+#elif __FreeBSD__
+
+static unsigned long dr_get (int reg)
+{
+	unsigned long val;
+	int ret;
+	struct dbreg dbr;
+
+  	ret = ptrace (PT_GETDBREGS, ps.tid, &dbr, sizeof(struct dbreg));
+
+	if (reg>=0 && reg<=7)
+		return dbr.dr[reg];
+
+	return 0;
+}
+
+static int dr_set (int reg, unsigned long val)
+{
+	int ret;
+	struct dbreg dbr;
+
+  	ret = ptrace (PT_GETDBREGS, ps.tid, &dbr, sizeof(struct dbreg));
+	if (ret == -1)
+		return -1;
+
+	if (reg>=0 && reg<=7)
+		dbr.dr[reg] = val;
+	else return -1;
+
+  	ret = ptrace (PT_SETDBREGS, ps.tid, &dbr, sizeof(struct dbreg));
+
+	return ret;
+}
+
 #elif __WINDOWS__
 
 inline static unsigned long dr_get(int reg)

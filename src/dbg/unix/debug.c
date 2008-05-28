@@ -159,16 +159,19 @@ int debug_init_maps(int rest)
 {
 	FILE *fd;
 	MAP_REG *mr;
-	char  path[1024];
-	char  region[100], perms[5], null[16];
+	char  path[1024], unkstr[1024];
+	char  region[100], region2[100], perms[5], null[16];
 	char  line[1024];
 	char  *pos_c;
-	int   i, unk = 0;
+	int   i, ign, unk = 0;
 
 	if(ps.map_regs_sz > 0)
 		free_regmaps(rest);
-
+#if __FreeBSD__
+	sprintf(path, "/proc/%d/map", ps.tid);
+#else
 	sprintf(path, "/proc/%d/maps", ps.tid);
+#endif
 	fd = fopen(path, "r");
 	if(!fd) {
 		perror("debug_init_maps");
@@ -176,18 +179,36 @@ int debug_init_maps(int rest)
 	}
 
 	while(!feof(fd)) {
+		line[0]='\0';
 		fgets(line, 1023, fd);
+		if (line[0]=='\0')
+			break;
 		path[0]='\0';
+		line[strlen(line)-1]='\0';
+#if __FreeBSD__
+	// 0x8070000 0x8072000 2 0 0xc1fde948 rw- 1 0 0x2180 COW NC vnode /usr/bin/gcc
+		sscanf(line, "%s %s %d %d 0x%s %3s %d %d",
+			&region[2], &region2[2], &ign, &ign, unkstr, perms, &ign, &ign);
+		pos_c = strchr(line, '/');
+		if (pos_c) strcpy(path, pos_c);
+		else path[0]='\0';
+#else
 		sscanf(line, "%s %s %s %s %s %s",
 			&region[2], perms,  null, null, null, path);
-		if (path[0]=='\0')
-			sprintf(path, "unk%d", unk++);
 
 		pos_c = strchr(&region[2], '-');
 		if(!pos_c)
 			continue;
 
-		*pos_c = (char)NULL;
+		pos_c[-1] = (char)'0';
+		pos_c[ 0] = (char)'x';
+		strcpy(region2, pos_c-1);
+#endif
+		region[0] = region2[0] = '0';
+		region[1] = region2[1] = 'x';
+
+		if (path[0]=='\0')
+			sprintf(path, "unk%d", unk++);
 
 		mr = malloc(sizeof(MAP_REG));
 		if(!mr) {
@@ -196,15 +217,8 @@ int debug_init_maps(int rest)
 			return -1;
 		}
 
-		region[0] = '0';
-		region[1] = 'x';
-
-		mr->ini = get_math(region);
-
-		pos_c[-1] = '0';
-		pos_c[0] = 'x';
-
-		mr->end = get_math(pos_c - 1);
+		mr->ini = get_offset(region);
+		mr->end = get_offset(region2);
 		mr->size = mr->end - mr->ini;
 		mr->bin = strdup(path);
 		mr->perms = 0;
@@ -538,6 +552,39 @@ inline int debug_getregs(pid_t pid, regs_t *reg)
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
 #else
 	return ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
+#endif
+}
+
+inline int debug_getxmmregs(pid_t pid, regs_t *reg)
+{
+#if 0
+/* FREEBSD */
+int cpu_ptrace(struct thread *td, int req, void *addr, int data)
+{
+
+	struct savexmm *fpstate;
+	int error;
+
+	if (!cpu_fxsr)
+		return (EINVAL);
+
+	fpstate = &td->td_pcb->pcb_save.sv_xmm;
+	switch (req) {
+	case PT_GETXMMREGS:
+		error = copyout(fpstate, addr, sizeof(*fpstate));
+		break;
+
+	case PT_SETXMMREGS:
+		error = copyin(addr, fpstate, sizeof(*fpstate));
+		fpstate->sv_env.en_mxcsr &= cpu_mxcsr_mask;
+		break;
+
+	default:
+		return (EINVAL);
+	}
+
+	return (error);
+}
 #endif
 }
 
