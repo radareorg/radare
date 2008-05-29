@@ -149,6 +149,9 @@ int debug_print_wait(char *act)
 				act, ps.tid, WS_SI(si_signo),
 				sig_to_name(WS_SI(si_signo)),
 				arch_pc());
+#if __mips__
+			debug_status();
+#endif
 		}
 	}
 	return 0;
@@ -256,7 +259,51 @@ int debug_os_init()
 
 int debug_status()
 {
+#if __mips__
+	int cause;
+	// XXX : is this ok?
+	radare_cmd(".!regs*",0);
+       	cause = get_offset("cause") & 0xff;
+	cons_printf("cause: (%d) ", cause);
+	switch(cause) {
+	case  0: cons_printf("external interrupt\n"); break;
+	case  4: cons_printf("address exception on load or instruction fetch\n"); break;
+	case  5: cons_printf("address exception on store\n"); break;
+	case  6: cons_printf("bus error on instruction fetch\n"); break;
+	case  7: cons_printf("bus error on data load\n"); break;
+	case  8: cons_printf("syscall exception\n"); break;
+	case  9: cons_printf("breakpoint exception\n"); break;
+	case 10: cons_printf("reserved instruction\n"); break;
+	case 12: cons_printf("arithmetic overflow\n"); break;
+	case 32: cons_printf("end of execution\n"); break;
+	default: cons_printf("unknown %d\n", (int)cause); break;
+	}
+	cons_printf("badvaddr: 0x%08llx (t0)\n", get_offset("t0"));
+	cons_printf("status:   0x%08llx (t4)\n", get_offset("t4"));
+	cons_printf("cause:    0x%08llx (t5)\n", get_offset("t5"));
+	cons_printf("excaddr:  0x%08llx (t6)\n", get_offset("t6"));
+#else
 	system("cat /proc/${DPID}/status");
+#endif
+
+	// TODO: run !status here ??? and move the following code to arch_specific one?
+	#if ARCH_MIPS
+	// r8  = badvaddr - memory address at which address exception ocurred (t0)
+	// r12 = status - interrupt mask and enable bits                      (t4)
+	// r13 = cause - exception type and pending itnerrupt bits            (t5)
+	// r14 = address of instruction that caused exception                 (t6)
+	// 
+	// CAUSE VALUE: (cause & 0xff)
+	// 0 : int - external interrupt
+	// 4 : addrl - address error exception (load or instruction fetch)
+	// 5 : addrs - address error exception (store)
+	// 6 : ibus - bus error on instruction fetch
+	// 7 : dbus - bus error on data load or store
+	// 8 : syscall - syscall exception
+	// 9 : bkpt - breakpoint exception
+	// 10: ri   - reserved instruction exception
+	// 12: ovf  - arithmetic overflow exception
+	#endif
 	return 0; //for warning message
 }
 
@@ -586,6 +633,7 @@ int cpu_ptrace(struct thread *td, int req, void *addr, int data)
 	return (error);
 }
 #endif
+	return 0;
 }
 
 inline int debug_setregs(pid_t pid, regs_t *reg)

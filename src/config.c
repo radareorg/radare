@@ -557,7 +557,11 @@ void config_init()
 	config_set("cmd.visual", "");
 	config_set("cmd.hit", "");
 	config_set("cmd.prompt", "");
+#if __mips__
+	config_set("cmd.vprompt", "!fpregs");
+#else
 	config_set("cmd.vprompt", "p%");
+#endif
 	config_set("cmd.bp", "");
 
 	config_set("search.flag", "true");

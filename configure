@@ -448,7 +448,7 @@ VAR=$1
 S="$"
 _REQUIRED=$3
 _CHKLIB_NAME=$2
-_CHKLIB_LIBS="`echo ${_CHKLIB_NAME} | awk -F + '{ for(i=1;i<=NF;i++) { str=str "-l" $i " " } print str; }'`"
+_CHKLIB_LIBS=$(echo "-l${_CHKLIB_NAME}" | sed 's,\+, -l,g')
 printf "checking for lib${_CHKLIB_NAME} ... "
 echo "main(){ }" > test.c
 eval ${S}${COMPILER} ${CFLAGS} ${LDFLAGS} ${_CHKLIB_LIBS} test.c >/dev/null 2>&1

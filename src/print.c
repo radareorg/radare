@@ -491,8 +491,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		D {} else cons_printf("\n");
 		break;
 	case FMT_DISAS:
-		udis_arch(0, config.block_size, len);
-		//radare_dump_and_process( DUMP_DISASM, len);
+		disassemble( config.block_size, len);
 		break;
 	case FMT_CODE: {
 		char cmd[1024];
