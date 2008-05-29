@@ -557,11 +557,7 @@ void config_init()
 	config_set("cmd.visual", "");
 	config_set("cmd.hit", "");
 	config_set("cmd.prompt", "");
-#if __mips__
-	config_set("cmd.vprompt", "!fpregs");
-#else
 	config_set("cmd.vprompt", "p%");
-#endif
 	config_set("cmd.bp", "");
 
 	config_set("search.flag", "true");
@@ -625,6 +621,11 @@ void config_init()
 	config_set("child.chroot", "/");
 	config_set("child.setuid", "");
 
+#if __mips__
+	config_set("dbg.fpregs", "true");
+#else
+	config_set("dbg.fpregs", "false");
+#endif
 	config_set("dbg.syms", "true");
 	config_set("dbg.dwarf", "true");
 	config_set("dbg.maps", "true");

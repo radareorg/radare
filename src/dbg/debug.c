@@ -24,6 +24,7 @@
 #define TRACE printf("%s:%d\n", __FILE__, __LINE__);
 
 #include "libps2fd.h"
+#include "arch/arch.h"
 #include "../radare.h"
 #include "../config.h"
 #include "../print.h"
@@ -278,7 +279,6 @@ void debug_reload_bps()
                                         	"set breakpoint SOFT at 0x%x\n",
 						 ps.bps[i].addr);
                         }
-
                         bps++;
                 }
         }

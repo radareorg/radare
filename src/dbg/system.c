@@ -168,13 +168,13 @@ static struct commads_t {
 	CB_CMD( "load"     , CB_NOARGS   , debug_load )         , 
 	CB_CMD( "unload"   , CB_NOARGS   , debug_unload )       , 
 	CB_CMD( "ret"      , CB_NOARGS   , arch_ret )           , 
-	CB_CMD( "jmp "     , CB_NORMAL   , arch_jmp )           , 
-	CB_CMD( "call "    , CB_NORMAL   , arch_call )          , 
+	CB_CMD( "jmp"      , CB_NORMAL   , debug_jmp )          , 
+	CB_CMD( "call"     , CB_NORMAL   , debug_call )         , 
 	CB_CMD( "info"     , CB_NORMAL   , debug_info )         , 
 	CB_CMD( "set"      , CB_NORMAL   , debug_set_register ) , 
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           , 
 	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           , 
-	CB_CMD( "inject "  , CB_NORMAL   , debug_inject )       , 
+	CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        , 
 	CB_CMD( "wtrace"   , CB_NOARGS   , debug_wtrace )       , 
 	CB_CMD( "signal"   , CB_SPACE    , debug_signal )       , 
@@ -229,4 +229,14 @@ int debug_system(const char *command)
 		eprintf("No program loaded.\n");
 
 	return -1;
+}
+
+int debug_jmp(const char *str)
+{
+	return arch_jmp(get_math(str));
+}
+
+int debug_call(const char *str)
+{
+	return arch_call(get_math(str));
 }

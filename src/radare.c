@@ -554,6 +554,12 @@ int radare_cmd(char *command, int log)
 			radare_cmd("!regs", 0);
 		}
 
+		if (config_get("dbg.fpregs")) {
+			C cons_printf(C_RED"Floating registers:\n"C_RESET);
+			else cons_printf("Floating registers:\n");
+			radare_cmd("!fpregs", 0);
+		}
+
 		//config.verbose = 1; //t;
 		config_set("cfg.verbose", "true");
 		if (config_get("dbg.bt")) {

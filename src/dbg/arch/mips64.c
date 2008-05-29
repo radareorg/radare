@@ -210,7 +210,12 @@ int arch_ret()
 
 int arch_jmp(u64 ptr)
 {
-	return ptrace(PTRACE_POKEUSER, ps.pid, PTRACE_PC, ptr);
+	//return ptrace(PTRACE_POKEUSER, ps.pid, PTRACE_PC, (unsigned int)ptr);
+	u8 buf[4096];
+	unsigned int ptr32 = (unsigned int )ptr;
+	int ret = ptrace(PTRACE_GETREGS, ps.tid, 0, &buf);
+	memcpy(buf+272, &ptr32, sizeof(ptr32));
+	return ptrace(PTRACE_SETREGS, ps.tid, 0, &buf);
 }
 
 u64 arch_pc()

@@ -38,7 +38,7 @@ addr_t arch_mmap(int fd, int size, addr_t addr);
 int arch_set_register(char *args, char *value);
 int arch_print_fpregisters(int rad, const char *mask);
 int arch_print_syscall();
-int arch_jmp(addr_t addr);
+int arch_jmp(u64 addr);
 int arch_is_stepoverable(const unsigned char *cmd);
 int arch_is_soft_stepoverable(const unsigned char *opcode);
 int arch_ret();
