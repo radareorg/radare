@@ -34,7 +34,7 @@ STR=`eval "echo ${S}$1"`
 SPLIT_CPU="`echo "$STR" | cut -d - -f 1`"
 SPLIT_OS="`echo "$STR" | cut -d - -f 3`"
 eval "$1_CPU=\"$SPLIT_CPU\""
-eval "$1_OS=\"$SPLIT_OS\""
+eval "$1_OS=\"$(echo $SPLIT_OS|tr '[A-Z]' '[a-z]')\""
 shift
 [ -z "$1" ] && break
 done
@@ -342,7 +342,7 @@ else
 fi
 export SOLARIS="0"
 export DARWIN="0"
-if [ "$HOST_OS" = "sunos" ]; then
+if [ "$HOST_OS" = "SunOS" ]; then
 export SOLARIS="1"; fi
 if [ "$HOST_OS" = "solaris" ]; then
 export SOLARIS="1"; fi

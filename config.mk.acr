@@ -34,6 +34,10 @@ BINSFX=.exe
 DL_LIBS=
 ##W32##
 
+##OSOLIBS##
+OSOLIBS=-lsocket -lnsl
+##OSOLIBS##
+
 ##SYSPROXY##
 CFLAGS+=-DSYSPROXY 
 SYSPROXY_OBJ+=sysproxy.o rpc.o syscall.S syscall-linux.o

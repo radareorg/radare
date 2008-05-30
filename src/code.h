@@ -3,6 +3,8 @@
 
 #include "main.h"
 
+extern struct list_head comments;
+
 // generic assembly opcode structure type
 enum {
 	AOP_TYPE_JMP,  // mandatory jump

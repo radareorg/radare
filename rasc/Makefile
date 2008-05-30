@@ -6,7 +6,7 @@ OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
 
 all: ${OBJ}
 	${E} 'Linking rasc'
-	${Q}${CC} -o rasc${BINSFX} ${OBJ}
+	${Q}${CC} -o rasc${BINSFX} ${OSOLIBS} ${LDFLAGS} ${OBJ}
 
 ${OBJ}: %.o: %.c
 	${E} 'Compiling $<'
