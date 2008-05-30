@@ -59,6 +59,36 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		unsigned long addr = dst-5;
 		unsigned char *ptr = (uchar *)&addr;
 
+		if (dst == 0) {
+			data[0] = '\xff';
+			if (!strcmp(arg, "eax"))
+				data[1]='\xd0';
+			else
+			if (!strcmp(arg, "ebx"))
+				data[1]='\xd3';
+			else
+			if (!strcmp(arg, "ecx"))
+				data[1]='\xd1';
+			else
+			if (!strcmp(arg, "edx"))
+				data[1]='\xd2';
+			else
+			if (!strcmp(arg, "esi"))
+				data[1]='\xd6';
+			else
+			if (!strcmp(arg, "edi"))
+				data[1]='\xd7';
+			else
+			if (!strcmp(arg, "ebp"))
+				data[1]='\xd5';
+			else
+			if (!strcmp(arg, "esp"))
+				data[1]='\xd4';
+			else
+				return 0; // invalid register name to push
+			return 2;
+		}
+
 		data[0] = '\xe8';
 		data[1] = ptr[0];
 		data[2] = ptr[1];
@@ -159,6 +189,36 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		off_t dst = get_math(arg);
 		unsigned long addr = dst;
 		unsigned char *ptr = (uchar *)&addr;
+
+		if (dst == 0) {
+			data[0] = '\xff';
+			if (!strcmp(arg, "eax"))
+				data[1]='\xe0';
+			else
+			if (!strcmp(arg, "ebx"))
+				data[1]='\xe3';
+			else
+			if (!strcmp(arg, "ecx"))
+				data[1]='\xe1';
+			else
+			if (!strcmp(arg, "edx"))
+				data[1]='\xe2';
+			else
+			if (!strcmp(arg, "esi"))
+				data[1]='\xe6';
+			else
+			if (!strcmp(arg, "edi"))
+				data[1]='\xe7';
+			else
+			if (!strcmp(arg, "ebp"))
+				data[1]='\xe5';
+			else
+			if (!strcmp(arg, "esp"))
+				data[1]='\xe4';
+			else
+				return 0; // invalid register name to push
+			return 2;
+		}
 
 		dst-=offset;
 
