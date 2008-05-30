@@ -98,7 +98,7 @@ void show_help_message()
 		cmdaux[0] = '\0';
 		printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
-	cons_printf(" ? <expr>          calc    math expr and show result in hex,oct,dec,bin\n");
+	cons_printf(" ? <expr>          calc     math expr and show result in hex,oct,dec,bin\n");
 }
 
 
@@ -113,35 +113,35 @@ int fixed_width = 0;
 	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
 
 command_t commands[] = {
-	COMMAND('b', " [blocksize]",   "bsize   change the block size", blocksize),
-	COMMAND('c', "[f file]|[hex]","compare compare block with given value", compare),
-	COMMAND('C', "[op] [arg]",         "Code related commands (comment, conversions, ..)", code),
-	COMMAND('e', "[m?] key=value",     "eval    evaluates a configuration expression", config_eval),
-	COMMAND('f', "[d|-][name]",    "flag    flag the current offset (f? for help)", flag),
-	COMMAND('H', " [cmd]",         "performs a hack", hack),
-	COMMAND('i', "",               "info    prints status information", info),
-	COMMAND('m', " [size] [dst]",  "move    copy size bytes from here to dst", move),
-	COMMAND('o', " [file]",        "open    open file", open),
-	COMMAND('p', "[fmt] [len]",    "print   print data block", print),
-	COMMAND('q', "",               "quit    close radare shell", quit),
-	COMMAND('P', "[so][i [file]]", "Project project Open, Save, Info", project),
-	COMMAND('r', " [size|-strip]", "resize  resize or query the file size", resize),
-	COMMAND('R', "[act] ([arg])",  "RDB     rdb operations", rdb),
-	COMMAND('s', " [[+,-]pos]",    "seek    seek to absolute/relative expression", seek),
-	COMMAND('u', "[!|?|u]",        "undo    undo seek (! = reset, ? = list, u = redo)", undoseek),
-	COMMAND('V', "",               "Visual  go visual mode", visual),
-	COMMAND('w', "[?aAdwxf] [str]", "write   write ascii/hexpair string here", write),
-	COMMAND('x', " [length]",      "examine the same as p/x", examine),
-	COMMAND('y', "[y] [length]",   "yank    copy n bytes from cursor to clipboard (yy=paste)", yank),
-	COMMAND('.', "[!cmd]|[ file]", "script  interpret a commands script", interpret),
-	COMMAND('-', "[size]",         "prev    go to previous block (-= block_size)", prev),
-	COMMAND('+', "[size]",         "next    go to next block (+= block_size)", next),
-	COMMAND('<', "",               "preva   go previous aligned block", prev_align),
-	COMMAND('>', "",               "nexta   go next aligned block", next_align),
-	COMMAND('/', "[?] [str]",      "search  find matching strings", search),
-	COMMAND('!', "[command]",      "system  execute a shell command", shell), 
-	COMMAND('#', "[hash|!lang]",   "hash    hash current block (#? or #!perl)", hash),
-	COMMAND('?', "",               "help    show the help message", help),
+	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
+	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given value", compare),
+	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
+	COMMAND('e', "[m?] key=value", "eval     evaluates a configuration expression", config_eval),
+	COMMAND('f', "[d|-][name]",    "flag     flag the current offset (f? for help)", flag),
+	COMMAND('H', " [cmd]",         "Hack     performs a hack", hack),
+	COMMAND('i', "",               "info     prints status information", info),
+	COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
+	COMMAND('o', " [file]",        "open     open file", open),
+	COMMAND('p', "[fmt] [len]",    "print    print data block", print),
+	COMMAND('q', "",               "quit     close radare shell", quit),
+	COMMAND('P', "[so][i [file]]", "Project  project Open, Save, Info", project),
+	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
+	COMMAND('R', "[act] ([arg])",  "RDB      rdb operations", rdb),
+	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
+	COMMAND('u', "[!|?|u]",        "undo     undo seek (! = reset, ? = list, u = redo)", undoseek),
+	COMMAND('V', "",               "Visual   go visual mode", visual),
+	COMMAND('w', "[?aAdwxf] [str]","write    write ascii/hexpair string here", write),
+	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
+	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
+	COMMAND('.', "[!cmd]|[ file]", "script   interpret a commands script", interpret),
+	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),
+	COMMAND('+', "[size]",         "next     go to next block (+= block_size)", next),
+	COMMAND('<', "",               "preva    go previous aligned block", prev_align),
+	COMMAND('>', "",               "nexta    go next aligned block", next_align),
+	COMMAND('/', "[?] [str]",      "search   find matching strings", search),
+	COMMAND('!', "[command]",      "system   execute a shell command", shell), 
+	COMMAND('#', "[hash|!lang]",   "hash     hash current block (#? or #!perl)", hash),
+	COMMAND('?', "",               "help     show the help message", help),
 	COMMAND( 0, NULL, NULL, default)
 };
 

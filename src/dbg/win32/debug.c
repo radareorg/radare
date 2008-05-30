@@ -58,6 +58,11 @@ static DWORD WINAPI (*win32_getprocessid)(HANDLE); // XP
 static int single_step;
 static int exit_wait;
 
+int arch_print_syscall()
+{
+	/* dummy */
+}
+
 void debug_init_calls()
 {
 	HANDLE lib;

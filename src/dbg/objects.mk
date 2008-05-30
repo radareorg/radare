@@ -38,6 +38,7 @@ psOBJ+=dbg/mem.o dbg/wp.o dbg/unix/fd.o dbg/events.o
 #psOBJ+=dbg/unix/debug.o dbg/unix/fd.o dbg/unix/signal.o
 psOBJ+=dbg/unix/signal.o dbg/unix/debug.o
 psOBJ+=dbg/procs.o dbg/thread.o dbg/parser.o
+psOBJ+=dbg/unix/syscall.o
 endif
 
 endif

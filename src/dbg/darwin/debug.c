@@ -50,6 +50,11 @@ int debug_ktrace()
 {
 }
 
+int arch_print_syscall()
+{
+	/* dummy */
+}
+
 inline int debug_detach()
 {
 	ptrace(PT_DETACH, ps.tid, 0, 0);

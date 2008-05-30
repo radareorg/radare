@@ -29,8 +29,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/types.h>
-
+#include <time.h>
 #include <unistd.h>
+
 #if __WINDOWS__
 /* do nothing */
 #else
@@ -48,6 +49,12 @@
 #include "../../arch/x86/instcount.c"
 #include "../parser.h"
 #include "arch.h"
+
+int dislen(unsigned char* opcode0, int limit);
+unsigned long get_ret_sf(unsigned long top, unsigned long *ret_pos);
+static char oregs_timestamp[128];
+static regs_t oregs;
+static regs_t nregs;
 
 struct regs_off roff[] = {
 	{"eax", R_EAX_OFF},
@@ -316,7 +323,6 @@ int arch_dump_registers()
 	return 1;
 }
 
-int dislen(unsigned char* opcode0, int limit);
 int arch_opcode_size()
 {
 	return dislen(config.block, config.block_size);
@@ -541,29 +547,18 @@ int arch_backtrace()
 
 void dump_eflags(const int eflags)
 {
+#define EFL(x,y,z) eflags & (1 << x) ? y : z
     cons_printf("%c%c%c%c%c%c%c%c%c%c%c ",
-	   eflags & (1 <<  0) ? 'C' : 'c',
-	   eflags & (1 <<  2) ? 'P' : 'p',
-	   eflags & (1 <<  4) ? 'A' : 'a',
-	   eflags & (1 <<  6) ? 'Z' : 'z',
-	   eflags & (1 <<  7) ? 'S' : 's',
-	   eflags & (1 <<  8) ? 'T' : 't',
-	   eflags & (1 <<  9) ? 'I' : 'i',
-	   eflags & (1 << 10) ? 'D' : 'd',
-	   eflags & (1 << 11) ? 'O' : 'o',
-	   eflags & (1 << 16) ? 'R' : 'r',
-	   ((eflags >> 12) & 3) + '0');
+	EFL(0,'C','c'), EFL(2,'P','p'), EFL(4,'A','a'), 
+	EFL(6,'Z','z'), EFL(7,'S','s'), EFL(8,'T','t'),
+	EFL(9,'I','i'), EFL(10,'D','d'), EFL(11,'O','o'),
+	EFL(16,'R','r'), ((eflags >> 12) & 3) + '0');
+
+#define EF(x,y) eflags & (1 << x) ? y : ""
     cons_printf("(%s%s%s%s%s%s%s%s%s%s)\n",
-	   eflags & (1 <<  0) ? "C" : "",
-	   eflags & (1 <<  2) ? "P" : "",
-	   eflags & (1 <<  4) ? "A" : "",
-	   eflags & (1 <<  6) ? "Z" : "",
-	   eflags & (1 <<  7) ? "S" : "",
-	   eflags & (1 <<  8) ? "T" : "",
-	   eflags & (1 <<  9) ? "I" : "",
-	   eflags & (1 << 10) ? "D" : "",
-	   eflags & (1 << 11) ? "O" : "",
-	   eflags & (1 << 16) ? "R" : "");
+	EF(0,"C"), EF(2,"P"), EF(4,"A"), EF(6,"Z"),
+	EF(7,"S"), EF(8,"T"), EF(9,"I"), EF(10,"D"),
+	EF(11,"O"), EF(16,"R"));
 }
 
 int arch_ret()
@@ -674,231 +669,6 @@ int arch_print_fpregisters(int rad, const char *mask)
 
 #endif
 
-#if __linux__
-/* syscall-linux */
-struct syscall_t {
-  char *name;
-  int num;
-  int args;
-} syscalls_linux_x86[] = {
-  { "exit", 1, 1 },
-  { "fork", 2, 0 },
-  { "read", 3, 3 },
-  { "write", 4, 3 },
-  { "open", 5, 3 },
-  { "close", 6, 1 },
-  { "waitpid", 7, 3 },
-  { "creat", 8, 2 },
-  { "link", 9, 2 },
-  { "unlink", 10, 1 },
-  { "execve", 11, 3},
-  { "chdir", 12, 1},
-  { "getpid", 20, 0},
-  { "setuid", 23, 1},
-  { "getuid", 24, 0},
-  { "ptrace", 26, 4},
-  { "access", 33, 2},
-  { "dup", 41, 2},
-  { "brk", 45, 1},
-  { "signal", 48, 2},
-  { "utime", 30, 2 },
-  { "kill", 37,2 },
-  { "ioctl", 54, 3 },
-  { "mmap", 90, 6},
-  { "munmap", 91, 1},
-  { "socketcall", 102, 2 },
-  { "sigreturn", 119, 1 },
-  { "clone", 120, 4 },
-  { "mprotect", 125, 3},
-  { "rt_sigaction", 174, 3},
-  { "rt_sigprocmask", 175, 3},
-  { "sysctl", 149, 1 },
-  { "mmap2", 192, 6},
-  { "fstat64", 197, 2},
-  { "fcntl64", 221, 3},
-  { "gettid", 224, 0},
-  { "set_thread_area", 243, 2},
-  { "get_thread_area", 244, 2},
-  { "exit_group", 252, 1},
-  { NULL, 0, 0 }
-};
-#endif
-
-#if __NetBSD__
-/* syscall-netbsd */
-struct syscall_t {
-  char *name;
-  int num;
-  int args;
-} syscalls_netbsd_x86[] = {
-  { "syscall", 0, 4 },
-  { "exit", 1, 1 },
-  { "fork", 2, 0 },
-  { "read", 3, 3 },
-  { "write", 4, 3 },
-  { "open", 5, 3 },
-  { "close", 6, 1 },
-  { "wait4", 7, 3 },
-  { "compat_43_ocreat", 8, 2 },
-  { "link", 9, 2 },
-  { "unlink", 10, 1 },
-  //{ "execve", 11, 3},
-  { "chdir", 12, 1},
-  { "fchdir", 13, 1},
-  { "mknod", 14, 1},
-  { "chmod", 15, 1},
-  { "chown", 16, 1},
-  { "break", 17, 1},
-  { "getpid", 20, 0},
-  { "mount", 21, 0},
-  { "unmount", 22, 0},
-  { "setuid", 23, 1},
-  { "getuid", 24, 0},
-  { "ptrace", 26, 4},
-  { "recvmsg", 27, 4},
-  { "sendmsg", 28, 4},
-  { "recvfrom", 29, 4},
-  { "accept", 30, 4},
-  { "access", 33, 2},
-  { "dup", 41, 2},
-  { "ktrace", 45, 1},
-  { "signal", 48, 2},
-  { "utime", 30, 2 },
-  { "kill", 37,2 },
-  { "ioctl", 54, 3 },
-  { "mmap", 90, 6},
-  { "munmap", 91, 1},
-  { "socketcall", 102, 2 },
-  { "sigreturn", 119, 1 },
-  { "clone", 120, 4 },
-  { "mprotect", 125, 3},
-  { "rt_sigaction", 174, 3},
-  { "rt_sigprocmask", 175, 3},
-  { "sysctl", 149, 1 },
-  { "mmap2", 192, 6},
-  { "fstat64", 197, 2},
-  { "fcntl64", 221, 3},
-  { "gettid", 224, 0},
-  { "set_thread_area", 243, 2},
-  { "get_thread_area", 244, 2},
-  { "exit_group", 252, 1},
-  { NULL, 0, 0 }
-};
-#endif
-
-int arch_print_syscall()
-{
-#if __linux__ || __NetBSD__
-	int i,j,ret;
-	regs_t regs;
-	struct syscall_t *ptr = (struct syscall_t *) 
-#if __linux__
-	&syscalls_linux_x86;
-#endif
-#if __NetBSD__
-	&syscalls_netbsd_x86;
-#endif
-
-	ret = debug_getregs(ps.tid, &regs);
-	if (ret < 0) {
-		perror("getregs");
-		return -1;
-	}
-	cons_printf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
-
-	for(i=0;ptr[i].num;i++) {
-		if (R_OEAX(regs) == ptr[i].num) {
-			cons_printf("%s ( ", ptr[i].name);
-			j = ptr[i].args;
-			if (j>0) cons_printf("0x%08x ", R_EBX(regs));
-			if (j>1) cons_printf("0x%08x ", R_ECX(regs));
-			if (j>2) cons_printf("0x%08x ", R_EDX(regs));
-			if (j>3) cons_printf("0x%08x ", R_ESI(regs));
-			if (j>4) cons_printf("0x%08x ", R_EDI(regs));
-			break;
-		}
-	}
-	cons_printf(") = 0x%08x\n", R_EAX(regs));
-	return (int)R_OEAX(regs);
-#else
-	return -1;
-#endif
-}
-
-#include <time.h>
-void getHTTPDate(char *DATE)
-{
-#if __UNIX__
-#include <sys/utsname.h>
-	struct tm curt; /* current time */
-	time_t l;
-	char week_day[4], month[4];
-
-	l=time(0);
-	localtime_r(&l,&curt);
-
-	DATE[0]=0;
-	switch(curt.tm_wday)
-	{
-		case 0: strcpy(week_day, "Sun");
-			break;
-		case 1: strcpy(week_day, "Mon");
-			break;
-		case 2:	strcpy(week_day, "Tue");
-			break;
-		case 3:	strcpy(week_day, "Wed");
-			break;
-		case 4:	strcpy(week_day, "Thu");
-			break;
-		case 5:	strcpy(week_day, "Fri");
-			break;
-		case 6:	strcpy(week_day, "Sat");
-			break;
-		default: return;
-	}
-	
-	switch(curt.tm_mon)
-	{
-		case 0: strcpy(month, "Jan");
-			break;
-		case 1: strcpy(month, "Feb");
-			break;
-		case 2: strcpy(month, "Mar");
-			break;
-		case 3: strcpy(month, "Apr");
-			break;
-		case 4: strcpy(month, "May");
-			break;
-		case 5: strcpy(month, "Jun");
-			break;
-		case 6: strcpy(month, "Jul");
-			break;
-		case 7: strcpy(month, "Aug");
-			break;
-		case 8: strcpy(month, "Sep");
-			break;
-		case 9: strcpy(month, "Oct");
-			break;
-		case 10: strcpy(month, "Nov");
-			break;
-		case 11: strcpy(month, "Dec");
-			break;
-		default: return;
-	}
-	
-	sprintf(DATE, "%s, %02d %s %d %02d:%02d:%02d GMT", 
-			week_day, curt.tm_mday, month, 
-			curt.tm_year + 1900, curt.tm_hour, 
-			curt.tm_min, curt.tm_sec);
-#else
-	DATE[0]='\0';
-
-#endif
-}
-
-static char oregs_timestamp[128];
-static regs_t oregs;
-static regs_t nregs;
 
 int arch_print_registers(int rad, const char *mask)
 {
@@ -1600,7 +1370,6 @@ int arch_is_stepoverable(const unsigned char *cmd)
 	return arch_is_soft_stepoverable(cmd);
 }
 
-unsigned long get_ret_sf(unsigned long top, unsigned long *ret_pos);
 
 void next_sf(struct list_head *list, unsigned long esp)
 {

@@ -30,6 +30,7 @@ int arch_set_bp_soft(struct bp_t *bp, unsigned long addr);
 struct bp_t *arch_stopped_bp();
 int arch_backtrace();
 int arch_stackanal();
+int arch_print_syscall();
 addr_t arch_pc();
 addr_t arch_get_entrypoint();
 addr_t arch_get_sighandler(int signum);

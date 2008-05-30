@@ -28,6 +28,7 @@
 #include <signal.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <time.h>
 
 #if __UNIX__
 #include <termios.h>
@@ -384,6 +385,77 @@ void print_msdos_date(unsigned char _time[2], unsigned char _date[2])
         printf("%d-%02d-%02d %d:%d:%d",
                 year, month, day, hour, minutes, seconds);
 }
+
+void getHTTPDate(char *DATE)
+{
+#if __UNIX__
+#include <sys/utsname.h>
+	struct tm curt; /* current time */
+	time_t l;
+	char week_day[4], month[4];
+
+	l=time(0);
+	localtime_r(&l,&curt);
+
+	DATE[0]=0;
+	switch(curt.tm_wday)
+	{
+		case 0: strcpy(week_day, "Sun");
+			break;
+		case 1: strcpy(week_day, "Mon");
+			break;
+		case 2:	strcpy(week_day, "Tue");
+			break;
+		case 3:	strcpy(week_day, "Wed");
+			break;
+		case 4:	strcpy(week_day, "Thu");
+			break;
+		case 5:	strcpy(week_day, "Fri");
+			break;
+		case 6:	strcpy(week_day, "Sat");
+			break;
+		default: return;
+	}
+	
+	switch(curt.tm_mon)
+	{
+		case 0: strcpy(month, "Jan");
+			break;
+		case 1: strcpy(month, "Feb");
+			break;
+		case 2: strcpy(month, "Mar");
+			break;
+		case 3: strcpy(month, "Apr");
+			break;
+		case 4: strcpy(month, "May");
+			break;
+		case 5: strcpy(month, "Jun");
+			break;
+		case 6: strcpy(month, "Jul");
+			break;
+		case 7: strcpy(month, "Aug");
+			break;
+		case 8: strcpy(month, "Sep");
+			break;
+		case 9: strcpy(month, "Oct");
+			break;
+		case 10: strcpy(month, "Nov");
+			break;
+		case 11: strcpy(month, "Dec");
+			break;
+		default: return;
+	}
+	
+	sprintf(DATE, "%s, %02d %s %d %02d:%02d:%02d GMT", 
+			week_day, curt.tm_mday, month, 
+			curt.tm_year + 1900, curt.tm_hour, 
+			curt.tm_min, curt.tm_sec);
+#else
+	DATE[0]='\0';
+
+#endif
+}
+
 
 /* Returns 0 or 1 depending if the given character is safety printable */
 int is_printable (int c)
