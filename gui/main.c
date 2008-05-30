@@ -42,9 +42,11 @@ char *font = FONT;
 	GtkWindow *w = NULL;
 #endif
 
+// TODO: autodetect project files (rdb)
+
 void show_help_message()
 {
-	printf("Usage: gradare [-h] [-e command] [-f font] file\n");
+	printf("Usage: gradare [-h] [-e command] [-f font] [[-d pid|prg] | file]\n");
 	exit(1);
 }
 
@@ -384,8 +386,33 @@ int main(int argc, char **argv, char **envp)
 	GtkWidget *vbox;
 	GtkWidget *hpan;
 
-	while ((c = getopt(argc, argv, "e:hf:")) != -1) {
+	while ((c = getopt(argc, argv, "e:hf:d")) != -1) {
 		switch( c ) {
+		case 'd': {
+			// XXX : overflowable, must use strcatdup or stgh like that
+			int pid = atoi(argv[optind]);
+			char buf[4096];
+			char buf2[4096];
+			buf[0]='\0';
+
+			/* by process-id */
+			if (pid > 0) {
+				sprintf(buf2, "pid://%d", pid);
+				plugin_load();
+				return radare_go();
+			}
+
+			/* by program path */
+			for(c=optind;argv[c];c++) {
+				ps.argv[c-optind] = argv[c];
+				strcat(buf, argv[c]);
+				if (argv[c+1])
+					strcat(buf, " ");
+			}
+			sprintf(buf2, "dbg://%s", buf);
+			filename = strdup(buf2);
+			}
+			break;
 		case 'h':
 			show_help_message();
 			break;
@@ -398,7 +425,7 @@ int main(int argc, char **argv, char **envp)
 		}
 	}
 
-	if (optind<argc)
+	if (filename == NULL && optind<argc)
 		filename = argv[optind];
 
 	gtk_init(&argc, &argv);
@@ -478,7 +505,6 @@ int main(int argc, char **argv, char **envp)
 	if (filename) {
 		char *arg[6] = { "/usr/bin/radare", "-c", "-b", "1024", filename, NULL};
 		char str[1024];
-printf("FILE(%s)\n", filename);
 
 		vte_terminal_fork_command(
 			VTE_TERMINAL(term),

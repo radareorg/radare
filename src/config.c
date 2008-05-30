@@ -456,7 +456,7 @@ static int config_baddr_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (node && node->i_value)
+	if (node)
 		config.baddr = (u64)node->i_value;
 	return 1;
 }

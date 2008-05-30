@@ -52,6 +52,22 @@ struct reflines_t {
 	struct list_head list;
 };
 
+extern struct list_head data;
+struct data_t {
+	u64 from;
+	u64 to;
+	int type;
+	u64 size;
+	struct list_head *list;
+};
+
+extern struct list_head comments;
+struct comment_t {
+	u64 offset;
+	const char *comment;
+	struct list_head list;
+};
+
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_arm_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);

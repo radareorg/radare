@@ -86,3 +86,6 @@ Use the 'pR' command to see the source line related to the current seek
 Analyze socket connections with the socket plugin: $ radare socket://www.foo.com:80. Use 'w' to send data
 I like to suck nibbles and make hex
 I'm in your source securing your bits
+radare contributes to the One Byte Per Child fundation
+setup dbg.fpregs to true to visualize the fpu registers in the debugger view
+To debug a program you can do dbg://${path-to-program} or use -d ${path..}

@@ -97,15 +97,74 @@ command_t keystrokes[] = {
 	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
+#if 0
 	COMMAND('w', 1, "write string", insert_string),
 	COMMAND('W', 1, "write hex string", insert_hexa_string),
 	//COMMAND('f', 0, "seek to flag", seek_to_flag),
 	COMMAND('%', 0, "show radare environment", show_environ),
+#endif
 	/* debugger */
         COMMAND('s', 0, "step into the debugger", step_in_dbg),
         COMMAND('S', 0, "step over the debugger", stepo_in_dbg),
 	COMMAND('\0',0, NULL, seek_to_flag)
 };
+
+
+#define TITLE if (config.color) cons_printf("\e[36m");
+#define TITLE_END if (config.color) cons_printf("\e[0m");
+
+void visual_show_help()
+{
+#warning TODO: use 0123456789 as % places of the file ? :D that looks cool, or predefined seekz
+	cons_strcat("\e[2J\e[0;0H\n");
+	TITLE
+	cons_printf("Visual keybindings:\n");
+	TITLE_END
+	cons_printf(
+	":          radare command (vi like)\n"
+	";          edit or add comment\n"
+	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
+	"g,G        seek to beggining or end of file\n"
+	"<>         seek block aligned (cursor mode = folder code)\n"
+	"+-*/       +1, -1, +width, -width -> block size\n"
+	"[]         decrease or increment the width limits\n"
+	"a,A,=      insert patch assembly, rsc asm or !hack\n"
+	"i          insert mode (use tab to switch btw hex and ascii)\n"
+	"f #        seek to search result 0-9\n"
+	"c          toggle cursor mode\n"
+	"C          toggle scr.color\n"
+	"d          convert cursor selected bytes to ascii, code or hex\n"
+//	"b[k][cmd]  binds key 'k' to the specified command\n"
+//	"D          delete current flag\n"
+	"m          applies rfile magic on this block\n" // ???
+	"I          invert block (same as pIx or so)\n"
+	"y,Y        yank and Yankee aliases for copy and paste\n"
+	"f,F        go next, previous flag (cursor mode to add/remove)\n"
+	"h,j,k,l    scroll view to left, down, up, right.\n"
+	"J,K        up down scroll one block.\n"
+	"H,L        scroll left, right by 2 bytes (16 bits).\n"
+	"p,P        switch between hex, bin and string formats\n"
+	"x          show xrefs of the current offset\n"
+	"q          exits visual mode\n");
+	if (config.debug) {
+	TITLE
+	cons_printf("\nDebugger keybindings:\n");
+	TITLE_END
+	cons_printf(
+	"!          show debugger commands help\n"
+	"F1         commands help\n"
+	"F2         set breakpoint (execute)\n"
+	"F3         set watchpoint (read)\n"
+	"F4         continue until here (!contuh)\n"
+	"F6         continue until syscall (!contsc)\n"
+	"F7         step in debugger user code (!step)\n"
+	"F8         step over in debugger (!stepo)\n"
+	"F9         continue execution (!cont)\n"
+	"F10        continue until user code (!contu)\n"
+	);
+	}
+	cons_flush();
+}
 
 struct binding {
 	unsigned char key;
@@ -609,62 +668,6 @@ int keystroke_run(unsigned char key) {
 		}
 
 	return 0;
-}
-
-#define TITLE if (config.color) cons_printf("\e[36m");
-#define TITLE_END if (config.color) cons_printf("\e[0m");
-
-void visual_show_help()
-{
-#warning TODO: use 0123456789 as % places of the file ? :D that looks cool, or predefined seekz
-	cons_strcat("\e[2J\e[0;0H\n");
-	TITLE
-	cons_printf("Visual keybindings:\n");
-	TITLE_END
-	cons_printf(
-	":          radare command (vi like)\n"
-	";          edit or add comment\n"
-	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
-	"g,G        seek to beggining or end of file\n"
-	"<>         seek block aligned\n"
-	"+-*/       +1, -1, +width, -width -> block size\n"
-	"[]         decrease or increment the width limits\n"
-	"a,A,=      insert patch assembly, rsc asm or !hack\n"
-	"w,W        insert string (w) or hexpair string (W)\n"
-	"f #        seek to search result 0-9\n"
-	"c          toggle cursor mode\n"
-	"C          toggle color\n"
-	"d          convert cursor selected bytes in data\n"
-//	"b[k][cmd]  binds key 'k' to the specified command\n"
-	"D          delete current flag\n"
-	"m          applies rfile magic on this block\n"
-	"I          invert block (same as pIx or so)\n"
-	"y,Y        yank and Yankee aliases for copy and paste\n"
-	"f,F        go next, previous flag\n"
-	"h,j,k,l    scroll view to left, down, up, right.\n"
-	"J,K        up down scroll one block.\n"
-	"H,L        scroll left, right by 2 bytes (16 bits).\n"
-	"p,P        switch between hex, bin and string formats\n"
-	"x          show xrefs of the current offset\n"
-	"q          exits visual mode\n");
-	if (config.debug) {
-	TITLE
-	cons_printf("\nDebugger keybindings:\n");
-	TITLE_END
-	cons_printf(
-	"!          show debugger commands help\n"
-	"F1         commands help\n"
-	"F2         set breakpoint (execute)\n"
-	"F3         set watchpoint (read)\n"
-	"F4         continue until here (!contuh)\n"
-	"F6         continue until syscall (!contsc)\n"
-	"F7         step in debugger user code (!step)\n"
-	"F8         step over in debugger (!stepo)\n"
-	"F9         continue execution (!cont)\n"
-	"F10        continue until user code (!contu)\n"
-	);
-	}
-	cons_flush();
 }
 
 // XXX Does not support Fx..is this ok?
@@ -1410,6 +1413,7 @@ CMD_DECL(visual)
 					cons_clear(); }
 			}
 			break;
+#if 0
 		case 'D':
 			name = flag_name_by_offset(config.seek);
 			if (name) {
@@ -1419,6 +1423,7 @@ CMD_DECL(visual)
 				flag_clear(name);
 			}
 			break;
+#endif
 		case '<':
 			// fold
 			if (config.cursor_mode) {
@@ -1433,8 +1438,13 @@ CMD_DECL(visual)
 					}
 				} else {
 					// create new closed folder containing selected bytes
-					data_add((u64)config.seek+config.cursor, DATA_FOLD_C);
-					data_set_len((u64)(config.seek+config.cursor), (u64)(config.cursor-config.ocursor+1));
+					u64 cu = config.cursor; //+config.baddr;
+					if (config.cursor < config.ocursor)
+						config.ocursor++;
+					int sz = (((int)config.cursor)-((int)config.ocursor))+1;
+					if (sz <0) { sz=(-sz)-1;cu = 0; sz+=2;}
+					data_add(config.seek+cu, DATA_FOLD_C);
+					data_set_len(config.seek+cu, (u64)sz);
 					cons_clear();
 				}
 			} else {

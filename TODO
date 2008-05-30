@@ -10,6 +10,10 @@
 
 0.9.7:
 ======
+ * Allow to increase/decrease folder size with + and -
+  - wheen scrolling over folders skip faster
+ * embed xrefs into radare (to be used from the debugger)
+  - handle current map only
  * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
@@ -20,7 +24,6 @@
  * remove comments doesnt works properly
  * Add -d to gradare also
  * Add script editor window for lua and radare
- * in graph redraw we must execute stuff for monitors
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
  * make !get work on linux with arch_get_register (currently only works on w32)

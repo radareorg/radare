@@ -198,6 +198,7 @@ struct list_head comments;
 void metadata_comment_add(u64 offset, const char *str)
 {
 	struct comment_t *cmt;
+	char *ptr;
 
 	/* no null comments */
 	if (strnull(str))
@@ -205,9 +206,10 @@ void metadata_comment_add(u64 offset, const char *str)
 
 	cmt = (struct comment_t *) malloc(sizeof(struct comment_t));
 	cmt->offset = offset;
-	cmt->comment = strdup(str);
-	if (cmt->comment[strlen(cmt->comment)-1]=='\n')
-		cmt->comment[strlen(cmt->comment)-1]='\0';
+	ptr = strdup(str);
+	if (ptr[strlen(ptr)-1]=='\n')
+		ptr[strlen(ptr)-1]='\0';
+	cmt->comment = ptr;
 	list_add_tail(&(cmt->list), &(comments));
 }
 
@@ -252,7 +254,7 @@ void metadata_comment_list()
 	struct list_head *pos;
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		cons_printf("CC %s @ 0x"OFF_FMTx"\n", cmt->comment, cmt->offset);
+		cons_printf("CC %s @ 0x%llx\n", cmt->comment, cmt->offset);
 	}
 }
 
@@ -441,6 +443,7 @@ void udis_arch(int arch, int len, int rows)
 	char c;
 	int i,idata,delta;
 	u64 seek = 0;
+	u64 sk = 0;
 	int lines = 0;
 	int bytes = 0;
 	u64 myinc = 0;
@@ -510,15 +513,19 @@ void udis_arch(int arch, int len, int rows)
 		if (bytes>=config.block_size)
 			break;
 		seek = config.baddr +config.seek+bytes;
+		sk = config.seek+bytes;
 		CHECK_LINES
 
 		if (show_comments)
 			lines+=metadata_print(bytes);
 
 		/* is this data? */
-		idata = data_count(seek);
+		idata = data_count(sk);
 		if (idata>0) {
-			struct data_t *foo = data_get(seek);
+			struct data_t *foo = data_get(sk);
+			int dt = data_type(sk);
+			if (dt == DATA_FOLD_O)
+				cons_printf("  ");
 			if (show_lines)
 				code_lines_print(reflines, seek, 0);
 			if (show_offset)
@@ -527,7 +534,7 @@ void udis_arch(int arch, int len, int rows)
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
 			}
-			switch(data_type(seek)) {
+			switch(dt) {
 			case DATA_FOLD_C: 
 				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
 				bytes+=(foo->to-foo->from);
@@ -568,7 +575,7 @@ void udis_arch(int arch, int len, int rows)
 			continue;
 		}
 		__outofme:
-		if (data_end(seek) == DATA_FOLD_O) {
+		if (data_end(sk) == DATA_FOLD_O) {
 			if (show_lines)
 				code_lines_print(reflines, seek, 1);
 			if (show_offset) {

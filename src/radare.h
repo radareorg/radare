@@ -45,7 +45,6 @@ enum {
 
 extern struct list_head hacks;
 extern struct list_head traces;
-extern struct list_head comments;
 
 int trace_count(u64 addr);
 int trace_times(u64 addr);
@@ -69,21 +68,6 @@ enum {
 	DATA_EXPAND = 0x200 
 };
 
-extern struct list_head data;
-struct data_t {
-	u64 from;
-	u64 to;
-	int type;
-	u64 size;
-	struct list_head *list;
-};
-
-
-struct comment_t {
-	u64 offset;
-	char *comment;
-	struct list_head list;
-};
 
 #undef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
