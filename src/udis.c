@@ -479,7 +479,7 @@ void udis_arch(int arch, int len, int rows)
 	inc = 0;
 
 	if (config.visual && rows<1)
-		rows = config.height - 11 - config.lines;
+		rows = config.height - ((last_print_format==FMT_VISUAL)?11:0) - config.lines;
 
 	switch(arch) {
 	case ARCH_X86:

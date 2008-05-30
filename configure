@@ -342,7 +342,7 @@ else
 fi
 export SOLARIS="0"
 export DARWIN="0"
-if [ "$HOST_OS" = "SunOS" ]; then
+if [ "$HOST_OS" = "sunos" ]; then
 export SOLARIS="1"; fi
 if [ "$HOST_OS" = "solaris" ]; then
 export SOLARIS="1"; fi

@@ -56,6 +56,12 @@
 	/* bsd 32 bits */
 	#include <machine/reg.h>
 	#define regs_t struct reg
+#elif __sun
+	struct solaris_regs_t {
+	  int eax,ebx,ecx,edx,esi,edi,ebp,esp;
+	};
+	//typedef unsigned long solaris_regs_//t [4096];
+	#define regs_t struct solaris_regs_t
 #endif
 
 #if __arm__ && __linux__
@@ -121,6 +127,23 @@
 #define PTRACE_GETFPREGS PT_GETFPREGS
 #define PTRACE_SETFPREGS PT_SETFPREGS
 #define PTRACE_SINGLESTEP PT_STEP
+#endif
+
+#if __sun
+/* TODO: replace with dtrace? */
+#define PTRACE_KILL 8
+#define PTRACE_DETACH 0
+#define PTRACE_TRACEME 0
+#define PTRACE_ATTACH 0
+#define PTRACE_SYSCALL 0
+#define PTRACE_CONT     7
+#define PTRACE_PEEKTEXT 1
+#define PTRACE_POKEDATA 6
+#define PTRACE_GETREGS 0
+#define PTRACE_SETREGS 0
+#define PTRACE_GETFPREGS 0
+#define PTRACE_SETFPREGS 0
+#define PTRACE_SINGLESTEP 9
 #endif
 
 #if __FreeBSD__ || __NetBSD__ || __OpenBSD__

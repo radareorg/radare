@@ -5,6 +5,9 @@ endif
 ifeq ($(CPU),i586)
 CPU=i386
 endif
+ifeq ($(CPU),i86pc)
+CPU=i386
+endif
 
 
 ifeq ($(W32),1)

@@ -18,7 +18,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+/* no ptrace for sun solaris ? */
+#ifndef __sun
 #include <sys/ptrace.h>
+#endif
 
 #endif
 
