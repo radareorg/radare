@@ -404,7 +404,6 @@ int main(int argc, char **argv, char **envp)
 
 			/* by program path */
 			for(c=optind;argv[c];c++) {
-				ps.argv[c-optind] = argv[c];
 				strcat(buf, argv[c]);
 				if (argv[c+1])
 					strcat(buf, " ");
