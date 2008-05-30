@@ -275,15 +275,22 @@ int debug_status()
 	case  9: cons_printf("breakpoint exception\n"); break;
 	case 10: cons_printf("reserved instruction\n"); break;
 	case 12: cons_printf("arithmetic overflow\n"); break;
+	case 16: cons_printf("unaligned memory load access? (look at pc-4 opcode)\n");
+		 radare_cmd("pd 4 @ pc-8", 0); break;//(pd 4 @ pc-8)\n"); break;
 	case 32: cons_printf("end of execution\n"); break;
 	default: cons_printf("unknown %d\n", (int)cause); break;
 	}
-	cons_printf("badvaddr: 0x%08llx (t0)\n", get_offset("t0"));
+	//cons_printf("badvaddr: 0x%08llx (t0)\n", get_offset("t0"));
+	cons_printf("badvaddr: 0x%08llx (bad)\n", get_offset("bad"));
+#if 0
 	cons_printf("status:   0x%08llx (t4)\n", get_offset("t4"));
 	cons_printf("cause:    0x%08llx (t5)\n", get_offset("t5"));
 	cons_printf("excaddr:  0x%08llx (t6)\n", get_offset("t6"));
+#endif
 #else
-	system("cat /proc/${DPID}/status");
+	system("cat /proc/${DPID}/stat");
+	// verbose way //
+	//system("cat /proc/${DPID}/status");
 #endif
 
 	// TODO: run !status here ??? and move the following code to arch_specific one?

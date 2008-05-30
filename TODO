@@ -10,6 +10,7 @@
 
 0.9.7:
 ======
+ * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
  * flag str_
