@@ -136,5 +136,6 @@ clean:
 	-${Q}${MAKE} -C radiff clean
 	-${Q}${MAKE} -C rabin clean
 	-${Q}${MAKE} -C rasm clean
+	-${Q}${MAKE} -C rasc clean
 	-${Q}${MAKE} -C arch/x86/udis86 clean
 	-${Q}rm -rf xc.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} xc${BINSFX} a.out a.exe

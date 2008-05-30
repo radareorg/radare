@@ -31,7 +31,7 @@ void radiff_help()
 	printf("  -d   use gnu diff as backend (default)\n");
 	printf("  -e   use erg0ts bdiff (c++) as backend\n");
 	printf("  -r   use rdb diff (code analysis diff)\n");
-	printf("  -i   converts a source idc file to a rdb (radare database)\n");
+//	printf("  -i   converts a source idc file to a rdb (radare database)\n");
 	printf("  -p   binpatching (TODO)\n");
 	exit(1);
 }

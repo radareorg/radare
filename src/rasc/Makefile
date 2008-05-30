@@ -1,4 +1,4 @@
-include ../config.mk
+include ../../config.mk
 
 OBJ=shellcodes.o test.o rasc.o ${SYSPROXY_OBJ}
 # only for sysproxy example

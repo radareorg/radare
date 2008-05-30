@@ -47,7 +47,7 @@ static int show_help()
 	printf("  -v           enables debug\n");
 	printf("  -f [file]    compiles assembly file to 'file'.o\n");
 	printf("  -s [offset]  offset where this opcode is suposed to be\n");
-	printf("  -a [arch]    selected architecture\n");
+	printf("  -a [arch]    selected architecture (x86, ppc, arm, java)\n");
 	printf("  -e           use big endian\n");
 	printf("  -l           list all supported opcodes and architectures\n");
 	printf("  -V           show version information\n");

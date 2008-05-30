@@ -162,6 +162,9 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 
 		dst-=offset;
 
+// 7C90EAF5   .- E9 42158783   JMP     0018003C
+// RELATIVE LONG JUMP (nice coz is 4 bytes, not 5) 
+
 		if (dst>-0x80 && dst<0x7f) {
 			/* relative address */
 			addr-=2;

@@ -27,7 +27,6 @@ omni:
 	exuberant-ctags **/*.c **/*.h
 
 radare:
-	cd rasc && ${MAKE} all
 ##GUI##
 ##VALA##
 	cd vala/grava/ && ${MAKE} radare
@@ -37,7 +36,6 @@ radare:
 
 clean:
 	${Q}cd src && ${MAKE} clean
-	${Q}cd rasc && ${MAKE} clean
 	${Q}cd src/rabin && ${MAKE} clean
 	${Q}cd gui && ${MAKE} clean
 	${Q}cd libusbsniff && ${MAKE} clean
@@ -97,7 +95,7 @@ install:
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}
 	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${DATADIR}/radare/
-	${INSTALL_PROGRAM} rasc/rasc ${BINDIR}
+	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
 	${INSTALL_PROGRAM} src/hasher/hasher ${BINDIR}
 	${INSTALL_PROGRAM} src/xc ${BINDIR}
 	mkdir -p ${LIBDIR}
