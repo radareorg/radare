@@ -34,9 +34,9 @@ BINSFX=.exe
 DL_LIBS=
 ##W32##
 
-##OSOLIBS##
+##SOLARIS##
 OSOLIBS=-lsocket -lnsl
-##OSOLIBS##
+##SOLARIS##
 
 ##SYSPROXY##
 CFLAGS+=-DSYSPROXY 

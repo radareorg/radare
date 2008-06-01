@@ -51,7 +51,7 @@ int scsize = 0;
 
 static int show_helpline()
 {
-	printf( "Usage: rasc [-cCxXtLV] [-l port] [-a addr@off] [-[A|N|C|E] N]\n"
+	printf( "Usage: rasc [-cCexXtLV] [-l port] [-a addr@off] [-[A|N|C|E] N]\n"
 		"            [-s hexpair] [-i name] [-S file] [-h]\n");
 	return 0;
 }
@@ -70,6 +70,7 @@ static int show_help()
 	printf("  -i 'scdb'    hardcoded shellcode (-L to list)\n");
 	printf("  -L           list hardcoded shellcodes\n");
 	printf("  -c           output in C format\n");
+	printf("  -e           output in escapped string\n");
 	printf("  -x           output in hexpairs format\n");
 	printf("  -X           execute shellcode\n");
 	printf("  -t           test current platform\n");
@@ -222,6 +223,15 @@ int print_shellcode()
 		} else {
 			void (*cb)() = (void *)&shellcode; cb(); 
 		}
+		break;
+	case 4:
+		printf("\"");
+		j = 0;
+		for(i=0;i<SCSIZE;i++) {
+			printf("\\x%02x", output[i]);
+		}
+		printf("\"\n");
+		fflush(stdout);
 		break;
 	}
 	return 0;
@@ -403,7 +413,7 @@ int main(int argc, char **argv)
 	if (argc<2)
 		return show_helpline();
 
-	while ((c = getopt(argc, argv, "a:VcC:ts:S:i:Ll:uhN:A:XxE:")) != -1)
+	while ((c = getopt(argc, argv, "a:VcC:ts:S:i:Ll:uhN:A:XxE:e")) != -1)
 	{
 		switch( c ) {
 		case 't':
@@ -424,6 +434,9 @@ int main(int argc, char **argv)
 			E = atoi(optarg);
 			break;
 			// dump shellcode in C
+		case 'e':
+			hexa_print = 4;
+			break;
 		case 'c':
 			hexa_print = 2;
 			break;

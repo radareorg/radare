@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 			arch = optarg;
 			break;
 		case 'f':
-			if (verbose) printf("Compiling %s\n", optarg);
+			if (!verbose) printf("Compiling %s to %s.o\n", optarg, optarg);
 			return rasm_file(arch, offset, optarg, NULL);
 		case 's':
 			offset = get_offset(optarg);

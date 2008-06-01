@@ -40,6 +40,8 @@ my %ops=(
 	"scasw"=>"cmp ax, ES:[edi+=2]",
 	"rep" => "repeats next instruction ECX times",
 	"ret" => "return from subroutine. pop 4 bytes from esp and jump there.",
+	"enter" => "alias for push ebp mov ebp, esp",
+	"leave" => "one byte alias for mov esp, ebp ; pop ebp",
 	"clc" => "eflags[CF] = 0",
 	"stc" => "eflags[CF] = 1",
 	"cld" => "elfags[DF] = 0",

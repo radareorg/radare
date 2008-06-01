@@ -10,6 +10,38 @@
 
 0.9.7:
 ======
+ * write a char on selected bytes
+ * export info from ida to radare
+   - pm xxi @ esp for functions
+   - func names and so
+   - comments
+   - etc
+ * implement sleep shellcode
+  - using nanosleep
+    -> nanosleep(&foo, NULL);
+
+call +1
+pop ebx
+push 3
+push 0
+mov eax, 162
+mov ebx
+int 0x80
+
+ * xc is crappy!
+ * radare -d 'pid' doesnt works
+ * debugger show PID when creating it with -d or dbg://
+ * shellcode to get cur eip in eax
+	14:52 < dreyer> de call +1
+	14:52 < dreyer> pop eax
+	14:52 < dreyer> mv  [deplaz+eax], restore_value
+ *  /x 58 5b c3
+   - no funciona be troba coses com 58 5b c9 c3...
+ * breakpoints en fbsd no va be
+   - deixa el bp (no el treu)
+   - i lexecuta (no restaura eip) :/
+
+
  * Allow to increase/decrease folder size with + and -
   - wheen scrolling over folders skip faster
  * embed xrefs into radare (to be used from the debugger)

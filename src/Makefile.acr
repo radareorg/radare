@@ -29,7 +29,7 @@ OBJ+=plug/io/wii/wii.o
 ##WII##
 
 ##SYSPROXY##
-OBJ2+=../rasc/sysproxy.o ../rasc/syscall-linux.o ../rasc/rpc.o
+OBJ2+=rasc/sysproxy.o rasc/syscall-linux.o rasc/rpc.o
 CFLAGS+=-DSYSPROXY
 ##SYSPROXY##
 
@@ -61,7 +61,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 all: ${TARGETS} udis86 armasm _radiff \
 	lsbstego pre radare${BINSFX} radare-hash plugs \
-	xc${BINSFX} xrefs${BINSFX} javasm${BINSFX} _rasm _rabin
+	xc${BINSFX} xrefs${BINSFX} javasm${BINSFX} _rasm _rabin _rasc
 	@true
 
 ${OBJS}: %.o: %.c
@@ -107,6 +107,9 @@ _rabin:
 
 _rasm:
 	cd rasm && ${MAKE} all
+
+_rasc:
+	cd rasc && ${MAKE} all
 
 armasm:
 	cd arch/arm/aasm && ${MAKE} all

@@ -42,7 +42,7 @@ int (*__usb_find_busses)();
 int (*__usb_claim_interface)(usb_dev_handle *dev, int interface);
 int (*__usb_set_altinterface)(usb_dev_handle *dev, int alternate);
 int (*__usb_control_msg)(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
-int (*__usb_bulk_write)(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout);
+int (*__usb_bulk_write)(usb_dev_handle *dev, int ep, const char *bytes, int size, int timeout);
 int (*__usb_bulk_read)(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout);
 
 /*
@@ -95,7 +95,7 @@ int usb_close(struct usb_dev_handle *dev)
 	return ret;
 }
 
-int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout)
+int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size, int timeout)
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_bulk_write()\n");

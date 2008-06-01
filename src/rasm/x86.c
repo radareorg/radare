@@ -138,6 +138,43 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		data[4] = ptr[3];
 		return 5;
 	} else
+	if (!strcmp(op, "pop")) {
+		off_t dst = get_math(arg);
+		unsigned long addr = dst;
+		unsigned char *ptr = (uchar *)&addr;
+
+		if (dst == 0) {
+			if (!strcmp(arg, "eax"))
+				data[0]='\x58';
+			else
+			if (!strcmp(arg, "ebx"))
+				data[0]='\x5b';
+			else
+			if (!strcmp(arg, "ecx"))
+				data[0]='\x59';
+			else
+			if (!strcmp(arg, "edx"))
+				data[0]='\x5a';
+			else
+			if (!strcmp(arg, "esi"))
+				data[0]='\x5e';
+			else
+			if (!strcmp(arg, "edi"))
+				data[0]='\x5f';
+			else
+			if (!strcmp(arg, "ebp"))
+				data[0]='\x5d';
+			else
+			if (!strcmp(arg, "esp"))
+				data[0]='\x5c';
+			else
+				return 0; // invalid register name to push
+			
+			return 1;
+		}
+		eprintf("Invalid pop syntax\n");
+		return 0;
+	} else
 	if (!strcmp(op, "mov")) {
 		off_t dst;
 		unsigned long addr;
