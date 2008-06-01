@@ -1253,8 +1253,8 @@ int debug_trace(char *input)
 		radare_cmd("px  64 @ esp",0);
 	}
 
+	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_step(1)) {
-		radare_controlc();
 		radare_cmd(".!regs*", 0);
 		if (smart) {
 			cons_printf("[-] 0x%08llx\n", arch_pc());
@@ -1298,13 +1298,9 @@ int debug_trace(char *input)
 				break;
 			}
 		}
-			radare_controlc();
 		cons_flush();
-		if (slip) {
+		if (slip)
 			sleep(slip);
-		}
-			if (config.interrupted)
-				break;
 	}
 
 	radare_controlc_end();

@@ -16,6 +16,7 @@
    - func names and so
    - comments
    - etc
+* TODO: write from file hexpair formatted
  * implement sleep shellcode
   - using nanosleep
     -> nanosleep(&foo, NULL);
@@ -28,6 +29,11 @@ mov eax, 162
 mov ebx
 int 0x80
 
+ * options for trace
+  - trace.depth = 0
+  - trace.alarm = 0
+ * ^C doesnt works with trace
+
  * xc is crappy!
  * shellcode to get cur eip in eax
 	de call +1
@@ -39,6 +45,7 @@ int 0x80
    - deixa el bp (no el treu)
    - i lexecuta (no restaura eip) :/
 
+ * 'w' in cursor mode with range selected must fill the buffer
 
  * Allow to increase/decrease folder size with + and -
   - wheen scrolling over folders skip faster
@@ -48,11 +55,9 @@ int 0x80
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
  * flag str_
- * 'w' in cursor mode with range selected must fill the buffer
  * !fd really works? :/
  * number keybindings doest works
  * remove comments doesnt works properly
- * Add -d to gradare also
  * Add script editor window for lua and radare
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline

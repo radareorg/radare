@@ -93,7 +93,7 @@ command_t keystrokes[] = {
 	COMMAND('Y', 0, "Yankee (paste clipboard here)", yank_paste),
 	COMMAND('=', 0, "insert assembly hack", insert_assembly_hack),
 	COMMAND('x', 1, "show xrefs of the current offset", xrefs_here),
-	COMMAND('i', 0, "insert mode", insert),
+	COMMAND('i', 0, "insert mode (tab to change hex,asm,ascii, q to back)", insert),
 	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
@@ -129,8 +129,8 @@ void visual_show_help()
 	"+-*/       +1, -1, +width, -width -> block size\n"
 	"[]         decrease or increment the width limits\n"
 	"a,A,=      insert patch assembly, rsc asm or !hack\n"
-	"i          insert mode (use tab to switch btw hex and ascii)\n"
-	"f #        seek to search result 0-9\n"
+	"i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
+	"f,F        seek between flag list (f = forward, F = backward)\n"
 	"c          toggle cursor mode\n"
 	"C          toggle scr.color\n"
 	"d          convert cursor selected bytes to ascii, code or hex\n"
@@ -191,8 +191,10 @@ CMD_DECL(insert)
 		cons_printf("Use <tab> to change between ascii and hex\n");
 		config.insert_mode = 1;
 		config.cursor_mode = 1;
-		last_print_format = FMT_HEXB;
-		press_any_key();
+		config.ocursor = -1;
+cons_flush();
+		//last_print_format = FMT_HEXB;
+//		press_any_key();
 	} else {
 		cons_printf("Not in write mode.\n");
 		press_any_key();
@@ -778,9 +780,17 @@ void visual_draw_screen()
 		config.width = cons_get_columns();
 		cons_set_raw(1);
 	}
-	if (config.insert_mode) {
-		strcpy(buf, "<insert>");
-	} else {
+	switch(config.insert_mode) {
+	case 1:
+		strcpy(buf, "<insert hex pairs> ('q','tab')");
+		break;
+	case 2:
+		strcpy(buf, "<insert ascii> ('tab')");
+		break;
+	case 3:
+		strcpy(buf, "<insert assembly> ('tab')");
+		break;
+	default:
 		string_flag_offset(buf, config.seek);
 	}
 	ptr = config_get("scr.seek");
@@ -955,6 +965,11 @@ CMD_DECL(visual)
 
 			switch(key) {
 			case 9: // TAB
+				if (last_print_format == FMT_DISAS
+					|| last_print_format == FMT_UDIS
+					|| last_print_format == FMT_VISUAL)
+					config.insert_mode = 3;
+				else
 				config.insert_mode = 2;
 				nibble=1;
 				break;
@@ -964,6 +979,16 @@ CMD_DECL(visual)
 				config.cursor_mode = 0;
 				cons_clear();
 				break;
+			case '*': radare_set_block_size_i(config.block_size+inc); cons_clear(); break;
+			case '/': radare_set_block_size_i(config.block_size-inc); cons_clear(); break;
+			case '+': radare_set_block_size_i(config.block_size+1); break;
+			case '-': radare_set_block_size_i(config.block_size-1); cons_clear(); break;
+			case 'p': CMD_NAME(rotate_print_format)(""); cons_clear();  break;
+			case 'P': CMD_NAME(rotate_print_format_prev)(""); cons_clear(); break;
+			case 'H': config.seek -= 1; cons_clear(); break;
+			case 'L': config.seek += 1; cons_clear(); break;
+			case 'J': config.seek += config.block_size*accel/2; cons_clear(); break;
+			case 'K': config.seek -= config.block_size*accel/2; cons_clear(); break;
 			case 'h':
 				if (config.cursor--<1)
 					config.cursor = 0;
@@ -1016,7 +1041,7 @@ CMD_DECL(visual)
 				config.cursor = config.block_size-1;
 #endif
 			continue;
-		case 2:
+		case 2: // insert scii
 			nibble=1;
 			switch(key) {
 			case 9:
@@ -1058,6 +1083,11 @@ CMD_DECL(visual)
 				break;
 			}
 			continue;
+		case 3: // insert asm
+			case 9:
+				config.insert_mode = 1;
+				continue;
+			break;
 		}
 
 		/* normal visual mode */

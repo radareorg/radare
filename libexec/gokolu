@@ -20,7 +20,8 @@ die " `-> Usage: Gokolu [file] [grep-string] (env CURL, SLEEP)\n"
 my $file=$ARGV[0];
 my $grep = (defined($ARGV[1]))?"|grep -e '$ARGV[1]'":"";
 my $basefile = `basename $file`;
-my @strings = split(/\n/, `radare -vS 8 $file | sort | uniq $grep`);
+#my @strings = split(/\n/, `radare -vS 8 $file | sort | uniq $grep`);
+my @strings = split(/\n/, `strings $file | sort | uniq $grep`);
 
 for my $str (@strings) {
 	my ( $moo );
@@ -43,7 +44,7 @@ sub query_string {
 	my ($ok, $ok2) = ("","");
 	my @lines = `$curl -s "$url"`;
 	for my $line (@lines) {
-		if ($line=~/first">([^<]*)/) {
+		if ($line=~/\&url=([^\&]*)/) {
 			my $file = $1;
 			$line=~/(\d+) identical/;
 			$n = $1;
