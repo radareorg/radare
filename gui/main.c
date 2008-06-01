@@ -398,19 +398,19 @@ int main(int argc, char **argv, char **envp)
 			/* by process-id */
 			if (pid > 0) {
 				sprintf(buf2, "pid://%d", pid);
-				plugin_load();
-				return radare_go();
-			}
-
-			/* by program path */
-			for(c=optind;argv[c];c++) {
-				strcat(buf, argv[c]);
-				if (argv[c+1])
-					strcat(buf, " ");
-			}
-			sprintf(buf2, "dbg://%s", buf);
-			filename = strdup(buf2);
-			}
+				//plugin_load();
+				//return radare_go();
+				filename = strdup(buf2);
+			} else {
+				/* by program path */
+				for(c=optind;argv[c];c++) {
+					strcat(buf, argv[c]);
+					if (argv[c+1])
+						strcat(buf, " ");
+				}
+				sprintf(buf2, "dbg://%s", buf);
+				filename = strdup(buf2);
+			}}
 			break;
 		case 'h':
 			show_help_message();

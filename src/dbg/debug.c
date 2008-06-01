@@ -1259,7 +1259,7 @@ int debug_trace(char *input)
 		if (smart) {
 			cons_printf("[-] 0x%08llx\n", arch_pc());
 			radare_cmd("!dregs", 0);
-			radare_cmd("pD 20 @ eip", 0);
+			radare_cmd("pd 4 @ eip", 0);
 			//disassemble(20, 2);
 		} else {
 			switch(level) {
@@ -1275,11 +1275,9 @@ int debug_trace(char *input)
 				radare_cmd("px 64 @ esp",0);
 			case 2:
 			case 3:
-				radare_cmd("pD 20 @ eip",0);
+				radare_cmd("pd 1 @ eip",0);
 			default:
 				pc = arch_pc();
-				if (config.interrupted)
-					break;
 				if (tracelibs || is_usercode(pc)) {
 					//radare_seek((addr_t)pc, SEEK_SET);
 					//radare_read(0);
