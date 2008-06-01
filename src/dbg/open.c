@@ -109,10 +109,11 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	else
 		eprintf("Attached to pid '%d'.\n", atoi(ps.filename)); }
 
+	eprintf("PID = %d\n", ps.pid);
+
 #if __linux__
 	system("if [ \"`cat /proc/sys/kernel/randomize_va_space`\" = 1 ]; then"
 		" echo Warning: sysctl -w kernel.randomize_va_space=0; fi");
 #endif
-
 	return ps.fd;
 }

@@ -29,12 +29,10 @@ mov ebx
 int 0x80
 
  * xc is crappy!
- * radare -d 'pid' doesnt works
- * debugger show PID when creating it with -d or dbg://
  * shellcode to get cur eip in eax
-	14:52 < dreyer> de call +1
-	14:52 < dreyer> pop eax
-	14:52 < dreyer> mv  [deplaz+eax], restore_value
+	de call +1
+	pop eax
+	mv  [deplaz+eax], restore_value
  *  /x 58 5b c3
    - no funciona be troba coses com 58 5b c9 c3...
  * breakpoints en fbsd no va be

@@ -41,7 +41,7 @@ int hash_pcprint(unsigned char *buffer, u64 len)
 
 int hash_par(unsigned char *buffer, u64 len)
 {
-	unsigned char *end;
+	unsigned char *end = buffer+len;
 	unsigned int ones = 0;
 	for(;buffer<end; buffer = buffer + 1) {
 		#define x buffer[0]

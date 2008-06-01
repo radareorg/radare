@@ -61,30 +61,17 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 
 		if (dst == 0) {
 			data[0] = '\xff';
-			if (!strcmp(arg, "eax"))
-				data[1]='\xd0';
-			else
-			if (!strcmp(arg, "ebx"))
-				data[1]='\xd3';
-			else
-			if (!strcmp(arg, "ecx"))
-				data[1]='\xd1';
-			else
-			if (!strcmp(arg, "edx"))
-				data[1]='\xd2';
-			else
-			if (!strcmp(arg, "esi"))
-				data[1]='\xd6';
-			else
-			if (!strcmp(arg, "edi"))
-				data[1]='\xd7';
-			else
-			if (!strcmp(arg, "ebp"))
-				data[1]='\xd5';
-			else
-			if (!strcmp(arg, "esp"))
-				data[1]='\xd4';
-			else
+			if (!strcmp(arg, "eax")) data[1]='\xd0'; else
+			if (!strcmp(arg, "ebx")) data[1]='\xd3'; else
+			if (!strcmp(arg, "ecx")) data[1]='\xd1'; else
+			if (!strcmp(arg, "edx")) data[1]='\xd2'; else
+			if (!strcmp(arg, "esi")) data[1]='\xd6'; else
+			if (!strcmp(arg, "edi")) data[1]='\xd7'; else
+			if (!strcmp(arg, "ebp")) data[1]='\xd5'; else
+			if (!strcmp(arg, "esp")) data[1]='\xd4';
+			else {
+				
+			}
 				return 0; // invalid register name to push
 			return 2;
 		}
@@ -102,29 +89,14 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		unsigned char *ptr = (uchar *)&addr;
 
 		if (dst == 0) {
-			if (!strcmp(arg, "eax"))
-				data[0]='\x50';
-			else
-			if (!strcmp(arg, "ebx"))
-				data[0]='\x53';
-			else
-			if (!strcmp(arg, "ecx"))
-				data[0]='\x51';
-			else
-			if (!strcmp(arg, "edx"))
-				data[0]='\x52';
-			else
-			if (!strcmp(arg, "esi"))
-				data[0]='\x56';
-			else
-			if (!strcmp(arg, "edi"))
-				data[0]='\x57';
-			else
-			if (!strcmp(arg, "ebp"))
-				data[0]='\x55';
-			else
-			if (!strcmp(arg, "esp"))
-				data[0]='\x54';
+			if (!strcmp(arg, "eax")) data[0]='\x50'; else
+			if (!strcmp(arg, "ebx")) data[0]='\x53'; else
+			if (!strcmp(arg, "ecx")) data[0]='\x51'; else
+			if (!strcmp(arg, "edx")) data[0]='\x52'; else
+			if (!strcmp(arg, "esi")) data[0]='\x56'; else
+			if (!strcmp(arg, "edi")) data[0]='\x57'; else
+			if (!strcmp(arg, "ebp")) data[0]='\x55'; else
+			if (!strcmp(arg, "esp")) data[0]='\x54';
 			else
 				return 0; // invalid register name to push
 			
@@ -140,34 +112,16 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 	} else
 	if (!strcmp(op, "pop")) {
 		off_t dst = get_math(arg);
-		unsigned long addr = dst;
-		unsigned char *ptr = (uchar *)&addr;
 
 		if (dst == 0) {
-			if (!strcmp(arg, "eax"))
-				data[0]='\x58';
-			else
-			if (!strcmp(arg, "ebx"))
-				data[0]='\x5b';
-			else
-			if (!strcmp(arg, "ecx"))
-				data[0]='\x59';
-			else
-			if (!strcmp(arg, "edx"))
-				data[0]='\x5a';
-			else
-			if (!strcmp(arg, "esi"))
-				data[0]='\x5e';
-			else
-			if (!strcmp(arg, "edi"))
-				data[0]='\x5f';
-			else
-			if (!strcmp(arg, "ebp"))
-				data[0]='\x5d';
-			else
-			if (!strcmp(arg, "esp"))
-				data[0]='\x5c';
-			else
+			if (!strcmp(arg, "eax")) data[0]='\x58'; else
+			if (!strcmp(arg, "ebx")) data[0]='\x5b'; else
+			if (!strcmp(arg, "ecx")) data[0]='\x59'; else
+			if (!strcmp(arg, "edx")) data[0]='\x5a'; else
+			if (!strcmp(arg, "esi")) data[0]='\x5e'; else
+			if (!strcmp(arg, "edi")) data[0]='\x5f'; else
+			if (!strcmp(arg, "ebp")) data[0]='\x5d'; else
+			if (!strcmp(arg, "esp")) data[0]='\x5c'; else
 				return 0; // invalid register name to push
 			
 			return 1;
@@ -189,32 +143,15 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		addr = dst;
 
 		data[0]='\xb8';
-		if (!strcmp(arg, "eax"))
-			data[0] = 0xb8;
-		else
-		if (!strcmp(arg, "ebx"))
-			data[0] = 0xbb;
-		else
-		if (!strcmp(arg, "ebx"))
-			data[0] = 0xbb;
-		else
-		if (!strcmp(arg, "ecx"))
-			data[0] = 0xb9;
-		else
-		if (!strcmp(arg, "edx"))
-			data[0] = 0xba;
-		else
-		if (!strcmp(arg, "esp"))
-			data[0] = 0xbc;
-		else
-		if (!strcmp(arg, "ebp"))
-			data[0] = 0xbd;
-		else
-		if (!strcmp(arg, "esi"))
-			data[0] = 0xbe;
-		else
-		if (!strcmp(arg, "edi"))
-			data[0] = 0xbf;
+		if (!strcmp(arg, "eax")) data[0] = 0xb8; else
+		if (!strcmp(arg, "ebx")) data[0] = 0xbb; else
+		if (!strcmp(arg, "ebx")) data[0] = 0xbb; else
+		if (!strcmp(arg, "ecx")) data[0] = 0xb9; else
+		if (!strcmp(arg, "edx")) data[0] = 0xba; else
+		if (!strcmp(arg, "esp")) data[0] = 0xbc; else
+		if (!strcmp(arg, "ebp")) data[0] = 0xbd; else
+		if (!strcmp(arg, "esi")) data[0] = 0xbe; else
+		if (!strcmp(arg, "edi")) data[0] = 0xbf;
 
 		data[1] =ptr[0];
 		data[2] =ptr[1];
@@ -223,37 +160,48 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		return 5;
 	} else
 	if (!strcmp(op, "jmp")) {
-		off_t dst = get_math(arg);
+		//off_t dst = get_math(arg); // XXX: get_math breaks ebp+33 to be 33 instead of 0
+		off_t dst = get_offset(arg);
 		unsigned long addr = dst;
 		unsigned char *ptr = (uchar *)&addr;
 
 		if (dst == 0) {
 			data[0] = '\xff';
-			if (!strcmp(arg, "eax"))
-				data[1]='\xe0';
-			else
-			if (!strcmp(arg, "ebx"))
-				data[1]='\xe3';
-			else
-			if (!strcmp(arg, "ecx"))
-				data[1]='\xe1';
-			else
-			if (!strcmp(arg, "edx"))
-				data[1]='\xe2';
-			else
-			if (!strcmp(arg, "esi"))
-				data[1]='\xe6';
-			else
-			if (!strcmp(arg, "edi"))
-				data[1]='\xe7';
-			else
-			if (!strcmp(arg, "ebp"))
-				data[1]='\xe5';
-			else
-			if (!strcmp(arg, "esp"))
-				data[1]='\xe4';
-			else
-				return 0; // invalid register name to push
+			if (!strcmp(arg, "eax")) data[1]='\xe0'; else
+			if (!strcmp(arg, "ebx")) data[1]='\xe3'; else
+			if (!strcmp(arg, "ecx")) data[1]='\xe1'; else
+			if (!strcmp(arg, "edx")) data[1]='\xe2'; else
+			if (!strcmp(arg, "esi")) data[1]='\xe6'; else
+			if (!strcmp(arg, "edi")) data[1]='\xe7'; else
+			if (!strcmp(arg, "ebp")) data[1]='\xe5'; else
+			if (!strcmp(arg, "esp")) data[1]='\xe4'; 
+			else {
+				if (!strcmp(arg, "[eax]")) data[1]='\x20'; else
+				if (!strcmp(arg, "[ebx]")) data[1]='\x23'; else
+				if (!strcmp(arg, "[ecx]")) data[1]='\x21'; else
+				if (!strcmp(arg, "[edx]")) data[1]='\x22'; else
+				if (!strcmp(arg, "[esi]")) data[1]='\x26'; else
+				if (!strcmp(arg, "[edi]")) data[1]='\x27'; 
+				else {
+					if (!strcmp(arg, "esp")) { data[1]='\x24'; data[2]='\x24'; } else
+					if (!strcmp(arg, "ebp")) { data[1]='\x24'; data[2]='\x24'; } else
+					if (strstr(arg, "[eax")) { data[1]='\x60'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[ebx")) { data[1]='\x63'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[ecx")) { data[1]='\x61'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[edx")) { data[1]='\x62'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[esi")) { data[1]='\x66'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[edi")) { data[1]='\x67'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[esi")) { data[1]='\x67'; data[2]=(char)get_math(arg+4); } else
+					if (strstr(arg, "[ebp")) { data[1]='\x65'; data[2]=(char)get_math(arg+4); } 
+					else {
+						if (!strcmp(arg, "[esp")) { data[1]='\x64'; data[2]='\x24'; data[3]=(char)get_math(arg+4); }
+							else return 0;
+						return 4;
+					}
+					return 3;
+				}
+				return 2; // invalid register name to push
+			}
 			return 2;
 		}
 

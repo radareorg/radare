@@ -1,4 +1,4 @@
-u32 hash_par(const u8 *buffer, int len);
+int hash_par(unsigned char *buffer, u64 len);
 u16 hash_xorpair(const u16 *b, int len);
 u8  hash_xor(const u8 *b, u64 len);
 u8  hash_mod255(const u8 *b, u64 len);

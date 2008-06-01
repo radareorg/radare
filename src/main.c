@@ -66,6 +66,7 @@ int main(int argc, char **argv, char **envp)
 			/* by process-id */
 			if (pid > 0) {
 				sprintf(buf2, "pid://%d", pid);
+				config.file = strdup(buf2);
 				plugin_load();
 				return radare_go();
 			}
