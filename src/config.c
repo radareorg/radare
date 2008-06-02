@@ -676,6 +676,7 @@ void config_init()
 	config_set("scr.seek", "");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
+	config_set("scr.tee", "");
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
 	config_set_i("scr.width", config.width);

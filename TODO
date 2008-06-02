@@ -7,15 +7,13 @@
 
 ===========================================================
 
+CODE INJECTION (as a plugin)
+==============
 
 0.9.7:
 ======
+ * define print format per flags (useful to find strings, code,etc..) :D
  * write a char on selected bytes
- * export info from ida to radare
-   - pm xxi @ esp for functions
-   - func names and so
-   - comments
-   - etc
 * TODO: write from file hexpair formatted
  * implement sleep shellcode
   - using nanosleep

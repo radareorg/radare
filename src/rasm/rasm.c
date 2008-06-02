@@ -28,25 +28,25 @@ int rasm_show_list()
 {
  //" jmpa [addr]  - jump to absolute address (??)\n"
 	printf(
- "Architectures:\n"
- " x86, ppc, arm, java\n"
- "Opcodes:\n"
- " call [addr]  - call to address\n"
- " jmp [addr]   - jump to relative address\n"
- " jz  [addr]   - jump if equal\n"
- " jnz          - jump if not equal\n"
- " trap         - trap into the debugger\n"
- " nop          - no operation\n"
- " push 33      - push a value or reg in stack\n"
- " pop eax      - pop into a register\n"
- " int 0x80     - system call interrupt\n"
- " ret          - return from subroutine\n"
- " ret0         - return 0 from subroutine\n"
- " hang         - hang (infinite loop\n"
- " mov eax, 33  - asign a value to a register\n"
- "Directives:\n"
- " .zero 23     - fill 23 zeroes\n"
- " .org 0x8000  - offset\n");
+	 "Architectures:\n"
+	 " x86, ppc, arm, java\n"
+	 "Opcodes:\n"
+	 " call [addr]  - call to address\n"
+	 " jmp [addr]   - jump to relative address\n"
+	 " jz  [addr]   - jump if equal\n"
+	 " jnz          - jump if not equal\n"
+	 " trap         - trap into the debugger\n"
+	 " nop          - no operation\n"
+	 " push 33      - push a value or reg in stack\n"
+	 " pop eax      - pop into a register\n"
+	 " int 0x80     - system call interrupt\n"
+	 " ret          - return from subroutine\n"
+	 " ret0         - return 0 from subroutine\n"
+	 " hang         - hang (infinite loop\n"
+	 " mov eax, 33  - asign a value to a register\n"
+	 "Directives:\n"
+	 " .zero 23     - fill 23 zeroes\n"
+	 " .org 0x8000  - offset\n");
 	return 0;
 }
 
@@ -76,11 +76,13 @@ int rasm_file(const char *arch, u64 offset, const char *file, const char *ofile)
 			if (!buf[0])
 				break;
 			buf[strlen(buf)-1]='\0';
-			eprintf(" %03d : %s\n", line++, buf);
-			n = rasm_asm(arch, offset, buf, data);
+			eprintf(" %03d : %08llx  %s\n", line++, offset, buf);
+			n = rasm_asm(arch, &offset, buf, data);
 			if (n == -1)
 				break;
-			fwrite(data, n, 1, fo);
+			if (n!=0)
+				fwrite(data, n, 1, fo);
+			offset+=n;
 		}
 		fclose(fd);
 		fclose(fo);
@@ -97,7 +99,7 @@ int rasm_file(const char *arch, u64 offset, const char *file, const char *ofile)
 	return 1;
 }
 
-int rasm_directive(u64 *offset, const char *str, u8 *data)
+int rasm_directive(const char *arch, u64 *offset, const char **str, u8 *data)
 {
 	char op[128];
 	char *arg;
@@ -116,17 +118,26 @@ int rasm_directive(u64 *offset, const char *str, u8 *data)
 		arg = arg + 1;
 	}
 
-#if TODO
 	if (!strcmp(op, ".equ")) {
 		n = get_offset(arg);
+printf("TODO: (%s)\n", op);
 		memset(data, '\0', n);
 		return n;
 	}
-#endif
+	if (!strcmp(op, ".arch")) {
+		//*arch = strdup(op+6);
+printf("DEFINE CPU: (%s)\n", op+6);
+		return 0;
+	}
+
+	if (!strcmp(op, ".global")) {
+printf("TODO: (%s)\n", op);
+		return 0; //*offset;
+	}
 
 	if (!strcmp(op, ".org")) {
 		*offset = get_offset(arg);
-		return *offset;
+		return 0; //*offset;
 	}
 
 	if (!strcmp(op, ".zero")) {
@@ -135,23 +146,30 @@ int rasm_directive(u64 *offset, const char *str, u8 *data)
 		return (int)n;
 	}
 
+	if (op[strlen(op)-1]==':') {
+		printf("0x%llx %s\n", *offset, op);
+		// TODO: Store label offset information
+		return 0;
+	}
+
 	return -1;
 }
 
 /* assemble */
-int rasm_asm(const char *arch, u64 offset, const char *str, unsigned char *data)
+int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data)
 {
 	int ret = -1;
+	while(str[0]==' '||str[0]=='\t') str = str + 1;
 
 	if (arch == NULL||str==NULL)
 		return -1;
 
-	ret = rasm_directive(&offset, str, data);
+	ret = rasm_directive(arch, offset, str, data);
 	if (ret != -1)
 		return ret;
 
 	if (str[0]=='\0'||str[1]=='\0' || strchr(str,'?')!=NULL)
-		return rasm_show_list();
+		return 0;
 
 	if ((!strcmp(arch, "x86")) ||(!strcmp(arch, "intel")))
 		ret = rasm_x86(offset, str, data);

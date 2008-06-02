@@ -1,0 +1,36 @@
+;
+; Self-Stop shellcode written in rasm for x86
+;
+; --pancake
+;
+
+.arch x86
+.equ base 0x8048000
+.org 0x8048000  ; the offset where we inject the 5 byte jmp
+
+selfstop:
+  push 0x8048000
+  pusha
+  mov eax, 20
+  int 0x80
+
+  mov ebx, eax 
+  mov ecx, 19
+  mov eax, 37
+  int 0x80
+  popa
+  ret
+
+;
+; The call injection
+;
+
+.org 0x8048100 ; the off
+ jmp 
+
+
+
+; .global main
+main:
+  call selfstop
+  ret

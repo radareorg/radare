@@ -559,6 +559,7 @@ void cons_flush()
 
 	if (!strnull(cons_buffer)) {
 		char *file = config_get("file.scrfilter");
+		char *tee = config_get("scr.tee");
 		if (!strnull(file)) {
 			fd = fopen(file, "r");
 			if (fd) {
@@ -578,6 +579,14 @@ void cons_flush()
 				fclose(fd);
 			}
 		}
+		
+		if (tee&&tee[0]) {
+			FILE *d = fopen(tee, "a+");
+			if (d != NULL) {
+				fwrite(cons_buffer, strlen(cons_buffer),1, d);
+				fclose(d);
+			}
+		}
 #if __WINDOWS__
 		if (_print_fd == 1)
 			cons_w32_print(cons_buffer);
@@ -586,8 +595,9 @@ void cons_flush()
 		if (config_get("scr.html"))
 			cons_html_print(cons_buffer);
 		else
-			write(_print_fd, cons_buffer, strlen(cons_buffer));
+			write(_print_fd, cons_buffer, strlen(cons_buffer));//cons_buffer_len);
 		cons_buffer[0] = '\0';
+		//cons_buffer_sz=0;
 	}
 }
 
@@ -671,7 +681,6 @@ int cons_get_real_columns()
 	config.width = win.ws_col;
 	config.height = win.ws_row;
 #endif
-
         return win.ws_col;
 #else
 	return 80;
