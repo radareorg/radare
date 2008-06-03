@@ -243,7 +243,7 @@ int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
 	return arch_set_wp_hw(addr, DR_RW_EXECUTE);
 }
 
-int arch_rm_bp_hw(struct bp_t *bp)
+int arch_bp_rm_hw(struct bp_t *bp)
 {
 	int i; 
 	unsigned long addr;
@@ -334,7 +334,7 @@ int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 	return 0;
 }
 
-int arch_rm_bp_soft(struct bp_t *bp)
+int arch_bp_rm_soft(struct bp_t *bp)
 {
 	debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 	return 0;
@@ -369,20 +369,46 @@ int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
 
+	if (bp == NULL) {
+		eprintf("WARNING: Cannot restore bp %08llx\n",(u64)arch_pc());
+		return 0;
+	}
+
 	if(WS(bp)->hw) {
+printf("restore hard bp\n");
 		arch_bp_hw_disable(bp);
 		debug_os_steps();
 		debug_dispatch_wait();
 		arch_bp_hw_enable(bp);
 	} else {
-		arch_bp_soft_disable(bp);
+printf("restore soft bp\n");
+	//	arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
+#define CODE_GUAI 1
+#if CODE_GUAI
+	{
+		char buf[4];
+		u64 off = arch_pc()-2;
+		arch_jmp(off);
+		arch_bp_soft_disable(bp);
+		debug_read_at(ps.tid, buf, 4, off);
+		debug_write_at(ps.tid, "\x90", 1, off);
+		debug_os_steps();
+		debug_dispatch_wait();
+	printf("WRITE 4 bytes (%02x%02x%02x%02x) %08llx\n", buf[0], buf[1], buf[2], buf[3], off);
+		debug_write_at(ps.tid, buf, 4, off);
+//		arch_bp_soft_enable(bp);
+	}
+#endif
+#if 0
 		R_EIP(regs) = R_EIP(regs) - 1;
+		printf("EIP = %08x\n", R_EIP(regs));
 		debug_setregs(ps.tid, &regs);
 		debug_os_steps();
 		debug_dispatch_wait();
+#endif
+	//	arch_bp_soft_enable(bp);
 		debug_getregs(ps.tid, &regs);
-		arch_bp_soft_enable(bp);
 	}
 
 	return 0;

@@ -191,6 +191,8 @@ int cons_readchar()
 	if (read(0,buf,1)==-1)
 		return -1;
 #endif
+//printf("READ CHAR: (%02x) '%c'\n",buf[0], buf[0]);
+//sleep(1);
 	return buf[0];
 }
 

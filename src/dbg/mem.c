@@ -488,3 +488,71 @@ void rest_all_regions()
 	}
 }
 #endif
+
+int debug_imap(char *args)
+{
+	int fd = -1;
+	int ret = -1;
+
+	if (!ps.opened) {
+		eprintf(":imap No program loaded.\n");
+		return 1;
+	}
+
+	if(!args) {
+		eprintf(":imap No insert input stream.\n");
+		return 1;
+	}
+
+	if (!strncmp("file://", args + 1, 7)) {
+		struct stat inf;
+		addr_t addr;
+		char *pos;
+		char buf[4096];
+		char *filename = args + 8;
+		int len;
+
+		if((fd = open(filename, O_RDONLY)) < 0) {
+			perror(":map open");
+			goto err_map;
+		}
+
+		if(fstat(fd, &inf) == -1) {
+			perror(":map fstat");
+			goto err_map;
+		}
+
+		if(inf.st_size > MAX_MAP_SIZE) {
+			eprintf(":map file too long\n");
+			goto err_map;
+		}
+
+		addr = alloc_tagged_page(args + 1, inf.st_size);
+		if(addr == (addr_t)-1) {
+			eprintf(":imap memory size %i failed\n", inf.st_size);
+			goto err_map;
+		}
+
+		pos = (char *)(long)addr;
+		while((len = read(fd, buf, 4096)) > 4096) {
+			debug_write_at(ps.tid, buf, 4096, (long)pos);
+			pos += 4096;
+		}
+
+		if(len > 0)
+			debug_write_at(ps.tid, buf, len, (long)pos);
+
+		eprintf("file %s mapped at 0x%x\n", filename, addr);
+	} else {
+		eprintf(":imap Invalid input stream\n");
+		goto err_map;
+	}
+
+	ret = 0;
+
+err_map:
+	if(fd >= 0)
+		close(fd);
+
+	return ret;
+}

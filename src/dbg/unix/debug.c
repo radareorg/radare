@@ -141,6 +141,7 @@ int debug_print_wait(char *act)
 		cmd = config_get("cmd.bp");
 		if (cmd&&cmd[0])
 			radare_cmd((char *)cmd, 0);
+		debug_bp_restore(-1);
 		break;
 	default:
 		if(WS(event) != EXIT_EVENT ) {
@@ -156,7 +157,6 @@ int debug_print_wait(char *act)
 	}
 	return 0;
 }
-
 
 int debug_init_maps(int rest)
 {

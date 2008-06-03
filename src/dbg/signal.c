@@ -64,3 +64,46 @@ char *sig_to_desc(int sig)
 			return signals[i].string;
 	return NULL;
 }
+
+int debug_signal(const char *args)
+{
+	int signum;
+	char *signame;
+	char *arg;
+	addr_t address;
+
+	if (!ps.opened) {
+		eprintf(":signal No program loaded.\n");
+		return 1;
+	}
+
+	if (!args) {
+		print_sigah();
+		return 0;
+	}
+
+	if(strchr(args,'?')) {
+		cons_printf("Usage: !signal <SIGNUM> <HANDLER-ADDR>\n");
+		cons_printf(" HANDLER=0 means ignore signal\n");
+		return 0;
+	}
+	signame = args + 1;
+	if ((arg= strchr(signame, ' '))) {
+		arg[0]='\0'; arg=arg+1;
+		signum = name_to_sig(signame);
+		address = get_math(arg);
+		//signal_set(signum, address);
+		arch_set_sighandler(signum, address);
+	} else {
+		signum = name_to_sig(signame);	
+
+		if (signum == -1) {
+			eprintf(":signal Invalid signal name %s.\n", signame);
+			return 1;
+		}
+
+		debug_print_sigh(signame, (unsigned long)arch_get_sighandler(signum));
+	}
+
+	return 0;
+}

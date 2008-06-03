@@ -5,6 +5,16 @@
 #include "regs.h"
 #include "arch/arch.h"
 
+// bp.c
+int debug_bp(const char *addr);
+int debug_bp_set(struct bp_t *bp, u64 addr, int type);
+int debug_bp_rm(u64 addr, int type);
+int debug_bp_rm_num(int num);
+int debug_bp_rm_addr(u64 addr);
+int debug_bp_restore(int pos);
+struct bp_t *debug_bp_get(addr_t addr);
+struct bp_t *debug_bp_get_num(int num);
+
 // debug.c
 //
 int debug_init();
@@ -15,7 +25,6 @@ int debug_load();
 int debug_read(pid_t pid, void *addr, int length);
 int debug_write(pid_t pid, void *data, int length);
 int debug_run();
-int debug_bp(char *addr);
 int debug_wp(char *expr);
 int debug_mp(char *expr);
 int debug_wtrace();
@@ -55,7 +64,7 @@ int debug_bt();
 int debug_jmp(const char *str);
 int debug_call(const char *str);
 int debug_info();
-int debug_signal(char *);
+int debug_signal(const char *);
 //int debug_contfork();
 struct bp_t *debug_get_bp(addr_t addr);
 int debug_pstree();
@@ -130,9 +139,9 @@ struct event_t {
 struct bp_t
 {
 	int hw;
-	unsigned long addr;
-	unsigned char data[512];
+	u64 addr;
 	int len;
+	unsigned char data[512];
 };
 
 struct debug_t {

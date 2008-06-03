@@ -18,6 +18,10 @@ CODE INJECTION (as a plugin)
  * implement sleep shellcode
   - using nanosleep
     -> nanosleep(&foo, NULL);
+* handle 0x values in hexpairs to swap endian on it:
+  00 0x8048010 10 20
+  will be:
+  00 10 80 04 08 10 20
 
 call +1
 pop ebx

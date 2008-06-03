@@ -31,7 +31,7 @@ int dislen(u8* opcode0, int limit);
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	unsigned long *ptr = (unsigned long *)(bytes+1);
-	unsigned char *ptr2 = (unsigned char *)(bytes+1);
+	//unsigned char *ptr2 = (unsigned char *)(bytes+1);
 
 	memset(aop, '\0', sizeof(struct aop_t));
 //printf("0x%08x %02x %02x\n", addr, (unsigned char)bytes[0], (unsigned char)bytes[1]);

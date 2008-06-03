@@ -55,9 +55,6 @@
 
 extern struct regs_off roff[];
 
-int debug_set_bp(struct bp_t *bp, unsigned long addr, int type);
-int inline debug_rm_bp_num(int num);
-inline int debug_rm_bp_addr(unsigned long addr);
 int debug_alloc_status();
 
 void debug_dumpcore()
@@ -112,6 +109,10 @@ int getv()
 /// XXX use wait4 and get rusage here!!!
 pid_t debug_waitpid(int pid, int *status)
 {
+#if CRASH_LINUX_KERNEL
+	if (pid == -1)
+		return -1;
+#endif
 #if __FreeBSD__
 	return waitpid(pid, status, WUNTRACED);
 #else
@@ -255,34 +256,6 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	hijack_fd(2, config_get("child.stderr"));
 }
 
-void debug_reload_bps()
-{
-        int bps;
-        int i;
-
-	// XXX must free the lists before
-        INIT_LIST_HEAD(&(ps.th_list));       
-        INIT_LIST_HEAD(&(ps.map_mem));
-        INIT_LIST_HEAD(&(ps.map_reg));
-
-        bps = 0;
-        for(i = 0; bps != ps.bps_n; i++) {
-                if(ps.bps[i].addr != 0) {
-                        if(ps.bps[i].hw) {
-                                if(arch_set_bp_hw(&ps.bps[i], ps.bps[i].addr) < 0)
-                                	eprintf(":debug_reload_bps failed "
-                                        	"set breakpoint HARD at 0x%x\n",
-						 ps.bps[i].addr);
-			} else {
-				if(arch_set_bp_soft(&ps.bps[i], ps.bps[i].addr) != 0)
-                                	eprintf(":debug_reload_bps failed "
-                                        	"set breakpoint SOFT at 0x%x\n",
-						 ps.bps[i].addr);
-                        }
-                        bps++;
-                }
-        }
-}
 
 int debug_bt()
 {
@@ -459,37 +432,39 @@ int debug_until(char *addr)
 
 	if (off != 0) {
 		eprintf("entry at: 0x%x\n", ps.entrypoint);
-		bp_pos = debug_set_bp(NULL, off, BP_SOFT);
+		bp_pos = debug_bp_set(NULL, off, BP_SOFT);
 		debug_cont(0);
-		debug_rm_bp_num(bp_pos);
-		restore_bp();
+		debug_bp_restore(bp_pos);
+		debug_bp_rm_num(bp_pos);
 	}
 
 	if (!strcmp("main", addr)) {
 		// XXX intel only
 		// XXX BP_SOFT is ugly (linux supports DRX HERE)
+#if ARCH_I386
 		debug_read_at(ps.tid, buf, 12, arch_pc());
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
 			off = (addr_t)ptr;
-			bp_pos = debug_set_bp(NULL, off, BP_SOFT);
+			bp_pos = debug_bp_set(NULL, off, BP_SOFT);
 			debug_cont(0);
-			debug_rm_bp_num(bp_pos);
-			restore_bp();
+			debug_bp_rm_num(bp_pos);
+			debug_bp_restore();
 			//arch_jmp(arch_pc()-1); // XXX only x86
 		} else
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
 			debug_read_at(ps.tid, &addr, 4, arch_pc()+0x16);
 			off = (addr_t)addr;
-			bp_pos = debug_set_bp(NULL, addr, BP_SOFT);
+			bp_pos = debug_bp_set(NULL, addr, BP_SOFT);
 			printf("main at: 0x%x\n", addr);
 			debug_step(1);
 			debug_cont(0);
-			debug_rm_bp_num(bp_pos);
-			restore_bp();
+			debug_bp_rm_num(bp_pos);
+			debug_bp_restore();
 		} else
 			eprintf("Cannot find main analyzing the entrypoint. Try harder.\n");
+#endif
 	}
 
 	if (config_get("dbg.syms"))
@@ -820,116 +795,6 @@ int debug_skip(int times)
 	return 0;
 }
 
-int debug_imap(char *args)
-{
-	int fd = -1;
-	int ret = -1;
-
-	if (!ps.opened) {
-		eprintf(":imap No program loaded.\n");
-		return 1;
-	}
-
-	if(!args) {
-		eprintf(":imap No insert input stream.\n");
-		return 1;
-	}
-
-	if (!strncmp("file://", args + 1, 7)) {
-		struct stat inf;
-		addr_t addr;
-		char *pos;
-		char buf[4096];
-		char *filename = args + 8;
-		int len;
-
-		if((fd = open(filename, O_RDONLY)) < 0) {
-			perror(":map open");
-			goto err_map;
-		}
-
-		if(fstat(fd, &inf) == -1) {
-			perror(":map fstat");
-			goto err_map;
-		}
-
-		if(inf.st_size > MAX_MAP_SIZE) {
-			eprintf(":map file too long\n");
-			goto err_map;
-		}
-
-		addr = alloc_tagged_page(args + 1, inf.st_size);
-		if(addr == (addr_t)-1) {
-			eprintf(":imap memory size %i failed\n", inf.st_size);
-			goto err_map;
-		}
-
-		pos = (char *)(long)addr;
-		while((len = read(fd, buf, 4096)) > 4096) {
-			debug_write_at(ps.tid, buf, 4096, (long)pos);
-			pos += 4096;
-		}
-
-		if(len > 0)
-			debug_write_at(ps.tid, buf, len, (long)pos);
-
-		eprintf("file %s mapped at 0x%x\n", filename, addr);
-	} else {
-		eprintf(":imap Invalid input stream\n");
-		goto err_map;
-	}
-
-	ret = 0;
-
-err_map:
-	if(fd >= 0)
-		close(fd);
-
-	return ret;
-}
-
-int debug_signal(char *args)
-{
-	int signum;
-	char *signame;
-	char *arg;
-	addr_t address;
-
-	if (!ps.opened) {
-		eprintf(":signal No program loaded.\n");
-		return 1;
-	}
-
-	if (!args) {
-		print_sigah();
-		return 0;
-	}
-
-	if(strchr(args,'?')) {
-		cons_printf("Usage: !signal <SIGNUM> <HANDLER-ADDR>\n");
-		cons_printf(" HANDLER=0 means ignore signal\n");
-		return 0;
-	}
-	signame = args + 1;
-	if ((arg= strchr(signame, ' '))) {
-		arg[0]='\0'; arg=arg+1;
-		signum = name_to_sig(signame);
-		address = get_math(arg);
-		//signal_set(signum, address);
-		arch_set_sighandler(signum, address);
-	} else {
-		signum = name_to_sig(signame);	
-
-		if (signum == -1) {
-			eprintf(":signal Invalid signal name %s.\n", signame);
-			return 1;
-		}
-
-		debug_print_sigh(signame, (unsigned long)arch_get_sighandler(signum));
-	}
-
-	return 0;
-}
 
 int debug_stepu()
 {
@@ -967,13 +832,13 @@ int debug_stepo()
 		if (config_get("trace.log"))
 			trace_add((addr_t)pc);
 
-		///  XXX  BP_SOFT with restore_bp doesnt restores EIP correctly
-		bp_pos = debug_set_bp(NULL, pc+skip, BP_HARD);
+		///  XXX  BP_SOFT with debug_bp_restore doesnt restores EIP correctly
+		bp_pos = debug_bp_set(NULL, pc+skip, BP_HARD);
 
 		debug_cont(0);
-		debug_rm_bp_num(bp_pos);
+		debug_bp_rm_num(bp_pos);
 		
-//		restore_bp();
+//		debug_bp_restore();
 		return 1;
 	} else
 		debug_step(1);
@@ -1006,22 +871,22 @@ int debug_stepbp(int times)
 
 	if (times<2) {
 		if (aop.jump)
-			bp0 = debug_set_bp(NULL, aop.jump, BP_SOFT);
+			bp0 = debug_bp_set(NULL, aop.jump, BP_SOFT);
 		if (aop.fail)
-			bp1 = debug_set_bp(NULL, aop.fail, BP_SOFT);
+			bp1 = debug_bp_set(NULL, aop.fail, BP_SOFT);
 		if (bp0==-1 && bp1==-1)
-			bp0 = debug_set_bp(NULL, pc+len, BP_SOFT);
+			bp0 = debug_bp_set(NULL, pc+len, BP_SOFT);
 
 		debug_cont(0);
-		//restore_bp();
+		//debug_bp_restore();
 
 		printf("%08llx %08llx %08llx\n", aop.jump, aop.fail, pc+len);
 		if (bp0!=-1)
-			debug_rm_bp_addr(aop.jump);
-			//debug_rm_bp_num(bp0);
+			debug_bp_rm_addr(aop.jump);
+			//debug_bp_rm_num(bp0);
 		if (bp1!=-1)
-			debug_rm_bp_addr(aop.fail);
-		debug_rm_bp_addr(pc+len);
+			debug_bp_rm_addr(aop.fail);
+		debug_bp_rm_addr(pc+len);
 	} else {
 		u64 ptr = pc;
 		for(i=0;i<times;i++) {
@@ -1030,11 +895,11 @@ int debug_stepbp(int times)
 			ptr += len;
 		}
 		printf("Stepping %d opcodes using breakpoint at %08llx\n", ptr);
-		bp0 = debug_set_bp(NULL, ptr, BP_SOFT);
+		bp0 = debug_bp_set(NULL, ptr, BP_SOFT);
 		debug_cont(0);
-		debug_rm_bp_addr(ptr);
+		debug_bp_rm_addr(ptr);
 	}
-		//debug_rm_bp_num(bp1);
+		//debug_bp_rm_num(bp1);
 
 	return 0;
 }
@@ -1060,9 +925,11 @@ int debug_step(int times)
 	if(times < 1)
 		times = 1;
 
+#if 0
 	/* restore breakpoint */
-	if(restore_bp())
+	if(debug_bp_restore(-1))
 		times--;
+#endif
 
 	if (ps.verbose) {
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
@@ -1079,7 +946,7 @@ int debug_step(int times)
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			pc = arch_pc();
 			if (config_get("trace.log"))
-				trace_add((addr_t)arch_pc());
+				trace_add(pc);
 
 			if (pc == old_pc) {
 				debug_read_at(ps.tid, opcode, 32, (addr_t)pc);
@@ -1097,12 +964,12 @@ int debug_step(int times)
 				(const unsigned char *)opcode))) {
 				pc += off;
 			#if __i386__
-				debug_set_bp(NULL, pc, BP_HARD);
+				debug_bp_set(NULL, pc, BP_HARD);
 			#else
-				debug_set_bp(NULL, pc, BP_SOFT);
+				debug_bp_set(NULL, pc, BP_SOFT);
 			#endif
 				debug_cont(0);
-				debug_rm_bp_addr(pc);
+				debug_bp_rm_addr(pc);
 				ps.steps++;
 			} else {
 				if (debug_os_steps() == -1) {
@@ -1123,8 +990,7 @@ int debug_step(int times)
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
-				sprintf(buf, "CC %d %s @ 0x%08x",
-					ps.steps, ptr, (unsigned int)arch_pc());
+				sprintf(buf, "CC %d %s @ 0x%08x", ps.steps, ptr, (unsigned int)pc);
 				config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer
@@ -1139,7 +1005,8 @@ int debug_step(int times)
 					char buf[1024];
 // XXX dbg.tracefile doesnt works as expected :(
 					//pprint_fd(fd);
-					sprintf(buf, "0x%08llx ", pc);
+					// TODO: store moar nfo here like opcode and !dregs
+					sprintf(buf, "0x%08llx\n", pc);
 					write(fd, buf, strlen(buf));
 					close(fd);
 				}
@@ -1331,7 +1198,7 @@ void debug_print_bps()
 		eprintf("breakpoints not set\n");
 }
 
-int debug_rm_bps()
+int debug_bp_rms()
 {
 	int i;
 	int ret, bps;
@@ -1341,12 +1208,12 @@ int debug_rm_bps()
 	for(i = 0; i < MAX_BPS && ps.bps_n > 0; i++) {
 		if(ps.bps[i].addr > 0) { 
 		        if(ps.bps[i].hw)
-                		ret = arch_rm_bp_hw(&ps.bps[i]);
-        		else	ret = arch_rm_bp_soft(&ps.bps[i]);
+                		ret = arch_bp_rm_hw(&ps.bps[i]);
+        		else	ret = arch_bp_rm_soft(&ps.bps[i]);
 
 			if(ret < 0) {
 				eprintf(
-					":debug_rm_bps error removing bp 0x%x\n",
+					":debug_bp_rms error removing bp 0x%x\n",
 					ps.bps[i].addr);
 				break;
 			}
@@ -1510,102 +1377,6 @@ int debug_wp(char *str)
 	return 0;
 }
 
-int debug_bp(char *str)
-{
-	addr_t addr;
-	const char *ptr = str;
-	const char *type;
-	int bptype = BP_NONE;
-
-	switch(str[0]) {
-	case 's':
-		bptype = BP_SOFT;
-		break;
-	case 'h':
-		bptype = BP_HARD;
-		break;
-	case '?':
-		cons_printf("Usage: !bp[?|s|h|*] ([addr|-addr])\n"
-		"  !bp [addr]    add a breakpoint\n"
-		"  !bp -[addr]   remove a breakpoint\n"
-		"  !bp*          remove all breakpoints\n"
-		"  !bps          software breakpoint\n"
-		"  !bph          hardware breakpoint\n");
-		return 0;
-	}
-
-	if (bptype == BP_NONE) {
-		type = config_get("dbg.bptype");
-		if (type) {
-			if (type[0]=='s')
-				bptype = BP_SOFT;
-			else
-			if (type[0]=='h')
-				bptype = BP_HARD;
-		}
-	}
-
-	while ( *ptr && *ptr != ' ') ptr = ptr + 1;
-	while ( *ptr && *ptr == ' ' ) ptr = ptr + 1;
-
-	type = ptr;
-
-	while ( *type && *type != ' ') type = type + 1;
-	while ( *type && *type == ' ' ) type = type + 1;
-
-	switch(ptr[0]) {
-	case '-':
-		addr = get_offset(ptr+1);
-		flag_clear_by_addr(addr);
-		if(debug_rm_bp_addr(addr) == 0)
-			eprintf("breakpoint at 0x%x dropped\n", addr);
-		break;
-	case '+': // relative from eip
-		addr = config.seek + get_offset(ptr+1);
-		flag_set("breakpoint", addr, 3);
-		debug_set_bp(NULL, addr, bptype);
-		eprintf("new breakpoint at 0x%lx\n", addr);
-		break;
-	case '*':
-		eprintf("%i breakpoint(s) removed\n", debug_rm_bps());
-		break;
-	default:
-		addr = get_offset(ptr);
-		if (ptr[0]==0 || addr == 0)
-			debug_print_bps();
-		else {
-			flag_set("breakpoint", addr, 3);
-			debug_set_bp(NULL, addr, bptype);
-			eprintf("new breakpoint at 0x%lx\n", addr);
-		}
-		break;
-	}
-
-	return 0;
-}
-
-struct bp_t *debug_get_bp(addr_t addr)
-{
-	int i = 0;
-
-	for(i = 0; i < MAX_BPS; i++) 
-		if(ps.bps[i].addr == addr)
-			return &ps.bps[i]; 
-
-	return  NULL;
-}
-
-/* HACK: save a hardware/software breakpoint */
-inline int restore_bp()
-{
-        if(WS(event) == BP_EVENT) {
-		arch_restore_bp(WS(bp));
-		return 1;
-        }
-
-	return 0;
-}
-
 int print_syscall()
 {
 	return arch_print_syscall();
@@ -1617,10 +1388,10 @@ int debug_contuh(char *arg)
 	int bp;
 	addr_t off = arch_pc();
 	debug_step(1);
-	bp = debug_set_bp(NULL, off, BP_SOFT);
+	bp = debug_bp_set(NULL, off, BP_SOFT);
 	debug_cont(0);
-	restore_bp();
-	debug_rm_bp_num(bp);
+	debug_bp_restore(-1);
+	debug_bp_rm_num(bp);
 	return 0;
 }
 
@@ -1636,7 +1407,7 @@ int debug_contsc(char *arg)
 
 	/* restore breakpoint */
 	do {
-		restore_bp();
+		debug_bp_restore(-1);
 
 		/* launch continue */
 		debug_contscp();
@@ -1720,7 +1491,7 @@ int debug_inject(char *file)
 	return 1;
 }
 
-/* XXX : Stops at the following opcode at this address...restore_bp() doesnt works? */
+/* XXX : Stops at the following opcode at this address...debug_bp_restore() doesnt works? */
 int debug_cont_until(const char *input)
 {
 	u64 addr = input?get_math(input):0;
@@ -1729,10 +1500,10 @@ int debug_cont_until(const char *input)
 	if (addr != 0) {
 		struct bp_t *bp;
 		debug_step(1);
-		bp = debug_set_bp(NULL, addr, BP_HARD);
+		bp = debug_bp_set(NULL, addr, BP_HARD);
 		debug_cont(0);
-		debug_rm_bp_num(bp);
-		restore_bp();
+		debug_bp_rm_num(bp);
+		debug_bp_restore(-1);
 		return 1;
 	} 
 	return 0;
@@ -1750,7 +1521,7 @@ int debug_cont(const char *input)
 
 	do { 
 		/* restore breakpoint */
-		restore_bp();
+		debug_bp_restore(0);
 
 		/* launch continue */
 		debug_contp(ps.tid);
@@ -1797,34 +1568,6 @@ int debug_pids()
 #endif
 }
 
-int debug_rm_bp(unsigned long addr, int type)
-{
-	struct bp_t *bp;
-	int ret;
-
-	bp = debug_get_bp(addr);	
-	if (bp == NULL)
-		return -1;
-	if(bp->hw)
-		ret = arch_rm_bp_hw(bp);
-	else	ret = arch_rm_bp_soft(bp);
-
-	if(ret < 0)
-		return ret;
-
-	flag_clear_by_addr((addr_t)addr); //"breakpoint", addr, 1);
-
-	bp->addr = 0;
-	ps.bps_n--;
-
-	return 0;
-}
-
-int inline debug_rm_bp_num(int num)
-{
-#warning XXX THIS IS BUGGY! num != addr, addr_t != int !!
-	return debug_rm_bp(num, 1);
-}
 
 inline unsigned long debug_get_regoff(regs_t *reg, int off)
 {
@@ -1843,65 +1586,6 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 	debug_setregs(ps.tid, regs);
 }
 
-inline int debug_rm_bp_addr(unsigned long addr)
-{
-	return debug_rm_bp(addr, 0);
-}
-
-int debug_set_bp(struct bp_t *bp, unsigned long addr, int type)
-{
-	int i, ret, bp_free = -1;
-
-	if (addr == 0)
-		addr = arch_pc(); // WS_PC();
-
-	/* all slots busy */
-	if(ps.bps_n == MAX_BPS)
-		return -2;
-
-	/* search for breakpoint */
-	for(i=0;i < MAX_BPS;i++) {
-
-		/* breakpoint found it */
-		if(ps.bps[i].addr == addr) {
-			if(bp)
-				bp = &ps.bps[i];
-			return 0;
-		}
-
-		if(ps.bps[i].addr == 0)
-			bp_free = i;
-	}
-
-	ret = -1;
-	if(type == BP_SOFT) {
-		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
-		
-		ps.bps[bp_free].hw = 0;
-	} else if(type == BP_HARD) {
-		ret = arch_set_bp_hw(&ps.bps[bp_free], addr);
-		ps.bps[bp_free].hw = 1;
-	}
-	if(ret < 0) {
-		if((ret = arch_set_bp_hw(&ps.bps[bp_free], addr)) >= 0 )
-			ps.bps[bp_free].hw = 1;
-		else if((ret = arch_set_bp_soft(&ps.bps[bp_free], addr)) >= 0)
-			ps.bps[bp_free].hw = 0;
-
-		if(ret < 0) {
-			ps.bps[bp_free].addr = 0;
-			return ret;
-		}
-	}
-
-	ps.bps[bp_free].addr = addr;
-	if(bp)
-		bp = &ps.bps[bp_free];
-
-	ps.bps_n++;
-
-	return bp_free;
-}
 
 int debug_run()
 {
@@ -1952,15 +1636,14 @@ int debug_loop(char *addr_str)
 	pc = arch_pc();
 
 	/* if exist a breakpoint at PC address then delete it */
-	bp = debug_get_bp(pc);
+	bp = debug_bp_get(pc);
 	if(bp != (struct bp_t *)NULL)
-		debug_rm_bp_addr(pc);
+		debug_bp_rm_addr(pc);
 
 	/* set HW breakpoint on return address */
-	if(debug_set_bp(NULL, ret_addr, BP_HARD) < 0) {
+	if(debug_bp_set(NULL, ret_addr, BP_HARD) < 0) {
 		eprintf("Cannot set hw on return address(0x%x)\n",
 				ret_addr);
-
 		return -1;
 	}
 
@@ -1996,7 +1679,7 @@ int debug_loop(char *addr_str)
 	}
 
 	/* remove HW bp */
-	debug_rm_bp_addr(ret_addr);
+	debug_bp_rm_addr(ret_addr);
 
 	/* set pc */
 	arch_jmp(pc);

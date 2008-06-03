@@ -45,3 +45,5 @@ psOBJ+=dbg/unix/syscall.o
 endif
 
 endif
+
+psOBJ+=dbg/bp.o

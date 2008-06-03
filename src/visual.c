@@ -1090,59 +1090,24 @@ CMD_DECL(visual)
 			break;
 		}
 
+		if (key == '~')
+			key = cons_readchar();
+
 		/* normal visual mode */
 		switch(key) {
-		case 27:
+		case 0x1b: // ESC
 			key = cons_readchar();
 			switch(key) {
-			case 0x1b:
-				key = 'q';
-				break;
+#if 0
 			case 0x4f: // Fx
 				key = cons_readchar();
 				key-=0x4f;
 				if (config.debug)
 				switch(key) {
 				case 1: // F1 -help
-					cons_clear();
-					radare_cmd("!help", 0);
-					press_any_key();
-					cons_clear();
-					continue;
 #if DEBUGGER
 					/* debugger */
 				case 2: // F2 - breakpoint
-					{
-						struct bp_t *bp;
-						u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
-						//			cons_set_raw(0);
-						//			printf("Breakpoint at: ");
-						//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
-						bp = debug_get_bp(addr);
-						if (bp) {
-							sprintf(line, "!bp -0x%08x", (unsigned int)addr);
-							radare_cmd(line,0);
-							//debug_rm_bp(addr, 0);
-						} else {
-							sprintf(line, "!bp 0x%08x", (unsigned int)addr);
-							radare_cmd(line,0);
-						}
-						if (!debug_get_bp(addr))
-							flag_clear_by_addr(addr);
-						cons_clear();
-						continue;
-					}
-				case 3: // F3 - watchpoint
-					cons_set_raw(0);
-					printf("Watchpoint at: ");
-					strcpy(line, "!drw ");
-					fgets(line+5, sizeof(line), stdin);
-					line[strlen(line)-1]='\0';
-					radare_cmd(line,0);
-					cons_set_raw(1);
-					press_any_key();
-					cons_clear();
-					continue;
 				case 4: // F4 - watchpoint
 					radare_cmd("!contuh", 0);
 					cons_clear();
@@ -1150,7 +1115,11 @@ CMD_DECL(visual)
 #endif
 				}
 				break;
-			case 0x5b:
+#endif
+			case 0x1b: // DOUBLE ESC
+				key='q';
+				break;
+			case '[':
 				key = cons_readchar();
 				switch(key) {
 				case 0x35: key='K'; break; // re.pag
@@ -1159,14 +1128,58 @@ CMD_DECL(visual)
 				case 0x42: key='j'; break; // down
 				case 0x43: key='l'; break; // right
 				case 0x44: key='h'; break; // left
-				case 0x31: // Fn
-				case 0x32:
-					key = cons_readchar();
+				case '1':
+					key = cons_readchar(); // Read dummy '~'
 					switch(key) {
-					case 0x37: // F6
+					case '1': // F1
+						cons_clear();
+						radare_cmd("!help", 0);
+						press_any_key();
+						cons_clear();
+						continue;
+					case '2': // F2
+						{
+						struct bp_t *bp;
+						u64 addr = config.seek + (config.cursor_mode?config.cursor:0);
+						//			cons_set_raw(0);
+						//			printf("Breakpoint at: ");
+						//toggle_breakpoint(config.seek+(config.cursor_mode?config.cursor:0));
+						bp = debug_bp_get(addr);
+						if (bp) {
+							sprintf(line, "!bp -0x%08x", (unsigned int)addr);
+							radare_cmd(line,0);
+							//debug_rm_bp(addr, 0);
+						} else {
+							sprintf(line, "!bp 0x%08x", (unsigned int)addr);
+							radare_cmd(line,0);
+						}
+						if (!debug_bp_get(addr))
+							flag_clear_by_addr(addr);
+						cons_clear();
+						continue;
+						}
+					case '3': // F3 - watchpoint
+						cons_set_raw(0);
+						printf("Watchpoint at: ");
+						strcpy(line, "!drw ");
+						fgets(line+5, sizeof(line), stdin);
+						line[strlen(line)-1]='\0';
+						radare_cmd(line,0);
+						cons_set_raw(1);
+						press_any_key();
+						cons_clear();
+						continue;
+					case '4': // contuh
+						radare_cmd("!contuh", 0);
+						cons_clear();
+						continue;
+					case '5': // F5 - set eip
+						arch_jmp(config.seek + (config.cursor_mode?config.cursor:0));
+						continue;
+					case '7': // F6
 						radare_cmd("!contsc", 0);
-						break;
-					case 0x38: // F7
+						continue;
+					case '8': // F7
 						if (config_get("trace.libs")) {
 							//CMD_NAME(step)(NULL);
 							debug_step(1);
@@ -1174,17 +1187,15 @@ CMD_DECL(visual)
 							CMD_NAME(stepu_in_dbg)(NULL);
 						}
 						continue;
-					case 0x39: // F8
+					case '9': // F8
 						if (config.debug)
 							CMD_NAME(stepo_in_dbg)(NULL);
 						continue;
-					case 0x30: // F9
-						if (config.debug)
-							radare_cmd("!cont", 0);
-						continue;
 					}
-				case 0x3b:
+					break;
+				case '2':
 					key = cons_readchar();
+					cons_readchar(); // Read dummy '~'
 					switch(key) {
 					case 50:
 						key = cons_readchar();
@@ -1195,14 +1206,19 @@ CMD_DECL(visual)
 						case 68: key='H'; break;
 						}
 						break;
-					case 126: // F10
+					case '0': // F9
+						if (config.debug)
+							radare_cmd("!cont", 0);
+						continue;
+					case '~': // F10
 						D printf("Walking until user code...\n");
 						radare_cmd("!contu", 0);
 						continue;
 					default:
 						printf("50 unknown key %d\n", key);
 						key = cons_readchar();
-					} break;
+					}
+					break;
 				default:
 					printf("0x5b unknown key 0x%x\n", key);
 					key = cons_readchar();
