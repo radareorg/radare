@@ -229,7 +229,7 @@ void gradare_new_graph()
 
 void gradare_new_monitor()
 {
-	GtkWidget *w;
+	GtkWindow *w;
 	GtkWidget *vbox;
 	GtkWidget *hbox;
 	GtkWidget *hpan;
@@ -238,6 +238,7 @@ void gradare_new_monitor()
 	mon->id = mon_id++;
 
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	w->allow_shrink=TRUE;
 #if _MAEMO_
 	hildon_program_add_window(p, w);
 #endif
@@ -438,6 +439,7 @@ int main(int argc, char **argv, char **envp)
 #else
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #endif
+	w->allow_shrink=TRUE;
 	g_signal_connect(G_OBJECT(w), "key_press_event", G_CALLBACK(key_press_cb), w);
 
 	gtk_window_resize(GTK_WINDOW(w), 800,600);
