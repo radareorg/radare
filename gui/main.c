@@ -36,10 +36,10 @@ int is_debugger = 0;
 char *font = FONT;
 
 #if _MAEMO_
-	HildonWindow *w = NULL;
-	HildonProgram *p = NULL;
+HildonWindow *w = NULL;
+HildonProgram *p = NULL;
 #else
-	GtkWindow *w = NULL;
+GtkWindow *w = NULL;
 #endif
 
 // TODO: autodetect project files (rdb)
@@ -144,7 +144,7 @@ void continue_until_here()
 
 gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_data)
 {
-        GtkWidget *menu_item;
+	GtkWidget *menu_item;
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
 		menu = gtk_menu_new();
@@ -203,9 +203,9 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 	system(buf);
 
 	vte_terminal_fork_command(
-		VTE_TERMINAL(mon->term),
-		cmd[0], cmd, NULL, ".",
-		FALSE, FALSE, FALSE);
+			VTE_TERMINAL(mon->term),
+			cmd[0], cmd, NULL, ".",
+			FALSE, FALSE, FALSE);
 
 	return 0;
 }
@@ -214,17 +214,17 @@ int mon_id = 0;
 
 void gradare_save_project()
 {
-	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
 }
 
 void gradare_open_project()
 {
-	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
 }
 
 void gradare_new_graph()
 {
-	 vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
 }
 
 void gradare_new_monitor()
@@ -253,10 +253,10 @@ void gradare_new_monitor()
 	mon->entry = gtk_entry_new();
 	mon->but = gtk_button_new_with_label("Go");
 	// mouse
-        g_signal_connect(mon->but, "released", (gpointer)monitor_button_clicked, (gpointer)mon);
+	g_signal_connect(mon->but, "released", (gpointer)monitor_button_clicked, (gpointer)mon);
 	// keyboard
-        g_signal_connect(mon->but, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
-        g_signal_connect(mon->entry, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
+	g_signal_connect(mon->but, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
+	g_signal_connect(mon->entry, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
 	gtk_container_add(GTK_CONTAINER(hbox), mon->entry);
 	gtk_box_pack_start(GTK_CONTAINER(hbox), mon->but, FALSE, FALSE, 5);
 	gtk_box_pack_start(GTK_CONTAINER(vbox), hbox, FALSE, FALSE, 5);
@@ -271,13 +271,13 @@ void gradare_new_monitor()
 	vte_terminal_set_scrollback_lines((VteTerminal*)mon->term, 3000);
 	vte_terminal_set_font_from_string_full((VteTerminal*)mon->term, font, VTE_ANTI_ALIAS_FORCE_DISABLE);
 	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
-         g_signal_connect (mon->term, "button-press-event", G_CALLBACK (popup_context_menu), NULL);
+	g_signal_connect (mon->term, "button-press-event", G_CALLBACK (popup_context_menu), NULL);
 
-/*
-	vte_terminal_fork_command(
-		VTE_TERMINAL(term),
-		cmd[0], cmd, NULL, ".",
-		FALSE, FALSE, FALSE);
+	/*
+	   vte_terminal_fork_command(
+	   VTE_TERMINAL(term),
+	   cmd[0], cmd, NULL, ".",
+	   FALSE, FALSE, FALSE);
 
 */
 	gtk_container_add(GTK_CONTAINER(vbox), mon->term);
@@ -311,71 +311,71 @@ void toggle_fullscreen()
 
 /* Callback for hardware keys */
 gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
-                      GtkWindow * window)
+		GtkWindow * window)
 {
-    switch (event->keyval) {
+	switch (event->keyval) {
 #if 0
-    case GDK_Up:
-//        hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Up");
-	vte_terminal_feed_child(VTE_TERMINAL(term), "k", 1);
-        return TRUE;
+		case GDK_Up:
+			//        hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Up");
+			vte_terminal_feed_child(VTE_TERMINAL(term), "k", 1);
+			return TRUE;
 
-    case GDK_Down:
- //       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Down");
-	vte_terminal_feed_child(VTE_TERMINAL(term), "j", 1);
-        return TRUE;
+		case GDK_Down:
+			//       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Down");
+			vte_terminal_feed_child(VTE_TERMINAL(term), "j", 1);
+			return TRUE;
 
-    case GDK_Left:
- //       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Left");
-	vte_terminal_feed_child(VTE_TERMINAL(term), "h", 1);
-        return TRUE;
+		case GDK_Left:
+			//       hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Left");
+			vte_terminal_feed_child(VTE_TERMINAL(term), "h", 1);
+			return TRUE;
 
-    case GDK_Right:
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Right");
-	vte_terminal_feed_child(VTE_TERMINAL(term), "l", 1);
-        return TRUE;
+		case GDK_Right:
+			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key Right");
+			vte_terminal_feed_child(VTE_TERMINAL(term), "l", 1);
+			return TRUE;
 
-    case GDK_Return:
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key select");
-        return TRUE;
+		case GDK_Return:
+			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key select");
+			return TRUE;
 #endif
 
-    case GDK_F6:
-  //      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
-	toggle_fullscreen();
-        return TRUE;
+		case GDK_F6:
+			//      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
+			toggle_fullscreen();
+			return TRUE;
 
-// TODO: FONT SIZE HERE!
+			// TODO: FONT SIZE HERE!
 #if _MAEMO_
-    case GDK_F7:
+		case GDK_F7:
 #else
-    case GDK_KP_Add:
+		case GDK_KP_Add:
 #endif
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
-	fontsize = console_font_size(++fontsize);
-        return TRUE;
+			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
+			fontsize = console_font_size(++fontsize);
+			return TRUE;
 
-    case GDK_F5:
-	gradare_refresh();
-	return TRUE;
+		case GDK_F5:
+			gradare_refresh();
+			return TRUE;
 #if _MAEMO_
-    case GDK_F8:
+		case GDK_F8:
 #else
-    case GDK_KP_Subtract:
+		case GDK_KP_Subtract:
 #endif
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
-	fontsize = console_font_size(--fontsize);
-        return TRUE;
-//#endif
+			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+			fontsize = console_font_size(--fontsize);
+			return TRUE;
+			//#endif
 
-    case GDK_Escape:
-        //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
-	//gtk_window_unfullscreen(window);
-	gtk_widget_grab_focus(term);
-        return TRUE;
-    }
+		case GDK_Escape:
+			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
+			//gtk_window_unfullscreen(window);
+			gtk_widget_grab_focus(term);
+			return TRUE;
+	}
 
-    return FALSE;
+	return FALSE;
 }
 
 
@@ -388,39 +388,39 @@ int main(int argc, char **argv, char **envp)
 
 	while ((c = getopt(argc, argv, "e:hf:d")) != -1) {
 		switch( c ) {
-		case 'd': {
-			// XXX : overflowable, must use strcatdup or stgh like that
-			int pid = atoi(argv[optind]);
-			char buf[4096];
-			char buf2[4096];
-			buf[0]='\0';
+			case 'd': {
+					  // XXX : overflowable, must use strcatdup or stgh like that
+					  int pid = atoi(argv[optind]);
+					  char buf[4096];
+					  char buf2[4096];
+					  buf[0]='\0';
 
-			/* by process-id */
-			if (pid > 0) {
-				sprintf(buf2, "pid://%d", pid);
-				//plugin_load();
-				//return radare_go();
-				filename = strdup(buf2);
-			} else {
-				/* by program path */
-				for(c=optind;argv[c];c++) {
-					strcat(buf, argv[c]);
-					if (argv[c+1])
-						strcat(buf, " ");
-				}
-				sprintf(buf2, "dbg://%s", buf);
-				filename = strdup(buf2);
-			}}
-			break;
-		case 'h':
-			show_help_message();
-			break;
-		case 'e':
-			command = optarg;
-			break;
-		case 'f':
-			font = optarg;
-			break;
+					  /* by process-id */
+					  if (pid > 0) {
+						  sprintf(buf2, "pid://%d", pid);
+						  //plugin_load();
+						  //return radare_go();
+						  filename = strdup(buf2);
+					  } else {
+						  /* by program path */
+						  for(c=optind;argv[c];c++) {
+							  strcat(buf, argv[c]);
+							  if (argv[c+1])
+								  strcat(buf, " ");
+						  }
+						  sprintf(buf2, "dbg://%s", buf);
+						  filename = strdup(buf2);
+					  }}
+					  break;
+			case 'h':
+					  show_help_message();
+					  break;
+			case 'e':
+					  command = optarg;
+					  break;
+			case 'f':
+					  font = optarg;
+					  break;
 		}
 	}
 
@@ -454,13 +454,13 @@ int main(int argc, char **argv, char **envp)
 	}
 #else
 	gtk_box_pack_start(GTK_BOX(vbox),
-		GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
+			GTK_WIDGET(gradare_menubar_new(w)), FALSE, FALSE, 0);
 #endif
 
 	tool = gradare_toolbar_new(NULL);
 #if _MAEMO_
 	hildon_window_add_toolbar(HILDON_WINDOW(w), GTK_TOOLBAR(tool));
-//	hildon_program_set_common_toolbar(p, tool);
+	//	hildon_program_set_common_toolbar(p, tool);
 #else
 	gtk_box_pack_start(GTK_BOX(vbox), tool, FALSE, FALSE, 0);
 #endif
@@ -485,8 +485,8 @@ int main(int argc, char **argv, char **envp)
 	vte_terminal_set_scrollback_lines((VteTerminal*)term, 3000);
 	vte_terminal_set_font_from_string_full((VteTerminal*)term, font, VTE_ANTI_ALIAS_FORCE_DISABLE);
 	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
- g_signal_connect (term, "button-press-event",
-                G_CALLBACK (popup_context_menu), NULL);
+	g_signal_connect (term, "button-press-event",
+			G_CALLBACK (popup_context_menu), NULL);
 
 
 	//gtk_paned_pack2(GTK_PANED(hpan), term, TRUE, TRUE);
@@ -497,26 +497,28 @@ int main(int argc, char **argv, char **envp)
 	if (command) {
 		char *arg[2] = { command, NULL};
 		vte_terminal_fork_command(
-			VTE_TERMINAL(term),
-			command, arg, envp, ".",
-			FALSE, FALSE, FALSE);
-	} else
-	if (filename) {
-		char *arg[6] = { "/usr/bin/radare", "-c", "-b", "1024", filename, NULL};
-		char str[1024];
+				VTE_TERMINAL(term),
+				command, arg, envp, ".",
+				FALSE, FALSE, FALSE);
+	} else {
+		if (filename) {
+			char *arg[6] = { "/usr/bin/radare", "-c", "-b", "1024", filename, NULL};
+			char str[1024];
 
-		vte_terminal_fork_command(
-			VTE_TERMINAL(term),
-			arg[0], arg, envp, ".",
-			FALSE, FALSE, FALSE);
-		vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
-		sprintf(str, "radare -b 1024 -c - %s", filename);
-		gtk_window_set_title(GTK_WINDOW(w), str);
-	} else
-		vte_terminal_fork_command(
-			VTE_TERMINAL(term),
-			GRSCDIR"/Shell", NULL, envp, ".",
-			FALSE, FALSE, FALSE);
+			vte_terminal_fork_command(
+					VTE_TERMINAL(term),
+					arg[0], arg, envp, ".",
+					FALSE, FALSE, FALSE);
+			vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
+			sprintf(str, "radare -c -b 1024 - %s", filename);
+			gtk_window_set_title(GTK_WINDOW(w), str);
+		} else {
+			vte_terminal_fork_command(
+					VTE_TERMINAL(term),
+					GRSCDIR"/Shell", NULL, envp, ".",
+					FALSE, FALSE, FALSE);
+		}
+	}
 
 	if (filename && (strstr(filename, "dbg://") || strstr(filename, "pid://"))) {
 		is_debugger = 1;
@@ -528,8 +530,8 @@ int main(int argc, char **argv, char **envp)
 
 #if 0
 	printf("Terminal size: %dx%d\n",
-		vte_terminal_get_char_width(term),
-		vte_terminal_get_char_height(term));
+			vte_terminal_get_char_width(term),
+			vte_terminal_get_char_height(term));
 #endif
 
 	gtk_main();

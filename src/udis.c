@@ -681,7 +681,7 @@ void udis_arch(int arch, int len, int rows)
 				cons_printf("%d ", aop.length); //dislen(config.block+seek));
 			/* trac information */
 			if (show_traces)
-				cons_printf("%02d %02d ", trace_count(seek), trace_times(seek));
+				cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));
 
 			if (show_flags && !show_flagsline) {
 				char buf[1024];

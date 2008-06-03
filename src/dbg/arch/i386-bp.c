@@ -394,8 +394,13 @@ printf("restore soft bp\n");
 		debug_read_at(ps.tid, buf, 4, off);
 		debug_write_at(ps.tid, "\x90", 1, off);
 		debug_os_steps();
+		R_EIP(regs) = R_EIP(regs) - 1;
 		debug_dispatch_wait();
-	printf("WRITE 4 bytes (%02x%02x%02x%02x) %08llx\n", buf[0], buf[1], buf[2], buf[3], off);
+#if 0
+		debug_os_steps();
+		debug_dispatch_wait();
+#endif
+//	printf("WRITE 4 bytes (%02x%02x%02x%02x) %08llx\n", buf[0], buf[1], buf[2], buf[3], off);
 		debug_write_at(ps.tid, buf, 4, off);
 //		arch_bp_soft_enable(bp);
 	}

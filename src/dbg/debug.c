@@ -1308,16 +1308,20 @@ int debug_mp(char *str)
 	return 0;
 }
 
-int debug_wp(char *str)
+int debug_wp(const char *str)
 {
 	int i = 0;
+	int key = *str;
 
 	if(ps.wps_n == sizeof(ps.wps)) {
 		eprintf(":error	max watchpoints are 4!\n");
 		return -1;
 	}
 
-	switch(*str) {
+	if (key==0 && ps.wps_n == 0)
+		key='?';
+
+	switch(key) {
 	/* remove watchpoint */
 	case '-':
 		str++;

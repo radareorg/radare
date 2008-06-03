@@ -25,7 +25,7 @@ int debug_load();
 int debug_read(pid_t pid, void *addr, int length);
 int debug_write(pid_t pid, void *data, int length);
 int debug_run();
-int debug_wp(char *expr);
+int debug_wp(const char *expr);
 int debug_mp(char *expr);
 int debug_wtrace();
 int debug_detach();

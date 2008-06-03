@@ -217,10 +217,27 @@ hildon_banner_show_information(GTK_WIDGET(w), NULL, "Opening file...");
 
 void gradare_help()
 {
-	char cmd[1024];
+	//char cmd[1024];
+const char *cmd[] ={"man","radare"};
 	// XXX should be a dialog !
-	sprintf(cmd, "( xterm -bg black -fg gray -fn 10x20 -e 'man radare' & )");
-	system(cmd);
+	//sprintf(cmd, "( xterm -bg black -fg gray -fn 10x20 -e 'man radare' & )");
+	//system(cmd);
+gradare_shell(cmd);
+}
+
+void gradare_shell(const char *cmd[])
+{
+	GtkWidget *vte;
+	GtkWindow *w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_resize(GTK_WINDOW(w), 600,400);
+	gtk_window_set_title(GTK_WINDOW(w), "radare manpage");
+	vte = vte_terminal_new();
+	gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(vte));
+	vte_terminal_fork_command(
+		VTE_TERMINAL(vte),
+		cmd[0], cmd, NULL, ".",
+		FALSE, FALSE, FALSE);
+	gtk_widget_show_all(w);
 }
 
 void gradare_nop()
