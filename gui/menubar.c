@@ -91,6 +91,8 @@ void gradare_about() //GtkAction *action, CanoeWindow *w)
         gtk_widget_destroy(GTK_WIDGET(gad));
 }
 
+// "      <menuitem action='Script editor'/>"
+
 extern GtkWindow *window;
 static const gchar *ui_info = 
 "<ui>"
