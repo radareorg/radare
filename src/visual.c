@@ -489,8 +489,9 @@ CMD_DECL(insert_assembly_rsc)
 	cons_set_raw(1);
 }
 
-static const char *radare_opcodes[4]={
-	"mov ", "nop", "jmp " , NULL};
+#define RADARE_OPCODES 12
+static const char *radare_opcodes[RADARE_OPCODES]={
+	NULL, "call ", "mov ", "nop", "jmp ", "jnz ", "jz ", "ret", "push ", "pop ", "trap", "int "};
 
 CMD_DECL(insert_assembly)
 {
@@ -509,7 +510,7 @@ CMD_DECL(insert_assembly)
 	strcpy(buf, "wa ");
 	dl_prompt = strdup(":> wa ");
 	/* TODO: autocomplete opcodes */
-	cons_fgets(buf+3, 120, radare_opcodes);
+	cons_fgets(buf+3, 120, RADARE_OPCODES, radare_opcodes);
 	sprintf(buf2, " @ 0x%llx", config.seek+ (config.cursor_mode?config.cursor:0));
 	strcat(buf, buf2);
 	if(buf[3]) {
@@ -597,7 +598,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	strcpy(buf, "wx ");
 	dl_prompt = strdup(":> wx ");
 	/* TODO: autocomplete opcodes */
-	cons_fgets(buf+3, 1024, radare_opcodes);
+	cons_fgets(buf+3, 1024, 0, NULL);
 
 	if(buf[3]) {
 		if (config.cursor_mode && config.ocursor != -1) {
@@ -776,7 +777,7 @@ void visual_bind_key()
 	cons_set_raw(1);
 	return;
 #else
-	if (cons_fgets(buf, 1000, NULL) <0)
+	if (cons_fgets(buf, 1000, 0, NULL) <0)
 		buf[0]='\0';
 #endif
 	cons_set_raw(1);
@@ -1363,7 +1364,7 @@ CMD_DECL(visual)
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
-			if (cons_fgets(line, 1000, NULL) <0)
+			if (cons_fgets(line, 1000, 0, NULL) <0)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
@@ -1526,7 +1527,7 @@ CMD_DECL(visual)
 				eprintf("Flag name: ");
 				fflush(stderr);
 				cons_set_raw(0);
-				cons_fgets(name, 1000, NULL);
+				cons_fgets(name, 1000, 0, NULL);
 				cons_set_raw(1);
 				if (name[0])
 					flag_set(name, config.baddr+ config.seek+config.cursor, 1);

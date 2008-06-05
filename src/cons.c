@@ -513,11 +513,11 @@ static const char *radare_argv[CMDS] ={
 };
 
 char *dl_readline(int argc, char **argv);
-int cons_fgets(char *buf, int len, const char **argv)
+int cons_fgets(char *buf, int len, int argc, const char **argv)
 {
 	char *ptr;
 	buf[0]='\0';
-	ptr = dl_readline(CMDS, argv?argv:radare_argv);
+	ptr = dl_readline(argv?argc:CMDS, argv?argv:radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);

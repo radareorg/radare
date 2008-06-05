@@ -444,7 +444,7 @@ char *dl_readline(int argc, const char **argv)
 
 					if (dl_buffer_len>0&&opt==1)
 						for(i=1;i<argc;i++) {
-							if (!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
+							if (!strncmp(dl_buffer, argv[i], dl_buffer_len)) {
 								strcpy(dl_buffer, argv[i]);
 								dl_buffer_idx = dl_buffer_len = strlen(dl_buffer);
 								// TODO: if only 1 keyword hits:
