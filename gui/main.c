@@ -161,6 +161,7 @@ gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_
 
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
+	/* TODO: make these menus optional depending on the mode */
 		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", "gtk-add");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
