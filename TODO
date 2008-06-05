@@ -7,23 +7,21 @@
 
 ===========================================================
 
-CODE INJECTION (as a plugin)
+CODE INJECTION (as a plugin in lua)
 ==============
 
 0.9.7:
 ======
+ * add --includedir to ACR
  * populate the use of cmd.flag (in prompt and so)
- * graphically draw structures in memory
+ * flag grep print mode
+ * graphically draw structures in memory (pAG)?
  * define print format per flags (useful to find strings, code,etc..) :D
  * write a char on selected bytes
 * TODO: write from file hexpair formatted
  * implement sleep shellcode
   - using nanosleep
     -> nanosleep(&foo, NULL);
-* handle 0x values in hexpairs to swap endian on it:
-  00 0x8048010 10 20
-  will be:
-  00 10 80 04 08 10 20
 
 call +1
 pop ebx

@@ -44,7 +44,6 @@ int iswhitespace(char ch)
    return (ch==' '||ch=='\t');
 }
 
-
 void eprintf(const char *format, ...)
 {
 	va_list ap;
@@ -120,6 +119,13 @@ int word_count(const char *string)
 	return word-1;
 }
 
+void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
+{
+	int i,j;
+	for(i=0;i<dsize;i++)
+		for(j=0;j<osize;j++)
+			dest[i] = orig[j];
+}
 
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
@@ -553,6 +559,25 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 
 		d = c;
 		if (hex2int(&c, ptr[0])) {
+			if (ptr[0]=='x' && c==0) {
+				u64 addr   = get_math(ptr-1);
+				unsigned int addr32 = (u32) addr;
+				if (addr &~0xFFFFFFFF) {
+					// 64 bit fun
+				} else {
+					// 32 bit fun
+					u8 *addrp = &addr32;
+					// XXX always copy in native endian?
+					out[len++] = addrp[0];
+					out[len++] = addrp[1];
+					out[len++] = addrp[2];
+					out[len++] = addrp[3];
+					while(ptr[0]&&ptr[0]!=' '&&ptr[0]!='\t')
+						ptr = ptr + 1;
+					j = 0;
+				}
+				continue;
+			}
 			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
 			return 0;
 		}

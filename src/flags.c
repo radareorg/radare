@@ -21,6 +21,8 @@
 // TODO: automatic bubble sort by addr - faster indexing
 // TODO: support cursor indexing (index inside flag list)
 // TODO: store data and show (flag.data) in last_print_format
+// TODO: visual editor for flags
+
 #include "main.h"
 #include "radare.h"
 #include "flags.h"
@@ -40,6 +42,7 @@ void flag_help()
 	"  fortune      ; show fortune message! :D\n"
 	"  fd           ; print flag delta offset\n"
 	"  fc cmd       ; set command to be executed on flag at current seek\n"
+	"  fg text      ; grep for all flags (like multiline f | grep foo)\n"
 	"  fn name      ; flag new name (ignores dupped names)\n"
 	"  fr old new   ; rename a flag or more with '*'\n"
 	"  f sym_main   ; flag current offset as sym_main\n"
@@ -64,7 +67,7 @@ void flag_cmd(const char *text)
 	if (flag != NULL) {
 		free(flag->cmd);
 		flag->cmd = strdup(text);
-		cons_printf("%s '%s'\n", flag->name, text);
+		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
 	}
 }
 
@@ -88,7 +91,7 @@ flag_t *flag_get_i(int id)
 }
 
 // TODO: USE GLOB OR SO...
-void flag_grep(const char *grep)
+void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain address
 {
 	int i=0;
 	struct list_head *pos;
@@ -100,8 +103,12 @@ void flag_grep(const char *grep)
 		if (strstr(flag->name, grep)) {
 			cons_printf("%03d 0x%08llx %3lld %s",
 				i++, flag->offset, flag->length, flag->name);
-			if (config_get("cmd.flag"))
+			if (config_get("cmd.flag")) {
+				u64 seek = config.seek;
+				radare_seek(flag->offset, SEEK_SET);
 				radare_cmd(flag->cmd, 0);
+				radare_seek(seek, SEEK_SET);
+			}
 			NEWLINE;
 		}
 

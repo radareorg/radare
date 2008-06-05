@@ -457,67 +457,67 @@ int cons_w32_print(unsigned char *ptr)
 }
 
 #endif
+#define CMDS 50
+static const char *radare_argv[CMDS] ={
+	NULL, // padding
+	"? ",
+	"!step ",
+	"!stepo ",
+	"!cont ",
+	"!signal ",
+	"!fd ",
+	"!maps ",
+	".!maps*",
+	"!bp ",
+	"!!",
+	"#md5",
+	"#sha1",
+	"#crc32",
+	"#entropy",
+	"Visual",
+	"emenu ",
+	"eval ",
+	"seek ",
+	"info ",
+	"help ",
+	"move ",
+	"quit ",
+	"flag ",
+	"Po ",
+	"Ps ",
+	"Pi ",
+	"H ",
+	"H no ",
+	"H nj ",
+	"H fj ",
+	"H lua ",
+	"x ",
+	"b ",
+	"y ",
+	"yy ",
+	"y? ",
+	"wx ",
+	"ww ",
+	"wf ",
+	"w?",
+	"pD ",
+	"pG ",
+	"pb ",
+	"px ",
+	"pX ",
+	"po ",
+	"pm ",
+	"pz ",
+	"pr > ",
+	"p? "
+};
 
 char *dl_readline(int argc, char **argv);
-int cons_fgets(char *buf, int len)
+int cons_fgets(char *buf, int len, const char **argv)
 {
-	#define CMDS 50
-	const char *argv[CMDS] ={
-		NULL, // padding
-		"? ",
-		"!step ",
-		"!stepo ",
-		"!cont ",
-		"!signal ",
-		"!fd ",
-		"!maps ",
-		".!maps*",
-		"!bp ",
-		"!!",
-		"#md5",
-		"#sha1",
-		"#crc32",
-		"#entropy",
-		"Visual",
-		"emenu ",
-		"eval ",
-		"seek ",
-		"info ",
-		"help ",
-		"move ",
-		"quit ",
-		"flag ",
-		"Po ",
-		"Ps ",
-		"Pi ",
-		"H ",
-		"H no ",
-		"H nj ",
-		"H fj ",
-		"H lua ",
-		"x ",
-		"b ",
-		"y ",
-		"yy ",
-		"y? ",
-		"wx ",
-		"ww ",
-		"wf ",
-		"w?",
-		"pD ",
-		"pG ",
-		"pb ",
-		"px ",
-		"pX ",
-		"po ",
-		"pm ",
-		"pz ",
-		"pr > ",
-		"p? "
-	};
 	char *ptr;
 	buf[0]='\0';
-	ptr = dl_readline(CMDS, argv);
+	ptr = dl_readline(CMDS, argv?argv:radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);
