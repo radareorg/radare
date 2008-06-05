@@ -117,7 +117,7 @@ command_t commands[] = {
 	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given value", compare),
 	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
 	COMMAND('e', "[m?] key=value", "eval     evaluates a configuration expression", config_eval),
-	COMMAND('f', "[d|-][name]",    "flag     flag the current offset (f? for help)", flag),
+	COMMAND('f', "[crogd|-][name]","flag     flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "Hack     performs a hack", hack),
 	COMMAND('i', "",               "info     prints status information", info),
 	COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
@@ -764,8 +764,10 @@ CMD_DECL(flag)
 	for(;*text&&iswhitespace(*text);text=text+1);
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';
 
-	if (input[0]=='?') { flag_help(); } else
 	if (input[0]=='o') { radare_fortunes(); } else
+	if (input[0]=='?') { flag_help(); } else
+	if (input[0]=='g') { flag_grep(text); } else
+	if (input[0]=='c') { flag_cmd(text); } else
 	if (input[0]=='r') { flag_rename_str(text); } else
 	if (input[0]=='d') { print_flag_offset(config.seek); NEWLINE; } else
 	if (text[0]=='\0') { flag_list(text); } else

@@ -52,8 +52,8 @@ int debug_close(int fd)
 #if __UNIX__
 				ptrace(PTRACE_KILL, ps.pid, 0, 0);
 				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
-				kill(ps.pid, SIGKILL);
 #endif
+				debug_os_kill(ps.pid, SIGKILL);
 			case 'n': case 'N':
 				/* TODO: w32 stuff here */
 #if __UNIX__

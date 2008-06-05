@@ -100,5 +100,6 @@ char *strclean(char *str);
 int strnull(const char *str);
 int gnu_disarm(unsigned char *address, unsigned long seek);
 char *gnu_dismips(unsigned char *inst, unsigned long offset);
+int iswhitespace(char ch);
 
 #endif

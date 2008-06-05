@@ -60,7 +60,7 @@ static void libps2fd_fini() __attribute__ ((destructor));
 static void libps2fd_fini()
 {
 	if (ps.opened) {
-		kill(ps.pid, 9);
+		debug_os_kill(ps.pid, 9);
 		debug_close(ps.fd);
 		printf("Process killed.\n");
 	}

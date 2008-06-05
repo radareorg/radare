@@ -44,7 +44,7 @@ static void help_show_message()
 	"  -h               this help message\n");
 }
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, const char **argv, char **envp)
 {
 	int c;
 

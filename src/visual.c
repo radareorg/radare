@@ -490,7 +490,9 @@ CMD_DECL(insert_assembly_rsc)
 
 CMD_DECL(insert_assembly)
 {
-	char buf[129];
+	char buf[128];
+	char buf2[64];
+	char *dl_prompt_old = dl_prompt;
 
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
@@ -499,19 +501,25 @@ CMD_DECL(insert_assembly)
 	}
 
 	cons_set_raw(0);
-	printf(":> wa ");
-	fflush(stdout);
 	buf[0]='\0';
 	strcpy(buf, "wa ");
-	fgets(buf+3, 120, stdin);
+	dl_prompt = strdup(":> wa ");
+	/* TODO: autocomplete opcodes */
+	cons_fgets(buf+3, 120);
+	//buf[strlen(buf)-1]='\0';
+	sprintf(buf2, " @ 0x%llx", config.seek+ (config.cursor_mode?config.cursor:0));
+	strcat(buf, buf2);
 	if(buf[3]) {
 		buf[strlen(buf)-1]='\0';
+printf("CMD(%s)\n", buf);
 		radare_cmd(buf, 0);
 	} else {
 		eprintf("ignored\n");
 	}
 	
 	cons_set_raw(1);
+	free(dl_prompt);
+	dl_prompt = dl_prompt_old;
 }
 
 #warning XXX: insert_assembly_hack must be accesible without the debugger and scriptable (outsize eip)
@@ -1329,20 +1337,28 @@ CMD_DECL(visual)
 			cons_strcat("\e[2J\e[0;0H");
 			continue;
 		case ',':
-			if (config.seek == mark)
+			if (config.seek == mark) {
 				mark = 0;
-			else	mark = config.seek + ((config.cursor_mode)?config.cursor:0);
+			} else {
+				mark = config.seek + ((config.cursor_mode)?config.cursor:0);
+			}
 			break;
 		case '.':
-			if (mark==0) {
-				u64 u = get_offset("eip");	
-				if (u!=0) {
-					undo_push();
-					radare_seek(u, SEEK_SET);
-				}
-			} else {
+			// TODO: WHAT IS THIS DOING? I THINK '.' is better for seek to (nice with cursor)
+			if (config.cursor_mode) {
 				undo_push();
-				radare_seek(mark, SEEK_SET);
+				radare_seek(config.seek + ((config.cursor_mode)?config.cursor:0), SEEK_SET);
+			} else {
+				if (mark==0) {
+					u64 u = get_offset("eip");	
+					if (u!=0) {
+						undo_push();
+						radare_seek(u, SEEK_SET);
+					}
+				} else {
+					undo_push();
+					radare_seek(mark, SEEK_SET);
+				}
 			}
 			break;
 		case 'b':

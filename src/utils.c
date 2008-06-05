@@ -39,6 +39,12 @@
 
 const char hex[16] = "0123456789ABCDEF";
 
+int iswhitespace(char ch)
+{
+   return (ch==' '||ch=='\t');
+}
+
+
 void eprintf(const char *format, ...)
 {
 	va_list ap;
@@ -90,6 +96,30 @@ char *slurp(char *str)
 	fclose(fd);
 	return ret;
 }
+
+/*
+ * Count the number of words in the given string
+ *
+ */
+int word_count(const char *string)
+{
+	char *text = (char *)string;
+	char *tmp  = (char *)string;
+	int word   = 0;
+
+	for(;(*text)&&(iswhitespace(*text));text=text+1);
+
+	for(word = 0; *text; word++) {
+		for(;*text && !iswhitespace(*text);text = text +1);
+		tmp = text;
+		for(;*text &&iswhitespace(*text);text = text +1);
+		if (tmp == text)
+			word-=1;
+	}
+
+	return word-1;
+}
+
 
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
@@ -658,3 +688,27 @@ char *strsub (char *string, char *pat, char *rep, int global)
 	temp[templen] = 0;
 	return (temp);
 }
+
+char *str_first_word(const char *string)
+{
+	char *text  = (char *)string;
+	char *start = NULL;
+	char *ret   = NULL;
+	int len     = 0;
+
+	for(;*text &&iswhitespace(*text);text = text + 1);
+	start = text;
+	for(;*text &&!iswhitespace(*text);text = text + 1) len++;
+
+	/* strdup */
+	ret = (char *)malloc(len+1);
+	if (ret == 0) {
+		fprintf(stderr, "Cannot allocate %d bytes.\n", len+1);
+		exit(1);
+	}
+	strncpy(ret, start, len);
+	ret[len]='\0';
+
+	return ret;
+}
+

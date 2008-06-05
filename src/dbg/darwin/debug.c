@@ -11,8 +11,7 @@
  *
  * radare is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with radare; if not, write to the Free Software
@@ -44,6 +43,15 @@
 #include <sys/wait.h>
 
 static thread_array_t inferior_threads = NULL;
+
+int debug_os_kill(int pid, int sig)
+{
+	/* prevent killall selfdestruction */
+	if (pid < 1)
+		return -1;
+	return kill(pid, sig);
+}
+
 
 // TODO: to be removed
 int debug_ktrace()

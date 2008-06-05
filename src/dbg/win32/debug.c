@@ -42,6 +42,14 @@ DWORD WINAPI GetProcessId(HANDLE);
 #include "../thread.h"
 #include "utils.h"
 
+int debug_os_kill(int pid, int sig)
+{
+	/* prevent oops */
+	if (pid < 1)
+		return -1;
+	/* XXX: this is not ok, but.. can w32 send other signals? */
+	TerminateProcess(WIN32_PI(hProcess), 1);
+}
 
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);

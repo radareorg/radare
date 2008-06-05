@@ -12,6 +12,7 @@ CODE INJECTION (as a plugin)
 
 0.9.7:
 ======
+ * populate the use of cmd.flag (in prompt and so)
  * graphically draw structures in memory
  * define print format per flags (useful to find strings, code,etc..) :D
  * write a char on selected bytes

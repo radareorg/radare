@@ -824,8 +824,6 @@ void monitors_run()
 	}
 }
 
-extern char *dl_prompt;
-extern int dl_disable;
 int radare_prompt()
 {
 	char input[BUFLEN];

@@ -109,10 +109,13 @@ int getv()
 /// XXX use wait4 and get rusage here!!!
 pid_t debug_waitpid(int pid, int *status)
 {
+
+#define CRASH_LINUX_KERNEL 0
 #if CRASH_LINUX_KERNEL
 	if (pid == -1)
 		return -1;
 #endif
+
 #if __FreeBSD__
 	return waitpid(pid, status, WUNTRACED);
 #else
@@ -712,7 +715,7 @@ int debug_load()
 		// use signal(0) to check if its already there
 		/* TODO: ask before kill */
 	//	if (ps.is_file)
-	//		kill(ps.tid, SIGKILL);
+	//		debug_os_kill(ps.tid, SIGKILL);
 	//	else return 0;
 	}
 
@@ -747,9 +750,10 @@ int debug_unload()
 {
 	ps.opened = 0;
 #if __UNIX__
-	if (ps.tid != 0)
-		kill(ps.tid, SIGKILL);
+	debug_os_kill(ps.tid, SIGKILL);
 #endif
+	ps.pid = ps.tid = 0;
+
 	return 0; //for warning message
 }
 
@@ -1547,7 +1551,7 @@ int debug_pids()
 
 	// TODO: use ptrace to get cmdline from esp like tuxi does
 	for(i=2;i<999999;i++) {
-		switch( kill(i, 0) ) {
+		switch( debug_os_kill(i, 0) ) {
 		case 0:
 			sprintf(cmdline, "/proc/%d/cmdline", i);
 			fd = open(cmdline, O_RDONLY);

@@ -403,11 +403,27 @@ static int config_limit_callback(void *data)
 	struct config_node_t *node = data;
 
 	config.limit = get_offset(node->value);
+
+	return 0;
 }
 
 static int config_arch_callback(void *data)
 {
 	arch_set_callbacks();
+
+	return 0;
+}
+
+static int config_verbose_callback(void *data)
+{
+	struct config_node_t *node = data;
+
+	if (node && node->i_value) {
+		config.verbose = node->i_value;
+		dl_echo = config.verbose;
+	}
+
+	return 0;
 }
 
 static int config_wmode_callback(void *data)
@@ -501,8 +517,8 @@ void config_init()
 
 	flags_init();
 	config_old_init();
-	// TODO: use from scr.palette
 
+	// TODO : dl_callback = radare_dl_autocompletion;
 	dl_init();
 	dl_hist_load(".radare_history");
 
@@ -546,6 +562,7 @@ void config_init()
 	config_set("asm.size", "false"); // opcode size
 
 	config_set("asm.follow", "");
+	config_set("cmd.flag", "true");
 	config_set("cmd.asm", "");
 	config_set("cmd.user", "");
 	config_set("cmd.visual", "");
@@ -580,7 +597,8 @@ void config_init()
 	config_set("cfg.noscript", "false");
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 1024); // cp850
-	config_set("cfg.verbose", "true");
+	node = config_set("cfg.verbose", "true");
+	node->callback = &config_verbose_callback;
 #if LIL_ENDIAN
 	config_set("cfg.endian", "false");
 #else
