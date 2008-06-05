@@ -1,0 +1,88 @@
+#---------------------------------------------
+#
+# Collection of GDB scripts
+#
+#---------------------------------------------
+
+#
+# dreyer '08  - GDB functions
+#
+def next_call
+    set pagination off
+    stepi
+    while( ((char)(*(char *)$eip)!=(char)0xe8))
+        stepi
+    end
+    x/5i $eip
+    set pagination on
+end
+
+def next_call_verbose
+    display/i $eip
+    set pagination off
+    stepi
+    while( ((char)(*(char *)$eip)!=(char)0xe8))
+        stepi
+    end
+    x/5i $eip
+    set pagination on
+end
+
+def gob
+    set pagination off
+    set $base=0x08040000
+    set $mask=0xffff0000
+    while (((long)$eip & $mask) != $base )
+         stepi
+    end
+    set pagination on
+end
+
+#---------------------------------------------
+
+#sha0 step until next base addr
+def gob
+        set $base = 0x08040000
+        set $mask = 0xffff0000
+        while (((long)$eip & $mask) != $base )
+                stepi
+        end
+        print $base
+        disas $pc $pc+30
+end
+
+#sha0 binary search
+def seek
+        set $addr = $arg0
+        set $initaddr = $addr
+        set $str  = $arg1
+        set $range = 0xffff
+
+        #Length calculation
+        set $p = (char *)$str
+        set $len = 0
+        while (*$p++)
+                set $len++
+        end
+
+        while ($addr < $initaddr+$range)
+                set $p = (char *)$str
+                set $baddr = $addr
+                set $check = 0
+                while (*$p)
+                        if (*$p == (char)(*(char *)$baddr))
+                                set $check++
+                        end
+                        set $p++
+                        set $baddr++
+                end
+                if ($check == $len)
+                        print "found:"
+                        print /x $addr
+                        set $addr = $initaddr+$range
+                end
+                set $addr++
+        end
+end
+
+

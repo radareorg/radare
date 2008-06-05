@@ -418,8 +418,6 @@ int debug_ie(char *input)
 int debug_until(char *addr)
 {
 	int bp_pos;
-	unsigned long ptr;
-	char buf[12];
 	addr_t off;
 
 	if (!addr)
@@ -763,10 +761,6 @@ int debug_unload()
 
 int debug_read(pid_t pid, void *addr, int length)
 {
-	//unsigned long dword;
-        //int i = length;
-	//int align = ps.offset%ALIGN_SIZE;
-
 	return debug_read_at(pid, addr, length, ps.offset);
 }
 
@@ -777,25 +771,28 @@ int debug_write(pid_t pid, void *data, int length)
 
 int debug_skip(int times)
 {
-#if __x86__
-	unsigned char buf[16];
 	regs_t reg;
-	int size;
+	unsigned char buf[16];
+	struct aop_t aop;
+	int len, size;
+	u64 pc = arch_pc();
 
 	if (ps.opened) {
-		debug_getregs(ps.tid, &reg);
-		debug_read_at(ps.tid, buf, 16, R_EIP(reg));
+		debug_read_at(ps.tid, buf, 16, arch_pc());
 
 		if (times<1) times = 1;
 		for (;times;times--){
-			R_EIP(reg) += instLength(buf,16, 0);
-			debug_setregs(ps.tid, &reg);
+			len = arch_aop(pc, buf, &aop);
+			if (len >0) {
+				pc+=len;
+				arch_jmp(pc);
+			} else {
+				eprintf("Unknown opcode\n");
+				break;
+			}
 		}
 	}
-#else
-#warning TODO: debug_skip()
-	eprintf("TODO\n");
-#endif
+
 	return 0;
 }
 
@@ -874,12 +871,14 @@ int debug_stepbp(int times)
 #endif
 
 	if (times<2) {
-		if (aop.jump)
+		if (aop.jump>0)
 			bp0 = debug_bp_set(NULL, aop.jump, BP_SOFT);
-		if (aop.fail)
+		if (aop.fail>0)
 			bp1 = debug_bp_set(NULL, aop.fail, BP_SOFT);
-		if (bp0==-1 && bp1==-1)
+		if ((aop.fail == 0) || (bp0==-1 && bp1==-1))
 			bp0 = debug_bp_set(NULL, pc+len, BP_SOFT);
+			printf("jump %08llx fail %08llx -> here %08llx\n", aop.jump, aop.fail, pc+8);
+					sleep(2);
 
 		debug_cont(0);
 		//debug_bp_restore();
