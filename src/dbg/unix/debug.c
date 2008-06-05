@@ -54,10 +54,13 @@
 #include "../debug.h"
 #include "procs.h"
 
-
-// TODO: move to ps structure
-//static int stepping_in_progress = 0;
-
+int debug_os_kill(int pid, int sig)
+{
+	/* prevent killall selfdestruction */
+	if (pid < 1)
+		return -1;
+	return kill(pid, sig);
+}
 
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
 

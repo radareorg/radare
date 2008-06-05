@@ -109,10 +109,13 @@ int getv()
 /// XXX use wait4 and get rusage here!!!
 pid_t debug_waitpid(int pid, int *status)
 {
+
+#define CRASH_LINUX_KERNEL 0
 #if CRASH_LINUX_KERNEL
 	if (pid == -1)
 		return -1;
 #endif
+
 #if __FreeBSD__
 	return waitpid(pid, status, WUNTRACED);
 #else
@@ -415,8 +418,6 @@ int debug_ie(char *input)
 int debug_until(char *addr)
 {
 	int bp_pos;
-	unsigned long ptr;
-	char buf[12];
 	addr_t off;
 
 	if (!addr)
@@ -712,7 +713,7 @@ int debug_load()
 		// use signal(0) to check if its already there
 		/* TODO: ask before kill */
 	//	if (ps.is_file)
-	//		kill(ps.tid, SIGKILL);
+	//		debug_os_kill(ps.tid, SIGKILL);
 	//	else return 0;
 	}
 
@@ -747,9 +748,10 @@ int debug_unload()
 {
 	ps.opened = 0;
 #if __UNIX__
-	if (ps.tid != 0)
-		kill(ps.tid, SIGKILL);
+	debug_os_kill(ps.tid, SIGKILL);
 #endif
+	ps.pid = ps.tid = 0;
+
 	return 0; //for warning message
 }
 
@@ -759,10 +761,6 @@ int debug_unload()
 
 int debug_read(pid_t pid, void *addr, int length)
 {
-	//unsigned long dword;
-        //int i = length;
-	//int align = ps.offset%ALIGN_SIZE;
-
 	return debug_read_at(pid, addr, length, ps.offset);
 }
 
@@ -773,25 +771,28 @@ int debug_write(pid_t pid, void *data, int length)
 
 int debug_skip(int times)
 {
-#if __x86__
-	unsigned char buf[16];
 	regs_t reg;
-	int size;
+	unsigned char buf[16];
+	struct aop_t aop;
+	int len, size;
+	u64 pc = arch_pc();
 
 	if (ps.opened) {
-		debug_getregs(ps.tid, &reg);
-		debug_read_at(ps.tid, buf, 16, R_EIP(reg));
+		debug_read_at(ps.tid, buf, 16, arch_pc());
 
 		if (times<1) times = 1;
 		for (;times;times--){
-			R_EIP(reg) += instLength(buf,16, 0);
-			debug_setregs(ps.tid, &reg);
+			len = arch_aop(pc, buf, &aop);
+			if (len >0) {
+				pc+=len;
+				arch_jmp(pc);
+			} else {
+				eprintf("Unknown opcode\n");
+				break;
+			}
 		}
 	}
-#else
-#warning TODO: debug_skip()
-	eprintf("TODO\n");
-#endif
+
 	return 0;
 }
 
@@ -870,12 +871,14 @@ int debug_stepbp(int times)
 #endif
 
 	if (times<2) {
-		if (aop.jump)
+		if (aop.jump>0)
 			bp0 = debug_bp_set(NULL, aop.jump, BP_SOFT);
-		if (aop.fail)
+		if (aop.fail>0)
 			bp1 = debug_bp_set(NULL, aop.fail, BP_SOFT);
-		if (bp0==-1 && bp1==-1)
+		if ((aop.fail == 0) || (bp0==-1 && bp1==-1))
 			bp0 = debug_bp_set(NULL, pc+len, BP_SOFT);
+			printf("jump %08llx fail %08llx -> here %08llx\n", aop.jump, aop.fail, pc+8);
+					sleep(2);
 
 		debug_cont(0);
 		//debug_bp_restore();
@@ -1547,7 +1550,7 @@ int debug_pids()
 
 	// TODO: use ptrace to get cmdline from esp like tuxi does
 	for(i=2;i<999999;i++) {
-		switch( kill(i, 0) ) {
+		switch( debug_os_kill(i, 0) ) {
 		case 0:
 			sprintf(cmdline, "/proc/%d/cmdline", i);
 			fd = open(cmdline, O_RDONLY);

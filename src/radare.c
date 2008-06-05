@@ -824,8 +824,6 @@ void monitors_run()
 	}
 }
 
-extern char *dl_prompt;
-extern int dl_disable;
 int radare_prompt()
 {
 	char input[BUFLEN];
@@ -888,7 +886,7 @@ int radare_prompt()
 #endif
 		//D { printf(prompt); fflush(stdout); }
 		dl_prompt = prompt;
-		ret = cons_fgets(input, BUFLEN-1);
+		ret = cons_fgets(input, BUFLEN-1, 0, NULL);
 		if (ret == -1)
 			exit(0);
 		radare_cmd(input, 1);

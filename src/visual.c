@@ -24,6 +24,7 @@ extern const char *dl_prompt;
 #include "radare.h"
 #include "code.h"
 #include "config.h"
+#include "utils.h"
 #include "print.h"
 #include "plugin.h"
 #include <signal.h>
@@ -97,9 +98,9 @@ command_t keystrokes[] = {
 	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
+	COMMAND('w', 1, "write hex string", insert_hexa_string),
 #if 0
 	COMMAND('w', 1, "write string", insert_string),
-	COMMAND('W', 1, "write hex string", insert_hexa_string),
 	//COMMAND('f', 0, "seek to flag", seek_to_flag),
 	COMMAND('%', 0, "show radare environment", show_environ),
 #endif
@@ -488,9 +489,15 @@ CMD_DECL(insert_assembly_rsc)
 	cons_set_raw(1);
 }
 
+#define RADARE_OPCODES 12
+static const char *radare_opcodes[RADARE_OPCODES]={
+	NULL, "call ", "mov ", "nop", "jmp ", "jnz ", "jz ", "ret", "push ", "pop ", "trap", "int "};
+
 CMD_DECL(insert_assembly)
 {
-	char buf[129];
+	char buf[128];
+	char buf2[64];
+	char *dl_prompt_old = dl_prompt;
 
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
@@ -499,19 +506,22 @@ CMD_DECL(insert_assembly)
 	}
 
 	cons_set_raw(0);
-	printf(":> wa ");
-	fflush(stdout);
 	buf[0]='\0';
 	strcpy(buf, "wa ");
-	fgets(buf+3, 120, stdin);
+	dl_prompt = strdup(":> wa ");
+	/* TODO: autocomplete opcodes */
+	cons_fgets(buf+3, 120, RADARE_OPCODES, radare_opcodes);
+	sprintf(buf2, " @ 0x%llx", config.seek+ (config.cursor_mode?config.cursor:0));
+	strcat(buf, buf2);
 	if(buf[3]) {
-		buf[strlen(buf)-1]='\0';
 		radare_cmd(buf, 0);
 	} else {
 		eprintf("ignored\n");
 	}
 	
 	cons_set_raw(1);
+	free(dl_prompt);
+	dl_prompt = dl_prompt_old;
 }
 
 #warning XXX: insert_assembly_hack must be accesible without the debugger and scriptable (outsize eip)
@@ -572,12 +582,48 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	int bytes = 0;
 	int count = 0;
 	int tmp = 0;
+	//--
+	char buf[1025];
+	char buf2[64];
+	char *dl_prompt_old = dl_prompt;
+	u64 oseek = config.seek;
 
 	if (!config_get("file.write")) {
 		eprintf("Not in write mode.\n");
 		return;
 	}
 
+	cons_set_raw(0);
+	buf[0]='\0';
+	strcpy(buf, "wx ");
+	dl_prompt = strdup(":> wx ");
+	/* TODO: autocomplete opcodes */
+	cons_fgets(buf+3, 1024, 0, NULL);
+
+	if(buf[3]) {
+		if (config.cursor_mode && config.ocursor != -1) {
+			/* repeat in loop to fill the selected area */
+			char *tmp;
+			char out[1024];
+			int osize;
+			int size = config.cursor - config.ocursor;
+			if (size<0) size=-size;
+			tmp = (char *)malloc(size+1);
+			osize = hexstr2binstr(buf+3, &out);
+			memcpy_loop(tmp, out, size, osize);
+			radare_seek(oseek + CMPMIN(config.cursor, config.ocursor),SEEK_SET);
+			io_write(config.fd, tmp, size);
+			free(tmp);
+			radare_seek(oseek, SEEK_SET);
+		} else {
+			radare_cmd(buf, 0);
+		}
+	}
+	
+	cons_set_raw(1);
+	free(dl_prompt);
+	dl_prompt = dl_prompt_old;
+#if 0
 	printf("write hexa string: ");
 	fflush(stdout);
 	radare_seek(config.seek+((config.cursor_mode)?config.cursor:0), SEEK_SET);
@@ -610,6 +656,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	printf("\n\nWritten %d bytes.\n", bytes);
 	if (config.cursor_mode)
 		radare_seek(config.seek-config.cursor, SEEK_SET);
+#endif
 }
 
 
@@ -730,7 +777,7 @@ void visual_bind_key()
 	cons_set_raw(1);
 	return;
 #else
-	if (cons_fgets(buf, 1000) <0)
+	if (cons_fgets(buf, 1000, 0, NULL) <0)
 		buf[0]='\0';
 #endif
 	cons_set_raw(1);
@@ -1317,7 +1364,7 @@ CMD_DECL(visual)
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
-			if (cons_fgets(line, 1000) <0)
+			if (cons_fgets(line, 1000, 0, NULL) <0)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
@@ -1329,20 +1376,28 @@ CMD_DECL(visual)
 			cons_strcat("\e[2J\e[0;0H");
 			continue;
 		case ',':
-			if (config.seek == mark)
+			if (config.seek == mark) {
 				mark = 0;
-			else	mark = config.seek + ((config.cursor_mode)?config.cursor:0);
+			} else {
+				mark = config.seek + ((config.cursor_mode)?config.cursor:0);
+			}
 			break;
 		case '.':
-			if (mark==0) {
-				u64 u = get_offset("eip");	
-				if (u!=0) {
-					undo_push();
-					radare_seek(u, SEEK_SET);
-				}
-			} else {
+			// TODO: WHAT IS THIS DOING? I THINK '.' is better for seek to (nice with cursor)
+			if (config.cursor_mode) {
 				undo_push();
-				radare_seek(mark, SEEK_SET);
+				radare_seek(config.seek + ((config.cursor_mode)?config.cursor:0), SEEK_SET);
+			} else {
+				if (mark==0) {
+					u64 u = get_offset("eip");	
+					if (u!=0) {
+						undo_push();
+						radare_seek(u, SEEK_SET);
+					}
+				} else {
+					undo_push();
+					radare_seek(mark, SEEK_SET);
+				}
 			}
 			break;
 		case 'b':
@@ -1472,7 +1527,7 @@ CMD_DECL(visual)
 				eprintf("Flag name: ");
 				fflush(stderr);
 				cons_set_raw(0);
-				cons_fgets(name, 1000);
+				cons_fgets(name, 1000, 0, NULL);
 				cons_set_raw(1);
 				if (name[0])
 					flag_set(name, config.baddr+ config.seek+config.cursor, 1);

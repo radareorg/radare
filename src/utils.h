@@ -7,18 +7,17 @@
 
 
 #define uint unsigned int
+#define TMPFILE_MAX 50
+#define BUFLEN 4096
+#define CMPMIN(a,b) (a<b? a : b)
 
 int _print_fd;
 
 extern const char hex[16];
-//extern u64 tmpoff;
 extern int std;
 extern char **environ;
 extern char *last_tsearch;
 
-#define TMPFILE_MAX 50
-#define BUFLEN 4096
-#define CMPMIN(a,b) (a<b? a : b)
 
 void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
@@ -100,5 +99,7 @@ char *strclean(char *str);
 int strnull(const char *str);
 int gnu_disarm(unsigned char *address, unsigned long seek);
 char *gnu_dismips(unsigned char *inst, unsigned long offset);
+int iswhitespace(char ch);
+void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);
 
 #endif

@@ -14,6 +14,7 @@ typedef struct {
 	u64 offset;
 	u64 length;
 	print_fmt_t format;
+	const char *cmd;
 	unsigned char data[FLAG_BSIZE]; // only take a minor part of the data
 	struct list_head list;
 } flag_t;
@@ -23,6 +24,7 @@ void flag_array_clear(const char *name);
 void flag_clear(const char *name);
 void flag_clear_by_addr(u64 addr);
 u64 flag_get_addr(const char *name);
+flag_t *flag_by_offset(u64 offset);
 flag_t *flag_get(const char *name);
 flag_t *flag_get_i(int id);
 flag_t *flag_get_next();

@@ -18,6 +18,8 @@
  *
  */
 
+#include "dietline.h"
+
 /* dietline is a lighweight and portable library similar to GNU readline */
 
 #if RADARE_CORE
@@ -29,7 +31,6 @@ static int cons_get_real_columns();
 #endif
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #if __WINDOWS__
@@ -41,16 +42,19 @@ static int cons_get_real_columns();
 #endif
 
 /* line input */
-#define DL_BUFSIZE 1024
-int dl_echo = 0;
+int dl_echo = 1;
 const char *dl_prompt = "> ";
+const char *dl_clipboard = NULL;
+static char *dl_nullstr = "";
 static char dl_buffer[DL_BUFSIZE];
 static int dl_buffer_len = 0;
 static int dl_buffer_idx = 0;
 
+/* autocompletion callback */
+char **(*dl_callback)(const char *text, int start, int end) = NULL;
+
 /* history */
-#define DL_HISTSIZE 256
-char **dl_history;
+char **dl_history = NULL;
 int dl_histsize = DL_HISTSIZE;
 int dl_histidx = 0;
 int dl_autosave = 0; // TODO
@@ -61,7 +65,7 @@ int dl_disable = 0; // TODO use fgets..no autocompletion
 // char **rad_autocompletion(const char *text, int start, int end)
 // return  matches = rl_completion_matches (text, rad_offset_matches);
 
-static int dl_readchar()
+int dl_readchar()
 {
 	char buf[2];
 #if __WINDOWS__
@@ -81,7 +85,8 @@ static int dl_readchar()
 	}
 	SetConsoleMode(h, mode);
 #else
-	if (read(0, buf, 1) < 1)
+	int ret = read(0,buf,1);
+	if (ret <1)
 		return -1;
 #endif
 	return buf[0];
@@ -128,10 +133,23 @@ int dl_hist_down()
 	return 0;
 }
 
+int dl_hist_list()
+{
+	int i;
+
+	if (dl_history != NULL)
+	for(i=0;i<dl_histsize; i++) {
+		if (dl_history[i] == NULL)
+			break;
+		printf("%.3d  %s\n", i, dl_history[i]);
+	}
+}
+
 int dl_hist_free()
 {
 	int i;
-	for(i=0;i<DL_HISTSIZE; i++) {
+	if (dl_history != NULL)
+	for(i=0;i<dl_histsize; i++) {
 		free(dl_history[i]);
 		dl_history[i] = NULL;
 	}
@@ -198,8 +216,12 @@ int dl_init()
 	dl_history = (char **)malloc(dl_histsize*sizeof(char *));
 	if (dl_history==NULL)
 		return 0;
-	memset(dl_history, '\0', dl_histsize);
+	memset(dl_history, '\0', dl_histsize*sizeof(char *));
 	dl_histidx = 0;
+	dl_histsize = DL_HISTSIZE;
+	dl_histidx = 0;
+	dl_autosave = 0;
+	dl_disable = 0;
 	return 1;
 }
 
@@ -261,8 +283,10 @@ char *dl_readline(int argc, const char **argv)
 	memset(&buf,0,sizeof buf);
 	cons_set_raw(1);
 
-	printf("%s", dl_prompt);
-	fflush(stdout);
+	if (dl_echo) {
+		printf("%s", dl_prompt);
+		fflush(stdout);
+	}
 
 #if __UNIX__
 	if (feof(stdin))
@@ -270,6 +294,7 @@ char *dl_readline(int argc, const char **argv)
 #endif
 
 	while(1) {
+#if 0
 		if (dl_echo) {
 			printf("  (");
 			for(i=1;i<argc;i++) {
@@ -282,12 +307,15 @@ char *dl_readline(int argc, const char **argv)
 			printf(")");
 			fflush(stdout);
 		}
+#endif
 
 		dl_buffer[dl_buffer_len]='\0';
 		buf[0] = dl_readchar();
 		
 //		printf("\e[K\r");
 		columns = cons_get_real_columns()-2;
+		if (columns <1)
+			columns = 40;
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
@@ -313,6 +341,10 @@ char *dl_readline(int argc, const char **argv)
 					return NULL;
 				}
 				break;
+			case 10: // ^J -- ignore
+				return dl_buffer;
+			case 11: // ^K -- ignore
+				break;
 			case 19: // ^S -- backspace
 				dl_buffer_idx = dl_buffer_idx?dl_buffer_idx-1:0;
 				break;
@@ -320,6 +352,12 @@ char *dl_readline(int argc, const char **argv)
 				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
 				printf("\e[2J\e[0;0H");
 				fflush(stdout);
+				break;
+			case 21: // ^U - cut
+				dl_clipboard = strdup(dl_buffer);
+				dl_buffer[0]='\0';
+				dl_buffer_len = 0;
+				dl_buffer_idx = 0;
 				break;
 			case 23: // ^W
 				if (dl_buffer_idx>0) {
@@ -331,6 +369,16 @@ char *dl_readline(int argc, const char **argv)
 					strcpy(dl_buffer+i, dl_buffer+dl_buffer_idx);
 					dl_buffer_len = strlen(dl_buffer);
 					dl_buffer_idx = i;
+				}
+				break;
+			case 25: // ^Y - paste
+				if (dl_clipboard != NULL) {
+					dl_buffer_len += strlen(dl_clipboard);
+					// TODO: support endless strings
+					if (dl_buffer_len < DL_BUFSIZE) {
+						dl_buffer_idx = dl_buffer_len;
+						strcat(dl_buffer, dl_clipboard);
+					} else dl_buffer_len -= strlen(dl_clipboard);
 				}
 				break;
 			case 16:
@@ -384,38 +432,44 @@ char *dl_readline(int argc, const char **argv)
 				/* autocomplete */
 				// XXX does not autocompletes correctly
 				// XXX needs to check if valid results have the same prefix (from 1 to N)
-				if (dl_buffer_idx>0)
-				for(i=1,opt=0;i<argc;i++)
-					if (!strncmp(argv[i], dl_buffer, dl_buffer_idx))
-						opt++;
+				if (dl_callback != NULL) {
+					const char *from = strrchr(dl_buffer, ' ');
+					char **res = dl_callback(dl_buffer, (from==NULL)?dl_buffer_idx:from-dl_buffer, dl_buffer_len);
+					/* TODO: manage res */
+				} else {
+					if (dl_buffer_idx>0)
+					for(i=1,opt=0;i<argc;i++)
+						if (!strncmp(argv[i], dl_buffer, dl_buffer_idx))
+							opt++;
 
-				if (dl_buffer_len>0&&opt==1)
-					for(i=1;i<argc;i++) {
-						if (!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
-							strcpy(dl_buffer, argv[i]);
-							dl_buffer_idx = dl_buffer_len = strlen(dl_buffer);
-							// TODO: if only 1 keyword hits:
-							//		if (argv[i][dl_buffer_len]=='\0') {
-							//			strcat(dl_buffer, " ");
-							//			dl_buffer_len++;
-							//		}
-							break;
+					if (dl_buffer_len>0&&opt==1)
+						for(i=1;i<argc;i++) {
+							if (!strncmp(dl_buffer, argv[i], dl_buffer_len)) {
+								strcpy(dl_buffer, argv[i]);
+								dl_buffer_idx = dl_buffer_len = strlen(dl_buffer);
+								// TODO: if only 1 keyword hits:
+								//		if (argv[i][dl_buffer_len]=='\0') {
+								//			strcat(dl_buffer, " ");
+								//			dl_buffer_len++;
+								//		}
+								break;
+							}
 						}
-					}
 
-				/* show options */
-				if (dl_buffer_idx==0 || opt>1) {
-					printf("%s%s\n",dl_prompt,dl_buffer);
-					for(i=1;i<argc;i++) {
-						if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
-							len+=strlen(argv[i]);
-				//			if (len+dl_buffer_len+4 >= columns) break;
-							printf("%s ", argv[i]);
+					/* show options */
+					if (dl_buffer_idx==0 || opt>1) {
+						printf("%s%s\n",dl_prompt,dl_buffer);
+						for(i=1;i<argc;i++) {
+							if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
+								len+=strlen(argv[i]);
+					//			if (len+dl_buffer_len+4 >= columns) break;
+								printf("%s ", argv[i]);
+							}
 						}
+						printf("\n");
 					}
-					printf("\n");
+					fflush(stdout);
 				}
-				fflush(stdout);
 				break;
 			case 18:
 				// TODO: SUPPORT FOR ^R (search command in history)
@@ -450,17 +504,27 @@ char *dl_readline(int argc, const char **argv)
 				dl_buffer_idx++;
 				break;
 		}
-		printf("\r%s%s", dl_prompt, dl_buffer);
-		printf("\r%s", dl_prompt);
-		for(i=0;i<dl_buffer_idx;i++)
-			printf("%c", dl_buffer[i]);
-		fflush(stdout);
+		if (dl_echo) {
+			printf("\r%s%s", dl_prompt, dl_buffer);
+			printf("\r%s", dl_prompt);
+		
+			for(i=0;i<dl_buffer_idx;i++)
+				printf("%c", dl_buffer[i]);
+			fflush(stdout);
+		}
 	}
 
 _end:
 	cons_set_raw(0);
-	printf("\r%s%s\n", dl_prompt, dl_buffer);
-	fflush(stdout);
+	if (dl_echo) {
+		printf("\r%s%s\n", dl_prompt, dl_buffer);
+		fflush(stdout);
+	}
+
+	if (dl_buffer[0]=='!' && dl_buffer[1]=='\0') {
+		dl_hist_list();
+		return dl_nullstr;
+	}
 	//write(1,"\n",1);
 	return dl_buffer;
 }
@@ -515,7 +579,7 @@ static int cons_get_real_columns()
         return win.ws_col;
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	char *ret;
 

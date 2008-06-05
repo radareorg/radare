@@ -21,6 +21,8 @@
 // TODO: automatic bubble sort by addr - faster indexing
 // TODO: support cursor indexing (index inside flag list)
 // TODO: store data and show (flag.data) in last_print_format
+// TODO: visual editor for flags
+
 #include "main.h"
 #include "radare.h"
 #include "flags.h"
@@ -39,6 +41,8 @@ void flag_help()
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
 	"  fortune      ; show fortune message! :D\n"
 	"  fd           ; print flag delta offset\n"
+	"  fc cmd       ; set command to be executed on flag at current seek\n"
+	"  fg text      ; grep for all flags (like multiline f | grep foo)\n"
 	"  fn name      ; flag new name (ignores dupped names)\n"
 	"  fr old new   ; rename a flag or more with '*'\n"
 	"  f sym_main   ; flag current offset as sym_main\n"
@@ -51,6 +55,20 @@ void flag_help()
 void flags_init()
 {
 	INIT_LIST_HEAD(&flags);
+}
+
+void flag_cmd(const char *text)
+{
+	flag_t *flag = flag_by_offset(config.seek);
+	if (text == NULL || text[0] == '\0' || text[0]=='?') {
+		cons_printf("Usage: fc <cmd> @ <offset>\n");
+		cons_printf("   > fc pd 20 @ 0x8049104\n");
+	} else
+	if (flag != NULL) {
+		free(flag->cmd);
+		flag->cmd = strdup(text);
+		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
+	}
 }
 
 // TODO: implement bubble sort with cache?
@@ -70,6 +88,32 @@ flag_t *flag_get_i(int id)
 	}
 
 	return NULL;
+}
+
+// TODO: USE GLOB OR SO...
+void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain address
+{
+	int i=0;
+	struct list_head *pos;
+	int cmd_flag = config_get("cmd.flag");
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (strstr(flag->name, grep)) {
+			cons_printf("%03d 0x%08llx %3lld %s",
+				i++, flag->offset, flag->length, flag->name);
+			if (config_get("cmd.flag")) {
+				u64 seek = config.seek;
+				radare_seek(flag->offset, SEEK_SET);
+				radare_cmd(flag->cmd, 0);
+				radare_seek(seek, SEEK_SET);
+			}
+			NEWLINE;
+		}
+
+	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
+	}
 }
 
 flag_t *flag_get(const char *name)
@@ -250,6 +294,20 @@ void flags_setenv()
 #endif
 }
 
+flag_t *flag_by_offset(u64 offset)
+{
+	struct list_head *pos;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (flag->offset == offset)
+			return flag;
+		if (config.interrupted) break;
+	}
+
+	return nullstr;
+}
+
 const char *flag_name_by_offset(u64 offset)
 {
 	struct list_head *pos;
@@ -414,7 +472,7 @@ int flag_qsort_compare(const void *a, const void *b)
 	return strcmp(b, a);
 }
 
-int flag_valid_name(const char *name)
+int flag_is_valid_name(const char *name)
 {
 	if (strchr(name, '*')  ||  strchr(name, '/') ||  strchr(name, '+')
 	||  strchr(name, '-')  ||  strchr(name, ' ') ||  strchr(name, '\n')
@@ -440,7 +498,7 @@ int flag_set(const char *name, u64 addr, int dup)
 			}
 			return 2;
 		} else {
-			if (!flag_valid_name(name)) {
+			if (!flag_is_valid_name(name)) {
 				eprintf("invalid flag name '%s'.\n", name);
 				return 2;
 			}
@@ -480,6 +538,7 @@ int flag_set(const char *name, u64 addr, int dup)
 
 	if (flag == NULL) {
 		flag = malloc(sizeof(flag_t));
+		memset(flag,'\0', sizeof(flag_t));
 		list_add_tail(&(flag->list), &flags);
 		if (flag==NULL)
 			return 1;
@@ -490,6 +549,7 @@ int flag_set(const char *name, u64 addr, int dup)
 	flag->offset = addr;
 	flag->length = config.block_size;
 	flag->format = last_print_format;
+	flag->cmd = NULL;
 #if 0
 	// XXX store data in flags is ugly!
 	if (radare_read(0)!=-1)

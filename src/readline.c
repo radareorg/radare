@@ -19,14 +19,6 @@
  */
 
 #include "main.h"
-
-int iswhitespace(char ch)
-{
-   return (ch==' '||ch=='\t');
-}
-
-#if HAVE_LIB_READLINE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "readline.h"
@@ -39,51 +31,6 @@ int iswhitespace(char ch)
 int rad_rl_init=0;
 extern command_t *commands[];
 
-/*
- * Count the number of words in the given string
- *
- */
-int word_count(const char *string)
-{
-	char *text = (char *)string;
-	char *tmp  = (char *)string;
-	int word   = 0;
-
-	for(;(*text)&&(iswhitespace(*text));text=text+1);
-
-	for(word = 0; *text; word++) {
-		for(;*text && !iswhitespace(*text);text = text +1);
-		tmp = text;
-		for(;*text &&iswhitespace(*text);text = text +1);
-		if (tmp == text)
-			word-=1;
-	}
-
-	return word-1;
-}
-
-char *get_first_word(const char *string)
-{
-	char *text  = (char *)string;
-	char *start = NULL;
-	char *ret   = NULL;
-	int len     = 0;
-
-	for(;*text &&iswhitespace(*text);text = text + 1);
-	start = text;
-	for(;*text &&!iswhitespace(*text);text = text + 1) len++;
-
-	/* strdup */
-	ret = (char *)malloc(len+1);
-	if (ret == 0) {
-		fprintf(stderr, "Cannot allocate %d bytes.\n", len+1);
-		exit(1);
-	}
-	strncpy(ret, start, len);
-	ret[len]='\0';
-
-	return ret;
-}
 
 enum {
 	ARG_NULL = 0,
@@ -410,6 +357,85 @@ char *rad_command_matches(const char *text, int state)
 	return ((char *)NULL);
 }
 
+/* DIETLINE STUFF */
+char **radare_dl_autocompletion(const char *text, int start, int end)
+{
+	char **matches = (char **)NULL;
+	char *word = NULL;
+	int w;
+	int i;
+
+	w = word_count(text);
+	switch(w) {
+	case -1: // null string
+	//	matches = rl_completion_matches (text, rad_command_matches);
+		break;
+	case 0: // first word
+		word = str_first_word(text);
+		if (word == NULL) break;
+		for (i = 0; cmds[i].name ; i++) {
+			if (!strcmp(cmds[i].name, word))
+			switch(cmds[i].arg1) {
+			case ARG_EVAL:
+				//matches = rl_completion_matches(text, rad_eval_matches);
+				break;
+			case ARG_NUMBER:
+				//matches = rl_completion_matches(text, rad_flags_matches);
+				if (matches == NULL)
+				//matches = rl_completion_matches (text, rad_offset_matches);
+				break;
+			case ARG_FLAG:
+				//matches = rl_completion_matches(text, rad_flags_matches);
+				break;
+			case ARG_FILENAME:
+				return NULL;
+			case ARG_BOOL:
+				//matches = rl_completion_matches(text, rad_bool_matches);
+				break;
+			case ARG_ARCH:
+				//matches = rl_completion_matches(text, rad_arch_matches);
+				break;
+			default: // no reply
+				return NULL;
+			}
+		}
+		break;
+#if 0
+	case 1:
+		word = str_first_word(rl_line_buffer);
+		if (word == NULL) break;
+		for (i = 0; cmds[i].name ; i++) {
+			if (!strcmp(cmds[i].name, word))
+			switch(cmds[i].arg2) {
+			case ARG_NUMBER:
+				matches = rl_completion_matches(text, rad_flags_matches);
+				if (matches == NULL)
+				matches = rl_completion_matches (text, rad_offset_matches);
+				break;
+			case ARG_FLAG:
+				matches = rl_completion_matches(text, rad_flags_matches);
+				break;
+			// autocomplete with search results offsets
+			case ARG_FILENAME:
+				return NULL;
+			case ARG_BOOL:
+				matches = rl_completion_matches(text, rad_bool_matches);
+				break;
+			default: // no reply
+				return NULL;
+			}
+		}
+#endif
+		break;
+	}
+
+	free(word);
+	return matches;
+
+}
+
+/* LIB GNU READLINE STUFF */
+#if HAVE_LIB_READLINE
 /*
  * Function to autocomplete radare commands
  *
@@ -429,7 +455,7 @@ char **rad_autocompletion(const char *text, int start, int end)
 		matches = rl_completion_matches (text, rad_command_matches);
 		break;
 	case 0: // first word
-		word = get_first_word(rl_line_buffer);
+		word = str_first_word(rl_line_buffer);
 		if (word == NULL) break;
 		for (i = 0; cmds[i].name ; i++) {
 			if (!strcmp(cmds[i].name, word))
@@ -459,7 +485,7 @@ char **rad_autocompletion(const char *text, int start, int end)
 		}
 		break;
 	case 1:
-		word = get_first_word(rl_line_buffer);
+		word = str_first_word(rl_line_buffer);
 		if (word == NULL) break;
 		for (i = 0; cmds[i].name ; i++) {
 			if (!strcmp(cmds[i].name, word))
