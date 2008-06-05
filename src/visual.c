@@ -1234,6 +1234,17 @@ CMD_DECL(visual)
 			case '[':
 				key = cons_readchar();
 				switch(key) {
+				case '[':
+					key = cons_readchar();
+					//cons_readchar();
+					switch(key) {
+					case 'A': visual_f(1); break;
+					case 'B': visual_f(2); break;
+					case 'C': visual_f(3); break;
+					case 'D': visual_f(4); break;
+					}
+					
+					break;
 				case 0x35: key='K'; break; // re.pag
 				case 0x36: key='J'; break; // av.pag
 				case 0x41: key='k'; break; // up

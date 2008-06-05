@@ -11,6 +11,7 @@ Radare.Config = {}
 Radare.Code = {}
 Radare.Hash = {}
 Radare.Debugger = {}
+Radare.Write = {}
 
 -- define aliases
 r = Radare
@@ -20,6 +21,7 @@ code = Radare.Code
 hash = Radare.Hash
 s = Radare.Search
 d = Radare.Debugger
+w = Radare.Write
 
 -- General use functions
 
@@ -89,8 +91,12 @@ end
 -- Radare api functions
 
 function Radare.get(value)
-	-- TODO. convert to number
-	return cmd_str("? "..value.." | cut -d ' ' -f 1");
+ 	-- | cut -d ' ' -f 1");
+	foo = split(
+		string.gsub(
+		  cmd_str("? "..value),'(0x[^ ])', 
+			function(x)return x end),';')
+	return tonumber(foo[1])
 end
 
 function Radare.bytes(text)
@@ -119,6 +125,14 @@ function Radare.open(filename)
 	r.cmd("o "..filename)
 	-- todo handle errors here
 	return 0
+end
+
+function Radare.attach(pid)
+	return r.cmd("o pid://"..pid)
+end
+
+function Radare.debug(filename)
+	return r.cmd("o dbg://"..filename)
 end
 
 function Radare.undo_seek()
@@ -248,6 +262,9 @@ function Radare.quit()
 	return 0
 end
 
+function Radare.exit()
+	return r.quit()
+end
 
 -- Radare.Debugger API
 
@@ -307,6 +324,15 @@ function Radare.Print.hex(size, address)
 	end
 end
 
+function Radare.Print.dis(nops, address)
+	if size == nil then size = "" end
+	if address == nil then
+		return r.cmd("pd "..nops)
+	else
+		return r.cmd("pd "..nops.." @ "..address)
+	end
+end
+
 function Radare.Print.disasm(size, address)
 	if size == nil then size = "" end
 	if address == nil then
@@ -359,6 +385,57 @@ end
 
 function Radare.Search.hex(string)
 	return Radare.Search.parse(Radare.cmd("/x "..string))
+end
+
+
+-- write stuff
+
+function Radare.Write.hex(string, address)
+	if address == nil then
+		return r.cmd("wx "..string)
+	else
+		return r.cmd("wx "..string.." @ "..address)
+	end
+end
+
+function Radare.Write.string(string, address)
+	if address == nil then
+		return r.cmd("w ", string)
+	else
+		return r.cmd("w "..string.." @ "..address)
+	end
+end
+
+function Radare.Write.wide_string(string, address)
+	if address == nil then
+		return r.cmd("ws "..string)
+	else
+		return r.cmd("ws "..string.." @ "..address)
+	end
+end
+
+function Radare.Write.asm(string, address)
+	if address == nil then
+		return r.cmd("wa ".. string)
+	else
+		return r.cmd("wa "..string.." @ "..address)
+	end
+end
+
+function Radare.Write.rscasm(string, address)
+	if address == nil then
+		return r.cmd("wA "..string)
+	else
+		return r.cmd("wA "..string.." @ "..address)
+	end
+end
+
+function Radare.Write.from_file(filename, address)
+	if address == nil then
+		return r.cmd("wf "..filename)
+	else
+		return r.cmd("wf "..filename.." @ "..address)
+	end
 end
 
 -- config stuff
