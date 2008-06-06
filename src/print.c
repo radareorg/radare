@@ -352,7 +352,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		}
 		break;
 	case FMT_ANAL:
-		radare_analyze(seek, len, 3);
+		radare_analyze(seek, len, config_get_i("cfg.analdepth"));
 		break;
 	case FMT_PRINT:
 		INILINE;

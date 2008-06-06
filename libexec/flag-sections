@@ -4,6 +4,6 @@ PRG=$1
 if [ -z "${PRG}" ]; then
 	echo "Usage: rsc flag-sections \${FILE}"
 else
-	readelf -S $PRG | grep '\] \.' | sed -e 's,\.,section_,' | cut -d ']' -f 2 | awk '{print "f "$1" @ 0x"$3"\nf "$1"_end @ 0x"$3"+0x"$4}'
+	readelf -S $PRG | grep '\] \.' | sed -e 's,\.,section_,' -e 's,\.,_,g' | cut -d ']' -f 2 | awk '{print "f "$1" @ 0x"$3"\nf "$1"_end @ 0x"$3"+0x"$4}'
 fi
 

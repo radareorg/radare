@@ -471,7 +471,7 @@ int radare_analyze(u64 seek, int size, int depth)
 	char cmd[1024];
 	int count=0;
 	unsigned int num, nume; // little endian
-	int i;
+	int i,j;
 	unsigned char str[1024];
 	int str_i=0;
 	unsigned char word[128];
@@ -494,6 +494,7 @@ int radare_analyze(u64 seek, int size, int depth)
 		size = 64;
 		count=1;
 	}
+	size<<=2;
 	for(i=0;i<size;i++) {
 		if (config.interrupted)
 			break;
@@ -504,6 +505,8 @@ int radare_analyze(u64 seek, int size, int depth)
 		}
 		if (str_i>2) {
 			str[str_i] = '\0';
+			//for(j=config_get_i("cfg.analdepth"); j>depth;j--)
+				cons_strcat("   ");
 			print_addr((u64)(seek+i-str_i));
 			C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
 			else	cons_printf("string \"%s\"\n", str);
@@ -530,6 +533,8 @@ int radare_analyze(u64 seek, int size, int depth)
 
 			if (num == 0) {
 				if (lastnull++ == 0) {
+			//		for(j=config_get_i("cfg.analdepth"); j>depth;j--)
+						cons_strcat("   ");
 					print_addr(seek+i-3);
 					C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
 					else cons_printf("(NULL)\n");
@@ -542,6 +547,8 @@ int radare_analyze(u64 seek, int size, int depth)
 				if (lastnull>1)
 					cons_printf("(last null repeated %d times)\n", lastnull);
 				lastnull = 0;
+			//	for(j=config_get_i("cfg.analdepth"); j>depth;j--)
+			//		cons_strcat("   ");
 				print_addr(seek+i-3);
 				C {
 					if (config.endian)
@@ -568,7 +575,7 @@ int radare_analyze(u64 seek, int size, int depth)
 					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
 					radare_cmd(cmd, 0);
 
-					cons_strcat("     ");
+					//cons_strcat("     ");
 					radare_analyze((config.endian)?num:nume, size, --depth);
 
 					config.seek = seek;

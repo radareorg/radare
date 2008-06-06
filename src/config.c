@@ -605,6 +605,7 @@ void config_init()
 	config_set("cfg.endian", "true");
 #endif
 	config_set("cfg.inverse", "false");
+	config_set_i("cfg.analdepth", 4);
 	config_set("file.insert", "false");
 	node = config_set("file.write", "false");
 	node->callback = &config_wmode_callback;

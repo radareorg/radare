@@ -101,15 +101,15 @@ void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain addre
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
 		if (strstr(flag->name, grep)) {
-			cons_printf("%03d 0x%08llx %3lld %s",
+			cons_printf("%03d 0x%08llx %3lld %s\n",
 				i++, flag->offset, flag->length, flag->name);
 			if (config_get("cmd.flag")) {
 				u64 seek = config.seek;
 				radare_seek(flag->offset, SEEK_SET);
 				radare_cmd(flag->cmd, 0);
 				radare_seek(seek, SEEK_SET);
+				NEWLINE;
 			}
-			NEWLINE;
 		}
 
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
