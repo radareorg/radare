@@ -561,7 +561,7 @@ struct syscall_t {
   { NULL, 0, 0 }
 };
 
-int arch_print_syscall()
+int arch_arm_print_syscall()
 {
 	unsigned int sc;
 	int i,j;

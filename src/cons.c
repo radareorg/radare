@@ -663,6 +663,9 @@ int cons_get_columns()
 	int columns_i = cons_get_real_columns();
 	char buf[64];
 
+	if (columns_i<2)
+		columns_i = 78;
+
 	sprintf(buf, "%d", columns_i);
 	setenv("COLUMNS", buf, 0);
 

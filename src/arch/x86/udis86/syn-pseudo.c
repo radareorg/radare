@@ -132,6 +132,7 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 				case 64: mkasm(u, "0x" FMT64 "x", op->lval.uqword); break;
 				default: break;
 			}
+#if 0
 			/* get flag only (32 bits) ? */
 			//if (op->size==32)
 			if ((unsigned int)(op->lval.udword) != 0) {
@@ -143,6 +144,7 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 				if (label[0]!='\0')
 					mkasm(u, " ; %s", label);
 			}
+#endif
 			break;
 
 		case UD_OP_JIMM:
@@ -155,7 +157,8 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 						long long l = (long long)((u->pc+op->lval.sdword));
 						string_flag_offset(label, (u64)l);
 						label[MAXREFLEN]='\0'; // no more than 20
-						mkasm(u, "0x" FMT64 "X   ; %s", u->pc + op->lval.sbyte, label); 
+						//mkasm(u, "0x" FMT64 "X   ; %s", u->pc + op->lval.sbyte, label); 
+						mkasm(u, "0x" FMT64 "X", u->pc + op->lval.sbyte);
 					}
 					break;
 				case 16:
@@ -164,7 +167,8 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 						long long l = (long long)((u->pc+op->lval.sdword));
 						string_flag_offset(label, (unsigned long long)l);
 						label[MAXREFLEN]='\0'; // no more than 20
-						mkasm(u, "0x" FMT64 "X  ;  %s", u->pc + op->lval.sword, label);
+						//mkasm(u, "0x" FMT64 "X  ;  %s", u->pc + op->lval.sword, label);
+						mkasm(u, "0x" FMT64 "X", u->pc + op->lval.sword);
 					}
 					break;
 				case 32:
@@ -179,10 +183,8 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 							strcpy(label+2, label+strlen(label)-16);
 						}
 						label[MAXREFLEN]='\0'; // no more than 20
-						if (l<0)
-							mkasm(u, "0x%X  ; %s", (unsigned int)l, label); //(long long)(u->pc + op->lval.sdword));
-						else
-							mkasm(u, "0x%X  ; %s", (unsigned int)l, label); //u->pc + op->lval.sdword);
+						//mkasm(u, "0x%X  ; %s", (unsigned int)l, label);
+						mkasm(u, "0x%X", (unsigned int)l);
 					}
 					break;
 				default:break;

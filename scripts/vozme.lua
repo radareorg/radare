@@ -27,9 +27,8 @@ end
 -- opcode player
 
 Radare.Config.verbose(0)
-local str = ""
---local eip= r.get("eip")
 local lines = split(Radare.Print.dis(n_opcodes),'\n')
+local str = ""
 for i = 1, #lines do str = play_queue(str, lines[i]) end
 play(str, true)
 Radare.Config.verbose(3)

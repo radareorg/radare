@@ -821,11 +821,13 @@ void visual_draw_screen()
 		if (!config.cursor_mode)
 			cons_clear();
 	}
+#if 0
 	if (!getenv("COLUMNS")) {
 		cons_set_raw(0);
 		config.width = cons_get_columns();
 		cons_set_raw(1);
 	}
+#endif
 	switch(config.insert_mode) {
 	case 1:
 		strcpy(buf, "<insert hex pairs> ('q','tab')");
@@ -848,11 +850,14 @@ void visual_draw_screen()
 
 	monitors_run();
 
-#if __WINDOWS__
+	/* HUH */
 	gotoxy(0,0);
-#else
-	cons_strcat("\e[0;0H");
-#endif
+	cons_clear();
+	V cons_printf("\e[0m");
+
+	if (inc >config.block_size)
+		inc = config.block_size;
+
 	cons_printf("[ 0x%llx (inc=%d, bs=%d, cur=%d sz=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
@@ -1355,7 +1360,7 @@ CMD_DECL(visual)
 		//else repeat-=1;
 		repeat=1;
 		for (i=0;i<repeat;i++)
-			switch(key) {
+		switch(key) {
 		case 'r':
 			repeat--;
 			do_repeat =1;
@@ -1442,15 +1447,14 @@ CMD_DECL(visual)
 			break;
 		case ']':
 		case '[': {
+			int cols;
 			char buf[1024];
 			char *c = getenv("COLUMNS");
-			int cols;
-			if (!c) cols = config.width;
-			else cols = atoi(c);
-			sprintf(buf, "%d", cols+((key==']')?4:-4));
-			setenv("COLUMNS", buf,1);
-			cons_strcat("\e[2J\e[0;0H");
-			fflush(stdout);
+			if (c) cols = atoi(c); else cols = config.width;
+			if (cols < 10) cols = 10;
+			sprintf(buf, "%d", cols+(key==']'?+4:-4));
+			setenv("COLUMNS", buf, 1);
+			cons_clear();
 			break; }
 		case 'L':
 			if (config.cursor_mode) {

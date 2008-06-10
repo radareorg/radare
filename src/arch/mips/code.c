@@ -27,6 +27,76 @@
 
 extern int mips_mode;
 
+#if 0
+Instruction	Opcode/Function	Syntax	Operation
+add 	100000	ArithLog 	$d = $s + $t
+addu 	100001	ArithLog 	$d = $s + $t
+addi 	001000	ArithLogI	$t = $s + SE(i)
+addiu 	001001	ArithLogI	$t = $s + SE(i)
+and 	100100	ArithLog 	$d = $s & $t
+andi 	001100	ArithLogI	$t = $s & ZE(i)
+div 	011010	DivMult 	lo = $s / $t; hi = $s % $t
+divu 	011011	DivMult 	lo = $s / $t; hi = $s % $t
+mult 	011000	DivMult 	hi:lo = $s * $t
+multu 	011001	DivMult 	hi:lo = $s * $t
+nor 	100111	ArithLog 	$d = ~($s | $t)
+or 	100101	ArithLog 	$d = $s | $t
+ori 	001101	ArithLogI	$t = $s | ZE(i)
+sll 	000000	Shift 	$d = $t << a
+sllv 	000100	ShiftV 	$d = $t << $s
+sra 	000011	Shift 	$d = $t >> a
+srav 	000111	ShiftV 	$d = $t >> $s
+srl 	000010	Shift 	$d = $t >>> a
+srlv 	000110	ShiftV 	$d = $t >>> $s
+sub 	100010	ArithLog 	$d = $s - $t
+subu 	100011	ArithLog 	$d = $s - $t
+xor 	100110	ArithLog 	$d = $s ^ $t
+xori 	001110	ArithLogI	$d = $s ^ ZE(i)
+Constant-Manipulating Instructions
+Instruction	Opcode/Function	Syntax	Operation
+lhi 	011001	LoadI	HH ($t) = i
+llo 	011000	LoadI	LH ($t) = i
+Comparison Instructions
+Instruction	Opcode/Function	Syntax	Operation
+slt 	101010	ArithLog 	$d = ($s < $t)
+sltu 	101001	ArithLog 	$d = ($s < $t)
+slti 	001010	ArithLogI	$t = ($s < SE(i))
+sltiu 	001001	ArithLogI	$t = ($s < SE(i))
+Branch Instructions
+Instruction	Opcode/Function	Syntax	Operation
+beq 	000100	Branch 	if ($s == $t) pc += i << 2
+bgtz 	000111	BranchZ 	if ($s > 0) pc += i << 2
+blez 	000110	BranchZ 	if ($s <= 0) pc += i << 2
+bne 	000101	Branch 	if ($s != $t) pc += i << 2
+Jump Instructions
+Instruction	Opcode/Function	Syntax	Operation
+j 	000010	Jump 	pc += i << 2
+jal 	000011	Jump 	$31 = pc; pc += i << 2
+jalr 	001001	JumpR 	$31 = pc; pc = $s
+jr 	001000	JumpR 	pc = $s
+Load Instructions
+Instruction	Opcode/Function	Syntax	Operation
+lb 	100000	LoadStore	$t = SE (MEM [$s + i]:1)
+lbu 	100100	LoadStore	$t = ZE (MEM [$s + i]:1)
+lh 	100001	LoadStore	$t = SE (MEM [$s + i]:2)
+lhu 	100101	LoadStore	$t = ZE (MEM [$s + i]:2)
+lw 	100011	LoadStore	$t = MEM [$s + i]:4
+Store Instructions
+Instruction	Opcode/Function	Syntax	Operation
+sb 	101000	LoadStore	MEM [$s + i]:1 = LB ($t)
+sh 	101001	LoadStore	MEM [$s + i]:2 = LH ($t)
+sw 	101011	LoadStore	MEM [$s + i]:4 = $t
+Data Movement Instructions
+Instruction	Opcode/Function	Syntax	Operation
+mfhi 	010000	MoveFrom 	$d = hi
+mflo 	010010	MoveFrom 	$d = lo
+mthi 	010001	MoveTo 	hi = $s
+mtlo 	010011	MoveTo 	lo = $s
+Exception and Interrupt Instructions
+Instruction	Opcode/Function	Syntax	Operation
+trap 	011010	Trap
+#endif
+
 // NOTE: bytes should be at least 16 bytes?
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {

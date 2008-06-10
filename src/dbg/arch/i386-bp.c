@@ -375,13 +375,14 @@ int arch_restore_bp(struct bp_t *bp)
 	}
 
 	if(WS(bp)->hw) {
-printf("restore hard bp\n");
+//printf("restore hard bp\n");
+
 		arch_bp_hw_disable(bp);
 		debug_os_steps();
 		debug_dispatch_wait();
 		arch_bp_hw_enable(bp);
 	} else {
-printf("restore soft bp\n");
+//printf("restore soft bp\n");
 	//	arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
 #define CODE_GUAI 1

@@ -145,16 +145,18 @@ struct syscall_t {
 
 int arch_print_syscall()
 {
-#if __linux__ || __NetBSD__
+#if __ARM__
+	return arch_arm_print_syscall();
+#elif __linux__ || __NetBSD__
 	int i,j,ret;
 	regs_t regs;
 	struct syscall_t *ptr = (struct syscall_t *) 
-#if __linux__
+  #if __linux__
 	&syscalls_linux_x86;
-#endif
-#if __NetBSD__
+  #endif
+  #if __NetBSD__
 	&syscalls_netbsd_x86;
-#endif
+  #endif
 
 	ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) {
@@ -179,7 +181,7 @@ int arch_print_syscall()
 	cons_printf(") = 0x%08x\n", R_EAX(regs));
 	return (int)R_OEAX(regs);
 #else
-#warning Unknown arch for arch_print_syscall
+  #warning Unknown arch for arch_print_syscall
 #endif
 #else
 	return -1;

@@ -12,6 +12,10 @@ CODE INJECTION (as a plugin in lua)
 
 0.9.7:
 ======
+ * control screen height in cons.c (limit \n per screen)
+ * if myinc > len myinc = 1;
+  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
+    recover the 0 position
  * rename -v to -q (quiet or -s silent)
    - cfg.verbose = integer (autosetup scr.color and asm.color)
    - cfg.quiet = false

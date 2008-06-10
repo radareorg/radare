@@ -112,6 +112,13 @@ struct bp_t *debug_bp_get(addr_t addr)
 }
 
 /* HACK: save a hardware/software breakpoint */
+/* XXX: called after the step */
+int debug_bp_restore_before(int pos)
+{
+
+}
+
+/* called before the step */
 int debug_bp_restore(int pos)
 {
 	struct bp_t *bp;
@@ -129,10 +136,15 @@ int debug_bp_restore(int pos)
 		bp = debug_bp_get(addr);
 	else	bp = debug_bp_get_num(pos);
 
-	if (bp == 0) {
-	//	printf("CANnot restore no bp found here :/ %08llx\n", addr);
+eprintf("bp-restore\n");
+
+	if (bp == NULL) {
+	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
 		return 0;
-	}
+	}else
+{
+	printf("Breakpoint ata\n");
+}
 	//printf("go forward with bp found here !! %08llx and bp = %08x\n", addr, bp);
 #if 0
 	if (!bp->hw)

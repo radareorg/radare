@@ -802,7 +802,6 @@ int debug_stepu()
 	unsigned long pc = arch_pc(); //WS_PC();
 	int i;
 
-	// TODO handle ^C
 	radare_controlc();
 
 	do {
@@ -916,7 +915,14 @@ int debug_step(int times)
 	const char *flagregs;
 	int ret;
 
-	/* mips step->stepbp bypass hack */
+	if(times < 1)
+		times = 1;
+
+	/* restore breakpoint */
+	if(debug_bp_restore(-1))
+		times--;
+
+	/* mips step->stepbp bypass hack for mips */
 	if (!strcmp(config_get("asm.arch"), "mips"))
 		return debug_stepbp(times);
 
@@ -925,14 +931,8 @@ int debug_step(int times)
 		return 0;
 	}
 
-	if(times < 1)
-		times = 1;
-
-#if 0
-	/* restore breakpoint */
-	if(debug_bp_restore(-1))
-		times--;
-#endif
+	/* Skip breakpoint event before first step */
+	WS(event) = UNKNOWN_EVENT;
 
 	if (ps.verbose) {
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
@@ -941,7 +941,7 @@ int debug_step(int times)
 				return 0;
 			}
 			ret = debug_dispatch_wait();
-			//printf("DISPATH WAIT: %d\n", ret);
+			printf("DISPATH WAIT: %d\n", ret);
 		}
 		debug_print_wait("step");
 	} else {
@@ -965,14 +965,13 @@ int debug_step(int times)
 
 			if ((off=(addr_t)arch_is_soft_stepoverable(
 				(const unsigned char *)opcode))) {
-				pc += off;
 			#if __i386__
-				debug_bp_set(NULL, pc, BP_HARD);
+				debug_bp_set(NULL, pc+off, BP_HARD);
 			#else
-				debug_bp_set(NULL, pc, BP_SOFT);
+				debug_bp_set(NULL, pc+off, BP_SOFT);
 			#endif
 				debug_cont(0);
-				debug_bp_rm_addr(pc);
+				debug_bp_rm_addr(pc+off);
 				ps.steps++;
 			} else {
 				if (debug_os_steps() == -1) {
