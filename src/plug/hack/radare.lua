@@ -12,6 +12,7 @@ Radare.Code = {}
 Radare.Hash = {}
 Radare.Debugger = {}
 Radare.Write = {}
+Radare.Utils = {}
 
 -- define aliases
 r = Radare
@@ -22,6 +23,7 @@ hash = Radare.Hash
 s = Radare.Search
 d = Radare.Debugger
 w = Radare.Write
+u = Radare.Utils
 
 -- General use functions
 
@@ -86,6 +88,12 @@ end
 function chomp(text)
 	if text == nil then return "" end
 	return string.gsub(text, "\n$", "")
+end
+
+function chop(text)
+	if text == nil then return "" end
+	text = string.gsub(text, "\ *$", "")
+	return string.gsub(text, "^\ *", "")
 end
 
 -- Radare api functions
@@ -325,7 +333,7 @@ function Radare.Print.hex(size, address)
 end
 
 function Radare.Print.dis(nops, address)
-	if size == nil then size = "" end
+	if nops == nil then nops = "" end
 	if address == nil then
 		return r.cmd("pd "..nops)
 	else
@@ -441,6 +449,60 @@ end
 -- config stuff
 
 -- eval like
+function Radare.Config.verbose(level)
+	Radare.Config.set("asm.syntax","intel")
+	Radare.Config.set("asm.lines","false")
+	Radare.Config.set("asm.offset","false")
+	Radare.Config.set("asm.bytes","false")
+	Radare.Config.set("asm.flags","false")
+	Radare.Config.set("asm.split","false")
+	Radare.Config.set("scr.color","false")
+	Radare.Config.set("asm.comments","false")
+	if level >= 1 then
+		Radare.Config.set("asm.size", "true")
+	end
+	if level >= 2 then
+		Radare.Config.set("asm.offset", "true")
+	end
+	if level >= 3 then
+		Radare.Config.set("asm.lines", "true")
+		Radare.Config.set("asm.bytes", "true")
+		Radare.Config.set("asm.split", "true")
+		Radare.Config.set("asm.flags", "true")
+		Radare.Config.set("scr.color", "true")
+		Radare.Config.set("asm.comments","true")
+	end
+end
+
+-- TODO: store/restore eval config
+local Radare_Config_storage = {}
+function Radare.Config.store()
+	local lines = split(r.cmd("e"),"\n")
+	for i = 1, #lines do
+		local a = split(lines[i],"=")
+		if a[1] ~= nil then
+			if a[2] == nil then a[2]="" end
+			if (string.match(a[1], "file") ~= nil) then
+				-- ignore
+			else
+				-- TODO. should store everything! (but no reopen :O)
+				if (string.match(a[1], "asm") ~= nil) 
+				or (string.match(a[1], "scr") ~= nil) then
+					Radare_Config_storage[a[1]] = a[2]
+					Radare_Config_storage[a[1]] = a[2]
+				end
+			end
+		end
+	end
+end
+
+function Radare.Config.restore()
+	for a,b in pairs(Radare_Config_storage) do
+		Radare.Config.set(a,b)
+	--	print (a.." = "..b)
+	end
+end
+
 function Radare.Config.set(key, val)
 	r.cmd("eval "..key.."="..val)
 	return val
@@ -618,6 +680,26 @@ function Radare.Debugger.backtrace()
 		ret[i] = line[2]
 	end
 	return ret;
+end
+
+-- Utils
+function Radare.Utils.hexpairs(buf)
+      for byte=1, #buf, 16 do
+         local chunk = buf:sub(byte, byte+15)
+         io.write(string.format('%08X  ',byte-1))
+         chunk:gsub('.', function (c) io.write(string.format('%02X ',string.byte(c))) end)
+         io.write(string.rep(' ',3*(16-#chunk)))
+         io.write(' ',chunk:gsub('%c','.'),"\n") 
+      end
+end
+
+function Radare.Utils.hexdump(buf)
+   for i=1,math.ceil(#buf/16) * 16 do
+      if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
+      io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
+      if i %  8 == 0 then io.write(' ') end
+      if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('%c','.'), '\n' ) end
+   end
 end
 
 print "=> Type 'help()' or 'quit' to return to radare shell."

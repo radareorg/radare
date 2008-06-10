@@ -362,10 +362,12 @@ char *dl_readline(int argc, const char **argv)
 			case 23: // ^W
 				if (dl_buffer_idx>0) {
 					for(i=dl_buffer_idx-1;i&&dl_buffer[i]==' ';i--);
-					for(i--;i&&dl_buffer[i]!=' ';i--);
-					for(;i&&dl_buffer[i]==' ';i--);
-					if (dl_buffer[i+1]==' ')
+					for(;i&&dl_buffer[i]!=' ';i--);
+					for(;i>0&&dl_buffer[i]==' ';i--);
+					if (i>1) {
+						if (dl_buffer[i+1]==' ')
 						i+=2;
+					} else if (i<0) i=0;
 					strcpy(dl_buffer+i, dl_buffer+dl_buffer_idx);
 					dl_buffer_len = strlen(dl_buffer);
 					dl_buffer_idx = i;

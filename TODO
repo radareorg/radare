@@ -12,6 +12,9 @@ CODE INJECTION (as a plugin in lua)
 
 0.9.7:
 ======
+ * rename -v to -q (quiet or -s silent)
+   - cfg.verbose = integer (autosetup scr.color and asm.color)
+   - cfg.quiet = false
  * add --includedir to ACR
  * populate the use of cmd.flag (in prompt and so)
  * flag grep print mode

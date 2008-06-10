@@ -61,7 +61,7 @@ int debug_step(int x) {}
 
 void radare_init()
 {
-	config_init();
+	config_init(1);
 	flags_setenv();
 	plugin_init();
 }
@@ -345,9 +345,9 @@ int radare_cmd_raw(const char *tmp, int log)
 			free(oinput);
 			return 1;
 		}
-fd = 0;
-fdi = 0;
-std = 0;
+		fd = -1;
+		fdi = -1;
+		std = -1;
 		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			/* inline pipe */
 			piped = strchr(input, '`');
@@ -428,7 +428,6 @@ std = 0;
 			if (eof[0]=='\n') eof[0]=' ';
 		ret = commands_parse(input);
 
-#if 0
 		if (fdi!=-1) {
 			fflush(stdout);
 			if (std)
@@ -444,12 +443,11 @@ std = 0;
 				close(fd);
 		}
 
-		if (std!=0) {
+		if (std!=-1) {
 			fflush(stdout);
 			dup2(std, 1);
-			//std = 0;
+			std = 0;
 		}
-#endif
 
 		/* restore seek */
 		if (tmpoff != -1) {

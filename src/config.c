@@ -511,20 +511,24 @@ void config_lock(int l)
 	config_new.lock = l;
 }
 
-void config_init()
+void config_init(int first)
 {
 	struct config_node_t *node;
 
-	flags_init();
-	config_old_init();
+	if (first) {
+		flags_init();
+		config_old_init();
 
-	// TODO : dl_callback = radare_dl_autocompletion;
-	dl_init();
-	dl_hist_load(".radare_history");
+		// TODO : dl_callback = radare_dl_autocompletion;
+		dl_init();
+		dl_hist_load(".radare_history");
 
-	config_new.n_nodes = 0;
-	config_new.lock = 0;
-	INIT_LIST_HEAD(&(config_new.nodes));
+		config_new.n_nodes = 0;
+		config_new.lock = 0;
+		INIT_LIST_HEAD(&(config_new.nodes));
+
+	}
+
 
 	/* enter keys */
 #if __POWERPC__
@@ -607,8 +611,10 @@ void config_init()
 	config_set("cfg.inverse", "false");
 	config_set_i("cfg.analdepth", 4);
 	config_set("file.insert", "false");
-	node = config_set("file.write", "false");
-	node->callback = &config_wmode_callback;
+	if (first) {
+		node = config_set("file.write", "false");
+		node->callback = &config_wmode_callback;
+	}
 	node = config_set("cfg.limit", "0");
 	node->callback = &config_limit_callback;
 #if __mips__
@@ -736,8 +742,12 @@ void config_init()
 
 	/* lock */
 	config_lock(1);
+
 	cons_palette_init(config_get("scr.palette"));
-	metadata_comment_init(1);
-	radare_hack_init();
-	trace_init();
+
+	if (first) {
+		metadata_comment_init(1);
+		radare_hack_init();
+		trace_init();
+	}
 }

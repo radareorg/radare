@@ -14,14 +14,7 @@ function opcleaner_configure()
   r.cmd(".!rsc flag-sections ${FILE}");
   
   -- configure disassembler
-  Radare.Config.set("asm.syntax", "intel")
-  Radare.Config.set("asm.comments", "false")
-  Radare.Config.set("asm.lines", "false")
-  Radare.Config.set("asm.bytes", "false")
-  Radare.Config.set("asm.offset", "false")
-  Radare.Config.set("asm.flags", "false")
-  Radare.Config.set("asm.split", "false")
-  Radare.Config.set("asm.size", "true")
+  Radare.Config.verbose(1) -- size + opcode
 end
 
 -- get opcode information

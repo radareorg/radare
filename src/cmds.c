@@ -149,15 +149,22 @@ CMD_DECL(config_eval)
 {
 	int i = 0;
 	for(i=0;input[i]&&input[i]!=' ';i++);
-	if (input[0]=='m') {
+	switch(input[0]) {
+	case 'r':
+		config_init(0);
+		break;
+	case 'm':
 		CMD_CALL(menu, input);
-	} else
-	if (input[0]=='?') {
+		break;
+	case '?':
 		cons_printf("Usage: e[m] key=value\n");
+		cons_printf("   > ereset           ; reset configuration\n");
 		cons_printf("   > emenu            ; opens menu for eval\n");
 		cons_printf("   > e scr.color = 1  ; sets color for terminal\n");
-	} else
+		break;
+	default:
 		config_eval(input+i);
+	}
 
 	return 0;
 }
