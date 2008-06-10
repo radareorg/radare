@@ -39,11 +39,11 @@ format_info_t formats[] = {
 	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",         NULL,   "entire block" },
 //	{ '8', FMT_87BIT,       "print 8bit block in raw 7bit",         NULL,   "entire block" },
 	{ 'a', FMT_ASHC,       "asm shellcode",          NULL,         "entire block" },
-	{ 'A', FMT_ANAL,       "analyze data",           NULL,         "entire block" },
+//	{ 'A', FMT_ANAL,       "analyze data",           NULL,         "entire block" },
 	{ 'b', FMT_BIN,        "binary",                 "N bytes",    "entire block" },
 	{ 'B', FMT_LSB,        "LSB Stego analysis",     "N bytes",    "entire block" },
 	{ 'c', FMT_CSTR,       "C format",               "N bytes",    "entire block" },
-	{ 'C', FMT_CODE,       "Code Analysis",          "N bytes",    "entire block" },
+//	{ 'C', FMT_CODE,       "Code Analysis",          "N bytes",    "entire block" },
 	{ 'h', FMT_SHORT,      "short",                 "2 bytes",     "(endian)"},
 	//{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" }, // removed or renamed! XXX doesn works without file.wmode
 	{ 'd', FMT_DISAS,      "disassembly N opcodes",  "bsize bytes", "entire block" },
@@ -351,7 +351,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			cons_strcat("]\n");
 		}
 		break;
-	case FMT_ANAL:
+	case FMT_ANAL: // XXX DEPRECATED
+		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
 		radare_analyze(seek, len, config_get_i("cfg.analdepth"));
 		break;
 	case FMT_PRINT:
@@ -493,6 +494,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_DISAS:
 		disassemble( config.block_size, len);
 		break;
+	// moved to 'a' command
+#if 0
 	case FMT_CODE: {
 		char cmd[1024];
 		prg = code_analyze(config.seek+config.baddr, config_get_i("graph.depth"));
@@ -518,7 +521,9 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			i++;
 		}
 		} break;
+#endif
 	case FMT_CODEGRAPH:
+		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
 #if VALA
 		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);

@@ -31,18 +31,6 @@
 #include "arch/x86/udis86/extern.h"
 #include "list.h"
 
-enum {
-	ARCH_X86 = 0,
-	ARCH_ARM = 1,
-	ARCH_ARM16 = 2,
-	ARCH_PPC = 3,
-	ARCH_M68K = 4,
-	ARCH_JAVA = 5,
-	ARCH_MIPS = 6,
-	ARCH_SPARC = 7,
-	ARCH_CSR = 8
-};
-
 struct list_head data;
 
 extern int force_thumb;
@@ -435,11 +423,89 @@ void udis_jump(int n)
 //#define CHECK_LINES printf("%d/%d\n",lines,rows); if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
 #define CHECK_LINES if ( config.visual && len!=config.block_size && (++lines>=rows) ) break;
 
+int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
+{
+	char *b = config.block;
+	char* hex1, *hex2;
+	int c;
+
+	switch(arch) {
+	case ARCH_X86:
+		hex1 = ud_insn_hex(&ud_obj);
+		hex2 = hex1 + 16;
+		c = hex1[16];
+		hex1[16] = 0;
+		cons_printf("%-24s", ud_insn_asm(&ud_obj));
+		hex1[16] = c;
+		if (strlen(hex1) > 24) {
+			C cons_printf(C_RED);
+			cons_printf("\n");
+			if (o_do_off)
+				cons_printf("%15s .. ", "");
+			cons_printf("%-16s", hex2);
+		}
+		return ud_insn_len(&ud_obj);
+	case ARCH_CSR: {
+		if (bytes+myinc<config.block_size)
+			arch_csr_disasm((const unsigned char *)b, (u64)seek);
+		}
+		break;
+	case ARCH_ARM16:
+	case ARCH_ARM:
+		       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+		       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+		       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+		       break;
+	case ARCH_MIPS:
+		       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+		       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+		       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+		       break;
+	case ARCH_SPARC:
+		       gnu_disparc((unsigned char*)b, (unsigned int)seek);
+		       break;
+	case ARCH_PPC: {
+			       char opcode[128];
+			       char operands[128];
+			       struct DisasmPara_PPC dp;
+			       /* initialize DisasmPara */
+			       dp.opcode = opcode;
+			       dp.operands = operands;
+			       dp.iaddr = seek; //config.baddr + config.seek + i;
+			       dp.instr = b; //config.block + i;
+			       PPC_Disassemble(&dp, endian);
+			       cons_printf("  %s %s", opcode, operands);
+		       } break;
+	case ARCH_JAVA: {
+				char output[128];
+				if (java_disasm(b, output)!=-1)
+					cons_printf(" %s", output);
+				else cons_strcat(" ???");
+			} break;
+	case ARCH_M68K: {
+				char opcode[128];
+				char operands[128];
+				struct DisasmPara_PPC dp;
+				/* initialize DisasmPara */
+				dp.opcode = opcode;
+				dp.operands = operands;
+				dp.iaddr = seek; //config.baddr + config.seek + i;
+				dp.instr = b; //config.block + i;
+				// XXX read vda68k: this fun returns something... size of opcode?
+				M68k_Disassemble(&dp);
+				cons_printf("  %s %s", opcode, operands);
+			} break;
+default:
+	cons_printf("Unknwon architecture\n");
+	break;
+	}
+	C cons_printf(C_RESET);
+}
+
 extern int color;
 void udis_arch(int arch, int len, int rows)
 {
 	struct aop_t aop;
-	char* hex1, *hex2;
 	char c;
 	int i,idata,delta;
 	u64 seek = 0;
@@ -761,6 +827,9 @@ void udis_arch(int arch, int len, int rows)
 				cons_strcat(cons_palette[PAL_RET]);
 				break;
 			}
+
+		udis_arch_opcode(arch, endian, seek, bytes, myinc);
+#if 0
 			switch(arch) {
 			case ARCH_X86:
 				hex1 = ud_insn_hex(&ud_obj);
@@ -828,7 +897,7 @@ void udis_arch(int arch, int len, int rows)
 						cons_printf("  %s %s", opcode, operands);
 					} break;
 			}
-			C cons_printf(C_RESET);
+#endif
 			if (aop.ref) {
 				if (string_flag_offset(buf, aop.ref))
 					cons_printf(" ; %s",buf);

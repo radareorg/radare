@@ -96,7 +96,7 @@ void show_help_message()
 		cmdaux++;
 		cmdaux += sprintf(cmdaux, "%s", cmd->options);
 		cmdaux[0] = '\0';
-		printf(" %-17s %s\n", cmdstr, cmd->help);
+		cons_printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
 	cons_printf(" ? <expr>          calc     math expr and show result in hex,oct,dec,bin\n");
 }
@@ -113,6 +113,7 @@ int fixed_width = 0;
 	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
 
 command_t commands[] = {
+	COMMAND('a', "[ocdg?]",        "analyze  perform code/data analysis", analyze),
 	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
 	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given value", compare),
 	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
@@ -123,7 +124,7 @@ command_t commands[] = {
 	COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
 	COMMAND('o', " [file]",        "open     open file", open),
 	COMMAND('p', "[fmt] [len]",    "print    print data block", print),
-	COMMAND('q', "",               "quit     close radare shell", quit),
+	COMMAND('q', "[!]",            "quit     close radare shell", quit),
 	COMMAND('P', "[so][i [file]]", "Project  project Open, Save, Info", project),
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
 	COMMAND('R', "[act] ([arg])",  "RDB      rdb operations", rdb),
@@ -167,6 +168,124 @@ CMD_DECL(config_eval)
 	}
 
 	return 0;
+}
+
+CMD_DECL(analyze)
+{
+	struct aop_t aop;
+	struct program_t *prg;
+	struct block_t *b0;
+	struct list_head *head;
+	int i, sz;
+	int depth_i;
+	int delta = 0;
+	int depth = input[0]?atoi(input+1):0;
+	u64 oseek = config.seek;
+
+	if (depth<1)depth=1;
+	//eprintf("depth = %d\n", depth);
+	memset(&aop, '\0', sizeof(struct aop_t));
+
+	switch(input[0]) {
+	case 'd':
+		// XXX do not uses depth...ignore analdepth?
+		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"));
+		break;
+	case 'g':
+#if VALA
+		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+		list_add_tail(&prg->list, &config.rdbs);
+		grava_program_graph(prg, NULL);
+#else
+		eprintf("Compiled without valac/gtk/cairo\n");
+#endif
+		break;
+	case 'c': {
+		int c = config.verbose;
+			config.verbose=1;
+		char cmd[1024];
+		prg = code_analyze(config.seek+config.baddr, depth); //config_get_i("graph.depth"));
+		list_add_tail(&prg->list, &config.rdbs);
+		list_for_each(head, &(prg->blocks)) {
+			b0 = list_entry(head, struct block_t, list);
+			D {
+				cons_printf("0x%08x (%d) -> ", b0->addr, b0->n_bytes);
+				if (b0->tnext)
+					cons_printf("0x%08llx", b0->tnext);
+				if (b0->fnext)
+					cons_printf(", 0x%08llx", b0->fnext);
+				cons_printf("\n");
+			// TODO eval asm.lines=0
+				sprintf(cmd, "pD %d @ 0x%08x", b0->n_bytes, (unsigned int)b0->addr);
+			// TODO restore eval
+				radare_cmd(cmd, 0);
+				cons_printf("\n\n");
+			} else {
+				cons_printf("b %d\n", b0->n_bytes);
+				cons_printf("f blk_%08X @ 0x%08x\n", b0->addr, b0->addr);
+			}
+			i++;
+		}
+				config.verbose=c;
+		} break;
+	case 'o':
+		udis_init();
+		for(depth_i=0;depth_i<depth;depth_i++) {
+			radare_read(0);
+			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
+			cons_printf("index = %d\n", depth_i);
+			cons_printf("opcode = ");
+			config.verbose=0;
+				radare_cmd("pd 1",0);
+			config.verbose=1;
+			cons_printf("size = %d\n", sz);
+			cons_printf("type = ");
+			switch(aop.type) {
+			case AOP_TYPE_CALL: cons_printf("call\n"); break;
+			case AOP_TYPE_CJMP: cons_printf("conditional-jump\n"); break;
+			case AOP_TYPE_JMP: cons_printf("jump\n"); break;
+			case AOP_TYPE_UJMP: cons_printf("jump-unknown\n"); break;
+			case AOP_TYPE_TRAP: cons_printf("trap\n"); break;
+			case AOP_TYPE_SWI: cons_printf("interrupt\n"); break;
+			case AOP_TYPE_UPUSH: cons_printf("push-unknown\n"); break;
+			case AOP_TYPE_PUSH: cons_printf("push\n"); break;
+			case AOP_TYPE_POP: cons_printf("pop\n"); break;
+			case AOP_TYPE_ADD: cons_printf("add\n"); break;
+			case AOP_TYPE_SUB: cons_printf("sub\n"); break;
+			case AOP_TYPE_AND: cons_printf("and\n"); break;
+			case AOP_TYPE_OR: cons_printf("or\n"); break;
+			case AOP_TYPE_XOR: cons_printf("xor\n"); break;
+			case AOP_TYPE_NOT: cons_printf("not\n"); break;
+			case AOP_TYPE_MUL: cons_printf("mul\n"); break;
+			case AOP_TYPE_DIV: cons_printf("div\n"); break;
+			case AOP_TYPE_SHL: cons_printf("shift-left\n"); break;
+			case AOP_TYPE_SHR: cons_printf("shift-right\n"); break;
+			case AOP_TYPE_REP: cons_printf("rep\n"); break;
+			case AOP_TYPE_RET: cons_printf("ret\n"); break;
+			case AOP_TYPE_ILL: cons_printf("illegal-instruction\n"); break;
+			case AOP_TYPE_MOV: cons_printf("move\n"); break;
+			default: cons_printf("unknown(%d)\n", aop.type);
+			}
+			cons_printf("bytes = ");
+			for (i=0;i<sz;i++) cons_printf("%02x ", config.block[i]);
+			cons_printf("\n");
+			cons_printf("base = 0x%08llx\n", config.baddr+config.seek);
+			cons_printf("jump = 0x%08llx\n", aop.jump);
+			cons_printf("fail = 0x%08llx\n", aop.fail);
+			cons_newline();
+			delta += sz;
+			config.seek += sz;
+		}
+		break;
+	default:
+		cons_printf("Usage: a[ocdg] [depth]\n");
+		cons_printf(" ao : analyze N opcodes\n");
+		cons_printf(" ac : analyze N code blocks \n");
+		cons_printf(" ad : analyze N data blocks \n");
+		cons_printf(" ag : graph analyzed code\n");
+		break;
+	}
+	config.seek = oseek;
 }
 
 CMD_DECL(project)
@@ -739,6 +858,8 @@ CMD_DECL(print)
 
 CMD_DECL(quit)
 {
+	if (input[0]=='!')
+		exit(1);
 	radare_exit();
 	return 0;
 }

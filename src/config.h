@@ -37,6 +37,7 @@ struct config_t {
 	int color;
 	int debug;
 	int assume_yes;
+	int arch;
 	int endian;
 	int buf; // scr.buf
 	/* modes */

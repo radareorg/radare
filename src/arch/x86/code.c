@@ -38,9 +38,13 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	aop->type = AOP_TYPE_UNK;
 
 	switch(bytes[0]) {
+	case 0x89: // move
+		aop->type   = AOP_TYPE_MOV;
+		aop->length = 2;
+		break;
 	case 0xf4: // hlt
 		aop->type   = AOP_TYPE_RET;
-		aop->eob = 1;
+		aop->length = 1;
 		break;
 	case 0xc3: // ret
 	case 0xc2: // ret + 2 bytes
@@ -48,7 +52,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0xcf: // iret
 		aop->type   = AOP_TYPE_RET;
 	//	aop->length = 1;
-		aop->eob    = 1;
+		aop->eob = 1;
 		break;
 	//case 0xea: // far jmp
 	// TODO moar
@@ -74,7 +78,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->jump   = addr+6+bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);//((unsigned long)((bytes+2))+6);
 			aop->fail   = addr+6;
 			aop->length = 6;
-			aop->eob    = 1;
+			//aop->eob    = 1;
 		} 
 		break;
 	case 0xcc: // int3
@@ -92,7 +96,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->jump   = addr+*ptr+5; //(unsigned long)((bytes+1)+5);
 		aop->fail   = addr+5;
 //printf("addr: %08x\n call %08x \n ret %08x\n", addr, aop->jump, aop->fail);
-		aop->eob    = 1;
+	//	aop->eob    = 1;
 		break;
 	case 0xe9: // jmp
 		aop->type   = AOP_TYPE_JMP;
@@ -116,14 +120,14 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->jump   = 0L;
 		aop->fail   = 0L;
 		break;
-	case 0xFF:
+	case 0xff:
 		if (bytes[1]>=0x50 && bytes[1]<=0x6f) {
 			aop->type = AOP_TYPE_UJMP;
 			aop->eob    = 1;
 		} else
 		if (bytes[1]>=0xd0 && bytes[1]<=0xe7) {
 			aop->type = AOP_TYPE_UJMP;
-		//	aop->length = 2;
+			aop->length = 2;
 			aop->eob    = 1;
 		}
 		break;
@@ -137,18 +141,35 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x57:
 	case 0x58:
 	case 0x59:
+		aop->type = AOP_TYPE_UPUSH;
+		aop->ref = 0; // TODO value of register here! get_offset
+		break;
 	case 0x5a:
 	case 0x5b:
 	case 0x5c:
 	case 0x5d:
+	case 0x5e:
 	case 0x5f:
-		aop->type = AOP_TYPE_UPUSH;
-		aop->ref = 0; // TODO value of register here! get_offset
+		aop->type = AOP_TYPE_POP;
+		aop->length = 1;
 		break;
 	case 0x68:
 		aop->type = AOP_TYPE_PUSH;
 		aop->ref = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
 		break;
+	case 0x81:
+		aop->type = AOP_TYPE_ADD;
+		break;
+	case 0x29:
+		aop->type = AOP_TYPE_SUB;
+		break;
+	case 0x31:
+		aop->type = AOP_TYPE_XOR;
+		break;
+	case 0x32:
+		aop->type = AOP_TYPE_AND;
+		break;
+		
 #if 0
 	case0xF
 		/* conditional jump */

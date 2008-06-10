@@ -5,6 +5,18 @@
 
 extern struct list_head comments;
 
+enum {
+	ARCH_X86 = 0,
+	ARCH_ARM = 1,
+	ARCH_ARM16 = 2,
+	ARCH_PPC = 3,
+	ARCH_M68K = 4,
+	ARCH_JAVA = 5,
+	ARCH_MIPS = 6,
+	ARCH_SPARC = 7,
+	ARCH_CSR = 8
+};
+
 // generic assembly opcode structure type
 enum {
 	AOP_TYPE_JMP,  // mandatory jump
@@ -16,6 +28,7 @@ enum {
 	AOP_TYPE_ILL,  // illegal instruction // trap
 	AOP_TYPE_UNK,  // unknown opcode type
 	AOP_TYPE_NOP,  // does nothing
+	AOP_TYPE_MOV,  // register move
 	AOP_TYPE_TRAP,  // it's a trap!
 	AOP_TYPE_SWI,  // syscall, software interrupt
 	AOP_TYPE_UPUSH, // unknown push of data into stack
@@ -93,5 +106,6 @@ int data_end(u64 offset);
 int data_count(u64 offset);
 int data_list();
 void udis_jump(int n);
+int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);
 
 #endif

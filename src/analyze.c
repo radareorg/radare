@@ -39,33 +39,43 @@ void arch_set_callbacks()
 
 	if (!strcmp(a, "arm")) {
 		arch_aop = &arch_arm_aop;
+		config.arch = ARCH_ARM;
 	} else
 	if (!strcmp(a, "arm16")) {
 		arch_aop = &arch_arm_aop;
+		config.arch = ARCH_ARM16;
 	} else
 	if (!strcmp(a, "java")) {
 		arch_aop = &arch_java_aop;
+		config.arch = ARCH_JAVA;
 	} else
 	if (!strcmp(a, "mips")) {
 		arch_aop = &arch_mips_aop;
+		config.arch = ARCH_MIPS;
 	} else
 	if (!strcmp(a, "ppc")) {
 		arch_aop = &arch_ppc_aop;
+		config.arch = ARCH_PPC;
 	} else
 	if (!strcmp(a, "csr")) {
 		arch_aop = &arch_csr_aop;
+		config.arch = ARCH_CSR;
 	} else
 	if (!strcmp(a, "intel16")) {
 		arch_aop = &arch_x86_aop;
+		config.arch = ARCH_X86;
 	} else
 	if (!strcmp(a, "intel32")) {
 		arch_aop = &arch_x86_aop;
+		config.arch = ARCH_X86;
 	} else
 	if (!strcmp(a, "intel64")) {
 		arch_aop = &arch_x86_aop;
+		config.arch = ARCH_X86;
 	} else
 	if (!strcmp(a, "intel")) {
 		arch_aop = &arch_x86_aop;
+		config.arch = ARCH_X86;
 	}
 }
 
@@ -388,9 +398,13 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
                         break;
                 }
 
-                if (!callblocks && aop.type == AOP_TYPE_CALL) {
-                        aop.eob = 0;
-                        block_add_call(prg, oseek, aop.jump);
+		if (aop.type == AOP_TYPE_CALL) {
+                	if (callblocks) {
+				aop.eob = 1;
+				block_add_call(prg, oseek, aop.jump);
+			} else {
+				aop.eob = 0;
+			}
                 }
 
                 memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
