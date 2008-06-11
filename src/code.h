@@ -45,6 +45,8 @@ enum {
 	AOP_TYPE_AND,
 	AOP_TYPE_XOR,
 	AOP_TYPE_NOT,
+	AOP_TYPE_STORE, /* store from register to memory */
+	AOP_TYPE_LOAD, /* load from memory to register */
 };
 
 struct aop_t {

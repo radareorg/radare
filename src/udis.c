@@ -425,7 +425,7 @@ void udis_jump(int n)
 
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
-	char *b = config.block;
+	char *b = config.block + bytes;
 	char* hex1, *hex2;
 	int c;
 

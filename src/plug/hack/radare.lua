@@ -5,6 +5,7 @@
 
 -- define namespaces
 Radare = {}
+Radare.Analyze = {}
 Radare.Print = {}
 Radare.Search = {}
 Radare.Config = {}
@@ -16,6 +17,7 @@ Radare.Utils = {}
 
 -- define aliases
 r = Radare
+a = Radare.Analyze
 p = Radare.Print
 cfg = Radare.Config
 code = Radare.Code
@@ -274,6 +276,18 @@ function Radare.exit()
 	return r.quit()
 end
 
+-- Radare.Analyze
+
+function Radare.Analyze.opcode(addr)
+	if addr == nil then addr = "" else addr= "@ "..addr end
+	local res = split(Radare.cmd("ao "..addr),"\n")
+	local ret = {}
+	for i = 1, #res do
+		local line = split(res[i], "=")
+		ret[chop(line[1])] = chop(line[2])
+	end
+	return ret;
+end
 -- Radare.Debugger API
 
 function Radare.Debugger.step(times)

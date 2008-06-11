@@ -113,17 +113,22 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	case 2: // j
 	case 3: // jal
 		break;
+	
 	// R-Type
 	case 1: // bltz
 	case 4: // beq
 	case 5: // bne
 	case 6: // blez
 	case 7: // bgtz
-	case 8: // jr
-	case 9: // jalr
 		aop->type = AOP_TYPE_CJMP;
 		aop->jump = -1;
 		// calculate jump
+		break;
+	case 9: // jalr
+		aop->type = AOP_TYPE_CALL;
+		break;
+	case 8: // jr
+		aop->type = AOP_TYPE_RET;
 		break;
 	case 12:
 		aop->type = AOP_TYPE_SWI;
@@ -133,11 +138,19 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 		break;
 	default:
 		switch(op) {
+		case 32: // add
+		case 33: // addu
+			aop->type = AOP_TYPE_ADD;
+			break;
+		case 34: // sub
+		case 35: // subu
+			aop->type = AOP_TYPE_SUB;
+			break;
 		case 0x03e00008:
 		case 0x0800e003: // jr ra
 			aop->type = AOP_TYPE_RET;
 			break;
-		case 0x0000000d:
+		case 0x0000000d: // case 26:
 		case 0x0d000000: // break
 			aop->type = AOP_TYPE_TRAP; 
 			break;
