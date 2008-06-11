@@ -146,15 +146,20 @@ int is_cursor(int from, int len)
 	if (config.cursor_mode == 0)
 		return 0;
 
-	for(;from<end;from++) {
+	//for(;from<end;from++) {
 		if (config.ocursor != -1) {
 			if ((from >= config.ocursor && from <= config.cursor)
 			||  (from <= config.ocursor && from >= config.cursor))
 				return 2;
-		} else
-		if  (from == config.cursor)
-			return 1;
-	}
+		} else {
+			if (len > 1) {
+				if (from < config.cursor && config.cursor < end)
+					return 2;
+			}
+			if  (from == config.cursor)
+				return 1;
+		}
+	//}
 	return 0;
 }
 

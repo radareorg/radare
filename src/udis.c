@@ -787,7 +787,7 @@ void udis_arch(int arch, int len, int rows)
  				cons_printf("*");
 				break;
 			case 2:
- 				cons_printf("+");
+ 				cons_printf(">");
 				break;
 			}
 			if (show_bytes) {
