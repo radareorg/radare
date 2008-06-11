@@ -131,7 +131,7 @@ command_t commands[] = {
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
 	COMMAND('u', "[!|?|u]",        "undo     undo seek (! = reset, ? = list, u = redo)", undoseek),
 	COMMAND('V', "",               "Visual   go visual mode", visual),
-	COMMAND('w', "[?aAdwxf] [str]","write    write ascii/hexpair string here", write),
+	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
 	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
 	COMMAND('.', "[!cmd]|[ file]", "script   interpret a commands script", interpret),
@@ -176,7 +176,7 @@ CMD_DECL(analyze)
 	struct program_t *prg;
 	struct block_t *b0;
 	struct list_head *head;
-	int i, sz;
+	int i, j, sz;
 	int depth_i;
 	int delta = 0;
 	int depth = input[0]?atoi(input+1):0;
@@ -235,9 +235,10 @@ CMD_DECL(analyze)
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 			cons_printf("index = %d\n", depth_i);
 			cons_printf("opcode = ");
-			config.verbose=0;
-				radare_cmd("pd 1",0);
-			config.verbose=1;
+			j = config.verbose;
+			config.verbose = 0;
+			radare_cmd("pd 1", 0);
+			config.verbose = j;
 			cons_printf("size = %d\n", sz);
 			cons_printf("type = ");
 			switch(aop.type) {
@@ -1094,12 +1095,38 @@ CMD_DECL(compare)
 CMD_DECL(write)
 {
 	int ret;
-	unsigned long off;
+	u64 delta = 0;
+	u64 off;
 
 	switch (input[0]) {
 	case 'd':
 		off = (unsigned long) get_offset(input);
 		io_write(config.fd, &off, 4);
+		break;
+	case 'F':
+		if (input[1]!=' ') {
+			eprintf("Please. use 'wF [hexpair-file]'\n");
+			return 0;
+		} else {
+			/* TODO: move to radare_poke_hexpairs() */
+			int n;
+			u8 c;
+			FILE *fd = fopen(input+2, "r");
+			if (fd) {
+				while(!feof(fd)) {
+					fscanf(fd, "%02x", &n);
+					if (feof(fd))
+						break;
+					c = n;
+					radare_write_at(config.seek+delta, &c, 1);
+					delta++;
+				}
+				fclose(fd);
+			} else {
+				eprintf("Cannot open file '%s'\n", input+2);
+				return 0;
+			}
+		}
 		break;
 	case 'f':
 		if (input[1]!=' ') {
@@ -1155,10 +1182,11 @@ CMD_DECL(write)
 		"  wd [offset]   - writes a doubleword from a math expression\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
-		"  wf [file]     - write contents of file at current seek\n");
+		"  wf [file]     - write contents of file at current seek\n"
+		"  wF [hexfile]  - write hexpair contents of file\n");
 		break;
 	default:
-		eprintf("Usage: w[?|a|A|d|w|x|f] [argument]\n");
+		eprintf("Usage: w[?|a|A|d|w|x|f|F] [argument]\n");
 		return 0;
 	}
 

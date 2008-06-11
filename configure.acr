@@ -107,7 +107,9 @@ IFNOT GUI {
 	ECHO Vala build disabled, no gtk-dev or libvte-dev found ;
 }
 
-REPORT GUI WII MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+LANG_LUA
+
+REPORT GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
 SUBDIRS . ./config.mk src src/rsc src/rfile ;
@@ -118,14 +120,4 @@ SUBDIRS . ./config.mk src src/rsc src/rfile ;
   ERR = 0 ;
   IFNOTEQ SIZEOF_OFF_T 8 ; ERR = 1 ;
   DIE ERR Radare requires a 64 bit POSIX OS to work properly ;
-))
-
-((
-    libedit not yet supported. Sorry netbsd :"
- 
-	CHKLIB edit+curses
-	IF HAVE_LIB_EDIT_AND_CURSES {
-		LDFLAGS += -ledit -lcurses ;
-		HAVE_LIB_READLINE = 1 ;
-	}
 ))

@@ -19,13 +19,11 @@ CODE INJECTION (as a plugin in lua)
  * rename -v to -q (quiet or -s silent)
    - cfg.verbose = integer (autosetup scr.color and asm.color)
    - cfg.quiet = false
- * add --includedir to ACR
  * populate the use of cmd.flag (in prompt and so)
  * flag grep print mode
- * graphically draw structures in memory (pAG)?
+ * graphically draw structures in memory (adg, aD)?
  * define print format per flags (useful to find strings, code,etc..) :D
  * write a char on selected bytes
-* TODO: write from file hexpair formatted
  * implement sleep shellcode
   - using nanosleep
     -> nanosleep(&foo, NULL);

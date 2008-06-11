@@ -566,7 +566,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 					// 64 bit fun
 				} else {
 					// 32 bit fun
-					u8 *addrp = &addr32;
+					u8 *addrp = (u8*) &addr32;
 					// XXX always copy in native endian?
 					out[len++] = addrp[0];
 					out[len++] = addrp[1];

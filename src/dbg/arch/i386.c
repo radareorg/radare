@@ -91,9 +91,9 @@ u64 get_reg(char *reg)
 	return -1;
 }
 
-long long arch_syscall(int pid, int sc, ...)
+u64 arch_syscall(int pid, int sc, ...)
 {
-        long long ret = (addr_t)-1;
+        u64 ret = (addr_t)-1;
 #if __linux__
 	va_list ap;
         regs_t   reg, reg_saved;

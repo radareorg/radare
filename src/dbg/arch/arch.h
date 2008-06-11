@@ -47,7 +47,7 @@ int arch_call(char *arg);
 int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type);
 addr_t arch_set_sighandler(int signum, addr_t handler);
 int arch_hack(const char *cmd);
-long long arch_syscall(int pid, int sc, ...);
+u64 arch_syscall(int pid, int sc, ...);
 int arch_dump_registers();
 int arch_restore_registers();
 void arch_set_pc(addr_t pc);

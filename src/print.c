@@ -150,7 +150,7 @@ int is_cursor(int from, int len)
 		if (config.ocursor != -1) {
 			if ((from >= config.ocursor && from <= config.cursor)
 			||  (from <= config.ocursor && from >= config.cursor))
-				return 1;
+				return 2;
 		} else
 		if  (from == config.cursor)
 			return 1;

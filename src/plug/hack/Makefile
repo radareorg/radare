@@ -13,14 +13,14 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO}  gtkhello.${SO} luaedit.${SO}
+all: hello.${SO} lua.${SO}  gtk-hello.${SO} luaedit.${SO}
 
 #perl.${SO}
 
 hello.${SO}:
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SO}
 
-gtkhello.${SO}:
+gtk-hello.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-hello.c -I ../.. -fPIC -shared -g -o gtk-hello.${SO}
 
 luaedit.${SO}:
@@ -31,8 +31,7 @@ luaedit.${SO}:
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}: lua.o
-	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -llua -o lua.so || \
-	${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} -llua5.1 -o lua.so
+	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
 
 install:
 	-[ -e lua.${SHARED_EXT} ] && ${INSTALL_LIB} lua.${SHARED_EXT} ${LIBDIR}/radare

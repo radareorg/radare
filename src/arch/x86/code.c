@@ -158,6 +158,9 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->ref = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
 		break;
 	case 0x81:
+	case 0x82:
+	case 0x83:
+	case 0x8b:
 		aop->type = AOP_TYPE_ADD;
 		break;
 	case 0x29:
