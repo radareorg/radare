@@ -7,11 +7,21 @@
 
 ===========================================================
 
-CODE INJECTION (as a plugin in lua)
-==============
 
 0.9.7:
 ======
+ * Make the color palette more accessible to the users
+ * Make ^C work again in debugger?!?
+  - do not pass user signals to child process
+ * 'w' in cursor mode with range selected must fill the buffer
+ * code injection (as a plugin in lua)
+ * Add script editor window for lua and radare
+ * when loading strings from file
+  - run Cs
+  - make Cs support multiple strings at a time
+  - split .dbs with flags
+ * xc is crappy!
+ * Support to change program arguments while running
  * control screen height in cons.c (limit \n per screen)
  * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
@@ -23,36 +33,30 @@ CODE INJECTION (as a plugin in lua)
  * flag grep print mode
  * graphically draw structures in memory (adg, aD)?
  * define print format per flags (useful to find strings, code,etc..) :D
- * write a char on selected bytes
- * implement sleep shellcode
+
+ * add selfsigstop shellcodes in lua script or rasc
+ * add nanosleep shellcode
   - using nanosleep
     -> nanosleep(&foo, NULL);
-
-call +1
-pop ebx
-push 3
-push 0
-mov eax, 162
-mov ebx
-int 0x80
+	call +1
+	pop ebx
+	push 3
+	push 0
+	mov eax, 162
+	mov ebx
+	int 0x80
 
  * options for trace
   - trace.depth = 0
   - trace.alarm = 0
  * ^C doesnt works with trace
 
- * xc is crappy!
  * shellcode to get cur eip in eax
 	de call +1
 	pop eax
 	mv  [deplaz+eax], restore_value
  *  /x 58 5b c3
    - no funciona be troba coses com 58 5b c9 c3...
- * breakpoints en fbsd no va be
-   - deixa el bp (no el treu)
-   - i lexecuta (no restaura eip) :/
-
- * 'w' in cursor mode with range selected must fill the buffer
 
  * Allow to increase/decrease folder size with + and -
   - wheen scrolling over folders skip faster
@@ -62,19 +66,13 @@ int 0x80
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
  * flag str_
- * !fd really works? :/
- * number keybindings doest works
  * remove comments doesnt works properly
- * Add script editor window for lua and radare
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
  * make !get work on linux with arch_get_register (currently only works on w32)
  * show labels of all jumps/calls (not only bookmarked ones)
- * refactor dbg/arch/i386 to dbg_os_foo
  * make the gui plugins be possible little demo launched from pG
  * implement waiter for radare debugger as an rsc script
- * support to remove fixed nodes
- * store node positions (label = x,y)
  * make fixed nodes fixed to the graph view
  * Make q! quit witout asking anything
  * rename V to v and pG to V ?
@@ -89,8 +87,15 @@ int 0x80
  * support for search and replace
  * support for oprofile (via rsc or so)
  * Edit modify source references ;)
- * cfg.limit must be size of current maps section by default (file size?) useful for memory searchs
- * add map search doing a search inside the process maps only
+
+
+Gui
+===
+* implement start/pause/continue/stop/reload button for a pid
+* frontend for hasher (Vala api for hashing)
+* the gui must listen:// and connect:// too!
+* Add toggle endian in gradare
+* integrate the gui with maemo!
 
 Open streams
 ============
@@ -105,7 +110,7 @@ Open streams
   - automatic stepu 
 
   - file.insertblock=false - to not modify the whole stuff
-  - must interact with search engine too
+  - must interact with search engine too for search and replace
 
 /////////////////////////////////////////////////////////////////////////
 /* Fetch the thread-local storage pointer for libthread_db.  */
@@ -134,10 +139,10 @@ DONE?
   cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
 
 
-0.9.5
+Core
 =====
+* allow to run without opening a file (useful for batch mode)
 * Fix XXX hack in src/radare.c to avoid hardcoding all interpretable debugger commands :?
-* Show FPU stack contents
 * set asm.arch with rabin_arch
 * open/close projects in GUI
 * status shows backtrace !?!?!
@@ -151,16 +156,7 @@ make fdsniff and usbsniff generate a project file and a binary one.
 
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
 * xc can get_math!
-* allow to run without opening a file (useful for batch mode)
-* when loading strings from file
-  - run Cs
-  - make Cs support multiple strings at a time
-  - split .dbs with flags
 
-
-
-
--> should with cmd.search or cmd.hit
 
 
 Imports:
@@ -173,42 +169,31 @@ Imports:
 ARM
 ===
 * arm has no backtrace
--S flag move to rabin
-when runnin to bp says invalid address (uh?)
+- -S flag move to rabin
+- when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
+* wx `pW 33 -> the ` doesnt works
 * step over doesnt works on arm
 * keybinding assignment dosnt workz
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
-* threading stuff for ptrace is broken. try to make the ada crackme
-  http://crackmes.de/users/darkphoenix_/ada_crackme_1_elf/
 * inv -> make offsets take sense
   - make cursor bytes take sense too
 * s <unexistant-flag> -> do not seek
 * !ret should use !bt if possible
 * In visual mode the 'w' doesn't allows to erase chars (backspace..)
    - pipecmd2str must use radare_cmd_str
-* new graph view
-  * string references are referenced to a block which is composed by jumps (a calls or ret break a block)
-* next pel debugger (next source line) -- comment uh?
 
-
-TODO for 0.9.5
-==============
+Random:
+=======
 * Indentify, parse and show the auxv_t structure
 * filter visible flags with scr.flagfilter (strstr expression)
-* bindiff is buggy (gnu huh!)
-  - use bdiff
-  - integrated with bdcolor huh!
 * support to append data (without getting out of the block_size) (or so..)
 * cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
 * implement insert data inda core
 * graph.body=asm,flags,symcalls,description, trace execution data
-* blue or black background for metadata in udis -> nicer for w32 and white screens
-  - use global palete in eval variable
-  - scr.palete = 1732367 -> when printing colors are peeked from this palete
 * Create linked list of hit0[0] and hit1[0] , etc..
   define block size by hit1[0]-hit0[0]
 
@@ -231,14 +216,18 @@ Rabin
 =====
 * elf-section-headers -> loggejar shelf stuff
   - pillar base address al vol ( rabin -b)
-* add full PE support to rabin
-* integrated with radare debugger /code analyer
+* Full PE parser support
 * Move radare -S into rabin to find strings in data sections only
   - like gnu strings like bfd does
 
 
 Graphs
 ======
+* identify nodes with 'ret' in graph
+* identify nodes with 'cmp' in graph
+
+ * support to remove fixed nodes
+ * store node positions (label = x,y)
   - show comments in a separated toggleable box:
 
    +-------------+
@@ -258,6 +247,8 @@ Graphs
   - not portable, coz arm mixes data and code
   - continue until breakpoints
 * virtual machine decompilation -> helpers for debugging soft VM opcodes (new user-defined archs)
+
+/* done in lua? */
 * analize input/output of function calls
   - bp enter
   - bp exit
@@ -268,24 +259,14 @@ Graphs
 * exception frame information (try { ... } catch stuff)
 * ram dump driver for w32
 
-* switch table decompilation
-* implement bindiff in the core
-  - Allow to bindiff two data blocks or repeated data blocks (src,dst,len)
-  - use the pattern finding algorithm
+* use the pattern finding algorithm
 * dinamic block size defined by:
   - height of screen
   - <tags> (set inigial and end binary tags)
     - allow to move forward/backward between 'bintags'
 + EH - event handling (event type + source pid)
   * add '!eh' command, how to handle an event ((ignore?), log, bypass, handle)
-* wtrace
-  - rename to stepw
-  - trace using !wp or so? wtrace until reached wp?
 * cfg.dbgbsize (default block size for debugger)
-* breakpoints
-  - command
-  - log (trace)
-  - enabled
 * RDB TO GML
 * circle to group looped code blocks in graph view
 
@@ -302,12 +283,10 @@ Graphs
 
 Search
 ======
- * search for head and foot
+* cfg.limit must be size of current maps section by default (file size?) useful for memory searchs
+* add map search doing a search inside the process maps only
+* search for head and foot
   - for each head finds a foot and defines block size
-* Fix search progress bar and hits view (cleaner :!!)
-  - output configure by search.
-* new search engine allowing AES and RSA key (so...predefined algos for signature searches)
-  - must think on! - entropia = 1 en un block (tots numeros primers)
 
 Filesystem
 ==========
@@ -322,6 +301,8 @@ Core
 * function hooker in C (dbg.hooker)      
   - some C macros or so to create a .so and LD_PRELOAD't
   - if static...should inject trampolines to our code.
+  - defined in a external file. promote description tab files
+    - happily done with lua scripts
 * add cfg.insert (make user write operations insert or overwrite)
 * Multiple rdb load
   - allow to map into flags, etc..
@@ -348,7 +329,6 @@ Rasm
 Visual
 ======
 * colorize background of flagged bytes in hexdump
-* ease monitor access from the visual (xterm or so) (run inside dvtm?)
 * count the number of lines in backtrace and substract them to make the visual
 
 Hasher
@@ -399,7 +379,20 @@ FileDescriptors
 
 Debugger
 ========
-* trace on !wp
+* Show FPU stack contents
+* Support for MMX
+* next pel debugger (next source line) -- needs dwarf integration?
+  - or just follow a file containing a list of breakpoint addresses
+   like: 1 2 10 44 -> radare will set and unset all these breakpoints
+   everytime. so you have a separate file with the breakpoints, so you
+   can use rsc to generate this and next properly
+* add dosdebug:// to debug dosemu-based applications
+* import of qemu:// plugin to connect to qemus :D
+* import of windbg:// for serial port (w32 kernel debugger)
+* breakpoints
+  - command
+  - log (trace)
+  - enabled
 * al atacharse a un proces deixa <pid>.rdb hauria de ser <program.pid>.rdb?
 * debug_new() -> alloc new glib object or so
   - allows multiple ps structures to be loaded
@@ -432,8 +425,6 @@ Debugger
  - integrated with !wp too
   A hook to an api can be emulated from the debugger, no need to inject
   code everywhere, just BP and change regs
-* add dosdebug:// to debug dosemu-based applications
-* import of qemu:// plugin to connect to qemus :D
  - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
 * use 'tm' (terminal mixer) to run the target debugged program
    - allows multiple interactives consoles over the program,
@@ -447,11 +438,6 @@ Debugger
   (autodetect .s or raw binary)
   - read shellcode from a file 
     should support .c or .s or raw or elf _start
-
-Graphs
-======
-* identify nodes with 'ret' in graph
-* identify nodes with 'cmp' in graph
 
 Code analyzer
 =============
@@ -467,15 +453,6 @@ Code analyzer
   - data xrefs is not detected here. uh?
 * persistent nodes in graph executing commands
 
-Gui
-===
-* Implement 'gui hack' command for 'GUI plugins'.
-  - implement start/pause/continue/stop/reload button for a pid
-* frontend for hasher (Vala api for hashing)
-* GUI: contextual popup menu allows to change font size
-* the gui must listen:// and connect:// too!
-* Add toggle endian in gradare
-* integrate the gui with maemo!
 
 Random
 ======
@@ -489,7 +466,10 @@ Random
 
 TOTHINK
 =======
-* Implement gtk-dialog replacement (radialog)?
+* new search engine allowing AES and RSA key (so...predefined algos for signature searches)
+  - must think on! - entropia = 1 en un block (tots numeros primers)
+* ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
+* Implement gtk-dialog replacement (radialog)? (in lua-gtk?)
 * make !dump incremental
   - support to enable full dump (with hashing for reducing sizes)
   - bindiffing using bdiff
@@ -561,6 +541,11 @@ foo:
         push %ebx
         push %eax
         int $0x80
+
+mips:
+	li $v0, syscall
+	li $v1, arg0
+	syscall
 
 
 libraries

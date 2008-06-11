@@ -32,8 +32,12 @@
 #include "list.h"
 
 struct list_head data;
-
 extern int force_thumb;
+
+static ud_t ud_obj;
+static unsigned char o_do_off = 1;
+static int ud_idx = 0;
+static int length = 0;
 
 int data_set_len(u64 off, u64 len)
 {
@@ -346,12 +350,6 @@ static int metadata_print(int delta)
 	return lines;
 }
 
-
-static ud_t ud_obj;
-static unsigned char o_do_off = 1;
-static int ud_idx = 0;
-static int length = 0;
-
 static int input_hook_x(ud_t* u)
 {
 	if (ud_idx>length)
@@ -379,7 +377,7 @@ void udis_init()
 	if (!strcmp(ptr, "intel16")) {
 		ud_set_mode(&ud_obj, 16);
 	} else
-	if((!strcmp(ptr, "intel")) || (!strcmp(ptr, "intel32"))) {
+	if((!strcmp(ptr, "intel")) || (!strcmp(ptr, "intel32")) || (!strcmp(ptr,"x86"))) {
 			ud_set_mode(&ud_obj, 32);
 	} else
 	if (!strcmp(ptr, "intel64")) {
@@ -425,7 +423,7 @@ void udis_jump(int n)
 
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
-	char *b = config.block + bytes;
+	unsigned char *b = config.block + bytes;
 	char* hex1, *hex2;
 	int c;
 
@@ -458,7 +456,6 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		       break;
 	case ARCH_MIPS:
 		       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-		       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
 		       gnu_dismips((unsigned char*)b, (unsigned int)seek);
 		       break;
 	case ARCH_SPARC:

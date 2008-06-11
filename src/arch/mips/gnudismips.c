@@ -48,8 +48,7 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 	str[0] = '\0';
 
 	Offset = (unsigned long)offset;
-	//endian_memcpy(bytes, inst, 4); //
-	memcpy(bytes, inst, 4); // TODO handle thumb
+	endian_memcpy(bytes, inst, 4); // TODO handle thumb
 
 	/* prepare disassembler */
 	memset(&info,'\0', sizeof(struct disassemble_info));

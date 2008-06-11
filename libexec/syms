@@ -9,4 +9,6 @@ if [ "$TARGET" = "-h" ]; then
 	echo "Usage: rsc syms [file]\n"
 	exit 1
 fi
-objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
+#objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
+#readelf -s /bin/ls | cut -d @ -f 1 | awk '{print "f sym_"$8" @ 0x"$2}'
+readelf -s $1 | cut -d @ -f 1 | awk '{print $2" "$8 }'
