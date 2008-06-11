@@ -439,8 +439,8 @@ int main(int argc, const char **argv, char **envp)
 	hildon_program_add_window(p, w);
 #else
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#endif
 	w->allow_shrink=TRUE;
+#endif
 	g_signal_connect(G_OBJECT(w), "key_press_event", G_CALLBACK(key_press_cb), w);
 
 	gtk_window_resize(GTK_WINDOW(w), 800,600);

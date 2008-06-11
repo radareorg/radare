@@ -646,13 +646,13 @@ int arch_print_fpregisters(int rad, const char *mask)
 
 	ret = ptrace(PTRACE_GETFPXREGS, ps.tid, NULL, &regs);
 
-	cons_printf("  cwd 0x%lx  ; control\n", regs.cwd);
-	cons_printf("  swd 0x%lx  ; status\n", regs.swd);
-	cons_printf("  twd 0x%lx  ; tag\n", regs.twd);
-	cons_printf("  fip 0x%lx  ; eip of fpu opcode\n", regs.fip);
-	cons_printf("  fcs 0x%lx\n", regs.fcs);
-	cons_printf("  foo 0x%lx  ; stack\n", regs.foo);
-	cons_printf("  fos 0x%lx\n", regs.fos);
+	cons_printf(" cwd = 0x%04lx  ; control   ", regs.cwd);
+	cons_printf(" swd = 0x%04lx  ; status\n", regs.swd);
+	cons_printf(" twd = 0x%04lx  ; tag       ", regs.twd);
+	cons_printf(" fip = 0x%04lx  ; eip of fpu opcode\n", regs.fip);
+	cons_printf(" fcs = 0x%04lx              ", regs.fcs);
+	cons_printf(" foo = 0x%04lx  ; stack\n", regs.foo);
+	cons_printf(" fos = 0x%04lx\n", regs.fos);
 
 #if __NetBSD__
 #define FADDR ((double*)&regs.__data[i*4])
@@ -660,8 +660,13 @@ int arch_print_fpregisters(int rad, const char *mask)
 #define FADDR ((double*)&regs.st_space[i*4])
 #endif
 
-	for(i=0;i<8;i++)
-		cons_printf("st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+	for(i=0;i<8;i++) {
+		u16 *a = &regs.xmm_space;
+		a = a + (i * 4);
+
+		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);
+		cons_printf(" st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+	}
 #endif
 
 	return ret;

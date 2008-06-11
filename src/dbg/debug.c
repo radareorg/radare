@@ -180,10 +180,10 @@ int hijack_fd(int fd, const char *file)
 {
 	int f;
 
-	if (strnull(file)||fd==-1)
-		return 0;
+	if (strnull(file) || fd==-1)
+		return -1;
 
-	f = open(file, (fd?O_RDWR:O_RDONLY));
+	f = open(file, (fd?O_RDWR:O_RDONLY) | O_NOCTTY);
 	// TODO handle pipes to programs
 	// does not works
 	if (f == -1) {
@@ -194,8 +194,9 @@ int hijack_fd(int fd, const char *file)
 		}
 	}
 	close(fd);
-	dup2(f, 0);
-	return f;
+	dup2(f, fd);
+
+	return fd;
 }
 
 void debug_environment()
@@ -254,9 +255,15 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	if (!strnull(ptr)) setgid(atoi(ptr));
 #endif
 	// TODO: add suid bin chmod 4755 ${FILE}
-	hijack_fd(0, config_get("child.stdin"));
-	hijack_fd(1, config_get("child.stdout"));
-	hijack_fd(2, config_get("child.stderr"));
+	if (config_get("child.stdio") != NULL) {
+		hijack_fd(0, config_get("child.stdio"));
+		hijack_fd(1, config_get("child.stdio"));
+		hijack_fd(2, config_get("child.stdio"));
+	} else {
+		hijack_fd(0, config_get("child.stdin"));
+		hijack_fd(1, config_get("child.stdout"));
+		hijack_fd(2, config_get("child.stderr"));
+	}
 }
 
 

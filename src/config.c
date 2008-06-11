@@ -633,6 +633,7 @@ void config_init(int first)
 	config_set_i("cfg.vbsize", 1024);
 	config_set("cfg.vbsize_enabled", "false");
 
+	config_set("child.stdio", "");
 	config_set("child.stdin", "");
 	config_set("child.stdout", "");
 	config_set("child.stderr", "");
