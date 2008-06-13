@@ -136,7 +136,6 @@ int debug_bp_restore(int pos)
 		bp = debug_bp_get(addr);
 	else	bp = debug_bp_get_num(pos);
 
-eprintf("bp-restore\n");
 
 	if (bp == NULL) {
 	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);

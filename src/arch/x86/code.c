@@ -30,7 +30,7 @@ int dislen(u8* opcode0, int limit);
 // XXX addr should be off_t for 64 love
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
-	unsigned long *ptr = (unsigned long *)(bytes+1);
+	u64 *ptr = (u64 *)(bytes+1);
 	//unsigned char *ptr2 = (unsigned char *)(bytes+1);
 
 	memset(aop, '\0', sizeof(struct aop_t));
@@ -93,9 +93,10 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0xe8: // call
 		aop->type   = AOP_TYPE_CALL;
 		aop->length = 5;
-		aop->jump   = addr+*ptr+5; //(unsigned long)((bytes+1)+5);
+		//aop->jump   = addr+*ptr+5; //(unsigned long)((bytes+1)+5);
+		aop->jump   = addr+5+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);//((unsigned long)((bytes+2))+6);
 		aop->fail   = addr+5;
-//printf("addr: %08x\n call %08x \n ret %08x\n", addr, aop->jump, aop->fail);
+//printf("addr: %08llx\n call %08llx \n ret %08llx\n", addr, aop->jump, aop->fail);
 	//	aop->eob    = 1;
 		break;
 	case 0xe9: // jmp

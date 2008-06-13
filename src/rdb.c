@@ -131,7 +131,7 @@ char *estrdup(char *ptr, char *string)
 }
 #endif
 
-struct xref_t *xref_new(unsigned long addr)
+struct xref_t *xref_new(u64 addr)
 {
 	struct xref_t *xt;
 
@@ -142,7 +142,7 @@ struct xref_t *xref_new(unsigned long addr)
 	return xt;
 }
 
-struct block_t *block_new(unsigned long addr)
+struct block_t *block_new(u64 addr)
 {
 	struct block_t *bt;
 
@@ -155,7 +155,7 @@ struct block_t *block_new(unsigned long addr)
 	return bt;
 }
 
-struct block_t *block_get(struct program_t *program, unsigned long addr)
+struct block_t *block_get(struct program_t *program, u64 addr)
 {
 	struct list_head *i;
 
@@ -167,17 +167,17 @@ struct block_t *block_get(struct program_t *program, unsigned long addr)
 	return NULL;
 }
 
-struct block_t *block_split_new(struct program_t *program, unsigned long addr)
+struct block_t *block_split_new(struct program_t *program, u64 addr)
 {
 	struct list_head *i;
 	struct block_t *bta;
 	unsigned int oldb;
 	list_for_each_prev(i, &(program->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
-		if (( addr >= bt->addr )&& (addr < (bt->addr+(unsigned long)bt->n_bytes) ) )
+		if (( addr >= bt->addr )&& (addr < (bt->addr+(u64)bt->n_bytes) ) )
 		{
 			#if 0
-			printf ("addr: %lx , %lx-%lx\n", addr,bt->addr,(bt->addr+(unsigned long)bt->n_bytes));
+			printf ("addr: %lx , %lx-%lx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
 			#endif
 			oldb = bt->n_bytes;
 
@@ -194,7 +194,7 @@ struct block_t *block_split_new(struct program_t *program, unsigned long addr)
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
 			printf ("addr: %lx , %lx-%lx, [%d]\n",
 				addr, bt->addr,
-				(bt->addr+(unsigned long)bt->n_bytes),
+				(bt->addr+(u64)bt->n_bytes),
 				(int) bta->n_bytes);
 			#endif
 			bta->bytes = (unsigned char*) malloc (bta -> n_bytes);
@@ -206,7 +206,7 @@ struct block_t *block_split_new(struct program_t *program, unsigned long addr)
 }
 
 
-struct block_t *block_get_new(struct program_t *program, unsigned long addr)
+struct block_t *block_get_new(struct program_t *program, u64 addr)
 {
 	struct block_t *bt;
 
@@ -248,7 +248,7 @@ struct block_t *block_split(struct program_t *program, struct block_t *block, un
 	return new;
 }
 
-int block_set_framesize(struct program_t *program, unsigned long addr, int size)
+int block_set_framesize(struct program_t *program, u64 addr, int size)
 {
 	struct block_t *bt = block_get_new(program, addr);
 
@@ -258,7 +258,7 @@ int block_set_framesize(struct program_t *program, unsigned long addr, int size)
 }
 
 // label
-int block_set_name(struct program_t *program, unsigned long addr, char *name)
+int block_set_name(struct program_t *program, u64 addr, char *name)
 {
 	struct block_t *bt = block_get_new(program, addr);
 
@@ -267,18 +267,19 @@ int block_set_name(struct program_t *program, unsigned long addr, char *name)
 	return 1;
 }
 
-int block_add_call(struct program_t *program, unsigned long addr, unsigned long dest)
+int block_add_call(struct program_t *program, u64 addr, u64 dest)
 {
 	struct block_t *bt = block_get_new(program, addr);
 	struct xref_t *xr = xref_new(dest);
 
+eprintf("BLock add call!\n");
 	bt->n_calls++;
 	list_add_tail(&(xr->list), &(bt->calls));
 
 	return 1;
 }
 
-int block_add_xref(struct program_t *program, unsigned long addr, unsigned long from)
+int block_add_xref(struct program_t *program, u64 addr, u64 from)
 {
 	struct block_t *bt = block_get_new(program, addr);
 	struct xref_t *xr = xref_new(addr); //(struct xref_t *)malloc(sizeof(struct xref_t));
@@ -289,7 +290,7 @@ int block_add_xref(struct program_t *program, unsigned long addr, unsigned long 
 	return 1;
 }
 
-int block_set_comment(struct program_t *program, unsigned long addr, char *comment)
+int block_set_comment(struct program_t *program, u64 addr, char *comment)
 {
 	struct list_head *i;
 	struct block_t *b0;
@@ -307,7 +308,7 @@ int block_set_comment(struct program_t *program, unsigned long addr, char *comme
 	return 1;
 }
 
-int block_set_bytes(struct program_t *program, unsigned long addr, char *hexpairs)
+int block_set_bytes(struct program_t *program, u64 addr, char *hexpairs)
 {
 	unsigned char *bytes = (unsigned char *)strdup(hexpairs);
 	struct block_t *bt = block_get_new(program, addr);
@@ -394,14 +395,14 @@ struct program_t *program_open(char *file)
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
-			block_set_name(program, (unsigned long) off, ptr2);
+			block_set_name(program, (u64) off, ptr2);
 		} else
 		if (!strcmp(buf, "xref")) {
 			ptr2 = strchr(ptr, ' ');
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
-			block_add_xref(program, (unsigned long) off, (unsigned long)get_offset(ptr2));
+			block_add_xref(program, (u64) off, (u64)get_offset(ptr2));
 		} else
 		if (!strcmp(buf, "entry")) {
 			ptr2 = strchr(ptr, ' ');
@@ -415,21 +416,21 @@ struct program_t *program_open(char *file)
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
-			block_set_framesize(program, (unsigned long) off, atoi(ptr2));
+			block_set_framesize(program, (u64) off, atoi(ptr2));
 		} else
 		if (!strcmp(buf, "bytes")) {
 			ptr2 = strchr(ptr, ' ');
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
-			block_set_bytes(program, (unsigned long) off, ptr2);
+			block_set_bytes(program, (u64) off, ptr2);
 		} else
 		if (!strcmp(buf, "comment")) {
 			ptr2 = strchr(ptr, ' ');
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
-			block_set_comment(program, (unsigned long) off, ptr2);
+			block_set_comment(program, (u64) off, ptr2);
 		}
 	}
 	fclose(fd);

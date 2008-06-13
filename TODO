@@ -10,6 +10,7 @@
 
 0.9.7:
 ======
+ * implement radiff -b in C
  * search backward in memory (invert string and add inc as argument for binparse)
  * Make the color palette more accessible to the users
  * Make ^C work again in debugger?!?

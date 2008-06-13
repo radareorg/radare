@@ -91,6 +91,11 @@ enum {
 #define offtx unsigned int
 #endif
 
+#if __FreeBSD__ || __OpenBSD__ || __NetBSD__
+#define BSD 1
+#else
+#define BSD 0
+#endif
 
 #define LANG_PERL 1
 #define LANG_PYTHON 2

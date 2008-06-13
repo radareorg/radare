@@ -94,7 +94,7 @@ u64 get_reg(char *reg)
 u64 arch_syscall(int pid, int sc, ...)
 {
         u64 ret = (addr_t)-1;
-#if __linux__
+#if __linux__ || BSD
 	va_list ap;
         regs_t   reg, reg_saved;
 	int baksz = 128;
@@ -119,15 +119,25 @@ u64 arch_syscall(int pid, int sc, ...)
 
 	/* set syscall */
         R_EAX(reg) = sc;
+#if BSD
+	R_ESP(reg) += 4;
+	debug_write_at(pid, &(R_EAX(reg)), 4, R_ESP(reg));
+#endif
 
 	arg = (char *)&sc;
 	va_start(ap, sc);
 	switch(sc) {
+#if __linux__
 	case SYS_gettid:
 		break;
+#endif
 	case SYS_getpid:
 		break;
+#if BSD
+	case SYS_kill:
+#else
 	case SYS_tkill:
+#endif
 		R_EBX(reg) = va_arg(ap, pid_t);
 		R_ECX(reg) = va_arg(ap, int);
 #if BSD
@@ -163,6 +173,9 @@ u64 arch_syscall(int pid, int sc, ...)
 		break;
 	}
 	va_end(ap);
+#if BSD
+	R_ESP(reg)-=4;
+#endif
 
 	/* write SYSCALL OPS */
 	debug_write_at(pid, (long *)SYSCALL_OPS, 4, R_EIP(reg));

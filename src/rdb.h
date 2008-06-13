@@ -10,7 +10,7 @@
 
 // TODO: rename to ref_t or addr_t or something like that
 struct xref_t {
-	unsigned long addr;
+	u64 addr;
 	struct list_head list;
 };
 
@@ -18,7 +18,7 @@ struct xref_t {
 struct block_t {
 	char *name;
 	char *comment;
-	unsigned long addr;
+	u64 addr;
 
 	int ignored;
 	int framesize;
@@ -43,10 +43,12 @@ struct block_t {
 /* program structure */
 struct program_t {
 	char *name;
-	int setuid;
+#if 0
+	int setuid; // WTF?
 	int setgid;
+#endif
 
-	unsigned long entry;
+	u64 entry;
 
 	int n_blocks;
 	struct list_head blocks;
@@ -57,20 +59,20 @@ struct program_t {
 
 /* functions */
 struct program_t *program_new(char *file);
-int block_set_bytes(struct program_t *program, unsigned long addr, char *hexpairs);
+int block_set_bytes(struct program_t *program, u64 addr, char *hexpairs);
 int program_free(struct program_t *program);
 void program_reset(struct program_t *program);
 int program_serialize(struct program_t *program, char *file);
-struct block_t *block_new(unsigned long addr);
-struct block_t *block_get(struct program_t *program, unsigned long addr);
-struct block_t *block_get_new(struct program_t *program, unsigned long addr);
-struct block_t *block_split_new(struct program_t *program, unsigned long addr);
-int block_set_framesize(struct program_t *program, unsigned long addr, int size);
-int block_set_name(struct program_t *program, unsigned long addr, char *name);
-int block_add_xref(struct program_t *program, unsigned long addr, unsigned long from);
-int block_set_comment(struct program_t *program, unsigned long addr, char *comment);
-int block_set_bytes(struct program_t *program, unsigned long addr, char *hexpairs);
-int block_add_call(struct program_t *program, unsigned long addr, unsigned long dest);
+struct block_t *block_new(u64 addr);
+struct block_t *block_get(struct program_t *program, u64 addr);
+struct block_t *block_get_new(struct program_t *program, u64 addr);
+struct block_t *block_split_new(struct program_t *program, u64 addr);
+int block_set_framesize(struct program_t *program, u64 addr, int size);
+int block_set_name(struct program_t *program, u64 addr, char *name);
+int block_add_xref(struct program_t *program, u64 addr, u64 from);
+int block_set_comment(struct program_t *program, u64 addr, char *comment);
+int block_set_bytes(struct program_t *program, u64 addr, char *hexpairs);
+int block_add_call(struct program_t *program, u64 addr, u64 dest);
 struct program_t *program_open(char *file);
 int rdb_diff(struct program_t *a, struct program_t *b, int mode);
 

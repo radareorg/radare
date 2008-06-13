@@ -176,7 +176,9 @@ CMD_DECL(analyze)
 	struct program_t *prg;
 	struct block_t *b0;
 	struct list_head *head;
-	int i, j, sz;
+	struct list_head *head2;
+	struct xref_t *c0;
+	int i, j, sz, n_calls=0;
 	int depth_i;
 	int delta = 0;
 	int depth = input[0]?atoi(input+1):0;
@@ -191,9 +193,34 @@ CMD_DECL(analyze)
 		// XXX do not uses depth...ignore analdepth?
 		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"));
 		break;
+	case 'b':
+		prg = code_analyze(config.seek, depth);
+		if (prg) {
+			//cons_printf("name = %s\n", prg->name);
+			list_for_each_prev(head, &(prg->blocks)) {
+				struct block_t *b0 = list_entry(head, struct block_t, list);
+				cons_printf("offset = 0x%08llx\n", b0->addr);
+				cons_printf("size = 0x%08llx\n", b0->n_bytes);
+				list_for_each(head2, &(b0->calls)) {
+					c0 = list_entry(head2, struct xref_t, list);
+					cons_printf("call%d = 0x%08llx\n", n_calls++, c0->addr);
+				}
+				cons_printf("n_calls = %d\n", b0->n_calls);
+
+				if (b0->tnext)
+					cons_printf("true = 0x%08llx\n", b0->tnext);
+				if (b0->fnext)
+					cons_printf("false = 0x%08llx\n", b0->fnext);
+				cons_printf("\n");
+			}
+		} else {
+			eprintf("oops\n");
+		}
+		break;
 	case 'g':
 #if VALA
-		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+		// use graph.depth by default if not set
+		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
 #else
@@ -270,7 +297,7 @@ CMD_DECL(analyze)
 			cons_printf("bytes = ");
 			for (i=0;i<sz;i++) cons_printf("%02x ", config.block[i]);
 			cons_printf("\n");
-			cons_printf("base = 0x%08llx\n", config.baddr+config.seek);
+			cons_printf("offset = 0x%08llx\n", config.baddr+config.seek);
 			cons_printf("jump = 0x%08llx\n", aop.jump);
 			cons_printf("fail = 0x%08llx\n", aop.fail);
 			cons_newline();
@@ -281,7 +308,8 @@ CMD_DECL(analyze)
 	default:
 		cons_printf("Usage: a[ocdg] [depth]\n");
 		cons_printf(" ao : analyze N opcodes\n");
-		cons_printf(" ac : analyze N code blocks \n");
+		cons_printf(" ab : analyze N code blocks \n");
+		cons_printf(" ac : disassemble and analyze N code blocks \n");
 		cons_printf(" ad : analyze N data blocks \n");
 		cons_printf(" ag : graph analyzed code\n");
 		break;
