@@ -76,7 +76,7 @@ static int search_verbose = 0;
 char *search_last_keyword = NULL;
 
 static int nhit = 0;
-static int radare_tsearch_callback(struct _tokenizer *t, int i, unsigned long long where)
+static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 {
 	char flag_name[128];
 	u64 off = config.seek;
@@ -161,7 +161,7 @@ int search_range(char *range)
 	tokenizer *t;
 	u64 tmp = config.seek;
 	int f0 = 0;
-
+	u64 s;
 
 	if (range == NULL)
 		return 0;
@@ -214,13 +214,24 @@ int search_range(char *range)
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
+
+	/* search loop */
 	radare_controlc();
-	for(radare_read(0);!config.interrupted;i = radare_read(1)) {
-	//	if (!i) break;
+	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
+		s = config.seek;
+		if (i==0) {
+			eprintf("read err at 0x%08llx\n", config.seek);
+			break;
+		}
 		if (config.limit && config.seek >= config.limit) break;
 		if (config.debug && config.seek == 0xFFFFFFFF) break;
-		for(i=0;i<config.block_size;i++)
-			update_tlist(t, config.block[i], config.seek+i);
+		for(i=0;i<config.block_size;i++) {
+			if (update_tlist(t, config.block[i], config.seek+i)) {
+				config.seek = s;
+				radare_read(0);
+			}
+		}
+		config.seek = s;
 	}
 	binparser_free(t);
 #if __UNIX__

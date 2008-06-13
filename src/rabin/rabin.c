@@ -309,6 +309,7 @@ void rabin_show_sections()
 {
 	char buf[1024];
 
+	// TODO: use the way that rsc flag-sections does
 	sprintf(buf, "readelf -S '%s'|grep '\\[' | grep -v '\\[Nr\\]' | cut -c 4- | awk '{ print \"0x\"$4\" \"$2 }'", file);
 	system(buf);
 }

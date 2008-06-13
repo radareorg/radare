@@ -10,6 +10,7 @@
 
 0.9.7:
 ======
+ * search backward in memory (invert string and add inc as argument for binparse)
  * Make the color palette more accessible to the users
  * Make ^C work again in debugger?!?
   - do not pass user signals to child process

@@ -358,7 +358,7 @@ static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
 	strcpy ( tls->name , name ); // XXX bof here!
 	
 	if ( mask == NULL )
-		mask = "ff" ;
+		mask = "ff";
 
 	masklen = binparse_get_mask_list ( mask , maskout );
 	binparse_apply_mask ( maskout, masklen , tlist , ntok ) ;
@@ -382,7 +382,7 @@ int binparse_add(tokenizer *t, char *string, char *mask)
 	return n;
 }
 
-void update_tlist(tokenizer* t, unsigned char inchar, u64 where )
+int update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 {
 	unsigned char cmin;
 	unsigned char cmax;
@@ -402,18 +402,21 @@ void update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 		} else {
 			// 1 char
 			cmask = (t->tls[i]->tl[t->tls[i]->estat]).mask;
-			if (  (inchar&cmask) == (cmin&cmask)   )
+			if (  (inchar&cmask) == (cmin&cmask)  )
 				t->tls[i]->actp[t->tls[i]->estat++] = inchar;
 			else	t->tls[i]->estat = 0;
 		}
 
 		if ( t->tls[i]->estat == (t->tls[i]->numtok) ) {
 			t->tls[i]->actp[t->tls[i]->estat+1] = 0 ;
-			if (!t->callback(t, i, (unsigned long long)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
-				return;
+			t->tls[i]->actp[0] = 0 ; //rststr
+			if (!t->callback(t, i, (u64)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
+				return 1;
 			t->tls[i]->estat = 0 ;
 		}
 	}
+
+	return 0;
 }
 
 void tokenize(int fd, tokenizer* t)
