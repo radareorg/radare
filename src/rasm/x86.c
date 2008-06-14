@@ -134,7 +134,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		unsigned long addr;
 		unsigned char *ptr = (uchar *)&addr;
 		char *arg2 = strchr(arg, ',');
-		if (arg2== NULL) {
+		if (arg2 == NULL) {
 			eprintf("Invalid syntax\n");
 			return 0;
 		}
@@ -152,7 +152,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		if (!strcmp(arg, "esi")) data[0] = 0xbe; else
 		if (!strcmp(arg, "edi")) data[0] = 0xbf;
 
-		if (dst==0) {
+		if (dst==0 && arg2[1]!='0') {
 			int src = data[0];
 			data[0]=0x89;
 			if (strstr(arg2+1, "eax")) {
@@ -180,7 +180,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			if (!strcmp(arg2, "esp")) data[0]='\x5c'; else
 				return 0; // invalid register name to push
 			fprintf(stderr, "PUTA\n");
-		}else {
+		} else {
 			data[1] =ptr[0];
 			data[2] =ptr[1];
 			data[3] =ptr[2];

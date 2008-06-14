@@ -82,9 +82,12 @@ int radiff_bindiff(const char *a, const char *b)
 
 int radiff_bytediff(const char *a, const char *b)
 {
+#if 0
 	char buf[8096];
 	snprintf(buf, 8095, "rsc bytediff %s %s | rsc bdcolor 3", a, b);
 	return system(buf);
+#endif
+	radiff_bytediff_c(a,b);
 }
 
 int radiff_ergodiff(const char *a, const char *b)

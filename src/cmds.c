@@ -1078,10 +1078,10 @@ CMD_DECL(info)
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
 		(u64)config.limit, (u64)config.limit); NEWLINE;
 
-	cons_printf("Debugger:\n");
-
-	if (config.debug)
+	if (config.debug) {
+		cons_printf("Debugger:\n");
 		io_system("info");
+	}
 
 	return 0;
 }

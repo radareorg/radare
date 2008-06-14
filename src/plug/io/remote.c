@@ -32,6 +32,7 @@ enum {
 	REMOTE_CLIENT=1,
 	REMOTE_LISTEN=2
 };
+
 int remote_mode = REMOTE_NONE;
 int remote_fd = 0;
 

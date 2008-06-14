@@ -260,7 +260,6 @@ void plugin_init()
 #if __WINDOWS__
 	extern plugin_t w32_plugin;
 	plugins[last++] = w32_plugin;
-	plugins[last++] = remote_plugin;
   #if DEBUGGER
 	plugins[last++] = debug_plugin;
 	plugins[last++] = posix_plugin;
@@ -278,17 +277,13 @@ void plugin_init()
     #if SYSPROXY
 	plugins[last++] = sysproxy_plugin;
 	plugins[last++] = posix_plugin;
-    #else
-	plugins[last++] = posix_plugin;
     #endif
-  #else
-	plugins[last++] = posix_plugin;
   #endif
 #endif
 #if HAVE_LIB_EWF
 	plugins[last++] = ewf_plugin;
 #endif
-	plugins[last++]   = remote_plugin;
+	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = gxemul_plugin;
 	plugins[last++] = socket_plugin;
@@ -315,8 +310,8 @@ int io_system(const char *command)
 int io_open(const char *pathname, int flags, mode_t mode)
 {
 	FIND_OPEN(pathname)
-		IF_HANDLED(0, open)
-			return plugins[i].open(pathname, flags, mode);
+	IF_HANDLED(0, open)
+		return plugins[i].open(pathname, flags, mode);
 	return -1;
 }
 
@@ -331,7 +326,7 @@ ssize_t io_read(int fd, void *buf, size_t count)
 u64 io_lseek(int fd, u64 offset, int whence)
 {
 	FIND_FD(fd)
-		IF_HANDLED(fd, read)
+		IF_HANDLED(fd, lseek)
 			return plugins[i].lseek(fd, offset, whence);
 	return -1;
 }
@@ -359,7 +354,7 @@ int io_close(int fd)
 int io_isdbg(int fd)
 {
 	FIND_FD(fd)
-		IF_HANDLED(fd, close)
+		IF_HANDLED(fd, open)
 			return (int)(plugins[i].debug);
 	return 0;
 }

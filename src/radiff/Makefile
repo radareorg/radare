@@ -1,6 +1,6 @@
 include ../../config.mk
 
-OBJ=radiff.o ../rdb.o ../utils.o ../w32utils.o ../hasher/crc16.o rdbdiff.o
+OBJ=radiff.o ../rdb.o ../utils.o ../w32utils.o ../hasher/crc16.o rdbdiff.o bytediff.o
 BIN=radiff${BINSFX}
 CC?=gcc
 OBJ_RDB=rdbdiff_main.o rdbdiff.o ../rdb.o ../utils.o ../w32utils.o ../hasher/crc16.o
