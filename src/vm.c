@@ -79,7 +79,6 @@ int vm_init(int init)
 	return 0;
 }
 
-
 /* emulate n opcodes */
 int vm_emulate(int n)
 {

@@ -80,7 +80,7 @@ public class RadareGUI.List : GLib.Object
 	TreeSelection sel = tv.get_selection();
 
 	if (sel.count_selected_rows() == 1) {
-		String foo = new String.sized(1024);
+		StringBuilder foo = new StringBuilder.sized(1024);
 		sel.get_selected(out model, out iter);
 		tv.model.get(iter, 0, foo);
 		str = foo.str;

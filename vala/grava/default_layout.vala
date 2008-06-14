@@ -1,6 +1,6 @@
 /*
  *  Grava - General purpose graphing library for Vala
- *  Copyright (C) 2007  pancake <youterm.com>
+ *  Copyright (C) 2007, 2008   pancake <youterm.com>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ public class Grava.DefaultLayout : Grava.Layout
 		Node n,p, destn;
 		Edge e;
 		bool found;
-		////return; // HAHAHA
 
 		// reset all node positions
 
@@ -80,7 +79,7 @@ public class Grava.DefaultLayout : Grava.Layout
 			node.fit();
 			node.y = last_y ;
 			last_y = node.y + node.h + 50 ;
-			if(d)stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
+			if (d) stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
 		}
 		
 		// Per cada node. Segueixo la condiciÃ³ certa, tots els nodes que estiguin
@@ -89,8 +88,7 @@ public class Grava.DefaultLayout : Grava.Layout
 		//
 		// Entre el node que miro i el desti vol dir que la x sigui la mateixa.
 
-		for( i = 0 ; i < graph.nodes.length() ; i ++ ) 
-		{
+		for( i = 0 ; i < graph.nodes.length() ; i ++ ) {
 			n = graph.nodes.nth_data ( i );
 
 			/// busco l'edge verd d'aquest node
@@ -115,47 +113,35 @@ public class Grava.DefaultLayout : Grava.Layout
 			// Si la base del node origen es < que le desti .
 			// sempre anem avall.
 			//
-			if ( (found == true ) && ( n.baseaddr < destn.baseaddr ) ) 
-			{
+			if ( (found == true ) && ( n.baseaddr < destn.baseaddr ) ) {
 				/// Busco el node mes ample.
 				///
 				double maxw = 0;
-				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) 
-				{
+				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) {
 					p = graph.nodes.nth_data ( k );
 					if ( (p.x == n.x) && ( p.w > maxw ) )
-					{
 						maxw = p.w;
-					}	
 				}
 				/// DesplaÃ§o
-				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) 
-				{
+				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) {
 					p = graph.nodes.nth_data ( k );
 					
 					if(d)stdout.printf ( "Displacing 0x%x\n", p.baseaddr );
 				
 					// El node estava entre el node origen i el desti
 					if ( p.x == n.x )
-					{
 						p.x += ( maxw + 10 );
-					}	
 				
 					/// Es ja el node desti.
-					if ( p == destn ) 
-					{
+					if ( p == destn ) {
 						if(d)stdout.printf ( "AT 0x%x\n", p.baseaddr );
 						destn.x = n.x; 
 						destn.y = n.y + n.h + 50;
 						break;
 					}
-	
 				}
 			}
-
-	
 		}
-
 
 		return;
 

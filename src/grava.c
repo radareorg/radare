@@ -40,6 +40,8 @@ struct mygrava_window {
 	GtkWidget *fix;
 	GtkWidget *bnew;
 	GtkWidget *close;
+	GtkWidget *zoomin;
+	GtkWidget *zoomout;
 	GravaWidget *grava;
 	GtkWidget *text;
 };
@@ -93,6 +95,7 @@ void mygrava_bp_at(void *unk, const char *str)
 	sprintf(buf, "!bp %s", str);
 	radare_cmd(buf, 0);
 	eprintf("Breakpoint at (%08llx) (%s) added.\n", off, str);
+	core_load_graph_at(NULL, "here");
 }
 
 void mygrava_bp_rm_at(void *unk, const char *str)
@@ -102,6 +105,7 @@ void mygrava_bp_rm_at(void *unk, const char *str)
 	sprintf(buf, "!bp -%s", str);
 	radare_cmd(buf, 0);
 	eprintf("Breakpoint at (%08llx) (%s) removed.\n", off, str);
+	core_load_graph_at(NULL, "here");
 }
 
 
@@ -153,6 +157,8 @@ static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
 	}
 
 	printf("new node with : %s\n", str);
+	if (str == NULL || str[0]=='\0')
+		return;
 
 	snode = malloc(sizeof(struct static_nodes));
 	snode->command = strdup(str);
@@ -161,7 +167,6 @@ static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
 	gtk_entry_set_text(GTK_ENTRY(w->entry),"");
 
 	core_load_graph_entry(widget,obj);
-
 }
 
 static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
@@ -262,6 +267,18 @@ gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygr
 	return FALSE;
 }
 
+gboolean mygrava_zoomin(void *foo, void *bar, struct mygrava_window *w)
+{
+	w->grava->graph->zoom += (GRAVA_WIDGET_ZOOM_FACTOR);
+	core_load_graph_at(NULL, "here");
+}
+
+gboolean mygrava_zoomout(void *foo, void *bar, struct mygrava_window *w)
+{
+	w->grava->graph->zoom -= (GRAVA_WIDGET_ZOOM_FACTOR);
+	core_load_graph_at(NULL, "here");
+}
+
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	char cmd[1024];
@@ -318,9 +335,19 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		win->bnew = gtk_button_new_with_mnemonic("");
 		gtk_button_set_image (GTK_BUTTON (win->bnew), gtk_image_new_from_stock ("gtk-new", GTK_ICON_SIZE_BUTTON));
 
+		win->zoomin = gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->zoomin), gtk_image_new_from_stock ("gtk-zoom-in", GTK_ICON_SIZE_BUTTON));
+
+		win->zoomout = gtk_button_new_with_mnemonic("");
+		gtk_button_set_image (GTK_BUTTON (win->zoomout), gtk_image_new_from_stock ("gtk-zoom-out", GTK_ICON_SIZE_BUTTON));
+
 		win->close = gtk_button_new_with_mnemonic("");
 		gtk_button_set_image (GTK_BUTTON (win->close), gtk_image_new_from_stock ("gtk-close", GTK_ICON_SIZE_BUTTON));
 
+		g_signal_connect(win->zoomin,"activate",((GCallback) mygrava_zoomin), (gpointer)win); 
+		g_signal_connect(win->zoomin,"button-release-event",((GCallback) mygrava_zoomin), (gpointer)win); 
+		g_signal_connect(win->zoomout,"activate",((GCallback) mygrava_zoomout), (gpointer)win); 
+		g_signal_connect(win->zoomout,"button-release-event",((GCallback) mygrava_zoomout), (gpointer)win); 
 		g_signal_connect(win->bnew,"activate",((GCallback) mygrava_new_window), (gpointer)win); 
 		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_new_window2), (gpointer)win); 
 		g_signal_connect(win->close,"activate",((GCallback) mygrava_close), (gpointer)win); 
@@ -348,6 +375,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->fix), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomin), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomout), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);

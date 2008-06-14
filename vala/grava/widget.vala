@@ -264,8 +264,10 @@ public class Grava.Widget : GLib.Object {
 
 		graph.selected = n;
 		if (n != null) {
+			opanx = em.x;
+			opany = em.y;
 //			graph.draw(Gdk.cairo_create(da.window));
-				da.queue_draw_area(0,0,5000,3000);
+			da.queue_draw_area(0,0,5000,3000);
 			
 			if (eb.button == 3)
 				do_popup_menu();
@@ -293,7 +295,8 @@ public class Grava.Widget : GLib.Object {
 		EventMotion em = ev.motion; 
 		DrawingArea da = (DrawingArea)w;
 
-		if (ev.type == EventType.BUTTON_RELEASE) {
+		if (ev.type == Gdk.EventType.BUTTON_RELEASE) {
+			on = null;
 			opanx = opany = 0;
 			return true;
 		}
@@ -301,20 +304,17 @@ public class Grava.Widget : GLib.Object {
 		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
 			if (n != on) {
-				offx = abs(em.x - n.x-opanx);
-				offy = abs(em.y - n.y-opany);
-				//offx-=opanx;
-				//offy-=opany;
+				offx = abs(opanx - (graph.zoom*n.x));
+				offy = abs(opany - (graph.zoom*n.y));
 				on = n;
-			}
-			/* zoom view */
-			em.x-=graph.panx;
-			em.y-=graph.pany;
-			em.x/=graph.zoom; 
-			em.y/=graph.zoom;
+			} else {
+				/* zoom view */
+				em.x/=graph.zoom; 
+				em.y/=graph.zoom;
 
-			n.x = (em.x - (n.w/2)); // todo: use offx/y to get click original point?
-			n.y = (em.y - (n.h/2));
+				n.x = em.x - offx;
+				n.y = em.y - offy;
+			}
 			da.queue_draw_area(0,0,5000,3000);
 			Graph.selected = n;
 		} else {
@@ -322,8 +322,8 @@ public class Grava.Widget : GLib.Object {
 			if ((opanx!=0) && (opany!=0)) {
 				double x = em.x-opanx;
 				double y = em.y-opany;
-				graph.panx+=x*0.9;
-				graph.pany+=y*0.9;
+				graph.panx+=x*0.8;
+				graph.pany+=y*0.8;
 				//graph.draw(Gdk.cairo_create(da.window));
 				da.queue_draw_area(0,0,5000,3000);
 			}

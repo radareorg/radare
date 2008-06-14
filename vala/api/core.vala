@@ -25,7 +25,7 @@ public class Radare.Core : Object
 		_init_();
 	}
 
-	public static string# command(string command)
+	public static string command(string command)
 	{
 		return pipe_command_to_string(command);
 	}
@@ -64,13 +64,13 @@ public class Radare.Core : Object
 }
 
 [Import()]
-public static string# pipe_command_to_string(string command);
+public static string pipe_command_to_string(string command);
 
 [Import()]
-public static int radare_cmd(weak string command, int arg);
+public static int radare_cmd(string command, int arg);
 
 [Import()]
-public static int system(weak string str);
+public static int system(string str);
 
 [Import()]
 public static int radare_init();

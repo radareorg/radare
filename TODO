@@ -11,11 +11,8 @@
 0.9.7:
 ======
  * add asm.arch=aop -> analyze code engine to disassemble
- * rename V to v?
- * Fix cairo mouse pointer position while moving nodes
  * 'ar' -> anal reset -> reset vm
  * add 'call <reg>' to rasm
- * implement radiff -b in C
  * search backward in memory (invert string and add inc as argument for binparse)
  * Make the color palette more accessible to the users
  * Make ^C work again in debugger?!?

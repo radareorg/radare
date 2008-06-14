@@ -9,6 +9,7 @@ ifeq ($(CPU),i86pc)
 CPU=i386
 endif
 
+OBJ+=plug/io/debug.o
 
 ifeq ($(W32),1)
 # Windows 32 bits

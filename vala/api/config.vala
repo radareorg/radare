@@ -7,32 +7,32 @@ public class Radare.Config : Object
 	}
 
 	// must return value
-	public void set(weak string key, weak string val)
+	public void set(string key, string val)
 	{
 		config_set(key, val);
 	}
 
-	public void set_i(weak string key, long i)
+	public void set_i(string key, long i)
 	{
 		config_set_i(key, i);
 	}
 
-	public weak string get(weak string key)
+	public string get(string key)
 	{
 		return config_get(key);
 	}
 
-	public long get_i(weak string key)
+	public long get_i(string key)
 	{
 		return config_get_i(key);
 	}
 
-	public bool rm(weak string key)
+	public bool rm(string key)
 	{
 		return config_rm(key);
 	}
 
-	public void list(weak string mask)
+	public void list(string mask)
 	{
 		config_list(mask);
 	}
@@ -42,19 +42,19 @@ public class Radare.Config : Object
 public static void config_init();
 
 [Import()]
-public static void *config_set(weak string key, weak string val);
+public static void *config_set(string key, string val);
 
 [Import()]
-public static void *config_set_i(weak string key, long i);
+public static void *config_set_i(string key, long i);
 
 [Import()]
-public static weak string config_get(weak string key);
+public static string config_get(string key);
 
 [Import()]
-public static long config_get_i(weak string key);
+public static long config_get_i(string key);
 
 [Import()]
-public static bool config_rm(weak string key);
+public static bool config_rm(string key);
 
 [Import()]
-public static void config_list(weak string mask);
+public static void config_list(string mask);

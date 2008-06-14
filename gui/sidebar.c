@@ -22,6 +22,8 @@ void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 		break;
 	case 8: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = csr\n\n", 23);
 		break;
+	case 9: vte_terminal_feed_child(VTE_TERMINAL(term), ":eval asm.arch = sparc\n\n", 24);
+		break;
 	}
 
 	gtk_widget_grab_focus(term);
@@ -115,6 +117,7 @@ GtkWidget *gradare_sidebar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 6, "java");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 7, "mips");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 8, "csr");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 9, "sparc");
 #if _MAEMO_
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 3);
 #else

@@ -756,6 +756,10 @@ CMD_DECL(code)
 	char *text = input;
 
 	switch(text[0]) {
+	case 'F':
+		// define function 
+		eprintf("TODO\n");
+		break;
 	case 'C':
 		/* comment */
 		text = text+1;
@@ -810,7 +814,8 @@ CMD_DECL(code)
 		break;
 	default:
 		cons_printf("Usage: C[op] [arg] <@ offset>\n"
-		"  CC [-][comment] @ here - add/rm a comment\n"
+		"  CC [-][comment] @ here - add/rm comment\n"
+		"  CF [-][len]  @ here    - add/rm function\n"
 		"  Cx [-][addr] @ here    - add/rm code xref\n"
 		"  CX [-][addr] @ here    - add/rm data xref\n"
 		"  Cc [num]     - converts num bytes to code\n"

@@ -411,7 +411,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 
                 memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
         }
-        bsz+=sz;
+	bsz-=1;
         config.seek = tmp;
 
         blk = block_get_new(prg, oseek);

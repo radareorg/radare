@@ -12,7 +12,7 @@ public class Radare.Utils
 		return get_math(str);
 	}
 
-	public static weak string get(string str)
+	public static string get(string str)
 	{
 		return getenv(str);
 	}
@@ -21,10 +21,9 @@ public class Radare.Utils
 	{
 		return setenv(foo, bar, 1);
 	}
-}
 
 [Import]
-public static weak string getenv(string str);
+public static string getenv(string str);
 
 [Import]
 public static int setenv(string foo, string bar, int force);
@@ -34,3 +33,5 @@ public static ulong get_offset(string str);
 
 [Import]
 public static ulong get_math(string str);
+
+}

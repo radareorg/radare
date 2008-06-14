@@ -17,7 +17,7 @@ public class Radare.IO
 		return io_read(fd, ref buf, size);
 	}
 
-	public static int write(int fd, weak string buf, long size)
+	public static int write(int fd, string buf, long size)
 	{
 		return io_write(fd, buf, size);
 	}
@@ -38,7 +38,7 @@ public static int io_close(int fd);
 public static int io_read(int fd, ref string buf, long size);
 
 [Import()]
-public static int io_write(int fd, weak string buf, long size);
+public static int io_write(int fd, string buf, long size);
 
 [Import()]
 public static int io_system(string command);

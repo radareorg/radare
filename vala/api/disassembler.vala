@@ -2,11 +2,11 @@ using GLib;
 
 public class Radare.Disassembler
 {
-	public string# INTEL = "intel";
-	public string# ARM = "arm";
-	public string# JAVA = "java";
+	public string INTEL = "intel";
+	public string ARM = "arm";
+	public string JAVA = "java";
 
-	public static weak string arch()
+	public static string arch()
 	{
 		return Radare.Utils.get("ARCH");
 	}
