@@ -364,7 +364,7 @@ inline int arch_bp_hw_disable(struct bp_t *bp)
 	return arch_bp_hw_state(bp->addr, 0);
 }
 
-
+/* DRY! MOVE TO BP.C IT IS CASI ARCH INDEPENDENT OW YEAH */
 int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;

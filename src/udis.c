@@ -184,8 +184,62 @@ int data_list()
 
 static struct reflines_t *reflines = NULL;
 struct list_head comments;
+struct list_head xrefs;
 
 /* -- metadata -- */
+int metadata_xrefs_print(u64 addr, int type)
+{
+	int n = 0;
+	struct xrefs_t *x;
+	struct list_head *pos;
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (x->addr == addr) {
+			switch(type) {
+			case 0: if (x->type == type) { cons_printf("; CODE xref %08llx\n", x->from); n++; } break;
+			case 1: if (x->type == type) { cons_printf("; DATA xref %08llx\n", x->from); n++; } break;
+			default: { cons_printf("; %s xref %08llx\n", (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from); n++; };
+			}
+		}
+	}
+
+	return n;
+}
+
+int metadata_xrefs_add(u64 addr, u64 from, int type)
+{
+	struct xrefs_t *x;
+	struct list_head *pos;
+
+	/* avoid dup */
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (x->addr == addr && x->from == from)
+			return 0;
+	}
+
+	x = (struct xrefs_t *)malloc(sizeof(struct xrefs_t));
+
+	x->addr = addr;
+	x->from = from;
+	x->type = type;
+
+	list_add(&(x->list), &xrefs);
+	return 1;
+}
+
+void metadata_xrefs_del(u64 addr, u64 from, int data /* data or code */)
+{
+	struct xrefs_t *x;
+	struct list_head *pos;
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (x->addr == addr && x->from == from) {
+			list_del(&(x->list));
+			break;
+		}
+	}
+}
 
 void metadata_comment_add(u64 offset, const char *str)
 {
@@ -302,6 +356,7 @@ char *metadata_comment_get(u64 offset)
 
 void metadata_comment_init(int new)
 {
+	INIT_LIST_HEAD(&(xrefs));
 	INIT_LIST_HEAD(&(comments));
 	INIT_LIST_HEAD(&(data));
 }
@@ -347,6 +402,7 @@ static int metadata_print(int delta)
 		free(ptr);
 	}
 
+	lines += metadata_xrefs_print(offset, -1);
 	return lines;
 }
 

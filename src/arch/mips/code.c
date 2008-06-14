@@ -28,6 +28,12 @@
 extern int mips_mode;
 
 #if 0
+
+          0x00401F3C            8f998268        lw      t9,-32152(gp)
+          0x00401F40,           00000000        nop
+          0x00401F44            0320f809        jalr    t9
+
+
 Instruction	Opcode/Function	Syntax	Operation
 add 	100000	ArithLog 	$d = $s + $t
 addu 	100001	ArithLog 	$d = $s + $t

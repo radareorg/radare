@@ -122,7 +122,7 @@ void visual_show_help()
 	cons_printf("Visual keybindings:\n");
 	TITLE_END
 	cons_printf(
-	":          radare command (vi like)\n"
+	":<cmd>     radare command (vi like)\n"
 	";          edit or add comment\n"
 	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
 	"g,G        seek to beggining or end of file\n"

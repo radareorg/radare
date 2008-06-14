@@ -21,8 +21,8 @@
 #include "radare.h"
 #include "code.h"
 
-char *vm_regs_str = NULL;
-static u64 *vm_regs;
+const char **vm_regs_str;
+static u64 *vm_regs = NULL;
 int vm_nregs = 0;
 
 u64 vm_get(int reg)
@@ -40,6 +40,17 @@ int vm_set(int reg, u64 value)
 	return 0;
 }
 
+void vm_print()
+{
+	int i;
+	if (vm_regs == NULL || vm_regs_str == NULL)
+		return;
+
+	for(i=0;i<vm_nregs;i++) {
+		cons_printf("%s = 0x%08llx\n", vm_regs_str[i], vm_regs[i]);
+	}
+}
+
 int vm_init(int init)
 {
 	/* if debuggah get from teh cpu */
@@ -50,10 +61,30 @@ int vm_init(int init)
 		vm_nregs    = vm_arch_x86_nregs;
 		vm_regs     = vm_arch_x86_regs;
 		vm_regs_str = vm_arch_x86_regs_str;
+		// TODO: do the same for fpregs and mmregs
 		if (init)
 			vm_arch_x86_init();
 		break;
+	case ARCH_MIPS:
+		vm_nregs    = vm_arch_mips_nregs;
+		vm_regs     = vm_arch_mips_regs;
+		vm_regs_str = vm_arch_mips_regs_str;
+		// TODO: do the same for fpregs and mmregs
+		if (init)
+			vm_arch_mips_init();
+		break;
+	default:
+		vm_regs = NULL;
 	}
 	return 0;
 }
 
+
+/* emulate n opcodes */
+int vm_emulate(int n)
+{
+	eprintf("TODO: vm_emulate\n");
+	vm_init(1);
+	vm_print();
+	return n;
+}

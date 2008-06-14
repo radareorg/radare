@@ -746,6 +746,7 @@ void config_init(int first)
 	config_lock(1);
 
 	cons_palette_init(config_get("scr.palette"));
+	arch_set_callbacks();
 
 	if (first) {
 		metadata_comment_init(1);

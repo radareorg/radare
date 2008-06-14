@@ -131,11 +131,11 @@ char *estrdup(char *ptr, char *string)
 }
 #endif
 
-struct xref_t *xref_new(u64 addr)
+struct xrefs_t *xref_new(u64 addr)
 {
-	struct xref_t *xt;
+	struct xrefs_t *xt;
 
-	xt = (struct xref_t *)malloc(sizeof(struct xref_t));
+	xt = (struct xrefs_t *)malloc(sizeof(struct xrefs_t));
 	xt->addr      = addr;
 	INIT_LIST_HEAD(&(xt->list));
 
@@ -270,7 +270,7 @@ int block_set_name(struct program_t *program, u64 addr, char *name)
 int block_add_call(struct program_t *program, u64 addr, u64 dest)
 {
 	struct block_t *bt = block_get_new(program, addr);
-	struct xref_t *xr = xref_new(dest);
+	struct xrefs_t *xr = xref_new(dest);
 
 	bt->n_calls++;
 	list_add_tail(&(xr->list), &(bt->calls));
@@ -281,7 +281,7 @@ int block_add_call(struct program_t *program, u64 addr, u64 dest)
 int block_add_xref(struct program_t *program, u64 addr, u64 from)
 {
 	struct block_t *bt = block_get_new(program, addr);
-	struct xref_t *xr = xref_new(addr); //(struct xref_t *)malloc(sizeof(struct xref_t));
+	struct xrefs_t *xr = xref_new(addr); //(struct xrefs_t *)malloc(sizeof(struct xrefs_t));
 
 	bt->n_xrefs++;
 	list_add_tail(&(xr->list), &(bt->xrefs));

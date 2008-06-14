@@ -271,7 +271,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	GtkWidget *tw,*tw2;
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
-	struct xref_t *c0;
+	struct xrefs_t *c0;
 	u64 here = config.seek;
 	char title[256], name[128];
 	int graph_flagblocks = (int)config_get("graph.flagblocks");
@@ -427,7 +427,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		/* add call references for this node */
 		// XXX avoid dupped calls
 		list_for_each(head2, &(b0->calls)) {
-			c0 = list_entry(head2, struct xref_t, list);
+			c0 = list_entry(head2, struct xrefs_t, list);
 			grava_node_add_call(node, c0->addr);
 		}
 

@@ -263,6 +263,8 @@ u64 get_offset(const char *orig)
 	for(;arg[i]=='\\';i++); i++;
 
 #ifdef RADARE_CORE
+	if (!strcmp(orig, "here"))
+		return config.seek;
 	ptr = strchr(arg, '[');
 	if (ptr)
 		return get_pointer(get_offset(ptr+1));

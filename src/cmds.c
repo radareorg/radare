@@ -113,7 +113,7 @@ int fixed_width = 0;
 	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
 
 command_t commands[] = {
-	COMMAND('a', "[ocdg?]",        "analyze  perform code/data analysis", analyze),
+	COMMAND('a', "[ocdgv?]",       "analyze  perform code/data analysis", analyze),
 	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
 	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given value", compare),
 	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
@@ -130,7 +130,7 @@ command_t commands[] = {
 	COMMAND('R', "[act] ([arg])",  "RDB      rdb operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
 	COMMAND('u', "[!|?|u]",        "undo     undo seek (! = reset, ? = list, u = redo)", undoseek),
-	COMMAND('V', "",               "Visual   go visual mode", visual),
+	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
 	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
@@ -140,7 +140,7 @@ command_t commands[] = {
 	COMMAND('<', "",               "preva    go previous aligned block", prev_align),
 	COMMAND('>', "",               "nexta    go next aligned block", next_align),
 	COMMAND('/', "[?] [str]",      "search   find matching strings", search),
-	COMMAND('!', "[command]",      "system   execute a shell command", shell), 
+	COMMAND('!', "[[!]command]",   "system   execute a !iosystem or !!shell command", shell), 
 	COMMAND('#', "[hash|!lang]",   "hash     hash current block (#? or #!perl)", hash),
 	COMMAND('?', "",               "help     show the help message", help),
 	COMMAND( 0, NULL, NULL, default)
@@ -177,7 +177,7 @@ CMD_DECL(analyze)
 	struct block_t *b0;
 	struct list_head *head;
 	struct list_head *head2;
-	struct xref_t *c0;
+	struct xrefs_t *c0;
 	int i, j, sz, n_calls=0;
 	int depth_i;
 	int delta = 0;
@@ -207,7 +207,7 @@ CMD_DECL(analyze)
 				cons_printf("offset = 0x%08llx\n", b0->addr);
 				cons_printf("size = %d\n", b0->n_bytes);
 				list_for_each(head2, &(b0->calls)) {
-					c0 = list_entry(head2, struct xref_t, list);
+					c0 = list_entry(head2, struct xrefs_t, list);
 					cons_printf("call%d = 0x%08llx\n", n_calls++, c0->addr);
 				}
 				cons_printf("n_calls = %d\n", b0->n_calls);
@@ -310,6 +310,10 @@ CMD_DECL(analyze)
 			config.seek += sz;
 		}
 		break;
+	case 'v':
+		eprintf("WIP: av . analyze N opcodes using code emulation\n");
+		vm_emulate(depth);
+		break;
 	default:
 		cons_printf("Usage: a[ocdg] [depth]\n");
 		cons_printf(" ao : analyze N opcodes\n");
@@ -317,6 +321,7 @@ CMD_DECL(analyze)
 		cons_printf(" ac : disassemble and analyze N code blocks \n");
 		cons_printf(" ad : analyze N data blocks \n");
 		cons_printf(" ag : graph analyzed code\n");
+		cons_printf(" av : analyze virtual machine (negative resets before)\n");
 		break;
 	}
 	config.seek = oseek;
@@ -750,7 +755,8 @@ CMD_DECL(code)
 {
 	char *text = input;
 
-	if (text[0]=='C') {
+	switch(text[0]) {
+	case 'C':
 		/* comment */
 		text = text+1;
 		while(text[0]==' ')
@@ -763,48 +769,56 @@ CMD_DECL(code)
 		if (text[0]) {
 			if (text[0]=='-')
 				metadata_comment_del(config.seek, text+1);
-			else
-				metadata_comment_add(config.seek, text);
+			else	metadata_comment_add(config.seek, text);
 		}
-	} else  {
+		break;
+	case 'x': // code xref
+		if (text[1]=='-')
+			metadata_xrefs_del(config.seek, text+2,0);
+		else	metadata_xrefs_add(config.seek, text+1,0);
+		break;
+	case 'X': // data xref
+		if (text[1]=='-')
+			metadata_xrefs_del(config.seek, text+2,1);
+		else	metadata_xrefs_add(config.seek, text+1,1);
+		break;
+	case 'c':
+	case 'd':
+	case 's':
+	case 'f':
+	case 'u': {
+		u64 tmp = config.block_size;
+		int fmt = FMT_HEXB;
+		int len = get_math(text +1);
 		switch(text[0]) {
-			case 'c':
-			case 'd':
-			case 's':
-			case 'f':
-			case 'u': {
-				u64 tmp = config.block_size;
-				int fmt = FMT_HEXB;
-				int len = get_math(text +1);
-				switch(text[0]) {
-					case 'c': fmt = DATA_CODE; break;
-					case 'd': fmt = DATA_HEX; break;
-					case 's': fmt = DATA_STR; break;
-					case 'f': fmt = DATA_FOLD_C; break;
-					case 'u': fmt = DATA_FOLD_O; break;
-				}
-				if (len>config.block_size)
-					len = config.block_size;
-				tmp = config.block_size;
-				config.block_size = len;
-				data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
-				config.block_size = tmp;
-			}
-				break;
-			case '*':
-				metadata_comment_list();
-				data_list();
-				break;
-			default:
-				cons_printf("Usage: C[op] [arg] <@ offset>\n"
-						"CC [-][comment] - adds a comment\n"
-						"Cc [num]     - converts num bytes to code\n"
-						"Cd [num]     - convsrts '' data bytes\n"
-						"Cs [num]     - converts '' to string\n"
-						"Cf [num]     - folds num bytes\n"
-						"Cu [num]     - unfolds num bytes\n"
-						"C*           - list metadata database\n");
+			case 'c': fmt = DATA_CODE; break;
+			case 'd': fmt = DATA_HEX; break;
+			case 's': fmt = DATA_STR; break;
+			case 'f': fmt = DATA_FOLD_C; break;
+			case 'u': fmt = DATA_FOLD_O; break;
 		}
+		if (len>config.block_size)
+			len = config.block_size;
+		tmp = config.block_size;
+		config.block_size = len;
+		data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+		config.block_size = tmp;
+		} break;
+	case '*':
+		metadata_comment_list();
+		data_list();
+		break;
+	default:
+		cons_printf("Usage: C[op] [arg] <@ offset>\n"
+		"  CC [-][comment] @ here - add/rm a comment\n"
+		"  Cx [-][addr] @ here    - add/rm code xref\n"
+		"  CX [-][addr] @ here    - add/rm data xref\n"
+		"  Cc [num]     - converts num bytes to code\n"
+		"  Cd [num]     - converts to data bytes\n"
+		"  Cs [num]     - converts to string\n"
+		"  Cf [num]     - folds num bytes\n"
+		"  Cu [num]     - unfolds num bytes\n"
+		"  C*           - list metadata database\n");
 	}
 
 	return 0;

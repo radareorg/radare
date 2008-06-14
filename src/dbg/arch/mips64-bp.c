@@ -143,7 +143,11 @@ int arch_bp_soft_disable(struct bp_t *bp)
 int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
-
+	u64 off = arch_pc()-4;
+	arch_jmp(off);
+	debug_getregs(ps.tid, &regs);
+	arch_bp_soft_disable(bp);
+	//debug_read_at(ps.tid, buf, 4, off);
 #if 0
 	arch_bp_soft_disable(bp);
 	debug_getregs(ps.tid, &regs);

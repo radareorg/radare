@@ -9,8 +9,10 @@
 #include "list.h"
 
 // TODO: rename to ref_t or addr_t or something like that
-struct xref_t {
-	u64 addr;
+struct xrefs_t {
+	u64 addr;  /* offset of the cross reference */
+	u64 from;  /* where the code/data is referenced */
+	int type;  /* 0 = code, 1 = data, -1 = unknown */
 	struct list_head list;
 };
 

@@ -18,23 +18,17 @@
  *
  */
 
-/* code analysis functions */
+#include "radare.h"
+#include "code.h"
 
-#include "../../main.h"
-#include "../../code.h"
-#include <string.h>
+/* from mips-dis.c */
+extern const char * mips_gpr_names_newabi[32];
+const char **vm_arch_mips_regs_str = &mips_gpr_names_newabi;
 
-/* Virtual Machine */
+int vm_arch_mips_nregs = VM_MIPS_N_REGS;
+u64 vm_arch_mips_regs[VM_MIPS_N_REGS];
 
-const char *vm_arch_x86_regs_str[VM_X86_N_REGS] = {
-	"eax", "ecx", "edx", "ebx",
-	"esi", "edi", "esp", "ebp"
-};
-
-int vm_arch_x86_nregs = VM_X86_N_REGS;
-u64 vm_arch_x86_regs[VM_X86_N_REGS];
-
-void vm_arch_x86_init()
+void vm_arch_mips_init()
 {
-	memset(&vm_arch_x86_regs, '\0', sizeof(vm_arch_x86_regs));
+	memset(&vm_arch_mips_regs, '\0', sizeof(vm_arch_mips_regs));
 }

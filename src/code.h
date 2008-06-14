@@ -132,9 +132,51 @@ enum {
 	VM_X86_N_REGS
 };
 
+/* arch/mips/vm.c */
+enum {
+	VM_MIPS_ZERO = 0,
+	VM_MIPS_AT,
+	VM_MIPS_V0,
+	VM_MIPS_V1,
+	VM_MIPS_A0,
+	VM_MIPS_A1,
+	VM_MIPS_A2,
+	VM_MIPS_A3,
+	VM_MIPS_A4,
+	VM_MIPS_A5,
+	VM_MIPS_A6,
+	VM_MIPS_A7,
+	VM_MIPS_T0,
+	VM_MIPS_T1,
+	VM_MIPS_T2,
+	VM_MIPS_T3,
+	VM_MIPS_S0,
+	VM_MIPS_S1,
+	VM_MIPS_S2,
+	VM_MIPS_S3,
+	VM_MIPS_S4,
+	VM_MIPS_S5,
+	VM_MIPS_S6,
+	VM_MIPS_S7,
+	VM_MIPS_T8,
+	VM_MIPS_T9,
+	VM_MIPS_K0,
+	VM_MIPS_K1,
+	VM_MIPS_GP,
+	VM_MIPS_SP,
+	VM_MIPS_S8,
+	VM_MIPS_RA,
+	VM_MIPS_N_REGS
+};
+
 extern const char *vm_arch_x86_regs_str[VM_X86_N_REGS];
 extern int vm_arch_x86_nregs;
 extern u64 vm_arch_x86_regs[VM_X86_N_REGS];
 void vm_arch_x86_init();
+
+extern const char **vm_arch_mips_regs_str;
+extern int vm_arch_mips_nregs;
+extern u64 vm_arch_mips_regs[VM_MIPS_N_REGS];
+void vm_arch_mips_init();
 
 #endif
