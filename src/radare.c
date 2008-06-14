@@ -690,11 +690,6 @@ void radare_move(char *arg)
 	u64 pos = -1;
 	u64 src = config.seek;
 
-	if (!config_get("file.write")) {
-		eprintf("You are not in read-write mode.\n");
-		return;
-	}
-
 	if (str) {
 		str[0]='\0';
 		len = get_math(arg);
@@ -703,6 +698,11 @@ void radare_move(char *arg)
 	}
 	if ( (str == NULL) || (pos == -1) || (len == 0) ) {
 		printf("Usage: move [len] [dst-addr]\n");
+		return;
+	}
+
+	if (!config_get("file.write")) {
+		eprintf("You are not in read-write mode.\n");
 		return;
 	}
 
@@ -715,7 +715,9 @@ void radare_move(char *arg)
 
 	config.seek = src;
 	radare_read(0);
+#if 0
 	radare_open(1);
+#endif
 }
 
 void radare_prompt_command()

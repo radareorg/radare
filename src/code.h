@@ -23,6 +23,7 @@ enum {
 	AOP_TYPE_UJMP, // unknown jump (register or so)
 	AOP_TYPE_CJMP, // conditional jump
 	AOP_TYPE_CALL, // call to subroutine (branch+link)
+	AOP_TYPE_RCALL,// call to register
 	AOP_TYPE_REP,  // repeats next instruction N times
 	AOP_TYPE_RET,  // returns from subrutine
 	AOP_TYPE_ILL,  // illegal instruction // trap
@@ -109,5 +110,31 @@ int data_count(u64 offset);
 int data_list();
 void udis_jump(int n);
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);
+int dislen(u8* opcode0, int limit);
+
+/* Virtual Machine */
+int vm_init();
+u64 vm_get(int reg);
+const char *vm_get_name(int reg);
+int vm_set(int reg, u64 value);
+
+
+/* arch/x86/vm.c */
+enum {
+	VM_X86_EAX = 0,
+	VM_X86_ECX,
+	VM_X86_EDX,
+	VM_X86_EBX,
+	VM_X86_ESI,
+	VM_X86_EDI,
+	VM_X86_ESP,
+	VM_X86_EBP,
+	VM_X86_N_REGS
+};
+
+extern const char *vm_arch_x86_regs_str[VM_X86_N_REGS];
+extern int vm_arch_x86_nregs;
+extern u64 vm_arch_x86_regs[VM_X86_N_REGS];
+void vm_arch_x86_init();
 
 #endif

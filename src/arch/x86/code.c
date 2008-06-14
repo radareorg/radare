@@ -24,7 +24,8 @@
 #include "../../main.h"
 #include "../../code.h"
 #include <string.h>
-int dislen(u8* opcode0, int limit);
+
+/* arch_aop for x86 */
 
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love
@@ -126,9 +127,17 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->type = AOP_TYPE_UJMP;
 			aop->eob    = 1;
 		} else
-		if (bytes[1]>=0xd0 && bytes[1]<=0xe7) {
+		if (bytes[1]>=0xd0 && bytes[1]<=0xd7) {
+			aop->type = AOP_TYPE_CALL;
+			aop->length = 2;
+			aop->eob    = 1;
+			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xd0];
+			aop->fail   = addr+2;
+		} else
+		if (bytes[1]>=0xe0 && bytes[1]<=0xe7) {
 			aop->type = AOP_TYPE_UJMP;
 			aop->length = 2;
+			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xd0];
 			aop->eob    = 1;
 		}
 		break;
@@ -173,7 +182,38 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x32:
 		aop->type = AOP_TYPE_AND;
 		break;
+
+	case 0xa1: // mov eax, [addr]
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_EAX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		radare_read_at((u64)vm_arch_x86_regs[VM_X86_EAX], &(vm_arch_x86_regs[VM_X86_EAX]), 4);
+		break;
 		
+	// roll to a switch range case
+	case 0xb8: // mov eax, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_EAX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
+	case 0xb9: // mov ecx, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_ECX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
+	case 0xba: // mov edx, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_EDX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
+	case 0xbb: // mov ebx, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_EBX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
+	case 0xbc: // mov esp, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_ESP] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
+	case 0xbd: // mov esp, <inmedate>
+		aop->type = AOP_TYPE_MOV;
+		vm_arch_x86_regs[VM_X86_EBP] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
+		break;
 #if 0
 	case0xF
 		/* conditional jump */

@@ -272,7 +272,6 @@ int block_add_call(struct program_t *program, u64 addr, u64 dest)
 	struct block_t *bt = block_get_new(program, addr);
 	struct xref_t *xr = xref_new(dest);
 
-eprintf("BLock add call!\n");
 	bt->n_calls++;
 	list_add_tail(&(xr->list), &(bt->calls));
 

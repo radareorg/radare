@@ -193,6 +193,11 @@ CMD_DECL(analyze)
 		// XXX do not uses depth...ignore analdepth?
 		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"));
 		break;
+#if 0
+	/* TODO: reset analyze engine ? - remove rdbs, xrefs, etc...  reset level as argument? maybe cool 0 for just vm, 1 for rdbs, 2 for xrefs */
+	case 'r':
+		break;
+#endif
 	case 'b':
 		prg = code_analyze(config.seek, depth);
 		if (prg) {
@@ -200,7 +205,7 @@ CMD_DECL(analyze)
 			list_for_each_prev(head, &(prg->blocks)) {
 				struct block_t *b0 = list_entry(head, struct block_t, list);
 				cons_printf("offset = 0x%08llx\n", b0->addr);
-				cons_printf("size = 0x%08llx\n", b0->n_bytes);
+				cons_printf("size = %d\n", b0->n_bytes);
 				list_for_each(head2, &(b0->calls)) {
 					c0 = list_entry(head2, struct xref_t, list);
 					cons_printf("call%d = 0x%08llx\n", n_calls++, c0->addr);

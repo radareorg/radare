@@ -1,35 +1,50 @@
--- radare lua api interface
+--
+-- radare lua api
 --
 -- 2008 pancake <youterm.com>
 
 
--- define namespaces
-Radare = {}
-Radare.Analyze = {}
-Radare.Print = {}
-Radare.Search = {}
-Radare.Config = {}
-Radare.Code = {}
-Radare.Hash = {}
-Radare.Debugger = {}
-Radare.Write = {}
-Radare.Utils = {}
+	-- ========== --
+	--            --
+	-- Namespaces --
+	--            --
+	-- ========== --
 
--- define aliases
-r = Radare
-a = Radare.Analyze
-p = Radare.Print
-cfg = Radare.Config
+Radare          = {}
+Radare.Analyze  = {}
+Radare.Print    = {}
+Radare.Search   = {}
+Radare.Config   = {}
+Radare.Code     = {}
+Radare.Hash     = {}
+Radare.Debugger = {}
+Radare.Write    = {}
+Radare.Utils    = {}
+
+	-- ================= --
+	--                   --
+	-- Namespace aliases --
+	--                   --
+	-- ================= --
+
+r    = Radare
+a    = Radare.Analyze
+p    = Radare.Print
+cfg  = Radare.Config
 code = Radare.Code
 hash = Radare.Hash
-s = Radare.Search
-d = Radare.Debugger
-w = Radare.Write
-u = Radare.Utils
+s    = Radare.Search
+d    = Radare.Debugger
+w    = Radare.Write
+u    = Radare.Utils
 
--- General use functions
 
--- show help for radare lua api
+	-- ================ --
+	--                  --
+	-- Helper functions --
+	--                  --
+	-- ================ --
+
 function help(table)
 	if table == nil then
 		print "Use help(Radare), help(Radare.Debugger) or help(Radare.Print)"
@@ -52,6 +67,7 @@ function list(table)
 				print("  "..k) -- XXX crash
 			else
 				print("  "..k..": "..v)
+-- k('?')
 			end
 			i = i + 1
 		end
@@ -98,7 +114,39 @@ function chop(text)
 	return string.gsub(text, "^\ *", "")
 end
 
--- Radare api functions
+function hexpairs(buf)
+      for byte=1, #buf, 16 do
+         local chunk = buf:sub(byte, byte+15)
+         io.write(string.format('%08X  ',byte-1))
+         chunk:gsub('.', function (c) io.write(string.format('%02X ',string.byte(c))) end)
+         io.write(string.rep(' ',3*(16-#chunk)))
+         io.write(' ',chunk:gsub('%c','.'),"\n") 
+      end
+end
+
+function hexdump(buf)
+   for i=1,math.ceil(#buf/16) * 16 do
+      if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
+      io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
+      if i %  8 == 0 then io.write(' ') end
+      if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('%c','.'), '\n' ) end
+   end
+end
+
+
+
+
+
+
+
+
+
+
+	-- ==================== --
+	--                      --
+	-- Radare API functions --
+	--                      --
+	-- ==================== --
 
 function Radare.get(value)
  	-- | cut -d ' ' -f 1");
@@ -109,24 +157,29 @@ function Radare.get(value)
 	return tonumber(foo[1])
 end
 
-function Radare.bytes(text)
-	local res = split(Radare.cmd("pX @"..text), " ")
+Radare.bytes_help = 'Radare.bytes(addr)\tReturn hexpair string with block_size bytes at [addr]'
+function Radare.bytes(addr)
+	if addr == '?' then print 
+	local res = split(Radare.cmd("pX @"..addr), " ")
 	-- TODO
 	return res;
 end
 
+Radare.cmd_help = 'Radare.cmd(command)\tExecutes a radare command and returns its output'
 function Radare.cmd(cmd)
 	return chomp(cmd_str(cmd))
 end
 
-function Radare.iosystem(command)
-	r.cmd("!"..command)
+Radare.system_help = 'Radare.system(command)\tExecute an IO system command'
+function Radare.system(command)
+	r.cmd("!!"..command)
 	-- todo handle errors here
 	return 0
 end
 
-function Radare.system(command)
-	r.cmd("!!"..command)
+Radare.iosystem_help = 'Radare.iosystem(command)\tExecute an IO system command'
+function Radare.iosystem(command)
+	r.cmd("!"..command)
 	-- todo handle errors here
 	return 0
 end
@@ -143,6 +196,11 @@ end
 
 function Radare.debug(filename)
 	return r.cmd("o dbg://"..filename)
+end
+
+function Radare.seek(offset)
+	r.cmd("s "..offset)
+	return 0
 end
 
 function Radare.undo_seek()
@@ -165,11 +223,6 @@ end
 
 function Radare.fortune()
 	return r.cmd("fortune")
-end
-
-function Radare.seek(offset)
-	r.cmd("s "..offset)
-	return 0
 end
 
 function Radare.interpret(file)
@@ -281,6 +334,17 @@ end
 function Radare.Analyze.opcode(addr)
 	if addr == nil then addr = "" else addr= "@ "..addr end
 	local res = split(Radare.cmd("ao "..addr),"\n")
+	local ret = {}
+	for i = 1, #res do
+		local line = split(res[i], "=")
+		ret[chop(line[1])] = chop(line[2])
+	end
+	return ret;
+end
+
+function Radare.Analyze.block(addr)
+	if addr == nil then addr = "" else addr= "@ "..addr end
+	local res = split(Radare.cmd("ab "..addr),"\n")
 	local ret = {}
 	for i = 1, #res do
 		local line = split(res[i], "=")
@@ -696,24 +760,4 @@ function Radare.Debugger.backtrace()
 	return ret;
 end
 
--- Utils
-function Radare.Utils.hexpairs(buf)
-      for byte=1, #buf, 16 do
-         local chunk = buf:sub(byte, byte+15)
-         io.write(string.format('%08X  ',byte-1))
-         chunk:gsub('.', function (c) io.write(string.format('%02X ',string.byte(c))) end)
-         io.write(string.rep(' ',3*(16-#chunk)))
-         io.write(' ',chunk:gsub('%c','.'),"\n") 
-      end
-end
-
-function Radare.Utils.hexdump(buf)
-   for i=1,math.ceil(#buf/16) * 16 do
-      if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
-      io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
-      if i %  8 == 0 then io.write(' ') end
-      if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('%c','.'), '\n' ) end
-   end
-end
-
-print "=> Type 'help()' or 'quit' to return to radare shell."
+print "[radare.lua] Type 'help()' or 'quit' to return to radare shell."

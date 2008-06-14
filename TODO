@@ -10,6 +10,8 @@
 
 0.9.7:
 ======
+ * 'ar' -> anal reset -> reset vm
+ * add 'call <reg>' to rasm
  * implement radiff -b in C
  * search backward in memory (invert string and add inc as argument for binparse)
  * Make the color palette more accessible to the users

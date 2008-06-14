@@ -431,7 +431,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 			grava_node_add_call(node, c0->addr);
 		}
 
-		node->baseaddr = (unsigned long)b0->addr;
+		node->baseaddr = b0->addr;
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
