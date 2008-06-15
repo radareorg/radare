@@ -1219,7 +1219,7 @@ void signal_set(int signum, addr_t address)
 
 int arch_mprotect(addr_t addr, unsigned int size, int perms)
 {
-#ifdef __linux__
+#ifdef __linux__ || BSD
         regs_t   reg, reg_saved;
         int     status;
         char    bak[4];
@@ -1234,6 +1234,11 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
         R_EDX(reg) = perms;
         R_EBX(reg) = (int)addr;
 
+#if BSD
+	/* IS THIS OK ? */
+	R_ESP(reg) += 4;
+	debug_write_at(pid, &(R_EAX(reg)), 4, R_ESP(reg));
+#endif
         R_EIP(reg) = R_ESP(reg) - 4;
 
 	/* read stack values */

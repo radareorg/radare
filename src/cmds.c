@@ -1342,6 +1342,7 @@ CMD_DECL(search) {
 	char *input2 = (char *)strdup(input);
 	char *text   = input2;
 	int  len,i = 0,j = 0;
+	u64 seek = config.seek;
 	char *ptr;
 
 	switch(text[0]) {
@@ -1357,7 +1358,12 @@ CMD_DECL(search) {
 		" /a             ; Find expanded AES keys from current seek(*)\n"
 		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /r 0,2-10      ; launch range searches 0-10\n"
+		" /p len         ; search pattern of length = len\n"
 		" //             ; repeat last search\n");
+		break;
+	case 'p':
+		do_byte_pat(atoi(text+1));
+		radare_seek(seek, SEEK_SET);
 		break;
 	case 'm':
 		if (text[1]=='?') {

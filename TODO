@@ -68,6 +68,7 @@
   - handle current map only
  * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
+ * !pid must show status of process
  * add !status to get last crash info and stuff like that
  * flag str_
  * remove comments doesnt works properly

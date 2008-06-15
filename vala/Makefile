@@ -26,10 +26,11 @@ OBJ+=../src/arch/java/javasm.o
 OBJ+=../src/plug/io/gdb.o
 #OBJ+=../rasc/sysproxy.o ../rasc/syscall-linux.o ../rasc/rpc.o
 
+CFLAGS+=-DRADARE_CORE
 VALAFLAGS=--save-temps
 VALAFLAGS=-g
 
-all:
+all: ../src/radare.o
 	${VALAC} ${VALAFLAGS} -c --pkg vte --pkg gtk+-2.0 *.vala api/*.vala panel/*.vala
 	${CC} -lewf -g ${OBJ} *.o `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 

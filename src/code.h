@@ -97,7 +97,11 @@ int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);
 void code_lines_print(struct reflines_t *list, u64 addr, int expand);
+void metadata_comment_add(u64 offset, const char *str);
+
 void code_lines_print2(struct reflines_t *list, u64 addr);
+int metadata_xrefs_print(u64 addr, int type);
+int metadata_xrefs_add(u64 addr, u64 from, int type);
 
 int data_set_len(u64 off, u64 len);
 int data_set(u64 off, int type);

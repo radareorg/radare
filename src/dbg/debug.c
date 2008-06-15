@@ -598,7 +598,8 @@ int debug_info(char *arg)
 		cons_printf(" filename    %s\n", ps.filename);
 
 		cons_printf(" pid         %d\n", ps.pid);
-		sprintf(buf, "/proc/%d/cmdline", ps.pid);
+		cons_printf(" tid         %d\n", ps.tid);
+		sprintf(buf, "/proc/%d/cmdline", ps.tid);
 		if ((fd = open(buf, O_RDONLY)) !=-1) {
 			memset(buf,'\0',4096);
 			read(fd, buf, 4095);

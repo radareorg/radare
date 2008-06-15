@@ -225,6 +225,7 @@ int metadata_xrefs_add(u64 addr, u64 from, int type)
 	x->type = type;
 
 	list_add(&(x->list), &xrefs);
+
 	return 1;
 }
 
