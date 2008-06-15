@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include "plugin.h"
 #include <dirent.h>
 #include "plugin.h"
 #if __UNIX__ || __CYGWIN__
@@ -271,12 +272,10 @@ void plugin_init()
    #if DEBUGGER
 	plugins[last++] = debug_plugin;
 	(debug_plugin.init)();
-	//(ptrace_plugin.init)();
 	plugins[last++] = gdb_plugin;
 	plugins[last++] = gdbx_plugin;
     #if SYSPROXY
 	plugins[last++] = sysproxy_plugin;
-	plugins[last++] = posix_plugin;
     #endif
   #endif
 #endif
@@ -285,10 +284,12 @@ void plugin_init()
 #endif
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
-	plugins[last++] = gxemul_plugin;
 	plugins[last++] = socket_plugin;
-	//plugins[last++] = winegdb_plugin;
+	plugins[last++] = gxemul_plugin;
 	plugins[last++] = posix_plugin;
+	plugins[last++] = posix_plugin;
+
+	//plugins[last++] = winegdb_plugin;
 
 	radare_hack_init();
 }
@@ -310,8 +311,8 @@ int io_system(const char *command)
 int io_open(const char *pathname, int flags, mode_t mode)
 {
 	FIND_OPEN(pathname)
-	IF_HANDLED(0, open)
-		return plugins[i].open(pathname, flags, mode);
+		IF_HANDLED(0, open)
+			return plugins[i].open(pathname, flags, mode);
 	return -1;
 }
 

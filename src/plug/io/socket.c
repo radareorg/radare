@@ -49,7 +49,9 @@ ssize_t zocket_read(int fd, void *buf, size_t count)
 				// XXX close foo
 			}
 			if (sz>0) {
-				socket_buf = (u8 *)realloc(socket_buf, socket_bufsz+sz);
+				if (socket_buf)
+					socket_buf = (u8 *)realloc(socket_buf, socket_bufsz+sz);
+				else 	socket_buf = (u8 *)malloc(socket_bufsz+sz);
 				memcpy(socket_buf+(int)socket_bufsz, data, sz);
 				sprintf(data, "_sockread_%d", socket_bufread++);
 				flag_set(data, socket_bufsz, 0);
@@ -95,7 +97,7 @@ int zocket_handle_fd(int fd)
 
 int zocket_handle_open(const char *pathname)
 {
-	return !memcmp(pathname, "socket://", 9);
+	return (!memcmp(pathname, "socket://", 9));
 }
 
 int zocket_open(const char *pathname, int flags, mode_t mode)
