@@ -303,6 +303,7 @@ CMD_DECL(analyze)
 			for (i=0;i<sz;i++) cons_printf("%02x ", config.block[i]);
 			cons_printf("\n");
 			cons_printf("offset = 0x%08llx\n", config.baddr+config.seek);
+			cons_printf("ref = 0x%08llx\n", aop.ref);
 			cons_printf("jump = 0x%08llx\n", aop.jump);
 			cons_printf("fail = 0x%08llx\n", aop.fail);
 			cons_newline();

@@ -303,18 +303,25 @@ public class Grava.Widget : GLib.Object {
 
 		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
+			/* drag node */
+			/* TODO: properly handle the graph.zoom */
 			if (n != on) {
-				offx = abs(opanx - (graph.zoom*n.x));
-				offy = abs(opany - (graph.zoom*n.y));
+				offx = (em.x - n.x);
+				offy = (em.y - n.y);
 				on = n;
-			} else {
-				/* zoom view */
-				em.x/=graph.zoom; 
-				em.y/=graph.zoom;
+			} 
+				n.x = (em.x) - (offx);
+				n.y = (em.y) - (offy);
 
-				n.x = em.x - offx;
-				n.y = em.y - offy;
-			}
+				offx = (em.x - n.x);
+				offy = (em.y - n.y);
+
+				//offx += (offx/graph.zoom);
+				//offy += (offy/graph.zoom);
+//n.x += (offx-(offx*graph.zoom));
+//n.y += (offy-(offy*graph.zoom));
+//n.x*=graph.zoom;
+//n.y*=graph.zoom;
 			da.queue_draw_area(0,0,5000,3000);
 			Graph.selected = n;
 		} else {

@@ -334,6 +334,12 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		case AOP_TYPE_CJMP:
 		case AOP_TYPE_CALL:
 			block_add_call(prg, oseek, aop.jump);
+			break;
+		case AOP_TYPE_PUSH:
+			/* TODO : add references */
+			if (config_get("graph.refblocks"))
+				block_add_call(prg, oseek, aop.ref);
+			break;
 		}
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
@@ -375,6 +381,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         char buf[4096]; // bytes of the code block
         unsigned char *ptr = (unsigned char *)&buf;
         int callblocks = config_get("graph.callblocks");
+        int refblocks = config_get("graph.refblocks");
 
         if (depth<=0)
                 return 0;
@@ -407,7 +414,19 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
                 	if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
-                }
+                } else
+		if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
+			/* TODO : add references */
+//printf("ADD PUSH\n");
+			if (refblocks) {
+				block_add_call(prg, oseek, aop.ref);
+				aop.eob = 1;
+				aop.jump = aop.ref;
+				aop.fail = oseek+bsz+sz;
+			}
+		//		block_add_ref(prg, oseek, aop.ref);
+				//block_add_call(prg, oseek, aop.ref);
+		}
 
                 memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
         }

@@ -189,6 +189,7 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 			bta->fnext = bt->fnext;
 			bt->tnext = addr;
 			bt->fnext = 0;
+			bt->type = 0;
 
 			#if 0
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
@@ -204,7 +205,6 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 	}
 	return NULL;
 }
-
 
 struct block_t *block_get_new(struct program_t *program, u64 addr)
 {

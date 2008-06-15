@@ -21,6 +21,7 @@ struct block_t {
 	char *name;
 	char *comment;
 	u64 addr;
+	int type;
 
 	int ignored;
 	int framesize;
