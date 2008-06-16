@@ -158,7 +158,6 @@ end
 
 Radare.bytes_help = 'Radare.bytes(addr)\tReturn hexpair string with block_size bytes at [addr]'
 function Radare.bytes(addr)
-	if addr == '?' then print 
 	local res = split(Radare.cmd("pX @"..addr), " ")
 	-- TODO
 	return res;

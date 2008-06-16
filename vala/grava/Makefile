@@ -1,7 +1,7 @@
 include ../../config.mk
 
 SOURCES=default_layout.vala edge.vala graph.vala layout.vala \
-	main.vala node.vala renderer.vala widget.vala
+	main.vala node.vala renderer.vala widget.vala shape.vala
 VALAFLAGS=--pkg gtk+-2.0 --pkg cairo -g
 
 all:

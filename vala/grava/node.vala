@@ -26,7 +26,7 @@ public class Grava.Node : GLib.Object
 	public SList<string> xrefs;
 	public bool visible;
 	public bool selected;
-	public int layer;
+	public int shape;
 	public double x;
 	public double y;
 	public double w;
@@ -40,7 +40,7 @@ public class Grava.Node : GLib.Object
 		x        = y = 0;
 		w        = 150;
 		h        = 200;
-		layer    = 0;
+		shape    = Shape.RECTANGLE;
 		visible  = true;
 		selected = false;
 	}

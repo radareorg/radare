@@ -71,7 +71,7 @@ public class Grava.Renderer
 				ctx.set_source_rgba (0.0, 0.0, 0.0, 0.7);
 			else
 			if (color == "white")
-				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.8);
+				ctx.set_source_rgba (0.9, 0.9, 0.9, 0.8);
 			else
 			if (color == "green")
 				ctx.set_source_rgba (0.1, 0.7, 0.1, 0.8);
@@ -118,8 +118,17 @@ public class Grava.Renderer
 */
 		set_color(ctx, node.data);
 		set_color_str(ctx, node.data.lookup("bgcolor"));
-		square (ctx, node.w, node.h);
-		ctx.fill();
+		switch (node.shape) {
+		case Shape.CIRCLE:
+			circle(ctx, node.w, node.h);
+			ctx.fill();
+			break;
+		//case Shape.RECTANGLE:
+		default:
+			square (ctx, node.w, node.h);
+			ctx.fill();
+			break;
+		}
 
 		/* title rectangle */
 		if (node.data.lookup("color")!=null)
@@ -179,10 +188,29 @@ public class Grava.Renderer
 			ctx.set_source_rgba (0.2, 0.2, 0.2, 0.4);
 			ctx.set_line_width (1);
 		}
-		square (ctx, node.w, node.h);
+
+		if (node.shape == Shape.CIRCLE)
+			circle(ctx, node.w, node.h);
+		else square (ctx, node.w, node.h);
+
 		ctx.stroke();
 
 		ctx.restore();
+	}
+
+	public static void circle(Context ctx, double w, double h) {
+		ctx.save();
+		ctx.scale(1, h/w);
+		ctx.move_to (w, h/2.5);
+		ctx.arc(w/2, h/2.5, ((w<h)?h:w)*0.7, 0, 2*Math.PI);
+		ctx.restore();
+		//ctx.arc(100,250, 50, 0, 2*Math.PI); //w/2, h/2.5, ((w<h)?h:w)*0.7, 0, 2*Math.PI);
+/*
+		ctx.rel_line_to (w, 0);
+		ctx.rel_line_to (0, h);
+		ctx.rel_line_to (-w, 0);
+*/
+		ctx.close_path ();
 	}
 
 	public static void square (Context ctx, double w, double h) {
@@ -192,6 +220,7 @@ public class Grava.Renderer
 		ctx.rel_line_to (-w, 0);
 		ctx.close_path ();
 	}
+
 
 	public static void line (Context ctx, double x, double y, double w, double h) {
 		ctx.move_to (x,y);

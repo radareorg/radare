@@ -685,7 +685,7 @@ void config_init(int first)
 	config_set("graph.color", "magic");
 	config_set("graph.split", "false"); // split blocks // SHOULD BE TRUE, but true algo is buggy
 	config_set("graph.jmpblocks", "true");
-	config_set("graph.refblocks", "true");
+	config_set("graph.refblocks", "false"); // must be circle nodes
 	config_set("graph.callblocks", "false");
 	config_set("graph.flagblocks", "true");
 	config_set_i("graph.depth", 7);
