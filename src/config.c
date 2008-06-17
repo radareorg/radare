@@ -18,6 +18,7 @@
  *
  */
 
+#include "code.h"
 #include "main.h"
 #include "code.h"
 #include "radare.h"
@@ -611,7 +612,7 @@ void config_init(int first)
 	config_set("cfg.endian", "true");
 #endif
 	config_set("cfg.inverse", "false");
-	config_set_i("cfg.analdepth", 4);
+	config_set_i("cfg.analdepth", 6);
 	config_set("file.insert", "false");
 	if (first) {
 		node = config_set("file.write", "false");
@@ -689,7 +690,7 @@ void config_init(int first)
 	config_set("graph.refblocks", "false"); // must be circle nodes
 	config_set("graph.callblocks", "false");
 	config_set("graph.flagblocks", "true");
-	config_set_i("graph.depth", 7);
+	config_set_i("graph.depth", 9);
 	config_set("graph.offset", "false");
 	config_set("graph.render", "cairo"); // aalib/ncurses/text
 

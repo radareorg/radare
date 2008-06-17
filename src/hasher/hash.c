@@ -53,8 +53,9 @@ int hash_par(unsigned char *buffer, u64 len)
 
 /* These functions comes from 0xFFFF */
 /* fmi: nopcode.org/0xFFFF */
-unsigned short hash_xorpair(unsigned short *b, u64 len)
+u16 hash_xorpair(u8 *a, u64 len)
 {
+	unsigned short *b = (unsigned short *)a;
 	unsigned short result = 0;
 	for(len>>=1;len--;b=b+1)
 		result^=b[0];

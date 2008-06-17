@@ -115,7 +115,7 @@ int fixed_width = 0;
 command_t commands[] = {
 	COMMAND('a', "[ocdgv?]",       "analyze  perform code/data analysis", analyze),
 	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
-	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given value", compare),
+	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given data", compare),
 	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
 	COMMAND('e', "[m?] key=value", "eval     evaluates a configuration expression", config_eval),
 	COMMAND('f', "[crogd|-][name]","flag     flag the current offset (f? for help)", flag),

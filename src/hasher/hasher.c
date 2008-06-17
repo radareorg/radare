@@ -389,7 +389,7 @@ int radare_hash_generate(char *src, char *dst)
 		case ALGO_XORPAIR: {
 			unsigned short s;
 			unsigned char *p = (unsigned char *)&s;
-			s = hash_xorpair((unsigned short *)(buffer + header.from), len);
+			s = hash_xorpair(buffer+header.from, len); //(unsigned short *)(buffer + header.from), len);
 			digest[0] = p[0]; digest[1] = p[1];
 			} break;
 		case ALGO_MD5:
