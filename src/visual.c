@@ -946,6 +946,7 @@ void visual_f(int f)
 			press_any_key();
 			cons_clear();
 			break;
+#if DEBUGGER
 		case 2:
 			addr = config.seek + (config.cursor_mode?config.cursor:0);
 			bp = debug_bp_get(addr);
@@ -972,13 +973,16 @@ void visual_f(int f)
 			press_any_key();
 			cons_clear();
 			break;
+#endif
 		case 4:
 			radare_cmd("!contuh", 0);
 			cons_clear();
 			break;
+#if DEBUGGER
 		case 5:
 			arch_jmp(config.seek + (config.cursor_mode?config.cursor:0));
 			break;
+#endif
 		case 6:
 			radare_cmd("!contsc", 0);
 			break;

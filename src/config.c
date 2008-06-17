@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include "code.h"
 #include "radare.h"
 #include "utils.h"
 #include "config.h"

@@ -111,8 +111,10 @@ void radare_exit()
 static void radare_interrupt(int sig)
 {
 	config.interrupted = 1;
+#if DEBUGGER
 	if (config.debug)
 		kill(ps.pid, SIGCONT);
+#endif
 }
 
 void radare_controlc()
