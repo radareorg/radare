@@ -444,42 +444,27 @@ int debug_until(char *addr)
 		eprintf("entry at: 0x%x\n", (unsigned int)ps.entrypoint);
 		sprintf(buf, "0x%x\n", (unsigned int)off);
 		debug_cont_until(buf);
-		//bp_pos = debug_bp_set(NULL, off, BP_SOFT);
-		//debug_cont(0);
-		//debug_bp_restore(0);
-		//debug_bp_rm_num(bp_pos);
 	}
 
 	if (!strcmp("main", addr)) {
 		// XXX intel only
 		// XXX BP_SOFT is ugly (linux supports DRX HERE)
-printf("MAGIAJCFKDL\n\n");
 #if 1
 		debug_read_at(ps.tid, buf, 12, arch_pc());
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
 			off = (u64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
 			sprintf(buf, "0x%x", (unsigned int)off);
-printf("== > main at : %s\n", buf);
-printf("== > %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3]);
+			printf("== > main at : %s\n", buf);
 			debug_cont_until(buf);
-		//debug_bp_restore(0); //bp_pos = debug_bp_set(NULL, off, BP_HARD);
-		//	debug_cont(0);
-		//	debug_bp_rm_num(bp_pos);
-		//	debug_bp_restore(-1);
-			//arch_jmp(arch_pc()-1); // XXX only x86
 		} else
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
 			debug_read_at(ps.tid, &addr, 4, arch_pc()+0x16);
 			off = (addr_t)addr;
-			bp_pos = debug_bp_set(NULL, addr, BP_SOFT);
-			printf("main at: 0x%x\n", addr);
-			// TODO: use cont_until
-			debug_step(1);
-			debug_cont(0);
-			debug_bp_rm_num(bp_pos);
-			debug_bp_restore(-1);
+			sprintf(buf, "0x%x", addr);
+			printf("== > main at : %s\n", buf);
+			debug_cont_until(buf);
 		} else
 			eprintf("Cannot find main analyzing the entrypoint. Try harder.\n");
 #endif
@@ -1507,7 +1492,7 @@ int debug_inject(char *file)
 	read(fd, fil, sz);
 
 	debug_inject_buffer(fil, sz);
-	printf("%d bytes injected and executed from %s\n", (unsigned int)sz-1, file);
+	eprintf("%d bytes injected and executed from %s\n", (unsigned int)sz-1, file);
 
 	free(fil);
 	close(fd);
@@ -1520,15 +1505,15 @@ int debug_cont_until(const char *input)
 {
 	u64 addr = input?get_math(input):0;
 
-	printf("CONTUNUE UNTIL ADDRESS (%s)%08llx\n", input, addr);
+	eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
-//		debug_step(1);
-// XXX: BP_SOFT doesnt works well :S
+// XXX: BP_HARD doesnt works well :S
 		bp = debug_bp_set(NULL, addr, BP_HARD);
 		debug_cont(NULL);
-radare_cmd("!dr-",0);
+		/* XXX REALLY UGLY HACK */
+		radare_cmd("!dr-",0);
 		debug_bp_restore(bp);
 		debug_bp_rm_num(bp);
 		return 1;

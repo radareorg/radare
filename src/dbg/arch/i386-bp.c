@@ -384,8 +384,9 @@ int arch_restore_bp(struct bp_t *bp)
 //printf("restore soft bp\n");
 	//	arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
-#define CODE_GUAI 1
-#if CODE_GUAI
+#define CODE_GUAI 0
+// CODE EXPERIMENTAL TO CLEAN THE CACHE (NOT NEEDED!! NOISE!!! )
+#if 0
 	{
 		char buf[4];
 		u64 off = arch_pc()-2;

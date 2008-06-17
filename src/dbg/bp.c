@@ -148,7 +148,6 @@ int debug_bp_restore(int pos)
 	}
 	if (bp == NULL)
 		return 0;
-printf("GO FW FOR BREAKPONT HERE\n");
 	//printf("go forward with bp found here !! %08llx and bp = %08x\n", addr, bp);
         if(WS(event) == BP_EVENT) {
 		eprintf("restore: restoring bp at %llx\n", addr);
@@ -163,7 +162,6 @@ int debug_bp_rm(u64 addr, int type)
 	struct bp_t *bp;
 	int ret;
 
-eprintf("debug_bp_rm(%08llx,%d)\n", addr, type);
 	bp = debug_bp_get(addr);	
 	if (bp == NULL) {
 		eprintf("debug_bp_rm: No breakpoint found at this address\n");
