@@ -370,13 +370,12 @@ int arch_restore_bp(struct bp_t *bp)
 	regs_t	regs;
 
 	if (bp == NULL) {
-		eprintf("WARNING: Cannot restore bp %08llx\n",(u64)arch_pc());
+		eprintf("WARNING: Cannot restore bp at eip = 0x%08llx\n",(u64)arch_pc());
 		return 0;
 	}
 
 	if(WS(bp)->hw) {
 //printf("restore hard bp\n");
-
 		arch_bp_hw_disable(bp);
 		debug_os_steps();
 		debug_dispatch_wait();
@@ -397,10 +396,8 @@ int arch_restore_bp(struct bp_t *bp)
 		debug_os_steps();
 		R_EIP(regs) = R_EIP(regs) - 1;
 		debug_dispatch_wait();
-#if 0
 		debug_os_steps();
 		debug_dispatch_wait();
-#endif
 //	printf("WRITE 4 bytes (%02x%02x%02x%02x) %08llx\n", buf[0], buf[1], buf[2], buf[3], off);
 		debug_write_at(ps.tid, buf, 4, off);
 //		arch_bp_soft_enable(bp);
@@ -414,6 +411,15 @@ int arch_restore_bp(struct bp_t *bp)
 		debug_dispatch_wait();
 #endif
 	//	arch_bp_soft_enable(bp);
+#if 0
+#if ARCH_I386
+	if (!bp->hw)
+	  arch_jmp(arch_pc()-1);
+	else
+#else
+	  arch_jmp(arch_pc()-4);
+#endif
+#endif
 		debug_getregs(ps.tid, &regs);
 	}
 

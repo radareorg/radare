@@ -284,6 +284,7 @@ int unpacking_7bit_character(char *src, char *dest)
 void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
+	int last;
 	int zoom = 0;
 	unsigned char buffer[256];
 	unsigned char *bufi; // inverted buffer
@@ -386,18 +387,34 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		// TODO: support skip n char  f.ex: pm i(3)s
 		// TODO: automatic add comment C `pmxzx ??
 		if (arg)
-		for(;!config.interrupted && i<len&&*arg;arg=arg+1) {
+		for(;!config.interrupted && i<config.block ;arg=arg+1) {
 			if (endian)
 				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
 
+#if 0
 			if (*arg == '*') {
 				radare_read_at((u64)addr, buffer, 4);
 				memcpy(&addr, buffer, 4);
 				continue;
 			}
+#endif
 
-			switch(*arg) {
+printf("TMP%cLAST%c\n", tmp, last);
+			tmp = *arg;
+		feed_me_again:
+			if (tmp == 0 && last != '*')
+				break;
+			switch(tmp) {
+			case '*':
+				if (i>0) {
+					tmp = last;
+printf("len=%d\n", len);
+				} else break;
+		//		if (tmp=='*')
+		//			break;
+				arg = arg - 1;
+				goto feed_me_again;
 			case 'e': // tmp swap endian
 				endian ^=1;
 				continue;
@@ -439,7 +456,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			case 'B':
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08x ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
 				cons_strcat(" ... (");
 				for(j=0;j<10;j++) if (is_printable(buf[j])) cons_printf("%c", buf[j]);
@@ -447,24 +464,32 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				i+=4;
 				break;
 			case 'i':
-				D cons_printf("0x%08x ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				cons_printf("%d", addr);
 				i+=4;
 				break;
 			case 'x':
-				D cons_printf("0x%08x ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				cons_printf("0x%08x ", addr);
 				i+=4;
 				break;
+			case 'X': {
+				char buf[128];
+				D cons_printf("0x%08x = ", config.seek+i);
+				cons_printf("0x%08x ", addr);
+				if (string_flag_offset(buf, addr))
+					cons_printf("; %s", buf);
+				i+=4;
+				} break;
 			case 'w': // word (16 bits)
-				D cons_printf("0x%08x ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				if (endian)
 					 addr = (*(buf+i))<<8  | (*(buf+i+1));
 				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
 				cons_printf("0x%04x ", addr);
 				break;
 			case 'z': // zero terminated string
-				D cons_printf("0x%08x  ", config.seek+i);
+				D cons_printf("0x%08x  = ", config.seek+i);
 				for(;buf[i]&&i<len;i++) {
 					if (is_printable(buf[i]))
 						cons_printf("%c", buf[i]);
@@ -493,6 +518,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				continue;
 			}
 			D cons_printf("\n");
+			last = tmp;
 		}
 		D {} else cons_printf("\n");
 		break;

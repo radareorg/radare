@@ -31,6 +31,7 @@ int debug_bp(const char *str)
 	const char *ptr = str;
 	const char *type;
 	int bptype = BP_NONE;
+	int num;
 
 	switch(str[0]) {
 	case 's':
@@ -90,8 +91,8 @@ int debug_bp(const char *str)
 			debug_print_bps();
 		else {
 			flag_set("breakpoint", addr, 3);
-			debug_bp_set(NULL, addr, bptype);
-			eprintf("new breakpoint at 0x%lx\n", addr);
+			num = debug_bp_set(NULL, addr, bptype);
+			eprintf("new breakpoint %d at 0x%lx\n", num, addr);
 		}
 		break;
 	}
@@ -122,7 +123,7 @@ int debug_bp_restore_before(int pos)
 int debug_bp_restore(int pos)
 {
 	struct bp_t *bp;
-	u64 addr = arch_pc()-1; // x86
+	u64 addr = arch_pc(); // x86
 #if 0
 #if ARCH_I386
 	u64 addr = arch_pc()-1; // x86
@@ -130,37 +131,31 @@ int debug_bp_restore(int pos)
 	u64 addr = arch_pc()-4; // arm, mips, ppc, ...
 #endif
 #endif
-	int ret = 0;
-
 	if (pos==-1)
 		bp = debug_bp_get(addr);
 	else	bp = debug_bp_get_num(pos);
 
 
 	if (bp == NULL) {
+		bp = debug_bp_get(addr-1);
+		if (bp==NULL) {
 	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
+			return 0;
+		}
+		printf("Breakpoint -1 %08llx\n", addr);
+	} else {
+		printf("Breakpoint restored %08llx\n", addr);
+	}
+	if (bp == NULL)
 		return 0;
-	}else
-{
-	printf("Breakpoint ata\n");
-}
+printf("GO FW FOR BREAKPONT HERE\n");
 	//printf("go forward with bp found here !! %08llx and bp = %08x\n", addr, bp);
-#if 0
-	if (!bp->hw)
-#if ARCH_I386
-	  arch_jmp(arch_pc()-1);
-#else
-	  arch_jmp(arch_pc()-4);
-#endif
-#else
         if(WS(event) == BP_EVENT) {
 		eprintf("restore: restoring bp at %llx\n", addr);
 		arch_restore_bp(WS(bp));
 		return 1;
         }
-#endif
-
-	return ret;
+	return 	arch_restore_bp(WS(bp));
 }
 
 int debug_bp_rm(u64 addr, int type)
@@ -168,9 +163,10 @@ int debug_bp_rm(u64 addr, int type)
 	struct bp_t *bp;
 	int ret;
 
+eprintf("debug_bp_rm(%08llx,%d)\n", addr, type);
 	bp = debug_bp_get(addr);	
 	if (bp == NULL) {
-		eprintf("No breakpoint found at this address\n");
+		eprintf("debug_bp_rm: No breakpoint found at this address\n");
 		return -1;
 	}
 	if(bp->hw)
@@ -198,7 +194,9 @@ struct bp_t *debug_bp_get_num(int num)
 int debug_bp_rm_num(int num)
 {
 #warning XXX THIS IS BUGGY! num != addr, addr_t != int !!
-	return debug_bp_rm(num, 1);
+	if (num>=0&& num<ps.bps_n)
+		return debug_bp_rm(ps.bps[num].addr, ps.bps[num].hw);
+	return 0;
 }
 
 int debug_bp_rm_addr(u64 addr)
@@ -230,6 +228,7 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 		if(ps.bps[i].addr == 0)
 			bp_free = i;
 	}
+/* TODO: hardware registers are not supported everywhere. bp->hw = 0 for the rest! */
 
 	ret = -1;
 	if(type == BP_SOFT) {

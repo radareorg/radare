@@ -425,7 +425,9 @@ int debug_ie(char *input)
 int debug_until(char *addr)
 {
 	int bp_pos;
-	addr_t off;
+	u64 off = 0LL;
+	char buf[128];
+	u8 ptr[128];
 
 	if (!addr)
 		return 0;
@@ -439,25 +441,32 @@ int debug_until(char *addr)
 	else	off = get_math(addr);
 
 	if (off != 0) {
-		eprintf("entry at: 0x%x\n", ps.entrypoint);
-		bp_pos = debug_bp_set(NULL, off, BP_SOFT);
-		debug_cont(0);
-		debug_bp_restore(bp_pos);
-		debug_bp_rm_num(bp_pos);
+		eprintf("entry at: 0x%x\n", (unsigned int)ps.entrypoint);
+		sprintf(buf, "0x%x\n", (unsigned int)off);
+		debug_cont_until(buf);
+		//bp_pos = debug_bp_set(NULL, off, BP_SOFT);
+		//debug_cont(0);
+		//debug_bp_restore(0);
+		//debug_bp_rm_num(bp_pos);
 	}
 
 	if (!strcmp("main", addr)) {
 		// XXX intel only
 		// XXX BP_SOFT is ugly (linux supports DRX HERE)
-#if ARCH_I386
+printf("MAGIAJCFKDL\n\n");
+#if 1
 		debug_read_at(ps.tid, buf, 12, arch_pc());
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
-			off = (addr_t)ptr;
-			bp_pos = debug_bp_set(NULL, off, BP_SOFT);
-			debug_cont(0);
-			debug_bp_rm_num(bp_pos);
-			debug_bp_restore();
+			off = (u64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
+			sprintf(buf, "0x%x", (unsigned int)off);
+printf("== > main at : %s\n", buf);
+printf("== > %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3]);
+			debug_cont_until(buf);
+		//debug_bp_restore(0); //bp_pos = debug_bp_set(NULL, off, BP_HARD);
+		//	debug_cont(0);
+		//	debug_bp_rm_num(bp_pos);
+		//	debug_bp_restore(-1);
 			//arch_jmp(arch_pc()-1); // XXX only x86
 		} else
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
@@ -466,10 +475,11 @@ int debug_until(char *addr)
 			off = (addr_t)addr;
 			bp_pos = debug_bp_set(NULL, addr, BP_SOFT);
 			printf("main at: 0x%x\n", addr);
+			// TODO: use cont_until
 			debug_step(1);
 			debug_cont(0);
 			debug_bp_rm_num(bp_pos);
-			debug_bp_restore();
+			debug_bp_restore(-1);
 		} else
 			eprintf("Cannot find main analyzing the entrypoint. Try harder.\n");
 #endif
@@ -1509,15 +1519,18 @@ int debug_inject(char *file)
 int debug_cont_until(const char *input)
 {
 	u64 addr = input?get_math(input):0;
-//	printf("CONTUNUE UNTIL ADDRESS (%s)%08llx\n", input, addr);
+
+	printf("CONTUNUE UNTIL ADDRESS (%s)%08llx\n", input, addr);
 	/* continue until address */
 	if (addr != 0) {
-		struct bp_t *bp;
-		debug_step(1);
+		int bp;
+//		debug_step(1);
+// XXX: BP_SOFT doesnt works well :S
 		bp = debug_bp_set(NULL, addr, BP_HARD);
-		debug_cont(0);
+		debug_cont(NULL);
+radare_cmd("!dr-",0);
+		debug_bp_restore(bp);
 		debug_bp_rm_num(bp);
-		debug_bp_restore(-1);
 		return 1;
 	} 
 	return 0;
@@ -1532,6 +1545,9 @@ int debug_cont(const char *input)
 
 	if (debug_cont_until(input))
 		return 0;
+
+	/* restore breakpoint */
+	debug_bp_restore(-1);
 
 	do { 
 		/* restore breakpoint */
