@@ -57,6 +57,9 @@ int debug_close(int fd)
 				ptrace(PTRACE_DETACH, ps.tid, 0, 0);
 				/* TODO: Do it properly for all the childs! */
 #endif
+#ifndef SIGKILL
+#define SIGKILL 9
+#endif
 				debug_os_kill(ps.pid, SIGKILL);
 				debug_os_kill(ps.tid, SIGKILL);
 

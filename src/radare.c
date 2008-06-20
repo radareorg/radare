@@ -112,8 +112,13 @@ static void radare_interrupt(int sig)
 {
 	config.interrupted = 1;
 #if DEBUGGER
+/* XXX This is absolutely UGLY!!! */
 	if (config.debug)
+#if __UNIX__
 		kill(ps.pid, SIGCONT);
+#else
+		debug_contp(ps.tid);
+#endif
 #endif
 }
 

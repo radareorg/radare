@@ -1019,6 +1019,7 @@ CMD_DECL(visual)
 
 	undo_push();
 
+	config.height = config_get_i("scr.height");
 	if (config.height<1)
 		config_set_i("scr.height", 24);
 

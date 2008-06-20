@@ -183,7 +183,11 @@ int hijack_fd(int fd, const char *file)
 	if (strnull(file) || fd==-1)
 		return -1;
 
+#if __UNIX__
 	f = open(file, (fd?O_RDWR:O_RDONLY) | O_NOCTTY);
+#else
+	f = open(file, (fd?O_RDWR:O_RDONLY));
+#endif
 	// TODO handle pipes to programs
 	// does not works
 	if (f == -1) {
