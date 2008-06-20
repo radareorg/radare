@@ -359,7 +359,7 @@ u64 get_math(const char* text)
 
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
-		tmp = mytok(ptr, "+-*/[", &op);
+		tmp = mytok(ptr, "+-<>%*/[", &op);
 		switch(oop) {
 #ifdef RADARE_CORE
 		case '[': end = strchr(txt2+(ptr-txt+1),']');
@@ -375,6 +375,9 @@ u64 get_math(const char* text)
 			break;
 #endif
 		case '+': new_off += get_offset(ptr); break;
+		case '%': new_off %= get_offset(ptr); break;
+		case '<': new_off <<= get_offset(ptr); break;
+		case '>': new_off >>= get_offset(ptr); break;
 		case '-': new_off -= get_offset(ptr); break;
 		case '/': t = get_offset(ptr);
 			if (t == 0) {
@@ -392,7 +395,6 @@ u64 get_math(const char* text)
 #if RADARE_CORE
 	free(txt2);
 #endif
-
 	level--;
 	return new_off;
 }

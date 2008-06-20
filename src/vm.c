@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -24,6 +24,19 @@
 const char **vm_regs_str;
 static u64 *vm_regs = NULL;
 int vm_nregs = 0;
+
+/* returns register index given a name */
+int vm_get_reg(const char *name)
+{
+	int i;
+	for(i=0;i<vm_nregs;i++)
+		if (!strcmp(name, vm_regs_str[i]))
+			return i;
+	i = atoi(name+1);
+	if (i<0||i>vm_nregs)
+		return i;
+	return -1;
+}
 
 u64 vm_get(int reg)
 {

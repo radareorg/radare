@@ -51,7 +51,7 @@ regs_t oregs; // old registers
 #define REG_K0 25 // Stack pointer
 #define REG_SP 29 // Stack pointer
 
-long long arch_syscall(int pid, int sc, ...)
+u64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 	return ret;
@@ -273,7 +273,7 @@ int arch_set_register(char *reg, char *value)
 {
 	int ret;
 	regs_t regs;
-	unsigned long *llregs = &regs;
+	unsigned long long *llregs = &regs;
 
 	if (ps.opened == 0)
 		return 0;
@@ -281,11 +281,13 @@ int arch_set_register(char *reg, char *value)
 	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
 
-	ret = atoi(reg+1);
-	if (ret > 17 || ret < 0) {
-		eprintf("Invalid register\n");
+	ret = vm_get_reg(reg);
+	if (ret == -1) {
+		eprintf("Invalid register name '%s'\n", reg);
+		return 1;
 	}
-	llregs[atoi(reg+1)] = (int)get_offset(value);
+	printf("reg idx = %d\n", ret);
+	llregs[ret] = (int)get_offset(value);
 
 	ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 
@@ -301,7 +303,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 			cons_printf("f fp%d @ 0x%08llx\n", i, ptr[i]);
 	else
 		for(i=0;i<16;i++)
-			cons_printf("fp%02d: 0x%08llx%c", i<<1, ptr[i*2], (i%2)?'\n':'\t');
+			cons_printf("fp%02d: 0x%016llx%c", i<<1, ptr[i*2], (i%2)?'\n':'\t');
 
 	return ret;
 }
@@ -350,7 +352,7 @@ int arch_print_registers(int rad, const char *mask)
 
 	if (rad) {
 		cons_printf("f pc  @ 0x%llx\nf eip@pc", reg(arch_pc())); // dupgetregs
-		cons_printf("f at  @ 0x%llx\n", reg(llregs[1]));
+		cons_printf("f at  @ 0x%llx\n", reg(llregs[1])); // is this t1 ?!?!?
 		cons_printf("f v0  @ 0x%llx\n", reg(llregs[2]));
 		cons_printf("f v1  @ 0x%llx\n", reg(llregs[3]));
 
