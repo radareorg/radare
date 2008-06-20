@@ -141,7 +141,8 @@ System types:
   --target=TARGET        configure for building compilers for TARGET [HOST]
 EOF2
 
-printf "\nOptional Features:
+printf "
+Optional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
   --without-debugger     disables the debugger layer 
@@ -151,16 +152,21 @@ printf "\nOptional Features:
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-maemo           build hildon interface 
-  --without-gui          radare without the gtk frontend \n"
-printf "\nSome influential environment variables:
+  --without-gui          radare without the gtk frontend 
+"
+printf "
+Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
               nonstandard directory <lib dir>
   CPPFLAGS    C/C++ preprocessor flags, e.g. -I<include dir> if you have
               headers in a nonstandard directory <include dir>
-  CPP         C preprocessor\n"
-printf "\nReport bugs to: pancake <pancake@youterm.com>"
+  CPP         C preprocessor
+  LUA         path to lua interpreter
+"
+printf "
+Report bugs to: pancake <pancake@youterm.com>"
 echo ""
 exit 0
 }
@@ -522,12 +528,13 @@ check_library HAVE_LIB_LUA5_1 lua5.1 0
  else
 echo no ; fi
 SEDFLAGS=" -e '"
+COUNT=0
 for A in ${ENVWORDS} ; do
 	[ "${A}" = VPATH ] && continue
 	[ "${A}" = srcdir ] && continue 
 	eval "VAR=\$${A}"
 	VAR="`echo ${VAR} | sed -e 's/\,/\\\,/g'`"
-#	SEDFLAGS="${SEDFLAGS} -e 's,@${A}@,${VAR},g;'"
+	[ $COUNT = 10 ] && COUNT=0 && SEDFLAGS="${SEDFLAGS}' -e '"
 	SEDFLAGS="${SEDFLAGS}s,@${A}@,${VAR},g;"
 done
 SEDFLAGS="${SEDFLAGS}'"

@@ -1,13 +1,18 @@
-LIBS=-llua
+include ../../../config.mk
+
+LIBS=${LUA_LIBS}
 
 all: posix.so
 	@echo
 
-posix.so: posix.o
-	${CC} -fPIC ${LIBS} -shared -o posix.so
+posix.so:
+	-${CC} ${LIBS} -fPIC posix.c -shared -o posix.so
+
+#posix.so: posix.o
+#	${CC} -fPIC ${LIBS} -shared -o posix.so
 
 posix.o:
-	${CC} -c posix.c
+	${CC} -fPIC -shared -c posix.c
 	
 install:
 	mkdir -p /usr/lib/lua/5.1
