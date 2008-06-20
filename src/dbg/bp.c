@@ -146,7 +146,7 @@ int debug_bp_restore(int pos)
 	} else {
 		printf("Breakpoint restored %08llx\n", addr);
 	}
-	if (bp == NULL)
+	if (bp == NULL || WS(bp)==NULL)
 		return 0;
 	//printf("go forward with bp found here !! %08llx and bp = %08x\n", addr, bp);
         if(WS(event) == BP_EVENT) {
@@ -154,7 +154,7 @@ int debug_bp_restore(int pos)
 		arch_restore_bp(WS(bp));
 		return 1;
         }
-	return 	arch_restore_bp(WS(bp));
+	return arch_restore_bp(WS(bp));
 }
 
 int debug_bp_rm(u64 addr, int type)

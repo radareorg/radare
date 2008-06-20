@@ -118,7 +118,7 @@ static const char * const mips_gpr_names_numeric[32] =
   "$24",  "$25",  "$26",  "$27",  "$28",  "$29",  "$30",  "$31"
 };
 
-static const char * const mips_gpr_names_oldabi[32] =
+const char * const mips_gpr_names_oldabi[32] =
 {
   "zero", "at",   "v0",   "v1",   "a0",   "a1",   "a2",   "a3",
   "t0",   "t1",   "t2",   "t3",   "t4",   "t5",   "t6",   "t7",

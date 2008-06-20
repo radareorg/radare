@@ -750,6 +750,7 @@ void config_init(int first)
 
 	cons_palette_init(config_get("scr.palette"));
 	arch_set_callbacks();
+	vm_init(1);
 
 	if (first) {
 		metadata_comment_init(1);
