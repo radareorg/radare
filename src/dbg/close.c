@@ -47,13 +47,19 @@ int debug_close(int fd)
 				eprintf("Cancelled\n");
 				cons_set_raw(0);
 				return -2;
+
 			case 'y': case 'Y': case '\n': case '\r':
 				/* TODO: w32 stuff here */
 #if __UNIX__
 				ptrace(PTRACE_KILL, ps.pid, 0, 0);
 				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
+				ptrace(PTRACE_KILL, ps.tid, 0, 0);
+				ptrace(PTRACE_DETACH, ps.tid, 0, 0);
+				/* TODO: Do it properly for all the childs! */
 #endif
 				debug_os_kill(ps.pid, SIGKILL);
+				debug_os_kill(ps.tid, SIGKILL);
+
 			case 'n': case 'N':
 				/* TODO: w32 stuff here */
 #if __UNIX__

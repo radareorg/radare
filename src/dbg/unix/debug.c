@@ -113,27 +113,6 @@ int debug_ktrace()
 	return 0;
 }
 #endif
-
-
-int debug_pstree(char *input)
-{
-	int tid = 0;
-
-	if (input)
-		tid = atoi(input);
-	if (tid != 0) {
-		ps.tid = tid;
-		eprintf("Current selected thread id (pid): %d\n", ps.tid);
-		// XXX check if exists or so
-	}
-
-	printf(" pid : %d\n", ps.pid);
-	pids_sons_of_r(ps.pid,0,0);
-	printf(" tid : %d\n", ps.tid);
-	pids_sons_of_r(ps.tid,0,0);
-	return 0;
-}
-
 int debug_print_wait(char *act)
 {
 	const char *cmd;

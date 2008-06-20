@@ -336,7 +336,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	} else {
 		/* pipe */
 		piped = strchr(input, '|');
-		if (piped) {
+		if (piped && input != piped && piped[-1]!='\\') {
 			char tmp[1024];
 			char cmd[1024];
 			piped[0]='\0';

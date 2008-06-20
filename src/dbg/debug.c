@@ -799,7 +799,6 @@ int debug_skip(int times)
 	return 0;
 }
 
-
 int debug_stepu()
 {
 	unsigned long pc = arch_pc(); //WS_PC();

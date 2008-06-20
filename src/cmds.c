@@ -274,29 +274,29 @@ CMD_DECL(analyze)
 			cons_printf("size = %d\n", sz);
 			cons_printf("type = ");
 			switch(aop.type) {
-			case AOP_TYPE_CALL: cons_printf("call\n"); break;
-			case AOP_TYPE_CJMP: cons_printf("conditional-jump\n"); break;
-			case AOP_TYPE_JMP: cons_printf("jump\n"); break;
-			case AOP_TYPE_UJMP: cons_printf("jump-unknown\n"); break;
-			case AOP_TYPE_TRAP: cons_printf("trap\n"); break;
-			case AOP_TYPE_SWI: cons_printf("interrupt\n"); break;
+			case AOP_TYPE_CALL:  cons_printf("call\n"); break;
+			case AOP_TYPE_CJMP:  cons_printf("conditional-jump\n"); break;
+			case AOP_TYPE_JMP:   cons_printf("jump\n"); break;
+			case AOP_TYPE_UJMP:  cons_printf("jump-unknown\n"); break;
+			case AOP_TYPE_TRAP:  cons_printf("trap\n"); break;
+			case AOP_TYPE_SWI:   cons_printf("interrupt\n"); break;
 			case AOP_TYPE_UPUSH: cons_printf("push-unknown\n"); break;
-			case AOP_TYPE_PUSH: cons_printf("push\n"); break;
-			case AOP_TYPE_POP: cons_printf("pop\n"); break;
-			case AOP_TYPE_ADD: cons_printf("add\n"); break;
-			case AOP_TYPE_SUB: cons_printf("sub\n"); break;
-			case AOP_TYPE_AND: cons_printf("and\n"); break;
-			case AOP_TYPE_OR: cons_printf("or\n"); break;
-			case AOP_TYPE_XOR: cons_printf("xor\n"); break;
-			case AOP_TYPE_NOT: cons_printf("not\n"); break;
-			case AOP_TYPE_MUL: cons_printf("mul\n"); break;
-			case AOP_TYPE_DIV: cons_printf("div\n"); break;
-			case AOP_TYPE_SHL: cons_printf("shift-left\n"); break;
-			case AOP_TYPE_SHR: cons_printf("shift-right\n"); break;
-			case AOP_TYPE_REP: cons_printf("rep\n"); break;
-			case AOP_TYPE_RET: cons_printf("ret\n"); break;
-			case AOP_TYPE_ILL: cons_printf("illegal-instruction\n"); break;
-			case AOP_TYPE_MOV: cons_printf("move\n"); break;
+			case AOP_TYPE_PUSH:  cons_printf("push\n"); break;
+			case AOP_TYPE_POP:   cons_printf("pop\n"); break;
+			case AOP_TYPE_ADD:   cons_printf("add\n"); break;
+			case AOP_TYPE_SUB:   cons_printf("sub\n"); break;
+			case AOP_TYPE_AND:   cons_printf("and\n"); break;
+			case AOP_TYPE_OR:    cons_printf("or\n"); break;
+			case AOP_TYPE_XOR:   cons_printf("xor\n"); break;
+			case AOP_TYPE_NOT:   cons_printf("not\n"); break;
+			case AOP_TYPE_MUL:   cons_printf("mul\n"); break;
+			case AOP_TYPE_DIV:   cons_printf("div\n"); break;
+			case AOP_TYPE_SHL:   cons_printf("shift-left\n"); break;
+			case AOP_TYPE_SHR:   cons_printf("shift-right\n"); break;
+			case AOP_TYPE_REP:   cons_printf("rep\n"); break;
+			case AOP_TYPE_RET:   cons_printf("ret\n"); break;
+			case AOP_TYPE_ILL:   cons_printf("illegal-instruction\n"); break;
+			case AOP_TYPE_MOV:   cons_printf("move\n"); break;
 			default: cons_printf("unknown(%d)\n", aop.type);
 			}
 			cons_printf("bytes = ");
@@ -387,7 +387,7 @@ CMD_DECL(menu)
 		} else {
 			radare_cmd("e | sort | cut -d . -f 1 | uniq | awk '{print \" - \"$1}'", 0);
 		}
-noprint:
+	noprint:
 								cons_printf("> ");
 								cons_flush();
 				fgets(buf, 128, stdin);
@@ -403,7 +403,7 @@ noprint:
 		if (strchr(buf, '=')) {
 			sprintf(buf2, "e %s.%s", pfx, buf);
 			radare_cmd(buf2, 0);
-		}else
+		} else
 		if (!pfx[0]) {
 			strcpy(pfx, buf);
 		} else {
@@ -605,10 +605,10 @@ CMD_DECL(hash)
 
 CMD_DECL(interpret_perl)
 {
-#if HAVE_PERL
+	#if HAVE_PERL
 	char *ptr;
 	char *cmd[] = { "perl", "-e", ptr, 0};
-#endif
+	#endif
 
 	if (input==NULL || *input== '\0' || strchr(input,'?')) {
 	#if HAVE_PERL

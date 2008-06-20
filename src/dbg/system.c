@@ -38,7 +38,7 @@ int help_message()
 	cons_printf(" Information\n");
 	TITLE_END
 	cons_printf("  info               show debugger and process status\n");
-	cons_printf("  pid [tid]          show pid of the debug process, current tid and childs, or set tid.\n");
+	cons_printf("  pid [tid] [action] show pid of the debug process, current tid and childs, or set tid.\n");
 	//cons_printf("  pids            show the pids of all the attachable processes\n"); // ??!?
 	cons_printf("  status             show the contents of /proc/pid/status\n");
 	cons_printf("  signal             show signals handler\n");

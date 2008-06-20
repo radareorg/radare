@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2008
  *       pancake <youterm.com>
  *
  * libps2fd is part of the radare project
@@ -20,7 +20,10 @@
  *
  */
 
-#include "libps2fd.h"
+#include "../../config.h"
+#include "../../main.h"
+#include "../../code.h"
+#include "../libps2fd.h"
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -111,12 +114,12 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 			if (fd) {
 				mola = 0;
 				fscanf(fd,"%d %s %s %d",
-					&tmp, tmp2, &tmp3, &mola);
+					&tmp, tmp2, tmp3, &mola);
 				if (mola == pid) {
 					pids_cmdline(p, tmp2);
 					//for(i=0; i<recursive*2;i++)
 					//	printf(" ");
-					printf(" `- %d : %s\n", p, tmp2);
+					cons_printf(" `- %d : %s (%s)\n", p, tmp2, (tmp3[0]=='S')?"sleeping":(tmp3[0]=='T')?"stopped":"running");
 					n++;
 					if (recursive<limit)
 						n+=pids_sons_of_r(p, recursive+1, limit);
@@ -128,6 +131,7 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 	return n;
 }
 
+#if 0
 int pids_sons_of(int pid)
 {
 	char buf[512];
@@ -135,6 +139,7 @@ int pids_sons_of(int pid)
 	printf("-+- %d : %s\n",pid, buf);
 	return pids_sons_of_r(pid,0,999);
 }
+#endif
 
 int pids_list()
 {
@@ -164,3 +169,91 @@ main(int argc, char **argv)
 	return 0;
 }
 #endif
+
+static const char *debug_unix_pid_running  = "running";
+static const char *debug_unix_pid_stopped  = "stopped";
+static const char *debug_unix_pid_sleeping = "sleeping";
+static const char *debug_unix_pid_unknown  = "unknown";
+static const char *debug_unix_pid_zombie   = "zombie";
+
+const char *debug_unix_pid_status(int pid)
+{
+	const char *str = debug_unix_pid_unknown;
+	char buf[129];
+	FILE *fd;
+
+	sprintf(buf, "/proc/%d/status", pid);
+	fd = fopen(buf, "r");
+	if (fd) {
+		while(1) {
+			buf[0]='\0';
+			fgets(buf, 128, fd);
+			if (buf[0]=='\0')
+				break;
+			if (strstr(buf, "State:")) {
+				if (strstr(buf, "sleep"))
+					str = debug_unix_pid_sleeping;
+				else
+				if (strstr(buf, "running"))
+					str = debug_unix_pid_running;
+				else
+				if (strstr(buf, "stop"))
+					str = debug_unix_pid_stopped;
+				else
+				if (strstr(buf, "zombie")) // XXX ?
+					str = debug_unix_pid_zombie;
+			}
+		}
+		fclose(fd);
+	}
+		
+	return str;
+}
+
+int debug_pstree(const char *input)
+{
+	int foo, tid = 0;
+	const char *ptr;
+
+	if (input)
+		tid = atoi(input);
+
+	if (tid != 0) {
+		if (strstr(input, "stop")) {
+			kill(tid, SIGSTOP);
+			eprintf("stop for %d\n", tid);
+		} else
+		if (strstr(input, "cont")) {
+			kill(tid, SIGCONT);
+			eprintf("running for %d\n", tid);
+		} else
+		if (strstr(input, "segv")) {
+			kill(tid, SIGSEGV);
+			eprintf("segv for %d\n", tid);
+		} else
+		if (strstr(input, "kill")) {
+			kill(tid, SIGKILL);
+			eprintf("Current selected thread id (pid): %d\n", ps.tid);
+		} else
+		if (input && strstr(input, "?")) {
+			cons_printf("Usage: !pid [pid] [stop|cont|segv|kill]\n");
+		} else {
+			ps.tid = tid;
+			eprintf("Current selected thread id (pid): %d\n", ps.tid);
+		}
+		// XXX check if exists or so
+		return 0;
+	}
+
+	foo = ps.pid;
+	eprintf(" pid : %d (%s)\n", foo, debug_unix_pid_status(foo));
+	pids_sons_of_r(foo, 0, 0);
+	if (ps.pid != ps.tid) {
+		foo = ps.tid;
+		eprintf(" pid : %d (%s)\n", foo, debug_unix_pid_status(foo));
+		pids_sons_of_r(foo, 0, 0);
+	}
+
+	return 0;
+}
+

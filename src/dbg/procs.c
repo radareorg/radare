@@ -31,6 +31,7 @@
 
 int pids_sons_of_r(int pid, int recursive, int limit);
 
+#if 0
 int pids_cmdline(int pid, char *cmdline)
 {
 	int fd;
@@ -45,8 +46,10 @@ int pids_cmdline(int pid, char *cmdline)
 
 	return 0;
 }
+#endif
 
 /* ptrace attaches to all sons of a pid */
+#if 0
 int pids_ptrace_all(int pid)
 {
 /* no ptrace for apple */
@@ -93,7 +96,10 @@ int pids_ptrace_all(int pid)
 	return n;
 #endif
 }
+#endif
 
+#if 0
+/* Unix dependent */
 int pids_sons_of_r(int pid, int recursive, int limit)
 {
 	int p;
@@ -134,6 +140,7 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 	}
 	return n;
 }
+#endif
 
 int pids_sons_of(int pid)
 {
@@ -143,6 +150,7 @@ int pids_sons_of(int pid)
 	return pids_sons_of_r(pid,0,999);
 }
 
+#if 0
 int pids_list()
 {
 	int i;
@@ -165,6 +173,7 @@ int pids_list()
 	}
 	return count;
 }
+#endif
 
 
 #if 0
