@@ -7,8 +7,9 @@
 
 ===========================================================
 
-0.9.7:
+0.9.8:
 ======
+ * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
  * add 'call <reg>' to rasm

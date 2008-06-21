@@ -98,12 +98,12 @@ create_environ() {
 : ${INSTALL_PROGRAM:=${INSTALL} -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='0.9.7' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='0.9.8' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-0.9.7 to adapt to many kinds of systems.
+'configure' configures radare-0.9.8 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -141,8 +141,7 @@ System types:
   --target=TARGET        configure for building compilers for TARGET [HOST]
 EOF2
 
-printf "
-Optional Features:
+printf "\nOptional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
   --without-debugger     disables the debugger layer 
@@ -152,10 +151,8 @@ Optional Features:
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-maemo           build hildon interface 
-  --without-gui          radare without the gtk frontend 
-"
-printf "
-Some influential environment variables:
+  --without-gui          radare without the gtk frontend \n"
+printf "\nSome influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -163,10 +160,8 @@ Some influential environment variables:
   CPPFLAGS    C/C++ preprocessor flags, e.g. -I<include dir> if you have
               headers in a nonstandard directory <include dir>
   CPP         C preprocessor
-  LUA         path to lua interpreter
-"
-printf "
-Report bugs to: pancake <pancake@youterm.com>"
+  LUA         path to lua interpreter\n"
+printf "\nReport bugs to: pancake <pancake@youterm.com>"
 echo ""
 exit 0
 }
@@ -180,7 +175,7 @@ take_environ() {
 }
 
 show_version() {
-echo "radare-0.9.7 configuration script done with acr v0.7.
+echo "radare-0.9.8 configuration script done with acr v0.7.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -198,7 +193,7 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   0.9.7"
+echo "VERSION:   0.9.8"
 echo "LANGS:     c lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.3.3"
 echo "OPTIONAL:  libewf"

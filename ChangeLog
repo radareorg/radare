@@ -1,3 +1,846 @@
+=== 0.9.7 ===
+changeset:   255:0af245f7d644
+tag:         tip
+user:        pancake <youterm.com>
+date:        Sat Jun 21 14:13:19 2008 +0200
+files:       TODO libexec/waiter libusbsniff/libusbsniff.c src/plug/hack/Makefile src/plug/hack/luaedit.c src/plug/hack/python.c src/plug/hack/scriptedit.c
+description:
+* Initial import of 'rsc waiter'
+  - Pools /proc looking for childs of a PID or process name with a certain name
+* Fix build of python.so
+* Rename luaedit to scriptedit
+  - The graphical widget script editor now allows to choose between:
+    - lua, python and perl
+  - Support keybindings for saving, opening and executing
+* Fix signature of libusbsniff's usb_bulk_write
+
+
+changeset:   254:e63bc134cf66
+user:        pancake <youterm.com>
+date:        Sat Jun 21 00:42:16 2008 +0200
+files:       src/dbg/close.c src/dbg/debug.c src/radare.c src/visual.c
+description:
+* Fix build for mingw32
+  - Fix scr.height problem
+
+
+changeset:   253:473040969044
+user:        pancake <youterm.com>
+date:        Sat Jun 21 00:32:21 2008 +0200
+files:       TODO src/cmds.c src/dbg/close.c src/dbg/debug.c src/dbg/objects.mk src/dbg/procs.c src/dbg/system.c src/dbg/unix/debug.c src/dbg/unix/procs.c src/radare.c src/utils.c
+description:
+* Support to 'escape' pipes '|' in radare_cmd
+  - Add \| and \& operators for get_math for ORs and ANDs
+* Add dbg/unix/procs.c
+  - Cleanup of dbg/procs.c
+* Cleanup implementation of !pid command
+  - Supports argument to switch between threads or processes
+  - Allows to stop/continue/kill a process
+  - Show process running status after the pid
+
+
+changeset:   252:a6b3dc160ec0
+parent:      251:95d22110520d
+parent:      250:c6769b1ea485
+user:        pancake <@youterm.com>
+date:        Fri Jun 20 15:59:22 2008 +0200
+description:
+* Merge!
+
+
+changeset:   251:95d22110520d
+parent:      249:cb371d9d1529
+user:        pancake <@youterm.com>
+date:        Fri Jun 20 15:58:47 2008 +0200
+files:       config.mk.acr configure doc/fortunes scripts/lua/posix/Makefile
+description:
+* Fix lua-posix build problem
+* Fix ACR problems with BSD's sed
+* Add one more line in doc/fortunes
+
+
+changeset:   250:c6769b1ea485
+user:        pancake <youterm.com>
+date:        Thu Jun 19 22:42:01 2008 -0400
+files:       src/arch/mips/mips-dis.c src/arch/mips/vm.c src/config.c src/dbg/arch/mips64.c src/dbg/bp.c src/utils.c src/vm.c
+description:
+* loongson2f follows the old abi? is gdb buggy again?
+  - needs testing. but now !set and vm regs are working fine
+* Fix segfault issue in breakpoint after stepping on mips
+* Add shifting and modulus on get_math/utils.c
+* Add 'vm_get_reg' to resolve reg indexes from reg names
+
+
+changeset:   249:cb371d9d1529
+user:        asdfsafd@asdf-safds-imac.desnet.org
+date:        Tue Jun 17 05:35:04 2008 +0200
+files:       src/cmds.c src/config.c src/hasher/hash.c src/hasher/hash.h src/hasher/hasher.c
+description:
+* Fix segfault hash_xorpair on big endian
+* Fix typo in help msg (value -> data)
+* Graph now are more deeper!
+
+
+changeset:   248:030abb64b056
+user:        pancake <youterm.com>
+date:        Tue Jun 17 05:03:55 2008 +0200
+files:       src/dbg/arch/i386-bp.c src/dbg/bp.c src/dbg/debug.c src/print.c
+description:
+* Remove the printf debugging messages
+* Make the stepover work again (bps are nice again)
+
+
+changeset:   247:67f83bee82b6
+user:        pancake <youterm.com>
+date:        Tue Jun 17 04:49:30 2008 +0200
+files:       src/arch/arm/aasm/Makefile src/config.c src/radare.c src/visual.c
+description:
+* Fix build for non-debugger platforms (osx-ppc)
+  --without-debugger
+
+
+changeset:   246:e09ea5c15f3d
+user:        pancake <youterm.com>
+date:        Tue Jun 17 04:46:00 2008 +0200
+files:       src/dbg/arch/i386-bp.c src/dbg/bp.c src/dbg/debug.c src/print.c vala/grava/shape.vala
+description:
+* Fix the problems with breakpoints
+  - Now hw and sw are ok for cont_until
+  - take it as example if something fails
+  - XXX: Lot of noisy debugging printfs
+* Add 'X' to 'pm' and '*' be a repeater of the last type
+
+
+changeset:   245:506cc9cb7016
+user:        pancake <youterm.com>
+date:        Mon Jun 16 09:52:44 2008 +0200
+files:       src/config.c src/plug/hack/radare.lua vala/grava/Makefile vala/grava/node.vala vala/grava/renderer.vala
+description:
+* Set refblocks to false by default
+* Fix radare.lua (Oops: syntax error)
+* Add Shape.vala (CIRCLE, RECTANGLE)
+  - add circle() method
+
+
+changeset:   244:89f306896ce5
+user:        pancake <youterm.com>
+date:        Sun Jun 15 14:35:22 2008 +0200
+files:       src/analyze.c src/arch/x86/code.c src/cmds.c src/config.c src/rdb.c src/rdb.h src/udis.c vala/grava/widget.vala
+description:
+* Fix ref for aop.type == PUSH on x86
+  - Properly handle aop.ref in code analysis
+  - Add graph.refblocks to split the graph by references too
+    - useful to follow calls of pushed pointers
+  - Show ref in analyze opcode (ao)
+* Nicer node dragging (no zoom yet..but much better)
+
+
+changeset:   243:755ada1fd502
+user:        pancake <youterm.com>
+date:        Sun Jun 15 04:22:37 2008 +0200
+files:       src/bytepat.c src/objects.mk src/plug/io/socket.c src/plugin.c src/plugin.h
+description:
+* Initial import of the byte pattern search engine
+  - looks for N repeated series of bytes
+  - Accessible with '/p <N>' command
+  - Thanks esteve!
+* Fix plugin stupid bug. Needs refactor. but now is ok
+
+
+changeset:   242:c799398fa034
+user:        pancake <youterm.com>
+date:        Sun Jun 15 03:06:45 2008 +0200
+files:       TODO src/cmds.c src/code.h src/dbg/arch/i386.c src/dbg/debug.c src/objects.mk src/udis.c vala/Makefile
+description:
+* Inconsistent commit
+  - Stub for /p to search patterns
+  - Some minor fixups
+
+
+changeset:   241:a08da5f3e1dc
+user:        pancake <youterm.com>
+date:        Sun Jun 15 01:24:49 2008 +0200
+files:       src/cmds.c src/dbg/objects.mk src/plug/io/remote.c src/plugin.c src/radare.c src/radiff/Makefile src/radiff/bytediff.c src/radiff/radiff.c src/rasm/x86.c
+description:
+* Add bytediff in C (Thanks esteve!)
+* Fix 'rasm 'mov eax,0''
+* Fix build
+* Prperly fix euros
+
+
+changeset:   240:e0949c094b46
+user:        pancake <youterm.com>
+date:        Sun Jun 15 00:28:30 2008 +0200
+files:       TODO gui/sidebar.c libexec/syms src/analyze.c src/cmds.c src/dbg/objects.mk src/grava.c src/vm.c vala/api/config.vala vala/api/core.vala vala/api/disassembler.vala vala/api/io.vala vala/api/project.vala vala/api/utils.vala vala/grava/default_layout.vala vala/grava/widget.vala vala/list.vala
+description:
+* Fix grava node move with mouse (no zoom yet)
+ - Add zoom buttons to GUI
+ - Update graph after after adding breakpoints
+ - Add 'sparc' in gui arch combo
+* Back to use objdump
+* Some fixups in native vala gui frontend build
+
+
+changeset:   239:336b8056cf4c
+user:        pancake <youterm.com>
+date:        Sat Jun 14 18:28:45 2008 +0200
+files:       TODO src/arch/mips/code.c src/arch/mips/mips-dis.c src/arch/mips/vm.c src/arch/x86/vm.c src/cmds.c src/code.h src/config.c src/dbg/arch/i386-bp.c src/dbg/arch/mips64-bp.c src/grava.c src/objects.mk src/plug/hack/radare.lua src/rdb.c src/rdb.h src/readline.c src/udis.c src/utils.c src/visual.c src/vm.c
+description:
+* Initial implementation of the 'av' command
+  - Analyzes the emulation of N opcodes from current seek
+  - calls vm_emulate from vm.c
+  > av 3 @ eip
+* Initial import of the mips vm code
+  - hooked from asm.arch=mips
+* Initial buggy implementation of the xrefs manager
+  - Cx and CX commands to add and remove xrefs (code (x), data (X))
+* Fix some command autocompletions in readline.c
+* Resolve 'here' string in get_offset as config.seek
+* Theorically fix a breakpoint issue on mips64 (needs test)
+
+
+changeset:   238:acff1c4d9daa
+user:        pancake <youterm.com>
+date:        Sat Jun 14 15:24:59 2008 +0200
+files:       TODO doc/fortunes src/arch/x86/code.c src/arch/x86/vm.c src/cmds.c src/code.h src/grava.c src/objects.mk src/plug/hack/radare.lua src/radare.c src/rdb.c src/vm.c
+description:
+* Initial implementation of the multi-arch virtual machine
+  - Allows to emulate register changes while disassembling or debugging
+  - Register Jump/Call/interrupt vector prediction
+  - Single interface for register name resolution
+  - add arch/x86/vm.c
+  - ATM is very basic interface
+* Initial integration of the x86 code analyzer with the vm
+* Make the 'ab' command accessible from the radare lua api
+  - code_block = Radare.Analyze.block(0x8049430)
+  print("Number of calls: "..code_block['n_calls'])
+* 'm'ove command shows help before checking file.write
+
+
+changeset:   237:9c728b23728f
+user:        panda@panda0
+date:        Fri Jun 13 01:36:52 2008 -0700
+files:       TODO src/analyze.c src/arch/x86/code.c src/cmds.c src/dbg/arch/i386.c src/dbg/bp.c src/radare.h src/rdb.c src/rdb.h
+description:
+* Fix lot of code analysis issues related to long vs u64 addresses
+  - New command 'ab' analyze block
+* Fix x86 call address for arch_aop
+* Make the arch_syscall work on FreeBSD/x86 (should work on others bsds)
+  - Needs at least one step to launch a syscall
+
+
+changeset:   236:ea43b2b4b366
+user:        pancake <youterm.com>
+date:        Fri Jun 13 03:04:09 2008 +0200
+files:       TODO doc/fortunes src/binparse.c src/binparse.h src/rabin/rabin.c src/search.c
+description:
+* Fix the search engine ancient bug
+  - Ow yeah
+
+
+changeset:   235:d355955084cd
+user:        pancake <@youterm.com>
+date:        Wed Jun 11 20:12:19 2008 +0200
+files:       gui/main.c gui/toolbar.c src/config.c src/dbg/arch/i386.c src/dbg/debug.c
+description:
+* Show MMX registers in the linux/x86 debugger
+* Add child.stdio to change stdin,stdout,stderr to another terminal
+  - use O_NOCTTY if the target file already exists
+  $ radare -e child.stdio=/dev/pts/4 -d /bin/ls
+  - inspired in the 'tty' command of gdb
+* Fix build of the GUI for maemo
+
+
+changeset:   234:a92447e06459
+user:        pancake <youterm.com>
+date:        Wed Jun 11 18:32:41 2008 -0400
+files:       TODO libexec/syms src/arch/mips/gnudismips.c src/udis.c
+description:
+* Add big endian support to the MIPS disassembler
+* Reorganize TODO file
+* Use readelf instead of objdump in rsc syms (much faster!)
+* Handle "x86" asm.arch like "intel" or "intel32"
+
+
+changeset:   233:9168f876e44f
+user:        pancake <youterm.com>
+date:        Wed Jun 11 04:24:18 2008 +0200
+files:       scripts/anal.lua src/arch/mips/code.c src/code.h src/plug/hack/radare.lua src/udis.c
+description:
+* Some more opcodes handled by the mips code analyzer
+  - add LOAD and STORE opcode types in code.h
+* Initial implementation of the Radare.Analyze API
+  - Add anal.lua as an example of use
+* Fix the disassembler offset in internal buffer
+
+
+changeset:   232:3c736aee5271
+user:        pancake <youterm.com>
+date:        Wed Jun 11 03:53:10 2008 +0200
+files:       src/print.c src/udis.c
+description:
+* Optimize and enhace is_cursor
+  - Make it detect if the cursor is 'inside' a opcode
+  - Cursor can be '*' or '>' now
+
+
+changeset:   231:ccd34e6e8eba
+user:        pancake <youterm.com>
+date:        Wed Jun 11 03:42:12 2008 +0200
+files:       TODO config.mk.acr configure configure.acr scripts/lua/posix/Makefile scripts/lua/posix/modemuncher.c scripts/lua/posix/posix.c src/arch/x86/code.c src/cmds.c src/dbg/arch/arch.h src/dbg/arch/i386.c src/plug/hack/Makefile src/print.c src/udis.c src/utils.c
+description:
+* Add LANG_LUA checks from ACR 0.7
+  - Use it for proper building the lua plugin
+  - --includedir and --libdir setup cflags and ldflags now
+* Import luaposix plugin
+* Add 'wF' command to write from an hexpair based file
+* Make nonverbose disassembly happy with non-x86
+  - Make ao command work better
+  - Better asm.arch parser
+
+
+changeset:   230:5c0880d44a02
+user:        pancake <@youterm.com>
+date:        Tue Jun 10 17:11:05 2008 +0200
+files:       TODO scripts/vozme.lua src/arch/mips/code.c src/arch/x86/udis86/syn-pseudo.c src/cons.c src/dbg/arch/arm.c src/dbg/arch/i386-bp.c src/dbg/bp.c src/dbg/debug.c src/dbg/unix/syscall.c src/visual.c
+description:
+* Fix breakpoints again!
+  - just ignore bp event if we're stepping
+* Do not show dupped info in asm.syntax=pseudo
+* Make arch_print_syscall be built on arm
+* if inc > bs then inc = bs (Thanks thij!)
+* add mips code analysis documentation in mips/code.c
+
+
+changeset:   229:7d827eac99cc
+user:        pancake <youterm.com>
+date:        Tue Jun 10 05:10:46 2008 +0200
+files:       src/analyze.c src/arch/x86/code.c src/cmds.c src/cmds.h src/code.h src/config.c src/config.h src/grava.c src/print.c src/udis.c
+description:
+* Make 'q!' command quit without prompting
+* Modularize udis_arch_opcode (needs more work)
+  - Some refactoring work on the code analyzer engine
+  - Enhacements for x86-code-analysis
+  - config.arch for faster fun
+* Move code analysis print functions to a new command called 'a'nalyze
+  - pG is now called ag  ; generates graph
+  - pC is now called ac  ; code (deprecated)
+  - pA is now called ad  ; data (deprecated)
+  - 'ao' analyzes a opcode showing the attributes
+	index = 0
+	opcode = mov eax, esp
+	size = 2
+	type = move
+	bytes = 89 e0
+	base = 0xb7f8b8c0
+	jump = 0x00000000
+	fail = 0x00000000
+  - very useful for code analysis and scripting
+  !WARNING! old print commands will be deprecated!
+* Previous commit fixes a segfault with dietlint and ^W
+
+
+changeset:   228:92bb11fa2257
+user:        pancake <youterm.com>
+date:        Tue Jun 10 03:42:35 2008 +0200
+files:       TODO scripts/opcleaner.lua scripts/vozme.lua src/cmds.c src/config.c src/config.h src/dietline.c src/plug/hack/radare.lua src/radare.c
+description:
+* Fix pipes '>' in the shell \o/
+* Enhacements on the radare lua api
+  - Config.verbose( level ) new method
+  - make radare_init get a bool argument to init or reinit
+* Add 'ereset' (aka 'er' command to eval reset)
+* New script to read (using vozme) the opcodes
+  - Uses the new api for Config.restore
+
+
+changeset:   227:1dc80c54a6c6
+user:        pancake <youterm.com>
+date:        Fri Jun 06 02:56:01 2008 +0200
+files:       libexec/Makefile libexec/elf-prg-maps libexec/flag-sections src/analyze.c src/config.c src/flags.c src/print.c
+description:
+* Add rsc elf-prg-maps
+  - To flag all the program maps of an ELF file using readelf
+  - Handles note sections useful for core files
+* Fix pA print mode to analyze the whole block size
+  - Add cfg.analdepth to make the pA analyze in more levels
+* Fix \n problem in 'fg' (flag grep) command
+
+
+changeset:   226:d72e8221dcd5
+parent:      222:fc5fd1ec5b91
+parent:      225:a3228b563a64
+user:        pancake <youterm.com>
+date:        Fri Jun 06 00:50:20 2008 +0200
+description:
+* Merge lua branch
+
+
+changeset:   225:a3228b563a64
+parent:      224:3d6c63721278
+parent:      223:32412dc54941
+user:        pancake <@youterm.com>
+date:        Thu Jun 05 17:08:47 2008 +0200
+files:       gui/main.c
+description:
+* Branch merge!
+
+
+changeset:   224:3d6c63721278
+parent:      218:9f20b813ef25
+user:        pancake <@youterm.com>
+date:        Thu Jun 05 17:07:57 2008 +0200
+files:       gui/main.c gui/menubar.c src/rasc/shellcodes.c
+description:
+* Fix shellcode length for rasc (thx whatsup)
+  - add 23byte bsd shellcode
+* Some gui todo as comments
+
+
+changeset:   223:32412dc54941
+parent:      221:88cdd6b7b5b9
+user:        pancake <youterm.com>
+date:        Thu Jun 05 18:42:06 2008 -0400
+files:       doc/gdb.scripts src/dbg/arch/arm-bp.c src/dbg/arch/mips64-bp.c src/dbg/arch/mips64.c src/dbg/debug.c src/dbg/unix/syscall.c
+description:
+* Make debug_skip be portable using arch_aop
+  - works on arm and mips64 now!
+* Minor code cleanup
+
+
+changeset:   222:fc5fd1ec5b91
+user:        pancake <youterm.com>
+date:        Fri Jun 06 00:49:47 2008 +0200
+files:       libexec/flag-sections scripts/opcleaner.lua src/plug/hack/Makefile src/plug/hack/luaedit.c src/plug/hack/radare.lua src/visual.c
+description:
+* Initial import of the lua script editor in gtk
+  - needs more work. this is just a sketch
+  - H luaedit
+* Initial import of the opcleaner.lua script
+  - Enhacementes on the radare.lua API
+* Make flag-sections show _end of sections
+  - useful to get ranges of .text section, etc..
+
+
+changeset:   221:88cdd6b7b5b9
+user:        pancake <youterm.com>
+date:        Thu Jun 05 05:25:33 2008 +0200
+files:       src/cons.c src/cons.h src/dietline.c src/radare.c src/visual.c
+description:
+* Fix fgets for assembly insertion
+ - 'a' key in visual mode
+ - Add more opcodes
+
+
+changeset:   220:594aabbfb091
+user:        pancake <youterm.com>
+date:        Thu Jun 05 05:09:19 2008 +0200
+files:       TODO libexec/Makefile src/cons.c src/cons.h src/flags.c src/radare.c src/utils.c src/utils.h src/visual.c
+description:
+* Add rsc sections-flag in Makefile
+* Make dietline cons_fgets be modular
+  - Supports multiple sets of commands
+* Document 'fg' command
+  - Use radare_seek properly
+* Add memcpy_loop in utils.h
+* Add support for endian address conversion in hexstr2binstr fun
+  - Accessible with /x, wx, etc...
+  - Useful to write addresses in memory
+    > wx 00 00 0x8048312 00 00
+* Rehabilite the 'w' command in visual mode to write hexstrings
+  - If range of bytes are selected with cursor the whole block is filled
+    - this is useful for nopping or blanking areas
+
+
+changeset:   219:899feb6c1c23
+user:        pancake <youterm.com>
+date:        Thu Jun 05 04:02:09 2008 +0200
+files:       TODO gui/main.c libexec/flag-sections src/cmds.c src/config.c src/dbg/close.c src/dbg/darwin/debug.c src/dbg/debug.c src/dbg/libps2fd.c src/dbg/system.c src/dbg/unix/debug.c src/dbg/win32/debug.c src/dietline.c src/dietline.h src/flags.c src/flags.h src/main.c src/radare.c src/radare.h src/readline.c src/readline.h src/utils.c src/utils.h src/visual.c
+description:
+* New flag commands: 'fc' and 'fg'
+  - fc : define a command to be executed to print this flag
+  - fg : flag grep. greps flag names with nicer output
+  - The new 'eval flag.cmds' has beed created to enable or
+    disable the commands.
+* Initial import of rsc flag-sections
+* Initial import of dl_callback for dietline
+  - Support for ^U and ^Y (copy pasta for the shell)
+  - Fix stdin issues when using pipes in dietline
+  - Fix dl_hist_free out of range array access
+  - First steps for full dietline autocompletion
+* Reduce debugger help command list
+* Wrap kill syscall to avoid massive kills (pid=-1)
+* The '.' in cursor+visual mode seeks to
+* Some refactoring
+
+
+changeset:   218:9f20b813ef25
+user:        pancake <@youterm.com>
+date:        Tue Jun 03 20:05:01 2008 +0200
+files:       TODO gui/main.c gui/toolbar.c
+description:
+* Fix vte shrink
+
+
+changeset:   217:b7ae6035ff5b
+user:        pancake <@youterm.com>
+date:        Tue Jun 03 11:52:31 2008 +0200
+files:       gui/main.c gui/toolbar.c src/dbg/arch/i386-bp.c src/dbg/debug.c src/dbg/debug.h src/dbg/system.c src/udis.c src/visual.c
+description:
+* More fixups for F1-4 keys
+  - Refactor visual_f(int key) keys
+* Add vte-based manpage reader for gradare
+  - indent it
+* Make !wp show help if no wps defined
+  - Code cleanup
+
+
+changeset:   216:d036155dc50b
+user:        pancake <youterm.com>
+date:        Tue Jun 03 10:20:59 2008 +0200
+files:       TODO src/arch/x86/code.c src/cons.c src/dbg/arch/i386-bp.c src/dbg/bp.c src/dbg/debug.c src/dbg/debug.h src/dbg/mem.c src/dbg/objects.mk src/dbg/signal.c src/dbg/unix/debug.c src/visual.c
+description:
+* Lot of work on the breakpoint refactoring front
+  - Needs more work, but for soft bps is cleaner than before
+  - More refactoring on the debugger side
+  - ABI changed (now breakpoints are 64bit addressable)
+  - debug_bp_restore now makes it stop where it should (on x86)
+* Fix visual ESC keys handling
+  - Double <ESC> makes the visual to quit
+  - F5 changes current EIP
+
+
+changeset:   215:3a21a9ba9f2e
+user:        pancake <youterm.com>
+date:        Mon Jun 02 02:49:24 2008 +0200
+files:       TODO libexec/idc2rdb src/config.c src/cons.c src/radare.c src/rasc/shellcodes.c src/rasm/examples/selfstop.rasm src/rasm/rasm.c src/rasm/rasm.h src/rasm/x86.c
+description:
+* Initial import of idc2rdb (import IDA comments and symbols)
+* Add functional example of 'rasm' shellcode
+* Add 'scr.tee' to tee the output of the screen to a file
+* Handle ^C sending a SIGSTOP to the child
+* Add shellcodes of selfsigstop for linux and bsd x86
+* Lot of fixups in rasm for directives
+  - Initial mov eax, reg
+  - Added jz and jnz
+  - Fixed jmp and call delta offsets
+  - Add pusha and popa opcodes
+
+
+changeset:   214:061a66c1be5f
+user:        pancake <youterm.com>
+date:        Sun Jun 01 22:22:59 2008 +0200
+files:       gui/main.c src/dbg/debug.c
+description:
+* Use 'pd' for !trace :)
+* Fix build of gui
+
+
+changeset:   213:0141e52f53d4
+user:        pancake <youterm.com>
+date:        Sun Jun 01 15:00:51 2008 +0200
+files:       TODO libexec/gokolu src/dbg/debug.c src/visual.c
+description:
+* Fix gokolu to work with current google output
+* Make the 'i'nsert mode more pleasant
+  - show insert mode in visual prompt
+  - can use +-*/ for resizing and HJKL for moving
+  - can use any available print mode for inserting
+    (assume consequences until full support done)
+
+
+changeset:   212:1e3dd0b999ef
+user:        pancake <youterm.com>
+date:        Sun Jun 01 13:51:25 2008 +0200
+files:       TODO src/Makefile.acr src/dbg/open.c src/hasher/hash.c src/hasher/hash.h src/main.c src/rasm/x86.c
+description:
+* Show PID after attach
+* Fix hash_par segfault
+* Make -d pid work in radare
+* Add jmp [reg] and [reg+delta] opcodes to x86/rasm
+
+
+changeset:   211:58e9b1f323c8
+user:        pancake <youterm.com>
+date:        Sun Jun 01 13:20:38 2008 +0200
+files:       TODO config.mk.acr libexec/adict libusbsniff/libusbsniff.c src/Makefile.acr src/rasc/rasc.c src/rasc/shellcodes.c src/rasm/main.c src/rasm/x86.c
+description:
+* s/OSOLIBS/SOLARIS/g
+* Add 'enter' and 'leave' opcode descriptions in 'rsc adict'
+* Fix usb_bulk_write signature (thx nibble!)
+  - Fix rasc build and sysproxy path
+* Add -e flag to rasc to output escapped string format (for perl and so)
+  - fix some shellcodes (x86.bsd.bind4444 was not ok)
+* Add 'pop' opcode to the rasm assembler for x86
+
+
+changeset:   210:d790f7f8022a
+user:        pancake <@youterm.com>
+date:        Fri May 30 19:28:22 2008 +0200
+files:       src/rasm/x86.c
+description:
+* Add 'call (reg)' and 'jmp (reg)' for rasm/x86
+
+
+changeset:   209:7c680c1634d6
+user:        pancake <@youterm.com>
+date:        Fri May 30 17:32:45 2008 +0200
+files:       Makefile.acr man/hasher.1 man/radare.1 man/radiff.1 man/rasc.1 man/rasm.1 rasc/Makefile rasc/b2a.pl rasc/dump_sh.c rasc/listeners/getsock.S rasc/listeners/lis_socket_tcp.S rasc/listeners/lis_socket_udp.S rasc/rasc.c rasc/rasc.h rasc/rpc.c rasc/shellcodes.c rasc/sp.h rasc/syscall-linux.c rasc/syscall.S rasc/syscalls.h rasc/sysproxy.c rasc/test.c rasc/test_sp.c rasc/test_srv.c rasc/test_srv1.c src/Makefile.acr src/radiff/radiff.c src/rasc/Makefile src/rasc/b2a.pl src/rasc/dump_sh.c src/rasc/listeners/getsock.S src/rasc/listeners/lis_socket_tcp.S src/rasc/listeners/lis_socket_udp.S src/rasc/rasc.c src/rasc/rasc.h src/rasc/rpc.c src/rasc/shellcodes.c src/rasc/sp.h src/rasc/syscall-linux.c src/rasc/syscall.S src/rasc/syscalls.h src/rasc/sysproxy.c src/rasc/test.c src/rasc/test_sp.c src/rasc/test_srv.c src/rasc/test_srv1.c src/rasm/main.c src/rasm/x86.c
+description:
+* Move rasc to src/rasc
+* Update radare manpage
+  - Add manpages for radiff and rasm
+* Some minor fixups
+
+
+changeset:   208:66aa782d09fd
+user:        pancake@localhost
+date:        Fri May 30 13:43:01 2008 +0200
+files:       configure src/dbg/libps2fd.h src/dbg/objects.mk src/dbg/regs.h src/udis.c
+description:
+* Fix SunOS case sensitive problem
+* Initial ptrace overview for solaris
+  - i86pc -> i386
+  - ptrace(3) have no enums, hardcoded numbers only
+* Fix height in disasembly
+
+
+changeset:   207:09cfa1bb0779
+user:        pancake@localhost
+date:        Fri May 30 13:15:07 2008 +0200
+files:       config.mk.acr configure rasc/Makefile src/Makefile.acr src/code.h src/project.c
+description:
+* Fix ACR to support OpenSolaris (SunOS/Solaris)
+  - Lowercase it
+* Use ${OSOLIBS} to link radare against libsocket and libnsl
+  on OpenSolaris
+* Export comments list in code.h
+
+
+changeset:   206:04a8a8377185
+user:        pancake <@youterm.com>
+date:        Fri May 30 12:55:45 2008 +0200
+files:       configure
+description:
+* New fixup from acr 0.7
+
+
+changeset:   205:05194093b753
+user:        pancake <youterm.com>
+date:        Fri May 30 05:22:05 2008 +0200
+files:       configure gui/main.c
+description:
+* Upload configure script generated with ACR v0.7
+  - Speeding with sed
+  - Theorically fixes the problem in OpenSolaris
+* Fix build of the gui
+
+
+changeset:   204:f14b4ad19ccf
+user:        pancake <youterm.com>
+date:        Fri May 30 04:52:51 2008 +0200
+files:       TODO doc/fortunes gui/main.c src/code.h src/config.c src/radare.h src/udis.c src/visual.c
+description:
+* Add '-d flag to gradare
+* Refactor comment_t and data_t to code.h
+* Fix file.baddr=0
+* Make assembly folders work with file.baddr
+* Drop %, w and W keys of visual mode
+  - Make use of 'i' or shell commands like 'wx'
+* Fix cursor code folding forward and backward
+  - handles file.baddr properly
+
+
+changeset:   203:444cedf05745
+user:        pancake <youterm.com>
+date:        Fri May 30 02:52:51 2008 +0200
+files:       src/cmds.c src/config.c src/dbg/arch/arch.h src/dbg/arch/i386.c src/dbg/arch/powerpc-bp.c src/dbg/arch/powerpc-hack.c src/dbg/arch/powerpc.c src/dbg/darwin/debug.c src/dbg/objects.mk src/dbg/unix/syscall.c src/dbg/win32/debug.c src/utils.c
+description:
+* Fix '?' command column tabs
+* Fix #ifdef for powerpc in config.c
+  - dump_eflags code cleanup
+  - move getHTTPDate to utils
+* Strip syscall.c from i386 to unix
+* Initial import of the powerpc debugger stub
+  - warnings with stuff to do
+
+
+changeset:   202:71fc27147c35
+user:        pancake <youterm.com>
+date:        Thu May 29 23:41:47 2008 -0400
+files:       TODO src/dbg/unix/debug.c
+description:
+* Fixes on the mips64 process status handler
+  - Dumps a piece of code when unaligned access smashes the cpu
+
+
+changeset:   201:6e136c8baba0
+user:        pancake <youterm.com>
+date:        Thu May 29 19:58:33 2008 -0400
+files:       src/config.c src/dbg/arch/arch.h src/dbg/arch/mips64.c src/dbg/debug.c src/dbg/debug.h src/dbg/system.c src/radare.c
+description:
+* Add dbg.fpregs to view fpregs in debugger view
+* Oops. fix !jmp and !call
+  - Make !jmp work on mips
+
+
+changeset:   200:fd7794db8034
+user:        pancake <youterm.com>
+date:        Thu May 29 17:34:29 2008 -0400
+files:       TODO configure rasc/shellcodes.c src/config.c src/dbg/unix/debug.c src/print.c
+description:
+* Fix acr problem with OpenSolaris awk
+* Fix build for rasc
+* Show fpregs in mips by default
+* Handle mips6t4 (ls2f) exception values
+
+
+changeset:   199:4645c8c7f6a4
+user:        pancake <@youterm.com>
+date:        Wed May 28 19:23:54 2008 +0200
+files:       rasc/shellcodes.c src/dbg/debug.c
+description:
+* Add nopcode stack carver
+* Add shellcodes for osx on x86 and ppc
+  - Also dual one
+* Add dummy 'cpuid' code.
+
+
+changeset:   198:670b45b98d95
+parent:      196:5b2184ba62b1
+parent:      197:b3bdca1f143a
+user:        pancake <youterm.com>
+date:        Wed May 28 04:54:41 2008 +0200
+files:       src/dbg/arch/i386.c src/dbg/unix/debug.c src/radare.c
+description:
+* Merge freebsd branch
+  - Fix radare_cmd bug while parsing end of string spaces
+
+
+changeset:   197:b3bdca1f143a
+parent:      195:3db23795670b
+user:        pancake <youterm.com>
+date:        Wed May 28 04:48:50 2008 +0200
+files:       src/config.c src/dbg/arch/i386-bp.c src/dbg/arch/i386.c src/dbg/debug.c src/dbg/mem.c src/dbg/unix/debug.c src/plug/io/debug.c src/radiff/bdiff/Makefile
+description:
+* Fix radare debugger on FreeBSD (waitpid problem)
+* Use software breakpoints by default on FreeBSD
+- Initial implementation of Hardware breakpoints for FreeBSD
+  - dr_get() and dr_set()
+* Snippet code for fpregs and xmmregs on freebsd
+* Implement !maps for FreeBSD
+
+
+changeset:   196:5b2184ba62b1
+user:        pancake <youterm.com>
+date:        Wed May 28 03:16:56 2008 +0200
+files:       src/dbg/arch/i386.c src/dbg/debug.c src/dbg/mem.c src/dbg/unix/debug.c src/plug/io/debug.c src/radiff/bdiff/Makefile
+description:
+* Fix debug_waitpid for FreeBSD
+  - the debugger is working again
+* Fix !mp help message (format string problem)
+
+
+changeset:   195:3db23795670b
+user:        pancake <youterm.com>
+date:        Wed May 28 03:05:17 2008 +0200
+files:       TODO src/dbg/debug.c src/print.c src/udis.c
+description:
+* Fix !signal segfault
+* Make 'pd' command work again
+  - udis.c needs more love
+
+
+changeset:   194:bda5eef1f328
+user:        pancake <youterm.com>
+date:        Tue May 27 05:00:22 2008 +0200
+files:       gui/main.c
+description:
+* Fix gui consistence bug hpaned -> hbox
+
+
+changeset:   193:5a909ba1d57b
+user:        pancake <youterm.com>
+date:        Tue May 27 04:21:26 2008 +0200
+files:       TODO src/cons.c src/dbg/debug.c src/grava.c src/plugin.c src/radare.c src/radare.h src/udis.c src/visual.c
+description:
+* Add <hr /> to cons_printf
+* Split monitors_run() and call it from graph and visual
+* Fix radare_cmd("") and pD usage
+* Show flags for all jumps (>10)
+* Fix number of lines for pD in visual mode
+  - Better control of screen
+
+
+changeset:   192:bffae661cac7
+user:        pancake <youterm.com>
+date:        Tue May 27 03:36:21 2008 +0200
+files:       TODO src/arch/x86/code.c src/config.c src/cons.c src/dbg/debug.c src/flags.c src/flags.h src/io.c src/print.c src/udis.c src/utils.h
+description:
+* Lot of small bugs found in a talk
+  - code analysis returns invalid pointers
+* Add scr.html boolean to output html instead of ansi
+* Fix flag_name_by_offset problems in udis
+  - Fixes the asm.flags and asm.flagsline weirdness
+* Show labels in keybind aop.jumps
+* Make 'pd' command disasemble 'n' opcodes
+  - no longer use objdump
+
+
+changeset:   191:29303d20e107
+user:        pancake <@youterm.com>
+date:        Mon May 26 13:48:50 2008 +0200
+files:       dist/maemo/Makefile gui/gradare.desktop gui/grsc/Shell
+description:
+* Up version and fix the missing gradare entry
+- fix install for the maemo menu
+
+
+changeset:   190:882b25102db1
+user:        pancake <@youterm.com>
+date:        Mon May 26 12:57:58 2008 +0200
+files:       Makefile.acr config.mk.acr src/plug/hack/Makefile
+description:
+* Use 'install' program to install plugins
+  - fixes dlopen map-populate bug
+  - Thanks sha0 and gerardo for the tips! :)
+* Fix build for lua plugin (try -llua and -llua5.1)
+  - ubuntu friendly
+
+
+changeset:   189:5d2c67b3298e
+user:        pancake <@youterm.com>
+date:        Fri May 23 13:52:33 2008 +0200
+files:       configure configure.acr libexec/Makefile libexec/boomerang src/environ.c
+description:
+* Up to 0.9.7
+* Add support for boomerang
+  - decompilation of functions in the fly
+  - Implemented as 'rsc' script.
+  - export XOFFSET envvar
+* Usage: !rsc boomerang $FILE $XOFFSET
+
+
+changeset:   188:7d1402af39ad
+user:        pancake <youterm.com>
+date:        Fri May 23 02:32:46 2008 +0200
+files:       Makefile.acr src/arch/sparc/sparc-dis.c src/rabin/Makefile src/radiff/Makefile src/w32utils.c
+description:
+* Fix build for mingw32
+* Proper handle of ${BINSFX}
+* Add w32dist make target
+
+
+changeset:   187:e195042eaf68
+user:        pancake <@youterm.com>
+date:        Wed May 21 16:57:03 2008 +0200
+files:       ChangeLog configure configure.acr gui/Makefile gui/grsc/Shell scripts/search-demo.lua
+description:
+* radare 0.9.6 released!
+  - We need at least valac 0.3.3 (svn one)
+  - Fix warning from configure.acr script
+  - Update changelog for the release
+
 === 0.9.6 ===
 
 changeset:   186:d578e87649db
