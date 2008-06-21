@@ -13,7 +13,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO}  gtk-hello.${SO} luaedit.${SO}
+all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO}
 
 #perl.${SO}
 
@@ -23,8 +23,11 @@ hello.${SO}:
 gtk-hello.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-hello.c -I ../.. -fPIC -shared -g -o gtk-hello.${SO}
 
-luaedit.${SO}:
-	-${CC} `pkg-config gtk+-2.0 --cflags --libs` luaedit.c -I ../.. -fPIC -shared -g -o luaedit.${SO}
+scriptedit.${SO}:
+	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
+
+python.${SO}:
+	-${CC} python.c ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO}
 
 #perl.${SO}:
 #	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
@@ -34,12 +37,12 @@ lua.${SO}: lua.o
 	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
 
 install:
-	-[ -e lua.${SHARED_EXT} ] && ${INSTALL_LIB} lua.${SHARED_EXT} ${LIBDIR}/radare
-	-[ -e hello.${SHARED_EXT} ] && ${INSTALL_LIB} hello.${SHARED_EXT} ${LIBDIR}/radare
-	-[ -e gtk-hello.${SHARED_EXT} ] && ${INSTALL_LIB} gtk-hello.${SHARED_EXT} ${LIBDIR}/radare
-	-[ -e luaedit.${SHARED_EXT} ] && ${INSTALL_LIB} luaedit.${SHARED_EXT} ${LIBDIR}/radare
-	-[ -e perl.${SHARED_EXT} ] && ${INSTALL_LIB} perl.${SHARED_EXT} ${LIBDIR}/radare
-	-[ -e python.${SHARED_EXT} ] && ${INSTALL_LIB} python .${SHARED_EXT} ${LIBDIR}/radare
+	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${LIBDIR}/radare
+	-[ -e hello.${SO} ] && ${INSTALL_LIB} hello.${SO} ${LIBDIR}/radare
+	-[ -e gtk-hello.${SO} ] && ${INSTALL_LIB} gtk-hello.${SO} ${LIBDIR}/radare
+	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${LIBDIR}/radare
+	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${LIBDIR}/radare
+	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${LIBDIR}/radare
 
 clean:
 	-rm -f *.${SHARED_EXT} *.o

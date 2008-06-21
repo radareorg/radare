@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# Author: pancake <youterm.com>
+#
+
+if [ -z "$RADARE_WAITER_CMD" ]; then
+	RADARE_WAITER_CMD="radare -d"
+fi
+
+if [ -z "$1" ]; then
+	echo "Usage: rsc waiter <pid>|<process-name> <sleep>"
+	echo " Waits for a child of pid or process-name created"
+	echo "RADARE_WAITER_CMD=\"radare -d\""
+	exit
+fi
+
+pid="$1"
+sleep="$2"
+[ -z "$pid" ] && pid=0
+[ -z "$sleep" ] && sleep=0
+
+isnum=$(($pid+1))
+if [ $isnum = 1 ]; then
+	# process name
+	while : ; do
+		for a in /proc/*/stat ; do
+			if [ -f $a ]; then
+				target=`cut -d ' ' -f 1 $a`
+				name=`cut -d ' ' -f 2 $a | tr '()' '  ' | sed -e 's, ,,g'`
+				if [ "$name" = "$pid" ]; then
+					echo "Attaching to $target..."
+					$RADARE_WAITER_CMD $target
+					exit 0
+				fi
+			fi
+		done
+		sleep $sleep
+	done
+else
+	# child of pid
+	while : ; do
+		for a in /proc/*/stat ; do
+			if [ -f $a ]; then
+				target=`cut -d ' ' -f 1 $a`
+				ppid=`cut -d ' ' -f 4 $a`
+				if [ "$ppid" = "$pid" ]; then
+					echo "Attaching to $target..."
+					$RADARE_WAITER_CMD $target
+					exit 0
+				fi
+			fi
+		done
+		sleep $sleep
+	done
+fi

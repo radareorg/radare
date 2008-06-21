@@ -75,7 +75,7 @@
  * add full autocompletion support for dietline
  * make !get work on linux with arch_get_register (currently only works on w32)
  * show labels of all jumps/calls (not only bookmarked ones)
- * make the gui plugins be possible little demo launched from pG
+ * make the gui plugins be possible little demo launched from ag
  * implement waiter for radare debugger as an rsc script
  * make fixed nodes fixed to the graph view
  * Make spcc be happy with pU (!!spcc $BLOCK $OFFSET) ?

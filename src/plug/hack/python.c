@@ -273,7 +273,7 @@ int epython_destroy()
 	return 0;
 }
 
-void python_cmd(char *input)
+void python_hack_cmd(const char *input)
 {
 	if (rs == NULL)
 		rs = radare_plugin.resolve("radare_cmd_str");
@@ -316,5 +316,5 @@ int radare_plugin_type = PLUGIN_TYPE_HACK;
 struct plugin_hack_t radare_plugin = {
 	.name = "python",
 	.desc = "python plugin",
-	.callback = &python_cmd
+	.callback = &python_hack_cmd
 };
