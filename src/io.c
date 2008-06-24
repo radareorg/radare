@@ -60,10 +60,8 @@ int radare_write(char *arg, int mode)
 	}
 
 	str = strdup(arg);
-	if (arg[0]=='0' && arg[1]=='x'){
+	if (arg[0]=='0' && arg[1]=='x')
 		mode = WMODE_HEX;
-		strcpy(str, str+2);
-	}
 
 	switch(mode) {
 	case WMODE_WSTRING:

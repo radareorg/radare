@@ -599,19 +599,22 @@ int radare_analyze(u64 seek, int size, int depth)
 					cons_printf("(be= %d )", num);
 				if (nume<0xffff)
 					cons_printf(", (le= %d ) ", nume);
-
 				if (num>-0xfffff && num<0xfffff)
 					cons_printf("(%d)\n", num);
 				else
 				if (nume>-0xfffff && nume<0xfffff)
 					cons_printf("(%d)\n", nume);
 				else {
+					unsigned int n = (config.endian)?num:nume;
 					C cons_printf(C_TURQOISE);
 					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
 					radare_cmd(cmd, 0);
 
 					//cons_strcat("     ");
-					radare_analyze((config.endian)?num:nume, size, --depth);
+					if (n == (unsigned int)seek)
+						cons_printf("  (self pointer)\n");
+					else
+						radare_analyze(n, size, --depth);
 
 					config.seek = seek;
 					radare_read(0);

@@ -7,8 +7,10 @@
 
 ===========================================================
 
+
 0.9.8:
 ======
+ * xc is crappy!
  * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
@@ -24,7 +26,6 @@
   - run Cs
   - make Cs support multiple strings at a time
   - split .dbs with flags
- * xc is crappy!
  * Support to change program arguments while running
  * control screen height in cons.c (limit \n per screen)
  * if myinc > len myinc = 1;

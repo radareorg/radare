@@ -553,8 +553,11 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 	unsigned int len = 0, j = 0;
 
 	for (ptr = in; ;ptr = ptr + 1) {
-		if (ptr[0]==':' || ptr[0]==0x52 || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r' || ptr[0]== ' ')
+		//if (ptr[0]!='0' && ptr[1]!='x') {
+		/* ignored chars */
+		if (ptr[0]==':' || ptr[0]=='\n' || ptr[0]=='\t' || ptr[0]=='\r' || ptr[0]==' ')
 			continue;
+
 		if (j==2) {
 			if (j>0) {
 				out[len] = c;
@@ -565,16 +568,22 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 				continue;
 		}
 
+		/* break after len++ */
 		if (ptr[0] == '\0') break;
 
+		//} 
+
 		d = c;
+//		if (ptr[0]=='0' && ptr[1]=='x') ptr = ptr +1;
+#if 0
 		if (hex2int(&c, ptr[0])) {
 			if (ptr[0]=='x' && c==0) {
 				u64 addr   = get_math(ptr-1);
 				unsigned int addr32 = (u32) addr;
-				if (addr &~0xFFFFFFFF) {
+				if (addr & ~0xFFFFFFFF) {
 					// 64 bit fun
 				} else {
+					// TODO: add 16 bit fun ?
 					// 32 bit fun
 					u8 *addrp = (u8*) &addr32;
 					// XXX always copy in native endian?
@@ -591,6 +600,31 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
 			return 0;
 		}
+#else
+			if (ptr[0]=='0' && ptr[1]=='x' ){ //&& c==0) {
+				u64 addr   = get_math(ptr);
+				unsigned int addr32 = (u32) addr;
+				if (addr & ~0xFFFFFFFF) {
+					// 64 bit fun
+				} else {
+					// 32 bit fun
+					u8 *addrp = (u8*) &addr32;
+					// XXX always copy in native endian?
+					out[len++] = addrp[0];
+					out[len++] = addrp[1];
+					out[len++] = addrp[2];
+					out[len++] = addrp[3];
+					while(ptr[0]&&ptr[0]!=' '&&ptr[0]!='\t')
+						ptr = ptr + 1;
+					j = 0;
+				}
+				continue;
+			}
+		if (hex2int(&c, ptr[0])) {
+			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
+			return 0;
+		}
+#endif
 		c |= d;
 		if (j++ == 0) c <<= 4;
 	}

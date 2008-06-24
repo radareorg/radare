@@ -248,11 +248,11 @@ void grava_toggle_fullscreen(GtkWindow *w)
 gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygrava_window *w)
 {
     switch (event->keyval) {
+#if _MAEMO_
     case GDK_F6:
   //      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
 	grava_toggle_fullscreen(w->w);
         return TRUE;
-#if _MAEMO_
     case GDK_F7:
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
 	w->grava->graph->zoom += (GRAVA_WIDGET_ZOOM_FACTOR);
@@ -261,6 +261,10 @@ gboolean grava_key_press_cb(GtkWidget * widget, GdkEventKey * event, struct mygr
     case GDK_F8:
 	w->grava->graph->zoom -= (GRAVA_WIDGET_ZOOM_FACTOR);
         //hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+        return TRUE;
+#else
+    case GDK_F10:
+	grava_toggle_fullscreen(w->w);
         return TRUE;
 #endif
     }
@@ -385,7 +389,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		gtk_text_view_set_editable(GTK_TEXT_VIEW(win->text), 0);
 //gtk_text_buffer_new(NULL);
 		tw2 = gtk_scrolled_window_new(NULL,NULL);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		//gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_NEVER,GTK_POLICY_NEVER);
 		gtk_container_add(GTK_CONTAINER(tw2), win->text);
 		gtk_container_add(GTK_CONTAINER(tw), tw2);
 		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);

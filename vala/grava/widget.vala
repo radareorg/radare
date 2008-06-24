@@ -67,7 +67,8 @@ public class Grava.Widget : GLib.Object {
 		sw = new ScrolledWindow(
 				new Adjustment(0, 10, 1000, 2, 100, 1000),
 				new Adjustment(0, 10, 1000, 2, 100, 1000));
-		sw.set_policy(PolicyType.ALWAYS,PolicyType.ALWAYS);
+		//sw.set_policy(PolicyType.ALWAYS,PolicyType.ALWAYS);
+		sw.set_policy(PolicyType.NEVER, PolicyType.NEVER);
 
 		Viewport vp = new Viewport(
 				new Adjustment(0, 10, 1000, 2, 100, 1000),

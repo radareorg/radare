@@ -195,12 +195,20 @@ int radare_hack_init()
 	list_add_tail(&(hack->list), &(hacks));
 }
 
-int static radare_hack_call(struct hack_t *h, const char *arg)
+#ifdef VALA
+static int gtk_is_init = 0;
+static GtkWindow *w;
+
+static int hack_close_window(/* TODO : get args */)
+{
+	gtk_widget_destroy(w);
+	gtk_main_quit();
+}
+#endif
+
+static int radare_hack_call(struct hack_t *h, const char *arg)
 {
 #ifdef VALA
-  static int gtk_is_init = 0;
-  GtkWindow *w;
-
   if (h->widget != NULL) {
     /* initialize gtk before */
     if (!gtk_is_init) {
@@ -216,6 +224,7 @@ int static radare_hack_call(struct hack_t *h, const char *arg)
     w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_add(GTK_CONTAINER(w), *h->widget);
     gtk_widget_show_all(GTK_WIDGET(w));
+    g_signal_connect (w, "destroy", G_CALLBACK (hack_close_window), w);
     gtk_main();
   } else
 #endif
