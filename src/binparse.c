@@ -239,10 +239,10 @@ tokenlist* get_tok_list(char* line, int maxlen)
 
 	tls->tl = tlist;
 	tls->numtok = ntok;
-	tls->lastpos = 0;
+	/* tls->lastpos = 0; */
 	tls->estat = 0;
 
-	strcpy(tls->name, line+p+1); // XXX bof here
+	strncpy(tls->name, line+p+1, 256);
 	tls->name[strlen(tls->name)-1] = '\0'; 
 
 	return tls;
@@ -348,12 +348,12 @@ static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
 	tls = malloc(sizeof( tokenlist )) ;
 	// TODO mask not yet done
 	len = strlen(token);
-	tlist = malloc( sizeof (token) * len+1 );
+	tlist = malloc( (sizeof (token) * len) + 1 );
 	ntok = tok_parse(token, len, tlist);
 
 	tls->tl = tlist;
 	tls->numtok = ntok;
-	tls->lastpos = 0;
+	/* tls->lastpos = 0; */
 	tls->estat = 0;
 	strcpy ( tls->name , name ); // XXX bof here!
 	

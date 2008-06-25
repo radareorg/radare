@@ -851,7 +851,7 @@ void visual_draw_screen()
 	monitors_run();
 
 	/* HUH */
-	gotoxy(0,0);
+	cons_gotoxy(0,0);
 	cons_clear();
 	V cons_printf("\e[0m");
 

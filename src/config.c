@@ -412,7 +412,7 @@ static int config_limit_callback(void *data)
 
 static int config_arch_callback(void *data)
 {
-	arch_set_callbacks();
+	radis_update();
 
 	return 0;
 }
@@ -749,7 +749,7 @@ void config_init(int first)
 	config_lock(1);
 
 	cons_palette_init(config_get("scr.palette"));
-	arch_set_callbacks();
+	radis_update();
 	vm_init(1);
 
 	if (first) {

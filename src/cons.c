@@ -204,7 +204,7 @@ int cons_set_fd(int fd)
 }
 
 #if __WINDOWS__
-void gotoxy(int x, int y)
+void cons_gotoxy(int x, int y)
 {
         static HANDLE hStdout = NULL;
         COORD coord;
@@ -219,7 +219,7 @@ void gotoxy(int x, int y)
 }
 #else
 
-inline void gotoxy(int x, int y)
+void cons_gotoxy(int x, int y)
 {
 	cons_printf("\e[0;0H");
 }
@@ -239,7 +239,7 @@ void cons_clear(void)
         }
 
         FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
-        gotoxy(0,0);
+        cons_gotoxy(0,0);
 #else
 	write(1, "\e[2J", 4);
 #endif
@@ -285,7 +285,7 @@ int cons_html_print(unsigned char *ptr)
 			} else
 			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
 				ptr = ptr + 4;
-				gotoxy(0,0);
+				cons_gotoxy(0,0);
 				esc = 0;
 				str = ptr;
 				continue;
@@ -388,7 +388,7 @@ int cons_w32_print(unsigned char *ptr)
 			} else
 			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
 				ptr = ptr + 4;
-				gotoxy(0,0);
+				cons_gotoxy(0,0);
 				esc = 0;
 				str = ptr;
 				continue;

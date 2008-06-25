@@ -30,55 +30,6 @@
 /* code analyzer */
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
-// called from env_update
-void arch_set_callbacks()
-{
-	const char *a = config_get("asm.arch");
-	arch_aop = &arch_x86_aop;
-	if (!a) return;
-
-	if (!strcmp(a, "arm")) {
-		arch_aop = &arch_arm_aop;
-		config.arch = ARCH_ARM;
-	} else
-	if (!strcmp(a, "arm16")) {
-		arch_aop = &arch_arm_aop;
-		config.arch = ARCH_ARM16;
-	} else
-	if (!strcmp(a, "java")) {
-		arch_aop = &arch_java_aop;
-		config.arch = ARCH_JAVA;
-	} else
-	if (!strcmp(a, "mips")) {
-		arch_aop = &arch_mips_aop;
-		config.arch = ARCH_MIPS;
-	} else
-	if (!strcmp(a, "ppc")) {
-		arch_aop = &arch_ppc_aop;
-		config.arch = ARCH_PPC;
-	} else
-	if (!strcmp(a, "csr")) {
-		arch_aop = &arch_csr_aop;
-		config.arch = ARCH_CSR;
-	} else
-	if (!strcmp(a, "intel16")) {
-		arch_aop = &arch_x86_aop;
-		config.arch = ARCH_X86;
-	} else
-	if (!strcmp(a, "intel32")) {
-		arch_aop = &arch_x86_aop;
-		config.arch = ARCH_X86;
-	} else
-	if (!strcmp(a, "intel64")) {
-		arch_aop = &arch_x86_aop;
-		config.arch = ARCH_X86;
-	} else
-	if (!strcmp(a, "intel")) {
-		arch_aop = &arch_x86_aop;
-		config.arch = ARCH_X86;
-	}
-}
-
 /* code lines */
 struct reflines_t *code_lines_init()
 {
@@ -369,7 +320,6 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	return 0;
 }
 
-
 int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 {
         struct aop_t aop;
@@ -417,7 +367,6 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
                 } else
 		if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
 			/* TODO : add references */
-//printf("ADD PUSH\n");
 			if (refblocks) {
 				block_add_call(prg, oseek, aop.ref);
 				aop.eob = 1;
@@ -464,7 +413,6 @@ struct program_t *code_analyze(u64 seek, int depth)
 	prg->entry = config.seek;
 
 	radare_controlc();
-	arch_set_callbacks();
 
 	if (config_get("graph.split"))
 		code_analyze_r = &code_analyze_r_split;

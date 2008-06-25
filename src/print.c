@@ -511,7 +511,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		D {} else cons_printf("\n");
 		break;
 	case FMT_DISAS:
-		disassemble( config.block_size, len);
+		radis( config.block_size, len);
 		break;
 	// moved to 'a' command
 #if 0
@@ -552,7 +552,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 #endif
 		break;
 	case FMT_UDIS:
-		disassemble(len, 0);
+		radis(len, 0);
 		break;
 	case FMT_SHORT: {
 		short *s;

@@ -478,11 +478,13 @@ void udis_jump(int n)
 //#define CHECK_LINES printf("%d/%d\n",lines,rows); if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
 #define CHECK_LINES if ( config.visual && len!=config.block_size && (++lines>=rows) ) break;
 
+static int last_arch = ARCH_X86;
+
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
 	unsigned char *b = config.block + bytes;
 	char* hex1, *hex2;
-	int c;
+	int c,ret=0;
 
 	switch(arch) {
 	case ARCH_X86:
@@ -499,10 +501,16 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 				cons_printf("%15s .. ", "");
 			cons_printf("%-16s", hex2);
 		}
-		return ud_insn_len(&ud_obj);
-	case ARCH_CSR: {
+		ret = ud_insn_len(&ud_obj);
+		break;
+	case ARCH_CSR:
 		if (bytes+myinc<config.block_size)
 			arch_csr_disasm((const unsigned char *)b, (u64)seek);
+		break;
+	case ARCH_AOP: {
+		struct aop_t aop;
+		arch_aop(seek, b, &aop);
+		ret = arch_aop_aop(seek, b, &aop);
 		}
 		break;
 	case ARCH_ARM16:
@@ -550,10 +558,11 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		cons_printf("  %s %s", opcode, operands);
 		} break;
 	default:
-		cons_printf("Unknwon architecture\n");
+		cons_printf("Unknown architecture\n");
 		break;
 	}
 	C cons_printf(C_RESET);
+	return ret;
 }
 
 extern int color;
@@ -601,6 +610,7 @@ void udis_arch(int arch, int len, int rows)
 	if (config.visual && rows<1)
 		rows = config.height - ((last_print_format==FMT_VISUAL)?11:0) - config.lines;
 
+	/* XXX dupped move */
 	switch(arch) {
 	case ARCH_X86:
 		udis_init();
@@ -726,6 +736,11 @@ void udis_arch(int arch, int len, int rows)
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);
 		}
+		if (arch==ARCH_AOP) {
+//printf("OLD ARCH %d %d \n", ARCH_X86, last_arch);
+			//radis_update_i(last_arch);
+			arch = last_arch;
+		}
 
 		switch(arch) {
 			case ARCH_X86:
@@ -746,12 +761,10 @@ void udis_arch(int arch, int len, int rows)
 				arch_mips_aop(seek, (const unsigned char *)b, &aop);
 				myinc = aop.length;
 				break;
-#if 0
 			case ARCH_SPARC:
 				arch_sparc_aop(seek, (const unsigned char *)b, &aop);
 				myinc = aop.length;
 				break;
-#endif
 			case ARCH_JAVA:
 				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
 				myinc = aop.length;
@@ -946,52 +959,82 @@ void udis_arch(int arch, int len, int rows)
 	radare_controlc_end();
 }
 
-void disassemble(int len, int rows)
+/* aop disassembler */
+int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
-	char *ptr = config_get("asm.arch");
-
-	if (ptr == NULL) {
-		eprintf("No ARCH defined.\n");
-		return;
+	switch(aop->type) {
+	case AOP_TYPE_NOP:
+		cons_printf("nop");
+		break;
+	case AOP_TYPE_RET:
+		cons_printf("ret");
+		break;
+	case AOP_TYPE_CALL:
+		cons_printf("call 0x%08llx", aop->jump);
+		break;
+	case AOP_TYPE_JMP:
+		cons_printf("jmp 0x%08llx", aop->jump);
+		break;
+	case AOP_TYPE_CJMP:
+		cons_printf("cjmp 0x%08llx", aop->jump);
+		break;
 	}
+	return aop->length;
+}
+
+struct radis_arch_t {
+	const char *name;
+	int id;
+	int (*fun)(u64 addr, u8 *bytes, struct aop_t *aop);
+} radis_arches [] = {
+ { "intel", ARCH_X86, &arch_x86_aop },
+ { "intel16", ARCH_X86, &arch_x86_aop },
+ { "intel32", ARCH_X86, &arch_x86_aop },
+ { "intel64", ARCH_X86, &arch_x86_aop },
+ { "x86", ARCH_X86, &arch_x86_aop },
+ { "mips", ARCH_MIPS , &arch_mips_aop },
+ //{ "aop", ARCH_AOP , &arch_aop_aop },
+ { "arm", ARCH_ARM, &arch_arm_aop },
+ { "arm16", ARCH_ARM16, &arch_arm_aop },
+ { "java", ARCH_JAVA , &arch_java_aop },
+ { "sparc", ARCH_SPARC, &arch_sparc_aop },
+ { "ppc", ARCH_PPC , &arch_ppc_aop },
+ { "m68k", ARCH_M68K, &arch_m68k_aop },
+ { "csr", ARCH_CSR , &arch_csr_aop },
+ { NULL, -1, NULL }
+};
+
+void radis_update_i(int id)
+{
+	int i;
+	for(i=0;radis_arches[i].name;i++) {
+		if (radis_arches[i].id == id) {
+			config.arch = radis_arches[i].id;
+			arch_aop    = radis_arches[i].fun;
+			break;
+		}
+	}
+}
+
+void radis_update()
+{
+	char *arch = config_get("asm.arch");
+	int i;
+	for(i=0;radis_arches[i].name;i++) {
+		if (!strcmp(arch, radis_arches[i].name)) {
+			config.arch = radis_arches[i].id;
+			arch_aop    = radis_arches[i].fun;
+			break;
+		}
+	}
+}
+
+void radis(int len, int rows)
+{
+	/* not always necesary necessary 
+	radis_update(); */
 
 	radare_controlc();
-
-	// TODO: move to config.c
-
-	/* handles intel16, intel32, intel64 */
-	if (!memcmp(ptr, "intel", 5))
-		udis_arch(ARCH_X86, len,rows);
-	else
-	if (!memcmp(ptr, "x86", 3))
-		udis_arch(ARCH_X86, len,rows);
-	else
-	if (!strcmp(ptr, "mips"))
-		udis_arch(ARCH_MIPS, len,rows);
-	else
-	if (!strcmp(ptr, "arm"))
-		udis_arch(ARCH_ARM, len,rows);
-	else
-	if (!strcmp(ptr, "arm16"))
-		udis_arch(ARCH_ARM16, len,rows);
-	else
-	if (!strcmp(ptr, "java"))
-		udis_arch(ARCH_JAVA, len, rows);
-	else
-	if (!strcmp(ptr, "sparc"))
-		udis_arch(ARCH_SPARC, len, rows);
-	else
-	if (!strcmp(ptr, "ppc"))
-		udis_arch(ARCH_PPC, len, rows);
-	else
-	if (!strcmp(ptr, "m68k"))
-		udis_arch(ARCH_M68K, len, rows);
-	else
-	if (!strcmp(ptr, "csr"))
-		udis_arch(ARCH_CSR, len, rows);
-	else
-		eprintf("Unknown architecture in asm.arch\n");
-
+	udis_arch(config.arch, len, rows);
 	radare_controlc_end();
-	fflush(stdout);
 }

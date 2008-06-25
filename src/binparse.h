@@ -15,7 +15,7 @@ typedef struct _tokenlist {
 	char name [300];
 	char actp[300]; //aux pel parseig actual
 	int estat;
-	int lastpos;
+	/* int lastpos; XXX unused */
 } tokenlist;
 
 typedef struct _tokenizer {

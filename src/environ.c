@@ -130,7 +130,7 @@ void update_environment()
 {
 	char *ptr;
 
-	arch_set_callbacks();
+	/* radis_update(); */
 
 	config.verbose = config_get("cfg.verbose");
 

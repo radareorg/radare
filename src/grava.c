@@ -115,7 +115,7 @@ static void mygrava_close(void *widget, gpointer obj)
 	gtk_widget_destroy(GTK_WIDGET(w->w));
 	if (--n_windows<0)
 		n_windows = 0;
-printf("N_WINDOWS: %d\n", n_windows);
+//printf("N_WINDOWS: %d\n", n_windows);
 	if (n_windows<1)
 		gtk_main_quit();
 }

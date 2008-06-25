@@ -1,5 +1,6 @@
-/* lua script editor in GTK */
-/* TODO: make it work :) */
+/* license gplv3 */
+/* author pancake */
+/* script editor for radare/gtk */
 
 #include <gtk/gtk.h>
 #include "plugin.h"

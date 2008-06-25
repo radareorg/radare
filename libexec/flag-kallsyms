@@ -1,0 +1,4 @@
+#!/bin/sh
+# only for linux
+#
+cat /proc/kallsyms | awk '{print "f "$3" @ 0x"$1}'
