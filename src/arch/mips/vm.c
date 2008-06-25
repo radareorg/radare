@@ -18,6 +18,7 @@
  *
  */
 
+#include <string.h>
 #include "radare.h"
 #include "code.h"
 

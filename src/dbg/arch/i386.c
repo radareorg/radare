@@ -674,7 +674,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 #endif
 
 	for(i=0;i<8;i++) {
-		u16 *a = &regs.xmm_space;
+		u16 *a = (u16*)&regs.xmm_space;
 		a = a + (i * 4);
 
 		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);

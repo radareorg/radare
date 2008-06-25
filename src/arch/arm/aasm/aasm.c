@@ -773,7 +773,8 @@ boolean input_line(FILE *file, char *buffer, unsigned int max)
 boolean parse_mnemonic_line(char *line, sym_table *a_table, sym_table *t_table,
 		sym_table *d_table)
 {
-	int i, j, k, okay;
+	int j, k, okay;
+	unsigned int i;
 	unsigned int value, token;
 	sym_record *dummy;
 	char buffer[SYM_NAME_MAX + 5];  /* Largest suffix is 5 bytes, inc. terminator */

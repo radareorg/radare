@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007
+ * Copyright (C) 2006-2008
  *       pancake <pancake@youterm.com>
  *
  * + 2006-05-12 Lluis Vilanova <xscript@gmx.net>
@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "hexdump.h"
 
 char getprintablechar(char a)

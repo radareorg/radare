@@ -73,3 +73,4 @@ void cons_newline();
 void cons_set_raw(int b);
 int cons_get_real_columns();
 int cons_get_columns();
+int cons_palette_init(const unsigned char *pal);

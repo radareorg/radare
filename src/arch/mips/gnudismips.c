@@ -41,9 +41,11 @@ static void  print_address(bfd_vma address, struct disassemble_info *info)
 char *gnu_dismips(unsigned char *inst, unsigned long offset)
 {
 	struct disassemble_info info;
+#if 0
 	struct mips_cpu_info *arch_info = {
 		"loongson2f",     0,      ISA_MIPS3,      CPU_LOONGSON_2F
 	};
+#endif
 
 	str[0] = '\0';
 

@@ -186,7 +186,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0xa1: // mov eax, [addr]
 		aop->type = AOP_TYPE_MOV;
 		vm_arch_x86_regs[VM_X86_EAX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
-		radare_read_at((u64)vm_arch_x86_regs[VM_X86_EAX], &(vm_arch_x86_regs[VM_X86_EAX]), 4);
+		radare_read_at((u64)vm_arch_x86_regs[VM_X86_EAX], (unsigned char *)&(vm_arch_x86_regs[VM_X86_EAX]), 4);
 		break;
 		
 	// roll to a switch range case

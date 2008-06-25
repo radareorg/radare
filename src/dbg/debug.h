@@ -94,6 +94,8 @@ addr_t debug_getregister(char *reg);
 //inline int debug_setregs(pid_t pid, regs_t *reg);
 int dispatch_wait();
 int debug_os_init();
+int debug_os_kill(int pid, int sig);
+int debug_cont_until(const char *input);
 void print_wps();
 int rm_wp(int i);
 void print_sigh(char *signame, unsigned long handler);

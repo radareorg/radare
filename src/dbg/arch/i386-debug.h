@@ -13,6 +13,8 @@ struct sf_t {
 };
 
 
+int arch_bp_arm_hw(struct bp_t *bp);
+
 /* Native-dependent code for the i386.
 
    Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.

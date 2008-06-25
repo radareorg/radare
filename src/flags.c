@@ -52,7 +52,7 @@ void flag_help()
 	"  f -sym_*     ; remove all flags starting with 'sym_'\n");
 }
 
-void flags_init()
+void flag_init()
 {
 	INIT_LIST_HEAD(&flags);
 }

@@ -732,7 +732,6 @@ void radare_prompt_command()
 {
 	const char *ptr;
 	char* aux;
-	int tmp; /* preserve print format */
 
 	if (config_get("cfg.vbsze_enabled")) {
 		struct list_head *pos;

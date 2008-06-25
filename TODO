@@ -160,6 +160,7 @@ make fdsniff and usbsniff generate a project file and a binary one.
 
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
 * xc can get_math!
+- -S flag move to rabin
 
 
 
@@ -172,8 +173,8 @@ Imports:
 
 ARM
 ===
-* arm has no backtrace
-- -S flag move to rabin
+* arm backtrace
+- 
 - when runnin to bp says invalid address (uh?)
 
 BUGS:
@@ -224,7 +225,6 @@ Rabin
 * Move radare -S into rabin to find strings in data sections only
   - like gnu strings like bfd does
 
-
 Graphs
 ======
 * identify nodes with 'ret' in graph
@@ -258,7 +258,6 @@ Graphs
   - bp exit
   - useful to reverse packer VMs
   - see what changes in register and memory
-
 
 * exception frame information (try { ... } catch stuff)
 * ram dump driver for w32

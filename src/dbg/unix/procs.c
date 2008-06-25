@@ -73,7 +73,7 @@ int pids_ptrace_all(int pid)
 			if (fd) {
 				mola = 0;
 				fscanf(fd,"%d %s %s %d",
-					&tmp, tmp2, &tmp3, &mola);
+					&tmp, tmp2, tmp3, &mola);
 				if (mola == pid) {
 					//pids_cmdline(p, tmp2);
 					//for(i=0; i<recursive*2;i++)
@@ -92,7 +92,7 @@ int pids_ptrace_all(int pid)
 
 int pids_sons_of_r(int pid, int recursive, int limit)
 {
-	int p,i;
+	int p;
 	int n = 0;
 	int mola;
 	char buf[128];
@@ -143,7 +143,7 @@ int pids_sons_of(int pid)
 
 int pids_list()
 {
-	int i, fd;
+	int i;
 	char cmdline[1025];
 
 	// TODO: use ptrace to get cmdline from esp like tuxi does

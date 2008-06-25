@@ -23,6 +23,8 @@ extern int dl_histidx;
 extern int dl_autosave;
 extern int dl_disable;
 
+int dl_init();
+int dl_hist_load(const char *file);
 extern int dl_readchar();
 extern int dl_hist_add(const char *line);
 extern char *hist_get_i(int p);

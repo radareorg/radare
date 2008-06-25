@@ -428,7 +428,6 @@ int debug_ie(char *input)
 
 int debug_until(char *addr)
 {
-	int bp_pos;
 	u64 off = 0LL;
 	char buf[128];
 	u8 ptr[128];
@@ -781,7 +780,7 @@ int debug_skip(int times)
 	regs_t reg;
 	unsigned char buf[16];
 	struct aop_t aop;
-	int len, size;
+	int len;
 	u64 pc = arch_pc();
 
 	if (ps.opened) {
@@ -860,8 +859,8 @@ int debug_stepbp(int times)
 	int bp0 = -1;
 	int bp1 = -1;
 	unsigned char bytes[32];
-	struct aop_t aop,aop2;
-	int i, len,len2;
+	struct aop_t aop; /* ,aop2; */
+	int i, len; /* ,len2; */
 	addr_t pc = arch_pc();
 
 	debug_read_at(ps.tid,bytes, 32, pc);

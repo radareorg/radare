@@ -62,7 +62,7 @@ int rasm_assemble(char *str)
 	int ret = -1;
 
 	if (str!=NULL)
-		ret = rasm_asm(arch, offset, str, data);
+		ret = rasm_asm(arch, &offset, str, data);
 
 	if (ret <1)
 		eprintf("Unknown arch or opcode. See -l\n");

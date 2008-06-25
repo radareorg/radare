@@ -30,7 +30,7 @@ int arch_ppc_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	// TODO swap endian here??
 	int opcode = (bytes[0] & 0xf8) >> 3; // bytes 0-5
-	short baddr  = (bytes[2]<<8 | bytes[3]&0xfc);// 16-29
+	short baddr  = ((bytes[2]<<8) | (bytes[3]&0xfc));// 16-29
 	int aa     = bytes[3]&0x2;
 	int lk     = bytes[3]&0x1;
 	//if (baddr>0x7fff)

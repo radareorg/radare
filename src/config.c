@@ -519,7 +519,7 @@ void config_init(int first)
 	struct config_node_t *node;
 
 	if (first) {
-		flags_init();
+		flag_init();
 		config_old_init();
 
 		// TODO : dl_callback = radare_dl_autocompletion;

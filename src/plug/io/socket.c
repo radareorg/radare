@@ -53,8 +53,8 @@ ssize_t zocket_read(int fd, void *buf, size_t count)
 					socket_buf = (u8 *)realloc(socket_buf, socket_bufsz+sz);
 				else 	socket_buf = (u8 *)malloc(socket_bufsz+sz);
 				memcpy(socket_buf+(int)socket_bufsz, data, sz);
-				sprintf(data, "_sockread_%d", socket_bufread++);
-				flag_set(data, socket_bufsz, 0);
+				sprintf((char *)data, "_sockread_%d", socket_bufread++);
+				flag_set((char *)data, socket_bufsz, 0);
 				flag_set("_sockread_last", socket_bufsz, 0);
 				socket_bufsz += sz;
 			}
@@ -102,8 +102,6 @@ int zocket_handle_open(const char *pathname)
 
 int zocket_open(const char *pathname, int flags, mode_t mode)
 {
-	int i;
-	char *file;
 	char buf[1024];
 	char *ptr = buf;
 
@@ -134,7 +132,7 @@ int zocket_open(const char *pathname, int flags, mode_t mode)
 		if (socket_fd>=0)
 			printf("Connected to: %s at port %d\n", ptr, atoi(port+1));
 		else	printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
-		socket_buf = (char *)malloc(1);
+		socket_buf = (unsigned char *)malloc(1);
 		socket_bufsz = 0;
 		config_set("file.write", "true");
 		buf[0]='\0';

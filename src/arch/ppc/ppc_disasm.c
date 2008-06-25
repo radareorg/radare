@@ -458,7 +458,7 @@ static void cmp(struct DisasmPara_PPC *dp,ppc_word in)
     if (i)
       dp->flags |= PPCF_64;
     strcpy(dp->opcode,cmpname[((in&PPCIDX2MASK)?2:0)+i]);
-    if (i = (int)PPCGETCRD(in))
+    if ((i = (int)PPCGETCRD(in)))
       oper += sprintf(oper,"cr%c,",'0'+i);
     ra_rb(oper,in);
   }

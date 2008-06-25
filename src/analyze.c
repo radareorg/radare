@@ -94,7 +94,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
 	int bar = config_get_i("asm.nlines");
-	int i, cow= 0;
+	int cow = 0;
 	char ch = ' ';
 
 	if (!list)

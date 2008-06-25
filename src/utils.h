@@ -24,6 +24,7 @@ void cons_printf(const char *format, ...);
 int _strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, char *string);
 char *slurp(char *str);
+int word_count(const char *string);
 
 
 enum {
@@ -101,5 +102,6 @@ int gnu_disarm(unsigned char *address, unsigned long seek);
 char *gnu_dismips(unsigned char *inst, unsigned long offset);
 int iswhitespace(char ch);
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);
+void getHTTPDate(char *DATE);
 
 #endif

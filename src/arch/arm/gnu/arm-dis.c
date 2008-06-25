@@ -31,6 +31,7 @@
 extern int arm_mode;
 
 #include <stdlib.h>
+#include <string.h>
 #ifndef uint32_t
 #define uint32_t unsigned int
 #endif

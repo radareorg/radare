@@ -19,6 +19,7 @@ typedef struct {
 	struct list_head list;
 } flag_t;
 
+void flag_init();
 void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
