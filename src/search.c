@@ -98,6 +98,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		setenv("KEYWORD", search_last_keyword, 1); // XXX this is not last-keyword!! must array this!
 		radare_cmd(cmdhit, 0);
 		free(cmdhit);
+		radare_controlc();
 	}
 
 
@@ -111,11 +112,6 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		cons_printf("\n");
 	} 
 	D {	fprintf(stderr, "\r%d", nhit); fflush(stderr); }
-#if 0
-	D { printf("\e[K"OFF_FMTs" '%s' ", (u64)where, flag_name);
-	    data_print((u64)where, "", config.block+(where-config.seek), 60, FMT_ASC, MD_BLOCK);
-	} else printf("0x"OFF_FMTx" ", where); // TODO : print data_dump?
-#endif
 
 	fflush(stdout);
 	config.seek = off;

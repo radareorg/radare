@@ -33,7 +33,7 @@ for my $i (0 .. $#strings) {
 	$str=~s/\.*//g;
 	$str=substr($str, 0,27);
 	if ($str=~/%/ || length($str)>$minlen) {
-		print ":fn \"$str\" @ 0x".sprintf "%08x\n", $cow;
+		print ":fn str_\"$str\" @ 0x".sprintf "%08x\n", $cow;
 		$count++;
 	}
 }

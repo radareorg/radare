@@ -45,7 +45,7 @@ static struct core_t core[]={
 	{ NULL, NULL, NULL }
 };
 
-void *radare_resolve(char *name)
+static void *plugin_resolve(char *name)
 {
 	int i,j = (int)name;
 	if (j>0 && j<255) {
@@ -98,31 +98,16 @@ plugin_t *plugin_registry(const char *file)
 #if __WINDOWS__
 	HMODULE h;
 #endif
-
 	if (strlen(file)>254) {
 		eprintf("Invalid plugin name\n");
 		return NULL;
 	}
-
-	/* find a place to store our child */
-	for(i=0; i<MAXPLUGINS && plugins[i].name; i++);i--;
 
 	/* construct file name */
 	ip = config_get("dir.plugins");
 	if (ip) {
 		strcpy(buf, ip);
 	} else buf[0]='\0';
-#if 0
-	if (file[0]!='/') {
-		buf[4000]='\0';
-		getwd(buf);
-		if (buf[4000]!='\0') {
-			eprintf("Dont oflowme nauh!\n");
-			exit(1);
-		}
-		strcat(buf,"/");
-	}
-#endif
 
 	strcat(buf, file);
 	if (  (ptr = strstr(buf,".so"))
@@ -130,7 +115,6 @@ plugin_t *plugin_registry(const char *file)
 		ptr[0]='\0';
 
 #if __WINDOWS__ && !__CYGWIN__
-
 	strcat(buf, ".dll");
 
 	h = LoadLibrary(buf);
@@ -151,7 +135,7 @@ plugin_t *plugin_registry(const char *file)
 	hd = (void *)dlopen(buf, RTLD_NOW); //LAZY);
 	if (hd == NULL) {
 		perror("dlopen");
-		eprintf("Cannot open plugin '%s'.\n(%s)\n", buf,dlerror());
+		eprintf("Cannot open plugin '%s'.\n(%s)\n", buf, dlerror());
 		return NULL;
 	}
 
@@ -200,7 +184,7 @@ plugin_t *plugin_registry(const char *file)
 
 		list_add_tail(&(hack->list), &(hacks));
 
-		pl->resolve = (void *)&radare_resolve;
+		pl->resolve = (void *)&plugin_resolve;
 		pl->config = &config;
 #if DEBUGGER
 		pl->ps = &ps;
@@ -215,9 +199,10 @@ plugin_t *plugin_registry(const char *file)
 	}
 
 	sprintf(buf, "%s_plugin", file);
+	/* find a place to store our child */
+	for(i=0; i<MAXPLUGINS && plugins[i].name; i++);i--;
 	plugins[i] = *p;
 	plugins[i+1] = posix_plugin;
-	//printf("plugin registered??\n");
 	return p;
 
 }

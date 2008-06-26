@@ -92,9 +92,9 @@ enum {
 #endif
 
 #if __FreeBSD__ || __OpenBSD__ || __NetBSD__
-#define BSD 1
+#define __BSD__ 1
 #else
-#define BSD 0
+#define __BSD__ 0
 #endif
 
 #define LANG_PERL 1

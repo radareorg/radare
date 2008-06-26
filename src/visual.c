@@ -18,8 +18,6 @@
  *
  */
 
-extern const char *dl_prompt;
-
 #include "main.h"
 #include "radare.h"
 #include "code.h"
@@ -46,6 +44,32 @@ extern const char *dl_prompt;
 #include "flags.h"
 #include "undo.h"
 
+extern const char *dl_prompt;
+static unsigned char *yank_buffer = NULL;
+static int yank_buffer_size = 0;
+static int do_repeat=0;
+static int repeat=0;
+static int repeat_weight=1;
+static int scraccel = 0;
+static int accel=1;
+struct binding {
+	unsigned char key;
+	char *cmd;
+};
+static int nbds = 0;
+static struct binding *bds = NULL;
+static int inv = 0;
+static u64 mark = 0;
+#define VMODES 12
+static char modes[VMODES] =
+{ FMT_HEXB, FMT_VISUAL, FMT_UDIS, FMT_OCT, FMT_CSTR,
+  FMT_BIN, FMT_URLE, FMT_ASC, FMT_ASHC, FMT_HEXB, 0 };
+
+static char *modestr[VMODES] =
+{ "hexb", "visual", "disasm", "octal", "cstr",
+  "binary", "url-encoding", "ascii", "ashc", "hexb" };
+static char *zoom_string="zoom";
+
 CMD_DECL(rotate_print_format);
 CMD_DECL(rotate_print_format_prev);
 CMD_DECL(insert_assembly);
@@ -71,15 +95,6 @@ CMD_DECL(zoom);
 CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 
-#if 0
-make keybindings be structured like:
- int char
- int len
- char rest[5]
- void *callback
- int id
-#endif
-
 command_t keystrokes[] = {
 	/*   key, wait, description, callback */
 	COMMAND('g', 0, "seek to offset 0", seek0),
@@ -99,11 +114,6 @@ command_t keystrokes[] = {
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
 	COMMAND('w', 1, "write hex string", insert_hexa_string),
-#if 0
-	COMMAND('w', 1, "write string", insert_string),
-	//COMMAND('f', 0, "seek to flag", seek_to_flag),
-	COMMAND('%', 0, "show radare environment", show_environ),
-#endif
 	/* debugger */
         COMMAND('s', 0, "step into the debugger", step_in_dbg),
         COMMAND('S', 0, "step over the debugger", stepo_in_dbg),
@@ -166,15 +176,6 @@ void visual_show_help()
 	cons_flush();
 }
 
-struct binding {
-	unsigned char key;
-	char *cmd;
-};
-static int nbds = 0;
-static struct binding *bds = NULL;
-static int inv = 0;
-static u64 mark = 0;
-
 void press_any_key()
 {
 	D cons_printf("\n--press any key--\n");
@@ -192,9 +193,7 @@ CMD_DECL(insert)
 		config.insert_mode = 1;
 		config.cursor_mode = 1;
 		config.ocursor = -1;
-cons_flush();
-		//last_print_format = FMT_HEXB;
-//		press_any_key();
+		cons_flush();
 	} else {
 		cons_printf("Not in write mode.\n");
 		press_any_key();
@@ -322,9 +321,6 @@ CMD_DECL(seek0)
 		config.cursor = 0;
 	else	config.seek = 0;
 }
-
-unsigned char *yank_buffer = NULL;
-int yank_buffer_size = 0;
 
 CMD_DECL(yank)
 {
@@ -623,52 +619,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	cons_set_raw(1);
 	free(dl_prompt);
 	dl_prompt = dl_prompt_old;
-#if 0
-	printf("write hexa string: ");
-	fflush(stdout);
-	radare_seek(config.seek+((config.cursor_mode)?config.cursor:0), SEEK_SET);
-
-	while((ret=read(0, &key, 1)!=-1 && key!='\r')) {
-		inc++;
-		if (key=='\n') break;
-		if (key==' ') continue;
-		if (hex2int((unsigned char *)&tmp ,key)) {
-			printf("Invalid hex character at byte %d\n", inc);
-			break;
-		}
-		switch(count++) {
-		case 0:
-			byte = tmp;
-			printf("%x", tmp);
-			fflush(stdout);
-			continue;
-		case 1:
-			byte<<=4;
-			byte |= tmp;
-			count = 0;
-		}
-		printf("%01x(%c) ", tmp, is_printable(tmp)?tmp:'.');
-		bytes++;
-		fflush(stdout);
-		write(config.fd, &byte, 1);
-	}
-
-	printf("\n\nWritten %d bytes.\n", bytes);
-	if (config.cursor_mode)
-		radare_seek(config.seek-config.cursor, SEEK_SET);
-#endif
 }
-
-
-#define VMODES 12
-static char modes[VMODES] =
-{ FMT_HEXB, FMT_VISUAL, FMT_UDIS, FMT_OCT, FMT_CSTR,
-  FMT_BIN, FMT_URLE, FMT_ASC, FMT_ASHC, FMT_HEXB, 0 };
-
-static char *modestr[VMODES] =
-{ "hexb", "visual", "disasm", "octal", "cstr",
-  "binary", "url-encoding", "ascii", "ashc", "hexb" };
-static char *zoom_string="zoom";
 
 CMD_DECL(rotate_print_format)
 {
@@ -703,7 +654,7 @@ CMD_DECL(rotate_print_format_prev)
 	cons_clear();
 }
 
-int keystroke_run(unsigned char key) {
+static int keystroke_run(unsigned char key) {
 	command_t cmd;
 	int i = 0;
 
@@ -719,7 +670,7 @@ int keystroke_run(unsigned char key) {
 }
 
 // XXX Does not support Fx..is this ok?
-void visual_bind_key()
+static void visual_bind_key()
 {
 #if HAVE_LIB_READLINE
 	char *ptr;
@@ -807,7 +758,6 @@ void visual_draw_screen()
 	const char *ptr;
 	char buf[256];
 
-
 	/* printage */
 	switch (last_print_format) {
 	case FMT_HEXB:
@@ -821,13 +771,6 @@ void visual_draw_screen()
 		if (!config.cursor_mode)
 			cons_clear();
 	}
-#if 0
-	if (!getenv("COLUMNS")) {
-		cons_set_raw(0);
-		config.width = cons_get_columns();
-		cons_set_raw(1);
-	}
-#endif
 	switch(config.insert_mode) {
 	case 1:
 		strcpy(buf, "<insert hex pairs> ('q','tab')");
@@ -892,17 +835,10 @@ static void ringring()
 		CLRSCR();
 		visual_draw_screen();
 	}
-
 #if __UNIX__
 	go_alarm(ringring);
 #endif
 }
-
-static int do_repeat=0;
-static int repeat=0;
-static int repeat_weight=1;
-static int scraccel = 0;
-static int accel=1;
 
 static void check_accel(int foo)
 {
@@ -1010,7 +946,6 @@ CMD_DECL(visual)
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
-
 	cons_get_real_columns();
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);
@@ -1707,12 +1642,6 @@ CMD_DECL(visual)
 
 		if (config.seek<0)
 			config.seek = 0;
-#if 0
-		if (repeat>1) {
-			cons_strcat("\e[2J");
-			radare_sync();
-		}
-#endif
 		do_repeat = 0;
 		repeat = 0;
 		repeat_weight=1;

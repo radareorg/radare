@@ -34,7 +34,7 @@
 #define COLOR_AD C_GREEN
 #endif
 
-#define CONS_PALETTE_SIZE 20
+#define CONS_PALETTE_SIZE 22
 #define CONS_COLORS_SIZE 21
 enum {
 	PAL_PROMPT = 0,

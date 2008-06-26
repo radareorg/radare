@@ -94,7 +94,7 @@ u64 get_reg(char *reg)
 u64 arch_syscall(int pid, int sc, ...)
 {
         u64 ret = (addr_t)-1;
-#if __linux__ || BSD
+#if __linux__ || __BSD__
 	va_list ap;
         regs_t   reg, reg_saved;
 	int baksz = 128;
@@ -119,7 +119,7 @@ u64 arch_syscall(int pid, int sc, ...)
 
 	/* set syscall */
         R_EAX(reg) = sc;
-#if BSD
+#if __BSD__
 	R_ESP(reg) += 4;
 	debug_write_at(pid, &(R_EAX(reg)), 4, R_ESP(reg));
 #endif
@@ -133,14 +133,14 @@ u64 arch_syscall(int pid, int sc, ...)
 #endif
 	case SYS_getpid:
 		break;
-#if BSD
+#if __BSD__
 	case SYS_kill:
 #else
 	case SYS_tkill:
 #endif
 		R_EBX(reg) = va_arg(ap, pid_t);
 		R_ECX(reg) = va_arg(ap, int);
-#if BSD
+#if __BSD__
 		R_ESP(reg)+=4;
 		debug_write_at(pid, &(R_EBX(reg)), 4, R_ESP(reg));
 		R_ESP(reg)+=4;
@@ -173,9 +173,6 @@ u64 arch_syscall(int pid, int sc, ...)
 		break;
 	}
 	va_end(ap);
-#if BSD
-	R_ESP(reg)-=4;
-#endif
 
 	/* write SYSCALL OPS */
 	debug_write_at(pid, (long *)SYSCALL_OPS, 4, R_EIP(reg));
@@ -1219,7 +1216,7 @@ void signal_set(int signum, addr_t address)
 
 int arch_mprotect(addr_t addr, unsigned int size, int perms)
 {
-#ifdef __linux__ || BSD
+#ifdef __linux__ || __BSD__
         regs_t   reg, reg_saved;
         int     status;
         char    bak[4];
@@ -1234,7 +1231,7 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
         R_EDX(reg) = perms;
         R_EBX(reg) = (int)addr;
 
-#if BSD
+#if __BSD__
 	/* IS THIS OK ? */
 	R_ESP(reg) += 4;
 	debug_write_at(pid, &(R_EAX(reg)), 4, R_ESP(reg));

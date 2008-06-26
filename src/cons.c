@@ -61,7 +61,6 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-// 23 elements
 const char *cons_colors[CONS_COLORS_SIZE] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
@@ -457,7 +456,7 @@ int cons_w32_print(unsigned char *ptr)
 }
 
 #endif
-#define CMDS 50
+#define CMDS 54
 static const char *radare_argv[CMDS] ={
 	NULL, // padding
 	"? ",
@@ -475,6 +474,9 @@ static const char *radare_argv[CMDS] ={
 	"#crc32",
 	"#entropy",
 	"Visual",
+	"ad",
+	"ac",
+	"ag",
 	"emenu ",
 	"eval ",
 	"seek ",

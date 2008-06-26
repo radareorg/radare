@@ -110,7 +110,7 @@ long long arch_syscall(int pid, int sc, ...)
 		case SYS_tkill:
 			R_RBX(reg) = va_arg(ap, pid_t);
 			R_RCX(reg) = va_arg(ap, int);
-#if BSD
+#if __BSD__
 			R_RSP(reg)+=4;
 			debug_write_at(pid, &(R_RBX(reg)), 4, R_RSP(reg));
 			R_RSP(reg)+=4;

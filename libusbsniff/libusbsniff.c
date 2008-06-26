@@ -95,7 +95,7 @@ int usb_close(struct usb_dev_handle *dev)
 	return ret;
 }
 
-int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size, int timeout)
+int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout)
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_bulk_write()\n");

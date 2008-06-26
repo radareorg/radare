@@ -6,6 +6,31 @@
  * created from FreeBSD: src/sys/kern/syscalls.master,v 1.198.2.5 2006/10/10 13:19:47 rwatson Exp 
  */
 
+#if 0
+open:
+    push    dword mode
+    push    dword flags
+    push    dword path
+    mov eax, 5
+    push    eax     ; Or any other dword
+    int 80h
+    add esp, byte 16
+---
+kernel:
+    int 80h ; Call kernel
+    ret
+
+open:
+    push    dword mode
+    push    dword flags
+    push    dword path
+    mov eax, 5
+    call    kernel
+    add esp, byte 12
+    ret
+
+#endif
+
 #define	SYS_syscall	0
 #define	SYS_exit	1
 #define	SYS_fork	2

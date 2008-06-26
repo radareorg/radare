@@ -28,9 +28,8 @@
 #include "radare.h"
 #include "flags.h"
 
-int rad_rl_init=0;
+static int rad_rl_init=0;
 extern command_t *commands[];
-
 
 enum {
 	ARG_NULL = 0,
@@ -525,7 +524,7 @@ char **rad_autocompletion(const char *text, int start, int end)
 	return matches;
 }
 
-char history_file[1024];
+static char history_file[1024];
 
 void rad_readline_finish()
 {

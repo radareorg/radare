@@ -10,6 +10,8 @@
 
 0.9.8:
 ======
+ * Update manpages
+ * undo write
  * xc is crappy!
  * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
@@ -21,7 +23,6 @@
   - do not pass user signals to child process
  * 'w' in cursor mode with range selected must fill the buffer
  * code injection (as a plugin in lua)
- * Add script editor window for lua and radare
  * when loading strings from file
   - run Cs
   - make Cs support multiple strings at a time
@@ -31,9 +32,6 @@
  * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
     recover the 0 position
- * rename -v to -q (quiet or -s silent)
-   - cfg.verbose = integer (autosetup scr.color and asm.color)
-   - cfg.quiet = false
  * populate the use of cmd.flag (in prompt and so)
  * flag grep print mode
  * graphically draw structures in memory (adg, aD)?
@@ -69,9 +67,7 @@
   - handle current map only
  * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
- * !pid must show status of process
  * add !status to get last crash info and stuff like that
- * flag str_
  * remove comments doesnt works properly
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
@@ -459,7 +455,6 @@ Code analyzer
 
 Random
 ======
-* Update manpages
 * output of rsc help should start with ';'
 * Implement a boolean bindiff based on symdiffing (uses dwarf)
 * make monitors work with inotify and glib events or so
@@ -469,6 +464,9 @@ Random
 
 TOTHINK
 =======
+* rename -v to -q (quiet or -s silent)
+  - cfg.verbose = integer (autosetup scr.color and asm.color)
+  - cfg.quiet = false
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
   - must think on! - entropia = 1 en un block (tots numeros primers)
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
@@ -567,6 +565,5 @@ TODO LIST
 * base64 conversion, fixer and so
 * full charsets support (search strings in utf8, etc)
 * implement 'commit' command. delayed write operations with bindiff output
-* undo write and more things
 
 * total world domination

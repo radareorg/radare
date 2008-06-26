@@ -37,38 +37,38 @@ u64 rabin_entrypoint(int filetype)
 	unsigned long base = 0;
 
 	switch(filetype) {
-		case FILETYPE_CSRFW:
-			eprintf("filetype: CSR firmware. Not yet supported by rabin\n");
-			return addr;
-			break;
-		case FILETYPE_ELF:
-			io_lseek(config.fd, 0x18, SEEK_SET);
-			io_read(config.fd, &addr, 4);
-			io_lseek(config.fd, 0, SEEK_SET);
+	case FILETYPE_CSRFW:
+		eprintf("filetype: CSR firmware. Not yet supported by rabin\n");
+		return addr;
+		break;
+	case FILETYPE_ELF:
+		io_lseek(config.fd, 0x18, SEEK_SET);
+		io_read(config.fd, &addr, 4);
+		io_lseek(config.fd, 0, SEEK_SET);
 
-			/* FIX */
-			if (addr>0x8048000)
-				return addr-0x8048000;
-			return addr;
-			//pprintf("0x%08x memory\n", addr);
-			//pprintf("0x%08x disk\n", addr - 0x8048000);
-			break;
-		case FILETYPE_MZ:
-			break;
-		case FILETYPE_PE:
-			io_lseek(config.fd, pebase+0x28, SEEK_SET);
-			io_read(config.fd, &addr, 4);
-			//printf("0x%08x disk offset for ep\n", pebase+0x28);
-			//printf("0x%08x disk\n", addr);
+		/* FIX */
+		if (addr>0x8048000)
+			return addr-0x8048000;
+		return addr;
+		//pprintf("0x%08x memory\n", addr);
+		//pprintf("0x%08x disk\n", addr - 0x8048000);
+		break;
+	case FILETYPE_MZ:
+		break;
+	case FILETYPE_PE:
+		io_lseek(config.fd, pebase+0x28, SEEK_SET);
+		io_read(config.fd, &addr, 4);
+		//printf("0x%08x disk offset for ep\n", pebase+0x28);
+		//printf("0x%08x disk\n", addr);
 
-			io_lseek(config.fd, pebase+0x45, SEEK_SET);
-			io_read(config.fd, &base, 4);
-			eprintf("entry disk: 0x%08x\n", addr);
-			eprintf("base address: 0x%08x\n", base);
-			eprintf("entry in memory\n", base+addr);
+		io_lseek(config.fd, pebase+0x45, SEEK_SET);
+		io_read(config.fd, &base, 4);
+		eprintf("entry disk: 0x%08x\n", addr);
+		eprintf("base address: 0x%08x\n", base);
+		eprintf("entry in memory\n", base+addr);
 
-			io_lseek(config.fd, 0, SEEK_SET);
-			return (u64)(addr)-0xc00;
+		io_lseek(config.fd, 0, SEEK_SET);
+		return (u64)(addr)-0xc00;
 	}
 	return 0;
 }
@@ -120,30 +120,32 @@ int rabin_load()
 
 	/* add autodetection stuff here */
 	switch(header) {
-		case FILETYPE_ELF:
-			config_set("file.type", "elf");
-			//config_set_i("file.baddr", 0x8048000);
-			config_set_i("file.baddr", (u64)0x8048000); // XXX doesnt works! :(
-			#if __i386__
-			config.baddr = 0x8048000;
-			#else
-			config.baddr = 0x8000; // ARM
-			#endif
-			break;
-		case FILETYPE_MZ:
-			config_set("file.type", "mz");
-			break;
-		case FILETYPE_PE:
-			config_set("file.type", "pe");
-			break;
-		case FILETYPE_CLASS:
-			config_set("file.type", "class");
-			config_set("asm.arch", "java");
-			config_set("cfg.endian", "true"); // we need big endian for proper java disassembly
-			// loading class information
-			java_classdump(config.file);
-			//radare_cmd(".!javasm -rc ${FILE}");
-			break;
+	case FILETYPE_ELF:
+		config_set("file.type", "elf");
+		//config_set_i("file.baddr", 0x8048000);
+		config_set_i("file.baddr", (u64)0x8048000); // XXX doesnt works! :(
+		#if __i386__
+		config.baddr = 0x8048000;
+		#else
+		config.baddr = 0x8000; // ARM
+		#endif
+		break;
+	case FILETYPE_MZ:
+		config_set("file.type", "mz");
+		break;
+	case FILETYPE_PE:
+		config_set("file.type", "pe");
+		break;
+	case FILETYPE_CLASS:
+		config_set("file.type", "class");
+		config_set("asm.arch", "java");
+		config_set("cfg.endian", "true"); // we need big endian for proper java disassembly
+		// loading class information
+		java_classdump(config.file);
+		//radare_cmd(".!javasm -rc ${FILE}");
+		break;
 	}
+
 	// TODO: autodetect arch
+	return 0;
 }

@@ -19,6 +19,14 @@
  */
 #define USE_SOCKETS
 #include "main.h"
+#include "socket.h"
+#include <sys/types.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #if __UNIX__
 #include <sys/un.h>
@@ -29,17 +37,6 @@
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #endif
-
-#include <sys/types.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include "socket.h"
-
 
 #define BUFFER_SIZE 4096
 
