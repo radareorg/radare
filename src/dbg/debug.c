@@ -841,7 +841,7 @@ int debug_stepo()
 		bp_pos = debug_bp_set(NULL, pc+skip, BP_HARD);
 
 		debug_cont(0);
-		debug_bp_rm_num(bp_pos);
+		//debug_bp_rm_num(bp_pos);
 		
 //		debug_bp_restore();
 		return 1;

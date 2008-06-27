@@ -29,6 +29,9 @@
 #include <stdarg.h>
 #include <fcntl.h>
 #include <time.h>
+#if __Linux__
+#include <sys/utsname.h>
+#endif
 
 #if __UNIX__
 #include <termios.h>
@@ -435,7 +438,6 @@ void print_msdos_date(unsigned char _time[2], unsigned char _date[2])
 void getHTTPDate(char *DATE)
 {
 #if __UNIX__
-#include <sys/utsname.h>
 	struct tm curt; /* current time */
 	time_t l;
 	char week_day[4], month[4];

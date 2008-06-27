@@ -26,8 +26,14 @@
 #endif
 
 
+#undef __BSD__
 #undef __UNIX__
 #undef __WINDOWS__
+
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#define __BSD__ 1
+#endif
+
 #if __WIN32__ || __CYGWIN__ || MINGW32
 
 #include <windows.h>

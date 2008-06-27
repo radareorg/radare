@@ -23,6 +23,7 @@
 
 //#if __i386__
 #include "../libps2fd.h"
+#include "../../main.h"
 #include "../../radare.h"
 #include <stdio.h>
 #include <string.h>
@@ -1216,7 +1217,7 @@ void signal_set(int signum, addr_t address)
 
 int arch_mprotect(addr_t addr, unsigned int size, int perms)
 {
-#ifdef __linux__ || __BSD__
+#if __linux__ || __BSD__
         regs_t   reg, reg_saved;
         int     status;
         char    bak[4];
@@ -1234,7 +1235,7 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
 #if __BSD__
 	/* IS THIS OK ? */
 	R_ESP(reg) += 4;
-	debug_write_at(pid, &(R_EAX(reg)), 4, R_ESP(reg));
+	debug_write_at(ps.tid, &(R_EAX(reg)), 4, R_ESP(reg));
 #endif
         R_EIP(reg) = R_ESP(reg) - 4;
 
@@ -1253,10 +1254,8 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
         /* wait to stop process */
         waitpid(ps.tid, &status, 0);
 	if(WIFSTOPPED(status)) {
-
         	/* get new registers value */
         	debug_getregs(ps.tid, &reg);
-
         	/* get return code */
         	ret = (int)R_EAX(reg);
 	}
@@ -1272,7 +1271,7 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
 	DWORD old;
 	return VirtualProtectEx(WIN32_PI(hProcess), (LPVOID)(UINT)addr, size, perms, &old); 
 #else
-	eprintf("Not supported on this OS\n");
+	eprintf("arch_mprotect: Not supported on this OS\n");
 	return -1;
 #endif
 }

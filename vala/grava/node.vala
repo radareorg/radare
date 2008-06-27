@@ -57,13 +57,13 @@ public class Grava.Node : GLib.Object
 
 	public void add_call(long addr)
 	{
-		string str = "0x%08x".printf(addr);
+		string str = "0x%08llx".printf(addr);
 		calls.append(str);
 	}
 
 	public void add_xref(long addr)
 	{
-		string str = "0x%08x".printf(addr);
+		string str = "0x%08llx".printf(addr);
 		xrefs.append(str);
 	}
 

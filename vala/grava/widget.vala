@@ -58,7 +58,7 @@ public class Grava.Widget : GLib.Object {
 				// Gdk.EventMask.POINTER_MOTION_MASK );
 		da.expose_event += expose;
 		da.motion_notify_event += motion;
-		da.button_release_event += motion;
+		da.button_release_event += button_release;
 		da.button_press_event += button_press;
 		//da.key_press_event += key_press;
 		//da.key_release_event += key_press;
@@ -85,11 +85,8 @@ public class Grava.Widget : GLib.Object {
 	}
 
 	/* capture mouse motion */
-	private bool scroll_press (Gtk.Widget w, Gdk.Event event)
+	private bool scroll_press (Gtk.DrawingArea da, Gdk.EventScroll es)
 	{
-		EventScroll es = event.scroll;
-		DrawingArea da = (DrawingArea)w;
-
 		switch(es.direction) {
 			case ScrollDirection.UP:
 				graph.zoom+=ZOOM_FACTOR;
@@ -256,17 +253,16 @@ public class Grava.Widget : GLib.Object {
 		menu.popup(null, null, null, 0, 0);
 	}
 
-	private bool button_press (Gtk.Widget w, Gdk.Event event)
+	private bool button_press (Gtk.DrawingArea da, Gdk.EventButton eb)
 	{
-		EventButton eb = event.button;
-		EventMotion em = event.motion; 
-		Node n = graph.click(em.x-graph.panx, em.y-graph.pany);
-		DrawingArea da = (DrawingArea)w;
+		//EventButton eb = event.button;
+		//EventMotion em = event.motion; 
+		Node n = graph.click(eb.x-graph.panx, eb.y-graph.pany);
 
 		graph.selected = n;
 		if (n != null) {
-			opanx = em.x;
-			opany = em.y;
+			opanx = eb.x;
+			opany = eb.y;
 //			graph.draw(Gdk.cairo_create(da.window));
 			da.queue_draw_area(0,0,5000,3000);
 			
@@ -291,16 +287,15 @@ public class Grava.Widget : GLib.Object {
 	}
 
 	Node on = null;
-	private bool motion (Gtk.Widget w, Gdk.Event ev)
-	{
-		EventMotion em = ev.motion; 
-		DrawingArea da = (DrawingArea)w;
-
-		if (ev.type == Gdk.EventType.BUTTON_RELEASE) {
+	private bool button_release(Gtk.DrawingArea da, Gdk.EventButton em)
+{
 			on = null;
 			opanx = opany = 0;
 			return true;
-		}
+
+}
+	private bool motion (Gtk.DrawingArea da, Gdk.EventMotion em)
+	{
 
 		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
@@ -342,7 +337,7 @@ public class Grava.Widget : GLib.Object {
 		return true;
 	}
 
-	private bool expose (Gtk.Widget w, Gdk.Event ev)
+	private bool expose (Gtk.DrawingArea w, Gdk.EventExpose ev)
 	{
 		DrawingArea da = (DrawingArea)w;
 		draw();
