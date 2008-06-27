@@ -21,7 +21,7 @@
 #include "radare.h"
 #include "code.h"
 
-const char **vm_regs_str;
+const char **vm_regs_str = NULL;
 static u64 *vm_regs = NULL;
 int vm_nregs = 0;
 
@@ -29,6 +29,8 @@ int vm_nregs = 0;
 int vm_get_reg(const char *name)
 {
 	int i;
+	if (vm_regs == NULL || vm_regs_str == NULL)
+		return 0;
 	for(i=0;i<vm_nregs;i++)
 		if (!strcmp(name, vm_regs_str[i]))
 			return i;
@@ -40,6 +42,8 @@ int vm_get_reg(const char *name)
 
 u64 vm_get(int reg)
 {
+	if (vm_regs == NULL || vm_regs_str == NULL)
+		return 0;
 	if (reg<0 || reg >=vm_nregs)
 		return 0;
 	return vm_regs[reg];
@@ -47,6 +51,8 @@ u64 vm_get(int reg)
 
 int vm_set(int reg, u64 value)
 {
+	if (vm_regs == NULL || vm_regs_str == NULL)
+		return 0;
 	if (reg<0 || reg >=vm_nregs)
 		return 0;
 	vm_regs[reg] = value;

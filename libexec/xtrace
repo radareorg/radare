@@ -21,19 +21,31 @@ if [ -z "${BREAKPOINT}" ]; then
 	fi
 fi
 
+#def gob
+
 TMP=`mktemp -t gdb.XXXXXX`
+S=$
 cat > ${TMP} <<EOF
+
 set height 0
+set \$base=0x08040000
+set \$mask=0xffff0000
+
 break *${BREAKPOINT}
+
 run
+
 while(1)
 	stepi
-	disassemble \$eip \$eip+1
+	if (((long)${S}eip & (long)${S}mask) == (long)${S}base)
+	  disassemble ${S}eip ${S}eip+1
+	end
 end
 quit
 EOF
 
 shift ; shift
-gdb -batch -n -q -x ${TMP} "${PROGRAM}" $@ | grep : | grep -v Dump
+cat ${TMP}
+gdb -batch -n -q -x ${TMP} --args ${PROGRAM} $@ | grep : | grep -v Dump
 
 rm ${TMP}

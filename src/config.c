@@ -532,7 +532,9 @@ void config_init(int first)
 
 	}
 
+	vm_init(1);
 
+printf("cfg.init\n");
 	/* enter keys */
 #if __POWERPC__
         node = config_set("asm.arch", "ppc");
@@ -748,7 +750,6 @@ void config_init(int first)
 
 	cons_palette_init(config_get("scr.palette"));
 	radis_update();
-	vm_init(1);
 
 	if (first) {
 		metadata_comment_init(1);
