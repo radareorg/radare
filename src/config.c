@@ -658,6 +658,7 @@ void config_init(int first)
 	config_set("dbg.sections", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
+	config_set("dbg.threads", "false");
 	config_set("dbg.contscbt", "true");
 	config_set("dbg.regs", "true");
 	config_set("dbg.stack", "true");

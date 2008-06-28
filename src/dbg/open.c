@@ -94,7 +94,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 		return -1;
 
 	/* get entry point here */
-	ps.ldentry    = arch_pc();
+	ps.ldentry    = arch_pc(ps.tid);
 	ps.entrypoint = arch_get_entrypoint();
 
 	/* initialize breakpoint list */

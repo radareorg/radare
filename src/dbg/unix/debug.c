@@ -131,7 +131,7 @@ int debug_print_wait(char *act)
 			eprintf("=== %s: tid: %d signal: %d (%s). stop at 0x%08llx\n", 
 				act, ps.tid, WS_SI(si_signo),
 				sig_to_name(WS_SI(si_signo)),
-				arch_pc());
+				arch_pc(ps.tid));
 #if __mips__
 			debug_status();
 #endif
@@ -687,16 +687,16 @@ int debug_dispatch_wait()
 	if(!TH_MAIN(ps.tid)) {
 		if ( ( th = get_th(ps.tid) ) ) {
 			ps.th_active = th;
-			TH_ADDR(th, arch_pc());
+			TH_ADDR(th, arch_pc(ps.tid));
 		} else {
 			eprintf("pid: %d. new process created!\n"
-			" - Use !pstree to list, and !th to change current pid (tid)\n", ps.tid);
+			" - Use !pid for processes, and !th for threads\n", ps.tid);
 			if(!(th = init_th(tid, status))) { // STOPPED?
 				perror("init_th");
 				return -1;
 			}
 			th->tid = ps.tid;
-			th->addr = arch_pc();
+			th->addr = arch_pc(ps.tid);
 			add_th(th);
 			ps.th_active = th;
 
@@ -729,15 +729,12 @@ sleep(1);
 #if __linux__ && !__x86_64__
 				/* linux threads support */
 				if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {
-
-					if(ptrace (PTRACE_GETEVENTMSG,
-						ps.pid, 0, &tid) == -1) {
+					if(ptrace (PTRACE_GETEVENTMSG, ps.pid, 0, &tid) == -1) {
 						perror("ptrace_geteventmsg");
 						return -1;	
 					}
 				
-					printf("____[ New thread created ]____\n");
-					printf("tid: %d\n", tid);
+					printf("____[ New thread created ]____\ntid: %d\n", tid);
 
 					ret = debug_waitpid(tid, &status);
 
@@ -745,11 +742,9 @@ sleep(1);
 						eprintf(":error waiting for new child\n");
           				else if (ret != tid)
 						eprintf(":error return tid %d != %d\n", ret, tid);
-#if 0
           				else if (!WIFSTOPPED (status) ||
 						 WSTOPSIG (status) != SIGSTOP)
 						eprintf(":error unknown state thread %d\n", tid);
-#endif
 					else {
 						if(!(th = init_th(tid, status))) {
 							perror("init_th");
@@ -775,6 +770,9 @@ sleep(1);
 				/* TODO: manage access to protected pages */
 				;
 				eprintf("Segmentation fault!\n");
+			} else
+			if (WS_SI(si_signo)==19) {
+				eprintf("CLONE HAS BEEN INVOKED\n");
 			} else
 				eprintf("Unknown signal %d received\n", WS_SI(si_signo));
 		}

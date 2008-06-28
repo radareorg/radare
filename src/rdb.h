@@ -16,6 +16,15 @@ struct xrefs_t {
 	struct list_head list;
 };
 
+enum {
+	BLK_TYPE_HEAD,  // first block
+	BLK_TYPE_BODY,  // conditional jump
+	BLK_TYPE_LAST,  // ret
+	BLK_TYPE_FOOT   // unknown jump
+};
+
+extern const char *block_type_names[4];
+
 /* code block */
 struct block_t {
 	char *name;

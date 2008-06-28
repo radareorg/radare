@@ -123,7 +123,7 @@ int debug_bp_restore_before(int pos)
 int debug_bp_restore(int pos)
 {
 	struct bp_t *bp;
-	u64 addr = arch_pc(); // x86
+	u64 addr = arch_pc(ps.tid); // x86
 #if 0
 #if ARCH_I386
 	u64 addr = arch_pc()-1; // x86
@@ -207,7 +207,7 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 	int i, ret, bp_free = -1;
 
 	if (addr == 0)
-		addr = arch_pc(); // WS_PC();
+		addr = arch_pc(ps.tid); // WS_PC();
 
 	/* all slots busy */
 	if(ps.bps_n == MAX_BPS)

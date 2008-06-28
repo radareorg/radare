@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while [ 1 ]
+do
+	read cmd
+	echo $cmd > /proc/kradare
+	cat /proc/kradare
+done

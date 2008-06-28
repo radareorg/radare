@@ -75,7 +75,7 @@
 #if __linux__
 #define PTRACE_PC 0
 #else
-#define PTRACE_PC arch_pc()
+#define PTRACE_PC arch_pc(pid_t pid)
 #endif
 
 // BSD compatibility

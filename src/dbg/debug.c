@@ -119,14 +119,15 @@ pid_t debug_waitpid(int pid, int *status)
 #if __FreeBSD__
 	return waitpid(pid, status, WUNTRACED);
 #else
-#ifdef __WCLONE
-	return waitpid(pid, status, __WALL | __WCLONE | WUNTRACED);
-#ifdef __WALL
+  #ifdef __WCLONE
+	if (config_get("dbg.threads"))
+		return waitpid(pid, status, __WALL | __WCLONE | WUNTRACED);
+  #endif
+  #ifdef __WALL
 	return waitpid(pid, status, __WALL | WUNTRACED);
-#else
+  #else
 	return waitpid(pid, status, WUNTRACED);
-#endif
-#endif
+  #endif
 #endif
 	return -1;
 }
@@ -344,8 +345,8 @@ int debug_stepret()
 	/* make steps until esp = oesp and [eip] == 0xc3 */
 	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_stepo()) {
-		debug_read_at(ps.tid, bytes, 4, arch_pc());
-		arch_aop((u64)arch_pc(), (const u8 *)bytes, &aop);
+		debug_read_at(ps.tid, bytes, 4, arch_pc(ps.tid));
+		arch_aop((u64)arch_pc(ps.tid), (const u8 *)bytes, &aop);
 		if (aop.type == AOP_TYPE_RET)
 			break;
 	}
@@ -363,14 +364,14 @@ int debug_contu(const char *input)
 
 	ps.verbose = 0;
 	while(!config.interrupted && ps.opened && debug_step(1)) {
-		if (is_usercode(arch_pc()))
+		if (is_usercode(arch_pc(ps.tid)))
 			return 0;
 	}
 	radare_controlc_end();
 	ps.verbose = 1;
 
 	if (config_get("trace.log"))
-		trace_add((addr_t)arch_pc());
+		trace_add((addr_t)arch_pc(ps.tid));
 
 	return 0;	
 }
@@ -392,7 +393,7 @@ int debug_wtrace()
 		ret = wp_matched();
 		if(ret >= 0) {
 			printf("watchpoint %d matched at 0x%x\n",
-				 ret, (unsigned int)arch_pc());		
+				 ret, (unsigned int)arch_pc(ps.tid));
 			break;
 		}
         }
@@ -453,7 +454,7 @@ int debug_until(char *addr)
 		// XXX intel only
 		// XXX BP_SOFT is ugly (linux supports DRX HERE)
 #if 1
-		debug_read_at(ps.tid, buf, 12, arch_pc());
+		debug_read_at(ps.tid, buf, 12, arch_pc(ps.tid));
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc()+0x18);
 			off = (u64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
@@ -463,7 +464,7 @@ int debug_until(char *addr)
 		} else
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
-			debug_read_at(ps.tid, &addr, 4, arch_pc()+0x16);
+			debug_read_at(ps.tid, &addr, 4, arch_pc(ps.tid)+0x16);
 			off = (addr_t)addr;
 			sprintf(buf, "0x%x", addr);
 			printf("== > main at : %s\n", buf);
@@ -781,10 +782,10 @@ int debug_skip(int times)
 	unsigned char buf[16];
 	struct aop_t aop;
 	int len;
-	u64 pc = arch_pc();
+	u64 pc = arch_pc(ps.tid);
 
 	if (ps.opened) {
-		debug_read_at(ps.tid, buf, 16, arch_pc());
+		debug_read_at(ps.tid, buf, 16, arch_pc(ps.tid));
 
 		if (times<1) times = 1;
 		for (;times;times--){
@@ -804,7 +805,7 @@ int debug_skip(int times)
 
 int debug_stepu()
 {
-	unsigned long pc = arch_pc(); //WS_PC();
+	unsigned long pc = arch_pc(ps.tid); //WS_PC();
 	int i;
 
 	radare_controlc();
@@ -812,7 +813,7 @@ int debug_stepu()
 	do {
 		debug_step(1);
 		ps.steps++;
-		pc = arch_pc();
+		pc = arch_pc(ps.tid);
 		i++;
 	} while (!config.interrupted && !is_usercode(pc) );
 
@@ -826,7 +827,7 @@ int debug_stepu()
 
 int debug_stepo()
 {
-	addr_t pc = arch_pc(); //WS_PC();
+	addr_t pc = arch_pc(ps.tid); //WS_PC();
 	char cmd[4];
 	int skip;
 	int bp_pos;
@@ -849,7 +850,7 @@ int debug_stepo()
 		debug_step(1);
 
 	if (config_get("trace.log"))
-		trace_add((addr_t)arch_pc());
+		trace_add((addr_t)arch_pc(ps.tid));
 
 	return 0;
 }
@@ -861,7 +862,7 @@ int debug_stepbp(int times)
 	unsigned char bytes[32];
 	struct aop_t aop; /* ,aop2; */
 	int i, len; /* ,len2; */
-	addr_t pc = arch_pc();
+	addr_t pc = arch_pc(ps.tid);
 
 	debug_read_at(ps.tid,bytes, 32, pc);
 	len = arch_aop(pc, bytes, &aop);
@@ -952,7 +953,7 @@ int debug_step(int times)
 	} else {
 		/* accelerate soft stepoverables */
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
-			pc = arch_pc();
+			pc = arch_pc(ps.tid);
 			if (config_get("trace.log"))
 				trace_add(pc);
 
@@ -1135,7 +1136,7 @@ int debug_trace(char *input)
 	while(!config.interrupted && ps.opened && debug_step(1)) {
 		radare_cmd(".!regs*", 0);
 		if (smart) {
-			cons_printf("[-] 0x%08llx\n", arch_pc());
+			cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
 			radare_cmd("!dregs", 0);
 			radare_cmd("pd 4 @ eip", 0);
 			//disassemble(20, 2);
@@ -1144,10 +1145,10 @@ int debug_trace(char *input)
 			case 1:
 				radare_cmd("!dregs", 0);
 			case 0:
-				cons_printf("0x%08llx\n", arch_pc());
+				cons_printf("0x%08llx\n", arch_pc(ps.tid));
 				break;
 			case 5:
-				cons_printf("[-] 0x%08llx\n", arch_pc());
+				cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
 				radare_cmd("!regs", 0);
 			case 4:
 				radare_cmd("px 64 @ esp",0);
@@ -1155,7 +1156,7 @@ int debug_trace(char *input)
 			case 3:
 				radare_cmd("pd 1 @ eip",0);
 			default:
-				pc = arch_pc();
+				pc = arch_pc(ps.tid);
 				if (tracelibs || is_usercode(pc)) {
 					//radare_seek((addr_t)pc, SEEK_SET);
 					//radare_read(0);
@@ -1401,7 +1402,7 @@ int print_syscall()
 int debug_contuh(char *arg)
 {
 	int bp;
-	addr_t off = arch_pc();
+	addr_t off = arch_pc(ps.tid);
 	debug_step(1);
 	bp = debug_bp_set(NULL, off, BP_SOFT);
 	debug_cont(0);
@@ -1447,7 +1448,7 @@ int debug_contsc(char *arg)
 int debug_inject_buffer(unsigned char *fil, int sz)
 {
 	int i;
-	unsigned long eip = arch_pc(); //WS_PC();
+	unsigned long eip = arch_pc(ps.tid); //WS_PC();
 	unsigned char *ptr;
 
 	// XXX make this work on ARM and MIPS
@@ -1511,7 +1512,7 @@ int debug_cont_until(const char *input)
 {
 	u64 addr = input?get_math(input):0;
 
-	eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
+	//eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
@@ -1654,7 +1655,7 @@ int debug_loop(char *addr_str)
 		return -1;
 
 	ret_addr = get_offset(addr_str);
-	pc = arch_pc();
+	pc = arch_pc(ps.tid);
 
 	/* if exist a breakpoint at PC address then delete it */
 	bp = debug_bp_get(pc);

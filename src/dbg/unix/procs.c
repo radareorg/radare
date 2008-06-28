@@ -246,11 +246,11 @@ int debug_pstree(const char *input)
 	}
 
 	foo = ps.pid;
-	eprintf(" pid : %d (%s)\n", foo, debug_unix_pid_status(foo));
+	eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
 	pids_sons_of_r(foo, 0, 0);
 	if (ps.pid != ps.tid) {
 		foo = ps.tid;
-		eprintf(" pid : %d (%s)\n", foo, debug_unix_pid_status(foo));
+		eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
 		pids_sons_of_r(foo, 0, 0);
 	}
 

@@ -285,10 +285,10 @@ int arch_jmp(u64 ptr)
 	return 0;
 }
 
-u64 arch_pc()
+u64 arch_pc(int tid)
 {
 	elf_gregset_t regs;
-	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
+	int ret = ptrace(PTRACE_GETREGS, tid, NULL, &regs);
 	if (ret < 0) return 1;
 	return ARM_pc;
 }

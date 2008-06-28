@@ -305,6 +305,17 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;
 	blk->fnext = aop.fail;
+	
+
+		blk->type = BLK_TYPE_HEAD;
+	if (aop.jump && !aop.fail)
+		blk->type = BLK_TYPE_BODY;
+	else
+	if (aop.jump && aop.fail)
+		blk->type = BLK_TYPE_BODY;
+	else
+	if (aop.type == AOP_TYPE_RET)
+		blk->type = BLK_TYPE_LAST;
 
 	oseek = seek;
 
@@ -390,6 +401,16 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         blk->tnext = aop.jump;
         blk->fnext = aop.fail;
         oseek = seek;
+		blk->type = BLK_TYPE_HEAD;
+	if (aop.jump && !aop.fail)
+		blk->type = BLK_TYPE_BODY;
+	else
+	if (aop.jump && aop.fail)
+		blk->type = BLK_TYPE_BODY;
+	else
+	if (aop.type == AOP_TYPE_RET)
+		blk->type = BLK_TYPE_LAST;
+
 
         /* walk childs */
         if (blk->tnext)

@@ -9,12 +9,6 @@
 
 * enhacementes for freebsd plz!!1
 * Fix height of screen
-* import kradare module
-* graphs:
-  node->type = HEAD // first block
-  node->type = BODY // conditional jump
-  node->type = LAST // ret
-  node->type = FOOT // unknown jump
 
 FileDescriptors
 ===============

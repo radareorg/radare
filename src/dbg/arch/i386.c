@@ -392,10 +392,10 @@ int arch_inject(unsigned char *data, int size)
 	return 0;
 }
 
-u64 arch_pc()
+u64 arch_pc(int tid)
 {
 	regs_t regs;
-	debug_getregs(ps.tid, &regs);
+	debug_getregs(tid, &regs);
 #if __x86_64__
 	return (u64)R_EIP(regs);
 #else

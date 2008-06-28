@@ -68,7 +68,7 @@ int watchpoint_parse(char *str, struct watchpoint_t *wp)
 	||  (!strcmp(str, "ebp"))
 	||  (!strcmp(str, "esp"))) {
 		wp->type    = WP_REGISTER;
-		wp->address = arch_pc(); // XXX must be the value or R_ENX
+		wp->address = arch_pc(ps.tid); // XXX must be the value or R_ENX
 		wp->value   = strdup(str);
 		return 1;
 	} else {

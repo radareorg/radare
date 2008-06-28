@@ -26,6 +26,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include "rdb.h"
+const char *block_type_names[4] =
+{
+	"head",
+	"body",
+	"last",
+	"foot"
+};
 
 struct xrefs_t *xref_new(u64 addr)
 {

@@ -1,0 +1,7 @@
+sha0's ktrace kernel interface
+==============================
+
+This kernel module is based on the work done by sha0
+to analyze kernel stack traces from userland.
+
+* ATM IS BUGGY AS SHIT *

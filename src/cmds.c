@@ -205,6 +205,7 @@ CMD_DECL(analyze)
 			list_for_each_prev(head, &(prg->blocks)) {
 				struct block_t *b0 = list_entry(head, struct block_t, list);
 				cons_printf("offset = 0x%08llx\n", b0->addr);
+				cons_printf("type = %s\n", block_type_names[b0->type]);
 				cons_printf("size = %d\n", b0->n_bytes);
 				list_for_each(head2, &(b0->calls)) {
 					c0 = list_entry(head2, struct xrefs_t, list);
@@ -216,7 +217,11 @@ CMD_DECL(analyze)
 					cons_printf("true = 0x%08llx\n", b0->tnext);
 				if (b0->fnext)
 					cons_printf("false = 0x%08llx\n", b0->fnext);
-				cons_printf("\n");
+				cons_printf("bytes = ");
+				for (i=0;i<b0->n_bytes;i++)
+					cons_printf("%02x ", b0->bytes[i]);
+				cons_newline();
+				cons_newline();
 			}
 		} else {
 			eprintf("oops\n");
