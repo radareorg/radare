@@ -971,8 +971,8 @@ CMD_DECL(flag)
 					eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
 			} else {
 				flags_setenv();
-				eprintf("flag '%s' at "OFF_FMT" and size %d\n",
-						text, config.seek, config.block_size);
+				//eprintf("flag '%s' at "OFF_FMT" and size %d\n",
+				//		text, config.seek, config.block_size);
 			} }
 		}
 	}

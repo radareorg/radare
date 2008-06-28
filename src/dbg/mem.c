@@ -244,6 +244,9 @@ void print_maps_regions(int rad)
 	char name[128];
 	char perms[5];
 
+	if (rad) {
+		cons_printf("fs maps\n");
+	}
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 
@@ -258,7 +261,7 @@ void print_maps_regions(int rad)
 					name[i] = ch;
 				}
 				name[i]='\0';
-				cons_printf("f section_%s @ 0x%08llx\n", name,
+				cons_printf("f map_%s @ 0x%08llx\n", name,
 						(unsigned long long)mr->ini);
 			}
 		} else {

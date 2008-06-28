@@ -536,7 +536,6 @@ void config_init(int first)
 
 	vm_init(1);
 
-printf("cfg.init\n");
 	/* enter keys */
 #if __POWERPC__
         node = config_set("asm.arch", "ppc");
@@ -656,6 +655,7 @@ printf("cfg.init\n");
 	config_set("dbg.syms", "true");
 	config_set("dbg.dwarf", "true");
 	config_set("dbg.maps", "true");
+	config_set("dbg.sections", "true");
 	config_set("dbg.strings", "false");
 	config_set("dbg.stop", "false");
 	config_set("dbg.contscbt", "true");

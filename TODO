@@ -7,9 +7,37 @@
 
 ===========================================================
 
+* enhacementes for freebsd plz!!1
+* Fix height of screen
+* import kradare module
+* graphs:
+  node->type = HEAD // first block
+  node->type = BODY // conditional jump
+  node->type = LAST // ret
+  node->type = FOOT // unknown jump
+
+FileDescriptors
+===============
+* read/write from/to child filedescriptor
+* sniff filedescriptor (dumping to file or socket)
+ - using CONTSC ?
+ - hooks read/write/ syscalls and gets buf and so
+ - can be done in lua
+ - !contsc needs lua interface
 
 0.9.8:
 ======
+* function hooker in C (dbg.hooker)      
+  - some C macros or so to create a .so and LD_PRELOAD't
+  - if static...should inject trampolines to our code.
+  - or just manage the breakpoints
+  - if bp == 1 !jmp 0x8084840 - redirect code execution on certain points
+  - stored in file
+    [from-address] \t  [to-address]
+
+ * remove comments doesnt works properly
+ * show labels of all jumps/calls (not only bookmarked ones)
+ * proper handle of negative values in disasm (no 0xfffff)
  * Update manpages
  * undo write
  * xc is crappy!
@@ -33,7 +61,6 @@
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
     recover the 0 position
  * populate the use of cmd.flag (in prompt and so)
- * flag grep print mode
  * graphically draw structures in memory (adg, aD)?
  * define print format per flags (useful to find strings, code,etc..) :D
 
@@ -68,16 +95,10 @@
  * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
- * remove comments doesnt works properly
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
  * make !get work on linux with arch_get_register (currently only works on w32)
- * show labels of all jumps/calls (not only bookmarked ones)
- * make the gui plugins be possible little demo launched from ag
- * implement waiter for radare debugger as an rsc script
  * make fixed nodes fixed to the graph view
- * Make spcc be happy with pU (!!spcc $BLOCK $OFFSET) ?
-   - Must think a more handy way to do this
  * Use SIGHUP to dump monitor stuff to files
  * rename or remove pd command.
    - make it work without file.wmode
@@ -86,7 +107,6 @@
  * blinking byte at cursor
  * support for search and replace
  * support for oprofile (via rsc or so)
- * Edit modify source references ;)
 
 
 Gui
@@ -94,8 +114,6 @@ Gui
 * implement start/pause/continue/stop/reload button for a pid
 * frontend for hasher (Vala api for hashing)
 * the gui must listen:// and connect:// too!
-* Add toggle endian in gradare
-* integrate the gui with maemo!
 
 Open streams
 ============
@@ -142,21 +160,14 @@ DONE?
 Core
 =====
 * allow to run without opening a file (useful for batch mode)
-* Fix XXX hack in src/radare.c to avoid hardcoding all interpretable debugger commands :?
-* set asm.arch with rabin_arch
-* open/close projects in GUI
-* status shows backtrace !?!?!
 * dbg.stepolibs = true ;  step over non-user code?
 * asm.offset must be for all print modes
 * Funroll mode - stacked disassembly
 * add u64 cursor[config.block_size]; when printing
   - useful for zoom , disasembly, code folding
-support for 7bit text encoding
 make fdsniff and usbsniff generate a project file and a binary one.
 
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
-* xc can get_math!
-- -S flag move to rabin
 
 
 
@@ -170,13 +181,12 @@ Imports:
 ARM
 ===
 * arm backtrace
-- 
 - when runnin to bp says invalid address (uh?)
 
 BUGS:
 =====
 * wx `pW 33 -> the ` doesnt works
-* step over doesnt works on arm
+* step over doesnt works on arm/mips
 * keybinding assignment dosnt workz
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
@@ -184,8 +194,6 @@ BUGS:
   - make cursor bytes take sense too
 * s <unexistant-flag> -> do not seek
 * !ret should use !bt if possible
-* In visual mode the 'w' doesn't allows to erase chars (backspace..)
-   - pipecmd2str must use radare_cmd_str
 
 Random:
 =======
@@ -258,7 +266,6 @@ Graphs
 * exception frame information (try { ... } catch stuff)
 * ram dump driver for w32
 
-* use the pattern finding algorithm
 * dinamic block size defined by:
   - height of screen
   - <tags> (set inigial and end binary tags)
@@ -297,19 +304,6 @@ Filesystem
 
 Core
 ====
-* function hooker in C (dbg.hooker)      
-  - some C macros or so to create a .so and LD_PRELOAD't
-  - if static...should inject trampolines to our code.
-  - defined in a external file. promote description tab files
-    - happily done with lua scripts
-* add cfg.insert (make user write operations insert or overwrite)
-* Multiple rdb load
-  - allow to map into flags, etc..
-* optimized flag storing algorithm (a bit slower for >5000 strings)
-  * marcar blocks amb cursor i asignar un alias o nom (flag)
-    - flags must have start and end
-    - flags/comments/labels/dwarf
-    - optimized linked list usage
 * Add views/states/.. (S (switch) command) (open multiple files)
   - A view is just a stored copy of the config_t structure
   - and store different states for the same file
@@ -329,10 +323,6 @@ Visual
 * colorize background of flagged bytes in hexdump
 * count the number of lines in backtrace and substract them to make the visual
 
-Hasher
-======
-* Refactor code -> no dupped code
-  - sum*charpos, hash sha0, md2, crc64, hmac, network-hashes
 
 Tracer
 ======
@@ -340,6 +330,8 @@ Tracer
 * random trace peeker
   - takes traces from the process while running every N usecs
 * timeline of a trace |----------------|
+  - in rsc script? - can dump traces on separated files? slow? bloat?
+   - single file is better
   - allow to view frame windows inside the timeline
   - extended 'f' and 'F' keys mode
   * List viewer (get offset as index fr cursor, right view shows the
@@ -353,11 +345,6 @@ Tracer
   - blank line means a trace step
   - program_t -> asign name and color
     -> useful to merge graphs of code analysis and code execution
-  - if comments have a '{' indent disasemly to the right and '}' to the left
-  - allow to monitor register values and memory pointers
-    - for example:
-     > :x 200 @ [eax]+33
-  - flag monitring
 * tracepoints
   - allow to execute a command (!dump?)
     - follow some variables
@@ -366,14 +353,7 @@ Tracer
   - debug.c -> implement a while(debug_step()) loop to arch_aop() each instruction
     and draw a graph until a breakpoint or ^C
   - creates a program_t graphable with vala
-  - can be diffed with rdbdiff
 
-FileDescriptors
-===============
-* read/write from/to child filedescriptor
-* sniff filedescriptor (dumping to file or socket)
- - using CONTSC ?
- - hooks read/write/ syscalls and gets buf and so
 
 Debugger
 ========
@@ -384,9 +364,9 @@ Debugger
    like: 1 2 10 44 -> radare will set and unset all these breakpoints
    everytime. so you have a separate file with the breakpoints, so you
    can use rsc to generate this and next properly
-* add dosdebug:// to debug dosemu-based applications
-* import of qemu:// plugin to connect to qemus :D
-* import of windbg:// for serial port (w32 kernel debugger)
+* dosdebug:// to debug dosemu-based applications
+* qemu:// plugin to connect to qemus :D
+* windbg:// for serial port (w32 kernel debugger)
 * breakpoints
   - command
   - log (trace)
@@ -440,6 +420,7 @@ Debugger
 Code analyzer
 =============
 * handle relative references to code and data
+ + in debugger must dump current section
 * Implement libcaca/aalib backend for grava! :D
 * xrefs does not works for string references
   - make xrefs support base address
@@ -455,8 +436,7 @@ Code analyzer
 Random
 ======
 * output of rsc help should start with ';'
-* Implement a boolean bindiff based on symdiffing (uses dwarf)
-* make monitors work with inotify and glib events or so
+* Implement a boolean bindiff based on symdiffing (in lua!!!)
 
 
 ===========================================================
@@ -472,10 +452,8 @@ TOTHINK
 * Implement gtk-dialog replacement (radialog)? (in lua-gtk?)
 * make !dump incremental
   - support to enable full dump (with hashing for reducing sizes)
-  - bindiffing using bdiff
+  - bindiffing patch
   - ultra slow ? i should analyze code to enhace this
-[MAGIC] repeat a command at every flag matching
-> wx foo @ hit*
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset
   - do not execute twice
@@ -488,9 +466,6 @@ TOTHINK
   - execute a command on a certain offset
   - show funtion frames and arguments on the fly
   - automatize unpacks and so
-change flags search and replace
- /r foo
- /1-5 ranged search
 
 * performance counters:
    - inject code into the child process
@@ -525,10 +500,10 @@ change flags search and replace
  - add software watchpoints with stepall (register and memory changes control)
  - fer un binpatch a traves del contexte del asm que sigui muahah
  - rasc : send file and execute (pitbull inside!)
-  - use it for the fuzzer framework
+
+  * add 'list' gdb -like command
 
 * DWARF DUMP !!! 
-  * add 'list' gdb -like command
   * http://reality.sgiweb.org/davea/dwarf.html
 
 BSD_SYSCALL_PTRACE:
@@ -550,7 +525,6 @@ mips:
 
 libraries
 =========
-libsal   -> implements a layer on top of radare for SAL (or parrot?) (or nekovm?)
 libiconv -> encoding support
 libmagic -> better integration with magic stuff (atm use external magic dbs) (obsd magic)
 libdwarf -> supports dwarf stuff and so

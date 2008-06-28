@@ -1287,6 +1287,8 @@ int radare_go()
 			radare_cmd("!syms", 0);
 		if (config_get("dbg.maps"))
 			radare_cmd("!maps", 0);
+		if (config_get("dbg.sections"))
+			radare_cmd(":.!! rsc flag-sections $FILE", 0);
 		if (config_get("dbg.strings")) {
 			eprintf("Loading strings...press ^C when tired\n");
 			radare_cmd(".!!rsc strings-flag $FILE", 0);
