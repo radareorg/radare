@@ -675,13 +675,22 @@ printf("cfg.init\n");
 	config_set("dbg.bep", "loader"); // loader, main
 	config_set("dir.home", getenv("HOME"));
 {
+	/* dir.monitor */
 	char buf[1024];
 	char *ptr = getenv("MONITORPATH");
 	if (ptr == NULL) {
 		sprintf(buf, "%s/.radare/monitor/", getenv("HOME"));
 		ptr = &buf;
 	}
-	config_set("dir.monitor", buf);
+	config_set("dir.monitor", ptr);
+
+	/* dir.spcc */
+	ptr = getenv("SPCCPATH");
+	if (ptr == NULL) {
+		sprintf(buf, "%s/.radare/spcc/", getenv("HOME"));
+		ptr = &buf;
+	}
+	config_set("dir.spcc", ptr);
 }
 	config_set("dir.plugins", LIBDIR"/radare/");
 	config_set("dir.rdb", ""); // ~/.radare/rdb/

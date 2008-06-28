@@ -403,6 +403,35 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         return 0;
 }
 
+void analyze_spcc(const char *name)
+{
+	char *ptr;
+	char buf[1024];
+	const char *path = config_get("dir.spcc");
+
+	if (path)
+		setenv("SPCCPATH", path, 1);
+	if (name[0]=='\0') {
+		cons_printf("Usage: as [?][-][file]\n");
+		cons_printf("Analyze structure using the spcc descriptor\n");
+		cons_printf("  > as name   :  create/show structure\n");
+		cons_printf("  > as -name  :  edit structure\n");
+		cons_printf("  > as ?      :  list all spcc in dir.spcc\n");
+		return;
+	}
+
+	buf[0]='\0';
+	ptr = strchr(name, '-');
+
+	if (ptr)
+		sprintf(buf, "!!${EDITOR} %s/%s.spcc", path, ptr+1);
+	else
+	if (strchr(name, '?'))
+		sprintf(buf, "!!rsc spcc-fe list");
+	else sprintf(buf, "!!rsc spcc-fe %s ${BLOCK} 0", name);
+
+	radare_cmd_raw(buf,0);
+}
 
 /* CALLBACK defined with graph.split which is false by default */
 int (*code_analyze_r)(struct program_t *prg, u64 seek, int depth) = &code_analyze_r_nosplit;

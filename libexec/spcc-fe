@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# radare_cmd_raw("!!rsc spcc-fe file $BLOCK $OFFSET",0);
+#
+
+[ -z "$SPCCPATH" ] && SPCCPATH="${HOME}/.radare/spcc"
+
+if [ "$1" = "" ]; then
+	echo "spcc-fe - structure parser c compiler (frontend)"
+	echo "Usage: rsc spcc-fe [file] [block] [offset]"
+	echo "SPCCPATH='$SPCCPATH' environ to define .spcc files"
+	echo "EDITOR='$SPCCPATH' environ to define .spcc files"
+	exit 0 
+fi
+
+if [ "$2" = "" ]; then
+	cd $SPCCPATH
+	ls -- *.spcc | sed -e 's,\.spcc,,g'
+	exit 0
+fi
+
+FILE=$1
+BLOCK=$2
+ADDR=$3
+
+mkdir -p $SPCCPATH
+cd $SPCCPATH
+
+if [ ! -e "$FILE.spcc" ]; then
+	if [ -z "$EDITOR" ]; then
+		echo "You must specify EDITOR to create spcc files"
+		exit 1
+	else
+		rsc spcc -t > $FILE.spcc
+		$EDITOR $FILE.spcc
+	fi
+fi
+
+
+[ ! -e $FILE ] && rsc spcc $FILE.spcc -o $FILE
+[ $FILE.spcc -nt $FILE ] && rsc spcc $FILE.spcc -o $FILE
+[ ! -e $FILE ] && exit 1
+
+$SPCCPATH/$FILE $BLOCK $ADDR
+
+exit 0

@@ -44,19 +44,19 @@ print FD <<EOF
 #include <fcntl.h>
 #include <unistd.h>
 #define uchar unsigned char
-// TODO Support for 32/64 bits here
-#define OFF_FMTx "%x"
-#define OFF_FMTd "%d"
+#define ull unsigned long long
+#define OFF_FMTx "%llx"
+#define OFF_FMTd "%lld"
 
 struct spcc {
 	char *filename;
-	int offset;
+	ull offset;
 };
 
-off_t get_offset (char *arg)
+ull get_offset (char *arg)
 {
         int i;
-        off_t ret = 0;
+        unsigned long long ret = 0;
 
         for(i=0;arg[i]==' ';i++);
         for(;arg[i]=='\\\\';i++); i++;
@@ -95,6 +95,8 @@ int main(int argc, char **argv)
 	}
 
 	len = lseek (fd, 0, SEEK_END);
+	if (spcc.offset > len)
+		len = 0;
 
 	buffer = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
 	if (((int)buffer) == -1) {

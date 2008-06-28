@@ -315,6 +315,9 @@ CMD_DECL(analyze)
 		eprintf("WIP: av . analyze N opcodes using code emulation\n");
 		vm_emulate(depth);
 		break;
+	case 's':
+		analyze_spcc(input+1);
+		break;
 	default:
 		cons_printf("Usage: a[ocdg] [depth]\n");
 		cons_printf(" ao : analyze N opcodes\n");
@@ -322,6 +325,7 @@ CMD_DECL(analyze)
 		cons_printf(" ac : disassemble and analyze N code blocks \n");
 		cons_printf(" ad : analyze N data blocks \n");
 		cons_printf(" ag : graph analyzed code\n");
+		cons_printf(" as : analyze spcc structure (uses dir.spcc) need file as arg\n");
 		cons_printf(" av : analyze virtual machine (negative resets before)\n");
 		break;
 	}
