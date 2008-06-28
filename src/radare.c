@@ -183,6 +183,60 @@ void radare_sync()
 	}
 }
 
+void radare_cmd_foreach(const char *cmd, const char *each)
+{
+	int i=0,j;
+	u64 off;
+	char ch;
+	char *word = NULL;
+	char *str = strdup(each);
+
+	radare_controlc();
+	while(str[i] && !config.interrupted) {
+		j = i;
+		for(;str[j]&&str[j]==' ';j++); // skip spaces
+		for(i=j;str[i]&&str[i]!=' ';i++); // find EOS
+		ch = str[i];
+		str[i] = '\0';
+		word = strdup(str+j);
+		str[i] = ch;
+		if (strchr(word, '*')) {
+			struct list_head *pos;
+
+			/* for all flags in current flagspace */
+			list_for_each(pos, &flags) {
+				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+				if (config.interrupted)
+					break;
+
+				/* filter per flag spaces */
+				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+					continue;
+
+				config.seek = flag->offset;
+				radare_read(0);
+				cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
+				radare_cmd_raw(cmd,0);
+			}
+		} else {
+			/* ugly copypasta from tmpseek .. */
+			if (word[i]=='+'||word[i]=='-')
+				config.seek = config.seek + get_math(word);
+			else	config.seek = get_math(word);
+			radare_read(0);
+			cons_printf("; @@ 0x%08llx\n", config.seek);
+			radare_cmd_raw(cmd,0);
+		}
+		radare_controlc();
+
+		free(word);
+		word = NULL;
+	}
+	radare_controlc_end();
+
+	free(str);
+}
+
 void radare_fortunes()
 {
 #if __WINDOWS__
@@ -390,12 +444,23 @@ int radare_cmd_raw(const char *tmp, int log)
 			if (eof2 && input && input[0]!='e') {
 				char *ptr = eof2+1;
 				eof2[0] = '\0';
-				tmpoff = config.seek;
-				for(;*ptr==' ';ptr=ptr+1);
-				if (*ptr=='+'||*ptr=='-')
-					config.seek = config.seek + get_math(ptr);
-				else	config.seek = get_math(ptr);
-				radare_read(0);
+
+				if (eof2[1]=='@') {
+					/* @@ is for foreaching */
+					tmpoff = config.seek;
+					radare_cmd_foreach(input ,eof2+2);
+					//config.seek = tmpoff;
+					radare_seek(tmpoff, SEEK_SET);
+					
+					return 0;
+				} else {
+					tmpoff = config.seek;
+					for(;*ptr==' ';ptr=ptr+1);
+					if (*ptr=='+'||*ptr=='-')
+						config.seek = config.seek + get_math(ptr);
+					else	config.seek = get_math(ptr);
+					radare_read(0);
+				}
 			}
 
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
