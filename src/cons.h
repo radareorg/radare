@@ -59,7 +59,7 @@ enum {
 	PAL_FF
 };
 extern const char *cons_palette_default;
-const char *cons_colors[CONS_COLORS_SIZE];
+const char *cons_colors[CONS_COLORS_SIZE+1];
 extern char cons_palette[CONS_PALETTE_SIZE][8];
 char *cons_get_buffer();
 void cons_reset();

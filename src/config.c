@@ -34,9 +34,9 @@ struct config_t config;
 
 int rdb_init()
 {
+	const char *rdbdir;
+	const char *rdbfile;
 	int fd = -1;
-	char *rdbdir;
-	char *rdbfile;
 	char *str =
 		"# RDB (radare database) file\n"
 		"chdir=\nchroot=\nsetuid=\nsetgid=\n";
@@ -146,7 +146,7 @@ void config_list(char *str)
 	}
 }
 
-struct config_node_t *config_node_get(char *name)
+struct config_node_t *config_node_get(const char *name)
 {
 	struct list_head *i;
 	int hash = strhash(name);
@@ -167,7 +167,7 @@ const char *config_get(const char *name)
 	node = config_node_get(name);
 	if (node) {
 		if (node->flags & CN_BOOL)
-			return !strcmp("true", node->value) || !strcmp("1", node->value);
+			return ((!strcmp("true", node->value)) || (!strcmp("1", node->value)))?1:NULL; //"true":NULL; //?"true":"false";
 		return node->value;
 	}
 
@@ -257,7 +257,7 @@ struct config_node_t *config_set_i(const char *name, const u64 i)
 
 	if (node) {
 		if (node->flags & CN_RO)
-			return;
+			return NULL;
 		free(node->value);
 		sprintf(buf, "%ld", i); //0x%08lx", i);
 		node->value = strdup(buf);
@@ -351,6 +351,7 @@ static int config_zoombyte_callback(void *data)
 	}
 }
 
+#if 0
 static int config_core_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -400,6 +401,7 @@ static int config_core_callback(void *data)
 	}
 	// TODO needs more work
 }
+#endif
 
 static int config_limit_callback(void *data)
 {

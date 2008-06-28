@@ -24,6 +24,8 @@
 #include "radare.h"
 #include "rdb.h"
 
+int radiff_bytediff(const char *a, const char *b);
+
 void radiff_help()
 {
 	printf("Usage: radiff [-c] [-bgeirp] [file-a] [file-b]\n");
@@ -49,8 +51,8 @@ int main_rdb_diff(char *file0, char *file1)
 		printf("Error opening rdb database\n");
 		return 1;
 	}
-	printf("%s entrypoint = 0x%08lx\n", p0->name, p0->entry);
-	printf("%s entrypoint = 0x%08lx\n", p1->name, p1->entry);
+	printf("%s entrypoint = 0x%08llx\n", p0->name, p0->entry);
+	printf("%s entrypoint = 0x%08llx\n", p1->name, p1->entry);
 
 #if 0
 	{
@@ -78,16 +80,6 @@ int radiff_bindiff(const char *a, const char *b)
 	char buf[8096];
 	snprintf(buf, 8095, "bindiff %s %s | rsc bdcolor 3", a, b);
 	return system(buf);
-}
-
-int radiff_bytediff(const char *a, const char *b)
-{
-#if 0
-	char buf[8096];
-	snprintf(buf, 8095, "rsc bytediff %s %s | rsc bdcolor 3", a, b);
-	return system(buf);
-#endif
-	radiff_bytediff_c(a,b);
 }
 
 int radiff_ergodiff(const char *a, const char *b)

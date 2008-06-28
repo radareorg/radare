@@ -143,6 +143,8 @@ int dl_hist_list()
 			break;
 		printf("%.3d  %s\n", i, dl_history[i]);
 	}
+
+	return i;
 }
 
 int dl_hist_free()
@@ -261,6 +263,8 @@ int dl_printchar()
 	}
 
 	cons_set_raw(0);
+
+	return buf[0];
 }
 
 /* main readline function */
@@ -435,8 +439,8 @@ char *dl_readline(int argc, const char **argv)
 				// XXX does not autocompletes correctly
 				// XXX needs to check if valid results have the same prefix (from 1 to N)
 				if (dl_callback != NULL) {
-					const char *from = strrchr(dl_buffer, ' ');
-					char **res = dl_callback(dl_buffer, (from==NULL)?dl_buffer_idx:from-dl_buffer, dl_buffer_len);
+					//const char *from = strrchr(dl_buffer, ' ');
+					//char **res = dl_callback(dl_buffer, (from==NULL)?dl_buffer_idx:from-dl_buffer, dl_buffer_len);
 					/* TODO: manage res */
 				} else {
 					if (dl_buffer_idx>0)

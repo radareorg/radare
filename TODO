@@ -306,7 +306,6 @@ Core
 * Multiple rdb load
   - allow to map into flags, etc..
 * optimized flag storing algorithm (a bit slower for >5000 strings)
-  * flag namespaces (comment, label, symbol, ...) sym. cmt. ...
   * marcar blocks amb cursor i asignar un alias o nom (flag)
     - flags must have start and end
     - flags/comments/labels/dwarf

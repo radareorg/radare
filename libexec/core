@@ -7,7 +7,8 @@
 if [ -z "$1" ]; then
 	echo "Usage: rsc core [pid]"
 else
-	if [ "`uname`" = "FreeBSD" ]; then
+	gcore > /dev/null 2>&1
+	if [ $? = 0 ]; then
 		gcore $1
 	else
 		PID=$1

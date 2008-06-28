@@ -73,7 +73,7 @@ static int do_byte_diff ( int fd1, int fd2, off_t bytes )
 	return cf;
 }
 
-int radiff_bytediff_c(char *a, char *b)
+int radiff_bytediff(const char *a, const char *b)
 {
 	int fd1,fd2;
 	off_t size1, size2;
@@ -101,4 +101,9 @@ int radiff_bytediff_c(char *a, char *b)
 
 	if ( ( r == 0) && ( size1 == size2 ) )
 		printf ("Files are the same\n");
+
+	close(fd1);
+	close(fd2);
+
+	return 0;
 }

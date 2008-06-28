@@ -707,7 +707,7 @@ int strnull(const char *str)
 	return (!str || !str[0]);
 }
 
-int strhash(char *str)
+int strhash(const char *str)
 {
 	int i = 1;
 	int a = 0x31;

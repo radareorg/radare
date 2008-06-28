@@ -19,6 +19,7 @@ my $disk=`xc $foodsk[0]`;
 my $count=0;
 $offset=$mem-$disk unless($offset);
 
+print "fs strings\n";
 print ":f _here_\n";
 
 for my $i (0 .. $#strings) {

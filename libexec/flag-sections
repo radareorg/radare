@@ -1,6 +1,7 @@
 #!/bin/sh
 PRG=$1
 
+echo "fs sections"
 if [ -z "${PRG}" ]; then
 	echo "Usage: rsc flag-sections \${FILE}"
 else

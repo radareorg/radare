@@ -31,7 +31,7 @@
 // XXX addr should be off_t for 64 love
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
-	u64 *ptr = (u64 *)(bytes+1);
+	//u64 *ptr = (u64 *)(bytes+1);
 	//unsigned char *ptr2 = (unsigned char *)(bytes+1);
 
 	memset(aop, '\0', sizeof(struct aop_t));

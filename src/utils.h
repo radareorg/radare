@@ -103,5 +103,6 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset);
 int iswhitespace(char ch);
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);
 void getHTTPDate(char *DATE);
+int strhash(const char *str);
 
 #endif

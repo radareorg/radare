@@ -61,7 +61,7 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-const char *cons_colors[CONS_COLORS_SIZE] = {
+const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2

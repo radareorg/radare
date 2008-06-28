@@ -195,7 +195,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 		//radare_cmd(str, 0);
 		//buf = radare_cmd_str(str);
 		//cons_flush();
-		radare_cmd(str, 0);
+		radare_cmd_raw(str, 0);
 		buf = cons_get_buffer();
 		if (buf && buf[0]) {
 			printf("BUFFER(%s->%s)\n", str, buf);
@@ -275,12 +275,14 @@ gboolean mygrava_zoomin(void *foo, void *bar, struct mygrava_window *w)
 {
 	w->grava->graph->zoom += (GRAVA_WIDGET_ZOOM_FACTOR);
 	core_load_graph_at(NULL, "here");
+	return TRUE;
 }
 
 gboolean mygrava_zoomout(void *foo, void *bar, struct mygrava_window *w)
 {
 	w->grava->graph->zoom -= (GRAVA_WIDGET_ZOOM_FACTOR);
 	core_load_graph_at(NULL, "here");
+	return TRUE;
 }
 
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
@@ -441,7 +443,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		// TODO: support for real labelling stuff
 		string_flag_offset(cmd, b0->addr);
 		cmd[127]='\0'; // XXX ugly string recycle hack
-		sprintf(cmd+128, "0x%08lX  %s", b0->addr, cmd);
+		sprintf(cmd+128, "0x%08llX  %s", b0->addr, cmd);
 		if (cmd) {
 			if (!graph_flagblocks)
 				continue;
@@ -469,7 +471,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
-		sprintf(cmd, "pD %d @ 0x%08lx", b0->n_bytes , b0->addr);
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes , b0->addr);
 		config.seek = b0->addr;
 		radare_read(0);
 		ptr =  pipe_command_to_string(cmd);
@@ -491,7 +493,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		node = b0->data;
 		g_object_ref(node);
 
-		printf("A %08lx\n", b0->addr);
+		printf("A %08llx\n", b0->addr);
 		if (b0->tnext) {
 			list_for_each(head2, &(prg->blocks)) {
 				b1 = list_entry(head2, struct block_t, list);

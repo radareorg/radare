@@ -1060,6 +1060,8 @@ int debug_fpregisters(int rad)
 		return 1;
 	}
 
+	if (rad)
+		cons_printf("fs fpregs\n");
 	return arch_print_fpregisters(rad, "");
 }
 
@@ -1090,6 +1092,8 @@ int debug_registers(int rad)
 		return 1;
 	}
 
+	if (rad)
+		cons_printf("fs regs\n");
 	return arch_print_registers(rad, "");
 }
 

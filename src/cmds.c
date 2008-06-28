@@ -946,19 +946,22 @@ CMD_DECL(flag)
 	for(;*text&&iswhitespace(*text);text=text+1);
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';
 
-	if (input[0]=='o') { radare_fortunes(); } else
-	if (input[0]=='?') { flag_help(); } else
-	if (input[0]=='g') { flag_grep(text); } else
-	if (input[0]=='c') { flag_cmd(text); } else
-	if (input[0]=='r') { flag_rename_str(text); } else
-	if (input[0]=='d') { print_flag_offset(config.seek); NEWLINE; } else
-	if (text[0]=='\0') { flag_list(text); } else
-	if (text[0]=='*') { flag_set("*",0,0); } else
-	if (text[0]=='-') { flag_clear(text+1); }
-	else {
-		ret = flag_set(text, config.seek, input[0]=='n');
-		D
-		{
+	switch(input[0]) {
+	case 'o': radare_fortunes(); break;
+	case '?': flag_help(); break;
+	case 'g': flag_grep(text); break;
+	case 'c': flag_cmd(text); break;
+	case 'r': flag_rename_str(text); break;
+	case 's': flag_space(text); break;
+	case 'd': print_flag_offset(config.seek); NEWLINE; break;
+	default:
+		switch(text[0]) {
+		case '\0': flag_list(text); break;
+		case '*': flag_set("*",0,0); break;
+		case '-': flag_clear(text+1); break;
+		default:
+			ret = flag_set(text, config.seek, input[0]=='n');
+			D {
 			if (ret) {
 				if (!config.debug)
 					eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
@@ -966,7 +969,7 @@ CMD_DECL(flag)
 				flags_setenv();
 				eprintf("flag '%s' at "OFF_FMT" and size %d\n",
 						text, config.seek, config.block_size);
-			}
+			} }
 		}
 	}
 

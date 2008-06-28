@@ -12,6 +12,7 @@ if (( $target eq "" ) || ( $target eq "-h" )) {
 	exit 1;
 }
 
+print "fs symbols\n";
 my @syms = split(/\n/,qx(rsc syms $target));
 print ":f _here_\n";
 for my $i (0 .. @syms) {

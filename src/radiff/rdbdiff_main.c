@@ -62,8 +62,8 @@ int main_rdb_diff(char *file0, char *file1)
 		printf("Error opening rdb database\n");
 		return 1;
 	}
-	printf("%s entrypoint = 0x%08lx\n", p0->name, p0->entry);
-	printf("%s entrypoint = 0x%08lx\n", p1->name, p1->entry);
+	printf("%s entrypoint = 0x%08llx\n", p0->name, p0->entry);
+	printf("%s entrypoint = 0x%08llx\n", p1->name, p1->entry);
 
 #if 0
 	{

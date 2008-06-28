@@ -35,6 +35,15 @@
 
 static char *nullstr = "";
 struct list_head flags;
+static int flag_ptr = -1;
+
+static struct flags_spaces_t {
+	const char *name;
+} flag_spaces[255];
+
+int flag_space_idx = -1;
+int flag_space_idx2 = -1;
+#define FLAG_SPACES 255
 
 void flag_help()
 {
@@ -44,6 +53,7 @@ void flag_help()
 	"  fc cmd       ; set command to be executed on flag at current seek\n"
 	"  fg text      ; grep for all flags (like multiline f | grep foo)\n"
 	"  fn name      ; flag new name (ignores dupped names)\n"
+	"  fs spacename ; create/list/switch flag spaces\n"
 	"  fr old new   ; rename a flag or more with '*'\n"
 	"  f sym_main   ; flag current offset as sym_main\n"
 	"  f foo @ 0x23 ; flag 0x23 offset as foo\n"
@@ -65,7 +75,7 @@ void flag_cmd(const char *text)
 		cons_printf("   > fc pd 20 @ 0x8049104\n");
 	} else
 	if (flag != NULL) {
-		free(flag->cmd);
+		free((void *)flag->cmd);
 		flag->cmd = strdup(text);
 		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
 	}
@@ -77,10 +87,6 @@ flag_t *flag_get_i(int id)
 	struct list_head *pos;
 	int i = 0;
 
-/*
-	if ( id<0 || id>=nflags )
-		return NULL;
-*/
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (i++ == id)
@@ -95,7 +101,7 @@ void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain addre
 {
 	int i=0;
 	struct list_head *pos;
-	int cmd_flag = config_get("cmd.flag");
+	//const char *cmd_flag = config_get("cmd.flag");
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
@@ -106,7 +112,7 @@ void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain addre
 			if (config_get("cmd.flag")) {
 				u64 seek = config.seek;
 				radare_seek(flag->offset, SEEK_SET);
-				radare_cmd(flag->cmd, 0);
+				radare_cmd_raw(flag->cmd, 0);
 				radare_seek(seek, SEEK_SET);
 				NEWLINE;
 			}
@@ -136,9 +142,6 @@ u64 flag_get_addr(const char *name)
 		return foo->offset;
 	return 0;
 }
-
-
-static int flag_ptr = -1;
 
 flag_t *flag_get_next(int delta)
 {
@@ -305,7 +308,7 @@ flag_t *flag_by_offset(u64 offset)
 		if (config.interrupted) break;
 	}
 
-	return nullstr;
+	return NULL;
 }
 
 const char *flag_name_by_offset(u64 offset)
@@ -367,7 +370,6 @@ void print_flag_offset(u64 seek)
 		cons_printf("%s", buf);
 }
 
-
 void flag_do_empty(flag_t *flag)
 {
 	if (flag == NULL)
@@ -393,6 +395,10 @@ void flag_list(char *arg)
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
 
+		/* filter per flag spaces */
+		if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+			continue;
+
 		cons_printf("%03d 0x%08llx %3lld %s",
 			i++, flag->offset, flag->length, flag->name);
 		NEWLINE;
@@ -414,6 +420,106 @@ void flag_clear_by_addr(u64 seek)
 			pos = flags.prev;
 			goto _polla;
 		}
+	}
+}
+
+void flag_space_set(const char *name)
+{
+	int i;
+	for(i=0;i<FLAG_SPACES;i++) {
+		if (flag_spaces[i].name != NULL)
+		if (!strcmp(name, flag_spaces[i].name)) {
+			flag_space_idx = i;
+			return;
+		}
+	}
+	/* not found */
+	for(i=0;i<FLAG_SPACES;i++) {
+		if (flag_spaces[i].name == NULL) {
+			flag_spaces[i].name = strdup(name);
+			flag_space_idx = i;
+			break;
+		}
+	}
+}
+
+void flag_space_cleanup()
+{
+	/* TODO: remove all flag spaces with 0 flags */
+}
+
+void flag_space_remove(const char *name)
+{
+	struct list_head *pos;
+	int i;
+
+	for(i=0;i<FLAG_SPACES;i++) {
+		if (flag_spaces[i].name && ((!strcmp(name, flag_spaces[i].name)) || (name[0]=='*'))) {
+			free(flag_spaces[i].name);
+			flag_spaces[i].name = NULL;
+			if (i == flag_space_idx) {
+				flag_space_idx = -1;
+			}
+
+			/* unlink related flags */
+			list_for_each(pos, &flags) {
+				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+				if (config.interrupted) break;
+				if (flag->space == i)
+					flag->space = -1;
+			}
+			break;
+		}
+	}
+}
+
+void flag_space_list()
+{
+	int i,j = 0;
+	for(i=0;i<FLAG_SPACES;i++) {
+		if (flag_spaces[i].name) {
+			printf("%02d %c %s\n", j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+		}
+	}
+	
+}
+
+void flag_space_init()
+{
+	static int init = 0;
+	int i;
+	if (init)
+		return;
+	init = 1;
+	for(i=0;i<FLAG_SPACES;i++) {
+		flag_spaces[i].name = NULL;
+	}
+}
+
+void flag_space(const char *name)
+{
+	flag_space_init();
+
+	switch(name[0]) {
+	case '\0':
+		flag_space_list();
+		break;
+	case '*':
+		flag_space_idx = -1;
+		break;
+	case '-':
+		flag_space_remove(name+1);
+		break;
+	case '?':
+		cons_printf("Usage: fs [name]\n");
+		cons_printf("  > fs regs     - create/switch to 'regs' flagspace\n");
+		cons_printf("  > fs -regs    - remove 'regs' space\n");
+		cons_printf("  > fs *        - select all spaces\n");
+		cons_printf("  > fs          - list all flag spaces\n");
+		break;
+	default:
+		flag_space_set(name);
+		break;
 	}
 }
 
@@ -547,6 +653,7 @@ int flag_set(const char *name, u64 addr, int dup)
 	strncpy(flag->name, name, FLAG_BSIZE);
 	flag->name[FLAG_BSIZE-1]='\0';
 	flag->offset = addr;
+	flag->space = flag_space_idx;
 	flag->length = config.block_size;
 	flag->format = last_print_format;
 	flag->cmd = NULL;

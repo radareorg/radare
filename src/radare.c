@@ -757,7 +757,7 @@ void radare_prompt_command()
 		int tmp = last_print_format;
 		aux = strdup ( ptr );
 		radare_cmd_raw(aux, 0);
-		free ( aux) ;
+		free ( aux );
 		last_print_format = tmp;
 	}
 
@@ -876,6 +876,7 @@ int radare_prompt()
 
 		strncpy(input, aux, sizeof(input));
 
+		flag_space_pop();
 		if (config.width>0) { // fixed width
 			fixed_width = 0;
 			config.width = cons_get_columns();
@@ -887,6 +888,7 @@ int radare_prompt()
 			radare_cmd(input, 1);
 			config.width=-config.width;	
 		}
+		flag_space_push();
 		if (aux && aux[0]) free(aux);
 	} else {
 		dl_disable=1;

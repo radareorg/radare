@@ -14,11 +14,16 @@ typedef struct {
 	u64 offset;
 	u64 length;
 	print_fmt_t format;
+	int space;
 	const char *cmd;
 	unsigned char data[FLAG_BSIZE]; // only take a minor part of the data
 	struct list_head list;
 } flag_t;
 
+extern int flag_space_idx;
+extern int flag_space_idx2;
+#define flag_space_push() flag_space_idx2 = flag_space_idx;
+#define flag_space_pop() flag_space_idx = flag_space_idx2;
 void flag_init();
 void flag_list(char *arg);
 void flag_array_clear(const char *name);

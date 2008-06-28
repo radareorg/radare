@@ -12,6 +12,7 @@ if (( $target eq "" ) || ( $target eq "-h" )) {
 	exit 1;
 }
 
+print "fs symbols\n";
 my $base = qx(rsc elf-base-addr $target | head -n 1); chomp($base);
 my @syms = split(/\n/, qx(rsc syms $target));
 print ":f _here_\n";
