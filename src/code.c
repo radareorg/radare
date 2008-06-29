@@ -1018,8 +1018,8 @@ void radis_update_i(int id)
 
 void radis_update()
 {
-	char *arch = config_get("asm.arch");
 	int i;
+	char *arch = config_get("asm.arch");
 	for(i=0;radis_arches[i].name;i++) {
 		if (!strcmp(arch, radis_arches[i].name)) {
 			config.arch = radis_arches[i].id;

@@ -45,4 +45,4 @@ install:
 	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${LIBDIR}/radare
 
 clean:
-	-rm -f *.${SHARED_EXT} *.o
+	-rm -f *.${SO} *.o

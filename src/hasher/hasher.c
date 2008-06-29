@@ -27,6 +27,9 @@
 #if __linux__
 #include <arpa/inet.h>
 #endif
+#if __BSD__
+#include <netinet/in.h>
+#endif
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>

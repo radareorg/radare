@@ -21,7 +21,6 @@
 #include "syn.h"
 
 #define MAXREFLEN 30
-extern int string_flag_offset(char *buf, unsigned long long addr);
 
 /* =============================================================================
  * ud_lookup_mnemonic() - Looks-up the mnemonic code.

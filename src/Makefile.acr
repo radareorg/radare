@@ -131,7 +131,7 @@ xrefs${BINSFX}: xrefs.o
 
 clean:
 	${E} 'Cleaning src'
-	-${Q}cd plug/hack && ${MAKE} all
+	-${Q}cd plug/hack && ${MAKE} clean
 	-${Q}rm -f *.o
 	-${Q}cd arch/arm/aasm && ${MAKE} clean
 	-${Q}rm -f dbg/arch/*.o

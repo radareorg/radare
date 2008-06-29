@@ -1285,10 +1285,10 @@ int radare_go()
 		if (config_get("dbg.maps"))
 			radare_cmd("!maps", 0);
 		if (config_get("dbg.sections"))
-			radare_cmd(":.!! rsc flag-sections $FILE", 0);
+			radare_cmd(":.!rsc flag-sections $FILE", 0);
 		if (config_get("dbg.strings")) {
 			eprintf("Loading strings...press ^C when tired\n");
-			radare_cmd(".!!rsc strings-flag $FILE", 0);
+			radare_cmd(".!rsc strings-flag $FILE", 0);
 		}
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("file.write", "true"); /* write mode enabled for the debugger */
@@ -1338,7 +1338,7 @@ int radare_go()
 
 // TODO: move to cons.c
 //static int pipe_fd = -1;
-int pipe_stdout_to_tmp_file(char *tmpfile, char *cmd)
+int pipe_stdout_to_tmp_file(const char *tmpfile, const char *cmd)
 {
 #if 0
 	/* DOES NOT WORKS */
