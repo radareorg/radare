@@ -31,6 +31,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+#if __x86_64__
+#define ARCH_X86_64 1
+#endif
+
 #if __linux__
 /* syscall-linux */
 struct syscall_t {
@@ -158,12 +162,34 @@ int arch_print_syscall()
 	&syscalls_netbsd_x86;
   #endif
 
+  #if ARCH_X86_64
+	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
+  #else
 	ret = debug_getregs(ps.tid, &regs);
+  #endif
 	if (ret < 0) {
 		perror("getregs");
 		return -1;
 	}
-#if ARCH_X86
+#if ARCH_X86_64
+	cons_printf("0x%08llx syscall(%d) ", (u64)R_RIP(regs), (int)R_REAX(regs));
+	
+	for(i=0;ptr[i].num;i++) {
+		if(R_REAX(regs) == ptr[i].num) {
+			cons_printf("%s ( ", ptr[i].name);
+			j = ptr[i].args;
+			if (j>0) cons_printf("0x%08x ", R_RBX(regs));
+			if (j>1) cons_printf("0x%08x ", R_RCX(regs));
+			if (j>2) cons_printf("0x%08x ", R_RDX(regs));
+			if (j>3) cons_printf("0x%08x ", R_RSI(regs));
+			if (j>4) cons_printf("0x%08x ", R_RDI(regs));
+			break;
+		}
+	}
+
+	cons_printf(") = 0x%08llx\n", R_RAX(regs));
+	return (int)R_REAX(regs);
+#elif ARCH_X86
 	cons_printf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
 
 	for(i=0;ptr[i].num;i++) {

@@ -21,6 +21,7 @@
 #include "main.h"
 #include "socket.h"
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdarg.h>

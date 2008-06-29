@@ -68,11 +68,7 @@ void radare_init()
 
 void radare_exit()
 {
-	const char *ptr;
-	char* pch;
-
 	int ret;
-	char ch;
 
 	ret = radare_close();
 
@@ -188,7 +184,6 @@ void radare_sync()
 void radare_cmd_foreach(const char *cmd, const char *each)
 {
 	int i=0,j;
-	u64 off;
 	char ch;
 	char *word = NULL;
 	char *str = strdup(each);
@@ -840,7 +835,7 @@ void monitors_run()
 	char path[1024];
 	int i;
 	FILE *fd;
-	char *ptr;
+	const char *ptr;
 	int tmp;
 	struct dirent *de;
 	DIR *dir;
@@ -1342,7 +1337,7 @@ int radare_go()
 }
 
 // TODO: move to cons.c
-static int pipe_fd = -1;
+//static int pipe_fd = -1;
 int pipe_stdout_to_tmp_file(char *tmpfile, char *cmd)
 {
 #if 0

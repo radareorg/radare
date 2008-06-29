@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
+#define u64 unsigned long long
 #define CTXMAXB 3
 
-static int do_byte_diff ( int fd1, int fd2, off_t bytes ) 
+static int do_byte_diff ( int fd1, int fd2, u64 bytes ) 
 {
 	unsigned char block1[4096];
 	unsigned char block2[4096];
@@ -42,12 +42,12 @@ static int do_byte_diff ( int fd1, int fd2, off_t bytes )
 					l = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
 					for ( k = 0 ; k < CTXMAXB ; k ++ )
 					{
-						printf ( "%8.8lx %2.2x\n", bproc+i-CTXMAXB+k,bufb[l] );
+						printf ( "%8.8llx %2.2x\n", bproc+i-CTXMAXB+k,bufb[l] );
 						l  = ( (l+1)>=CTXMAXB)?0:l+1;
 					}
 					inctx=1;
 				}
-				printf ( "%8.8lx %2.2x   |   %2.2x \n", bproc+i , block1[i], block2[i]);
+				printf ( "%8.8llx %2.2x   |   %2.2x \n", bproc+i , block1[i], block2[i]);
 				outctx = CTXMAXB;
 				cf++;
 			}

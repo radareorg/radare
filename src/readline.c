@@ -25,6 +25,7 @@
 #include "cmds.h"
 #include "list.h"
 #include "config.h"
+#include "utils.h"
 #include "radare.h"
 #include "flags.h"
 

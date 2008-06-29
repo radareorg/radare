@@ -622,6 +622,7 @@ struct syscall_t {
 };
 #endif
 
+#if 0
 int arch_print_syscall()
 {
 #if __linux__
@@ -642,7 +643,8 @@ int arch_print_syscall()
 	}
 	
 	//XXX why are there 3 parameters?
-	printf("0x%08x syscall(%d) ", (unsigned int)R_RIP(regs), (unsigned int)R_REAX(regs), (int)R_RAX(regs));
+	printf("0x%08llx syscall(%d) ", R_RIP(regs),
+		(unsigned int)R_REAX(regs));
 
 	for(i=0;ptr[i].num;i++) {
 		if (R_REAX(regs) == ptr[i].num) {
@@ -662,6 +664,7 @@ int arch_print_syscall()
 	return -1;
 #endif
 }
+#endif
 
 static regs_t oregs;
 static regs_t nregs;

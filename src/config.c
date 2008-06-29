@@ -167,7 +167,9 @@ const char *config_get(const char *name)
 	node = config_node_get(name);
 	if (node) {
 		if (node->flags & CN_BOOL)
-			return ((!strcmp("true", node->value)) || (!strcmp("1", node->value)))?1:NULL; //"true":NULL; //?"true":"false";
+			return (const char *)
+				(((!strcmp("true", node->value))
+				 || (!strcmp("1", node->value)))?1:NULL);
 		return node->value;
 	}
 
@@ -433,8 +435,7 @@ static int config_verbose_callback(void *data)
 
 static int config_wmode_callback(void *data)
 {
-	struct config_node_t *node = data;
-
+	//struct config_node_t *node = data;
 	//if (node && node->i_value)
 	// XXX: strange magic conditional
 	if (config.fd != -1 && config.file && !config.debug) // && config_new.lock)

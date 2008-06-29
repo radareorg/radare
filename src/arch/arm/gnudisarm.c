@@ -1,5 +1,6 @@
 /* trampoline to the gnu disassembler for arm */
 #include <radare.h>
+#include <cons.h>
 #include <dis-asm.h>
 #include <string.h>
 

@@ -649,19 +649,19 @@ int debug_getsignal(siginfo_t *si)
 	return 0;
 }
 
-inline int debug_contp(int pid)
+int debug_contp(int pid)
 {
-	return ptrace(PTRACE_CONT, pid, PTRACE_PC, 0);
+	return ptrace(PTRACE_CONT, pid, (u32)arch_pc(pid), 0);
 }
 
-inline int debug_contscp()
+int debug_contscp()
 {
-	return ptrace(PTRACE_SYSCALL, ps.tid, PTRACE_PC, 0);
+	return ptrace(PTRACE_SYSCALL, ps.tid, (u32)arch_pc(ps.tid), 0);
 }
 
-inline int debug_os_steps()
+int debug_os_steps()
 {
-	return ptrace(PTRACE_SINGLESTEP, ps.tid, PTRACE_PC, 0);
+	return ptrace(PTRACE_SINGLESTEP, ps.tid, (u32)arch_pc(ps.tid), 0);
 }
 
 int debug_dispatch_wait()

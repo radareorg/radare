@@ -778,7 +778,6 @@ int debug_write(pid_t pid, void *data, int length)
 
 int debug_skip(int times)
 {
-	regs_t reg;
 	unsigned char buf[16];
 	struct aop_t aop;
 	int len;
@@ -902,7 +901,7 @@ int debug_stepbp(int times)
 			len = arch_aop(pc, bytes, &aop);
 			ptr += len;
 		}
-		printf("Stepping %d opcodes using breakpoint at %08llx\n", ptr);
+		printf("Stepping %d opcodes using breakpoint at %08llx\n", times, ptr);
 		bp0 = debug_bp_set(NULL, ptr, BP_SOFT);
 		debug_cont(0);
 		debug_bp_rm_addr(ptr);
@@ -915,8 +914,8 @@ int debug_stepbp(int times)
 int debug_step(int times)
 {
 	unsigned char opcode[32];
-	addr_t pc, off;
-	addr_t old_pc = 0;
+	u64 pc, off;
+	u64 old_pc = 0;
 	const char *tracefile;
 	const char *flagregs;
 	int ret;
@@ -998,7 +997,7 @@ int debug_step(int times)
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
-				sprintf(buf, "CC %d %s @ 0x%08x", ps.steps, ptr, (unsigned int)pc);
+				sprintf(buf, "CC %d %s @ 0x%08llx", ps.steps, ptr, pc);
 				config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer
@@ -1201,8 +1200,8 @@ void debug_print_bps()
 			if(ps.bps[i].addr > 0) { 
 				string_flag_offset(str, ps.bps[i].addr);
 				if(ps.bps[i].hw)
-					eprintf(" 0x%08x HARD %s\n", ps.bps[i].addr, str); 
-				else	eprintf(" 0x%08x SOFT %s\n", ps.bps[i].addr, str);
+					eprintf(" 0x%08llx HARD %s\n", ps.bps[i].addr, str); 
+				else	eprintf(" 0x%08llx SOFT %s\n", ps.bps[i].addr, str);
 				bps--;	
 			}
 		}

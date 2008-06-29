@@ -25,6 +25,9 @@
 #if __UNIX__ || __CYGWIN__
 #include <dlfcn.h>
 #endif
+#ifdef VALA
+#include <gtk/gtk.h>
+#endif
 
 plugin_t plugins[MAXPLUGINS];
 plugin_t plugins_backup[MAXPLUGINS];

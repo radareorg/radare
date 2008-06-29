@@ -87,7 +87,6 @@ CMD_DECL(seek0);
 CMD_DECL(invert);
 CMD_DECL(insert);
 CMD_DECL(add_comment);
-CMD_DECL(show_environ);
 CMD_DECL(edit_comment);
 CMD_DECL(yank);
 CMD_DECL(yank_paste);
@@ -204,14 +203,6 @@ CMD_DECL(invert)
 {
 	int inv = config_get_i("cfg.inverse")^1;
 	config_set("cfg.inverse", inv?"true":"false");
-}
-
-CMD_DECL(show_environ)
-{
-	CLRSCR();
-	radare_cmd("%", 0);
-	press_any_key();
-	CLRSCR();
 }
 
 CMD_DECL(zoom_reset)
@@ -572,15 +563,7 @@ CMD_DECL(insert_string)
 
 CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe int _write?
 {
-	int ret, inc = 0;
-	unsigned char key;
-	unsigned char byte;
-	int bytes = 0;
-	int count = 0;
-	int tmp = 0;
-	//--
 	char buf[1025];
-	char buf2[64];
 	char *dl_prompt_old = dl_prompt;
 	u64 oseek = config.seek;
 

@@ -123,7 +123,7 @@ const char *cons_get_color(int ch)
 
 int cons_palette_init(const unsigned char *pal)
 {
-	int palstrlen = strlen(pal);
+	int palstrlen = strlen((const char *)pal);
 	int i,j=1,k;
 
 	if (pal==NULL || pal[0]=='\0') {

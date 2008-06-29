@@ -1,3 +1,5 @@
+#ifndef _INCLUDE_CONS_H_
+#define _INCLUDE_CONS_H_
 
 /* plain colors */
 #define C_BLACK    "\e[30m"
@@ -74,3 +76,6 @@ void cons_set_raw(int b);
 int cons_get_real_columns();
 int cons_get_columns();
 int cons_palette_init(const unsigned char *pal);
+void cons_printf(const char *format, ...);
+
+#endif

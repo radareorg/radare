@@ -162,7 +162,7 @@ int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
 	return arch_set_wp_hw(addr, DR_RW_EXECUTE);
 }
 
-int arch_rm_bp_hw(struct bp_t *bp)
+int arch_bp_rm_hw(struct bp_t *bp)
 {
 	int i; 
 	unsigned long addr;
@@ -253,7 +253,7 @@ int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 	return 0;
 }
 
-int arch_rm_bp_soft(struct bp_t *bp)
+int arch_bp_rm_soft(struct bp_t *bp)
 {
 	debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 	return 0;

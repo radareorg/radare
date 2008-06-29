@@ -76,7 +76,6 @@ void data_print (u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t p
 int hex2int (unsigned char *val, unsigned char c);
 int get_cmp(const char *str0, const char *str1);
 int radare_open(int);
-int string_flag_offset(char *buf, unsigned long long seek);
 int yesno(int def, const char *fmt, ...);
 // write modes
 enum {
@@ -104,5 +103,7 @@ int iswhitespace(char ch);
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);
 void getHTTPDate(char *DATE);
 int strhash(const char *str);
+char *str_first_word(const char *string);
+const char *get_tmp_dir();
 
 #endif

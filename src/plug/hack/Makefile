@@ -27,7 +27,7 @@ scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
 
 python.${SO}:
-	-${CC} python.c ${SHARED_CFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO}
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO}
 
 #perl.${SO}:
 #	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
