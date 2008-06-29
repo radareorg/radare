@@ -38,7 +38,7 @@ static char *ins_buf;
 
 #ifdef __linux__
 
-static unsigned long dr_get (int reg)
+unsigned long dr_get (int reg)
 {
 	unsigned long val;
 
@@ -48,7 +48,7 @@ static unsigned long dr_get (int reg)
   	return val;
 }
 
-static int dr_set (int reg, unsigned long val)
+int dr_set (int reg, unsigned long val)
 {
 	int ret;
 
@@ -60,12 +60,12 @@ static int dr_set (int reg, unsigned long val)
 #else
 /* NOT YET */
 
-static unsigned long dr_get(int reg)
+unsigned long dr_get(int reg)
 {
 	return 0L;
 }
 
-static int dr_set(int reg, unsigned long val)
+int dr_set(int reg, unsigned long val)
 {
 	return 0;
 }
@@ -73,28 +73,28 @@ static int dr_set(int reg, unsigned long val)
 #endif
 
 
-inline static void dr_set_control (unsigned long control)
+inline void dr_set_control (unsigned long control)
 {
 	dr_set(DR_CONTROL, control);
 }
 
-inline static unsigned dr_get_control ()
+inline unsigned dr_get_control ()
 {
 	dr_get(DR_CONTROL);
 	return 0; //for compiler warning
 }
 
-inline static void dr_set_addr (int regnum, unsigned long addr)
+inline void dr_set_addr (int regnum, unsigned long addr)
 {
 	dr_set(regnum, addr);
 }
 
-inline static void dr_reset_addr (int regnum)
+inline void dr_reset_addr (int regnum)
 {
 	dr_set(regnum, 0L);
 }
 
-inline static unsigned long dr_get_status (void)
+inline unsigned long dr_get_status (void)
 {
 	return dr_get(DR_STATUS);
 }
@@ -195,7 +195,7 @@ void dr_list()
 	}
 }
 
-static int arch_bp_hw_state(unsigned long addr, int enable)
+int arch_bp_hw_state(unsigned long addr, int enable)
 {
 	unsigned long control;
 	int i;
@@ -303,6 +303,8 @@ int arch_restore_bp(struct bp_t *bp)
 		debug_getregs(ps.tid, &regs);
 		arch_bp_soft_enable(bp);
 	}
+
+	return 0;
 }
 
 struct bp_t *arch_stopped_bp()

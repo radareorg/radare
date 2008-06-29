@@ -35,6 +35,8 @@
 #include "../libps2fd.h"
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -72,7 +74,7 @@ struct regs_off roff[] = {
      63 #define	tR15	11
 #endif
 
-long long arch_syscall(int pid, int sc, ...)
+u64 arch_syscall(int pid, int sc, ...)
 {
 	long long ret = (off_t)-1;
 #if __linux__
@@ -329,7 +331,7 @@ int arch_restore_registers()
 	while(!feof(fd)) {
 		fgets(buf, 1023, fd);
 		if (feof(fd)) break;
-		sscanf(buf, "%3s 0x%08x", reg, &val);
+		sscanf(buf, "%3s 0x%08x", reg, (unsigned int*) &val);
 		//printf("	case %d: // %s \n", ( reg[0] + (reg[1]<<8) + (reg[2]<<16) ), reg);
 		switch( reg[0] + (reg[1]<<8) + (reg[2]<<16) ) {
 		case 7889253: R_RAX(regs) = val; break;
@@ -357,7 +359,7 @@ int arch_inject(unsigned char *data, int size)
         int ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) return 1;
 	//ptrace_read_at(regs.eip = ptr;
-//	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
+	//ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 	return 0;
 }
 
@@ -384,7 +386,8 @@ int arch_backtrace()
 		return 0;
 
 	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
-	if (ret < 0) return 1;
+	if (ret < 0)
+		return 1;
 
 	debug_read_at(ps.tid, &buf, 4, R_RIP(regs));
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
@@ -440,7 +443,8 @@ int arch_ret()
 		return 0;
 
 	debug_getregs(ps.tid, &regs);
-	if (ret < 0) return 1;
+	if (ret < 0)
+		return 1;
 	debug_read_at(ps.tid, &R_RIP(regs), 4, R_RSP(regs));
 	R_RSP(regs)+=4;
 	debug_setregs(ps.tid, &regs);
@@ -459,16 +463,17 @@ int arch_call(char *arg)
 
 	addr = get_offset(arg);
 	ret = debug_getregs(ps.tid, &regs);
-	if (ret < 0) return 1;
+	if (ret < 0)
+		return 1;
 	R_RSP(regs)-=4;
 	debug_write_at(ps.tid, (unsigned char*)&R_RIP(regs), 4, R_RSP(regs));
 	if (arg[0]=='+')
 		R_RIP(regs) += addr;
 	else
-	if (arg[0]=='-')
-		R_RIP(regs) -= addr;
-	else
-		R_RIP(regs) = addr;
+		if (arg[0]=='-')
+			R_RIP(regs) -= addr;
+		else
+			R_RIP(regs) = addr;
 	ret = debug_setregs(ps.tid, &regs);
 
 	return 0;
@@ -904,126 +909,128 @@ void main(void) {
 $
 #endif
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-	char	bak[4];
-        void*   ret = (void *)-1;
+	regs_t  reg, reg_saved;
+	int     status;
+	char    bak[4];
+	void*   ret = (void *)-1;
 
 	/* save old registers */
-        debug_getregs(ps.tid, &reg_saved);
+	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
 	// XXX: FUCK MMAP GOES TO ESP!
 
 	/* mmap call */
-        R_RAX(reg) = 90;    // SYS_mmap
-        R_RBX(reg) = addr;  // mmap addr
-        R_RCX(reg) = size;  // size
-        R_RDX(reg) = 0x7;   // perm
-        R_RDX(reg) = 0x1;   // options
-        R_RSI(reg) = fd;    // fd
-        R_RDI(reg) = 0;     // offset
 
-        /* write syscall interrupt code */
-        R_RIP(reg) = R_RSP(reg) - 4;
+	R_RAX(reg) = 90;    // SYS_mmap
+	R_RBX(reg) = addr;  // mmap addr
+	R_RCX(reg) = size;  // size
+	R_RDX(reg) = 0x7;   // perm
+	R_RDX(reg) = 0x1;   // options
+	R_RSI(reg) = fd;    // fd
+	R_RDI(reg) = 0;     // offset
+
+	/* write syscall interrupt code */
+	R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
-        debug_read_at(ps.tid, bak, 4, R_RIP(reg));
+	debug_read_at(ps.tid, bak, 4, R_RIP(reg));
 
 	/* write SYSCALL OPS */
 	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
 
-        /* set new registers value */
-        debug_setregs(ps.tid, &reg);
+	/* set new registers value */
+	debug_setregs(ps.tid, &reg);
 
-        /* continue */
-        debug_contp(ps.tid);
+	/* continue */
+	debug_contp(ps.tid);
 
-        /* wait to stop process */
-        waitpid(ps.tid, &status, 0);
+	/* wait to stop process */
+	waitpid(ps.tid, &status, 0);
 
 	if(WIFSTOPPED(status)) {
-        	/* get new registers value */
-        	debug_getregs(ps.tid, &reg);
+		/* get new registers value */
+		debug_getregs(ps.tid, &reg);
 
-        	/* read allocated address */
-        	ret = (void *)R_RAX(reg);
+		/* read allocated address */
+		ret = (void *)R_RAX(reg);
+
 		if (ret != 0) {
 			eprintf("oops\n");
 			return 0;
 		}
 	}
 
-        /* restore memory */
+	/* restore memory */
 	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
 
-        /* restore registers */
-        debug_setregs(ps.tid, &reg_saved);
+	/* restore registers */
+	debug_setregs(ps.tid, &reg_saved);
+
+	return (addr_t) addr;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
-
-	return (void*) addr;
 } 
 
 addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-	char	bak[4];
-        void*   ret = (void *)-1;
+	regs_t  reg, reg_saved;
+	int     status;
+	char    bak[4];
+	void*   ret = (void *)-1;
 
 	/* save old registers */
-        debug_getregs(ps.tid, &reg_saved);
+	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
 	/* mmap call */
-        R_RAX(reg) = 0xc0;
+	R_RAX(reg) = 0xc0;
 	R_RSI(reg) = 0x21;
-        R_RDI(reg) = 0;
-        R_RBP(reg) = 0;
-        R_RDX(reg) = 5;
-        R_RCX(reg) = (size + PAGE_SIZE - 1) & PAGE_MASK;
-        R_RBX(reg) = 0;
+	R_RDI(reg) = 0;
+	R_RBP(reg) = 0;
+	R_RDX(reg) = 5;
+	R_RCX(reg) = (size + PAGE_SIZE - 1) & PAGE_MASK;
+	R_RBX(reg) = 0;
 
-        /* write syscall interrupt code */
-        R_RIP(reg) = R_RSP(reg) - 4;
+	/* write syscall interrupt code */
+	R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
-        debug_read_at(ps.tid, bak, 4, R_RIP(reg));
+	debug_read_at(ps.tid, bak, 4, R_RIP(reg));
 
 	/* write SYSCALL OPS */
 	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
 
-        /* set new registers value */
-        debug_setregs(ps.tid, &reg);
+	/* set new registers value */
+	debug_setregs(ps.tid, &reg);
 
-        /* continue */
-        debug_contp(ps.tid);
+	/* continue */
+	debug_contp(ps.tid);
 
 	/* set real allocated size */
 	*rsize = R_RCX(reg);
 
-        /* wait to stop process */
-        waitpid(ps.tid, &status, 0);
+	/* wait to stop process */
+	waitpid(ps.tid, &status, 0);
 
 	if(WIFSTOPPED(status)) {
-        	/* get new registers value */
-        	debug_getregs(ps.tid, &reg);
+		/* get new registers value */
+		debug_getregs(ps.tid, &reg);
 
-        	/* read allocated address */
-        	ret = (void *)R_RAX(reg);
+		/* read allocated address */
+		ret = (void *)R_RAX(reg);
 	}
 
-        /* restore memory */
+	/* restore memory */
 	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
 
-        /* restore registers */
-        debug_setregs(ps.tid, &reg_saved);
+	/* restore registers */
+	debug_setregs(ps.tid, &reg_saved);
 
-	return ret;
+	return (addr_t) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1033,52 +1040,52 @@ addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
 addr_t arch_get_sighandler(int signum)
 {
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-	char	bak[8];
-        void*   ret = (void *)-1;
+	regs_t  reg, reg_saved;
+	int     status;
+	char    bak[8];
+	void*   ret = (void *)-1;
 
 	/* save old registers */
-        debug_getregs(ps.tid, &reg_saved);
+	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
-        R_RAX(reg) = 0xae;
-        R_RSI(reg) = 8;
-        R_RDX(reg) = R_RSP(reg) - 8;
-        R_RCX(reg) = 0;
-        R_RBX(reg) = signum;
+	R_RAX(reg) = 0xae;
+	R_RSI(reg) = 8;
+	R_RDX(reg) = R_RSP(reg) - 8;
+	R_RCX(reg) = 0;
+	R_RBX(reg) = signum;
 
-        /* save memory */
-        debug_read_at(ps.tid, bak, 8, R_RDX(reg));
+	/* save memory */
+	debug_read_at(ps.tid, bak, 8, R_RDX(reg));
 
-        /* write -1 */
+	/* write -1 */
 	debug_write_at(ps.tid, (unsigned char*)&ret, 4, R_RDX(reg));
 
-        /* write syscall interrupt code */
-        R_RIP(reg) = R_RSP(reg) - 4;
+	/* write syscall interrupt code */
+	R_RIP(reg) = R_RSP(reg) - 4;
 	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
 
-        /* set new registers value */
-        debug_setregs(ps.tid, &reg);
+	/* set new registers value */
+	debug_setregs(ps.tid, &reg);
 
-        /* continue */
-        debug_contp(ps.tid);
+	/* continue */
+	debug_contp(ps.tid);
 
-        /* wait to stop process */
-        waitpid(ps.tid, &status, 0);
+	/* wait to stop process */
+	waitpid(ps.tid, &status, 0);
 
 	if(WIFSTOPPED(status)) {
-        	/* read sighandler address */
-        	debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
+		/* read sighandler address */
+		debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
 	}
 
-        /* restore memory */
+	/* restore memory */
 	debug_write_at(ps.tid, (unsigned char*)bak, 8, R_RSP(reg_saved) - 8);
 
-        /* restore registers */
-        debug_setregs(ps.tid, &reg_saved);
+	/* restore registers */
+	debug_setregs(ps.tid, &reg_saved);
 
-	return ret;
+	return (addr_t) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1113,50 +1120,50 @@ void signal_set(int signum, off_t address)
 int arch_mprotect(addr_t addr, unsigned int size, int perms)
 {
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-        char    bak[4];
-        int   ret = -1;
+	regs_t  reg, reg_saved;
+	int     status;
+	char    bak[4];
+	int     ret = -1;
 
-        /* save old registers */
-        debug_getregs(ps.tid, &reg_saved);
-        memcpy(&reg, &reg_saved, sizeof(reg));
+	/* save old registers */
+	debug_getregs(ps.tid, &reg_saved);
+	memcpy(&reg, &reg_saved, sizeof(reg));
 
-        R_RAX(reg) = 0x7d;
-        R_RCX(reg) = size;
-        R_RDX(reg) = perms;
-        R_RBX(reg) = (long long) addr;
+	R_RAX(reg) = 0x7d;
+	R_RCX(reg) = size;
+	R_RDX(reg) = perms;
+	R_RBX(reg) = (long long) addr;
 
-        R_RIP(reg) = R_RSP(reg) - 4;
+	R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
 	debug_read_at(ps.tid, bak, 4, R_RIP(reg));
 
-        /* write syscall interrupt code */
-        debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
+	/* write syscall interrupt code */
+	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
 
-        /* set new registers value */
-        debug_setregs(ps.tid, &reg);
+	/* set new registers value */
+	debug_setregs(ps.tid, &reg);
 
-        /* continue */
-        debug_contp(ps.tid);
+	/* continue */
+	debug_contp(ps.tid);
 
-        /* wait to stop process */
-        waitpid(ps.tid, &status, 0);
+	/* wait to stop process */
+	waitpid(ps.tid, &status, 0);
+
 	if(WIFSTOPPED(status)) {
+		/* get new registers value */
+		debug_getregs(ps.tid, &reg);
 
-        	/* get new registers value */
-        	debug_getregs(ps.tid, &reg);
-
-        	/* get return code */
-        	ret = (int) R_RAX(reg);
+		/* get return code */
+		ret = (int) R_RAX(reg);
 	}
 
-        /* restore memory */
+	/* restore memory */
 	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
 
-        /* restore registers */
-        debug_setregs(ps.tid, &reg_saved);
+	/* restore registers */
+	debug_setregs(ps.tid, &reg_saved);
 
 	return ret;
 #else
@@ -1168,47 +1175,47 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
 addr_t arch_set_sighandler(int signum, addr_t handler)
 {
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-	char	bak[8];
-        void*   ret = (void *)-1;
+	regs_t  reg, reg_saved;
+	int     status;
+	char    bak[8];
+	void*   ret = (void *)-1;
 
 	/* save old registers */
-        debug_getregs(ps.tid, &reg_saved);
+	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
-        R_RAX(reg) = 0x30;
-        R_RBX(reg) = signum;
-        R_RCX(reg) = handler;
-        R_RDX(reg) = R_RSP(reg) - 8;
+	R_RAX(reg) = 0x30;
+	R_RBX(reg) = signum;
+	R_RCX(reg) = handler;
+	R_RDX(reg) = R_RSP(reg) - 8;
 
-        /* save memory */
-        debug_read_at(ps.tid, bak, 8, R_RDX(reg));
+	/* save memory */
+	debug_read_at(ps.tid, bak, 8, R_RDX(reg));
 
-        /* write -1 */
+	/* write -1 */
 	debug_write_at(ps.tid, (unsigned char*)&ret, 4, R_RDX(reg));
 
-        /* write syscall interrupt code */
-        R_RIP(reg) = R_RSP(reg) - 4;
+	/* write syscall interrupt code */
+	R_RIP(reg) = R_RSP(reg) - 4;
 	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
 
-        /* set new registers value */
-        debug_setregs(ps.tid, &reg);
+	/* set new registers value */
+	debug_setregs(ps.tid, &reg);
 
-        /* continue */
-        debug_contp(ps.tid);
+	/* continue */
+	debug_contp(ps.tid);
 
-        /* wait to stop process */
-        waitpid(ps.tid, &status, 0);
+	/* wait to stop process */
+	waitpid(ps.tid, &status, 0);
 
 	if(WIFSTOPPED(status)) {
-        	/* read sighandler address */
-        	debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
+		/* read sighandler address */
+		debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
 	}
 
-        /* restore memory */
+	/* restore memory */
 	debug_write_at(ps.tid, (unsigned char*)bak, 8, R_RSP(reg_saved) - 8);
-        debug_getregs(ps.tid, &reg);
+	debug_getregs(ps.tid, &reg);
 	if (R_RAX(reg)==0) {
 		eprintf("Signal %d handled by 0x%08x\n", signum, handler);
 	} else {
@@ -1218,10 +1225,10 @@ addr_t arch_set_sighandler(int signum, addr_t handler)
 			eprintf("Error\n");
 	}
 
-        /* restore registers */
-        debug_setregs(ps.tid, &reg_saved);
+	/* restore registers */
+	debug_setregs(ps.tid, &reg_saved);
 
-	return ret;
+	return (addr_t) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1273,10 +1280,10 @@ int arch_is_stepoverable(const unsigned char *cmd)
 	if (cmd[0]==(unsigned char)0xe8) // call
 		return 5;
 	
-	return arch_is_soft_stepoverable((char*)cmd);
+	return arch_is_soft_stepoverable(cmd);
 }
 
-#warning "FIXMI XXX (TM): following code is a party..."
+#warning "FIXME: following code is a party..."
 ull get_ret_sf(ull rsp, ull *ret_pos)
 {
 	ull pos;
@@ -1366,7 +1373,8 @@ struct list_head *arch_bt()
 
 int arch_stackanal()
 {
-#warning "FIXMI XXX (TM): I prefered to leave this function void in favor of humand kind."
+	#warning "FIXME: code is missing"
+	return 0;
 }
 
 u64 get_reg(char *reg)
@@ -1382,7 +1390,7 @@ u64 get_reg(char *reg)
 
 void arch_view_bt(struct list_head *sf)
 {
-#warning "FIXMI XXX (TM): Would be so nice to have some code inside my short life."
+	#warning "FIXME: code is missing"
 }
 
 void free_bt(struct list_head *sf)
@@ -1407,6 +1415,8 @@ void free_bt(struct list_head *sf)
 
 addr_t arch_dealloc_page(addr_t addr, unsigned long size)
 {
+	#warning "FIXME: code is missing"
+	return 0;
 }
 
 #endif

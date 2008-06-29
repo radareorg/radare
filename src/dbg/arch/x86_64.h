@@ -5,7 +5,7 @@
 
 int arch_jmp(u64 ptr);
 addr_t arch_mmap(int fd, int size, addr_t addr);
-long long arch_syscall(int pid, int sc, ...);
+//long long arch_syscall(int pid, int sc, ...);
 int debug_dr(char *cmd);
 int arch_is_jump(unsigned char *buf);
 addr_t arch_get_entrypoint();
@@ -32,16 +32,14 @@ int arch_is_call(const char *cmd);
 int arch_is_soft_stepoverable(const unsigned char *opcode);
 
 //x86_64-bp.c
-static unsigned long dr_get (int reg);
-static int dr_set (int reg, unsigned long val);
-static unsigned long dr_get(int reg);
-static int dr_set(int reg, unsigned long val);
-static inline void dr_set_control (unsigned long control);
-static inline unsigned dr_get_control ();
-static inline void dr_set_addr (int regnum, unsigned long addr);
-static inline void dr_reset_addr (int regnum);
-static inline unsigned long dr_get_status (void);
-static int arch_bp_hw_state(unsigned long addr, int enable);
+unsigned long dr_get (int reg);
+int dr_set (int reg, unsigned long val);
+inline void dr_set_control (unsigned long control);
+inline unsigned dr_get_control ();
+inline void dr_set_addr (int regnum, unsigned long addr);
+inline void dr_reset_addr (int regnum);
+inline unsigned long dr_get_status (void);
+int arch_bp_hw_state(unsigned long addr, int enable);
 void dr_init();
 void dr_list();
 int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type);
