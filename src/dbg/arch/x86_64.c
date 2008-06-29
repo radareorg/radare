@@ -511,7 +511,7 @@ struct syscall_t {
   char *name;
   int num;
   int args;
-} syscalls_linux_x86[] = {
+} syscalls_linux_x86_64[] = {
   { "exit", 1, 1 },
   { "fork", 2, 0 },
   { "read", 3, 3 },
@@ -561,7 +561,7 @@ struct syscall_t {
   char *name;
   int num;
   int args;
-} syscalls_netbsd_x86[] = {
+} syscalls_netbsd_x86_64[] = {
   { "syscall", 0, 4 },
   { "exit", 1, 1 },
   { "fork", 2, 0 },
@@ -620,10 +620,10 @@ struct syscall_t {
 int arch_print_syscall()
 {
 #if __linux__
-	struct syscall_t *ptr = (struct syscall_t*) &syscalls_linux_x86;
+	struct syscall_t *ptr = (struct syscall_t*) &syscalls_linux_x86_64;
 #endif
 #if __NetBSD__
-	struct syscall_t *ptr = &syscalls_netbsd_x86;
+	struct syscall_t *ptr = &syscalls_netbsd_x86_64;
 #endif
 
 #if __linux__ || __NetBSD__

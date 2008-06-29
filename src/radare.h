@@ -142,9 +142,9 @@ void disassemble(int len, int rows);
 void radare_search_aes();
 int aes_key_test(unsigned char *buf);
 
-int project_save(char *file);
+int project_save(const char *file);
 void project_close();
-int project_open(char *file);
+int project_open(const char *file);
 int project_info(const char *file);
 
 int rabin_load();

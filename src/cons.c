@@ -712,6 +712,8 @@ int yesno(int def, const char *fmt, ...)
 		cons_set_raw(1);
 		read(0, &key, 1); write(2, "\n", 1);
 		cons_set_raw(0);
+		if (key=='\n'||key=='\r')
+			key = def;
 	} else
 		key = 'y';
 

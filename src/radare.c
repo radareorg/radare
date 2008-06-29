@@ -84,7 +84,8 @@ void radare_exit()
 		#else
 		dl_hist_save(".radare_history");
 		#endif
-
+#if 0
+	// already done
 		/* save project : user confirmation */
 		ptr = config_get("file.project");
 
@@ -103,6 +104,7 @@ void radare_exit()
 			}
 			cons_set_raw(0);
 		}
+#endif
 	}
 	//dl_hist_save(".radare_history");
 	exit(0);

@@ -23,7 +23,7 @@
 #include "flags.h"
 #include "radare.h"
 
-int project_save(char *file)
+int project_save(const char *file)
 {
 	FILE *fd;
 	struct list_head *pos;
@@ -61,7 +61,7 @@ int project_save(char *file)
 	fprintf(fd, "# Comments\n");
 	list_for_each_prev(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		fprintf(fd, "comment=0x"OFF_FMTx" %s\n", cmt->offset, cmt->comment);
+		fprintf(fd, "comment=0x%08llx %s\n", cmt->offset, cmt->comment);
 	}
 	fprintf(fd, "# Code attributes\n");
 	list_for_each(pos, &data) {
@@ -76,7 +76,7 @@ int project_save(char *file)
 
 	fclose(fd);
 
-	config_set("file.project", file);
+	config_set("file.project", strdup(file));
 	cons_printf("Project '%s' saved.\n", file);
 
 	return 1;
@@ -94,7 +94,7 @@ void project_close()
 	cons_flush();
 }
 
-int project_open(char *file)
+int project_open(const char *file)
 {
 	FILE *fd;
 	char buf[1025];
