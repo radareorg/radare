@@ -6,7 +6,7 @@
 
 P=$1
 [ -z "$P" ] && \
-  echo "Usage: proc-map [pid]" && exit
+  echo "Usage: rsc map [pid]" && exit
 
 parse() {
 	b=0 # old value for a
@@ -21,7 +21,7 @@ parse() {
 		[ $i = 1 ] && addr=`echo $a|sed -e s/-/,/ |cut -d , -f 1`
 		if [ $i = 6 ]; then
 			if [ $a = $b ]; then
-				let inc=$(($inc+1))
+				inc=$(($inc+1))
 			else
 				b="$a"
 				inc=0
@@ -33,6 +33,47 @@ parse() {
 	done
 }
 
-if [ -e "/proc/$P/maps" ]; then
-	column -t /proc/$P/maps | parse
+# For BSD
+parse2() {
+	b=0 # old value for a
+	inc=0
+
+	while : ; do
+	read A
+	[ -z "$A" ] && break
+	i=0
+	for a in $A ; do
+		i=$(($i+1))
+		[ $i = 1 ] && addr=`echo $a|sed -e s/-/,/ |cut -d , -f 1`
+		if [ $i = 13 ]; then
+			if [ $a = $b ]; then
+				inc=$(($inc+1))
+			else
+				b="$a"
+				inc=0
+			fi
+			a=`basename $a`
+			echo "f section_${a}_${inc} @ 0x$addr" | sed -e s,/,_,g -e s,-,_,g
+		fi
+	done
+	done
+}
+
+echo "fs maps"
+
+if [ -e "/proc/$P/maps" ] ; then
+	column -t /proc/$P/maps | parse 
+else
+	if [ -e "/proc/$P/map" ] ; then
+		column -t /proc/$P/map | parse2
+	#	cut -d ' ' -f 1,13 /proc/$P/map
+	else
+		echo "oops. no /proc found?" > /dev/stderr
+	fi
 fi
+
+# FreeBSD
+ps_strings=`sysctl kern.ps_strings 2>/dev/null | cut -d : -f 2`
+usrstack=`sysctl kern.usrstack 2>/dev/null | cut -d : -f 2`
+[ -n "${ps_strings}" ] && echo "f kern_ps_strings @ ${ps_strings}"
+[ -n "${usrstack}" ] && echo "f kern_usrstack @ ${usrstack}"

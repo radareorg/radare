@@ -69,6 +69,7 @@ extern plugin_t socket_plugin;
 extern plugin_t winedbg_plugin;
 extern plugin_t winegdb_plugin;
 extern plugin_t gxemul_plugin;
+extern plugin_t shm_plugin;
 extern plugin_t debug_plugin;
 
 #if __linux__

@@ -7,8 +7,12 @@
 
 ===========================================================
 
-* enhacementes for freebsd plz!!1
 * Fix height of screen
+
+debug.elf32_trace: 0
+
+Implement freebsd waiter:
+ > kern.lastpid: 55763 -> wait until changes :O
 
 FileDescriptors
 ===============

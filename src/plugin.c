@@ -270,11 +270,13 @@ void plugin_init()
 #if HAVE_LIB_EWF
 	plugins[last++] = ewf_plugin;
 #endif
+#if __UNIX__
+	plugins[last++] = shm_plugin;
+#endif
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
-	plugins[last++] = posix_plugin;
 	plugins[last++] = posix_plugin;
 
 	//plugins[last++] = winegdb_plugin;

@@ -10,6 +10,7 @@ crOBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
 
 crOBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
 crOBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o plug/io/socket.o
+crOBJ+=plug/io/shm.o
 #plug/io/winegdb.o
 
 # hasher

@@ -62,12 +62,22 @@ int debug_step(int x) {}
 int radare_system(const char *cmd)
 {
 #if __FreeBSD__
+	/* freebsd system() is broken */
+	int fds[2];
 	int st,pid;
 	char *argv[] ={ "/bin/sh", "-c", cmd , NULL};
-	pid = fork();
-	if (pid == 0)
+	pipe(fds);
+	/* not working ?? */
+	//pid = rfork(RFPROC|RFCFDG);
+	pid = vfork();
+	if (pid == 0) {
+		dup2(1, fds[1]);
 		execv(argv[0], argv);
-	else waitpid(pid, &st, 0);
+		_exit(127); /* error */
+	} else {
+		dup2(1, fds[0]);
+		waitpid(pid, &st, 0);
+	}
 	return WEXITSTATUS(st);
 #else
 	return system(cmd);
@@ -1297,8 +1307,10 @@ int radare_go()
 		/* load everything */
 		if (config_get("dbg.syms"))
 			radare_cmd("!syms", 0);
-		if (config_get("dbg.maps"))
+		if (config_get("dbg.maps")) {
 			radare_cmd("!maps", 0);
+			radare_cmd(".!!rsc maps ${DPID}", 0);
+		}
 		if (config_get("dbg.sections"))
 			radare_cmd(":.!rsc flag-sections $FILE", 0);
 		if (config_get("dbg.strings")) {
