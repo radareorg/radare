@@ -227,7 +227,7 @@ int debug_system(const char *command)
 	if (!strcmp(command, "s"))
 		return debug_step(1);
 	else
-		return system(command);
+		return radare_system(command);
 
 	if (!ps.opened)
 		eprintf("No program loaded.\n");

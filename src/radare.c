@@ -59,6 +59,21 @@ static int radare_close();
 int debug_step(int x) {}
 #endif
 
+int radare_system(const char *cmd)
+{
+#if __FreeBSD__
+	int st,pid;
+	char *argv[] ={ "/bin/sh", "-c", cmd , NULL};
+	pid = fork();
+	if (pid == 0)
+		execv(argv[0], argv);
+	else waitpid(pid, &st, 0);
+	return WEXITSTATUS(st);
+#else
+	return system(cmd);
+#endif
+}
+
 void radare_init()
 {
 	config_init(1);
@@ -580,7 +595,7 @@ int radare_cmd(char *command, int log)
 
 // XXX not handled !?!?
 	if (command[0]=='!'&&command[1]=='!') {
-		return system(command+2);
+		return radare_system(command+2);
 	}
 
 	// bypass radare commandline hack ;D

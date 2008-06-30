@@ -1529,7 +1529,7 @@ CMD_DECL(shell)
 
 	prepare_environment(input);
 	if (input[0]=='!')
-		system(input+1);
+		radare_system(input+1);
 	else
 		ret = io_system(input);
 
