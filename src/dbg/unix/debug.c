@@ -54,6 +54,33 @@
 #include "../debug.h"
 #include "procs.h"
 
+#if __FreeBSD__
+int th_init_freebsd(int pid)
+{
+	struct ptrace_lwpinfo lwps[128];
+	int i,n = 0;
+	ptrace(PT_GETLWPLIST, pid, &lwps, sizeof(lwps));
+	ptrace(PT_GETNUMLWPS, pid, &n, sizeof(n));
+	for(i=0;i<n;i++) {
+		cons_printf("lwp(pid=%d)%d id=%d event=%d\n", 
+			pid, i, lwps[i].pl_lwpid, lwps[i].pl_event);
+		/* TODO: add threads here ??? */
+	}
+}
+#endif
+
+#if __BSD__
+int th_info_bsd(int pid)
+{
+	struct ptrace_lwpinfo lwps;
+	int i,n = 0;
+	lwps.pl_lwpid = pid;
+	if (ptrace(PT_LWPINFO, pid, &lwps, sizeof(lwps)) != -1)
+		cons_printf("lwp(pid=%d) id=%d event=%d\n",pid,
+			lwps.pl_lwpid, lwps.pl_event);
+}
+#endif
+
 int debug_os_kill(int pid, int sig)
 {
 	/* prevent killall selfdestruction */
@@ -714,67 +741,67 @@ sleep(1);
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
 
-	if (event_is_ignored(WS_SI(si_signo))) {
-		eprintf("signal %d ignored\n",WS_SI(si_signo));
-		return 1;
-	}
-			// 0 is for bsd?
-			if(
-#if __linux__
-			WS_SI(si_signo) ==  SIGTRAP
-#else
-			WS_SI(si_signo) == 0 /* bsd */
-#endif
-			) {
-#if __linux__ && !__x86_64__
-				/* linux threads support */
-				if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {
-					if(ptrace (PTRACE_GETEVENTMSG, ps.pid, 0, &tid) == -1) {
-						perror("ptrace_geteventmsg");
-						return -1;	
-					}
-				
-					printf("____[ New thread created ]____\ntid: %d\n", tid);
+		if (event_is_ignored(WS_SI(si_signo))) {
+			eprintf("signal %d ignored\n",WS_SI(si_signo));
+			return 1;
+		}
+		// 0 is for bsd?
+		if(
+	#if __linux__
+		WS_SI(si_signo) ==  SIGTRAP
+	#else
+		WS_SI(si_signo) == 0 /* bsd */
+	#endif
+		) {
+	#if __linux__ && !__x86_64__
+			/* linux threads support */
+			if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {
+			if(ptrace (PTRACE_GETEVENTMSG, ps.pid, 0, &tid) == -1) {
+				perror("ptrace_geteventmsg");
+				return -1;	
+			}
+		
+			printf("____[ New thread created ]____\ntid: %d\n", tid);
 
-					ret = debug_waitpid(tid, &status);
+			ret = debug_waitpid(tid, &status);
 
-				        if (ret == -1)
-						eprintf(":error waiting for new child\n");
-          				else if (ret != tid)
-						eprintf(":error return tid %d != %d\n", ret, tid);
-          				else if (!WIFSTOPPED (status) ||
-						 WSTOPSIG (status) != SIGSTOP)
-						eprintf(":error unknown state thread %d\n", tid);
-					else {
-						if(!(th = init_th(tid, status))) {
-							perror("init_th");
-							return -1;
-						}
-						add_th(th);
-
-						ps.tid = tid;
-						ret = 1;
-					}
-					return ret;
+			if (ret == -1)
+				eprintf(":error waiting for new child\n");
+			else if (ret != tid)
+				eprintf(":error return tid %d != %d\n", ret, tid);
+			else if (!WIFSTOPPED (status) ||
+				 WSTOPSIG (status) != SIGSTOP)
+				eprintf(":error unknown state thread %d\n", tid);
+			else {
+				if(!(th = init_th(tid, status))) {
+					perror("init_th");
+					return -1;
 				}
+				add_th(th);
+
+				ps.tid = tid;
+				ret = 1;
+			}
+			return ret;
+		}
 #endif
-				/*  stopped by? */
-				bp = (struct bp_t*) arch_stopped_bp();
-				if(bp) {
-					WS(event) = BP_EVENT;
-					WS(bp) = bp;
-				} 
-			} else if(WS_SI(si_signo) ==  SIGSEGV) {
-				/* search if changed permissions at region */
-				//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
-				/* TODO: manage access to protected pages */
-				;
-				eprintf("Segmentation fault!\n");
-			} else
-			if (WS_SI(si_signo)==19) {
-				eprintf("CLONE HAS BEEN INVOKED\n");
-			} else
-				eprintf("Unknown signal %d received\n", WS_SI(si_signo));
+			/*  stopped by? */
+			bp = (struct bp_t*) arch_stopped_bp();
+			if(bp) {
+				WS(event) = BP_EVENT;
+				WS(bp) = bp;
+			} 
+		} else if(WS_SI(si_signo) ==  SIGSEGV) {
+			/* search if changed permissions at region */
+			//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
+			/* TODO: manage access to protected pages */
+			;
+			eprintf("Segmentation fault!\n");
+		} else
+		if (WS_SI(si_signo)==19) {
+			eprintf("CLONE HAS BEEN INVOKED\n");
+		} else
+			eprintf("Unknown signal %d received\n", WS_SI(si_signo));
 		}
 	} else
 		eprintf("What?\n");

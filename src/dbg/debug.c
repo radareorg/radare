@@ -630,15 +630,22 @@ int debug_info(char *arg)
 int debug_th(char *cmd)
 {
 	int newpid = atoi(cmd);
-	if (newpid !=0) {
-		ps.tid = newpid;
-	}
+
 	if (strchr(cmd,'?')) {
 		eprintf("Usage: th [pid]\n");
 		eprintf("- Change current thread\n");
 		eprintf("- Use !pid to see other processes\n");
 		return 0;
 	} 
+
+	if (newpid !=0)
+		ps.tid = newpid;
+#if __FreeBSD__
+	th_init_freebsd(ps.tid);
+#endif
+#if __BSD__
+	th_info_bsd(ps.tid);
+#endif
 	return th_list();
 }
 

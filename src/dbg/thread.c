@@ -81,8 +81,7 @@ TH_INFO	*get_th(int tid)
 	struct list_head *pos;
 
 	list_for_each_prev(pos, &ps.th_list) {
-
-		TH_INFO		*th = list_entry(pos, TH_INFO, list);
+		TH_INFO	*th = list_entry(pos, TH_INFO, list);
 
 		if(tid == th->tid)
 			return th;
