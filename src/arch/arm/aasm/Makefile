@@ -2,9 +2,9 @@ include ../../../../config.mk
 CFLAGS+=-DDATADIR=\"${DATADIR}\"
 AOBJ=aasm.o utils.o elf.o
 
-ifeq ($(DARWIN),1)
-CFLAGS+=-fnested-functions
-endif
+#ifeq ($(DARWIN),1)
+#CFLAGS+=-fnested-functions
+#endif
 
 .SUFFIXES: .c .o
 .c.o:

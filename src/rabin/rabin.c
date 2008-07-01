@@ -299,8 +299,13 @@ void rabin_show_exports(char *file)
 		system(buf);
 		break;
 	case FILETYPE_MACHO:
-		sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /'", file);
+	   #if __DARWIN_BYTE_ORDER
+		sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
 		system(buf);
+	   #else
+		sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
+		system(buf);
+	   #endif
 		break;
 	}
 }
@@ -342,6 +347,10 @@ int rabin_identify_header()
                 	filetype = FILETYPE_CLASS;
 		else	filetype = FILETYPE_MACHO;
 	else
+        if (!memcmp(buf, "\xFE\xED\xFA\xCE", 4)) {
+		filetype = FILETYPE_MACHO;
+		printf("endian = big\n");
+	} else	
 	if (!memcmp(buf, "dex\n009\0", 8))
 		filetype = FILETYPE_DEX;
 	else

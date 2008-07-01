@@ -226,13 +226,14 @@ int radare_dump(const char *arg, int size)
 	return 1;
 }
 
+#if DEBUGGER
 int radare_dump_section(char *tmpfile)
 {
 	u64 f, t, s;
 	int ret = radare_get_region(&f, &t);
 	s = t-f;
 
-	if (!ret || f == 0 || t == 0) {
+	if (ret == 0 || f == 0 || t == 0) {
 		cons_printf("Cannot get region range\n");
 		return 1;
 	}
@@ -242,6 +243,7 @@ int radare_dump_section(char *tmpfile)
 
 	return 0;
 }
+#endif
 
 u64 radare_seek(u64 offset, int whence)
 {
