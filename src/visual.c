@@ -44,6 +44,8 @@
 #include "flags.h"
 #include "undo.h"
 
+static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
+
 extern const char *dl_prompt;
 static unsigned char *yank_buffer = NULL;
 static int yank_buffer_size = 0;
@@ -1332,6 +1334,7 @@ CMD_DECL(visual)
 			if (config.cursor_mode) {
 				undo_push();
 				radare_seek(config.seek + ((config.cursor_mode)?config.cursor:0), SEEK_SET);
+				config.cursor = 0;
 			} else {
 				if (mark==0) {
 					u64 u = get_offset("eip");	
@@ -1366,8 +1369,13 @@ CMD_DECL(visual)
 			break;
 		case 'h':
 			if (config.cursor_mode) {
-				if (config.cursor!=0)
-					config.cursor --;
+				config.cursor --;
+				if (cursorseek && IS_LTZ(config.cursor)) {
+					inc = 1;
+					radare_seek(config.seek-1, SEEK_SET);
+				}
+				if (IS_LTZ(config.cursor))
+					config.cursor =0;
 				config.ocursor = -1;
 			} else {
 				config.seek--;
@@ -1390,6 +1398,13 @@ CMD_DECL(visual)
 				if (config.ocursor==-1)
 					config.ocursor = config.cursor;
 				config.cursor ++;
+				if (cursorseek && config.cursor >= config.block_size) {
+inc = 1;
+					radare_seek(config.seek+inc, SEEK_SET);
+					config.cursor-=inc;
+					if (config.ocursor != -1)
+						config.ocursor-=inc;
+				}
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
 			} else
@@ -1399,6 +1414,12 @@ CMD_DECL(visual)
 		case 'j':
 			if (config.cursor_mode) {
 				config.cursor += inc;
+				if (cursorseek && config.cursor >= config.block_size) {
+					radare_seek(config.seek+inc, SEEK_SET);
+					config.cursor-=inc;
+					if (config.ocursor != -1)
+						config.ocursor-=inc;
+				}
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
 				config.ocursor = -1;
@@ -1415,6 +1436,12 @@ CMD_DECL(visual)
 				if (config.ocursor==-1)
 					config.ocursor = config.cursor;
 				config.cursor += inc;
+				if (cursorseek && config.cursor >= config.block_size) {
+					radare_seek(config.seek+inc, SEEK_SET);
+					config.cursor-=inc;
+					if (config.ocursor != -1)
+						config.ocursor-=inc;
+				}
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
 				if (config.block_size >= (config.size-config.seek))
@@ -1432,9 +1459,12 @@ CMD_DECL(visual)
 		case 'k':
 			check_accel(0);
 			if (config.cursor_mode) {
-				if (dec > config.cursor)
+				config.cursor-=dec;
+				if (cursorseek && IS_LTZ(config.cursor)) {
+					radare_seek(config.seek-dec, SEEK_SET);
+				}
+				if (IS_LTZ(config.cursor))
 					config.cursor = 0;
-				else config.cursor -= dec;
 				config.ocursor = -1;
 			} else {
 				config.seek -= dec;
@@ -1445,10 +1475,14 @@ CMD_DECL(visual)
 		case 'K':
 			if (config.cursor_mode) {
 				if (config.ocursor==-1)
-					config.ocursor = config.cursor;
-				if (inc > config.cursor)
+					config.ocursor = config.cursor-1;
+				config.cursor-=dec;
+				if (cursorseek && IS_LTZ(config.cursor)) {
+					radare_seek(config.seek-dec, SEEK_SET);
+					config.ocursor+=dec+1;
+				}
+				if (IS_LTZ(config.cursor))
 					config.cursor = 0;
-				else	config.cursor -= inc;
 			} else {
 				check_accel(1);
 				if (last_print_format == FMT_DISAS)
@@ -1540,10 +1574,16 @@ CMD_DECL(visual)
 			break;
 		case 'H':
 			if (config.cursor_mode) {
+				config.cursor--;
+				if (cursorseek && IS_LTZ(config.cursor)) {
+					inc = 1;
+					radare_seek(config.seek-1, SEEK_SET);
+					config.ocursor++;
+				}
 				if (config.ocursor==-1)
-					config.ocursor = config.cursor;
-				if (config.cursor)
-					config.cursor--;
+					config.ocursor = config.cursor+1;
+				if (IS_LTZ(config.cursor))
+					config.cursor =0;
 			} else
 				config.seek -= 2;
 			break;
@@ -1556,15 +1596,15 @@ CMD_DECL(visual)
 				config.seek++;
 			break;
 		case '*':
-			if (!config.cursor_mode) {
+		//	if (!config.cursor_mode) {
 				radare_set_block_size_i(config.block_size+inc);
-			}
+		//	}
 			break;
 		case '/':
-			if (!config.cursor_mode) {
+		//	if (!config.cursor_mode) {
 				radare_set_block_size_i(config.block_size-inc);
 				cons_strcat("\e[2J\e[0;0H");
-			}
+		//	}
 			break;
 		case '+':
 			if (config.cursor_mode) {

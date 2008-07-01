@@ -80,7 +80,7 @@ match value ffffffad (ffffad) at offset 0x454
 #define _FILE_OFFSET_BITS 32
 #define _GNU_SOURCE
 
-#if __FreeBSD__ || __Linux__ || __NetBSD__ || __OpenBSD__
+#if __FreeBSD__ || __linux__ || __NetBSD__ || __OpenBSD__
 #define __UNIX__ 1
 #else
 #define __UNIX__ 0

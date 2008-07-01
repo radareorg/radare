@@ -6,6 +6,7 @@
 //#include "print.h"
 
 
+#define IS_LTZ(x) (((int)x)<0)
 #define uint unsigned int
 #define TMPFILE_MAX 50
 #define BUFLEN 4096

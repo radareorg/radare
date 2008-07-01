@@ -8,7 +8,6 @@
 ===========================================================
 
 * Fix height of screen
-* rename xrefs to radare-xrefs
 
 debug.elf32_trace: 0
 

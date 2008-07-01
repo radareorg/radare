@@ -348,16 +348,18 @@ CMD_DECL(analyze)
 		char buf[4096];
 		char file[1024];
 		u64 seek = config.seek;
+		u64 base = 0;
 		strcpy(file, config.file);
 #if DEBUGGER
 		if (config.debug) {
 			/* dump current section */
 			if (radare_dump_section(file))
 				return 1;
+			base = 0x8048000; // XXX must be section base
 		}
 #endif
 		snprintf(buf, 4095, "%s -a %s -b %lld %s %lld",
-			config_get("asm.xrefs"), config_get("asm.arch"), (u64)0x8048000, file, seek);
+			config_get("asm.xrefs"), config_get("asm.arch"), base, file, seek);
 		eprintf("system(%s)\n", buf);
 		radare_system(buf);
 #if DEBUGGER
