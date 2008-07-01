@@ -160,5 +160,7 @@ int radare_read_at(u64 offset, unsigned char *data, int len);
 int radare_write_at(u64 offset, unsigned char *data, int len);
 int radare_write(char *arg, int mode);
 void radare_poke(const char *arg);
+int radare_get_region(u64 *from, u64 *to);
+
 
 #endif

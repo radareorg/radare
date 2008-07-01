@@ -29,9 +29,8 @@
 #include <gtk/gtk.h>
 #endif
 
-plugin_t plugins[MAXPLUGINS];
-plugin_t plugins_backup[MAXPLUGINS];
-int plugin_init_flag = 0;
+static plugin_t plugins[MAXPLUGINS];
+static int plugin_init_flag = 0;
 
 struct core_t {
 	void *ptr;
@@ -277,6 +276,8 @@ void plugin_init()
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
+	/* must be dupped or will die */
+	plugins[last++] = posix_plugin;
 	plugins[last++] = posix_plugin;
 
 	//plugins[last++] = winegdb_plugin;
@@ -294,7 +295,7 @@ int io_system(const char *command)
 		eprintf("Not in debugger.\n");
 		return 0;
 	}
-	return system(command);
+	return radare_system(command);
 }
 
 /* io wrappers */

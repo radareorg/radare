@@ -227,6 +227,27 @@ CMD_DECL(analyze)
 			eprintf("oops\n");
 		}
 		break;
+	case 'f': {
+		u64 end = 0;
+		cons_printf("; from = 0x%08x\n", config.baddr+config.seek);
+		/* Analyze function */
+		/* XXX ensure this is ok */
+		config_set("graph.jmpblocks", "true");
+		config_set("graph.callblocks", "false");
+		prg = code_analyze(config.baddr + config.seek, 1024);
+		list_add_tail(&prg->list, &config.rdbs);
+		list_for_each(head, &(prg->blocks)) {
+			b0 = list_entry(head, struct block_t, list);
+			//if ((b0->type == BLK_TYPE_HEAD)
+			//if ((b0->type == BLK_TYPE_LAST)
+			//|| (b0->type == BLK_TYPE_FOOT))
+			if (b0->addr +b0->n_bytes > end)
+				end = b0->addr + b0->n_bytes;
+		}
+		cons_printf("; to = 0x%08llx\n", end);
+		cons_printf("Cf %lld @ 0x%08llx\n", end+1-(config.baddr+config.seek), config.baddr+config.seek);
+		}
+		break;
 	case 'g':
 #if VALA
 		// use graph.depth by default if not set
@@ -323,15 +344,39 @@ CMD_DECL(analyze)
 	case 's':
 		analyze_spcc(input+1);
 		break;
+	case 'x': {
+		char buf[4096];
+		char file[1024];
+		u64 seek = config.seek;
+		strcpy(file, config.file);
+#if DEBUGGER
+		if (config.debug) {
+			/* dump current section */
+			if (radare_dump_section(file))
+				return 1;
+		}
+#endif
+		snprintf(buf, 4095, "%s -a %s -b %lld %s %lld",
+			config_get("asm.xrefs"), config_get("asm.arch"), (u64)0x8048000, file, seek);
+		eprintf("system(%s)\n", buf);
+		radare_system(buf);
+#if DEBUGGER
+		if (config.debug) {
+			unlink(file);
+		}
+#endif
+		} break;
 	default:
 		cons_printf("Usage: a[ocdg] [depth]\n");
-		cons_printf(" ao : analyze N opcodes\n");
-		cons_printf(" ab : analyze N code blocks \n");
-		cons_printf(" ac : disassemble and analyze N code blocks \n");
-		cons_printf(" ad : analyze N data blocks \n");
-		cons_printf(" ag : graph analyzed code\n");
-		cons_printf(" as : analyze spcc structure (uses dir.spcc) need file as arg\n");
-		cons_printf(" av : analyze virtual machine (negative resets before)\n");
+		cons_printf(" ao [nops]    analyze N opcodes\n");
+		cons_printf(" ab [num]     analyze N code blocks\n");
+		cons_printf(" af [name]    analyze function\n");
+		cons_printf(" ac [num]     disasmand analyze N code blocks\n");
+		cons_printf(" ad [num]     analyze N data blocks \n");
+		cons_printf(" ag [depth]   graph analyzed code\n");
+		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
+		cons_printf(" av [nops]    analyze virtual machine (negative resets before)\n");
+		cons_printf(" ax           analyze xrefs\n");
 		break;
 	}
 	config.seek = oseek;
@@ -811,8 +856,8 @@ CMD_DECL(code)
 			case 'f': fmt = DATA_FOLD_C; break;
 			case 'u': fmt = DATA_FOLD_O; break;
 		}
-		if (len>config.block_size)
-			len = config.block_size;
+		//if (len>config.block_size)
+		//	len = config.block_size;
 		tmp = config.block_size;
 		config.block_size = len;
 		data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);

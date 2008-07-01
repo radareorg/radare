@@ -197,10 +197,11 @@ void radare_poke(const char *arg)
 	free(buf);
 }
 
-int radare_dump(char *arg, int size)
+int radare_dump(const char *arg, int size)
 {
 	int fd;
 	u64 ret = 0;
+	int bs = config.block_size;
 
 	if (arg[0]=='\0') {
 		eprintf("Usage: dump [filename]\n");
@@ -211,6 +212,7 @@ int radare_dump(char *arg, int size)
 			return 0;
 		}
 
+		radare_set_block_size_i(size);
 		if ((ret = radare_read(0)) < 0) {
 			eprintf("Error reading: %s\n", strerror(errno));
 			return 0;
@@ -219,8 +221,26 @@ int radare_dump(char *arg, int size)
 		ret = io_write(fd, config.block, size);
 
 		io_close(fd);
+		radare_set_block_size_i(bs);
 	}
 	return 1;
+}
+
+int radare_dump_section(char *tmpfile)
+{
+	u64 f, t, s;
+	int ret = radare_get_region(&f, &t);
+	s = t-f;
+
+	if (!ret || f == 0 || t == 0) {
+		cons_printf("Cannot get region range\n");
+		return 1;
+	}
+	cons_printf("Current section is: 0x%08llx 0x%08llx\n", f, t);
+	make_tmp_file(tmpfile);
+	radare_dump(tmpfile, s);
+
+	return 0;
 }
 
 u64 radare_seek(u64 offset, int whence)

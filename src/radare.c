@@ -1025,7 +1025,7 @@ void radare_set_block_size(char *arg)
 	for(;arg[i]&&iswhitespace(arg[i]);i++);
 
 	if ( arg[i] != '\0' ) {
-		size = get_offset(arg+i);
+		size = get_math(arg+i);
 		if (size<1) size = 1;
 		radare_set_block_size_i(size);
 	}

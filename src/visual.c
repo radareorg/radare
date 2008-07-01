@@ -394,12 +394,10 @@ CMD_DECL(yank_paste)
 	}
 }
 
+/* deprecated!! */
 CMD_DECL(xrefs_here)
 {
-	char buf[4096];
-	snprintf(buf, 4095, "%s %s %d",
-		config_get("asm.xrefs"), config.file, (unsigned int)config.seek);
-	io_system(buf);
+	radare_cmd("ax", 0);
 }
 
 CMD_DECL(stepu_in_dbg)
@@ -784,10 +782,18 @@ void visual_draw_screen()
 	if (inc >config.block_size)
 		inc = config.block_size;
 
-	cons_printf("[ 0x%llx (inc=%d, bs=%d, cur=%d sz=%d mark=0x%llx) %s %s] %s            \n",
+	if (config.cursor_mode)
+	cons_printf("[ 0x%llx (inc=%d, bs=%d cursor=%d sz=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor, (config.ocursor==-1)?0:config.cursor-config.ocursor+1,
+		mark, get_print_format_name(last_print_format),
+		(inv)?"inv ":"", buf);
+	else
+	cons_printf("[ 0x%llx (inc=%d, bs=%d sz=%d mark=0x%llx) %s %s] %s            \n",
+		(config.seek+config.baddr), inc,
+		(unsigned int)config.block_size,
+		(config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
 

@@ -60,7 +60,7 @@ typedef struct plugin_t {
 	int (*handle_fd)(int);
 } plugin_t;
 
-extern plugin_t plugins[MAXPLUGINS];
+//extern plugin_t plugins[MAXPLUGINS];
 extern plugin_t posix_plugin;
 extern plugin_t gdbx_plugin;
 extern plugin_t haret_plugin;

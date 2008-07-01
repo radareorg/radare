@@ -237,6 +237,21 @@ void free_regmaps(int rest)
 	ps.map_regs_sz = 0;
 }
 
+int radare_get_region(u64 *from, u64 *to)
+{
+	struct list_head *pos;
+
+	list_for_each_prev(pos, &ps.map_reg) {
+		MAP_REG *mr = list_entry(pos, MAP_REG, list);
+		if (config.seek >mr->ini && config.seek < mr->end) {
+			*from = mr->ini;
+			*to = mr->end;
+			return 1;
+		}
+	}
+	return 0;
+}
+
 void print_maps_regions(int rad)
 {
 	int i;
@@ -244,9 +259,9 @@ void print_maps_regions(int rad)
 	char name[128];
 	char perms[5];
 
-	if (rad) {
+	if (rad)
 		cons_printf("fs maps\n");
-	}
+
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 

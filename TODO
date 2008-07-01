@@ -8,6 +8,7 @@
 ===========================================================
 
 * Fix height of screen
+* rename xrefs to radare-xrefs
 
 debug.elf32_trace: 0
 
@@ -48,7 +49,6 @@ FileDescriptors
  * Make ^C work again in debugger?!?
   - do not pass user signals to child process
  * 'w' in cursor mode with range selected must fill the buffer
- * code injection (as a plugin in lua)
  * when loading strings from file
   - run Cs
   - make Cs support multiple strings at a time

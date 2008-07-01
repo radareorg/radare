@@ -80,6 +80,12 @@ match value ffffffad (ffffad) at offset 0x454
 #define _FILE_OFFSET_BITS 32
 #define _GNU_SOURCE
 
+#if __FreeBSD__ || __Linux__ || __NetBSD__ || __OpenBSD__
+#define __UNIX__ 1
+#else
+#define __UNIX__ 0
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -96,10 +102,12 @@ match value ffffffad (ffffad) at offset 0x454
 #endif
 
 /* XXX: ufly hack : override radare version number */
+#if 0
 #if defined(VERSION)
 #undef VERSION
 #endif
 #define VERSION "0.2.1"
+#endif
 
 #if 0
 #if SIZEOF_OFF_T == 8
@@ -127,6 +135,7 @@ typedef enum {
 	ARCH_X86
 } arch_t;
 
+off_t base    = 0;
 off_t delta   = 0;
 off_t range   = 0;
 off_t xylum   = 0;
@@ -138,7 +147,7 @@ int verbose   = 0;
 int found     = 0;
 int quite     = 0;
 arch_t arch   = ARCH_NULL;
-unsigned char *ma;
+unsigned char *ma = NULL;
 
 static int show_usage()
 {
@@ -150,6 +159,7 @@ static int show_usage()
 	" -h             Show this helpy message\n"
 	" -e             Use big endian for offsets to search\n"
 	" -a [arch]      Architecture profile (fmi: help) (autodetects ELF and PE hdrs)\n"
+	" -b [address]   base address (0x8048000 f.ex)\n"
 	" -f [from]      start scanning from this offset (default 0)\n"
 	" -t [to]        limit address (default 99999999)\n"
 	" -r [range]     Range in bytes of allowed relative offsets\n"
@@ -270,7 +280,7 @@ int set_arch_settings()
 				}
 			}
 		} else {
-			fprintf(stderr, "Plz. gimmie an architecture.\n");
+			fprintf(stderr, "Plz. gimmie an architecture. (xrefs -a [arch])\n");
 			exit(1);
 		}
 	}
@@ -296,7 +306,7 @@ int main(int argc, char **argv)
 		return show_usage();
 
 	/* parse arguments */
-	while ((c = getopt(argc, argv, "qa:d:hves:f:t:r:X:")) != -1)
+	while ((c = getopt(argc, argv, "qa:d:hves:f:t:r:X:b:")) != -1)
 	{
 		switch( c )
 		{
@@ -304,6 +314,9 @@ int main(int argc, char **argv)
 			quite = 1;
 			break;
 		case 'a':
+			if (!strcmp(optarg, "intel"))
+				arch = ARCH_X86;
+			else
 			if (!strcmp(optarg, "x86"))
 				arch = ARCH_X86;
 			else
@@ -316,6 +329,9 @@ int main(int argc, char **argv)
 				printf("arm ppc x86\n");
 				return 1;
 			}
+			break;
+		case 'b':
+			base = get_offset(optarg);
 			break;
 		case 'd':
 			delta = get_offset(optarg);
@@ -354,7 +370,14 @@ int main(int argc, char **argv)
 
 	/* openning stuff */
 	src    = open(argv[optind], O_RDONLY);
+	if (src == -1) {
+		fprintf(stderr, "Cannot open file source %s\n", argv[optind]);
+		return -1;
+	}
+
 	offset = get_offset(argv[optind+1]);
+	if (offset >= base)
+		offset -= base;
 
 	sa = file_size_fd(src) - size;
 #if __UNIX__
@@ -363,10 +386,16 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Minimum length is 0x50 bytes.\n");
 		return 1;
 	}
-#endif
-#if __WINDOWS__
+#elif __WINDOWS__
 	fprintf(stderr, "Not yet implemented\n");
+#else
+	fprintf(stderr, "No MMAP for this platform? report it!\n");
 #endif
+	if (ma == NULL) {
+		perror("Error mmaping");
+		fprintf(stderr, "cannot open %s\n", argv[optind]);
+		return 1;
+	}
 
 	/* configure environment */
 	sysendian = get_system_endian();
@@ -394,7 +423,7 @@ int main(int argc, char **argv)
 		if (verbose)
 			printf("0x%08x  try %02x %02x %02x %02x (0x"
 				OFF_FMTx") - "OFF_FMTd"\n",
-				i, buf[0], buf[1], buf[2], buf[3], (offtx) value, (offtd)value);
+				i, buf[0], buf[1], buf[2], buf[3], (offtx) base+value, (offtd)base+value);
 
 		if (xylum && i == xylum) {
 			printf("# offset: 0x"OFF_FMTx"\n", i);

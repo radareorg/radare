@@ -18,7 +18,13 @@ enum {
 	ARCH_AOP = 0x10000
 };
 
-// generic assembly opcode structure type
+enum {
+	BLK_TYPE_HEAD,  // first block
+	BLK_TYPE_BODY,  // conditional jump
+	BLK_TYPE_LAST,  // ret
+	BLK_TYPE_FOOT   // unknown jump
+};
+
 enum {
 	AOP_TYPE_JMP,  // mandatory jump
 	AOP_TYPE_UJMP, // unknown jump (register or so)
