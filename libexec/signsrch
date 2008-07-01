@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Signature Search output conversor
+#
+# original source from:
+# - http://aluigi.altervista.org/mytoolz/signsrch.zip
+# download page:
+# - http://aluigi.altervista.org/mytoolz.htm
+#
+
+FILE=$1
+
+if [ -z "${FILE}" ]; then
+	echo "Usage: rsc signsrc <file>"
+	exit 1
+fi
+
+signsrch $FILE 2>/dev/null | grep 0000 | awk '{print "f "$3"_"$8" @ 0x"$1}' |sed -e 's,(,,g' -e 's,),,g'

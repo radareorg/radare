@@ -141,7 +141,8 @@ System types:
   --target=TARGET        configure for building compilers for TARGET [HOST]
 EOF2
 
-printf "\nOptional Features:
+printf "
+Optional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
   --without-debugger     disables the debugger layer 
@@ -151,8 +152,10 @@ printf "\nOptional Features:
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-maemo           build hildon interface 
-  --without-gui          radare without the gtk frontend \n"
-printf "\nSome influential environment variables:
+  --without-gui          radare without the gtk frontend 
+"
+printf "
+Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -160,8 +163,10 @@ printf "\nSome influential environment variables:
   CPPFLAGS    C/C++ preprocessor flags, e.g. -I<include dir> if you have
               headers in a nonstandard directory <include dir>
   CPP         C preprocessor
-  LUA         path to lua interpreter\n"
-printf "\nReport bugs to: pancake <pancake@youterm.com>"
+  LUA         path to lua interpreter
+"
+printf "
+Report bugs to: pancake <pancake@youterm.com>"
 echo ""
 exit 0
 }
@@ -195,7 +200,7 @@ case $flag in
 echo "PKGNAME:   radare"
 echo "VERSION:   0.9.8"
 echo "LANGS:     c lua"
-echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.3.3"
+echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.3.4"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
 echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-maemo --without-gui"
@@ -264,7 +269,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_3_3 GUI WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_3_4 GUI WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -407,13 +412,13 @@ else
  HAVE_VALAC=0
  VALAC=valac
  echo no ; fi
-HAVE_VALA_1_0_VERSION_0_3_3=0
-printf "checking version of library vala-1.0 >= 0.3.3... "
-pkg-config --atleast-version=0.3.3 vala-1.0 >/dev/null 2>&1
-if [ $? = 0 ]; then HAVE_VALA_1_0_VERSION_0_3_3=1 ; echo ok; else
+HAVE_VALA_1_0_VERSION_0_3_4=0
+printf "checking version of library vala-1.0 >= 0.3.4... "
+pkg-config --atleast-version=0.3.4 vala-1.0 >/dev/null 2>&1
+if [ $? = 0 ]; then HAVE_VALA_1_0_VERSION_0_3_4=1 ; echo ok; else
 echo "no" ; fi
-if [ "$HAVE_VALA_1_0_VERSION_0_3_3" = "0" ]; then
-echo "   Needs vala 0.3.3 at least" >&2 
+if [ "$HAVE_VALA_1_0_VERSION_0_3_4" = "0" ]; then
+echo "   Needs vala 0.3.4 at least" >&2 
 export VALAC=""
 export VALA="0"
 export GUI="0"; fi
