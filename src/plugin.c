@@ -271,6 +271,7 @@ void plugin_init()
 #endif
 #if __UNIX__
 	plugins[last++] = shm_plugin;
+	plugins[last++] = mmap_plugin;
 #endif
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;

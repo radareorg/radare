@@ -41,7 +41,7 @@ static int posix_close(int fd)
 	return close(fd);
 }
 
-static u64 posix_lseek(int fildes, u64 offset, int whence)
+u64 posix_lseek(int fildes, u64 offset, int whence)
 {
 #if __WINDOWS__ 
 	return _lseek(fildes,(long)offset,whence);
