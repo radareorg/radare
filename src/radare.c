@@ -363,10 +363,12 @@ int radare_cmd_raw(const char *tmp, int log)
 				cons_printf("oops (%s)\n", input+2);
 			break;
 		default:
+			#if __WINDOWS__
 			/* XXX hack to parse .!regs* on w32 */
+			/* XXX w32 port needs a system replacement *|
 			/* maybe everything but debug commands must be in this way */
 			/* radare_cmd_str doesn't handle system() output :( */
-			if( (strstr(input,"regs")) ||(strstr(input,"maps"))) {
+			if( (strstr(input,"!regs")) ||(strstr(input,"!maps"))) {
 			//if (1) {
 				str = radare_cmd_str(input+1);
 				st = str;
@@ -381,6 +383,7 @@ int radare_cmd_raw(const char *tmp, int log)
 				free(oinput);
 				return 0;
 			}
+			#endif
 			// this way doesnt workz
 			pipe_stdout_to_tmp_file(file, input+1);
 			f = open(file, O_RDONLY);
