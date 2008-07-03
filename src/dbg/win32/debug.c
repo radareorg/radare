@@ -123,7 +123,7 @@ static BOOL dispatch_console(DWORD type)
 {
 	switch(type) {
 		case CTRL_C_EVENT: 
-			if (debug_get("dbg.controlc")) {
+			if (config_get("dbg.controlc")) {
 				/* stop process */
 				win32_dbgbreak(WIN32_PI(hProcess));
 				exit_wait = 1;

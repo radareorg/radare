@@ -20,6 +20,7 @@
 
 #include <main.h>
 #include <plugin.h>
+#if __UNIX__
 #include <sys/types.h>
 #include <sys/mman.h>
 
@@ -126,3 +127,4 @@ plugin_t mmap_plugin = {
 	.lseek       = mmap_lseek,
 	.close       = mmap_close
 };
+#endif

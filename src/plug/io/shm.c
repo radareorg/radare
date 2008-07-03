@@ -18,8 +18,10 @@
  *
  */
 
+
 #include <main.h>
 #include <plugin.h>
+#if __UNIX__
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -122,3 +124,4 @@ plugin_t shm_plugin = {
 	.lseek       = rshm_lseek,
 	.close       = rshm_close
 };
+#endif

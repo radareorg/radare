@@ -75,10 +75,8 @@ match value ffffffad (ffffad) at offset 0x454
 ========================================================================
 **/
 
-/* work in 32 bit mode...no need for 64 yet..
- * and it looks problematic */
-#define _FILE_OFFSET_BITS 32
-#define _GNU_SOURCE
+/* setup 64 bit environment! */
+#include "radare.h"
 
 #if __FreeBSD__ || __linux__ || __NetBSD__ || __OpenBSD__
 #define __UNIX__ 1
@@ -99,33 +97,6 @@ match value ffffffad (ffffad) at offset 0x454
 #if __UNIX__
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#endif
-
-/* XXX: ufly hack : override radare version number */
-#if 0
-#if defined(VERSION)
-#undef VERSION
-#endif
-#define VERSION "0.2.1"
-#endif
-
-#if 0
-#if SIZEOF_OFF_T == 8
-#define OFF_FMT "%016llX"
-#define OFF_FMTx "%llx"
-#define OFF_FMTd "%lld"
-#else 
-#define OFF_FMT "%08X"
-#define OFF_FMTx "%x"
-#define OFF_FMTd "%d"
-#endif
-#else
-/* we're in 32 bits mode (FORCED BEFORE) */
-#define OFF_FMT "%08x"
-#define OFF_FMTx "%x"
-#define OFF_FMTd "%d"
-#define offtd int
-#define offtx unsigned int
 #endif
 
 typedef enum {
@@ -189,9 +160,9 @@ static off_t get_offset(char *arg)
 	for(;arg[i]=='\\';i++); i++;
 
         if (arg[i] == 'x')
-                sscanf(arg, OFF_FMTx, (offtx *)&ret);
+                sscanf(arg, "0x%08llx", (u64 *)&ret);
         else
-                sscanf(arg, OFF_FMTd, (offtd *)&ret);
+                sscanf(arg, "%lld", (u64 *)&ret);
 
         return ret;
 }
@@ -421,17 +392,16 @@ int main(int argc, char **argv)
 		}
 
 		if (verbose)
-			printf("0x%08x  try %02x %02x %02x %02x (0x"
-				OFF_FMTx") - "OFF_FMTd"\n",
-				i, buf[0], buf[1], buf[2], buf[3], (offtx) base+value, (offtd)base+value);
+			printf("0x%08x  try %02x %02x %02x %02x (0x%08llx) - %lld\n",
+				i, buf[0], buf[1], buf[2], buf[3], (u64) base+value, (u64) (base+value));
 
 		if (xylum && i == xylum) {
-			printf("# offset: 0x"OFF_FMTx"\n", i);
-			printf("# delta: "OFF_FMTd"\n", (offtd)delta);
-			printf("# size:  "OFF_FMTd"\n", (offtd)size);
-			printf("# value:  "OFF_FMTd"\n", (offtd)value);
-			printf("# bytes:  %02x %02x %02x %02x (0x"OFF_FMTx") - "OFF_FMTd"\n",
-				buf[0], buf[1], buf[2], buf[3], (offtx)value, (offtd)value);
+			printf("# offset: 0x%08llx\n", i);
+			printf("# delta:  %lld\n", (u64)delta);
+			printf("# size:   %lld\n", (u64)size);
+			printf("# value:  %lld\n", (u64)value);
+			printf("# bytes:  %02x %02x %02x %02x (0x%08llx) - %lld\n",
+				buf[0], buf[1], buf[2], buf[3], (u64)value, (u64)value);
 			tmpvalue = ma[i+gamme];
 			printf("# found:  %02x %02x %02x %02x\n",
 				ma[i+gamme+0], ma[i+gamme+1],
@@ -466,8 +436,8 @@ int main(int argc, char **argv)
 		}
 
 		if (xylum && ovalue == xylum) {
-			printf("# buf:  %02x %02x %02x %02x (+"OFF_FMTd")\n",
-				buf[0], buf[1], buf[2], buf[3], (offtd)(4-size));
+			printf("# buf:  %02x %02x %02x %02x (+%lld)\n",
+				buf[0], buf[1], buf[2], buf[3], (u64)(4-size));
 			printf("# map:  %02x %02x %02x \n",
 				ma[i+gamme], ma[i+1+gamme], ma[i+2+gamme]);
 			printf("# cmp:  %02x %02x %02x\n", ma[i], ma[i+1], ma[i+2]);
@@ -483,12 +453,12 @@ int main(int argc, char **argv)
 
 		if (memcmp((unsigned char *)ma+i+gamme, (unsigned char *)buf+(4-size), size) == 0) {
 			if (quite)
-				printf("0x"OFF_FMTx"\n", (offtx)i);
+				printf("0x%08llx\n", (u64)i);
 			else
-				printf("match value 0x"OFF_FMTx" (%02x%02x%02x) at offset 0x"OFF_FMTx"\n",
-					(offtx)ovalue,
+				printf("match value 0x%08llx (%02x%02x%02x) at offset 0x%08llx\n",
+					(u64)ovalue,
 					buf[0+(4-size)], buf[1+(4-size)], buf[2+(4-size)],
-					(offtx)((off_t)i)+((gamme<0)?-1:0));
+					(u64)((off_t)i)+((gamme<0)?-1:0));
 			found++;
 		}
 	}
