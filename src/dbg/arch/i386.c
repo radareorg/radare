@@ -714,18 +714,18 @@ int arch_print_registers(int rad, const char *mask)
 	
 	if (rad == 1) {
 		//cons_printf("\n"); // stupid trick
-		cons_printf("f oeax @ 0x%llx\n", (u64)R_OEAX(regs));
-		cons_printf("f eax @ 0x%llx\n", (u64)R_EAX(regs));
-		cons_printf("f ebx @ 0x%llx\n", (u64)R_EBX(regs));
-		cons_printf("f ecx @ 0x%llx\n", (u64)R_ECX(regs));
-		cons_printf("f edx @ 0x%llx\n", (u64)R_EDX(regs));
-		cons_printf("f ebp @ 0x%llx\n", (u64)R_EBP(regs));
-		cons_printf("f esi @ 0x%llx\n", (u64)R_ESI(regs));
-		cons_printf("f edi @ 0x%llx\n", (u64)R_EDI(regs));
-		cons_printf("f oeip @ 0x%llx\n", (u64)R_EIP(oregs));
-		cons_printf("f eip @ 0x%llx\n", (u64)R_EIP(regs));
-		cons_printf("f oesp @ 0x%llx\n", (u64)R_ESP(oregs));
-		cons_printf("f esp @ 0x%llx\n", (u64)R_ESP(regs));
+		cons_printf("f oeax @ 0x%llx\n", (u64)(R_OEAX(regs)&0xffffffff));
+		cons_printf("f eax @ 0x%llx\n", (u64)(R_EAX(regs)&0xffffffff));
+		cons_printf("f ebx @ 0x%llx\n", (u64)(R_EBX(regs)&0xffffffff));
+		cons_printf("f ecx @ 0x%llx\n", (u64)(R_ECX(regs)&0xffffffff));
+		cons_printf("f edx @ 0x%llx\n", (u64)(R_EDX(regs)&0xffffffff));
+		cons_printf("f ebp @ 0x%llx\n", (u64)(R_EBP(regs)&0xffffffff));
+		cons_printf("f esi @ 0x%llx\n", (u64)(R_ESI(regs)&0xffffffff));
+		cons_printf("f edi @ 0x%llx\n", (u64)(R_EDI(regs)&0xffffffff));
+		cons_printf("f oeip @ 0x%llx\n", (u64)(R_EIP(oregs)&0xffffffff));
+		cons_printf("f eip @ 0x%llx\n", (u64)(R_EIP(regs)&0xffffffff));
+		cons_printf("f oesp @ 0x%llx\n", (u64)(R_ESP(oregs)&0xffffffff));
+		cons_printf("f esp @ 0x%llx\n", (u64)(R_ESP(regs)&0xffffffff));
 	} else
 	if (rad == 2) {
 			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
