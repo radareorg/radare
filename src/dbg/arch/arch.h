@@ -52,6 +52,7 @@ int arch_dump_registers();
 int arch_restore_registers();
 void arch_set_pc(addr_t pc);
 u64 get_reg(char *reg);
+int arch_is_fork();
 //int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 

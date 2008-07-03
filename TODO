@@ -7,6 +7,9 @@
 
 ===========================================================
 
+* !contall
+* !cont <pid> ???
+
 * Fix height of screen
 
 debug.elf32_trace: 0

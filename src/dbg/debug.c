@@ -109,7 +109,6 @@ int getv()
 /// XXX use wait4 and get rusage here!!!
 pid_t debug_waitpid(int pid, int *status)
 {
-
 #define CRASH_LINUX_KERNEL 0
 #if CRASH_LINUX_KERNEL
 	if (pid == -1)
@@ -123,6 +122,7 @@ pid_t debug_waitpid(int pid, int *status)
 	if (config_get("dbg.threads"))
 		return waitpid(pid, status, __WALL | __WCLONE | WUNTRACED);
   #endif
+	return waitpid(pid, status, WUNTRACED);
   #ifdef __WALL
 	return waitpid(pid, status, __WALL | WUNTRACED);
   #else
@@ -361,7 +361,6 @@ int debug_contu(const char *input)
 		return 0;
 
 	radare_controlc();
-
 	ps.verbose = 0;
 	while(!config.interrupted && ps.opened && debug_step(1)) {
 		if (is_usercode(arch_pc(ps.tid)))
@@ -1279,7 +1278,7 @@ int debug_mp(char *str)
 	if (str[0]=='\0') {
 		list_for_each(i, &(mps)) {
 			struct mp_t *m = list_entry(i, struct mp_t, list);
-			printf("0x%08llx %d %c%c%c\n", m->addr, m->size,
+			cons_printf("0x%08llx %d %c%c%c\n", m->addr, m->size,
 			m->perms&4?'r':'-', m->perms&2?'w':'-', m->perms&1?'x':'-');
 		}
 		return 0;
@@ -1299,7 +1298,7 @@ int debug_mp(char *str)
 	size = get_math(buf3);
 
 	if (size == 0) {
-		printf("Invalid arguments\n");
+		eprintf("Invalid arguments\n");
 		return 1;
 	}
 
@@ -1522,7 +1521,7 @@ int debug_cont_until(const char *input)
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
-// XXX: BP_HARD doesnt works well :S
+// XXX: BP_SOFT doesnt works well :S
 		bp = debug_bp_set(NULL, addr, BP_HARD);
 		debug_cont(NULL);
 		/* XXX REALLY UGLY HACK */
@@ -1534,8 +1533,13 @@ int debug_cont_until(const char *input)
 	return 0;
 }
 
+#define CONTINUE_IN_NEW_PROCESS() (WS(event) == CLONE_EVENT && config_get("dbg.forks"))
+#define SKIP_USER_CONTROLC() (WS(event) == INT_EVENT && !config_get("dbg.controlc"))
+
 int debug_cont(const char *input)
 {
+	int ret;
+
 	if (!ps.opened) {
 		eprintf("cont: No program loaded.\n");
 		return -1;
@@ -1547,14 +1551,36 @@ int debug_cont(const char *input)
 	/* restore breakpoint */
 	debug_bp_restore(-1);
 
+	/*
+	 * TODO: must launch one thread per process to debug sending PTRACE_CONT
+	 *  must keep the shell clean for the debugger
+	 */
+
 	do { 
 		/* restore breakpoint */
 		debug_bp_restore(0);
 
 		/* launch continue */
-		debug_contp(ps.tid);
+		ret = debug_contp(ps.tid);
+		if (ret == -1) {
+			eprintf("debug_contp = -1\n");
+			break;
+		}
+		ret = debug_dispatch_wait();
+		printf("debug_dispatch_wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
+			ret, WS(event), INT3_EVENT, INT_EVENT, CLONE_EVENT);
+	#warning TODO: add in debug_print_foo() disassembly of eip here and change process id or so
+		if (SKIP_USER_CONTROLC()) {
+			eprintf("user control-c pressed\n");
+			continue;
+		}
 
-	} while(debug_dispatch_wait() == 1 && debug_contp(ps.tid) != -1);
+		if (CONTINUE_IN_NEW_PROCESS()) {
+			eprintf("continue after new process\n");
+			continue;
+		}
+	} while( ret ); //ret && (debug_dispatch_wait() == 1 || CONTINUE_IN_NEW_PROCESS()));
+		//(CONTINUE_IN_NEW_PROCESS()) && debug_contp(ps.tid) != -1))));
 
 	/* print status */
 	debug_print_wait("cont");

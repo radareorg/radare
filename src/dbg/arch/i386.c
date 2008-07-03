@@ -714,18 +714,18 @@ int arch_print_registers(int rad, const char *mask)
 	
 	if (rad == 1) {
 		//cons_printf("\n"); // stupid trick
-		cons_printf("f oeax @ 0x%x\n", (int)R_OEAX(regs));
-		cons_printf("f eax @ 0x%x\n", (int)R_EAX(regs));
-		cons_printf("f ebx @ 0x%x\n", (int)R_EBX(regs));
-		cons_printf("f ecx @ 0x%x\n", (int)R_ECX(regs));
-		cons_printf("f edx @ 0x%x\n", (int)R_EDX(regs));
-		cons_printf("f ebp @ 0x%x\n", (int)R_EBP(regs));
-		cons_printf("f esi @ 0x%x\n", (int)R_ESI(regs));
-		cons_printf("f edi @ 0x%x\n", (int)R_EDI(regs));
-		cons_printf("f oeip @ 0x%x\n", (int)R_EIP(oregs));
-		cons_printf("f eip @ 0x%x\n", (int)R_EIP(regs));
-		cons_printf("f oesp @ 0x%x\n", (int)R_ESP(oregs));
-		cons_printf("f esp @ 0x%x\n", (int)R_ESP(regs));
+		cons_printf("f oeax @ 0x%llx\n", (u64)R_OEAX(regs));
+		cons_printf("f eax @ 0x%llx\n", (u64)R_EAX(regs));
+		cons_printf("f ebx @ 0x%llx\n", (u64)R_EBX(regs));
+		cons_printf("f ecx @ 0x%llx\n", (u64)R_ECX(regs));
+		cons_printf("f edx @ 0x%llx\n", (u64)R_EDX(regs));
+		cons_printf("f ebp @ 0x%llx\n", (u64)R_EBP(regs));
+		cons_printf("f esi @ 0x%llx\n", (u64)R_ESI(regs));
+		cons_printf("f edi @ 0x%llx\n", (u64)R_EDI(regs));
+		cons_printf("f oeip @ 0x%llx\n", (u64)R_EIP(oregs));
+		cons_printf("f eip @ 0x%llx\n", (u64)R_EIP(regs));
+		cons_printf("f oesp @ 0x%llx\n", (u64)R_ESP(oregs));
+		cons_printf("f esp @ 0x%llx\n", (u64)R_ESP(regs));
 	} else
 	if (rad == 2) {
 			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
@@ -1533,7 +1533,6 @@ void arch_view_bt(struct list_head *sf)
 			i++, (uint)sf_e->ret_addr,
 			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);
 	}
-
 }
 
 void free_bt(struct list_head *sf)
@@ -1565,4 +1564,17 @@ void arch_set_pc(addr_t pc)
 	debug_setregs(ps.tid, &regs);
 }
 
+int arch_is_fork()
+{
+        char sc_ins[2];
 
+	#if __linux__
+       	/* clone or fork syscalls */
+		return (R_OEAX(WS(regs)) == 120 || R_OEAX(WS(regs)) == 2) &&
+               	 debug_read_at(ps.tid, sc_ins, 2, R_EIP(WS(regs)) - 2) == 2 &&
+                 memcmp(sc_ins, SYSCALL_INS, sizeof(SYSCALL_INS) - 1) == 0;
+	#else
+#warning arch_is_fork() is not implemetned for this platform
+		return 0;
+	#endif
+}

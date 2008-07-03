@@ -90,12 +90,13 @@ int event_is_ignored(int id)
 #include "arch/i386.h"
 
 
-
 int events_init()
 {
 	int flags;
-
-#if !__x86_64__
+/* THIS IS KILLING THE !cont and !contfork stuff */
+/* XXX: we must rethink this in another way */
+#if 1
+#if __linux__
 	/* 2.4 */
 	flags    = PTRACE_O_TRACESYSGOOD;
 	/* 2.6 */
@@ -108,6 +109,7 @@ int events_init()
 
 	return ptrace(PTRACE_SETOPTIONS,ps.pid, NULL, flags);
 #endif
+#endif
 	return 0;
 }
 
@@ -116,23 +118,28 @@ int events_get()
 	int ret;
 	unsigned int ret2;
 
-#if !__x86_64__
-	ret = ptrace(PTRACE_GETEVENTMSG, ps.pid, NULL, &ret2);
+#if __linux__
+	ret = ptrace(PTRACE_GETEVENTMSG, ps.tid, NULL, &ret2);
 
 	switch(ret) {
 	case PTRACE_EVENT_EXIT:
-		printf("Exit status: %d\n", ret);
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("event-msg = exit status: %d\n", ret);
+		config.interrupted = 1;
 		break;
 	case PTRACE_EVENT_EXEC:
-		printf("Execve handled %d %d\n", ret, ret2);
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("event-msg = execve handled %d %d\n", ret, ret2);
 		break;
 	case PTRACE_EVENT_FORK:
 	case PTRACE_EVENT_VFORK:
 	case PTRACE_EVENT_CLONE:
-		printf("New pid: %d\n", ret);
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("event-msg = new pid: %d\n", ret);
 		break;
 	case PTRACE_EVENT_VFORK_DONE:
-		printf("Vfork done: %d\n", ret);
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("event-msg = vfork done: %d\n", ret);
 		break;
 	}
 #endif

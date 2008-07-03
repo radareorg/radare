@@ -101,7 +101,7 @@ int help_message()
 	TITLE_END
 	cons_printf("  bp [addr]          put a breakpoint at addr (no arg = list)\n");
 	cons_printf("  mp [rwx] [a] [s]   change memory protections at [a]ddress with [s]ize\n");
-	cons_printf("  ie                 ignore debug events\n");
+	cons_printf("  ie [-][event]      ignore debug events\n");
 	TITLE
 	cons_printf(" Registers\n");
 	TITLE_END
@@ -141,6 +141,7 @@ static struct commads_t {
 	CB_CMD( "help"     , CB_NOARGS   , help_message )       , 
 	CB_CMD( "?"        , CB_NOARGS   , help_message )       , 
 	CB_CMD( "run"      , CB_NOARGS   , debug_run )          , 
+	CB_CMD( "status"   , CB_NOARGS   , debug_status )       , 
 	CB_CMD( "stepret"  , CB_NOARGS   , debug_stepret )      , 
 	CB_CMD( "stepbp"   , CB_INT      , debug_stepbp)        , 
 	CB_CMD( "stepo"    , CB_NOARGS   , debug_stepo )        , 
@@ -163,7 +164,6 @@ static struct commads_t {
 	CB_CMD( "core"     , CB_NOARGS   , debug_dumpcore )     , 
 	CB_CMD( "dump"     , CB_SPACE    , page_dumper )        , 
 	CB_CMD( "restore"  , CB_SPACE    , page_restore )       , 
-	CB_CMD( "status"   , CB_NOARGS   , debug_status )       , 
 	CB_CMD( "pids"     , CB_NOARGS   , debug_pids )         , 
 	CB_CMD( "pid"      , CB_SPACE    , debug_pstree )       , 
 	CB_CMD( "attach"   , CB_INT      , debug_attach)        , 

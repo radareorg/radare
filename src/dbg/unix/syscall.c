@@ -162,16 +162,12 @@ int arch_print_syscall()
 	&syscalls_netbsd_x86;
   #endif
 
-  #if ARCH_X86_64
-	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
-  #else
 	ret = debug_getregs(ps.tid, &regs);
-  #endif
 	if (ret < 0) {
 		perror("getregs");
 		return -1;
 	}
-#if ARCH_X86_64
+#if __x86_64__
 	cons_printf("0x%08llx syscall(%d) ", (u64)R_RIP(regs), (int)R_REAX(regs));
 	
 	for(i=0;ptr[i].num;i++) {
@@ -189,7 +185,7 @@ int arch_print_syscall()
 
 	cons_printf(") = 0x%08llx\n", R_RAX(regs));
 	return (int)R_REAX(regs);
-#elif ARCH_X86
+#elif __i386__
 	cons_printf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
 
 	for(i=0;ptr[i].num;i++) {
@@ -207,7 +203,7 @@ int arch_print_syscall()
 	cons_printf(") = 0x%08x\n", R_EAX(regs));
 	return (int)R_OEAX(regs);
 #else
-  #warning Unknown arch for arch_print_syscall
+  #error Unknown arch for arch_print_syscall
 #endif
 #else
 	return -1;

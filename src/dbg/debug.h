@@ -122,7 +122,8 @@ enum {
 	INT3_EVENT,
 	INT_EVENT,	/* interrupt, CTRL-C */
 	FATAL_EVENT,	/* fatal exception (access violation) */
-	EXIT_EVENT
+	EXIT_EVENT,
+	CLONE_EVENT
 };
 
 enum {

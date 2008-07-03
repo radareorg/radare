@@ -194,8 +194,10 @@ void dr_init();
 
 #ifdef __linux__
 #define SYSCALL_OPS	"\xcd\x80\xcc\x90"	/* int $0x80, int $0x3, nop */
+#define SYSCALL_INS	"\xcd\x80"
 #else
 #define SYSCALL_OPS	"\xcd\x80\xcc\x90"	/* int $0x80, int $0x3, nop */
+#define SYSCALL_INS	""
 #endif
 
 int instLength(unsigned char *p, int s, int mode);

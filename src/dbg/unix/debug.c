@@ -155,8 +155,10 @@ int debug_print_wait(char *act)
 	default:
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
-			eprintf("=== %s: tid: %d signal: %d (%s). stop at 0x%08llx\n", 
-				act, ps.tid, WS_SI(si_signo),
+			eprintf("=== %s: tid: %d event: %d, signal: %d (%s). stop at 0x%08llx\n", 
+				act, ps.tid, 
+				WS(event),
+				WS_SI(si_signo),
 				sig_to_name(WS_SI(si_signo)),
 				arch_pc(ps.tid));
 #if __mips__
@@ -761,7 +763,7 @@ sleep(1);
 				return -1;	
 			}
 		
-			printf("____[ New thread created ]____\ntid: %d\n", tid);
+			eprintf("____[ New thread created ]____\ntid: %d\n", tid);
 
 			ret = debug_waitpid(tid, &status);
 
@@ -799,6 +801,7 @@ sleep(1);
 			eprintf("Segmentation fault!\n");
 		} else
 		if (WS_SI(si_signo)==19) {
+			WS(event) = CLONE_EVENT;
 			eprintf("CLONE HAS BEEN INVOKED\n");
 		} else
 			eprintf("Unknown signal %d received\n", WS_SI(si_signo));
@@ -817,14 +820,19 @@ int debug_contfork(int tid)
 	// XXX ignore tid
 	if (ps.opened) {
 		//arch_reset_breakpoint(1);
-		ret = ptrace(PTRACE_SYSCALL, ps.tid, 0, 0);
-		if (ret != 0) {
-			eprintf("ptrace_syscall error\n");
-			return 1;
-		}
+		do {
+			ret = ptrace(PTRACE_SYSCALL, ps.tid, 0, 0);
+			if (ret != 0) {
+				eprintf("ptrace_syscall error\n");
+				return 1;
+			}
 
-		debug_dispatch_wait();
-		//wait_ptrace(0);
+			debug_dispatch_wait();
+			debug_print_wait("contsc");
+
+		} while(!arch_is_fork() && ( WS(event) != EXIT_EVENT ) );
+		
+		debug_print_wait("contfork");
 
 		return 0;
 	}
