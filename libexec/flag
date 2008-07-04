@@ -14,19 +14,20 @@ type=`file $FILE |awk '{print $2}'`
 echo "Automagically flagging $FILE" >/dev/stderr
 
 case "$type" in
-
 	"PE")
 		rsc syms-pe-flag ${FILE}
 		rsc strings-pe-flag ${FILE}
 	;;
 
 	"ELF")
+		rsc flag-sections ${FILE}
+		rsc syms-dbg-flag ${FILE}
 		## are we being called from debugger??
-		if [ -n "$DPID" ]; then
-			rsc syms-dbg-flag ${FILE}
-		else
-			rsc syms-flag ${FILE}
-		fi
+		#if [ -n "$DPID" ]; then
+		#	rsc syms-dbg-flag ${FILE}
+		#else
+		#	rsc syms-flag ${FILE}
+		#fi
 		rsc strings-flag ${FILE}
 		rsc syscall-flag ${FILE}
 	;;

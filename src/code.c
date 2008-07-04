@@ -818,8 +818,8 @@ void udis_arch(int arch, int len, int rows)
 
 			if (show_flags && !show_flagsline) {
 				char buf[1024];
-				const char *flag = flag_name_by_offset(
-					config.baddr?(config.seek+bytes-myinc-myinc):seek);
+				const char *flag = flag_name_by_offset(seek-config.baddr);
+				//config.baddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
 					sprintf(buf, "%%%ds:", show_nbytes);
 					if (strlen(flag)>show_nbytes) {
@@ -841,7 +841,7 @@ void udis_arch(int arch, int len, int rows)
 					}
 				} else {
 					sprintf(buf, "%%%ds ", show_nbytes);
-					cons_printf(buf,"");
+					cons_printf(buf,flag);
 				}
 			}
 

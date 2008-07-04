@@ -15,16 +15,17 @@ if (( $target eq "" ) || ( $target eq "-h" )) {
 print "fs symbols\n";
 my $base = qx(rsc elf-base-addr $target | head -n 1); chomp($base);
 my @syms = split(/\n/, qx(rsc syms $target));
-print ":f _here_\n";
 for my $i (0 .. @syms) {
 	my ($addr, $name) = split(/ /,$syms[$i]);
 	next if ($name eq "");
 	$name=~s/\@.*//;
 	$name=~s/-/_/;
 	$name="sym_$name";
-	eval "\$addr=$addr-$base;";
-	printf ":f $name @ 0x%x\n", $addr if ($addr<0x99999);
+	if ($base>0) {
+		eval "\$addr=$addr-$base;";
+	} else {
+		eval "\$addr=$addr;";
+	}
+	printf "f $name @ 0x%x\n", $addr if ($addr<0x99999);
 }
-print ":s _here_\n";
-print ":f -_here_\n";
 print STDERR @syms." symbols added.\n" if ( $ENV{"VERBOSE"} );

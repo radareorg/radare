@@ -10,4 +10,9 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-readelf -l $1 | grep LOAD | column -t | awk '{print $3}'
+if [ -n "`file $1 | grep relocat`" ]; then
+	# object files get text as base address for text symbols
+	readelf -S src/hack.o | grep text | grep PROGBITS | awk '{print "0x"$6}'
+else
+	readelf -l $1 | grep LOAD | column -t | awk '{print $3}'
+fi

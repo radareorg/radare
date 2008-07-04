@@ -49,6 +49,7 @@ struct reflines_t *code_lines_init()
 		if (config.interrupted)
 			break;
 		sz = arch_aop(config.baddr + config.seek+bsz, ptr, &aop);
+		//sz = arch_aop(config.seek+bsz, ptr, &aop);
 		if (sz <1) {
 			sz = 1;
 		} else {
@@ -59,16 +60,16 @@ struct reflines_t *code_lines_init()
 			case AOP_TYPE_JMP:
 				if (!bar) {
 					/* skip outside lines */
-					if (aop.jump > config.seek+config.block_size)
+					if (aop.jump > config.seek+config.baddr+config.block_size)
 						goto __next;
 					/* skip outside lines */
-					if (aop.jump < config.seek-30)
+					if (aop.jump < config.seek+config.baddr-30)
 						goto __next;
 				} else
 					if (aop.jump == 0)
 						goto __next;
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
-				list2->from = config.seek + bsz;
+				list2->from = config.seek + config.baddr + bsz;
 				list2->to = aop.jump;
 				list2->index = index++;
 				list_add_tail(&(list2->list), &(list->list));
