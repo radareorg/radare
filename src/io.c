@@ -104,14 +104,18 @@ int radare_write(char *arg, int mode)
 		} else {
 			/* TODO must take care about search mode for replacements */
 			/* TODO check cfg.running or so? */
-			rest = config.size - (seek + (len*times));
-			if (rest > 0) {
-				char *str = malloc(rest);
-				io_read(config.fd, str, rest);
-				io_lseek(config.fd, seek+(len*times), SEEK_SET);
-				io_write(config.fd, str, rest);
-				free(str);
-				io_lseek(config.fd, seek, SEEK_SET);
+			if (config_get("file.insertblock")) {
+				eprintf("file.insertblock: not yet implemented\n");
+			} else {
+				rest = config.size - (seek + (len*times));
+				if (rest > 0) {
+					char *str = malloc(rest);
+					io_read(config.fd, str, rest);
+					io_lseek(config.fd, seek+(len*times), SEEK_SET);
+					io_write(config.fd, str, rest);
+					free(str);
+					io_lseek(config.fd, seek, SEEK_SET);
+				}
 			}
 		}
 		

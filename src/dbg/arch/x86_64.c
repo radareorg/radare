@@ -58,6 +58,9 @@ struct regs_off roff[] = {
 	{"rsi", R_RSI_OFF},
 	{"rdi", R_RDI_OFF},
 	{"rip", R_RIP_OFF},
+	{"eip", R_RIP_OFF},
+	{"rsp", R_ESP_OFF},
+	{"rbp", R_EBP_OFF},
 	{"eflags", R_RFLAGS_OFF},
 	{0, 0}
 };

@@ -618,6 +618,7 @@ void config_init(int first)
 	config_set("cfg.inverse", "false");
 	config_set_i("cfg.analdepth", 6);
 	config_set("file.insert", "false");
+	config_set("file.insertblock", "false");
 	if (first) {
 		node = config_set("file.write", "false");
 		node->callback = &config_wmode_callback;

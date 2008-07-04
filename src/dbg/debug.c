@@ -716,7 +716,12 @@ int debug_fd(char *cmd)
 
 int debug_loaduri(char *cmd)
 {
+	char pids[128];
 	debug_fork_and_attach();
+	/* debug_init() ??? */
+	sprintf(pids, "%d", ps.tid);
+	setenv("DPID", pids, 1);
+	debug_getregs(ps.pid, &(WS(regs)));
 	printf("%d\n", ps.tid);
 	exit(0);
 }
@@ -758,6 +763,8 @@ int debug_load()
 	debug_init_maps(0);
 	events_init();
 	debug_until((char *)config_get("dbg.bep"));
+
+	debug_getregs(ps.pid, &(WS(regs)));
 
 	return ret;
 }
@@ -1663,7 +1670,7 @@ addr_t debug_getregister(char *input)
 {
 	char *reg = input;
 	int off;
-	addr_t ret;
+	u64 ret;
 
 	// TODO: user streclean
 	if(*input == ' ')
@@ -1673,7 +1680,7 @@ addr_t debug_getregister(char *input)
 		return -1;
 
 	/* TODO: debug_get_regoff must return a value addr_t */
-	ret = (addr_t)debug_get_regoff(&WS(regs), roff[off].off); 
+	ret = (u64)debug_get_regoff(&WS(regs), roff[off].off); 
 
 	printf("0x%08llx\n", ret);
 

@@ -65,7 +65,9 @@ struct regs_off roff[] = {
 	{"esi", R_ESI_OFF},
 	{"edi", R_EDI_OFF},
 	{"esp", R_ESP_OFF},
+	{"ebp", R_EBP_OFF},
 	{"eip", R_EIP_OFF},
+	{"eflags", R_EFLAGS_OFF},
 
 #if __WINDOWS__
 	{"dr0", R_DR0_OFF},
@@ -75,7 +77,6 @@ struct regs_off roff[] = {
 	{"dr6", R_DR6_OFF},
 	{"dr7", R_DR7_OFF},
 #endif
-	{"eflags", R_EFLAGS_OFF},
 	{0, 0}
 };
 

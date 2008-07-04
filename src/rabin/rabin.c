@@ -62,6 +62,7 @@ char *file = NULL;
 int filetype = FILETYPE_UNK;
 int action   = ACTION_UNK;
 int verbose  = 0;
+int rof      = 0; //radare output format
 int fd       = -1;
 static int pebase = 0;
 
@@ -124,8 +125,16 @@ void rabin_show_entrypoint()
 	case FILETYPE_ELF:
 		lseek(fd, 0x18, SEEK_SET);
 		read(fd, &addr, 4);
-		printf("0x%08lx memory\n", addr);
-		printf("0x%08lx disk\n", addr - 0x8048000);
+		if (rof) {
+			printf("f entrypoint @ 0x%08lx\n", addr);
+		} else {
+			if (verbose) {
+				printf("0x%08lx memory\n", addr);
+				printf("0x%08lx disk\n", addr - 0x8048000);
+			} else {
+				printf("0x%08lx\n", addr);
+			}
+		}
 		break;
 	case FILETYPE_MZ:
 		break;
@@ -414,6 +423,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_NOP;
 			break;
 		case 'r':
+			rof = 1;
 			break;
 		case 'v':
 			verbose = 1;

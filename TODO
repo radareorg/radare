@@ -7,6 +7,35 @@
 
 ===========================================================
 
+=====
+0.9.8 - codename 'scg08'
+=====
+
+* Indentify, parse and show the auxv_t structure
+  * LD_AUXV_SHOW=1 /bin/ls before start to debug
+  * dbg.auxv= true
+* file.insertblock - TODO: implement io.c radare_write
+  - must interact with search engine too for search and replace
+* !contu must use '!mp rw- 0x8048000 0x4045' if supported
+* search backward (esteve?)
+ - search backward in memory (invert string and add inc as argument for binparse)
+ - useful to static analyze interrupt calls
+* make xrefs work inside the core
+* Move all flags of current flagspace +offset or -offset
+  - fm ?
+* remove comments doesnt works properly
+* Access to local variables using dwarf stuff
+* proper handle of negative values in disasm (no 0xfffff)
+* Update manpages
+* add 'call <reg>' to rasm
+* Make the color palette more accessible to the users
+* Add 'strings-cmt' to add comments in strings and use Cs to convert them
+  - Make 'Cs' be more intelligent for multiple strings
+  - Support for cursor range split
+  - Without argument must find the end of string from curseek
+* control screen height in cons.c (limit \n per screen)
+
+
 * !contall
 * !cont <pid> ???
 
@@ -16,6 +45,7 @@ debug.elf32_trace: 0
 
 Implement freebsd waiter:
  > kern.lastpid: 55763 -> wait until changes :O
+  - use this value to parse /proc faster (buggy)
 
 FileDescriptors
 ===============
@@ -26,8 +56,6 @@ FileDescriptors
  - can be done in lua
  - !contsc needs lua interface
 
-0.9.8:
-======
 * function hooker in C (dbg.hooker)      
   - some C macros or so to create a .so and LD_PRELOAD't
   - if static...should inject trampolines to our code.
@@ -36,27 +64,14 @@ FileDescriptors
   - stored in file
     [from-address] \t  [to-address]
 
- * remove comments doesnt works properly
  * show labels of all jumps/calls (not only bookmarked ones)
- * proper handle of negative values in disasm (no 0xfffff)
- * Update manpages
  * undo write
  * xc is crappy!
  * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
- * add 'call <reg>' to rasm
- * search backward in memory (invert string and add inc as argument for binparse)
- * Make the color palette more accessible to the users
- * Make ^C work again in debugger?!?
-  - do not pass user signals to child process
  * 'w' in cursor mode with range selected must fill the buffer
- * when loading strings from file
-  - run Cs
-  - make Cs support multiple strings at a time
-  - split .dbs with flags
  * Support to change program arguments while running
- * control screen height in cons.c (limit \n per screen)
  * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
     recover the 0 position
@@ -90,18 +105,12 @@ FileDescriptors
 
  * Allow to increase/decrease folder size with + and -
   - wheen scrolling over folders skip faster
- * embed xrefs into radare (to be used from the debugger)
-  - handle current map only
- * Access to local variables using dwarf stuff
  * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
- * make !get work on linux with arch_get_register (currently only works on w32)
  * make fixed nodes fixed to the graph view
  * Use SIGHUP to dump monitor stuff to files
- * rename or remove pd command.
-   - make it work without file.wmode
  * radare debugger for osx x86/arm
  * support for background color
  * blinking byte at cursor
@@ -127,8 +136,6 @@ Open streams
   - dbg.steplibs = true|false ??
   - automatic stepu 
 
-  - file.insertblock=false - to not modify the whole stuff
-  - must interact with search engine too for search and replace
 
 /////////////////////////////////////////////////////////////////////////
 /* Fetch the thread-local storage pointer for libthread_db.  */
@@ -197,7 +204,6 @@ BUGS:
 
 Random:
 =======
-* Indentify, parse and show the auxv_t structure
 * filter visible flags with scr.flagfilter (strstr expression)
 * support to append data (without getting out of the block_size) (or so..)
 * cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
