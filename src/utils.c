@@ -351,15 +351,16 @@ u64 get_math(const char* text)
 	if (level++>5)
 		return 0;
 
-	if (text==NULL||text[0]=='\0')
+	if (text==NULL||text[0]=='\0') {
+		level--;
 		return 0;
+	}
 
 #if RADARE_CORE
 	txt2=strdup(text);
 #endif
 	for(txt = strdup(text); txt && txt[0]==' ' && txt[0]; strcpy(txt, txt+1));
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
-
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
 		tmp = mytok(ptr, "+-<>%*/[\\", &op);

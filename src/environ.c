@@ -52,7 +52,7 @@ int var_required(char *str, char *var)
 void prepare_environment(char *line)
 {
 	int i;
-	char *offset = (char *)malloc((config.block_size*3)+1);
+	char *offset = (char *)malloc((config.block_size*3)+2);
 
 	/* to think.. +/
 	setenv("SYNTAX", config_get("asm.syntax"));

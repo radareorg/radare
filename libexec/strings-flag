@@ -14,8 +14,8 @@ my @strings=split('\n', `strings -tx -n2 $file`);
 my @foo=split('\n', `rabin -e $file`);
 my @foomem=split(' ', $foo[0]);
 my @foodsk=split(' ', $foo[1]);
-my $mem=`xc $foomem[0]`;
-my $disk=`xc $foodsk[0]`;
+my $mem=`xc $foomem[0]` if (defined($foomem[0]));
+my $disk=`xc $foodsk[0]` if (defined($foodsk[0]));
 my $count=0;
 $offset=$mem-$disk unless($offset);
 
