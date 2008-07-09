@@ -13,7 +13,7 @@
 
 * Indentify, parse and show the auxv_t structure
   * LD_AUXV_SHOW=1 /bin/ls before start to debug
-  * dbg.auxv= true
+  * dbg.auxv = true
 * file.insertblock - TODO: implement io.c radare_write
   - must interact with search engine too for search and replace
 * !contu must use '!mp rw- 0x8048000 0x4045' if supported

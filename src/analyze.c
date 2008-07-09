@@ -48,6 +48,17 @@ struct reflines_t *code_lines_init()
 	while( ptr < end ) {
 		if (config.interrupted)
 			break;
+		{
+			int dt = data_type(config.baddr+config.seek+bsz);
+			if (dt) {
+				u64 sz = data_size(config.baddr+config.seek+bsz);
+				if (sz > 0) {
+					ptr= ptr +sz;
+					bsz=bsz+sz;
+					continue;
+				}
+			}
+		}
 		sz = arch_aop(config.baddr + config.seek+bsz, ptr, &aop);
 		//sz = arch_aop(config.seek+bsz, ptr, &aop);
 		if (sz <1) {

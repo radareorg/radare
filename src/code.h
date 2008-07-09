@@ -120,7 +120,7 @@ struct data_t *data_get(u64 offset);
 int data_type_range(u64 offset);
 int data_type(u64 offset);
 int data_end(u64 offset);
-int data_count(u64 offset);
+int data_size(u64 offset);
 int data_list();
 void udis_jump(int n);
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);

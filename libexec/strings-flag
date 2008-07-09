@@ -30,7 +30,7 @@ for my $i (0 .. $#strings) {
 	my $str  = $2;
 	my $cow;
 	eval ("\$cow = 0x$addr+$offset\n");
-	$str=~tr/\ \-\>\<\`\t\|\@"/.__________./;
+	$str=~tr/\ \-\>\<\`\t\|&;\@"/.___________./;
 	$str=~s/\.*//g;
 	$str=substr($str, 0,27);
 	if ($str=~/%/ || length($str)>$minlen) {

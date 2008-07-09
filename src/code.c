@@ -43,6 +43,11 @@ static ud_t ud_obj;
 static unsigned char o_do_off = 1;
 static int ud_idx = 0;
 static int length = 0;
+// ???
+int udis86_color = 0;
+
+extern int arm_mode;
+extern int mips_mode;
 
 int data_set_len(u64 off, u64 len)
 {
@@ -81,8 +86,8 @@ void data_add(u64 off, int type)
 		__reloop:
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-			if (off>= d->from && off<= d->to) {
-				list_del((&d)); //->list));
+			if (d && (off>= d->from && off<= d->to)) {
+				list_del((&d->list)); //->list));
 				goto __reloop;
 			}
 		}
@@ -159,7 +164,7 @@ int data_end(u64 offset)
 	return -1;
 }
 
-int data_count(u64 offset)
+int data_size(u64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -278,7 +283,7 @@ void metadata_comment_del(u64 offset, const char *str)
 		if (off) {
 			if (off == cmt->offset) {
 				free(cmt->comment);
-				list_del(&pos);
+				list_del(&(pos));
 				free(cmt);
 				if (str[0]=='*')
 					metadata_comment_del(offset, str);
@@ -288,13 +293,13 @@ void metadata_comment_del(u64 offset, const char *str)
 		} else {
 			if (str[0]=='*') {
 				free(cmt->comment);
-				list_del(&pos);
+				list_del(&(pos));
 				free(cmt);
 				pos = comments.next; // list_init
 				//metadata_comment_del(offset, str);
 			} else
 			if (cmt->offset == offset) {
-				list_del(&pos);
+				list_del(&(pos));
 				return;
 			}
 		}
@@ -421,10 +426,6 @@ static int input_hook_x(ud_t* u)
 	return config.block[ud_idx++];
 }
 
-int udis86_color = 0;
-
-extern int arm_mode;
-extern int mips_mode;
 void udis_init()
 {
 	const char *syn = config_get("asm.syntax");
@@ -454,9 +455,8 @@ void udis_init()
 	if (syn) {
 		if (!strcmp(syn,"pseudo")) 
 			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
-		else
-			if (!strcmp(syn,"att")) 
-				ud_set_syntax(&ud_obj, UD_SYN_ATT);
+		else if (!strcmp(syn,"att")) 
+			ud_set_syntax(&ud_obj, UD_SYN_ATT);
 	}
 
 #ifdef _WIN32
@@ -488,19 +488,8 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		hex1 = ud_insn_hex(&ud_obj);
-		hex2 = hex1 + 16;
-		c = hex1[16];
-		hex1[16] = 0;
+		ud_set_pc(&ud_obj, seek);
 		cons_printf("%-24s", ud_insn_asm(&ud_obj));
-		hex1[16] = c;
-		if (strlen(hex1) > 24) {
-			C cons_printf(C_RED);
-			cons_printf("\n");
-			if (o_do_off)
-				cons_printf("%15s .. ", "");
-			cons_printf("%-16s", hex2);
-		}
 		ret = ud_insn_len(&ud_obj);
 		break;
 	case ARCH_CSR:
@@ -515,17 +504,17 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
-		       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-		       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-		       gnu_disarm((unsigned char*)b, (unsigned int)seek);
-		       break;
+	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+	       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
+	       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+	       break;
 	case ARCH_MIPS:
-		       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-		       gnu_dismips((unsigned char*)b, (unsigned int)seek);
-		       break;
+	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+	       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+	       break;
 	case ARCH_SPARC:
-		       gnu_disparc((unsigned char*)b, (unsigned int)seek);
-		       break;
+	       gnu_disparc((unsigned char*)b, (unsigned int)seek);
+	       break;
 	case ARCH_PPC: {
 	       char opcode[128];
 	       char operands[128];
@@ -614,7 +603,7 @@ void udis_arch(int arch, int len, int rows)
 	switch(arch) {
 	case ARCH_X86:
 		udis_init();
-		ud_obj.pc = config.seek;
+		ud_set_pc(&ud_obj, config.seek);
 		break;
 	case ARCH_ARM:
 		arm_mode = 32;
@@ -650,7 +639,7 @@ void udis_arch(int arch, int len, int rows)
 			metadata_print(bytes);
 
 		/* is this data? */
-		idata = data_count(sk);
+		idata = data_size(sk);
 		if (idata>0) {
 			struct data_t *foo = data_get(sk);
 			int dt = data_type(sk);
@@ -672,12 +661,12 @@ void udis_arch(int arch, int len, int rows)
 			switch(dt) {
 			case DATA_FOLD_C: 
 				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
-				bytes+=(foo->to-foo->from);
-				ud_idx+=(foo->size);
+				//bytes+=foo->size; //(foo->to-foo->from);
 				//bytes+=idata;
 				continue;
 			case DATA_FOLD_O:
 				cons_strcat("\r                                       \r");
+				myinc =foo->size; //(foo->to-foo->from);
 				if (show_lines)
 					code_lines_print(reflines, seek, 1);
 				if (show_reladdr)
@@ -706,7 +695,11 @@ void udis_arch(int arch, int len, int rows)
 			}
 			cons_newline();
 			CHECK_LINES
+			/* how many different ways to do the same we have? */
 			bytes+=idata;
+			sk = config.seek+bytes;
+			seek = config.baddr +config.seek+bytes;
+			ud_idx+=(foo->size); // XXX ud_stuff must be handled in another way
 			continue;
 		}
 		__outofme:
@@ -749,7 +742,9 @@ void udis_arch(int arch, int len, int rows)
 			case ARCH_X86:
 				if (ud_disassemble(&ud_obj)<1)
 					return;
-				arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
+				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
+				ud_set_pc(&ud_obj, seek);
+				arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
 				myinc = ud_insn_len(&ud_obj);
 				break;
 			case ARCH_ARM16:
@@ -907,6 +902,14 @@ void udis_arch(int arch, int len, int rows)
 			}
 
 			/* disassemble opcode! */
+#if 0
+cons_printf("DIS at 0x%08llx\n", seek);
+cons_printf("BYTES at 0x%08lld\n", (u64)bytes+idata);
+cons_printf("MYINC at 0x%08lld\n", (u64)myinc);
+cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
+	config.block[bytes+1], config.block[bytes+2]);
+
+#endif
 			udis_arch_opcode(arch, endian, seek, bytes, myinc);
 
 			/* show references */

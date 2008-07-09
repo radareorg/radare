@@ -1,0 +1,20 @@
+#!/bin/sh
+# author : pancake
+
+PID=$1
+if [ -z "${PID}" ]; then
+	echo "Usage: rsc fds [pid]"
+	echo " list filedescriptors of a pid"
+fi
+
+lsof -h > /dev/null 2>&1
+if [ $? = 0 ]; then
+	lsof -p $PID
+else
+	fstat -h > /dev/null 2>&1
+	if [ $? = 0 ]; then
+		fstat -p $PID
+	else
+		ls -l /proc/$PID/fd
+	fi
+fi
