@@ -487,8 +487,11 @@ static int config_scrheight(void *data)
 {
 	struct config_node_t *node = data;
 	config.height = node->i_value;
-	if (config.height<1)
-		config.height = 24;
+	if (config.height<1) {
+		cons_get_real_columns();
+		if (config.height<1)
+			config.height = 24;
+	}
 	return 1;
 }
 

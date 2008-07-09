@@ -31,6 +31,11 @@
 #include "arch/x86/udis86/extern.h"
 #include "list.h"
 
+
+#define CHECK_LINES if ( config.visual && len!=config.block_size && (cons_lines >config.height) ) break;
+
+static int last_arch = ARCH_X86;
+
 struct list_head data;
 extern int force_thumb;
 
@@ -475,11 +480,6 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
-//#define CHECK_LINES printf("%d/%d\n",lines,rows); if ( (config.visual && len!=config.block_size && (++lines>=rows))) break;
-#define CHECK_LINES if ( config.visual && len!=config.block_size && (++lines>=rows) ) break;
-
-static int last_arch = ARCH_X86;
-
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
 	unsigned char *b = config.block + bytes;
@@ -647,7 +647,7 @@ void udis_arch(int arch, int len, int rows)
 		CHECK_LINES
 
 		if (show_comments)
-			lines+=metadata_print(bytes);
+			metadata_print(bytes);
 
 		/* is this data? */
 		idata = data_count(sk);
@@ -664,6 +664,11 @@ void udis_arch(int arch, int len, int rows)
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
 			}
+		{
+			const char *flag = flag_name_by_offset(seek-config.baddr);
+			if (!strnull(flag))
+				cons_printf("%s: ", flag);
+		}
 			switch(dt) {
 			case DATA_FOLD_C: 
 				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
@@ -710,11 +715,9 @@ void udis_arch(int arch, int len, int rows)
 				code_lines_print(reflines, seek, 1);
 			if (show_offset) {
 				cons_strcat("           ");
-				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
 			folder--;
-			for(i=0;i<folder;i++)cons_strcat("  ");
+			for(i=0;i<folder;i++) cons_strcat("  ");
 			cons_strcat("  }\n");
 			CHECK_LINES
 		}
@@ -731,7 +734,7 @@ void udis_arch(int arch, int len, int rows)
 		}
 
 		if (cmd_asm && cmd_asm[0]) {
-			char buf[1024];
+			char buf[128];
 			sprintf(buf, "%lld", seek);
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);

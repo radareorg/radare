@@ -956,6 +956,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 					else	print_color_byte_i(j, ".", buf[j]);
 				}
 				NEWLINE;
+				if (cons_lines > config.height)
+					break;
 			}
 		}
 		config.cursor_mode = tmp;

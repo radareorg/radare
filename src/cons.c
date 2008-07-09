@@ -112,6 +112,8 @@ const char *pal_names[CONS_PALETTE_SIZE]={
 	NULL
 };
 
+int cons_lines = 0;
+
 const char *cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
@@ -242,6 +244,7 @@ void cons_clear(void)
 #else
 	write(1, "\e[2J", 4);
 #endif
+	cons_lines = 0;
 }
 
 int cons_html_print(unsigned char *ptr)
@@ -560,6 +563,7 @@ void cons_flush()
 	FILE *fd;
 	char *ptr;
 	char buf[1024];
+	int i;
 
 	if (!strnull(cons_buffer)) {
 		char *file = config_get("file.scrfilter");
@@ -590,6 +594,10 @@ void cons_flush()
 				fwrite(cons_buffer, strlen(cons_buffer),1, d);
 				fclose(d);
 			}
+		}
+		for(i=0;cons_buffer[i];i++) {
+			if (cons_buffer[i] == '\n')
+				cons_lines++;
 		}
 #if __WINDOWS__
 		if (_print_fd == 1)
