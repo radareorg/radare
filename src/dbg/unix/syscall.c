@@ -203,7 +203,8 @@ int arch_print_syscall()
 	cons_printf(") = 0x%08x\n", R_EAX(regs));
 	return (int)R_OEAX(regs);
 #else
-  #error Unknown arch for arch_print_syscall
+#warning Unknown arch for arch_print_syscall
+	eprintf("arch_print_syscall: not implemented for this platform\n");
 #endif
 #else
 	return -1;

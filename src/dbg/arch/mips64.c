@@ -51,6 +51,11 @@ regs_t oregs; // old registers
 #define REG_K0 25 // Stack pointer
 #define REG_SP 29 // Stack pointer
 
+int arch_is_fork()
+{
+	return 0
+}
+
 u64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;

@@ -36,6 +36,11 @@
 elf_gregset_t cregs; // current registers
 elf_gregset_t oregs; // old registers
 
+int arch_is_fork()
+{
+	return 0
+}
+
 long long arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;

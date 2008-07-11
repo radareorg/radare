@@ -141,12 +141,17 @@ void rabin_show_entrypoint()
 	case FILETYPE_PE:
 		lseek(fd, pebase+0x28, SEEK_SET);
 		read(fd, &addr, 4);
-		printf("0x%08x disk offset for ep\n", pebase+0x28);
-		printf("0x%08lx disk\n", addr-0xc00);
-
+	//	printf("0x%08x disk offset for ep\n", pebase+0x28);
 		lseek(fd, pebase+0x45, SEEK_SET);
 		read(fd, &base, 4);
-		printf("0x%08lx memory\n", base+addr);
+		if (rof) {
+			printf("f entrypoint @ 0x%08lx\n", addr);
+		} else {
+			if (verbose) {
+				printf("0x%08lx memory\n", base+addr);
+				printf("0x%08lx disk\n", addr-0xc00);
+			} else	printf("0x%08lx\n", base+addr);
+		}
 		break;
 	}
 }
