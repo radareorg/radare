@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include "dietelf.h"
 
 /* var */
 
@@ -62,7 +63,7 @@ char *file = NULL;
 int filetype = FILETYPE_UNK;
 int action   = ACTION_UNK;
 int verbose  = 0;
-int rof      = 0; //radare output format
+int rad      = 0; //radare output format
 int fd       = -1;
 static int pebase = 0;
 
@@ -125,7 +126,7 @@ void rabin_show_entrypoint()
 	case FILETYPE_ELF:
 		lseek(fd, 0x18, SEEK_SET);
 		read(fd, &addr, 4);
-		if (rof) {
+		if (rad) {
 			printf("f entrypoint @ 0x%08lx\n", addr);
 		} else {
 			if (verbose) {
@@ -144,7 +145,7 @@ void rabin_show_entrypoint()
 	//	printf("0x%08x disk offset for ep\n", pebase+0x28);
 		lseek(fd, pebase+0x45, SEEK_SET);
 		read(fd, &base, 4);
-		if (rof) {
+		if (rad) {
 			printf("f entrypoint @ 0x%08lx\n", addr);
 		} else {
 			if (verbose) {
@@ -290,15 +291,28 @@ void rabin_show_filetype()
 	}
 }
 
-void rabin_show_imports()
+void rabin_show_imports(const char *file)
 {
 	char buf[1024];
+	dietelf_bin_t bin;
+
 
 	switch(filetype) {
 	case FILETYPE_ELF:
 		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
+#if 0
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
+#else
+		
+    		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_imports(fd, bin.string, &bin.ehdr, bin.shdr);
+		close(fd);
+#endif
 		break;
 	}
 }
@@ -324,16 +338,30 @@ void rabin_show_exports(char *file)
 	}
 }
 
-void rabin_show_sections()
+void rabin_show_sections(const char *file)
 {
 	char buf[1024];
+	int fd;
+	dietelf_bin_t bin;
 
-	// TODO: use the way that rsc flag-sections does
-	sprintf(buf, "readelf -S '%s'|grep '\\[' | grep -v '\\[Nr\\]' | cut -c 4- | awk '{ print \"0x\"$4\" \"$2 }'", file);
-	system(buf);
+	switch(filetype) {
+	case FILETYPE_ELF:
+    		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_sections(fd, bin.string, &bin.ehdr, bin.shdr);
+		close(fd);
+		break;
+	default:
+		// TODO: use the way that rsc flag-sections does
+		sprintf(buf, "readelf -S '%s'|grep '\\[' | grep -v '\\[Nr\\]' | cut -c 4- | awk '{ print \"0x\"$4\" \"$2 }'", file);
+		system(buf);
+	}
 }
 
-void rabin_show_libs()
+void rabin_show_libs(const char *file)
 {
 	char buf[1024];
 
@@ -428,7 +456,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_NOP;
 			break;
 		case 'r':
-			rof = 1;
+			rad = 1;
 			break;
 		case 'v':
 			verbose = 1;
@@ -468,9 +496,9 @@ int main(int argc, char **argv, char **envp)
 	if (action&ACTION_SYMBOLS)
 		rabin_show_symbols(file);
 	if (action&ACTION_SECTIONS)
-		rabin_show_sections();
+		rabin_show_sections(file);
 	if (action&ACTION_LIBS)
-		rabin_show_libs();
+		rabin_show_libs(file);
 	if (action&ACTION_CHECKSUM)
 		rabin_show_checksum();
 
