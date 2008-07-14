@@ -122,20 +122,35 @@ void rabin_show_entrypoint()
 {
 	unsigned long addr = 0;
 	unsigned long base = 0;
+	dietelf_bin_t bin;
+
 	switch(filetype) {
 	case FILETYPE_ELF:
+#if 0
 		lseek(fd, 0x18, SEEK_SET);
 		read(fd, &addr, 4);
+#endif
+
+		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		addr=dietelf_get_entry_addr(&bin.ehdr);
+		base=dietelf_get_base_addr(bin.phdr);
+
 		if (rad) {
 			printf("f entrypoint @ 0x%08lx\n", addr);
 		} else {
 			if (verbose) {
 				printf("0x%08lx memory\n", addr);
-				printf("0x%08lx disk\n", addr - 0x8048000);
+				printf("0x%08lx disk\n", addr - base);
 			} else {
 				printf("0x%08lx\n", addr);
 			}
 		}
+
+		close(fd);
 		break;
 	case FILETYPE_MZ:
 		break;
@@ -176,12 +191,24 @@ void rabin_show_symbols()
 {
 	unsigned long addr, addr2, addr3;
 	unsigned int num, i;
-	char buf[1024];
+	//char buf[1024];
+	dietelf_bin_t bin;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
+#if 0
 		sprintf(buf, "objdump -d '%s' | grep '>:' | sed -e 's,<,,g' -e 's,>:,,g' -e 's,^,0x,' | sort | uniq", file);
 		system(buf);
+#endif
+
+		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_BOTH);
+		close(fd);
+
 		break;
 	case FILETYPE_DEX:
 // METHODS AND CODE OFFSETS
@@ -293,7 +320,7 @@ void rabin_show_filetype()
 
 void rabin_show_imports(const char *file)
 {
-	char buf[1024];
+	//char buf[1024];
 	dietelf_bin_t bin;
 
 
@@ -310,7 +337,7 @@ void rabin_show_imports(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_imports(fd, bin.string, &bin.ehdr, bin.shdr);
+		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_IMP);
 		close(fd);
 #endif
 		break;
@@ -320,11 +347,22 @@ void rabin_show_imports(const char *file)
 void rabin_show_exports(char *file)
 {
 	char buf[1024];
+	dietelf_bin_t bin;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
+#if 0		
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
+#endif		
+
+		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_EXP);
+		close(fd);
 		break;
 	case FILETYPE_MACHO:
 	   #if __DARWIN_BYTE_ORDER

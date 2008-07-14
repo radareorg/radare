@@ -1,9 +1,9 @@
 /* Author: nibble */
 /* Based on Silvio Cesare's elf infector */
 /* TODO: filter strings for rad output */
-/* TODO: rename to DIETELF (prefix all external functions) */
 /* TODO: port to x86-64 */
-/* TODO: list imports/exports */
+/* TODO: list exports addresses */
+/* TODO: solve 0x1000 got offset issue */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +24,6 @@ int rad = 0;
 int verbose = 1;
 #endif
 
-//int  main(int argc, char *argv[]);
-
 void
 do_elf_checks(Elf32_Ehdr *ehdr)
 {
@@ -40,14 +38,20 @@ do_elf_checks(Elf32_Ehdr *ehdr)
     }
 }
 
-int
+u64
 dietelf_get_base_addr(Elf32_Phdr *phdr)
 {
     return phdr->p_vaddr & 0xfffff000;
 }
 
 u64
-get_syms_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, int sym)
+dietelf_get_entry_addr(Elf32_Ehdr *ehdr)
+{
+   return ehdr->e_entry; 
+}
+
+u64
+get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, int sym)
 {
 
     Elf32_Shdr *shdrp;
@@ -88,7 +92,9 @@ get_syms_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, in
 			exit(1);
 		    }
 		    
-		    return plt_addr-0x6;
+		    plt_addr-=0x6;
+
+		    return plt_addr;
 		}
 	    }
 	}
@@ -97,13 +103,13 @@ get_syms_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, in
     return -1;
 }
 
-void
+int
 dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
 {
     Elf32_Shdr *shdrp;
     int i;
 
-#define GET_FLAGS(x) (x&SHF_WRITE)?'r':'-', (x&SHF_ALLOC)?'w':'-', (x&SHF_EXECINSTR)?'x':'-'
+#define GET_FLAGS(x) (x&SHF_WRITE)?'w':'-', (x&SHF_ALLOC)?'a':'-', (x&SHF_EXECINSTR)?'x':'-'
     shdrp = shdr;
     if (rad)
 	printf("fs sections\n");
@@ -111,8 +117,6 @@ dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (rad) {
-		/* TODO: filter section name (replace '.' for '_' and so) */
-		/* TODO: check if sh_name points out of mother */
 		printf("f section_%s @ 0x%08x\n", &string[shdrp->sh_name], shdrp->sh_offset);
 		printf("f section_%s_end @ 0x%08x\n", &string[shdrp->sh_name], shdrp->sh_offset+shdrp->sh_size);
 		printf("CC ");
@@ -128,10 +132,12 @@ dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *
 		printf(" @ 0x%08x\n", shdrp->sh_offset);
 	else printf("\n");
     }
+
+    return i;
 }
 
-void
-dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
+int
+dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, int sym_type)
 {
     Elf32_Shdr *shdrp = shdr;
     Elf32_Sym *sym, *symp;
@@ -146,33 +152,33 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 	    string = (char *)malloc(strtabhdr->sh_size);
 	    if (string == NULL) {
 		perror("malloc");
-		exit(1);
+		return -1;
 	    }
 
 	    if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
 		perror("lseek");
-		exit(1);
+		return -1;
 	    }
 
 	    if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
 		perror("read");
-		exit(1);
+		return -1;
 	    }
 
 	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
 	    if (sym == NULL) {
 		perror("malloc");
-		exit(1);
+		return -1;
 	    }
 
 	    if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 		perror("lseek");
-		exit(1);
+		return -1;
 	    }
 
 	    if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
 		perror("read");
-		exit(1);
+		return -1;
 	    }
 
 	    symp = sym;
@@ -182,19 +188,19 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
-		    if (rad) {
-			if (symp->st_shndx == STN_UNDEF)
-			    printf("f sym_imp_%s @ 0x%08llx\n", &string[symp->st_name], get_syms_addr(fd, bstring, ehdr, shdr, k));
-			else if (symp->st_shndx == 12)
-			    printf("f sym_exp_%s @ 0x0\n", &string[symp->st_name]);
-		    } else {
-			if (verbose) {
-				if (symp->st_shndx == STN_UNDEF)
-				    printf("Symbol (Import): %s @ 0x%08llx\n", &string[symp->st_name], get_syms_addr(fd, bstring, ehdr, shdr, k));
-				else if (symp->st_shndx == 12)
-				    printf("Symbol (Export): %s\n", &string[symp->st_name]);
+		    if ((sym_type & SYM_IMP) && symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+			if (rad) {
+			    printf("f sym_imp_%s @ 0x%08llx\n", &string[symp->st_name], get_import_addr(fd, bstring, ehdr, shdr, k));
 			} else {
-				printf("0x%08llx %s\n", (u64) get_syms_addr(fd, bstring, ehdr, shdr, k), &string[symp->st_name]);
+			    if (verbose) printf("Symbol (Import): ");
+			    printf("0x%08llx %s\n", get_import_addr(fd, bstring, ehdr, shdr, k), &string[symp->st_name]);
+			}
+		    } else if ((sym_type & SYM_EXP) && (symp->st_shndx == 11 || symp->st_shndx == 12) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+			if (rad) {
+			    printf("f sym_exp_%s @ 0x%08x\n", &string[symp->st_name], symp->st_value);
+			} else { 
+			    if (verbose) printf("Symbol (Export): ");
+			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			}
 		    }
 		}
@@ -203,6 +209,7 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 	    free(string);
 	}
     }
+    return i;
 }
 
 void
