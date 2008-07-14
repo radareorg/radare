@@ -1211,10 +1211,6 @@ CMD_DECL(write)
 	u64 off;
 
 	switch (input[0]) {
-	case 'd':
-		off = (unsigned long) get_offset(input);
-		io_write(config.fd, &off, 4);
-		break;
 	case 'F':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wF [hexpair-file]'\n");
@@ -1238,6 +1234,21 @@ CMD_DECL(write)
 				eprintf("Cannot open file '%s'\n", input+2);
 				return 0;
 			}
+		}
+		break;
+	case 'v':
+		off = get_math(input+1);
+		if (off&0xFFFFFFFF00000000LL) {
+			/* 8 byte addr */
+			unsigned long long addr8;
+			endian_memcpy(&addr8, &off, 8);
+			io_write(config.fd, &addr8, 8);
+		} else {
+			unsigned long addr4;
+			unsigned long addr4_= (unsigned long)off;
+			endian_memcpy(&addr4, &addr4, 4);
+			/* 4 byte addr */
+			io_write(config.fd, &addr4, 4);
 		}
 		break;
 	case 'f':
@@ -1291,7 +1302,7 @@ CMD_DECL(write)
 		"  w  [string]   - write plain with escaped chars string\n"
 		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
 		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
-		"  wd [offset]   - writes a doubleword from a math expression\n"
+		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.endian)\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
 		"  wf [file]     - write contents of file at current seek\n"

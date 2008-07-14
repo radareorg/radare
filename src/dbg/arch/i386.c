@@ -788,13 +788,18 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
+/* ?!? XXX rename to get_math32 ?? */
 long get_value(char *str)
 {
 	long tmp;
 
+	tmp = get_math(str);
+
+#if 0
 	if (str[0]&&str[1]=='x')
 		sscanf(str, "0x%lx", &tmp);
 	else	tmp = atol(str);
+#endif
 	return tmp;
 }
 

@@ -1047,7 +1047,7 @@ int debug_step(int times)
 
 int debug_set_register(char *args)
 {
-	char *value;
+	char *value, *tmp;
 
 	if (!args) {
 		eprintf("Usage: !set [reg] [value]\n");
@@ -1065,8 +1065,11 @@ int debug_set_register(char *args)
 		eprintf("  > !set r0 0x33\n");
 		return 1;
 	}
+	tmp = strchr(value, '=');
 	value[0]='\0';
-	value = value + 1;
+	if (tmp)
+		value = tmp+1;
+	else value = value + 1;
 
 	return arch_set_register(args, value);
 }
