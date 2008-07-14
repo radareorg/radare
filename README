@@ -32,11 +32,14 @@ DESCRIPTION
 
     $ radare -L
     haret       Read WCE memory ( haret://host:port )
-    ptrace      Debugs or attach to a process ( dbg://file or pid://PID )
+    debug       Debugs or attach to a process ( dbg://file or pid://PID )
     gdb         Debugs/attach with gdb (gdb://file, gdb://PID, gdb://host:port)
+    gdbx        GDB shell interface 'gdbx://program.exe args' )
+    shm         shared memory ( shm://key )
+    mmap        memory mapped device ( mmap://file )
     remote      TCP IO ( listen://:port or connect://host:port )
-    sysproxy    IO redirected to a sysproxy server ( sysproxy://host:port )
     winedbg     Wine Debugger interface ( winedbg://program.exe )
+    socket      socket stream access ( socket://host:port )
     gxemul      GxEmul Debugger interface ( gxemul://program.arm )
     ewf         EnCase EWF file support ( ewf:// )
     posix       plain posix file access

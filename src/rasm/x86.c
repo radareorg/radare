@@ -55,8 +55,8 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		return 2;
 	} else
 	if (arg && !strcmp(op, "call")) {
-		off_t dst = get_math(arg) - offset;
-		unsigned long addr = dst-5;
+		u64 dst = get_math(arg);
+		unsigned long addr = dst;
 		unsigned char *ptr = (uchar *)&addr;
 
 		if (dst == 0) {
@@ -70,11 +70,13 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			if (!strcmp(arg, "ebp")) data[1]='\xd5'; else
 			if (!strcmp(arg, "esp")) data[1]='\xd4';
 			else {
-				
+				printf("Invalid argument for 'call'\n");
+				return 0;
 			}
-				return 0; // invalid register name to push
 			return 2;
 		}
+		dst-=offset;
+		addr = addr - 5;
 
 		data[0] = '\xe8';
 		data[1] = ptr[0];
@@ -194,7 +196,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		unsigned long addr = dst;
 		unsigned char *ptr = (uchar *)&addr;
 
-		if (dst == 0) {
+		if (dst+offset == 0) {
 			data[0] = '\xff';
 			if (!strcmp(arg, "eax")) data[1]='\xe0'; else
 			if (!strcmp(arg, "ebx")) data[1]='\xe3'; else

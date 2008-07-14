@@ -10,36 +10,51 @@
 =====
 0.9.8 - codename 'scg08'
 =====
+* Fix dupped plugin posix
+* Remove 'bug'
+* check bindiff output
+* port to waf
+* 'w' in cursor mode with range selected must fill the buffer
+* proper handle of negative values in disasm (no 0xfffff)
+* write shellcode to dump a buffer in hexa (inline jump)
+* search backward (esteve?)
+  - search backward in memory (invert string and add inc as argument for binparse)
+  - useful to static analyze interrupt calls
+* remove comments doesnt works properly
+* Add function analysis in code analysis
+  - detect push ebp ; mov esp, ebp (begin)
+  - analize sub and add properly (to get stack frame size)
+  - analize access to stack in function code to determine local vars
+  - Access to local variables using dwarf stuff
+* ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
+* Xrefs working with the core 
+* !contu must use '!mp rw- 0x8048000 0x4045' if supported
+* Update manpages
+* rasm : Add .db, .byte, .dw, .dd directives or so, .string
+  - make them usable from the assembler (labels and so too)
+* implement bindiff patchers
 
+==============================================================
+
+* colorize background of flagged bytes in hexdump
+* '<' and '>' commands converted in prefix modifiers
+* Funroll mode - stacked disassembly
+* Support to change program arguments while running
 * Indentify, parse and show the auxv_t structure
   * LD_AUXV_SHOW=1 /bin/ls before start to debug
   * dbg.auxv = true
 * file.insertblock - TODO: implement io.c radare_write
   - must interact with search engine too for search and replace
-* !contu must use '!mp rw- 0x8048000 0x4045' if supported
-* search backward (esteve?)
- - search backward in memory (invert string and add inc as argument for binparse)
- - useful to static analyze interrupt calls
-* make xrefs work inside the core
 * Move all flags of current flagspace +offset or -offset
   - fm ?
-* remove comments doesnt works properly
-* Access to local variables using dwarf stuff
-* proper handle of negative values in disasm (no 0xfffff)
-* Update manpages
-* add 'call <reg>' to rasm
 * Make the color palette more accessible to the users
 * Add 'strings-cmt' to add comments in strings and use Cs to convert them
   - Make 'Cs' be more intelligent for multiple strings
   - Support for cursor range split
   - Without argument must find the end of string from curseek
-* control screen height in cons.c (limit \n per screen)
-
 
 * !contall
 * !cont <pid> ???
-
-* Fix height of screen
 
 debug.elf32_trace: 0
 
@@ -47,14 +62,13 @@ Implement freebsd waiter:
  > kern.lastpid: 55763 -> wait until changes :O
   - use this value to parse /proc faster (buggy)
 
-FileDescriptors
-===============
-* read/write from/to child filedescriptor
-* sniff filedescriptor (dumping to file or socket)
- - using CONTSC ?
- - hooks read/write/ syscalls and gets buf and so
- - can be done in lua
- - !contsc needs lua interface
+Rabin
+=====
+* elf-section-headers -> loggejar shelf stuff
+  - pillar base address al vol ( rabin -b)
+* Full PE parser support
+* Move radare -S into rabin to find strings in data sections only
+  - like gnu strings like bfd does
 
 * function hooker in C (dbg.hooker)      
   - some C macros or so to create a .so and LD_PRELOAD't
@@ -66,12 +80,10 @@ FileDescriptors
 
  * show labels of all jumps/calls (not only bookmarked ones)
  * undo write
- * xc is crappy!
+ * xc is crappy! no args, some vals are invalid
  * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
- * 'w' in cursor mode with range selected must fill the buffer
- * Support to change program arguments while running
  * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
     recover the 0 position
@@ -131,9 +143,9 @@ Open streams
 * serial console support
   - configure bps and so
   $ radare /dev/ttyS0
-* '<' and '>' commands converted in prefix modifiers
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
+  * dbg.stepolibs = true ;  step over non-user code?
   - automatic stepu 
 
 
@@ -167,9 +179,6 @@ DONE?
 Core
 =====
 * allow to run without opening a file (useful for batch mode)
-* dbg.stepolibs = true ;  step over non-user code?
-* asm.offset must be for all print modes
-* Funroll mode - stacked disassembly
 * add u64 cursor[config.block_size]; when printing
   - useful for zoom , disasembly, code folding
 make fdsniff and usbsniff generate a project file and a binary one.
@@ -189,30 +198,30 @@ ARM
 ===
 * arm backtrace
 - when runnin to bp says invalid address (uh?)
+- step over doesnt works on arm/mips
 
 BUGS:
 =====
 * wx `pW 33 -> the ` doesnt works
-* step over doesnt works on arm/mips
 * keybinding assignment dosnt workz
+  - UGLY
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
-* inv -> make offsets take sense
-  - make cursor bytes take sense too
 * s <unexistant-flag> -> do not seek
 * !ret should use !bt if possible
 
 Random:
 =======
-* filter visible flags with scr.flagfilter (strstr expression)
 * support to append data (without getting out of the block_size) (or so..)
 * cfg.invdelta = inverses the delta (<=1024 ..-> >=1024) (or delta range) deltamin deltamax
 * implement insert data inda core
 * graph.body=asm,flags,symcalls,description, trace execution data
-* Create linked list of hit0[0] and hit1[0] , etc..
-  define block size by hit1[0]-hit0[0]
+* define block size by hit1[0]-hit0[0] rollo begin-end (buscar <html> i </html>)
 
 * invert pel disasm
+  * inv -> make offsets take sense
+  - make cursor bytes take sense too
+
 * /a algorithm defined by search.algorithm
  it flags if search.flag
   - armfuncsearch
@@ -227,13 +236,6 @@ Random:
   use [delimiters] to embed rdbs inside rps
 * MSB stego
 
-Rabin
-=====
-* elf-section-headers -> loggejar shelf stuff
-  - pillar base address al vol ( rabin -b)
-* Full PE parser support
-* Move radare -S into rabin to find strings in data sections only
-  - like gnu strings like bfd does
 
 Graphs
 ======
@@ -318,16 +320,6 @@ Core
     0 /bin/ls 0x0000000 ; comment
     1 /bin/ls 0x0000123 ; comment2
   - S [number]
-
-Rasm
-====
-* Add .db, .byte, .dw, .dd directives or so, .string
-  - make them usable from the assembler (labels and so too)
-
-Visual
-======
-* colorize background of flagged bytes in hexdump
-* count the number of lines in backtrace and substract them to make the visual
 
 
 Tracer
@@ -449,16 +441,24 @@ Random
 
 TOTHINK
 =======
+* asm.offset must be for all print modes?
+  - renamed to scr.offset?
+
+FileDescriptors
+===============
+* read/write from/to child filedescriptor
+* sniff filedescriptor (dumping to file or socket)
+ - using CONTSC ?
+ - hooks read/write/ syscalls and gets buf and so
+ - can be done in lua
+ - !contsc needs lua interface
 * rename -v to -q (quiet or -s silent)
   - cfg.verbose = integer (autosetup scr.color and asm.color)
   - cfg.quiet = false
 * new search engine allowing AES and RSA key (so...predefined algos for signature searches)
   - must think on! - entropia = 1 en un block (tots numeros primers)
-* ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
-* Implement gtk-dialog replacement (radialog)? (in lua-gtk?)
-* make !dump incremental
+* make !dump incremental using bindiff
   - support to enable full dump (with hashing for reducing sizes)
-  - bindiffing patch
   - ultra slow ? i should analyze code to enhace this
 * cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
   - fc = flag command fc <command> @ offset

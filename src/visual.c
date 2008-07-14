@@ -1348,9 +1348,11 @@ CMD_DECL(visual)
 				}
 			}
 			break;
+#if 0
 		case 'b':
 			visual_bind_key();
 			break;
+#endif
 		case 'm':
 			printf("\nrfile magic:\n\n");
 			radare_dump_and_process( DUMP_MAGIC, config.block_size);
