@@ -19,6 +19,7 @@
  */
 
 #include "../main.h"
+#include "rabin.h"
 #include <stdio.h>
 #if __UNIX__
 #include <fcntl.h>
@@ -33,36 +34,12 @@
 #include <getopt.h>
 #include "dietelf.h"
 
-/* var */
-
-enum {
-	FILETYPE_UNK = 0,
-	FILETYPE_ELF,
-	FILETYPE_MZ,
-	FILETYPE_PE,
-	FILETYPE_CLASS,
-	FILETYPE_DEX,
-	FILETYPE_MACHO
-};
-
-#define ACTION_UNK      0x0000
-#define ACTION_ENTRY    0x0001 
-#define ACTION_IMPORTS  0x0002 
-#define ACTION_SYMBOLS  0x0004 
-#define ACTION_LIBS     0x0008 
-#define ACTION_EXPORTS  0x0010 
-#define ACTION_SECTIONS 0x0020 
-#define ACTION_CHECKSUM 0x0040 
-#define ACTION_BASE     0x0080
-#define ACTION_ARCH     0x0100
-#define ACTION_FILETYPE 0x0200
-#define ACTION_NOP      0x1000
-
 // TODO : move into rabin_t
 char *file = NULL;
 int filetype = FILETYPE_UNK;
 int action   = ACTION_UNK;
 int verbose  = 0;
+int xrefs    = 0;
 int rad      = 0; //radare output format
 int fd       = -1;
 static int pebase = 0;
@@ -75,14 +52,14 @@ int rabin_show_help()
 "rabin [-erlis] [bin-file]\n"
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
-" -c        checksum\n"
-" -E        exports (symbols exported)\n"
-" -s        all program symbols\n"
+" -s        symbols (export)\n"
+" -x        show xrefs of symbols (-s/-i required)\n"
+" -c        header checksum\n"
 " -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
-" -r        flag makes show the output in radare format\n"
+" -r        output in radare commands\n"
 " -v        be verbose\n");
 	return 1;
 }
@@ -187,6 +164,8 @@ unsigned long addr_for_lib(char *name)
 	return 0;
 }
 
+/* deprecated: moved to imports and exports */
+#if 0
 void rabin_show_symbols()
 {
 	unsigned long addr, addr2, addr3;
@@ -252,6 +231,7 @@ void rabin_show_symbols()
 		break;
 	}
 }
+#endif
 
 void rabin_show_arch()
 {
@@ -456,7 +436,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishL:ESvt")) != -1)
+	while ((c = getopt(argc, argv, "acerlishxL:Svt")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -474,11 +454,9 @@ int main(int argc, char **argv, char **envp)
 		case 'c':
 			action |= ACTION_CHECKSUM;
 			break;
-		case 'E':
-			action |= ACTION_EXPORTS;
-			break;
 		case 's':
 			action |= ACTION_SYMBOLS;
+			action |= ACTION_EXPORTS;
 			break;
 		case 'S':
 			action |= ACTION_SECTIONS;
@@ -498,6 +476,9 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'v':
 			verbose = 1;
+			break;
+		case 'x':
+			xrefs = 1;
 			break;
 		case 'h':
 		default:
@@ -531,8 +512,8 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_exports(file);
 	if (action&ACTION_IMPORTS)
 		rabin_show_imports(file);
-	if (action&ACTION_SYMBOLS)
-		rabin_show_symbols(file);
+	//if (action&ACTION_SYMBOLS)
+//		rabin_show_symbols(file);
 	if (action&ACTION_SECTIONS)
 		rabin_show_sections(file);
 	if (action&ACTION_LIBS)

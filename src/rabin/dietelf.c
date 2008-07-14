@@ -1,9 +1,14 @@
-/* Author: nibble */
-/* Based on Silvio Cesare's elf infector */
-/* TODO: filter strings for rad output */
-/* TODO: port to x86-64 */
-/* TODO: list exports addresses */
-/* TODO: solve 0x1000 got offset issue */
+/* Author: nibble 
+ * --------------
+ * Based on Silvio Cesare's elf infector
+ * Licensed under GPLv2
+ * This file is part of radare
+ *
+ * TODO: filter strings for rad output
+ * TODO: port to x86-64
+ * TODO: list exports addresses
+ * TODO: solve 0x1000 got offset issue
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,12 +21,15 @@
 #include "dietelf.h"
 
 static unsigned long BASE_ADDR = 0;
+const char *dietelf_FILE = NULL;
 #ifdef RADARE_CORE
+extern int xrefs;
 extern int rad;
 extern int verbose;
 #else
 int rad = 0;
 int verbose = 1;
+int xrefs = 0; // XXX
 #endif
 
 void
@@ -194,6 +202,11 @@ dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shd
 			} else {
 			    if (verbose) printf("Symbol (Import): ");
 			    printf("0x%08llx %s\n", get_import_addr(fd, bstring, ehdr, shdr, k), &string[symp->st_name]);
+			    if (xrefs) {
+				char buf[1024];
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)BASE_ADDR, dietelf_FILE, (u64)get_import_addr(fd, bstring, ehdr, shdr, k));
+				system(buf);
+			    }
 			}
 		    } else if ((sym_type & SYM_EXP) && (symp->st_shndx == 11 || symp->st_shndx == 12) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
@@ -201,6 +214,11 @@ dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shd
 			} else { 
 			    if (verbose) printf("Symbol (Export): ");
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
+			    if (xrefs) {
+				char buf[1024];
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)BASE_ADDR, dietelf_FILE, (u64)symp->st_value);
+				system(buf);
+			    }
 			}
 		    }
 		}
@@ -336,7 +354,10 @@ int dietelf_new(const char *file, dietelf_bin_t *bin)
     
     dietelf_open(fd, bin);
 
+/* TODO: ugly hack : this goes inside *bin */
+	dietelf_FILE = file;
     BASE_ADDR = bin->base_addr; //dietelf_get_base_addr(bin.phdr);
+
     return fd;
 }
 

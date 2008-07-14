@@ -10,6 +10,7 @@
 =====
 0.9.8 - codename 'scg08'
 =====
+* Make rabin flag ELF variables and so (useful to modify tables like PLT entries and so)
 * Fix dupped plugin posix
 * Remove 'bug'
 * check bindiff output
