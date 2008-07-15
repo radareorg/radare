@@ -1,18 +1,12 @@
 #! /usr/bin/env python
 
-obj = bld.create_obj('cc', 'shlib')
-obj.env['CCFLAGS'].append('-I..')
+#plug_io = bld.new_task_gen('cc', 'staticlib')
+plug_io        = bld.create_obj('cc', 'staticlib')
+plug_io.target = 'plug-io'
 
-obj.packages='gtk+-2.0'
+plug_io.source = 'gdb.c winedbg.c gdbx.c haret.c posix.c mmap.c remote.c shm.c socket.c gxemul.c'
 
-obj.add_obj_file('gdb.o')
-obj.add_obj_file('winedbg.o')
-obj.add_obj_file('gdbx.o')
-obj.add_obj_file('haret.o')
-obj.add_obj_file('mmap.o')
-obj.add_obj_file('posix.o')
-obj.add_obj_file('remote.o')
-obj.add_obj_file('shm.o')
-obj.add_obj_file('socket.o')
-#obj.add_obj_file('w32.o')
-#obj.add_obj_file('ewf.o')
+#plug_io.env['CCFLAGS'].append('-I..')
+plug_io.includes = '../..'
+
+#plug_io.packages='gtk+-2.0'

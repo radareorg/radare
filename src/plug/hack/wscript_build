@@ -1,0 +1,12 @@
+#! /usr/bin/env python
+
+so_hello = bld.create_obj('cc', 'sharedlib')
+so_hello.includes = '../..'
+so_hello.target = 'hello.so'
+so_hello.source = 'hello.c'
+
+#so_hello = bld.create_obj('cc', 'sharedlib')
+#so_hello.includes = '../..'
+#so_hello.target = 'hello.so'
+#so_hello.source = 'hello.c'
+

@@ -4,7 +4,6 @@
  * Licensed under GPLv2
  * This file is part of radare
  *
- * TODO: filter strings for rad output
  * TODO: port to x86-64
  */
 
@@ -17,6 +16,8 @@
 #include <sys/types.h>
 #include "../main.h"
 #include "dietelf.h"
+
+char rad_output[255];
 
 static unsigned long BASE_ADDR = 0;
 const char *dietelf_FILE = NULL;
@@ -42,6 +43,34 @@ do_elf_checks(Elf32_Ehdr *ehdr)
 	fprintf(stderr, "ELF version not current\n");
 	exit(1);
     }
+}
+
+char*
+filter_rad_output(char *string)
+{
+    char *p = rad_output;
+
+    for (; *string != '\0'; string++) {
+	switch(*string) {
+	    case '.':
+	    case '*':
+	    case '/':
+	    case '+':
+	    case '-':
+	    case ' ':
+	    case '\n':
+	    case '\t':
+		*p++ = '_';
+		break;
+	    default:
+		*p++ = *string;
+		break;
+	}
+    }
+
+    *p='\0';
+
+    return rad_output;
 }
 
 u64
@@ -133,8 +162,8 @@ dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (rad) {
-		printf("f section_%s @ 0x%08x\n", &string[shdrp->sh_name], shdrp->sh_offset);
-		printf("f section_%s_end @ 0x%08x\n", &string[shdrp->sh_name], shdrp->sh_offset+shdrp->sh_size);
+		printf("f section_%s @ 0x%08x\n", filter_rad_output(&string[shdrp->sh_name]), shdrp->sh_offset);
+		printf("f section_%s_end @ 0x%08x\n", filter_rad_output(&string[shdrp->sh_name]), shdrp->sh_offset+shdrp->sh_size);
 		printf("CC ");
 	}
 	printf("0x%08x align=0x%02x 0x%04x %02d %c%c%c %s", 
@@ -207,7 +236,7 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 		if (k != 0) {
 		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("f sym_imp_%s @ 0x%08llx\n", &string[symp->st_name], get_import_addr(fd, bstring, ehdr, shdr, k));
+			    printf("f sym_imp_%s @ 0x%08llx\n", filter_rad_output(&string[symp->st_name]), get_import_addr(fd, bstring, ehdr, shdr, k));
 			} else {
 			    if (verbose) printf("Symbol (Import): ");
 			    printf("0x%08llx %s\n", get_import_addr(fd, bstring, ehdr, shdr, k), &string[symp->st_name]);
@@ -287,7 +316,7 @@ dietelf_list_exports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 		if (k != 0) {
 		    if ((symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("b %i && f sym_exp_%s @ 0x%08x\n", symp->st_size, &string[symp->st_name], symp->st_value);
+			    printf("b %i && f sym_exp_%s @ 0x%08x\n", symp->st_size, filter_rad_output(&string[symp->st_name]), symp->st_value);
 			} else { 
 			    if (verbose) printf("Symbol (Export) size=%05i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);

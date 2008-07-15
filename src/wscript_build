@@ -4,14 +4,34 @@
 obj = bld.create_obj('cc', 'program')
 obj.find_sources_in_dirs('.')
 obj.find_sources_in_dirs('arch/x86')
+obj.find_sources_in_dirs('arch/x86/udis86')
 obj.find_sources_in_dirs('arch/ppc')
-#obj.find_sources_in_dirs('arch/arm')
-#obj.find_sources_in_dirs('arch/mips')
+obj.find_sources_in_dirs('arch/sparc')
+obj.find_sources_in_dirs('arch/arm')
+obj.find_sources_in_dirs('arch/m68k')
+obj.find_sources_in_dirs('arch/java')
+obj.find_sources_in_dirs('arch/csr')
+obj.find_sources_in_dirs('arch/mips')
+
+#obj.env['CCFLAGS'].append('-Iinclude')
+obj.includes = '. ../'
 #obj.find_sources_in_dirs('plug/hack/')
 #obj.find_sources_in_dirs('plug/io/')
 
+#plug_io_objects  = 'plug/io/gdb.o'
+#plug_io_objects += 'plug/io/winedbg.o'
+bld.add_subdirs('plug/io')
+obj.uselib_local = 'plug-io'
+
+bld.add_subdirs('plug/hack')
+bld.add_subdirs('radiff')
+
+bld.libs = 'readline'
+obj.includes = '.. include'
+
 obj.target = 'radare'
-#obj.uselib = ''
 obj.packages='gtk+-2.0'
 
-bld.add_subdirs('plug/io/')
+
+#lsb = bld.create_obj('cc', 'program')
+#lsb.target = 'lsbstego'

@@ -57,7 +57,7 @@ static void haret_wait_until_prompt()
 	}
 }
 
-ssize_t haret_read(int fd, unsigned char *buf, size_t count)
+ssize_t haret_read(int fd, void *buf, size_t count)
 {
 	char tmp[1024];
 	unsigned char *pbuf = buf;
