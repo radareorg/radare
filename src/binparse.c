@@ -43,6 +43,7 @@
 // --->per ordre, no pot tenir conflicte a esquerres
 //
 
+#if 0
 static void print_tok_list(tokenlist* toklist) 
 {
 	int i;
@@ -63,6 +64,7 @@ static void print_tokenizer ( tokenizer* ptokenizer )
 	for (i=0 ; i < ptokenizer->nlists; i++ )
 		print_tok_list(ptokenizer->tls[i]);
 }
+#endif
 
 static char* fd_readline ( int fd, char* line, int maxsize )
 {

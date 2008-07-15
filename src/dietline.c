@@ -135,7 +135,7 @@ int dl_hist_down()
 
 int dl_hist_list()
 {
-	int i;
+	int i = 0;
 
 	if (dl_history != NULL)
 	for(i=0;i<dl_histsize; i++) {
@@ -271,7 +271,8 @@ int dl_printchar()
 char *dl_readline(int argc, const char **argv)
 {
 	int buf[10];
-	int i, opt, len = 0;
+	int i, len = 0;
+	int opt = 0;
 	int columns = cons_get_real_columns()-2;
 
 	dl_buffer_idx = dl_buffer_len = 0;

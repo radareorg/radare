@@ -278,7 +278,7 @@ char *rad_eval_matches(const char *text, int state)
 char *rad_flags_matches(const char *text, int state)
 {
 	static int i;
-	int len, j;
+	static int len, j;
 	struct list_head *pos;
 
 	if (config.interrupted) return NULL;

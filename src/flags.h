@@ -46,5 +46,13 @@ void flag_help();
 int flag_rename_str(char *text);
 int string_flag_offset(char *buf, u64 seek);
 struct list_head flags;
+void flag_grep(const char *grep);
+void flag_cmd(const char *text);
+void flag_space_set(const char *name);
+void flag_space_cleanup();
+void flag_space(const char *name);
+void flag_space_list();
+void flag_space_init();
+void flag_space_remove(const char *name);
 
 #endif

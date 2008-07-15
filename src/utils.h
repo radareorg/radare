@@ -61,7 +61,7 @@ enum {
 
 int radare_dump(const char *arg, int size);
 void radare_dump_and_process(int type, int size);
-int pipe_stdout_to_tmp_file(const char *tmp, const char *cmd);
+int pipe_stdout_to_tmp_file(char *tmp, const char *cmd);
 int pprint_fd(int fd);
 int make_tmp_file(char *str);
 void progressbar(int pc);

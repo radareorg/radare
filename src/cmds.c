@@ -382,6 +382,7 @@ CMD_DECL(analyze)
 		break;
 	}
 	config.seek = oseek;
+	return 0;
 }
 
 CMD_DECL(project)
@@ -557,8 +558,8 @@ CMD_DECL(rdb)
 		int a, b;
 		int i = 0;
 		struct list_head *pos;
-		struct program_t *mr0;
-		struct program_t *mr1;
+		struct program_t *mr0 = NULL;
+		struct program_t *mr1 = NULL;
 
 		sscanf(text, "%d %d", &a, &b);
 
@@ -570,7 +571,9 @@ CMD_DECL(rdb)
 			i++;
 		}
 
-		rdb_diff(mr0, mr1, 0);
+		if (mr0 != NULL && mr1 != NULL)
+			rdb_diff(mr0, mr1, 0);
+		else eprintf("!mr0 || !mr1 ??\n");
 		return 0;
 	}
 	/* draw graph */

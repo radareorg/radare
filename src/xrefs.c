@@ -392,8 +392,8 @@ int main(int argc, char **argv)
 		}
 
 		if (verbose)
-			printf("0x%08x  try %02x %02x %02x %02x (0x%08llx) - %lld\n",
-				i, buf[0], buf[1], buf[2], buf[3], (u64) base+value, (u64) (base+value));
+			printf("0x%08llx  try %02x %02x %02x %02x (0x%08llx) - %lld\n",
+				(u64)i, buf[0], buf[1], buf[2], buf[3], (u64) base+value, (u64) (base+value));
 
 		if (xylum && i == xylum) {
 			printf("# offset: 0x%08llx\n", (u64)i);

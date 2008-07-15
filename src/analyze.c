@@ -224,7 +224,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks =(int) config_get("graph.callblocks");
 	int jmpblocks = (int) config_get("graph.jmpblocks");
-	struct block_t *blf;
+	struct block_t *blf = NULL;
 	
 	// too deep! chop branch here!
 	if (depth<=0)
@@ -332,7 +332,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	oseek = seek;
 
 	/* walk childs */
-	if (blk->tnext && (blf == 0) )
+	if (blk->tnext && (blf == NULL) )
 		code_analyze_r_split(prg, blk->tnext, depth-1);
 	if (blk->fnext  )
 		code_analyze_r_split(prg, blk->fnext, depth-1);
@@ -353,8 +353,8 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         int bsz = 0;// block size
         char buf[4096]; // bytes of the code block
         unsigned char *ptr = (unsigned char *)&buf;
-        int callblocks = config_get("graph.callblocks");
-        int refblocks = config_get("graph.refblocks");
+        int callblocks = (int)config_get("graph.callblocks");
+        int refblocks = (int)config_get("graph.refblocks");
 
         if (depth<=0)
                 return 0;
@@ -516,7 +516,7 @@ int radare_analyze(u64 seek, int size, int depth)
 	char cmd[1024];
 	int count=0;
 	unsigned int num, nume; // little endian
-	int i,j;
+	int i;
 	unsigned char str[1024];
 	int str_i=0;
 	unsigned char word[128];

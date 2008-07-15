@@ -3,6 +3,10 @@
 
 obj = bld.create_obj('cc', 'program')
 obj.find_sources_in_dirs('.')
+obj.find_sources_in_dirs('arch/x86')
+obj.find_sources_in_dirs('arch/ppc')
+#obj.find_sources_in_dirs('arch/arm')
+#obj.find_sources_in_dirs('arch/mips')
 #obj.find_sources_in_dirs('plug/hack/')
 #obj.find_sources_in_dirs('plug/io/')
 

@@ -522,7 +522,7 @@ int cons_fgets(char *buf, int len, int argc, const char **argv)
 {
 	char *ptr;
 	buf[0]='\0';
-	ptr = dl_readline(argv?argc:CMDS, argv?argv:radare_argv);
+	ptr = dl_readline(argv?argc:CMDS, argv?argv:&radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);
@@ -561,7 +561,6 @@ inline void palloc(int moar)
 void cons_flush()
 {
 	FILE *fd;
-	char *ptr;
 	char buf[1024];
 	int i;
 

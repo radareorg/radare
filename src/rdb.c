@@ -263,7 +263,7 @@ struct program_t *program_new(char *file)
 struct program_t *program_open(char *file)
 {
 	struct program_t *program;
-	FILE *fd;
+	FILE *fd = NULL;
 	int len;
 	char buf[1024];
 	char *ptr, *ptr2;

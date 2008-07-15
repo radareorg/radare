@@ -132,7 +132,7 @@ void update_environment()
 
 	/* radis_update(); */
 
-	config.verbose = config_get("cfg.verbose");
+	config.verbose = (int)config_get("cfg.verbose");
 
 	ptr = getenv("COLUMNS");
 	if (ptr != NULL)
@@ -142,5 +142,5 @@ void update_environment()
 	if (config.width<10)config.width=10;
 	config_set_i("scr.width", config.width);
 
-	config.color = config_get("scr.color");
+	config.color = (int)config_get("scr.color");
 }

@@ -153,14 +153,15 @@ dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *
 }
 
 int
-dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, int sym_type)
+dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
 {
-    Elf32_Shdr *shdrp = shdr;
+    Elf32_Shdr *shdrp;
     Elf32_Sym *sym, *symp;
     Elf32_Shdr *strtabhdr;
     char *string;
     int i, j, k;
 
+    shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (shdrp->sh_type == SHT_DYNSYM) {
 	    strtabhdr = &shdr[shdrp->sh_link];
@@ -204,7 +205,7 @@ dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shd
 
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
-		    if ((sym_type & SYM_IMP) && symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    printf("f sym_imp_%s @ 0x%08llx\n", &string[symp->st_name], get_import_addr(fd, bstring, ehdr, shdr, k));
 			} else {
@@ -216,11 +217,79 @@ dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shd
 				system(buf);
 			    }
 			}
-		    } else if ((sym_type & SYM_EXP) && (symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    }
+		}
+	    }
+	    
+	    free(string);
+	}
+    }
+    return i;
+}
+
+int
+dietelf_list_exports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
+{
+    Elf32_Shdr *shdrp;
+    Elf32_Sym *sym, *symp;
+    Elf32_Shdr *strtabhdr;
+    char *string;
+    int i, j, k, stripped = 0;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++)
+	if (shdrp->sh_type == SHT_SYMTAB)
+	    stripped = 1;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (shdrp->sh_type == (stripped?SHT_SYMTAB:SHT_DYNSYM)) {
+	    strtabhdr = &shdr[shdrp->sh_link];
+
+	    string = (char *)malloc(strtabhdr->sh_size);
+	    if (string == NULL) {
+		perror("malloc");
+		return -1;
+	    }
+
+	    if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
+		perror("lseek");
+		return -1;
+	    }
+
+	    if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
+		perror("read");
+		return -1;
+	    }
+
+	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
+	    if (sym == NULL) {
+		perror("malloc");
+		return -1;
+	    }
+
+	    if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+		perror("lseek");
+		return -1;
+	    }
+
+	    if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+		perror("read");
+		return -1;
+	    }
+
+	    symp = sym;
+
+	    if (rad)
+		printf("fs symbols\n");
+
+	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
+		if (k != 0) {
+		    if ((symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    printf("b %i && f sym_exp_%s @ 0x%08x\n", symp->st_size, &string[symp->st_name], symp->st_value);
 			} else { 
-			    if (verbose) printf("Symbol (Export) size=%i: ", symp->st_size);
+			    if (verbose) printf("Symbol (Export) size=%05i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];

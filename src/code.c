@@ -87,7 +87,7 @@ void data_add(u64 off, int type)
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 			if (d && (off>= d->from && off<= d->to)) {
-				list_del((&d->list)); //->list));
+				list_del((&d)); //->list)); //->list));
 				goto __reloop;
 			}
 		}
@@ -133,9 +133,8 @@ int data_type_range(u64 offset)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset >= d->from && offset < d->to) {
+		if (offset >= d->from && offset < d->to)
 			return d->type;
-		}
 	}
 	return -1;
 }
@@ -145,9 +144,8 @@ int data_type(u64 offset)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset == d->from) {
+		if (offset == d->from)
 			return d->type;
-		}
 	}
 	return -1;
 }
@@ -157,9 +155,8 @@ int data_end(u64 offset)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset == d->to) {
+		if (offset == d->to)
 			return d->type;
-		}
 	}
 	return -1;
 }
@@ -483,7 +480,6 @@ void udis_jump(int n)
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
 	unsigned char *b = config.block + bytes;
-	char* hex1, *hex2;
 	int c,ret=0;
 
 	switch(arch) {

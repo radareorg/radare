@@ -250,7 +250,7 @@ int flag_rename(char *foo, char *bar)
 
 int flag_rename_str(char *text)
 {
-	int n;
+	int n = 0;
 	char *arg = text?strchr(text, ' '):NULL;
 	if (arg) {
 		arg[0]='\0';
@@ -455,7 +455,7 @@ void flag_space_remove(const char *name)
 
 	for(i=0;i<FLAG_SPACES;i++) {
 		if (flag_spaces[i].name && ((!strcmp(name, flag_spaces[i].name)) || (name[0]=='*'))) {
-			free(flag_spaces[i].name);
+			free((void *)flag_spaces[i].name);
 			flag_spaces[i].name = NULL;
 			if (i == flag_space_idx) {
 				flag_space_idx = -1;

@@ -83,12 +83,9 @@ int do_byte_pat ( int patlen)
 {
 	unsigned char block[BSIZE+MAX_PATLEN];
 	unsigned char sblk[MAX_PATLEN+1];
-	
 	static fnditem* root;
-
 	u64 bproc = 0;
 	ssize_t rb;
-	int srch=0;
 
 	int nr,i;
 	int pcnt, cnt=0, k =0 ;
@@ -144,6 +141,7 @@ int do_byte_pat ( int patlen)
 		bact++;
 	}
 	radare_controlc_end();
+	return 0;
 }
 
 /*

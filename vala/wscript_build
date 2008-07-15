@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+obj = bld.create_obj('cc', 'program')
+obj.find_sources_in_dirs('. api grava panel')
+obj.packages = 'gtk+-2.0 vte'
+obj.target = 'gravala'
+obj.uselib = 'GTK GLIB VTE'

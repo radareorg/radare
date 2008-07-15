@@ -89,7 +89,7 @@ extern int arm_mode;
 int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 {
 	unsigned int i=0;
-	unsigned int* code=codeA;
+	unsigned int* code=(unsigned int *)codeA;
 
 	unsigned int branch_dst_addr;
 	memset(aop, '\0', sizeof(struct aop_t));

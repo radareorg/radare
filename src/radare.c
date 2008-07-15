@@ -56,7 +56,7 @@ int std = 0;
 static int radare_close();
 
 #if !DEBUGGER
-int debug_step(int x) {}
+int debug_step(int x) { return 0; }
 #endif
 
 int radare_system(const char *cmd)
@@ -298,7 +298,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *piped;
 	char file[1024], buf[1024];
 	char *input, *oinput;
-	char *str, *st;
+	//char *str, *st;
 	char *next = NULL;
 	int ret = 0;
 
@@ -365,7 +365,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		default:
 			#if __WINDOWS__
 			/* XXX hack to parse .!regs* on w32 */
-			/* XXX w32 port needs a system replacement *|
+			/* XXX w32 port needs a system replacement */
 			/* maybe everything but debug commands must be in this way */
 			/* radare_cmd_str doesn't handle system() output :( */
 			if( (strstr(input,"!regs")) ||(strstr(input,"!maps"))) {
@@ -1368,7 +1368,7 @@ int radare_go()
 
 // TODO: move to cons.c
 //static int pipe_fd = -1;
-int pipe_stdout_to_tmp_file(const char *tmpfile, const char *cmd)
+int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 {
 #if 0
 	/* DOES NOT WORKS */
@@ -1401,8 +1401,11 @@ int pipe_stdout_to_tmp_file(const char *tmpfile, const char *cmd)
 	std = dup(1); // store stdout
 	dup2(fd, 1);
 
-	if (cmd[0])
-		radare_cmd(cmd, 0);
+	if (cmd[0]) {
+		char *ptr = strdup(cmd);
+		radare_cmd_raw(ptr, 0);
+		free(ptr);
+	}
 
 	cons_flush();
 	fflush(stdout);

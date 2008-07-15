@@ -199,12 +199,14 @@ CMD_DECL(insert)
 		cons_printf("Not in write mode.\n");
 		press_any_key();
 	}
+	return 0;
 }
 
 CMD_DECL(invert)
 {
 	int inv = config_get_i("cfg.inverse")^1;
 	config_set("cfg.inverse", inv?"true":"false");
+	return 0;
 }
 
 CMD_DECL(zoom_reset)
@@ -212,6 +214,7 @@ CMD_DECL(zoom_reset)
 	config.zoom.from = 0;
 	config.zoom.size = config.size;
 	config.zoom.piece = config.zoom.size/config.block_size;
+	return 0;
 }
 
 CMD_DECL(trace)
@@ -219,6 +222,7 @@ CMD_DECL(trace)
 	if (config.cursor_mode)
 		trace_add(config.seek+config.cursor);
 	else	trace_add(get_offset("eip"));
+	return 0;
 }
 
 void convert_bytes()
@@ -281,6 +285,7 @@ CMD_DECL(zoom)
 		config.ocursor = -1;
 	}
 	CLRSCR();
+	return 0;
 }
 
 CMD_DECL(add_comment)
@@ -306,6 +311,7 @@ CMD_DECL(add_comment)
 		radare_cmd(buf,0);
 	}
 	cons_clear();
+	return 0;
 }
 
 CMD_DECL(seek0)
@@ -313,6 +319,7 @@ CMD_DECL(seek0)
 	if (config.cursor_mode)
 		config.cursor = 0;
 	else	config.seek = 0;
+	return 0;
 }
 
 CMD_DECL(yank)
@@ -323,13 +330,13 @@ CMD_DECL(yank)
 		ptr = input;
 	if (ptr[0]=='y') {
 		cmd_yank_paste(input);
-		return;
+		return 0;
 	}
 	if (ptr[0]=='?') {
 		eprintf("Usage: y[y] [length]\n");
 		eprintf(" > y 10 @ eip   ; yanks 10 bytes from eip\n");
 		eprintf(" > yy @ edi ; write these bytes where edi points\n");
-		return;
+		return 0;
 	}
 
 	free(yank_buffer);
@@ -360,6 +367,7 @@ CMD_DECL(yank)
 		press_any_key();
 		CLRSCR();
 	}
+	return 0;
 }
 
 CMD_DECL(yank_paste)
@@ -400,6 +408,7 @@ CMD_DECL(yank_paste)
 CMD_DECL(xrefs_here)
 {
 	radare_cmd("ax", 0);
+	return 0;
 }
 
 CMD_DECL(stepu_in_dbg)
@@ -414,6 +423,7 @@ CMD_DECL(stepu_in_dbg)
 		radare_cmd("!stepu", 0);
 	}
 	radare_sync();
+	return 0;
 }
 
 CMD_DECL(step_in_dbg)
@@ -425,6 +435,7 @@ CMD_DECL(step_in_dbg)
 		radare_cmd("!step", 0);
 	radare_sync();
 	//trace_add(get_offset("eip"));
+	return 0;
 }
 
 CMD_DECL(stepo_in_dbg)
@@ -435,6 +446,7 @@ CMD_DECL(stepo_in_dbg)
 	} else
 		radare_cmd("!stepo", 0);
 	radare_sync();
+	return 0;
 }
 
 CMD_DECL(seek_to_flag)
@@ -452,6 +464,7 @@ CMD_DECL(seek_to_flag)
 			config.block_size = flg->length;
 		}
 	}
+	return 0;
 }
 
 CMD_DECL(seek_to_end)
@@ -459,6 +472,7 @@ CMD_DECL(seek_to_end)
 	if (config.cursor_mode)
 		config.cursor = config.block_size - 1;
 	else	config.seek = config.size - config.block_size;
+	return 0;
 }
 
 CMD_DECL(insert_assembly_rsc)
@@ -466,7 +480,7 @@ CMD_DECL(insert_assembly_rsc)
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
-		return;
+		return 1;
 	}
 
 	printf("write assembly (end with ^d):\n");
@@ -474,6 +488,7 @@ CMD_DECL(insert_assembly_rsc)
 	cons_set_raw(0);
 	radare_cmd("wA -", 0);
 	cons_set_raw(1);
+	return 0;
 }
 
 #define RADARE_OPCODES 12
@@ -484,12 +499,12 @@ CMD_DECL(insert_assembly)
 {
 	char buf[128];
 	char buf2[64];
-	char *dl_prompt_old = dl_prompt;
+	const char *dl_prompt_old = dl_prompt;
 
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
 		press_any_key();
-		return;
+		return 1;
 	}
 
 	cons_set_raw(0);
@@ -509,6 +524,8 @@ CMD_DECL(insert_assembly)
 	cons_set_raw(1);
 	free(dl_prompt);
 	dl_prompt = dl_prompt_old;
+
+	return 0;
 }
 
 #warning XXX: insert_assembly_hack must be accesible without the debugger and scriptable (outsize eip)
@@ -534,6 +551,7 @@ CMD_DECL(insert_assembly_hack)
 	arch_hack(buf);
 	CLRSCR();
 #endif
+	return 0;
 }
 
 CMD_DECL(insert_string)
@@ -543,7 +561,7 @@ CMD_DECL(insert_string)
 
 	if (!config_get("file.write")) {
 		eprintf("Not in write mode\n");
-		return;
+		return 0;
 	}
 
 	printf("(press return to cancel)\n write stdin->file: ");
@@ -559,6 +577,7 @@ CMD_DECL(insert_string)
 	printf("\n\nWritten %d bytes.\n", inc);
 	if (config.cursor_mode)
 		radare_seek(config.seek-config.cursor, SEEK_SET);
+	return 0;
 }
 
 CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe int _write?
@@ -569,7 +588,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 
 	if (!config_get("file.write")) {
 		eprintf("Not in write mode.\n");
-		return;
+		return 0;
 	}
 
 	cons_set_raw(0);
@@ -602,6 +621,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	cons_set_raw(1);
 	free(dl_prompt);
 	dl_prompt = dl_prompt_old;
+	return 0;
 }
 
 CMD_DECL(rotate_print_format)
@@ -613,6 +633,7 @@ CMD_DECL(rotate_print_format)
 
 	last_print_format = modes[(i==VMODES)?0:i+1];
 	cons_clear();
+	return 0;
 }
 
 char *get_print_format_name(int j)
@@ -635,6 +656,7 @@ CMD_DECL(rotate_print_format_prev)
 			break;
 	last_print_format = modes[(i==VMODES)?0:(i==0)?VMODES-2:i-1];
 	cons_clear();
+	return 0;
 }
 
 static int keystroke_run(unsigned char key) {

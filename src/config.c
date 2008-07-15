@@ -187,7 +187,7 @@ u64 config_get_i(const char *name)
 		return (u64)get_math(node->value);
 	}
 
-	return NULL;
+	return (u64)0LL;
 }
 
 struct config_node_t *config_set(const char *name, const char *value)
@@ -261,7 +261,7 @@ struct config_node_t *config_set_i(const char *name, const u64 i)
 		if (node->flags & CN_RO)
 			return NULL;
 		free(node->value);
-		sprintf(buf, "%ld", i); //0x%08lx", i);
+		sprintf(buf, "%lld", i); //0x%08lx", i);
 		node->value = strdup(buf);
 		node->i_value = i;
 	} else {
@@ -350,7 +350,9 @@ static int config_zoombyte_callback(void *data)
 	} else {
 		free(node->value);
 		node->value = strdup("head");
+		return 0;
 	}
+	return 1;
 }
 
 #if 0
@@ -492,10 +494,10 @@ static int config_scrheight(void *data)
 		if (config.height<1)
 			config.height = 24;
 	}
-	return 1;
+	return config.height;
 }
 
-static int config_scrbuf_callback(void *data)
+static void config_scrbuf_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -508,6 +510,7 @@ static int config_bsize_callback(void *data)
 
 	if (node->i_value)
 		radare_set_block_size_i(node->i_value);
+	return 1;
 /*
 	else
 		cons_printf("(ignored)");

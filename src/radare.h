@@ -141,6 +141,7 @@ void radare_move(char *arg);
 void disassemble(int len, int rows);
 void radare_search_aes();
 int aes_key_test(unsigned char *buf);
+int radare_system(const char *cmd);
 
 int project_save(const char *file);
 void project_close();

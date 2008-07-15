@@ -317,7 +317,7 @@ void rabin_show_imports(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_IMP);
+		dietelf_list_imports(fd, bin.string, &bin.ehdr, bin.shdr);
 		close(fd);
 #endif
 		break;
@@ -341,7 +341,7 @@ void rabin_show_exports(char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_EXP);
+		dietelf_list_exports(fd, bin.string, &bin.ehdr, bin.shdr);
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
