@@ -83,10 +83,10 @@ int debug_write_at(pid_t pid, void *data, int length, u64 addr);
 int debug_read_at(pid_t pid, void *addr, int length, u64 at);
 int inline debug_contp(int pid);
 int inline debug_steps();
-inline unsigned long debug_get_regoff(regs_t *reg, int off);
+u64 debug_get_regoff(regs_t *reg, int off);
 int debug_set_register(char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
-addr_t debug_getregister(char *reg);
+addr_t debug_get_register(char *reg);
 
 
 //#include "libps2fd.h"

@@ -6,8 +6,6 @@
  *
  * TODO: filter strings for rad output
  * TODO: port to x86-64
- * TODO: list exports addresses
- * TODO: solve 0x1000 got offset issue
  */
 
 #include <stdio.h>
@@ -64,8 +62,16 @@ get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, 
 
     Elf32_Shdr *shdrp;
     Elf32_Rel *rel, *relp;
-    Elf32_Addr plt_addr;
-    int i, j;
+    Elf32_Addr plt_sym_addr, got_addr;
+    int i, j, got_offset;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (!strcmp(&string[shdrp->sh_name], ".got.plt")) {
+
+	    got_addr = shdrp->sh_offset & 0xfffff000;
+	}
+    }
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -86,23 +92,25 @@ get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, 
 		exit(1);
 	    }
 
+	    got_offset = ((rel->r_offset - BASE_ADDR) & 0xfffff000) - got_addr;
+
 	    relp = rel;
 
 	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Rel), relp++) {
 		if (ELF32_R_SYM(relp->r_info) == sym) {
-		    if (lseek(fd, relp->r_offset-BASE_ADDR, SEEK_SET) != relp->r_offset-BASE_ADDR) {
+		    if (lseek(fd, relp->r_offset-BASE_ADDR-got_offset, SEEK_SET) != relp->r_offset-BASE_ADDR-got_offset) {
 			perror("lseek oops");
 			exit(1);
 		    }
 
-		    if (read(fd, &plt_addr, sizeof(Elf32_Addr)) != sizeof(Elf32_Addr)) {
+		    if (read(fd, &plt_sym_addr, sizeof(Elf32_Addr)) != sizeof(Elf32_Addr)) {
 			perror("read syms_addr read");
 			exit(1);
 		    }
 		    
-		    plt_addr-=0x6;
+		    plt_sym_addr-=0x6;
 
-		    return plt_addr;
+		    return plt_sym_addr;
 		}
 	    }
 	}
@@ -208,11 +216,11 @@ dietelf_list_syms(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shd
 				system(buf);
 			    }
 			}
-		    } else if ((sym_type & SYM_EXP) && (symp->st_shndx == 11 || symp->st_shndx == 12) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    } else if ((sym_type & SYM_EXP) && (symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("f sym_exp_%s @ 0x%08x\n", &string[symp->st_name], symp->st_value);
+			    printf("b %i && f sym_exp_%s @ 0x%08x\n", symp->st_size, &string[symp->st_name], symp->st_value);
 			} else { 
-			    if (verbose) printf("Symbol (Export): ");
+			    if (verbose) printf("Symbol (Export) size=%i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];

@@ -1638,9 +1638,10 @@ int debug_pids()
 }
 
 
-inline unsigned long debug_get_regoff(regs_t *reg, int off)
+u64 debug_get_regoff(regs_t *regs, int off)
 {
-	char *c = (char *)reg;
+	char *c = (char *)regs;
+	debug_getregs(ps.tid, regs);
 	return *(unsigned long *)(c + off);	
 }
 
@@ -1669,7 +1670,7 @@ int debug_run()
 	return 1;
 }
 
-addr_t debug_getregister(char *input)
+addr_t debug_get_register(char *input)
 {
 	char *reg = input;
 	int off;

@@ -187,7 +187,7 @@ static struct commads_t {
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
-	CB_CMD( "get"      , CB_NORMAL   , debug_getregister )  , 
+	CB_CMD( "get"      , CB_NORMAL   , debug_get_register )  , 
 	CB_CMD( "regs"     , CB_ASTERISK , debug_registers )    , 
 	CB_CMD( "oregs"    , CB_ASTERISK , debug_oregisters )   , 
 	CB_CMD( "dregs"    , CB_ASTERISK , debug_dregisters )   , 

@@ -803,7 +803,24 @@ CMD_DECL(envvar)
 
 CMD_DECL(blocksize)
 {
-	radare_set_block_size(input);
+	flag_t *flag;
+	switch(input[0]) {
+	case 'f': // bf = block flag size
+		flag = flag_get(input+2);
+		if (flag) {
+			radare_set_block_size_i(flag->length);
+			printf("block size = %d\n", flag->length);
+		} else {
+			eprintf("Unknown flag '%s'\n", input+2);
+		}
+		break;
+	case '?':
+		cons_printf("Usage: b[f flag]|[size]     ; Change block size\n");
+		cons_printf("  > bf sym_main && s sym_main\n");
+		break;
+	default:
+		radare_set_block_size(input);
+	}
 
 	return 0;
 }

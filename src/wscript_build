@@ -1,8 +1,13 @@
 #! /usr/bin/env python
 
+
 obj = bld.create_obj('cc', 'program')
 obj.find_sources_in_dirs('.')
+#obj.find_sources_in_dirs('plug/hack/')
+#obj.find_sources_in_dirs('plug/io/')
 
 obj.target = 'radare'
 #obj.uselib = ''
-#obj.packages='gtk+-2.0'
+obj.packages='gtk+-2.0'
+
+bld.add_subdirs('plug/io/')

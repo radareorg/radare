@@ -261,11 +261,11 @@ int set_arch_settings()
 
 int main(int argc, char **argv)
 {
-	int i, c, src;
-	off_t offset = 0;
-	off_t from   = 1,
-	      to     = INT_MAX;
-	off_t sa;
+	u64 i, c, src;
+	u64 offset = 0;
+	u64 from   = 1,
+	      to   = INT_MAX;
+	u64 sa;
 
 	if (argc==2)
 	if (!strcmp(argv[1],"-V")) {
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
 				i, buf[0], buf[1], buf[2], buf[3], (u64) base+value, (u64) (base+value));
 
 		if (xylum && i == xylum) {
-			printf("# offset: 0x%08llx\n", i);
+			printf("# offset: 0x%08llx\n", (u64)i);
 			printf("# delta:  %lld\n", (u64)delta);
 			printf("# size:   %lld\n", (u64)size);
 			printf("# value:  %lld\n", (u64)value);
