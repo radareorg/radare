@@ -317,7 +317,7 @@ void rabin_show_imports(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_imports(fd, bin.string, &bin.ehdr, bin.shdr);
+		dietelf_list_imports(fd, &bin);
 		close(fd);
 #endif
 		break;
@@ -341,7 +341,7 @@ void rabin_show_exports(char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_exports(fd, bin.string, &bin.ehdr, bin.shdr);
+		dietelf_list_exports(fd, &bin);
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
@@ -369,7 +369,7 @@ void rabin_show_sections(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_sections(fd, bin.string, &bin.ehdr, bin.shdr);
+		dietelf_list_sections(fd, &bin);
 		close(fd);
 		break;
 	default:

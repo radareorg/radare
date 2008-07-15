@@ -22,3 +22,12 @@ function dbg_pop_reg(reg)
 	r.cmd("!set reg = [esp]")
 	r.cmd("!set esp esp+4")
 end
+
+function dbg_call(addr)
+	dbg_push_reg("eip")
+	r.cmd("!jmp "..addr)
+end
+
+function dbg_jmp(addr)
+	r.cmd("!jmp "..addr)
+end

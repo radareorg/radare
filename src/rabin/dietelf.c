@@ -17,10 +17,8 @@
 #include "../main.h"
 #include "dietelf.h"
 
-char rad_output[255];
+static char rad_output[255];
 
-static unsigned long BASE_ADDR = 0;
-const char *dietelf_FILE = NULL;
 #ifdef RADARE_CORE
 extern int xrefs;
 extern int rad;
@@ -86,12 +84,13 @@ dietelf_get_entry_addr(Elf32_Ehdr *ehdr)
 }
 
 u64
-get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, int sym)
+get_import_addr(int fd, dietelf_bin_t *bin, int sym)
 {
-
-    Elf32_Shdr *shdrp;
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
     Elf32_Rel *rel, *relp;
     Elf32_Addr plt_sym_addr, got_addr;
+    const char *string = bin->string;
     int i, j, got_offset;
 
     shdrp = shdr;
@@ -121,13 +120,13 @@ get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, 
 		exit(1);
 	    }
 
-	    got_offset = ((rel->r_offset - BASE_ADDR) & 0xfffff000) - got_addr;
+	    got_offset = ((rel->r_offset - bin->base_addr) & 0xfffff000) - got_addr;
 
 	    relp = rel;
 
 	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Rel), relp++) {
 		if (ELF32_R_SYM(relp->r_info) == sym) {
-		    if (lseek(fd, relp->r_offset-BASE_ADDR-got_offset, SEEK_SET) != relp->r_offset-BASE_ADDR-got_offset) {
+		    if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET) != relp->r_offset-bin->base_addr-got_offset) {
 			perror("lseek oops");
 			exit(1);
 		    }
@@ -149,9 +148,11 @@ get_import_addr(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr, 
 }
 
 int
-dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
+dietelf_list_sections(int fd, dietelf_bin_t *bin)
 {
-    Elf32_Shdr *shdrp;
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    const char *string = bin->string;
     int i;
 
 #define GET_FLAGS(x) (x&SHF_WRITE)?'w':'-', (x&SHF_ALLOC)?'a':'-', (x&SHF_EXECINSTR)?'x':'-'
@@ -182,9 +183,10 @@ dietelf_list_sections(int fd, const char *string, Elf32_Ehdr *ehdr, Elf32_Shdr *
 }
 
 int
-dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
+dietelf_list_imports(int fd, dietelf_bin_t *bin)
 {
-    Elf32_Shdr *shdrp;
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
     Elf32_Sym *sym, *symp;
     Elf32_Shdr *strtabhdr;
     char *string;
@@ -236,13 +238,13 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 		if (k != 0) {
 		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("f sym_imp_%s @ 0x%08llx\n", filter_rad_output(&string[symp->st_name]), get_import_addr(fd, bstring, ehdr, shdr, k));
+			    printf("f sym_imp_%s @ 0x%08llx\n", filter_rad_output(&string[symp->st_name]), get_import_addr(fd, bin, k));
 			} else {
 			    if (verbose) printf("Symbol (Import): ");
-			    printf("0x%08llx %s\n", get_import_addr(fd, bstring, ehdr, shdr, k), &string[symp->st_name]);
+			    printf("0x%08llx %s\n", get_import_addr(fd, bin, k), &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];
-				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)BASE_ADDR, dietelf_FILE, (u64)get_import_addr(fd, bstring, ehdr, shdr, k));
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)get_import_addr(fd, bin, k));
 				system(buf);
 			    }
 			}
@@ -257,9 +259,10 @@ dietelf_list_imports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 }
 
 int
-dietelf_list_exports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *shdr)
+dietelf_list_exports(int fd, dietelf_bin_t *bin)
 {
-    Elf32_Shdr *shdrp;
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
     Elf32_Sym *sym, *symp;
     Elf32_Shdr *strtabhdr;
     char *string;
@@ -316,13 +319,14 @@ dietelf_list_exports(int fd, const char *bstring, Elf32_Ehdr *ehdr, Elf32_Shdr *
 		if (k != 0) {
 		    if ((symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("b %i && f sym_exp_%s @ 0x%08x\n", symp->st_size, filter_rad_output(&string[symp->st_name]), symp->st_value);
+			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
+			    printf("f sym_exp_%s @ 0x%08x\n", filter_rad_output(&string[symp->st_name]), symp->st_value);
 			} else { 
 			    if (verbose) printf("Symbol (Export) size=%05i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];
-				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)BASE_ADDR, dietelf_FILE, (u64)symp->st_value);
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value);
 				system(buf);
 			    }
 			}
@@ -459,10 +463,7 @@ int dietelf_new(const char *file, dietelf_bin_t *bin)
     }
     
     dietelf_open(fd, bin);
-
-/* TODO: ugly hack : this goes inside *bin */
-	dietelf_FILE = file;
-    BASE_ADDR = bin->base_addr; //dietelf_get_base_addr(bin.phdr);
+    bin->file = file;
 
     return fd;
 }
@@ -490,16 +491,15 @@ main(int argc, char *argv[])
     }
     
     dietelf_open(fd, &bin);
-
-    BASE_ADDR = bin.base_addr; //dietelf_get_base_addr(bin.phdr);
+    bin.file = file;
 
     if (rad)
-    	printf(" eval file.baddr=0x%08x\n", BASE_ADDR);
+    	printf(" eval file.baddr=0x%08x\n", bin.base_addr);
     else
-	printf("BASE ADDRESS: 0x%08x\n", BASE_ADDR);
+	printf("BASE ADDRESS: 0x%08x\n", bin.base_addr);
 
-    dietelf_list_sections(fd, bin.string, &bin.ehdr, bin.shdr);
-    dietelf_list_imports(fd, bin.string, &bin.ehdr, bin.shdr);
+    dietelf_list_sections(fd, &bin);
+    dietelf_list_imports(fd, &bin);
     
     close(fd);
 

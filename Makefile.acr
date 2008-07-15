@@ -112,7 +112,6 @@ install:
 	-${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
 ##USBSNF##
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
-	${INSTALL_SCRIPT} src/bug ${BINDIR}
 	${INSTALL_SCRIPT} src/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
 	${INSTALL_SCRIPT} src/radiff/radiff ${BINDIR}
@@ -126,7 +125,6 @@ install:
 	#${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
-	${INSTALL_MAN} man/bug.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/xc.1 ${MANDIR}/man1/
 	${INSTALL_DIR} ${DATADIR}/radare/
@@ -148,7 +146,6 @@ deinstall:
 	-rm -f ${BINDIR}/xc
 	-rm -f ${BINDIR}/xrefs
 	-rm -f ${BINDIR}/bindiff
-	-rm -f ${BINDIR}/bug
 	-rm -f ${BINDIR}/rsc
 	-rm -f ${BINDIR}/rfile
 	-rm -f ${BINDIR}/rabin

@@ -10,11 +10,10 @@
 =====
 0.9.8 - codename 'scg08'
 =====
-* Make rabin flag ELF variables and so (useful to modify tables like PLT entries and so)
 * Fix dupped plugin posix
-* Remove 'bug'
+* ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * check bindiff output
-* port to waf
+  - implement bindiff patchers
 * 'w' in cursor mode with range selected must fill the buffer
 * proper handle of negative values in disasm (no 0xfffff)
 * write shellcode to dump a buffer in hexa (inline jump)
@@ -27,13 +26,11 @@
   - analize sub and add properly (to get stack frame size)
   - analize access to stack in function code to determine local vars
   - Access to local variables using dwarf stuff
-* ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * Xrefs working with the core 
 * !contu must use '!mp rw- 0x8048000 0x4045' if supported
 * Update manpages
 * rasm : Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
-* implement bindiff patchers
 
 ==============================================================
 
