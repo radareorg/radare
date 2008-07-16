@@ -9,12 +9,21 @@ if [ "$TARGET" = "-h" ]; then
 	echo "Usage: rsc syms [file]\n"
 	exit 1
 fi
-if [ -n "`file $1 | grep relocat`" ]; then
-	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
-	#nm $1 | grep -e ' T ' -e ' t ' | sed -e 's, . ,+section_text\ ,' -e 's,^,0x,'
+
+if [ -n "`file $1 | grep "32-bit"`" ]; then
+	rabin -ri $1
+	rabin -rs $1
+	rabin -ro $1
 else
-	#nm $1 | grep -e ' T ' -e ' t ' | sed -e 's, . ,\ ,' -e 's,^,0x,'
 	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
 fi
+
+#if [ -n "`file $1 | grep relocat`" ]; then
+#	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
+#	#nm $1 | grep -e ' T ' -e ' t ' | sed -e 's, . ,+section_text\ ,' -e 's,^,0x,'
+#else
+#	#nm $1 | grep -e ' T ' -e ' t ' | sed -e 's, . ,\ ,' -e 's,^,0x,'
+#	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
+#fi
 #readelf -s /bin/ls | cut -d @ -f 1 | awk '{print "f sym_"$8" @ 0x"$2}'
 #readelf -s $1 | cut -d @ -f 1 | awk '{print $2" "$8 }'

@@ -23,6 +23,7 @@ enum {
 #define ACTION_ARCH     0x0100
 #define ACTION_FILETYPE 0x0200
 #define ACTION_OTHERS	0x0400
+#define ACTION_STRINGS  0x0800
 #define ACTION_NOP      0x1000
 
 #endif

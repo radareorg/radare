@@ -171,10 +171,10 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
 		printf("f section_%s_end @ 0x%08llx\n", filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset+shdrp->sh_size);
 		printf("CC ");
 	}
-	printf("0x%08x align=0x%02x 0x%04x %02d %c%c%c %s", 
+	printf("0x%08x 0x%04x align=0x%02x %02d %c%c%c %s", 
 		shdrp->sh_offset,
-		shdrp->sh_addralign,
 		shdrp->sh_size,
+		shdrp->sh_addralign,
 		shdrp->sh_type,
 		GET_FLAGS(shdrp->sh_flags),
 		&string[shdrp->sh_name]);

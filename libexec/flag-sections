@@ -1,17 +1,13 @@
 #!/bin/sh
 PRG=$1
 
-echo "fs sections"
 if [ -z "${PRG}" ]; then
 	echo "Usage: rsc flag-sections \${FILE}"
 else
-	if [ -n "`file $PRG | grep relocat`" ]; then
-		# is an object
-	 	readelf -S $PRG | \
-			grep '\] \.' | \
-			sed -e 's,-,_,g' -e 's,\.,section_,' -e 's,\.,_,g' | \
-			cut -d ']' -f 2 | \
-			awk '{print "f "$1" @ 0x"$4"\nf "$1"_end @ 0x"$4"+0x"$5}'
+	echo "fs sections"
+	if [ -n "`file $PRG | grep "32-bit"`" ]; then
+		rabin -re $PRG
+		rabin -rS $PRG
 	else
 		# is a program or library
 		readelf -S $PRG | grep '\] \.' | \
@@ -19,5 +15,19 @@ else
 			cut -d ']' -f 2 | \
 			awk '{print "f "$1" @ 0x"$3"\nf "$1"_end @ 0x"$3"+0x"$5}'
 	fi
+#	if [ -n "`file $PRG | grep relocat`" ]; then
+#		# is an object
+#	 	readelf -S $PRG | \
+#			grep '\] \.' | \
+#			sed -e 's,-,_,g' -e 's,\.,section_,' -e 's,\.,_,g' | \
+#			cut -d ']' -f 2 | \
+#			awk '{print "f "$1" @ 0x"$4"\nf "$1"_end @ 0x"$4"+0x"$5}'
+#	else
+#		# is a program or library
+#		readelf -S $PRG | grep '\] \.' | \
+#			sed -e 's,-,_,g' -e 's,\.,section_,' -e 's,\.,_,g' | \
+#			cut -d ']' -f 2 | \
+#			awk '{print "f "$1" @ 0x"$3"\nf "$1"_end @ 0x"$3"+0x"$5}'
+#	fi
 fi
 

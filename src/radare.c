@@ -206,6 +206,34 @@ void radare_sync()
 	}
 }
 
+int radare_strsearch(char *str)
+{
+	u64 i;
+	int j, ret;
+	u64 seek = config.seek;
+	u64 size = config.size;
+
+	// TODO: Move to stripstr_iterate as args or so
+	//encoding = resolve_encoding(config_get("cfg.encoding"));
+	//min = 5;
+
+	if (str) str=str+1;
+	if (size <=0)
+		size=0xbfffffff;
+
+	radare_controlc();
+	for(i = (size_t)seek; !config.interrupted && config.seek < size; i++) {
+		ret = radare_read(1);
+		if (ret == -1) break;
+		for(j=0;j<config.block_size;j++)
+			stripstr_iterate(config.block, j, config.seek+j, str);
+	}
+	config.seek = seek;
+	radare_controlc_end();
+
+	return 0;
+}
+
 void radare_cmd_foreach(const char *cmd, const char *each)
 {
 	int i=0,j;
@@ -1033,7 +1061,7 @@ void radare_set_block_size(char *arg)
 		radare_set_block_size_i(size);
 	}
 	config_set_i("cfg.bsize", config.block_size);
-	D printf("bsize = %d\n", config.block_size);
+	//D printf("bsize = %d\n", config.block_size);
 }
 
 void radare_resize(const char *arg)

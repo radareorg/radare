@@ -120,7 +120,7 @@ void radare_resize(const char *arg);
 void radare_prompt_command();
 void radare_sync();
 int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t print_fmt);
-int stripstr_from_file(const char *filename, int min, u64 seek);
+int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(char *str);
 int radare_cmd(char *command, int log);

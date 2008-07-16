@@ -399,7 +399,7 @@ void flag_list(char *arg)
 		if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 			continue;
 
-		cons_printf("%03d 0x%08llx %3lld %s",
+		cons_printf("%03d 0x%08llx %4lld %s",
 			i++, flag->offset, flag->length, flag->name);
 		NEWLINE;
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length

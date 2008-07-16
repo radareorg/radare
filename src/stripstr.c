@@ -95,7 +95,7 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 	if (match&&match[0]=='\0')
 		match=NULL;
 
-	if (is_printable(buf[i]) || (config.color&&is_encoded(buf[i]))) {
+	if (is_printable(buf[i]) || (is_encoded(buf[i]))) {
 		if (matches == 0)
 			offset += i;
 		str[matches] = buf[i];
@@ -148,7 +148,7 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 				cons_printf("f %s @ 0x%08x\n", msg, (unsigned int)offset-matches);
 			} else
 			if ((!match) || (match && strstr(str, match)) ){
-				D cons_printf("0x%08x %c %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', str);
+				D cons_printf("0x%08x %c (%d) %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', strlen(str), str);
 				else cons_printf("%s\n", str);
 				cons_flush();
 			}
@@ -159,34 +159,7 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 	return 0;
 }
 
-int radare_strsearch(char *str)
-{
-	u64 i;
-	int j, ret;
-	u64 seek = config.seek;
-	u64 size = config.size;
-	encoding = resolve_encoding(config_get("cfg.encoding"));
-
-	min = 5;
-	if (str) str=str+1;
-	if (size <=0)
-		size=0xbfffffff;
-
-	radare_controlc();
-	for(i = (size_t)seek; !config.interrupted && config.seek < size; i++) {
-		ret = radare_read(1);
-		if (ret == -1) break;
-		for(j=0;j<config.block_size;j++)
-			stripstr_iterate(config.block, j, config.seek+j, str);
-	}
-	config.seek = seek;
-	radare_controlc_end();
-
-	return 0;
-}
-
-#if 0
-int stripstr_from_file(const char *filename, int min, u64 seek)
+int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit)
 {
 	int i, fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -201,6 +174,7 @@ int stripstr_from_file(const char *filename, int min, u64 seek)
 
 	encoding = resolve_encoding(config_get("cfg.encoding"));
 
+	/* TODO: do not use mmap */
 #if __UNIX__
 	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
 	if (((int)buf) == -1 ) {
@@ -209,6 +183,9 @@ int stripstr_from_file(const char *filename, int min, u64 seek)
 	}
 	if (min <1)
 		min = 5;
+
+	if (limit && limit < len)
+		len = limit;
 
 	radare_controlc();
 	for(i = (size_t)seek; !config.interrupted && i < len; i++)
@@ -224,4 +201,3 @@ int stripstr_from_file(const char *filename, int min, u64 seek)
 
 	return 0;
 }
-#endif

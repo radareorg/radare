@@ -54,18 +54,28 @@ int rabin_show_help()
 " -i        imports (symbols imported from libraries)\n"
 " -s        symbols (export)\n"
 " -o        others (other symbols)\n"
-" -x        show xrefs of symbols (-s/-i required)\n"
 " -c        header checksum\n"
 " -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
+" -z        search for strings in .data\n"
+" -x        show xrefs of symbols (-s/-i required)\n"
 " -r        output in radare commands\n"
 " -v        be verbose\n");
 	return 1;
 }
 
-void rabin_show_checksum()
+//int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit);
+void rabin_show_strings(const char *file)
+{
+	/* TODO: get .data section range (ONLY) */
+	//stripstr_from_file(file, 0, 0, 0);
+	/* TODO: define callback for printing strings found */
+	fprintf(stderr, "TODO: Not yet implemented\n");
+}
+
+void rabin_show_checksum(const char *file)
 {
 	unsigned char buf[32];
 	unsigned long addr = 0;
@@ -454,7 +464,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlisohxL:Svt")) != -1)
+	while ((c = getopt(argc, argv, "acerlishotL:Svxz")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -501,6 +511,9 @@ int main(int argc, char **argv, char **envp)
 		case 'x':
 			xrefs = 1;
 			break;
+		case 'z':
+			action |= ACTION_STRINGS;
+			break;
 		case 'h':
 		default:
 			return rabin_show_help();
@@ -542,7 +555,9 @@ int main(int argc, char **argv, char **envp)
 	if (action&ACTION_LIBS)
 		rabin_show_libs(file);
 	if (action&ACTION_CHECKSUM)
-		rabin_show_checksum();
+		rabin_show_checksum(file);
+	if (action&ACTION_STRINGS)
+		rabin_show_strings(file);
 
 	close(fd);
 
