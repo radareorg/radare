@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+obj = bld.create_obj('cc', 'program')
+obj.target = 'rabin'
+obj.source='rabin.c dietelf.c'
+obj.env.append_value('CCFLAGS','-DRADARE_CORE')
+obj.env.append_value('LINKFLAGS','-ldl')

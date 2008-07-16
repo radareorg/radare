@@ -5,6 +5,7 @@
  * This file is part of radare
  *
  * TODO: port to x86-64
+ * TODO: s/exit/return/
  */
 
 #include <stdio.h>
@@ -30,8 +31,10 @@ int xrefs = 0; // XXX
 #endif
 
 void
-do_elf_checks(Elf32_Ehdr *ehdr)
+do_elf_checks(dietelf_bin_t *bin)
 {
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+
     if (strncmp((char *)ehdr->e_ident, ELFMAG, SELFMAG)) {
 	fprintf(stderr, "File not ELF\n");
 	exit(1);
@@ -72,15 +75,15 @@ filter_rad_output(char *string)
 }
 
 u64
-dietelf_get_base_addr(Elf32_Phdr *phdr)
+dietelf_get_base_addr(dietelf_bin_t *bin)
 {
-    return phdr->p_vaddr & 0xfffff000;
+    return bin->phdr->p_vaddr & 0xfffff000;
 }
 
 u64
-dietelf_get_entry_addr(Elf32_Ehdr *ehdr)
+dietelf_get_entry_addr(dietelf_bin_t *bin)
 {
-   return ehdr->e_entry; 
+   return bin->ehdr.e_entry; 
 }
 
 u64
@@ -340,6 +343,83 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
     return i;
 }
 
+int
+dietelf_list_others(int fd, dietelf_bin_t *bin)
+{
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    Elf32_Sym *sym, *symp;
+    Elf32_Shdr *strtabhdr;
+    char *string;
+    int i, j, k;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (shdrp->sh_type == (SHT_SYMTAB)) {
+	    strtabhdr = &shdr[shdrp->sh_link];
+
+	    string = (char *)malloc(strtabhdr->sh_size);
+	    if (string == NULL) {
+		perror("malloc");
+		return -1;
+	    }
+
+	    if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
+		perror("lseek");
+		return -1;
+	    }
+
+	    if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
+		perror("read");
+		return -1;
+	    }
+
+	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
+	    if (sym == NULL) {
+		perror("malloc");
+		return -1;
+	    }
+
+	    if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+		perror("lseek");
+		return -1;
+	    }
+
+	    if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+		perror("read");
+		return -1;
+	    }
+
+	    symp = sym;
+
+	    if (rad)
+		printf("fs symbols\n");
+
+	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
+		if (k != 0) {
+		    if (symp->st_shndx == 3  && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+			if (rad) {
+			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
+			    printf("f sym_oth_%s @ 0x%08x\n", filter_rad_output(&string[symp->st_name]), symp->st_value);
+			} else { 
+			    if (verbose) printf("Symbol (Other) size=%05i: ", symp->st_size);
+			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
+			    if (xrefs) {
+				char buf[1024];
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value);
+				system(buf);
+			    }
+			}
+		    }
+		}
+	    }
+	    
+	    free(string);
+	}
+    }
+    return i;
+}
+
 void
 dietelf_open(int fd, dietelf_bin_t *bin)
 {
@@ -357,7 +437,7 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 	exit(1);
     }
 
-    do_elf_checks(ehdr);
+    do_elf_checks(bin);
 
     bin->phdr = (Elf32_Phdr *)malloc(bin->plen = sizeof(Elf32_Phdr)*ehdr->e_phnum);
     if (bin->phdr == NULL) {
@@ -430,7 +510,7 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 	exit(1);
     }
 
-    bin->base_addr = dietelf_get_base_addr(bin->phdr);
+    bin->base_addr = dietelf_get_base_addr(bin);
 }
 
 void 

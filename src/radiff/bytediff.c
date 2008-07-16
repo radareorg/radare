@@ -18,7 +18,7 @@ static int do_byte_diff ( int fd1, int fd2, u64 bytes )
 	unsigned char bufb[CTXMAXB];
 	int atbufb=0;
 
-	int i,k,l;
+	int i,k=0,l;
 	int outctx=0;
 
 	int inctx=0;
@@ -42,12 +42,12 @@ static int do_byte_diff ( int fd1, int fd2, u64 bytes )
 					l = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
 					for ( k = 0 ; k < CTXMAXB ; k ++ )
 					{
-						printf ( "%8.8llx %2.2x\n", bproc+i-CTXMAXB+k,bufb[l] );
+						printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,bufb[l] );
 						l  = ( (l+1)>=CTXMAXB)?0:l+1;
 					}
 					inctx=1;
 				}
-				printf ( "%8.8llx %2.2x   |   %2.2x \n", bproc+i , block1[i], block2[i]);
+				printf ( "%8.8llx %2.2x   |   %2.2x \n", (u64) bproc+i , block1[i], block2[i]);
 				outctx = CTXMAXB;
 				cf++;
 			}
@@ -58,7 +58,7 @@ static int do_byte_diff ( int fd1, int fd2, u64 bytes )
 
 				if ( outctx > 0 )
 				{
-					printf ( "%8.8lx %2.2x\n", bproc+i-CTXMAXB+k,block1[i] );
+					printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,block1[i] );
 					outctx--;
 				}
 				else

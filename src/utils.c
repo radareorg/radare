@@ -252,7 +252,7 @@ u64 get_offset(const char *orig)
 	char *arg = (char *)&arga;
 	u64 ret = 0;
 	int i, j;
-#ifdef RADARE_CORE
+#if RADARE_CORE
 	flag_t *flag;
 	char *ptr = 0;
 #endif
@@ -265,7 +265,7 @@ u64 get_offset(const char *orig)
 	for(i=0;arg[i]==' ';i++);
 	for(;arg[i]=='\\';i++); i++;
 
-#ifdef RADARE_CORE
+#if RADARE_CORE
 	if (!strcmp(orig, "here"))
 		return config.seek;
 	ptr = strchr(arg, '[');
@@ -365,7 +365,7 @@ u64 get_math(const char* text)
 	{
 		tmp = mytok(ptr, "+-<>%*/[\\", &op);
 		switch(oop) {
-#ifdef RADARE_CORE
+#if RADARE_CORE
 		case '[': end = strchr(txt2+(ptr-txt+1),']');
 			// todo. support nested lol
 			if (end) {

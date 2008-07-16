@@ -49,10 +49,11 @@ static int pebase = 0;
 int rabin_show_help()
 {
 	printf(
-"rabin [-erlis] [bin-file]\n"
+"rabin [options] [bin-file]\n"
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
 " -s        symbols (export)\n"
+" -o        others (other symbols)\n"
 " -x        show xrefs of symbols (-s/-i required)\n"
 " -c        header checksum\n"
 " -t        type of binary\n"
@@ -113,8 +114,8 @@ void rabin_show_entrypoint()
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		addr=dietelf_get_entry_addr(&bin.ehdr);
-		base=dietelf_get_base_addr(bin.phdr);
+		addr=dietelf_get_entry_addr(&bin);
+		base=dietelf_get_base_addr(&bin);
 
 		if (rad) {
 			printf("f entrypoint @ 0x%08lx\n", addr);
@@ -356,6 +357,23 @@ void rabin_show_exports(char *file)
 	}
 }
 
+void rabin_show_others(char *file)
+{
+	dietelf_bin_t bin;
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_others(fd, &bin);
+		close(fd);
+		break;
+	}
+}
+
 void rabin_show_sections(const char *file)
 {
 	char buf[1024];
@@ -436,7 +454,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishxL:Svt")) != -1)
+	while ((c = getopt(argc, argv, "acerlisohxL:Svt")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -455,8 +473,11 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_CHECKSUM;
 			break;
 		case 's':
-			action |= ACTION_SYMBOLS;
+			//action |= ACTION_SYMBOLS;
 			action |= ACTION_EXPORTS;
+			break;
+		case 'o':
+			action |= ACTION_OTHERS;
 			break;
 		case 'S':
 			action |= ACTION_SECTIONS;
@@ -510,6 +531,8 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_entrypoint(file);
 	if (action&ACTION_EXPORTS)
 		rabin_show_exports(file);
+	if (action&ACTION_OTHERS)
+		rabin_show_others(file);
 	if (action&ACTION_IMPORTS)
 		rabin_show_imports(file);
 	//if (action&ACTION_SYMBOLS)

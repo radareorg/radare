@@ -14,6 +14,7 @@
 ** action of contract, tort, or otherwise, arising from, out of, or in
 ** connection with this software.
 */
+#if 0
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -3846,3 +3847,4 @@ main(int     argc,
    exit(0);
    /*NOTREACHED*/
 }
+#endif

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#if !RADARE_CORE
+
 char *arch = "x86";
 u64 offset = 0;
 int endian = 0;
@@ -130,3 +132,5 @@ int main(int argc, char **argv)
 	// TODO concat argv
 	return rasm_assemble(argv[optind]);
 }
+
+#endif

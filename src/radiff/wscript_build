@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 
-
 obj = bld.create_obj('cc', 'program')
-obj.source='radiff.c rdbdiff.c ../rdb.c ../utils.c'
+
+obj.env['CCFLAGS'] = ''
+obj.source='radiff.c rdbdiff.c ../rdb.c ../ut.c bytediff.c ../hasher/crc16.c'
+#obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
 
 obj.includes = '. ../'
 

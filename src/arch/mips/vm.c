@@ -26,7 +26,7 @@
 extern const char * mips_gpr_names_newabi[32];
 extern const char * mips_gpr_names_oldabi[32];
 //const char **vm_arch_mips_regs_str = &mips_gpr_names_newabi;
-const char **vm_arch_mips_regs_str = &mips_gpr_names_oldabi;
+const char **vm_arch_mips_regs_str = (const char **)&mips_gpr_names_oldabi;
 
 int vm_arch_mips_nregs = VM_MIPS_N_REGS;
 u64 vm_arch_mips_regs[VM_MIPS_N_REGS];

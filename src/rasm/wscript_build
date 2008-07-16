@@ -1,0 +1,10 @@
+#! /usr/bin/env python
+
+
+obj = bld.create_obj('cc', 'program')
+obj.source='rasm.c x86.c ppc.c arm.c java.c'
+#obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
+
+obj.includes = '. ../'
+
+obj.target = 'rasm'
