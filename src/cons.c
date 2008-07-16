@@ -247,10 +247,10 @@ void cons_clear(void)
 	cons_lines = 0;
 }
 
-int cons_html_print(unsigned char *ptr)
+int cons_html_print(const char *ptr)
 {
 	int esc = 0;
-	unsigned char *str = ptr;
+	char *str = ptr;
 	int len = 0;
 	int inv = 0;
 	int color = 0;

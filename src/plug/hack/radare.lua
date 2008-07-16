@@ -498,12 +498,8 @@ function Radare.Write.wide_string(string, address)
 	end
 end
 
-function Radare.asm(string, address)
-	if address == nil then
-		return r.cmd("!rsc asm '".. string.."'")
-	else
-		return r.cmd("!rsc asm '"..string.."' @ "..address)
-	end
+function Radare.asm(string)
+	return r.cmd("!rsc asm '".. string.."'")
 end
 
 function Radare.Write.asm(string, address)

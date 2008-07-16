@@ -11,7 +11,7 @@
 #include <math.h>
 #include "../radare.h"
 
-static float get_px(u8 x, u8 *data, u64 size)
+static float get_px(u8 x, const u8 *data, u64 size)
 {
         unsigned long i, count;
 

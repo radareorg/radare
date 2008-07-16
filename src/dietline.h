@@ -30,6 +30,7 @@ extern int dl_hist_add(const char *line);
 extern char *hist_get_i(int p);
 extern void hist_add(char *str, int log);
 extern void hist_clean();
+int dl_hist_save(const char *file);
 extern int hist_show();
 
 extern char **(*dl_callback)(const char *text, int start, int end);

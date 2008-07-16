@@ -1,0 +1,86 @@
+#!/usr/bin/perl
+# author: pancake
+# 2008-07-16
+#
+
+$header = "<html><body bgcolor=black text=white><b><pre>\n";
+$color0 = "<font color=red>";
+$color1 = "<font color=white style='background-color:red'>";
+$color2 = "<font color=green>";
+$color3 = "<font color=red>";
+$color4 = "<font color=yellow>";
+$color5 = "<font color=red>";
+$color6 = "<font color=blue>";
+$color7 = "<font color=red>";
+$color8 = "<font color=orange>";
+$color9 = "<font color=red>";
+$color10 = "<font color=cyan>";
+$color11 = "<font color=red>";
+$color12 = "<font color=gray>";
+$color13 = "<font color=red>";
+$color14 = "<font color=#ffaa00>";
+$color15 = "<font color=red>";
+$color16 = "<font color=#aabb33>";
+$color17 = "<font color=red>";
+$color18 = "<font color=#bb33af>";
+$color20 = "<font color=#40a030>";
+$color22 = "<font color=#004fa5>";
+$color24 = "<font color=#1010cf>";
+$color26 = "<font color=#901010>";
+$color28 = "<font color=#101090>";
+$color30 = "<font color=#109010>";
+$color_cmt = "<font color=#2020c0>";
+$color_lab = "<font color=#a020c0>";
+$color_def = "<font color=green>";
+$color_undef = "<font color=red>";
+$color_end = "</font>";
+$footer = "</pre></b></body></html>\n";
+
+sub oops {
+	print STDERR "Usage: rsc asmcolor <file>\n";
+	print STDERR "\$ rsc asmcolor /dev/stdin < file\n";
+	exit(1);
+}
+
+$file = $ARGV[0];
+&oops if ($file eq "" || ! -e $file);
+open FD, "<$file" || oops(); my $str=""; while(<FD>) { $str.=$_; } close FD;
+
+#cpp
+$str=~s/\/\*/$color_cmt\/\*/g;
+$str=~s/\*\//\*\/$color_end/g;
+$str=~s/#if 0/$color_cmt#if 0/g;
+$str=~s/#define ([^\n]*)/$color_def#define $1$color_end/g;
+$str=~s/#undef ([^\n]*)/$color_undef#undef $1$color_end/g;
+$str=~s/#else/#else$color_end/g;
+$str=~s/#endif/#endif$color_end/g;
+$str=~s/(.*):\n/$color_lab$1:$color_end\n/g;
+#mips
+$str=~s/f0/$color0 f0,$color_end/g;
+$str=~s/f4/$color4 f4,$color_end/g;
+$str=~s/f6/$color6 f6,$color_end/g;
+$str=~s/f8/$color8 f8,$color_end/g;
+$str=~s/f10/$color10 f10,$color_end/g;
+$str=~s/f12/$color12 f12,$color_end/g;
+$str=~s/f14/$color14 f14,$color_end/g;
+$str=~s/f16/$color16 f16, $color_end/g;
+$str=~s/f18/$color18 f18, $color_end/g;
+$str=~s/f20/$color20 f20,$color_end/g;
+$str=~s/f22/$color22 f22,$color_end/g;
+$str=~s/f24/$color24 f24,$color_end/g;
+$str=~s/f26/$color26 f26,$color_end/g;
+$str=~s/f28/$color28 f28,$color_end/g;
+$str=~s/f30/$color30 f30,$color_end/g;
+$str=~s/\$f2/$color2\$f2$color_end/g;
+#x86
+$str=~s/eax/$color0 eax $color_end/g;
+$str=~s/ebx/$color1 ebx $color_end/g;
+$str=~s/ecx/$color2 ecx $color_end/g;
+$str=~s/edx/$color3 edx $color_end/g;
+$str=~s/esi/$color3 esi $color_end/g;
+$str=~s/edi/$color3 edi $color_end/g;
+$str=~s/esp/$color3 esp $color_end/g;
+$str=~s/ebp/$color3 ebp $color_end/g;
+# TODO: add rax, rbx, ..
+
+print "$header$str$footer";

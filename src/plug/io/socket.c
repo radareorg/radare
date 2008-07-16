@@ -29,7 +29,7 @@ static unsigned int socket_bufread = 0;
 
 ssize_t zocket_write(int fd, const void *buf, size_t count)
 {
-        return socket_write(fd, buf, count);
+        return socket_write(fd, (unsigned char *)buf, count);
 }
 
 ssize_t zocket_read(int fd, void *buf, size_t count)

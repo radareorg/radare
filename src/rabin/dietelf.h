@@ -17,7 +17,7 @@ typedef struct {
 } dietelf_bin_t;
 
 void do_elf_checks(dietelf_bin_t *bin);
-char* filter_rad_output(char *string);
+char* filter_rad_output(const char *string);
 u64  dietelf_get_entry_addr(dietelf_bin_t *bin);
 u64  dietelf_get_base_addr(dietelf_bin_t *bin);
 u64  get_import_addr(int fd, dietelf_bin_t *bin, int sym);

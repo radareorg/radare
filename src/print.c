@@ -282,7 +282,7 @@ int unpacking_7bit_character(char *src, char *dest)
 void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
-	int last;
+	int last = 0;// used for pm xxx
 	int zoom = 0;
 	unsigned char buffer[256];
 	unsigned char *bufi = NULL; // inverted buffer

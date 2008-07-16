@@ -794,6 +794,7 @@ static void print_label(struct state *s, struct label *l)
 	       l->l_name, l->l_refc);
 }
 
+#if 0
 static void own(struct state *s)
 {
 	struct directive *d;
@@ -877,6 +878,7 @@ static void own(struct state *s)
 
 	output(s, "\n\tENDMOD\n");
 }
+#endif
 
 // XXX lot of memory leaks
 int arch_csr_disasm(unsigned char *buf, u64 seek)

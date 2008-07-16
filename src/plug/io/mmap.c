@@ -26,12 +26,11 @@
 
 static int mmap_fd = -1;
 static unsigned char *mmap_buf = NULL;
-static unsigned int mmap_bufsz = 32*1024*1024; /* 32MB */
-static unsigned int mmap_bufread = 0;
+//static unsigned int mmap_bufsz = 32*1024*1024; /* 32MB */
+//static unsigned int mmap_bufread = 0;
 
 static ssize_t mmap_write(int fd, const void *buf, size_t count)
 {
-	int ret;
 	if (mmap_buf != NULL) {
 		mmap_buf = mmap(NULL, 4096,  PROT_WRITE, MAP_SHARED, fd, (off_t)config.seek-config.seek%4096);
 		if (((int)mmap_buf)==-1) {
@@ -40,17 +39,13 @@ static ssize_t mmap_write(int fd, const void *buf, size_t count)
 		}
 		memcpy(mmap_buf+config.seek%4096, buf, count);
 		munmap(mmap_buf, count*2);
-		return ret;
+		return count;
 	}
 	return -1;
 }
 
 static ssize_t mmap_read(int fd, void *buf, size_t count)
 {
-	u8 data[32000];
-	int sz;
-	u64 s;
-
 	if (config.seek + count > config.size) {
 		//config.seek = 0; // ugly hack
 		//count = config.seek+count-config.size;

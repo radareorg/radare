@@ -64,7 +64,7 @@ static void gxemul_wait_until_prompt(int o)
 	}
 }
 
-ssize_t gxemul_read(int fd, unsigned char *buf, size_t count)
+ssize_t gxemul_read(int fd, void *buf, size_t count)
 {
 	char tmp[1024];
 	int size = count;
@@ -159,7 +159,7 @@ int gxemul_system(const char *cmd)
 		
 		tmp[0]='\0';
 		socket_fgets(gxemul_fd, tmp, 128);
-		sscanf(tmp, "cpu0:  cpsr = %6s   pc = %08lx", &cpsr, &r[15]);
+		sscanf(tmp, "cpu0:  cpsr = %6s   pc = %08lx", (char *)&cpsr, &r[15]);
 		tmp[0]='\0';
 		socket_fgets(gxemul_fd, tmp, 128);
 		sscanf(tmp, "cpu0:  r0 = 0x%08lx r1 = %08lx  r2 = %08lx  r3 = %08lx",

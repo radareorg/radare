@@ -47,7 +47,7 @@ do_elf_checks(dietelf_bin_t *bin)
 }
 
 char*
-filter_rad_output(char *string)
+filter_rad_output(const char *string)
 {
     char *p = rad_output;
 
@@ -92,16 +92,17 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
     Elf32_Ehdr *ehdr = &bin->ehdr;
     Elf32_Shdr *shdr = bin->shdr, *shdrp;
     Elf32_Rel *rel, *relp;
-    Elf32_Addr plt_sym_addr, got_addr;
+    Elf32_Addr plt_sym_addr, got_addr = 0;
     const char *string = bin->string;
     int i, j, got_offset;
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-	if (!strcmp(&string[shdrp->sh_name], ".got.plt")) {
-
+	if (!strcmp(&string[shdrp->sh_name], ".got.plt"))
 	    got_addr = shdrp->sh_offset & 0xfffff000;
-	}
+    }
+    if (got_addr == 0) {
+	/* Unknown GOT address */
     }
 
     shdrp = shdr;
@@ -166,8 +167,8 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (rad) {
-		printf("f section_%s @ 0x%08x\n", filter_rad_output(&string[shdrp->sh_name]), shdrp->sh_offset);
-		printf("f section_%s_end @ 0x%08x\n", filter_rad_output(&string[shdrp->sh_name]), shdrp->sh_offset+shdrp->sh_size);
+		printf("f section_%s @ 0x%08llx\n", filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
+		printf("f section_%s_end @ 0x%08llx\n", filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset+shdrp->sh_size);
 		printf("CC ");
 	}
 	printf("0x%08x align=0x%02x 0x%04x %02d %c%c%c %s", 

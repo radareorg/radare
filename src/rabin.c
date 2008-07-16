@@ -31,6 +31,10 @@ enum {
 
 static unsigned int pebase;
 
+/* arch/java/javasm.c */
+int java_classdump(const char *file);
+
+
 u64 rabin_entrypoint(int filetype)
 {
 	unsigned long addr = 0;

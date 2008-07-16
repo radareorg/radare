@@ -169,7 +169,7 @@ const char *config_get(const char *name)
 		if (node->flags & CN_BOOL)
 			return (const char *)
 				(((!strcmp("true", node->value))
-				 || (!strcmp("1", node->value)))?1:NULL);
+				 || (!strcmp("1", node->value)))?(const char *)1:NULL);
 		return node->value;
 	}
 
@@ -317,9 +317,8 @@ void config_eval(char *str)
 			config_list(name);
 		} else {
 			/* get */
-			char * str = config_get(foo);
-			
-			cons_printf("%s\n", (str==1)?"true":(str==0)?"false":str);
+			const char * str = config_get(foo);
+			cons_printf("%s\n", (((int)str)==1)?"true":(str==0)?"false":str);
 		}
 	}
 
@@ -688,10 +687,10 @@ void config_init(int first)
 {
 	/* dir.monitor */
 	char buf[1024];
-	char *ptr = getenv("MONITORPATH");
+	const char *ptr = getenv("MONITORPATH");
 	if (ptr == NULL) {
 		sprintf(buf, "%s/.radare/monitor/", getenv("HOME"));
-		ptr = &buf;
+		ptr = (const char *)&buf;
 	}
 	config_set("dir.monitor", ptr);
 

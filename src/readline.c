@@ -29,7 +29,6 @@
 #include "radare.h"
 #include "flags.h"
 
-static int rad_rl_init=0;
 extern command_t *commands[];
 
 enum {
@@ -446,6 +445,9 @@ char **radare_dl_autocompletion(const char *text, int start, int end)
 
 /* LIB GNU READLINE STUFF */
 #if HAVE_LIB_READLINE
+
+static int rad_rl_init=0;
+
 /*
  * Function to autocomplete radare commands
  *
