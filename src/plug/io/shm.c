@@ -40,10 +40,6 @@ static ssize_t rshm_write(int fd, const void *buf, size_t count)
 
 static ssize_t rshm_read(int fd, void *buf, size_t count)
 {
-	u8 data[32000];
-	int sz;
-	u64 s;
-
 	if (shm_buf == NULL)
 		return -1;
 	if (config.seek > shm_bufsz)

@@ -31,16 +31,13 @@
 #include "arch/x86/udis86/extern.h"
 #include "list.h"
 
-
 #define CHECK_LINES if ( config.visual && len!=config.block_size && (cons_lines >config.height) ) break;
 
 static int last_arch = ARCH_X86;
-
 struct list_head data;
 extern int force_thumb;
 
 static ud_t ud_obj;
-static unsigned char o_do_off = 1;
 static int ud_idx = 0;
 static int length = 0;
 // ???
@@ -376,7 +373,7 @@ static int metadata_print(int delta)
 	u64 offset = (u64)config.seek + (u64)delta;
 	int lines = 0;
 	const char *ptr;
-	int i;
+	int i = 0;
 
 	// config.baddr everywhere???
 	D {} else return 0;
@@ -554,16 +551,16 @@ extern int color;
 void udis_arch(int arch, int len, int rows)
 {
 	struct aop_t aop;
-	char c;
+	//char c;
 	int i,idata,delta;
 	u64 seek = 0;
 	u64 sk = 0;
-	int lines = 0;
+	//int lines = 0;
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
 	char buf[1024];
-	const char *follow, *cmd_asm;
+	const char *cmd_asm;
 	int rrows = rows;
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
