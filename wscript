@@ -7,7 +7,7 @@ APPNAME='radare'
 LIL_ENDIAN="0"
 MAEMO="0"
 HAVE_VALAC="0"
-DEBUGGER="0"
+DEBUGGER=False
 LIBDIR="/usr/lib"
 LIBEXECDIR="/usr/libexec"
 DOCDIR="/usr/share/doc"
@@ -19,7 +19,7 @@ def set_options(opt):
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 	opt.add_option('--without-readline', type='string', help='Build without readline', dest='HAVE_READLINE')
-	opt.add_option('--without-debugger', type='string', help='Build without debugger', dest='DEBUGGER')
+	opt.add_option('--without-debugger', action='store_false', default=True, help='Build without debugger', dest='DEBUGGER')
 
 def configure(conf):
 	conf.check_tool('compiler_cc compiler_cxx cc vala perl lua')
@@ -37,7 +37,12 @@ def configure(conf):
 	conf.env['CCFLAGS'].append('-DDOCDIR=\\"'+DOCDIR+'\\"')
 	conf.env['CCFLAGS'].append('-DHAVE_LIB_READLINE=0')
 	conf.env['CCFLAGS'].append('-DSIZE_OFF_T=8')
-	conf.env['CCFLAGS'].append('-DDEBUGGER='+DEBUGGER)
+	if DEBUGGER:
+		conf.env['CCFLAGS'].append('-DDEBUGGER=1')
+		print " = DEBUGGER: 1"
+	else:
+		conf.env['CCFLAGS'].append('-DDEBUGGER=0')
+		print " = DEBUGGER: 0"
 	conf.env['CCFLAGS'].append('-DTARGET=\\"i686-unknown-linux-gnu\\"')
 #	conf.env['CCFLAGS'].append('-DRADARE_CORE')
 	conf.env['CCFLAGS'].append('-DHAVE_LIB_EWF=0')

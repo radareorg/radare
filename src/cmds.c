@@ -1014,7 +1014,7 @@ CMD_DECL(resize)
 
 CMD_DECL(flag)
 {
-	int ret;
+	int ret = 0;
 	char *text = input;
 	char *eof = input + strlen(input)-1;
 
@@ -1037,19 +1037,10 @@ CMD_DECL(flag)
 		case '-': flag_clear(text+1); break;
 		default:
 			ret = flag_set(text, config.seek, input[0]=='n');
-			D {
-			if (ret) {
-				if (!config.debug)
-					eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
-			} else {
-				flags_setenv();
-				//eprintf("flag '%s' at "OFF_FMT" and size %d\n",
-				//		text, config.seek, config.block_size);
-			} }
-		}
+			D { if (!ret) { flags_setenv(); } } }
 	}
 
-	return 0;
+	return ret;
 }
 
 CMD_DECL(undoseek)

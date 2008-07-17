@@ -2,6 +2,7 @@
 
 # build subdirectories
 bld.add_subdirs('plug/hack')
+bld.add_subdirs('hasher')
 bld.add_subdirs('radiff')
 bld.add_subdirs('rabin')
 
@@ -12,14 +13,20 @@ xrefs = bld.create_obj('cc', 'program')
 xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
 
+
+javasm = bld.create_obj('cc', 'program')
+javasm.sources = 'arch/java/javasm.c'
+javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
+javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
+javasm.target = 'javasm'
+
 obj = bld.create_obj('cc', 'program')
-obj.env['CCFLAGS'].append('-DRADARE_CORE')
+obj.env.append_value('CCFLAGS','-DRADARE_CORE')
 obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
 obj.target = 'radare'
 obj.packages='gtk+-2.0'
 
-#obj.find_sources_in_dirs('.')
 obj.source = 'aes-find.c analyze.c binparse.c bytepat.c cmds.c code.c config.c cons.c dietline.c environ.c flags.c grava.c hack.c io.c main.c plugin.c print.c project.c rabin.c radare.c rdb.c readline.c search.c socket.c stripstr.c trace.c undo.c visual.c utils.c hist.c radiff/rdbdiff.c hasher/hash.c vm.c hasher/entropy.c hasher/crc16.c'
 obj.find_sources_in_dirs('rasm')
 obj.find_sources_in_dirs('arch/x86')

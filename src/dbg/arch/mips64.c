@@ -53,7 +53,7 @@ regs_t oregs; // old registers
 
 int arch_is_fork()
 {
-	return 0
+	return 0;
 }
 
 u64 arch_syscall(int pid, int sc, ...)
@@ -299,19 +299,31 @@ int arch_set_register(char *reg, char *value)
 	return 0;
 }
 
+
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	u64 ptr[128];
-	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
-	if (rad)
-		for(i=0;i<32;i+=2)
-			cons_printf("f fp%d @ 0x%08llx\n", i, ptr[i]);
-	else
-		for(i=0;i<16;i++)
-			cons_printf("fp%02d: 0x%016llx%c", i<<1, ptr[i*2], (i%2)?'\n':'\t');
+        u64 ptr[128];
+        int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
+        if (rad)
+                for(i=0;i<32;i+=2)
+                        cons_printf("f f%d @ 0x%08llx\n", i, ptr[i]);
+        else {
+                for(i=0;i<16;i++)
+                        cons_printf("f%02d: 0x%016llx%c", i<<1, ptr[i*2], (i%2)?'\n':'\t');
+                /* packed autodetect */
+                for(i=0;i<16;i++) {
+                        u64 val = ptr[i*2];
+                        if (val != -1 && val != 0 && ((val & 0xf000f000f000f000LL)==0)) {
+                                u16 *val16 = (u16*)&val;
+                                cons_printf("f%02d: packed (%4d, %4d, %4d, %4d)\n",  i<<1,
+                                        val16[0], val16[1], val16[2], val16[3]);
+                        }
+                }
+        }
 
-	return ret;
+        return ret;
 }
+
 
 #if 0
 reg      name    usage
