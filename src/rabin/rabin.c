@@ -59,22 +59,32 @@ int rabin_show_help()
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
-" -z        search for strings in .data\n"
-" -x        show xrefs of symbols (-s/-i required)\n"
+" -z        search for strings in elf non-executable sections\n"
+" -x        show xrefs of symbols (-s/-i/-o required)\n"
 " -r        output in radare commands\n"
 " -v        be verbose\n");
 	return 1;
 }
 
-//int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit);
 void rabin_show_strings(const char *file)
 {
-	char buf[4096];
-	sprintf(buf, "echo /s | radare -e file.id=true -nv %s", file);
-	system(buf);
-	/* TODO: get .data section range (ONLY) */
-	//stripstr_from_file(file, 0, 0, 0);
-	/* TODO: define callback for printing strings found */
+	dietelf_bin_t bin;
+
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+    		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		dietelf_list_strings(fd, &bin);
+		close(fd);
+		break;
+	}
+	
+	//sprintf(buf, "echo /s | radare -e file.id=true -nv %s", file);
+	//system(buf);
 }
 
 void rabin_show_checksum(const char *file)

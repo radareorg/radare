@@ -15,10 +15,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include "../main.h"
 #include "dietelf.h"
 
 static char rad_output[255];
+enum {
+	ENCODING_ASCII = 0,
+	ENCODING_CP850 = 1
+};
 
 #ifdef RADARE_CORE
 extern int xrefs;
@@ -29,6 +34,127 @@ int rad = 0;
 int verbose = 1;
 int xrefs = 0; // XXX
 #endif
+
+int
+aux_is_encoded(int encoding, unsigned char c)
+{
+	switch(encoding) {
+	case ENCODING_ASCII:
+		break;
+	case ENCODING_CP850:
+		switch(c) {
+		// CP850
+		case 128: // cedilla
+		case 133: // a grave
+		case 135: // minicedilla
+		case 160: // a acute
+		case 161: // i acute
+		case 129: // u dieresi
+		case 130: // e acute
+		case 139: // i dieresi
+		case 162: // o acute
+		case 163: // u acute
+		case 164: // enye
+		case 165: // enyemay
+		case 181: // A acute
+		case 144: // E acute
+		case 214: // I acute
+		case 224: // O acute
+		case 233: // U acute
+			return 1;
+		}
+		break;
+	}
+	return 0;
+}
+
+int
+aux_is_printable (int c)
+{
+	if (c<' '||c>'~') return 0;
+	return 1;
+}
+
+int 
+aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset)
+{
+	static int unicode = 0;
+	static int matches = 0;
+	char str[4096];
+
+	if (aux_is_printable(buf[i]) || (aux_is_encoded(enc, buf[i]))) {
+		if (matches == 0)
+			offset += i;
+		str[matches] = buf[i];
+		if (matches < sizeof(str))
+			matches++;
+	} else {
+		/* wide char check \x??\x00\x??\x00 */
+		if (matches && buf[i+2]=='\0' && buf[i]=='\0' && buf[i+1]!='\0') {
+			unicode = 1;
+			return 1; // unicode
+		}
+		/* check if the length fits on our request */
+		if (matches >= min) {
+			str[matches] = '\0';
+			int len = strlen(str);
+			if (len>2) {
+			    if (rad) {
+				printf("Cs %i @ 0x%08llx\n", len, offset-matches);
+				printf("f str_%s_%c @ 0x%08llx\n",
+					aux_filter_rad_output(str), (unicode)?'U':'A', offset-matches);
+			    } else {
+				printf("0x%08llx %03d %c %s\n",
+					offset-matches, len, (unicode)?'U':'A', str);
+			    }
+			}
+		}
+		matches = 0;
+		unicode = 0;
+	}
+	return 0;
+}
+
+int
+aux_stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u64 limit)
+{
+	int fd = open(filename, O_RDONLY);
+	unsigned char *buf;
+	u64 i = seek;
+	u64 len;
+
+	if (fd == -1) {
+		fprintf(stderr, "Cannot open target file.\n");
+		return 1;
+	}
+
+	len = lseek(fd, 0, SEEK_END);
+
+	/* TODO: do not use mmap */
+#if __UNIX__
+	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+	if (((int)buf) == -1 ) {
+		perror("mmap");
+		return 1;
+	}
+	if (min <1)
+		min = 5;
+
+	if (limit && limit < len)
+		len = limit;
+
+	for(i = seek; i < len; i++) 
+		aux_stripstr_iterate(buf, i, min, encoding, i);
+
+	munmap(buf, len); 
+#endif
+#if __WINDOWS__
+	fprintf(stderr, "Not yet implemented\n");
+#endif
+	close(fd);
+
+	return 0;
+}
 
 void
 do_elf_checks(dietelf_bin_t *bin)
@@ -47,18 +173,30 @@ do_elf_checks(dietelf_bin_t *bin)
 }
 
 char*
-filter_rad_output(const char *string)
+aux_filter_rad_output(const char *string)
 {
     char *p = rad_output;
 
-    for (; *string != '\0'; string++) {
+    for (; *string != '\0' && p-rad_output < 255; string++) {
 	switch(*string) {
+	    case ' ':
+	    case '@':
+	    case '%':
+	    case '#':
+	    case '!':
+	    case ':':
+	    case '"':
+	    case '&':
+	    case '>':
+	    case '<':
+	    case ';':
+	    case '`':
 	    case '.':
 	    case '*':
 	    case '/':
 	    case '+':
 	    case '-':
-	    case ' ':
+	    case '\'':
 	    case '\n':
 	    case '\t':
 		*p++ = '_';
@@ -84,6 +222,40 @@ u64
 dietelf_get_entry_addr(dietelf_bin_t *bin)
 {
    return bin->ehdr.e_entry; 
+}
+
+u64
+dietelf_get_section_offset(int fd, dietelf_bin_t *bin, const char *section_name)
+{
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    const char *string = bin->string;
+    int i;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (!strcmp(&string[shdrp->sh_name], section_name))
+	    return shdrp->sh_offset;
+    }
+
+    return -1;
+}
+
+int
+dietelf_get_section_size(int fd, dietelf_bin_t *bin, const char *section_name)
+{
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    const char *string = bin->string;
+    int i;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (!strcmp(&string[shdrp->sh_name], section_name))
+	    return shdrp->sh_size;
+    }
+
+    return -1;
 }
 
 u64
@@ -167,8 +339,8 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (rad) {
-		printf("f section_%s @ 0x%08llx\n", filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
-		printf("f section_%s_end @ 0x%08llx\n", filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset+shdrp->sh_size);
+		printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
+		printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset+shdrp->sh_size);
 		printf("CC ");
 	}
 	printf("0x%08x 0x%04x align=0x%02x %02d %c%c%c %s", 
@@ -242,7 +414,7 @@ dietelf_list_imports(int fd, dietelf_bin_t *bin)
 		if (k != 0) {
 		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("f sym_imp_%s @ 0x%08llx\n", filter_rad_output(&string[symp->st_name]), get_import_addr(fd, bin, k));
+			    printf("f sym_imp_%s @ 0x%08llx\n", aux_filter_rad_output(&string[symp->st_name]), get_import_addr(fd, bin, k));
 			} else {
 			    if (verbose) printf("Symbol (Import): ");
 			    printf("0x%08llx %s\n", get_import_addr(fd, bin, k), &string[symp->st_name]);
@@ -324,7 +496,7 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 		    if ((symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
-			    printf("f sym_exp_%s @ 0x%08x\n", filter_rad_output(&string[symp->st_name]), symp->st_value);
+			    printf("f sym_exp_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
 			} else { 
 			    if (verbose) printf("Symbol (Export) size=%05i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
@@ -401,7 +573,7 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 		    if (symp->st_shndx == 3  && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
-			    printf("f sym_oth_%s @ 0x%08x\n", filter_rad_output(&string[symp->st_name]), symp->st_value);
+			    printf("f sym_oth_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
 			} else { 
 			    if (verbose) printf("Symbol (Other) size=%05i: ", symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
@@ -418,6 +590,29 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 	    free(string);
 	}
     }
+    return i;
+}
+
+int
+dietelf_list_strings(int fd, dietelf_bin_t *bin)
+{
+    /* TODO: define callback for printing strings found */
+    
+    Elf32_Ehdr *ehdr = &bin->ehdr;
+    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    int i;
+
+    if (rad)
+	printf("fs strings\n");
+    else printf("Strings:\n");
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (!(shdrp->sh_flags & SHF_EXECINSTR))
+	    aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
+    }
+
+
     return i;
 }
 
