@@ -72,6 +72,7 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 		if (op->scale)
 			mkasm(u, "*%d", op->scale);
 
+#if 0
 		if (op->offset == 8) {
 			if (op->lval.sbyte < 0)
 				mkasm(u, "-0x%x", -op->lval.sbyte);
@@ -89,7 +90,34 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 		}
 		else if (op->offset == 64) 
 			mkasm(u, "%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);
+#else
+			switch(op->offset) {
+			case 8:
+				if (op->lval.sbyte < 0) // 8b75fc |  esi = [ebp-0x4]
+					mkasm(u, "-0x%x", -op->lval.sbyte);
+				else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sbyte);
+				break;
+			case 16:
+				mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.uword);
+				break;
+			case 32:
+				if (u->adr_mode == 64) {
+					if (op->lval.sdword < 0)
+						mkasm(u, "-0x%x", -op->lval.sdword);
+					else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sdword);
+				} else {
+					// f.ex: eax = [ebx-0xf8]
+					if (((long)op->lval.udword) < 0) //XXX an unsigned value should always be >= 0
+						mkasm(u, "-0x%x", -op->lval.udword);
+					else
+						mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.udword,op->lval.udword);
+				}
+				break;
+			case 64:
+				mkasm(u, "%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);
+			}
 
+#endif
 		mkasm(u, "]");
 		break;
 	}
@@ -97,7 +125,12 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 	case UD_OP_IMM:
 		if (syn_cast) opr_cast(u, op);
 		switch (op->size) {
+#if PANCAKE
+			case  8: mkasm(u, "0x%x  ; %d '%c'", op->lval.ubyte, op->lval.ubyte,
+				 is_printable(op->lval.ubyte)?op->lval.ubyte:' ');    break;
+#else
 			case  8: mkasm(u, "0x%x", op->lval.ubyte);    break;
+#endif
 			case 16: mkasm(u, "0x%x", op->lval.uword);    break;
 			case 32: mkasm(u, "0x%lx", op->lval.udword);  break;
 			case 64: mkasm(u, "0x" FMT64 "x", op->lval.uqword); break;

@@ -481,13 +481,13 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		ud_set_pc(&ud_obj, seek);
+		ud_set_pc(&ud_obj, seek+myinc);
 		cons_printf("%-24s", ud_insn_asm(&ud_obj));
 		ret = ud_insn_len(&ud_obj);
 		break;
 	case ARCH_CSR:
 		if (bytes+myinc<config.block_size)
-			arch_csr_disasm((const unsigned char *)b, (u64)seek);
+			arch_csr_disasm((const unsigned char *)b, (u64)seek+myinc);
 		break;
 	case ARCH_AOP: {
 		struct aop_t aop;
@@ -499,14 +499,14 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	case ARCH_ARM:
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
 	       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-	       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+	       gnu_disarm((unsigned char*)b, (unsigned int)seek+myinc);
 	       break;
 	case ARCH_MIPS:
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-	       gnu_dismips((unsigned char*)b, (unsigned int)seek);
+	       gnu_dismips((unsigned char*)b, (unsigned int)seek+myinc);
 	       break;
 	case ARCH_SPARC:
-	       gnu_disparc((unsigned char*)b, (unsigned int)seek);
+	       gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
 	       break;
 	case ARCH_PPC: {
 	       char opcode[128];
@@ -515,7 +515,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	       /* initialize DisasmPara */
 	       dp.opcode = opcode;
 	       dp.operands = operands;
-	       dp.iaddr = seek; //config.baddr + config.seek + i;
+	       dp.iaddr = seek+myinc; //config.baddr + config.seek + i;
 	       dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
 	       cons_printf("  %s %s", opcode, operands);
@@ -533,7 +533,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		/* initialize DisasmPara */
 		dp.opcode = opcode;
 		dp.operands = operands;
-		dp.iaddr = seek; //config.baddr + config.seek + i;
+		dp.iaddr = seek+myinc; //config.baddr + config.seek + i;
 		dp.instr = b; //config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
 		M68k_Disassemble(&dp);
@@ -665,7 +665,7 @@ void udis_arch(int arch, int len, int rows)
 				if (show_reladdr)
 					cons_printf("        ");
 				if (show_offset)
-				cons_strcat("           ");
+					cons_strcat("            ");
 				for(i=0;i<folder;i++)cons_strcat("  ");
 					cons_strcat("  {\n");
 				CHECK_LINES
@@ -681,8 +681,21 @@ void udis_arch(int arch, int len, int rows)
 			case DATA_HEX:
 			default:
 				cons_printf("  .db  ");
+				int w = 0;
 				for(i=0;i<idata;i++) {
 					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
+					w+=4;
+					if (w >= config.height) {
+						cons_printf("\n");
+						if (show_lines)
+							code_lines_print(reflines, seek+i, 1);
+						if (show_reladdr)
+							cons_printf("        ");
+						if (show_offset)
+							print_addr(seek+i);
+						cons_printf("  .db  ");
+						w = 0;
+					}
 				}
 				break;
 			}

@@ -32,6 +32,7 @@ opr_cast(struct ud* u, struct ud_operand* op)
 static void 
 gen_operand(struct ud* u, struct ud_operand* op)
 {
+	int op_f = 0;
   switch(op->type) {
 	case UD_OP_REG:
 		mkasm(u, "%%%s", ud_reg_tab[op->base - UD_R_AL]);
@@ -41,6 +42,7 @@ gen_operand(struct ud* u, struct ud_operand* op)
 		if (u->br_far) opr_cast(u, op);
 		if (u->pfx_seg)
 			mkasm(u, "%%%s:", ud_reg_tab[u->pfx_seg - UD_R_AL]);
+#if 0
 		if (op->offset == 8) {
 			if (op->lval.sbyte < 0)
 				mkasm(u, "-0x%x", (-op->lval.sbyte) & 0xff);
@@ -52,6 +54,33 @@ gen_operand(struct ud* u, struct ud_operand* op)
 			mkasm(u, "0x%lx", op->lval.udword);
 		else if (op->offset == 64) 
 			mkasm(u, "0x" FMT64 "x", op->lval.uqword);
+#else
+			switch(op->offset) {
+			case 8:
+				if (op->lval.sbyte < 0) // 8b75fc |  esi = [ebp-0x4]
+					mkasm(u, "$-0x%x", -op->lval.sbyte);
+				else	mkasm(u, "$%s0x%x", (op_f) ? "+" : "", op->lval.sbyte);
+				break;
+			case 16:
+				mkasm(u, "$%s0x%x", (op_f) ? "+" : "", op->lval.uword);
+				break;
+			case 32:
+				if (u->adr_mode == 64) {
+					if (op->lval.sdword < 0)
+						mkasm(u, "$-0x%x", -op->lval.sdword);
+					else	mkasm(u, "$%s0x%x", (op_f) ? "+" : "", op->lval.sdword);
+				} else {
+					// f.ex: eax = [ebx-0xf8]
+					if (((long)op->lval.udword) < 0) //XXX an unsigned value should always be >= 0
+						mkasm(u, "$-0x%x", -op->lval.udword);
+					else
+						mkasm(u, "$%s0x%x", (op_f) ? "+" : "", op->lval.udword,op->lval.udword);
+				}
+				break;
+			case 64:
+				mkasm(u, "$%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);
+			}
+#endif
 
 		if (op->base)
 			mkasm(u, "(%%%s", ud_reg_tab[op->base - UD_R_AL]);

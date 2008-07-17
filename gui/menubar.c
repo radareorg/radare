@@ -43,6 +43,12 @@ void gradare_redo() //GtkAction *action, CanoeWindow *w)
 	vte_terminal_feed_child(VTE_TERMINAL(term), "U", 1);
 }
 
+void gradare_edit_script() //GtkAction *action, CanoeWindow *w)
+{
+	char *cmd = ":H scriptedit\n\n";
+	vte_terminal_feed_child(VTE_TERMINAL(term), cmd, strlen(cmd));
+}
+
 void gradare_run_script() //GtkAction *action, CanoeWindow *w)
 {
 	GtkWidget *fcd; 
@@ -108,6 +114,7 @@ static const gchar *ui_info =
 "      <menuitem action='Save project'/>"
 "      <menuitem action='Save project as...'/>"
 "      <separator />"
+"      <menuitem action='Edit script'/>"
 "      <menuitem action='Run script'/>"
 "      <separator />"
 "      <menuitem action='Quit'/>"
@@ -168,6 +175,10 @@ static GtkActionEntry entries[] = {
     "_Run script", NULL,
     "Runs a script",
     G_CALLBACK (gradare_run_script) },
+  { "Edit script", GTK_STOCK_GO_FORWARD,
+    "_Edit script", NULL,
+    "Runs GTK scriptedit plugin",
+    G_CALLBACK (gradare_edit_script) },
   { "Quit", GTK_STOCK_QUIT,
     "_Quit","<control>Q",
     "Cya!",
@@ -239,20 +250,24 @@ GtkMenu *gradare_menubar_hildon_new(GtkWindow *w)
 	g_signal_connect_object (mi, "activate", gradare_open, w, 0);
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
-	mi = gtk_image_menu_item_new_with_label("Debug process");
-	g_signal_connect_object (mi, "activate", gradare_open_process, w, 0);
-	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
-
 	mi = gtk_image_menu_item_new_with_label("Debug program");
 	g_signal_connect_object (mi, "activate", gradare_open_program, w, 0);
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
-	mi = gtk_image_menu_item_new_with_label("Run script");
-	g_signal_connect_object (mi, "activate", gradare_run_script, w, 0);
+	mi = gtk_image_menu_item_new_with_label("Attach to process");
+	g_signal_connect_object (mi, "activate", gradare_open_process, w, 0);
+	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
+
+	mi = gtk_image_menu_item_new_with_label("Edit script");
+	g_signal_connect_object (mi, "activate", gradare_edit_script, w, 0);
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
 	mi = gtk_image_menu_item_new_with_label("Code graph");
 	g_signal_connect_object (mi, "activate", gradare_new_graph, w, 0);
+	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
+
+	mi = gtk_image_menu_item_new_with_label("Monitor window");
+	g_signal_connect_object (mi, "activate", gradare_new_monitor, w, 0);
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
 	mi = gtk_image_menu_item_new_with_label("Refresh");

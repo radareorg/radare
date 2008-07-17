@@ -10,6 +10,9 @@
 =====
 0.9.8 - codename 'scg08'
 =====
+* scriptedit must work also for 'radare scripts'
+  - Multiple open/close is broken :?
+  - make it work with vim in console
 * remove comments doesnt works properly
 * fix data types inside disassenmbly (hexbytes are buggy)
 * check bindiff output
@@ -17,7 +20,6 @@
 * Fix dupped plugin posix
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * 'w' in cursor mode with range selected must fill the buffer
-* proper handle of negative values in disasm (no 0xfffff)
 * write shellcode to dump a buffer in hexa (inline jump)
 * search backward (esteve?)
   - search backward in memory (invert string and add inc as argument for binparse)
@@ -31,6 +33,7 @@
 * !contu must use '!mp rw- 0x8048000 0x4045' if supported
 * rasm : Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
+  - be like a cmdline gas. use the internal code of gnu (stripped down plz!)
 
 ==============================================================
 

@@ -20,6 +20,10 @@
 
 #include "main.h"
 #include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <glib/glist.h>
 #include <glib/glist.h>
@@ -99,7 +103,7 @@ static void ok_cb()
 	gtk_widget_destroy(wop);
 	cancel_cb();
 #if _MAEMO_
-hildon_banner_show_information(GTK_WIDGET(w), NULL, "Attaching to pid...");
+	hildon_banner_show_information(GTK_WIDGET(w), NULL, "Attaching to pid...");
 #endif
 	sprintf(cmd,"( gradare 'pid://%d' & )", pid);
 	sprintf(dpid, "%d", pid);
@@ -139,7 +143,7 @@ void gradare_open_process()
 		gtk_container_add(GTK_CONTAINER(hbb), ok);
 
 #if _MAEMO_
-hildon_banner_show_information(GTK_WIDGET(w), NULL, "Searching for available pids...");
+	hildon_banner_show_information(GTK_WIDGET(w), NULL, "Searching for available pids...");
 #endif
 	combo = gtk_combo_box_new_text();
 
@@ -206,7 +210,7 @@ void gradare_open()
 		char cmd[4096];
 		char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
 #if _MAEMO_
-hildon_banner_show_information(GTK_WIDGET(w), NULL, "Opening file...");
+	hildon_banner_show_information(GTK_WIDGET(w), NULL, "Opening file...");
 #endif
 		sprintf(cmd,"( gradare '%s' & )", filename);
 		system(cmd);
@@ -270,7 +274,6 @@ void gradare_shortcut( GtkWidget *widget, gpointer   data )
 int v = 0;
 void gradare_refresh()
 {
-	int i;
 	GList *list = gtk_container_get_children(GTK_CONTAINER(tool));
 
 	g_list_foreach(list, (GFunc)gtk_widget_destroy, NULL);
@@ -396,6 +399,7 @@ GtkWidget *gradare_toolbar_new(GtkWidget *base)
 		gtk_image_new_from_stock("gtk-new", GTK_ICON_SIZE_MENU),
 		GTK_SIGNAL_FUNC(gradare_new), NULL);
 #endif
+
 	gtk_toolbar_append_item(
 		GTK_TOOLBAR(toolbar), "Open", "Open file", "",
 		gtk_image_new_from_stock("gtk-open", GTK_ICON_SIZE_MENU),
@@ -408,7 +412,9 @@ GtkWidget *gradare_toolbar_new(GtkWidget *base)
 		GTK_TOOLBAR(toolbar), "Attach", "Attach process", "",
 		gtk_image_new_from_stock("gtk-properties", GTK_ICON_SIZE_MENU),
 		GTK_SIGNAL_FUNC(gradare_open_process), NULL);
+
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
+
 	gtk_toolbar_append_item(
 		GTK_TOOLBAR(toolbar), "Undo seek", "Undo", "",
 		gtk_image_new_from_stock("gtk-undo", GTK_ICON_SIZE_MENU),
@@ -417,7 +423,9 @@ GtkWidget *gradare_toolbar_new(GtkWidget *base)
 		GTK_TOOLBAR(toolbar), "Redo seek", "Redo", "",
 		gtk_image_new_from_stock("gtk-redo", GTK_ICON_SIZE_MENU),
 		GTK_SIGNAL_FUNC(gradare_redo), NULL);
+
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
+
 	gtk_toolbar_append_item(
 		GTK_TOOLBAR(toolbar), "Refresh toolbar", "Refresh", "",
 		gtk_image_new_from_stock("gtk-refresh", GTK_ICON_SIZE_MENU),

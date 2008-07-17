@@ -29,6 +29,9 @@
 //#define FONT "-adobe-courier-bold-o-normal--18-180-75-75-m-110-iso8859-15"
 #define FONT "Sans Bold 8"
 
+int mon_id = 0;
+static char *project_file = NULL;
+
 GtkWidget *term = NULL;
 char *filename = NULL;
 char *command = NULL;
@@ -211,10 +214,6 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 	return 0;
 }
 
-int mon_id = 0;
-
-static char *project_file = NULL;
-
 void gradare_save_project_as()
 {
 	char buf[1024];
@@ -228,23 +227,24 @@ void gradare_save_project_as()
                 NULL);
 
         gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
-        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
-        {
-                char cmd[4096];
-                char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
-
-		sprintf(buf, ":Ps %s\n\n", filename);
-		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
+                const char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+		free(project_file);
+		project_file = strdup(filename);
+		gradare_save_project();
 	}
-gtk_widget_destroy(fcd);
+	gtk_widget_destroy(fcd);
 }
 
 void gradare_save_project()
 {
 	char buf[1024];
 	if (project_file) {
-		sprintf(buf, ":Ps %s\n\n", project_file);
+		snprintf(buf, 4095, ":Ps %s\n\n", project_file);
 		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+#if _MAEMO_
+		hildon_banner_show_information(GTK_WIDGET(w), NULL, "Project saved...");
+#endif
 	} else
 		gradare_save_project_as();
 	
