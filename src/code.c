@@ -52,7 +52,7 @@ int data_set_len(u64 off, u64 len)
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		if (off>= d->from && off< d->to) {
-			d->to = d->from+len;
+			d->to = d->from+len+1;
 			d->size = d->to-d->from;
 			return 0;
 		}
@@ -84,7 +84,7 @@ void data_add(u64 off, int type)
 		list_for_each(pos, &data) {
 			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 			if (d && (off>= d->from && off<= d->to)) {
-				list_del((&d)); //->list)); //->list));
+				list_del((&d->list)); //->list));
 				goto __reloop;
 			}
 		}
@@ -107,7 +107,10 @@ void data_add(u64 off, int type)
 		}
 	}
 	d->type = type;
-	d->size = (d->to - d->from);
+	if (d->to > d->from) {
+		d->to++;
+		d->size = d->to - d->from;
+	} else d->size = d->from - d->to+1;
 	if (d->size<1)
 		d->size = 1;
 
@@ -152,7 +155,7 @@ int data_end(u64 offset)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset == d->to)
+		if (offset == d->from+d->size) // XXX: must be d->to..but is buggy ?
 			return d->type;
 	}
 	return -1;
@@ -181,7 +184,7 @@ int data_list()
 		case DATA_HEX:    cons_strcat("Cd "); break;
 		case DATA_STR:    cons_strcat("Cs "); break;
 		default:          cons_strcat("Cc "); break; }
-		cons_printf("%d @ 0x%08llx\n", d->to - d->from, d->type);
+		cons_printf("%d @ 0x%08llx\n", d->size, d->type);
 	}
 	return 0;
 }
@@ -653,13 +656,10 @@ void udis_arch(int arch, int len, int rows)
 		}
 			switch(dt) {
 			case DATA_FOLD_C: 
-				cons_printf("  { 0x%llx-0x%llx %lld }\n", foo->from, foo->to, (foo->to-foo->from));
-				//bytes+=foo->size; //(foo->to-foo->from);
-				//bytes+=idata;
-				continue;
+				cons_printf("  { 0x%llx-0x%llx %lld }", foo->from, foo->to, foo->size); //(foo->to-foo->from));
+				break;
 			case DATA_FOLD_O:
 				cons_strcat("\r                                       \r");
-				myinc =foo->size; //(foo->to-foo->from);
 				if (show_lines)
 					code_lines_print(reflines, seek, 1);
 				if (show_reladdr)
@@ -703,6 +703,7 @@ void udis_arch(int arch, int len, int rows)
 			CHECK_LINES
 			/* how many different ways to do the same we have? */
 			bytes+=idata;
+			myinc =foo->size; //(foo->to-foo->from);
 			sk = config.seek+bytes;
 			seek = config.baddr +config.seek+bytes;
 			ud_idx+=(foo->size); // XXX ud_stuff must be handled in another way
@@ -717,8 +718,9 @@ void udis_arch(int arch, int len, int rows)
 			}
 			folder--;
 			for(i=0;i<folder;i++) cons_strcat("  ");
-			cons_strcat("  }\n");
+			cons_strcat("   }\n");
 			CHECK_LINES
+/* oops */
 		}
 
 		switch(arch) {
@@ -916,7 +918,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 	config.block[bytes+1], config.block[bytes+2]);
 
 #endif
-			udis_arch_opcode(arch, endian, seek, bytes, myinc);
+			udis_arch_opcode(arch, endian, seek+bytes, bytes, myinc);
 
 			/* show references */
 			if (aop.ref) {

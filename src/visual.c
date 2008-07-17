@@ -137,9 +137,9 @@ void visual_show_help()
 	";          edit or add comment\n"
 	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
 	"g,G        seek to beggining or end of file\n"
-	"<>         seek block aligned (cursor mode = folder code)\n"
 	"+-*/       +1, -1, +width, -width -> block size\n"
-	"[]         decrease or increment the width limits\n"
+	"<>         seek block aligned (cursor mode = folder code)\n"
+	"[]         adjust screen width\n"
 	"a,A,=      insert patch assembly, rsc asm or !hack\n"
 	"i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
 	"f,F        seek between flag list (f = forward, F = backward)\n"
@@ -1499,7 +1499,7 @@ inc = 1;
 		case 'K':
 			if (config.cursor_mode) {
 				if (config.ocursor==-1)
-					config.ocursor = config.cursor-1;
+					config.ocursor = config.cursor;
 				config.cursor-=dec;
 				if (cursorseek && IS_LTZ(config.cursor)) {
 					radare_seek(config.seek-dec, SEEK_SET);
@@ -1561,12 +1561,21 @@ inc = 1;
 						cons_clear();
 					}
 				} else {
+					u64 sz;
 					// create new closed folder containing selected bytes
-					u64 cu = config.cursor; //+config.baddr;
-					if (config.cursor < config.ocursor)
-						config.ocursor++;
-					int sz = (((int)config.cursor)-((int)config.ocursor))+1;
-					if (sz <0) { sz=(-sz)-1;cu = 0; sz+=2;}
+					u64 cu = config.ocursor; //+config.baddr;
+					/* upwards */
+					if (config.cursor < config.ocursor) {
+					//	config.ocursor++;
+						sz = (config.ocursor-config.cursor)+1;
+						cu = 0;
+					} else  {
+						sz = config.cursor-config.ocursor;
+						cu = config.ocursor;
+					}
+//printf("SIZE: %d, OFFSET: %llx\n", (int)sz, config.seek+cu);
+//sleep (2);
+					//if (sz <0) { sz=(-sz)-1;cu = 0; sz+=2;}
 					data_add(config.seek+cu, DATA_FOLD_C);
 					data_set_len(config.seek+cu, (u64)sz);
 					cons_clear();
