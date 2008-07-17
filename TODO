@@ -13,10 +13,12 @@
 * scriptedit must work also for 'radare scripts'
   - Multiple open/close is broken :?
   - make it work with vim in console
+* cfg.inverse must be universal!
 * remove comments doesnt works properly
 * fix data types inside disassenmbly (hexbytes are buggy)
 * check bindiff output
   - implement bindiff patchers
+  - fer un binpatch a traves del contexte del asm que sigui muahah
 * Fix dupped plugin posix
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * 'w' in cursor mode with range selected must fill the buffer
@@ -24,16 +26,81 @@
 * search backward (esteve?)
   - search backward in memory (invert string and add inc as argument for binparse)
   - useful to static analyze interrupt calls
-* Add function analysis in code analysis
-  - detect push ebp ; mov esp, ebp (begin)
-  - analize sub and add properly (to get stack frame size)
-  - analize access to stack in function code to determine local vars
-  - Access to local variables using dwarf stuff
 * Xrefs working with the core 
 * !contu must use '!mp rw- 0x8048000 0x4045' if supported
 * rasm : Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
   - be like a cmdline gas. use the internal code of gnu (stripped down plz!)
+* rasc : send file and execute (pitbull inside!)
+
+Stack Analysis:
+===============
+* Add function analysis in code analysis
+  - detect push ebp ; mov esp, ebp (begin)
+  - analize sub and add properly (to get stack frame size)
+  - analize access to stack in function code to determine local vars
+  - Access to local variables using dwarf stuff
+* show esp-ebp !!! stackframe is important everywhere! ??
+* show esp-ebp of stack at top (or mark a range)
+  - show stack offsets
+  - max size of stack
+  - colorize esb-ebp with temp cursor or so
+
+DWARF
+=====
+	/* Merge libdwarf inside rabin */
+	/* This is dwarfdump -G <file> */
+
+	DwarfDumpOutput:
+	----------------
+
+	/* Enums */
+<2>< 1308>      DW_TAG_enumerator
+                DW_AT_name                  FILETYPE_MACHO
+                DW_AT_const_value           6
+
+<1>< 1155>      DW_TAG_structure_type
+                DW_AT_name                  list_head
+                DW_AT_byte_size             8
+                DW_AT_decl_file             7 ../list.h
+                DW_AT_decl_line             14
+                DW_AT_sibling               <1204>
+
+	/* VarTypes */
+
+<1>< 1122>      DW_TAG_pointer_type
+                DW_AT_byte_size             4
+                DW_AT_type                  <1128>
+
+
+	/* Local Variables */
+
+	info we get:
+		varname,
+		file,
+		file_line,
+		var_type
+
+
+<2>< 2507>      DW_TAG_formal_parameter
+                DW_AT_name                  file
+                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
+                DW_AT_decl_line             80
+                DW_AT_type                  <1122>
+                DW_AT_location              DW_OP_fbreg -60
+<2>< 2521>      DW_TAG_variable
+                DW_AT_name                  buf
+                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
+                DW_AT_decl_line             82
+                DW_AT_type                  <2563>
+                DW_AT_location              DW_OP_fbreg -44
+<2>< 2535>      DW_TAG_variable
+                DW_AT_name                  addr
+                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
+                DW_AT_decl_line             83
+                DW_AT_type                  <173>
+                DW_AT_location              DW_OP_fbreg -48
+
 
 ==============================================================
 
@@ -55,22 +122,12 @@
   - Support for cursor range split
   - Without argument must find the end of string from curseek
 
+ * show labels of all jumps/calls (not only bookmarked ones)
 * !contall
 * !cont <pid> ???
 
+/* FreeBSD */
 debug.elf32_trace: 0
-
-Implement freebsd waiter:
- > kern.lastpid: 55763 -> wait until changes :O
-  - use this value to parse /proc faster (buggy)
-
-Rabin
-=====
-* elf-section-headers -> loggejar shelf stuff
-  - pillar base address al vol ( rabin -b)
-* Full PE parser support
-* Move radare -S into rabin to find strings in data sections only
-  - like gnu strings like bfd does
 
 * function hooker in C (dbg.hooker)      
   - some C macros or so to create a .so and LD_PRELOAD't
@@ -79,16 +136,10 @@ Rabin
   - if bp == 1 !jmp 0x8084840 - redirect code execution on certain points
   - stored in file
     [from-address] \t  [to-address]
-
- * show labels of all jumps/calls (not only bookmarked ones)
  * undo write
  * xc is crappy! no args, some vals are invalid
- * scriptedit must work in text mode also
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
- * if myinc > len myinc = 1;
-  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
-    recover the 0 position
  * populate the use of cmd.flag (in prompt and so)
  * graphically draw structures in memory (adg, aD)?
  * define print format per flags (useful to find strings, code,etc..) :D
@@ -119,7 +170,6 @@ Rabin
 
  * Allow to increase/decrease folder size with + and -
   - wheen scrolling over folders skip faster
- * !pids must control non-printable chars
  * add !status to get last crash info and stuff like that
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
@@ -131,6 +181,9 @@ Rabin
  * support for search and replace
  * support for oprofile (via rsc or so)
 
+Rabin
+=====
+* Full PE parser support
 
 Gui
 ===
@@ -141,15 +194,16 @@ Gui
 Open streams
 ============
 * radare pcap://"eth0/port 4000"
-* cfg.inverse must be universal!
 * serial console support
   - configure bps and so
   $ radare /dev/ttyS0
+
+Debugger
+========
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
   * dbg.stepolibs = true ;  step over non-user code?
   - automatic stepu 
-
 
 /////////////////////////////////////////////////////////////////////////
 /* Fetch the thread-local storage pointer for libthread_db.  */
@@ -177,23 +231,12 @@ DONE?
   - tries to find another flag after
   cfg.vbsize = true -> variable block size (until next flag) (with a similar name to cur one?)
 
-
 Core
 =====
 * allow to run without opening a file (useful for batch mode)
-* add u64 cursor[config.block_size]; when printing
-  - useful for zoom , disasembly, code folding
-make fdsniff and usbsniff generate a project file and a binary one.
+* make fdsniff and usbsniff generate a project file and a binary one.
 
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
-
-
-
-Imports:
-========
-* import pdi-tool from gerardo to inject code
-* import esteve's object injector
-* import libdwarf
 
 
 ARM
@@ -204,6 +247,10 @@ ARM
 
 BUGS:
 =====
+ * !pids must control non-printable chars
+* if myinc > len myinc = 1;
+  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
+    recover the 0 position
 * wx `pW 33 -> the ` doesnt works
 * keybinding assignment dosnt workz
   - UGLY
@@ -390,11 +437,6 @@ Debugger
 	char * register_name;
 	uchar *shellcode
   - all shellcodes must be coded and injected in the same way
-* show esp-ebp !!! stackframe is important everywhere! ??
-* show esp-ebp of stack at top (or mark a range)
-  - show stack offsets
-  - max size of stack
-  - colorize esb-ebp with temp cursor or so
 * implement process freze and bootup
 * own elf loader (avoid system one)
 * amd64 -> x86-64 -> alias ( BSD64 is broken )
@@ -504,15 +546,17 @@ FileDescriptors
 
    - statistics will show the time spend to run a determined piece of code
 
-* implement move data inside the core (yank?)
- - add software watchpoints with stepall (register and memory changes control)
- - fer un binpatch a traves del contexte del asm que sigui muahah
- - rasc : send file and execute (pitbull inside!)
 
-  * add 'list' gdb -like command
 
-* DWARF DUMP !!! 
+
+Imports:
+========
+* import pdi-tool from gerardo to inject code
+* import esteve's object injector
+* import libdwarf
   * http://reality.sgiweb.org/davea/dwarf.html
+  * add 'list' gdb -like command
+  * parse dwarfdump output in perl
 
 BSD_SYSCALL_PTRACE:
 ===================

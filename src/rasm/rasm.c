@@ -188,3 +188,13 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 
 	return ret;
 }
+
+int rasm_disasm(const char *arch, u64 *offset, const char *str, unsigned char *data)
+{
+	char buf[4096];
+	/* TODO: Use internal disasembler */
+	/* TODO: parse hexpairs and disassemble */
+	snprintf(buf, 4095, "rsc dasm '%s'", str);
+	system(buf);
+	return 0;
+}

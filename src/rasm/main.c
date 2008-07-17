@@ -47,6 +47,7 @@ static int show_help()
 {
 	show_helpline();
 	printf("  -v           enables debug\n");
+	printf("  -d [bytes]   disassemble from hexpair bytes\n");
 	printf("  -f [file]    compiles assembly file to 'file'.o\n");
 	printf("  -s [offset]  offset where this opcode is suposed to be\n");
 	printf("  -a [arch]    selected architecture (x86, ppc, arm, java)\n");
@@ -101,11 +102,14 @@ int main(int argc, char **argv)
 	if (argc<2)
 		return show_helpline();
 
-	while ((c = getopt(argc, argv, "a:Vs:lhef:v")) != -1)
+	while ((c = getopt(argc, argv, "d:a:Vs:lhef:v")) != -1)
 	{
 		switch( c ) {
 		case 'a':
 			arch = optarg;
+			break;
+		case 'd':
+			rasm_disasm(arch, offset, optarg, NULL);
 			break;
 		case 'f':
 			if (!verbose) printf("Compiling %s to %s.o\n", optarg, optarg);

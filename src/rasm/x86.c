@@ -303,8 +303,26 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		data[0]='\x90';
 		return 1;
 	} else {
-		if (op[0]&& op[0]!=';')
+		if (op[0]&& op[0]==';')
+			return 0;
+		/* Use The OllyDbg Assembler Here */
+#define USE_OLLY 0
+#if USE_OLLY
+#include "../arch/x86/ollyasm/disasm.h"
+		{
+		char errtext[TEXTLEN];
+		char s[1024];
+		int i,j;
+		  //int j=Assemble(str,0x400000,&am,0,4,errtext);
+  		  t_asmmodel am;
+		  j = Assemble(str,0,&am,0,4,errtext);
+		  printf("(%3d)  ",j);
+		  for (i=0; i<j; i++) printf("%02x ", (unsigned char)am.code[i]);
+		  //for (i=0; i<j; i++) n+=sprintf(s+n,"%02x ",(unsigned char)am.code[i]);
+		}
+#else
 		fprintf(stderr, "unknown opcode (%s)\n",op);
+#endif
 	}
 
 	return 0;
