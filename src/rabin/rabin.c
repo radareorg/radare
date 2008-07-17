@@ -69,10 +69,12 @@ int rabin_show_help()
 //int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit);
 void rabin_show_strings(const char *file)
 {
+	char buf[4096];
+	sprintf(buf, "echo /s | radare -e file.id=true -nv %s", file);
+	system(buf);
 	/* TODO: get .data section range (ONLY) */
 	//stripstr_from_file(file, 0, 0, 0);
 	/* TODO: define callback for printing strings found */
-	fprintf(stderr, "TODO: Not yet implemented\n");
 }
 
 void rabin_show_checksum(const char *file)

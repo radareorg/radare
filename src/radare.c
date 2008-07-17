@@ -212,6 +212,8 @@ int radare_strsearch(char *str)
 	int j, ret;
 	u64 seek = config.seek;
 	u64 size = config.size;
+	int min = 3;
+	int enc = resolve_encoding(config_get("cfg.encoding")); // ASCII
 
 	// TODO: Move to stripstr_iterate as args or so
 	//encoding = resolve_encoding(config_get("cfg.encoding"));
@@ -226,7 +228,7 @@ int radare_strsearch(char *str)
 		ret = radare_read(1);
 		if (ret == -1) break;
 		for(j=0;j<config.block_size;j++)
-			stripstr_iterate(config.block, j, config.seek+j, str);
+			stripstr_iterate(config.block, j, min, enc, config.seek+j, str);
 	}
 	config.seek = seek;
 	radare_controlc_end();

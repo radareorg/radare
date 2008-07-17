@@ -30,6 +30,7 @@ void gradare_new_monitor();
 void gradare_new_graph();
 void gradare_open_project();
 void gradare_save_project();
+void gradare_save_project_as();
 void gradare_help();
 void gradare_undo();
 void gradare_redo();

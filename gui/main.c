@@ -213,14 +213,67 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 
 int mon_id = 0;
 
+static char *project_file = NULL;
+
+void gradare_save_project_as()
+{
+	char buf[1024];
+        GtkWidget *fcd;
+
+        fcd = gtk_file_chooser_dialog_new (
+                "Save project as...", NULL, // parent
+                GTK_FILE_CHOOSER_ACTION_SAVE,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                NULL);
+
+        gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
+        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
+        {
+                char cmd[4096];
+                char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+
+		sprintf(buf, ":Ps %s\n\n", filename);
+		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+	}
+gtk_widget_destroy(fcd);
+}
+
 void gradare_save_project()
 {
-	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	char buf[1024];
+	if (project_file) {
+		sprintf(buf, ":Ps %s\n\n", project_file);
+		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+	} else
+		gradare_save_project_as();
+	
 }
 
 void gradare_open_project()
 {
-	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	char buf[1024];
+        GtkWidget *fcd;
+
+        fcd = gtk_file_chooser_dialog_new (
+                "Open project file...", NULL, // parent
+                GTK_FILE_CHOOSER_ACTION_OPEN,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                NULL);
+
+        gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
+        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
+        {
+                char cmd[4096];
+                char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+
+		sprintf(buf, ":Po %s\n\n", filename);
+		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+	}
+gtk_widget_destroy(fcd);
+
+
 }
 
 void gradare_new_graph()

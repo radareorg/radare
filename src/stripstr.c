@@ -38,10 +38,10 @@ enum {
 };
 
 static char *encodings[3] = { "ascii", "cp850", NULL };
-static int encoding = ENCODING_ASCII; // default
-static int min;
+//static int encoding = ENCODING_ASCII; // default
+	//encoding = resolve_encoding(config_get("cfg.encoding"));
 
-static int resolve_encoding(const char *name)
+int resolve_encoding(const char *name)
 {
 	int i;
 
@@ -53,7 +53,7 @@ static int resolve_encoding(const char *name)
 	return ENCODING_ASCII;
 }
 
-static int is_encoded(unsigned char c)
+static int is_encoded(int encoding, unsigned char c)
 {
 	switch(encoding) {
 	case ENCODING_ASCII:
@@ -85,7 +85,7 @@ static int is_encoded(unsigned char c)
 	return 0;
 }
 
-int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
+int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset, char *match)
 {
 	flag_t *flag;
 	static int unicode = 0;
@@ -95,7 +95,7 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 	if (match&&match[0]=='\0')
 		match=NULL;
 
-	if (is_printable(buf[i]) || (is_encoded(buf[i]))) {
+	if (is_printable(buf[i]) || (is_encoded(enc, buf[i]))) {
 		if (matches == 0)
 			offset += i;
 		str[matches] = buf[i];
@@ -148,8 +148,11 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 				cons_printf("f %s @ 0x%08x\n", msg, (unsigned int)offset-matches);
 			} else
 			if ((!match) || (match && strstr(str, match)) ){
-				D cons_printf("0x%08x %c (%d) %s\n", (unsigned int)offset-matches, (unicode)?'U':'A', strlen(str), str);
-				else cons_printf("%s\n", str);
+				int len = strlen(str);
+				if (len>2) {
+					cons_printf("0x%08llx %3d %c %s\n",
+						(u64)config.baddr+ offset-matches, len, (unicode)?'U':'A', str);
+				}
 				cons_flush();
 			}
 		}
@@ -159,10 +162,11 @@ int stripstr_iterate(const unsigned char *buf, int i, u64 offset, char *match)
 	return 0;
 }
 
-int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit)
+int stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u64 limit)
 {
-	int i, fd = open(filename, O_RDONLY);
+	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
+	u64 i = seek;
 	u64 len;
 
 	if (fd == -1) {
@@ -171,8 +175,6 @@ int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit)
 	}
 
 	len = lseek(fd, 0, SEEK_END);
-
-	encoding = resolve_encoding(config_get("cfg.encoding"));
 
 	/* TODO: do not use mmap */
 #if __UNIX__
@@ -189,7 +191,7 @@ int stripstr_from_file(const char *filename, int min, u64 seek, u64 limit)
 
 	radare_controlc();
 	for(i = (size_t)seek; !config.interrupted && i < len; i++)
-		stripstr_iterate(buf+i, i, i, "");
+		stripstr_iterate(buf+i, i, min, encoding, i, "");
 	radare_controlc_end();
 	
 	munmap(buf, len); 

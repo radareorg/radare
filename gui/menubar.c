@@ -106,6 +106,7 @@ static const gchar *ui_info =
 "      <separator />"
 "      <menuitem action='Open project'/>"
 "      <menuitem action='Save project'/>"
+"      <menuitem action='Save project as...'/>"
 "      <separator />"
 "      <menuitem action='Run script'/>"
 "      <separator />"
@@ -159,6 +160,10 @@ static GtkActionEntry entries[] = {
     "_Save project", NULL,
     "Stores all the information to a project file",
     G_CALLBACK (gradare_save_project) },
+  { "Save project as...", GTK_STOCK_SAVE,
+    "_Save project as...", NULL,
+    "Stores all the information to a project file",
+    G_CALLBACK (gradare_save_project_as) },
   { "Run script", GTK_STOCK_GO_FORWARD,
     "_Run script", NULL,
     "Runs a script",
