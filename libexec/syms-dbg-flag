@@ -13,7 +13,6 @@ if (( $target eq "" ) || ( $target eq "-h" )) {
 }
 
 
-print "fs symbols\n";
 
 if ( `uname`=~/Darwin/ ) {
  	system("otool -tv $target|grep -C 1 -e : |grep -v / | awk '{if (/:/){label=\$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"\$1;label=\"\"}}'\n");
@@ -27,6 +26,7 @@ for my $i (0 .. @syms) {
 		my ($addr, $name) = split(/ /,$syms[$i]);
 		$name =~ s/@.*//g;
 		next if ($name eq "");
+		print "fs symbols\n";
 		printf "f sym_$name @ $addr\n";
 	} else {
 		print $syms[$i],"\n";

@@ -76,7 +76,7 @@ aux_is_printable (int c)
 }
 
 int 
-aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset)
+aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset)
 {
 	static int unicode = 0;
 	static int matches = 0;
@@ -100,12 +100,12 @@ aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 			int len = strlen(str);
 			if (len>2) {
 			    if (rad) {
+				printf("f str_%s @ 0x%08llx\n",
+					aux_filter_rad_output(str), offset-matches+base);
 				printf("Cs %i @ 0x%08llx\n", len, offset-matches);
-				printf("f str_%s_%c @ 0x%08llx\n",
-					aux_filter_rad_output(str), (unicode)?'U':'A', offset-matches);
 			    } else {
 				printf("0x%08llx %03d %c %s\n",
-					offset-matches, len, (unicode)?'U':'A', str);
+					offset-matches+base, len, (unicode)?'U':'A', str);
 			    }
 			}
 		}
@@ -116,7 +116,7 @@ aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 }
 
 int
-aux_stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u64 limit)
+aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -145,11 +145,10 @@ aux_stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u6
 		len = limit;
 
 	for(i = seek; i < len; i++) 
-		aux_stripstr_iterate(buf, i, min, encoding, i);
+		aux_stripstr_iterate(buf, i, min, encoding, base, i);
 
 	munmap(buf, len); 
-#endif
-#if __WINDOWS__
+#elif __WINDOWS__
 	fprintf(stderr, "Not yet implemented\n");
 #endif
 	close(fd);
@@ -185,6 +184,7 @@ aux_filter_rad_output(const char *string)
 	    case '%':
 	    case '#':
 	    case '!':
+	    case '|':
 	    case ':':
 	    case '"':
 	    case '&':
@@ -411,7 +411,7 @@ dietelf_list_imports(int fd, dietelf_bin_t *bin)
 	    symp = sym;
 
 	    if (rad)
-		printf("fs symbols\n");
+		printf("fs sym_imports\n");
 
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
@@ -492,7 +492,7 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 	    symp = sym;
 
 	    if (rad)
-		printf("fs symbols\n");
+		printf("fs sym_exports\n");
 
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
@@ -569,7 +569,7 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 	    symp = sym;
 
 	    if (rad)
-		printf("fs symbols\n");
+		printf("fs sym_others\n");
 
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
@@ -600,19 +600,19 @@ int
 dietelf_list_strings(int fd, dietelf_bin_t *bin)
 {
     /* TODO: define callback for printing strings found */
-    
     Elf32_Ehdr *ehdr = &bin->ehdr;
     Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    const char *string = bin->string;
     int i;
 
-    if (rad)
-	printf("fs strings\n");
-    else printf("Strings:\n");
-
     shdrp = shdr;
+    if (rad)
+	printf("fs strings\n"); //, aux_filter_rad_output(&string[shdrp->sh_name]));
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-	if (!(shdrp->sh_flags & SHF_EXECINSTR))
-	    aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
+	if (i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
+	    if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
+	    aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
+	}
     }
 
     return i;

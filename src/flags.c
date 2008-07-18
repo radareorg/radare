@@ -676,6 +676,7 @@ void flags_visual_menu()
 	struct list_head *pos;
 #define MAX_FORMAT 2
 	int format = 0;
+	char *ptr;
 	char *fs = NULL;
 	char *fs2 = NULL;
 	int option = 0;
@@ -688,9 +689,17 @@ void flags_visual_menu()
 	while(1) {
 		cons_gotoxy(0,0);
 		cons_clear();
+		/* Execute visual prompt */
+		ptr = config_get("cmd.vprompt");
+		if (ptr&&ptr[0]) {
+			int tmp = last_print_format;
+			radare_cmd_raw(ptr, 0);
+			last_print_format = tmp;
+		}
+
 		switch(menu) {
 		case 0: // flag space
-			cons_printf("\n Flag spaces:\n");
+			cons_printf("\n Flag spaces:\n\n");
 			hit = 0;
 			for(j=i=0;i<FLAG_SPACES;i++) {
 				if (flag_spaces[i].name) {
@@ -698,16 +707,19 @@ void flags_visual_menu()
 						fs = flag_spaces[i].name;
 						hit = 1;
 					}
-					cons_printf(" %c %02d %c %s\n", (option==i)?'>':' ', j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+					if( (i >=option-delta) && ((i<option+delta)||((option<delta)&&(i<(delta<<1))))) {
+						cons_printf(" %c %02d %c %s\n", (option==i)?'>':' ', j, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+						j++;
+					}
 				}
 			}
-			if (!hit) {
+			if (!hit && j>0) {
 				option = j-1;
 				continue;
 			}
 			break;
 		case 1: // flag selection
-			cons_printf("\n Flags in flagspace '%s'\n", fs);
+			cons_printf("\n Flags in flagspace '%s'\n\n", fs);
 			hit = 0;
 			i = j = 0;
 			list_for_each(pos, &flags) {
@@ -727,11 +739,11 @@ void flags_visual_menu()
 				}
 				i++;
 			}
-			if (!hit) {
+			if (!hit && i>0) {
 				option = i-1;
 				continue;
 			}
-			cons_printf("\n Selected: %s\n", fs2);
+			cons_printf("\n Selected: %s\n\n", fs2);
 
 			switch(format) {
 			case 0: sprintf(cmd, "px @ %s", fs2); break;

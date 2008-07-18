@@ -18,8 +18,8 @@ typedef struct {
 
 int   aux_is_encoded(int encoding, unsigned char c);
 int   aux_is_printable (int c);
-int   aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset);
-int   aux_stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u64 limit);
+int   aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset);
+int   aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit);
 char* aux_filter_rad_output(const char *string);
 void  do_elf_checks(dietelf_bin_t *bin);
 u64   get_import_addr(int fd, dietelf_bin_t *bin, int sym);
