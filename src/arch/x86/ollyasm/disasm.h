@@ -16,6 +16,8 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+#ifndef _INCLUDE_OLLY_
+#define _INCLUDE_OLLY_
 //#define strupr str
 //#define strlwr //
 #define pow10l //
@@ -353,3 +355,4 @@ int    Printfloat10(char *s,long double ext);
 int    Printfloat4(char *s,float f);
 int    Printfloat8(char *s,double d);
 
+#endif

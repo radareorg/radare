@@ -669,3 +669,135 @@ int flag_set(const char *name, u64 addr, int dup)
 
 	return 0;
 }
+
+void flags_visual_menu()
+{
+	char cmd[1024];
+	struct list_head *pos;
+	char *fs = NULL;
+	char *fs2 = NULL;
+	int option = 0;
+	int _option = 0;
+	int delta = 7;
+	int menu = 0;
+	int i,j, ch;
+	int hit;
+
+	while(1) {
+		cons_gotoxy(0,0);
+		cons_clear();
+		switch(menu) {
+		case 0: // flag space
+			cons_printf("\n Flag spaces:\n");
+			hit = 0;
+			for(j=i=0;i<FLAG_SPACES;i++) {
+				if (flag_spaces[i].name) {
+					if (option==i) {
+						fs = flag_spaces[i].name;
+						hit = 1;
+					}
+					cons_printf(" %c %02d %c %s\n", (option==i)?'>':' ', j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+				}
+			}
+			if (!hit) {
+				option = j-1;
+				continue;
+			}
+			break;
+		case 1: // flag selection
+			cons_printf("\n Flags in flagspace '%s'\n", fs);
+			hit = 0;
+			i = j = 0;
+			list_for_each(pos, &flags) {
+				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+				/* filter per flag spaces */
+				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+					continue;
+				if (option==i) {
+					fs2 = flag->name;
+					hit = 1;
+				}
+				if( (i >=option-delta) && ((i<option+delta)||((option<delta)&&(i<(delta<<1))))) {
+					cons_printf(" %c  %03d 0x%08llx %4lld %s\n",
+						(option==i)?'>':' ',
+						i, flag->offset, flag->length, flag->name);
+					j++;
+				}
+				i++;
+			}
+			if (!hit) {
+				option = i-1;
+				continue;
+			}
+			cons_printf("\n Selected: %s\n", fs2);
+
+			/* TODO: auto seek + print + disasm + string ...analyze stuff and proper print */
+			cmd[0]='\0';
+			if (strstr(fs2, "str_")) {
+				sprintf(cmd, "pz @ %s", fs2);
+			} else
+			if (strstr(fs2, "sym_")) {
+				sprintf(cmd, "pd @ %s", fs2);
+			} else
+				sprintf(cmd, "px @ %s", fs2);
+			if (cmd[0])
+				radare_cmd_raw(cmd, 0);
+		}
+		cons_flush();
+		ch = cons_readchar();
+		switch(ch) {
+		case 'j':
+			option++;
+			break;
+		case 'k':
+			if (--option<0)
+				option = 0;
+			break;
+		case 'h':
+		case 'b': // back
+			menu = 0;
+			option = _option;
+			break;
+		case 'n':
+			switch(menu) {
+			case 0: // new flag space
+				break;
+			case 1: // new flag
+				break;
+			}
+			break;
+		case 'q':
+			return;
+		case '*':
+		case '+':
+			radare_set_block_size_i(config.block_size+1);
+			break;
+		case '/':
+		case '-':
+			radare_set_block_size_i(config.block_size-1);
+			break;
+		case 'l':
+		case ' ':
+		case '\n': // never happens
+			if (menu == 1) {
+				sprintf(cmd, "s %s", fs2);
+				radare_cmd_raw(cmd, 0);
+				return;
+			}
+			flag_space_set(fs);
+			menu = 1;
+			_option = option;
+			option = 0;
+			break;
+		case '?':
+			cons_printf(" j/k   - down/up keys\n");
+			cons_printf(" h/b   - go back\n");
+			cons_printf(" l/' ' - accept current selection\n");
+			cons_printf(" n/d   - new/destroy flagspace or flag\n");
+			cons_printf(" +/-   - increase/decrease block size\n");
+			cons_flush();
+			press_any_key();
+			break;
+		}
+	}
+}

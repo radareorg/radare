@@ -20,6 +20,20 @@
 
 #include "rasm.h"
 
+#define USE_OLLY 1
+#if USE_OLLY
+#define STRICT
+#define MAINPROG
+
+#include "arch/x86/ollyasm/disasm.h"
+
+#if RADARE_CORE
+#include "arch/x86/ollyasm/disasm.h"
+#else
+#include "../arch/x86/ollyasm/disasm.h"
+#endif
+#endif
+
 int rasm_x86(u64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
@@ -53,6 +67,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		data[0]='\xeb';
 		data[1]='\xfe';
 		return 2;
+#if !USE_OLLY
 	} else
 	if (arg && !strcmp(op, "call")) {
 		u64 dst = get_math(arg);
@@ -290,6 +305,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			memcpy(data+2,&dst,4);
 			return 6;
 		}
+#endif
 	} else
 	if (!strcmp(op, "pusha")) {
 		data[0]='\x60';
@@ -306,20 +322,18 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		if (op[0]&& op[0]==';')
 			return 0;
 		/* Use The OllyDbg Assembler Here */
-#define USE_OLLY 0
 #if USE_OLLY
-#include "../arch/x86/ollyasm/disasm.h"
 		{
 		char errtext[TEXTLEN];
-		char s[1024];
 		int i,j;
 		  //int j=Assemble(str,0x400000,&am,0,4,errtext);
   		  t_asmmodel am;
 		  j = Assemble(str,0,&am,0,4,errtext);
-		  printf("(%3d)  ",j);
+//		  printf("(%3d)  ",j);
 		  for (i=0; i<j; i++) printf("%02x ", (unsigned char)am.code[i]);
 		  //for (i=0; i<j; i++) n+=sprintf(s+n,"%02x ",(unsigned char)am.code[i]);
 		}
+		return 1;
 #else
 		fprintf(stderr, "unknown opcode (%s)\n",op);
 #endif

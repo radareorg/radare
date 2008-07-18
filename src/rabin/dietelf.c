@@ -338,6 +338,8 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
     else printf("Sections:\n");
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (shdrp->sh_offset < bin->base_addr)
+		shdrp->sh_offset += bin->base_addr;
 	if (rad) {
 		printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
 		printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)shdrp->sh_offset+shdrp->sh_size);

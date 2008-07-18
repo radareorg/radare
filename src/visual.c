@@ -104,7 +104,7 @@ command_t keystrokes[] = {
 	COMMAND('p', 0, "change to next print format", rotate_print_format),
 	COMMAND('P', 0, "change to previous print format", rotate_print_format_prev),
 	COMMAND('a', 0, "insert assembly", insert_assembly),
-	COMMAND('t', 0, "simulate trace cursor position", trace),
+	//COMMAND('t', 0, "simulate trace cursor position", trace),
 	COMMAND('A', 0, "insert assembly", insert_assembly_rsc),
 	COMMAND('y', 0, "yank (copy selected block to clipboard)", yank),
 	COMMAND('Y', 0, "Yankee (paste clipboard here)", yank_paste),
@@ -1547,6 +1547,9 @@ inc = 1;
 				if (flag) { config.seek = flag->offset;
 					cons_clear(); }
 			}
+			break;
+		case 't':
+			flags_visual_menu();
 			break;
 		case '<':
 			// fold
