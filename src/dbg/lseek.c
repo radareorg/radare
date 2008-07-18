@@ -29,8 +29,7 @@ u64 debug_lseek(int fildes, u64 offset, int whence)
 	if (ps.opened && ps.fd == fildes)
 		switch(whence) {
 		case SEEK_SET:
-			if (offset!=0)
-				ps.offset = offset;
+			ps.offset = offset;
 			return ps.offset;
 		case SEEK_CUR:
 			ps.offset = (u64)((unsigned long long)ps.offset+(unsigned long long)offset);

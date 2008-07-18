@@ -5,7 +5,6 @@
  * This file is part of radare
  *
  * TODO: port to x86-64
- * TODO: s/exit/return/
  */
 
 #include <stdio.h>
