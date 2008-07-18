@@ -780,7 +780,7 @@ void flags_visual_menu()
 			menu = 0;
 			option = _option;
 			break;
-		case 'n':
+		case 'a':
 			switch(menu) {
 			case 0: // new flag space
 				break;
@@ -788,8 +788,14 @@ void flags_visual_menu()
 				break;
 			}
 			break;
+		case 'd':
+			break;
+		case 'e':
+			/* TODO: prompt for addr, size, name */
+			break;
 		case 'q':
-			return;
+			if (menu<=0) return; menu--;
+			break;
 		case '*':
 		case '+':
 			radare_set_block_size_i(config.block_size+1);
@@ -822,7 +828,7 @@ void flags_visual_menu()
 			cons_printf(" j/k   - down/up keys\n");
 			cons_printf(" h/b   - go back\n");
 			cons_printf(" l/' ' - accept current selection\n");
-			cons_printf(" n/d   - new/destroy flagspace or flag\n");
+			cons_printf(" a/d/e - add/delete/edit flag\n");
 			cons_printf(" +/-   - increase/decrease block size\n");
 			cons_printf(" p/P   - rotate print format\n");
 			cons_printf(" :     - enter command\n");

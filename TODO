@@ -11,10 +11,11 @@
 0.9.8 - codename 'scg08'
 =====
 
+* Edit flags in Vt (add, edit, delete)
+* Support arrow keys in Ve and Vt
 * register flags does not match with reality
   - Coz of the 0 value!!!
 * Native 'rasm -d' (do not rsc dasm)
-* Edit values in Ve !!!
 * Make 'Cs' autodetect multiple strings
 * check bindiff output
   - implement bindiff patchers

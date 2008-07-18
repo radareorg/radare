@@ -249,24 +249,6 @@ void metadata_xrefs_del(u64 addr, u64 from, int data /* data or code */)
 	}
 }
 
-void metadata_comment_add(u64 offset, const char *str)
-{
-	struct comment_t *cmt;
-	char *ptr;
-
-	/* no null comments */
-	if (strnull(str))
-		return;
-
-	cmt = (struct comment_t *) malloc(sizeof(struct comment_t));
-	cmt->offset = offset;
-	ptr = strdup(str);
-	if (ptr[strlen(ptr)-1]=='\n')
-		ptr[strlen(ptr)-1]='\0';
-	cmt->comment = ptr;
-	list_add_tail(&(cmt->list), &(comments));
-}
-
 void metadata_comment_del(u64 offset, const char *str)
 {
 	struct comment_t *cmt;
@@ -275,10 +257,12 @@ void metadata_comment_del(u64 offset, const char *str)
 
 	list_for_each(pos, &comments) {
 		cmt = list_entry(pos, struct comment_t, list);
+#if 0
 		if (!pos)
 			return;
+#endif
 		if (off) {
-			if (off == cmt->offset) {
+			if ((off == cmt->offset)) {
 				free(cmt->comment);
 				list_del(&(pos));
 				free(cmt);
@@ -302,6 +286,30 @@ void metadata_comment_del(u64 offset, const char *str)
 		}
 	}
 }
+
+void metadata_comment_add(u64 offset, const char *str)
+{
+	struct comment_t *cmt;
+	char *ptr;
+
+	/* no null comments */
+	if (strnull(str))
+		return;
+
+#if 0
+	/* avoid dupped comments */
+	metadata_comment_del(offset, str);
+#endif
+
+	cmt = (struct comment_t *) malloc(sizeof(struct comment_t));
+	cmt->offset = offset;
+	ptr = strdup(str);
+	if (ptr[strlen(ptr)-1]=='\n')
+		ptr[strlen(ptr)-1]='\0';
+	cmt->comment = ptr;
+	list_add_tail(&(cmt->list), &(comments));
+}
+
 
 void metadata_comment_list()
 {

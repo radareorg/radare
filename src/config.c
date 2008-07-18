@@ -206,6 +206,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		if (node->flags & CN_BOOL) {
 			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
 			node->i_value = (u64)b;
+			//node->value = estrdup(node->value, b?"true":"false");
 			node->value = strdup(b?"true":"false");
 		} else {
 			if (value == NULL) {
@@ -779,6 +780,29 @@ void config_init(int first)
 	}
 }
 
+/* Visually activate the config variable */
+void config_visual_hit(const char *name)
+{
+	char buf[1024];
+	struct config_node_t *node;
+	node = config_node_get(name);
+	if (node) {
+		if (node->flags & CN_BOOL) {
+			/* TOGGLE */
+			node->i_value = !node->i_value;
+			node->value = estrdup(node->value, node->i_value?"true":"false");
+		} else {
+			// FGETS AND SO
+			cons_printf("New value: ");
+			cons_flush();
+			cons_set_raw(0);
+			cons_fgets(buf, 1023, 0, 0);
+			cons_set_raw(1);
+			node->value = estrdup(node->value, buf);
+		}
+	}
+}
+
 /* Like emenu but for real */
 void config_visual_menu()
 {
@@ -886,51 +910,35 @@ void config_visual_menu()
 			menu = 0;
 			option = _option;
 			break;
-		case 'n':
-			switch(menu) {
-			case 0: // new flag space
-				break;
-			case 1: // new flag
-				break;
-			}
-			break;
 		case 'q':
-			return;
+			if (menu<=0) return; menu--;
+			break;
 		case '*':
 		case '+':
-			radare_set_block_size_i(config.block_size+1);
+			// TODO: increment numeric value of selected eval var
 			break;
 		case '/':
 		case '-':
-			radare_set_block_size_i(config.block_size-1);
-			break;
-		case 'P':
-			if (--format<0)
-				format = MAX_FORMAT;
-			break;
-		case 'p':
-			format++;
+			// TODO: increment numeric value of selected eval var
 			break;
 		case 'l':
+		case 'e': // edit value
 		case ' ':
 		case '\n': // never happens
 			if (menu == 1) {
-				sprintf(cmd, "s %s", fs2);
-				radare_cmd_raw(cmd, 0);
-				return;
+				config_visual_hit(fs2);
+			} else {
+				flag_space_set(fs);
+				menu = 1;
+				_option = option;
+				option = 0;
 			}
-			flag_space_set(fs);
-			menu = 1;
-			_option = option;
-			option = 0;
 			break;
 		case '?':
 			cons_printf(" j/k   - down/up keys\n");
 			cons_printf(" h/b   - go back\n");
-			cons_printf(" l/' ' - accept current selection\n");
-			cons_printf(" n/d   - new/destroy flagspace or flag\n");
-			cons_printf(" +/-   - increase/decrease block size\n");
-			cons_printf(" p/P   - rotate print format\n");
+			cons_printf(" e/' ' - edit/toggle current variable\n");
+			cons_printf(" +/-   - increase/decrease numeric value\n");
 			cons_printf(" :     - enter command\n");
 			cons_flush();
 			press_any_key();
@@ -942,7 +950,6 @@ void config_visual_menu()
 			if (ptr) {
 				strncpy(cmd, ptr, sizeof(cmd));
 				radare_cmd(cmd, 1);
-				//commands_parse(line);
 				free(ptr);
 			}
 #else
