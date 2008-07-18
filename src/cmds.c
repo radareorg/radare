@@ -428,6 +428,8 @@ CMD_DECL(project)
 	return 0;
 }
 
+/* XXX: DEPREACTED BY Ve */
+#if 1
 CMD_DECL(menu)
 {
 	char buf[128];
@@ -436,7 +438,7 @@ CMD_DECL(menu)
 
 	pfx[0]='\0';
 	while (1) {
-			cons_printf("Menu: (q to quit)\n");
+		cons_printf("Menu: (q to quit)\n");
 		if (pfx[0]) {
 			cons_printf("* %s\n", pfx);
 			sprintf(buf2, "e %s. | cut -d . -f 2 | sort | awk '{print \" - \"$1\"   \t\"$2\"\t\"$3$4$5$6}'", pfx);
@@ -445,46 +447,35 @@ CMD_DECL(menu)
 			radare_cmd("e | sort | cut -d . -f 1 | uniq | awk '{print \" - \"$1}'", 0);
 		}
 	noprint:
-								cons_printf("> ");
-								cons_flush();
-				fgets(buf, 128, stdin);
+		cons_printf("> ");
+		cons_flush();
+		fgets(buf, 128, stdin);
 		if (buf[0])
 			buf[strlen(buf)-1]='\0';
-					if (strstr(buf, "..")) {
-						pfx[0] = '\0';
-						continue;
-					}
-	if (buf[0]=='q')
-		break;
+		if (strstr(buf, "..")) {
+			pfx[0] = '\0';
+			continue;
+		}
+		if (buf[0]=='q')
+			break;
 
 		if (strchr(buf, '=')) {
 			sprintf(buf2, "e %s.%s", pfx, buf);
 			radare_cmd(buf2, 0);
 		} else
-		if (!pfx[0]) {
-			strcpy(pfx, buf);
-		} else {
-			cons_printf("%s.%s = ", pfx, buf);
-			sprintf(buf2, "e %s.%s", pfx, buf);
-			radare_cmd(buf2, 0);
-			goto noprint;
-		}
+			if (!pfx[0]) {
+				strcpy(pfx, buf);
+			} else {
+				cons_printf("%s.%s = ", pfx, buf);
+				sprintf(buf2, "e %s.%s", pfx, buf);
+				radare_cmd(buf2, 0);
+				goto noprint;
+			}
 	}
 
 	return 0;
-	
-	// TODO
-	// TODO: for flags mark namespaces or so
-        //       - allow to manage
-#if 0
-	list_for_each(i, &(config_new.nodes)) {
-		struct config_node_t *bt = list_entry(i, struct config_node_t, list);
-		if (str) {
-			if (strncmp(str, bt->name,len) == 0)
-		}
-	}
-#endif
 }
+#endif
 
 CMD_DECL(hack)
 {

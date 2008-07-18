@@ -429,6 +429,7 @@ void udis_init()
 	const char *ptr = config_get("asm.arch");
 
 	ud_init(&ud_obj);
+	ud_set_pc(&ud_obj, config.seek);
 
 	arm_mode = 32;
 	if (!strcmp(ptr, "arm16")) {
@@ -477,6 +478,7 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
+// TODO: remove myinc here
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
 	unsigned char *b = config.block + bytes;
@@ -484,13 +486,16 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		ud_set_pc(&ud_obj, seek+myinc);
+		//ud_set_pc(&ud_obj, seek);
+		ud_obj.insn_offset = seek;//bytes;
+		ud_obj.pc = seek;
 		cons_printf("%-24s", ud_insn_asm(&ud_obj));
+
 		ret = ud_insn_len(&ud_obj);
 		break;
 	case ARCH_CSR:
-		if (bytes+myinc<config.block_size)
-			arch_csr_disasm((const unsigned char *)b, (u64)seek+myinc);
+		if (bytes<config.block_size)
+			arch_csr_disasm((const unsigned char *)b, (u64)seek);
 		break;
 	case ARCH_AOP: {
 		struct aop_t aop;
@@ -502,14 +507,14 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	case ARCH_ARM:
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
 	       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-	       gnu_disarm((unsigned char*)b, (unsigned int)seek+myinc);
+	       gnu_disarm((unsigned char*)b, (unsigned int)seek);
 	       break;
 	case ARCH_MIPS:
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-	       gnu_dismips((unsigned char*)b, (unsigned int)seek+myinc);
+	       gnu_dismips((unsigned char*)b, (unsigned int)seek);
 	       break;
 	case ARCH_SPARC:
-	       gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
+	       gnu_disparc((unsigned char*)b, (unsigned int)seek);
 	       break;
 	case ARCH_PPC: {
 	       char opcode[128];
@@ -536,7 +541,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		/* initialize DisasmPara */
 		dp.opcode = opcode;
 		dp.operands = operands;
-		dp.iaddr = seek+myinc; //config.baddr + config.seek + i;
+		dp.iaddr = seek; //config.baddr + config.seek + i;
 		dp.instr = b; //config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
 		M68k_Disassemble(&dp);
@@ -622,6 +627,7 @@ void udis_arch(int arch, int len, int rows)
 		reflines = code_lines_init();
 	radare_controlc();
 
+	// XXX remove rows
 	if (rrows>0) rrows++;
 	while (!config.interrupted) {
 		if (rrows>0 && --rrows == 0) break;
@@ -704,9 +710,9 @@ void udis_arch(int arch, int len, int rows)
 			/* how many different ways to do the same we have? */
 			bytes+=idata;
 			myinc =foo->size; //(foo->to-foo->from);
-			sk = config.seek+bytes;
-			seek = config.baddr +config.seek+bytes;
-			ud_idx+=(foo->size); // XXX ud_stuff must be handled in another way
+			sk = config.seek; //+bytes;
+			seek = config.baddr +sk;
+			//ud_idx+=(foo->size); // XXX ud_stuff must be handled in another way
 			continue;
 		}
 		__outofme:
@@ -745,14 +751,16 @@ void udis_arch(int arch, int len, int rows)
 			//radis_update_i(last_arch);
 			arch = last_arch;
 		}
-
+		
+		// TODO: Use a single arch_aop here
 		switch(arch) {
 			case ARCH_X86:
 				if (ud_disassemble(&ud_obj)<1)
 					return;
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
-				ud_set_pc(&ud_obj, seek);
-				arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
+				//ud_set_pc(&ud_obj, seek);
+				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
+				arch_x86_aop((u64)seek, (const unsigned char *)b, &aop);
 				myinc = ud_insn_len(&ud_obj);
 				break;
 			case ARCH_ARM16:
@@ -787,7 +795,6 @@ void udis_arch(int arch, int len, int rows)
 				// Uh?
 				myinc = 4;
 				break;
-				// TODO
 		}
 		if (myinc<1)
 			myinc = 1;
@@ -918,7 +925,14 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 	config.block[bytes+1], config.block[bytes+2]);
 
 #endif
-			udis_arch_opcode(arch, endian, seek+bytes, bytes, myinc);
+			/* XXX: The seek+myinc is weird but MANDATORY, the first opcode must
+			 * be used to get the 'base incremental' address for calculating the
+			 * rest of opcodes, or the jumps will be addr-myinc and only the *first*
+			 * opcode will be disassmbled correctly.
+			 *
+			 * I know that this has no sense, but computer science is not an exact one.
+			 */
+			udis_arch_opcode(arch, endian, seek+myinc, bytes, myinc);
 
 			/* show references */
 			if (aop.ref) {

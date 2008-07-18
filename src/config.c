@@ -778,3 +778,187 @@ void config_init(int first)
 		trace_init();
 	}
 }
+
+/* Like emenu but for real */
+void config_visual_menu()
+{
+	char cmd[1024];
+	struct list_head *pos;
+#define MAX_FORMAT 2
+	int format = 0;
+	char *ptr;
+	char *fs = NULL;
+	char *fs2 = NULL;
+	int option = 0;
+	int _option = 0;
+	int delta = 9;
+	int menu = 0;
+	int i,j, ch;
+	int hit;
+	int show;
+	char old[1024];
+	old[0]='\0';
+
+	while(1) {
+		cons_gotoxy(0,0);
+		cons_clear();
+
+		/* Execute visual prompt */
+		ptr = config_get("cmd.vprompt");
+		if (ptr&&ptr[0]) {
+			int tmp = last_print_format;
+			radare_cmd_raw(ptr, 0);
+			last_print_format = tmp;
+		}
+
+		switch(menu) {
+		case 0: // flag space
+			cons_printf("\n Eval spaces:\n\n");
+			hit = 0;
+			j = i = 0;
+			list_for_each(pos, &(config_new.nodes)) {
+				struct config_node_t *bt = list_entry(pos, struct config_node_t, list);
+				if (option==i) {
+					fs = bt->name;
+					hit = 1;
+				}
+				show = 0;
+				if (old[0]=='\0') {
+					strccpy(old, bt->name, '.');
+					show = 1;
+				} else if (strccmp(old, bt->name, '.')) {
+					strccpy(old, bt->name, '.');
+					show = 1;
+				}
+
+				if (show) {
+					if( (i >=option-delta) && ((i<option+delta)||((option<delta)&&(i<(delta<<1))))) {
+						cons_printf(" %c  %s\n", (option==i)?'>':' ', old);
+						j++;
+					}
+					i++;
+				}
+			}
+			if (!hit && j>0) {
+				option = j-1;
+				continue;
+			}
+			cons_printf("\n Sel:%s \n\n", fs);
+			break;
+		case 1: // flag selection
+			cons_printf("\n Eval variables: (%s)\n\n", fs);
+			hit = 0;
+			j = i = 0;
+			// TODO: cut -d '.' -f 1 | sort | uniq !!!
+			list_for_each(pos, &(config_new.nodes)) {
+				struct config_node_t *bt = list_entry(pos, struct config_node_t, list);
+				if (option==i) {
+					fs2 = bt->name;
+					hit = 1;
+				}
+				if (!strccmp(bt->name, fs, '.')) {
+					if( (i >=option-delta) && ((i<option+delta)||((option<delta)&&(i<(delta<<1))))) {
+					// TODO: Better align
+						cons_printf(" %c  %s = %s\n", (option==i)?'>':' ', bt->name, bt->value);
+						j++;
+					}
+				i++;
+				}
+			}
+			if (!hit && j>0) {
+				option = i-1;
+				continue;
+			}
+			cons_printf("\n Selected: %s\n\n", fs2);
+		}
+		cons_flush();
+		ch = cons_readchar();
+		switch(ch) {
+		case 'j':
+			option++;
+			break;
+		case 'k':
+			if (--option<0)
+				option = 0;
+			break;
+		case 'h':
+		case 'b': // back
+			menu = 0;
+			option = _option;
+			break;
+		case 'n':
+			switch(menu) {
+			case 0: // new flag space
+				break;
+			case 1: // new flag
+				break;
+			}
+			break;
+		case 'q':
+			return;
+		case '*':
+		case '+':
+			radare_set_block_size_i(config.block_size+1);
+			break;
+		case '/':
+		case '-':
+			radare_set_block_size_i(config.block_size-1);
+			break;
+		case 'P':
+			if (--format<0)
+				format = MAX_FORMAT;
+			break;
+		case 'p':
+			format++;
+			break;
+		case 'l':
+		case ' ':
+		case '\n': // never happens
+			if (menu == 1) {
+				sprintf(cmd, "s %s", fs2);
+				radare_cmd_raw(cmd, 0);
+				return;
+			}
+			flag_space_set(fs);
+			menu = 1;
+			_option = option;
+			option = 0;
+			break;
+		case '?':
+			cons_printf(" j/k   - down/up keys\n");
+			cons_printf(" h/b   - go back\n");
+			cons_printf(" l/' ' - accept current selection\n");
+			cons_printf(" n/d   - new/destroy flagspace or flag\n");
+			cons_printf(" +/-   - increase/decrease block size\n");
+			cons_printf(" p/P   - rotate print format\n");
+			cons_printf(" :     - enter command\n");
+			cons_flush();
+			press_any_key();
+			break;
+		case ':':
+			cons_set_raw(0);
+#if HAVE_LIB_READLINE
+			char *ptr = readline(VISUAL_PROMPT);
+			if (ptr) {
+				strncpy(cmd, ptr, sizeof(cmd));
+				radare_cmd(cmd, 1);
+				//commands_parse(line);
+				free(ptr);
+			}
+#else
+			cmd[0]='\0';
+			dl_prompt = ":> ";
+			if (cons_fgets(cmd, 1000, 0, NULL) <0)
+				cmd[0]='\0';
+			//line[strlen(line)-1]='\0';
+			radare_cmd(cmd, 1);
+#endif
+			cons_set_raw(1);
+			if (cmd[0])
+				press_any_key();
+			cons_gotoxy(0,0);
+			cons_clear();
+			continue;
+		}
+	}
+}

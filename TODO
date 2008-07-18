@@ -13,27 +13,58 @@
 
 * register flags does not match with reality
   - Coz of the 0 value!!!
-* XXX strings are not properly flagged !!!
+* Native 'rasm -d' (do not rsc dasm)
+* Edit values in Ve !!!
+* Make 'Cs' autodetect multiple strings
+* check bindiff output
+  - implement bindiff patchers
+  - fer un binpatch a traves del contexte del asm que sigui muahah
+* remove comments doesnt works properly (CC)
+* avoid dupped comments (CC)
+* Xrefs working with the core (radare_read and so)
+
+DONE
+* Disassembly is not ok (graphs brbr) (myinc?)
+* s/exits/retun/ en rabin
+* Use DESTDIR in install:
+
+
+=====
+0.9.9
+=====
+* Add 'bookmarked flags'
+* Add comment support for wF (ignore lines with '#')
+  - check if it's done...
+* rabin
+  - Elf64
+  - string xrefs
+  - exports: CF'em
+  - .data section: Cd't
+
+* Support to change program arguments while running
+  - !run <argv>
+
+* search backward (esteve?)
+  - search backward in memory (invert string and add inc as argument for binparse)
+  - useful to static analyze interrupt calls
+
+* Really?
+ * define default print format per flags (useful to find strings, code,etc..) :D
+
+Radare:
+    + Dwarf support:
+        - dwarfdump parser???
+        - natively use libwarf in rabin
+    + StackFram analysis for local variables
 
 * scriptedit must work also for 'radare scripts'
   - Multiple open/close is broken :?
   - make it work with vim in console
-* bind 'e' to 'emenu' or 'eshell' in visual
-  - make it work like 't' does but for config
 * cfg.inverse must be universal!
-* remove comments doesnt works properly
-* fix data types inside disassenmbly (hexbytes are buggy)
-* check bindiff output
-  - implement bindiff patchers
-  - fer un binpatch a traves del contexte del asm que sigui muahah
 * Fix dupped plugin posix
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * 'w' in cursor mode with range selected must fill the buffer
 * write shellcode to dump a buffer in hexa (inline jump)
-* search backward (esteve?)
-  - search backward in memory (invert string and add inc as argument for binparse)
-  - useful to static analyze interrupt calls
-* Xrefs working with the core 
 * !contu must use '!mp rw- 0x8048000 0x4045' if supported
 * rasm : Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
@@ -48,6 +79,7 @@ Stack Analysis:
   - analize access to stack in function code to determine local vars
   - Access to local variables using dwarf stuff
 * show esp-ebp !!! stackframe is important everywhere! ??
+* show pm xxxxxxxx @ esp (show esp-ebp bytes here or so)
 * show esp-ebp of stack at top (or mark a range)
   - show stack offsets
   - max size of stack
@@ -111,11 +143,9 @@ DWARF
 
 ==============================================================
 
-* Update manpages
 * colorize background of flagged bytes in hexdump
 * '<' and '>' commands converted in prefix modifiers
 * Funroll mode - stacked disassembly
-* Support to change program arguments while running
 * Indentify, parse and show the auxv_t structure
   * LD_AUXV_SHOW=1 /bin/ls before start to debug
   * dbg.auxv = true
@@ -149,7 +179,6 @@ debug.elf32_trace: 0
  * 'ar' -> anal reset -> reset vm
  * populate the use of cmd.flag (in prompt and so)
  * graphically draw structures in memory (adg, aD)?
- * define print format per flags (useful to find strings, code,etc..) :D
 
  * add selfsigstop shellcodes in lua script or rasc
  * add nanosleep shellcode

@@ -226,7 +226,13 @@ void cons_gotoxy(int x, int y)
 }
 #endif
 
-void cons_clear(void)
+void cons_clear00()
+{
+	cons_clear();
+	cons_gotoxy(0,0);
+}
+
+void cons_clear()
 {
 #if __WINDOWS__
         static HANDLE hStdout = NULL;

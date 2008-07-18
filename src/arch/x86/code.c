@@ -33,6 +33,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	//u64 *ptr = (u64 *)(bytes+1);
 	//unsigned char *ptr2 = (unsigned char *)(bytes+1);
+//cons_printf("aop(%08llx) ", addr);
 
 	memset(aop, '\0', sizeof(struct aop_t));
 //printf("0x%08x %02x %02x\n", addr, (unsigned char)bytes[0], (unsigned char)bytes[1]);

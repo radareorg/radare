@@ -784,3 +784,22 @@ char *str_first_word(const char *string)
 	return ret;
 }
 
+/* memccmp("foo.bar", "foo.cow, '.') == 0 */
+int strccmp(char *dst, char *orig, int ch)
+{
+	int i;
+	for(i=0;orig[i] && orig[i] != ch; i++)
+		if (dst[i] != orig[i])
+			return 1;
+	return 0;
+}
+
+int strccpy(char *dst, char *orig, int ch)
+{
+	int i;
+	for(i=0;orig[i] && orig[i] != ch; i++)
+		dst[i] = orig[i];
+	dst[i] = '\0';
+	return i;
+}
+

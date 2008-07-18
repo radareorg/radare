@@ -156,20 +156,22 @@ aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u6
 	return 0;
 }
 
-void
+int
 do_elf_checks(dietelf_bin_t *bin)
 {
     Elf32_Ehdr *ehdr = &bin->ehdr;
 
     if (strncmp((char *)ehdr->e_ident, ELFMAG, SELFMAG)) {
 	fprintf(stderr, "File not ELF\n");
-	exit(1);
+	return -1;
     }
     
     if (ehdr->e_version != EV_CURRENT) {
 	fprintf(stderr, "ELF version not current\n");
-	exit(1);
+	return -1;
     }
+
+    return 0;
 }
 
 char*
@@ -284,17 +286,17 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
 	    rel = (Elf32_Rel *)malloc(shdrp->sh_size);
 	    if (rel == NULL) {
 		perror("malloc");
-		exit(1);
+		return -1;
 	    }
 
 	    if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 		perror("lseek");
-		exit(1);
+		return -1;
 	    }
 
 	    if (read(fd, rel, shdrp->sh_size) != shdrp->sh_size) {
 		perror("read syms_addr");
-		exit(1);
+		return -1;
 	    }
 
 	    got_offset = ((rel->r_offset - bin->base_addr) & 0xfffff000) - got_addr;
@@ -305,12 +307,12 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
 		if (ELF32_R_SYM(relp->r_info) == sym) {
 		    if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET) != relp->r_offset-bin->base_addr-got_offset) {
 			perror("lseek oops");
-			exit(1);
+			return -1;
 		    }
 
 		    if (read(fd, &plt_sym_addr, sizeof(Elf32_Addr)) != sizeof(Elf32_Addr)) {
 			perror("read syms_addr read");
-			exit(1);
+			return -1;
 		    }
 		    
 		    plt_sym_addr-=0x6;
@@ -618,7 +620,7 @@ dietelf_list_strings(int fd, dietelf_bin_t *bin)
     return i;
 }
 
-void
+int
 dietelf_open(int fd, dietelf_bin_t *bin)
 {
     Elf32_Ehdr *ehdr;
@@ -632,47 +634,48 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 
     if (read(fd, ehdr, sizeof(Elf32_Ehdr)) != sizeof(Elf32_Ehdr)) {
 	perror("read 6");
-	exit(1);
+	return -1;
     }
 
-    do_elf_checks(bin);
+    if (do_elf_checks(bin) == -1)
+	return -1;
 
     bin->phdr = (Elf32_Phdr *)malloc(bin->plen = sizeof(Elf32_Phdr)*ehdr->e_phnum);
     if (bin->phdr == NULL) {
 	perror("malloc");
-	exit(1);
+	return -1;
     }
 
     if (lseek(fd, ehdr->e_phoff, SEEK_SET) < 0) {
 	perror("lseek 0");
-	exit(1);
+	return -1;
     }
 
     if (read(fd, bin->phdr, bin->plen) != bin->plen) {
 	perror("read 0");
-	exit(1);
+	return -1;
     }
 
     bin->shdr = (Elf32_Shdr *)malloc(slen = sizeof(Elf32_Shdr)*ehdr->e_shnum);
     if (bin->shdr == NULL) {
 	perror("malloc");
-	exit(1);
+	return -1;
     }
 
     bin->section = (char **)malloc(sizeof(char **)*ehdr->e_shnum);
     if (bin->section == NULL) {
 	perror("malloc");
-	exit(1);
+	return -1;
     }
 
     if (lseek(fd, ehdr->e_shoff, SEEK_SET) < 0) {
 	perror("lseek 1");
-	exit(1);
+	return -1;
     }
 
     if (read(fd, bin->shdr, slen) != slen) {
 	perror("read 2");
-	exit(1);
+	return -1;
     }
 
     strtabhdr = &bin->shdr[ehdr->e_shstrndx];
@@ -680,17 +683,17 @@ dietelf_open(int fd, dietelf_bin_t *bin)
     bin->string = (char *)malloc(strtabhdr->sh_size);
     if (bin->string == NULL) {
 	perror("malloc");
-	exit(1);
+	return -1;
     }
 
     if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
 	perror("lseek 2");
-	exit(1);
+	return -1;
     }
 
     if (read(fd, bin->string, strtabhdr->sh_size) != strtabhdr->sh_size) {
 	perror("read 3");
-	exit(1);
+	return -1;
     }
 
     bin->bss = -1;
@@ -699,36 +702,41 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 	if (shdr[i].sh_type == SHT_NOBITS) {
 	    bin->bss = i;
 	} else {
-	    load_section(sectionp, fd, &shdr[i]);
+	    if (load_section(sectionp, fd, &shdr[i]) == -1)
+		return -1;
 	}
     }
 
     if (bin->bss < 0) {
 	printf("No bss section\n");
-	exit(1);
+	return -1;
     }
 
     bin->base_addr = dietelf_get_base_addr(bin);
+
+    return 0;
 }
 
-void 
+int 
 load_section(char **section, int fd, Elf32_Shdr *shdr)
 {
     if (lseek(fd, shdr->sh_offset, SEEK_SET) < 0) {
 	perror("lseek");
-	exit(1);
+	return -1;
     }
 
     *section = (char *)malloc(shdr->sh_size);
     if (*section == NULL) {
 	perror("malloc");
-	exit(1);
+	return -1;
     }
 
     if (read(fd, *section, shdr->sh_size) != shdr->sh_size) {
 	perror("read load section");
-	exit(1);
+	return -1;
     }
+
+    return 0;
 }
 
 int dietelf_new(const char *file, dietelf_bin_t *bin)
@@ -740,7 +748,9 @@ int dietelf_new(const char *file, dietelf_bin_t *bin)
 	return -1;
     }
     
-    dietelf_open(fd, bin);
+    if (dietelf_open(fd, bin) == -1)
+	return -1;
+
     bin->file = file;
 
     return fd;

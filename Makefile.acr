@@ -1,14 +1,14 @@
 include config.mk
 
-ROOT?=/
+DESTDIR?=/
 VERSION=@VERSION@
 
-VPATH=${ROOT}@VPATH@
-BINDIR=${ROOT}@BINDIR@
-DATADIR=${ROOT}@DATADIR@
-MANDIR=${ROOT}@MANDIR@
-LIBDIR=${ROOT}@LIBDIR@
-LIBEXECDIR=${ROOT}@LIBEXECDIR@
+VPATH=${DESTDIR}@VPATH@
+BINDIR=${DESTDIR}@BINDIR@
+DATADIR=${DESTDIR}@DATADIR@
+MANDIR=${DESTDIR}@MANDIR@
+LIBDIR=${DESTDIR}@LIBDIR@
+LIBEXECDIR=${DESTDIR}@LIBEXECDIR@
 INSTALL_MAN=@INSTALL_MAN@
 INSTALL_SCRIPT=@INSTALL_SCRIPT@
 
@@ -59,7 +59,7 @@ w32dist:
 
 arm: all
 	mkdir -p pkg
-	${MAKE} install ROOT=pkg/
+	${MAKE} install DESTDIR=pkg/
 	mkdir -p pkg/usr/lib
 	-cp /usr/lib/libreadline.so.5 pkg/usr/lib
 	-cp /usr/lib/libtermcap.so.2.0.8 pkg/usr/lib
@@ -134,9 +134,9 @@ install:
 	-${INSTALL_DATA} doc/* ${DATADIR}/doc/radare/
 	${INSTALL_DIR} ${DATADIR}/doc/radare/xtra
 	${INSTALL_DATA} doc/xtra/* ${DATADIR}/doc/radare/xtra
-	cd libexec && ${MAKE} install ROOT=${ROOT}
+	cd libexec && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
-	cd gui && ${MAKE} install ROOT=${ROOT}
+	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
 
 deinstall:

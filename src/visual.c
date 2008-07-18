@@ -96,6 +96,7 @@ CMD_DECL(zoom);
 CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 
+/* TODO: Move 't' and 'e' here */
 command_t keystrokes[] = {
 	/*   key, wait, description, callback */
 	COMMAND('g', 0, "seek to offset 0", seek0),
@@ -1548,6 +1549,9 @@ inc = 1;
 					cons_clear(); }
 			}
 			break;
+		case 'e':
+			config_visual_menu();
+			break;
 		case 't':
 			flags_visual_menu();
 			break;
@@ -1632,15 +1636,11 @@ inc = 1;
 				config.seek++;
 			break;
 		case '*':
-		//	if (!config.cursor_mode) {
-				radare_set_block_size_i(config.block_size+inc);
-		//	}
+			radare_set_block_size_i(config.block_size+inc);
 			break;
 		case '/':
-		//	if (!config.cursor_mode) {
-				radare_set_block_size_i(config.block_size-inc);
-				cons_strcat("\e[2J\e[0;0H");
-		//	}
+			radare_set_block_size_i(config.block_size-inc);
+			cons_clear00();
 			break;
 		case '+':
 			if (config.cursor_mode) {
@@ -1653,7 +1653,7 @@ inc = 1;
 					radare_cmd(buf, 0);
 					config.cursor = c;
 					config.ocursor = -1;
-			cons_clear();
+					cons_clear00();
 				}
 			} else
 				radare_set_block_size_i(config.block_size+1);
@@ -1671,19 +1671,16 @@ inc = 1;
 					config.cursor = c;
 					config.ocursor = -1;
 				}
+			} else radare_set_block_size_i(config.block_size-1);
 			cons_clear();
-			} else {
-				radare_set_block_size_i(config.block_size-1);
-				cons_strcat("\e[2J\e[0;0H");
-			}
 			break;
 		case '!':
-			cons_clear();
+			cons_clear00();
 			radare_cmd("!help", 0);
 			press_any_key();
 			break;
 		case '?':
-			cons_clear();
+			cons_clear00();
 			visual_show_help();
 			press_any_key();
 			cons_clear();
