@@ -1219,17 +1219,31 @@ CMD_DECL(write)
 			return 0;
 		} else {
 			/* TODO: move to radare_poke_hexpairs() */
-			int n;
+			int n, commented=0;
 			u8 c;
 			FILE *fd = fopen(input+2, "r");
 			if (fd) {
 				while(!feof(fd)) {
-					fscanf(fd, "%02x", &n);
-					if (feof(fd))
-						break;
-					c = n;
-					radare_write_at(config.seek+delta, &c, 1);
-					delta++;
+					if (!commented && fscanf(fd, "%02x", &n)){
+						if (feof(fd))
+						        break;
+
+						c = n;
+
+						radare_write_at(config.seek+delta, &c, 1);
+						delta++;
+					} else {
+						fscanf(fd, "%c", &n);
+						if (feof(fd))
+							break;
+
+						c = n;
+
+						if (c == '#')
+							commented = 1;
+						else if (c == '\n' || c == '\r')
+							commented = 0;
+					}
 				}
 				fclose(fd);
 			} else {

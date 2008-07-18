@@ -38,10 +38,10 @@ elf_gregset_t oregs; // old registers
 
 int arch_is_fork()
 {
-	return 0
+	return 0;
 }
 
-long long arch_syscall(int pid, int sc, ...)
+u64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 
@@ -572,7 +572,7 @@ int arch_arm_print_syscall()
 	int i,j;
 
 	/* read 4 previous bytes to ARM_pc and get syscall number from there */
-	debug_read_at(ps.tid, &sc, 4, arch_pc()-4);
+	debug_read_at(ps.tid, &sc, 4, arch_pc(ps.tid)-4);
 	sc<<=8; // drop opcode
 	for(i=0;syscalls_linux_arm[i].num;i++) {
 		if (sc == 0x900000 + syscalls_linux_arm[i].num) {

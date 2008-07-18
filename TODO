@@ -11,23 +11,23 @@
 0.9.8 - codename 'scg08'
 =====
 
-* Edit flags in Vt (add, edit, delete)
 * Support arrow keys in Ve and Vt
-* register flags does not match with reality
-  - Coz of the 0 value!!!
 * Native 'rasm -d' (do not rsc dasm)
 * Make 'Cs' autodetect multiple strings
 * check bindiff output
   - implement bindiff patchers
   - fer un binpatch a traves del contexte del asm que sigui muahah
-* remove comments doesnt works properly (CC)
-* avoid dupped comments (CC)
 * Xrefs working with the core (radare_read and so)
 
 DONE
 * Disassembly is not ok (graphs brbr) (myinc?)
 * s/exits/retun/ en rabin
 * Use DESTDIR in install:
+* Edit flags in Vt (add, edit, delete)
+* register flags does not match with reality
+* remove comments doesnt works properly (CC)
+* avoid dupped comments (CC)
+* Add comment support for wF (ignore lines with '#')
 
 
 =====
