@@ -207,6 +207,7 @@ int search_range(char *range)
 	// twice
 	radare_cmd("f -hit0_*", 0);
 	radare_cmd("f -hit0_*", 0);
+	radare_cmd("fs search", 0);
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif

@@ -674,6 +674,8 @@ void flags_visual_menu()
 {
 	char cmd[1024];
 	struct list_head *pos;
+#define MAX_FORMAT 2
+	int format = 0;
 	char *fs = NULL;
 	char *fs2 = NULL;
 	int option = 0;
@@ -731,6 +733,13 @@ void flags_visual_menu()
 			}
 			cons_printf("\n Selected: %s\n", fs2);
 
+			switch(format) {
+			case 0: sprintf(cmd, "px @ %s", fs2); break;
+			case 1: sprintf(cmd, "pd @ %s", fs2); break;
+			case 2: sprintf(cmd, "pz @ %s", fs2); break;
+			default: format = 0; continue;
+			}
+#if 0
 			/* TODO: auto seek + print + disasm + string ...analyze stuff and proper print */
 			cmd[0]='\0';
 			if (strstr(fs2, "str_")) {
@@ -740,6 +749,7 @@ void flags_visual_menu()
 				sprintf(cmd, "pd @ %s", fs2);
 			} else
 				sprintf(cmd, "px @ %s", fs2);
+#endif
 			if (cmd[0])
 				radare_cmd_raw(cmd, 0);
 		}
@@ -776,6 +786,13 @@ void flags_visual_menu()
 		case '-':
 			radare_set_block_size_i(config.block_size-1);
 			break;
+		case 'P':
+			if (--format<0)
+				format = MAX_FORMAT;
+			break;
+		case 'p':
+			format++;
+			break;
 		case 'l':
 		case ' ':
 		case '\n': // never happens
@@ -795,9 +812,35 @@ void flags_visual_menu()
 			cons_printf(" l/' ' - accept current selection\n");
 			cons_printf(" n/d   - new/destroy flagspace or flag\n");
 			cons_printf(" +/-   - increase/decrease block size\n");
+			cons_printf(" p/P   - rotate print format\n");
+			cons_printf(" :     - enter command\n");
 			cons_flush();
 			press_any_key();
 			break;
+		case ':':
+			cons_set_raw(0);
+#if HAVE_LIB_READLINE
+			char *ptr = readline(VISUAL_PROMPT);
+			if (ptr) {
+				strncpy(cmd, ptr, sizeof(cmd));
+				radare_cmd(cmd, 1);
+				//commands_parse(line);
+				free(ptr);
+			}
+#else
+			cmd[0]='\0';
+			dl_prompt = ":> ";
+			if (cons_fgets(cmd, 1000, 0, NULL) <0)
+				cmd[0]='\0';
+			//line[strlen(line)-1]='\0';
+			radare_cmd(cmd, 1);
+#endif
+			cons_set_raw(1);
+			if (cmd[0])
+				press_any_key();
+			cons_gotoxy(0,0);
+			cons_clear();
+			continue;
 		}
 	}
 }

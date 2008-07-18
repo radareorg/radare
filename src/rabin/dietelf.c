@@ -130,6 +130,7 @@ aux_stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u6
 
 	len = lseek(fd, 0, SEEK_END);
 
+	// TODO: use read here ?!?
 	/* TODO: do not use mmap */
 #if __UNIX__
 	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
@@ -613,7 +614,6 @@ dietelf_list_strings(int fd, dietelf_bin_t *bin)
 	if (!(shdrp->sh_flags & SHF_EXECINSTR))
 	    aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
     }
-
 
     return i;
 }

@@ -1318,7 +1318,6 @@ CMD_DECL(visual)
 			repeat--;
 			do_repeat =1;
 			break;
-			
 		case ':':
 			cons_set_raw(0);
 			lpf = last_print_format;
@@ -1342,7 +1341,8 @@ CMD_DECL(visual)
 			cons_set_raw(1);
 			if (line[0])
 				press_any_key();
-			cons_strcat("\e[2J\e[0;0H");
+			cons_gotoxy(0,0);
+			cons_clear();
 			continue;
 		case ',':
 			if (config.seek == mark) {

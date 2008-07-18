@@ -10,6 +10,11 @@
 =====
 0.9.8 - codename 'scg08'
 =====
+
+* register flags does not match with reality
+  - Coz of the 0 value!!!
+* XXX strings are not properly flagged !!!
+
 * scriptedit must work also for 'radare scripts'
   - Multiple open/close is broken :?
   - make it work with vim in console
