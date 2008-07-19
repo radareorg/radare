@@ -1,6 +1,6 @@
 include ../../config.mk
 
-OBJ=rasm.o x86.o arm.o java.o ppc.o main.o ../w32utils.o
+OBJ=rasm.o x86.o arm.o java.o ppc.o main.o ../w32utils.o olly.o
 OLLYOBJ=../arch/x86/ollyasm/assembl.o
 OLLYOBJ+=../arch/x86/ollyasm/asmserv.o
 OLLYOBJ+=../arch/x86/ollyasm/disasm.o

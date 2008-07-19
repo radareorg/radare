@@ -74,7 +74,15 @@ static int mmap_close(int fd)
 extern u64 posix_lseek(int fildes, u64 offset, int whence);
 static u64 mmap_lseek(int fildes, u64 offset, int whence)
 {
-	return posix_lseek(fildes,offset,whence);
+	switch(whence) {
+	case SEEK_SET:
+		return offset;
+	case SEEK_CUR:
+		return config.seek+offset;
+	case SEEK_END:
+		return 0xffffffff;
+	}
+	return offset;
 }
 
 static int mmap_handle_fd(int fd)

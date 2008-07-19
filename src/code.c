@@ -513,7 +513,8 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		ud_obj.insn_offset = seek+bytes;
 		ud_obj.pc = seek;
 		ret = ud_insn_len(&ud_obj);
-		cons_printf("%08llx: %d %d %-24s", seek, ud_idx, bytes, ud_insn_asm(&ud_obj));
+		cons_printf("%-24s", ud_insn_asm(&ud_obj));
+		//cons_printf("%08llx: %d %d %-24s", seek, ud_idx, bytes, ud_insn_asm(&ud_obj));
 		break;
 	case ARCH_CSR:
 		if (bytes<config.block_size)
@@ -828,6 +829,7 @@ void udis_arch(int arch, int len, int rows)
 		if (length<=0)
 			break;
 		D { 
+//if (config.verbose) {
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
 				code_lines_print(reflines, sk, 0);

@@ -26,7 +26,7 @@
 
 #if !RADARE_CORE
 
-char *arch = "x86";
+char *arch = "olly";
 u64 offset = 0;
 int endian = 0;
 int verbose = 0;
@@ -67,9 +67,12 @@ int rasm_assemble(char *str)
 	if (str!=NULL)
 		ret = rasm_asm(arch, &offset, str, data);
 
+#if 0
 	if (ret <1)
 		eprintf("Unknown arch or opcode. See -l\n");
 	else {
+#endif
+	if (ret>0) {
 		int i;
 		if (endian) {
 			if (ret == 4) {

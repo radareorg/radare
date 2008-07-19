@@ -11,7 +11,6 @@
 0.9.8 - codename 'scg08'
 =====
 
-* Native 'rasm -d' (do not rsc dasm)
 * Make 'Cs' autodetect multiple strings
 * Use rabin directly . not rsc
 
@@ -31,6 +30,7 @@ DONE
 =====
 0.9.9
 =====
+* Native 'rasm -d' (do not rsc dasm)
 * Xrefs working with the core (radare_read and so)
 * file.endian = false when opening powerpc files by default
   - rabin does not detects MACHO bins

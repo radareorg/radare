@@ -29,7 +29,7 @@ int rasm_show_list()
  //" jmpa [addr]  - jump to absolute address (??)\n"
 	printf(
 	 "Architectures:\n"
-	 " x86, ppc, arm, java\n"
+	 " olly, x86, ppc, arm, java\n"
 	 "Opcodes:\n"
 	 " call [addr]  - call to address\n"
 	 " jmp [addr]   - jump to relative address\n"
@@ -174,6 +174,9 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 	if ((!strcmp(arch, "x86")) ||(!strcmp(arch, "intel")))
 		ret = rasm_x86(offset, str, data);
 
+	if (!strcmp(arch, "olly"))
+		ret = rasm_olly_x86(offset, str, data);
+
 	if (!strcmp(arch, "arm"))
 		ret = rasm_arm(offset, str, data);
 
@@ -192,9 +195,11 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 int rasm_disasm(const char *arch, u64 *offset, const char *str, unsigned char *data)
 {
 	char buf[4096];
+	int sz;
 	/* TODO: Use internal disasembler */
 	/* TODO: parse hexpairs and disassemble */
-	snprintf(buf, 4095, "rsc dasm '%s'", str);
+	sz = strlen(str)/2;
+	snprintf(buf, 4095, "echo 'wx %s && pd' | radare -e asm.syntax=0 -e asm.bytes=0 -e asm.offset=0 -e asm.flags=0 -e asm.lines=0 -nvw malloc://%d", str, sz);
 	system(buf);
 	return 0;
 }

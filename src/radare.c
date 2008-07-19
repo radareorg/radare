@@ -1164,8 +1164,9 @@ int radare_open(int rst)
 	snprintf(buf2, 255, "%s.rdb", buf);
 	config_set("file.rdb", buf2);
 
-	D if (wm)
-		eprintf("warning: Opening file in read-write mode\n");
+	//D if (wm)
+	//if (config.verbose)
+	//	eprintf("warning: Opening file in read-write mode\n");
 
 	cptr = config_get("file.project");
 	if (cptr)

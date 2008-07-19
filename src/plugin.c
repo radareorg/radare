@@ -273,6 +273,7 @@ void plugin_init()
 	plugins[last++] = shm_plugin;
 	plugins[last++] = mmap_plugin;
 #endif
+	plugins[last++] = malloc_plugin;
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
