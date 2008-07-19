@@ -1,4 +1,809 @@
+=== 0.9.8 ===
+
+changeset:   320:e639079b9c5f
+tag:         tip
+user:        pancake <youterm.com>
+date:        Sat Jul 19 22:34:01 2008 +0200
+files:       TODO src/code.c src/objects.mk src/plug/io/malloc.c src/plug/io/mmap.c src/plugin.c src/plugin.h src/radare.c src/rasm/Makefile src/rasm/main.c src/rasm/olly.c src/rasm/rasm.c src/rasm/rasm.h src/rasm/x86.c
+description:
+* Add 'olly' architecture for 'rasm'
+  - Default over x86
+* Add native rasm -d using system+radare
+* New IO module 'malloc'
+  - Allocates N bytes and zeroes the buffer
+  > radare malloc://1024
+  - Useful for scripting with volatile data
+
+
+changeset:   319:593830857604
+user:        pancake <youterm.com>
+date:        Sat Jul 19 21:19:34 2008 +0200
+files:       TODO dist/maemo/Makefile gui/Makefile libexec/Makefile src/rasm/main.c src/rsc.acr
+description:
+* Fix paths (/usr/libexec is outdated in FHS ?!?)
+  - Moved to $prefix/share/radare/rsc
+  - Moved to $prefix/share/radare/gradare
+  - Adapt rsc and gradare for these new paths
+* Make 'rasm' show -d in short help
+
+
+changeset:   318:3ded3354d9a1
+user:        pancake <youterm.com>
+date:        Sat Jul 19 21:03:03 2008 +0200
+files:       TODO src/code.c src/code.h src/config.c src/cons.c src/flags.c src/visual.c
+description:
+* Add support for arrow keys in Vt and Ve
+  - Add '+' and '-' keys for numeric config variables in Ve
+* Fix weird bugs in handling data types and disassembly
+  - Now disassembly for udis86 is fixed again
+  - needs huge refactoring and cleanup
+  - Handle ranged data types and show offset
+  - Optimize the data type handling code
+
+
+changeset:   317:717088cd19a4
+user:        pancake <@youterm.com>
+date:        Fri Jul 18 20:17:49 2008 +0200
+files:       TODO dist/maemo/Makefile src/cmds.c src/dbg/arch/arm.c
+description:
+* Apply wF with comments patch from Nibble
+  - Cleanup TODO
+* Fix build for ARM (maemo)
+
+
+changeset:   316:b7cd46d2f684
+user:        pancake <@youterm.com>
+date:        Fri Jul 18 19:28:12 2008 +0200
+files:       src/code.c src/dbg/lseek.c src/rabin/dietelf.c
+description:
+* Import bugfixing patch from Nibble for 098 deadline
+  - Fix segfault while removing comments
+  - Avoid dupped comments
+* Fix flag @ 0 problem (only bugs the debugger)
+
+
+changeset:   315:78e793716c64
+user:        pancake <@youterm.com>
+date:        Fri Jul 18 16:28:40 2008 +0200
+files:       TODO src/code.c src/config.c src/flags.c
+description:
+* Support to toggle bool vars in Ve
+  - Can edit strings too (use 'space' or 'e' key)
+  - 'q' is up menu level + exit now
+* Some minor unimplemented enhacements (R)
+
+
+changeset:   314:30108342f243
+user:        pancake <@youterm.com>
+date:        Fri Jul 18 14:15:56 2008 +0200
+files:       Makefile.acr TODO src/arch/x86/code.c src/cmds.c src/code.c src/config.c src/cons.c src/rabin/dietelf.c src/rabin/dietelf.h src/utils.c src/visual.c
+description:
+* Add DESTDIR in makefile (helpy for rpmbuild)
+* Define dead line for 0.9.8 in TODO
+  - Bugfixing now!
+* Fix bizarre disassembly bug
+  - drop myinc
+  - first opcode was trashing the rest of deltas
+* Add 'Ve' for visual eval configuration
+  - Works like 'Vt'
+* Add strccmp and strccpy to copy until a separator char
+* s/exit/return/g in dietelf (nibble)
+  - Add some more checks
+
+
+changeset:   313:050a335ff2f0
+user:        pancake <@youterm.com>
+date:        Fri Jul 18 12:19:41 2008 +0200
+files:       libexec/strings-flag libexec/syms-dbg-flag src/flags.c src/rabin/dietelf.c src/rabin/dietelf.h
+description:
+* Do not split strings flag spaces
+* Make cmd.vprompt happy with Vt mode
+  - Avoid infinite loops in Vt
+  - Add scrolling in flagspace selector
+* Fix base address for strings in rabin
+  - Now they work fine inside the debugger
+* Split symbols by imports, exports and others
+  - Thx nibble ^^
+
+
+changeset:   312:cfaaf19639b8
+user:        pancake <youterm.com>
+date:        Fri Jul 18 04:41:54 2008 +0200
+files:       TODO src/flags.c src/rabin/dietelf.c src/search.c src/visual.c
+description:
+* Add ':' in Visual 't' mode
+  - Add 'p' and 'P' to rotate print formats
+  - use cons_ instead of direct ansi
+* Flag search when searching
+
+
+changeset:   311:85816b6642fa
+user:        pancake <youterm.com>
+date:        Fri Jul 18 04:22:57 2008 +0200
+files:       TODO src/arch/x86/ollyasm/disasm.h src/flags.c src/objects.mk src/rabin/dietelf.c src/rasm/Makefile src/rasm/x86.c src/visual.c
+description:
+* Bind 't' in visual to walk into flag spaces and flags easily
+  - flags_visual_menu()
+  - Must do the same for the config
+  - Must support creation and deletion of flags
+* Make ollydbg assembler work with rasm
+
+
+changeset:   310:77a49e4c4093
+user:        pancake <@youterm.com>
+date:        Thu Jul 17 18:59:35 2008 +0200
+files:       src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/rabin.c
+description:
+- Import rabin patch from Nibble
+* auxilar function in dietelf prefixed with aux_
+* added dietelf_list_strings() to dietelf which list
+  strings in all non-executable sections
+* -z flag in rabin now uses dietelf_list_strings
+
+
+changeset:   309:b23fe0c26edf
+user:        pancake <@youterm.com>
+date:        Thu Jul 17 17:12:48 2008 +0200
+files:       TODO doc/fortunes man/bindiff.1 man/hasher.1 man/radare.1 man/radiff.1 man/rasm.1 man/rsc.1 man/xc.1 man/xrefs.1 src/arch/x86/ollyasm/Makefile src/arch/x86/ollyasm/README src/arch/x86/ollyasm/asmserv.c src/arch/x86/ollyasm/assembl.c src/arch/x86/ollyasm/disasm.c src/arch/x86/ollyasm/disasm.h src/arch/x86/ollyasm/gpl.txt src/arch/x86/ollyasm/main.c src/arch/x86/ollyasm/readme.htm src/rasm/Makefile src/rasm/main.c src/rasm/rasm.c src/rasm/rasm.h src/rasm/x86.c
+description:
+* Initial import of the Olly's assembler/disassembler
+  - Will be good to have until the GAS merge
+  - Should be used from inside 'rasm'
+  - Coz it's GPL :)
+* Add '-d' to 'rasm' to disassemble an hexpair list of bytes
+
+
+changeset:   308:71b734f19269
+user:        pancake <youterm.com>
+date:        Thu Jul 17 06:23:50 2008 +0200
+files:       src/code.c src/visual.c
+description:
+* Fix the really anoying problem with foldering
+  - Now is usable again \o/
+  - Nicer output for folders.
+  - Fix some metadata problems (correct jump address and so)
+  - Fix segfault while changing a folder
+
+
+changeset:   307:b6a50a8e450e
+user:        pancake <youterm.com>
+date:        Thu Jul 17 05:16:35 2008 +0200
+files:       TODO gui/main.c gui/menubar.c gui/toolbar.c src/arch/x86/udis86/syn-att.c src/arch/x86/udis86/syn-intel.c src/code.c
+description:
+* Fix negative values in x86 disassembly for syn-intel and syn-att
+  - Merged code from syn-pseudo
+* Fix 'seek' base address for the disassembler
+  - Big oops. But needs check
+  - Fit .db 'Cd' bytes in screen width
+* Remember project_file after save_as
+  - Smarter code! Clean some warns
+  - Add 'edit script' menu entry in the GUI
+
+
+changeset:   306:1a7c1398dc55
+user:        pancake <youterm.com>
+date:        Thu Jul 17 04:24:09 2008 +0200
+files:       gui/main.c gui/main.h gui/menubar.c src/rabin/rabin.c src/radare.c src/radare.h src/stripstr.c
+description:
+* Fix 'open/save project' menu entries in gradare
+  - Add new 'save project as'
+* Add a functional version of rabin -z
+  - runs echo /s | radare -e file.id -nv $FILE
+  - some cleanup of the stripstr functions to not depend on core
+
+
+changeset:   305:782b8d4a00a8
+user:        pancake <youterm.com>
+date:        Thu Jul 17 02:46:43 2008 +0200
+files:       src/cmds.c src/dbg/arch/mips64.c src/hasher/wscript_build src/wscript_build wscript
+description:
+* Fix build for mips64
+  - Add automatic 64bit packed registers and show them nicely with !fpregs
+* Make redefined flags quite
+* Add 'hasher' for the waf build
+  - Some testing with boolean configure flags :/
+
+
+changeset:   304:6328b67412a9
+user:        pancake <@youterm.com>
+date:        Wed Jul 16 17:31:38 2008 +0200
+files:       TODO libexec/flag-sections libexec/syms libexec/syms-dbg-flag man/rabin.1 src/flags.c src/rabin/dietelf.c src/rabin/rabin.c src/rabin/rabin.h src/radare.c src/radare.h src/stripstr.c
+description:
+* Use rabin from the core thru 'rsc syms'. Thx nibble
+  - Demonstrates that loading 500 symbols from 'evolution'
+    can be done in less than a fraction of a second :)
+* Update rabin manpage
+* Add dummy '-z' for showing strings of a binary
+  - Not yet working..just to form the idea..
+  - Must work with '-x' (get xrefs of strings)
+  - Must handle string length and do it for Cs
+
+
+changeset:   303:3e43c0d38783
+user:        pancake <@youterm.com>
+date:        Wed Jul 16 13:56:44 2008 +0200
+files:       src/arch/ppc/vdappc.c src/code.c src/plug/io/shm.c vala/grava/widget.vala
+description:
+* Fix build for valac 0.3.5
+  - Declare 'extern' functions in C
+* Remove vdappc.c (unused file)
+* Cleanup some more warnings
+
+
+changeset:   302:55264559130a
+parent:      301:d74c2d922520
+parent:      300:38177ada5e94
+user:        pancake <@youterm.com>
+date:        Wed Jul 16 13:46:35 2008 +0200
+files:       src/arch/csr/dis.c src/config.c src/cons.c src/dietline.h src/hasher/entropy.c src/plug/hack/radare.lua src/plug/io/gxemul.c src/plug/io/mmap.c src/plug/io/socket.c src/print.c src/rabin.c src/rabin/dietelf.c src/rabin/dietelf.h src/readline.c
+description:
+* Oops merge waf branch
+* Unexpected warnaton
+
+
+changeset:   301:d74c2d922520
+parent:      299:a38bd009ca45
+user:        pancake <@youterm.com>
+date:        Wed Jul 16 13:30:22 2008 +0200
+files:       src/arch/m68k/Makefile src/arch/m68k/vda68k.c src/arch/mips/vm.c src/arch/x86/cpuid.c src/dbg/wscript_build src/plug/hack/radare.lua src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/rabin.c src/rabin/rabin.h src/rabin/wscript_build src/radiff/bytediff.c src/radiff/wscript_build src/rasm/main.c src/rasm/wscript_build src/utils.c src/wscript_build wscript
+description:
+* First *basic* build using waf
+  - No debugger, removed some unused stuff
+  - Some workarounds for -DRADARE_CORE
+* radare.lua: Add Radare.asm(str)
+* Import dietelf patch from Nibble to support 'other' symbols
+ - Added dietelf_list_others() to dietelf
+ - Added -o (other symbols) flag to rabin (sym_oth_ prefix with -r)
+ - dietelf_get_base_addr, dietelf_get_entry_addr use dietelf_bin_t as parameter
+
+
+changeset:   300:38177ada5e94
+user:        pancake <youterm.com>
+date:        Wed Jul 16 03:42:27 2008 +0200
+files:       libexec/Makefile libexec/asmcolor src/plug/io/pcap.c
+description:
+* Add dummy broken and experimental pcapio plugin
+* Add asmcolor script for mips and intel
+  - Useful to trace register usage
+
+
+changeset:   299:a38bd009ca45
+user:        pancake <@youterm.com>
+date:        Tue Jul 15 17:45:28 2008 +0200
+files:       Makefile.acr TODO man/bug.1 scripts/pushpop.lua src/bug src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/rabin.c
+description:
+* More enhacements for dietelf from Nibble
+  - Code cleanup and refactoring
+* Add dbg_call and dbg_jmp
+* Remove 'bug'
+  - Cleanup of TODO for 0.9.8
+
+
+changeset:   298:243165c6f95c
+user:        pancake <@youterm.com>
+date:        Tue Jul 15 14:18:48 2008 +0200
+files:       src/plug/hack/wscript_build src/plug/io/haret.c src/plug/io/wscript_build src/rabin/dietelf.c src/radiff/wscript_build src/wscript_build wscript
+description:
+* More advances in the waf front
+  - Adopt 1.4.3 changes
+* Import more Nibble updates for dietelf
+  - Filter flag names
+
+
+changeset:   297:e6ad80b734a9
+user:        pancake <@youterm.com>
+date:        Tue Jul 15 13:12:29 2008 +0200
+files:       src/analyze.c src/arch/arm/code.c src/arch/ppc/Makefile src/binparse.c src/bytepat.c src/cmds.c src/code.c src/config.c src/cons.c src/dietline.c src/environ.c src/flags.c src/flags.h src/hack.c src/print.c src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/rabin.c src/radare.c src/radare.h src/rdb.c src/readline.c src/search.c src/socket.c src/utils.h src/visual.c src/wscript_build src/xrefs.c vala/wscript_build wscript
+description:
+* Import latest Nibble's changes on dietelf
+  - Adds support for exported symbols on non-stripped bins
+  - Code cleanup
+  - Shows and flags block sizes for each symbol
+* Warnatooon!!1
+  - Should fix any bugs
+* Moar advances in the waf port
+
+
+changeset:   296:e30b7bd41782
+user:        pancake <@youterm.com>
+date:        Tue Jul 15 12:23:54 2008 +0200
+files:       scripts/pushpop.lua src/cmds.c src/dbg/debug.c src/dbg/debug.h src/dbg/system.c src/plug/io/wscript_build src/rabin/dietelf.c src/wscript_build src/xrefs.c wscript
+description:
+* Add dbg_push_reg and dbg_pop_reg lua functions
+* Add 'bf' command (block size like flag size)
+  - Useful to fit block size to symbol sizes or so
+  - 'b?' shows help message
+* Fix !get command
+* Enhacements for rabin's dietelf. Thx Nibble!
+  - Properly fixes the BSD problem (+0x1000)
+* More advances in the waf front. Stills incomplete
+
+
+changeset:   295:2a862bd1585d
+user:        pancake <youterm.com>
+date:        Tue Jul 15 01:28:26 2008 +0200
+files:       scripts/pushpop.lua src/cmds.c src/dbg/arch/i386.c src/dbg/debug.c src/dbg/win32/memdump.c src/dbg/wscript_build src/wscript_build wscript
+description:
+* Add push/pop emulated for the debugger in Lua
+* Rename 'wd to 'wv'
+  - add support for endian
+  - add support for 4-8 bytes (32-64 addresses)
+  - support for get_math expressions
+  > wv eax @ esp
+* !set skips '=' char
+  - supports get_math
+  > !set esp = esp -4
+* add memdump for w32 from metasploit
+* Initial non-working port to waf
+
+
+changeset:   294:4919f81e01ce
+user:        pancake <@youterm.com>
+date:        Mon Jul 14 13:50:03 2008 +0200
+files:       TODO src/rabin/dietelf.c src/rabin/rabin.c src/rabin/rabin.h
+description:
+* Initial integration of rabin with xrefs
+  - '-x' show xrefs for each symbol
+  - maybe we need a flag to only 'grep' one symbol
+  - needs radare output format and avoid system()
+  - '-E' flag renamed to '-s'
+
+
+changeset:   293:96a841610bc2
+user:        pancake <@youterm.com>
+date:        Mon Jul 14 12:48:20 2008 +0200
+files:       README TODO man/hasher.1 man/rabin.1 man/rasc.1 man/rasm.1 man/rsc.1 man/xc.1 man/xrefs.1 src/rasm/x86.c src/visual.c
+description:
+* Fixups in manpages, TODO and README
+* Fix 'call <reg>' and add 'jmp <reg>' in rasm
+* Remove user keybindings in visual (buggy)
+
+
+changeset:   292:c6d9e8b50054
+user:        pancake <@youterm.com>
+date:        Mon Jul 14 11:46:35 2008 +0200
+files:       src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/rabin.c
+description:
+* Merge last dietelf patches
+  - More code cleanup
+  - Handle get_entry
+  - Fixed support for BSD (stills a workaround)
+  - Section perms are 'wax' and not 'rwx'
+  - Initial support for exports
+
+
+changeset:   291:aae347e3b97b
+user:        pancake <@youterm.com>
+date:        Mon Jul 14 00:15:17 2008 +0200
+files:       src/rabin/Makefile src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/elf.c src/rabin/rabin.c
+description:
+* Integrate Nibble's dietelf with rabin
+  - Used for listing imports and sections (-i, -S)
+  - Fixes the problems with netbsd
+  - support for '-r' (radare output format for dietelf
+
+
+changeset:   290:52f632e2b9b4
+user:        pancake <@youterm.com>
+date:        Sun Jul 13 04:59:17 2008 +0200
+files:       src/rabin/elf.c
+description:
+* Add initial source for the ELF parser. thx Nibble!
+  - Not yet integrated with rabin
+    - Actually just lists sections in rad and human modes
+    - plt resolution only for x86/linux
+    - no exports implemented yet
+  - Needs more work
+
+
+changeset:   289:e4c7f1ac8538
+user:        pancake <@youterm.com>
+date:        Fri Jul 11 19:03:50 2008 +0200
+files:       src/dbg/arch/arm.c src/dbg/arch/mips64.c src/dbg/unix/syscall.c src/rabin/rabin.c
+description:
+* Fix build on mips/arm
+* Make rabin be happy with output on w32 entrypoint
+
+
+changeset:   288:0b7d2e0dd53d
+user:        pancake <youterm.com>
+date:        Wed Jul 09 10:38:51 2008 +0200
+files:       TODO libexec/Makefile libexec/fds libexec/strings-flag src/analyze.c src/arch/x86/udis86/test.c src/code.c src/code.h src/dbg/arch/i386.c
+description:
+* Initial import of 'rsc fds [pid]'
+  - Show FDs used by a process-id (lsof,fstat frontend)
+* strings-flag filters '&' and ';' chars now
+* Fix code analysis and x86 intel disassembly problems with data_size()
+  - User defined data types makes the code disassembly to be aligned
+  - Fix a segfault in data_add
+  - data_count -> data_size
+* Some code cleanup and indent
+* Make !fd work again on BSD
+
+
+changeset:   287:2281797346a4
+user:        pancake <youterm.com>
+date:        Wed Jul 09 02:47:09 2008 +0200
+files:       src/code.c src/config.c src/cons.c src/cons.h src/print.c
+description:
+* Add cons_lines int symbols from cons.c
+  - Controls screen height
+  - Fix HEXB and udis
+* Show flags before data types
+
+
+changeset:   286:919670e8ecc6
+user:        pancake <youterm.com>
+date:        Wed Jul 09 01:22:59 2008 +0200
+files:       libexec/strings-flag libexec/syms src/environ.c src/utils.c
+description:
+* Make string-flag not hang
+* Fix really weird bug in get_math
+  - The debugger got crazy after some usage
+  - Fix a valgrind warn in environ.c
+* Use objdump again .. nm is not that good
+
+
+changeset:   285:a28b85618e90
+user:        pancake@localhost.my.domain
+date:        Fri Jul 04 04:30:58 2008 +0000
+files:       TODO libexec/syms-dbg-flag man/radare.1 src/config.c src/dbg/arch/i386.c src/dbg/arch/x86_64.c src/dbg/debug.c src/io.c src/rabin/rabin.c
+description:
+* Update TODO for next release
+* Fix dupped '-c' help in radare manpage
+* Use rabin -re $target in syms-dbg-flag to get entrypoint
+  - Make rabin use the '-r' flag to output in radare format
+* Add file.insertblock (needs implementation O:)
+* Add 'ebp' for !get command
+  - Make it work before starting to debug
+  - initialize WS(regs) after forking
+  - Add missing rsp and rbp 64 bit registers
+
+
+changeset:   284:687c8cb61b46
+user:        pancake@localhost.my.domain
+date:        Fri Jul 04 03:54:30 2008 +0000
+files:       libexec/elf-base-addr libexec/flag libexec/flag-sections libexec/syms libexec/syms-dbg-flag libexec/syms-flag src/analyze.c src/code.c
+description:
+* Fix .text relocation issues while working with ELF objects
+  - Thanks thij for the bug reports! :D
+  - Fix elf-base-addr to return .text base if object (.o)
+  - Make 'rsc flag' always use syms-dbg-flag instead of conditional
+  - syms-dbg-flag now works for on-disk-files
+  - make flag-sections be consistent with objects
+  - Make 'syms' work with 'nm' instead of objdump (quite faster :)
+  - Make syms-flag and syms-dbg-flag cleaner
+* Fix code analysis and flagging in disassembly print mode while using file.baddr
+  - Now the lines of jumps in code works fine on files
+  - Also the flags outside the debugger
+
+
+changeset:   283:e6efbd311dd2
+user:        pancake <youterm.com>
+date:        Thu Jul 03 23:29:04 2008 +0200
+files:       src/dbg/debug.c src/dbg/win32/debug.c src/plug/io/mmap.c src/plug/io/shm.c src/xrefs.c
+description:
+* Fix build for w32
+* Make the xrefs work in 64 bit
+  - needs test and rewrite to work inside the core
+
+
+changeset:   282:60a41272215d
+user:        pancake <@youterm.com>
+date:        Thu Jul 03 13:13:14 2008 +0200
+files:       scripts/mmx2ls2f.pl src/dbg/arch/i386.c
+description:
+* Fix sign problem with register flags
+* Add mmx2ls2f.pl -> perl script to convert MMX code into MIPS Loongson2F
+
+
+changeset:   281:15a5d14d0c58
+user:        ora8@localhost
+date:        Thu Jul 03 03:52:35 2008 +0200
+files:       TODO src/config.c src/dbg/arch/arch.h src/dbg/arch/i386.c src/dbg/arch/i386.h src/dbg/debug.c src/dbg/debug.h src/dbg/events.c src/dbg/system.c src/dbg/unix/debug.c src/dbg/unix/syscall.c src/dbg/win32/debug.c
+description:
+* Add dbg.forks and dbg.controlc - not yet working
+  - dbg.controlc is working only in w32
+* Fixups for !contfork
+* Lot of fixups in the fork+threading handling
+  - needs more work and unit tests
+  - thanks th0rpe for the patches
+* Verbose output for event handling in debugger
+
+
+changeset:   280:bdcaafc0538b
+user:        pancake <youterm.com>
+date:        Wed Jul 02 23:25:32 2008 +0200
+files:       src/radare.c
+description:
+* Comment out an XXX code that makes some rsc fail on !w32
+
+
+changeset:   279:1a91099a1dfe
+user:        pancake <@youterm.com>
+date:        Tue Jul 01 13:46:39 2008 +0200
+files:       configure configure.acr libexec/Makefile libexec/signsrch
+description:
+* Added signsrch rsc script
+  - Depends on signsrch from:
+  - http://aluigi.altervista.org/mytoolz.htm
+* valac 0.3.4 is mandatory now
+
+
+changeset:   278:b9d5a2c4339e
+user:        asdfsafd@asdf-safds-imac.desnet.org
+date:        Tue Jul 01 11:14:19 2008 +0200
+files:       libexec/syms-dbg-flag src/arch/arm/aasm/Makefile src/io.c src/rabin/rabin.c
+description:
+* Fix build for darwin-osx10.4-powerpc
+* Fix rabin and syms-dbg-flag for mach-o sym exports
+  - Identify big endian machos
+
+
+changeset:   277:861e82e8a684
+user:        pancake <youterm.com>
+date:        Tue Jul 01 04:39:29 2008 +0200
+files:       src/objects.mk src/plug/io/mmap.c src/plug/io/posix.c src/plugin.c src/plugin.h
+description:
+* Initial import of the mmap:// IO plugin
+  - Supports multi-user interaction on a single file in realtime
+  - Nice to experiment on IO optimizations
+
+
+changeset:   276:8ecc78b491a4
+user:        pancake <youterm.com>
+date:        Tue Jul 01 02:59:09 2008 +0200
+files:       TODO src/cmds.c src/config.h src/utils.h src/visual.c src/xrefs.c
+description:
+* Make the cursor scroll in visual
+  - / and * work in cursor mode too
+* Oops for xrefs on linux fixed
+
+
+changeset:   275:3de2ecca802c
+user:        pancake@flap.desnet.org
+date:        Tue Jul 01 02:24:12 2008 +0000
+files:       TODO inject/README inject/shellcode.s scripts/inject/Makefile scripts/inject/dump-text.lua scripts/inject/inj.lua scripts/inject/shellcode.s src/cmds.c src/code.h src/dbg/mem.c src/io.c src/plug/hack/hello.c src/plug/io/posix.c src/plugin.c src/plugin.h src/radare.c src/radare.h src/rdb.h src/utils.h src/visual.c src/xrefs.c
+description:
+* New command 'ax' to invoke 'xrefs'
+  - Initial support for xrefs in debugger
+  - Dumps current section to disk and run xrefs
+  - Added support for multiple architectures
+  - Fixes the bsize limitation in radare_dump
+  - Makes 'b' command accept math oops!
+* Some fixes in xrefs for segmentation faults (unchecked return values)
+  - New flag '-b' to define base address (0x8048000 f.ex)
+* New command 'af' analyze function
+  - Tries to identify the origin and destination of a function
+  - Looks for farest code block without following calls
+* Some examples of code injection and section dumping
+  - Implemented in lua scripts
+* Fix segfault in plugin list (ugly hack)
+
+
+changeset:   274:cff5c4e43285
+user:        pancake@flap.desnet.org
+date:        Mon Jun 30 23:17:22 2008 +0000
+files:       src/dbg/debug.c src/dbg/thread.c src/dbg/unix/debug.c
+description:
+* Add freebsd LWP thread list support
+  - Add bsd specific LWPINFO ptrace support
+  - Both accessible with !th command
+
+
+changeset:   273:53ae349611fc
+user:        pancake@flap.desnet.org
+date:        Mon Jun 30 22:41:18 2008 +0000
+files:       TODO libexec/maps src/objects.mk src/plug/io/shm.c src/plugin.c src/plugin.h src/radare.c
+description:
+* Use sysctl in rsc map on fbsd
+* Initial import of the shm:// IO plugin
+  - Allows to access to shared memory regions
+* Load rsc maps if dbg.maps enabled
+  - Some fixups on the fbsd forking side
+  - Stills buggy :O
+
+
+changeset:   272:4ea5c7f518eb
+user:        erg0t@flap
+date:        Mon Jun 30 00:51:57 2008 +0000
+files:       src/cmds.c src/dbg/system.c src/radare.c
+description:
+* Wrap system() calls using execv(sh,-c,cmd)
+  - Fixes the segmentation fault bug of FreeBSD
+  - Thanks erg0t for the tip
+
+
+changeset:   271:bcee72a34969
+user:        pancake@flap.lan
+date:        Sun Jun 29 03:35:36 2008 +0000
+files:       src/Makefile.acr src/arch/x86/udis86/syn-pseudo.c src/code.c src/dbg/debug.c src/flags.h src/hasher/hasher.c src/plug/hack/Makefile src/radare.c src/utils.h
+description:
+* Fix make clean for hack plugins
+* Fix build and freebsd warnings
+
+
+changeset:   270:c7cb686af8dc
+user:        pancake@flap.lan
+date:        Sun Jun 29 03:07:57 2008 +0000
+files:       gui/menubar.c libexec/flag-sections src/arch/arm/gnudisarm.c src/config.c src/cons.c src/cons.h src/dbg/arch/x86_64-bp.c src/dbg/arch/x86_64.c src/dbg/debug.c src/dbg/unix/debug.c src/dbg/unix/syscall.c src/flags.h src/plug/hack/Makefile src/plugin.c src/radare.c src/radiff/bytediff.c src/radiff/rdbdiff.c src/readline.c src/socket.c src/utils.h src/visual.c
+description:
+* More fixups for x86-64 (thx elektranox)
+  - Fix flag-sections s/-/_/g
+  - Remove some warnings
+  - fix some formatting issues
+
+
+changeset:   269:135c34e14e08
+user:        pancake <youterm.com>
+date:        Sun Jun 29 02:06:40 2008 +0200
+files:       src/dbg/arch/x86_64-bp.c src/dbg/arch/x86_64.c src/dbg/arch/x86_64.h
+description:
+* Apply elektranox patches for x86-64
+
+
+changeset:   268:44d9d8ffee39
+user:        pancake <youterm.com>
+date:        Sun Jun 29 02:03:00 2008 +0200
+files:       src/cons.c src/dbg/arch/x86_64.c src/project.c src/radare.c src/radare.h
+description:
+* Fix the yesno issue (Thanks whats!)
+  - Fix project_save problem
+* Some x86-64 issues
+
+
+changeset:   267:2669fb00001c
+user:        pancake <youterm.com>
+date:        Sat Jun 28 23:32:25 2008 +0200
+files:       TODO src/analyze.c src/cmds.c src/config.c src/dbg/arch/arm.c src/dbg/arch/i386.c src/dbg/bp.c src/dbg/debug.c src/dbg/open.c src/dbg/regs.h src/dbg/unix/debug.c src/dbg/unix/procs.c src/dbg/watchpoint.c src/kradare/Makefile src/kradare/README src/kradare/kdebug src/kradare/kradare.c src/rdb.c src/rdb.h
+description:
+* Fill blk->type field
+  - show bytes and type in 'ab' command
+* Add dbg.threads (not working)
+* Make arch_pc() receive a pid as argument
+  - Show program counter for each process (!pid)
+* Initial import of kradare
+  - A highly experimental kernel module for linux
+  - Thanks sha0 for the contrib
+
+
+changeset:   266:26c927f9c64b
+user:        pancake <youterm.com>
+date:        Sat Jun 28 20:24:06 2008 +0200
+files:       TODO src/cmds.c src/config.c src/dbg/mem.c src/radare.c
+description:
+* Major cleanup of the TODO file
+* Add dbg.sections=true
+  - Loads rsc flag-sections
+  - Add a special flag space for 'maps' and 'sections'
+  - Remove flag verbosity
+
+
+changeset:   265:7144952f0b96
+user:        pancake <youterm.com>
+date:        Sat Jun 28 19:52:56 2008 +0200
+files:       libexec/Makefile libexec/spcc libexec/spcc-fe src/analyze.c src/cmds.c src/config.c src/print.c
+description:
+* Initial import of 'spcc-fe' structure parser frontend
+  - Used from the new 'as' command.
+  - 'as' stands for analyze structure
+  - Uses the new dir.spcc to store all structures
+  - Fixes some problems with rsc spcc
+* Fix minor bug in config
+
+
+changeset:   264:af6cb4818acc
+user:        pancake <youterm.com>
+date:        Sat Jun 28 18:52:58 2008 +0200
+files:       src/print.c src/radare.c
+description:
+* Implementation of the '@@' for-each syntax for radare commands
+  > fs regs && pz @@ *
+  > pd 20 @@ 100 200 0x3433+44 0x804859
+* Print command renames
+  - pa -> ps (asm->shellcode)
+  - ps -> pa (string->ascii)
+  - pS -> pA (takes more sense)
+
+
+changeset:   263:56f40ad7f73b
+user:        pancake <youterm.com>
+date:        Sat Jun 28 18:05:25 2008 +0200
+files:       TODO libexec/core libexec/flag-sections libexec/strings-flag libexec/syms-dbg-flag libexec/syms-flag src/arch/x86/code.c src/cmds.c src/config.c src/config.h src/cons.c src/cons.h src/dbg/README src/dbg/debug.c src/dietline.c src/flags.c src/flags.h src/grava.c src/radare.c src/radiff/bytediff.c src/radiff/radiff.c src/radiff/rdbdiff_main.c src/utils.c src/utils.h
+description:
+* Initial implementation of 'fs' flag spaces
+  - Allows to split the flag space with names
+  - 'regs', 'symbols', 'strings', and more to come!
+  - 'fs *' to unselect all flagspaces
+  - 'fs -name' to remove a flag space
+  - Adapt rsc scripts for it
+* Some code cleanup and some bugs fixed in radiff
+  - Fix rare possible bugs in config
+* Use 'gcore' when possible in rsc core
+
+
+changeset:   262:62b6de7db84a
+user:        pancake@flap.desnet.org
+date:        Fri Jun 27 04:20:41 2008 +0000
+files:       libexec/xtrace src/config.c src/vm.c
+description:
+* Enhace rsc xtrace to only trace userland addresses
+* Some debugging and enforcement to catch bugs :/
+
+
+changeset:   261:e7105c463f9a
+user:        pancake@flap.desnet.org
+date:        Fri Jun 27 03:26:34 2008 +0000
+files:       libexec/core src/dbg/arch/i386.c src/dbg/debug.c src/main.h src/utils.c vala/grava/node.vala vala/grava/widget.vala
+description:
+* Use 'gcore' on FreeBSD for 'rsc core'
+* Fix build for FreeBSD 7.0
+  - arch_mprotect seems to partially work
+* Fix vala issue with 0.3.4
+
+
+changeset:   260:aa11a31b3b63
+user:        pancake <@youterm.com>
+date:        Thu Jun 26 13:50:53 2008 +0200
+files:       TODO doc/xtra/freebsd-sys-syscall.h libexec/strings-flag libusbsniff/libusbsniff.c src/config.c src/cons.c src/cons.h src/dbg/arch/i386.c src/dbg/arch/x86_64.c src/plugin.c src/rabin.c src/radare.h src/rdb.c src/readline.c src/search.c src/socket.c src/visual.c
+description:
+* More code cleanup
+  - Rename BSD to __BSD__
+  - fix some warnings
+  - remove some unused code
+* Fix ^C when search and cmd.hit is defined
+* Fix for bsd arch_syscall on x86
+  - add some notes
+* Prefix all strings with 'str_'
+* Fix bulk_write signature for libusbsniff
+
+
+changeset:   259:3b83a4860a8e
+user:        pancake <youterm.com>
+date:        Thu Jun 26 01:13:50 2008 +0200
+files:       TODO libusbsniff/hexdump.c src/analyze.c src/arch/arm/aasm/aasm.c src/arch/arm/gnu/arm-dis.c src/arch/arm/gnudisarm.c src/arch/mips/gnudismips.c src/arch/mips/vm.c src/arch/ppc/code.c src/arch/ppc/ppc_disasm.c src/arch/sparc/sparc-opc.c src/arch/x86/code.c src/arch/x86/udis86/syn-pseudo.c src/config.c src/cons.h src/dbg/arch/i386-debug.h src/dbg/arch/i386.c src/dbg/debug.c src/dbg/debug.h src/dbg/unix/procs.c src/dietline.h src/flags.c src/flags.h src/main.c src/plug/io/socket.c src/radare.c src/rasm/main.c src/utils.h
+description:
+* Apply antiwarning patch from 'whatsup'. Thanks!
+
+
+changeset:   258:9c1fd83aa6a3
+user:        pancake <youterm.com>
+date:        Wed Jun 25 23:46:10 2008 +0200
+files:       libexec/Makefile libexec/flag-kallsyms src/analyze.c src/arch/m68k/code.c src/binparse.c src/binparse.h src/code.c src/code.h src/config.c src/cons.c src/environ.c src/grava.c src/objects.mk src/plug/hack/scriptedit.c src/print.c src/udis.c src/visual.c
+description:
+* Add rsc flag-kallsyms to flag kernel symbols
+* Some code reorganization and optimization + cleanup
+  for the udis->code disassembling stuff
+  - Faster disassemblying (needs more cleanup)
+  - Added a pseudo-m68k code analyzer (empty)
+  - gotoxy -> cons_gotoxy
+
+
+changeset:   257:1f70c3cdcd8a
+user:        pancake <youterm.com>
+date:        Wed Jun 25 00:59:53 2008 +0200
+files:       TODO doc/xtra/segdump.S doc/xtra/segint.S src/analyze.c src/grava.c src/hack.c src/io.c src/utils.c vala/grava/widget.vala
+description:
+* Added segdump and segint
+  - x86 segment register dumper
+  - vdso syscall example using %gs
+* Fixed the problem in hexstr2binstr endian problem
+  while starting the string with '0x'
+* Use F10 in gradare for fullscreen on desktops
+  - Remove scrollbars in grava window
+* Quit GTK main loop after calling a gui plugin
+
+
 === 0.9.7 ===
+changeset:   256:b2a723657f8e
+user:        pancake <youterm.com>
+date:        Sat Jun 21 14:26:40 2008 +0200
+files:       ChangeLog TODO configure configure.acr
+description:
+* 0.9.7 released
+  - Update development version to 0.9.8
+  - Update ChangeLog
+
 changeset:   255:0af245f7d644
 tag:         tip
 user:        pancake <youterm.com>

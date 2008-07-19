@@ -8,28 +8,11 @@
 ===========================================================
 
 =====
-0.9.8 - codename 'scg08'
-=====
-
-* Make 'Cs' autodetect multiple strings
-* Use rabin directly . not rsc
-
-DONE
-* If seek inside a string - detect!! if we're in the middle of a data type
-* Support arrow keys in Ve and Vt
-* Disassembly is not ok (graphs brbr) (myinc?)
-* s/exits/retun/ en rabin
-* Use DESTDIR in install:
-* Edit flags in Vt (add, edit, delete)
-* register flags does not match with reality
-* remove comments doesnt works properly (CC)
-* avoid dupped comments (CC)
-* Add comment support for wF (ignore lines with '#')
-
-
-=====
 0.9.9
 =====
+* Use rabin directly . not rsc
+* Make 'Cs' autodetect multiple strings
+* Rabin identify ELF and ELF32 with -t
 * Native 'rasm -d' (do not rsc dasm)
 * Xrefs working with the core (radare_read and so)
 * file.endian = false when opening powerpc files by default
