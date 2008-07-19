@@ -9,8 +9,8 @@
 #
 # --author pancake
 
-SCRIPTS="@LIBEXECDIR@/radare/"
-HOMESCRIPTS="~/.radare/scripts/"
+SCRIPTS="@DATADIR@/radare/rsc"
+HOMESCRIPTS="~/.radare/rsc/"
 COMMAND="$1"
 
 show_help() {

@@ -39,7 +39,7 @@ static int show_version()
 
 static int show_helpline()
 {
-	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] \"opcode\"\n");
+	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] \"opcode\"\n");
 	return 0;
 }
 

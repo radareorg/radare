@@ -31,7 +31,7 @@ PRG=../../
 ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	rm -rf $@
 	mkdir $@
-	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/libexec/radare $@/usr/libexec/gradare $@/usr/share/radare $@/usr/lib $@/usr/share/radare/magic
+	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/share/radare/ $@/usr/libexec/gradare $@/usr/share/radare/rsc $@/usr/lib $@/usr/share/radare/magic
 	#radare
 	cp ../../src/radare $@/usr/bin
 	-cp ${PRG}/src/bug $@/usr/bin/bug
@@ -51,8 +51,8 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp ${PRG}/gui/gradare $@/usr/bin/gradare
 	-cp /usr/bin/gtkdialog $@/usr/bin/gtkdialog
 	-cp /usr/lib/libvte.so.9 $@/usr/lib
-	-cp -rf ${PRG}/gui/grsc/* $@/usr/libexec/gradare
-	-cp -rf ${PRG}/libexec/* $@/usr/libexec/radare
+	-cp -rf ${PRG}/gui/grsc/* $@/usr/share/radare/gradare
+	-cp -rf ${PRG}/libexec/* $@/usr/share/radare/rsc
 	-cp -rf ${PRG}/magic/* $@/usr/share/radare/magic/
 	-cp -rf ${PRG}/doc/* $@/usr/share/doc/radare/
 	-chmod +x $@/usr/bin/*

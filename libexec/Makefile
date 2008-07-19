@@ -21,10 +21,11 @@ miss:
 	@perl miss.pl
 
 install:
-	${INSTALL_DIR} ${LIBEXECDIR}
-	${INSTALL_DIR} ${LIBEXECDIR}/radare
-	rm -rf ${LIBEXECDIR}/radare/*
-	for A in ${FILES} ; do cp $$A ${LIBEXECDIR}/radare ; done
+	${INSTALL_DIR} ${DATADIR}
+	${INSTALL_DIR} ${DATADIR}/radare
+	${INSTALL_DIR} ${DATADIR}/radare/rsc
+	rm -rf ${DATADIR}/radare/rsc/*
+	for A in ${FILES} ; do cp $$A ${DATADIR}/radare/rsc ; done
 
 files:
 	@echo ${FILES}

@@ -13,10 +13,10 @@
 
 * Native 'rasm -d' (do not rsc dasm)
 * Make 'Cs' autodetect multiple strings
-  - If seek inside a string - detect!! if we're in the middle of a data type
-* Xrefs working with the core (radare_read and so)
+* Use rabin directly . not rsc
 
 DONE
+* If seek inside a string - detect!! if we're in the middle of a data type
 * Support arrow keys in Ve and Vt
 * Disassembly is not ok (graphs brbr) (myinc?)
 * s/exits/retun/ en rabin
@@ -31,6 +31,7 @@ DONE
 =====
 0.9.9
 =====
+* Xrefs working with the core (radare_read and so)
 * file.endian = false when opening powerpc files by default
   - rabin does not detects MACHO bins
 * check bindiff output (GNU DIFF shows dupped offsets BRBRB. should I replace it?!?)
