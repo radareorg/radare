@@ -767,12 +767,21 @@ void flags_visual_menu()
 		}
 		cons_flush();
 		ch = cons_readchar();
+		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
 		switch(ch) {
+		case 'J':
+			option+=10;
+			break;
 		case 'j':
 			option++;
 			break;
 		case 'k':
 			if (--option<0)
+				option = 0;
+			break;
+		case 'K':
+			option-=10;
+			if (option<0)
 				option = 0;
 			break;
 		case 'h':
@@ -825,6 +834,9 @@ void flags_visual_menu()
 			option = 0;
 			break;
 		case '?':
+			cons_clear00();
+			cons_printf("\nVt: Visual Track help:\n\n");
+			cons_printf(" q     - quit menu\n");
 			cons_printf(" j/k   - down/up keys\n");
 			cons_printf(" h/b   - go back\n");
 			cons_printf(" l/' ' - accept current selection\n");

@@ -217,6 +217,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 				if (strchr(value, '/'))
 					node->i_value = get_offset(value);
 				else	node->i_value = get_math(value);
+				node->flags |= CN_INT;
 			}
 		}
 	} else {
@@ -264,6 +265,7 @@ struct config_node_t *config_set_i(const char *name, const u64 i)
 		free(node->value);
 		sprintf(buf, "%lld", i); //0x%08lx", i);
 		node->value = strdup(buf);
+		node->flags = CN_RW | CN_INT;
 		node->i_value = i;
 	} else {
 		if (config_new.lock) {
@@ -780,6 +782,18 @@ void config_init(int first)
 	}
 }
 
+void config_visual_hit_i(const char *name, int delta)
+{
+	char buf[1024];
+	struct config_node_t *node;
+	node = config_node_get(name);
+	if (node) {
+		if (node->flags & CN_INT || node->flags & CN_OFFT) {
+			config_set_i(name, config_get_i(name)+delta);
+		}
+	}
+}
+
 /* Visually activate the config variable */
 void config_visual_hit(const char *name)
 {
@@ -793,7 +807,7 @@ void config_visual_hit(const char *name)
 			node->value = estrdup(node->value, node->i_value?"true":"false");
 		} else {
 			// FGETS AND SO
-			cons_printf("New value: ");
+			cons_printf("New value (old=%s): ", node->value);
 			cons_flush();
 			cons_set_raw(0);
 			cons_fgets(buf, 1023, 0, 0);
@@ -897,6 +911,7 @@ void config_visual_menu()
 		}
 		cons_flush();
 		ch = cons_readchar();
+		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
 		switch(ch) {
 		case 'j':
 			option++;
@@ -915,12 +930,12 @@ void config_visual_menu()
 			break;
 		case '*':
 		case '+':
-			// TODO: increment numeric value of selected eval var
-			break;
+			config_visual_hit_i(fs2, +1);
+			continue;
 		case '/':
 		case '-':
-			// TODO: increment numeric value of selected eval var
-			break;
+			config_visual_hit_i(fs2, -1);
+			continue;
 		case 'l':
 		case 'e': // edit value
 		case ' ':
@@ -935,6 +950,9 @@ void config_visual_menu()
 			}
 			break;
 		case '?':
+			cons_clear00();
+			cons_printf("\nVe: Visual Eval help:\n\n");
+			cons_printf(" q     - quit menu\n");
 			cons_printf(" j/k   - down/up keys\n");
 			cons_printf(" h/b   - go back\n");
 			cons_printf(" e/' ' - edit/toggle current variable\n");

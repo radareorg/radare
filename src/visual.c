@@ -308,9 +308,9 @@ CMD_DECL(add_comment)
 			sprintf(ptr, " @ +0x%x", config.cursor);
 			strcat(buf, ptr);
 		}
-		cons_set_raw(1);
 		radare_cmd(buf,0);
 	}
+	cons_set_raw(1);
 	cons_clear();
 	return 0;
 }
@@ -1011,14 +1011,16 @@ CMD_DECL(visual)
 		/* insert mode . 'i' key */
 		switch(config.insert_mode) {
 		case 1:
+			key = cons_get_arrow(key); // get ESC+char, return 'hjkl' char
+#if 0
 			if (key==0x1b) {
 				key = cons_readchar();
 				if (key==0x5b) {
 					// TODO: must also work in interactive visual write ascii mode
 					key = cons_readchar();
 					switch(key) {
-					case 0x35: key='k'; break; // re.pag
-					case 0x36: key='j'; break; // av.pag
+					case 0x35: key='K'; break; // re.pag
+					case 0x36: key='J'; break; // av.pag
 					case 0x41: key='k'; break; // up
 					case 0x42: key='j'; break; // down
 					case 0x43: key='l'; break; // right
@@ -1030,6 +1032,7 @@ CMD_DECL(visual)
 					}
 				}
 			}
+#endif
 
 			switch(key) {
 			case 9: // TAB

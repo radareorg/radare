@@ -11,15 +11,13 @@
 0.9.8 - codename 'scg08'
 =====
 
-* Support arrow keys in Ve and Vt
 * Native 'rasm -d' (do not rsc dasm)
 * Make 'Cs' autodetect multiple strings
-* check bindiff output
-  - implement bindiff patchers
-  - fer un binpatch a traves del contexte del asm que sigui muahah
+  - If seek inside a string - detect!! if we're in the middle of a data type
 * Xrefs working with the core (radare_read and so)
 
 DONE
+* Support arrow keys in Ve and Vt
 * Disassembly is not ok (graphs brbr) (myinc?)
 * s/exits/retun/ en rabin
 * Use DESTDIR in install:
@@ -33,6 +31,11 @@ DONE
 =====
 0.9.9
 =====
+* file.endian = false when opening powerpc files by default
+  - rabin does not detects MACHO bins
+* check bindiff output (GNU DIFF shows dupped offsets BRBRB. should I replace it?!?)
+  - implement bindiff patchers
+  - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 * Add 'bookmarked flags'
 * Add comment support for wF (ignore lines with '#')
   - check if it's done...

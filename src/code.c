@@ -38,9 +38,10 @@ struct list_head data;
 extern int force_thumb;
 
 static ud_t ud_obj;
-static int ud_idx = 0;
 static int length = 0;
-// ???
+/* XXX UD_IDX SHOULD BE REPLACED BY 'BYTES'. THEY HAVE THE SAME FINALITY. DRY! */
+static int ud_idx = 0;
+// XXX udis does not needs to use this !!!
 int udis86_color = 0;
 
 extern int arm_mode;
@@ -128,14 +129,22 @@ struct data_t *data_get(u64 offset)
 	return NULL;
 }
 
-int data_type_range(u64 offset)
+struct data_t *data_get_range(u64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset >= d->from && offset < d->to)
-			return d->type;
+		if (offset >= d->from && offset < d->to-1)
+			return d;
 	}
+	return NULL;
+}
+
+int data_type_range(u64 offset)
+{
+	struct data_t *d = data_get_range(offset);
+	if (d != NULL)
+		return d->type;
 	return -1;
 }
 
@@ -452,7 +461,7 @@ void udis_init()
 		ud_set_mode(&ud_obj, 16);
 	} else
 	if((!strcmp(ptr, "intel")) || (!strcmp(ptr, "intel32")) || (!strcmp(ptr,"x86"))) {
-			ud_set_mode(&ud_obj, 32);
+		ud_set_mode(&ud_obj, 32);
 	} else
 	if (!strcmp(ptr, "intel64")) {
 		ud_set_mode(&ud_obj, 64);
@@ -495,26 +504,24 @@ void udis_jump(int n)
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
 	unsigned char *b = config.block + bytes;
-	int c,ret=0;
+	struct aop_t aop;
+	int c, ret=0;
+	ud_idx =bytes+myinc;
 
 	switch(arch) {
 	case ARCH_X86:
-		//ud_set_pc(&ud_obj, seek);
-		ud_obj.insn_offset = seek;//bytes;
+		ud_obj.insn_offset = seek+bytes;
 		ud_obj.pc = seek;
-		cons_printf("%-24s", ud_insn_asm(&ud_obj));
-
 		ret = ud_insn_len(&ud_obj);
+		cons_printf("%08llx: %d %d %-24s", seek, ud_idx, bytes, ud_insn_asm(&ud_obj));
 		break;
 	case ARCH_CSR:
 		if (bytes<config.block_size)
 			arch_csr_disasm((const unsigned char *)b, (u64)seek);
 		break;
-	case ARCH_AOP: {
-		struct aop_t aop;
+	case ARCH_AOP:
 		arch_aop(seek, b, &aop);
 		ret = arch_aop_aop(seek, b, &aop);
-		}
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
@@ -536,9 +543,11 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	       /* initialize DisasmPara */
 	       dp.opcode = opcode;
 	       dp.operands = operands;
-	       dp.iaddr = seek+myinc; //config.baddr + config.seek + i;
+	       dp.iaddr = seek; //config.baddr + config.seek + i;
 	       dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
+//cons_printf("%08llx-", seek);
+//cons_printf("%02x %02x",b[0],b[1]);
 	       cons_printf("  %s %s", opcode, operands);
 	       } break;
 	case ARCH_JAVA: {
@@ -641,6 +650,7 @@ void udis_arch(int arch, int len, int rows)
 	radare_controlc();
 
 	// XXX remove rows
+	myinc = 0;
 	if (rrows>0) rrows++;
 	while (!config.interrupted) {
 		if (rrows>0 && --rrows == 0) break;
@@ -653,13 +663,12 @@ void udis_arch(int arch, int len, int rows)
 		if (show_comments)
 			metadata_print(bytes);
 
-		/* is this data? */
-		idata = data_size(sk);
-		if (idata>0) {
-			struct data_t *foo = data_get(sk);
-			int dt = data_type(sk);
-			if (dt == DATA_FOLD_O)
-				cons_printf("  ");
+		/* handle data type block */
+		struct data_t *foo = data_get_range(sk);
+		if (foo != NULL) {
+			int dt = foo->type;
+			idata = foo->to-sk-1;
+			myinc = idata;
 			if (show_lines)
 				code_lines_print(reflines, seek, 0);
 			if (show_offset)
@@ -668,14 +677,18 @@ void udis_arch(int arch, int len, int rows)
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
 			}
-		{
-			const char *flag = flag_name_by_offset(seek-config.baddr);
-			if (!strnull(flag))
+			{
+				const char *flag = flag_name_by_offset(seek); //-config.baddr);
+				if (!strnull(flag)) {
 				cons_printf("%s: ", flag);
-		}
-			switch(dt) {
+				}
+			}
+			if (foo->from != sk)
+				cons_printf("<< %d <<",sk-foo->from);
+
+			switch(foo->type) {
 			case DATA_FOLD_C: 
-				cons_printf("  { 0x%llx-0x%llx %lld }", foo->from, foo->to, foo->size); //(foo->to-foo->from));
+				cons_printf("  { 0x%llx-0x%llx %lld(%d) }", foo->from, foo->to, foo->size, myinc);
 				break;
 			case DATA_FOLD_O:
 				cons_strcat("\r                                       \r");
@@ -707,11 +720,11 @@ void udis_arch(int arch, int len, int rows)
 					if (w >= config.height) {
 						cons_printf("\n");
 						if (show_lines)
-							code_lines_print(reflines, seek+i, 1);
+							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
 						if (show_offset)
-							print_addr(seek+i);
+							print_addr(sk+i);
 						cons_printf("  .db  ");
 						w = 0;
 					}
@@ -720,12 +733,9 @@ void udis_arch(int arch, int len, int rows)
 			}
 			cons_newline();
 			CHECK_LINES
-			/* how many different ways to do the same we have? */
-			bytes+=idata;
-			myinc =foo->size; //(foo->to-foo->from);
-			sk = config.seek; //+bytes;
-			seek = config.baddr +sk;
-			//ud_idx+=(foo->size); // XXX ud_stuff must be handled in another way
+			bytes+=idata+1;
+			ud_idx+=idata;
+			myinc = 0;
 			continue;
 		}
 		__outofme:
@@ -739,7 +749,6 @@ void udis_arch(int arch, int len, int rows)
 			for(i=0;i<folder;i++) cons_strcat("  ");
 			cons_strcat("   }\n");
 			CHECK_LINES
-/* oops */
 		}
 
 		switch(arch) {
@@ -759,11 +768,8 @@ void udis_arch(int arch, int len, int rows)
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);
 		}
-		if (arch==ARCH_AOP) {
-//printf("OLD ARCH %d %d \n", ARCH_X86, last_arch);
-			//radis_update_i(last_arch);
+		if (arch==ARCH_AOP)
 			arch = last_arch;
-		}
 		
 		// TODO: Use a single arch_aop here
 		switch(arch) {
@@ -774,39 +780,39 @@ void udis_arch(int arch, int len, int rows)
 				//ud_set_pc(&ud_obj, seek);
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
 				arch_x86_aop((u64)seek, (const unsigned char *)b, &aop);
-				myinc = ud_insn_len(&ud_obj);
+				myinc += ud_insn_len(&ud_obj);
 				break;
 			case ARCH_ARM16:
 				arm_mode = 16;
-				myinc = 2;
+				myinc += 2;
 				arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_ARM:
-				myinc = arch_arm_aop(seek, (const unsigned char *)b, &aop);
+				myinc += arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_MIPS:
 				arch_mips_aop(seek, (const unsigned char *)b, &aop);
-				myinc = aop.length;
+				myinc += aop.length;
 				break;
 			case ARCH_SPARC:
 				arch_sparc_aop(seek, (const unsigned char *)b, &aop);
-				myinc = aop.length;
+				myinc += aop.length;
 				break;
 			case ARCH_JAVA:
 				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
-				myinc = aop.length;
+				myinc += aop.length;
 				break;
 			case ARCH_PPC:
 				arch_ppc_aop(seek, (const unsigned char *)b, &aop);
-				myinc = aop.length;
+				myinc += aop.length;
 				break;
 			case ARCH_CSR:
 				arch_csr_aop(seek, (const unsigned char *)b, &aop);
-				myinc = 2;
+				myinc += 2;
 				break;
 			default:
 				// Uh?
-				myinc = 4;
+				myinc += 4;
 				break;
 		}
 		if (myinc<1)
@@ -824,7 +830,7 @@ void udis_arch(int arch, int len, int rows)
 		D { 
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
-				code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
+				code_lines_print(reflines, sk, 0);
 
 			if (show_offset) {
 				print_addr(seek);
@@ -890,7 +896,7 @@ void udis_arch(int arch, int len, int rows)
 					cur = show_nbytes - 1;
 
 				for(i=0;i<cur; i++)
-					print_color_byte_i(bytes+i, "%02x", b[i]); //config.block[bytes+i]); //ud_obj.insn_hexcode[i]);
+					print_color_byte_i(bytes+i, "%02x", b[i]);
 				if (cur !=myinc)
 					max--;
 				for(i=(max-cur)*2;i>0;i--)
@@ -945,7 +951,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 			 *
 			 * I know that this has no sense, but computer science is not an exact one.
 			 */
-			udis_arch_opcode(arch, endian, seek+myinc, bytes, myinc);
+			udis_arch_opcode(arch, endian, sk, bytes, myinc); //seek+myinc, bytes, myinc);
 
 			/* show references */
 			if (aop.ref) {
@@ -989,12 +995,12 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 				}
 			}
 		} else {
-			udis_arch_opcode(arch, endian, seek, bytes, myinc);
+			udis_arch_opcode(arch, endian, sk, bytes, myinc);
 		}
 
 		NEWLINE;
-		seek+=myinc;
 		bytes+=myinc;
+		myinc = 0;
 	}
 
 	radare_controlc_end();
@@ -1028,21 +1034,21 @@ struct radis_arch_t {
 	int id;
 	int (*fun)(u64 addr, u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
- { "intel", ARCH_X86, &arch_x86_aop },
- { "intel16", ARCH_X86, &arch_x86_aop },
- { "intel32", ARCH_X86, &arch_x86_aop },
- { "intel64", ARCH_X86, &arch_x86_aop },
- { "x86", ARCH_X86, &arch_x86_aop },
- { "mips", ARCH_MIPS , &arch_mips_aop },
- //{ "aop", ARCH_AOP , &arch_aop_aop },
- { "arm", ARCH_ARM, &arch_arm_aop },
- { "arm16", ARCH_ARM16, &arch_arm_aop },
- { "java", ARCH_JAVA , &arch_java_aop },
- { "sparc", ARCH_SPARC, &arch_sparc_aop },
- { "ppc", ARCH_PPC , &arch_ppc_aop },
- { "m68k", ARCH_M68K, &arch_m68k_aop },
- { "csr", ARCH_CSR , &arch_csr_aop },
- { NULL, -1, NULL }
+	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
+	{ "intel16" , ARCH_X86   , &arch_x86_aop }   , 
+	{ "intel32" , ARCH_X86   , &arch_x86_aop }   , 
+	{ "intel64" , ARCH_X86   , &arch_x86_aop }   , 
+	{ "x86"     , ARCH_X86   , &arch_x86_aop }   , 
+	{ "mips"    , ARCH_MIPS  , &arch_mips_aop }  , 
+	//{ "aop"   , ARCH_AOP   , &arch_aop_aop }   , 
+	{ "arm"     , ARCH_ARM   , &arch_arm_aop }   , 
+	{ "arm16"   , ARCH_ARM16 , &arch_arm_aop }   , 
+	{ "java"    , ARCH_JAVA  , &arch_java_aop }  , 
+	{ "sparc"   , ARCH_SPARC , &arch_sparc_aop } , 
+	{ "ppc"     , ARCH_PPC   , &arch_ppc_aop }   , 
+	{ "m68k"    , ARCH_M68K  , &arch_m68k_aop }  , 
+	{ "csr"     , ARCH_CSR   , &arch_csr_aop }   , 
+	{ NULL      , -1         , NULL }
 };
 
 void radis_update_i(int id)
@@ -1072,8 +1078,8 @@ void radis_update()
 
 void radis(int len, int rows)
 {
-	/* not always necesary necessary 
-	radis_update(); */
+	/* not always necesary */
+	// radis_update();
 
 	radare_controlc();
 	udis_arch(config.arch, len, rows);

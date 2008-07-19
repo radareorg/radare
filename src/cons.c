@@ -774,3 +774,27 @@ void cons_set_raw(int b)
 #endif
 	fflush(stdout);
 }
+
+int cons_get_arrow(int ch)
+{
+	if (ch==0x1b) {
+		ch = cons_readchar();
+		if (ch==0x5b) {
+			// TODO: must also work in interactive visual write ascii mode
+			ch = cons_readchar();
+			switch(ch) {
+				case 0x35: ch='K'; break; // re.pag
+				case 0x36: ch='J'; break; // av.pag
+				case 0x41: ch='k'; break; // up
+				case 0x42: ch='j'; break; // down
+				case 0x43: ch='l'; break; // right
+				case 0x44: ch='h'; break; // left
+				case 0x3b:
+					   break;
+				default:
+					   ch = 0;
+			}
+		}
+	}
+	return ch;
+}

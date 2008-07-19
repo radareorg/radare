@@ -113,6 +113,7 @@ void code_lines_print2(struct reflines_t *list, u64 addr);
 int metadata_xrefs_print(u64 addr, int type);
 int metadata_xrefs_add(u64 addr, u64 from, int type);
 
+struct data_t *data_get_range(u64 offset);
 int data_set_len(u64 off, u64 len);
 int data_set(u64 off, int type);
 void data_add(u64 off, int type);
