@@ -1,5 +1,15 @@
 === 0.9.8 ===
 
+changeset:   321:3bf039d212b9
+tag:         tip
+user:        pancake <youterm.com>
+date:        Sat Jul 19 22:38:05 2008 +0200
+files:       ChangeLog TODO
+description:
+* Up release version to 0.9.8
+- Update ChangeLog file
+
+
 changeset:   320:e639079b9c5f
 tag:         tip
 user:        pancake <youterm.com>

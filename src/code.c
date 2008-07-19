@@ -510,8 +510,8 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		ud_obj.insn_offset = seek+bytes;
-		ud_obj.pc = seek;
+		ud_obj.insn_offset = seek+myinc; //+bytes;
+		ud_obj.pc = seek+myinc;
 		ret = ud_insn_len(&ud_obj);
 		cons_printf("%-24s", ud_insn_asm(&ud_obj));
 		//cons_printf("%08llx: %d %d %-24s", seek, ud_idx, bytes, ud_insn_asm(&ud_obj));

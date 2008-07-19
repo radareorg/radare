@@ -10,7 +10,7 @@ crOBJ+=${OLLYOBJ}
 crOBJ+=radare.o stripstr.o readline.o search.o undo.o io.o cons.o trace.o vm.o
 crOBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o
 crOBJ+=plugin.o socket.o analyze.o hist.o code.o rabin.o project.o hack.o bytepat.o
-crOBJ+=rasm/rasm.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
+crOBJ+=rasm/rasm.o rasm/olly.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
 
 # plug/io
 
