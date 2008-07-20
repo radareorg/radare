@@ -451,6 +451,10 @@ int rabin_identify_header()
 		filetype = FILETYPE_MACHO;
 		printf("endian = big\n");
 	} else	
+	if (!memcmp(buf, "CSR-", 4)) {
+		filetype = FILETYPE_CSRFW;
+	//	config_set("asm.arch", "csr");
+	} else
 	if (!memcmp(buf, "dex\n009\0", 8))
 		filetype = FILETYPE_DEX;
 	else

@@ -10,10 +10,10 @@
 =====
 0.9.9
 =====
+* Avoid dupped code between rabin.c and rabin/rabin.c
 * Use rabin directly . not rsc
 * Make 'Cs' autodetect multiple strings
 * Rabin identify ELF and ELF32 with -t
-* Native 'rasm -d' (do not rsc dasm)
 * Xrefs working with the core (radare_read and so)
 * file.endian = false when opening powerpc files by default
   - rabin does not detects MACHO bins

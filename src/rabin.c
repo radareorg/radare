@@ -20,6 +20,8 @@
 
 #include "main.h"
 
+#include "rabin/rabin.h"
+#if 0
 enum {
 	FILETYPE_UNK = 0,
 	FILETYPE_ELF,
@@ -28,6 +30,8 @@ enum {
 	FILETYPE_CLASS,
 	FILETYPE_CSRFW,
 };
+#endif
+// XXX duppend between rabin/rabin.c and rabin.c
 
 static unsigned int pebase;
 
@@ -84,6 +88,47 @@ int rabin_identify_header()
 
 	io_lseek(config.fd, 0, SEEK_SET);
 	io_read(config.fd, buf, 1024);
+
+        if (!memcmp(buf, "\xCA\xFE\xBA\xBE", 4))
+		if (buf[9])
+                	filetype = FILETYPE_CLASS;
+		else	filetype = FILETYPE_MACHO;
+	else
+	if (!memcmp(buf, "CSR-", 4)) {
+		filetype = FILETYPE_CSRFW;
+		config_set("asm.arch", "csr");
+	} else
+        if (!memcmp(buf, "\xFE\xED\xFA\xCE", 4)) {
+		filetype = FILETYPE_MACHO;
+		printf("endian = big\n");
+	} else	
+	if (!memcmp(buf, "dex\n009\0", 8))
+		filetype = FILETYPE_DEX;
+	else
+	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4))
+		filetype = FILETYPE_ELF;
+	else
+	if (!memcmp(buf, "\x4d\x5a", 2)) {
+		int pe = buf[0x3c];
+		filetype = FILETYPE_MZ;
+		if (buf[pe]=='P' && buf[pe+1]=='E') {
+			filetype = FILETYPE_PE;
+			pebase = pe;
+		}
+	} else {
+		printf("Unknown filetype\n");
+	}
+
+	return filetype;
+}
+#if 0
+int rabin_identify_header()
+{
+	int pe, filetype = FILETYPE_UNK;
+	unsigned char buf[1024];
+
+	io_lseek(config.fd, 0, SEEK_SET);
+	io_read(config.fd, buf, 1024);
 	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4))
 		filetype = FILETYPE_ELF;
 	else
@@ -107,6 +152,7 @@ int rabin_identify_header()
 
 	return filetype;
 }
+#endif
 
 int rabin_load()
 {
@@ -124,9 +170,13 @@ int rabin_load()
 
 	/* add autodetection stuff here */
 	switch(header) {
+	case FILETYPE_MACHO:
+		config_set("file.type", "macho");
+		config_set("asm.arch", "ppc");
+		config_set("cfg.endian", "false");
+		 break;
 	case FILETYPE_ELF:
 		config_set("file.type", "elf");
-		//config_set_i("file.baddr", 0x8048000);
 		config_set_i("file.baddr", (u64)0x8048000); // XXX doesnt works! :(
 		#if __i386__
 		config.baddr = 0x8048000;

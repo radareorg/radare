@@ -168,10 +168,10 @@ int arch_print_syscall()
 		return -1;
 	}
 #if __x86_64__
-	cons_printf("0x%08llx syscall(%d) ", (u64)R_RIP(regs), (int)R_REAX(regs));
+	cons_printf("0x%08llx syscall(%d) ", (u64)R_RIP(regs), (int)R_ORAX(regs));
 	
 	for(i=0;ptr[i].num;i++) {
-		if(R_REAX(regs) == ptr[i].num) {
+		if(R_ORAX(regs) == ptr[i].num) {
 			cons_printf("%s ( ", ptr[i].name);
 			j = ptr[i].args;
 			if (j>0) cons_printf("0x%08x ", R_RBX(regs));
@@ -184,7 +184,7 @@ int arch_print_syscall()
 	}
 
 	cons_printf(") = 0x%08llx\n", R_RAX(regs));
-	return (int)R_REAX(regs);
+	return (int)R_ORAX(regs);
 #elif __i386__
 	cons_printf("0x%08x syscall(%d) ", R_EIP(regs), R_OEAX(regs), R_EAX(regs));
 
