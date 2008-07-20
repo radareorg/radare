@@ -471,12 +471,16 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
-		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes , b0->addr);
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
+#if 0
 		config.seek = b0->addr;
 		radare_read(0);
+#endif
 		ptr =  pipe_command_to_string(cmd);
 		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
 		grava_node_set(node, "body", ptr);
+		//printf("cmd_str = %x\n", grava_graph_get(win->grava->graph, "cmd"));
+		//grava_graph_set(win->grava->graph, "cmd", "; XXX LOL!!!");
 		//printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
 		free(ptr);
 

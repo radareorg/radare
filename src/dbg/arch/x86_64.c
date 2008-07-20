@@ -59,8 +59,8 @@ struct regs_off roff[] = {
 	{"rdi", R_RDI_OFF},
 	{"rip", R_RIP_OFF},
 	{"eip", R_RIP_OFF},
-	{"rsp", R_ESP_OFF},
-	{"rbp", R_EBP_OFF},
+	{"rsp", R_RSP_OFF},
+	{"rbp", R_RBP_OFF},
 	{"eflags", R_RFLAGS_OFF},
 	{0, 0}
 };
@@ -625,7 +625,6 @@ struct syscall_t {
 };
 #endif
 
-#if 0
 int arch_print_syscall()
 {
 #if __linux__
@@ -647,10 +646,10 @@ int arch_print_syscall()
 	
 	//XXX why are there 3 parameters?
 	printf("0x%08llx syscall(%d) ", R_RIP(regs),
-		(unsigned int)R_REAX(regs));
+		(unsigned int)R_RAX(regs));
 
 	for(i=0;ptr[i].num;i++) {
-		if (R_REAX(regs) == ptr[i].num) {
+		if (R_RAX(regs) == ptr[i].num) {
 			cons_printf("%s ( ", ptr[i].name);
 			j = ptr[i].args;
 			if (j>0) cons_printf("0x%08x ", R_RBX(regs));
@@ -662,12 +661,11 @@ int arch_print_syscall()
 		}
 	}
 	cons_printf(") = 0x%08x\n", R_RAX(regs));
-	return (int)R_REAX(regs);
+	return (int)R_RAX(regs);
 #else
 	return -1;
 #endif
 }
-#endif
 
 static regs_t oregs;
 static regs_t nregs;
@@ -1423,6 +1421,21 @@ addr_t arch_dealloc_page(addr_t addr, unsigned long size)
 {
 	#warning "FIXME: code is missing"
 	return 0;
+}
+
+int arch_is_fork()
+{
+        char sc_ins[2];
+
+	#if __linux__
+       	/* clone or fork syscalls */
+		return (R_ORAX(WS(regs)) == 120 || R_RAX(WS(regs)) == 2) &&
+               	 debug_read_at(ps.tid, sc_ins, 2, R_RIP(WS(regs)) - 2) == 2 &&
+                 memcmp(sc_ins, SYSCALL_INS, sizeof(SYSCALL_INS) - 1) == 0;
+	#else
+#warning arch_is_fork() is not implemetned for this platform
+		return 0;
+	#endif
 }
 
 #endif

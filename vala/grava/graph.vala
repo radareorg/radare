@@ -24,6 +24,7 @@ public class Grava.Graph : GLib.Object
 	public Layout layout;
 	public SList<Node> nodes;
 	public SList<Edge> edges;
+	public HashTable<string,string> data;
 	public static weak Node selected = null;
 	public double zoom  = 1;
 	public double panx  = 0;
@@ -35,12 +36,23 @@ public class Grava.Graph : GLib.Object
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
 		layout = new DefaultLayout();
+		data = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);
 	}
 
 	public void reset() {
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
 		layout = new DefaultLayout();
+	}
+
+	public void set(string key, string val)
+	{
+		data.insert(key, val);
+	}
+
+	public string get(string key)
+	{
+		return data.lookup(key);
 	}
 
 	public void select_next()
