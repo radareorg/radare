@@ -46,7 +46,6 @@
 
 static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
 
-extern const char *dl_prompt;
 static unsigned char *yank_buffer = NULL;
 static int yank_buffer_size = 0;
 static int do_repeat=0;
