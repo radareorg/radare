@@ -94,7 +94,7 @@ create_environ() {
 : ${INSTALL:=/usr/bin/install}
 : ${INSTALL_DIR:=${INSTALL} -d}
 : ${INSTALL_DATA:=${INSTALL} -m 644}
-: ${INSTALL_SCRIPT:=${INSTALL} -m 644}
+: ${INSTALL_SCRIPT:=${INSTALL} -m 755}
 : ${INSTALL_PROGRAM:=${INSTALL} -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}

@@ -471,6 +471,14 @@ function Radare.Search.hex(string)
 	return Radare.Search.parse(Radare.cmd("/x "..string))
 end
 
+function Radare.Search.replace(hex_search, hex_write, delta)
+	if delta == nil then
+		Radare.Config.set("cmd.hit","wx "..hex_write)
+	else
+		Radare.Config.set("cmd.hit","wx "..hex_write.." @ +"..delta)
+	end
+	return Radare.Search.parse(Radare.cmd("/x "..hex_search))
+end
 
 -- write stuff
 

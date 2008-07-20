@@ -114,8 +114,7 @@ install:
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
 	${INSTALL_SCRIPT} src/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
-	${INSTALL_SCRIPT} src/radiff/radiff ${BINDIR}
-	#${INSTALL_SCRIPT} src/bindiff ${BINDIR}
+	${INSTALL_SCRIPT} src/bindiff ${BINDIR}
 	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
 	${INSTALL_SCRIPT} src/rfile ${BINDIR}
 	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/

@@ -625,6 +625,7 @@ struct syscall_t {
 };
 #endif
 
+#if 0
 int arch_print_syscall()
 {
 #if __linux__
@@ -666,6 +667,7 @@ int arch_print_syscall()
 	return -1;
 #endif
 }
+#endif
 
 static regs_t oregs;
 static regs_t nregs;
