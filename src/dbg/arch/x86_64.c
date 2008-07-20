@@ -696,16 +696,17 @@ int arch_print_registers(int rad, const char *mask)
 	
 	if (rad) {
 		cons_printf("\n"); // XXX stupid trick
-		cons_printf("f eax_orig @ 0x%llx\n", (long)R_REAX(regs));
-		cons_printf("f eax @ 0x%llx\n", (long)R_RAX(regs));
-		cons_printf("f ebx @ 0x%llx\n", (long)R_RBX(regs));
-		cons_printf("f ecx @ 0x%llx\n", (long)R_RCX(regs));
-		cons_printf("f edx @ 0x%llx\n", (long)R_RDX(regs));
-		cons_printf("f ebp @ 0x%llx\n", (long)R_RBP(regs));
-		cons_printf("f esi @ 0x%llx\n", (long)R_RSI(regs));
-		cons_printf("f edi @ 0x%llx\n", (long)R_RDI(regs));
+		cons_printf("f rax_orig @ 0x%llx\n", (long)R_ORAX(regs));
+		cons_printf("f rax @ 0x%llx\n", (long)R_RAX(regs));
+		cons_printf("f rbx @ 0x%llx\n", (long)R_RBX(regs));
+		cons_printf("f rcx @ 0x%llx\n", (long)R_RCX(regs));
+		cons_printf("f rdx @ 0x%llx\n", (long)R_RDX(regs));
+		cons_printf("f rbp @ 0x%llx\n", (long)R_RBP(regs));
+		cons_printf("f rsi @ 0x%llx\n", (long)R_RSI(regs));
+		cons_printf("f rdi @ 0x%llx\n", (long)R_RDI(regs));
 		cons_printf("f eip @ 0x%llx\n", (long)R_RIP(regs));
-		cons_printf("f esp @ 0x%llx\n", (long)R_RSP(regs));
+		cons_printf("f rip @ 0x%llx\n", (long)R_RIP(regs));
+		cons_printf("f rsp @ 0x%llx\n", (long)R_RSP(regs));
 	} else {
 		if (color) {
 			if (R_RAX(regs)!=R_RAX(oregs)) cons_printf("\e[35m");
@@ -719,8 +720,8 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("  rbx  0x%08llx\e[0m", (long long)R_RBX(regs));
 			if (R_RDI(regs)!=R_RDI(oregs)) cons_printf("\e[35m");
 			cons_printf("    rdi  0x%08llx\e[0m", (long long)R_RDI(regs));
-			if (R_REAX(regs)!=R_REAX(oregs)) cons_printf("\e[35m");
-			cons_printf("    orax   0x%08llx\e[0m\n",   (long long)R_REAX(regs));
+			if (R_ORAX(regs)!=R_ORAX(oregs)) cons_printf("\e[35m");
+			cons_printf("    orax   0x%08llx\e[0m\n",   (long long)R_ORAX(regs));
 			if (R_RCX(regs)!=R_RCX(oregs)) cons_printf("\e[35m");
 			cons_printf("  rcx  0x%08llx\e[0m", (long long)R_RCX(regs));
 			if (R_RSP(regs)!=R_RSP(oregs)) printf("\e[35m");
@@ -740,7 +741,7 @@ int arch_print_registers(int rad, const char *mask)
 //#endif
 		} else {
 			cons_printf("  rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (long long)R_RAX(regs), (long long)R_RSI(regs), (long long)R_RIP(regs));
-			cons_printf("  rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (long long)R_RBX(regs), R_RDI(regs), (long long)R_REAX(regs));
+			cons_printf("  rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (long long)R_RBX(regs), R_RDI(regs), (long long)R_ORAX(regs));
 			cons_printf("  rcx  0x%08llx    rsp  0x%08llx    eflags 0x%04x\n",   (long long)R_RCX(regs), (long long)R_RSP(regs), (long long)R_RFLAGS(regs));
 			cons_printf("  rdx  0x%08llx    rbp  0x%08llx    ", (long long)R_RDX(regs), (long long)R_RBP(regs));
 			dump_eflags(R_RFLAGS(regs));

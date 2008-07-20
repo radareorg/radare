@@ -61,7 +61,7 @@ void dr_init();
 #define R_RBP(x) x.rbp
 #define R_RSP(x) x.rsp
 #define R_RAX(x) x.rax
-#define R_REAX(x) x.orig_rax
+#define R_ORAX(x) x.orig_rax
 #define R_RBX(x) x.rbx
 #define R_RCX(x) x.rcx
 #define R_RDX(x) x.rdx
@@ -74,7 +74,7 @@ void dr_init();
 #define R_RBP_OFF offsetof(struct user_regs_struct, rbp)
 #define R_RSP_OFF offsetof(struct user_regs_struct, rsp)
 #define R_RAX_OFF offsetof(struct user_regs_struct, rax)
-#define R_REAX_OFF offsetof(struct user_regs_struct, orig_rax)
+#define R_ORAX_OFF offsetof(struct user_regs_struct, orig_rax)
 #define R_RBX_OFF offsetof(struct user_regs_struct, rbx)
 #define R_RCX_OFF offsetof(struct user_regs_struct, rcx)
 #define R_RDX_OFF offsetof(struct user_regs_struct, rdx)
