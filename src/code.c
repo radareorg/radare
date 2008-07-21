@@ -395,7 +395,7 @@ static int metadata_print(int delta)
 {
 	int show_lines = (int)config_get("asm.lines");
 	int show_flagsline = (int)config_get("asm.flagsline");
-	u64 offset = (u64)config.seek + (u64)delta;
+	u64 offset = config.baddr + (u64)config.seek + (u64)delta;
 	int lines = 0;
 	const char *ptr;
 	int i = 0;
@@ -406,12 +406,11 @@ static int metadata_print(int delta)
 		ptr = flag_name_by_offset( offset );
 		if (ptr && ptr[0]) {
 			if (show_lines&&reflines)
-				code_lines_print(reflines, config.baddr+config.seek+i, 1);
+				code_lines_print(reflines, offset, 1);
 			C
-				cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n",
-					config.baddr+offset, ptr);
+				cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", offset, ptr);
 			else
-				cons_printf(OFF_FMTs" %s:\n", config.baddr+offset, ptr);
+				cons_printf(OFF_FMTs" %s:\n", offset, ptr);
 			lines++;
 		}
 	}
@@ -419,12 +418,6 @@ static int metadata_print(int delta)
 	ptr = metadata_comment_get(offset);
 	if (ptr && ptr[0]) {
 		int i;
-#if 0
-		if (show_lines&&reflines)
-			code_lines_print2(reflines, config.baddr+config.seek +i);
-		C	cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", config.baddr+offset, ptr);
-		else	cons_printf(OFF_FMTs" %s:\n", config.baddr+offset, ptr);
-#endif
 		for(i=0;ptr[i];i++)
 			if (ptr[i]=='\n') lines++;
 		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
@@ -478,10 +471,6 @@ void udis_init()
 		else if (!strcmp(syn,"att")) 
 			ud_set_syntax(&ud_obj, UD_SYN_ATT);
 	}
-
-#ifdef _WIN32
-	_setmode(_fileno(stdin), _O_BINARY);
-#endif  
 	ud_set_input_hook(&ud_obj, input_hook_x);
 }
 
@@ -506,7 +495,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	unsigned char *b = config.block + bytes;
 	struct aop_t aop;
 	int c, ret=0;
-	ud_idx =bytes+myinc;
+	ud_idx = bytes+myinc;
 
 	switch(arch) {
 	case ARCH_X86:
@@ -547,8 +536,6 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	       dp.iaddr = seek; //config.baddr + config.seek + i;
 	       dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
-//cons_printf("%08llx-", seek);
-//cons_printf("%02x %02x",b[0],b[1]);
 	       cons_printf("  %s %s", opcode, operands);
 	       } break;
 	case ARCH_JAVA: {
@@ -591,6 +578,7 @@ void udis_arch(int arch, int len, int rows)
 	u64 myinc = 0;
 	unsigned char b[32];
 	char buf[1024];
+	const char *flag;
 	const char *cmd_asm;
 	int rrows = rows;
 	int endian;
@@ -657,8 +645,8 @@ void udis_arch(int arch, int len, int rows)
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
-		seek = config.baddr +config.seek+bytes;
-		sk = config.seek+bytes;
+		seek = config.baddr + config.seek+bytes;
+		sk = config.baddr + config.seek+bytes;
 		CHECK_LINES
 
 		if (show_comments)
@@ -678,14 +666,13 @@ void udis_arch(int arch, int len, int rows)
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
 			}
-			{
-				const char *flag = flag_name_by_offset(seek); //-config.baddr);
-				if (!strnull(flag)) {
+
+			flag = flag_name_by_offset(seek);
+			if (!strnull(flag))
 				cons_printf("%s: ", flag);
-				}
-			}
+
 			if (foo->from != sk)
-				cons_printf("<< %d <<",sk-foo->from);
+				cons_printf("<< %d <<", sk-foo->from);
 
 			switch(foo->type) {
 			case DATA_FOLD_C: 
@@ -852,7 +839,7 @@ void udis_arch(int arch, int len, int rows)
 
 			if (show_flags && !show_flagsline) {
 				char buf[1024];
-				const char *flag = flag_name_by_offset(seek-config.baddr);
+				const char *flag = flag_name_by_offset(seek ); //+config.baddr);
 				//config.baddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
 					sprintf(buf, "%%%ds:", show_nbytes);
@@ -957,7 +944,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 
 			/* show references */
 			if (aop.ref) {
-				if (string_flag_offset(buf, aop.ref))
+				if (string_flag_offset(buf, aop.ref));
 					cons_printf(" ; %s",buf);
 			}
 

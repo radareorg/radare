@@ -163,12 +163,12 @@ do_elf_checks(dietelf_bin_t *bin)
 	fprintf(stderr, "File not ELF\n");
 	return -1;
     }
-    
+#if 0 
     if (ehdr->e_version != EV_CURRENT) {
 	fprintf(stderr, "ELF version not current\n");
 	return -1;
     }
-
+#endif
     if (ehdr->e_ident[EI_CLASS] != ELFCLASS32) {
 	printf("ELF64 not yet supported\n");
 	return -1;

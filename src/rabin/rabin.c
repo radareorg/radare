@@ -84,22 +84,24 @@ void rabin_show_info(const char *file)
 		       "Data enconding:  %s\n"
 		       "OS/ABI name:     %s\n"
 		       "Machine name:    %s\n"
-		       "File type:       %s, ",
+		       "File type:       %s\n",
 		       dietelf_get_elf_class(&bin),
 		       dietelf_get_data_encoding(&bin),
 		       dietelf_get_osabi_name(&bin),
 		       dietelf_get_machine_name(&bin),
 		       dietelf_get_file_type(&bin));
 
+		printf("Stripped:        ");
 		if (dietelf_get_stripped(&bin))
-		    printf("stripped, ");
+		    printf("Yes\n");
 		else
-		    printf("not stripped, ");
+		    printf("No\n");
 
+		printf("Static:          ");
 		if (dietelf_get_static(&bin))
-		    printf("statically linked\n");
+		    printf("Yes\n");
 		else
-		    printf("dynamically linked\n");
+		    printf("No\n");
 
 		close(fd);
 		break;

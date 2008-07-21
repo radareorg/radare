@@ -10,6 +10,12 @@
 =====
 0.9.9
 =====
+* autodetect references to flags with aop.ref on
+	a1acc30508      mov eax, [0x805c3ac]
+	3d00800000      cmp eax, 0x8000
+	833d0cc4050803  cmp dword [0x805c40c], 0x3
+	bf0d9b0508      mov edi, 0x8059b0d
+
 * Avoid dupped code between rabin.c and rabin/rabin.c
 * Use rabin directly . not rsc
 * Make 'Cs' autodetect multiple strings
