@@ -26,5 +26,6 @@ enum {
 #define ACTION_OTHERS	0x0400
 #define ACTION_STRINGS  0x0800
 #define ACTION_NOP      0x1000
+#define ACTION_INFO     0x2000
 
 #endif

@@ -61,9 +61,49 @@ int rabin_show_help()
 " -L [lib]  dlopen library and show address\n"
 " -z        search for strings in elf non-executable sections\n"
 " -x        show xrefs of symbols (-s/-i/-o required)\n"
+" -I        show binary info\n"
 " -r        output in radare commands\n"
 " -v        be verbose\n");
 	return 1;
+}
+
+void rabin_show_info(const char *file)
+{
+	dietelf_bin_t bin;
+
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+    		fd = dietelf_new(file, &bin);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+
+		printf("ELF class:       %s\n"
+		       "Data enconding:  %s\n"
+		       "OS/ABI name:     %s\n"
+		       "Machine name:    %s\n"
+		       "File type:       %s, ",
+		       dietelf_get_elf_class(&bin),
+		       dietelf_get_data_encoding(&bin),
+		       dietelf_get_osabi_name(&bin),
+		       dietelf_get_machine_name(&bin),
+		       dietelf_get_file_type(&bin));
+
+		if (dietelf_get_stripped(&bin))
+		    printf("stripped, ");
+		else
+		    printf("not stripped, ");
+
+		if (dietelf_get_static(&bin))
+		    printf("statically linked\n");
+		else
+		    printf("dynamically linked\n");
+
+		close(fd);
+		break;
+	}
 }
 
 void rabin_show_strings(const char *file)
@@ -480,7 +520,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishotL:Svxz")) != -1)
+	while ((c = getopt(argc, argv, "acerlishotL:SIvxz")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -507,6 +547,9 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'S':
 			action |= ACTION_SECTIONS;
+			break;
+		case 'I':
+			action |= ACTION_INFO;
 			break;
 		case 'e':
 			action |= ACTION_ENTRY;
@@ -568,6 +611,8 @@ int main(int argc, char **argv, char **envp)
 //		rabin_show_symbols(file);
 	if (action&ACTION_SECTIONS)
 		rabin_show_sections(file);
+	if (action&ACTION_INFO)
+		rabin_show_info(file);
 	if (action&ACTION_LIBS)
 		rabin_show_libs(file);
 	if (action&ACTION_CHECKSUM)

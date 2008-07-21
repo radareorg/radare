@@ -28,6 +28,13 @@ u64   dietelf_get_section_offset(int fd, dietelf_bin_t *bin, const char *section
 int   dietelf_get_section_size(int fd, dietelf_bin_t *bin, const char *section_name);
 u64   dietelf_get_entry_addr(dietelf_bin_t *bin);
 u64   dietelf_get_base_addr(dietelf_bin_t *bin);
+int   dietelf_get_stripped(dietelf_bin_t *bin);
+int   dietelf_get_static(dietelf_bin_t *bin);
+char* dietelf_get_data_encoding (dietelf_bin_t *bin);
+char* dietelf_get_machine_name (dietelf_bin_t *bin);
+char* dietelf_get_file_type (dietelf_bin_t *bin);
+char* dietelf_get_elf_class (dietelf_bin_t *bin);
+char* dietelf_get_osabi_name (dietelf_bin_t *bin);
 int   dietelf_list_sections(int fd, dietelf_bin_t *bin);
 int   dietelf_list_imports(int fd, dietelf_bin_t *bin);
 int   dietelf_list_exports(int fd, dietelf_bin_t *bin);
