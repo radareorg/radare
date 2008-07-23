@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GETCOLOR int color = getv("COLOR");
+#define GETCOLOR int color = config_get("scr.color");
 #define TITLE if (color) cons_printf("\e[36m");
 #define TITLE_END if (color) cons_printf("\e[0m");
 

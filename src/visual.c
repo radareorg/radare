@@ -604,7 +604,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 			char *tmp;
 			char out[1024];
 			int osize;
-			int size = config.cursor - config.ocursor;
+			int size = config.cursor - config.ocursor+1;
 			if (size<0) size=-size;
 			tmp = (char *)malloc(size+1);
 			osize = hexstr2binstr(buf+3, &out);

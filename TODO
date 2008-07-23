@@ -7,9 +7,37 @@
 
 ===========================================================
 
+=== TODAY ===
+
+
+1- syscall-flag  using userdefined table (in file)
+2- file.baddr fix fix fix
+3- global data in graphs - allow to run specific commands in nodes
+4- radiff --> soporte básico correcto, y diff de symbols
+5- fix io plugin shit
+6- aop.ref must get more ref types (write checks)
+7- graph.seek
+9- reload project file if changes
+b- endian fix for rabin
+d- !run <args>
+e- rsc monitor cool from teh graph view or so
+f- pcap/radare for fun
+10 backward search
+11 happier bindiff
+
+
+
+13 call <flag> arg arg arg
+ - done with lua
+
+
+
+8- remove project strange commands (use radare ones) -- ?? sure? is not secure!
+
 =====
 0.9.9
 =====
+* Fix dupped plugin posix
 * autodetect references to flags with aop.ref on
 	a1acc30508      mov eax, [0x805c3ac]
 	3d00800000      cmp eax, 0x8000
@@ -19,16 +47,11 @@
 * Avoid dupped code between rabin.c and rabin/rabin.c
 * Use rabin directly . not rsc
 * Make 'Cs' autodetect multiple strings
-* Rabin identify ELF and ELF32 with -t
 * Xrefs working with the core (radare_read and so)
-* file.endian = false when opening powerpc files by default
-  - rabin does not detects MACHO bins
 * check bindiff output (GNU DIFF shows dupped offsets BRBRB. should I replace it?!?)
   - implement bindiff patchers
   - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 * Add 'bookmarked flags'
-* Add comment support for wF (ignore lines with '#')
-  - check if it's done...
 * rabin
   - Elf64
   - string xrefs
@@ -55,7 +78,6 @@ Radare:
   - Multiple open/close is broken :?
   - make it work with vim in console
 * cfg.inverse must be universal!
-* Fix dupped plugin posix
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * 'w' in cursor mode with range selected must fill the buffer
 * write shellcode to dump a buffer in hexa (inline jump)
@@ -575,8 +597,6 @@ FileDescriptors
      pop eax
 
    - statistics will show the time spend to run a determined piece of code
-
-
 
 
 Imports:

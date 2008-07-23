@@ -61,6 +61,8 @@ int debug_fd_list(int pid)
 	char path[1024];
 	char buf[1024];
 	char buf2[1024];
+	struct stat st;
+	int r,w, t;
 	struct dirent *de;
 	DIR *dd;
 
@@ -77,12 +79,21 @@ int debug_fd_list(int pid)
 		strncat(path, de->d_name, de->d_reclen);
 		memset(buf, 0, 1024);
 		readlink(path, buf, 1023);
-		if (readlink(buf, buf2, 1023) != -1)
-		printf("%2s 0x%08x %s -> %s \n", de->d_name, 
-			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),buf,buf2);
+		if (stat(path, &st) != -1) {
+			t = st.st_mode & S_IFIFO  ? 'P':
+			    st.st_mode & S_IFSOCK ? 'S':
+			    st.st_mode & S_IFCHR  ? 'C':'-';
+		} else t = '-';
+		if (lstat(path, &st) != -1) {
+			r = st.st_mode & S_IRUSR  ? 'r':'-';
+			w = st.st_mode & S_IWUSR  ? 'w':'-';
+		} else r = w = '-';
+		if (readlink(buf, buf2, 1023) != -1) /* never happens ? */
+		printf("%2s 0x%08x %c%c%c %s -> %s \n", de->d_name, 
+			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf,buf2);
 		else
-		printf("%2s 0x%08x %s \n", de->d_name, 
-			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),buf);
+		printf("%2s 0x%08x %c%c%c %s\n", de->d_name, 
+			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf);
 	}
 	closedir(dd);
 
@@ -169,7 +180,8 @@ int debug_fd_open(int pid, char *file, int mode)
 int debug_fd_close(int pid, int fd)
 {
 #if __UNIX__
-	return arch_syscall(pid, SYS_close, 'i', fd);
+	//return arch_syscall(pid, SYS_close, 'i', fd);
+	return arch_syscall(pid, SYS_close, fd);
 #endif
 	return 0;
 }

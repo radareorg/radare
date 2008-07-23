@@ -276,27 +276,26 @@ char *rad_eval_matches(const char *text, int state)
  */
 char *rad_flags_matches(const char *text, int state)
 {
-	static int i;
-	static int len, j;
-	struct list_head *pos;
+	static struct list_head *pos;
+        static int i, j, len;
 
-	if (config.interrupted) return NULL;
-	if (!state) {
-		i = 0;
-		len = strlen(text);
-	}
+        if (!state) {
+                len = strlen(text);
+		pos = (&flags)->next;
+        }
 
-	j = 0;
-	i++;
-	list_for_each(pos, &flags) {
-		flag_t *f = list_entry(pos, flag_t, list);
-		if (j++ == state) {
-			if (len == 0 || strncmp (text, f->name, len) == 0)
-				return strdup(f->name);
+	for (; pos != &flags; pos = pos->next) {
+		flag_t *f = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (len == 0 || strncmp(text, f->name, len) == 0) {
+			pos = pos->next;
+			return strdup(f->name);
 		}
 	}
-	return ((char *)NULL);
+
+        return ((char *)NULL);
 }
+
 
 /*
  * Boolean autocompletion
@@ -475,11 +474,6 @@ char **rad_autocompletion(const char *text, int start, int end)
 			case ARG_EVAL:
 				matches = rl_completion_matches(text, rad_eval_matches);
 				break;
-			case ARG_NUMBER:
-				matches = rl_completion_matches(text, rad_flags_matches);
-				if (matches == NULL)
-				matches = rl_completion_matches (text, rad_offset_matches);
-				break;
 			case ARG_FLAG:
 				matches = rl_completion_matches(text, rad_flags_matches);
 				break;
@@ -487,6 +481,11 @@ char **rad_autocompletion(const char *text, int start, int end)
 				return NULL;
 			case ARG_BOOL:
 				matches = rl_completion_matches(text, rad_bool_matches);
+				break;
+			case ARG_NUMBER:
+				matches = rl_completion_matches(text, rad_flags_matches);
+				if (matches == NULL)
+				matches = rl_completion_matches (text, rad_offset_matches);
 				break;
 			case ARG_ARCH:
 				matches = rl_completion_matches(text, rad_arch_matches);
@@ -502,11 +501,6 @@ char **rad_autocompletion(const char *text, int start, int end)
 		for (i = 0; cmds[i].name ; i++) {
 			if (!strcmp(cmds[i].name, word))
 			switch(cmds[i].arg2) {
-			case ARG_NUMBER:
-				matches = rl_completion_matches(text, rad_flags_matches);
-				if (matches == NULL)
-				matches = rl_completion_matches (text, rad_offset_matches);
-				break;
 			case ARG_FLAG:
 				matches = rl_completion_matches(text, rad_flags_matches);
 				break;
@@ -515,6 +509,11 @@ char **rad_autocompletion(const char *text, int start, int end)
 				return NULL;
 			case ARG_BOOL:
 				matches = rl_completion_matches(text, rad_bool_matches);
+				break;
+			case ARG_NUMBER:
+				matches = rl_completion_matches(text, rad_flags_matches);
+				if (matches == NULL)
+				matches = rl_completion_matches (text, rad_offset_matches);
 				break;
 			default: // no reply
 				return NULL;

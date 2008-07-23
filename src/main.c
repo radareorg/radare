@@ -50,7 +50,7 @@ int main(int argc, char **argv, char **envp)
 
 	environ = envp;
 	radare_init();
- 
+
 	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:d")) != -1)
 	{
 		switch( c ) {

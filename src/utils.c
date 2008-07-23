@@ -124,10 +124,10 @@ int word_count(const char *string)
 
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 {
-	int i,j;
-	for(i=0;i<dsize;i++)
-		for(j=0;j<osize;j++)
-			dest[i] = orig[j];
+	int i=0,j;
+	while(i<dsize)
+		for(j=0;j<osize && i<dsize;j++)
+			dest[i++] = orig[j];
 }
 
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
