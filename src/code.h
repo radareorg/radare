@@ -55,10 +55,18 @@ enum {
 	AOP_TYPE_NOT,
 	AOP_TYPE_STORE, /* store from register to memory */
 	AOP_TYPE_LOAD, /* load from memory to register */
+
+	/* TODO: MOVE TO AOP_STACK_+ */
+	AOP_TYPE_INCSTACK, /* sub $0xc, %esp */
+	AOP_TYPE_LOCAL_GET,
+	AOP_TYPE_LOCAL_SET,
+	AOP_TYPE_ARG_GET,
+	AOP_TYPE_ARG_SET,
 };
 
 struct aop_t {
 	int type; /* type of opcode */
+	int stackop; /* operation on stack? */
 	int length; /* length in bytes of opcode */
 	int eob; // end of block (boolean)
 	u64 jump; /* true jmp */

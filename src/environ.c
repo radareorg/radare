@@ -54,6 +54,8 @@ void prepare_environment(char *line)
 	int i;
 	char *offset = (char *)malloc((config.block_size*3)+2);
 
+	if (offset == NULL)
+		return;
 	/* to think.. +/
 	setenv("SYNTAX", config_get("asm.syntax"));
 	*/

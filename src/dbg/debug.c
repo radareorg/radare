@@ -717,13 +717,8 @@ int debug_fd(char *cmd)
 int debug_loaduri(char *cmd)
 {
 	char pids[128];
-	debug_fork_and_attach();
-	/* debug_init() ??? */
-	sprintf(pids, "%d", ps.tid);
-	setenv("DPID", pids, 1);
-	debug_getregs(ps.pid, &(WS(regs)));
-	printf("%d\n", ps.tid);
-	exit(0);
+	ps.filename = cmd;
+	debug_load();
 }
 
 int debug_load()
@@ -1657,8 +1652,22 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 }
 
 
-int debug_run()
+int debug_run(char *input)
 {
+	char *buf;
+	if (input[0]) {
+		//printf("INPUT IS: %s\n", input);
+		free(ps.filename);
+		buf = (char *)malloc(strlen(ps.args)+strlen(input)+5);
+		if (buf == NULL) {
+			eprintf("Cannot malloc?\n");
+			return 1;
+		} 
+		strcpy(buf, ps.args);
+		strcat(buf, input);
+		printf("DebugLoad(%s)\n", buf);
+		return debug_loaduri(buf);
+	} else
 	if (ps.opened) {
 		if (getv())
 			eprintf("To cleanly stop the execution, type: "

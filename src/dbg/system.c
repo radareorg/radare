@@ -61,7 +61,7 @@ int help_message()
 	TITLE
 	cons_printf(" Loader\n");
 	TITLE_END
-	cons_printf("  run                load and start execution\n");
+	cons_printf("  run [args]         load and start execution\n");
 	cons_printf("  (un)load           load or unload a program to debug\n");
 	cons_printf("  kill [-S] [pid]    sends a signal to a process\n");
 	cons_printf("  {a,de}ttach [pid]  attach or detach target pid\n");
@@ -74,18 +74,6 @@ int help_message()
 	cons_printf("  skip [N]           skip (N=1) instruction(s)\n");
 	cons_printf("  step{o,u,bp,ret}   step, step over, step until user code, step until ret\n");
 	cons_printf("  cont{u,uh,sc,fork} continue until user code, here, syscall or fork\n");
-#if 0
-	cons_printf("  stepbp [N]       steps using code analysis and breakpoints\n");
-	cons_printf("  stepu            (so) step over library code and repz\n");
-	cons_printf("  stepo            (so) step over calls and repz\n");
-	cons_printf("  stepret          continue until ret (TODO)\n");
-
-	cons_printf("  cont             continue until bp, eof\n");
-	cons_printf("  contu ([addr])   continue until user code, bp, eof (or addr if defined)\n");
-	cons_printf("  contuh           continue until here (loop analysis)\n");
-	cons_printf("  contsc           continue until next syscall\n");
-	cons_printf("  contfork         continue until fork\n");
-#endif
 	TITLE
 	cons_printf(" Tracing\n");
 	TITLE_END
@@ -140,7 +128,7 @@ static struct commads_t {
 } commands[] = {
 	CB_CMD( "help"     , CB_NOARGS   , help_message )       , 
 	CB_CMD( "?"        , CB_NOARGS   , help_message )       , 
-	CB_CMD( "run"      , CB_NOARGS   , debug_run )          , 
+	CB_CMD( "run"      , CB_NORMAL   , debug_run )          , 
 	CB_CMD( "status"   , CB_NOARGS   , debug_status )       , 
 	CB_CMD( "stepret"  , CB_NOARGS   , debug_stepret )      , 
 	CB_CMD( "stepbp"   , CB_INT      , debug_stepbp)        , 

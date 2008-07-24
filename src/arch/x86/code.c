@@ -31,16 +31,23 @@
 // XXX addr should be off_t for 64 love
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
-	//u64 *ptr = (u64 *)(bytes+1);
-	//unsigned char *ptr2 = (unsigned char *)(bytes+1);
-//cons_printf("aop(%08llx) ", addr);
-
 	memset(aop, '\0', sizeof(struct aop_t));
-//printf("0x%08x %02x %02x\n", addr, (unsigned char)bytes[0], (unsigned char)bytes[1]);
 	aop->type = AOP_TYPE_UNK;
 
 	switch(bytes[0]) {
 	case 0x89: // move
+		if (bytes[1]== 0x45) {
+			aop->stackop = AOP_TYPE_LOCAL_SET;
+			aop->ref = (u64)-((char)bytes[2]);
+		} else
+		if (bytes[1]== 0x85) {
+			aop->stackop = AOP_TYPE_LOCAL_SET;
+			aop->ref = (u64)-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
+		} else
+		if (bytes[1]== 0x75) {
+			aop->stackop = AOP_TYPE_LOCAL_GET;
+			aop->ref = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);
+		}
 		aop->type   = AOP_TYPE_MOV;
 		aop->length = 2;
 		break;
@@ -124,6 +131,16 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->fail   = 0L;
 		break;
 	case 0xff:
+		if (bytes[1]== 0x75) {
+			aop->type = AOP_TYPE_PUSH;
+			aop->stackop = AOP_TYPE_ARG_GET;
+			aop->ref = (u64)(((char)bytes[2]));
+		} else
+		if (bytes[1]== 0x45) {
+			aop->type = AOP_TYPE_ADD;
+			aop->stackop = AOP_TYPE_LOCAL_SET;
+			aop->ref = (u64)(-((char)bytes[2]));
+		} else
 		if (bytes[1]>=0x50 && bytes[1]<=0x6f) {
 			aop->type = AOP_TYPE_UJMP;
 			aop->eob    = 1;
@@ -169,9 +186,47 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->ref = bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
 		break;
 	case 0x81:
-	case 0x82:
+		if (bytes[1] == 0xec) {
+			/* sub $0x????????, $esp*/
+			aop->ref = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);
+			aop->stackop = AOP_TYPE_INCSTACK;
+			break;
+		}
+		aop->type = AOP_TYPE_ADD;
+		break;
 	case 0x83:
+		if (bytes[1] == 0xec) {
+			/* sub $0x????????, $esp*/
+			aop->ref = (u64)(unsigned char)bytes[2];
+			aop->stackop = AOP_TYPE_INCSTACK;
+		}
+	case 0x8d:
+		/* LEA */
+		if (bytes[1] == 0x85) {
+			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			aop->stackop = AOP_TYPE_LOCAL_GET;
+		}
+		aop->type =AOP_TYPE_MOV;
+		break;
+	case 0xc7:
+		/* mov dword [ebp-0xc], 0x0  ||  c7 45 f4 00000000 */
+		if (bytes[1]==0x45) {
+			aop->stackop = AOP_TYPE_LOCAL_SET;
+			aop->ref = (u64)(-((char)bytes[2]));
+		}
+		aop->type = AOP_TYPE_STORE;
+		break;
 	case 0x8b:
+		if (bytes[1]==0x45) {
+			/* mov -0xc(%ebp, %eax */
+			aop->ref = (u64)(-((char)bytes[2]));
+			aop->stackop = AOP_TYPE_LOCAL_GET;
+		}else if(bytes[1]==0xbd) {
+			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			//aop->ref = -(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
+			aop->stackop = AOP_TYPE_LOCAL_GET;
+		}
+	case 0x82:
 		aop->type = AOP_TYPE_ADD;
 		break;
 	case 0x29:

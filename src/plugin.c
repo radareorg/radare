@@ -202,7 +202,7 @@ plugin_t *plugin_registry(const char *file)
 
 	sprintf(buf, "%s_plugin", file);
 	/* find a place to store our child */
-	for(i=0; i<MAXPLUGINS && plugins[i].name; i++);i--;
+	for(i=0; i<MAXPLUGINS && plugins[i].name; i++);
 	plugins[i] = *p;
 	plugins[i+1] = posix_plugin;
 	return p;
@@ -280,7 +280,6 @@ void plugin_init()
 	plugins[last++] = gxemul_plugin;
 	/* must be dupped or will die */
 	plugins[last++] = posix_plugin;
-	plugins[last++] = posix_plugin;
 
 	//plugins[last++] = winegdb_plugin;
 
@@ -303,7 +302,12 @@ int io_system(const char *command)
 /* io wrappers */
 int io_open(const char *pathname, int flags, mode_t mode)
 {
-	FIND_OPEN(pathname)
+int i=0; 
+
+for(i=0; i<MAXPLUGINS && plugins[i].name && 
+!plugins[i].handle_open( pathname ); i++) 
+printf("--------%s\n", plugins[i].name);
+	//FIND_OPEN(pathname)
 		IF_HANDLED(0, open)
 			return plugins[i].open(pathname, flags, mode);
 	return -1;

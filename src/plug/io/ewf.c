@@ -181,16 +181,17 @@ u64 ewf_lseek(int fildes, u64 offset, int whence)
 }
 
 plugin_t ewf_plugin = {
-	.name = "ewf",
-	.desc = "EnCase EWF file support ( ewf:// )",
-	.init = NULL,
-	.debug = NULL,
-	.system = NULL,
-	.handle_fd = ewf_handle_fd,
+	.name        = "ewf",
+	.desc        = "EnCase EWF file support ( ewf:// )",
+	.init        = NULL,
+	.debug       = NULL,
+	.system      = NULL,
+	.widget      = NULL,
+	.handle_fd   = ewf_handle_fd,
 	.handle_open = ewf_handle_open,
-	.open = ewf_open,
-	.read = ewf_read,
-	.write = ewf_write,
-	.lseek = ewf_lseek,
-	.close = ewf_close
+	.open        = ewf_open,
+	.read        = ewf_read,
+	.write       = ewf_write,
+	.lseek       = ewf_lseek,
+	.close       = ewf_close
 };

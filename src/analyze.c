@@ -41,6 +41,7 @@ struct reflines_t *code_lines_init()
 	struct aop_t aop;
 	int sz, bsz = 0;
 	int index = 0;
+	u64 seek = 0;
 
 	INIT_LIST_HEAD(&(list->list));
 
@@ -59,28 +60,86 @@ struct reflines_t *code_lines_init()
 				}
 			}
 		}
-		sz = arch_aop(config.baddr + config.seek+bsz, ptr, &aop);
+		seek = config.baddr + config.seek + bsz;
+		sz = arch_aop(seek, ptr, &aop);
 		//sz = arch_aop(config.seek+bsz, ptr, &aop);
 		if (sz <1) {
 			sz = 1;
 		} else {
 			/* store data */
+			switch(aop.stackop) {
+			case AOP_TYPE_LOCAL_SET:
+				{
+				char buf[1024];
+				int ref = (int)aop.ref;
+				if (ref<0)
+					sprintf(buf, "CC Set local var%d@ 0x%08llx\n", ref, seek);
+				else
+					sprintf(buf, "CC Set frame var%d@ 0x%08llx\n", ref, seek);
+				radare_cmd(buf, 0);
+				radare_seek(config.seek, SEEK_SET);
+				radare_read(0);
+				}
+				break;
+			case AOP_TYPE_ARG_SET:
+				{
+				int ref = (int)aop.ref;
+				char buf[1024];
+				sprintf(buf, "CC Set arg%d@ 0x%08llx\n", ref, seek);
+				radare_cmd(buf, 0);
+				radare_seek(config.seek, SEEK_SET);
+				radare_read(0);
+				}
+				break;
+			case AOP_TYPE_ARG_GET:
+				{
+				char buf[1024];
+				int ref = (int)aop.ref;
+				sprintf(buf, "CC Get arg%d@ 0x%08llx\n", ref, seek);
+				radare_cmd(buf, 0);
+				radare_seek(config.seek, SEEK_SET);
+				radare_read(0);
+				}
+				break;
+			case AOP_TYPE_LOCAL_GET:
+				{
+				char buf[1024];
+				int ref = (int)aop.ref;
+				if (ref<0)
+					sprintf(buf, "CC Get arg%d@ 0x%08llx\n", ref, seek);
+				else
+					sprintf(buf, "CC Get local var%d@ 0x%08llx\n", ref, seek);
+				radare_cmd(buf, 0);
+				radare_seek(config.seek, SEEK_SET);
+				radare_read(0);
+				}
+				break;
+			case AOP_TYPE_INCSTACK:
+				{
+				char buf[1024];
+				sprintf(buf, "CC Stack size +%d@ 0x%08llx\n", (int)aop.ref, seek);
+				radare_cmd(buf, 0);
+				radare_seek(config.seek, SEEK_SET);
+				radare_read(0);
+				}
+				break;
+			}
 			switch(aop.type) {
 			case AOP_TYPE_CALL:
 			case AOP_TYPE_CJMP:
 			case AOP_TYPE_JMP:
 				if (!bar) {
 					/* skip outside lines */
-					if (aop.jump > config.seek+config.baddr+config.block_size)
+					if (aop.jump > seek+config.block_size)
 						goto __next;
 					/* skip outside lines */
-					if (aop.jump < config.seek+config.baddr-30)
+					if (aop.jump < seek-30)
 						goto __next;
 				} else
 					if (aop.jump == 0)
 						goto __next;
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
-				list2->from = config.seek + config.baddr + bsz;
+				list2->from = seek;
 				list2->to = aop.jump;
 				list2->index = index++;
 				list_add_tail(&(list2->list), &(list->list));

@@ -26,7 +26,7 @@
 
 #if !RADARE_CORE
 
-char *arch = "olly";
+char *arch = "x86";
 u64 offset = 0;
 int endian = 0;
 int verbose = 0;

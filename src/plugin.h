@@ -9,7 +9,7 @@
 #endif
 
 #define FIND_FD(x) int i=0; if ( x ==-1 ) return -1; for(i=0; plugins[i].name && !plugins[i].handle_fd( x ); i++);
-#define FIND_OPEN(y) int i=0; for(i=0; plugins[i].name && !plugins[i].handle_open( y ); i++);
+#define FIND_OPEN(y) int i=0; for(i=0; plugins[i].name && !plugins[i].handle_open( y ); i++) printf("--------%s\n", plugins[i].name);
 #define IF_HANDLED(x,y) if (( x != -1) && (plugins[i].name != NULL) && plugins[i].y )
 #define MAXPLUGINS 64
 

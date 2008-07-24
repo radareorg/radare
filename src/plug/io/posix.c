@@ -41,7 +41,7 @@ static int posix_close(int fd)
 	return close(fd);
 }
 
-u64 posix_lseek(int fildes, u64 offset, int whence)
+static u64 posix_lseek(int fildes, u64 offset, int whence)
 {
 #if __WINDOWS__ 
 	return _lseek(fildes,(long)offset,whence);
@@ -70,6 +70,7 @@ plugin_t posix_plugin = {
 	.init        = NULL,
 	.debug       = NULL,
 	.system      = NULL,
+	.widget      = NULL,
 	.handle_fd   = posix_handle_fd,
 	.handle_open = posix_handle_open,
 	.open        = posix_open,

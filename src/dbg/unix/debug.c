@@ -739,72 +739,89 @@ int debug_dispatch_wait()
 		//ps.opened = 0;
 		kill(ps.tid, SIGKILL);
 		debug_load();
-sleep(1);
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
-
-		if (event_is_ignored(WS_SI(si_signo))) {
-			eprintf("signal %d ignored\n",WS_SI(si_signo));
-			return 1;
-		}
-		// 0 is for bsd?
-		if(
-	#if __linux__
-		WS_SI(si_signo) ==  SIGTRAP
-	#else
-		WS_SI(si_signo) == 0 /* bsd */
-	#endif
-		) {
-	#if __linux__ && !__x86_64__
-			/* linux threads support */
-			if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {
-			if(ptrace (PTRACE_GETEVENTMSG, ps.pid, 0, &tid) == -1) {
-				perror("ptrace_geteventmsg");
-				return -1;	
+			if (event_is_ignored(WS_SI(si_signo))) {
+				eprintf("signal %d ignored\n",WS_SI(si_signo));
+				return 1;
 			}
-		
-			eprintf("____[ New thread created ]____\ntid: %d\n", tid);
-
-			ret = debug_waitpid(tid, &status);
-
-			if (ret == -1)
-				eprintf(":error waiting for new child\n");
-			else if (ret != tid)
-				eprintf(":error return tid %d != %d\n", ret, tid);
-			else if (!WIFSTOPPED (status) ||
-				 WSTOPSIG (status) != SIGSTOP)
-				eprintf(":error unknown state thread %d\n", tid);
-			else {
-				if(!(th = init_th(tid, status))) {
-					perror("init_th");
-					return -1;
+			// 0 is for bsd?
+			if(
+		#if __linux__
+			WS_SI(si_signo) ==  SIGTRAP
+		#else
+			WS_SI(si_signo) == 0 /* bsd */
+		#endif
+			) {
+		#if __linux__ && !__x86_64__
+				/* linux threads support */
+				if (ps.pid == ps.tid  && status >> 16 == PTRACE_EVENT_CLONE) {
+				if(ptrace (PTRACE_GETEVENTMSG, ps.pid, 0, &tid) == -1) {
+					perror("ptrace_geteventmsg");
+					return -1;	
 				}
-				add_th(th);
+			
+				eprintf("____[ New thread created ]____\ntid: %d\n", tid);
 
-				ps.tid = tid;
-				ret = 1;
+				ret = debug_waitpid(tid, &status);
+
+				if (ret == -1)
+					eprintf(":error waiting for new child\n");
+				else if (ret != tid)
+					eprintf(":error return tid %d != %d\n", ret, tid);
+				else if (!WIFSTOPPED (status) ||
+					 WSTOPSIG (status) != SIGSTOP)
+					eprintf(":error unknown state thread %d\n", tid);
+				else {
+					if(!(th = init_th(tid, status))) {
+						perror("init_th");
+						return -1;
+					}
+					add_th(th);
+
+					ps.tid = tid;
+					ret = 1;
+				}
+				return ret;
 			}
-			return ret;
-		}
-#endif
-			/*  stopped by? */
-			bp = (struct bp_t*) arch_stopped_bp();
-			if(bp) {
-				WS(event) = BP_EVENT;
-				WS(bp) = bp;
-			} 
-		} else if(WS_SI(si_signo) ==  SIGSEGV) {
-			/* search if changed permissions at region */
-			//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
-			/* TODO: manage access to protected pages */
-			;
-			eprintf("Segmentation fault!\n");
-		} else
-		if (WS_SI(si_signo)==19) {
-			WS(event) = CLONE_EVENT;
-			eprintf("CLONE HAS BEEN INVOKED\n");
-		} else
-			eprintf("Unknown signal %d received\n", WS_SI(si_signo));
+	#endif
+				/*  stopped by? */
+				bp = (struct bp_t*) arch_stopped_bp();
+				if(bp) {
+					WS(event) = BP_EVENT;
+					WS(bp) = bp;
+				} 
+			} else if(WS_SI(si_signo) ==  SIGSEGV) {
+				/* search if changed permissions at region */
+				//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
+				/* TODO: manage access to protected pages */
+				;
+				eprintf("Segmentation fault!\n");
+			} else {
+				switch(WS_SI(si_signo)){
+				case 2:
+					eprintf("CHILD PROCESS HAS RECEIVED A KEYBOARD INTERRUPT. REPEAT LAST COMMAND\n");
+					break;
+				case 3:
+					eprintf("CHILD PROCESS HAS RECEIVED A QUIT FROM KEYBOARD\n");
+					break;
+				case 8:
+					eprintf("FLOATING POINT EXCEPTION\n");
+					break;
+				case 4:
+					eprintf("ILLEGAL INSTRUCTION\n");
+					break;
+				case 18:
+					eprintf("THE CHILD IS STOPPED: REPEAT LAST COMMAND AGAIN\n");
+					break;
+				case 19:
+					WS(event) = CLONE_EVENT;
+					eprintf("CLONE HAS BEEN INVOKED\n");
+					break;
+				default:
+					eprintf("Unknown signal %d received\n", WS_SI(si_signo));
+				}
+			}
 		}
 	} else
 		eprintf("What?\n");
