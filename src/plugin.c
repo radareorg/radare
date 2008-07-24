@@ -302,12 +302,13 @@ int io_system(const char *command)
 /* io wrappers */
 int io_open(const char *pathname, int flags, mode_t mode)
 {
-int i=0; 
 
+#if 0
+int i=0; 
 for(i=0; i<MAXPLUGINS && plugins[i].name && 
 !plugins[i].handle_open( pathname ); i++) 
-printf("--------%s\n", plugins[i].name);
-	//FIND_OPEN(pathname)
+#endif
+	FIND_OPEN(pathname)
 		IF_HANDLED(0, open)
 			return plugins[i].open(pathname, flags, mode);
 	return -1;

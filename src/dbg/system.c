@@ -38,6 +38,7 @@ int help_message()
 	cons_printf(" Information\n");
 	TITLE_END
 	cons_printf("  info               show debugger and process status\n");
+	cons_printf("  msg                show last debugger status message\n");
 	cons_printf("  pid [tid] [action] show pid of the debug process, current tid and childs, or set tid.\n");
 	//cons_printf("  pids            show the pids of all the attachable processes\n"); // ??!?
 	cons_printf("  status             show the contents of /proc/pid/status\n");
@@ -163,6 +164,7 @@ static struct commads_t {
 	CB_CMD( "jmp"      , CB_NORMAL   , debug_jmp )          , 
 	CB_CMD( "call"     , CB_NORMAL   , debug_call )         , 
 	CB_CMD( "info"     , CB_NORMAL   , debug_info )         , 
+	CB_CMD( "msg"      , CB_NOARGS   , debug_msg )          , 
 	CB_CMD( "set"      , CB_NORMAL   , debug_set_register ) , 
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           , 
 	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           , 

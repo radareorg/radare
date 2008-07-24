@@ -73,9 +73,9 @@ struct reflines_t *code_lines_init()
 				char buf[1024];
 				int ref = (int)aop.ref;
 				if (ref<0)
-					sprintf(buf, "CC Set local var%d@ 0x%08llx\n", ref, seek);
+					sprintf(buf, "CC Set arg%d@ 0x%08llx\n", -ref, seek);
 				else
-					sprintf(buf, "CC Set frame var%d@ 0x%08llx\n", ref, seek);
+					sprintf(buf, "CC Set var%d@ 0x%08llx\n", ref, seek);
 				radare_cmd(buf, 0);
 				radare_seek(config.seek, SEEK_SET);
 				radare_read(0);
@@ -106,9 +106,9 @@ struct reflines_t *code_lines_init()
 				char buf[1024];
 				int ref = (int)aop.ref;
 				if (ref<0)
-					sprintf(buf, "CC Get arg%d@ 0x%08llx\n", ref, seek);
+					sprintf(buf, "CC Get arg%d@ 0x%08llx\n", -ref, seek);
 				else
-					sprintf(buf, "CC Get local var%d@ 0x%08llx\n", ref, seek);
+					sprintf(buf, "CC Get var%d@ 0x%08llx\n", ref, seek);
 				radare_cmd(buf, 0);
 				radare_seek(config.seek, SEEK_SET);
 				radare_read(0);

@@ -718,6 +718,8 @@ int debug_dispatch_wait()
 			ps.th_active = th;
 			TH_ADDR(th, arch_pc(ps.tid));
 		} else {
+			// TODO: get parent PID HERE!!!
+			debug_msg_set("new pid: %d. from parent %d\n", ps.tid,0);
 			eprintf("pid: %d. new process created!\n"
 			" - Use !pid for processes, and !th for threads\n", ps.tid);
 			if(!(th = init_th(tid, status))) { // STOPPED?
@@ -735,6 +737,7 @@ int debug_dispatch_wait()
 		ps.th_active = 0;
 
 	if(WIFEXITED(status)) {
+		debug_msg_set("process %d finished\n", ps.tid);
 		eprintf("\n\n______________[ process finished ]_______________\n\n");
 		//ps.opened = 0;
 		kill(ps.tid, SIGKILL);
@@ -782,6 +785,7 @@ int debug_dispatch_wait()
 					ps.tid = tid;
 					ret = 1;
 				}
+					debug_msg_set("pid %d New thread created\n", ps.tid);
 				return ret;
 			}
 	#endif
@@ -790,35 +794,44 @@ int debug_dispatch_wait()
 				if(bp) {
 					WS(event) = BP_EVENT;
 					WS(bp) = bp;
+					debug_msg_set("pid %d Stopped by breakpoint\n", ps.tid);
 				} 
 			} else if(WS_SI(si_signo) ==  SIGSEGV) {
 				/* search if changed permissions at region */
 				//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
 				/* TODO: manage access to protected pages */
 				;
+				debug_msg_set("pid %d Segmentation fault!\n", ps.tid);
 				eprintf("Segmentation fault!\n");
 			} else {
 				switch(WS_SI(si_signo)){
 				case 2:
+					debug_msg_set("pid %d has received keyboard interrupt\n", ps.tid);
 					eprintf("CHILD PROCESS HAS RECEIVED A KEYBOARD INTERRUPT. REPEAT LAST COMMAND\n");
 					break;
 				case 3:
+					debug_msg_set("pid %d has received a quit from keyboard\n", ps.tid);
 					eprintf("CHILD PROCESS HAS RECEIVED A QUIT FROM KEYBOARD\n");
 					break;
 				case 8:
+					debug_msg_set("pid %d floating point exception\n", ps.tid);
 					eprintf("FLOATING POINT EXCEPTION\n");
 					break;
 				case 4:
+					debug_msg_set("pid %d illegal instruction\n", ps.tid);
 					eprintf("ILLEGAL INSTRUCTION\n");
 					break;
 				case 18:
+					debug_msg_set("pid %d process stopped\n", ps.tid);
 					eprintf("THE CHILD IS STOPPED: REPEAT LAST COMMAND AGAIN\n");
 					break;
 				case 19:
 					WS(event) = CLONE_EVENT;
+					debug_msg_set("pid %d clone()\n", ps.tid);
 					eprintf("CLONE HAS BEEN INVOKED\n");
 					break;
 				default:
+					debug_msg_set("pid %d unknown signal received (%d)\n", ps.tid, WS_SI(si_signo));
 					eprintf("Unknown signal %d received\n", WS_SI(si_signo));
 				}
 			}
@@ -840,6 +853,7 @@ int debug_contfork(int tid)
 		do {
 			ret = ptrace(PTRACE_SYSCALL, ps.tid, 0, 0);
 			if (ret != 0) {
+				debug_msg_set("ptrace syscall error\n");
 				eprintf("ptrace_syscall error\n");
 				return 1;
 			}

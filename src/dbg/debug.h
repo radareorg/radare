@@ -5,6 +5,8 @@
 #include "regs.h"
 #include "arch/arch.h"
 
+void debug_msg();
+void debug_msg_set(const char *format, ...);
 // bp.c
 int debug_bp(const char *addr);
 int debug_bp_set(struct bp_t *bp, u64 addr, int type);
@@ -150,6 +152,7 @@ struct bp_t
 struct debug_t {
 	int fd;         /* related metadata */
 	int verbose;
+	char *msg;
 	pid_t opid;
 	pid_t pid;
 	pid_t tid;

@@ -28,6 +28,7 @@
 #include "../radare.h"
 #include "../config.h"
 #include "../print.h"
+#include <stdarg.h>
 #include "../code.h"
 #include <stdio.h>
 #include <errno.h>
@@ -137,10 +138,16 @@ pid_t debug_waitpid(int pid, int *status)
 	return -1;
 }
 
+void debug_msg()
+{
+	cons_printf("%s\n", ps.msg);
+}
+
 int debug_init()
 {
 	// TODO use memcpy
 	ps.tid      =  0;
+	ps.msg      = NULL;
 	ps.steps    =  0;
 	ps.offset   = -1;
 	ps.opened   =  0;
@@ -180,6 +187,17 @@ int debug_print_maps(char *arg)
 	}
 
 	return -1;
+}
+
+void debug_msg_set(const char *format, ...)
+{
+	char buf[1024];
+	va_list ap;
+	va_start(ap, format);
+	vsnprintf(buf,1023, format, ap);
+	free(ps.msg);
+	ps.msg = strdup(buf);
+	va_end(ap);
 }
 
 int hijack_fd(int fd, const char *file)
@@ -626,6 +644,7 @@ int debug_info(char *arg)
 		cons_printf(" steps       %d\n", ps.steps);
 		cons_printf(" offset      0x%llx\n", ps.offset);
 		cons_printf(" isbpaddr    %d\n", ps.isbpaddr);
+		cons_printf(" dbg_message %s\n", ps.msg);
 	}
 
 	return 0;
@@ -1577,6 +1596,8 @@ int debug_cont(const char *input)
 			break;
 		}
 		ret = debug_dispatch_wait();
+		//debug_msg_set("debug_dispatch_wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
+	//		ret, WS(event), INT3_EVENT, INT_EVENT, CLONE_EVENT);
 		printf("debug_dispatch_wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
 			ret, WS(event), INT3_EVENT, INT_EVENT, CLONE_EVENT);
 	#warning TODO: add in debug_print_foo() disassembly of eip here and change process id or so
