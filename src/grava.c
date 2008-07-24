@@ -172,7 +172,7 @@ static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
 static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 {
 	const char *str;
-	char *buf;
+	char *buf, *ptr;
 	struct program_t *prg;
 	struct mygrava_window *w = obj;
 	u64 off;
@@ -196,6 +196,13 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 		//buf = radare_cmd_str(str);
 		//cons_flush();
 		radare_cmd_raw(str, 0);
+		ptr = config_get("scr.seek");
+		if (ptr&&ptr[0]) {
+			u64 off = get_math(ptr);
+			if (off != 0)
+				radare_seek(off, SEEK_SET);
+		}
+
 		buf = cons_get_buffer();
 		if (buf && buf[0]) {
 			printf("BUFFER(%s->%s)\n", str, buf);
