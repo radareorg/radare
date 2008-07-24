@@ -68,7 +68,7 @@ struct reflines_t *code_lines_init()
 		} else {
 			/* store data */
 			switch(aop.stackop) {
-			case AOP_TYPE_LOCAL_SET:
+			case AOP_STACK_LOCAL_SET:
 				{
 				char buf[1024];
 				int ref = (int)aop.ref;
@@ -81,7 +81,7 @@ struct reflines_t *code_lines_init()
 				radare_read(0);
 				}
 				break;
-			case AOP_TYPE_ARG_SET:
+			case AOP_STACK_ARG_SET:
 				{
 				int ref = (int)aop.ref;
 				char buf[1024];
@@ -91,7 +91,7 @@ struct reflines_t *code_lines_init()
 				radare_read(0);
 				}
 				break;
-			case AOP_TYPE_ARG_GET:
+			case AOP_STACK_ARG_GET:
 				{
 				char buf[1024];
 				int ref = (int)aop.ref;
@@ -101,7 +101,7 @@ struct reflines_t *code_lines_init()
 				radare_read(0);
 				}
 				break;
-			case AOP_TYPE_LOCAL_GET:
+			case AOP_STACK_LOCAL_GET:
 				{
 				char buf[1024];
 				int ref = (int)aop.ref;
@@ -114,7 +114,7 @@ struct reflines_t *code_lines_init()
 				radare_read(0);
 				}
 				break;
-			case AOP_TYPE_INCSTACK:
+			case AOP_STACK_INCSTACK:
 				{
 				char buf[1024];
 				sprintf(buf, "CC Stack size +%d@ 0x%08llx\n", (int)aop.ref, seek);

@@ -18,6 +18,9 @@
 * more wrong disass 
  8d9574ffffff    lea edx, [ebp-0x8c] 
 
+0- store all the stack analysis info in a struct per-function
+   and before removing it store a comment or metadata at the
+   begginging of it.
 1- syscall-flag  using userdefined table (in file)
 2- file.baddr fix fix fix
 3- global data in graphs - allow to run specific commands in nodes
@@ -25,12 +28,10 @@
 6- aop.ref must get more ref types (write checks)
 7- graph.seek
 9- reload project file if changes
-b- endian fix for rabin
 e- rsc monitor cool from teh graph view or so
 f- pcap/radare for fun
 10 backward search
 11 happier bindiff
-
 
 
 13 call <flag> arg arg arg

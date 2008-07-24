@@ -55,13 +55,15 @@ enum {
 	AOP_TYPE_NOT,
 	AOP_TYPE_STORE, /* store from register to memory */
 	AOP_TYPE_LOAD, /* load from memory to register */
+};
 
-	/* TODO: MOVE TO AOP_STACK_+ */
-	AOP_TYPE_INCSTACK, /* sub $0xc, %esp */
-	AOP_TYPE_LOCAL_GET,
-	AOP_TYPE_LOCAL_SET,
-	AOP_TYPE_ARG_GET,
-	AOP_TYPE_ARG_SET,
+enum {
+	AOP_STACK_NOP = 0, /* sub $0xc, %esp */
+	AOP_STACK_INCSTACK, /* sub $0xc, %esp */
+	AOP_STACK_LOCAL_GET,
+	AOP_STACK_LOCAL_SET,
+	AOP_STACK_ARG_GET,
+	AOP_STACK_ARG_SET,
 };
 
 struct aop_t {

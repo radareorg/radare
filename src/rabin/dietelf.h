@@ -16,6 +16,7 @@ typedef struct {
     const char*	    file;
 } dietelf_bin_t;
 
+void  aux_swap_endian(u8 *value, int size);
 int   aux_is_encoded(int encoding, unsigned char c);
 int   aux_is_printable (int c);
 int   aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset);
