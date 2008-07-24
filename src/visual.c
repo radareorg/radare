@@ -94,10 +94,12 @@ CMD_DECL(yank_paste);
 CMD_DECL(zoom);
 CMD_DECL(trace);
 CMD_DECL(zoom_reset);
+CMD_DECL(edit_screen_filter);
 
 /* TODO: Move 't' and 'e' here */
 command_t keystrokes[] = {
 	/*   key, wait, description, callback */
+	COMMAND('#', 0, "edit screen filter", edit_screen_filter),
 	COMMAND('g', 0, "seek to offset 0", seek0),
 	COMMAND('G', 0, "seek to end of file", seek_to_end),
 	COMMAND(';', 0, "add a comment", add_comment),
@@ -183,6 +185,23 @@ void press_any_key()
 	cons_flush();
 	cons_readchar();
 	cons_strcat("\e[2J\e[0;0H");
+}
+
+CMD_DECL(edit_screen_filter)
+{
+	char buf[1024];
+	const char *ed = config_get("cfg.editor");
+	if (!strnull(ed)) {
+		/* TODO: Handle errors, put a different file name for */
+		sprintf(buf, "%s ~/.radare/screen-filter.txt", ed);
+		system(buf);
+		sprintf(buf, "%s/.radare/screen-filter.txt", getenv("HOME"));
+		config_set("file.scrfilter", buf);
+		return 0;
+	} else {
+		eprintf("No cfg.editor defined\n");
+		return 1;
+	}
 }
 
 CMD_DECL(insert)

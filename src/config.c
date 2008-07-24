@@ -613,6 +613,7 @@ void config_init(int first)
 	config_set("trace.dup", "false");
 	config_set("trace.cmtregs", "false");
 
+	config_set("cfg.editor", "vi");
 	config_set("cfg.noscript", "false");
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 1024); // cp850
