@@ -479,13 +479,9 @@ CMD_DECL(menu)
 
 CMD_DECL(hack)
 {
-	if (strnull(input)) {
-		radare_hack_help();
-	} else {
-		radare_hack(input);
-	}
-
-	return 0;
+	if (strnull(input))
+		return radare_hack_help();
+	return radare_hack(input);
 }
 
 CMD_DECL(rdb)

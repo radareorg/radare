@@ -163,7 +163,7 @@ int is_cursor(int from, int len)
 
 void print_color_byte_i(int i, char *str, int c)
 {
-	flag_t *f = flag_by_offset(config.seek+i);
+	flag_t *f = flag_by_offset(config.seek+config.baddr+i);
 	if (f) {
 		cons_strcat("\e[44m");
 	} else cons_strcat("\e[40m");

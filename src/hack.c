@@ -214,7 +214,7 @@ static int radare_hack_call(struct hack_t *h, const char *arg)
     /* initialize gtk before */
     if (!gtk_is_init) {
       if ( ! gtk_init_check(NULL, NULL) ) {
-        fprintf(stderr, "Oops. Cannot initialize gui\n");
+        D eprintf(stderr, "Oops. Cannot initialize gui\n");
         return 1;
       }
       gtk_is_init = 1;
