@@ -478,7 +478,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set(node, "label", cmd+128);
 
 		/* disassemble body */
-		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
+		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
 #if 0
 		config.seek = b0->addr;
 		radare_read(0);

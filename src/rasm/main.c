@@ -113,6 +113,17 @@ int main(int argc, char **argv)
 			arch = optarg;
 			break;
 		case 'd':
+			if (!strcmp(optarg, "-")) {
+				char buf[1024];
+				while(!feof(stdin)) {
+					fgets(buf, 128, stdin);
+					if (!feof(stdin)) {
+						buf[strlen(buf)-1]='\0';
+						rasm_disasm(arch, offset, buf, NULL);
+					}
+				}
+				return 0;
+			}
 			rasm_disasm(arch, offset, optarg, NULL);
 			break;
 		case 'f':

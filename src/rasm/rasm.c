@@ -197,14 +197,8 @@ int count_bytes(char *str)
 	int word = 0;
 	int c = 0;
 	while(str[0]) {
-		if (word) {
-			if (str[0]==' ')
-				word = 0;
-		} else
-		if (str[0]!= ' ') {
-			word = 1;
-			c++;
-		}
+		if (str[0]!= ' ')
+			if (0==(++word%2))c++;
 		str = str + 1;
 	}
 	return c;

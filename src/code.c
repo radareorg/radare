@@ -602,7 +602,7 @@ void udis_arch(int arch, int len, int rows)
 	color         = (int) config_get("scr.color");
 
 	jump_n = 0;
-	length = len * 2; // UHUHU??
+	length = len; // * 2; // UHUHU??
 	ud_idx = 0;
 	delta = 0;
 	inc = 0;
@@ -641,7 +641,7 @@ void udis_arch(int arch, int len, int rows)
 	myinc = 0;
 	if (rrows>0) rrows++;
 	while (!config.interrupted) {
-		//if (bytes > length ) break;
+		if (bytes >= length ) break;
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
@@ -812,9 +812,11 @@ void udis_arch(int arch, int len, int rows)
 		} else
 			if (inc == 0)
 				inc = myinc;
+#if 0
 		length-=inc;
 		if (length<0)
 			break;
+#endif
 		D { 
 //if (config.verbose) {
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
