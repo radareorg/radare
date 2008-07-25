@@ -9,6 +9,9 @@
 
 === TODAY ===
 
+* radare malloc://30 && e file.write=1 && wx 90 = segfault
+* folders doesnt works well
+
 * Make the color palette more accessible to the users
   - integrated with eval config in visual Ve
 * Use rabin directly . not rsc

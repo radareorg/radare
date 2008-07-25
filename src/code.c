@@ -580,7 +580,7 @@ void udis_arch(int arch, int len, int rows)
 	char buf[1024];
 	const char *flag;
 	const char *cmd_asm;
-	int rrows = rows;
+	int rrows = rows; /* rrows is in reality the num of bytes to be disassembled */
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
 	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline;
@@ -601,9 +601,8 @@ void udis_arch(int arch, int len, int rows)
 	endian        = (int) config_get("cfg.endian");
 	color         = (int) config_get("scr.color");
 
-	len*=2; // uh?!
 	jump_n = 0;
-	length = len;
+	length = len * 2; // UHUHU??
 	ud_idx = 0;
 	delta = 0;
 	inc = 0;
@@ -642,6 +641,7 @@ void udis_arch(int arch, int len, int rows)
 	myinc = 0;
 	if (rrows>0) rrows++;
 	while (!config.interrupted) {
+		//if (bytes > length ) break;
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
@@ -812,8 +812,8 @@ void udis_arch(int arch, int len, int rows)
 		} else
 			if (inc == 0)
 				inc = myinc;
-		length-=myinc;
-		if (length<=0)
+		length-=inc;
+		if (length<0)
 			break;
 		D { 
 //if (config.verbose) {

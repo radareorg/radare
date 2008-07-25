@@ -192,13 +192,32 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 	return ret;
 }
 
+int count_bytes(char *str)
+{
+	int word = 0;
+	int c = 0;
+	while(str[0]) {
+		if (word) {
+			if (str[0]==' ')
+				word = 0;
+		} else
+		if (str[0]!= ' ') {
+			word = 1;
+			c++;
+		}
+		str = str + 1;
+	}
+	return c;
+}
+
 int rasm_disasm(const char *arch, u64 *offset, const char *str, unsigned char *data)
 {
 	char buf[4096];
 	int sz;
 	/* TODO: Use internal disasembler */
 	/* TODO: parse hexpairs and disassemble */
-	sz = strlen(str)/2;
+	//sz = strlen(str)/2;
+	sz = count_bytes(str);
 	snprintf(buf, 4095, "echo 'wx %s && pd' | radare -e asm.syntax=0 -e asm.bytes=0 -e asm.offset=0 -e asm.flags=0 -e asm.lines=0 -nvw malloc://%d", str, sz);
 	system(buf);
 	return 0;

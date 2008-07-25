@@ -39,13 +39,14 @@ static int show_version()
 
 static int show_helpline()
 {
-	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] \"opcode\"\n");
+	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] \"opcode\"|-\n");
 	return 0;
 }
 
 static int show_help()
 {
 	show_helpline();
+	printf(" if 'opcode' is '-' reads from stdin\n");
 	printf("  -v           enables debug\n");
 	printf("  -d [bytes]   disassemble from hexpair bytes\n");
 	printf("  -f [file]    compiles assembly file to 'file'.o\n");
@@ -137,7 +138,21 @@ int main(int argc, char **argv)
 	}
 
 	// TODO concat argv
-	return rasm_assemble(argv[optind]);
+	if (argv[optind]) {
+		if (!strcmp(argv[optind], "-")) {
+			char buf[1024];
+			while(!feof(stdin)) {
+				fgets(buf, 128, stdin);
+				if (!feof(stdin)) {
+					buf[strlen(buf)-1]='\0';
+					rasm_assemble(buf);
+				}
+			}
+			return 0;
+		}
+		return rasm_assemble(argv[optind]);
+	}
+	return 0;
 }
 
 #endif
