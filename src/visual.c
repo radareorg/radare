@@ -781,6 +781,7 @@ void visual_draw_screen()
 {
 	const char *ptr;
 	char buf[256];
+	char buf2[256];
 
 	/* printage */
 	switch (last_print_format) {
@@ -807,6 +808,8 @@ void visual_draw_screen()
 		break;
 	default:
 		string_flag_offset(buf, config.seek);
+		if (config.cursor!=-1)
+			string_flag_offset(buf2, config.seek+config.cursor);
 	}
 	ptr = config_get("scr.seek");
 	if (ptr&&ptr[0]&&last_print_format==FMT_REF) {
@@ -818,20 +821,19 @@ void visual_draw_screen()
 	monitors_run();
 
 	/* HUH */
-	cons_gotoxy(0,0);
-	cons_clear();
+	cons_clear00();
 	V cons_printf("\e[0m");
 
 	if (inc >config.block_size)
 		inc = config.block_size;
 
 	if (config.cursor_mode)
-	cons_printf("[ 0x%llx (inc=%d, bs=%d cursor=%d sz=%d mark=0x%llx) %s %s] %s            \n",
+	cons_printf("[ 0x%llx (inc=%d, bs=%d cursor=%d sz=%d mark=0x%llx) %s %s] %s -> %s         \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor, (config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		mark, get_print_format_name(last_print_format),
-		(inv)?"inv ":"", buf);
+		(inv)?"inv ":"", buf, buf2);
 	else
 	cons_printf("[ 0x%llx (inc=%d, bs=%d sz=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.baddr), inc,

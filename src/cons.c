@@ -351,6 +351,40 @@ int cons_html_print(const char *ptr)
 				str = ptr + 2;
 				esc = 0;
 				continue;
+			} else
+			if (ptr[0]=='4' && ptr[2]=='m') {
+				/* background color */
+				switch(ptr[1]) {
+				case '0': // BLACK
+					printf("<font style='background-color:#000'>"); fflush(stdout);
+					break;
+				case '1': // RED
+					printf("<font style='background-color:#f00'>"); fflush(stdout);
+					break;
+				case '2': // GREEN
+					printf("<font style='background-color:#0f0'>"); fflush(stdout);
+					break;
+				case '3': // YELLOW
+					printf("<font style='background-color:#ff0'>"); fflush(stdout);
+					break;
+				case '4': // BLUE
+					printf("<font style='background-color:#00f'>"); fflush(stdout);
+					break;
+				case '5': // MAGENTA
+					printf("<font style='background-color:#f0f'>"); fflush(stdout);
+					break;
+				case '6': // TURQOISE
+					printf("<font style='background-color:#aaf'>"); fflush(stdout);
+					break;
+				case '7': // WHITE
+					printf("<font style='background-color:#fff'>"); fflush(stdout);
+					break;
+				case '8': // GRAY
+					printf("<font style='background-color:#777'>"); fflush(stdout);
+					break;
+				case '9': // ???
+					break;
+				}
 			}
 		} 
 		len++;
@@ -364,6 +398,7 @@ int cons_w32_print(unsigned char *ptr)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	int esc = 0;
+	int bg = 0;
 	unsigned char *str = ptr;
 	int len = 0;
 	int inv = 0;
@@ -423,31 +458,31 @@ int cons_w32_print(unsigned char *ptr)
 				// http://www.betarun.com/Pages/ConsoleColor/
 				switch(ptr[1]) {
 				case '0': // BLACK
-					SetConsoleTextAttribute(hConsole, 0|inv);
+					SetConsoleTextAttribute(hConsole, bg|0|inv);
 					break;
 				case '1': // RED
-					SetConsoleTextAttribute(hConsole, 4|inv);
+					SetConsoleTextAttribute(hConsole, bg|4|inv);
 					break;
 				case '2': // GREEN
-					SetConsoleTextAttribute(hConsole, 2|inv);
+					SetConsoleTextAttribute(hConsole, bg|2|inv);
 					break;
 				case '3': // YELLOW
-					SetConsoleTextAttribute(hConsole, 2|4|inv);
+					SetConsoleTextAttribute(hConsole, bg|2|4|inv);
 					break;
 				case '4': // BLUE
-					SetConsoleTextAttribute(hConsole, 1|inv);
+					SetConsoleTextAttribute(hConsole, bg|1|inv);
 					break;
 				case '5': // MAGENTA
-					SetConsoleTextAttribute(hConsole, 1|4|inv);
+					SetConsoleTextAttribute(hConsole, bg|1|4|inv);
 					break;
 				case '6': // TURQOISE
-					SetConsoleTextAttribute(hConsole, 1|2|8|inv);
+					SetConsoleTextAttribute(hConsole, bg|1|2|8|inv);
 					break;
 				case '7': // WHITE
-					SetConsoleTextAttribute(hConsole, 1|2|4|inv);
+					SetConsoleTextAttribute(hConsole, bg|1|2|4|inv);
 					break;
 				case '8': // GRAY
-					SetConsoleTextAttribute(hConsole, 8|inv);
+					SetConsoleTextAttribute(hConsole, bg|8|inv);
 					break;
 				case '9': // ???
 					break;
@@ -456,6 +491,40 @@ int cons_w32_print(unsigned char *ptr)
 				str = ptr + 2;
 				esc = 0;
 				continue;
+			} else
+			if (ptr[0]=='4' && ptr[2]=='m') {
+				/* background color */
+				switch(ptr[1]) {
+				case '0': // BLACK
+					bg = 0;
+					break;
+				case '1': // RED
+					bg = 40;
+					break;
+				case '2': // GREEN
+					bg = 20;
+					break;
+				case '3': // YELLOW
+					bg = 20|40;
+					break;
+				case '4': // BLUE
+					bg = 10;
+					break;
+				case '5': // MAGENTA
+					bg = 10|40;
+					break;
+				case '6': // TURQOISE
+					bg = 10|20|80;
+					break;
+				case '7': // WHITE
+					bg = 10|20|40;
+					break;
+				case '8': // GRAY
+					bg = 80;
+					break;
+				case '9': // ???
+					break;
+				}
 			}
 		} 
 		len++;

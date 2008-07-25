@@ -944,7 +944,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 
 			/* show references */
 			if (aop.ref) {
-				if (string_flag_offset(buf, aop.ref));
+				if (string_flag_offset(buf, aop.ref-config.baddr));
 					cons_printf(" ; %s",buf);
 			}
 
