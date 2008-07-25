@@ -163,6 +163,10 @@ int is_cursor(int from, int len)
 
 void print_color_byte_i(int i, char *str, int c)
 {
+	flag_t *f = flag_by_offset(config.seek+i);
+	if (f) {
+		cons_strcat("\e[44m");
+	} else cons_strcat("\e[40m");
 	if (is_cursor(i,1)) {
 		cons_strcat("\e[7m");
 		print_color_byte(str, c);
