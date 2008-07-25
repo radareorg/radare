@@ -249,17 +249,17 @@ void dr_init();
 #define R_EDI(x) x.r_edi
 /* registers offset */
 
-#define R_EIP_OFF offsetof(struct reg, r_rip)
-#define R_EFLAGS_OFF offsetof(struct reg, r_rflags)
-#define R_EBP_OFF offsetof(struct reg, r_rbp)
-#define R_ESP_OFF offsetof(struct reg, r_rsp)
-#define R_EAX_OFF offsetof(struct reg, r_rax)
-#define R_OEAX_OFF offsetof(struct reg, r_rax)
-#define R_EBX_OFF offsetof(struct reg, r_rbx)
-#define R_ECX_OFF offsetof(struct reg, r_rcx)
-#define R_EDX_OFF offsetof(struct reg, r_rdx)
-#define R_ESI_OFF offsetof(struct reg, r_rsi)
-#define R_EDI_OFF offsetof(struct reg, r_rdi)
+#define R_EIP_OFF offsetof(struct reg, r_eip)
+#define R_EFLAGS_OFF offsetof(struct reg, r_eflags)
+#define R_EBP_OFF offsetof(struct reg, r_ebp)
+#define R_ESP_OFF offsetof(struct reg, r_esp)
+#define R_EAX_OFF offsetof(struct reg, r_eax)
+#define R_OEAX_OFF offsetof(struct reg, r_eax)
+#define R_EBX_OFF offsetof(struct reg, r_ebx)
+#define R_ECX_OFF offsetof(struct reg, r_ecx)
+#define R_EDX_OFF offsetof(struct reg, r_edx)
+#define R_ESI_OFF offsetof(struct reg, r_esi)
+#define R_EDI_OFF offsetof(struct reg, r_edi)
 
 #endif
 
