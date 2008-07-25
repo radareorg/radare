@@ -30,6 +30,12 @@
 #endif
 #endif
 
+#if defined(__amd64__)
+#undef __x86_64
+#define __x86_64
+#endif
+
+
 #if __x86_64__
 
 #include "../libps2fd.h"
@@ -506,7 +512,9 @@ int arch_print_fpregisters(int rad, const char *mask)
 #if __NetBSD__
 		cons_printf("  st%d %f\n", i, regs.__data[i]); // XXX Fill this in with real info.
 #else
+#if __linux__
 		cons_printf("  st%d %f\n", i, regs.fpr_env[i]);
+#endif
 #endif
 #endif
 
@@ -707,6 +715,16 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f eip @ 0x%llx\n", (long)R_RIP(regs));
 		cons_printf("f rip @ 0x%llx\n", (long)R_RIP(regs));
 		cons_printf("f rsp @ 0x%llx\n", (long)R_RSP(regs));
+
+		/* r8-r15 */
+		cons_printf("f r8 @ 0x%llx\n", (long)R_R8(regs));
+		cons_printf("f r9 @ 0x%llx\n", (long)R_R9(regs));
+		cons_printf("f r10 @ 0x%llx\n", (long)R_R10(regs));
+		cons_printf("f r11 @ 0x%llx\n", (long)R_R11(regs));
+		cons_printf("f r12 @ 0x%llx\n", (long)R_R12(regs));
+		cons_printf("f r13 @ 0x%llx\n", (long)R_R13(regs));
+		cons_printf("f r14 @ 0x%llx\n", (long)R_R14(regs));
+		cons_printf("f r15 @ 0x%llx\n", (long)R_R15(regs));
 	} else {
 		if (color) {
 			if (R_RAX(regs)!=R_RAX(oregs)) cons_printf("\e[35m");
@@ -740,11 +758,16 @@ int arch_print_registers(int rad, const char *mask)
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
 //#endif
 		} else {
-			cons_printf("  rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (long long)R_RAX(regs), (long long)R_RSI(regs), (long long)R_RIP(regs));
-			cons_printf("  rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (long long)R_RBX(regs), R_RDI(regs), (long long)R_ORAX(regs));
-			cons_printf("  rcx  0x%08llx    rsp  0x%08llx    eflags 0x%04x\n",   (long long)R_RCX(regs), (long long)R_RSP(regs), (long long)R_RFLAGS(regs));
-			cons_printf("  rdx  0x%08llx    rbp  0x%08llx    ", (long long)R_RDX(regs), (long long)R_RBP(regs));
+			cons_printf(" rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (u64)R_RAX(regs), (u64)R_RSI(regs), (u64)R_RIP(regs));
+			cons_printf(" rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (u64)R_RBX(regs), R_RDI(regs), (u64)R_ORAX(regs));
+			cons_printf(" rcx  0x%08llx    rsp  0x%08llx    rflags 0x%04x\n",   (u64)R_RCX(regs), (u64)R_RSP(regs), (u64)R_RFLAGS(regs));
+			cons_printf(" rdx  0x%08llx    rbp  0x%08llx    ", (u64)R_RDX(regs), (u64)R_RBP(regs));
 			dump_eflags(R_RFLAGS(regs));
+
+			/* r8-r15 */
+			cons_printf("  r8 0x%08llx     r11 0x%08llx    r14 0x%08llx\n", (u64)R_R8(regs), (u64)R_R11(regs), (u64)R_R14(regs));
+			cons_printf("  r9 0x%08llx     r12 0x%08llx    r15 0x%08llx\n", (u64)R_R9(regs), (u64)R_R12(regs), (u64)R_R15(regs));
+			cons_printf(" r10 0x%08llx     r13 0x%08llx\n", (u64)R_R10(regs), (u64)R_R13(regs));
 		}
 
 		if (memcmp(&nregs,&regs, sizeof(regs_t))) {
@@ -783,24 +806,26 @@ int arch_set_register(char *reg, char *value)
 #endif
 	if (ret < 0) return 1;
 	
-	if (!strcmp(reg, "eax"))
+	if (!strcmp(reg, "rax"))
 		R_RAX(regs) = get_value(value);
-	else if (!strcmp(reg, "ebx"))
+	else if (!strcmp(reg, "rbx"))
 		R_RBX(regs) = get_value(value);
-	else if (!strcmp(reg, "ecx"))
+	else if (!strcmp(reg, "rcx"))
 		R_RCX(regs) = get_value(value);
-	else if (!strcmp(reg, "edx"))
+	else if (!strcmp(reg, "rdx"))
 		R_RDX(regs) = get_value(value);
-	else if (!strcmp(reg, "ebp"))
+	else if (!strcmp(reg, "rbp"))
 		R_RBP(regs) = get_value(value);
-	else if (!strcmp(reg, "esp"))
+	else if (!strcmp(reg, "rsp"))
 		R_RSP(regs) = get_value(value);
-	else if (!strcmp(reg, "esi"))
+	else if (!strcmp(reg, "rsi"))
 		R_RSI(regs) = get_value(value);
-	else if (!strcmp(reg, "edi"))
+	else if (!strcmp(reg, "rdi"))
 		R_RDI(regs) = get_value(value);
-	else if (!strcmp(reg, "eip"))
+	else if (!strcmp(reg, "rip"))
 		R_RIP(regs) = get_value(value);
+#warning TODO: Add !set r8, r9, ....
+
 #if __linux__
 	else if (!strcmp(reg, "eflags")) {
 		int i, foo = 0;

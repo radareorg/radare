@@ -51,7 +51,7 @@ int arch_set_bp_soft(struct bp_t *bp, unsigned long addr);
 int arch_rm_bp_soft(struct bp_t *bp);
 
 //debug.c
-int inline debug_getregs(pid_t pid, regs_t *reg);
-int inline debug_setregs(pid_t pid, regs_t *reg);
+//int debug_getregs(pid_t tid, regs_t *regs);
+//int debug_setregs(pid_t tid, regs_t *regs);
 
 addr_t arch_alloc_page(unsigned long size, unsigned long *rsize);

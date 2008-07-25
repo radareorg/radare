@@ -63,31 +63,52 @@ while($line=<STDIN>) {
 	$str = sprintf "%08x $a  $b   $c\e[0m %08x\n",
 		$offa-1, $offb-1;
 
-	if ($context>=0) {
+	if ($context >= 0) {
 		if ($diff) {
-			if ($odiff==$diff) {
-		 		# print out initial context
-				if ($ctxcnt!=$context) {
-					print "--\n";
-					foreach $buf (@buffer)
-					{ print $buf; }
-				}
+			if ($odiff != $diff) {
 				$ctxcnt = $context;
-				print $str;
-			} else {
-				# limit buffer to context size
-				shift @buffer if ($#buffer>=$context);
-				push @buffer, $str;
+				foreach $buf (@buffer) { 
+					print $buf;
+				}
+				@buffer = ();
 			}
+			print $str;
 		} else {
-			# print out end context
 			print $str if ($ctxcnt-->0);
-			# limit buffer to context size
-			shift @buffer if ($#buffer>=$context);
+			shift @buffer if ($#buffer>=$context-1);
 			push @buffer, $str;
 		}
-		$odiff = $diff;
 	} else {
 		print $str;
 	}
+
+	$odiff = $diff;
+
+#	if ($context>=0) {
+#		if ($diff) {
+#			if ($odiff==$diff) {
+#		 		# print out initial context
+#				if ($ctxcnt!=$context) {
+#					print "--\n";
+#					foreach $buf (@buffer)
+#					{ print $buf; }
+#				}
+#				$ctxcnt = $context;
+#				print $str;
+#			} else {
+#				# limit buffer to context size
+#				shift @buffer if ($#buffer>=$context);
+#				push @buffer, $str;
+#			}
+#		} else {
+#			# print out end context
+#			print $str if ($ctxcnt-->0);
+#			# limit buffer to context size
+#			shift @buffer if ($#buffer>=$context);
+#			push @buffer, $str;
+#		}
+#		$odiff = $diff;
+#	} else {
+#		print $str;
+#	}
 }

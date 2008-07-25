@@ -5,6 +5,8 @@
 #error Do not include i386.h directly!
 #endif
 
+#include <limits.h>
+
 /* ensure */
 #undef __UNIX__
 #undef __WINDOWS__
@@ -67,6 +69,15 @@ void dr_init();
 #define R_RDX(x) x.rdx
 #define R_RSI(x) x.rsi
 #define R_RDI(x) x.rdi
+
+#define R_R8(x) x.r8
+#define R_R9(x) x.r9
+#define R_R10(x) x.r10
+#define R_R11(x) x.r11
+#define R_R12(x) x.r12
+#define R_R13(x) x.r13
+#define R_R14(x) x.r14
+#define R_R15(x) x.r15
 /* registers offset */
 
 #define R_RIP_OFF offsetof(struct user_regs_struct, rip)
@@ -80,6 +91,15 @@ void dr_init();
 #define R_RDX_OFF offsetof(struct user_regs_struct, rdx)
 #define R_RSI_OFF offsetof(struct user_regs_struct, rsi)
 #define R_RDI_OFF offsetof(struct user_regs_struct, rdi)
+
+#define R_R8_OFF offsetof(struct reg, r8)
+#define R_R9_OFF offsetof(struct reg, r9)
+#define R_R10_OFF offsetof(struct reg, r10)
+#define R_R11_OFF offsetof(struct reg, r11)
+#define R_R12_OFF offsetof(struct reg, r12)
+#define R_R13_OFF offsetof(struct reg, r13)
+#define R_R14_OFF offsetof(struct reg, r14)
+#define R_R15_OFF offsetof(struct reg, r15)
 
 #endif
 
@@ -158,8 +178,63 @@ void dr_init();
 
 #else /* BSD? */
 
-
 #include <machine/reg.h>
+#include <sys/param.h>
+#include <sys/user.h>
+
+#if defined(__amd64)
+#undef __x86_64
+#define __x86_64 1
+#endif
+
+#if __x86_64__
+#define regs_t struct reg
+#define R_RIP(x) x.r_rip
+#define R_RFLAGS(x) x.r_rflags
+#define R_RBP(x) x.r_rbp
+#define R_RSP(x) x.r_rsp
+#define R_RAX(x) x.r_rax
+#define R_ORAX(x) x.r_rax
+#define R_RBX(x) x.r_rbx
+#define R_RCX(x) x.r_rcx
+#define R_RDX(x) x.r_rdx
+#define R_RSI(x) x.r_rsi
+#define R_RDI(x) x.r_rdi
+
+#define R_R8(x) x.r_r8
+#define R_R9(x) x.r_r9
+#define R_R10(x) x.r_r10
+#define R_R11(x) x.r_r11
+#define R_R12(x) x.r_r12
+#define R_R13(x) x.r_r13
+#define R_R14(x) x.r_r14
+#define R_R15(x) x.r_r15
+
+/* registers offset */
+
+#define R_RIP_OFF offsetof(struct reg, r_rip)
+#define R_RFLAGS_OFF offsetof(struct reg, r_rflags)
+#define R_RBP_OFF offsetof(struct reg, r_rbp)
+#define R_RSP_OFF offsetof(struct reg, r_rsp)
+#define R_RAX_OFF offsetof(struct reg, r_rax)
+#define R_ORAX_OFF offsetof(struct reg, r_rax)
+#define R_RBX_OFF offsetof(struct reg, r_rbx)
+#define R_RCX_OFF offsetof(struct reg, r_rcx)
+#define R_RDX_OFF offsetof(struct reg, r_rdx)
+#define R_RSI_OFF offsetof(struct reg, r_rsi)
+#define R_RDI_OFF offsetof(struct reg, r_rdi)
+
+#define R_R8_OFF offsetof(struct reg, r_r8)
+#define R_R9_OFF offsetof(struct reg, r_r9)
+#define R_R10_OFF offsetof(struct reg, r_r10)
+#define R_R11_OFF offsetof(struct reg, r_r11)
+#define R_R12_OFF offsetof(struct reg, r_r12)
+#define R_R13_OFF offsetof(struct reg, r_r13)
+#define R_R14_OFF offsetof(struct reg, r_r14)
+#define R_R15_OFF offsetof(struct reg, r_r15)
+
+#else
+
 #define regs_t struct reg
 #define R_EIP(x) x.r_eip
 #define R_EFLAGS(x) x.r_eflags
@@ -174,17 +249,19 @@ void dr_init();
 #define R_EDI(x) x.r_edi
 /* registers offset */
 
-#define R_EIP_OFF offsetof(struct reg, r_eip)
-#define R_EFLAGS_OFF offsetof(struct reg, r_eflags)
-#define R_EBP_OFF offsetof(struct reg, r_ebp)
-#define R_ESP_OFF offsetof(struct reg, r_esp)
-#define R_EAX_OFF offsetof(struct reg, r_eax)
-#define R_OEAX_OFF offsetof(struct reg, r_eax)
-#define R_EBX_OFF offsetof(struct reg, r_ebx)
-#define R_ECX_OFF offsetof(struct reg, r_ecx)
-#define R_EDX_OFF offsetof(struct reg, r_edx)
-#define R_ESI_OFF offsetof(struct reg, r_esi)
-#define R_EDI_OFF offsetof(struct reg, r_edi)
+#define R_EIP_OFF offsetof(struct reg, r_rip)
+#define R_EFLAGS_OFF offsetof(struct reg, r_rflags)
+#define R_EBP_OFF offsetof(struct reg, r_rbp)
+#define R_ESP_OFF offsetof(struct reg, r_rsp)
+#define R_EAX_OFF offsetof(struct reg, r_rax)
+#define R_OEAX_OFF offsetof(struct reg, r_rax)
+#define R_EBX_OFF offsetof(struct reg, r_rbx)
+#define R_ECX_OFF offsetof(struct reg, r_rcx)
+#define R_EDX_OFF offsetof(struct reg, r_rdx)
+#define R_ESI_OFF offsetof(struct reg, r_rsi)
+#define R_EDI_OFF offsetof(struct reg, r_rdi)
+
+#endif
 
 #endif
 #include "i386-debug.h"

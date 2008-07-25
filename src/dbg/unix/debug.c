@@ -72,12 +72,15 @@ int th_init_freebsd(int pid)
 #if __BSD__
 int th_info_bsd(int pid)
 {
+#if __FreeBSD__ || __NetBSD__
 	struct ptrace_lwpinfo lwps;
 	int i,n = 0;
 	lwps.pl_lwpid = pid;
 	if (ptrace(PT_LWPINFO, pid, &lwps, sizeof(lwps)) != -1)
 		cons_printf("lwp(pid=%d) id=%d event=%d\n",pid,
 			lwps.pl_lwpid, lwps.pl_event);
+#endif
+	return 0;
 }
 #endif
 
@@ -89,7 +92,8 @@ int debug_os_kill(int pid, int sig)
 	return kill(pid, sig);
 }
 
-#if __NetBSD__ || __OpenBSD__ || __APPLE__
+/* TODO: OpenBSD have no fktrace..only ktrace */
+#if __NetBSD__ || __FreeBSD__ || __OpenBSD__ || __APPLE__
 
 #include <sys/param.h>
 #include <sys/resource.h>
@@ -98,6 +102,9 @@ int debug_os_kill(int pid, int sig)
 
 int debug_ktrace()
 {
+#if __OpenBSD__
+	eprintf("No fktrace for OpenBSD. Needs to be implemented with ktrace(2)\n");
+#else
 	int sta, ops, trp, fd, ret;
 	int pd[2];
 	char buf[1024];
@@ -136,7 +143,7 @@ int debug_ktrace()
 	}
 	close(pd[0]);
 	close(pd[1]);
-
+#endif
 	return 0;
 }
 #endif
@@ -685,7 +692,12 @@ int debug_contp(int pid)
 
 int debug_contscp()
 {
+#if __linux__ || ( __BSD__ && defined(PT_SYSCALL))
 	return ptrace(PTRACE_SYSCALL, ps.tid, (u32)arch_pc(ps.tid), 0);
+#else
+	eprintf("contscp: not implemented for this platform\n");
+	return 0;
+#endif
 }
 
 int debug_os_steps()
@@ -847,6 +859,7 @@ int debug_contfork(int tid)
 {
 	int ret;
 
+#if __linux__ || ( __BSD__ && defined(PT_SYSCALL))
 	// XXX ignore tid
 	if (ps.opened) {
 		//arch_reset_breakpoint(1);
@@ -867,6 +880,9 @@ int debug_contfork(int tid)
 
 		return 0;
 	}
+#else
+	eprintf("contfork: oops\n");
+#endif
 
 	eprintf(":contsc No program loaded.\n");
 	return 1;
