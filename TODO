@@ -9,7 +9,10 @@
 
 === TODAY ===
 
-* radare malloc://30 && e file.write=1 && wx 90 = segfault
+* Remove !get and !set to !reg [<reg>[=value]]
+* rename !regs to !reg
+
+* radare malloc://30 && e file.write=1 && wx 90 = segfaults
 * folders doesnt works well
 
 * Make the color palette more accessible to the users

@@ -1009,10 +1009,11 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 	}
     }
 
+#if 0
     if (bin->bss < 0) {
 	printf("No bss section\n");
-	return -1;
     }
+#endif
 
     bin->base_addr = dietelf_get_base_addr(bin);
 

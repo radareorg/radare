@@ -31,7 +31,8 @@
 #include "arch/x86/udis86/extern.h"
 #include "list.h"
 
-#define CHECK_LINES if ( config.visual && len!=config.block_size && (cons_lines >config.height) ) break;
+//#define CHECK_LINES if ( config.visual && len != config.block_size && (cons_lines > config.height) ) break;
+#define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) break;
 
 static int last_arch = ARCH_X86;
 struct list_head data;
@@ -395,15 +396,16 @@ static int metadata_print(int delta)
 {
 	int show_lines = (int)config_get("asm.lines");
 	int show_flagsline = (int)config_get("asm.flagsline");
-	u64 offset = config.baddr + (u64)config.seek + (u64)delta;
+	u64 offset = (u64)config.seek + (u64)delta;// - config.baddr;
 	int lines = 0;
 	const char *ptr;
 	int i = 0;
 
-	// config.baddr everywhere???
 	D {} else return 0;
 	if (config_get("asm.flags") && show_flagsline) {
 		ptr = flag_name_by_offset( offset );
+		if (ptr == NULL && config.baddr)
+			ptr = flag_name_by_offset( config.seek + delta);
 		if (ptr && ptr[0]) {
 			if (show_lines&&reflines)
 				code_lines_print(reflines, offset, 1);
@@ -573,7 +575,6 @@ void udis_arch(int arch, int len, int rows)
 	int i,idata,delta;
 	u64 seek = 0;
 	u64 sk = 0;
-	//int lines = 0;
 	int bytes = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
@@ -602,7 +603,7 @@ void udis_arch(int arch, int len, int rows)
 	color         = (int) config_get("scr.color");
 
 	jump_n = 0;
-	length = len; // * 2; // UHUHU??
+	length = len;
 	ud_idx = 0;
 	delta = 0;
 	inc = 0;
@@ -639,14 +640,17 @@ void udis_arch(int arch, int len, int rows)
 
 	// XXX remove rows
 	myinc = 0;
-	if (rrows>0) rrows++;
+	if (rrows>0) rrows ++;
+	/* DISASSEMBLY LOOP */
 	while (!config.interrupted) {
+		CHECK_LINES
 		if (bytes >= length ) break;
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
-		seek = config.baddr + config.seek+bytes;
-		sk = config.baddr + config.seek+bytes;
+		/* XXX : diff between sk and seek?? */
+		//sk = seek = config.baddr + config.seek+bytes;
+		sk = seek = config.seek+bytes;
 		CHECK_LINES
 
 		if (show_comments)
@@ -668,6 +672,8 @@ void udis_arch(int arch, int len, int rows)
 			}
 
 			flag = flag_name_by_offset(seek);
+			if (flag == NULL && config.baddr)
+				flag = flag_name_by_offset(seek-config.baddr);
 			if (!strnull(flag))
 				cons_printf("%s: ", flag);
 
@@ -730,9 +736,8 @@ void udis_arch(int arch, int len, int rows)
 		if (data_end(sk) == DATA_FOLD_O) {
 			if (show_lines)
 				code_lines_print(reflines, seek, 1);
-			if (show_offset) {
+			if (show_offset)
 				cons_strcat("           ");
-			}
 			folder--;
 			for(i=0;i<folder;i++) cons_strcat("  ");
 			cons_strcat("   }\n");
@@ -809,16 +814,11 @@ void udis_arch(int arch, int len, int rows)
 		if (config.cursor_mode) {
 			if (config.cursor == bytes)
 				inc = myinc;
-		} else
+		} else {
 			if (inc == 0)
 				inc = myinc;
-#if 0
-		length-=inc;
-		if (length<0)
-			break;
-#endif
+		}
 		D { 
-//if (config.verbose) {
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
 			if (show_lines)
 				code_lines_print(reflines, sk, 0);
@@ -841,7 +841,12 @@ void udis_arch(int arch, int len, int rows)
 
 			if (show_flags && !show_flagsline) {
 				char buf[1024];
-				const char *flag = flag_name_by_offset(seek ); //+config.baddr);
+				const char *flag = flag_name_by_offset( seek );
+				//cons_printf("(%08x) ", seek-config.baddr);
+				if (flag == NULL || !flag[0])
+					flag = flag_name_by_offset(seek -config.baddr);
+				//if (flag == NULL)
+				//	flag = flag_name_by_offset(seek +config.baddr);
 				//config.baddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
 					sprintf(buf, "%%%ds:", show_nbytes);
