@@ -96,6 +96,9 @@ int dl_readchar()
 /* history stuff */
 int dl_hist_add(const char *line)
 {
+#if HAVE_LIB_READLINE
+	add_history(line);
+#else
 	if (dl_histidx>=dl_histsize)
 		dl_histidx = 0; // workaround
 	if (*line) { // && dl_histidx < dl_histsize) {
@@ -103,6 +106,7 @@ int dl_hist_add(const char *line)
 		return 1;
 	}
 	return 0;
+#endif
 }
 
 int dl_hist_up()

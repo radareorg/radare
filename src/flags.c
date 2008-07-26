@@ -18,11 +18,6 @@
  *
  */
 
-// TODO: automatic bubble sort by addr - faster indexing
-// TODO: support cursor indexing (index inside flag list)
-// TODO: store data and show (flag.data) in last_print_format
-// TODO: visual editor for flags
-
 #include "main.h"
 #include "radare.h"
 #include "flags.h"
@@ -81,7 +76,6 @@ void flag_cmd(const char *text)
 	}
 }
 
-// TODO: implement bubble sort with cache?
 flag_t *flag_get_i(int id)
 {
 	struct list_head *pos;
@@ -175,16 +169,6 @@ flag_t *flag_get_next(int delta)
 	}
 	return nice;
 }
-/*
-
-	if (flag_ptr < 0) flag_ptr = 0;
-	if (flag == NULL)
-		flag_ptr = 0;
-	flag_ptr += delta;
-
-	return flag;
-}
-*/
 
 flag_t *flag_get_reset()
 {
@@ -282,19 +266,6 @@ void flags_setenv()
 			}
 		}
 	}
-
-#if 0
-	{
-		struct list_head *pos;
-		list_for_each(pos, &flags) {
-			if (config.interrupted) break;
-			flag_t *flag = list_entry(pos, flag_t, list);
-			sprintf(var, "flag_%s", flag->name);
-			sprintf(bar, OFF_FMT, flag->offset);
-			setenv(var, bar, 1);
-		}
-	}
-#endif
 }
 
 flag_t *flag_by_offset(u64 offset)

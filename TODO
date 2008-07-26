@@ -9,8 +9,12 @@
 
 === TODAY ===
 
+BUG: graph contents are empty in gradare uh?
+
+// TODO: store data and show (flag.data) in last_print_format
 * Remove !get and !set to !reg [<reg>[=value]]
 * rename !regs to !reg
+* Allow to edit flags in Vt
 
 * radare malloc://30 && e file.write=1 && wx 90 = segfaults
 * folders doesnt works well

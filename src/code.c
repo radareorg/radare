@@ -650,7 +650,8 @@ void udis_arch(int arch, int len, int rows)
 			break;
 		/* XXX : diff between sk and seek?? */
 		//sk = seek = config.baddr + config.seek+bytes;
-		sk = seek = config.seek+bytes;
+		seek = config.seek+bytes + config.baddr;
+		sk   = config.seek+bytes;
 		CHECK_LINES
 
 		if (show_comments)

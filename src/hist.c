@@ -18,6 +18,9 @@
  *
  */
 
+/* DEPRECATED: MOVE THIS STUFF TO DIETLINE */
+#if 0
+
 #include "main.h"
 #include "radare.h"
 #include "search.h"
@@ -327,3 +330,5 @@ int hist_show()
 	}
 	return n;
 }
+
+#endif

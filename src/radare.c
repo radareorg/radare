@@ -728,6 +728,7 @@ int radare_cmd(char *command, int log)
 		return 0;
 	}
 
+#if 0
 // XXX to be moved to dietline.c
 	/* history stuff */
 	if (command[0]=='!') {
@@ -735,8 +736,9 @@ int radare_cmd(char *command, int log)
 		if (command[0]=='0'||p>0)
 			return radare_cmd(hist_get_i(p), 0);
 	}
-	hist_add(command, log);
 // XXX ---
+#endif
+	dl_hist_add(command); //, log);
 
 	if (config.skip) return 0;
 
