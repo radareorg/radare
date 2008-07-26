@@ -1345,6 +1345,7 @@ CMD_DECL(visual)
 		case ':':
 			cons_set_raw(0);
 			lpf = last_print_format;
+			config.visual=0;
 #if HAVE_LIB_READLINE
 			ptr = readline(VISUAL_PROMPT);
 			if (ptr) {
@@ -1361,6 +1362,7 @@ CMD_DECL(visual)
 			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
 #endif
+			config.visual=1;
 			last_print_format = lpf;
 			cons_set_raw(1);
 			if (line[0])
