@@ -2,7 +2,7 @@
 #ifndef _INCLUDE_DIETELF_H_
 #define _INCLUDE_DIETELF_H_
 
-#include <elf.h>
+#include "elf.h"
 
 typedef struct {
     Elf32_Ehdr      ehdr;

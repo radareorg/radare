@@ -60,12 +60,13 @@ while($line=<STDIN>) {
 	$line=~/(\w*)\s*(\w*)/;
 	if ("$a$c" eq "    ") { $a=$1; $c=$2; }
 
-	$str = sprintf "%08x $a  $b   $c\e[0m %08x\n",
+	$str = sprintf "0x%08x $a  $b   $c\e[0m 0x%08x\n",
 		$offa-1, $offb-1;
 
-	if ($context >= 0) {
+	if ($context > 0) {
 		if ($diff) {
 			if ($odiff != $diff) {
+				print "--\n" unless ($ctxcnt >= 0);
 				$ctxcnt = $context;
 				foreach $buf (@buffer) { 
 					print $buf;
@@ -74,10 +75,15 @@ while($line=<STDIN>) {
 			}
 			print $str;
 		} else {
-			print $str if ($ctxcnt-->0);
-			shift @buffer if ($#buffer>=$context-1);
-			push @buffer, $str;
+			if ($ctxcnt-- > 0) {
+				print $str;
+			} else {
+				shift @buffer if ($#buffer>=$context-1);
+				push @buffer, $str;
+			}
 		}
+	} elsif ($context == 0) {
+		print $str if ($diff);
 	} else {
 		print $str;
 	}

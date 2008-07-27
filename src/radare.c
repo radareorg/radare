@@ -25,7 +25,7 @@
 
 #if __UNIX__
 #include <sys/ioctl.h>
-#include <regex.h>
+//#include <regex.h> // NOT PARSEABLE BY TCC :O
 #include <termios.h>
 #include <sys/wait.h>
 #include <netdb.h>
