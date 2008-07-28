@@ -90,7 +90,8 @@ void get_cpuid(int op, int *a, int *b, int *c, int *d)
 int debug_syms()
 {
 	char buf[1024];
-	snprintf(buf, 1022, ".!!rsc syms-dbg-flag '%s'", config.file);
+	//snprintf(buf, 1022, ".!!rsc syms-dbg-flag '%s'", config.file);
+	snprintf(buf, 1022, ".!!rabin -rios '%s'", config.file);
 	return radare_cmd_raw(buf, 0);
 }
 

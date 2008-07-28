@@ -1309,9 +1309,6 @@ int radare_go()
 		return 0;
 	}
 
-#if HAVE_LIB_READLINE
-	D rad_readline_init();
-#endif
 	radare_controlc();
 
 	if (!config.noscript) {

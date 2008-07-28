@@ -400,7 +400,6 @@ void rabin_show_exports(char *file)
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
 #endif		
-
 		fd = dietelf_new(file, &bin);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
@@ -410,13 +409,17 @@ void rabin_show_exports(char *file)
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
-	   #if __DARWIN_BYTE_ORDER
-		sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
-		system(buf);
-	   #else
-		sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
-		system(buf);
-	   #endif
+		if (rad) {
+			system("otool -tv $target|grep -C 1 -e : |grep -v / | awk '{if (/:/){label=\$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"\$1;label=\"\"}}");
+		} else {
+		   #if __DARWIN_BYTE_ORDER
+			sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
+			system(buf);
+		   #else
+			sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
+			system(buf);
+		   #endif
+		}
 		break;
 	}
 }

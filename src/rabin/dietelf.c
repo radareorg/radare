@@ -751,7 +751,7 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 	    symp = sym;
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
-		    if ((symp->st_shndx > 10 && symp->st_shndx < 14) && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    if (symp->st_shndx >= 10 && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
 			    printf("f sym_exp_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
@@ -835,7 +835,7 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 	    symp = sym;
 	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
 		if (k != 0) {
-		    if (symp->st_shndx == 3  && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    if (symp->st_shndx < 10 && symp->st_shndx > 0  && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
 			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
 			    printf("f sym_oth_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
