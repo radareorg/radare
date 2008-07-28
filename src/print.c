@@ -163,16 +163,17 @@ int is_cursor(int from, int len)
 
 void print_color_byte_i(int i, char *str, int c)
 {
-	flag_t *f = flag_by_offset(config.seek+config.baddr+i);
-	if (f) {
-		cons_strcat("\e[44m");
-	} 
+	C {
+		flag_t *f = flag_by_offset(config.seek+config.baddr+i);
+		if (f) {
+			cons_strcat("\e[44m");
+		} else cons_strcat("\e[0m");
+	}
 	if (is_cursor(i,1)) {
 		cons_strcat("\e[7m");
 		print_color_byte(str, c);
 		cons_strcat("\e[0m");
-	} else
-	print_color_byte(str, c);
+	} else print_color_byte(str, c);
 }
 
 void radare_dump_and_process(int type, int size)
@@ -831,8 +832,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy(buffer, buf+i, 4);
 			sh = (unsigned int *)buffer;
-			//print_color_byte_i(i, "%08x ", sh[0]);
-			cons_printf("0x%08x ", sh[0]);
+			cons_printf("0x%02x%02x%02x%02x ", buffer[0],buffer[1],buffer[2],buffer[3]);
 			D { NEWLINE; }
 		} D{}else NEWLINE;
 		} break;
@@ -841,8 +841,9 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		for(i=0;!config.interrupted&&i<len;i+=2) {
 			endian_memcpy(buffer, buf+i, 2); //sizeof(short));
 			sh = (unsigned short *)&buffer;
+			cons_printf("0x%02x%02x ", buffer[0],buffer[1]);
 			//print_color_byte_i(i, "%04x ", sh[0]);
-			cons_printf("0x%04x", sh[0]);
+			//cons_printf("0x%04x", sh[0]);
 			D { NEWLINE; }
 		}  D{}else NEWLINE;
 		} break;

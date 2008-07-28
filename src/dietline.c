@@ -219,6 +219,9 @@ int dl_hist_chop(const char *file, int limit)
 /* initialize history stuff */
 int dl_init()
 {
+#if HAVE_LIB_READLINE
+	rad_readline_init();
+#endif
 	dl_history = (char **)malloc(dl_histsize*sizeof(char *));
 	if (dl_history==NULL)
 		return 0;

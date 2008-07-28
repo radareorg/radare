@@ -738,7 +738,8 @@ int radare_cmd(char *command, int log)
 	}
 // XXX ---
 #endif
-	dl_hist_add(command); //, log);
+	if (log)
+		dl_hist_add(command);
 
 	if (config.skip) return 0;
 
