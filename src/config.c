@@ -653,7 +653,7 @@ void config_init(int first)
 	config_set("child.stdin", "");
 	config_set("child.stdout", "");
 	config_set("child.stderr", "");
-	config_set_i("child.setgid", -1);
+	config_set("child.setgid", ""); // must be int ?
 	config_set("child.chdir", ".");
 	config_set("child.chroot", "/");
 	config_set("child.setuid", "");
