@@ -32,7 +32,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+
 #include "dietelf.h"
+#include "dietelf64.h"
+
+#define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
+
+typedef union {
+    Elf32_dietelf_bin_t e32;
+    Elf64_dietelf_bin_t e64;
+} dietelf_bin_t;
 
 // TODO : move into rabin_t
 char *file = NULL;
@@ -43,6 +52,7 @@ int xrefs    = 0;
 int rad      = 0; //radare output format
 int fd       = -1;
 static int pebase = 0;
+static int elf64 = 0;
 
 /* fun */
 
@@ -74,7 +84,7 @@ void rabin_show_info(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-    		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
@@ -85,20 +95,20 @@ void rabin_show_info(const char *file)
 		       "OS/ABI name:     %s\n"
 		       "Machine name:    %s\n"
 		       "File type:       %s\n",
-		       dietelf_get_elf_class(&bin),
-		       dietelf_get_data_encoding(&bin),
-		       dietelf_get_osabi_name(&bin),
-		       dietelf_get_machine_name(&bin),
-		       dietelf_get_file_type(&bin));
+		       ELF_CALL(dietelf_get_elf_class,bin),
+		       ELF_CALL(dietelf_get_data_encoding,bin),
+		       ELF_CALL(dietelf_get_osabi_name,bin),
+		       ELF_CALL(dietelf_get_machine_name,bin),
+		       ELF_CALL(dietelf_get_file_type,bin));
 
 		printf("Stripped:        ");
-		if (dietelf_get_stripped(&bin))
+		if (ELF_CALL(dietelf_get_stripped,bin))
 		    printf("Yes\n");
 		else
 		    printf("No\n");
 
 		printf("Static:          ");
-		if (dietelf_get_static(&bin))
+		if (ELF_CALL(dietelf_get_static,bin))
 		    printf("Yes\n");
 		else
 		    printf("No\n");
@@ -115,12 +125,12 @@ void rabin_show_strings(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-    		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_strings(fd, &bin);
+		ELF_CALL(dietelf_list_strings,bin,fd);
 		close(fd);
 		break;
 	}
@@ -173,13 +183,13 @@ void rabin_show_entrypoint()
 		read(fd, &addr, 4);
 #endif
 
-		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		addr=dietelf_get_entry_addr(&bin);
-		base=dietelf_get_base_addr(&bin);
+		addr=ELF_CALL(dietelf_get_entry_addr,bin);
+		base=ELF_CALL(dietelf_get_base_addr,bin);
 
 		if (rad) {
 			printf("f entrypoint @ 0x%08lx\n", addr);
@@ -245,12 +255,12 @@ void rabin_show_symbols()
 		system(buf);
 #endif
 
-		fd = dietelf_new(file, &bin);
+		fd = ELF_COND(dietelf_new(file, &bin));
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_BOTH);
+		ELF_COND(dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_BOTH));
 		close(fd);
 
 		break;
@@ -377,12 +387,12 @@ void rabin_show_imports(const char *file)
 		system(buf);
 #else
 		
-    		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_imports(fd, &bin);
+		ELF_CALL(dietelf_list_imports,bin,fd);
 		close(fd);
 #endif
 		break;
@@ -400,17 +410,17 @@ void rabin_show_exports(char *file)
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
 #endif		
-		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_exports(fd, &bin);
+		ELF_CALL(dietelf_list_exports,bin,fd);
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
 		if (rad) {
-			system("otool -tv $target|grep -C 1 -e : |grep -v / | awk '{if (/:/){label=\$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"\$1;label=\"\"}}");
+			system("otool -tv $target|grep -C 1 -e : |grep -v / | awk '{if (/:/){label=$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"$1;label=\"\"}}");
 		} else {
 		   #if __DARWIN_BYTE_ORDER
 			sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
@@ -430,12 +440,12 @@ void rabin_show_others(char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_others(fd, &bin);
+		ELF_CALL(dietelf_list_others,bin,fd);
 		close(fd);
 		break;
 	}
@@ -449,12 +459,12 @@ void rabin_show_sections(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-    		fd = dietelf_new(file, &bin);
+		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		dietelf_list_sections(fd, &bin);
+		ELF_CALL(dietelf_list_sections,bin,fd);
 		close(fd);
 		break;
 	default:
@@ -503,9 +513,14 @@ int rabin_identify_header()
 	if (!memcmp(buf, "dex\n009\0", 8))
 		filetype = FILETYPE_DEX;
 	else
-	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4))
+	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4)) {
 		filetype = FILETYPE_ELF;
-	else
+		
+		if (buf[EI_CLASS] == ELFCLASS64)
+		{
+		    elf64 = 1;
+		}
+	} else
 	if (!memcmp(buf, "\x4d\x5a", 2)) {
 		int pe = buf[0x3c];
 		filetype = FILETYPE_MZ;

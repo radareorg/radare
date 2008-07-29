@@ -187,7 +187,7 @@ int print_shellcode()
 	for(i=0;i<N;i++)
 		output[i+A] = '\x90';
 	for(i=0;i<E;i++)
-		output[i+A+N] = (unsigned char)(i%256);
+		output[i+A+N] = (unsigned char)(i%255)+1;
 	memcpy(output+A+N+E, shellcode, scsize);
 	for(i=0;i<C;i++)
 		output[i+A+E+N+scsize] = '\xCC';

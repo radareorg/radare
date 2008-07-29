@@ -3,8 +3,6 @@
  * Based on Silvio Cesare's elf infector
  * Licensed under GPLv2
  * This file is part of radare
- *
- * TODO: x86-64
  */
 
 #include <stdio.h>
@@ -15,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+
 #include "../main.h"
 #include "dietelf.h"
 
@@ -25,18 +24,18 @@ enum {
 
 static int endian=0;
 
-#ifdef RADARE_CORE
 extern int xrefs;
 extern int rad;
 extern int verbose;
-#else
+
+#if 0
 int rad = 0;
 int verbose = 1;
 int xrefs = 0; // XXX
 #endif
 
 void
-aux_swap_endian(u8 *value, int size)
+ELF_(aux_swap_endian)(u8 *value, int size)
 {
 	unsigned char buffer[8];
 	
@@ -72,7 +71,7 @@ aux_swap_endian(u8 *value, int size)
 }
 
 int
-aux_is_encoded(int encoding, unsigned char c)
+ELF_(aux_is_encoded)(int encoding, unsigned char c)
 {
 	switch(encoding) {
 	case ENCODING_ASCII:
@@ -105,20 +104,20 @@ aux_is_encoded(int encoding, unsigned char c)
 }
 
 int
-aux_is_printable (int c)
+ELF_(aux_is_printable) (int c)
 {
 	if (c<' '||c>'~') return 0;
 	return 1;
 }
 
 int 
-aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset)
+ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset)
 {
 	static int unicode = 0;
 	static int matches = 0;
 	char str[4096];
 
-	if (aux_is_printable(buf[i]) || (aux_is_encoded(enc, buf[i]))) {
+	if (ELF_(aux_is_printable)(buf[i]) || (ELF_(aux_is_encoded)(enc, buf[i]))) {
 		if (matches == 0)
 			offset += i;
 		str[matches] = buf[i];
@@ -137,7 +136,7 @@ aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base
 			if (len>2) {
 			    if (rad) {
 				printf("f str_%s @ 0x%08llx\n",
-					aux_filter_rad_output(str), offset-matches+base);
+					ELF_(aux_filter_rad_output)(str), offset-matches+base);
 				printf("Cs %i @ 0x%08llx\n", len, offset-matches);
 			    } else {
 				printf("0x%08llx %03d %c %s\n",
@@ -152,7 +151,7 @@ aux_stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 base
 }
 
 int
-aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit)
+ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -181,7 +180,7 @@ aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u6
 		len = limit;
 
 	for(i = seek; i < len; i++) 
-		aux_stripstr_iterate(buf, i, min, encoding, base, i);
+		ELF_(aux_stripstr_iterate)(buf, i, min, encoding, base, i);
 
 	munmap(buf, len); 
 #elif __WINDOWS__
@@ -193,9 +192,9 @@ aux_stripstr_from_file(const char *filename, int min, int encoding, u64 base, u6
 }
 
 int
-do_elf_checks(dietelf_bin_t *bin)
+ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
 
     if (strncmp((char *)ehdr->e_ident, ELFMAG, SELFMAG)) {
 	fprintf(stderr, "File not ELF\n");
@@ -207,16 +206,11 @@ do_elf_checks(dietelf_bin_t *bin)
 	return -1;
     }
 
-    if (ehdr->e_ident[EI_CLASS] != ELFCLASS32) {
-	printf("ELF64 not yet supported\n");
-	return -1;
-    }
-
     return 0;
 }
 
 char*
-aux_filter_rad_output(const char *string)
+ELF_(aux_filter_rad_output)(const char *string)
 {
     static char buff[255];
     char *p = buff;
@@ -258,22 +252,22 @@ aux_filter_rad_output(const char *string)
 }
 
 u64
-dietelf_get_base_addr(dietelf_bin_t *bin)
+ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
 {
     return bin->phdr->p_vaddr & 0xfffff000;
 }
 
 u64
-dietelf_get_entry_addr(dietelf_bin_t *bin)
+ELF_(dietelf_get_entry_addr)(ELF_(dietelf_bin_t) *bin)
 {
    return bin->ehdr.e_entry; 
 }
 
 int
-dietelf_get_stripped(dietelf_bin_t *bin)
+ELF_(dietelf_get_stripped)(ELF_(dietelf_bin_t) *bin)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     int i;
 
     shdrp = shdr;
@@ -285,10 +279,10 @@ dietelf_get_stripped(dietelf_bin_t *bin)
 }
 
 int
-dietelf_get_static(dietelf_bin_t *bin)
+ELF_(dietelf_get_static)(ELF_(dietelf_bin_t) *bin)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Phdr *phdr = bin->phdr, *phdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Phdr) *phdr = bin->phdr, *phdrp;
     int i;
 
     phdrp = phdr;
@@ -300,7 +294,7 @@ dietelf_get_static(dietelf_bin_t *bin)
 }
 
 char*
-dietelf_get_data_encoding (dietelf_bin_t *bin)
+ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int encoding = bin->ehdr.e_ident[EI_DATA];
     static char buff[32];
@@ -316,7 +310,7 @@ dietelf_get_data_encoding (dietelf_bin_t *bin)
 }
 
 char*
-dietelf_get_machine_name (dietelf_bin_t *bin)
+ELF_(dietelf_get_machine_name)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int e_machine = bin->ehdr.e_machine;
     static char buff[64]; 
@@ -403,7 +397,7 @@ dietelf_get_machine_name (dietelf_bin_t *bin)
 }
 
 char*
-dietelf_get_file_type (dietelf_bin_t *bin)
+ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int e_type = bin->ehdr.e_type;
     static char buff[32];
@@ -427,7 +421,7 @@ dietelf_get_file_type (dietelf_bin_t *bin)
 }
 
 char*
-dietelf_get_elf_class (dietelf_bin_t *bin)
+ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int elf_class = bin->ehdr.e_ident[EI_CLASS];
     static char buff[32];
@@ -443,7 +437,7 @@ dietelf_get_elf_class (dietelf_bin_t *bin)
 }
 
 char*
-dietelf_get_osabi_name (dietelf_bin_t *bin)
+ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int osabi = bin->ehdr.e_ident[EI_OSABI];
     static char buff[32];
@@ -469,10 +463,27 @@ dietelf_get_osabi_name (dietelf_bin_t *bin)
 }
 
 u64
-dietelf_get_section_offset(int fd, dietelf_bin_t *bin, const char *section_name)
+ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+    const char *string = bin->string;
+    int i;
+
+    shdrp = shdr;
+    for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (!strcmp(&string[shdrp->sh_name], section_name))
+	    return i;
+    }
+
+    return -1;
+}
+
+u64
+ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
+{
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
     int i;
 
@@ -486,10 +497,10 @@ dietelf_get_section_offset(int fd, dietelf_bin_t *bin, const char *section_name)
 }
 
 int
-dietelf_get_section_size(int fd, dietelf_bin_t *bin, const char *section_name)
+ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
     int i;
 
@@ -503,12 +514,12 @@ dietelf_get_section_size(int fd, dietelf_bin_t *bin, const char *section_name)
 }
 
 u64
-get_import_addr(int fd, dietelf_bin_t *bin, int sym)
+ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
-    Elf32_Rel *rel, *relp;
-    Elf32_Addr plt_sym_addr, got_addr = 0;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+    ELF_(Rel) *rel, *relp;
+    ELF_(Addr) plt_sym_addr, got_addr = 0;
     const char *string = bin->string;
     int i, j, got_offset;
 
@@ -524,7 +535,7 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (!strcmp(&string[shdrp->sh_name], ".rel.plt")) {
-	    rel = (Elf32_Rel *)malloc(shdrp->sh_size);
+	    rel = (ELF_(Rel) *)malloc(shdrp->sh_size);
 	    if (rel == NULL) {
 		perror("malloc");
 		return -1;
@@ -541,22 +552,22 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
 	    }
 
 	    relp = rel;
-	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Rel), relp++) {
-		aux_swap_endian((u8*)&(relp->r_offset), sizeof(Elf32_Addr));
-		aux_swap_endian((u8*)&(relp->r_info), sizeof(Elf32_Word));
+	    for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
+		ELF_(aux_swap_endian)((u8*)&(relp->r_offset), sizeof(ELF_(Addr)));
+		ELF_(aux_swap_endian)((u8*)&(relp->r_info), sizeof(ELF_(Word)));
 	    }
 
 	    got_offset = ((rel->r_offset - bin->base_addr) & 0xfffff000) - got_addr;
 
 	    relp = rel;
-	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Rel), relp++) {
+	    for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
 		if (ELF32_R_SYM(relp->r_info) == sym) {
 		    if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET) != relp->r_offset-bin->base_addr-got_offset) {
 			perror("lseek");
 			return -1;
 		    }
 
-		    if (read(fd, &plt_sym_addr, sizeof(Elf32_Addr)) != sizeof(Elf32_Addr)) {
+		    if (read(fd, &plt_sym_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
 			perror("read");
 			return -1;
 		    }
@@ -573,10 +584,10 @@ get_import_addr(int fd, dietelf_bin_t *bin, int sym)
 }
 
 int
-dietelf_list_sections(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
     int i;
 
@@ -588,14 +599,14 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (rad) {
-		printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr));
-		printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr + shdrp->sh_size));
+		printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr));
+		printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr + shdrp->sh_size));
 		printf("CC ");
 	}
-	printf("0x%08llx 0x%04x align=0x%02x %02d %c%c%c %s", 
+	printf("0x%08llx 0x%08llx align=0x%08llx %02d %c%c%c %s", 
 		(u64)(shdrp->sh_offset + bin->base_addr),
-		shdrp->sh_size,
-		shdrp->sh_addralign,
+		(u64)shdrp->sh_size,
+		(u64)shdrp->sh_addralign,
 		shdrp->sh_type,
 		GET_FLAGS(shdrp->sh_flags),
 		&string[shdrp->sh_name]);
@@ -608,12 +619,12 @@ dietelf_list_sections(int fd, dietelf_bin_t *bin)
 }
 
 int
-dietelf_list_imports(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
-    Elf32_Sym *sym, *symp;
-    Elf32_Shdr *strtabhdr;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+    ELF_(Sym) *sym, *symp;
+    ELF_(Shdr) *strtabhdr;
     char *string;
     int i, j, k;
 
@@ -638,7 +649,7 @@ dietelf_list_imports(int fd, dietelf_bin_t *bin)
 		return -1;
 	    }
 
-	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
+	    sym = (ELF_(Sym) *)malloc(shdrp->sh_size);
 	    if (sym == NULL) {
 		perror("malloc");
 		return -1;
@@ -655,28 +666,28 @@ dietelf_list_imports(int fd, dietelf_bin_t *bin)
 	    }
 	    
 	    symp = sym;
-	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), symp++) {
-		aux_swap_endian((u8*)&(symp->st_name), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_value), sizeof(Elf32_Addr));
-		aux_swap_endian((u8*)&(symp->st_size), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_shndx), sizeof(Elf32_Section));
+	    for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), symp++) {
+		ELF_(aux_swap_endian)((u8*)&(symp->st_name), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_value), sizeof(ELF_(Addr)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_size), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 	    }
 
 	    if (rad)
 		printf("fs sym_imports\n");
 
 	    symp = sym;
-	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
+	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 		if (k != 0) {
 		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    printf("f sym_imp_%s @ 0x%08llx\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value?symp->st_value:get_import_addr(fd, bin, k));
+			    printf("f sym_imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
 			} else {
 			    if (verbose) printf("Symbol (Import): ");
-			    printf("0x%08llx %s\n", symp->st_value?symp->st_value:get_import_addr(fd, bin, k), &string[symp->st_name]);
+			    printf("0x%08llx %s\n", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];
-				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)get_import_addr(fd, bin, k));
+				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)ELF_(get_import_addr)(bin, fd, k));
 				system(buf);
 			    }
 			}
@@ -691,18 +702,18 @@ dietelf_list_imports(int fd, dietelf_bin_t *bin)
 }
 
 int
-dietelf_list_exports(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_list_exports)(ELF_(dietelf_bin_t) *bin, int fd)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
-    Elf32_Sym *sym, *symp;
-    Elf32_Shdr *strtabhdr;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+    ELF_(Sym) *sym, *symp;
+    ELF_(Shdr) *strtabhdr;
     char *string;
     int i, j, k;
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-	if (shdrp->sh_type == (dietelf_get_stripped(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
+	if (shdrp->sh_type == (ELF_(dietelf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
 	    strtabhdr = &shdr[shdrp->sh_link];
 
 	    string = (char *)malloc(strtabhdr->sh_size);
@@ -721,7 +732,7 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 		return -1;
 	    }
 
-	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
+	    sym = (ELF_(Sym) *)malloc(shdrp->sh_size);
 	    if (sym == NULL) {
 		perror("malloc");
 		return -1;
@@ -738,25 +749,25 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 	    }
 	    
 	    symp = sym;
-	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), symp++) {
-		aux_swap_endian((u8*)&(symp->st_name), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_value), sizeof(Elf32_Addr));
-		aux_swap_endian((u8*)&(symp->st_size), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_shndx), sizeof(Elf32_Section));
+	    for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), symp++) {
+		ELF_(aux_swap_endian)((u8*)&(symp->st_name), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_value), sizeof(ELF_(Addr)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_size), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 	    }
 
 	    if (rad)
 		printf("fs sym_exports\n");
 
 	    symp = sym;
-	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
+	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 		if (k != 0) {
-		    if (symp->st_shndx >= 10 && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    if (symp->st_shndx > 10 && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
-			    printf("f sym_exp_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
+			    if (symp->st_size != 0) printf("b %08llx && ", (u64)symp->st_size); 
+			    printf("f sym_exp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
 			} else { 
-			    if (verbose) printf("Symbol (Export) size=%05i: ", symp->st_size);
+			    if (verbose) printf("Symbol (Export) size=%05lli: ", (u64)symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];
@@ -775,12 +786,12 @@ dietelf_list_exports(int fd, dietelf_bin_t *bin)
 }
 
 int
-dietelf_list_others(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_list_others)(ELF_(dietelf_bin_t) *bin, int fd)
 {
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
-    Elf32_Sym *sym, *symp;
-    Elf32_Shdr *strtabhdr;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+    ELF_(Sym) *sym, *symp;
+    ELF_(Shdr) *strtabhdr;
     char *string;
     int i, j, k;
 
@@ -805,7 +816,7 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 		return -1;
 	    }
 
-	    sym = (Elf32_Sym *)malloc(shdrp->sh_size);
+	    sym = (ELF_(Sym) *)malloc(shdrp->sh_size);
 	    if (sym == NULL) {
 		perror("malloc");
 		return -1;
@@ -822,25 +833,25 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 	    }
 	    
 	    symp = sym;
-	    for (j = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), symp++) {
-		aux_swap_endian((u8*)&(symp->st_name), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_value), sizeof(Elf32_Addr));
-		aux_swap_endian((u8*)&(symp->st_size), sizeof(Elf32_Word));
-		aux_swap_endian((u8*)&(symp->st_shndx), sizeof(Elf32_Section));
+	    for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), symp++) {
+		ELF_(aux_swap_endian)((u8*)&(symp->st_name), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_value), sizeof(ELF_(Addr)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_size), sizeof(ELF_(Word)));
+		ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 	    }
 
 	    if (rad)
 		printf("fs sym_others\n");
 
 	    symp = sym;
-	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(Elf32_Sym), k++, symp++) {
+	    for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 		if (k != 0) {
-		    if (symp->st_shndx < 10 && symp->st_shndx > 0  && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		    if (symp->st_shndx <= 10 && symp->st_shndx > 0  && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			if (rad) {
-			    if (symp->st_size != 0) printf("b %i && ", symp->st_size); 
-			    printf("f sym_oth_%s @ 0x%08x\n", aux_filter_rad_output(&string[symp->st_name]), symp->st_value);
+			    if (symp->st_size != 0) printf("b %lli && ", (u64)symp->st_size); 
+			    printf("f sym_oth_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
 			} else { 
-			    if (verbose) printf("Symbol (Other) size=%05i: ", symp->st_size);
+			    if (verbose) printf("Symbol (Other) size=%05lli: ", (u64)symp->st_size);
 			    printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
 			    if (xrefs) {
 				char buf[1024];
@@ -859,21 +870,21 @@ dietelf_list_others(int fd, dietelf_bin_t *bin)
 }
 
 int
-dietelf_list_strings(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     /* TODO: define callback for printing strings found */
-    Elf32_Ehdr *ehdr = &bin->ehdr;
-    Elf32_Shdr *shdr = bin->shdr, *shdrp;
+    ELF_(Ehdr) *ehdr = &bin->ehdr;
+    ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
     int i;
 
     shdrp = shdr;
     if (rad)
-	printf("fs strings\n"); //, aux_filter_rad_output(&string[shdrp->sh_name]));
+	printf("fs strings\n"); //, ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]));
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
 	    if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
-	    aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
+	    ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size);
 	}
     }
 
@@ -881,19 +892,19 @@ dietelf_list_strings(int fd, dietelf_bin_t *bin)
 }
 
 int
-dietelf_open(int fd, dietelf_bin_t *bin)
+ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
 {
-    Elf32_Ehdr *ehdr;
-    Elf32_Shdr *shdr;
-    Elf32_Shdr *strtabhdr;
-    Elf32_Phdr *phdr;
+    ELF_(Ehdr) *ehdr;
+    ELF_(Shdr) *shdr;
+    ELF_(Shdr) *strtabhdr;
+    ELF_(Phdr) *phdr;
     char **sectionp;
     int i, slen;
 	bin->base_addr = 0;
 
     ehdr = &bin->ehdr;
 
-    if (read(fd, ehdr, sizeof(Elf32_Ehdr)) != sizeof(Elf32_Ehdr)) {
+    if (read(fd, ehdr, sizeof(ELF_(Ehdr))) != sizeof(ELF_(Ehdr))) {
 	perror("read");
 	return -1;
     }
@@ -901,24 +912,24 @@ dietelf_open(int fd, dietelf_bin_t *bin)
     if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
 	endian = 1;
 
-    aux_swap_endian((u8*)&(ehdr->e_type), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_machine), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_version), sizeof(Elf32_Word));
-    aux_swap_endian((u8*)&(ehdr->e_entry), sizeof(Elf32_Addr));
-    aux_swap_endian((u8*)&(ehdr->e_phoff), sizeof(Elf32_Off));
-    aux_swap_endian((u8*)&(ehdr->e_shoff), sizeof(Elf32_Off));
-    aux_swap_endian((u8*)&(ehdr->e_flags), sizeof(Elf32_Word));
-    aux_swap_endian((u8*)&(ehdr->e_ehsize), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_phentsize), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_phnum), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_shentsize), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_shnum), sizeof(Elf32_Half));
-    aux_swap_endian((u8*)&(ehdr->e_shstrndx), sizeof(Elf32_Half));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_type), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_machine), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_version), sizeof(ELF_(Word)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_entry), sizeof(ELF_(Addr)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_phoff), sizeof(ELF_(Off)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_shoff), sizeof(ELF_(Off)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_flags), sizeof(ELF_(Word)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_ehsize), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_phentsize), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_phnum), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_shentsize), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_shnum), sizeof(ELF_(Half)));
+    ELF_(aux_swap_endian)((u8*)&(ehdr->e_shstrndx), sizeof(ELF_(Half)));
 
-    if (do_elf_checks(bin) == -1)
+    if (ELF_(do_elf_checks)(bin) == -1)
 	return -1;
 
-    bin->phdr = (Elf32_Phdr *)malloc(bin->plen = sizeof(Elf32_Phdr)*ehdr->e_phnum);
+    bin->phdr = (ELF_(Phdr) *)malloc(bin->plen = sizeof(ELF_(Phdr))*ehdr->e_phnum);
     if (bin->phdr == NULL) {
 	perror("malloc");
 	return -1;
@@ -935,17 +946,17 @@ dietelf_open(int fd, dietelf_bin_t *bin)
     }
     
     for (i = 0, phdr = bin->phdr; i < ehdr->e_phnum; i++) {
-	aux_swap_endian((u8*)&(phdr[i].p_type), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(phdr[i].p_offset), sizeof(Elf32_Off));
-	aux_swap_endian((u8*)&(phdr[i].p_vaddr), sizeof(Elf32_Addr));
-	aux_swap_endian((u8*)&(phdr[i].p_paddr), sizeof(Elf32_Addr));
-	aux_swap_endian((u8*)&(phdr[i].p_filesz), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(phdr[i].p_memsz), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(phdr[i].p_flags), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(phdr[i].p_align), sizeof(Elf32_Word));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_type), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_offset), sizeof(ELF_(Off)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_vaddr), sizeof(ELF_(Addr)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_paddr), sizeof(ELF_(Addr)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_filesz), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_memsz), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_flags), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(phdr[i].p_align), sizeof(ELF_(Word)));
     }
 
-    bin->shdr = (Elf32_Shdr *)malloc(slen = sizeof(Elf32_Shdr)*ehdr->e_shnum);
+    bin->shdr = (ELF_(Shdr) *)malloc(slen = sizeof(ELF_(Shdr))*ehdr->e_shnum);
     if (bin->shdr == NULL) {
 	perror("malloc");
 	return -1;
@@ -968,16 +979,16 @@ dietelf_open(int fd, dietelf_bin_t *bin)
     }
 
     for (i = 0, shdr = bin->shdr; i < ehdr->e_shnum; i++) {
-	aux_swap_endian((u8*)&(shdr[i].sh_name), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_type), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_flags), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_addr), sizeof(Elf32_Addr));
-	aux_swap_endian((u8*)&(shdr[i].sh_offset), sizeof(Elf32_Off));
-	aux_swap_endian((u8*)&(shdr[i].sh_size), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_link), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_info), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_addralign), sizeof(Elf32_Word));
-	aux_swap_endian((u8*)&(shdr[i].sh_entsize), sizeof(Elf32_Word));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_name), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_type), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_flags), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_addr), sizeof(ELF_(Addr)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_offset), sizeof(ELF_(Off)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_size), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_link), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_info), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_addralign), sizeof(ELF_(Word)));
+	ELF_(aux_swap_endian)((u8*)&(shdr[i].sh_entsize), sizeof(ELF_(Word)));
     }
 
     strtabhdr = &bin->shdr[ehdr->e_shstrndx];
@@ -1004,7 +1015,7 @@ dietelf_open(int fd, dietelf_bin_t *bin)
 	if (shdr[i].sh_type == SHT_NOBITS) {
 	    bin->bss = i;
 	} else {
-	    if (load_section(sectionp, fd, &shdr[i]) == -1)
+	    if (ELF_(load_section)(sectionp, fd, &shdr[i]) == -1)
 		return -1;
 	}
     }
@@ -1015,13 +1026,13 @@ dietelf_open(int fd, dietelf_bin_t *bin)
     }
 #endif
 
-    bin->base_addr = dietelf_get_base_addr(bin);
+    bin->base_addr = ELF_(dietelf_get_base_addr)(bin);
 
     return 0;
 }
 
 int 
-load_section(char **section, int fd, Elf32_Shdr *shdr)
+ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
 {
     if (lseek(fd, shdr->sh_offset, SEEK_SET) < 0) {
 	perror("lseek");
@@ -1042,7 +1053,7 @@ load_section(char **section, int fd, Elf32_Shdr *shdr)
     return 0;
 }
 
-int dietelf_new(const char *file, dietelf_bin_t *bin)
+int ELF_(dietelf_new)(ELF_(dietelf_bin_t) *bin, const char *file)
 {
     int fd;
 
@@ -1051,7 +1062,7 @@ int dietelf_new(const char *file, dietelf_bin_t *bin)
 	return -1;
     }
     
-    if (dietelf_open(fd, bin) == -1)
+    if (ELF_(dietelf_open)(bin, fd) == -1)
 	return -1;
 
     bin->file = file;
@@ -1059,14 +1070,14 @@ int dietelf_new(const char *file, dietelf_bin_t *bin)
     return fd;
 }
 
-#ifndef RADARE_CORE
+#if 0
 
 int
 main(int argc, char *argv[])
 {
     char *file;
     int fd;
-    dietelf_bin_t bin;
+    ELF_(dietelf_bin_t) bin;
 
     if (argc != 2)
     {
@@ -1081,7 +1092,7 @@ main(int argc, char *argv[])
 	return 1;
     }
     
-    dietelf_open(fd, &bin);
+    ELF_(dietelf_open)(fd, &bin);
     bin.file = file;
 
     if (rad)
@@ -1089,8 +1100,8 @@ main(int argc, char *argv[])
     else
 	printf("BASE ADDRESS: 0x%08x\n", bin.base_addr);
 
-    dietelf_list_sections(fd, &bin);
-    dietelf_list_imports(fd, &bin);
+    ELF_(dietelf_list_sections)(fd, &bin);
+    ELF_(dietelf_list_imports)(fd, &bin);
     
     close(fd);
 

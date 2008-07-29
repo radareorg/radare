@@ -10,6 +10,8 @@
 === TODAY ===
 
 * rasc - helper for format strings
+* implement bindiff patchers
+  - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 * Add write history and output binpatch format
 * Move javasm.c as dietjava in rabin
 // TODO: store data and show (flag.data) in last_print_format
@@ -37,9 +39,6 @@
   - shows return value in eax before restoring regs
 * call <flag> arg arg arg
  - done with lua
-* check bindiff output (GNU DIFF shows dupped offsets BRBRB. should I replace it?!?)
-  - implement bindiff patchers
-  - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 
 3- global data in graphs - allow to run specific commands in nodes
 6- aop.ref must get more ref types (write checks)
