@@ -40,7 +40,7 @@ extern struct regs_off roff[];
 
 
 /* skip \s\t and space characters */
-char skip_chars(char **c)
+char skip_chars(const char **c)
 {
 	for(;**c == ' ' || **c == '\t'; *c = *c + 1)
 		;
@@ -173,7 +173,7 @@ struct tok* get_tok(char **c)
 	char *val;
 	int ret;
 
-	skip_chars(c);
+	skip_chars((const char**)c);
 
 	/* register */
 	if(**c == '%') {
@@ -194,7 +194,7 @@ struct tok* get_tok(char **c)
 
 		t->off = roff[ret].off;
 
-		skip_chars(c);
+		skip_chars((const char**)c);
 
 		/* get operation */
 		if(get_tok_op(c, t) == -1) {
@@ -204,7 +204,7 @@ struct tok* get_tok(char **c)
 			goto err_get_tok;
 		}
 
-		skip_chars(c);
+		skip_chars((const char**)c);
 
 		t->type = REG_TOK;
 
@@ -221,7 +221,7 @@ struct tok* get_tok(char **c)
 
 		*c = *c + 1;
 
-		skip_chars(c);
+		skip_chars((const char **)c);
 
 		val = *c;
 
@@ -245,7 +245,7 @@ struct tok* get_tok(char **c)
 			return NULL;
 		}
 
-		skip_chars(c);
+		skip_chars((const char **)c);
 
 		if(**c != ']') {
 			eprintf(":error invalid sintax near ' %s '\n",
@@ -264,7 +264,7 @@ struct tok* get_tok(char **c)
 
 		*c =  *c + 1;
 
-		skip_chars(c);
+		skip_chars((const char**)c);
 
 		/* get operation */
 		if(get_tok_op(c, t) == -1) {
@@ -274,7 +274,7 @@ struct tok* get_tok(char **c)
 			goto err_get_tok;
 		}
 
-		skip_chars(c);
+		skip_chars((const char**)c);
 
 		t->off = get_math(aux);	
 		t->type = MEM_TOK;
@@ -378,7 +378,7 @@ struct tok* process_cond(char **c, int top)
 
 	for(;**c;) {
 
-		skip_chars(c);
+		skip_chars((const char **)c);
 
 		if(get_log_op(c, t, f) < 0) {
 			eprintf(":error missing token or "
@@ -386,7 +386,7 @@ struct tok* process_cond(char **c, int top)
 			goto err_cond;	
 		}
 
-		skip_chars(c);
+		skip_chars((const char **)c);
 
 		/* enter condition */
 		if(**c == '(') {

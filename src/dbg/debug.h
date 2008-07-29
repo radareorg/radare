@@ -4,6 +4,7 @@
 #include "libps2fd.h"
 #include "regs.h"
 #include "arch/arch.h"
+#include "parser.h"
 
 void debug_msg();
 void debug_msg_set(const char *format, ...);

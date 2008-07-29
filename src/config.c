@@ -499,7 +499,7 @@ static int config_scrheight(void *data)
 	return config.height;
 }
 
-static void config_scrbuf_callback(void *data)
+static int config_scrbuf_callback(void *data)
 {
 	struct config_node_t *node = data;
 
@@ -653,7 +653,7 @@ void config_init(int first)
 	config_set("child.stdin", "");
 	config_set("child.stdout", "");
 	config_set("child.stderr", "");
-	config_set_i("child.setgid", "");
+	config_set_i("child.setgid", -1);
 	config_set("child.chdir", ".");
 	config_set("child.chroot", "/");
 	config_set("child.setuid", "");
@@ -702,7 +702,7 @@ void config_init(int first)
 	ptr = getenv("SPCCPATH");
 	if (ptr == NULL) {
 		sprintf(buf, "%s/.radare/spcc/", getenv("HOME"));
-		ptr = &buf;
+		ptr = buf;
 	}
 	config_set("dir.spcc", ptr);
 }

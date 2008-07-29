@@ -65,7 +65,7 @@ int pids_ptrace_all(int pid)
 	if (dh == NULL)
 		return 0;
 
-	while((file=readdir(dh)) ) {
+	while((file=(struct dirent *)readdir(dh)) ) {
 		p = atoi(file->d_name);
 		if (p) {
 			sprintf(buf,"/proc/%s/stat", file->d_name);
@@ -106,7 +106,7 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 	if (pid == 0 || dh == NULL)
 		return 0;
 
-	while((file=readdir(dh)) ) {
+	while((file=(struct dirent *)readdir(dh)) ) {
 		p = atoi(file->d_name);
 		if (p) {
 			sprintf(buf,"/proc/%s/stat", file->d_name);

@@ -15,6 +15,7 @@ Everytime you run radare. It removes a random file :)
 RADARE CUMS WITH ABSOLUTELY NO WARRANTY
 Enable asm.trace to see the tracing information inside the disassembly
 Change the registers of the child process in this way: '!set eax 0x333'
+Deltify your life with radare
 Manipulate the filedescriptors of the child with '!fd'
 Trace until system calls with !contsc
 Remotely open files or debug processes with radare listen://:9999/dbg:///bin/ls
@@ -97,3 +98,5 @@ If you send the program you are debugging to 15 friends before 143 minutes and t
 To remove this message, put `dbxenv suppress_startup_message 7.5' in your .dbxrc
 Heisenbug: A bug that disappears or alters its behavior when one attempts to probe or isolate it.
 radare is for lulzhats
+Use 'e' and 't' in Visual mode to edit configuration and track flags
+Use rabin -rios to get the import/export/other symbols of any binary

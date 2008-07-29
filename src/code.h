@@ -121,7 +121,11 @@ void metadata_comment_add(u64 offset, const char *str);
 
 void code_lines_print2(struct reflines_t *list, u64 addr);
 int metadata_xrefs_print(u64 addr, int type);
+int metadata_xrefs_print(u64 addr, int type);
 int metadata_xrefs_add(u64 addr, u64 from, int type);
+void metadata_xrefs_del(u64 addr, u64 from, int data);
+void metadata_comment_del(u64 offset, const char *str);
+void metadata_comment_add(u64 offset, const char *str);
 
 struct data_t *data_get_range(u64 offset);
 int data_set_len(u64 off, u64 len);

@@ -842,13 +842,13 @@ CMD_DECL(code)
 		break;
 	case 'x': // code xref
 		if (text[1]=='-')
-			metadata_xrefs_del(config.seek, text+2,0);
-		else	metadata_xrefs_add(config.seek, text+1,0);
+			metadata_xrefs_del(config.seek, get_math(text+2), 0);
+		else	metadata_xrefs_add(config.seek, get_math(text+1), 0);
 		break;
 	case 'X': // data xref
 		if (text[1]=='-')
-			metadata_xrefs_del(config.seek, text+2,1);
-		else	metadata_xrefs_add(config.seek, text+1,1);
+			metadata_xrefs_del(config.seek, get_math(text+2), 1);
+		else	metadata_xrefs_add(config.seek, get_math(text+1), 1);
 		break;
 	case 'c':
 	case 'd':
@@ -1253,12 +1253,12 @@ CMD_DECL(write)
 		if (off&0xFFFFFFFF00000000LL) {
 			/* 8 byte addr */
 			unsigned long long addr8;
-			endian_memcpy(&addr8, &off, 8);
+			endian_memcpy((u8*)&addr8, (u8*)&off, 8);
 			io_write(config.fd, &addr8, 8);
 		} else {
 			unsigned long addr4;
 			unsigned long addr4_= (unsigned long)off;
-			endian_memcpy(&addr4, &addr4, 4);
+			endian_memcpy((u8*)&addr4, (u8*)&addr4, 4);
 			/* 4 byte addr */
 			io_write(config.fd, &addr4, 4);
 		}

@@ -909,7 +909,11 @@ ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
 	return -1;
     }
 
+#ifdef LIL_ENDIAN
     if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
+#else 
+    if (ehdr->e_ident[EI_DATA] == ELFDATA2LSB)
+#endif
 	endian = 1;
 
     ELF_(aux_swap_endian)((u8*)&(ehdr->e_type), sizeof(ELF_(Half)));

@@ -621,12 +621,12 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 		if (config.cursor_mode && config.ocursor != -1) {
 			/* repeat in loop to fill the selected area */
 			char *tmp;
-			char out[1024];
+			unsigned char out[1024];
 			int osize;
 			int size = config.cursor - config.ocursor+1;
 			if (size<0) size=-size;
 			tmp = (char *)malloc(size+1);
-			osize = hexstr2binstr(buf+3, &out);
+			osize = hexstr2binstr(buf+3, out);
 			memcpy_loop(tmp, out, size, osize);
 			radare_seek(oseek + CMPMIN(config.cursor, config.ocursor),SEEK_SET);
 			io_write(config.fd, tmp, size);

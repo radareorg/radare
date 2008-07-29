@@ -592,7 +592,7 @@ static const char *radare_argv[CMDS] ={
 	"p? "
 };
 
-char *dl_readline(int argc, char **argv);
+char *dl_readline(int argc, const char **argv);
 int cons_fgets(char *buf, int len, int argc, const char **argv)
 {
 	char *ptr;

@@ -568,7 +568,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_FLOAT: {
 		float f;
 		for(i=0;!config.interrupted && i<len;i+=sizeof(float)) {
-			endian_memcpy(&f, buf+i, sizeof(float));
+			endian_memcpy((u8*)&f, buf+i, sizeof(float));
 			cons_printf("%f\n", f);
 		} } break;
 	case FMT_INT: {

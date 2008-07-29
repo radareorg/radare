@@ -407,7 +407,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         struct aop_t aop;
         struct block_t *blk;
         u64 oseek = seek;
-        off_t tmp = config.seek;
+        u64 tmp = config.seek;
         unsigned int sz = 0, ret;
         int bsz = 0;// block size
         char buf[4096]; // bytes of the code block

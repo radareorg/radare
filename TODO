@@ -9,6 +9,10 @@
 
 === TODAY ===
 
+* do not create trace.log and .rdb all the time
+  - must be loaded by default
+  - must ask while closing
+  - mixed with -P
 * rasc - helper for format strings
 * implement bindiff patchers
   - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)

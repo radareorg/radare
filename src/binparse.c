@@ -90,7 +90,7 @@ static int indent_count( int fd )
 	}
 
 	// Posiciono a la primera diferent.
-	lseek ( fd, -1, SEEK_CUR );
+	lseek ( fd, (off_t)-1, SEEK_CUR );
 
 	return ret;
 }
@@ -424,7 +424,7 @@ int update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 void tokenize(int fd, tokenizer* t)
 {
 	char ch;
-	int where = lseek(fd , 0, SEEK_CUR);
+	int where = lseek(fd, (off_t)0, SEEK_CUR);
 	while(1) {
 		if ( read(fd, &ch, 1) <= 0 ) break;
 		update_tlist(t, ch, where); 

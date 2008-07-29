@@ -915,7 +915,7 @@ void monitors_run()
 		tmp = last_print_format;
 		dir = opendir(path);
 		if (dir) {
-			while((de = readdir(dir))) {
+			while((de = (struct dirent *)readdir(dir))) {
 				if (de->d_name[0] != '.' && !strstr(de->d_name, ".txt")) {
 					sprintf(file, "%s/%s", path, de->d_name);
 					fd = fopen(file, "r");
@@ -1111,7 +1111,7 @@ void radare_resize(const char *arg)
 				free(str);
 				io_lseek(config.fd, config.seek, SEEK_SET);
 				config.size -= size;
-				ftruncate(config.fd, config.size);
+				ftruncate(config.fd, (off_t)config.size);
 			}
 		return;
 	}

@@ -42,7 +42,7 @@ enum {
 	LOG_AND
 }; 
 
-char skip_chars(char **c);
+char skip_chars(const char **c);
 inline struct tok* parse_cond(char *cond);
 int eval_cond(struct tok *group);
 void free_cond(struct tok *group);

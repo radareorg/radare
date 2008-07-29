@@ -1294,7 +1294,7 @@ int debug_mp(char *str)
 	char buf[128];
 	char buf2[128];
 	char buf3[128];
-	char *ptr = &buf;
+	char *ptr = buf;
 	u64 addr;
 	u64 size;
 	int perms = 0;
@@ -1358,7 +1358,7 @@ int debug_mp(char *str)
 int debug_wp(const char *str)
 {
 	int i = 0;
-	int key = *str;
+	int key = str[0];
 
 	if(ps.wps_n == sizeof(ps.wps)) {
 		eprintf(":error	max watchpoints are 4!\n");
@@ -1513,7 +1513,7 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 
 int debug_inject(char *file)
 {
-	addr_t sz = (addr_t)0;
+	u64 sz = 0;
 	int fd = open(file, O_RDONLY);
 	unsigned char *fil = NULL;
 
@@ -1522,8 +1522,8 @@ int debug_inject(char *file)
 		return 0;
 	}
 
-	lseek(fd, (addr_t)0, SEEK_END); // + (addr_t)4;
-	lseek(fd, (addr_t)0, SEEK_SET);
+	lseek(fd, (off_t)0, SEEK_END); // + (addr_t)4;
+	lseek(fd, (off_t)0, SEEK_SET);
 	if (sz>0xffff) {
 		eprintf("File too big\n");
 		close(fd);

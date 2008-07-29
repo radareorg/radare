@@ -76,8 +76,8 @@ addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 	}
 
 	if (rsize <1) {
-		rsize = lseek(fd, SEEK_END, 0);
-		lseek(fd, SEEK_SET, 0);
+		rsize = lseek(fd, (off_t)0, SEEK_END);
+		lseek(fd, (off_t)0, SEEK_SET);
 	}
 
 	addr = (int)arch_mmap(fd, addr, rsize);
