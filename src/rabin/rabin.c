@@ -62,10 +62,10 @@ int rabin_show_help()
 "rabin [options] [bin-file]\n"
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
-" -s        symbols\n"
+" -s        symbols (exports)\n"
 //" -o        others (other symbols)\n"
 " -c        header checksum\n"
-" -t        type of binary\n"
+//" -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
@@ -81,19 +81,42 @@ void rabin_show_info(const char *file)
 {
 	dietelf_bin_t bin;
 
-
 	switch(filetype) {
 	case FILETYPE_ELF:
-		if (rad) {
-			// TODO: set endian and asm.arch
-			// and file.baddr if not in debugger
-		} else {
-			fd = ELF_CALL(dietelf_new,bin,file);
-			if (fd == -1) {
-				fprintf(stderr, "cannot open file\n");
-				return;
-			}
+		fd = ELF_CALL(dietelf_new,bin,file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
 
+		u64 baddr=ELF_CALL(dietelf_get_base_addr,bin);
+		
+		if (rad) {
+			printf("e file.type = elf\n");
+			printf("e file.baddr = 0x%08llx\n", baddr);
+			if (ELF_CALL(dietelf_is_big_endian,bin))
+				printf("e cfg.endian = true\n");
+			else
+				printf("e cfg.endian = false\n");
+			switch (ELF_CALL(dietelf_get_arch,bin)) {
+				case EM_MIPS:
+				case EM_MIPS_RS3_LE:
+				case EM_MIPS_X:
+					printf("e asm.arch = mips\n"); break;
+				case EM_ARM:
+					printf("e asm.arch = arm\n"); break;
+				case EM_SPARC:
+				case EM_SPARC32PLUS:
+				case EM_SPARCV9:
+					printf("e asm.arch = sparc\n"); break;
+				case EM_PPC:
+				case EM_PPC64:
+					printf("e asm.arch = ppc\n"); break;
+				case EM_68K:
+					printf("e asm.arch = m68k\n"); break;
+				default: printf("e asm.arch = intel\n");
+			}
+		} else {
 			printf("ELF class:       %s\n"
 			       "Data enconding:  %s\n"
 			       "OS/ABI name:     %s\n"
@@ -116,24 +139,60 @@ void rabin_show_info(const char *file)
 			    printf("Yes\n");
 			else
 			    printf("No\n");
-
-			close(fd);
 		}
+
+		close(fd);
 		break;
 	case FILETYPE_CLASS:
 		if (rad) {
-			printf("eval asm.arch=java\n");
+			printf("e asm.arch = java\n");
+			printf("e cfg.endian = true\n");
 		}else {
-			printf("Version:       ???\n");
-			printf("File type:     java class\n");
+			printf("File type: JAVA CLASS\n");
 		}
 		break;
+	case FILETYPE_PE:
+		if (rad)
+			printf("e file.type = pe\n");
+		else
+			printf("File type: PE\n");
+		break;
+	case FILETYPE_MZ:
+		if (rad)
+			printf("e file.type = mz\n");
+		else
+			printf("File type: DOS COM\n");
+		break;
+	case FILETYPE_DEX:
+		if (!rad)
+			printf("File type: DEX (google android)\n");
+		break;
+	case FILETYPE_MACHO:
+		if (rad) {
+			printf("e file.type = macho\n");
+			printf("e asm.arch = ppc\n");
+			printf("e cfg.endian = false\n");
+		} else
+			printf("File type: MACH-O\n");
+		break;
+	case FILETYPE_CSRFW:
+		if (rad) {
+			printf("e asm.arch = csr\n");
+		} else
+			printf("File type: CSR FW\n");
+		break;
+	case FILETYPE_UNK:
+		if (rad)
+			printf("e file.type = unk\n");
+		else
+			printf("File type: UNKNOWN\n");
 	}
 }
 
 void rabin_show_strings(const char *file)
 {
 	dietelf_bin_t bin;
+	char buf[1024];
 
 
 	switch(filetype) {
@@ -145,6 +204,11 @@ void rabin_show_strings(const char *file)
 		}
 		ELF_CALL(dietelf_list_strings,bin,fd);
 		close(fd);
+		break;
+	case FILETYPE_PE:
+		// TODO: native version and support for non -r
+		snprintf(buf, 1022, "rsc strings-pe-flag %s",file);
+		system(buf);
 		break;
 	}
 	
@@ -185,8 +249,8 @@ void rabin_show_checksum(const char *file)
 
 void rabin_show_entrypoint()
 {
-	unsigned long addr = 0;
-	unsigned long base = 0;
+	u64 addr = 0;
+	u64 base = 0;
 	dietelf_bin_t bin;
 
 	switch(filetype) {
@@ -205,13 +269,15 @@ void rabin_show_entrypoint()
 		base=ELF_CALL(dietelf_get_base_addr,bin);
 
 		if (rad) {
-			printf("f entrypoint @ 0x%08lx\n", addr);
+			printf("fs symbols\n");
+			printf("f entrypoint @ 0x%08llx\n", addr - base);
+			printf("s entrypoint\n");
 		} else {
 			if (verbose) {
-				printf("0x%08lx memory\n", addr);
-				printf("0x%08lx disk\n", addr - base);
+				printf("0x%08llx memory\n", addr);
+				printf("0x%08llx disk\n", addr - base);
 			} else {
-				printf("0x%08lx\n", addr);
+				printf("0x%08llx\n", addr);
 			}
 		}
 
@@ -226,12 +292,12 @@ void rabin_show_entrypoint()
 		lseek(fd, pebase+0x45, SEEK_SET);
 		read(fd, &base, 4);
 		if (rad) {
-			printf("f entrypoint @ 0x%08lx\n", addr);
+			printf("f entrypoint @ 0x%08llx\n", addr);
 		} else {
 			if (verbose) {
-				printf("0x%08lx memory\n", base+addr);
-				printf("0x%08lx disk\n", addr-0xc00);
-			} else	printf("0x%08lx\n", base+addr);
+				printf("0x%08llx memory\n", base+addr);
+				printf("0x%08llx disk\n", addr-0xc00);
+			} else	printf("0x%08llx\n", base+addr);
 		}
 		break;
 	}
@@ -289,30 +355,6 @@ void rabin_show_arch()
 		default:
 			printf("arch: 0x%x (unknown)\n", w);
 		}
-		break;
-	}
-}
-
-void rabin_show_filetype()
-{
-	switch(filetype) {
-	case FILETYPE_ELF:
-		printf("ELF\n");
-		break;
-	case FILETYPE_PE:
-		printf("PE\n");
-		break;
-	case FILETYPE_MZ:
-		printf("DOS COM\n");
-		break;
-	case FILETYPE_CLASS:
-		printf("Java class\n");
-		break;
-	case FILETYPE_DEX:
-		printf("DEX (google android)\n");
-		break;
-	case FILETYPE_MACHO:
-		printf("mach-o\n");
 		break;
 	}
 }
@@ -377,7 +419,15 @@ void rabin_show_symbols(char *file)
 		break;
 	case FILETYPE_CLASS:
 		// TODO: native version and support for non -r
-		sprintf(buf, "javasm -rc %s",file);
+		if (rad)
+			snprintf(buf, 1022, "javasm -rc %s",file);
+		else
+			snprintf(buf, 1022, "javasm -c '%s'", file);
+		system(buf);
+		break;
+	case FILETYPE_PE:
+		// TODO: native version and support for non -r
+		snprintf(buf, 1022, "rsc syms-pe-flag %s",file);
 		system(buf);
 		break;
 	}
@@ -502,7 +552,7 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishotL:SIvxz")) != -1)
+	while ((c = getopt(argc, argv, "acerlishL:SIvxz")) != -1)
 	{
 		switch( c ) {
 		case 'a':
@@ -510,9 +560,6 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'b':
 			action |= ACTION_BASE;
-			break;
-		case 't':
-			action |= ACTION_FILETYPE;
 			break;
 		case 'i':
 			action |= ACTION_IMPORTS;
@@ -525,6 +572,9 @@ int main(int argc, char **argv, char **envp)
 			//action |= ACTION_EXPORTS;
 			break;
 #if 0
+		case 't':
+			action |= ACTION_FILETYPE;
+			break;
 		case 'o':
 			action |= ACTION_OTHERS;
 			break;
@@ -579,13 +629,13 @@ int main(int argc, char **argv, char **envp)
 
 	rabin_identify_header();
 
-	if (action&ACTION_FILETYPE)
-		rabin_show_filetype();
 	if (action&ACTION_ARCH)
 		rabin_show_arch(file);
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
 #if 0
+	if (action&ACTION_FILETYPE)
+		rabin_show_filetype();
 	if (action&ACTION_EXPORTS)
 		rabin_show_exports(file);
 	if (action&ACTION_OTHERS)

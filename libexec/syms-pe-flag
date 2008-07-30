@@ -4,7 +4,7 @@
 # perl port: pancake <youterm.com>
 #
 
-die "Usage: rsc syms-pe-flag.pl [file] ([offset])\n" unless(@ARGV);
+die "Usage: rsc syms-pe-flag [file] ([offset])\n" unless(@ARGV);
 
 my $file=$ARGV[0];
 my $offset=$ARGV[1];
@@ -26,4 +26,4 @@ for my $i (0 .. $#strings) {
 }
 
 print ":s _here_\n:f -_here_\n";
-print STDERR $#strings." symbols added.\n";
+print STDERR $#strings." symbols added\n";

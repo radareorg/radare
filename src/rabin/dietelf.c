@@ -111,7 +111,7 @@ ELF_(aux_is_printable) (int c)
 }
 
 int 
-ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter)
+ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
 {
 	static int unicode = 0;
 	static int matches = 0;
@@ -139,6 +139,7 @@ ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u6
 				    printf("f str_%s @ 0x%08llx\n",
 					    ELF_(aux_filter_rad_output)(str), offset-matches+base);
 				    printf("Cs %i @ 0x%08llx\n", len, offset-matches);
+				    if (cont) (*cont)++;
 				} else {
 				    printf("0x%08llx", offset-matches+base);
 				    if (verbose) printf(" %03d %c", len, (unicode)?'U':'A');
@@ -154,7 +155,7 @@ ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u6
 }
 
 int
-ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter)
+ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -183,7 +184,7 @@ ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 ba
 		len = limit;
 
 	for(i = seek; i < len; i++) 
-		ELF_(aux_stripstr_iterate)(buf, i, min, encoding, base, i, filter);
+		ELF_(aux_stripstr_iterate)(buf, i, min, encoding, base, i, filter, cont);
 
 	munmap(buf, len); 
 #elif __WINDOWS__
@@ -252,6 +253,25 @@ ELF_(aux_filter_rad_output)(const char *string)
     *p='\0';
 
     return buff;
+}
+
+int
+ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
+{
+    return bin->ehdr.e_machine;
+}
+
+int
+ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
+{
+#ifdef LIL_ENDIAN
+    if (endian)
+#else
+    if (!endian)
+#endif
+	return 1;
+    else
+	return 0;
 }
 
 u64
@@ -631,7 +651,7 @@ ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
     ELF_(Sym) *sym, *symp;
     ELF_(Shdr) *strtabhdr;
     char *string;
-    int i, j, k;
+    int i, j, k, cont=0;
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -689,6 +709,7 @@ ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 		    if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 			if (rad) {
 			    printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
+			    cont++;
 			} else {
 			    if (verbose) {
 				printf("0x%08llx ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
@@ -734,6 +755,8 @@ ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 	    free(string);
 	}
     }
+
+    if (rad) fprintf(stderr, "%i imports added\n", cont);
     return i;
 }
 
@@ -745,7 +768,7 @@ ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
     ELF_(Sym) *sym, *symp;
     ELF_(Shdr) *strtabhdr;
     char *string;
-    int i, j, k;
+    int i, j, k, cont=0;
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -804,6 +827,7 @@ ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 			if (rad) {
 			    printf("b %08llx && ", (u64)symp->st_size); 
 			    printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
+			    cont++;
 			} else { 
 			    if (verbose) {
 				printf("0x%08llx size=%05lli ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), (u64)symp->st_size);
@@ -848,6 +872,11 @@ ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 	    
 	    free(string);
 	}
+    }
+
+    if (rad) {
+	    printf("b 512\n");
+	    fprintf(stderr, "%i symbols added\n", cont);
     }
     return i;
 }
@@ -945,7 +974,7 @@ ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
-    int i;
+    int i, cont=0;
 
     shdrp = shdr;
     if (rad)
@@ -953,10 +982,11 @@ ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
 	    if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
-	    ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL);
+	    ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, &cont);
 	}
     }
 
+    if (rad) fprintf(stderr, "%i strings added\n", cont);
     return i;
 }
 
@@ -967,14 +997,16 @@ ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
-    int i;
+    int i, cont=0;
 
     printf("==> Libraries:\n");
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 	if (!strcmp(&string[shdrp->sh_name], ".dynstr")) {
-	    ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.");
+	    ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", &cont);
+    
+	    if (rad) fprintf(stderr, "%i libs added\n", cont);
 	    return i;
 	}
     }

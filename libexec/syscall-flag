@@ -243,4 +243,4 @@ for my $i (0 .. $#syscalls) {
 		}
 	}
 }
-print STDERR "$cont syscalls added.\n"
+print STDERR "$cont syscalls added\n"

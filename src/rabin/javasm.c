@@ -607,6 +607,7 @@ int java_classdump(const char *file)
 		}
 	}
 
+	R printf("b 512\n");
 	fread(&cf2, sizeof(struct classfile2), 1, fd);
 	check_eof(fd);
 	NR printf("Access flags: 0x%04x\n", cf2.access_flags);
