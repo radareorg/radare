@@ -34,6 +34,8 @@ for my $i (0 .. $#strings) {
 	$str=substr($str, 0,27);
 	if ($str=~/%/ || length($str)>$minlen) {
 		print ":fn \"$str\" @ 0x".sprintf "%08x\n", $cow;
+# TODO
+#		print "Cs ".length($str)."0x".sprintf("%08x",$cow);
 		$count++;
 	}
 }

@@ -28,6 +28,9 @@ crOBJ+=hasher/entropy.o hasher/hash.o hasher/crc16.o aes-find.o
 crOBJ+=arch/csr/dis.o
 crOBJ+=arch/csr/code.o
 
+crOBJ+=arch/msil/demsil.o
+crOBJ+=arch/msil/code.o
+
 crOBJ+=arch/arm/code.o
 crOBJ+=arch/arm/disarm.o
 crOBJ+=arch/arm/gnudisarm.o

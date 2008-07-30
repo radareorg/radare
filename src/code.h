@@ -6,16 +6,17 @@
 extern struct list_head comments;
 
 enum {
-	ARCH_X86 = 0,
-	ARCH_ARM = 1,
+	ARCH_X86   = 0,
+	ARCH_ARM   = 1,
 	ARCH_ARM16 = 2,
-	ARCH_PPC = 3,
-	ARCH_M68K = 4,
-	ARCH_JAVA = 5,
-	ARCH_MIPS = 6,
+	ARCH_PPC   = 3,
+	ARCH_M68K  = 4,
+	ARCH_JAVA  = 5,
+	ARCH_MIPS  = 6,
 	ARCH_SPARC = 7,
-	ARCH_CSR = 8,
-	ARCH_AOP = 0x10000
+	ARCH_CSR   = 8,
+	ARCH_MSIL  = 9,
+	ARCH_AOP   = 0x10000
 };
 
 enum {
@@ -113,6 +114,7 @@ int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_ppc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_m68k_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_msil_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);

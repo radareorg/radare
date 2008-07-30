@@ -559,8 +559,17 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		M68k_Disassemble(&dp);
 		cons_printf("  %s %s", opcode, operands);
 		} break;
+	case ARCH_MSIL: {
+#include "arch/msil/demsil.h"
+		int n;
+		DISASMSIL_OFFSET CodeBase = seek;
+		ILOPCODE_STRUCT ilopar[8]; // XXX only uses 1
+		DisasMSIL(b,bytes,CodeBase,ilopar, 8, &n);
+		cons_printf("%s", ilopar[0].Mnemonic);
+		ret = ilopar[0].Size;
+		} break;
 	default:
-		cons_printf("Unknown architecture\n");
+		cons_printf("Unknown architecture");
 		break;
 	}
 	C cons_printf(C_RESET);
@@ -804,6 +813,10 @@ void udis_arch(int arch, int len, int rows)
 				arch_csr_aop(seek, (const unsigned char *)b, &aop);
 				myinc += 2;
 				break;
+			case ARCH_MSIL:
+				arch_msil_aop(seek, (const unsigned char *)b, &aop);
+				myinc += aop.length+1;
+				break;
 			default:
 				// Uh?
 				myinc += 4;
@@ -1045,6 +1058,7 @@ struct radis_arch_t {
 	{ "ppc"     , ARCH_PPC   , &arch_ppc_aop }   , 
 	{ "m68k"    , ARCH_M68K  , &arch_m68k_aop }  , 
 	{ "csr"     , ARCH_CSR   , &arch_csr_aop }   , 
+	{ "msil"    , ARCH_MSIL, &arch_msil_aop }   , 
 	{ NULL      , -1         , NULL }
 };
 
