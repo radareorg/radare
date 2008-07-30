@@ -20,7 +20,15 @@
 
 #include "main.h"
 #include "radare.h"
+#include "list.h"
+#include "undo.h"
 
+/* History for writes support indexing and undo/redo with state flags */
+static struct list_head undo_w_list;
+static int undo_w_init = 0;
+static int undo_w_lock = 0;
+
+/* History for the N last seeks, stack-like access */
 #define UNDOS 64
 static u64 undos[UNDOS];
 static int undos_idx = 0;
@@ -75,4 +83,85 @@ void undo_list()
 		cons_printf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
 		NEWLINE;
 	}
+}
+
+void undo_write_new(u64 off, u8 *data, int len)
+{
+	struct undow_t *uw = (struct undow_t *)malloc(sizeof(struct undow_t));
+	struct list_head *p;
+
+	if (undo_w_lock)
+		return;
+
+	if (!undo_w_init) {
+		undo_w_init = 1;
+		INIT_LIST_HEAD(&(undo_w_list));
+	}
+
+	/* undo changes */
+	uw->set = UNDO_WRITE_SET;
+	uw->off = off;
+	uw->len = len;
+	uw->n = (u8*) malloc(len);
+	memcpy(uw->n, data, len);
+	uw->o = (u8*) malloc(len);
+	radare_read_at(off, uw->o, len);
+	list_add_tail(&(uw->list), &(undo_w_list));
+}
+
+void undo_write_list()
+{
+#define BW 8 /* byte wrap */
+	struct list_head *p;
+	unsigned int oldb;
+	int i = 0, j, len;
+
+	if (undo_w_init)
+	list_for_each_prev(p, &(undo_w_list)) {
+		struct undow_t *u = list_entry(p, struct undow_t, list);
+		cons_printf("%02d %c %d %08llx: ", i, u->set?'+':'-', u->len, u->off);
+		len = (u->len>BW)?BW:u->len;
+		for(j=0;j<len;j++) cons_printf("%02x ", u->o[j]);
+		if (len == BW) cons_printf(".. ");
+		cons_printf ("=> ");
+		for(j=0;j<len;j++) cons_printf("%02x ", u->n[j]);
+		if (len == BW) cons_printf(".. ");
+		cons_newline();
+		i++;
+	}
+}
+
+/* sets or unsets the writes done */
+/* if ( set == 0 ) unset(n) */
+int undo_write_set(int n, int set) 
+{
+	struct undow_t *u = NULL;
+	struct list_head *p;
+	unsigned int oldb;
+	int i = 0, len;
+
+	if (undo_w_init) {
+		list_for_each_prev(p, &(undo_w_list)) {
+			if (i++ == n) {
+				u = list_entry(p, struct undow_t, list);
+				break;
+			}
+		}
+
+		if (u) {
+			undo_w_lock = 1;
+			if (set) {
+				radare_write_at(u->off, u->n, u->len);
+				u->set = UNDO_WRITE_SET;
+			} else {
+				radare_write_at(u->off, u->o, u->len);
+				u->set = UNDO_WRITE_UNSET;
+			}
+			undo_w_lock = 0;
+		} else
+			eprintf("invalid undo-write index\n");
+	} else
+		eprintf("no writes done\n");
+
+	return 0;
 }

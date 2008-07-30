@@ -1046,11 +1046,22 @@ CMD_DECL(undoseek)
 	case 'u':
 		undo_redo();
 		break;
+	case 'w':
+		if (input[1] == '\0')
+			undo_write_list();
+		else {
+			if (input[2]=='-')
+				undo_write_set(atoi(input+3), 1);
+			else
+				undo_write_set(atoi(input+2), 0);
+		}
+		break;
 	case '?':
 	default:
 		cons_printf(
 		"un   undo seek\n"
 		"uu   redo\n"
+		"uw N undo write (uw 3 = drop changes, uw -3 = re set)\n"
 		"u*   list all seeks done\n"
 		"u!   reset seek history\n"
 		"u?   help this help\n");
@@ -1260,6 +1271,7 @@ CMD_DECL(write)
 			unsigned long addr4_= (unsigned long)off;
 			endian_memcpy((u8*)&addr4, (u8*)&addr4, 4);
 			/* 4 byte addr */
+			undo_write_new(config.seek, &addr4, 4);
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
@@ -1285,6 +1297,7 @@ CMD_DECL(write)
 			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
 		else {
 			u64 tmp = config.seek;
+			undo_write_new(config.seek, data, ret);
 			radare_seek(config.seek, SEEK_SET);
 			io_write(config.fd, data, ret);
 			radare_seek(tmp, SEEK_SET);

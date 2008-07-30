@@ -34,6 +34,7 @@ int radare_write_at(u64 offset, unsigned char *data, int len)
 {
 	u64 cur = config.seek;
 	radare_seek(offset,SEEK_SET);
+	undo_write_new(offset, data, len);
 	io_write(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
 	radare_read(0);
@@ -47,7 +48,7 @@ int radare_write(char *arg, int mode)
 	u64 oseek = config.seek;
 	u64 seek = config.seek;
 	int times = config_get_i("cfg.count");
-	int i,bytes = 0;
+	int i, bytes = 0;
 	int len   = 0;
 	char *str, *tmp;
 
@@ -104,6 +105,7 @@ int radare_write(char *arg, int mode)
 		} else {
 			/* TODO must take care about search mode for replacements */
 			/* TODO check cfg.running or so? */
+			/* TODO: SUPPORT WRITE WITH DELTA HERE!!! */
 			if (config_get("file.insertblock")) {
 				eprintf("file.insertblock: not yet implemented\n");
 			} else {
@@ -118,10 +120,11 @@ int radare_write(char *arg, int mode)
 				}
 			}
 		}
-		
 	}
-	for(bytes=0;times--;)
+	for(bytes=0;times--;) {
+		undo_write_new(seek, str, len);
 		bytes += io_write(config.fd, str, len);
+	}
 
 	if (!config.debug)
 	if (!config.unksize && seek + len > config.size)
@@ -172,9 +175,12 @@ void radare_poke(const char *arg)
 		if (key=='y' || key=='Y') {
 			memcpy(config.block, buf, ret);
 
+			undo_write_new(config.seek, buf, ret);
 			radare_seek(config.seek, SEEK_SET);
-			while(times--)
+			while(times--) {
+				undo_write_new(config.seek, buf, ret);
 				io_write(config.fd, buf, ret);
+			}
 
 			if ((config.seek + (ret * otimes)) > config.size) {
 				if (config.limit == config.size)

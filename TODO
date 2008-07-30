@@ -14,6 +14,7 @@
   - must ask while closing
   - mixed with -P
 * rasc - helper for format strings
+  - no cal
 * implement bindiff patchers
   - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 * Add write history and output binpatch format

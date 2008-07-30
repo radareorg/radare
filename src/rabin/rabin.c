@@ -62,15 +62,15 @@ int rabin_show_help()
 "rabin [options] [bin-file]\n"
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
-" -s        symbols (export)\n"
-" -o        others (other symbols)\n"
+" -s        symbols\n"
+//" -o        others (other symbols)\n"
 " -c        header checksum\n"
 " -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
 " -z        search for strings in elf non-executable sections\n"
-" -x        show xrefs of symbols (-s/-i/-o required)\n"
+" -x        show xrefs of symbols (-s/-i required)\n"
 " -I        show binary info\n"
 " -r        output in radare commands\n"
 " -v        be verbose\n");
@@ -239,7 +239,7 @@ unsigned long addr_for_lib(char *name)
 	return 0;
 }
 
-/* deprecated: moved to imports and exports */
+/* deprecated: moved to imports and symbols */
 #if 0
 void rabin_show_symbols()
 {
@@ -399,7 +399,7 @@ void rabin_show_imports(const char *file)
 	}
 }
 
-void rabin_show_exports(char *file)
+void rabin_show_symbols(char *file)
 {
 	char buf[1024];
 	dietelf_bin_t bin;
@@ -415,7 +415,7 @@ void rabin_show_exports(char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_exports,bin,fd);
+		ELF_CALL(dietelf_list_symbols,bin,fd);
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
@@ -434,6 +434,7 @@ void rabin_show_exports(char *file)
 	}
 }
 
+#if 0
 void rabin_show_others(char *file)
 {
 	dietelf_bin_t bin;
@@ -450,6 +451,7 @@ void rabin_show_others(char *file)
 		break;
 	}
 }
+#endif
 
 void rabin_show_sections(const char *file)
 {
@@ -477,8 +479,19 @@ void rabin_show_sections(const char *file)
 void rabin_show_libs(const char *file)
 {
 	char buf[1024];
+	int fd;
+	dietelf_bin_t bin;
 
 	switch(filetype) {
+	case FILETYPE_ELF:
+		fd = ELF_CALL(dietelf_new,bin,file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		ELF_CALL(dietelf_list_libs,bin,fd);
+		close(fd);
+		break;
 	case FILETYPE_MACHO:
 		sprintf(buf, "otool -L '%s'", file);
 		system(buf);
@@ -559,12 +572,14 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_CHECKSUM;
 			break;
 		case 's':
-			//action |= ACTION_SYMBOLS;
-			action |= ACTION_EXPORTS;
+			action |= ACTION_SYMBOLS;
+			//action |= ACTION_EXPORTS;
 			break;
+#if 0
 		case 'o':
 			action |= ACTION_OTHERS;
 			break;
+#endif
 		case 'S':
 			action |= ACTION_SECTIONS;
 			break;
@@ -621,14 +636,16 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_arch(file);
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
+#if 0
 	if (action&ACTION_EXPORTS)
 		rabin_show_exports(file);
 	if (action&ACTION_OTHERS)
 		rabin_show_others(file);
+#endif
 	if (action&ACTION_IMPORTS)
 		rabin_show_imports(file);
-	//if (action&ACTION_SYMBOLS)
-//		rabin_show_symbols(file);
+	if (action&ACTION_SYMBOLS)
+		rabin_show_symbols(file);
 	if (action&ACTION_SECTIONS)
 		rabin_show_sections(file);
 	if (action&ACTION_INFO)
