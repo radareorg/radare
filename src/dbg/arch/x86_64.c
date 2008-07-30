@@ -416,31 +416,20 @@ int arch_backtrace()
 	return i;
 }
 
-void dump_eflags(const int eflags)
+void dump_eflags64(const int eflags)
 {
+#define EFL(x,y,z) eflags & (1 << x) ? y : z
     cons_printf("%c%c%c%c%c%c%c%c%c%c%c ",
-	   eflags & (1 <<  0) ? 'C' : 'c',
-	   eflags & (1 <<  2) ? 'P' : 'p',
-	   eflags & (1 <<  4) ? 'A' : 'a',
-	   eflags & (1 <<  6) ? 'Z' : 'z',
-	   eflags & (1 <<  7) ? 'S' : 's',
-	   eflags & (1 <<  8) ? 'T' : 't',
-	   eflags & (1 <<  9) ? 'I' : 'i',
-	   eflags & (1 << 10) ? 'D' : 'd',
-	   eflags & (1 << 11) ? 'O' : 'o',
-	   eflags & (1 << 16) ? 'R' : 'r',
-	   ((eflags >> 12) & 3) + '0');
+	EFL(0,'C','c'), EFL(2,'P','p'), EFL(4,'A','a'), 
+	EFL(6,'Z','z'), EFL(7,'S','s'), EFL(8,'T','t'),
+	EFL(9,'I','i'), EFL(10,'D','d'), EFL(11,'O','o'),
+	EFL(16,'R','r'), ((eflags >> 12) & 3) + '0');
+
+#define EF(x,y) eflags & (1 << x) ? y : ""
     cons_printf("(%s%s%s%s%s%s%s%s%s%s)\n",
-	   eflags & (1 <<  0) ? "C" : "",
-	   eflags & (1 <<  2) ? "P" : "",
-	   eflags & (1 <<  4) ? "A" : "",
-	   eflags & (1 <<  6) ? "Z" : "",
-	   eflags & (1 <<  7) ? "S" : "",
-	   eflags & (1 <<  8) ? "T" : "",
-	   eflags & (1 <<  9) ? "I" : "",
-	   eflags & (1 << 10) ? "D" : "",
-	   eflags & (1 << 11) ? "O" : "",
-	   eflags & (1 << 16) ? "R" : "");
+	EF(0,"C"), EF(2,"P"), EF(4,"A"), EF(6,"Z"),
+	EF(7,"S"), EF(8,"T"), EF(9,"I"), EF(10,"D"),
+	EF(11,"O"), EF(16,"R"));
 }
 
 int arch_ret()
@@ -683,7 +672,7 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-	int color = config_get("color")?1:0;
+	int color = config_get("scr.color")?1:0;
 
 	if (ps.opened == 0)
 		return 0;
@@ -703,7 +692,6 @@ int arch_print_registers(int rad, const char *mask)
 	}
 	
 	if (rad) {
-		cons_printf("\n"); // XXX stupid trick
 		cons_printf("f rax_orig @ 0x%llx\n", (long)R_ORAX(regs));
 		cons_printf("f rax @ 0x%llx\n", (long)R_RAX(regs));
 		cons_printf("f rbx @ 0x%llx\n", (long)R_RBX(regs));
@@ -715,6 +703,7 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f eip @ 0x%llx\n", (long)R_RIP(regs));
 		cons_printf("f rip @ 0x%llx\n", (long)R_RIP(regs));
 		cons_printf("f rsp @ 0x%llx\n", (long)R_RSP(regs));
+		cons_printf("f esp @ 0x%llx\n", (long)R_RSP(regs));
 
 		/* r8-r15 */
 		cons_printf("f r8 @ 0x%llx\n", (long)R_R8(regs));
@@ -729,30 +718,46 @@ int arch_print_registers(int rad, const char *mask)
 		if (color) {
 			if (R_RAX(regs)!=R_RAX(oregs)) cons_printf("\e[35m");
 			else cons_printf("\e[0m");
-			cons_printf("  rax  0x%08llx\e[0m", (long long)R_RAX(regs));
+			cons_printf(" rax  0x%08llx\e[0m", (long long)R_RAX(regs));
 			if (R_RSI(regs)!=R_RSI(oregs)) cons_printf("\e[35m");
 			cons_printf("    rsi  0x%08llx\e[0m", (long long)R_RSI(regs));
 			if (R_RIP(regs)!=R_RIP(oregs)) cons_printf("\e[35m");
 			cons_printf("    rip    0x%08llx\e[0m\n",  (ull) R_RIP(regs));
 			if (R_RBX(regs)!=R_RBX(oregs)) cons_printf("\e[35m");
-			cons_printf("  rbx  0x%08llx\e[0m", (long long)R_RBX(regs));
+			cons_printf(" rbx  0x%08llx\e[0m", (long long)R_RBX(regs));
 			if (R_RDI(regs)!=R_RDI(oregs)) cons_printf("\e[35m");
 			cons_printf("    rdi  0x%08llx\e[0m", (long long)R_RDI(regs));
 			if (R_ORAX(regs)!=R_ORAX(oregs)) cons_printf("\e[35m");
 			cons_printf("    orax   0x%08llx\e[0m\n",   (long long)R_ORAX(regs));
 			if (R_RCX(regs)!=R_RCX(oregs)) cons_printf("\e[35m");
-			cons_printf("  rcx  0x%08llx\e[0m", (long long)R_RCX(regs));
+			cons_printf(" rcx  0x%08llx\e[0m", (long long)R_RCX(regs));
 			if (R_RSP(regs)!=R_RSP(oregs)) printf("\e[35m");
 			cons_printf("    rsp  0x%08llx\e[0m", (long long)R_RSP(regs));
 			if (R_RFLAGS(regs)!=R_RFLAGS(oregs)) cons_printf("\e[35m");
 			//cons_printf("    eflags 0x%04x  ", R_RFLAGS(regs));
-			cons_printf("    eflags 0x%04llx  \n", (long long)R_RFLAGS(regs));
+			cons_printf("    rflags 0x%04llx  \n", (long long)R_RFLAGS(regs));
 			if (R_RDX(regs)!=R_RDX(oregs)) printf("\e[35m");
-			cons_printf("  edx  0x%08llx\e[0m", (long long)R_RDX(regs));
+			cons_printf(" rdx  0x%08llx\e[0m", (long long)R_RDX(regs));
 			if (R_RBP(regs)!=R_RBP(oregs)) printf("\e[35m");
 			cons_printf("    rbp  0x%08llx\e[0m    ",(long long) R_RBP(regs));
+			dump_eflags64(R_RFLAGS(regs));
+			if (R_R8(regs)!=R_R8(oregs)) printf("\e[35m");
+			cons_printf("  r8 0x%08llx     ",(u64)R_R8(regs)); 
+			if (R_R11(regs)!=R_R11(oregs)) printf("\e[35m");
+			cons_printf("r11 0x%08llx    ",(u64)R_R11(regs)); 
+			if (R_R14(regs)!=R_R14(oregs)) printf("\e[35m");
+			cons_printf("r14 0x%08llx\n", (u64)R_R14(regs));
+			if (R_R9(regs)!=R_R9(oregs)) printf("\e[35m");
+			cons_printf("  r9 0x%08llx     ",(u64)R_R9(regs)); 
+			if (R_R12(regs)!=R_R12(oregs)) printf("\e[35m");
+			cons_printf("r12 0x%08llx    ",(u64)R_R12(regs)); 
+			if (R_R15(regs)!=R_R15(oregs)) printf("\e[35m");
+			cons_printf("r15 0x%08llx\n", (u64)R_R15(regs));
+			if (R_R10(regs)!=R_R10(oregs)) printf("\e[35m");
+			cons_printf(" r10 0x%08llx     ", (u64)R_R10(regs));
+			if (R_R13(regs)!=R_R13(oregs)) printf("\e[35m");
+			cons_printf("r13 0x%08llx\n", (u64)R_R13(regs));
 			
-			dump_eflags(R_RFLAGS(regs));
 			fflush(stdout);
 //#if __linux__
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
@@ -762,7 +767,7 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf(" rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (u64)R_RBX(regs), R_RDI(regs), (u64)R_ORAX(regs));
 			cons_printf(" rcx  0x%08llx    rsp  0x%08llx    rflags 0x%04x\n",   (u64)R_RCX(regs), (u64)R_RSP(regs), (u64)R_RFLAGS(regs));
 			cons_printf(" rdx  0x%08llx    rbp  0x%08llx    ", (u64)R_RDX(regs), (u64)R_RBP(regs));
-			dump_eflags(R_RFLAGS(regs));
+			dump_eflags64(R_RFLAGS(regs));
 
 			/* r8-r15 */
 			cons_printf("  r8 0x%08llx     r11 0x%08llx    r14 0x%08llx\n", (u64)R_R8(regs), (u64)R_R11(regs), (u64)R_R14(regs));
