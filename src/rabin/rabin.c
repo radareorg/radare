@@ -93,7 +93,8 @@ void rabin_show_info(const char *file)
 		
 		if (rad) {
 			printf("e file.type = elf\n");
-			printf("e file.baddr = 0x%08llx\n", baddr);
+			if (strncmp(getenv("DEBUG"), "1", 1))
+				printf("e file.baddr = 0x%08llx\n", baddr);
 			if (ELF_CALL(dietelf_is_big_endian,bin))
 				printf("e cfg.endian = true\n");
 			else

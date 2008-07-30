@@ -60,6 +60,8 @@ void prepare_environment(char *line)
 	setenv("SYNTAX", config_get("asm.syntax"));
 	*/
 
+	sprintf(offset,  "%d", config.debug);
+	setenv("DEBUG",  offset, 1);
 	setenv("ARCH",   config_get("asm.arch"), 1);
 	setenv("NASM",   "1",      1);
 

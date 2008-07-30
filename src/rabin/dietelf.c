@@ -612,7 +612,7 @@ ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
     const char *string = bin->string;
-    int i;
+    int i, cont=0;
 
 #define GET_FLAGS(x) (x&SHF_WRITE)?'w':'-', (x&SHF_ALLOC)?'a':'-', (x&SHF_EXECINSTR)?'x':'-'
     shdrp = shdr;
@@ -638,8 +638,10 @@ ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
 	if (rad)
 		printf(" @ 0x%08llx\n", (u64)(shdrp->sh_offset + bin->base_addr));
 	else printf("\n");
+	cont++;
     }
 
+    if (rad) fprintf(stderr, "%i sections added\n", cont);
     return i;
 }
 

@@ -27,7 +27,11 @@ int rabin_id()
 	fprintf(stderr, "Automagically identifying file...\n");
 
     	snprintf(buf, 1022, ".!!rabin -rIe '%s'", config.file);
-	return radare_cmd_raw(buf, 0);
+	radare_cmd_raw(buf, 0);
+    	snprintf(buf, 1022, "!!rabin -Iv '%s'", config.file);
+	radare_cmd_raw(buf, 0);
+
+	return 0;
 }
 
 int rabin_flag()
@@ -36,7 +40,7 @@ int rabin_flag()
 
 	fprintf(stderr, "Automagically flagging file...\n");
 
-    	snprintf(buf, 1022, ".!!rabin -risz '%s'", config.file);
+    	snprintf(buf, 1022, ".!!rabin -rSisz '%s'", config.file);
 	radare_cmd_raw(buf, 0);
 	if (!strcmp("java", config_get("asm.arch"))) {
 		java_classdump(config.file);
