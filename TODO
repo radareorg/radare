@@ -9,6 +9,7 @@
 
 === TODAY ===
 
+* folders are broken
 * do not create trace.log by default
 * rasc - helper for format strings
   - no cal

@@ -198,8 +198,8 @@ int rabin_load()
 		config_set("asm.arch", "java");
 		config_set("cfg.endian", "true"); // we need big endian for proper java disassembly
 		// loading class information
-		java_classdump(config.file);
-		//radare_cmd(".!javasm -rc ${FILE}");
+		D java_classdump(config.file);
+		radare_cmd(".!javasm -rc ${FILE}",0);
 		break;
 	}
 

@@ -15,7 +15,7 @@ xrefs.source = 'xrefs.c'
 
 
 javasm = bld.create_obj('cc', 'program')
-javasm.sources = 'arch/java/javasm.c'
+javasm.sources = 'rabin/javasm.c'
 javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
 javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
 javasm.target = 'javasm'

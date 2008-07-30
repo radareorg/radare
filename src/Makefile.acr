@@ -52,7 +52,7 @@ TARGETS+=valagrava
 JAVASM_STUFF=w32utils.o -lwsock32
 ##W32##
 
-.PHONY: all pre radare radare-hash radare-xc javasm radare-xrefs clean
+.PHONY: all pre radare radare-hash radare-xc radare-xrefs clean
 
 .SUFFIXES: .c .o
 .c.o:
@@ -61,7 +61,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 all: ${TARGETS} udis86 armasm _radiff \
 	lsbstego pre radare${BINSFX} _hasher plugs \
-	xc${BINSFX} xrefs${BINSFX} javasm${BINSFX} _rasm _rabin _rasc
+	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _rasc
 	@true
 
 ${OBJS}: %.o: %.c
@@ -94,10 +94,6 @@ gui: ${OBJ}
 	${E} 'Compiling Vala GUI'
 	cd ../vala && ${MAKE} c
 	-${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${W32LIBS} -lvte
-
-javasm${BINSFX}: arch/java/javasm.o
-	-${Q}${CC} -DJAVA_ASM_MAIN ${CFLAGS} arch/java/javasm.c ${JAVASM_STUFF} -o javasm${BINSFX}
-
 
 lsbstego${BINSFX}: lsbstego.o
 	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}

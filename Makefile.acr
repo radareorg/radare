@@ -47,11 +47,11 @@ clean:
 w32dist:
 	mkdir w32-build
 	cp src/radare.exe w32-build
-	cp src/javasm.exe w32-build
 	cp src/xc.exe w32-build
 	cp src/xrefs.exe w32-build
 	cp src/hasher/hasher.exe w32-build
 	cp src/rabin/rabin.exe w32-build
+	cp src/rabin/javasm.exe w32-build
 	cp src/radiff/radiff.exe w32-build
 	cp src/radiff/rdbdiff.exe w32-build
 	-cp src/radiff/bdiff/bdiff.exe w32-build
@@ -90,7 +90,7 @@ install:
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
 	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
-	${INSTALL_PROGRAM} src/javasm ${BINDIR}
+	${INSTALL_PROGRAM} src/rabin/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}

@@ -20,7 +20,7 @@
 
 // TODO: add radare related commands to stdout with -r (R printf..)
 
-#include "../../main.h"
+#include "../main.h"
 #if __UNIX__
 #include <arpa/inet.h>
 #endif
@@ -79,6 +79,7 @@ struct cp_item {
 	char name[255];
 	char *value;
 	unsigned char bytes[5];
+	u64 off;
 };
 
 struct cp_item *cp_items;
@@ -334,7 +335,7 @@ int java_print_opcode(int idx, unsigned char *bytes, char *output)
 	case 0x12:
 	case 0x13:
 	case 0x14:
-		java_resolve(bytes[0]-1, arg);
+		java_resolve(bytes[1]-1, arg);
 		sprintf(output, "%s %s", java_ops[idx].name, arg);
 		return java_ops[idx].size;
 	case 0xb2: // getstatic
@@ -342,7 +343,7 @@ int java_print_opcode(int idx, unsigned char *bytes, char *output)
 	case 0xb7: // invokespecial
 	case 0xb8: // invokestatic
 	case 0xb9: // invokeinterface
-		java_resolve((int)USHORT(bytes,0)-1, arg);
+		java_resolve((int)USHORT(bytes,1)-1, arg);
 		sprintf(output, "%s %s", java_ops[idx].name, arg);
 		return java_ops[idx].size;
 	}
@@ -432,6 +433,7 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 		fread(buf, 6, 1, fd);
 		name = (get_cp(USHORT(buf,0)-1))->value;//cp_items[USHORT(buf,0)-1].value;
 		NR printf("   %2d: Name Index: %d (%s)\n", j, USHORT(buf,0), name);
+		// TODO add comment with constant pool index
 		sz3 = UINT(buf, 2);
 		if (fields) {
 			NR printf("FIELD\n");
@@ -447,7 +449,9 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 					printf("      Max Stack: %d\n", USHORT(buf, 0));
 					printf("      Max Locals: %d\n", USHORT(buf, 2));
 					printf("      Code Length: %d\n", UINT(buf, 4));
-					printf("      Code At Offset: 0x%08lx\n", ftell(fd));
+					printf("      Code At Offset: 0x%08llx\n", (u64)ftell(fd));
+				} else {
+					printf("@ 0x%08llx\n", (u64)ftell(fd));
 				}
 				fread(buf, UINT(buf, 4), 1, fd); // READ CODE
 				sz4 = read_short(fd);
@@ -462,7 +466,7 @@ static int attributes_walk(FILE *fd, int sz2, int fields)
 					}
 				}
 				sz4 = (int)read_short(fd);
-				printf("      code Attributes_count: %d\n", sz4);
+				NR printf("      code Attributes_count: %d\n", sz4);
 
 				if (sz4>0)
 					attributes_walk(fd, sz4, fields);
@@ -524,7 +528,7 @@ int java_classdump(const char *file)
 
 	/* show class version information */
 	NR printf("Version: 0x%02x%02x 0x%02x%02x\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
-	else printf("CC version: 0x%02x%02x 0x%02x%02x @ 0\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
+	else printf("CC Class version: 0x%02x%02x 0x%02x%02x @ 0\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
 
 	cf.cp_count = ntohs(cf.cp_count);
 	if (cf.major[0]==cf.major[1] && cf.major[0]==0) {
@@ -557,12 +561,14 @@ int java_classdump(const char *file)
 		strcpy( cp_items[i].name, c->name);
 		cp_items[i].tag = c->tag;
 		cp_items[i].value = NULL; // no string by default
+		cp_items[i].off = ftell(fd)-1;
 
 		/* read bytes */
 		switch(c->tag) {
 		case 1: // utf 8 string
 			fread(buf, 2, 1, fd);
 			sz = USHORT(buf,0); //(buf[0]<<8)|buf[1];
+			//cp_items[i].len = sz;
 			fread(buf, sz, 1, fd);
 			buf[sz] = '\0';
 			break;
@@ -572,6 +578,8 @@ int java_classdump(const char *file)
 
 		memcpy(cp_items[i].bytes, buf, 5);
 
+		R printf("b %d\n", c->len);
+		R printf("f cp%d @ 0x%04llx\n", i+1, cp_items[i].off);
 		/* parse value */
 		switch(c->tag) {
 		case 1:
@@ -626,6 +634,10 @@ int java_classdump(const char *file)
 				printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
 				printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf,2)-1)->value);
 				printf("    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
+			} else {
+				printf("; %2d: Access Flags: %d\n", i, USHORT(buf, 0));
+				printf("f field_%s", get_cp(USHORT(buf,2)-1)->value);
+				//printf(" ;    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
 			}
 			sz2 = USHORT(buf, 6);
 			NR printf("    field Attributes Count: %d\n", sz2);
@@ -643,6 +655,15 @@ int java_classdump(const char *file)
 				printf("%2d: Access Flags: %d\n", i, USHORT(buf, 0));
 				printf("    Name Index: %d (%s)\n", USHORT(buf, 2), get_cp(USHORT(buf, 2)-1)->value);
 				printf("    Descriptor Index: %d (%s)\n", USHORT(buf, 4), get_cp(USHORT(buf, 4)-1)->value);
+			} else {
+				char *p, buf2[256];
+				strncpy(buf2, get_cp(USHORT(buf,2)-1)->value, 255);
+				for(p = &buf2; p[0]; p = p +1){
+					// XXX add if is printable
+					if (*p=='<'||*p=='>'||*p=='@'||*p==' ')
+						*p = '_';
+				}
+				printf("f %s ", buf2);
 			}
 			sz2 = USHORT(buf, 6);
 			NR printf("    method Attributes Count: %d\n", sz2);
@@ -733,7 +754,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 
 static int show_help()
 {
-	printf("Usage: javasm [-hV] [-a 'opcode'] [-d 'hexpairstring'] [-c 'classfile']\n");
+	printf("Usage: javasm [-hV] [-a 'opcode'] [-d 'hexpairstring'] [-r][-c 'classfile']\n");
 	return 0;
 }
 
@@ -744,7 +765,7 @@ int main(int argc, char **argv)
 	unsigned char buf[1024];
 	char output[128];
 	
-	while ((c = getopt(argc, argv, "a:d:c:hV")) != -1)
+	while ((c = getopt(argc, argv, "ra:d:c:hV")) != -1)
 	{
 		switch( c ) {
 		case 'r':

@@ -62,7 +62,7 @@ crOBJ+=arch/x86/udis86/syn-intel.o
 crOBJ+=arch/x86/udis86/syn-pseudo.o
 
 crOBJ+=arch/java/code.o
-crOBJ+=arch/java/javasm.o
+crOBJ+=rabin/javasm.o
 
 crOBJ+=arch/m68k/code.o
 crOBJ+=arch/m68k/m68k_disasm.o

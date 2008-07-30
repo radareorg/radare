@@ -84,36 +84,49 @@ void rabin_show_info(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
-		if (fd == -1) {
-			fprintf(stderr, "cannot open file\n");
-			return;
+		if (rad) {
+			// TODO: set endian and asm.arch
+			// and file.baddr if not in debugger
+		} else {
+			fd = ELF_CALL(dietelf_new,bin,file);
+			if (fd == -1) {
+				fprintf(stderr, "cannot open file\n");
+				return;
+			}
+
+			printf("ELF class:       %s\n"
+			       "Data enconding:  %s\n"
+			       "OS/ABI name:     %s\n"
+			       "Machine name:    %s\n"
+			       "File type:       %s\n",
+			       ELF_CALL(dietelf_get_elf_class,bin),
+			       ELF_CALL(dietelf_get_data_encoding,bin),
+			       ELF_CALL(dietelf_get_osabi_name,bin),
+			       ELF_CALL(dietelf_get_machine_name,bin),
+			       ELF_CALL(dietelf_get_file_type,bin));
+
+			printf("Stripped:        ");
+			if (ELF_CALL(dietelf_get_stripped,bin))
+			    printf("Yes\n");
+			else
+			    printf("No\n");
+
+			printf("Static:          ");
+			if (ELF_CALL(dietelf_get_static,bin))
+			    printf("Yes\n");
+			else
+			    printf("No\n");
+
+			close(fd);
 		}
-
-		printf("ELF class:       %s\n"
-		       "Data enconding:  %s\n"
-		       "OS/ABI name:     %s\n"
-		       "Machine name:    %s\n"
-		       "File type:       %s\n",
-		       ELF_CALL(dietelf_get_elf_class,bin),
-		       ELF_CALL(dietelf_get_data_encoding,bin),
-		       ELF_CALL(dietelf_get_osabi_name,bin),
-		       ELF_CALL(dietelf_get_machine_name,bin),
-		       ELF_CALL(dietelf_get_file_type,bin));
-
-		printf("Stripped:        ");
-		if (ELF_CALL(dietelf_get_stripped,bin))
-		    printf("Yes\n");
-		else
-		    printf("No\n");
-
-		printf("Static:          ");
-		if (ELF_CALL(dietelf_get_static,bin))
-		    printf("Yes\n");
-		else
-		    printf("No\n");
-
-		close(fd);
+		break;
+	case FILETYPE_CLASS:
+		if (rad) {
+			printf("eval asm.arch=java\n");
+		}else {
+			printf("Version:       ???\n");
+			printf("File type:     java class\n");
+		}
 		break;
 	}
 }
@@ -239,75 +252,6 @@ unsigned long addr_for_lib(char *name)
 	return 0;
 }
 
-/* deprecated: moved to imports and symbols */
-#if 0
-void rabin_show_symbols()
-{
-	unsigned long addr, addr2, addr3;
-	unsigned int num, i;
-	//char buf[1024];
-	dietelf_bin_t bin;
-
-	switch(filetype) {
-	case FILETYPE_ELF:
-#if 0
-		sprintf(buf, "objdump -d '%s' | grep '>:' | sed -e 's,<,,g' -e 's,>:,,g' -e 's,^,0x,' | sort | uniq", file);
-		system(buf);
-#endif
-
-		fd = ELF_COND(dietelf_new(file, &bin));
-		if (fd == -1) {
-			fprintf(stderr, "cannot open file\n");
-			return;
-		}
-		ELF_COND(dietelf_list_syms(fd, bin.string, &bin.ehdr, bin.shdr, SYM_BOTH));
-		close(fd);
-
-		break;
-	case FILETYPE_DEX:
-// METHODS AND CODE OFFSETS
-		lseek(fd, 0x4c, SEEK_SET); // num of methods
-		read(fd, &num, 4);
-		lseek(fd, 0x50, SEEK_SET); // num of methods
-		read(fd, &addr, 4);
-		lseek(fd, addr, SEEK_SET);
-		for(i=0;i<num;i++) {
-			lseek(fd, (addr+i*32)+0xc, SEEK_SET);
-			read(fd, &addr2, 4);
-			lseek(fd, (addr2+0xc), 4);
-			read(fd, &addr3, 4);
-			printf("0x%08lx\n", addr3);
-		}
-// CLASSES
-#if 0
-		lseek(fd, 0x40, SEEK_SET); // class list
-		read(fd, &addr, 4);
-		printf("Offset of class list: %d\n", addr);
-		lseek(fd, 0x3c, SEEK_SET); // number of classes
-		read(fd, &num, 4);
-		printf("Number of classes: %d\n", num);
-		lseek(fd, addr, SEEK_SET);
-		for(i=0;i<num;i++) {
-			read(fd, &idx, 4);
-			printf(" class name: (string-index %d)\n", idx);
-		}
-
-		/* class definition */
-		lseek(fd, 0x58, SEEK_SET); // class definition tables
-		read(fd, &addr, 4);
-		printf("Offset of class definition table: %d\n", addr);
-		lseek(fd, 0x54, SEEK_SET); // number of class definition tables
-		read(fd, &num, 4);
-		printf("Number of classes: %d\n", num);
-		lseek(fd, addr, SEEK_SET);
-		// TODO: needs to be parsed completely
-#endif
-		
-		break;
-	}
-}
-#endif
-
 void rabin_show_arch()
 {
 	u32 dw;
@@ -430,6 +374,11 @@ void rabin_show_symbols(char *file)
 			system(buf);
 		   #endif
 		}
+		break;
+	case FILETYPE_CLASS:
+		// TODO: native version and support for non -r
+		sprintf(buf, "javasm -rc %s",file);
+		system(buf);
 		break;
 	}
 }
