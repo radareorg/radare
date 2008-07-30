@@ -270,14 +270,16 @@ void print_maps_regions(int rad)
 				strcpy(name, mr->bin);
 				for(i=0;mr->bin[i];i++) {
 					int ch = mr->bin[i];
-					if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-') {
+					if (!is_printable(ch)||
+				//	ch=='['||ch==']'||
+					ch=='/'||ch=='.'||ch=='-') {
 						ch = '_';
 					}
 					name[i] = ch;
 				}
 				name[i]='\0';
-				cons_printf("f map_%s @ 0x%08llx\n", name,
-						(unsigned long long)mr->ini);
+				cons_printf("f map_%s @ 0x%08llx\n", name, (u64)mr->ini);
+				cons_printf("f map_%s_end @ 0x%08llx\n", name, (u64)mr->end);
 			}
 		} else {
 			perms[0] = (mr->perms & REGION_READ)?   'r' : '-';

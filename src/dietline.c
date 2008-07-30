@@ -96,7 +96,6 @@ int dl_readchar()
 /* history stuff */
 int dl_hist_add(const char *line)
 {
-printf("hist-add\n");
 #if HAVE_LIB_READLINE
 	add_history(line);
 #else
