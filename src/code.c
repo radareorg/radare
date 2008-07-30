@@ -734,7 +734,7 @@ void udis_arch(int arch, int len, int rows)
 			continue;
 		}
 		__outofme:
-		if (data_end(sk) == DATA_FOLD_O) {
+		if (data_end(seek) == DATA_FOLD_O) {
 			if (show_lines)
 				code_lines_print(reflines, seek, 1);
 			if (show_offset)

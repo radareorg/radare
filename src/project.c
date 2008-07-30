@@ -28,10 +28,17 @@ int project_save(const char *file)
 	FILE *fd;
 	struct list_head *pos;
 	flag_t *flag;
+	char *rdbdir;
 	int i;
 	
 	if (strnull(file))
 		return 0;
+
+	rdbdir = config_get("dir.project");
+	if (rdbdir&&rdbdir[0]) {
+		mkdir(rdbdir, 0755);
+		chdir(rdbdir);
+	}
 
 	// TODO: check if exists
 	// append .rdb if not defined ??
@@ -61,7 +68,7 @@ int project_save(const char *file)
 	fprintf(fd, "# Comments\n");
 	list_for_each_prev(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		fprintf(fd, "comment=0x%08llx %s\n", cmt->offset, cmt->comment);
+		fprintf(fd, "comment=0x%08llx %s\n", (u64)cmt->offset, cmt->comment);
 	}
 	fprintf(fd, "# Code attributes\n");
 	list_for_each(pos, &data) {
@@ -100,9 +107,16 @@ int project_open(const char *file)
 	char buf[1025];
 	int len;
 	char *ptr, *ptr2;
+	char *rdbdir;
 
 	if (strnull(file))
 		return 0;
+
+	rdbdir = config_get("dir.project");
+	if (rdbdir&&rdbdir[0]) {
+		mkdir(rdbdir, 0755);
+		chdir(rdbdir);
+	}
 
 	fd = fopen(file, "r");
 	if (fd == NULL) {

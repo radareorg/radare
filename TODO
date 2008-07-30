@@ -9,10 +9,7 @@
 
 === TODAY ===
 
-* do not create trace.log and .rdb all the time
-  - must be loaded by default
-  - must ask while closing
-  - mixed with -P
+* do not create trace.log by default
 * rasc - helper for format strings
   - no cal
 * implement bindiff patchers

@@ -156,6 +156,7 @@ int rabin_identify_header()
 
 int rabin_load()
 {
+	char buf[255];
 	int header = rabin_identify_header();
 	u64 entry = rabin_entrypoint(header);
 
@@ -165,7 +166,9 @@ int rabin_load()
 	}
 
 	config_set_i("file.entrypoint", entry);
-	flag_set("entrypoint", entry, 0);
+	sprintf(buf, "fs symbols && f entrypoint @ %08llx", entry);
+	radare_cmd(buf, 0);
+	//flag_set("entrypoint", entry, 0);
 	radare_cmd("s entrypoint",0);
 
 	/* add autodetection stuff here */

@@ -28,7 +28,7 @@ static void help_show_message()
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
 	"  -i [script]      interpret radare or lua script\n"
-	"  -P [project]     load metadata from project file\n"
+	"  -p [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
 	"  -d [program|pid] debug a program. same as --args in gdb\n"
@@ -51,7 +51,7 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
 
-	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:P:d")) != -1)
+	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:p:d")) != -1)
 	{
 		switch( c ) {
 #if DEBUGGER
@@ -97,7 +97,7 @@ int main(int argc, char **argv, char **envp)
 		case 'n':
 			config.noscript = 1;
 			break;
-		case 'P':
+		case 'p':
 			config_set("file.project", optarg);
 			break;
 		case 'w':

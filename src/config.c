@@ -43,13 +43,16 @@ int rdb_init()
 /* FUCKY! */
 // just set project name (cfg.project)
 
-	rdbdir = config_get("dir.rdb");
-	if (rdbdir&&rdbdir[0])
-		chdir(rdbdir);
+	rdbfile = config_get("file.project");
+	if (strnull(rdbfile))
+		return -1;
 
-	rdbfile = config_get("file.rdb");
-	if (!strnull(rdbfile))
-		fd = open(rdbfile, O_APPEND|O_RDWR, 0644);
+	fd = open(rdbfile, O_APPEND|O_RDWR, 0644);
+	rdbdir = config_get("dir.project");
+	if (rdbdir&&rdbdir[0]) {
+		mkdir(rdbdir, 0755);
+		chdir(rdbdir);
+	}
 	if (fd == -1) {
 		fd = open(rdbfile, O_CREAT|O_APPEND|O_RDWR, 0644);
 		if (fd != -1 )
@@ -504,6 +507,7 @@ static int config_scrbuf_callback(void *data)
 	struct config_node_t *node = data;
 
 	config.buf = node->i_value;
+	return 1;
 }
 
 static int config_bsize_callback(void *data)
@@ -513,11 +517,6 @@ static int config_bsize_callback(void *data)
 	if (node->i_value)
 		radare_set_block_size_i(node->i_value);
 	return 1;
-/*
-	else
-		cons_printf("(ignored)");
-*/
-	// TODO more work
 }
 
 void config_lock(int l)
@@ -599,7 +598,6 @@ void config_init(int first)
 	config_set("file.trace", "trace.log");
 	config_set("file.project", "");
 	config_set("file.entrypoint", "");
-	config_set("file.rdb", "");
 	config_set("file.scrfilter", "");
 	config_set_i("file.size", 0);
 	node = config_set_i("file.baddr", 0);
@@ -707,7 +705,11 @@ void config_init(int first)
 	config_set("dir.spcc", ptr);
 }
 	config_set("dir.plugins", LIBDIR"/radare/");
-	config_set("dir.rdb", ""); // ~/.radare/rdb/
+	{
+		char buf[1024];
+		snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
+		config_set("dir.project", buf); // ~/.radare/rdb/
+	}
 	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.color", "magic");
 	config_set("graph.split", "false"); // split blocks // SHOULD BE TRUE, but true algo is buggy

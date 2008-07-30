@@ -1164,8 +1164,8 @@ int radare_open(int rst)
 	strncpy(buf, ptr, 4000);
 	ptr = strchr(buf, ' ');
 	if (ptr) ptr[0] = '\0';
-	snprintf(buf2, 255, "%s.rdb", buf);
-	config_set("file.rdb", buf2);
+	//snprintf(buf2, 255, "%s.rdb", buf);
+	//config_set("file.rdb", buf2);
 
 	//D if (wm)
 	//if (config.verbose)
