@@ -10,13 +10,11 @@ if [ "$TARGET" = "-h" ]; then
 	exit 1
 fi
 
-if [ -n "`file $1 | grep "32-bit"`" ]; then
-	rabin -ri $1
-	rabin -rs $1
-	rabin -ro $1
-else
-	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
-fi
+#if [ -n "`file $1 | grep "32-bit"`" ]; then
+	rabin -rsi $1
+#else
+#	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'
+#fi
 
 #if [ -n "`file $1 | grep relocat`" ]; then
 #	objdump -d $1 | grep '>:' | perl -ne '{ print "0x$_"; }' | sed -e 's,>:,,g' -e 's,<,,g'

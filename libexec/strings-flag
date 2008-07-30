@@ -20,30 +20,30 @@ my $count=0;
 $offset=$mem-$disk unless($offset);
 my $file_info = `file $file`;
 
-if (!($file_info =~ /32-bit/)) {
-    print "fs strings\n";
-    print ":f _here_\n";
-
-    for my $i (0 .. $#strings) {
-	$strings[$i]=~s/^\ *//;
-	$strings[$i]=~/([^\ ]*) (.*)$/;
-	my $addr = $1;
-	#my $type = $2;
-	my $str  = $2;
-	my $cow;
-	eval ("\$cow = 0x$addr+$offset\n");
-	$str=~tr/\ \-\>\<\`\t\|&;\@"/.___________./;
-	$str=~s/\.*//g;
-	$str=substr($str, 0,27);
-	if ($str=~/%/ || length($str)>$minlen) {
-	    print ":fn str_\"$str\" @ 0x".sprintf "%08x\n", $cow;
-	    $count++;
-	}
-    }
-
-    print ":s _here_\n:f -_here_\n";
-    print STDERR "$count strings added.\n" if ( $ENV{"VERBOSE"} );
-} else {
+#if (!($file_info =~ /32-bit/)) {
+#    print "fs strings\n";
+#    print ":f _here_\n";
+#
+#    for my $i (0 .. $#strings) {
+#	$strings[$i]=~s/^\ *//;
+#	$strings[$i]=~/([^\ ]*) (.*)$/;
+#	my $addr = $1;
+#	#my $type = $2;
+#	my $str  = $2;
+#	my $cow;
+#	eval ("\$cow = 0x$addr+$offset\n");
+#	$str=~tr/\ \-\>\<\`\t\|&;\@"/.___________./;
+#	$str=~s/\.*//g;
+#	$str=substr($str, 0,27);
+#	if ($str=~/%/ || length($str)>$minlen) {
+#	    print ":fn str_\"$str\" @ 0x".sprintf "%08x\n", $cow;
+#	    $count++;
+#	}
+#    }
+#
+#    print ":s _here_\n:f -_here_\n";
+#    print STDERR "$count strings added.\n" if ( $ENV{"VERBOSE"} );
+#} else {
     my @strs = split(/\n/,qx(rabin -rz $file));
     for my $i (0 .. @strs) {
 	if ($strs[$i] =~ /^f /) {
@@ -52,4 +52,4 @@ if (!($file_info =~ /32-bit/)) {
 	print $strs[$i],"\n";
     }
     print STDERR "$count strings added.\n" if ( $ENV{"VERBOSE"} );
-}
+#}

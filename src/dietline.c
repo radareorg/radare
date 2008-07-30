@@ -96,6 +96,7 @@ int dl_readchar()
 /* history stuff */
 int dl_hist_add(const char *line)
 {
+printf("hist-add\n");
 #if HAVE_LIB_READLINE
 	add_history(line);
 #else
@@ -172,6 +173,10 @@ void dl_free()
 /* load history from file. if file == NULL load from ~/.<prg>.history or so */
 int dl_hist_load(const char *file)
 {
+#if HAVE_LIB_READLINE
+	rad_readline_init();
+	return 0;
+#else
 	char buf[1024];
 	FILE *fd;
 
@@ -189,6 +194,7 @@ int dl_hist_load(const char *file)
 	fclose(fd);
 
 	return 1;
+#endif
 }
 
 int dl_hist_save(const char *file)

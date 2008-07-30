@@ -95,8 +95,8 @@ int help_message()
 	cons_printf(" Registers\n");
 	TITLE_END
 	cons_printf("  [o|d|fp]regs[*]    show registers (o=old, d=diff, fp=fpu, *=radare)\n");
+	cons_printf("  reg[s|*] [reg[=v]  show get and set registers\n");
 	cons_printf("  oregs[*]           show old registers information (* for radare)\n");
-	cons_printf("  set [reg] [val]    set a value for a register\n");
 #if __i386__
 	cons_printf("  dr[rwx-]           DR registers control (dr? for help) (x86 only)\n");
 #endif
@@ -177,8 +177,8 @@ static struct commads_t {
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
-	CB_CMD( "get"      , CB_NORMAL   , debug_get_register )  , 
-	CB_CMD( "regs"     , CB_ASTERISK , debug_registers )    , 
+	CB_CMD( "get"      , CB_NORMAL   , debug_get_register ) , 
+	CB_CMD( "reg"      , CB_NORMAL   , debug_reg )          , //debug_registers )    , 
 	CB_CMD( "oregs"    , CB_ASTERISK , debug_oregisters )   , 
 	CB_CMD( "dregs"    , CB_ASTERISK , debug_dregisters )   , 
 	CB_CMD( "fpregs"   , CB_ASTERISK , debug_fpregisters )  , 
@@ -190,6 +190,23 @@ static struct commads_t {
 #endif
 	{ NULL, 0 }
 };
+
+int debug_reg(const char *arg)
+{
+	if (arg[0]) {
+		if ((arg[0]=='s' && arg[1]=='*') || arg[0] == '*')
+			debug_registers(1);
+		else {
+			if (arg[0]=='s' || strnull(arg))
+				debug_registers(0);
+			else {
+				if (strchr(arg+1, '='))
+					debug_set_register(arg+1);
+				else debug_get_register(arg+1);
+			}
+		}
+	} else debug_registers(0);
+}
 
 int debug_system(const char *command)
 {

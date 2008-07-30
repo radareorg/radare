@@ -22,7 +22,7 @@ if ( `uname`=~/Darwin/ ) {
 
 my @syms = split(/\n/,qx(rsc syms $target));
 for my $i (0 .. @syms) {
-	if (!($syms[$i] =~ /fs? sym/)) {
+	if (!($syms[$i] =~ /fs? [imp_|sym_]/)) {
 		my ($addr, $name) = split(/ /,$syms[$i]);
 		$name =~ s/@.*//g;
 		next if ($name eq "");

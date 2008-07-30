@@ -792,9 +792,10 @@ ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 		ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 	    }
 
-	    if (rad)
+	    if (rad) {
 		printf("fs symbols\n");
-	    else
+		printf("f entrypoint @ 0x%08llx\n", ELF_(dietelf_get_entry_addr)(bin));
+	    } else
 		printf("==> Symbols:\n");
 
 	    symp = sym;

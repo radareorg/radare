@@ -91,7 +91,7 @@ int debug_syms()
 {
 	char buf[1024];
 	//snprintf(buf, 1022, ".!!rsc syms-dbg-flag '%s'", config.file);
-	snprintf(buf, 1022, ".!!rabin -rios '%s'", config.file);
+	snprintf(buf, 1022, ".!!rabin -ris '%s'", config.file);
 	return radare_cmd_raw(buf, 0);
 }
 
@@ -1072,19 +1072,19 @@ int debug_set_register(char *args)
 		eprintf(":regs No program loaded.\n");
 		return 1;
 	}
-	args = args + 1;
-	value = strchr(args, ' ');
+	value = strchr(args, '=');
+	if (!value)
+		value = strchr(args, ' ');
 	if (!value) {
 		eprintf("Usage: !set [reg] [value]\n");
 		eprintf("  > !set eflags PZTI\n");
 		eprintf("  > !set r0 0x33\n");
 		return 1;
 	}
-	tmp = strchr(value, '=');
 	value[0]='\0';
-	if (tmp)
-		value = tmp+1;
-	else value = value + 1;
+	args = strclean(args);
+	value = strclean(value+1);
+	printf("%s=%s\n", args, value);
 
 	return arch_set_register(args, value);
 }

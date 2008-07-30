@@ -6,6 +6,7 @@
 #include "arch/arch.h"
 #include "parser.h"
 
+int debug_reg(const char *arg);
 void debug_msg();
 void debug_msg_set(const char *format, ...);
 // bp.c

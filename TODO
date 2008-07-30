@@ -17,12 +17,8 @@
   - no cal
 * implement bindiff patchers
   - fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
-* Add write history and output binpatch format
 * Move javasm.c as dietjava in rabin
 // TODO: store data and show (flag.data) in last_print_format
-
-* Remove !get and !set to !reg [<reg>[=value]]
-* rename !regs to !reg
 
 * Allow to edit flags in Vt
 
