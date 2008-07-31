@@ -974,11 +974,11 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if (string_flag_offset(buf, aop.jump))
+						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
 							cons_printf("  ; %d = %s", jump_n,buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if (string_flag_offset(buf, aop.jump))
+						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
