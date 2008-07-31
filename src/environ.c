@@ -62,6 +62,7 @@ void prepare_environment(char *line)
 
 	sprintf(offset,  "%d", config.debug);
 	setenv("DEBUG",  offset, 1);
+	setenv("EDITOR", config_get("cfg.editor"),1);
 	setenv("ARCH",   config_get("asm.arch"), 1);
 	setenv("NASM",   "1",      1);
 

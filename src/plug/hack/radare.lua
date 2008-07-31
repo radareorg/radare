@@ -507,7 +507,7 @@ function Radare.Write.wide_string(string, address)
 end
 
 function Radare.asm(string)
-	return r.cmd("!rsc asm '".. string.."'")
+	return r.cmd("!rasm '".. string.."'")
 end
 
 function Radare.Write.asm(string, address)

@@ -264,6 +264,7 @@ int epython_init()
 	init_radare_module();
 	//Py_InitModule3("radare", Radare_methods, NULL);
 	PyRun_SimpleString("import r");
+	PyRun_SimpleString("import radare");
 	return 0;
 }
 
@@ -286,6 +287,7 @@ void python_hack_cmd(const char *input)
 	Py_Initialize();
 	init_radare_module();
 	PyRun_SimpleString("import r");
+	PyRun_SimpleString("import radare");
 
 	if (input && input[0]) {
 		FILE *fd  = fopen(input, "r");

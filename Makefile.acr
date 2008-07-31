@@ -103,7 +103,10 @@ install:
 	mkdir -p ${LIBDIR}/radare
 	cd src/plug/hack/ && ${MAKE} install
 	#-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
+	-sudo mkdir ${LIBDIR}/radare
 	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
+	-sudo mkdir ${LIBDIR}/python2.5
+	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.5/
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
 #	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}

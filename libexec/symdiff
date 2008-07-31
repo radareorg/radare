@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+my $a=$ARGV[0];
+my $b=$ARGV[1];
+
+die "Usage: rsc symdiff [a-file] [b-file]\n"
+	if ($a eq "" or $b eq "" or $a eq "-h");
+
+sub domybest {
+	unlink $tmpa;
+	unlink $tmpb;
+	exit 0;
+}
+
+sub ow_yeah {
+    foreach (@_) {
+	if (/[\||<|>]/) {
+	    s/\s+//g;
+	    if (/</) {
+		s/<//g;
+		print "<$_\n";
+	    } else {
+		print "$_\n";
+	    }
+	}
+    }
+}
+
+$SIG{INT}=\&domybest;
+
+my $tmpa="/tmp/.a.$$.".int rand(0xfef);
+my $tmpb="/tmp/.b.$$.".int rand(0xefe);
+
+system("rabin -i $a | awk \'{print \$2}\' > $tmpa");
+system("rabin -i $b | awk \'{print \$2}\' > $tmpb");
+my @difflines=`diff -y $tmpa $tmpb`;
+print "==> Imports:\n";
+ow_yeah @difflines;
+
+system("rabin -s $a | awk \'{print \$2}\' > $tmpa");
+system("rabin -s $b | awk \'{print \$2}\' > $tmpb");
+@difflines=`diff -y $tmpa $tmpb`;
+print "==> Symbols:\n";
+ow_yeah @difflines;
+
+domybest;

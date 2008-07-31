@@ -9,7 +9,7 @@ FILES+=bin2tab tab2asm tab2gml move bytediff Display net-tcp net-udp net-icmp
 FILES+=strings-flag syms-pe-flag flag gokolu bin2xml search-asm strings-flag
 FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
 FILES+=boomerang radaredbg flag-sections elf-prg-maps flag-kallsyms spcc-fe
-FILES+=signsrch fds asmcolor
+FILES+=signsrch fds asmcolor symdiff
 
 all:
 	@echo nothing here
