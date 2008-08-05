@@ -1292,7 +1292,7 @@ int radare_go()
 	radare_controlc_end();
 
 	if (config.file == NULL) {
-		eprintf("radare [-cfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
+		help_message_short();
 		return 1;
 	}
 

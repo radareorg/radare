@@ -78,7 +78,7 @@ def seek_history():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["addr"] = w[0].rstrip()
+			t["addr"] = w[0].strip()
 			ret.append(t)
 	return ret
 
@@ -98,8 +98,8 @@ def write_history():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["size"] = long(w[2].rstrip(),10)
-			t["addr"] = long(w[3].rstrip(),16)
+			t["size"] = long(w[2].strip(),10)
+			t["addr"] = long(w[3].strip(),16)
 			# TODO moar nfo here
 			ret.append(t)
 	return ret
@@ -114,9 +114,9 @@ def flag_list():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["addr"] = long(w[1].rstrip(),16)
-			t["size"] = long(w[3].rstrip(),10)
-			t["name"] = w[4].rstrip()
+			t["addr"] = long(w[1].strip(),16)
+			t["size"] = long(w[3].strip(),10)
+			t["name"] = w[4].strip()
 			ret.append(t)
 	return ret
 
@@ -169,19 +169,19 @@ def dis_at(num,addr):
 	return r.cmd("pd %d @ 0x%x"%(num,addr))
 
 def str():
-	return r.cmd("pz").rstrip()
+	return r.cmd("pz").strip()
 
 def str_at(addr):
-	return r.cmd("pz @ %s"%addr).rstrip()
+	return r.cmd("pz @ %s"%addr).strip()
 
 def hex(num):
-	return r.cmd("pX %d"%num).rstrip()
+	return r.cmd("pX %d"%num).strip()
 
 def hex_at(num,addr):
-	return r.cmd("pX %d @ 0x%x"%(num,addr)).rstrip()
+	return r.cmd("pX %d @ 0x%x"%(num,addr)).strip()
 
 def eval_get(key):
-	return r.cmd("eval %s"%key).rstrip()
+	return r.cmd("eval %s"%key).strip()
 
 def eval_set(key,value):
 	r.cmd("eval %s = %s"%(key,value))
@@ -249,9 +249,9 @@ def dbg_backtrace():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["addr"] = w[1].rstrip()
-			t["framesz"] = w[2].rstrip()
-			t["varsz"] = w[3].rstrip()
+			t["addr"]    = long(w[1].strip(),16)
+			t["framesz"] = long(w[2].strip(),10)
+			t["varsz"]   = long(w[3].strip(),10)
 			ret.append(t)
 	return ret
 

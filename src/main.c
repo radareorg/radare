@@ -21,7 +21,12 @@
 #include "main.h"
 #include <getopt.h>
 
-static void help_show_message()
+void help_message_short()
+{
+	eprintf("radare [-cfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
+}
+
+static void help_message()
 {
 	printf(
 	"radare [options] [file]\n"
@@ -55,8 +60,11 @@ int main(int argc, char **argv, char **envp)
 	{
 		switch( c ) {
 #if DEBUGGER
-		case 'd':
-			{
+		case 'd': {
+			if (optind==argc) {
+				help_message_short();
+				return 1;
+			}
 			// XXX : overflowable, must use strcatdup or stgh like that
 			int pid = atoi(argv[optind]);
 			char buf[4096];
@@ -120,8 +128,7 @@ int main(int argc, char **argv, char **envp)
 		case 'V':
 			printf("radare %s %dbit on %s%dbit "TARGET" %s%s\n", VERSION,
 				sizeof(u64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
-				(DEBUGGER)?   "dbg "   :"",
-				(HAVE_VALAC)? "vala"   :"");
+				(DEBUGGER)?   "dbg "   :"", (HAVE_VALAC)? "vala"   :"");
 			return 0;
 		case 'u':
 			config.unksize = 1;
@@ -133,7 +140,7 @@ int main(int argc, char **argv, char **envp)
 			config_eval(optarg);
 			break;
 		case 'h':
-			help_show_message();
+			help_message();
 			return 0;
 		case 'v':
 			config_set("cfg.verbose", "false");
