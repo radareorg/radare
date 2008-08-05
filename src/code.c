@@ -695,6 +695,7 @@ void udis_arch(int arch, int len, int rows)
 				cons_printf("  { 0x%llx-0x%llx %lld(%d) }", foo->from, foo->to, foo->size, myinc);
 				break;
 			case DATA_FOLD_O:
+#if 0
 				cons_strcat("\r                                       \r");
 				if (show_lines)
 					code_lines_print(reflines, seek, 1);
@@ -702,6 +703,7 @@ void udis_arch(int arch, int len, int rows)
 					cons_printf("        ");
 				if (show_offset)
 					cons_strcat("            ");
+#endif
 				for(i=0;i<folder;i++)cons_strcat("  ");
 					cons_strcat("  {\n");
 				CHECK_LINES
@@ -737,13 +739,13 @@ void udis_arch(int arch, int len, int rows)
 			}
 			cons_newline();
 			CHECK_LINES
-			bytes+=idata+1;
+			bytes+=idata;
 			ud_idx+=idata;
 			myinc = 0;
 			continue;
 		}
 		__outofme:
-		if (data_end(seek) == DATA_FOLD_O) {
+		if (data_end(sk) == DATA_FOLD_O) {
 			if (show_lines)
 				code_lines_print(reflines, seek, 1);
 			if (show_offset)

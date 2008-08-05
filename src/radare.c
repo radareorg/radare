@@ -1375,13 +1375,20 @@ int radare_go()
 	}
 
 	if (config.script) {
-		if (strstr(config.script, ".lua")) {
-			char buf[1024];
+		char buf[1024];
+		buf[0]='\0';
+		if (strstr(config.script, ".pl"))
+			snprintf(buf, 1012, "H perl %s", config.script);
+		else
+		if (strstr(config.script, ".py"))
+			snprintf(buf, 1012, "H python %s", config.script);
+		else
+		if (strstr(config.script, ".lua"))
 			snprintf(buf, 1012, "H lua %s", config.script);
+
+		if (buf[0])
 			radare_cmd(buf, 0);
-		} else {
-			radare_interpret(config.script);
-		}
+		else radare_interpret(config.script);
 	}
 
 	config_set("cfg.verbose", t?"true":"false");

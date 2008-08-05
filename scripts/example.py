@@ -16,13 +16,10 @@ eval_set("asm.comments", "false")
 #eval_set("asm.bytes", "false")
 
 flag_space_set("sections")
-list = flag_list()
 
 # enumerate flags
-for i in range (0, len(list)):
-	q = list[i]
-	print "%s"%q["name"]
-	#print "%s"%q["offset"]
+for q in flag_list():
+	print "0x%08x: %s"%(q["addr"], q["name"])
 
 print flag_get("entrypoint")
 print hex(3)
@@ -35,7 +32,7 @@ print asm("mov eax,33")
 
 op = analyze_opcode()
 print "opcode string: %s"%op["opcode"]
-print "opcode size: %s"%op["size"]
+print "opcode size: %d"%op["size"]
 
 dbg_step(1)
 #dbg_bp_set(0x8049412)

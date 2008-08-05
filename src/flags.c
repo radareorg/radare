@@ -94,16 +94,16 @@ flag_t *flag_get_i(int id)
 void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain address
 {
 	int i=0;
+	int cmd_flag = config_get_i("cmd.flag"); /* boolean */
 	struct list_head *pos;
-	//const char *cmd_flag = config_get("cmd.flag");
-
+	
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
 		if (strstr(flag->name, grep)) {
 			cons_printf("%03d 0x%08llx %3lld %s\n",
 				i++, flag->offset, flag->length, flag->name);
-			if (config_get("cmd.flag")) {
+			if (flag->cmd!=NULL && *flag->cmd && cmd_flag){
 				u64 seek = config.seek;
 				radare_seek(flag->offset, SEEK_SET);
 				radare_cmd_raw(flag->cmd, 0);
@@ -111,7 +111,6 @@ void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain addre
 				NEWLINE;
 			}
 		}
-
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
 }

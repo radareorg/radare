@@ -10,18 +10,32 @@ quit()
 
 """
 import r
+import string
 import array
+
+def hex2bin(str):
+	return a2b_hex(str.replace(' ',''))
+
+def bin2hex(binstr):
+	str = lower(b2a_hex(binstr))
+	return str
 
 def __str_to_hash(str):
 	list = str.split("\n")
-	w=[]
+	w = []
 	t = {}
 	for i in range(1, len(list)):
 		w = list[i].split("=")
 		if (len(w)>1):
-			t[w[0].rstrip()] = w[1].rstrip()
+			a = w[0].strip()
+			b = w[1].strip()
+			if (b[0:2] == '0x'):
+				t[a] = long(b,16)
+			elif (b[0]>='0' and b[0]<='9'):
+				t[a] = long(b,10)
+			else:
+				t[a] = b
 	return t
-
 
 def analyze_opcode():
 	return __str_to_hash(r.cmd("ao"))
@@ -84,8 +98,8 @@ def write_history():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["size"]   = w[2].rstrip()
-			t["addr"] = w[3].rstrip()
+			t["size"] = long(w[2].rstrip(),10)
+			t["addr"] = long(w[3].rstrip(),16)
 			# TODO moar nfo here
 			ret.append(t)
 	return ret
@@ -100,9 +114,9 @@ def flag_list():
 		w = list[i].split(" ")
 		if len(w) > 3:
 			t = {}
-			t["addr"] = w[1].rstrip()
-			t["size"]   = w[3].rstrip()
-			t["name"]   = w[4].rstrip()
+			t["addr"] = long(w[1].rstrip(),16)
+			t["size"] = long(w[3].rstrip(),10)
+			t["name"] = w[4].rstrip()
 			ret.append(t)
 	return ret
 

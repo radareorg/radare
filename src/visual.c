@@ -1602,7 +1602,7 @@ inc = 1;
 						sz = (config.ocursor-config.cursor)+1;
 						cu = 0;
 					} else  {
-						sz = config.cursor-config.ocursor;
+						sz = config.cursor-config.ocursor+1;
 						cu = config.ocursor;
 					}
 //printf("SIZE: %d, OFFSET: %llx\n", (int)sz, config.seek+cu);

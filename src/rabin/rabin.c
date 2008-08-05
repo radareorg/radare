@@ -115,6 +115,9 @@ void rabin_show_info(const char *file)
 					printf("e asm.arch = ppc\n"); break;
 				case EM_68K:
 					printf("e asm.arch = m68k\n"); break;
+				case EM_IA_64:
+				case EM_X86_64:
+					printf("e asm.arch = intel64\n"); break;
 				default: printf("e asm.arch = intel\n");
 			}
 		} else {
