@@ -17,7 +17,7 @@ quit()
 
 """
 # Already imported from radare's core
-#import r
+import r
 import string
 import array
 

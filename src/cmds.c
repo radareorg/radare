@@ -134,7 +134,7 @@ command_t commands[] = {
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
 	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
-	COMMAND('.', "[!cmd]|[ file]", "script   interpret a commands script", interpret),
+	COMMAND('.', "[!cmd]|[ file]", ".script  interpret a script (radare, .py, .lua, .pl)", interpret),
 	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next     go to next block (+= block_size)", next),
 	COMMAND('<', "",               "preva    go previous aligned block", prev_align),

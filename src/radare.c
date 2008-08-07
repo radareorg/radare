@@ -769,10 +769,25 @@ int radare_interpret(char *file)
 	int len;
 	char buf[1024];
 	FILE *fd;
-	
+
 	if (file==NULL || file[0]=='\0')
 		return 0;
 	
+	/* check for perl/python/lua/ */
+	buf[0]='\0';
+	if (strstr(file, ".pl"))
+		snprintf(buf, 1012, "H perl %s", config.script);
+	else
+	if (strstr(file, ".py"))
+		snprintf(buf, 1012, "H python %s", config.script);
+	else
+	if (strstr(file, ".lua"))
+		snprintf(buf, 1012, "H lua %s", config.script);
+
+	if (buf[0])
+		return radare_cmd(buf, 0);
+
+	/* failover to simple radare script */
 	fd = fopen(file, "r");
 	if (fd == NULL)
 		return 0;
@@ -1374,22 +1389,8 @@ int radare_go()
 		radare_cmd("s eip", 0);
 	}
 
-	if (config.script) {
-		char buf[1024];
-		buf[0]='\0';
-		if (strstr(config.script, ".pl"))
-			snprintf(buf, 1012, "H perl %s", config.script);
-		else
-		if (strstr(config.script, ".py"))
-			snprintf(buf, 1012, "H python %s", config.script);
-		else
-		if (strstr(config.script, ".lua"))
-			snprintf(buf, 1012, "H lua %s", config.script);
-
-		if (buf[0])
-			radare_cmd(buf, 0);
-		else radare_interpret(config.script);
-	}
+	if (config.script)
+		radare_interpret(config.script);
 
 	config_set("cfg.verbose", t?"true":"false");
 
