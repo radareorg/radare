@@ -1,4 +1,11 @@
-"""
+"""python api for it
+
+This is the API provided with radare to use python inside radare as
+scripting language for extending its features or automatize some
+tasks analyzing code, patching binaries or debugging programs.
+
+Here's a small example of use:
+
 from radare import *
 
 seek(0x1024)
@@ -9,16 +16,46 @@ print hex(3)
 quit()
 
 """
-import r
+# Already imported from radare's core
+#import r
 import string
 import array
 
 def hex2bin(str):
+	"""
+	Converts an ascii-hexpair based string into a binary array of bytes
+	"""
 	return a2b_hex(str.replace(' ',''))
 
 def bin2hex(binstr):
+	"""
+	Converts a binary array of bytes into an ascii-hexpair based string
+	"""
 	str = lower(b2a_hex(binstr))
 	return str
+
+# TODO: skip commented lines
+def slurp_hexpair(file):
+	"""
+	Returns the hexpair string contained in a hexpair-based file
+	in a single line
+	"""
+	fd = open(file, 'r')
+	str = join(fd.readlines(),'\n')
+	fd.close()
+	return str
+
+# slurp a raw file or a symbol, returning the hexpair string
+def slurp(file):
+	"""
+	Returns the hexpair-based representation of a binary file
+	"""
+	fd = open(file, 'r')
+	str = bin2hex(fd.read())
+	fd.close()
+	return str
+
+#def slurp_symbol(file,symbol):
 
 def __str_to_hash(str):
 	list = str.split("\n")
@@ -37,11 +74,23 @@ def __str_to_hash(str):
 				t[a] = b
 	return t
 
-def analyze_opcode():
-	return __str_to_hash(r.cmd("ao"))
+def analyze_opcode(addr=None):
+	"""
+	Returns a hashtable containing the information of the analysis of the opcode in the current seek.
+	This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
+	"""
+	if addr == None:
+		return __str_to_hash(r.cmd("ao"))
+	return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
 
-def analyze_block():
-	return __str_to_hash(r.cmd("ab"))
+def analyze_block(addr=None):
+	"""
+	Returns a hashtable containing the information of the analysis of the basic block found in the current seek.
+	This is: 'offset', 'type', 'size', 'call#', 'n_calls', 'true', 'false' and 'bytes'
+	"""
+	if addr == None:
+		return __str_to_hash(r.cmd("ab"))
+	return __str_to_hash(r.cmd("ab @ 0x%x"%addr))
 
 def endian_set(big):
 	r.cmd("eval cfg.endian=%d"%big)
@@ -160,18 +209,33 @@ def paste_at(addr):
 	r.cmd("yy @ 0x%x"%addr)
 
 def asm(opcode):
+	"""
+	Returns the hexpair strin representation of the assembled opcode
+	"""
 	return r.cmd("!rasm '%s'"%opcode)
 
 def dis(num):
+	"""
+	Disassemble 'num' opcodes from the current seek and returns the output
+	"""
 	return r.cmd("pd %d"%num)
 
 def dis_at(num,addr):
+	"""
+	Disassemble 'num' opcodes at 'addr' and returns the output
+	"""
 	return r.cmd("pd %d @ 0x%x"%(num,addr))
 
 def str():
+	"""
+	Returns a zero-terminated string found in current seek
+	"""
 	return r.cmd("pz").strip()
 
 def str_at(addr):
+	"""
+	Returns a zero-terminated string found in 'addr'
+	"""
 	return r.cmd("pz @ %s"%addr).strip()
 
 def hex(num):

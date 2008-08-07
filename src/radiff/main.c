@@ -33,6 +33,8 @@ void radiff_help()
 	printf("  -d   use gnu diff as backend (default)\n");
 	printf("  -e   use erg0ts bdiff (c++) as backend\n");
 	printf("  -r   use rdb diff (code analysis diff)\n");
+	printf("  -s   use rsc symdiff\n");
+	printf("  -S   use rsc symbytediff\n");
 //	printf("  -i   converts a source idc file to a rdb (radare database)\n");
 	printf("  -p   binpatching (TODO)\n");
 	exit(1);
@@ -75,6 +77,20 @@ int main_rdb_diff(char *file0, char *file1)
 	return rdb_diff(p0, p1, 0);
 }
 
+int radiff_symdiff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "rsc symdiff %s %s", a, b);
+	return system(buf);
+}
+
+int radiff_symbytediff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "rsc symbytediff %s %s", a, b);
+	return system(buf);
+}
+
 int radiff_bindiff(const char *a, const char *b)
 {
 	char buf[8096];
@@ -114,9 +130,6 @@ int main(int argc, char **argv)
 		radiff_help();
 
 	switch(action) {
-	case 0:
-		radiff_help();
-		return 1;
 	case 'e': // erg0t c++ bin diff
 		return radiff_ergodiff(argv[optind], argv[optind+1]);
 	case 'd': // gnu diff
@@ -125,7 +138,12 @@ int main(int argc, char **argv)
 		return radiff_bytediff(argv[optind], argv[optind+1]);
 	case 'r': // rdbdiff
 		return main_rdb_diff(argv[optind], argv[optind+1]);
+	case 's':
+		return radiff_symdiff(argv[optind], argv[optind+1]);
+	case 'S':
+		return radiff_symbytediff(argv[optind], argv[optind+1]);
 	}
 
-	return 0;
+	radiff_help();
+	return 1;
 }

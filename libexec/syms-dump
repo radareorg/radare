@@ -10,7 +10,9 @@ my $file=$ARGV[0];
 my $limit=$ARGV[1];
 my $delta=$ARGV[2];
 my $offset=0;
-my $count=int($limit)-1; # byte counter
+my $count=int($limit); # byte counter
+$limit=-1 if ($limit<1);
+print $count;
 
 if ( $file eq "") {
 	print "Usage: symdump [elf] [limit-bytes] [delta-offset]\n";

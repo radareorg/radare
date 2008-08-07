@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+#
+# Look for symbol-byte-level differences between two elfs
+# 
+# pancake <youterm.com>
+#
+
+my $a=$ARGV[0];
+my $b=$ARGV[1];
+
+die "Usage: rsc symbytediff [a-file] [b-file]\n"
+	if ($a eq "" or $b eq "" or $a eq "-h");
+
+sub domybest {
+	unlink $tmpa;
+	unlink $tmpb;
+	exit 0;
+}
+
+sub ow_yeah {
+    foreach (@_) {
+	print "$1\n" if(/^\+([^:]+)/ and !/^\+\+/);
+    }
+}
+
+$SIG{INT}=\&domybest;
+
+my $tmpa="/tmp/.a.$$.".int rand(0xfef);
+my $tmpb="/tmp/.b.$$.".int rand(0xefe);
+
+system("rsc syms-dump $a > $tmpa");
+system("rsc syms-dump $b > $tmpb");
+my @difflines=`diff -u $tmpa $tmpb`;
+ow_yeah @difflines;
+
+domybest;
