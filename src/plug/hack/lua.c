@@ -26,8 +26,12 @@
 #include "../../main.h"
 #include "../../dbg/debug.h"
 
+/* extern */
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
+
+/* static stuff */
+static lua_State *L;
 static char *(*rs)(const char *cmd) = NULL;
 static int (*rs_cmd)(char *cmd, int log) = NULL;
 
@@ -41,14 +45,6 @@ static int report (lua_State *L, int status) {
 	}
 	return status;
 }
-
-#if 0
-static int l_num (lua_State *L) {
-	double d = lua_tonumber(L, 1);  /* get argument */
-	lua_pushnumber(L, d+1);  /* push result */
-	return 1;  /* number of results */
-}
-#endif
 
 static int lua_cmd_str (lua_State *L) {
 	char *str;
@@ -66,27 +62,6 @@ static int lua_cmd (lua_State *L) {
 	return 1;  /* number of results */
 }
 
-static lua_State *L;
-
-#if 0
-static char *myslurp(const char *file)
-{
-	char *ret;
-	u64 sz;
-	FILE *fd = fopen(file, "r");
-	if (fd == NULL)
-		return NULL;
-	fseek(fd, 0,SEEK_END);
-	sz = ftell(fd);
-	fseek(fd, 0,SEEK_SET);
-	ret = (char *)malloc(sz+1);
-	fread(ret, sz, 1, fd);
-	ret[sz]='\0';
-	fclose(fd);
-	return ret;
-}
-
-#endif
 
 static int slurp_lua(char *file)
 {

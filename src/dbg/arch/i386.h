@@ -16,11 +16,9 @@
 #define __UNIX__ 1
 #endif
 
-#if __CYGWIN__
-/* no def for cygwin? ..strange uh */
-#else
+#undef offsetof
 #define offsetof(TYPE, MEMBER) ((unsigned long) &((TYPE *)0)->MEMBER)
-#endif
+
 void dr_list();
 void dr_init();
 

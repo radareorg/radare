@@ -244,30 +244,42 @@ CMD_DECL(trace)
 	return 0;
 }
 
-void convert_bytes()
+void convert_bytes(int fmt)
 {
 	int c;
-	u64 off;
-	int fmt;
-	cons_printf(
-	"c - code\n"
-	"d - data bytes\n"
-	"s - string\n");
-	cons_flush();
-	c = cons_readchar();
-	if (c != 'c' && c!='d' && c!='s')
-		return;
-	fmt = FMT_HEXB;
-	switch(c) {
-	case 'c': fmt = FMT_UDIS; break;
-	case 'd': fmt = FMT_HEXB; break;
-	case 's': fmt = FMT_ASC0; break;
+	u64 off, len;
+	if (fmt == -1) {
+		cons_printf(
+		"c - code\n"
+		"d - data bytes\n"
+		"s - string\n"
+		"< - close folder\n"
+		"> - open folder\n");
+		cons_flush();
+		c = cons_readchar();
+		if (c != 'c' && c!='d' && c!='s')
+			return;
+		fmt = FMT_HEXB;
+		switch(c) {
+		case 'c': fmt = DATA_CODE; break;
+		case 'd': fmt = DATA_HEX; break;
+		case 's': fmt = DATA_STR; break;
+		case '<': fmt = DATA_FOLD_C; break;
+		case '>': fmt = DATA_FOLD_O; break;
+		}
 	}
-	//data_add((u64)config.seek+config.cursor, DATA_FOLD_C);
-	off = config.seek+(config.cursor_mode?config.cursor:0);
+	if (config.cursor > config.ocursor+1) {
+		len = config.cursor-config.ocursor+1;
+		off = config.ocursor;
+	} else {
+		len = config.ocursor-config.cursor+1;
+		off = config.cursor;
+	}
+	off += config.seek;
+
 	data_add(off, fmt);
 	if (config.cursor_mode)
-		data_set_len(off, (u64)(config.cursor-config.ocursor+1));
+		data_set_len(off, len);
 	cons_clear();
 }
 
@@ -1407,7 +1419,7 @@ CMD_DECL(visual)
 			press_any_key();
 			break;
 		case 'd':
-			convert_bytes();
+			convert_bytes(-1);
 			break;
 		case 'C':
 			config.color^=1;
@@ -1593,6 +1605,8 @@ inc = 1;
 						cons_clear();
 					}
 				} else {
+					convert_bytes(DATA_FOLD_C);
+#if 0
 					u64 sz;
 					// create new closed folder containing selected bytes
 					u64 cu = config.ocursor; //+config.baddr;
@@ -1611,6 +1625,7 @@ inc = 1;
 					data_add(config.seek+cu, DATA_FOLD_C);
 					data_set_len(config.seek+cu, (u64)sz);
 					cons_clear();
+#endif
 				}
 			} else {
 				config.seek-= config.block_size;

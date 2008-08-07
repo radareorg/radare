@@ -18,6 +18,8 @@
  *
  */
 
+/* THIS PLUGIS IS BROKEN! */
+
 #include "plugin.h"
 #include "main.h"
 #include <radare.h>
@@ -31,7 +33,7 @@ extern void xs_init (pTHX);
 static char *(*rs)(const char *cmd);
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
-void perl_cmd(char *input);
+void perl_hack_cmd(char *input);
 void eperl_init();
 void eperl_destroy();
 
@@ -109,7 +111,8 @@ void eperl_destroy()
 	my_perl = NULL;
 }
 
-void perl_cmd(char *input)
+/* TODO: handle multi-line */
+void perl_hack_cmd(char *input)
 {
 	char str[1025];
 	char *ptr ;
@@ -132,7 +135,7 @@ void perl_cmd(char *input)
 
 	printf("perl> ");
 	fflush(stdout);
-	fgets(str, 1024, stdin);
+	fgets(str, 1023, stdin);
 	ptr = strdup(str);
 
 	perl_parse(my_perl, xs_init, 1, ptr, (char **)NULL);
@@ -145,7 +148,7 @@ int radare_plugin_type = PLUGIN_TYPE_HACK;
 struct plugin_hack_t radare_plugin = {
 	.name = "perl",
 	.desc = "perl plugin",
-	.callback = &perl_cmd
+	.callback = &perl_hack_cmd
 };
 
-main() { printf("i'm a plugin!\n"); }
+//main() { printf("i'm a plugin!\n"); }

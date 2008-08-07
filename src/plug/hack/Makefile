@@ -14,7 +14,6 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 CFLAGS+=-I../.. -g
 
 all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO}
-
 #perl.${SO}
 
 hello.${SO}:
@@ -29,8 +28,8 @@ scriptedit.${SO}:
 python.${SO}:
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO}
 
-#perl.${SO}:
-#	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
+perl.${SO}:
+	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}: lua.o
