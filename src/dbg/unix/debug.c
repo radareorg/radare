@@ -102,7 +102,7 @@ int debug_os_kill(int pid, int sig)
 
 int debug_ktrace()
 {
-#if __OpenBSD__
+#if __OpenBSD__ || __FreeBSD__
 	eprintf("No fktrace for OpenBSD. Needs to be implemented with ktrace(2)\n");
 #else
 	int sta, ops, trp, fd, ret;

@@ -7,6 +7,8 @@
 
 ===========================================================
 
+rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
+
 // TODO: store data and show (flag.data) in last_print_format
 
 Debugger:

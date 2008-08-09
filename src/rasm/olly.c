@@ -25,7 +25,6 @@
 #define STRICT
 #define MAINPROG
 
-
 #if RADARE_CORE
 #include "arch/x86/ollyasm/disasm.h"
 #else

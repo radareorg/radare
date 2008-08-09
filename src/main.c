@@ -39,7 +39,7 @@ static void help_message()
 	"  -d [program|pid] debug a program. same as --args in gdb\n"
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
-	"  -c               same as -e scr.color=true\n"
+	//"  -c               same as -e scr.color=true\n"
 	"  -w               open file in read-write mode\n"
 	"  -x               dump block in hexa and exit\n"
 	"  -n               do not load ~/.radarerc and ./radarerc\n"
@@ -99,9 +99,11 @@ int main(int argc, char **argv, char **envp)
 		case 'f':
 			config.block_size = 0;
 			break;
+#if 0
 		case 'c':
 			config_set("scr.color", "true");
 			break;
+#endif
 		case 'n':
 			config.noscript = 1;
 			break;

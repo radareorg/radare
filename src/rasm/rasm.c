@@ -212,7 +212,7 @@ int rasm_disasm(const char *arch, u64 *offset, const char *str, unsigned char *d
 	/* TODO: parse hexpairs and disassemble */
 	//sz = strlen(str)/2;
 	sz = count_bytes(str);
-	snprintf(buf, 4095, "echo 'wx %s && pd' | radare -e asm.syntax=0 -e asm.bytes=0 -e asm.offset=0 -e asm.flags=0 -e asm.lines=0 -nvw malloc://%d", str, sz);
+	snprintf(buf, 4095, "echo 'wx %s && pd' | radare -e asm.arch=%s -e asm.syntax=0 -e asm.bytes=0 -e asm.offset=0 -e asm.flags=0 -e asm.lines=0 -nvw malloc://%d", str, arch, sz);
 	system(buf);
 	return 0;
 }
