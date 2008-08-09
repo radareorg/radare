@@ -5,6 +5,7 @@
 # author: pancake <@youterm.com>
 #
 
+my $inrad = defined($ENV{FILE});
 my @path = split(/:/,$ENV{LISTPATH});
 
 sub resolve_file {
@@ -32,13 +33,17 @@ if ($arg) {
 		$file = $arg;
 		$line = shift;
 		if ($line == 0) {
-			die "No line specified\n";
+			if ($inrad) {
+				exit(0);
+			} else {
+				die "No line specified\n";
+			}
 		}
 	}
 	$file = resolve_file($file)
 		unless(-f "$file");
-print "$file $line\n";
-	@lines=split(/\n/,`nl -ba "$file"`);
+#print "$file $line\n";
+	@lines = split(/\n/,`nl -ba "$file"`);
 
 	for my $myline (@lines) {
 		$myline=~/([^\t]*)/;
@@ -59,5 +64,6 @@ print "$file $line\n";
 	}
 } else {
 	die("Usage: rsc list <file>:<line>\n".
-	    "LISTPATH is used to find sources in a colon separated string\n");
+	    "LISTPATH is used to find sources in a colon separated string\n")
+		if ($inrad);
 }

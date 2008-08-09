@@ -1787,3 +1787,45 @@ int debug_loop(char *addr_str)
 
 	return ret;
 }
+
+/* hacky util for dumping pages without knowing anything about map pages */
+int debug_dumpall(const char *ptr)
+{
+	char file[128];
+	FILE *fd = NULL;
+	int ret,i=0;
+	char buf[4096];
+	u64 from=config.seek;
+	u64 to = config.limit;
+	if (to == -1)
+		to = 0xffffffff;
+	from &= 0xfffffff0; // align hack
+	cons_printf("Dumping from 0x%08llx to 0x%08llx...\n", from, to);
+
+	while(1) {
+		ret = debug_read_at(ps.pid, buf, 4096, from);
+		from += 4096;
+		if (0==(i++%30)) printf("0x%08llx: %d    \r", from, ret);
+		if (ret<0) {
+			if (fd != NULL) {
+				fclose(fd);
+				fd = NULL;
+			}
+			continue;
+		}
+		if (fd == NULL) {
+			sprintf(file, "0x%08llx.dall", from);
+			printf("\nNew section found at 0x%08llx\n", from);
+			i = 0;
+			fd = fopen(file, "w");
+			if (fd == NULL) {
+				eprintf("Cannot create '%s'\n", file);
+				break;
+			}
+		}
+		fwrite(buf, ret, 1, fd);
+	}
+	if (fd != NULL)
+		fclose(fd);
+	return 0;
+}

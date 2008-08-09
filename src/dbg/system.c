@@ -174,6 +174,7 @@ static struct commads_t {
 	CB_CMD( "signal"   , CB_SPACE    , debug_signal )       , 
 	CB_CMD( "contsc"   , CB_NORMAL   , debug_contsc )       , 
 	CB_CMD( "contfork" , CB_NOARGS   , debug_contfork )     , 
+	CB_CMD( "dall"     , CB_NOARGS   , debug_dumpall)     , 
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 

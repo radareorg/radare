@@ -8,6 +8,7 @@
 
 int debug_reg(const char *arg);
 void debug_msg();
+int debug_dumpall(const char *arg);
 void debug_msg_set(const char *format, ...);
 // bp.c
 int debug_bp(const char *addr);

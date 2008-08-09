@@ -1,4 +1,5 @@
 include ../config.mk
+DESTDIR?=/
 
 FILES=add asm bdcolor bin2txt dasm elf-base-addr elf-dump-header dbg-report
 FILES+=elf-entry-point elf-flag-header elf-quad-word-shell findrawsyms path
@@ -8,8 +9,8 @@ FILES+=syms-flag syms-xrefs elf-trace write xtrace ffftoneg core gtkdialog
 FILES+=bin2tab tab2asm tab2gml move bytediff Display net-tcp net-udp net-icmp
 FILES+=strings-flag syms-pe-flag flag gokolu bin2xml search-asm strings-flag
 FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
-FILES+=boomerang radaredbg flag-sections elf-prg-maps flag-kallsyms spcc-fe
-FILES+=signsrch fds asmcolor symdiff
+FILES+=boomerang flag-sections elf-prg-maps flag-kallsyms spcc-fe asmcolor
+FILES+=signsrch fds symdiff
 
 all:
 	@echo nothing here
@@ -21,11 +22,11 @@ miss:
 	@perl miss.pl
 
 install:
-	${INSTALL_DIR} ${DATADIR}
-	${INSTALL_DIR} ${DATADIR}/radare
-	${INSTALL_DIR} ${DATADIR}/radare/rsc
-	rm -rf ${DATADIR}/radare/rsc/*
-	for A in ${FILES} ; do cp $$A ${DATADIR}/radare/rsc ; done
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare/rsc
+	rm -rf ${DESTDIR}/${DATADIR}/radare/rsc/*
+	for A in ${FILES} ; do cp $$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 
 files:
 	@echo ${FILES}
