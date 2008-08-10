@@ -1028,7 +1028,7 @@ CMD_DECL(visual)
 		visual_draw_screen();
 
 		if (last_print_format == FMT_UDIS) {
-			const char *follow = config_get("asm.follow");	
+			const char *follow = config_get("asm.follow");
 			if (follow&&follow[0]) {
 				u64 addr = get_offset(follow);
 				if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
@@ -1065,7 +1065,6 @@ CMD_DECL(visual)
 				}
 			}
 #endif
-
 			switch(key) {
 			case 9: // TAB
 				if (last_print_format == FMT_DISAS
@@ -1159,7 +1158,7 @@ CMD_DECL(visual)
 					cons_clear();
 					break;
 				case 0x44: //'h':
-					if (config.cursor--<1)
+					if (--config.cursor<0)
 						config.cursor = 0;
 					break;
 				case 0x42: //'j':
@@ -1685,9 +1684,9 @@ inc = 1;
 		case '+':
 			if (config.cursor_mode) {
 				char buf[128];
-				int ch;
+				int c, ch;
 				if (config.cursor>=0 && config.cursor< config.block_size) {
-					int c = config.cursor;
+					c = config.cursor;
 					ch = config.block[config.cursor];
 					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(++ch), config.seek); //+config.cursor);
 					radare_cmd(buf, 0);
@@ -1701,10 +1700,10 @@ inc = 1;
 		case '-':
 			if (config.cursor_mode) {
 				char buf[128];
-				int ch;
+				int c, ch;
 				if (config.cursor>=0 && config.cursor< config.block_size) {
-					int c = config.cursor;
-					 ch = config.block[config.cursor];
+					c = config.cursor;
+					ch = config.block[config.cursor];
 					eprintf("cursor %d\n", config.cursor);
 					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(--ch), config.seek); //+config.cursor);
 					radare_cmd(buf, 0);

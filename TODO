@@ -7,30 +7,38 @@
 
 ===========================================================
 
+BSD imports with dietelf doesnt works well
+
+* Comments without baddr doesnt works
+
 rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
  - avoid \n, avoid \r
 
-* if block size > file size -> bs = file size or so... but not reset the old one
+* deprecate asm.follow !!!
 
-* Quan block size > seek+size el seek enrera no va be :OOOO ('h' key f.ex)
+* if block size > file size -> bs = file size or so... but not reset the old one
+  - When block_size > seek+size in Visual negative seeks doesnt works !!! ZOMFG
 
 * define ranges of the file to analize (.text by default...)
+  - autodetected using !dall algorithm
   - but if its a static binary ...would be cool to define a way
     to only analyze the calls inside a static bin
+
+* entry vs entrypoint flag :O
 
 * analize previous pushes or stack accesses before a call
   to a function (identify function arguments)
   - not only by the ones accessed in the code)
 
-* Write process dumper without !maps huhuhu
-
-* Comments without baddr doesnt works
-
 * asm.stackpointer (show stack pointer value like in IDA)
+
+* !bpc -> execute command when hitting breakpoint
 
 // TODO: store data and show (flag.data) in last_print_format
 
 Debugger:
+	* fix software breakpoints
+ 	  - after restore !set eip = eip -1 && !bp -eip
 	* load libraries on the child process
 	* !contall
 	* !cont <pid> ???
@@ -95,7 +103,6 @@ Grava:
 	3d00800000      cmp eax, 0x8000
 	833d0cc4050803  cmp dword [0x805c40c], 0x3
 	bf0d9b0508      mov edi, 0x8059b0d
-
 
 
 

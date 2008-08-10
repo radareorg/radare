@@ -1797,12 +1797,13 @@ int debug_dumpall(const char *ptr)
 	char buf[4096];
 	u64 from=config.seek;
 	u64 to = config.limit;
-	if (to == -1)
+	if (to <= 0)
 		to = 0xffffffff;
 	from &= 0xfffffff0; // align hack
 	cons_printf("Dumping from 0x%08llx to 0x%08llx...\n", from, to);
 
-	while(1) {
+	radare_controlc();
+	while(!config.interrupted) {
 		ret = debug_read_at(ps.pid, buf, 4096, from);
 		from += 4096;
 		if (0==(i++%30)) printf("0x%08llx: %d    \r", from, ret);
@@ -1825,7 +1826,10 @@ int debug_dumpall(const char *ptr)
 		}
 		fwrite(buf, ret, 1, fd);
 	}
+	if (config.interrupted)
+		eprintf("Dump interrupted at 0x%08llx\n", from);
 	if (fd != NULL)
 		fclose(fd);
+	radare_controlc_end();
 	return 0;
 }

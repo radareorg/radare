@@ -526,6 +526,8 @@ void config_lock(int l)
 
 void config_init(int first)
 {
+	char buf[1024];
+	const char *ptr;
 	struct config_node_t *node;
 
 	if (first) {
@@ -655,7 +657,6 @@ void config_init(int first)
 	config_set("child.chdir", ".");
 	config_set("child.chroot", "/");
 	config_set("child.setuid", "");
-
 #if __mips__
 	config_set("dbg.fpregs", "true");
 #else
@@ -664,7 +665,7 @@ void config_init(int first)
 	config_set("dbg.forks", "false"); // stop debugger in any fork or clone
 	config_set("dbg.controlc", "true"); // stop debugger if ^C is pressed
 	config_set("dbg.syms", "true");
-	config_set("dbg.dwarf", "true");
+	config_set("dbg.dwarf", "false");
 	config_set("dbg.maps", "true");
 	config_set("dbg.sections", "true");
 	config_set("dbg.strings", "false");
@@ -683,10 +684,9 @@ void config_init(int first)
 	config_set("dbg.bptype", "hard"); // hardware breakpoints by default // ALSO BSD
 	config_set("dbg.bep", "loader"); // loader, main
 	config_set("dir.home", getenv("HOME"));
-{
+
 	/* dir.monitor */
-	char buf[1024];
-	const char *ptr = getenv("MONITORPATH");
+	ptr = getenv("MONITORPATH");
 	if (ptr == NULL) {
 		sprintf(buf, "%s/.radare/monitor/", getenv("HOME"));
 		ptr = (const char *)&buf;
@@ -700,13 +700,10 @@ void config_init(int first)
 		ptr = buf;
 	}
 	config_set("dir.spcc", ptr);
-}
+
 	config_set("dir.plugins", LIBDIR"/radare/");
-	{
-		char buf[1024];
-		snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
-		config_set("dir.project", buf); // ~/.radare/rdb/
-	}
+	snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
+	config_set("dir.project", buf); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.color", "magic");
 	config_set("graph.split", "false"); // split blocks // SHOULD BE TRUE, but true algo is buggy

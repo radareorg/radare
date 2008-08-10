@@ -104,6 +104,7 @@ int help_message()
 	cons_printf(" Other\n");
 	TITLE_END
 	cons_printf("  dump/restore [N]   dump/restore pages (and registers) to/from disk\n");
+	cons_printf("  dall               dump from current seek to cfg.limit all available bytes (no !maps required)\n");
 	cons_printf("  core               dump core of the process\n");
 	cons_printf("  hack [N]           Make a hack.\n");
 	cons_printf("  inject [bin]       inject code inside child process (UNSTABLE)\n");
@@ -207,6 +208,7 @@ int debug_reg(const char *arg)
 			}
 		}
 	} else debug_registers(0);
+	return 0;
 }
 
 int debug_system(const char *command)

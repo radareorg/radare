@@ -356,10 +356,8 @@ int radare_cmd_raw(const char *tmp, int log)
 
  	eof = input+strlen(input)-1;
 
-	if (input[0]!='%') {
-		next = strstr(input, "&&");
-		if (next) next[0]='\0';
-	}
+	next = strstr(input, "&&");
+	if (next) next[0]='\0';
 
 	/* interpret stdout of a process executed */
 	if (input[0]=='.') {
@@ -624,141 +622,154 @@ char *radare_cmd_str(const char *cmd)
 	return buf;
 }
 
-int radare_cmd(char *command, int log)
+/* default debugger interface */
+void radare_nullcmd()
+{
+	char buf[128];
+	const char *ptr;
+	int p,i;
+
+	if (!config.debug)
+		return;
+
+	radare_read(0);
+	ptr = config_get("cmd.visual");
+	if (!strnull(ptr)) {
+		char *ptrcmd = strdup(ptr);
+		radare_cmd_raw(ptrcmd, 0);
+		free(ptrcmd);
+	}
+	config_set("cfg.verbose", "false");
+	p = last_print_format;
+
+	/* NOT REQUIRED update flag registers NOT REQUIRED */
+	//radare_cmd(":.!regs*", 0);
+
+	if (config_get("dbg.stack")) {
+		C cons_printf(C_RED"Stack:\n"C_RESET);
+		else cons_printf("Stack:\n");
+		sprintf(buf, "%spx %d @ %s",
+			(config_get("dbg.vstack"))?":":"",
+			(int)config_get_i("dbg.stacksize"),
+			config_get("dbg.stackreg"));
+		radare_cmd(buf, 0); //":px 66@esp", 0);
+	}
+
+	if (config_get("dbg.regs")) {
+		C cons_printf(C_RED"Registers:\n"C_RESET);
+		else cons_printf("Registers:\n");
+		radare_cmd("!regs", 0);
+	}
+
+	if (config_get("dbg.fpregs")) {
+		C cons_printf(C_RED"Floating registers:\n"C_RESET);
+		else cons_printf("Floating registers:\n");
+		radare_cmd("!fpregs", 0);
+	}
+
+	//config.verbose = 1; //t;
+	config_set("cfg.verbose", "true");
+	if (config_get("dbg.bt")) {
+		if (config_get("dbg.fullbt")) {
+			C cons_printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
+			else cons_printf("Full Backtrace:\n");
+			radare_cmd(":!bt", 0);
+		} else {
+			C cons_printf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
+			else cons_printf("User Backtrace:\n");
+			radare_cmd("!bt", 0);
+		}
+	}
+
+	C cons_printf(C_RED"Disassembly:\n"C_RESET);
+	else cons_printf("Disassembly:\n");
+	if (config_get("dbg.dwarf"))
+		radare_cmd("pR @ eip",0);
+	{
+		u64 pc = flag_get_addr("eip");
+		if (pc<config.seek || pc > config.seek+config.block_size)
+			radare_seek(pc, SEEK_SET);
+	}
+	config_set("cfg.verbose", "true");
+	config.verbose=1;
+	/* TODO: chose pd or pD by eval */
+	radare_cmd("pD", 0);
+#if 0
+	if (config.visual) {
+		config.lines=-12;
+		radare_cmd("pD", 0);
+		config.lines = 0;
+	//radare_cmd("pd 100", 0);
+#endif
+
+	config_set("cfg.verbose", "1");
+	last_print_format = p;
+}
+
+int radare_cmd(char *input, int log)
 {
 	const char *ptr;
 	int repeat;
 	int p,i;
 	char buf[128];
+	char *next = NULL;
 	int ret = 0;
 
 	/* silently skip lines begginging with 0 */
-	if(command==NULL || (log&&command==NULL) || (command&&command[0]=='0'))
+	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
+
+	next = strstr(input, "&&");
+	if (next) next[0]='\0';
 
 // XXX not handled !?!?
-	if (command[0]=='!'&&command[1]=='!') {
-		return radare_system(command+2);
-	}
+	if (input[0]=='!'&&input[1]=='!')
+		return radare_system(input+2);
 
-	// bypass radare commandline hack ;D
-	if (!memcmp(command, "[0x", 3)) {
-		char *foo = strchr(command, '>');
+	// bypass radare inputline hack ;D
+	if (!memcmp(input, "[0x", 3)) {
+		char *foo = strchr(input, '>');
 		if (foo)
-			command = foo+2;
+			input = foo+2;
 	}
 
-	// TODO : move to a dbg specific func outside here
-	if (config.debug && command && command[0]=='\0') {
-		radare_read(0);
-		ptr = config_get("cmd.visual");
-		if (!strnull(ptr)) {
-			char *ptrcmd = strdup(ptr);
-			radare_cmd_raw(ptrcmd, 0);
-			free(ptrcmd);
-		}
-		config_set("cfg.verbose", "false");
-		p = last_print_format;
-
-
-		/* NOT REQUIRED update flag registers NOT REQUIRED */
-		//radare_cmd(":.!regs*", 0);
-
-		if (config_get("dbg.stack")) {
-			C cons_printf(C_RED"Stack:\n"C_RESET);
-			else cons_printf("Stack:\n");
-			sprintf(buf, "%spx %d @ %s",
-				(config_get("dbg.vstack"))?":":"",
-				(int)config_get_i("dbg.stacksize"),
-				config_get("dbg.stackreg"));
-			radare_cmd(buf, 0); //":px 66@esp", 0);
-		}
-
-
-		if (config_get("dbg.regs")) {
-			C cons_printf(C_RED"Registers:\n"C_RESET);
-			else cons_printf("Registers:\n");
-			radare_cmd("!regs", 0);
-		}
-
-		if (config_get("dbg.fpregs")) {
-			C cons_printf(C_RED"Floating registers:\n"C_RESET);
-			else cons_printf("Floating registers:\n");
-			radare_cmd("!fpregs", 0);
-		}
-
-		//config.verbose = 1; //t;
-		config_set("cfg.verbose", "true");
-		if (config_get("dbg.bt")) {
-			if (config_get("dbg.fullbt")) {
-				C cons_printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
-				else cons_printf("Full Backtrace:\n");
-				radare_cmd(":!bt", 0);
-			} else {
-				C cons_printf(C_RED"User Backtrace:\n" C_YELLOW C_RESET);
-				else cons_printf("User Backtrace:\n");
-				radare_cmd("!bt", 0);
-			}
-		}
-
-		C cons_printf(C_RED"Disassembly:\n"C_RESET);
-		else cons_printf("Disassembly:\n");
-		if (config_get("dbg.dwarf"))
-			radare_cmd("pR @ eip",0);
-		{
-			u64 pc = flag_get_addr("eip");
-			if (pc<config.seek || pc > config.seek+config.block_size)
-				radare_seek(pc, SEEK_SET);
-		}
-		config_set("cfg.verbose", "true");
-		config.verbose=1;
-		/* TODO: chose pd or pD by eval */
-		radare_cmd("pD", 0);
-#if 0
-		if (config.visual) {
-			config.lines=-12;
-			radare_cmd("pD", 0);
-			config.lines = 0;
-		//radare_cmd("pd 100", 0);
-#endif
-
-		config_set("cfg.verbose", "1");
-		last_print_format = p;
-		//cons_flush();
+	if (input && input[0]=='\0') {
+		radare_nullcmd();
 		return 0;
 	}
 
-#if 0
-// XXX to be moved to dietline.c
-	/* history stuff */
-	if (command[0]=='!') {
-		p = atoi(command+1);
-		if (command[0]=='0'||p>0)
-			return radare_cmd(hist_get_i(p), 0);
-	}
-// XXX ---
-#endif
 	if (log)
-		dl_hist_add(command);
+		dl_hist_add(input);
 
 	if (config.skip) return 0;
 
-	if (command[0] == ':') {
+	if (input[0] == ':') {
 		config.verbose = ((int)config_get("cfg.verbose"))^1;
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
-		command = command+1;
+		input = input+1;
 	}
 
 	/* repeat stuff */
-	if (command)
-		repeat = atoi(command);
+	if (input)
+		repeat = atoi(input);
 	if (repeat<1)
 		repeat = 1;
-	for(;command&&(command[0]>='0'&&command[0]<='9');)
-		command=command+1;
+	for(;input&&(input[0]>='0'&&input[0]<='9');)
+		input=input+1;
 
 	for(i=0;i<repeat;i++)
-		ret = radare_cmd_raw(command, log);
+		ret = radare_cmd_raw(input, log);
+
+	if (next && next[1]=='&') {
+		int ret;
+		next[0] = '&';
+		for(next=next+2;*next==' ';next=next+1);
+
+		//free(oinput);
+		ret = radare_cmd(next, 0);
+	//	cons_flush();
+		return ret; 
+	}
 
 	return ret;
 }

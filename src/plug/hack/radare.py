@@ -113,7 +113,6 @@ def write_from_file(file):
 def write_from_hexpair_file(file):
 	r.cmd("wF %s"%file)
 
-
 def seek_undo():
 	r.cmd("undo")
 
@@ -169,11 +168,11 @@ def flag_list():
 			ret.append(t)
 	return ret
 
-def flag_set(name):
-	r.cmd("f %s"%name)
-
-def flag_set_at(name, addr):
-	r.cmd("f %s @ 0x%x"%(name,addr))
+def flag_set(name, addr=None):
+	if addr == None:
+		r.cmd("f %s"%name)
+	else:
+		r.cmd("f %s @ 0xx"%name, addr)
 
 def flag_rename(old_name, new_name):
 	r.cmd("fr %s %s"%(old_name,new_name))
@@ -182,7 +181,7 @@ def flag_unset(name):
 	r.cmd("f -%s"%name)
 
 def flag_get(name):
-	return r.cmd("? %s"%name).split(" ")[0]
+	return r.cmd("? %s"%name).split(" ")[0].strip()
 
 def meta_comment_add(msg):
 	r.cmd("CC %s"%msg)
@@ -196,17 +195,17 @@ def type_data(len):
 def type_string(len):
 	r.cmd("Cs %d"%len)
 
-def copy(num):
-	r.cmd("y %d"%num)
+def copy(num, addr=None):
+	if addr == None:
+		r.cmd("y %d"%num)
+	else:
+		r.cmd("y %d @ 0x%x"%(num,addr))
 
-def copy_at(num,addr):
-	r.cmd("y %d @ 0x%x"%(num,addr))
-
-def paste():
-	r.cmd("yy")
-
-def paste_at(addr):
-	r.cmd("yy @ 0x%x"%addr)
+def paste(addr=None):
+	if addr == None:
+		r.cmd("yy"%num)
+	else:
+		r.cmd("yy @ 0x%x"%(num,addr))
 
 def asm(opcode):
 	"""
@@ -214,34 +213,25 @@ def asm(opcode):
 	"""
 	return r.cmd("!rasm '%s'"%opcode)
 
-def dis(num):
+def dis(num, addr=None):
 	"""
 	Disassemble 'num' opcodes from the current seek and returns the output
 	"""
-	return r.cmd("pd %d"%num)
-
-def dis_at(num,addr):
-	"""
-	Disassemble 'num' opcodes at 'addr' and returns the output
-	"""
+	if addr == None:
+		return r.cmd("pd %d"%num)
 	return r.cmd("pd %d @ 0x%x"%(num,addr))
 
-def str():
+def str(addr=None):
 	"""
 	Returns a zero-terminated string found in current seek
 	"""
-	return r.cmd("pz").strip()
+	if addr == None:
+		return r.cmd("pz").strip()
+	return r.cmd("pz @ 0x%x"%addr).strip()
 
-def str_at(addr):
-	"""
-	Returns a zero-terminated string found in 'addr'
-	"""
-	return r.cmd("pz @ %s"%addr).strip()
-
-def hex(num):
-	return r.cmd("pX %d"%num).strip()
-
-def hex_at(num,addr):
+def hex(num, addr=None):
+	if addr == None:
+		return r.cmd("pX %d"%num).strip()
 	return r.cmd("pX %d @ 0x%x"%(num,addr)).strip()
 
 def eval_get(key):
@@ -334,11 +324,11 @@ def dbg_register_set(name, value):
 def hash(algo,size):
 	return r.cmd("#%s %d"%(algo,size))
 
-def graph():
-	r.cmd("ag")
-
-def graph_at(at):
-	r.cmd("ag @ %s"%at)
+def graph(addr=None):
+	if addr == None:
+		r.cmd("ag")
+	else:
+		r.cmd("ag @ %s"%addr)
 
 def quit():
 	r.cmd("q")

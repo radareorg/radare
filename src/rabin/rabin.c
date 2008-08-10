@@ -79,6 +79,8 @@ int rabin_show_help()
 
 void rabin_show_info(const char *file)
 {
+	char *str;
+	u64 baddr;
 	dietelf_bin_t bin;
 
 	switch(filetype) {
@@ -89,16 +91,20 @@ void rabin_show_info(const char *file)
 			return;
 		}
 
-		u64 baddr=ELF_CALL(dietelf_get_base_addr,bin);
+		baddr = ELF_CALL(dietelf_get_base_addr,bin);
 		
 		if (rad) {
 			printf("e file.type = elf\n");
-			if (strncmp(getenv("DEBUG"), "1", 1))
+			str = getenv("DEBUG");
+			if (str && strncmp(str, "1", 1))
 				printf("e file.baddr = 0x%08llx\n", baddr);
 			if (ELF_CALL(dietelf_is_big_endian,bin))
 				printf("e cfg.endian = true\n");
 			else
 				printf("e cfg.endian = false\n");
+			if (ELF_CALL(dietelf_get_stripped,bin))
+			    printf("e dbg.dwarf = false\n");
+			else printf("e dbg.dwarf = true\n");
 			switch (ELF_CALL(dietelf_get_arch,bin)) {
 				case EM_MIPS:
 				case EM_MIPS_RS3_LE:
@@ -151,21 +157,15 @@ void rabin_show_info(const char *file)
 		if (rad) {
 			printf("e asm.arch = java\n");
 			printf("e cfg.endian = true\n");
-		}else {
-			printf("File type: JAVA CLASS\n");
-		}
+		} else printf("File type: JAVA CLASS\n");
 		break;
 	case FILETYPE_PE:
-		if (rad)
-			printf("e file.type = pe\n");
-		else
-			printf("File type: PE\n");
+		if (rad) printf("e file.type = pe\n");
+		else printf("File type: PE\n");
 		break;
 	case FILETYPE_MZ:
-		if (rad)
-			printf("e file.type = mz\n");
-		else
-			printf("File type: DOS COM\n");
+		if (rad) printf("e file.type = mz\n");
+		else printf("File type: DOS COM\n");
 		break;
 	case FILETYPE_DEX:
 		if (!rad)
@@ -176,20 +176,17 @@ void rabin_show_info(const char *file)
 			printf("e file.type = macho\n");
 			printf("e asm.arch = ppc\n");
 			printf("e cfg.endian = false\n");
-		} else
-			printf("File type: MACH-O\n");
+		} else printf("File type: MACH-O\n");
 		break;
 	case FILETYPE_CSRFW:
-		if (rad) {
+		if (rad)
 			printf("e asm.arch = csr\n");
-		} else
-			printf("File type: CSR FW\n");
+		else printf("File type: CSR FW\n");
 		break;
 	case FILETYPE_UNK:
-		if (rad)
-			printf("e file.type = unk\n");
-		else
-			printf("File type: UNKNOWN\n");
+		if (rad) printf("e file.type = unk\n");
+		else printf("File type: UNKNOWN\n");
+		break;
 	}
 }
 
@@ -244,9 +241,7 @@ void rabin_show_checksum(const char *file)
 		lseek(fd, pebase+0x18, SEEK_SET);
 		read(fd, &addr, 4);
 		printf("0x%x checksum file offset\n", pebase+0x18);
-		printf("0x%04x checksum\n",
-			(unsigned int)
-			(unsigned short)addr);
+		printf("0x%04x checksum\n", (unsigned int) (unsigned short)addr);
 		break;
 	}
 }
@@ -269,8 +264,8 @@ void rabin_show_entrypoint()
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		addr=ELF_CALL(dietelf_get_entry_addr,bin);
-		base=ELF_CALL(dietelf_get_base_addr,bin);
+		addr = ELF_CALL(dietelf_get_entry_addr,bin);
+		base = ELF_CALL(dietelf_get_base_addr,bin);
 
 		if (rad) {
 			printf("fs symbols\n");
@@ -365,14 +360,14 @@ void rabin_show_arch()
 
 void rabin_show_imports(const char *file)
 {
-	//char buf[1024];
 	dietelf_bin_t bin;
 
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
 #if 0
+		char buf[1024];
+		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
 #else

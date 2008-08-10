@@ -90,29 +90,45 @@ flag_t *flag_get_i(int id)
 	return NULL;
 }
 
-// TODO: USE GLOB OR SO...
-void flag_grep(const char *grep) // TODO: add u64 arg to grep only certain address
+void flag_show(flag_t *flag, int cmd_flag)
 {
-	int i=0;
+	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
+	cons_printf("0x%08llx %lld %s\n",
+		flag->offset, flag->length, flag->name);
+	if (cmd_flag && flag->cmd!=NULL && *flag->cmd) {
+		u64 seek = config.seek;
+		radare_seek(flag->offset, SEEK_SET);
+		radare_cmd_raw(flag->cmd, 0);
+		radare_seek(seek, SEEK_SET);
+		NEWLINE;
+	}
+}
+
+// TODO: USE GLOB OR SO...
+void flag_grep(const char *grepstr) // TODO: add u64 arg to grep only certain address
+{
+	int i = 0;
 	int cmd_flag = config_get_i("cmd.flag"); /* boolean */
+	char *grep = strdup(grepstr);
+	char *mask = strchr(grep, '*');
 	struct list_head *pos;
+
+	if (mask)
+		mask[0]='\0';
 	
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
-		if (strstr(flag->name, grep)) {
-			cons_printf("%03d 0x%08llx %3lld %s\n",
-				i++, flag->offset, flag->length, flag->name);
-			if (flag->cmd!=NULL && *flag->cmd && cmd_flag){
-				u64 seek = config.seek;
-				radare_seek(flag->offset, SEEK_SET);
-				radare_cmd_raw(flag->cmd, 0);
-				radare_seek(seek, SEEK_SET);
-				NEWLINE;
-			}
+		if (mask) {
+			if (strstr(flag->name, grep))
+				flag_show(flag, cmd_flag);
+		} else {
+			if (!strcmp(flag->name, grep))
+				flag_show(flag, cmd_flag);
 		}
-	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
+
+	free(grep);
 }
 
 flag_t *flag_get(const char *name)
@@ -369,9 +385,11 @@ void flag_list(char *arg)
 		if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 			continue;
 
+		flag_show(flag, 0);
+#if 0
 		cons_printf("%03d 0x%08llx %4lld %s",
 			i++, flag->offset, flag->length, flag->name);
-		NEWLINE;
+#endif
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
 }
