@@ -806,6 +806,7 @@ CMD_DECL(blocksize)
 		break;
 	case '?':
 		cons_printf("Usage: b[f flag]|[size]     ; Change block size\n");
+		cons_printf("  > b 200 ; set block size to 200\n");
 		cons_printf("  > bf sym_main && s sym_main\n");
 		break;
 	default:

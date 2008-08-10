@@ -36,43 +36,42 @@ void udis_arch(int arch, int len, int rows);
 int inc = 16;
 int dec = 16;
 format_info_t formats[] = {
-	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",         NULL,   "entire block" },
+	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",          NULL,   "entire block" },
 //	{ '8', FMT_87BIT,       "print 8bit block in raw 7bit",         NULL,   "entire block" },
-	{ 'a', FMT_ASC,        "ascii",                  NULL,         "entire block" },
-	{ 'A', FMT_ASCP,       "ascii printable",        NULL,         "entire block" },
-	{ 'b', FMT_BIN,        "binary",                 "N bytes",    "entire block" },
-	{ 'B', FMT_LSB,        "LSB Stego analysis",     "N bytes",    "entire block" },
-	{ 'c', FMT_CSTR,       "C format",               "N bytes",    "entire block" },
+	{ 'a', FMT_ASC,        "ascii",                  NULL,          "entire block" },
+	{ 'A', FMT_ASCP,       "ascii printable",        NULL,          "entire block" },
+	{ 'b', FMT_BIN,        "binary",                 "N bytes",     "entire block" },
+	{ 'B', FMT_LSB,        "LSB Stego analysis",     "N bytes",     "entire block" },
+	{ 'c', FMT_CSTR,       "C format",               "N bytes",     "entire block" },
 	{ 'h', FMT_SHORT,      "half word (short)",      "2 bytes",     "(endian)"},
-	//{ 'd', FMT_DISAS,      "asm.objdump disassembly",  "bsize bytes", "entire block" }, // removed or renamed! XXX doesn works without file.wmode
 	{ 'd', FMT_DISAS,      "disassembly N opcodes",  "bsize bytes", "entire block" },
-	{ 'D', FMT_UDIS,       "asm.arch disassembler",   "bsize bytes", "entire block" },
-	{ 'f', FMT_FLOAT,      "float",                 "4 bytes",     "(endian)"},
-	{ 'F', FMT_TIME_FTIME, "windows filetime",      "8 bytes",     "(endian)"},
-	{ 'G', FMT_CODEGRAPH,  "Code Analysis Graph",    "N bytes",    "entire block" },
-	{ 'i', FMT_INT,        "integer",               "4 bytes",     "(endian)"},
-	{ 'l', FMT_LONG,       "long",                  "4 bytes",     "(endian)"},
-	{ 'L', FMT_LLONG,      "long long",             "8 bytes",     "(endian)"},
-	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",     "fun args"},
-	{ 'o', FMT_OCT,        "octal",                  "N bytes",    "entire block" },
-	{ 'O', FMT_ZOOM,       "Zoom out view",          "entire file","entire block" },
-	{ 'p', FMT_PRINT,      "cmd.prompt",              NULL,        "entire block" },
-	{ '%', FMT_PERCENT,    "print scrollbar of seek", NULL,        "entire file" },
-	{ 'q', FMT_HEXQ,       "hexadecimal quad-word", "8 bytes",     "(endian)"},
-	{ 'r', FMT_RAW,        "raw ascii",              NULL,         "entire block" },
-	{ 'R', FMT_REF,        "reference",              NULL,         "entire block" },
-	{ 's', FMT_ASHC,       "asm shellcode",          NULL,         "entire block" },
-	{ 't', FMT_TIME_UNIX,  "unix timestamp",        "4 bytes",	  "(endian)"},
-	{ 'T', FMT_TIME_DOS,   "dos timestamp",         "4 bytes",	  "(endian)"},
-	{ 'u', FMT_URLE,       "URL encoding",           NULL,         "entire block" },
-	{ 'U', FMT_USER,       "executes cmd.user",      NULL,         "entire block" },
-	{ 'v', FMT_VISUAL,     "executes cmd.vprompt",            NULL,         "entire block" },
-	{ 'w', FMT_HEXW,       "hexadecimal word",      "2 bytes",	  "(endian)"},
-	{ 'W', FMT_HEXD,       "hexadecimal dword",     "4 bytes",     "(endian)"},
-	{ 'x', FMT_HEXB,       "hexadecimal byte pairs","N byte", 	  "entire block" },
-	{ 'X', FMT_HEXBS,      "hexadecimal string",	   "N byte", 	  "entire block" },
-	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,         "until \\0" },
-	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,         "until \\0" },
+	{ 'D', FMT_UDIS,       "asm.arch disassembler",  "bsize bytes", "entire block" },
+	{ 'f', FMT_FLOAT,      "float",                  "4 bytes",     "(endian)"},
+	{ 'F', FMT_TIME_FTIME, "windows filetime",       "8 bytes",     "(endian)"},
+	{ 'G', FMT_CODEGRAPH,  "Code Analysis Graph",    "N bytes",     "entire block" },
+	{ 'i', FMT_INT,        "integer",                "4 bytes",     "(endian)"},
+	{ 'l', FMT_LONG,       "long",                   "4 bytes",     "(endian)"},
+	{ 'L', FMT_LLONG,      "long long",              "8 bytes",     "(endian)"},
+	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
+	{ 'o', FMT_OCT,        "octal",                  "N bytes",     "entire block" },
+	{ 'O', FMT_ZOOM,       "Zoom out view",          "entire file", "entire block" },
+	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
+	{ '%', FMT_PERCENT,    "print scrollbar of seek",NULL,          "entire file" },
+	{ 'q', FMT_HEXQ,       "hexadecimal quad-word",  "8 bytes",     "(endian)"},
+	{ 'r', FMT_RAW,        "raw ascii",              NULL,          "entire block" },
+	{ 'R', FMT_REF,        "reference",              NULL,          "entire block" },
+	{ 's', FMT_ASHC,       "asm shellcode",          NULL,          "entire block" },
+	{ 't', FMT_TIME_UNIX,  "unix timestamp",         "4 bytes",     "(endian)"},
+	{ 'T', FMT_TIME_DOS,   "dos timestamp",          "4 bytes",     "(endian)"},
+	{ 'u', FMT_URLE,       "URL encoding",           NULL,          "entire block" },
+	{ 'U', FMT_USER,       "executes cmd.user",      NULL,          "entire block" },
+	{ 'v', FMT_VISUAL,     "executes cmd.vprompt",   NULL,          "entire block" },
+	{ 'w', FMT_HEXW,       "hexadecimal word",       "2 bytes",     "(endian)"},
+	{ 'W', FMT_HEXD,       "hexadecimal dword",      "4 bytes",     "(endian)"},
+	{ 'x', FMT_HEXB,       "hexadecimal byte pairs", "N byte",      "entire block" },
+	{ 'X', FMT_HEXBS,      "hexadecimal string",	 "N byte",      "entire block" },
+	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
+	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,          "until \\0" },
 	{ 0, 0, NULL, NULL, NULL }
 };
 
@@ -961,8 +960,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 					else	print_color_byte_i(j, ".", buf[j]);
 				}
 				NEWLINE;
-				if (cons_lines > config.height)
-					break;
 			}
 		}
 		config.cursor_mode = tmp;

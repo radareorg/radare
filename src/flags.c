@@ -43,18 +43,18 @@ int flag_space_idx2 = -1;
 void flag_help()
 {
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
-	"  fortune      ; show fortune message! :D\n"
-	"  fd           ; print flag delta offset\n"
-	"  fc cmd       ; set command to be executed on flag at current seek\n"
-	"  fg text      ; grep for all flags (like multiline f | grep foo)\n"
-	"  fn name      ; flag new name (ignores dupped names)\n"
-	"  fs spacename ; create/list/switch flag spaces\n"
-	"  fr old new   ; rename a flag or more with '*'\n"
-	"  f sym_main   ; flag current offset as sym_main\n"
-	"  f foo @ 0x23 ; flag 0x23 offset as foo\n"
-	"  f -sym_main  ; remove sym_main\n"
-	"  f -*         ; remove all flags\n"
-	"  f -sym_*     ; remove all flags starting with 'sym_'\n");
+	" fortune      ; show fortune message! :D\n"
+	" fd           ; print flag delta offset\n"
+	" fc cmd       ; set command to be executed on flag at current seek\n"
+	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
+	" fn name      ; flag new name (ignores dupped names)\n"
+	" fs spacename ; create/list/switch flag spaces\n"
+	" fr old new   ; rename a flag or more with '*'\n"
+	" f sym_main   ; flag current offset as sym_main\n"
+	" f foo @ 0x23 ; flag 0x23 offset as foo\n"
+	" f -sym_main  ; remove sym_main\n"
+	" f -*         ; remove all flags\n"
+	" f -sym_*     ; remove all flags starting with 'sym_'\n");
 }
 
 void flag_init()
