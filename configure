@@ -98,12 +98,12 @@ create_environ() {
 : ${INSTALL_PROGRAM:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='0.9.9' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='1.0-beta' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-0.9.9 to adapt to many kinds of systems.
+'configure' configures radare-1.0-beta to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -175,7 +175,7 @@ take_environ() {
 }
 
 show_version() {
-echo "radare-0.9.9 configuration script done with acr v0.7.
+echo "radare-1.0-beta configuration script done with acr v0.7.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -193,7 +193,7 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   0.9.9"
+echo "VERSION:   1.0-beta"
 echo "LANGS:     c lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.3.4"
 echo "OPTIONAL:  libewf"

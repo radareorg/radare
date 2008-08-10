@@ -23,7 +23,7 @@
 
 void help_message_short()
 {
-	eprintf("radare [-cfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
+	eprintf("radare [-fhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
 }
 
 static void help_message()

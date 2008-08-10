@@ -1219,7 +1219,10 @@ CMD_DECL(write)
 	int ret;
 	u64 delta = 0;
 	u64 off;
+	u64 here = config.seek + (config.cursor_mode?config.cursor:0);
+	u64 back = config.seek;
 
+	radare_seek(here, SEEK_SET);
 	switch (input[0]) {
 	case 'F':
 		if (input[1]!=' ') {
@@ -1289,7 +1292,6 @@ CMD_DECL(write)
 		radare_cmd(data, 0);
 		} break;
 	case 'a': {
-		// TODO: use config.cursor here
 		unsigned char data[256];
 		char* aux = strdup ( config_get("asm.arch") );
 		int ret = rasm_asm(aux, config.seek, input+2, data);
@@ -1297,11 +1299,8 @@ CMD_DECL(write)
 		if (ret<1)
 			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
 		else {
-			u64 tmp = config.seek;
 			undo_write_new(config.seek, data, ret);
-			radare_seek(config.seek, SEEK_SET);
 			io_write(config.fd, data, ret);
-			radare_seek(tmp, SEEK_SET);
 		}
 		
 		} break;
@@ -1338,6 +1337,7 @@ CMD_DECL(write)
 		eprintf("Usage: w[?|a|A|d|w|x|f|F] [argument]\n");
 		return 0;
 	}
+	radare_seek(back, SEEK_SET);
 
 	return 0;
 }

@@ -12,9 +12,10 @@ BSD imports with dietelf doesnt works well
 * Comments without baddr doesnt works
 
 rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
+ - be alphanumeric
  - avoid \n, avoid \r
 
-* deprecate asm.follow !!!
+* deprecate asm.follow for scr.seek or so !!!
 
 * if block size > file size -> bs = file size or so... but not reset the old one
   - When block_size > seek+size in Visual negative seeks doesnt works !!! ZOMFG
@@ -52,6 +53,12 @@ Debugger:
 Rabin:
 	* rabin string refs
 	* Move javasm.c as dietjava in rabin
+
+Radiff:
+	* Entry point for the bin diffing utilities
+	- Supports byte-level diffing with differences
+	- Allows to diff code-level trees from radare RDB code
+	  analysis, that can be generated from IDA or radare.
 	
 Rasc:
 	* rasc - helper for format strings (orly?)

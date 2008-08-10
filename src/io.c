@@ -89,11 +89,14 @@ int radare_write(char *arg, int mode)
 
 	arg[len]='\0';
 
+#if 0
+	/* this is handled in cmds.c */
 	if (config.cursor_mode) {
 		config.ocursor = seek;
 		seek += config.cursor;
 		config.cursor = seek;
 	}
+#endif
 
 	radare_seek(seek, SEEK_SET);
 
