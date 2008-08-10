@@ -118,7 +118,6 @@ Grava:
   - search backward in memory (invert string and add inc as argument for binparse)
   - useful to static analyze interrupt calls
 
-
 Radare:
     + Dwarf support:
         - dwarfdump parser???
