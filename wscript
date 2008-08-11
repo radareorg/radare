@@ -2,15 +2,16 @@
 
 import os
 
-VERSION='0.9.8'
+VERSION='1.0-beta'
 APPNAME='radare'
-LIL_ENDIAN="0"
-MAEMO="0"
-HAVE_VALAC="0"
+TARGET='i686-unknown-linux-gnu'
+LIL_ENDIAN='0'
+MAEMO='0'
+HAVE_VALAC='0'
 DEBUGGER=False
-LIBDIR="/usr/lib"
-LIBEXECDIR="/usr/libexec"
-DOCDIR="/usr/share/doc"
+LIBDIR='/usr/lib'
+LIBEXECDIR='/usr/libexec'
+DOCDIR='/usr/share/doc'
 
 srcdir = '.'
 blddir = 'build'

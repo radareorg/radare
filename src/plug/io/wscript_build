@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 #plug_io = bld.new_task_gen('cc', 'staticlib')
-plug_io        = bld.create_obj('cc', 'staticlib')
+plug_io        = bld.new_task_gen('cc', 'staticlib')
 plug_io.target = 'plug-io'
 
 plug_io.source = 'gdb.c winedbg.c gdbx.c haret.c posix.c mmap.c remote.c shm.c socket.c gxemul.c'

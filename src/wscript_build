@@ -9,19 +9,21 @@ bld.add_subdirs('rabin')
 # ONLY IF DEBUGGER ENABLED
 # bld.add_subdirs('dbg')
 
-xrefs = bld.create_obj('cc', 'program')
+xrefs = bld.new_task_gen('cc', 'program')
+xrefs.env.append_value('CCFLAGS','-DVERSION=\\"'+VERSION+'\\"')
 xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
 
-
-javasm = bld.create_obj('cc', 'program')
+javasm = bld.new_task_gen('cc', 'program')
 javasm.sources = 'rabin/javasm.c'
 javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
 javasm.env.append_value('CCFLAGS','-DJAVA_ASM_MAIN')
 javasm.target = 'javasm'
 
-obj = bld.create_obj('cc', 'program')
+obj = bld.new_task_gen('cc', 'program')
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
+obj.env.append_value('CCFLAGS','-DLIBDIR=\\"/usr/lib\\"')
+obj.env.append_value('CCFLAGS','-DTARGET=\\"i686-unknown-linux-gnu\\"')
 obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
 obj.target = 'radare'
