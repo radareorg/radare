@@ -28,14 +28,7 @@ extern int xrefs;
 extern int rad;
 extern int verbose;
 
-#if 0
-int rad = 0;
-int verbose = 1;
-int xrefs = 0; // XXX
-#endif
-
-void
-ELF_(aux_swap_endian)(u8 *value, int size)
+void ELF_(aux_swap_endian)(u8 *value, int size)
 {
 	unsigned char buffer[8];
 	
@@ -70,8 +63,7 @@ ELF_(aux_swap_endian)(u8 *value, int size)
 	}
 }
 
-int
-ELF_(aux_is_encoded)(int encoding, unsigned char c)
+int ELF_(aux_is_encoded)(int encoding, unsigned char c)
 {
 	switch(encoding) {
 	case ENCODING_ASCII:
@@ -103,15 +95,14 @@ ELF_(aux_is_encoded)(int encoding, unsigned char c)
 	return 0;
 }
 
-int
-ELF_(aux_is_printable) (int c)
+// Use from utils.c
+int ELF_(aux_is_printable) (int c)
 {
 	if (c<' '||c>'~') return 0;
 	return 1;
 }
 
-int 
-ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
+int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
 {
 	static int unicode = 0;
 	static int matches = 0;
@@ -154,8 +145,7 @@ ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u6
 	return 0;
 }
 
-int
-ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
+int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -195,8 +185,7 @@ ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 ba
 	return 0;
 }
 
-int
-ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
+int ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
 
@@ -213,8 +202,7 @@ ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
     return 0;
 }
 
-char*
-ELF_(aux_filter_rad_output)(const char *string)
+char* ELF_(aux_filter_rad_output)(const char *string)
 {
     static char buff[255];
     char *p = buff;
@@ -245,6 +233,7 @@ ELF_(aux_filter_rad_output)(const char *string)
 		*p++ = '_';
 		break;
 	    default:
+		// TODO: check if is printable char
 		*p++ = *string;
 		break;
 	}
@@ -261,9 +250,9 @@ ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
     return bin->ehdr.e_machine;
 }
 
-int
-ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
+int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 {
+// TODO: would be better if (endian) return LIL_ENDIAN; (one liner ;D)
 #ifdef LIL_ENDIAN
     if (endian)
 #else
@@ -274,35 +263,30 @@ ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 	return 0;
 }
 
-u64
-ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
+u64 ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
 {
     return bin->phdr->p_vaddr & 0xfffff000;
 }
 
-u64
-ELF_(dietelf_get_entry_addr)(ELF_(dietelf_bin_t) *bin)
+u64 ELF_(dietelf_get_entry_addr)(ELF_(dietelf_bin_t) *bin)
 {
    return bin->ehdr.e_entry; 
 }
 
-int
-ELF_(dietelf_get_stripped)(ELF_(dietelf_bin_t) *bin)
+int ELF_(dietelf_get_stripped)(ELF_(dietelf_bin_t) *bin)
 {
+    int i;
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
-    int i;
 
     shdrp = shdr;
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++)
 	if (shdrp->sh_type == SHT_SYMTAB)
 	    return 0;
-
     return 1;
 }
 
-int
-ELF_(dietelf_get_static)(ELF_(dietelf_bin_t) *bin)
+int ELF_(dietelf_get_static)(ELF_(dietelf_bin_t) *bin)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Phdr) *phdr = bin->phdr, *phdrp;
@@ -316,8 +300,7 @@ ELF_(dietelf_get_static)(ELF_(dietelf_bin_t) *bin)
     return 1;
 }
 
-char*
-ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t) *bin)
+char* ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int encoding = bin->ehdr.e_ident[EI_DATA];
     static char buff[32];
@@ -332,8 +315,7 @@ ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t) *bin)
     }
 }
 
-char*
-ELF_(dietelf_get_machine_name)(ELF_(dietelf_bin_t) *bin)
+char* ELF_(dietelf_get_machine_name)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int e_machine = bin->ehdr.e_machine;
     static char buff[64]; 
@@ -419,8 +401,7 @@ ELF_(dietelf_get_machine_name)(ELF_(dietelf_bin_t) *bin)
     }
 }
 
-char*
-ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t) *bin)
+char* ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int e_type = bin->ehdr.e_type;
     static char buff[32];
@@ -443,8 +424,7 @@ ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t) *bin)
     }
 }
 
-char*
-ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t) *bin)
+char* ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t) *bin)
 {
     unsigned int elf_class = bin->ehdr.e_ident[EI_CLASS];
     static char buff[32];
@@ -459,30 +439,49 @@ ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t) *bin)
     }
 }
 
-char*
-ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
+char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 {
-    unsigned int osabi = bin->ehdr.e_ident[EI_OSABI];
-    static char buff[32];
+	unsigned int osabi = bin->ehdr.e_ident[EI_OSABI];
+	static char buff[32];
 
-    switch (osabi) {
-	case ELFOSABI_NONE:		return "UNIX - System V";
-	case ELFOSABI_HPUX:		return "UNIX - HP-UX";
-	case ELFOSABI_NETBSD:		return "UNIX - NetBSD";
-	case ELFOSABI_LINUX:		return "UNIX - Linux";
-	case ELFOSABI_SOLARIS:		return "UNIX - Solaris";
-	case ELFOSABI_AIX:		return "UNIX - AIX";
-	case ELFOSABI_IRIX:		return "UNIX - IRIX";
-	case ELFOSABI_FREEBSD:		return "UNIX - FreeBSD";
-	case ELFOSABI_TRU64:		return "UNIX - TRU64";
-	case ELFOSABI_MODESTO:		return "Novell - Modesto";
-	case ELFOSABI_OPENBSD:		return "UNIX - OpenBSD";
-	case ELFOSABI_STANDALONE:	return "Standalone App";
-	case ELFOSABI_ARM:		return "ARM";
-	default:
-	    snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
-	    return buff;
-    }
+	if (rad)
+		switch (osabi) {
+			case ELFOSABI_NONE:		return "linux"; // sysv
+			case ELFOSABI_HPUX:		return "hpux";
+			case ELFOSABI_NETBSD:		return "netbsd";
+			case ELFOSABI_LINUX:		return "linux";
+			case ELFOSABI_SOLARIS:		return "solaris";
+			case ELFOSABI_AIX:		return "aix";
+			case ELFOSABI_IRIX:		return "irix";
+			case ELFOSABI_FREEBSD:		return "freebsd";
+			case ELFOSABI_TRU64:		return "tru64";
+			case ELFOSABI_MODESTO:		return "modesto";
+			case ELFOSABI_OPENBSD:		return "openbsd";
+			case ELFOSABI_STANDALONE:	return "Standalone App";
+			case ELFOSABI_ARM:		return "arm";
+			default:
+				snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
+				return buff;
+		}
+	else
+		switch (osabi) {
+			case ELFOSABI_NONE:		return "UNIX - System V";
+			case ELFOSABI_HPUX:		return "UNIX - HP-UX";
+			case ELFOSABI_NETBSD:		return "UNIX - NetBSD";
+			case ELFOSABI_LINUX:		return "UNIX - Linux";
+			case ELFOSABI_SOLARIS:		return "UNIX - Solaris";
+			case ELFOSABI_AIX:		return "UNIX - AIX";
+			case ELFOSABI_IRIX:		return "UNIX - IRIX";
+			case ELFOSABI_FREEBSD:		return "UNIX - FreeBSD";
+			case ELFOSABI_TRU64:		return "UNIX - TRU64";
+			case ELFOSABI_MODESTO:		return "Novell - Modesto";
+			case ELFOSABI_OPENBSD:		return "UNIX - OpenBSD";
+			case ELFOSABI_STANDALONE:	return "Standalone App";
+			case ELFOSABI_ARM:		return "ARM";
+			default:
+				snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
+				return buff;
+		}
 }
 
 u64
@@ -502,8 +501,7 @@ ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *se
     return -1;
 }
 
-u64
-ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
+u64 ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -519,8 +517,7 @@ ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *s
     return -1;
 }
 
-int
-ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
+int ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -536,8 +533,7 @@ ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char *sec
     return -1;
 }
 
-u64
-ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
+u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -606,8 +602,7 @@ ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
     return -1;
 }
 
-int
-ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -645,8 +640,7 @@ ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
     return i;
 }
 
-int
-ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -762,8 +756,7 @@ ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
     return i;
 }
 
-int
-ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     ELF_(Ehdr) *ehdr = &bin->ehdr;
     ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -969,8 +962,7 @@ ELF_(dietelf_list_others)(ELF_(dietelf_bin_t) *bin, int fd)
 }
 #endif
 
-int
-ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     /* TODO: define callback for printing strings found */
     ELF_(Ehdr) *ehdr = &bin->ehdr;
@@ -992,8 +984,7 @@ ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
     return i;
 }
 
-int
-ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     /* TODO: define callback for printing strings found */
     ELF_(Ehdr) *ehdr = &bin->ehdr;
@@ -1017,8 +1008,7 @@ ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
     return -1;
 }
 
-int
-ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
 {
     ELF_(Ehdr) *ehdr;
     ELF_(Shdr) *shdr;
@@ -1161,8 +1151,7 @@ ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
     return 0;
 }
 
-int 
-ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
+int ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
 {
     if (lseek(fd, shdr->sh_offset, SEEK_SET) < 0) {
 	perror("lseek");

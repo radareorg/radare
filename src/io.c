@@ -330,11 +330,13 @@ int radare_read(int next)
 
 		memset(config.block, '\xff', config.block_size);
 		ret = io_read(config.fd, config.block, config.block_size);
+#if 0
 		// XXX wrong aligned memory read !!! first 4 bytes are trash
 		if (ret!=-1 && ret<config.block_size) {// aligned read
 			radare_seek(config.seek+config.seek%4, SEEK_SET);
 			ret = io_read(config.fd, config.block+(config.seek%4), config.block_size);
 		}
+#endif
 	}
 
 	if (ret == -1)

@@ -7,6 +7,7 @@
 
 ===========================================================
 
+!contsc must be string as arg also
 BSD imports with dietelf doesnt works well
 
 * Comments without baddr doesnt works
@@ -16,9 +17,6 @@ rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
  - avoid \n, avoid \r
 
 * deprecate asm.follow for scr.seek or so !!!
-
-* if block size > file size -> bs = file size or so... but not reset the old one
-  - When block_size > seek+size in Visual negative seeks doesnt works !!! ZOMFG
 
 * define ranges of the file to analize (.text by default...)
   - autodetected using !dall algorithm
@@ -40,6 +38,7 @@ rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
 Debugger:
 	* fix software breakpoints
  	  - after restore !set eip = eip -1 && !bp -eip
+	* !contu must use '!mp rw- 0x8048000 0x4045' if supported
 	* load libraries on the child process
 	* !contall
 	* !cont <pid> ???
@@ -137,7 +136,6 @@ Radare:
 * cfg.inverse must be universal!
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * write shellcode to dump a buffer in hexa (inline jump)
-* !contu must use '!mp rw- 0x8048000 0x4045' if supported
 * rasm : Add .db, .byte, .dw, .dd directives or so, .string
   - make them usable from the assembler (labels and so too)
   - be like a cmdline gas. use the internal code of gnu (stripped down plz!)

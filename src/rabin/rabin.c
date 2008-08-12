@@ -105,6 +105,7 @@ void rabin_show_info(const char *file)
 			if (ELF_CALL(dietelf_get_stripped,bin))
 			    printf("e dbg.dwarf = false\n");
 			else printf("e dbg.dwarf = true\n");
+			printf("e asm.arch = %s\n", ELF_CALL(dietelf_get_osabi_name,bin));
 			switch (ELF_CALL(dietelf_get_arch,bin)) {
 				case EM_MIPS:
 				case EM_MIPS_RS3_LE:
@@ -453,7 +454,6 @@ void rabin_show_others(char *file)
 
 void rabin_show_sections(const char *file)
 {
-	char buf[1024];
 	int fd;
 	dietelf_bin_t bin;
 
@@ -467,10 +467,13 @@ void rabin_show_sections(const char *file)
 		ELF_CALL(dietelf_list_sections,bin,fd);
 		close(fd);
 		break;
+#if 0
 	default:
 		// TODO: use the way that rsc flag-sections does
+		char buf[1024];
 		sprintf(buf, "readelf -S '%s'|grep '\\[' | grep -v '\\[Nr\\]' | cut -c 4- | awk '{ print \"0x\"$4\" \"$2 }'", file);
 		system(buf);
+#endif
 	}
 }
 
@@ -540,7 +543,8 @@ int rabin_identify_header()
 			pebase = pe;
 		}
 	} else {
-		printf("Unknown filetype\n");
+		if (!rad)
+			printf("Unknown filetype\n");
 	}
 
 	return filetype;

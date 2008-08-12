@@ -559,8 +559,10 @@ void config_init(int first)
 	node = config_set("asm.arch", "intel");
 #endif
 	node->callback = &config_arch_callback;
+	config_set("asm.comments", "true"); // show comments in disassembly
+	config_set_i("asm.cmtmargin", 27); // show comments in disassembly
+	config_set_i("asm.cmtlines", 0); // show comments in disassembly
 	config_set("asm.syntax", "pseudo");
-	config_set("asm.xrefs", "xrefs");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
 	config_set("asm.reladdr", "false"); // relative offset
@@ -574,12 +576,22 @@ void config_init(int first)
 	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
-	config_set("asm.comments", "true"); // show comments in disassembly
-	config_set_i("asm.cmtmargin", 27); // show comments in disassembly
-	config_set_i("asm.cmtlines", 0); // show comments in disassembly
+	// asm.os = used for syscall tables and so.. redefined with rabin -rI
+#if __linux__
+	config_set("asm.os", "linux"); 
+#elif __FreeBSD__
+	config_set("asm.os", "freebsd");
+#elif __NetBSD__
+	config_set("asm.os", "netbsd");
+#elif __OpenBSD__
+	config_set("asm.os", "openbsd");
+#elif __Windows__
+	config_set("asm.os", "linux");
+#endif
 	config_set("asm.split", "true"); // split code blocks
 	config_set("asm.splitall", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
+	config_set("asm.xrefs", "xrefs");
 
 	config_set("asm.follow", "");
 	config_set("cmd.flag", "true");

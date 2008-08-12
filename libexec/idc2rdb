@@ -6,10 +6,12 @@
 #      MakeRptCmt      (0X804C1B6,     "comentari chachi\n");
 #
 
+print "idc";
+
 while(<STDIN>) {
 	$str=$_;
 	if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {
-		print "f _$2 @ 0x$1\n";
+		print "f idc_$2 @ 0x$1\n";
 	}
 	elsif ($str=~/MakeRptCmt[^X]*.([^,]*)[^"]*.([^"]*)/) {
 		$cmt = $2;
