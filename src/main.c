@@ -32,11 +32,13 @@ static void help_message()
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
-	"  -i [script]      interpret radare or lua script\n"
+	"  -i [script]      interpret radare or python/perl/lua script\n"
 	"  -p [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
+#if DEBUGGER
 	"  -d [program|pid] debug a program. same as --args in gdb\n"
+#endif
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
 	//"  -c               same as -e scr.color=true\n"

@@ -7,6 +7,19 @@
 
 ===========================================================
 
+* rename 'hasher' into 'rahash'
+
+* rasc with ascii-nops
+
+* if print len is bigger than block size (change it temporally)
+
+* search backward (esteve?)
+  - search backward in memory (invert string and add inc as argument for binparse)
+  - useful to static analyze interrupt calls
+
+* search for strings in disassembly
+  - pd 1 -> strstr(cons_buffer, mystr)
+
 !contsc must be string as arg also
 BSD imports with dietelf doesnt works well
 
@@ -93,6 +106,7 @@ Rsc:
   	- fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 	* pcap/radare for fun
 	* syscall-flag  using userdefined table (in file)
+	   - must use asm.os to get proper syscall table
 	   - must be implemented in code analysis!!
 
 Grava:
@@ -110,19 +124,9 @@ Grava:
 	833d0cc4050803  cmp dword [0x805c40c], 0x3
 	bf0d9b0508      mov edi, 0x8059b0d
 
-
-
-=====
-0.9.9
-=====
-
 * Make 'Cs' autodetect multiple strings
 * Xrefs working with the core (radare_read and so)
 * Add 'bookmarked flags'
-
-* search backward (esteve?)
-  - search backward in memory (invert string and add inc as argument for binparse)
-  - useful to static analyze interrupt calls
 
 Radare:
     + Dwarf support:

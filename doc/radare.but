@@ -1,0 +1,368 @@
+\title radare
+
+A commandline framework for reverse engineering ala *nix-style
+
+\versionid $Id: pvc.but 2008-08-12 pancake $
+
+\C{introduction} Introduction
+
+The radare project started in February of 2006 aiming to provide a Free and simple command line interface for an hexadecimal editor supporting 64 bit offsets to make searches and recovering data from hard-disks.
+
+Since then, the project growed and the aim changed to provide a complete framework for analyzing binaries with some basic *NIX concepts in mind like 'everything is a file', 'small programs that interact together using stdin/out' or 'keep it simple'.
+
+It's mostly a single-person project, but some contributions (in source, patches, ideas or species) have been made and are really appreciated.
+
+The project is composed by an hexadecimal editor as the central point of the project with assembler/disassembler, code analysis, scripting features, analysis and graphs of code and data, easy unix integration, ..
+
+\H{overview} Overview
+
+Nowadays the project is composed by a set of small utilities that can be used together or independently from the command line:
+
+\c radare
+
+The core of the hexadecimal editor and debugger. Allows to open any kind of file from different IO access like disk, network, kernel plugins, remote devices, debugged processes, ... and handle all of them as if they were a simple plain file.
+
+Implements an advanced command line interface for moving around the file, analyzing data, disassembling, binary patching, data comparision, searching, replacing, scripting with python, lua and perl, ...
+
+\c rabin
+
+Extracts information from executable binaries like ELF, PE, Java CLASS, MACH-O. It's used from the core to get exported symbols, imports, file information, xrefs, library dependencies, sections, ...
+
+\c rasm
+
+Commandline assembler and disassembler for multiple architectures (intel[32,64], mips, arm, powerpc, java, msil, ...)
+
+\c rasc
+
+Small utility to prepare buffers or shellcodes for exploiting vulnerabilities. It has an internal hardcoded database of shellcodes and a syscall-proxy interface with some nice helpers like fill-with nops, breakpoints, series of values to find the landing point, etc..
+
+\c hasher
+
+Implementation of a block-based hasher for small text strings or large disks, supporting multiple algorithms like md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist or entropy.
+
+It can be used to check the integrity or track changes between big files, memory dumps or disks.
+
+\c radiff
+
+Binary diffing utility with multiple algorithms implemented inside. Supports byte-level or delta diffing for binary files and code-analysis diffing to find changes in basic code blocks from radare code analysis or IDA ones using the idc2rdb rsc script.
+
+\c rsc
+
+Entrypoint for calling multiple small scripts and utilities that can be used from the shell.
+
+\H{get} Getting radare
+
+You can get radare from the website http://radare.nopcode.org/
+
+There are binary packages for multiple operating systems and GNU/Linux distributions (ubuntu, maemo, gentoo, windows, iphone, etc..) But I hardly encourage you to get the sources and compile them yourself to better understand the dependencies and have the source code and examples more accessible.
+
+I try to make a new stable release every month and sometimes publish nightly tarballs.
+
+But as always the best way to use a software is to go upstream and pull the development repository which in radare is commonly more stable than the 'stable' releases O:)
+
+To do this you will need mercurial (a distributed python-based source code management aliased Hg) and type:
+
+\c $ hg clone http://radare.nopcode.org/hg/radare
+
+This will probably take a while, so take a coffee and continue reading this paper.
+
+To update your local copy of the repository you will have to type these two commands in the root of the recently created 'radare' directory.
+
+\c $ hg pull
+\c $ hg update
+
+If you have local modifications of the source, you can revert them with:
+
+\c $ hg revert --all
+
+Or just feed me with a patch
+
+\c $ hg diff > radare-foo.patch
+
+\H{compile} Compilation and portability
+
+Currently the core of radare can be compiled in many systems, and architectures, but the main development is done on GNU/Linux and GCC.
+
+People usually wants to use radare as a debugger for reverse engineering, and this is a bit more restrictive portability issue, so if the debugger is not ported to your favorite platform, please, notify it to me or just disable the debugger layer with --without-debugger in the ./configure stage.
+
+Nowadays the debugger layer can be used on Windows, GNU/Linux (intel32, intel64, mips, arm), FreeBSD, NetBSD, OpenBSD (intel32, intel64) and there are plans for Solaris and OSX. And there are some IO plugins to use gdb, gdbremote or wine as backends.
+
+There's some work for porting the ACR/GMAKE build system to WAF, but it's not finished or tested enought, so I encourage you to use the basic way to configure, compile and install the software:
+
+\c $ ./configure --prefix=/usr
+\c $ gmake
+\c $ sudo gmake install
+
+\H{cmdflags} Commandline flags
+
+The core accepts multiple flags from the command line to change some configuration or start with different options.
+
+Here's the help message:
+
+\c $ radare -h
+\c radare [options] [file]
+\c   -s [offset]      seek to the desired offset (cfg.seek)
+\c   -b [blocksize]   change the block size (512) (cfg.bsize)
+\c   -i [script]      interpret radare or python/perl/lua script
+\c   -p [project]     load metadata from project file
+\c   -l [plugin.so]   link against a plugin (.so or .dll)
+\c   -e [key=val]     evaluates a configuration string
+\c   -d [program|pid] debug a program. same as --args in gdb
+\c   -f               set block size to fit file size
+\c   -L               list all available plugins
+\c   -w               open file in read-write mode
+\c   -x               dump block in hexa and exit
+\c   -n               do not load ~/.radarerc and ./radarerc
+\c   -v               same as -e cfg.verbose=false
+\c   -V               show version information
+\c   -u               unknown size (no seek limits)
+\c   -h               this help message
+
+\H{usage} Basic usage
+
+Lot of people ping me some times for a sample usage session of radare to help to understand how the shell works and how to perform the most common tasks like disassembling, seeking, binary patching or debugging.
+
+I hardly encourage you to read the rest of this book to help you understand better how everything works and enhace your skills, the learning curve of radare is usually a bit harder at the beggining, but after an hour of using it you will easily understand how most of the things work and how to get them cooperate together :)
+
+\H{usage-dbg} Basic debugger session
+
+To start debugging a program use the '-d' flag and append the PID or the program path with arguments.
+
+\c $ radare -d /bin/ls
+
+The debugger will fork and load the 'ls' program in memory stopping the execution in the 'ld.so', so don't expect to see the entrypoint or the mapped libraries at this point. To change this you can define a new 'break entry point' adding 'e dbg.bep=entry' or 'dbg.bep=main' to your .radarerc.
+
+But take care on this, because some malware or programs can execute code before the main.
+
+Now the debugger prompt should appear and if you press 'enter' ( null command ) the basic view of the process will be displayed with the stack dump, general purpose registers and disassembly from current program counter (eip on intel).
+
+All the debugger commands are handled by a plugin, so the 'system()' interface is hooked by it and you will have to supply them prefixing it with a '!' character.
+
+Here's a list of the most common commands for the debugger:
+
+\c > !help          ; get the help
+\c > !step 3        ; step 3 times
+\c > !bp 0x8048920  ; setup a breakpoint
+\c > !bp -0x8048920 ; remove a breakpoint
+\c > !cont          ; continue process execution
+\c > !contsc        ; continue until syscall
+\c > !fd            ; manipulate file descriptors
+\c > !maps          ; show process maps
+\c > !mp            ; change page protection permissions
+\c > !reg eax=33    ; change a register
+
+The easiest way to use the debugger is from the Visual mode, so, you will no need to remember much commands or keep states in your mind.
+
+\c [0xB7F0C8C0]> Visual
+
+After entering this command an hexdump of the current eip will be showed. Now press 'p' one time to get into the debugger view. You can press 'p' and 'P' to rotate thru the most commonly used print modes.
+
+Use F6 or 's' to step into and F7 or 'S' to step over.
+
+With the 'c' key you will toggle the cursor mode and being able to select range of bytes to nop them or set breakpoints using the 'F2' key.
+
+In the visual mode you can enter commands with ':' to dump buffer contents like
+
+\c x @ esi
+
+To get the help in the visual mode press '?' and for the help of the debugger press
+
+\H{sample} Basic commands
+
+TODO
+
+\C{config} Configuration
+
+The core reads ~/.radarerc while starting, so you can setup there some 'eval' commands to set it up in your favorite way.
+
+To avoid parsing this file, use '-n' and to get a cleaner output for using radare in batch mode maybe is better to just drop the verbosity with '-v'.
+
+All the configuration of radare is done with the 'eval' command which allows the user to change some variables from an internal hashtable containing string pairs.
+
+The most common configuration looks like this:
+
+\c $ cat ~/.radarerc
+\c eval scr.color = true
+\c eval file.id   = true
+\c eval file.flag = true
+\c eval dbg.bep   = entry
+
+These configurations can be also defined using the '-e' flag of radare while loading it, so you can setup different initial configurations from the commandline without having to change to rc file.
+
+\c $ radare -n -e scr.color=true -e asm.syntax=intel -d /bin/ls
+
+All the configuration is stored in a pseudo two-level depth tree grouped by different
+
+To get a list of the configuration variables just type 'eval' or 'e' in the prompt. All the basic commands can be reduced to a single char. You can also list the configuration variables of a single eval configruation group ending the command argument with a dot '.'.
+
+There are two enhaced interfaces to help users to interactively configure this hashtable. One is called 'emenu' and provides a shell for walking thru the tree and change variables. 
+
+Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands can be reduced to a single char, and you can just type 'e?' to get the help of all the 'subcommands' for the basic command.
+
+\c [0xB7EF38C0]> emenu
+\c Menu: (q to quit)
+\c - asm
+\c - cfg
+\c - child
+\c - cmd
+\c - dbg
+\c - dir
+\c - file
+\c - graph
+\c - scr
+\c - search
+\c - trace
+\c - zoom
+\c >
+
+There is a more handful eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
+
+Most of the eval tree is quite stable, so don't expect hard changes on this area, but I encourage you to experiment a bit on this to fit the interface to your needs.
+
+\H{common-conf} Common configuration variables
+
+Here's a list of the most common eval configuration variables:
+
+\c asm.arch
+
+Defines the architecture to be used while disassembling (pd, pD commands) and analyzing code ('a' command). Currently it handles 'intel32', 'intel64', 'mips', 'arm16', 'arm' 'java', 'csr', 'sparc', 'ppc', 'msil' and 'm68k'.
+
+It is quite simple to add new architectures for disassembling and analyzing code, so there is an interface adapted for the GNU disassembler and others for udis86 or handmade ones.
+
+\c asm.os
+
+Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
+
+\c asm.lines
+
+Draw lines at the left of the offset in the dissassemble print format (pd, pD) to graphically represent jumps and calls inside the current block.
+
+\c asm.linesout
+
+When defined as 'true', also draws the jump lines in the current block that goes ouside of this block.
+
+\c file.id
+
+When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
+
+\c file.flag
+
+Finds all the information of the target binary and setup flags to point symbols (imports, exports), sections, maps, strings, etc.
+
+This command is commonly used with file.id.
+
+\c scr.color
+
+This boolean variable allows to enable or disable the colorized output
+
+\c cfg.fortunes
+
+Enables or disables the 'fortune' message at the begging of the program
+
+\C{printmodes} Print formats
+
+The core of radare handles the data adquired from the IO layer as blocks of a user defined size (block size).
+
+To get a list of all the print formats type 'p?' in the prompt. All print formats are accessible with a single char appended to the 'p'rint command. (px, pd, po, ...)
+
+\C{visual-mode} Visual mode
+
+TODO
+
+\C{flags} Flags
+
+A 'flag' is the way in radare to put a mark in a certain offset and size. It is useful to provide a fast access to symbols, strings, user-defined data pointers, etc
+
+\C{flagspaces} Flag spaces
+
+\C{searching} Search for data
+
+One of the most common tasks when analyzing binaries is to look for a series of consecutive bytes inside the target file.
+
+\C{disasm} Disassembling
+
+TODO
+
+\C{patch} Writing data
+
+TODO
+
+\H{metadata} Adding metadata
+
+TODO
+
+\C{iobackend} IO backend
+
+All the access to files, network, debugger, etc.. is wrapped by an IO abstraction layer that allows to interpret all the data as if it was a single file.
+
+\C{plugins} Plugins
+
+TODO
+
+\H{plugins-io} IO plugins
+
+TODO
+
+\H{plugins-hack} Hack plugins
+
+TODO
+
+\C{rsc} RSC toolset
+
+RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
+
+\C{rasm} Inline assembler/disassembler
+
+TODO
+
+\C{anal} Analysis
+
+TODO
+
+\H{codeanal} Code analysis
+
+TODO
+
+\H{dataanal} Data analysis
+
+TODO
+
+\C{Hashing} Hashing data
+
+TODO
+
+\C{bindiff-index} Bindiff
+
+TODO
+
+\C{bytediff} Diffing at byte-level
+
+TODO
+
+\C{bindiff} Diffing with delta support
+
+TODO
+
+\C{debugging} Debugger
+
+TODO
+
+\H{exec} Controlling execution
+
+\H{bps} Breakpoints
+
+\C{script} Scripting
+
+TODO
+
+\C{graph} Graphing code and data
+
+TODO
+
+\C{greetings} Greetings
+
+I would like to greet some people that help me or encourage me to continue developing and having fun on radare.
+
+- my God (FSM)
+- Sexy Pandas
+- nopcode project
