@@ -8,6 +8,8 @@
 ===========================================================
 
 * rename 'hasher' into 'rahash'
+* arrows+shift in visual
+* 'x' char should not be accepted as hexpair
 
 * rasc with ascii-nops
 

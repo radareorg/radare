@@ -124,6 +124,27 @@ Lot of people ping me some times for a sample usage session of radare to help to
 
 I hardly encourage you to read the rest of this book to help you understand better how everything works and enhace your skills, the learning curve of radare is usually a bit harder at the beggining, but after an hour of using it you will easily understand how most of the things work and how to get them cooperate together :)
 
+For walking thru the binary file you will use three different kind of basic actions: seek, print and alterate.
+
+To 'seek' there's an specific command abreviated as 's' than accepts an expression as argument that can be something like '10', '+0x25' or '[0x100+ptr_table]'. If you are working with block-based files you may prefer to set up the block size to 4K or the size required with the command 'b' and move forward or backward at seeks aligned to the block size using the '>' and '<' commands.
+
+The 'print' command aliased as 'p', accepts a second letter to specify the print mode selected. The most common ones are 'px' for printing in hexadecimal, 'pd' for disassembling.
+
+To 'write' open the file with 'radare -w'. This should be specified while opening the file, or just type 'eval file.write=true' in runtime to reopen the file in read-write-mode. You can use the 'w' command to write strings or 'wx' for hexpair strings:
+
+\c > w hello world         ; string
+\c > wx 90 90 90 90        ; hexpairs
+\c > wa jmp 0x8048140      ; assemble
+\c > wf inline.bin         ; write contents of file
+
+Appending a '?' to the command you will get the help message of it. (p? for example)
+
+Enter the visual mode pressing 'V<enter>', and return to the prompt using the 'q' key. 
+
+In the visual mode you should use hjkl keys which are the default ones for scrolling (like left,down,up,right). So entering in cursor mode ('c') you will be able select bytes if using the shift together with HJKL.
+
+In the visual mode you can insert (alterate bytes) pressing 'i' and then <tab> to switch between the hex or string column. Pressing 'q' in hex panel to return into the visual mode.
+
 \H{usage-dbg} Basic debugger session
 
 To start debugging a program use the '-d' flag and append the PID or the program path with arguments.
@@ -165,11 +186,126 @@ In the visual mode you can enter commands with ':' to dump buffer contents like
 
 \c x @ esi
 
-To get the help in the visual mode press '?' and for the help of the debugger press
+To get the help in the visual mode press '?' and for the help of the debugger press '!'.
+
+At this point the most common commands are !reg that can be used to get or set values for the general purpose registers. You can also manipulate the hardware and extended/floating registers.
 
 \H{sample} Basic commands
 
-TODO
+The basic set of commands in radare can be mostly grouped by action, and they should be easy to remember and short. This is why they are grouped with a single character, subcommands or related commands are described with a second character. For example '/ foo' for searching plain strings or '/x 90 90' to look for hexpair strings.
+
+The format of the commands looks something like that:
+
+\c [#][!][cmd] [arg] [@ offset] [> file] [ && ...]
+
+This is: repeat the described command '#' times.
+
+\c > 3s +1024    ; seeks three times 1024 from the current seek
+
+If the command starts with '!' the string is passed to the plugin hadling the current IO (the debugger for example), if no one handles it calls to posix_system() which is a shell escape, you can prefix the command with two '!!'.
+
+\c > !help       ; handled by the debugger or shell
+\c > !!ls        ; runs ls in the shell
+
+The [arg] argument depends on the command, but most of them take a number as argument to specify the number of bytes to work on instead of block size. Other commands accept math expressions, or strings.
+
+\c > px 0x17     ; show 0x17 bytes in hexa at cur seek
+\c > s base+0x33 ; seeks to flag 'base' plus 0x33
+\c > / lib       ; search for 'lib' string.
+
+The '@' is used to specify a temporal seek where the command is executed. This is quite useful to not seeking all the time.
+
+\c > pX 10 @ 0x4010  ; show 10 bytes at offset 0x4010
+\c > f patata @ 0x10 ; set 'patata' flag at offset 0x10
+
+The '>' is used to pipe the output of the command to a file (truncating to 0 if exist)
+
+\c > pr > dump.bin   ; dump 'raw' bytes of current block to 'dump.bin' file
+\c > f  > flags.txt  ; dump flag list to 'flags.txt'
+
+Using the '&&' chars you can concatenate multiple commands in a single line:
+
+\c > x @ esp && !reg && !bt  ; shows stack, regs and backtrace
+
+\S{seek} Seeking
+
+The command 's' is used to seek. It accepts a math expression as argument that can be composed by shift operations, basic math ones and memory access.
+
+The '>' and '<' commands are used to seek into the file using a block-aligned base.
+
+\c > >>>         ; seek 3 aligned blocks forward
+\c > s +30       ; seek 30 bytes forward from current seek
+\c > s 0x300     ; seek at 0x300
+\c > s [0x400]   ; seek at 4 byte dword at offset 0x400
+\c > s 10+0x80   ; seek at 0x80+10
+
+To 'query' the math expression you can evaluate them using the '?' command and giving the math operation as argument. And getting the result in hexa, decimal, octal and binary.
+
+\c > ? 0x100+200
+\c 0x1C8 ; 456d ; 710o ; 1100 1000  
+
+\S{print} Print
+
+One of the efforts in radare is the way to show the information to the user. This is interpreting the bytes and giving an almost readable output format.
+
+The bytes can be represented as integers, shorts, longs, floats, hexpair strings, or things more complex like C structures, disassembly, decompilations, external processors, ..
+
+\S{zoom} Zoom
+
+\S{flagsmin} Flags
+
+\S{write} Writing
+
+\c 'r' to resize
+\c 'w' to write
+\c uw - undo write
+
+\S{undo} Undo/redo
+
+The 'u' command is used to undo or redo things like seeks and write changes. Here's the help:
+
+\c > u?
+\c un   undo seek
+\c uu   redo
+\c uw N undo write (uw 3 = drop changes, uw -3 = re set)
+\c u*   list all seeks done
+\c u!   reset seek history
+\c u?   help this help
+
+Here's a sample session working with undo seeks and writes:
+
+\c [0x00000000]> s 0x100
+\c [0x00000100]> s 0x200
+\c [0x00000200]> undo
+\c [0x00000100]>
+
+\c [0x00000000]> wx 90 90 90 @ 0x100
+\c [0x00000100]> uw
+\c 00 + 3 00000100: 89 90 c4 => 90 90 90 
+\c [0x00000000]> pX 3 @ 0x100
+\c 90 90 90 
+\c [0x00000000]> uw 0
+\c [0x00000000]> pX 3 @ 0x100
+\c 89 90 c4 
+\c [0x00000000]> uw -0
+\c [0x00000000]> pX 3 @ 0x100
+\c 90 90 90 
+
+
+ 
+\S{yank} Yank/Paste
+
+You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that are alias for the 'y' and 'yy' commands of the shell. There is an internal buffer that stores N bytes from the current seek. You can write-back to another seek using the 'yy' one.
+
+\c > s 0x100    ; seek at 0x100
+\c > y 100      ; yanks 100 bytes from here
+\c > s 0x200    ; seek 0x200
+\c > yy         ; pastes 100 bytes
+
+\S{cmpmv} Compare/move data
+
+
+\H{concepts} Concepts
 
 \C{config} Configuration
 
