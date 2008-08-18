@@ -1,0 +1,33 @@
+#ifndef _GLOBAL_H_
+#define _GLOBAL_H_
+
+/* platform */
+#define CPU "@TARGET_CPU@"
+#define TARGET "@TARGET@"
+#define SIZEOF_OFF_T @SIZEOF_OFF_T
+#define MAEMO @MAEMO@
+#define SOLARIS @SOLARIS@
+#define W32 @W32@
+#define DARWIN @DARWIN@
+
+/* features */
+#define DEBUGGER @DEBUGGER@
+#define SYSPROXY @SYSPROXY@
+#define GUI @GUI@
+#define HAVE_VALAC @HAVE_VALAC@
+#define HAVE_LANG_LUA @HAVE_LANG_LUA@
+#define HAVE_LANG_PYTHON @HAVE_LANG_PYTHON@
+
+#define LIL_ENDIAN @LIL_ENDIAN@
+#define VERSION "@VERSION@"
+
+/* paths */
+#define LIBDIR "@LIBDIR@"
+#define DOCDIR "@DATADIR@/doc/radare/"
+#define LIBEXECDIR "@LIBEXECDIR@"
+
+/* libraries */
+#define HAVE_LIB_REDALINE @HAVE_LIB_READLINE@
+#define HAVE_LIB_EWF @HAVE_LIB_EWF@
+
+#endif

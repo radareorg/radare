@@ -62,4 +62,6 @@
 #include "print.h"
 #include "plugin.h"
 
+#include "../global.h"
+
 #endif

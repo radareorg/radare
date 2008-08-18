@@ -32,6 +32,11 @@ Extracts information from executable binaries like ELF, PE, Java CLASS, MACH-O. 
 
 Commandline assembler and disassembler for multiple architectures (intel[32,64], mips, arm, powerpc, java, msil, ...)
 
+\c $ rasm -a java 'nop'
+\c 00
+\c $ rasm -a x86 -d '90'
+\c nop
+
 \c rasc
 
 Small utility to prepare buffers or shellcodes for exploiting vulnerabilities. It has an internal hardcoded database of shellcodes and a syscall-proxy interface with some nice helpers like fill-with nops, breakpoints, series of values to find the landing point, etc..
@@ -196,7 +201,7 @@ The basic set of commands in radare can be mostly grouped by action, and they sh
 
 The format of the commands looks something like that:
 
-\c [#][!][cmd] [arg] [@ offset] [> file] [ && ...]
+\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [ && ...]
 
 This is: repeat the described command '#' times.
 
@@ -217,6 +222,12 @@ The '@' is used to specify a temporal seek where the command is executed. This i
 
 \c > pX 10 @ 0x4010  ; show 10 bytes at offset 0x4010
 \c > f patata @ 0x10 ; set 'patata' flag at offset 0x10
+
+Using '@@' you can execute a single command on a list of flags matching the glob:
+
+\c > s 0
+\c > / lib             ; search 'lib' string
+\c > pX 20 @@ hit0_*   ; show 20 hexpairs at each search hit
 
 The '>' is used to pipe the output of the command to a file (truncating to 0 if exist)
 
@@ -248,17 +259,108 @@ To 'query' the math expression you can evaluate them using the '?' command and g
 
 One of the efforts in radare is the way to show the information to the user. This is interpreting the bytes and giving an almost readable output format.
 
-The bytes can be represented as integers, shorts, longs, floats, hexpair strings, or things more complex like C structures, disassembly, decompilations, external processors, ..
+The bytes can be represented as integers, shorts, longs, floats, timestamps, hexpair strings, or things more complex like C structures, disassembly, decompilations, external processors, ..
+
+This is a list of the available print modes listable with 'p?':
+
+\c [0x08049A80]> p?
+\c Available formats:
+\c  7 : print 7bit block as raw 8bit (null)
+\c  a : ascii                   (null)
+\c  A : ascii printable         (null)
+\c  b : binary                  N bytes
+\c  B : LSB Stego analysis      N bytes
+\c  c : C format                N bytes
+\c  h : half word (short)       2 bytes
+\c  d : disassembly N opcodes   bsize bytes
+\c  D : asm.arch disassembler   bsize bytes
+\c  f : float                   4 bytes
+\c  F : windows filetime        8 bytes
+\c  G : Code Analysis Graph     N bytes
+\c  i : integer                 4 bytes
+\c  l : long                    4 bytes
+\c  L : long long               8 bytes
+\c  m : print memory structure  0xHHHH
+\c  o : octal                   N bytes
+\c  O : Zoom out view           entire file
+\c  p : cmd.prompt              (null)
+\c  % : print scrollbar of seek (null)
+\c  q : hexadecimal quad-word   8 bytes
+\c  r : raw ascii               (null)
+\c  R : reference               (null)
+\c  s : asm shellcode           (null)
+\c  t : unix timestamp          4 bytes
+\c  T : dos timestamp           4 bytes
+\c  u : URL encoding            (null)
+\c  U : executes cmd.user       (null)
+\c  v : executes cmd.vprompt    (null)
+\c  w : hexadecimal word        2 bytes
+\c  W : hexadecimal dword       4 bytes
+\c  x : hexadecimal byte pairs  N byte
+\c  X : hexadecimal string      N byte
+\c  z : ascii null terminated   (null)
+\c  Z : wide ascii null end     (null)
 
 \S{zoom} Zoom
 
+The zoom is a print mode that allows you to get a global view of the whole file or memory map in a single screen. Each byte represents file_size/block_size bytes of the file. Use the pO (zoom out print mode) to use it, or just toggle 'z' in the visual mode to zoom-out/zoom-in.
+
+The cursor can be used to scroll faster thru the zoom out view and pressing 'z' again to zoom-in where the cursor points.
+
+\c zoom.byte values:
+\c  F : number of 0xFF
+\c  f : number of flags
+\c  p : number of printable chars
+\c  e : entropy calculation
+\c  * : first byte of block
+
 \S{flagsmin} Flags
+
+The flags are bookmarks at a certain offset in the file that can be stored inside 'flag spaces'.
+
+To create a flag just type:
+
+\c > f flag_name @ offset
+
+You can remove this flag adding '-' at the begginging of the command. Most commands accept '-' as argument-prefix as a way to delete.
+
+\c > f -flag_name
+
+To switch/create between flagspaces use the 'fs' command:
+
+\c > fs symbols
+\c > f         ; list only flags in symbols flagspace
+\c > fs *      ; select all flagspaces
+
+You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
 \S{write} Writing
 
-\c 'r' to resize
-\c 'w' to write
-\c uw - undo write
+Radare can manipulate the file in multiple ways. You can resize the file, move bytes, copy/paste them, insert mode (shifting data to the end of the block or file) or just overwrite some bytes with an address, the contents of a file, a widestring or inline assembling an opcode.
+
+To resize. Use the 'r' command which accepts a numeric argument. Possitive valule sets the new size to the file. A negative one will strip N bytes from the current seek down-sizing the file.
+
+\c > r 1024      ; resize the file to 1024 bytes
+\c > r 10 @ 33   ; strip 10 bytes at offset 33
+
+To write bytes just use the 'w' command. It accepts multiple input formats like inline assembling, endian-friendly dwords, files, hexpair files, wide strings:
+
+\c [0x08049A80]> w?
+\c Usage: w[?|w|x|f] [argument]
+\c   w  [string]   - write plain with escaped chars string
+\c   wa [opcode]   - write assembly using asm.arch and rasm
+\c   wA '[opcode]' - write assembly using asm.arch and rsc asm
+\c   wv [expr]     - writes 4-8 byte value of expr (use cfg.endian)
+\c   ww [string]   - write wide chars (interlace 00s in string)
+\c   wx [hexpair]  - write hexpair string
+\c   wf [file]     - write contents of file at current seek
+\c   wF [hexfile]  - write hexpair contents of file
+
+\c > wx 12 34 56 @ 0x8048300
+\c > wv 0x8048123 @ 0x8049100
+\c > wa jmp 0x8048320
+
+All overwrite changes are recorded and can be listed or undo-ed using the 'uw' command. Read the 'undo/redo' section for more precisse information.
 
 \S{undo} Undo/redo
 
@@ -291,7 +393,6 @@ Here's a sample session working with undo seeks and writes:
 \c [0x00000000]> pX 3 @ 0x100
 \c 90 90 90 
 
-
  
 \S{yank} Yank/Paste
 
@@ -304,8 +405,20 @@ You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that 
 
 \S{cmpmv} Compare/move data
 
+The command 'm' is used to move data, which is something similar to 'yank/paste', but in a single command.
 
-\H{concepts} Concepts
+\c > m?
+\c Usage: move [len] [dst-addr]
+\c > m 10 0x300 @ 0x100  ; copy 10 bytes from 0x100 to 0x300
+
+You can compare data using the 'c' command that accepts different input formats and compares the input against the bytes in the current seek.
+
+\c > c?
+\c Usage: c[?|d|x|f] [argument]
+\c   c  [string]   - compares a plain with escaped chars string
+\c   cd [offset]   - compare a doubleword from a math expression
+\c   cx [hexpair]  - compare hexpair string
+\c   cf [file]     - compare contents of file at current seek
 
 \C{config} Configuration
 
@@ -357,7 +470,7 @@ Most of the eval tree is quite stable, so don't expect hard changes on this area
 
 \H{common-conf} Common configuration variables
 
-Here's a list of the most common eval configuration variables:
+Here's a list of the most common eval configuration variables, you can get the complete list using the 'e' command without arguments or just use 'e cfg.' (ending with dot, to list all the configuration variables of the cfg. space).
 
 \c asm.arch
 
@@ -376,6 +489,10 @@ Draw lines at the left of the offset in the dissassemble print format (pd, pD) t
 \c asm.linesout
 
 When defined as 'true', also draws the jump lines in the current block that goes ouside of this block.
+
+\c cfg.endian
+
+Choose the endian flavour 1 for big, 0 for little.
 
 \c file.id
 
@@ -403,7 +520,7 @@ To get a list of all the print formats type 'p?' in the prompt. All print format
 
 \C{visual-mode} Visual mode
 
-TODO
+The visual mode is a user-friendlier interface for the commandline prompt of radare which accepts HJKL movement keys, a cursor for selecting bytes and some keybindings to ease the use of the debugger
 
 \C{flags} Flags
 
@@ -417,11 +534,11 @@ One of the most common tasks when analyzing binaries is to look for a series of 
 
 \C{disasm} Disassembling
 
-TODO
+To disassemble use the 'pd' command.
 
 \C{patch} Writing data
 
-TODO
+Read the 'write' section
 
 \H{metadata} Adding metadata
 
@@ -483,7 +600,7 @@ TODO
 
 TODO
 
-\H{exec} Controlling execution
+\H{exec} Run control
 
 \H{bps} Breakpoints
 

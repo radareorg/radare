@@ -6,6 +6,7 @@
 
 #define __addr_t_defined
 
+#include "../global.h"
 // basic data types
 typedef unsigned char u8;
 typedef unsigned short u16;
