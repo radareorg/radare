@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * libps2fd is part of the radare project
@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-//#include <sys/ptrace.h>
 #include "../mem.h"
 #include "i386.h"
 #include "../debug.h"
@@ -59,7 +58,7 @@ int arch_hack(const char *cmd)
 	case '0': // nop
 		debug_getregs(ps.tid, &reg);
 		debug_read_at(ps.tid, buf, 16, R_EIP(reg));
-		len = instLength(buf, 16, 0);
+		len = dislen(buf, 16);
 		for(i=0;i<len;i++)
 			buf[i]=0x90;
 		debug_write_at(ps.tid, buf, 16, R_EIP(reg));

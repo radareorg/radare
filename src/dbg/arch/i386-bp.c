@@ -21,17 +21,10 @@
  *
  */
 
-
 #include "../libps2fd.h"
-#include "../debug.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#if __UNIX__
-#include <sys/ptrace.h>
-#endif
-
 #include <x86/udis86/types.h>
 #include <x86/udis86/extern.h>
 #include "../mem.h"

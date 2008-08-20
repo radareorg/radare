@@ -25,6 +25,29 @@ struct debug_t ps;
 
 struct debug_t debug_debugt;
 
+u64 dbg_lseek(int fildes, u64 offset, int whence)
+{
+	if (ps.opened && ps.fd == fildes)
+		switch(whence) {
+		case SEEK_SET:
+			ps.offset = offset;
+			return ps.offset;
+		case SEEK_CUR:
+			ps.offset = (u64)((unsigned long long)ps.offset+(unsigned long long)offset);
+			return ps.offset;
+		case SEEK_END:
+#if __x86_64__
+			return ps.offset = (u64)((unsigned long long)(-1));
+#else
+			return ps.offset = 0xffffffff;
+#endif
+		default:
+			return (u64)(unsigned long long)-1;
+		}
+
+	return __lseek(fildes, offset, whence);
+}
+
 static ssize_t dbg_write(int fd, const void *buf, size_t count)
 {
 	if (ps.opened)
@@ -68,6 +91,6 @@ plugin_t debug_plugin = {
 	.open = debug_open,
 	.read = dbg_read,
 	.write = dbg_write,
-	.lseek = debug_lseek,
+	.lseek = dbg_lseek,
 	.close = debug_close
 };

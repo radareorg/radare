@@ -4,8 +4,10 @@
 #undef __UNIX__
 #undef __WINDOWS__
 #if __WIN32__ || __CYGWIN__ || MINGW32
+#define __UNIX__ 0
 #define __WINDOWS__ 1
 #else
+#define __WINDOWS__ 0
 #define __UNIX__ 1
 #endif
 
@@ -26,11 +28,15 @@
 
 #endif
 
+#if __UNIX__
+#include <sys/ptrace.h>
+#endif
+
 #if __linux__
 #include <asm/ptrace.h>
 #endif
 #include <unistd.h>
-#include <signal.h>
+#include "signals.h"
 #include "debug.h"
 #include "thread.h"
 #include "wp.h"
@@ -45,7 +51,6 @@
 #endif
 // XXX?
 //#include "os.h"
-
 
 int       (*__open)   (const char *pathname, int flags, mode_t mode);
 int       (*__open64) (const char *pathname, int flags, mode_t mode);

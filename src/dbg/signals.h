@@ -1,7 +1,11 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
+#include "libps2fd.h"
+
 #if __UNIX__
+#include <sys/types.h>
+#include <wait.h>
 #include <signal.h>
 #endif
 

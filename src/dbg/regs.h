@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_REGS_H_
 #define _INCLUDE_REGS_H_
-#include "../main.h"
+
+//#include "../main.h"
 #include "thread.h"
 #include "wp.h"
 
@@ -69,7 +70,6 @@
 	#define regs_t elf_gregset_t
 #endif
 #endif
-
 
   /* portable ptrace */
 #if __linux__
@@ -151,7 +151,6 @@
   #define regs_t struct reg
 #endif
 
-
 #if __x86_64__ && __linux__
 	/* linux 64 bits */
 	#include <sys/user.h>
@@ -186,6 +185,5 @@ struct wait_state {
 	regs_t regs;
 	siginfo_t si;
 };
-
 
 #endif

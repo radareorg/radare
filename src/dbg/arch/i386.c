@@ -46,7 +46,7 @@
 #include "../debug.h"
 #include "../mem.h"
 #include "i386.h"
-#include "../../arch/x86/instcount.c"
+//#include "../../arch/x86/instcount.c"
 #include "../parser.h"
 #include "arch.h"
 
@@ -558,6 +558,7 @@ int arch_backtrace()
 
 void dump_eflags(const int eflags)
 {
+#undef EFL
 #define EFL(x,y,z) eflags & (1 << x) ? y : z
     cons_printf("%c%c%c%c%c%c%c%c%c%c%c ",
 	EFL(0,'C','c'), EFL(2,'P','p'), EFL(4,'A','a'), 
@@ -565,6 +566,7 @@ void dump_eflags(const int eflags)
 	EFL(9,'I','i'), EFL(10,'D','d'), EFL(11,'O','o'),
 	EFL(16,'R','r'), ((eflags >> 12) & 3) + '0');
 
+#undef EFL
 #define EF(x,y) eflags & (1 << x) ? y : ""
     cons_printf("(%s%s%s%s%s%s%s%s%s%s)\n",
 	EF(0,"C"), EF(2,"P"), EF(4,"A"), EF(6,"Z"),

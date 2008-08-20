@@ -1,11 +1,9 @@
 #! /usr/bin/env python
 
-obj = bld.create_obj('cc', 'staticlib')
-obj.sources = 'arch/i386.c arch/i386-bp.c arch/i386-hack.c'
-obj.find_sources_in_dirs('.')
+obj = bld.new_task_gen('cc', 'staticlib')
+obj.target  = 'debugger'
+obj.includes = '../arch ..'
+obj.source  = ' bp.c close.c debug.c events.c lseek.c mem.c open.c parser.c procs.c signal.c system.c thread.c wp.c'
+# XXX UNUSED FILES : watchpoint.c ptrace.c, libps2fd.c dosdebug.c # must be removed
+obj.source += ' arch/i386.c arch/i386-bp.c arch/i386-hack.c'
 obj.find_sources_in_dirs('unix')
-obj.includes = '.. .'
-
-obj.target = 'radare-dbg.a'
-#obj.uselib = ''
-#obj.packages='gtk+-2.0'

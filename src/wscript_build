@@ -7,8 +7,6 @@ bld.add_subdirs('radiff')
 bld.add_subdirs('rabin')
 bld.add_subdirs('javasm')
 
-# ONLY IF DEBUGGER ENABLED
-# bld.add_subdirs('dbg')
 
 xrefs = bld.new_task_gen('cc', 'program')
 xrefs.target = 'xrefs'
@@ -20,6 +18,10 @@ obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
 obj.target = 'radare'
 obj.packages='gtk+-2.0'
+
+if Options.options.DEBUGGER:
+	bld.add_subdirs('dbg')
+	obj.uselib_local = 'debugger'
 
 # sources for radare-core
 obj.source = 'aes-find.c analyze.c binparse.c bytepat.c cmds.c code.c config.c cons.c dietline.c environ.c flags.c grava.c hack.c io.c main.c plugin.c print.c project.c rabin.c radare.c rdb.c readline.c search.c socket.c stripstr.c trace.c undo.c visual.c utils.c hist.c radiff/rdbdiff.c hasher/hash.c vm.c hasher/entropy.c hasher/crc16.c rabin/javasm.c'
@@ -41,19 +43,11 @@ obj.find_sources_in_dirs('arch/java')
 obj.find_sources_in_dirs('arch/csr')
 obj.find_sources_in_dirs('arch/mips')
 
-#obj.env['CCFLAGS'].append('-Iinclude')
-obj.includes = '. ../'
-#obj.find_sources_in_dirs('plug/hack/')
-#obj.find_sources_in_dirs('plug/io/')
-
-#plug_io_objects  = 'plug/io/gdb.o'
-#plug_io_objects += 'plug/io/winedbg.o'
-
+obj.includes = '../'
 
 # Subdirectories
-
 bld.add_subdirs('plug/io')
-obj.uselib_local = 'plug-io'
+obj.uselib_local += ' plug-io'
 
 bld.libs = 'readline'
 bld.libs = 'dl'

@@ -28,8 +28,8 @@
 #include "../radare.h"
 #include "../config.h"
 #include "../print.h"
-#include <stdarg.h>
 #include "../code.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -38,10 +38,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#if __UNIX__
-#include <sys/wait.h>
-#endif
-#include <sys/types.h>
 #if __linux__
 #include <sys/prctl.h>
 #include <linux/ptrace.h>
@@ -50,7 +46,7 @@
 #include "wp.h"
 #include "mem.h"
 #include "thread.h"
-#include "signal.h"
+#include "signals.h"
 #include "events.h"
 #include "debug.h"
 

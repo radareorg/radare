@@ -5,8 +5,6 @@ LIL_ENDIAN="1"
 obj = bld.new_task_gen('cc', 'program')
 #obj.env['CCFLAGS'] = ''
 #obj.env['CCFLAGS'].append('-DLIL_ENDIAN="'+LIL_ENDIAN+'"')
-obj.env.append_value('CCFLAGS','-DLIL_ENDIAN=\\"'+LIL_ENDIAN+'\\"')
-obj.env.append_value('CCFLAGS','-DVERSION=\\"'+VERSION+'\\"')
 obj.env.append_value('LINKFLAGS','-lm')
 obj.source='hasher.c crc16.c crc32.c entropy.c hash.c hamdist.c md4.c md5c.c sha1.c sha2.c'
 

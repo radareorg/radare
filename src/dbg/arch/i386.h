@@ -275,8 +275,8 @@ void dr_init();
 #define SYSCALL_INS	""
 #endif
 
-int instLength(unsigned char *p, int s, int mode);
-int dislen(unsigned char* opcode0, int limit);
+extern int instLength(unsigned char *p, int s, int mode);
+extern int dislen(unsigned char* opcode0, int limit);
 
 #define REG_PC eip
 #define REG_SP esp

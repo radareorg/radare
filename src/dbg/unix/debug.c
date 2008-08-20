@@ -30,7 +30,7 @@
 #include "../wp.h"
 #include "../mem.h"
 #include "../thread.h"
-#include "../signal.h"
+#include "../signals.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -618,7 +618,7 @@ int debug_write_at(pid_t pid, void *data, int length, u64 addr)
 	return WriteMem(pid, addr, length, data);
 }
 
-inline int debug_getregs(pid_t pid, regs_t *reg)
+int debug_getregs(pid_t pid, regs_t *reg)
 {
 #if __linux__
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
@@ -627,7 +627,7 @@ inline int debug_getregs(pid_t pid, regs_t *reg)
 #endif
 }
 
-inline int debug_getxmmregs(pid_t pid, regs_t *reg)
+int debug_getxmmregs(pid_t pid, regs_t *reg)
 {
 #if 0
 /* FREEBSD */

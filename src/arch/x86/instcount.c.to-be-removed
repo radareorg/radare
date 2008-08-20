@@ -1,4 +1,5 @@
 /* Shit Oriented Programming Model Example - SHOP-ME (TM) */
+/* XXX TO BE REMOVED */
 
 #include<unistd.h>
 #include<stdio.h>
