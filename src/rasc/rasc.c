@@ -19,6 +19,7 @@
  */
 
 #include "rasc.h"
+#include "../../global.h"
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
