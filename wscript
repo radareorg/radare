@@ -36,6 +36,11 @@ def configure(conf):
 	conf.checkEndian()
 
 	# Generate GLOBAL.H
+	conf.env['GUI'] = False
+	conf.find_program('valac', var='VALAC')
+	if conf.env['HAVE_GTK'] and conf.env['HAVE_VTE'] and conf.env['VALAC' != '']:
+		conf.env['GUI'] = True
+		
 	conf.define('True', 1)
 	conf.define('False', 0) # hack for booleans
 	conf.define('VERSION', VERSION)
@@ -49,7 +54,8 @@ def configure(conf):
 	conf.define('CPU', 'i686') # XXX
 	conf.define('TARGET', 'i686-unknown-linux-gnu') # XXX
 
-	conf.define('HAVE_VALAC', False)
+	conf.define('HAVE_VALAC', conf.env['GUI'])
+	#conf.define('HAVE_GTK', conf.env['HAVE_GTK'])
 	conf.define('HAVE_LANG_LUA', False)
 	conf.define('LIL_ENDIAN', False)
 	conf.define('HAVE_LANG_PYTHON', False)
@@ -90,10 +96,17 @@ def configure(conf):
 	else:
 		print " * Readline: disabled"
 
+	if conf.env['GUI']:
+		print " * GUI: enabled"
+	else:
+		print " * GUI: disabled"
+
 def build(bld):
 	#bld.add_subdirs('vala')
 	os.system("cp "+srcdir+"/src/utils.c "+srcdir+"/ut.c")
 	bld.add_subdirs('src')
+	#if bld.env['GUI']:
+	#bld.add_subdirs('vala')
 	#if Params.g_commands['clean']:
 	#	os.system("echo unknown clean")
 	#else:
