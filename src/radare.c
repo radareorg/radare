@@ -627,7 +627,9 @@ void radare_nullcmd()
 	if (!config.debug)
 		return;
 
-	radare_read(0);
+	i = radare_read(0);
+	if (i<0)
+		return;
 	ptr = config_get("cmd.visual");
 	if (!strnull(ptr)) {
 		char *ptrcmd = strdup(ptr);

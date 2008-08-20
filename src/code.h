@@ -94,7 +94,7 @@ struct data_t {
 	u64 to;
 	int type;
 	u64 size;
-	struct list_head *list;
+	struct list_head list;
 };
 
 extern struct list_head comments;

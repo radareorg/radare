@@ -90,7 +90,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	ps.is_file  = (atoi(ps.filename)?0:1);
 	ps.opened = 1;
 
-	if (debug_load() == -1)
+	if (debug_load() == -1 || ps.pid == 0)
 		return -1;
 
 	/* get entry point here */

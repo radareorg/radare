@@ -72,9 +72,8 @@ int commands_parse (const char *_cmdline)
 	}
 
 	for (cmd = commands; cmd->sname != 0; cmd++)
-		if (cmd->sname == cmdline[0]) {
+		if (cmd->sname == cmdline[0])
 		    return cmd->hook(cmdline+1);
-		}
 
 	/* default hook */
 	return cmd->hook(cmdline);
@@ -869,9 +868,9 @@ CMD_DECL(code)
 		//if (len>config.block_size)
 		//	len = config.block_size;
 		tmp = config.block_size;
-		config.block_size = len;
+		radare_set_block_size_i(len);
 		data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
-		config.block_size = tmp;
+		radare_set_block_size_i(tmp);
 		} break;
 	case '*':
 		metadata_comment_list();

@@ -94,9 +94,9 @@ void data_add(u64 off, int type)
 	}
 
 	d = (struct data_t *)malloc(sizeof(struct data_t));
-
 	d->from = off;
-	d->to = d->from+config.block_size;  // 1 byte if no cursor // on strings should autodetect
+	d->to = d->from + config.block_size;  // 1 byte if no cursor // on strings should autodetect
+
 	if (config.cursor_mode) {
 		d->to = d->from + 1;
 		d->from+=config.cursor;
