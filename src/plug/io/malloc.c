@@ -31,7 +31,7 @@ static unsigned int malloc_bufsz = 0;
 
 static ssize_t malloc_write(int fd, const void *buf, size_t count)
 {
-	return memcpy(malloc_buf+config.seek, buf, count);
+	return (ssize_t)memcpy(malloc_buf+config.seek, buf, count);
 }
 
 static ssize_t malloc_read(int fd, void *buf, size_t count)
@@ -44,7 +44,7 @@ static ssize_t malloc_read(int fd, void *buf, size_t count)
 	if (config.seek +count > config.size)
 		config.seek = config.size;
 
-	return memcpy(buf, malloc_buf+config.seek, count);
+	return (ssize_t)memcpy(buf, malloc_buf+config.seek, count);
 }
 
 static int malloc_close(int fd)

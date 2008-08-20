@@ -62,7 +62,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 all: ${TARGETS} udis86 armasm _radiff \
 	lsbstego pre radare${BINSFX} _hasher plugs \
-	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _rasc
+	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true
 
 ${OBJS}: %.o: %.c
@@ -101,6 +101,9 @@ lsbstego${BINSFX}: lsbstego.o
 
 _rabin:
 	cd rabin && ${MAKE} all
+
+_javasm:
+	cd javasm && ${MAKE} all
 
 _rasm:
 	cd rasm && ${MAKE} all

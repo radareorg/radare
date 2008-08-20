@@ -1,0 +1,5 @@
+#! /usr/bin/env python
+
+ob2= bld.new_task_gen('cc', 'program')
+ob2.target = 'javasm'
+ob2.source='../rabin/javasm.c main.c'

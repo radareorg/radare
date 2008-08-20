@@ -51,7 +51,7 @@ static int show_help()
 	printf("  -d [bytes]   disassemble from hexpair bytes\n");
 	printf("  -f [file]    compiles assembly file to 'file'.o\n");
 	printf("  -s [offset]  offset where this opcode is suposed to be\n");
-	printf("  -a [arch]    selected architecture (x86, ppc, arm, java)\n");
+	printf("  -a [arch]    selected architecture (x86, olly, ppc, arm, java, rsc)\n");
 	printf("  -e           use big endian\n");
 	printf("  -l           list all supported opcodes and architectures\n");
 	printf("  -V           show version information\n");
@@ -68,11 +68,6 @@ int rasm_assemble(char *str)
 	if (str!=NULL)
 		ret = rasm_asm(arch, &offset, str, data);
 
-#if 0
-	if (ret <1)
-		eprintf("Unknown arch or opcode. See -l\n");
-	else {
-#endif
 	if (ret>0) {
 		int i;
 		if (endian) {

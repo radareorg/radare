@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
 import os
+import shutil
+import Options
 
 VERSION='1.0-beta'
 APPNAME='radare'
@@ -20,6 +22,8 @@ def set_options(opt):
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 	opt.add_option('--without-readline', type='string', help='Build without readline', dest='HAVE_READLINE')
+	opt.add_option('--with-maemo',       action='store_true', default=False, help='Build for maemo', dest='MAEMO')
+	opt.add_option('--with-sysproxy',    action='store_true', default=False, help='Build with syscall proxy', dest='SYSPROXY')
 	opt.add_option('--without-debugger', action='store_false', default=True, help='Build without debugger', dest='DEBUGGER')
 
 def configure(conf):
@@ -29,27 +33,34 @@ def configure(conf):
         conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.10.0', mandatory=False)
         conf.check_pkg('gtk+-2.0', destvar='GTK', vnum='2.10.0', mandatory=False)
         conf.check_pkg('vte', destvar='GTK', vnum='0.16', mandatory=False)
-	conf.env['CCFLAGS'].append('-DVERSION=\\"'+VERSION+'\\"')
-	conf.env['CCFLAGS'].append('-DLIL_ENDIAN="'+LIL_ENDIAN+'"')
-	conf.env['CCFLAGS'].append('-D_MAEMO_="'+MAEMO+'"')
-	conf.env['CCFLAGS'].append('-DHAVE_VALAC='+HAVE_VALAC)
-	conf.env['CCFLAGS'].append('-DLIBDIR=\\"'+LIBDIR+'\\"')
-	conf.env['CCFLAGS'].append('-DLIBEXECDIR=\\"'+LIBEXECDIR+'\\"')
-	conf.env['CCFLAGS'].append('-DDOCDIR=\\"'+DOCDIR+'\\"')
-	conf.env['CCFLAGS'].append('-DHAVE_LIB_READLINE=0')
-	conf.env['CCFLAGS'].append('-DSIZE_OFF_T=8')
-	if DEBUGGER:
-		conf.env['CCFLAGS'].append('-DDEBUGGER=1')
-		print " = DEBUGGER: 1"
-	else:
-		conf.env['CCFLAGS'].append('-DDEBUGGER=0')
-		print " = DEBUGGER: 0"
-	conf.env['CCFLAGS'].append('-DTARGET=\\"i686-unknown-linux-gnu\\"')
-#	conf.env['CCFLAGS'].append('-DRADARE_CORE')
-	conf.env['CCFLAGS'].append('-DHAVE_LIB_EWF=0')
-	#conf.define('VERSION', VERSION)
-	#conf.env.append_value('CCFLAGS', '')
-	#conf.write_config_header('src/waf.h')
+	conf.checkEndian()
+
+	# Generate GLOBAL.H
+	conf.define('True', 1)
+	conf.define('False', 0) # hack for booleans
+	conf.define('VERSION', VERSION)
+	conf.define('W32', False)
+	conf.define('GUI', False)
+	conf.define('SIZE_OFF_T', 8)
+	conf.define('DARWIN', False)
+	conf.define('DEBUGGER', Options.options.DEBUGGER)
+	conf.define('SYSPROXY', Options.options.SYSPROXY)
+	conf.define('_MAEMO_', Options.options.MAEMO)
+	conf.define('CPU', 'i686') # XXX
+	conf.define('TARGET', 'i686-unknown-linux-gnu') # XXX
+
+	conf.define('HAVE_VALAC', False)
+	conf.define('HAVE_LANG_LUA', False)
+	conf.define('LIL_ENDIAN', False)
+	conf.define('HAVE_LANG_PYTHON', False)
+	conf.define('HAVE_LIB_READLINE', False) # TODO
+	conf.define('HAVE_LIB_EWF', False) # TODO
+	conf.define('LIBDIR', '/usr/lib')
+	conf.define('DOCDIR', '/usr/share/doc/radare')
+	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
+
+	conf.write_config_header('global.h')
+	shutil.copyfile("%s/default/global.h"%blddir, "%s/global.h"%srcdir)
 
 	rl = conf.create_library_configurator()
 	rl.name = 'readline'

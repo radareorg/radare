@@ -5,8 +5,7 @@
 #define CPU "@TARGET_CPU@"
 #define TARGET "@TARGET@"
 #define SIZEOF_OFF_T @SIZEOF_OFF_T
-#define MAEMO @MAEMO@
-#define SOLARIS @SOLARIS@
+#define _MAEMO_ @MAEMO@
 #define W32 @W32@
 #define DARWIN @DARWIN@
 
@@ -17,6 +16,7 @@
 #define HAVE_VALAC @HAVE_VALAC@
 #define HAVE_LANG_LUA @HAVE_LANG_LUA@
 #define HAVE_LANG_PYTHON @HAVE_LANG_PYTHON@
+#define SIZE_OFF_T 8
 
 #define LIL_ENDIAN @LIL_ENDIAN@
 #define VERSION "@VERSION@"

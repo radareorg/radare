@@ -34,7 +34,7 @@ static unsigned int shm_bufread = 0;
 static ssize_t rshm_write(int fd, const void *buf, size_t count)
 {
 	if (shm_buf != NULL)
-        	return memcpy(shm_buf+config.seek, buf, count);
+        	return (ssize_t)memcpy(shm_buf+config.seek, buf, count);
 	return -1;
 }
 
@@ -96,7 +96,7 @@ static int rshm_open(const char *pathname, int flags, mode_t mode)
 
 		if (((int)(shm_buf)) != -1) {
 			printf("Connected to shared memory 0x%08x\n", atoi(ptr));
-			shm_fd = &shm_buf;
+			shm_fd = (int)&shm_buf;
 		} else	{
 			printf("Cannot connect to shared memory (%d)\n", atoi(ptr));
 			shm_buf = NULL;

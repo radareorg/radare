@@ -21,12 +21,14 @@
 #define RADARE_MODULE
 #include <plugin.h>
 #include <main.h>
+#undef _GNU_SOURCE
 #include <Python.h>
 #include <structmember.h>
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static char *(*rs)(const char *cmd) = NULL;
 
+#if 0
 static PyObject * PyRadare_Exec(PyObject *self, PyObject *args)
 {
 	const char *command;
@@ -59,6 +61,7 @@ static PyObject * PyRadare_Exec(PyObject *self, PyObject *args)
    return 0;
    }
  */
+#endif
 
 typedef struct {
 	PyObject_HEAD

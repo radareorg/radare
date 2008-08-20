@@ -173,18 +173,25 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 
 	if ((!strcmp(arch, "x86")) ||(!strcmp(arch, "intel")))
 		ret = rasm_x86(offset, str, data);
-
+	else
 	if (!strcmp(arch, "olly"))
 		ret = rasm_olly_x86(offset, str, data);
-
+	else
 	if (!strcmp(arch, "arm"))
 		ret = rasm_arm(offset, str, data);
-
+	else
 	if (!strcmp(arch, "java"))
 		ret = rasm_java(offset, str, data);
-
+	else
 	if (!strcmp(arch, "ppc"))
 		ret = rasm_ppc(offset, str, data);
+	else
+	if (!strcmp(arch, "rsc")) {
+		char buf[1024];
+		snprintf(buf,1020, "SYNTAX=intel rsc asm '%s'", str);
+		system(buf);
+		return -1;
+	}
 
 	if (ret == -1)
 		fprintf(stderr, "error in '%s'\n", str);
