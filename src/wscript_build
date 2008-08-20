@@ -13,9 +13,12 @@ xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
 
 obj = bld.new_task_gen('cc', 'program')
+obj.includes = '.. include'
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
 obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
+if Options.options.HAVE_READLINE:
+	obj.env.append_value('LINKFLAGS','-lreadline')
 obj.target = 'radare'
 obj.packages='gtk+-2.0'
 
@@ -43,15 +46,6 @@ obj.find_sources_in_dirs('arch/java')
 obj.find_sources_in_dirs('arch/csr')
 obj.find_sources_in_dirs('arch/mips')
 
-obj.includes = '../'
-
 # Subdirectories
 bld.add_subdirs('plug/io')
 obj.uselib_local += ' plug-io'
-
-bld.libs = 'readline'
-bld.libs = 'dl'
-obj.includes = '.. include'
-
-#lsb = bld.create_obj('cc', 'program')
-#lsb.target = 'lsbstego'

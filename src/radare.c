@@ -623,6 +623,7 @@ void radare_nullcmd()
 	char buf[128];
 	const char *ptr;
 	int p,i;
+	int verborig;
 
 	if (!config.debug)
 		return;
@@ -636,6 +637,7 @@ void radare_nullcmd()
 		radare_cmd_raw(ptrcmd, 0);
 		free(ptrcmd);
 	}
+	verborig = config_get_i("cfg.verbose");
 	config_set("cfg.verbose", "false");
 	p = last_print_format;
 
@@ -664,8 +666,7 @@ void radare_nullcmd()
 		radare_cmd("!fpregs", 0);
 	}
 
-	//config.verbose = 1; //t;
-	config_set("cfg.verbose", "true");
+	config_set_i ("cfg.verbose", 1);
 	if (config_get("dbg.bt")) {
 		if (config_get("dbg.fullbt")) {
 			C cons_printf(C_RED"Full Backtrace:\n" C_YELLOW C_RESET);
@@ -691,15 +692,8 @@ void radare_nullcmd()
 	config.verbose=1;
 	/* TODO: chose pd or pD by eval */
 	radare_cmd("pD", 0);
-#if 0
-	if (config.visual) {
-		config.lines=-12;
-		radare_cmd("pD", 0);
-		config.lines = 0;
-	//radare_cmd("pd 100", 0);
-#endif
 
-	config_set("cfg.verbose", "1");
+	config_set_i ("cfg.verbose", verborig);
 	last_print_format = p;
 }
 
@@ -1008,7 +1002,8 @@ int radare_prompt()
 
 	memset(input, 0, BUFLEN);
 
-	t = (int) config_get("cfg.verbose");
+	t = (int) config_get_i("cfg.verbose");
+	if (!t) prompt[0]='\0';
 
 #if HAVE_LIB_READLINE
 	D {
@@ -1047,9 +1042,7 @@ int radare_prompt()
 		dl_disable=0;
 	}
 #endif
-	
-	config_set("cfg.verbose", t?"true":"false");
-	config.verbose = t;
+	config_set_i("cfg.verbose", t);
 	return 1;
 }
 
@@ -1187,10 +1180,6 @@ int radare_open(int rst)
 	if (ptr) ptr[0] = '\0';
 	//snprintf(buf2, 255, "%s.rdb", buf);
 	//config_set("file.rdb", buf2);
-
-	//D if (wm)
-	//if (config.verbose)
-	//	eprintf("warning: Opening file in read-write mode\n");
 
 	cptr = config_get("file.project");
 	if (cptr)
@@ -1334,11 +1323,10 @@ int radare_go()
 
 	if (!config.noscript) {
 		char path[1024];
-		int t = (int)config_get("cfg.verbose");
 		config.verbose = 0;
 		snprintf(path, 1000, "%s/.radarerc", config_get("dir.home"));
 		radare_interpret(path);
-		config_set("cfg.verbose", t?"true":"false");
+		config_set_i("cfg.verbose", t);
 	}
 
 	if (config_get("cfg.verbose") && config_get("cfg.fortunes"))
@@ -1379,7 +1367,7 @@ int radare_go()
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("file.write", "true"); /* write mode enabled for the debugger */
 		config_set("cfg.verbose", "true"); /* write mode enabled for the debugger */
-		config.verbose = 1; // ?
+		//config.verbose = 1; // ?
 		break;
 	case 2:
 		radare_seek(config.seek, SEEK_SET);
@@ -1398,7 +1386,7 @@ int radare_go()
 	if (config.script)
 		radare_interpret(config.script);
 
-	config_set("cfg.verbose", t?"true":"false");
+	config_set_i("cfg.verbose", t);
 
 	radare_controlc_end();
 

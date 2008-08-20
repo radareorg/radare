@@ -21,10 +21,10 @@ blddir = 'build'
 def set_options(opt):
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
-	opt.add_option('--without-readline', type='string', help='Build without readline', dest='HAVE_READLINE')
-	opt.add_option('--with-maemo',       action='store_true', default=False, help='Build for maemo', dest='MAEMO')
-	opt.add_option('--with-sysproxy',    action='store_true', default=False, help='Build with syscall proxy', dest='SYSPROXY')
-	opt.add_option('--without-debugger', action='store_false', default=True, help='Build without debugger', dest='DEBUGGER')
+	opt.add_option('--with-maemo',       action='store_true',  default=False, help='Build for maemo',          dest='MAEMO')
+	opt.add_option('--with-sysproxy',    action='store_true',  default=False, help='Build with syscall proxy', dest='SYSPROXY')
+	opt.add_option('--without-debugger', action='store_false', default=True,  help='Build without debugger',   dest='DEBUGGER')
+	opt.add_option('--without-readline', action='store_false', default=True,  help='Build without readline',   dest='HAVE_READLINE')
 
 def configure(conf):
 	conf.check_tool('compiler_cc compiler_cxx cc vala perl lua')
@@ -53,27 +53,42 @@ def configure(conf):
 	conf.define('HAVE_LANG_LUA', False)
 	conf.define('LIL_ENDIAN', False)
 	conf.define('HAVE_LANG_PYTHON', False)
-	conf.define('HAVE_LIB_READLINE', False) # TODO
 	conf.define('HAVE_LIB_EWF', False) # TODO
 	conf.define('LIBDIR', '/usr/lib')
 	conf.define('DOCDIR', '/usr/share/doc/radare')
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
-	conf.write_config_header('global.h')
-	shutil.copyfile("%s/default/global.h"%blddir, "%s/global.h"%srcdir)
 
+	# Check for libreadline
 	rl = conf.create_library_configurator()
 	rl.name = 'readline'
+	rl.define = 'HAVE_READLINE'
 	rl.libs = ['readline']
 	rl.mandatory = False
 	rl.run()
+	if conf.env['HAVE_READLINE'] != 1:
+		Options.options.HAVE_READLINE = False
+	conf.define('HAVE_LIB_READLINE', Options.options.HAVE_READLINE)
 
 	rl2 = conf.create_library_configurator()
 	rl2.name = 'dl'
 	rl2.libs = ['dl']
 	rl2.mandatory = False
 	rl2.run()
+
+	# Write global.h and show report to stdout
+	conf.write_config_header('global.h')
+	shutil.copyfile("%s/default/global.h"%blddir, "%s/global.h"%srcdir)
 	
+	if Options.options.DEBUGGER:
+		print " * Debugger: enabled"
+	else:
+		print " * Debugger: disabled"
+
+	if Options.options.HAVE_READLINE:
+		print " * Readline: enabled"
+	else:
+		print " * Readline: disabled"
 
 def build(bld):
 	#bld.add_subdirs('vala')
