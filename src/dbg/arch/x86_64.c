@@ -50,7 +50,7 @@
 #include <sys/ptrace.h>
 #include "../mem.h"
 #include "i386.h"
-#include "../../arch/x86/instcount.c"
+//#include "../../arch/x86/instcount.c"
 #include "../parser.h"
 #include "../debug.h"
 #include "../flags.h"

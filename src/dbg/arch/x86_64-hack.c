@@ -60,7 +60,7 @@ int arch_hack(const char *cmd)
 	case '0': // nop
 		debug_getregs(ps.tid, &reg);
 		debug_read_at(ps.tid, buf, 16, R_RIP(reg));
-		len = instLength(buf, 16, 0);
+		len = dislen(buf, 16);
 		for(i=0;i<len;i++)
 			buf[i]=0x90;
 		debug_write_at(ps.tid, buf, 16, R_RIP(reg));

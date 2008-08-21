@@ -25,7 +25,8 @@ def set_options(opt):
 		dest    = 'prefix')
 
 def configure(conf):
-	conf.check_tool('compiler_cc compiler_cxx cc vala perl lua')
+	#conf.check_tool('compiler_cc compiler_cxx cc vala perl lua')
+	conf.check_tool('compiler_cc cc')
 	if not conf.env['CC']: fatal('C compiler not found')
 
         conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.10.0', mandatory=False)
@@ -40,10 +41,8 @@ def configure(conf):
 		conf.env['GUI'] = True
 	conf.env['OS']= os.uname()[0]
 	conf.env['CPU']= os.uname()[4]
-	if conf.env['CPU'] == 'i686':
-		conf.env['CPU'] = 'i386'
-	if conf.env['CPU'] == 'i586':
-		conf.env['CPU'] = 'i386'
+	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
+	if conf.env['CPU'] == 'i586': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':
 		print "Unknown CPU. Disabling debugger"
 		Options.options.DEBUGGER = False
@@ -128,7 +127,7 @@ def configure(conf):
 	print "Use --without-gui : vala-waf support is not yet complete"
 
 def build(bld):
-	os.system("cp "+srcdir+"/src/utils.c "+srcdir+"/ut.c")
+	shutil.copyfile(srcdir+"/src/utils.c", srcdir+"/src/ut.c")
 	bld.add_subdirs('src')
 	if bld.env['GUI']:
 		bld.add_subdirs('vala')

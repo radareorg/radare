@@ -19,7 +19,9 @@ obj.includes = '.. include'
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
 obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
-if Options.options.HAVE_READLINE:
+
+#if Options.options.HAVE_READLINE:
+if bld.env['HAVE_READLINE']:
 	obj.env.append_value('LINKFLAGS','-lreadline')
 obj.target = 'radare'
 obj.packages='gtk+-2.0'
