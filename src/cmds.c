@@ -46,12 +46,12 @@
 #include "print.h"
 #include "flags.h"
 #include "undo.h"
-//#include "eperl.h"
 
 print_fmt_t last_print_format = FMT_HEXB;
+int fixed_width = 0;
+extern char **environ;
 extern command_t commands[];
 extern void show_help_message();
-#define uchar unsigned char
 
 /* Call a command from the command table */
 int commands_parse (const char *_cmdline)
@@ -99,9 +99,6 @@ void show_help_message()
 	}
 	cons_printf(" ? <expr>          calc     math expr and show result in hex,oct,dec,bin\n");
 }
-
-
-int fixed_width = 0;
 
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
 	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
@@ -1451,7 +1448,8 @@ CMD_DECL(search) {
 		" /x A0 B0 43    ; hex byte pair binary search.\n"
 		" /k# keyword    ; keyword # to search\n"
 		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
-		" /a             ; Find expanded AES keys from current seek(*)\n"
+		" /a [opcode]    ; Look for a string in disasembly\n"
+		" /A             ; Find expanded AES keys from current seek(*)\n"
 		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /r 0,2-10      ; launch range searches 0-10\n"
 		" /p len         ; search pattern of length = len\n"
@@ -1496,22 +1494,21 @@ CMD_DECL(search) {
 			sprintf(buf, "SEARCH[%d]", i);
 			setenv(buf, ptr+1, 1);
 		} else {
-			extern char **environ;
 			for(i=0;environ[i];i++) {
 				if (!memcmp(environ[i], "SEARCH[", 7)) {
 					int j = atoi(environ[i]+7);
 					sprintf(buf, "SEARCH[%d]", j);
 					ptr = getenv(buf);
-					if (ptr) {
-						cons_printf("%02d %s\n", j, ptr);
-					} else {
-						cons_printf("%02d (no keyword)\n", i);
-					}
+					if (ptr) cons_printf("%02d %s\n", j, ptr);
+					else cons_printf("%02d (no keyword)\n", i);
 				}
 			}
 		}
 		break;
 	case 'a':
+		radare_search_asm(text+2);
+		break;
+	case 'A':
 		radare_search_aes();
 		break;
 	case 's':

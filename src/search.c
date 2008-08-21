@@ -27,6 +27,14 @@
 #include <stdlib.h>
 #include <signal.h>
 
+static const char *search_cmdhit = NULL;
+static int search_count = 0;
+static int search_flag = 1;
+static int search_verbose = 0;
+char *search_last_keyword = NULL;
+
+static int nhit = 0;
+
 static void search_alarm()
 {
 	progressbar((int)(config.seek/config.size*100));  // slowdowns 170%
@@ -69,13 +77,16 @@ void radare_search_aes()
 	config.block_size = bsize;
 }
 
-static const char *search_cmdhit = NULL;
-static int search_count = 0;
-static int search_flag = 1;
-static int search_verbose = 0;
-char *search_last_keyword = NULL;
+int radare_search_asm(const char *str)
+{
+	eprintf("TODO\n");
+#if 0
+	u64 seek = config.seek;
+	radare_seek(seek);
+#endif
+	return 0;
+}
 
-static int nhit = 0;
 static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 {
 	char flag_name[128];
