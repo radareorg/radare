@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* TODO: make !tt interact with optraces
+  - A way to dump the 'trace' table to stdout
 * cons.c (dietline) should work fine without readline and without verbose)
 * fix file.baddr problems
 * rename 'hasher' into 'rahash'

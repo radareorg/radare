@@ -2,11 +2,11 @@
 
 obj = bld.new_task_gen('cc', 'program')
 #obj.source = ' line.vala list.vala logs.vala main.vala panel.vala shell.vala term.vala visor.vala window.vala'
-obj.source = ' line.vala list.vala logs.vala panel.vala shell.vala term.vala visor.vala window.vala'
-obj.source += ' api/core.vala'
+#obj.source = ' line.vala list.vala logs.vala panel.vala shell.vala term.vala visor.vala window.vala'
+#obj.source += ' api/core.vala'
 #obj.source += ' api/asm.vala api/config.vala api/core.vala api/debugger.vala api/disassembler.vala api/io.vala api/plugin.vala api/project.vala api/utils.vala'
-obj.source += ' grava/chart.vala grava/default_layout.vala grava/edge.vala grava/graph.vala grava/layout.vala grava/main.vala grava/node.vala grava/renderer.vala grava/shape.vala grava/widget.vala'
-obj.source += ' panel/debug.vala panel/info.vala panel/radget.vala panel/search.vala'
+obj.source += ' chart.vala default_layout.vala edge.vala graph.vala layout.vala node.vala renderer.vala shape.vala widget.vala'
+#obj.source += ' panel/debug.vala panel/info.vala panel/radget.vala panel/search.vala'
 #obj.find_sources_in_dirs('. api grava panel')
 obj.packages = 'gtk+-2.0 vte'
 obj.target = 'gravala'

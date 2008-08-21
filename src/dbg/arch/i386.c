@@ -397,7 +397,7 @@ u64 arch_pc(int tid)
 	regs_t regs;
 	debug_getregs(tid, &regs);
 #if __x86_64__
-	return (u64)R_EIP(regs);
+	return (u64)R_RIP(regs);
 #else
 	return (u64)R_EIP(regs)&0xffffffff;
 #endif

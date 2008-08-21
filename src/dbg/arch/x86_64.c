@@ -260,14 +260,14 @@ int arch_is_jump(unsigned char *buf)
 	return 0;
 }
 
-addr_t arch_get_entrypoint()
+u64 arch_get_entrypoint()
 {
 	ull addr;
 	debug_read_at(ps.tid, &addr, 4, 0x8048018);
 	return (off_t)addr;
 }
 
-int arch_jmp(addr_t ptr)
+int arch_jmp(u64 ptr)
 {
 	regs_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
@@ -372,7 +372,7 @@ int arch_inject(unsigned char *data, int size)
 	return 0;
 }
 
-addr_t arch_pc()
+u64 arch_pc()
 {
 	regs_t regs;
 	debug_getregs(ps.tid, &regs);
@@ -878,7 +878,7 @@ int arch_continue()
 }
 
 //void *arch_mmap(int fd, int size, off_t addr) //int *rsize)
-addr_t arch_mmap(int fd, int size, addr_t addr)
+u64 arch_mmap(int fd, int size, u64 addr)
 {
 #if 0
 #include <sys/types.h>
@@ -1004,14 +1004,14 @@ $
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (addr_t) addr;
+	return (u64) addr;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 } 
 
-addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
+u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1067,14 +1067,14 @@ addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (addr_t) ret;
+	return (u64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 } 
 
-addr_t arch_get_sighandler(int signum)
+u64 arch_get_sighandler(int signum)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1122,7 +1122,7 @@ addr_t arch_get_sighandler(int signum)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (addr_t) ret;
+	return (u64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1154,7 +1154,7 @@ void signal_set(int signum, off_t address)
 }
 #endif
 
-int arch_mprotect(addr_t addr, unsigned int size, int perms)
+int arch_mprotect(u64 addr, unsigned int size, int perms)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1209,7 +1209,7 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
 #endif
 }
 
-addr_t arch_set_sighandler(int signum, addr_t handler)
+u64 arch_set_sighandler(int signum, u64 handler)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1265,7 +1265,7 @@ addr_t arch_set_sighandler(int signum, addr_t handler)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (addr_t) ret;
+	return (u64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1450,7 +1450,7 @@ void free_bt(struct list_head *sf)
    free(sf);
 }
 
-addr_t arch_dealloc_page(addr_t addr, unsigned long size)
+u64 arch_dealloc_page(u64 addr, unsigned long size)
 {
 	#warning "FIXME: code is missing"
 	return 0;

@@ -5,6 +5,8 @@ bld.add_subdirs('plug/hack')
 bld.add_subdirs('hasher')
 bld.add_subdirs('radiff')
 bld.add_subdirs('rabin')
+bld.add_subdirs('rasm')
+bld.add_subdirs('rasc')
 bld.add_subdirs('javasm')
 
 

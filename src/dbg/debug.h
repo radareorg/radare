@@ -15,6 +15,7 @@ int debug_bp(const char *addr);
 int debug_bp_set(struct bp_t *bp, u64 addr, int type);
 int debug_bp_rm(u64 addr, int type);
 int debug_bp_rm_num(int num);
+int debug_tt(const char *arg);
 int debug_bp_rm_addr(u64 addr);
 int debug_bp_restore(int pos);
 struct bp_t *debug_bp_get(addr_t addr);

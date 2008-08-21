@@ -79,6 +79,7 @@ int help_message()
 	cons_printf(" Tracing\n");
 	TITLE_END
 	cons_printf("  trace [N]          trace until bp or eof at N debug level\n");
+	cons_printf("  tt [size]          touch trace using a swapable bps area\n");
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
 	cons_printf("  ktrace             follow app until ktrace event occurs\n");
 #endif
@@ -158,6 +159,7 @@ static struct commads_t {
 	CB_CMD( "pid"      , CB_SPACE    , debug_pstree )       , 
 	CB_CMD( "attach"   , CB_INT      , debug_attach)        , 
 	CB_CMD( "skip"     , CB_INT      , debug_skip)          , 
+	CB_CMD( "tt"       , CB_NORMAL   , debug_tt)            , 
 	CB_CMD( "detach"   , CB_NOARGS   , debug_detach )       , 
 	CB_CMD( "load"     , CB_NOARGS   , debug_load )         , 
 	CB_CMD( "unload"   , CB_NOARGS   , debug_unload )       , 

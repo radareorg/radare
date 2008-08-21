@@ -1,0 +1,13 @@
+#! /usr/bin/env python
+
+
+obj = bld.new_task_gen('cc', 'program')
+obj.source='shellcodes.c test.c rasc.c'
+
+# TODO : add sysproxy stuff here
+#OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
+#obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
+
+obj.includes = '. ../'
+
+obj.target = 'rasc'

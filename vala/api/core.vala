@@ -64,34 +64,34 @@ public class Radare.Core : Object
 }
 
 [Import()]
-public static string pipe_command_to_string(string command);
+public extern static string pipe_command_to_string(string command);
 
 [Import()]
-public static int radare_cmd(string command, int arg);
+public extern static int radare_cmd(string command, int arg);
 
 [Import()]
-public static int system(string str);
+public extern static int system(string str);
 
 [Import()]
-public static int radare_init();
+public extern static int radare_init();
 
 [Import()]
-public static int plugin_init();
+public extern static int plugin_init();
 
 [Import()]
-public static void radare_read(int next);
+public extern static void radare_read(int next);
 
 [Import()]
-public static int radare_close();
+public extern static int radare_close();
 
 [Import()]
-public static int radare_open(string file, int allow_write);
+public extern static int radare_open(string file, int allow_write);
 
 [Import()]
-public static void prepare_environment(string str);
+public extern static void prepare_environment(string str);
 
 [Import()]
-public static bool radare_seek(ulong offset, int which);
+public extern static bool radare_seek(ulong offset, int which);
 
 [Import()]
-public static uchar radare_get(int delta);
+public extern static uchar radare_get(int delta);

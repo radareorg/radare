@@ -103,6 +103,81 @@ int getv()
 #endif
 }
 
+int debug_tt(const char *arg)
+{
+	struct aop_t aop;
+	u8 tmp[4];
+	u64 pc; // program counter
+	u8 *sa; // swap area
+	u8 *cc; // breakpoint area
+	u64 ba = config.seek; // base address
+	u64 sz = get_math(arg+1); // size
+	int status;
+	if (sz <1) {
+		cons_printf("Usage: !tt [size] @ [base_address]\n");
+		cons_printf("Touch trace a section of N bytes starting at seek\n");
+		return 0;
+	}
+	cons_printf("TouchTracing %lld bytes from 0x%08llx..\n", sz, ba);
+	cons_flush();
+	/* */
+	radare_controlc();
+	sa = (u8 *)malloc(sz);
+	cc = (u8 *)malloc(sz);
+	debug_read_at(ps.tid, sa, (int)sz, ba);
+	/* TODO: make it depend on asm.arch */
+	/* TODO: use memcpy_loop with get_arch_breakpoint() or whatever */
+	memset(cc, '\xCC', sz);
+	debug_write_at(ps.tid, cc, (int)sz,ba);
+
+	while(!config.interrupted) {
+		debug_contp(ps.tid);
+		ps.tid = debug_waitpid(-1, &status);
+
+		pc = arch_pc(ps.tid);
+		if ((pc & 0xffffffff) == 0xffffffff) {
+			perror("arch_pc");
+			break;
+		}
+		if (pc >= ba && pc <= ba+sz) {
+			/* swap area and continue */
+			int bpsz = 1; // XXX for intel
+			int delta = pc-ba-bpsz;
+
+#if 0
+			TODO: ensure this is a breakpoint
+			debug_read_at(ps.tid, tmp, 4, pc-bpsz);
+
+			if (tmp[0]=='\xcc') {
+				printf("RESTORING\n");
+			} else {
+				printf("SKIPPING 0x%llx\n",pc-bpsz);
+			//arch_jmp(pc-bpsz); // restore pc // XXX this is x86 only!!!
+			//	continue;
+			}
+#endif
+
+			arch_aop(pc-bpsz, sa+delta, &aop);
+			debug_write_at(ps.tid, sa+delta, aop.length, ba+delta);
+			arch_jmp(pc-bpsz); // restore pc // XXX this is x86 only!!!
+			printf("0x%llx %d\n", pc-bpsz, aop.length);
+			continue;
+		} else {
+			/* unexpected stop */
+			cons_printf("Oops: Unexpected stop oustide tracing area pid=%d at 0x%08llx\n", ps.tid, pc);
+			break;
+		}
+	}
+	radare_controlc_end();
+	debug_write_at(ps.tid, (void *)sa, (int)sz,ba);
+#if 0 /* check */
+	debug_read_at(ps.tid, sa, (int)sz, ba);
+	printf("%x %x\n", sa[0], sa[1]);
+#endif
+	free(sa);
+	free(cc);
+}
+
 /// XXX looks wrong
 /// XXX use wait4 and get rusage here!!!
 /// XXX move to dbg/unix
@@ -1650,7 +1725,6 @@ int debug_pids()
 #endif
 }
 
-
 u64 debug_get_regoff(regs_t *regs, int off)
 {
 	char *c = (char *)regs;
@@ -1668,7 +1742,6 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 #endif
 	debug_setregs(ps.tid, regs);
 }
-
 
 int debug_run(char *input)
 {
