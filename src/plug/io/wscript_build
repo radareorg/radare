@@ -5,7 +5,7 @@ plug_io.target = 'plug-io'
 plug_io.source = 'gdb.c winedbg.c gdbx.c haret.c posix.c mmap.c remote.c shm.c socket.c gxemul.c malloc.c'
 plug_io.includes = '../..'
 
-if Options.options.DEBUGGER:
+if bld.env['DEBUGGER'] == 1:
 	plug_io.source += ' debug.c'
 
 #plug_io.packages='gtk+-2.0'

@@ -68,6 +68,7 @@ def configure(conf):
 	conf.define('SYSPROXY', Options.options.SYSPROXY)
 	conf.define('_MAEMO_', Options.options.MAEMO)
 	conf.define('CPU', conf.env['CPU'])
+	conf.define('OS', conf.env['OS'])
 	conf.define('TARGET', "%s-%s"%(conf.env['CPU'],conf.env['OS']))
 
 	conf.define('HAVE_VALAC', conf.env['GUI'])
