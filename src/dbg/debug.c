@@ -156,11 +156,11 @@ int debug_tt(const char *arg)
 			//	continue;
 			}
 #endif
-
 			arch_aop(pc-bpsz, sa+delta, &aop);
 			debug_write_at(ps.tid, sa+delta, aop.length, ba+delta);
 			arch_jmp(pc-bpsz); // restore pc // XXX this is x86 only!!!
 			printf("0x%llx %d\n", pc-bpsz, aop.length);
+			trace_add(pc-bpsz); // trace it!
 			continue;
 		} else {
 			/* unexpected stop */

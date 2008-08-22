@@ -92,7 +92,7 @@ CMD_DECL(edit_comment);
 CMD_DECL(yank);
 CMD_DECL(yank_paste);
 CMD_DECL(zoom);
-CMD_DECL(trace);
+//CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 CMD_DECL(edit_screen_filter);
 
@@ -236,6 +236,7 @@ CMD_DECL(zoom_reset)
 	return 0;
 }
 
+#if 0
 CMD_DECL(trace)
 {
 	if (config.cursor_mode)
@@ -243,6 +244,7 @@ CMD_DECL(trace)
 	else	trace_add(get_offset("eip"));
 	return 0;
 }
+#endif
 
 void convert_bytes(int fmt)
 {

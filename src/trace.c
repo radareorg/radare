@@ -101,6 +101,16 @@ int trace_add(u64 addr)
 	return t->times;
 }
 
+/* TODO: Show ranges !!! must store instruction size here? */
+void trace_show()
+{
+	struct list_head *pos;
+	list_for_each(pos, &traces) {
+		struct trace_t *h= list_entry(pos, struct trace_t, list);
+		cons_printf("0x%08llx %d\n", h->addr, h->times);
+	}
+}
+
 void trace_init()
 {
 	INIT_LIST_HEAD(&traces);

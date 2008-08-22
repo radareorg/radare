@@ -256,7 +256,7 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return 0;
 #else
 	unsigned int size= 0;
-	int err = vm_read_overwrite(inferior_task, (unsigned int)addr, 4, (pointer_t)buff, &size);
+	int err = vm_read_overwrite(tid, (unsigned int)addr, 4, (pointer_t)buff, &size);
 	if (err == -1)
 		return -1;
 	return size;
@@ -272,93 +272,115 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 	return -1;
 }
 
+int debug_list_threads()
+{
+	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
+		fprintf(stderr, "Failed to get list of task's threads.\n");
+		return;
+	}
+	for (i = 0; i < inferior_thread_count; i++) {
+		printf("THREAD%d: %d\n", i, inferior_threads[i]);
+	}
+}
 
 int debug_getregs(pid_t tid, regs_t *regs)
 {
-	printf("TODO: GETREGS\n");
-	/* TODO */
-	return 0;
+	//unsigned int gp_count, regs[17];
+	unsigned int gp_count;
+	kern_return_t err;
+
+	/* thread_id, flavor, old_state, old_state_count */
+	if ((err = thread_get_state(tid, 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
+		return -1;
+	}
+	return gp_count;
 }
 
-	const char *
-unparse_exception_type (unsigned int i)
+int debug_setregs(pid_t tid, regs_t *regs)
 {
-	switch (i)
-	{
-		case EXC_BAD_ACCESS:
-			return "EXC_BAD_ACCESS";
-		case EXC_BAD_INSTRUCTION:
-			return "EXC_BAD_INSTRUCTION";
-		case EXC_ARITHMETIC:
-			return "EXC_ARITHMETIC";
-		case EXC_EMULATION:
-			return "EXC_EMULATION";
-		case EXC_SOFTWARE:
-			return "EXC_SOFTWARE";
-		case EXC_BREAKPOINT:
-			return "EXC_BREAKPOINT";
-		case EXC_SYSCALL:
-			return "EXC_SYSCALL";
-		case EXC_MACH_SYSCALL:
-			return "EXC_MACH_SYSCALL";
-		case EXC_RPC_ALERT:
-			return "EXC_RPC_ALERT";
+	//unsigned int gp_count, regs[17];
+	unsigned int gp_count;
+	kern_return_t err;
 
-		default:
-			return "???";
+	/* thread_id, flavor, old_state, old_state_count */
+	if ((err = thread_set_state(tid, 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
+		return -1;
+	}
+	return gp_count;
+}
+
+/* XXX this must be structures in arrays or so */
+const char * unparse_exception_type (unsigned int i)
+{
+	switch (i) {
+	case EXC_BAD_ACCESS:
+		return "EXC_BAD_ACCESS";
+	case EXC_BAD_INSTRUCTION:
+		return "EXC_BAD_INSTRUCTION";
+	case EXC_ARITHMETIC:
+		return "EXC_ARITHMETIC";
+	case EXC_EMULATION:
+		return "EXC_EMULATION";
+	case EXC_SOFTWARE:
+		return "EXC_SOFTWARE";
+	case EXC_BREAKPOINT:
+		return "EXC_BREAKPOINT";
+	case EXC_SYSCALL:
+		return "EXC_SYSCALL";
+	case EXC_MACH_SYSCALL:
+		return "EXC_MACH_SYSCALL";
+	case EXC_RPC_ALERT:
+		return "EXC_RPC_ALERT";
+	}
+	return "???";
+}
+
+const char * unparse_protection (vm_prot_t p)
+{
+	switch (p) {
+	case VM_PROT_NONE:
+		return "---";
+	case VM_PROT_READ:
+		return "r--";
+	case VM_PROT_WRITE:
+		return "-w-";
+	case VM_PROT_READ | VM_PROT_WRITE:
+		return "rw-";
+	case VM_PROT_EXECUTE:
+		return "--x";
+	case VM_PROT_EXECUTE | VM_PROT_READ:
+		return "r-x";
+	case VM_PROT_EXECUTE | VM_PROT_WRITE:
+		return "-wx";
+	case VM_PROT_EXECUTE | VM_PROT_WRITE | VM_PROT_READ:
+		return "rwx";
+	default:
+		return "???";
 	}
 }
 
-	const char *
-unparse_protection (vm_prot_t p)
+const char * unparse_inheritance (vm_inherit_t i)
 {
-	switch (p)
-	{
-		case VM_PROT_NONE:
-			return "---";
-		case VM_PROT_READ:
-			return "r--";
-		case VM_PROT_WRITE:
-			return "-w-";
-		case VM_PROT_READ | VM_PROT_WRITE:
-			return "rw-";
-		case VM_PROT_EXECUTE:
-			return "--x";
-		case VM_PROT_EXECUTE | VM_PROT_READ:
-			return "r-x";
-		case VM_PROT_EXECUTE | VM_PROT_WRITE:
-			return "-wx";
-		case VM_PROT_EXECUTE | VM_PROT_WRITE | VM_PROT_READ:
-			return "rwx";
-		default:
-			return "???";
+	switch (i) {
+	case VM_INHERIT_SHARE:
+		return "share";
+	case VM_INHERIT_COPY:
+		return "copy";
+	case VM_INHERIT_NONE:
+		return "none";
+	default:
+		return "???";
 	}
 }
 
-	const char *
-unparse_inheritance (vm_inherit_t i)
-{
-	switch (i)
-	{
-		case VM_INHERIT_SHARE:
-			return "share";
-		case VM_INHERIT_COPY:
-			return "copy";
-		case VM_INHERIT_NONE:
-			return "none";
-		default:
-			return "???";
-	}
-}
-
-	void
-macosx_debug_region (task_t task, mach_vm_address_t address)
+void macosx_debug_region (task_t task, mach_vm_address_t address)
 {
 	macosx_debug_regions (task, address, 1);
 }
 
-	void
-macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
+void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 {
 	kern_return_t kret;
 	vm_region_basic_info_data_64_t info, prev_info;
@@ -374,8 +396,7 @@ macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 	count = VM_REGION_BASIC_INFO_COUNT_64;
 	kret = mach_vm_region (task, &address, &size, VM_REGION_BASIC_INFO_64,
 			(vm_region_info_t) &info, &count, &object_name);
-	if (kret != KERN_SUCCESS)
-	{
+	if (kret != KERN_SUCCESS) {
 		printf("No memory regions.\n");
 		return;
 	}
@@ -458,13 +479,6 @@ macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 		if (done)
 			break;
 	}
-}
-
-int debug_setregs(pid_t tid, regs_t *regs)
-{
-	printf("TODO: SETREGS\n");
-	/* TODO */
-	return 0;
 }
 
 inline int debug_single_setregs(pid_t tid, regs_t *regs)
@@ -552,7 +566,6 @@ return 0;
 
 int debug_init_maps(int rest)
 {
-
 	macosx_debug_regions (0,0,999);//task_t task, mach_vm_address_t address, int max)
 	return 0;
 }
