@@ -245,7 +245,7 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'g':
-#if VALA
+#if HAVE_VALAC
 		// use graph.depth by default if not set
 		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
@@ -561,7 +561,7 @@ CMD_DECL(rdb)
 	}
 	/* draw graph */
 	if (input[0] =='G') {
-#if VALA
+#if HAVE_VALAC
 		int num = atoi(text);
 		int i = 0;
 		struct list_head *pos;

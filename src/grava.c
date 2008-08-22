@@ -17,7 +17,8 @@
  *
  */
 
-#ifdef VALA
+#include "../global.h"
+#if HAVE_VALAC
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "main.h"

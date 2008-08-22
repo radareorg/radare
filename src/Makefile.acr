@@ -41,7 +41,7 @@ LDFLAGS+=${DL_LIBS} ${OSOLIBS}
 
 ##VALA##
 ##GUI##
-CFLAGS+=-I../vala/grava/ `pkg-config --cflags gtk+-2.0` -DVALA
+CFLAGS+=-I../vala/grava/ `pkg-config --cflags gtk+-2.0` -DHAVE_VALAC
 LDFLAGS+=`pkg-config --libs gtk+-2.0`
 OBJ2+=../vala/grava/*.o
 OBJ+=grava.o

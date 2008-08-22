@@ -545,7 +545,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 #endif
 	case FMT_CODEGRAPH:
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
-#if VALA
+#if HAVE_VALAC
 		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);

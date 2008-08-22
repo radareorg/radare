@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-obj = bld.new_task_gen('cc', 'program')
+#obj = bld.new_task_gen('cc', 'program')
+obj = bld.new_task_gen('cc', 'staticlib')
 #obj.source = ' line.vala list.vala logs.vala main.vala panel.vala shell.vala term.vala visor.vala window.vala'
 obj.source = ' line.vala list.vala logs.vala panel.vala shell.vala term.vala visor.vala window.vala'
 obj.source += ' api/core.vala'
@@ -9,5 +10,5 @@ obj.source += ' grava/chart.vala grava/default_layout.vala grava/edge.vala grava
 obj.source += ' panel/debug.vala panel/info.vala panel/radget.vala panel/search.vala'
 #obj.find_sources_in_dirs('. api grava panel')
 obj.packages = 'gtk+-2.0 vte'
-obj.target = 'gravala'
+obj.target = 'grava'
 obj.uselib = 'GTK GLIB VTE'

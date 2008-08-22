@@ -9,26 +9,17 @@ bld.add_subdirs('rasm')
 bld.add_subdirs('rasc')
 bld.add_subdirs('javasm')
 
-
 xrefs = bld.new_task_gen('cc', 'program')
 xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
 
 obj = bld.new_task_gen('cc', 'program')
-obj.includes = '.. include'
+obj.target = 'radare'
+obj.includes += ' .. include '
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
 obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
-
-#if Options.options.HAVE_READLINE:
-if bld.env['HAVE_READLINE']:
-	obj.env.append_value('LINKFLAGS','-lreadline')
-obj.target = 'radare'
-obj.packages='gtk+-2.0'
-
-if Options.options.DEBUGGER:
-	bld.add_subdirs('dbg')
-	obj.uselib_local = 'debugger'
+#obj.packages='gtk+-2.0'
 
 # sources for radare-core
 obj.source = 'aes-find.c analyze.c binparse.c bytepat.c cmds.c code.c config.c cons.c dietline.c environ.c flags.c grava.c hack.c io.c main.c plugin.c print.c project.c rabin.c radare.c rdb.c readline.c search.c socket.c stripstr.c trace.c undo.c visual.c utils.c hist.c radiff/rdbdiff.c hasher/hash.c vm.c hasher/entropy.c hasher/crc16.c rabin/javasm.c'
@@ -50,6 +41,22 @@ obj.find_sources_in_dirs('arch/java')
 obj.find_sources_in_dirs('arch/csr')
 obj.find_sources_in_dirs('arch/mips')
 
+# Linking against..
+
+if Options.options.DEBUGGER:
+	bld.add_subdirs('dbg')
+	obj.uselib_local = 'debugger'
+
 # Subdirectories
 bld.add_subdirs('plug/io')
 obj.uselib_local += ' plug-io'
+
+# IF GUI
+if bld.env['HAVE_VALAC']:
+	obj.uselib='GTK'
+	obj.uselib_local += ' grava'
+	obj.includes += ' ../build/default/vala/'
+
+#if Options.options.HAVE_READLINE:
+if bld.env['HAVE_READLINE']:
+	obj.env.append_value('LINKFLAGS','-lreadline')
