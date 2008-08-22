@@ -43,7 +43,7 @@ obj.find_sources_in_dirs('arch/mips')
 
 # Linking against..
 
-if Options.options.DEBUGGER:
+if Options.options.DEBUGGER == True:
 	bld.add_subdirs('dbg')
 	obj.uselib_local = 'debugger'
 
@@ -52,11 +52,11 @@ bld.add_subdirs('plug/io')
 obj.uselib_local += ' plug-io'
 
 # IF GUI
-if bld.env['HAVE_VALAC']:
+if bld.env['HAVE_VALAC'] == True:
 	obj.uselib='GTK'
 	obj.uselib_local += ' grava'
 	obj.includes += ' ../build/default/vala/'
 
 #if Options.options.HAVE_READLINE:
-if bld.env['HAVE_READLINE']:
+if bld.env['HAVE_READLINE'] == True:
 	obj.env.append_value('LINKFLAGS','-lreadline')

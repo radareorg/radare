@@ -25,7 +25,7 @@
 #if __UNIX__ || __CYGWIN__
 #include <dlfcn.h>
 #endif
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
 #include <gtk/gtk.h>
 #endif
 
@@ -90,7 +90,7 @@ plugin_t *plugin_registry(const char *file)
 {
 	int i;
 	void *hd;
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
 	static int gtk_is_init = 0;
 #endif
 	char *ptr;
@@ -158,7 +158,7 @@ plugin_t *plugin_registry(const char *file)
 		#else
 		p = dlsym(hd, "radare_plugin");
 		#endif
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
 	case PLUGIN_TYPE_GUI:
 		/* initialize gtk before */
 		if (!gtk_is_init) {

@@ -888,7 +888,7 @@ int arch_csr_disasm(unsigned char *buf, u64 seek)
 	memset(s, 0, sizeof(*s));
 	s->s_buf = buf;
 	s->s_off = seek;
-	s->s_out = -1;
+	s->s_out = NULL;
 	d = next_inst(s);
 	csr_decode(s, d);
 #if 0

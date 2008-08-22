@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
 #include <gtk/gtk.h>
 #endif
 
@@ -196,7 +196,7 @@ int radare_hack_init()
 	return 1;
 }
 
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
 static int gtk_is_init = 0;
 static GtkWindow *w;
 
@@ -209,7 +209,7 @@ static int hack_close_window(/* TODO : get args */)
 
 static int radare_hack_call(struct hack_t *h, const char *arg)
 {
-#ifdef HAVE_VALAC
+#if HAVE_VALAC
   if (h->widget != NULL) {
     /* initialize gtk before */
     if (!gtk_is_init) {

@@ -986,7 +986,7 @@ int debug_stepbp(int times)
 		if ((aop.fail == 0) || (bp0==-1 && bp1==-1))
 			bp0 = debug_bp_set(NULL, pc+len, BP_SOFT);
 			printf("jump %08llx fail %08llx -> here %08llx\n", aop.jump, aop.fail, pc+8);
-					sleep(2);
+					//sleep(2);
 
 		debug_cont(0);
 		//debug_bp_restore();

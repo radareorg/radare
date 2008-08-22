@@ -368,7 +368,7 @@ int arch_print_registers(int rad, const char *mask)
 	}
 
 	if (rad) {
-		cons_printf("f pc  @ 0x%llx\nf eip@pc", reg(arch_pc())); // dupgetregs
+		cons_printf("f pc  @ 0x%llx\n", reg(arch_pc())); // dupgetregs
 		cons_printf("f at  @ 0x%llx\n", reg(llregs[1])); // is this t1 ?!?!?
 		cons_printf("f v0  @ 0x%llx\n", reg(llregs[2]));
 		cons_printf("f v1  @ 0x%llx\n", reg(llregs[3]));
@@ -405,6 +405,7 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f gp  @ 0x%llx\n", reg(llregs[28]));
 		cons_printf("f sp  @ 0x%llx\n", reg(llregs[29]));
 		cons_printf("f esp  @ sp\n");
+		cons_printf("f eip  @ pc\n");
 
 		cons_printf("f fp  @ 0x%llx ; fp\n", reg(llregs[30]));
 		cons_printf("f ra  @ 0x%llx\n", reg(llregs[31]));
