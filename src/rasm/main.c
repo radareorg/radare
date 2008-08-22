@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-#if !RADARE_CORE
+//#if !RADARE_CORE
 
 char *arch = "x86";
 u64 offset = 0;
@@ -161,4 +161,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-#endif
+//#endif

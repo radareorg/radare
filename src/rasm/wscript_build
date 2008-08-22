@@ -2,10 +2,10 @@
 
 
 obj = bld.new_task_gen('cc', 'program')
-obj.source='main.c rasm.c x86.c ppc.c arm.c java.c ../utils.c'
+obj.source='main.c rasm.c x86.c ppc.c arm.c java.c ../ut.c'
 obj.source +=' olly.c '
 obj.source +=' ../arch/x86/ollyasm/disasm.c ../arch/x86/ollyasm/assembl.c ../arch/x86/ollyasm/asmserv.c' 
-#obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
+obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
 
 obj.includes = '. ../'
 

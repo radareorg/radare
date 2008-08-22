@@ -139,9 +139,9 @@ def configure(conf):
 
 def build(bld):
 	shutil.copyfile(srcdir+"/src/utils.c", srcdir+"/src/ut.c")
-	bld.add_subdirs('src')
 	if bld.env['GUI']:
 		bld.add_subdirs('vala')
+	bld.add_subdirs('src')
 	#if Params.g_commands['clean']:
 	#	os.system("echo unknown clean")
 	#else:
