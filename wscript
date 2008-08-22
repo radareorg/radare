@@ -25,10 +25,22 @@ def set_options(opt):
 		dest    = 'prefix')
 
 def configure(conf):
-	#conf.check_tool('compiler_cc compiler_cxx cc vala perl lua')
+	# Check for compiler tools
 	conf.check_tool('compiler_cc cc')
+	try: conf.check_tool('compiler_cxx')
+	except: pass
+	have_valac = False
+	try:
+		conf.check_tool('vala')
+		have_valac = True
+	except: pass
+	try: conf.check_tool('perl')
+	except: pass
+	try: conf.check_tool('lua')
+	except: pass
 	if not conf.env['CC']: fatal('C compiler not found')
 
+	# Check libraries
         conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.10.0', mandatory=False)
         conf.check_pkg('gtk+-2.0', destvar='GTK', vnum='2.10.0', mandatory=False)
         conf.check_pkg('vte',      destvar='VTE', vnum='0.16', mandatory=False)
@@ -36,7 +48,6 @@ def configure(conf):
 
 	# Generate GLOBAL.H
 	conf.env['GUI'] = False
-	have_valac = conf.find_program('valac', var='VALAC')
 	if conf.env['HAVE_GTK'] and conf.env['HAVE_VTE'] and have_valac and Options.options.GUI:
 		conf.env['GUI'] = True
 	conf.env['OS']= os.uname()[0]
