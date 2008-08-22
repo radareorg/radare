@@ -1,0 +1,27 @@
+ptrace interface is quite limited.
+
+only for ia32 (not 64 or sparc)
+ 0  child must call ptrace(0) (PTRACEME)
+ 1  read a word from addr .text
+ 2  read a word from addr .data
+ 3  read a word from user area (sys/user.h fmi)
+ 4  write word .text
+ 5  write word .data
+ 6  set registers and status reg
+ 7  resume execution
+ 8  kill child
+ 9  set trace bit for stepping
+
+man 4 proc for proc debugging:
+
+ - pcred   - change credentials
+ - pldd    - list linked libs
+ - psig    - show signal handlers
+ - pstack  - show stack trace
+ - pfiles  - show opened files
+ - pstop   - stop process and lwps
+ 
+Cores
+
+ - coreadm - change core options
+ - gcore -F (Force - grab process control)

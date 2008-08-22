@@ -800,3 +800,10 @@ int strccpy(char *dst, char *orig, int ch)
 	return i;
 }
 
+static const char * nullstr="(null)";
+const char *strget(const char *str)
+{
+	if (str == NULL)
+		return nullstr;
+	return str;
+}

@@ -1124,9 +1124,9 @@ CMD_DECL(info)
 #endif
 
 	INILINE;
-	cons_printf(" file    %s",   config.file); NEWLINE;
-	cons_printf(" rdb     %s",   config_get("file.rdb")); NEWLINE;
-	cons_printf(" project %s",   config_get("file.project")); NEWLINE;
+	cons_printf(" file    %s",   strget(config.file)); NEWLINE;
+	cons_printf(" rdb     %s",   strget(config_get("file.rdb"))); NEWLINE;
+	cons_printf(" project %s",   strget(config_get("file.project"))); NEWLINE;
 	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); NEWLINE;
 	cons_printf(" debug   %d",   config.debug); NEWLINE;
 	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;

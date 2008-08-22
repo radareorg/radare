@@ -106,5 +106,6 @@ void getHTTPDate(char *DATE);
 int strhash(const char *str);
 char *str_first_word(const char *string);
 const char *get_tmp_dir();
+const char *strget(const char *str);
 
 #endif
