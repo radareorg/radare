@@ -917,7 +917,7 @@ void udis_arch(int arch, int len, int rows)
 					cons_printf(". ");
 			}
 			C switch(aop.type) {
-			case AOP_TYPE_CMP: // cons_strcat("\e[36m");
+			case AOP_TYPE_CMP: // cons_strcat("\x1b[36m");
 				cons_strcat(cons_palette[PAL_CMP]);
 				break;
 			case AOP_TYPE_REP:
@@ -925,24 +925,24 @@ void udis_arch(int arch, int len, int rows)
 			case AOP_TYPE_CJMP:
 				cons_strcat(cons_palette[PAL_JUMP]);
 				break;
-			case AOP_TYPE_CALL: // green cons_strcat("\e[32m");
+			case AOP_TYPE_CALL: // green cons_strcat("\x1b[32m");
 				cons_strcat(cons_palette[PAL_CALL]);
 				break;
-			case AOP_TYPE_NOP: // cons_strcat("\e[35m");
+			case AOP_TYPE_NOP: // cons_strcat("\x1b[35m");
 				cons_strcat(cons_palette[PAL_NOP]);
 				break;
 			case AOP_TYPE_UPUSH:
 			case AOP_TYPE_PUSH:
-			case AOP_TYPE_POP: // yellow cons_strcat("\e[33m");
+			case AOP_TYPE_POP: // yellow cons_strcat("\x1b[33m");
 				cons_strcat(cons_palette[PAL_PUSH]);
 				break;
 			case AOP_TYPE_SWI:
 			//case AOP_TYPE_UNK:
 			case AOP_TYPE_TRAP:
-			case AOP_TYPE_UJMP: //red cons_strcat("\e[31m");
+			case AOP_TYPE_UJMP: //red cons_strcat("\x1b[31m");
 				cons_strcat(cons_palette[PAL_TRAP]);
 				break;
-			case AOP_TYPE_RET: // blue cons_strcat("\e[34m");
+			case AOP_TYPE_RET: // blue cons_strcat("\x1b[34m");
 				cons_strcat(cons_palette[PAL_RET]);
 				break;
 			}

@@ -19,6 +19,7 @@
  */
 
 #include "../radare.h"
+#include "../../global.h"
 #include "../utils.h"
 #include <stdio.h>
 #include <getopt.h>

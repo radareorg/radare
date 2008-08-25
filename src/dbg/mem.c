@@ -137,12 +137,12 @@ addr_t alloc_tagged_page(const char *tag, unsigned long size)
 	return addr;
 }
 
-inline addr_t alloc_page(int size) 
+u64 alloc_page(int size) 
 {
 	return alloc_tagged_page(NULL, size);
 }
 
-inline void add_regmap(MAP_REG *mr)
+void add_regmap(MAP_REG *mr)
 {
 	unsigned long entry_alig = ps.entrypoint & ~(PAGE_SIZE-1);
 	

@@ -368,57 +368,57 @@ int arch_print_registers(int rad, const char *mask)
 		cons_printf("f r16 @ 0x%x ; cpsr\n", regs[16]);
 	} else {
 		if (color) {
-			if (regs[0]!=oregs[0]) cons_strcat("\e[35m");
-			cons_printf("  r0  0x%08x\e[0m", regs[0]);
-			if (regs[5]!=oregs[5]) cons_strcat("\e[35m");
-			cons_printf("  r5  0x%08x\e[0m", regs[5]);
-			if (regs[9]!=oregs[9]) cons_strcat("\e[35m");
-			cons_printf("  r9  0x%08x\e[0m", regs[9]);
-			if (regs[13]!=oregs[13]) cons_strcat("\e[35m");
-			cons_printf(" r13  0x%08x\e[0m\n", regs[13]);
+			if (regs[0]!=oregs[0]) cons_strcat("\x1b[35m");
+			cons_printf("  r0  0x%08x\x1b[0m", regs[0]);
+			if (regs[5]!=oregs[5]) cons_strcat("\x1b[35m");
+			cons_printf("  r5  0x%08x\x1b[0m", regs[5]);
+			if (regs[9]!=oregs[9]) cons_strcat("\x1b[35m");
+			cons_printf("  r9  0x%08x\x1b[0m", regs[9]);
+			if (regs[13]!=oregs[13]) cons_strcat("\x1b[35m");
+			cons_printf(" r13  0x%08x\x1b[0m\n", regs[13]);
 			//
-			if (regs[1]!=oregs[1]) cons_strcat("\e[35m");
-			cons_printf("  r1  0x%08x\e[0m", regs[1]);
-			if (regs[6]!=oregs[6]) cons_strcat("\e[35m");
-			cons_printf("  r6  0x%08x\e[0m", regs[6]);
-			if (regs[10]!=oregs[10]) cons_strcat("\e[35m");
-			cons_printf(" r10  0x%08x\e[0m", regs[10]);
-			if (regs[14]!=oregs[14]) cons_strcat("\e[35m");
-			cons_printf(" r14  0x%08x\e[0m\n", regs[14]);
+			if (regs[1]!=oregs[1]) cons_strcat("\x1b[35m");
+			cons_printf("  r1  0x%08x\x1b[0m", regs[1]);
+			if (regs[6]!=oregs[6]) cons_strcat("\x1b[35m");
+			cons_printf("  r6  0x%08x\x1b[0m", regs[6]);
+			if (regs[10]!=oregs[10]) cons_strcat("\x1b[35m");
+			cons_printf(" r10  0x%08x\x1b[0m", regs[10]);
+			if (regs[14]!=oregs[14]) cons_strcat("\x1b[35m");
+			cons_printf(" r14  0x%08x\x1b[0m\n", regs[14]);
 			//
-			if (regs[2]!=oregs[2]) cons_strcat("\e[35m");
-			cons_printf("  r2  0x%08x\e[0m", regs[2]);
-			if (regs[7]!=oregs[7]) cons_strcat("\e[35m");
-			cons_printf("  r7  0x%08x\e[0m", regs[7]);
-			if (regs[11]!=oregs[11]) cons_strcat("\e[35m");
-			cons_printf(" r11  0x%08x\e[0m", regs[11]);
-			if (regs[15]!=oregs[15]) cons_strcat("\e[35m");
-			cons_printf(" r15  0x%08x\e[0m\n", regs[15]);
+			if (regs[2]!=oregs[2]) cons_strcat("\x1b[35m");
+			cons_printf("  r2  0x%08x\x1b[0m", regs[2]);
+			if (regs[7]!=oregs[7]) cons_strcat("\x1b[35m");
+			cons_printf("  r7  0x%08x\x1b[0m", regs[7]);
+			if (regs[11]!=oregs[11]) cons_strcat("\x1b[35m");
+			cons_printf(" r11  0x%08x\x1b[0m", regs[11]);
+			if (regs[15]!=oregs[15]) cons_strcat("\x1b[35m");
+			cons_printf(" r15  0x%08x\x1b[0m\n", regs[15]);
 			//
-			if (regs[3]!=oregs[3]) cons_strcat("\e[35m");
-			cons_printf("  r3  0x%08x\e[0m", regs[3]);
-			if (regs[8]!=oregs[8]) cons_strcat("\e[35m");
-			cons_printf("  r8  0x%08x\e[0m", regs[8]);
-			if (regs[12]!=oregs[12]) cons_strcat("\e[35m");
-			cons_printf(" r12  0x%08x\e[0m", regs[12]);
-			if (regs[16]!=oregs[16]) cons_strcat("\e[35m");
-			cons_printf(" r16  0x%08x\e[0m\n", regs[16]);
+			if (regs[3]!=oregs[3]) cons_strcat("\x1b[35m");
+			cons_printf("  r3  0x%08x\x1b[0m", regs[3]);
+			if (regs[8]!=oregs[8]) cons_strcat("\x1b[35m");
+			cons_printf("  r8  0x%08x\x1b[0m", regs[8]);
+			if (regs[12]!=oregs[12]) cons_strcat("\x1b[35m");
+			cons_printf(" r12  0x%08x\x1b[0m", regs[12]);
+			if (regs[16]!=oregs[16]) cons_strcat("\x1b[35m");
+			cons_printf(" r16  0x%08x\x1b[0m\n", regs[16]);
 			//
-			if (regs[4]!=oregs[4]) cons_strcat("\e[35m");
-			cons_printf("  r4  0x%08x\e[0m", regs[4]);
+			if (regs[4]!=oregs[4]) cons_strcat("\x1b[35m");
+			cons_printf("  r4  0x%08x\x1b[0m", regs[4]);
 
-			if (regs[11]!=oregs[11]) cons_strcat("\e[35m");
-			cons_strcat("  fp=r11\e[0m");
-			if (regs[12]!=oregs[12]) cons_strcat("\e[35m");
-			cons_strcat("  ip=r12\e[0m");
-			if (regs[13]!=oregs[13]) cons_strcat("\e[35m");
-			cons_strcat("  sp=r13\e[0m");
-			if (regs[14]!=oregs[14]) cons_strcat("\e[35m");
-			cons_strcat("  lr=r14\e[0m");
-			if (regs[15]!=oregs[15]) cons_strcat("\e[35m");
-			cons_strcat("  pc=r15\e[0m");
-			if (regs[16]!=oregs[16]) cons_strcat("\e[35m");
-			cons_strcat("  cpsr=r16\e[0m\n");
+			if (regs[11]!=oregs[11]) cons_strcat("\x1b[35m");
+			cons_strcat("  fp=r11\x1b[0m");
+			if (regs[12]!=oregs[12]) cons_strcat("\x1b[35m");
+			cons_strcat("  ip=r12\x1b[0m");
+			if (regs[13]!=oregs[13]) cons_strcat("\x1b[35m");
+			cons_strcat("  sp=r13\x1b[0m");
+			if (regs[14]!=oregs[14]) cons_strcat("\x1b[35m");
+			cons_strcat("  lr=r14\x1b[0m");
+			if (regs[15]!=oregs[15]) cons_strcat("\x1b[35m");
+			cons_strcat("  pc=r15\x1b[0m");
+			if (regs[16]!=oregs[16]) cons_strcat("\x1b[35m");
+			cons_strcat("  cpsr=r16\x1b[0m\n");
 		} else {
 			cons_printf("  r0 0x%08x   r5 0x%08x   r9 0x%08x  r13 0x%08x\n", regs[0], regs[5], regs[9], regs[13]);
 			cons_printf("  r1 0x%08x   r6 0x%08x  r10 0x%08x  r14 0x%08x\n", regs[1], regs[6], regs[10], regs[14]);
@@ -490,23 +490,23 @@ int arch_opcode_size()
 	return 4;
 }
 
-void *arch_dealloc_page(void *addr, int size)
+u64 arch_dealloc_page(void *addr, int size)
 {
 }
 
-void *arch_alloc_page(int size, int *rsize)
+u64 arch_alloc_page(int size, int *rsize)
 {
 }
 
-addr_t arch_mmap(int fd, int size, addr_t addr)
+u64 arch_mmap(int fd, int size, u64 addr)
 {
 }
 
-addr_t arch_get_sighandler(int signum)
+u64 arch_get_sighandler(int signum)
 {
 }
 
-addr_t arch_set_sighandler(int signum, u64 handler)
+u64 arch_set_sighandler(int signum, u64 handler)
 {
 }
 

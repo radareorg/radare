@@ -64,7 +64,7 @@ ssize_t gdbx_write(int fd, const void *buf, size_t count)
         return 0;
 }
 
-ssize_t gdbx_read(int fd, unsigned char *buf, size_t count)
+ssize_t gdbx_read(int fd, void *buf, size_t count)
 {
 	char tmp[1024];
 	unsigned char *pbuf = buf;

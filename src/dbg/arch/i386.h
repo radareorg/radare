@@ -67,9 +67,9 @@ void dr_init();
 //extern int instLength(unsigned char *p, int s, int mode);
 extern int dislen(unsigned char* opcode0, int limit);
 
-#undef REG_PC
-#define REG_PC eip
-#undef REG_SP
-#define REG_SP esp
+#undef CPUREG_PC
+#define CPUREG_PC eip
+#undef CPUREG_SP
+#define CPUREG_SP esp
 
 #endif

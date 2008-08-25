@@ -742,29 +742,29 @@ int arch_print_registers(int rad, const char *mask)
 			NEWLINE;
 	} else {
 		if (color) {
-			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("\e[35m");
-			else cons_printf("\e[0m");
-			cons_printf("  eax  0x%08x\e[0m", R_EAX(regs));
-			if (R_ESI(regs)!=R_ESI(oregs)) cons_printf("\e[35m");
-			cons_printf("    esi  0x%08x\e[0m", R_ESI(regs));
-			if (R_EIP(regs)!=R_EIP(oregs)) cons_printf("\e[35m");
-			cons_printf("    eip    0x%08x\e[0m\n",  R_EIP(regs));
-			if (R_EBX(regs)!=R_EBX(oregs)) cons_printf("\e[35m");
-			cons_printf("  ebx  0x%08x\e[0m", R_EBX(regs));
-			if (R_EDI(regs)!=R_EDI(oregs)) cons_printf("\e[35m");
-			cons_printf("    edi  0x%08x\e[0m", R_EDI(regs));
-			if (R_OEAX(regs)!=R_OEAX(oregs)) cons_printf("\e[35m");
-			cons_printf("    oeax   0x%08x\e[0m\n",   R_OEAX(regs));
-			if (R_ECX(regs)!=R_ECX(oregs)) cons_printf("\e[35m");
-			cons_printf("  ecx  0x%08x\e[0m", R_ECX(regs));
-			if (R_ESP(regs)!=R_ESP(oregs)) cons_printf("\e[35m");
-			cons_printf("    esp  0x%08x\e[0m", R_ESP(regs));
-			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) cons_printf("\e[35m");
+			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("\x1b[35m");
+			else cons_printf("\x1b[0m");
+			cons_printf("  eax  0x%08x\x1b[0m", R_EAX(regs));
+			if (R_ESI(regs)!=R_ESI(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    esi  0x%08x\x1b[0m", R_ESI(regs));
+			if (R_EIP(regs)!=R_EIP(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    eip    0x%08x\x1b[0m\n",  R_EIP(regs));
+			if (R_EBX(regs)!=R_EBX(oregs)) cons_printf("\x1b[35m");
+			cons_printf("  ebx  0x%08x\x1b[0m", R_EBX(regs));
+			if (R_EDI(regs)!=R_EDI(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    edi  0x%08x\x1b[0m", R_EDI(regs));
+			if (R_OEAX(regs)!=R_OEAX(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    oeax   0x%08x\x1b[0m\n",   R_OEAX(regs));
+			if (R_ECX(regs)!=R_ECX(oregs)) cons_printf("\x1b[35m");
+			cons_printf("  ecx  0x%08x\x1b[0m", R_ECX(regs));
+			if (R_ESP(regs)!=R_ESP(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    esp  0x%08x\x1b[0m", R_ESP(regs));
+			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) cons_printf("\x1b[35m");
 			cons_printf("    eflags 0x%04x  \n", R_EFLAGS(regs));
-			if (R_EDX(regs)!=R_EDX(oregs)) cons_printf("\e[35m");
-			cons_printf("  edx  0x%08x\e[0m", R_EDX(regs));
-			if (R_EBP(regs)!=R_EBP(oregs)) cons_printf("\e[35m");
-			cons_printf("    ebp  0x%08x\e[0m    ", R_EBP(regs));
+			if (R_EDX(regs)!=R_EDX(oregs)) cons_printf("\x1b[35m");
+			cons_printf("  edx  0x%08x\x1b[0m", R_EDX(regs));
+			if (R_EBP(regs)!=R_EBP(oregs)) cons_printf("\x1b[35m");
+			cons_printf("    ebp  0x%08x\x1b[0m    ", R_EBP(regs));
 			
 			dump_eflags(R_EFLAGS(regs));
 //#if __linux__
@@ -1004,7 +1004,7 @@ $
 	return (addr_t)addr;
 } 
 
-addr_t arch_alloc_page(unsigned long size, unsigned long *rsize)
+u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
         regs_t   reg, reg_saved;

@@ -676,7 +676,7 @@ void print_expr(struct tok *group)
 	printf("exit group\n");
 }
 
-inline struct tok* parse_cond(char *cond)
+struct tok* parse_cond(char *cond)
 {
 	return process_cond(&cond, 1);
 }

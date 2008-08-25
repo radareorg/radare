@@ -5,9 +5,9 @@
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 
-static int my_hack(char *input)
+static int my_hack(const char *input)
 {
-	int (*r)(char *cmd, int log);
+	int (*r)(const char *cmd, int log);
 
 	printf("Hello hack! %s\n", radare_plugin.config->file);
 

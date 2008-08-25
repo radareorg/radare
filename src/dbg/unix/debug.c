@@ -514,7 +514,7 @@ int debug_read_at(pid_t pid, void *buf, int length, u64 addr)
 int WriteMem(int pid,  u64 addr, int sz, u8 *buff)
 {
         long words = sz / sizeof(long) ;
-        long last = (sz % sizeof(long))*CHAR_BIT ;
+        long last = (sz % sizeof(long))*8;
         long  lr ;
 	int x;
 

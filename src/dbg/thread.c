@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       th0rpe <nopcode.org>
  *       pancake <youterm.com>
  *
@@ -26,12 +26,12 @@
 #include <stdlib.h>
 #include "thread.h"
 
-inline void add_th(TH_INFO *th)
+void add_th(TH_INFO *th)
 {
 	list_add_tail(&(th->list), &(ps.th_list));
 }
 
-inline void del_th(TH_INFO *th)
+void del_th(TH_INFO *th)
 {		
 	list_del(&(th->list));
 	free(th);
@@ -62,7 +62,7 @@ int th_list()
 	return n;
 }
 
-inline TH_INFO *init_th(pid_t tid, int status)
+TH_INFO *init_th(pid_t tid, int status)
 {
 	TH_INFO *th;
 

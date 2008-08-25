@@ -16,7 +16,7 @@ extern int dec;
 #undef NEWLINE
 #define NEWLINE cons_newline();
 
-#define CLRSCR() cons_strcat("\e[2J\e[0;0H");
+#define CLRSCR() cons_strcat("\x1b[2J\x1b[0;0H");
 int is_cursor(int from, int len);
 
 /* inverted print block */

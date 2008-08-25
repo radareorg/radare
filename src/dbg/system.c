@@ -28,8 +28,8 @@
 #include <string.h>
 
 #define GETCOLOR int color = config_get("scr.color");
-#define TITLE if (color) cons_printf("\e[36m");
-#define TITLE_END if (color) cons_printf("\e[0m");
+#define TITLE if (color) cons_printf("\x1b[36m");
+#define TITLE_END if (color) cons_printf("\x1b[0m");
 
 int help_message()
 {

@@ -5,7 +5,7 @@
 #error Do not include arm.h directly!
 #endif
 
-#define REG_PC pc
+#define CPUREG_PC pc
 #define WS_PC() ARM_pc
 
 enum {

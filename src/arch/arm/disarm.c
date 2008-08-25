@@ -809,7 +809,8 @@ char *disarm (RawInstruction rawinstruction, int offset)
 
 	current_offset = offset;
 
-	instruction = (Access32)rawinstruction;
+//	instruction = (Access32)rawinstruction;
+memcpy(&instruction, rawinstruction, sizeof(RawInstruction));
 
 	sprintf(disasmstr, "Not decoded");
 	condpos = 0; /* Position in disasmstr for condition - set to 0 to inhibit insertion of condition */

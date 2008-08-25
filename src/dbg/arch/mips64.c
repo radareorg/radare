@@ -47,9 +47,9 @@
 regs_t cregs; // current registers
 regs_t oregs; // old registers
 
-#define REG_RA 31 // Return address
-#define REG_K0 25 // Stack pointer
-#define REG_SP 29 // Stack pointer
+//#define REG_RA 31 // Return address
+//#define REG_K0 25 // Stack pointer
+//#define REG_SP 29 // Stack pointer
 
 int arch_is_fork()
 {
@@ -425,9 +425,9 @@ int arch_print_registers(int rad, const char *mask)
 	} else {
 		#define PRINT_REG(name, tail, idx) \
 			if (!color) cons_printf("  %4s  0x%08llx"tail, name, reg(llregs[idx])); \
-			else { if (llregs[idx] != ollregs[idx]) cons_strcat("\e[35m"); \
-			cons_printf("  %4s  0x%08llx\e[0m"tail, name, reg(llregs[idx])); }
-		cons_printf("    pc  0x%08llx\e[0m", arch_pc());
+			else { if (llregs[idx] != ollregs[idx]) cons_strcat("\x1b[35m"); \
+			cons_printf("  %4s  0x%08llx\x1b[0m"tail, name, reg(llregs[idx])); }
+		cons_printf("    pc  0x%08llx\x1b[0m", arch_pc());
 		PRINT_REG("ra", "", 31);
 		PRINT_REG("fp", "", 30);
 		PRINT_REG("gp", "", 28);

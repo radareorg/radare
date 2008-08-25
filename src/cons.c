@@ -131,7 +131,7 @@ int cons_palette_init(const unsigned char *pal)
 	if (pal==NULL || pal[0]=='\0') {
 		cons_printf("\n=>( Targets ):");
 		for(j=0;pal_names[j]&&*pal_names[j];j++)
-			cons_printf("%s .%s\e[0m ", cons_palette[j], pal_names[j]);
+			cons_printf("%s .%s\x1b[0m ", cons_palette[j], pal_names[j]);
 		cons_printf("\n\n=>( Colors ): "
 		"/*normal*/, " "black, = 0, " "gray, = 1, " "white, = 2, " "red, = 3, " "magenta, = 4, "
 		"blue, = 5, " "green, = 6, " "yellow, = 7, " "turqoise, = 8, " "/*bold*/, " "bblack, = a, "
@@ -222,7 +222,7 @@ void cons_gotoxy(int x, int y)
 
 void cons_gotoxy(int x, int y)
 {
-	cons_printf("\e[0;0H");
+	cons_printf("\x1b[0;0H");
 }
 #endif
 
@@ -248,7 +248,7 @@ void cons_clear()
         FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
         cons_gotoxy(0,0);
 #else
-	write(1, "\e[2J", 4);
+	write(1, "\x1b[2J", 4);
 #endif
 	cons_lines = 0;
 }
@@ -256,7 +256,7 @@ void cons_clear()
 int cons_html_print(const char *ptr)
 {
 	int esc = 0;
-	char *str = ptr;
+	const char *str = (char *)ptr;
 	int len = 0;
 	int inv = 0;
 	int color = 0;
@@ -273,7 +273,7 @@ int cons_html_print(const char *ptr)
 			continue;
 		}
 		if (esc == 1) {
-			// \e[2J
+			// \x1b[2J
 			if (ptr[0] != '[') {
 				eprintf("Oops invalid escape char\n");
 				esc = 0;
@@ -411,7 +411,7 @@ int cons_w32_print(unsigned char *ptr)
 			continue;
 		}
 		if (esc == 1) {
-			// \e[2J
+			// \x1b[2J
 			if (ptr[0] != '[') {
 				eprintf("Oops invalid escape char\n");
 				esc = 0;
@@ -597,7 +597,7 @@ int cons_fgets(char *buf, int len, int argc, const char **argv)
 {
 	char *ptr;
 	buf[0]='\0';
-	ptr = dl_readline(argv?argc:CMDS, argv?argv:&radare_argv);
+	ptr = dl_readline((argv)?argc:CMDS, (argv)?argv:radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);
@@ -620,7 +620,7 @@ char *cons_get_buffer()
 	return cons_buffer;
 }
 
-inline void palloc(int moar)
+void palloc(int moar)
 {
 	if (cons_buffer == NULL) {
 		cons_buffer_len = moar+1024;
@@ -640,8 +640,8 @@ void cons_flush()
 	int i;
 
 	if (!strnull(cons_buffer)) {
-		char *file = config_get("file.scrfilter");
-		char *tee = config_get("scr.tee");
+		const char *file = config_get("file.scrfilter");
+		const char *tee = config_get("scr.tee");
 		if (!strnull(file)) {
 			fd = fopen(file, "r");
 			if (fd) {
@@ -774,8 +774,6 @@ int cons_get_real_columns()
 #else
 	return 80;
 #endif
-	config.width = 78;
-	config.height = 24;
 }
 
 #ifdef RADARE_CORE

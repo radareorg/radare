@@ -261,7 +261,7 @@ void dr_list()
 	}
 }
 
-static int arch_bp_hw_state(unsigned long addr, int enable)
+int arch_bp_hw_state(unsigned long addr, int enable)
 {
 	unsigned long control;
 	int i;
@@ -337,12 +337,12 @@ inline int arch_bp_soft_disable(struct bp_t *bp)
 }
 
 /* hardware breakpoints */
-inline int arch_bp_hw_enable(struct bp_t *bp)
+int arch_bp_hw_enable(struct bp_t *bp)
 {
 	return arch_bp_hw_state(bp->addr, 1);
 }
 
-inline int arch_bp_hw_disable(struct bp_t *bp)
+int arch_bp_hw_disable(struct bp_t *bp)
 {
 	return arch_bp_hw_state(bp->addr, 0);
 }

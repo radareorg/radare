@@ -165,13 +165,13 @@ void print_color_byte_i(int i, char *str, int c)
 	C {
 		flag_t *f = flag_by_offset(config.seek+config.baddr+i);
 		if (f) {
-			cons_strcat("\e[44m");
-		} else cons_strcat("\e[0m");
+			cons_strcat("\x1b[44m");
+		} else cons_strcat("\x1b[0m");
 	}
 	if (is_cursor(i,1)) {
-		cons_strcat("\e[7m");
+		cons_strcat("\x1b[7m");
 		print_color_byte(str, c);
-		cons_strcat("\e[0m");
+		cons_strcat("\x1b[0m");
 	} else print_color_byte(str, c);
 }
 
@@ -755,7 +755,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			for(j = i+inc; i<j && i<len; i++) {
 				C cons_printf(get_color_for(buf[i]));
 				if (is_cursor(i,1))
-					cons_strcat("\e[7m");
+					cons_strcat("\x1b[7m");
 				PRINT_BIN(buf[i]);
 				C cons_printf(C_RESET);
 			}

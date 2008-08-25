@@ -219,7 +219,7 @@ void progressbar(int pc)
 #endif
 
 	(pc<0)?pc=0:(pc>100)?pc=100:0;
-	fprintf(stderr, "\e[K  %3d%% [", pc);
+	fprintf(stderr, "\x1b[K  %3d%% [", pc);
 	cols-=15;
 	for(tmp=cols*pc/100;tmp;tmp--) fprintf(stderr,"#");
 	for(tmp=cols-(cols*pc/100);tmp;tmp--) fprintf(stderr,"-");

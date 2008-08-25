@@ -47,9 +47,9 @@
 regs_t cregs; // current registers
 regs_t oregs; // old registers
 
-#define REG_RA 31 // Return address
-#define REG_K0 25 // Stack pointer
-#define REG_SP 29 // Stack pointer
+//#define REG_RA 31 // Return address
+//#define REG_K0 25 // Stack pointer
+//#define REG_SP 29 // Stack pointer
 
 long long arch_syscall(int pid, int sc, ...)
 {
@@ -377,9 +377,9 @@ int arch_print_registers(int rad, const char *mask)
 				cons_printf("  "name"  0x%08llx"tail, reg(llregs[idx])); \
 			else {\
 			if (llregs[idx] != ollregs[idx]) \
-				cons_strcat("\e[35m"); \
-			cons_printf("  "name"  0x%08llx\e[0m"tail, reg(llregs[idx])); }
-		cons_printf("  pc  0x%08llx\e[0m", arch_pc());
+				cons_strcat("\x1b[35m"); \
+			cons_printf("  "name"  0x%08llx\x1b[0m"tail, reg(llregs[idx])); }
+		cons_printf("  pc  0x%08llx\x1b[0m", arch_pc());
 		PRINT_REG("ra", "", 31);
 		PRINT_REG("fp", "", 30);
 		PRINT_REG("gp", "", 28);
@@ -487,22 +487,22 @@ void *arch_alloc_page(int size, int *rsize)
 	return NULL;
 }
 
-addr_t arch_mmap(int fd, int size, u64 addr) //int *rsize)
+u64 arch_mmap(int fd, int size, u64 addr) //int *rsize)
 {
 	return NULL;
 }
 
-addr_t arch_get_sighandler(int signum)
+u64 arch_get_sighandler(int signum)
 {
 	return NULL;
 }
 
-addr_t arch_set_sighandler(int signum, u64 handler)
+u64 arch_set_sighandler(int signum, u64 handler)
 {
 	return NULL;
 }
 
-addr_t arch_get_entrypoint()
+u64 arch_get_entrypoint()
 {
 	unsigned long addr;
 	debug_read_at(ps.tid, &addr, 4, 0x00400018);

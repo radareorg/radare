@@ -333,7 +333,7 @@ char *dl_readline(int argc, const char **argv)
 		dl_buffer[dl_buffer_len]='\0';
 		buf[0] = dl_readchar();
 		
-//		printf("\e[K\r");
+//		printf("\x1b[K\r");
 		columns = cons_get_real_columns()-2;
 		if (columns <1)
 			columns = 40;
@@ -371,7 +371,7 @@ char *dl_readline(int argc, const char **argv)
 				break;
 			case 12: // ^L -- right
 				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
-				printf("\e[2J\e[0;0H");
+				printf("\x1b[2J\x1b[0;0H");
 				fflush(stdout);
 				break;
 			case 21: // ^U - cut

@@ -124,13 +124,13 @@ command_t keystrokes[] = {
 };
 
 
-#define TITLE if (config.color) cons_printf("\e[36m");
-#define TITLE_END if (config.color) cons_printf("\e[0m");
+#define TITLE if (config.color) cons_printf("\x1b[36m");
+#define TITLE_END if (config.color) cons_printf("\x1b[0m");
 
 void visual_show_help()
 {
-#warning TODO: use 0123456789 as % places of the file ? :D that looks cool, or predefined seekz
-	cons_strcat("\e[2J\e[0;0H\n");
+//#warning TODO use 0123456789 as %% places of the file ? :D that looks cool, or predefined seekz
+	cons_strcat("\x1b[2J\x1b[0;0H\n");
 	TITLE
 	cons_printf("Visual keybindings:\n");
 	TITLE_END
@@ -186,7 +186,7 @@ void press_any_key()
 	D cons_printf("\n--press any key--\n");
 	cons_flush();
 	cons_readchar();
-	cons_strcat("\e[2J\e[0;0H");
+	cons_strcat("\x1b[2J\x1b[0;0H");
 }
 
 CMD_DECL(edit_screen_filter)
@@ -806,7 +806,7 @@ void visual_draw_screen()
 	case FMT_CSTR:
 	case FMT_OCT:
 		//if (config.size!=-1 && config.seek+config.block_size> config.size)
-		//	printf("\e[2J\e[0;0H");
+		//	printf("\x1b[2J\x1b[0;0H");
 		break;
 	default:
 		if (!config.cursor_mode)
@@ -838,7 +838,7 @@ void visual_draw_screen()
 
 	/* HUH */
 	cons_clear00();
-	V cons_printf("\e[0m");
+	V cons_printf("\x1b[0m");
 
 	if (inc >config.block_size)
 		inc = config.block_size;
