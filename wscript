@@ -52,6 +52,7 @@ def configure(conf):
 		conf.env['GUI'] = True
 	conf.env['OS']= os.uname()[0]
 	conf.env['CPU']= os.uname()[4]
+	if conf.env['CPU'] == 'i86pc': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i586': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':

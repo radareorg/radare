@@ -29,10 +29,6 @@
 
 #endif
 
-#if __UNIX__
-#include <sys/ptrace.h>
-#endif
-
 #if __linux__
 #include <asm/ptrace.h>
 #endif

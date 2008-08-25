@@ -181,7 +181,7 @@ int debug_tt(const char *arg)
 /// XXX looks wrong
 /// XXX use wait4 and get rusage here!!!
 /// XXX move to dbg/unix
-pid_t debug_waitpid(int pid, int *status)
+int debug_waitpid(int pid, int *status)
 {
 #define CRASH_LINUX_KERNEL 0
 #if CRASH_LINUX_KERNEL
@@ -198,17 +198,24 @@ pid_t debug_waitpid(int pid, int *status)
 	if (config_get("dbg.threads"))
 		return waitpid(pid, status, __WALL | __WCLONE | WUNTRACED);
   #endif
+
   #if __linux__
 	return waitpid(pid, status, WUNTRACED);
-  #endif
+  #end
+
   #ifdef __WALL
 	return waitpid(pid, status, __WALL | WUNTRACED);
   #else
+    #ifdef WUNTRACED
 	return waitpid(pid, status, WUNTRACED);
+    #else
+	return waitpid(pid, status, 0);
+    #endif
   #endif
 #endif
 	return -1;
 }
+#endif
 
 void debug_msg()
 {

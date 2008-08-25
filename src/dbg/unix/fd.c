@@ -37,7 +37,7 @@
 #if __UNIX__
 #include <sys/wait.h>
 #include <sys/syscall.h>
-#include <sys/ptrace.h>
+//#include <sys/ptrace.h>
 #endif
 
 #if __linux__
@@ -103,7 +103,11 @@ int debug_fd_list(int pid)
 int debug_fd_dup2(int pid, int oldfd, int newfd)
 {
 #if __UNIX__
+#ifdef SYS_dup2
 	return arch_syscall(pid, SYS_dup2, oldfd, newfd);
+#else
+#warning No dup2 here? Solaris?
+#endif
 #else
 #warning Implement fd debugger stuff for w32
 	return -1;

@@ -2793,7 +2793,7 @@ struct map_entry itab_3DNow =
   { UD_I3dnow,	P,	Q,	NOARG };
 struct map_entry nop = 
   { UD_Inop,	NOARG,	NOARG,	NOARG, Pnone };
-struct map_entry pause = 
+struct map_entry udis_pause = 
   { UD_Ipause,	NOARG,	NOARG,	NOARG, Pnone };
 struct map_entry movsxd = 
   { UD_Imovsxd,	Gv,	Ed,	NOARG,	Pc2 | Po32 | Pa32 | REX(_X|_W|_B|_R) };
@@ -2855,7 +2855,7 @@ search_1byte_insn(register struct ud* u)
   if (inp_curr(u) == 0x90) {
 	if (!(u->dis_mode == 64 && P_REX_B(u->pfx_rex))) {
 		if (u->pfx_rep) {
-			u->mapen = &pause;
+			u->mapen = &udis_pause;
 			u->pfx_rep = 0;
 		} else  u->mapen = &nop;
 	}

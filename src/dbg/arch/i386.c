@@ -558,15 +558,15 @@ int arch_backtrace()
 
 void dump_eflags(const int eflags)
 {
-#undef EFL
-#define EFL(x,y,z) eflags & (1 << x) ? y : z
+#undef _EFL_
+#define _EFL_(x,y,z) eflags & (1 << x) ? y : z
     cons_printf("%c%c%c%c%c%c%c%c%c%c%c ",
-	EFL(0,'C','c'), EFL(2,'P','p'), EFL(4,'A','a'), 
-	EFL(6,'Z','z'), EFL(7,'S','s'), EFL(8,'T','t'),
-	EFL(9,'I','i'), EFL(10,'D','d'), EFL(11,'O','o'),
-	EFL(16,'R','r'), ((eflags >> 12) & 3) + '0');
+	_EFL_(0,'C','c'), _EFL_(2,'P','p'), _EFL_(4,'A','a'), 
+	_EFL_(6,'Z','z'), _EFL_(7,'S','s'), _EFL_(8,'T','t'),
+	_EFL_(9,'I','i'), _EFL_(10,'D','d'), _EFL_(11,'O','o'),
+	_EFL_(16,'R','r'), ((eflags >> 12) & 3) + '0');
 
-#undef EFL
+#undef _EFL_
 #define EF(x,y) eflags & (1 << x) ? y : ""
     cons_printf("(%s%s%s%s%s%s%s%s%s%s)\n",
 	EF(0,"C"), EF(2,"P"), EF(4,"A"), EF(6,"Z"),

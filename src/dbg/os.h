@@ -10,7 +10,7 @@ int debug_detach();
 int debug_load_threads();
 
 /* open */
-int debug_attach(pid_t pid);
+int debug_attach(int pid);
 int debug_fork_and_attach();
 
 /* flow */

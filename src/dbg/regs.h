@@ -58,11 +58,13 @@
 	#include <machine/reg.h>
 	#define regs_t struct reg
 #elif __sun
-	struct solaris_regs_t {
-	  int eax,ebx,ecx,edx,esi,edi,ebp,esp;
-	};
+	//struct solaris_regs_t {
+	 // int eax,ebx,ecx,edx,esi,edi,ebp,esp;
+	//};
 	//typedef unsigned long solaris_regs_//t [4096];
-	#define regs_t struct solaris_regs_t
+	//#define regs_t struct solaris_regs_t
+	// defined in i386-solaris.h
+#include "arch/i386-solaris.h"
 #endif
 
 #if __arm__ && __linux__
