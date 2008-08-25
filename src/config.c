@@ -833,7 +833,7 @@ void config_visual_menu()
 	struct list_head *pos;
 #define MAX_FORMAT 2
 	int format = 0;
-	char *ptr;
+	const char *ptr;
 	char *fs = NULL;
 	char *fs2 = NULL;
 	int option = 0;
@@ -948,6 +948,7 @@ void config_visual_menu()
 		case 'l':
 		case 'e': // edit value
 		case ' ':
+		case '\r':
 		case '\n': // never happens
 			if (menu == 1) {
 				config_visual_hit(fs2);

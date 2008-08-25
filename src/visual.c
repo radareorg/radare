@@ -145,6 +145,8 @@ void visual_show_help()
 	"a,A,=      insert patch assembly, rsc asm or !hack\n"
 	"i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
 	"f,F        seek between flag list (f = forward, F = backward)\n"
+	"t          visual track/browse flagspaces and flags\n"
+	"e          visual eval configuration variables\n"
 	"c          toggle cursor mode\n"
 	"C          toggle scr.color\n"
 	"d          convert cursor selected bytes to ascii, code or hex\n"
@@ -1139,11 +1141,6 @@ CMD_DECL(visual)
 			}
 			if (config.cursor<0)
 				config.cursor = 0;
-#if 0
-			else
-			if (config.cursor>config.block_size);
-				config.cursor = config.block_size-1;
-#endif
 			continue;
 		case 2: // insert scii
 			nibble=1;

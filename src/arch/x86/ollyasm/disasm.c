@@ -468,7 +468,7 @@ static void DecodeSO(void) {
   else if (datasize==2) da->memtype=DEC_WORD;
   else if (datasize==4) da->memtype=DEC_DWORD;
   da->indexed=1;
-  Memadr(SEG_DS,regname[addrsize==2?1:2][REG_ESI],0L,datasize);
+  Memadr(SEG_DS,regname[addrsize==2?1:2][GREG_ESI],0L,datasize);
 };
 
 // Disassemble implicit destination of string operations and, if available,
@@ -482,7 +482,7 @@ static void DecodeDE(void) {
   else if (datasize==4) da->memtype=DEC_DWORD;
   da->indexed=1;
   seg=segprefix; segprefix=SEG_ES;     // Fake Memadr by changing segment prefix
-  Memadr(SEG_DS,regname[addrsize==2?1:2][REG_EDI],0L,datasize);
+  Memadr(SEG_DS,regname[addrsize==2?1:2][GREG_EDI],0L,datasize);
   segprefix=seg;                       // Restore segment prefix
 };
 
@@ -1032,13 +1032,13 @@ ulong Disasm(char *src,ulong srcsize,ulong srcip,
           else DecodeRG(cmd[1]>>3,4,RG4);
           hasrm=1; break;
         case RAC:                      // Accumulator (AL/AX/EAX, implicit)
-          DecodeRG(REG_EAX,datasize,RAC); break;
+          DecodeRG(GREG_EAX,datasize,RAC); break;
         case RAX:                      // AX (2-byte, implicit)
-          DecodeRG(REG_EAX,2,RAX); break;
+          DecodeRG(GREG_EAX,2,RAX); break;
         case RDX:                      // DX (16-bit implicit port address)
-          DecodeRG(REG_EDX,2,RDX); break;
+          DecodeRG(GREG_EDX,2,RDX); break;
         case RCL:                      // Implicit CL register (for shifts)
-          DecodeRG(REG_ECX,1,RCL); break;
+          DecodeRG(GREG_ECX,1,RCL); break;
         case RS0:                      // Top of FPU stack (ST(0))
           DecodeST(0,0); break;
         case RST:                      // FPU register (ST(i)) in command byte
@@ -1135,7 +1135,7 @@ ulong Disasm(char *src,ulong srcsize,ulong srcip,
         case PRF:                      // Far return address (pseudooperand)
           da->warnings|=DAW_FARADDR; break;
         case PAC:                      // Accumulator (AL/AX/EAX, pseudooperand)
-          DecodeRG(REG_EAX,datasize,PAC); break;
+          DecodeRG(GREG_EAX,datasize,PAC); break;
         case PAH:                      // AH (in LAHF/SAHF, pseudooperand)
         case PFL:                      // Lower byte of flags (pseudooperand)
           break;
@@ -1144,9 +1144,9 @@ ulong Disasm(char *src,ulong srcsize,ulong srcip,
         case PS1:                      // ST(1) (pseudooperand)
           DecodeST(1,1); break;
         case PCX:                      // CX/ECX (pseudooperand)
-          DecodeRG(REG_ECX,cxsize,PCX); break;
+          DecodeRG(GREG_ECX,cxsize,PCX); break;
         case PDI:                      // EDI (pseudooperand in MMX extentions)
-          DecodeRG(REG_EDI,4,PDI); break;
+          DecodeRG(GREG_EDI,4,PDI); break;
         default:
           da->error=DAE_INTERN;        // Unknown argument type
         break;

@@ -50,6 +50,8 @@
 #define PSEUDOOP       128             // Base for pseudooperands
 #define TEXTLEN        256             // Maximal length of text string
 
+#undef WS
+#undef SS
 // Special command features.
 #define WW             0x01            // Bit W (size of operand)
 #define SS             0x02            // Bit S (sign extention of immediate)
@@ -197,14 +199,14 @@ extern const t_cmddata dangerous[];
 #define NOP            0x90            // Code of 1-byte NOP command
 #define TRAPFLAG       0x00000100      // Trap flag in CPU flag register
 
-#define REG_EAX        0               // Indexes of general-purpose registers
-#define REG_ECX        1               // in t_reg.
-#define REG_EDX        2
-#define REG_EBX        3
-#define REG_ESP        4
-#define REG_EBP        5
-#define REG_ESI        6
-#define REG_EDI        7
+#define GREG_EAX        0               // Indexes of general-purpose registers
+#define GREG_ECX        1               // in t_reg.
+#define GREG_EDX        2
+#define GREG_EBX        3
+#define GREG_ESP        4
+#define GREG_EBP        5
+#define GREG_ESI        6
+#define GREG_EDI        7
 
 #define SEG_UNDEF     -1
 #define SEG_ES         0               // Indexes of segment/selector registers

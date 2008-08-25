@@ -13,6 +13,7 @@
 
 #include "../main.h"
 #include "regs.h"
+#include "bp.h"
 
 #if __WINDOWS__
 #else

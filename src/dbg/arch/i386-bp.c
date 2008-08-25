@@ -34,27 +34,30 @@ static int ins_c;
 static char *ins_buf;
 extern struct regs_off roff[];
 
+/* software breakpoints */
+struct arch_bp_t arch_x86_bps[] = {
+	{ "\xCC", 1 },
+	{ "\xCD\x03", 2 },
+	{ NULL, 0 }
+};
+
+/* hardware breakpoints */
+// TODO: unsigned long -> u64
+// XXX: 64 bit hw registers working properly??
+//
 #ifdef __linux__
 
 static unsigned long dr_get (int reg)
 {
-	unsigned long val;
-
-  	val = ptrace (PTRACE_PEEKUSER, ps.tid,
+  	return ptrace (PTRACE_PEEKUSER, ps.tid,
                   offsetof(struct user, u_debugreg[reg]), 0);
-
-  	return val;
 }
 
 static int dr_set (int reg, unsigned long val)
 {
-	int ret;
-
-  	ret = ptrace (PTRACE_POKEUSER, ps.tid,
-                  offsetof(struct user, u_debugreg[reg]), val);
-
-	return ret;
+  	return ptrace (PTRACE_POKEUSER, ps.tid, offsetof(struct user, u_debugreg[reg]), val);
 }
+
 #elif __FreeBSD__
 
 static unsigned long dr_get (int reg)
@@ -84,14 +87,12 @@ static int dr_set (int reg, unsigned long val)
 		dbr.dr[reg] = val;
 	else return -1;
 
-  	ret = ptrace (PT_SETDBREGS, ps.tid, &dbr, sizeof(struct dbreg));
-
-	return ret;
+  	return ptrace (PT_SETDBREGS, ps.tid, &dbr, sizeof(struct dbreg));
 }
 
 #elif __WINDOWS__
 
-inline static unsigned long dr_get(int reg)
+static unsigned long dr_get(int reg)
 {
 	regs_t regs;
 	unsigned int off;
@@ -100,23 +101,19 @@ inline static unsigned long dr_get(int reg)
 
 	if(reg == 7)
 		off = offsetof(CONTEXT, Dr7);
-	else
-		off = sizeof(DWORD) + (reg * sizeof(DWORD));
-
+	else	off = sizeof(DWORD) + (reg * sizeof(DWORD));
 
 	return debug_get_regoff(&regs, off);
 }
 
-inline static int dr_set(int reg, unsigned long val)
+static int dr_set(int reg, unsigned long val)
 {
 	regs_t regs;
 	unsigned int off;
 
 	if(reg == 7)
 		off = offsetof(CONTEXT, Dr7);
-	else
-		off = sizeof(DWORD) + (reg * sizeof(DWORD));
-
+	else	off = sizeof(DWORD) + (reg * sizeof(DWORD));
 
 	debug_getregs(ps.tid, &regs);
 	debug_set_regoff(&regs, (int)off, val);
@@ -127,13 +124,12 @@ inline static int dr_set(int reg, unsigned long val)
 	printf("REG_RE_VAL3: 0x%x\n", regs.Dr3);
 	printf("REG_CONTROL: 0x%x\n", regs.Dr7);
 	*/
-
 	return 0;
 }
 
 #else
-/* NOT YET */
 
+/* NOT YET IMPLEMENTED: USE u64!!! */
 static unsigned long dr_get(int reg)
 {
 	return 0L;
@@ -145,7 +141,6 @@ static int dr_set(int reg, unsigned long val)
 }
 
 #endif
-
 
 inline static void dr_set_control (unsigned long control)
 {
@@ -175,7 +170,6 @@ inline static unsigned long dr_get_status (void)
 void dr_init()
 {
 	int i;
-
 	for(i = 0; i <= DR_CONTROL; i++)
 		dr_set(i, 0);
 }
@@ -198,13 +192,11 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 					return i;
 			}
 		}
-		if(dr_free == -1) {
+		if(dr_free == -1)
 			return -1;
-		}
 	} else
-	if (dr_free<0||dr_free>3) {
+	if (dr_free<0||dr_free>3)
 		return -2;
-	}
 
 	/* set access type */
 	I386_DR_SET_RW_LEN(control, dr_free, type);
@@ -280,9 +272,7 @@ static int arch_bp_hw_state(unsigned long addr, int enable)
 		if(dr_get(i) == addr)  {
 			if(enable)
 				I386_DR_ENABLE(control, i);
-			else
-				I386_DR_DISABLE(control, i);
-
+			else	I386_DR_DISABLE(control, i);
 			dr_set_control(control);
 			return 0;
 		}
@@ -336,7 +326,7 @@ int arch_bp_rm_soft(struct bp_t *bp)
 /* software breakpoints */
 inline int arch_bp_soft_enable(struct bp_t *bp)
 {
-	char breakpoint = '\xCC';
+	char breakpoint = '\xCC'; // XXX : support to choose which bp instruction use
 
 	return debug_write_at(ps.tid, &breakpoint, 1, bp->addr);
 }
@@ -362,21 +352,24 @@ int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
 
+printf("arch_restore_bp\n");
 	if (bp == NULL) {
 		eprintf("WARNING: Cannot restore bp at eip = 0x%08llx\n",(u64)arch_pc());
 		return 0;
 	}
 
 	if(WS(bp)->hw) {
-//printf("restore hard bp\n");
+printf("restore hard bp\n");
 		arch_bp_hw_disable(bp);
 		debug_os_steps();
 		debug_dispatch_wait();
 		arch_bp_hw_enable(bp);
 	} else {
-//printf("restore soft bp\n");
+printf("restore soft bp\n");
 	//	arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
+//	  arch_jmp(arch_pc()-1);
+//	  arch_jmp(arch_pc()-1);
 #define CODE_GUAI 0
 // CODE EXPERIMENTAL TO CLEAN THE CACHE (NOT NEEDED!! NOISE!!! )
 #if 0
@@ -407,14 +400,15 @@ int arch_restore_bp(struct bp_t *bp)
 	//	arch_bp_soft_enable(bp);
 #if 0
 #if ARCH_I386
+
 	if (!bp->hw)
 	  arch_jmp(arch_pc()-1);
 	else
 #else
 	  arch_jmp(arch_pc()-4);
-#endif
-#endif
 		debug_getregs(ps.tid, &regs);
+#endif
+#endif
 	}
 
 	return 0;
@@ -424,7 +418,7 @@ struct bp_t *arch_stopped_bp()
 {
         int i;
 	int bps = ps.bps_n;
-	unsigned long addr;
+	u64 addr;
 	struct bp_t *bp_w = 0, *bp_s = 0;
 
 	addr = R_EIP(WS(regs));
@@ -435,8 +429,8 @@ struct bp_t *arch_stopped_bp()
 				if(ps.bps[i].addr == addr)
 					bp_w = &ps.bps[i];
 			} else {
-
-				if(ps.bps[i].addr == addr - 1) { // XXX sizeof ( breakpoint ) -- on arm is 4!!
+				if(ps.bps[i].addr == addr - ps.bps[i].len) {
+//printf("BARATA IT IS SOFT AND needs to 0x%08llx\n", arch_pc());
 					bp_s = &ps.bps[i];
 				}
 			}

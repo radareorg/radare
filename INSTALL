@@ -15,9 +15,22 @@ You can get more information about it in:
 WAF is a modern work-in-progress python-based build system. Currently both systems are
 known to work on most systems, but there are some issues for ACR on Windows, OpenSolaris,
 and other proprietary systems. But it should properly work on all Free *nix systems like
-GNU/Linux, NetBSD, OpenBSD, FreeBSD on 32/64 bits
+GNU/Linux, NetBSD, OpenBSD, FreeBSD on 32/64 bits.
 
-BUILD
+If you experience any problem building radare. Please ping me to pancake<nopcode.org>
+
+
+BUILD USING WAF:
+
+  $ ./waf configure
+  $ ./waf
+
+  to clean the build, update waf or cleaning the db:
+
+  $ ./waf distclean
+
+
+BUILD USING ACR:
 
  Mingw32:
 
@@ -35,5 +48,3 @@ BUILD
  Other unixes
 
   $ ./configure --prefix=/usr --without-vala --without-gui
-
-

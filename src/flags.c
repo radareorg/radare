@@ -664,8 +664,8 @@ void flags_visual_menu()
 	struct list_head *pos;
 #define MAX_FORMAT 2
 	int format = 0;
-	char *ptr;
-	char *fs = NULL;
+	const char *ptr;
+	const char *fs = NULL;
 	char *fs2 = NULL;
 	int option = 0;
 	int _option = 0;
@@ -810,7 +810,8 @@ void flags_visual_menu()
 			break;
 		case 'l':
 		case ' ':
-		case '\n': // never happens
+		case '\r':
+		case '\n':
 			if (menu == 1) {
 				sprintf(cmd, "s %s", fs2);
 				radare_cmd_raw(cmd, 0);
@@ -838,7 +839,7 @@ void flags_visual_menu()
 		case ':':
 			cons_set_raw(0);
 #if HAVE_LIB_READLINE
-			char *ptr = readline(VISUAL_PROMPT);
+			char *ptr = (char *)readline(VISUAL_PROMPT);
 			if (ptr) {
 				strncpy(cmd, ptr, sizeof(cmd));
 				radare_cmd(cmd, 1);
