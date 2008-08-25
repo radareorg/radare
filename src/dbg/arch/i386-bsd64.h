@@ -1,5 +1,5 @@
-
 #define regs_t struct reg
+
 #define R_RIP(x) x.r_rip
 #define R_RFLAGS(x) x.r_rflags
 #define R_RBP(x) x.r_rbp
@@ -43,5 +43,3 @@
 #define R_R13_OFF offsetof(struct reg, r_r13)
 #define R_R14_OFF offsetof(struct reg, r_r14)
 #define R_R15_OFF offsetof(struct reg, r_r15)
-
-

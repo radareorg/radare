@@ -201,8 +201,6 @@ int debug_waitpid(int pid, int *status)
 
   #if __linux__
 	return waitpid(pid, status, WUNTRACED);
-  #end
-
   #ifdef __WALL
 	return waitpid(pid, status, __WALL | WUNTRACED);
   #else

@@ -1,4 +1,5 @@
 #define regs_t struct reg
+
 #define R_EIP(x) x.r_eip
 #define R_EFLAGS(x) x.r_eflags
 #define R_EBP(x) x.r_ebp
@@ -10,6 +11,7 @@
 #define R_EDX(x) x.r_edx
 #define R_ESI(x) x.r_esi
 #define R_EDI(x) x.r_edi
+
 /* registers offset */
 
 #define R_EIP_OFF offsetof(struct reg, r_eip)

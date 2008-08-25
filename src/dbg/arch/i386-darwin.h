@@ -1,5 +1,7 @@
 #include <mach/i386/_structs.h>
+
 #define regs_t _STRUCT_X86_THREAD_STATE32
+
 #define R_EIP(x) x.__eip
 #define R_EFLAGS(x) x.__eflags
 #define R_EBP(x) x.__ebp
@@ -11,6 +13,7 @@
 #define R_EDX(x) x.__edx
 #define R_ESI(x) x.__esi
 #define R_EDI(x) x.__edi
+
 /* registers offset */
 
 #define R_EIP_OFF offsetof(regs_t, __eip)

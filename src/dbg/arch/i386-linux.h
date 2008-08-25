@@ -24,4 +24,3 @@
 #define R_EDX_OFF offsetof(struct user_regs_struct, edx)
 #define R_ESI_OFF offsetof(struct user_regs_struct, esi)
 #define R_EDI_OFF offsetof(struct user_regs_struct, edi)
-#endif
