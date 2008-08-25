@@ -28,6 +28,9 @@ if bld.env['HAVE_VALAC'] == 1:
 	obj.uselib_local += ' grava'
 	obj.includes += ' ..//build/default/vala/grava '
 
+if bld.env['HAVE_LIB_EWF'] == 1:
+	obj.env.append_value('LINKFLAGS','-lewf')
+
 # Subdirectories
 bld.add_subdirs('plug/io')
 obj.uselib_local += ' plug-io'

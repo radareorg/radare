@@ -8,4 +8,7 @@ plug_io.includes = '../..'
 if bld.env['DEBUGGER'] == 1:
 	plug_io.source += ' debug.c'
 
+if bld.env['HAVE_LIB_EWF'] == 1:
+	plug_io.source += ' ewf.c'
+
 #plug_io.packages='gtk+-2.0'

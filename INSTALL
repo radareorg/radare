@@ -1,0 +1,39 @@
+==================
+Installation notes
+==================
+
+radare supports two kind of build systems: ACR and WAF
+
+The WAF build system is supossed to replace the ACR one. But currently both
+systems are supported.
+
+ACR is basically a minimalistic replacement of autotools written in shellscript.
+You can get more information about it in:
+
+    http://nopcode.org/wk.php/Acr
+
+WAF is a modern work-in-progress python-based build system. Currently both systems are
+known to work on most systems, but there are some issues for ACR on Windows, OpenSolaris,
+and other proprietary systems. But it should properly work on all Free *nix systems like
+GNU/Linux, NetBSD, OpenBSD, FreeBSD on 32/64 bits
+
+BUILD
+
+ Mingw32:
+
+  $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui
+  $ make
+
+ Desktop GNU/Linux:
+
+  $ ./configure --prefix=/usr --with-sysproxy
+
+ NetBSD box:
+
+  $ CFLAGS=-I/usr/pkg/include LDFLAGS=-Wl,-R/usr/pkg/lib ./configure --prefix=/usr/pkg
+
+ Other unixes
+
+  $ ./configure --prefix=/usr --without-vala --without-gui
+
+

@@ -189,26 +189,6 @@ FEATURES
   - ollydbg-like keybindings (F7 step , F9 continue, ...)
 
 
-BUILD
-
- Mingw32:
-
-  $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui
-  $ make
-
- Desktop GNU/Linux:
-
-  $ ./configure --prefix=/usr --with-sysproxy
-
- NetBSD box:
-
-  $ CFLAGS=-I/usr/pkg/include LDFLAGS=-Wl,-R/usr/pkg/lib ./configure --prefix=/usr/pkg
-
- Other unixes
-
-  $ ./configure --prefix=/usr --without-vala --without-gui
-
-
 
                        -- Dedicated to the girl I have loved, hated and loved.
 

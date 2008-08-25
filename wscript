@@ -120,7 +120,11 @@ def configure(conf):
 	#print " * InstDir   : %s"%inst_var
 	print " * Target    : %s"%conf.env['TARGET']
 	print " * LilEndian : %s"%conf.env['LIL_ENDIAN']
-	print " * EWF       : %s"%conf.env['HAVE_LIB_EWF']
+
+	if conf.env['HAVE_LIB_EWF'] == 1:
+		print " * EWF       : enabled"
+	else:
+		print " * EWF       : disabled"
 
 	if Options.options.DEBUGGER:
 		print " * Debugger  : enabled"
@@ -132,7 +136,7 @@ def configure(conf):
 	else:
 		print " * Readline  : disabled"
 
-	if conf.env['GUI']:
+	if conf.env['GUI'] == 1:
 		print " * GUI       : enabled"
 	else:
 		print " * GUI       : disabled"
