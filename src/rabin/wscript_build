@@ -4,4 +4,5 @@ obj = bld.new_task_gen('cc', 'program')
 obj.target = 'rabin'
 obj.source='rabin.c dietelf.c dietelf64.c'
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
-obj.env.append_value('LINKFLAGS','-ldl')
+if bld.env['OS'] == 'Linux':
+	obj.env.append_value('LINKFLAGS','-ldl')

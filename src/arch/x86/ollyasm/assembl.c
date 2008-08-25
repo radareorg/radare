@@ -527,7 +527,7 @@ static void Parseasmoperand(t_asmoperand *op) {
       if (sign=='?') {
         asmerror="Syntax error"; scan=SCAN_ERR; return; };
       // Register AL appears as part of operand of (seldom used) command XLAT.
-      if (scan==SCAN_REG8 && idata==REG_EAX) {
+      if (scan==SCAN_REG8 && idata==GREG_EAX) {
         if (sign=='-') {
           asmerror="Unable to subtract register"; scan=SCAN_ERR; return; };
         if (xlataddr!=0) {
@@ -554,11 +554,11 @@ static void Parseasmoperand(t_asmoperand *op) {
           Scanasm(0); }
         else r[reg]++; }               // Simple register
       else if (scan==SCAN_LOCAL) {
-        r[REG_EBP]++;
+        r[GREG_EBP]++;
         op->offset-=idata*4;
         Scanasm(0); }
       else if (scan==SCAN_ARG) {
-        r[REG_EBP]++;
+        r[GREG_EBP]++;
         op->offset+=(idata+1)*4;
         Scanasm(0); }
       else if (scan==SCAN_ICONST || scan==SCAN_DCONST) {
@@ -599,9 +599,9 @@ static void Parseasmoperand(t_asmoperand *op) {
     // Process XLAT address separately.
     if (xlataddr!=0) {                 // XLAT address in form [EBX+AX]
       for (i=0; i<=8; i++) {           // Check which registers used
-        if (i==REG_EBX) continue;
+        if (i==GREG_EBX) continue;
         if (r[i]!=0) break; };
-      if (i<=8 || r[REG_EBX]!=1 || op->offset!=0 || op->anyoffset!=0) {
+      if (i<=8 || r[GREG_EBX]!=1 || op->offset!=0 || op->anyoffset!=0) {
         asmerror="Invalid address"; scan=SCAN_ERR; return; };
       op->type=MXL; }
     // Determine scale, index and base.
@@ -846,7 +846,7 @@ retrylongjump:
         case RCM:                      // Integer register in command byte
         case RAC:                      // Accumulator (AL/AX/EAX, implicit)
           if (op->type!=REG) match|=MA_TYP;
-          if (arg==RAC && op->index!=REG_EAX && op->index!=8) match|=MA_TYP;
+          if (arg==RAC && op->index!=GREG_EAX && op->index!=8) match|=MA_TYP;
           if (bytesize==0 && op->size==1) match|=MA_SIZ;
           if (datasize==0) datasize=op->size;
           if (datasize!=op->size) match|=MA_DIF;
@@ -858,18 +858,18 @@ retrylongjump:
           if (datasize!=op->size) match|=MA_DIF;
           break;
         case RAX:                      // AX (2-byte, implicit)
-          if (op->type!=REG || (op->index!=REG_EAX && op->index!=8))
+          if (op->type!=REG || (op->index!=GREG_EAX && op->index!=8))
             match|=MA_TYP;
           if (op->size!=2) match|=MA_SIZ;
           if (datasize==0) datasize=op->size;
           if (datasize!=op->size) match|=MA_DIF;
           break;
         case RDX:                      // DX (16-bit implicit port address)
-          if (op->type!=REG || (op->index!=REG_EDX && op->index!=8))
+          if (op->type!=REG || (op->index!=GREG_EDX && op->index!=8))
             match|=MA_TYP;
           if (op->size!=2) match|=MA_SIZ; break;
         case RCL:                      // Implicit CL register (for shifts)
-          if (op->type!=REG || (op->index!=REG_ECX && op->index!=8))
+          if (op->type!=REG || (op->index!=GREG_ECX && op->index!=8))
             match|=MA_TYP;
           if (op->size!=1) match|=MA_SIZ;
           break;
@@ -967,13 +967,13 @@ retrylongjump:
           if (op->size!=0) match|=MA_SIZ;
           break;
         case MSO:                      // Source in string operands ([ESI])
-          if (op->type!=MRG || op->base!=REG_ESI ||
+          if (op->type!=MRG || op->base!=GREG_ESI ||
             op->index!=-1 || op->offset!=0 || op->anyoffset!=0) match|=MA_TYP;
           if (datasize==0) datasize=op->size;
           if (op->size!=0 && op->size!=datasize) match|=MA_DIF;
           break;
         case MDE:                      // Destination in string operands ([EDI])
-          if (op->type!=MRG || op->base!=REG_EDI ||
+          if (op->type!=MRG || op->base!=GREG_EDI ||
             op->index!=-1 || op->offset!=0 || op->anyoffset!=0) match|=MA_TYP;
           if (op->segment!=SEG_UNDEF && op->segment!=SEG_ES) match|=MA_SEG;
           if (datasize==0) datasize=op->size;
@@ -1199,9 +1199,9 @@ retrylongjump:
             segment=op->segment;
           tcode[i+1]|=0x05;
           tmask[i+1]|=0xC7; }
-        else if (op->index<0 && op->base!=REG_ESP) {
+        else if (op->index<0 && op->base!=GREG_ESP) {
           tmask[i+1]|=0xC0;            // SIB byte unnecessary
-          if (op->offset==0 && op->anyoffset==0 && op->base!=REG_EBP)
+          if (op->offset==0 && op->anyoffset==0 && op->base!=GREG_EBP)
             ;                          // [EBP] always requires offset
           else if ((constsize & 1)!=0 &&
             ((op->offset>=-128 && op->offset<128) || op->anyoffset!=0)
@@ -1220,23 +1220,23 @@ retrylongjump:
           else segment=op->segment; }
         else {                         // SIB byte necessary
           hassib=1;
-          if (op->base==REG_EBP &&     // EBP as base requires offset, optimize
+          if (op->base==GREG_EBP &&     // EBP as base requires offset, optimize
             op->index>=0 && op->scale==1 && op->offset==0 && op->anyoffset==0) {
-            op->base=op->index; op->index=REG_EBP; };
-          if (op->index==REG_ESP &&    // ESP cannot be an index, reorder
+            op->base=op->index; op->index=GREG_EBP; };
+          if (op->index==GREG_ESP &&    // ESP cannot be an index, reorder
             op->scale<=1) {
-            op->index=op->base; op->base=REG_ESP; op->scale=1; };
+            op->index=op->base; op->base=GREG_ESP; op->scale=1; };
           if (op->base<0 &&            // No base means 4-byte offset, optimize
             op->index>=0 && op->scale==2 &&
             op->offset>=-128 && op->offset<128 && op->anyoffset==0) {
             op->base=op->index; op->scale=1; };
-          if (op->index==REG_ESP) {    // Reordering was unsuccessfull
+          if (op->index==GREG_ESP) {    // Reordering was unsuccessfull
             strcpy(errtext,"Invalid indexing mode");
             goto error; };
           if (op->base<0) {
             tcode[i+1]|=0x04;
             dispsize=4; }
-          else if (op->offset==0 && op->anyoffset==0 && op->base!=REG_EBP)
+          else if (op->offset==0 && op->anyoffset==0 && op->base!=GREG_EBP)
             tcode[i+1]|=0x04;          // No displacement
           else if ((constsize & 1)!=0 &&
             ((op->offset>=-128 && op->offset<128) || op->anyoffset!=0)

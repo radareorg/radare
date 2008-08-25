@@ -5,7 +5,7 @@
 
 #if __UNIX__
 #include <sys/types.h>
-#include <wait.h>
+#include <sys/wait.h>
 #include <signal.h>
 #endif
 

@@ -13,9 +13,10 @@ obj = bld.new_task_gen('cc', 'program')
 obj.target = 'radare'
 obj.includes += ' .. include '
 obj.env.append_value('CCFLAGS','-DRADARE_CORE')
-obj.env.append_value('LINKFLAGS','-ldl') ## XXX: only for linux
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
 # Linking against..
+if bld.env['OS'] == 'Linux':
+	obj.env.append_value('LINKFLAGS','-ldl')
 
 #if Options.options.DEBUGGER == 1:
 if bld.env['DEBUGGER'] == 1:

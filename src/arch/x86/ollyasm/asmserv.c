@@ -861,7 +861,7 @@ int Isfilling(ulong addr,char *data,ulong size,ulong align) {
   // any register except ESP (here address is constructed differently):
   if (addr+2<size &&
     data[addr]==0x8D && (data[addr+1] & 0xC0)==0x40 && data[addr+2]==0x00 &&
-    (data[addr+1] & 0x07)!=REG_ESP &&
+    (data[addr+1] & 0x07)!=GREG_ESP &&
     (((data[addr+1]>>3)^data[addr+1]) & 0x07)==0)
     return 3;
   // WATCOM compilers use LEA EAX,[EAX] with SIB and 8-bit zero (8D,44,20,00)
@@ -873,7 +873,7 @@ int Isfilling(ulong addr,char *data,ulong size,ulong align) {
     return 4;
   if (addr+5<size && data[addr]==0x8D &&
     (data[addr+1] & 0xC0)==0x80 && *(ulong *)(data+addr+2)==0 &&
-    (data[addr+1] & 0x07)!=REG_ESP &&
+    (data[addr+1] & 0x07)!=GREG_ESP &&
     (((data[addr+1]>>3)^data[addr+1]) & 0x07)==0)
     return 6;
   // Unable to recognize this code as a valid filling.
