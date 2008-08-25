@@ -1044,7 +1044,7 @@ int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 struct radis_arch_t {
 	const char *name;
 	int id;
-	int (*fun)(u64 addr, u8 *bytes, struct aop_t *aop);
+	int (*fun)(u64 addr, const u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
 	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel16" , ARCH_X86   , &arch_x86_aop }   , 
@@ -1060,7 +1060,7 @@ struct radis_arch_t {
 	{ "ppc"     , ARCH_PPC   , &arch_ppc_aop }   , 
 	{ "m68k"    , ARCH_M68K  , &arch_m68k_aop }  , 
 	{ "csr"     , ARCH_CSR   , &arch_csr_aop }   , 
-	{ "msil"    , ARCH_MSIL, &arch_msil_aop }   , 
+	{ "msil"    , ARCH_MSIL  , &arch_msil_aop }   , 
 	{ NULL      , -1         , NULL }
 };
 

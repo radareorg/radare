@@ -15,7 +15,12 @@ struct instruction {
 			in_reg:2,
 			in_opcode:4,
 			in_operand:8;
+#if __sun
+#warning XXX related to sunstudio :O
+};
+#else
 } __packed;
+#endif
 
 struct directive {
 	struct instruction	d_inst;

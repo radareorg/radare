@@ -26,7 +26,7 @@ def set_options(opt):
 
 def configure(conf):
 	# Check for compiler tools
-	conf.check_tool('compiler_cc cc')
+	conf.check_tool('compiler_cc')
 	try: conf.check_tool('compiler_cxx')
 	except: pass
 	have_valac = False

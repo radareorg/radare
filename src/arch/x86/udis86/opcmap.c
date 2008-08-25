@@ -2791,7 +2791,7 @@ struct map_entry *itab_x87[] =
 /* AMD 3DNow! Instructions */
 struct map_entry itab_3DNow =  
   { UD_I3dnow,	P,	Q,	NOARG };
-struct map_entry nop = 
+struct map_entry udis_nop = 
   { UD_Inop,	NOARG,	NOARG,	NOARG, Pnone };
 struct map_entry udis_pause = 
   { UD_Ipause,	NOARG,	NOARG,	NOARG, Pnone };
@@ -2857,7 +2857,7 @@ search_1byte_insn(register struct ud* u)
 		if (u->pfx_rep) {
 			u->mapen = &udis_pause;
 			u->pfx_rep = 0;
-		} else  u->mapen = &nop;
+		} else  u->mapen = &udis_nop;
 	}
   } else if (u->dis_mode == 64 && (u->mapen)->mnemonic == UD_Iarpl)
 	u->mapen = &movsxd;
