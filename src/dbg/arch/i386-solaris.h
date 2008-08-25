@@ -21,13 +21,34 @@ typedef	struct	user {
 	int		u_code;		/* fault code on trap */
 	caddr_t		u_addr;		/* fault PC on trap */
 } user_t;
+
+#define	SS		18	/* only stored on a privilege transition */
+#define	UESP		17	/* only stored on a privilege transition */
+#define	EFL		16
+#define	CS		15
+#define	EIP		14
+#define	ERR		13
+#define	TRAPNO		12
+#define	EAX		11
+#define	ECX		10
+#define	EDX		9
+#define	EBX		8
+#define	ESP		7
+#define	EBP		6
+#define	ESI		5
+#define	EDI		4
+#define	DS		3
+#define	ES		2
+#define	FS		1
+#define	GS		0
+
 #endif
 
 #define regs_t gregset_t
-#define R_EIP(x) x[EIP]
+#define R_EIP(x) x[14]
 #define R_EFLAGS(x) x[EFL]
 #define R_EBP(x) x[EBP]
-#define R_ESP(x) x[ESP]
+#define R_ESP(x) x[7]
 #define R_EAX(x) x[EAX]
 #define R_OEAX(x) x[TRAPNO] // trapno!?!
 #define R_EBX(x) x[EBX]

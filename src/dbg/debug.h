@@ -10,6 +10,7 @@ int debug_reg(const char *arg);
 void debug_msg();
 int debug_dumpall(const char *arg);
 void debug_msg_set(const char *format, ...);
+
 // bp.c
 int debug_bp(const char *addr);
 int debug_bp_set(struct bp_t *bp, u64 addr, int type);
@@ -22,7 +23,6 @@ struct bp_t *debug_bp_get(addr_t addr);
 struct bp_t *debug_bp_get_num(int num);
 
 // debug.c
-//
 int debug_init();
 int debug_ktrace();
 void debug_exit();
@@ -71,7 +71,6 @@ int debug_jmp(const char *str);
 int debug_call(const char *str);
 int debug_info();
 int debug_signal(const char *);
-//int debug_contfork();
 struct bp_t *debug_get_bp(addr_t addr);
 int debug_pstree();
 int debug_attach();
@@ -92,12 +91,8 @@ int inline debug_steps();
 u64 debug_get_regoff(regs_t *reg, int off);
 int debug_set_register(char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
-addr_t debug_get_register(char *reg);
+u64 debug_get_register(char *reg);
 
-
-//#include "libps2fd.h"
-//inline int debug_getregs(pid_t pid, regs_t *reg);
-//inline int debug_setregs(pid_t pid, regs_t *reg);
 int dispatch_wait();
 int debug_os_init();
 int debug_os_kill(int pid, int sig);
@@ -106,10 +101,8 @@ void print_wps();
 int rm_wp(int i);
 void print_sigh(char *signame, unsigned long handler);
 void debug_environment();
-//inline unsigned long debug_get_regoff(regs_t *reg, int off);
-inline int restore_bp();
+int restore_bp();
 int getv();
-
 
 // events.c
 int events_init();
@@ -137,7 +130,6 @@ enum {
 	BP_HARD,
 	BP_SOFT
 };
-
 
 struct event_t {
 	char *name;
@@ -191,6 +183,6 @@ struct debug_t {
 };
 
 extern struct event_t events[];
-int is_code(addr_t pc);
+int is_code(u64 pc);
 
 #endif

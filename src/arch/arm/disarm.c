@@ -487,9 +487,9 @@ static char *sdtsource (QByte Rn, QByte offset, QByte W, QByte U, QByte P, QByte
 static CondPosT decode_swi (SWI swi)
 {
 	sprintf(disasmstr, "%sswi  0x%08x%s", 
-		(color)?"\e[31m":"",
+		(color)?"\x1b[31m":"",
 		swi.comment,
-		(color)?"\e[0m":"");
+		(color)?"\x1b[0m":"");
 	return (3);
 }
 
@@ -584,12 +584,12 @@ static CondPosT decode_branch (Branch branch)
 	label[0]='\0';
 	string_flag_offset(label, current_offset+addr);
 	sprintf(disasmstr, "%sb%s  0x%x ; %s%s",
-			(color)?"\e[32m":"",
+			(color)?"\x1b[32m":"",
 			condtext[(bytes->byte3&0xf0)>>4][0],
 			(0==branch.sign)?(current_offset+addr):
 			(current_offset+(addr)), 
 			label,
-			(color)?"\e[0m":"");
+			(color)?"\x1b[0m":"");
 	if (0 == branch.L) {
 		cp = 1;
 	} else {
@@ -738,7 +738,7 @@ static CondPosT decode_dataproc (DataProc dataproc)
 	&& bytes->byte1 == 0
 	&& bytes->byte2 == 0
 	&& bytes->byte3 == 0) {
-		strcpy(pfx,"\e[36m");
+		strcpy(pfx,"\x1b[36m");
 	}
 
 	if ( (dataproc.opcode == 0xD)  || (dataproc.opcode == 0xF)) {

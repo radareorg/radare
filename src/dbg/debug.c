@@ -695,7 +695,7 @@ int debug_info(char *arg)
 		cons_printf("f entry @ 0x%08x\n", ps.entrypoint);
 		//cons_printf("f bep @ %s\n", config_get("dbg.bep"));
 	} else {
-		cons_printf(" filename    %s\n", ps.filename);
+		cons_printf(" filename    %s\n", strget(ps.filename));
 
 		cons_printf(" pid         %d\n", ps.pid);
 		cons_printf(" tid         %d\n", ps.tid);
@@ -723,7 +723,7 @@ int debug_info(char *arg)
 		cons_printf(" steps       %d\n", ps.steps);
 		cons_printf(" offset      0x%llx\n", ps.offset);
 		cons_printf(" isbpaddr    %d\n", ps.isbpaddr);
-		cons_printf(" dbg_message %s\n", ps.msg);
+		cons_printf(" dbg_message %s\n", strget(ps.msg));
 	}
 
 	return 0;
@@ -1108,7 +1108,7 @@ int debug_step(int times)
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
-				sprintf(buf, "CC %d %s @ 0x%08llx", ps.steps, ptr, pc);
+				sprintf(buf, "CC %d %s @ 0x%08llx", ps.steps, strget(ptr), pc);
 				config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer

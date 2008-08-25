@@ -186,6 +186,49 @@ int debug_init_maps(int rest)
 	char  *pos_c;
 	int   i, ign, unk = 0;
 
+#if 0
+ /* FOR SUN */
+  08045000      12K rwx--    [ stack ]
+  08050000    1212K r-x--  /usr/bin/vim
+  0818E000     156K rwx--  /usr/bin/vim
+  081B5000     120K rwx--    [ heap ]
+  D2F70000      64K rwx--    [ anon ]
+  D33FE000       4K rwx--  /lib/ld.so.1
+
+radare -x /proc/<pid>/map
+   offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF0123456789ABCDEF01
+0x00000000, 0050 0408 0030 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 .P...0............................
+0x00000022  0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..................................
+0x00000044, 0000 0000 00e0 ffff ffff ffff 6700 0000 0010 0000 ffff ffff 0000 0000 0000 0508 00f0 ............g.....................
+0x00000066  1200 612e 6f75 7400 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..a.out...........................
+0x00000088, 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..................................
+0x000000AA  0000 0000 0000 0500 0000 0010 0000 ffff ffff 0000 0000 00e0 1808 0070 0200 612e 6f75 ...........................p..a.ou
+0x000000CC, 7400 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 t.................................
+0x000000EE  0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 00e0 1200 0000 0000 ..................................
+0x00000110, 0700 0000 0010 0000 ffff ffff 0000 0000 0050 1b08 00e0 0100 0000 0000 0000 0000 0000 .................P................
+0x00000132  0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..................................
+0x00000154, 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 5700 0000 0010 ............................W.....
+0x00000176  0000 ffff ffff 0000 0000 0000 f7d2 0000 0100 0000 0000 0000 0000 0000 0000 0000 0000 ..................................
+0x00000198, 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..................................
+0x000001BA  0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 4700 0000 0010 0000 ffff ffff ......................G...........
+0x000001DC, 0000 0000 0000 f9d2 00e0 0000 7a66 732e 3138 322e 3635 3533 382e 3332 3135 3500 0000 ............zfs.182.65538.32155...
+0x000001FE  0000                                                                                 ..                                
+
+0x00000000  0050 0408 -> base addr
+0x00000004  0030 0000 -> 0x3000 = 12K of size
+
+0x00000060  0000 0508 -> base addr
+0x00000064  00f0 1200 -> size ...
+
+#endif
+
+#if __sun
+	/* TODO: On solaris parse /proc/%d/map */
+	sprintf(path, "pmap %d > /dev/stderr", ps.tid);
+	system(path);
+	return 0;
+#endif
+
 	if(ps.map_regs_sz > 0)
 		free_regmaps(rest);
 #if __FreeBSD__
@@ -338,6 +381,7 @@ static int is_alive(int pid)
 	return kill(pid, 0)==0;
 }
 
+#define MAGIC_EXIT 0x33
 int debug_fork_and_attach()
 {
 	int wait_val;
@@ -365,15 +409,16 @@ int debug_fork_and_attach()
 		execv(ps.argv[0], ps.argv);
 		perror("fork_and_attach: execv");
 		eprintf("[%d] %s execv failed.\n", getpid(), ps.filename);
-		exit(0);
+		exit(MAGIC_EXIT); /* error */
 	default:
 		ps.opened = 1;
 		ps.pid = pid;
 		ps.tid = pid;
 
 		/* dupped kill check */
-		debug_waitpid(-1, &wait_val);
+		debug_waitpid(pid, &wait_val);
 		if (WIFEXITED(wait_val)) {
+		//if ((WEXITSTATUS(wait_val)) != 0) {
 			perror("waitpid");
 			debug_exit();
 			return -1;
@@ -389,6 +434,7 @@ int debug_fork_and_attach()
 
 		if (config_get("dbg.stop")) 
 			kill(ps.pid, SIGSTOP);
+
 		ps.steps  = 1;
 	}
 	return 0;
@@ -620,9 +666,12 @@ int debug_write_at(pid_t pid, void *data, int length, u64 addr)
 
 int debug_getregs(pid_t pid, regs_t *reg)
 {
-#if __linux__
+#if __sun
+	return ptrace(PTRACE_GETREGS, pid, 0, reg);
+#elif __linux__
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
 #else
+	memset(reg, sizeof(regs_t));
 	return ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
 #endif
 }

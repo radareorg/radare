@@ -176,8 +176,8 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
   }
 }
 
-#define C_RESET   "\e[0m"
-#define C_BWHITE  "\e[1;37m"
+#define C_RESET   "\x1b[0m"
+#define C_BWHITE  "\x1b[1;37m"
 extern int udis86_color;
 
 /* =============================================================================
@@ -191,11 +191,11 @@ extern void ud_translate_intel(struct ud* u)
 	if (udis86_color) switch(u->mnemonic) {
 		case UD_Itest:
 		case UD_Icmp:
-			mkasm(u, "\e[36m");
+			mkasm(u, "\x1b[36m");
 			break;
 		case UD_Ipush:
 		case UD_Ipop:
-			mkasm(u, "\e[33m");
+			mkasm(u, "\x1b[33m");
 			break;
 		case UD_Iret:
 		case UD_Inop:
@@ -216,13 +216,13 @@ extern void ud_translate_intel(struct ud* u)
 		case UD_Ijns:
 		case UD_Ijmp:
 		case UD_Icall:
-			mkasm(u, "\e[32m");
+			mkasm(u, "\x1b[32m");
 			break;
 		case UD_Iint:
-			mkasm(u, "\e[31m");
+			mkasm(u, "\x1b[31m");
 			break;
 		case UD_Iinvalid:
-			mkasm(u, "\e[31m");
+			mkasm(u, "\x1b[31m");
 			break;
 		case UD_Ifstp:
 		case UD_Ifld:
@@ -256,7 +256,7 @@ extern void ud_translate_intel(struct ud* u)
 		case UD_Ifdivp:
 		case UD_Ifdivr:
 		case UD_Ifdivrp:
-			mkasm(u, "\e[36m");
+			mkasm(u, "\x1b[36m");
 		default:
 			break;
 	}
@@ -316,6 +316,6 @@ extern void ud_translate_intel(struct ud* u)
 	gen_operand(u, &u->operand[2], u->c3);
   }
 if (udis86_color)
-	mkasm(u, "\e[0m");
+	mkasm(u, "\x1b[0m");
 
 }
