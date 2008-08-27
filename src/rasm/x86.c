@@ -181,7 +181,6 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			if (!strcmp(arg2, "ebp")) data[0]='\x5d'; else
 			if (!strcmp(arg2, "esp")) data[0]='\x5c'; else
 				return 0; // invalid register name to push
-			fprintf(stderr, "PUTA\n");
 		} else {
 			data[1] =ptr[0];
 			data[2] =ptr[1];

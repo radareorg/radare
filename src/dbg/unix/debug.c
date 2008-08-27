@@ -86,6 +86,7 @@ int th_info_bsd(int pid)
 
 int debug_os_kill(int pid, int sig)
 {
+	return NULL;
 	/* prevent killall selfdestruction */
 	if (pid < 1)
 		return -1;

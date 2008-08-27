@@ -48,7 +48,7 @@ def configure(conf):
 
 	# Generate GLOBAL.H
 	conf.env['GUI'] = False
-	if conf.env['HAVE_GTK'] and conf.env['HAVE_VTE'] and have_valac and Options.options.GUI:
+	if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and have_valac and Options.options.GUI:
 		conf.env['GUI'] = True
 	conf.env['OS']= os.uname()[0]
 	conf.env['CPU']= os.uname()[4]
@@ -151,8 +151,12 @@ def build(bld):
 	#if Params.g_commands['clean']:
 	#	os.system("echo unknown clean")
 	#else:
+	# ADD MISSING FILES TO THE INSTALLATION
+	#bld.add_subdirs('libexec')
+	#bld.install_files('BINDIR', 'src/rsc', 'libexec/')
+	#bld.install_files('DATADIR', 'radare/rsc', 'libexec/adict')
 
-def install(self):
+def install():
 	print "Installing..."
 
 

@@ -92,7 +92,6 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 
 	if (debug_load() == -1 || ps.pid == 0)
 		return -1;
-
 	/* get entry point here */
 	ps.ldentry    = arch_pc(ps.tid);
 	ps.entrypoint = arch_get_entrypoint();

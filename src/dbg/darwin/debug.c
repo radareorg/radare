@@ -43,6 +43,7 @@
 #include <sys/wait.h>
 
 static thread_array_t inferior_threads = NULL;
+static int task = 0;
 
 int debug_os_kill(int pid, int sig)
 {
@@ -84,9 +85,12 @@ void inferior_abort_handler(int pid)
 #define MACH_ERROR_STRING(ret) \
 (mach_error_string (ret) ? mach_error_string (ret) : "[UNKNOWN]")
 
+// s/inferior_task/port/
 int debug_attach(int pid)
 {
 	kern_return_t err;
+
+	pid = task; // XXX HACK
 
 	signal(SIGCHLD, pid);
 
@@ -99,11 +103,16 @@ int debug_attach(int pid)
 		return -1;
 	}
 
+	task = inferior_task; // ugly global asignation
+	printf("; PID: %d\nTASK: %d\n", pid, inferior_task);
+	//ps.pid = ps.tid = task; // XXX HACK
+
 	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count)
 			!= KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get list of task's threads.\n");
 		return -1;
 	}
+	fprintf(stderr, "Thread count: %d\n", inferior_thread_count);
 
 	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE,
 				&exception_port) != KERN_SUCCESS) {
@@ -164,7 +173,8 @@ static pid_t start_inferior(int argc, char **argv)
 	fprintf(stderr, "Starting process...\n");
 
 	if ((kid = fork())) {
-		wait(&status);
+		waitpid(kid, &status, 0);
+		//wait(&status);
 		if (WIFSTOPPED(status)) {
 			fprintf(stderr, "Process with PID %d started...\n", (int)kid);
 			return kid;
@@ -256,9 +266,13 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return 0;
 #else
 	unsigned int size= 0;
+//printf("Going to read\n");
 	int err = vm_read_overwrite(tid, (unsigned int)addr, 4, (pointer_t)buff, &size);
-	if (err == -1)
+	if (err == -1) {
+		printf("Cannot read\n");
 		return -1;
+	}
+//printf("READ %d\n", len);
 	return size;
 #endif
 }
@@ -274,6 +288,7 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 
 int debug_list_threads()
 {
+	int i;
 	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get list of task's threads.\n");
 		return;
@@ -288,12 +303,26 @@ int debug_getregs(pid_t tid, regs_t *regs)
 	//unsigned int gp_count, regs[17];
 	unsigned int gp_count;
 	kern_return_t err;
+i386_thread_state_t  state;
 
+	thread_act_port_array_t thread_list;
+	mach_msg_type_number_t thread_count;
+
+	err = task_threads(task, &thread_list, &thread_count);
+	if (err != KERN_SUCCESS) {
+		fprintf(stderr, "FUCK\n");
+	} else {
+		fprintf(stderr, "THREAD COUNT: %d\n", thread_count);
+	}
+
+tid = task;
 	/* thread_id, flavor, old_state, old_state_count */
-	if ((err = thread_get_state(tid, 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
-		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
+// s/state/regs/
+	if ((err = thread_get_state(tid, i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
+		fprintf(stderr, "getregs: Failed to get thread %d state (%d).\n", (int)tid, (int)err);
 		return -1;
 	}
+fprintf(stderr, "MY PROGRAM COUNTER IS : 0x%08llx\n", (u64)state.__eip);
 	return gp_count;
 }
 
@@ -442,25 +471,21 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 		if (print)
 		{
 			if (num_printed == 0)
-				printf("Region ");
+				fprintf(stderr, "Region ");
 			else
-				printf("   ... ");
-
-			/*
-			   printf("from 0x%s to 0x%s (%s, max %s; %s, %s, %s)",
-			   paddr_nz (prev_address),
-			   paddr_nz (prev_address + prev_size),
+				fprintf(stderr, "   ... ");
+			   fprintf(stderr, "from 0x%08llx to 0x%08llx (%s, max %s; %s, %s, %s)",
+			   (u64)prev_address, (u64)(prev_address + prev_size),
 			   unparse_protection (prev_info.protection),
 			   unparse_protection (prev_info.max_protection),
 			   unparse_inheritance (prev_info.inheritance),
-			   prev_info.shared ? "shared" : "private",
+			   prev_info.shared ? "shared" : " private",
 			   prev_info.reserved ? "reserved" : "not-reserved");
-			 */
 
 			if (nsubregions > 1)
-				printf(" (%d sub-regions)", nsubregions);
+				fprintf(stderr, " (%d sub-regions)", nsubregions);
 
-			printf("\n");
+			fprintf(stderr, "\n");
 
 			prev_address = address;
 			prev_size = size;
@@ -486,12 +511,6 @@ inline int debug_single_setregs(pid_t tid, regs_t *regs)
 	return 0;
 }
 
-static int debug_enable(int enable)
-{
-
-	return 0;
-}
-
 int debug_print_wait(char *act)
 {
 	return 0;
@@ -503,7 +522,7 @@ static void debug_init_console()
 
 int debug_os_init()
 {
-	return debug_enable(1);
+	return 0;
 }
 
 static int debug_exception_event(unsigned long code)
@@ -543,7 +562,7 @@ int debug_dispatch_wait()
 			exception_type, (unsigned int)exception_data);
 
 	gp_count = 17;
-	thread_get_state(inferior_threads[0], 1, (thread_state_t)regs, &gp_count);
+	thread_get_state(inferior_threads[0], 0, (thread_state_t)regs, &gp_count);
 
 #if 0
 	bkpt = breakpoints;
@@ -560,13 +579,15 @@ int debug_dispatch_wait()
 }
 #endif
 
-return 0;
+	return 0;
 }
 
 
 int debug_init_maps(int rest)
 {
-	macosx_debug_regions (0,0,999);//task_t task, mach_vm_address_t address, int max)
+fprintf(stderr, "PS:PID:%d\n", ps.pid);
+	macosx_debug_regions(task,0,999);
+	//macosx_debug_regions (0,0,999);//task_t task, mach_vm_address_t address, int max)
 	return 0;
 }
 

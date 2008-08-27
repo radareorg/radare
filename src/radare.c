@@ -1311,7 +1311,7 @@ int radare_go()
 	if (radare_open(0))
 		return 1;
 	if (tmp)
-	radare_set_block_size_i(tmp);
+		radare_set_block_size_i(tmp);
 
 	/* hexdump mode (-x) */
 	if (config.mode == MODE_HEXDUMP) {
@@ -1349,6 +1349,7 @@ int radare_go()
 		config.endian = !LIL_ENDIAN;
 		radare_cmd(":.!regs*", 0);
 		radare_cmd("s eip", 0);
+
 		/* load everything */
 		if (config_get("dbg.syms") && !config_get("file.flag"))
 			radare_cmd("!syms", 0);
@@ -1356,16 +1357,20 @@ int radare_go()
 			radare_cmd("!maps", 0);
 			radare_cmd(".!!rsc maps ${DPID}", 0);
 		}
+
 		if (config_get("dbg.sections") && !config_get("file.flag"))
 			//radare_cmd(":.!rsc flag-sections $FILE", 0);
 			radare_cmd(".!!rabin -rS $FILE",0);
+
 		if (config_get("dbg.strings") && !config_get("file.flag")) {
 			//eprintf("Loading strings...press ^C when tired\n");
 			//radare_cmd(".!rsc strings-flag $FILE", 0);
 			radare_cmd(".!!rabin -rz $FILE",0);
 		}
+
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger
 		config_set("file.write", "true"); /* write mode enabled for the debugger */
+
 		config_set("cfg.verbose", "true"); /* write mode enabled for the debugger */
 		//config.verbose = 1; // ?
 		break;

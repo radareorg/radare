@@ -8,4 +8,8 @@ obj.source  = ' bp.c close.c debug.c events.c lseek.c mem.c open.c parser.c proc
 cpu = bld.env['CPU']
 #obj.source += ' arch/i386.c arch/i386-bp.c arch/i386-hack.c'
 obj.source += ' arch/%s.c arch/%s-bp.c arch/%s-hack.c'%(cpu,cpu,cpu)
-obj.find_sources_in_dirs('unix')
+
+if bld.env['OS'] == 'Darwin':
+	obj.find_sources_in_dirs('darwin')
+else:
+	obj.find_sources_in_dirs('unix')

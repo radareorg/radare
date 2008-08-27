@@ -62,7 +62,7 @@ static void libps2fd_fini()
 	if (ps.opened) {
 		debug_os_kill(ps.pid, 9);
 		debug_close(ps.fd);
-		printf("Process killed.\n");
+		eprintf("Process killed.\n");
 	}
 }
 

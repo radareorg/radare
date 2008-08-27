@@ -20,7 +20,7 @@
 
 #include <signal.h>
 #include <stdio.h>
-#include "../signal.h"
+#include "../signals.h"
 
 // <asm/signal.h>
 struct {
