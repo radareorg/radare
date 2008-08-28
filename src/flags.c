@@ -28,7 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-static char *nullstr = "";
 struct list_head flags;
 static int flag_ptr = -1;
 

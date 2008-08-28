@@ -590,6 +590,7 @@ void udis_arch(int arch, int len, int rows)
 	char buf[1024];
 	const char *flag;
 	const char *cmd_asm;
+	flag_t *f = NULL;
 	int rrows = rows; /* rrows is in reality the num of bytes to be disassembled */
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
@@ -857,7 +858,11 @@ void udis_arch(int arch, int len, int rows)
 
 			if (show_flags && !show_flagsline) {
 				char buf[1024];
-				const char *flag = flag_name_by_offset( seek );
+				f = flag_by_offset( seek );
+				
+				const char *flag = nullstr;
+				if (f != NULL)
+					flag = f->name;
 				//cons_printf("(%08x) ", seek-config.baddr);
 				if (flag == NULL || !flag[0])
 					flag = flag_name_by_offset(seek -config.baddr);
@@ -1010,7 +1015,10 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 			udis_arch_opcode(arch, endian, sk, bytes, myinc);
 		}
 
-		NEWLINE;
+		cons_newline();
+		if (f && f->cmd != NULL)
+			radare_cmd(f->cmd, 0);
+
 		bytes+=myinc;
 		myinc = 0;
 	}

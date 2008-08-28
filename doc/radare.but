@@ -542,7 +542,79 @@ Read the 'write' section
 
 \H{metadata} Adding metadata
 
-TODO
+The work on binary files makes the task of taking notes and defining information on top of the file quite important. Radare offers multiple ways to retrieve and adquire this information from many kind of file types.
+
+Following some *nix principles becomes quite easy to write a small utility in shellscript that using objdump, otool, etc.. to get information from a binary and import it into radare just making echo's of the commands script.
+
+You can have a look on one of the many 'rsc' scripts that are distributed with radare like 'idc2rdb':
+
+\\ $ cat src/rsc/pool/idc2rdb
+\\
+\\while(<STDIN>) {
+\\        $str=$_;
+\\        if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {
+\\                print "f idc_$2 @ 0x$1\n";
+\\        }
+\\        elsif ($str=~/MakeRptCmt[^X]*.([^,]*)[^"]*.([^"]*)/) {
+\\                $cmt = $2;
+\\                $off = $1;
+\\                $cmt=~s/\\n//g;
+\\                print "CC $cmt @ 0x$off\n";
+\\        }
+\\}
+
+This script is called with 'rsc idc2rdb < file.idc > file.rdb'. It reads an IDC file exported from an IDA database and imports the comments and the names of the functions.
+
+We can import the 'file.rdb' using the '.' command of radare (similar to the shell):
+
+\\ [0x00000000]> . file.rdb
+
+The command '.' is used to interpret data from external resources like files, programs, etc.. In the same way we can do the same without writing a file.
+
+\\ [0x00000000]> .!rsc idc2rdb < file.idc
+
+The 'C' command is the one used to manage comments and data conversions. So you can define a range of bytes to be interpreted as code, or a string. It is also possible to define flags and execute code in a certain seek to fetch a comment from an external file or database.
+
+Here's the help:
+
+\\Usage: C[op] [arg] <@ offset>
+\\  CC [-][comment] @ here - add/rm comment
+\\  CF [-][len]  @ here    - add/rm function
+\\  Cx [-][addr] @ here    - add/rm code xref
+\\  CX [-][addr] @ here    - add/rm data xref
+\\  Cc [num]     - converts num bytes to code
+\\  Cd [num]     - converts to data bytes
+\\  Cs [num]     - converts to string
+\\  Cf [num]     - folds num bytes
+\\  Cu [num]     - unfolds num bytes
+\\  C*           - list metadata database
+
+For example, if you want to add a comment just type:
+
+\\ [0x00000000]> CC this is the bad guy @ 0x8048536
+
+You can execute code inside the disassembly just placing a flag and assigning a command to it:
+
+\\ [0x00000000]> fc !regs @ eip
+
+This way radare will show the registers of the cpu printing the opcode at the address where 'eip' points.
+
+In the same way you can interpret structures or fetch information from external files. If you want to execute more than one command in a single address you will have to type them in a file and use the '.' command as explained before.
+
+\\ [0x00000000]> fc . script @ eip
+
+The 'C' command allows us to change the type of data. The three basic types are: code (disassembly using asm.arch), data (byte array) or string.
+
+In visual mode is easier to manage this because it is hooked to the 'd' key trying to mean 'data type change'. Use the cursor to select a range of bytes ('c' key to toggle cursor mode and HJKL to move with selection) and then press 'ds' to convert to string.
+
+You can use the Cs command from the shell also:
+
+\\ [0x00000000]> pz 0x800
+\\ HelloWorld
+\\ [0x00000000]> f string_foo @ 0x800
+\\ [0x00000000]> Cs 10 @ string_foo
+
+The folding/unfolding is quite premature but the idea comes from the 'folder' concepts in vim. So you can select a range of bytes in the disassembly view and press '<' to fold these bytes in a single line or '>' to unfold them. Just to ease the readability of the code.
 
 \C{iobackend} IO backend
 

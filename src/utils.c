@@ -41,6 +41,8 @@
 #endif
 
 const char hex[16] = "0123456789ABCDEF";
+const char *nullstr = "";
+static const char * nullstr_c="(null)";
 
 int iswhitespace(char ch)
 {
@@ -800,10 +802,9 @@ int strccpy(char *dst, char *orig, int ch)
 	return i;
 }
 
-static const char * nullstr="(null)";
 const char *strget(const char *str)
 {
 	if (str == NULL)
-		return nullstr;
+		return nullstr_c;
 	return str;
 }

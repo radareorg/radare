@@ -19,6 +19,7 @@ extern int std;
 extern char **environ;
 extern char *last_tsearch;
 
+extern const char *nullstr;
 
 void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
