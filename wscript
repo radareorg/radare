@@ -22,7 +22,7 @@ def set_options(opt):
 	opt.add_option('--prefix',
 		help    = "installation prefix [Default: '%s']" % prefix,
 		default = prefix,
-		dest    = 'prefix')
+		dest    = 'PREFIX')
 
 def configure(conf):
 	# Check for compiler tools
@@ -82,10 +82,10 @@ def configure(conf):
 		endian = False
 	conf.define('LIL_ENDIAN', endian)
 	conf.define('HAVE_LANG_PYTHON', False)
-	conf.define('PREFIX',  prefix)
-	conf.define('LIBDIR',  "%s/lib"%prefix)
-	conf.define('DATADIR', "%s/share/"%prefix)
-	conf.define('DOCDIR',  "%s/share/doc/radare"%prefix)
+	conf.define('PREFIX',  Options.options.PREFIX)
+	conf.define('LIBDIR',  "%s/lib"%Options.options.PREFIX)
+	conf.define('DATADIR', "%s/share/"%Options.options.PREFIX)
+	conf.define('DOCDIR',  "%s/share/doc/radare"%Options.options.PREFIX)
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
 	# Check for libreadline
@@ -118,7 +118,7 @@ def configure(conf):
 	conf.write_config_header('global.h')
 	shutil.copyfile("%s/default/global.h"%blddir, "%s/global.h"%srcdir)
 	
-	print " * Prefix    : %s"%prefix
+	print " * Prefix    : %s"%conf.env['PREFIX']
 	#print " * InstDir   : %s"%inst_var
 	print " * Target    : %s"%conf.env['TARGET']
 	print " * LilEndian : %s"%conf.env['LIL_ENDIAN']
