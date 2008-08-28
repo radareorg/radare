@@ -1,3 +1,6 @@
+
+NOTE: This document can contain some outdated documentation
+
 ---------------------------------------
 
 radare -- elf tutorial
@@ -25,7 +28,7 @@ _001_ The easy way
   Open the ELF file with radare and type these commands:
 
    $ radare /bin/ls
-   > ! rsc syms-flag /bin/ls > /tmp/ls.syms.flags
+   > !!rsc syms-flag /bin/ls > /tmp/ls.syms.flags
    > . /tmp/ls.syms.flags
 
   At this moment you have one flag for each symbol of the ELF file.
@@ -49,37 +52,37 @@ _01_ Get entry point
   open '/bin/ls'
   File size: 77832
   
-  [0x0000000000000000] > . ../scripts/elf-flag-header 
+  [0x00000000] > . ../scripts/elf-flag-header 
   Interpreting file: '../scripts/elf-flag-header'
-  Flag hooked at 0x0000000000000000 with size  512 named 'here'.
-  Flag hooked at 0x0000000000000000 with size    4 named 'elf.magic'.
-  Flag hooked at 0x0000000000000000 with size   16 named 'elf.ident'.
-  Flag hooked at 0x0000000000000010 with size    2 named 'elf.type'.
-  Flag hooked at 0x0000000000000012 with size    2 named 'elf.machine'.
-  Flag hooked at 0x0000000000000014 with size    4 named 'elf.version'.
-  Flag hooked at 0x0000000000000018 with size    4 named 'elf.entry'.
-  Flag hooked at 0x000000000000001c with size    4 named 'elf.phoff'.
-  Flag hooked at 0x0000000000000020 with size    4 named 'elf.shoff'.
-  Flag hooked at 0x0000000000000024 with size    4 named 'elf.flags'.
+  Flag hooked at 0x00000000 with size  512 named 'here'.
+  Flag hooked at 0x00000000 with size    4 named 'elf.magic'.
+  Flag hooked at 0x00000000 with size   16 named 'elf.ident'.
+  Flag hooked at 0x00000010 with size    2 named 'elf.type'.
+  Flag hooked at 0x00000012 with size    2 named 'elf.machine'.
+  Flag hooked at 0x00000014 with size    4 named 'elf.version'.
+  Flag hooked at 0x00000018 with size    4 named 'elf.entry'.
+  Flag hooked at 0x0000001c with size    4 named 'elf.phoff'.
+  Flag hooked at 0x00000020 with size    4 named 'elf.shoff'.
+  Flag hooked at 0x00000024 with size    4 named 'elf.flags'.
   
-  [0x0000000000000000] > flag
-  0x0000000000000000   512           here  7f 45 4c 46 01 01 01 00 00 00 ...
-  0x0000000000000000     4      elf.magic  7f 45 4c 46 
-  0x0000000000000000    16      elf.ident  7f 45 4c 46 01 01 01 00 00 00 ...
-  0x0000000000000010     2       elf.type  02 00 
-  0x0000000000000012     2    elf.machine  03 00 
-  0x0000000000000014     4    elf.version  01 00 00 00 
-  0x0000000000000018     4      elf.entry  40 9b 04 08 
-  0x000000000000001c     4      elf.phoff  34 00 00 00 
-  0x0000000000000020     4      elf.shoff  d0 2b 01 00 
-  0x0000000000000024     4      elf.flags  00 00 00 00 
+  [0x00000000] > flag
+  0x00000000   512           here  7f 45 4c 46 01 01 01 00 00 00 ...
+  0x00000000     4      elf.magic  7f 45 4c 46 
+  0x00000000    16      elf.ident  7f 45 4c 46 01 01 01 00 00 00 ...
+  0x00000010     2       elf.type  02 00 
+  0x00000012     2    elf.machine  03 00 
+  0x00000014     4    elf.version  01 00 00 00 
+  0x00000018     4      elf.entry  40 9b 04 08 
+  0x0000001c     4      elf.phoff  34 00 00 00 
+  0x00000020     4      elf.shoff  d0 2b 01 00 
+  0x00000024     4      elf.flags  00 00 00 00 
   
-  [0x0000000000000000] > seek elf.entry
+  [0x00000000] > seek elf.entry
   
-  [0x0000000000000018] > endian 0
+  [0x00000018] > endian 0
   Endian is: little
   
-  [0x0000000000000018] > vW
+  [0x00000018] > vW
   08049B40
 
 
@@ -99,7 +102,7 @@ _010_ Get entry point using magic
 
 
   The same in the radare shell:
-  [0x0000000000000000] >!file -m magic/elf /bin/ls|sed -e 's,),)\n,g'|grep entry
+  [0x00000000] >!file -m magic/elf /bin/ls|sed -e 's,),)\n,g'|grep entry
    (entry 0x8049b40)
 
 
@@ -111,25 +114,25 @@ _02_ Seek to the entry point and disas
 
    0x8049B40 - 0x8048000 = 0x1B40 = 6976
 
-  [0x0000000000000018] > (0x8049B40-0x8048000)
+  [0x00000018] > (0x8049B40-0x8048000)
   6976
 
-  [0x0000000000000018] > !printf "%x" 6976
+  [0x00000018] > !printf "%x" 6976
   1b40
   
-  [0x0000000000000018] > seek 6976
-  Current offset = 0x0000000000001B40 (6976)
+  [0x00000018] > seek 6976
+  Current offset = 0x00001B40 (6976)
 
-  [0x0000000000001B40] > b 512
+  [0x00001B40] > b 512
 
-  [0x0000000000001B40] > d /tmp/text
+  [0x00001B40] > d /tmp/text
   Dump file: '/tmp/text'
-  Dumping block 0x0000000000001B40
+  Dumping block 0x00001B40
   Block size = 512 (0x200)
   Limit/length = 512
   *OK file dumped.
 
-  [0x0000000000001B40] > !cat /tmp/text | sh ../scripts/dasm.sh - | head -n 10
+  [0x00001B40] > !cat /tmp/text | sh ../scripts/dasm.sh - | head -n 10
    0:   31 ed                   xor    %ebp,%ebp
    2:   5e                      pop    %esi
    3:   89 e1                   mov    %esp,%ecx
@@ -149,7 +152,7 @@ _03_ Visual disassembling
 
   Going into visual mode...
 
-  [0x0000000000001B40] > Visual
+  [0x00001B40] > Visual
 
   (.. inside visual mode ..)
 

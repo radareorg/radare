@@ -82,9 +82,10 @@ def configure(conf):
 		endian = False
 	conf.define('LIL_ENDIAN', endian)
 	conf.define('HAVE_LANG_PYTHON', False)
-	conf.define('PREFIX', prefix)
-	conf.define('LIBDIR', "%s/lib"%prefix)
-	conf.define('DOCDIR', "%s/share/doc/radare"%prefix)
+	conf.define('PREFIX',  prefix)
+	conf.define('LIBDIR',  "%s/lib"%prefix)
+	conf.define('DATADIR', "%s/share/"%prefix)
+	conf.define('DOCDIR',  "%s/share/doc/radare"%prefix)
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
 	# Check for libreadline
@@ -154,7 +155,22 @@ def build(bld):
 	# ADD MISSING FILES TO THE INSTALLATION
 	#bld.add_subdirs('libexec')
 	#bld.install_files('BINDIR', 'src/rsc', 'libexec/')
-	#bld.install_files('DATADIR', 'radare/rsc', 'libexec/adict')
+
+	# RSC scripts
+	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*')
+	# Documentation
+	bld.install_files('${PREFIX}/share/doc/radare', 'README')
+	bld.install_files('${PREFIX}/share/doc/radare', 'COPYING')
+	bld.install_files('${PREFIX}/share/doc/radare', 'AUTHORS')
+	bld.install_files('${PREFIX}/share/doc/radare', 'HISTORY')
+	bld.install_files('${PREFIX}/share/doc/radare', 'TODO')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/csr')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/flags')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/fortunes')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/gdb.scripts')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/map-struct')
+	bld.install_files('${PREFIX}/share/doc/radare', 'doc/shell')
+	bld.install_files('${PREFIX}/share/doc/radare/xtra', 'doc/xtra/*')
 
 def install():
 	print "Installing..."

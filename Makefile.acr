@@ -67,8 +67,7 @@ arm: all
 
 mrproper: clean
 	-rm -f src/Makefile Makefile
-	#-rm -f src/hasher/Makefile libexec/radaredbg src/rsc src/rfile
-	#-rm -f gui/Makefile java/Makefile libafflib/Makefile
+
 ball:
 	FILES=`hg status -mc|cut -c 3-|sed -e s,^,radare-${VERSION}/,`; \
 	cd .. && mv radare radare-${VERSION} && \
@@ -98,6 +97,7 @@ install:
 	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
 	${INSTALL_PROGRAM} src/hasher/hasher ${BINDIR}
 	${INSTALL_PROGRAM} src/xc ${BINDIR}
+	cd src/rsc && ${MAKE} install
 	mkdir -p ${LIBDIR}
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
@@ -115,7 +115,7 @@ install:
 	-${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
 ##USBSNF##
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
-	${INSTALL_SCRIPT} src/rsc ${BINDIR}
+	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
 	${INSTALL_SCRIPT} src/radiff/bindiff ${BINDIR}
 	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
@@ -136,7 +136,7 @@ install:
 	-${INSTALL_DATA} doc/* ${DATADIR}/doc/radare/
 	${INSTALL_DIR} ${DATADIR}/doc/radare/xtra
 	${INSTALL_DATA} doc/xtra/* ${DATADIR}/doc/radare/xtra
-	cd libexec && ${MAKE} install DESTDIR=${DESTDIR}
+	cd src/rsc/libexec && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##

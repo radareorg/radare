@@ -24,6 +24,7 @@
 /* paths */
 #define LIBDIR "@LIBDIR@"
 #define DOCDIR "@DATADIR@/doc/radare/"
+#define DATADIR "@DATADIR@"
 #define LIBEXECDIR "@LIBEXECDIR@"
 
 /* libraries */

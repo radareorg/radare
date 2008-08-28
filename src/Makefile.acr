@@ -53,7 +53,7 @@ TARGETS+=valagrava
 JAVASM_STUFF=w32utils.o -lwsock32
 ##W32##
 
-.PHONY: all pre radare radare-hash radare-xc radare-xrefs clean
+.PHONY: all pre radare radare-hash radare-xc radare-xrefs clean rsc_
 
 .SUFFIXES: .c .o
 .c.o:
@@ -61,13 +61,16 @@ JAVASM_STUFF=w32utils.o -lwsock32
 	${Q}$(CC) -c $(CFLAGS) -o $@ $<
 
 all: ${TARGETS} udis86 armasm _radiff \
-	lsbstego pre radare${BINSFX} _hasher plugs \
+	lsbstego pre radare${BINSFX} _hasher plugs rsc_ \
 	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true
 
 ${OBJS}: %.o: %.c
 	${E} 'Compiling $<'
 	${Q}${CC} ${CFLAGS} -c -o $@ $<
+
+rsc_:
+	-cd rsc && ${MAKE} all
 
 plugs:
 	-cd plug/hack && ${MAKE} all

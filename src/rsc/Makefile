@@ -1,4 +1,4 @@
-include ../config.mk
+include ../../config.mk
 DESTDIR?=/
 
 FILES=add asm bdcolor bin2txt dasm elf-base-addr elf-dump-header dbg-report
@@ -12,11 +12,13 @@ FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
 FILES+=boomerang flag-sections elf-prg-maps flag-kallsyms spcc-fe asmcolor
 FILES+=signsrch fds symdiff idc2rdb
 
-all:
-	@echo nothing here
+BIN=rsc
+
+all: main.o
+	${CC} -o ${BIN} main.o
 
 list:
-	@for a in ${FILES}; do echo $$a; done
+	@for a in pool/${FILES}; do echo $$a; done
 
 miss:
 	@perl miss.pl
@@ -26,7 +28,7 @@ install:
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare/rsc
 	rm -rf ${DESTDIR}/${DATADIR}/radare/rsc/*
-	for A in ${FILES} ; do cp $$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
+	for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 
 files:
 	@echo ${FILES}

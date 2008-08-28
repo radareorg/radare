@@ -1,0 +1,5 @@
+#! /usr/bin/env python
+
+obj = bld.new_task_gen('cc', 'program')
+obj.source='main.c'
+obj.target = 'rsc'

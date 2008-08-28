@@ -114,7 +114,7 @@ LANG_LUA
 REPORT GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
-SUBDIRS . ./global.h ./config.mk src src/rsc src/rfile ;
+SUBDIRS . ./global.h ./config.mk src src/rsc/rsc src/rfile ;
 
 (( end-of-file ))
 
