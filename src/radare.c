@@ -706,6 +706,7 @@ int radare_cmd(char *input, int log)
 	char *next = NULL;
 	int ret = 0;
 
+//fprintf(stderr, "CMD: (%s)\n", input);
 	/* silently skip lines begginging with 0 */
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;

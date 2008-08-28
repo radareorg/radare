@@ -30,7 +30,8 @@
 #include <getopt.h>
 #include <stdarg.h>
 
-int radare_output;
+//int radare_output = 0;
+extern int radare_output;
 
 void eprintf(const char *format, ...)
 {

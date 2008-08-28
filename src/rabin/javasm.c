@@ -34,7 +34,7 @@
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
 // Jazzele: http://people.bath.ac.uk/enpsgp/nokia770/jazelle/test_jazelle5.c
 static struct classfile cf;
-static int radare_output = 0;
+int radare_output = 0;
 
 #define R if (radare_output)
 #define NR if (!radare_output)
@@ -305,6 +305,9 @@ struct java_op {
 
 static int java_resolve(int idx, char *str)
 {
+	if (str == NULL)
+		return 0;
+
 	str[0]='\0';
 	if (idx<0||idx>cf.cp_count)
 		return 1;

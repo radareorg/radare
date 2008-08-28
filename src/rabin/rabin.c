@@ -255,18 +255,14 @@ void rabin_show_entrypoint()
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-#if 0
-		lseek(fd, 0x18, SEEK_SET);
-		read(fd, &addr, 4);
-#endif
-
-		fd = ELF_CALL(dietelf_new,bin,file);
+		/* pW 4 @ 0x18 */
+		fd = ELF_CALL(dietelf_new,bin, file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		addr = ELF_CALL(dietelf_get_entry_addr,bin);
-		base = ELF_CALL(dietelf_get_base_addr,bin);
+		addr = ELF_CALL(dietelf_get_entry_addr, bin);
+		base = ELF_CALL(dietelf_get_base_addr, bin);
 
 		if (rad) {
 			printf("fs symbols\n");
@@ -282,6 +278,25 @@ void rabin_show_entrypoint()
 		}
 
 		close(fd);
+		break;
+	case FILETYPE_MACHO:
+#if 0
+		/* TODO: Walk until LOAD COMMAND 9 */
+Load command 9
+        cmd LC_UNIXTHREAD
+    cmdsize 80
+     flavor i386_THREAD_STATE
+      count i386_THREAD_STATE_COUNT
+            eax 0x00000000 ebx    0x00000000 ecx 0x00000000 edx 0x00000000
+            edi 0x00000000 esi    0x00000000 ebp 0x00000000 esp 0x00000000
+            ss  0x00000000 eflags 0x00000000 eip 0x000023d0 cs  0x00000000
+            ds  0x00000000 es     0x00000000 fs  0x00000000 gs  0x00000000
+#endif
+		{
+		char buf[256];
+		sprintf(buf, "otool -l %s | grep eip | awk '{print $6}'", file);
+		system(buf);
+		}
 		break;
 	case FILETYPE_MZ:
 		break;
@@ -467,6 +482,9 @@ void rabin_show_sections(const char *file)
 		ELF_CALL(dietelf_list_sections,bin,fd);
 		close(fd);
 		break;
+	case FILETYPE_PE:
+		printf("TODO: import dietpe\n");
+		break;
 #if 0
 	default:
 		// TODO: use the way that rsc flag-sections does
@@ -561,9 +579,12 @@ int main(int argc, char **argv, char **envp)
 		case 'a':
 			action |= ACTION_ARCH;
 			break;
+#if 0
+	/* XXX depend on sections ??? */
 		case 'b':
 			action |= ACTION_BASE;
 			break;
+#endif
 		case 'i':
 			action |= ACTION_IMPORTS;
 			break;
@@ -620,6 +641,7 @@ int main(int argc, char **argv, char **envp)
 
 	if (action == ACTION_UNK)
 		return rabin_show_help();
+
 	if (action != ACTION_NOP) {
 		if (file == NULL)
 			return rabin_show_help();
@@ -637,6 +659,8 @@ int main(int argc, char **argv, char **envp)
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
 #if 0
+	if (action&ACTION_BASE)
+		rabin_show_baseaddr(file);
 	if (action&ACTION_FILETYPE)
 		rabin_show_filetype();
 	if (action&ACTION_EXPORTS)
