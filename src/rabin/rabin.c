@@ -318,19 +318,19 @@ Load command 9
 	}
 }
 
-unsigned long addr_for_lib(char *name)
+unsigned long long addr_for_lib(char *name)
 {
 #if __UNIX__
-	unsigned long *addr = dlopen(name, RTLD_LAZY);
+	unsigned long long *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
 		dlclose(addr);
-		return (unsigned long)((addr!=NULL)?(*addr):0);
+		return (unsigned long long)((addr!=NULL)?(*addr):0);
 	} else {
 		printf("cannot open '%s' library\n", name);
-		return 0;
+		return 0LL;
 	}
 #endif
-	return 0;
+	return 0LL;
 }
 
 void rabin_show_arch()
@@ -568,7 +568,6 @@ int rabin_identify_header()
 	return filetype;
 }
 
-
 int main(int argc, char **argv, char **envp)
 {
 	int c;
@@ -616,7 +615,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_LIBS;
 			break;
 		case 'L':
-			printf("0x%08lx %s\n", addr_for_lib(optarg), optarg);
+			printf("0x%08llx %s\n", addr_for_lib(optarg), optarg);
 			action |= ACTION_NOP;
 			break;
 		case 'r':

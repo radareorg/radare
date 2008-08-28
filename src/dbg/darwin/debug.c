@@ -43,7 +43,13 @@
 #include <sys/wait.h>
 
 static thread_array_t inferior_threads = NULL;
+static task_t inferior_task = 0;
+static unsigned int inferior_thread_count = 0;
+static exception_type_t exception_type;
+static exception_data_t exception_data;
+static mach_port_t exception_port; 
 static int task = 0;
+extern int errno;
 
 int debug_os_kill(int pid, int sig)
 {
@@ -52,7 +58,6 @@ int debug_os_kill(int pid, int sig)
 		return -1;
 	return kill(pid, sig);
 }
-
 
 // TODO: to be removed
 int debug_ktrace()
@@ -71,11 +76,6 @@ inline int debug_detach()
 	return 0;
 }
 
-static task_t inferior_task = 0;
-static unsigned int inferior_thread_count = 0;
-static exception_type_t exception_type;
-static exception_data_t exception_data;
-static mach_port_t exception_port; 
 
 void inferior_abort_handler(int pid)
 {
@@ -85,37 +85,51 @@ void inferior_abort_handler(int pid)
 #define MACH_ERROR_STRING(ret) \
 (mach_error_string (ret) ? mach_error_string (ret) : "[UNKNOWN]")
 
+task_t pid_to_task(int pid)
+{
+	static task_t old_pid  = -1;
+	static task_t old_task = -1;
+	task_t task = 0;
+	int err;
+
+	/* xlr8! */
+	if (old_pid != -1 && old_pid == pid)
+		return old_task;
+
+	if (task_for_pid(mach_task_self(), (pid_t)pid, &task) != KERN_SUCCESS) {
+		fprintf(stderr, "Failed to get task for pid %d.\n", (int)pid, task);
+		fprintf(stderr, "Reason: 0x%x: %s\n", err, MACH_ERROR_STRING(err));
+		fprintf(stderr, "You probably need to add user to procmod group.\n"
+				" Or chmod g+s radare && chown root:procmod radare\n");
+		fprintf(stderr, "FMI: http://developer.apple.com/documentation/Darwin/Reference/ManPages/man8/taskgated.8.html\n");
+		return -1;
+	}
+	old_pid = pid;
+	old_task = task;
+	
+	return task;
+}
+
 // s/inferior_task/port/
 int debug_attach(int pid)
 {
 	kern_return_t err;
 
-	pid = task; // XXX HACK
-
-	signal(SIGCHLD, pid);
-
-	if ((err = task_for_pid(mach_task_self(), (int)pid, &inferior_task) !=
-				KERN_SUCCESS)) {
-		fprintf(stderr, "Failed to get task for pid %d: %d.\n", (int)pid, (int)err);
-		fprintf(stderr, "Reason: %s\n", MACH_ERROR_STRING(err));
-		fprintf(stderr, "You probably need to add user to procmod group.\n"
-				" Or chmod g+s radare && chown root:procmod radare\n");
+	inferior_task = pid_to_task(pid);
+	if (inferior_task == -1)
 		return -1;
-	}
 
 	task = inferior_task; // ugly global asignation
-	printf("; PID: %d\nTASK: %d\n", pid, inferior_task);
+	fprintf(stderr, "; pid = %d\ntask= %d\n", pid, inferior_task);
 	//ps.pid = ps.tid = task; // XXX HACK
 
-	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count)
-			!= KERN_SUCCESS) {
+	if (task_threads(task, &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get list of task's threads.\n");
 		return -1;
 	}
 	fprintf(stderr, "Thread count: %d\n", inferior_thread_count);
 
-	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE,
-				&exception_port) != KERN_SUCCESS) {
+	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &exception_port) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to create exception port.\n");
 		return -1;
 	}
@@ -173,8 +187,8 @@ static pid_t start_inferior(int argc, char **argv)
 	fprintf(stderr, "Starting process...\n");
 
 	if ((kid = fork())) {
-		waitpid(kid, &status, 0);
-		//wait(&status);
+		//waitpid(kid, &status, 0);
+		wait(&status);
 		if (WIFSTOPPED(status)) {
 			fprintf(stderr, "Process with PID %d started...\n", (int)kid);
 			return kid;
@@ -212,16 +226,14 @@ int debug_fork_and_attach()
 
 	err = debug_attach(pid);
 	if (err == -1) {
-		kill(pid, SIGKILL);
-exit(1);
+		debug_os_kill(pid, SIGKILL);
+		exit(1);
 		return -1;
 	}
 
 	ps.pid = ps.tid = pid;
 	return pid;
 }
-
-extern int errno;
 
 #define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
 static int ReadMem(int pid,  addr_t addr, size_t sz, void *buff)
@@ -266,13 +278,11 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return 0;
 #else
 	unsigned int size= 0;
-//printf("Going to read\n");
-	int err = vm_read_overwrite(tid, (unsigned int)addr, 4, (pointer_t)buff, &size);
+	int err = vm_read_overwrite(pid_to_task(tid), (unsigned int)addr, len, (pointer_t)buff, &size);
 	if (err == -1) {
 		printf("Cannot read\n");
 		return -1;
 	}
-//printf("READ %d\n", len);
 	return size;
 #endif
 }
@@ -300,29 +310,29 @@ int debug_list_threads()
 
 int debug_getregs(pid_t tid, regs_t *regs)
 {
-	//unsigned int gp_count, regs[17];
+	//unsigned int gp_count, regs[17]; // FOR ARM // IPHONE
 	unsigned int gp_count;
 	kern_return_t err;
-i386_thread_state_t  state;
+	i386_thread_state_t  state;
 
 	thread_act_port_array_t thread_list;
 	mach_msg_type_number_t thread_count;
 
-	err = task_threads(task, &thread_list, &thread_count);
+	err = task_threads(pid_to_task(tid), &inferior_threads, &inferior_thread_count);
 	if (err != KERN_SUCCESS) {
 		fprintf(stderr, "FUCK\n");
 	} else {
 		fprintf(stderr, "THREAD COUNT: %d\n", thread_count);
 	}
 
-tid = task;
-	/* thread_id, flavor, old_state, old_state_count */
-// s/state/regs/
-	if ((err = thread_get_state(tid, i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
-		fprintf(stderr, "getregs: Failed to get thread %d state (%d).\n", (int)tid, (int)err);
+	/* TODO: allow to choose the selected thread */
+	if ((err = thread_get_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
+		fprintf(stderr, "getregs: Failed to get thread %d .error (%x).\n", (int)tid, (int)err);
 		return -1;
 	}
-fprintf(stderr, "MY PROGRAM COUNTER IS : 0x%08llx\n", (u64)state.__eip);
+	// XXX USELESS COPY
+	memcpy(regs, &state, sizeof(regs_t));
+
 	return gp_count;
 }
 
@@ -333,7 +343,7 @@ int debug_setregs(pid_t tid, regs_t *regs)
 	kern_return_t err;
 
 	/* thread_id, flavor, old_state, old_state_count */
-	if ((err = thread_set_state(tid, 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+	if ((err = thread_set_state(pid_to_task(tid), 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
 		return -1;
 	}
@@ -434,8 +444,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 	prev_size = size;
 	nsubregions = 1;
 
-	for (;;)
-	{
+	for (;;) {
 		int print = 0;
 		int done = 0;
 
@@ -445,14 +454,11 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 		if (address == 0)
 			print = done = 1;
 
-		if (!done)
-		{
+		if (!done) {
 			count = VM_REGION_BASIC_INFO_COUNT_64;
-			kret =
-				mach_vm_region (task, &address, &size, VM_REGION_BASIC_INFO_64,
-						(vm_region_info_t) &info, &count, &object_name);
-			if (kret != KERN_SUCCESS)
-			{
+			kret = mach_vm_region (task, &address, &size, VM_REGION_BASIC_INFO_64,
+					(vm_region_info_t) &info, &count, &object_name);
+			if (kret != KERN_SUCCESS) {
 				size = 0;
 				print = done = 1;
 			}
@@ -468,8 +474,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 				|| (info.reserved != prev_info.reserved))
 			print = 1;
 
-		if (print)
-		{
+		if (print) {
 			if (num_printed == 0)
 				fprintf(stderr, "Region ");
 			else
@@ -582,12 +587,9 @@ int debug_dispatch_wait()
 	return 0;
 }
 
-
 int debug_init_maps(int rest)
 {
-fprintf(stderr, "PS:PID:%d\n", ps.pid);
-	macosx_debug_regions(task,0,999);
-	//macosx_debug_regions (0,0,999);//task_t task, mach_vm_address_t address, int max)
+	//task_t task, mach_vm_address_t address, int max)
+	macosx_debug_regions(task, 0, 999);
 	return 0;
 }
-

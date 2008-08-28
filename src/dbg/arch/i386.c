@@ -1466,6 +1466,7 @@ void next_sf(struct list_head *list, unsigned long ebp, unsigned long top)
 }
 #endif
 
+/* XXX WTF IS THIS 32 bit functions doing here?!?! */
 unsigned long get_ret_sf(unsigned long esp, unsigned long *ret_pos)
 {
 	unsigned long pos;
