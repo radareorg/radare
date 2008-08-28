@@ -171,6 +171,8 @@ def build(bld):
 	bld.install_files('${PREFIX}/share/doc/radare', 'doc/map-struct')
 	bld.install_files('${PREFIX}/share/doc/radare', 'doc/shell')
 	bld.install_files('${PREFIX}/share/doc/radare/xtra', 'doc/xtra/*')
+	# ONLY FOR UNIX
+	os.system("chmod +x %s/radare/rsc/*"%bld.env['DATADIR'])
 
 def install():
 	print "Installing..."

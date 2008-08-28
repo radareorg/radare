@@ -271,6 +271,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 
 /* code analyze */
 
+/* not working properly */
 int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 {
 	struct aop_t aop;
@@ -281,8 +282,9 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
 	unsigned char *ptr = (unsigned char *)&buf;
-	int callblocks =(int) config_get("graph.callblocks");
-	int jmpblocks = (int) config_get("graph.jmpblocks");
+	int callblocks =(int) config_get_i("graph.callblocks");
+	int jmpblocks = (int) config_get_i("graph.jmpblocks");
+        int refblocks = (int)config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
 	// too deep! chop branch here!
@@ -312,9 +314,9 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
 			break;
 		}
-		
-		if ( blf != NULL )
-		{	
+#if 1
+	/* splitting code lives here */
+		if ( blf != NULL ) {	
 			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
 			aop.jump = blf->tnext; //config.seek+bsz;
@@ -325,8 +327,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		}
 
 		blf = block_split_new ( prg, config.seek+bsz  );
-		if ( blf != NULL )
-		{		
+		if ( blf != NULL ) {		
 			//printf ("--Address %llx already analed\n", config.seek+bsz );
 //printf("-- %llx, %llx\n", aop.fail, aop.jump);
 			
@@ -338,10 +339,11 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 			aop.fail = blf->fnext;
 			break;
 		}		
-
+#endif
 		if (config.interrupted)
 			break;
 
+		/* continue normal analysis */
 		if (!callblocks && aop.type == AOP_TYPE_CALL) {
 			block_add_call(prg, oseek, aop.jump);
                 	if (callblocks)
@@ -366,19 +368,18 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
+	bsz--;
 	config.seek = tmp;
 
 	blk = block_get_new(prg, oseek);
 
-	bsz+=sz;
 	blk->bytes = (unsigned char *)malloc(bsz);
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;
 	blk->fnext = aop.fail;
 	
-
-		blk->type = BLK_TYPE_HEAD;
+	blk->type = BLK_TYPE_HEAD;
 	if (aop.jump && !aop.fail)
 		blk->type = BLK_TYPE_BODY;
 	else
@@ -395,9 +396,6 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		code_analyze_r_split(prg, blk->tnext, depth-1);
 	if (blk->fnext  )
 		code_analyze_r_split(prg, blk->fnext, depth-1);
-	bsz = 0;
-
-	depth--;
 
 	return 0;
 }
@@ -412,8 +410,9 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         int bsz = 0;// block size
         char buf[4096]; // bytes of the code block
         unsigned char *ptr = (unsigned char *)&buf;
-        int callblocks = (int)config_get("graph.callblocks");
-        int refblocks = (int)config_get("graph.refblocks");
+        int callblocks = (int)config_get_i("graph.callblocks");
+	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
+        int refblocks = (int)config_get_i("graph.refblocks");
 
         if (depth<=0)
                 return 0;
@@ -435,9 +434,10 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
                 if (config.interrupted)
                         break;
+
                 sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
                 if (sz<=0) {
-                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+//                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
                         break;
                 }
 
@@ -461,7 +461,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 
                 memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
         }
-	bsz-=1;
+	bsz--;
         config.seek = tmp;
 
         blk = block_get_new(prg, oseek);
@@ -472,7 +472,8 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         blk->tnext = aop.jump;
         blk->fnext = aop.fail;
         oseek = seek;
-		blk->type = BLK_TYPE_HEAD;
+
+	blk->type = BLK_TYPE_HEAD;
 	if (aop.jump && !aop.fail)
 		blk->type = BLK_TYPE_BODY;
 	else
@@ -482,15 +483,11 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 	if (aop.type == AOP_TYPE_RET)
 		blk->type = BLK_TYPE_LAST;
 
-
         /* walk childs */
         if (blk->tnext)
-                code_analyze_r_nosplit(prg, (unsigned long)blk->tnext, depth-1);
+                code_analyze_r_nosplit(prg, blk->tnext, depth-1);
         if (blk->fnext)
-                code_analyze_r_nosplit(prg, (unsigned long)blk->fnext, depth-1);
-        bsz = 0;
-
-        depth--;
+                code_analyze_r_nosplit(prg, blk->fnext, depth-1);
 
         return 0;
 }
