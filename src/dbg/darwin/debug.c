@@ -42,9 +42,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-static thread_array_t inferior_threads = NULL;
+#define MACH_ERROR_STRING(ret) \
+(mach_error_string (ret) ? mach_error_string (ret) : "(unknown)")
+
+/* working task and threads */
 static task_t inferior_task = 0;
+static thread_array_t inferior_threads = NULL;
 static unsigned int inferior_thread_count = 0;
+
 static exception_type_t exception_type;
 static exception_data_t exception_data;
 static mach_port_t exception_port; 
@@ -81,9 +86,6 @@ void inferior_abort_handler(int pid)
 {
 	fprintf(stderr, "Inferior received signal SIGABRT. Executing BKPT.\n");
 }
-
-#define MACH_ERROR_STRING(ret) \
-(mach_error_string (ret) ? mach_error_string (ret) : "[UNKNOWN]")
 
 task_t pid_to_task(int pid)
 {
@@ -148,6 +150,8 @@ int debug_attach(int pid)
 
 int debug_contp(int tid)
 {
+	fprintf(stderr, "debug_contp: program is running now...\n");
+	task_resume(inferior_task);
 	thread_resume(inferior_threads[0]);
 	//wait_for_events();
 	return 0;
@@ -155,6 +159,7 @@ int debug_contp(int tid)
 
 inline int debug_os_steps()
 {
+	fprintf(stderr, "debug_os_steps: TODO\n");
 	return 0;
 }
 
@@ -296,15 +301,31 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 	return -1;
 }
 
-int debug_list_threads()
+int debug_list_threads(int pid)
 {
-	int i;
-	if (task_threads(inferior_task, &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
+	int i, err;
+	int gp_count;
+	i386_thread_state_t  state;
+	TH_INFO *th;
+
+	if (task_threads(pid_to_task(pid), &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get list of task's threads.\n");
 		return;
 	}
 	for (i = 0; i < inferior_thread_count; i++) {
-		printf("THREAD%d: %d\n", i, inferior_threads[i]);
+		th = malloc(sizeof(TH_INFO));
+		memset(th, '\0', sizeof(TH_INFO));
+		th->tid = inferior_threads[i];
+		
+		if ((err=thread_get_state(th->tid, i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
+			fprintf(stderr, "FUCK %s\n", MACH_ERROR_STRING(err));
+		} else{
+			th->status = 0; // XXX TODO
+			th->addr = state.__eip;
+			//printf("ADDR: %08x\n", state.__eip);
+		}
+		add_th(th);
+
 	}
 }
 
@@ -322,7 +343,7 @@ int debug_getregs(pid_t tid, regs_t *regs)
 	if (err != KERN_SUCCESS) {
 		fprintf(stderr, "FUCK\n");
 	} else {
-		fprintf(stderr, "THREAD COUNT: %d\n", thread_count);
+		//fprintf(stderr, "THREAD COUNT: %d\n", inferior_thread_count);
 	}
 
 	/* TODO: allow to choose the selected thread */
@@ -343,10 +364,11 @@ int debug_setregs(pid_t tid, regs_t *regs)
 	kern_return_t err;
 
 	/* thread_id, flavor, old_state, old_state_count */
-	if ((err = thread_set_state(pid_to_task(tid), 1, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+	if ((err = thread_set_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
 		return -1;
 	}
+
 	return gp_count;
 }
 
@@ -400,6 +422,30 @@ const char * unparse_protection (vm_prot_t p)
 	}
 }
 
+int darwin_prot_to_unix(int prot)
+{
+	switch(prot) {
+	case VM_PROT_NONE:
+		return REGION_NONE;
+	case VM_PROT_READ:
+		return REGION_READ;
+	case VM_PROT_WRITE:
+		return REGION_WRITE;
+	case VM_PROT_READ | VM_PROT_WRITE:
+		return REGION_READ | REGION_WRITE;
+	case VM_PROT_EXECUTE:
+		return REGION_EXEC;
+	case VM_PROT_EXECUTE | VM_PROT_READ:
+		return REGION_EXEC | REGION_READ;
+	case VM_PROT_EXECUTE | VM_PROT_WRITE:
+		return REGION_EXEC | REGION_WRITE;
+	case VM_PROT_EXECUTE | VM_PROT_WRITE | VM_PROT_READ:
+		return REGION_READ | REGION_WRITE | REGION_EXEC;
+	default:
+		return 7; // UNKNOWN
+	}
+}
+
 const char * unparse_inheritance (vm_inherit_t i)
 {
 	switch (i) {
@@ -419,18 +465,22 @@ void macosx_debug_region (task_t task, mach_vm_address_t address)
 	macosx_debug_regions (task, address, 1);
 }
 
-void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
+void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int rest)
 {
+	char buf[128];
+	int i;
 	kern_return_t kret;
 	vm_region_basic_info_data_64_t info, prev_info;
 	mach_vm_address_t prev_address;
 	mach_vm_size_t size, prev_size;
-
 	mach_port_t object_name;
 	mach_msg_type_number_t count;
-
 	int nsubregions = 0;
 	int num_printed = 0;
+	MAP_REG *mr;
+
+	if(ps.map_regs_sz > 0)
+		free_regmaps(rest);
 
 	count = VM_REGION_BASIC_INFO_COUNT_64;
 	kret = mach_vm_region (task, &address, &size, VM_REGION_BASIC_INFO_64,
@@ -444,7 +494,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 	prev_size = size;
 	nsubregions = 1;
 
-	for (;;) {
+	for (i=0;;i++) {
 		int print = 0;
 		int done = 0;
 
@@ -474,12 +524,28 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 				|| (info.reserved != prev_info.reserved))
 			print = 1;
 
-		if (print) {
+		mr = malloc(sizeof(MAP_REG));
+		mr->ini = prev_address;
+		mr->end = prev_address + prev_size;
+		mr->size = prev_size;
+		
+		sprintf(buf, "unk%d-%s-%s-%s", i,
+			   unparse_inheritance (prev_info.inheritance),
+			   prev_info.shared ? "shar" : "priv",
+			   prev_info.reserved ? "reserved" : "not-reserved");
+		mr->bin = strdup(buf);
+		mr->perms = darwin_prot_to_unix(prev_info.protection); // XXX is this ok?
+		//mr->flags = // FLAG_NOPERM  // FLAG_USERCODE ...
+		//mr->perms = prev_info.max_protection;
+
+		add_regmap(mr);
+
+		if (1==0 && rest) { /* XXX never pritn this info here */
 			if (num_printed == 0)
 				fprintf(stderr, "Region ");
 			else
 				fprintf(stderr, "   ... ");
-			   fprintf(stderr, "from 0x%08llx to 0x%08llx (%s, max %s; %s, %s, %s)",
+			   fprintf(stderr, " 0x%08llx - 0x%08llx %s (%s) %s, %s, %s",
 			   (u64)prev_address, (u64)(prev_address + prev_size),
 			   unparse_protection (prev_info.protection),
 			   unparse_protection (prev_info.max_protection),
@@ -499,8 +565,17 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 
 			num_printed++;
 		} else {
+#if 0
 			prev_size += size;
 			nsubregions++;
+#else
+			prev_address = address;
+			prev_size = size;
+			memcpy (&prev_info, &info, sizeof (vm_region_basic_info_data_64_t));
+			nsubregions = 1;
+
+			num_printed++;
+#endif
 		}
 
 		if ((max > 0) && (num_printed >= max))
@@ -513,16 +588,14 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max)
 
 inline int debug_single_setregs(pid_t tid, regs_t *regs)
 {
+	fprintf(stderr, "debug_single_setregs: TODO\n");
 	return 0;
 }
 
 int debug_print_wait(char *act)
 {
+	fprintf(stderr, "debug_print_wait: TODO\n");
 	return 0;
-}
-
-static void debug_init_console()
-{
 }
 
 int debug_os_init()
@@ -544,7 +617,10 @@ int debug_dispatch_wait()
 	mach_msg_header_t msg, out_msg;
 	struct weasel_breakpoint *bkpt;
 
-	fprintf(stderr, "Listening for exceptions.\n");
+	printf("debug_dispatch_wait: TODO\n");
+	return 0;
+
+	fprintf(stderr, "Waiting for events... (kill -STOP %d to get prompt)\n",ps.tid);
 
 	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 0,
 			MACH_PORT_NULL);
@@ -566,8 +642,10 @@ int debug_dispatch_wait()
 	fprintf(stderr, "Inferior received exception %x, %x.\n", (unsigned int)
 			exception_type, (unsigned int)exception_data);
 
+#if 0
 	gp_count = 17;
 	thread_get_state(inferior_threads[0], 0, (thread_state_t)regs, &gp_count);
+#endif
 
 #if 0
 	bkpt = breakpoints;
@@ -590,6 +668,6 @@ int debug_dispatch_wait()
 int debug_init_maps(int rest)
 {
 	//task_t task, mach_vm_address_t address, int max)
-	macosx_debug_regions(task, 0, 999);
+	macosx_debug_regions(task, 0, 999, rest);
 	return 0;
 }

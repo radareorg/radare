@@ -69,7 +69,9 @@ else
 		column -t /proc/$P/map | parse2
 	#	cut -d ' ' -f 1,13 /proc/$P/map
 	else
-		echo "oops. no /proc found?" > /dev/stderr
+		# do not print anything
+		:
+		#echo "oops. no /proc found?" > /dev/stderr
 	fi
 fi
 

@@ -478,9 +478,38 @@ Defines the architecture to be used while disassembling (pd, pD commands) and an
 
 It is quite simple to add new architectures for disassembling and analyzing code, so there is an interface adapted for the GNU disassembler and others for udis86 or handmade ones.
 
+\c asm.syntax
+
+Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
+
+The 'pseudo' syntax is closer to the humans, but it can be anoying if you are reading lot of code:
+
+\c [0xB7FB8810]> e asm.syntax=pseudo
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,    eax = esp        
+\c 0xB7FB8812   v call 0xB7FB8A60
+\c 0xB7FB8817     edi += eax        
+\c
+\c [0xB7FB8810]> e asm.syntax=intel
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,  mov eax, esp        
+\c 0xB7FB8812   call 0xb7fb8a60
+\c 0xB7FB8817   add edi, eax        
+\c
+\c [0xB7FB8810]> e asm.syntax=att
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,  mov %esp, %eax          
+\c 0xB7FB8812   call 0xb7fb8a60
+\c 0xB7FB8817   add %eax, %edi          
+\c [0xB7FB8810]> 
+
 \c asm.os
 
 Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
+
+\c asm.flags
+
+If defined to 'true' shows the flags column inside the disassembly.
 
 \c asm.lines
 
@@ -489,6 +518,18 @@ Draw lines at the left of the offset in the dissassemble print format (pd, pD) t
 \c asm.linesout
 
 When defined as 'true', also draws the jump lines in the current block that goes ouside of this block.
+
+\c asm.linestyle
+
+Can get 'true' or 'false' values and makes the line analysis be performed from top to bottom if false or bottom to top if true. 'false' is the optimal and default value for readability.
+
+\c asm.offset
+
+Boolean value that shows or hides the offset address of the disassembled opcode
+
+\c asm.bytes
+
+Boolean value that shows or hides the bytes of the disassebled opcode
 
 \c cfg.endian
 
@@ -534,7 +575,23 @@ One of the most common tasks when analyzing binaries is to look for a series of 
 
 \C{disasm} Disassembling
 
+Disassembling in radare is just a way to represent a bunch of bytes. So it is handled as a print mode with the 'p' command.
+
+In the old times when radare core was smaller. The disassembler was handled by an external rsc file, so radare was dumping the current block into a file, and the script was just calling objdump in a proper way to disassemble for intel, arm, etc...
+
+Obviously this is a working solution, but takes too much cpu for repeating just the same task so many times, because there are no caches and the scrolling was absolutely slow.
+
+Nowadays, the disassembler is one of the basics in radare allowing you to choose the architecture flavour and some 
 To disassemble use the 'pd' command.
+
+The 'pd' command accepts a numeric argument to specify how many opcodes of the current block do you want to disassemble. Most of the commands in radare are restricted by the block size. So if you want to disassemble more bytes you should use the 'b' command to specify the new block size.
+
+\c [0x00000000]> b 100    ; set block size to 100
+\c [0x00000000]> pd       ; disassemble 100 bytes
+\c [0x00000000]> pd 3     ; disassemble 3 opcodes
+\c [0x00000000]> pD 30    ; disassemble 30 bytes
+
+The 'pD' command works like 'pd' but gets the number of bytes instead of the number of opcodes.
 
 \C{patch} Writing data
 
@@ -548,60 +605,60 @@ Following some *nix principles becomes quite easy to write a small utility in sh
 
 You can have a look on one of the many 'rsc' scripts that are distributed with radare like 'idc2rdb':
 
-\\ $ cat src/rsc/pool/idc2rdb
-\\
-\\while(<STDIN>) {
-\\        $str=$_;
-\\        if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {
-\\                print "f idc_$2 @ 0x$1\n";
-\\        }
-\\        elsif ($str=~/MakeRptCmt[^X]*.([^,]*)[^"]*.([^"]*)/) {
-\\                $cmt = $2;
-\\                $off = $1;
-\\                $cmt=~s/\\n//g;
-\\                print "CC $cmt @ 0x$off\n";
-\\        }
-\\}
+\c  $ cat src/rsc/pool/idc2rdb
+\c 
+\c while(<STDIN>) {
+\c         $str=$_;
+\c         if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {
+\c                 print "f idc_$2 @ 0x$1\n";
+\c         }
+\c         elsif ($str=~/MakeRptCmt[^X]*.([^,]*)[^"]*.([^"]*)/) {
+\c                 $cmt = $2;
+\c                 $off = $1;
+\c                 $cmt=~s/\\n//g;
+\c                 print "CC $cmt @ 0x$off\n";
+\c         }
+\c }
 
 This script is called with 'rsc idc2rdb < file.idc > file.rdb'. It reads an IDC file exported from an IDA database and imports the comments and the names of the functions.
 
 We can import the 'file.rdb' using the '.' command of radare (similar to the shell):
 
-\\ [0x00000000]> . file.rdb
+\c [0x00000000]> . file.rdb
 
 The command '.' is used to interpret data from external resources like files, programs, etc.. In the same way we can do the same without writing a file.
 
-\\ [0x00000000]> .!rsc idc2rdb < file.idc
+\c [0x00000000]> .!rsc idc2rdb < file.idc
 
 The 'C' command is the one used to manage comments and data conversions. So you can define a range of bytes to be interpreted as code, or a string. It is also possible to define flags and execute code in a certain seek to fetch a comment from an external file or database.
 
 Here's the help:
 
-\\Usage: C[op] [arg] <@ offset>
-\\  CC [-][comment] @ here - add/rm comment
-\\  CF [-][len]  @ here    - add/rm function
-\\  Cx [-][addr] @ here    - add/rm code xref
-\\  CX [-][addr] @ here    - add/rm data xref
-\\  Cc [num]     - converts num bytes to code
-\\  Cd [num]     - converts to data bytes
-\\  Cs [num]     - converts to string
-\\  Cf [num]     - folds num bytes
-\\  Cu [num]     - unfolds num bytes
-\\  C*           - list metadata database
+\c Usage: C[op] [arg] <@ offset>
+\c  CC [-][comment] @ here - add/rm comment
+\c  CF [-][len]  @ here    - add/rm function
+\c  Cx [-][addr] @ here    - add/rm code xref
+\c  CX [-][addr] @ here    - add/rm data xref
+\c  Cc [num]     - converts num bytes to code
+\c  Cd [num]     - converts to data bytes
+\c  Cs [num]     - converts to string
+\c  Cf [num]     - folds num bytes
+\c  Cu [num]     - unfolds num bytes
+\c  C*           - list metadata database
 
 For example, if you want to add a comment just type:
 
-\\ [0x00000000]> CC this is the bad guy @ 0x8048536
+\c [0x00000000]> CC this is the bad guy @ 0x8048536
 
 You can execute code inside the disassembly just placing a flag and assigning a command to it:
 
-\\ [0x00000000]> fc !regs @ eip
+\c [0x00000000]> fc !regs @ eip
 
 This way radare will show the registers of the cpu printing the opcode at the address where 'eip' points.
 
 In the same way you can interpret structures or fetch information from external files. If you want to execute more than one command in a single address you will have to type them in a file and use the '.' command as explained before.
 
-\\ [0x00000000]> fc . script @ eip
+\c [0x00000000]> fc . script @ eip
 
 The 'C' command allows us to change the type of data. The three basic types are: code (disassembly using asm.arch), data (byte array) or string.
 
@@ -609,10 +666,10 @@ In visual mode is easier to manage this because it is hooked to the 'd' key tryi
 
 You can use the Cs command from the shell also:
 
-\\ [0x00000000]> pz 0x800
-\\ HelloWorld
-\\ [0x00000000]> f string_foo @ 0x800
-\\ [0x00000000]> Cs 10 @ string_foo
+\c [0x00000000]> pz 0x800
+\c HelloWorld
+\c [0x00000000]> f string_foo @ 0x800
+\c [0x00000000]> Cs 10 @ string_foo
 
 The folding/unfolding is quite premature but the idea comes from the 'folder' concepts in vim. So you can select a range of bytes in the disassembly view and press '<' to fold these bytes in a single line or '>' to unfold them. Just to ease the readability of the code.
 
@@ -632,13 +689,36 @@ TODO
 
 TODO
 
+\C{rabin} Rabin
+
+Under this bunny-arabic-like name, radare hides the power of a wonderful tool to handle binary files and get information to show it in the command line or import it into radare.
+
+Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, etc.. and it is able to get symbol import/exports, library dependencies, strings of data sections, xrefs, address of entrypoint, sections, architecture type, etc.
+
+\c $ rabin -h
+\c rabin [options] [bin-file]
+\c  -e        shows entrypoints one per line
+\c  -i        imports (symbols imported from libraries)
+\c  -s        symbols (exports)
+\c  -c        header checksum
+\c  -S        show sections
+\c  -l        linked libraries
+\c  -L [lib]  dlopen library and show address
+\c  -z        search for strings in elf non-executable sections
+\c  -x        show xrefs of symbols (-s/-i required)
+\c  -I        show binary info
+\c  -r        output in radare commands
+\c  -v        be verbose
+
+TODO
+
 \C{rsc} RSC toolset
 
 RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
 
-\C{rasm} Inline assembler/disassembler
+\C{rasm} rasm: Inline assembler/disassembler
 
-TODO
+Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
 
 \C{anal} Analysis
 

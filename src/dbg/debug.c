@@ -740,6 +740,12 @@ int debug_th(char *cmd)
 
 	if (newpid !=0)
 		ps.tid = newpid;
+
+	// TODO: use a single interface for managing threads in os dependant way
+#if __APPLE__
+	free_th();
+	debug_list_threads(ps.tid);
+#endif
 #if __FreeBSD__
 	th_init_freebsd(ps.tid);
 #endif

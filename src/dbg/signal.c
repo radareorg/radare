@@ -46,7 +46,6 @@ int name_to_sig(char *signame)
 	return -1;
 }
 
-static char *nullstr="";
 char *sig_to_name(int sig)
 {
 	int i;
