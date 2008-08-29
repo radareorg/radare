@@ -692,8 +692,11 @@ void config_init(int first)
 	config_set("dbg.bt", "false");
 	config_set("dbg.fullbt", "false"); // user backtrace or lib+user backtrace
 	config_set("dbg.bttype", "default"); // default, st and orig or so!
-//	config_set("dbg.bptype", "soft"); // default, st and orig or so!
+#if __APPLE__ || __ARM__ || __mips__
+	config_set("dbg.bptype", "soft"); // default, st and orig or so!
+#else
 	config_set("dbg.bptype", "hard"); // hardware breakpoints by default // ALSO BSD
+#endif
 	config_set("dbg.bep", "loader"); // loader, main
 	config_set("dir.home", getenv("HOME"));
 

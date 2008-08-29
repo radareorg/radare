@@ -637,7 +637,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 		if (config.cursor_mode && config.ocursor != -1) {
 			/* repeat in loop to fill the selected area */
 			char *tmp;
-			unsigned char out[1024];
+			unsigned char out[1024]; // XXX can be overflowed
 			int osize;
 			int size = config.cursor - config.ocursor+1;
 			if (size<0) size=-size;

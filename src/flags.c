@@ -47,6 +47,7 @@ void flag_help()
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
 	" fn name      ; flag new name (ignores dupped names)\n"
+	" fm name      ; move flag to another flag space\n"
 	" fs spacename ; create/list/switch flag spaces\n"
 	" fr old new   ; rename a flag or more with '*'\n"
 	" f sym_main   ; flag current offset as sym_main\n"
@@ -407,6 +408,18 @@ void flag_clear_by_addr(u64 seek)
 			pos = flags.prev;
 			goto _polla;
 		}
+	}
+}
+
+void flag_space_move(const char *name)
+{
+	flag_t *f;
+
+	if (name == NULL || name[0] == '\0' || name[0]=='?') {
+		eprintf("Usage: fm <flag_name>  - moves the selected flag to the current flagspace\n");
+	} else {
+		f = flag_get(name);
+		f->space = flag_space_idx;
 	}
 }
 

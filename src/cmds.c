@@ -185,6 +185,11 @@ CMD_DECL(analyze)
 	memset(&aop, '\0', sizeof(struct aop_t));
 
 	switch(input[0]) {
+	case 't':
+		if (input[1]=='?') {
+			cons_printf("Usage: at     - list all traced opcode ranges\n");
+		} else trace_show();
+		break;
 	case 'd':
 		// XXX do not uses depth...ignore analdepth?
 		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"));
@@ -373,6 +378,7 @@ CMD_DECL(analyze)
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
+		cons_printf(" at [args]    analyze opcode traces\n");
 		cons_printf(" av [nops]    analyze virtual machine (negative resets before)\n");
 		cons_printf(" ax           analyze xrefs\n");
 		break;
@@ -1013,6 +1019,7 @@ CMD_DECL(flag)
 	case 'c': flag_cmd(text); break;
 	case 'r': flag_rename_str(text); break;
 	case 's': flag_space(text); break;
+	case 'm': flag_space_move(text); break;
 	case 'd': print_flag_offset(config.seek); NEWLINE; break;
 	default:
 		switch(text[0]) {
@@ -1275,6 +1282,19 @@ CMD_DECL(write)
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
+	case 'b': {
+		char *tmp;
+		char out[9999]; // XXX
+		int size, osize = hexstr2binstr(input+1, out);
+		if (osize>0) {
+			tmp = (char *)malloc(config.block_size);
+			memcpy_loop(tmp, out, config.block_size, osize);
+			io_write(config.fd, tmp, config.block_size);
+			free(tmp);
+		} else {
+			eprintf("Usage: wb 90 90\n");
+		} }
+		break;
 	case 'f':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'wf [file]'\n");
@@ -1323,6 +1343,7 @@ CMD_DECL(write)
 		"  w  [string]   - write plain with escaped chars string\n"
 		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
 		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
+		"  wb [hexpair]  - circulary fill the block with these bytes\n"
 		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.endian)\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
