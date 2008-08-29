@@ -255,7 +255,7 @@ To 'query' the math expression you can evaluate them using the '?' command and g
 \c > ? 0x100+200
 \c 0x1C8 ; 456d ; 710o ; 1100 1000  
 
-\S{print} Print
+\S{print} Print modes
 
 One of the efforts in radare is the way to show the information to the user. This is interpreting the bytes and giving an almost readable output format.
 
@@ -531,12 +531,6 @@ This boolean variable allows to enable or disable the colorized output
 \c cfg.fortunes
 
 Enables or disables the 'fortune' message at the begging of the program
-
-\C{printmodes} Print formats
-
-The core of radare handles the data adquired from the IO layer as blocks of a user defined size (block size).
-
-To get a list of all the print formats type 'p?' in the prompt. All print formats are accessible with a single char appended to the 'p'rint command. (px, pd, po, ...)
 
 \C{visual-mode} Visual mode
 
@@ -851,11 +845,13 @@ Here's a small part of radare.py to exemplify this:
 
 The use of these functions is quite natural:
 
-\\c from radare import *
+\c from radare import *
 \c
 \c aop = analyze_opcode(flag_get("eip"))
 \c if aop["type"] == "jump":
-\c	print "Jumping to 0x%08x"%aop["jump"]
+\c        print "Jumping to 0x%08x"%aop["jump"]
+
+Read the 'scripting' chapter to get a deeper look on this topic.
 
 \C{rabin} Rabin
 
@@ -884,9 +880,27 @@ TODO
 
 RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
 
-\C{rasm} rasm, Inline assembler/disassembler
+\H{rsc-asmdasm} asm/dasm
+
+TODO
+
+\H{rsc-syms} syms
+
+TODO
+
+\H{rsc-idc2rdb} idc2rdb
+
+TODO
+
+\H{rsc-gokolu} gokolu
+
+TODO
+
+\C{rasm} rasm the inline (a/disa)ssembler
 
 Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
+
+TODO
 
 \C{anal} Analysis
 
@@ -936,6 +950,9 @@ TODO
 
 I would like to greet some people that help me or encourage me to continue developing and having fun on radare.
 
-- my God (FSM)
-- Sexy Pandas
-- nopcode project
+\u - my God (FSM)
+
+\u - nopcode guys
+
+\u - Sexy Pandas
+
