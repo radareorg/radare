@@ -334,7 +334,7 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
-\S{write} Writing
+\S{write} Writing bytes
 
 Radare can manipulate the file in multiple ways. You can resize the file, move bytes, copy/paste them, insert mode (shifting data to the end of the block or file) or just overwrite some bytes with an address, the contents of a file, a widestring or inline assembling an opcode.
 
@@ -482,27 +482,6 @@ It is quite simple to add new architectures for disassembling and analyzing code
 
 Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
 
-The 'pseudo' syntax is closer to the humans, but it can be anoying if you are reading lot of code:
-
-\c [0xB7FB8810]> e asm.syntax=pseudo
-\c [0xB7FB8810]> pd 3
-\c 0xB7FB8810,    eax = esp        
-\c 0xB7FB8812   v call 0xB7FB8A60
-\c 0xB7FB8817     edi += eax        
-\c
-\c [0xB7FB8810]> e asm.syntax=intel
-\c [0xB7FB8810]> pd 3
-\c 0xB7FB8810,  mov eax, esp        
-\c 0xB7FB8812   call 0xb7fb8a60
-\c 0xB7FB8817   add edi, eax        
-\c
-\c [0xB7FB8810]> e asm.syntax=att
-\c [0xB7FB8810]> pd 3
-\c 0xB7FB8810,  mov %esp, %eax          
-\c 0xB7FB8812   call 0xb7fb8a60
-\c 0xB7FB8817   add %eax, %edi          
-\c [0xB7FB8810]> 
-
 \c asm.os
 
 Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
@@ -561,7 +540,72 @@ To get a list of all the print formats type 'p?' in the prompt. All print format
 
 \C{visual-mode} Visual mode
 
-The visual mode is a user-friendlier interface for the commandline prompt of radare which accepts HJKL movement keys, a cursor for selecting bytes and some keybindings to ease the use of the debugger
+The visual mode is a user-friendlier interface for the commandline prompt of radare which accepts HJKL movement keys, a cursor for selecting bytes and some keybindings to ease the use of the debugger.
+
+In this mode you can change the configuration in a easy way using the 'e' (eval) key. Or just track the flags and walk thru the flagspaces pressing 't'.
+
+To get a help of all the keybindings hooked in visual mode you can press '?':
+
+\c Visual keybindings:
+\c :<cmd>     radare command (vi like)
+\c ;          edit or add comment
+\c ,.         ',' marks an offset, '.' seeks to mark or eip if no mark
+\c g,G        seek to beggining or end of file
+\c +-*/       +1, -1, +width, -width -> block size
+\c <>         seek block aligned (cursor mode = folder code)
+\c []         adjust screen width
+\c a,A,=      insert patch assembly, rsc asm or !hack
+\c i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)
+\c f,F        seek between flag list (f = forward, F = backward)
+\c t          visual track/browse flagspaces and flags
+\c e          visual eval configuration variables
+\c c          toggle cursor mode
+\c C          toggle scr.color
+\c d          convert cursor selected bytes to ascii, code or hex
+\c m          applies rfile magic on this block
+\c I          invert block (same as pIx or so)
+\c y,Y        yank and Yankee aliases for copy and paste
+\c f,F        go next, previous flag (cursor mode to add/remove)
+\c h,j,k,l    scroll view to left, down, up, right.
+\c J,K        up down scroll one block.
+\c H,L        scroll left, right by 2 bytes (16 bits).
+\c p,P        switch between hex, bin and string formats
+\c x          show xrefs of the current offset
+\c q          exits visual mode
+\c 
+\c Debugger keybindings:
+\c !          show debugger commands help
+\c F1         commands help
+\c F2         set breakpoint (execute)
+\c F3         set watchpoint (read)
+\c F4         continue until here (!contuh)
+\c F6         continue until syscall (!contsc)
+\c F7         step in debugger user code (!step)
+\c F8         step over in debugger (!stepo)
+\c F9         continue execution (!cont)
+\c F10        continue until user code (!contu)
+
+From the visual mode you can toggle the insert and cursor modes with the 'i' and 'c' keys.
+
+\H{visual-mode-cursor} Visual cursor
+
+Pressing lowercase 'c' makes the cursor appear or disappear. The cursor is used to select a range of bytes or just point to a byte to flag it (press 'f' to create a new flag where the cursor points to)
+
+If you select a range of bytes press 'w' and then a byte array to overwrite the selected bytes with the ones you choose in a circular copy way. For example:
+
+\c <select 10 bytes in visual mode>
+\c <press 'w' and then '12 34'>
+\c The 10 bytes selected will become: 12 34 12 34 12 34 12 34 12 34
+
+The byte range selection can be used together with the 'd' key to change the data type of the selected bytes into a string, code or a byte array.
+
+That's useful to enhace the disassembly, add metadata or just align the code if there are bytes mixed with code.
+
+\H{visual-mode-insert} Visual insert
+
+The insert mode allows you to write bytes at nibble-level like most common hexadecimal editors. In this mode you can press '<tab>' to switch between the hexa and ascii columns of the hexadecimal dump.
+
+To get back to the normal mode, just press '<tab>' to switch to the hexadecimal view and press 'q'. (NOTE: if you press 'q' in the ascii view...it will insert a 'q' instead of quit this mode)
 
 \C{flags} Flags
 
@@ -593,9 +637,26 @@ The 'pd' command accepts a numeric argument to specify how many opcodes of the c
 
 The 'pD' command works like 'pd' but gets the number of bytes instead of the number of opcodes.
 
-\C{patch} Writing data
+The 'pseudo' syntax is closer to the humans, but it can be anoying if you are reading lot of code:
 
-Read the 'write' section
+\c [0xB7FB8810]> e asm.syntax=pseudo
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,    eax = esp        
+\c 0xB7FB8812   v call 0xB7FB8A60
+\c 0xB7FB8817     edi += eax        
+\c
+\c [0xB7FB8810]> e asm.syntax=intel
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,  mov eax, esp        
+\c 0xB7FB8812   call 0xb7fb8a60
+\c 0xB7FB8817   add edi, eax        
+\c
+\c [0xB7FB8810]> e asm.syntax=att
+\c [0xB7FB8810]> pd 3
+\c 0xB7FB8810,  mov %esp, %eax          
+\c 0xB7FB8812   call 0xb7fb8a60
+\c 0xB7FB8817   add %eax, %edi          
+\c [0xB7FB8810]> 
 
 \H{metadata} Adding metadata
 
@@ -679,15 +740,122 @@ All the access to files, network, debugger, etc.. is wrapped by an IO abstractio
 
 \C{plugins} Plugins
 
-TODO
+Radare can be extended in many ways. The most common is by using stdin/stdout get input from a file an interpret the output of the program execution as radare commands. stderr is used for direct user messaging, because it is not handled by the core and it is directly printed in the terminal.
+
+But with this kind of plugins are not directly interactive, because the communication is one-way from the external program to radare. and the only way to get feedback from radare is by using pipes and files. For example:
+
+\c $ cat interactive.rsc
+\c #!/bin/sh
+\c addr=$1
+\c if [ -z "${addr}" ]; then
+\c    echo "No address given"
+\c    exit 1
+\c fi
+\c echo "pX 4 > tmpfile"
+\c sleep 1
+\c bytes=`cat tmpfile`
+\c echo "wx ${bytes} @ ${addr}+4"
+
+What this 'dummy' script does is get an address as argument, read 4 bytes from there, and write them at address+4.
+
+As you see this simple task becomes quite 'ugly' using this concepts, so its better to write a native plugin to get full access to the radare internals
 
 \H{plugins-io} IO plugins
 
-TODO
+IO plugins are the ones used to wrap the open, read, write and 'system' on virtual file systems.
+
+The cool thing of IO plugins is that you can make radare understand that any thing can be handled as a plain file. A socket connection, a remote radare session, a file, a process, a device, a gdb session, etc..
+
+So, when radare reads a block of bytes, is the task of the IO plugin to get these bytes from any place and put them in the internal buffer.
+
+IO plugins are selected while opening a file by its URI. Here'r some examples:
+
+\c # Debugging URIs
+\c $ radare dbg:///bin/ls
+\c $ radare pid://1927
+\c
+\c # Remote sessions
+\c $ radare listen://:9999
+\c $ radare connect://localhost:9999
+\c
+\c # Virtual buffers
+\c $ radare malloc://1024
+
+You can get a list of the radare IO plugins by typing 'radare -L':
+
+\c $ radare -L
+\c haret       Read WCE memory ( haret://host:port )
+\c debug       Debugs or attach to a process ( dbg://file or pid://PID )
+\c gdb         Debugs/attach with gdb (gdb://file, gdb://PID, gdb://host:port)
+\c gdbx        GDB shell interface 'gdbx://program.exe args' )
+\c shm         shared memory ( shm://key )
+\c mmap        memory mapped device ( mmap://file )
+\c malloc      memory allocation ( malloc://size )
+\c remote      TCP IO ( listen://:port or connect://host:port )
+\c winedbg     Wine Debugger interface ( winedbg://program.exe )
+\c socket      socket stream access ( socket://host:port )
+\c gxemul      GxEmul Debugger interface ( gxemul://program.arm )
+\c posix       plain posix file access
+
 
 \H{plugins-hack} Hack plugins
 
-TODO
+The hack plugins are just shared libraries that have access to some internal apis of radare. The most important one "radare_cmd" which accepts a command string and returns the string representing the output of the execution.
+
+In this way it is possible to perform any action in the core just formatting command strings and parsing its output.
+
+\H{plugins-lang} Language bindings
+
+All language bindings supported by radare to script some actions are implemented as hack plugins.
+
+LUA is probably the cleaner implementation of a language binding for radare, i recommend you to read the source at 'src/plug/hack/lua.c'. Here's the structure to register the plugin:
+
+\c int radare_plugin_type = PLUGIN_TYPE_HACK;
+\c struct plugin_hack_t radare_plugin = {
+\c         .name = "lua",
+\c         .desc = "lua plugin",
+\c         .callback = &lua_hack_cmd
+\c };
+
+The 'lua_hack_cmd' accepts a string as argument which is the argument given when calling the plugin from the radare shell:
+
+\c [0x00000000]> H lua my-script.lua
+
+If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
+
+The same happens with other language bindings like python or perl.
+
+In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
+
+The APIs in radare for language bindings are just wrappers for the basic 'r.cmd()' function handled by the core which is hooked to 'radare_cmd()'.
+
+Here's a small part of radare.py to exemplify this:
+
+\c def flag_get(name):
+\c         return r.cmd("? %s"%name).split(" ")[0].strip()
+\c
+\c def flag_set(name, addr=None):
+\c         if addr == None:
+\c                 r.cmd("f %s"%name)
+\c         else:
+\c                 r.cmd("f %s @ 0xx"%name, addr)
+\c
+\c def analyze_opcode(addr=None):
+\c         """
+\c         Returns a hashtable containing the information of the analysis of the opcode in the current seek.
+\c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
+\c         """
+\c         if addr == None:
+\c                 return __str_to_hash(r.cmd("ao"))
+\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
+
+The use of these functions is quite natural:
+
+\\c from radare import *
+\c
+\c aop = analyze_opcode(flag_get("eip"))
+\c if aop["type"] == "jump":
+\c	print "Jumping to 0x%08x"%aop["jump"]
 
 \C{rabin} Rabin
 
@@ -716,7 +884,7 @@ TODO
 
 RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
 
-\C{rasm} rasm: Inline assembler/disassembler
+\C{rasm} rasm, Inline assembler/disassembler
 
 Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
 

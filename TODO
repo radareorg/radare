@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* how to write 30 times a single char? sthg like memset in 'w' ?
+  - memsetloop from cmdline i need!
 
 RASM is buggy about relative/absolute offsets
 * TODO: make !tt interact with optraces

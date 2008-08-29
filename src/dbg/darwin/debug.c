@@ -19,6 +19,28 @@
  *
  */
 
+#if 0
+#define PT_TRACE_ME     0       /* child declares it's being traced */
+#define PT_READ_I       1       /* read word in child's I space */
+#define PT_READ_D       2       /* read word in child's D space */
+#define PT_READ_U       3       /* read word in child's user structure */
+#define PT_WRITE_I      4       /* write word in child's I space */
+#define PT_WRITE_D      5       /* write word in child's D space */
+#define PT_WRITE_U      6       /* write word in child's user structure */
+#define PT_CONTINUE     7       /* continue the child */
+#define PT_KILL         8       /* kill the child process */
+#define PT_STEP         9       /* single step the child */
+#define PT_ATTACH       10      /* trace some running process */
+#define PT_DETACH       11      /* stop tracing a process */
+#define PT_SIGEXC       12      /* signals as exceptions for current_proc */
+#define PT_THUPDATE     13      /* signal for thread# */
+#define PT_ATTACHEXC    14      /* attach to running process with signal exception */
+
+#define PT_FORCEQUOTA   30      /* Enforce quota for root */
+#define PT_DENY_ATTACH  31
+#define PT_FIRSTMACH    32      /* for machine-specific requests */
+#endif
+
 
 #define USE_PTRACE 0
 #define __addr_t_defined
@@ -148,18 +170,63 @@ int debug_attach(int pid)
 	return 0;
 }
 
+static int inferior_in_ptrace = 1;
+
 int debug_contp(int tid)
 {
-	fprintf(stderr, "debug_contp: program is running now...\n");
-	task_resume(inferior_task);
-	thread_resume(inferior_threads[0]);
-	//wait_for_events();
+	fprintf(stderr, "debug_contp: program is now running...\n");
+
+	if (inferior_in_ptrace) {
+		/* only stopped with ptrace the first time */
+		//ptrace(PT_CONTINUE, ps.tid, 0, 0);
+		ptrace(PT_DETACH, ps.tid, 0, 0);
+		inferior_in_ptrace = 1;
+	} else {
+		task_resume(inferior_task); // ???
+		thread_resume(inferior_threads[0]);
+	}
+
 	return 0;
 }
 
 inline int debug_os_steps()
 {
-	fprintf(stderr, "debug_os_steps: TODO\n");
+	int ret;
+	regs_t regs;
+	/* signal to be throwed after the step */
+	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGSTOP);
+//	debug_getregs(ps.tid, &regs);
+//printf("PC%08x\n", (u32)R_EIP(regs));
+	printf("stepping from pc = %08x\n", (u32)get_offset("eip"));
+	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)get_offset("eip"), SIGSTOP);
+	ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGINT);
+	if (ret != 0) {
+		perror("ptrace-step");
+		fprintf(stderr, "debug_os_steps: %d\n", ret);
+	}
+#if 0
+  [ESRCH]
+           No process having the specified process ID exists.
+
+     [EINVAL]
+           oo   A process attempted to use PT_ATTACH on itself.
+           oo   The request was not one of the legal requests.
+           oo   The signal number (in data) to PT_CONTINUE was neither 0 nor a legal signal number.
+           oo   PT_GETREGS, PT_SETREGS, PT_GETFPREGS, or PT_SETFPREGS was attempted on a process with no
+               valid register set.  (This is normally true only of system processes.)
+
+     [EBUSY]
+           oo   PT_ATTACH was attempted on a process that was already being traced.
+           oo   A request attempted to manipulate a process that was being traced by some process other than
+               the one making the request.
+           oo   A request (other than PT_ATTACH) specified a process that wasn't stopped.
+
+     [EPERM]
+           oo   A request (other than PT_ATTACH) attempted to manipulate a process that wasn't being traced
+               at all.
+           oo   An attempt was made to use PT_ATTACH on a process in violation of the requirements listed
+               under PT_ATTACH above.
+#endif
 	return 0;
 }
 
@@ -318,7 +385,7 @@ int debug_list_threads(int pid)
 		th->tid = inferior_threads[i];
 		
 		if ((err=thread_get_state(th->tid, i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
-			fprintf(stderr, "FUCK %s\n", MACH_ERROR_STRING(err));
+			//fprintf(stderr, "debug_list_threads: %s\n", MACH_ERROR_STRING(err));
 		} else{
 			th->status = 0; // XXX TODO
 			th->addr = state.__eip;
@@ -338,21 +405,24 @@ int debug_getregs(pid_t tid, regs_t *regs)
 
 	thread_act_port_array_t thread_list;
 	mach_msg_type_number_t thread_count;
+//fprintf(stderr, "getregs-TID: %d\n", tid);
 
 	err = task_threads(pid_to_task(tid), &inferior_threads, &inferior_thread_count);
 	if (err != KERN_SUCCESS) {
-		fprintf(stderr, "FUCK\n");
-	} else {
-		//fprintf(stderr, "THREAD COUNT: %d\n", inferior_thread_count);
-	}
-
-	/* TODO: allow to choose the selected thread */
-	if ((err = thread_get_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
-		fprintf(stderr, "getregs: Failed to get thread %d .error (%x).\n", (int)tid, (int)err);
+		fprintf(stderr, "debug_getregs\n");
 		return -1;
 	}
-	// XXX USELESS COPY
-	memcpy(regs, &state, sizeof(regs_t));
+
+	if (inferior_thread_count>0) {
+		/* TODO: allow to choose the thread */
+		if ((err = thread_get_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+			fprintf(stderr, "getregs: Failed to get thread %d %d.error (%x). (%s)\n", (int)tid, pid_to_task(tid), (int)err, MACH_ERROR_STRING(err));
+			perror("thread_get_state");
+			return -1;
+		}
+	} else {
+		fprintf(stderr, "There are no threads!\n");
+	}
 
 	return gp_count;
 }
@@ -360,13 +430,23 @@ int debug_getregs(pid_t tid, regs_t *regs)
 int debug_setregs(pid_t tid, regs_t *regs)
 {
 	//unsigned int gp_count, regs[17];
-	unsigned int gp_count;
 	kern_return_t err;
 
-	/* thread_id, flavor, old_state, old_state_count */
-	if ((err = thread_set_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
-		fprintf(stderr, "Failed to get thread %d state (%d).\n", (int)tid, (int)err);
+	err = task_threads(pid_to_task(tid), &inferior_threads, &inferior_thread_count);
+	if (err != KERN_SUCCESS) {
+		fprintf(stderr, "debug_getregs\n");
 		return -1;
+	} 
+
+	/* thread_id, flavor, old_state, old_state_count */
+	if (inferior_thread_count>0) {
+		if ((err = thread_set_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, regs_sizeof)) != KERN_SUCCESS) {
+			fprintf(stderr, "setregs: Failed to get thread %d %d.error (%x). (%s)\n", (int)tid, pid_to_task(tid), (int)err, MACH_ERROR_STRING(err));
+			perror("thread_set_state");
+			return -1;
+		}
+	} else {
+		// XXX
 	}
 
 	return gp_count;
@@ -592,12 +672,6 @@ inline int debug_single_setregs(pid_t tid, regs_t *regs)
 	return 0;
 }
 
-int debug_print_wait(char *act)
-{
-	fprintf(stderr, "debug_print_wait: TODO\n");
-	return 0;
-}
-
 int debug_os_init()
 {
 	return 0;
@@ -609,6 +683,33 @@ static int debug_exception_event(unsigned long code)
 	return 0;
 }
 
+int debug_print_wait(char *act)
+{
+	fprintf(stderr, "debug_print_wait: TODO\n");
+	return 0;
+}
+
+#if 0
+static enum bp_ss_or_other
+get_event_type (struct macosx_exception_thread_message *msg)
+{
+  if (msg->exception_type == EXC_BREAKPOINT)
+    {
+      if (msg->data_count == 2
+          && msg->exception_data[0] == SINGLE_STEP)
+        return ss_event;
+      else
+        return bp_event;
+    }
+  else if (msg->exception_type == EXC_SOFTWARE
+      && (msg->data_count == 2)
+      && (msg->exception_data[0] == EXC_SOFT_SIGNAL))
+    return sig_event;
+  else
+    return other_event;
+}
+#endif
+
 int debug_dispatch_wait() 
 {
 	char data[1024];
@@ -617,13 +718,12 @@ int debug_dispatch_wait()
 	mach_msg_header_t msg, out_msg;
 	struct weasel_breakpoint *bkpt;
 
-	printf("debug_dispatch_wait: TODO\n");
-	return 0;
+	//printf("debug_dispatch_wait: TODO\n");
+	//return 0;
 
 	fprintf(stderr, "Waiting for events... (kill -STOP %d to get prompt)\n",ps.tid);
 
-	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 0,
-			MACH_PORT_NULL);
+	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 0, MACH_PORT_NULL);
 	if (err != KERN_SUCCESS) {
 		fprintf(stderr, "Event listening failed.\n");
 		return 1;

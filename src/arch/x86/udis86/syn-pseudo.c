@@ -125,8 +125,13 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 			if (syn_cast) opr_cast(u, op);
 			switch (op->size) {
 				// TODO: if is printable show char or DWORD or QWORD
-				case  8: mkasm(u, "0x%x  ; %d '%c'", op->lval.ubyte, op->lval.ubyte,
-					 is_printable(op->lval.ubyte)?op->lval.ubyte:' ');    break;
+				case  8: if (op->lval.ubyte != 0) {
+						mkasm(u, "0x%x  ; %d '%c'", op->lval.ubyte, op->lval.ubyte,
+					 		is_printable(op->lval.ubyte)?op->lval.ubyte:' ');
+					} else  {
+						mkasm(u, "0x%x", op->lval.ubyte);
+					}
+					break;
 				case 16: mkasm(u, "0x%x", op->lval.uword);    break;
 				case 32: mkasm(u, "0x%x", op->lval.udword, op->lval.udword);  break;
 				case 64: mkasm(u, "0x" FMT64 "x", op->lval.uqword); break;

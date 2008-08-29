@@ -2,6 +2,7 @@
 #include <mach/i386/thread_status.h>
 
 #define regs_t _STRUCT_X86_THREAD_STATE32
+#define regs_sizeof sizeof(regs_t)/4
 //#define regs_t i386_thread_state_t
 
 #define R_EIP(x) x.__eip
