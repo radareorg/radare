@@ -41,7 +41,7 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm
 	-cp ${PRG}/src/rasc/rasc $@/usr/bin/rasc
 	-cp ${PRG}/src/arch/arm/aasm/armasm $@/usr/bin/armasm
-	-cp ${PRG}/src/rsc $@/usr/bin/rsc
+	-cp ${PRG}/src/rsc/rsc $@/usr/bin/rsc
 	-cp ${PRG}/src/rfile $@/usr/bin/rfile
 	-cp ${PRG}/src/hasher/hasher $@/usr/bin/hasher
 	-cp ${PRG}/src/xc $@/usr/bin/xc
@@ -50,8 +50,9 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp ${PRG}/gui/gradare $@/usr/bin/gradare
 	-cp /usr/bin/gtkdialog $@/usr/bin/gtkdialog
 	-cp /usr/lib/libvte.so.9 $@/usr/lib
+	mkdir -p $@/usr/share/radare/gradare
 	-cp -rf ${SPRG}/gui/grsc/* $@/usr/share/radare/gradare
-	-cp -rf ${SPRG}/libexec/* $@/usr/share/radare/rsc
+	-cp -rf ${SPRG}/src/rsc/pool/* $@/usr/share/radare/rsc
 	-cp -rf ${SPRG}/magic/* $@/usr/share/radare/magic/
 	-cp -rf ${SPRG}/doc/* $@/usr/share/doc/radare/
 	-chmod +x $@/usr/bin/*
