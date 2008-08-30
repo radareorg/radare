@@ -18,6 +18,12 @@
  *
  */
 
+
+/*
+ * TODO:
+ *  * dietpe integration
+ */
+
 #include "../main.h"
 #include "rabin.h"
 #include <stdio.h>
@@ -35,6 +41,7 @@
 
 #include "dietelf.h"
 #include "dietelf64.h"
+#include "dietpe.h"
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
 
@@ -82,6 +89,7 @@ void rabin_show_info(const char *file)
 	char *str;
 	u64 baddr;
 	dietelf_bin_t bin;
+	dietpe_pe_memfile pebin;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -161,8 +169,17 @@ void rabin_show_info(const char *file)
 		} else printf("File type: JAVA CLASS\n");
 		break;
 	case FILETYPE_PE:
+		fd = dietpe_new(&pebin, file);
+		if (fd == 1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+
 		if (rad) printf("e file.type = pe\n");
 		else printf("File type: PE\n");
+
+		dietpe_list_info(&pebin);
+
 		break;
 	case FILETYPE_MZ:
 		if (rad) printf("e file.type = mz\n");
@@ -471,6 +488,7 @@ void rabin_show_sections(const char *file)
 {
 	int fd;
 	dietelf_bin_t bin;
+	dietpe_pe_memfile pebin;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -483,7 +501,13 @@ void rabin_show_sections(const char *file)
 		close(fd);
 		break;
 	case FILETYPE_PE:
-		printf("TODO: import dietpe\n");
+		fd = dietpe_new(&pebin, file);
+		if (fd == 1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+
+		dietpe_list_sections(&pebin);
 		break;
 #if 0
 	default:
