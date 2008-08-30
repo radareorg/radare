@@ -55,7 +55,7 @@ def configure(conf):
 	if conf.env['CPU'] == 'i86pc': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i586': conf.env['CPU'] = 'i386'
-	if conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':
+	if conf.env['CPU'] != 'arm' and conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':
 		print "Unknown CPU. Disabling debugger"
 		Options.options.DEBUGGER = False
 
@@ -86,6 +86,7 @@ def configure(conf):
 	conf.define('LIBDIR',  "%s/lib"%Options.options.PREFIX)
 	conf.define('DATADIR', "%s/share/"%Options.options.PREFIX)
 	conf.define('DOCDIR',  "%s/share/doc/radare"%Options.options.PREFIX)
+	conf.define('GRSCDIR', "%s/share/radare/gradare"%Options.options.PREFIX)
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
 	# Check for libreadline

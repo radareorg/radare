@@ -4,6 +4,8 @@
 #include <gtk/gtk.h>
 #include <vte/vte.h>
 
+#include "../global.h"
+
 #if _MAEMO_
 #include <hildon/hildon.h>
 #include <hildon/hildon-window.h>

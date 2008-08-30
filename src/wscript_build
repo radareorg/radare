@@ -25,10 +25,11 @@ if bld.env['DEBUGGER'] == 1:
 	obj.uselib_local += 'debugger'
 
 # IF GUI
-if bld.env['HAVE_VALAC'] == 1:
+if bld.env['GUI'] == 1:
 	obj.uselib += 'GTK'
 	obj.uselib_local += ' grava'
 	obj.includes += ' ..//build/default/vala/grava '
+	bld.add_subdirs('../gui')
 
 if bld.env['HAVE_LIB_EWF'] == 1:
 	obj.env.append_value('LINKFLAGS','-lewf')
@@ -78,3 +79,7 @@ obj.find_sources_in_dirs('arch/mips')
 xrefs = bld.new_task_gen('cc', 'program')
 xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
+
+xc = bld.new_task_gen('cc', 'program')
+xc.target = 'xc'
+xc.source = 'xc.c'
