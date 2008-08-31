@@ -30,12 +30,16 @@
 int arch_msil_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	int n;
-	memset(aop, '\0', sizeof(struct aop_t));
-	aop->type = AOP_TYPE_UNK;
+
 	DISASMSIL_OFFSET CodeBase = addr;
 	ILOPCODE_STRUCT ilopar[8]; // XXX only uses 1
 	DisasMSIL(bytes,16,CodeBase, ilopar, 8, &n);
-//printf("%d ", ilopar[0].Size);
+
+	if (aop == NULL)
+		return ilopar[0].Size;
+
+	memset(aop, '\0', sizeof(struct aop_t));
+	aop->type = AOP_TYPE_UNK;
 	aop->length = ilopar[0].Size;
 
 	return ilopar[0].Size;

@@ -188,7 +188,9 @@ CMD_DECL(analyze)
 	case 't':
 		if (input[1]=='?') {
 			cons_printf("Usage: at     - list all traced opcode ranges\n");
-		} else trace_show();
+		} else {
+			trace_show(0);
+		}
 		break;
 	case 'd':
 		// XXX do not uses depth...ignore analdepth?

@@ -29,5 +29,5 @@
 int arch_m68k_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 
-	return 0;
+	return 4;
 }

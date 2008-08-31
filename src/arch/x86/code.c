@@ -31,6 +31,9 @@
 // XXX addr should be off_t for 64 love
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
+	if (aop == NULL)
+		return dislen((unsigned char *)bytes, 64);
+
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
 

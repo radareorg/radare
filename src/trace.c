@@ -31,27 +31,28 @@
 struct list_head traces;
 static unsigned int n_traces = 0;
 
-// num of traces for an address
-int trace_times(u64 addr)
+struct trace_t *trace_get(u64 addr)
 {
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
 		struct trace_t *h= list_entry(pos, struct trace_t, list);
 		if (h->addr == addr)
-			return h->times;
+			return h;
 	}
-	return 0;
+	return NULL;
+}
+
+// num of traces for an address
+int trace_times(u64 addr)
+{
+	struct trace_t *t = trace_get(addr);
+	return t?t->times:0;
 }
 
 int trace_count(u64 addr)
 {
-	struct list_head *pos;
-	list_for_each(pos, &traces) {
-		struct trace_t *h= list_entry(pos, struct trace_t, list);
-		if (h->addr == addr)
-			return h->count;
-	}
-	return 0;
+	struct trace_t *t = trace_get(addr);
+	return t?t->count:0;
 }
 
 int trace_index(u64 addr)
@@ -69,6 +70,7 @@ int trace_index(u64 addr)
 
 int trace_add(u64 addr)
 {
+	char bytes[16];
 	struct trace_t *t;
 	struct list_head *pos;
 
@@ -91,8 +93,11 @@ int trace_add(u64 addr)
 	}
 
 	t = (struct trace_t *)malloc(sizeof(struct trace_t));
+	memset(t,'\0',sizeof(struct trace_t));
 	t->addr = addr;
 	t->times = 1;
+	radare_read_at(addr, bytes, 16);
+	t->opsize = arch_aop(addr, bytes, NULL);
 	gettimeofday(&(t->tm), NULL);
 	t->count = ++n_traces;
 	list_add_tail(&(t->list), &traces);
@@ -101,13 +106,67 @@ int trace_add(u64 addr)
 	return t->times;
 }
 
-/* TODO: Show ranges !!! must store instruction size here? */
-void trace_show()
+u64 trace_range(from)
 {
+	u64 last = from;
+	u64 last2 = 0LL;
+	struct trace_t *h;
+	
+	while(last != last2) {
+		last2 = last;
+		h = trace_get(last);
+		if (h) {
+			last = last + h->opsize;
+		}
+	}
+
+	return last;
+}
+
+u64 trace_next(from)
+{
+	u64 next = 0xFFFFFFFFFFFFFFFFLL;
 	struct list_head *pos;
+	struct trace_t *h;
+
 	list_for_each(pos, &traces) {
-		struct trace_t *h= list_entry(pos, struct trace_t, list);
-		cons_printf("0x%08llx %d\n", h->addr, h->times);
+		h = list_entry(pos, struct trace_t, list);
+		if (h->addr > from && h->addr < next)
+			next = h->addr;
+	}
+
+	if (next == 0xFFFFFFFFFFFFFFFFLL)
+		return NULL;
+
+	return next;
+}
+
+void trace_show(int plain)
+{
+	u64 from = 0LL;
+	u64 last;
+	struct list_head *pos;
+	struct trace_t *h;
+
+	/* get the lower address */
+	list_for_each(pos, &traces) {
+		h = list_entry(pos, struct trace_t, list);
+		if (from == 0LL)
+			from = h->addr;
+		if (h->addr < from)
+			from = h->addr;
+		if (plain)
+			cons_printf("0x%08llx %d\n", h->addr, h->times);
+	}
+	if (plain)
+		return;
+
+	while(from) {
+		last = trace_range(from);
+		// TODO: show timestamps
+		cons_printf("0x%08llx - 0x%08llx\n", from, last);
+		from = trace_next(last);
+		cons_flush();
 	}
 }
 

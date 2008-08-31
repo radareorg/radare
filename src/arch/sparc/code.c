@@ -28,8 +28,11 @@
 // NOTE: bytes should be at least 16 bytes?
 int arch_sparc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
+	if (aop == NULL)
+		return 4;
+
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
 
-	return 0;
+	return 4;
 }

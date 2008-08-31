@@ -4,6 +4,32 @@
 #include "main.h"
 
 extern struct list_head comments;
+extern struct list_head traces;
+
+int trace_count(u64 addr);
+int trace_times(u64 addr);
+int trace_add(u64 addr);
+void trace_init();
+
+struct trace_t {
+	u64 addr;
+	int opsize;
+	int times;
+	int count;
+	struct timeval tm;
+	struct list_head list;
+};
+
+enum {
+	DATA_HEX    = FMT_HEXB, /* hex byte pairs */
+	DATA_STR    = FMT_ASC0, /* ascii string */
+	DATA_CODE   = FMT_UDIS, /* plain assembly code */
+	DATA_FOLD_O = 0x100,    /* open folder */
+	DATA_FOLD_C = 0x101,    /* closed folder */
+	DATA_EXPAND = 0x200 
+};
+
+
 
 enum {
 	ARCH_X86   = 0,

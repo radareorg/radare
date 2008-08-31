@@ -38,13 +38,15 @@ int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	unsigned int i;
 	int sz = 1;
 
-	memset(aop, '\0', sizeof(struct aop_t));
-
 	/* get opcode size */
 	for(i = 0;java_ops[i].name != NULL;i++)
 		if (bytes[0] == java_ops[i].byte)
 			sz = java_ops[i].size;
 
+	if (aop == NULL)
+		return sz;
+
+	memset(aop, '\0', sizeof(struct aop_t));
 	aop->length = sz;
 
 	switch(bytes[0]) {

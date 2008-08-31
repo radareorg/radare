@@ -107,6 +107,10 @@ trap 	011010	Trap
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	unsigned long op;
+
+	if (aop == NULL)
+		return (mips_mode==16)?2:4;
+
 	//endian_memcpy(&op, bytes, 4, ! config_get("cfg.endian"));
 	memset(aop, '\0', sizeof(struct aop_t));
 	//of &=0x3f;

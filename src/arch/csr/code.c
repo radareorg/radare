@@ -101,10 +101,13 @@ int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	uint16_t ins;
 	struct directive d;
 	int rel = 0;
-	memcpy(&ins, bytes, sizeof(uint16_t));
 	struct instruction *in = bytes;
-
 	struct state *s = &_state;
+
+	if (aop == NULL)
+		return 2;
+
+	memcpy(&ins, bytes, sizeof(uint16_t));
 	s->s_buf = bytes;
 	s->s_off = addr;
 	s->s_out = -1;

@@ -90,8 +90,11 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 {
 	unsigned int i=0;
 	unsigned int* code=(unsigned int *)codeA;
-
 	unsigned int branch_dst_addr;
+
+	if (aop == NULL)
+		return (arm_mode==16)?2:4;
+
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
 #if 0
