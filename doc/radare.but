@@ -853,9 +853,8 @@ The use of these functions is quite natural:
 
 Read the 'scripting' chapter to get a deeper look on this topic.
 
-\C{rabin} Rabin
-
-Under this bunny-arabic-like name, radare hides the power of a wonderful tool to handle binary files and get information to show it in the command line or import it into radare.
+\C{rabin} Rabin 
+Under this bunny-arabic-like name, radare hides the power of a wonderful tool to handle binary files and get information to show it in the command line or import it into the core.
 
 Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, etc.. and it is able to get symbol import/exports, library dependencies, strings of data sections, xrefs, address of entrypoint, sections, architecture type, etc.
 
@@ -914,29 +913,402 @@ TODO
 
 TODO
 
+\H{anal-trace} Trace analysis
+
+The radare debugger stores information about the executed opcodes in a linked list and allows later to get an execution trace of the code with a list of ranged addresses of the executed code and how many times and in which order these instructions has been executed.
+
+This information is managed with the 'at' command. 'Analyze Traces'.
+
+\c [0x4A13C00E]> at
+\c 0x4a13b8c0 - 0x4a13b8c7
+\c 0x4a13c000 - 0x4a13c048
+\c 0x4a13c050 - 0x4a13c066
+\c 0x4a1508cb - 0x4a1508cf
+
+To get a complete list of all the executed addresses use 'at*'. The first column represents the offset and the second one the number of times it has been executed and the third one the last step counter value for this offset.
+
+\c [0x4A13C00E]> at*
+\c 0x4a13b8c0 1 1
+\c 0x4a13b8c2 1 2
+\c 0x4a13c000 1 3
+\c 0x4a13c001 1 4
+\c 0x4a13c003 1 5
+\c 0x4a13c004 1 6
+\c 0x4a13c005 1 7
+\c 0x4a13c006 1 8
+\c 0x4a13c009 1 9
+\c 0x4a1508cb 1 10
+\c 0x4a1508ce 1 11
+\c 0x4a13c00e 1 12
+\c 0x4a13c014 1 13
+\c 0x4a13c017 1 14
+\c 0x4a13c019 1 15
+\c 0x4a13c01f 1 16
+\c 0x4a13c025 1 17
+\c 0x4a13c02b 1 18
+\c 0x4a13c031 1 19
+\c 0x4a13c033 1 20
+\c 0x4a13c036 1 21
+\c 0x4a13c03c 1 22
+\c 0x4a13c042 1 23
+\c 0x4a13c044 1 24
+\c 0x4a13c046 1 25
+\c 0x4a13c061 5 54
+\c 0x4a13c064 5 55
+\c 0x4a13c050 5 56
+\c 0x4a13c057 5 57
+\c 0x4a13c05a 5 58
+\c 0x4a13c05d 5 59
+\c 0x4a13c05f 4 53
+\c [0x4A13C00E]> 
+
+With this log we can easily identify the loops, how many times they have been executed and the execution order of them.
+
+You can also get detailed information of a certain offset:
+
+\c [0x4A13C05A]> !at 0x4a13c064
+\c ffset = 0x4a13c064
+\c opsize = 2
+\c times = 5
+\c count = 55
+
+
 \C{Hashing} Hashing data
 
 TODO
 
-\C{bindiff-index} Bindiff
+\C{rahash} Rahash tool
 
 TODO
+
+\C{bindiff-index} Binary diffing
+
+Radiff is the program used in radare to identify changes and delta offsets between two binary files. It implements different algorithms to find and show this information:
+
+\c $ radiff -h
+\c Usage: radiff [-c] [-bgeirp] [file-a] [file-b]
+\c   -b   bytediff (faster but doesnt support displacements)
+\c   -d   use gnu diff as backend (default)
+\c   -e   use erg0ts bdiff (c++) as backend
+\c   -r   use rdb diff (code analysis diff)
+\c   -s   use rsc symdiff
+\c   -S   use rsc symbytediff
+\c   -p   binpatching (TODO)
 
 \C{bytediff} Diffing at byte-level
 
-TODO
+The byte-level binary diffing is the fastest and simple one. It will only work on files with the same size and will no detect delta offsets. This is obviously not useful for all the cases, but it will help when analyzing big files or patched ones to be able to identify and extract the patched bytes.
+
+\c $ radiff -b a.bin b.bin
 
 \C{bindiff} Diffing with delta support
 
 TODO
 
-\C{debugging} Debugger
+\C{bindiff} Diffing code graphs
 
 TODO
 
+\C{debugging} Debugger
+
+The debugger in radare is implemented as an IO plugin. It handles two different URIs for creating or attaching to a process: dbg:// and pid://.
+
+The debugger have different backends for multiple architectures and operating systems like GNU/Linux, Windows, MacOSX, (NetFreeOpen)BSD and Solaris.
+
+The process memory is interpreted by radare as a plain file. So all the mapped pages like the program and the libraries can be readed and interpreted as code, structures, etc..
+
+The rest of the communication between radare and the debugger layer is the wrapped system() call that receives a string as argument and executes the given command. The result of the operation is buffered in the output console and this contents can be handled by a scripting language.
+
+This is the reason why radare can handle single and double exclamation marks for calling system().
+
+\c [0x00000000]> !step
+\c [0x00000000]> !!ls
+
+The double exclamation mark tells radare to skip the plugin list to find an IO plugin handling this command to launch it directly to the shell. A single one will walk thru the io plugin list.
+
+The debugger commands are mostly portable between architectures and operating systems. But radare tries to implement them on all the artchitectures and OSs injecting shellcodes, or handling exceptions in a special way. For example in mips there's no stepping feature by hardware, so radare has an own implementation using a mix of code analysis and software breakpoints to bypass this limitation.
+
+To get the basic help of the debugger you can just type '!help':
+
+\c [0x4A13B8C0]> !help
+\c  Information
+\c   info               show debugger and process status
+\c   msg                show last debugger status message
+\c   pid [tid] [action] show pid of the debug process, current tid and childs, or set tid.
+\c   status             show the contents of /proc/pid/status
+\c   signal             show signals handler
+\c   maps[*]            flags the current memory maps (.!rsc maps)
+\c   syms               flags all syms of the debugged program (TODO: get syms from libs too)
+\c   fd[?][-#] [arg]    file descriptors (fd? for help)
+\c   th[?]              threads control command
+\c  Stack analysis
+\c   bt                 backtrace stack frames (use :!bt for user code only)
+\c   st                 analyze stack trace (experimental)
+\c  Memory allocation
+\c   alloc [N]          allocates N bytes (no args = list regions)
+\c   mmap [F] [off]     mmaps a file into a memory region
+\c   free               free allocated memory regions
+\c   imap               map input stream to a memory region (DEPRECATED)
+\c  Loader
+\c   run [args]         load and start execution
+\c   (un)load           load or unload a program to debug
+\c   kill [-S] [pid]    sends a signal to a process
+\c   {a,de}ttach [pid]  attach or detach target pid
+\c  Flow Control
+\c   jmp [addr]         set program counter
+\c   call [addr]        enters a subroutine
+\c   ret                emulates a return from subroutine
+\c   skip [N]           skip (N=1) instruction(s)
+\c   step{o,u,bp,ret}   step, step over, step until user code, step until ret
+\c   cont{u,uh,sc,fork} continue until user code, here, syscall or fork
+\c  Tracing
+\c   trace [N]          trace until bp or eof at N debug level
+\c   tt [size]          touch trace using a swapable bps area
+\c   wtrace             watchpoint trace (see !wp command)
+\c   wp[m|?] [expr]     put a watchpoint (!wp? for help) (wpm for monitor)
+\c  Breakpoints
+\c   bp [addr]          put a breakpoint at addr (no arg = list)
+\c   mp [rwx] [a] [s]   change memory protections at [a]ddress with [s]ize
+\c   ie [-][event]      ignore debug events
+\c  Registers
+\c   [o|d|fp]regs[*]    show registers (o=old, d=diff, fp=fpu, *=radare)
+\c   reg[s|*] [reg[=v]  show get and set registers
+\c   oregs[*]           show old registers information (* for radare)
+\c   dr[rwx-]           DR registers control (dr? for help) (x86 only)
+\c  Other
+\c   dump/restore [N]   dump/restore pages (and registers) to/from disk
+\c   dall               dump from current seek to cfg.limit all available bytes (no !maps required)
+\c   core               dump core of the process
+\c   hack [N]           Make a hack.
+\c   inject [bin]       inject code inside child process (UNSTABLE)
+\c Usage: !<cmd>[?] <args> @ <offset>     ; see eval dbg. fmi
+
+\H{regs} Registers
+
+The registers are part of the user area stored in the context structure used by the scheduler. This structure can be manipulated to get and set values for those registers, and on intel for example, is possible to directly manipulate the DRx hardware registers to setup hardware breakpoints and watchpoints.
+
+There are different commands to get values of the registers. For the General Purpose ones use:
+
+\c [0x4A13B8C0]> !regs
+\c   eax  0x00000000    esi  0x00000000    eip    0x4a13b8c0
+\c   ebx  0x00000000    edi  0x00000000    oeax   0x0000000b
+\c   ecx  0x00000000    esp  0xbfac9bd0    eflags 0x200286  
+\c   edx  0x00000000    ebp  0x00000000    cPazStIdor0 (PSI)
+
+The !reg command can be used in different ways:
+
+\c [0x4A13B8C0]> !reg eip         ; get value of 'eip'
+\c 0x4a13b8c0
+\c
+\c [0x4A13B8C0]> !reg eip = esp   ; set 'eip' as esp
+
+The interaction between the plugin and the core is done by commands returning radare instructions. This is used for example to set some flags in the core to set the values of the registers.
+
+\c [0x4A13B8C0]> !reg*    ; Appending '*' will show radare commands
+\c fs regs
+\c f oeax @ 0xb
+\c f eax @ 0x0
+\c f ebx @ 0x0
+\c f ecx @ 0x0
+\c f edx @ 0x0
+\c f ebp @ 0x0
+\c f esi @ 0x0
+\c f edi @ 0x0
+\c f oeip @ 0x0
+\c f eip @ 0x4a13b8c0
+\c f oesp @ 0x0
+\c f esp @ 0xbfac9bd0
+\c 
+\c [0x4A13B8C0]> .!reg*  ; '.!' interprets the output of this command
+
+Note that the 'oeax' stores the original eax value before executing a syscall. This is used by '!contsc' to identify the call, similar to 'strace'.
+
+An old copy of the registers is stored all the time to keep track of the changes done during the execution of the program. This old copy can be accessed with '!oregs'.
+
+\c [0x4A13B8C0]> !oregs
+\c Mon, 01 Sep 2008 00:22:32 GMT
+\c   eax  0x00000000    esi  0x00000000    eip    0x4a13b8c0
+\c   ebx  0x00000000    edi  0x00000000    oeax   0x0000000b
+\c   ecx  0x00000000    esp  0xbfac9bd0    eflags 0x200386  
+\c   edx  0x00000000    ebp  0x00000000    cPazSTIdor0 (PSTI)
+\c [0x4A13B8C0]> !regs
+\c   eax  0xbfac9bd0    esi  0x00000000    eip    0x4a13b8c2
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfac9bd0    eflags 0x200386  
+\c   edx  0x00000000    ebp  0x00000000    cPazSTIdor0 (PSTI)
+
+The values in eax, oeax and eip has changed. And this is noted when enabling scr.color.
+
+You can easily get a string representing the last changes in the registers using the 'dregs' command (diff registers):
+
+\c [0x4A13B8C0]> !dregs
+\c eax = 0xbfac9bd0 (0x00000000)
+
+eip register is ignored and oeax is not handled for obvious reasons :)
+
+There's an eval variable called 'trace.cmtregs' that adds a comment after each executed instruction giving information about the changes in the registers. Here's an example
+
+\c [0x4A13C000]> !step 5
+\c [0x4A13C000]> pd 5
+\c                  ; 10 esp = 0xbfac9bc8 (0xbfac9bd0)  
+\c    0x4A13C000,           55              push ebp            
+\c                  ; 12 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc8 (0xbfac9bcc)  
+\c    0x4A13C001            89e5            mov ebp, esp        
+\c                  ; 14 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc4 (0xbfac9bc8)  
+\c    0x4A13C003            57              push edi            
+\c                  ; 16 esp = 0xbfac9bc0 (0xbfac9bc8)  
+\c    0x4A13C004,           56              push esi            
+\c                  ; 18 esp = 0xbfac9bbc (0xbfac9bc4)  
+\c    0x4A13C005      oeip: 53              push ebx            
+\c [0x4A13C000]> 
+
+You can align these comments with 'eval asm.cmtmargin'.
+
+The extended or floating point registers are accessed with the '!fpregs' command.
+
+\c [0x4A13C000]> !fpregs
+\c  cwd = 0x037f  ; control    swd = 0x0000  ; status
+\c  twd = 0x0000  ; tag        fip = 0x0000  ; eip of fpu opcode
+\c  fcs = 0x0000               foo = 0x0000  ; stack
+\c  fos = 0x0000
+\c  mm0 = 0000 0000 0000 0000     st0 = 0 (0x00000000)
+\c  mm1 = 0000 0000 0000 0000     st1 = 0 (0x00000000)
+\c  mm2 = 0000 0000 0000 0000     st2 = 0 (0x00000000)
+\c  mm3 = 0000 0000 0000 0000     st3 = 0 (0x00000000)
+\c  mm4 = 0000 0000 0000 0000     st4 = 0 (0x00000000)
+\c  mm5 = 0000 0000 0000 0000     st5 = 0 (0x00000000)
+\c  mm6 = 0000 0000 0000 0000     st6 = 0 (0x00000000)
+\c  mm7 = 0000 0000 0000 0000     st7 = 0 (0x00000000)
+
+\H{hwregs} Hardware registers
+
+The hardware registers are only supported on few architectures. In this case only 'intel' 32 and 64 bits. also called 'DRx' on intel.
+
+Radare allows you to manipulate them manually to setup 4 different breakpoints when reading, writing or executing (rwx):
+
+\c [0x4A13C000]> !dr
+\c DR0 0x00000000 x
+\c DR1 0x00000000 x
+\c DR2 0x00000000 x
+\c DR3 0x00000000 x
+\c [0x4A13C000]> !dr?
+\c Usage: !dr[type] [args]
+\c   dr                   - show DR registers
+\c   dr-                  - reset DR registers
+\c   drr [addr]           - set a read watchpoint
+\c   drw [addr]           - set a write watchpoint
+\c   drx [addr]           - set an execution watchpoint
+\c   dr[0-3][rwx] [addr]  - set a rwx wp at a certain DR reg
+\c Use addr=0 to undefine a DR watchpoint
+
+For example. To setup a read exception at address 0xBF894404:
+
+\c [0x80480303]> !dr0r 0xBF894404
+
+The DR index can be ignored, because it can be automatically handled by radare in the same way:
+
+\c [0x80480303]> !dr 0xBF894404
+
+To remove all the values of the hw regs just type:
+
+\c [0x80480303]> !dr-
+
+\H{memprot} Memory protections
+
+Another way to setup read/write exceptions is done by changing the protection properties of the memory pages of a program.
+
+These properties must have an aligned size like 4096 bytes or so. This depends on the operating system and the cpu, but it is supported by all the architectures with MMU.
+
+\c [0x4A13C000]> !mp?
+\c Usage: !mp [rwx] [addr] [size]
+\c   > !mp       - lists all memory protection changes
+\c   > !mp --- 0x8048100 4096
+\c   > !mp rwx 0x8048100 4096
+\c - addr and size are aligned to memory (-=%4).
+
+Using '!maps' you can get a list of all the mapped regions of the program, but this ones will not refer to the changes done by this command, because they are handled submappings and not all OS allows you a fine-grained control over this.
+
+For this reason, radare handles a list of changes done by this command to allow you to reset the changes done.
+
+Here's an example... you are interested on getting the point where a program tries to write in a buffer at a certain address. The way to catch this is by changing the properties of this page, dropping the write permission and kepping the read one.
+
+\c [0x4A13C000]> !mp r-- 0x8054180 4096
+\c [0x4A13C000]> !cont
+\c
+\c .. write exception ..
+\c
+\c [0x4A13C000]> !mp rw- 0x8054180 4096 ; restore change
+
+\H{mmap} Memory pages
+
+TODO: explain !alloc, !maps, !mmap, !dall, !core, !dump, !restore
+
 \H{exec} Run control
 
+The basic life-cycle of a process can be managed with different commands of the debugger.
+
+\c !load         ; reload the process (restart program)
+\c !run          ; start running
+
+\c !step         ; executes a single instruction
+\c !stepo        ; step over call instructions
+\c !stepret      ; step instructions until function return
+\c !stepu [addr] ; step until address
+\c !stepbp       ; step using breakpoints and code analysis
+
+Is interesting to have multiple ways to perform stepping and continuation to be able to bypass different protections like avoid changing the memory adding software breakpoints, just stepping until an address.
+
+You can also step N times in two ways:
+
+\c [0x80484040]> !step 4
+\c [0x80484040]> 4!step
+
+About continuations radare offers multiple commands for handling process continuations:
+
+\c !cont         ; continue execution
+\c !contu [addr] ; continue until address using a breakpoint
+\c !contuh       ; continue until here
+\c !contsc       ; continue until syscall (strace)
+\c !contfork     ; continue until new child is created
+
+The 'contuh' command is quite useful when analyzing loops, because allows you to easily complete a loop without having to manually setup breakpoints.
+
+\H{tt} Touch Tracing
+
 \H{bps} Breakpoints
+
+\H{wps} Watchpoints
+
+\H{fds} Filedescriptors
+
+The file descriptors of a process can be manipulated in multiple ways to get information about the opened files of a program, in which permissions, duplicate them as new file descriptors, close, change the seek, open a file on an already opened filedescriptor or making a TCP connection for example.
+
+All this stuff is system-dependant, so if it is not implemented in your favourite operating system(R) i'll be happy to receive feedback and patches.
+
+It is handled by the '!fd' command:
+
+\c [0x4A13C00E]> !fd?
+\c Usage: !fd[s|d] [-#] [file | host:port]
+\c   !fd                   ; list filedescriptors
+\c   !fdd 2 7              ; dup2(2, 7)
+\c   !fds 3 0x840          ; seek filedescriptor
+\c   !fd -1                ; close stdout
+\c   !fd /etc/motd         ; open file at fd=3
+\c   !fd 127.0.0.1:9999    ; open socket at fd=5
+
+Here's the filedescriptor list once a process is created with stdin, stdout and sterr
+
+[0x4A13C00E]> !fd
+ 0 0x00000013 rwC /dev/pts/0
+ 1 0x00000000 rwC /dev/pts/0
+ 2 0x00000000 rwC /dev/pts/0
+
+Now we can close the stdout of the program or just redirect them to a file opening a file on the fd number '1':
+
+\c [0x4A13C00E]> !fd /tmp/stdout.txt  ; open new fd
+\c [0x4A13C00E]> !fd -1               ; close stdout
+\c [0x4A13C00E]> !fdd 3 1             ; stdout = new_fd
+\c [0x4A13C00E]> !fd -3               ; close file
 
 \H{thprocs} Threads and processes
 

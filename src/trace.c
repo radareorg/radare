@@ -156,7 +156,7 @@ void trace_show(int plain)
 		if (h->addr < from)
 			from = h->addr;
 		if (plain)
-			cons_printf("0x%08llx %d\n", h->addr, h->times);
+			cons_printf("0x%08llx %d %d\n", h->addr, h->times, h->count);
 	}
 	if (plain)
 		return;

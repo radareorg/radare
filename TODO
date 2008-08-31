@@ -14,9 +14,14 @@
    and before removing it store a comment or metadata at the
    begginging of it.
 
-* Make 'at' command show ranges
+* debugger
+  - follow child or parent
+  - ignore other threads
+
+* dbg.hwbp instead of bptype
 
 * rename 'hasher' into 'rahash'
+
 * A way to dump the 'trace' table to stdout (optraces) (at? analyze traced opcodes/regions)
 * file.baddr breaks lot of stuff ZOMFG!
 * bash autocompletion script for rsc and rfile

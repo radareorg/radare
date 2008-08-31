@@ -186,9 +186,27 @@ CMD_DECL(analyze)
 
 	switch(input[0]) {
 	case 't':
-		if (input[1]=='?') {
-			cons_printf("Usage: at     - list all traced opcode ranges\n");
-		} else {
+		switch(input[1]) {
+		case '?':
+			cons_printf("Usage: at[*] [addr]\n");
+			cons_printf("   > at         ; list all traced opcode ranges\n");
+			cons_printf("   > at*        ; list all traced opcode offsets\n");
+			cons_printf("   > at [addr]  ; show trace info at address\n");
+			break;
+		case ' ': {
+			u64 foo = get_math(input+1);
+			struct trace_t *t = trace_get(foo);
+			if (t != NULL) {
+				cons_printf("offset = 0x%llx\n", t->addr);
+				cons_printf("opsize = %d\n", t->opsize);
+				cons_printf("times = %d\n", t->times);
+				cons_printf("count = %d\n", t->count);
+				//TODO cons_printf("time = %d\n", t->tm);
+			} } break;
+		case '*':
+			trace_show(1);
+			break;
+		default:
 			trace_show(0);
 		}
 		break;
