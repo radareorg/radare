@@ -190,8 +190,12 @@ CMD_DECL(analyze)
 		case '?':
 			cons_printf("Usage: at[*] [addr]\n");
 			cons_printf("   > at         ; list all traced opcode ranges\n");
+			cons_printf("   > at-        ; reset the tracing information\n");
 			cons_printf("   > at*        ; list all traced opcode offsets\n");
 			cons_printf("   > at [addr]  ; show trace info at address\n");
+			break;
+		case '-':
+			trace_reset();
 			break;
 		case ' ': {
 			u64 foo = get_math(input+1);

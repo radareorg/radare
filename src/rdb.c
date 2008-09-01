@@ -345,6 +345,10 @@ struct program_t *program_open(char *file)
 
 void rdb_help()
 {
+#if 0
+ Ro -> open
+ Rs -> save
+#endif
 	printf("Usage: R[?] [argument] (TODO)\n"
 	"  R              ; list all RDBs loded in memory\n"
 	"  R [rdb-file]   ; load rdb file into memory\n"

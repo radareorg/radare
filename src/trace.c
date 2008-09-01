@@ -106,7 +106,7 @@ int trace_add(u64 addr)
 	return t->times;
 }
 
-u64 trace_range(from)
+u64 trace_range(u64 from)
 {
 	u64 last = from;
 	u64 last2 = 0LL;
@@ -115,31 +115,61 @@ u64 trace_range(from)
 	while(last != last2) {
 		last2 = last;
 		h = trace_get(last);
-		if (h) {
-			last = last + h->opsize;
-		}
+		if (h) last = last + h->opsize;
 	}
 
 	return last;
 }
 
-u64 trace_next(from)
+#if 1
+u64 trace_next(u64 from)
 {
-	u64 next = 0xFFFFFFFFFFFFFFFFLL;
+        u64 next = 0xFFFFFFFFFFFFFFFFLL;
+        struct list_head *pos;
+        struct trace_t *h;
+
+        list_for_each(pos, &traces) {
+                h = list_entry(pos, struct trace_t, list);
+                if (h->addr > from && h->addr < next)
+                        next = h->addr;
+        }
+
+        if (next == 0xFFFFFFFFFFFFFFFFLL)
+                return NULL;
+
+        return next;
+}
+
+#endif
+
+#if 0
+/* buggy version */
+u64 trace_next(u64 from)
+{
+	u64 next;
+	int next_init = 0;
 	struct list_head *pos;
 	struct trace_t *h;
 
 	list_for_each(pos, &traces) {
 		h = list_entry(pos, struct trace_t, list);
+		if (!next_init) {
+			if (h->addr > from && h->addr < next) {
+				next = h->addr;
+				next_init = 1;
+			}
+			continue;
+		}
 		if (h->addr > from && h->addr < next)
 			next = h->addr;
 	}
 
-	if (next == 0xFFFFFFFFFFFFFFFFLL)
+	if (next_init == 0)
 		return NULL;
 
 	return next;
 }
+#endif
 
 void trace_show(int plain)
 {
@@ -172,5 +202,16 @@ void trace_show(int plain)
 
 void trace_init()
 {
+	INIT_LIST_HEAD(&traces);
+}
+
+void trace_reset()
+{
+	struct list_head *pos;
+	struct trace_t *h;
+	list_for_each(pos, &traces) {
+		h = list_entry(pos, struct trace_t, list);
+		free(h);
+	}
 	INIT_LIST_HEAD(&traces);
 }

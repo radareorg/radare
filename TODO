@@ -10,6 +10,10 @@
 * search for strings in disassembly
   - pd 1 -> strstr(cons_buffer, mystr)
 
+* export a graph to a file using 'Rf' command
+* Make idc2rdb also export graph structure
+* ao [addr] same as ao @ addr
+
 0- store all the stack analysis info in a struct per-function
    and before removing it store a comment or metadata at the
    begginging of it.
