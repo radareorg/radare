@@ -321,6 +321,18 @@ def dbg_register_get(name):
 def dbg_register_set(name, value):
 	r.cmd("!reg %s=%s"%(name,value))
 
+def trace_at(addr):
+	return __str_to_hash(r.cmd("at %s"%addr))
+
+def trace_list():
+	return r.cmd("at*").split("\n")
+
+def trace_reset():
+	r.cmd("at-")
+
+def trace_ranges():
+	return r.cmd("at").split("\n")
+
 def hash(algo,size):
 	return r.cmd("#%s %d"%(algo,size))
 

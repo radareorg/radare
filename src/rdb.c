@@ -262,6 +262,10 @@ struct program_t *program_new(char *file)
 	return program;
 }
 
+void program_save(const char *file)
+{
+}
+
 struct program_t *program_open(char *file)
 {
 	struct program_t *program;
@@ -351,7 +355,8 @@ void rdb_help()
 #endif
 	printf("Usage: R[?] [argument] (TODO)\n"
 	"  R              ; list all RDBs loded in memory\n"
-	"  R [rdb-file]   ; load rdb file into memory\n"
+	"  R  [rdb-file]  ; load rdb file into memory\n"
+	//"  Rs [rdb-file]  ; save graph analysis as rdb \n" XXX same as project file?
 	"  R -[idx]       ; removes an rdb indexed\n"
 	"  Rm [range]     ; performs a merge between selected rdbs\n"
 	"  RG [num]       ; graph RDB number 'num'\n"

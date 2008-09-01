@@ -30,15 +30,15 @@ int debug_bp(const char *str)
 	u64 addr = 0;
 	const char *ptr = str;
 	const char *type;
-	int bptype = BP_NONE;
+	int hwbp = BP_NONE;
 	int num;
 
 	switch(str[0]) {
 	case 's':
-		bptype = BP_SOFT;
+		hwbp = BP_SOFT;
 		break;
 	case 'h':
-		bptype = BP_HARD;
+		hwbp = BP_HARD;
 		break;
 	case '?':
 		cons_printf("Usage: !bp[?|s|h|*] ([addr|-addr])\n"
@@ -50,16 +50,8 @@ int debug_bp(const char *str)
 		return 0;
 	}
 
-	if (bptype == BP_NONE) {
-		type = config_get("dbg.bptype");
-		if (type) {
-			if (type[0]=='s')
-				bptype = BP_SOFT;
-			else
-			if (type[0]=='h')
-				bptype = BP_HARD;
-		}
-	}
+	if (hwbp == BP_NONE)
+		hwbp = config_get_i("dbg.hwbp");
 
 	while ( *ptr && *ptr != ' ') ptr = ptr + 1;
 	while ( *ptr && *ptr == ' ' ) ptr = ptr + 1;
@@ -79,7 +71,7 @@ int debug_bp(const char *str)
 	case '+': // relative from eip
 		addr = config.seek + get_offset(ptr+1);
 		flag_set("breakpoint", addr, 3);
-		debug_bp_set(NULL, addr, bptype);
+		debug_bp_set(NULL, addr, hwbp);
 		eprintf("new breakpoint at 0x%lx\n", addr);
 		break;
 	case '*':
@@ -91,7 +83,7 @@ int debug_bp(const char *str)
 			debug_print_bps();
 		else {
 			flag_set("breakpoint", addr, 3);
-			num = debug_bp_set(NULL, addr, bptype);
+			num = debug_bp_set(NULL, addr, hwbp);
 			eprintf("new breakpoint %d at 0x%lx\n", num, addr);
 		}
 		break;
@@ -113,10 +105,24 @@ struct bp_t *debug_bp_get(addr_t addr)
 }
 
 /* HACK: save a hardware/software breakpoint */
-/* XXX: called after the step */
-int debug_bp_restore_before(int pos)
+int debug_bp_restore_after()
 {
+	struct bp_t *bp;
+	u64 addr = arch_pc(ps.tid); // x86
+	int bpsize = arch_bpsize();
 
+	if (bp == NULL) {
+		bp = debug_bp_get(addr-bpsize);
+		if (bp==NULL) {
+	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
+			return 0;
+		}
+		printf("post-Breakpoint restored %08llx\n", addr);
+		arch_jmp(addr-bpsize);
+	} else {
+		printf("post-Breakpoint restored %08llx\n", addr);
+	}
+	return 0;
 }
 
 /* called before the step */
@@ -124,17 +130,10 @@ int debug_bp_restore(int pos)
 {
 	struct bp_t *bp;
 	u64 addr = arch_pc(ps.tid); // x86
-#if 0
-#if ARCH_I386
-	u64 addr = arch_pc()-1; // x86
-#else
-	u64 addr = arch_pc()-4; // arm, mips, ppc, ...
-#endif
-#endif
+
 	if (pos==-1)
 		bp = debug_bp_get(addr);
 	else	bp = debug_bp_get_num(pos);
-
 
 	if (bp == NULL) {
 		bp = debug_bp_get(addr-1);
@@ -142,9 +141,9 @@ int debug_bp_restore(int pos)
 	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
 			return 0;
 		}
-		printf("Breakpoint -1 %08llx\n", addr);
+		printf("pre-Breakpoint -1 %08llx\n", addr);
 	} else {
-		printf("Breakpoint restored %08llx\n", addr);
+		printf("pre-Breakpoint restored %08llx\n", addr);
 	}
 	if (bp == NULL || WS(bp)==NULL)
 		return 0;

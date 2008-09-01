@@ -259,7 +259,7 @@ int debug_init()
 int debug_print_maps(char *arg)
 {
 	if(debug_init_maps(1) == 0) {
-		print_maps_regions((int)strchr(arg, '*'));
+		print_maps_regions((int)strchr(arg, '*'), arg[0]=='?');
 		return 0;
 	}
 

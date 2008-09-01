@@ -50,7 +50,7 @@ inline addr_t alloc_page(int size);
 inline void add_regmap(MAP_REG *mr);
 void print_status_alloc();
 void free_regmaps(int rest);
-void print_maps_regions(int rad);
+void print_maps_regions(int rad, int two);
 void page_restore(const char *dir);
 void page_dumper(const char *dir);
 void up_regions(int usrcode);

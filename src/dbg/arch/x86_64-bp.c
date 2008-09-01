@@ -72,29 +72,33 @@ int dr_set(int reg, unsigned long val)
 
 #endif
 
+int arch_bpsize()
+{
+	return 1;
+}
 
-inline void dr_set_control (unsigned long control)
+void dr_set_control (unsigned long control)
 {
 	dr_set(DR_CONTROL, control);
 }
 
-inline unsigned dr_get_control ()
+unsigned dr_get_control ()
 {
 	dr_get(DR_CONTROL);
 	return 0; //for compiler warning
 }
 
-inline void dr_set_addr (int regnum, unsigned long addr)
+void dr_set_addr (int regnum, unsigned long addr)
 {
 	dr_set(regnum, addr);
 }
 
-inline void dr_reset_addr (int regnum)
+void dr_reset_addr (int regnum)
 {
 	dr_set(regnum, 0L);
 }
 
-inline unsigned long dr_get_status (void)
+unsigned long dr_get_status (void)
 {
 	return dr_get(DR_STATUS);
 }
@@ -260,25 +264,25 @@ int arch_bp_rm_soft(struct bp_t *bp)
 }
 
 /* software breakpoints */
-inline int arch_bp_soft_enable(struct bp_t *bp)
+int arch_bp_soft_enable(struct bp_t *bp)
 {
 	char breakpoint = '\xCC';
 
 	return debug_write_at(ps.tid, (unsigned char*)&breakpoint, 1, bp->addr);
 }
 
-inline int arch_bp_soft_disable(struct bp_t *bp)
+int arch_bp_soft_disable(struct bp_t *bp)
 {
 	return debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 }
 
 /* hardware breakpoints */
-inline int arch_bp_hw_enable(struct bp_t *bp)
+int arch_bp_hw_enable(struct bp_t *bp)
 {
 	return arch_bp_hw_state(bp->addr, 1);
 }
 
-inline int arch_bp_hw_disable(struct bp_t *bp)
+int arch_bp_hw_disable(struct bp_t *bp)
 {
 	return arch_bp_hw_state(bp->addr, 0);
 }

@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
 
-	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVcnxi:e:p:d")) != -1)
+	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVnxi:e:p:d")) != -1)
 	{
 		switch( c ) {
 #if DEBUGGER

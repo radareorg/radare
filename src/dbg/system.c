@@ -43,7 +43,6 @@ int help_message()
 	//cons_printf("  pids            show the pids of all the attachable processes\n"); // ??!?
 	cons_printf("  status             show the contents of /proc/pid/status\n");
 	cons_printf("  signal             show signals handler\n");
-	cons_printf("  maps[*]            flags the current memory maps (.!rsc maps)\n");
 	cons_printf("  syms               flags all syms of the debugged program (TODO: get syms from libs too)\n");
 	cons_printf("  fd[?][-#] [arg]    file descriptors (fd? for help)\n");
 	cons_printf("  th[?]              threads control command\n");
@@ -56,6 +55,7 @@ int help_message()
 	cons_printf(" Memory allocation\n");
 	TITLE_END
 	cons_printf("  alloc [N]          allocates N bytes (no args = list regions)\n");
+	cons_printf("  maps[*|?]          show mapped regions in program memory\n");
 	cons_printf("  mmap [F] [off]     mmaps a file into a memory region\n");
 	cons_printf("  free               free allocated memory regions\n");
 	cons_printf("  imap               map input stream to a memory region (DEPRECATED)\n");

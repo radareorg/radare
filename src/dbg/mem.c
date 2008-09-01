@@ -252,7 +252,7 @@ int radare_get_region(u64 *from, u64 *to)
 	return 0;
 }
 
-void print_maps_regions(int rad)
+void print_maps_regions(int rad, int two)
 {
 	int i;
 	struct list_head *pos;
@@ -288,8 +288,9 @@ void print_maps_regions(int rad)
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
 			perms[4] = 0;
 
+			if ((!two) || (two && ((config.seek>mr->ini) && (config.seek < mr->end))))
 			cons_printf("0x%.8llx %c 0x%.8llx %s 0x%.8llx %s\n",
-				 (unsigned long long)mr->ini, 
+				(unsigned long long)mr->ini, 
 				((config.seek>mr->ini) && (config.seek < mr->end))?'*':'-',
 				(unsigned long long)mr->end, perms,
 				(unsigned long long)mr->size, mr->bin? mr->bin : "");

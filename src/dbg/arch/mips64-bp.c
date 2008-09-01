@@ -63,6 +63,11 @@ inline static void dr_set_addr (int regnum, unsigned long addr)
 inline static void dr_set_control (unsigned long control)
 inline static void dr_set_addr (int regnum, unsigned long addr)
 */
+int arch_bpsize()
+{
+	return 4;
+}
+
 int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 {
 	return -1;

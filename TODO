@@ -11,7 +11,6 @@
   - pd 1 -> strstr(cons_buffer, mystr)
 
 * export a graph to a file using 'Rf' command
-* Make idc2rdb also export graph structure
 * ao [addr] same as ao @ addr
 
 0- store all the stack analysis info in a struct per-function
@@ -22,18 +21,14 @@
   - follow child or parent
   - ignore other threads
 
-* dbg.hwbp instead of bptype
-
 * rename 'hasher' into 'rahash'
 
-* A way to dump the 'trace' table to stdout (optraces) (at? analyze traced opcodes/regions)
 * file.baddr breaks lot of stuff ZOMFG!
 * bash autocompletion script for rsc and rfile
 
 * implement 'commit' command. delayed write operations with bindiff output
   - using the 'uw' command
 
-* full charsets support (search strings in utf8, etc) using iconv
 
 * arrows+shift in visual
 * 'x' char should not be accepted as hexpair
@@ -51,6 +46,7 @@
 * deprecate asm.follow for scr.seek or so !!!
 
 * define ranges of the file to analize (.text by default...)
+  mr - memory ranges ??
   - autodetected using !dall algorithm
   - but if its a static binary ...would be cool to define a way
     to only analyze the calls inside a static bin
@@ -692,6 +688,7 @@ mips:
 Split radare into libraries accessible by VAPI interfaces. (no gobject dependency, but an OO C one).
 
 
+* full charsets support (search strings in utf8, etc) using iconv
 
 
 

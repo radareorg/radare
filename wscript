@@ -158,7 +158,7 @@ def build(bld):
 	#bld.install_files('BINDIR', 'src/rsc', 'libexec/')
 
 	# RSC scripts
-	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*')
+	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')
 	bld.install_files('${PREFIX}/share/doc/radare', 'COPYING')
@@ -172,8 +172,11 @@ def build(bld):
 	bld.install_files('${PREFIX}/share/doc/radare', 'doc/map-struct')
 	bld.install_files('${PREFIX}/share/doc/radare', 'doc/shell')
 	bld.install_files('${PREFIX}/share/doc/radare/xtra', 'doc/xtra/*')
-	# ONLY FOR UNIX
-	os.system("chmod +x %s/src/rsc/*"%srcdir)
+	bld.install_files('${PREFIX}/share/doc/radare/', 'src/radiff/ida2rdb.idc')
+	if bld.env['GUI']:
+		bld.install_files('${PREFIX}/share/radare/gradare', 'gui/grsc/Shell', chmod=0755)
+		for dir in "Config Debugger Disassembly Flags Hacks Movement Search Visual".split(" "):
+			bld.install_files('${PREFIX}/share/radare/gradare/%s'%dir, 'gui/grsc/%s/*'%dir, chmod=0755)
 
 def install():
 	print "Installing..."

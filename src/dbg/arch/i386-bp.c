@@ -41,6 +41,11 @@ struct arch_bp_t arch_x86_bps[] = {
 	{ NULL, 0 }
 };
 
+int arch_bpsize()
+{
+	return 1; // XXX use arch_x86_bps idx
+}
+
 /* hardware breakpoints */
 // TODO: unsigned long -> u64
 // XXX: 64 bit hw registers working properly??
@@ -366,7 +371,7 @@ printf("restore hard bp\n");
 		arch_bp_hw_enable(bp);
 	} else {
 printf("restore soft bp\n");
-	//	arch_bp_soft_disable(bp);
+//		arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
 //	  arch_jmp(arch_pc()-1);
 //	  arch_jmp(arch_pc()-1);
@@ -397,7 +402,7 @@ printf("restore soft bp\n");
 		debug_os_steps();
 		debug_dispatch_wait();
 #endif
-	//	arch_bp_soft_enable(bp);
+		arch_bp_soft_enable(bp);
 #if 0
 #if ARCH_I386
 

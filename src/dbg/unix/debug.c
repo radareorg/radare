@@ -851,14 +851,17 @@ int debug_dispatch_wait()
 				return ret;
 			}
 	#endif
+			debug_bp_restore_after();
+#if 0
 				/*  stopped by? */
 				bp = (struct bp_t*) arch_stopped_bp();
 				if(bp) {
 					WS(event) = BP_EVENT;
 					WS(bp) = bp;
 					debug_msg_set("pid %d Stopped by breakpoint\n", ps.tid);
-				} 
-			} else if(WS_SI(si_signo) ==  SIGSEGV) {
+				}
+#endif
+			} else if(WS_SI(si_signo) == SIGSEGV) {
 				/* search if changed permissions at region */
 				//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
 				/* TODO: manage access to protected pages */
