@@ -46,6 +46,9 @@ def configure(conf):
         conf.check_pkg('vte',      destvar='VTE', vnum='0.16', mandatory=False)
 	conf.checkEndian()
 
+	if Options.options.MAEMO == True:
+        	conf.check_pkg('hildon-1',      destvar='HILDON', vnum='0.1', mandatory=False)
+
 	# Generate GLOBAL.H
 	conf.env['GUI'] = False
 	if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and have_valac and Options.options.GUI:

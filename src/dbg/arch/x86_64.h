@@ -34,11 +34,11 @@ int arch_is_soft_stepoverable(const unsigned char *opcode);
 //x86_64-bp.c
 unsigned long dr_get (int reg);
 int dr_set (int reg, unsigned long val);
-inline void dr_set_control (unsigned long control);
-inline unsigned dr_get_control ();
-inline void dr_set_addr (int regnum, unsigned long addr);
-inline void dr_reset_addr (int regnum);
-inline unsigned long dr_get_status (void);
+void dr_set_control (unsigned long control);
+unsigned dr_get_control ();
+void dr_set_addr (int regnum, unsigned long addr);
+void dr_reset_addr (int regnum);
+unsigned long dr_get_status (void);
 int arch_bp_hw_state(unsigned long addr, int enable);
 void dr_init();
 void dr_list();

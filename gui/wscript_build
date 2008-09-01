@@ -4,5 +4,7 @@ obj = bld.new_task_gen('cc', 'program')
 obj.packages = 'gtk+-2.0 vte'
 obj.target = 'gradare'
 obj.uselib = 'GTK GLIB VTE'
+if bld.env["MAEMO"] == 1:
+	obj.uselib+=' HILDON'
 #obj.env.append_value('LINKFLAGS','-lm')
 obj.source='actions.c dialog.c execute.c main.c menubar.c prefs.c sidebar.c toolbar.c'
