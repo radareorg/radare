@@ -234,7 +234,7 @@ int arch_restore_registers()
 	return;
 }
 
-int arch_mprotect(char *addr, unsigned int size, int perms)
+int arch_mprotect(u64 addr, unsigned int size, int perms)
 {
 	fprintf(stderr, "TODO: arch_mprotect\n");
 	return 0;

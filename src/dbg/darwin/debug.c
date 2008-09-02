@@ -86,6 +86,37 @@ int debug_os_kill(int pid, int sig)
 	return kill(pid, sig);
 }
 
+vm_prot_t unix_prot_to_darwin(int prot)
+{
+	return ((prot&1<<4)?VM_PROT_READ:0 |
+		(prot&1<<2)?VM_PROT_WRITE:0 |
+		(prot&1<<1)?VM_PROT_EXECUTE:0);
+}
+
+int darwin_prot_to_unix(int prot)
+{
+	switch(prot) {
+	case VM_PROT_NONE:
+		return REGION_NONE;
+	case VM_PROT_READ:
+		return REGION_READ;
+	case VM_PROT_WRITE:
+		return REGION_WRITE;
+	case VM_PROT_READ | VM_PROT_WRITE:
+		return REGION_READ | REGION_WRITE;
+	case VM_PROT_EXECUTE:
+		return REGION_EXEC;
+	case VM_PROT_EXECUTE | VM_PROT_READ:
+		return REGION_EXEC | REGION_READ;
+	case VM_PROT_EXECUTE | VM_PROT_WRITE:
+		return REGION_EXEC | REGION_WRITE;
+	case VM_PROT_EXECUTE | VM_PROT_WRITE | VM_PROT_READ:
+		return REGION_READ | REGION_WRITE | REGION_EXEC;
+	default:
+		return 7; // UNKNOWN
+	}
+}
+
 // TODO: to be removed
 int debug_ktrace()
 {
@@ -307,63 +338,78 @@ int debug_fork_and_attach()
 	return pid;
 }
 
-#define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
-static int ReadMem(int pid,  addr_t addr, size_t sz, void *buff)
+// XXX This must be implemented on all the os/debug.c instead of arch_mprotect
+int debug_os_mprotect(u64 addr, int len, int perms)
 {
-	unsigned long words = sz / sizeof(long) ;
-	unsigned long last = sz % sizeof(long) ;
-	long x, lr ;
-	int ret ;
-
-	if (addr==-1)
-		return 0;
-
-	for(x=0;x<words;x++) {
-		((long *)buff)[x] = debug_read_raw(pid, (void *)(&((long*)(long )addr)[x]));
-
-		if (((long *)buff)[x] == -1 && errno)
-			goto err;
-	}
-
-	if (last) {
-		//lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)addr)[x],0) ;
-		lr = debug_read_raw(pid, &((long*)(long)addr)[x]);
-
-		if (lr == -1 && errno)
-			goto err;
-
-		memcpy(&((long *)buff)[x],&lr,last) ;
-	}
-
-	return sz;
-err:
-	ret = --x * sizeof(long);
-
-	return ret ;
+	return vm_protect(pid_to_task(ps.tid),
+		(vm_address_t)addr,
+		(vm_size_t)len,
+		(boolean_t)0, /* maximum protection */
+		unix_prot_to_darwin(perms));
 }
+
+#if 0
+debug_os_alloc()
+debug_os_dealloc()
+#endif
+#if 0
+kern_return_t   vm_allocate
+                (vm_task_t                          target_task,
+                 vm_address_t                           address,
+                 vm_size_t                                 size,
+                 boolean_t                             anywhere);
+
+ anywhere
+    [in scalar] Placement indicator. The valid values are:
+
+    TRUE
+        The kernel allocates the region in the next unused space that is sufficient within the address space. The kernel returns the starting address actually used in address.
+
+    FALSE
+        The kernel allocates the region starting at address unless that space is already allocated. 
+
+---------------------
+
+kern_return_t   vm_deallocate
+                (vm_task_t                          target_task,
+                 vm_address_t                           address,
+                 vm_size_t                                 size);
+
+/* MAP AND REMAP */
+
+Function - Map memory objects in one task's address space to that of another task's. 
+
+http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/vm_remap.html
+http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/vm_map.html
+
+#endif
 
 int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 {
-#if USE_PTRACE
-	int ret = ReadMem(tid, (addr_t)addr, (size_t)len, (void *)buff);
-	if (ret>0)return ret;
-	return 0;
-#else
 	unsigned int size= 0;
 	int err = vm_read_overwrite(pid_to_task(tid), (unsigned int)addr, len, (pointer_t)buff, &size);
 	if (err == -1) {
-		printf("Cannot read\n");
+		fprintf(stderr, "Cannot read\n");
 		return -1;
 	}
 	return size;
-#endif
 }
 
 int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
 {
-	kern_return_t err = vm_write(tid, addr, (pointer_t)buff, (mach_msg_type_number_t)len);
+	// XXX SHOULD RESTORE PERMS LATER!!!
+	vm_protect(pid_to_task(tid), addr, len, 0, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
+
+	kern_return_t err = vm_write(
+		pid_to_task(tid),
+		(vm_address_t)(unsigned int)addr, // XXX not for 64 bits
+		(pointer_t)buff,
+		(mach_msg_type_number_t)len);
+
 	if (err == KERN_SUCCESS)
 		return len;
+
+	fprintf(stderr, "Oops (0x%llx) error (%s)\n", addr, MACH_ERROR_STRING(err));
 
 	return -1;
 }
@@ -449,7 +495,7 @@ int debug_setregs(pid_t tid, regs_t *regs)
 		// XXX
 	}
 
-	return gp_count;
+	return 0;
 }
 
 /* XXX this must be structures in arrays or so */
@@ -499,30 +545,6 @@ const char * unparse_protection (vm_prot_t p)
 		return "rwx";
 	default:
 		return "???";
-	}
-}
-
-int darwin_prot_to_unix(int prot)
-{
-	switch(prot) {
-	case VM_PROT_NONE:
-		return REGION_NONE;
-	case VM_PROT_READ:
-		return REGION_READ;
-	case VM_PROT_WRITE:
-		return REGION_WRITE;
-	case VM_PROT_READ | VM_PROT_WRITE:
-		return REGION_READ | REGION_WRITE;
-	case VM_PROT_EXECUTE:
-		return REGION_EXEC;
-	case VM_PROT_EXECUTE | VM_PROT_READ:
-		return REGION_EXEC | REGION_READ;
-	case VM_PROT_EXECUTE | VM_PROT_WRITE:
-		return REGION_EXEC | REGION_WRITE;
-	case VM_PROT_EXECUTE | VM_PROT_WRITE | VM_PROT_READ:
-		return REGION_READ | REGION_WRITE | REGION_EXEC;
-	default:
-		return 7; // UNKNOWN
 	}
 }
 

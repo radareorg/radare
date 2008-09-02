@@ -11,6 +11,12 @@
   - pd 1 -> strstr(cons_buffer, mystr)
 
 * export a graph to a file using 'Rf' command
+* Make idc2rdb also export graph structure
+* ao [addr] same as ao @ addr
+
+* search + seek -- seek next or so /n
+
+* export a graph to a file using 'Rf' command
 * ao [addr] same as ao @ addr
 
 0- store all the stack analysis info in a struct per-function

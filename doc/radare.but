@@ -1,3 +1,6 @@
+\cfg{paper-code-font-size}{9}
+\cfg{paper-code-fonts}{Courier}{Courier}{Courier}
+
 \title radare
 
 A commandline framework for reverse engineering ala *nix-style
@@ -601,15 +604,113 @@ The insert mode allows you to write bytes at nibble-level like most common hexad
 
 To get back to the normal mode, just press '<tab>' to switch to the hexadecimal view and press 'q'. (NOTE: if you press 'q' in the ascii view...it will insert a 'q' instead of quit this mode)
 
-\C{flags} Flags
+\C{searching} Searching bytes
 
-A 'flag' is the way in radare to put a mark in a certain offset and size. It is useful to provide a fast access to symbols, strings, user-defined data pointers, etc
+The search engine of radare is based on the work done by esteve plus multiple features on top of it that allows multiple keyword searching with binary masks and automatic flagging of results.
 
-\C{flagspaces} Flag spaces
+This powerful command is '/'.
 
-\C{searching} Search for data
+\c [0x00000000]> /?
+\c  / \x7FELF      ; plain string search (supports \x).
+\c  /. [file]      ; search using the token file rules
+\c  /s [string]    ; strip strings matching optional string
+\c  /x A0 B0 43    ; hex byte pair binary search.
+\c  /k# keyword    ; keyword # to search
+\c  /m# FF 0F      ; Binary mask for search '#' (optional)
+\c  /a [opcode]    ; Look for a string in disasembly
+\c  /A             ; Find expanded AES keys from current seek(*)
+\c  /w foobar      ; Search a widechar string (f\0o\0o\0b\0..)
+\c  /r 0,2-10      ; launch range searches 0-10
+\c  /p len         ; search pattern of length = len
+\c  //             ; repeat last search
 
-One of the most common tasks when analyzing binaries is to look for a series of consecutive bytes inside the target file.
+The search is performed from the current seek until the end of the file or 'cfg.limit' if != 0. So in this way you can perform limited searches between two offsets of a file or the process memory.
+
+With radare everything is handled as a file, a socket, a remote device, the process memory, etc..
+
+\H{search-simple} Basic searchs
+
+A basic search for a plain string in a whole file would be something like:
+
+\c $ echo "/ lib" | radare -nv /bin/ls
+\c 001  0x00000135  hit0_0 lib/ld-linux.so.2
+\c 002  0x00000b71  hit0_1 librt.so.1__gmon_st
+\c 003  0x00000bad  hit0_2 libselinux.so.1_ini
+\c 004  0x00000bdd  hit0_3 libacl.so.1acl_exte
+\c 005  0x00000bfb  hit0_4 libc.so.6_IO_stdin_
+\c 006  0x00000f2a  hit0_5 libc_start_maindirf
+\c $
+
+As you can see, radare generates a 'hit' flag for each search result found. You you can just use the 'pz' command to visualize the strings at these offsets in this way:
+
+\c [0x00000000]> / ls
+\c ...
+\c [0x00000000]> pz @ hit0_0
+\c lib/ld-linux.so.2
+
+We can also search wide-char strings (the ones containing zeros between each letter) using the '/w' in this way:
+
+\c [0x00000000]> /w Hello
+\c 0 results found.
+
+It is also possible to mix hexadecimal scape sequences in the search string:
+
+\c $ radare -u /dev/mem
+\c [0x00000000]> / \x7FELF
+
+But if you want to perform an hexadecimal search you will probably prefer an hexpair input with '/x':
+
+\c [0x00000000]> /x 7F 45 4C 46
+
+Once the search is done, the results are stored in the 'search' flag space.
+
+\c [0x00000000]> fs search
+\c [0x00000000]> f
+\c 0x00000135 512 hit0_0
+\c 0x00000b71 512 hit0_1
+\c 0x00000bad 512 hit0_2
+\c 0x00000bdd 512 hit0_3
+\c 0x00000bfb 512 hit0_4
+\c 0x00000f2a 512 hit0_5
+
+To remove these flags, you can just use the 'f -hit*' command.
+
+Sometimes while working long time in the same file you will need to launch the last search more than once and you will probably prefer to use the '//' command instead of typing all the string again.
+
+\c [0x00000f2a]> //     ; repeat last search
+
+\H{search-pattern} Pattern search
+
+The search command allows you to throw repeated pattern searchs against the IO backend to be able to identify repeated sequences of bytes without specifying them. The only property to perform this search is to manually define the minimum length of these patterns.
+
+Here's an example:
+
+\c [0x00000000]> /p 10
+
+The output of the command will show the different patterns found and how many times they are repeated.
+
+\H{search-backward} Backward search
+
+TODO (not yet implemented)
+
+\H{search-binmask} Binary masks
+
+
+\H{search-multiple} Multiple keywords
+
+TODO: ranges, keyword management
+
+\H{search-filerules} Search using rules file
+
+TODO
+
+\H{search-asm} Search in assembly
+
+TODO: pd | grep foo
+
+\H{search-aes-keys} Searching AES keys
+
+TODO
 
 \C{disasm} Disassembling
 
@@ -703,7 +804,7 @@ Here's the help:
 
 For example, if you want to add a comment just type:
 
-\c [0x00000000]> CC this is the bad guy @ 0x8048536
+\c [0x00000000]> CC this guy seems legit @ 0x8048536
 
 You can execute code inside the disassembly just placing a flag and assigning a command to it:
 

@@ -1222,8 +1222,12 @@ void signal_set(int signum, addr_t address)
 }
 #endif
 
-int arch_mprotect(addr_t addr, unsigned int size, int perms)
+int arch_mprotect(u64 addr, unsigned int size, int perms)
 {
+#if __APPLE__
+	/* OSX: Apple Darwin */
+	debug_os_mprotect(addr, size, perms);
+#else
 #if __linux__ || __BSD__
         regs_t   reg, reg_saved;
         int     status;
@@ -1280,6 +1284,7 @@ int arch_mprotect(addr_t addr, unsigned int size, int perms)
 #else
 	eprintf("arch_mprotect: Not supported on this OS\n");
 	return -1;
+#endif
 #endif
 }
 

@@ -558,7 +558,7 @@ int main(int argc, const char **argv, char **envp)
 				FALSE, FALSE, FALSE);
 	} else {
 		if (filename) {
-			char *arg[6] = { "/usr/bin/radare", "-b", "1024", filename, NULL};
+			char *arg[6] = { "/usr/bin/radare", "-escr.color=true", "-b", "1024", filename, NULL};
 			char str[1024];
 
 			vte_terminal_fork_command(
