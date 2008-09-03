@@ -117,18 +117,89 @@ int darwin_prot_to_unix(int prot)
 		return 7; // UNKNOWN
 	}
 }
+#if 0
+
+struct syscall_t {
+  char *name;
+  int num;
+  int args;
+} syscalls_linux_powerpc[] = {
+  { "exit", 1, 1 },
+  { "fork", 2, 0 },
+  { "read", 3, 3 },
+  { "write", 4, 3 },
+  { "open", 5, 3 },
+  { "close", 6, 1 },
+  { "waitpid", 7, 3 },
+  { "creat", 8, 2 },
+  { "link", 9, 2 },
+  { "unlink", 10, 1 },
+  { "execve", 11, 3},
+  { "chdir", 12, 1},
+  { "getpid", 20, 0},
+  { "setuid", 23, 1},
+  { "getuid", 24, 0},
+  { "ptrace", 26, 4},
+  { "access", 33, 2},
+  { "dup", 41, 2},
+  { "brk", 45, 1},
+  { "signal", 48, 2},
+  { "utime", 30, 2 },
+  { "kill", 37,2 },
+  { "ioctl", 54, 3 },
+  { "mmap", 90, 6},
+  { "munmap", 91, 1},
+  { "socketcall", 102, 2 },
+  { "sigreturn", 119, 1 },
+  { "clone", 120, 4 },
+  { "mprotect", 125, 3},
+  { "rt_sigaction", 174, 3},
+  { "rt_sigprocmask", 175, 3},
+  { "sysctl", 149, 1 },
+  { "mmap2", 192, 6},
+  { "fstat64", 197, 2},
+  { "fcntl64", 221, 3},
+  { "gettid", 224, 0},
+  { "set_thread_area", 243, 2},
+  { "get_thread_area", 244, 2},
+  { "exit_group", 252, 1},
+  { "accept", 254, 1},
+  { NULL, 0, 0 }
+};
+#endif
+
+int arch_print_syscall()
+{
+#if 0
+	unsigned int sc;
+	int i,j;
+
+	/* read 4 previous bytes to ARM_pc and get syscall number from there */
+	debug_read_at(ps.tid, &sc, 4, arch_pc()-4);
+	sc<<=8; // drop opcode
+	for(i=0;syscalls_linux_powerpc[i].num;i++) {
+		if (sc == 0x900000 + syscalls_linux_powerpc[i].num) {
+			printf("%s ( ", syscalls_linux_powerpc[i].name);
+			j = syscalls_linux_powerpc[i].args;
+			/*
+			if (j>0) printf("0x%08x ", R_EBX(regs));
+			if (j>1) printf("0x%08x ", R_ECX(regs));
+			if (j>2) printf("0x%08x ", R_EDX(regs));
+			if (j>3) printf("0x%08x ", R_ESI(regs));
+			if (j>4) printf("0x%08x ", R_EDI(regs));
+			*/
+			break;
+		}
+	}
+	return sc-0x900000;
+#endif
+}
+
 
 // TODO: to be removed
 int debug_ktrace()
 {
 }
-
-#if 0
-int arch_print_syscall()
-{
-	/* dummy */
-}
-#endif
 
 int debug_detach()
 {

@@ -476,7 +476,9 @@ typedef struct dis_buffer dis_buffer_t;
 #define PRINT_AREG(dbuf, reg) addstr(dbuf, aregs[reg])
 
 #define NBBY 256  /*@@@*/
-//#define INT_MAX 0x7fffffff;
+#ifndef INT_MAX
+#define INT_MAX 0x7fffffff;
+#endif
 #define DB_STGY_PROC 0  /*@@@*/
 #define DB_STGY_ANY 0  /*@@@*/
 

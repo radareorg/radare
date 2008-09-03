@@ -304,6 +304,71 @@ This is a list of the available print modes listable with 'p?':
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
 
+\H{print-hexa}
+
+\H{print-dates}
+
+The current supported timestamp print modes are:
+
+\c  F : windows filetime        8 bytes
+\c  t : unix timestamp          4 bytes
+\c  T : dos timestamp           4 bytes
+
+For example, you can 'view' the current buffer as timestamps in dos, unix or windows filetime formats:
+
+\c [0x08048000]> eval cfg.endian = 0
+\c [0x08048000]> pt 4
+\c 30:08:2037 12:25:42 +0000
+
+\c [0x08048000]> eval cfg.endian = 1
+\c [0x08048000]> pt 4
+\c 17:05:2007 12:07:27 +0000
+
+As you can see, the endianness affects to the print formats. Once printing these filetimes you can grep the results by the year for example:
+
+\c [0x08048000]> pt | grep 1974 | wc -l
+\c 15
+\c [0x08048000]> pt | grep 2022
+\c 27:04:2022 16:15:43 +0000
+
+\H{print-basic-types}
+
+\c  f : float                   4 bytes
+\c  i : integer                 4 bytes
+\c  l : long                    4 bytes
+\c  L : long long               8 bytes
+
+\H{print-hexa}
+
+\c  h : half word (short)       2 bytes
+\c  w : hexadecimal word        2 bytes
+\c  W : hexadecimal dword       4 bytes
+\c  x : hexadecimal byte pairs  N byte
+\c  X : hexadecimal string      N byte
+
+\H{print-source}
+
+\c  c : C format                N bytes
+\c  s : asm shellcode           (null)
+
+\H{print-strings}
+
+\c  a : ascii                   (null)
+\c  A : ascii printable         (null)
+\c  r : raw ascii               (null)
+\c  X : hexadecimal string      N byte
+\c  z : ascii null terminated   (null)
+\c  Z : wide ascii null end     (null)
+
+\H{print-memory}
+
+\c  m : print memory structure  0xHHHH
+
+\H{print-code}
+
+\c  d : disassembly N opcodes   bsize bytes
+\c  D : asm.arch disassembler   bsize bytes
+
 \S{zoom} Zoom
 
 The zoom is a print mode that allows you to get a global view of the whole file or memory map in a single screen. Each byte represents file_size/block_size bytes of the file. Use the pO (zoom out print mode) to use it, or just toggle 'z' in the visual mode to zoom-out/zoom-in.
@@ -367,36 +432,46 @@ All overwrite changes are recorded and can be listed or undo-ed using the 'uw' c
 
 \S{undo} Undo/redo
 
-The 'u' command is used to undo or redo things like seeks and write changes. Here's the help:
+The 'u'ndo command is used to undo or redo write changes done on the file.
 
 \c > u?
-\c un   undo seek
-\c uu   redo
-\c uw N undo write (uw 3 = drop changes, uw -3 = re set)
-\c u*   list all seeks done
-\c u!   reset seek history
-\c u?   help this help
+\c Usage: > u 3   ; undo write change at index 3
+\c        > u -3  ; redo write change at index 3
+\c        > u     ; list all write changes
 
 Here's a sample session working with undo seeks and writes:
 
-\c [0x00000000]> s 0x100
-\c [0x00000100]> s 0x200
-\c [0x00000200]> undo
-\c [0x00000100]>
-
 \c [0x00000000]> wx 90 90 90 @ 0x100
-\c [0x00000100]> uw
+\c [0x00000100]> u
 \c 00 + 3 00000100: 89 90 c4 => 90 90 90 
 \c [0x00000000]> pX 3 @ 0x100
 \c 90 90 90 
-\c [0x00000000]> uw 0
+\c [0x00000000]> u 0
 \c [0x00000000]> pX 3 @ 0x100
 \c 89 90 c4 
-\c [0x00000000]> uw -0
+\c [0x00000000]> u -0
 \c [0x00000000]> pX 3 @ 0x100
 \c 90 90 90 
 
- 
+\H{undoseek} Undo seeks
+
+The 's'eek command supports '+-*!' characters as arguments to perform acts on the seek history.
+
+\c Usage: > s 0x128 ; absolute seek
+\c        > s +33   ; relative seek
+\c        > s-     ; undo seek
+\c        > s+     ; redo seek
+\c        > s*     ; show seek history
+\c        > .s*    ; flag them all
+\c        > s!     ; reset seek history
+
+Here's a seesion example:
+
+\c [0x00000000]> s 0x100
+\c [0x00000100]> s 0x200
+\c [0x00000200]> s-        ; undo last seek done
+\c [0x00000100]>
+
 \S{yank} Yank/Paste
 
 You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that are alias for the 'y' and 'yy' commands of the shell. There is an internal buffer that stores N bytes from the current seek. You can write-back to another seek using the 'yy' one.

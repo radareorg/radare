@@ -34,7 +34,7 @@ int debug_bp(const char *str)
 	int hwbp = BP_NONE;
 	int num;
 
-	hwbp = config_get("dbg.hwbp");
+	hwbp = (int)config_get("dbg.hwbp");
 	switch(str[0]) {
 	case 's':
 		hwbp = BP_SOFT;
