@@ -40,9 +40,9 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/ptrace.h>
-#include <asm/ptrace.h>
-#include <sys/procfs.h>
+//#include <sys/procfs.h>
 #include <sys/syscall.h>
+#include "powerpc.h"
 
 regs_t cregs; // current registers
 regs_t oregs; // old registers
@@ -51,7 +51,7 @@ regs_t oregs; // old registers
 //#define REG_K0 25 // Stack pointer
 //#define REG_SP 29 // Stack pointer
 
-long long arch_syscall(int pid, int sc, ...)
+u64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 	return ret;
@@ -271,31 +271,14 @@ int arch_print_fpregisters(int rad, const char *mask)
 	return ret;
 }
 
-#if 0
-reg      name    usage
----+-----------+-------------
-0        zero   always zero
-1         at    reserved for assembler
-2-3     v0-v1   expression evaluation, result of function
-4-7     a0-a3   arguments for functions
-8-15    t0-t7   temporary (not preserved across calls)
-16-23   s0-s7   saved temporary (preserved across calls)
-24-25   t8-t9   temporary (not preserved across calls)
-26-27   k0-k1   reserved for OS kernel
-28      gp      points to global area
-29      sp      stack pointer
-30      fp      frame pointer
-31      ra      return address
-#endif
-
 // TODO: control 63-32 fffff bits and drop them :)
 int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-#warning POWERPC: adapt regs structures..maybe is not long long
-	unsigned long long *llregs = &regs;
-	unsigned long long *ollregs = &oregs;
+// POWERPC: adapt regs structures..maybe is not long long
+	unsigned int *llregs = &regs;
+	unsigned int *ollregs = &oregs;
 	unsigned char *qregs = &regs;
 	int color = config_get("scr.color");
 
@@ -306,26 +289,30 @@ int arch_print_registers(int rad, const char *mask)
 		memcpy(&regs, &oregs, sizeof(regs_t));
 	} else {
 		memset(&regs, '\0', sizeof(regs));
-		ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+		//ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+		ret = debug_getregs(ps.tid, &regs);
+#if 0
 		if (ret < 0) {
 			perror("ptrace_getregs");
 			return 1;
 		}
+#endif
 
 		//for(ret=0;ret<(45*8);ret++) printf("%d:%02x ", ret, qregs[ret]); printf("\n");
 	}
 
 #warning POWERPC: change register names
 	if (rad) {
-		cons_printf("f pc  @ 0x%llx\nf eip@pc", reg(arch_pc())); // dupgetregs
-		cons_printf("f at  @ 0x%llx\n", reg(llregs[1]));
-		cons_printf("f v0  @ 0x%llx\n", reg(llregs[2]));
-		cons_printf("f v1  @ 0x%llx\n", reg(llregs[3]));
+		cons_printf("fs regs\n");
+		cons_printf("f srr0  @ 0x%llx\nf eip@srr0\n", reg(arch_pc())); // dupgetregs
+		cons_printf("f srr1  @ 0x%llx\n", reg(llregs[1]));
+		cons_printf("f r0  @ 0x%llx\n", reg(llregs[2]));
+		cons_printf("f r1  @ 0x%llx\n", reg(llregs[3]));
 
-		cons_printf("f a0  @ 0x%llx\n", reg(llregs[4]));
-		cons_printf("f a1  @ 0x%llx\n", reg(llregs[5]));
-		cons_printf("f a2  @ 0x%llx\n", reg(llregs[6]));
-		cons_printf("f a3  @ 0x%llx\n", reg(llregs[7]));
+		cons_printf("f r1  @ 0x%llx\n", reg(llregs[4]));
+		cons_printf("f r2  @ 0x%llx\n", reg(llregs[5]));
+		cons_printf("f r3  @ 0x%llx\n", reg(llregs[6]));
+		cons_printf("f r4  @ 0x%llx\n", reg(llregs[7]));
 
 		cons_printf("f t0  @ 0x%llx\n", reg(llregs[8]));
 		cons_printf("f t1  @ 0x%llx\n", reg(llregs[9]));
@@ -379,17 +366,17 @@ int arch_print_registers(int rad, const char *mask)
 			if (llregs[idx] != ollregs[idx]) \
 				cons_strcat("\x1b[35m"); \
 			cons_printf("  "name"  0x%08llx\x1b[0m"tail, reg(llregs[idx])); }
-		cons_printf("  pc  0x%08llx\x1b[0m", arch_pc());
-		PRINT_REG("ra", "", 31);
-		PRINT_REG("fp", "", 30);
-		PRINT_REG("gp", "", 28);
-		PRINT_REG("at", "\n", 1);
+		cons_printf("  srr0 0x%08llx\x1b[0m", arch_pc());
+		PRINT_REG("srr1", "", 1);
+		PRINT_REG("r0", "", 2);
+		PRINT_REG("r1", "", 3);
+		PRINT_REG("r2", "\n", 4);
 		/* -- */
-		PRINT_REG("sp", "", 29);
-		PRINT_REG("a0", "", 4);
-		PRINT_REG("a1", "", 5);
-		PRINT_REG("a2", "", 6);
-		PRINT_REG("a3", "\n", 7);
+		PRINT_REG("r3", "", 5);
+		PRINT_REG("r4", "", 6);
+		PRINT_REG("r5", "", 7);
+		PRINT_REG("r6", "", 8);
+		PRINT_REG("r7", "\n", 9);
 		/* -- */
 		PRINT_REG("k0", "", 26);
 		PRINT_REG("k1", "", 27);
@@ -612,7 +599,7 @@ u64 get_reg(char *reg)
 
 #warning POWERPC: get_reg must use the proper register names and structures
 	memset(&regs, '\0', sizeof(regs));
-	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+	ret = ptrace (PT_READ_U, ps.tid, &regs, sizeof(regs_t)/4);
 
 	if (ret < 0) {
 		perror("ptrace_getregs");

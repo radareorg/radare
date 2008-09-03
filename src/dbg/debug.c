@@ -1205,14 +1205,17 @@ int debug_oregisters(int rad)
 
 int debug_registers(int rad)
 {
+	int fs, ret = 1;
+
 	if (!ps.opened) {
 		eprintf(":regs No program loaded.\n");
-		return 1;
+	} else {
+		fs = flag_space_idx;
+		flag_space_set("regs");
+		ret = arch_print_registers(rad, "");
+		flag_space_idx = fs;
 	}
-
-	if (rad)
-		cons_printf("fs regs\n");
-	return arch_print_registers(rad, "");
+	return ret;
 }
 
 int debug_trace(char *input)

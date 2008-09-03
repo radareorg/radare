@@ -55,10 +55,11 @@ def configure(conf):
 		conf.env['GUI'] = True
 	conf.env['OS']= os.uname()[0]
 	conf.env['CPU']= os.uname()[4]
+	if conf.env['CPU'] == 'Power Macintosh': conf.env['CPU'] = 'powerpc'
 	if conf.env['CPU'] == 'i86pc': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i586': conf.env['CPU'] = 'i386'
-	if conf.env['CPU'] != 'arm' and conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':
+	if conf.env['CPU'] != 'arm' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'i386' and conf.env['CPU'] != 'powerpc' and conf.env['CPU'] != 'x86_64' and conf.env['CPU'] != 'mips64':
 		print "Unknown CPU. Disabling debugger"
 		Options.options.DEBUGGER = False
 

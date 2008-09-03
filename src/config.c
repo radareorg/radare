@@ -197,6 +197,9 @@ struct config_node_t *config_set(const char *name, const char *value)
 {
 	struct config_node_t *node;
 
+	if (name[0] == '\0')
+		return NULL;
+
 	node = config_node_get(name);
 
 	// TODO: store old value anywhere or something..

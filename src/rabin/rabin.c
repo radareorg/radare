@@ -297,6 +297,7 @@ void rabin_show_entrypoint()
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
+		printf("fs symbols\n");
 #if 0
 		/* TODO: Walk until LOAD COMMAND 9 */
 Load command 9
@@ -395,7 +396,6 @@ void rabin_show_imports(const char *file)
 {
 	dietelf_bin_t bin;
 
-
 	switch(filetype) {
 	case FILETYPE_ELF:
 #if 0
@@ -413,6 +413,25 @@ void rabin_show_imports(const char *file)
 		ELF_CALL(dietelf_list_imports,bin,fd);
 		close(fd);
 #endif
+		break;
+	case FILETYPE_MACHO:
+		setenv("target", file, 1);
+		if (rad) {
+			printf("fs imports\n");
+			fflush(stdout);
+			system("otool -vI $target | grep 0x | awk '{ print \"f imp_\"$3\" @ \"$1 }'");
+		} else {
+			system("otool -vI $target | grep 0x");
+#if 0
+		   #if __DARWIN_BYTE_ORDER
+			sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
+			system(buf);
+		   #else
+			sprintf(buf, "arm-apple-darwin-nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
+			system(buf);
+		   #endif
+#endif
+		}
 		break;
 	}
 }
@@ -437,8 +456,11 @@ void rabin_show_symbols(char *file)
 		close(fd);
 		break;
 	case FILETYPE_MACHO:
+		setenv("target", file, 1);
 		if (rad) {
-			system("otool -tv $target|grep -C 1 -e : |grep -v / | awk '{if (/:/){label=$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"$1;label=\"\"}}");
+			printf("fs symbols\n");
+			fflush(stdout);
+			system("otool -tv $target | grep -C 1 -e : | grep -v / | awk '{if (/:/){label=$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"$1;label=\"\"}}'");
 		} else {
 		   #if __DARWIN_BYTE_ORDER
 			sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);
@@ -560,7 +582,9 @@ int rabin_identify_header()
 	else
         if (!memcmp(buf, "\xFE\xED\xFA\xCE", 4)) {
 		filetype = FILETYPE_MACHO;
-		printf("endian = big\n");
+		/* ENDIAN = BIG */
+		if (rad)
+			printf("e cfg.endian = big\n");
 	} else	
 	if (!memcmp(buf, "CSR-", 4)) {
 		filetype = FILETYPE_CSRFW;

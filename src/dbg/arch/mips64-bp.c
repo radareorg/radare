@@ -123,17 +123,17 @@ int arch_bp_rm_soft(struct bp_t *bp)
 	return debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 }
 
-inline int arch_bp_hw_enable(struct bp_t *bp)
+int arch_bp_hw_enable(struct bp_t *bp)
 {
 	return arch_bp_soft_enable(bp);
 }
 
-inline int arch_bp_hw_disable(struct bp_t *bp)
+int arch_bp_hw_disable(struct bp_t *bp)
 {
 	return arch_bp_soft_disable(bp);
 }
 
-inline int arch_bp_soft_enable(struct bp_t *bp)
+int arch_bp_soft_enable(struct bp_t *bp)
 {
 	int endian = config_get("cfg.endian");
 	char *breakpoint = mips_bps[endian&1];

@@ -47,9 +47,16 @@
  
 #if __APPLE__
 	#include <sys/ucontext.h>
-	#include <mach/i386/_structs.h>
- 	#include <mach/mach_types.h>
+#if __POWERPC__
+	#include <mach/ppc/_types.h>
+	#define regs_t ppc_thread_state_t
+	#define THREAD_STATE PPC_THREAD_STATE
+#else
 	#define regs_t _STRUCT_X86_THREAD_STATE32
+	#include <mach/i386/_structs.h>
+	#define THREAD_STATE i386_THREAD_STATE
+#endif
+ 	#include <mach/mach_types.h>
 #endif
 
 /* BSD */
@@ -124,11 +131,18 @@
 #define PTRACE_CONT PT_CONTINUE
 #define PTRACE_PEEKTEXT PT_READ_D
 #define PTRACE_POKEDATA PT_WRITE_D
+#define PTRACE_SINGLESTEP PT_STEP
+#if __POWERPC__
+#define PTRACE_GETREGS PT_READ_U
+#define PTRACE_SETREGS PT_WRITE_U
+#define PTRACE_GETFPREGS PT_READ_U // XXX
+#define PTRACE_SETFPREGS PT_WRITE_U // XXX
+#else
 #define PTRACE_GETREGS PT_GETREGS
 #define PTRACE_SETREGS PT_SETREGS
 #define PTRACE_GETFPREGS PT_GETFPREGS
 #define PTRACE_SETFPREGS PT_SETFPREGS
-#define PTRACE_SINGLESTEP PT_STEP
+#endif
 #endif
 
 #if __sun

@@ -7,8 +7,13 @@
 
 ===========================================================
 
+* powerpc
+  - !regs must show and flag proper regs!!
+
 * search for strings in disassembly
   - pd 1 -> strstr(cons_buffer, mystr)
+
+* !lib /lib/libm.so.1   ; use 'uselib' on linux and dlopen on *bsd MUAHA
 
 * export a graph to a file using 'Rf' command
 * Make idc2rdb also export graph structure

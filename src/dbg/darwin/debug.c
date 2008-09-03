@@ -47,6 +47,7 @@
 
 #include "../mem.h"
 #include "../debug.h"
+#include "../libps2fd.h"
 #include "../thread.h"
 //#include "utils.h"
 #include <mach/exception_types.h>
@@ -122,12 +123,14 @@ int debug_ktrace()
 {
 }
 
+#if 0
 int arch_print_syscall()
 {
 	/* dummy */
 }
+#endif
 
-inline int debug_detach()
+int debug_detach()
 {
 	ptrace(PT_DETACH, ps.tid, 0, 0);
 	//inferiorinferior_in_ptrace = 0;
@@ -220,7 +223,7 @@ int debug_contp(int tid)
 	return 0;
 }
 
-inline int debug_os_steps()
+int debug_os_steps()
 {
 	int ret;
 	regs_t regs;
@@ -314,10 +317,12 @@ static pid_t start_inferior(int argc, char **argv)
 	return 0;
 }
 
+#if 0
 int debug_set_bp_mem(int pid, u64 addr, int len)
 {
 	// TODO: not used
 }
+#endif
 
 int debug_fork_and_attach()
 {
@@ -418,7 +423,7 @@ int debug_list_threads(int pid)
 {
 	int i, err;
 	int gp_count;
-	i386_thread_state_t  state;
+	regs_t state;
 	TH_INFO *th;
 
 	if (task_threads(pid_to_task(pid), &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
@@ -430,12 +435,16 @@ int debug_list_threads(int pid)
 		memset(th, '\0', sizeof(TH_INFO));
 		th->tid = inferior_threads[i];
 		
-		if ((err=thread_get_state(th->tid, i386_THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
+		if ((err=thread_get_state(th->tid, THREAD_STATE, (thread_state_t) &state, &gp_count)) != KERN_SUCCESS) {
 			//fprintf(stderr, "debug_list_threads: %s\n", MACH_ERROR_STRING(err));
 		} else{
 			th->status = 0; // XXX TODO
+#if __POWERPC__
+			th->addr = state.srr0;
+#else
 			th->addr = state.__eip;
-			//printf("ADDR: %08x\n", state.__eip);
+#endif
+			//printf("ADDR: %08llx\n", state.srr0);
 		}
 		add_th(th);
 
@@ -444,10 +453,9 @@ int debug_list_threads(int pid)
 
 int debug_getregs(pid_t tid, regs_t *regs)
 {
-	//unsigned int gp_count, regs[17]; // FOR ARM // IPHONE
-	unsigned int gp_count;
+	unsigned int gp_count = sizeof(regs_t);
 	kern_return_t err;
-	i386_thread_state_t  state;
+	regs_t state;
 
 	thread_act_port_array_t thread_list;
 	mach_msg_type_number_t thread_count;
@@ -461,8 +469,8 @@ int debug_getregs(pid_t tid, regs_t *regs)
 
 	if (inferior_thread_count>0) {
 		/* TODO: allow to choose the thread */
-		if ((err = thread_get_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
-			fprintf(stderr, "getregs: Failed to get thread %d %d.error (%x). (%s)\n", (int)tid, pid_to_task(tid), (int)err, MACH_ERROR_STRING(err));
+		if ((err = thread_get_state(inferior_threads[0], THREAD_STATE, (thread_state_t) regs, &gp_count)) != KERN_SUCCESS) {
+			fprintf(stderr, "debug_getregs: Failed to get thread %d %d.error (%x). (%s)\n", (int)tid, pid_to_task(tid), (int)err, MACH_ERROR_STRING(err));
 			perror("thread_get_state");
 			return -1;
 		}
@@ -486,7 +494,7 @@ int debug_setregs(pid_t tid, regs_t *regs)
 
 	/* thread_id, flavor, old_state, old_state_count */
 	if (inferior_thread_count>0) {
-		if ((err = thread_set_state(inferior_threads[0], i386_THREAD_STATE, (thread_state_t) regs, regs_sizeof)) != KERN_SUCCESS) {
+		if ((err = thread_set_state(inferior_threads[0], THREAD_STATE, (thread_state_t) regs, sizeof(regs_t)/4)) != KERN_SUCCESS) { /* regs_sizeof */
 			fprintf(stderr, "setregs: Failed to get thread %d %d.error (%x). (%s)\n", (int)tid, pid_to_task(tid), (int)err, MACH_ERROR_STRING(err));
 			perror("thread_set_state");
 			return -1;
@@ -688,7 +696,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 	}
 }
 
-inline int debug_single_setregs(pid_t tid, regs_t *regs)
+ int debug_single_setregs(pid_t tid, regs_t *regs)
 {
 	fprintf(stderr, "debug_single_setregs: TODO\n");
 	return 0;

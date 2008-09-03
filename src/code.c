@@ -536,9 +536,14 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	       dp.opcode = opcode;
 	       dp.operands = operands;
 	       dp.iaddr = seek; //config.baddr + config.seek + i;
-	       dp.instr = b; //config.block + i;
+		{
+		char buf[1024];
+		endian_memcpy(buf, b, 4);
+		dp.instr = buf;
+	      // dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
 	       cons_printf("  %s %s", opcode, operands);
+		}
 	       } break;
 	case ARCH_JAVA: {
 		char output[128];

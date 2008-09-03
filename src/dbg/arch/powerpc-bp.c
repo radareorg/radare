@@ -30,25 +30,31 @@
 
 // XXX must alias pc, lr, sp, etc..
 struct regs_off roff[] = {
-	{"r0", 0},
-	{"r1", 4},
-	{"r2", 8},
-	{"r3", 16},
-	{"r4", 24},
-	{"r5", 32},
-	{"r6", 48},
-	{"r7", 56},
-	{"r8", 64},
-	{"r9", 72},
-	{"r10", 80},
-	{"r11", 88},
-	{"r12", 96},
-	{"r13", 104},
-	{"r14", 112},
-	{"r15", 120},
-	{"r16", 128},
+	{"srr0", 0},
+	{"srr1", 4},
+	{"r0", 8},
+	{"r1", 16},
+	{"r2", 24},
+	{"r3", 32},
+	{"r4", 48},
+	{"r5", 56},
+	{"r6", 64},
+	{"r7", 72},
+	{"r8", 80},
+	{"r9", 88},
+	{"r10", 96},
+	{"r11", 104},
+	{"r12", 112},
+	{"r13", 120},
+	{"r14", 128},
+	/* TODO: ... */
 	{0, 0}
 };
+
+int arch_bpsize()
+{
+	return 4;
+}
 
 #define POWERPC: setup an array of valid breakpoint instructions (trap) for powerpc
 unsigned char *powerpc_bps[] = {
@@ -73,6 +79,17 @@ int arch_set_wp_hw(unsigned long addr, int type)
 {
 	return -1;
 }
+
+int arch_bp_rm_soft(struct bp_t *bp)
+{
+        return debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
+}
+
+int arch_bp_rm_hw(struct bp_t *bp)
+{
+        return arch_bp_rm_soft(bp);
+}
+
 
 /* hook hardware bps to software ones..arm can't :/ */
 int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
