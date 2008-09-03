@@ -10,6 +10,10 @@
 * powerpc
   - !regs must show and flag proper regs!!
 
+* remove undo seek and redo seek commands...should be only for changes, write and so :D
+    s -  = undo seek!!! :D
+    s +  = redo seek
+
 * search for strings in disassembly
   - pd 1 -> strstr(cons_buffer, mystr)
 

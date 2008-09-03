@@ -399,7 +399,7 @@ u64 arch_pc(int tid)
 #if __x86_64__
 	return (u64)R_RIP(regs);
 #else
-	return (u64)R_EIP(regs)&0xffffffff;
+	return (u64)(R_EIP(regs)&0xffffffff);
 #endif
 }
 

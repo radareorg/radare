@@ -6,6 +6,10 @@
 #include "arch/arch.h"
 #include "parser.h"
 
+/* lib.c */
+int debug_lib(const char *arg);
+int debug_lib_load(const char *file);
+
 int debug_reg(const char *arg);
 void debug_msg();
 int debug_dumpall(const char *arg);

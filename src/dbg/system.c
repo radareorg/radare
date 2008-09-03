@@ -55,6 +55,7 @@ int help_message()
 	cons_printf(" Memory allocation\n");
 	TITLE_END
 	cons_printf("  alloc [N]          allocates N bytes (no args = list regions)\n");
+	cons_printf("  lib [path]         load library on target process\n");
 	cons_printf("  maps[*|?]          show mapped regions in program memory\n");
 	cons_printf("  mmap [F] [off]     mmaps a file into a memory region\n");
 	cons_printf("  free               free allocated memory regions\n");
@@ -172,12 +173,13 @@ static struct commads_t {
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           , 
 	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           , 
 	CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
+	CB_CMD( "lib"      , CB_NORMAL   , debug_lib)           , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        , 
 	CB_CMD( "wtrace"   , CB_NOARGS   , debug_wtrace )       , 
 	CB_CMD( "signal"   , CB_SPACE    , debug_signal )       , 
 	CB_CMD( "contsc"   , CB_NORMAL   , debug_contsc )       , 
 	CB_CMD( "contfork" , CB_NOARGS   , debug_contfork )     , 
-	CB_CMD( "dall"     , CB_NOARGS   , debug_dumpall)     , 
+	CB_CMD( "dall"     , CB_NOARGS   , debug_dumpall)       ,
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
@@ -194,6 +196,13 @@ static struct commads_t {
 #endif
 	{ NULL, 0 }
 };
+
+int debug_lib(const char *arg)
+{
+	if (arg[0]!=' ')
+		cons_printf("Usage: !lib /path/to/lib.so\n");
+	else debug_lib_load(arg+1);
+}
 
 int debug_reg(const char *arg)
 {

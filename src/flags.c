@@ -500,6 +500,9 @@ void flag_space(const char *name)
 {
 	flag_space_init();
 
+	if (name[0]==' ')
+		name = name+1;
+
 	switch(name[0]) {
 	case '\0':
 		flag_space_list();

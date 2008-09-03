@@ -1042,7 +1042,7 @@ CMD_DECL(flag)
 	case 'g': flag_grep(text); break;
 	case 'c': flag_cmd(text); break;
 	case 'r': flag_rename_str(text); break;
-	case 's': flag_space(text); break;
+	case 's': flag_space(input+1); break;
 	case 'm': flag_space_move(text); break;
 	case 'd': print_flag_offset(config.seek); NEWLINE; break;
 	default:

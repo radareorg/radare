@@ -21,6 +21,7 @@
  */
 
 #include "libps2fd.h"
+#include "debug.h"
 #include "arch/arch.h"
 #include "../radare.h"
 #include "../config.h"
@@ -33,6 +34,7 @@ int debug_bp(const char *str)
 	int hwbp = BP_NONE;
 	int num;
 
+	hwbp = config_get("dbg.hwbp");
 	switch(str[0]) {
 	case 's':
 		hwbp = BP_SOFT;
@@ -49,9 +51,6 @@ int debug_bp(const char *str)
 		"  !bph          hardware breakpoint\n");
 		return 0;
 	}
-
-	if (hwbp == BP_NONE)
-		hwbp = config_get_i("dbg.hwbp");
 
 	while ( *ptr && *ptr != ' ') ptr = ptr + 1;
 	while ( *ptr && *ptr == ' ' ) ptr = ptr + 1;
@@ -84,7 +83,7 @@ int debug_bp(const char *str)
 		else {
 			flag_set("breakpoint", addr, 3);
 			num = debug_bp_set(NULL, addr, hwbp);
-			eprintf("new breakpoint %d at 0x%lx\n", num, addr);
+			eprintf("new %s breakpoint %d at 0x%lx\n", hwbp?"hw":"sw", num, addr);
 		}
 		break;
 	}
@@ -120,7 +119,7 @@ int debug_bp_restore_after()
 		printf("post-Breakpoint restored %08llx\n", addr);
 		arch_jmp(addr-bpsize);
 	} else {
-		printf("post-Breakpoint restored %08llx\n", addr);
+		//printf("post-Breakpoint restored %08llx\n", addr);
 	}
 	return 0;
 }
@@ -228,14 +227,19 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 /* TODO: hardware registers are not supported everywhere. bp->hw = 0 for the rest! */
 
 	ret = -1;
-	if(type == BP_SOFT) {
-		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
-		
-		ps.bps[bp_free].hw = 0;
-	} else if(type == BP_HARD) {
+
+	switch(type) {
+	case BP_HARD:
 		ret = arch_set_bp_hw(&ps.bps[bp_free], addr);
 		ps.bps[bp_free].hw = 1;
+		break;
+	case BP_SOFT:
+	default:
+		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
+		ps.bps[bp_free].hw = 0;
+		break;
 	}
+
 	if(ret < 0) {
 		if((ret = arch_set_bp_hw(&ps.bps[bp_free], addr)) >= 0 )
 			ps.bps[bp_free].hw = 1;
