@@ -77,11 +77,13 @@ void undo_list()
 {
 	int i;
 	if (undos_idx<1)
-		printf("-no seeks done-\n");
-	else
-	for(i=undos_idx-1;i!=0;i--) {
-		cons_printf(OFF_FMT" ; %lld", undos[i-1], undos[i-1]);
-		NEWLINE;
+		eprintf("-no seeks done-\n");
+	else {
+		cons_printf("f undo_idx @ %d\n", undos_idx);
+		for(i=undos_idx-1;i!=0;i--) {
+			cons_printf("f undo_%d @ 0x%llx", undos_idx-1-i, undos[i-1]);
+			NEWLINE;
+		}
 	}
 }
 

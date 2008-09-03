@@ -138,6 +138,7 @@ int radare_write_at(u64 offset, unsigned char *data, int len);
 int radare_write(char *arg, int mode);
 void radare_poke(const char *arg);
 int radare_get_region(u64 *from, u64 *to);
+int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);
 
 int resolve_encoding(const char *name);
 

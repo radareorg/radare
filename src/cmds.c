@@ -125,7 +125,7 @@ command_t commands[] = {
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
 	COMMAND('R', "[act] ([arg])",  "RDB      rdb operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
-	COMMAND('u', "[!|?|u]",        "undo     undo seek (! = reset, ? = list, u = redo)", undoseek),
+	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
@@ -920,18 +920,6 @@ CMD_DECL(code)
 	return 0;
 }
 
-#if 0
-CMD_DECL(count)
-{
-	char *text = input;
-	for(;*text&&!iswhitespace(*text);text=text+1);
-	for(;*text&&iswhitespace(*text);text=text+1);
-	if (text[0]!='\0'&&text[0]!=' ')
-		config.count = get_math(text);
-	D eprintf("count = %d\n", config.count);
-}
-#endif
-
 CMD_DECL(endianess)
 {
 	char *text = input;
@@ -1058,41 +1046,28 @@ CMD_DECL(flag)
 	return ret;
 }
 
-CMD_DECL(undoseek)
+CMD_DECL(undowrite)
 {
 	switch(input[0]) {
-	case 'n':
-		undo_seek();
-	case '*':
-	case 'l':
-		undo_list();
-		break;
-	case '!':
-	case '-':
-		undo_reset();
-		break;
-	case 'u':
-		undo_redo();
-		break;
 	case 'w':
-		if (input[1] == '\0')
+		input = input +1;
+	case ' ':
+	case '\0':
+		if (input[0] == '\0')
 			undo_write_list();
 		else {
-			if (input[2]=='-')
-				undo_write_set(atoi(input+3), 1);
+			if (input[1]=='-')
+				undo_write_set(atoi(input+2), 1);
 			else
-				undo_write_set(atoi(input+2), 0);
+				undo_write_set(atoi(input+1), 0);
 		}
 		break;
 	case '?':
 	default:
 		cons_printf(
-		"un   undo seek\n"
-		"uu   redo\n"
-		"uw N undo write (uw 3 = drop changes, uw -3 = re set)\n"
-		"u*   list all seeks done\n"
-		"u!   reset seek history\n"
-		"u?   help this help\n");
+		"Usage: > u 3   ; undo write change at index 3\n"
+		"       > u -3  ; redo write change at index 3\n"
+		"       > u     ; list all write changes\n");
 		break;
 	}
 
@@ -1110,10 +1085,47 @@ CMD_DECL(seek)
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
 
+	if (strchr(input, '?')) {
+		cons_printf("Usage: > s 0x128 ; absolute seek\n");
+		cons_printf("       > s +33   ; relative seek\n");
+		cons_printf("       > s-     ; undo seek\n");
+		cons_printf("       > s+     ; redo seek\n");
+		cons_printf("       > s*     ; show seek history\n");
+		cons_printf("       > .s*    ; flag them all\n");
+		cons_printf("       > s!     ; reset seek history\n");
+		return;
+	}
+
+	if (input[0]=='!'||input[0]=='*'||input[0]=='+'||input[0]=='-'||(input[0]>='0'&&input[0]<'9'))
+		text = input;
+
 	if (text[0] != '\0') {
 		switch(text[0]) {
+		case '!': sign = -2; text++; break;
+		case '*': sign = 0; text++; break;
 		case '-': sign = -1; text++; whence = SEEK_CUR; break;
 		case '+': sign = 1;  text++; whence = SEEK_CUR; break; }
+
+		if (input[text-input]=='\0') {
+			switch(sign) {
+			case 0:
+				undo_list();
+				break;
+			case 1:
+				eprintf("redo seek\n");
+				undo_redo();
+				break;
+			case -1:
+				eprintf("undo seek\n");
+				undo_seek();
+				break;
+			case -2:
+				eprintf("undo history reset\n");
+				undo_reset();
+				break;
+			}
+			return;
+		}
 
 		new_off = get_math( text );
 
@@ -1146,7 +1158,6 @@ CMD_DECL(info)
 	if (strchr(input, '*')) {
 		printf("b %d\n", config.block_size);
 		printf("e %d\n", config.endian);
-		printf("eval  %d\n", config.count);
 		printf("s 0x"OFF_FMTx"\n", config.seek);
 		printf("B 0x"OFF_FMTx"\n", config.baddr);
 		printf("l 0x"OFF_FMTx"\n", config.limit);
@@ -1161,7 +1172,6 @@ CMD_DECL(info)
 	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); NEWLINE;
 	cons_printf(" debug   %d",   config.debug); NEWLINE;
 	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;
-//	printf(" count   %d   \t 0x%x", config.count, config.count); NEWLINE;
 	cons_printf(" baddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.baddr, config.baddr); NEWLINE;
 	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); NEWLINE;
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
@@ -1302,7 +1312,7 @@ CMD_DECL(write)
 			unsigned long addr4_= (unsigned long)off;
 			endian_memcpy((u8*)&addr4, (u8*)&addr4, 4);
 			/* 4 byte addr */
-			undo_write_new(config.seek, &addr4, 4);
+			undo_write_new(config.seek, (u8*)&addr4, 4);
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
@@ -1334,7 +1344,8 @@ CMD_DECL(write)
 	case 'a': {
 		unsigned char data[256];
 		char* aux = strdup ( config_get("asm.arch") );
-		int ret = rasm_asm(aux, config.seek, input+2, data);
+		u64 seek = config.seek;
+		int ret = rasm_asm(aux, &seek, input+2, data);
 		free ( aux );
 		if (ret<1)
 			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");

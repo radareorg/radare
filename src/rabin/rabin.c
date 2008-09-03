@@ -283,7 +283,8 @@ void rabin_show_entrypoint()
 
 		if (rad) {
 			printf("fs symbols\n");
-			printf("f entrypoint @ 0x%08llx\n", addr - base);
+			printf("f entry @ 0x%08llx\n", addr - base);
+			printf("f entrypoint @ 0x%08llx\n", addr);
 			printf("s entrypoint\n");
 		} else {
 			if (verbose) {
