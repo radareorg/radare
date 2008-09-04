@@ -79,6 +79,29 @@ static mach_port_t exception_port;
 static int task = 0;
 extern int errno;
 
+/* SIGCHLD handler */
+void child_handler(int pid)
+{
+    int status;
+
+printf("WAITIING IN CHILD HANDL\n");
+fflush(stdout);
+    wait(&status);
+    if (WIFEXITED(status)) {
+        fprintf(stderr, "Inferior %d exited with status %d.\n",
+		pid, (int) WEXITSTATUS(status));
+        exit(0);
+    } else if (WIFSTOPPED(status)) {
+        fprintf(stderr, "Inferior %d is stopped %d.\n",
+		pid, (int) WEXITSTATUS(status));
+	
+    } else if (WIFSIGNALED(status)) {
+        fprintf(stderr, "Inferior %d exited with signal %d.\n", 
+		pid, (int)WTERMSIG(status));
+        exit(0);
+    }
+}
+
 int debug_os_kill(int pid, int sig)
 {
 	/* prevent killall selfdestruction */
@@ -212,6 +235,7 @@ int debug_detach()
 void inferior_abort_handler(int pid)
 {
 	fprintf(stderr, "Inferior received signal SIGABRT. Executing BKPT.\n");
+	fflush(stderr);
 }
 
 task_t pid_to_task(int pid)
@@ -225,8 +249,9 @@ task_t pid_to_task(int pid)
 	if (old_pid != -1 && old_pid == pid)
 		return old_task;
 
-	if (task_for_pid(mach_task_self(), (pid_t)pid, &task) != KERN_SUCCESS) {
-		fprintf(stderr, "Failed to get task for pid %d.\n", (int)pid, task);
+	err = task_for_pid(mach_task_self(), (pid_t)pid, &task);
+	if ((err != KERN_SUCCESS) || !MACH_PORT_VALID(task)) {
+		fprintf(stderr, "Failed to get task %d for pid %d.\n", (int)task, (int)pid);
 		fprintf(stderr, "Reason: 0x%x: %s\n", err, MACH_ERROR_STRING(err));
 		fprintf(stderr, "You probably need to add user to procmod group.\n"
 				" Or chmod g+s radare && chown root:procmod radare\n");
@@ -294,21 +319,39 @@ int debug_contp(int tid)
 	return 0;
 }
 
+// XXX intel specific
+#define EFLAGS_TRAP_FLAG 0x100
+void debug_arch_x86_trap_set(int pid, int foo)
+{
+	regs_t regs;
+	debug_getregs(pid_to_task(pid), &regs);
+	printf("trap flag: %d\n", (regs.__eflags&0x100));
+	if ( foo ) regs.__eflags |= EFLAGS_TRAP_FLAG;
+	else regs.__eflags &= ~EFLAGS_TRAP_FLAG;
+	debug_setregs(pid_to_task(pid), &regs);
+}
+
+int QMACHINE_THREAD_STATE_COUNT = sizeof(regs_t)/4;
 int debug_os_steps()
 {
 	int ret;
 	regs_t regs;
-	/* signal to be throwed after the step */
-	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGSTOP);
-//	debug_getregs(ps.tid, &regs);
-//printf("PC%08x\n", (u32)R_EIP(regs));
+
+	debug_arch_x86_trap_set(ps.tid, 1);
+
+#define OLD_PANCAKE_CODE 1
+#if OLD_PANCAKE_CODE
 	printf("stepping from pc = %08x\n", (u32)get_offset("eip"));
 	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)get_offset("eip"), SIGSTOP);
-	ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGINT);
+	ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGTRAP); //SIGINT);
 	if (ret != 0) {
 		perror("ptrace-step");
+		fprintf(stderr, "FUCK: %s\n", MACH_ERROR_STRING(ret));
 		fprintf(stderr, "debug_os_steps: %d\n", ret);
+		/* DO NOT WAIT FOR EVENTS !!! */
+		return -1;
 	}
+#endif
 #if 0
   [ESRCH]
            No process having the specified process ID exists.
@@ -379,7 +422,8 @@ static pid_t start_inferior(int argc, char **argv)
 
 	ptrace(PT_TRACE_ME, 0, 0, 0);
 	/* why altering these signals? */
-	signal(SIGTRAP, SIG_IGN);
+	/* XXX this can be monitorized by the child */
+	signal(SIGTRAP, SIG_IGN); // SINO NO FUNCIONA EL STEP
 	signal(SIGABRT, inferior_abort_handler);
 
 	execvp(argv[0], child_args);
@@ -824,7 +868,7 @@ int debug_dispatch_wait()
 
 	fprintf(stderr, "Waiting for events... (kill -STOP %d to get prompt)\n",ps.tid);
 
-	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 0, MACH_PORT_NULL);
+	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 1, MACH_PORT_NULL);
 	if (err != KERN_SUCCESS) {
 		fprintf(stderr, "Event listening failed.\n");
 		return 1;
