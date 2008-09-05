@@ -20,7 +20,7 @@
 
 #include "utils.h"
 #include "list.h"
-#include "hasher/hash.h"
+#include "rahash/hash.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

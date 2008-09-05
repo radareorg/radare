@@ -145,6 +145,7 @@ void visual_show_help()
 	"a,A,=      insert patch assembly, rsc asm or !hack\n"
 	"i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
 	"f,F        seek between flag list (f = forward, F = backward)\n"
+	"n,N        seek between hits of the hit0 search\n"
 	"t          visual track/browse flagspaces and flags\n"
 	"e          visual eval configuration variables\n"
 	"c          toggle cursor mode\n"
@@ -187,6 +188,26 @@ void press_any_key()
 	cons_flush();
 	cons_readchar();
 	cons_strcat("\x1b[2J\x1b[0;0H");
+}
+
+
+static int hit_idx = 0;
+void seek_to_hit(int idx)
+{
+	flag_t *flag;
+	u8 buf[64];
+
+	sprintf(buf, "hit0_%d", hit_idx);
+	flag = flag_get(buf);
+	if (flag == NULL) {
+		if (idx>0)
+			hit_idx -=idx;
+		else	hit_idx +=idx*2;
+	} else {
+		radare_seek(flag->offset, SEEK_SET);
+	}
+	hit_idx += idx;
+	if (hit_idx<0) hit_idx=0;
 }
 
 CMD_DECL(edit_screen_filter)
@@ -1426,6 +1447,12 @@ CMD_DECL(visual)
 			break;
 		case 'c':
 			config.cursor_mode ^= 1;
+			break;
+		case 'n':
+			seek_to_hit(+1);
+			break;
+		case 'N':
+			seek_to_hit(-1);
 			break;
 		case 'h':
 			if (config.cursor_mode) {

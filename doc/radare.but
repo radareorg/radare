@@ -1443,7 +1443,84 @@ Here's an example... you are interested on getting the point where a program tri
 
 \H{mmap} Memory pages
 
-TODO: explain !alloc, !maps, !mmap, !dall, !core, !dump, !restore
+You can control different operations over the memory pages of the target process. This is an important task that should be handled by the debugger layer to get information to get the ranges of memory mapped.
+
+The '!maps' command will list all the regions mapped in the target process. For example:
+
+\c [0x4A13B8C0]> !maps
+\c 0xbfe15000 - 0xbfe2a000 rw-- 0x00015000 [stack]
+\c 0xb7f87000 - 0xb7f88000 r-x- 0x00001000 [vdso]
+\c 0x4a155000 - 0x4a157000 rw-- 0x00002000 /lib/ld-2.5.so
+\c 0x4a13b000 * 0x4a155000 r-x- 0x0001a000 /lib/ld-2.5.so
+\c 0x0805c000 - 0x0805d000 rw-u 0x00001000 /bin/ls
+\c 0x08048000 - 0x0805c000 r-xu 0x00014000 /bin/ls
+
+The columns are start address, end address, permissions, size and name of region. At the same time all the proper flags are registered in the core named as 'section_foo' and 'section_foo_end'.
+
+This way it is possible to iterate in scripts from these ranges easily. The '*' between the from-to addresses allows you to easily view where you are located
+
+\c -- analyze a section
+\c function opcleaner_section(name)
+\c   print("FROM: "..r.get("section_"..name))
+\c   from = r.get("section_"..name)
+\c   to   = r.get("section_"..name.."_end")
+\c   old_opcode = '' 
+\c 
+\c   print (string.format("Segment "..name.." at 0x%x",from))
+\c 
+\c   --- ... do the job here ...
+\c end
+
+So we can now work on a single segment just giving the section name:
+
+\c opcleaner_section ("_text")
+
+We can locate the current seek in the maps by typing '!maps?':
+
+\c [0x4A13B8C0]> !maps?
+\c 0x4a13b000 * 0x4a155000 r-x- 0x0001a000 /lib/ld-2.5.so
+
+\H{mem-dump} Dumping memory
+
+There are different commands to dump these sections to disk. The '!dump' and '!restore' are used to create a directory called 'dump#' where '#' is a number starting from 0 and is incremented while called multiple times. So you can use '!dump' and '!restore' to go 'forward' and 'backward' of the process status. Because it is also dumping and restoring the register values.
+
+\c [0x4A13B8C0]> !dump
+\c Dump directory: dump0
+\c Dumping BFE15000-BFE2A000.dump  ; 0x00015000  [stack]
+\c Dumping 4A155000-4A157000.dump  ; 0x00002000  /lib/ld-2.5.so
+\c Dumping 0805C000-0805D000.dump  ; 0x00001000  /bin/ls
+\c Dumping 08048000-0805C000.dump  ; 0x00014000  /bin/ls
+\c Dumping CPU to cpustate.dump...
+
+You can also specify the directory name as argument:
+
+\c [0x4A13B8C0]> !dump foo
+\c ...
+\c [0x4A13B8C0]> !restore foo
+
+The '!dall' command is similar to the previous one, but it is based on the concept that there are no maps sections information. This is useful on some unixes like some BSDs that they have no /proc to get this information. So it reads from 0 to 0xFFFFFFFF looking for readables pages and dumping them to files named 'from-to.bin' in the current directory.
+
+\H{mem-dump} Managing memory
+
+It is also possible to allocate and free new memory regions on the child process at specified or decided by the system. In the following example we are allocating 10 MB in the child process.
+
+\c [0x000000C0]> !alloc 10M
+\c 0xb7587000
+\c [0x000000C0]> s 0xb7587000
+\c [0xB7587000]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  0123456789ABCD
+\c 0xB7587000, 0000 0000 0000 0000 0000 0000 0000 ..............
+\c 0xB758700E  0000 0000 0000 0000 0000 0000 0000 ..............
+
+We can now write the contents of a file here:
+
+\c [0xb7587000]> wf program.bin
+
+But there's another option for mapping files in memory: '!mmap':
+
+XXX: this is not working
+
+In the same way you can create a core file with '!core'. But this is currently system-specific.
 
 \H{exec} Run control
 
@@ -1534,6 +1611,32 @@ Now we can close the stdout of the program or just redirect them to a file openi
 
 \H{thprocs} Threads and processes
 
+The list of child processes of the target process can be listed with '!pid' command.
+
+\c $ radare -d /bin/sh
+\c 
+\c [0x13B8C0]> !run
+\c To cleanly stop the execution, type: "^Z kill -STOP 1527 && fg"
+\c
+\c sh-3.2$ ls
+\c pid: 1611. new process created!
+\c  - Use !pid for processes, and !th for threads
+\c CLONE HAS BEEN INVOKED
+\c debug_dispatch_wait: RET = 0 WS(event)=6 INT3_EVENT=2 INT_EVENT=3 CLONE_EVENT=6
+\c === cont: tid: 1611 event: 6, signal: 19 (SIGSTOP). stop at 0x4ab95eb3
+\c 
+\c [0x4A13B8C0]> !pid
+\c  pid : 1527 0x4ab95eb3 (stopped)
+\c  pid : 1611 0x4ab95eb3 (stopped)
+\c  `- 1611 : /bin/sh (stopped)
+
+The /bin/sh while calling 'ls'. This event has been catched by radare and prompts you again. Now we can choose which process we want to follow. The parent or the child.
+
+\c [0x4A13B8C0]> !pid 1527
+\c Current selected thread id (pid): 1527
+
+The same operations can be done by using the '!th' command for the threads.
+
 \C{script} Scripting
 
 TODO
@@ -1551,3 +1654,5 @@ I would like to greet some people that help me or encourage me to continue devel
 \u - nopcode guys
 
 \u - Sexy Pandas
+
+\u - Gerardo

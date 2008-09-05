@@ -12,6 +12,8 @@
 
 * gradare must load using Shell to loop all the time the radare
 
+* 'n' in visual must be next/previous hit flag
+
 * Sync documentation for s+ s- s* s! and undo write
   - split it in seek history and write history
 

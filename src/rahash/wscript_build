@@ -8,6 +8,6 @@ obj = bld.new_task_gen('cc', 'program')
 obj.env.append_value('LINKFLAGS','-lm')
 if bld.env['OS'] == 'SunOS':
 	obj.env.append_value('LINKFLAGS','-lsocket')
-obj.source='hasher.c crc16.c crc32.c entropy.c hash.c hamdist.c md4.c md5c.c sha1.c sha2.c'
+obj.source='rahash.c crc16.c crc32.c entropy.c hash.c hamdist.c md4.c md5c.c sha1.c sha2.c'
 
-obj.target = 'hasher'
+obj.target = 'rahash'

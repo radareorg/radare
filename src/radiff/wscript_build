@@ -3,7 +3,7 @@
 obj = bld.new_task_gen('cc', 'program')
 
 obj.env['CCFLAGS'] = ''
-obj.source='main.c rdbdiff.c ../rdb.c ../ut.c bytediff.c ../hasher/crc16.c'
+obj.source='main.c rdbdiff.c ../rdb.c ../ut.c bytediff.c ../rahash/crc16.c'
 #obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
 
 obj.includes = '. ../'

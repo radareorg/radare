@@ -662,9 +662,9 @@ CMD_DECL(hash)
 	// XXX use real temporal file instead of /tmp/xx
 	if (config.debug) {
 		radare_cmd("pr > /tmp/xx", 0);
-		snprintf(buf, 1000, "hasher -fa '%s' '/tmp/xx'", input);
+		snprintf(buf, 1000, "rahash -fa '%s' '/tmp/xx'", input);
 	} else
-	snprintf(buf, 1000, "hasher -a '%s' -S "OFF_FMTd" -L '"OFF_FMTd"' '%s' | head -n 1", 
+	snprintf(buf, 1000, "rahash -a '%s' -S "OFF_FMTd" -L '"OFF_FMTd"' '%s' | head -n 1", 
 		input, (u64)config.seek, (u64)config.block_size, config.file);
 
 	io_system(buf);

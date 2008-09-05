@@ -20,7 +20,7 @@
 
 #include "main.h"
 #include "utils.h"
-#include "hasher/hash.h"
+#include "rahash/hash.h"
 #include "plugin.h"
 #include "rdb.h"
 #include "list.h"

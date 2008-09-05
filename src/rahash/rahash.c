@@ -709,7 +709,7 @@ int main(int argc, char **argv)
 		case 'h':
 		default:
 			printf(
-			"hasher [-action] [-options] [source] [hash-file]\n"
+			"rahash [-action] [-options] [source] [hash-file]\n"
 			" actions:\n"
 			"  -g           generate (default action)\n"
 			"  -c           check changes between source and hash-file\n"
@@ -745,7 +745,7 @@ int main(int argc, char **argv)
 		if ( optind < argc )
 			dst = argv[optind];
 	} else {
-		fprintf(stderr, "Usage: hasher [-qv] [-gcoA] [[-a algo] [-s str] [-bSEL num]] [src] [hash]\n");
+		fprintf(stderr, "Usage: rahash [-qv] [-gcoA] [[-a algo] [-s str] [-bSEL num]] [src] [hash]\n");
 		return 1;
 	}
 	if (action == ACTION_OUT) {

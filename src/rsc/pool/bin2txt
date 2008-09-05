@@ -37,7 +37,7 @@ unless (-f $target) {
 }
 
 # TODO USE HASHER
-# hasher -a md5 -qvf $file
+# rahash -a md5 -qvf $file
 my $md5bin="md5sum";
 $md5bin="md5" if (`md5 -x 2>/dev/null`);
 
