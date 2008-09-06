@@ -614,7 +614,7 @@ void udis_arch(int arch, int len, int rows)
 	show_traces   = (int) config_get("asm.trace");
 	show_comments = (int) config_get("asm.comments");
 	show_nbytes   = (int) config_get_i("asm.nbytes");
-	endian        = (int) config_get("cfg.endian");
+	endian        = (int) config_get("cfg.bigendian");
 	color         = (int) config_get("scr.color");
 
 	jump_n = 0;

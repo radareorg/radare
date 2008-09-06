@@ -108,7 +108,7 @@ int get_len_ins(char *buf, int len)
 
 int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
 {
-	int endian = config_get("cfg.endian");
+	int endian = config_get("cfg.bigendian");
 	char *breakpoint = mips_bps[endian&1];
 
 	debug_read_at(ps.tid, bp->data, 16, addr);
@@ -135,7 +135,7 @@ int arch_bp_hw_disable(struct bp_t *bp)
 
 int arch_bp_soft_enable(struct bp_t *bp)
 {
-	int endian = config_get("cfg.endian");
+	int endian = config_get("cfg.bigendian");
 	char *breakpoint = mips_bps[endian&1];
 	debug_write_at(ps.tid, breakpoint, bp->len, bp->addr);
 }

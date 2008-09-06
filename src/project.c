@@ -58,7 +58,7 @@ int project_save(const char *file)
 	fprintf(fd, "setgid=%s\n", config_get("child.setgid"));
 	fprintf(fd, "eval=file.scrfilter\t%s\n", config_get("file.scrfilter"));
 	fprintf(fd, "eval=asm.arch\t%s\n", config_get("asm.arch"));
-	fprintf(fd, "eval=cfg.endian\t%s\n", config_get("cfg.endian"));
+	fprintf(fd, "eval=cfg.bigendian\t%s\n", config_get("cfg.bigendian"));
 	fprintf(fd, "# Flags\n");
         for (i=0;(flag = flag_get_i(i)); i++)
 		fprintf(fd, "flag=0x"OFF_FMTx" %s\n", flag->offset, flag->name);

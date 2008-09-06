@@ -11,7 +11,7 @@ A commandline framework for reverse engineering ala *nix-style
 
 The radare project started in February of 2006 aiming to provide a Free and simple command line interface for an hexadecimal editor supporting 64 bit offsets to make searches and recovering data from hard-disks.
 
-Since then, the project growed and the aim changed to provide a complete framework for analyzing binaries with some basic *NIX concepts in mind like 'everything is a file', 'small programs that interact together using stdin/out' or 'keep it simple'.
+Since then, the project has grown with the aim changed to provide a complete framework for analyzing binaries with some basic *NIX concepts in mind like 'everything is a file', 'small programs that interact together using stdin/out' or 'keep it simple'.
 
 It's mostly a single-person project, but some contributions (in source, patches, ideas or species) have been made and are really appreciated.
 
@@ -23,7 +23,7 @@ Nowadays the project is composed by a set of small utilities that can be used to
 
 \c radare
 
-The core of the hexadecimal editor and debugger. Allows to open any kind of file from different IO access like disk, network, kernel plugins, remote devices, debugged processes, ... and handle all of them as if they were a simple plain file.
+The core of the hexadecimal editor and debugger. Allows to open any kind of file from different IO access like disk, network, kernel plugins, remote devices, debugged processes, ... and handle any of them as if they were a simple plain file.
 
 Implements an advanced command line interface for moving around the file, analyzing data, disassembling, binary patching, data comparision, searching, replacing, scripting with python, lua and perl, ...
 
@@ -64,7 +64,7 @@ You can get radare from the website http://radare.nopcode.org/
 
 There are binary packages for multiple operating systems and GNU/Linux distributions (ubuntu, maemo, gentoo, windows, iphone, etc..) But I hardly encourage you to get the sources and compile them yourself to better understand the dependencies and have the source code and examples more accessible.
 
-I try to make a new stable release every month and sometimes publish nightly tarballs.
+I try to publish a new stable release every month and sometimes publish nightly tarballs.
 
 But as always the best way to use a software is to go upstream and pull the development repository which in radare is commonly more stable than the 'stable' releases O:)
 
@@ -204,7 +204,7 @@ The basic set of commands in radare can be mostly grouped by action, and they sh
 
 The format of the commands looks something like that:
 
-\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [ && ...]
+\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...]
 
 This is: repeat the described command '#' times.
 
@@ -237,6 +237,12 @@ The '>' is used to pipe the output of the command to a file (truncating to 0 if 
 \c > pr > dump.bin   ; dump 'raw' bytes of current block to 'dump.bin' file
 \c > f  > flags.txt  ; dump flag list to 'flags.txt'
 
+The '|' pipe is used to dump the output of the command to another program.
+
+\c [0x4A13B8C0]> f | grep section | grep text
+\c 0x0805f3b0 512 section__text
+\c 0x080d24b0 512 section__text_end
+
 Using the '&&' chars you can concatenate multiple commands in a single line:
 
 \c > x @ esp && !reg && !bt  ; shows stack, regs and backtrace
@@ -248,6 +254,7 @@ The command 's' is used to seek. It accepts a math expression as argument that c
 The '>' and '<' commands are used to seek into the file using a block-aligned base.
 
 \c > >>>         ; seek 3 aligned blocks forward
+\c > 3>          ; 3 times block-seeking
 \c > s +30       ; seek 30 bytes forward from current seek
 \c > s 0x300     ; seek at 0x300
 \c > s [0x400]   ; seek at 4 byte dword at offset 0x400
@@ -306,6 +313,37 @@ This is a list of the available print modes listable with 'p?':
 
 \H{print-hexa}
 
+User-friendly way:
+
+\c [0x4A13B8C0]> px
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+\c 0x4A13B8C0, 89e0 e839 0700 0089 c7e8 e2ff ffff 81c3 ...9............
+\c 0x4A13B8D0, eea6 0100 8b83 08ff ffff 5a8d 2484 29c2 ..........Z.$.).
+
+Hexpairs:
+
+\c [0x4A13B8C0]> pX
+\c 89 e0 e8 39 07 00 00 89 c7 e8 e2 ff ff ff 81 c3 ee a6 01 00 8b 83 08 ff ff ff 5a 8d 24 84 29 c2 
+
+Basic size types governed by endian:
+
+16 bit words
+
+\c [0x4A13B8C0]> pw 4
+\c 0xe089 
+\c 0x39e8 
+
+32 bit doublewords
+
+\c [0x4A13B8C0]> pW 4
+\c 0x39e8e089 
+\c [0x4A13B8C0]> e cfg.bigendian 
+\c false
+\c [0x4A13B8C0]> e cfg.bigendian = true
+\c [0x4A13B8C0]> pW 4
+\c 0x89e0e839 
+\c [0x4A13B8C0]> 
+
 \H{print-dates}
 
 The current supported timestamp print modes are:
@@ -316,11 +354,11 @@ The current supported timestamp print modes are:
 
 For example, you can 'view' the current buffer as timestamps in dos, unix or windows filetime formats:
 
-\c [0x08048000]> eval cfg.endian = 0
+\c [0x08048000]> eval cfg.bigendian = 0
 \c [0x08048000]> pt 4
 \c 30:08:2037 12:25:42 +0000
 
-\c [0x08048000]> eval cfg.endian = 1
+\c [0x08048000]> eval cfg.bigendian = 1
 \c [0x08048000]> pt 4
 \c 17:05:2007 12:07:27 +0000
 
@@ -382,9 +420,49 @@ The cursor can be used to scroll faster thru the zoom out view and pressing 'z' 
 \c  e : entropy calculation
 \c  * : first byte of block
 
+For example. let's see some examples:
+
+\c [0x08049790]> pO
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00001790, 7fc7 0107 0141 b9e9 559b 3b85 f87d 7f89 ff05 .....A..U.;..}....
+\c 0x00007730, 04c0 8505 c78b 7555 7dc3 0584 f8b0 8985 8900 ......uU}.........
+\c 0x0000D6D0, 8b55 1485 fbff ffff ff50 83d0 6620 2020 6561 .U.......P..f   ea
+\c 0x00013670, 6918 7f57 cc74 002e 2400                     i..W.t..$.   
+\c 
+\c [0x08049790]> eval zoom.byte = printable
+\c [0x08049790]> pO
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00001790, 7fc7 0107 0141 b9e9 559b 3b85 f87d 7f89 ff05 .....A..U.;..}....
+\c 0x00007730, 04c0 8505 c78b 7555 7dc3 0584 f8b0 8985 8900 ......uU}.........
+\c 0x0000D6D0, 8b55 1485 fbff ffff ff50 83d0 6620 2020 6561 .U.......P..f   ea
+\c 0x00013670, 6918 7f57 cc74 002e 2400                     i..W.t..$.        
+\c 
+\c [0x08049790]> pO
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00001790, 0202 0304 0505 0505 0505 0505 0505 0605 0505 ..................
+\c 0x00007730, 0505 0505 0505 0505 0505 0606 0505 0505 0605 ..................
+\c 0x0000D6D0, 0505 0405 0505 0505 0505 0505 0303 0303 0405 ..................
+\c 0x00013670, 0403 0405 0404 0304 0303                     ..........        
+\c 
+\c [0x08049790]> eval zoom.byte = flags
+\c [0x08049790]> pO
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00001790, 0b04 1706 0400 0000 0000 0000 0000 0000 0000 ..................
+\c 0x00007730, 0000 0000 0000 0000 0000 0000 0000 0000 0000 ..................
+\c 0x0000D6D0, 0000 0000 0000 0000 0000 000d 1416 1413 165b .................[
+\c 0x00013670, 1701 0e23 0b67 2705 0f12                     ...#.g'...        
+\c 
+\c [0x08049790]> eval zoom.byte = FF    
+\c [0x08049790]> pO
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00001790, 0000 0000 0000 0001 0000 0001 0000 0000 0200 ..................
+\c 0x00007730, 0000 0100 0000 0000 0000 0000 0000 0101 0000 ..................
+\c 0x0000D6D0, 0000 0001 0201 0202 0100 0000 0000 0000 0000 ..................
+\c 0x00013670, 0000 0000 0002 0000 0000                     ..........        
+
 \S{flagsmin} Flags
 
-The flags are bookmarks at a certain offset in the file that can be stored inside 'flag spaces'.
+The flags are bookmarks at a certain offset in the file that can be stored inside 'flag spaces'. A flag space is something like a namespace for flags. They are used to group flags with similar characteristics or of a certain type. Some example of flagspaces could be [i]sections, registers, symbols, search hits[/i], etc.
 
 To create a flag just type:
 
@@ -396,8 +474,17 @@ You can remove this flag adding '-' at the begginging of the command. Most comma
 
 To switch/create between flagspaces use the 'fs' command:
 
+\c [0x4A13B8C0]> fs   ; list flag spaces
+\c 00   symbols
+\c 01   imports
+\c 02   sections
+\c 03   strings
+\c 04   regs
+\c 05   maps
+
 \c > fs symbols
 \c > f         ; list only flags in symbols flagspace
+\c ...
 \c > fs *      ; select all flagspaces
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
@@ -409,7 +496,7 @@ Radare can manipulate the file in multiple ways. You can resize the file, move b
 To resize. Use the 'r' command which accepts a numeric argument. Possitive valule sets the new size to the file. A negative one will strip N bytes from the current seek down-sizing the file.
 
 \c > r 1024      ; resize the file to 1024 bytes
-\c > r 10 @ 33   ; strip 10 bytes at offset 33
+\c > r -10 @ 33  ; strip 10 bytes at offset 33
 
 To write bytes just use the 'w' command. It accepts multiple input formats like inline assembling, endian-friendly dwords, files, hexpair files, wide strings:
 
@@ -418,7 +505,7 @@ To write bytes just use the 'w' command. It accepts multiple input formats like 
 \c   w  [string]   - write plain with escaped chars string
 \c   wa [opcode]   - write assembly using asm.arch and rasm
 \c   wA '[opcode]' - write assembly using asm.arch and rsc asm
-\c   wv [expr]     - writes 4-8 byte value of expr (use cfg.endian)
+\c   wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)
 \c   ww [string]   - write wide chars (interlace 00s in string)
 \c   wx [hexpair]  - write hexpair string
 \c   wf [file]     - write contents of file at current seek
@@ -428,7 +515,7 @@ To write bytes just use the 'w' command. It accepts multiple input formats like 
 \c > wv 0x8048123 @ 0x8049100
 \c > wa jmp 0x8048320
 
-All overwrite changes are recorded and can be listed or undo-ed using the 'uw' command. Read the 'undo/redo' section for more precisse information.
+All write changes are recorded and can be listed or undo-ed using the 'u' command which is explained in the 'undo/redo' section.
 
 \S{undo} Undo/redo
 
@@ -439,11 +526,13 @@ The 'u'ndo command is used to undo or redo write changes done on the file.
 \c        > u -3  ; redo write change at index 3
 \c        > u     ; list all write changes
 
+
 Here's a sample session working with undo seeks and writes:
 
 \c [0x00000000]> wx 90 90 90 @ 0x100
-\c [0x00000100]> u
+\c [0x00000100]> u                        ; list changes 
 \c 00 + 3 00000100: 89 90 c4 => 90 90 90 
+
 \c [0x00000000]> pX 3 @ 0x100
 \c 90 90 90 
 \c [0x00000000]> u 0
@@ -453,7 +542,7 @@ Here's a sample session working with undo seeks and writes:
 \c [0x00000000]> pX 3 @ 0x100
 \c 90 90 90 
 
-\H{undoseek} Undo seeks
+\H{seeking} Seeking
 
 The 's'eek command supports '+-*!' characters as arguments to perform acts on the seek history.
 
@@ -498,6 +587,35 @@ You can compare data using the 'c' command that accepts different input formats 
 \c   cx [hexpair]  - compare hexpair string
 \c   cf [file]     - compare contents of file at current seek
 
+An example of memory comparision:
+
+\c [0x08048000]> pX 4
+\c 7f 45 4c 46 
+\c
+\c [0x08048000]> cx 7f 45 90 46
+\c Compare 3/4 equal bytes
+\c 0x00000002 (byte=03)   90 ' '  ->  4c 'L'
+\c [0x08048000]> 
+
+This is also useful for comparing memory pointers at certain offsets. The variable cfg.bigendian is used to change the value in the proper way to be compared against the contents at the '0x4A13B8C0' offset:
+
+\c [0x4A13B8C0]> cd 0x39e8e089 @ 0x4A13B8C0
+\c Compare 4/4 equal bytes
+\c
+\c [0x4A13B8C0]> pX 4
+\c 89 e0 e8 39 
+
+It takes 4 bytes from the current seek (0x4A13B8C0) and compares them to the number given. This number can be an math expressions using flag names and so:
+
+\c [0x08048000]> cx 7f 45 90 46
+\c Compare 3/4 equal bytes
+\c 0x00000002 (byte=03)   90 ' '  ->  4c 'L'
+\c [0x08048000]> 
+
+We can use the compare command against a file previously dumped to disk from the contents of the current block.
+
+XXX: cf is not working
+
 \C{config} Configuration
 
 The core reads ~/.radarerc while starting, so you can setup there some 'eval' commands to set it up in your favorite way.
@@ -518,11 +636,19 @@ These configurations can be also defined using the '-e' flag of radare while loa
 
 \c $ radare -n -e scr.color=true -e asm.syntax=intel -d /bin/ls
 
-All the configuration is stored in a pseudo two-level depth tree grouped by different
+All the configuration is stored in a hash table grouped by different root names ([i]cfg., file., dbg., ..[/i])
 
 To get a list of the configuration variables just type 'eval' or 'e' in the prompt. All the basic commands can be reduced to a single char. You can also list the configuration variables of a single eval configruation group ending the command argument with a dot '.'.
 
-There are two enhaced interfaces to help users to interactively configure this hashtable. One is called 'emenu' and provides a shell for walking thru the tree and change variables. 
+There are two enhaced interfaces to help users to interactively configure this hashtable. One is called 'emenu' and provides a shell for walking through the tree and change variables. 
+
+To get a help about this command you can type 'e?':
+
+[0x4A13B8C0]> e?
+Usage: e[m] key=value
+   > ereset              ; reset configuration
+   > emenu               ; opens menu for eval
+   > e scr.color = true  ; sets color for terminal
 
 Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands can be reduced to a single char, and you can just type 'e?' to get the help of all the 'subcommands' for the basic command.
 
@@ -542,7 +668,7 @@ Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands ca
 \c - zoom
 \c >
 
-There is a more handful eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
+There is a easier eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
 
 Most of the eval tree is quite stable, so don't expect hard changes on this area, but I encourage you to experiment a bit on this to fit the interface to your needs.
 
@@ -588,7 +714,7 @@ Boolean value that shows or hides the offset address of the disassembled opcode
 
 Boolean value that shows or hides the bytes of the disassebled opcode
 
-\c cfg.endian
+\c cfg.bigendian
 
 Choose the endian flavour 1 for big, 0 for little.
 
@@ -907,6 +1033,20 @@ The folding/unfolding is quite premature but the idea comes from the 'folder' co
 \C{iobackend} IO backend
 
 All the access to files, network, debugger, etc.. is wrapped by an IO abstraction layer that allows to interpret all the data as if it was a single file.
+
+The IO backend is implement as IO plugins. They are selected depending on the uri file.
+
+\c # debug this file using the debug io plugin
+\c $ radare dbg:///bin/ls
+\c
+\c # allocate 10MB in a malloc buffer
+\c $ radare malloc://10M
+\c
+\c # allocate 10MB in a malloc buffer
+\c $ radare malloc://10M
+\c 
+\c # connect to remote host
+\c $ radare connect://192.168.3.33:9999
 
 \C{plugins} Plugins
 
@@ -1352,15 +1492,15 @@ There's an eval variable called 'trace.cmtregs' that adds a comment after each e
 
 \c [0x4A13C000]> !step 5
 \c [0x4A13C000]> pd 5
-\c                  ; 10 esp = 0xbfac9bc8 (0xbfac9bd0)  
+\c    ; 10 esp = 0xbfac9bc8 (0xbfac9bd0)  
 \c    0x4A13C000,           55              push ebp            
-\c                  ; 12 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc8 (0xbfac9bcc)  
+\c    ; 12 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc8 (0xbfac9bcc)  
 \c    0x4A13C001            89e5            mov ebp, esp        
-\c                  ; 14 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc4 (0xbfac9bc8)  
+\c    ; 14 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc4 (0xbfac9bc8)  
 \c    0x4A13C003            57              push edi            
-\c                  ; 16 esp = 0xbfac9bc0 (0xbfac9bc8)  
+\c    ; 16 esp = 0xbfac9bc0 (0xbfac9bc8)  
 \c    0x4A13C004,           56              push esi            
-\c                  ; 18 esp = 0xbfac9bbc (0xbfac9bc4)  
+\c    ; 18 esp = 0xbfac9bbc (0xbfac9bc4)  
 \c    0x4A13C005      oeip: 53              push ebx            
 \c [0x4A13C000]> 
 
@@ -1500,7 +1640,7 @@ You can also specify the directory name as argument:
 
 The '!dall' command is similar to the previous one, but it is based on the concept that there are no maps sections information. This is useful on some unixes like some BSDs that they have no /proc to get this information. So it reads from 0 to 0xFFFFFFFF looking for readables pages and dumping them to files named 'from-to.bin' in the current directory.
 
-\H{mem-dump} Managing memory
+\H{mem-management} Managing memory
 
 It is also possible to allocate and free new memory regions on the child process at specified or decided by the system. In the following example we are allocating 10 MB in the child process.
 
@@ -1636,6 +1776,57 @@ The /bin/sh while calling 'ls'. This event has been catched by radare and prompt
 \c Current selected thread id (pid): 1527
 
 The same operations can be done by using the '!th' command for the threads.
+
+In the same way you can hackily 'attach' and 'detach' from to a pid.
+
+\H{dbg-events} Event handling
+
+It is possible to configure which events should be ignored by the debugger
+
+\c [0x4A13B8C0]> !ie
+\c  0 stop
+\c  0 trap
+\c  0 pipe
+\c  0 alarm
+\c  0 fpe
+\c  0 ill
+\c 
+\c [0x4A13B8C0]> !ie stop
+\c [0x4A13B8C0]> !ie | grep stop
+\c  1 stop
+
+The 'ie' command refers to 'ignore events'
+
+\H{dbg-signal} Signal handling
+
+You can change visualize and change the signal handlers of the target process:
+
+\c [0x4A13B8C0]> !signal
+\c SIGHUP     (DEFAULT)
+\c SIGINT     (IGNORE)
+\c SIGQUIT    (DEFAULT)
+\c SIGILL     (DEFAULT)
+\c SIGTRAP    (DEFAULT)
+\c SIGABRT    (DEFAULT)
+\c SIGFPE     (DEFAULT)
+\c SIGKILL    (DEFAULT)
+\c SIGBUS     (DEFAULT)
+\c SIGSEGV    (DEFAULT)
+\c SIGSYS     (DEFAULT)
+\c SIGPIPE    (DEFAULT)
+\c SIGALRM    (IGNORE)
+\c SIGTERM    (DEFAULT)
+\c SIGURG     (DEFAULT)
+\c SIGSTOP    (DEFAULT)
+\c SIGTSTP    (DEFAULT)
+\c SIGCONT    (DEFAULT)
+\c SIGCHLD    (DEFAULT)
+\c SIGTTIN    (DEFAULT)
+\c SIGTTOU    (DEFAULT)
+\c SIGIO      (DEFAULT)
+
+
+TODO: FIX !signal <sig> <addr>
 
 \C{script} Scripting
 

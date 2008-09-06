@@ -10,7 +10,14 @@
 * powerpc
   - !regs must show and flag proper regs!!
 
+* inejct should be removed
+* !signal? does not gives help
+* !signal SIG addr doesnt works :(
+* cf is not working :(
+
+* show bg color or so for progressbar depending on type
 * gradare must load using Shell to loop all the time the radare
+* 64 bit words for print mode!!
 
 * 'n' in visual must be next/previous hit flag
 

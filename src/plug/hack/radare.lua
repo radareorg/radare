@@ -251,7 +251,7 @@ function Radare.paste(address)
 end
 
 function Radare.endian(big)
-	r.cmd("eval cfg.endian = "..big)
+	r.cmd("eval cfg.bigendian = "..big)
 	return 0
 end
 

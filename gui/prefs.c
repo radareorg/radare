@@ -40,7 +40,7 @@ static struct {
 	{ 0, "Lines out of block",  "asm.linesout",  0 },
 	{ 0, "Show comments",  "asm.comments",  1 },
 
-	{ 1, "Endian (set = big, unset little)",  "cfg.endian",  0 },
+	{ 1, "Endian (set = big, unset little)",  "cfg.bigendian",  0 },
 	{ 1, "Color",  "scr.color",  1 },
 	{ 1, "Buffered output",  "scr.buf",  0 },
 	{ 1, "Inverse block",  "cfg.inverse",  0 },

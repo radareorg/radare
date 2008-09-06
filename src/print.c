@@ -291,7 +291,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	unsigned char buffer[256];
 	unsigned char *bufi = NULL; // inverted buffer
 	unsigned long addr = seek;
-	int endian = (int)config_get("cfg.endian");
+	int endian = (int)config_get("cfg.bigendian");
 	int inverse = (int)config_get("cfg.inverse");
 	int lines = 0;
 	// code anal

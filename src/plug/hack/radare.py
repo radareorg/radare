@@ -93,7 +93,7 @@ def analyze_block(addr=None):
 	return __str_to_hash(r.cmd("ab @ 0x%x"%addr))
 
 def endian_set(big):
-	r.cmd("eval cfg.endian=%d"%big)
+	r.cmd("eval cfg.bigendian=%d"%big)
 
 def write(hexpair):
 	r.cmd("wx %s"%hexpair)

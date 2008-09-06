@@ -635,9 +635,9 @@ void config_init(int first)
 	node = config_set("cfg.verbose", "true");
 	node->callback = &config_verbose_callback;
 #if LIL_ENDIAN
-	config_set("cfg.endian", "false");
+	config_set("cfg.bigendian", "false");
 #else
-	config_set("cfg.endian", "true");
+	config_set("cfg.bigendian", "true");
 #endif
 	config_set("cfg.inverse", "false");
 	config_set_i("cfg.analdepth", 6);

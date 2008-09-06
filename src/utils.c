@@ -135,7 +135,7 @@ void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
-	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.endian"));
+	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.bigendian"));
 #else
 	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
 #endif
@@ -230,11 +230,11 @@ void progressbar(int pc)
 }
 
 #if RADARE_CORE
-// TODO get [ prefix: (size of ptr), use cfg.endian
+// TODO get [ prefix: (size of ptr), use cfg.bigendian
 //  4[0x300] = dword[0x300]
 //  d[0x300] ...
 //  b[0x300]
-// eval cfg.endian
+// eval cfg.bigendian
 //unsigned char *ptr = &newa;
 unsigned long get_pointer(u64 addr)
 {

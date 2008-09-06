@@ -56,7 +56,7 @@ char *gnu_disparc(unsigned char *inst, unsigned long offset)
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
 	info.print_address_func = &print_address;
-	info.endian = 0;//config_get_i("cfg.endian");
+	info.endian = 0;//config_get_i("cfg.bigendian");
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 

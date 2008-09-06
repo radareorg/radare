@@ -107,9 +107,9 @@ void rabin_show_info(const char *file)
 			if (str && strncmp(str, "1", 1))
 				printf("e file.baddr = 0x%08llx\n", baddr);
 			if (ELF_CALL(dietelf_is_big_endian,bin))
-				printf("e cfg.endian = true\n");
+				printf("e cfg.bigendian = true\n");
 			else
-				printf("e cfg.endian = false\n");
+				printf("e cfg.bigendian = false\n");
 			if (ELF_CALL(dietelf_get_stripped,bin))
 			    printf("e dbg.dwarf = false\n");
 			else printf("e dbg.dwarf = true\n");
@@ -165,7 +165,7 @@ void rabin_show_info(const char *file)
 	case FILETYPE_CLASS:
 		if (rad) {
 			printf("e asm.arch = java\n");
-			printf("e cfg.endian = true\n");
+			printf("e cfg.bigendian = true\n");
 		} else printf("File type: JAVA CLASS\n");
 		break;
 	case FILETYPE_PE:
@@ -193,7 +193,7 @@ void rabin_show_info(const char *file)
 		if (rad) {
 			printf("e file.type = macho\n");
 			printf("e asm.arch = ppc\n");
-			printf("e cfg.endian = false\n");
+			printf("e cfg.bigendian = false\n");
 		} else printf("File type: MACH-O\n");
 		break;
 	case FILETYPE_CSRFW:
@@ -585,7 +585,7 @@ int rabin_identify_header()
 		filetype = FILETYPE_MACHO;
 		/* ENDIAN = BIG */
 		if (rad)
-			printf("e cfg.endian = big\n");
+			printf("e cfg.bigendian = big\n");
 	} else	
 	if (!memcmp(buf, "CSR-", 4)) {
 		filetype = FILETYPE_CSRFW;

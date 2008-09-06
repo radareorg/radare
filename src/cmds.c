@@ -1379,7 +1379,7 @@ CMD_DECL(write)
 		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
 		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
 		"  wb [hexpair]  - circulary fill the block with these bytes\n"
-		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.endian)\n"
+		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
 		"  wf [file]     - write contents of file at current seek\n"
