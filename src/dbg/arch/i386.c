@@ -1288,7 +1288,7 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 #endif
 }
 
-addr_t arch_set_sighandler(int signum, addr_t handler)
+u64 arch_set_sighandler(int signum, addr_t handler)
 {
 #ifdef __linux__
         regs_t   reg, reg_saved;

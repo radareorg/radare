@@ -7,22 +7,19 @@
 
 ===========================================================
 
+* add margin right to the text
+  - or margin left to the shell code
+
+* #crc32 <size>  <-- size is not supported
+
+* add support for strings with "" in CC for.example
+
 * powerpc
   - !regs must show and flag proper regs!!
-
-* inejct should be removed
-* !signal? does not gives help
-* !signal SIG addr doesnt works :(
-* cf is not working :(
+* add command to seek to hit number N
 
 * show bg color or so for progressbar depending on type
 * gradare must load using Shell to loop all the time the radare
-* 64 bit words for print mode!!
-
-* 'n' in visual must be next/previous hit flag
-
-* Sync documentation for s+ s- s* s! and undo write
-  - split it in seek history and write history
 
 * search for strings in disassembly
   - pd 1 -> strstr(cons_buffer, mystr)
@@ -31,12 +28,10 @@
 
 * export a graph to a file using 'Rf' command
 * Make idc2rdb also export graph structure
-* ao [addr] same as ao @ addr
 
 * search + seek -- seek next or so /n
 
 * export a graph to a file using 'Rf' command
-* ao [addr] same as ao @ addr
 
 0- store all the stack analysis info in a struct per-function
    and before removing it store a comment or metadata at the
@@ -52,7 +47,7 @@
 * bash autocompletion script for rsc and rfile
 
 * implement 'commit' command. delayed write operations with bindiff output
-  - using the 'uw' command
+  - using the 'u' command
 
 
 * arrows+shift in visual

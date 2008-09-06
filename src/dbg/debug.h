@@ -24,6 +24,7 @@ int debug_tt(const char *arg);
 int debug_bp_rm_addr(u64 addr);
 int debug_bp_restore(int pos);
 struct bp_t *debug_bp_get(addr_t addr);
+u64 arch_set_sighandler(int signal, u64 addr);
 struct bp_t *debug_bp_get_num(int num);
 
 // debug.c

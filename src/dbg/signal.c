@@ -41,9 +41,13 @@ int name_to_sig(char *signame)
 {
 	int i;
 	for(i=0;signals[i].name;i++)
-		if (!strcmp(signame, signals[i].name))
+		if (!strcasecmp(signame, signals[i].name))
 			return signals[i].sig;
-	return -1;
+	for(i=0;signals[i].name;i++)
+		if (!strcasestr(signame, signals[i].name))
+			return signals[i].sig;
+	return get_offset(signame);
+	//return -1;
 }
 
 char *sig_to_name(int sig)
@@ -69,14 +73,14 @@ int debug_signal(const char *args)
 	int signum;
 	char *signame;
 	char *arg;
-	addr_t address;
+	u64 address;
 
 	if (!ps.opened) {
 		eprintf(":signal No program loaded.\n");
 		return 1;
 	}
 
-	if (!args) {
+	if (!args||args[0]=='\0') {
 		print_sigah();
 		return 0;
 	}
@@ -87,7 +91,7 @@ int debug_signal(const char *args)
 		return 0;
 	}
 	signame = args + 1;
-	if ((arg= strchr(signame, ' '))) {
+	if ((arg = strchr(signame, ' '))) {
 		arg[0]='\0'; arg=arg+1;
 		signum = name_to_sig(signame);
 		address = get_math(arg);

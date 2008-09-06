@@ -57,7 +57,6 @@ format_info_t formats[] = {
 	{ 'O', FMT_ZOOM,       "Zoom out view",          "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
 	{ '%', FMT_PERCENT,    "print scrollbar of seek",NULL,          "entire file" },
-	{ 'q', FMT_HEXQ,       "hexadecimal quad-word",  "8 bytes",     "(endian)"},
 	{ 'r', FMT_RAW,        "raw ascii",              NULL,          "entire block" },
 	{ 'R', FMT_REF,        "reference",              NULL,          "entire block" },
 	{ 's', FMT_ASHC,       "asm shellcode",          NULL,          "entire block" },
@@ -66,10 +65,11 @@ format_info_t formats[] = {
 	{ 'u', FMT_URLE,       "URL encoding",           NULL,          "entire block" },
 	{ 'U', FMT_USER,       "executes cmd.user",      NULL,          "entire block" },
 	{ 'v', FMT_VISUAL,     "executes cmd.vprompt",   NULL,          "entire block" },
-	{ 'w', FMT_HEXW,       "hexadecimal word",       "2 bytes",     "(endian)"},
-	{ 'W', FMT_HEXD,       "hexadecimal dword",      "4 bytes",     "(endian)"},
+	{ '8', FMT_HEXBS,      "p8:   8 bit hex pair",	 "N byte",      "entire block" },
+	{ '1', FMT_HEXW,       "p16: 16 bit hex word",   "2 bytes",     "(endian)"},
+	{ '3', FMT_HEXD,       "p32: 32 bit hex dword",  "4 bytes",     "(endian)"},
+	{ '6', FMT_HEXQ,       "p64: 64 bit quad-word",  "8 bytes",     "(endian)"},
 	{ 'x', FMT_HEXB,       "hexadecimal byte pairs", "N byte",      "entire block" },
-	{ 'X', FMT_HEXBS,      "hexadecimal string",	 "N byte",      "entire block" },
 	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
 	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,          "until \\0" },
 	{ 0, 0, NULL, NULL, NULL }
@@ -286,19 +286,19 @@ int unpacking_7bit_character(char *src, char *dest)
 void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
-	int last = 0;// used for pm xxx
-	int zoom = 0;
-	unsigned char buffer[256];
-	unsigned char *bufi = NULL; // inverted buffer
-	unsigned long addr = seek;
-	int endian = (int)config_get("cfg.bigendian");
+	int last    = 0; // used for pm xxx
+	int zoom    = 0;
+	int lines   = 0;
+	int endian  = (int)config_get("cfg.bigendian");
 	int inverse = (int)config_get("cfg.inverse");
-	int lines = 0;
+	char *str;
 	// code anal
 	struct program_t *prg;
 	struct block_t *b0;
 	struct list_head *head;
-	char *str;
+	unsigned char buffer[256];
+	unsigned char *bufi = NULL; // inverted buffer
+	unsigned long addr = seek;
 
 	last_print_format = fmt;
 	if (buf == NULL)
@@ -471,7 +471,8 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 					cons_printf("; %s", buf);
 				i+=4;
 				} break;
-			case 'w': // word (16 bits)
+			case 'w':
+			case '1': // word (16 bits)
 				D cons_printf("0x%08x = ", config.seek+i);
 				if (endian)
 					 addr = (*(buf+i))<<8  | (*(buf+i+1));
@@ -821,7 +822,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		for(i=0;!config.interrupted && i<len;i+=8) {
 			endian_memcpy(buffer, buf+i, 8);
 			sh = (long long int*)&buffer;
-			print_color_byte_i(i, "%016llx ", (long long int)sh[0]);
 			cons_printf("0x%016llx ", (long long int)sh[0]);
 			D {NEWLINE;}
 		} D{}else NEWLINE;
@@ -986,18 +986,23 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
  */
 void radare_print(char *arg, print_fmt_t fmt)
 {
-	int bs;
+	int obs, bs;
 
 	if (radare_read(0) < 0) {
 		//eprintf("Error reading: %s\n", strerror(errno));
 		return;
 	}
 
+	obs = 0;
 	if ( arg[0] != '\0' ) {
 		bs = get_math(arg);
-		if (bs > config.block_size)
-			bs = config.block_size;
+		if (bs > config.block_size) {
+			/* Resize block */
+			obs = config.block_size;
+			radare_set_block_size_i (bs);
+		}
 	} else bs = config.block_size;
+
 
 	if (config.limit && bs > config.limit - config.seek)
 		bs = config.limit - config.seek;
@@ -1008,4 +1013,7 @@ void radare_print(char *arg, print_fmt_t fmt)
 	}
 
 	data_print(config.seek, arg, config.block, bs, fmt);
+
+	if (obs != 0)
+		radare_set_block_size_i (obs);
 }

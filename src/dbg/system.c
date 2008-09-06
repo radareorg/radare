@@ -109,7 +109,7 @@ int help_message()
 	cons_printf("  dall               dump from current seek to cfg.limit all available bytes (no !maps required)\n");
 	cons_printf("  core               dump core of the process\n");
 	cons_printf("  hack [N]           Make a hack.\n");
-	cons_printf("  inject [bin]       inject code inside child process (UNSTABLE)\n");
+	//cons_printf("  inject [bin]       inject code inside child process (UNSTABLE)\n");
 	cons_printf("Usage: !<cmd>[?] <args> @ <offset>     ; see eval dbg. fmi\n");
 
 	return 0;
@@ -159,9 +159,9 @@ static struct commads_t {
 	CB_CMD( "pids"     , CB_NOARGS   , debug_pids )         , 
 	CB_CMD( "pid"      , CB_SPACE    , debug_pstree )       , 
 	CB_CMD( "attach"   , CB_INT      , debug_attach)        , 
+	CB_CMD( "detach"   , CB_NOARGS   , debug_detach )       , 
 	CB_CMD( "skip"     , CB_INT      , debug_skip)          , 
 	CB_CMD( "tt"       , CB_NORMAL   , debug_tt)            , 
-	CB_CMD( "detach"   , CB_NOARGS   , debug_detach )       , 
 	CB_CMD( "load"     , CB_NOARGS   , debug_load )         , 
 	CB_CMD( "unload"   , CB_NOARGS   , debug_unload )       , 
 	CB_CMD( "ret"      , CB_NOARGS   , arch_ret )           , 
@@ -172,11 +172,12 @@ static struct commads_t {
 	CB_CMD( "set"      , CB_NORMAL   , debug_set_register ) , 
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           , 
 	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           , 
-	CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
+	//CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
 	CB_CMD( "lib"      , CB_NORMAL   , debug_lib)           , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        , 
 	CB_CMD( "wtrace"   , CB_NOARGS   , debug_wtrace )       , 
-	CB_CMD( "signal"   , CB_SPACE    , debug_signal )       , 
+	CB_CMD( "signal"   , CB_NORMAL   , debug_signal )       , 
+	CB_CMD( "sig"      , CB_NORMAL   , debug_signal )       , 
 	CB_CMD( "contsc"   , CB_NORMAL   , debug_contsc )       , 
 	CB_CMD( "contfork" , CB_NOARGS   , debug_contfork )     , 
 	CB_CMD( "dall"     , CB_NOARGS   , debug_dumpall)       ,

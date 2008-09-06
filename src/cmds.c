@@ -982,7 +982,7 @@ CMD_DECL(print)
 		fmt = format_get(input[0]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
-		else	radare_print(input+1, fmt);
+		else	radare_print(input+2, fmt);
 	}
 
 	return 0;
@@ -1211,9 +1211,9 @@ CMD_DECL(compare)
 			eprintf("Please. use 'wf [file]'\n");
 			return 0;
 		}
-		fd = fopen(input+1,"r");
+		fd = fopen(input+2,"r");
 		if (fd == NULL) {
-			eprintf("Cannot open file\n");
+			eprintf("Cannot open file '%s'\n",input+2);
 			return 0;
 		}
 		buf = (unsigned char *)malloc(config.block_size);

@@ -223,14 +223,14 @@ The [arg] argument depends on the command, but most of them take a number as arg
 
 The '@' is used to specify a temporal seek where the command is executed. This is quite useful to not seeking all the time.
 
-\c > pX 10 @ 0x4010  ; show 10 bytes at offset 0x4010
+\c > p8 10 @ 0x4010  ; show 10 bytes at offset 0x4010
 \c > f patata @ 0x10 ; set 'patata' flag at offset 0x10
 
 Using '@@' you can execute a single command on a list of flags matching the glob:
 
 \c > s 0
 \c > / lib             ; search 'lib' string
-\c > pX 20 @@ hit0_*   ; show 20 hexpairs at each search hit
+\c > p8 20 @@ hit0_*   ; show 20 hexpairs at each search hit
 
 The '>' is used to pipe the output of the command to a file (truncating to 0 if exist)
 
@@ -322,7 +322,7 @@ User-friendly way:
 
 Hexpairs:
 
-\c [0x4A13B8C0]> pX
+\c [0x4A13B8C0]> p8
 \c 89 e0 e8 39 07 00 00 89 c7 e8 e2 ff ff ff 81 c3 ee a6 01 00 8b 83 08 ff ff ff 5a 8d 24 84 29 c2 
 
 Basic size types governed by endian:
@@ -533,13 +533,13 @@ Here's a sample session working with undo seeks and writes:
 \c [0x00000100]> u                        ; list changes 
 \c 00 + 3 00000100: 89 90 c4 => 90 90 90 
 
-\c [0x00000000]> pX 3 @ 0x100
+\c [0x00000000]> p8 3 @ 0x100
 \c 90 90 90 
 \c [0x00000000]> u 0
-\c [0x00000000]> pX 3 @ 0x100
+\c [0x00000000]> p8 3 @ 0x100
 \c 89 90 c4 
 \c [0x00000000]> u -0
-\c [0x00000000]> pX 3 @ 0x100
+\c [0x00000000]> p8 3 @ 0x100
 \c 90 90 90 
 
 \H{seeking} Seeking
@@ -589,7 +589,7 @@ You can compare data using the 'c' command that accepts different input formats 
 
 An example of memory comparision:
 
-\c [0x08048000]> pX 4
+\c [0x08048000]> p8 4
 \c 7f 45 4c 46 
 \c
 \c [0x08048000]> cx 7f 45 90 46
@@ -602,7 +602,7 @@ This is also useful for comparing memory pointers at certain offsets. The variab
 \c [0x4A13B8C0]> cd 0x39e8e089 @ 0x4A13B8C0
 \c Compare 4/4 equal bytes
 \c
-\c [0x4A13B8C0]> pX 4
+\c [0x4A13B8C0]> p8 4
 \c 89 e0 e8 39 
 
 It takes 4 bytes from the current seek (0x4A13B8C0) and compares them to the number given. This number can be an math expressions using flag names and so:
@@ -670,7 +670,9 @@ Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands ca
 
 There is a easier eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
 
-Most of the eval tree is quite stable, so don't expect hard changes on this area, but I encourage you to experiment a bit on this to fit the interface to your needs.
+Most of the eval tree is quite stable, so don't expect hard changes on this area. 
+
+I encourage you to experiment a bit on this to fit the interface to your needs.
 
 \H{common-conf} Common configuration variables
 
@@ -827,7 +829,7 @@ This powerful command is '/'.
 
 The search is performed from the current seek until the end of the file or 'cfg.limit' if != 0. So in this way you can perform limited searches between two offsets of a file or the process memory.
 
-With radare everything is handled as a file, a socket, a remote device, the process memory, etc..
+With radare everything is handled as a file, it doesn't matters if it is a socket, a remote device, the process memory, etc..
 
 \H{search-simple} Basic searchs
 
@@ -911,7 +913,11 @@ TODO: pd | grep foo
 
 \H{search-aes-keys} Searching AES keys
 
-TODO
+Thanks to Victor Muñoz i have added support to the algorithm he developed to find expanded AES keys. It runs the search from the current seek to the cfg.limit or the end of the file. You can always stop the search pressing ^C.
+
+\c $ sudo radare /dev/mem
+\c [0x00000000]> /A
+\c 0 AES keys found
 
 \C{disasm} Disassembling
 
@@ -1061,7 +1067,7 @@ But with this kind of plugins are not directly interactive, because the communic
 \c    echo "No address given"
 \c    exit 1
 \c fi
-\c echo "pX 4 > tmpfile"
+\c echo "p8 4 > tmpfile"
 \c sleep 1
 \c bytes=`cat tmpfile`
 \c echo "wx ${bytes} @ ${addr}+4"
@@ -1114,7 +1120,7 @@ The hack plugins are just shared libraries that have access to some internal api
 
 In this way it is possible to perform any action in the core just formatting command strings and parsing its output.
 
-\H{plugins-lang} Language bindings
+\bLanguage bindings\b
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
 
@@ -1192,7 +1198,27 @@ Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, 
 
 TODO
 
-\C{rsc} RSC toolset
+\C{net} Networking
+
+Radare have some interesting features in the networking area. It can be used as a hexadecimal netcat-like application using the io socket plugin which offers a file-like interface to access a TCP/IP connection.
+
+TODO
+
+\H{net-iosocket}
+
+It generates a malloc-ed buffer which grows when receiving data from the socket and writing data to it in 
+
+TODO
+
+\H{net-connect}
+
+TODO
+
+\H{net-sysproxy}
+
+TODO
+
+\C{rsc} rsc toolset
 
 RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
 
@@ -1219,6 +1245,8 @@ Initially 'rasm' was designed to be used for binary patching, just to get the by
 TODO
 
 \C{anal} Analysis
+
+There are different commands to perform data analysis on data
 
 TODO
 
@@ -1289,12 +1317,23 @@ You can also get detailed information of a certain offset:
 \c times = 5
 \c count = 55
 
-
 \C{Hashing} Hashing data
 
-TODO
+The it is quite easy to calculate a hash checksum of the current block using the '#' command.
 
-\C{rahash} Rahash tool
+Change the block size, seek to the interesting offset and calculate the md5 of it.
+
+\c $ radare /bin/ls
+\c [0x08048000]> s section__text
+\c [0x08049790]> b section__text_end-section__text
+\c [0x08049790]> #md5
+\c d2994c75adaa58392f953a448de5fba7
+
+In the same way you can also calculate other hashing algorithms that are supported by 'rahash': md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist, entropy, all.
+
+TODO #all doesnt works ?
+
+\H{rahash} Rahash tool
 
 TODO
 
