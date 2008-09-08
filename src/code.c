@@ -141,6 +141,37 @@ struct data_t *data_get_range(u64 offset)
 	return NULL;
 }
 
+struct data_t *data_get_between(u64 from, u64 to)
+{
+	int hex = 0;
+	int str = 0;
+	int code = 0;
+	struct list_head *pos;
+	struct data_t *d = NULL;
+
+	list_for_each(pos, &data) {
+		d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (from >= d->from && d->to <= to) {
+			switch(d->type) {
+			case DATA_HEX: hex++; break;
+			case DATA_STR: str++; break;
+			case DATA_CODE: code++; break;
+			}
+		}
+	}
+
+	if (d == NULL)
+		return NULL;
+
+	if (hex>=str && hex>=code) d->type = hex;
+	else
+	if (str>=hex && str>=code) d->type = str;
+	else
+	if (code>=hex && code>=str) d->type = code;
+
+	return d;
+}
+
 int data_type_range(u64 offset)
 {
 	struct data_t *d = data_get_range(offset);
@@ -973,7 +1004,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 			 *
 			 * I know that this has no sense, but computer science is not an exact one.
 			 */
-			udis_arch_opcode(arch, endian, sk, bytes, myinc); //seek+myinc, bytes, myinc);
+			udis_arch_opcode(arch, endian, seek, bytes, myinc); //seek+myinc, bytes, myinc);
 
 			/* show references */
 			if (aop.ref) {

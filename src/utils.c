@@ -387,7 +387,12 @@ u64 get_math(const char* text)
 			case '&': new_off &= get_offset(ptr+1); break; }
 			ptr = ptr + 1;
 			break;
-		case '%': new_off %= get_offset(ptr); break;
+		case '%': { t = get_offset(ptr);
+			if (t == 0) {
+				printf("Mod by zero?\n");
+				break;
+			} else new_off %= t;
+			} break;
 		case '<': new_off <<= get_offset(ptr); break;
 		case '>': new_off >>= get_offset(ptr); break;
 		case '-': new_off -= get_offset(ptr); break;

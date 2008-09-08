@@ -156,6 +156,7 @@ void metadata_comment_del(u64 offset, const char *str);
 void metadata_comment_add(u64 offset, const char *str);
 
 struct data_t *data_get_range(u64 offset);
+struct data_t *data_get_between(u64 from, u64 to);
 int data_set_len(u64 off, u64 len);
 int data_set(u64 off, int type);
 void data_add(u64 off, int type);

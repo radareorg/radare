@@ -342,12 +342,28 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_PERCENT: {
 			int w = config.width-4;
 			u64 s = config.size;
-			u64 piece;
+			u64 piece = 0;
 			if (s==-1)
-				s = 0x100000000LL;
+				s = 0x100000000LL; // XXX WTF
 			piece = s/w;
 			cons_printf("[");
 			for(i=0;i<w;i++) {
+				u64 from = config.seek + (piece*i);
+				C { struct data_t *d = data_get_between(from, from+piece);
+//printf("%lld, %lld (piece =%lld\n", from , from+piece, piece);
+				if (d != NULL)
+				switch(d->type) {
+				case DATA_STR:
+					cons_printf(C_YELLOW);
+					break;
+				case DATA_HEX:
+					cons_printf(C_GREEN);
+					break;
+				case DATA_CODE:
+					cons_printf(C_RED);
+					break;
+				}}
+				
 				if (config.seek > piece*i && config.seek < (piece*(i+1)))
 					cons_strcat("#");
 				else
@@ -355,6 +371,9 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 					cons_strcat(".");
 				else
 					cons_strcat("_");
+				C {
+					cons_strcat(C_RESET);
+				}
 			}
 			cons_strcat("]\n");
 		}
