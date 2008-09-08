@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* !contuh doesnt works :O
+ - implement continue until cursor
 * 'u*' - undo all changes (should be 'uw *') ?
 * add margin right to the text
   - or margin left to the shell code
@@ -15,6 +17,7 @@
 
 * multithread traces <pid>:<addr>
 
+* !contsc should support arg types
 * add support for strings with "" in CC for.example
 
 * powerpc

@@ -31,6 +31,7 @@
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 /* code lines */
+// XXX baddr should be ignored here
 struct reflines_t *code_lines_init()
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
@@ -50,9 +51,9 @@ struct reflines_t *code_lines_init()
 		if (config.interrupted)
 			break;
 		{
-			int dt = data_type(config.baddr+config.seek+bsz);
+			int dt = data_type(config.seek+bsz);
 			if (dt) {
-				u64 sz = data_size(config.baddr+config.seek+bsz);
+				u64 sz = data_size(config.seek+bsz);
 				if (sz > 0) {
 					ptr= ptr +sz;
 					bsz=bsz+sz;
@@ -60,7 +61,7 @@ struct reflines_t *code_lines_init()
 				}
 			}
 		}
-		seek = config.baddr + config.seek + bsz;
+		seek = config.seek + bsz;
 		sz = arch_aop(seek, ptr, &aop);
 		//sz = arch_aop(config.seek+bsz, ptr, &aop);
 		if (sz <1) {

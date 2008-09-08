@@ -59,14 +59,40 @@ void ps_parse_argv()
 	//eprintf("ppa:A0(%s)\n", ps.argv[0]);
 }
 
+static const char *resolve_path(const char *str)
+{
+	char buf[1024];
+	char *path = getenv("PATH");
+	char *foo, *bar;
+	if (path != NULL) {
+		path = strdup(path);
+		foo = path;
+		bar = str; // dummy
+		while(bar) {
+			bar = strchr(foo, ':');
+			if (bar != NULL) {
+				bar[0]='\0';
+			}
+			snprintf(buf, 1022, "%s/%s", foo, str);
+			//printf("FINDING(%s)\n", buf);
+			if (!access(buf, X_OK)) {
+				return strdup(buf);
+				free (path);
+			}
+			foo = bar + 1;
+		}
+		free (path);
+	}
+	return strdup(str);
+}
+
 int debug_open(const char *pathname, int flags, mode_t mode)
 {
 	int flag = 0;
 	char *file = (char *)pathname;
 
-	if (file == NULL) {
+	if (file == NULL)
 		return -1;
-	}
 
 	/* TODO: advanced URIs for debugger :? */
 	if (!strncmp("pid://", file, 6)) {
@@ -85,7 +111,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 		debug_close(ps.fd);
 	}
 
-	ps.filename = strdup(file);
+	ps.filename = resolve_path(file);
 	ps_parse_argv();
 	ps.is_file  = (atoi(ps.filename)?0:1);
 	ps.opened = 1;
@@ -103,10 +129,10 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	/* wait state */
 	WS(event)   = UNKNOWN_EVENT;
 
-	D { if (ps.is_file)
-		eprintf("Program '%s' loaded.\n", ps.filename);
-	else
-		eprintf("Attached to pid '%d'.\n", atoi(ps.filename)); }
+	D {	if (ps.is_file)
+			eprintf("Program '%s' loaded.\n", ps.filename);
+		else eprintf("Attached to pid '%d'.\n", atoi(ps.filename));
+	}
 
 	eprintf("PID = %d\n", ps.pid);
 

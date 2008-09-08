@@ -248,6 +248,53 @@ int arch_print_syscall_mips64()
 }
 #endif
 
+
+/* TODO: move to default debug_os namespace */
+struct syscall_t *syscall_by_os(const char *os)
+{
+	struct syscall_t *sysptr;
+	if (!strcmp(os, "linux"))
+		sysptr = &syscalls_linux_x86;
+	else
+	if (!strcmp(os, "netbsd"))
+		sysptr = &syscalls_netbsd_x86;
+	else
+	if (!strcmp(os, "openbsd"))
+		sysptr = &syscalls_netbsd_x86; // XXX
+	else
+	if (!strcmp(os, "freebsd"))
+		sysptr = &syscalls_freebsd_x86;
+	else {
+		eprintf("Unknown/unhandled OS in asm.os for arch_print_syscall()\n");
+		return -1;
+	}
+	return sysptr;
+}
+
+int syscall_name_to_int(const char *str)
+{
+	int i;
+	struct syscall_t *sysptr = syscall_by_os(config_get("asm.os"));
+
+	for(i=0;sysptr[i].num;i++)
+		if (!strcmp(str, sysptr[i].name))
+			return sysptr[i].num;
+
+	return 0;
+}
+
+void debug_os_syscall_list()
+{
+	int i;
+	struct syscall_t *sysptr = syscall_by_os(config_get("asm.os"));
+
+	for(i=0;sysptr[i].num;i++) {
+		cons_printf("%d = %s\n",
+			sysptr[i].num,
+			sysptr[i].name);
+	}
+}
+
 int arch_print_syscall()
 {
 #if __ARM__
@@ -257,21 +304,7 @@ int arch_print_syscall()
 	regs_t regs;
 	struct syscall_t *sysptr;
 
-	if (!strcmp(config_get("asm.os"), "linux"))
-		sysptr = &syscalls_linux_x86;
-	else
-	if (!strcmp(config_get("asm.os"), "netbsd"))
-		sysptr = &syscalls_netbsd_x86;
-	else
-	if (!strcmp(config_get("asm.os"), "openbsd"))
-		sysptr = &syscalls_netbsd_x86; // XXX
-	else
-	if (!strcmp(config_get("asm.os"), "freebsd"))
-		sysptr = &syscalls_freebsd_x86;
-	else {
-		eprintf("Unknown/unhandled OS in asm.os for arch_print_syscall()\n");
-		return -1;
-	}
+	sysptr = syscall_by_os(config_get("asm.os"));
 
 	ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) {

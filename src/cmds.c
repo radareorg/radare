@@ -326,6 +326,7 @@ CMD_DECL(analyze)
 #endif
 			cons_printf("size = %d\n", sz);
 			cons_printf("type = ");
+			// TODO: implement aop-type-to-string
 			switch(aop.type) {
 			case AOP_TYPE_CALL:  cons_printf("call\n"); break;
 			case AOP_TYPE_CJMP:  cons_printf("conditional-jump\n"); break;

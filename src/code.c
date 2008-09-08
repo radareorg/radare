@@ -678,8 +678,8 @@ void udis_arch(int arch, int len, int rows)
 			int dt = foo->type;
 			idata = foo->to-sk-1;
 			myinc = idata;
-			if (show_lines)
-				code_lines_print(reflines, seek, 0);
+			if (show_lines) // does nothing if not data
+				code_lines_print(reflines, sk, 0);
 			if (show_offset)
 				print_addr(seek);
 			if (show_reladdr) {
@@ -753,7 +753,7 @@ void udis_arch(int arch, int len, int rows)
 		__outofme:
 		if (data_end(sk) == DATA_FOLD_O) {
 			if (show_lines)
-				code_lines_print(reflines, seek, 1);
+				code_lines_print(reflines, sk, 1);
 			if (show_offset)
 				cons_strcat("           ");
 			folder--;
@@ -881,7 +881,7 @@ void udis_arch(int arch, int len, int rows)
 						NEWLINE;
 						CHECK_LINES
 						if (show_lines)
-							code_lines_print(reflines, seek, 0); //config.baddr+ud_insn_off(&ud_obj));
+							code_lines_print(reflines, sk, 0); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX  ", (unsigned long long)(seek));
@@ -1004,7 +1004,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
 						NEWLINE;
 						if (show_lines)
-							code_lines_print(reflines, seek, 0);
+							code_lines_print(reflines, sk, 0);
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));

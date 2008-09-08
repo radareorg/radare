@@ -407,12 +407,35 @@ As you can see, the endianness affects to the print formats. Once printing these
 
 \H{print-memory}
 
-\c  m : print memory structure  0xHHHH
+It is possible to print various packed data types in a single line using the 'pm' command (print memory). Here's the help and some examples:
+
+\c [0xB7F74810]> pm ?
+\c Usage: pm [format]
+\c  e - temporally swap endian
+\c  b - one byte 
+\c  B - show 10 first bytes of buffer
+\c  i - %d integer value (4 byets)
+\c  w - word (16 bit hexa)
+\c  q - quadword (8 bytes)
+\c  x - 0x%08x hexadecimal value
+\c  z - \0 terminated string
+\c  Z - \0 terminated wide string
+\c  s - pointer to string
+\c  * - next char is pointer
+\c  . - skip 1 byte
+
+\c [0xB7F08810]> pm xxs @ esp
+\c 0xbf8614d4 = 0xb7f22ff4 
+\c 0xbf8614d8 = 0xb7f16818 
+\c 0xbf8614dc  0xbf8614dc -> 0x00000000 /etc/ld.so.cache 
+\c [0xB7F08810]>
 
 \H{print-code}
 
-\c  d : disassembly N opcodes   bsize bytes
+\c  d : disassembly N opcodes   count of opcodes
 \c  D : asm.arch disassembler   bsize bytes
+
+TODO: uses asm.arch
 
 \S{zoom} Zoom
 
@@ -1654,6 +1677,19 @@ An old copy of the registers is stored all the time to keep track of the changes
 
 The values in eax, oeax and eip has changed. And this is noted when enabling scr.color.
 
+To store and restore the register values you can just dump the output of '!reg*' command to disk and then re-interpret it again:
+
+\c ; save registers
+\c [0x4A13B8C0]> !reg* > regs.saved
+\c
+\c ; restore
+\c [0x4A13B8C0]> . regs.saved
+
+In the same way the eflags can be altered by the characters given in this way. Setting to '1' the selected flags:
+
+\c [0x4A13B8C0]> !reg eflags = pst
+\c [0x4A13B8C0]> !reg eflags = azsti
+
 You can easily get a string representing the last changes in the registers using the 'dregs' command (diff registers):
 
 \c [0x4A13B8C0]> !dregs
@@ -1665,17 +1701,17 @@ There's an eval variable called 'trace.cmtregs' that adds a comment after each e
 
 \c [0x4A13C000]> !step 5
 \c [0x4A13C000]> pd 5
-\c    ; 10 esp = 0xbfac9bc8 (0xbfac9bd0)  
-\c    0x4A13C000,           55              push ebp            
-\c    ; 12 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc8 (0xbfac9bcc)  
-\c    0x4A13C001            89e5            mov ebp, esp        
+\c    ; 10 esp = 0xbfac9bc8 (0xbfac9bd0)
+\c    0x4A13C000,           55              push ebp
+\c    ; 12 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc8 (0xbfac9bcc)
+\c    0x4A13C001            89e5            mov ebp, esp
 \c    ; 14 ebp = 0xbfac9bc8 (0x00000000) esp = 0xbfac9bc4 (0xbfac9bc8)  
-\c    0x4A13C003            57              push edi            
-\c    ; 16 esp = 0xbfac9bc0 (0xbfac9bc8)  
-\c    0x4A13C004,           56              push esi            
+\c    0x4A13C003            57              push edi
+\c    ; 16 esp = 0xbfac9bc0 (0xbfac9bc8)
+\c    0x4A13C004,           56              push esi
 \c    ; 18 esp = 0xbfac9bbc (0xbfac9bc4)  
-\c    0x4A13C005      oeip: 53              push ebx            
-\c [0x4A13C000]> 
+\c    0x4A13C005      oeip: 53              push ebx
+\c [0x4A13C000]>
 
 You can align these comments with 'eval asm.cmtmargin'.
 

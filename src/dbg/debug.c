@@ -1534,11 +1534,26 @@ int debug_contuh(char *arg)
 int debug_contsc(char *arg)
 {
 	int ret;
-	int num = (int)get_math(arg);
+	int num = (int)get_math(arg+1);
+
+	if (strchr(arg, '?')) {
+		eprintf("Usage: !contsc <syscall-number|name>\n");
+		debug_os_syscall_list();
+		return 0;
+	}
 
 	if (!ps.opened) {
 		eprintf(":contc No program loaded.\n");
 		return -1;
+	}
+
+	/* TODO: str_to_int_syscall */
+	if (num == 0)
+		num = syscall_name_to_int(arg+1);
+
+	if (num == 0 && arg[0]!='\0') {
+		eprintf("Unknown syscall. Use '!contsc?' to get a list\n");
+		return 0;
 	}
 
 	/* restore breakpoint */

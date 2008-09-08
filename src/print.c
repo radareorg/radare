@@ -35,6 +35,7 @@
 void udis_arch(int arch, int len, int rows);
 int inc = 16;
 int dec = 16;
+
 format_info_t formats[] = {
 //	{ '8', FMT_87BIT,       "print 8bit block in raw 7bit",         NULL,   "entire block" },
 	{ 'a', FMT_ASC,        "ascii",                  NULL,          "entire block" },
@@ -46,7 +47,6 @@ format_info_t formats[] = {
 	{ 'd', FMT_DISAS,      "disassembly N opcodes",  "bsize bytes", "entire block" },
 	{ 'D', FMT_UDIS,       "asm.arch disassembler",  "bsize bytes", "entire block" },
 	{ 'F', FMT_TIME_FTIME, "windows filetime",       "8 bytes",     "(endian)"},
-	//{ 'G', FMT_CODEGRAPH,  "Code Analysis Graph",    "N bytes",     "entire block" },
 	{ 'f', FMT_FLOAT,      "float",                  "4 bytes",     "(endian)"},
 	{ 'i', FMT_INT,        "integer",                "4 bytes",     "(endian)"},
 	{ 'l', FMT_LONG,       "long",                   "4 bytes",     "(endian)"},
@@ -408,9 +408,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			case 'e': // tmp swap endian
 				endian ^=1;
 				continue;
+#if 0
 			case 'n': // enable newline
 				j ^= 1;
 				continue;
+#endif
 			case '.': // skip char
 				i++;
 				continue;
@@ -419,7 +421,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				cons_printf(
 				"Usage: pm [format]\n"
 				" e - temporally swap endian\n"
-				" n - perform \\n after format\n"
 				" b - one byte \n"
 				" B - show 10 first bytes of buffer\n"
 				" i - %%d integer value (4 byets)\n"
@@ -508,42 +509,14 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			default:
 				continue;
 			}
-			D cons_printf("\n");
+			D cons_newline();
 			last = tmp;
 		}
-		D {} else cons_printf("\n");
+		D {} else cons_newline();
 		break;
 	case FMT_DISAS:
 		radis( config.block_size, len);
 		break;
-	// moved to 'a' command
-#if 0
-	case FMT_CODE: {
-		char cmd[1024];
-		prg = code_analyze(config.seek+config.baddr, config_get_i("graph.depth"));
-		list_add_tail(&prg->list, &config.rdbs);
-		list_for_each(head, &(prg->blocks)) {
-			b0 = list_entry(head, struct block_t, list);
-			D {
-				cons_printf("0x%08x (%d) -> ", b0->addr, b0->n_bytes);
-				if (b0->tnext)
-					cons_printf("0x%08llx", b0->tnext);
-				if (b0->fnext)
-					cons_printf(", 0x%08llx", b0->fnext);
-				cons_printf("\n");
-			// TODO eval asm.lines=0
-				sprintf(cmd, "pD %d @ 0x%08x", b0->n_bytes+1, (unsigned int)b0->addr);
-			// TODO restore eval
-				radare_cmd(cmd, 0);
-				cons_printf("\n\n");
-			} else {
-				cons_printf("b %d\n", b0->n_bytes);
-				cons_printf("f blk_%08X @ 0x%08x\n", b0->addr, b0->addr);
-			}
-			i++;
-		}
-		} break;
-#endif
 	case FMT_CODEGRAPH:
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
 #if HAVE_VALAC
