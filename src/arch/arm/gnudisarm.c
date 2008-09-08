@@ -17,6 +17,7 @@ static int arm_buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned i
 	memcpy (myaddr, bytes, length);
 	return 0;
 }
+static char *str_data = " (data)";
 
 static int symbol_at_address(bfd_vma addr, struct disassemble_info * info)
 {
@@ -30,12 +31,12 @@ static int hoho(int a, int b, int c)
 
 static int print_address(unsigned long address, struct disassemble_info *info)
 {
-	cons_printf("0x%lx", (address)); // control flags and so
+	cons_printf("0x%lx", (address+Offset)); // control flags and so
 	return 0;
 }
 
 /* Disassembler entry point */
-char *gnu_disarm(unsigned char *inst, unsigned long offset)
+const char *gnu_disarm(unsigned char *inst, u64 offset)
 {
 	struct disassemble_info info;
 
@@ -57,8 +58,8 @@ char *gnu_disarm(unsigned char *inst, unsigned long offset)
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 
-	if (print_insn_arm(offset, &info) == -1)
-		cons_strcat("  (data)");
+	if (print_insn_arm((unsigned long)offset, &info) == -1)
+		return str_data;
 
 	return str;
 }

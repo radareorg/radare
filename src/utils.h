@@ -79,6 +79,7 @@ int hex2int (unsigned char *val, unsigned char c);
 int get_cmp(const char *str0, const char *str1);
 int radare_open(int);
 int yesno(int def, const char *fmt, ...);
+
 // write modes
 enum {
 	WMODE_CHAR = 0,
@@ -99,7 +100,7 @@ void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian);
 int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
-int gnu_disarm(unsigned char *address, unsigned long seek);
+const char *gnu_disarm(unsigned char *address, u64 seek);
 char *gnu_dismips(unsigned char *inst, unsigned long offset);
 int iswhitespace(char ch);
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);

@@ -255,6 +255,9 @@ int radare_hash_generate(char *src, char *dst)
 		lseek(sd, 0, SEEK_SET);
 	}
 
+	if (header.length != 0)
+		header.to = header.from + header.length;
+
 	if (header.from && (header.from > header.file_size)) {
 		fprintf(stderr, "Initial seek out of range.\n");
 		return 1;
@@ -275,6 +278,7 @@ int radare_hash_generate(char *src, char *dst)
 		header.length = header.to - header.from;
 	} else
 		header.to = header.file_size;
+
 
 	if (header.from && (header.from >= header.to)) {
 		fprintf(stderr, "Initial seek cannot be greater than end.\n");

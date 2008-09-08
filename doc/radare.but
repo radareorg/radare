@@ -275,18 +275,15 @@ This is a list of the available print modes listable with 'p?':
 
 \c [0x08049A80]> p?
 \c Available formats:
-\c  7 : print 7bit block as raw 8bit (null)
 \c  a : ascii                   (null)
 \c  A : ascii printable         (null)
 \c  b : binary                  N bytes
 \c  B : LSB Stego analysis      N bytes
 \c  c : C format                N bytes
-\c  h : half word (short)       2 bytes
 \c  d : disassembly N opcodes   bsize bytes
 \c  D : asm.arch disassembler   bsize bytes
 \c  f : float                   4 bytes
 \c  F : windows filetime        8 bytes
-\c  G : Code Analysis Graph     N bytes
 \c  i : integer                 4 bytes
 \c  l : long                    4 bytes
 \c  L : long long               8 bytes
@@ -295,7 +292,6 @@ This is a list of the available print modes listable with 'p?':
 \c  O : Zoom out view           entire file
 \c  p : cmd.prompt              (null)
 \c  % : print scrollbar of seek (null)
-\c  q : hexadecimal quad-word   8 bytes
 \c  r : raw ascii               (null)
 \c  R : reference               (null)
 \c  s : asm shellcode           (null)
@@ -304,12 +300,15 @@ This is a list of the available print modes listable with 'p?':
 \c  u : URL encoding            (null)
 \c  U : executes cmd.user       (null)
 \c  v : executes cmd.vprompt    (null)
-\c  w : hexadecimal word        2 bytes
-\c  W : hexadecimal dword       4 bytes
+\c  1 : p16: 16 bit hex word    2 bytes
+\c  3 : p32: 32 bit hex dword   4 bytes
+\c  6 : p64: 64 bit quad-word   8 bytes
+\c  7 : print 7bit block as raw 8bit (null)
+\c  8 : p8:   8 bit hex pair    N byte
 \c  x : hexadecimal byte pairs  N byte
-\c  X : hexadecimal string      N byte
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
+
 
 \H{print-hexa}
 
@@ -329,20 +328,28 @@ Basic size types governed by endian:
 
 16 bit words
 
-\c [0x4A13B8C0]> pw 4
+\c [0x4A13B8C0]> p16 4
 \c 0xe089 
 \c 0x39e8 
 
 32 bit doublewords
 
-\c [0x4A13B8C0]> pW 4
+\c [0x4A13B8C0]> p32 4
 \c 0x39e8e089 
 \c [0x4A13B8C0]> e cfg.bigendian 
 \c false
 \c [0x4A13B8C0]> e cfg.bigendian = true
-\c [0x4A13B8C0]> pW 4
+\c [0x4A13B8C0]> p32 4
 \c 0x89e0e839 
 \c [0x4A13B8C0]> 
+
+64 bit dwords
+
+\c [0x08049A80]> p8 16
+\c 31 ed 5e 89 e1 83 e4 f0 50 54 52 68 60 9e 05 08 
+\c [0x08049A80]> p64 16
+\c 0x31ed5e89e183e4f0 
+\c 0x50545268609e0508 
 
 \H{print-dates}
 
@@ -614,7 +621,10 @@ It takes 4 bytes from the current seek (0x4A13B8C0) and compares them to the num
 
 We can use the compare command against a file previously dumped to disk from the contents of the current block.
 
-XXX: cf is not working
+\c $ radare /bin/true
+\c [0x08049A80]> s 0
+\c [0x08048000]> cf /bin/true
+\c Compare 512/512 equal bytes
 
 \C{config} Configuration
 
@@ -1331,11 +1341,106 @@ Change the block size, seek to the interesting offset and calculate the md5 of i
 
 In the same way you can also calculate other hashing algorithms that are supported by 'rahash': md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist, entropy, all.
 
-TODO #all doesnt works ?
+The '#' command can accept a numeric argument to define the length in bytes to be hashed.
+
+\c [0x08049A80]> #md5 32
+\c 9b9012b00ef7a94b5824105b7aaad83b
+\c [0x08049A80]> #md5 64
+\c a71b087d8166c99869c9781e2edcf183
+\c [0x08049A80]> #md5 1024
+\c a933cc94cd705f09a41ecc80c0041def
+\c [0x08049A80]> 
 
 \H{rahash} Rahash tool
 
-TODO
+The rahash tool is the used by radare to realize these calculations. It 
+
+\c $ rahash -h
+\c rahash [-action] [-options] [source] [hash-file]
+\c  actions:
+\c   -g           generate (default action)
+\c   -c           check changes between source and hash-file
+\c   -o           shows the contents of the source hash-file
+\c   -A           use all hash algorithms
+\c  options:
+\c   -a [algo]    algorithm to hash (md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist, entropy, all)
+\c   -s [string]  hash this string instead of a file
+\c   -S [offset]  seek initial offset to
+\c   -E [offset]  end hashing at offset
+\c   -L [length]  end hashing at length
+\c   -b [size]    sets the block size (default 32KB)
+\c   -f           block size = file size (!!)
+\c   -q           quite output (can be combined with -v)
+\c   -V           show version information
+\c   -v           be verbose
+
+It permits the calculation of the hashes from strings or files.
+
+\c $ rahash -a md5 -s 'hello world'
+\c 5eb63bbbe01eeed093cb22bb8f5acdc3
+
+It is possible to hash the full contents of a file by giving '-f' as argument. But dont do this for large files like disks or so, because rahash stores the buffer in memory before calculating the checksum instead of doing it progressively.
+
+\c $ rahash -a all -f /bin/ls
+\c par:     1
+\c xor:     ae
+\c hamdist: 00
+\c xorpair: 11bf
+\c entropy: 6.08
+\c mod255:  ea
+\c crc16:   41a4
+\c crc32:   d34e458d
+\c md4:     f0bfd80cea21ca98cc48aefef8d71f3e
+\c md5:     f58860f27dd2673111083770c9445099
+\c sha1:    bfb9b77a29318fc6a075323c67af74d5e3071232
+\c sha256:  8c0d752022269a8673dc38ef5d548c991bc7913a43fe3f1d4d076052d6a5f0b6
+\c sha384:  1471bd8b14c2e11b3bcedcaa23209f2b87154e0daedf2f3f23053a598685850318ecb363cf07cf48410d3ed8e9921573
+\c sha512:  03c63d38b0286e9a6230ffd39a1470419887ea775823d21dc03a2f2b2762a24b496847724296b45e81a5ff607cc46ef0f46e4eb1b8faa67ea3c463999f7b5864
+
+rahash is designed to work with blocks like radare does. So this way you can generate multiple checksums from a single file, and then make a faster comparision of the blocks to find the part of the file that has changed.
+
+This is useful in forensic tasks, when progressively analyzing memory dumps to find the places where it has changed and then use 'radiff' to get a closer look to these changes.
+
+This is the default work way for rahash. So lets generate a rahash checksumming file and then use it to check if something has changed. The default block size is 32 KBytes. You can change it by using the -b flag.
+
+\c # generate ls.rahash
+\c $ rahash -g -a sha1 /bin/ls ls.rahash
+\c 91c9cc53e7c7204027218ba372e9e738
+\c f5547b7cd016678bebc61b4b0ca3a442
+\c 5fd03cecbbad68314bc82f2f7db2f6aa
+\c 
+\c # show values stored in rahash file:
+\c $ rahash -vo ls.hash 
+\c file_name  /bin/ls
+\c offt_size  8
+\c endian     0 (little)
+\c version    1
+\c block_size 32768
+\c file_size  92376
+\c fragments  3
+\c file_name  /bin/ls
+\c from       0
+\c to         92376
+\c length     92376
+\c algorithm  md5
+\c algo_size  16
+\c 0x00000000 91C9CC53E7C7204027218BA372E9E738
+\c 0x00008000 F5547B7CD016678BEBC61B4B0CA3A442
+\c 0x00010000 5FD03CECBBAD68314BC82F2F7DB2F6AA
+\c 
+\c # check if something has changed
+\c $ rahash -c -a sha1 /bin/ls ls.rahash
+
+You can also specify some limits when calculating checksummings, so, you can easily tell rahash to start hashing at a certain seek and finish after N bytes or just when reaching another offset.
+
+\c   -S [offset]  seek initial offset to
+\c   -E [offset]  end hashing at offset
+\c   -L [length]  end hashing at length
+
+f.example:
+
+\c $ rahash -S 10 -L 20 /bin/ls
+\c 4b01adea1951a55cdf05f92cd4b2cf75
 
 \C{bindiff-index} Binary diffing
 
