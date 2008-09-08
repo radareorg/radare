@@ -46,6 +46,10 @@ def configure(conf):
         conf.check_pkg('vte',      destvar='VTE', vnum='0.16', mandatory=False)
 	conf.checkEndian()
 
+	conf.check_tool('python')
+	conf.check_python_version((2,4,2));
+	conf.check_python_headers()
+
 	if Options.options.MAEMO == True:
         	conf.check_pkg('hildon-1',      destvar='HILDON', vnum='0.1', mandatory=False)
 
@@ -161,6 +165,8 @@ def build(bld):
 	#bld.add_subdirs('libexec')
 	#bld.install_files('BINDIR', 'src/rsc', 'libexec/')
 
+	bld.install_files('${PREFIX}/lib/python2.5', 'src/plug/hack/radare.py')
+	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.lua')
 	# RSC scripts
 	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
 	# Documentation

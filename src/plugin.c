@@ -134,7 +134,7 @@ plugin_t *plugin_registry(const char *file)
 	// TODO: support dynlib and so
 	strcat(buf, ".so");
 	/* open library */
-	hd = (void *)dlopen(buf, RTLD_NOW); //LAZY);
+	hd = (void *)dlopen(buf, RTLD_GLOBAL | RTLD_NOW); //LAZY);
 	if (hd == NULL) {
 		perror("dlopen");
 		eprintf("Cannot open plugin '%s'.\n(%s)\n", buf, dlerror());

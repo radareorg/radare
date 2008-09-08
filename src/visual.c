@@ -182,33 +182,6 @@ void visual_show_help()
 	cons_flush();
 }
 
-void press_any_key()
-{
-	D cons_printf("\n--press any key--\n");
-	cons_flush();
-	cons_readchar();
-	cons_strcat("\x1b[2J\x1b[0;0H");
-}
-
-
-static int hit_idx = 0;
-void seek_to_hit(int idx)
-{
-	flag_t *flag;
-	u8 buf[64];
-
-	sprintf(buf, "hit0_%d", hit_idx);
-	flag = flag_get(buf);
-	if (flag == NULL) {
-		if (idx>0)
-			hit_idx -=idx;
-		else	hit_idx +=idx*2;
-	} else {
-		radare_seek(flag->offset, SEEK_SET);
-	}
-	hit_idx += idx;
-	if (hit_idx<0) hit_idx=0;
-}
 
 CMD_DECL(edit_screen_filter)
 {
@@ -239,7 +212,7 @@ CMD_DECL(insert)
 		cons_flush();
 	} else {
 		cons_printf("Not in write mode.\n");
-		press_any_key();
+		cons_any_key();
 	}
 	return 0;
 }
@@ -420,7 +393,7 @@ CMD_DECL(yank)
 		off, yank_buffer[0], yank_buffer[1], yank_buffer[2]);
 
 	if (config.visual) {
-		press_any_key();
+		cons_any_key();
 		CLRSCR();
 	}
 	return 0;
@@ -431,7 +404,7 @@ CMD_DECL(yank_paste)
 	if (yank_buffer_size == 0) {
 		eprintf("No buffer yanked\n");
 		if (config.visual) {
-			press_any_key();
+			cons_any_key();
 			CLRSCR();
 		}
 	} else {
@@ -453,7 +426,7 @@ CMD_DECL(yank_paste)
 		} else {
 			printf("Not in write mode\n");
 			if (config.visual) {
-				press_any_key();
+				cons_any_key();
 				CLRSCR();
 			}
 		}
@@ -471,7 +444,7 @@ CMD_DECL(stepu_in_dbg)
 {
 	if (!config.debug) {
 		eprintf("not in debugger\n");
-		press_any_key();
+		cons_any_key();
 	} else {
 		eprintf("Stepping to user code. wait a while...\n");
 		//eprintf("TODO: should take care about the backtrace and use...\n");
@@ -486,7 +459,7 @@ CMD_DECL(step_in_dbg)
 {
 	if (!config.debug) {
 		eprintf("not in debugger\n");
-		press_any_key();
+		cons_any_key();
 	} else
 		radare_cmd("!step", 0);
 	radare_sync();
@@ -498,7 +471,7 @@ CMD_DECL(stepo_in_dbg)
 {
 	if (!config.debug) {
 		eprintf("not in debugger\n");
-		press_any_key();
+		cons_any_key();
 	} else
 		radare_cmd("!stepo", 0);
 	radare_sync();
@@ -535,7 +508,7 @@ CMD_DECL(insert_assembly_rsc)
 {
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
-		press_any_key();
+		cons_any_key();
 		return 1;
 	}
 
@@ -559,7 +532,7 @@ CMD_DECL(insert_assembly)
 
 	if (!config_get("file.write")) {
 		eprintf("Sorry, but you're not in read-write mode\n");
-		press_any_key();
+		cons_any_key();
 		return 1;
 	}
 
@@ -723,7 +696,7 @@ static int keystroke_run(unsigned char key) {
 		if (cmd.sname == key) {
 			(void)cmd.hook(""); // no args
 			if (cmd.options)
-				press_any_key();
+				cons_any_key();
 			return 1;
 		}
 
@@ -745,7 +718,7 @@ static void visual_bind_key()
 	key = cons_readchar();
 	if (!is_printable(key)) {
 		printf("\n\nInvalid keystroke\n");
-		press_any_key();
+		cons_any_key();
 		return;
 	}
 	printf("%c\n", key);
@@ -753,7 +726,7 @@ static void visual_bind_key()
 	for(i=0;keystrokes[i].sname;i++) {
 		if (key == keystrokes[i].sname) {
 			printf("\n\nInvalid keystroke (handled by radare)\n");
-			press_any_key();
+			cons_any_key();
 			return;
 		}
 	}
@@ -768,7 +741,7 @@ static void visual_bind_key()
 				NEWLINE;
 			}
 		}
-		press_any_key();
+		cons_any_key();
 		return;
 	}
 
@@ -950,7 +923,7 @@ void visual_f(int f)
 		case 1:
 			cons_clear();
 			radare_cmd("!help", 0);
-			press_any_key();
+			cons_any_key();
 			cons_clear();
 			break;
 #if DEBUGGER
@@ -977,7 +950,7 @@ void visual_f(int f)
 			line[strlen(line)-1]='\0';
 			radare_cmd(line,0);
 			cons_set_raw(1);
-			press_any_key();
+			cons_any_key();
 			cons_clear();
 			break;
 #endif
@@ -1397,7 +1370,7 @@ CMD_DECL(visual)
 			last_print_format = lpf;
 			cons_set_raw(1);
 			if (line[0])
-				press_any_key();
+				cons_any_key();
 			cons_gotoxy(0,0);
 			cons_clear();
 			continue;
@@ -1435,7 +1408,7 @@ CMD_DECL(visual)
 		case 'm':
 			printf("\nrfile magic:\n\n");
 			radare_dump_and_process( DUMP_MAGIC, config.block_size);
-			press_any_key();
+			cons_any_key();
 			break;
 		case 'd':
 			convert_bytes(-1);
@@ -1449,10 +1422,10 @@ CMD_DECL(visual)
 			config.cursor_mode ^= 1;
 			break;
 		case 'n':
-			seek_to_hit(+1);
+			radare_search_seek_hit(+1);
 			break;
 		case 'N':
-			seek_to_hit(-1);
+			radare_search_seek_hit(-1);
 			break;
 		case 'h':
 			if (config.cursor_mode) {
@@ -1742,12 +1715,12 @@ inc = 1;
 		case '!':
 			cons_clear00();
 			radare_cmd("!help", 0);
-			press_any_key();
+			cons_any_key();
 			break;
 		case '?':
 			cons_clear00();
 			visual_show_help();
-			press_any_key();
+			cons_any_key();
 			cons_clear();
 			break;
 		case 'Q':

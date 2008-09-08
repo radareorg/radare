@@ -317,11 +317,13 @@ CMD_DECL(analyze)
 			radare_read(0);
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 			cons_printf("index = %d\n", depth_i);
+#if 0
 			cons_printf("opcode = ");
 			j = config.verbose;
 			config.verbose = 0;
 			radare_cmd("pd 1", 0);
 			config.verbose = j;
+#endif
 			cons_printf("size = %d\n", sz);
 			cons_printf("type = ");
 			switch(aop.type) {
@@ -398,7 +400,7 @@ CMD_DECL(analyze)
 		cons_printf(" ao [nops]    analyze N opcodes\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
 		cons_printf(" af [name]    analyze function\n");
-		cons_printf(" ac [num]     disasmand analyze N code blocks\n");
+		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
@@ -674,7 +676,7 @@ CMD_DECL(hash)
 		snprintf(buf, 1000, "rahash -fa '%s' '/tmp/xx'", input);
 		radare_set_block_size_i(obs);
 	} else
-	snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s' | head -n 1", 
+	snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s'", // | head -n 1", 
 		input, (u64)config.seek, (u64)bs, config.file);
 
 	io_system(buf);
@@ -1514,6 +1516,7 @@ CMD_DECL(search) {
 		" /x A0 B0 43    ; hex byte pair binary search.\n"
 		" /k# keyword    ; keyword # to search\n"
 		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
+		" /n[-]          ; seek to hit index N (/n : next, /n- : prev)\n"
 		" /a [opcode]    ; Look for a string in disasembly\n"
 		" /A             ; Find expanded AES keys from current seek(*)\n"
 		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
@@ -1549,6 +1552,22 @@ CMD_DECL(search) {
 			}
 		}
 		break;
+	case 'n':
+		switch(text[1]) {
+		case '\0':
+			radare_search_seek_hit(+1);
+			break;
+		case '+':
+		case '-':
+			i = atoi(text+1);
+			if (i ==0)
+				i = (text[1]=='+')?1:-1;
+			radare_search_seek_hit(i);
+			break;
+		default:
+			radare_search_seek_hit(atoi(text+1));
+			break;
+		}
 	case 'k':
 		if (text[1]=='?') {
 			eprintf("/k[number] [keyword]\n");

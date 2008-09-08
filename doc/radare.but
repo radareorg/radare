@@ -1256,15 +1256,44 @@ TODO
 
 \C{anal} Analysis
 
-There are different commands to perform data analysis on data
+There are different commands to perform data and code analysis and extract information like pointers, string references, basic blocks, extract opcode information, jump information, xrefs, etc..
 
-TODO
+Those operations are handled by the root 'a'nalyze command:
+
+\c Usage: a[ocdg] [depth]
+\c  ao [nops]    analyze N opcodes
+\c  ab [num]     analyze N code blocks
+\c  af [name]    analyze function
+\c  ac [num]     disasm and analyze N code blocks
+\c  ad [num]     analyze N data blocks 
+\c  ag [depth]   graph analyzed code
+\c  as [name]    analyze spcc structure (uses dir.spcc)
+\c  at [args]    analyze opcode traces
+\c  av [nops]    analyze virtual machine (negative resets before)
+\c  ax           analyze xrefs
 
 \H{codeanal} Code analysis
 
+About code analysis radare can work with functions, basic blocks, opcodes.
+
+-- ao: opcode
+-- ab: block
+-- af: function
+-- ac: anlayze code
+-- av: analyze using virtual machine
+
 TODO
 
+\c [0xB7F14810]> H python
+\c python> op = analyze_opcode()
+\c python> print "0x%x\n"%op['offset']
+\c 0xb7f14810
+
+
 \H{dataanal} Data analysis
+
+- structures (as)
+- raw data (ad)
 
 TODO
 
@@ -1969,8 +1998,32 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGTTOU    (DEFAULT)
 \c SIGIO      (DEFAULT)
 
+\c [0xB7FA8810]> !sig SIGIO 0x8049350
+\c Signal 29 handled by 0x08049350
+\c [0xB7FA8810]> !sig SIGIO
+\c SIGIO      (0x8049350)
+\c [0xB7FA8810]> !sig SIGIO 0
+\c (DEFAULT)
+\c [0xB7FA8810]> !sig SIGIO
+\c SIGIO      (DEFAULT)
+\c [0xB7FA8810]> 
 
-TODO: FIX !signal <sig> <addr>
+\H{events} Events
+
+You can even configure radare to handle or ignore multiple types of events. This is useful to avoid stopping when an event is received from the child process.
+
+\c [0xB7FA8810]> !ie?
+\c Usage: !ie [-]<event>
+\c  - enables or disables the 'ignore event' 
+\c [0xB7FA8810]> !ie
+\c  0 stop
+\c  0 trap
+\c  0 pipe
+\c  0 alarm
+\c  0 fpe
+\c  0 ill
+
+This is usually used to bypass some packer protections that relay on some events. So this way you can skip them just with '!ie stop' or '!ie -stop'.
 
 \C{script} Scripting
 
@@ -1978,16 +2031,24 @@ TODO
 
 \C{graph} Graphing code and data
 
+'ag' command'
+'ad' command'
 TODO
 
 \C{greetings} Greetings
 
-I would like to greet some people that help me or encourage me to continue developing and having fun on radare.
+I would like to greet some drugs, drinks and people that shared his life with mine during the development of radare and this book.
 
-\u - my God (FSM)
+\u - God. aka Flying Spaguetti Monster
+
+\u - Laia
 
 \u - nopcode guys
 
 \u - Sexy Pandas
 
 \u - Gerardo
+
+\u - Esteve
+
+\u - Nibble

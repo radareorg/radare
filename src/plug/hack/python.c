@@ -28,41 +28,6 @@ extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static char *(*rs)(const char *cmd) = NULL;
 
-#if 0
-static PyObject * PyRadare_Exec(PyObject *self, PyObject *args)
-{
-	const char *command;
-	int sts;
-
-	if (!	PyArg_Parse(args, "s", &command))
-		return NULL;
-	//if (!PyArg_ParseTuple(args, "s", &command))
-	//    return NULL;
-	sts = system(command);
-	return Py_BuildValue("i", sts);
-}
-
-/*
-   static void **PySpam_API;
-
-   static int
-   import_radare(void)
-   {
-   PyObject *module = PyImport_ImportModule("radare");
-
-   if (module != NULL) {
-   PyObject *c_api_object = PyObject_GetAttrString(module, "_C_API");
-   if (c_api_object == NULL)
-   return -1;
-   if (PyCObject_Check(c_api_object))
-   PySpam_API = (void **)PyCObject_AsVoidPtr(c_api_object);
-   Py_DECREF(c_api_object);
-   }
-   return 0;
-   }
- */
-#endif
-
 typedef struct {
 	PyObject_HEAD
 		PyObject *first; /* first name */
@@ -122,7 +87,7 @@ static PyObject * Radare_eval(Radare* self, PyObject *args)
 		sprintf(str, "eval %s = %s", cmd, cmd2);
 	else
 		sprintf(str, "eval %s", cmd);
-printf("Setr(%s)\n", str);
+	printf("Setr(%s)\n", str);
 	result = PyString_FromString(rs(str));
 	Py_DECREF(args);
 
@@ -193,48 +158,47 @@ static PyMethodDef Radare_methods[] = {
 	{NULL}  /* Sentinel */
 };
 
-
-	static PyTypeObject RadareType = {
-		PyObject_HEAD_INIT(NULL)
-			0,                         /*ob_size*/
-		"radare.Radare",             /*tp_name*/
-		sizeof(Radare),             /*tp_basicsize*/
-		0,                         /*tp_itemsize*/
-		(destructor)Radare_dealloc, /*tp_dealloc*/
-		0,                         /*tp_print*/
-		0,                         /*tp_getattr*/
-		0,                         /*tp_setattr*/
-		0,                         /*tp_compare*/
-		0,                         /*tp_repr*/
-		0,                         /*tp_as_number*/
-		0,                         /*tp_as_sequence*/
-		0,                         /*tp_as_mapping*/
-		0,                         /*tp_hash */
-		0,                         /*tp_call*/
-		0,                         /*tp_str*/
-		0,                         /*tp_getattro*/
-		0,                         /*tp_setattro*/
-		0,                         /*tp_as_buffer*/
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-		"Radare objects",           /* tp_doc */
-		0,                         /* tp_traverse */
-		0,                         /* tp_clear */
-		0,                         /* tp_richcompare */
-		0,                         /* tp_weaklistoffset */
-		0,                         /* tp_iter */
-		0,                         /* tp_iternext */
-		Radare_methods,             /* tp_methods */
-		Radare_members,             /* tp_members */
-		0,                         /* tp_getset */
-		0,                         /* tp_base */
-		0,                         /* tp_dict */
-		0,                         /* tp_descr_get */
-		0,                         /* tp_descr_set */
-		0,                         /* tp_dictoffset */
-		(initproc)Radare_init,      /* tp_init */
-		0,                         /* tp_alloc */
-		Radare_new,                 /* tp_new */
-	};
+static PyTypeObject RadareType = {
+	PyObject_HEAD_INIT(NULL)
+	0,                         /*ob_size*/
+	"radare.Radare",           /*tp_name*/
+	sizeof(Radare),            /*tp_basicsize*/
+	0,                         /*tp_itemsize*/
+	(destructor)Radare_dealloc,/*tp_dealloc*/
+	0,                         /*tp_print*/
+	0,                         /*tp_getattr*/
+	0,                         /*tp_setattr*/
+	0,                         /*tp_compare*/
+	0,                         /*tp_repr*/
+	0,                         /*tp_as_number*/
+	0,                         /*tp_as_sequence*/
+	0,                         /*tp_as_mapping*/
+	0,                         /*tp_hash */
+	0,                         /*tp_call*/
+	0,                         /*tp_str*/
+	0,                         /*tp_getattro*/
+	0,                         /*tp_setattro*/
+	0,                         /*tp_as_buffer*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+	"Radare objects",          /* tp_doc */
+	0,                         /* tp_traverse */
+	0,                         /* tp_clear */
+	0,                         /* tp_richcompare */
+	0,                         /* tp_weaklistoffset */
+	0,                         /* tp_iter */
+	0,                         /* tp_iternext */
+	Radare_methods,            /* tp_methods */
+	Radare_members,            /* tp_members */
+	0,                         /* tp_getset */
+	0,                         /* tp_base */
+	0,                         /* tp_dict */
+	0,                         /* tp_descr_get */
+	0,                         /* tp_descr_set */
+	0,                         /* tp_dictoffset */
+	(initproc)Radare_init,     /* tp_init */
+	0,                         /* tp_alloc */
+	Radare_new,                /* tp_new */
+};
 
 #if 0
 static PyMethodDef module_methods[] = {
@@ -268,6 +232,7 @@ int epython_init()
 	//Py_InitModule3("radare", Radare_methods, NULL);
 	PyRun_SimpleString("import r");
 	PyRun_SimpleString("import radare");
+	PyRun_SimpleString("from radare import *");
 	return 0;
 }
 

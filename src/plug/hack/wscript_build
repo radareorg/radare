@@ -1,12 +1,16 @@
 #! /usr/bin/env python
 
-so_hello = bld.new_task_gen('cc', 'sharedlib')
+plugindir = '%s/radare/'%bld.env['LIBDIR']
+
+so_hello = bld.new_task_gen('cc', 'shlib')
 so_hello.includes = '../..'
-so_hello.target = 'hello.so'
+so_hello.target = 'hello'
 so_hello.source = 'hello.c'
+so_hello.install_path = plugindir
 
-#so_hello = bld.create_obj('cc', 'sharedlib')
-#so_hello.includes = '../..'
-#so_hello.target = 'hello.so'
-#so_hello.source = 'hello.c'
-
+# TODO: if have python here...
+so_python = bld.new_task_gen('cc', 'shlib','pyembed')
+so_python.includes = '../..'
+so_python.target = 'python'
+so_python.source = 'python.c'
+so_python.install_path = plugindir

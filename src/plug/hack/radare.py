@@ -68,7 +68,7 @@ def __str_to_hash(str):
 			b = w[1].strip()
 			if (b[0:2] == '0x'):
 				t[a] = long(b,16)
-			elif (b[0]>='0' and b[0]<='9'):
+			elif (b.find(' ') == -1) and (b[0]>='0' and b[0]<='9'):
 				t[a] = long(b,10)
 			else:
 				t[a] = b

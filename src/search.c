@@ -43,6 +43,26 @@ static void search_alarm()
 #endif
 }
 
+static int hit_idx = 0;
+
+void radare_search_seek_hit(int idx)
+{
+	flag_t *flag;
+	u8 buf[64];
+
+	sprintf(buf, "hit0_%d", hit_idx);
+	flag = flag_get(buf);
+
+	if (flag == NULL) {
+		if (idx>0)
+			hit_idx -=idx;
+		else	hit_idx +=idx*2;
+	} else radare_seek(flag->offset, SEEK_SET);
+
+	hit_idx += idx;
+	if (hit_idx<0) hit_idx=0;
+}
+
 // TODO: handle Control-C
 void radare_search_aes()
 {

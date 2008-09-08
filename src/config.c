@@ -975,7 +975,7 @@ void config_visual_menu()
 			cons_printf(" +/-   - increase/decrease numeric value\n");
 			cons_printf(" :     - enter command\n");
 			cons_flush();
-			press_any_key();
+			cons_any_key();
 			break;
 		case ':':
 			cons_set_raw(0);
@@ -996,7 +996,7 @@ void config_visual_menu()
 #endif
 			cons_set_raw(1);
 			if (cmd[0])
-				press_any_key();
+				cons_any_key();
 			cons_gotoxy(0,0);
 			cons_clear();
 			continue;

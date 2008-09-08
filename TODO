@@ -7,11 +7,13 @@
 
 ===========================================================
 
-* #all doesnt works
+* 'u*' - undo all changes (should be 'uw *') ?
 * add margin right to the text
   - or margin left to the shell code
 
-* #crc32 <size>  <-- size is not supported
+* store xrefs
+
+* multithread traces <pid>:<addr>
 
 * add support for strings with "" in CC for.example
 
@@ -42,8 +44,6 @@
   - follow child or parent
   - ignore other threads
 
-* rename 'hasher' into 'rahash'
-
 * file.baddr breaks lot of stuff ZOMFG!
 * bash autocompletion script for rsc and rfile
 
@@ -60,7 +60,6 @@
   - search backward in memory (invert string and add inc as argument for binparse)
   - useful to static analyze interrupt calls
 
-* 'ua' - undo all changes (should be 'uw *') ?
 * !contsc must be string as arg also with syscall name (depending on asm.os)
 * BSD imports with dietelf doesnt works well
 

@@ -865,3 +865,11 @@ int cons_get_arrow(int ch)
 	}
 	return ch;
 }
+
+void cons_any_key()
+{
+	D cons_printf("\n--press any key--\n");
+	cons_flush();
+	cons_readchar();
+	cons_strcat("\x1b[2J\x1b[0;0H");
+}
