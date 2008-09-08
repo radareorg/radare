@@ -23,4 +23,13 @@ enum {
 } ArmBpType;
 
 //#define regs_t elf_gregset_t
+
+#define CPU_ARG0(x) R_R0(x)
+#define CPU_ARG1(x) R_R1(x)
+#define CPU_ARG2(x) R_R2(x)
+#define CPU_ARG3(x) R_R3(x)
+#define CPU_SP(x) R_SP(x)
+#define CPU_PC(x) R_PC(x)
+#define CPU_RET(x) R_R0(x) /* return value */
+
 #endif

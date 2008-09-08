@@ -1,7 +1,14 @@
 //#include "../arch.h"
 //#include "../mem.h"
 //x86_64.c
-#define ull unsigned long long
+
+#define CPU_ARG0(x) R_RAX(x)
+#define CPU_ARG1(x) R_RBX(x)
+#define CPU_ARG2(x) R_RCX(x)
+#define CPU_ARG3(x) R_RDX(x)
+#define CPU_SP(x) R_RSP(x)
+#define CPU_PC(x) R_RIP(x)
+#define CPU_RET(x) R_RAX(x) /* return value */
 
 int arch_jmp(u64 ptr);
 addr_t arch_mmap(int fd, int size, addr_t addr);
@@ -27,7 +34,7 @@ int arch_continue();
 //void *arch_get_sighandler(int signum);
 //int arch_mprotect(char *addr, unsigned int size, int perms);
 //void *arch_set_sighandler(int signum, off_t handler);
-int arch_is_jmp(const unsigned char *cmd, ull *addr);
+int arch_is_jmp(const unsigned char *cmd, u64 *addr);
 int arch_is_call(const char *cmd);
 int arch_is_soft_stepoverable(const unsigned char *opcode);
 

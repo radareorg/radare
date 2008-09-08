@@ -53,7 +53,7 @@ int debug_lib_load(const char *file)
 
 	/* backup current state */
 	debug_getregs(ps.tid, &regs);
-	pc = R_EIP(regs);
+	pc = CPU_PC(regs);
 	memcpy(&oregs, &regs, sizeof(regs_t));
 	debug_read_at(ps.tid, tmp, 1024, pc);
 
@@ -66,14 +66,14 @@ int debug_lib_load(const char *file)
 	debug_write_at(ps.tid, file, strlen(file), pc+10);
 
 	/* prepare registers */
-	R_EAX(regs) = 86; // uselib
-	R_EBX(regs) = pc+10; // string
-	R_EIP(regs) = pc; // ??? unnecessary
+	CPU_ARG0(regs) = 86; // uselib
+	CPU_ARG1(regs) = pc+10; // string
+	CPU_ARG2(regs) = pc; // ??? unnecessary
 
 	/* run */
 	debug_step(1);
 	debug_getregs(ps.tid, &regs);
-	printf("RESULT: %d\n", R_EAX(regs));
+	printf("RESULT: %d\n", CPU_RET(regs));
 
 	/* restore */
 	debug_write_at(ps.tid, tmp, 1024, pc);
