@@ -1120,7 +1120,7 @@ The hack plugins are just shared libraries that have access to some internal api
 
 In this way it is possible to perform any action in the core just formatting command strings and parsing its output.
 
-\bLanguage bindings\b
+\c{Language bindings}
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
 

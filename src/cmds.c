@@ -639,6 +639,13 @@ CMD_DECL(hash)
 {
 	int i;
 	char buf[1024];
+	char *str;
+	u64 bs = config.block_size;
+	u64 obs = config.block_size;
+
+	str = strchr(input, ' ');
+	if (str)
+		bs = get_math(str+1);
 
 	for(i=0;input[i];i++) if (input[i]==' ') { input[i]='\0'; break; }
 
@@ -658,14 +665,17 @@ CMD_DECL(hash)
 		// TODO: check perl|python build and show proper msg
 		return 0;
 	}
+
 	// XXX doesnt works with dbg:///
 	// XXX use real temporal file instead of /tmp/xx
 	if (config.debug) {
+		radare_set_block_size_i(bs);
 		radare_cmd("pr > /tmp/xx", 0);
 		snprintf(buf, 1000, "rahash -fa '%s' '/tmp/xx'", input);
+		radare_set_block_size_i(obs);
 	} else
-	snprintf(buf, 1000, "rahash -a '%s' -S "OFF_FMTd" -L '"OFF_FMTd"' '%s' | head -n 1", 
-		input, (u64)config.seek, (u64)config.block_size, config.file);
+	snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s' | head -n 1", 
+		input, (u64)config.seek, (u64)bs, config.file);
 
 	io_system(buf);
 
@@ -679,7 +689,7 @@ CMD_DECL(interpret_perl)
 {
 	#if HAVE_PERL
 	char *ptr;
-	char *cmd[] = { "perl", "-e", ptr, 0};
+	char *cmd[] = { "perl", "-e", ptr, 0 };
 	#endif
 
 	if (input==NULL || *input== '\0' || strchr(input,'?')) {

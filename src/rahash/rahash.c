@@ -716,7 +716,7 @@ int main(int argc, char **argv)
 			"  -o           shows the contents of the source hash-file\n"
 			"  -A           use all hash algorithms\n"
 			" options:\n"
-			"  -a [algo]    algorithm for hashing ("ALGO_STRING")\n"
+			"  -a [algo]    algorithm to hash ("ALGO_STRING")\n"
 			"  -s [string]  hash this string instead of a file\n"
 			"  -S [offset]  seek initial offset to\n"
 			"  -E [offset]  end hashing at offset\n"
