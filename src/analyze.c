@@ -68,63 +68,6 @@ struct reflines_t *code_lines_init()
 			sz = 1;
 		} else {
 			/* store data */
-			switch(aop.stackop) {
-			case AOP_STACK_LOCAL_SET:
-				{
-				char buf[1024];
-				int ref = (int)aop.ref;
-				if (ref<0)
-					sprintf(buf, "CC Set arg%d@ 0x%08llx\n", -ref, seek);
-				else
-					sprintf(buf, "CC Set var%d@ 0x%08llx\n", ref, seek);
-				radare_cmd(buf, 0);
-				radare_seek(config.seek, SEEK_SET);
-				radare_read(0);
-				}
-				break;
-			case AOP_STACK_ARG_SET:
-				{
-				int ref = (int)aop.ref;
-				char buf[1024];
-				sprintf(buf, "CC Set arg%d@ 0x%08llx\n", ref, seek);
-				radare_cmd(buf, 0);
-				radare_seek(config.seek, SEEK_SET);
-				radare_read(0);
-				}
-				break;
-			case AOP_STACK_ARG_GET:
-				{
-				char buf[1024];
-				int ref = (int)aop.ref;
-				sprintf(buf, "CC Get arg%d@ 0x%08llx\n", ref, seek);
-				radare_cmd(buf, 0);
-				radare_seek(config.seek, SEEK_SET);
-				radare_read(0);
-				}
-				break;
-			case AOP_STACK_LOCAL_GET:
-				{
-				char buf[1024];
-				int ref = (int)aop.ref;
-				if (ref<0)
-					sprintf(buf, "CC Get arg%d@ 0x%08llx\n", -ref, seek);
-				else
-					sprintf(buf, "CC Get var%d@ 0x%08llx\n", ref, seek);
-				radare_cmd(buf, 0);
-				radare_seek(config.seek, SEEK_SET);
-				radare_read(0);
-				}
-				break;
-			case AOP_STACK_INCSTACK:
-				{
-				char buf[1024];
-				sprintf(buf, "CC Stack size +%d@ 0x%08llx\n", (int)aop.ref, seek);
-				radare_cmd(buf, 0);
-				radare_seek(config.seek, SEEK_SET);
-				radare_read(0);
-				}
-				break;
-			}
 			switch(aop.type) {
 			case AOP_TYPE_CALL:
 			case AOP_TYPE_CJMP:

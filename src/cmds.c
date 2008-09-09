@@ -254,7 +254,6 @@ CMD_DECL(analyze)
 		break;
 	case 'f': {
 		u64 end = 0;
-		cons_printf("; from = 0x%08x\n", config.baddr+config.seek);
 		/* Analyze function */
 		/* XXX ensure this is ok */
 		config_set("graph.jmpblocks", "true");
@@ -269,9 +268,101 @@ CMD_DECL(analyze)
 			if (b0->addr +b0->n_bytes > end)
 				end = b0->addr + b0->n_bytes;
 		}
-		cons_printf("; to = 0x%08llx\n", end);
-		cons_printf("Cf %lld @ 0x%08llx\n", end+1-(config.baddr+config.seek), config.baddr+config.seek);
-		}
+		{
+			char *bytes;
+			struct aop_t aop;
+			u64 from = config.baddr+ config.seek;
+			u64 seek = from; // to place comments
+			u64 to   = end+1;
+			u64 len  = to-from;
+			int inc  = 0;
+
+			bytes = (char *)malloc(len);
+			radare_read_at(from, bytes, len);
+
+			cons_printf("; from = 0x%08llx\n", from);
+			cons_printf("; to   = 0x%08llx\n", end);
+			cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
+			for(;seek< to; seek+=inc) {
+				inc = arch_aop(seek, bytes+(seek-from), &aop);
+				if (inc<1) {
+					inc = 1;
+					continue;
+				}
+				switch(aop.stackop) {
+				case AOP_STACK_LOCAL_SET:
+					{
+					char buf[1024];
+					int ref = (int)aop.ref;
+					if (ref<0)
+						sprintf(buf, "CC Set arg%d @ 0x%08llx\n", -ref, seek);
+					else sprintf(buf, "CC Set var%d @ 0x%08llx\n", ref, seek);
+					cons_strcat(buf);
+#if 0
+					radare_cmd(buf, 0);
+					radare_seek(config.seek, SEEK_SET);
+					radare_read(0);
+#endif
+					}
+					break;
+				case AOP_STACK_ARG_SET:
+					{
+					int ref = (int)aop.ref;
+					char buf[1024];
+					sprintf(buf, "CC Set arg%d @ 0x%08llx\n", ref, seek);
+					cons_strcat(buf);
+#if 0
+					radare_cmd(buf, 0);
+					radare_seek(config.seek, SEEK_SET);
+					radare_read(0);
+#endif
+					}
+					break;
+				case AOP_STACK_ARG_GET:
+					{
+					char buf[1024];
+					int ref = (int)aop.ref;
+					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
+					cons_strcat(buf);
+#if 0
+					radare_cmd(buf, 0);
+					radare_seek(config.seek, SEEK_SET);
+					radare_read(0);
+#endif
+					}
+					break;
+				case AOP_STACK_LOCAL_GET:
+					{
+					char buf[1024];
+					int ref = (int)aop.ref;
+					if (ref<0)
+						sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
+					else sprintf(buf, "CC Get var%d @ 0x%08llx\n", ref, seek);
+					cons_strcat(buf);
+#if 0
+					radare_cmd(buf, 0);
+					radare_seek(config.seek, SEEK_SET);
+					radare_read(0);
+#endif
+					}
+					break;
+				case AOP_STACK_INCSTACK:
+					{
+					char buf[1024];
+					sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)aop.ref, seek);
+					cons_strcat(buf);
+#if 0
+					radare_cmd(buf, 0);
+					radare_seek(config.seek, SEEK_SET); radare_read(0);
+#endif
+					}
+					break;
+				}
+			}
+			free(bytes);
+			/* add final report here */
+			/* N local vars...*/
+		}}
 		break;
 	case 'g':
 #if HAVE_VALAC
@@ -285,8 +376,8 @@ CMD_DECL(analyze)
 		break;
 	case 'c': {
 		int c = config.verbose;
-			config.verbose=1;
 		char cmd[1024];
+		config.verbose = 1;
 		prg = code_analyze(config.seek+config.baddr, depth); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		list_for_each(head, &(prg->blocks)) {
@@ -860,10 +951,6 @@ CMD_DECL(code)
 	char *text = input;
 
 	switch(text[0]) {
-	case 'F':
-		// define function 
-		eprintf("TODO\n");
-		break;
 	case 'C':
 		/* comment */
 		text = text+1;
@@ -890,6 +977,9 @@ CMD_DECL(code)
 			metadata_xrefs_del(config.seek, get_math(text+2), 1);
 		else	metadata_xrefs_add(config.seek, get_math(text+1), 1);
 		break;
+	case 'F':
+		/* do code analysis here */
+		//radare_cmd(".af",0);
 	case 'c':
 	case 'd':
 	case 's':
@@ -902,6 +992,7 @@ CMD_DECL(code)
 			case 'c': fmt = DATA_CODE; break;
 			case 'd': fmt = DATA_HEX; break;
 			case 's': fmt = DATA_STR; break;
+			case 'F': fmt = DATA_FUN; break;
 			case 'f': fmt = DATA_FOLD_C; break;
 			case 'u': fmt = DATA_FOLD_O; break;
 		}

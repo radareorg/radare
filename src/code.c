@@ -141,6 +141,7 @@ struct data_t *data_get_range(u64 offset)
 	return NULL;
 }
 
+/* TODO: OPTIMIZE: perform cache here */
 struct data_t *data_get_between(u64 from, u64 to)
 {
 	int hex = 0;
@@ -151,7 +152,8 @@ struct data_t *data_get_between(u64 from, u64 to)
 
 	list_for_each(pos, &data) {
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (from >= d->from && d->to <= to) {
+		//if (from >= d->from && to <= d->to) {
+		if (d->from >= from && d->to < to) {
 			switch(d->type) {
 			case DATA_HEX: hex++; break;
 			case DATA_STR: str++; break;
@@ -163,11 +165,12 @@ struct data_t *data_get_between(u64 from, u64 to)
 	if (d == NULL)
 		return NULL;
 
-	if (hex>=str && hex>=code) d->type = hex;
+	if (hex>=str && hex>=code) d->type = DATA_HEX;
 	else
-	if (str>=hex && str>=code) d->type = str;
+	if (str>=hex && str>=code) d->type = DATA_STR;
 	else
-	if (code>=hex && code>=str) d->type = code;
+	if (code>=hex && code>=str) d->type = DATA_CODE;
+//printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
 }
