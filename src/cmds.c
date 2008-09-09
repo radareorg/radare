@@ -1319,13 +1319,14 @@ CMD_DECL(write)
 			/* 8 byte addr */
 			unsigned long long addr8;
 			endian_memcpy((u8*)&addr8, (u8*)&off, 8);
+			undo_write_new(config.seek, &addr8, 8);
 			io_write(config.fd, &addr8, 8);
 		} else {
-			unsigned long addr4;
-			unsigned long addr4_= (unsigned long)off;
-			endian_memcpy((u8*)&addr4, (u8*)&addr4, 4);
 			/* 4 byte addr */
-			undo_write_new(config.seek, (u8*)&addr4, 4);
+			unsigned long addr4_, addr4 = (unsigned long)off;
+			drop_endian((u8*)&addr4_, (u8*)&addr4, 4); /* addr4_ = addr4 */
+			endian_memcpy((u8*)&addr4, (u8*)&addr4_, 4); /* addr4 = addr4_ */
+			undo_write_new(config.seek, &addr4, 4);
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
@@ -1336,6 +1337,7 @@ CMD_DECL(write)
 		if (osize>0) {
 			tmp = (char *)malloc(config.block_size);
 			memcpy_loop(tmp, out, config.block_size, osize);
+			undo_write_new(config.seek, tmp, config.block_size);
 			io_write(config.fd, tmp, config.block_size);
 			free(tmp);
 		} else {

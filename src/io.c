@@ -117,6 +117,7 @@ int radare_write(char *arg, int mode)
 					char *str = malloc(rest);
 					io_read(config.fd, str, rest);
 					io_lseek(config.fd, seek+(len*times), SEEK_SET);
+					undo_write_new(seek+(len*times), str, rest);
 					io_write(config.fd, str, rest);
 					free(str);
 					io_lseek(config.fd, seek, SEEK_SET);
@@ -231,6 +232,7 @@ int radare_dump(const char *arg, int size)
 			return 0;
 		}
 
+		undo_write_new(config.seek, config.block, size);
 		ret = io_write(fd, config.block, size);
 
 		io_close(fd);

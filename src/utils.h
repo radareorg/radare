@@ -97,6 +97,7 @@ int radare_tsearch_file(char *file);
 int hexpair2bin(const char *arg);
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size);
 void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian);
+void drop_endian(u8 *dest, u8 *orig, unsigned int size);
 int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
