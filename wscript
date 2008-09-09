@@ -160,10 +160,6 @@ def build(bld):
 	bld.add_subdirs('src')
 	#if Params.g_commands['clean']:
 	#	os.system("echo unknown clean")
-	#else:
-	# ADD MISSING FILES TO THE INSTALLATION
-	#bld.add_subdirs('libexec')
-	#bld.install_files('BINDIR', 'src/rsc', 'libexec/')
 
 	bld.install_files('${PREFIX}/lib/python2.5', 'src/plug/hack/radare.py')
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.lua')

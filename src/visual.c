@@ -251,17 +251,19 @@ void convert_bytes(int fmt)
 		"c - code\n"
 		"d - data bytes\n"
 		"s - string\n"
+		"f - function\n"
 		"< - close folder\n"
 		"> - open folder\n");
 		cons_flush();
 		c = cons_readchar();
-		if (c != 'c' && c!='d' && c!='s')
+		if (c != 'c' && c!='d' && c!='s' && c!='f' && c!='<' && c!='>')
 			return;
 		fmt = FMT_HEXB;
 		switch(c) {
 		case 'c': fmt = DATA_CODE; break;
 		case 'd': fmt = DATA_HEX; break;
 		case 's': fmt = DATA_STR; break;
+		case 'f': fmt = DATA_FUN; break;
 		case '<': fmt = DATA_FOLD_C; break;
 		case '>': fmt = DATA_FOLD_O; break;
 		}

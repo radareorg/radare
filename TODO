@@ -17,14 +17,12 @@
 
 * multithread traces <pid>:<addr>
 
-* !contsc should support arg types
 * add support for strings with "" in CC for.example
 
 * powerpc
   - !regs must show and flag proper regs!!
 * add command to seek to hit number N
 
-* show bg color or so for progressbar depending on type
 * gradare must load using Shell to loop all the time the radare
 
 * search for strings in disassembly

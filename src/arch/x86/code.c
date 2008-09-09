@@ -137,7 +137,8 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		if (bytes[1]== 0x75) {
 			aop->type = AOP_TYPE_PUSH;
 			aop->stackop = AOP_STACK_ARG_GET;
-			aop->ref = (u64)(((char)bytes[2]));
+			aop->ref = 0LL;
+			aop->ref = (u64)(((char)(bytes[2])));
 		} else
 		if (bytes[1]== 0x45) {
 			aop->type = AOP_TYPE_ADD;
