@@ -94,17 +94,24 @@ static PyObject * Radare_eval(Radare* self, PyObject *args)
 	return result;
 }
 
+
+static char *py_nullstr = "";
 static PyObject * Radare_cmd(Radare* self, PyObject *args)
 {
 	PyObject *result;
-	char *cmd = NULL;
+	char *str, *cmd = NULL;
 
 	if (!	PyArg_ParseTuple(args, "s", &cmd))
 		return NULL;
 
 	if (rs == NULL)
 		return NULL;
-	result = PyString_FromString(rs(cmd));
+
+	str = rs(cmd);
+	if (str == NULL)
+		str = py_nullstr;
+
+	result = PyString_FromString(str);
 
 	return result;
 }

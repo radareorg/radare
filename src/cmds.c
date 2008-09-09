@@ -1192,11 +1192,11 @@ CMD_DECL(seek)
 	if (strchr(input, '?')) {
 		cons_printf("Usage: > s 0x128 ; absolute seek\n");
 		cons_printf("       > s +33   ; relative seek\n");
-		cons_printf("       > s-     ; undo seek\n");
-		cons_printf("       > s+     ; redo seek\n");
-		cons_printf("       > s*     ; show seek history\n");
-		cons_printf("       > .s*    ; flag them all\n");
-		cons_printf("       > s!     ; reset seek history\n");
+		cons_printf("       > s-      ; undo seek\n");
+		cons_printf("       > s+      ; redo seek\n");
+		cons_printf("       > s*      ; show seek history\n");
+		cons_printf("       > .s*     ; flag them all\n");
+		cons_printf("       > s!      ; reset seek history\n");
 		return;
 	}
 
