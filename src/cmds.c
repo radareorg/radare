@@ -252,7 +252,13 @@ CMD_DECL(analyze)
 			eprintf("oops\n");
 		}
 		break;
+	case 'F': {
+		analyze_function(3);
+		}
+		break;
 	case 'f': {
+		analyze_function(0);
+#if 0
 		u64 end = 0;
 		/* Analyze function */
 		/* XXX ensure this is ok */
@@ -363,6 +369,8 @@ CMD_DECL(analyze)
 			/* add final report here */
 			/* N local vars...*/
 		}}
+#endif
+		}
 		break;
 	case 'g':
 #if HAVE_VALAC

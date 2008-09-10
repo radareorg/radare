@@ -16,6 +16,8 @@
 * b +3
 * b -3 should work!!
 
+* cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
+
 * store xrefs
 
 * multithread traces <pid>:<addr>

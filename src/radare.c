@@ -1078,6 +1078,9 @@ void radare_set_block_size(char *arg)
 	if ( arg[i] != '\0' ) {
 		size = get_math(arg+i);
 		if (size<1) size = 1;
+		if (arg[i]=='+') size += config.block_size;
+		else
+		if (arg[i]=='-') size = config.block_size - size;
 		radare_set_block_size_i(size);
 	}
 	config_set_i("cfg.bsize", config.block_size);

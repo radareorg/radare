@@ -532,6 +532,8 @@ err:
 #define ALIGN_SIZE 4096
 int debug_read_at(pid_t pid, void *buf, int length, u64 addr)
 {
+	if (length<0)
+		return -1;
 	return ReadMem(pid, (addr_t)addr, length, buf);
 #if 0
 	long dword;

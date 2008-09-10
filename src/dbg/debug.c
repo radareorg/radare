@@ -883,6 +883,8 @@ int debug_unload()
 
 int debug_read(pid_t pid, void *addr, int length)
 {
+	if (length<0)
+		return -1;
 	return debug_read_at(pid, addr, length, ps.offset);
 }
 
