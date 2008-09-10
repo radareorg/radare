@@ -132,6 +132,17 @@ void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 			dest[i++] = orig[j];
 }
 
+/* arch dependant */
+void drop_endian(u8 *dest, u8 *orig, unsigned int size)
+{
+#if LIL_ENDIAN
+	endian_memcpy_e(dest, orig, size, 0);
+#else
+	endian_memcpy_e(dest, orig, size, 1); // lilendian by default
+#endif
+}
+
+
 void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
 {
 #if RADARE_CORE

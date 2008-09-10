@@ -342,5 +342,8 @@ def graph(addr=None):
 	else:
 		r.cmd("ag @ %s"%addr)
 
+def cmd(str):
+	return r.cmd(str)
+
 def quit():
 	r.cmd("q")
