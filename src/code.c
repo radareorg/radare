@@ -48,6 +48,7 @@ int udis86_color = 0;
 
 extern int arm_mode;
 extern int mips_mode;
+int ollyasm_enable = 0;
 
 int data_set_len(u64 off, u64 len)
 {
@@ -510,6 +511,10 @@ void udis_init()
 	/* set syntax */
 	ud_set_syntax(&ud_obj, UD_SYN_INTEL);
 	if (syn) {
+		ollyasm_enable = 0;
+		if (!strcmp(syn,"olly")) {
+			ollyasm_enable = 1;
+		} else
 		if (!strcmp(syn,"pseudo")) 
 			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
 		else if (!strcmp(syn,"att")) 
@@ -543,10 +548,19 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		ud_obj.insn_offset = seek+myinc; //+bytes;
-		ud_obj.pc = seek+myinc;
-		ret = ud_insn_len(&ud_obj);
-		cons_printf("%-24s", ud_insn_asm(&ud_obj));
+		if (ollyasm_enable) {
+#include "arch/x86/ollyasm/disasm.h"
+			t_disasm da;
+			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
+			cons_printf("%-24s", da.result);
+			if (da.comment[0])
+				cons_printf("; %s", da.comment);
+		} else {
+			ud_obj.insn_offset = seek+myinc; //+bytes;
+			ud_obj.pc = seek+myinc;
+			ret = ud_insn_len(&ud_obj);
+			cons_printf("%-24s", ud_insn_asm(&ud_obj));
+		}
 		//cons_printf("%08llx: %d %d %-24s", seek, ud_idx, bytes, ud_insn_asm(&ud_obj));
 		break;
 	case ARCH_CSR:
@@ -743,7 +757,7 @@ void udis_arch(int arch, int len, int rows)
 				if (foo->from == sk)
 					strcpy(funline,"/");
 				else
-				if (foo->to -2 == sk)
+				if (foo->to-1-aop.length== sk)
 					strcpy(funline,"\\");
 				else
 					strcpy(funline,"|");

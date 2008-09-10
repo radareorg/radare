@@ -660,10 +660,10 @@ int analyze_function(int recursive)
 	char *bytes;
 	u64 from = config.baddr+ config.seek;
 	u64 seek = from; // to place comments
-	u64 end = 0;
+	u64 end  = 0;
 	int inc  = 0;
-	u64 to   ;
-	u64 len  ;
+	u64 to;
+	u64 len;
 
 
 	d = data_get(config.baddr+config.seek);
@@ -684,8 +684,8 @@ int analyze_function(int recursive)
 		//if ((b0->type == BLK_TYPE_HEAD)
 		//if ((b0->type == BLK_TYPE_LAST)
 		//|| (b0->type == BLK_TYPE_FOOT))
-		if (b0->addr +b0->n_bytes > end)
-			end = b0->addr + b0->n_bytes;
+		if ((b0->addr + b0->n_bytes) > end)
+			end = (b0->addr + b0->n_bytes);
 	}
 	to = end;
 	len=1+to-from;
@@ -693,7 +693,7 @@ int analyze_function(int recursive)
 	bytes = (char *)malloc(len);
 	ret = radare_read_at(from, bytes, len);
 	if (ret <0) {
-		printf("Invalid read at 0x%08llx len=%08lld\n", from,len);
+		printf("Invalid read at 0x%08llx len=%lld\n", from,len);
 		return -1;
 	}
 
