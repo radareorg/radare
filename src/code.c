@@ -723,31 +723,38 @@ void udis_arch(int arch, int len, int rows)
 			code_lines_print(reflines, sk, 0);
 		if (show_offset)
 			print_addr(seek);
+		if (show_reladdr) {
+			if (bytes==0) cons_printf("%08llX ", seek);
+			else cons_printf("+%7d ", bytes);
+		}
+		/* size */
+		if (show_size)
+			cons_printf("%d ", aop.length); //dislen(config.block+seek));
+		/* trac information */
+		if (show_traces)
+			cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));
 
-		/* handle data type block */
-		//if(show_functions)
-		//print_function_line(foo, sk);
 		struct data_t *foo = data_get_range(sk);
 		funline[0]='\0';
+		/* handle data type block */
+		//	print_function_line(foo, sk);
 		if (foo != NULL && foo->type == DATA_FUN) {
-			if (foo->from == sk)
-				strcpy(funline,"/");
-			else
-			if (foo->to -2 == sk)
-				strcpy(funline,"\\");
-			else
-				strcpy(funline,"|");
-			cons_strcat(funline);
+			if(show_functions) {
+				if (foo->from == sk)
+					strcpy(funline,"/");
+				else
+				if (foo->to -2 == sk)
+					strcpy(funline,"\\");
+				else
+					strcpy(funline,"|");
+				cons_strcat(funline);
+			}
 			foo = NULL;
 		}
 		if (foo != NULL) {
 			int dt = foo->type;
 			idata = foo->to-sk-1;
 			myinc = idata;
-			if (show_reladdr) {
-				if (bytes==0) cons_printf("%08llX ", seek);
-				else cons_printf("+%7d ", bytes);
-			}
 
 			flag = flag_name_by_offset(seek);
 			if (flag == NULL && config.baddr)
@@ -918,44 +925,6 @@ void udis_arch(int arch, int len, int rows)
 				inc = myinc;
 		}
 		D { 
-			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
-#if 0
-			if (show_lines)
-				code_lines_print(reflines, sk, 0);
-#endif
-
-#if 0
-			if (show_offset) {
-				print_addr(seek);
-				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
-			}
-#endif
-			if (show_reladdr) {
-				if (bytes==0) cons_printf("%08llX ", seek);
-				else cons_printf("+%7d ", bytes);
-			}
-			if (0){// XXX should be : show_functions) {
-				struct data_t *d = data_get(sk);
-				if (d != NULL) {
-					if (d->type == DATA_FUN) {
-						if (d->from == seek)
-							cons_strcat("/");
-						else
-						if (d->to == seek)
-							cons_strcat("\\");
-						else
-							cons_strcat("|");
-					}
-				}
-			}
-			/* size */
-			if (show_size)
-				cons_printf("%d ", aop.length); //dislen(config.block+seek));
-			/* trac information */
-			if (show_traces)
-				cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));
-
 			if (show_flags && !show_flagsline) {
 				char buf[1024];
 				f = flag_by_offset( seek );
