@@ -13,6 +13,9 @@
 * add margin right to the text
   - or margin left to the shell code
 
+* b +3
+* b -3 should work!!
+
 * store xrefs
 
 * multithread traces <pid>:<addr>

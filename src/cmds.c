@@ -491,7 +491,8 @@ CMD_DECL(analyze)
 		cons_printf("Usage: a[ocdg] [depth]\n");
 		cons_printf(" ao [nops]    analyze N opcodes\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
-		cons_printf(" af [name]    analyze function\n");
+		cons_printf(" af [size]    analyze function\n");
+		cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code\n");
@@ -979,7 +980,6 @@ CMD_DECL(code)
 		break;
 	case 'F':
 		/* do code analysis here */
-		//radare_cmd(".af",0);
 	case 'c':
 	case 'd':
 	case 's':
@@ -987,7 +987,7 @@ CMD_DECL(code)
 	case 'u': {
 		u64 tmp = config.block_size;
 		int fmt = FMT_HEXB;
-		int len = get_math(text +1);
+		int len = get_math(text +2);
 		switch(text[0]) {
 			case 'c': fmt = DATA_CODE; break;
 			case 'd': fmt = DATA_HEX; break;

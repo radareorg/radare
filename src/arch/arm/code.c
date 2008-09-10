@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-static inline unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
+static unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
 {
 	unsigned int add;
 		
@@ -42,14 +42,14 @@ static inline unsigned int disarm_branch_offset ( unsigned int pc, unsigned int 
 	return add;
 }
 
-static inline int anal_is_B  ( int inst )
+static int anal_is_B  ( int inst )
 {
 	if  ( ( inst & ARM_BRANCH_I_MASK  ) == ARM_BRANCH_I )
 		return 1;
 	 return 0;
 }
 
-static inline int anal_is_BL  ( int inst )
+static int anal_is_BL  ( int inst )
 {
 	
 	if ( anal_is_B(inst) && ( inst & ARM_BRANCH_LINK ) == ARM_BRANCH_LINK  )
@@ -58,30 +58,31 @@ static inline int anal_is_BL  ( int inst )
 }
 
 
-static inline int anal_is_return ( int inst )
+static int anal_is_return ( int inst )
 {
 	if ( ( inst & ( ARM_DTM_I_MASK | ARM_DTM_LOAD  | ( 1 << 15 ) ) ) == ( ARM_DTM_I | ARM_DTM_LOAD  | ( 1 << 15 ) )  )
 		return 1;
 	return 0;
 }
 
-static inline int anal_is_unkjmp ( int inst )
+static int anal_is_unkjmp ( int inst )
 {
-	if ( (inst & ( ARM_DTX_I_MASK | ARM_DTX_LOAD  | ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ) )
+	//if ( (inst & ( ARM_DTX_I_MASK | ARM_DTX_LOAD  | ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ) )
+	if (( (( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ))
 		return 1;
 	return 0;
 }
 
-static inline int anal_is_condAL ( int inst )
+static int anal_is_condAL ( int inst )
 {
 	if ( ( inst &ARM_COND_MASK ) == ARM_COND_AL )
 		return 1;
 	return 0;
 }
 
-static inline int anal_is_exitpoint ( int inst )
+static int anal_is_exitpoint ( int inst )
 {
-	return ( anal_is_B ( inst )  || anal_is_return ( inst ) || anal_is_unkjmp ( inst ) );
+	return ( anal_is_B ( inst ) || anal_is_return ( inst ) || anal_is_unkjmp ( inst ) );
 }
 
 extern int arm_mode;
@@ -102,6 +103,12 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 		codeA[0], codeA[1], codeA[2], codeA[3]);
 #endif
 
+	// 0x0001B4D8,           1eff2fe1        bx    lr
+	if( (code[i] == 0x1eff2fe1) ||(code[i] == 0xe12fff1e)) { // bx lr
+		aop->type = AOP_TYPE_RET;
+		aop->eob = 1;
+		return (arm_mode==16)?2:4;
+	} else
 	if ( anal_is_exitpoint ( code[i] ) )
 	{
 		branch_dst_addr =  disarm_branch_offset ( addr, code[i]&0x00FFFFFF ) ;
@@ -113,10 +120,11 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 				aop->fail = addr + 4 ;
 				aop->eob  = 1;
 			} else {
-				//aop->type = AOP_TYPE_UJMP;
-				//aop->eob = 1;
+				aop->type = AOP_TYPE_RET;
+				aop->eob = 1;
 				return (arm_mode==16)?2:4;
 			}
+
 		} else {
 			if ( anal_is_B ( code[i] ) ) {
 				if ( anal_is_condAL (code[i] )  ) {

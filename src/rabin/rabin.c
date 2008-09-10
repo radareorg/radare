@@ -199,7 +199,12 @@ void rabin_show_info(const char *file)
 	case FILETYPE_CSRFW:
 		if (rad)
 			printf("e asm.arch = csr\n");
-		else printf("File type: CSR FW\n");
+		else printf("File type: CSR firmware\n");
+		break;
+	case FILETYPE_ARMFW:
+		if (rad)
+			printf("e asm.arch = arm\n");
+		else printf("File type: ARM firmwarre\n");
 		break;
 	case FILETYPE_UNK:
 		if (rad) printf("e file.type = unk\n");
@@ -598,9 +603,7 @@ int rabin_identify_header()
 		filetype = FILETYPE_ELF;
 		
 		if (buf[EI_CLASS] == ELFCLASS64)
-		{
 		    elf64 = 1;
-		}
 	} else
 	if (!memcmp(buf, "\x4d\x5a", 2)) {
 		int pe = buf[0x3c];
@@ -609,6 +612,9 @@ int rabin_identify_header()
 			filetype = FILETYPE_PE;
 			pebase = pe;
 		}
+	} else
+	if (buf[2]==0 && buf[3]==0xea) {
+		filetype = FILETYPE_ARMFW;
 	} else {
 		if (!rad)
 			printf("Unknown filetype\n");

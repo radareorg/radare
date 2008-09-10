@@ -37,6 +37,7 @@
 static int last_arch = ARCH_X86;
 struct list_head data;
 extern int force_thumb;
+static char funline[3];
 
 static ud_t ud_obj;
 static int length = 0;
@@ -80,7 +81,8 @@ void data_add(u64 off, int type)
 	u64 tmp;
 	struct data_t *d;
 
-	if (type == FMT_UDIS) {
+#if 1
+	if (type == DATA_CODE) {
 		struct list_head *pos;
 		__reloop:
 		list_for_each(pos, &data) {
@@ -92,6 +94,7 @@ void data_add(u64 off, int type)
 		}
 		return;
 	}
+#endif
 
 	d = (struct data_t *)malloc(sizeof(struct data_t));
 	d->from = off;
@@ -146,6 +149,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 {
 	int hex = 0;
 	int str = 0;
+	int fun = 0;
 	int code = 0;
 	struct list_head *pos;
 	struct data_t *d = NULL;
@@ -158,6 +162,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 			case DATA_HEX: hex++; break;
 			case DATA_STR: str++; break;
 			case DATA_CODE: code++; break;
+			case DATA_FUN: fun++; break;
 			}
 		}
 	}
@@ -165,11 +170,13 @@ struct data_t *data_get_between(u64 from, u64 to)
 	if (d == NULL)
 		return NULL;
 
-	if (hex>=str && hex>=code) d->type = DATA_HEX;
+	if (hex>=str && hex>=code && hex>=fun) d->type = DATA_HEX;
 	else
-	if (str>=hex && str>=code) d->type = DATA_STR;
+	if (str>=hex && str>=code && str>=fun) d->type = DATA_STR;
 	else
-	if (code>=hex && code>=str) d->type = DATA_CODE;
+	if (code>=hex && code>=str && code>=fun) d->type = DATA_CODE;
+	else
+	if (fun>=hex && fun>=str && fun>=code) d->type = DATA_FUN;
 //printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
@@ -225,10 +232,11 @@ int data_list()
 		switch(d->type) {
 		case DATA_FOLD_O: cons_strcat("Cu "); break;
 		case DATA_FOLD_C: cons_strcat("Cf "); break;
+		case DATA_FUN:    cons_strcat("CF "); break;
 		case DATA_HEX:    cons_strcat("Cd "); break;
 		case DATA_STR:    cons_strcat("Cs "); break;
 		default:          cons_strcat("Cc "); break; }
-		cons_printf("%d @ 0x%08llx\n", d->size, d->type);
+		cons_printf("%lld @ 0x%08llx\n", d->size, d->from);
 	}
 	return 0;
 }
@@ -551,9 +559,14 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
+{
+	char bu[4];
+	
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
 	       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-	       gnu_disarm((unsigned char*)b, (unsigned int)seek);
+		endian_memcpy(&bu, b, 4); //, endian);
+	       ret=gnu_disarm((unsigned char*)bu, (u64)seek);
+}
 	       break;
 	case ARCH_MIPS:
 	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
@@ -633,13 +646,14 @@ void udis_arch(int arch, int len, int rows)
 	int rrows = rows; /* rrows is in reality the num of bytes to be disassembled */
 	int endian;
 	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
-	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline;
+	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline, show_functions;
 	int folder = 0; // folder level
 
 	cmd_asm       = config_get("cmd.asm");
 	show_size     = (int) config_get("asm.size");
 	show_bytes    = (int) config_get("asm.bytes");
 	show_offset   = (int) config_get("asm.offset");
+	show_functions= (int) config_get("asm.functions");
 	show_splits   = (int) config_get("asm.split");
 	show_flags    = (int) config_get("asm.flags");
 	show_flagsline= (int) config_get("asm.flagsline");
@@ -705,17 +719,31 @@ void udis_arch(int arch, int len, int rows)
 
 		if (show_comments)
 			metadata_print(bytes);
+		if (show_lines) // does nothing if not data
+			code_lines_print(reflines, sk, 0);
+		if (show_offset)
+			print_addr(seek);
 
 		/* handle data type block */
+		//if(show_functions)
+		//print_function_line(foo, sk);
 		struct data_t *foo = data_get_range(sk);
+		funline[0]='\0';
+		if (foo != NULL && foo->type == DATA_FUN) {
+			if (foo->from == sk)
+				strcpy(funline,"/");
+			else
+			if (foo->to -2 == sk)
+				strcpy(funline,"\\");
+			else
+				strcpy(funline,"|");
+			cons_strcat(funline);
+			foo = NULL;
+		}
 		if (foo != NULL) {
 			int dt = foo->type;
 			idata = foo->to-sk-1;
 			myinc = idata;
-			if (show_lines) // does nothing if not data
-				code_lines_print(reflines, sk, 0);
-			if (show_offset)
-				print_addr(seek);
 			if (show_reladdr) {
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
@@ -786,15 +814,18 @@ void udis_arch(int arch, int len, int rows)
 		}
 		__outofme:
 		if (data_end(sk) == DATA_FOLD_O) {
+#if 0
 			if (show_lines)
 				code_lines_print(reflines, sk, 1);
 			if (show_offset)
 				cons_strcat("           ");
+#endif
 			folder--;
 			for(i=0;i<folder;i++) cons_strcat("  ");
 			cons_strcat("   }\n");
 			CHECK_LINES
 		}
+		__outofme2:
 
 		switch(arch) {
 		case ARCH_X86:
@@ -803,7 +834,17 @@ void udis_arch(int arch, int len, int rows)
 		case ARCH_CSR:
 			memcpy(b, config.block+bytes, 2);
 			break;
+		case ARCH_ARM16:
+			memcpy(b, config.block+bytes, 2);
+			break;
+		case ARCH_ARM:
+			memcpy(b, config.block+bytes, 4);
+			break;
+		case ARCH_PPC:
+			endian_memcpy_e(b, config.block+bytes, 4, !endian);
+			break;
 		default:
+			//memcpy(b, config.block+bytes, 4);
 			endian_memcpy_e(b, config.block+bytes, 4, endian);
 		}
 
@@ -833,6 +874,7 @@ void udis_arch(int arch, int len, int rows)
 				arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_ARM:
+				// endian stuff here
 				myinc += arch_arm_aop(seek, (const unsigned char *)b, &aop);
 				break;
 			case ARCH_MIPS:
@@ -862,6 +904,7 @@ void udis_arch(int arch, int len, int rows)
 			default:
 				// Uh?
 				myinc += 4;
+				// XXX clear aop or so
 				break;
 		}
 		if (myinc<1)
@@ -876,17 +919,35 @@ void udis_arch(int arch, int len, int rows)
 		}
 		D { 
 			// TODO autodetect stack frames here !! push ebp and so... and wirte a comment
+#if 0
 			if (show_lines)
 				code_lines_print(reflines, sk, 0);
+#endif
 
+#if 0
 			if (show_offset) {
 				print_addr(seek);
 				//C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
 				//else cons_printf("0x%08llX ", (unsigned long long)(seek));
 			}
+#endif
 			if (show_reladdr) {
 				if (bytes==0) cons_printf("%08llX ", seek);
 				else cons_printf("+%7d ", bytes);
+			}
+			if (0){// XXX should be : show_functions) {
+				struct data_t *d = data_get(sk);
+				if (d != NULL) {
+					if (d->type == DATA_FUN) {
+						if (d->from == seek)
+							cons_strcat("/");
+						else
+						if (d->to == seek)
+							cons_strcat("\\");
+						else
+							cons_strcat("|");
+					}
+				}
 			}
 			/* size */
 			if (show_size)
@@ -922,6 +983,7 @@ void udis_arch(int arch, int len, int rows)
 						}
 						if (show_reladdr)
 							cons_printf("        ");
+						cons_strcat(funline);
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf,"");
 					} else {

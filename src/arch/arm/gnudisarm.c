@@ -54,11 +54,13 @@ const char *gnu_disarm(unsigned char *inst, u64 offset)
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
 	info.print_address_func = &print_address;
-	info.endian = 0;//config_get_i("cfg.bigendian");
+	info.endian = config_get_i("cfg.bigendian")?1:0;
 	info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 
-	if (print_insn_arm((unsigned long)offset, &info) == -1)
+	//if (print_insn_arm((unsigned long)offset, &info) == -1)
+	//if (print_insn_arm((unsigned long)config_get_i("file.baddr"), &info) == -1)
+	if (print_insn_arm((unsigned long)0, &info) == -1)
 		return str_data;
 
 	return str;

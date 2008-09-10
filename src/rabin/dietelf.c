@@ -823,12 +823,13 @@ int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 		if (k != 0) {
 		    if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 			if (rad) {
-			    printf("b %08llx && ", (u64)symp->st_size); 
+			    printf("b 0x%08llx && ", (u64)symp->st_size); 
 			    printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
+			    printf("CF %lld @ 0x%08llx\n", (u64)symp->st_size, (u64)symp->st_value);
 			    cont++;
 			} else { 
 			    if (verbose) {
-				printf("0x%08llx size=%05lli ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), (u64)symp->st_size);
+				printf("0x%08llx size=%05lld ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), (u64)symp->st_size);
 				switch (ELF32_ST_BIND(symp->st_info)) {
 				    case STB_LOCAL:  printf("LOCAL  "); break;
 				    case STB_GLOBAL: printf("GLOBAL "); break;

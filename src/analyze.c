@@ -77,7 +77,7 @@ struct reflines_t *code_lines_init()
 					if (aop.jump > seek+config.block_size)
 						goto __next;
 					/* skip outside lines */
-					if (aop.jump < seek-30)
+					if (aop.jump < seek-config.block_size)
 						goto __next;
 				} else
 					if (aop.jump == 0)

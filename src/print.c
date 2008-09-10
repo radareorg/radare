@@ -356,6 +356,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 					case DATA_STR: cons_printf(C_RED); break;
 					case DATA_HEX: cons_printf(C_GREEN); break;
 					case DATA_CODE: cons_printf(C_YELLOW); break;
+					case DATA_FUN: cons_printf(C_MAGENTA); break;
 				}	}
 				
 				if (config.seek >= piece*i && config.seek < (piece*(i+1)))

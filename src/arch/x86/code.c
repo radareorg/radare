@@ -39,17 +39,20 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 
 	switch(bytes[0]) {
 	case 0x89: // move
-		if (bytes[1]== 0x45) {
+		switch(bytes[1]) {
+		case 0x45:
+		case 0x55:
 			aop->stackop = AOP_STACK_LOCAL_SET;
 			aop->ref = (u64)-((char)bytes[2]);
-		} else
-		if (bytes[1]== 0x85) {
+			break;
+		case 0x85:
 			aop->stackop = AOP_STACK_LOCAL_SET;
 			aop->ref = (u64)-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
-		} else
-		if (bytes[1]== 0x75) {
+			break;
+		case 0x75:
 			aop->stackop = AOP_STACK_LOCAL_GET;
-			aop->ref = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);
+			aop->ref = (u64)(bytes[2]); //+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
+			break;
 		}
 		aop->type   = AOP_TYPE_MOV;
 		aop->length = 2;
