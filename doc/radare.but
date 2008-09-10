@@ -1297,26 +1297,201 @@ Those operations are handled by the root 'a'nalyze command:
 
 \H{codeanal} Code analysis
 
-About code analysis radare can work with functions, basic blocks, opcodes.
+The code analysis is a common technique used to extract information from the assembly code. Radare stores multiple internal data structures to identify basic blocks, function trees, extract opcode-level information and such.
 
--- ao: opcode
--- ab: block
--- af: function
--- ac: anlayze code
--- av: analyze using virtual machine
 
-TODO
+\H{codeanal-fun} Functions
+
+We can use rabin to import the function definitions directly from the program
+
+\c [0xB7F14810]> .!rabin -rs $FILE
+
+Rabin will mark each function with 'CF <size> @ <fun-addr>', add comments for stack usage, and setup flags for each function symbols.
+
+To make a function analysis use the 'af' command which will analyze the code from the current seek and tries to identify the end of the function. The command will just output some radare commands, Use '.af' to interpret them.
+
+\c [0xB7F93A60]> af
+\c ; from = 0xb7f93a60
+\c ; to   = 0xb7f93c0d
+\c CF 430 @ 0xb7f93a60
+\c CC Stack size +40 @ 0xb7f93a71
+\c CC Set var32 @ 0xb7f93a74
+\c
+\c [0xB7F93A60]> .af
+
+The function analysis stops when reaching calls, use the 'aF' command to analyze the functions recursively. Use it like in 'af'
+
+\c [0xB7F93A60]> .aF
+
+\H{codeanal-block} Basic blocks
+
+A basic block is cosidered a sequence of opcodes ended up by a jump/branch/ret instruction. Radare allows you to determine which kind of basic block splitting you want to use to have a more personalized way to read the code and be able to split the functions as basic blocks for example.
+
+Use these variables to configure how the code analysis should work to determine basic blocks:
+
+\c graph.jmpblocks = true
+\c graph.refblocks = false
+\c graph.callblocks = false
+\c graph.flagblocks = true
+
+The 'ab' command will look for a basic block definition starting at current seek:
+
+\c [0xB7FC4810]> ab
+\c offset = 0xb7fc4810
+\c type = head
+\c size = 73
+\c call0 = 0xb7fc4a60
+\c call1 = 0xb7fc4800
+\c call2 = 0xb7fd1a40
+\c n_calls = 3
+\c bytes = 89 e0 e8 49 02 00 00 89 c7 e8 e2 ff ff ff ...
+
+The output is quite parsing friendly, so you can easily use the python API to extract this information:
+
+\c [0xB7F14810]> H python
+\c python> block = radare.analyze_block()
+\c python> print "This basic block have %d calls.\n" % radare.block['n_calls']
+\c
+\c This basic block have 3 calls.
+\c
+\c python> print "Its size is %d bytes.\n" % block['size']
+\c
+\c Its size is 74 bytes
+
+There's a human friendly version of 'ab' called 'ac' which stands for 'analyze code'. It accepts a numeric argument to determine the depth level when performing the basic block analysis.
+
+\c [0xB7F93A60]> ac 10
+\c 0xb7f93a60 (0) -> 0xb7f93ae1, 0xb7f93a99
+\c          0xB7F93A60,       eip:   push ebp         
+\c          0xB7F93A61               ebp = esp        
+\c          0xB7F93A63               push edi         
+\c          ...
+\c          0xB7F93A8F               [ebx+0x2b4] = eax
+\c          0xB7F93A95               test edx, edx
+\c          0xB7F93A97             v jz 0xB7F93AE1      ; 2 = eip+0x7b
+\c
+\c 0xb7f93ae1 (0) -> 0xb7f93b53, 0xb7f93aeb
+\c          0xB7F93AE1               edx = [ebx+0x2ac]
+\c          0xB7F93AE7               test edx, edx
+\c          0xB7F93AE9             v jz 0xB7F93B53      ; 1 
+\c 
+\c 0xb7f93b53 (0) -> 0xb7f93b67, 0xb7f93b5d
+\c          0xB7F93B53               eax = [ebx+0x31c]
+\c          0xB7F93B59               test eax, eax
+\c     .==< 0xB7F93B5B             v jz 0xB7F93B67      ; 1 = eip+0x107
+\c 
+\c 0xb7f93b67 (0) -> 0xb7f93b81, 0xb7f93b71
+\c          0xB7F93B67               eax = [ebx+0x310]
+\c          0xB7F93B6D               test eax, eax
+\c     .==< 0xB7F93B6F             v jz 0xB7F93B81      ; 1 = eip+0x121
+\c          ...
+
+The values shown are:
+
+\c address (0) -> true-jump, false-jump
+
+\H{codeanal-opcodes} Opcodes
+
+In the same way as 'ab' or 'ac' works. Radare exposes an opcode-level analysis with the 'ao' command.
+
+Here's a simple example
+
+\c [0xB7F93A66]> pd 1
+\c 0xB7F93A66        eip: v call 0xB7FA87AB 
+\c
+\c [0xB7F93A66]> ao
+\c index = 0
+\c size = 5
+\c type = call
+\c bytes = e8 40 4d 01 00 
+\c offset = 0xb7f93a66
+\c ref = 0x00000000
+\c jump = 0xb7fa87ab
+\c fail = 0xb7f93a6b
 
 \c [0xB7F14810]> H python
 \c python> op = analyze_opcode()
 \c python> print "0x%x\n"%op['offset']
 \c 0xb7f14810
 
+\H{codeanal-traces} Opcode traces
+
+The 'at' command is the one used to get information about the executed opcodes while debugging. It registers memory ranges and it is useful to determine which parts of the program are executed under a debugging session.
+
+\c [0xB7F93A60]> at?
+\c Usage: at[*] [addr]
+\c    > at         ; list all traced opcode ranges
+\c    > at-        ; reset the tracing information
+\c    > at*        ; list all traced opcode offsets
+\c    > at [addr]  ; show trace info at address
+\c
+\c [0xB7F93A60]> at
+\c 0xb7f93810 - 0xb7f93817
+\c 0xb7f93a60 - 0xb7f93b8b
+\c 0xb7f93b95 - 0xb7f93b9f
+\c 0xb7f93ba9 - 0xb7f93bd3
+\c 0xb7f93be1 - 0xb7f93c63
+\c 0xb7f93c70 - 0xb7f93c80
+\c 0xb7f93c93 - 0xb7f93d1e
+\c 0xb7f93d23 - 0xb7f93db8
+
+To reset this information just type 'at-'. There are API functions to get this information from python, lua, etc..
+
+\H{codeanal-vm} Opcode emulation
+
+The 'av' stands for 'Analyze' using 'Virtual machine'. It is used to emulate machine code to determine values of registers at a certain part of the program. This is used to resolve register branches and similar stuff.
+
+TODO : actually it is in a very newborn state.
 
 \H{dataanal} Data analysis
 
+There are some basic data analysis functions implemented in radare. The most basic one is just a memory parser that tries to identify pointers to flags, strings, linked lists, handled endianness with 'cfg.bigendian' and displays integer values of contained dwords and strings. Here's a simple example from a basic debugger session to analyze the stack to get information about pointers.
+
+\c [0xB7EEC810]> ad @ esp
+\c 0xBFBEAA80, int be=0x01000000 le=0x00000001 , (le= 1 ) 
+\c 0xBFBEAA84, int be=0xe4b7bebf le=0xbfbeb7e4 
+\c    0xBFBEB7E4, string "/bin/ls"
+\c    0xBFBEB7EC, string "GPG_AGENT_INFO=/tmp/gpg-mJ80Cm/S.gpg-agent:7090:1"
+\c    0xBFBEB81E  string "TERM=xterm"
+\c    0xBFBEB829  string "SHELL=/bin/bash"
+\c    0xBFBEAA88, (NULL)
+
+\H{datanal-structs} Structures
+
+The 'as' command is used to interpret a buffer of bytes using an spcc program (See 'rsc spcc' for more information). Giving a name of function it firstly edits the C code and later runs 'rsc spcc' to compile the parser and interpret the current block. The spcc files are stored in ~/.radare/spcc/, so you can edit the structure definition by browsing in this directory.
+
+Here's a sample session:
+
+\c [0xBFBEAA80]> as
+\c Usage: as [?][-][file]
+\c Analyze structure using the spcc descriptor
+\c   > as name   :  create/show structure
+\c   > as -name  :  edit structure
+\c   > as ?      :  list all spcc in dir.spcc
+\c 
+\c [0xBFBEAA80]> as foo
+\c # .. vi ~/.radare/spcc/foo.spcc
+\c struct foo {
+\c         int id;
+\c         void *next;
+\c         void *prev;
+\c };
+\c 
+\c void parse(struct spcc *spcc, uchar *buffer) {
+\c         struct foo tmp;
+\c         memcpy(&tmp, buffer, sizeof(struct foo));
+\c         printf("id: %d\nnext: %p\nprev: %p\n",
+\c                 tmp.id, tmp.next, tmp.prev);
+\c }
+\c ~                                                                                                                               
+\c ~         
+\c [0xBFBEAA80]> as foo
+\c id: 1
+\c next: 0xbfbeb7e4
+\c prev: (nil)
+
+
 - structures (as)
-- raw data (ad)
 
 TODO
 
@@ -1514,7 +1689,7 @@ The byte-level binary diffing is the fastest and simple one. It will only work o
 
 \c $ radiff -b a.bin b.bin
 
-\H{bindiff} Diffing with delta support
+\H{bindiff} Delta diffing
 
 A better fine grained approach for the binary diffing should be able to detect binary changes with delta offsets.
 

@@ -52,7 +52,7 @@ struct reflines_t *code_lines_init()
 			break;
 		{
 			int dt = data_type(config.seek+bsz);
-			if (dt) {
+			if (dt != DATA_FUN && dt != DATA_CODE) {
 				u64 sz = data_size(config.seek+bsz);
 				if (sz > 0) {
 					ptr= ptr +sz;
@@ -78,13 +78,14 @@ struct reflines_t *code_lines_init()
 						goto __next;
 					/* skip outside lines */
 #if 0
-XXXX DO NOT ENABLE 
-					if (aop.jump < seek-config.block_size)
+//XXXX DO NOT ENABLE 
+					if (aop.jump < seek-20) //config.block_size)
 						goto __next;
 #endif
-				} else
+				} else {
 					if (aop.jump == 0)
 						goto __next;
+				}
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 				list2->from = seek;
 				list2->to = aop.jump;

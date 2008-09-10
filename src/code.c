@@ -175,9 +175,9 @@ struct data_t *data_get_between(u64 from, u64 to)
 	else
 	if (str>=hex && str>=code && str>=fun) d->type = DATA_STR;
 	else
-	if (code>=hex && code>=str && code>=fun) d->type = DATA_CODE;
-	else
 	if (fun>=hex && fun>=str && fun>=code) d->type = DATA_FUN;
+	else
+	if (code>=hex && code>=str && code>=fun) d->type = DATA_CODE;
 //printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
@@ -879,6 +879,7 @@ void udis_arch(int arch, int len, int rows)
 			arch = last_arch;
 		
 		// TODO: Use a single arch_aop here
+#if 1
 		switch(arch) {
 			case ARCH_X86:
 				if (ud_disassemble(&ud_obj)<1)
@@ -928,6 +929,7 @@ void udis_arch(int arch, int len, int rows)
 				// XXX clear aop or so
 				break;
 		}
+#endif
 		if (myinc<1)
 			myinc = 1;
 
@@ -953,7 +955,7 @@ void udis_arch(int arch, int len, int rows)
 				//	flag = flag_name_by_offset(seek +config.baddr);
 				//config.baddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
-					sprintf(buf, "%%%ds:", show_nbytes);
+					sprintf(buf, " %%%ds:", show_nbytes);
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
 						NEWLINE;
@@ -966,15 +968,17 @@ void udis_arch(int arch, int len, int rows)
 						}
 						if (show_reladdr)
 							cons_printf("        ");
-						cons_strcat(funline);
-						sprintf(buf, "%%%ds ", show_nbytes);
+						if (funline[0] != '\0')
+							cons_strcat("|");
+							//cons_strcat(funline);
+						sprintf(buf, " %%%ds ", show_nbytes);
 						cons_printf(buf,"");
 					} else {
 						cons_printf(buf, flag);
 					}
 				} else {
-					sprintf(buf, "%%%ds ", show_nbytes);
-					cons_printf(buf,flag);
+					sprintf(buf, " %%%ds ", show_nbytes);
+					cons_printf(buf, flag);
 				}
 			}
 

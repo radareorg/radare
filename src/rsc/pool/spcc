@@ -11,7 +11,7 @@ if ($ARGV[0] eq "" || $ARGV[0] eq "-h") {
 
 if ( $ARGV[0] eq "-t" ) {
 	print <<EOF
-/*-- test.spc --*/
+/*-- test.spcc --*/
 struct foo {
 	int id;
 	void *next;
