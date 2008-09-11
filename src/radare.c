@@ -779,13 +779,13 @@ int radare_interpret(char *file)
 	/* check for perl/python/lua/ */
 	buf[0]='\0';
 	if (strstr(file, ".pl"))
-		snprintf(buf, 1012, "H perl %s", config.script);
+		snprintf(buf, 1012, "H perl %s", file); //config.script);
 	else
 	if (strstr(file, ".py"))
-		snprintf(buf, 1012, "H python %s", config.script);
+		snprintf(buf, 1012, "H python %s", file); //config.script);
 	else
 	if (strstr(file, ".lua"))
-		snprintf(buf, 1012, "H lua %s", config.script);
+		snprintf(buf, 1012, "H lua %s", file); //config.script);
 
 	if (buf[0])
 		return radare_cmd(buf, 0);
@@ -1391,6 +1391,8 @@ int radare_go()
 		radare_cmd(":.!maps*", 0);
 		radare_cmd("s eip", 0);
 	}
+
+	config_set_i("cfg.verbose", t);
 
 	if (config.script)
 		radare_interpret(config.script);

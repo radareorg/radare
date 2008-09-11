@@ -89,17 +89,28 @@ Or just feed me with a patch
 
 \H{compile} Compilation and portability
 
-Currently the core of radare can be compiled in many systems, and architectures, but the main development is done on GNU/Linux and GCC.
+Currently the core of radare can be compiled in many systems, and architectures, but the main development is done on GNU/Linux and GCC. But it is known to compile with TCC and SunStudio.
 
 People usually wants to use radare as a debugger for reverse engineering, and this is a bit more restrictive portability issue, so if the debugger is not ported to your favorite platform, please, notify it to me or just disable the debugger layer with --without-debugger in the ./configure stage.
 
 Nowadays the debugger layer can be used on Windows, GNU/Linux (intel32, intel64, mips, arm), FreeBSD, NetBSD, OpenBSD (intel32, intel64) and there are plans for Solaris and OSX. And there are some IO plugins to use gdb, gdbremote or wine as backends.
 
+The current build system is 'waf':
+
+\c $ ./waf distclean
+\c $ ./waf configure
+\c $ ./waf
+\c $ sudo ./waf install
+\c ...
+
+#if DEPRECATED
 There's some work for porting the ACR/GMAKE build system to WAF, but it's not finished or tested enought, so I encourage you to use the basic way to configure, compile and install the software:
 
 \c $ ./configure --prefix=/usr
 \c $ gmake
 \c $ sudo gmake install
+
+#endif
 
 \H{cmdflags} Commandline flags
 
@@ -198,7 +209,129 @@ To get the help in the visual mode press '?' and for the help of the debugger pr
 
 At this point the most common commands are !reg that can be used to get or set values for the general purpose registers. You can also manipulate the hardware and extended/floating registers.
 
-\H{sample} Basic commands
+\C{config} Configuration
+
+The core reads ~/.radarerc while starting, so you can setup there some 'eval' commands to set it up in your favorite way.
+
+To avoid parsing this file, use '-n' and to get a cleaner output for using radare in batch mode maybe is better to just drop the verbosity with '-v'.
+
+All the configuration of radare is done with the 'eval' command which allows the user to change some variables from an internal hashtable containing string pairs.
+
+The most common configuration looks like this:
+
+\c $ cat ~/.radarerc
+\c eval scr.color = true
+\c eval file.id   = true
+\c eval file.flag = true
+\c eval dbg.bep   = entry
+
+These configurations can be also defined using the '-e' flag of radare while loading it, so you can setup different initial configurations from the commandline without having to change to rc file.
+
+\c $ radare -n -e scr.color=true -e asm.syntax=intel -d /bin/ls
+
+All the configuration is stored in a hash table grouped by different root names ([i]cfg., file., dbg., ..[/i])
+
+To get a list of the configuration variables just type 'eval' or 'e' in the prompt. All the basic commands can be reduced to a single char. You can also list the configuration variables of a single eval configruation group ending the command argument with a dot '.'.
+
+There are two enhaced interfaces to help users to interactively configure this hashtable. One is called 'emenu' and provides a shell for walking through the tree and change variables. 
+
+To get a help about this command you can type 'e?':
+
+[0x4A13B8C0]> e?
+Usage: e[m] key=value
+   > ereset              ; reset configuration
+   > emenu               ; opens menu for eval
+   > e scr.color = true  ; sets color for terminal
+
+Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands can be reduced to a single char, and you can just type 'e?' to get the help of all the 'subcommands' for the basic command.
+
+\c [0xB7EF38C0]> emenu
+\c Menu: (q to quit)
+\c - asm
+\c - cfg
+\c - child
+\c - cmd
+\c - dbg
+\c - dir
+\c - file
+\c - graph
+\c - scr
+\c - search
+\c - trace
+\c - zoom
+\c >
+
+There is a easier eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
+
+Most of the eval tree is quite stable, so don't expect hard changes on this area. 
+
+I encourage you to experiment a bit on this to fit the interface to your needs.
+
+\H{common-conf} Common configuration variables
+
+Here's a list of the most common eval configuration variables, you can get the complete list using the 'e' command without arguments or just use 'e cfg.' (ending with dot, to list all the configuration variables of the cfg. space).
+
+\c asm.arch
+
+Defines the architecture to be used while disassembling (pd, pD commands) and analyzing code ('a' command). Currently it handles 'intel32', 'intel64', 'mips', 'arm16', 'arm' 'java', 'csr', 'sparc', 'ppc', 'msil' and 'm68k'.
+
+It is quite simple to add new architectures for disassembling and analyzing code, so there is an interface adapted for the GNU disassembler and others for udis86 or handmade ones.
+
+\c asm.syntax
+
+Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
+
+\c asm.os
+
+Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
+
+\c asm.flags
+
+If defined to 'true' shows the flags column inside the disassembly.
+
+\c asm.lines
+
+Draw lines at the left of the offset in the dissassemble print format (pd, pD) to graphically represent jumps and calls inside the current block.
+
+\c asm.linesout
+
+When defined as 'true', also draws the jump lines in the current block that goes ouside of this block.
+
+\c asm.linestyle
+
+Can get 'true' or 'false' values and makes the line analysis be performed from top to bottom if false or bottom to top if true. 'false' is the optimal and default value for readability.
+
+\c asm.offset
+
+Boolean value that shows or hides the offset address of the disassembled opcode
+
+\c asm.bytes
+
+Boolean value that shows or hides the bytes of the disassebled opcode
+
+\c cfg.bigendian
+
+Choose the endian flavour 1 for big, 0 for little.
+
+\c file.id
+
+When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
+
+\c file.flag
+
+Finds all the information of the target binary and setup flags to point symbols (imports, exports), sections, maps, strings, etc.
+
+This command is commonly used with file.id.
+
+\c scr.color
+
+This boolean variable allows to enable or disable the colorized output
+
+\c cfg.fortunes
+
+Enables or disables the 'fortune' message at the begging of the program
+
+\C{sample} Basic commands
 
 The basic set of commands in radare can be mostly grouped by action, and they should be easy to remember and short. This is why they are grouped with a single character, subcommands or related commands are described with a second character. For example '/ foo' for searching plain strings or '/x 90 90' to look for hexpair strings.
 
@@ -247,9 +380,19 @@ Using the '&&' chars you can concatenate multiple commands in a single line:
 
 \c > x @ esp && !reg && !bt  ; shows stack, regs and backtrace
 
-\S{seek} Seeking
+\H{seek} Seeking
 
 The command 's' is used to seek. It accepts a math expression as argument that can be composed by shift operations, basic math ones and memory access.
+
+The 's'eek command supports '+-*!' characters as arguments to perform acts on the seek history.
+
+\c Usage: > s 0x128 ; absolute seek
+\c        > s +33   ; relative seek
+\c        > s-      ; undo seek
+\c        > s+      ; redo seek
+\c        > s*      ; show seek history
+\c        > .s*     ; flag them all
+\c        > s!      ; reset seek history
 
 The '>' and '<' commands are used to seek into the file using a block-aligned base.
 
@@ -265,7 +408,41 @@ To 'query' the math expression you can evaluate them using the '?' command and g
 \c > ? 0x100+200
 \c 0x1C8 ; 456d ; 710o ; 1100 1000  
 
-\S{print} Print modes
+\S{undo-seek} Undo seek
+
+All the seeks are stored in a linked list as a history of navigation over the file. You can easily go forward backward of the seek history by using the 's-' and 's+' commands.
+
+In visual mode just press 'u' or 'U' to undo or redo inside the seek history.
+
+Here's a seesion example:
+
+\c [0x00000000]> s 0x100
+\c [0x00000100]> s 0x200
+\c [0x00000200]> s-        ; undo last seek done
+\c [0x00000100]>
+
+\H{bsize} Block size
+
+The block size is the default view size for radare. All commands will work with this constraint, but you can always temporally change the block size just giving a numeric argument to the print commands for example (px 20)
+
+\c [0xB7F9D810]> b?
+\c Usage: b[f flag]|[size]     ; Change block size
+\c   > b 200 ; set block size to 200
+\c   > bf sym_main && s sym_main
+
+The 'b' command is used to change the block size:
+
+\c [0x00000000]> b 0x100   ; block size = 0x100
+\c [0x00000000]> b +16     ;  ... = 0x110
+\c [0x00000000]> b -32     ;  ... = 0xf0
+
+The 'bf' command is used to change the block size to the one specified by a flag. For example in symbols, the block size of the flag represents the size of the function.
+
+\c [0x00000000]> bf sym_main    ; block size = sizeof(sym_main)
+\c [0x00000000]> pd @ sym_main  ; disassemble sym_main
+\c   ...
+
+\H{print} Print modes
 
 One of the efforts in radare is the way to show the information to the user. This is interpreting the bytes and giving an almost readable output format.
 
@@ -308,7 +485,6 @@ This is a list of the available print modes listable with 'p?':
 \c  x : hexadecimal byte pairs  N byte
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
-
 
 \H{print-hexa}
 
@@ -435,9 +611,26 @@ It is possible to print various packed data types in a single line using the 'pm
 \c  d : disassembly N opcodes   count of opcodes
 \c  D : asm.arch disassembler   bsize bytes
 
-TODO: uses asm.arch
+TODO
 
-\S{zoom} Zoom
+\S{print-code-arch}
+
+TODO: Selecting the architecture asm.arch
+
+\S{print-code-syntax}
+
+The syntax is the flavour of disassembly syntax prefered to be used by the disasm engine.
+
+Actually the x86 disassembler is the more complete one. It's based on udis86 and supports the following syntax flavours:
+
+\c e asm.syntax = olly
+\c e asm.syntax = intel
+\c e asm.syntax = att
+\c e asm.syntax = pseudo
+
+The 'olly' syntax uses the ollydbg disassembler engine. 'intel' and 'att' are the most common ones and 'pseudo' is an experimental pseudocode disassembly, sometimes useful for reading algorithms.
+
+\H{zoom} Zoom
 
 The zoom is a print mode that allows you to get a global view of the whole file or memory map in a single screen. Each byte represents file_size/block_size bytes of the file. Use the pO (zoom out print mode) to use it, or just toggle 'z' in the visual mode to zoom-out/zoom-in.
 
@@ -490,7 +683,7 @@ For example. let's see some examples:
 \c 0x0000D6D0, 0000 0001 0201 0202 0100 0000 0000 0000 0000 ..................
 \c 0x00013670, 0000 0000 0002 0000 0000                     ..........        
 
-\S{flagsmin} Flags
+\H{flagsmin} Flags
 
 The flags are bookmarks at a certain offset in the file that can be stored inside 'flag spaces'. A flag space is something like a namespace for flags. They are used to group flags with similar characteristics or of a certain type. Some example of flagspaces could be [i]sections, registers, symbols, search hits[/i], etc.
 
@@ -519,7 +712,7 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
-\S{write} Writing bytes
+\H{write} Write
 
 Radare can manipulate the file in multiple ways. You can resize the file, move bytes, copy/paste them, insert mode (shifting data to the end of the block or file) or just overwrite some bytes with an address, the contents of a file, a widestring or inline assembling an opcode.
 
@@ -547,7 +740,7 @@ To write bytes just use the 'w' command. It accepts multiple input formats like 
 
 All write changes are recorded and can be listed or undo-ed using the 'u' command which is explained in the 'undo/redo' section.
 
-\S{undo} Undo/redo
+\H{undo} Undo/redo
 
 The 'u'ndo command is used to undo or redo write changes done on the file.
 
@@ -556,8 +749,7 @@ The 'u'ndo command is used to undo or redo write changes done on the file.
 \c        > u -3  ; redo write change at index 3
 \c        > u     ; list all write changes
 
-
-Here's a sample session working with undo seeks and writes:
+Here's a sample session working with undo writes:
 
 \c [0x00000000]> wx 90 90 90 @ 0x100
 \c [0x00000100]> u                        ; list changes 
@@ -572,26 +764,7 @@ Here's a sample session working with undo seeks and writes:
 \c [0x00000000]> p8 3 @ 0x100
 \c 90 90 90 
 
-\H{seeking} Seeking
-
-The 's'eek command supports '+-*!' characters as arguments to perform acts on the seek history.
-
-\c Usage: > s 0x128 ; absolute seek
-\c        > s +33   ; relative seek
-\c        > s-     ; undo seek
-\c        > s+     ; redo seek
-\c        > s*     ; show seek history
-\c        > .s*    ; flag them all
-\c        > s!     ; reset seek history
-
-Here's a seesion example:
-
-\c [0x00000000]> s 0x100
-\c [0x00000100]> s 0x200
-\c [0x00000200]> s-        ; undo last seek done
-\c [0x00000100]>
-
-\S{yank} Yank/Paste
+\H{yank} Yank/Paste
 
 You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that are alias for the 'y' and 'yy' commands of the shell. There is an internal buffer that stores N bytes from the current seek. You can write-back to another seek using the 'yy' one.
 
@@ -600,7 +773,7 @@ You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that 
 \c > s 0x200    ; seek 0x200
 \c > yy         ; pastes 100 bytes
 
-\S{cmpmv} Compare/move data
+\H{cmpmv} Compare/move data
 
 The command 'm' is used to move data, which is something similar to 'yank/paste', but in a single command.
 
@@ -649,127 +822,6 @@ We can use the compare command against a file previously dumped to disk from the
 \c [0x08048000]> cf /bin/true
 \c Compare 512/512 equal bytes
 
-\C{config} Configuration
-
-The core reads ~/.radarerc while starting, so you can setup there some 'eval' commands to set it up in your favorite way.
-
-To avoid parsing this file, use '-n' and to get a cleaner output for using radare in batch mode maybe is better to just drop the verbosity with '-v'.
-
-All the configuration of radare is done with the 'eval' command which allows the user to change some variables from an internal hashtable containing string pairs.
-
-The most common configuration looks like this:
-
-\c $ cat ~/.radarerc
-\c eval scr.color = true
-\c eval file.id   = true
-\c eval file.flag = true
-\c eval dbg.bep   = entry
-
-These configurations can be also defined using the '-e' flag of radare while loading it, so you can setup different initial configurations from the commandline without having to change to rc file.
-
-\c $ radare -n -e scr.color=true -e asm.syntax=intel -d /bin/ls
-
-All the configuration is stored in a hash table grouped by different root names ([i]cfg., file., dbg., ..[/i])
-
-To get a list of the configuration variables just type 'eval' or 'e' in the prompt. All the basic commands can be reduced to a single char. You can also list the configuration variables of a single eval configruation group ending the command argument with a dot '.'.
-
-There are two enhaced interfaces to help users to interactively configure this hashtable. One is called 'emenu' and provides a shell for walking through the tree and change variables. 
-
-To get a help about this command you can type 'e?':
-
-[0x4A13B8C0]> e?
-Usage: e[m] key=value
-   > ereset              ; reset configuration
-   > emenu               ; opens menu for eval
-   > e scr.color = true  ; sets color for terminal
-
-Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands can be reduced to a single char, and you can just type 'e?' to get the help of all the 'subcommands' for the basic command.
-
-\c [0xB7EF38C0]> emenu
-\c Menu: (q to quit)
-\c - asm
-\c - cfg
-\c - child
-\c - cmd
-\c - dbg
-\c - dir
-\c - file
-\c - graph
-\c - scr
-\c - search
-\c - trace
-\c - zoom
-\c >
-
-There is a easier eval interface accessible from the Visual mode, just typing 'e' after entering this mode (type 'Visual' command before).
-
-Most of the eval tree is quite stable, so don't expect hard changes on this area. 
-
-I encourage you to experiment a bit on this to fit the interface to your needs.
-
-\H{common-conf} Common configuration variables
-
-Here's a list of the most common eval configuration variables, you can get the complete list using the 'e' command without arguments or just use 'e cfg.' (ending with dot, to list all the configuration variables of the cfg. space).
-
-\c asm.arch
-
-Defines the architecture to be used while disassembling (pd, pD commands) and analyzing code ('a' command). Currently it handles 'intel32', 'intel64', 'mips', 'arm16', 'arm' 'java', 'csr', 'sparc', 'ppc', 'msil' and 'm68k'.
-
-It is quite simple to add new architectures for disassembling and analyzing code, so there is an interface adapted for the GNU disassembler and others for udis86 or handmade ones.
-
-\c asm.syntax
-
-Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
-
-\c asm.os
-
-Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
-
-\c asm.flags
-
-If defined to 'true' shows the flags column inside the disassembly.
-
-\c asm.lines
-
-Draw lines at the left of the offset in the dissassemble print format (pd, pD) to graphically represent jumps and calls inside the current block.
-
-\c asm.linesout
-
-When defined as 'true', also draws the jump lines in the current block that goes ouside of this block.
-
-\c asm.linestyle
-
-Can get 'true' or 'false' values and makes the line analysis be performed from top to bottom if false or bottom to top if true. 'false' is the optimal and default value for readability.
-
-\c asm.offset
-
-Boolean value that shows or hides the offset address of the disassembled opcode
-
-\c asm.bytes
-
-Boolean value that shows or hides the bytes of the disassebled opcode
-
-\c cfg.bigendian
-
-Choose the endian flavour 1 for big, 0 for little.
-
-\c file.id
-
-When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
-
-\c file.flag
-
-Finds all the information of the target binary and setup flags to point symbols (imports, exports), sections, maps, strings, etc.
-
-This command is commonly used with file.id.
-
-\c scr.color
-
-This boolean variable allows to enable or disable the colorized output
-
-\c cfg.fortunes
-
-Enables or disables the 'fortune' message at the begging of the program
 
 \C{visual-mode} Visual mode
 
@@ -931,6 +983,7 @@ TODO (not yet implemented)
 
 \H{search-binmask} Binary masks
 
+TODO
 
 \H{search-multiple} Multiple keywords
 
@@ -1069,24 +1122,6 @@ You can use the Cs command from the shell also:
 
 The folding/unfolding is quite premature but the idea comes from the 'folder' concepts in vim. So you can select a range of bytes in the disassembly view and press '<' to fold these bytes in a single line or '>' to unfold them. Just to ease the readability of the code.
 
-\C{iobackend} IO backend
-
-All the access to files, network, debugger, etc.. is wrapped by an IO abstraction layer that allows to interpret all the data as if it was a single file.
-
-The IO backend is implement as IO plugins. They are selected depending on the uri file.
-
-\c # debug this file using the debug io plugin
-\c $ radare dbg:///bin/ls
-\c
-\c # allocate 10MB in a malloc buffer
-\c $ radare malloc://10M
-\c
-\c # allocate 10MB in a malloc buffer
-\c $ radare malloc://10M
-\c 
-\c # connect to remote host
-\c $ radare connect://192.168.3.33:9999
-
 \C{plugins} Plugins
 
 Radare can be extended in many ways. The most common is by using stdin/stdout get input from a file an interpret the output of the program execution as radare commands. stderr is used for direct user messaging, because it is not handled by the core and it is directly printed in the terminal.
@@ -1108,6 +1143,25 @@ But with this kind of plugins are not directly interactive, because the communic
 What this 'dummy' script does is get an address as argument, read 4 bytes from there, and write them at address+4.
 
 As you see this simple task becomes quite 'ugly' using this concepts, so its better to write a native plugin to get full access to the radare internals
+
+\H{iobackend} IO backend
+
+All the access to files, network, debugger, etc.. is wrapped by an IO abstraction layer that allows to interpret all the data as if it was a single file.
+
+The IO backend is implement as IO plugins. They are selected depending on the uri file.
+
+\c # debug this file using the debug io plugin
+\c $ radare dbg:///bin/ls
+\c
+\c # allocate 10MB in a malloc buffer
+\c $ radare malloc://10M
+\c
+\c # allocate 10MB in a malloc buffer
+\c $ radare malloc://10M
+\c 
+\c # connect to remote host
+\c $ radare connect://192.168.3.33:9999
+
 
 \H{plugins-io} IO plugins
 
@@ -1146,14 +1200,17 @@ You can get a list of the radare IO plugins by typing 'radare -L':
 \c gxemul      GxEmul Debugger interface ( gxemul://program.arm )
 \c posix       plain posix file access
 
-
 \H{plugins-hack} Hack plugins
 
 The hack plugins are just shared libraries that have access to some internal apis of radare. The most important one "radare_cmd" which accepts a command string and returns the string representing the output of the execution.
 
 In this way it is possible to perform any action in the core just formatting command strings and parsing its output.
 
-\c{Language bindings}
+\S{jmphacks} Jump hacks
+
+TODO: nop N opcodes, invert jump, force jump... !jmp and !call
+
+\S{langs} Language bindings
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
 
@@ -1229,6 +1286,32 @@ Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, 
 \c  -r        output in radare commands
 \c  -v        be verbose
 
+\H{rabin-id} File identification
+
+TODO : 
+
+\H{rabin-ep} Entrypoint
+
+TODO
+
+\H{rabin-sb} Symbols (exports)
+
+TODO
+
+\H{rabin-imp} Imports
+
+TODO
+
+\H{rabin-sections} Sections
+
+TODO
+
+\H{rabin-lib} Libraries
+
+TODO
+
+\H{rabin-str} Strings
+
 TODO
 
 \C{net} Networking
@@ -1237,21 +1320,21 @@ Radare have some interesting features in the networking area. It can be used as 
 
 TODO
 
-\H{net-iosocket}
+\H{net-iosocket} IO Sockets
 
 It generates a malloc-ed buffer which grows when receiving data from the socket and writing data to it in 
 
 TODO
 
-\H{net-connect}
+\H{net-connect} TCP remoting
 
 TODO
 
-\H{net-sysproxy}
+\H{net-sysproxy} IO thru Syscall proxying
 
 TODO
 
-\C{rsc} rsc toolset
+\C{rsc} Rsc toolset
 
 RSC stands for 'radare scripts' which are a set of scripts accessible thru the 'rsc' command and allow to perform different tasks or provide small utilities that can interact with radare in some way.
 
@@ -1271,9 +1354,27 @@ TODO
 
 TODO
 
-\C{rasm} rasm the inline (a/disa)ssembler
+\C{rasm} Rasm
+ 
+The inline assembler/disassembler. Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
 
-Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
+\H{rasm-asm} Assemble
+
+TODO
+
+\H{rasm-dasm} Disassemble
+
+TODO
+
+\C{rasc} Rasc
+ 
+Radare ShellCodes
+
+\H{rasc-shellcodes} Shellcodes
+
+TODO
+
+\H{rasc-sysproxy} Syscall proxying
 
 TODO
 
@@ -1300,7 +1401,7 @@ Those operations are handled by the root 'a'nalyze command:
 The code analysis is a common technique used to extract information from the assembly code. Radare stores multiple internal data structures to identify basic blocks, function trees, extract opcode-level information and such.
 
 
-\H{codeanal-fun} Functions
+\S{codeanal-fun} Functions
 
 We can use rabin to import the function definitions directly from the program
 
@@ -1323,7 +1424,7 @@ The function analysis stops when reaching calls, use the 'aF' command to analyze
 
 \c [0xB7F93A60]> .aF
 
-\H{codeanal-block} Basic blocks
+\S{codeanal-block} Basic blocks
 
 A basic block is cosidered a sequence of opcodes ended up by a jump/branch/ret instruction. Radare allows you to determine which kind of basic block splitting you want to use to have a more personalized way to read the code and be able to split the functions as basic blocks for example.
 
@@ -1390,7 +1491,7 @@ The values shown are:
 
 \c address (0) -> true-jump, false-jump
 
-\H{codeanal-opcodes} Opcodes
+\S{codeanal-opcodes} Opcodes
 
 In the same way as 'ab' or 'ac' works. Radare exposes an opcode-level analysis with the 'ao' command.
 
@@ -1437,7 +1538,7 @@ The 'at' command is the one used to get information about the executed opcodes w
 
 To reset this information just type 'at-'. There are API functions to get this information from python, lua, etc..
 
-\H{codeanal-vm} Opcode emulation
+\S{codeanal-vm} Opcode emulation
 
 The 'av' stands for 'Analyze' using 'Virtual machine'. It is used to emulate machine code to determine values of registers at a certain part of the program. This is used to resolve register branches and similar stuff.
 
@@ -1456,7 +1557,7 @@ There are some basic data analysis functions implemented in radare. The most bas
 \c    0xBFBEB829  string "SHELL=/bin/bash"
 \c    0xBFBEAA88, (NULL)
 
-\H{datanal-structs} Structures
+\S{datanal-structs} Structures
 
 The 'as' command is used to interpret a buffer of bytes using an spcc program (See 'rsc spcc' for more information). Giving a name of function it firstly edits the C code and later runs 'rsc spcc' to compile the parser and interpret the current block. The spcc files are stored in ~/.radare/spcc/, so you can edit the structure definition by browsing in this directory.
 
@@ -1490,12 +1591,11 @@ Here's a sample session:
 \c next: 0xbfbeb7e4
 \c prev: (nil)
 
+\S{datanal-spcc} Spcc
 
-- structures (as)
+TODO : explain how spcc works
 
-TODO
-
-\H{anal-trace} Trace analysis
+\S{anal-trace} Trace analysis
 
 The radare debugger stores information about the executed opcodes in a linked list and allows later to get an execution trace of the code with a list of ranged addresses of the executed code and how many times and in which order these instructions has been executed.
 
@@ -1554,7 +1654,22 @@ You can also get detailed information of a certain offset:
 \c times = 5
 \c count = 55
 
-\C{Hashing} Hashing data
+\H{graph} Graphing code
+
+radare offers a graphical interface for browsing the code graphs. It uses an own-made Vala library called 'grava' that permits the creation of graphs using Gtk+Cairo easily. To open a new window displaying the code analysis graph type: 'ag'.
+
+\c [0x08048923]> ag
+\c ... gui ...
+
+The grava window permits opening new nodes with the content executing a certain command (!regs, x@esp, ..), and offers a simple interface for debugging allowing to browse the code with the mouse and set breakpoints with the contextual menu over the nodes.
+
+TODO: screenshots
+
+\C{gradare} Gradare
+
+TODO
+
+\C{Hashing} Rahash
 
 The it is quite easy to calculate a hash checksum of the current block using the '#' command.
 
@@ -1906,7 +2021,7 @@ The extended or floating point registers are accessed with the '!fpregs' command
 \c  mm6 = 0000 0000 0000 0000     st6 = 0 (0x00000000)
 \c  mm7 = 0000 0000 0000 0000     st7 = 0 (0x00000000)
 
-\H{hwregs} Hardware registers
+\S{hwregs} Hardware registers
 
 The hardware registers are only supported on few architectures. In this case only 'intel' 32 and 64 bits. also called 'DRx' on intel.
 
@@ -1939,7 +2054,13 @@ To remove all the values of the hw regs just type:
 
 \c [0x80480303]> !dr-
 
-\H{memprot} Memory protections
+\S{fpregs} Floating point registers
+
+TODO: !fpregs
+
+\H{memory} Memory
+
+\S{memprot} Memory protections
 
 Another way to setup read/write exceptions is done by changing the protection properties of the memory pages of a program.
 
@@ -1965,7 +2086,7 @@ Here's an example... you are interested on getting the point where a program tri
 \c
 \c [0x4A13C000]> !mp rw- 0x8054180 4096 ; restore change
 
-\H{mmap} Memory pages
+\S{mmap} Memory pages
 
 You can control different operations over the memory pages of the target process. This is an important task that should be handled by the debugger layer to get information to get the ranges of memory mapped.
 
@@ -2004,7 +2125,7 @@ We can locate the current seek in the maps by typing '!maps?':
 \c [0x4A13B8C0]> !maps?
 \c 0x4a13b000 * 0x4a155000 r-x- 0x0001a000 /lib/ld-2.5.so
 
-\H{mem-dump} Dumping memory
+\S{mem-dump} Dumping memory
 
 There are different commands to dump these sections to disk. The '!dump' and '!restore' are used to create a directory called 'dump#' where '#' is a number starting from 0 and is incremented while called multiple times. So you can use '!dump' and '!restore' to go 'forward' and 'backward' of the process status. Because it is also dumping and restoring the register values.
 
@@ -2024,7 +2145,7 @@ You can also specify the directory name as argument:
 
 The '!dall' command is similar to the previous one, but it is based on the concept that there are no maps sections information. This is useful on some unixes like some BSDs that they have no /proc to get this information. So it reads from 0 to 0xFFFFFFFF looking for readables pages and dumping them to files named 'from-to.bin' in the current directory.
 
-\H{mem-management} Managing memory
+\S{mem-management} Managing memory
 
 It is also possible to allocate and free new memory regions on the child process at specified or decided by the system. In the following example we are allocating 10 MB in the child process.
 
@@ -2053,6 +2174,8 @@ The basic life-cycle of a process can be managed with different commands of the 
 \c !load         ; reload the process (restart program)
 \c !run          ; start running
 
+\S{stepping} Stepping
+
 \c !step         ; executes a single instruction
 \c !stepo        ; step over call instructions
 \c !stepret      ; step instructions until function return
@@ -2066,6 +2189,8 @@ You can also step N times in two ways:
 \c [0x80484040]> !step 4
 \c [0x80484040]> 4!step
 
+\S{cont} Continuations
+
 About continuations radare offers multiple commands for handling process continuations:
 
 \c !cont         ; continue execution
@@ -2076,7 +2201,41 @@ About continuations radare offers multiple commands for handling process continu
 
 The 'contuh' command is quite useful when analyzing loops, because allows you to easily complete a loop without having to manually setup breakpoints.
 
-\H{tt} Touch Tracing
+\S{skip} Skipping opcodes
+
+\c !skip [n]
+
+\S{thprocs} Threads and processes
+
+The list of child processes of the target process can be listed with '!pid' command.
+
+\c $ radare -d /bin/sh
+\c 
+\c [0x13B8C0]> !run
+\c To cleanly stop the execution, type: "^Z kill -STOP 1527 && fg"
+\c
+\c sh-3.2$ ls
+\c pid: 1611. new process created!
+\c  - Use !pid for processes, and !th for threads
+\c CLONE HAS BEEN INVOKED
+\c debug_dispatch_wait: RET = 0 WS(event)=6 INT3_EVENT=2 INT_EVENT=3 CLONE_EVENT=6
+\c === cont: tid: 1611 event: 6, signal: 19 (SIGSTOP). stop at 0x4ab95eb3
+\c 
+\c [0x4A13B8C0]> !pid
+\c  pid : 1527 0x4ab95eb3 (stopped)
+\c  pid : 1611 0x4ab95eb3 (stopped)
+\c  `- 1611 : /bin/sh (stopped)
+
+The /bin/sh while calling 'ls'. This event has been catched by radare and prompts you again. Now we can choose which process we want to follow. The parent or the child.
+
+\c [0x4A13B8C0]> !pid 1527
+\c Current selected thread id (pid): 1527
+
+The same operations can be done by using the '!th' command for the threads.
+
+In the same way you can hackily 'attach' and 'detach' from to a pid.
+
+\S{tt} Touch Tracing
 
 The 'touch trace' is a special tracing engine that was born from an idea of Gadix (Thanks! ;D)
 
@@ -2098,9 +2257,72 @@ To use this command just give an argument with the size of the tracing area to b
 
 \H{bps} Breakpoints
 
-TODO: software/hardware
+The breakpoints in radare are managed by the '!bp' command which is able to handle software and hardware breakpoints for different architectures. On intel there's a specific command called '!dr' to manage the DRX registers and be able to define 4 hardware breakpoints manually for read, write or exec.
 
-\H{wps} Watchpoints
+The '!bp' command will use software or hardware breakpoints (if supported) depending on the boolean eval value 'dbg.hwbp'.
+
+\S{bph} Software breakpoints
+
+The software breakpoints are the most used and common to be used because of their portability. They are based on invalid, undefined or trap instructions depending on the architecture.
+
+This way the debugger can catch the event and identify if this address is handled by a breakpoint and restore the memory and program counter to make the program flow continue properly.
+
+\c [0xB7F08810]> !bp?
+\c Usage: !bp[?|s|h|*] ([addr|-addr])
+\c   !bp [addr]    add a breakpoint
+\c   !bp -[addr]   remove a breakpoint
+\c   !bp*          remove all breakpoints
+\c   !bps          software breakpoint
+\c   !bph          hardware breakpoint
+
+To add a software breakpoint type:
+
+\c [0xB7F75810]> !bp sym_main       ; set breakpoint at flag 'sym_main'
+\c [0xB7F75810]> !cont              ; continue execution
+\c [0x08048910]> !bp -sym_main      ; remove breakpoint
+
+TODO: moar nfo
+
+\S{bpm} Memory breakpoints
+
+You can setup read/write/exec breakpoints on memory pages by changing their access permissions with the '!mp' command. See 'Memory Protections' section for more information.
+
+\S{bph-foo} Hardware breakpoints
+
+The hardware breakpoints are architecture-dependant and provide a limited but powerful way to make the debugger stop when reading, writing or executing at a certain memory address. On intel there's the '!dr' command to manually modify the DRX registers.
+
+\c [0xB7F08810]> !dr?
+\c Usage: !dr[type] [args]
+\c   dr                   - show DR registers
+\c   dr-                  - reset DR registers
+\c   drr [addr]           - set a read watchpoint
+\c   drw [addr]           - set a write watchpoint
+\c   drx [addr]           - set an execution watchpoint
+\c   dr[0-3][rwx] [addr]  - set a rwx wp at a certain DR reg
+\c Use addr=0 to undefine a DR watchpoint
+
+Lets define some hardware breakpoints on intel:
+
+\c [0xB7F08810]> !dr0r 0x8048000 ; DR0 = read breakpoint
+\c [0xB7F08810]> !dr1x 0x8049200 ; DR1 = exec breakpoint
+\c [0xB7F08810]> !dr      ; list DRX reg values
+\c DR0 0x08048000 r
+\c DR1 0x08049200 x
+\c DR2 0x00000000 x
+\c DR3 0x00000000 x
+\c
+\c [0xB7F08810]> !dr-     ; reset DRX
+\c [0xB7F08810]> !dr
+\c DR0 0x00000000 x
+\c DR1 0x00000000 x
+\c DR2 0x00000000 x
+\c DR3 0x00000000 x
+
+TODO !bph, !dr
+
+\S{wps} Watchpoints
+
+TODO: !wp
 
 \H{fds} Filedescriptors
 
@@ -2133,37 +2355,24 @@ Now we can close the stdout of the program or just redirect them to a file openi
 \c [0x4A13C00E]> !fdd 3 1             ; stdout = new_fd
 \c [0x4A13C00E]> !fd -3               ; close file
 
-\H{thprocs} Threads and processes
+\H{events} Events
 
-The list of child processes of the target process can be listed with '!pid' command.
+You can even configure radare to handle or ignore multiple types of events. This is useful to avoid stopping when an event is received from the child process.
 
-\c $ radare -d /bin/sh
-\c 
-\c [0x13B8C0]> !run
-\c To cleanly stop the execution, type: "^Z kill -STOP 1527 && fg"
-\c
-\c sh-3.2$ ls
-\c pid: 1611. new process created!
-\c  - Use !pid for processes, and !th for threads
-\c CLONE HAS BEEN INVOKED
-\c debug_dispatch_wait: RET = 0 WS(event)=6 INT3_EVENT=2 INT_EVENT=3 CLONE_EVENT=6
-\c === cont: tid: 1611 event: 6, signal: 19 (SIGSTOP). stop at 0x4ab95eb3
-\c 
-\c [0x4A13B8C0]> !pid
-\c  pid : 1527 0x4ab95eb3 (stopped)
-\c  pid : 1611 0x4ab95eb3 (stopped)
-\c  `- 1611 : /bin/sh (stopped)
+\c [0xB7FA8810]> !ie?
+\c Usage: !ie [-]<event>
+\c  - enables or disables the 'ignore event' 
+\c [0xB7FA8810]> !ie
+\c  0 stop
+\c  0 trap
+\c  0 pipe
+\c  0 alarm
+\c  0 fpe
+\c  0 ill
 
-The /bin/sh while calling 'ls'. This event has been catched by radare and prompts you again. Now we can choose which process we want to follow. The parent or the child.
+This is usually used to bypass some packer protections that relay on some events. So this way you can skip them just with '!ie stop' or '!ie -stop'.
 
-\c [0x4A13B8C0]> !pid 1527
-\c Current selected thread id (pid): 1527
-
-The same operations can be done by using the '!th' command for the threads.
-
-In the same way you can hackily 'attach' and 'detach' from to a pid.
-
-\H{dbg-events} Event handling
+\S{dbg-events} Event handling
 
 It is possible to configure which events should be ignored by the debugger
 
@@ -2181,7 +2390,7 @@ It is possible to configure which events should be ignored by the debugger
 
 The 'ie' command refers to 'ignore events'
 
-\H{dbg-signal} Signal handling
+\S{dbg-signal} Signal handling
 
 You can change visualize and change the signal handlers of the target process:
 
@@ -2219,31 +2428,21 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGIO      (DEFAULT)
 \c [0xB7FA8810]> 
 
-\H{events} Events
-
-You can even configure radare to handle or ignore multiple types of events. This is useful to avoid stopping when an event is received from the child process.
-
-\c [0xB7FA8810]> !ie?
-\c Usage: !ie [-]<event>
-\c  - enables or disables the 'ignore event' 
-\c [0xB7FA8810]> !ie
-\c  0 stop
-\c  0 trap
-\c  0 pipe
-\c  0 alarm
-\c  0 fpe
-\c  0 ill
-
-This is usually used to bypass some packer protections that relay on some events. So this way you can skip them just with '!ie stop' or '!ie -stop'.
 
 \C{script} Scripting
 
 TODO
 
-\C{graph} Graphing code and data
+\H{rsc-scripts} Radare scripts
 
-'ag' command'
-'ad' command'
+TODO: radare scripts
+
+\H{python} Python
+
+TODO
+
+\H{lua} LUA
+
 TODO
 
 \C{greetings} Greetings
