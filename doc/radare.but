@@ -1265,6 +1265,8 @@ The use of these functions is quite natural:
 
 Read the 'scripting' chapter to get a deeper look on this topic.
 
+The clearest example about how to implement a language binding for radare is done in Ruby. Read it at src/plug/hack/ruby.c
+
 \C{rabin} Rabin 
 
 Under this bunny-arabic-like name, radare hides the power of a wonderful tool to handle binary files and get information to show it in the command line or import it into the core.
@@ -1399,7 +1401,6 @@ Those operations are handled by the root 'a'nalyze command:
 \H{codeanal} Code analysis
 
 The code analysis is a common technique used to extract information from the assembly code. Radare stores multiple internal data structures to identify basic blocks, function trees, extract opcode-level information and such.
-
 
 \S{codeanal-fun} Functions
 
@@ -1593,7 +1594,13 @@ Here's a sample session:
 
 \S{datanal-spcc} Spcc
 
-TODO : explain how spcc works
+SPCC stands for 'Structure Parser C Compiler'. And it is just a small script that generates a dummy main() to call a user specified function over a block of data from radare. This way it is possible to parse any buffer using just C with all the libraries and includes like a real program will do. Use 'pm' command if you want a oneline and simplified version for reading structures.
+
+\c $ rsc spcc
+\c spcc - structure parser c compiler
+\c Usage: spcc [-ht] [file.spc] ([gcc-flags])
+
+The 'rsc spcc' command should be used like gcc against .spc files that are just .c files without main() and having a function called 'void parse(struct spcc *spcc, uchar *buffer)'.
 
 \S{anal-trace} Trace analysis
 
@@ -1667,7 +1674,23 @@ TODO: screenshots
 
 \C{gradare} Gradare
 
-TODO
+The current graphical frontend of radare is based on a simple Gtk+Vte+Cairo application running a radare application inside the virtual terminal (vte) and feeding it with the output of some scripts called 'grsc' stored in $prefix/share/radare/gradare/ in subdirectories per categories.
+
+\c $ pwd
+\c /usr/share/radare/gradare
+\c 
+\c $ ls
+\c Config  Debugger  Disassembly  Flags  Hacks  Movement  Search  Shell  Visual
+\c 
+\c $ ls Debugger/
+\c AttachOrLoad  Continue          Detach  Registers    Status  StepOver      Stop
+\c Breakpoint    ContinueUserCode  Maps    SetRegister  Step    StepUserCode
+\c 
+\c $ cat Debugger/StepOver 
+\c #!/bin/sh
+\c echo S
+
+TODO ... 
 
 \C{Hashing} Rahash
 
@@ -2005,21 +2028,7 @@ There's an eval variable called 'trace.cmtregs' that adds a comment after each e
 
 You can align these comments with 'eval asm.cmtmargin'.
 
-The extended or floating point registers are accessed with the '!fpregs' command.
-
-\c [0x4A13C000]> !fpregs
-\c  cwd = 0x037f  ; control    swd = 0x0000  ; status
-\c  twd = 0x0000  ; tag        fip = 0x0000  ; eip of fpu opcode
-\c  fcs = 0x0000               foo = 0x0000  ; stack
-\c  fos = 0x0000
-\c  mm0 = 0000 0000 0000 0000     st0 = 0 (0x00000000)
-\c  mm1 = 0000 0000 0000 0000     st1 = 0 (0x00000000)
-\c  mm2 = 0000 0000 0000 0000     st2 = 0 (0x00000000)
-\c  mm3 = 0000 0000 0000 0000     st3 = 0 (0x00000000)
-\c  mm4 = 0000 0000 0000 0000     st4 = 0 (0x00000000)
-\c  mm5 = 0000 0000 0000 0000     st5 = 0 (0x00000000)
-\c  mm6 = 0000 0000 0000 0000     st6 = 0 (0x00000000)
-\c  mm7 = 0000 0000 0000 0000     st7 = 0 (0x00000000)
+The extended or floating point registers are accessed with the '!fpregs' command. (See floating point registers for more information)
 
 \S{hwregs} Hardware registers
 
@@ -2056,7 +2065,39 @@ To remove all the values of the hw regs just type:
 
 \S{fpregs} Floating point registers
 
-TODO: !fpregs
+The floating point and extended registers are accessed thru the '!fpregs' command. This command depends on the cpu and the operating system, so floating point registers are usually stored in a quite weird way at kernel level. 
+
+Here's an example on intel with MMX and STX registers:
+
+\c [0xB7F9E810]> !fpregs
+\c  cwd = 0x037f  ; control    swd = 0x0000  ; status
+\c  twd = 0x0000  ; tag        fip = 0x0000  ; eip of fpu opcode
+\c  fcs = 0x0000               foo = 0x0000  ; stack
+\c  fos = 0x0000
+\c  mm0 = 0000 0000 0000 0000     st0 = 0 (0x00000000)
+\c  mm1 = 0000 0000 0000 0000     st1 = 0 (0x00000000)
+\c  mm2 = 0000 0000 0000 0000     st2 = 0 (0x00000000)
+\c  mm3 = 0000 0000 0000 0000     st3 = 0 (0x00000000)
+\c  mm4 = 0000 0000 0000 0000     st4 = 0 (0x00000000)
+\c  mm5 = 0000 0000 0000 0000     st5 = 0 (0x00000000)
+\c  mm6 = 0000 0000 0000 0000     st6 = 0 (0x00000000)
+\c  mm7 = 0000 0000 0000 0000     st7 = 0 (0x00000000)
+
+And the same for mips:
+
+\c [0x2AAA8820]> !fpregs                                                                                                         
+\c f00: 0xffffffffffffffff f02: 0xffffffffffffffff
+\c f04: 0xffffffffffffffff f06: 0xffffffffffffffff
+\c f08: 0xffffffffffffffff f10: 0xffffffffffffffff
+\c f12: 0xffffffffffffffff f14: 0xffffffffffffffff
+\c f16: 0xffffffffffffffff f18: 0xffffffffffffffff
+\c f20: 0xffffffffffffffff f22: 0xffffffffffffffff
+\c f24: 0xffffffffffffffff f26: 0xffffffffffffffff
+\c f28: 0xffffffffffffffff f30: 0xffffffffffffffff
+
+(On mips the default value for undefined registers is '-1' and not '0'.
+
+You can enable them in the visual debugger view with the 'e dbg.fpregs=true' command. The '!fpregs*' command is also available to export the registers as flags.
 
 \H{memory} Memory
 
@@ -2450,14 +2491,17 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGIO      (DEFAULT)
 \c [0xB7FA8810]> 
 
-
 \C{script} Scripting
 
 TODO
 
 \H{rsc-scripts} Radare scripts
 
-TODO: radare scripts
+TODO: See 'language bindings' for more information
+
+\H{ruby} Ruby
+
+TODO
 
 \H{python} Python
 

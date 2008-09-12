@@ -7,6 +7,8 @@
 
 ===========================================================
 
+* @ and > doesnt works
+
 * Build ruby stuff with waf also!
 
 * Signal handling should idenitfy backtracing and siginfo and so from here or so
