@@ -71,8 +71,10 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		break;
 	//case 0xea: // far jmp
 	// TODO moar
+	case 0x3b: //cmp
+		aop->ref = (u64)(-((char)bytes[2]));
+		aop->stackop = AOP_STACK_LOCAL_GET;
 	case 0x39:
-	case 0x3b:
 	case 0x3c:
 	case 0x3d:
 	case 0x85:

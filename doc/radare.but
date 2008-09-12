@@ -25,7 +25,7 @@ Nowadays the project is composed by a set of small utilities that can be used to
 
 The core of the hexadecimal editor and debugger. Allows to open any kind of file from different IO access like disk, network, kernel plugins, remote devices, debugged processes, ... and handle any of them as if they were a simple plain file.
 
-Implements an advanced command line interface for moving around the file, analyzing data, disassembling, binary patching, data comparision, searching, replacing, scripting with python, lua and perl, ...
+Implements an advanced command line interface for moving around the file, analyzing data, disassembling, binary patching, data comparision, searching, replacing, scripting with ruby, python, lua and perl, ...
 
 \c rabin
 
@@ -122,7 +122,7 @@ Here's the help message:
 \c radare [options] [file]
 \c   -s [offset]      seek to the desired offset (cfg.seek)
 \c   -b [blocksize]   change the block size (512) (cfg.bsize)
-\c   -i [script]      interpret radare or python/perl/lua script
+\c   -i [script]      interpret radare or ruby/python/perl/lua script
 \c   -p [project]     load metadata from project file
 \c   -l [plugin.so]   link against a plugin (.so or .dll)
 \c   -e [key=val]     evaluates a configuration string
@@ -311,7 +311,7 @@ Boolean value that shows or hides the bytes of the disassebled opcode
 
 \c cfg.bigendian
 
-Choose the endian flavour 1 for big, 0 for little.
+Choose the endian flavour 'true' for big, 'false' for little.
 
 \c file.id
 
@@ -1229,7 +1229,7 @@ The 'lua_hack_cmd' accepts a string as argument which is the argument given when
 
 If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
 
-The same happens with other language bindings like python or perl.
+The same happens with other language bindings like ruby, python or perl.
 
 In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
 
@@ -2281,7 +2281,7 @@ To add a software breakpoint type:
 \c [0xB7F75810]> !cont              ; continue execution
 \c [0x08048910]> !bp -sym_main      ; remove breakpoint
 
-TODO: moar nfo
+You can directly specify which kind of breakpoint you want to use, just using the same syntax for "!bp", but using "!bps" or "!bph" to not let radare decide for you which is the better option. (or just define dbg.hwbp to true or false)
 
 \S{bpm} Memory breakpoints
 
@@ -2318,11 +2318,33 @@ Lets define some hardware breakpoints on intel:
 \c DR2 0x00000000 x
 \c DR3 0x00000000 x
 
-TODO !bph, !dr
+TODO !bph
 
 \S{wps} Watchpoints
 
-TODO: !wp
+Watchpoints are evaluated expressions that makes the '!contwp' command stop stepping when they match. You can setup multiple expressions and logical operations and groupping checking for memory or register values.
+
+\c e cmd.wp = pd 3 @ eip
+\c e dbg.wptrace = false
+
+The 'dbg.wptrace' is used to make the watchpoints stop or not the execution when a watchpoint expression matches.
+The 'cmd.wp' will be executed every time a watchpoint is matched.
+
+\c [0xB7F45A60]> !wp %eip = 0xB7F45A8B
+\c 0: %eip = 0xB7F45A8B
+\c [0xB7F45A60]> !contwp
+\c watchpoint 0 matches at 0xb7f45a8b
+\c [0xB7F45A60]> pd 1 @ 0xB7F45A8B
+\c                0xB7F45A8B        eip: 01d0              eax += edx       
+\c [0xB7F45A60]> !wp %eax = 0x6fffffff
+\c 1: %eax = 0x6fffffff
+\c [0xB7F45A60]> !contwp
+\c watchpoint 1 matches at 0xb7f45abe
+\c [0xB7F45A60]> pd 1 @ 0xb7f45abe
+\c           |    0xB7F45ABE        eip: 29d0              eax -= edx       
+\c [0xB7F45A60]> !reg eax
+\c 0x6fffffff
+\c [0xB7F45A60]> 
 
 \H{fds} Filedescriptors
 

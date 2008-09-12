@@ -61,7 +61,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 	${Q}$(CC) -c $(CFLAGS) -o $@ $<
 
 all: ${TARGETS} udis86 armasm _radiff \
-	lsbstego pre radare${BINSFX} _hasher plugs rsc_ \
+	lsbstego pre radare${BINSFX} _rahash plugs rsc_ \
 	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true
 
@@ -120,8 +120,8 @@ armasm:
 _radiff:
 	-cd radiff && ${MAKE} all
 
-_hasher:
-	-cd hasher && ${MAKE} all
+_rahash:
+	-cd rahash && ${MAKE} all
 
 xc${BINSFX}: xc.o
 	${E} 'Linking xc'
@@ -138,7 +138,7 @@ clean:
 	-${Q}rm -f *.o
 	-${Q}cd arch/arm/aasm && ${MAKE} clean
 	-${Q}rm -f dbg/arch/*.o
-	-${Q}${MAKE} -C hasher clean
+	-${Q}${MAKE} -C rahash clean
 	-${Q}${MAKE} -C radiff clean
 	-${Q}${MAKE} -C rabin clean
 	-${Q}${MAKE} -C rasm clean

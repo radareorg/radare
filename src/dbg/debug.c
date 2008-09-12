@@ -475,8 +475,9 @@ int debug_contu(const char *input)
 	return 0;	
 }
 
-int debug_wtrace()
+int debug_contwp()
 {
+	const char *cmd;
 	int ret;
 
 	/* not watchpoints, nothing */
@@ -489,10 +490,18 @@ int debug_wtrace()
 
         ps.verbose = 0;
         while(!config.interrupted && ps.opened && debug_step(1)) {
-		ret = wp_matched();
+		ret = debug_wp_match();
 		if(ret >= 0) {
-			printf("watchpoint %d matched at 0x%x\n",
+			printf("watchpoint %d matches at 0x%x\n",
 				 ret, (unsigned int)arch_pc(ps.tid));
+
+			cmd = config_get("cmd.wp");
+			if (!strnull(cmd))
+				radare_cmd(cmd, 0);
+
+			if (config_get("dbg.wptrace"))
+				continue;
+
 			break;
 		}
         }
@@ -1454,15 +1463,18 @@ int debug_wp(const char *str)
 
 	if (key==0 && ps.wps_n == 0)
 		key='?';
+	else
+	if (str[0] == ' ')
+		key = str[1];
 
 	switch(key) {
 	/* remove watchpoint */
 	case '-':
-		str++;
+		str = str+1;
 		skip_chars(&str);
 		i = atoi(str);
 		if(i >= 0 && i <= 4) {
-			if(rm_wp(i))
+			if( debug_wp_rm (i))
 				printf("watchpoint %d free\n", i);
 		} else {
 			eprintf(":error invalid watchpoint number\n");
@@ -1471,8 +1483,8 @@ int debug_wp(const char *str)
 		break;
 	/* print watchpoints */
 	case '?':
-		cons_printf("Usage: !wp[?|*] ([expression|-idx])\n"
-		"  !wp           list all watchpoints\n"
+		eprintf("Usage: !wp[?|*] ([expression|-idx])\n"
+		"  !wp           list all watchpoints (limit = 4)\n"
 		"  !wp*          remove all watchpoints\n"
 		"  !wp -#        removes watchpoint number\n"
 		" Expression example:\n"
@@ -1491,7 +1503,7 @@ int debug_wp(const char *str)
 			if (sizeof(ps.wps)==0) {
 				eprintf("No watchpoints defined. Try !wp?\n");
 			} else
-				print_wps();
+				debug_wp_list();
 		} else {
 			for(i = 0; i < sizeof(ps.wps); i++) {
 				if(!ps.wps[i].cond) {

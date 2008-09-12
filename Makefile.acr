@@ -136,7 +136,7 @@ install:
 	-${INSTALL_DATA} doc/* ${DATADIR}/doc/radare/
 	${INSTALL_DIR} ${DATADIR}/doc/radare/xtra
 	${INSTALL_DATA} doc/xtra/* ${DATADIR}/doc/radare/xtra
-	cd src/rsc/libexec && ${MAKE} install DESTDIR=${DESTDIR}
+	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
