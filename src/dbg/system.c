@@ -75,7 +75,8 @@ int help_message()
 	cons_printf("  ret                emulates a return from subroutine\n");
 	cons_printf("  skip [N]           skip (N=1) instruction(s)\n");
 	cons_printf("  step{o,u,bp,ret}   step, step over, step until user code, step until ret\n");
-	cons_printf("  cont{u,uh,sc,fork} continue until user code, here, syscall or fork\n");
+	cons_printf("  cont{u,uh,wp,sc,fork} continue until user code, here, watchpoint, syscall or fork\n");
+	//cons_printf("  contwp             continue until watchpoint matches\n");
 	TITLE
 	cons_printf(" Tracing\n");
 	TITLE_END
@@ -84,8 +85,7 @@ int help_message()
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
 	cons_printf("  ktrace             follow app until ktrace event occurs\n");
 #endif
-	cons_printf("  wtrace             watchpoint trace (see !wp command)\n");
-	cons_printf("  wp[m|?] [expr]     put a watchpoint (!wp? for help) (wpm for monitor)\n");
+	cons_printf("  wp[?] [-id|expr]   add watchpoint (!wp? for help) (see dbg.wptrace)\n");
 
 	TITLE
 	cons_printf(" Breakpoints\n");
@@ -175,11 +175,11 @@ static struct commads_t {
 	//CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
 	CB_CMD( "lib"      , CB_NORMAL   , debug_lib)           , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        , 
-	CB_CMD( "wtrace"   , CB_NOARGS   , debug_wtrace )       , 
 	CB_CMD( "signal"   , CB_NORMAL   , debug_signal )       , 
 	CB_CMD( "sig"      , CB_NORMAL   , debug_signal )       , 
 	CB_CMD( "contsc"   , CB_NORMAL   , debug_contsc )       , 
 	CB_CMD( "contfork" , CB_NOARGS   , debug_contfork )     , 
+	CB_CMD( "contwp"   , CB_NOARGS   , debug_contwp )       , 
 	CB_CMD( "dall"     , CB_NOARGS   , debug_dumpall)       ,
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 

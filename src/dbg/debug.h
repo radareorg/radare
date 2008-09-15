@@ -38,7 +38,7 @@ int debug_write(pid_t pid, void *data, int length);
 int debug_run();
 int debug_wp(const char *expr);
 int debug_mp(char *expr);
-int debug_wtrace();
+int debug_contwp();
 int debug_detach();
 int debug_syms();
 int debug_system(const char *command);

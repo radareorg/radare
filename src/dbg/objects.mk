@@ -49,4 +49,4 @@ endif
 
 endif
 
-psOBJ+=dbg/bp.o
+psOBJ+=dbg/bp.o dbg/lib.o

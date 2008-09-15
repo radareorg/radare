@@ -25,8 +25,7 @@
 #include <string.h>
 #include <stdio.h>
 
-
-int wp_matched()
+int debug_wp_match()
 {
 	int i, n;
 
@@ -39,14 +38,13 @@ int wp_matched()
 				return i;
 			n--;
 		}
-
 		i++;
 	}
 
 	return -1;
 }
 
-int add_wp(char *str)
+int debug_wp_add(const char *str)
 {
 	int i;
 
@@ -69,7 +67,7 @@ int add_wp(char *str)
 	return i;	
 }
 
-int rm_wp(int i)
+int debug_wp_rm(int i)
 { 
 	if(ps.wps[i].cond == NULL)
 		return -1;
@@ -85,19 +83,14 @@ int rm_wp(int i)
 	return 0;
 }
 
-void print_wps()
+void debug_wp_list()
 {
-	int i, n;
+	int i, n = ps.wps_n;
 
-	n = ps.wps_n;
-	i = 0;
-
-	while(n > 0) {
+	for(i=0; n>0 ; i++) {
 		if(ps.wps[i].cond) {
 			printf("%d: %s\n", i, ps.wps[i].str_cond);
 			n--;
 		}
-
-		i++;
 	}
 }

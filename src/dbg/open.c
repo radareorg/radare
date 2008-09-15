@@ -112,6 +112,9 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	}
 
 	ps.filename = resolve_path(file);
+	file = (char *)malloc(strlen(file)+8);
+	sprintf(config.file, "dbg://%s", ps.filename);
+
 	ps_parse_argv();
 	ps.is_file  = (atoi(ps.filename)?0:1);
 	ps.opened = 1;

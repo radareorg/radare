@@ -11,14 +11,29 @@
  - ? eip = 0x4A13B8C0   --> doesnt works
  - ? 0x4A13B8C0 = eip   --> works!
  * Make !wp work in this way!!
+* @ and > doesnt works
+
+* Build ruby stuff with waf also!
+
+* Signal handling should idenitfy backtracing and siginfo and so from here or so
+
+       static void
+       handler(int sig, siginfo_t *si, void *unused)
+       {
+           printf("Got SIGSEGV at address: 0x%lx\n",
+                   (long) si->si_addr);
+           exit(EXIT_FAILURE);
+       }
+
+* Watchpoints:
+  - Make dbg.wptrace = make it stop when there's a breakpoint
+  - support for %eax = %ebx f.ex
+
 * !contuh doesnt works :O
  - implement continue until cursor
 * 'u*' - undo all changes (should be 'uw *') ?
 * add margin right to the text
   - or margin left to the shell code
-
-* b +3
-* b -3 should work!!
 
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 

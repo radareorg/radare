@@ -728,12 +728,12 @@ function Radare.Debugger.step_until_user_code()
 end
 
 function Radare.Debugger.add_bp(addr)
-	r.cmd("!bp "..num)
+	r.cmd("!bp "..addr)
 	return Radare.Debugger
 end
 
 function Radare.Debugger.remove_bp(addr)
-	r.cmd("!bp -"..num)
+	r.cmd("!bp -"..addr)
 	return Radare.Debugger
 end
 

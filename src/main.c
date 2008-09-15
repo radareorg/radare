@@ -32,7 +32,7 @@ static void help_message()
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
-	"  -i [script]      interpret radare or python/perl/lua script\n"
+	"  -i [script]      interpret radare or ruby/python/perl/lua script\n"
 	"  -p [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"

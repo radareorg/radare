@@ -19,9 +19,9 @@ crOBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o plug/io/socket.o
 crOBJ+=plug/io/shm.o plug/io/mmap.o plug/io/malloc.o
 #plug/io/winegdb.o
 
-# hasher
+# rahash
 
-crOBJ+=hasher/entropy.o hasher/hash.o hasher/crc16.o aes-find.o
+crOBJ+=rahash/entropy.o rahash/hash.o rahash/crc16.o aes-find.o
 
 # arch
 

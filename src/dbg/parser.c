@@ -32,6 +32,8 @@
 #include "../utils.h"
 #include "arch/arch.h"
 
+/* TODO: Support %eax = %ebx . fexample */
+
 extern struct regs_off roff[];
 //extern unsigned long get_reg(char *reg);
 

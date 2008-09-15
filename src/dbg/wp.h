@@ -6,9 +6,11 @@ typedef struct {
 	struct tok *cond;
 	char *str_cond;
 	int refs;
-}WP;
+} WP;
 
-int wp_matched();
-
+int debug_wp_match();
+int debug_wp_add(const char *str);
+int debug_wp_rm(int i);
+void debug_wp_list();
 
 #endif

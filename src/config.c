@@ -598,6 +598,7 @@ void config_init(int first)
 	config_set("asm.xrefs", "xrefs");
 
 	config_set("asm.follow", "");
+	config_set("cmd.wp", "");
 	config_set("cmd.flag", "true");
 	config_set("cmd.asm", "");
 	config_set("cmd.user", "");
@@ -691,6 +692,7 @@ void config_init(int first)
 	config_set("dbg.regs", "true");
 	config_set("dbg.stack", "true");
 	config_set("dbg.vstack", "true");
+	config_set("dbg.wptrace", "false");
 	config_set_i("dbg.stacksize", 66);
 	config_set("dbg.stackreg", "esp");
 	config_set("dbg.bt", "false");

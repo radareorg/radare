@@ -778,14 +778,17 @@ int radare_interpret(char *file)
 	
 	/* check for perl/python/lua/ */
 	buf[0]='\0';
+	if (strstr(file, ".rb"))
+		snprintf(buf, 1012, "H ruby %s", file);
+	else
 	if (strstr(file, ".pl"))
-		snprintf(buf, 1012, "H perl %s", file); //config.script);
+		snprintf(buf, 1012, "H perl %s", file);
 	else
 	if (strstr(file, ".py"))
-		snprintf(buf, 1012, "H python %s", file); //config.script);
+		snprintf(buf, 1012, "H python %s", file);
 	else
 	if (strstr(file, ".lua"))
-		snprintf(buf, 1012, "H lua %s", file); //config.script);
+		snprintf(buf, 1012, "H lua %s", file);
 
 	if (buf[0])
 		return radare_cmd(buf, 0);
