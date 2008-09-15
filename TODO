@@ -7,6 +7,10 @@
 
 ===========================================================
 
+* Conditional execution
+ - ? eip = 0x4A13B8C0   --> doesnt works
+ - ? 0x4A13B8C0 = eip   --> works!
+ * Make !wp work in this way!!
 * !contuh doesnt works :O
  - implement continue until cursor
 * 'u*' - undo all changes (should be 'uw *') ?

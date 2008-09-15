@@ -4,7 +4,7 @@
 
 struct regs_off {
 	char *reg;
-	int  off;
+	int off; // XXX 32 bit only !? wtf?
 };
 
 /* token types */
@@ -16,7 +16,7 @@ enum {
 
 /* token structure */
 struct tok {
-	unsigned long off;
+	u64 off;
 	int type;
 	int op, log_op;
 	char *val;

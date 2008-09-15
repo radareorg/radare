@@ -348,9 +348,12 @@ char *mytok(char *ptr, char *delim, char *backup)
 	return ptr;
 }
 
+u64 last_cmp = 0;
 static int level = 0; // recursivity counter
 u64 get_math(const char* text)
 {
+	u64 cmp_off = 0;
+	int is_cmp = 0;
 	u64 t, new_off = 0;
 	int  sign     = 1;
 	char op       = 0;
@@ -376,8 +379,13 @@ u64 get_math(const char* text)
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
-		tmp = mytok(ptr, "+-<>%*/[\\", &op);
+		tmp = mytok(ptr, "=+-<>%*/[\\", &op);
 		switch(oop) {
+		case '=':
+			is_cmp = 1;
+			cmp_off = new_off;
+			new_off  = get_offset(ptr);
+			break;
 #if RADARE_CORE
 		case '[': end = strchr(txt2+(ptr-txt+1),']');
 			// todo. support nested lol
@@ -417,13 +425,25 @@ u64 get_math(const char* text)
 		}
 		if (tmp == NULL) break;
 		ptr = tmp;
-		oop=op;
+		oop = op;
 	}
 	free(txt);
 #if RADARE_CORE
 	free(txt2);
 #endif
 	level--;
+//eprintf("CMP (%s)(%d\n", text, is_cmp);
+//eprintf("    (0x%llx)(0x%llx)\n", cmp_off, new_off);
+	if (is_cmp) {
+		return cmp_off-new_off;
+#if 0
+		if ((cmp_off-new_off) & 0x100000000LL)
+			return new_off-cmp_off;
+		else
+			return cmp_off-new_off;
+#endif
+	}
+
 	return new_off;
 }
 

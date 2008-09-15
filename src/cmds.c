@@ -97,7 +97,7 @@ void show_help_message()
 		cmdaux[0] = '\0';
 		cons_printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
-	cons_printf(" ? <expr>          calc     math expr and show result in hex,oct,dec,bin\n");
+	cons_printf(" ?[?]<expr>       calc     math expr and show result in hex,oct,dec,bin\n");
 }
 
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
@@ -253,7 +253,7 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'F': {
-		analyze_function(3);
+		analyze_function(10);
 		}
 		break;
 	case 'f': {
@@ -1808,9 +1808,29 @@ CMD_DECL(shell)
 CMD_DECL(help)
 {
 	if (strlen(input)>0) {
-		u64 res = get_math(input);
-		cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
-		PRINT_BIN(res); NEWLINE;
+		if (input[0]=='?') {
+			if (input[1]=='\0') {
+				eprintf("Usage: ?[?] <expr>\n");
+				eprintf("  > ? eip             ; get value of eip flag\n");
+				eprintf("  > ? 0x80+44         ; calc math expression\n");
+				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
+				eprintf("  > ? eip = sym_main  ; compare flags\n");
+				eprintf(" The '??' is used for conditional executions after a comparision\n");
+				eprintf("  > ? [foo] = 0x44    ; compare memory read with byte\n");
+				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
+			} else
+			if (last_cmp == 0) {
+				radare_cmd(input+1, 0);
+			} else {
+				u64 res = last_cmp;
+				cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+				PRINT_BIN(res); NEWLINE;
+			}
+		} else {
+			u64 res = get_math(input);
+			cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+			PRINT_BIN(res); NEWLINE;
+		}
 	}
 	else show_help_message();
 

@@ -1801,7 +1801,7 @@ int debug_run(char *input)
 	return 1;
 }
 
-addr_t debug_get_register(char *input)
+u64 debug_get_register(char *input)
 {
 	char *reg = input;
 	int off;
