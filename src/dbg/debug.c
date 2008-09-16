@@ -1319,28 +1319,6 @@ int debug_trace(char *input)
 	return 0;
 }
 
-void debug_print_bps()
-{
-	char str[512];
-	int bps;
-	int i;
-
-	if (ps.bps_n) {
-		eprintf("breakpoints:\n");
-		bps = ps.bps_n;
-		for(i = 0; i < MAX_BPS && bps > 0; i++) {
-			if(ps.bps[i].addr > 0) { 
-				string_flag_offset(str, ps.bps[i].addr);
-				if(ps.bps[i].hw)
-					eprintf(" 0x%08llx HARD %s\n", ps.bps[i].addr, str); 
-				else	eprintf(" 0x%08llx SOFT %s\n", ps.bps[i].addr, str);
-				bps--;	
-			}
-		}
-	} else
-		eprintf("breakpoints not set\n");
-}
-
 int debug_bp_rms()
 {
 	int i;

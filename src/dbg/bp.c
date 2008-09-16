@@ -79,7 +79,7 @@ int debug_bp(const char *str)
 	default:
 		addr = get_offset(ptr);
 		if (ptr[0]==0 || addr == 0)
-			debug_print_bps();
+			debug_bp_list();
 		else {
 			flag_set("breakpoint", addr, 3);
 			num = debug_bp_set(NULL, addr, hwbp);
@@ -110,17 +110,22 @@ int debug_bp_restore_after()
 	u64 addr = arch_pc(ps.tid); // x86
 	int bpsize = arch_bpsize();
 
-	if (bp == NULL) {
-		bp = debug_bp_get(addr-bpsize);
-		if (bp==NULL) {
-	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
-			return 0;
-		}
-		printf("post-Breakpoint restored %08llx\n", addr);
-		arch_jmp(addr-bpsize);
-	} else {
-		//printf("post-Breakpoint restored %08llx\n", addr);
+	/* hardware */
+	bp = debug_bp_get(addr);
+	if (bp!=NULL && bp->hw) {
+		eprintf("HW breakpoint hit!\n");
+		bp->count++;
+		return 0;
 	}
+
+	/* software */
+	bp = debug_bp_get(addr-bpsize);
+	if (bp!=NULL) {
+		bp->count++;
+		eprintf("post-breakpoint restored %08llx\n", addr);
+		arch_jmp(addr-bpsize);
+	}
+
 	return 0;
 }
 
@@ -289,3 +294,26 @@ void debug_reload_bps()
                 }
         }
 }
+
+void debug_bp_list()
+{
+	char str[512];
+	int bps;
+	int i;
+
+	if (ps.bps_n) {
+		eprintf("breakpoints:\n");
+		bps = ps.bps_n;
+		for(i = 0; i < MAX_BPS && bps > 0; i++) {
+			if(ps.bps[i].addr > 0) { 
+				string_flag_offset(str, ps.bps[i].addr);
+				eprintf(" 0x%08llx %s %s (hits=%d)\n",
+					ps.bps[i].addr, (ps.bps[i].hw)?"HARD":"SOFT",
+					str, ps.bps[i].count); 
+				bps--;	
+			}
+		}
+	} else
+		eprintf("breakpoints not set\n");
+}
+

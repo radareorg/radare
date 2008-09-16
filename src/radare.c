@@ -748,8 +748,16 @@ int radare_cmd(char *input, int log)
 	for(;input&&(input[0]>='0'&&input[0]<='9');)
 		input=input+1;
 
-	for(i=0;i<repeat;i++)
+	/* no command found? */
+	if (input[0]=='\0')
+		return 0;
+
+	radare_controlc();
+	for(i=0;!config.interrupted&&i<repeat;i++) {
 		ret = radare_cmd_raw(input, log);
+		/* TODO: do something with ret */
+	}
+	radare_controlc_end();
 
 	if (next && next[1]=='&') {
 		int ret;
@@ -1420,25 +1428,6 @@ int radare_go()
 //static int pipe_fd = -1;
 int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 {
-#if 0
-	/* DOES NOT WORKS */
-	eprintf("pipe(%s)\n", cmd);
-	cons_flush();
-	if (pipe_fd == -1) {
-	eprintf("real-pipe(%s)\n", cmd);
-		pipe_fd = make_tmp_file(tmpfile);
-		if (pipe_fd == -1)
-			return 0;
-		cons_set_fd(pipe_fd);
-		radare_cmd(cmd, 0);
-		cons_set_fd(1);
-		close(pipe_fd);
-		pipe_fd = -1;
-	} else {
-		radare_cmd(cmd, 0);
-	}
-	return 1;
-#else
 	/* WORKS BUT IT IS UGLY */
 	int fd = make_tmp_file(tmpfile);
 	int std;
@@ -1467,7 +1456,6 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	}
 
 	return 1;
-#endif
 }
 
 char *pipe_command_to_string(char *cmd)
@@ -1482,113 +1470,3 @@ char *pipe_command_to_string(char *cmd)
 
 	return buf;
 }
-
-#if 0
-	int child;
-	int io[2];
-	int i, ret;
-/* on memory */
-// XXX DISABLED ATM XXX
-//printf("Execute(%s)\n", cmd);
-	
-	int j;
-	char tmp[1024];
-	char *argv[10];
-	argv[0]=argv[1]=argv[2]=argv[3]='\0';
-	strcpy(tmp, cmd);
-	for(j=0,i=strlen(tmp)-1;i>0;i--) {
-		if (tmp[i]==' ') {
-			tmp[i]='\0';
-			argv[j++] = tmp+i+1;
-			printf("arg: %s\n", tmp+i+1);
-		}
-	}
-	argv[j++] = tmp;
-
-	buf = (char *)malloc(size);
-	pipe(io);
-//printf("CMD: %s\n", cmd);
-//printf("ARG: %s, %s, %s\n", argv[0], argv[1], argv[2]);
-	child = fork();
-	if (child) {
-		// pare
-		fcntl(io[0], F_SETFL, O_NONBLOCK);
-		for(i=0;;) {
-			if (i==size) {
-				size += BLOCK;
-				buf = realloc(buf, size);
-			}
-			ret = read(io[0], buf+i, 1);
-			if (ret == 1)
-				i++;
-			if (ret<0)
-				if (-1==waitpid(child, NULL, WNOHANG))
-					break;
-		}
-		buf[i]='\0';
-		close(io[0]);
-		close(io[1]);
-	} else {
-		// fill
-		close(0); // no stdin
-		dup2(io[1], 1); // stdout to pipe
-		radare_cmd(cmd, 0);
-	//	io_system(cmd);
-	//	execv(argv[0], argv);
-	//	perror("execv");
-		// execl failed
-		close(io[0]);
-		close(io[1]);
-		exit(1);
-	}
-
-	if (buf[0]=='\0') {
-		free(buf);
-		buf = NULL;
-	}
-	return buf;
-}
-#endif
-
-#if 0
-char *pipe_command_to_string(char *cmd)
-{
-	int pid, ret;
-	int limit = 1024;
-	int strlen = 0;
-	char *str;
-	char buf[2];
-	int pee[2];
-
-	if (!cmd[0])
-		return NULL;
-	pipe(pee);
-
-	str = (char *)malloc(limit);
-	if (str == NULL)
-		return NULL;
-
-	if (!(pid = fork())) {
-		close(1);
-		dup2(pee[1], 1);
-		radare_cmd(cmd, 0);
-		fflush(stdout);
-		fflush(stderr);
-		exit(0);
-	}
-
-	while((ret = read(pee[0], buf+strlen,1))==1) {
-		if (strlen>limit) {
-			str = realloc(str, strlen+1024);
-			limit += 1024;
-		}
-		str[strlen++] = buf[0];
-		str[strlen] = '\0';
-	}
-
-	close(pee[0]);
-	close(pee[1]);
-
-	return str;
-}
-#endif

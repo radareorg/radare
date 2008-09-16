@@ -1482,11 +1482,47 @@ TODO
 
 \C{rasm} Rasm
  
-The inline assembler/disassembler. Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode.
+The inline assembler/disassembler. Initially 'rasm' was designed to be used for binary patching, just to get the bytes of a certain opcode. Here's the help
+
+\c $ rasm -h
+\c Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] "opcode"|-
+\c  if 'opcode' is '-' reads from stdin
+\c   -v           enables debug
+\c   -d [bytes]   disassemble from hexpair bytes
+\c   -f [file]    compiles assembly file to 'file'.o
+\c   -s [offset]  offset where this opcode is suposed to be
+\c   -a [arch]    selected architecture (x86, olly, ppc, arm, java, rsc)
+\c   -e           use big endian
+\c   -l           list all supported opcodes and architectures
+\c   -V           show version information
+
+The basic 'portable' assembler instructions can be listed with 'rasm -l':
+
+\c $ rasm -l
+\c Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] "opcode"|-
+\c Architectures:
+\c  olly, x86, ppc, arm, java
+\c Opcodes:
+\c  call [addr]  - call to address
+\c  jmp [addr]   - jump to relative address
+\c  jz  [addr]   - jump if equal
+\c  jnz          - jump if not equal
+\c  trap         - trap into the debugger
+\c  nop          - no operation
+\c  push 33      - push a value or reg in stack
+\c  pop eax      - pop into a register
+\c  int 0x80     - system call interrupt
+\c  ret          - return from subroutine
+\c  ret0         - return 0 from subroutine
+\c  hang         - hang (infinite loop
+\c  mov eax, 33  - asign a value to a register
+\c Directives:
+\c  .zero 23     - fill 23 zeroes
+\c  .org 0x8000  - offset
 
 \H{rasm-asm} Assemble
 
-TODO
+TODO : from file, inline
 
 \H{rasm-dasm} Disassemble
 

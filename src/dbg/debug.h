@@ -148,6 +148,7 @@ struct bp_t
 	int hw;
 	u64 addr;
 	int len;
+	int count; /* hit counter */
 	unsigned char data[512];
 };
 

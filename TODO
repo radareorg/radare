@@ -7,6 +7,13 @@
 
 ===========================================================
 
+* zoom for functions and trace counts
+* store from->to list for all the jumps/calls analized inside functions
+  - use them to resolve xrefs at runtime only for functions)
+
+* make gdb connector work happily
+
+* cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 * XC floating not happy
 * Watchpoints:
   - Make !wp work with ? conditionals
@@ -21,9 +28,6 @@
   - define working memory ranges (0-100,400-500)
   - allow to enable/disable
   - useful for searching
-
-* search for strings in disassembly
-  - pd 1 -> strstr(cons_buffer, mystr)
 
 * gradare must load using Shell to loop all the time the radare
 
@@ -51,8 +55,6 @@
   - follow child or parent
   - ignore other threads
 
-* cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
-
 * store xrefs
 * add support for strings with "" in CC for.example
 
@@ -71,20 +73,18 @@
 
 * bash autocompletion script for rsc and rfile
 
-
 * arrows+shift in visual
 * 'x' char should not be accepted as hexpair
-
-* if print len is bigger than block size (change it temporally)
+* wX write with xor key
 
 * search backward (esteve?)
   - search backward in memory (invert string and add inc as argument for binparse)
   - useful to static analyze interrupt calls
 
-* !contsc must be string as arg also with syscall name (depending on asm.os)
 * BSD imports with dietelf doesnt works well
 
 * deprecate asm.follow for scr.seek or so !!!
+ - documentation for this
 
 * define ranges of the file to analize (.text by default...)
   mr - memory ranges ??
@@ -100,6 +100,7 @@
 
 * fix software breakpointz
 * !bpc -> execute command when hitting breakpoint
+  - stop on breakpoint after N hits
   * breakpoint callbacks:
    - integrated with !wp too
     A hook to an api can be emulated from the debugger, no need to inject
@@ -115,7 +116,6 @@ Debugger:
  	  - after restore !set eip = eip -1 && !bp -eip
 	* !contu must use '!mp rw- 0x8048000 0x4045' if supported
 	* load libraries on the child process
-	* next pel debugger (next source line) -- needs dwarf integration?
 	* !contall
 	* !cont <pid> ???
 	* Add !int opcode to call a syscall
@@ -126,6 +126,7 @@ Debugger:
 	 - done with lua/python
 	* breakpoints
 	  - command
+          - stop at count
 	  - log (trace)
 	  - enabled
 
@@ -539,9 +540,8 @@ Core
 Tracer
 ======
 * store more info in trace (output of command)
-* random trace peeker
-  - takes traces from the process while running every N usecs
 * timeline of a trace |----------------|
+  - available as a zoom view
   - in rsc script? - can dump traces on separated files? slow? bloat?
    - single file is better
   - allow to view frame windows inside the timeline
@@ -647,9 +647,6 @@ FileDescriptors
 
 Random Stuff
 ============
-* cmd.flag = eip -> fer una taula de offsets-comandes per cmd.flag
-  - fc = flag command fc <command> @ offset
-  - do not execute twice
 * Do not use the char '(' in asm.lines. just use - or =
 * record radare commands
   - all commands executed within a recording time are stored on a single script file
@@ -735,5 +732,9 @@ Split radare into libraries accessible by VAPI interfaces. (no gobject dependenc
 * implement 'commit' command. delayed write operations with bindiff output
   - using the 'u' command
 
+* search for strings in disassembly
+  - pd 1 -> strstr(cons_buffer, mystr)
+
+* next pel debugger (next source line) -- needs dwarf integration?
 
 * total world domination
