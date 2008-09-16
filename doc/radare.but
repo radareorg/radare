@@ -164,6 +164,130 @@ In the visual mode you should use hjkl keys which are the default ones for scrol
 
 In the visual mode you can insert (alterate bytes) pressing 'i' and then <tab> to switch between the hex or string column. Pressing 'q' in hex panel to return into the visual mode.
 
+\H{cmds} Command format
+
+The format of the commands looks something like that:
+
+\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...]
+
+Some examples:
+
+\c !step                 ; call debugger 'step' command
+\c px 200 @ esp          ; show 200 hex bytes at esp
+\c pc > file.c           ; dump buffer as a C byte array to file
+\c wx 90 @@ sym_*        ; write a nop on every symbol
+\c pd 2000 | grep eax    ; grep opcodes using 'eax' register
+\c x 20 && s +3 && x 40  ; multiple commands in a single line
+
+\H{expr} Expressions
+
+The expressions are mathematical representations of a 64 bit numeric value which can be displayed in different formats, compared or used at any command as a numeric argument. They support multiple basic arithmetic operations and some binary and boolean ones. The command used to evaluate these math expressions is the '?'. Here there are some examples:
+
+\c [0xB7F9D810]> ? 0x8048000
+\c 0x8048000 ; 134512640d ; 1001100000o ; 0000 0000  
+\c [0xB7F9D810]> ? 0x8048000+34
+\c 0x8048022 ; 134512674d ; 1001100042o ; 0010 0010  
+\c [0xB7F9D810]> ? 0x8048000+0x34
+\c 0x8048034 ; 134512692d ; 1001100064o ; 0011 0100  
+
+\c [0xB7F9D810]> ? 1+2+3-4*3
+\c 0x6 ; 6d ; 6o ; 0000 0110 
+
+\c [0xB7F9D810]> ? [0x8048000]
+\c 0x464C457F ; 1179403647d ; 10623042577o ; 0111 1111  
+
+The supported arithmetic expressions supported are:
+
+\c + : addition
+\c - : substraction
+\c * : multiply
+\c / : division
+\c % : modulus
+\c > : shift right
+\c < : shift left
+
+The binary expressions should be scapped:
+
+\c \| : logical OR
+\c \& : logical AND
+
+The values can be numbers in many formats:
+
+\c 0x033   : hexadecimal
+\c 3334    : decimal
+\c sym_fo  : resolve flag offset
+\c 10K     : KBytes  10*1024
+\c 10M     : MBytes  10*1024*1024
+
+\H{expr-xc} XC
+
+The 'xc' utility comes with the radare framework and aims to be a minimalistic expression evaluator for the shell useful for making base conversions easily between floating point values, hexadecimal representations, hexpair strings to ascii, octal to integer. It supports endianness and can be used as a shell if no arguments given.
+
+\c $ xc -h
+\c Usage: xc [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]
+\c  int   ->  hex           ;  xc 10
+\c  hex   ->  int           ;  xc 0xa
+\c  -int  ->  hex           ;  xc -77
+\c  -hex  ->  int           ;  xc 0xffffffb3
+\c  float ->  hex           ;  xc 3.33f
+\c  hex   ->  float         ;  xc Fx40551ed8
+\c  oct   ->  hex           ;  xc 035
+\c  hex   ->  oct           ;  xc Ox12 (O is a letter)
+\c  bin   ->  hex           ;  xc 1100011b
+\c  hex   ->  bin           ;  xc Bx63
+\c  -e    swap endianness   ;  xc -e 0x33
+\c  -s    swap hex to bin   ;  xc -s 43 4a 50
+\c  -     read data from stdin until eof
+
+Some examples:
+
+\c $ xc 0x345
+\c 837
+\c $ xc 837
+\c 0x345
+\c $ xc 44.44f
+\c Fx8fc23142
+\c $ xc 0xfffffffd
+\c -3
+\c $ xc -3
+\c 0xfffffffd
+\c $ xc -s "41 42 43 44"
+\c ABCD
+
+\H{expr-cmp} Boolean expressions
+
+These expressions can be checked for equality for later make conditional execution of commands.
+
+Here is an example that checks if current eip is 0x8048404 and skips this instruction (jmp eip+2) if matches.
+
+\c > ? eip == 0x8048404
+\c > ??!jmp eip+2
+
+You can check the last comparision result with the '???' command. Which is the substraction of the first part of the expression and the second part of it.
+
+\c > 1==1   ; check equality (==)
+\c > ???
+\c 0x0
+\c > 1==2   ; check equality (==)
+\c > ???
+\c 0x1
+\c > 1!=2   ; check difference (!=)
+\c > ???
+\c 0x0
+
+The conditional command is given after the '??' command. Which is the help of the '?' command when no arguments given:
+
+\c [0xB7F9D810]> ??
+\c Usage: ?[?[?]] <expr>
+\c   > ? eip             ; get value of eip flag
+\c   > ? 0x80+44         ; calc math expression
+\c   > ? eip-23          ; ops with flags and numbers
+\c   > ? eip==sym_main   ; compare flags
+\c  The '??' is used for conditional executions after a comparision
+\c   > ? [foo] = 0x44    ; compare memory read with byte
+\c   > ???               ; show result of comparision
+\c   > ?? s +3           ; seek current seek + 3 if equal
+
 \H{usage-dbg} Basic debugger session
 
 To start debugging a program use the '-d' flag and append the PID or the program path with arguments.

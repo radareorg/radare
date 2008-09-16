@@ -1819,20 +1819,17 @@ CMD_DECL(help)
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
 				eprintf("  > ? eip==sym_main   ; compare flags\n");
 				eprintf(" The '??' is used for conditional executions after a comparision\n");
-				eprintf("  > ? [foo] = 0x44    ; compare memory read with byte\n");
+				eprintf("  > ? [foo] == 0x44   ; compare memory read with byte\n");
+				eprintf("  > ? eip != oeip     ; compare memory read with byte\n");
 				eprintf("  > ???               ; show result of comparision\n");
 				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
 			} else
 			if (last_cmp == 0) {
 				radare_cmd(input+1, 0);
-			} else {
-				u64 res = last_cmp;
-				cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
-				PRINT_BIN(res); NEWLINE;
 			}
 		} else {
 			u64 res = get_math(input);
-			if (strchr(input,'=')) {
+			if (strchr(input,'=') || strchr(input,'!')) {
 				last_cmp = res;
 			} else {
 				cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);

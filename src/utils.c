@@ -374,23 +374,36 @@ u64 get_math(const char* text)
 
 	/* remove whitespaces and dupped '=' */
 	for(tmp = txt = strdup(text); txt && *txt; txt = txt+1) {
+#if 1
+		if ((txt[0]=='!' && txt[1]=='='))
+			strcpy(txt+1, txt+2);
+		else
+#endif
 		if ((txt[0]=='=' && txt[1]=='=') || (txt[0]==' '))
 			strcpy(txt, txt+1);
 	}
 	txt = tmp;
+
 #if RADARE_CORE
 	txt2 = strdup(txt);
 #endif
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
-		tmp = mytok(ptr, "=+-<>%*/[\\", &op);
+		tmp = mytok(ptr, "=!+-<>%*/[\\", &op);
 		switch(oop) {
+		case '!':
+			if (is_cmp == 0) {
+				is_cmp  = -1;
+				cmp_off = new_off;
+				new_off = get_offset(ptr);
+			}
+			break;
 		case '=':
-			if (!is_cmp) {
+			if (is_cmp == 0) {
 				is_cmp = 1;
 				cmp_off = new_off;
-				new_off  = get_offset(ptr);
+				new_off = get_offset(ptr);
 			}
 			break;
 #if RADARE_CORE
@@ -439,8 +452,12 @@ u64 get_math(const char* text)
 	free(txt2);
 #endif
 	level--;
-	if (is_cmp)
+//eprintf("CMP(%d)(%llx-%llx)\n", is_cmp,new_off,cmp_off);
+	if (is_cmp>0)
 		return (new_off - cmp_off);
+	else
+	if (is_cmp<0)
+		return ((new_off - cmp_off)==0)?1:0;
 
 	return new_off;
 }

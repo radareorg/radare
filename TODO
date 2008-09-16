@@ -7,6 +7,7 @@
 
 ===========================================================
 
+* XC floating not happy
 * Watchpoints:
   - Make !wp work with ? conditionals
   - Make dbg.wptrace = make it stop when there's a breakpoint
