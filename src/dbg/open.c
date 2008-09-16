@@ -112,7 +112,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	}
 
 	ps.filename = resolve_path(file);
-	file = (char *)malloc(strlen(file)+8);
+	config.file = (char *)malloc(strlen(ps.filename)+8);
 	sprintf(config.file, "dbg://%s", ps.filename);
 
 	ps_parse_argv();

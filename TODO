@@ -7,11 +7,29 @@
 
 ===========================================================
 
-* Conditional execution
- - ? eip = 0x4A13B8C0   --> doesnt works
- - ? 0x4A13B8C0 = eip   --> works!
- * Make !wp work in this way!!
-* @ and > doesnt works
+* Watchpoints:
+  - Make !wp work with ? conditionals
+  - Make dbg.wptrace = make it stop when there's a breakpoint
+  - support for %eax = %ebx f.ex
+
+* ignore events from pid = blah (ignore pid??)
+  - ^C should be always catched!!
+
+* Memory ranges
+  - in core
+  - define working memory ranges (0-100,400-500)
+  - allow to enable/disable
+  - useful for searching
+
+* search for strings in disassembly
+  - pd 1 -> strstr(cons_buffer, mystr)
+
+* gradare must load using Shell to loop all the time the radare
+
+* 'u*' - undo all changes (should be 'uw *') ?
+
+* !contuh doesnt works :O
+ - implement continue until cursor
 
 * Build ruby stuff with waf also!
 
@@ -25,39 +43,24 @@
            exit(EXIT_FAILURE);
        }
 
-* Watchpoints:
-  - Make dbg.wptrace = make it stop when there's a breakpoint
-  - support for %eax = %ebx f.ex
-
-* !contuh doesnt works :O
- - implement continue until cursor
-* 'u*' - undo all changes (should be 'uw *') ?
 * add margin right to the text
   - or margin left to the shell code
+
+* debugger
+  - follow child or parent
+  - ignore other threads
 
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 
 * store xrefs
-
-* multithread traces <pid>:<addr>
-
 * add support for strings with "" in CC for.example
 
 * powerpc
   - !regs must show and flag proper regs!!
-* add command to seek to hit number N
-
-* gradare must load using Shell to loop all the time the radare
-
-* search for strings in disassembly
-  - pd 1 -> strstr(cons_buffer, mystr)
 
 * !lib /lib/libm.so.1   ; use 'uselib' on linux and dlopen on *bsd MUAHA
-
-* export a graph to a file using 'Rf' command
-* Make idc2rdb also export graph structure
-
-* search + seek -- seek next or so /n
+  - implement !call
+  - must allocate strings
 
 * export a graph to a file using 'Rf' command
 
@@ -65,15 +68,7 @@
    and before removing it store a comment or metadata at the
    begginging of it.
 
-* debugger
-  - follow child or parent
-  - ignore other threads
-
-* file.baddr breaks lot of stuff ZOMFG!
 * bash autocompletion script for rsc and rfile
-
-* implement 'commit' command. delayed write operations with bindiff output
-  - using the 'u' command
 
 
 * arrows+shift in visual
@@ -734,7 +729,10 @@ Split radare into libraries accessible by VAPI interfaces. (no gobject dependenc
 
 
 * full charsets support (search strings in utf8, etc) using iconv
+* multithread traces <pid>:<addr>
 
+* implement 'commit' command. delayed write operations with bindiff output
+  - using the 'u' command
 
 
 * total world domination

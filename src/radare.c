@@ -323,13 +323,11 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *piped;
 	char file[1024], buf[1024];
 	char *input, *oinput;
-	//char *str, *st;
 	char *next = NULL;
 	int ret = 0;
 
 	if (strnull(tmp))
 		return 0;
-
 
 	eof = strchr(tmp,'\n');
 	if (eof) {
@@ -487,30 +485,6 @@ int radare_cmd_raw(const char *tmp, int log)
 				sprintf(oinput, "wx %s", filebuf);
 			}
 
-			/* temporally offset */
-			eof2 = strchr(input, '@');
-			if (eof2 && input && input[0]!='e') {
-				char *ptr = eof2+1;
-				eof2[0] = '\0';
-
-				if (eof2[1]=='@') {
-					/* @@ is for foreaching */
-					tmpoff = config.seek;
-					radare_cmd_foreach(input ,eof2+2);
-					//config.seek = tmpoff;
-					radare_seek(tmpoff, SEEK_SET);
-					
-					return 0;
-				} else {
-					tmpoff = config.seek;
-					for(;*ptr==' ';ptr=ptr+1);
-					if (*ptr=='+'||*ptr=='-')
-						config.seek = config.seek + get_math(ptr);
-					else	config.seek = get_math(ptr);
-					radare_read(0);
-				}
-			}
-
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
 				char *pos = strchr(input+1, '>');
 				char *file = pos + 1;
@@ -538,6 +512,31 @@ int radare_cmd_raw(const char *tmp, int log)
 					}
 				}
 			}
+
+			/* temporally offset */
+			eof2 = strchr(input, '@');
+			if (eof2 && input && input[0]!='e') {
+				char *ptr = eof2+1;
+				eof2[0] = '\0';
+
+				if (eof2[1]=='@') {
+					/* @@ is for foreaching */
+					tmpoff = config.seek;
+					radare_cmd_foreach(input ,eof2+2);
+					//config.seek = tmpoff;
+					radare_seek(tmpoff, SEEK_SET);
+					
+					return 0;
+				} else {
+					tmpoff = config.seek;
+					for(;*ptr==' ';ptr=ptr+1);
+					if (*ptr=='+'||*ptr=='-')
+						config.seek = config.seek + get_math(ptr);
+					else	config.seek = get_math(ptr);
+					radare_read(0);
+				}
+			}
+
 		}
 
 		// XXX fuckmenot
@@ -711,6 +710,9 @@ int radare_cmd(char *input, int log)
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
 
+	if (log)
+		dl_hist_add(input);
+
 	next = strstr(input, "&&");
 	if (next) next[0]='\0';
 
@@ -729,9 +731,6 @@ int radare_cmd(char *input, int log)
 		radare_nullcmd();
 		return 0;
 	}
-
-	if (log)
-		dl_hist_add(input);
 
 	if (config.skip) return 0;
 

@@ -14,6 +14,7 @@
 
 int _print_fd;
 
+extern u64 last_cmp;
 extern const char hex[16];
 extern int std;
 extern char **environ;

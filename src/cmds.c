@@ -47,6 +47,7 @@
 #include "flags.h"
 #include "undo.h"
 
+u64 last_cmp = 0;
 print_fmt_t last_print_format = FMT_HEXB;
 int fixed_width = 0;
 extern char **environ;
@@ -1045,7 +1046,6 @@ CMD_DECL(endianess)
 	return 0;
 }
 
-
 static void radare_set_limit(char *arg)
 {
 	if ( arg[0] != '\0' )
@@ -1809,14 +1809,18 @@ CMD_DECL(help)
 {
 	if (strlen(input)>0) {
 		if (input[0]=='?') {
+			if (input[1]=='?') {
+				cons_printf("0x%llx\n", last_cmp);
+			} else
 			if (input[1]=='\0') {
-				eprintf("Usage: ?[?] <expr>\n");
+				eprintf("Usage: ?[?[?]] <expr>\n");
 				eprintf("  > ? eip             ; get value of eip flag\n");
 				eprintf("  > ? 0x80+44         ; calc math expression\n");
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
-				eprintf("  > ? eip = sym_main  ; compare flags\n");
+				eprintf("  > ? eip==sym_main   ; compare flags\n");
 				eprintf(" The '??' is used for conditional executions after a comparision\n");
 				eprintf("  > ? [foo] = 0x44    ; compare memory read with byte\n");
+				eprintf("  > ???               ; show result of comparision\n");
 				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
 			} else
 			if (last_cmp == 0) {
@@ -1828,8 +1832,12 @@ CMD_DECL(help)
 			}
 		} else {
 			u64 res = get_math(input);
-			cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
-			PRINT_BIN(res); NEWLINE;
+			if (strchr(input,'=')) {
+				last_cmp = res;
+			} else {
+				cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+				PRINT_BIN(res); NEWLINE;
+			}
 		}
 	}
 	else show_help_message();
