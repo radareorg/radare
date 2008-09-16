@@ -53,7 +53,7 @@ format_info_t formats[] = {
 	{ 'L', FMT_LLONG,      "long long",              "8 bytes",     "(endian)"},
 	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
 	{ 'o', FMT_OCT,        "octal",                  "N bytes",     "entire block" },
-	{ 'O', FMT_ZOOM,       "Zoom out view",          "entire file", "entire block" },
+	{ 'O', FMT_ZOOM,       "Overview (zoom.type)",   "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
 	{ '%', FMT_PERCENT,    "print scrollbar of seek",NULL,          "entire file" },
 	{ 'r', FMT_RAW,        "raw ascii",              NULL,          "entire block" },
@@ -865,6 +865,12 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 				for(j=0;j<sz;j++)
 					if (buf[j]==0xff)
 						config.block[i]++;
+				break;
+			case 'c': // code
+				config.block[i] = (unsigned char)data_get_between(ptr, ptr+config.zoom.piece);
+				break;
+			case 't': // traces
+				config.block[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);
 				break;
 			case 'f': // flags
 				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);

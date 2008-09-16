@@ -86,7 +86,7 @@ int th_info_bsd(int pid)
 
 int debug_os_kill(int pid, int sig)
 {
-	return NULL;
+	//return 0;
 	/* prevent killall selfdestruction */
 	if (pid < 1)
 		return -1;
@@ -431,7 +431,7 @@ int debug_fork_and_attach()
 		}
 
 		/* restore breakpoints */
-		debug_reload_bps();
+		debug_bp_reload_all();
 
 		if (config_get("dbg.stop")) 
 			kill(ps.pid, SIGSTOP);

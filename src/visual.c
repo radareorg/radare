@@ -555,7 +555,7 @@ CMD_DECL(insert_assembly)
 	}
 	
 	cons_set_raw(1);
-	free(dl_prompt);
+	free((void *)dl_prompt);
 	dl_prompt = dl_prompt_old;
 
 	return 0;
@@ -616,7 +616,7 @@ CMD_DECL(insert_string)
 CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe int _write?
 {
 	char buf[1025];
-	char *dl_prompt_old = dl_prompt;
+	const char *dl_prompt_old = dl_prompt;
 	u64 oseek = config.seek;
 
 	if (!config_get("file.write")) {
@@ -652,7 +652,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 	}
 	
 	cons_set_raw(1);
-	free(dl_prompt);
+	free((void *)dl_prompt);
 	dl_prompt = dl_prompt_old;
 	return 0;
 }
@@ -842,7 +842,7 @@ void visual_draw_screen()
 		inc = config.block_size;
 
 	if (config.cursor_mode)
-	cons_printf("[ 0x%llx (inc=%d, bs=%d cursor=%d sz=%d mark=0x%llx) %s %s] %s -> %s         \n",
+	cons_printf("[ 0x%llx (inc=%d, bs=%d cur=%d sz=%d mark=0x%llx) %s %s] %s -> %s         \n",
 		(config.seek+config.baddr), inc,
 		(unsigned int)config.block_size,
 		config.cursor, (config.ocursor==-1)?0:config.cursor-config.ocursor+1,

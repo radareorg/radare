@@ -215,3 +215,19 @@ void trace_reset()
 	}
 	INIT_LIST_HEAD(&traces);
 }
+
+int trace_get_between(u64 from, u64 to)
+{
+	int ctr;
+	struct list_head *pos;
+	struct trace_t *h;
+
+	/* get the lower address */
+	list_for_each(pos, &traces) {
+		h = list_entry(pos, struct trace_t, list);
+		if (h->addr >= from && h->addr <=to)
+			ctr++;
+	}
+
+	return ctr;
+}

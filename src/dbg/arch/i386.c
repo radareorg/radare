@@ -81,7 +81,7 @@ struct regs_off roff[] = {
 
 
 /* return register offset */
-u64 get_reg(char *reg)
+u64 get_reg(const char *reg)
 {
 	int i;
 
@@ -210,7 +210,7 @@ u64 arch_syscall(int pid, int sc, ...)
 
 // NOTE: it is not possible to use read+write watchpoints.
 // not implemented on all x86, and needs some CR4 hacking.
-int debug_dr(char *cmd)
+int debug_dr(const char *cmd)
 {
 	char *ptr = strchr(cmd, ' ');
 	addr_t addr;
@@ -382,7 +382,7 @@ int arch_restore_registers()
 	return 1;
 }
 
-int arch_inject(unsigned char *data, int size)
+int arch_inject(u8 *data, int size)
 {
 	regs_t regs;
         int ret = debug_getregs(ps.tid, &regs);
@@ -591,7 +591,7 @@ int arch_ret()
 	return 0;
 }
 
-int arch_call(char *arg)
+int arch_call(const char *arg)
 {
 	int ret;
 	regs_t regs;
@@ -790,22 +790,7 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
-/* ?!? XXX rename to get_math32 ?? */
-long get_value(char *str)
-{
-	long tmp;
-
-	tmp = get_math(str);
-
-#if 0
-	if (str[0]&&str[1]=='x')
-		sscanf(str, "0x%lx", &tmp);
-	else	tmp = atol(str);
-#endif
-	return tmp;
-}
-
-int arch_set_register(char *reg, char *value)
+int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	regs_t regs;
@@ -817,23 +802,23 @@ int arch_set_register(char *reg, char *value)
 	if (ret < 0) return 1;
 	
 	if (!strcmp(reg, "eax"))
-		R_EAX(regs) = get_value(value);
+		R_EAX(regs) = get_offset32(value);
 	else if (!strcmp(reg, "ebx"))
-		R_EBX(regs) = get_value(value);
+		R_EBX(regs) = get_offset32(value);
 	else if (!strcmp(reg, "ecx"))
-		R_ECX(regs) = get_value(value);
+		R_ECX(regs) = get_offset32(value);
 	else if (!strcmp(reg, "edx"))
-		R_EDX(regs) = get_value(value);
+		R_EDX(regs) = get_offset32(value);
 	else if (!strcmp(reg, "ebp"))
-		R_EBP(regs) = get_value(value);
+		R_EBP(regs) = get_offset32(value);
 	else if (!strcmp(reg, "esp"))
-		R_ESP(regs) = get_value(value);
+		R_ESP(regs) = get_offset32(value);
 	else if (!strcmp(reg, "esi"))
-		R_ESI(regs) = get_value(value);
+		R_ESI(regs) = get_offset32(value);
 	else if (!strcmp(reg, "edi"))
-		R_EDI(regs) = get_value(value);
+		R_EDI(regs) = get_offset32(value);
 	else if (!strcmp(reg, "eip"))
-		R_EIP(regs) = get_value(value);
+		R_EIP(regs) = get_offset32(value);
 #if __linux__
 	else if (!strcmp(reg, "eflags")) {
 		int i, foo = 0;

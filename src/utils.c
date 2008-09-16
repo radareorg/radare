@@ -324,6 +324,11 @@ u64 get_offset(const char *orig)
 	return ret;
 }
 
+u32 get_offset32(u64 foo)
+{
+	return (u32) get_offset (foo);
+}
+
 char *mytok(char *ptr, char *delim, char *backup)
 {
 	char *tmp,*tmp2;

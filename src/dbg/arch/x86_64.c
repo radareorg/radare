@@ -194,9 +194,9 @@ u64 arch_syscall(int pid, int sc, ...)
 
 // NOTE: it is not possible to use read+write watchpoints.
 // not implemented on all x86, and needs some CR4 hacking.
-int debug_dr(char *cmd)
+int debug_dr(const char *cmd)
 {
-	char *ptr = strchr(cmd, ' ');
+	const char *ptr = strchr(cmd, ' ');
 	off_t addr;
 	int reg = -1;
 
@@ -248,7 +248,7 @@ int debug_dr(char *cmd)
 	return 0;
 }
 
-int arch_is_jump(unsigned char *buf)
+int arch_is_jump(u8 *buf)
 {
 	switch(buf[0]) {
 	case 0x75:
@@ -450,7 +450,7 @@ int arch_ret()
 	return 0;
 }
 
-int arch_call(char *arg)
+int arch_call(const char *arg)
 {
 	int ret;
 	regs_t regs;
@@ -513,7 +513,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 #if __linux__
 /* syscall-linux */
 struct syscall_t {
-  char *name;
+  const char *name;
   int num;
   int args;
 } syscalls_linux_x86_64[] = {
@@ -786,7 +786,7 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
-long long get_value(char *str)
+static u64 get_value(const char *str)
 {
 	long long tmp;
 
@@ -796,7 +796,7 @@ long long get_value(char *str)
 	return tmp;
 }
 
-int arch_set_register(char *reg, char *value)
+int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	regs_t regs;
@@ -1414,7 +1414,7 @@ int arch_stackanal()
 	return 0;
 }
 
-u64 get_reg(char *reg)
+u64 get_reg(const char *reg)
 {
 	int i;
 

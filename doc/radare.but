@@ -763,6 +763,8 @@ The cursor can be used to scroll faster thru the zoom out view and pressing 'z' 
 \c zoom.byte values:
 \c  F : number of 0xFF
 \c  f : number of flags
+\c  c : code (functions)
+\c  t : traces (opcode traces)
 \c  p : number of printable chars
 \c  e : entropy calculation
 \c  * : first byte of block

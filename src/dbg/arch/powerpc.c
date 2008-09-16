@@ -165,12 +165,6 @@ int arch_mprotect(u64 addr, int size, int perms)
 	return 0;
 }
 
-long get_value(char *str)
-{
-	/* parse register name and return value */
-	return 0;
-}
-
 int arch_is_soft_stepoverable(const unsigned char *cmd)
 {
 	return 0;
@@ -182,7 +176,7 @@ int arch_is_stepoverable(const unsigned char *cmd)
 	return 0;
 }
 
-int arch_call(char *arg)
+int arch_call(const char *arg)
 {
 	return 0;
 }
@@ -235,7 +229,7 @@ u64 arch_pc()
 	return addr;
 }
 
-int arch_set_register(char *reg, char *value)
+int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	regs_t regs;
@@ -513,7 +507,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(char *reg)
+u64 get_reg(const char *reg)
 {
 	regs_t regs;
 	u64 *llregs = &regs; // 45 elements of 64 bits here

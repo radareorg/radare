@@ -170,24 +170,16 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 	return 0;
 }
 
-long get_value(char *str)
-{
-	/* parse register name and return value */
-	return 0;
-}
-
-int arch_is_soft_stepoverable(const unsigned char *cmd)
-{
-	return 0;
-}
-
 int arch_is_stepoverable(const unsigned char *cmd)
 {
-#warning TODO: arch_is_stepoverable()
+	struct aop_t aop;
+	ret = arch_aop(0, cmd, &aop);
+	if (aop->type == AOP_TYPE_CALL)
+		return 1;
 	return 0;
 }
 
-int arch_call(char *arg)
+int arch_call(const char *arg)
 {
 	return 0;
 }
@@ -201,16 +193,11 @@ int arch_call(char *arg)
 
 int arch_ret()
 {
-	/* TODO: branch to %ra */
-#if 0
-#define uregs regs
+	/* branch to %ra */
 	regs_t regs;
-	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
-	if (ret < 0) return 1;
-	ARM_pc = ARM_lr;
-	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
-	return ARM_lr;
-#endif
+	unsigned long long *llregs = &regs;
+	debug_getregs(ps.tid, &regs);
+	return arch_jmp(llregs[31]);
 }
 
 int arch_jmp(u64 ptr)
@@ -274,7 +261,7 @@ u64 arch_pc()
 	return addr;
 }
 
-int arch_set_register(char *reg, char *value)
+int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	regs_t regs;
@@ -574,7 +561,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(char *reg)
+u64 get_reg(const char *reg)
 {
 	regs_t regs;
 	u64 *llregs = &regs; // 45 elements of 64 bits here

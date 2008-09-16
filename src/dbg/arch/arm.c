@@ -240,12 +240,6 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 	return 0;
 }
 
-long get_value(char *str)
-{
-	/* parse register name and return value */
-	return 0;
-}
-
 int arch_is_soft_stepoverable(const unsigned char *opcode)
 {
 	return 0;
@@ -257,7 +251,7 @@ int arch_is_stepoverable(const unsigned char *cmd)
 	return 0;
 }
 
-int arch_call(char *arg)
+int arch_call(const char *arg)
 {
 	return 0;
 }
@@ -298,7 +292,7 @@ u64 arch_pc(int tid)
 	return ARM_pc;
 }
 
-int arch_set_register(char *reg, char *value)
+int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	elf_gregset_t regs;
@@ -519,7 +513,7 @@ u64 arch_get_entrypoint()
 }
 
 struct syscall_t {
-  char *name;
+  const char *name;
   int num;
   int args;
 } syscalls_linux_arm[] = {
@@ -619,7 +613,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(char *reg)
+u64 get_reg(const char *reg)
 {
 	elf_gregset_t regs;
 	int ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);

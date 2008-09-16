@@ -141,6 +141,7 @@ int radare_get_region(u64 *from, u64 *to);
 int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);
 
 int resolve_encoding(const char *name);
+int trace_get_between(u64 from, u64 to);
 
 
 #endif

@@ -497,7 +497,7 @@ int debug_contwp()
 
 			cmd = config_get("cmd.wp");
 			if (!strnull(cmd))
-				radare_cmd(cmd, 0);
+				radare_cmd_raw(cmd, 0);
 
 			if (config_get("dbg.wptrace"))
 				continue;
@@ -1153,7 +1153,7 @@ int debug_step(int times)
 	return (WS(event) != BP_EVENT);
 }
 
-int debug_set_register(char *args)
+int debug_set_register(const char *args)
 {
 	char *value, *tmp;
 

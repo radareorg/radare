@@ -266,7 +266,7 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 	return bp_free;
 }
 
-void debug_reload_bps()
+void debug_bp_reload_all()
 {
         int bps;
         int i;

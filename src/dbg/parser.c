@@ -50,7 +50,7 @@ char skip_chars(const char **c)
 	return **c;
 }
 
-int get_tok_op(char **c, struct tok *t)
+int get_tok_op(const char **c, struct tok *t)
 {
 	t->op = -1;
 
@@ -168,7 +168,7 @@ int get_tok_value(char **c, struct tok *t)
 	return 0;
 }
 
-struct tok* get_tok(char **c)
+struct tok* get_tok(const char **c)
 {
 	struct tok *t = NULL;
 	char aux[60];
@@ -299,7 +299,7 @@ err_get_tok:
 	return NULL;
 }
 
-int get_log_op(char **c, struct tok *t, int f)
+int get_log_op(const char **c, struct tok *t, int f)
 {
 	if(strncmp(*c, "and", 3) == 0) {
 		if(!f)
@@ -355,7 +355,7 @@ void free_cond(struct tok *group)
 }
 
 /* TODO: free list when error */
-struct tok* process_cond(char **c, int top)
+struct tok* process_cond(const char **c, int top)
 {
 	struct tok *t = NULL;
 	struct tok *group;
@@ -678,7 +678,7 @@ void print_expr(struct tok *group)
 	printf("exit group\n");
 }
 
-struct tok* parse_cond(char *cond)
+struct tok* parse_cond(const char *cond)
 {
 	return process_cond(&cond, 1);
 }
