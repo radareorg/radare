@@ -19,6 +19,7 @@ def set_options(opt):
 	opt.add_option('--without-gui',      action='store_false', default=True,  help='Build without GUI',        dest='GUI')
 	opt.add_option('--without-debugger', action='store_false', default=True,  help='Build without debugger',   dest='DEBUGGER')
 	opt.add_option('--without-readline', action='store_false', default=True,  help='Build without readline',   dest='HAVE_READLINE')
+	opt.add_option('--without-lua',      action='store_false', default=True,  help='Build without LUA',        dest='HAVE_LIBLUA')
 	opt.add_option('--prefix',
 		help    = "installation prefix [Default: '%s']" % prefix,
 		default = prefix,
@@ -107,6 +108,28 @@ def configure(conf):
 	if conf.env['HAVE_READLINE'] != 1:
 		Options.options.HAVE_READLINE = False
 	conf.define('HAVE_LIB_READLINE', Options.options.HAVE_READLINE)
+
+	# Check for liblua
+	rl = conf.create_library_configurator()
+	rl.name = 'lua'
+	rl.define = 'HAVE_LIBLUA'
+	rl.libs = ['lua']
+	rl.mandatory = False
+	rl.run()
+	if conf.env['HAVE_LIBLUA'] != 1:
+		rl2 = conf.create_library_configurator()
+		rl2.name = 'lua5.1'
+		rl2.define = 'HAVE_LIBLUA51'
+		rl2.libs = ['lua5.1']
+		rl2.mandatory = False
+		rl2.run()
+		if conf.env['HAVE_LIBLUA51'] != 1:
+			Options.options.HAVE_LIBLUA = False
+		else:
+			conf.env['HAVE_LIBLUA_STR'] = "-llua5.1"
+	else:
+		conf.env['HAVE_LIBLUA_STR'] = "-llua"
+	conf.define('HAVE_LIBLUA', Options.options.HAVE_LIBLUA)
 
 	rl2 = conf.create_library_configurator()
 	rl2.name = 'dl'

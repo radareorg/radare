@@ -164,9 +164,8 @@ void print_color_byte_i(int i, char *str, int c)
 {
 	C {
 		flag_t *f = flag_by_offset(config.seek+config.baddr+i);
-		if (f) {
-			cons_strcat("\x1b[44m");
-		} else cons_strcat("\x1b[0m");
+		if (f) cons_strcat("\x1b[44m");
+		else cons_strcat("\x1b[0m");
 	}
 	if (is_cursor(i,1)) {
 		cons_strcat("\x1b[7m");

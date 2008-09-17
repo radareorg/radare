@@ -7,8 +7,13 @@
 
 ===========================================================
 
+* Vdf doesnt detect func size properly
 * store from->to list for all the jumps/calls analized inside functions
   - use them to resolve xrefs at runtime only for functions)
+
+          0x000001EE  |           b80007           invokestatic java/lang/Object (null)
+-> this should be a call to callme()
+
 
 * imp_foo are not ok in dietelf :OO.
 

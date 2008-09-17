@@ -304,6 +304,22 @@ int metadata_xrefs_add(u64 addr, u64 from, int type)
 	return 1;
 }
 
+int metadata_xrefs_at(u64 addr)
+{
+	int ctr = 0;
+	struct xrefs_t *x;
+	struct list_head *pos;
+
+	/* avoid dup */
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (x->addr == addr)
+			ctr++;
+	}
+	return ctr;
+
+}
+
 void metadata_xrefs_del(u64 addr, u64 from, int data /* data or code */)
 {
 	struct xrefs_t *x;

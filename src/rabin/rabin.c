@@ -147,17 +147,11 @@ void rabin_show_info(const char *file)
 			       ELF_CALL(dietelf_get_machine_name,bin),
 			       ELF_CALL(dietelf_get_file_type,bin));
 
-			printf("Stripped:        ");
-			if (ELF_CALL(dietelf_get_stripped,bin))
-			    printf("Yes\n");
-			else
-			    printf("No\n");
+			printf("Stripped:        %s",
+				(ELF_CALL(dietelf_get_stripped,bin))?"Yes":"No");
 
-			printf("Static:          ");
-			if (ELF_CALL(dietelf_get_static,bin))
-			    printf("Yes\n");
-			else
-			    printf("No\n");
+			printf("Static:          %s",
+				(ELF_CALL(dietelf_get_static,bin))?"Yes":"No");
 		}
 
 		close(fd);
@@ -179,7 +173,6 @@ void rabin_show_info(const char *file)
 		else printf("File type: PE\n");
 
 		dietpe_list_info(&pebin);
-
 		break;
 	case FILETYPE_MZ:
 		if (rad) printf("e file.type = mz\n");
@@ -404,7 +397,7 @@ void rabin_show_imports(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-#if 1
+#if 0
 		{ char buf[1024];
 		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
 //		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);

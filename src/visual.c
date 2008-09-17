@@ -264,7 +264,7 @@ void convert_bytes(int fmt)
 		case 'd': fmt = DATA_HEX; break;
 		case 's': fmt = DATA_STR; break;
 		case 'f': fmt = DATA_FUN; 
-			radare_cmd(".af", 0); // XXX add cursor here
+			radare_cmd(".af*", 0); // XXX add cursor here
 			return;
 		case '<': fmt = DATA_FOLD_C; break;
 		case '>': fmt = DATA_FOLD_O; break;

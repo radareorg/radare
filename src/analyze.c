@@ -656,34 +656,93 @@ int radare_analyze(u64 seek, int size, int depth)
 	return 0;
 }
 
-int analyze_function(int recursive)
+// XXX move to code.h
+enum {
+	VAR_TYPE_NONE=0,
+	VAR_TYPE_ARG=1,
+	VAR_TYPE_LOCAL=2
+};
+
+struct vars_t {
+	int type;
+	int delta;
+	int count;
+}; 
+
+#define VAR_MAX 64
+struct vars_t vars[VAR_MAX];
+
+void analyze_var_reset()
 {
-	struct data_t *d;
+	memset(&vars, '\0', sizeof(vars));
+}
+
+int analyze_var_add(int type, int delta)
+{
+	int i, hole = -1;
+	for(i=0;i<VAR_MAX;i++) {
+		if (vars[i].type == type && vars[i].delta == delta) {
+			vars[i].count++;
+			return 0;
+		} else
+		if (vars[i].type==VAR_TYPE_NONE && hole==-1) {
+			hole = i;
+		}
+	}
+	if (hole==-1) {
+		eprintf("No space left in var pool\n");
+		return -1;
+	}
+	vars[hole].type  = type;
+	vars[hole].delta = delta;
+	return 1;
+}
+
+int analyze_var_get(int type)
+{
+	int i, ctr = 0;
+	for(i=0;i<VAR_MAX;i++) {
+		if (vars[i].type == type)
+			ctr++;
+	}
+	return ctr;
+}
+
+int analyze_function(int recursive, int report)
+{
 	struct aop_t aop;
 	struct list_head *head;
 	struct block_t *b0;
 	struct program_t *prg;
 	int ret;
-	char label[1024];
+	char buf[1024];
 	/*--*/
 	char *bytes;
-	u64 from = config.baddr+ config.seek;
+	u64 from = config.baddr + config.seek;
 	u64 seek = from; // to place comments
 	u64 end  = 0;
 	int inc  = 0;
 	u64 to;
 	u64 len;
+	int ref;
+	int ncalls = 0;
+	int framesize = 0;
+	int nblocks = 0;
 
-
+#if 0
+	struct data_t *d;
 	d = data_get(config.baddr+config.seek);
 	if (d && d->type == DATA_FUN) {
-		cons_printf("; already analyzed\n");
+		//cons_printf("; already analyzed\n");
 	//	return 0;
 	}
+#endif
 	/* Analyze function */
 	/* XXX ensure this is ok */
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.callblocks", "false");
+
+	analyze_var_reset(); // ??? control recursivity here ??
 
 	prg = code_analyze(config.baddr + config.seek, 1024);
 	list_add_tail(&prg->list, &config.rdbs);
@@ -695,6 +754,7 @@ int analyze_function(int recursive)
 		//|| (b0->type == BLK_TYPE_FOOT))
 		if ((b0->addr + b0->n_bytes) > end)
 			end = (b0->addr + b0->n_bytes);
+		nblocks++;
 	}
 	to = end;
 	len=1+to-from;
@@ -706,10 +766,19 @@ int analyze_function(int recursive)
 		return -1;
 	}
 
-	cons_printf("; from = 0x%08llx\n", from);
-	cons_printf("; to   = 0x%08llx\n", end);
-	cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
-	cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
+	if (!report) {
+		cons_printf("; from = 0x%08llx\n", from);
+		cons_printf("; to   = 0x%08llx\n", end);
+		cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
+		cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
+	} else {
+		buf[0]='\0';
+		string_flag_offset(buf, from);
+		cons_printf("offset = 0x%08llx\n", from);
+		cons_printf("label = %s\n", buf);
+		cons_printf("size = %lld\n", to-from);
+		cons_printf("blocks = %lld\n", nblocks);
+	}
 
 	for(;seek< to; seek+=inc) {
 		inc = arch_aop(seek, bytes+(seek-from), &aop);
@@ -719,78 +788,61 @@ int analyze_function(int recursive)
 		}
 		switch(aop.type) {
 		case AOP_TYPE_CALL:
-			label[0]='\0';
-			string_flag_offset(label, aop.jump);
-			// if resolved as sym_ add its call
-			cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, label);
+			if (!report) {
+				buf[0]='\0';
+				string_flag_offset(buf, aop.jump);
+				// if resolved as sym_ add its call
+				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, buf);
+			}
+			ncalls++;
 			break;
 		}
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:
-			{
-			char buf[1024];
-			int ref = (int)aop.ref;
-			if (ref<0)
-				sprintf(buf, "CC Set arg%d @ 0x%08llx\n", -ref, seek);
-			else sprintf(buf, "CC Set var%d @ 0x%08llx\n", ref, seek);
-			cons_strcat(buf);
-#if 0
-			radare_cmd(buf, 0);
-			radare_seek(config.seek, SEEK_SET);
-			radare_read(0);
-#endif
+			ref = (int)aop.ref;
+			if (!report) {
+				if (ref<0)
+					sprintf(buf, "CC Set arg%d @ 0x%08llx\n", -ref, seek);
+				else sprintf(buf, "CC Set var%d @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
 			}
+			if (ref<0) analyze_var_add(VAR_TYPE_ARG, -ref);
+			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_ARG_SET:
-			{
-			int ref = (int)aop.ref;
-			char buf[1024];
-			sprintf(buf, "CC Set arg%d @ 0x%08llx\n", ref, seek);
-			cons_strcat(buf);
-#if 0
-			radare_cmd(buf, 0);
-			radare_seek(config.seek, SEEK_SET);
-			radare_read(0);
-#endif
+			ref = (int)aop.ref;
+			if (!report) {
+				sprintf(buf, "CC Set arg%d @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
 			}
+			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_ARG_GET:
-			{
-			char buf[1024];
-			int ref = (int)aop.ref;
-			sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
-			cons_strcat(buf);
-#if 0
-			radare_cmd(buf, 0);
-			radare_seek(config.seek, SEEK_SET);
-			radare_read(0);
-#endif
+			ref = (int)aop.ref;
+			if (!report) {
+				char buf[1024];
+				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
 			}
+			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_LOCAL_GET:
-			{
-			char buf[1024];
-			int ref = (int)aop.ref;
-			if (ref<0)
-				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
-			else sprintf(buf, "CC Get var%d @ 0x%08llx\n", ref, seek);
-			cons_strcat(buf);
-#if 0
-			radare_cmd(buf, 0);
-			radare_seek(config.seek, SEEK_SET);
-			radare_read(0);
-#endif
+			ref = (int)aop.ref;
+			if (!report) {
+				if (ref<0)
+					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
+				else sprintf(buf, "CC Get var%d @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
 			}
+			if (ref<0) analyze_var_add(VAR_TYPE_ARG, -ref);
+			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_INCSTACK:
-			{
-			char buf[1024];
-			sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)aop.ref, seek);
-			cons_strcat(buf);
-#if 0
-			radare_cmd(buf, 0);
-			radare_seek(config.seek, SEEK_SET); radare_read(0);
-#endif
+			if (!report) {
+				char buf[1024];
+				sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)aop.ref, seek);
+				cons_strcat(buf);
+				framesize += aop.ref;
 			}
 			break;
 		}
@@ -807,12 +859,22 @@ int analyze_function(int recursive)
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(recursive);
+				analyze_function(recursive, report);
 				break;
 			}
 		}
 	}
 	free(bytes);
-	/* add final report here */
-	/* N local vars...*/
+
+	if (report) {
+		cons_printf("framesize = %d\n", framesize);
+		cons_printf("ncalls = %d\n", ncalls);
+		cons_printf("xrefs = %d\n", metadata_xrefs_at(from));
+		cons_printf("args = %d\n", analyze_var_get(VAR_TYPE_ARG));
+		cons_printf("vars = %d\n", analyze_var_get(VAR_TYPE_LOCAL));
+	} else {
+		cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
+		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
+		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
+	}
 }

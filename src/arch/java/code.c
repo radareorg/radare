@@ -33,7 +33,7 @@ extern struct java_op {
 } java_ops[];
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_java_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	unsigned int i;
 	int sz = 1;
@@ -47,6 +47,7 @@ int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 		return sz;
 
 	memset(aop, '\0', sizeof(struct aop_t));
+	aop->type = AOP_TYPE_UNK;
 	aop->length = sz;
 
 	switch(bytes[0]) {
@@ -63,7 +64,7 @@ int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	case 0xa7: // goto
 	case 0xc8: // goto_w
 		aop->type = AOP_TYPE_JMP;
-		aop->jump = 0x0; // TODO
+		aop->jump = 0; // TODO
 		aop->eob  = 1;
 		break;
 	case 0xa5: // acmpeq
