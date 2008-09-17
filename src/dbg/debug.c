@@ -1096,13 +1096,8 @@ int debug_step(int times)
 			#endif
 			}
 
-			if ((off=(addr_t)arch_is_soft_stepoverable(
-				(const unsigned char *)opcode))) {
-			#if __i386__
-				debug_bp_set(NULL, pc+off, BP_HARD);
-			#else
-				debug_bp_set(NULL, pc+off, BP_SOFT);
-			#endif
+			if ((off=(addr_t)arch_is_soft_stepoverable((const u8*)opcode))) {
+				debug_bp_set(NULL, pc+off, config_get("dbg.hwbp"));
 				debug_cont(0);
 				debug_bp_rm_addr(pc+off);
 				ps.steps++;

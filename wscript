@@ -20,6 +20,7 @@ def set_options(opt):
 	opt.add_option('--without-debugger', action='store_false', default=True,  help='Build without debugger',   dest='DEBUGGER')
 	opt.add_option('--without-readline', action='store_false', default=True,  help='Build without readline',   dest='HAVE_READLINE')
 	opt.add_option('--without-lua',      action='store_false', default=True,  help='Build without LUA',        dest='HAVE_LIBLUA')
+	opt.add_option('--without-python',   action='store_false', default=True,  help='Build without Python',     dest='HAVE_PYTHON')
 	opt.add_option('--prefix',
 		help    = "installation prefix [Default: '%s']" % prefix,
 		default = prefix,
@@ -47,9 +48,18 @@ def configure(conf):
         conf.check_pkg('vte',      destvar='VTE', vnum='0.16', mandatory=False)
 	conf.checkEndian()
 
-	conf.check_tool('python')
-	conf.check_python_version((2,4,2));
-	conf.check_python_headers()
+	if Options.options.HAVE_PYTHON == True:
+		try:
+			conf.check_tool('python')
+			conf.check_python_version((2,4,2));
+			conf.check_python_headers()
+			conf.env['HAVE_PYTHON']=1 # XXX
+		except: 
+			print " ==> Use --without-python"
+			conf.env['HAVE_PYTHON']=0
+		pass
+	else:
+		conf.env['HAVE_PYTHON']=0
 
 	if Options.options.MAEMO == True:
         	conf.check_pkg('hildon-1',      destvar='HILDON', vnum='0.1', mandatory=False)

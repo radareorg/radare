@@ -44,7 +44,13 @@
 #if __i386__ || __x86_64__
 #include "arch/i386.h"
 #else
+#if __mips__
+#include "arch/mips.h"
+#elif __arm__
 #include "arch/arm.h"
+#else
+#error Unknown cpu?
+#endif
 #endif
 // XXX?
 //#include "os.h"

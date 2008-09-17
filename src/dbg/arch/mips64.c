@@ -43,6 +43,7 @@
 #include <asm/ptrace.h>
 #include <sys/procfs.h>
 #include <sys/syscall.h>
+#include "mips.h"
 
 regs_t cregs; // current registers
 regs_t oregs; // old registers
@@ -170,11 +171,16 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 	return 0;
 }
 
+int arch_is_soft_stepoverable(const u8 *cmd)
+{
+	/* no soft stepovers for mips */
+	return 0;
+}
 int arch_is_stepoverable(const unsigned char *cmd)
 {
 	struct aop_t aop;
-	ret = arch_aop(0, cmd, &aop);
-	if (aop->type == AOP_TYPE_CALL)
+	int ret = arch_aop(0, cmd, &aop);
+	if (aop.type == AOP_TYPE_CALL)
 		return 1;
 	return 0;
 }

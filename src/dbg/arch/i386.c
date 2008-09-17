@@ -91,17 +91,6 @@ u64 get_reg(const char *reg)
 	return -1;
 }
 
-int debug_fork()
-{
-#if __linux__ || __BSD__
-	int forksyscall=2;
-	return arch_syscall(ps.tid, forksyscall);
-#else
-	eprintf("debug_fork: not implemented for this system\n");
-	return -1;
-#endif
-}
-
 u64 arch_syscall(int pid, int sc, ...)
 {
         u64 ret = (addr_t)-1;

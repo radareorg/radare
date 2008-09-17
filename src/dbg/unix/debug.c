@@ -69,6 +69,19 @@ int th_init_freebsd(int pid)
 }
 #endif
 
+int debug_fork()
+{
+#if __linux__ || __BSD__
+	int forksyscall = 2; // XXX must be collected from foo
+	return arch_syscall(ps.tid, forksyscall);
+	// XXX restore child process memory
+#else
+	eprintf("debug_fork: not implemented for this system\n");
+	return -1;
+#endif
+}
+
+
 #if __BSD__
 int th_info_bsd(int pid)
 {

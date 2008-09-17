@@ -9,11 +9,12 @@ so_hello.source = 'hello.c'
 so_hello.install_path = plugindir
 
 # TODO: if have python here...
-so_python = bld.new_task_gen('cc', 'shlib','pyembed')
-so_python.includes = '../..'
-so_python.target = 'python'
-so_python.source = 'python.c'
-so_python.install_path = plugindir
+if so_hello.env['HAVE_PYTHON'] == 1:
+	so_python = bld.new_task_gen('cc', 'shlib','pyembed')
+	so_python.includes = '../..'
+	so_python.target = 'python'
+	so_python.source = 'python.c'
+	so_python.install_path = plugindir
 
 if so_hello.env['HAVE_LIBLUA'] == 1:
 	so_lua = bld.new_task_gen('cc', 'shlib','lua')
