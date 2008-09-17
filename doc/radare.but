@@ -1636,20 +1636,50 @@ We can use rabin to import the function definitions directly from the program
 
 Rabin will mark each function with 'CF <size> @ <fun-addr>', add comments for stack usage, and setup flags for each function symbols.
 
-To make a function analysis use the 'af' command which will analyze the code from the current seek and tries to identify the end of the function. The command will just output some radare commands, Use '.af' to interpret them.
+To make a function analysis use the 'af' command which will analyze the code from the current seek and tries to identify the end of the function. The command will just output some radare commands, Use '.af*' to interpret them.
 
-\c [0xB7F93A60]> af
+\c [0xB7F94810]> af @ sym_main
+\c offset = 0x080499b7
+\c label = sym_main
+\c size = 832
+\c blocks = 2
+\c framesize = 0
+\c ncalls = 21
+\c xrefs = 0
+\c args = 3
+\c vars = 5
+
+This report shows information about the function analysis. it is useful for scripting, so it is possible to do function signatures easily to identify functions in static bins from previously captured library signatures. (for example) So you can use these metrics to identify if two functions are the same or not.
+
+Once you read this report it is possible to import this information into the core:
+
+\c [0xB7F93A60]> af*
 \c ; from = 0xb7f93a60
 \c ; to   = 0xb7f93c0d
 \c CF 430 @ 0xb7f93a60
 \c CC Stack size +40 @ 0xb7f93a71
 \c CC Set var32 @ 0xb7f93a74
+\c ...
 \c
-\c [0xB7F93A60]> .af
+\c [0xB7F93A60]> .af*
 
 The function analysis stops when reaching calls, use the 'aF' command to analyze the functions recursively. Use it like in 'af'
 
 \c [0xB7F93A60]> .aF
+
+You can also analyze all the symbols of a binary using the '@@' operator.
+
+\c [0xB7F94A60]> .af* @@ sym_
+
+To read the xref information try with:
+
+\c [0xB7F94A60]> pd 1 @@ imp_printf
+\c ; CODE xref 0804923e (sym_main+0x1a2)
+\c 0x08048CB8,  imp_printf:
+\c 0x08048CB8      v goto dword near [0x805e164]
+
+\c [0xB7FD9810]> pd 1 @ sym_main+0x1a2
+\c 0x0804923E     ^ call 0x8048CB8     ; 1 = imp_printf
 
 \S{codeanal-block} Basic blocks
 

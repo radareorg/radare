@@ -762,7 +762,7 @@ int analyze_function(int recursive, int report)
 	bytes = (char *)malloc(len);
 	ret = radare_read_at(from, bytes, len);
 	if (ret <0) {
-		printf("Invalid read at 0x%08llx len=%lld\n", from,len);
+		eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
 		return -1;
 	}
 

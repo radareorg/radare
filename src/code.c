@@ -271,8 +271,8 @@ int metadata_xrefs_print(u64 addr, int type)
 			str[0]='\0';
 			string_flag_offset(str, x->from);
 			switch(type) {
-			case 0: if (x->type == type) { cons_printf("; CODE xref %08llx (%s)\n", x->from, str); n++; } break;
-			case 1: if (x->type == type) { cons_printf("; DATA xref %08llx (%s)\n", x->from), str; n++; } break;
+			case 0: if (x->type == type) { cons_printf("; CODE xref 0x%08llx (%s)\n", x->from, str); n++; } break;
+			case 1: if (x->type == type) { cons_printf("; DATA xref 0x%08llx (%s)\n", x->from), str; n++; } break;
 			default: { cons_printf("; %s xref %08llx (%s)\n", (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
 			}
 		}
