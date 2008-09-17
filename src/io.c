@@ -42,7 +42,30 @@ int radare_write_at(u64 offset, unsigned char *data, int len)
 	return len;
 }
 
-int radare_write(char *arg, int mode)
+int radare_write_xor(const char *arg)
+{
+	int i,j;
+	int len;
+	u8 *buf;
+	char *str;
+
+	// XXX we can work with config.block instead of dupping it
+	buf = (char *)malloc(config.block_size);
+	memcpy(buf, config.block, config.block_size);
+	str = (char *)malloc(strlen(arg));
+	len = hexstr2binstr(arg, (unsigned char *)str);
+
+	for(i=j=0;i<config.block_size;i++) {
+		buf[i] ^= str[j];
+		j++; if (j>=len) j=0; /* cyclic key */
+	}
+
+	radare_write_at(config.seek, buf, config.block_size);
+
+	free(buf);
+}
+
+int radare_write(const char *argro, int mode)
 {
 	int fmt = last_print_format;
 	u64 oseek = config.seek;
@@ -50,7 +73,9 @@ int radare_write(char *arg, int mode)
 	int times = config_get_i("cfg.count");
 	int i, bytes = 0;
 	int len   = 0;
-	char *str, *tmp;
+	char *str, *tmp, *arg;
+
+	arg = strdup(argro);
 
 	if (times<=0)
 		times = 1;
@@ -84,6 +109,7 @@ int radare_write(char *arg, int mode)
 	if (len == 0) {
 		D eprintf("warning: zero length string.\n");
 		free(str);
+		free(arg);
 		return 0;
 	}
 
@@ -138,6 +164,7 @@ int radare_write(char *arg, int mode)
 	radare_read(0);
 
 	last_print_format = fmt;
+	free(arg);
 	free(str);
 
 	return 1;

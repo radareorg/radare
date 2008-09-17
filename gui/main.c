@@ -266,19 +266,18 @@ void gradare_open_project()
         if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
         {
                 char cmd[4096];
-                char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+                const char *filename = (const char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
 
 		sprintf(buf, ":Po %s\n\n", filename);
 		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
 	}
-gtk_widget_destroy(fcd);
 
-
+	gtk_widget_destroy(fcd);
 }
 
 void gradare_new_graph()
 {
-	vte_terminal_feed_child(VTE_TERMINAL(term), ":pG\n\n", 5);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":ag\n\n", 5);
 }
 
 void gradare_new_monitor()
@@ -433,10 +432,10 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
 	return FALSE;
 }
 
-
 int main(int argc, const char **argv, char **envp)
 {
 	int c;
+	char str[1024];
 	GtkWidget *chos;
 	GtkWidget *vbox;
 	GtkWidget *hpan;
@@ -558,8 +557,8 @@ int main(int argc, const char **argv, char **envp)
 				FALSE, FALSE, FALSE);
 	} else {
 		if (filename) {
+#if 0
 			char *arg[6] = { "/usr/bin/radare", "-escr.color=true", "-b", "1024", filename, NULL};
-			char str[1024];
 
 			vte_terminal_fork_command(
 					VTE_TERMINAL(term),
@@ -567,8 +566,17 @@ int main(int argc, const char **argv, char **envp)
 					FALSE, FALSE, FALSE);
 			vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
 			sprintf(str, "radare -c -b 1024 - %s", filename);
+#endif
+			char *arg[6] = { GRSCDIR"/Shell", filename, NULL};
+			sprintf(str, "gradare: %s", filename);
 			gtk_window_set_title(GTK_WINDOW(w), str);
+			vte_terminal_fork_command(
+					VTE_TERMINAL(term),
+					GRSCDIR"/Shell", arg, envp, ".",
+					FALSE, FALSE, FALSE);
 		} else {
+			sprintf(str, "gradare: (no file)");
+			gtk_window_set_title(GTK_WINDOW(w), str);
 			vte_terminal_fork_command(
 					VTE_TERMINAL(term),
 					GRSCDIR"/Shell", NULL, envp, ".",

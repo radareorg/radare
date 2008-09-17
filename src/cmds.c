@@ -1369,10 +1369,17 @@ CMD_DECL(write)
 		} break;
 	case 'x':
 		if (input[1]!=' ') {
-			eprintf("Please. use 'wx 00 11 22'\n");
+			eprintf("Usage: 'wx 00 11 22'\n");
 			return 0;
 		}
 		ret = radare_write(input+2, WMODE_HEX);
+		break;
+	case 'X':
+		if (input[1]!=' ') {
+			eprintf("Usage: 'wX 00 11 22'\n");
+			return 0;
+		}
+		ret = radare_write_xor(input+2);
 		break;
 	case 'w':
 		if (input[1]!=' ') {
@@ -1394,6 +1401,7 @@ CMD_DECL(write)
 		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		"  ww [string]   - write wide chars (interlace 00s in string)\n"
 		"  wx [hexpair]  - write hexpair string\n"
+		"  wX [hexpair]  - xor-cipher from cur seek with ciclick hexpair key\n"
 		"  wf [file]     - write contents of file at current seek\n"
 		"  wF [hexfile]  - write hexpair contents of file\n");
 		break;

@@ -1,2 +1,6 @@
 #!/bin/sh
-while : ; do radare /dev/null ; echo "..." ; sleep 1 ; done
+if [ -z "$1" ]; then
+	while : ; do radare -w malloc://256 ; echo "..." ; sleep 1 ; done
+else
+	while : ; do radare -w "$1" ; echo "..." ; sleep 1 ; done
+fi

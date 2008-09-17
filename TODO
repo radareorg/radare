@@ -7,15 +7,20 @@
 
 ===========================================================
 
+* Make 'Cs' autodetect multiple strings
 * Vdf doesnt detect func size properly
 * store from->to list for all the jumps/calls analized inside functions
   - use them to resolve xrefs at runtime only for functions)
 
-          0x000001EE  |           b80007           invokestatic java/lang/Object (null)
+java bug:
+  0x000001EE  |           b80007           invokestatic java/lang/Object (null)
+
 -> this should be a call to callme()
 
-
 * imp_foo are not ok in dietelf :OO.
+* rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
+ - be alphanumeric
+ - avoid \n, avoid \r
 
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
@@ -38,8 +43,6 @@
   - allow to enable/disable
   - useful for searching
 
-* gradare must load using Shell to loop all the time the radare
-
 * 'u*' - undo all changes (should be 'uw *') ?
 
 * !contuh doesnt works :O
@@ -59,6 +62,8 @@
 
 * add margin right to the text
   - or margin left to the shell code
+  - cut all lines at column scr.width
+  - add screen.hshift (horitzontal scrolling)
 
 * debugger
   - follow child or parent
@@ -84,7 +89,6 @@
 
 * arrows+shift in visual
 * 'x' char should not be accepted as hexpair
-* wX write with xor key
 
 * search backward (esteve?)
   - search backward in memory (invert string and add inc as argument for binparse)
@@ -107,7 +111,6 @@
 
 * asm.stackpointer (show stack pointer value like in IDA)
 
-* fix software breakpointz
 * !bpc -> execute command when hitting breakpoint
   - stop on breakpoint after N hits
   * breakpoint callbacks:
@@ -121,8 +124,6 @@
 
 Debugger:
 	* when attaching sets <pid>.rdb ..should be <program.pid>.rdb?
-	* fix software breakpoints
- 	  - after restore !set eip = eip -1 && !bp -eip
 	* !contu must use '!mp rw- 0x8048000 0x4045' if supported
 	* load libraries on the child process
 	* !contall
@@ -137,12 +138,13 @@ Debugger:
 	  - command
           - stop at count
 	  - log (trace)
-	  - enabled
+	  - enable/disable
 
 Rabin:
 	* rabin string refs
 	* Move javasm.c as dietjava in rabin
 	* entry vs entrypoint flag :O
+	* Full PE parser support
 
 Radiff:
 	* Entry point for the bin diffing utilities
@@ -155,9 +157,6 @@ Rasc:
 	* rasc : send file and execute (pitbull inside!)
  	* add selfsigstop/stackperm shellcodes in lua script or rasc
 	* rasc with ascii-nops
-	* rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
-	 - be alphanumeric
-	 - avoid \n, avoid \r
 
 Rasm:
 	* RASM is buggy about relative/absolute offsets
@@ -169,7 +168,7 @@ Rasm:
 
 Core:
 	BUGS:
-	* cons.c (dietline) should work fine without readline and without verbose)
+	* cons.c (dietline) should work fine without readline and without verbose) (malloc should be happy)
 	* radare malloc://30 && e file.write=1 && wx 90 = segfaults
 	* folders doesnt works well
 	* rsc monitor not so cool from teh graph view or so
@@ -183,7 +182,6 @@ Core:
 	* '<' and '>' commands converted in prefix modifiers
 	* remove project strange commands (use radare ones) -- ?? sure? is not secure!
 	(avoid system and pipes?!?) .. so drop '!' and '>' chars from input strings that is
-	* backward search until (config.limit <0)? config.seek+config.limit : 0;
 	* reload project file if changes
 	* folders are broken
 	* do not create trace.log by default
@@ -209,15 +207,12 @@ Grava:
 	833d0cc4050803  cmp dword [0x805c40c], 0x3
 	bf0d9b0508      mov edi, 0x8059b0d
 
-* Make 'Cs' autodetect multiple strings
-* Xrefs working with the core (radare_read and so)
 * Add 'bookmarked flags'
 
 Radare:
     + Dwarf support:
         - dwarfdump parser???
         - natively use libwarf in rabin
-    + StackFram analysis for local variables
 
 * scriptedit must work also for 'radare scripts'
   - Multiple open/close is broken :?
@@ -350,21 +345,15 @@ DWARF
    - no funciona be troba coses com 58 5b c9 c3...
 
  * Allow to increase/decrease folder size with + and -
-  - wheen scrolling over folders skip faster
+  - when scrolling over folders skip faster
  * add !status to get last crash info and stuff like that
  * fix autocomplete stuff for readline-flags
  * add full autocompletion support for dietline
  * make fixed nodes fixed to the graph view
  * Use SIGHUP to dump monitor stuff to files
- * radare debugger for osx x86/arm
- * support for background color
  * blinking byte at cursor
  * support for search and replace
  * support for oprofile (via rsc or so)
-
-Rabin
-=====
-* Full PE parser support
 
 Gui
 ===

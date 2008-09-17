@@ -25,14 +25,10 @@
 #include "main.h"
 #include "../global.h"
 
-void focus_input()
-	{ gtk_widget_grab_focus(GTK_WIDGET(entry)); }
-void focus_combo()
-	{ gtk_widget_grab_focus(GTK_WIDGET(combo)); }
-void focus_actions()
-	{ gtk_widget_grab_focus(GTK_WIDGET(catact)); }
-void focus_vte()
-	{ gtk_widget_grab_focus(GTK_WIDGET(term)); }
+void focus_input()   { gtk_widget_grab_focus(GTK_WIDGET(entry));  }
+void focus_combo()   { gtk_widget_grab_focus(GTK_WIDGET(combo));  }
+void focus_actions() { gtk_widget_grab_focus(GTK_WIDGET(catact)); }
+void focus_vte()     { gtk_widget_grab_focus(GTK_WIDGET(term));   }
 
 void gradare_undo() //GtkAction *action, CanoeWindow *w)
 {

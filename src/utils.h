@@ -90,7 +90,6 @@ enum {
 	WMODE_WSTRING
 };
 
-int radare_write(char *arg, int mode);
 //int hexstr2binstr(unsigned char *arg);
 int hexstr2binstr(const char *in, unsigned char *out);
 int escape_buffer(char *buf);
