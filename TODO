@@ -10,7 +10,7 @@
 * store from->to list for all the jumps/calls analized inside functions
   - use them to resolve xrefs at runtime only for functions)
 
-* imp_foo are not ok :OO.
+* imp_foo are not ok in dietelf :OO.
 
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
@@ -25,7 +25,6 @@
   - Make dbg.wptrace = make it stop when there's a breakpoint
   - support for %eax = %ebx f.ex
 
-* ignore events from pid = blah (ignore pid??)
   - ^C should be always catched!!
 
 * Memory ranges

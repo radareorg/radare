@@ -17,6 +17,7 @@ so_python.install_path = plugindir
 
 so_lua = bld.new_task_gen('cc', 'shlib','lua')
 so_lua.includes = '../..'
+so_lua.env.append_value('LINKFLAGS','-llua') 
 so_lua.target = 'lua'
 so_lua.source = 'lua.c'
 so_lua.install_path = plugindir

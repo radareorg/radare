@@ -25,6 +25,8 @@
 #include "../../main.h"
 #include "../../dbg/debug.h"
 
+ // XXX buggy ?!?
+
 /* extern */
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
@@ -78,6 +80,8 @@ static int ruby_hack_cya()
 
 void ruby_hack_cmd(char *input)
 {
+	char str[1024];
+
 	if (rs_cmdstr == NULL)
 		rs_cmdstr = radare_plugin.resolve("radare_cmd_str");
 
@@ -94,10 +98,9 @@ void ruby_hack_cmd(char *input)
 	if (input && input[0]) {
 		if (slurp_ruby(input)) {
 			fprintf(stderr, "Cannot open '%s'\n", input);
-			fflush(stdout);
+			fflush(stderr);
 		}
 	} else {
-		char str[1024];
 		while(!feof(stdin)) {
 			printf("ruby> ");
 			fflush(stdout);
@@ -113,6 +116,7 @@ void ruby_hack_cmd(char *input)
 				break;
 			str[strlen(str)]='\0';
 			rb_eval_string(str);
+			ruby_run();
 		}
 	}
 	ruby_hack_cya();

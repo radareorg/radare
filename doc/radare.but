@@ -1527,12 +1527,72 @@ The basic 'portable' assembler instructions can be listed with 'rasm -l':
 
 \H{rasm-asm} Assemble
 
-You can assemble instructions
-TODO : from file, inline
+It is quite common to use 'rasm' from the shell. It is a nice utility for copypasting the hexpairs that represent the opcode.
+
+\c $ rasm -a x86 'jmp 0x8048198'
+\c e9 bb 9e fe ff
+\c rasm -a ppc 'jmp 0x8048198'
+\c 48 fa 1d 28 
+
+Rasm is used from radare core to write bytes using 'wa' command. So you can directly an opcode from the radare shell.
+
+It is possible to assemble for x86 (intel syntax), olly (olly syntax), powerpc, arm and java. For the rest of architectures you can use 'rsc asm' that takes $OBJDUMP and $AS to generate the proper output after assembling the given instruction. For the intel syntax, rasm tries to use NASM or GAS. You can use the SYNTAX environment variable to choose your favorite syntax: intel or att.
+
+There are some examples in rasm's source directory to assemble a raw file using rasm from a file describing these opcodes.
+
+\c $ cat selfstop.rasm
+\c ;
+\c ; Self-Stop shellcode written in rasm for x86
+\c ;
+\c ; --pancake
+\c ;
+\c 
+\c .arch x86
+\c .equ base 0x8048000
+\c .org 0x8048000  ; the offset where we inject the 5 byte jmp
+\c 
+\c selfstop:
+\c   push 0x8048000
+\c   pusha
+\c   mov eax, 20
+\c   int 0x80
+\c 
+\c   mov ebx, eax 
+\c   mov ecx, 19
+\c   mov eax, 37
+\c   int 0x80
+\c   popa
+\c   ret
+\c ;
+\c ; The call injection
+\c ;
+\c 
+\c   ret
+\c 
+\c $ rasm -f selfstop.rasm
+\c $ ls
+\c selfstop.rasm selfstop.rasm.o
+\c $ echo pd | radare -vn ./selfstop.rasm.o 
+\c   0x00000000,    cursor: 6800800408        push dword 0x8048000
+\c   0x00000005             60                pushad             
+\c   0x00000006             b814000000        eax = 0x14        
+\c   0x0000000B             cd80              int 0x80         
+\c   0x0000000D             89d8              eax = ebx       
+\c   0x0000000F             b913000000        ecx = 0x13     
+\c   0x00000014,            b825000000        eax = 0x25    
+\c   0x00000019             cd80              int 0x80     
+\c   0x0000001B             61                popad       
+\c   0x0000001C,            c3               ret ;--     
+\c   0x0000001C          ; ------------------------------------
+\c   0x0000001D             c3               ret ;--    
+\c   0x0000001D          ; ------------------------------------
 
 \H{rasm-dasm} Disassemble
 
-TODO
+In the same way as rasm assembler works, giving the '-d' flag you can disassemble an hexpair string:
+
+\c $ rasm -d 'b8 21 00 00 00'
+\c mov eax, 33
 
 \C{rasc} Rasc
  

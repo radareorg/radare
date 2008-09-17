@@ -412,9 +412,13 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 	bsz--;
         config.seek = tmp;
 
+	if (bsz<0) {
+		bsz = 5;
+		// XXX WTF?!?!
+	}
         blk = block_get_new(prg, oseek);
 
-        blk->bytes = (unsigned char *)malloc(bsz);
+        blk->bytes = (unsigned char *)malloc(bsz+1);
         blk->n_bytes = bsz;
         memcpy(blk->bytes, buf, bsz);
         blk->tnext = aop.jump;
