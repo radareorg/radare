@@ -660,6 +660,7 @@ int analyze_function(int recursive)
 	struct block_t *b0;
 	struct program_t *prg;
 	int ret;
+	char label[1024];
 	/*--*/
 	char *bytes;
 	u64 from = config.baddr+ config.seek;
@@ -714,8 +715,10 @@ int analyze_function(int recursive)
 		}
 		switch(aop.type) {
 		case AOP_TYPE_CALL:
+			label[0]='\0';
+			string_flag_offset(label, aop.jump);
 			// if resolved as sym_ add its call
-			cons_printf("Cx 0x%08llx @ 0x%08llx\n", seek, aop.jump);
+			cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, label);
 			break;
 		}
 		switch(aop.stackop) {
