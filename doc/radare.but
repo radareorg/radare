@@ -764,6 +764,7 @@ The cursor can be used to scroll faster thru the zoom out view and pressing 'z' 
 \c  F : number of 0xFF
 \c  f : number of flags
 \c  c : code (functions)
+\c  s : strings
 \c  t : traces (opcode traces)
 \c  p : number of printable chars
 \c  e : entropy calculation
@@ -808,6 +809,8 @@ For example. let's see some examples:
 \c 0x00007730, 0000 0100 0000 0000 0000 0000 0000 0101 0000 ..................
 \c 0x0000D6D0, 0000 0001 0201 0202 0100 0000 0000 0000 0000 ..................
 \c 0x00013670, 0000 0000 0002 0000 0000                     ..........        
+
+In the debugger, the zoom.from and zoom.to eval variables are defined by .!maps* to fit the user code sections of memory of the target process.
 
 \H{flagsmin} Flags
 

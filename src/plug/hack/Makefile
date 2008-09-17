@@ -8,12 +8,14 @@ PY_CFLAGS=-I${PREFIX}/include/python2.5/ -I/usr/include/python2.5/
 PY_LDFLAGS=-lpython2.5
 LUA_CFLAGS=-I${PREFIX}/include/lua5.1/ -I/usr/include/lua5.1/
 LUA_LDFLAGS=
+RUBY_CFLAGS=-I/usr/lib/ruby/1.8/i386-linux
+RUBY_LDFLAGS=-lruby18
 SO=${SHARED_EXT}
 CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO}
+all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO}
 #perl.${SO}
 
 hello.${SO}:
@@ -31,6 +33,9 @@ python.${SO}:
 perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
 
+ruby.${SO}:
+	-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO}
+
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}: lua.o
 	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
@@ -41,6 +46,7 @@ install:
 	-[ -e gtk-hello.${SO} ] && ${INSTALL_LIB} gtk-hello.${SO} ${LIBDIR}/radare
 	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${LIBDIR}/radare
 	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${LIBDIR}/radare
+	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${LIBDIR}/radare
 	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${LIBDIR}/radare
 
 clean:

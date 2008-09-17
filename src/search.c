@@ -187,6 +187,9 @@ int search_range(char *range)
 	int num = -1, num2 = -1;
 	tokenizer *t;
 	u64 tmp = config.seek;
+	u64 search_from;
+	u64 search_to;
+	u64 limit;
 	int f0 = 0;
 	u64 s;
 
@@ -199,6 +202,8 @@ int search_range(char *range)
 	search_cmdhit = config_get("cmd.hit");
 	search_count = (int)config_get_i("cfg.count");
 	search_flag = (int)config_get("search.flag");
+	search_from = (int)config_get("search.from");
+	search_to = (int)config_get("search.to");
 	search_verbose = (int)config_get("search.verbose");
 
 	nhit = 0;
@@ -245,13 +250,18 @@ int search_range(char *range)
 
 	/* search loop */
 	radare_controlc();
+	if (search_from!=0)
+		config.seek = search_from;
+	limit = config.limit;
+	if (search_to!=0)
+		limit = search_to;
 	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
 		s = config.seek;
 		if (i==0) {
 			eprintf("read err at 0x%08llx\n", config.seek);
 			break;
 		}
-		if (config.limit && config.seek >= config.limit) break;
+		if (limit && config.seek >= limit) break;
 		if (config.debug && config.seek == 0xFFFFFFFF) break;
 		for(i=0;i<config.block_size;i++) {
 			if (update_tlist(t, config.block[i], config.seek+i)) {

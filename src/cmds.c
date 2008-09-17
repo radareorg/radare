@@ -98,7 +98,7 @@ void show_help_message()
 		cmdaux[0] = '\0';
 		cons_printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
-	cons_printf(" ?[?]<expr>       calc     math expr and show result in hex,oct,dec,bin\n");
+	cons_printf(" ?[?]<expr>        calc     math expr and show result in hex,oct,dec,bin\n");
 }
 
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
@@ -1014,6 +1014,7 @@ CMD_DECL(code)
 		} break;
 	case '*':
 		metadata_comment_list();
+		metadata_xrefs_list();
 		data_list();
 		break;
 	default:

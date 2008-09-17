@@ -106,6 +106,7 @@ int getv()
 int debug_tt(const char *arg)
 {
 	struct aop_t aop;
+	int pid;
 	u8 tmp[4];
 	u64 pc; // program counter
 	u8 *sa; // swap area
@@ -132,7 +133,8 @@ int debug_tt(const char *arg)
 
 	while(!config.interrupted) {
 		debug_contp(ps.tid);
-		ps.tid = debug_waitpid(-1, &status);
+		pid = debug_waitpid(-1, &status);
+		ps.tid = pid;
 
 		pc = arch_pc(ps.tid);
 		if ((pc & 0xffffffff) == 0xffffffff) {

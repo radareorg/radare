@@ -338,24 +338,19 @@ static int config_zoombyte_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (!strcmp(node->value, "head")) {
-		// ok
-	} else
-	if (!strcmp(node->value, "flags")) {
-		// ok
-	} else
-	if (!strcmp(node->value, "FF")) {
-		// ok
-	} else
-	if (!strcmp(node->value, "entropy")) {
-		// ok
-	} else
-	if (!strcmp(node->value, "print")) {
-		// ok
-	} else
-	if (!strcmp(node->value, "printable")) {
-		// ok
-	} else {
+	switch(node->value[0]) {
+	/* ok */
+	case 'h': // head
+	case 'f': // flags
+	case 'F': // 0xFF
+	case 'e': // entropy
+	case 'p': // print
+	case 't': // traces
+	case 'c': // code
+	case 's': // strings
+		break;
+	/* not ok */
+	default:
 		free(node->value);
 		node->value = strdup("head");
 		return 0;
@@ -544,7 +539,6 @@ void config_init(int first)
 		config_new.n_nodes = 0;
 		config_new.lock = 0;
 		INIT_LIST_HEAD(&(config_new.nodes));
-
 	}
 
 	vm_init(1);
@@ -608,6 +602,8 @@ void config_init(int first)
 	config_set("cmd.vprompt", "p%");
 	config_set("cmd.bp", "");
 
+	config_set_i("search.from", 0);
+	config_set_i("search.to", 0);
 	config_set("search.flag", "true");
 	config_set("search.verbose", "true");
 
@@ -681,6 +677,7 @@ void config_init(int first)
 #endif
 	config_set("dbg.forks", "false"); // stop debugger in any fork or clone
 	config_set("dbg.controlc", "true"); // stop debugger if ^C is pressed
+	config_set("dbg.focus", "false"); // focus on ps.pid or not (ignore events of rest of procs)
 	config_set("dbg.syms", "true");
 	config_set("dbg.dwarf", "false");
 	config_set("dbg.maps", "true");
@@ -737,7 +734,7 @@ void config_init(int first)
 	config_set("graph.render", "cairo"); // aalib/ncurses/text
 
 	node = config_set_i("zoom.from", 0);
-	node = config_set_i("zoom.size", config.size);
+	node = config_set_i("zoom.to", config.size);
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 

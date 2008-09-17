@@ -120,6 +120,7 @@ struct data_t {
 	u64 from;
 	u64 to;
 	int type;
+	int times;
 	u64 size;
 	struct list_head list;
 };
@@ -128,6 +129,13 @@ extern struct list_head comments;
 struct comment_t {
 	u64 offset;
 	const char *comment;
+	struct list_head list;
+};
+
+struct xrefs_t {
+	u64 addr;  /* offset of the cross reference */
+	u64 from;  /* where the code/data is referenced */
+	int type;  /* 0 = code, 1 = data, -1 = unknown */
 	struct list_head list;
 };
 

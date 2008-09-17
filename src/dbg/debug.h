@@ -29,6 +29,7 @@ struct bp_t *debug_bp_get_num(int num);
 
 // debug.c
 int debug_init();
+int debug_fork();
 int debug_ktrace();
 void debug_exit();
 int debug_breakpoint(unsigned long addr);

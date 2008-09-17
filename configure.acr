@@ -49,6 +49,7 @@ ARG_ENABLE W32 w32 enables the build of w32 version using mingw32 ;
 
 ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
+LANG_RUBY
 LANG_PYTHON
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;

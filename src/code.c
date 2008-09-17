@@ -171,13 +171,22 @@ struct data_t *data_get_between(u64 from, u64 to)
 	if (d == NULL)
 		return NULL;
 
-	if (hex>=str && hex>=code && hex>=fun) d->type = DATA_HEX;
-	else
-	if (str>=hex && str>=code && str>=fun) d->type = DATA_STR;
-	else
-	if (fun>=hex && fun>=str && fun>=code) d->type = DATA_FUN;
-	else
-	if (code>=hex && code>=str && code>=fun) d->type = DATA_CODE;
+	if (hex>=str && hex>=code && hex>=fun) {
+		d->type = DATA_HEX;
+		d->times = hex;
+	} else
+	if (str>=hex && str>=code && str>=fun) {
+		d->type = DATA_STR;
+		d->times = str;
+	} else
+	if (fun>=hex && fun>=str && fun>=code) {
+		d->type = DATA_FUN;
+		d->times = fun;
+	} else
+	if (code>=hex && code>=str && code>=fun) {
+		d->type = DATA_CODE;
+		d->times = code;
+	}
 //printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
@@ -375,6 +384,16 @@ void metadata_comment_list()
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
 		cons_printf("CC %s @ 0x%llx\n", cmt->comment, cmt->offset);
+	}
+}
+
+void metadata_xrefs_list()
+{
+	struct xrefs_t *x;
+	struct list_head *pos;
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		cons_printf("Cx 0x%08llx @ 0x%08llx\n", x->from, x->addr);
 	}
 }
 

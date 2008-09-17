@@ -218,7 +218,7 @@ void trace_reset()
 
 int trace_get_between(u64 from, u64 to)
 {
-	int ctr;
+	int ctr = 0;
 	struct list_head *pos;
 	struct trace_t *h;
 

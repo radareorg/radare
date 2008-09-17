@@ -30,7 +30,6 @@ extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 
 /* static stuff */
-static ruby_State *L;
 static char *(*rs_cmdstr)(const char *cmd) = NULL;
 static int (*rs_cmd)(char *cmd, int log) = NULL;
 
@@ -73,8 +72,7 @@ static int ruby_hack_init()
 
 static int ruby_hack_cya()
 {
-	ruby_close(L);
-
+	/* TODO */
 	return 0;
 }
 
@@ -86,7 +84,7 @@ void ruby_hack_cmd(char *input)
 	if (rs_cmd == NULL)
 		rs_cmd = radare_plugin.resolve("radare_cmd");
 
-	if (rs == NULL || rs_cmd == NULL) {
+	if (rs_cmd == NULL || rs_cmdstr == NULL) {
 		printf("cannot find radare_cmd_str or radare_cmd\n");
 		return;
 	}
@@ -114,9 +112,7 @@ void ruby_hack_cmd(char *input)
 			||	!strcmp(str,"q"))
 				break;
 			str[strlen(str)]='\0';
-			rubyL_loadbuffer(L, str, strlen(str), ""); // \n included
-			if ( ruby_pcall(L,0,0,0) != 0 )
-				printf("Oops\n");
+			rb_eval_string(str);
 		}
 	}
 	ruby_hack_cya();

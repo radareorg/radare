@@ -836,6 +836,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		u64 sz = 4;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
+		u64 to = config_get_i("zoom.to");
+		config.size = to-ptr;
+		if (config.size<0)
+			config.size = -config.size;
 	
 		if (!mode)
 			break;
@@ -859,6 +863,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			io_lseek(config.fd, ptr, SEEK_SET);
 			buf[0]='\xff';
 			io_read(config.fd, buf, sz);
+
 			switch(mode[0]) {
 			case 'F': // 0xFF
 				config.block[i] = 0;
@@ -867,7 +872,21 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 						config.block[i]++;
 				break;
 			case 'c': // code
-				config.block[i] = (unsigned char)data_get_between(ptr, ptr+config.zoom.piece);
+				{
+				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
+				config.block[i] = (unsigned char) 0;
+				if (data->type == DATA_CODE)
+					config.block[i] = (unsigned char) data->times;
+				}
+				break;
+
+			case 's': // strings
+				{
+				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
+				config.block[i] = (unsigned char) 0;
+				if (data->type == DATA_STR)
+					config.block[i] = (unsigned char) data->times;
+				}
 				break;
 			case 't': // traces
 				config.block[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);

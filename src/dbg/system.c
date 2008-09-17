@@ -108,6 +108,7 @@ int help_message()
 	cons_printf("  dump/restore [N]   dump/restore pages (and registers) to/from disk\n");
 	cons_printf("  dall               dump from current seek to cfg.limit all available bytes (no !maps required)\n");
 	cons_printf("  core               dump core of the process\n");
+	cons_printf("  fork               fork current process\n");
 	cons_printf("  hack [N]           Make a hack.\n");
 	//cons_printf("  inject [bin]       inject code inside child process (UNSTABLE)\n");
 	cons_printf("Usage: !<cmd>[?] <args> @ <offset>     ; see eval dbg. fmi\n");
@@ -184,6 +185,7 @@ static struct commads_t {
 	CB_CMD( "contu"    , CB_NORMAL   , debug_contu )        , 
 	CB_CMD( "contuh"   , CB_NOARGS   , debug_contuh )       , 
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
+	CB_CMD( "fork"     , CB_NORMAL   , debug_fork )         , 
 	CB_CMD( "get"      , CB_NORMAL   , debug_get_register ) , 
 	CB_CMD( "reg"      , CB_NORMAL   , debug_reg )          , //debug_registers )    , 
 	CB_CMD( "oregs"    , CB_ASTERISK , debug_oregisters )   , 

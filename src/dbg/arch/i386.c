@@ -79,7 +79,6 @@ struct regs_off roff[] = {
 	{0, 0}
 };
 
-
 /* return register offset */
 u64 get_reg(const char *reg)
 {
@@ -90,6 +89,17 @@ u64 get_reg(const char *reg)
 			return i;
 
 	return -1;
+}
+
+int debug_fork()
+{
+#if __linux__ || __BSD__
+	int forksyscall=2;
+	return arch_syscall(ps.tid, forksyscall);
+#else
+	eprintf("debug_fork: not implemented for this system\n");
+	return -1;
+#endif
 }
 
 u64 arch_syscall(int pid, int sc, ...)
@@ -156,6 +166,8 @@ u64 arch_syscall(int pid, int sc, ...)
 		R_ECX(reg) = va_arg(ap, int);
 		R_EDX(reg) = 0755; // TODO: Support create flags
 		break;
+	case SYS_fork:
+		break;
 	case SYS_close:
 		R_EBX(reg) = va_arg(ap, int);
 		break;
@@ -170,6 +182,7 @@ u64 arch_syscall(int pid, int sc, ...)
 		break;
 	default:
 		eprintf("ptrace-syscall %d not yet supported\n", sc);
+		// TODO resolve syscall name
 		// XXX return ???
 		break;
 	}

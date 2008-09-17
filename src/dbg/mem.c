@@ -258,6 +258,8 @@ void print_maps_regions(int rad, int two)
 	struct list_head *pos;
 	char name[128];
 	char perms[5];
+	int zoominit=0;
+	u64 from=0, to=0;
 
 	if (rad)
 		cons_printf("fs maps\n");
@@ -280,6 +282,15 @@ void print_maps_regions(int rad, int two)
 				name[i]='\0';
 				cons_printf("f map_%s @ 0x%08llx\n", name, (u64)mr->ini);
 				cons_printf("f map_%s_end @ 0x%08llx\n", name, (u64)mr->end);
+				
+				// TODO: control limits..needs >= comparisions
+				//cons_printf("? $zoom.from >= 0x%08llx && ?? e zoom.from = 0x%08llx\n", mr->ini);
+				if (mr->flags & FLAG_USERCODE) {
+					if (from == 0 || mr->ini < from)
+						from = mr->ini;
+					if (to == 0 || mr->ini > to)
+						to = mr->end;
+				}
 			}
 		} else {
 			perms[0] = (mr->perms & REGION_READ)?   'r' : '-';
@@ -295,6 +306,11 @@ void print_maps_regions(int rad, int two)
 				(unsigned long long)mr->end, perms,
 				(unsigned long long)mr->size, mr->bin? mr->bin : "");
 		}
+	}
+
+	if (rad) {
+		cons_printf("e zoom.from = 0x%08llx\n", from);
+		cons_printf("e zoom.to = 0x%08llx\n", to);
 	}
 }
 

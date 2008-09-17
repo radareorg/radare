@@ -7,9 +7,12 @@
 
 ===========================================================
 
-* zoom for functions and trace counts
 * store from->to list for all the jumps/calls analized inside functions
   - use them to resolve xrefs at runtime only for functions)
+
+* documentate dbg.focus
+* documentate zoom.from, zoom.to better (zoom.size is removed)
+* doc search.from and search.to
 
 * make gdb connector work happily
 

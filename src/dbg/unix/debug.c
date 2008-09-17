@@ -767,10 +767,19 @@ int debug_dispatch_wait()
 	TH_INFO		*th;
 	pid_t tid = 0;
 	int ret = 0;
+	int dbg_focus = config_get_i("dbg.focus");
 
 	WS(event) = UNKNOWN_EVENT;
 
-	ps.tid = debug_waitpid(-1, &status);
+	do_repeat:
+	tid = debug_waitpid(-1, &status);
+	if (dbg_focus) {
+		/* ignore */
+		if (ps.tid != tid)
+			goto do_repeat;
+	}
+	ps.tid = tid;
+	
 
 #if __i386__
 	debug_getregs(ps.pid, &(WS(regs)));

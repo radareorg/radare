@@ -670,7 +670,7 @@ int analyze_function(int recursive)
 	d = data_get(config.baddr+config.seek);
 	if (d && d->type == DATA_FUN) {
 		cons_printf("; already analyzed\n");
-		return 0;
+	//	return 0;
 	}
 	/* Analyze function */
 	/* XXX ensure this is ok */
@@ -708,6 +708,12 @@ int analyze_function(int recursive)
 		if (inc<1) {
 			inc = 1;
 			continue;
+		}
+		switch(aop.type) {
+		case AOP_TYPE_CALL:
+			// if resolved as sym_ add its call
+			cons_printf("Cx 0x%08llx @ 0x%08llx\n", seek, aop.jump);
+			break;
 		}
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:

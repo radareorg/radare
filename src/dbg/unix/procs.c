@@ -246,6 +246,7 @@ int debug_pstree(const char *input)
 	}
 
 	foo = ps.pid;
+	eprintf(" tid : %d\n", ps.tid);
 	eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
 	pids_sons_of_r(foo, 0, 0);
 	if (ps.pid != ps.tid) {

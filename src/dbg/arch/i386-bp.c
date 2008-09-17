@@ -52,20 +52,20 @@ int arch_bpsize()
 //
 #ifdef __linux__
 
-static unsigned long dr_get (int reg)
+static u32 dr_get (int reg)
 {
   	return ptrace (PTRACE_PEEKUSER, ps.tid,
                   offsetof(struct user, u_debugreg[reg]), 0);
 }
 
-static int dr_set (int reg, unsigned long val)
+static int dr_set (int reg, u32 val)
 {
   	return ptrace (PTRACE_POKEUSER, ps.tid, offsetof(struct user, u_debugreg[reg]), val);
 }
 
 #elif __FreeBSD__
 
-static unsigned long dr_get (int reg)
+static u32 dr_get (int reg)
 {
 	unsigned long val;
 	int ret;
@@ -97,7 +97,7 @@ static int dr_set (int reg, unsigned long val)
 
 #elif __WINDOWS__
 
-static unsigned long dr_get(int reg)
+static u32 dr_get(int reg)
 {
 	regs_t regs;
 	unsigned int off;
@@ -135,7 +135,7 @@ static int dr_set(int reg, unsigned long val)
 #else
 
 /* NOT YET IMPLEMENTED: USE u64!!! */
-static unsigned long dr_get(int reg)
+static u32 dr_get(int reg)
 {
 	return 0L;
 }
@@ -147,27 +147,27 @@ static int dr_set(int reg, unsigned long val)
 
 #endif
 
-inline static void dr_set_control (unsigned long control)
+static void dr_set_control (unsigned long control)
 {
 	dr_set(DR_CONTROL, control);
 }
 
-inline static unsigned long dr_get_control ()
+static u32 dr_get_control ()
 {
 	return dr_get(DR_CONTROL);
 }
 
-inline static void dr_set_addr (int regnum, unsigned long addr)
+static void dr_set_addr (int regnum, u32 addr)
 {
 	dr_set(regnum, addr);
 }
 
-inline static void dr_reset_addr (int regnum)
+static void dr_reset_addr (int regnum)
 {
 	dr_set(regnum, 0L);
 }
 
-inline static unsigned long dr_get_status (void)
+static u32 dr_get_status (void)
 {
 	return dr_get(DR_STATUS);
 }
@@ -221,7 +221,6 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 	return dr_free;
 }
 
-
 // TODO: Move to macros in .h
 int arch_set_wp_hw(unsigned long addr, int type)
 {
@@ -236,12 +235,12 @@ int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
 int arch_bp_rm_hw(struct bp_t *bp)
 {
 	int i; 
-	unsigned long addr;
+	u64 addr = 0LL;
 
 	addr = bp->addr;
 
 	for(i = 0; i < 4; i++) {
-		if(dr_get(i)  == addr) {
+		if(dr_get(i) == addr) {
 			dr_set(i, 0);
 			return 0;
 		}
@@ -329,14 +328,14 @@ int arch_bp_rm_soft(struct bp_t *bp)
 }
 
 /* software breakpoints */
-inline int arch_bp_soft_enable(struct bp_t *bp)
+static int arch_bp_soft_enable(struct bp_t *bp)
 {
 	char breakpoint = '\xCC'; // XXX : support to choose which bp instruction use
 
 	return debug_write_at(ps.tid, &breakpoint, 1, bp->addr);
 }
 
-inline int arch_bp_soft_disable(struct bp_t *bp)
+int arch_bp_soft_disable(struct bp_t *bp)
 {
 	return debug_write_at(ps.tid, bp->data, bp->len, bp->addr);
 }
@@ -371,49 +370,8 @@ printf("restore hard bp\n");
 		arch_bp_hw_enable(bp);
 	} else {
 printf("restore soft bp\n");
-//		arch_bp_soft_disable(bp);
 		debug_getregs(ps.tid, &regs);
-//	  arch_jmp(arch_pc()-1);
-//	  arch_jmp(arch_pc()-1);
-#define CODE_GUAI 0
-// CODE EXPERIMENTAL TO CLEAN THE CACHE (NOT NEEDED!! NOISE!!! )
-#if 0
-	{
-		char buf[4];
-		u64 off = arch_pc()-2;
-		arch_jmp(off);
-		arch_bp_soft_disable(bp);
-		debug_read_at(ps.tid, buf, 4, off);
-		debug_write_at(ps.tid, "\x90", 1, off);
-		debug_os_steps();
-		R_EIP(regs) = R_EIP(regs) - 1;
-		debug_dispatch_wait();
-		debug_os_steps();
-		debug_dispatch_wait();
-//	printf("WRITE 4 bytes (%02x%02x%02x%02x) %08llx\n", buf[0], buf[1], buf[2], buf[3], off);
-		debug_write_at(ps.tid, buf, 4, off);
-//		arch_bp_soft_enable(bp);
-	}
-#endif
-#if 0
-		R_EIP(regs) = R_EIP(regs) - 1;
-		printf("EIP = %08x\n", R_EIP(regs));
-		debug_setregs(ps.tid, &regs);
-		debug_os_steps();
-		debug_dispatch_wait();
-#endif
 		arch_bp_soft_enable(bp);
-#if 0
-#if ARCH_I386
-
-	if (!bp->hw)
-	  arch_jmp(arch_pc()-1);
-	else
-#else
-	  arch_jmp(arch_pc()-4);
-		debug_getregs(ps.tid, &regs);
-#endif
-#endif
 	}
 
 	return 0;
