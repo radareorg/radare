@@ -38,9 +38,9 @@ static char *ins_buf;
 
 #ifdef __linux__
 
-unsigned long dr_get (int reg)
+u64 dr_get (int reg)
 {
-	unsigned long val;
+	u64 val;
 
   	val = ptrace (PTRACE_PEEKUSER, ps.tid,
                   offsetof(struct user, u_debugreg[reg]), 0);
@@ -48,7 +48,7 @@ unsigned long dr_get (int reg)
   	return val;
 }
 
-int dr_set (int reg, unsigned long val)
+int dr_set (int reg, u64 val)
 {
 	int ret;
 
@@ -60,12 +60,12 @@ int dr_set (int reg, unsigned long val)
 #else
 /* NOT YET */
 
-unsigned long dr_get(int reg)
+u64 dr_get(int reg)
 {
 	return 0L;
 }
 
-int dr_set(int reg, unsigned long val)
+int dr_set(int reg, u64 val)
 {
 	return 0;
 }
@@ -88,7 +88,7 @@ unsigned dr_get_control ()
 	return 0; //for compiler warning
 }
 
-void dr_set_addr (int regnum, unsigned long addr)
+void dr_set_addr (int regnum, u64 addr)
 {
 	dr_set(regnum, addr);
 }
@@ -111,7 +111,7 @@ void dr_init()
 		dr_set(i, 0);
 }
 
-int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
+int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
 {
 	int i;
 	unsigned long control = dr_get_control();
@@ -156,12 +156,12 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 }
 
 // TODO: Move to macros in .h
-int arch_set_wp_hw(unsigned long addr, int type)
+int arch_set_wp_hw(u64 addr, int type)
 {
 	return arch_set_wp_hw_n(-1, addr, type);
 }
 
-int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
+int arch_set_bp_hw(struct bp_t *bp, u64 addr)
 {
 	return arch_set_wp_hw(addr, DR_RW_EXECUTE);
 }
@@ -169,7 +169,7 @@ int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
 int arch_bp_rm_hw(struct bp_t *bp)
 {
 	int i; 
-	unsigned long addr;
+	u64 addr;
 
 	addr = bp->addr;
 
@@ -188,7 +188,7 @@ int arch_bp_rm_hw(struct bp_t *bp)
 void dr_list()
 {
 	int i, flags;
-	unsigned long addr, control;
+	u64 addr, control;
 	
 	control = dr_get_control();
 
@@ -199,7 +199,7 @@ void dr_list()
 	}
 }
 
-int arch_bp_hw_state(unsigned long addr, int enable)
+int arch_bp_hw_state(u64 addr, int enable)
 {
 	unsigned long control;
 	int i;
@@ -246,7 +246,7 @@ int get_len_ins(char *buf, int len)
 	return ud_disassemble(&ud_obj);
 }
 
-int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
+int arch_set_bp_soft(struct bp_t *bp, u64 addr)
 {
 	char breakpoint = '\xCC';
 
@@ -315,7 +315,7 @@ struct bp_t *arch_stopped_bp()
 {
 	int i;
 	int bps = ps.bps_n;
-	unsigned long addr;
+	u64 addr;
 	struct bpt_t *bp_w = 0, *bp_s = 0;
 
 	addr = R_RIP(WS(regs));

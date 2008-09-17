@@ -742,6 +742,7 @@ int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 				printf("0x%08llx %s\n", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), &string[symp->st_name]);
 			    }
 			    if (xrefs) {
+				// TODO: use raadare >af
 				char buf[1024];
 				sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)ELF_(get_import_addr)(bin, fd, k));
 				system(buf);

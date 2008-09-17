@@ -537,7 +537,7 @@ int debug_ie(char *input)
 	return 0;
 }
 
-int debug_until(char *addr)
+int debug_until(const char *addr)
 {
 	u64 off = 0LL;
 	char buf[128];
@@ -870,7 +870,7 @@ int debug_load()
 	setenv("DPID", pids, 1);
 	debug_init_maps(0);
 	events_init();
-	debug_until((char *)config_get("dbg.bep"));
+	debug_until( config_get("dbg.bep") );
 
 	debug_getregs(ps.pid, &(WS(regs)));
 
@@ -1645,11 +1645,8 @@ int debug_cont_until(const char *input)
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
-// XXX: BP_SOFT doesnt works well :S
-		bp = debug_bp_set(NULL, addr, BP_HARD);
+		bp = debug_bp_set(NULL, addr,config_get_i("dbg.hwbp"));
 		debug_cont(NULL);
-		/* XXX REALLY UGLY HACK */
-		radare_cmd("!dr-",0);
 		debug_bp_restore(bp);
 		debug_bp_rm_num(bp);
 		return 1;

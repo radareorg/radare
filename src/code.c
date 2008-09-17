@@ -235,10 +235,13 @@ int data_size(u64 offset)
 
 int data_list()
 {
+	char label[1024];
 	struct data_t *d;
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
+		label[0]='\0';
+		string_flag_offset(label, d->from);
 		switch(d->type) {
 		case DATA_FOLD_O: cons_strcat("Cu "); break;
 		case DATA_FOLD_C: cons_strcat("Cf "); break;
@@ -246,7 +249,7 @@ int data_list()
 		case DATA_HEX:    cons_strcat("Cd "); break;
 		case DATA_STR:    cons_strcat("Cs "); break;
 		default:          cons_strcat("Cc "); break; }
-		cons_printf("%lld @ 0x%08llx\n", d->size, d->from);
+		cons_printf("%lld @ 0x%08llx ; %s\n", d->size, d->from, label);
 	}
 	return 0;
 }
@@ -258,16 +261,19 @@ struct list_head xrefs;
 /* -- metadata -- */
 int metadata_xrefs_print(u64 addr, int type)
 {
+	char str[1024];
 	int n = 0;
 	struct xrefs_t *x;
 	struct list_head *pos;
 	list_for_each(pos, &xrefs) {
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		if (x->addr == addr) {
+			str[0]='\0';
+			string_flag_offset(str, x->from);
 			switch(type) {
-			case 0: if (x->type == type) { cons_printf("; CODE xref %08llx\n", x->from); n++; } break;
-			case 1: if (x->type == type) { cons_printf("; DATA xref %08llx\n", x->from); n++; } break;
-			default: { cons_printf("; %s xref %08llx\n", (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from); n++; };
+			case 0: if (x->type == type) { cons_printf("; CODE xref %08llx (%s)\n", x->from, str); n++; } break;
+			case 1: if (x->type == type) { cons_printf("; DATA xref %08llx (%s)\n", x->from), str; n++; } break;
+			default: { cons_printf("; %s xref %08llx (%s)\n", (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
 			}
 		}
 	}
@@ -389,11 +395,15 @@ void metadata_comment_list()
 
 void metadata_xrefs_list()
 {
+	char label[1024];
 	struct xrefs_t *x;
 	struct list_head *pos;
+
 	list_for_each(pos, &xrefs) {
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
-		cons_printf("Cx 0x%08llx @ 0x%08llx\n", x->from, x->addr);
+		label[0]='\0';
+		string_flag_offset(label, x->from);
+		cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", x->from, x->addr, label);
 	}
 }
 

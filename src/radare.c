@@ -237,6 +237,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	char ch;
 	char *word = NULL;
 	char *str = strdup(each);
+	struct list_head *pos;
 
 	radare_controlc();
 	while(str[i] && !config.interrupted) {
@@ -248,7 +249,6 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 		word = strdup(str+j);
 		str[i] = ch;
 		if (strchr(word, '*')) {
-			struct list_head *pos;
 
 			/* for all flags in current flagspace */
 			list_for_each(pos, &flags) {
@@ -257,8 +257,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					break;
 
 				/* filter per flag spaces */
-				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
-					continue;
+//				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+//					continue;
 
 				config.seek = flag->offset;
 				radare_read(0);
@@ -266,13 +266,37 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				radare_cmd_raw(cmd,0);
 			}
 		} else {
+			/* for all flags in current flagspace */
+			list_for_each(pos, &flags) {
+				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+				if (config.interrupted)
+					break;
+
+#if 0
+				/* filter per flag spaces */
+				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+					continue;
+#endif
+//eprintf("polla(%s)(%s)\n", flag->name, word);
+				if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
+
+					config.seek = flag->offset;
+					radare_read(0);
+					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
+					radare_cmd_raw(cmd,0);
+				}
+			}
+#if 0
 			/* ugly copypasta from tmpseek .. */
-			if (word[i]=='+'||word[i]=='-')
-				config.seek = config.seek + get_math(word);
-			else	config.seek = get_math(word);
-			radare_read(0);
-			cons_printf("; @@ 0x%08llx\n", config.seek);
-			radare_cmd_raw(cmd,0);
+			if (strstr(word, each)) {
+				if (word[i]=='+'||word[i]=='-')
+					config.seek = config.seek + get_math(word);
+				else	config.seek = get_math(word);
+				radare_read(0);
+				cons_printf("; @@ 0x%08llx\n", config.seek);
+				radare_cmd(cmd,0);
+			}
+#endif
 		}
 		radare_controlc();
 

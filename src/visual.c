@@ -1287,8 +1287,11 @@ CMD_DECL(visual)
 						if (config.debug)
 							radare_cmd("!cont", 0);
 						continue;
-					case '~': // F10
+					case '~': // F10 // XXX this is not ok?!?
 						D printf("Walking until user code...\n");
+						radare_cmd("!contu", 0);
+						continue;
+					case 49: // F10
 						radare_cmd("!contu", 0);
 						continue;
 					default:

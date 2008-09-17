@@ -404,12 +404,15 @@ void rabin_show_imports(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-#if 0
-		char buf[1024];
+#if 1
+		{ char buf[1024];
 		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
-		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
+//		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
+		sprintf(buf, "objdump -d '%s' | grep 'plt>:' | sed -e 's,@plt>:,,g' -e 's,[<],,g' | awk '{print \"f imp_\"$2\" @ 0x\"$1 }'", file);
 		system(buf);
+		}
 #else
+	// XXX doesnt works!!
 		
 		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {

@@ -10,6 +10,8 @@
 * store from->to list for all the jumps/calls analized inside functions
   - use them to resolve xrefs at runtime only for functions)
 
+* imp_foo are not ok :OO.
+
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc search.from and search.to

@@ -103,6 +103,7 @@ int dispatch_wait();
 int debug_os_init();
 int debug_os_kill(int pid, int sig);
 int debug_cont_until(const char *input);
+int debug_until(const char *addr);
 void print_wps();
 int rm_wp(int i);
 void print_sigh(char *signame, unsigned long handler);

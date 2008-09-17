@@ -34,7 +34,7 @@ int debug_bp(const char *str)
 	int hwbp = BP_NONE;
 	int num;
 
-	hwbp = (int)config_get("dbg.hwbp");
+	hwbp = (int)config_get_i("dbg.hwbp");
 	switch(str[0]) {
 	case 's':
 		hwbp = BP_SOFT;
@@ -165,6 +165,7 @@ int debug_bp_rm(u64 addr, int type)
 	struct bp_t *bp;
 	int ret;
 
+eprintf("RM BP!!\n");
 	bp = debug_bp_get(addr);	
 	if (bp == NULL) {
 		eprintf("debug_bp_rm: No breakpoint found at this address\n");
@@ -218,7 +219,6 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 
 	/* search for breakpoint */
 	for(i=0;i < MAX_BPS;i++) {
-
 		/* breakpoint found it */
 		if(ps.bps[i].addr == addr) {
 			if(bp)
@@ -226,7 +226,7 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 			return 0;
 		}
 
-		if(ps.bps[i].addr == 0)
+		if ((bp_free == -1) && (ps.bps[i].addr == 0))
 			bp_free = i;
 	}
 /* TODO: hardware registers are not supported everywhere. bp->hw = 0 for the rest! */
@@ -264,6 +264,7 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 	ps.bps_n++;
 
 	return bp_free;
+	//return bp_free;
 }
 
 void debug_bp_reload_all()

@@ -202,8 +202,8 @@ int search_range(char *range)
 	search_cmdhit = config_get("cmd.hit");
 	search_count = (int)config_get_i("cfg.count");
 	search_flag = (int)config_get("search.flag");
-	search_from = (int)config_get("search.from");
-	search_to = (int)config_get("search.to");
+	search_from = config_get_i("search.from");
+	search_to = config_get_i("search.to");
 	search_verbose = (int)config_get("search.verbose");
 
 	nhit = 0;

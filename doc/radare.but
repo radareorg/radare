@@ -1527,6 +1527,7 @@ The basic 'portable' assembler instructions can be listed with 'rasm -l':
 
 \H{rasm-asm} Assemble
 
+You can assemble instructions
 TODO : from file, inline
 
 \H{rasm-dasm} Disassemble

@@ -484,6 +484,9 @@ struct program_t *code_analyze(u64 seek, int depth)
 		code_analyze_r = &code_analyze_r_split;
 	else	code_analyze_r = &code_analyze_r_nosplit;
 
+	/* XXX fix hirroble bug in deep overflow :O */
+	if (depth>3) depth=3;
+
 	if (prg == NULL)
 		eprintf("Cannot create program\n");
 	else

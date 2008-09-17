@@ -179,7 +179,7 @@ void dr_init()
 		dr_set(i, 0);
 }
 
-int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
+int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
 {
 	int i;
 	unsigned long control = dr_get_control();
@@ -222,12 +222,12 @@ int arch_set_wp_hw_n(int dr_free, unsigned long addr, int type)
 }
 
 // TODO: Move to macros in .h
-int arch_set_wp_hw(unsigned long addr, int type)
+int arch_set_wp_hw(u64 addr, int type)
 {
 	return arch_set_wp_hw_n(-1, addr, type);
 }
 
-int arch_set_bp_hw(struct bp_t *bp, unsigned long addr)
+int arch_set_bp_hw(struct bp_t *bp, u64 addr)
 {
 	return arch_set_wp_hw(addr, DR_RW_EXECUTE);
 }
@@ -265,7 +265,7 @@ void dr_list()
 	}
 }
 
-int arch_bp_hw_state(unsigned long addr, int enable)
+int arch_bp_hw_state(u64 addr, int enable)
 {
 	unsigned long control;
 	int i;
@@ -310,7 +310,7 @@ int get_len_ins(char *buf, int len)
 	return ud_disassemble(&ud_obj);
 }
 
-int arch_set_bp_soft(struct bp_t *bp, unsigned long addr)
+int arch_set_bp_soft(struct bp_t *bp, u64 addr)
 {
 	char breakpoint = '\xCC';
 
