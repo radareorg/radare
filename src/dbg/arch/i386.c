@@ -682,6 +682,25 @@ int arch_print_fpregisters(int rad, const char *mask)
 		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);
 		cons_printf(" st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
 	}
+#if 0
+  /* from ida sdk */
+  struct user_fpregs_struct i387;
+  if ( qptrace(PTRACE_GETFPREGS, tid, 0, &i387) != 0 )
+    return false;
+
+  for (int i = 0; i < FPU_REGS_COUNT; i++)
+  {
+    uchar *fpu_float = (uchar *)i387.st_space;
+    fpu_float += i * 10;
+    *(long double *)values[R_ST0+i].fval = *(long double *)fpu_float;
+  }
+  values[R_CTRL].ival = ulong(i387.cwd);
+  values[R_STAT].ival = ulong(i387.swd);
+  values[R_TAGS].ival = ulong(i387.twd);
+
+  return true;
+#endif
+
 #endif
 
 	return ret;

@@ -334,6 +334,13 @@ void config_eval(char *str)
 	free(name);
 }
 
+static int config_bigendian_callback(void *data)
+{
+	struct config_node_t *node = data;
+	config.endian = node->i_value?1:0;
+	return 1;
+}
+
 static int config_zoombyte_callback(void *data)
 {
 	struct config_node_t *node = data;
@@ -633,10 +640,13 @@ void config_init(int first)
 	node = config_set("cfg.verbose", "true");
 	node->callback = &config_verbose_callback;
 #if LIL_ENDIAN
-	config_set("cfg.bigendian", "false");
+	node = config_set("cfg.bigendian", "false");
 #else
-	config_set("cfg.bigendian", "true");
+	node = config_set("cfg.bigendian", "true");
 #endif
+	node->callback = &config_bigendian_callback;
+
+	config.endian = config_get("cfg.bigendian");
 	config_set("cfg.inverse", "false");
 	config_set_i("cfg.analdepth", 6);
 	config_set("file.insert", "false");

@@ -37,6 +37,7 @@ DESCRIPTION
     gdbx        GDB shell interface 'gdbx://program.exe args' )
     shm         shared memory ( shm://key )
     mmap        memory mapped device ( mmap://file )
+    malloc      memory allocation ( malloc://size )
     remote      TCP IO ( listen://:port or connect://host:port )
     winedbg     Wine Debugger interface ( winedbg://program.exe )
     socket      socket stream access ( socket://host:port )
@@ -66,6 +67,17 @@ FEATURES
      - C unsigned char array
      - execute shellcode (for local testing)
 
+
+   rasm
+
+   - commandline assembler/disassembler
+     - supports x86, olly, java, powerpc...
+     - can support any other arch supported by GAS using 'rsc asm'
+     - assembling from text file to raw object
+     - you can specify the offset and endian manually
+   - can disassemble from an hexpair string
+
+
    rabin
 
     - show information about ELF/PE/MZ/CLASS files
@@ -78,7 +90,7 @@ FEATURES
       - checksums
     - integration with radare core
 
-   hasher
+   rahash
 
     - generates and checks block checksums of a file
     - can hash from stdin

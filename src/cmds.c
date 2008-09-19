@@ -931,6 +931,7 @@ CMD_DECL(code)
 	return 0;
 }
 
+#if 0
 CMD_DECL(endianess)
 {
 	char *text = input;
@@ -943,6 +944,7 @@ CMD_DECL(endianess)
 	D eprintf("endian = %d %s\n", config.endian, (config.endian)?"big":"little");
 	return 0;
 }
+#endif
 
 static void radare_set_limit(char *arg)
 {
