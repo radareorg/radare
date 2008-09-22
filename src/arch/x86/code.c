@@ -38,9 +38,24 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	aop->type = AOP_TYPE_UNK;
 
 	switch(bytes[0]) {
+	case 0x8b:
+		switch(bytes[1]) {
+		case 0x45:
+		case 0x55:
+			/* mov -0xc(%ebp, %eax */
+			aop->ref = (u64)(-((char)bytes[2]));
+			aop->stackop = AOP_STACK_LOCAL_GET;
+			break;
+		case 0xbd:
+			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			//aop->ref = -(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
+			aop->stackop = AOP_STACK_LOCAL_GET;
+			break;
+		}
 	case 0x89: // move
 		switch(bytes[1]) {
 		case 0x45:
+		case 0x4d: //  894de0          mov [ebp-0x20], ecx 
 		case 0x55:
 			aop->stackop = AOP_STACK_LOCAL_SET;
 			aop->ref = (u64)-((char)bytes[2]);
@@ -232,16 +247,6 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		}
 		aop->type = AOP_TYPE_STORE;
 		break;
-	case 0x8b:
-		if (bytes[1]==0x45) {
-			/* mov -0xc(%ebp, %eax */
-			aop->ref = (u64)(-((char)bytes[2]));
-			aop->stackop = AOP_STACK_LOCAL_GET;
-		}else if(bytes[1]==0xbd) {
-			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
-			//aop->ref = -(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
-			aop->stackop = AOP_STACK_LOCAL_GET;
-		}
 	case 0x82:
 		aop->type = AOP_TYPE_ADD;
 		break;

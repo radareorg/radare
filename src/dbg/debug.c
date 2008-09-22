@@ -459,20 +459,30 @@ int debug_stepret()
 
 int debug_contu(const char *input)
 {
+	int is_user;
+
 	if (debug_cont_until(input))
 		return 0;
 
 	radare_controlc();
 	ps.verbose = 0;
 	while(!config.interrupted && ps.opened && debug_step(1)) {
-		if (is_usercode(arch_pc(ps.tid)))
+#if 0
+eprintf(". (0x%08llx)\n", arch_pc(ps.tid));
+radare_cmd(".!regs*",0);
+radare_cmd("pd 1 @ eip",0);
+#endif
+		is_user = is_usercode(arch_pc(ps.tid));
+		if (is_user)
 			return 0;
 	}
 	radare_controlc_end();
 	ps.verbose = 1;
 
-	if (config_get("trace.log"))
-		trace_add((addr_t)arch_pc(ps.tid));
+	if (is_user) {
+		if (config_get("trace.log"))
+			trace_add((addr_t)arch_pc(ps.tid));
+	}
 
 	return 0;	
 }
@@ -1636,10 +1646,10 @@ int debug_cont_until(const char *input)
 {
 	u64 addr = input?get_math(input):0;
 
-	//eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
+		eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
 		bp = debug_bp_set(NULL, addr,config_get_i("dbg.hwbp"));
 		debug_cont(NULL);
 		debug_bp_restore(bp);

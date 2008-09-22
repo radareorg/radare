@@ -827,7 +827,9 @@ int debug_dispatch_wait()
 		eprintf("\n\n______________[ process finished ]_______________\n\n");
 		//ps.opened = 0;
 		kill(ps.tid, SIGKILL);
-		debug_load();
+		sleep(1);
+		eprintf("Use !load or ^C to reload\n");
+		config.interrupted=1;
 	} else if(WIFSTOPPED(status)) {
 		if(debug_getsignal(&WS(si)) == 0) {
 			if (event_is_ignored(WS_SI(si_signo))) {
