@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007, 2008
  *       pancake <@youterm.com>
- *       esteve <@pof.eslack.org>
+ *       esteve <@eslack.org>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ static int hit_idx = 0;
 void radare_search_seek_hit(int idx)
 {
 	flag_t *flag;
-	u8 buf[64];
+	char buf[64];
 
 	sprintf(buf, "hit0_%d", hit_idx);
 	flag = flag_get(buf);
@@ -107,10 +107,15 @@ int radare_search_asm(const char *str)
 	return 0;
 }
 
+static int align = 0;
+
 static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 {
 	char flag_name[128];
 	u64 off = config.seek;
+
+	if (align != 0 && where%align != 0)
+		return 1;
 
 	if (search_count && nhit >= search_count)
 		return 1;
@@ -208,6 +213,7 @@ int search_range(char *range)
 
 	nhit = 0;
 	t = binparse_new();
+	align = config_get_i("search.align");
 	t->callback = &radare_tsearch_callback;
 	len = strlen(range);
 	// foreach token in range

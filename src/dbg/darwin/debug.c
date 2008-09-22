@@ -19,30 +19,8 @@
  *
  */
 
-#if 0
-#define PT_TRACE_ME     0       /* child declares it's being traced */
-#define PT_READ_I       1       /* read word in child's I space */
-#define PT_READ_D       2       /* read word in child's D space */
-#define PT_READ_U       3       /* read word in child's user structure */
-#define PT_WRITE_I      4       /* write word in child's I space */
-#define PT_WRITE_D      5       /* write word in child's D space */
-#define PT_WRITE_U      6       /* write word in child's user structure */
-#define PT_CONTINUE     7       /* continue the child */
-#define PT_KILL         8       /* kill the child process */
-#define PT_STEP         9       /* single step the child */
-#define PT_ATTACH       10      /* trace some running process */
-#define PT_DETACH       11      /* stop tracing a process */
-#define PT_SIGEXC       12      /* signals as exceptions for current_proc */
-#define PT_THUPDATE     13      /* signal for thread# */
-#define PT_ATTACHEXC    14      /* attach to running process with signal exception */
-
-#define PT_FORCEQUOTA   30      /* Enforce quota for root */
-#define PT_DENY_ATTACH  31
-#define PT_FIRSTMACH    32      /* for machine-specific requests */
-#endif
-
-
 #define USE_PTRACE 0
+
 #define __addr_t_defined
 
 #include "../mem.h"
@@ -78,6 +56,7 @@ static exception_data_t exception_data;
 static mach_port_t exception_port; 
 static int task = 0;
 extern int errno;
+static int inferior_in_ptrace = 1;
 
 /* SIGCHLD handler */
 void child_handler(int pid)
@@ -140,89 +119,6 @@ int darwin_prot_to_unix(int prot)
 		return 7; // UNKNOWN
 	}
 }
-#if 0
-
-struct syscall_t {
-  char *name;
-  int num;
-  int args;
-} syscalls_linux_powerpc[] = {
-  { "exit", 1, 1 },
-  { "fork", 2, 0 },
-  { "read", 3, 3 },
-  { "write", 4, 3 },
-  { "open", 5, 3 },
-  { "close", 6, 1 },
-  { "waitpid", 7, 3 },
-  { "creat", 8, 2 },
-  { "link", 9, 2 },
-  { "unlink", 10, 1 },
-  { "execve", 11, 3},
-  { "chdir", 12, 1},
-  { "getpid", 20, 0},
-  { "setuid", 23, 1},
-  { "getuid", 24, 0},
-  { "ptrace", 26, 4},
-  { "access", 33, 2},
-  { "dup", 41, 2},
-  { "brk", 45, 1},
-  { "signal", 48, 2},
-  { "utime", 30, 2 },
-  { "kill", 37,2 },
-  { "ioctl", 54, 3 },
-  { "mmap", 90, 6},
-  { "munmap", 91, 1},
-  { "socketcall", 102, 2 },
-  { "sigreturn", 119, 1 },
-  { "clone", 120, 4 },
-  { "mprotect", 125, 3},
-  { "rt_sigaction", 174, 3},
-  { "rt_sigprocmask", 175, 3},
-  { "sysctl", 149, 1 },
-  { "mmap2", 192, 6},
-  { "fstat64", 197, 2},
-  { "fcntl64", 221, 3},
-  { "gettid", 224, 0},
-  { "set_thread_area", 243, 2},
-  { "get_thread_area", 244, 2},
-  { "exit_group", 252, 1},
-  { "accept", 254, 1},
-  { NULL, 0, 0 }
-};
-#endif
-
-int arch_print_syscall()
-{
-#if 0
-	unsigned int sc;
-	int i,j;
-
-	/* read 4 previous bytes to ARM_pc and get syscall number from there */
-	debug_read_at(ps.tid, &sc, 4, arch_pc()-4);
-	sc<<=8; // drop opcode
-	for(i=0;syscalls_linux_powerpc[i].num;i++) {
-		if (sc == 0x900000 + syscalls_linux_powerpc[i].num) {
-			printf("%s ( ", syscalls_linux_powerpc[i].name);
-			j = syscalls_linux_powerpc[i].args;
-			/*
-			if (j>0) printf("0x%08x ", R_EBX(regs));
-			if (j>1) printf("0x%08x ", R_ECX(regs));
-			if (j>2) printf("0x%08x ", R_EDX(regs));
-			if (j>3) printf("0x%08x ", R_ESI(regs));
-			if (j>4) printf("0x%08x ", R_EDI(regs));
-			*/
-			break;
-		}
-	}
-	return sc-0x900000;
-#endif
-}
-
-
-// TODO: to be removed
-int debug_ktrace()
-{
-}
 
 int debug_detach()
 {
@@ -230,7 +126,6 @@ int debug_detach()
 	//inferiorinferior_in_ptrace = 0;
 	return 0;
 }
-
 
 void inferior_abort_handler(int pid)
 {
@@ -299,8 +194,6 @@ int debug_attach(int pid)
 	}
 	return 0;
 }
-
-static int inferior_in_ptrace = 1;
 
 int debug_contp(int tid)
 {
@@ -383,6 +276,19 @@ int debug_contfork(int tid) { eprintf("not work yet\n"); return -1; }
 int debug_contscp() { eprintf("not work yet\n"); return -1; }
 int debug_status() { eprintf("not work yet\n"); return -1; }
 
+int debug_fork()
+{
+	int forksyscall = 2; // XXX must be collected from foo
+	return arch_syscall(ps.tid, forksyscall);
+	// XXX restore child process memory
+}
+
+int debug_ktrace()
+{
+	/* TODO ? */
+}
+
+
 int debug_pstree(char *input)
 { 
 	int tid = atoi(input);
@@ -431,13 +337,6 @@ static pid_t start_inferior(int argc, char **argv)
 	fprintf(stderr, "Failed to start inferior.\n");
 	return 0;
 }
-
-#if 0
-int debug_set_bp_mem(int pid, u64 addr, int len)
-{
-	// TODO: not used
-}
-#endif
 
 int debug_fork_and_attach()
 {
@@ -811,7 +710,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 	}
 }
 
- int debug_single_setregs(pid_t tid, regs_t *regs)
+int debug_single_setregs(pid_t tid, regs_t *regs)
 {
 	fprintf(stderr, "debug_single_setregs: TODO\n");
 	return 0;

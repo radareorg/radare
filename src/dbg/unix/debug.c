@@ -792,7 +792,6 @@ int debug_dispatch_wait()
 			goto do_repeat;
 	}
 	ps.tid = tid;
-	
 
 #if __i386__
 	debug_getregs(ps.pid, &(WS(regs)));

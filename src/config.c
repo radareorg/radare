@@ -611,6 +611,7 @@ void config_init(int first)
 
 	config_set_i("search.from", 0);
 	config_set_i("search.to", 0);
+	config_set_i("search.align", 0);
 	config_set("search.flag", "true");
 	config_set("search.verbose", "true");
 
