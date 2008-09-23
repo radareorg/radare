@@ -5,6 +5,7 @@
 
 # TODO: use 64 bit here
 
+from traceback import *
 from socket import *
 import sys
 from struct import *
@@ -20,22 +21,24 @@ RMT_CLOSE  = 5
 RMT_SYSTEM = 6
 RMT_REPLY  = 0x80
 
+ADDR="I"
+#ADDR="Q" # 64 bits
+
 offset = 0
 
 def handle_packet(c, key):
 	print "Handling packet %x",key
 	if key == RMT_OPEN:
-		print "OPEN command"
-		flags = c.recv(1)
-		lun = c.recv(1)
-		print dir(ord(lun[0]))
-		file = c.recv(ord(lun[0]))
+		buffer = c.recv(2)
+		(flags, length) = unpack(">BB", buffer)
+		file = c.recv(length)
 		buf = pack(">Bi", key|RMT_REPLY, FD)
 		c.send(buf)
-	elif key == 2:
+	elif key == RMT_READ:
 		print "READ command"
-		buf = c.recv(4) # handle endian here length
-		lun = unpack(">i", buf)
+		buffer = c.recv(4) # handle endian here length
+		(length,) = unpack(">%c"%(ADDR), buffer)
+		# TODO: get buffer and length
 		str = "patata"
 		lon = 6;
 		buf = pack(">Bis", key|RMT_REPLY, lon, str)
@@ -43,10 +46,10 @@ def handle_packet(c, key):
 	elif key == RMT_WRITE:
 		print "WRITE command"
 	elif key == RMT_SEEK:
-		print "SEEK command"
-		type = c.recv(1)
-		seek = c.recv(4)
-		buf = pack(">BBBBB", key|RMT_REPLY, ord(seek[0]), ord(seek[1]), ord(seek[2]), ord(seek[3]));
+		buffer = c.recv(5)
+		(type, seek) = unpack(">B%c"%(ADDR), buffer)
+		print "SEEK command (type=%d)"%type
+		buf = pack(">B%c"%(ADDR), key|RMT_REPLY, seek)
 		c.send(buf)
 	elif key == RMT_CLOSE:
 		print "CLOSE command"
@@ -70,6 +73,9 @@ def handle_client(c):
 		try:
 			handle_packet(c, ord(c.recv(1)))
 		except KeyboardInterrupt:
+			break
+		except TypeError, foo:
+			print_stack()
 			break
 #		except:
 #			print "HandleClientErrorOops (%s)"%(sys.exc_info()[0])
