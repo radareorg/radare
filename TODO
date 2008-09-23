@@ -7,50 +7,142 @@
 
 ===========================================================
 
+=== WORK FOR 1.0 ===
 
-* radare graphs should be outputted properly for radiff -r
+* Added labels in history
+* hit interpolation
+  - search <body> and </body>
+  - get the interpolation of the results and show a list of it
+  (o'really?)
+* store position of graph nodes in view
+  - support to remove fixed nodes
+  - store node positions (label = x,y)
+  - show comments in a separated toggleable box:
+* Allow to run shellcodes on debugged process.
+  (autodetect .s or raw binary)
+  - read shellcode from a file 
+    should support .c or .s or raw or elf _start
+* support size of pointer with [xxx] get_offset expressions
+  - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
+  - also make use of cfg.endian
+* pD -> 'decompile or sthg like that'
+* s <unexistant-flag> -> do not seek
+* wx `pW 33 -> the ` doesnt works
+* trace.libcode = trace libcode or not?
+  - dbg.steplibs = true|false ??
+  * dbg.stepolibs = true ;  step over non-user code?
+  - automatic stepu 
+* if myinc > len myinc = 1;
+  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
+    recover the 0 position
+* disasm is incorrect. always returns the negative value :OO
+  - 03 e4 f0 = and esp, 0xf0
+  but must be= and esp, 0xfffffff0
+* implement bindiff patchers
+* Make the color palette more accessible to the users
+  - integrated with eval config in visual Ve
+* syscall-flag using userdefined table (in file)
+   - must use asm.os to get proper syscall table
+   - must be implemented in code analysis!!
+* BSD imports with dietelf doesnt works well
+* fix dietline for rasm -d 90
+* make 'pm' work like (pydoc struct)
+* support for array of structures
+* ascii-nops for rasc
+* export graph analysis to an rdb to use radiff -r
+  - export a graph to a file using 'Rf' command
+* String references (data refs)
+* Add !int opcode to call a syscall
+  !int eax=30 ebx=0x8048400
+  - store/restore regs
+  - shows return value in eax before restoring regs
+* folders doesnt works well - * folders are broken
+* radare malloc://30 && e file.write=1 && wx 90 = segfaults
+* RASM is buggy about relative/absolute offsets
+* split nodes of the graph code analysis
 * Make 'Cs' autodetect multiple strings
-* Vdf doesnt detect func size properly
-* store from->to list for all the jumps/calls analized inside functions
-  - use them to resolve xrefs at runtime only for functions)
-
-java bug:
-  0x000001EE  |           b80007           invokestatic java/lang/Object (null)
-
--> this should be a call to callme()
-
-* imp_foo are not ok in dietelf :OO.
+* dump first N bytes per function (ida makes 32 first ones)
 * rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
  - be alphanumeric
  - avoid \n, avoid \r
-
-* documentate dbg.focus
-* documentate zoom.from, zoom.to better (zoom.size is removed)
-* doc search.from and search.to
-
-* make gdb connector work happily
-
+* !bpc -> execute command when hitting breakpoint
+  - stop on breakpoint after N hits
+  * breakpoint callbacks:
+   - integrated with !wp too
+    A hook to an api can be emulated from the debugger, no need to inject
+    code everywhere, just BP and change regs
+   - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
+* asm.regs2 or asm.regsegments = true ( to show cs, ds, gs, ... )
+* !dall should pseudo-initialize the !maps internal structures
+  - identify page type by contents (ELF header and so)
+* imp_foo are not ok in dietelf :OO.
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
+* Vdf doesnt detect func size properly
 * XC floating not happy
+ - xc is crappy! no args, some vals are invalid
 * Watchpoints:
   - Make !wp work with ? conditionals
   - Make dbg.wptrace = make it stop when there's a breakpoint
   - support for %eax = %ebx f.ex
-
   - ^C should be always catched!!
+* 'u*' - undo all changes (should be 'uw *') ?
+  - allow to remove undo changes (ur -> undo reset?)
+* !contuh doesnt works :O
+ - implement continue until cursor
+* add margin right to the text
+  - or margin left to the shell code
+  - cut all lines at column scr.width
+  - add screen.hshift (horitzontal scrolling)
+* !lib should be for >1.0
+  - !fork should be fixed
+* powerpc OSX (also for ARM)
+  - !regs must show and flag proper regs!!
+* arrows+shift in visual
+* 'x' char should not be accepted as hexpair
+* asm.stackpointer (show stack pointer value like in IDA)
+* Give info about stack size!!
+
+java bug:
+  0x000001EE  |           b80007           invokestatic java/lang/Object (null)
+-> this should be a call to callme()
+
+* documentate inverse
+* documentate dbg.focus
+* documentate zoom.from, zoom.to better (zoom.size is removed)
+* doc search.from and search.to
+* documentate wX
+* deprecate asm.follow for scr.seek or so !!!
+ - documentation for this
+
+===========
+
+>1.0 STUFF
+
+* timezone for timestamps
+* debugger
+  - follow child or parent
+
+* call <flag> arg arg arg
+ - done with lua/python
+
+* store from->to list for all the jumps/calls analized inside functions
+  - use them to resolve xrefs at runtime only for functions)
+
+
+* make gdb connector work happily
 
 * Memory ranges
   - in core
   - define working memory ranges (0-100,400-500)
   - allow to enable/disable
   - useful for searching
+  * define ranges of the file to analize (.text by default...)
+    mr - memory ranges ??
+    - autodetected using !dall algorithm
+    - but if its a static binary ...would be cool to define a way
+      to only analyze the calls inside a static bin
 
-* 'u*' - undo all changes (should be 'uw *') ?
-
-* !contuh doesnt works :O
- - implement continue until cursor
-
-* Build ruby stuff with waf also!
+* Build ruby stuff with waf also! (no ruby support for waf)
 
 * Signal handling should idenitfy backtracing and siginfo and so from here or so
 
@@ -62,26 +154,15 @@ java bug:
            exit(EXIT_FAILURE);
        }
 
-* add margin right to the text
-  - or margin left to the shell code
-  - cut all lines at column scr.width
-  - add screen.hshift (horitzontal scrolling)
+* search backward (esteve?)
+  - search backward in memory (invert string and add inc as argument for binparse)
+  - useful to static analyze interrupt calls
 
-* debugger
-  - follow child or parent
-  - ignore other threads
-
-* store xrefs
 * add support for strings with "" in CC for.example
-
-* powerpc
-  - !regs must show and flag proper regs!!
 
 * !lib /lib/libm.so.1   ; use 'uselib' on linux and dlopen on *bsd MUAHA
   - implement !call
   - must allocate strings
-
-* export a graph to a file using 'Rf' command
 
 0- store all the stack analysis info in a struct per-function
    and before removing it store a comment or metadata at the
@@ -89,38 +170,9 @@ java bug:
 
 * bash autocompletion script for rsc and rfile
 
-* arrows+shift in visual
-* 'x' char should not be accepted as hexpair
-
-* search backward (esteve?)
-  - search backward in memory (invert string and add inc as argument for binparse)
-  - useful to static analyze interrupt calls
-
-* BSD imports with dietelf doesnt works well
-
-* deprecate asm.follow for scr.seek or so !!!
- - documentation for this
-
-* define ranges of the file to analize (.text by default...)
-  mr - memory ranges ??
-  - autodetected using !dall algorithm
-  - but if its a static binary ...would be cool to define a way
-    to only analyze the calls inside a static bin
-
 * analize previous pushes or stack accesses before a call
   to a function (identify function arguments)
   - not only by the ones accessed in the code)
-
-* asm.stackpointer (show stack pointer value like in IDA)
-
-* !bpc -> execute command when hitting breakpoint
-  - stop on breakpoint after N hits
-  * breakpoint callbacks:
-   - integrated with !wp too
-    A hook to an api can be emulated from the debugger, no need to inject
-    code everywhere, just BP and change regs
-   - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
-* asm.regs2 or asm.regsegments = true ( to show cs, ds, gs, ... )
 
 // TODO: store data and show (flag.data) in last_print_format
 
@@ -130,12 +182,6 @@ Debugger:
 	* load libraries on the child process
 	* !contall
 	* !cont <pid> ???
-	* Add !int opcode to call a syscall
-	  !int eax=30 ebx=0x8048400
-	  - store/restore regs
-	  - shows return value in eax before restoring regs
-	* call <flag> arg arg arg
-	 - done with lua/python
 	* breakpoints
 	  - command
           - stop at count
@@ -152,10 +198,8 @@ Rasc:
 	* rasc - helper for format strings (orly?)
 	* rasc : send file and execute (pitbull inside!)
  	* add selfsigstop/stackperm shellcodes in lua script or rasc
-	* rasc with ascii-nops
 
 Rasm:
-	* RASM is buggy about relative/absolute offsets
 	* Support for macros? Write my own cpp? Use cpp?
 	* olly assembler segfaults everywhere everytime :OO
 	* rasm : Add .db, .byte, .dw, .dd directives or so, .string
@@ -163,35 +207,17 @@ Rasm:
 	  - be like a cmdline gas. use the internal code of gnu (stripped down plz!)
 
 Core:
-	BUGS:
-	* cons.c (dietline) should work fine without readline and without verbose) (malloc should be happy)
-	* radare malloc://30 && e file.write=1 && wx 90 = segfaults
-	* folders doesnt works well
 	* rsc monitor not so cool from teh graph view or so
-	* disasm is incorrect. always returns the negative value :OO
-	  - 03 e4 f0 = and esp, 0xf0
-	  but must be= and esp, 0xfffffff0
-	* more wrong disass 
-	  8d9574ffffff    lea edx, [ebp-0x8c] 
-
-	TODO:
 	* '<' and '>' commands converted in prefix modifiers
 	* remove project strange commands (use radare ones) -- ?? sure? is not secure!
 	(avoid system and pipes?!?) .. so drop '!' and '>' chars from input strings that is
 	* reload project file if changes
-	* folders are broken
 	* do not create trace.log by default
 	* Allow to edit flags in Vt
-	* Make the color palette more accessible to the users
-	  - integrated with eval config in visual Ve
 
 Rsc:
-	* implement bindiff patchers
   	- fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 	* pcap/radare for fun
-	* syscall-flag  using userdefined table (in file)
-	   - must use asm.os to get proper syscall table
-	   - must be implemented in code analysis!!
 
 Grava:
 	3- global data in graphs - allow to run specific commands in nodes
@@ -202,8 +228,6 @@ Grava:
 	3d00800000      cmp eax, 0x8000
 	833d0cc4050803  cmp dword [0x805c40c], 0x3
 	bf0d9b0508      mov edi, 0x8059b0d
-
-* Add 'bookmarked flags'
 
 Radare:
     + Dwarf support:
@@ -292,11 +316,6 @@ DWARF
 * file.insertblock - TODO: implement io.c radare_write
   - must interact with search engine too for search and replace
 
-* fm to move a flag to another flagspace
-  > fs foo
-  > fm sym_foo
-  # makes sym_foo live in foo flagspace
-
 * Add 'strings-cmt' to add comments in strings and use Cs to convert them
   - Make 'Cs' be more intelligent for multiple strings
   - Support for cursor range split
@@ -311,7 +330,6 @@ DWARF
   - if bp == 1 !jmp 0x8084840 - redirect code execution on certain points
   - stored in file
     [from-address] \t  [to-address]
- * xc is crappy! no args, some vals are invalid
  * add asm.arch=aop -> analyze code engine to disassemble
  * 'ar' -> anal reset -> reset vm
  * populate the use of cmd.flag (in prompt and so)
@@ -364,13 +382,6 @@ Open streams
   - configure bps and so
   $ radare /dev/ttyS0
 
-Debugger
-========
-* trace.libcode = trace libcode or not?
-  - dbg.steplibs = true|false ??
-  * dbg.stepolibs = true ;  step over non-user code?
-  - automatic stepu 
-
 /////////////////////////////////////////////////////////////////////////
 /* Fetch the thread-local storage pointer for libthread_db.  */
 ps_err_e
@@ -404,7 +415,6 @@ Core
 
 (gdb) break ptrace if $r3 == 31 -> !wp equivalent. better docu/integration
 
-
 ARM
 ===
 * arm backtrace
@@ -414,15 +424,10 @@ ARM
 BUGS:
 =====
  * !pids must control non-printable chars
-* if myinc > len myinc = 1;
-  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
-    recover the 0 position
-* wx `pW 33 -> the ` doesnt works
 * keybinding assignment dosnt workz
   - UGLY
 * wa doesnt handle file resize
 * rsc monitor doesnt works as expected
-* s <unexistant-flag> -> do not seek
 * !ret should use !bt if possible
 
 Random:
@@ -457,9 +462,6 @@ Graphs
 * identify nodes with 'ret' in graph
 * identify nodes with 'cmp' in graph
 
- * support to remove fixed nodes
- * store node positions (label = x,y)
-  - show comments in a separated toggleable box:
 
    +-------------+
    | 0x0804483   |-----------.
@@ -499,10 +501,6 @@ Graphs
 * RDB TO GML
 * circle to group looped code blocks in graph view
 
-* support size of pointer with [xxx] get_offset expressions
-  - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
-  - also make use of cfg.endian
-
 ---------------------------
 * do not sigalarm in visual
 * new flag type: temporal 
@@ -519,8 +517,6 @@ Search
 
 Core
 ====
-* multiple instancies of the core handled with a pointer to it.
-  - use more pointer tables
 * Add views/states/.. (S (switch) command) (open multiple files)
   - A view is just a stored copy of the config_t structure
   - and store different states for the same file
@@ -576,22 +572,11 @@ Debugger
 	char * register_name;
 	uchar *shellcode
   - all shellcodes must be coded and injected in the same way
-* Allow to run shellcodes on debugged process.
-  (autodetect .s or raw binary)
-  - read shellcode from a file 
-    should support .c or .s or raw or elf _start
 
 * make libgdb2fd work
 
 * xrefs does not works for string references
   - make xrefs support base address
-  - integrate xrefs into the core (debugger needs love too!)
-  [ xref struct ] ; basic jump table
-   - u64 from
-   - u64 to   -> nothing more :)
-  - only for valid analyzed code .. uh?
-  - data xrefs is not detected here. uh?
-
 
 ===========================================================
 
@@ -719,6 +704,10 @@ mips:
 
 Split radare into libraries accessible by VAPI interfaces. (no gobject dependency, but an OO C one).
 
+* make it be an API 
+  radare_t *r = radare_new ("/bin/ls", "ro");
+  radare_seek(r, 0x100);
+  ...
 
 * full charsets support (search strings in utf8, etc) using iconv
 * multithread traces <pid>:<addr>
