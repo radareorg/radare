@@ -84,6 +84,16 @@ int radare_system(const char *cmd)
 #endif
 }
 
+int radare_systemf(const char *format, ...)
+{
+	char buf[4096]
+	va_list ap;
+	va_start(ap, format);
+	snprintf(buf, 4095, format, ap);
+	radare_system(buf);
+	va_end(ap);
+}
+
 void radare_init()
 {
 	config_init(1);

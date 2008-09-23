@@ -20,6 +20,7 @@
  */
 
 #define USE_PTRACE 0
+#define EXCEPTION_PORT 0
 
 #define __addr_t_defined
 
@@ -178,6 +179,7 @@ int debug_attach(int pid)
 	}
 	fprintf(stderr, "Thread count: %d\n", inferior_thread_count);
 
+#if EXCEPTION_PORT
 	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &exception_port) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to create exception port.\n");
 		return -1;
@@ -192,6 +194,7 @@ int debug_attach(int pid)
 		fprintf(stderr, "Failed to set the inferior's exception ports.\n");
 		return -1;
 	}
+#endif
 	return 0;
 }
 
@@ -767,11 +770,13 @@ int debug_dispatch_wait()
 
 	fprintf(stderr, "Waiting for events... (kill -STOP %d to get prompt)\n",ps.tid);
 
+#if EXCEPTION_PORT
 	err = mach_msg(&msg, MACH_RCV_MSG, 0, sizeof(data), exception_port, 1, MACH_PORT_NULL);
 	if (err != KERN_SUCCESS) {
 		fprintf(stderr, "Event listening failed.\n");
 		return 1;
 	}
+#endif
 
 	fprintf(stderr, "Exceptional event received.\n");
 

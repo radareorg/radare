@@ -136,9 +136,10 @@ def configure(conf):
 		if conf.env['HAVE_LIBLUA51'] != 1:
 			Options.options.HAVE_LIBLUA = False
 		else:
-			conf.env['HAVE_LIBLUA_STR'] = "-llua5.1"
+			conf.env['HAVE_LIBLUA_LD'] = "-llua5.1"
+			conf.env['HAVE_LIBLUA_CC'] = "-I /usr/include/lua5.1"
 	else:
-		conf.env['HAVE_LIBLUA_STR'] = "-llua"
+		conf.env['HAVE_LIBLUA_LD'] = "-llua"
 	conf.define('HAVE_LIBLUA', Options.options.HAVE_LIBLUA)
 
 	rl2 = conf.create_library_configurator()

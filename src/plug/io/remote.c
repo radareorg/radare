@@ -18,6 +18,8 @@
  *
  */
 
+// TODO: port to 64 tits
+
 #include <plugin.h>
 #include <utils.h>
 #include <socket.h>

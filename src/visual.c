@@ -189,10 +189,9 @@ CMD_DECL(edit_screen_filter)
 	const char *ed = config_get("cfg.editor");
 	if (!strnull(ed)) {
 		/* TODO: Handle errors, put a different file name for */
-		sprintf(buf, "%s ~/.radare/screen-filter.txt", ed);
-		system(buf);
-		sprintf(buf, "%s/.radare/screen-filter.txt", getenv("HOME"));
+		snprintf(buf, 1023, "%s/.radare/screen-filter.txt", getenv("HOME"));
 		config_set("file.scrfilter", buf);
+		radare_systemf("%s %s", ed, buf);
 		return 0;
 	} else {
 		eprintf("No cfg.editor defined\n");

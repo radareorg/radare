@@ -147,10 +147,10 @@ void rabin_show_info(const char *file)
 			       ELF_CALL(dietelf_get_machine_name,bin),
 			       ELF_CALL(dietelf_get_file_type,bin));
 
-			printf("Stripped:        %s",
+			printf("Stripped:        %s\n",
 				(ELF_CALL(dietelf_get_stripped,bin))?"Yes":"No");
 
-			printf("Static:          %s",
+			printf("Static:          %s\n",
 				(ELF_CALL(dietelf_get_static,bin))?"Yes":"No");
 		}
 

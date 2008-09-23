@@ -383,10 +383,8 @@ CMD_DECL(analyze)
 			base = 0x8048000; // XXX must be section base
 		}
 #endif
-		snprintf(buf, 4095, "%s -a %s -b %lld %s %lld",
+		radare_systemf("%s -a %s -b %lld %s %lld",
 			config_get("asm.xrefs"), config_get("asm.arch"), base, file, seek);
-		eprintf("system(%s)\n", buf);
-		radare_system(buf);
 #if DEBUGGER
 		if (config.debug) {
 			unlink(file);
@@ -1704,10 +1702,8 @@ CMD_DECL(shell)
 
 	prepare_environment(input);
 	if (input[0]=='!')
-		radare_system(input+1);
-	else
-		ret = io_system(input);
-
+		ret = radare_system(input+1);
+	else ret = io_system(input);
 	destroy_environment(input);
 
 	return ret;

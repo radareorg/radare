@@ -7,6 +7,8 @@
 
 ===========================================================
 
+
+* radare graphs should be outputted properly for radiff -r
 * Make 'Cs' autodetect multiple strings
 * Vdf doesnt detect func size properly
 * store from->to list for all the jumps/calls analized inside functions
@@ -146,12 +148,6 @@ Rabin:
 	* entry vs entrypoint flag :O
 	* Full PE parser support
 
-Radiff:
-	* Entry point for the bin diffing utilities
-	- Supports byte-level diffing with differences
-	- Allows to diff code-level trees from radare RDB code
-	  analysis, that can be generated from IDA or radare.
-	
 Rasc:
 	* rasc - helper for format strings (orly?)
 	* rasc : send file and execute (pitbull inside!)
