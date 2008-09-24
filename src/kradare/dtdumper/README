@@ -1,0 +1,12 @@
+dtdumper v0.1.3
+---------------
+
+- This is a small utility to dump your GDT, LDT and IDT tables and print descriptors
+- Use make obsd on bsds systems
+- This userland version will not work with VMware/Xen/Kqemu running on a non VT-able
+  processor but should print out your VMware/Xen/Kqemu version. If not, please help me
+  to fill the database and send me an e-mail ;)
+- Some privileges are needed if you intend to dump some table. Getting the
+  tables' addresses or detecting VMware/Xen/Kqemu does'nt require any privilege.
+
+	- Julien TINNES <julien at cr0.org>
