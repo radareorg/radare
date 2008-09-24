@@ -1437,8 +1437,7 @@ CMD_DECL(prev)
 	u64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
-	else
-		off = get_math(input);
+	else	off = get_math(input);
 
 	if (off > config.seek)
 		config.seek = 0;
@@ -1458,8 +1457,7 @@ CMD_DECL(next)
 	u64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
-	else
-		off = get_math(input);
+	else	off = get_math(input);
 
 	config.seek += off;
 	if (config.limit && config.seek > config.limit)

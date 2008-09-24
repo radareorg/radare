@@ -28,6 +28,7 @@
 //#include <regex.h> // NOT PARSEABLE BY TCC :O
 #include <termios.h>
 #include <sys/wait.h>
+#include <stdarg.h>
 #include <netdb.h>
 #endif
 

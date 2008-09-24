@@ -78,7 +78,6 @@ static char* fd_readline ( int fd, char* line, int maxsize )
 	return line;
 }
 
-
 static int indent_count( int fd )
 {
 	int ret=0;
@@ -293,7 +292,7 @@ tokenizer* binparse_new_from_file(char *file)
 	for(i=0; (i<200) && (indent_count(fd) == 1); i++) {
 		//printf ("token-decl: %s\n",fd_readline ( fd, line, 300 ) );
 		fd_readline ( fd, line, 300 );
-		tlist=get_tok_list (  line, 300 ) ;
+		tlist = get_tok_list (  line, 300 ) ;
 		//print_tok_list ( tlist );
 		tllaux[i] = tlist;
 	}
@@ -301,6 +300,8 @@ tokenizer* binparse_new_from_file(char *file)
 	tll = binparse_new(i);
 	memcpy(tll->tls, tllaux, i * sizeof (tokenlist*));
 	tll->nlists = i;
+
+	close(fd);
 	
 	return tll ;
 }

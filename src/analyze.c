@@ -801,7 +801,7 @@ int analyze_function(int recursive, int report)
 				buf[0]='\0';
 				string_flag_offset(buf, aop.ref);
 				if (!report)
-					cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", aop.ref, seek, buf);
+					cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", seek, aop.ref, buf);
 				nrefs++;
 			}
 		}

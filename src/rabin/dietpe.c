@@ -27,27 +27,27 @@ int dietpe_list_sections( dietpe_pe_memfile* filein )
 	int i;
 
     if (rad)
-	printf("fs sections\n");
-    else
-	printf("==> Sections:\n");
-	for ( i = 0 ; i < filein->file_header->NumberOfSections ; i ++ )
-	{
-		printf ("\tname: %.8s\n\tVirtual Address 0x%x \n",&filein->section_headers[i].Name,filein->section_headers[i].VirtualAddress ) ;
-		printf ("\tVirtual Size: 0x%x\n",filein->section_headers[i].Misc.VirtualSize);
-		printf ("\tsize: 0x%x\n",filein->section_headers[i].SizeOfRawData);
-		printf ("\tfile offset: 0x%x\n",filein->section_headers[i].PointerToRawData );
-		printf ("\tCharacteristics: 0x%x\n",filein->section_headers[i].Characteristics);
-		if ( (filein->section_headers[i].Characteristics & 0x00000020 ) == 0x00000020 ) 
+		printf("fs sections\n");
+	else {
+		printf("==> Sections:\n");
+		for ( i = 0 ; i < filein->file_header->NumberOfSections ; i ++ )
 		{
-			printf ("\tCODE\n");
+			printf ("[%02i] name: %.8s\n\tVirtual Address 0x%x \n", i, &filein->section_headers[i].Name,filein->section_headers[i].VirtualAddress ) ;
+			printf ("\tVirtual Size: 0x%x\n",filein->section_headers[i].Misc.VirtualSize);
+			printf ("\tsize: 0x%x\n",filein->section_headers[i].SizeOfRawData);
+			printf ("\tfile offset: 0x%x\n",filein->section_headers[i].PointerToRawData );
+			printf ("\tCharacteristics: 0x%x\n",filein->section_headers[i].Characteristics);
+			if ( (filein->section_headers[i].Characteristics & 0x00000020 ) == 0x00000020 ) 
+			{
+				printf ("\tCODE\n");
+			}
+			if ( (filein->section_headers[i].Characteristics & PE_IMAGE_SCN_MEM_DISCARDABLE ) == PE_IMAGE_SCN_MEM_DISCARDABLE ) 
+			{
+				printf ("\tDiscarded\n");
+			}
+			printf ("\n");
 		}
-		if ( (filein->section_headers[i].Characteristics & PE_IMAGE_SCN_MEM_DISCARDABLE ) == PE_IMAGE_SCN_MEM_DISCARDABLE ) 
-		{
-			printf ("\tDiscarded\n");
-		}
-		printf ("\n");
 	}
-
 	return i;
 }
 
@@ -260,47 +260,44 @@ void dietpe_list_info ( dietpe_pe_memfile* filein )
 {
 	int i;
 
-	printf ("Info : \n" );
-	printf ("\tsize: %d\n", filein->fsize );
-		
-	printf ("\n-- dos header --\n");
-	printf ( "\te_magic: %.2s\n", &filein->dos_header->e_magic );	
-	printf ( "\te_sp: %x\n", &filein->dos_header->e_sp );	
-	printf ("\n-- file header --\n");
+	printf ("DOS header:\n");
+	printf (" e_magic:                 %.2s\n", &filein->dos_header->e_magic );	
+	printf (" e_sp:                    %x\n", &filein->dos_header->e_sp );	
+	printf ("File header:\n");
 	if ( filein->file_header->Machine == PE_IMAGE_FILE_MACHINE_ARM )
 	{
-		printf ( "\tMachine: ARM\n");
+		printf ( " Machine:                 ARM\n");
 	}
 	else
 	{
-		printf ( "\tMachine: 0x%x\n", filein->file_header->Machine );
+		printf ( " Machine:                 0x%x\n", filein->file_header->Machine );
 	//	return 1;
 	}
 
-	printf ( "\tNumber of sections: %d\n", filein->file_header->NumberOfSections);
-	printf ( "\tSize Of Optional Header: %d\n", filein->file_header->SizeOfOptionalHeader);
-	printf ( "\tPointerToSymbolTable: %x\n", filein->file_header->PointerToSymbolTable);
+	printf ( " Number of sections:      %d\n", filein->file_header->NumberOfSections);
+	printf ( " Size of optional header: %d\n", filein->file_header->SizeOfOptionalHeader);
+	printf ( " Pointer to symbol table: %x\n", filein->file_header->PointerToSymbolTable);
 	
 	
 	if ( filein->opt_header->Magic == 0x010b )
 	{
-		printf ("\n-- opt header --\n" );	
+		printf ("Opt header:\n" );	
 
 		
-		printf ("\tEntry point RVA: 0x%x\n",filein->opt_header->AddressOfEntryPoint );
-		printf ("\tPrefered Image Base: 0x%x\n",filein->opt_header->ImageBase );
-		printf ("\tSection alignment: %d\n",filein->opt_header->SectionAlignment );
-		printf ("\tFile alignment: %d\n",filein->opt_header->FileAlignment );
-		printf ("\tSize of Image: %d\n",filein->opt_header->SizeOfImage );
-		printf ("\tCheck sum: 0x%x\n",filein->opt_header->CheckSum );
-		printf ("\tFirst section at: 0x%x\n",filein->opt_header->SizeOfHeaders );	
+		printf (" Entry point RVA:         0x%x\n",filein->opt_header->AddressOfEntryPoint );
+		printf (" Prefered Image Base:     0x%x\n",filein->opt_header->ImageBase );
+		printf (" Section alignment:       %d\n",filein->opt_header->SectionAlignment );
+		printf (" File alignment:          %d\n",filein->opt_header->FileAlignment );
+		printf (" Size of Image:           %d\n",filein->opt_header->SizeOfImage );
+		printf (" Check sum:               0x%x\n",filein->opt_header->CheckSum );
+		printf (" First section at:        0x%x\n",filein->opt_header->SizeOfHeaders );	
 
-		printf ("\n\t-- data directory --\n" );	
+		printf (" Data directory:\n" );	
 		for ( i = 0 ; i < PE_IMAGE_NUMBEROF_DIRECTORY_ENTRIES ; i ++ ) 
 		{
 			if ( filein->opt_header->DataDirectory[i].Size != 0 )
 			{
-				printf ("\t\tdirectory %d, RVA 0x%x, size 0x%x\n",i,filein->opt_header->DataDirectory[i].VirtualAddress,filein->opt_header->DataDirectory[i].Size);
+				printf ("  Directory %d, RVA 0x%x, size 0x%x\n",i,filein->opt_header->DataDirectory[i].VirtualAddress,filein->opt_header->DataDirectory[i].Size);
 			}
 		}
 

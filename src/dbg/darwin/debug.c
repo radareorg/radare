@@ -142,7 +142,7 @@ task_t pid_to_task(int pid)
 	int err;
 
 	/* xlr8! */
-	if (old_pid != -1 && old_pid == pid)
+	if (old_task!= -1) //old_pid != -1 && old_pid == pid)
 		return old_task;
 
 	err = task_for_pid(mach_task_self(), (pid_t)pid, &task);
@@ -670,15 +670,14 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 		if (1==0 && rest) { /* XXX never pritn this info here */
 			if (num_printed == 0)
 				fprintf(stderr, "Region ");
-			else
-				fprintf(stderr, "   ... ");
-			   fprintf(stderr, " 0x%08llx - 0x%08llx %s (%s) %s, %s, %s",
-			   (u64)prev_address, (u64)(prev_address + prev_size),
-			   unparse_protection (prev_info.protection),
-			   unparse_protection (prev_info.max_protection),
-			   unparse_inheritance (prev_info.inheritance),
-			   prev_info.shared ? "shared" : " private",
-			   prev_info.reserved ? "reserved" : "not-reserved");
+			else	fprintf(stderr, "   ... ");
+			fprintf(stderr, " 0x%08llx - 0x%08llx %s (%s) %s, %s, %s",
+					(u64)prev_address, (u64)(prev_address + prev_size),
+					unparse_protection (prev_info.protection),
+					unparse_protection (prev_info.max_protection),
+					unparse_inheritance (prev_info.inheritance),
+					prev_info.shared ? "shared" : " private",
+					prev_info.reserved ? "reserved" : "not-reserved");
 
 			if (nsubregions > 1)
 				fprintf(stderr, " (%d sub-regions)", nsubregions);

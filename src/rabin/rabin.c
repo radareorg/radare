@@ -42,6 +42,12 @@
 #include "dietelf.h"
 #include "dietelf64.h"
 #include "dietpe.h"
+#if defined(_DARWIN_C_SOURCE)
+#define HAVE_MACHO 1
+#include "dietmach0.h"
+#else
+#define HAVE_MACHO 0
+#endif
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
 
@@ -170,9 +176,10 @@ void rabin_show_info(const char *file)
 		}
 
 		if (rad) printf("e file.type = pe\n");
-		else printf("File type: PE\n");
-
-		dietpe_list_info(&pebin);
+		else { 
+			printf("File type:                PE\n");
+			dietpe_list_info(&pebin);
+		}
 		break;
 	case FILETYPE_MZ:
 		if (rad) printf("e file.type = mz\n");
@@ -281,7 +288,6 @@ void rabin_show_entrypoint()
 
 		if (rad) {
 			printf("fs symbols\n");
-			printf("f entry @ 0x%08llx\n", addr - base);
 			printf("f entrypoint @ 0x%08llx\n", addr);
 			printf("s entrypoint\n");
 		} else {
@@ -350,45 +356,53 @@ unsigned long long addr_for_lib(char *name)
 	return 0LL;
 }
 
-void rabin_show_arch()
+void rabin_show_arch(char *file)
 {
 	u32 dw;
 	u16 w;
 
-	switch(filetype) {
-	case FILETYPE_ELF:
-		lseek(fd, 16+2, SEEK_SET);
-		read(fd, &w, 2);
-		switch(w) {
-		case 3:
-			printf("arch: x86-32\n");
-			break;
-		case 0x28:
-			printf("arch: ARM\n");
-			break;
-		default:
-			printf("arch: 0x%x (unknown)\n", w);
-			break;
-		}
-		break;
-	case FILETYPE_PE:
-		// [[0x3c]+4]
-		lseek(fd, 0x3c, SEEK_SET);
-		read(fd, &dw, 4);
-		lseek(fd, dw+4, SEEK_SET);
-		read(fd, &w, 2);
-		switch(w) {
-		case 0x1c0:
-			printf("arch: ARM\n");
-			break;
-		case 0x14c:
-			printf("arch: x86-32\n");
-			break;
-		default:
-			printf("arch: 0x%x (unknown)\n", w);
-		}
-		break;
-	}
+  switch(filetype)
+    {
+    case FILETYPE_MACHO:
+#if HAVE_MACHO
+      dm_read_header(1);
+#endif
+      break;
+    case FILETYPE_ELF:
+      lseek(fd, 16+2, SEEK_SET);
+      read(fd, &w, 2);
+      switch(w)
+        {
+        case 3:
+          printf("arch: x86-32\n");
+          break;
+        case 0x28:
+          printf("arch: ARM\n");
+          break;
+        default:
+          printf("arch: 0x%x (unknown)\n", w);
+          break;
+        }
+      break;
+    case FILETYPE_PE:
+      // [[0x3c]+4]
+      lseek(fd, 0x3c, SEEK_SET);
+      read(fd, &dw, 4);
+      lseek(fd, dw+4, SEEK_SET);
+      read(fd, &w, 2);
+      switch(w)
+        {
+        case 0x1c0:
+          printf("arch: ARM\n");
+          break;
+        case 0x14c:
+          printf("arch: x86-32\n");
+          break;
+        default:
+          printf("arch: 0x%x (unknown)\n", w);
+        }
+      break;
+    }
 }
 
 void rabin_show_imports(const char *file)
@@ -397,7 +411,7 @@ void rabin_show_imports(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-#if 1
+#if 0
 		{ char buf[1024];
 		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
 //		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
@@ -515,6 +529,11 @@ void rabin_show_sections(const char *file)
 	dietpe_pe_memfile pebin;
 
 	switch(filetype) {
+	case FILETYPE_MACHO:
+#if HAVE_MACHO
+		dm_read_command(0);
+#endif
+		break;
 	case FILETYPE_ELF:
 		fd = ELF_CALL(dietelf_new,bin,file);
 		if (fd == -1) {
@@ -530,7 +549,6 @@ void rabin_show_sections(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-
 		dietpe_list_sections(&pebin);
 		break;
 #if 0
@@ -577,45 +595,65 @@ int rabin_identify_header()
 	lseek(fd, 0, SEEK_SET);
 	read(fd, buf, 1024);
 
-        if (!memcmp(buf, "\xCA\xFE\xBA\xBE", 4))
-		if (buf[9])
-                	filetype = FILETYPE_CLASS;
-		else	filetype = FILETYPE_MACHO;
+  if ( !memcmp(buf, "\xCA\xFE\xBA\xBE", 4) )
+    {
+      if (buf[9])
+        filetype = FILETYPE_CLASS;
+      else
+        filetype = FILETYPE_MACHO;
+    }
 	else
-        if (!memcmp(buf, "\xFE\xED\xFA\xCE", 4)) {
-		filetype = FILETYPE_MACHO;
-		/* ENDIAN = BIG */
-		if (rad)
-			printf("e cfg.bigendian = big\n");
-	} else	
-	if (!memcmp(buf, "CSR-", 4)) {
-		filetype = FILETYPE_CSRFW;
-	//	config_set("asm.arch", "csr");
-	} else
-	if (!memcmp(buf, "dex\n009\0", 8))
-		filetype = FILETYPE_DEX;
-	else
-	if (!memcmp(buf, "\x7F\x45\x4c\x46", 4)) {
-		filetype = FILETYPE_ELF;
-		
-		if (buf[EI_CLASS] == ELFCLASS64)
-		    elf64 = 1;
-	} else
-	if (!memcmp(buf, "\x4d\x5a", 2)) {
-		int pe = buf[0x3c];
-		filetype = FILETYPE_MZ;
-		if (buf[pe]=='P' && buf[pe+1]=='E') {
-			filetype = FILETYPE_PE;
-			pebase = pe;
-		}
-	} else
-	if (buf[2]==0 && buf[3]==0xea) {
-		filetype = FILETYPE_ARMFW;
-	} else {
-		if (!rad)
-			printf("Unknown filetype\n");
-	}
+    {
+      if ( !memcmp(buf, "\xFE\xED\xFA\xCE", 4) )
+        {
+          filetype = FILETYPE_MACHO;
+          /* ENDIAN = BIG */
+          if (rad)
+            printf("e cfg.bigendian = big\n");
+        }
+      else
+        {
+          if ( !memcmp(buf, "CSR-", 4) )
+            {
+              filetype = FILETYPE_CSRFW;
+              //	config_set("asm.arch", "csr");
+            }
+          else
+            {
+              if ( !memcmp(buf, "dex\n009\0", 8) )
+                filetype = FILETYPE_DEX;
+              else
+                if ( !memcmp(buf, "\x7F\x45\x4c\x46", 4) )
+                  {
+                    filetype = FILETYPE_ELF;
 
+                    if (buf[EI_CLASS] == ELFCLASS64)
+                      elf64 = 1;
+                  }
+                else
+                  if ( !memcmp(buf, "\x4d\x5a", 2) )
+                    {
+                      int pe = buf[0x3c];
+                      filetype = FILETYPE_MZ;
+                      if (buf[pe]=='P' && buf[pe+1]=='E')
+                        {
+                          filetype = FILETYPE_PE;
+                          pebase = pe;
+                        }
+                    }
+                  else
+                      if (buf[2]==0 && buf[3]==0xea)
+                        {
+                          filetype = FILETYPE_ARMFW;
+                        }
+                      else
+                        {
+                          if (!rad)
+                            printf("Unknown filetype\n");
+                        }
+            }
+        }
+    }
 	return filetype;
 }
 
@@ -702,6 +740,9 @@ int main(int argc, char **argv, char **envp)
 		}
 	} else return 0;
 
+#if HAVE_MACHO
+	dm_map_file(file, fd);
+#endif
 	rabin_identify_header();
 
 	if (action&ACTION_ARCH)
