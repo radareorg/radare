@@ -20,10 +20,10 @@ RMT_SYSTEM = 6
 RMT_REPLY  = 0x80
 
 handle_cmd_system = None
-handle_cmd_seek = None
-handle_cmd_read = None
-handle_cmd_write = None
-handle_cmd_open = None
+handle_cmd_seek   = None
+handle_cmd_read   = None
+handle_cmd_write  = None
+handle_cmd_open   = None
 
 offset = 0
 size = 0
@@ -38,7 +38,10 @@ def handle_packet(c, key):
 		buffer = c.recv(2)
 		(flags, length) = unpack(">BB", buffer)
 		file = c.recv(length)
-		buf = pack(">Bi", key|RMT_REPLY, FD)
+		if handle_cmd_open != None:
+			fd = handle_cmd_open(file, flags)
+		else: 	fd = 3434
+		buf = pack(">Bi", key|RMT_REPLY, fd)
 		c.send(buf)
 	elif key == RMT_READ:
 		#print "READ command at %d ----------"%offset

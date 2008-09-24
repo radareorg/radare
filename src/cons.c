@@ -61,6 +61,31 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
+const char *cons_color_names[CONS_COLORS_SIZE+1] = {
+	"black",
+	"gray",
+	"white",
+	"red",
+	"magenta",
+	"blue",
+	"green",
+	"yellow",
+	"turqoise",
+	"bblack",
+	"bgray",
+	"bwhite",
+	"bred",
+	"bmagenta",
+	"bblue",
+	"bgreen",
+	"byellow",
+	"bturqoise",
+	"reset",
+	"bgblack",
+	"bgred",
+	NULL
+};
+
 const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
@@ -123,6 +148,16 @@ const char *cons_get_color(int ch)
 	return NULL;
 }
 
+const char *cons_get_color_by_name(const char *str)
+{
+	int i;
+	for(i=0;cons_color_names[i];i++) {
+		if (!strcmp(str, cons_color_names[i]))
+			return cons_colors[i];
+	}
+	return nullstr;
+}
+
 void cons_print_real(const char *buf)
 {
 #if __WINDOWS__
@@ -135,6 +170,22 @@ void cons_print_real(const char *buf)
 	else write(_print_fd, buf, strlen(buf)); //buf_len);
 }
 
+int cons_palette_set(const char *key, const u8 *value)
+{
+	const char *str;
+	int i;
+
+	for(i=0;pal_names[i];i++) {
+		if (!strcmp(key, pal_names[i])) {
+			str = cons_get_color_by_name(value);
+			if (str != NULL) {
+				strcpy(cons_palette[i], str);
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
 
 int cons_palette_init(const unsigned char *pal)
 {

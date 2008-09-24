@@ -7,8 +7,11 @@ def fun_system(str):
 	print "CURRENT SEEK IS %d"%rapyl.offset
 	return str
 
-#def fun_seek(off,type):
-#	return str
+def fun_open(file,flags):
+	return str
+
+def fun_seek(off,type):
+	return str
 
 def fun_write(buf):
 	print "WRITING %d bytes (%s)"%(len(buf),buf)
@@ -23,6 +26,7 @@ def fun_read(len):
 
 # main
 
+#rapyl.handle_cmd_open = fun_open
 rapyl.handle_cmd_system = fun_system
 rapyl.handle_cmd_read = fun_read
 rapyl.handle_cmd_write = fun_write

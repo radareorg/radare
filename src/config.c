@@ -460,7 +460,12 @@ static int config_palette_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	cons_palette_init(node->value);
+	if (!strcmp(node->name, "scr.palette")) {
+		cons_palette_init(node->value);
+		return 0;
+	}
+	// 8 = strlen(scr.pal.)
+	cons_palette_set(node->name+8, node->value);
 
 	return 1;
 }
@@ -763,8 +768,36 @@ void config_init(int first)
 
 	config_set("scr.html", "false");
 	config_set_i("scr.accel", 0);
+
 	node = config_set("scr.palette", cons_palette_default);
 	node->callback = &config_palette_callback;
+	cons_palette_init(config_get("scr.palette"));
+#define config_set_scr_pal(x,y) \
+	node = config_set("scr.pal."x"", y); \
+	node->callback = &config_palette_callback; \
+	node->callback(node);
+
+	config_set_scr_pal("prompt","yellow")
+	config_set_scr_pal("default","white")
+	config_set_scr_pal("changed","green")
+	config_set_scr_pal("jumps","green")
+	config_set_scr_pal("calls","green")
+	config_set_scr_pal("push","green")
+	config_set_scr_pal("trap","red")
+	config_set_scr_pal("cmp","yellow")
+	config_set_scr_pal("ret","red")
+	config_set_scr_pal("nop","gray")
+	config_set_scr_pal("metadata","gray")
+	config_set_scr_pal("header","green")
+	config_set_scr_pal("printable","bwhite")
+	config_set_scr_pal("lines0","white")
+	config_set_scr_pal("lines1","yellow")
+	config_set_scr_pal("lines2","bwhite")
+	config_set_scr_pal("address","green")
+	config_set_scr_pal("ff","red")
+	config_set_scr_pal("00","white")
+	config_set_scr_pal("7f","magenta")
+
 	config_set("scr.seek", "");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
@@ -811,7 +844,6 @@ void config_init(int first)
 	/* lock */
 	config_lock(1);
 
-	cons_palette_init(config_get("scr.palette"));
 	radis_update();
 
 	if (first) {
