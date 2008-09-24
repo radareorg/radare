@@ -516,9 +516,10 @@ int radare_cmd_raw(const char *tmp, int log)
 					return 0;
 				}
 				len += strlen(input) + 5;
-				free(oinput);
-				input = oinput = malloc(len);
-				sprintf(oinput, "wx %s", filebuf);
+				oinput = malloc(len);
+				sprintf(oinput, "%s %s", input, filebuf);
+				free(input);
+				input = oinput;
 			}
 
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
@@ -1063,17 +1064,19 @@ int radare_prompt()
 		strncpy(input, aux, sizeof(input));
 
 		flag_space_pop();
+
 		if (config.width>0) { // fixed width
-			fixed_width = 0;
-			config.width = cons_get_columns();
+			//fixed_width = 0;
+			//config.width = cons_get_columns();
 			//rl_get_screen_size(NULL, &config.width);
 			radare_cmd(input, 1);
 		} else { // dinamic width
-			fixed_width = 1;
-			config.width=-config.width;	
+			//fixed_width = 1;
+			//config.width=-config.width;
 			radare_cmd(input, 1);
-			config.width=-config.width;	
+			//config.width=-config.width;	
 		}
+
 		flag_space_push();
 		if (aux && aux[0]) free(aux);
 	} else {

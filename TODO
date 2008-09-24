@@ -27,7 +27,6 @@
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
   - also make use of cfg.endian
 * pD -> 'decompile or sthg like that'
-* wx `pW 33 -> the ` doesnt works
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
   * dbg.stepolibs = true ;  step over non-user code?

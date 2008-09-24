@@ -18,8 +18,6 @@
  *
  */
 
-// TODO: port to 64 tits
-
 #include <plugin.h>
 #include <utils.h>
 #include <socket.h>
@@ -61,7 +59,12 @@ ssize_t remote_write(int fd, const void *buf, size_t count)
 	memcpy(tmp+5, buf, size);
 
 	ret = write(remote_fd, tmp, size+5);
+
+	// recv
+	read(remote_fd, tmp, 5);
+
 	free(tmp);
+	// TODO: get reply
 
         return ret;
 }
@@ -94,6 +97,7 @@ int remote_handle_client( int fd ){
 	uchar flg;
 	uchar *ptr;
 	int i, c;
+	u64 x;
 
 	if (fd == -1) {
 		printf("Cannot listen.\n");
@@ -149,13 +153,13 @@ int remote_handle_client( int fd ){
 				printf("TODO: write\n");
 				break;
 			case RMT_SEEK:
-				read(c, buf, 5);
-				endian_memcpy((uchar *)&i, buf+1, 4);
-				config.seek = io_lseek(config.fd, i, buf[0]);
-				i = (int)config.seek;
+				read(c, buf, 9);
+				endian_memcpy((uchar *)&x, buf+1, 8);
+				config.seek = io_lseek(config.fd, x, buf[0]);
+				x = (int)config.seek;
 				buf[0] = RMT_SEEK | RMT_REPLY;
-				endian_memcpy(buf+1, (uchar*)&i, 4);
-				write(c, buf, 5);
+				endian_memcpy(buf+1, (uchar*)&x, 8);
+				write(c, buf, 9);
 				break;
 			case RMT_CLOSE:
 				// XXX : proper shutdown
@@ -290,23 +294,22 @@ int remote_close(int fd)
 u64 remote_lseek(int fildes, u64 offset, int whence)
 {
 	uchar tmp[1+4+1];
-	unsigned int size = (int)offset;
 
 	// query
 	tmp[0] = RMT_SEEK;
-	endian_memcpy(tmp+2, (uchar*)&size, 4);
 	tmp[1] = (uchar)whence;
-	write(remote_fd, &tmp, 6);
+	endian_memcpy(tmp+2, (uchar*)&offset, 8);
+	write(remote_fd, &tmp, 10);
 
 	// get reply
-	read(fildes, &tmp, 5);
+	read(fildes, &tmp, 9);
 	if (tmp[0] != (RMT_SEEK | RMT_REPLY)) {
 		printf("Unexpected lseek reply\n");
 		return -1;
 	}
-	endian_memcpy((uchar *)&size, tmp+1, 4);
+	endian_memcpy((uchar *)&offset, tmp+1, 8);
 	
-	return size;
+	return offset;
 }
 
 int remote_handle_fd(int fd)
@@ -327,35 +330,32 @@ int remote_system(const char *command)
 {
 	uchar buf[1024];
 	char *ptr;
-	int i;
+	int i,j;
 
 	if (command[0] == '!')
 		return system(command+1);
 
-	if (config.debug) {
-		// send
-		buf[0] = RMT_SYSTEM;
-		i = strlen(command);
-		endian_memcpy(buf+1, (uchar*)&i, 4);
-		memcpy(buf+5, command, i);
-		write(remote_fd, buf, i+5);
+	// send
+	buf[0] = RMT_SYSTEM;
+	i = strlen(command);
+	endian_memcpy(buf+1, (uchar*)&i, 4);
+	memcpy(buf+5, command, i);
+	write(remote_fd, buf, i+5);
 
-		// read
-		read(remote_fd, buf, 5);
-		if (buf[0] != (RMT_SYSTEM | RMT_REPLY)) {
-			printf("Unexpected system reply\n");
-			return -1;
-		}
-		endian_memcpy((uchar*)&i, buf+1, 4);
-		if (i == -1) //0xFFFFFFFF) {
-			return -1;
-		ptr = (char *)malloc(i);
-		read(remote_fd, ptr, i);
-		write(1, ptr, i);
-		free(ptr);
-		return i;
+	// read
+	read(remote_fd, buf, 5);
+	if (buf[0] != (RMT_SYSTEM | RMT_REPLY)) {
+		printf("Unexpected system reply\n");
+		return -1;
 	}
-	return 0;
+	endian_memcpy((uchar*)&i, buf+1, 4);
+	if (i == -1) //0xFFFFFFFF) {
+		return -1;
+	ptr = (char *)malloc(i);
+	read(remote_fd, ptr, i);
+	j = write(1, ptr, i);
+	free(ptr);
+	return i-j;
 }
 
 plugin_t remote_plugin = {

@@ -2,6 +2,7 @@
 #define _INCLUDE_CODE_H_
 
 #include "main.h"
+#include "list.h"
 
 extern struct list_head comments;
 extern struct list_head traces;
@@ -21,16 +22,15 @@ struct trace_t {
 };
 
 enum {
-	DATA_HEX    = FMT_HEXB, /* hex byte pairs */
-	DATA_STR    = FMT_ASC0, /* ascii string */
-	DATA_CODE   = FMT_UDIS, /* plain assembly code */
+	DATA_HEX    = FMT_HEXB,  /* hex byte pairs */
+	DATA_STR    = FMT_ASC0,  /* ascii string */
+	DATA_CODE   = FMT_UDIS,  /* plain assembly code */
 	DATA_FUN    = FMT_DISAS, /* plain assembly code */
-	DATA_FOLD_O = 0x100,    /* open folder */
-	DATA_FOLD_C = 0x101,    /* closed folder */
+	DATA_STRUCT = FMT_UDIS,  /* plain assembly code */
+	DATA_FOLD_O = 0x100,     /* open folder */
+	DATA_FOLD_C = 0x101,     /* closed folder */
 	DATA_EXPAND = 0x200 
 };
-
-
 
 enum {
 	ARCH_X86   = 0,
@@ -106,8 +106,6 @@ struct aop_t {
 	int r_dst,r_src1,r_src2; // register arguments
 	u64 i_dst,i_src1,i_src2; // inmediate arguments
 };
-
-#include "list.h"
 
 struct reflines_t {
 	u64 from;

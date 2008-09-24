@@ -123,6 +123,19 @@ const char *cons_get_color(int ch)
 	return NULL;
 }
 
+void cons_print_real(const char *buf)
+{
+#if __WINDOWS__
+	if (_print_fd == 1)
+		cons_w32_print(buf);
+	else
+#endif
+	if (config_get("scr.html"))
+		cons_html_print(buf);
+	else write(_print_fd, buf, strlen(buf)); //buf_len);
+}
+
+
 int cons_palette_init(const unsigned char *pal)
 {
 	int palstrlen = strlen((const char *)pal);
@@ -637,7 +650,7 @@ void cons_flush()
 {
 	FILE *fd;
 	char buf[1024];
-	int i;
+	int i,j;
 
 	if (!strnull(cons_buffer)) {
 		const char *file = config_get("file.scrfilter");
@@ -669,19 +682,19 @@ void cons_flush()
 				fclose(d);
 			}
 		}
-		for(i=0;cons_buffer[i];i++) {
-			if (cons_buffer[i] == '\n')
-				cons_lines++;
-		}
-#if __WINDOWS__
-		if (_print_fd == 1)
-			cons_w32_print(cons_buffer);
-		else
+		for(i=j=0;cons_buffer[i];i++) {
+#if 0
+			if (cons_buffer[i]=='\x1b') {
+				for(++i;cons_buffer[i] != '\0' && cons_buffer[i] != 'H' && cons_buffer[i] != 'm'; i++, j++);
+			}
 #endif
-		if (config_get("scr.html"))
-			cons_html_print(cons_buffer);
-		else
-			write(_print_fd, cons_buffer, strlen(cons_buffer));//cons_buffer_len);
+			if (cons_buffer[i] == '\n') {
+				cons_lines++;
+			}
+		}
+
+		cons_print_real(cons_buffer);
+
 		cons_buffer[0] = '\0';
 		//cons_buffer_sz=0;
 	}
@@ -727,8 +740,7 @@ void cons_newline()
 {
 	if (config_get("scr.html"))
 		cons_printf("<br />");
-	else
-		cons_printf("\n");
+	else cons_printf("\n");
 #if RADARE_CORE
 	if (!config.buf)
 		cons_flush();

@@ -316,7 +316,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	if (config.visual) {
 		// update config.height heres
 		//terminal_get_real_columns();
-		config.height= config_get_i("scr.height");
+		config.height = config_get_i("scr.height");
 		config.height -= 3;
 	}
 

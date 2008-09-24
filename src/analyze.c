@@ -716,11 +716,11 @@ int analyze_function(int recursive, int report)
 	int ret;
 	char buf[1024];
 	/*--*/
-	char *bytes;
+	u8 *bytes;
 	u64 from = config.baddr + config.seek;
 	u64 seek = from; // to place comments
 	u64 end  = 0;
-	int inc  = 0;
+	int i, inc = 0;
 	u64 to;
 	u64 len;
 	int ref;
@@ -778,6 +778,14 @@ int analyze_function(int recursive, int report)
 		cons_printf("label = %s\n", buf);
 		cons_printf("size = %lld\n", to-from);
 		cons_printf("blocks = %lld\n", nblocks);
+		{
+		int len = to-from;
+		cons_printf("bytes = ");
+		if (len>32)len=32; // anal.limitbytes
+		for(i=0;i<len;i++) 
+			cons_printf("%02x ", bytes[i]);
+		cons_printf("\n");
+		}
 	}
 
 	for(;seek< to; seek+=inc) {
@@ -795,6 +803,11 @@ int analyze_function(int recursive, int report)
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, buf);
 			}
 			ncalls++;
+			break;
+		case AOP_TYPE_SWI:
+			if (!report) {
+				cons_printf("CC syscall %s\n", "<todo>");
+			}
 			break;
 		default:
 			if (aop.ref != 0) {

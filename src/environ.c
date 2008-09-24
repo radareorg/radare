@@ -139,6 +139,7 @@ void update_environment()
 
 	config.verbose = config_get_i("cfg.verbose");
 
+#if 0
 	ptr = getenv("COLUMNS");
 	if (ptr != NULL)
 		config.width = atoi(ptr);
@@ -146,6 +147,7 @@ void update_environment()
 		config.width = cons_get_columns();
 	if (config.width<10)config.width=10;
 	config_set_i("scr.width", config.width);
+#endif
 
 	config.color = (int)config_get("scr.color");
 }

@@ -495,6 +495,18 @@ static int config_baddr_callback(void *data)
 	return 1;
 }
 
+static int config_scrwidth(void *data)
+{
+	struct config_node_t *node = data;
+	config.width = node->i_value;
+	if (config.width<1) {
+		cons_get_real_columns();
+		if (config.width<1)
+			config.width = 80;
+	}
+	return config.width;
+}
+
 static int config_scrheight(void *data)
 {
 	struct config_node_t *node = data;
@@ -759,7 +771,8 @@ void config_init(int first)
 	config_set("scr.tee", "");
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
-	config_set_i("scr.width", config.width);
+	node = config_set_i("scr.width", config.width);
+	node->callback = &config_scrwidth;
 	node = config_set_i("scr.height", config.height);
 	node->callback = &config_scrheight;
 #if 0

@@ -27,7 +27,7 @@ void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
 int _strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, char *string);
-char *slurp(char *str);
+char *slurp(const char *str);
 int word_count(const char *string);
 
 
@@ -112,15 +112,8 @@ char *str_first_word(const char *string);
 const char *get_tmp_dir();
 const char *strget(const char *str);
 u32 get_offset32(u64);
-
-#define htonq(x) (\
-	(((x) & 0xff00000000000000LL) >> 56)  | \
-	(((x) & 0x00ff000000000000LL) >> 40)  | \
-	(((x) & 0x0000ff0000000000LL) >> 24)  | \
-	(((x) & 0x000000ff00000000LL) >> 8)   | \
-	(((x) & 0x00000000ff000000LL) << 8)   | \
-	(((x) & 0x0000000000ff0000LL) << 24)  | \
-	(((x) & 0x000000000000ff00LL) << 40)  | \
-	(((x) & 0x00000000000000ffLL) << 56))
+//u64 ntohq(u64 x);
+#define ntohq htonq
+u64 htonq(u64 x);
 
 #endif

@@ -49,7 +49,7 @@
 
 u64 last_cmp = 0;
 print_fmt_t last_print_format = FMT_HEXB;
-int fixed_width = 0;
+//int fixed_width = 0;
 extern char **environ;
 extern command_t commands[];
 extern void show_help_message();

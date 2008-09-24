@@ -1002,9 +1002,11 @@ CMD_DECL(visual)
 
 	undo_push();
 
+#if 0
 	config.height = config_get_i("scr.height");
 	if (config.height<1)
 		config_set_i("scr.height", 24);
+#endif
 
 	if (bds == NULL)
 		bds = (struct binding *)malloc(sizeof(struct binding));
@@ -1451,13 +1453,9 @@ CMD_DECL(visual)
 			break;
 		case ']':
 		case '[': {
-			int cols;
-			char buf[1024];
-			char *c = getenv("COLUMNS");
-			if (c) cols = atoi(c); else cols = config.width;
+			int cols = config.width;
 			if (cols < 10) cols = 10;
-			sprintf(buf, "%d", cols+(key==']'?+4:-4));
-			setenv("COLUMNS", buf, 1);
+			config_set_i("scr.width", cols+(key==']'?+4:-4));
 			cons_clear();
 			break; }
 		case 'L':

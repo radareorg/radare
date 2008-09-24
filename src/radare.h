@@ -7,12 +7,14 @@
 #define __addr_t_defined
 
 #include "../global.h"
-// basic data types
+
+/* basic data types */
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 typedef u64 addr_t;
+#define uchar unsigned char
 
 #ifndef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8
@@ -24,13 +26,6 @@ typedef u64 addr_t;
 #endif
 #endif
 
-// conditional goto
-enum {
-	OP_JE,
-	OP_JNE,
-	OP_JA,
-	OP_JB
-};
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
@@ -76,6 +71,14 @@ extern struct list_head hacks;
 #define LANG_PERL 1
 #define LANG_PYTHON 2
 
+// conditional goto
+enum {
+	OP_JE,
+	OP_JNE,
+	OP_JA,
+	OP_JB
+};
+
 int java_disasm(unsigned char *bytes, char *output);
 
 void metadata_comment_add(u64 offset, const char *str);
@@ -84,7 +87,6 @@ void metadata_comment_list();
 char *metadata_comment_get(u64 offset);
 void metadata_comment_init(int new);
 
-#define uchar unsigned char
 extern int fixed_width;
 extern int inc;
 void monitors_run();
