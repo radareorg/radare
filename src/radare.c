@@ -32,6 +32,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <dirent.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -86,7 +87,7 @@ int radare_system(const char *cmd)
 
 int radare_systemf(const char *format, ...)
 {
-	char buf[4096]
+	char buf[4096];
 	va_list ap;
 	va_start(ap, format);
 	snprintf(buf, 4095, format, ap);
@@ -376,7 +377,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	input = strclean(input);
 
 	if (input[0] == ':') {
-		config.verbose = ((int)config_get("cfg.verbose"))^1;
+		config.verbose = config_get_i("cfg.verbose")^1;
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
 		input = input+1;
 	}
@@ -769,7 +770,7 @@ int radare_cmd(char *input, int log)
 	if (config.skip) return 0;
 
 	if (input[0] == ':') {
-		config.verbose = ((int)config_get("cfg.verbose"))^1;
+		config.verbose = config_get_i("cfg.verbose")^1;
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
 		input = input+1;
 	}

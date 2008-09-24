@@ -137,7 +137,7 @@ void update_environment()
 
 	/* radis_update(); */
 
-	config.verbose = (int)config_get("cfg.verbose");
+	config.verbose = config_get_i("cfg.verbose");
 
 	ptr = getenv("COLUMNS");
 	if (ptr != NULL)

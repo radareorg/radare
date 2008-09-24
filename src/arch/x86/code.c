@@ -220,13 +220,17 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		break;
 	case 0x83:
 		switch(bytes[1]) {
+		case 0xe4: // and
+			aop->value = (u64)(unsigned char)bytes[2];
+			aop->type = AOP_TYPE_AND;
+			break;
 		case 0xec:
 			/* sub $0x????????, $esp*/
-			aop->ref = (u64)(unsigned char)bytes[2];
+			aop->value = (u64)(unsigned char)bytes[2];
 			aop->stackop = AOP_STACK_INCSTACK;
 			break;
 		case 0x7d: // cmp dword [ebp+0x8], 0x1f
-			aop->ref = (u64)(unsigned char)bytes[2];
+			aop->value = (u64)(unsigned char)bytes[2];
 			aop->stackop = AOP_STACK_ARG_GET;
 			aop->type = AOP_TYPE_CMP;
 			break;

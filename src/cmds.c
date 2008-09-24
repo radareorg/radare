@@ -1146,8 +1146,9 @@ CMD_DECL(seek)
 		}
 
 		if (new_off<0) new_off = 0;
-		if (radare_seek(new_off, whence) < 0)
-			eprintf("Couldn't seek: %s\n", strerror(errno));
+		if (text[0]=='0'&&new_off==0 || new_off != 0)
+			if (radare_seek(new_off, whence) < 0)
+				eprintf("Couldn't seek: %s\n", strerror(errno));
 		undo_push();
 	} else {
 		if (text[0]!='\0')

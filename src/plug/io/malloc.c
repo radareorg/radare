@@ -31,17 +31,22 @@ static unsigned int malloc_bufsz = 0;
 
 static ssize_t malloc_write(int fd, const void *buf, size_t count)
 {
+	if (malloc_buf == NULL)
+		return 0;
 	return (ssize_t)memcpy(malloc_buf+config.seek, buf, count);
 }
 
 static ssize_t malloc_read(int fd, void *buf, size_t count)
 {
+	if (malloc_buf == NULL)
+		return 0;
+
 	if (config.seek + count > config.size) {
 		//config.seek = 0; // ugly hack
 		//count = config.seek+count-config.size;
 		return 0;
 	}
-	if (config.seek +count > config.size)
+	if (config.seek + count > config.size)
 		config.seek = config.size;
 
 	return (ssize_t)memcpy(buf, malloc_buf+config.seek, count);
@@ -52,6 +57,7 @@ static int malloc_close(int fd)
 	if (malloc_buf == NULL)
 		return -1;
 	free(malloc_buf);
+	malloc_buf = malloc(malloc_bufsz);
 	return 0;
 }
 
@@ -87,7 +93,7 @@ static int malloc_open(const char *pathname, int flags, mode_t mode)
 	strncpy(buf, pathname, 1000);
 
 	if (!memcmp(ptr , "malloc://", 9)) {
-		ptr= ptr+6;
+		ptr = ptr+6;
 		// connect
 		malloc_fd = MALLOC_FD;
 		malloc_bufsz = atoi(pathname+9);

@@ -31,7 +31,6 @@
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 /* code lines */
-// XXX baddr should be ignored here
 struct reflines_t *code_lines_init()
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
@@ -726,6 +725,7 @@ int analyze_function(int recursive, int report)
 	u64 len;
 	int ref;
 	int ncalls = 0;
+	int nrefs = 0;
 	int framesize = 0;
 	int nblocks = 0;
 
@@ -738,7 +738,7 @@ int analyze_function(int recursive, int report)
 	}
 #endif
 	/* Analyze function */
-	/* XXX ensure this is ok */
+	/* XXX restore values later.. */
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.callblocks", "false");
 
@@ -796,10 +796,18 @@ int analyze_function(int recursive, int report)
 			}
 			ncalls++;
 			break;
+		default:
+			if (aop.ref != 0) {
+				buf[0]='\0';
+				string_flag_offset(buf, aop.ref);
+				if (!report)
+					cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", aop.ref, seek, buf);
+				nrefs++;
+			}
 		}
+		ref = (int)aop.value;
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:
-			ref = (int)aop.ref;
 			if (!report) {
 				if (ref<0)
 					sprintf(buf, "CC Set arg%d @ 0x%08llx\n", -ref, seek);
@@ -810,7 +818,6 @@ int analyze_function(int recursive, int report)
 			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_ARG_SET:
-			ref = (int)aop.ref;
 			if (!report) {
 				sprintf(buf, "CC Set arg%d @ 0x%08llx\n", ref, seek);
 				cons_strcat(buf);
@@ -818,7 +825,6 @@ int analyze_function(int recursive, int report)
 			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_ARG_GET:
-			ref = (int)aop.ref;
 			if (!report) {
 				char buf[1024];
 				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
@@ -827,7 +833,6 @@ int analyze_function(int recursive, int report)
 			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_LOCAL_GET:
-			ref = (int)aop.ref;
 			if (!report) {
 				if (ref<0)
 					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
@@ -840,9 +845,9 @@ int analyze_function(int recursive, int report)
 		case AOP_STACK_INCSTACK:
 			if (!report) {
 				char buf[1024];
-				sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)aop.ref, seek);
+				sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
-				framesize += aop.ref;
+				framesize += aop.value;
 			}
 			break;
 		}
@@ -869,6 +874,7 @@ int analyze_function(int recursive, int report)
 	if (report) {
 		cons_printf("framesize = %d\n", framesize);
 		cons_printf("ncalls = %d\n", ncalls);
+		cons_printf("drefs = %d\n", nrefs);
 		cons_printf("xrefs = %d\n", metadata_xrefs_at(from));
 		cons_printf("args = %d\n", analyze_var_get(VAR_TYPE_ARG));
 		cons_printf("vars = %d\n", analyze_var_get(VAR_TYPE_LOCAL));
@@ -876,5 +882,6 @@ int analyze_function(int recursive, int report)
 		cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
 		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
 		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
+		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
 	}
 }

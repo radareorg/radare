@@ -102,6 +102,7 @@ struct aop_t {
 	u64 jump; /* true jmp */
 	u64 fail; /* false jmp */
 	u64 ref; /* referente to memory */
+	u64 value; /* referente to value */
 	int r_dst,r_src1,r_src2; // register arguments
 	u64 i_dst,i_src1,i_src2; // inmediate arguments
 };

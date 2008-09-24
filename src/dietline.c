@@ -294,6 +294,8 @@ char *dl_readline(int argc, const char **argv)
 	dl_buffer_idx = dl_buffer_len = 0;
 	dl_buffer[0]='\0';
 
+	dl_echo = config.verbose;
+
 	if (dl_disable) {
 		dl_buffer[0]='\0';
 		fgets(dl_buffer, DL_BUFSIZE-1, stdin);
@@ -337,6 +339,7 @@ char *dl_readline(int argc, const char **argv)
 		columns = cons_get_real_columns()-2;
 		if (columns <1)
 			columns = 40;
+		if (dl_echo)
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
@@ -352,11 +355,13 @@ char *dl_readline(int argc, const char **argv)
 				dl_buffer_idx = dl_buffer_len;
 				break;
 			case 3: // ^C 
-				printf("\n^C\n");
+				if (dl_echo)
+					printf("\n^C\n");
 				dl_buffer[dl_buffer_idx = dl_buffer_len = 0] = '\0';
 				goto _end;
 			case 4: // ^D
-				printf("^D\n");
+				if (dl_echo)
+					printf("^D\n");
 				if (!dl_buffer[0]) { /* eof */
 					cons_set_raw(0);
 					return NULL;
@@ -371,7 +376,8 @@ char *dl_readline(int argc, const char **argv)
 				break;
 			case 12: // ^L -- right
 				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
-				printf("\x1b[2J\x1b[0;0H");
+				if (dl_echo)
+					printf("\x1b[2J\x1b[0;0H");
 				fflush(stdout);
 				break;
 			case 21: // ^U - cut
@@ -481,15 +487,18 @@ char *dl_readline(int argc, const char **argv)
 
 					/* show options */
 					if (dl_buffer_idx==0 || opt>1) {
-						printf("%s%s\n",dl_prompt,dl_buffer);
+						if (dl_echo)
+							printf("%s%s\n",dl_prompt,dl_buffer);
 						for(i=1;i<argc;i++) {
 							if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
 								len+=strlen(argv[i]);
 					//			if (len+dl_buffer_len+4 >= columns) break;
-								printf("%s ", argv[i]);
+								if (dl_echo)
+									printf("%s ", argv[i]);
 							}
 						}
-						printf("\n");
+						if (dl_echo)
+							printf("\n");
 					}
 					fflush(stdout);
 				}

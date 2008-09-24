@@ -9,6 +9,7 @@
 
 === WORK FOR 1.0 ===
 
+* Make the color palette more accessible to the users
 * Added labels in history
 * hit interpolation
   - search <body> and </body>
@@ -26,7 +27,6 @@
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
   - also make use of cfg.endian
 * pD -> 'decompile or sthg like that'
-* s <unexistant-flag> -> do not seek
 * wx `pW 33 -> the ` doesnt works
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
@@ -39,32 +39,25 @@
   - 03 e4 f0 = and esp, 0xf0
   but must be= and esp, 0xfffffff0
 * implement bindiff patchers
-* Make the color palette more accessible to the users
   - integrated with eval config in visual Ve
 * syscall-flag using userdefined table (in file)
    - must use asm.os to get proper syscall table
    - must be implemented in code analysis!!
 * BSD imports with dietelf doesnt works well
-* fix dietline for rasm -d 90
 * make 'pm' work like (pydoc struct)
 * support for array of structures
 * ascii-nops for rasc
 * export graph analysis to an rdb to use radiff -r
   - export a graph to a file using 'Rf' command
-* String references (data refs)
 * Add !int opcode to call a syscall
   !int eax=30 ebx=0x8048400
   - store/restore regs
   - shows return value in eax before restoring regs
 * folders doesnt works well - * folders are broken
-* radare malloc://30 && e file.write=1 && wx 90 = segfaults
 * RASM is buggy about relative/absolute offsets
 * split nodes of the graph code analysis
 * Make 'Cs' autodetect multiple strings
 * dump first N bytes per function (ida makes 32 first ones)
-* rasc -E must be AAAA BBBB CCCC (de 4 en 4 :P)
- - be alphanumeric
- - avoid \n, avoid \r
 * !bpc -> execute command when hitting breakpoint
   - stop on breakpoint after N hits
   * breakpoint callbacks:
@@ -191,7 +184,6 @@ Debugger:
 Rabin:
 	* rabin string refs
 	* Move javasm.c as dietjava in rabin
-	* entry vs entrypoint flag :O
 	* Full PE parser support
 
 Rasc:
