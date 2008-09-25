@@ -262,7 +262,7 @@ int arch_is_jump(u8 *buf)
 
 u64 arch_get_entrypoint()
 {
-	ull addr;
+	u64 addr;
 	debug_read_at(ps.tid, &addr, 4, 0x8048018);
 	return (off_t)addr;
 }
@@ -386,8 +386,8 @@ int arch_backtrace()
 	%ebp+4 points to ret
 	*/
 	int ret, i;
-	ull ptr;
-	ull ebp2;
+	u64 ptr;
+	u64 ebp2;
 	regs_t regs;
 	unsigned char buf[4];
 
@@ -402,7 +402,7 @@ int arch_backtrace()
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
 	||  !memcmp(buf, "\x89\xe5\x57", 3)) { /* push %ebp ; mov %esp, %ebp */
 		debug_read_at(ps.tid, &ptr, 4, R_RSP(regs));
-		cons_printf("#0 0x%08llx %s", (ull)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#0 0x%08llx %s", (u64)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ptr;
 	}
 
@@ -410,7 +410,7 @@ int arch_backtrace()
 		debug_read_at(ps.tid, &ebp2, 4, R_RBP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_RBP(regs)+4);
 		if (ptr == 0x0 || R_RBP(regs) == 0x0) break;
-		cons_printf("#%d 0x%08llx %s\n", i, (ull)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#%d 0x%08llx %s\n", i, (u64)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ebp2;
 	}
 	return i;
@@ -454,7 +454,7 @@ int arch_call(const char *arg)
 {
 	int ret;
 	regs_t regs;
-	ull addr;
+	u64 addr;
 
 	if (ps.opened == 0)
 		return 0;
@@ -722,7 +722,7 @@ int arch_print_registers(int rad, const char *mask)
 			if (R_RSI(regs)!=R_RSI(oregs)) cons_printf("\x1b[35m");
 			cons_printf("    rsi  0x%08llx\x1b[0m", (long long)R_RSI(regs));
 			if (R_RIP(regs)!=R_RIP(oregs)) cons_printf("\x1b[35m");
-			cons_printf("    rip    0x%08llx\x1b[0m\n",  (ull) R_RIP(regs));
+			cons_printf("    rip    0x%08llx\x1b[0m\n",  (u64) R_RIP(regs));
 			if (R_RBX(regs)!=R_RBX(oregs)) cons_printf("\x1b[35m");
 			cons_printf(" rbx  0x%08llx\x1b[0m", (long long)R_RBX(regs));
 			if (R_RDI(regs)!=R_RDI(oregs)) cons_printf("\x1b[35m");
@@ -786,12 +786,12 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
-static u64 get_value(const char *str)
+u64 get_value(const char *str)
 {
 	long long tmp;
 
 	if (str[0]&&str[1]=='x')
-		sscanf(str, "0x%llx",  (ull *)&tmp);
+		sscanf(str, "0x%llx",  (u64 *)&tmp);
 	else	tmp = atoll(str);
 	return tmp;
 }
@@ -1276,7 +1276,7 @@ u64 arch_set_sighandler(int signum, u64 handler)
 /* I SHOULD USE THE AOP INTERFACE */
 // XXX must handle current seek
 // XXX must say if this is a forced jump or a conditional one
-int arch_is_jmp(const unsigned char *cmd, ull *addr)
+int arch_is_jmp(const u8 *cmd, u64 *addr)
 {
 	switch(cmd[0]) {
 	case 0xe9: // jmp
@@ -1321,10 +1321,10 @@ int arch_is_stepoverable(const unsigned char *cmd)
 }
 
 #warning "FIXME: following code is a party..."
-ull get_ret_sf(ull rsp, ull *ret_pos)
+u64 get_ret_sf(u64 rsp, u64 *ret_pos)
 {
-	ull pos;
-	ull val;
+	u64 pos;
+	u64 val;
 	unsigned char aux;
 
 	pos = rsp;
@@ -1355,9 +1355,9 @@ ull get_ret_sf(ull rsp, ull *ret_pos)
 	return 0;
 }
 
-void next_sf(struct list_head *list, ull rsp)
+void next_sf(struct list_head *list, u64 rsp)
 {
-	ull ret_pos, ret;
+	u64 ret_pos, ret;
 	struct sf_t  *sf;
 
 	/* get return address of stack frame and return position */
@@ -1377,10 +1377,10 @@ void next_sf(struct list_head *list, ull rsp)
 	sf->ret_addr = ret;
 	sf->ebp = 0;
 	sf->vars_sz = ret_pos - rsp;
-	sf->sz =  ret_pos - rsp + sizeof(ull);
+	sf->sz =  ret_pos - rsp + sizeof(u64);
 
 	/* get next stack frame */
-	next_sf(list, ret_pos + sizeof(ull));
+	next_sf(list, ret_pos + sizeof(u64));
 
 	/* add stack frame */
 	list_add(&sf->next, list);

@@ -12,6 +12,9 @@ int trace_times(u64 addr);
 int trace_add(u64 addr);
 void trace_init();
 
+extern int _print_fd;
+extern int cons_lines;
+
 struct trace_t {
 	u64 addr;
 	int opsize;

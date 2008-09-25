@@ -31,8 +31,8 @@
 #include <windows.h>
 #endif
 
-static int _print_fd = 1;
-static int cons_lines = 0;
+int _print_fd = 1;
+int cons_lines = 0;
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
 char cons_palette[CONS_PALETTE_SIZE][8] = {
@@ -62,7 +62,7 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-static const char *cons_color_names[CONS_COLORS_SIZE+1] = {
+const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	"black",
 	"gray",
 	"white",
@@ -87,7 +87,7 @@ static const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	NULL
 };
 
-static const char *cons_colors[CONS_COLORS_SIZE+1] = {
+const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2
@@ -114,7 +114,7 @@ static const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	NULL
 };
 
-static const char *pal_names[CONS_PALETTE_SIZE]={
+const char *pal_names[CONS_PALETTE_SIZE]={
 	"prompt",
 	"address",
 	"default",
@@ -138,7 +138,7 @@ static const char *pal_names[CONS_PALETTE_SIZE]={
 	NULL
 };
 
-static const char *cons_get_color(int ch)
+const char *cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
 		return cons_colors[ch-'0'];

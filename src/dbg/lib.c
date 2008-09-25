@@ -42,7 +42,8 @@ int debug_lib_load(const char *file)
 	char tmp[1024];
 	regs_t oregs, regs;
 	u64 pc;
-#if __linux__
+#if 0
+//__linux__
 	/* use uselib syscall here! :D */
 	// XXX control strlen(fil
 	if (strlen(file) > 1023) {
@@ -65,10 +66,13 @@ int debug_lib_load(const char *file)
 	debug_write_at(ps.tid, "\xcd\x80\xCC", 4, pc);
 	debug_write_at(ps.tid, file, strlen(file), pc+10);
 
+#if __i386__
+	// XXX this is broken
 	/* prepare registers */
 	CPU_ARG0(regs) = 86; // uselib
 	CPU_ARG1(regs) = pc+10; // string
 	CPU_ARG2(regs) = pc; // ??? unnecessary
+#endif
 
 	/* run */
 	debug_step(1);

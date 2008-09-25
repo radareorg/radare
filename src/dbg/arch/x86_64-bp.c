@@ -77,7 +77,7 @@ int arch_bpsize()
 	return 1;
 }
 
-void dr_set_control (unsigned long control)
+void dr_set_control (u32 control)
 {
 	dr_set(DR_CONTROL, control);
 }
