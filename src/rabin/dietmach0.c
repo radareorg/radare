@@ -109,9 +109,8 @@ dm_read_routines (int i)
 
   printf("\ncmd \t\t\t: LC_ROUTINES\n");
   printf("cmd size \t\t: %d\n",       routines_command->cmdsize);
-
-  printf("init_address \t\t\t %d:\n",	routines_command->init_address);
-  printf("init_module \t\t\t: %d\n",	routines_command->init_module);
+  printf("init_address \t\t\t %d:\n", routines_command->init_address);
+  printf("init_module \t\t\t: %d\n",  routines_command->init_module);
   printf("reserved1 \t\t\t: %d\n",    routines_command->reserved1);
   printf("reserved2 \t\t\t: %d\n",    routines_command->reserved2);
   printf("reserved3 \t\t\t: %d\n",    routines_command->reserved3);
@@ -133,7 +132,7 @@ dm_read_twolevel_hints (int i)
   printf("\n [-] Load command %d\n", i);
 
   printf("\ncmd \t\t\t: LC_TWOLEVEL_HINTS\n");
-  printf("cmd size \t\t: %d\n",    	tlh_command->cmdsize);
+  printf("cmd size \t\t: %d\n",       tlh_command->cmdsize);
   printf("offset \t\t\t: %d\n",       tlh_command->offset);
   printf("nhints \t\t\t: %d\n",       tlh_command->nhints);
 }
@@ -561,14 +560,14 @@ dm_read_segment (int i)
   printf ("\ncmd \t\t: LC_SEGMENT\n");
   printf ("cmd size \t: %d\n",        seg_command->cmdsize);
   printf ("seg name \t: %s\n",        seg_command->segname);
-  printf ("VM Addr \t: 0x%08x\n", 	  seg_command->vmaddr);
-  printf ("VM Size \t: 0x%08x\n", 	  seg_command->vmsize);
+  printf ("VM Addr \t: 0x%08x\n",     seg_command->vmaddr);
+  printf ("VM Size \t: 0x%08x\n",     seg_command->vmsize);
   printf ("Fileoff \t: %d\n",         seg_command->fileoff);
   printf ("Filesize \t: %d\n",        seg_command->filesize);
-  printf ("Max Prot \t: 0x%08x\n", 	  seg_command->maxprot);
-  printf ("Init Prot \t: 0x%08x\n", 	seg_command->initprot);
+  printf ("Max Prot \t: 0x%08x\n",    seg_command->maxprot);
+  printf ("Init Prot \t: 0x%08x\n",   seg_command->initprot);
   printf ("NSects \t\t: %d\n",        seg_command->nsects);
-  printf ("Flags \t\t: 0x%08x\n", 	  seg_command->flags);    
+  printf ("Flags \t\t: 0x%08x\n",     seg_command->flags);    
 }
 
 void

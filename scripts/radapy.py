@@ -3,13 +3,10 @@
 # Python implementation of the radare remote protocol
 #
 
-from traceback import *
 from socket import *
-import sys
 from struct import *
-
-PORT = 9999
-FD=3434
+import traceback
+import sys
 
 RMT_OPEN   = 1
 RMT_READ   = 2
@@ -24,16 +21,16 @@ handle_cmd_seek   = None
 handle_cmd_read   = None
 handle_cmd_write  = None
 handle_cmd_open   = None
+handle_cmd_close  = None
 
 offset = 0
 size = 0
 buffer = None
 
-def handle_packet(c, key):
+def _handle_packet(c, key):
 	global offset
 	global size
 	global buffer
-#	print "Handling packet %x",key
 	if key == RMT_OPEN:
 		buffer = c.recv(2)
 		(flags, length) = unpack(">BB", buffer)
@@ -44,7 +41,6 @@ def handle_packet(c, key):
 		buf = pack(">Bi", key|RMT_REPLY, fd)
 		c.send(buf)
 	elif key == RMT_READ:
-		#print "READ command at %d ----------"%offset
 		buffer = c.recv(4)
 		(length,) = unpack(">I", buffer)
 		if handle_cmd_read != None:
@@ -56,14 +52,12 @@ def handle_packet(c, key):
 		buf = pack(">Bi", key|RMT_REPLY, lon)
 		c.send(buf+str)
 	elif key == RMT_WRITE:
-		#print "WRITE command"
 		buffer = c.recv(4)
 		(length,) = unpack(">I", buffer)
 		buffer = c.recv(length)
 		# TODO: get buffer and length
 		if handle_cmd_write != None:
 			length = handle_cmd_write (buffer)
-			
 		buf = pack(">Bi", key|RMT_REPLY, length)
 		c.send(buf)
 	elif key == RMT_SEEK:
@@ -84,42 +78,37 @@ def handle_packet(c, key):
 		buf = pack(">BQ", key|RMT_REPLY, seek)
 		c.send(buf)
 	elif key == RMT_CLOSE:
-		print "CLOSE command"
-		# XXX
+		if handle_cmd_close != None:
+			length = handle_cmd_close (fd)
 	elif key == RMT_SYSTEM:
 		buf = c.recv(4)
 		(length,) = unpack(">i", buf)
 		str = c.recv(length)
-		print "SYSTEM command (%s)"%str
-
 		if handle_cmd_system != None:
 			reply = handle_cmd_system(str)
 		else:	reply = ""
-
 		buf = pack(">Bi", key|RMT_REPLY, len(reply))
-		print "SYSTEM reply (%s)"%reply
 		c.send(buf+reply)
 	else:
-		print "UNKNOWN COMMAND"
+		print "Unknown command"
 		c.close()
-		exit(1)
 
-def handle_client(c):
+def _handle_client(c):
 	while True:
 		try:
 			handle_packet(c, ord(c.recv(1)))
 		except KeyboardInterrupt:
 			break
 		#except TypeError, foo:
-		#	print_stack()
+		#	traceback.print_stack()
 		#	break
 #		except:
 #			print "HandleClientErrorOops (%s)"%(sys.exc_info()[0])
 #			break
 
-def listen_for_clients(port):
+def listen_tcp(port):
 	s = socket();
-	s.bind(("0.0.0.0", PORT))
+	s.bind(("0.0.0.0", port))
 	s.listen(999)
 	print "Listening at port %d"%port
 	while True:
@@ -134,6 +123,3 @@ def listen_for_clients(port):
 #				break
 #	except:
 #		print "Cannot listen at port %d (%s)"%(port, "unknown")
-
-
-#listen_for_clients (PORT)

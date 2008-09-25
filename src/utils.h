@@ -12,8 +12,6 @@
 #define BUFLEN 4096
 #define CMPMIN(a,b) (a<b? a : b)
 
-int _print_fd;
-
 extern u64 last_cmp;
 extern const char hex[16];
 extern int std;

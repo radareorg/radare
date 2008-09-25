@@ -95,8 +95,9 @@ CMD_DECL(zoom);
 //CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 CMD_DECL(edit_screen_filter);
+CMD_DECL(zoom_reset);
 
-/* TODO: Move 't' and 'e' here */
+/* TODO: Move 'u', 't', 'e' ... here */
 command_t keystrokes[] = {
 	/*   key, wait, description, callback */
 	COMMAND('#', 0, "edit screen filter", edit_screen_filter),
@@ -129,7 +130,6 @@ command_t keystrokes[] = {
 
 void visual_show_help()
 {
-//#warning TODO use 0123456789 as %% places of the file ? :D that looks cool, or predefined seekz
 	cons_strcat("\x1b[2J\x1b[0;0H\n");
 	TITLE
 	cons_printf("Visual keybindings:\n");
@@ -263,9 +263,8 @@ void convert_bytes(int fmt)
 		case 'd': fmt = DATA_HEX; break;
 		case 's': fmt = DATA_STR; break;
 		case 'f': fmt = DATA_FUN; 
-radare_cmd(".af*", 0);
-return;
-break;
+			radare_cmd(".af*", 0);
+			return;
 		case '<': fmt = DATA_FOLD_C; break;
 		case '>': fmt = DATA_FOLD_O; break;
 		}
@@ -1609,26 +1608,6 @@ inc = 1;
 					}
 				} else {
 					convert_bytes(DATA_FOLD_C);
-#if 0
-					u64 sz;
-					// create new closed folder containing selected bytes
-					u64 cu = config.ocursor; //+config.baddr;
-					/* upwards */
-					if (config.cursor < config.ocursor) {
-					//	config.ocursor++;
-						sz = (config.ocursor-config.cursor)+1;
-						cu = 0;
-					} else  {
-						sz = config.cursor-config.ocursor+1;
-						cu = config.ocursor;
-					}
-//printf("SIZE: %d, OFFSET: %llx\n", (int)sz, config.seek+cu);
-//sleep (2);
-					//if (sz <0) { sz=(-sz)-1;cu = 0; sz+=2;}
-					data_add(config.seek+cu, DATA_FOLD_C);
-					data_set_len(config.seek+cu, (u64)sz);
-					cons_clear();
-#endif
 				}
 			} else {
 				config.seek-= config.block_size;
@@ -1641,11 +1620,7 @@ inc = 1;
 				int type = data_type_range(config.seek+config.cursor);
 				if (type == DATA_FOLD_C) {
 					data_set(config.seek+config.cursor, DATA_FOLD_O);
-				} /* else
-				if (aop.jump) {
-					data_add(config.seek, DATA_EXPAND);
 				}
-*/
 				cons_clear();
 				
 				// unfold or expand

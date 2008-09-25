@@ -79,8 +79,7 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 	unsigned int oldb;
 	list_for_each_prev(i, &(program->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
-		if (( addr >= bt->addr )&& (addr < (bt->addr+(u64)bt->n_bytes) ) )
-		{
+		if (( addr >= bt->addr ) && (addr < (bt->addr+(u64)bt->n_bytes) ) ) {
 			#if 0
 			printf ("addr: %lx , %lx-%lx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
 			#endif
@@ -103,7 +102,7 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 				(bt->addr+(u64)bt->n_bytes),
 				(int) bta->n_bytes);
 			#endif
-			bta->bytes = (unsigned char*) malloc (bta -> n_bytes);
+			bta->bytes = (u8*) malloc (bta -> n_bytes);
 			memcpy ( bta->bytes,  bt->bytes + bt->n_bytes, bta -> n_bytes);
 			return bta;
 		}

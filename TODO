@@ -9,6 +9,9 @@
 
 === WORK FOR 1.0 ===
 
+* compile rasc with syscall proxy with waf
+* jmphacks as a plugin
+* asm.arch=objdump
 * Added labels in history
 * hit interpolation
   - search <body> and </body>

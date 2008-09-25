@@ -18,12 +18,6 @@
  *
  */
 
-
-/*
- * TODO:
- *  * dietpe integration
- */
-
 #include "../main.h"
 #include "rabin.h"
 #include <stdio.h>
@@ -67,8 +61,6 @@ int fd       = -1;
 static int pebase = 0;
 static int elf64 = 0;
 
-/* fun */
-
 int rabin_show_help()
 {
 	printf(
@@ -76,9 +68,7 @@ int rabin_show_help()
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
 " -s        symbols (exports)\n"
-//" -o        others (other symbols)\n"
 " -c        header checksum\n"
-//" -t        type of binary\n"
 " -S        show sections\n"
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
@@ -361,48 +351,44 @@ void rabin_show_arch(char *file)
 	u32 dw;
 	u16 w;
 
-  switch(filetype)
-    {
-    case FILETYPE_MACHO:
+	switch(filetype) {
+	case FILETYPE_MACHO:
 #if HAVE_MACHO
-      dm_read_header(1);
+		dm_read_header(1);
 #endif
-      break;
-    case FILETYPE_ELF:
-      lseek(fd, 16+2, SEEK_SET);
-      read(fd, &w, 2);
-      switch(w)
-        {
-        case 3:
-          printf("arch: x86-32\n");
-          break;
-        case 0x28:
-          printf("arch: ARM\n");
-          break;
-        default:
-          printf("arch: 0x%x (unknown)\n", w);
-          break;
-        }
-      break;
-    case FILETYPE_PE:
-      // [[0x3c]+4]
-      lseek(fd, 0x3c, SEEK_SET);
-      read(fd, &dw, 4);
-      lseek(fd, dw+4, SEEK_SET);
-      read(fd, &w, 2);
-      switch(w)
-        {
-        case 0x1c0:
-          printf("arch: ARM\n");
-          break;
-        case 0x14c:
-          printf("arch: x86-32\n");
-          break;
-        default:
-          printf("arch: 0x%x (unknown)\n", w);
-        }
-      break;
-    }
+		break;
+	case FILETYPE_ELF:
+		lseek(fd, 16+2, SEEK_SET);
+		read(fd, &w, 2);
+		switch(w) {
+		case 3:
+			printf("arch: x86-32\n");
+			break;
+		case 0x28:
+			printf("arch: ARM\n");
+			break;
+		default:
+			printf("arch: 0x%x (unknown)\n", w);
+		}
+		break;
+	case FILETYPE_PE:
+		// [[0x3c]+4]
+		lseek(fd, 0x3c, SEEK_SET);
+		read(fd, &dw, 4);
+		lseek(fd, dw+4, SEEK_SET);
+		read(fd, &w, 2);
+		switch(w) {
+		case 0x1c0:
+			printf("arch: ARM\n");
+			break;
+		case 0x14c:
+			printf("arch: x86-32\n");
+			break;
+		default:
+			printf("arch: 0x%x (unknown)\n", w);
+		}
+		break;
+	}
 }
 
 void rabin_show_imports(const char *file)
@@ -595,65 +581,38 @@ int rabin_identify_header()
 	lseek(fd, 0, SEEK_SET);
 	read(fd, buf, 1024);
 
-  if ( !memcmp(buf, "\xCA\xFE\xBA\xBE", 4) )
-    {
-      if (buf[9])
-        filetype = FILETYPE_CLASS;
-      else
-        filetype = FILETYPE_MACHO;
-    }
-	else
-    {
-      if ( !memcmp(buf, "\xFE\xED\xFA\xCE", 4) )
-        {
-          filetype = FILETYPE_MACHO;
-          /* ENDIAN = BIG */
-          if (rad)
-            printf("e cfg.bigendian = big\n");
-        }
-      else
-        {
-          if ( !memcmp(buf, "CSR-", 4) )
-            {
-              filetype = FILETYPE_CSRFW;
-              //	config_set("asm.arch", "csr");
-            }
-          else
-            {
-              if ( !memcmp(buf, "dex\n009\0", 8) )
-                filetype = FILETYPE_DEX;
-              else
-                if ( !memcmp(buf, "\x7F\x45\x4c\x46", 4) )
-                  {
-                    filetype = FILETYPE_ELF;
-
-                    if (buf[EI_CLASS] == ELFCLASS64)
-                      elf64 = 1;
-                  }
-                else
-                  if ( !memcmp(buf, "\x4d\x5a", 2) )
-                    {
-                      int pe = buf[0x3c];
-                      filetype = FILETYPE_MZ;
-                      if (buf[pe]=='P' && buf[pe+1]=='E')
-                        {
-                          filetype = FILETYPE_PE;
-                          pebase = pe;
-                        }
-                    }
-                  else
-                      if (buf[2]==0 && buf[3]==0xea)
-                        {
-                          filetype = FILETYPE_ARMFW;
-                        }
-                      else
-                        {
-                          if (!rad)
-                            printf("Unknown filetype\n");
-                        }
-            }
-        }
-    }
+	if ( !memcmp(buf, "\xCA\xFE\xBA\xBE", 4) ) {
+		if (buf[9])
+			filetype = FILETYPE_CLASS;
+		else
+			filetype = FILETYPE_MACHO;
+	} else if ( !memcmp(buf, "\xFE\xED\xFA\xCE", 4) ) {
+		filetype = FILETYPE_MACHO;
+		/* ENDIAN = BIG */
+		if (rad)
+			printf("e cfg.bigendian = big\n");
+	} else if ( !memcmp(buf, "CSR-", 4) ) {
+		filetype = FILETYPE_CSRFW;
+		//	config_set("asm.arch", "csr");
+	} else if ( !memcmp(buf, "dex\n009\0", 8) ) {
+		filetype = FILETYPE_DEX;
+	} else if ( !memcmp(buf, "\x7F\x45\x4c\x46", 4) ) {
+		filetype = FILETYPE_ELF;
+		if (buf[EI_CLASS] == ELFCLASS64)
+			elf64 = 1;
+	} else if ( !memcmp(buf, "\x4d\x5a", 2) ) {
+		int pe = buf[0x3c];
+		filetype = FILETYPE_MZ;
+		if (buf[pe]=='P' && buf[pe+1]=='E') {
+			filetype = FILETYPE_PE;
+			pebase = pe;
+		}
+	} else if (buf[2]==0 && buf[3]==0xea) {
+		filetype = FILETYPE_ARMFW;
+	} else {
+		if (!rad)
+			printf("Unknown filetype\n");
+	}
 	return filetype;
 }
 

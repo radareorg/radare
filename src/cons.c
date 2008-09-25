@@ -31,7 +31,8 @@
 #include <windows.h>
 #endif
 
-int _print_fd = 1;
+static int _print_fd = 1;
+static int cons_lines = 0;
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
 char cons_palette[CONS_PALETTE_SIZE][8] = {
@@ -61,7 +62,7 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-const char *cons_color_names[CONS_COLORS_SIZE+1] = {
+static const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	"black",
 	"gray",
 	"white",
@@ -86,7 +87,7 @@ const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	NULL
 };
 
-const char *cons_colors[CONS_COLORS_SIZE+1] = {
+static const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2
@@ -113,7 +114,7 @@ const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	NULL
 };
 
-const char *pal_names[CONS_PALETTE_SIZE]={
+static const char *pal_names[CONS_PALETTE_SIZE]={
 	"prompt",
 	"address",
 	"default",
@@ -137,9 +138,7 @@ const char *pal_names[CONS_PALETTE_SIZE]={
 	NULL
 };
 
-int cons_lines = 0;
-
-const char *cons_get_color(int ch)
+static const char *cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
 		return cons_colors[ch-'0'];
@@ -148,7 +147,7 @@ const char *cons_get_color(int ch)
 	return NULL;
 }
 
-const char *cons_get_color_by_name(const char *str)
+static const char *cons_get_color_by_name(const char *str)
 {
 	int i;
 	for(i=0;cons_color_names[i];i++) {
@@ -158,7 +157,7 @@ const char *cons_get_color_by_name(const char *str)
 	return nullstr;
 }
 
-void cons_print_real(const char *buf)
+static void cons_print_real(const char *buf)
 {
 #if __WINDOWS__
 	if (_print_fd == 1)
@@ -226,7 +225,7 @@ int cons_palette_init(const unsigned char *pal)
 					}
 				}
 			} else {
-				char *ptr = cons_get_color(pal[i]);
+				const char *ptr = cons_get_color(pal[i]);
 				if (ptr)
 					strcpy(cons_palette[k], ptr);
 				else k--;
@@ -256,8 +255,6 @@ int cons_readchar()
 	if (read(0,buf,1)==-1)
 		return -1;
 #endif
-//printf("READ CHAR: (%02x) '%c'\n",buf[0], buf[0]);
-//sleep(1);
 	return buf[0];
 }
 
@@ -283,7 +280,6 @@ void cons_gotoxy(int x, int y)
         SetConsoleCursorPosition(hStdout,coord);
 }
 #else
-
 void cons_gotoxy(int x, int y)
 {
 	cons_printf("\x1b[0;0H");
@@ -717,7 +713,7 @@ void cons_flush()
 						char *ptr = strchr(buf, '\t');;
 						if (ptr) {
 							ptr[0]='\0'; ptr = ptr +1;
-							cons_buffer = strsub(cons_buffer, buf, ptr, 1);
+							cons_buffer = (char *)strsub(cons_buffer, buf, ptr, 1);
 							cons_buffer_len = strlen(cons_buffer);
 						}
 					}

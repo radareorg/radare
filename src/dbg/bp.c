@@ -165,7 +165,6 @@ int debug_bp_rm(u64 addr, int type)
 	struct bp_t *bp;
 	int ret;
 
-eprintf("RM BP!!\n");
 	bp = debug_bp_get(addr);	
 	if (bp == NULL) {
 		eprintf("debug_bp_rm: No breakpoint found at this address\n");
@@ -178,7 +177,7 @@ eprintf("RM BP!!\n");
 	if(ret < 0)
 		return ret;
 
-	flag_clear_by_addr((addr_t)addr); //"breakpoint", addr, 1);
+	flag_clear_by_addr((addr_t)addr);
 
 	bp->addr = 0;
 	ps.bps_n--;

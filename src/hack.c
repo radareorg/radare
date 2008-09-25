@@ -32,11 +32,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#if 0
-TODO:
-	printf(" 7 - negate zero flag (TODO)\n");
-#endif
-
 struct list_head hacks;
 
 int radare_hack_help()

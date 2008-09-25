@@ -39,7 +39,7 @@ struct reflines_t *code_lines_init()
 	unsigned char *ptr = config.block;
 	unsigned char *end = config.block + config.block_size;
 	struct aop_t aop;
-	int sz, bsz = 0;
+	int dt, sz, bsz = 0;
 	int index = 0;
 	u64 seek = 0;
 
@@ -49,21 +49,19 @@ struct reflines_t *code_lines_init()
 	while( ptr < end ) {
 		if (config.interrupted)
 			break;
-		{
-			int dt = data_type(config.seek+bsz);
-			if (dt != DATA_FUN && dt != DATA_CODE) {
-				u64 sz = data_size(config.seek+bsz);
-				if (sz > 0) {
-					ptr= ptr +sz;
-					bsz=bsz+sz;
-					continue;
-				}
+		dt = data_type(config.seek+bsz);
+		if (dt != DATA_FUN && dt != DATA_CODE) {
+			u64 sz = data_size(config.seek+bsz);
+			if (sz > 0) {
+				ptr= ptr +sz;
+				bsz=bsz+sz;
+				continue;
 			}
 		}
 		seek = config.seek + bsz;
 		sz = arch_aop(seek, ptr, &aop);
 		//sz = arch_aop(config.seek+bsz, ptr, &aop);
-		if (sz <1) {
+		if (sz < 1) {
 			sz = 1;
 		} else {
 			/* store data */
@@ -103,7 +101,7 @@ struct reflines_t *code_lines_init()
 
 void code_lines_free(struct list_head *list)
 {
-	// WTF!!1   What The Free!!
+	// TODO: WTF!!1   What The Free!!
 	free(list);
 }
 
@@ -165,7 +163,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 					else
 						cons_strcat("|");
 				} else
-					if (!expand) {
+				if (!expand) {
 					C {
 						if (ch=='-')
 							cons_printf(C_WHITE"-");
@@ -173,7 +171,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 							cons_printf(C_YELLOW"=");
 						else cons_printf("%c",ch);
 					} else cons_printf("%c",ch);
-					}
+				}
 			} else {
 				C cons_strcat(C_WHITE);
 				/* up */
@@ -216,9 +214,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 	C cons_printf(C_RESET);
 }
 
-/* code analyze */
-
-/* not working properly */
+/* XXX not working properly */
 int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 {
 	struct aop_t aop;
@@ -231,7 +227,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks =(int) config_get_i("graph.callblocks");
 	int jmpblocks = (int) config_get_i("graph.jmpblocks");
-        int refblocks = (int)config_get_i("graph.refblocks");
+        int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
 	// too deep! chop branch here!

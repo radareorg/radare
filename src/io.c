@@ -20,6 +20,25 @@
 
 #include "main.h"
 
+#if DEBUGGER
+int radare_dump_section(char *tmpfile)
+{
+	u64 f, t, s;
+	int ret = radare_get_region(&f, &t);
+	s = t-f;
+
+	if (ret == 0 || f == 0 || t == 0) {
+		cons_printf("Cannot get region range\n");
+		return 1;
+	}
+	cons_printf("Current section is: 0x%08llx 0x%08llx\n", f, t);
+	make_tmp_file(tmpfile);
+	radare_dump(tmpfile, s);
+
+	return 0;
+}
+#endif
+
 int radare_read_at(u64 offset, unsigned char *data, int len)
 {
 	int ret;
@@ -114,15 +133,6 @@ int radare_write(const char *argro, int mode)
 	}
 
 	arg[len]='\0';
-
-#if 0
-	/* this is handled in cmds.c */
-	if (config.cursor_mode) {
-		config.ocursor = seek;
-		seek += config.cursor;
-		config.cursor = seek;
-	}
-#endif
 
 	radare_seek(seek, SEEK_SET);
 
@@ -268,25 +278,6 @@ int radare_dump(const char *arg, int size)
 	return 1;
 }
 
-#if DEBUGGER
-int radare_dump_section(char *tmpfile)
-{
-	u64 f, t, s;
-	int ret = radare_get_region(&f, &t);
-	s = t-f;
-
-	if (ret == 0 || f == 0 || t == 0) {
-		cons_printf("Cannot get region range\n");
-		return 1;
-	}
-	cons_printf("Current section is: 0x%08llx 0x%08llx\n", f, t);
-	make_tmp_file(tmpfile);
-	radare_dump(tmpfile, s);
-
-	return 0;
-}
-#endif
-
 u64 radare_seek(u64 offset, int whence)
 {
 	u64 seek = 0;
@@ -349,7 +340,7 @@ int radare_read(int next)
 	if (config.fd == -1)
 		return 0;
 
-	if (config.seek==-1) {
+	if (config.seek == -1) {
 		config.seek = 0;
 		ret = config.block_size;
 	} else {
@@ -359,17 +350,7 @@ int radare_read(int next)
 
 		memset(config.block, '\xff', config.block_size);
 		ret = io_read(config.fd, config.block, config.block_size);
-#if 0
-		// XXX wrong aligned memory read !!! first 4 bytes are trash
-		if (ret!=-1 && ret<config.block_size) {// aligned read
-			radare_seek(config.seek+config.seek%4, SEEK_SET);
-			ret = io_read(config.fd, config.block+(config.seek%4), config.block_size);
-		}
-#endif
 	}
-
-	if (ret == -1)
-		perror("radare_read()==-1");
 
 	return ret;
 }
