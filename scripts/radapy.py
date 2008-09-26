@@ -45,7 +45,11 @@ def _handle_packet(c, key):
 		(length,) = unpack(">I", buffer)
 		if handle_cmd_read != None:
 			str = handle_cmd_read(length)
-			lon = len(str)
+			try:
+				lon = len(str)
+			except:
+				str = ""
+				lon = 0
 		else:
 			str = ""
 			lon = 0;
@@ -96,7 +100,7 @@ def _handle_packet(c, key):
 def _handle_client(c):
 	while True:
 		try:
-			handle_packet(c, ord(c.recv(1)))
+			_handle_packet(c, ord(c.recv(1)))
 		except KeyboardInterrupt:
 			break
 		#except TypeError, foo:
@@ -114,7 +118,7 @@ def listen_tcp(port):
 	while True:
 		(c, (addr,port)) = s.accept()
 		print "New client %s:%d"%(addr,port)
-		handle_client(c)
+		_handle_client(c)
 
 #			try:
 #			except:

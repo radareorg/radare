@@ -31,6 +31,14 @@
 
 int pids_sons_of_r(int pid, int recursive, int limit);
 
+int pids_sons_of(int pid)
+{
+	char buf[512];
+	pids_cmdline(pid, buf);
+	printf("-+- %d : %s\n",pid, buf);
+	return pids_sons_of_r(pid,0,999);
+}
+
 #if 0
 int pids_cmdline(int pid, char *cmdline)
 {
@@ -142,13 +150,6 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 }
 #endif
 
-int pids_sons_of(int pid)
-{
-	char buf[512];
-	pids_cmdline(pid, buf);
-	printf("-+- %d : %s\n",pid, buf);
-	return pids_sons_of_r(pid,0,999);
-}
 
 #if 0
 int pids_list()
