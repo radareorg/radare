@@ -1206,7 +1206,34 @@ This case is quite stupid, but if you work with JPEGs or on ARM for example, you
 
 \H{search-filerules} Search using rules file
 
-TODO
+You can specify a list of keywords in a single file with its binary mask and use the search engine to find them.
+
+The file format should be something like this:
+
+\c $ cat token 
+\c token:  Library token
+\c         string: lib
+\c         mask:   ff 00 ff
+\c 
+\c token:  Realtime
+\c         string: rt
+\c         mask:   ff ff
+
+Note that tab is used to indent the 'string' and 'mask' tokens. The first line specifies the keyword name which have nothing to do with the search.
+
+\c [0x08049A80]> /. /tmp/token 
+\c Using keyword(Library token,lib,ff 00 ff)
+\c Using keyword(Realtime,rt,ff ff)
+\c Keywords: 2
+\c 29 hits found
+
+Now you can move to the 'search' flag space and list the hits with the 'f' command.
+
+\c [0x08049A80]> fs search
+\c [0x08049A80]> f
+\c ...
+
+Use the '/n' command to seek between the hits. Or just 'n' and 'N' keys in visual mode.
 
 \H{search-asm} Search in assembly
 

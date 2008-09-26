@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       esteve <@eslack.org>
  *
  * Contributions:
@@ -29,21 +29,20 @@
 #include "binparse.h"
 #include "utils.h"
 
-//
-// Token file format
-// =================
-//
-// token-list:\n
-// \t$\x90\x80\x20\x10$tokname
-// \t$hola$toklist
-// \t$\xFF\xFF\xFF$toktag
-// \t$\xFF\xFF\x/F$tokhelp
-// \t$[\x20-\x30]$blah
-// \t$$ALL
-// --->per ordre, no pot tenir conflicte a esquerres
-//
-
 #if 0
+
+token file example:
+------------------------------
+token:  Library token
+        string: lib
+        mask:   ff 00 ff
+token:  Fruit for the loom
+        string: rt
+        mask:   ff ff
+------------------------------
+#endif
+
+#if 1
 static void print_tok_list(tokenlist* toklist) 
 {
 	int i;
@@ -66,17 +65,20 @@ static void print_tokenizer ( tokenizer* ptokenizer )
 }
 #endif
 
+#if 0
 static char* fd_readline ( int fd, char* line, int maxsize )
 {
-	int i;
+	int i,ret ;
 	memset(line, 0x00, maxsize); 
 	for (i=0; i<maxsize; i++) {
-		read (fd, line + i, 1);
+		ret = read (fd, line + i, 1);
+		if (ret <1) return NULL;
 		if (line[i] =='\n') break;
 	}
 	line[i+1]=0;
 	return line;
 }
+#endif
 
 static int indent_count( int fd )
 {
@@ -211,7 +213,6 @@ static int tok_parse (char* str, int len, token * tlist )
 	return tokact;
 }
 
-
 // line , IN rep linia tokens, surt llista token
 tokenlist* get_tok_list(char* line, int maxlen) 
 {
@@ -272,38 +273,125 @@ int binparse_add_search(tokenizer *t, int id)
 	return binparse_add(t, token, mask);
 }
 
+static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
+{
+	tokenlist *tls;
+	void *tlist = 0;
+	int ntok = 0;
+	int len;
+	int masklen;
+	char maskout[300];
+
+	tls = malloc( sizeof(tokenlist) );
+	// TODO mask not yet done
+	len = strlen(token);
+	tlist = malloc( (sizeof (token) * len) + 1 );
+	ntok = tok_parse(token, len, tlist);
+
+	tls->tl = tlist;
+	tls->numtok = ntok;
+	/* tls->lastpos = 0; */
+	tls->estat = 0;
+	strcpy ( tls->name , name ); // XXX bof here!
+	
+	if ( mask == NULL )
+		mask = "ff";
+
+	masklen = binparse_get_mask_list ( mask , maskout );
+	binparse_apply_mask ( maskout, masklen , tlist , ntok ) ;
+
+	//print_tok_list ( tls ) ;
+	return tls;
+}
+
+
+int binparse_add(tokenizer *t, char *string, char *mask)
+{
+	int n = t->nlists;
+	char name[32];
+
+	if (string == NULL)
+		return n;
+	t->nlists++;
+	snprintf(name, 31, "SEARCH[%d]", n);
+	t->tls    = (tokenlist **) realloc(t->tls, t->nlists*sizeof(tokenlist*));
+	t->tls[n] = binparse_token_mask(name, string, mask);
+
+	return n;
+}
+
+int binparse_add_name(tokenizer *t, char *name, char *string, char *mask)
+{
+	int ret = binparse_add(t, string, mask);
+	strncpy(t->tls[ret]->name, strdup(name), 200);
+	return ret;
+}
+
+const char *str_get_arg(const char *buf)
+{
+	const char *str;
+	str = strchr(buf, ':');
+	if (str != NULL)
+		str = strchr(str+1, '\t');
+	if (str == NULL)
+		return NULL;
+	str = strdup(str+1);
+	return str;
+}
+
 tokenizer* binparse_new_from_file(char *file)
 {
-	int i, fd;
-	char line[300];
-	tokenlist* tlist;
-	tokenizer* tll;
-	tokenlist* tllaux[200];
+	char buf[2049];
+	FILE *fd;
+	tokenizer *tok;
+	char *str  = NULL;
+	char *mask = NULL;
+	char *name = NULL;
 
-	fd = open ( file, O_RDONLY );
-	if (fd == -1) {
-		D fprintf(stderr, "Cannot open %s\n", file);
+	tok = binparse_new(0);
+	fd = fopen(file, "r");
+	if (fd == NULL) {
+		eprintf("Cannot open file '%s'\n", file);
 		return NULL;
 	}
-	//Busco l'string token-list:\n
-	while ( strcmp( fd_readline(fd, line, 300 ), "token-list:\n") );
+	while(!feof(fd)) {
+		/* read line */
+		buf[0]='\0';
+		fgets(buf, 2048, fd);
+		if (buf[0]=='\0') continue;
+		buf[strlen(buf)-1]='\0';
 
-	//Compto quants \t hi ha
-	for(i=0; (i<200) && (indent_count(fd) == 1); i++) {
-		//printf ("token-decl: %s\n",fd_readline ( fd, line, 300 ) );
-		fd_readline ( fd, line, 300 );
-		tlist = get_tok_list (  line, 300 ) ;
-		//print_tok_list ( tlist );
-		tllaux[i] = tlist;
+		/* find token: */
+		if (!memcmp(buf, "token:",6)) {
+			if (str != NULL) {
+				eprintf("new keyword(%s,%s,%s)\n", name, str, mask);
+				binparse_add_name(tok, name, str, mask);
+				free(name); name = NULL;
+				free(str);  str  = NULL;
+				free(mask); mask = NULL;
+			}
+			free(name);
+			name = str_get_arg(buf);
+		} else
+		if (!memcmp(buf, "\tstring:", 8)) {
+			str = str_get_arg(buf);
+		} else
+		if (!memcmp(buf, "\tmask:", 6)) {
+			mask = str_get_arg(buf);
+		}
 	}
 
-	tll = binparse_new(i);
-	memcpy(tll->tls, tllaux, i * sizeof (tokenlist*));
-	tll->nlists = i;
+	if (str != NULL) {
+		eprintf("new keyword(%s,%s,%s)\n", name, str, mask);
+		binparse_add_name(tok, name, str, mask);
+	}
 
-	close(fd);
-	
-	return tll ;
+	free(name);
+	free(str);
+	free(mask);
+	printf("TOKEN ELEMENTS: %d\n", tok->nlists);
+
+	return tok;
 }
 
 int binparse_get_mask_list ( char* mask , char* maskout )
@@ -338,59 +426,19 @@ void binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
 		tlist[i].mask = maskout[i%masklen];
 }
 
-static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
-{
-	tokenlist *tls;
-//	token * tlist;
-	void *tlist = 0;
-	int ntok = 0;
-	int len;
-	int masklen;
-	char maskout[300];
-
-	tls = malloc(sizeof( tokenlist )) ;
-	// TODO mask not yet done
-	len = strlen(token);
-	tlist = malloc( (sizeof (token) * len) + 1 );
-	ntok = tok_parse(token, len, tlist);
-
-	tls->tl = tlist;
-	tls->numtok = ntok;
-	/* tls->lastpos = 0; */
-	tls->estat = 0;
-	strcpy ( tls->name , name ); // XXX bof here!
-	
-	if ( mask == NULL )
-		mask = "ff";
-
-	masklen = binparse_get_mask_list ( mask , maskout );
-	binparse_apply_mask ( maskout, masklen , tlist , ntok ) ;
-
-	//print_tok_list ( tls ) ;
-	return tls;
-}
-
-int binparse_add(tokenizer *t, char *string, char *mask)
-{
-	int n = t->nlists;
-	char name[32];
-
-	if (string == NULL)
-		return n;
-	t->nlists++;
-	snprintf(name, 31, "SEARCH[%d]", n);
-	t->tls    = (tokenlist **) realloc(t->tls, t->nlists*sizeof(tokenlist*));
-	t->tls[n] = binparse_token_mask(name, string, mask);
-
-	return n;
-}
-
-int update_tlist(tokenizer* t, unsigned char inchar, u64 where )
+/* -1 = error, 0 = skip, 1 = hit found */
+int update_tlist(tokenizer* t, u8 inchar, u64 where )
 {
 	unsigned char cmin;
 	unsigned char cmax;
 	unsigned char cmask;
 	int i;
+
+	if (t->nlists == 0) {
+		eprintf("No tokens defined\n");
+		config.interrupted = 1;
+		return -1;
+	}
 
 	for (i=0; i<t->nlists; i++ ) {
 		cmin = (t->tls[i]->tl[t->tls[i]->estat]).mintok;
@@ -413,8 +461,9 @@ int update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 		if ( t->tls[i]->estat == (t->tls[i]->numtok) ) {
 			t->tls[i]->actp[t->tls[i]->estat+1] = 0 ;
 			t->tls[i]->actp[0] = 0 ; //rststr
-			if (!t->callback(t, i, (u64)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
-				return 1;
+			if (t->callback != NULL)
+				if (!t->callback(t, i, (u64)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
+					return 1;
 			t->tls[i]->estat = 0 ;
 		}
 	}
@@ -425,10 +474,13 @@ int update_tlist(tokenizer* t, unsigned char inchar, u64 where )
 void tokenize(int fd, tokenizer* t)
 {
 	char ch;
+	int ret;
 	int where = lseek(fd, (off_t)0, SEEK_CUR);
+
 	while(1) {
 		if ( read(fd, &ch, 1) <= 0 ) break;
-		update_tlist(t, ch, where); 
+		ret = update_tlist(t, ch, where); 
+		if (ret == -1) break;
 		where++;
 	}
 }

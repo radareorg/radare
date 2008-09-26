@@ -155,12 +155,12 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 	return 0;
 }
 
-
 int search_from_file(char *file)
 {
-	int i;
+	int i,ret;
 	u64 tmp = config.seek;
 	tokenizer *t = binparse_new_from_file(file);
+	t->callback = &radare_tsearch_callback;
 
 	if (t == NULL)
 		return 0;
@@ -170,9 +170,15 @@ int search_from_file(char *file)
 	D go_alarm(search_alarm);
 #endif
 	radare_controlc();
-	for(radare_read(0);!config.interrupted;radare_read(1))
-		for(i=0;i<config.block_size;i++)
-			update_tlist(t, config.block[i], config.seek+i);
+	// TODO: do it generic (as for init)
+	radare_cmd("fs search", 0);
+	for(radare_read(0);!config.interrupted&& config.seek < config.size;radare_read(1)) {
+		for(i=0;i<config.block_size;i++) {
+			ret = update_tlist(t, config.block[i], config.seek+i);
+			if (ret == -1)
+				break;
+		}
+	}
 
 	radare_controlc_end();
 #if __UNIX__
@@ -212,7 +218,7 @@ int search_range(char *range)
 	search_verbose = (int)config_get("search.verbose");
 
 	nhit = 0;
-	t = binparse_new();
+	t = binparse_new(0);
 	align = config_get_i("search.align");
 	t->callback = &radare_tsearch_callback;
 	len = strlen(range);
@@ -261,6 +267,7 @@ int search_range(char *range)
 	limit = config.limit;
 	if (search_to!=0)
 		limit = search_to;
+
 	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
 		s = config.seek;
 		if (i==0) {
@@ -269,7 +276,7 @@ int search_range(char *range)
 		}
 		if (limit && config.seek >= limit) break;
 		if (config.debug && config.seek == 0xFFFFFFFF) break;
-		for(i=0;i<config.block_size;i++) {
+		for(i=0;!config.interrupted && i<config.block_size;i++) {
 			if (update_tlist(t, config.block[i], config.seek+i)) {
 				config.seek = s;
 				radare_read(0);

@@ -1571,10 +1571,14 @@ CMD_DECL(search) {
 				i = (text[1]=='+')?1:-1;
 			radare_search_seek_hit(i);
 			break;
+		case '?':
+			eprintf("/n[+,-,#]      ; seek to search hit next, previous or number N\n");
+			break;
 		default:
 			radare_search_seek_hit(atoi(text+1));
 			break;
 		}
+		break;
 	case 'k':
 		if (text[1]=='?') {
 			eprintf("/k[number] [keyword]\n");
