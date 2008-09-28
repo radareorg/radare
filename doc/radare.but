@@ -2948,6 +2948,138 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGIO      (DEFAULT)
 \c [0xB7FA8810]> 
 
+\C{debug-bochs} Debugging with bochs and python
+
+radare can be easily adapted to be a frontend for other debuggers. Ero Carrera has written a python interface for instrumentating bochs. Having python embedded on a debugger is just simple to use radare as a frontend to launch scripts.
+
+So, understand this bochs implementation as simple as for the immunity debugger or vtrace. for example :)
+
+The magic resides in the 'radapy.py' python module included in the scripts/ directory of the sources. It should be installed in the /usr/lib/python2.5 or similar directory, so you can type from any python console "import radapy" to test it.
+
+\c $ python
+\c >>> import radapy
+
+This module implements a python version of the network protocol of radare to be used together with connect://.
+
+There's also another python module called 'radapy_bochs' which implements the interface of radapy to interact between ero's python-bochs instrumentation api and a remote radare. The port can be configured if we just call 'radapy.listen_tcp( PORT )' from the bochs-python console.
+
+To open the debugger interface in radare we just have to append 'dbg://' to the end of the 'connect://' uri.
+
+\H{debug-bochs-demo} Demo
+
+We will need a bochs compiled with the Ero patches to provide the python instrumentation with the CVS version.
+
+\c $ cvs -d:pserver:anonymous@bochs.cvs.sourceforge.net:/cvsroot/bochs login
+\c $ cvs -z3 -d:pserver:anonymous@bochs.cvs.sourceforge.net:/cvsroot/bochs co -P bochs
+\c  ...
+\c $ cd bochs
+\c $ patch -p1 < bochs-python-ero.patch
+\c $ ./configure --enable-debugger --enable-instrumentation=python_hooks --enable-all-optimizations --enable-show-ips --enable-global-pages --enable-fpu --enable-pci --enable-cpu-le     vel=6 --enable-vbe --enable-repeat-speedups --enable-guest2host-tlb --enable-ignore-bad-msr --enable-pae --enable-mtrr --enable-trace-cache --enable-icache --enable-fast-function-calls --enable-host-specific-asms --enable-mmx --enable-sse=4 --enable-sse-extension --enable-sep --enable-x86-debugger
+\c ...
+\c $ make
+\c ...
+\c $ sudo make install
+\c ...
+
+Now we have to open a bochs session and initialize the radapy-bochs interface.
+
+\c $ bochs
+\c 00000000000i[APIC?] local apic in  initializing
+\c ========================================================================
+\c                      Bochs x86 Emulator 2.3.7.cvs
+\c              Build from CVS snapshot, after release 2.3.7
+\c ========================================================================
+\c 00000000000i[     ] reading configuration from .bochsrc
+\c ------------------------------
+\c Bochs Configuration: Main Menu
+\c ------------------------------
+\c 
+\c This is the Bochs Configuration Interface, where you can describe the
+\c machine that you want to simulate.  Bochs has already searched for a
+\c configuration file (typically called bochsrc.txt) and loaded it if it
+\c could be found.  When you are satisfied with the configuration, go
+\c ahead and start the simulation.
+\c 
+\c You can also start bochs with the -q option to skip these menus.
+\c 
+\c 1. Restore factory default configuration
+\c 2. Read options from...
+\c 3. Edit options
+\c 4. Save options to...
+\c 5. Restore the Bochs state from...
+\c 6. Begin simulation
+\c 7. Quit now
+\c 
+\c Please choose one: [6] 
+\c 00000000000i[     ] installing x module as the Bochs GUI
+\c 00000000000i[     ] using log file bochsout.txt
+\c Next at t=0
+\c (0) [0xfffffff0] f000:fff0 (unk. ctxt): jmp far f000:e05b         ; ea5be000f0
+\c bochs-python: environment variable "BOCHS_PYTHON_INIT" not set
+\c
+\c >>> import radapy_bochs
+\c
+\c Listening at port 9998
+
+Now is time to launch our radare against this port!
+
+\c $ radare connect://127.0.0.1:9998/dbg://bochs
+\c Connected to 127.0.0.1:9998
+
+We can just enter in visual mode to make the debugging more pleasant, and obviously we need to disassemble in 16 bit. EIP is calculated from CS_base+EIP only for flags.
+
+\c [0x000F05F7]> e asm.arch=intel16
+\c [0x000F05F7]> V
+
+\c [0x000F05F7]> 
+\c Stack:
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x0000FFC6  d0ff 9c08 00f0 9401 0000 f0ff d50c 0400 00f0 ..................
+\c 0x0000FFD8, 9401 0000 0000 0000 0000 0000 9401 0000 f8ff ..................
+\c 0x0000FFEA  0000 0100 0073 faff e117 0400 f7d7 9401 0000 .....s............
+\c 0x0000FFFC, c1e0 0000 0000 0000 0000 0000                ............      
+\c Registers:
+\c   eax  0x0000f000    esi  0x00000000    eip     0x000005f7
+\c   ebx  0x0000fff8    edi  0x00000500    oeax    0x0000f000
+\c   ecx  0x00000000    esp  0x0000ffc6    eflags  0x00000082
+\c   edx  0x00000f00    ebp  0x0000ffc6    cr0     0x60000010
+\c   dr0 0x00000000   dr1 0x00000000   dr2 0x00000000   dr3 0x00000000
+\c Disassembly:
+\c           0x000F05F7        eip: 53              push bx             
+\c           0x000F05F8,            1e              push ds             
+\c           0x000F05F9             8b4604          mov ax, [bp+0x4]    
+\c           0x000F05FC,            8ed8            mov ds, ax          
+\c           0x000F05FE             8b5e06          mov bx, [bp+0x6]    
+\c           0x000F0601             8a07            mov al, [bx]        
+\c           0x000F0603             1f              pop ds              
+\c           0x000F0604,            5b              pop bx              
+\c           0x000F0605             5d              pop bp              
+\c           0x000F0606             c3              ret                 
+\c           0x000F0606          ; ------------------------------------ 
+\c           0x000F0607             55              push bp             
+\c           0x000F0608,            89e5            mov bp, sp          
+\c           0x000F060A             53              push bx             
+
+
+The '!help' will show us the available commands
+
+[0x000F05F7]> !help
+Bochs-python remote debugger
+ !?                     : alias for !help
+ !reg [reg] ([value])   : get/set CPU registers
+ !regs[*]               : show CPU registers
+ !cregs                 : show control registers
+ !fpregs                : show FPU registers
+ !st                    : print stack
+ !bp [[-]addr]          : breakpoints
+ !cont                  : continue execution
+ !step [n]              : perforn N steps
+ !stepo [n]             : step over
+ !mem [physical|linear] : select memory addressing
+ !exec [python-expr]    : execute python expression remotely
+
+Have fun!
+
 \C{script} Scripting
 
 TODO: explain

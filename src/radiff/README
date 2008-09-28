@@ -41,13 +41,13 @@ Step 2: Diff both RDBs
   of IDA in my own format. These two databases are stored in memory and
   generates 
 
-  $ rbdiff program0.rdb program1.rdb > program01.txt
+  $ radiff -r program0.rdb program1.rdb > program01.txt
 
 
 Step 3: State of the art
 -------
 
-  rbdiff supports multiple output formats
+  radiff -r supports multiple output formats
 
 Algorithm
 ---------

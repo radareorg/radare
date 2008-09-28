@@ -99,7 +99,7 @@ int syscall_name_to_int(const char *str)
 	return 0;
 }
 
-void debug_os_syscall_list()
+void syscall_list()
 {
 	int i;
 	struct syscall_t *sysptr = syscall_by_os(config_get("asm.os"));

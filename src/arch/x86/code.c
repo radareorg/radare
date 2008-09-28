@@ -38,9 +38,11 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	aop->type = AOP_TYPE_UNK;
 
 	switch(bytes[0]) {
+	case 0x8a:
 	case 0x8b:
 		switch(bytes[1]) {
 		case 0x45:
+		case 0x46:
 		case 0x55:
 			/* mov -0xc(%ebp, %eax */
 			aop->ref = (u64)(-((char)bytes[2]));

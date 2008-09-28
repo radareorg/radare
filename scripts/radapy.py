@@ -31,6 +31,7 @@ def _handle_packet(c, key):
 	global offset
 	global size
 	global buffer
+	ret = ""
 	if key == RMT_OPEN:
 		buffer = c.recv(2)
 		(flags, length) = unpack(">BB", buffer)
@@ -44,17 +45,17 @@ def _handle_packet(c, key):
 		buffer = c.recv(4)
 		(length,) = unpack(">I", buffer)
 		if handle_cmd_read != None:
-			str = handle_cmd_read(length)
+			ret = str(handle_cmd_read(length))
 			try:
-				lon = len(str)
+				lon = len(ret)
 			except:
-				str = ""
+				ret = ""
 				lon = 0
 		else:
-			str = ""
+			ret = ""
 			lon = 0;
 		buf = pack(">Bi", key|RMT_REPLY, lon)
-		c.send(buf+str)
+		c.send(buf+ret)
 	elif key == RMT_WRITE:
 		buffer = c.recv(4)
 		(length,) = unpack(">I", buffer)
@@ -87,11 +88,11 @@ def _handle_packet(c, key):
 	elif key == RMT_SYSTEM:
 		buf = c.recv(4)
 		(length,) = unpack(">i", buf)
-		str = c.recv(length)
+		ret = c.recv(length)
 		if handle_cmd_system != None:
-			reply = handle_cmd_system(str)
+			reply = handle_cmd_system(ret)
 		else:	reply = ""
-		buf = pack(">Bi", key|RMT_REPLY, len(reply))
+		buf = pack(">Bi", key|RMT_REPLY, len(str(reply)))
 		c.send(buf+reply)
 	else:
 		print "Unknown command"
