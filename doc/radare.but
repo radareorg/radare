@@ -105,14 +105,11 @@ The current build system is 'waf':
 \c $ sudo ./waf install
 \c ...
 
-#if DEPRECATED
-There's some work for porting the ACR/GMAKE build system to WAF, but it's not finished or tested enought, so I encourage you to use the basic way to configure, compile and install the software:
+The old build system based on ACR/GMAKE stills maintained and usable, but don't relay on it because it is aimed to be removed to only use waf.
 
 \c $ ./configure --prefix=/usr
 \c $ gmake
 \c $ sudo gmake install
-
-#endif
 
 \H{cmdflags} Commandline flags
 
@@ -221,7 +218,7 @@ The values can be numbers in many formats:
 \c 10K     : KBytes  10*1024
 \c 10M     : MBytes  10*1024*1024
 
-\H{expr-xc} XC
+\H{expr-xc} Xc
 
 The 'xc' utility comes with the radare framework and aims to be a minimalistic expression evaluator for the shell useful for making base conversions easily between floating point values, hexadecimal representations, hexpair strings to ascii, octal to integer. It supports endianness and can be used as a shell if no arguments given.
 
@@ -364,11 +361,11 @@ There are two enhaced interfaces to help users to interactively configure this h
 
 To get a help about this command you can type 'e?':
 
-[0x4A13B8C0]> e?
-Usage: e[m] key=value
-   > ereset              ; reset configuration
-   > emenu               ; opens menu for eval
-   > e scr.color = true  ; sets color for terminal
+\c [0x4A13B8C0]> e?
+\c Usage: e[m] key=value
+\c    > ereset              ; reset configuration
+\c    > emenu               ; opens menu for eval
+\c    > e scr.color = true  ; sets color for terminal
 
 Note the 'e' of emenu, which stands for 'eval'. In radare, all basic commands can be reduced to a single char, and you can just type 'e?' to get the help of all the 'subcommands' for the basic command.
 
@@ -443,6 +440,10 @@ Choose the endian flavour 'true' for big, 'false' for little.
 \c file.id
 
 When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
+
+\c file.analyze
+
+When enabled runs '.af* @@ sym_' command and other ones to determine the maximum information about the code analysis of the program. This will not be used while opening a project file, so it is preloaded.
 
 \c file.flag
 
@@ -627,7 +628,7 @@ This is a list of the available print modes listable with 'p?':
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
 
-\H{print-hexa}
+\S{print-hexa} Hexadecimal
 
 User-friendly way:
 
@@ -664,11 +665,12 @@ Basic size types governed by endian:
 
 \c [0x08049A80]> p8 16
 \c 31 ed 5e 89 e1 83 e4 f0 50 54 52 68 60 9e 05 08 
+\c
 \c [0x08049A80]> p64 16
 \c 0x31ed5e89e183e4f0 
 \c 0x50545268609e0508 
 
-\H{print-dates}
+\S{print-dates} Date formats
 
 The current supported timestamp print modes are:
 
@@ -693,36 +695,46 @@ As you can see, the endianness affects to the print formats. Once printing these
 \c [0x08048000]> pt | grep 2022
 \c 27:04:2022 16:15:43 +0000
 
-\H{print-basic-types}
+\S{print-basic-types} Basic types
 
 \c  f : float                   4 bytes
 \c  i : integer                 4 bytes
 \c  l : long                    4 bytes
 \c  L : long long               8 bytes
 
-\H{print-hexa}
+TODO: add examples + doc
 
-\c  h : half word (short)       2 bytes
-\c  w : hexadecimal word        2 bytes
-\c  W : hexadecimal dword       4 bytes
-\c  x : hexadecimal byte pairs  N byte
-\c  X : hexadecimal string      N byte
-
-\H{print-source}
+\S{print-source} Source (asm, C)
 
 \c  c : C format                N bytes
 \c  s : asm shellcode           (null)
 
-\H{print-strings}
+\c [0xB7F8E810]> pc 32
+\c #define _BUFFER_SIZE 32
+\c unsigned char buffer[_BUFFER_SIZE] = {
+\c 0x89, 0xe0, 0xe8, 0x49, 0x02, 0x00, 0x00, 0x89, 0xc7, 0xe8, 0xe2, 0xff, 0xff, 
+\c 0xff, 0x81, 0xc3, 0xd6, 0xa7, 0x01, 0x00, 0x8b, 0x83, 0x00, 0xff, 0xff, 0xff, 
+\c 0x5a, 0x8d, 0x24, 0x84, 0x29, 0xc2 };
+
+\c [0xB7F8E810]> ps 32
+\c eip:
+\c .byte 0x89, 0xe0, 0xe8, 0x49, 0x02, 0x00, 0x00, 0x89, 0xc7, 0xe8, 0xe2
+\c .byte 0xff, 0xff, 0xff, 0x81, 0xc3, 0xd6, 0xa7, 0x01, 0x00, 0x8b, 0x83
+\c .byte 0x00, 0xff, 0xff, 0xff, 0x5a, 0x8d, 0x24, 0x84, 0x29, 0xc2
+\c .equ eip_len, 32
+
+
+\S{print-strings} Strings
 
 \c  a : ascii                   (null)
 \c  A : ascii printable         (null)
 \c  r : raw ascii               (null)
-\c  X : hexadecimal string      N byte
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
 
-\H{print-memory}
+TODO: add examples + explanation
+
+\S{print-memory} Format
 
 It is possible to print various packed data types in a single line using the 'pm' command (print memory). Here's the help and some examples:
 
@@ -745,9 +757,8 @@ It is possible to print various packed data types in a single line using the 'pm
 \c 0xbf8614d4 = 0xb7f22ff4 
 \c 0xbf8614d8 = 0xb7f16818 
 \c 0xbf8614dc  0xbf8614dc -> 0x00000000 /etc/ld.so.cache 
-\c [0xB7F08810]>
 
-\H{print-code}
+\S{print-code} Disassembly
 
 The 'pd' command is the one used to disassemble code, it accepts a numeric value to specify how many opcodes are wanted to be disassembled. The 'pD' one acts in the same way, but using a number-of-bytes instead of counting instructions.
 
@@ -764,7 +775,7 @@ If you prefer a smarter disassembly with offset and opcode prefix the 'pd' comma
 
 The ',' near the offset determines if the address is aligned to 'cfg.addrmod' (this is 4 by default).
 
-\S{print-code-arch}
+\S{print-code-arch} Selecting the architecture
 
 The architecture flavour for the disassembly is defined by the 'asm.arch' eval variable. Here's a list of all the supported architectures:
 
@@ -786,7 +797,7 @@ The architecture flavour for the disassembly is defined by the 'asm.arch' eval v
 \c csr
 \c msil
 
-\S{print-code-config}
+\S{print-code-config} Configuring the disassembly
 
 There are multiple options that can be used to configure the output of the disassembly
 
@@ -811,7 +822,7 @@ There are multiple options that can be used to configure the output of the disas
 \c asm.splitall = false   ; split all blocks by lines
 \c asm.size = false       ; show size of opcode
 
-\S{print-code-syntax}
+\S{print-code-syntax} Disassembly syntax
 
 The syntax is the flavour of disassembly syntax prefered to be used by the disasm engine.
 
@@ -911,7 +922,7 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
-\H{flagsint} Flag intersections
+\S{flagsint} Flag intersections
 
 The '/' command for searching registers some flags for the hit results. You can use them to draw intersection vectors between these hits and be able to determine block sizes from a header and a footer search keywords.
 
@@ -1004,6 +1015,8 @@ Here's a sample session working with undo writes:
 \c [0x00000000]> u -0
 \c [0x00000000]> p8 3 @ 0x100
 \c 90 90 90 
+
+Note: Read 'undo-seek' for seeking history manipulation.
 
 \H{yank} Yank/Paste
 
@@ -1561,67 +1574,12 @@ The hack plugins are just shared libraries that have access to some internal api
 
 In this way it is possible to perform any action in the core just formatting command strings and parsing its output.
 
+All language bindings (python, lua, ...) are implemented as hack plugins. See 'scripting' section for detailed information.
+
 \S{jmphacks} Jump hacks
 
 TODO: needs to be rewritten into a plugin (outside the core)
 TODO: nop N opcodes, invert jump, force jump... !jmp and !call
-
-\S{langs} Language bindings
-
-All language bindings supported by radare to script some actions are implemented as hack plugins.
-
-LUA is probably the cleaner implementation of a language binding for radare, i recommend you to read the source at 'src/plug/hack/lua.c'. Here's the structure to register the plugin:
-
-\c int radare_plugin_type = PLUGIN_TYPE_HACK;
-\c struct plugin_hack_t radare_plugin = {
-\c         .name = "lua",
-\c         .desc = "lua plugin",
-\c         .callback = &lua_hack_cmd
-\c };
-
-The 'lua_hack_cmd' accepts a string as argument which is the argument given when calling the plugin from the radare shell:
-
-\c [0x00000000]> H lua my-script.lua
-
-If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
-
-The same happens with other language bindings like ruby, python or perl.
-
-In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
-
-The APIs in radare for language bindings are just wrappers for the basic 'r.cmd()' function handled by the core which is hooked to 'radare_cmd()'.
-
-Here's a small part of radare.py to exemplify this:
-
-\c def flag_get(name):
-\c         return r.cmd("? %s"%name).split(" ")[0].strip()
-\c
-\c def flag_set(name, addr=None):
-\c         if addr == None:
-\c                 r.cmd("f %s"%name)
-\c         else:
-\c                 r.cmd("f %s @ 0xx"%name, addr)
-\c
-\c def analyze_opcode(addr=None):
-\c         """
-\c         Returns a hashtable containing the information of the analysis of the opcode in the current seek.
-\c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
-\c         """
-\c         if addr == None:
-\c                 return __str_to_hash(r.cmd("ao"))
-\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
-
-The use of these functions is quite natural:
-
-\c from radare import *
-\c
-\c aop = analyze_opcode(flag_get("eip"))
-\c if aop["type"] == "jump":
-\c        print "Jumping to 0x%08x"%aop["jump"]
-
-Read the 'scripting' chapter to get a deeper look on this topic.
-
-The clearest example about how to implement a language binding for radare is done in Ruby. Read it at src/plug/hack/ruby.c
 
 \C{rabin} Rabin 
 
@@ -2763,7 +2721,9 @@ in the same way it is possible to look for the differences between two different
 
 This command will show the differences between these two graphs like new basic blocks, new edges, differences at byte level of the basic blocks to identify modified branches or so.
 
-To export an RDB file from IDA use the 'ida2rdb.idc' script that lives in the documentation directory of radare.
+To generate an rdb file you just have to save the project using the 'Ps' command. This command will store the project file in ~/.radare/rdb/<project-file>. Take it from there to diff the code analysis with radiff.
+
+TODO: To export an RDB file from IDA use the 'ida2rdb.idc' script that lives in the documentation directory of radare.
 
 \C{debugging} Debugger
 
@@ -3422,7 +3382,12 @@ We will need a bochs compiled with the Ero patches to provide the python instrum
 \c  ...
 \c $ cd bochs
 \c $ patch -p1 < bochs-python-ero.patch
-\c $ ./configure --enable-debugger --enable-instrumentation=python_hooks --enable-all-optimizations --enable-show-ips --enable-global-pages --enable-fpu --enable-pci --enable-cpu-le     vel=6 --enable-vbe --enable-repeat-speedups --enable-guest2host-tlb --enable-ignore-bad-msr --enable-pae --enable-mtrr --enable-trace-cache --enable-icache --enable-fast-function-calls --enable-host-specific-asms --enable-mmx --enable-sse=4 --enable-sse-extension --enable-sep --enable-x86-debugger
+\c $ ./configure --enable-debugger --enable-instrumentation=python_hooks --enable-all-optimizations \
+\c  --enable-show-ips --enable-global-pages --enable-fpu --enable-pci --enable-cpu-level=6 \
+\c  --enable-vbe --enable-repeat-speedups --enable-guest2host-tlb --enable-ignore-bad-msr \
+\c  --enable-pae --enable-mtrr --enable-trace-cache --enable-icache --enable-fast-function-calls \
+\c  --enable-host-specific-asms --enable-mmx --enable-sse=4 --enable-sse-extension --enable-sep \
+\c  --enable-x86-debugger
 \c ...
 \c $ make
 \c ...
@@ -3528,44 +3493,140 @@ Have fun!
 
 \C{script} Scripting
 
-TODO: explain
+Radare is a very versatile application which supports many kinds of scripting features in different languages.
 
-\C{script-remote} Remote API
+I have already explained how you can write scripts using radare commands (called 'radare scripts'). Or just interpret the output of external applications as radare commands. This kind of unidirectional scripting is interesting for data adquisition, but probably is a mess if you want to make something more interactive or complex.
 
-TODO: explain radapy here
+For this reason radare have a pluggable interface for scripting languages using the plugin-hack API (See 'language bindings' chapter for more information)
 
 \H{rsc-scripts} Radare scripts
 
-TODO: See 'language bindings' for more information
+Radare scripts are just unidirectional scripts that are parsed in the core from a file or from the output of a program.
 
-\H{ruby} Ruby
+This methodology is quite used for automatizing simple tasks or for data adquisition.
 
-TODO
+\c [0x00000000]> !cat binpatch.rsc
+\c wx 90 90 @ 0x300
+\c
+\c [0x00000000]> . file        ; interpret this file
 
-\H{python} Python
+You can obviously do the same by interpreting the output of a command:
 
-TODO
+\c [0x00000000]> .! rsc syms-dbg-flag ${FILE}
+
+\H{langs} Language bindings
+
+All language bindings supported by radare to script some actions are implemented as hack plugins.
+
+LUA is probably the cleaner implementation of a language binding for radare, i recommend you to read the source at 'src/plug/hack/lua.c'. Here's the structure to register the plugin:
+
+\c int radare_plugin_type = PLUGIN_TYPE_HACK;
+\c struct plugin_hack_t radare_plugin = {
+\c         .name = "lua",
+\c         .desc = "lua plugin",
+\c         .callback = &lua_hack_cmd
+\c };
+
+The 'lua_hack_cmd' accepts a string as argument which is the argument given when calling the plugin from the radare shell:
+
+\c [0x00000000]> H lua my-script.lua
+
+If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
+
+The same happens with other language bindings like ruby, python or perl.
+
+In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
+
+The APIs in radare for language bindings are just wrappers for the basic 'r.cmd()' function handled by the core which is hooked to 'radare_cmd()'.
+
+Here's a small part of radare.py to exemplify this:
+
+\c def flag_get(name):
+\c         return r.cmd("? %s"%name).split(" ")[0].strip()
+\c
+\c def flag_set(name, addr=None):
+\c         if addr == None:
+\c                 r.cmd("f %s"%name)
+\c         else:
+\c                 r.cmd("f %s @ 0xx"%name, addr)
+\c
+\c def analyze_opcode(addr=None):
+\c         """
+\c         Returns a hashtable containing the information of the analysis of the opcode in the current seek.
+\c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
+\c         """
+\c         if addr == None:
+\c                 return __str_to_hash(r.cmd("ao"))
+\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
+
+The use of these functions is quite natural:
+
+\c from radare import *
+\c
+\c aop = analyze_opcode(flag_get("eip"))
+\c if aop["type"] == "jump":
+\c        print "Jumping to 0x%08x"%aop["jump"]
+
+Read the 'scripting' chapter to get a deeper look on this topic.
+
+The clearest example about how to implement a language binding for radare is done in Ruby. Read it at src/plug/hack/ruby.c
 
 \H{lua} LUA
 
-TODO
+The LUA language aims to be small, simple and fast dynamic language with a well designed core. This was the first language binding implemented in radare for this obvious reasons, and there are some scripts and API available in 'scripts/'.
 
-\C{greetings} Greetings
+The main problem of LUA is the lack of libraries and community, so.. sadly for those copypasta developers it is not a productive language.
+
+TODO:...
+
+\H{python} Python
+
+The second scripting language implemented in radare was 'python'. Lot of people ping me for adding support for python scripting. The python interface for C is not as nice as the LUA one, and it is obviously not as optimal as LUA, but it gives a very handy syntax and provides a full-featured list of libraries and modules to extend your script.
+
+Actually in python it is possible to write a radare frontend in GTK+ (for example) just calling this from inside the commandline.
+
+The basics of the scripting for any language is the same. The entrypoint between the language and the core is a 'str=r.cmd(str)' function which accepts a string representing a radare command and returns the output of this command as a string.
+
+The file 'radare.py' implements the API for accessing the raw 'r' module which is only loaded from inside the core. (So you cannot use radare-python scripts outside radare (obviously)).
+
+The file 'radapy.py' implements a pure-python radare-remote server and enables a simple interface for extending the basic IO operations thru the network in python. Read 'networking' section for more information.
+
+TODO: moar
+
+\H{ruby} Ruby
+
+TODO: not yet implemented at all
+
+\C{conclussions} EOF
+
+TODO:
+
+\H{greetings} Greetings
 
 I would like to greet some drugs, drinks and people that shared his life with mine during the development of radare and this book.
 
 \u - God. aka Flying Spaguetti Monster
 
-\u - Lia
+\u - nopcode guys (for the cons and 
 
-\u - nopcode guys
+\u - Sexy Pandas (let's pwn the plugs!)
 
-\u - Sexy Pandas
+\u - 48bits (keep up the good work)
 
 \u - Gerardo (ideas and tips for the book)
+
+\u - pof (for the crackme tutorial and usability tips)
 
 \u - Esteve (search engine+some code graph stuff)
 
 \u - Nibble (ELF32/64 and PE parser+some core work)
 
 \u - revenge (OSX debugger+mach0 work)
+
+\u - Lia (4teh luf :)
+
+I hope you guys did enjoyed the book, the soft, the hard, the weed and the smoke.
+
+Spread the dword and don't let the bytes grind you down!
+
+Have fun!
