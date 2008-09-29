@@ -288,9 +288,19 @@ u64 get_offset(const char *orig)
 	if (((int)ret) != 0)
 		return ret;
 
-	flag = flag_get(arg);
-	if (flag)
-		return flag->offset; // - config.baddr;
+	if (arg[i]=='$') {
+		if (arg[i+1]=='$') {
+			struct aop_t aop;
+			arch_aop(config.seek, config.block,&aop);
+			ret = aop.length;
+		} else {
+			ret = config.seek;
+		}
+	} else {
+		flag = flag_get(arg);
+		if (flag)
+			return flag->offset; // - config.baddr;
+	}
 #endif
 	if (arg[i] == 'x' && i>0 && arg[i-1]=='0') {
 		sscanf(arg, "0x"OFF_FMTx, &ret);

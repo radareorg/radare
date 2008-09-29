@@ -9,10 +9,9 @@
 
 === WORK FOR 1.0 ===
 
+* organize Functions (RDBs) in visual mode ala 't' or 'e'
 * Add gzip to rdbs
 * rdbdiff doesnt works
-* 'wa+' should update the seek after wirting the opcode...
-  - a sign of '+' at the end of a write command should seek tot ht e end!
 * use libasm to get metadata from each opcode
 * Use graphviz for code graphs
   - export graph information in a parseable format

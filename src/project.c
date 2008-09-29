@@ -80,8 +80,10 @@ int project_save(const char *file)
 		fprintf(fd, "CC %s @ 0x%08llx\n", cmt->comment, (u64)cmt->offset);
 	}
 #endif
-	cons_set_fd(fd);
-	radare_cmd("C*", 0);
+	cons_set_fd(fileno(fd));
+		metadata_comment_list();
+		metadata_xrefs_list();
+		data_list();
 	cons_flush();
 	cons_set_fd(_print_fd);
 

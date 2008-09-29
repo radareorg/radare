@@ -776,10 +776,12 @@ void udis_arch(int arch, int len, int rows)
 		sk   = config.seek+bytes;
 		CHECK_LINES
 
-		if (show_comments)
-			metadata_print(bytes);
-		if (show_lines) // does nothing if not data
-			code_lines_print(reflines, sk, 0);
+		D {
+			if (show_comments)
+				metadata_print(bytes);
+			if (show_lines) // does nothing if not data
+				code_lines_print(reflines, sk, 0);
+		}
 		if (show_offset)
 			print_addr(seek);
 		if (show_reladdr) {
@@ -1104,13 +1106,13 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 			udis_arch_opcode(arch, endian, seek, bytes, myinc); //seek+myinc, bytes, myinc);
 
 			/* show references */
-			if (aop.ref) {
+			D if (aop.ref) {
 				if (string_flag_offset(buf, aop.ref-config.baddr));
 					cons_printf(" ; %s",buf);
 			}
 
 			/* show comments and jump keys */
-			if (show_comments) {
+			D if (show_comments) {
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
@@ -1126,7 +1128,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 			}
 
 			/* show splits at end of code blocks */
-			if (show_splits) {
+			D if (show_splits) {
 				char buf[1024];
 				if (aop.jump||aop.eob) {
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
