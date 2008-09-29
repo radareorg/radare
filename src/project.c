@@ -62,6 +62,7 @@ int project_save(const char *file)
 	fprintf(fd, "; eval child.setgid=%s\n", config_get("child.setgid"));
 	fprintf(fd, "eval file.scrfilter = %s\n", config_get("file.scrfilter"));
 	fprintf(fd, "eval asm.arch = %s\n", config_get("asm.arch"));
+	fprintf(fd, "eval dbg.bep = %s\n", config_get("dbg.bep"));
 	fprintf(fd, "eval cfg.bigendian = %s\n", config_get("cfg.bigendian"));
 	fprintf(fd, "; Flags\n");
 	lfs = -1;

@@ -887,6 +887,48 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
+\H{flagsint} Flag interpolation
+
+The '/' command for searching registers some flags for the hit results. You can use them to draw interpolation vectors between these hits and be able to determine block sizes from a header and a footer search keywords.
+
+Here's an example:
+
+\c [0x00000000]> !cat txt
+\c +body
+\c jklsdfjlksaf
+\c -body
+\c +body
+\c jeje peeee
+\c -body
+\c +body
+\c food is lavle
+\c -body
+
+Let's define the header and the footer keywords:
+
+\c [0x00000000]> /k0 +body
+\c [0x00000000]> /k1 -body
+\c [0x00000000]> /k
+\c 00 +body
+\c 01 -body
+
+Do the ranged search using keywords 0 and 1:
+
+\c [0x00000000]> /r 0,1
+\c 001  0x00000000  hit0_0 +bodyjklsdfjlksaf
+\c 002  0x00000015  hit1_1 -body+bodyjeje p
+\c 003  0x0000001c  hit0_2 +bodyjeje peeee-
+\c 004  0x0000002f  hit1_3 -body+bodyfood is
+\c 005  0x00000036  hit0_4 +bodyfood is lavle
+\c 006  0x0000004b  hit1_5 -body
+
+Perform interpolation between hits!
+
+[0x00000000]> fi hit0 hit1
+hit0_0 (0x00000000) -> hit1_1 (0x00000015)   ; size = 21
+hit0_2 (0x0000001c) -> hit1_3 (0x0000002f)   ; size = 19
+hit0_4 (0x00000036) -> hit1_5 (0x0000004b)   ; size = 21
+
 \H{write} Write
 
 Radare can manipulate the file in multiple ways. You can resize the file, move bytes, copy/paste them, insert mode (shifting data to the end of the block or file) or just overwrite some bytes with an address, the contents of a file, a widestring or inline assembling an opcode.

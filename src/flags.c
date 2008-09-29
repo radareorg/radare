@@ -54,6 +54,7 @@ void flag_help()
 	" fortune      ; show fortune message! :D\n"
 	" fd           ; print flag delta offset\n"
 	" fc cmd       ; set command to be executed on flag at current seek\n"
+	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
 	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
 	" fn name      ; flag new name (ignores dupped names)\n"
 	" fm name      ; move flag to another flag space\n"
@@ -69,6 +70,36 @@ void flag_help()
 void flag_init()
 {
 	INIT_LIST_HEAD(&flags);
+}
+
+int flag_interpolation(const char *from, const char *to)
+{
+	int ret = 0;
+	u64 tmp = 0;
+	const char *str = NULL;
+	struct list_head *pos, *pos2;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		tmp = 0;
+		if (!memcmp(from, flag->name, strlen(from))) {
+			list_for_each(pos2, &flags) {
+				flag_t *flag2 = (flag_t *)list_entry(pos2, flag_t, list);
+				if (!memcmp(from, flag->name, strlen(to))) {
+					if (flag2->offset>flag->offset && (tmp == 0 || flag2->offset < tmp)) {
+						tmp = flag2->offset;
+						str = flag2->name;
+					}
+				}
+			}
+
+			if (tmp != 0) {
+				printf("%s (0x%08llx) -> %s (0x%08llx)   ; size = %lld\n",
+					flag->name, flag->offset, str, tmp, tmp-flag->offset);
+			}
+		}
+	}
+	return ret;
 }
 
 void flag_cmd(const char *text)

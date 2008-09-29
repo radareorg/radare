@@ -53,8 +53,10 @@ static void help_message()
 
 int main(int argc, char **argv, char **envp)
 {
-	int c;
+	int pid, c;
 	const char *prj;
+	char buf[4096];
+	char buf2[4096];
 
 	environ = envp;
 	radare_init();
@@ -70,14 +72,13 @@ int main(int argc, char **argv, char **envp)
 					help_message_short();
 					return 1;
 				}
-				config.file = strdup( project_get_file(prj) );
+				sprintf(buf2, "dbg://%s", project_get_file(prj) );
+				config.file = estrdup( config.file, buf2 );
 				plugin_load();
 				return radare_go();
 			}
 			// XXX : overflowable, must use strcatdup or stgh like that
-			int pid = atoi(argv[optind]);
-			char buf[4096];
-			char buf2[4096];
+			pid = atoi(argv[optind]);
 			buf[0]='\0';
 
 			/* by process-id */

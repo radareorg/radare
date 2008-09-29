@@ -1032,6 +1032,7 @@ CMD_DECL(flag)
 {
 	int ret = 0;
 	char *text = input;
+	char *text2;
 	char *eof = input + strlen(input)-1;
 
 	for(;*text&&!iswhitespace(*text);text=text+1);
@@ -1047,6 +1048,17 @@ CMD_DECL(flag)
 	case 's': flag_space(input+1); break;
 	case 'm': flag_space_move(text); break;
 	case 'd': print_flag_offset(config.seek); NEWLINE; break;
+	case 'i': {
+		text2=strchr(text,' ');
+		if (text2) {
+			text2[0]='\0';
+			text2 = text2+1;
+			flag_interpolation(text, text2); 
+		} else {
+			eprintf("Usage: fi hit0_ hit1_\n");
+		}
+	}
+		break;
 	default:
 		switch(text[0]) {
 		case '\0': flag_list(text); break;

@@ -81,6 +81,7 @@ void data_add(u64 off, int type)
 {
 	u64 tmp;
 	struct data_t *d;
+	struct list_head *pos;
 
 #if 1
 	if (type == DATA_CODE) {
@@ -94,6 +95,11 @@ void data_add(u64 off, int type)
 			}
 		}
 		return;
+	} else
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->from == off && d->type == type && d->size == config.block_size)
+			return;
 	}
 #endif
 
