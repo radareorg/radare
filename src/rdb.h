@@ -56,7 +56,6 @@ struct function_t {
 	struct list_head list;
 };
 
-
 /* program structure */
 struct program_t {
 	char *name;

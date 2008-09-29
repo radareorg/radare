@@ -130,13 +130,16 @@ struct function_t *function_new(u64 addr, int size)
 	fu->addr = addr;
 	fu->size = size;
 	fu->frame= 0;
+	INIT_LIST_HEAD(&(fu->calls));
+	INIT_LIST_HEAD(&(fu->list));
 	return fu;
 }
 
 struct function_t *program_add_function(struct program_t *program, u64 addr, int size)
 {
 	struct function_t *fu;
-	fu = function_new(addr,size);
+	fu = function_new(addr, size);
+	program->n_functions++;
 	list_add_tail(&(fu->list), &(program->functions));
 	return fu;
 }
@@ -163,14 +166,9 @@ struct function_t *program_function_add_call(struct program_t *program, u64 addr
 struct block_t *program_function_get_new(struct program_t *program, u64 addr)
 {
 	struct function_t *bt;
-
 	bt = program_function_get(program, addr);
-	if (bt == NULL) {
-		bt = function_new(addr, 0);
-		program->n_functions++;
-		list_add_tail(&(bt->list), &(program->functions));
-	}
-
+	if (bt == NULL)
+		bt = program_add_function(program, addr, 0);
 	return bt;
 }
 
@@ -434,6 +432,7 @@ struct program_t *program_open(char *file)
 		if (!memcmp(buf, "f sym_",6)) { // label
 			off = get_offset(ptr);
 			program_function_set_name(program, (u64) off, buf+6);
+			program_block_set_name(program, (u64) off, buf+2);
 		}
 	}
 #if OLD_PARSER

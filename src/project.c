@@ -30,7 +30,7 @@ int project_save(const char *file)
 	struct list_head *pos;
 	flag_t *flag;
 	char *rdbdir;
-	int i;
+	int i, lfs;
 	
 	if (strnull(file))
 		return 0;
@@ -64,9 +64,12 @@ int project_save(const char *file)
 	fprintf(fd, "eval asm.arch = %s\n", config_get("asm.arch"));
 	fprintf(fd, "eval cfg.bigendian = %s\n", config_get("cfg.bigendian"));
 	fprintf(fd, "; Flags\n");
+	lfs = -1;
         for (i=0;(flag = flag_get_i(i)); i++) {
-		if (flag->space != -1)
+		if (flag->space != -1 && lfs != flag->space) {
 			fprintf(fd, "fs %s\n", flag_space_get(flag->space));
+			lfs = flag->space;
+		}
 		fprintf(fd, "f %s @ 0x%llx\n", flag->name, flag->offset);
 	}
 #if 0
@@ -79,6 +82,7 @@ int project_save(const char *file)
 #endif
 	cons_set_fd(fd);
 	radare_cmd("C*", 0);
+	cons_flush();
 	cons_set_fd(_print_fd);
 
 	fclose(fd);

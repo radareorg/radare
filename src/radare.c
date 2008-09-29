@@ -530,7 +530,7 @@ int radare_cmd_raw(const char *tmp, int log)
 				if (pos != NULL) {
 					for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
 					if (*file == '\0') {
-						eprintf("No target file\n");
+						eprintf("No target file (%s)\n", input);
 					} else {
 						for(end = file+strlen(file);
 							end[0]&&!iswhitespace(end[0]);

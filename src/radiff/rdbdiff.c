@@ -41,7 +41,6 @@ int rdb_diff_block(struct block_t *a, struct block_t *b)
 				printf("  %d %02x vs %02x\t", i, a->bytes[i], b->bytes[i]);
 			}
 		}
-		printf("\n");
 	}
 	return 0;
 }
@@ -50,9 +49,12 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 {
 	struct list_head *i, *j;
 	struct block_t *b0, *b1;
+	struct function_t *f0, *f1;
 	//struct xref_t *x0, *x1;
 	int ignored = 0;
 	int count = 0;
+
+	// TODO: analyze functions before!
 
 	/* ignore dupped code blocks by checksum */
 	// TODO: analyze xrefs too!
@@ -61,12 +63,12 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 		if (! b0->ignored)
 		list_for_each_prev(j, &(b->blocks)) {
 			b1 = list_entry(j, struct block_t, list);
-			if (! b1->ignored )
+			if (! b1->ignored && b1->checksum != 0)
 			if (b0->checksum == b1->checksum) {
 				b0->ignored = \
 				b1->ignored = 1;
 				ignored++;
-				printf("ignored by checksum: %s\n", b0->name);
+				printf("ignored by checksum: %s / %s\n", b0->name, b1->name);
 				// TODO: check xrefs
 			}
 		}
@@ -87,7 +89,7 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 			b1 = list_entry(j, struct block_t, list);
 			if (! b1->ignored ) {
 				/* check if they have the same name */
-				if (b0->name && b1->name) {
+				if (b0->name && b1->name && b1->checksum) {
 					if (!strcmp(b0->name, b1->name)) {
 						/* hey hey! we got two different blocks with the same name! */
 						rdb_diff_block(b0, b1);
@@ -99,9 +101,32 @@ int rdb_diff(struct program_t *a, struct program_t *b, int mode)
 			}
 		}
 	}
+
+	list_for_each_prev(i, &(a->functions)) {
+		f0 = list_entry(i, struct function_t , list);
+		f1 = NULL;
+		list_for_each_prev(j, &(a->functions)) {
+			f1 = list_entry(j, struct function_t , list);
+			if (f0 != f1 && f0->addr == f1->addr)
+				break;
+		}
+		if (f0->frame == f1->frame) {
+			b0 = program_block_get(a, f0->addr);
+			b1 = program_block_get(b, f0->addr);
+			if (b0) {
+				b0->ignored = 1;
+				if (b1)
+					b1->ignored = 1;
+				count++;
+			}
+		} else
+		printf("Function differs: %s (0x%08llx)\n", f0->name, f0->addr);
+	}
+
 	if (count) {
 		printf("Found %d/(%d,%d) blocks with same name and different checksum\n", count, a->n_blocks, b->n_blocks);
 	}
+
 	printf("Missing %d blocks to analyze\n", a->n_blocks-(count+ignored));
 	list_for_each_prev(i, &(a->blocks)) {
 		b0 = list_entry(i, struct block_t, list);

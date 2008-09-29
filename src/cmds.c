@@ -1091,6 +1091,7 @@ CMD_DECL(undowrite)
 CMD_DECL(seek)
 {
 	u64 new_off = 0;
+	struct aop_t aop;
 	char *input2  = strdup(input);
 	char *text    = input2;
 	int whence    = SEEK_SET;
@@ -1102,6 +1103,8 @@ CMD_DECL(seek)
 	if (strchr(input, '?')) {
 		cons_printf("Usage: > s 0x128 ; absolute seek\n");
 		cons_printf("       > s +33   ; relative seek\n");
+		cons_printf("       > sn      ; seek to next opcode\n");
+		cons_printf("       > sb      ; seek to opcode branch\n");
 		cons_printf("       > s-      ; undo seek\n");
 		cons_printf("       > s+      ; redo seek\n");
 		cons_printf("       > s*      ; show seek history\n");
@@ -1110,16 +1113,33 @@ CMD_DECL(seek)
 		return;
 	}
 
-	if (input[0]=='!'||input[0]=='*'||input[0]=='+'||input[0]=='-'||(input[0]>='0'&&input[0]<'9'))
+	if (input[0]=='n'||input[0]=='b'||input[0]=='!'||input[0]=='*'||input[0]=='+'||input[0]=='-'||(input[0]>='0'&&input[0]<'9'))
 		text = input;
 
-	if (text[0] != '\0') {
-		switch(text[0]) {
-		case '!': sign = -2; text++; break;
-		case '*': sign = 0; text++; break;
-		case '-': sign = -1; text++; whence = SEEK_CUR; break;
-		case '+': sign = 1;  text++; whence = SEEK_CUR; break; }
 
+	if (text[0] == '\0') {
+		D printf(OFF_FMT"\n", (u64)config.seek);
+		return 0;
+		free(input2);
+	}
+
+	switch(text[0]) {
+	case 'n': 
+		arch_aop(config.seek, config.block, &aop);
+		new_off = config.seek + aop.length;
+		break;
+	case 'b': 
+		arch_aop(config.seek, config.block, &aop);
+		if (aop.jump != 0)
+			new_off = aop.jump;
+		break;
+	case '!': sign = -2; text++; break;
+	case '*': sign = 0; text++; break;
+	case '-': sign = -1; text++; whence = SEEK_CUR; break;
+	case '+': sign = 1;  text++; whence = SEEK_CUR; break; 
+	}
+
+	if (new_off!= 0) {
 		if (input[text-input]=='\0') {
 			switch(sign) {
 			case 0:
@@ -1141,24 +1161,20 @@ CMD_DECL(seek)
 			return;
 		}
 
+	} else
 		new_off = get_math( text );
 
-		if (whence == SEEK_CUR) {
-			new_off *= sign;
-			new_off += config.seek;
-			whence   = SEEK_SET; // stupid twice
-		}
-
-		if (new_off<0) new_off = 0;
-		if (text[0]=='0'&&new_off==0 || new_off != 0)
-			if (radare_seek(new_off, whence) < 0)
-				eprintf("Couldn't seek: %s\n", strerror(errno));
-		undo_push();
-	} else {
-		if (text[0]!='\0')
-			eprintf("Whitespace expected after 's'.\n");
-		else	D printf(OFF_FMT"\n", (u64)config.seek);
+	if (whence == SEEK_CUR) {
+		new_off *= sign;
+		new_off += config.seek;
+		whence   = SEEK_SET; // stupid twice
 	}
+
+	if (new_off<0) new_off = 0;
+	if (text[0]=='0'&&new_off==0 || new_off != 0)
+		if (radare_seek(new_off, whence) < 0)
+			eprintf("Couldn't seek: %s\n", strerror(errno));
+	undo_push();
 
 	radare_read(0);
 

@@ -802,7 +802,7 @@ int analyze_function(int recursive, int report)
 			break;
 		case AOP_TYPE_SWI:
 			if (!report) {
-				cons_printf("CC syscall %s\n", "<todo>");
+				cons_printf("CC syscall %s\n", "(todo)");
 			}
 			break;
 		default:
