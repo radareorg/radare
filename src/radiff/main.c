@@ -46,8 +46,8 @@ int main_rdb_diff(char *file0, char *file1)
 	struct program_t *p0, *p1;
 	struct block_t *block;
 
-	p0 = program_new(file0);
-	p1 = program_new(file1);
+	p0 = program_open(file0);
+	p1 = program_open(file1);
 
 	if (p0 == NULL || p1 == NULL) {
 		printf("Error opening rdb database\n");
@@ -66,11 +66,11 @@ int main_rdb_diff(char *file0, char *file1)
 	}
 #endif
    
-	block = block_get(p0, p0->entry);
+	block = program_block_get(p0, p0->entry);
 	if (block) 
 		printf("checksum %08x\n", block->n_bytes);
 
-	block = block_get(p1, p1->entry);
+	block = program_block_get(p1, p1->entry);
 	if (block) 
 		printf("checksum %08x\n", block->n_bytes);
 

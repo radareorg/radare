@@ -54,6 +54,7 @@ static void help_message()
 int main(int argc, char **argv, char **envp)
 {
 	int c;
+	const char *prj;
 
 	environ = envp;
 	radare_init();
@@ -63,9 +64,15 @@ int main(int argc, char **argv, char **envp)
 		switch( c ) {
 #if DEBUGGER
 		case 'd': {
+			prj = config_get("file.project");
 			if (optind==argc) {
-				help_message_short();
-				return 1;
+				if (prj == NULL) {
+					help_message_short();
+					return 1;
+				}
+				config.file = strdup( project_get_file(prj) );
+				plugin_load();
+				return radare_go();
 			}
 			// XXX : overflowable, must use strcatdup or stgh like that
 			int pid = atoi(argv[optind]);

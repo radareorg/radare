@@ -345,9 +345,10 @@ The most common configuration looks like this:
 
 \c $ cat ~/.radarerc
 \c eval scr.color = true
+\c eval dbg.bep   = entry
 \c eval file.id   = true
 \c eval file.flag = true
-\c eval dbg.bep   = entry
+\c eval file.analyze = true
 
 These configurations can be also defined using the '-e' flag of radare while loading it, so you can setup different initial configurations from the commandline without having to change to rc file.
 
@@ -1363,6 +1364,52 @@ You can use the Cs command from the shell also:
 \c [0x00000000]> Cs 10 @ string_foo
 
 The folding/unfolding is quite premature but the idea comes from the 'folder' concepts in vim. So you can select a range of bytes in the disassembly view and press '<' to fold these bytes in a single line or '>' to unfold them. Just to ease the readability of the code.
+
+\C{projects} Projects
+
+When you are working more than once on the same file you will probably be interested in not losing your comments, flags, xrefs analysis and so.
+
+To solve this problem, radare implements 'project' support which can be specified with the '-p' flag. The project files are stored in '~/.radare/rdb' by default which is configured in 'eval dir.project'.
+
+The 'P' command is the one used inside the core to store and load project files. It also can information about the project file.
+
+These files are just radare scripts with some extra metadata as comments ';'.
+
+If you want to make a full analysis when opening a file try setting 'e file.analyze=true' in your .radarerc. It will run '.af* @@ sym_' and more..
+
+Once the program is analyzed (there is no difference between opening the program as a file or debug it) you can store this information in a project file:
+
+\c $ radare -e file.id=1 -e file.flag=1 -e file.analyze=1 -d rasc
+\c ...
+
+\c [0x4A13B8C0]> P?
+\c  Po [file]  open project
+\c  Ps [file]  save project
+\c  Pi [file]  info
+\c [0x4A13B8C0]> Ps rasc
+\c Project saved
+\c 
+\c [0x4A13B8C0]> Pi rasc
+\c e file.project = rasc
+\c e dir.project = /home/pancake/.radare/rdb/
+\c ; file = /usr/bin/rasc
+
+This database is stored in:
+
+\c $ du -hs ~/.radare/rdb/rasc
+\c 24K
+
+Now you can reopen this project in any directory by typing:
+
+\c $ radare -p rasc
+
+And if you prefer you can debug it.
+
+\c $ radare -p rasc -d
+
+The path to the filename is stored inside the project file, so you dont have to bother about typing it all the time.
+
+The user will be prompted for re-saving the project before exiting.
 
 \C{plugins} Plugins
 
@@ -3018,7 +3065,6 @@ Now we have to open a bochs session and initialize the radapy-bochs interface.
 \c bochs-python: environment variable "BOCHS_PYTHON_INIT" not set
 \c
 \c >>> import radapy_bochs
-\c
 \c Listening at port 9998
 
 Now is time to launch our radare against this port!
@@ -3031,7 +3077,6 @@ We can just enter in visual mode to make the debugging more pleasant, and obviou
 \c [0x000F05F7]> e asm.arch=intel16
 \c [0x000F05F7]> V
 
-\c [0x000F05F7]> 
 \c Stack:
 \c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
 \c 0x0000FFC6  d0ff 9c08 00f0 9401 0000 f0ff d50c 0400 00f0 ..................

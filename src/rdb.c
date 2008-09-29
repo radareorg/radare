@@ -60,10 +60,20 @@ struct block_t *block_new(u64 addr)
 	return bt;
 }
 
-struct block_t *block_get(struct program_t *program, u64 addr)
+struct function_t *program_function_get(struct program_t *program, u64 addr)
 {
 	struct list_head *i;
+	list_for_each_prev(i, &(program->functions)) {
+		struct function_t *fu = list_entry(i, struct function_t, list);
+		if (fu->addr == addr)
+			return fu;
+	}
+	return NULL;
+}
 
+struct block_t *program_block_get(struct program_t *program, u64 addr)
+{
+	struct list_head *i;
 	list_for_each_prev(i, &(program->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
 		if (bt->addr == addr)
@@ -72,7 +82,7 @@ struct block_t *block_get(struct program_t *program, u64 addr)
 	return NULL;
 }
 
-struct block_t *block_split_new(struct program_t *program, u64 addr)
+struct block_t *program_block_split_new(struct program_t *program, u64 addr)
 {
 	struct list_head *i;
 	struct block_t *bta;
@@ -86,7 +96,7 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 			oldb = bt->n_bytes;
 
 			bt->n_bytes = addr - bt->addr  ;
-			bta = block_get_new ( program, addr );
+			bta = program_block_get_new ( program, addr );
 			bta->n_bytes = oldb - bt->n_bytes ;
 
 			bta->tnext = bt->tnext;
@@ -110,11 +120,65 @@ struct block_t *block_split_new(struct program_t *program, u64 addr)
 	return NULL;
 }
 
-struct block_t *block_get_new(struct program_t *program, u64 addr)
+struct function_t *function_new(u64 addr, int size)
+{
+	struct function_t *fu;
+	fu = (struct function_t*)malloc(sizeof(struct function_t));
+	fu->name[0]='\0';
+	fu->vars = 0;
+	fu->args = 0;
+	fu->addr = addr;
+	fu->size = size;
+	fu->frame= 0;
+	return fu;
+}
+
+struct function_t *program_add_function(struct program_t *program, u64 addr, int size)
+{
+	struct function_t *fu;
+	fu = function_new(addr,size);
+	list_add_tail(&(fu->list), &(program->functions));
+	return fu;
+}
+
+struct call_t *call_new(u64 from, u64 to)
+{
+	struct call_t *c = (struct call_t *)malloc(sizeof(struct call_t));
+	c->from = from;
+	c->to = to;
+	return c;
+}
+
+struct function_t *program_function_add_call(struct program_t *program, u64 addr, u64 call)
+{
+	struct function_t *fu;
+	fu = program_function_get(program, addr);
+	if (fu != NULL) {
+		struct call_t *c = call_new(addr, call);
+		list_add_tail(&(c->list), &(fu->calls));
+	}
+	return fu;
+}
+
+struct block_t *program_function_get_new(struct program_t *program, u64 addr)
+{
+	struct function_t *bt;
+
+	bt = program_function_get(program, addr);
+	if (bt == NULL) {
+		bt = function_new(addr, 0);
+		program->n_functions++;
+		list_add_tail(&(bt->list), &(program->functions));
+	}
+
+	return bt;
+}
+
+struct block_t *program_block_get_new(struct program_t *program, u64 addr)
 {
 	struct block_t *bt;
 
-	bt = block_get(program, addr);
+	bt = program_block_get(program, addr);
 	if (bt == NULL) {
 		bt = block_new(addr);
 		program->n_blocks++;
@@ -124,7 +188,7 @@ struct block_t *block_get_new(struct program_t *program, u64 addr)
 	return bt;
 }
 
-struct block_t *block_split(struct program_t *program, struct block_t *block, unsigned int offset)
+struct block_t *program_block_split(struct program_t *program, struct block_t *block, unsigned int offset)
 {
 	int n_bytes = block->n_bytes;
 	struct block_t *new;
@@ -136,7 +200,7 @@ struct block_t *block_split(struct program_t *program, struct block_t *block, un
 	}
 
 	/* allocate new block */
-	new = block_get_new(program, block->addr + offset);
+	new = program_block_get_new(program, block->addr + offset);
 	new->n_bytes = n_bytes;
 	new->bytes = (unsigned char *)malloc(n_bytes);
 	memcpy(new->bytes, block->bytes+offset, n_bytes);
@@ -152,9 +216,9 @@ struct block_t *block_split(struct program_t *program, struct block_t *block, un
 	return new;
 }
 
-int block_set_framesize(struct program_t *program, u64 addr, int size)
+int prorgam_block_set_framesize(struct program_t *program, u64 addr, int size)
 {
-	struct block_t *bt = block_get_new(program, addr);
+	struct block_t *bt = program_block_get_new(program, addr);
 
 	bt->framesize = size;
 
@@ -162,18 +226,18 @@ int block_set_framesize(struct program_t *program, u64 addr, int size)
 }
 
 // label
-int block_set_name(struct program_t *program, u64 addr, char *name)
+int program_block_set_name(struct program_t *program, u64 addr, char *name)
 {
-	struct block_t *bt = block_get_new(program, addr);
+	struct block_t *bt = program_block_get_new(program, addr);
 
 	bt->name = estrdup(bt->name, name);
 
 	return 1;
 }
 
-int block_add_call(struct program_t *program, u64 addr, u64 dest)
+int program_block_add_call(struct program_t *program, u64 addr, u64 dest)
 {
-	struct block_t *bt = block_get_new(program, addr);
+	struct block_t *bt = program_block_get_new(program, addr);
 	struct xrefs_t *xr = xref_new(dest);
 
 	bt->n_calls++;
@@ -182,9 +246,9 @@ int block_add_call(struct program_t *program, u64 addr, u64 dest)
 	return 1;
 }
 
-int block_add_xref(struct program_t *program, u64 addr, u64 from)
+int program_block_add_xref(struct program_t *program, u64 addr, u64 from)
 {
-	struct block_t *bt = block_get_new(program, addr);
+	struct block_t *bt = program_block_get_new(program, addr);
 	struct xrefs_t *xr = xref_new(addr); //(struct xrefs_t *)malloc(sizeof(struct xrefs_t));
 
 	bt->n_xrefs++;
@@ -193,7 +257,7 @@ int block_add_xref(struct program_t *program, u64 addr, u64 from)
 	return 1;
 }
 
-int block_set_comment(struct program_t *program, u64 addr, char *comment)
+int program_block_set_comment(struct program_t *program, u64 addr, char *comment)
 {
 	struct list_head *i;
 	struct block_t *b0;
@@ -211,13 +275,49 @@ int block_set_comment(struct program_t *program, u64 addr, char *comment)
 	return 1;
 }
 
+int program_function_set_name(struct program_t *program, u64 addr, const char *name)
+{
+	struct function_t *func = program_function_get(program, addr);
+	if (func == NULL)
+		func = program_add_function(program, addr, 0);
+	strncpy(func->name, name, 200);
+	return 0;
+}
+
+int program_function_set_vars(struct program_t *program, u64 addr, int vars)
+{
+	struct function_t *func = program_function_get(program, addr);
+	if (func == NULL)
+		func = program_add_function(program, addr, 0);
+	func->vars = vars;
+	return 0;
+}
+
+int program_function_set_args(struct program_t *program, u64 addr, int args)
+{
+	struct function_t *func = program_function_get(program, addr);
+	if (func == NULL)
+		func = program_add_function(program, addr, 0);
+	func->args = args;
+	return 0;
+}
+
+int program_function_set_framesize(struct program_t *program, u64 addr, int size)
+{
+	struct function_t *func = program_function_get(program, addr);
+	if (func == NULL)
+		func = program_add_function(program, addr, 0);
+	func->frame = size;
+	return 0;
+}
+
 int block_set_bytes(struct program_t *program, u64 addr, char *hexpairs)
 {
-	unsigned char *bytes = (unsigned char *)strdup(hexpairs);
-	struct block_t *bt = block_get_new(program, addr);
+	u8 *bytes = (u8 *)strdup(hexpairs);
+	struct block_t *bt = program_block_get_new(program, addr);
 	
 	bt->n_bytes = hexstr2binstr((char *)bytes, bytes);
-	bt->bytes   = (unsigned char *)malloc(bt->n_bytes);
+	bt->bytes   = (u8 *)malloc(bt->n_bytes);
 	memcpy(bt->bytes, bytes, bt->n_bytes);
 	bt->checksum = crc16(0, bt->bytes, bt->n_bytes);
 	free(bytes);
@@ -255,14 +355,20 @@ struct program_t *program_new(char *file)
 	program = (struct program_t *)malloc(sizeof(struct program_t));
 	program->n_blocks = 0;
 	INIT_LIST_HEAD(&(program->blocks));
+	INIT_LIST_HEAD(&(program->functions));
 	if (file == NULL)
 		return program;
 	program->name = strdup(file);
 	return program;
 }
 
-void program_save(const char *file)
+int program_save(const char *file)
 {
+	char buf[1024];
+
+//	sprintf(buf, "C* > %s\n", file);
+
+	return 0;
 }
 
 struct program_t *program_open(char *file)
@@ -292,19 +398,66 @@ struct program_t *program_open(char *file)
 		len = strlen(buf)-1;
 		if (buf[len] == '\n' || buf[len] == '\r')
 			buf[len]='\0';
+		ptr = strchr(buf, '@');
+		if (ptr == NULL) continue;
+		ptr[0]='\0'; ptr = ptr + 1;
+
+		if (!memcmp(buf, "CF ",3)) { // function (bytes)
+			off = get_offset(ptr);
+			program_add_function(program, (u64) off, ptr2);
+		} else
+		if (!memcmp(buf, "CC framesize = ", 15)) { // framesize
+			off = get_offset(ptr);
+			program_function_set_framesize(program, (u64) off, atoi(buf+15));
+		} else
+		if (!memcmp(buf, "CC vars = ", 10)) { // framesize
+			off = get_offset(ptr);
+			program_function_set_vars(program, (u64) off, atoi(buf+10));
+		} else
+		if (!memcmp(buf, "CC args = ", 10)) { // framesize
+			off = get_offset(ptr);
+			program_function_set_args(program, (u64) off, atoi(buf+10));
+		} else
+		if (!memcmp(buf, "Cx ",3)) { // xref
+			off = get_offset(ptr);
+			program_block_add_xref(program, (u64) off, (u64)get_offset(buf+3));
+			program_function_add_call(program, (u64) off, (u64)get_offset(buf+3));
+		} else
+		if (!memcmp(buf, "CC ",3)) { // comment
+			off = get_offset(ptr);
+			program_block_set_comment(program, (u64) off, buf+3);
+		} else
+		if (!memcmp(buf, "f entrypoint",12)) { // entrypoint
+			off = get_offset(ptr);
+			program->entry = off; // XXX only one entry point ???
+		} else
+		if (!memcmp(buf, "f sym_",6)) { // label
+			off = get_offset(ptr);
+			program_function_set_name(program, (u64) off, buf+6);
+		}
+	}
+#if OLD_PARSER
+	while(!feof(fd)) {
+		buf[0]='\0';
+		fgets(buf, 1023, fd);
+		if (buf[0]=='\0'||feof(fd)) break;
+		buf[strlen(buf)-1]='\0';
+		len = strlen(buf)-1;
+		if (buf[len] == '\n' || buf[len] == '\r')
+			buf[len]='\0';
 
 		ptr = strchr(buf, '=');
 		if (!ptr) continue;
 		ptr[0]='\0'; ptr = ptr + 1;
 
-		if (!strcmp(buf, "label")) {
+		if (!strcmp(buf, "label")) { // "f sym_"
 			ptr2 = strchr(ptr, ' ');
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
 			off = get_offset(ptr);
 			block_set_name(program, (u64) off, ptr2);
 		} else
-		if (!strcmp(buf, "xref")) {
+		if (!strcmp(buf, "xref")) { // "Cx"
 			ptr2 = strchr(ptr, ' ');
 			if (!ptr2) continue;
 			ptr2[0]='\0'; ptr2=ptr2+1;
@@ -340,6 +493,7 @@ struct program_t *program_open(char *file)
 			block_set_comment(program, (u64) off, ptr2);
 		}
 	}
+#endif
 	fclose(fd);
 	// XXX TODO: generate tnext/fnext entries !!
 

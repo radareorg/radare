@@ -213,6 +213,8 @@ char* ELF_(aux_filter_rad_output)(const char *string)
     for (; *string != '\0' && p-buff < 255; string++) {
 	switch(*string) {
 	    case ' ':
+		strcpy(string, string+1);
+		break;
 	    case '@':
 	    case '%':
 	    case '#':

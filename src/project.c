@@ -25,6 +25,7 @@
 
 int project_save(const char *file)
 {
+	char buf[128];
 	FILE *fd;
 	struct list_head *pos;
 	flag_t *flag;
@@ -49,37 +50,36 @@ int project_save(const char *file)
 		return 0;
 	}
 
-	fprintf(fd, "#RP# Radare Project\n#\n");
+	fprintf(fd, ";RP; Radare Project\n");
 	// TODO: store timestamp
 	// TODO: all this stuff must be renamed as eval vars or so
-	fprintf(fd, "chdir=%s\n", config_get("child.chdir"));
-	fprintf(fd, "chroot=%s\n", config_get("child.chroot"));
-	fprintf(fd, "setuid=%s\n", config_get("child.setuid"));
-	fprintf(fd, "setgid=%s\n", config_get("child.setgid"));
-	fprintf(fd, "eval=file.scrfilter\t%s\n", config_get("file.scrfilter"));
-	fprintf(fd, "eval=asm.arch\t%s\n", config_get("asm.arch"));
-	fprintf(fd, "eval=cfg.bigendian\t%s\n", config_get("cfg.bigendian"));
-	fprintf(fd, "# Flags\n");
-        for (i=0;(flag = flag_get_i(i)); i++)
-		fprintf(fd, "flag=0x"OFF_FMTx" %s\n", flag->offset, flag->name);
+	fprintf(fd, "; file = %s\n", config.file);
+	getHTTPDate(buf);
+	fprintf(fd, "; timestamp = %s\n", buf);
+	fprintf(fd, "; eval child.chdir=%s\n", config_get("child.chdir"));
+	fprintf(fd, "; eval child.chroot=%s\n", config_get("child.chroot"));
+	fprintf(fd, "; eval child.setuid=%s\n", config_get("child.setuid"));
+	fprintf(fd, "; eval child.setgid=%s\n", config_get("child.setgid"));
+	fprintf(fd, "eval file.scrfilter = %s\n", config_get("file.scrfilter"));
+	fprintf(fd, "eval asm.arch = %s\n", config_get("asm.arch"));
+	fprintf(fd, "eval cfg.bigendian = %s\n", config_get("cfg.bigendian"));
+	fprintf(fd, "; Flags\n");
+        for (i=0;(flag = flag_get_i(i)); i++) {
+		if (flag->space != -1)
+			fprintf(fd, "fs %s\n", flag_space_get(flag->space));
+		fprintf(fd, "f %s @ 0x%llx\n", flag->name, flag->offset);
+	}
 #if 0
 	fprintf(fd, "# Breakpoints\n");
-#endif
-	fprintf(fd, "# Comments\n");
+	fprintf(fd, "; Comments\n");
 	list_for_each_prev(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		fprintf(fd, "comment=0x%08llx %s\n", (u64)cmt->offset, cmt->comment);
+		fprintf(fd, "CC %s @ 0x%08llx\n", cmt->comment, (u64)cmt->offset);
 	}
-	fprintf(fd, "# Code attributes\n");
-	list_for_each(pos, &data) {
-		int type = 'D';
-		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		switch(d->type) {
-		case FMT_HEXB: type = 'd'; break;
-		case FMT_ASC0: type = 's'; break;
-		default:       type = 'c'; break; }
-		fprintf(fd, "code=0x%llx %lld %c\n", (u64)d->from, (u64)(d->to-d->from), type);
-	}
+#endif
+	cons_set_fd(fd);
+	radare_cmd("C*", 0);
+	cons_set_fd(_print_fd);
 
 	fclose(fd);
 
@@ -101,24 +101,56 @@ void project_close()
 	cons_flush();
 }
 
+FILE *project_open_fd(const char *file, const char *mode)
+{
+	const char *rdbdir;
+
+	rdbdir = config_get("dir.project");
+	if (rdbdir && rdbdir[0]) {
+		mkdir(rdbdir, 0755);
+		chdir(rdbdir);
+	}
+
+	return fopen(file, mode);
+}
+
+static const char tmp_buf[128];
+const char *project_get_file(const char *file)
+{
+	int len;
+	char buf[1024];
+	FILE *fd = project_open_fd(file,"r");
+
+	if (fd == NULL)
+		return nullstr;
+
+	while(!feof(fd)) {
+		fgets(buf, 1023, fd);
+		if (feof(fd)) break;
+		len = strlen(buf)-1;
+		if (buf[len] == '\n' || buf[len] == '\r')
+			buf[len]='\0';
+		if (!memcmp(buf, "; file = ", 9)) {
+			strncpy(tmp_buf,buf+9, 1023);
+			break;
+		}
+	}
+
+	fclose(fd);
+	return tmp_buf;
+}
+
 int project_open(const char *file)
 {
 	FILE *fd;
 	char buf[1025];
 	int len;
 	char *ptr, *ptr2;
-	char *rdbdir;
 
 	if (strnull(file))
 		return 0;
 
-	rdbdir = config_get("dir.project");
-	if (rdbdir&&rdbdir[0]) {
-		mkdir(rdbdir, 0755);
-		chdir(rdbdir);
-	}
-
-	fd = fopen(file, "r");
+	fd = project_open_fd(file, "r");
 	if (fd == NULL) {
 		eprintf("Cannot open project '%s'\n", file);
 		return 0;
@@ -128,7 +160,7 @@ int project_open(const char *file)
 	flag_clear("*");
 	fgets(buf, 1024, fd);
 
-	if (memcmp(buf, "#RP#", 4)) {
+	if (memcmp(buf, ";RP;", 4)) {
 		eprintf("Invalid magic.\n");
 		return 0;
 	}
@@ -136,62 +168,18 @@ int project_open(const char *file)
 	for(;;) {
 		fgets(buf, 1024, fd);
 		if (feof(fd)) break;
-		if (buf[0]=='#') continue;
 		len = strlen(buf)-1;
 		if (buf[len] == '\n' || buf[len] == '\r')
 			buf[len]='\0';
 
-		ptr = strchr(buf, '=');
-		if (!ptr) continue;
-		ptr[0]='\0'; ptr = ptr + 1;
-		if (!strcmp(buf, "eval")) {
-			char *p = strchr(ptr, '\t');
-			if (p) p[0]='\0';
-			else break;
-			config_set(ptr, p+1);
-		} else
-		if (!strcmp(buf, "chdir")) {
-			config_set("child.chdir", ptr);
-		} else
-		if (!strcmp(buf, "chroot")) {
-			config_set("child.chroot", ptr);
-		} else
-		if (!strcmp(buf, "setuid")) {
-			config_set("child.setuid", ptr);
-		} else
-		if (!strcmp(buf, "setgid")) {
-			config_set("child.setgid", ptr);
-		} else
-		if (!strcmp(buf, "flag")) {
-			ptr2=strchr(ptr, ' ');
-			if (ptr2) {
-				ptr2 = ptr2 + 1;
-				flag_set(ptr2, get_offset(ptr), 1);
-			}
-		} else
-		if (!strcmp(buf, "comment")) {
-			ptr2=strchr(ptr, ' ');
-			if (ptr2) {
-				ptr2 = ptr2 + 1;
-				metadata_comment_add(get_offset(ptr), ptr2);
-			}
-		} else
-		if (!strcmp(buf, "code")) {
-			u64 len;
-			char type;
-			u64 from;
-			ptr2=strchr(ptr, ' ');
-			if (ptr2) {
-				ptr2 = ptr2 + 1;
-				sscanf(ptr2, "0x%08llx %lld %c", &from, &len, &type);
-				sprintf(buf, "C%c %lld @ 0x%08llx", type, len, from);
-				if (buf[1]!='\0')
-					radare_cmd(buf, 0);
-			}
+		if (!memcmp(buf, "; file = ", 9)) {
+			/* TODO open file now! */
 		}
+
+		if (buf[0]!=';')
+			radare_cmd(buf, 0);
 	}
 	fclose(fd);
-// TODO show statistics: N comments, symbols, labels, flags, etc...
 	eprintf("Project '%s' loaded\n", file);
 
 	config_set("file.project", file);
@@ -201,12 +189,20 @@ int project_open(const char *file)
 
 int project_info(const char *file)
 {
+	char *targetfile;
+
 	if (file == NULL || file[0]=='\0')
 		file = config_get("file.project");
+
 	if (strnull(file)) {
 		eprintf("No project opened\n");
 		return 0;
 	}
-	eprintf("project file: %s\n", file);
+	targetfile = project_get_file(file);
+
+	cons_printf("e file.project = %s\n", file);
+	cons_printf("e dir.project = %s\n", config_get("dir.project"));
+	cons_printf("; file = %s\n", targetfile);
+
 	return 1;
 }

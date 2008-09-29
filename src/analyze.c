@@ -237,7 +237,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		return 0;
 
 	/* if already analyzed skip */
-	if (block_get(prg,seek))
+	if (program_block_get(prg,seek))
 		return 0;
 
 	radare_seek(tmp, SEEK_SET);
@@ -250,7 +250,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
 		/// Miro si l'adreca on soc es base d'algun bloc
-		blf = block_get ( prg , config.seek+bsz );
+		blf = program_block_get ( prg , config.seek+bsz );
 
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
@@ -269,7 +269,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 			break;
 		}
 
-		blf = block_split_new ( prg, config.seek+bsz  );
+		blf = program_block_split_new ( prg, config.seek+bsz  );
 		if ( blf != NULL ) {		
 			//printf ("--Address %llx already analed\n", config.seek+bsz );
 //printf("-- %llx, %llx\n", aop.fail, aop.jump);
@@ -288,7 +288,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 		/* continue normal analysis */
 		if (!callblocks && aop.type == AOP_TYPE_CALL) {
-			block_add_call(prg, oseek, aop.jump);
+			program_block_add_call(prg, oseek, aop.jump);
                 	if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
@@ -300,12 +300,12 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		case AOP_TYPE_JMP:
 		case AOP_TYPE_CJMP:
 		case AOP_TYPE_CALL:
-			block_add_call(prg, oseek, aop.jump);
+			program_block_add_call(prg, oseek, aop.jump);
 			break;
 		case AOP_TYPE_PUSH:
 			/* TODO : add references */
 			if (config_get("graph.refblocks"))
-				block_add_call(prg, oseek, aop.ref);
+				program_block_add_call(prg, oseek, aop.ref);
 			break;
 		}
 
@@ -314,7 +314,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	bsz--;
 	config.seek = tmp;
 
-	blk = block_get_new(prg, oseek);
+	blk = program_block_get_new(prg, oseek);
 
 	blk->bytes = (unsigned char *)malloc(bsz);
 	blk->n_bytes = bsz;
@@ -363,7 +363,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
                 return 0;
 
         /* if already analyzed skip */
-        if (block_get(prg,seek))
+        if (program_block_get(prg,seek))
                 return 0;
 
         radare_seek(tmp, SEEK_SET);
@@ -385,7 +385,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
                 }
 
 		if (aop.type == AOP_TYPE_CALL) {
-			block_add_call(prg, oseek, aop.jump);
+			program_block_add_call(prg, oseek, aop.jump);
                 	if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
@@ -393,7 +393,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 		if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
 			/* TODO : add references */
 			if (refblocks) {
-				block_add_call(prg, oseek, aop.ref);
+				program_block_add_call(prg, oseek, aop.ref);
 				aop.eob = 1;
 				aop.jump = aop.ref;
 				aop.fail = oseek+bsz+sz;
@@ -411,7 +411,7 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 		bsz = 5;
 		// XXX WTF?!?!
 	}
-        blk = block_get_new(prg, oseek);
+        blk = program_block_get_new(prg, oseek);
 
         blk->bytes = (unsigned char *)malloc(bsz+1);
         blk->n_bytes = bsz;

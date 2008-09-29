@@ -39,6 +39,15 @@ int flag_space_idx = -1;
 int flag_space_idx2 = -1;
 #define FLAG_SPACES 255
 
+const const char *flag_space_get(int idx)
+{
+	if (idx==-1)
+		return nullstr;
+	if (idx>255||flag_spaces[idx].name[0]=='\0')
+		return nullstr;
+	return flag_spaces[idx].name;
+}
+
 void flag_help()
 {
 	eprintf("Usage: f[?|d|-] [flag-name]\n"

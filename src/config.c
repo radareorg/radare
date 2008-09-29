@@ -581,7 +581,7 @@ void config_init(int first)
 #endif
 	node->callback = &config_arch_callback;
 	config_set("asm.comments", "true"); // show comments in disassembly
-	config_set_i("asm.cmtmargin", 27); // show comments in disassembly
+	config_set_i("asm.cmtmargin", 10); // show comments in disassembly
 	config_set_i("asm.cmtlines", 0); // show comments in disassembly
 	config_set("asm.syntax", "pseudo");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
@@ -633,6 +633,7 @@ void config_init(int first)
 	config_set("search.verbose", "true");
 
 	config_set("file.id", "false");
+	config_set("file.analyze", "false");
 	config_set("file.type", "");
 	config_set("file.flag", "false");
 	config_set("file.trace", "trace.log");

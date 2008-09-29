@@ -75,11 +75,11 @@ int main_rdb_diff(char *file0, char *file1)
 	}
 #endif
    
-	block = block_get(p0, p0->entry);
+	block = program_block_get(p0, p0->entry);
 	if (block) 
 		printf("checksum %08x\n", block->n_bytes);
 
-	block = block_get(p1, p1->entry);
+	block = program_block_get(p1, p1->entry);
 	if (block) 
 		printf("checksum %08x\n", block->n_bytes);
 

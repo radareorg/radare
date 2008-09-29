@@ -465,6 +465,7 @@ int radare_cmd_raw(const char *tmp, int log)
 				if (i==-1) break;
 				if (buf[0])
 					radare_cmd(buf, 0);
+				cons_flush();
 				config_set_i("cfg.verbose", 1);
 			}
 			close(f);
@@ -584,6 +585,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		for(eof=input;eof[0];eof=eof+1)
 			if (eof[0]=='\n') eof[0]=' ';
 		ret = commands_parse(input);
+		cons_flush();
 
 		if (fdi!=-1) {
 			fflush(stdout);
@@ -1355,8 +1357,14 @@ int radare_go()
 	radare_controlc_end();
 
 	if (config.file == NULL) {
-		help_message_short();
-		return 1;
+		const char *project = config_get("file.project");
+		if (project != NULL)
+			config.file = strdup( project_get_file(project) );
+
+		if (strnull(config.file)) {
+			help_message_short();
+			return 1;
+		}
 	}
 
 	/* open file */
@@ -1386,14 +1394,20 @@ int radare_go()
 		radare_fortunes();
 
 	/* load rabin stuff here */
+	//rabin_load();
 	if (config_get("file.id"))
-		//rabin_load();
 		rabin_id();
 
 	/* flag all syms and strings */
-	if (config_get("file.flag"))
-		//radare_cmd(".!rsc flag $FILE", 0);
-		rabin_flag();
+	//radare_cmd(".!rsc flag $FILE", 0);
+	if (strnull(config_get("file.project"))) {
+		if (config_get("file.flag"))
+			rabin_flag();
+
+		if (config_get("file.analyze")) {
+			radare_cmd(".af* @@ sym_",0);
+		}
+	}
 
 	switch(config.debug) { // old config.debug value
 	case 1:

@@ -189,11 +189,11 @@ CMD_DECL(analyze)
 	case 't':
 		switch(input[1]) {
 		case '?':
-			cons_printf("Usage: at[*] [addr]\n");
-			cons_printf("   > at         ; list all traced opcode ranges\n");
-			cons_printf("   > at-        ; reset the tracing information\n");
-			cons_printf("   > at*        ; list all traced opcode offsets\n");
-			cons_printf("   > at [addr]  ; show trace info at address\n");
+			eprintf("Usage: at[*] [addr]\n");
+			eprintf("   > at         ; list all traced opcode ranges\n");
+			eprintf("   > at-        ; reset the tracing information\n");
+			eprintf("   > at*        ; list all traced opcode offsets\n");
+			eprintf("   > at [addr]  ; show trace info at address\n");
 			break;
 		case '-':
 			trace_reset();
@@ -534,11 +534,15 @@ CMD_DECL(rdb)
 	/* list */
 	if (text[0]=='\0') {
 		int i = 0;
+		char offstr[245];
 		struct list_head *pos;
 		list_for_each(pos, &config.rdbs) {
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			fflush(stdout);
-			cons_printf("%d 0x%08x %s\n", i, (unsigned long long)mr->entry, mr->name);
+			offstr[0]='\0';
+			string_flag_offset(offstr, mr->entry);
+
+			cons_printf("%02d 0x%08llx %s \n", i, (u64)mr->entry, offstr);
 			i++;
 		}
 		return 0;

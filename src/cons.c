@@ -33,6 +33,7 @@
 
 int _print_fd = 1;
 int cons_lines = 0;
+#define CONS_BUFSZ 0x4f00
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
 char cons_palette[CONS_PALETTE_SIZE][8] = {
@@ -751,13 +752,13 @@ void cons_flush()
 void cons_fprintf(FILE *stream, const char *format, ...)
 {
 	/* dupped */
-	char buf[4096];
+	char buf[CONS_BUFSZ];
 	va_list ap;
 
 	va_start(ap, format);
 
 	buf[0]='\0';
-	if (vsnprintf(buf, 4095, format, ap)<0)
+	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
 		buf[0]='\0';
 
 	palloc(strlen(buf)+1000);
@@ -768,13 +769,13 @@ void cons_fprintf(FILE *stream, const char *format, ...)
 
 void cons_printf(const char *format, ...)
 {
-	char buf[4096];
+	char buf[CONS_BUFSZ];
 	va_list ap;
 
 	va_start(ap, format);
 
 	buf[0]='\0';
-	if (vsnprintf(buf, 4095, format, ap)<0)
+	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
 		buf[0]='\0';
 
 	palloc(strlen(buf)+1000);
