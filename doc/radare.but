@@ -513,6 +513,8 @@ The 's'eek command supports '+-*!' characters as arguments to perform acts on th
 
 \c Usage: > s 0x128 ; absolute seek
 \c        > s +33   ; relative seek
+\c        > sn      ; seek to next opcode
+\c        > sb      ; seek to opcode branch
 \c        > s-      ; undo seek
 \c        > s+      ; redo seek
 \c        > s*      ; show seek history
@@ -527,6 +529,18 @@ The '>' and '<' commands are used to seek into the file using a block-aligned ba
 \c > s 0x300     ; seek at 0x300
 \c > s [0x400]   ; seek at 4 byte dword at offset 0x400
 \c > s 10+0x80   ; seek at 0x80+10
+
+The 'sn' and 'sb' commands uses the code analysis module to determine information about the opcode in the current seek and seek to the next one (sn) or branch where it points (sb).
+
+\c [0x4A13B8C0]> :pd 1
+\c 0x4A13B8C0, mov eax, esp
+\c [0x4A13B8C0]> sn              ; seek next opcode
+\c [0x4A13B8C2]> :pd 1
+\c 0x4A13B8C2  call 0x4a13c000     
+\c [0x4A13B8C2]> sb              ; seek to branch address
+\c [0x4A13C000]> :pd 1
+\c 0x4A13C000, push ebp            
+\c [0x4A13C000]> 
 
 To 'query' the math expression you can evaluate them using the '?' command and giving the math operation as argument. And getting the result in hexa, decimal, octal and binary.
 
@@ -738,7 +752,15 @@ The 'pd' command is the one used to disassemble code, it accepts a numeric value
 \c  d : disassembly N opcodes   count of opcodes
 \c  D : asm.arch disassembler   bsize bytes
 
-TODO: explain :pd 2  ; nun-verbose printage
+If you prefer a smarter disassembly with offset and opcode prefix the 'pd' command with ':'. This is used to temporally drop the verbosity while executing a radare command.
+
+\c [0x4A13B8C0]> pd 1
+\c       |    0x4A13B8C0,       eip: 89e0            mov eax, esp        
+\c
+\c [0x4A13B8C0]> :pd 1
+\c 0x4A13B8C0, mov eax, esp        
+
+The ',' near the offset determines if the address is aligned to 'cfg.addrmod' (this is 4 by default).
 
 \S{print-code-arch}
 
@@ -1620,33 +1642,267 @@ Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, 
 \c  -r        output in radare commands
 \c  -v        be verbose
 
+In Rabin every flag can be combined with -v for a more readable and verbose human output, and -r for using this output from the radare core. Furtheremore, we can combine -s, -i and -z with -x to get xrefs.
+
 \H{rabin-id} File identification
 
-TODO : 
+The file identification is done through the -I flag, it will output information regarding binary class, encoding, OS, type, etc.
+
+\c $ rabin -I /bin/ls
+\c ELF class:       ELF32
+\c Data enconding:  2's complement, little endian
+\c OS/ABI name:     UNIX - System V
+\c Machine name:    Intel 80386
+\c File type:       EXEC (Executable file)
+\c Stripped:        Yes
+\c Static:          No
+
+As it was said we can add the -r flag to use all this information in radare:
+
+\c $ rabin -Ir /bin/ls
+\c e file.type = elf
+\c e cfg.bigendian = false
+\c e dbg.dwarf = false
+\c e asm.arch = linux
+\c e asm.arch = intel
+
+This is automatically done at startup if we append to our configuration file (.radarerc) the eval command "eval file.id = true".
 
 \H{rabin-ep} Entrypoint
 
-TODO
+The flag "-e" lets us know the program entrypoint.
 
-\H{rabin-sb} Symbols (exports)
+\c $ rabin -e /bin/ls
+\c 0x08049a40
 
-TODO
+Again, if we mix it with -v we will get more information, in this case the memory location as well as the file offset.
+
+\c $ rabin -ev /bin/ls
+\c 0x08049a40 memory
+\c 0x00001a40 disk
+
+Combined with -r radare will create a new flag space called "symbols", and it will add a flag named "entrypoint" which points to the program's entrypoint. Thereupon, radare will seek it.
+
+\c $ rabin -er /bin/ls
+\c fs symbols
+\c f entrypoint @ 0x08049a40
+\c s entrypoint
 
 \H{rabin-imp} Imports
 
-TODO
+Rabin is able to get all the imported objects, as well as their offset at the PLT, this information is quite useful to recognize wich function is called by a call instruction. 
 
-\H{rabin-sections} Sections
+\c $ rabin -i /bin/ls
+\c ==> Imports:
+\c 0x08049484 abort
+\c 0x08049494 __errno_location
+\c 0x080494a4 sigemptyset
+\c 0x080494b4 sprintf
+\c 0x080494c4 localeconv
+\c 0x080494d4 dirfd
+\c 0x080494e4 __cxa_atexit
+\c 0x080494f4 strcoll
+\c 0x08049504 fputs_unlocked
 
-TODO
+Combined with -v, we get two new columns, bind (LOCAL, GLOBAL, etc.) and type (OBJECT, FUNC, SECTION, FILE, etc.)
+
+\c $ rabin -iv /bin/ls
+\c ==> Imports:
+\c 0x08049484 GLOBAL  FUNC    abort
+\c 0x08049494 GLOBAL  FUNC    __errno_location
+\c 0x080494a4 GLOBAL  FUNC    sigemptyset
+\c 0x080494b4 GLOBAL  FUNC    sprintf
+\c 0x080494c4 GLOBAL  FUNC    localeconv
+\c 0x080494d4 GLOBAL  FUNC    dirfd
+\c 0x080494e4 GLOBAL  FUNC    __cxa_atexit
+\c 0x080494f4 GLOBAL  FUNC    strcoll
+\c 0x08049504 GLOBAL  FUNC    fputs_unlocked
+
+Again, with -r we can automatically flag them in radare.
+
+\c $ rabin -ir /bin/ls
+\c 90 imports added
+\c fs imports
+\c f imp_abort @ 0x08049484
+\c f imp___errno_location @ 0x08049494
+\c f imp_sigemptyset @ 0x080494a4
+\c f imp_sprintf @ 0x080494b4
+\c f imp_localeconv @ 0x080494c4
+\c f imp_dirfd @ 0x080494d4
+\c f imp___cxa_atexit @ 0x080494e4
+\c f imp_strcoll @ 0x080494f4
+\c f imp_fputs_unlocked @ 0x08049504
+
+\H{rabin-sb} Symbols (exports)
+
+In rabin, symbols list works in a very similar way as exports do. With the flag -i we will get all the symbols present in the file as well as the offset where they are.
+
+\c $ rabin -s /bin/ls
+\c ==> Symbols:
+\c 0x0805e3c0 stdout
+\c 0x08059b04 _IO_stdin_used
+\c 0x0805e3a4 stderr
+\c 0x0805e3a0 optind
+\c 0x0805e3c4 optarg
+
+Using -v, we will get their size, bind and type too.
+
+\c $ rabin -sv /bin/ls
+\c ==> Symbols:
+\c 0x0805e3c0 size=00004 GLOBAL OBJECT  stdout
+\c 0x08059b04 size=00004 GLOBAL OBJECT  _IO_stdin_used
+\c 0x0805e3a4 size=00004 GLOBAL OBJECT  stderr
+\c 0x0805e3a0 size=00004 GLOBAL OBJECT  optind
+\c 0x0805e3c4 size=00004 GLOBAL OBJECT  optarg
+
+And, finally, with -r radare core can flag automatically all these symbols and define function and data blocks.
+
+\c $ rabin -sr /bin/ls
+\c fs symbols
+\c b 0x00000004 && f sym_stdout @ 0x0805e3c0
+\c CF 4 @ 0x0805e3c0
+\c b 0x00000004 && f sym__IO_stdin_used @ 0x08059b04
+\c CF 4 @ 0x08059b04
+\c b 0x00000004 && f sym_stderr @ 0x0805e3a4
+\c CF 4 @ 0x0805e3a4
+\c b 0x00000004 && f sym_optind @ 0x0805e3a0
+\c CF 4 @ 0x0805e3a0
+\c b 0x00000004 && f sym_optarg @ 0x0805e3c4
+\c CF 4 @ 0x0805e3c4
+\c b 512
+\c 5 symbols added
 
 \H{rabin-lib} Libraries
 
-TODO
+Rabin can list the libraries used by a binary with the flag -l.
+
+\c $ rabin -l /bin/ls
+\c ==> Libraries:
+\c 0x08048b5d librt.so.1
+\c 0x08048b99 libselinux.so.1
+\c 0x08048bc9 libacl.so.1
+\c 0x08048be7 libc.so.6
+
+Of course, it can be complete with -r, to get the corresponding radare commands.
+
+\c $ rabin -lr /bin/ls
+\c ==> Libraries:
+\c f str_librt_so_1 @ 0x08048b5d
+\c Cs 10 @ 0x00000b5d
+\c f str_libselinux_so_1 @ 0x08048b99
+\c Cs 15 @ 0x00000b99
+\c f str_libacl_so_1 @ 0x08048bc9
+\c Cs 11 @ 0x00000bc9
+\c f str_libc_so_6 @ 0x08048be7
+\c Cs 9 @ 0x00000be7
+\c 4 libs added
+
+TODO: -L
 
 \H{rabin-str} Strings
 
-TODO
+The -z flag is used to list all the strings located in the binary non-excutable sections. The first column matches offset.
+
+\c $ rabin -z /bin/ls
+\c (...)
+\c ==> Strings in .rodata:
+\c 0x08059b08 Try `%s --help' for more information.
+\c 0x08059b30 Usage: %s [OPTION]... [FILE]...
+\c 0x08059b54 List information about the FILEs (the current directory by default).
+\c 0x08059b99 Sort entries alphabetically if none of -cftuvSUX nor --sort.
+\c 0x08059bd8 Mandatory arguments to long options are mandatory for short options too.
+\c 0x08059c24   -a, --all                  do not ignore entries starting with .
+\c (...)
+
+Combined with -v, rabin will print the string size as well as its encoding (Ascii, Unicode).
+
+\c $ rabin -zv /bin/ls
+\c (...)
+\c ==> Strings in .rodata:
+\c 0x08059b08 037 A Try `%s --help' for more information.
+\c 0x08059b30 031 A Usage: %s [OPTION]... [FILE]...
+\c 0x08059b54 068 A List information about the FILEs (the current directory by default).
+\c 0x08059b99 060 A Sort entries alphabetically if none of -cftuvSUX nor --sort.
+\c 0x08059bd8 072 A Mandatory arguments to long options are mandatory for short options too.
+\c 0x08059c24 066 A   -a, --all                  do not ignore entries starting with .
+\c (...)
+
+With -r all this information is converted to radare commands, which will create a flag space called "strings" filled with flags for all those strings. Furtheremore, it will redefine them as strings insted of code.
+
+\c $ rabin -zr /bin/ls
+\c fs strings
+\c (...)
+\c f str_Try___s___help__for_more_information_ @ 0x08059b08
+\c Cs 37 @ 0x00011b08
+\c f str_Usage___s_[OPTION]____[FILE]___ @ 0x08059b30
+\c Cs 31 @ 0x00011b30
+\c f str_List_information_about_the_FILEs_(the_current_directory_by_default)_ @ 0x08059b54
+\c Cs 68 @ 0x00011b54
+\c f str_Sort_entries_alphabetically_if_none_of__cftuvSUX_nor___sort_ @ 0x08059b99
+\c Cs 60 @ 0x00011b99
+\c f str_Mandatory_arguments_to_long_options_are_mandatory_for_short_options_too_ @ 0x08059bd8
+\c Cs 72 @ 0x00011bd8
+\c f str____a,___all__________________do_not_ignore_entries_starting_with__ @ 0x08059c24
+\c (...)
+
+\H{rabin-sections} Sections
+
+Rabin give us complete information about the program sections. We can know their index, offset, size, align, type and permissions, as we can see in the next example.
+
+\c $ rabin -Sv /bin/ls
+\c ==> Sections:
+\c [00] 0x08048000 size=00000000 align=0x00000000 type=00 --- 
+\c [01] 0x08048134 size=00000019 align=0x00000001 type=01 -a- .interp
+\c [02] 0x08048148 size=00000032 align=0x00000004 type=07 -a- .note.ABI-tag
+\c [03] 0x08048168 size=00000808 align=0x00000004 type=05 -a- .hash
+\c [04] 0x08048490 size=00000092 align=0x00000004 type=1879048182 -a- .gnu.hash
+\c [05] 0x080484ec size=00001648 align=0x00000004 type=11 -a- .dynsym
+\c [06] 0x08048b5c size=00001127 align=0x00000001 type=03 -a- .dynstr
+\c [07] 0x08048fc4 size=00000206 align=0x00000002 type=1879048191 -a- .gnu.version
+\c [08] 0x08049094 size=00000176 align=0x00000004 type=1879048190 -a- .gnu.version_r
+\c [09] 0x08049144 size=00000040 align=0x00000004 type=09 -a- .rel.dyn
+\c [10] 0x0804916c size=00000728 align=0x00000004 type=09 -a- .rel.plt
+\c [11] 0x08049444 size=00000048 align=0x00000004 type=01 -ax .init
+\c [12] 0x08049474 size=00001472 align=0x00000004 type=01 -ax .plt
+\c [13] 0x08049a40 size=00065692 align=0x00000010 type=01 -ax .text
+\c [14] 0x08059adc size=00000028 align=0x00000004 type=01 -ax .fini
+\c [15] 0x08059b00 size=00015948 align=0x00000020 type=01 -a- .rodata
+\c [16] 0x0805d94c size=00000044 align=0x00000004 type=01 -a- .eh_frame_hdr
+\c [17] 0x0805d978 size=00000156 align=0x00000004 type=01 -a- .eh_frame
+\c [18] 0x0805e000 size=00000008 align=0x00000004 type=01 wa- .ctors
+\c [19] 0x0805e008 size=00000008 align=0x00000004 type=01 wa- .dtors
+\c [20] 0x0805e010 size=00000004 align=0x00000004 type=01 wa- .jcr
+\c [21] 0x0805e014 size=00000232 align=0x00000004 type=06 wa- .dynamic
+\c [22] 0x0805e0fc size=00000008 align=0x00000004 type=01 wa- .got
+\c [23] 0x0805e104 size=00000376 align=0x00000004 type=01 wa- .got.plt
+\c [24] 0x0805e280 size=00000272 align=0x00000020 type=01 wa- .data
+\c [25] 0x0805e390 size=00001132 align=0x00000020 type=08 wa- .bss
+\c [26] 0x0805e390 size=00000208 align=0x00000001 type=03 --- .shstrtab
+
+Also, using -r, radare will flag the beginning and end of each section, as well as comment each one with the previous information. 
+
+\c $ rabin -Sr /bin/ls
+\c fs sections
+\c f section_ @ 0x08048000
+\c f section__end @ 0x08048000
+\c CC [00] 0x08048000 size=00000000 align=0x00000000 type=00 ---  @ 0x08048000
+\c f section__interp @ 0x08048134
+\c f section__interp_end @ 0x08048147
+\c CC [01] 0x08048134 size=00000019 align=0x00000001 type=01 -a- .interp @ 0x08048134
+\c f section__note_ABI_tag @ 0x08048148
+\c f section__note_ABI_tag_end @ 0x08048168
+\c CC [02] 0x08048148 size=00000032 align=0x00000004 type=07 -a- .note.ABI-tag @ 0x08048148
+\c f section__hash @ 0x08048168
+\c f section__hash_end @ 0x08048490
+\c CC [03] 0x08048168 size=00000808 align=0x00000004 type=05 -a- .hash @ 0x08048168
+\c f section__gnu_hash @ 0x08048490
+\c f section__gnu_hash_end @ 0x080484ec
+\c CC [04] 0x08048490 size=00000092 align=0x00000004 type=1879048182 -a- .gnu.hash @ 0x08048490
+\c f section__dynsym @ 0x080484ec
+\c f section__dynsym_end @ 0x08048b5c
+\c (...)
+
+Take care of adding "eval file.flag = true" to .radarerc radare executes rabin -risSz at startup, automatically flaging the file.
 
 \C{net} Networking
 
@@ -3150,20 +3406,20 @@ We can just enter in visual mode to make the debugging more pleasant, and obviou
 
 The '!help' will show us the available commands
 
-[0x000F05F7]> !help
-Bochs-python remote debugger
- !?                     : alias for !help
- !reg [reg] ([value])   : get/set CPU registers
- !regs[*]               : show CPU registers
- !cregs                 : show control registers
- !fpregs                : show FPU registers
- !st                    : print stack
- !bp [[-]addr]          : breakpoints
- !cont                  : continue execution
- !step [n]              : perforn N steps
- !stepo [n]             : step over
- !mem [physical|linear] : select memory addressing
- !exec [python-expr]    : execute python expression remotely
+\c [0x000F05F7]> !help
+\c Bochs-python remote debugger
+\c  !?                     : alias for !help
+\c  !reg [reg] ([value])   : get/set CPU registers
+\c  !regs[*]               : show CPU registers
+\c  !cregs                 : show control registers
+\c  !fpregs                : show FPU registers
+\c  !st                    : print stack
+\c  !bp [[-]addr]          : breakpoints
+\c  !cont                  : continue execution
+\c  !step [n]              : perforn N steps
+\c  !stepo [n]             : step over
+\c  !mem [physical|linear] : select memory addressing
+\c  !exec [python-expr]    : execute python expression remotely
 
 Have fun!
 
