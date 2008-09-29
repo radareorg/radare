@@ -680,6 +680,18 @@ int escape_buffer(char *buf)
 
 	for(i=0;buf[i];i++) {
 		if (buf[i]=='\\') {
+			if (buf[i+1]=='e') {
+				buf[i] = 0x1b;
+				strcpy(buf+i+1, buf+i+2);
+			} else
+			if (buf[i+1]=='r') {
+				buf[i] = 0x0d;
+				strcpy(buf+i+1, buf+i+2);
+			} else
+			if (buf[i+1]=='n') {
+				buf[i] = 0x0a;
+				strcpy(buf+i+1, buf+i+2);
+			} else
 			if (buf[i+1]=='x') {
 				err = ch2 = ch = 0;
 				if (!buf[i+2] || !buf[i+3]) {

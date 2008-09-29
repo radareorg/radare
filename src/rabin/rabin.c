@@ -601,7 +601,7 @@ int rabin_identify_header()
 		if (buf[EI_CLASS] == ELFCLASS64)
 			elf64 = 1;
 	} else if ( !memcmp(buf, "\x4d\x5a", 2) ) {
-		int pe = buf[0x3c];
+		int pe = buf[0x3c] + (buf[0x3d] << 8);
 		filetype = FILETYPE_MZ;
 		if (buf[pe]=='P' && buf[pe+1]=='E') {
 			filetype = FILETYPE_PE;

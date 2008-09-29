@@ -66,12 +66,14 @@ int socket_write(int fd, unsigned char *buf, int len)
 /* returns -1 on error, 0 is false, 1 is true */
 int socket_ready(int fd, int secs,int usecs)
 {
-#if _UNIX_
+	int ret;
+#if __UNIX__
 	struct pollfd fds[1];
 	fds[0].fd = fd;
 	fds[0].events = POLLIN|POLLPRI;
 	fds[0].revents = POLLNVAL|POLLHUP|POLLERR;
-	return poll(&fds, 1, secs);
+	ret =  poll(&fds, 1, usecs);
+	return ret;
 #elif _WINDOWS_
 	fd_set rfds;
 	struct timeval tv;

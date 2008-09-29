@@ -1,5 +1,7 @@
 \cfg{paper-code-font-size}{9}
+\cfg{paper-left-margin}{64}
 \cfg{paper-code-fonts}{Courier}{Courier}{Courier}
+\cfg{text-chapter-align}{right}
 
 \title radare
 
@@ -909,47 +911,47 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
-\H{flagsint} Flag interpolation
+\H{flagsint} Flag intersections
 
-The '/' command for searching registers some flags for the hit results. You can use them to draw interpolation vectors between these hits and be able to determine block sizes from a header and a footer search keywords.
+The '/' command for searching registers some flags for the hit results. You can use them to draw intersection vectors between these hits and be able to determine block sizes from a header and a footer search keywords.
 
 Here's an example:
 
 \c [0x00000000]> !cat txt
-\c +body
+\c _head
 \c jklsdfjlksaf
-\c -body
-\c +body
+\c _foot
+\c _body
 \c jeje peeee
-\c -body
-\c +body
+\c _foot
+\c _body
 \c food is lavle
-\c -body
+\c _foot
 
 Let's define the header and the footer keywords:
 
-\c [0x00000000]> /k0 +body
-\c [0x00000000]> /k1 -body
+\c [0x00000000]> /k0 _body
+\c [0x00000000]> /k1 _foot
 \c [0x00000000]> /k
-\c 00 +body
-\c 01 -body
+\c 00 _body
+\c 01 _foot
 
 Do the ranged search using keywords 0 and 1:
 
 \c [0x00000000]> /r 0,1
-\c 001  0x00000000  hit0_0 +bodyjklsdfjlksaf
-\c 002  0x00000015  hit1_1 -body+bodyjeje p
-\c 003  0x0000001c  hit0_2 +bodyjeje peeee-
-\c 004  0x0000002f  hit1_3 -body+bodyfood is
-\c 005  0x00000036  hit0_4 +bodyfood is lavle
-\c 006  0x0000004b  hit1_5 -body
+\c 001  0x00000000  hit0_0 _bodyjklsdfjlksaf
+\c 002  0x00000015  hit1_1 _foot_bodyjeje p
+\c 003  0x0000001c  hit0_2 _bodyjeje peeee-
+\c 004  0x0000002f  hit1_3 _foot_bodyfood is
+\c 005  0x00000036  hit0_4 _bodyfood is lavle
+\c 006  0x0000004b  hit1_5 _foot
 
-Perform interpolation between hits!
+Perform intersection between hits!
 
-[0x00000000]> fi hit0 hit1
-hit0_0 (0x00000000) -> hit1_1 (0x00000015)   ; size = 21
-hit0_2 (0x0000001c) -> hit1_3 (0x0000002f)   ; size = 19
-hit0_4 (0x00000036) -> hit1_5 (0x0000004b)   ; size = 21
+\c [0x00000000]> fi hit0 hit1
+\c hit0_0 (0x00000000) -> hit1_1 (0x00000015)   ; size = 21
+\c hit0_2 (0x0000001c) -> hit1_3 (0x0000002f)   ; size = 19
+\c hit0_4 (0x00000036) -> hit1_5 (0x0000004b)   ; size = 21
 
 \H{write} Write
 
@@ -1908,21 +1910,122 @@ Take care of adding "eval file.flag = true" to .radarerc radare executes rabin -
 
 Radare have some interesting features in the networking area. It can be used as a hexadecimal netcat-like application using the io socket plugin which offers a file-like interface to access a TCP/IP connection.
 
-TODO
+The radare remote protocol allows to remotelly expand the IO of radare using a TCP connection. There's a pure-python implementation that has been used to implement python-based debuggers or just to offer a radare access to Bochs, vtrace or Immunity debugger for example.
 
 \H{net-iosocket} IO Sockets
 
-It generates a malloc-ed buffer which grows when receiving data from the socket and writing data to it in 
+The IO plugin called 'socket' generates a virtual file using a malloc-ed buffer which grows when receiving data from the socket and writing data to it in.
 
-TODO
+\c $ radare socket://av.com:80/
+\c [0x00000000]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00000000, ffff ffff ffff ffff ffff ffff ffff ffff ffff ..................
+\c 0x00000012, ffff ffff ffff ffff ffff ffff ffff ffff ffff ..................
+\c ...
+
+When writing the socket:// plugin redirects it to the socket.
+
+\c [0x00000000]> w GET / HTTP/1.1\r\nHost: av.com\r\n\r\n
+\c [0x00000000]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  0123456789ABCDEF01
+\c 0x00000000, 4854 5450 2f31 2e31 2033 3031 204d 6f76 6564 HTTP/1.1 301 Moved
+\c 0x00000012  2050 6572 6d61 6e65 6e74 6c79 0d0a 4461 7465  Permanently..Date
+\c 0x00000024, 3a20 4d6f 6e2c 2032 3920 5365 7020 3230 3038 : Mon, 29 Sep 2008
+\c 0x00000036  2031 313a 3035 3a34 3320 474d 540d 0a4c 6f63  11:05:43 GMT..Loc
+\c 0x00000048, 6174 696f 6e3a 2068 7474 703a 2f2f 7777 772e ation: http://www.
+\c 0x0000005A  616c 7461 7669 7374 612e 636f 6d2f 0d0a 436f altavista.com/..Co
+\c 0x0000006C, 6e6e 6563 7469 6f6e 3a20 636c 6f73 650d 0a54 nnection: close..T
+\c 0x0000007E  7261 6e73 6665 722d 456e 636f 6469 6e67 3a20 ransfer-Encoding: 
+\c 0x00000090, 6368 756e 6b65 640d 0a43 6f6e 7465 6e74 2d54 chunked..Content-T
+\c 0x000000A2  7970 653a 2074 6578 742f 6874 6d6c 3b20 6368 ype: text/html; ch
+\c 0x000000B4, 6172 7365 743d 7574 662d 380d 0a0d 0a39 3720 arset=utf-8....97 
+\c 0x000000C6  2020 2020 0d0a 5468 6520 646f 6375 6d65 6e74     ..The document
+\c 0x000000D8, 2068 6173 206d 6f76 6564 203c 4120 4852 4546  has moved <A HREF
+\c 0x000000EA  3d22 6874 7470 3a2f 2f77 7777 2e61 6c74 6176 ="http://www.altav
+\c 0x000000FC, 6973 7461 2e63 6f6d 2f22 3e68 6572 653c 2f41 ista.com/">here</A
+\c 0x0000010E  3e2e 3c50 3e0a 3c21 2d2d 2070 332e 7263 2e72 >.<P>.<!-- p3.rc.r
+\c 0x00000120, 6534 2e79 6168 6f6f 2e63 6f6d 2075 6e63 6f6d e4.yahoo.com uncom
+\c 0x00000132  7072 6573 7365 642f 6368 756e 6b65 6420 4d6f pressed/chunked Mo
+\c 0x00000144, 6e20 5365 7020 3239 2030 343a 3035 3a34 3320 n Sep 29 04:05:43 
+\c 0x00000156  5044 5420 3230 3038 202d 2d3e 0a0d 0a30 0d0a PDT 2008 -->...0..
+\c 0x00000168, 0d0a ffff ffff ffff ffff ffff ffff ffff ffff ..................
+
+The contents of the file are updated automatically while the socket is feeded by bytes. You can understand this plugin as a raw hexadecimal netcat with a nice interface ;)
+
+All reads from the socket are stored as flags pointing to the last read packet:
+
+[0x00000000]> f
+0x00000000       512     _sockread_0
+0x00000000       512     _sockread_last
 
 \H{net-connect} Radare remote
 
-TODO
+The 'io/remote' plugin implements a simple binary protocol for connecting client/server radare implementation and extend the basic IO operations over the network.
 
-\S{net-protocol} Remote protocol
+An example of use would be:
 
-TODO: 
+\c (alice)$ radare listen://:9999
+\c Listening at port 9999
+
+\c (bob)$ radare connect://alice:9999/dbg:///bin/ls
+\c ...
+
+Once bob connects to alice using the listen/connect URIs (both handled by the remote plugin) the listening one loads the nested uri and tries to load it "dbg:///bin/ls". Both radares will be working in debugger mode and all the debugger commands will be wrapped by network.
+
+In the same way it is possible to nest multiple socket connections between radare.
+
+\H{net-connect-radapy} radapy
+
+The radapy is the python implementation for the radare remote protocol. This module is distributed in the scripts/ directory of radare. For better understanding, here's an example:
+
+\c $ cat scripts/radapy-example.py
+\c import radapy
+\c from string import *
+\c 
+\c PORT = 9999
+\c 
+\c def fun_system(str):
+\c         print "CURRENT SEEK IS %d"%radapy.offset
+\c         return str
+\c 
+\c def fun_open(file,flags):
+\c         return str
+\c 
+\c def fun_seek(off,type):
+\c         return str
+\c 
+\c def fun_write(buf):
+\c         print "WRITING %d bytes (%s)"%(len(buf),buf)
+\c         return 6
+\c 
+\c def fun_read(len):
+\c         print "READ %d bytes from %d\n"% (len, radapy.offset)
+\c         str = "patata"
+\c         str = str[radapy.offset:]
+\c         return str
+\c 
+\c #radapy.handle_cmd_close = fun_close
+\c radapy.handle_cmd_system = fun_system
+\c radapy.handle_cmd_read = fun_read
+\c radapy.handle_cmd_write = fun_write
+\c radapy.size = 10
+\c 
+\c radapy.listen_tcp (PORT)
+
+As you see, you just need to implement the 'read' command and all the rest will mostly work. Here's a shorter implementation for immunity debugger:
+
+\c import immlib
+\c import radapy
+\c
+\c def fun_read(len):
+\c     return immlib.Debugger().readMemory(radapy.offset, len)
+\c
+\c radapy.handle_cmd_read = fun_read
+\c radapy.listen_tcp ( 9999 )
+
+For the other side you just have to connect a radare to this port to get the fun:
+
+\c $ radare connect://127.0.0.1:9999/dbg://immunity
 
 \H{net-sysproxy} IO thru Syscall proxying
 
