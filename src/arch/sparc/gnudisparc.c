@@ -55,6 +55,7 @@ char *gnu_disparc(unsigned char *inst, unsigned long offset)
 	info.read_memory_func = &sparc_buffer_read_memory;
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
+	info.buffer_vma = offset;
 	info.print_address_func = &print_address;
 	info.endian = 0;//config_get_i("cfg.bigendian");
 	info.fprintf_func = &cons_fprintf;

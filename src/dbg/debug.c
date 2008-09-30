@@ -1011,7 +1011,6 @@ int debug_stepbp(int times)
 			len+= len2;
 	}
 #endif
-
 	if (times<2) {
 		if (aop.jump>0)
 			bp0 = debug_bp_set(NULL, aop.jump, BP_SOFT);
@@ -1019,13 +1018,13 @@ int debug_stepbp(int times)
 			bp1 = debug_bp_set(NULL, aop.fail, BP_SOFT);
 		if ((aop.fail == 0) || (bp0==-1 && bp1==-1))
 			bp0 = debug_bp_set(NULL, pc+len, BP_SOFT);
-			printf("jump %08llx fail %08llx -> here %08llx\n", aop.jump, aop.fail, pc+8);
-					//sleep(2);
 
+		printf("jump 0x%08llx fail %08llx -> here %08llx\n", aop.jump, aop.fail, pc);
+					//sleep(2);
 		debug_cont(0);
 		//debug_bp_restore();
 
-		printf("%08llx %08llx %08llx\n", aop.jump, aop.fail, pc+len);
+		eprintf("%08llx %08llx %08llx\n", aop.jump, aop.fail, pc+len);
 		if (bp0!=-1)
 			debug_bp_rm_addr(aop.jump);
 			//debug_bp_rm_num(bp0);

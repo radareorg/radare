@@ -107,6 +107,8 @@ trap 	011010	Trap
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	unsigned long op;
+	int reg; 
+	char buf[10];
 
 	if (aop == NULL)
 		return (mips_mode==16)?2:4;
@@ -118,24 +120,39 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	memcpy(&op, bytes, 4);
 	aop->type = AOP_TYPE_UNK;
 
+	//eprintf("\n--%08llx : %d\n", addr, op&0x3f);
+	//switch((op>>24) & 0x3f) {
 	switch(op & 0x3f) {
 	// J-Type
 	case 2: // j
 	case 3: // jal
+		// branch to register
+		//XXX TODO
+		//eprintf("UJUMP\n");
+		//aop->type = AOP_TYPE_UJMP;
 		break;
-	
 	// R-Type
 	case 1: // bltz
-	case 4: // beq
+		// 04100001        bltzal        zero,0x2aaa8cb4
+	case 4: // beq // bal
 	case 5: // bne
 	case 6: // blez
 	case 7: // bgtz
 		aop->type = AOP_TYPE_CJMP;
-		aop->jump = -1;
+		aop->jump = addr+(4 * bytes[3]) - 8;
+		aop->fail = addr+8;
 		// calculate jump
 		break;
 	case 9: // jalr
 		aop->type = AOP_TYPE_CALL;
+		//if (bytes[1] == 0x20) { // jalr $t9
+			reg = bytes[0];
+		//	eprintf("REGISTER %d\n", reg);
+			aop->type = AOP_TYPE_CALL;
+			sprintf(buf, "t%d", reg); // XXX must be rN...!regs* should be synced here
+			aop->jump = flag_get_addr(buf);
+			aop->fail = addr+8;
+		//}
 		break;
 	case 8: // jr
 		aop->type = AOP_TYPE_RET;

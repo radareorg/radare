@@ -9,7 +9,8 @@ die "Usage: rsc syms-pe-flag [file] ([offset])\n" unless(@ARGV);
 my $file=$ARGV[0];
 my $offset=$ARGV[1];
 $offset="0x400c00" unless($offset);
-my @strings=split('\n', `rsc syms $file`);
+# XXX THIS IS BROKEN: MUST BE REPLACED BY RABIN
+my @strings=split('\n', `echo food`); #rsc syms $file`);
 
 print ":f _here_\n";
 
