@@ -54,7 +54,6 @@ static struct reflines_t *reflines = NULL;
 struct list_head comments;
 struct list_head xrefs;
 
-
 int data_set_len(u64 off, u64 len)
 {
 	struct list_head *pos;
@@ -143,7 +142,7 @@ u64 data_seek_to(u64 offset, int type, int idx)
 
 	list_for_each(pos, &xrefs) {
 		struct xrefs_t *d = (struct xrefs_t *)list_entry(pos, struct xrefs_t , list);
-		if (d->type == type) {
+		if (d->type == type || type == -1) {
 			if (d->addr == offset && idx == i) {
 				ret = d->from;
 				break;
@@ -432,6 +431,28 @@ void metadata_comment_list()
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
 		cons_printf("CC %s @ 0x%llx\n", cmt->comment, cmt->offset);
+	}
+}
+
+void metadata_xrefs_here(u64 addr)
+{
+	int count = 0;
+	char label[1024];
+	struct xrefs_t *x;
+	struct list_head *pos;
+
+	list_for_each(pos, &xrefs) {
+		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (addr = x->addr) {
+			label[0]='\0';
+			string_flag_offset(label, x->from);
+			cons_printf("%d %s xref 0x%08llx @ 0x%08llx ; %s\n",
+				count+1, x->type?"data":"code", x->from, x->addr, label);
+			count++;
+		}
+	}
+	if (count == 0) {
+		eprintf("No xrefs found\n");
 	}
 }
 
@@ -965,40 +986,40 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
 				//ud_set_pc(&ud_obj, seek);
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
-				arch_x86_aop((u64)seek, (const unsigned char *)b, &aop);
+				arch_x86_aop((u64)seek, (const u8*)block+bytes, &aop);
 				myinc += ud_insn_len(&ud_obj);
 				break;
 			case ARCH_ARM16:
 				arm_mode = 16;
 				myinc += 2;
-				arch_arm_aop(seek, (const unsigned char *)b, &aop);
+				arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
 				break;
 			case ARCH_ARM:
 				// endian stuff here
-				myinc += arch_arm_aop(seek, (const unsigned char *)b, &aop);
+				myinc += arch_arm_aop(seek, (const u8 *)b+bytes, &aop);
 				break;
 			case ARCH_MIPS:
-				arch_mips_aop(seek, (const unsigned char *)b, &aop);
+				arch_mips_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_SPARC:
-				arch_sparc_aop(seek, (const unsigned char *)b, &aop);
+				arch_sparc_aop(seek, (const u8 *)b+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_JAVA:
-				arch_java_aop(seek, (const unsigned char *)block+bytes, &aop);
+				arch_java_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_PPC:
-				arch_ppc_aop(seek, (const unsigned char *)b, &aop);
+				arch_ppc_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_CSR:
-				arch_csr_aop(seek, (const unsigned char *)b, &aop);
+				arch_csr_aop(seek, (const u8 *)b, &aop);
 				myinc += 2;
 				break;
 			case ARCH_MSIL:
-				arch_msil_aop(seek, (const unsigned char *)b, &aop);
+				arch_msil_aop(seek, (const u8 *)b, &aop);
 				myinc += aop.length+1;
 				break;
 			case ARCH_OBJD:
@@ -1082,7 +1103,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 					cur = show_nbytes - 1;
 
 				for(i=0;i<cur; i++)
-					print_color_byte_i(bytes+i, "%02x", b[i]);
+					print_color_byte_i(bytes+i, "%02x", block[bytes+i]);
 				if (cur !=myinc)
 					max--;
 				for(i=(max-cur)*2;i>0;i--)

@@ -1162,7 +1162,7 @@ CMD_DECL(seek)
 		cons_printf("       > sb      ; seek to opcode branch\n");
 		cons_printf("       > sc      ; seek to call index (pd)\n");
 		cons_printf("       > sx N    ; seek to code xref N\n");
-		cons_printf("       > sd N    ; seek to data reference N\n");
+		cons_printf("       > sX N    ; seek to data reference N\n");
 		cons_printf("       > s-      ; undo seek\n");
 		cons_printf("       > s+      ; redo seek\n");
 		cons_printf("       > s*      ; show seek history\n");
@@ -1187,8 +1187,7 @@ CMD_DECL(seek)
 	case 'x': 
 		new_off = data_seek_to(config.seek, 0, atoi(text+1));
 		break;
-
-	case 'd': 
+	case 'X': 
 		new_off = data_seek_to(config.seek, 1, atoi(text+1));
 		break;
 	case 'c': 

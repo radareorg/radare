@@ -108,16 +108,18 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	unsigned long op;
 	int reg; 
+	short r;
 	char buf[10];
 
 	if (aop == NULL)
 		return (mips_mode==16)?2:4;
 
-	//endian_memcpy(&op, bytes, 4, ! config_get("cfg.bigendian"));
+	endian_memcpy_e(&op, bytes, 4, config_get("cfg.bigendian"));
 	memset(aop, '\0', sizeof(struct aop_t));
 	//of &=0x3f;
 
-	memcpy(&op, bytes, 4);
+	//memcpy(&op, bytes, 4);
+	endian_memcpy_e(&op, bytes, 4, config.endian);
 	aop->type = AOP_TYPE_UNK;
 
 	//eprintf("\n--%08llx : %d\n", addr, op&0x3f);
@@ -125,11 +127,13 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	switch(op & 0x3f) {
 	// J-Type
 	case 2: // j
-	case 3: // jal
+		break;
 		// branch to register
 		//XXX TODO
 		//eprintf("UJUMP\n");
 		//aop->type = AOP_TYPE_UJMP;
+		break;
+		aop->type = AOP_TYPE_CJMP;
 		break;
 	// R-Type
 	case 1: // bltz
@@ -138,21 +142,23 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	case 5: // bne
 	case 6: // blez
 	case 7: // bgtz
+	case 16: //beqz
+	case 20: //bnel
 		aop->type = AOP_TYPE_CJMP;
-		aop->jump = addr+(4 * bytes[3]) - 8;
+		reg = (((op&0x00ff0000)>>16) + ((op&0xff000000)>>24));
+		aop->jump = addr+(reg<<2) + 4;
 		aop->fail = addr+8;
 		// calculate jump
 		break;
-	case 9: // jalr
-		aop->type = AOP_TYPE_CALL;
-		//if (bytes[1] == 0x20) { // jalr $t9
-			reg = bytes[0];
-		//	eprintf("REGISTER %d\n", reg);
+	case 3: // jalr
+	//case 9: // jalr
+		reg = op>>24;
+		if (reg< 10) {
 			aop->type = AOP_TYPE_CALL;
 			sprintf(buf, "t%d", reg); // XXX must be rN...!regs* should be synced here
 			aop->jump = flag_get_addr(buf);
 			aop->fail = addr+8;
-		//}
+		}
 		break;
 	case 8: // jr
 		aop->type = AOP_TYPE_RET;
@@ -185,7 +191,8 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 			aop->type = AOP_TYPE_NOP;
 			break;
 		default:
-			switch(bytes[3]) { // TODO handle endian ?
+			//switch((op<<24)&0xff) { //bytes[3]) { // TODO handle endian ?
+			switch((bytes[3])) {
 			case 0xc:
 				aop->type = AOP_TYPE_SWI;
 				break;

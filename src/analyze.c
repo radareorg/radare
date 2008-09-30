@@ -42,6 +42,10 @@ struct reflines_t *code_lines_init()
 	int dt, sz, bsz = 0;
 	int index = 0;
 	u64 seek = 0;
+	int lines = -1;
+
+	if (config.visual)
+		lines = config.height;
 
 	INIT_LIST_HEAD(&(list->list));
 
@@ -50,6 +54,8 @@ struct reflines_t *code_lines_init()
 
 	/* analyze code block */
 	while( ptr < end ) {
+		if (lines != -1 && --lines == 0)
+			break;
 		if (config.interrupted)
 			break;
 		dt = data_type(config.seek+bsz);

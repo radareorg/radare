@@ -112,7 +112,7 @@ command_t keystrokes[] = {
 	COMMAND('y', 0, "yank (copy selected block to clipboard)", yank),
 	COMMAND('Y', 0, "Yankee (paste clipboard here)", yank_paste),
 	COMMAND('=', 0, "insert assembly hack", insert_assembly_hack),
-	COMMAND('x', 1, "show xrefs of the current offset", xrefs_here),
+	COMMAND('x', 0, "show xrefs of the current offset", xrefs_here),
 	COMMAND('i', 0, "insert mode (tab to change hex,asm,ascii, q to back)", insert),
 	COMMAND('I', 0, "invert current block", invert),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
@@ -439,7 +439,19 @@ CMD_DECL(yank_paste)
 /* deprecated!! */
 CMD_DECL(xrefs_here)
 {
-	radare_cmd("ax", 0);
+	u64 addr;
+	int foo;
+	cons_printf("Select XREF from list:\n");
+	metadata_xrefs_here(config.seek);
+	cons_printf("==> ");
+	cons_flush();
+	foo = cons_readchar() - '0';
+	if (foo<10) {
+		addr = data_seek_to(config.seek, -1, foo);
+		if (addr != 0) {
+			radare_seek(addr, 0);
+		}
+	}
 	return 0;
 }
 
