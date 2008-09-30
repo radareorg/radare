@@ -50,6 +50,11 @@ extern int arm_mode;
 extern int mips_mode;
 int ollyasm_enable = 0;
 
+static struct reflines_t *reflines = NULL;
+struct list_head comments;
+struct list_head xrefs;
+
+
 int data_set_len(u64 off, u64 len)
 {
 	struct list_head *pos;
@@ -127,6 +132,26 @@ void data_add(u64 off, int type)
 		d->size = 1;
 
 	list_add(&(d->list), &data);
+}
+
+u64 data_seek_to(u64 offset, int type, int idx)
+{
+	u64 ret = 0ULL;
+	struct list_head *pos;
+	int i = 0;
+	idx--;
+
+	list_for_each(pos, &xrefs) {
+		struct xrefs_t *d = (struct xrefs_t *)list_entry(pos, struct xrefs_t , list);
+		if (d->type == type) {
+			if (d->addr == offset && idx == i) {
+				ret = d->from;
+				break;
+			}
+			i++;
+		}
+	}
+	return ret;
 }
 
 struct data_t *data_get(u64 offset)
@@ -259,11 +284,6 @@ int data_list()
 	}
 	return 0;
 }
-
-static struct reflines_t *reflines = NULL;
-struct list_head comments;
-struct list_head xrefs;
-
 /* -- metadata -- */
 int metadata_xrefs_print(u64 addr, int type)
 {
@@ -425,7 +445,7 @@ void metadata_xrefs_list()
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		label[0]='\0';
 		string_flag_offset(label, x->from);
-		cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", x->from, x->addr, label);
+		cons_printf("C%c 0x%08llx @ 0x%08llx ; %s\n", x->type?'d':'x', x->from, x->addr, label);
 	}
 }
 
@@ -696,6 +716,11 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 extern int color;
 void udis_arch(int arch, int len, int rows)
 {
+	udis_arch_buf(arch, config.block, len, rows);
+}
+
+void udis_arch_buf(int arch, const u8 *block, int len, int rows)
+{
 	struct aop_t aop;
 	//char c;
 	int i,idata,delta;
@@ -785,7 +810,7 @@ void udis_arch(int arch, int len, int rows)
 		D {
 			if (show_comments)
 				metadata_print(bytes);
-			if (show_lines) // does nothing if not data
+			if (show_lines && reflines) // does nothing if not data
 				code_lines_print(reflines, sk, 0);
 		}
 		if (show_offset)
@@ -854,7 +879,7 @@ void udis_arch(int arch, int len, int rows)
 			case DATA_STR:
 				cons_strcat("  .string \"");
 				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i, "%c", is_printable(config.block[bytes+i])?config.block[bytes+i]:'.');
+					print_color_byte_i(bytes+i, "%c", is_printable(block[bytes+i])?block[bytes+i]:'.');
 				}
 				cons_strcat("\"");
 				break;
@@ -863,11 +888,11 @@ void udis_arch(int arch, int len, int rows)
 				cons_printf("  .db  ");
 				int w = 0;
 				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i,"%02x ", config.block[bytes+i]);
+					print_color_byte_i(bytes+i,"%02x ", block[bytes+i]);
 					w+=4;
 					if (w >= config.height) {
 						cons_printf("\n");
-						if (show_lines)
+						if (show_lines && reflines) 
 							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
@@ -903,23 +928,23 @@ void udis_arch(int arch, int len, int rows)
 
 		switch(arch) {
 		case ARCH_X86:
-			memcpy(b, config.block+bytes, 32);
+			memcpy(b, block+bytes, 32);
 			break;
 		case ARCH_CSR:
-			memcpy(b, config.block+bytes, 2);
+			memcpy(b, block+bytes, 2);
 			break;
 		case ARCH_ARM16:
-			memcpy(b, config.block+bytes, 2);
+			memcpy(b, block+bytes, 2);
 			break;
 		case ARCH_ARM:
-			memcpy(b, config.block+bytes, 4);
+			memcpy(b, block+bytes, 4);
 			break;
 		case ARCH_PPC:
-			endian_memcpy_e(b, config.block+bytes, 4, !endian);
+			endian_memcpy_e(b, block+bytes, 4, !endian);
 			break;
 		default:
 			//memcpy(b, config.block+bytes, 4);
-			endian_memcpy_e(b, config.block+bytes, 4, endian);
+			endian_memcpy_e(b, block+bytes, 4, endian);
 		}
 
 		if (cmd_asm && cmd_asm[0]) {
@@ -961,7 +986,7 @@ void udis_arch(int arch, int len, int rows)
 				myinc += aop.length;
 				break;
 			case ARCH_JAVA:
-				arch_java_aop(seek, (const unsigned char *)config.block+bytes, &aop);
+				arch_java_aop(seek, (const unsigned char *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_PPC:
@@ -976,6 +1001,9 @@ void udis_arch(int arch, int len, int rows)
 				arch_msil_aop(seek, (const unsigned char *)b, &aop);
 				myinc += aop.length+1;
 				break;
+			case ARCH_OBJD:
+				radare_dump_and_process(DUMP_DISASM, len);
+				return 0;
 			default:
 				// Uh?
 				myinc += 4;
@@ -1013,7 +1041,7 @@ void udis_arch(int arch, int len, int rows)
 						cons_printf(buf, flag);
 						NEWLINE;
 						CHECK_LINES
-						if (show_lines)
+						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0); //config.baddr+ud_insn_off(&ud_obj));
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
@@ -1139,7 +1167,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 				if (aop.jump||aop.eob) {
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
 						NEWLINE;
-						if (show_lines)
+						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0);
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
@@ -1210,6 +1238,7 @@ struct radis_arch_t {
 	{ "m68k"    , ARCH_M68K  , &arch_m68k_aop }  , 
 	{ "csr"     , ARCH_CSR   , &arch_csr_aop }   , 
 	{ "msil"    , ARCH_MSIL  , &arch_msil_aop }   , 
+	{ "objdump" , ARCH_OBJD  , NULL }   , 
 	{ NULL      , -1         , NULL }
 };
 
@@ -1219,7 +1248,8 @@ void radis_update_i(int id)
 	for(i=0;radis_arches[i].name;i++) {
 		if (radis_arches[i].id == id) {
 			config.arch = radis_arches[i].id;
-			arch_aop    = radis_arches[i].fun;
+			if (radis_arches[i].fun != NULL)
+				arch_aop    = radis_arches[i].fun;
 			break;
 		}
 	}
@@ -1232,7 +1262,8 @@ void radis_update()
 	for(i=0;radis_arches[i].name;i++) {
 		if (!strcmp(arch, radis_arches[i].name)) {
 			config.arch = radis_arches[i].id;
-			arch_aop    = radis_arches[i].fun;
+			if (radis_arches[i].fun != NULL)
+				arch_aop    = radis_arches[i].fun;
 			break;
 		}
 	}

@@ -50,6 +50,12 @@ public class Grava.Node : GLib.Object
 		data.insert (key, val);
 	}
 
+	public void set_i (string key, int val)
+	{
+		string str = "0x%x".printf(val);
+		data.insert (key, str);
+	}
+
 	public string get (string key)
 	{
 		return data.lookup(key);

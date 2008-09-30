@@ -74,6 +74,8 @@ int trace_add(u64 addr)
 	struct trace_t *t;
 	struct list_head *pos;
 
+	if (arch_aop == NULL)
+		return -1;
 	if (config_get("trace.dup")) {
 		/* update times counter */
 		list_for_each(pos, &traces) {

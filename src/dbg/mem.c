@@ -272,9 +272,7 @@ void print_maps_regions(int rad, int two)
 				strcpy(name, mr->bin);
 				for(i=0;mr->bin[i];i++) {
 					int ch = mr->bin[i];
-					if (!is_printable(ch)||
-				//	ch=='['||ch==']'||
-					ch=='/'||ch=='.'||ch=='-') {
+					if (!is_printable(ch)|| ch=='['||ch==']'|| ch=='/'||ch=='.'||ch=='-') {
 						ch = '_';
 					}
 					name[i] = ch;

@@ -76,10 +76,11 @@ void core_load_graph_at(void *obj, const char *str)
 	}
 #endif
 	monitors_run();
+
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
-	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+	prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 	new_window = 1;
 	
@@ -108,7 +109,6 @@ void mygrava_bp_rm_at(void *unk, const char *str)
 	eprintf("Breakpoint at (%08llx) (%s) removed.\n", off, str);
 	core_load_graph_at(NULL, "here");
 }
-
 
 static void mygrava_close(void *widget, gpointer obj)
 {
@@ -187,6 +187,8 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 	}
 
 	off = get_offset(str);
+	//grava_graph_reset(last_window->grava->graph);
+	grava_default_layout_reset(last_window->grava->graph->layout);
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -215,9 +217,9 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 			radare_cmd(".!regs*", 0);
 		off = config.seek;
 	}
-	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
-	prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+	radare_seek(off, SEEK_SET);
+	prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 
 	grava_program_graph(prg, w);
@@ -477,6 +479,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		node->baseaddr = b0->addr;
 		grava_node_set(node, "label", cmd+128);
+		grava_node_set_i(node, "offset", b0->addr);
 
 		/* disassemble body */
 		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);

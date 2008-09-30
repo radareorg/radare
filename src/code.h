@@ -9,6 +9,7 @@ extern struct list_head traces;
 
 int trace_count(u64 addr);
 int trace_times(u64 addr);
+u64 data_seek_to(u64 offset, int type, int idx);
 int trace_add(u64 addr);
 void trace_init();
 
@@ -46,6 +47,7 @@ enum {
 	ARCH_SPARC = 7,
 	ARCH_CSR   = 8,
 	ARCH_MSIL  = 9,
+	ARCH_OBJD  = 10,
 	ARCH_AOP   = 0x10000
 };
 
@@ -179,6 +181,8 @@ int data_size(u64 offset);
 int data_list();
 void udis_jump(int n);
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);
+void udis_arch(int arch, int len, int rows);
+void udis_arch_buf(int arch, const u8 *block, int len, int rows);
 int dislen(u8* opcode0, int limit);
 
 /* Virtual Machine */

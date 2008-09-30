@@ -23,7 +23,29 @@ public class Grava.DefaultLayout : Grava.Layout
 	public double y_offset = 100;
 	public double x_offset = 50;
 	private weak Graph graph;
+	public HashTable<string,Node> data;
 	private static bool d = false; // debug output
+
+	construct
+	{
+		data = new HashTable<string, Node>.full(str_hash, str_equal, g_free, Object.unref);
+	}
+
+	public void reset()
+	{
+		stdout.printf("RESETING LAYOUT\n");
+		foreach(weak Node node in graph.nodes) {
+			stdout.printf("RESETING LAYOUT+++++\n");
+			setxy(node);
+		}
+	}
+
+	public void reset_real()
+	{
+		foreach(weak Node node in graph.nodes) {
+			graph.nodes.remove(node);
+		}
+	}
 
 	private void treenodes(Node n)
 	{
@@ -35,6 +57,41 @@ public class Grava.DefaultLayout : Grava.Layout
 			ox+=50;
 			treenodes(node);
 		}
+	}
+
+	public void setxy(Node n)
+	{
+		Node m = data.lookup(n.get("offset"));
+		if (m == null) {
+			Node no = new Node();
+			no.set("offset", n.get("offset"));
+			no.x = n.x;
+			no.y = n.y;
+			no.w = n.w;
+			no.h = n.h;
+			data.insert(n.get("offset"), no);
+		} else {
+			m.x = n.x;
+			m.y = n.y;
+			m.w = n.w;
+			m.h = n.h;
+		}
+	}
+
+	public bool getxy(ref Node n)
+	{
+		Node m = data.lookup(n.get("offset"));
+		if (m != null) {
+			n.x = m.x;
+			n.y = m.y;
+			n.w = m.w;
+			n.h = m.h;
+stdout.printf("TAKEND FOR %s\n", n.get("offset"));
+			return true;
+		}
+stdout.printf("NOT TAKEND FOR %s\n", n.get("offset"));
+		
+		return false;
 	}
 
 	public void walkChild(Node node, int level)
@@ -55,6 +112,11 @@ public class Grava.DefaultLayout : Grava.Layout
 				return edge.orig;
 		}
 		return null;
+	}
+
+	public override void set_graph(Graph graph)
+	{
+		this.graph = graph;
 	}
 
 	public override void run(Graph graph)
@@ -87,21 +149,33 @@ public class Grava.DefaultLayout : Grava.Layout
 		// Tambe  apropo  el node desti a l'origen.
 		//
 		// Entre el node que miro i el desti vol dir que la x sigui la mateixa.
-
+		//
 		for( i = 0 ; i < graph.nodes.length() ; i ++ ) {
 			n = graph.nodes.nth_data ( i );
+/*
+			if (getxy(ref n))
+				continue;
+*/
+			Node m = data.lookup(n.get("offset"));
+			if (m != null) {
+				n.x = m.x;
+				n.y = m.y;
+				n.w = m.w;
+				n.h = m.h;
+				stdout.printf("FUCKA! %f %f\n", n.x, n.y);
+				continue;
+			}
+			stdout.printf("---- not ounfd !\n");
 
 			/// busco l'edge verd d'aquest node
+			///
 			found = false;
 			foreach(weak Edge edge in graph.edges) {
-				if (edge.orig == n ) {
-					if (edge.jmpcnd == true )
-					{
-						if(d)stdout.printf ( "0x%x ----> 0x%x\n",edge.orig.baseaddr ,edge.dest.baseaddr );
-						destn = edge.dest;
-						found = true;
-						break;
-					}
+				if (edge.orig == n && edge.jmpcnd == true) {
+					if(d)stdout.printf ( "0x%x ----> 0x%x\n",edge.orig.baseaddr ,edge.dest.baseaddr );
+					destn = edge.dest;
+					found = true;
+					break;
 				}
 			}
 
@@ -123,6 +197,7 @@ public class Grava.DefaultLayout : Grava.Layout
 						maxw = p.w;
 				}
 				/// DesplaÃ§o
+				///
 				for( k = (i+1) ;  k < graph.nodes.length() ; k ++ ) {
 					p = graph.nodes.nth_data ( k );
 					
@@ -141,6 +216,7 @@ public class Grava.DefaultLayout : Grava.Layout
 					}
 				}
 			}
+			setxy(n);
 		}
 
 		return;

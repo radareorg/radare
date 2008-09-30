@@ -1245,6 +1245,24 @@ CMD_DECL(visual)
 				case '1':
 					key = cons_readchar(); // Read dummy '~'
 					switch(key) {
+					case ';': // arrow + shift
+						key = cons_readchar();
+						key = cons_readchar();
+						switch(key) {
+						case 'A': //Up
+							key = 'K';
+							break;
+						case 'B': //down
+							key = 'J';
+							break;
+						case 'C': //right
+							key = 'L';
+							break;
+						case 'D': //left
+							key = 'H';
+							break;
+						}
+						break;
 					case '1': // F1
 						visual_f(1);
 						continue;

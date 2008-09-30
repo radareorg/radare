@@ -21,4 +21,6 @@ using GLib;
 public abstract class Grava.Layout : Object
 {
 	public virtual void run(Graph graph) {}
+	public virtual void set_graph(Graph graph) {}
+	public virtual void reset() {}
 }

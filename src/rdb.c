@@ -364,6 +364,7 @@ int program_save(const char *file)
 {
 	char buf[1024];
 
+	eprintf("TODO\n");
 //	sprintf(buf, "C* > %s\n", file);
 
 	return 0;
@@ -501,17 +502,16 @@ struct program_t *program_open(char *file)
 
 void rdb_help()
 {
-#if 0
- Ro -> open
- Rs -> save
-#endif
-	printf("Usage: R[?] [argument] (TODO)\n"
-	"  R              ; list all RDBs loded in memory\n"
-	"  R  [rdb-file]  ; load rdb file into memory\n"
-	//"  Rs [rdb-file]  ; save graph analysis as rdb \n" XXX same as project file?
-	"  R -[idx]       ; removes an rdb indexed\n"
-	"  Rm [range]     ; performs a merge between selected rdbs\n"
-	"  RG [num]       ; graph RDB number 'num'\n"
-	"  Rd [a] [b]     ; rdb diff. should generate a new rdb\n");
+	eprintf("Usage: g[?] [argument] (TODO)\n"
+	"  g?             ; show help\n"
+	"  g              ; list all RDBs loded in memory\n"
+	"  g  [rdb-file]  ; load graph rdb file as graph\n"
+	"  g -[idx]       ; removes an rdb indexed\n"
+	"  ga 0xaddr      ; generate graph at address\n"
+	"  gs [rdb-file]  ; save graph analysis as rdb\n"
+	"  gc [num]       ; show block disassembles of graph num\n"
+	"  gg [num]       ; graph graph number 'num'\n"
+	"  gm [range]     ; performs a merge between selected rdbs\n"
+	"  gd [a] [b]     ; rdb diff. generates a new rdb\n");
 }
 

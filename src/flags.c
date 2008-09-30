@@ -625,7 +625,9 @@ int flag_is_valid_name(const char *name)
 {
 	if (strchr(name, '*')  ||  strchr(name, '/') ||  strchr(name, '+')
 	||  strchr(name, '-')  ||  strchr(name, ' ') ||  strchr(name, '\n')
-	||  strchr(name, '\t') ||  ((name[0] >= '0') &&  (name[0] <= '9'))
+	||  strchr(name, '\t') ||  strchr(name, '[') ||  strchr(name,'@')
+	||  strchr(name, ']') 
+	|| ((name[0] >= '0') &&  (name[0] <= '9'))
 	||  !is_printable(name[0]))
 		return 0;
 	return 1;

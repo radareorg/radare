@@ -133,6 +133,34 @@ void undo_write_list()
 	}
 }
 
+int undo_write_set_t(struct undow_t *u, int set) 
+{
+	undo_w_lock = 1;
+	if (set) {
+		radare_write_at(u->off, u->n, u->len);
+		u->set = UNDO_WRITE_SET;
+	} else {
+		radare_write_at(u->off, u->o, u->len);
+		u->set = UNDO_WRITE_UNSET;
+	}
+	undo_w_lock = 0;
+}
+
+void undo_write_set_all(int set)
+{
+	struct list_head *p;
+	unsigned int oldb;
+	int i = 0, j, len;
+
+	if (undo_w_init)
+	list_for_each_prev(p, &(undo_w_list)) {
+		struct undow_t *u = list_entry(p, struct undow_t, list);
+		undo_write_set_t(u, set); //UNDO_WRITE_UNSET);
+		eprintf("%s 0x%08llx\n", set?"redo":"undo", u->off);
+		i++;
+	}
+}
+
 /* sets or unsets the writes done */
 /* if ( set == 0 ) unset(n) */
 int undo_write_set(int n, int set) 
@@ -150,18 +178,8 @@ int undo_write_set(int n, int set)
 			}
 		}
 
-		if (u) {
-			undo_w_lock = 1;
-			if (set) {
-				radare_write_at(u->off, u->n, u->len);
-				u->set = UNDO_WRITE_SET;
-			} else {
-				radare_write_at(u->off, u->o, u->len);
-				u->set = UNDO_WRITE_UNSET;
-			}
-			undo_w_lock = 0;
-		} else
-			eprintf("invalid undo-write index\n");
+		if (u) undo_write_set_t(u, set);
+		else eprintf("invalid undo-write index\n");
 	} else
 		eprintf("no writes done\n");
 

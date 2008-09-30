@@ -1,6 +1,6 @@
 /*
  *  Grava - General purpose graphing library for Vala
- *  Copyright (C) 2007  pancake <youterm.com>
+ *  Copyright (C) 2007, 2008  pancake <youterm.com>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,13 +36,14 @@ public class Grava.Graph : GLib.Object
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
 		layout = new DefaultLayout();
-		data = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);
+		data   = new HashTable<string, string>.full(str_hash, str_equal, g_free, Object.unref);
 	}
 
 	public void reset() {
+		layout.reset();
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
-		layout = new DefaultLayout();
+		//layout = new DefaultLayout();
 	}
 
 	public void set(string key, string val)
@@ -74,6 +75,7 @@ public class Grava.Graph : GLib.Object
 
 	public void update()
 	{
+stdout.printf("update\n");
 		layout.run(this);
 	}
 
@@ -85,28 +87,24 @@ public class Grava.Graph : GLib.Object
 		Node p;
 		bool ins;
 		uint len = nodes.length();
+
+		layout.set_graph(this);
 		n.fit();
 		
-		//stdout.printf ( "ADD NODE %d, addr: 0x%x\n", nodes.length() , n.baseaddr );
-
 		ins = false;
-		for ( count = 0 ; count <  len ; count ++ )  
-		{
+		for ( count = 0 ; count <  len ; count ++ ) {
 			p = nodes.nth_data ( count );
 			//stdout.printf ("adding node base at %x , this is %x\n", p.baseaddr, n.baseaddr );
 
-			/// el node que estic mirant ja te la base address mes gran que jo. Inserto a l'anterior.
-			if ( p.baseaddr >= n.baseaddr )
-			{
+			if ( p.baseaddr >= n.baseaddr ) {
 				ins=true;
-				nodes.insert ( n , count   );
+				nodes.insert(n, count);
 				break;
 			}
 		}
+
 		if (  ins == false )
-		{
 			nodes.append(n);
-		}
 	}
 
 	public void add_edge (Edge e)

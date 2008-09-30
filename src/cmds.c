@@ -124,7 +124,7 @@ command_t commands[] = {
 	COMMAND('q', "[!]",            "quit     close radare shell", quit),
 	COMMAND('P', "[so][i [file]]", "Project  project Open, Save, Info", project),
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
-	COMMAND('R', "[act] ([arg])",  "RDB      rdb operations", rdb),
+	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
 	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
@@ -562,13 +562,48 @@ CMD_DECL(rdb)
 		}
 		eprintf("Not found\n");
 		return 0;
-	}
+	} else
+	if (input[0] =='c') {
+		struct list_head *pos, *head;
+		list_for_each(pos, &config.rdbs) {
+			struct program_t *prg = list_entry(pos, struct program_t, list);
+			list_for_each_prev(head, &(prg->blocks)) {
+				char str[128];
+				struct block_t *b0 = list_entry(head, struct block_t, list);
+				string_flag_offset(str, b0->addr);
+				cons_printf("0x%08llx : %s ",
+					b0->addr, str);
+				if (b0->tnext != 0)
+					cons_printf(": 0x%08llx -> 0x%08llx",  b0->tnext, b0->fnext);
+				cons_printf("\n");
+				udis_arch_buf(config.arch, b0->bytes, b0->n_bytes, 0);
+			}
+		}
+	} else
+	if (input[0] =='a') {
+		return radare_cmdf("ac %d@%s", (int)config_get_i("graph.depth"), input+1);
+	} else
+	if (input[0] =='s') {
+		int num = atoi(text+1);
+		int i = 0;
+		struct list_head *pos;
+		list_for_each(pos, &config.rdbs) {
+			struct program_t *prg = list_entry(pos, struct program_t, list);
+			if (i ==  num) {
+				program_save(prg);
+				return 0;
+			}
+			i++;
+		}
+		eprintf("Not found\n");
+	} else
 	/* open */
 	if (input[0] ==' ') {
-		struct program_t *prg = program_open(text+1); // XXX FIX stripstring and so
-		list_add_tail(&prg->list, &config.rdbs);
+		struct program_t *prg = program_open(input+1); // XXX FIX stripstring and so
+		if (prg != NULL)
+			list_add_tail(&prg->list, &config.rdbs);
 		return 0;
-	}
+	} else
 	/* grefusa diffing */
 	if (input[0] =='d') {
 		int a, b;
@@ -1075,6 +1110,12 @@ CMD_DECL(flag)
 CMD_DECL(undowrite)
 {
 	switch(input[0]) {
+	case 'a':
+		undo_write_set_all(0);
+		break;
+	case 'r':
+		undo_write_set_all(1);
+		break;
 	case 'w':
 		input = input +1;
 	case ' ':
@@ -1093,7 +1134,9 @@ CMD_DECL(undowrite)
 		cons_printf(
 		"Usage: > u 3   ; undo write change at index 3\n"
 		"       > u -3  ; redo write change at index 3\n"
-		"       > u     ; list all write changes\n");
+		"       > u     ; list all write changes\n"
+		"       > ua    ; undo all write changes\n"
+		"       > ur    ; redo all write changes\n");
 		break;
 	}
 
@@ -1117,6 +1160,9 @@ CMD_DECL(seek)
 		cons_printf("       > s +33   ; relative seek\n");
 		cons_printf("       > sn      ; seek to next opcode\n");
 		cons_printf("       > sb      ; seek to opcode branch\n");
+		cons_printf("       > sc      ; seek to call index (pd)\n");
+		cons_printf("       > sx N    ; seek to code xref N\n");
+		cons_printf("       > sd N    ; seek to data reference N\n");
 		cons_printf("       > s-      ; undo seek\n");
 		cons_printf("       > s+      ; redo seek\n");
 		cons_printf("       > s*      ; show seek history\n");
@@ -1125,9 +1171,11 @@ CMD_DECL(seek)
 		return;
 	}
 
-	if (input[0]=='n'||input[0]=='b'||input[0]=='!'||input[0]=='*'||input[0]=='+'||input[0]=='-'||(input[0]>='0'&&input[0]<'9'))
+	text = input;
+#if 0
+	if (input[0]=='n'||input[0]=='b'||input[0]=='c'||input[0]=='!'||input[0]=='*'||input[0]=='+'||input[0]=='-'||(input[0]>='0'&&input[0]<'9'))
 		text = input;
-
+#endif
 
 	if (text[0] == '\0') {
 		D printf(OFF_FMT"\n", (u64)config.seek);
@@ -1136,6 +1184,18 @@ CMD_DECL(seek)
 	}
 
 	switch(text[0]) {
+	case 'x': 
+		new_off = data_seek_to(config.seek, 0, atoi(text+1));
+		break;
+
+	case 'd': 
+		new_off = data_seek_to(config.seek, 1, atoi(text+1));
+		break;
+	case 'c': 
+		sign = atoi (text+1);
+		if (sign > 0)
+			udis_jump(sign-1);
+		return;
 	case 'n': 
 		arch_aop(config.seek, config.block, &aop);
 		new_off = config.seek + aop.length;
@@ -1754,6 +1814,7 @@ CMD_DECL(help)
 			if (input[1]=='\0') {
 				eprintf("Usage: ?[?[?]] <expr>\n");
 				eprintf("  > ? eip             ; get value of eip flag\n");
+				eprintf("  > ?x eip            ; show hex result of math expression\n");
 				eprintf("  > ? 0x80+44         ; calc math expression\n");
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
 				eprintf("  > ? eip==sym_main   ; compare flags\n");
@@ -1766,12 +1827,19 @@ CMD_DECL(help)
 			if (last_cmp == 0) {
 				radare_cmd(input+1, 0);
 			}
+		} else
+		if (input[0]=='x') {
+			u64 res = get_math(input+1);
+			if (res > 0xffffffff)
+				cons_printf("0x%llx\n", -res);
+			else
+				cons_printf("0x%llx\n", res);
 		} else {
 			u64 res = get_math(input);
 			if (strchr(input,'=') || strchr(input,'!')) {
 				last_cmp = res;
 			} else {
-				cons_printf("0x"OFF_FMTx" ; %lldd ; %lloo ; ", res, res, res);
+				cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res);
 				PRINT_BIN(res); NEWLINE;
 			}
 		}

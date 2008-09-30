@@ -142,6 +142,7 @@ int radare_write_xor(const char *arg);
 void radare_poke(const char *arg);
 int radare_get_region(u64 *from, u64 *to);
 int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);
+int radare_cmdf(const char *cmd, ...);
 
 int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);

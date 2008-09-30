@@ -294,7 +294,9 @@ char *dl_readline(int argc, const char **argv)
 	dl_buffer_idx = dl_buffer_len = 0;
 	dl_buffer[0]='\0';
 
+#if RADARE_CORE
 	dl_echo = config.verbose;
+#endif
 
 	if (dl_disable) {
 		dl_buffer[0]='\0';

@@ -109,6 +109,7 @@ int strhash(const char *str);
 char *str_first_word(const char *string);
 const char *get_tmp_dir();
 const char *strget(const char *str);
+char *strsub (char *string, char *pat, char *rep, int global);
 u32 get_offset32(u64);
 //u64 ntohq(u64 x);
 #define ntohq htonq

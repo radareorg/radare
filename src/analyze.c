@@ -45,6 +45,9 @@ struct reflines_t *code_lines_init()
 
 	INIT_LIST_HEAD(&(list->list));
 
+	if (arch_aop == NULL)
+		return NULL;
+
 	/* analyze code block */
 	while( ptr < end ) {
 		if (config.interrupted)
@@ -230,6 +233,8 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
         int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
+	if (arch_aop == NULL)
+		return -1;
 	// too deep! chop branch here!
 	if (depth<=0)
 		return 0;
@@ -357,6 +362,8 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
         int refblocks = (int)config_get_i("graph.refblocks");
 
+	if (arch_aop == NULL)
+		return -1;
         if (depth<=0)
                 return 0;
         if (config.interrupted)
@@ -484,7 +491,8 @@ struct program_t *code_analyze(u64 seek, int depth)
 	else	code_analyze_r = &code_analyze_r_nosplit;
 
 	/* XXX fix hirroble bug in deep overflow :O */
-	if (depth>3) depth=3;
+	//if (depth>3) depth=3;
+	if (depth>10) depth=10;
 
 	if (prg == NULL)
 		eprintf("Cannot create program\n");
@@ -718,13 +726,15 @@ int analyze_function(int recursive, int report)
 	u64 end  = 0;
 	int i, inc = 0;
 	u64 to;
-	u64 len;
+	int len = 0;
 	int ref;
 	int ncalls = 0;
 	int nrefs = 0;
 	int framesize = 0;
 	int nblocks = 0;
 
+	if (arch_aop == NULL)
+		return -1;
 #if 0
 	struct data_t *d;
 	d = data_get(config.baddr+config.seek);
@@ -754,6 +764,8 @@ int analyze_function(int recursive, int report)
 	}
 	to = end;
 	len=1+to-from;
+	if (len<0)
+		return -1;
 
 	bytes = (char *)malloc(len);
 	ret = radare_read_at(from, bytes, len);
@@ -806,11 +818,13 @@ int analyze_function(int recursive, int report)
 			}
 			break;
 		default:
-			if (aop.ref != 0) {
-				buf[0]='\0';
-				string_flag_offset(buf, aop.ref);
-				if (!report)
-					cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", seek, aop.ref, buf);
+			if (aop.ref != 0 && aop.type == AOP_TYPE_PUSH) {
+				if (!report) {
+					buf[0]='\0';
+					string_flag_offset(buf, aop.ref);
+					//cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", seek, aop.ref, buf);
+					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
+				}
 				nrefs++;
 			}
 		}

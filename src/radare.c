@@ -344,7 +344,7 @@ void radare_fortunes()
 				lines--;
 		ptr = str+i;
 		for(i=0;ptr[i];i++) if (ptr[i]=='\n') { ptr[i]='\0'; break; }
-		printf("Message of the day:\n  %s\n", ptr);
+		eprintf("Message of the day:\n  %s\n", ptr);
 		free(str);
 	}
 }
@@ -630,6 +630,18 @@ int radare_cmd_raw(const char *tmp, int log)
 	return ret; /* error */
 }
 
+int radare_cmdf(const char *cmd, ...)
+{
+	va_list ap;
+	int ret;
+	char buf[1024];
+	va_start(ap, cmd);
+	vsnprintf(buf, 1023, cmd, ap);
+	ret = radare_cmd_raw(buf, 0);
+	va_end(ap);
+	return ret;
+}
+
 /* XXX this is more portable and faster than the solution pipe_to_tmp_file and so */
 /* but doesnt supports system() stuff. i have to split the use of both functions */
 char *radare_cmd_str(const char *cmd)
@@ -683,8 +695,9 @@ void radare_nullcmd()
 	//radare_cmd(":.!regs*", 0);
 
 	if (config_get("dbg.stack")) {
-		C cons_printf(C_RED"Stack:\n"C_RESET);
-		else cons_printf("Stack:\n");
+		C cons_printf(C_RED"Stack: "C_RESET);
+		else cons_printf("Stack: ");
+		radare_cmd("?x ebp-esp", 0); //":px 66@esp", 0);
 		sprintf(buf, "%spx %d @ %s",
 			(config_get("dbg.vstack"))?":":"",
 			(int)config_get_i("dbg.stacksize"),
