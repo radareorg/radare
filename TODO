@@ -16,6 +16,7 @@
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc search.from and search.to
 * documentate wX
+* docuemtate 'g' and 'x' in visual
 
 --- todo
 * ascii-nops for rasc

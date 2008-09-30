@@ -30,10 +30,9 @@ static void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
 
 }
 
-
 static void  print_address(bfd_vma address, struct disassemble_info *info)
 {
-	cons_printf("0x%lx", (address)); // control flags and so
+	cons_printf("0x%llx", (address)); // control flags and so
 	return ;
 }
 
@@ -46,7 +45,7 @@ char *gnu_disparc(unsigned char *inst, unsigned long offset)
 
 	Offset = (unsigned long)offset;
 	//endian_memcpy(bytes, inst, 4); //
-	memcpy(bytes, inst, 4); // TODO handle thumb
+	endian_memcpy(bytes, inst, 4); // TODO handle thumb
 
 	/* prepare disassembler */
 	memset(&info,'\0', sizeof(struct disassemble_info));

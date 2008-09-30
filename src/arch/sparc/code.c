@@ -33,6 +33,7 @@ int arch_sparc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
+	aop->length = 4;
 
-	return 4;
+	return aop->length;
 }
