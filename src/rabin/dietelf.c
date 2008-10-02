@@ -626,6 +626,7 @@ int ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
 	if (rad) {
 		printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr));
 		printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr + shdrp->sh_size));
+//		printf("S 0x%llx 0x%llx section_%s @ 0x%llx\n", (u64)(shdrp->sh_size), (u64)bin->base_addr, ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
 		printf("CC ");
 	}
 	printf("[%02i] 0x%08llx size=%08lli align=0x%08llx type=%02d %c%c%c %s", 

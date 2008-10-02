@@ -37,6 +37,7 @@ typedef u64 addr_t;
 #include <sys/time.h>
 #include <fcntl.h>
 #include "cmds.h"
+#include "section.h"
 #include "print.h"
 
 extern struct list_head hacks;
@@ -146,6 +147,6 @@ int radare_cmdf(const char *cmd, ...);
 
 int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);
-
+struct trace_t *trace_get(u64 addr);
 
 #endif

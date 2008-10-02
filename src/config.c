@@ -495,8 +495,10 @@ static int config_baddr_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (node)
+	if (node) {
 		config.baddr = (u64)node->i_value;
+		section_set(config.seek, -1, config.baddr, NULL);
+	}
 	return 1;
 }
 
@@ -555,6 +557,7 @@ void config_init(int first)
 	if (first) {
 		flag_init();
 		config_old_init();
+		section_init(0);
 
 		// TODO : dl_callback = radare_dl_autocompletion;
 		dl_init();
@@ -665,7 +668,7 @@ void config_init(int first)
 #endif
 	node->callback = &config_bigendian_callback;
 
-	config.endian = config_get("cfg.bigendian");
+	config.endian = config_get_i("cfg.bigendian");
 	config_set("cfg.inverse", "false");
 	config_set_i("cfg.analdepth", 6);
 	config_set("file.insert", "false");

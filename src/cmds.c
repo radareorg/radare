@@ -126,6 +126,7 @@ command_t commands[] = {
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
 	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", rdb),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
+	COMMAND('S', "[len] [baddr]",  "Section  manage file.baddr sections", sections),
 	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
@@ -200,7 +201,7 @@ CMD_DECL(analyze)
 			break;
 		case ' ': {
 			u64 foo = get_math(input+1);
-			struct trace_t *t = trace_get(foo);
+			struct trace_t *t = (struct trace_t *)trace_get(foo);
 			if (t != NULL) {
 				cons_printf("offset = 0x%llx\n", t->addr);
 				cons_printf("opsize = %d\n", t->opsize);
@@ -1163,6 +1164,7 @@ CMD_DECL(seek)
 		cons_printf("       > sc      ; seek to call index (pd)\n");
 		cons_printf("       > sx N    ; seek to code xref N\n");
 		cons_printf("       > sX N    ; seek to data reference N\n");
+		cons_printf("       > sS N    ; seek to section N (fmi: 'S?')\n");
 		cons_printf("       > s-      ; undo seek\n");
 		cons_printf("       > s+      ; redo seek\n");
 		cons_printf("       > s*      ; show seek history\n");
@@ -1182,6 +1184,7 @@ CMD_DECL(seek)
 		return 0;
 		free(input2);
 	}
+	for(;text[0]==' ';text = text +1);
 
 	switch(text[0]) {
 	case 'x': 
@@ -1189,6 +1192,12 @@ CMD_DECL(seek)
 		break;
 	case 'X': 
 		new_off = data_seek_to(config.seek, 1, atoi(text+1));
+		break;
+	case 'S': {
+		struct section_t *s = section_get_i(atoi(text+1));
+		if (s != NULL) 
+			radare_seek(s->from, SEEK_SET);
+		}
 		break;
 	case 'c': 
 		sign = atoi (text+1);
@@ -1209,30 +1218,27 @@ CMD_DECL(seek)
 	case '-': sign = -1; text++; whence = SEEK_CUR; break;
 	case '+': sign = 1;  text++; whence = SEEK_CUR; break; 
 	}
-
-	if (new_off!= 0) {
-		if (input[text-input]=='\0') {
-			switch(sign) {
-			case 0:
-				undo_list();
-				break;
-			case 1:
-				eprintf("redo seek\n");
-				undo_redo();
-				break;
-			case -1:
-				eprintf("undo seek\n");
-				undo_seek();
-				break;
-			case -2:
-				eprintf("undo history reset\n");
-				undo_reset();
-				break;
-			}
-			return;
+	if (input[text-input]=='\0') {
+		switch(sign) {
+		case 0:
+			undo_list();
+			break;
+		case 1:
+			eprintf("redo seek\n");
+			undo_redo();
+			break;
+		case -1:
+			eprintf("undo seek\n");
+			undo_seek();
+			break;
+		case -2:
+			eprintf("undo history reset\n");
+			undo_reset();
+			break;
 		}
-
-	} else
+		return;
+	}
+	if (new_off == 0)
 		new_off = get_math( text );
 
 	if (whence == SEEK_CUR) {
@@ -1506,6 +1512,77 @@ CMD_DECL(write)
 	return 0;
 }
 
+CMD_DECL(sections)
+{
+	switch(input[0]) {
+	case '?':
+		eprintf("Usage: S len [base [comment]] @ address\n");
+		eprintf(" > S                ; list sections\n");
+		eprintf(" > S*               ; list sections (in radare commands\n");
+		eprintf(" > S=               ; list sections (in visual)\n");
+		eprintf(" > S 4096 0x80000 rwx section_text  @ 0x8048000 ; adds new section\n");
+		eprintf(" > S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
+		eprintf(" > S 10K @ 0x300    ; create 10K section at 0x300\n");
+		eprintf(" > S -0x300         ; remove this section definition\n");
+		eprintf(" > Sc rwx _text     ; add comment to the current section\n");
+		eprintf(" > Sb 0x100000      ; change base address\n");
+		eprintf(" > St 0x500         ; set end of section at this address\n");
+		eprintf(" > Sf 0x100         ; set from address of the current section\n");
+		break;
+	case ' ':
+		switch(input[1]) {
+		case '-': // remove
+			section_rm(atoi(input+1));
+			break;
+		default:
+			{
+			int i;
+			char *ptr = strdup(input+1);
+			const char *comment = NULL;
+			u64 from = config.seek;
+			u64 to   = config.seek + config.block_size;
+			u64 base = config_get_i("file.baddr");
+			
+			i = set0word(ptr);
+			switch(i) {
+			case 2: // get comment
+				comment = get0word(ptr, 2);
+			case 1: // get base address
+				base = get_math(get0word(ptr, 1));
+			case 0: // get length
+				to = from + get_math(get0word(ptr,0));
+			}
+			section_add(from, to, base, comment);
+			free(ptr);
+			}
+			break;
+		}
+		break;
+	case '=':
+		section_list_visual(config.seek, config.block_size);
+		break;
+	case '\0':
+		section_list(config.seek, 0);
+		break;
+	case '*':
+		section_list(config.seek, 1);
+		break;
+	case 'c':
+		section_set(config.seek, -1, -1, input+(input[1]==' '?2:1));
+		break;
+	case 'b':
+		section_set(config.seek, -1, get_math(input+1), NULL);
+		break;
+	case 't':
+		section_set(config.seek, get_math(input+1), -1, NULL);
+		break;
+	case 'f':
+		eprintf("TODO\n");
+		break;
+
+	}
+}
+
 CMD_DECL(examine)
 {
 	switch(input[0]) {
@@ -1573,6 +1650,7 @@ CMD_DECL(prev_align)
 		if ( config.seek % config.block_size )
 			CMD_CALL(next_align, "")
 	}
+	undo_push();
 
 	return 0;
 }
@@ -1589,6 +1667,7 @@ CMD_DECL(next_align)
 		}
 		config.seek += config.block_size - (config.seek % config.block_size);
 	}
+	undo_push();
 
 	return 0;
 }

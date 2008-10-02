@@ -186,7 +186,13 @@ static int radare_close()
 
 void radare_sync()
 {
+	u64 base;
 	int limit = DEFAULT_BLOCK_SIZE;
+
+	base = section_get_base(config.seek);
+	if (base != -1) {
+		config_set_i("file.baddr", base);
+	}
 
 	if (config.debug||config.unksize)
 		return;
@@ -211,6 +217,7 @@ void radare_sync()
 			config.block_size = limit;
 		}
 	}
+
 }
 
 int radare_strsearch(char *str)

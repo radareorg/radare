@@ -60,6 +60,7 @@ CMD_DECL(seek);
 CMD_DECL(undowrite);
 CMD_DECL(info);
 CMD_DECL(rdb);
+CMD_DECL(sections);
 CMD_DECL(project);
 CMD_DECL(yank);
 CMD_DECL(yank_paste);

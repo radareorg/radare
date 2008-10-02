@@ -329,6 +329,8 @@ u64 radare_seek(u64 offset, int whence)
 
 	io_lseek(config.fd, config.seek, SEEK_SET);
 
+	//undo_push();
+
 	return seek;
 }
 

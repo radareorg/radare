@@ -114,5 +114,7 @@ u32 get_offset32(u64);
 //u64 ntohq(u64 x);
 #define ntohq htonq
 u64 htonq(u64 x);
+int set0word(char *str);
+const char *get0word(const char *str, int idx);
 
 #endif

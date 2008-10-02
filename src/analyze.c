@@ -732,7 +732,7 @@ int analyze_function(int recursive, int report)
 	u64 end  = 0;
 	int i, inc = 0;
 	u64 to;
-	int len = 0;
+	u64 len = 0;
 	int ref;
 	int ncalls = 0;
 	int nrefs = 0;

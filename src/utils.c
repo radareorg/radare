@@ -338,6 +338,23 @@ u32 get_offset32(u64 foo)
 	return (u32) get_offset (foo);
 }
 
+int set0word(char *str)
+{
+	int i;
+	char *p;
+	for(i=0,p=str;p[0]&&i<3;p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
+	return i;
+}
+
+const char *get0word(const char *str, int idx)
+{
+	int i;
+	const char *ptr = str;
+	for (i=0;*ptr && i != idx;i++)
+		ptr = ptr + strlen(ptr) + 1;
+	return ptr;
+}
+
 char *mytok(char *ptr, char *delim, char *backup)
 {
 	char *tmp,*tmp2;
