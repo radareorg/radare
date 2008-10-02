@@ -27,7 +27,6 @@
 * Use graphviz for code graphs
   - export graph information in a parseable format
   - documentate how to use this information (ac*)
-* compile rasc with syscall proxy with waf
 * Added labels in history
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
 
@@ -56,13 +55,12 @@
   but must be= and esp, 0xfffffff0
 * Vdf doesnt detect func size properly
 * RASM is buggy about relative/absolute offsets
-* folders doesnt works well - * folders are broken
 
 
 ---- debugger
 * !dall should pseudo-initialize the !maps internal structures
   - identify page type by contents (ELF header and so)
-
+  - export info as S commands
 
 * support size of pointer with [xxx] get_offset expressions
   - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]

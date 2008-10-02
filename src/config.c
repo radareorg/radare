@@ -627,6 +627,8 @@ void config_init(int first)
 	config_set("cmd.hit", "");
 	config_set("cmd.prompt", "");
 	config_set("cmd.vprompt", "p%");
+	config_set("cmd.vprompt2", "");
+	config_set("cmd.vprompt3", "");
 	config_set("cmd.bp", "");
 
 	config_set_i("search.from", 0);

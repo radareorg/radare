@@ -867,7 +867,20 @@ void visual_draw_screen()
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
 
+	/* Spaguetti monster lives here ! */
 	ptr = config_get("cmd.vprompt");
+	if (ptr&&ptr[0]) {
+		int tmp = last_print_format;
+		radare_cmd_raw(ptr, 0);
+		last_print_format = tmp;
+	}
+	ptr = config_get("cmd.vprompt2");
+	if (ptr&&ptr[0]) {
+		int tmp = last_print_format;
+		radare_cmd_raw(ptr, 0);
+		last_print_format = tmp;
+	}
+	ptr = config_get("cmd.vprompt3");
 	if (ptr&&ptr[0]) {
 		int tmp = last_print_format;
 		radare_cmd_raw(ptr, 0);
