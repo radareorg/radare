@@ -11,4 +11,8 @@ if bld.env['DEBUGGER'] == 1:
 if bld.env['HAVE_LIB_EWF'] == 1:
 	plug_io.source += ' ewf.c'
 
+if bld.env['SYSPROXY'] == True:
+	plug_io.source += ' sysproxy.c'
+	plug_io.source += ' ../../rasc/rpc.c ../../rasc/syscall-linux.c'
+
 #plug_io.packages='gtk+-2.0'

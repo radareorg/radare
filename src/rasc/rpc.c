@@ -118,16 +118,17 @@ void rpc_init(char *host, int port)
 	}
 
 	ret = read(rpc_con, &remote_buf, sizeof(char *));
+	
 	if(ret < 0) {
 		perror("read");
 		exit(1);
 	} else {
 		printf("ret: %i\n", ret);
 		if(ret != sizeof(char *)) {
-			fprintf(stderr, "invalid buffer address!\n");
-			exit(1);
+			fprintf(stderr, "ERROR: Invalid buffer address!\n");
+			//exit(1);
 		}
 	}
 
-	printf("remote buf: 0x%x\n", (unsigned int)remote_buf);
+	printf("Remote buf: 0x%x\n", (unsigned int)remote_buf);
 }

@@ -278,6 +278,9 @@ void plugin_init()
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
+#if SYSPROXY
+	plugins[last++] = sysproxy_plugin;
+#endif
 	/* must be dupped or will die */
 	plugins[last++] = posix_plugin;
 

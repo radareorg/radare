@@ -1,12 +1,14 @@
 #! /usr/bin/env python
 
-
 obj = bld.new_task_gen('cc', 'program')
 obj.source='shellcodes.c test.c rasc.c'
 
 # TODO : add sysproxy stuff here
 #OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
-#obj.env['CCFLAGS'].append('-DRADARE_CORE=0')
+if obj.env['OS'] == "Linux":
+	obj.env.append_value('CCFLAGS', '-DSYSPROXY=1')
+	#obj.env.append_value('CCFLAGS', '-I')
+	obj.source += ' syscall.c'
 
 obj.includes = '. ../'
 

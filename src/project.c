@@ -85,7 +85,7 @@ int project_save(const char *file)
 		metadata_comment_list();
 		metadata_xrefs_list();
 		data_list();
-		section_list(1);
+		section_list(config.seek, 1);
 	cons_flush();
 	cons_set_fd(_print_fd);
 

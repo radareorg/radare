@@ -797,9 +797,13 @@ CMD_DECL(open)
 {
 	char *ptr = strdup(input);
 	clear_string(ptr);
-	config.file = ptr;
-	radare_open(0);
-	//radare_go();
+
+	if (ptr[0]=='\0') {
+		cons_printf("%s\n", config.file);
+	} else {
+		config.file = ptr;
+		radare_open(0);
+	}
 	free(ptr);
 
 	return 0;

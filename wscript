@@ -68,8 +68,8 @@ def configure(conf):
 	conf.env['GUI'] = False
 	if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and have_valac and Options.options.GUI:
 		conf.env['GUI'] = True
-	conf.env['OS']= os.uname()[0]
-	conf.env['CPU']= os.uname()[4]
+	conf.env['OS'] = os.uname()[0]
+	conf.env['CPU'] = os.uname()[4]
 	if conf.env['CPU'] == 'Power Macintosh': conf.env['CPU'] = 'powerpc'
 	if conf.env['CPU'] == 'i86pc': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
@@ -180,6 +180,11 @@ def configure(conf):
 		print " * Readline  : enabled"
 	else:
 		print " * Readline  : disabled"
+
+	if Options.options.SYSPROXY:
+		print " * SysProxy  : enabled"
+	else:
+		print " * SysProxy  : disabled"
 
 	if conf.env['GUI'] == 1:
 		print " * GUI       : enabled"

@@ -20,7 +20,7 @@
 
 #include "../src/main.h"
 #include "../src/plugin.h"
-#include "syscalls.h"
+//#include "syscalls.h"
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -50,8 +50,12 @@ int sysproxy_open(const char *file, int n, mode_t mode)
 
 	spfd = rpc_init(host,port);
 	//spfd = socket_connect(host, port);
-	printf("%s\n", (spfd!=-1)?"connected":"error");
-	if (spfd != -1) opened = 1; else return -1;
+	if (spfd != -1) {
+		printf("connected (%d)\n", spfd);
+	} else {
+		printf("error\n");
+		return -1;
+	}
 
 	ptr = strchr(ptr+1,'/');
 	if (ptr==0) {

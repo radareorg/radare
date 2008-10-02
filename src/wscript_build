@@ -24,6 +24,8 @@ if bld.env['DEBUGGER'] == 1:
 	bld.add_subdirs('dbg')
 	obj.uselib_local += 'debugger'
 
+if bld.env['SYSPROXY'] == 1:
+	obj.env.append_value('CCFLAGS','-DSYSPROXY=1')
 # IF GUI
 if bld.env['GUI'] == 1:
 	obj.uselib += 'GTK'
