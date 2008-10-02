@@ -1,43 +1,23 @@
-#include "pe.h"
+#ifndef _INCLUDE_DIETPE_H_
+#define _INCLUDE_DIETPE_H_
 
-#ifndef DIETPE_H
-#define DIETPE_H
+#include "dietpe_types.h"
 
-typedef struct _dietpe_arm_addr_desc 
-{
-	unsigned int type;
-} dietpe_arm_addr_desc; 
-
-typedef struct _dietpe_arm_code_desc 
-{
-	unsigned int base;
-	unsigned int size;
-	dietpe_arm_addr_desc* desc;
-} dietpe_arm_code_desc;
-
-
-typedef struct _dietpe_branch_resolver
-{
-	unsigned int call_resolver;
-	unsigned int b_al_resolver;
-	unsigned int b_cond_resolver;
-} dietpe_branch_resolver;
-
-
-typedef struct _dietpe_reg_list
-{
-	char used[16];
-} dietpe_reg_list;
-
-typedef struct _dietpe_func_arm
-{
-	unsigned int start;
-	unsigned int end;
-} dietpe_func_arm;
-
-
-#define PE_ANAL_DESC_NOTANALED 0x00
-#define PE_ANAL_DESC_CODE 0x01
-#define PE_ANAL_DESC_DATA 0x02
+int dietpe_close(int);
+PE_DWord dietpe_get_entrypoint(dietpe_bin*);
+int dietpe_get_exports(dietpe_bin*, int, dietpe_export*);
+int dietpe_get_exports_count(dietpe_bin*, int);
+int dietpe_get_file_alignment(dietpe_bin*);
+PE_DWord dietpe_get_image_base(dietpe_bin*);
+int dietpe_get_image_size(dietpe_bin*);
+int dietpe_get_imports(dietpe_bin*, int, dietpe_import*);
+int dietpe_get_imports_count(dietpe_bin*, int);
+int dietpe_get_machine(dietpe_bin*);
+int dietpe_get_pe_type(dietpe_bin*);
+int dietpe_get_section_alignment(dietpe_bin*);
+int dietpe_get_sections(dietpe_bin*, dietpe_section*);
+int dietpe_get_sections_count(dietpe_bin*);
+int dietpe_get_subsystem(dietpe_bin*);
+int dietpe_open(dietpe_bin*, const char*);
 
 #endif

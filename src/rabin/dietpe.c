@@ -1,438 +1,280 @@
-/* Author: esteve 
- * --------------
- * Licensed under GPLv2
- * This file is part of radare
- *
- * TODO:
- *  * Refactor
+/*
+ * TODO: strings for: pe_type, machines, sybsystem, section characteristics
+ *       offsets (exp, imp)
+ *       resources
+ *       64bits
  */
 
-
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 #include "dietpe.h"
+#include "dietpe_static.h"
+#include "dietpe_types.h"
 
-extern int rad;
+static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
+	pe_image_section_header *shdrp;
+	PE_DWord section_base;
+	int i, section_size;
 
-int dietpe_list_sections( dietpe_pe_memfile* filein )
-{
+	shdrp = bin->section_header;
+	for (i = 0; i < bin->nt_headers->file_header.NumberOfSections; i++, shdrp++) {
+		section_base = shdrp->VirtualAddress;
+		section_size = shdrp->Misc.VirtualSize;
+		if (rva >= section_base && rva < section_base + section_size)
+			return shdrp->PointerToRawData + (rva - section_base);
+	}
+		
+	return 0;
+}
+
+int dietpe_close(fd) {
+	close(fd);
+	return 0;
+}
+
+PE_DWord dietpe_get_entrypoint(dietpe_bin *bin) {
+	return dietpe_aux_rva_to_offset(bin, bin->nt_headers->optional_header.AddressOfEntryPoint);
+}
+
+int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
+	PE_DWord functions_offset, names_offset, ordinals_offset, function_offset, name_rva, name_offset;
+	PE_Word function_ordinal;
+	dietpe_export *exportp;
+	char function_name[PE_NAME_LENGTH], forwarder_name[PE_NAME_LENGTH], dll_name[PE_NAME_LENGTH], export_name[PE_NAME_LENGTH];
 	int i;
 
-    if (rad)
-		printf("fs sections\n");
-	else {
-		printf("==> Sections:\n");
-		for ( i = 0 ; i < filein->file_header->NumberOfSections ; i ++ )
-		{
-			printf ("[%02i] name: %.8s\n\tVirtual Address 0x%x \n", i, &filein->section_headers[i].Name,filein->section_headers[i].VirtualAddress ) ;
-			printf ("\tVirtual Size: 0x%x\n",filein->section_headers[i].Misc.VirtualSize);
-			printf ("\tsize: 0x%x\n",filein->section_headers[i].SizeOfRawData);
-			printf ("\tfile offset: 0x%x\n",filein->section_headers[i].PointerToRawData );
-			printf ("\tCharacteristics: 0x%x\n",filein->section_headers[i].Characteristics);
-			if ( (filein->section_headers[i].Characteristics & 0x00000020 ) == 0x00000020 ) 
-			{
-				printf ("\tCODE\n");
+	pe_image_data_directory *data_dir_export = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_EXPORT];
+	PE_DWord export_dir_offset = dietpe_aux_rva_to_offset(bin, data_dir_export->VirtualAddress);
+	int export_dir_size = data_dir_export->Size;
+	
+	if (dietpe_init_exports(bin, fd) == -1)
+		return -1;
+	
+	lseek(fd, dietpe_aux_rva_to_offset(bin, bin->export_directory->Name), SEEK_SET);
+    read(fd, dll_name, PE_NAME_LENGTH);
+
+	functions_offset = dietpe_aux_rva_to_offset(bin, bin->export_directory->AddressOfFunctions);
+	names_offset = dietpe_aux_rva_to_offset(bin, bin->export_directory->AddressOfNames);
+	ordinals_offset = dietpe_aux_rva_to_offset(bin, bin->export_directory->AddressOfOrdinals);
+
+	exportp = export;
+	for (i = 0; i < bin->export_directory->NumberOfNames; i++, exportp++) {
+		lseek(fd, functions_offset + i * sizeof(PE_DWord), SEEK_SET);
+		read(fd, &function_offset, sizeof(PE_DWord));
+		lseek(fd, ordinals_offset + i * sizeof(PE_Word), SEEK_SET);
+		read(fd, &function_ordinal, sizeof(PE_Word));
+		lseek(fd, names_offset + i * sizeof(PE_DWord), SEEK_SET);
+		read(fd, &name_rva, sizeof(PE_DWord));
+		name_offset = dietpe_aux_rva_to_offset(bin, name_rva);
+
+		if (name_offset) {
+			lseek(fd, name_offset, SEEK_SET);
+			read(fd, function_name, PE_NAME_LENGTH);
+		} else {
+			snprintf(function_name, PE_NAME_LENGTH, "Ordinal_%i", function_ordinal);
+		}
+		
+		snprintf(export_name, PE_NAME_LENGTH, "%s_%s", dll_name, function_name);
+
+		if (function_offset >= export_dir_offset && function_offset < (export_dir_offset + export_dir_size)) {
+			lseek(fd, dietpe_aux_rva_to_offset(bin, function_offset), SEEK_SET);
+			read(fd, forwarder_name, PE_NAME_LENGTH);
+		} else {
+			snprintf(forwarder_name, PE_NAME_LENGTH, "NONE");
+		}
+
+		exportp->offset = function_offset;
+		exportp->ordinal = function_ordinal;
+		memcpy(exportp->forwarder, forwarder_name, PE_NAME_LENGTH);
+		memcpy(exportp->name, export_name, PE_NAME_LENGTH);
+	}
+	return 0;
+}
+
+int dietpe_get_exports_count(dietpe_bin *bin, int fd) {
+	if (dietpe_init_exports(bin, fd) == -1)
+		return -1;
+	
+	return bin->export_directory->NumberOfNames;
+}
+
+int dietpe_get_file_alignment(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.FileAlignment;
+}
+
+PE_DWord dietpe_get_image_base(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.ImageBase;
+}
+
+int dietpe_get_imports(dietpe_bin *bin, int fd, dietpe_import *import) {
+	pe_image_import_directory *import_dirp;
+	PE_DWord import_lookup_table;
+	PE_Word import_hint, import_ordinal;
+	dietpe_import *importp;
+	char dll_name[PE_NAME_LENGTH], import_name[PE_NAME_LENGTH], name[PE_NAME_LENGTH];
+	int import_dirs_count = dietpe_get_import_dirs_count(bin), i, j;
+
+	if (dietpe_init_imports(bin, fd) == -1)
+		return -1;
+
+	import_dirp = bin->import_directory;
+	importp = import;
+	for (i = 0; i < import_dirs_count; i++, import_dirp++) {
+		lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Name), SEEK_SET);
+    	read(fd, dll_name, PE_NAME_LENGTH);
+		for (j = 0, import_lookup_table = 1; import_lookup_table; j++, importp++) {
+			lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Characteristics) + j * sizeof(PE_DWord), SEEK_SET);
+    		read(fd, &import_lookup_table, sizeof(PE_DWord));
+			import_ordinal = import_lookup_table & 0x80000000;
+			if (import_ordinal) {
+				import_hint = 0;
+				snprintf(import_name, PE_NAME_LENGTH, "%s_Ordinal_%i", dll_name, import_ordinal);
+			} else if (import_lookup_table) {
+				lseek(fd, dietpe_aux_rva_to_offset(bin, import_lookup_table), SEEK_SET);
+    			read(fd, &import_hint, sizeof(PE_Word));
+    			read(fd, name, PE_NAME_LENGTH);
+				snprintf(import_name, PE_NAME_LENGTH, "%s_%s", dll_name, name);
 			}
-			if ( (filein->section_headers[i].Characteristics & PE_IMAGE_SCN_MEM_DISCARDABLE ) == PE_IMAGE_SCN_MEM_DISCARDABLE ) 
-			{
-				printf ("\tDiscarded\n");
-			}
-			printf ("\n");
+			memcpy(importp->name, import_name, PE_NAME_LENGTH);
+			importp->ilt_offset = dietpe_aux_rva_to_offset(bin, import_lookup_table);
+			importp->hint = import_hint;
+			importp->ordinal = import_ordinal;
 		}
 	}
-	return i;
-}
-
-void dietpe_clean_discard_sections ( dietpe_pe_memfile* filein )
-{
-	int i,j;
-	unsigned int nsect ;
-	nsect = filein->file_header->NumberOfSections;
-	for ( i = 0 ; i < nsect ; i ++ )
-	{
-		if ( ( filein->section_headers[i].Characteristics & PE_IMAGE_SCN_MEM_DISCARDABLE ) == PE_IMAGE_SCN_MEM_DISCARDABLE )
-		{
-			// this section can be discarded
-			for ( j = i ; j < nsect ; j ++ )
-			{
-				memcpy ( &filein->section_headers[j], &filein->section_headers[j+1], sizeof (PE_IMAGE_SECTION_HEADER) );
-			}	
-			nsect --;
-			i--;
-			// res referent a i!!
-		}
-		// res referent a i!!
-	}
-	
-	filein->file_header->NumberOfSections = nsect;
-}
-
-void dietpe_set_section_characteristics ( dietpe_pe_memfile* filein , unsigned char* secname , unsigned int chars) 
-{
-	int i;
-	unsigned int nsect ;
-	unsigned int addr;
-
-	nsect = filein->file_header->NumberOfSections;
-	
-	for ( i = 0 ; i < nsect ; i ++ )
-	{
-		if ( !strncmp( filein->section_headers[i].Name, secname , 8) )
-		{	
-			filein->section_headers[i].Characteristics = chars;
-			break;
-		}
-	}
-	
-}
-
-
-PE_IMAGE_SECTION_HEADER dietpe_get_section_byname ( dietpe_pe_memfile* filein , unsigned char* secname ) 
-{
-	int i;
-	unsigned int nsect ;
-	unsigned int addr;
-
-	nsect = filein->file_header->NumberOfSections;
-	
-	for ( i = 0 ; i < nsect ; i ++ )
-	{
-		if ( !strncmp( filein->section_headers[i].Name, secname , 8) )
-		{
-			return filein->section_headers[i];
-		}
-	}
-	
-}
-
-int dietpe_clean_section_byname ( dietpe_pe_memfile* filein , unsigned char* secname ) 
-{
-	int i,j;
-	unsigned int nsect ;
-
-	nsect = filein->file_header->NumberOfSections;
-	
-	for ( i = 0 ; i < nsect ; i ++ )
-	{
-		if ( !strncmp( filein->section_headers[i].Name, secname , 8) )
-		{
-			for ( j = i ; j < nsect ; j ++ )
-			{
-				memcpy ( &filein->section_headers[j], &filein->section_headers[j+1], sizeof (PE_IMAGE_SECTION_HEADER) );
-			}	
-			filein->file_header->NumberOfSections --;
-	
-			return 0;
-		}
-	}
-	return 1;
-}
-
-unsigned int dietpe_set_entrypoint_to_address ( dietpe_pe_memfile* filein , unsigned int address ) 
-{
-	filein->opt_header->AddressOfEntryPoint = ( address - filein->opt_header->ImageBase );
-
-}
-
-unsigned int dietpe_set_entrypoint_to_section ( dietpe_pe_memfile* filein , unsigned char* secname ) 
-{
-	int i;
-	unsigned int nsect ;
-	unsigned int addr;
-
-	nsect = filein->file_header->NumberOfSections;
-	
-	for ( i = 0 ; i < nsect ; i ++ )
-	{
-		if ( !strncmp( filein->section_headers[i].Name, secname , 8) )
-		{
-			addr = filein->section_headers[i].VirtualAddress;
-			break;
-		}
-	}
-	filein->opt_header->AddressOfEntryPoint = addr;
-	
-}
-
-int dietpe_add_section_pefile ( dietpe_pe_memfile* filein , unsigned char* secname , int size , unsigned int characteristics , char* code) 
-{
-	
-	unsigned int off_last;
-	unsigned int voff_last;
-	int i;
-	int headersize;
-	PE_IMAGE_SECTION_HEADER newsec;
-
-	int nsect = filein->file_header->NumberOfSections - 1;
-		
-	//tinc prou espai per afegir seccions ?
-	headersize = filein->opt_header->SizeOfHeaders ;
-		
-	if ( ( (int)&filein->section_headers[nsect] - (int)filein->file ) >= ( (int)headersize - sizeof (PE_IMAGE_SECTION_HEADER) ) )
-	{
-		printf ("Not enough space to add section\n");
-		return 1;
-	}
-
-	size = size + ( filein->opt_header->FileAlignment -  ( size % filein->opt_header->FileAlignment ) );
-
-	// final de l'ultim section header
-	off_last = filein->section_headers[nsect].PointerToRawData +  filein->section_headers[nsect].SizeOfRawData  ;
-	off_last = off_last + ( filein->opt_header->FileAlignment - ( off_last % filein->opt_header->FileAlignment ) );
-	
-	voff_last = filein->section_headers[nsect].VirtualAddress +  filein->section_headers[nsect].SizeOfRawData  ;
-	voff_last = voff_last + ( filein->opt_header->SectionAlignment - ( voff_last % filein->opt_header->SectionAlignment ) );
-
-	//printf (" at : 0x%x\n", off_last);
-	//printf (" at : 0x%x\n", voff_last);
-
-	strncpy ( newsec.Name , secname , 8 );
-	newsec.Misc.VirtualSize = ( size + ( filein->opt_header->SectionAlignment - ( size % filein->opt_header->SectionAlignment ) ) );
-	newsec.VirtualAddress = voff_last ;
-	newsec.SizeOfRawData = size;
-	newsec.PointerToRawData = off_last ;
-	newsec.PointerToRelocations = 0;
-	newsec.PointerToLinenumbers = 0;
-	newsec.NumberOfRelocations = 0;
-	newsec.NumberOfLinenumbers = 0;
-	newsec.Characteristics = characteristics ;
-	//filein->opt_header->SizeOfHeaders
-	
-
-	// Afegim la seccio
-	filein->opt_header->SizeOfCode += size;
-	filein->opt_header->SizeOfImage += size;
-	filein->opt_header->CheckSum = 0;
-
-	//filein->opt_header->AddressOfEntryPoint = voff_last;
-
-	nsect++;
-	filein->file_header->NumberOfSections++;
-	memcpy ( &filein->section_headers[nsect], &newsec, sizeof (PE_IMAGE_SECTION_HEADER ) );
-	
-
-	// copiem les dades al fitxer
-	if ( code != NULL )
-	{
-		memcpy ( filein->file + off_last, code, size );
-	}
-
-	off_last = filein->section_headers[nsect].PointerToRawData +  filein->section_headers[nsect].SizeOfRawData  ;
-	off_last = off_last + ( filein->opt_header->FileAlignment - ( off_last % filein->opt_header->FileAlignment ) );
-	
-	filein->fsize = off_last ;
-
 	return 0;
 }
 
-int dietpe_init_pefile ( dietpe_pe_memfile* filein )
-{
+int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
+	pe_image_import_directory *import_dirp;
+	PE_DWord import_lookup_table;
+	int import_dirs_count = dietpe_get_import_dirs_count(bin), imports_count = 0, i, j;
 
-	filein->dos_header =(PE_IMAGE_DOS_HEADER*) filein->file;
-	if ( memcmp ( &filein->dos_header->e_magic, "MZ", 2 ) )
-	{
-		printf ("NOT a PE file \n" );
-		return 1;
-	}
-	
-	if ( *(unsigned int*)( filein->file + filein->dos_header->e_lfanew) != PE_IMAGE_NT_SIGNATURE )
-	{
-		printf ("IMAGE_NT_SIGNATURE not found \n");
-		return 1;
-	}
-	
-	filein->file_header = (PE_IMAGE_FILE_HEADER*) ( filein->file + filein->dos_header->e_lfanew + 4);
-	filein->opt_header = (PE_IMAGE_OPTIONAL_HEADER*)((int)filein->file_header + sizeof (PE_IMAGE_FILE_HEADER ));
-	filein->section_headers = (PE_IMAGE_SECTION_HEADER*) ( (int)filein->opt_header + sizeof (PE_IMAGE_OPTIONAL_HEADER ) ) ;
+	if (dietpe_init_imports(bin, fd) == -1)
+		return -1;
 
-	return 0;
-}	
-
-void dietpe_list_info ( dietpe_pe_memfile* filein )
-{
-	int i;
-
-	printf ("DOS header:\n");
-	printf (" e_magic:                 %.2s\n", &filein->dos_header->e_magic );	
-	printf (" e_sp:                    %x\n", &filein->dos_header->e_sp );	
-	printf ("File header:\n");
-	if ( filein->file_header->Machine == PE_IMAGE_FILE_MACHINE_ARM )
-	{
-		printf ( " Machine:                 ARM\n");
-	}
-	else
-	{
-		printf ( " Machine:                 0x%x\n", filein->file_header->Machine );
-	//	return 1;
-	}
-
-	printf ( " Number of sections:      %d\n", filein->file_header->NumberOfSections);
-	printf ( " Size of optional header: %d\n", filein->file_header->SizeOfOptionalHeader);
-	printf ( " Pointer to symbol table: %x\n", filein->file_header->PointerToSymbolTable);
-	
-	
-	if ( filein->opt_header->Magic == 0x010b )
-	{
-		printf ("Opt header:\n" );	
-
-		
-		printf (" Entry point RVA:         0x%x\n",filein->opt_header->AddressOfEntryPoint );
-		printf (" Prefered Image Base:     0x%x\n",filein->opt_header->ImageBase );
-		printf (" Section alignment:       %d\n",filein->opt_header->SectionAlignment );
-		printf (" File alignment:          %d\n",filein->opt_header->FileAlignment );
-		printf (" Size of Image:           %d\n",filein->opt_header->SizeOfImage );
-		printf (" Check sum:               0x%x\n",filein->opt_header->CheckSum );
-		printf (" First section at:        0x%x\n",filein->opt_header->SizeOfHeaders );	
-
-		printf (" Data directory:\n" );	
-		for ( i = 0 ; i < PE_IMAGE_NUMBEROF_DIRECTORY_ENTRIES ; i ++ ) 
-		{
-			if ( filein->opt_header->DataDirectory[i].Size != 0 )
-			{
-				printf ("  Directory %d, RVA 0x%x, size 0x%x\n",i,filein->opt_header->DataDirectory[i].VirtualAddress,filein->opt_header->DataDirectory[i].Size);
-			}
+	import_dirp = bin->import_directory;
+	for (i = 0; i < import_dirs_count; i++, import_dirp++) {
+		for (j = 0, import_lookup_table = 1; import_lookup_table; j++) {
+			lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Characteristics) + j * sizeof(PE_DWord), SEEK_SET);
+    		read(fd, &import_lookup_table, sizeof(PE_DWord));
+			imports_count++;
 		}
-
 	}
-	else
-	{
-		printf ("NO optional header\n");
-	}
-	
 
+	return imports_count;
 }
 
-int dietpe_get_pe_section_byname ( dietpe_pe_memfile* filein ,  char* secname )
-{
-	unsigned int nsect,i;
-	 nsect = filein->file_header->NumberOfSections;
-        
-        for ( i = 0 ; i < nsect ; i ++ )
-        {
-                if ( !strncmp( filein->section_headers[i].Name, secname , 8) )
-                {       
-                        break;
-                }
-        }
-	
-	
-	return ( ( i >= 0) ? i : -1 ) ;
+static int dietpe_get_import_dirs_count(dietpe_bin *bin) {
+	pe_image_data_directory *data_dir_import = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_IMPORT];
+
+	return (int) (data_dir_import->Size / sizeof(pe_image_import_directory) - 1);
 }
 
-unsigned int dietpe_get_entrypoint ( dietpe_pe_memfile* filein ) 
-{
-	return filein->opt_header->AddressOfEntryPoint ;
+int dietpe_get_image_size(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.SizeOfImage;
 }
 
-int dietpe_new(dietpe_pe_memfile *filein, const char *file)
-{
-	filein->fd = open ( file, O_RDONLY );
-	lseek ( filein->fd, 0, SEEK_END);
-	filein->fsize = lseek ( filein->fd, 0, SEEK_CUR);
-	lseek ( filein->fd, 0, SEEK_SET);
+int dietpe_get_machine(dietpe_bin *bin) {
+	return bin->nt_headers->file_header.Machine;
+}
 
-	filein->file = (unsigned char*) mmap ( 0, filein->fsize, PROT_READ, MAP_PRIVATE, filein->fd, 0 );
-	
-	close(filein->fd);
+int dietpe_get_pe_type(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.Magic;
+}
 
-	if ( filein->file == NULL )
-	{
-		printf ("ERROR mapping \n");
-		return 1;
-	}
-	
-	if ( dietpe_init_pefile ( filein ) != 0 )
-	{
-		return 1;
+int dietpe_get_section_alignment(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.SectionAlignment;
+}
+
+int dietpe_get_sections(dietpe_bin *bin, dietpe_section *section) {
+	pe_image_section_header *shdrp;
+	dietpe_section *sectionp;
+	int i, sections_count = dietpe_get_sections_count(bin);
+
+	shdrp = bin->section_header;
+	sectionp = section;
+	for (i = 0; i < sections_count; i++, shdrp++, sectionp++) {
+		memcpy(sectionp->name, shdrp->Name, PE_IMAGE_SIZEOF_SHORT_NAME);
+		sectionp->size = shdrp->SizeOfRawData;
+		sectionp->offset = shdrp->PointerToRawData;
+		sectionp->characteristics = shdrp->Characteristics;
 	}
 
 	return 0;
 }
 
-#if 0
-unsigned char auxbuff[1024*1024*5];
-unsigned char code[5*1024*1024];
-int main ( int argc , char** argv)
-{
-	int i;
-	int fdo;
+int dietpe_get_sections_count(dietpe_bin *bin) {
+	return bin->nt_headers->file_header.NumberOfSections;
+}
 
-	pe_memfile filein;
-	pe_memfile fileout;	
+int dietpe_get_subsystem(dietpe_bin *bin) {
+	return bin->nt_headers->optional_header.Subsystem;
+}
 
-	arm_code_desc codedesc ;
-	if ( argc !=2 )
-	{
-		printf ("USAGE fname\n");
-		return 1;
-	}
+static int dietpe_init(dietpe_bin *bin, int fd) {
+	lseek(fd, 0, SEEK_SET);
+    bin->dos_header = malloc(sizeof(pe_image_dos_header));
+    read(fd, bin->dos_header, sizeof(pe_image_dos_header));
 
-	filein.fd = open ( argv[1], O_RDONLY );
-	lseek ( filein.fd, 0, SEEK_END);
-	filein.fsize = lseek ( filein.fd, 0, SEEK_CUR);
-	lseek ( filein.fd, 0, SEEK_SET);
+	lseek(fd, bin->dos_header->e_lfanew, SEEK_SET);
+    bin->nt_headers = malloc(sizeof(pe_image_nt_headers));
+    read(fd, bin->nt_headers, sizeof(pe_image_nt_headers));
 
-	filein.file = (unsigned char*) mmap ( 0, filein.fsize, PROT_READ, MAP_PRIVATE, filein.fd, 0 );
+	if (bin->nt_headers->file_header.SizeOfOptionalHeader != 224)
+		return -1;
 	
-	if ( filein.file == NULL )
-	{
-		printf ("ERROR mapping \n");
-		return 1;
-	}
+	int sections_size = sizeof(pe_image_section_header) * bin->nt_headers->file_header.NumberOfSections;
+	lseek(fd, bin->dos_header->e_lfanew + sizeof(pe_image_nt_headers), SEEK_SET);
+    bin->section_header = malloc(sections_size);
+    read(fd, bin->section_header, sections_size);
 
-	
-	if ( init_pefile ( &filein ) != 0 )
-	{
-		return 1;
-	}
-
-	print_info ( &filein ) ;
-
-	/*	
-	printf ("\n-----------------------------------\n");
-	memcpy ( auxbuff , filein.file , filein.fsize );
-		
-	fileout.file = auxbuff ;
-	fileout.fsize =  filein.fsize ;
-
-	if ( init_pefile ( &fileout ) != 0 )
-	{
-		return 1;
-	}
-
-
-	//clean_discard_sections ( &fileout ) ;
-	add_section_pefile ( &fileout , PACK_SECNAME , 	4096 , IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_CODE, NULL) ;
-
-	IMAGE_SECTION_HEADER packsec =  get_section_byname ( &fileout , PACK_SECNAME );
-	IMAGE_SECTION_HEADER codesection =  get_section_byname ( &fileout , ".text" );
-	
-	
-	
-	clean_section_byname ( &fileout , PACK_SECNAME );
-	set_section_characteristics ( &fileout , ".text" , IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE | 
-							   IMAGE_SCN_CNT_INITIALIZED_DATA  ); 
-
-
-	add_section_pefile ( &fileout , PACK_SECNAME , 40*1024 , IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_WRITE , code) ;
-	
-
-	set_entrypoint_to_address ( &fileout  , arm_get_label_addr (&armseq, "main") ) ;
-
-//	print_info ( &fileout ) ;
-	
-
-	fdo = open ( "out.exe", O_CREAT|O_WRONLY|O_TRUNC, 00666 ) ;
-	write ( fdo , fileout.file, fileout.fsize );
-	*/
 	return 0;
 }
-#endif
+
+static int dietpe_init_exports(dietpe_bin *bin, int fd) {
+	pe_image_data_directory *data_dir_export = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_EXPORT];
+	PE_DWord export_dir_offset = dietpe_aux_rva_to_offset(bin, data_dir_export->VirtualAddress);
+
+	if (export_dir_offset == 0)
+		return -1;
+
+	lseek(fd, export_dir_offset, SEEK_SET);
+    bin->export_directory = malloc(sizeof(pe_image_export_directory));
+    read(fd, bin->export_directory, sizeof(pe_image_export_directory));
+
+	return 0;
+}
+
+static int dietpe_init_imports(dietpe_bin *bin, int fd) {
+	pe_image_data_directory *data_dir_import = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_IMPORT];
+	PE_DWord import_dir_offset = dietpe_aux_rva_to_offset(bin, data_dir_import->VirtualAddress);
+	int import_dir_size = data_dir_import->Size;
+
+	if (import_dir_offset == 0)
+		return -1;
+
+	lseek(fd, import_dir_offset, SEEK_SET);
+    bin->import_directory = malloc(import_dir_size);
+    read(fd, bin->import_directory, import_dir_size);
+
+	return 0;
+}
+
+int dietpe_open(dietpe_bin *bin, const char *file) {
+    int fd;
+
+    if ((fd = open(file, O_RDONLY)) == -1)
+		return -1;
+    
+    if (dietpe_init(bin, fd) == -1)
+		return -1;
+
+    return fd;
+}

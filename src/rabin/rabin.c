@@ -36,6 +36,7 @@
 #include "dietelf.h"
 #include "dietelf64.h"
 #include "dietpe.h"
+#include "dietpe_types.h"
 #if defined(_DARWIN_C_SOURCE)
 #define HAVE_MACHO 1
 #include "dietmach0.h"
@@ -85,7 +86,7 @@ void rabin_show_info(const char *file)
 	char *str;
 	u64 baddr;
 	dietelf_bin_t bin;
-	dietpe_pe_memfile pebin;
+	dietpe_bin pebin;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -159,17 +160,28 @@ void rabin_show_info(const char *file)
 		} else printf("File type: JAVA CLASS\n");
 		break;
 	case FILETYPE_PE:
-		fd = dietpe_new(&pebin, file);
-		if (fd == 1) {
-			fprintf(stderr, "cannot open file\n");
+		if ((fd = dietpe_open(&pebin, file)) == -1) {
+			fprintf(stderr, "Cannot open file\n");
 			return;
 		}
 
 		if (rad) printf("e file.type = pe\n");
 		else { 
-			printf("File type:                PE\n");
-			dietpe_list_info(&pebin);
+			printf("File type: PE\n"
+					"Machine: 0x%x\n"
+					"Subsystem: 0x%x\n"
+					"PE type: 0x%x\n"
+					"Number of sections: %i\n"
+					"Entrypoint: 0x%.08x\n"
+					"Image base: 0x%.08x\n"
+					"Section alignment: %i\n"
+					"File alignment: %i\n"
+					"Image size: %i\n",
+					dietpe_get_machine(&pebin), dietpe_get_subsystem(&pebin), dietpe_get_pe_type(&pebin), dietpe_get_sections_count(&pebin), 
+					dietpe_get_entrypoint(&pebin), dietpe_get_image_base(&pebin), dietpe_get_section_alignment(&pebin), 
+					dietpe_get_file_alignment(&pebin), dietpe_get_image_size(&pebin));
 		}
+		dietpe_close(fd);
 		break;
 	case FILETYPE_MZ:
 		if (rad) printf("e file.type = mz\n");
@@ -222,6 +234,10 @@ void rabin_show_strings(const char *file)
 	case FILETYPE_PE:
 		// TODO: native version and support for non -r
 		snprintf(buf, 1022, "rsc strings-pe-flag %s",file);
+		system(buf);
+		break;
+	default:
+		snprintf(buf, 1022, "echo /s | radare -nv %s",file);
 		system(buf);
 		break;
 	}
@@ -394,6 +410,9 @@ void rabin_show_arch(char *file)
 void rabin_show_imports(const char *file)
 {
 	dietelf_bin_t bin;
+	dietpe_bin pebin;
+	dietpe_import *import, *importp;
+	int i, imports_count;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -435,6 +454,28 @@ void rabin_show_imports(const char *file)
 #endif
 		}
 		break;
+	case FILETYPE_PE:
+		if ((fd = dietpe_open(&pebin, file)) == -1) {
+			fprintf(stderr, "Cannot open file\n");
+			return;
+		}
+
+		imports_count = dietpe_get_imports_count(&pebin, fd);
+
+		import = malloc(imports_count * sizeof(dietpe_import));
+		dietpe_get_imports(&pebin, fd, import);
+
+		if (!rad)
+			printf("==> Imports:\n");
+		importp = import;
+		for (i = 0; i < imports_count; i++, importp++) {
+			if (!rad)
+				printf("ilt_offset=0x%.08x hint=%.04i ordinal=%.03i %s\n",
+					   importp->ilt_offset, importp->hint, importp->ordinal, importp->name);
+		}
+
+		dietpe_close(fd);
+		break;
 	}
 }
 
@@ -442,6 +483,9 @@ void rabin_show_symbols(char *file)
 {
 	char buf[1024];
 	dietelf_bin_t bin;
+	dietpe_bin pebin;
+	dietpe_export *export, *exportp;
+	int exports_count, i;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -482,9 +526,26 @@ void rabin_show_symbols(char *file)
 		system(buf);
 		break;
 	case FILETYPE_PE:
-		// TODO: native version and support for non -r
-		snprintf(buf, 1022, "rsc syms-pe-flag %s",file);
-		system(buf);
+	if ((fd = dietpe_open(&pebin, file)) == -1) {
+		fprintf(stderr, "Cannot open file\n");
+		return;
+	}
+
+	exports_count = dietpe_get_exports_count(&pebin, fd);
+	
+	export = malloc(exports_count * sizeof(dietpe_export));
+	dietpe_get_exports(&pebin, fd, export);
+	
+	if (!rad)
+		printf("==> Exports:\n");
+	exportp = export;
+	for (i = 0; i < exports_count; i++, exportp++) {
+		if (!rad)
+			printf("0x%.08x ordinal=%.03i forwarder=%s %s\n", exportp->offset, exportp->ordinal, exportp->forwarder, exportp->name);
+	}
+
+	// DietPE Close
+	dietpe_close(fd);
 		break;
 	}
 }
@@ -510,9 +571,10 @@ void rabin_show_others(char *file)
 
 void rabin_show_sections(const char *file)
 {
-	int fd;
+	int fd, i, sections_count;
 	dietelf_bin_t bin;
-	dietpe_pe_memfile pebin;
+	dietpe_bin pebin;
+	dietpe_section *section, *sectionp;
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
@@ -530,12 +592,24 @@ void rabin_show_sections(const char *file)
 		close(fd);
 		break;
 	case FILETYPE_PE:
-		fd = dietpe_new(&pebin, file);
-		if (fd == 1) {
-			fprintf(stderr, "cannot open file\n");
+		if ((fd = dietpe_open(&pebin, file)) == -1) {
+			fprintf(stderr, "Cannot open file\n");
 			return;
 		}
-		dietpe_list_sections(&pebin);
+		
+		sections_count = dietpe_get_sections_count(&pebin);
+
+		section = malloc(sections_count * sizeof(dietpe_section));
+		dietpe_get_sections(&pebin, section);
+		sectionp = section;
+		if (!rad)
+			printf("==> Sections:\n");
+		for (i = 0; i < sections_count; i++, sectionp++) {
+			if (!rad)
+				printf("[%.02i] 0x%.08x size=0x%.08x characteristics=0x%.08x %s\n", i, sectionp->offset, sectionp->size, sectionp->characteristics, sectionp->name);
+		}
+
+		dietpe_close(fd);
 		break;
 #if 0
 	default:
