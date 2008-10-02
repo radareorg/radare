@@ -252,5 +252,6 @@ extern int vm_arch_mips_nregs;
 extern u64 vm_arch_mips_regs[VM_MIPS_N_REGS];
 void vm_arch_mips_init();
 int analyze_function(int recursive, int report);
+char *metadata_comment_get(u64 offset, int lines);
 
 #endif

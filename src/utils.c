@@ -446,7 +446,7 @@ u64 get_math(const char* text)
 				end[0]=']';
 				ptr = ptr + (end-txt2);
 			} else {
-				eprintf("Unbalanced ']' (%s)\n", ptr);
+				eprintf("Unbalanced ']' (%s)\n", text);
 			}
 			break;
 #endif

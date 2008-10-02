@@ -10,6 +10,7 @@
 === WORK FOR 1.0 ===
 
 ---- documentation
+* documentate 'S' command and 'sS' one
 * asm.arch=objdump <- documentation for it
 * documentate inverse
 * documentate dbg.focus

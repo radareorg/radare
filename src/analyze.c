@@ -487,8 +487,12 @@ int (*code_analyze_r)(struct program_t *prg, u64 seek, int depth) = &code_analyz
 
 struct program_t *code_analyze(u64 seek, int depth)
 {
+	u64 bsize = config.block_size;
 	struct program_t *prg = program_new(NULL);
 	prg->entry = config.seek;
+
+	radare_set_block_size_i(4096); // max function size = 5000
+radare_read(0);
 
 	radare_controlc();
 
@@ -508,6 +512,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
+	radare_set_block_size_i(bsize);
 
 	return prg;
 }
@@ -753,6 +758,7 @@ int analyze_function(int recursive, int report)
 	/* XXX restore values later.. */
 	config_set("graph.jmpblocks", "true");
 	config_set("graph.callblocks", "false");
+	// XXX cfg.bsize affects here!! WARN WARN WARN!
 
 	analyze_var_reset(); // ??? control recursivity here ??
 

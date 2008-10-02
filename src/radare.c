@@ -399,6 +399,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (input[0]=='.') {
 		radare_controlc();
 		switch(input[1]) {
+#if 0
 		case '%': {
 			char *cmd = getenv(input+2);
 			if (cmd)
@@ -406,12 +407,14 @@ int radare_cmd_raw(const char *tmp, int log)
 			free(oinput);
 			return 1;
 			}
+#endif
 		case '?':
 			cons_printf(
 			"Usage [.][command| file]\n"
 			"- Interpret radare commands from file or command\n"
-			"  > .!regs*\n"
-			"  > . /tmp/flags-saved\n");
+			"  > .!regs*               ; interpret the output of a command\n"
+			"  > . /tmp/flags-saved    ; load radare script file\n"
+			"  > . my-script.py        ; depends on file extension\n");
 			break;
 		case ' ':
 			filef = fopen(input+2,"r");
@@ -472,7 +475,7 @@ int radare_cmd_raw(const char *tmp, int log)
 				if (i==-1) break;
 				if (buf[0])
 					radare_cmd(buf, 0);
-				cons_flush();
+				//cons_flush();
 				config_set_i("cfg.verbose", 1);
 			}
 			close(f);
@@ -1504,7 +1507,8 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	/* WORKS BUT IT IS UGLY */
 	int fd = make_tmp_file(tmpfile);
 	int std;
-	cons_flush();
+	cons_reset();
+	//cons_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmpfile);
 		tmpoff = config.seek;
@@ -1519,7 +1523,8 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 		free(ptr);
 	}
 
-	cons_flush();
+	cons_reset();
+	//cons_flush();
 	fflush(stdout);
 	fflush(stderr);
 	close(fd);

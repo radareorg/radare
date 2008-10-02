@@ -623,6 +623,8 @@ int ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
 	printf("==> Sections:\n");
 
     for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+	if (i==0)
+		continue;
 	if (rad) {
 		printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr));
 		printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr + shdrp->sh_size));

@@ -59,8 +59,8 @@ int data_set_len(u64 off, u64 len)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (off>= d->from && off< d->to) {
-			d->to = d->from+len+1;
+		if (off>= d->from && off<= d->to) {
+			d->to = d->from+len;
 			d->size = d->to-d->from;
 			return 0;
 		}
@@ -73,7 +73,7 @@ int data_set(u64 off, int type)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (off>= d->from && off< d->to) {
+		if (off>= d->from && off<= d->to) {
 			d->type = type;
 			return 0;
 		}
@@ -87,25 +87,17 @@ void data_add(u64 off, int type)
 	struct data_t *d;
 	struct list_head *pos;
 
-#if 1
-	if (type == DATA_CODE) {
-		struct list_head *pos;
-		__reloop:
-		list_for_each(pos, &data) {
-			struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-			if (d && (off>= d->from && off<= d->to)) {
-				list_del((&d->list)); //->list));
-				goto __reloop;
-			}
-		}
-		return;
-	} else
+	__reloop:
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (d->from == off && d->type == type && d->size == config.block_size)
-			return;
+		if (d && (off>= d->from && off< d->to) ) {//&& d->type != type ) {
+			list_del((&d->list)); //->list));
+			goto __reloop;
+		}
 	}
-#endif
+
+	if (type == DATA_CODE)
+		return;
 
 	d = (struct data_t *)malloc(sizeof(struct data_t));
 	d->from = off;
@@ -169,7 +161,7 @@ struct data_t *data_get_range(u64 offset)
 	struct list_head *pos;
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (offset >= d->from && offset < d->to-1)
+		if (offset >= d->from && offset < d->to)
 			return d;
 	}
 	return NULL;
@@ -470,7 +462,7 @@ void metadata_xrefs_list()
 	}
 }
 
-char *metadata_comment_get(u64 offset)
+char *metadata_comment_get(u64 offset, int lines)
 {
 	struct list_head *pos;
 	char *str = NULL;
@@ -515,6 +507,8 @@ char *metadata_comment_get(u64 offset)
 			strcat(str, "; ");
 			strcat(str, cmt->comment);
 			strcat(str, "\n");
+			if (--lines == 0)
+				break;
 		}
 	}
 	return str;
@@ -552,7 +546,7 @@ static int metadata_print(int delta)
 		}
 	}
 
-	ptr = metadata_comment_get(offset);
+	ptr = metadata_comment_get(offset, config.height-cons_lines);
 	if (ptr && ptr[0]) {
 		int i;
 		for(i=0;ptr[i];i++)
@@ -866,7 +860,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 		}
 		if (foo != NULL) {
 			int dt = foo->type;
-			idata = foo->to-sk-1;
+			idata = foo->to-sk;
 			myinc = idata;
 
 			flag = flag_name_by_offset(seek);
@@ -875,8 +869,8 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			if (!strnull(flag))
 				cons_printf("%s: ", flag);
 
-			if (foo->from != sk)
-				cons_printf("<< %d <<", sk-foo->from);
+			//if (foo->from != sk)
+			//	cons_printf("<< %d <<", sk-foo->from);
 
 			switch(foo->type) {
 			case DATA_FOLD_C: 
@@ -892,10 +886,21 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				if (show_offset)
 					cons_strcat("            ");
 #endif
-				for(i=0;i<folder;i++)cons_strcat("  ");
+				if (foo->from == sk) {
+					for(i=0;i<folder;i++)
+						cons_strcat("  ");
 					cons_strcat("  {\n");
-				CHECK_LINES
-				folder++;
+						if (show_lines && reflines) 
+							code_lines_print(reflines, sk+i, 1);
+						if (show_reladdr)
+							cons_printf("        ");
+						if (show_offset)
+							print_addr(sk+i);
+					CHECK_LINES
+					folder++;
+				}
+				myinc = 0;
+				idata = 0;
 				goto __outofme;
 			case DATA_STR:
 				cons_strcat("  .string \"");
@@ -934,15 +939,15 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 		}
 		__outofme:
 		if (data_end(sk) == DATA_FOLD_O) {
-#if 0
-			if (show_lines)
-				code_lines_print(reflines, sk, 1);
-			if (show_offset)
-				cons_strcat("           ");
-#endif
 			folder--;
 			for(i=0;i<folder;i++) cons_strcat("  ");
-			cons_strcat("   }\n");
+			cons_strcat("  }\n");
+				if (show_lines && reflines) 
+					code_lines_print(reflines, sk+i, 1);
+				if (show_reladdr)
+					cons_printf("        ");
+				if (show_offset)
+					print_addr(sk+i);
 			CHECK_LINES
 		}
 		__outofme2:

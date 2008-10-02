@@ -103,6 +103,10 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->length = 1;
 		break;
 	case 0x0f: // 3 byte nop
+		if (bytes[1]==0x31) {
+			// RDTSC // colorize or sthg?
+			aop->eob = 0;
+		} else
 		if (bytes[1]>=0x18 && bytes[1]<=0x1f) {
 			aop->type = AOP_TYPE_NOP;
 			aop->length = 3;
