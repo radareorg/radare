@@ -93,6 +93,7 @@ public class Grava.Widget : GLib.Object {
 	private bool scroll_press (Gtk.DrawingArea da, Gdk.EventScroll es)
 	{
 		sw.grab_focus();
+
 		switch(es.direction) {
 		case ScrollDirection.UP:
 			switch(wheel_action) {
@@ -308,10 +309,15 @@ public class Grava.Widget : GLib.Object {
 		//EventMotion em = event.motion; 
 		Node n = graph.click(eb.x-graph.panx, eb.y-graph.pany);
 
+		sw.grab_focus();
 		graph.selected = n;
 		if (n != null) {
+			if (eb.y-24-graph.pany<n.y)
+				n.has_body = !n.has_body;
+
 			opanx = eb.x;
 			opany = eb.y;
+
 //			graph.draw(Gdk.cairo_create(da.window));
 			da.queue_draw_area(0,0,5000,3000);
 			
@@ -347,6 +353,7 @@ public class Grava.Widget : GLib.Object {
 	private bool motion (Gtk.DrawingArea da, Gdk.EventMotion em)
 	{
 		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
+		sw.grab_focus();
 		if (n != null) {
 			/* drag node */
 			/* TODO: properly handle the graph.zoom */

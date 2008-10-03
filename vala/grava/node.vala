@@ -26,6 +26,7 @@ public class Grava.Node : GLib.Object
 	public SList<string> xrefs;
 	public bool visible;
 	public bool selected;
+	public bool has_body;
 	public int shape;
 	public double x;
 	public double y;
@@ -42,6 +43,7 @@ public class Grava.Node : GLib.Object
 		h        = 200;
 		shape    = Shape.RECTANGLE;
 		visible  = true;
+		has_body = true;
 		selected = false;
 	}
 
@@ -61,13 +63,13 @@ public class Grava.Node : GLib.Object
 		return data.lookup(key);
 	}
 
-	public void add_call(long addr)
+	public void add_call(uint64 addr)
 	{
 		string str = "0x%08llx".printf(addr);
 		calls.append(str);
 	}
 
-	public void add_xref(long addr)
+	public void add_xref(uint64 addr)
 	{
 		string str = "0x%08llx".printf(addr);
 		xrefs.append(str);

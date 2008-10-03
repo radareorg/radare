@@ -26,25 +26,29 @@ public class Grava.Renderer
 	{
 		double dx = 0;
 		double dy = 0;
+		double oh = edge.orig.h;
+
+		if (edge.orig.has_body == false)
+			oh = 16;
 
 		ctx.save();
 		set_color(ctx, edge.data);
 
 		ctx.set_line_width (3);
-		if (edge.orig.y+edge.orig.h<(edge.dest.y)) {//-edge.dest.h)) {
+		if (edge.orig.y+oh<(edge.dest.y)) {//-edge.dest.h)) {
 			/* up to bottom */
-			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+edge.orig.h);
+			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);
 			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
-			  dy = edge.dest.y-edge.orig.y - edge.orig.h;
+			  dy = edge.dest.y-edge.orig.y - oh;
 			ctx.move_to(30,30);
 			line(ctx, 0,0, dx, dy);
 		} else {
 			/* bottom to up */
-			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+edge.orig.h);
+			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+oh);
 			ctx.move_to(0, 0);
 			  //dx = edge.dest.x-edge.orig.x;
 			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
-			  dy = edge.dest.y-edge.orig.y- edge.orig.h; // or 80 or so depending if > or < ???
+			  dy = edge.dest.y-edge.orig.y- oh; // or 80 or so depending if > or < ???
 			double ox = dx;
 			if (ox == 0){ ox = 150; }
 			ctx.curve_to(dx,100, ox, 120, dx, dy);
@@ -118,16 +122,19 @@ public class Grava.Renderer
 */
 		set_color(ctx, node.data);
 		set_color_str(ctx, node.data.lookup("bgcolor"));
-		switch (node.shape) {
-		case Shape.CIRCLE:
-			circle(ctx, node.w, node.h);
-			ctx.fill();
-			break;
-		//case Shape.RECTANGLE:
-		default:
-			square (ctx, node.w, node.h);
-			ctx.fill();
-			break;
+
+		if (node.has_body) {
+			switch (node.shape) {
+			case Shape.CIRCLE:
+				circle(ctx, node.w, node.h);
+				ctx.fill();
+				break;
+			//case Shape.RECTANGLE:
+			default:
+				square (ctx, node.w, node.h);
+				ctx.fill();
+				break;
+			}
 		}
 
 		/* title rectangle */
@@ -156,42 +163,44 @@ public class Grava.Renderer
 		ctx.show_text(node.data.lookup("label"));
 
 		/* set body */
-		int y = 25;
-		string? body = node.data.lookup("body");
-		if (body != null)
-		foreach(string str in body.split("\n")) {
-			y+=10;
-			ctx.move_to(5, y);
-			if((str.str("call ") != null)
-			|| (str.str("bl ") != null)) {
-				set_color_str(ctx, "blue");
-			} else
-			if (str.str("goto") != null) {
-				set_color_str(ctx, "green");
-			} else
-			if (str.str(" j") != null) {
-				set_color_str(ctx, "green");
-			} else
-			if (str.has_suffix(":")) {
-				set_color_str(ctx, "red");
-			} else
-				set_color_str(ctx, "black");
-			ctx.show_text(str);
-		}
-	
-		//set_color(ctx, node.data);
-		/* box square */
-		if (Graph.selected == node) {
-			ctx.set_source_rgba (1, 0.8, 0.0, 0.9);
-			ctx.set_line_width (6);
-		} else {
-			ctx.set_source_rgba (0.2, 0.2, 0.2, 0.4);
-			ctx.set_line_width (1);
-		}
+		if (node.has_body) {
+			int y = 25;
+			string? body = node.data.lookup("body");
+			if (body != null)
+			foreach(string str in body.split("\n")) {
+				y+=10;
+				ctx.move_to(5, y);
+				if((str.str("call ") != null)
+				|| (str.str("bl ") != null)) {
+					set_color_str(ctx, "blue");
+				} else
+				if (str.str("goto") != null) {
+					set_color_str(ctx, "green");
+				} else
+				if (str.str(" j") != null) {
+					set_color_str(ctx, "green");
+				} else
+				if (str.has_suffix(":")) {
+					set_color_str(ctx, "red");
+				} else
+					set_color_str(ctx, "black");
+				ctx.show_text(str);
+			}
+		
+			//set_color(ctx, node.data);
+			/* box square */
+			if (Graph.selected == node) {
+				ctx.set_source_rgba (1, 0.8, 0.0, 0.9);
+				ctx.set_line_width (6);
+			} else {
+				ctx.set_source_rgba (0.2, 0.2, 0.2, 0.4);
+				ctx.set_line_width (1);
+			}
 
-		if (node.shape == Shape.CIRCLE)
-			circle(ctx, node.w, node.h);
-		else square (ctx, node.w, node.h);
+			if (node.shape == Shape.CIRCLE)
+				circle(ctx, node.w, node.h);
+			else square (ctx, node.w, node.h);
+		}
 
 		ctx.stroke();
 
