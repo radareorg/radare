@@ -18,10 +18,31 @@
  */
 
 #include "../global.h"
+#include "main.h"
+
+int graph_viz(struct program_t *prg)
+{
+	struct block_t *b0;
+	struct list_head *head;
+
+	cons_printf("digraph code {\n");
+	//cons_printf("\tsize=\"6,6\";\n");
+	cons_printf("\tnode [color=lightblue2, style=filled];\n");
+	list_for_each_prev(head, &(prg->blocks)) {
+		b0 = list_entry(head, struct block_t, list);
+		if (b0->tnext)
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\";\n", b0->addr, b0->tnext);
+		if (b0->fnext)
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\";\n", b0->addr, b0->fnext);
+		if (!b0->tnext && !b0->fnext)
+			cons_printf("\t\"0x%08llx\";\n", b0->addr);
+	}
+	cons_printf("}\n");
+}
+
 #if HAVE_VALAC
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include "main.h"
 #include "widget.h"
 #include "node.h"
 #include "edge.h"

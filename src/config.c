@@ -765,7 +765,8 @@ void config_init(int first)
 	config_set("graph.flagblocks", "true");
 	config_set_i("graph.depth", 9);
 	config_set("graph.offset", "false");
-	config_set("graph.render", "cairo"); // aalib/ncurses/text
+	config_set("graph.render", "cairo");    // aalib/ncurses/text
+	config_set("graph.layout", "default");  // graphviz
 
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.to", config.size);

@@ -76,7 +76,7 @@ public class Grava.Main : Gtk.Window {
 
 	static int main (string[] args)
 	{
-		Gtk.init (out args);
+		Gtk.init (ref args);
 
 		var win = new Main();
 		win.show_all ();

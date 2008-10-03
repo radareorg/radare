@@ -21,12 +21,19 @@ using Cairo;
 using Gtk;
 using Gdk;
 
+
 public class Grava.Widget : GLib.Object {
+	enum WheelAction {
+		PANS   = 0,
+		ZOOMS  = 1,
+		ROTATE = 2
+	}
 	const int SIZE = 30;
 	const double ZOOM_FACTOR = 0.1;
 	[Widget] public DrawingArea da;
 	public Grava.Graph graph;
 	public const double S = 96;
+	private WheelAction wheel_action = WheelAction.PANS;
 	ScrolledWindow sw;
 	Menu menu;
 
@@ -60,14 +67,11 @@ public class Grava.Widget : GLib.Object {
 		da.motion_notify_event += motion;
 		da.button_release_event += button_release;
 		da.button_press_event += button_press;
-		//da.key_press_event += key_press;
-		//da.key_release_event += key_press;
 		da.scroll_event += scroll_press;
 
 		sw = new ScrolledWindow(
 				new Adjustment(0, 10, 1000, 2, 100, 1000),
 				new Adjustment(0, 10, 1000, 2, 100, 1000));
-		//sw.set_policy(PolicyType.ALWAYS,PolicyType.ALWAYS);
 		sw.set_policy(PolicyType.NEVER, PolicyType.NEVER);
 
 		Viewport vp = new Viewport(
@@ -76,6 +80,7 @@ public class Grava.Widget : GLib.Object {
 		vp.add(da);
 		sw.add_events(  Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK);
 		sw.key_press_event += key_press;
+		sw.key_release_event += key_release;
 
 		sw.add_with_viewport(vp);
 
@@ -87,102 +92,146 @@ public class Grava.Widget : GLib.Object {
 	/* capture mouse motion */
 	private bool scroll_press (Gtk.DrawingArea da, Gdk.EventScroll es)
 	{
+		sw.grab_focus();
 		switch(es.direction) {
-			case ScrollDirection.UP:
-				graph.zoom+=ZOOM_FACTOR;
-				//graph.angle-=0.02;
+		case ScrollDirection.UP:
+			switch(wheel_action) {
+			case WheelAction.PANS:
+				graph.pany += 64;
 				break;
-			case ScrollDirection.DOWN:
-				graph.zoom-=ZOOM_FACTOR;
-				//graph.angle+=0.02;
+			case WheelAction.ZOOMS:
+				graph.zoom += ZOOM_FACTOR;
 				break;
+			case WheelAction.ROTATE:
+				graph.angle-=0.04;
+				break;
+			}
+			break;
+		case ScrollDirection.DOWN:
+			switch(wheel_action) {
+			case WheelAction.PANS:
+				graph.pany -= 64;
+				break;
+			case WheelAction.ZOOMS:
+				graph.zoom -= ZOOM_FACTOR;
+				break;
+			case WheelAction.ROTATE:
+				graph.angle+=0.04;
+				break;
+			}
+			break;
 		}
 
-		da.queue_draw_area(0,0,5000,2000);
+		da.queue_draw_area (0, 0, 5000, 2000);
 		return false;
+	}
+
+	private bool key_release(Gtk.Widget w, Gdk.EventKey ek)
+	{
+		sw.grab_focus();
+
+//		stdout.printf("Key released %d (%c)\n", (int)ek.keyval, (int)ek.keyval);
+
+		switch (ek.keyval) {
+		case 65507: // CONTROL KEY
+			wheel_action = WheelAction.PANS;
+			break;
+		case 65505: // SHIFT
+			wheel_action = WheelAction.PANS;
+			break;
+		}
+
+		return true;
 	}
 
 	private bool key_press (Gtk.Widget w, Gdk.EventKey ek)
 	{
 		bool handled = true;
-		DrawingArea da = (DrawingArea)w;
+		//DrawingArea da = (DrawingArea)w;
+		sw.grab_focus();
 
 		/* */
-		//stdout.printf("Key pressed %d (%c)\n", ek.keyval,ek.keyval);
+		//stdout.printf("Key pressed %d (%c)\n", (int)ek.keyval, (int)ek.keyval);
 
 		switch (ek.keyval) {
-			case 46: // dot. center view on selected node
-				if (Graph.selected != null) {
-					//sw.get_size(ref w, ref, h);
-					graph.panx = -Graph.selected.x + 350;
-					graph.pany = -Graph.selected.y + 350;
-				}
-				break;
-			case 65056: // shift+tab : select previous
-				//graph.select_prev();
-				break;
-			case 65289: // tab : select next node
+		case 65507: // CONTROL KEY
+			wheel_action = WheelAction.ZOOMS;
+			break;
+		case 65505: // SHIFT
+			wheel_action = WheelAction.ROTATE;
+			break;
+		case 46: // dot. center view on selected node
+			if (Graph.selected != null) {
+				//sw.get_size(ref w, ref, h);
+				graph.panx = -Graph.selected.x + 350;
+				graph.pany = -Graph.selected.y + 350;
+			}
+			break;
+		case 65056: // shift+tab : select previous
+			//graph.select_prev();
+			break;
+		case 65289: // tab : select next node
+			graph.select_next();
+			if (graph.selected == null)
 				graph.select_next();
-				if (graph.selected == null)
-					graph.select_next();
-				if (Graph.selected != null) {
-					//sw.get_size(ref w, ref, h);
-					// XXXX get window size
-					graph.panx = -Graph.selected.x + 350;
-					graph.pany = -Graph.selected.y + 350;
-				}
-				break;
-			case 65361: // arrow left
-			case 'h':
-				graph.panx+=S*graph.zoom;
-				break;
-			case 65364: // arrow down
-			case 'j':
-				graph.pany-=S*graph.zoom;
-				break;
-			case 65362: // arrow up
-			case 'k':
-				graph.pany+=S*graph.zoom;
-				break;
-			case 65363: // arrow right
-			case 'l':
-				graph.panx-=S*graph.zoom;
-				break;
-			case 'u':
-				graph.pany+=S*2;
-				break;
-			case ' ':
-				graph.pany-=S*2;
-				break;
-			case 'H':
-				graph.panx+=S*graph.zoom;
-				if (Graph.selected != null)
-					Graph.selected.x-=S*graph.zoom;
-				break;
-			case 'J':
-				graph.pany-=S*graph.zoom;
-				if (Graph.selected != null)
-					Graph.selected.y+=S*graph.zoom;
-				break;
-			case 'K':
-				graph.pany+=S*graph.zoom;
-				if (Graph.selected != null)
-					Graph.selected.y-=S*graph.zoom;
-				break;
-			case 'L':
-				graph.panx-=S*graph.zoom;
-				if (Graph.selected != null)
-					Graph.selected.x+=S*graph.zoom;
-				break;
-			case '+':
-				graph.zoom+=ZOOM_FACTOR;
-				break;
-			case '-':
-				graph.zoom-=ZOOM_FACTOR;
-				break;
-			default:
-				handled = false;
-				break;
+			if (Graph.selected != null) {
+				//sw.get_size(ref w, ref, h);
+				// XXXX get window size
+				graph.panx = -Graph.selected.x + 350;
+				graph.pany = -Graph.selected.y + 350;
+			}
+			break;
+		case 65361: // arrow left
+		case 'h':
+			graph.panx+=S*graph.zoom;
+			break;
+		case 65364: // arrow down
+		case 'j':
+			graph.pany-=S*graph.zoom;
+			break;
+		case 65362: // arrow up
+		case 'k':
+			graph.pany+=S*graph.zoom;
+			break;
+		case 65363: // arrow right
+		case 'l':
+			graph.panx-=S*graph.zoom;
+			break;
+		case 'u':
+			graph.pany+=S*2;
+			break;
+		case ' ':
+			graph.pany-=S*2;
+			break;
+		case 'H':
+			graph.panx+=S*graph.zoom;
+			if (Graph.selected != null)
+				Graph.selected.x-=S*graph.zoom;
+			break;
+		case 'J':
+			graph.pany-=S*graph.zoom;
+			if (Graph.selected != null)
+				Graph.selected.y+=S*graph.zoom;
+			break;
+		case 'K':
+			graph.pany+=S*graph.zoom;
+			if (Graph.selected != null)
+				Graph.selected.y-=S*graph.zoom;
+			break;
+		case 'L':
+			graph.panx-=S*graph.zoom;
+			if (Graph.selected != null)
+				Graph.selected.x+=S*graph.zoom;
+			break;
+		case '+':
+			graph.zoom+=ZOOM_FACTOR;
+			break;
+		case '-':
+			graph.zoom-=ZOOM_FACTOR;
+			break;
+		default:
+			handled = false;
+			break;
 		}
 
 		//expose(da, ev);
@@ -288,15 +337,15 @@ public class Grava.Widget : GLib.Object {
 
 	Node on = null;
 	private bool button_release(Gtk.DrawingArea da, Gdk.EventButton em)
-{
-			on = null;
-			opanx = opany = 0;
-			return true;
+	{
+		on = null;
+		opanx = opany = 0;
+		return true;
 
-}
+	}
+
 	private bool motion (Gtk.DrawingArea da, Gdk.EventMotion em)
 	{
-
 		Node n = graph.selected; //graph.click(em.x-graph.panx, em.y-graph.pany);
 		if (n != null) {
 			/* drag node */
@@ -306,18 +355,19 @@ public class Grava.Widget : GLib.Object {
 				offy = (em.y - n.y);
 				on = n;
 			} 
-				n.x = (em.x) - (offx);
-				n.y = (em.y) - (offy);
+			n.x = (em.x) - (offx);
+			n.y = (em.y) - (offy);
 
-				offx = (em.x - n.x);
-				offy = (em.y - n.y);
+			offx = (em.x - n.x);
+			offy = (em.y - n.y);
 
-				//offx += (offx/graph.zoom);
-				//offy += (offy/graph.zoom);
-//n.x += (offx-(offx*graph.zoom));
-//n.y += (offy-(offy*graph.zoom));
-//n.x*=graph.zoom;
-//n.y*=graph.zoom;
+			//offx += (offx/graph.zoom);
+			//offy += (offy/graph.zoom);
+
+			//n.x += (offx-(offx*graph.zoom));
+			//n.y += (offy-(offy*graph.zoom));
+			//n.x*=graph.zoom;
+			//n.y*=graph.zoom;
 			da.queue_draw_area(0,0,5000,3000);
 			Graph.selected = n;
 		} else {

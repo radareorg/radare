@@ -272,14 +272,23 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'g':
+		depth = 10;
+		switch(input[1]) {
+		case '.':
+			prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
+			list_add_tail(&prg->list, &config.rdbs);
+			graph_viz(prg);
+			break;
+		default:
 #if HAVE_VALAC
 		// use graph.depth by default if not set
 		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
 #else
-		eprintf("Compiled without valac/gtk/cairo\n");
+		eprintf("Compiled without valac/gtk/cairo. Try with ag*\n");
 #endif
+		}
 		break;
 	case 'c': {
 		int c = config.verbose;
@@ -400,7 +409,7 @@ CMD_DECL(analyze)
 		cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
-		cons_printf(" ag [depth]   graph analyzed code\n");
+		cons_printf(" ag [depth]   graph analyzed code (ag. = dot format)\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
 		cons_printf(" at [args]    analyze opcode traces\n");
 		cons_printf(" av [nops]    analyze virtual machine (negative resets before)\n");

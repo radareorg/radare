@@ -30,6 +30,7 @@ public class Grava.Graph : GLib.Object
 	public double panx  = 0;
 	public double pany  = 0;
 	public double angle = 0;
+	//ImageSurface s;
 
 	/* constructor */
 	construct {
@@ -37,13 +38,16 @@ public class Grava.Graph : GLib.Object
 		edges  = new SList<Edge>();
 		layout = new DefaultLayout();
 		data   = new HashTable<string, string>.full(str_hash, str_equal, g_free, Object.unref);
+	//	s = new ImageSurface.from_png("/tmp/file.png");
 	}
 
+	/* TODO: Add boolean argument to reset layout too */
 	public void reset() {
 		layout.reset();
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
 		//layout = new DefaultLayout();
+		/* add png here */
 	}
 
 	public void set(string key, string val)
@@ -75,7 +79,6 @@ public class Grava.Graph : GLib.Object
 
 	public void update()
 	{
-stdout.printf("update\n");
 		layout.run(this);
 	}
 
@@ -172,15 +175,25 @@ stdout.printf("update\n");
 	public void draw(Context ctx)
 	{
 //		ctx.set_operator (Cairo.Operator.SOURCE);
-	// XXX THIS FLICKERS! MUST USE DOUBLE BUFFER
+		// XXX THIS FLICKERS! MUST USE DOUBLE BUFFER
 		if (ctx == null)
 			return;
+
 		ctx.set_source_rgba(1, 1, 1, 1);
 		ctx.translate( panx, pany);
 		ctx.scale( zoom, zoom );
 		ctx.rotate( angle );
 	
-		ctx.paint ();
+		/* blank screen */
+		ctx.paint();
+
+		/* draw bg picture
+		ctx.save();
+		ctx.set_source_surface(s, panx, pany);
+		ctx.paint();
+		ctx.restore ();
+		*/
+
 		foreach(weak Edge edge in edges ) {
 			if (edge.visible)
 				Renderer.draw_edge(ctx, edge);
