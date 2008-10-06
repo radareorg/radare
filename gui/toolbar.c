@@ -306,10 +306,9 @@ void toggle_toolbar()
 		v=-1;
 		break;
 	}
-	if(v)
-	gtk_toolbar_set_icon_size(GTK_TOOLBAR(tool), GTK_ICON_SIZE_SMALL_TOOLBAR); // LARGE
-else
-	gtk_toolbar_set_icon_size(GTK_TOOLBAR(tool), GTK_ICON_SIZE_LARGE_TOOLBAR); // LARGE
+
+	if(v) gtk_toolbar_set_icon_size(GTK_TOOLBAR(tool), GTK_ICON_SIZE_SMALL_TOOLBAR); // LARGE
+	else  gtk_toolbar_set_icon_size(GTK_TOOLBAR(tool), GTK_ICON_SIZE_LARGE_TOOLBAR); // LARGE
 
 //	if (v)
 //		gtk_widget_show_all(tool);

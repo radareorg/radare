@@ -239,6 +239,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
         int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
+eprintf("depth=%d\n", depth);
 	if (arch_aop == NULL)
 		return -1;
 	// too deep! chop branch here!
@@ -259,38 +260,37 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 	ret = radare_read(0);
 
+	/* Walk for all bytes of current block */
 	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
+
 		/// Miro si l'adreca on soc es base d'algun bloc
 		blf = program_block_get ( prg , config.seek+bsz );
 
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
-			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
 			break;
 		}
 #if 1
-	/* splitting code lives here */
+		/* splitting code lives here */
 		if ( blf != NULL ) {	
 			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
 			aop.jump = blf->tnext; //config.seek+bsz;
 			aop.fail = blf->fnext;
-//printf("%llx, %llx\n", aop.fail, aop.jump);
-	//bsz+=sz;
 			break;
 		}
 
-		blf = program_block_split_new ( prg, config.seek+bsz  );
-		if ( blf != NULL ) {		
-			//printf ("--Address %llx already analed\n", config.seek+bsz );
-//printf("-- %llx, %llx\n", aop.fail, aop.jump);
+		blf = program_block_split_new (prg, config.seek+bsz);
+		if ( blf != NULL ) {
+			eprintf("Block splitted at address 0x%08llx\n", config.seek+bsz);
 			
 			bsz = blf->n_bytes;
 			aop.eob = 1;
-		if (blf->tnext)
-			aop.jump = blf->tnext;
-		if (blf->fnext)
-			aop.fail = blf->fnext;
+			if (blf->tnext)
+				aop.jump = blf->tnext;
+			if (blf->fnext)
+				aop.fail = blf->fnext;
 			break;
 		}		
 #endif
@@ -492,7 +492,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 	prg->entry = config.seek;
 
 	radare_set_block_size_i(4096); // max function size = 5000
-radare_read(0);
+	radare_read(0);
 
 	radare_controlc();
 
@@ -506,9 +506,7 @@ radare_read(0);
 
 	if (prg == NULL)
 		eprintf("Cannot create program\n");
-	else
-		code_analyze_r(prg, seek, depth);
-		//code_analyze_r_nosplit(prg, seek, depth);
+	else	code_analyze_r(prg, seek, depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();

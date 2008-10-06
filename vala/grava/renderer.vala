@@ -152,7 +152,7 @@ public class Grava.Renderer
 		ctx.fill ();
 		line(ctx, 0, 15, node.w, 0);
 
-		ctx.select_font_face("Verdana", //Courier", 
+		ctx.select_font_face("Sans Serif", //Courier", 
 			FontSlant.NORMAL,
 			FontWeight.BOLD);
 		ctx.set_font_size(10);

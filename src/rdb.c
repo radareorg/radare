@@ -82,28 +82,29 @@ struct block_t *program_block_get(struct program_t *program, u64 addr)
 	return NULL;
 }
 
-struct block_t *program_block_split_new(struct program_t *program, u64 addr)
+struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 {
 	struct list_head *i;
 	struct block_t *bta;
 	unsigned int oldb;
-	list_for_each_prev(i, &(program->blocks)) {
+
+	list_for_each_prev(i, &(prg->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
 		if (( addr >= bt->addr ) && (addr < (bt->addr+(u64)bt->n_bytes) ) ) {
-			#if 0
-			printf ("addr: %lx , %lx-%lx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
+			#if 1
+			printf ("addr: %llx , %llx-%llx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
 			#endif
 			oldb = bt->n_bytes;
 
-			bt->n_bytes = addr - bt->addr  ;
-			bta = program_block_get_new ( program, addr );
-			bta->n_bytes = oldb - bt->n_bytes ;
+			bt->n_bytes = addr - bt->addr;
+			bta = program_block_get_new (prg, addr);
+			bta->n_bytes = oldb - bt->n_bytes;
 
 			bta->tnext = bt->tnext;
 			bta->fnext = bt->fnext;
-			bt->tnext = addr;
-			bt->fnext = 0;
-			bt->type = 0;
+			bt->tnext  = addr;
+			bt->fnext  = 0;
+			bt->type   = 0;
 
 			#if 0
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
@@ -112,8 +113,8 @@ struct block_t *program_block_split_new(struct program_t *program, u64 addr)
 				(bt->addr+(u64)bt->n_bytes),
 				(int) bta->n_bytes);
 			#endif
-			bta->bytes = (u8*) malloc (bta -> n_bytes);
-			memcpy ( bta->bytes,  bt->bytes + bt->n_bytes, bta -> n_bytes);
+			bta->bytes = (u8*) malloc (bta->n_bytes);
+			memcpy(bta->bytes, bt->bytes + bt->n_bytes, bta->n_bytes);
 			return bta;
 		}
 	}
