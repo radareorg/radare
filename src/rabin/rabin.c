@@ -84,7 +84,8 @@ int rabin_show_help()
 
 void rabin_show_info(const char *file)
 {
-	char *str;
+	char *str, pe_class_str[PE_NAME_LENGTH], pe_subsystem_str[PE_NAME_LENGTH], pe_machine_str[PE_NAME_LENGTH];
+	int pe_class, pe_subsystem, pe_machine;
 	u64 baddr;
 	dietelf_bin_t bin;
 	dietpe_bin pebin;
@@ -168,13 +169,22 @@ void rabin_show_info(const char *file)
 		}
 
 		dietpe_get_entrypoint(&pebin, &entrypoint);
+		pe_class = dietpe_get_class(&pebin, pe_class_str);
+		pe_machine = dietpe_get_machine(&pebin, pe_machine_str);
+		pe_subsystem = dietpe_get_subsystem(&pebin, pe_subsystem_str);
 
 		if (rad) printf("e file.type = pe\n");
 		else { 
-			printf("File type: PE\n"
-					"Machine: 0x%x\n"
-					"Subsystem: 0x%x\n"
-					"PE type: 0x%x\n"
+			printf("PE Class: %s (0x%x)\n"
+					"DLL: %s\n"
+					"Machine: %s (0x%x)\n"
+					"Big endian: %s\n"
+					"Subsystem: %s (0x%x)\n"
+					"Stripped:\n"
+					"  - Relocs: %s\n"
+					"  - Line numbers: %s\n"
+					"  - Local symbols: %s\n"
+					"  - Debug: %s\n"
 					"Number of sections: %i\n"
 					"Image base: 0x%.08x\n"
 					"Entrypoint (disk): 0x%.08x\n"
@@ -182,10 +192,14 @@ void rabin_show_info(const char *file)
 					"Section alignment: %i\n"
 					"File alignment: %i\n"
 					"Image size: %i\n",
-					dietpe_get_machine(&pebin), dietpe_get_subsystem(&pebin), dietpe_get_pe_type(&pebin), dietpe_get_sections_count(&pebin),
-					dietpe_get_image_base(&pebin), entrypoint.offset, entrypoint.rva, dietpe_get_section_alignment(&pebin),
-					dietpe_get_file_alignment(&pebin), dietpe_get_image_size(&pebin));
+					pe_class_str, pe_class, dietpe_is_dll(&pebin)?"True":"False", pe_machine_str, pe_machine,
+					dietpe_is_big_endian(&pebin)?"True":"False", pe_subsystem_str, pe_subsystem,
+					dietpe_is_stripped_relocs(&pebin)?"True":"False", dietpe_is_stripped_line_nums(&pebin)?"True":"False",
+					dietpe_is_stripped_local_syms(&pebin)?"True":"False", dietpe_is_stripped_debug(&pebin)?"True":"False",
+					dietpe_get_sections_count(&pebin), dietpe_get_image_base(&pebin), entrypoint.offset, entrypoint.rva,
+					dietpe_get_section_alignment(&pebin), dietpe_get_file_alignment(&pebin), dietpe_get_image_size(&pebin));
 		}
+
 		dietpe_close(fd);
 		break;
 	case FILETYPE_MZ:

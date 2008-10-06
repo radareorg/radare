@@ -35,6 +35,9 @@ typedef struct {
 	PE_DWord e_lfanew;     /* 3c: Offset to extended header */
 } pe_image_dos_header;
 
+#define PE_IMAGE_FILE_TYPE_PE32                0x10b
+#define PE_IMAGE_FILE_TYPE_PE32PLUS            0x20b
+
 #define PE_IMAGE_FILE_MACHINE_UNKNOWN          0x0000
 #define PE_IMAGE_FILE_MACHINE_ALPHA            0x0184
 #define PE_IMAGE_FILE_MACHINE_ALPHA64          0x0284
@@ -65,7 +68,6 @@ typedef struct {
 #define PE_IMAGE_FILE_MACHINE_THUMB            0x01c2
 #define PE_IMAGE_FILE_MACHINE_TRICORE          0x0520
 #define PE_IMAGE_FILE_MACHINE_WCEMIPSV2        0x0169
-#define PE_IMAGE_FILE_MACHINE_AMD64            0x8664
 
 #define PE_IMAGE_FILE_RELOCS_STRIPPED          0x0001
 #define PE_IMAGE_FILE_EXECUTABLE_IMAGE         0x0002

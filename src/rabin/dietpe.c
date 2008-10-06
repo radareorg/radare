@@ -196,11 +196,114 @@ int dietpe_get_image_size(dietpe_bin *bin) {
 	return bin->nt_headers->optional_header.SizeOfImage;
 }
 
-int dietpe_get_machine(dietpe_bin *bin) {
+int dietpe_get_machine(dietpe_bin *bin, char *str) {
+	if (str) {
+		switch (bin->nt_headers->file_header.Machine) {
+			case PE_IMAGE_FILE_MACHINE_UNKNOWN:
+				snprintf(str, PE_NAME_LENGTH, "Unknown");
+				break;
+			case PE_IMAGE_FILE_MACHINE_ALPHA:
+				snprintf(str, PE_NAME_LENGTH, "Alpha");
+				break;
+			case PE_IMAGE_FILE_MACHINE_ALPHA64:
+				snprintf(str, PE_NAME_LENGTH, "Alpha 64");
+				break;
+			case PE_IMAGE_FILE_MACHINE_AM33:
+				snprintf(str, PE_NAME_LENGTH, "AM33");
+				break;
+			case PE_IMAGE_FILE_MACHINE_AMD64:
+				snprintf(str, PE_NAME_LENGTH, "AMD 64");
+				break;
+			case PE_IMAGE_FILE_MACHINE_ARM:
+				snprintf(str, PE_NAME_LENGTH, "ARM");
+				break;
+			case PE_IMAGE_FILE_MACHINE_CEE:
+				snprintf(str, PE_NAME_LENGTH, "CEE");
+				break;
+			case PE_IMAGE_FILE_MACHINE_CEF:
+				snprintf(str, PE_NAME_LENGTH, "CEF");
+				break;
+			case PE_IMAGE_FILE_MACHINE_EBC:
+				snprintf(str, PE_NAME_LENGTH, "EBC");
+				break;
+			case PE_IMAGE_FILE_MACHINE_I386:
+				snprintf(str, PE_NAME_LENGTH, "i386");
+				break;
+			case PE_IMAGE_FILE_MACHINE_IA64:
+				snprintf(str, PE_NAME_LENGTH, "ia64");
+				break;
+			case PE_IMAGE_FILE_MACHINE_M32R:
+				snprintf(str, PE_NAME_LENGTH, "M32R");
+				break;
+			case PE_IMAGE_FILE_MACHINE_M68K:
+				snprintf(str, PE_NAME_LENGTH, "M68K");
+				break;
+			case PE_IMAGE_FILE_MACHINE_MIPS16:
+				snprintf(str, PE_NAME_LENGTH, "Mips 16");
+				break;
+			case PE_IMAGE_FILE_MACHINE_MIPSFPU:
+				snprintf(str, PE_NAME_LENGTH, "Mips FPU");
+				break;
+			case PE_IMAGE_FILE_MACHINE_MIPSFPU16:
+				snprintf(str, PE_NAME_LENGTH, "Mips FPU 16");
+				break;
+			case PE_IMAGE_FILE_MACHINE_POWERPC:
+				snprintf(str, PE_NAME_LENGTH, "PowerPC");
+				break;
+			case PE_IMAGE_FILE_MACHINE_POWERPCFP:
+				snprintf(str, PE_NAME_LENGTH, "PowerPC FP");
+				break;
+			case PE_IMAGE_FILE_MACHINE_R10000:
+				snprintf(str, PE_NAME_LENGTH, "R10000");
+				break;
+			case PE_IMAGE_FILE_MACHINE_R3000:
+				snprintf(str, PE_NAME_LENGTH, "R3000");
+				break;
+			case PE_IMAGE_FILE_MACHINE_R4000:
+				snprintf(str, PE_NAME_LENGTH, "R4000");
+				break;
+			case PE_IMAGE_FILE_MACHINE_SH3:
+				snprintf(str, PE_NAME_LENGTH, "SH3");
+				break;
+			case PE_IMAGE_FILE_MACHINE_SH3DSP:
+				snprintf(str, PE_NAME_LENGTH, "SH3DSP");
+				break;
+			case PE_IMAGE_FILE_MACHINE_SH3E:
+				snprintf(str, PE_NAME_LENGTH, "SH3E");
+				break;
+			case PE_IMAGE_FILE_MACHINE_SH4:
+				snprintf(str, PE_NAME_LENGTH, "SH4");
+				break;
+			case PE_IMAGE_FILE_MACHINE_SH5:
+				snprintf(str, PE_NAME_LENGTH, "SH5");
+				break;
+			case PE_IMAGE_FILE_MACHINE_THUMB:
+				snprintf(str, PE_NAME_LENGTH, "Thumb");
+				break;
+			case PE_IMAGE_FILE_MACHINE_TRICORE:
+				snprintf(str, PE_NAME_LENGTH, "Tricore");
+				break;
+			case PE_IMAGE_FILE_MACHINE_WCEMIPSV2:
+				snprintf(str, PE_NAME_LENGTH, "WCE Mips V2");
+				break;
+		}
+	}
+	
 	return bin->nt_headers->file_header.Machine;
 }
 
-int dietpe_get_pe_type(dietpe_bin *bin) {
+int dietpe_get_class(dietpe_bin *bin, char *str) {
+	if (str) {
+		switch (bin->nt_headers->optional_header.Magic) {
+			case PE_IMAGE_FILE_TYPE_PE32:
+				snprintf(str, PE_NAME_LENGTH, "PE32");
+				break;
+			case PE_IMAGE_FILE_TYPE_PE32PLUS:
+				snprintf(str, PE_NAME_LENGTH, "PE32+");
+				break;
+		}
+	}
+	
 	return bin->nt_headers->optional_header.Magic;
 }
 
@@ -230,7 +333,45 @@ int dietpe_get_sections_count(dietpe_bin *bin) {
 	return bin->nt_headers->file_header.NumberOfSections;
 }
 
-int dietpe_get_subsystem(dietpe_bin *bin) {
+int dietpe_get_subsystem(dietpe_bin *bin, char *str) {
+	if (str) {
+		switch (bin->nt_headers->optional_header.Subsystem) {
+			case PE_IMAGE_SUBSYSTEM_UNKNOWN:
+				snprintf(str, PE_NAME_LENGTH, "Unknown");
+				break;
+			case PE_IMAGE_SUBSYSTEM_NATIVE:
+				snprintf(str, PE_NAME_LENGTH, "Native");
+				break;
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_GUI:
+				snprintf(str, PE_NAME_LENGTH, "Windows GUI");
+				break;
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_CUI:
+				snprintf(str, PE_NAME_LENGTH, "Windows CUI");
+				break;
+			case PE_IMAGE_SUBSYSTEM_POSIX_CUI:
+				snprintf(str, PE_NAME_LENGTH, "POSIX CUI");
+				break;
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_CE_GUI:
+				snprintf(str, PE_NAME_LENGTH, "Windows CE GUI");
+				break;
+			case PE_IMAGE_SUBSYSTEM_EFI_APPLICATION:
+				snprintf(str, PE_NAME_LENGTH, "EFI Application");
+				break;
+			case PE_IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+				snprintf(str, PE_NAME_LENGTH, "EFI Boot Service Driver");
+				break;
+			case PE_IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+				snprintf(str, PE_NAME_LENGTH, "EFI Runtime Driver");
+				break;
+			case PE_IMAGE_SUBSYSTEM_EFI_ROM:
+				snprintf(str, PE_NAME_LENGTH, "EFI ROM");
+				break;
+			case PE_IMAGE_SUBSYSTEM_XBOX:
+				snprintf(str, PE_NAME_LENGTH, "XBOX");
+				break;
+		}
+	}
+
 	return bin->nt_headers->optional_header.Subsystem;
 }
 
@@ -281,6 +422,30 @@ static int dietpe_init_imports(dietpe_bin *bin, int fd) {
     read(fd, bin->import_directory, import_dir_size);
 
 	return 0;
+}
+
+int dietpe_is_dll(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_DLL;
+}
+
+int dietpe_is_big_endian(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_BYTES_REVERSED_HI;
+}
+
+int dietpe_is_stripped_relocs(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_RELOCS_STRIPPED;
+}
+
+int dietpe_is_stripped_line_nums(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_LINE_NUMS_STRIPPED;
+}
+
+int dietpe_is_stripped_local_syms(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_LOCAL_SYMS_STRIPPED;
+}
+
+int dietpe_is_stripped_debug(dietpe_bin *bin) {
+		return bin->nt_headers->file_header.Characteristics & PE_IMAGE_FILE_DEBUG_STRIPPED;
 }
 
 int dietpe_open(dietpe_bin *bin, const char *file) {
