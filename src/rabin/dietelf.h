@@ -1,3 +1,9 @@
+/* Author: nibble 
+ * --------------
+ * Licensed under GPLv2
+ * This file is part of radare
+ */
+
 #include "elf.h"
 
 #undef ELF_

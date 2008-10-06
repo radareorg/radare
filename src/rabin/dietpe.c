@@ -1,8 +1,7 @@
-/*
- * TODO: strings for: pe_type, machines, sybsystem, section characteristics
- *       offsets (exp, imp)
- *       resources
- *       64bits
+/* Author: nibble 
+ * --------------
+ * Licensed under GPLv2
+ * This file is part of radare
  */
 
 #include <fcntl.h>
@@ -36,22 +35,26 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 
 int dietpe_close(fd) {
 	close(fd);
+
 	return 0;
 }
 
-PE_DWord dietpe_get_entrypoint(dietpe_bin *bin) {
-	return dietpe_aux_rva_to_offset(bin, bin->nt_headers->optional_header.AddressOfEntryPoint);
+int dietpe_get_entrypoint(dietpe_bin *bin, dietpe_entrypoint *entrypoint) {
+	entrypoint->rva = bin->nt_headers->optional_header.AddressOfEntryPoint;
+	entrypoint->offset = dietpe_aux_rva_to_offset(bin, bin->nt_headers->optional_header.AddressOfEntryPoint);
+
+	return 0;
 }
 
 int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
-	PE_DWord functions_offset, names_offset, ordinals_offset, function_offset, name_rva, name_offset;
+	PE_DWord functions_offset, names_offset, ordinals_offset, function_rva, name_rva, name_offset;
 	PE_Word function_ordinal;
 	dietpe_export *exportp;
 	char function_name[PE_NAME_LENGTH], forwarder_name[PE_NAME_LENGTH], dll_name[PE_NAME_LENGTH], export_name[PE_NAME_LENGTH];
 	int i;
 
 	pe_image_data_directory *data_dir_export = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_EXPORT];
-	PE_DWord export_dir_offset = dietpe_aux_rva_to_offset(bin, data_dir_export->VirtualAddress);
+	PE_DWord export_dir_rva = data_dir_export->VirtualAddress;
 	int export_dir_size = data_dir_export->Size;
 	
 	if (dietpe_init_exports(bin, fd) == -1)
@@ -67,7 +70,7 @@ int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
 	exportp = export;
 	for (i = 0; i < bin->export_directory->NumberOfNames; i++, exportp++) {
 		lseek(fd, functions_offset + i * sizeof(PE_DWord), SEEK_SET);
-		read(fd, &function_offset, sizeof(PE_DWord));
+		read(fd, &function_rva, sizeof(PE_DWord));
 		lseek(fd, ordinals_offset + i * sizeof(PE_Word), SEEK_SET);
 		read(fd, &function_ordinal, sizeof(PE_Word));
 		lseek(fd, names_offset + i * sizeof(PE_DWord), SEEK_SET);
@@ -83,18 +86,20 @@ int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
 		
 		snprintf(export_name, PE_NAME_LENGTH, "%s_%s", dll_name, function_name);
 
-		if (function_offset >= export_dir_offset && function_offset < (export_dir_offset + export_dir_size)) {
-			lseek(fd, dietpe_aux_rva_to_offset(bin, function_offset), SEEK_SET);
+		if (function_rva >= export_dir_rva && function_rva < (export_dir_rva + export_dir_size)) {
+			lseek(fd, dietpe_aux_rva_to_offset(bin, function_rva), SEEK_SET);
 			read(fd, forwarder_name, PE_NAME_LENGTH);
 		} else {
 			snprintf(forwarder_name, PE_NAME_LENGTH, "NONE");
 		}
 
-		exportp->offset = function_offset;
+		exportp->rva = function_rva;
+		exportp->offset = dietpe_aux_rva_to_offset(bin, function_rva);
 		exportp->ordinal = function_ordinal;
 		memcpy(exportp->forwarder, forwarder_name, PE_NAME_LENGTH);
 		memcpy(exportp->name, export_name, PE_NAME_LENGTH);
 	}
+
 	return 0;
 }
 
@@ -120,7 +125,7 @@ int dietpe_get_imports(dietpe_bin *bin, int fd, dietpe_import *import) {
 	dietpe_import *importp;
 	char dll_name[PE_NAME_LENGTH], import_name[PE_NAME_LENGTH], name[PE_NAME_LENGTH];
 	int import_dirs_count = dietpe_get_import_dirs_count(bin), i, j;
-
+	
 	if (dietpe_init_imports(bin, fd) == -1)
 		return -1;
 
@@ -129,25 +134,33 @@ int dietpe_get_imports(dietpe_bin *bin, int fd, dietpe_import *import) {
 	for (i = 0; i < import_dirs_count; i++, import_dirp++) {
 		lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Name), SEEK_SET);
     	read(fd, dll_name, PE_NAME_LENGTH);
-		for (j = 0, import_lookup_table = 1; import_lookup_table; j++, importp++) {
+		for (j = 0, import_lookup_table = 1; import_lookup_table; j++) {
 			lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Characteristics) + j * sizeof(PE_DWord), SEEK_SET);
     		read(fd, &import_lookup_table, sizeof(PE_DWord));
-			import_ordinal = import_lookup_table & 0x80000000;
-			if (import_ordinal) {
+
+			if (import_lookup_table & 0x80000000) {
+				import_ordinal = import_lookup_table & 0x7fffffff;
 				import_hint = 0;
 				snprintf(import_name, PE_NAME_LENGTH, "%s_Ordinal_%i", dll_name, import_ordinal);
 			} else if (import_lookup_table) {
+				import_ordinal = 0;
 				lseek(fd, dietpe_aux_rva_to_offset(bin, import_lookup_table), SEEK_SET);
     			read(fd, &import_hint, sizeof(PE_Word));
     			read(fd, name, PE_NAME_LENGTH);
 				snprintf(import_name, PE_NAME_LENGTH, "%s_%s", dll_name, name);
 			}
-			memcpy(importp->name, import_name, PE_NAME_LENGTH);
-			importp->ilt_offset = dietpe_aux_rva_to_offset(bin, import_lookup_table);
-			importp->hint = import_hint;
-			importp->ordinal = import_ordinal;
+
+			if (import_lookup_table) {
+				memcpy(importp->name, import_name, PE_NAME_LENGTH);
+				importp->rva = import_dirp->FirstThunk + j * sizeof(PE_DWord);
+				importp->offset = dietpe_aux_rva_to_offset(bin, import_dirp->FirstThunk) + j * sizeof(PE_DWord);
+				importp->hint = import_hint;
+				importp->ordinal = import_ordinal;
+				importp++;
+			}
 		}
 	}
+	
 	return 0;
 }
 
@@ -164,7 +177,9 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 		for (j = 0, import_lookup_table = 1; import_lookup_table; j++) {
 			lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Characteristics) + j * sizeof(PE_DWord), SEEK_SET);
     		read(fd, &import_lookup_table, sizeof(PE_DWord));
-			imports_count++;
+			
+			if (import_lookup_table)
+				imports_count++;
 		}
 	}
 
@@ -202,6 +217,7 @@ int dietpe_get_sections(dietpe_bin *bin, dietpe_section *section) {
 	sectionp = section;
 	for (i = 0; i < sections_count; i++, shdrp++, sectionp++) {
 		memcpy(sectionp->name, shdrp->Name, PE_IMAGE_SIZEOF_SHORT_NAME);
+		sectionp->rva = shdrp->VirtualAddress;
 		sectionp->size = shdrp->SizeOfRawData;
 		sectionp->offset = shdrp->PointerToRawData;
 		sectionp->characteristics = shdrp->Characteristics;

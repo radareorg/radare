@@ -1,11 +1,7 @@
 /* Author: nibble 
  * --------------
- * Based on Silvio Cesare's elf infector
  * Licensed under GPLv2
  * This file is part of radare
- *
- * TODO:
- *  * Fix bsd64 issues
  */
 
 #include <stdio.h>

@@ -1,10 +1,16 @@
+/* Author: nibble 
+ * --------------
+ * Licensed under GPLv2
+ * This file is part of radare
+ */
+
 #ifndef _INCLUDE_DIETPE_H_
 #define _INCLUDE_DIETPE_H_
 
 #include "dietpe_types.h"
 
 int dietpe_close(int);
-PE_DWord dietpe_get_entrypoint(dietpe_bin*);
+int dietpe_get_entrypoint(dietpe_bin*, dietpe_entrypoint*);
 int dietpe_get_exports(dietpe_bin*, int, dietpe_export*);
 int dietpe_get_exports_count(dietpe_bin*, int);
 int dietpe_get_file_alignment(dietpe_bin*);

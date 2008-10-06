@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
+ *       nibble
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +88,7 @@ void rabin_show_info(const char *file)
 	u64 baddr;
 	dietelf_bin_t bin;
 	dietpe_bin pebin;
+	dietpe_entrypoint entrypoint;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -165,6 +167,8 @@ void rabin_show_info(const char *file)
 			return;
 		}
 
+		dietpe_get_entrypoint(&pebin, &entrypoint);
+
 		if (rad) printf("e file.type = pe\n");
 		else { 
 			printf("File type: PE\n"
@@ -172,13 +176,14 @@ void rabin_show_info(const char *file)
 					"Subsystem: 0x%x\n"
 					"PE type: 0x%x\n"
 					"Number of sections: %i\n"
-					"Entrypoint: 0x%.08x\n"
 					"Image base: 0x%.08x\n"
+					"Entrypoint (disk): 0x%.08x\n"
+					"Entrypoint (rva): 0x%.08x\n"
 					"Section alignment: %i\n"
 					"File alignment: %i\n"
 					"Image size: %i\n",
-					dietpe_get_machine(&pebin), dietpe_get_subsystem(&pebin), dietpe_get_pe_type(&pebin), dietpe_get_sections_count(&pebin), 
-					dietpe_get_entrypoint(&pebin), dietpe_get_image_base(&pebin), dietpe_get_section_alignment(&pebin), 
+					dietpe_get_machine(&pebin), dietpe_get_subsystem(&pebin), dietpe_get_pe_type(&pebin), dietpe_get_sections_count(&pebin),
+					dietpe_get_image_base(&pebin), entrypoint.offset, entrypoint.rva, dietpe_get_section_alignment(&pebin),
 					dietpe_get_file_alignment(&pebin), dietpe_get_image_size(&pebin));
 		}
 		dietpe_close(fd);
@@ -470,8 +475,8 @@ void rabin_show_imports(const char *file)
 		importp = import;
 		for (i = 0; i < imports_count; i++, importp++) {
 			if (!rad)
-				printf("ilt_offset=0x%.08x hint=%.04i ordinal=%.03i %s\n",
-					   importp->ilt_offset, importp->hint, importp->ordinal, importp->name);
+				printf("0x%.08x rva=0x%.08x hint=%.04i ordinal=%.03i %s\n",
+					   importp->offset, importp->rva, importp->hint, importp->ordinal, importp->name);
 		}
 
 		dietpe_close(fd);
@@ -541,7 +546,7 @@ void rabin_show_symbols(char *file)
 	exportp = export;
 	for (i = 0; i < exports_count; i++, exportp++) {
 		if (!rad)
-			printf("0x%.08x ordinal=%.03i forwarder=%s %s\n", exportp->offset, exportp->ordinal, exportp->forwarder, exportp->name);
+			printf("0x%.08x rva=%.08x ordinal=%.03i forwarder=%s %s\n", exportp->offset, exportp->rva, exportp->ordinal, exportp->forwarder, exportp->name);
 	}
 
 	// DietPE Close
@@ -606,7 +611,8 @@ void rabin_show_sections(const char *file)
 			printf("==> Sections:\n");
 		for (i = 0; i < sections_count; i++, sectionp++) {
 			if (!rad)
-				printf("[%.02i] 0x%.08x size=0x%.08x characteristics=0x%.08x %s\n", i, sectionp->offset, sectionp->size, sectionp->characteristics, sectionp->name);
+				printf("[%.02i] 0x%.08x rva=0x%.08x size=0x%.08x characteristics=0x%.08x %s\n",
+					   i, sectionp->offset, sectionp->rva, sectionp->size, sectionp->characteristics, sectionp->name);
 		}
 
 		dietpe_close(fd);

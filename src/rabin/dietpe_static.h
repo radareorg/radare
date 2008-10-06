@@ -1,3 +1,9 @@
+/* Author: nibble 
+ * --------------
+ * Licensed under GPLv2
+ * This file is part of radare
+ */
+
 #ifndef _INCLUDE_DIETPE_STATIC_H_
 #define _INCLUDE_DIETPE_STATIC_H_
 
