@@ -354,6 +354,11 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
 		g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
 
+		/* TODO: add left action panel */
+		//acti = gradare_actions_new();
+		//gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
+
+
 		/* add window */
 		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if 0 && _MAEMO_
@@ -433,6 +438,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
 		gtk_container_add(GTK_CONTAINER(win->vbox), grava_widget_get_widget(win->grava));
+
+
 	} else {
 		grava_graph_reset(win->grava->graph);
 	}
@@ -475,16 +482,17 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		// TODO: support for real labelling stuff
 		string_flag_offset(cmd, b0->addr);
 		cmd[127]='\0'; // XXX ugly string recycle hack
-		sprintf(cmd+128, "0x%08llX  %s", b0->addr, cmd);
+		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
 		if (cmd) {
 			if (!graph_flagblocks)
 				continue;
-			grava_node_set(node, "color", "red");
+			grava_node_set(node, "color", "gray");
 		}
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
 			grava_node_set(node, "bgcolor", "yellow");
+			//grava_node_set(node, "color", "darkgray");
 
 #if 0
 		// XXX this makes radare segfault with g_object_unref HUH!

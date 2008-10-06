@@ -34,7 +34,7 @@ public class Grava.Renderer
 		ctx.save();
 		set_color(ctx, edge.data);
 
-		ctx.set_line_width (3);
+		ctx.set_line_width (2);
 		if (edge.orig.y+oh<(edge.dest.y)) {//-edge.dest.h)) {
 			/* up to bottom */
 			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);
@@ -56,7 +56,7 @@ public class Grava.Renderer
 		}
 
 		ctx.set_source_rgb (0.0, 0.0, 0.0);
-		ctx.rectangle(dx, dy, 2, 2);
+		ctx.rectangle(dx, dy, 4, 4);
 		ctx.stroke();
 		ctx.restore();
 		ctx.set_source_rgb (0.6, 0.6, 0.6);
@@ -95,9 +95,12 @@ public class Grava.Renderer
 			if (color == "gray")
 				ctx.set_source_rgba (0.8, 0.8, 0.8, 0.8);
 			else
+			if (color == "darkgray")
+				ctx.set_source_rgba (0.6, 0.6, 0.6, 0.8);
+			else
 				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
 		} else
-			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.6);
+			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.9);
 
 		return (color!=null);
 	}
@@ -147,10 +150,19 @@ public class Grava.Renderer
 		if (node.calls.length() >0) 
 			ctx.set_source_rgba (0.3, 0.3, 1, 0.7);
 		else
-			ctx.set_source_rgba (0.8,0.8,0.8, 0.8);
+			ctx.set_source_rgba (0.8, 0.8, 0.8, 0.8);
 		square (ctx, node.w, 15);
 		ctx.fill ();
 		line(ctx, 0, 15, node.w, 0);
+
+		/* draw minimize button */
+		ctx.save();
+		//ctx.set_source_rgba (0.7, 0.0, 0.0, 1);
+		ctx.set_source_rgba (0.6, 0.6, 0.6, 0.8);
+		ctx.translate (node.w-16, 0);
+		square (ctx, 16, 16);
+		ctx.fill();
+		ctx.restore();
 
 		ctx.select_font_face("Sans Serif", //Courier", 
 			FontSlant.NORMAL,
@@ -190,8 +202,9 @@ public class Grava.Renderer
 			//set_color(ctx, node.data);
 			/* box square */
 			if (Graph.selected == node) {
-				ctx.set_source_rgba (1, 0.8, 0.0, 0.9);
-				ctx.set_line_width (6);
+				//ctx.set_source_rgba (1, 0.8, 0.0, 0.9);
+				ctx.set_source_rgba (0, 0.0, 0.0, 1.0);
+				ctx.set_line_width (2);
 			} else {
 				ctx.set_source_rgba (0.2, 0.2, 0.2, 0.4);
 				ctx.set_line_width (1);

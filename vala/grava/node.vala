@@ -52,9 +52,9 @@ public class Grava.Node : GLib.Object
 		data.insert (key, val);
 	}
 
-	public void set_i (string key, int val)
+	public void set_i (string key, uint64 val)
 	{
-		string str = "0x%x".printf(val);
+		string str = "0x%llx".printf(val);
 		data.insert (key, str);
 	}
 
@@ -88,9 +88,9 @@ public class Grava.Node : GLib.Object
 		double _w = 0;
 
 		if (label != null)
-			_w = label.len();
+			_w = label.len()+2;
 
-		if ( body != null )
+		if (has_body && body != null )
 		foreach( string str in body.split("\n") ) {
 			_y += 10;
 			if ( str.len() > (long)_w )

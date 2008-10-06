@@ -240,20 +240,38 @@ void progressbar(int pc)
 }
 
 #if RADARE_CORE
-// TODO get [ prefix: (size of ptr), use cfg.bigendian
-//  4[0x300] = dword[0x300]
-//  d[0x300] ...
-//  b[0x300]
-// eval cfg.bigendian
-//unsigned char *ptr = &newa;
-unsigned long get_pointer(u64 addr)
+u64 get_pointer(u64 addr, int size)
 {
-	unsigned long newa;
+	int endian = config_get_i("cfg.bigendian");
+	u64 ret;
+	u8 newa8;
+	u16 newa16;
+	u32 newa32;
+	u64 newa64;
 	u64 sk = config.seek;
 	radare_seek(addr, SEEK_SET);
-	io_read(config.fd, &newa, 4);
+	switch(size) {
+	case 1:
+		io_read(config.fd, &newa8, 1);
+		ret = newa64 = newa8;
+		break;
+	case 2:
+		io_read(config.fd, &newa16, 2);
+		ret = newa64 = newa16;
+		endian_memcpy_e(&ret, &newa16,2,endian);
+		break;
+	case 4:
+		io_read(config.fd, &newa32, 4);
+		newa64 = newa32;
+		endian_memcpy_e(&ret, &newa32,4,endian);
+		break;
+	case 8:
+		io_read(config.fd, &newa64, 8);
+		endian_memcpy_e(&ret, &newa64,8,endian);
+		break;
+	}
 	radare_seek(sk, SEEK_SET);
-	return newa;
+	return ret;
 }
 #endif
 
@@ -280,9 +298,27 @@ u64 get_offset(const char *orig)
 #if RADARE_CORE
 	if (!strcmp(orig, "here"))
 		return config.seek;
+
+	if (arg[0]=='.') {
+		u64 real = 0;
+		u64 mask = 0;
+		for(ptr = arg; ptr[0];ptr = ptr +1) {
+			if (ptr[0]!='.') {
+				mask<<= 4;
+				mask |= 0xf;
+				if (real==0)
+					sscanf(ptr,"%llx", &real);
+			}
+		}
+		mask = -mask -1;
+		return (config.seek&mask)+ real;
+	}
+
 	ptr = strchr(arg, '[');
-	if (ptr)
-		return get_pointer(get_offset(ptr+1));
+	if (ptr) {
+		eprintf("UNFOOD\n");
+		return get_pointer(get_offset(ptr+1),4);
+	}
 
 	ret = config_get_i(arg);
 	if (((int)ret) != 0)
@@ -441,8 +477,19 @@ u64 get_math(const char* text)
 		case '[': end = strchr(txt2+(ptr-txt+1),']');
 			// todo. support nested lol
 			if (end) {
+				int ptrsize = 4; // XXX use 8 for 64bit boxes ??
+				char *p = strchr(txt2+(ptr-txt),':');
+
+				if (p != NULL) {
+					p[0] = '\0';
+					ptrsize = atoi(txt2+(ptr-txt));
+					p = p+1;
+				} else
+					p = txt2+(ptr-txt);
+
 				end[0]='\0';
-				new_off += get_pointer(get_math(txt2+(ptr-txt)));
+				new_off += get_pointer(get_math(p), ptrsize);
+				//eprintf("ADDR 0x%08llx\nPTRSZ %d\n", new_off, ptrsize);
 				end[0]=']';
 				ptr = ptr + (end-txt2);
 			} else {

@@ -24,16 +24,17 @@ using Gdk;
 
 public class Grava.Widget : GLib.Object {
 	enum WheelAction {
-		PANS   = 0,
-		ZOOMS  = 1,
+		PAN   = 0,
+		ZOOM  = 1,
 		ROTATE = 2
 	}
+
 	const int SIZE = 30;
 	const double ZOOM_FACTOR = 0.1;
 	[Widget] public DrawingArea da;
 	public Grava.Graph graph;
 	public const double S = 96;
-	private WheelAction wheel_action = WheelAction.PANS;
+	private WheelAction wheel_action = WheelAction.PAN;
 	ScrolledWindow sw;
 	Menu menu;
 
@@ -57,10 +58,9 @@ public class Grava.Widget : GLib.Object {
 
 		/* add event listeners */
 		da.add_events(  Gdk.EventMask.BUTTON1_MOTION_MASK |
-				Gdk.EventMask.SCROLL_MASK |
-				Gdk.EventMask.BUTTON_PRESS_MASK |
-				Gdk.EventMask.BUTTON_RELEASE_MASK 
-				);
+				Gdk.EventMask.SCROLL_MASK         |
+				Gdk.EventMask.BUTTON_PRESS_MASK   |
+				Gdk.EventMask.BUTTON_RELEASE_MASK );
 		//da.set_events(  Gdk.EventMask.BUTTON1_MOTION_MASK );
 				// Gdk.EventMask.POINTER_MOTION_MASK );
 		da.expose_event += expose;
@@ -70,14 +70,15 @@ public class Grava.Widget : GLib.Object {
 		da.scroll_event += scroll_press;
 
 		sw = new ScrolledWindow(
-				new Adjustment(0, 10, 1000, 2, 100, 1000),
-				new Adjustment(0, 10, 1000, 2, 100, 1000));
+			new Adjustment(0, 10, 1000, 2, 100, 1000),
+			new Adjustment(0, 10, 1000, 2, 100, 1000));
 		sw.set_policy(PolicyType.NEVER, PolicyType.NEVER);
 
 		Viewport vp = new Viewport(
-				new Adjustment(0, 10, 1000, 2, 100, 1000),
-				new Adjustment(0, 10, 1000, 2, 100, 1000));
+			new Adjustment(0, 10, 1000, 2, 100, 1000),
+			new Adjustment(0, 10, 1000, 2, 100, 1000));
 		vp.add(da);
+
 		sw.add_events(  Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK);
 		sw.key_press_event += key_press;
 		sw.key_release_event += key_release;
@@ -97,10 +98,10 @@ public class Grava.Widget : GLib.Object {
 		switch(es.direction) {
 		case ScrollDirection.UP:
 			switch(wheel_action) {
-			case WheelAction.PANS:
+			case WheelAction.PAN:
 				graph.pany += 64;
 				break;
-			case WheelAction.ZOOMS:
+			case WheelAction.ZOOM:
 				graph.zoom += ZOOM_FACTOR;
 				break;
 			case WheelAction.ROTATE:
@@ -110,10 +111,10 @@ public class Grava.Widget : GLib.Object {
 			break;
 		case ScrollDirection.DOWN:
 			switch(wheel_action) {
-			case WheelAction.PANS:
+			case WheelAction.PAN:
 				graph.pany -= 64;
 				break;
-			case WheelAction.ZOOMS:
+			case WheelAction.ZOOM:
 				graph.zoom -= ZOOM_FACTOR;
 				break;
 			case WheelAction.ROTATE:
@@ -135,10 +136,10 @@ public class Grava.Widget : GLib.Object {
 
 		switch (ek.keyval) {
 		case 65507: // CONTROL KEY
-			wheel_action = WheelAction.PANS;
+			wheel_action = WheelAction.PAN;
 			break;
 		case 65505: // SHIFT
-			wheel_action = WheelAction.PANS;
+			wheel_action = WheelAction.PAN;
 			break;
 		}
 
@@ -156,7 +157,7 @@ public class Grava.Widget : GLib.Object {
 
 		switch (ek.keyval) {
 		case 65507: // CONTROL KEY
-			wheel_action = WheelAction.ZOOMS;
+			wheel_action = WheelAction.ZOOM;
 			break;
 		case 65505: // SHIFT
 			wheel_action = WheelAction.ROTATE;
@@ -241,6 +242,19 @@ public class Grava.Widget : GLib.Object {
 		return true;
 	}
 
+	public void do_popup_generic()
+	{
+		ImageMenuItem imi;
+ 		menu = new Menu();
+		imi = new ImageMenuItem.from_stock("gtk-zoom-in", null);
+		imi.activate += imi => {
+			/* foo */
+		};
+		menu.append(imi);
+		menu.show_all();
+		menu.popup(null, null, null, 0, 0);
+	}
+
 	public void do_popup_menu()
 	{
 		ImageMenuItem imi;
@@ -311,9 +325,17 @@ public class Grava.Widget : GLib.Object {
 
 		sw.grab_focus();
 		graph.selected = n;
+		if (eb.button == 3) {
+			if (n != null)
+				do_popup_menu();
+			else	do_popup_generic();
+		}
 		if (n != null) {
-			if (eb.y-24-graph.pany<n.y)
+			if (((eb.y-(16*graph.zoom)-graph.pany)<(n.y*graph.zoom))
+			&&  (eb.x-graph.panx>(n.x+n.w-(16*graph.zoom))*graph.zoom)) {
 				n.has_body = !n.has_body;
+				n.fit();
+			}
 
 			opanx = eb.x;
 			opany = eb.y;
@@ -321,8 +343,6 @@ public class Grava.Widget : GLib.Object {
 //			graph.draw(Gdk.cairo_create(da.window));
 			da.queue_draw_area(0,0,5000,3000);
 			
-			if (eb.button == 3)
-				do_popup_menu();
 		}
 		return true;
 	}
@@ -347,7 +367,6 @@ public class Grava.Widget : GLib.Object {
 		on = null;
 		opanx = opany = 0;
 		return true;
-
 	}
 
 	private bool motion (Gtk.DrawingArea da, Gdk.EventMotion em)
@@ -375,17 +394,17 @@ public class Grava.Widget : GLib.Object {
 			//n.y += (offy-(offy*graph.zoom));
 			//n.x*=graph.zoom;
 			//n.y*=graph.zoom;
-			da.queue_draw_area(0,0,5000,3000);
+			da.queue_draw_area(0, 0, 5000, 3000);
 			Graph.selected = n;
 		} else {
 			/* pan view */
 			if ((opanx!=0) && (opany!=0)) {
 				double x = em.x-opanx;
 				double y = em.y-opany;
-				graph.panx+=x*0.8;
-				graph.pany+=y*0.8;
+				graph.panx+=x;//*0.8;
+				graph.pany+=y;//*0.8;
 				//graph.draw(Gdk.cairo_create(da.window));
-				da.queue_draw_area(0,0,5000,3000);
+				da.queue_draw_area(0, 0, 5000, 3000);
 			}
 			Graph.selected = null;
 			opanx = em.x;
@@ -406,7 +425,6 @@ public class Grava.Widget : GLib.Object {
 		Context ctx = Gdk.cairo_create(da.window);
 		if (graph.zoom < 0.2)
 			graph.zoom = 0.2;
-
 		graph.draw(ctx);
 	}
 
@@ -422,44 +440,3 @@ public class Grava.Widget : GLib.Object {
         [CCode (cname="mygrava_bp_rm_at")]
         public static extern void unset_breakpoint(void *obj, string addr);
 }
-
-		/* Usage example */
-		/* nodes
-		Node n = new Node();
-		n.set("label", "0x8048490  _start:");
-		n.set("color", "gray");
-		n.set("body",
-		"0x08048490  mov eax, 0x3842\n"+
-		"0x08048495  xor ebx, ebx\n"+
-		"0x08048497  jz 0x08048900");
-		graph.add_node(n);
-
-		Node n2 = new Node();
-		n2.set("label", "0x08048900  _sub_start:");
-		n2.set("color","gray");
-		n2.set("body",
-		"0x08048900  jmp 0x804890");
-		graph.add_node(n2);
-
-		Node n3 = new Node();
-		n3.set("label", "0x0804849b  --");
-		n3.set("color","gray");
-		n3.set("body",
-		"0x0804849b  rdtsc\n"+
-		"0x0804849c  nop\n"+
-		"            ...\n");
-		graph.add_node(n3);
-
-		// edges
-		Edge e = new Edge().with(n, n2);
-		e.set("color", "green");
-		graph.add_edge(e);
-
-		e = new Edge().with(n, n3);
-		e.set("color", "red");
-		graph.add_edge(e);
-
-		e = new Edge().with(n2, n);
-		e.set("color", "blue");
-		graph.add_edge(e);
-		 */
