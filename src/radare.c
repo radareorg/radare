@@ -56,6 +56,8 @@ u64 tmpoff = -1;
 int std = 0;
 
 static int radare_close();
+/* dummy callback for dl_hist_label */
+static int cb(const char *str) { radare_cmd(str,0); }
 
 #if !DEBUGGER
 int debug_step(int x) { return 0; }
@@ -369,6 +371,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *next = NULL;
 	int ret = 0;
 
+//fprintf(stderr, "CMDRAW: (%s)\n", tmp);
 	if (strnull(tmp))
 		return 0;
 
@@ -389,6 +392,10 @@ int radare_cmd_raw(const char *tmp, int log)
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
 		input = input+1;
 	}
+
+//	if (dl_hist_label(input, &cb)) {
+//		return 0;
+//	}
 
  	eof = input+strlen(input)-1;
 
@@ -758,6 +765,7 @@ void radare_nullcmd()
 	last_print_format = p;
 }
 
+
 int radare_cmd(char *input, int log)
 {
 	const char *ptr;
@@ -767,13 +775,16 @@ int radare_cmd(char *input, int log)
 	char *next = NULL;
 	int ret = 0;
 
-//fprintf(stderr, "CMD: (%s)\n", input);
 	/* silently skip lines begginging with 0 */
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
 
-	if (log)
+	if (dl_hist_label(input, &cb))
+		return 0;
+//fprintf(stderr, "CMD: (%s)\n", input);
+	if (log) {
 		dl_hist_add(input);
+	}
 
 	next = strstr(input, "&&");
 	if (next) next[0]='\0';
@@ -1090,17 +1101,7 @@ int radare_prompt()
 
 		flag_space_pop();
 
-		if (config.width>0) { // fixed width
-			//fixed_width = 0;
-			//config.width = cons_get_columns();
-			//rl_get_screen_size(NULL, &config.width);
-			radare_cmd(input, 1);
-		} else { // dinamic width
-			//fixed_width = 1;
-			//config.width=-config.width;
-			radare_cmd(input, 1);
-			//config.width=-config.width;	
-		}
+		radare_cmd(input, 1);
 
 		flag_space_push();
 		if (aux && aux[0]) free(aux);

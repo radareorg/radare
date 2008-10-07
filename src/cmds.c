@@ -130,7 +130,7 @@ command_t commands[] = {
 	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
-	COMMAND('x', " [length]",      "examine  the same as p/x", examine),
+	COMMAND('x', " [length]",      "examine  the same as px", examine),
 	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
 	COMMAND('.', "[!cmd]|[ file]", ".script  interpret a script (radare, .py, .rb, .lua, .pl)", interpret),
 	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),

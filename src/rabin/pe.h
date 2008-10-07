@@ -212,13 +212,15 @@ typedef struct {
 } pe_image_import_directory;
 
 typedef struct {
-	PE_DWord Characteristics;
-	PE_DWord TimeDateStamp;
-	PE_DWord MajorVersion;
-	PE_DWord MinorVersion;
-	PE_DWord NumberOfNamedEntries;
-	PE_DWord NumberOfIdEntries;
-} pe_image_resource_directory;
+	PE_DWord Attributes;
+	PE_DWord Name;
+	PE_DWord ModuleHandle;
+	PE_DWord DelayImportAddressTable;
+	PE_DWord DelayImportNameTable;
+	PE_DWord BoundDelayImportTable;
+	PE_DWord UnloadDelayImportTable;
+	PE_DWord TimeStamp;
+} pe_image_delay_import_directory;
 
 typedef struct {
 	PE_DWord Signature;
@@ -227,12 +229,12 @@ typedef struct {
 } pe_image_nt_headers;
 
 typedef struct {
-	pe_image_dos_header         *dos_header;
-	pe_image_nt_headers			*nt_headers;
-	pe_image_section_header     *section_header;
-	pe_image_export_directory   *export_directory;
-	pe_image_import_directory   *import_directory;
-	pe_image_resource_directory *resource_directory;
+	pe_image_dos_header             *dos_header;
+	pe_image_nt_headers			    *nt_headers;
+	pe_image_section_header         *section_header;
+	pe_image_export_directory       *export_directory;
+	pe_image_import_directory       *import_directory;
+	pe_image_delay_import_directory *delay_import_directory;
 } dietpe_bin;
 
 #endif

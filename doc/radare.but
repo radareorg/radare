@@ -401,6 +401,27 @@ Defines the architecture to be used while disassembling (pd, pD commands) and an
 
 It is quite simple to add new architectures for disassembling and analyzing code, so there is an interface adapted for the GNU disassembler and others for udis86 or handmade ones.
 
+Setting asm.arch to 'objdump' the disassembly engine will use asm.objdump to disasemble the current block. For the code analysis the core will use the previous architecture defined in asm.arch.
+
+\c [0x4A13B8C0]> e asm.objdump 
+\c objdump -m i386 --target=binary -D
+\c [0x4A13B8C0]> e asm.arch 
+\c intel
+\c [0x4A13B8C0]> pd 2
+\c       |    0x4A13B8C0,       eip: 89e0            mov eax, esp        
+\c       |    0x4A13B8C2             e839070000      call 0x4a13c000       ; 1 = 0x4a13c000
+\c [0x4A13B8C0]> e asm.arch =objdump
+\c [0x4A13B8C0]> pd
+\c       |    0x4A13B8C0, eip
+\c    0:   89 e0                   mov    eax,esp
+\c    2:   e8 39 07 00 00          call   0x740
+\c    7:   89 c7                   mov    edi,eax
+\c    9:   e8 e2 ff ff ff          call   0xfffffff0
+\c    ...
+
+This is useful for disassembling files in architectures not supported by radare. You should understand 'objdump' as 'your-own-disassembler'.
+
+
 \c asm.syntax
 
 Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
@@ -514,10 +535,15 @@ The command 's' is used to seek. It accepts a math expression as argument that c
 
 The 's'eek command supports '+-*!' characters as arguments to perform acts on the seek history.
 
+\c [0x4A13B8C0]> s?
 \c Usage: > s 0x128 ; absolute seek
 \c        > s +33   ; relative seek
 \c        > sn      ; seek to next opcode
 \c        > sb      ; seek to opcode branch
+\c        > sc      ; seek to call index (pd)
+\c        > sx N    ; seek to code xref N
+\c        > sX N    ; seek to data reference N
+\c        > sS N    ; seek to section N (fmi: 'S?')
 \c        > s-      ; undo seek
 \c        > s+      ; redo seek
 \c        > s*      ; show seek history
@@ -975,14 +1001,16 @@ To resize. Use the 'r' command which accepts a numeric argument. Possitive valul
 
 To write bytes just use the 'w' command. It accepts multiple input formats like inline assembling, endian-friendly dwords, files, hexpair files, wide strings:
 
-\c [0x08049A80]> w?
+\c [0x4A13B8C0]> w?
 \c Usage: w[?|w|x|f] [argument]
 \c   w  [string]   - write plain with escaped chars string
 \c   wa [opcode]   - write assembly using asm.arch and rasm
 \c   wA '[opcode]' - write assembly using asm.arch and rsc asm
+\c   wb [hexpair]  - circulary fill the block with these bytes
 \c   wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)
 \c   ww [string]   - write wide chars (interlace 00s in string)
 \c   wx [hexpair]  - write hexpair string
+\c   wX [hexpair]  - xor-cipher from cur seek with ciclick hexpair key
 \c   wf [file]     - write contents of file at current seek
 \c   wF [hexfile]  - write hexpair contents of file
 

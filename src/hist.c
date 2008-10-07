@@ -45,12 +45,6 @@ static int cpu_cmp = 0;
 void hist_dump(char *file);
 void hist_load(char *file);
 
-int is_label(char *str)
-{
-	if (str[0]==';'&&str[strlen(str)-1]==':')
-		return 1;
-	return 0;
-}
 
 int label_get(char *name)
 {

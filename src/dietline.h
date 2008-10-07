@@ -8,6 +8,7 @@
 extern int dl_echo;
 extern const char *dl_prompt;
 extern const char *dl_clipboard;
+extern void dl_label_show();
 
 extern char **dl_history;
 extern int dl_histsize;
@@ -32,6 +33,8 @@ extern void hist_add(char *str, int log);
 extern void hist_clean();
 int dl_hist_save(const char *file);
 extern int hist_show();
+int dl_hist_label(const char *label, void (*cb)(const char*));
+void dl_label_show();
 
 extern char **(*dl_callback)(const char *text, int start, int end);
 

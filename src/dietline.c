@@ -92,8 +92,101 @@ int dl_readchar()
 	return buf[0];
 }
 
+/* scripting */
+
+#define BLOCK 4096
+static char *labels = NULL;
+static u32 size = 0;
+static u32 lsize = 0;
+
+static int label_get(char *name)
+{
+	int i, n;
+	for(i=0;i<size;i++) {
+		if (!strcmp(name, labels+i+4)) {
+			memcpy(&n, labels+i, 4);
+			return n;
+		}
+		i+=strlen(labels+i+4)+4;
+	}
+	return -1;
+}
+
+static void label_add (const char *str) {
+	int size = dl_buffer_len;
+	u32 len = strlen(str)-1;
+printf("New label(%s )\n",str);
+	memset(labels+lsize+4, '\0', BLOCK-((lsize+len+4)%BLOCK));
+	memcpy(labels+lsize, &size, 4);
+	memcpy(labels+lsize+4, str, len);
+	lsize+=len+4+1;
+}
+
+void dl_label_show()
+{
+	u32 i, p, n=0;
+	for(i=0;i<lsize;i++,n++) {
+		memcpy(&p, labels+i, 4);
+		printf("  %03d  %s\n", p, labels+i+4);
+		i+=strlen(labels+i+4)+4;
+	}
+}
+
+static void label_reset()
+{
+	lsize = 0;
+	free(labels);
+	labels = NULL;
+}
+
+static int is_label(const char *str)
+{
+	if (str[strlen(str)-1]==':') {
+		if (str[0]=='?') {
+			dl_label_show();
+			return 2;
+		}
+		return 1;
+	}
+	return 0;
+}
 
 /* history stuff */
+
+int dl_hist_label(const char *label, void (*cb)(const char*))
+{
+	int n,i;
+
+	if (label[0]=='.') {
+		if (!is_label(label+1))
+			return 0;
+	} else {
+		switch(is_label(label)) {
+		case 0:
+		case 2:
+			return 0;
+		}
+	}
+
+	i = label_get(label);
+	if (i == -1) {
+		label_add(label);
+		return 1;
+	}
+
+	if (dl_history != NULL)
+	for(i=0;i<dl_histsize; i++) {
+		if (dl_history[i] == NULL)
+			break;
+		printf(stderr, "%s\n", dl_history[i]);
+		if (cb != NULL)
+			cb(dl_history[i]);
+		else	printf(stderr, "%s\n", dl_history[i]);
+	}
+
+	return 1;
+}
+
 int dl_hist_add(const char *line)
 {
 #if HAVE_LIB_READLINE
@@ -231,6 +324,8 @@ int dl_init()
 #if HAVE_LIB_READLINE
 	rad_readline_init();
 #endif
+	if (labels==NULL)
+		labels = malloc(BLOCK);
 	dl_history = (char **)malloc(dl_histsize*sizeof(char *));
 	if (dl_history==NULL)
 		return 0;

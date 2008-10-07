@@ -113,7 +113,6 @@ void update_environment();
 void prepare_environment(char *line);
 void destroy_environment(char *line);
 void udis(int len, int rows);
-void label_show();
 int monitor_init();
 void radare_move(char *arg);
 void disassemble(int len, int rows);

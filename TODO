@@ -11,15 +11,18 @@
 
 ---- documentation
 * documentate 'S' command and 'sS' one
-* asm.arch=objdump <- documentation for it
 * documentate inverse
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc search.from and search.to
-* documentate wX
 * docuemtate 'g' and 'x' in visual
 
 --- todo
+* documentate wX... err we need a complete ciphering operations
+  - shift left, shift right, add, sub..
+  - also take source from ciclic memory buffer on target file or local file
+  - this is similar to 'm'ove command. or just do it in write..
+  
 * ascii-nops for rasc
 * radiff -r doesnt works
 * Make 'Cs' autodetect multiple strings
