@@ -22,6 +22,7 @@ using Cairo;
 public class Grava.Graph : GLib.Object
 {
 	public Layout layout;
+	public SList<Node> selhist;
 	public SList<Node> nodes;
 	public SList<Edge> edges;
 	public HashTable<string,string> data;
@@ -36,9 +37,17 @@ public class Grava.Graph : GLib.Object
 	construct {
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
+		selhist= new SList<int>();
 		layout = new DefaultLayout();
 		data   = new HashTable<string, string>.full(str_hash, str_equal, g_free, Object.unref);
 	//	s = new ImageSurface.from_png("/tmp/file.png");
+	}
+
+	public void undo_select()
+	{
+		uint length = selhist.length();
+		selected = selhist.nth_data(length-1);
+		selhist.remove(selected);
 	}
 
 	/* TODO: Add boolean argument to reset layout too */
@@ -46,6 +55,7 @@ public class Grava.Graph : GLib.Object
 		layout.reset();
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
+		selhist= new SList<int>();
 		//layout = new DefaultLayout();
 		/* add png here */
 	}
@@ -62,13 +72,56 @@ public class Grava.Graph : GLib.Object
 
 	public void select_next()
 	{
+/*
 		foreach(weak Node node in nodes) {
-			if (selected == null) {
+			if (Graph.selected == null) {
 				selected = node;
+				Graph.selected = node;
+				selhist.append(selected);
 				break;
 			}
-			if (selected == node)
+			if (selected == node) {
+				Graph.selected = node;
 				selected = null;
+			}
+		}
+*/
+		//if (Graph.selected == null || selected == null)
+			foreach(weak Node node in nodes) {
+				Graph.selected = selected = node;
+				break;
+			}
+	}
+
+	public void select_true()
+	{
+		if (selected == null)
+			return;
+
+		foreach(weak Edge edge in edges) {
+			if (selected == edge.orig) {
+				if (edge.get("color") == "green") {
+					selected = edge.dest;
+					selhist.append(selected);
+					break;
+				}
+			}
+		}
+	}
+
+	public void select_false()
+	{
+		if (selected == null)
+			return;
+
+		foreach(weak Edge edge in edges) {
+			if (selected == edge.orig) {
+				if (edge.get("color") == "red") {
+					selected = edge.dest;
+					selhist.append(selected);
+					break;
+				}
+			}
 		}
 	}
 

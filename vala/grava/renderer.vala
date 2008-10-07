@@ -32,15 +32,22 @@ public class Grava.Renderer
 			oh = 16;
 
 		ctx.save();
+
+
 		set_color(ctx, edge.data);
 
 		ctx.set_line_width (2);
 		if (edge.orig.y+oh<(edge.dest.y)) {//-edge.dest.h)) {
 			/* up to bottom */
-			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);
+			//ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);
+			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+oh);
+			ctx.move_to(0, 0);
 			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
 			  dy = edge.dest.y-edge.orig.y - oh;
-			ctx.move_to(30,30);
+			//ctx.move_to(30,30);
+		//ctx.set_source_rgb (0.0, 0.0, 0.0);
+			if (Graph.selected == edge.orig)
+				ctx.set_line_width (6);
 			line(ctx, 0,0, dx, dy);
 		} else {
 			/* bottom to up */
@@ -50,16 +57,17 @@ public class Grava.Renderer
 			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
 			  dy = edge.dest.y-edge.orig.y- oh; // or 80 or so depending if > or < ???
 			double ox = dx;
-			if (ox == 0){ ox = 150; }
-			ctx.curve_to(dx,100, ox, 120, dx, dy);
-			ctx.stroke();
+//			if (ox == 0){ ox = 150; }
+			//arrow
+			if (Graph.selected == edge.orig)
+				ctx.set_line_width (6);
+			ctx.curve_to(dx, 100, ox, (ox>0)?200:-200, dx, dy);
+			//ctx.stroke();
 		}
-
-		ctx.set_source_rgb (0.0, 0.0, 0.0);
-		ctx.rectangle(dx, dy, 4, 4);
 		ctx.stroke();
 		ctx.restore();
-		ctx.set_source_rgb (0.6, 0.6, 0.6);
+		ctx.set_source_rgba (0.6, 0.6, 0.6,1);
+
 	}
 
 	public static void set_color(Context ctx, HashTable<string,string> ht)
@@ -95,12 +103,15 @@ public class Grava.Renderer
 			if (color == "gray")
 				ctx.set_source_rgba (0.8, 0.8, 0.8, 0.8);
 			else
+			if (color == "beige")
+				ctx.set_source_rgba (0.9, 0.9, 0.6, 0.7);
+			else
 			if (color == "darkgray")
 				ctx.set_source_rgba (0.6, 0.6, 0.6, 0.8);
 			else
 				ctx.set_source_rgba (1.0, 1.0, 1.0, 0.4);
 		} else
-			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.9);
+			ctx.set_source_rgba (1.0, 1.0, 1.0, 0.8);
 
 		return (color!=null);
 	}

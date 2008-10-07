@@ -40,6 +40,7 @@ public class Grava.Widget : GLib.Object {
 
 	public signal void load_graph_at(string addr);
 	public signal void breakpoint_at(string addr);
+	public signal void run_cmd(string addr);
 
 	public Gtk.Widget get_widget()
 	{
@@ -153,22 +154,53 @@ public class Grava.Widget : GLib.Object {
 		sw.grab_focus();
 
 		/* */
-		//stdout.printf("Key pressed %d (%c)\n", (int)ek.keyval, (int)ek.keyval);
+		stdout.printf("Key pressed %d (%c)\n", (int)ek.keyval, (int)ek.keyval);
+
 
 		switch (ek.keyval) {
+		case 'b':
+		case 65471: // F2 - set breakpoint
+			Widget.set_breakpoint(null, Graph.selected.get("label"));
+			break;
+		case 'B':
+		//case 65471: // F2 - set breakpoint
+			Widget.set_breakpoint(null, "-%s".printf(Graph.selected.get("label")));
+			break;
+		case 'S':
+			run_cmd("!stepo");
+			run_cmd(".!regs*");
+			load_graph_at("$$");
+			break;
+		case 's':
+		case 65476: // F7 - step
+			run_cmd("!step");
+			run_cmd(".!regs*");
+			//graph.update();
+			load_graph_at("$$");
+			break;
+		case 65478: // F9 = cont
+			run_cmd("!cont");
+			run_cmd(".!regs*");
+			load_graph_at("$$");
+			break;
 		case 65507: // CONTROL KEY
 			wheel_action = WheelAction.ZOOM;
 			break;
 		case 65505: // SHIFT
 			wheel_action = WheelAction.ROTATE;
 			break;
+/*
 		case 46: // dot. center view on selected node
 			if (Graph.selected != null) {
 				//sw.get_size(ref w, ref, h);
 				graph.panx = -Graph.selected.x + 350;
 				graph.pany = -Graph.selected.y + 350;
 			}
+			graph.select_next();
+			Graph.selected = graph.selected;
+			Graph.selected.selected = true;
 			break;
+*/
 		case 65056: // shift+tab : select previous
 			//graph.select_prev();
 			break;
@@ -199,12 +231,6 @@ public class Grava.Widget : GLib.Object {
 		case 'l':
 			graph.panx-=S*graph.zoom;
 			break;
-		case 'u':
-			graph.pany+=S*2;
-			break;
-		case ' ':
-			graph.pany-=S*2;
-			break;
 		case 'H':
 			graph.panx+=S*graph.zoom;
 			if (Graph.selected != null)
@@ -221,9 +247,30 @@ public class Grava.Widget : GLib.Object {
 				Graph.selected.y-=S*graph.zoom;
 			break;
 		case 'L':
-			graph.panx-=S*graph.zoom;
+			if ( wheel_action == WheelAction.ZOOM) {
+			} else {
+				graph.panx-=S*graph.zoom;
+				if (Graph.selected != null)
+					Graph.selected.x+=S*graph.zoom;
+			}
+			break;
+		case '.':
 			if (Graph.selected != null)
-				Graph.selected.x+=S*graph.zoom;
+				load_graph_at(Graph.selected.get("label"));
+			else graph.select_next();
+			break;
+		case ':':
+			load_graph_at("eip");
+			Graph.selected = graph.selected = null;
+			break;
+		case 'u': // undo selection
+			graph.undo_select();
+			break;
+		case 't': // selected true branch
+			graph.select_true();
+			break;
+		case 'f': // selected false branch
+			graph.select_false();
 			break;
 		case '+':
 			graph.zoom+=ZOOM_FACTOR;
@@ -406,7 +453,7 @@ public class Grava.Widget : GLib.Object {
 				//graph.draw(Gdk.cairo_create(da.window));
 				da.queue_draw_area(0, 0, 5000, 3000);
 			}
-			Graph.selected = null;
+			//Graph.selected = null;
 			opanx = em.x;
 			opany = em.y;
 		}

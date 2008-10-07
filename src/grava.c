@@ -210,7 +210,10 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 
 	off = get_offset(str);
 	//grava_graph_reset(last_window->grava->graph);
-	grava_default_layout_reset(last_window->grava->graph->layout);
+//	ptr = config_get("graph.layout");
+//	if (ptr && !strcmp(ptr, "graphviz"))
+//	else
+		grava_default_layout_reset(last_window->grava->graph->layout);
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -226,8 +229,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 			u64 off = get_math(ptr);
 			if (off != 0)
 				radare_seek(off, SEEK_SET);
-		}
-
+		} 
 		buf = cons_get_buffer();
 		if (buf && buf[0]) {
 			printf("BUFFER(%s->%s)\n", str, buf);
@@ -317,6 +319,18 @@ gboolean mygrava_zoomout(void *foo, void *bar, struct mygrava_window *w)
 	return TRUE;
 }
 
+void mygrava_run_cmd(void * foo, char *cmd)
+{
+//printf("running cmd (%s)\n", cmd);
+	radare_cmd(cmd, 0);
+}
+
+void core_graph_reload(void * foo, char *cmd)
+{
+//printf("running cmd (%s)\n", cmd);
+	radare_cmd(cmd, 0);
+}
+
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	char cmd[1024];
@@ -353,6 +367,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		win->grava  = grava_widget_new();
 		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
 		g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
+		g_signal_connect(win->grava, "run-cmd", ((GCallback) mygrava_run_cmd), win);
 
 		/* TODO: add left action panel */
 		//acti = gradare_actions_new();
@@ -491,7 +506,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
-			grava_node_set(node, "bgcolor", "yellow");
+			grava_node_set(node, "bgcolor", "beige");
 			//grava_node_set(node, "color", "darkgray");
 
 #if 0

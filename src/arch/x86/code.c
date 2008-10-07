@@ -120,6 +120,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		} 
 		break;
 	case 0xcc: // int3
+		aop->eob = 1;
 	case 0xf1: // int1
 		aop->length = 1;
 		aop->type   = AOP_TYPE_SWI;
