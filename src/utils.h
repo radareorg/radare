@@ -24,7 +24,7 @@ extern const char *nullstr;
 void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
 int _strnstr(char *from, char *to, int size);
-char *estrdup(char *ptr, char *string);
+char *estrdup(char *ptr, const char *string);
 char *slurp(const char *str);
 int word_count(const char *string);
 

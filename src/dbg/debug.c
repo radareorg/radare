@@ -335,6 +335,7 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 	// LD_BIND_NOW : resolve all symbols at startup
 	setenv("LD_BIND_NOW", "true", 1);
 	//setenv("LD_TRACE_LOADED_OBJECTS", "true", 1);
+
 	setenv("LD_WARN", "true", 1);
 	setenv("LD_DEBUG", "", 1);
 	setenv("LD_VERBOSE", "", 1);

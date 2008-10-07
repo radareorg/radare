@@ -9,6 +9,9 @@
 /* lib.c */
 int debug_lib(const char *arg);
 int debug_lib_load(const char *file);
+void debug_bp_list();
+u64 debug_bp_restore_after();
+int debug_bp_set(struct bp_t *bp, u64 addr, int type);
 
 int debug_reg(const char *arg);
 void debug_msg();
@@ -135,7 +138,8 @@ enum {
 enum {
 	BP_NONE,
 	BP_HARD,
-	BP_SOFT
+	BP_SOFT,
+	BP_TRACE
 };
 
 struct event_t {
@@ -144,11 +148,11 @@ struct event_t {
 	int ignored;
 };
 
-struct bp_t
-{
+struct bp_t {
 	int hw;
 	u64 addr;
 	int len;
+	int trace; /* bool */
 	int count; /* hit counter */
 	unsigned char data[512];
 };

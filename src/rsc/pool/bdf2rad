@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+#
+# rsc bindiff output to radare cmd
+
+print "e file.insertblock=false\n";
+print "e file.insert=false\n";
+
+my $type=0;
+while($line=<STDIN>) {
+	chomp $line;
+	$line=~s/\t/ /g;
+	$a=$b=$c="  ";
+	$diff=1;
+	if ($line=~/\|/) {
+		$line=~tr/|/ /;
+		$line=~/(\w*)\s*(\w*)/;
+		print "e file.insert=false\n" if ($type == 1);
+		printf("wx $2 @ 0x%x\n", $offb);
+		$type = 0;
+		$a="\e[44m$1\e[0m";
+		$b=" |";
+		$c="\e[44m$2\e[0m";
+		$offa++;
+		$offb++;
+	} elsif ($line=~/>/) {
+		$line=~s/(\s|>)*//g;
+		$c="\e[42m$line\e[0m";
+		$b=" >";
+		print "e file.insert=true\n" if ($type != 1);
+		printf("wx $line @ 0x%x\n",$offb);
+		$type=1;
+		$offb++;
+		$color="\e[42m";
+	} elsif ($line=~/</) {
+		$line=~s/(\s|<)*//g;
+		$a="\e[41m$line\e[0m";
+		$b="< ";
+		$offa++;
+		print "e file.insert=false\n" if ($type == 1);
+		$type = 0;
+		printf ("r -1 @ 0x%x\n", $offb-1);
+	} else {
+		$line=~/(\w*)\s*(\w*)/;
+		$a=$1;
+		$c=$2;
+		$offa++;
+		$offb++;
+		$diff=0; # no differences here.
+	}
+
+	$line=~/(\w*)\s*(\w*)/;
+	if ("$a$c" eq "    ") { $a=$1; $c=$2; }
+
+#	$str = sprintf "0x%08x $a  $b   $c\e[0m 0x%08x\n",
+#		$offa-1, $offb-1;
+
+	if ($b=~/</) {
+		$offb-- if ($type!=2);
+		$type=2;
+	}
+
+	$odiff = $diff;
+}

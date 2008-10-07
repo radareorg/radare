@@ -876,7 +876,21 @@ int debug_dispatch_wait()
 				return ret;
 			}
 	#endif
-			debug_bp_restore_after();
+			{
+			char buf[128];
+			u64 addr = debug_bp_restore_after();
+			if (addr != 0) {
+				/* we should trace here */
+				debug_step(1);
+				sprintf(buf, "!bp -0x%08llx\n", (u64) addr); //-bpsize);
+				radare_cmd(buf,0);
+				eprintf("==> Trace address 0x%08llx\n", addr);
+				sprintf(buf,"!bpt 0x%08llx\n",(u64) addr); //-bpsize);
+				radare_cmd(buf,0);
+return 1;
+				debug_cont(0);
+			}
+			}
 #if 0
 				/*  stopped by? */
 				bp = (struct bp_t*) arch_stopped_bp();

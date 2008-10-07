@@ -24,6 +24,7 @@
 #include "radare.h"
 #include "rdb.h"
 
+int radare_fmt = 0;
 int radiff_bytediff(const char *a, const char *b);
 
 void radiff_help()
@@ -32,11 +33,11 @@ void radiff_help()
 	printf("  -b   bytediff (faster but doesnt support displacements)\n");
 	printf("  -d   use gnu diff as backend (default)\n");
 	printf("  -e   use erg0ts bdiff (c++) as backend\n");
-	printf("  -r   use rdb diff (code analysis diff)\n");
+	printf("  -p   use program diff (code analysis diff)\n");
 	printf("  -s   use rsc symdiff\n");
 	printf("  -S   use rsc symbytediff\n");
 //	printf("  -i   converts a source idc file to a rdb (radare database)\n");
-	printf("  -p   binpatching (TODO)\n");
+	printf("  -r   output radare commands\n");
 	exit(1);
 }
 
@@ -94,7 +95,9 @@ int radiff_symbytediff(const char *a, const char *b)
 int radiff_bindiff(const char *a, const char *b)
 {
 	char buf[8096];
-	snprintf(buf, 8095, "bindiff %s %s | rsc bdcolor 3", a, b);
+	if (radare_fmt) {
+		snprintf(buf, 8095, "rsc bindiff %s %s | rsc bdf2rad", a, b);
+	} else snprintf(buf, 8095, "rsc bindiff %s %s | rsc bdcolor 0", a, b);
 	return system(buf);
 }
 
@@ -113,17 +116,22 @@ int main(int argc, char **argv)
 	while ((c = getopt(argc, argv, "bderiph")) != -1)
 	{
 		switch( c ) {
-		case 'b':
 		case 'r':
+			radare_fmt = 1;
+			break;
+		case 'h':
+			radiff_help();
+			return 0;
+		case 'b':
+		case 'p':
 		case 'd':
 		case 'e':
+		case 's':
+		case 'S':
 			action = c;
 			break;
 		default:
 			printf("Invalid option\n");
-		case 'h':
-			radiff_help();
-			return 0;
 		}
 	}
 	if ((argc-optind) != 2)
@@ -136,7 +144,7 @@ int main(int argc, char **argv)
 		return radiff_bindiff(argv[optind], argv[optind+1]);
 	case 'b': // bytediff
 		return radiff_bytediff(argv[optind], argv[optind+1]);
-	case 'r': // rdbdiff
+	case 'p': // rdbdiff
 		return main_rdb_diff(argv[optind], argv[optind+1]);
 	case 's':
 		return radiff_symdiff(argv[optind], argv[optind+1]);

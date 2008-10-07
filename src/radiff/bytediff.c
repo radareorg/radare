@@ -7,7 +7,11 @@
 #define u64 unsigned long long
 #define CTXMAXB 3
 
-static int do_byte_diff ( int fd1, int fd2, u64 bytes ) 
+extern int radare_fmt;
+#define R if (radare_fmt)
+#define NR if (!radare_fmt)
+
+static int do_byte_diff (int fd1, int fd2, u64 bytes) 
 {
 	unsigned char block1[4096];
 	unsigned char block2[4096];
@@ -24,47 +28,34 @@ static int do_byte_diff ( int fd1, int fd2, u64 bytes )
 	int inctx=0;
 	int cf=0;
 
-	while ( bproc < bytes )
-	{
-
+	while ( bproc < bytes ) {
 		nr = ( (bytes-bproc) < 4096 )?(bytes-bproc):4096 ;
 		rb = read ( fd1, block1 , nr );
 		rb = read ( fd2, block2 , nr );
 		
-		for ( i = 0 ; i < nr ; i ++ )
-		{
-			if ( block1[i] != block2[i] )
-			{
-
-				if ( inctx == 0 )
-				{
-					printf ("------\n");
+		for ( i = 0 ; i < nr ; i ++ ) {
+			if ( block1[i] != block2[i] ) {
+				if ( inctx == 0 ) {
+					NR printf ("------\n");
 					l = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
-					for ( k = 0 ; k < CTXMAXB ; k ++ )
-					{
-						printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,bufb[l] );
+					for ( k = 0 ; k < CTXMAXB ; k ++ ) {
+						NR printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,bufb[l] );
 						l  = ( (l+1)>=CTXMAXB)?0:l+1;
 					}
 					inctx=1;
 				}
-				printf ( "%8.8llx %2.2x   |   %2.2x \n", (u64) bproc+i , block1[i], block2[i]);
+				R { printf("wx %02x @ 0x%llx\n", block2[i], (u64) bproc+i);
+				} else { printf ( "%8.8llx %2.2x   |   %2.2x \n", (u64) bproc+i , block1[i], block2[i]); }
 				outctx = CTXMAXB;
 				cf++;
-			}
-			else 
-			{
+			} else {
 				bufb[atbufb]=block1[i];
 				atbufb = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
 
-				if ( outctx > 0 )
-				{
-					printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,block1[i] );
+				if ( outctx > 0 ) {
+					NR printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,block1[i] );
 					outctx--;
-				}
-				else
-				{
-					inctx=0;
-				}
+				} else inctx=0;
 			}
 		}
 
@@ -79,28 +70,28 @@ int radiff_bytediff(const char *a, const char *b)
 	off_t size1, size2;
 	int r;
 
-	fd1 = open ( a , O_RDONLY );
+	fd1 = open (a , O_RDONLY);
 	if ( fd1 < 0 ) {	
 		printf ( "Could not open %s\n", a);
 		return -1; 
 	}	
 	
-	fd2 = open ( b , O_RDONLY );
+	fd2 = open (b , O_RDONLY);
 	if ( fd2 < 0 ) {	
 		printf ( "Could not open %s\n", b);
 		return -1; 
 	}	
 
-	size1 = lseek ( fd1 , 0 , SEEK_END );
-	size2 = lseek ( fd2 , 0 , SEEK_END );
+	size1 = lseek (fd1 , 0 , SEEK_END);
+	size2 = lseek (fd2 , 0 , SEEK_END);
 	
-	lseek ( fd1 , 0 , SEEK_SET );
-	lseek ( fd2 , 0 , SEEK_SET );
+	lseek ( fd1 , 0 , SEEK_SET);
+	lseek ( fd2 , 0 , SEEK_SET);
 
-	r = do_byte_diff ( fd1, fd2, (size1>size2)?size2:size1 ) ;
+	r = do_byte_diff (fd1, fd2, (size1>size2)?size2:size1);
 
 	if ( ( r == 0) && ( size1 == size2 ) )
-		printf ("Files are the same\n");
+		fprintf (stderr, "Files are the same\n");
 
 	close(fd1);
 	close(fd2);

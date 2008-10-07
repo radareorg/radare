@@ -36,6 +36,9 @@ int debug_bp(const char *str)
 
 	hwbp = (int)config_get_i("dbg.hwbp");
 	switch(str[0]) {
+	case 't':
+		hwbp = BP_TRACE;
+		break;
 	case 's':
 		hwbp = BP_SOFT;
 		break;
@@ -47,6 +50,7 @@ int debug_bp(const char *str)
 		"  !bp [addr]    add a breakpoint\n"
 		"  !bp -[addr]   remove a breakpoint\n"
 		"  !bp*          remove all breakpoints\n"
+		"  !bpt          do not stop..just trace\n"
 		"  !bps          software breakpoint\n"
 		"  !bph          hardware breakpoint\n");
 		return 0;
@@ -104,7 +108,7 @@ struct bp_t *debug_bp_get(addr_t addr)
 }
 
 /* HACK: save a hardware/software breakpoint */
-int debug_bp_restore_after()
+u64 debug_bp_restore_after()
 {
 	struct bp_t *bp;
 	u64 addr = arch_pc(ps.tid); // x86
@@ -122,8 +126,15 @@ int debug_bp_restore_after()
 	bp = debug_bp_get(addr-bpsize);
 	if (bp!=NULL) {
 		bp->count++;
-		eprintf("post-breakpoint restored %08llx\n", addr);
+		//eprintf("post-breakpoint restored %08llx\n", addr);
 		arch_jmp(addr-bpsize);
+
+#if 1
+		if (bp->trace) {
+eprintf("FUCK FUCK FUCK\n");
+			return addr;
+		}
+#endif
 	}
 
 	return 0;
@@ -132,6 +143,7 @@ int debug_bp_restore_after()
 /* called before the step */
 int debug_bp_restore(int pos)
 {
+	int ret =0;
 	struct bp_t *bp;
 	u64 addr = arch_pc(ps.tid); // x86
 
@@ -148,6 +160,7 @@ int debug_bp_restore(int pos)
 		printf("pre-Breakpoint -1 %08llx\n", addr);
 	} else {
 		printf("pre-Breakpoint restored %08llx\n", addr);
+		ret = 1;
 	}
 	if (bp == NULL || WS(bp)==NULL)
 		return 0;
@@ -157,7 +170,8 @@ int debug_bp_restore(int pos)
 		arch_restore_bp(WS(bp));
 		return 1;
         }
-	return arch_restore_bp(WS(bp));
+	arch_restore_bp(WS(bp));
+	return ret;
 }
 
 int debug_bp_rm(u64 addr, int type)
@@ -232,13 +246,16 @@ int debug_bp_set(struct bp_t *bp, u64 addr, int type)
 
 	ret = -1;
 
+	ps.bps[bp_free].trace = 0;
 	switch(type) {
 	case BP_HARD:
 		ret = arch_set_bp_hw(&ps.bps[bp_free], addr);
 		ps.bps[bp_free].hw = 1;
 		break;
-	case BP_SOFT:
+	case BP_TRACE:
+		ps.bps[bp_free].trace = 1;
 	default:
+	case BP_SOFT:
 		ret = arch_set_bp_soft(&ps.bps[bp_free], addr);
 		ps.bps[bp_free].hw = 0;
 		break;
@@ -307,9 +324,9 @@ void debug_bp_list()
 		for(i = 0; i < MAX_BPS && bps > 0; i++) {
 			if(ps.bps[i].addr > 0) { 
 				string_flag_offset(str, ps.bps[i].addr);
-				eprintf(" 0x%08llx %s %s (hits=%d)\n",
+				eprintf(" 0x%08llx %s %s (hits=%d)%s\n",
 					ps.bps[i].addr, (ps.bps[i].hw)?"HARD":"SOFT",
-					str, ps.bps[i].count); 
+					str, ps.bps[i].count, (ps.bps[i].trace)?" (trace)":""); 
 				bps--;	
 			}
 		}

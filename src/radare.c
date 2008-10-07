@@ -1193,19 +1193,19 @@ void radare_resize(const char *arg)
 	if (arg[0]=='-') {
 		u64 rest;
 		size = -size; // be positive
-		printf("stripping %lld bytes\n", size);
-			rest = config.size - (config.seek -size);
-			if (rest > 0) {
-				char *str = malloc(rest);
-				io_lseek(config.fd, config.seek+size, SEEK_SET);
-				io_read(config.fd, str, rest);
-				io_lseek(config.fd, config.seek, SEEK_SET);
-				io_write(config.fd, str, rest);
-				free(str);
-				io_lseek(config.fd, config.seek, SEEK_SET);
-				config.size -= size;
-				ftruncate(config.fd, (off_t)config.size);
-			}
+		D eprintf("stripping %lld bytes\n", size);
+		rest = config.size - (config.seek -size);
+		if (rest > 0) {
+			char *str = malloc(rest);
+			io_lseek(config.fd, config.seek+size, SEEK_SET);
+			io_read(config.fd, str, rest);
+			io_lseek(config.fd, config.seek, SEEK_SET);
+			io_write(config.fd, str, rest);
+			free(str);
+			io_lseek(config.fd, config.seek, SEEK_SET);
+			config.size -= size;
+			ftruncate(config.fd, (off_t)config.size);
+		}
 		return;
 	}
 	if (arg[1]=='x') sscanf(arg, OFF_FMTx, &size);
@@ -1383,7 +1383,7 @@ int radare_go()
 	if (config.file == NULL) {
 		const char *project = config_get("file.project");
 		if (project != NULL)
-			config.file = strdup( project_get_file(project) );
+			config.file = estrdup(config.file, project_get_file(project));
 
 		if (strnull(config.file)) {
 			help_message_short();

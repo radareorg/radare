@@ -10,8 +10,7 @@
 === WORK FOR 1.0 ===
 
 ---- documentation
-* documentate 'S' command and 'sS' one
-* documentate inverse
+* cfg.datefmt
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc search.from and search.to
@@ -23,14 +22,14 @@
   - also take source from ciclic memory buffer on target file or local file
   - this is similar to 'm'ove command. or just do it in write..
   
+* gui-prefs as a plugin
 * ascii-nops for rasc
-* radiff -r doesnt works
 * Make 'Cs' autodetect multiple strings
 * use libasm to get metadata from each opcode
 * Use graphviz for code graphs
   - export graph information in a parseable format
   - documentate how to use this information (ac*)
-* Added labels in history
+* Added labels in history with readline (***)
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
 
 ---- refactoring
@@ -45,10 +44,12 @@
   - shows return value in eax before restoring regs
 
 ---- bugs
+* fix radiff -r patching (tests/radiff)
 * rabin -v show all flags, without it, only the .rodata ones
 * Split nodes of the graph code analysis
 * BSD imports with dietelf doesnt works well
 * imp_foo are not ok in dietelf :OO.
+  - show xrefs to strings by using an rsc script
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
@@ -58,6 +59,8 @@
   but must be= and esp, 0xfffffff0
 * Vdf doesnt detect func size properly
 * RASM is buggy about relative/absolute offsets
+* deprecate asm.follow for scr.seek or so !!!
+ - documentation for this
 
 
 ---- debugger
@@ -65,15 +68,11 @@
   - identify page type by contents (ELF header and so)
   - export info as S commands
 
-* support size of pointer with [xxx] get_offset expressions
-  - b[xxx], w[xxx], d[xxx], 32[xxx], 16[xxx], 8[xxx]
-  - also make use of cfg.endian
 * pD -> 'decompile or sthg like that'
 * trace.libcode = trace libcode or not?
   - dbg.steplibs = true|false ??
   * dbg.stepolibs = true ;  step over non-user code?
   - automatic stepu 
-* implement bindiff patchers
 * support for array of structures
 * !bpc -> execute command when hitting breakpoint
   - stop on breakpoint after N hits
@@ -102,10 +101,13 @@ java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)
 -> this should be a call to callme()
 
-* deprecate asm.follow for scr.seek or so !!!
- - documentation for this
 
 ===========
+
+WTFS DONE:
+----------
+* documentate inverse (XXX)
+  - it is not working in all the cases
 
 >1.0 STUFF
 

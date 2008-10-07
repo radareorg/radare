@@ -255,6 +255,10 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		if (bytes[1]==0x45) {
 			aop->stackop = AOP_STACK_LOCAL_SET;
 			aop->ref = (u64)(-((char)bytes[2]));
+		} else
+		if (bytes[1]==0x04) {
+			// c7042496850408    dword [esp] = 0x8048596 ; LOL
+			aop->ref = (u64)(((int)(bytes[3]+(bytes[4]<<8)+(bytes[5]<<16)+(bytes[6]<<24))));
 		}
 		aop->type = AOP_TYPE_STORE;
 		break;
