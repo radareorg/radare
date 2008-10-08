@@ -534,20 +534,21 @@ TODO: use maps here! must be mixed with flags and so
 
 #endif
 
-int radare_analyze(u64 seek, int size, int depth)
+int radare_analyze(u64 seek, int size, int depth, int rad)
 {
 	char cmd[1024];
-	int count=0;
-	unsigned int num, nume; // little endian
-	int i;
-	unsigned char str[1024];
-	int str_i=0;
-	unsigned char word[128];
-	int word_i=0;
+	u8 str[1024];
+	u8 word[128];
 	u64 tmp = config.seek;
-	int v = config.verbose;
-	config.verbose = 0;
+	u32 num, nume; // little endian
+	int count=0;
+	int i;
+	int str_i=0;
+	int word_i=0;
 	int lastnull = 0;
+	int v = config.verbose;
+
+	config.verbose = 0;
 
 	if (depth<0)
 		return 0;
@@ -559,29 +560,36 @@ int radare_analyze(u64 seek, int size, int depth)
 		size = config.block_size/4;
 
 	if (size<0) {
+		count = 1;
 		size = 64;
-		count=1;
 	}
 	size<<=2;
 	for(i=0;i<size;i++) {
 		if (config.interrupted)
 			break;
+
 		if (is_printable(config.block[i])) {
 			if(word_i<4) word[word_i++] = config.block[i];
 			str[str_i++] = config.block[i];
 			continue;
 		}
+
 		if (str_i>2) {
 			str[str_i] = '\0';
-			//for(j=config_get_i("cfg.analdepth"); j>depth;j--)
-				cons_strcat("   ");
 			print_addr((u64)(seek+i-str_i));
-			C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
-			else	cons_printf("string \"%s\"\n", str);
+			if (rad) {
+				cons_printf("CX 0x%08llx @ 0x%08llx ; string data reference\n", (u64)(seek+i-str_i), (u64)config.seek);
+				cons_printf("; TODO (if exists) f str_%s\n", str);
+			} else {
+				cons_strcat("   ");
+				C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
+				else	cons_printf("string \"%s\"\n", str);
+			}
 			word_i = 0;
 			str_i=0;
 			continue;
 		}
+
 		str_i = 0;
 		word[word_i++] = config.block[i];
 		if (word_i==4) {
@@ -601,8 +609,7 @@ int radare_analyze(u64 seek, int size, int depth)
 
 			if (num == 0) {
 				if (lastnull++ == 0) {
-			//		for(j=config_get_i("cfg.analdepth"); j>depth;j--)
-						cons_strcat("   ");
+					cons_strcat("   ");
 					print_addr(seek+i-3);
 					C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
 					else cons_printf("(NULL)\n");
@@ -612,46 +619,57 @@ int radare_analyze(u64 seek, int size, int depth)
 				//print_addr(seek+i-3);
 				//cons_printf("0xffffffff (-1)\n");
 			} else {
-				if (lastnull>1)
-					cons_printf("(last null repeated %d times)\n", lastnull);
-				lastnull = 0;
-			//	for(j=config_get_i("cfg.analdepth"); j>depth;j--)
-			//		cons_strcat("   ");
-				print_addr(seek+i-3);
-				C {
-					if (config.endian)
-					cons_printf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
-						num, nume);
-					else
-					cons_printf("int be=0x%08x le="C_YELLOW"0x%08x"C_RESET" ",
-						num, nume);
-				} else
-					cons_printf("int be=0x%08x le=0x%08x ",
-						num, nume);
-				if (num<0xffff)
-					cons_printf("(be= %d )", num);
-				if (nume<0xffff)
-					cons_printf(", (le= %d ) ", nume);
-				if (num>-0xfffff && num<0xfffff)
-					cons_printf("(%d)\n", num);
-				else
-				if (nume>-0xfffff && nume<0xfffff)
-					cons_printf("(%d)\n", nume);
-				else {
-					unsigned int n = (config.endian)?num:nume;
+				if (rad) {
+					u32 n = (config.endian)?num:nume;
 					C cons_printf(C_TURQOISE);
-					sprintf(cmd, ":fd @0x%08x", (config.endian)?num:nume);
-					radare_cmd(cmd, 0);
-
-					//cons_strcat("     ");
-					if (n == (unsigned int)seek)
+					str[0]='\0';
+					string_flag_offset(str, (u64)n);
+					if (!strnull(str)) {
+						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)n, (u64)(seek+i-3), str);
+					} else
+					if (n == (u32)seek)
 						cons_printf("  (self pointer)\n");
+					else radare_analyze(n, size, --depth, rad);
+				} else {
+					if (lastnull>1)
+						cons_printf("(last null repeated %d times)\n", lastnull);
+					lastnull = 0;
+				//	for(j=config_get_i("cfg.analdepth"); j>depth;j--)
+				//		cons_strcat("   ");
+					print_addr(seek+i-3);
+					C {
+						if (config.endian)
+						cons_printf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
+							num, nume);
+						else
+						cons_printf("int be=0x%08x le="C_YELLOW"0x%08x"C_RESET" ",
+							num, nume);
+					} else
+						cons_printf("int be=0x%08x le=0x%08x ",
+							num, nume);
+					if (num<0xffff)
+						cons_printf("(be= %d )", num);
+					if (nume<0xffff)
+						cons_printf(", (le= %d ) ", nume);
+					if (num>-0xfffff && num<0xfffff)
+						cons_printf("(%d)\n", num);
 					else
-						radare_analyze(n, size, --depth);
+					if (nume>-0xfffff && nume<0xfffff)
+						cons_printf("(%d)\n", nume);
+					else {
+						u32 n = (config.endian)?num:nume;
+						C cons_printf(C_TURQOISE);
+						sprintf(cmd, ":fd @0x%08x", n);
+						radare_cmd(cmd, 0);
 
-					config.seek = seek;
-					radare_read(0);
-					C cons_printf(C_RESET);
+						if (n == (u32)seek)
+							cons_printf("  (self pointer)\n");
+						else radare_analyze(n, size, --depth, rad);
+
+						config.seek = seek;
+						radare_read(0);
+						C cons_printf(C_RESET);
+					}
 				}
 			}
 			if (count)

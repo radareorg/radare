@@ -218,7 +218,7 @@ CMD_DECL(analyze)
 		break;
 	case 'd':
 		// XXX do not uses depth...ignore analdepth?
-		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"));
+		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"), input[1]=='*');
 		break;
 #if 0
 	/* TODO: reset analyze engine ? - remove rdbs, xrefs, etc...  reset level as argument? maybe cool 0 for just vm, 1 for rdbs, 2 for xrefs */

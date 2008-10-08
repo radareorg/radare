@@ -164,6 +164,7 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 	pe_image_import_directory *import_dirp;
 	pe_image_delay_import_directory *delay_import_dirp;
 	PE_DWord import_table;
+	PE_DWord import_lookup_table, delay_import_name_table;
 	int import_dirs_count = dietpe_get_import_dirs_count(bin), delay_import_dirs_count = dietpe_get_delay_import_dirs_count(bin);
 	int imports_count = 0, i, j;
 
@@ -212,12 +213,6 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 	}
 
 	return imports_count;
-}
-
-static int dietpe_get_delay_import_dirs_count(dietpe_bin *bin) {
-	pe_image_data_directory *data_dir_delay_import = &bin->nt_headers->optional_header.DataDirectory[PE_IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT];
-
-	return (int) (data_dir_delay_import->Size / sizeof(pe_image_delay_import_directory) - 1);
 }
 
 int dietpe_get_image_size(dietpe_bin *bin) {
