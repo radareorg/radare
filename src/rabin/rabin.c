@@ -625,8 +625,13 @@ void rabin_show_sections(const char *file)
 			printf("==> Sections:\n");
 		for (i = 0; i < sections_count; i++, sectionp++) {
 			if (!rad)
-				printf("[%.02i] 0x%.08x rva=0x%.08x size=0x%.08x characteristics=0x%.08x %s\n",
-					   i, sectionp->offset, sectionp->rva, sectionp->size, sectionp->characteristics, sectionp->name);
+				printf("[%.02i] 0x%.08x rva=0x%.08x size=0x%.08x privileges=%c%c%c%c %s\n",
+					   i, sectionp->offset, sectionp->rva, sectionp->size,
+					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_READ)?'r':'-',
+					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_WRITE)?'w':'-',
+					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_EXECUTE)?'x':'-',
+					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_SHARED)?'s':'-',
+					   sectionp->name);
 		}
 
 		dietpe_close(fd);

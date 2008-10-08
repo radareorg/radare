@@ -610,7 +610,7 @@ The 'bf' command is used to change the block size to the one specified by a flag
 \c [0x00000000]> pd @ sym_main  ; disassemble sym_main
 \c   ...
 
-\H{seek} Sections
+\H{sections} Sections
 
 It is usually on firmware images, bootloaders and binary files to find sections that are loaded in memory at different addresses than the one in the disk.
 

@@ -173,6 +173,11 @@ typedef struct {
 
 #define PE_IMAGE_SIZEOF_SHORT_NAME 8
 
+#define PE_IMAGE_SCN_MEM_SHARED    0x10000000
+#define PE_IMAGE_SCN_MEM_EXECUTE   0x20000000
+#define PE_IMAGE_SCN_MEM_READ      0x40000000
+#define PE_IMAGE_SCN_MEM_WRITE     0x80000000
+
 typedef struct {
 	PE_Byte  Name[PE_IMAGE_SIZEOF_SHORT_NAME];
 	union {

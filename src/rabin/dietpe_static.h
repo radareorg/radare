@@ -15,5 +15,6 @@ static int dietpe_get_import_dirs_count(dietpe_bin*);
 static int dietpe_init(dietpe_bin*, int);
 static int dietpe_init_exports(dietpe_bin*, int);
 static int dietpe_init_imports(dietpe_bin*, int);
+static int dietpe_parse_imports(dietpe_bin*, int, dietpe_import**, char*, PE_DWord, PE_DWord);
 
 #endif
