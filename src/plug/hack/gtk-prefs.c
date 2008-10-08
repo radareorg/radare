@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2007, 2008
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -21,8 +21,15 @@
 #include "main.h"
 #include <gtk/gtk.h>
 
-GtkWidget *pw = NULL;
-int pw_opened = 0;
+static GtkWidget *pw = NULL;
+static int pw_opened = 0;
+
+#include <gtk/gtk.h>
+#include "plugin.h"
+
+extern int radare_plugin_type;
+extern struct plugin_hack_t radare_plugin;
+static GtkWidget *my_widget = NULL;
 
 // TODO.add a column to specify if toggle or string one
 static struct {
@@ -67,12 +74,10 @@ static gint prefs_close(void *item, GdkEvent *event, gpointer data)
 	}
 	pw_opened = 0;
 
-	if (data) {
-		gradare_refresh();
-	}
 	return TRUE;
 }
 
+	int (*r)(const char *cmd, int log);
 static GtkWidget *lines;
 static void toggle_changed(void *foo, void *data)
 {
@@ -81,8 +86,10 @@ static void toggle_changed(void *foo, void *data)
 
 	toggles[i].value = gtk_toggle_button_get_active(foo);
 
-	sprintf(buf, ":eval %s=%d\n\n", toggles[i].name, toggles[i].value);
-	vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+	sprintf(buf, ":eval %s=%d", toggles[i].name, toggles[i].value);
+	//vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
+	r(buf, 0);
+	
 }
 
 static GtkWidget *draw_toggles_for(int panel_id)
@@ -104,7 +111,7 @@ static GtkWidget *draw_toggles_for(int panel_id)
 	return vbox;
 }
 
-void prefs_open()
+static GtkWidget *prefs_open()
 {
 	GtkWidget *vbox;
 	GtkWidget *hbbox;
@@ -119,9 +126,11 @@ void prefs_open()
 	}
 
 	pw_opened = 1;
+#if 0
 	pw = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(pw), "gradare preferences");
 	g_signal_connect(pw, "destroy", G_CALLBACK(prefs_close), 0);
+#endif
 
 	vbox = gtk_vbox_new(FALSE, 5);
 	gtk_container_add(GTK_CONTAINER(pw), vbox);
@@ -151,5 +160,30 @@ void prefs_open()
 
 	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(hbbox), FALSE, FALSE, 5); 
 
-	gtk_widget_show_all(pw);
+	return vbox;
+
+//	gtk_widget_show_all(pw);
 }
+/*---*/
+
+static int my_hack(char *input)
+{
+	static int dry = 0;
+
+	my_widget = prefs_open();
+	r = radare_plugin.resolve("radare_cmd");
+	if (r != NULL)
+		return 1;
+
+	if (dry) return 0; dry=1;
+
+	return 0;
+}
+
+int radare_plugin_type = PLUGIN_TYPE_GUI;
+struct plugin_hack_t radare_plugin = {
+	.name = "gtk-prefs",
+	.desc = "GTK preferences menu",
+	.callback = &my_hack,
+	.widget = &my_widget
+};

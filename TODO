@@ -13,6 +13,7 @@
 * explain echo "/ libselinux" | radare -nvwe "cmd.hit=wx 00" $file
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
+* doc4 asm.follow or scr.seek or so..
 * doc4 search.from and search.to
 * doc4 'g' and 'x' in visual
 
@@ -22,12 +23,12 @@
   - also take source from ciclic memory buffer on target file or local file
   - this is similar to 'm'ove command. or just do it in write..
   
-* gui-prefs as a plugin
+* support for array of structures
 * ascii-nops for rasc
 * Make 'Cs' autodetect multiple strings
 * use libasm to get metadata from each opcode
 * Use graphviz for code graphs
-  - export graph information in a parseable format
+  - export graph information in a parseable format (svg?)
   - documentate how to use this information (ac*)
 * Added labels in history with readline (***)
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
@@ -37,7 +38,6 @@
 * syscall-flag using userdefined table (in file)
    - must use asm.os to get proper syscall table
    - must be implemented in code analysis!!
-* .ad* for teh fun
 * make 'pm' work like (pydoc struct)
 * Add !int opcode to call a syscall
   !int eax=30 ebx=0x8048400
@@ -62,7 +62,6 @@
 * Vdf doesnt detect func size properly
 * RASM is buggy about relative/absolute offsets
 * deprecate asm.follow for scr.seek or so !!!
- - documentation for this
 
 
 ---- debugger
@@ -75,7 +74,6 @@
   - dbg.steplibs = true|false ??
   * dbg.stepolibs = true ;  step over non-user code?
   - automatic stepu 
-* support for array of structures
 * !bpc -> execute command when hitting breakpoint
   - stop on breakpoint after N hits
   * breakpoint callbacks:
@@ -93,11 +91,11 @@
   - ^C should be always catched!!
 * !contuh doesnt works :O
  - implement continue until cursor
+ - implement !bpt properly
 * !fork should be fixed
 * powerpc OSX (also for ARM)
   - !regs must show and flag proper regs!!
 * asm.stackpointer (show stack pointer value like in IDA)
-* Give info about stack size!!
 
 java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)

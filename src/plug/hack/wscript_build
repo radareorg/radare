@@ -30,7 +30,6 @@ if so_hello.env['GUI'] == 1:
 	se = bld.new_task_gen('cc', 'shlib','scriptedit')
 	se.includes = '../..'
 	se.uselib += 'GTK'
-	#se.env.append_value('LINKFLAGS','-llua')
 	se.target = 'scriptedit'
 	se.source = 'scriptedit.c'
 	se.install_path = plugindir
@@ -38,7 +37,13 @@ if so_hello.env['GUI'] == 1:
 	sh = bld.new_task_gen('cc', 'shlib','gtk-hello')
 	sh.includes = '../..'
 	sh.uselib += 'GTK'
-	#sh.env.append_value('LINKFLAGS','-llua')
 	sh.target = 'gtk-hello'
 	sh.source = 'gtk-hello.c'
+	sh.install_path = plugindir
+	# gtk-prefs
+	sh = bld.new_task_gen('cc', 'shlib','gtk-prefs')
+	sh.includes = '../..'
+	sh.uselib += 'GTK'
+	sh.target = 'gtk-prefs'
+	sh.source = 'gtk-prefs.c'
 	sh.install_path = plugindir
