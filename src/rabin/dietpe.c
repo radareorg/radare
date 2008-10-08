@@ -164,7 +164,6 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 	pe_image_import_directory *import_dirp;
 	pe_image_delay_import_directory *delay_import_dirp;
 	PE_DWord import_table;
-	PE_DWord import_lookup_table, delay_import_name_table;
 	int import_dirs_count = dietpe_get_import_dirs_count(bin), delay_import_dirs_count = dietpe_get_delay_import_dirs_count(bin);
 	int imports_count = 0, i, j;
 
@@ -199,17 +198,6 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 				j++;
 			}
 		} while (import_table);
-	}
-
-	delay_import_dirp = bin->delay_import_directory;
-	for (i = 0; i < delay_import_dirs_count; i++, delay_import_dirp++) {
-		for (j = 0, import_lookup_table = 1; import_lookup_table; j++) {
-			lseek(fd, dietpe_aux_rva_to_offset(bin, delay_import_dirp->DelayImportNameTable) + j * sizeof(PE_DWord), SEEK_SET);
-    		read(fd, &import_lookup_table, sizeof(PE_DWord));
-			
-			if (import_lookup_table)
-				imports_count++;
-		}
 	}
 
 	return imports_count;

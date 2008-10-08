@@ -11,6 +11,7 @@
 
 ---- documentation
 * explain echo "/ libselinux" | radare -nvwe "cmd.hit=wx 00" $file
+* documentate the change of the execstack protection in program section of ELF
 * documentate dbg.focus
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc4 asm.follow or scr.seek or so..

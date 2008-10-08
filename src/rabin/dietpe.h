@@ -9,6 +9,11 @@
 
 #include "dietpe_types.h"
 
+#define PE_SCN_IS_SHAREABLE(x)       x & PE_IMAGE_SCN_MEM_SHARED
+#define PE_SCN_IS_EXECUTABLE(x)      x & PE_IMAGE_SCN_MEM_EXECUTE
+#define PE_SCN_IS_READABLE(x)        x & PE_IMAGE_SCN_MEM_READ
+#define PE_SCN_IS_WRITABLE(x)        x & PE_IMAGE_SCN_MEM_WRITE
+
 int dietpe_close(int);
 int dietpe_get_entrypoint(dietpe_bin*, dietpe_entrypoint*);
 int dietpe_get_exports(dietpe_bin*, int, dietpe_export*);

@@ -627,10 +627,10 @@ void rabin_show_sections(const char *file)
 			if (!rad)
 				printf("[%.02i] 0x%.08x rva=0x%.08x size=0x%.08x privileges=%c%c%c%c %s\n",
 					   i, sectionp->offset, sectionp->rva, sectionp->size,
-					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_READ)?'r':'-',
-					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_WRITE)?'w':'-',
-					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_EXECUTE)?'x':'-',
-					   (sectionp->characteristics & PE_IMAGE_SCN_MEM_SHARED)?'s':'-',
+					   PE_SCN_IS_SHAREABLE(sectionp->characteristics)?'s':'-',
+					   PE_SCN_IS_READABLE(sectionp->characteristics)?'r':'-',
+					   PE_SCN_IS_WRITABLE(sectionp->characteristics)?'w':'-',
+					   PE_SCN_IS_EXECUTABLE(sectionp->characteristics)?'x':'-',
 					   sectionp->name);
 		}
 

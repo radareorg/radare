@@ -372,7 +372,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		break;
 	case FMT_ANAL: // XXX DEPRECATED
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
-		radare_analyze(seek, len, config_get_i("cfg.analdepth"));
+		radare_analyze(seek, len, config_get_i("cfg.analdepth"),0);
 		break;
 	case FMT_PRINT:
 		INILINE;
