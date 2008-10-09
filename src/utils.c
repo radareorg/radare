@@ -384,7 +384,9 @@ int set0word(char *str)
 {
 	int i;
 	char *p;
-	for(i=0,p=str;p[0]&&i<3;p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
+	if (str[0]=='\0')
+		return 0;
+	for(i=1,p=str;p[0]&&i<3;p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
 	return i;
 }
 

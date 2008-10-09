@@ -338,12 +338,12 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
 
 			tmp = *arg;
-			if (idx<=nargs)
-				cons_printf("%10s : ",get0word(args, idx));
 		feed_me_again:
 			if (tmp == 0 && last != '*')
 				break;
 			cons_strcat("  ");
+			if (idx<nargs)
+				cons_printf("%10s : ", get0word(args, idx));
 			switch(tmp) {
 			case ' ':
 				config.interrupted=1;

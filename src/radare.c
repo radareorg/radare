@@ -90,11 +90,14 @@ int radare_system(const char *cmd)
 
 int radare_systemf(const char *format, ...)
 {
-	char buf[4096];
 	va_list ap;
+	char buf[4096];
+
 	va_start(ap, format);
+	buf[0]='\0';
 	snprintf(buf, 4095, format, ap);
 	radare_system(buf);
+
 	va_end(ap);
 }
 

@@ -836,7 +836,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 		}
 		/* size */
 		if (show_size)
-			cons_printf("%d ", aop.length); //dislen(config.block+seek));
+			cons_printf("%d ", aop.length);
 		/* trac information */
 		if (show_traces)
 			cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));
@@ -845,18 +845,21 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 		funline[0]='\0';
 		/* handle data type block */
 		//	print_function_line(foo, sk);
-		if (foo != NULL && foo->type == DATA_FUN) {
-			if(show_functions) {
-				if (foo->from == sk)
-					strcpy(funline,"/");
-				else
-				if (foo->to-1-aop.length== sk)
-					strcpy(funline,"\\");
-				else
-					strcpy(funline,"|");
-				cons_strcat(funline);
-			}
-			foo = NULL;
+		if (show_functions) {
+			if (foo != NULL && foo->type == DATA_FUN) {
+				if(show_functions) {
+					if (foo->from == sk)
+						strcpy(funline,"/");
+					else
+					if (foo->to-1-aop.length== sk)
+						strcpy(funline,"\\");
+					else
+						strcpy(funline,"|");
+					cons_strcat(funline);
+				}
+				foo = NULL;
+			} else
+				cons_strcat(" ");
 		}
 		if (foo != NULL) {
 			int dt = foo->type;
@@ -877,15 +880,6 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				cons_printf("  { 0x%llx-0x%llx %lld(%d) }", foo->from, foo->to, foo->size, myinc);
 				break;
 			case DATA_FOLD_O:
-#if 0
-				cons_strcat("\r                                       \r");
-				if (show_lines)
-					code_lines_print(reflines, seek, 1);
-				if (show_reladdr)
-					cons_printf("        ");
-				if (show_offset)
-					cons_strcat("            ");
-#endif
 				if (foo->from == sk) {
 					for(i=0;i<folder;i++)
 						cons_strcat("  ");
@@ -905,13 +899,14 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			case DATA_STR:
 				cons_strcat("  .string \"");
 				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i, "%c", is_printable(block[bytes+i])?block[bytes+i]:'.');
+					print_color_byte_i(bytes+i, "%c",
+						is_printable(block[bytes+i])?block[bytes+i]:'.');
 				}
 				cons_strcat("\"");
 				break;
 			case DATA_HEX:
 			default:
-				cons_printf("  .db  ");
+				cons_strcat("  .db  ");
 				int w = 0;
 				for(i=0;i<idata;i++) {
 					print_color_byte_i(bytes+i,"%02x ", block[bytes+i]);
@@ -924,7 +919,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 							cons_printf("        ");
 						if (show_offset)
 							print_addr(sk+i);
-						cons_printf("  .db  ");
+						cons_strcat("  .db  ");
 						w = 0;
 					}
 				}
@@ -1068,13 +1063,13 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 						NEWLINE;
 						CHECK_LINES
 						if (show_lines && reflines)
-							code_lines_print(reflines, sk, 0); //config.baddr+ud_insn_off(&ud_obj));
+							code_lines_print(reflines, sk, 0);
 						if (show_offset) {
 							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
 							else cons_printf("0x%08llX  ", (unsigned long long)(seek));
 						}
 						if (show_reladdr)
-							cons_printf("        ");
+							cons_strcat("        ");
 						if (funline[0] != '\0')
 							cons_strcat("|");
 							//cons_strcat(funline);
@@ -1092,13 +1087,13 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			/* cursor and bytes */
 			D switch(is_cursor(bytes,myinc)) {
 			case 0:
- 				cons_printf(" ");
+ 				cons_strcat(" ");
 				break;
 			case 1:
- 				cons_printf("*");
+ 				cons_strcat("*");
 				break;
 			case 2:
- 				cons_printf(">");
+ 				cons_strcat(">");
 				break;
 			}
 			if (show_bytes) {
@@ -1200,8 +1195,8 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));
 						}
 						sprintf(buf, "%%%ds ", show_nbytes);
-						cons_printf(buf,"");
-						cons_printf("; ------------------------------------ ");
+						cons_strcat(buf);
+						cons_strcat("; ------------------------------------ ");
 						CHECK_LINES
 					}
 				}
@@ -1226,10 +1221,10 @@ int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	switch(aop->type) {
 	case AOP_TYPE_NOP:
-		cons_printf("nop");
+		cons_strcat("nop");
 		break;
 	case AOP_TYPE_RET:
-		cons_printf("ret");
+		cons_strcat("ret");
 		break;
 	case AOP_TYPE_CALL:
 		cons_printf("call 0x%08llx", aop->jump);

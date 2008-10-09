@@ -772,6 +772,11 @@ void cons_printf(const char *format, ...)
 	char buf[CONS_BUFSZ];
 	va_list ap;
 
+	if (strchr(format,'%')==NULL) {
+		cons_strcat(format);
+		return;
+	}
+
 	va_start(ap, format);
 
 	buf[0]='\0';

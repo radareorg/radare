@@ -35,11 +35,9 @@
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
 
 ---- refactoring
-* jmphacks as a plugin
 * syscall-flag using userdefined table (in file)
    - must use asm.os to get proper syscall table
    - must be implemented in code analysis!!
-* make 'pm' work like (pydoc struct)
 * Add !int opcode to call a syscall
   !int eax=30 ebx=0x8048400
   - store/restore regs

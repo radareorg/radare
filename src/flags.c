@@ -110,8 +110,7 @@ void flag_cmd(const char *text)
 		cons_printf("   > fc pd 20 @ 0x8049104\n");
 	} else
 	if (flag != NULL) {
-		free((void *)flag->cmd);
-		flag->cmd = strdup(text);
+		flag->cmd = estrdup(flag->cmd, text);
 		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
 	}
 }

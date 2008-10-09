@@ -191,7 +191,13 @@ CMD_DECL(edit_screen_filter)
 		/* TODO: Handle errors, put a different file name for */
 		snprintf(buf, 1023, "%s/.radare/screen-filter.txt", getenv("HOME"));
 		config_set("file.scrfilter", buf);
-		radare_systemf("%s %s", ed, buf);
+		eprintf(":!!%s '%s'\n", ed, buf);
+		{
+		char buf2[1024];
+		snprintf(buf2, 1024, "%s '%s'", ed, buf);
+		radare_system(buf2);
+		}
+		cons_any_key();
 		return 0;
 	} else {
 		eprintf("No cfg.editor defined\n");
