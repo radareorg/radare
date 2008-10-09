@@ -117,5 +117,6 @@ u64 htonq(u64 x);
 int set0word(char *str);
 const char *get0word(const char *str, int idx);
 void efree(void **ptr);
+int strsub_memcmp (char *string, char *pat, int len);
 
 #endif

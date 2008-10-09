@@ -327,9 +327,10 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 
 	/* go format */
 	i = 0;
+	if (times==0) otimes=times=1;
 	for(;times;times--) {// repeat N times
 		const char * orig = arg;
-		if (times)
+		if (otimes>1)
 			cons_printf("[%d] {\n", otimes-times);
 		config.interrupted = 0;
 		for(idx=0;!config.interrupted && i<config.block ;idx++, arg=arg+1) {
@@ -416,16 +417,15 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 				cons_printf("0x%04x ", addr);
 				break;
 			case 'z': // zero terminated string
-				D cons_printf("0x%08x  = ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				for(;buf[i]&&i<len;i++) {
 					if (is_printable(buf[i]))
 						cons_printf("%c", buf[i]);
 					else cons_strcat(".");
 				}
-				cons_strcat(" ");
 				break;
 			case 'Z': // zero terminated wide string
-				D cons_printf("0x%08x  ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				for(;buf[i]&&i<len;i+=2) {
 					if (is_printable(buf[i]))
 						cons_printf("%c", buf[i]);
@@ -434,7 +434,7 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 				cons_strcat(" ");
 				break;
 			case 's':
-				D cons_printf("0x%08x  ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
 				D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
@@ -447,7 +447,7 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 		D cons_newline();
 		last = tmp;
 		}
-		if (times)
+		if (otimes>1)
 			cons_printf("}\n");
 		arg = orig;
 	}

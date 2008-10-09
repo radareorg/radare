@@ -853,6 +853,18 @@ int strhash(const char *str)
    replace all occurrences, otherwise replace only the first.
    This returns a new string; the caller should free it. */
 
+int strsub_memcmp (char *string, char *pat, int len)
+{
+	int res = 0;
+	while(len--) {
+		if (*pat!='?')
+			res += *string - *pat;
+		string = string+1;
+		pat = pat+1;
+	}
+	return res;
+}
+
 char *strsub (char *string, char *pat, char *rep, int global)
 {
 	int patlen, templen, tempsize, repl, i;
@@ -861,7 +873,8 @@ char *strsub (char *string, char *pat, char *rep, int global)
 	patlen = strlen (pat);
 	for (temp = (char *)NULL, i = templen = tempsize = 0, repl = 1; string[i]; )
 	{
-		if (repl && !memcmp(string + i, pat, patlen)) {
+//		if (repl && !memcmp(string + i, pat, patlen)) {
+		if (repl && !strsub_memcmp(string + i, pat, patlen)) {
 			RESIZE_MALLOCED_BUFFER (temp, templen, patlen, tempsize, 4096); //UGLY HACK (patlen * 2));
 
 			for (r = rep; *r; )
