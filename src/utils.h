@@ -116,5 +116,6 @@ u32 get_offset32(u64);
 u64 htonq(u64 x);
 int set0word(char *str);
 const char *get0word(const char *str, int idx);
+void efree(void **ptr);
 
 #endif

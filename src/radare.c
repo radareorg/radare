@@ -1412,7 +1412,7 @@ int radare_go()
 		config_set_i("cfg.verbose", t);
 	}
 
-	if (config_get("cfg.verbose") && config_get("cfg.fortunes"))
+	if (config_get_i("cfg.verbose") && config_get_i("cfg.fortunes"))
 		radare_fortunes();
 
 	/* load rabin stuff here */
@@ -1428,6 +1428,7 @@ int radare_go()
 
 		if (config_get("file.analyze")) {
 			eprintf("Analyzing program...\n");
+			radare_cmd(".af* @ entrypoint",0);
 			radare_cmd(".af* @@ sym_",0);
 		}
 	}

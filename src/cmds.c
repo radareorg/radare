@@ -131,7 +131,7 @@ command_t commands[] = {
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as px", examine),
-	COMMAND('y', "[y] [length]",   "yank     copy/paste bytes ('yy' to paste)", yank),
+	COMMAND('y', "[yt] [len] [to]","yank     copy/paste bytes ('yy' to paste)", yank),
 	COMMAND('.', "[!cmd]|[ file]", ".script  interpret a script (radare, .py, .rb, .lua, .pl)", interpret),
 	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next     go to next block (+= block_size)", next),

@@ -8,6 +8,18 @@ so_hello.target = 'hello'
 so_hello.source = 'hello.c'
 so_hello.install_path = plugindir
 
+so_nj = bld.new_task_gen('cc', 'shlib')
+so_nj.includes = '../..'
+so_nj.target = 'nj'
+so_nj.source = 'nj.c'
+so_nj.install_path = plugindir
+
+so_fj = bld.new_task_gen('cc', 'shlib')
+so_fj.includes = '../..'
+so_fj.target = 'fj'
+so_fj.source = 'fj.c'
+so_fj.install_path = plugindir
+
 # TODO: if have python here...
 if so_hello.env['HAVE_PYTHON'] == 1:
 	so_python = bld.new_task_gen('cc', 'shlib','pyembed')

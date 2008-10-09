@@ -57,6 +57,12 @@ void eprintf(const char *format, ...)
 	va_end(ap);
 }
 
+void efree(void **ptr)
+{
+	free (*ptr);
+	*ptr = NULL;
+}
+
 char *estrdup(char *ptr, const char *string)
 {
         if (ptr)
