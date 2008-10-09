@@ -366,13 +366,13 @@ Load command 9
 	}
 }
 
-unsigned long long addr_for_lib(char *name)
+u64 addr_for_lib(char *name)
 {
 #if __UNIX__
-	unsigned long long *addr = dlopen(name, RTLD_LAZY);
+	u32 *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
 		dlclose(addr);
-		return (unsigned long long)((addr!=NULL)?(*addr):0);
+		return (u64)((addr!=NULL)?(addr):0);
 	} else {
 		printf("cannot open '%s' library\n", name);
 		return 0LL;
@@ -762,7 +762,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_LIBS;
 			break;
 		case 'L':
-			printf("0x%08llx %s\n", addr_for_lib(optarg), optarg);
+			printf("0x%08llx %s\n", (u64) addr_for_lib(optarg), optarg);
 			action |= ACTION_NOP;
 			break;
 		case 'r':

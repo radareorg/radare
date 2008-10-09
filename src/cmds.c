@@ -118,7 +118,7 @@ command_t commands[] = {
 	COMMAND('f', "[crogd|-][name]","flag     flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "Hack     performs a hack", hack),
 	COMMAND('i', "",               "info     prints status information", info),
-	COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
+	//COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
 	COMMAND('o', " [file]",        "open     open file", open),
 	COMMAND('p', "[fmt] [len]",    "print    print data block", print),
 	COMMAND('q', "[!]",            "quit     close radare shell", quit),
@@ -131,7 +131,7 @@ command_t commands[] = {
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
 	COMMAND('x', " [length]",      "examine  the same as px", examine),
-	COMMAND('y', "[y] [length]",   "yank     copy n bytes from cursor ('yy' to paste)", yank),
+	COMMAND('y', "[y] [length]",   "yank     copy/paste bytes ('yy' to paste)", yank),
 	COMMAND('.', "[!cmd]|[ file]", ".script  interpret a script (radare, .py, .rb, .lua, .pl)", interpret),
 	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next     go to next block (+= block_size)", next),
@@ -1016,6 +1016,7 @@ CMD_DECL(limit)
 	return 0;
 }
 
+#if 0
 CMD_DECL(move)
 {
 	char *text = input;
@@ -1025,6 +1026,7 @@ CMD_DECL(move)
 
 	return 0;
 }
+#endif
 
 CMD_DECL(print)
 {

@@ -249,6 +249,7 @@ int packing_7bit_character(char *src, char *dest)
 
 int unpacking_7bit_character(char *src, char *dest)
 {
+	unsigned char buffer[256];
         unsigned char ch1, ch2 = '\0';
         int i, j;
         char buf[8];
@@ -272,6 +273,142 @@ int unpacking_7bit_character(char *src, char *dest)
         return 0;
 }
 
+void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
+{
+	unsigned char buffer[256];
+	int i,j;
+	char tmp, last;
+	const char *arg = fmt;
+	i = j = 0;
+	// TODO: support skip n char  f.ex: pm i(3)s
+	// TODO: automatic add comment C `pmxzx ??
+	if (arg)
+	for(;!config.interrupted && i<config.block ;arg=arg+1) {
+		if (endian)
+			 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
+		else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
+
+		tmp = *arg;
+	feed_me_again:
+		if (tmp == 0 && last != '*')
+			break;
+		switch(tmp) {
+		case '*':
+			if (i>0) {
+				tmp = last;
+			} else break;
+			arg = arg - 1;
+			goto feed_me_again;
+		case 'e': // tmp swap endian
+			endian ^=1;
+			continue;
+#if 0
+		case 'n': // enable newline
+			j ^= 1;
+			continue;
+#endif
+		case '.': // skip char
+			i++;
+			continue;
+		case '?': // help
+			cons_reset();
+			cons_printf(
+			"Usage: pm [format]\n"
+			" e - temporally swap endian\n"
+			" b - one byte \n"
+			" B - show 10 first bytes of buffer\n"
+			" i - %%d integer value (4 byets)\n"
+			" w - word (16 bit hexa)\n"
+			" q - quadword (8 bytes)\n"
+			" p - pointer reference\n"
+			" x - 0x%%08x hexadecimal value\n"
+			" z - \\0 terminated string\n"
+			" Z - \\0 terminated wide string\n"
+			" s - pointer to string\n"
+			" * - next char is pointer\n"
+			" . - skip 1 byte\n");
+			i=len; // exit
+			continue;
+		case 'q':
+			D cons_printf("0x%08x  ", config.seek+i);
+			cons_printf("(qword)");
+			i+=8;
+			break;
+		case 'b':
+			D cons_printf("0x%08x ", config.seek+i);
+			cons_printf("%d ; 0x%02x ; '%c' ", buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
+			i++;
+			break;
+		case 'B':
+			memset(buffer, '\0', 255);
+			radare_read_at((u64)addr, buffer, 248);
+			D cons_printf("0x%08x = ", config.seek+i);
+			for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
+			cons_strcat(" ... (");
+			for(j=0;j<10;j++) if (is_printable(buf[j])) cons_printf("%c", buf[j]);
+			cons_strcat(")");
+			i+=4;
+			break;
+		case 'i':
+			D cons_printf("0x%08x = ", config.seek+i);
+			cons_printf("%d", addr);
+			i+=4;
+			break;
+		case 'x':
+			D cons_printf("0x%08x = ", config.seek+i);
+			cons_printf("0x%08x ", addr);
+			i+=4;
+			break;
+		case 'X': {
+			char buf[128];
+			D cons_printf("0x%08x = ", config.seek+i);
+			cons_printf("0x%08x ", addr);
+			if (string_flag_offset(buf, addr))
+				cons_printf("; %s", buf);
+			i+=4;
+			} break;
+		case 'w':
+		case '1': // word (16 bits)
+			D cons_printf("0x%08x = ", config.seek+i);
+			if (endian)
+				 addr = (*(buf+i))<<8  | (*(buf+i+1));
+			else     addr = (*(buf+i+1))<<8 | (*(buf+i));
+			cons_printf("0x%04x ", addr);
+			break;
+		case 'z': // zero terminated string
+			D cons_printf("0x%08x  = ", config.seek+i);
+			for(;buf[i]&&i<len;i++) {
+				if (is_printable(buf[i]))
+					cons_printf("%c", buf[i]);
+				else cons_strcat(".");
+			}
+			cons_strcat(" ");
+			break;
+		case 'Z': // zero terminated wide string
+			D cons_printf("0x%08x  ", config.seek+i);
+			for(;buf[i]&&i<len;i+=2) {
+				if (is_printable(buf[i]))
+					cons_printf("%c", buf[i]);
+				else cons_strcat(".");
+			}
+			cons_strcat(" ");
+			break;
+		case 's':
+			D cons_printf("0x%08x  ", config.seek+i);
+			memset(buffer, '\0', 255);
+			radare_read_at((u64)addr, buffer, 248);
+			D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
+			cons_printf("%s ", buffer);
+			i+=4;
+			break;
+		default:
+			continue;
+		}
+		D cons_newline();
+		last = tmp;
+	}
+	D {} else cons_newline();
+}
 
 /** Print some data.
  *
@@ -314,8 +451,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	radare_controlc();
 
 	if (config.visual) {
-		// update config.height heres
-		//terminal_get_real_columns();
 		config.height = config_get_i("scr.height");
 		config.height -= 3;
 	}
@@ -370,10 +505,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			cons_strcat("]\n");
 		}
 		break;
-	case FMT_ANAL: // XXX DEPRECATED
-		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
-		radare_analyze(seek, len, config_get_i("cfg.analdepth"),0);
-		break;
 	case FMT_PRINT:
 		INILINE;
 		i = last_print_format;
@@ -396,134 +527,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		last_print_format = i;
 		break;
 	case FMT_MEMORY:
-		i = j = 0;
-		// TODO: support skip n char  f.ex: pm i(3)s
-		// TODO: automatic add comment C `pmxzx ??
-		if (arg)
-		for(;!config.interrupted && i<config.block ;arg=arg+1) {
-			if (endian)
-				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
-			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
-
-			tmp = *arg;
-		feed_me_again:
-			if (tmp == 0 && last != '*')
-				break;
-			switch(tmp) {
-			case '*':
-				if (i>0) {
-					tmp = last;
-				} else break;
-				arg = arg - 1;
-				goto feed_me_again;
-			case 'e': // tmp swap endian
-				endian ^=1;
-				continue;
-#if 0
-			case 'n': // enable newline
-				j ^= 1;
-				continue;
-#endif
-			case '.': // skip char
-				i++;
-				continue;
-			case '?': // help
-				cons_reset();
-				cons_printf(
-				"Usage: pm [format]\n"
-				" e - temporally swap endian\n"
-				" b - one byte \n"
-				" B - show 10 first bytes of buffer\n"
-				" i - %%d integer value (4 byets)\n"
-				" w - word (16 bit hexa)\n"
-				" q - quadword (8 bytes)\n"
-				" x - 0x%%08x hexadecimal value\n"
-				" z - \\0 terminated string\n"
-				" Z - \\0 terminated wide string\n"
-				" s - pointer to string\n"
-				" * - next char is pointer\n"
-				" . - skip 1 byte\n");
-				i=len; // exit
-				continue;
-			case 'q':
-				D cons_printf("0x%08x  ", config.seek+i);
-				cons_printf("(qword)");
-				i+=8;
-				break;
-			case 'b':
-				D cons_printf("0x%08x ", config.seek+i);
-				cons_printf("%d ; 0x%02x ; '%c' ", buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
-				i++;
-				break;
-			case 'B':
-				memset(buffer, '\0', 255);
-				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08x = ", config.seek+i);
-				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
-				cons_strcat(" ... (");
-				for(j=0;j<10;j++) if (is_printable(buf[j])) cons_printf("%c", buf[j]);
-				cons_strcat(")");
-				i+=4;
-				break;
-			case 'i':
-				D cons_printf("0x%08x = ", config.seek+i);
-				cons_printf("%d", addr);
-				i+=4;
-				break;
-			case 'x':
-				D cons_printf("0x%08x = ", config.seek+i);
-				cons_printf("0x%08x ", addr);
-				i+=4;
-				break;
-			case 'X': {
-				char buf[128];
-				D cons_printf("0x%08x = ", config.seek+i);
-				cons_printf("0x%08x ", addr);
-				if (string_flag_offset(buf, addr))
-					cons_printf("; %s", buf);
-				i+=4;
-				} break;
-			case 'w':
-			case '1': // word (16 bits)
-				D cons_printf("0x%08x = ", config.seek+i);
-				if (endian)
-					 addr = (*(buf+i))<<8  | (*(buf+i+1));
-				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
-				cons_printf("0x%04x ", addr);
-				break;
-			case 'z': // zero terminated string
-				D cons_printf("0x%08x  = ", config.seek+i);
-				for(;buf[i]&&i<len;i++) {
-					if (is_printable(buf[i]))
-						cons_printf("%c", buf[i]);
-					else cons_strcat(".");
-				}
-				cons_strcat(" ");
-				break;
-			case 'Z': // zero terminated wide string
-				D cons_printf("0x%08x  ", config.seek+i);
-				for(;buf[i]&&i<len;i+=2) {
-					if (is_printable(buf[i]))
-						cons_printf("%c", buf[i]);
-					else cons_strcat(".");
-				}
-				cons_strcat(" ");
-				break;
-			case 's':
-				D cons_printf("0x%08x  ", config.seek+i);
-				memset(buffer, '\0', 255);
-				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
-				cons_printf("%s ", buffer);
-				i+=4;
-				break;
-			default:
-				continue;
-			}
-			D cons_newline();
-			last = tmp;
-		}
-		D {} else cons_newline();
+		print_mem(addr, buf, len, arg, endian);
 		break;
 	case FMT_DISAS:
 		radis( config.block_size, len);

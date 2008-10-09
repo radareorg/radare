@@ -912,14 +912,16 @@ void stdout_close()
 	//close(stdout_file);
 }
 
-void radare_move(char *arg)
+int radare_move(char *arg)
 {
-	unsigned char *buf;
-	char *str = strchr(arg, ' ');
+	u64 src = config.seek;
 	u64 len =  0;
 	u64 pos = -1;
-	u64 src = config.seek;
+	char *str;
+	u8 *buf;
 
+	while(*arg==' ')arg=arg+1;
+	str = strchr(arg, ' ');
 	if (str) {
 		str[0]='\0';
 		len = get_math(arg);
@@ -927,27 +929,23 @@ void radare_move(char *arg)
 		str[0]=' ';
 	}
 	if ( (str == NULL) || (pos == -1) || (len == 0) ) {
-		printf("Usage: move [len] [dst-addr]\n");
-		return;
+		printf("Usage: yf [len] [dst-addr]\n");
+		return 1;
 	}
 
 	if (!config_get("file.write")) {
 		eprintf("You are not in read-write mode.\n");
-		return;
+		return 1;
 	}
 
-	buf = (unsigned char *)malloc( len );
-	radare_seek(config.seek, SEEK_SET);
-	read(config.fd, buf, len);
-	radare_seek(pos, SEEK_SET);
-	write(config.fd, buf, len);
+	buf = (u8*)malloc( len );
+	radare_read_at(src, buf, len);
+	radare_write_at(pos, buf, (int)len);
 	free(buf);
 
 	config.seek = src;
 	radare_read(0);
-#if 0
-	radare_open(1);
-#endif
+	return 0;
 }
 
 void radare_prompt_command()
@@ -1429,6 +1427,7 @@ int radare_go()
 			rabin_flag();
 
 		if (config_get("file.analyze")) {
+			eprintf("Analyzing program...\n");
 			radare_cmd(".af* @@ sym_",0);
 		}
 	}

@@ -19,6 +19,8 @@
 * doc4 'g' and 'x' in visual
 
 --- todo
+* find syscalls should be removed!!! FUCK OFF
+* yf renamed to yt or wathever
 * documentate wX... err we need a complete ciphering operations
   - shift left, shift right, add, sub..
   - also take source from ciclic memory buffer on target file or local file

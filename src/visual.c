@@ -360,14 +360,19 @@ CMD_DECL(yank)
 	char *ptr = strchr(input, ' ');
 	if (ptr == NULL)
 		ptr = input;
-	if (ptr[0]=='y') {
+	switch(input[0]) {
+	case 'y':
 		cmd_yank_paste(input);
+		return 0;
+	case 'f':
+		radare_move(input+1);
 		return 0;
 	}
 	if (ptr[0]=='?') {
-		eprintf("Usage: y[y] [length]\n");
+		eprintf("Usage: y[fy] [length]\n");
 		eprintf(" > y 10 @ eip   ; yanks 10 bytes from eip\n");
-		eprintf(" > yy @ edi ; write these bytes where edi points\n");
+		eprintf(" > yy @ edi     ; write these bytes where edi points\n");
+		eprintf(" > yf len dst   ; copy N bytes from here to dst\n");
 		return 0;
 	}
 

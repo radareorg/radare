@@ -44,9 +44,11 @@ int rabin_flag()
 	radare_cmd_raw(buf, 0);
 	if (!strcmp("java", config_get("asm.arch"))) {
 		java_classdump(config.file);
+#if 0
 	} else {
 		snprintf(buf, 1022, ".!!rsc syscall-flag '%s'", config.file);
 		radare_cmd_raw(buf, 0);
+#endif
 	}
 
 	return 0;

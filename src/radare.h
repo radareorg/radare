@@ -114,7 +114,7 @@ void prepare_environment(char *line);
 void destroy_environment(char *line);
 void udis(int len, int rows);
 int monitor_init();
-void radare_move(char *arg);
+int radare_move(char *arg);
 void disassemble(int len, int rows);
 void radare_search_aes();
 int aes_key_test(unsigned char *buf);
