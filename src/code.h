@@ -30,7 +30,7 @@ enum {
 	DATA_STR    = FMT_ASC0,  /* ascii string */
 	DATA_CODE   = FMT_UDIS,  /* plain assembly code */
 	DATA_FUN    = FMT_DISAS, /* plain assembly code */
-	DATA_STRUCT = FMT_UDIS,  /* plain assembly code */
+	DATA_STRUCT = FMT_MEMORY,/* memory */
 	DATA_FOLD_O = 0x100,     /* open folder */
 	DATA_FOLD_C = 0x101,     /* closed folder */
 	DATA_EXPAND = 0x200 
@@ -126,6 +126,7 @@ struct data_t {
 	int type;
 	int times;
 	u64 size;
+	char arg[128];
 	struct list_head list;
 };
 
@@ -172,7 +173,8 @@ struct data_t *data_get_range(u64 offset);
 struct data_t *data_get_between(u64 from, u64 to);
 int data_set_len(u64 off, u64 len);
 int data_set(u64 off, int type);
-void data_add(u64 off, int type);
+struct data_t *data_add_arg(u64 off, int type, const char *arg);
+struct data_t *data_add(u64 off, int type);
 struct data_t *data_get(u64 offset);
 int data_type_range(u64 offset);
 int data_type(u64 offset);

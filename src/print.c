@@ -273,12 +273,13 @@ int unpacking_7bit_character(char *src, char *dest)
         return 0;
 }
 
-static void print_mem_help()
+void print_mem_help()
 {
 	eprintf(
 	"Usage: pm [times][format] [arg0 arg1]\n"
 	"Example: pm 10xiz pointer length string\n"
 	" e - temporally swap endian\n"
+	" f - float value\n"
 	" b - one byte \n"
 	" B - show 10 first bytes of buffer\n"
 	" i - %%d integer value (4 byets)\n"
@@ -289,6 +290,7 @@ static void print_mem_help()
 	" z - \\0 terminated string\n"
 	" Z - \\0 terminated wide string\n"
 	" s - pointer to string\n"
+	" t - unix timestamp string\n"
 	" * - next char is pointer\n"
 	" . - skip 1 byte\n");
 }
@@ -304,11 +306,11 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	const char *arg = fmt;
 	i = j = 0;
 	
-eprintf("times=%s\n", fmt);
+	while(*arg && *arg==' ') arg = arg +1;
 	/* get times */
 	otimes = times = atoi(arg);
 	if (times > 0)
-		while(*arg && *arg>='0'&&*arg<='9') arg = arg +1;
+		while((*arg>='0'&&*arg<='9')) arg = arg +1;
 
 	if (arg == NULL || arg[0]=='\0') {
 		print_mem_help();
@@ -329,9 +331,9 @@ eprintf("times=%s\n", fmt);
 	for(;times;times--) {// repeat N times
 		const char * orig = arg;
 		if (otimes>1)
-			cons_printf("[%d] {\n", otimes-times);
+			cons_printf("0x%08llx [%d] {\n", config.seek+i, otimes-times);
 		config.interrupted = 0;
-		for(idx=0;!config.interrupted && i<config.block ;idx++, arg=arg+1) {
+		for(idx=0;!config.interrupted && idx<len;idx++, arg=arg+1) {
 			if (endian)
 				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
@@ -340,42 +342,65 @@ eprintf("times=%s\n", fmt);
 		feed_me_again:
 			if (tmp == 0 && last != '*')
 				break;
-			cons_strcat("  ");
-			if (idx<nargs)
-				cons_printf("%10s : ", get0word(args, idx));
+			/* skip chars */
 			switch(tmp) {
 			case ' ':
-				config.interrupted=1;
+config.interrupted =1;
+				i=len; // exit
 				continue;
 			case '*':
 				if (i>0) {
 					tmp = last;
 				} else break;
 				arg = arg - 1;
+				idx--;
 				goto feed_me_again;
 			case 'e': // tmp swap endian
+				idx--;
 				endian ^=1;
 				continue;
+			case '.': // skip char
+				i++;
+				idx--;
+				continue;
+			case '?': // help
+				print_mem_help();
+				idx--;
+				i=len; // exit
+				continue;
+			}
+			if (idx<nargs)
+				cons_printf("%10s : ", get0word(args, idx));
+			/* cmt chars */
+			switch(tmp) {
 	#if 0
 			case 'n': // enable newline
 				j ^= 1;
 				continue;
 	#endif
-			case '.': // skip char
-				i++;
-				continue;
-			case '?': // help
-				print_mem_help();
-				i=len; // exit
-				continue;
+			case 't':
+				/* unix timestamp */
+				D cons_printf("0x%08x = ", config.seek+i);
+{
+/* dirty hack */
+int oldfmt= last_print_format;
+u64 old = config.seek;
+radare_seek(config.seek+i, SEEK_SET);
+radare_read(0);
+data_print(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
+last_print_format=oldfmt;
+radare_seek(old, SEEK_SET);
+}
+				break;
 			case 'q':
-				D cons_printf("0x%08x  ", config.seek+i);
+				D cons_printf("0x%08x = ", config.seek+i);
 				cons_printf("(qword)");
 				i+=8;
 				break;
 			case 'b':
-				D cons_printf("0x%08x ", config.seek+i);
-				cons_printf("%d ; 0x%02x ; '%c' ", buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
+				D cons_printf("0x%08x = ", config.seek+i);
+				cons_printf("%d ; 0x%02x ; '%c' ", 
+					buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
 				i++;
 				break;
 			case 'B':
@@ -384,7 +409,9 @@ eprintf("times=%s\n", fmt);
 				D cons_printf("0x%08x = ", config.seek+i);
 				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
 				cons_strcat(" ... (");
-				for(j=0;j<10;j++) if (is_printable(buf[j])) cons_printf("%c", buf[j]);
+				for(j=0;j<10;j++)
+					if (is_printable(buf[j]))
+						cons_printf("%c", buf[j]);
 				cons_strcat(")");
 				i+=4;
 				break;
@@ -440,6 +467,8 @@ eprintf("times=%s\n", fmt);
 				i+=4;
 				break;
 			default:
+				/* ignore unknown chars */
+eprintf("ignore(%c)\n", tmp);
 				continue;
 			}
 		D cons_newline();
@@ -448,6 +477,7 @@ eprintf("times=%s\n", fmt);
 		if (otimes>1)
 			cons_printf("}\n");
 		arg = orig;
+		idx=0;
 	}
 	efree(&args);
 	D {} else cons_newline();
@@ -570,10 +600,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		last_print_format = i;
 		break;
 	case FMT_MEMORY:
-		print_mem(addr, buf, len, arg, endian);
+		print_mem((u64)addr, (const u8*)buf, (u64)len, (char *)arg, (int)endian);
 		break;
 	case FMT_DISAS:
-		radis( config.block_size, len);
+		radis(config.block_size, len);
 		break;
 	case FMT_CODEGRAPH:
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
@@ -1044,10 +1074,8 @@ void radare_print(char *arg, print_fmt_t fmt)
 {
 	int obs, bs;
 
-	if (radare_read(0) < 0) {
-		//eprintf("Error reading: %s\n", strerror(errno));
+	if (radare_read(0) < 0)
 		return;
-	}
 
 	obs = 0;
 	if ( arg[0] != '\0' ) {
@@ -1058,7 +1086,6 @@ void radare_print(char *arg, print_fmt_t fmt)
 			radare_set_block_size_i (bs);
 		}
 	} else bs = config.block_size;
-
 
 	if (config.limit && bs > config.limit - config.seek)
 		bs = config.limit - config.seek;

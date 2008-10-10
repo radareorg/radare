@@ -62,6 +62,7 @@ int rabin_show_help()
 {
 	printf(
 "rabin [options] [bin-file]\n"
+" -a        show arch\n"
 " -e        shows entrypoints one per line\n"
 " -i        imports (symbols imported from libraries)\n"
 " -s        symbols (exports)\n"
@@ -367,7 +368,7 @@ u64 addr_for_lib(char *name)
 	u32 *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
 		dlclose(addr);
-		return (u64)((addr!=NULL)?(addr):0);
+		return (u64)((addr!=NULL)?(addr):0LL);
 	} else {
 		printf("cannot open '%s' library\n", name);
 		return 0LL;
@@ -590,9 +591,7 @@ void rabin_show_sections(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
-#if HAVE_MACHO
 		dm_read_command(0);
-#endif
 		break;
 	case FILETYPE_ELF:
 		fd = ELF_CALL(dietelf_new,bin,file);

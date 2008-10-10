@@ -81,7 +81,14 @@ int data_set(u64 off, int type)
 	return -1;
 }
 
-void data_add(u64 off, int type)
+struct data_t *data_add_arg(u64 off, int type, const char *arg)
+{
+	struct data_t *d = data_add(off, type);
+	strncpy(d->arg , arg, 128);
+	return d;
+}
+
+struct data_t *data_add(u64 off, int type)
 {
 	u64 tmp;
 	struct data_t *d;
@@ -97,9 +104,10 @@ void data_add(u64 off, int type)
 	}
 
 	if (type == DATA_CODE)
-		return;
+		return d;
 
 	d = (struct data_t *)malloc(sizeof(struct data_t));
+	d->arg[0]='\0';
 	d->from = off;
 	d->to = d->from + config.block_size;  // 1 byte if no cursor // on strings should autodetect
 
@@ -123,6 +131,8 @@ void data_add(u64 off, int type)
 		d->size = 1;
 
 	list_add(&(d->list), &data);
+
+	return d;
 }
 
 u64 data_seek_to(u64 offset, int type, int idx)
@@ -816,8 +826,6 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
-		/* XXX : diff between sk and seek?? */
-		//sk = seek = config.baddr + config.seek+bytes;
 		seek = config.seek+bytes + config.baddr;
 		sk   = config.seek+bytes;
 		CHECK_LINES
@@ -904,6 +912,17 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				}
 				cons_strcat("\"");
 				break;
+			case DATA_STRUCT:
+				if (*foo->arg=='\0') {
+					cons_printf("(struct: undefined memory format)\n");
+				} else {
+					int ofmt = last_print_format;
+					cons_printf("(pm %s)\n", foo->arg);
+					/* TODO: implement scrolling delta */
+					radare_cmdf("pm %s @ 0x%08llx", foo->arg, foo->from);
+					last_print_format = ofmt;
+				}
+				break;
 			case DATA_HEX:
 			default:
 				cons_strcat("  .db  ");
@@ -925,7 +944,8 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				}
 				break;
 			}
-			cons_newline();
+			if (foo->type!=DATA_STRUCT)
+				cons_newline();
 			CHECK_LINES
 			bytes+=idata;
 			ud_idx+=idata;
@@ -1195,7 +1215,7 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 							else cons_printf("0x%08llX ", (unsigned long long)(seek));
 						}
 						sprintf(buf, "%%%ds ", show_nbytes);
-						cons_strcat(buf);
+						cons_printf(buf, "");
 						cons_strcat("; ------------------------------------ ");
 						CHECK_LINES
 					}

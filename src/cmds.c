@@ -937,27 +937,35 @@ CMD_DECL(code)
 		break;
 	case 'F':
 		/* do code analysis here */
+	case 'm':
 	case 'c':
 	case 'd':
 	case 's':
 	case 'f':
 	case 'u': {
+		char *arg=text+2;
+		struct data_t *d;
 		u64 tmp = config.block_size;
-		int fmt = FMT_HEXB;
-		int len = get_math(text +2);
+		int fmt;
+		int len;
+		for(;*arg && *arg==' ';arg=arg+1);
+		len = get_math(arg);
 		switch(text[0]) {
+			case 'm': fmt = DATA_STRUCT; break;
 			case 'c': fmt = DATA_CODE; break;
 			case 'd': fmt = DATA_HEX; break;
 			case 's': fmt = DATA_STR; break;
 			case 'F': fmt = DATA_FUN; break;
 			case 'f': fmt = DATA_FOLD_C; break;
 			case 'u': fmt = DATA_FOLD_O; break;
+			default:  fmt = DATA_HEX; break;
 		}
-		//if (len>config.block_size)
-		//	len = config.block_size;
+		arg = strchr(arg, ' ');
+		if (arg != NULL)
+			arg = arg + 1;
 		tmp = config.block_size;
 		radare_set_block_size_i(len);
-		data_add(config.seek+(config.cursor_mode?config.cursor:0), fmt);
+		d = data_add_arg(config.seek+(config.cursor_mode?config.cursor:0), fmt, arg);
 		radare_set_block_size_i(tmp);
 		} break;
 	case '*':
@@ -971,12 +979,13 @@ CMD_DECL(code)
 		"  CF [-][len]  @ here    - add/rm function\n"
 		"  Cx [-][addr] @ here    - add/rm code xref\n"
 		"  CX [-][addr] @ here    - add/rm data xref\n"
-		"  Cc [num]     - converts num bytes to code\n"
-		"  Cd [num]     - converts to data bytes\n"
-		"  Cs [num]     - converts to string\n"
-		"  Cf [num]     - folds num bytes\n"
-		"  Cu [num]     - unfolds num bytes\n"
-		"  C*           - list metadata database\n");
+		"  Cm [num] [expr]  ; define memory format (pm?)\n"
+		"  Cc [num]         ; converts num bytes to code\n"
+		"  Cd [num]         ; converts to data bytes\n"
+		"  Cs [num]         ; converts to string\n"
+		"  Cf [num]         ; folds num bytes\n"
+		"  Cu [num]         ; unfolds num bytes\n"
+		"  C*               ; list metadata database\n");
 	}
 
 	return 0;
@@ -1041,13 +1050,13 @@ CMD_DECL(print)
 		fmt = format_get(input[1]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
-		else	radare_print(input+2, fmt);
+		else	radare_print(input+1, fmt);
 		break;
 	default:
 		fmt = format_get(input[0]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
-		else	radare_print(input+2, fmt);
+		else	radare_print(input+1, fmt);
 	}
 
 	return 0;
@@ -1487,16 +1496,47 @@ CMD_DECL(write)
 		}
 		ret = radare_write(input+2, WMODE_HEX);
 		break;
-	case 'X':
-		if (input[1]!=' ') {
-			eprintf("Usage: 'wX 00 11 22'\n");
-			return 0;
+	case 'o':
+		switch(input[1]) {
+		case 'a':
+		case 's':
+		case 'A':
+		case 'x':
+		case 'r':
+		case 'l':
+		case 'm':
+		case 'd':
+		case 'o':
+			if (input[2]!=' ') {
+				eprintf("Usage: 'wo%c 00 11 22'\n",input[1]);
+				return 0;
+			}
+			ret = radare_write_op(input+3, input[1]);
+			break;
+		case '\0':
+		case '?':
+		default:
+			eprintf(
+			"Usage: wo[xrlasmd] [hexpairs]\n"
+			"Example: wox 90    ; xor cur block with 90\n"
+			"Example: woa 02 03 ; add 2, 3 to all bytes of cur block\n"
+			"Supported operations:\n"
+			"  woa  addition        +=\n"
+			"  wos  substraction    -=\n"
+			"  wom  multiply        *=\n"
+			"  wod  divide          /=\n"
+			"  wox  xor             ^=\n"
+			"  woo  or              |=\n"
+			"  woA  and             &=\n"
+			"  wor  shift right    >>=\n"
+			"  wol  shift left     <<=\n"
+			);
+			break;
 		}
-		ret = radare_write_xor(input+2);
 		break;
 	case 'w':
 		if (input[1]!=' ') {
-			eprintf("Please. use 'ww string-with-scaped-hex'.\n");
+			eprintf("Please. use 'ww string-with-scaped-hex'. (%s)\n", input);
 			return 0;
 		}
 		ret = radare_write(input+2, WMODE_WSTRING);
@@ -1505,21 +1545,19 @@ CMD_DECL(write)
 		ret = radare_write(input+1, WMODE_STRING);
 		break;
 	case '?':
-		eprintf(
-		"Usage: w[?|w|x|f] [argument]\n"
-		"  w  [string]   - write plain with escaped chars string\n"
-		"  wa [opcode]   - write assembly using asm.arch and rasm\n"
-		"  wA '[opcode]' - write assembly using asm.arch and rsc asm\n"
-		"  wb [hexpair]  - circulary fill the block with these bytes\n"
-		"  wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)\n"
-		"  ww [string]   - write wide chars (interlace 00s in string)\n"
-		"  wx [hexpair]  - write hexpair string\n"
-		"  wX [hexpair]  - xor-cipher from cur seek with ciclick hexpair key\n"
-		"  wf [file]     - write contents of file at current seek\n"
-		"  wF [hexfile]  - write hexpair contents of file\n");
-		break;
 	default:
-		eprintf("Usage: w[?|a|A|d|w|x|f|F] [argument]\n");
+		eprintf(
+		"Usage: w[?|*] [argument]\n"
+		"  w  [string]       ; write plain with escaped chars string\n"
+		"  wa [opcode]       ; write assembly using asm.arch and rasm\n"
+		"  wA '[opcode]'     ; write assembly using asm.arch and rsc asm\n"
+		"  wb [hexpair]      ; circulary fill the block with these bytes\n"
+		"  wv [expr]         ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
+		"  ww [string]       ; write wide chars (interlace 00s in string)\n"
+		"  wX [hexpair]      ; xor-cipher from cur seek with ciclick hexpair key\n"
+		"  wf [file]         ; write contents of file at current seek\n"
+		"  wF [hexfile]      ; write hexpair contents of file\n"
+		"  wo[xrlasmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
 		return 0;
 	}
 	radare_seek(back, SEEK_SET);

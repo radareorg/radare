@@ -98,9 +98,9 @@ dm_map_file (char *filename, int fd)
   /*
    *  Print out information about mach-o file
    */
-  printf("\nFilename: %s\n", filename);
+  //fprintf(stderr, "\nFilename: %s\n", filename);
   filesize = sb.st_size;
-  printf("File size: %d\n\n", filesize);
+  //fprintf(stderr, "File size: %d\n\n", filesize);
 
 #if __APPLE__
   if ( (result = map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
@@ -108,6 +108,8 @@ dm_map_file (char *filename, int fd)
                         (vm_size_t)filesize)) != KERN_SUCCESS )
 #elif __linux__
   fileaddr = mmap(0, filesize, PROT_READ, MAP_SHARED, fd, 0);
+#else
+#warning MACHO parser not working on this arch
 
   //fileaddr = (char *)malloc(filesize);
 #endif

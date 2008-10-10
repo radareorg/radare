@@ -247,8 +247,9 @@ CMD_DECL(trace)
 }
 #endif
 
-void convert_bytes(int fmt)
+static void visual_convert_bytes(int fmt)
 {
+	char argstr[128];
 	int c;
 	u64 off, len;
 	if (fmt == -1) {
@@ -257,14 +258,16 @@ void convert_bytes(int fmt)
 		"d - data bytes\n"
 		"s - string\n"
 		"f - function\n"
+		"m - memory format (pm)\n"
 		"< - close folder\n"
 		"> - open folder\n");
 		cons_flush();
 		c = cons_readchar();
-		if (c != 'c' && c!='d' && c!='s' && c!='f' && c!='<' && c!='>')
+		if (c != 'm' && c != 'c' && c!='d' && c!='s' && c!='f' && c!='<' && c!='>')
 			return;
 		fmt = FMT_HEXB;
 		switch(c) {
+		case 'm': fmt = DATA_STRUCT; break;
 		case 'c': fmt = DATA_CODE; break;
 		case 'd': fmt = DATA_HEX; break;
 		case 's': fmt = DATA_STR; break;
@@ -275,6 +278,16 @@ void convert_bytes(int fmt)
 		case '>': fmt = DATA_FOLD_O; break;
 		}
 	}
+	argstr[0]='\0';
+	if (fmt==DATA_STRUCT) {
+		const char *op = dl_prompt;
+		print_mem_help();
+		dl_prompt="> pm ";
+		cons_fgets(argstr, 127, 0, NULL);
+		cons_set_raw(1);
+		argstr[strlen(argstr)]='\0';
+		dl_prompt=op;
+	}
 	if (config.cursor > config.ocursor+1) {
 		len = config.cursor-config.ocursor+1;
 		off = config.ocursor;
@@ -284,7 +297,7 @@ void convert_bytes(int fmt)
 	}
 	off += config.seek;
 
-	data_add(off, fmt);
+	data_add_arg(off, fmt, argstr);
 	if (config.cursor_mode)
 		data_set_len(off, len);
 	cons_clear();
@@ -1473,7 +1486,7 @@ CMD_DECL(visual)
 			cons_any_key();
 			break;
 		case 'd':
-			convert_bytes(-1);
+			visual_convert_bytes(-1);
 			break;
 		case 'C':
 			config.color^=1;
@@ -1661,7 +1674,7 @@ inc = 1;
 						cons_clear();
 					}
 				} else {
-					convert_bytes(DATA_FOLD_C);
+					visual_convert_bytes(DATA_FOLD_C);
 				}
 			} else {
 				config.seek-= config.block_size;

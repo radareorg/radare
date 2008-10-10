@@ -61,7 +61,7 @@ int radare_write_at(u64 offset, unsigned char *data, int len)
 	return len;
 }
 
-int radare_write_xor(const char *arg)
+int radare_write_op(const char *arg, char op)
 {
 	int i,j;
 	int len;
@@ -75,7 +75,17 @@ int radare_write_xor(const char *arg)
 	len = hexstr2binstr(arg, (unsigned char *)str);
 
 	for(i=j=0;i<config.block_size;i++) {
-		buf[i] ^= str[j];
+		switch(op) {
+		case 'x': buf[i] ^= str[j]; break;
+		case 'a': buf[i] += str[j]; break;
+		case 's': buf[i] -= str[j]; break;
+		case 'm': buf[i] *= str[j]; break;
+		case 'd': buf[i] /= str[j]; break;
+		case 'r': buf[i] >>= str[j]; break;
+		case 'l': buf[i] <<= str[j]; break;
+		case 'o': buf[i] |= str[j]; break;
+		case 'A': buf[i] &= str[j]; break;
+		}
 		j++; if (j>=len) j=0; /* cyclic key */
 	}
 
