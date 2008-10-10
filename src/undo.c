@@ -111,6 +111,18 @@ void undo_write_new(u64 off, u8 *data, int len)
 	list_add_tail(&(uw->list), &(undo_w_list));
 }
 
+int undo_write_size()
+{
+	struct list_head *p;
+	int i = 0;
+
+	if (undo_w_init)
+	list_for_each_prev(p, &(undo_w_list)) {
+		i++;
+	}
+	return i;
+}
+
 void undo_write_list()
 {
 #define BW 8 /* byte wrap */

@@ -185,6 +185,7 @@ unsigned char radare_get(int delta)
 
 static int radare_close()
 {
+	radare_changes_close();
 	project_close();
 	return io_close(config.fd);
 }

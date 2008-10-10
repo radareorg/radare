@@ -19,15 +19,7 @@
 * doc4 'g' and 'x' in visual
 
 --- todo
-* prompt for undo changes
-  -runs ua
 
-* documentate wX... err we need a complete ciphering operations
-  - shift left, shift right, add, sub..
-  - also take source from ciclic memory buffer on target file or local file
-  - this is similar to 'm'ove command. or just do it in write..
-  
-* support for array of structures
 * ascii-nops for rasc
 * Make 'Cs' autodetect multiple strings
 * use libasm to get metadata from each opcode

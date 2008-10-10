@@ -1548,16 +1548,15 @@ CMD_DECL(write)
 	default:
 		eprintf(
 		"Usage: w[?|*] [argument]\n"
-		"  w  [string]       ; write plain with escaped chars string\n"
-		"  wa [opcode]       ; write assembly using asm.arch and rasm\n"
-		"  wA '[opcode]'     ; write assembly using asm.arch and rsc asm\n"
-		"  wb [hexpair]      ; circulary fill the block with these bytes\n"
-		"  wv [expr]         ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
-		"  ww [string]       ; write wide chars (interlace 00s in string)\n"
-		"  wX [hexpair]      ; xor-cipher from cur seek with ciclick hexpair key\n"
-		"  wf [file]         ; write contents of file at current seek\n"
-		"  wF [hexfile]      ; write hexpair contents of file\n"
-		"  wo[xrlasmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
+		"  w  [string]        ; write plain with escaped chars string\n"
+		"  wa [opcode]        ; write assembly using asm.arch and rasm\n"
+		"  wA '[opcode]'      ; write assembly using asm.arch and rsc asm\n"
+		"  wb [hexpair]       ; circulary fill the block with these bytes\n"
+		"  wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
+		"  ww [string]        ; write wide chars (interlace 00s in string)\n"
+		"  wf [file]          ; write contents of file at current seek\n"
+		"  wF [hexfile]       ; write hexpair contents of file\n"
+		"  wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
 		return 0;
 	}
 	radare_seek(back, SEEK_SET);

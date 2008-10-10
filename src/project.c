@@ -97,6 +97,25 @@ int project_save(const char *file)
 	return 1;
 }
 
+/* TODO move outside here */
+void radare_changes_close()
+{
+	int changes;
+	if (config.unksize||config.debug)
+		return;
+	changes = undo_write_size();
+	if (changes > 0) {
+		radare_cmd_raw("u", 0);
+		if (yesno('y', "Do you want save these changes? (Y/n)")) {
+			/* done */
+		} else {
+			D eprintf("Dropping changes ..\n");
+			radare_cmd_raw("ua", 0);
+		}
+	}
+	cons_flush();
+}
+
 void project_close()
 {
 	const char *file = config_get("file.project");

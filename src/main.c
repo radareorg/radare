@@ -126,6 +126,7 @@ int main(int argc, char **argv, char **envp)
 		case 's':
 			config.seek = (u64)get_offset(optarg);
 			if (config.seek < 0) config.seek = (u64)0;
+			config_set("dbg.bep", optarg);
 			break;
 		case 'l':
 			plugin_registry(optarg);
