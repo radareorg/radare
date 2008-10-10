@@ -3,6 +3,17 @@
 \cfg{paper-code-fonts}{Courier}{Courier}{Courier}
 \cfg{text-chapter-align}{right}
 
+\cfg{html-index-filename}{index.html}
+\cfg{html-contents-filename}{contents.html}
+\cfg{html-template-filename}{%n.html}
+\cfg{html-template-fragment}{%k}
+
+\cfg{html-leaf-level}{infinite}
+\cfg{html-leaf-contains-contents}{false}
+\cfg{html-suppress-navlinks}{true}
+\cfg{html-suppress-address}{true}
+
+
 \title radare
 
 A commandline framework for reverse engineering ala *nix-style
