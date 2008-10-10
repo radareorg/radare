@@ -38,12 +38,7 @@
 #include "dietelf64.h"
 #include "dietpe.h"
 #include "dietpe_types.h"
-#if defined(_DARWIN_C_SOURCE)
-#define HAVE_MACHO 1
 #include "dietmach0.h"
-#else
-#define HAVE_MACHO 0
-#endif
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
 
@@ -388,9 +383,7 @@ void rabin_show_arch(char *file)
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
-#if HAVE_MACHO
 		dm_read_header(1);
-#endif
 		break;
 	case FILETYPE_ELF:
 		lseek(fd, 16+2, SEEK_SET);
@@ -798,9 +791,7 @@ int main(int argc, char **argv, char **envp)
 		}
 	} else return 0;
 
-#if HAVE_MACHO
 	dm_map_file(file, fd);
-#endif
 	rabin_identify_header();
 
 	if (action&ACTION_ARCH)

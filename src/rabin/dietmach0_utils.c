@@ -30,18 +30,19 @@
  */
 /* @LICENSE_END@ */
 
-#include <libc.h>
+#if __APPLE__
+#include <mach-o/loader.h>
+#include <mach-o/fat.h>
+#include <mach-o/swap.h>
+#endif
+
 #include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <sqlite3.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <mach-o/loader.h>
-#include <mach-o/fat.h>
-#include <mach-o/swap.h>
 
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
@@ -84,7 +85,9 @@ dm_fatal (const char *fmt, ...)
 void
 dm_map_file (char *filename, int fd)
 {
+#if __APPLE__
   kern_return_t result;
+#endif
 
   if ( stat(filename, &sb) == -1 ) {
     close(fd);
@@ -99,14 +102,28 @@ dm_map_file (char *filename, int fd)
   filesize = sb.st_size;
   printf("File size: %d\n\n", filesize);
 
+#if __APPLE__
   if ( (result = map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
                         (boolean_t)TRUE, 
                         (vm_size_t)filesize)) != KERN_SUCCESS )
+#elif __linux__
+  fileaddr = mmap(0, filesize, PROT_READ, MAP_SHARED, fd, 0);
+
+  //fileaddr = (char *)malloc(filesize);
+#endif
+
+  //if ( (result = mmap(&fileaddr, (size_t)filesize, PROT_READ|PROT_WRITE,
+   //                   MAP_SHARED, (int)fd, 0)) == (int *)MAP_FAILED)
+  if ( fileaddr == MAP_FAILED )
     {
       dm_fatal("Cannot map file %s\n", filename);
       close(fd);
       exit(-1);
     }
+
+  //printf(" fileaddr = 0x%08x\n", fileaddr);
+  //fread(fileaddr, sizeof(char), filesize, fd);
+  //fclose(fd);
 
   startaddr = fileaddr;
 }

@@ -30,18 +30,21 @@
  */
 /* @LICENSE_END@ */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <time.h>
-#include <mach-o/arch.h>
+#if __APPLE__
 #include <mach-o/fat.h>
+#include <mach-o/arch.h>
 #include <mach-o/swap.h>
 #include <mach-o/loader.h>
 #include <mach/mach.h>
 #include <mach/machine.h>
 #include <mach/i386/thread_state.h>
 #include <mach/machine/thread_status.h>
+#endif
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
@@ -494,7 +497,12 @@ dm_read_header (int p)
 
   if (fat_header.magic == FAT_CIGAM)
     {
+#if __APPLE__
       swap_fat_header(&fat_header, LITTLE_ENDIAN);
+#elif __linux__
+      fat_header.magic = SWAP_LONG(fat_header.magic);
+      fat_header.nfat_arch = SWAP_LONG(fat_header.nfat_arch);
+#endif
       swapped = 1;
 
       printf ("\n\n [-] fat Header\n\n");
@@ -510,10 +518,19 @@ dm_read_header (int p)
       archs = dm_allocate(sizeof(struct fat_arch) * nfat);
 
       memcpy(archs, archp, sizeof(struct fat_arch) * nfat);
+#if __APPLE__
       swap_fat_arch(archs, nfat, LITTLE_ENDIAN);
+#endif
 
       for(i = 0; i < nfat; i++)
         {
+#if __linux__
+          archs[i].cputype    = SWAP_LONG(archs[i].cputype);
+          archs[i].cpusubtype = SWAP_LONG(archs[i].cpusubtype);
+          archs[i].offset     = SWAP_LONG(archs[i].offset);
+          archs[i].size       = SWAP_LONG(archs[i].size);
+          archs[i].align      = SWAP_LONG(archs[i].align);
+#endif
           printf("\n [-] Architecture %d\n\n", i);
 
           if (archs[i].cputype == CPU_TYPE_X86)

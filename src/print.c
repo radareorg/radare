@@ -293,7 +293,7 @@ static void print_mem_help()
 	" . - skip 1 byte\n");
 }
 
-void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
+void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
 	int i,j,idx;
@@ -304,18 +304,16 @@ void print_mem(u64 addr, const u8 *buf, int len, const char *fmt, int endian)
 	const char *arg = fmt;
 	i = j = 0;
 	
-	// TODO: support skip n char  f.ex: pm i(3)s
-	// TODO: automatic add comment C `pmxzx ??
-	if (arg[0]=='\0') {
-		print_mem_help();
-		return;
-	}
-
+eprintf("times=%s\n", fmt);
 	/* get times */
 	otimes = times = atoi(arg);
 	if (times > 0)
 		while(*arg && *arg>='0'&&*arg<='9') arg = arg +1;
 
+	if (arg == NULL || arg[0]=='\0') {
+		print_mem_help();
+		return;
+	}
 	/* get args */
 	args = strchr(arg, ' ');
 	if (args) {

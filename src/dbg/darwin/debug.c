@@ -178,12 +178,12 @@ int debug_attach(int pid)
 		return -1;
 	}
 	fprintf(stderr, "Thread count: %d\n", inferior_thread_count);
-
 #if EXCEPTION_PORT
 	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &exception_port) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to create exception port.\n");
 		return -1;
 	}
+#endif
 	if (mach_port_insert_right(mach_task_self(), exception_port,
 				exception_port, MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to acquire insertion rights on the port.\n");
@@ -194,7 +194,6 @@ int debug_attach(int pid)
 		fprintf(stderr, "Failed to set the inferior's exception ports.\n");
 		return -1;
 	}
-#endif
 	return 0;
 }
 
