@@ -1883,7 +1883,6 @@ The IO backend is implement as IO plugins. They are selected depending on the ur
 \c # connect to remote host
 \c $ radare connect://192.168.3.33:9999
 
-
 \H{plugins-io} IO plugins
 
 IO plugins are the ones used to wrap the open, read, write and 'system' on virtual file systems.
@@ -1931,8 +1930,18 @@ All language bindings (python, lua, ...) are implemented as hack plugins. See 's
 
 \S{jmphacks} Jump hacks
 
-TODO: needs to be rewritten into a plugin (outside the core)
-TODO: nop N opcodes, invert jump, force jump... !jmp and !call
+The basic radare distribution comes with two plugins to manipulate jumps (actually only x86) but wouldn't be hard to port it to ARM for example.
+
+These ones are: nj and fj. They stand for 'Negate Jump' and 'Force Jump'.
+
+Here's an example of use:
+
+\c [0x465D8AB7]> :pd 1
+\c 0x465D8AB7   ^ jle 0x465D8AA3   
+\c [0x465D8AB7]> H nj
+\c 0x465D8AB7   ^ jg 0x465D8AA3   
+\c [0x465D8AB7]> H fj
+\c 0x465D8AB7   ^ jmp 0x465D8AA3   
 
 \C{rabin} Rabin 
 
@@ -2265,9 +2274,9 @@ The contents of the file are updated automatically while the socket is feeded by
 
 All reads from the socket are stored as flags pointing to the last read packet:
 
-[0x00000000]> f
-0x00000000       512     _sockread_0
-0x00000000       512     _sockread_last
+\c [0x00000000]> f
+\c 0x00000000       512     _sockread_0
+\c 0x00000000       512     _sockread_last
 
 \H{net-connect} Radare remote
 
