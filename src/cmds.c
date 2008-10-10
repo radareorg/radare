@@ -1969,8 +1969,10 @@ CMD_DECL(help)
 			if (strchr(input,'=') || strchr(input,'!')) {
 				last_cmp = res;
 			} else {
-				cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res);
-				PRINT_BIN(res); NEWLINE;
+				D {cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
+					PRINT_BIN(res); NEWLINE;
+				} else { cons_printf("0x%llx\n", res);
+				}
 			}
 		}
 	}

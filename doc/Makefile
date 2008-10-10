@@ -6,4 +6,4 @@ all:
 
 push:
 	scp radare.pdf radare.pdf.html news.nopcode.org:/home/www/radarenopcode/get
-	scp html/* news.nopcode.org:/home/www/radarenopcode/doc/html
+	rsync -avz html/* news.nopcode.org:/home/www/radarenopcode/doc/html

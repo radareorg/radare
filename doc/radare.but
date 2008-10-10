@@ -13,7 +13,6 @@
 \cfg{html-suppress-navlinks}{true}
 \cfg{html-suppress-address}{true}
 
-
 \title radare
 
 A commandline framework for reverse engineering ala *nix-style
@@ -229,6 +228,23 @@ The values can be numbers in many formats:
 \c 10K     : KBytes  10*1024
 \c 10M     : MBytes  10*1024*1024
 
+There are other special syntaxes for the expressions. Here's for example some of them:
+
+\c $$   : current seek
+\c $$$  : size of opcode at current seek
+
+For example:
+
+\c [0x4A13B8C0]> :pd 2
+\c 0x4A13B8C0,  mov eax, esp        
+\c 0x4A13B8C2   call 0x4a13c000     
+\c
+\c [0x4A13B8C0]> :? $$+$$$
+\c 0x4a13b8c2
+\c
+\c [0x4A13B8C0]> :pd 1 @ +$$$
+\c 0x4A13B8C2   call 0x4a13c000   
+
 \H{expr-xc} Xc
 
 The 'xc' utility comes with the radare framework and aims to be a minimalistic expression evaluator for the shell useful for making base conversions easily between floating point values, hexadecimal representations, hexpair strings to ascii, octal to integer. It supports endianness and can be used as a shell if no arguments given.
@@ -432,7 +448,6 @@ Setting asm.arch to 'objdump' the disassembly engine will use asm.objdump to dis
 
 This is useful for disassembling files in architectures not supported by radare. You should understand 'objdump' as 'your-own-disassembler'.
 
-
 \c asm.syntax
 
 Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
@@ -472,6 +487,10 @@ Choose the endian flavour 'true' for big, 'false' for little.
 \c file.id
 
 When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
+
+\c file.analyze
+
+Runs '\c{.af* @@ sym_}' and '\c{.af* @ entrypoint}' after resolving the symbols while loading the binary. This option requires file.id to be true
 
 \c file.analyze
 
@@ -888,25 +907,49 @@ TODO: add examples + explanation
 
 It is possible to print various packed data types in a single line using the 'pm' command (print memory). Here's the help and some examples:
 
-\c [0xB7F74810]> pm ?
-\c Usage: pm [format]
+\c [0x4A13B8C0]> pm
+\c Usage: pm [times][format] [arg0 arg1]
+\c Example: pm 10xiz pointer length string
 \c  e - temporally swap endian
+\c  f - float value
 \c  b - one byte 
 \c  B - show 10 first bytes of buffer
 \c  i - %d integer value (4 byets)
 \c  w - word (16 bit hexa)
 \c  q - quadword (8 bytes)
+\c  p - pointer reference
 \c  x - 0x%08x hexadecimal value
 \c  z - \0 terminated string
 \c  Z - \0 terminated wide string
 \c  s - pointer to string
+\c  t - unix timestamp string
 \c  * - next char is pointer
 \c  . - skip 1 byte
+
+The simple use would be like this:
 
 \c [0xB7F08810]> pm xxs @ esp
 \c 0xbf8614d4 = 0xb7f22ff4 
 \c 0xbf8614d8 = 0xb7f16818 
-\c 0xbf8614dc  0xbf8614dc -> 0x00000000 /etc/ld.so.cache 
+\c 0xbf8614dc = 0xbf8614dc -> 0x00000000 /etc/ld.so.cache 
+
+This is sometimes useful for looking at the arguments passed to a function, by just giving the 'format memory string' as argument and temporally changing the current seek with the '@' token.
+
+It is also possible to define arrays of structures with 'pm'. Just prefix the format string with a numeric value. 
+
+You can also define a name for each field of the structure by giving them as optional arguments after the format string splitted by spaces.
+
+\c [0x4A13B8C0]> pm 2xw pointer type @ esp
+\c 0xbf87d160 [0] {
+\c    pointer : 0xbf87d160 = 0x00000001 
+\c       type : 0xbf87d164 = 0xd9f3 
+\c }
+\c 0xbf87d164 [1] {
+\c    pointer : 0xbf87d164 = 0xbf87d9f3 
+\c       type : 0xbf87d168 = 0x0000 
+\c }
+
+If you want to store this information as metadata for the binary file just use the same arguments, but instead of using \c{pm}, use \c{Cm}. To store all the metadata stored while analyzing use the 'Ps <filename>' command to save the project and then run \c{radare -p project-file} to restore the session. Read 'projects' section for more information.
 
 \S{print-code} Disassembly
 
@@ -1126,23 +1169,82 @@ To resize. Use the 'r' command which accepts a numeric argument. Possitive valul
 To write bytes just use the 'w' command. It accepts multiple input formats like inline assembling, endian-friendly dwords, files, hexpair files, wide strings:
 
 \c [0x4A13B8C0]> w?
-\c Usage: w[?|w|x|f] [argument]
-\c   w  [string]   - write plain with escaped chars string
-\c   wa [opcode]   - write assembly using asm.arch and rasm
-\c   wA '[opcode]' - write assembly using asm.arch and rsc asm
-\c   wb [hexpair]  - circulary fill the block with these bytes
-\c   wv [expr]     - writes 4-8 byte value of expr (use cfg.bigendian)
-\c   ww [string]   - write wide chars (interlace 00s in string)
-\c   wx [hexpair]  - write hexpair string
-\c   wX [hexpair]  - xor-cipher from cur seek with ciclick hexpair key
-\c   wf [file]     - write contents of file at current seek
-\c   wF [hexfile]  - write hexpair contents of file
+\c Usage: w[?|*] [argument]
+\c   w  [string]        ; write plain with escaped chars string
+\c   wa [opcode]        ; write assembly using asm.arch and rasm
+\c   wA '[opcode]'      ; write assembly using asm.arch and rsc asm
+\c   wb [hexpair]       ; circulary fill the block with these bytes
+\c   wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)
+\c   ww [string]        ; write wide chars (interlace 00s in string)
+\c   wf [file]          ; write contents of file at current seek
+\c   wF [hexfile]       ; write hexpair contents of file
+\c   wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div
+
+Some examples:
 
 \c > wx 12 34 56 @ 0x8048300
 \c > wv 0x8048123 @ 0x8049100
 \c > wa jmp 0x8048320
 
 All write changes are recorded and can be listed or undo-ed using the 'u' command which is explained in the 'undo/redo' section.
+
+\S{write-over} Write over with operation
+
+The 'wo' write command accepts multiple kinds of operations that can be applied on the curren block. This is for example a \c{XOR}, \c{ADD}, \c{SUB}, ...
+
+\c [0x4A13B8C0]> wo?
+\c Usage: wo[xrlasmd] [hexpairs]
+\c Example: wox 90    ; xor cur block with 90
+\c Example: woa 02 03 ; add 2, 3 to all bytes of cur block
+\c Supported operations:
+\c   woa  addition        +=
+\c   wos  substraction    -=
+\c   wom  multiply        *=
+\c   wod  divide          /=
+\c   wox  xor             ^=
+\c   woo  or              |=
+\c   woA  and             &=
+\c   wor  shift right    >>=
+\c   wol  shift left     <<=
+
+This way it is possible to implement ciphering algorithms using radare core primitives.
+
+A sample session doing a \c{xor(90) + addition(01 02)}
+
+\c [0x4A13B8C0]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  0123456789ABCD
+\c 0x4A13B8C0, 89e0 e839 0700 0089 c7e8 e2ff ffff ...9..........
+\c 0x4A13B8CE  81c3 eea6 0100 8b83 08ff ffff 5a8d ............Z.
+\c 0x4A13B8DC, 2484 29c2 528b 8344 0000 008d 7494 $.).R..D....t.
+\c 0x4A13B8EA  088d 4c24 0489 e583 e4f0 5050 5556 ..L$......PPUV
+\c 0x4A13B8F8, 31ed e8f1 d400 008d 93a4 31ff ff8b 1.........1...
+\c 0x4A13B906  2424 ffe7 8db6 0000 0000 e8b2 4f01 $$..........O.
+\c 0x4A13B914, 0081 c1a7 a601 0055 89e5 5d8d 814c .......U..]..L
+\c 0x4A13B922  0600                               ..            
+\c
+\c [0x4A13B8C0]> wox 90
+\c [0x4A13B8C0]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  0123456789ABCD
+\c 0x4A13B8C0, 1970 78a9 9790 9019 5778 726f 6f6f .px.....Wxrooo
+\c 0x4A13B8CE  1153 7e36 9190 1b13 986f 6f6f ca1d .S~6.....ooo..
+\c 0x4A13B8DC, b414 b952 c21b 13d4 9090 901d e404 ...R..........
+\c 0x4A13B8EA  981d dcb4 9419 7513 7460 c0c0 c5c6 ......u.t`....
+\c 0x4A13B8F8, a17d 7861 4490 901d 0334 a16f 6f1b .}xaD....4.oo.
+\c 0x4A13B906  b4b4 6f77 1d26 9090 9090 7822 df91 ..ow.&....x"..
+\c 0x4A13B914, 9011 5137 3691 90c5 1975 cd1d 11dc ..Q76....u....
+\c 0x4A13B922  9690                               ..            
+\c
+\c [0x4A13B8C0]> woa 01 02
+\c [0x4A13B8C0]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  0123456789ABCD
+\c 0x4A13B8C0, 1a72 79ab 9892 911b 587a 7371 7071 .ry.....Xzsqpq
+\c 0x4A13B8CE  1255 7f38 9292 1c15 9971 7071 cb1f .U.8.....qpq..
+\c 0x4A13B8DC, b516 ba54 c31d 14d6 9192 911f e506 ...T..........
+\c 0x4A13B8EA  991f ddb6 951b 7615 7562 c1c2 c6c8 ......v.ub....
+\c 0x4A13B8F8, a27f 7963 4592 911f 0436 a271 701d ..ycE....6.qp.
+\c 0x4A13B906  b5b6 7079 1e28 9192 9192 7924 e093 ..py.(....y$..
+\c 0x4A13B914, 9113 5239 3793 91c7 1a77 ce1f 12de ..R97....w....
+\c 0x4A13B922  9792                               ..            
 
 \H{undo} Undo/redo
 
@@ -1174,18 +1276,36 @@ Note: Read 'undo-seek' for seeking history manipulation.
 
 You can yank/paste bytes in visual mode using the 'y' and 'Y' key bindings that are alias for the 'y' and 'yy' commands of the shell. There is an internal buffer that stores N bytes from the current seek. You can write-back to another seek using the 'yy' one.
 
+\c [0x4A13B8C0]> y?
+\c Usage: y[ft] [length]
+\c  > y 10 @ eip     ; yanks 10 bytes from eip
+\c  > yy @ edi       ; write these bytes where edi points
+\c  > yt [len] dst   ; copy N bytes from here to dst
+
+Sample session:
+
 \c > s 0x100    ; seek at 0x100
 \c > y 100      ; yanks 100 bytes from here
 \c > s 0x200    ; seek 0x200
 \c > yy         ; pastes 100 bytes
 
-\H{cmpmv} Compare/move data
+You can perform a \c{yank and paste} in a single line by just using the 'yt' command (yank-to). The syntax is the following:
 
-The command 'm' is used to move data, which is something similar to 'yank/paste', but in a single command.
+\c [0x4A13B8C0]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  0123456789AB
+\c 0x4A13B8C0, 89e0 e839 0700 0089 c7e8 e2ff ...9........
+\c 0x4A13B8CC, ffff 81c3 eea6 0100 8b83 08ff ............
+\c 0x4A13B8D8, ffff 5a8d 2484 29c2           ..Z.$.).    
+\c
+\c [0x4A13B8C0]> yt 8 0x4A13B8CC @ 0x4A13B8C0
+\c [0x4A13B8C0]> x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  0123456789AB
+\c 0x4A13B8C0, 89e0 e839 0700 0089 c7e8 e2ff ...9........
+\c 0x4A13B8CC, 89e0 e839 0700 0089 8b83 08ff ...9........
+\c 0x4A13B8D8, ffff 5a8d 2484 29c2           ..Z.$.).    
+\c [0x4A13B8C0]> 
 
-\c > m?
-\c Usage: move [len] [dst-addr]
-\c > m 10 0x300 @ 0x100  ; copy 10 bytes from 0x100 to 0x300
+\H{cmp} Comparing bytes
 
 You can compare data using the 'c' command that accepts different input formats and compares the input against the bytes in the current seek.
 
@@ -1297,6 +1417,31 @@ The insert mode allows you to write bytes at nibble-level like most common hexad
 
 To get back to the normal mode, just press '<tab>' to switch to the hexadecimal view and press 'q'. (NOTE: if you press 'q' in the ascii view...it will insert a 'q' instead of quit this mode)
 
+\H{visual-xrefs} Visual xrefs
+
+radare implements many user-friendly features for the visual interface to walk thru the assembly code. One of them is the 'x' key that popups a menu for selecting the xref (data or code) against the current seek and then jump there. In this example, we are displaying the import getenv and displaying the CODE xreferences to this external symbol.
+
+\c [0x08048700]> pd @ imp_getenv
+\c ; CODE xref 0x08048e30 (sym_otf_patch+0x1d9)
+\c ; CODE xref 0x08048d53 (sym_otf_patch+0xfc)
+\c ; CODE xref 0x08048c90 (sym_otf_patch+0x39)
+\c       |    0x08048700,   imp_getenv:
+\c       |    0x08048700           jmp dword near [0x804c00c]
+\c       |    0x08048706           push dword 0x18       ; oeax+0xd
+\c       `==< 0x0804870B           jmp 0x80486c0         ; 1 = section__plt
+
+Use the 'sx' and 'sX' command to seek tot he xrefs for code and Xrefs for data indexed by numbers.
+
+All the calls and jumps are numbered (1, 2, 3...) these numbers are the keybindings for seeking there from the visual mode.
+
+\c [0x4A13B8C0]> pd 4
+\c 0x4A13B8C0,   eip:   mov eax, esp        
+\c 0x4A13B8C2           call 0x4a13c000       ; 1 = 0x4a13c000
+\c 0x4A13B8C7           mov edi, eax        
+\c 0x4A13B8C9           call 0x4a13b8b0       ; 2 = 0x4a13b8b0
+
+All the seek history is stored, by pressing 'u' key you will go back in the seek history time :)
+
 \C{searching} Searching bytes
 
 The search engine of radare is based on the work done by esteve plus multiple features on top of it that allows multiple keyword searching with binary masks and automatic flagging of results.
@@ -1398,6 +1543,38 @@ Here's an example:
 \c [0x00000000]> /p 10
 
 The output of the command will show the different patterns found and how many times they are repeated.
+
+\H{search-hits} Automatization
+
+The \c{cmd.hit} eval variable is used to define a command that will be executed when a hit is reached by the search engine. If you want to run more than one command use '&&' or '. script-file-name' for including a file as a script.
+
+For example:
+
+\c [0x08048000]> eval cmd.hit = p8 8
+\c [0x08048000]> / lib
+\c 6c 69 62 2f 6c 64 2d 6c 
+\c 1001  0x00000155  hit0_0 lib/ld-linux
+\c 6c 69 62 72 74 2e 73 6f 
+\c 2002  0x00013a25  hit0_1 librt.so.1c
+\c 6c 69 62 63 2e 73 6f 2e 
+\c 3003  0x00013a61  hit0_2 libc.so.6st
+\c 6c 69 62 63 5f 73 74 61 
+\c 4004  0x00013d6c  hit0_3 libc_start_m
+\c 6c 69 62 70 74 68 72 65 
+\c 5005  0x00013e13  hit0_4 libpthread.s
+\c 6c 69 62 2f 6c 64 2d 6c 
+\c 6006  0x00013e24  hit0_5 lib/ld-linux
+\c 6c 69 62 6c 69 73 74 00 
+\c 7read err at 0x0001542c
+\c 007  0x00014f22  hit0_6 liblist.gnu
+
+A simple and practical example for using cmd.hit can be for replacing some bytes for another ones, by setting 'wx ..' in cmd.hit. This example shows how to drop the selinux dependency on binaries compiled on selinux-enabled distributions to make the dynamic elf run on other systems without selinux:
+
+\c $ for file in bin/* ; do \
+\c     echo "/ libselinux" | radare -nvwe "cmd.hit=wx 00" $file \
+\c   done
+
+This shell command will run radare looking for the string 'libselinux' on the target binary. It ignores the user preferences with '-n', drops verbosity with '-v' and enables write mode with '-w'. Then it setups the 'cmd.hit' variable to run a 'wx 00' command so. it will truncate the 'libselinux' string to be 0length. This way the loader will ignore the loading because of the null-name.
 
 \H{search-backward} Backward search
 
@@ -1557,17 +1734,19 @@ The 'C' command is the one used to manage comments and data conversions. So you 
 
 Here's the help:
 
+\c [0x4A13B8C0]> C?
 \c Usage: C[op] [arg] <@ offset>
-\c  CC [-][comment] @ here - add/rm comment
-\c  CF [-][len]  @ here    - add/rm function
-\c  Cx [-][addr] @ here    - add/rm code xref
-\c  CX [-][addr] @ here    - add/rm data xref
-\c  Cc [num]     - converts num bytes to code
-\c  Cd [num]     - converts to data bytes
-\c  Cs [num]     - converts to string
-\c  Cf [num]     - folds num bytes
-\c  Cu [num]     - unfolds num bytes
-\c  C*           - list metadata database
+\c   CC [-][comment] @ here - add/rm comment
+\c   CF [-][len]  @ here    - add/rm function
+\c   Cx [-][addr] @ here    - add/rm code xref
+\c   CX [-][addr] @ here    - add/rm data xref
+\c   Cm [num] [expr]  ; define memory format (pm?)
+\c   Cc [num]         ; converts num bytes to code
+\c   Cd [num]         ; converts to data bytes
+\c   Cs [num]         ; converts to string
+\c   Cf [num]         ; folds num bytes
+\c   Cu [num]         ; unfolds num bytes
+\c   C*               ; list metadata database
 
 For example, if you want to add a comment just type:
 
@@ -1595,6 +1774,28 @@ You can use the Cs command from the shell also:
 \c [0x00000000]> Cs 10 @ string_foo
 
 The folding/unfolding is quite premature but the idea comes from the 'folder' concepts in vim. So you can select a range of bytes in the disassembly view and press '<' to fold these bytes in a single line or '>' to unfold them. Just to ease the readability of the code.
+
+The \c{Cm} command is used to define a memory format string (the same used by the pm command). Here's a example:
+
+\c [0x4A13B8C0]> Cm 16 2xi foo bar
+\c [0x4A13B8C0]> pd
+\c            0x4A13B8C0,  eip: (pm 2xi foo bar)
+\c 0x4a13b8c0 [0] {
+\c        foo : 0x4a13b8c0 = 0x39e8e089 
+\c        bar : 0x4a13b8c4 = -1996488697
+\c }
+\c 0x4a13b8c8 [1] {
+\c        foo : 0x4a13b8c8 = 0xffe2e8c7 
+\c        bar : 0x4a13b8cc = -1014890497
+\c }
+\c       .==< 0x4A13B927      7600            jbe 0x4a13b8c2        ; 1 = eip+0x69
+\c       `--> 0x4A13B929      8dbc2700000000  lea edi, [edi+0x0]  
+\c            0x4A13B930,     55              push ebp            
+\c            0x4A13B931      89e5            mov ebp, esp        
+
+This way it is possible to define structures by just using simple oneliners. See 'print memory' for more information.
+
+All those C* commands can also be accessed from the visual mode by pressing 'd' (data conversion) key.
 
 \C{projects} Projects
 
@@ -3137,6 +3338,10 @@ You can enable them in the visual debugger view with the 'e dbg.fpregs=true' com
 
 \H{memory} Memory
 
+Apart from the basic core operations done by radare on memory. The debugger allows you to perform some extended actions on it like changing the map protections, fruteforce the memory space to extract section information, maps ranges, etc.
+
+In this section I will explain how these commands works and how we can for example setup a on-read-breakpoint using the \c{!mp} command.
+
 \S{memprot} Memory protections
 
 Another way to setup read/write exceptions is done by changing the protection properties of the memory pages of a program.
@@ -3762,7 +3967,33 @@ The file 'radare.py' implements the API for accessing the raw 'r' module which i
 
 The file 'radapy.py' implements a pure-python radare-remote server and enables a simple interface for extending the basic IO operations thru the network in python. Read 'networking' section for more information.
 
-TODO: moar
+\S{python-hello} Python hello world
+
+to start we will write a small python script for radare to just test some of the features of the API.
+
+\c $ cat hello.py
+\c print "Hello World"
+\c seek(0)
+\c print hex(3)
+\c write("90 90 90")
+\c print hex(3)
+\c quit()
+\c 
+\c $ echo patata > file             # prepare the dummy file
+\c $ radare -i hello.py -wnv file   # launch the script
+\c Hello World
+\c 70 61 74 
+\c 90 90 90 
+
+If you want a better interface for writing your scripts inside radare use the scriptedit plugin that depends on GTK+ offering a simple editor with language selector and allows to run scripts from there. 
+
+You can also use radare programatically from the python shell:
+
+\c [0x4A13B8C0]> H python
+\c python> print dir(r)
+\c ['__doc__', '__name__', 'cmd', 'eval']
+\c python> print(r.cmd("p8 4"))
+\c 89 e0 e8 39 
 
 \H{ruby} Ruby
 

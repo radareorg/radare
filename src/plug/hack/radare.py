@@ -229,10 +229,25 @@ def str(addr=None):
 		return r.cmd("pz").strip()
 	return r.cmd("pz @ 0x%x"%addr).strip()
 
+def dword(num, addr=None):
+	if addr == None:
+		return r.cmd("p64 %d"%num).strip()
+	return r.cmd("p64 %d @ 0x%x"%(num,addr)).strip()
+
+def word(num, addr=None):
+	if addr == None:
+		return r.cmd("p32 %d"%num).strip()
+	return r.cmd("p32 %d @ 0x%x"%(num,addr)).strip()
+
+def half(num, addr=None):
+	if addr == None:
+		return r.cmd("p16 %d"%num).strip()
+	return r.cmd("p16 %d @ 0x%x"%(num,addr)).strip()
+
 def hex(num, addr=None):
 	if addr == None:
-		return r.cmd("pX %d"%num).strip()
-	return r.cmd("pX %d @ 0x%x"%(num,addr)).strip()
+		return r.cmd("p8 %d"%num).strip()
+	return r.cmd("p8 %d @ 0x%x"%(num,addr)).strip()
 
 def eval_get(key):
 	return r.cmd("eval %s"%key).strip()
@@ -346,4 +361,4 @@ def cmd(str):
 	return r.cmd(str)
 
 def quit():
-	r.cmd("q")
+	r.cmd("q!")
