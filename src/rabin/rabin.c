@@ -131,6 +131,10 @@ void rabin_show_info(const char *file)
 					printf("e asm.arch = intel64\n"); break;
 				default: printf("e asm.arch = intel\n");
 			}
+
+			if (verbose == 2) {
+
+			}
 		} else {
 			printf("ELF class:       %s\n"
 			       "Data enconding:  %s\n"
@@ -182,9 +186,9 @@ void rabin_show_info(const char *file)
 					"  - Local symbols: %s\n"
 					"  - Debug: %s\n"
 					"Number of sections: %i\n"
-					"Image base: 0x%.08x\n"
-					"Entrypoint (disk): 0x%.08x\n"
-					"Entrypoint (rva): 0x%.08x\n"
+					"Image base: 0x%08x\n"
+					"Entrypoint (disk): 0x%08x\n"
+					"Entrypoint (rva): 0x%08x\n"
 					"Section alignment: %i\n"
 					"File alignment: %i\n"
 					"Image size: %i\n",
@@ -429,7 +433,7 @@ void rabin_show_imports(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-#if 1
+#if 0
 		{ char buf[1024];
 		//sprintf(buf, "readelf -sA '%s'|grep GLOBAL | awk ' {print $8}'", file);
 //		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' UND ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
@@ -483,7 +487,7 @@ void rabin_show_imports(const char *file)
 		importp = import;
 		for (i = 0; i < imports_count; i++, importp++) {
 			if (!rad)
-				printf("0x%.08x rva=0x%.08x hint=%.04i ordinal=%.03i %s\n",
+				printf("0x%08x rva=0x%08x hint=%04i ordinal=%03i %s\n",
 					   importp->offset, importp->rva, importp->hint, importp->ordinal, importp->name);
 		}
 
@@ -554,7 +558,7 @@ void rabin_show_symbols(char *file)
 	exportp = export;
 	for (i = 0; i < exports_count; i++, exportp++) {
 		if (!rad)
-			printf("0x%.08x rva=%.08x ordinal=%.03i forwarder=%s %s\n", exportp->offset, exportp->rva, exportp->ordinal, exportp->forwarder, exportp->name);
+			printf("0x%08x rva=0x%08x ordinal=%03i forwarder=%s %s\n", exportp->offset, exportp->rva, exportp->ordinal, exportp->forwarder, exportp->name);
 	}
 
 	// DietPE Close
@@ -617,7 +621,7 @@ void rabin_show_sections(const char *file)
 			printf("==> Sections:\n");
 		for (i = 0; i < sections_count; i++, sectionp++) {
 			if (!rad)
-				printf("[%.02i] 0x%.08x rva=0x%.08x size=0x%.08x privileges=%c%c%c%c %s\n",
+				printf("[%02i] 0x%08x rva=0x%08x size=0x%08x privileges=%c%c%c%c %s\n",
 					   i, sectionp->offset, sectionp->rva, sectionp->size,
 					   PE_SCN_IS_SHAREABLE(sectionp->characteristics)?'s':'-',
 					   PE_SCN_IS_READABLE(sectionp->characteristics)?'r':'-',
@@ -761,7 +765,7 @@ int main(int argc, char **argv, char **envp)
 			rad = 1;
 			break;
 		case 'v':
-			verbose = 1;
+			verbose++;
 			break;
 		case 'x':
 			xrefs = 1;
