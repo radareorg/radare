@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ struct event_t events[] = {
 	{ "ill", 4, 0},
 	{ NULL, 0, 0 }
 };
+
 void event_ignore_list()
 {
 	int i;

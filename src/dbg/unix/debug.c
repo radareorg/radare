@@ -396,6 +396,13 @@ static int is_alive(int pid)
 }
 
 #define MAGIC_EXIT 0x33
+/* 
+ * Creates a new process and returns the result:
+ * -1 : error
+ *  0 : ok 
+ * TODO: should be pid number?
+ * TODO: should accept argv and so as arguments
+ */
 int debug_fork_and_attach()
 {
 	int wait_val;
@@ -407,15 +414,16 @@ int debug_fork_and_attach()
 		eprintf("Cannot fork.\n");
 		return 0;
 	case 0:
-		ps.pid = pid;
-		ps.tid = pid;
-		ptrace(PTRACE_TRACEME, 0, 0, 0);
+		if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) {
+			eprintf("ptrace-traceme failed\n");
+			exit(MAGIC_EXIT);
+		}
 
 		if (config_get("cfg.verbose")) {
-			printf("argv = ");
+			eprintf("argv = [ ");
 			for(i=0;ps.argv[i];i++)
-				printf("'%s', ", ps.argv[i]);
-			printf("]\n");
+				eprintf("'%s', ", ps.argv[i]);
+			eprintf("]\n");
 		}
 
 		// TODO: USE TM IF POSSIBLE TO ATTACH IT FROM ANOTHER CONSOLE!!!
@@ -451,6 +459,7 @@ int debug_fork_and_attach()
 
 		ps.steps  = 1;
 	}
+
 	return 0;
 }
 
@@ -481,7 +490,6 @@ int debug_attach(int pid)
 		}
 #endif
 	}
-
 
 	if (!is_alive(pid))
 		return -1;
@@ -602,8 +610,7 @@ int WriteMem(int pid,  u64 addr, int sz, u8 *buff)
 		if (ptrace(PTRACE_POKEDATA,pid,&((long *)(long)addr)[x],((long *)buff)[x]))
 			goto err ;
 
-	if (last)
-	{
+	if (last) {
 		lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)(long)addr)[x], 0) ;
 
 		/* Y despues me quejo que lisp tiene muchos parentesis... */
@@ -687,8 +694,8 @@ int debug_getregs(pid_t pid, regs_t *reg)
 #elif __linux__
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
 #else
-	memset(reg, sizeof(regs_t));
-	return ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
+	memset(reg,  0 ,sizeof(regs_t));
+	int ret = ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
 #endif
 }
 
@@ -875,7 +882,7 @@ int debug_dispatch_wait()
 					debug_msg_set("pid %d New thread created\n", ps.tid);
 				return ret;
 			}
-	#endif
+		#endif
 			{
 			char buf[128];
 			u64 addr = debug_bp_restore_after();

@@ -183,6 +183,8 @@ int debug_tt(const char *arg)
 /// XXX looks wrong
 /// XXX use wait4 and get rusage here!!!
 /// XXX move to dbg/unix
+/* stat 4 flag 1 => this message is thrown by the BSD kernel when trying to 
+ * act over a process that have some waitpid events pending */
 int debug_waitpid(int pid, int *status)
 {
 #define CRASH_LINUX_KERNEL 0
@@ -193,7 +195,7 @@ int debug_waitpid(int pid, int *status)
 
 #if __WINDOWS__
 	/* not implemented ? */
-#elif __FreeBSD__
+#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__
 	return waitpid(pid, status, WUNTRACED);
 #else
   #ifdef __WCLONE
@@ -214,8 +216,8 @@ int debug_waitpid(int pid, int *status)
   #endif
 #endif
 	return -1;
-}
 #endif
+}
 
 void debug_msg()
 {

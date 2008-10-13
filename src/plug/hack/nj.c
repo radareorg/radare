@@ -19,7 +19,7 @@ static int my_hack(const char *input)
 	if (r_cmdf == NULL || r_block == NULL) {
 		fprintf(stderr, "Cannot resolve core symbols!\n");
 	}
-	buf = r_block();
+	buf = (u8*)r_block();
 	fprintf(stderr, "warning: x86 only atm.\n");
 	switch(buf[0]) {
 	case 0x0f:

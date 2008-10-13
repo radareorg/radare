@@ -705,9 +705,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 
 	return ret;
 }
-
 #endif
-
 
 int arch_print_registers(int rad, const char *mask)
 {

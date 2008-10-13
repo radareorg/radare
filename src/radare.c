@@ -375,7 +375,6 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *next = NULL;
 	int ret = 0;
 
-//fprintf(stderr, "CMDRAW: (%s)\n", tmp);
 	if (strnull(tmp))
 		return 0;
 
