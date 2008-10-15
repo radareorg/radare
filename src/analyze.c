@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include "data.h"
 #include "code.h"
 #include "utils.h"
 #include "rdb.h"

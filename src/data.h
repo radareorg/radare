@@ -1,5 +1,40 @@
+#ifndef _INCLUDE_DATA_H_
+#define _INCLUDE_DATA_H_
 
 extern struct reflines_t *reflines;
+//extern struct list_head data;
+//extern struct list_head comments;
+extern struct list_head traces;
+
+struct data_t {
+	u64 from;
+	u64 to;
+	int type;
+	int times;
+	u64 size;
+	char arg[128];
+	struct list_head list;
+};
+
+struct comment_t {
+	u64 offset;
+	const char *comment;
+	struct list_head list;
+};
+
+struct xrefs_t {
+	u64 addr;  /* offset of the cross reference */
+	u64 from;  /* where the code/data is referenced */
+	int type;  /* 0 = code, 1 = data, -1 = unknown */
+	struct list_head list;
+};
+
+struct reflines_t {
+	u64 from;
+	u64 to;
+	int index;
+	struct list_head list;
+};
 
 int data_set_len(u64 off, u64 len);
 void data_info();
@@ -28,3 +63,5 @@ char *data_comment_get(u64 offset, int lines);
 void data_comment_init(int new);
 void data_reflines_init();
 int data_printd(int delta);
+
+#endif

@@ -57,6 +57,8 @@
 #include <sys/types.h>
 #include "config.h"
 #include "radare.h"
+#include "code.h"
+#include "data.h"
 #include "flags.h"
 #include "utils.h"
 #include "print.h"

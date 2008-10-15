@@ -4,8 +4,6 @@
 #include "main.h"
 #include "list.h"
 
-extern struct list_head comments;
-extern struct list_head traces;
 
 int trace_count(u64 addr);
 int trace_times(u64 addr);
@@ -110,38 +108,6 @@ struct aop_t {
 	u64 value; /* referente to value */
 	int r_dst,r_src1,r_src2; // register arguments
 	u64 i_dst,i_src1,i_src2; // inmediate arguments
-};
-
-struct reflines_t {
-	u64 from;
-	u64 to;
-	int index;
-	struct list_head list;
-};
-
-extern struct list_head data;
-struct data_t {
-	u64 from;
-	u64 to;
-	int type;
-	int times;
-	u64 size;
-	char arg[128];
-	struct list_head list;
-};
-
-extern struct list_head comments;
-struct comment_t {
-	u64 offset;
-	const char *comment;
-	struct list_head list;
-};
-
-struct xrefs_t {
-	u64 addr;  /* offset of the cross reference */
-	u64 from;  /* where the code/data is referenced */
-	int type;  /* 0 = code, 1 = data, -1 = unknown */
-	struct list_head list;
 };
 
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);

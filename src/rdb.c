@@ -19,6 +19,7 @@
  */
 
 #include "utils.h"
+#include "data.h"
 #include "list.h"
 #include "rahash/hash.h"
 #include <stdio.h>

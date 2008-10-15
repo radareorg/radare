@@ -21,6 +21,7 @@
 
 #include "main.h"
 #include "code.h"
+#include "data.h"
 #include "radare.h"
 #include "rdb.h"
 #include "rasm/rasm.h"

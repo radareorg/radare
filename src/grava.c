@@ -20,7 +20,6 @@
 #include "../global.h"
 #include "main.h"
 
-
 int graph_viz(struct program_t *prg)
 {
 	struct block_t *b0;

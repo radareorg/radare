@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "code.h"
+#include "data.h"
 #include "undo.h"
 #include "flags.h"
 #include "arch/csr/dis.h"
