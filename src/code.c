@@ -212,6 +212,9 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		cons_printf("%s", ilopar[0].Mnemonic);
 		ret = ilopar[0].Size;
 		} break;
+	case ARCH_BF:
+		ret = arch_bf_dis(b, seek, bytes);
+		break;
 	default:
 		cons_printf("Unknown architecture");
 		break;
@@ -520,12 +523,16 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				myinc += aop.length;
 				break;
 			case ARCH_CSR:
-				arch_csr_aop(seek, (const u8 *)b, &aop);
+				arch_csr_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += 2;
 				break;
 			case ARCH_MSIL:
-				arch_msil_aop(seek, (const u8 *)b, &aop);
+				arch_msil_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length+1;
+				break;
+			case ARCH_BF:
+				arch_bf_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
 				break;
 			case ARCH_OBJD:
 				radare_dump_and_process(DUMP_DISASM, len);
@@ -749,6 +756,7 @@ struct radis_arch_t {
 	int id;
 	int (*fun)(u64 addr, const u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
+	{ "bf"      , ARCH_BF    , &arch_bf_aop  }   ,
 	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel16" , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel32" , ARCH_X86   , &arch_x86_aop }   , 
@@ -775,7 +783,7 @@ void radis_update_i(int id)
 		if (radis_arches[i].id == id) {
 			config.arch = radis_arches[i].id;
 			if (radis_arches[i].fun != NULL)
-				arch_aop    = radis_arches[i].fun;
+				arch_aop = radis_arches[i].fun;
 			break;
 		}
 	}

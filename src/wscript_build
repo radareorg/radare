@@ -71,6 +71,7 @@ obj.find_sources_in_dirs('arch/arm/gnu')
 obj.find_sources_in_dirs('arch/m68k')
 obj.find_sources_in_dirs('arch/java')
 obj.find_sources_in_dirs('arch/csr')
+obj.find_sources_in_dirs('arch/bf')
 obj.find_sources_in_dirs('arch/mips')
 
 

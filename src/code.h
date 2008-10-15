@@ -46,6 +46,7 @@ enum {
 	ARCH_CSR   = 8,
 	ARCH_MSIL  = 9,
 	ARCH_OBJD  = 10,
+	ARCH_BF    = 11,
 	ARCH_AOP   = 0x10000
 };
 
@@ -112,6 +113,7 @@ struct aop_t {
 
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop);
+int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop);
 int arch_sparc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_arm_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
@@ -152,6 +154,8 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);
 void udis_arch(int arch, int len, int rows);
 void udis_arch_buf(int arch, const u8 *block, int len, int rows);
 int dislen(u8* opcode0, int limit);
+
+int arch_bf_dis(const u8* buf, u64 addr, int len);
 
 /* Virtual Machine */
 int vm_init();
