@@ -577,7 +577,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 						if (funline[0] != '\0')
 							cons_strcat("|");
 							//cons_strcat(funline);
-						sprintf(buf, " %%%ds ", show_nbytes+1);
+						sprintf(buf, " %%%ds ", show_nbytes+((funline[0]!='\0')?0:1)); //show_nbytes);
 						cons_printf(buf,"");
 					} else {
 						cons_printf(buf, flag);

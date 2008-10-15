@@ -239,7 +239,11 @@ void rabin_show_strings(const char *file)
 	dietelf_bin_t bin;
 	char buf[1024];
 
-
+	if (xrefs) {
+		snprintf(buf,1023, "printf \"pC @@ str_\\nq\\ny\\n\" | radare -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		system(buf);
+		return;
+	}
 	switch(filetype) {
 	case FILETYPE_ELF:
 		fd = ELF_CALL(dietelf_new,bin,file);
@@ -426,11 +430,17 @@ void rabin_show_arch(char *file)
 
 void rabin_show_imports(const char *file)
 {
+	char buf[1024];
 	dietelf_bin_t bin;
 	dietpe_bin pebin;
 	dietpe_import *import, *importp;
 	int i, imports_count;
 
+	if (xrefs) {
+		snprintf(buf,1023, "printf \"pC @@ imp_\\nq\\ny\\n\" | radare -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		system(buf);
+		return;
+	}
 	switch(filetype) {
 	case FILETYPE_ELF:
 #if 0

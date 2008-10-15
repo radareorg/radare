@@ -548,8 +548,9 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		break;
 #endif
 	case FMT_COMMENT:
-		if (data_xrefs_print(seek,1))
-			data_printd(0);
+		//data_comment_list();
+		data_xrefs_print(config.seek,-1);
+			//data_printd(0);
 		break;
 	case FMT_PERCENT: {
 			int w = config.width-4;

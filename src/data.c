@@ -290,14 +290,13 @@ int data_list()
 		case DATA_STR:    cons_strcat("Cs "); break;
 		default:          cons_strcat("Cc "); break; }
 		cons_printf("%lld @ 0x%08llx ; %s", d->to-d->from, d->from, label);
-#if 1
+#if 0
 		if (verbose)
 		if (d->type == DATA_STR) {
 			cons_printf("  (");
 			sprintf(label, "pz@0x%08llx", d->from);
 			radare_cmd(label, 0);
-			cons_printf(")");
-		}
+		}else
 #endif
 		cons_newline();
 	}
@@ -316,9 +315,9 @@ int data_xrefs_print(u64 addr, int type)
 			str[0]='\0';
 			string_flag_offset(str, x->from);
 			switch(type) {
-			case 0: if (x->type == type) { cons_printf("; CODE xref 0x%08llx (%s)\n", x->from, str); n++; } break;
-			case 1: if (x->type == type) { cons_printf("; DATA xref 0x%08llx (%s)\n", x->from), str; n++; } break;
-			default: { cons_printf("; %s xref 0x%08llx (%s)\n", (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
+			case 0: if (x->type == type) { cons_printf("; 0x%08llx CODE xref 0x%08llx (%s)\n", addr, x->from, str); n++; } break;
+			case 1: if (x->type == type) { cons_printf("; 0x%08llx DATA xref 0x%08llx (%s)\n", addr, x->from), str; n++; } break;
+			default: { cons_printf("; 0x%08llx %s xref from 0x%08llx (%s)\n", addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
 			}
 		}
 	}
