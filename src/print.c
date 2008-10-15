@@ -52,6 +52,7 @@ format_info_t formats[] = {
 	{ 'l', FMT_LONG,       "long",                   "4 bytes",     "(endian)"},
 	{ 'L', FMT_LLONG,      "long long",              "8 bytes",     "(endian)"},
 	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
+	{ 'C', FMT_COMMENT,    "comment information",    "string",      "range"},
 	{ 'o', FMT_OCT,        "octal",                  "N bytes",     "entire block" },
 	{ 'O', FMT_ZOOM,       "Overview (zoom.type)",   "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
@@ -546,6 +547,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		cons_newline();
 		break;
 #endif
+	case FMT_COMMENT:
+		if (data_xrefs_print(seek,1))
+			data_printd(0);
+		break;
 	case FMT_PERCENT: {
 			int w = config.width-4;
 			u64 s = config.size;
@@ -1007,7 +1012,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			NEWLINE;
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {
-			V if ((i/inc)+4>config.height) break;
+			V if (inc==0 && (i/inc)+4>config.height) break;
 			D { if ( fmt == FMT_HEXB )
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);

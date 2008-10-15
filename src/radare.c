@@ -195,9 +195,10 @@ void radare_sync()
 	u64 base;
 	int limit = DEFAULT_BLOCK_SIZE;
 
-	base = section_get_base(config.seek);
-	if (base != -1) {
-		config_set_i("file.baddr", base);
+	if (config_get_i("cfg.sections")) {
+		base = section_get_base(config.seek);
+		if (base != -1)
+			config_set_i("file.baddr", base);
 	}
 
 	if (config.debug||config.unksize)
@@ -1433,6 +1434,7 @@ int radare_go()
 			eprintf("Analyzing program...\n");
 			radare_cmd(".af* @ entrypoint",0);
 			radare_cmd(".af* @@ sym_",0);
+			radare_cmd_raw("Ci", 0);
 		}
 	}
 

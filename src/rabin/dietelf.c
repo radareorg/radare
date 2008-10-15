@@ -128,7 +128,7 @@ int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc
 					if (rad) {
 						printf("f str_%s @ 0x%08llx\n",
 								ELF_(aux_filter_rad_output)(str), offset-matches+base);
-						printf("Cs %i @ 0x%08llx\n", len, offset-matches);
+						printf("Cs %i @ 0x%08llx\n", len, offset-matches+base);
 						if (cont) (*cont)++;
 					} else {
 						printf("0x%08llx", offset-matches+base);

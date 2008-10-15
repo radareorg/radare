@@ -519,7 +519,7 @@ int main(int argc, const char **argv, char **envp)
 #else
 	gtk_box_pack_start(GTK_BOX(vbox), tool, FALSE, FALSE, 0);
 #endif
-	chos = gradare_sidebar_new();
+	chos = gradare_topbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), chos, FALSE, FALSE, 0);
 
 	//hpan = gtk_hpaned_new();

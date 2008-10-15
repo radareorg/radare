@@ -170,12 +170,12 @@ static int my_hack(char *input)
 {
 	static int dry = 0;
 
+	if (dry) return 0; dry=1;
+
 	my_widget = prefs_open();
 	r = radare_plugin.resolve("radare_cmd");
 	if (r != NULL)
 		return 1;
-
-	if (dry) return 0; dry=1;
 
 	return 0;
 }

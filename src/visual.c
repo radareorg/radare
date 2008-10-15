@@ -466,7 +466,7 @@ CMD_DECL(xrefs_here)
 	u64 addr;
 	int foo;
 	cons_printf("Select XREF from list:\n");
-	metadata_xrefs_here(config.seek);
+	data_xrefs_here(config.seek);
 	cons_printf("==> ");
 	cons_flush();
 	foo = cons_readchar() - '0';

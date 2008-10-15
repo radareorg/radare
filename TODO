@@ -18,6 +18,10 @@
 
 --- todo
 
+
+* print double!!
+  - support string print mode for [len][str] formats
+* wtf with fu cmd!
 * ascii-nops for rasc
 * Make 'Cs' autodetect multiple strings
 * use libasm to get metadata from each opcode
@@ -37,13 +41,10 @@
   - shows return value in eax before restoring regs
 
 ---- bugs
-* ensure .ad* is working :)
+* CF -addr segfaults
 * fix radiff -r patching (tests/radiff)
 * rabin -v show all flags, without it, only the .rodata ones
 * Split nodes of the graph code analysis
-* BSD imports with dietelf doesnt works well
-* imp_foo are not ok in dietelf :OO.
-  - show xrefs to strings by using an rsc script
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
@@ -92,6 +93,8 @@
 java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)
 -> this should be a call to callme()
+
+- show xrefs to strings by using an rsc script
 
 
 ===========

@@ -82,8 +82,8 @@ int project_save(const char *file)
 	}
 #endif
 	cons_set_fd(fileno(fd));
-		metadata_comment_list();
-		metadata_xrefs_list();
+		data_comment_list();
+		data_xrefs_list();
 		data_list();
 		section_list(config.seek, 1);
 	cons_flush();

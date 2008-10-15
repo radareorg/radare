@@ -211,7 +211,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		free(node->value);
 		if (node->flags & CN_BOOL) {
 			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
-			node->i_value = (u64)b;
+			node->i_value = (u64)(b==0)?0:1;
 			//node->value = estrdup(node->value, b?"true":"false");
 			node->value = strdup(b?"true":"false");
 		} else {
@@ -232,8 +232,10 @@ struct config_node_t *config_set(const char *name, const char *value)
 		} else {
 			node = config_node_new(name, value);
 			if (value)
-			if (!strcmp(value,"true")||!strcmp(value,"false"))
+			if (!strcmp(value,"true")||!strcmp(value,"false")) {
 				node->flags|=CN_BOOL;
+				node->i_value = (!strcmp(value,"true"))?1:0;
+			}
 			list_add_tail(&(node->list), &(config_new.nodes));
 		}
 	}
@@ -659,6 +661,7 @@ void config_init(int first)
 
 	config_set("cfg.editor", "vi");
 	config_set("cfg.noscript", "false");
+	config_set("cfg.sections", "true");
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 1024); // cp850
 	node = config_set("cfg.verbose", "true");
@@ -854,7 +857,7 @@ void config_init(int first)
 	radis_update();
 
 	if (first) {
-		metadata_comment_init(1);
+		data_comment_init(1);
 		radare_hack_init();
 		trace_init();
 	}

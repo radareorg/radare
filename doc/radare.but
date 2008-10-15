@@ -866,12 +866,35 @@ Extracted from the manpage:
 
 \S{print-basic-types} Basic types
 
+All basic C types are mapped as print modes for float, integer, long and longlong. If you are interested in a more complex structure or just an array definition see 'print memory' section for more information.
+
+Here's the list of the print (\c{p?}) modes for basic C types:
+
 \c  f : float                   4 bytes
 \c  i : integer                 4 bytes
 \c  l : long                    4 bytes
 \c  L : long long               8 bytes
 
-TODO: add examples + doc
+Let's see some examples:
+
+\c [0x4A13B8C0]> pi 32
+\c 57
+\c 137
+\c 255
+\c 195
+\c 0
+\c 255
+\c 141
+\c 194
+
+\c [0x4A13B8C0]> pf
+\c -0.000000
+\c 0.000000
+\c -119237.992188
+\c nan
+\c -25687860278081448018744180736.000000
+\c -0.000000
+\c nan
 
 \S{print-source} Source (asm, C)
 
@@ -895,15 +918,39 @@ TODO: add examples + doc
 
 \S{print-strings} Strings
 
+Strings are probably one of the most important entrypoints while starting to reverse engineer a program because they are usually referencing information about the functions actions ( asserts, debug or info messages, ...).
+
+So it is important for radare to be able to print strings in multiple ways:
+
+\c ..p?..
 \c  a : ascii                   (null)
 \c  A : ascii printable         (null)
-\c  r : raw ascii               (null)
 \c  z : ascii null terminated   (null)
 \c  Z : wide ascii null end     (null)
+\c  r : raw ascii               (null)
 
-TODO: add examples + explanation
+Commands 'pa' and 'pA' are pretty similar, but 'pA' protects your console from strange non-printable characters. These two commands are restricted to the block size, so you will have to manually adjust the block size to get a nicer format. If the analyzed strings are zero-terminated or wide-chars, use 'z' or 'Z'.
 
-\S{print-memory} Format
+Most common strings will be just zero-terminated ones. Here's an example by using the debugger to continue the execution of the program until it executes the 'open' syscall. When we recover the control over the process, we get the arguments passed to the syscall, pointed by \c{%ebx}. Which is obviously a zero terminated string.
+
+\c [0x4A13B8C0]> !contsc open
+\c 0x4a14fc24 syscall(5) open ( 0x4a151c91 0x00000000 0x00000000 ) = 0xffffffda
+\c [0x4A13B8C0]> !regs
+\c   eax  0xffffffda    esi  0xffffffff    eip    0x4a14fc24
+\c   ebx  0x4a151c91    edi  0x4a151be1    oeax   0x00000005
+\c   ecx  0x00000000    esp  0xbfbedb1c    eflags 0x200246  
+\c   edx  0x00000000    ebp  0xbfbedbb0    cPaZstIdor0 (PZI)
+\c [0x4A13B8C0]> 
+\c [0x4A13B8C0]> pz @ 0x4a151c91
+\c /etc/ld.so.cache
+
+Finally, the 'pr' is used to raw print the bytes to stdout. These bytes can be redirected to a file by using the '>' character:
+
+\c [0x4A13B8C0]> pr 20K > file
+\c [0x4A13B8C0]> !!du -h file
+\c 20K     file
+
+\S{print-memory} Print memory
 
 It is possible to print various packed data types in a single line using the 'pm' command (print memory). Here's the help and some examples:
 

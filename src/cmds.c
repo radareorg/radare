@@ -921,19 +921,22 @@ CMD_DECL(code)
 		else
 		if (text[0]) {
 			if (text[0]=='-')
-				metadata_comment_del(config.seek, text+1);
-			else	metadata_comment_add(config.seek, text);
+				data_comment_del(config.seek, text+1);
+			else	data_comment_add(config.seek, text);
 		}
 		break;
 	case 'x': // code xref
 		if (text[1]=='-')
-			metadata_xrefs_del(config.seek, get_math(text+2), 0);
-		else	metadata_xrefs_add(config.seek, get_math(text+1), 0);
+			data_xrefs_del(config.seek, get_math(text+2), 0);
+		else	data_xrefs_add(config.seek, get_math(text+1), 0);
 		break;
 	case 'X': // data xref
 		if (text[1]=='-')
-			metadata_xrefs_del(config.seek, get_math(text+2), 1);
-		else	metadata_xrefs_add(config.seek, get_math(text+1), 1);
+			data_xrefs_del(config.seek, get_math(text+2), 1);
+		else	data_xrefs_add(config.seek, get_math(text+1), 1);
+		break;
+	case 'i':
+		data_info();
 		break;
 	case 'F':
 		/* do code analysis here */
@@ -943,42 +946,56 @@ CMD_DECL(code)
 	case 's':
 	case 'f':
 	case 'u': {
-		char *arg=text+2;
+		char *arg=text+1;
 		struct data_t *d;
 		u64 tmp = config.block_size;
 		int fmt;
 		int len;
-		for(;*arg && *arg==' ';arg=arg+1);
-		len = get_math(arg);
-		switch(text[0]) {
-			case 'm': fmt = DATA_STRUCT; break;
-			case 'c': fmt = DATA_CODE; break;
-			case 'd': fmt = DATA_HEX; break;
-			case 's': fmt = DATA_STR; break;
-			case 'F': fmt = DATA_FUN; break;
-			case 'f': fmt = DATA_FOLD_C; break;
-			case 'u': fmt = DATA_FOLD_O; break;
-			default:  fmt = DATA_HEX; break;
+		for(; *arg==' ';arg=arg+1);
+		if (arg[0]=='\0') {
+			switch(text[0]) {
+				case 'm': radare_cmd("C* | grep Cm", 0); break;
+				case 'c': radare_cmd("C* | grep Cc", 0); break;
+				case 'd': radare_cmd("C* | grep Cd", 0); break;
+				case 's': radare_cmd("C* | grep Cs", 0); break;
+				case 'F': radare_cmd("C* | grep CF", 0); break;
+				case 'f': radare_cmd("C* | grep Cf", 0); break;
+				case 'u': radare_cmd("C* | grep Cu", 0); break;
+			}
+		} else {
+			len = get_math(arg);
+			switch(text[0]) {
+				case 'm': fmt = DATA_STRUCT; break;
+				case 'c': fmt = DATA_CODE; break;
+				case 'd': fmt = DATA_HEX; break;
+				case 's': fmt = DATA_STR; break;
+				case 'F': fmt = DATA_FUN; break;
+				case 'f': fmt = DATA_FOLD_C; break;
+				case 'u': fmt = DATA_FOLD_O; break;
+				default:  fmt = DATA_HEX; break;
+			}
+			arg = strchr(arg, ' ');
+			if (arg != NULL)
+				arg = arg + 1;
+			tmp = config.block_size;
+			radare_set_block_size_i(len);
+			d = data_add_arg(config.seek+(config.cursor_mode?config.cursor:0), fmt, arg);
+			radare_set_block_size_i(tmp);
 		}
-		arg = strchr(arg, ' ');
-		if (arg != NULL)
-			arg = arg + 1;
-		tmp = config.block_size;
-		radare_set_block_size_i(len);
-		d = data_add_arg(config.seek+(config.cursor_mode?config.cursor:0), fmt, arg);
-		radare_set_block_size_i(tmp);
 		} break;
 	case '*':
-		metadata_comment_list();
-		metadata_xrefs_list();
+		data_comment_list();
+		data_xrefs_list();
 		data_list();
 		break;
 	default:
-		cons_printf("Usage: C[op] [arg] <@ offset>\n"
-		"  CC [-][comment] @ here - add/rm comment\n"
-		"  CF [-][len]  @ here    - add/rm function\n"
-		"  Cx [-][addr] @ here    - add/rm code xref\n"
-		"  CX [-][addr] @ here    - add/rm data xref\n"
+		cons_printf(
+		"Usage: C[op] [arg] <@ offset>\n"
+		"  Ci               ; show info about metadata\n"
+		"  CC [-][comment] @ here ; add/rm comment\n"
+		"  CF [-][len]  @ here    ; add/rm function\n"
+		"  Cx [-][addr] @ here    ; add/rm code xref\n"
+		"  CX [-][addr] @ here    ; add/rm data xref\n"
 		"  Cm [num] [expr]  ; define memory format (pm?)\n"
 		"  Cc [num]         ; converts num bytes to code\n"
 		"  Cd [num]         ; converts to data bytes\n"
@@ -1106,6 +1123,7 @@ CMD_DECL(flag)
 	case 'c': flag_cmd(text); break;
 	case 'r': flag_rename_str(text); break;
 	case 's': flag_space(input+1); break;
+	case 'u': flag_set_undef(input+2, config.seek, 0); break;
 	case 'm': flag_space_move(text); break;
 	case 'd': print_flag_offset(config.seek); NEWLINE; break;
 	case 'i': {

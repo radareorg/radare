@@ -59,3 +59,10 @@ if so_hello.env['GUI'] == 1:
 	sh.target = 'gtk-prefs'
 	sh.source = 'gtk-prefs.c'
 	sh.install_path = plugindir
+	# gtk-topbar
+	sh = bld.new_task_gen('cc', 'shlib','gtk-topbar')
+	sh.includes = '../..'
+	sh.uselib += 'GTK'
+	sh.target = 'gtk-topbar'
+	sh.source = 'gtk-topbar.c'
+	sh.install_path = plugindir

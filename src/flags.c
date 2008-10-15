@@ -56,7 +56,8 @@ void flag_help()
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
 	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
-	" fn name      ; flag new name (ignores dupped names)\n"
+	" fn name      ; new flag (ignores dupped names)\n"
+	" fu name      ; new flag if no one exists here (shy)\n"
 	" fm name      ; move flag to another flag space\n"
 	" fs spacename ; create/list/switch flag spaces\n"
 	" fr old new   ; rename a flag or more with '*'\n"
@@ -113,6 +114,17 @@ void flag_cmd(const char *text)
 		flag->cmd = estrdup(flag->cmd, text);
 		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
 	}
+}
+
+flag_t *flag_get_by_addr(u64 addr)
+{
+	struct list_head *pos;
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (flag->offset = addr)
+			return flag;
+	}
+	return NULL;
 }
 
 flag_t *flag_get_i(int id)
@@ -620,15 +632,56 @@ int flag_qsort_compare(const void *a, const void *b)
 	return strcmp(b, a);
 }
 
+int flag_is_valid_char(const char ch)
+{
+	switch(ch) {
+	case '*':
+	case '/':
+	case '+':
+	case '-':
+	case ' ':
+	case '\n':
+	case '\t':
+	case '[':
+	case '@':
+		return 0;
+	default:
+		if (((ch >= '0') && (ch <= '9')))
+			return 1;
+		if (!is_printable(ch))
+			return 0;
+	}
+	return 1;
+}
+
+#define MAX_FLAG_LEN 20
+int flag_filter_name(char *name)
+{
+	int i;
+	char *oname;
+	for(;*name==' ';name=name+1);
+	oname=name;
+	for(i=0;*name!='\0'; name = name +1,i++) {
+		if (i>MAX_FLAG_LEN) {
+			name[0]='\0';
+			break;
+		}
+		if (!flag_is_valid_char(*name)) {
+			strcpy(name, name+1);
+			name = name -1;
+		}
+	}
+	return flag_is_valid_name(oname);
+}
+
 int flag_is_valid_name(const char *name)
 {
-	if (strchr(name, '*')  ||  strchr(name, '/') ||  strchr(name, '+')
-	||  strchr(name, '-')  ||  strchr(name, ' ') ||  strchr(name, '\n')
-	||  strchr(name, '\t') ||  strchr(name, '[') ||  strchr(name,'@')
-	||  strchr(name, ']') 
-	|| ((name[0] >= '0') &&  (name[0] <= '9'))
-	||  !is_printable(name[0]))
+	if (name[0]=='\0')
 		return 0;
+	for(;*name!='\0'; name = name +1) {
+		if (!flag_is_valid_char(*name))
+			return 0;
+	}
 	return 1;
 }
 
@@ -714,6 +767,15 @@ int flag_set(const char *name, u64 addr, int dup)
 	return 0;
 }
 
+int flag_set_undef(const char *name, u64 addr, int dup)
+{
+	flag_t *flag = flag_get_by_addr(addr);
+	if (flag == NULL || (strlen(flag->name)<4))
+		return flag_set(name, addr, dup);
+	return 0;
+}
+
+/* TODO: move to visual */
 void flags_visual_menu()
 {
 	char cmd[1024];

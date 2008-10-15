@@ -331,11 +331,33 @@ u64 get_offset(const char *orig)
 		return ret;
 
 	if (arg[i]=='$') {
-		if (arg[i+1]=='$') {
 			struct aop_t aop;
+		switch(arg[i+1]) {
+		case '?':
+			eprintf("Usage:\n");
+			eprintf(" $$  = current seek\n");
+			eprintf(" $$$ = size of opcode\n");
+			eprintf(" $$j = jump branch of opcode\n");
+			eprintf(" $$f = failover continuation of opcode\n");
+			eprintf(" $$r = pointer reference of opcode\n");
+			break;
+		case '$':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;
-		} else {
+			break;
+		case 'j':
+			arch_aop(config.seek, config.block,&aop);
+			ret = aop.jump;
+			break;
+		case 'f':
+			arch_aop(config.seek, config.block,&aop);
+			ret = aop.fail;
+			break;
+		case 'r':
+			arch_aop(config.seek, config.block,&aop);
+			ret = aop.ref;
+			break;
+		default:
 			ret = config.seek;
 		}
 	} else {

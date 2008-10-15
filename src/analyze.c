@@ -576,11 +576,14 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 
 		if (str_i>2) {
 			str[str_i] = '\0';
-			print_addr((u64)(seek+i-str_i));
 			if (rad) {
-				cons_printf("CX 0x%08llx @ 0x%08llx ; string data reference\n", (u64)(seek+i-str_i), (u64)config.seek);
-				cons_printf("; TODO (if exists) f str_%s\n", str);
+				u64 addr = (u64)(seek+i-str_i);
+				cons_printf("Cs %d @ 0x%08llx\n", strlen(str), addr);
+				flag_filter_name(str);
+				cons_printf("f str_%s @ 0x%08llx\n", str, addr);
+				//cons_printf("; TODO (if exists) f str_%s\n", str);
 			} else {
+				print_addr((u64)(seek+i-str_i));
 				cons_strcat("   ");
 				C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
 				else	cons_printf("string \"%s\"\n", str);
@@ -609,10 +612,13 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 
 			if (num == 0) {
 				if (lastnull++ == 0) {
-					cons_strcat("   ");
-					print_addr(seek+i-3);
-					C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
-					else cons_printf("(NULL)\n");
+					if (rad) {
+					}else {
+						cons_strcat("   ");
+						print_addr(seek+i-3);
+						C cons_printf(C_YELLOW"(NULL)"C_RESET"\n");
+						else cons_printf("(NULL)\n");
+					}
 				}
 			} else if (num == -1) {
 				/* ignore -1 */
@@ -621,14 +627,14 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 			} else {
 				if (rad) {
 					u32 n = (config.endian)?num:nume;
-					C cons_printf(C_TURQOISE);
 					str[0]='\0';
 					string_flag_offset(str, (u64)n);
 					if (!strnull(str)) {
+						/* reference by pointer */
 						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)n, (u64)(seek+i-3), str);
 					} else
 					if (n == (u32)seek)
-						cons_printf("  (self pointer)\n");
+						cons_printf(" ;  (self pointer)\n");
 					else radare_analyze(n, size, --depth, rad);
 				} else {
 					if (lastnull>1)
@@ -638,6 +644,7 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 				//		cons_strcat("   ");
 					print_addr(seek+i-3);
 					C {
+					C cons_printf(C_TURQOISE);
 						if (config.endian)
 						cons_printf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
 							num, nume);
@@ -680,7 +687,8 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 	/* restore */
 	config.seek = tmp;
 	radare_read(0);
-	cons_strcat("\n");
+	if (!rad)
+		cons_strcat("\n");
 	config.verbose = v;
 
 	return 0;
@@ -802,11 +810,12 @@ int analyze_function(int recursive, int report)
 		return -1;
 	}
 
+	cons_printf("fs functions\n");
 	if (!report) {
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
-		cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
-		cons_printf("CF %lld @ 0x%08llx\n", len, from); // XXX can be recursive
+		cons_printf("fu fun_%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
 	} else {
 		buf[0]='\0';
 		string_flag_offset(buf, from);
@@ -926,7 +935,7 @@ int analyze_function(int recursive, int report)
 		cons_printf("framesize = %d\n", framesize);
 		cons_printf("ncalls = %d\n", ncalls);
 		cons_printf("drefs = %d\n", nrefs);
-		cons_printf("xrefs = %d\n", metadata_xrefs_at(from));
+		cons_printf("xrefs = %d\n", data_xrefs_at(from));
 		cons_printf("args = %d\n", analyze_var_get(VAR_TYPE_ARG));
 		cons_printf("vars = %d\n", analyze_var_get(VAR_TYPE_LOCAL));
 	} else {
@@ -935,4 +944,5 @@ int analyze_function(int recursive, int report)
 		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
 		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
 	}
+	cons_printf("fs *\n");
 }

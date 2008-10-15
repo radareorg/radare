@@ -1,59 +1,68 @@
-#include "main.h"
-#include <string.h>
+#include <gtk/gtk.h>
+#include "plugin.h"
 
-GtkWidget *combo;
-GtkWidget *arch;
-GtkWidget *entry;
+extern int radare_plugin_type;
+extern struct plugin_hack_t radare_plugin;
+static int (*r)(char *cmd, int log);
+static GtkWidget *combo;
+static GtkWidget *arch;
+static GtkWidget *entry;
+static GtkWidget *my_widget = NULL;
 
-void core_cmd(const char *cmd)
+static int core_cmd(const char *cmd)
 {
+	return r(cmd, 0);
+#if 0
 	vte_terminal_feed_child(VTE_TERMINAL(term), cmd, strlen(cmd));
+#endif
 }
 
-void core_cmd_end()
+static void core_cmd_end()
 {
+#if 0
 	gtk_widget_grab_focus(term);
+#endif
 }
 
-void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
+static void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 {
 	switch(gtk_combo_box_get_active(widget)) {
-	case 0: core_cmd(":eval asm.arch = intel16\n\n"); break;
-	case 1: core_cmd(":eval asm.arch = intel32\n\n"); break;
-	case 2: core_cmd(":eval asm.arch = intel64\n\n"); break;
-	case 3: core_cmd(":eval asm.arch = arm\n\n"); break;
-	case 4: core_cmd(":eval asm.arch = ppc\n\n"); break;
-	case 5: core_cmd(":eval asm.arch = 68k\n\n"); break;
-	case 6: core_cmd(":eval asm.arch = java\n\n"); break;
-	case 7: core_cmd(":eval asm.arch = mips\n\n"); break;
-	case 8: core_cmd(":eval asm.arch = csr\n\n"); break;
-	case 9: core_cmd(":eval asm.arch = sparc\n\n"); break;
+	case 0: core_cmd(":eval asm.arch = intel16\n"); break;
+	case 1: core_cmd(":eval asm.arch = intel32\n"); break;
+	case 2: core_cmd(":eval asm.arch = intel64\n"); break;
+	case 3: core_cmd(":eval asm.arch = arm\n"); break;
+	case 4: core_cmd(":eval asm.arch = ppc\n"); break;
+	case 5: core_cmd(":eval asm.arch = 68k\n"); break;
+	case 6: core_cmd(":eval asm.arch = java\n"); break;
+	case 7: core_cmd(":eval asm.arch = mips\n"); break;
+	case 8: core_cmd(":eval asm.arch = csr\n"); break;
+	case 9: core_cmd(":eval asm.arch = sparc\n"); break;
 	}
 
 	core_cmd_end();
 }
 
-void print_mode_changed(GtkComboBox *widget, gpointer user_data)
+static void print_mode_changed(GtkComboBox *widget, gpointer user_data)
 {
 	core_cmd("Q");
 
 	switch(gtk_combo_box_get_active(widget)) {
-	case 0: core_cmd(":px\n\n"); break;
-	case 1: core_cmd(":pv\n\n"); break;
-	case 2: core_cmd(":pD\n\n"); break;
-	case 3: core_cmd(":po\n\n"); break;
-	case 4: core_cmd(":pb\n\n"); break;
-	case 5: core_cmd(":pa\n\n"); break;
-	case 6: core_cmd(":ps\n\n"); break;
-	case 7: core_cmd(":pX\n\n"); break;
-	case 8: core_cmd(":pr\n\n"); break;
+	case 0: core_cmd(":px\n"); break;
+	case 1: core_cmd(":pv\n"); break;
+	case 2: core_cmd(":pD\n"); break;
+	case 3: core_cmd(":po\n"); break;
+	case 4: core_cmd(":pb\n"); break;
+	case 5: core_cmd(":pa\n"); break;
+	case 6: core_cmd(":ps\n"); break;
+	case 7: core_cmd(":pX\n"); break;
+	case 8: core_cmd(":pr\n"); break;
 	}
 	core_cmd("V\n");
 
 	core_cmd_end();
 }
 
-void commandline_activated(GtkEntry *entry, gpointer  user_data)
+static void commandline_activated(GtkEntry *entry, gpointer  user_data)
 {
 	char *buf;
 	const char *cmd = gtk_entry_get_text(entry);
@@ -61,11 +70,11 @@ void commandline_activated(GtkEntry *entry, gpointer  user_data)
 
 	gtk_entry_select_region(entry, 0, len);
 	buf = (char *)malloc(len+5);
-	snprintf(buf, len+4, ":%s\n\n", cmd);
+	snprintf(buf, len+4, ":%s\n", cmd);
 	core_cmd(buf);
 }
 
-GtkWidget *gradare_topbar_new()
+static GtkWidget *gradare_topbar_new()
 {
 	GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
 	//GtkWidget *refresh;
@@ -118,5 +127,25 @@ GtkWidget *gradare_topbar_new()
 	g_signal_connect(GTK_COMBO_BOX(arch), "changed", GTK_SIGNAL_FUNC(arch_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), arch, FALSE, FALSE, 0);
 
+//gtk_widget_show_all(hbox);
 	return hbox;
 }
+
+/* STUB */
+static int my_hack(char *input)
+{
+	static int dry = 0;
+	if (dry) return 0; dry=1;
+	r = radare_plugin.resolve("radare_cmd");
+	my_widget = gradare_topbar_new();
+	if (r != NULL)
+		return 1;
+	return 0;
+}
+int radare_plugin_type = PLUGIN_TYPE_GUI;
+struct plugin_hack_t radare_plugin = {
+	.name     = "gtk-topbar",
+	.desc     = "GTK top bar (entry cmd and arch/view)",
+	.callback = &my_hack,
+	.widget   = &my_widget
+};
