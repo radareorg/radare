@@ -30,25 +30,62 @@ struct bfvm_cpu_t {
 	u64 base;
 	u8 *mem;
 	u32 size;
+	u64 screen;
+	int screen_idx;
+	int screen_size;
+	u8 *screen_buf;
+	u64 input;
+	int input_idx;
+	int input_size;
+	u8 *input_buf;
 	int circular; /* circular memory */
 } bfvm_cpu;
 
 static int bfvm_init(u32 size, int circular)
 {
 	memset(&bfvm_cpu,'\0', sizeof(struct bfvm_cpu_t));
+
+	/* data */
 	bfvm_cpu.mem = (u8 *)malloc(size);
 	if (bfvm_cpu.mem == NULL)
 		return 0;
+	if (size>65536)
+		bfvm_cpu.base = 0xd0000000;
+	else bfvm_cpu.base = 0xd0000;
 	memset(bfvm_cpu.mem,'\0',size);
+
+	/* setup */
 	bfvm_cpu.circular = circular;
 	bfvm_cpu.eip = 0; // look forward nops
 	bfvm_cpu.size = size;
-	if (size>65536)
-		bfvm_cpu.base = 0x10000000;
-	else bfvm_cpu.base = 0x10000;
+
+	/* screen */
+	bfvm_cpu.screen = 0x50000;
+	bfvm_cpu.screen_size = 4096;
+	bfvm_cpu.screen_buf = (u8*)malloc( bfvm_cpu.screen_size );
+	memset(bfvm_cpu.screen_buf, '\0', bfvm_cpu.screen_size);
+
+	/* input */
+	bfvm_cpu.input = 0x10000;
+	bfvm_cpu.input_size = 4096;
+	bfvm_cpu.input_buf = (u8*)malloc( bfvm_cpu.input_size );
+	memset(bfvm_cpu.input_buf, '\0', bfvm_cpu.input_size);
 	bfvm_cpu.esp = bfvm_cpu.base;
 	eprintf("BFVM INIT!\n");
+
 	return 1;
+}
+
+static struct bfvm_cpu_t *bfvm_destroy(struct bfvm_cpu_t *bfvm)
+{
+	free(bfvm_cpu.mem);
+	bfvm_cpu.mem = 0;
+
+	free(bfvm_cpu.screen_buf);
+	bfvm_cpu.screen_buf = 0;
+
+	free(bfvm);
+	return NULL;
 }
 
 static u8 bfvm_op()
@@ -122,6 +159,23 @@ static int bfvm_reg_set(const char *str)
 	return 1;
 }
 
+/* screen and input */
+static void bfvm_peek()
+{
+	int idx = bfvm_cpu.input_idx;
+	u8 *ptr = bfvm_get_ptr();
+	*ptr = bfvm_cpu.input_buf[idx];
+	bfvm_cpu.input_idx = idx+1;
+}
+
+static void bfvm_poke()
+{
+	int idx = bfvm_cpu.screen_idx;
+	bfvm_cpu.screen_buf[idx] = bfvm_get();
+	bfvm_cpu.screen_idx = idx+1;
+}
+
+/* debug */
 static int bfvm_step(int over)
 {
 	u8 *buf;
@@ -132,9 +186,10 @@ static int bfvm_step(int over)
 		switch(op) {
 		case '.':
 			buf = bfvm_get_ptr();
-			write(1,buf,1);
+			bfvm_poke();
 			break;
 		case ',':
+			bfvm_peek();
 			/* TODO read */
 			break;
 		case '+':
@@ -154,7 +209,11 @@ static int bfvm_step(int over)
 		case ']':
 			do {
 				bfvm_cpu.eip--;
-			/* TODO: control underflow */
+				/* control underflow */
+				if (bfvm_cpu.eip<0) {
+					bfvm_cpu.eip = 0;
+					break;
+				}
 			} while(bfvm_op()!='[');
 			break;
 		default:
@@ -186,14 +245,23 @@ static void bfvm_maps(int rad)
 {
 	if (rad) {
 		cons_printf("fs sections\n");
-		cons_printf("f section_code @ 0x%08llx\n", 0);
+		cons_printf("e cmd.vprompt=px@screen\n");
+		cons_printf("f section_code @ 0x%08llx\n", (u64)0LL);
 		cons_printf("f section_code_end @ 0x%08llx\n", (u64)config.size);
 		cons_printf("f section_data @ 0x%08llx\n", (u64)bfvm_cpu.base);
 		cons_printf("f section_data_end @ 0x%08llx\n", (u64)bfvm_cpu.base+bfvm_cpu.size);
+		cons_printf("f screen @ 0x%08llx\n", (u64)bfvm_cpu.screen);
+		cons_printf("f section_screen @ 0x%08llx\n", (u64)bfvm_cpu.screen);
+		cons_printf("f section_screen_end @ 0x%08llx\n", (u64)bfvm_cpu.screen+bfvm_cpu.screen_size);
+		cons_printf("f input @ 0x%08llx\n", (u64)bfvm_cpu.input);
+		cons_printf("f section_input @ 0x%08llx\n", (u64)bfvm_cpu.input);
+		cons_printf("f section_input_end @ 0x%08llx\n", (u64)bfvm_cpu.input+bfvm_cpu.input_size);
 		cons_printf("fs *\n");
 	} else {
 		cons_printf("0x%08llx - 0x%08llx rwxu 0x%08llx .code\n", (u64)0, (u64)config.size, config.size);
 		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .data\n", bfvm_cpu.base, bfvm_cpu.base+bfvm_cpu.size, bfvm_cpu.size);
+		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .screen\n", bfvm_cpu.screen, bfvm_cpu.screen+bfvm_cpu.screen_size, bfvm_cpu.screen_size);
+		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .input\n", bfvm_cpu.input, bfvm_cpu.input+bfvm_cpu.input_size, bfvm_cpu.input_size);
 	}
 }
 
@@ -222,6 +290,14 @@ static ssize_t bfdbg_write(int fd, const void *buf, size_t count)
 
 static ssize_t bfdbg_read(int fd, void *buf, size_t count)
 {
+	if (cur_seek>=bfvm_cpu.screen && cur_seek<=bfvm_cpu.screen+bfvm_cpu.screen_size) {
+		memcpy(buf, bfvm_cpu.screen_buf, count);
+		return count;
+	}
+	if (cur_seek>=bfvm_cpu.input && cur_seek<=bfvm_cpu.input+bfvm_cpu.input_size) {
+		memcpy(buf, bfvm_cpu.input_buf, count);
+		return count;
+	}
 	if (cur_seek>=bfvm_cpu.base) {
 		memcpy(buf, bfvm_cpu.mem, count);
 		return count;
