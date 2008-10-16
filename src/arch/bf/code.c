@@ -43,6 +43,8 @@ int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 	case ']':
 		aop->type = AOP_TYPE_CJMP;
 		aop->jump = last_loop;
+		aop->fail = addr+1;
+		aop->eob = 1;
 		break;
 	case '>':
 		//aop->type = AOP_TYPE_ADD;

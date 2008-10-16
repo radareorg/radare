@@ -1,4 +1,4 @@
-#include ../../config.mk
+include ../../config.mk
 
 CFLAGS+=-DRADARE_CORE
 

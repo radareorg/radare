@@ -117,7 +117,18 @@ enum NXByteOrder {
   NX_BigEndian
 };
 
-typedef unsigned int uint32_t;
+#ifndef u32
+#define u32 unsigned long
+#endif
+
+#ifndef u64
+#define u64 unsigned long long
+#endif
+
+#ifndef u8
+#define u8 unsigned char
+#endif
+
 typedef unsigned int vm_offset_t;
 typedef unsigned int vm_size_t;
 typedef unsigned int boolean_t;
@@ -125,8 +136,6 @@ typedef int cpu_type_t;
 typedef int cpu_subtype_t;
 typedef int vm_prot_t;
 typedef int kern_return_t;
-typedef unsigned long long uint64_t;
-typedef unsigned char uint8_t;
 
 /* Constants for the cmd field of all load commands, the type */
 #define	LC_SEGMENT	0x1	/* segment of this file to be mapped */
@@ -228,26 +237,26 @@ typedef _STRUCT_X86_THREAD_STATE32 i386_thread_state_t;
  * 32-bit architectures.
  */
 struct mach_header {
-	uint32_t	magic;		/* mach magic number identifier */
+	u32	magic;		/* mach magic number identifier */
 	cpu_type_t	cputype;	/* cpu specifier */
 	cpu_subtype_t	cpusubtype;	/* machine specifier */
-	uint32_t	filetype;	/* type of file */
-	uint32_t	ncmds;		/* number of load commands */
-	uint32_t	sizeofcmds;	/* the size of all the load commands */
-	uint32_t	flags;		/* flags */
+	u32	filetype;	/* type of file */
+	u32	ncmds;		/* number of load commands */
+	u32	sizeofcmds;	/* the size of all the load commands */
+	u32	flags;		/* flags */
 };
 
 struct fat_header {
-	uint32_t	magic;		/* FAT_MAGIC */
-	uint32_t	nfat_arch;	/* number of structs that follow */
+	u32	magic;		/* FAT_MAGIC */
+	u32	nfat_arch;	/* number of structs that follow */
 };
 
 struct fat_arch {
 	cpu_type_t	cputype;	/* cpu specifier (int) */
 	cpu_subtype_t	cpusubtype;	/* machine specifier (int) */
-	uint32_t	offset;		/* file offset to this object file */
-	uint32_t	size;		/* size of this object file */
-	uint32_t	align;		/* alignment as a power of 2 */
+	u32	offset;		/* file offset to this object file */
+	u32	size;		/* size of this object file */
+	u32	align;		/* alignment as a power of 2 */
 };
 
 /*
@@ -255,198 +264,198 @@ struct fat_arch {
  * 64-bit architectures.
  */
 struct mach_header_64 {
-	uint32_t	magic;		/* mach magic number identifier */
+	u32	magic;		/* mach magic number identifier */
 	cpu_type_t	cputype;	/* cpu specifier */
 	cpu_subtype_t	cpusubtype;	/* machine specifier */
-	uint32_t	filetype;	/* type of file */
-	uint32_t	ncmds;		/* number of load commands */
-	uint32_t	sizeofcmds;	/* the size of all the load commands */
-	uint32_t	flags;		/* flags */
-	uint32_t	reserved;	/* reserved */
+	u32	filetype;	/* type of file */
+	u32	ncmds;		/* number of load commands */
+	u32	sizeofcmds;	/* the size of all the load commands */
+	u32	flags;		/* flags */
+	u32	reserved;	/* reserved */
 };
 
 struct load_command {
-	uint32_t cmd;		/* type of load command */
-	uint32_t cmdsize;	/* total size of command in bytes */
+	u32 cmd;		/* type of load command */
+	u32 cmdsize;	/* total size of command in bytes */
 };
 
 union lc_str {
-	uint32_t	offset;	/* offset to the string */
+	u32	offset;	/* offset to the string */
 #ifndef __LP64__
 	char		*ptr;	/* pointer to the string */
 #endif 
 };
 
 struct segment_command { /* for 32-bit architectures */
-	uint32_t	cmd;		/* LC_SEGMENT */
-	uint32_t	cmdsize;	/* includes sizeof section structs */
+	u32	cmd;		/* LC_SEGMENT */
+	u32	cmdsize;	/* includes sizeof section structs */
 	char		segname[16];	/* segment name */
-	uint32_t	vmaddr;		/* memory address of this segment */
-	uint32_t	vmsize;		/* memory size of this segment */
-	uint32_t	fileoff;	/* file offset of this segment */
-	uint32_t	filesize;	/* amount to map from the file */
+	u32	vmaddr;		/* memory address of this segment */
+	u32	vmsize;		/* memory size of this segment */
+	u32	fileoff;	/* file offset of this segment */
+	u32	filesize;	/* amount to map from the file */
 	vm_prot_t	maxprot;	/* maximum VM protection */
 	vm_prot_t	initprot;	/* initial VM protection */
-	uint32_t	nsects;		/* number of sections in segment */
-	uint32_t	flags;		/* flags */
+	u32	nsects;		/* number of sections in segment */
+	u32	flags;		/* flags */
 };
 
 struct segment_command_64 { /* for 64-bit architectures */
-	uint32_t	cmd;		/* LC_SEGMENT_64 */
-	uint32_t	cmdsize;	/* includes sizeof section_64 structs */
+	u32	cmd;		/* LC_SEGMENT_64 */
+	u32	cmdsize;	/* includes sizeof section_64 structs */
 	char		segname[16];	/* segment name */
-	uint64_t	vmaddr;		/* memory address of this segment */
-	uint64_t	vmsize;		/* memory size of this segment */
-	uint64_t	fileoff;	/* file offset of this segment */
-	uint64_t	filesize;	/* amount to map from the file */
+	u64	vmaddr;		/* memory address of this segment */
+	u64	vmsize;		/* memory size of this segment */
+	u64	fileoff;	/* file offset of this segment */
+	u64	filesize;	/* amount to map from the file */
 	vm_prot_t	maxprot;	/* maximum VM protection */
 	vm_prot_t	initprot;	/* initial VM protection */
-	uint32_t	nsects;		/* number of sections in segment */
-	uint32_t	flags;		/* flags */
+	u32	nsects;		/* number of sections in segment */
+	u32	flags;		/* flags */
 };
 
 struct section { /* for 32-bit architectures */
 	char		sectname[16];	/* name of this section */
 	char		segname[16];	/* segment this section goes in */
-	uint32_t	addr;		/* memory address of this section */
-	uint32_t	size;		/* size in bytes of this section */
-	uint32_t	offset;		/* file offset of this section */
-	uint32_t	align;		/* section alignment (power of 2) */
-	uint32_t	reloff;		/* file offset of relocation entries */
-	uint32_t	nreloc;		/* number of relocation entries */
-	uint32_t	flags;		/* flags (section type and attributes)*/
-	uint32_t	reserved1;	/* reserved (for offset or index) */
-	uint32_t	reserved2;	/* reserved (for count or sizeof) */
+	u32	addr;		/* memory address of this section */
+	u32	size;		/* size in bytes of this section */
+	u32	offset;		/* file offset of this section */
+	u32	align;		/* section alignment (power of 2) */
+	u32	reloff;		/* file offset of relocation entries */
+	u32	nreloc;		/* number of relocation entries */
+	u32	flags;		/* flags (section type and attributes)*/
+	u32	reserved1;	/* reserved (for offset or index) */
+	u32	reserved2;	/* reserved (for count or sizeof) */
 };
 
 struct section_64 { /* for 64-bit architectures */
 	char		sectname[16];	/* name of this section */
 	char		segname[16];	/* segment this section goes in */
-	uint64_t	addr;		/* memory address of this section */
-	uint64_t	size;		/* size in bytes of this section */
-	uint32_t	offset;		/* file offset of this section */
-	uint32_t	align;		/* section alignment (power of 2) */
-	uint32_t	reloff;		/* file offset of relocation entries */
-	uint32_t	nreloc;		/* number of relocation entries */
-	uint32_t	flags;		/* flags (section type and attributes)*/
-	uint32_t	reserved1;	/* reserved (for offset or index) */
-	uint32_t	reserved2;	/* reserved (for count or sizeof) */
-	uint32_t	reserved3;	/* reserved */
+	u64	addr;		/* memory address of this section */
+	u64	size;		/* size in bytes of this section */
+	u32	offset;		/* file offset of this section */
+	u32	align;		/* section alignment (power of 2) */
+	u32	reloff;		/* file offset of relocation entries */
+	u32	nreloc;		/* number of relocation entries */
+	u32	flags;		/* flags (section type and attributes)*/
+	u32	reserved1;	/* reserved (for offset or index) */
+	u32	reserved2;	/* reserved (for count or sizeof) */
+	u32	reserved3;	/* reserved */
 };
 
 struct fvmlib {
 	union lc_str	name;		/* library's target pathname */
-	uint32_t	minor_version;	/* library's minor version number */
-	uint32_t	header_addr;	/* library's header address */
+	u32	minor_version;	/* library's minor version number */
+	u32	header_addr;	/* library's header address */
 };
 
 struct fvmlib_command {
-	uint32_t	cmd;		/* LC_IDFVMLIB or LC_LOADFVMLIB */
-	uint32_t	cmdsize;	/* includes pathname string */
+	u32	cmd;		/* LC_IDFVMLIB or LC_LOADFVMLIB */
+	u32	cmdsize;	/* includes pathname string */
 	struct fvmlib	fvmlib;		/* the library identification */
 };
 
 struct dylib {
     union lc_str  name;			/* library's path name */
-    uint32_t timestamp;			/* library's build time stamp */
-    uint32_t current_version;		/* library's current version number */
-    uint32_t compatibility_version;	/* library's compatibility vers number*/
+    u32 timestamp;			/* library's build time stamp */
+    u32 current_version;		/* library's current version number */
+    u32 compatibility_version;	/* library's compatibility vers number*/
 };
 
 struct dylib_command {
-	uint32_t	cmd;		/* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB,
+	u32	cmd;		/* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB,
 					   LC_REEXPORT_DYLIB */
-	uint32_t	cmdsize;	/* includes pathname string */
+	u32	cmdsize;	/* includes pathname string */
 	struct dylib	dylib;		/* the library identification */
 };
 
 struct sub_framework_command {
-	uint32_t	cmd;		/* LC_SUB_FRAMEWORK */
-	uint32_t	cmdsize;	/* includes umbrella string */
+	u32	cmd;		/* LC_SUB_FRAMEWORK */
+	u32	cmdsize;	/* includes umbrella string */
 	union lc_str 	umbrella;	/* the umbrella framework name */
 };
 
 struct sub_client_command {
-	uint32_t	cmd;		/* LC_SUB_CLIENT */
-	uint32_t	cmdsize;	/* includes client string */
+	u32	cmd;		/* LC_SUB_CLIENT */
+	u32	cmdsize;	/* includes client string */
 	union lc_str 	client;		/* the client name */
 };
 
 struct sub_umbrella_command {
-	uint32_t	cmd;		/* LC_SUB_UMBRELLA */
-	uint32_t	cmdsize;	/* includes sub_umbrella string */
+	u32	cmd;		/* LC_SUB_UMBRELLA */
+	u32	cmdsize;	/* includes sub_umbrella string */
 	union lc_str 	sub_umbrella;	/* the sub_umbrella framework name */
 };
 
 struct sub_library_command {
-	uint32_t	cmd;		/* LC_SUB_LIBRARY */
-	uint32_t	cmdsize;	/* includes sub_library string */
+	u32	cmd;		/* LC_SUB_LIBRARY */
+	u32	cmdsize;	/* includes sub_library string */
 	union lc_str 	sub_library;	/* the sub_library name */
 };
 
 struct prebound_dylib_command {
-	uint32_t	cmd;		/* LC_PREBOUND_DYLIB */
-	uint32_t	cmdsize;	/* includes strings */
+	u32	cmd;		/* LC_PREBOUND_DYLIB */
+	u32	cmdsize;	/* includes strings */
 	union lc_str	name;		/* library's path name */
-	uint32_t	nmodules;	/* number of modules in library */
+	u32	nmodules;	/* number of modules in library */
 	union lc_str	linked_modules;	/* bit vector of linked modules */
 };
 
 struct dylinker_command {
-	uint32_t	cmd;		/* LC_ID_DYLINKER or LC_LOAD_DYLINKER */
-	uint32_t	cmdsize;	/* includes pathname string */
+	u32	cmd;		/* LC_ID_DYLINKER or LC_LOAD_DYLINKER */
+	u32	cmdsize;	/* includes pathname string */
 	union lc_str    name;		/* dynamic linker's path name */
 };
 
 struct thread_command {
-	uint32_t	cmd;		/* LC_THREAD or  LC_UNIXTHREAD */
-	uint32_t	cmdsize;	/* total size of this command */
-	/* uint32_t flavor		   flavor of thread state */
-	/* uint32_t count		   count of longs in thread state */
+	u32	cmd;		/* LC_THREAD or  LC_UNIXTHREAD */
+	u32	cmdsize;	/* total size of this command */
+	/* u32 flavor		   flavor of thread state */
+	/* u32 count		   count of longs in thread state */
 	/* struct XXX_thread_state state   thread state for this flavor */
 	/* ... */
 };
 
 struct routines_command { /* for 32-bit architectures */
-	uint32_t	cmd;		/* LC_ROUTINES */
-	uint32_t	cmdsize;	/* total size of this command */
-	uint32_t	init_address;	/* address of initialization routine */
-	uint32_t	init_module;	/* index into the module table that */
+	u32	cmd;		/* LC_ROUTINES */
+	u32	cmdsize;	/* total size of this command */
+	u32	init_address;	/* address of initialization routine */
+	u32	init_module;	/* index into the module table that */
 				        /*  the init routine is defined in */
-	uint32_t	reserved1;
-	uint32_t	reserved2;
-	uint32_t	reserved3;
-	uint32_t	reserved4;
-	uint32_t	reserved5;
-	uint32_t	reserved6;
+	u32	reserved1;
+	u32	reserved2;
+	u32	reserved3;
+	u32	reserved4;
+	u32	reserved5;
+	u32	reserved6;
 };
 
 struct routines_command_64 { /* for 64-bit architectures */
-	uint32_t	cmd;		/* LC_ROUTINES_64 */
-	uint32_t	cmdsize;	/* total size of this command */
-	uint64_t	init_address;	/* address of initialization routine */
-	uint64_t	init_module;	/* index into the module table that */
+	u32	cmd;		/* LC_ROUTINES_64 */
+	u32	cmdsize;	/* total size of this command */
+	u64	init_address;	/* address of initialization routine */
+	u64	init_module;	/* index into the module table that */
 					/*  the init routine is defined in */
-	uint64_t	reserved1;
-	uint64_t	reserved2;
-	uint64_t	reserved3;
-	uint64_t	reserved4;
-	uint64_t	reserved5;
-	uint64_t	reserved6;
+	u64	reserved1;
+	u64	reserved2;
+	u64	reserved3;
+	u64	reserved4;
+	u64	reserved5;
+	u64	reserved6;
 };
 
 struct symtab_command {
-	uint32_t	cmd;		/* LC_SYMTAB */
-	uint32_t	cmdsize;	/* sizeof(struct symtab_command) */
-	uint32_t	symoff;		/* symbol table offset */
-	uint32_t	nsyms;		/* number of symbol table entries */
-	uint32_t	stroff;		/* string table offset */
-	uint32_t	strsize;	/* string table size in bytes */
+	u32	cmd;		/* LC_SYMTAB */
+	u32	cmdsize;	/* sizeof(struct symtab_command) */
+	u32	symoff;		/* symbol table offset */
+	u32	nsyms;		/* number of symbol table entries */
+	u32	stroff;		/* string table offset */
+	u32	strsize;	/* string table size in bytes */
 };
 
 struct dysymtab_command {
-    uint32_t cmd;	/* LC_DYSYMTAB */
-    uint32_t cmdsize;	/* sizeof(struct dysymtab_command) */
+    u32 cmd;	/* LC_DYSYMTAB */
+    u32 cmdsize;	/* sizeof(struct dysymtab_command) */
 
     /*
      * The symbols indicated by symoff and nsyms of the LC_SYMTAB load command
@@ -463,14 +472,14 @@ struct dysymtab_command {
      * binding (indirectly through the module table and the reference symbol
      * table when this is a dynamically linked shared library file).
      */
-    uint32_t ilocalsym;	/* index to local symbols */
-    uint32_t nlocalsym;	/* number of local symbols */
+    u32 ilocalsym;	/* index to local symbols */
+    u32 nlocalsym;	/* number of local symbols */
 
-    uint32_t iextdefsym;/* index to externally defined symbols */
-    uint32_t nextdefsym;/* number of externally defined symbols */
+    u32 iextdefsym;/* index to externally defined symbols */
+    u32 nextdefsym;/* number of externally defined symbols */
 
-    uint32_t iundefsym;	/* index to undefined symbols */
-    uint32_t nundefsym;	/* number of undefined symbols */
+    u32 iundefsym;	/* index to undefined symbols */
+    u32 nundefsym;	/* number of undefined symbols */
 
     /*
      * For the for the dynamic binding process to find which module a symbol
@@ -480,8 +489,8 @@ struct dysymtab_command {
      * library file.  For executable and object modules the defined external
      * symbols are sorted by name and is use as the table of contents.
      */
-    uint32_t tocoff;	/* file offset to table of contents */
-    uint32_t ntoc;	/* number of entries in table of contents */
+    u32 tocoff;	/* file offset to table of contents */
+    u32 ntoc;	/* number of entries in table of contents */
 
     /*
      * To support dynamic binding of "modules" (whole object files) the symbol
@@ -492,8 +501,8 @@ struct dysymtab_command {
      * shared library file.  For executable and object modules the file only
      * contains one module so everything in the file belongs to the module.
      */
-    uint32_t modtaboff;	/* file offset to module table */
-    uint32_t nmodtab;	/* number of module table entries */
+    u32 modtaboff;	/* file offset to module table */
+    u32 nmodtab;	/* number of module table entries */
 
     /*
      * To support dynamic module binding the module structure for each module
@@ -504,8 +513,8 @@ struct dysymtab_command {
      * executable and object modules the defined external symbols and the
      * undefined external symbols indicates the external references.
      */
-    uint32_t extrefsymoff;	/* offset to referenced symbol table */
-    uint32_t nextrefsyms;	/* number of referenced symbol table entries */
+    u32 extrefsymoff;	/* offset to referenced symbol table */
+    u32 nextrefsyms;	/* number of referenced symbol table entries */
 
     /*
      * The sections that contain "symbol pointers" and "routine stubs" have
@@ -517,8 +526,8 @@ struct dysymtab_command {
      * the symbol table to the symbol that the pointer or stub is referring to.
      * The indirect symbol table is ordered to match the entries in the section.
      */
-    uint32_t indirectsymoff; /* file offset to the indirect symbol table */
-    uint32_t nindirectsyms;  /* number of indirect symbol table entries */
+    u32 indirectsymoff; /* file offset to the indirect symbol table */
+    u32 nindirectsyms;  /* number of indirect symbol table entries */
 
     /*
      * To support relocating an individual module in a library file quickly the
@@ -547,135 +556,135 @@ struct dysymtab_command {
      * remaining external relocation entries for them (for merged sections
      * remaining relocation entries must be local).
      */
-    uint32_t extreloff;	/* offset to external relocation entries */
-    uint32_t nextrel;	/* number of external relocation entries */
+    u32 extreloff;	/* offset to external relocation entries */
+    u32 nextrel;	/* number of external relocation entries */
 
     /*
      * All the local relocation entries are grouped together (they are not
      * grouped by their module since they are only used if the object is moved
      * from it staticly link edited address).
      */
-    uint32_t locreloff;	/* offset to local relocation entries */
-    uint32_t nlocrel;	/* number of local relocation entries */
+    u32 locreloff;	/* offset to local relocation entries */
+    u32 nlocrel;	/* number of local relocation entries */
 
 };	
 
 struct dylib_module {
-    uint32_t module_name;	/* the module name (index into string table) */
+    u32 module_name;	/* the module name (index into string table) */
 
-    uint32_t iextdefsym;	/* index into externally defined symbols */
-    uint32_t nextdefsym;	/* number of externally defined symbols */
-    uint32_t irefsym;		/* index into reference symbol table */
-    uint32_t nrefsym;		/* number of reference symbol table entries */
-    uint32_t ilocalsym;		/* index into symbols for local symbols */
-    uint32_t nlocalsym;		/* number of local symbols */
+    u32 iextdefsym;	/* index into externally defined symbols */
+    u32 nextdefsym;	/* number of externally defined symbols */
+    u32 irefsym;		/* index into reference symbol table */
+    u32 nrefsym;		/* number of reference symbol table entries */
+    u32 ilocalsym;		/* index into symbols for local symbols */
+    u32 nlocalsym;		/* number of local symbols */
 
-    uint32_t iextrel;		/* index into external relocation entries */
-    uint32_t nextrel;		/* number of external relocation entries */
+    u32 iextrel;		/* index into external relocation entries */
+    u32 nextrel;		/* number of external relocation entries */
 
-    uint32_t iinit_iterm;	/* low 16 bits are the index into the init
+    u32 iinit_iterm;	/* low 16 bits are the index into the init
 				   section, high 16 bits are the index into
 			           the term section */
-    uint32_t ninit_nterm;	/* low 16 bits are the number of init section
+    u32 ninit_nterm;	/* low 16 bits are the number of init section
 				   entries, high 16 bits are the number of
 				   term section entries */
 
-    uint32_t			/* for this module address of the start of */
+    u32			/* for this module address of the start of */
 	objc_module_info_addr;  /*  the (__OBJC,__module_info) section */
-    uint32_t			/* for this module size of */
+    u32			/* for this module size of */
 	objc_module_info_size;	/*  the (__OBJC,__module_info) section */
 };	
 
 struct dylib_module_64 {
-    uint32_t module_name;	/* the module name (index into string table) */
+    u32 module_name;	/* the module name (index into string table) */
 
-    uint32_t iextdefsym;	/* index into externally defined symbols */
-    uint32_t nextdefsym;	/* number of externally defined symbols */
-    uint32_t irefsym;		/* index into reference symbol table */
-    uint32_t nrefsym;		/* number of reference symbol table entries */
-    uint32_t ilocalsym;		/* index into symbols for local symbols */
-    uint32_t nlocalsym;		/* number of local symbols */
+    u32 iextdefsym;	/* index into externally defined symbols */
+    u32 nextdefsym;	/* number of externally defined symbols */
+    u32 irefsym;		/* index into reference symbol table */
+    u32 nrefsym;		/* number of reference symbol table entries */
+    u32 ilocalsym;		/* index into symbols for local symbols */
+    u32 nlocalsym;		/* number of local symbols */
 
-    uint32_t iextrel;		/* index into external relocation entries */
-    uint32_t nextrel;		/* number of external relocation entries */
+    u32 iextrel;		/* index into external relocation entries */
+    u32 nextrel;		/* number of external relocation entries */
 
-    uint32_t iinit_iterm;	/* low 16 bits are the index into the init
+    u32 iinit_iterm;	/* low 16 bits are the index into the init
 				   section, high 16 bits are the index into
 				   the term section */
-    uint32_t ninit_nterm;      /* low 16 bits are the number of init section
+    u32 ninit_nterm;      /* low 16 bits are the number of init section
 				  entries, high 16 bits are the number of
 				  term section entries */
 
-    uint32_t			/* for this module size of */
+    u32			/* for this module size of */
         objc_module_info_size;	/*  the (__OBJC,__module_info) section */
-    uint64_t			/* for this module address of the start of */
+    u64			/* for this module address of the start of */
         objc_module_info_addr;	/*  the (__OBJC,__module_info) section */
 };
 
 struct twolevel_hints_command {
-    uint32_t cmd;	/* LC_TWOLEVEL_HINTS */
-    uint32_t cmdsize;	/* sizeof(struct twolevel_hints_command) */
-    uint32_t offset;	/* offset to the hint table */
-    uint32_t nhints;	/* number of hints in the hint table */
+    u32 cmd;	/* LC_TWOLEVEL_HINTS */
+    u32 cmdsize;	/* sizeof(struct twolevel_hints_command) */
+    u32 offset;	/* offset to the hint table */
+    u32 nhints;	/* number of hints in the hint table */
 };
 
 struct twolevel_hint {
-    uint32_t 
+    u32 
 	isub_image:8,	/* index into the sub images */
 	itoc:24;	/* index into the table of contents */
 };
 
 struct prebind_cksum_command {
-    uint32_t cmd;	/* LC_PREBIND_CKSUM */
-    uint32_t cmdsize;	/* sizeof(struct prebind_cksum_command) */
-    uint32_t cksum;	/* the check sum or zero */
+    u32 cmd;	/* LC_PREBIND_CKSUM */
+    u32 cmdsize;	/* sizeof(struct prebind_cksum_command) */
+    u32 cksum;	/* the check sum or zero */
 };
 
 struct uuid_command {
-    uint32_t	cmd;		/* LC_UUID */
-    uint32_t	cmdsize;	/* sizeof(struct uuid_command) */
-    uint8_t	uuid[16];	/* the 128-bit uuid */
+    u32	cmd;		/* LC_UUID */
+    u32	cmdsize;	/* sizeof(struct uuid_command) */
+    u8	uuid[16];	/* the 128-bit uuid */
 };
 
 struct rpath_command {
-    uint32_t	 cmd;		/* LC_RPATH */
-    uint32_t	 cmdsize;	/* includes string */
+    u32	 cmd;		/* LC_RPATH */
+    u32	 cmdsize;	/* includes string */
     union lc_str path;		/* path to add to run path */
 };
 
 struct linkedit_data_command {
-    uint32_t	cmd;		/* LC_CODE_SIGNATURE or LC_SEGMENT_SPLIT_INFO */
-    uint32_t	cmdsize;	/* sizeof(struct linkedit_data_command) */
-    uint32_t	dataoff;	/* file offset of data in __LINKEDIT segment */
-    uint32_t	datasize;	/* file size of data in __LINKEDIT segment  */
+    u32	cmd;		/* LC_CODE_SIGNATURE or LC_SEGMENT_SPLIT_INFO */
+    u32	cmdsize;	/* sizeof(struct linkedit_data_command) */
+    u32	dataoff;	/* file offset of data in __LINKEDIT segment */
+    u32	datasize;	/* file size of data in __LINKEDIT segment  */
 };
 
 struct encryption_info_command {
-   uint32_t	cmd;		/* LC_ENCRYPTION_INFO */
-   uint32_t	cmdsize;	/* sizeof(struct encryption_info_command) */
-   uint32_t	cryptoff;	/* file offset of encrypted range */
-   uint32_t	cryptsize;	/* file size of encrypted range */
-   uint32_t	cryptid;	/* which enryption system,
+   u32	cmd;		/* LC_ENCRYPTION_INFO */
+   u32	cmdsize;	/* sizeof(struct encryption_info_command) */
+   u32	cryptoff;	/* file offset of encrypted range */
+   u32	cryptsize;	/* file size of encrypted range */
+   u32	cryptid;	/* which enryption system,
 				   0 means not-encrypted yet */
 };
 
 struct symseg_command {
-	uint32_t	cmd;		/* LC_SYMSEG */
-	uint32_t	cmdsize;	/* sizeof(struct symseg_command) */
-	uint32_t	offset;		/* symbol segment offset */
-	uint32_t	size;		/* symbol segment size in bytes */
+	u32	cmd;		/* LC_SYMSEG */
+	u32	cmdsize;	/* sizeof(struct symseg_command) */
+	u32	offset;		/* symbol segment offset */
+	u32	size;		/* symbol segment size in bytes */
 };
 
 struct ident_command {
-	uint32_t cmd;		/* LC_IDENT */
-	uint32_t cmdsize;	/* strings that follow this command */
+	u32 cmd;		/* LC_IDENT */
+	u32 cmdsize;	/* strings that follow this command */
 };
 
 struct fvmfile_command {
-	uint32_t cmd;			/* LC_FVMFILE */
-	uint32_t cmdsize;		/* includes pathname string */
+	u32 cmd;			/* LC_FVMFILE */
+	u32 cmdsize;		/* includes pathname string */
 	union lc_str	name;		/* files pathname */
-	uint32_t	header_addr;	/* files virtual address */
+	u32	header_addr;	/* files virtual address */
 };
 #endif
 

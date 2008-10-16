@@ -267,7 +267,7 @@ int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 
 u64 ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
 {
-	return bin->phdr->p_vaddr & 0xfffff000;
+	return bin->phdr->p_vaddr & ELF_ADDR_MASK;
 }
 
 u64 ELF_(dietelf_get_entry_addr)(ELF_(dietelf_bin_t) *bin)
@@ -578,7 +578,7 @@ u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 				ELF_(aux_swap_endian)((u8*)&(relp->r_info), sizeof(ELF_(Word)));
 			}
 
-			got_offset = ((rel->r_offset - bin->base_addr) - got_addr) & 0xfffff000;
+			got_offset = ((rel->r_offset - bin->base_addr) - got_addr) & ELF_ADDR_MASK;
 
 			relp = rel;
 			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
@@ -768,8 +768,11 @@ int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
 	ELF_(Shdr) *strtabhdr;
+	u64 sym_offset;
 	char *string;
 	int i, j, k, cont=0;
+
+	sym_offset = (bin->ehdr.e_type == ET_REL ? ELF_(dietelf_get_section_offset)(bin, fd, ".text") : 0);
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -827,12 +830,12 @@ int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 					if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 						if (rad) {
 							printf("b 0x%08llx && ", (u64)symp->st_size); 
-							printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
-							printf("CF %lld @ 0x%08llx\n", (u64)symp->st_size, (u64)symp->st_value);
+							printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value + sym_offset);
+							printf("CF %lld @ 0x%08llx\n", (u64)symp->st_size, (u64)symp->st_value + sym_offset);
 							cont++;
 						} else { 
 							if (verbose) {
-								printf("0x%08llx size=%05lld ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), (u64)symp->st_size);
+								printf("0x%08llx size=%05lld ", (u64)symp->st_value + sym_offset, (u64)symp->st_size);
 								switch (ELF32_ST_BIND(symp->st_info)) {
 									case STB_LOCAL:		printf("LOCAL  "); break;
 									case STB_GLOBAL:	printf("GLOBAL "); break;
@@ -860,11 +863,11 @@ int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 								}
 								printf("%s\n", &string[symp->st_name]);
 							} else {
-								printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
+								printf("0x%08llx %s\n", (u64)symp->st_value + sym_offset, &string[symp->st_name]);
 							}
 							if (xrefs) {
 								char buf[1024];
-								sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value);
+								sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value + sym_offset);
 								system(buf);
 							}
 						}
@@ -981,7 +984,12 @@ int ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
 	if (rad)
 		printf("fs strings\n"); //, ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]));
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
+		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata")) {
+			if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
+			ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, &cont);
+			break;
+		}
+		if (verbose == 2 && i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
 			if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
 			ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, &cont);
 		}

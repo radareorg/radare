@@ -15,7 +15,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO}
+all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO}
 #perl.${SO}
 
 hello.${SO}:
@@ -23,6 +23,12 @@ hello.${SO}:
 
 gtk-hello.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-hello.c -I ../.. -fPIC -shared -g -o gtk-hello.${SO}
+
+gtk-prefs.${SO}:
+	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-prefs.c -I ../.. -fPIC -shared -g -o gtk-prefs.${SO}
+
+gtk-topbar.${SO}:
+	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-topbar.c -I ../.. -fPIC -shared -g -o gtk-topbar.${SO}
 
 scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}

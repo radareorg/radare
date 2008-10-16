@@ -7,4 +7,4 @@ obj.uselib = 'GTK GLIB VTE'
 if bld.env['_MAEMO_'] == 1:
 	obj.uselib+=' HILDON'
 #obj.env.append_value('LINKFLAGS','-lm')
-obj.source='actions.c dialog.c execute.c main.c menubar.c prefs.c sidebar.c toolbar.c'
+obj.source='actions.c dialog.c execute.c main.c menubar.c prefs.c topbar.c toolbar.c'

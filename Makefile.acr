@@ -49,7 +49,7 @@ w32dist:
 	cp src/radare.exe w32-build
 	cp src/xc.exe w32-build
 	cp src/xrefs.exe w32-build
-	cp src/hasher/hasher.exe w32-build
+	cp src/rahash/rahash.exe w32-build
 	cp src/rabin/rabin.exe w32-build
 	cp src/rabin/javasm.exe w32-build
 	cp src/radiff/radiff.exe w32-build
@@ -95,7 +95,7 @@ install:
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}
 	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${DATADIR}/radare/
 	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
-	${INSTALL_PROGRAM} src/hasher/hasher ${BINDIR}
+	${INSTALL_PROGRAM} src/rahash/rahash ${BINDIR}
 	${INSTALL_PROGRAM} src/xc ${BINDIR}
 	cd src/rsc && ${MAKE} install
 	mkdir -p ${LIBDIR}
@@ -117,13 +117,13 @@ install:
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
 	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
-	${INSTALL_SCRIPT} src/radiff/bindiff ${BINDIR}
+	${INSTALL_SCRIPT} src/radiff/radiff ${BINDIR}
 	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
 	${INSTALL_SCRIPT} src/rfile ${BINDIR}
 	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
-	${INSTALL_MAN} man/hasher.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rahash.1 ${MANDIR}/man1/
 	#${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
@@ -144,7 +144,9 @@ install:
 deinstall:
 	-rm -f ${BINDIR}/gradare
 	-rm -f ${BINDIR}/radare
-	-rm -f ${BINDIR}/hasher
+	-rm -f ${BINDIR}/rahash
+	-rm -f ${BINDIR}/rasm
+	-rm -f ${BINDIR}/rasc
 	-rm -f ${BINDIR}/xc
 	-rm -f ${BINDIR}/xrefs
 	-rm -f ${BINDIR}/bindiff

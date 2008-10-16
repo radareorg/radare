@@ -38,7 +38,7 @@ static int (*rs_cmd)(char *cmd, int log) = NULL;
 static int slurp_ruby(char *file)
 {
 	rb_load_file(file);
-	ruby_run();
+	ruby_exec();
 	return 0;
 }
 
@@ -63,7 +63,7 @@ static int ruby_hack_init()
 
 	VALUE rb_RadareCmd = rb_define_class("Radare", rb_cObject);
 	rb_define_method(rb_RadareCmd, "cmd", radare_ruby_cmd, 1);
-	rb_eval_string("r = Radare.new()");
+	rb_eval_string_protect("r = Radare.new()", NULL);
 
 	printf("Loading radare ruby api... %s\n",
 		slurp_ruby(RUBYAPI)? "error ( "RUBYAPI" )":"ok");
@@ -78,7 +78,7 @@ static int ruby_hack_cya()
 	return 0;
 }
 
-void ruby_hack_cmd(char *input)
+int ruby_hack_cmd(char *input)
 {
 	char str[1024];
 
@@ -90,7 +90,7 @@ void ruby_hack_cmd(char *input)
 
 	if (rs_cmd == NULL || rs_cmdstr == NULL) {
 		printf("cannot find radare_cmd_str or radare_cmd\n");
-		return;
+		return 1;
 	}
 
 	ruby_hack_init();
@@ -115,11 +115,12 @@ void ruby_hack_cmd(char *input)
 			||	!strcmp(str,"q"))
 				break;
 			str[strlen(str)]='\0';
-			rb_eval_string(str);
-			ruby_run();
+			rb_eval_string_protect(str, NULL);
+			//ruby_exec();
 		}
 	}
 	ruby_hack_cya();
+	return 0;
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

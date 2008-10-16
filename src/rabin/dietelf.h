@@ -7,12 +7,16 @@
 #include "elf.h"
 
 #undef ELF_
+#undef ELF_ADDR_MASK
 
 #ifdef DIETELF64
     #define ELF_(name) Elf64_##name 
+	#define ELF_ADDR_MASK 0xfffffffffffff000
 #else       
     #define ELF_(name) Elf32_##name 
+	#define ELF_ADDR_MASK 0xfffff000
 #endif      
+
 
 typedef struct {
     ELF_(Ehdr)    ehdr;

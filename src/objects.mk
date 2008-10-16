@@ -7,7 +7,7 @@ OLLYOBJ+=arch/x86/ollyasm/asmserv.o
 OLLYOBJ+=arch/x86/ollyasm/disasm.o
 crOBJ+=${OLLYOBJ}
 
-crOBJ+=radare.o stripstr.o readline.o search.o undo.o io.o cons.o trace.o vm.o
+crOBJ+=radare.o stripstr.o readline.o search.o undo.o io.o cons.o trace.o vm.o data.o
 crOBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o section.o
 crOBJ+=plugin.o socket.o analyze.o hist.o code.o rabin.o project.o hack.o bytepat.o
 crOBJ+=rasm/rasm.o rasm/olly.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
@@ -35,6 +35,8 @@ crOBJ+=arch/arm/code.o
 crOBJ+=arch/arm/disarm.o
 crOBJ+=arch/arm/gnudisarm.o
 crOBJ+=arch/arm/gnu/arm-dis.o
+
+crOBJ+=arch/bf/code.o
 
 crOBJ+=arch/mips/vm.o
 crOBJ+=arch/mips/code.o

@@ -71,7 +71,7 @@ int rabin_show_help()
 " -l        linked libraries\n"
 " -L [lib]  dlopen library and show address\n"
 " -z        search for strings in elf non-executable sections\n"
-" -x        show xrefs of symbols (-s/-i required)\n"
+" -x        show xrefs of symbols (-s/-i/-z required)\n"
 " -I        show binary info\n"
 " -r        output in radare commands\n"
 " -v        be verbose\n");
@@ -210,6 +210,11 @@ void rabin_show_info(const char *file)
 		if (!rad)
 			printf("File type: DEX (google android)\n");
 		break;
+	case FILETYPE_BF:
+		if (rad)
+			printf("e asm.arch = bf\n");
+		else printf("File type: Brainfuck\n");
+		break;
 	case FILETYPE_MACHO:
 		if (rad) {
 			printf("e file.type = macho\n");
@@ -240,7 +245,7 @@ void rabin_show_strings(const char *file)
 	char buf[1024];
 
 	if (xrefs) {
-		snprintf(buf,1023, "printf \"pC @@ str_\\nq\\ny\\n\" | radare -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		snprintf(buf,1023, "printf \"pC @@ str_\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
 		system(buf);
 		return;
 	}
@@ -350,6 +355,12 @@ Load command 9
 		system(buf);
 		}
 		break;
+	case FILETYPE_BF:
+		/* skip invalid chars */
+		if (rad)
+			printf("f entrypoint @ 0\n");
+		else	printf("Entrypoint: 0\n");
+		break;
 	case FILETYPE_MZ:
 		break;
 	case FILETYPE_PE:
@@ -437,7 +448,7 @@ void rabin_show_imports(const char *file)
 	int i, imports_count;
 
 	if (xrefs) {
-		snprintf(buf,1023, "printf \"pC @@ imp_\\nq\\ny\\n\" | radare -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		snprintf(buf,1023, "printf \"pC @@ imp_\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
 		system(buf);
 		return;
 	}
@@ -679,6 +690,28 @@ void rabin_show_libs(const char *file)
 	}
 }
 
+/* brainfuck header check */
+int buf_is_bf(const u8 * buf, int len)
+{
+	int i;
+	for(i=0;i<len;i++) {
+		switch(buf[i]) {
+		case '<':
+		case '>':
+		case '+':
+		case '-':
+		case '.':
+		case ',':
+		case '[':
+		case ']':
+			break;
+		default:
+			return 0;
+		}
+	}
+	return 1;
+}
+
 int rabin_identify_header()
 {
 	unsigned char buf[1024];
@@ -714,6 +747,8 @@ int rabin_identify_header()
 		}
 	} else if (buf[2]==0 && buf[3]==0xea) {
 		filetype = FILETYPE_ARMFW;
+	} else if (buf_is_bf(buf, 4)) {
+		filetype = FILETYPE_BF;
 	} else {
 		if (!rad)
 			printf("Unknown filetype\n");

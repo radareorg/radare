@@ -1,7 +1,7 @@
 include ../config.mk
 
 BIN=gradare${BINSFX}
-OBJ=main.o sidebar.o toolbar.o actions.o execute.o prefs.o menubar.o dialog.o
+OBJ=main.o topbar.o toolbar.o actions.o execute.o prefs.o menubar.o dialog.o
 CFLAGS+=-DPREFIX=\"${PREFIX}\" -DGRSCDIR=\"${DATADIR}/radare/gradare\"
 CFLAGS+=${GTK_FLAGS} ${VTE_FLAGS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --cflags`
