@@ -73,6 +73,7 @@ extern plugin_t shm_plugin;
 extern plugin_t mmap_plugin;
 extern plugin_t malloc_plugin;
 extern plugin_t debug_plugin;
+extern plugin_t bfdbg_plugin;
 
 #if __linux__
 extern plugin_t sysproxy_plugin;

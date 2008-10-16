@@ -18,7 +18,7 @@
 
 --- todo
 
-
+* .rfile.$FOO and .radare.tmp.$FOO are not removed!!
 * print double!!
   - support string print mode for [len][str] formats
 * wtf with fu cmd!

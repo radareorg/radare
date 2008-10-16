@@ -2,9 +2,11 @@
 
 Ruby API for radare scripting plugin
 
+author: pancake <nopcode.org>
+
 =end
 
-class Radare
+class Core
 
  # helpers
  def str2hash(str)
@@ -12,7 +14,8 @@ class Radare
    list = str.split("\n")
    list.each do |item|
      w = item.split("=")
-     if (w.len>1) do
+     if w.size > 1 then
+       t[w[0]]=w[1]
      end
    end
    return t
@@ -31,9 +34,32 @@ class Radare
   r.cmd("s %s"%addr)
  end
 
+ # code
+ def comment_add(addr, str)
+  r.cmd("CC #{str} @ 0x%08llx"%addr)
+ end
+
+ def comment_del(str)
+  r.cmd("CC -#{str}");
+ end
+
+ def analyze_opcode(addr)
+  return str2hash(r.cmd("ao @ 0x%08llx"%addr))
+ end
+
  # debugger
- def seek(addr)
-  r.cmd("s %s"%addr)
+ def step(addr)
+  r.cmd("!step")
+ end
+
+ def continue()
+  r.cmd("!cont")
+ end
+
+ def until(addr)
+  r.cmd("!cont #{addr}")
  end
 
 end
+
+puts "Load done"

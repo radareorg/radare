@@ -17,6 +17,8 @@ W32LIBS=-lwsock32
 
 MAEMO_OBJ=/usr/lib/libreadline.a /usr/lib/libtermcap.a
 
+OBJ+=plug/io/bfdbg.o
+
 ##DEBUGGER##
 include dbg/objects.mk
 OBJ+=plug/io/debug.o

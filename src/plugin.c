@@ -293,6 +293,7 @@ void plugin_init()
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
+	plugins[last++] = bfdbg_plugin;
 #if SYSPROXY
 	plugins[last++] = sysproxy_plugin;
 #endif

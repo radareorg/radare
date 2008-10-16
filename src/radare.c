@@ -1304,6 +1304,7 @@ int radare_open(int rst)
 	// if it's for debug or not
 	if((strstr(config.file, "dbg://"))
 	|| (strstr(config.file, "pid://"))
+	|| (strstr(config.file, "bfdbg://"))
 	|| (strstr(config.file, "winedbg://"))
 	|| (strstr(config.file, "gxemul://"))
 	|| (strstr(config.file, "gdb://"))

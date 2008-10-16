@@ -298,6 +298,7 @@ static void visual_convert_bytes(int fmt)
 	off += config.seek;
 
 	data_add_arg(off, fmt, argstr);
+
 	if (config.cursor_mode)
 		data_set_len(off, len);
 	cons_clear();

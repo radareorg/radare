@@ -37,6 +37,41 @@ public class Grava.Renderer
 		set_color(ctx, edge.data);
 
 		ctx.set_line_width (2);
+		/* oxymoroon! */
+		if (edge.orig == edge.dest) {
+			/* bottom to up */
+			ctx.translate (edge.orig.x+(edge.orig.w/2),edge.orig.y+oh);
+			ctx.move_to(0, 0);
+			  //dx = edge.dest.x-edge.orig.x;
+			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
+			  dy = edge.dest.y-edge.orig.y- oh; // or 80 or so depending if > or < ???
+			double ox = dx;
+//			if (ox == 0){ ox = 150; }
+			//arrow
+			if (Graph.selected == edge.orig)
+				ctx.set_line_width (6);
+
+			dx = edge.dest.w;
+			//dy += edge.dest.h/2;
+			ctx.curve_to(0, 0, 200, 100, dx-edge.orig.w/2, dy);
+/*
+			dx += edge.dest.w;
+			dy += edge.dest.h/2;
+			ctx.curve_to(0, 0, 200, edge.dest.h*0.3, dx, dy);
+			//ctx.move_to(edge.dest.y, edge.dest.x+(edge.dest.w/2));
+		//	ctx.curve_to(50,50, 200, -50, dx, dy);
+			ctx.translate (0, -edge.dest.h);
+//square(ctx,15,15);
+		ctx.move_to (0, 0);
+
+//			dx -= edge.dest.w;
+//ctx.move_to(50,50);
+			ctx.curve_to(0, 0, 200, -edge.dest.h*0.6, dx, -dy);
+//Renderer.set_color_str(ctx, "turqoise");
+//ctx.arc(0.0, 0.0, 1.0, 3.0, 2 * 3.1415);
+			//ctx.stroke();
+*/
+		} else
 		if (edge.orig.y+oh<(edge.dest.y)) {//-edge.dest.h)) {
 			/* up to bottom */
 			//ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);

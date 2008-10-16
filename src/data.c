@@ -91,15 +91,19 @@ int data_set(u64 off, int type)
 
 struct data_t *data_add_arg(u64 off, int type, const char *arg)
 {
-	struct data_t *d = data_add(off, type);
-	strncpy(d->arg , arg, 128);
+	struct data_t *d;
+	if (arg == NULL)
+		return NULL;
+	d = data_add(off, type);
+	if (d != NULL)
+		strncpy(d->arg , arg, 128);
 	return d;
 }
 
 struct data_t *data_add(u64 off, int type)
 {
 	u64 tmp;
-	struct data_t *d;
+	struct data_t *d = NULL;
 	struct list_head *pos;
 
 	__reloop:

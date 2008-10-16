@@ -264,6 +264,9 @@ void rabin_show_strings(const char *file)
 		snprintf(buf, 1022, "rsc strings-pe-flag %s",file);
 		system(buf);
 		break;
+	case FILETYPE_BF:
+		/* do nothing */
+		break;
 	default:
 		snprintf(buf, 1022, "echo /s | radare -nv %s",file);
 		system(buf);

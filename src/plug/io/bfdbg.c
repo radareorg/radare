@@ -1,0 +1,349 @@
+/*
+ * Copyright (C) 2008
+ *       pancake <@youterm.com>
+ *
+ * radare is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * radare is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with radare; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
+#include <main.h>
+#include <plugin.h>
+
+/* VM */
+
+struct bfvm_cpu_t {
+	u64 eip;
+	u64 esp;
+	int ptr;
+	u64 base;
+	u8 *mem;
+	u32 size;
+	int circular; /* circular memory */
+} bfvm_cpu;
+
+static int bfvm_init(u32 size, int circular)
+{
+	memset(&bfvm_cpu,'\0', sizeof(struct bfvm_cpu_t));
+	bfvm_cpu.mem = (u8 *)malloc(size);
+	if (bfvm_cpu.mem == NULL)
+		return 0;
+	memset(bfvm_cpu.mem,'\0',size);
+	bfvm_cpu.circular = circular;
+	bfvm_cpu.eip = 0; // look forward nops
+	bfvm_cpu.size = size;
+	if (size>65536)
+		bfvm_cpu.base = 0x10000000;
+	else bfvm_cpu.base = 0x10000;
+	bfvm_cpu.esp = bfvm_cpu.base;
+	eprintf("BFVM INIT!\n");
+	return 1;
+}
+
+static u8 bfvm_op()
+{
+	u8 buf[4];
+	radare_read_at(bfvm_cpu.eip, buf, 4);
+	return buf[0];
+}
+
+static u8 *bfvm_get_ptr_at(u64 at)
+{
+	if (at >= bfvm_cpu.base)
+		at-=bfvm_cpu.base;
+
+	if (at<0) {
+		if (bfvm_cpu.circular)
+			at = bfvm_cpu.size-2;
+		else at=0;
+	} else
+	if (at >= bfvm_cpu.size) {
+		if (bfvm_cpu.circular)
+			at = 0;
+		else at = bfvm_cpu.size-1;
+	}
+	if (at<0)
+		at = 0;
+	return bfvm_cpu.mem+at;
+}
+
+static u8 *bfvm_get_ptr()
+{
+//return bfvm_cpu.mem;
+	return bfvm_get_ptr_at(bfvm_cpu.ptr);
+}
+
+static u8 bfvm_get()
+{
+	u8 *ptr = bfvm_get_ptr();
+	if (ptr != NULL)
+		return ptr[0];
+	return 0;
+}
+
+static void bfvm_inc()
+{
+	u8 *mem = bfvm_get_ptr();
+	if (mem != NULL)
+		mem[0]++;
+}
+
+static void bfvm_dec()
+{
+	u8 *mem = bfvm_get_ptr();
+	*mem--;
+}
+
+static int bfvm_reg_set(const char *str)
+{
+	char *ptr = strchr(str, '=');
+	if (ptr == NULL)
+		return 0;
+	if (strstr(str, "eip")) {
+		bfvm_cpu.eip = get_math(ptr+1);
+	} else
+	if (strstr(str, "esp")) {
+		bfvm_cpu.esp = get_math(ptr+1);
+	} else
+	if (strstr(str, "ptr")) {
+		bfvm_cpu.ptr = get_math(ptr+1);
+	}
+	return 1;
+}
+
+static int bfvm_step(int over)
+{
+	u8 *buf;
+	u8 op = bfvm_op();
+	u8 op2;
+
+	do {
+		switch(op) {
+		case '.':
+			buf = bfvm_get_ptr();
+			write(1,buf,1);
+			break;
+		case ',':
+			/* TODO read */
+			break;
+		case '+':
+			bfvm_inc();
+			break;
+		case '-':
+			bfvm_dec();
+			break;
+		case '>':
+			bfvm_cpu.ptr++;
+			break;
+		case '<':
+			bfvm_cpu.ptr--;
+			break;
+		case '[':
+			break;
+		case ']':
+			do {
+				bfvm_cpu.eip--;
+			/* TODO: control underflow */
+			} while(bfvm_op()!='[');
+			break;
+		default:
+			break;
+		}
+		bfvm_cpu.eip++;
+		op2 = bfvm_op();
+	} while(over && op == op2);
+}
+
+static void bfvm_show_regs(int rad)
+{
+	if (rad) {
+		cons_printf("fs regs\n");
+		cons_printf("f eip @ 0x%08llx\n", (u64)bfvm_cpu.eip);
+		cons_printf("f esp @ 0x%08llx\n", (u64)bfvm_cpu.esp);
+		cons_printf("f ptr @ 0x%08llx\n", (u64)bfvm_cpu.ptr+bfvm_cpu.base);
+		cons_printf("fs *\n");
+	} else {
+		u8 ch = bfvm_get();
+		cons_printf("  eip  0x%08llx     esp  0x%08llx\n",
+			(u64)bfvm_cpu.eip, (u64)bfvm_cpu.esp);
+		cons_printf("  ptr  0x%08x     [ptr]  %d = 0x%02x '%c'\n",
+			(u32)bfvm_cpu.ptr, ch, ch, is_printable(ch)?ch:'?');
+	}
+}
+
+static void bfvm_maps(int rad)
+{
+	if (rad) {
+		cons_printf("fs sections\n");
+		cons_printf("f section_code @ 0x%08llx\n", 0);
+		cons_printf("f section_code_end @ 0x%08llx\n", (u64)config.size);
+		cons_printf("f section_data @ 0x%08llx\n", (u64)bfvm_cpu.base);
+		cons_printf("f section_data_end @ 0x%08llx\n", (u64)bfvm_cpu.base+bfvm_cpu.size);
+		cons_printf("fs *\n");
+	} else {
+		cons_printf("0x%08llx - 0x%08llx rwxu 0x%08llx .code\n", (u64)0, (u64)config.size, config.size);
+		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .data\n", bfvm_cpu.base, bfvm_cpu.base+bfvm_cpu.size, bfvm_cpu.size);
+	}
+}
+
+/* PLUGIN */
+static u64 cur_seek = 0;
+
+static int bfdbg_fd = -1;
+
+int bfdbg_handle_fd(int fd)
+{
+	return fd == bfdbg_fd;
+}
+
+int bfdbg_handle_open(const char *file)
+{
+	if (!memcmp(file, "bfdbg://", 8))
+		return 1;
+	return 0;
+}
+
+static ssize_t bfdbg_write(int fd, const void *buf, size_t count)
+{
+        //return write(fd, buf, count);
+	return -1;
+}
+
+static ssize_t bfdbg_read(int fd, void *buf, size_t count)
+{
+	if (cur_seek>=bfvm_cpu.base) {
+		memcpy(buf, bfvm_cpu.mem, count);
+		return count;
+	}
+
+        return read(fd, buf, count);
+}
+
+static int bfdbg_open(const char *pathname, int flags, mode_t mode)
+{
+	int fd = -1;
+	if (bfdbg_handle_open(pathname)) {
+		fd = open(pathname+8, flags, mode);
+		if (fd != -1) {
+			bfvm_init(0xFFFF, 1);
+			bfdbg_fd = fd;
+		}
+	}
+	return fd;
+}
+
+static int bfdbg_system(const char *cmd)
+{
+	if (!memcmp(cmd, "info",4)) {
+		bfvm_step(0);
+	} else
+	if (!memcmp(cmd, "help",4)) {
+		eprintf("Brainfuck debugger help:\n");
+		eprintf("!step        ; perform a step\n");
+		eprintf("!stepo       ; step over rep instructions\n");
+		eprintf("!reg         ; show registers\n");
+		eprintf("!reg eip = 3 ; force program counter\n");
+		eprintf(".!reg*       ; adquire register information into core\n");
+	} else
+	if (!memcmp(cmd, "stepo",5)) {
+		bfvm_step(1);
+	} else
+	if (!memcmp(cmd, "maps",4)) {
+		bfvm_maps(cmd[4]=='*');
+	} else
+	if (!memcmp(cmd, "step",4)) {
+		bfvm_step(0);
+	} else
+	if (!memcmp(cmd, "reg",3)) {
+		if (strchr(cmd+3,'=')) {
+			bfvm_reg_set(cmd+4);
+		} else {
+			switch (cmd[3]) {
+			case 's':
+				switch(cmd[4]) {
+				case '*':
+					bfvm_show_regs(1);
+					break;
+				default:
+					bfvm_show_regs(0);
+					break;
+				}
+				break;
+			case '*':
+				bfvm_show_regs(1);
+				break;
+			default:
+			//case ' ':
+			//case '\0':
+				bfvm_show_regs(0);
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
+static int bfdbg_close(int fd)
+{
+	return close(fd);
+}
+
+
+static u64 bfdbg_lseek(int fildes, u64 offset, int whence)
+{
+	switch(whence) {
+	case SEEK_SET:
+		cur_seek = offset;
+		break;
+	case SEEK_CUR:
+		cur_seek = config.seek+offset;
+		break;
+#if 1
+	case SEEK_END:
+		//if (cur_seek>bfvm_cpu.base)
+		cur_seek = 0xffffffff;
+		return cur_seek;
+#endif
+	}
+#if __WINDOWS__ 
+	return _lseek(fildes,(long)offset,whence);
+#else
+#if __linux__
+	return lseek64(fildes,(off_t)offset,whence);
+#else
+	return lseek(fildes,(off_t)offset,whence);
+#endif
+#endif
+}
+
+void bfdbg_plugin_init()
+{
+	bfvm_init(0xFFFF, 1);
+}
+
+plugin_t bfdbg_plugin = {
+	.name        = "bfdbg",
+	.desc        = "brainfuck debugger",
+	.init        = bfdbg_plugin_init,
+	.debug       = 1,
+	.system      = bfdbg_system,
+	.widget      = NULL,
+	.handle_fd   = bfdbg_handle_fd,
+	.handle_open = bfdbg_handle_open,
+	.open        = bfdbg_open,
+	.read        = bfdbg_read,
+	.write       = bfdbg_write,
+	.lseek       = bfdbg_lseek,
+	.close       = bfdbg_close
+};
