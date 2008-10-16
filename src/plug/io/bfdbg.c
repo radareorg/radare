@@ -27,6 +27,7 @@ struct bfvm_cpu_t {
 	u64 eip;
 	u64 esp;
 	int ptr;
+	int trace;
 	u64 base;
 	u8 *mem;
 	u32 size;
@@ -176,8 +177,15 @@ static void bfvm_peek()
 {
 	int idx = bfvm_cpu.input_idx;
 	u8 *ptr = bfvm_get_ptr();
-	*ptr = bfvm_cpu.input_buf[idx];
-	bfvm_cpu.input_idx = idx+1;
+
+	if (idx >= bfvm_cpu.input_size)
+		idx = 0;
+
+	if (ptr) {
+		*ptr = bfvm_cpu.input_buf[idx];
+		bfvm_cpu.input_idx = idx+1;
+	}
+
 }
 
 static void bfvm_poke()
@@ -187,6 +195,31 @@ static void bfvm_poke()
 	bfvm_cpu.screen_idx = idx+1;
 }
 
+int bfvm_trace_op(u8 op)
+{
+	u8 g;
+	switch(op) {
+	case '\0':
+		cons_printf(" ; trap (%02x)\n", op);
+	case '.':
+	case ',':
+	case '+':
+	case '-':
+	case '>':
+	case '<':
+		cons_printf("%c", op);
+		break;
+	case '[':
+	case ']':
+		g = bfvm_get();
+		cons_printf("%c  ; [ptr] = %d\n", op, g);
+		if (g!= 0)
+			cons_printf("[");
+		break;
+	}
+}
+
+#define T if (bfvm_cpu.trace)
 /* debug */
 static int bfvm_step(int over)
 {
@@ -195,6 +228,7 @@ static int bfvm_step(int over)
 	u8 op2;
 
 	do {
+		T bfvm_trace_op(op);
 		switch(op) {
 		case '\0':
 			/* trap */
@@ -241,6 +275,29 @@ static int bfvm_step(int over)
 	} while(over && op == op2);
 }
 
+static int bfvm_contsc()
+{
+	radare_controlc();
+	while(!config.interrupted) {
+		bfvm_step(0);
+		if (bfvm_in_trap()) {
+			eprintf("Trap instruction at 0x%08llx\n", bfvm_cpu.eip);
+			break;
+		}
+		switch(bfvm_op()) {
+		case ',':
+			eprintf("contsc: read from input trap\n");
+			config.interrupted=1;
+			continue;
+		case '.':
+			eprintf("contsc: print to screen trap\n");
+			config.interrupted=1;
+			continue;
+		}
+	}
+	radare_controlc_end();
+}
+
 static int bfvm_cont(u64 until)
 {
 	radare_controlc();
@@ -254,6 +311,12 @@ static int bfvm_cont(u64 until)
 	radare_controlc_end();
 }
 
+static int bfvm_trace(u64 until)
+{
+	bfvm_cpu.trace=1;
+	bfvm_cont(until);
+	bfvm_cpu.trace=0;
+}
 
 static void bfvm_show_regs(int rad)
 {
@@ -369,17 +432,25 @@ static int bfdbg_system(const char *cmd)
 	} else
 	if (!memcmp(cmd, "help",4)) {
 		eprintf("Brainfuck debugger help:\n");
-		eprintf("20!step      ; perform 20 steps\n");
-		eprintf("!step        ; perform a step\n");
-		eprintf("!stepo       ; step over rep instructions\n");
-		eprintf("!maps        ; show registers\n");
-		eprintf("!reg         ; show registers\n");
-		eprintf("!cont [addr] ; continue until address or ^C\n");
-		eprintf("!reg eip 3   ; force program counter\n");
-		eprintf(".!reg*       ; adquire register information into core\n");
+		eprintf("20!step       ; perform 20 steps\n");
+		eprintf("!step         ; perform a step\n");
+		eprintf("!stepo        ; step over rep instructions\n");
+		eprintf("!maps         ; show registers\n");
+		eprintf("!reg          ; show registers\n");
+		eprintf("!cont [addr]  ; continue until address or ^C\n");
+		eprintf("!trace [addr] ; trace code execution\n");
+		eprintf("!contsc       ; continue until write or read syscall\n");
+		eprintf("!reg eip 3    ; force program counter\n");
+		eprintf(".!reg*        ; adquire register information into core\n");
+	} else
+	if (!memcmp(cmd, "contsc",6)) {
+		bfvm_contsc();
 	} else
 	if (!memcmp(cmd, "cont",4)) {
 		bfvm_cont(get_math(cmd+4));
+	} else
+	if (!memcmp(cmd, "trace",5)) {
+		bfvm_trace(get_math(cmd+5));
 	} else
 	if (!memcmp(cmd, "stepo",5)) {
 		bfvm_step(1);
@@ -415,7 +486,7 @@ static int bfdbg_system(const char *cmd)
 				break;
 			}
 		}
-	}
+	} else eprintf("Invalid debugger command. Try !help\n");
 	return 0;
 }
 

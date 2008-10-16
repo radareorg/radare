@@ -111,7 +111,7 @@ int arch_bf_dis(const u8* buf, u64 addr, int len)
 		else cons_printf("- dec [ptr]");
 		break;
 	case ',':
-		cons_printf(". [ptr] = getch()");
+		cons_printf(", [ptr] = getch()");
 		break;
 	case '.':
 		cons_printf(". print( [ptr] )");
