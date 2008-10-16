@@ -3788,6 +3788,89 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGIO      (DEFAULT)
 \c [0xB7FA8810]> 
 
+\C{debug-bf} Debugging brainfuck
+
+The 'bfdbg' IO plugin offers a debugging interface for a brainfuck virtual machine implemented inside the same plugin. Rabin can magically autodetect brainfuck files, so the 'e asm.arch=bf' will be defined if you use 'e file.id=true' in your ~/.radarerc.
+
+The brainfuck disassembler decodes the bf instructions as complex instructions supporting repetitions. The translation would be:
+
+\c +++++   ->   add [ptr], 5
+
+Also loops are automatically detected between the '[' ']' opcodes, so the code analysis will show nice jump lines there:
+
+\c [0x00000000]> pd
+\c      0x00000000       3e              > inc [ptr]
+\c      0x00000001       2b2b2b2b2b2b2b. + add [ptr], 9
+\c .--> 0x0000000A  eip: 5b              [ loop {
+\c |    0x0000000B       3c              < dec [ptr]
+\c |    0x0000000C,      2b2b2b2b2b2b2b. + add [ptr], 8
+\c |    0x00000014,      3e              > inc [ptr]
+\c |    0x00000015       2d              - dec [ptr]
+\c `==< 0x00000016       5d              ] }  ; 1 = 0x0000000a
+\c      ...
+
+The BF virtual machine supports user input and screen output emulating two virtual buffers located at 0x10000 for the 'input' section and 0x50000 for the 'screen'. Here's a 'hello.bf' example:
+
+\c $ radare bfdbg://hello.bf
+\c File type: Brainfuck
+\c [0x00000000]> !!cat hello.bf
+\c >+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.[-]
+\c >++++++++[<++++>-] <.>+++++++++++[<++++++++>-]<-.--------.+++
+\c .------.--------.[-]>++++++++[<++++>- ]<+.[-]++++++++++.
+\c
+\c [0x00000000]> pz @ screen
+\c 
+\c [0x00000000]> !cont
+\c Trap instruction at 0x000000b5
+\c
+\c [0x00000000]> pz @ screen
+\c Hello world!
+
+You can query the section information using the !maps command:
+
+\c [0x00000000]> !maps
+\c 0x00000000 - 0xffffffff rwxu 0xffffffff .code
+\c 0x000d0000 - 0x000dffff rw-- 0x0000ffff .data
+\c 0x00050000 - 0x00051000 rw-- 0x00001000 .screen
+\c 0x00010000 - 0x00011000 rw-- 0x00001000 .input
+
+For getting/setting registers use the '!reg' command:
+
+\c [0x00000000]> !reg
+\c   eip  0x000000b5     esp  0x000d0000
+\c   ptr  0x00000000     [ptr]  10 = 0x0a ' '
+\c
+\c [0x00000000]> !reg eip 0
+\c [0x00000000]> !reg
+\c   eip  0x00000000     esp  0x000d0000
+\c   ptr  0x00000000     [ptr]  10 = 0x0a ' '
+
+The help for all the debugger commands is:
+
+\c [0x00000000]> !help
+\c Brainfuck debugger help:
+\c 20!step       ; perform 20 steps
+\c !step         ; perform a step
+\c !stepo        ; step over rep instructions
+\c !maps         ; show registers
+\c !reg          ; show registers
+\c !cont [addr]  ; continue until address or ^C
+\c !trace [addr] ; trace code execution
+\c !contsc       ; continue until write or read syscall
+\c !reg eip 3    ; force program counter
+\c .!reg*        ; adquire register information into core
+
+So.. as a fast overview, see that you can step, or step over all repeated instructions, continue the execution until an address, trace the executed opcodes with data information (bytes peeked and poked) or trace until syscall.
+
+Obviously all these commands can be used from the visual mode..so press 'V<enter>' in the radare prompt and use these keys:
+
+\c F6 : continue until syscall
+\c F7 : step instruction
+\c F8 : step over repeated instructions
+\c F9 : continue until trap or user ^C
+
+Enjoy!
+
 \C{debug-bochs} Debugging with bochs and python
 
 radare can be easily adapted to be a frontend for other debuggers. Ero Carrera has written a python interface for instrumentating bochs. Having python embedded on a debugger is just simple to use radare as a frontend to launch scripts.
