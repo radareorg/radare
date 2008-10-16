@@ -29,7 +29,7 @@ u64 last_loop = 0;
 // NOTE: bytes should be at least 16 bytes?
 int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 {
-	int len = 32; /* XXX fix limit bytes here */
+	int len = 256; /* XXX fix limit bytes here */
 	int i;
 	memset(aop, '\0', sizeof(struct aop_t));
 	aop->type = AOP_TYPE_UNK;
@@ -64,6 +64,9 @@ int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 	case ',':
 		aop->type = AOP_TYPE_TRAP;
 		break;
+	case '\x00':
+		aop->type = AOP_TYPE_TRAP;
+		break;
 	default:
 		aop->type = AOP_TYPE_NOP;
 		break;
@@ -80,6 +83,10 @@ int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 int arch_bf_dis(const u8* buf, u64 addr, int len)
 {
 	int i;
+	u8 *b = buf;
+
+	for(i=0;b[0] == b[1] && i<len; b=b+1,i++);
+
 	switch(buf[0]) {
 	case '[':
 		cons_printf("[ loop {");
@@ -88,16 +95,20 @@ int arch_bf_dis(const u8* buf, u64 addr, int len)
 		cons_printf("] }"); // TODO: detect clause and put label name
 		break;
 	case '>':
-		cons_printf("> inc ptr");
+		if (i>1) cons_printf("> add [ptr]");
+		else cons_printf("> inc [ptr]");
 		break;
 	case '<':
-		cons_printf("< dec ptr");
+		if (i>1) cons_printf("< sub [ptr]");
+		else cons_printf("< dec [ptr]");
 		break;
 	case '+':
-		cons_printf("+ inc [ptr]");
+		if (i>1) cons_printf("+ add [ptr]");
+		else cons_printf("+ inc [ptr]");
 		break;
 	case '-':
-		cons_printf("- dec [ptr]");
+		if (i>1) cons_printf("- sub [ptr]");
+		else cons_printf("- dec [ptr]");
 		break;
 	case ',':
 		cons_printf(". [ptr] = getch()");
@@ -105,14 +116,15 @@ int arch_bf_dis(const u8* buf, u64 addr, int len)
 	case '.':
 		cons_printf(". print( [ptr] )");
 		break;
+	case '\x00':
+		cons_printf("  trap");
+		break;
 	default:
 		cons_printf("  nop");
 		break;
 	}
 
-	for(i=0;buf[0] == buf[1] && i<len; buf=buf+1,i++);
-	if (i>0)
-		cons_printf(", %d", i+1);
+	if (i>0) cons_printf(", %d", i+1);
 	if (i<1) i=1; else i++;
 
 	return i;

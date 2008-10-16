@@ -41,6 +41,24 @@ struct bfvm_cpu_t {
 	int circular; /* circular memory */
 } bfvm_cpu;
 
+static u8 bfvm_op()
+{
+	u8 buf[4];
+	if (!radare_read_at(bfvm_cpu.eip, buf, 4))
+		return 0xff;
+	return buf[0];
+}
+
+static int bfvm_in_trap()
+{
+	switch(bfvm_op()) {
+	case 0x00:
+	case 0xff:
+		return 1;
+	}
+	return 0;
+}
+
 static int bfvm_init(u32 size, int circular)
 {
 	memset(&bfvm_cpu,'\0', sizeof(struct bfvm_cpu_t));
@@ -88,13 +106,6 @@ static struct bfvm_cpu_t *bfvm_destroy(struct bfvm_cpu_t *bfvm)
 	return NULL;
 }
 
-static u8 bfvm_op()
-{
-	u8 buf[4];
-	radare_read_at(bfvm_cpu.eip, buf, 4);
-	return buf[0];
-}
-
 static u8 *bfvm_get_ptr_at(u64 at)
 {
 	if (at >= bfvm_cpu.base)
@@ -139,12 +150,13 @@ static void bfvm_inc()
 static void bfvm_dec()
 {
 	u8 *mem = bfvm_get_ptr();
-	*mem--;
+	if (mem != NULL)
+		mem[0]--;
 }
 
 static int bfvm_reg_set(const char *str)
 {
-	char *ptr = strchr(str, '=');
+	char *ptr = strchr(str, ' ');
 	if (ptr == NULL)
 		return 0;
 	if (strstr(str, "eip")) {
@@ -184,6 +196,9 @@ static int bfvm_step(int over)
 
 	do {
 		switch(op) {
+		case '\0':
+			/* trap */
+			return;
 		case '.':
 			buf = bfvm_get_ptr();
 			bfvm_poke();
@@ -207,14 +222,16 @@ static int bfvm_step(int over)
 		case '[':
 			break;
 		case ']':
-			do {
-				bfvm_cpu.eip--;
-				/* control underflow */
-				if (bfvm_cpu.eip<0) {
-					bfvm_cpu.eip = 0;
-					break;
-				}
-			} while(bfvm_op()!='[');
+			if (bfvm_get() != 0) {
+				do {
+					bfvm_cpu.eip--;
+					/* control underflow */
+					if (bfvm_cpu.eip<0) {
+						bfvm_cpu.eip = 0;
+						break;
+					}
+				} while(bfvm_op()!='[');
+			}
 			break;
 		default:
 			break;
@@ -223,6 +240,20 @@ static int bfvm_step(int over)
 		op2 = bfvm_op();
 	} while(over && op == op2);
 }
+
+static int bfvm_cont(u64 until)
+{
+	radare_controlc();
+	while(!config.interrupted && bfvm_cpu.eip != until) {
+		bfvm_step(0);
+		if (bfvm_in_trap()) {
+			eprintf("Trap instruction at 0x%08llx\n", bfvm_cpu.eip);
+			break;
+		}
+	}
+	radare_controlc_end();
+}
+
 
 static void bfvm_show_regs(int rad)
 {
@@ -237,7 +268,7 @@ static void bfvm_show_regs(int rad)
 		cons_printf("  eip  0x%08llx     esp  0x%08llx\n",
 			(u64)bfvm_cpu.eip, (u64)bfvm_cpu.esp);
 		cons_printf("  ptr  0x%08x     [ptr]  %d = 0x%02x '%c'\n",
-			(u32)bfvm_cpu.ptr, ch, ch, is_printable(ch)?ch:'?');
+			(u32)bfvm_cpu.ptr, ch, ch, is_printable(ch)?ch:' ');
 	}
 }
 
@@ -284,8 +315,20 @@ int bfdbg_handle_open(const char *file)
 
 static ssize_t bfdbg_write(int fd, const void *buf, size_t count)
 {
-        //return write(fd, buf, count);
-	return -1;
+	if (cur_seek>=bfvm_cpu.screen && cur_seek<=bfvm_cpu.screen+bfvm_cpu.screen_size) {
+		memcpy(bfvm_cpu.screen_buf+cur_seek-bfvm_cpu.screen, buf, count);
+		return count;
+	}
+	if (cur_seek>=bfvm_cpu.input && cur_seek<=bfvm_cpu.input+bfvm_cpu.input_size) {
+		memcpy(bfvm_cpu.input_buf+cur_seek-bfvm_cpu.input, buf, count);
+		return count;
+	}
+	if (cur_seek>=bfvm_cpu.base) {
+		memcpy(bfvm_cpu.mem+cur_seek-bfvm_cpu.base, buf, count);
+		return count;
+	}
+	// TODO: call real read/write here?!?
+        return write(fd, buf, count);
 }
 
 static ssize_t bfdbg_read(int fd, void *buf, size_t count)
@@ -326,11 +369,17 @@ static int bfdbg_system(const char *cmd)
 	} else
 	if (!memcmp(cmd, "help",4)) {
 		eprintf("Brainfuck debugger help:\n");
+		eprintf("20!step      ; perform 20 steps\n");
 		eprintf("!step        ; perform a step\n");
 		eprintf("!stepo       ; step over rep instructions\n");
+		eprintf("!maps        ; show registers\n");
 		eprintf("!reg         ; show registers\n");
-		eprintf("!reg eip = 3 ; force program counter\n");
+		eprintf("!cont [addr] ; continue until address or ^C\n");
+		eprintf("!reg eip 3   ; force program counter\n");
 		eprintf(".!reg*       ; adquire register information into core\n");
+	} else
+	if (!memcmp(cmd, "cont",4)) {
+		bfvm_cont(get_math(cmd+4));
 	} else
 	if (!memcmp(cmd, "stepo",5)) {
 		bfvm_step(1);
@@ -342,7 +391,7 @@ static int bfdbg_system(const char *cmd)
 		bfvm_step(0);
 	} else
 	if (!memcmp(cmd, "reg",3)) {
-		if (strchr(cmd+3,'=')) {
+		if (strchr(cmd+4,' ')) {
 			bfvm_reg_set(cmd+4);
 		} else {
 			switch (cmd[3]) {
@@ -374,7 +423,6 @@ static int bfdbg_close(int fd)
 {
 	return close(fd);
 }
-
 
 static u64 bfdbg_lseek(int fildes, u64 offset, int whence)
 {

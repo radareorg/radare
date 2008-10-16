@@ -656,7 +656,7 @@ int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (shdrp->sh_type == SHT_DYNSYM) {
+		if (shdrp->sh_type == (ELF_(dietelf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
 			strtabhdr = &shdr[shdrp->sh_link];
 
 			string = (char *)malloc(strtabhdr->sh_size);

@@ -213,7 +213,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		ret = ilopar[0].Size;
 		} break;
 	case ARCH_BF:
-		ret = arch_bf_dis(b, seek, bytes);
+		ret = arch_bf_dis(b, seek, 1024);
 		break;
 	default:
 		cons_printf("Unknown architecture");
