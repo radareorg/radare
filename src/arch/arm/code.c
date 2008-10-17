@@ -31,28 +31,23 @@
 
 static unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff )
 {
-	unsigned int add;
-		
-	add = insoff << 2;
-	/// zero extend si el bit mes alt es 1, --> 0x02000000
+	unsigned int add = insoff << 2;
+	/* zero extend if higher is 1 (0x02000000) */
 	if ( (add & 0x02000000) == 0x02000000 )
 		add = add | 0xFC000000 ;
-	add = add + pc + 8;
-
-	return add;
+	return add + pc + 8;
 }
 
 static int anal_is_B  ( int inst )
 {
-	if  ( ( inst & ARM_BRANCH_I_MASK  ) == ARM_BRANCH_I )
+	if ((inst&ARM_BRANCH_I_MASK) == ARM_BRANCH_I)
 		return 1;
 	 return 0;
 }
 
 static int anal_is_BL  ( int inst )
 {
-	
-	if ( anal_is_B(inst) && ( inst & ARM_BRANCH_LINK ) == ARM_BRANCH_LINK  )
+	if (anal_is_B(inst) && (inst&ARM_BRANCH_LINK) == ARM_BRANCH_LINK)
 		return 1;
 	return 0;
 }
@@ -60,7 +55,7 @@ static int anal_is_BL  ( int inst )
 
 static int anal_is_return ( int inst )
 {
-	if ( ( inst & ( ARM_DTM_I_MASK | ARM_DTM_LOAD  | ( 1 << 15 ) ) ) == ( ARM_DTM_I | ARM_DTM_LOAD  | ( 1 << 15 ) )  )
+	if ((inst&(ARM_DTM_I_MASK|ARM_DTM_LOAD|(1<<15))) == (ARM_DTM_I|ARM_DTM_LOAD|(1<<15)))
 		return 1;
 	return 0;
 }
@@ -75,7 +70,7 @@ static int anal_is_unkjmp ( int inst )
 
 static int anal_is_condAL ( int inst )
 {
-	if ( ( inst &ARM_COND_MASK ) == ARM_COND_AL )
+	if ((inst&ARM_COND_MASK)==ARM_COND_AL)
 		return 1;
 	return 0;
 }
@@ -89,7 +84,7 @@ extern int arm_mode;
 
 int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 {
-	unsigned int i=0;
+	unsigned int i = 0;
 	unsigned int* code=(unsigned int *)codeA;
 	unsigned int branch_dst_addr;
 
@@ -107,13 +102,11 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 	if( (code[i] == 0x1eff2fe1) ||(code[i] == 0xe12fff1e)) { // bx lr
 		aop->type = AOP_TYPE_RET;
 		aop->eob = 1;
-		return (arm_mode==16)?2:4;
 	} else
-	if ( anal_is_exitpoint ( code[i] ) )
-	{
-		branch_dst_addr =  disarm_branch_offset ( addr, code[i]&0x00FFFFFF ) ;
+	if (anal_is_exitpoint(code[i])) {
+		branch_dst_addr = disarm_branch_offset(addr, code[i]&0x00FFFFFF );
 
-		if ( anal_is_BL ( code[i] )  ) {
+		if (anal_is_BL(code[i])) {
 			if ( anal_is_B ( code[i] ) ) {
 				aop->type = AOP_TYPE_CALL;
 				aop->jump = branch_dst_addr;
@@ -122,9 +115,7 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 			} else {
 				aop->type = AOP_TYPE_RET;
 				aop->eob = 1;
-				return (arm_mode==16)?2:4;
 			}
-
 		} else {
 			if ( anal_is_B ( code[i] ) ) {
 				if ( anal_is_condAL (code[i] )  ) {
@@ -141,14 +132,12 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 				//unknown jump o return
 				aop->type = AOP_TYPE_UJMP;
 				aop->eob = 1;
-				return (arm_mode==16)?2:4;
 			}
 		}
 	}
 
 	return (arm_mode==16)?2:4;
 }
-
 
 
 // NOTE: bytes should be at least 16 bytes!

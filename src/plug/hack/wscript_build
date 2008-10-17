@@ -38,6 +38,16 @@ if so_hello.env['HAVE_LIBLUA'] == 1:
 	so_lua.source = 'lua.c'
 	so_lua.install_path = plugindir
 
+if so_hello.env['HAVE_RUBY'] == 1:
+	so_ruby = bld.new_task_gen('cc', 'shlib','ruby')
+	so_ruby.includes = '../..'
+	#so_ruby.env.append_value('LINKFLAGS','-llua')
+	so_ruby.env.append_value('LINKFLAGS', '-lruby18') #so_hello.env['HAVE_LIBLUA_LD'])
+	so_ruby.env.append_value('CCFLAGS', '-I/usr/lib/ruby/1.8/i386-linux')
+	so_ruby.target = 'ruby'
+	so_ruby.source = 'ruby.c'
+	so_ruby.install_path = plugindir
+
 if so_hello.env['GUI'] == 1:
 	se = bld.new_task_gen('cc', 'shlib','scriptedit')
 	se.includes = '../..'

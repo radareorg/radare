@@ -504,14 +504,14 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 				break;
 			case ARCH_ARM:
 				// endian stuff here
-				myinc += arch_arm_aop(seek, (const u8 *)b+bytes, &aop);
+				myinc += arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
 				break;
 			case ARCH_MIPS:
 				arch_mips_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_SPARC:
-				arch_sparc_aop(seek, (const u8 *)b+bytes, &aop);
+				arch_sparc_aop(seek, (const u8 *)block+bytes, &aop);
 				myinc += aop.length;
 				break;
 			case ARCH_JAVA:

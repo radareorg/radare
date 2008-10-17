@@ -21,6 +21,7 @@ def set_options(opt):
 	opt.add_option('--without-readline', action='store_false', default=True,  help='Build without readline',   dest='HAVE_READLINE')
 	opt.add_option('--without-lua',      action='store_false', default=True,  help='Build without LUA',        dest='HAVE_LIBLUA')
 	opt.add_option('--without-python',   action='store_false', default=True,  help='Build without Python',     dest='HAVE_PYTHON')
+	opt.add_option('--without-ruby',     action='store_false', default=True,  help='Build without Ruby',     dest='HAVE_RUBY')
 	opt.add_option('--prefix',
 		help    = "installation prefix [Default: '%s']" % prefix,
 		default = prefix,
@@ -108,6 +109,17 @@ def configure(conf):
 	conf.define('DOCDIR',  "%s/share/doc/radare"%Options.options.PREFIX)
 	conf.define('GRSCDIR', "%s/share/radare/gradare"%Options.options.PREFIX)
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
+
+	# Check for ruby
+	ru = conf.create_library_configurator()
+	ru.name = 'ruby'
+	ru.define = 'HAVE_RUBY'
+	ru.libs = ['ruby']
+	ru.mandatory = False
+	ru.run()
+	if conf.env['HAVE_RUBY'] != 1:
+		Options.options.HAVE_READLINE = False
+	conf.define('HAVE_RUBY', Options.options.HAVE_RUBY)
 
 	# Check for libreadline
 	rl = conf.create_library_configurator()

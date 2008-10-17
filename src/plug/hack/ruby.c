@@ -65,7 +65,10 @@ static int ruby_hack_init()
 	rb_define_method(rb_RadareCmd, "cmd", radare_ruby_cmd, 1);
 	rb_eval_string_protect("r = Radare.new()", NULL);
 
-	printf("Loading radare ruby api... %s\n",
+	rb_eval_string_protect("require \"irb\"; IRB.start();", NULL);
+
+
+	printf("==> Loading radare ruby api... %s\n",
 		slurp_ruby(RUBYAPI)? "error ( "RUBYAPI" )":"ok");
 	fflush(stdout);
 
@@ -80,6 +83,7 @@ static int ruby_hack_cya()
 
 int ruby_hack_cmd(char *input)
 {
+	int rb_state = 0;
 	char str[1024];
 
 	if (rs_cmdstr == NULL)
@@ -115,7 +119,23 @@ int ruby_hack_cmd(char *input)
 			||	!strcmp(str,"q"))
 				break;
 			str[strlen(str)]='\0';
-			rb_eval_string_protect(str, NULL);
+
+			rb_eval_string_protect(str, &rb_state);
+#if 0
+			rb_eval_string_protect("rescue => e\n", NULL);
+			rb_eval_string_protect(" puts e.exception()\n", NULL);
+			rb_eval_string_protect("end\n", NULL);
+
+#endif
+			if (rb_state != 0) {
+				printf("Fuck yeah: %d\n", rb_state);
+#if 0
+				rb_eval_string_protect("rescue => e\n", NULL);
+				rb_eval_string_protect(" puts e.exception()\n", NULL);
+				rb_eval_string_protect("end\n", NULL);
+				rb_eval_string_protect(str, &rb_state);
+#endif
+			}
 			//ruby_exec();
 		}
 	}

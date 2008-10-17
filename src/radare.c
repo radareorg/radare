@@ -783,12 +783,13 @@ int radare_cmd(char *input, int log)
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
 
+#if 0
 	if (dl_hist_label(input, &cb))
 		return 0;
+#endif
 //fprintf(stderr, "CMD: (%s)\n", input);
-	if (log) {
+	if (log)
 		dl_hist_add(input);
-	}
 
 	next = strstr(input, "&&");
 	if (next) next[0]='\0';
@@ -1100,6 +1101,10 @@ int radare_prompt()
 		}
 
 		strncpy(input, aux, sizeof(input));
+	//	dl_hist_add(ret);
+		if (dl_hist_label(input, &cb)) {
+			return 1;
+		}
 
 		flag_space_pop();
 

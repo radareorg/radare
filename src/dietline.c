@@ -113,9 +113,10 @@ static int label_get(char *name)
 }
 
 static void label_add (const char *str) {
-	int size = dl_buffer_len;
+	u32 size = dl_histidx;
 	u32 len = strlen(str)-1;
-printf("New label(%s )\n",str);
+
+	eprintf("New label(%s)\n",str);
 	memset(labels+lsize+4, '\0', BLOCK-((lsize+len+4)%BLOCK));
 	memcpy(labels+lsize, &size, 4);
 	memcpy(labels+lsize+4, str, len);
@@ -124,10 +125,10 @@ printf("New label(%s )\n",str);
 
 void dl_label_show()
 {
-	u32 i, p, n=0;
+	u32 i, p, n = 0;
 	for(i=0;i<lsize;i++,n++) {
 		memcpy(&p, labels+i, 4);
-		printf("  %03d  %s\n", p, labels+i+4);
+		printf(" %03d %03d  %s\n", i, p, labels+i+4);
 		i+=strlen(labels+i+4)+4;
 	}
 }
@@ -141,8 +142,10 @@ static void label_reset()
 
 static int is_label(const char *str)
 {
+	if (str[0]=='\0')
+		return 0;
 	if (str[strlen(str)-1]==':') {
-		if (str[0]=='?') {
+		if (str[0]==':') {
 			dl_label_show();
 			return 2;
 		}
@@ -156,6 +159,7 @@ static int is_label(const char *str)
 int dl_hist_label(const char *label, void (*cb)(const char*))
 {
 	int n,i;
+//printf("food label(%s)\n", label);
 
 	if (label[0]=='.') {
 		if (!is_label(label+1))
@@ -191,7 +195,7 @@ int dl_hist_add(const char *line)
 {
 #if HAVE_LIB_READLINE
 	add_history(line);
-#else
+#endif
 	if (dl_histidx>=dl_histsize)
 		dl_histidx = 0; // workaround
 	if (*line) { // && dl_histidx < dl_histsize) {
@@ -199,7 +203,7 @@ int dl_hist_add(const char *line)
 		return 1;
 	}
 	return 0;
-#endif
+//#endif
 }
 
 int dl_hist_up()

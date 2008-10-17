@@ -50,6 +50,7 @@ format_info_t formats[] = {
 	{ 'f', FMT_FLOAT,      "float",                  "4 bytes",     "(endian)"},
 	{ 'i', FMT_INT,        "integer",                "4 bytes",     "(endian)"},
 	{ 'l', FMT_LONG,       "long",                   "4 bytes",     "(endian)"},
+	{ 'e', FMT_DOUBLE,     "double",                 "8 bytes",     "(endian)"},
 	{ 'L', FMT_LLONG,      "long long",              "8 bytes",     "(endian)"},
 	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
 	{ 'C', FMT_COMMENT,    "comment information",    "string",      "range"},
@@ -280,6 +281,7 @@ void print_mem_help()
 	"Usage: pm [times][format] [arg0 arg1]\n"
 	"Example: pm 10xiz pointer length string\n"
 	" e - temporally swap endian\n"
+	" d - double (8 bytes)\n"
 	" f - float value\n"
 	" b - one byte \n"
 	" B - show 10 first bytes of buffer\n"
@@ -350,9 +352,8 @@ config.interrupted =1;
 				i=len; // exit
 				continue;
 			case '*':
-				if (i>0) {
-					tmp = last;
-				} else break;
+				if (i<=0) break;
+				tmp = last;
 				arg = arg - 1;
 				idx--;
 				goto feed_me_again;
@@ -392,6 +393,14 @@ data_print(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
 last_print_format=oldfmt;
 radare_seek(old, SEEK_SET);
 }
+				break;
+			case 'e': {
+				double doub;
+				memcpy(&doub, buf+i, sizeof(double));
+				D cons_printf("%e = ", doub);
+				cons_printf("(double)");
+				i+=8;
+				}
 				break;
 			case 'q':
 				D cons_printf("0x%08x = ", config.seek+i);
@@ -631,6 +640,12 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 			s = (short *)buffer;
 			print_color_byte("%hd", s[0]);
 			NEWLINE;
+		} } break;
+	case FMT_DOUBLE: {
+		double f;
+		for(i=0;!config.interrupted && i<len;i+=sizeof(float)) {
+			endian_memcpy((u8*)&f, buf+i, sizeof(float));
+			cons_printf("%e\n", f);
 		} } break;
 	case FMT_FLOAT: {
 		float f;
