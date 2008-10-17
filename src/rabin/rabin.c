@@ -95,21 +95,20 @@ void rabin_show_info(const char *file)
 			return;
 		}
 
-		baddr = ELF_CALL(dietelf_get_base_addr,bin);
+		baddr = ELF_CALL(dietelf_get_base_addr, bin);
 		
 		if (rad) {
 			printf("e file.type = elf\n");
 			str = getenv("DEBUG");
-			if (str && strncmp(str, "1", 1))
+			if (str == NULL || (str && strncmp(str, "1", 1)))
 				printf("e file.baddr = 0x%08llx\n", baddr);
 			if (ELF_CALL(dietelf_is_big_endian,bin))
 				printf("e cfg.bigendian = true\n");
-			else
-				printf("e cfg.bigendian = false\n");
+			else printf("e cfg.bigendian = false\n");
 			if (ELF_CALL(dietelf_get_stripped,bin))
 			    printf("e dbg.dwarf = false\n");
 			else printf("e dbg.dwarf = true\n");
-			printf("e asm.arch = %s\n", ELF_CALL(dietelf_get_osabi_name,bin));
+			printf("e asm.os = %s\n", ELF_CALL(dietelf_get_osabi_name,bin));
 			switch (ELF_CALL(dietelf_get_arch,bin)) {
 				case EM_MIPS:
 				case EM_MIPS_RS3_LE:
@@ -152,6 +151,8 @@ void rabin_show_info(const char *file)
 
 			printf("Static:          %s\n",
 				(ELF_CALL(dietelf_get_static,bin))?"Yes":"No");
+
+			printf("Base address:    0x%08llx\n", baddr);
 		}
 
 		close(fd);

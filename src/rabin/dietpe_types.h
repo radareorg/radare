@@ -10,6 +10,15 @@
 #include "pe.h"
 
 typedef struct {
+	pe_image_dos_header             *dos_header;
+	pe_image_nt_headers			    *nt_headers;
+	pe_image_section_header         *section_header;
+	pe_image_export_directory       *export_directory;
+	pe_image_import_directory       *import_directory;
+	pe_image_delay_import_directory *delay_import_directory;
+} dietpe_bin;
+
+typedef struct {
 	PE_DWord rva;
 	PE_DWord offset;
 } dietpe_entrypoint;

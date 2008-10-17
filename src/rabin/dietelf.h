@@ -4,19 +4,18 @@
  * This file is part of radare
  */
 
+#include "../main.h"
 #include "elf.h"
 
 #undef ELF_
-#undef ELF_ADDR_MASK
-
+	
 #ifdef DIETELF64
     #define ELF_(name) Elf64_##name 
-	#define ELF_ADDR_MASK 0xfffffffffffff000
 #else       
     #define ELF_(name) Elf32_##name 
-	#define ELF_ADDR_MASK 0xfffff000
 #endif      
 
+#define ELF_ADDR_MASK 0xffffffffffff8000LL
 
 typedef struct {
     ELF_(Ehdr)    ehdr;
@@ -31,15 +30,6 @@ typedef struct {
 } ELF_(dietelf_bin_t);
 
 
-void  ELF_(aux_swap_endian)(u8 *value, int size);
-int   ELF_(aux_is_encoded)(int encoding, unsigned char c);
-int   ELF_(aux_is_printable)(int c);
-int   ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont);
-int   ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont);
-char* ELF_(aux_filter_rad_output)(const char *string);
-int   ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin);
-u64   ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym);
-int   ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr);
 u64   ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name);
 u64   ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name);
 int   ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name);

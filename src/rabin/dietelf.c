@@ -14,7 +14,9 @@
 #include <sys/mman.h>
 
 #include "../main.h"
+#include "elf.h"
 #include "dietelf.h"
+#include "dietelf_static.h"
 
 enum {
 	ENCODING_ASCII = 0,
@@ -27,7 +29,7 @@ extern int xrefs;
 extern int rad;
 extern int verbose;
 
-void ELF_(aux_swap_endian)(u8 *value, int size)
+static void ELF_(aux_swap_endian)(u8 *value, int size)
 {
 	unsigned char buffer[8];
 
@@ -62,7 +64,7 @@ void ELF_(aux_swap_endian)(u8 *value, int size)
 	}
 }
 
-int ELF_(aux_is_encoded)(int encoding, unsigned char c)
+static int ELF_(aux_is_encoded)(int encoding, unsigned char c)
 {
 	switch(encoding) {
 		case ENCODING_ASCII:
@@ -95,13 +97,13 @@ int ELF_(aux_is_encoded)(int encoding, unsigned char c)
 }
 
 // Use from utils.c
-int ELF_(aux_is_printable) (int c)
+static int ELF_(aux_is_printable) (int c)
 {
 	if (c<' '||c>'~') return 0;
 	return 1;
 }
 
-int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
+static int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
 {
 	static int unicode = 0;
 	static int matches = 0;
@@ -144,7 +146,7 @@ int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc
 	return 0;
 }
 
-int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
+static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -184,24 +186,7 @@ int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u6
 	return 0;
 }
 
-int ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
-{
-	ELF_(Ehdr) *ehdr = &bin->ehdr;
-
-	if (strncmp((char *)ehdr->e_ident, ELFMAG, SELFMAG)) {
-		fprintf(stderr, "File not ELF\n");
-		return -1;
-	}
-
-	if (ehdr->e_version != EV_CURRENT) {
-		fprintf(stderr, "ELF version not current\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-char* ELF_(aux_filter_rad_output)(const char *string)
+static char* ELF_(aux_filter_rad_output)(const char *string)
 {
 	static char buff[255];
 	char *p = buff;
@@ -246,23 +231,26 @@ char* ELF_(aux_filter_rad_output)(const char *string)
 	return buff;
 }
 
-	int
-ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
+static int ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
 {
-	return bin->ehdr.e_machine;
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+
+	if (strncmp((char *)ehdr->e_ident, ELFMAG, SELFMAG)) {
+		fprintf(stderr, "File not ELF\n");
+		return -1;
+	}
+
+	if (ehdr->e_version != EV_CURRENT) {
+		fprintf(stderr, "ELF version not current\n");
+		return -1;
+	}
+
+	return 0;
 }
 
-int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
+int ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
 {
-	// TODO: would be better if (endian) return LIL_ENDIAN; (one liner ;D)
-#ifdef LIL_ENDIAN
-	if (endian)
-#else
-		if (!endian)
-#endif
-			return 1;
-		else
-			return 0;
+	return bin->ehdr.e_machine;
 }
 
 u64 ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
@@ -535,14 +523,28 @@ int ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char 
 	return -1;
 }
 
-u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
+int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
+{
+	// TODO: would be better if (endian) return LIL_ENDIAN; (one liner ;D)
+#ifdef LIL_ENDIAN
+	if (endian)
+#else
+	if (!endian)
+#endif
+			return 1;
+		else
+			return 0;
+}
+
+static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Rel) *rel, *relp;
 	ELF_(Addr) plt_sym_addr, got_addr = 0;
 	const char *string = bin->string;
-	int i, j, got_offset;
+	int i, j;
+	u64 got_offset;
 	
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -1166,7 +1168,7 @@ int ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
 	return 0;
 }
 
-int ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
+static int ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
 {
 	if (lseek(fd, shdr->sh_offset, SEEK_SET) < 0) {
 		perror("lseek");
