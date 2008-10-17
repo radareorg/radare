@@ -15,7 +15,9 @@
     #define ELF_(name) Elf32_##name 
 #endif      
 
-#define ELF_ADDR_MASK 0xffffffffffff8000LL
+#define ELF_ADDR_MASK   0xffffffffffff8000LL
+#define ELF_GOTOFF_MASK 0xfffffffffffff000LL
+
 
 typedef struct {
     ELF_(Ehdr)    ehdr;

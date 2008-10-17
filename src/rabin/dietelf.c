@@ -580,7 +580,7 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 				ELF_(aux_swap_endian)((u8*)&(relp->r_info), sizeof(ELF_(Word)));
 			}
 
-			got_offset = ((rel->r_offset - bin->base_addr) - got_addr) & ELF_ADDR_MASK;
+			got_offset = (rel->r_offset - bin->base_addr - got_addr) & ELF_GOTOFF_MASK;
 
 			relp = rel;
 			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
@@ -658,7 +658,7 @@ int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (shdrp->sh_type == (ELF_(dietelf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
+		if (shdrp->sh_type == (bin->ehdr.e_type == ET_REL?SHT_SYMTAB:SHT_DYNSYM)) {
 			strtabhdr = &shdr[shdrp->sh_link];
 
 			string = (char *)malloc(strtabhdr->sh_size);
