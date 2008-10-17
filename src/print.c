@@ -919,9 +919,11 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
 		u64 to = config_get_i("zoom.to");
+#if 0
 		config.size = to-ptr;
 		if (config.size<0)
 			config.size = -config.size;
+#endif
 	
 		if (!mode)
 			break;
