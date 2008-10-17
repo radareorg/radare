@@ -3,6 +3,8 @@
 
 #if __APPLE__
 #include "powerpc-darwin.h"
+#elif __linux__
+#include "powerpc-linux.h"
 #endif
 
 #define CPU_ARG0(x) R_R0(x)

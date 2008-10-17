@@ -70,7 +70,8 @@ def configure(conf):
 		conf.env['GUI'] = True
 	conf.env['OS'] = os.uname()[0]
 	conf.env['CPU'] = os.uname()[4]
-	if conf.env['CPU'] == 'Power Macintosh': conf.env['CPU'] = 'powerpc'
+	if conf.env['CPU'] == 'Power Macintosh': conf.env['CPU'] = 'powerpc' # osx
+	if conf.env['CPU'] == 'ppc': conf.env['CPU'] = 'powerpc' # linux
 	if conf.env['CPU'] == 'i86pc': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i686': conf.env['CPU'] = 'i386'
 	if conf.env['CPU'] == 'i586': conf.env['CPU'] = 'i386'

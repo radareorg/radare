@@ -44,6 +44,12 @@
 	#include <sys/user.h>
 	#define regs_t struct user_regs_struct
 #endif
+
+#if __linux__ && __powerpc__
+	/* linux 32 bit powerpc */
+	#include <sys/user.h>
+	#define regs_t struct pt_regs
+#endif
  
 #if __APPLE__
 	#include <sys/ucontext.h>
@@ -143,6 +149,13 @@
 #define PTRACE_GETFPREGS PT_GETFPREGS
 #define PTRACE_SETFPREGS PT_SETFPREGS
 #endif
+#endif
+
+#if __linux__ && __powerpc__
+#define PTRACE_GETREGS PPC_PTRACE_GETREGS
+#define PTRACE_SETREGS PPC_PTRACE_SETREGS
+#define PTRACE_GETFPREGS PPC_PTRACE_GETFPREGS
+#define PTRACE_SETFPREGS PPC_PTRACE_SETFPREGS
 #endif
 
 #if __sun

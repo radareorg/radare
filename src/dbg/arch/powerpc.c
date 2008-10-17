@@ -65,6 +65,11 @@ static u64 reg(u64 reg)
 	return reg;
 }
 
+int arch_is_fork()
+{
+	return 0;
+}
+
 int arch_dump_registers()
 {
 	FILE *fd;
