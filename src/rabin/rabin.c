@@ -36,6 +36,7 @@
 
 #include "dietelf.h"
 #include "dietelf64.h"
+#include "dietelf_types.h"
 #include "dietpe.h"
 #include "dietpe_types.h"
 #include "dietmach0.h"
@@ -89,7 +90,7 @@ void rabin_show_info(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
@@ -155,7 +156,7 @@ void rabin_show_info(const char *file)
 			printf("Base address:    0x%08llx\n", baddr);
 		}
 
-		close(fd);
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_CLASS:
 		if (rad) {
@@ -252,13 +253,13 @@ void rabin_show_strings(const char *file)
 	}
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
 		ELF_CALL(dietelf_list_strings,bin,fd);
-		close(fd);
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
 		// TODO: native version and support for non -r
@@ -316,7 +317,7 @@ void rabin_show_entrypoint()
 	switch(filetype) {
 	case FILETYPE_ELF:
 		/* pW 4 @ 0x18 */
-		fd = ELF_CALL(dietelf_new,bin, file);
+		fd = ELF_CALL(dietelf_open,bin, file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
@@ -337,7 +338,7 @@ void rabin_show_entrypoint()
 			}
 		}
 
-		close(fd);
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
 		printf("fs symbols\n");
@@ -446,16 +447,22 @@ void rabin_show_arch(char *file)
 void rabin_show_imports(const char *file)
 {
 	char buf[1024];
-	dietelf_bin_t bin;
-	dietpe_bin pebin;
-	dietpe_import *import, *importp;
 	int i, imports_count;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin    pe;
+	} bin;
+	union {
+		dietelf_import* elf;
+		dietpe_import*  pe;
+	} import, importp;
 
 	if (xrefs) {
 		snprintf(buf,1023, "printf \"pC @@ imp_\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
 		system(buf);
 		return;
 	}
+
 	switch(filetype) {
 	case FILETYPE_ELF:
 #if 0
@@ -466,15 +473,37 @@ void rabin_show_imports(const char *file)
 		system(buf);
 		}
 #else
-	// XXX doesnt works!!
-		
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_imports,bin,fd);
-		close(fd);
+
+		imports_count = ELF_CALL(dietelf_get_imports_count,bin.elf,fd);
+
+		import.elf = malloc(imports_count * sizeof(dietelf_import));
+		ELF_CALL(dietelf_get_imports,bin.elf,fd,import.elf);
+
+		if (rad)
+			printf("fs imports\n");
+		else printf("==> Imports:\n");
+
+		importp.elf = import.elf;
+		for (i = 0; i < imports_count; i++, importp.elf++) {
+			if (rad) {
+				printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(importp.elf->name), importp.elf->offset);
+			} else {
+				if (verbose) {
+					printf("0x%08llx %s %s %s\n", importp.elf->offset, importp.elf->bind, importp.elf->type, importp.elf->name);
+				} else {
+					printf("0x%08llx %s\n", importp.elf->offset, importp.elf->name);
+				}
+			}
+		}
+
+		if (rad) fprintf(stderr, "%i imports added\n", imports_count);
+
+		ELF_(dietelf_close)(fd);
 #endif
 		break;
 	case FILETYPE_MACHO:
@@ -497,24 +526,26 @@ void rabin_show_imports(const char *file)
 		}
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&pebin, file)) == -1) {
+		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
 			fprintf(stderr, "Cannot open file\n");
 			return;
 		}
 
-		imports_count = dietpe_get_imports_count(&pebin, fd);
+		imports_count = dietpe_get_imports_count(&bin.pe, fd);
 
-		import = malloc(imports_count * sizeof(dietpe_import));
-		dietpe_get_imports(&pebin, fd, import);
+		import.pe = malloc(imports_count * sizeof(dietpe_import));
+		dietpe_get_imports(&bin.pe, fd, import.pe);
 
 		if (!rad)
 			printf("==> Imports:\n");
-		importp = import;
-		for (i = 0; i < imports_count; i++, importp++) {
+		importp.pe = import.pe;
+		for (i = 0; i < imports_count; i++, importp.pe++) {
 			if (!rad)
 				printf("0x%08x rva=0x%08x hint=%04i ordinal=%03i %s\n",
-					   importp->offset, importp->rva, importp->hint, importp->ordinal, importp->name);
+					   importp.pe->offset, importp.pe->rva, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 		}
+
+		if (rad) fprintf(stderr, "%i imports added\n", imports_count);
 
 		dietpe_close(fd);
 		break;
@@ -524,10 +555,15 @@ void rabin_show_imports(const char *file)
 void rabin_show_symbols(char *file)
 {
 	char buf[1024];
-	dietelf_bin_t bin;
-	dietpe_bin pebin;
-	dietpe_export *export, *exportp;
-	int exports_count, i;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin    pe;
+	} bin;
+	union {
+		dietelf_symbol* elf;
+		dietpe_export*  pe;
+	} symbol, symbolp;
+	int symbols_count, i;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -535,13 +571,40 @@ void rabin_show_symbols(char *file)
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
 		system(buf);
 #endif		
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_symbols,bin,fd);
-		close(fd);
+
+		symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd);
+
+		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
+		ELF_CALL(dietelf_get_symbols,bin.elf,fd,symbol.elf);
+
+		if (rad)
+			printf("fs symbols\n");
+		else printf("==> Symbols:\n");
+
+		symbolp.elf = symbol.elf;
+		for (i = 0; i < symbols_count; i++, symbolp.elf++) {
+			if (rad) {
+				printf("b %ld && ", symbolp.elf->size); 
+				printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(symbolp.elf->name), symbolp.elf->offset);
+				if (!strncmp(symbolp.elf->type,"FUNC", 4)) 
+					printf("CF %ld @ 0x%08llx\n", symbolp.elf->size, symbolp.elf->offset);
+			} else {
+				if (verbose) {
+					printf("0x%08llx size=%05ld %s %s %s\n", symbolp.elf->offset, symbolp.elf->size, symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
+				} else {
+					printf("0x%08llx %s\n", symbolp.elf->offset, symbolp.elf->name);
+				}
+			}
+		}
+
+		if (rad) fprintf(stderr, "%i symbols added\n", symbols_count);
+
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
 		setenv("target", file, 1);
@@ -568,26 +631,27 @@ void rabin_show_symbols(char *file)
 		system(buf);
 		break;
 	case FILETYPE_PE:
-	if ((fd = dietpe_open(&pebin, file)) == -1) {
-		fprintf(stderr, "Cannot open file\n");
-		return;
-	}
+		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+			fprintf(stderr, "Cannot open file\n");
+			return;
+		}
 
-	exports_count = dietpe_get_exports_count(&pebin, fd);
-	
-	export = malloc(exports_count * sizeof(dietpe_export));
-	dietpe_get_exports(&pebin, fd, export);
-	
-	if (!rad)
-		printf("==> Exports:\n");
-	exportp = export;
-	for (i = 0; i < exports_count; i++, exportp++) {
+		symbols_count = dietpe_get_exports_count(&bin.pe, fd);
+
+		symbol.pe = malloc(symbols_count * sizeof(dietpe_export));
+		dietpe_get_exports(&bin.pe, fd, symbol.pe);
+
 		if (!rad)
-			printf("0x%08x rva=0x%08x ordinal=%03i forwarder=%s %s\n", exportp->offset, exportp->rva, exportp->ordinal, exportp->forwarder, exportp->name);
-	}
+			printf("==> Exports:\n");
+		symbolp.pe = symbol.pe;
+		for (i = 0; i < symbols_count; i++, symbolp.pe++) {
+			if (!rad)
+				printf("0x%08x rva=0x%08x ordinal=%03i forwarder=%s %s\n", symbolp.pe->offset, symbolp.pe->rva, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
+		}
 
-	// DietPE Close
-	dietpe_close(fd);
+		if (rad) fprintf(stderr, "%i symbols added\n", symbols_count);
+
+		dietpe_close(fd);
 		break;
 	}
 }
@@ -599,7 +663,7 @@ void rabin_show_others(char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
@@ -614,45 +678,79 @@ void rabin_show_others(char *file)
 void rabin_show_sections(const char *file)
 {
 	int fd, i, sections_count;
-	dietelf_bin_t bin;
-	dietpe_bin pebin;
-	dietpe_section *section, *sectionp;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin    pe;
+	} bin;
+	union {
+		dietelf_section* elf;
+		dietpe_section*  pe;
+	} section, sectionp;
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
 		dm_read_command(0);
 		break;
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_sections,bin,fd);
-		close(fd);
+
+		sections_count = ELF_CALL(dietelf_get_sections_count,bin.elf);
+
+		section.elf = malloc(sections_count * sizeof(dietelf_section));
+		ELF_CALL(dietelf_get_sections,bin.elf,fd,section.elf);
+		sectionp.elf = section.elf;
+		if (rad)
+			printf("fs sections\n");
+		else printf("==> Sections:\n");
+
+		for (i = 0; i < sections_count; i++, sectionp.elf++) {
+			if (rad) {
+				printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset));
+				printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset + sectionp.elf->size));
+				printf("CC ");
+			}
+			printf("[%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s",
+					i, sectionp.elf->offset, sectionp.elf->size,
+					sectionp.elf->align,
+					ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
+					ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
+					ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
+					sectionp.elf->name);
+			if (rad)
+				printf(" @ 0x%08llx\n", (u64)(sectionp.elf->offset));
+			else printf("\n");
+		}
+
+		if (rad) fprintf(stderr, "%i sections added\n", sections_count);
+
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&pebin, file)) == -1) {
+		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
 			fprintf(stderr, "Cannot open file\n");
 			return;
 		}
 		
-		sections_count = dietpe_get_sections_count(&pebin);
+		sections_count = dietpe_get_sections_count(&bin.pe);
 
-		section = malloc(sections_count * sizeof(dietpe_section));
-		dietpe_get_sections(&pebin, section);
-		sectionp = section;
+		section.pe = malloc(sections_count * sizeof(dietpe_section));
+		dietpe_get_sections(&bin.pe, section.pe);
+		sectionp.pe = section.pe;
 		if (!rad)
 			printf("==> Sections:\n");
-		for (i = 0; i < sections_count; i++, sectionp++) {
+		for (i = 0; i < sections_count; i++, sectionp.pe++) {
 			if (!rad)
 				printf("[%02i] 0x%08x rva=0x%08x size=0x%08x privileges=%c%c%c%c %s\n",
-					   i, sectionp->offset, sectionp->rva, sectionp->size,
-					   PE_SCN_IS_SHAREABLE(sectionp->characteristics)?'s':'-',
-					   PE_SCN_IS_READABLE(sectionp->characteristics)?'r':'-',
-					   PE_SCN_IS_WRITABLE(sectionp->characteristics)?'w':'-',
-					   PE_SCN_IS_EXECUTABLE(sectionp->characteristics)?'x':'-',
-					   sectionp->name);
+					   i, sectionp.pe->offset, sectionp.pe->rva, sectionp.pe->size,
+					   PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+					   PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+					   PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+					   PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+					   sectionp.pe->name);
 		}
 
 		dietpe_close(fd);
@@ -675,13 +773,13 @@ void rabin_show_libs(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_new,bin,file);
+		fd = ELF_CALL(dietelf_open,bin,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
 		ELF_CALL(dietelf_list_libs,bin,fd);
-		close(fd);
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
 		sprintf(buf, "otool -L '%s'", file);

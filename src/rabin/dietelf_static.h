@@ -5,15 +5,16 @@
  */
 
 #include "../main.h"
+#include "dietelf_types.h"
 #include "elf.h"
 
 
-static void  ELF_(aux_swap_endian)(u8 *value, int size);
-static int   ELF_(aux_is_encoded)(int encoding, unsigned char c);
-static int   ELF_(aux_is_printable)(int c);
-static int   ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont);
-static int   ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont);
-static char* ELF_(aux_filter_rad_output)(const char *string);
-static int   ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin);
-static u64   ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym);
-static int   ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr);
+static int   ELF_(aux_is_encoded)(int, unsigned char);
+static int   ELF_(aux_is_printable)(int);
+static int   ELF_(aux_stripstr_from_file)(const char*, int, int, u64, u64, u64, const char*, int*);
+static int   ELF_(aux_stripstr_iterate)(const unsigned char*, int, int, int, u64, u64, const char*, int*);
+static void  ELF_(aux_swap_endian)(u8*, int);
+static int   ELF_(dietelf_init)(ELF_(dietelf_bin_t)*, int);
+static int   ELF_(do_elf_checks)(ELF_(dietelf_bin_t)*);
+static u64   ELF_(get_import_addr)(ELF_(dietelf_bin_t)*, int, int);
+static int   ELF_(load_section)(char**, int, ELF_(Shdr)*);

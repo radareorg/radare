@@ -21,7 +21,7 @@ def set_options(opt):
 	opt.add_option('--without-readline', action='store_false', default=True,  help='Build without readline',   dest='HAVE_READLINE')
 	opt.add_option('--without-lua',      action='store_false', default=True,  help='Build without LUA',        dest='HAVE_LIBLUA')
 	opt.add_option('--without-python',   action='store_false', default=True,  help='Build without Python',     dest='HAVE_PYTHON')
-	opt.add_option('--without-ruby',     action='store_false', default=True,  help='Build without Ruby',     dest='HAVE_RUBY')
+	opt.add_option('--without-ruby',     action='store_false', default=True,  help='Build without Ruby',       dest='HAVE_RUBY')
 	opt.add_option('--prefix',
 		help    = "installation prefix [Default: '%s']" % prefix,
 		default = prefix,
@@ -118,7 +118,7 @@ def configure(conf):
 	ru.mandatory = False
 	ru.run()
 	if conf.env['HAVE_RUBY'] != 1:
-		Options.options.HAVE_READLINE = False
+		Options.options.HAVE_RUBY= False
 	conf.define('HAVE_RUBY', Options.options.HAVE_RUBY)
 
 	# Check for libreadline

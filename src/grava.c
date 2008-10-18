@@ -223,7 +223,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 		//buf = radare_cmd_str(str);
 		//cons_flush();
 		radare_cmd_raw(str, 0);
-		ptr = config_get("scr.seek");
+		ptr = (char *)config_get("scr.seek");
 		if (ptr&&ptr[0]) {
 			u64 off = get_math(ptr);
 			if (off != 0)
@@ -328,6 +328,50 @@ void core_graph_reload(void * foo, char *cmd)
 {
 //printf("running cmd (%s)\n", cmd);
 	radare_cmd(cmd, 0);
+}
+
+static int
+ cfg_offset,
+ cfg_section,
+ cfg_bytes,
+ cfg_trace,
+ cfg_color,
+ cfg_verbose,
+ cfg_lines;
+
+void asm_state_save()
+{
+	/* store values */
+	cfg_offset = config_get_i("asm.offset");
+	cfg_section= config_get_i("asm.section");
+	cfg_verbose= config_get_i("asm.verbose");
+	cfg_bytes  = config_get_i("asm.bytes");
+	cfg_trace  = config_get_i("asm.trace");
+	cfg_color  = config_get_i("cfg.color");
+	cfg_lines  = config_get_i("asm.lines");
+
+	/* set our own config */
+	config_set("asm.offset", "false");
+	if (config_get("graph.offset"))
+		config_set("asm.offset", "true");
+	else 	config_set("asm.offset", "false");
+	config_set("asm.section", "false");
+	config_set("asm.bytes", "false");
+	config_set("asm.trace", "false");
+	config_set("scr.color", "false");
+	config_set("asm.lines", "false");
+	config.color = 0;
+}
+
+void asm_state_restore()
+{
+	config_set_i("asm.section", cfg_section);
+	config_set_i("cfg.verbose", cfg_verbose);
+	config_set_i("scr.color", cfg_color);
+	config_set_i("asm.offset", cfg_offset);
+	config_set_i("asm.trace", cfg_trace);
+	config_set_i("asm.bytes", cfg_bytes);
+	config_set_i("asm.lines", cfg_lines);
 }
 
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
@@ -459,15 +503,7 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	}
 
 	/* analyze code */
-	config_set("asm.offset", "false");
-	if (config_get("graph.offset"))
-		config_set("asm.offset", "true");
-	else 	config_set("asm.offset", "false");
-	config_set("asm.bytes", "false");
-	config_set("asm.trace", "false");
-	config_set("scr.color", "false");
-	config_set("asm.lines", "false");
-	config.color = 0;
+	asm_state_save();
 
 	/* add static nodes */
 	i = 0;
@@ -606,13 +642,9 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	n_windows++;
 	new_window = 0;
 	gtk_main();
+
+	asm_state_restore();
 	// oops. tihs is not for real!
-	config_set("cfg.verbose", "true");
-	config_set("scr.color", "true");
-	config_set("asm.offset", "true");
-	config_set("asm.trace", "false");
-	config_set("asm.bytes", "true");
-	config_set("asm.lines", "true");
 	cons_set_fd(1);
 	config.seek = here;
 	gtk_is_init = 0;

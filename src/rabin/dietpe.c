@@ -33,7 +33,7 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 	return 0;
 }
 
-int dietpe_close(fd) {
+int dietpe_close(int fd) {
 	close(fd);
 
 	return 0;

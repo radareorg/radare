@@ -17,6 +17,7 @@
 #include "elf.h"
 #include "dietelf.h"
 #include "dietelf_static.h"
+#include "dietelf_types.h"
 
 enum {
 	ENCODING_ASCII = 0,
@@ -25,7 +26,6 @@ enum {
 
 static int endian=0;
 
-extern int xrefs;
 extern int rad;
 extern int verbose;
 
@@ -186,7 +186,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 	return 0;
 }
 
-static char* ELF_(aux_filter_rad_output)(const char *string)
+char* ELF_(aux_filter_rad_output)(const char *string)
 {
 	static char buff[255];
 	char *p = buff;
@@ -229,6 +229,12 @@ static char* ELF_(aux_filter_rad_output)(const char *string)
 	*p='\0';
 
 	return buff;
+}
+
+int ELF_(dietelf_close)(int fd) {
+	close(fd);
+
+	return 0;
 }
 
 static int ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
@@ -474,7 +480,7 @@ char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 		}
 }
 
-	u64
+u64
 ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
@@ -606,55 +612,45 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 	return -1;
 }
 
-int ELF_(dietelf_list_sections)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_sections)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_section *section)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+	dietelf_section *sectionp;
 	const char *string = bin->string;
-	int i, cont=0;
+	int i;
 
-#define GET_FLAGS(x) (x&SHF_WRITE)?'w':'-', (x&SHF_ALLOC)?'a':'-', (x&SHF_EXECINSTR)?'x':'-'
+
 	shdrp = shdr;
-	if (rad)
-		printf("fs sections\n");
-	else
-		printf("==> Sections:\n");
-
-	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (i==0)
-			continue;
-		if (rad) {
-			printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr));
-			printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)(shdrp->sh_offset + bin->base_addr + shdrp->sh_size));
-			//		printf("S 0x%llx 0x%llx section_%s @ 0x%llx\n", (u64)(shdrp->sh_size), (u64)bin->base_addr, ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]), (u64)shdrp->sh_offset);
-			printf("CC ");
-		}
-		printf("[%02i] 0x%08llx size=%08lli align=0x%08llx type=0x%08x %c%c%c %s", 
-				i,
-				(u64)(shdrp->sh_offset + bin->base_addr),
-				(u64)shdrp->sh_size,
-				(u64)shdrp->sh_addralign,
-				shdrp->sh_type,
-				GET_FLAGS(shdrp->sh_flags),
-				&string[shdrp->sh_name]);
-		if (rad)
-			printf(" @ 0x%08llx\n", (u64)(shdrp->sh_offset + bin->base_addr));
-		else printf("\n");
-		cont++;
+	sectionp = section;
+	for (i = 0; i < ehdr->e_shnum; i++, shdrp++, sectionp++) {
+		sectionp->offset = shdrp->sh_offset + bin->base_addr;
+		sectionp->size = shdrp->sh_size;
+		sectionp->align = shdrp->sh_addralign;
+		sectionp->flags = shdrp->sh_flags;
+		memcpy(sectionp->name, &string[shdrp->sh_name], ELF_NAME_LENGTH);
 	}
 
-	if (rad) fprintf(stderr, "%i sections added\n", cont);
-	return i;
+	return 0;
 }
 
-int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_sections_count)(ELF_(dietelf_bin_t) *bin)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+
+
+	return ehdr->e_shnum;
+}
+
+int ELF_(dietelf_get_imports)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_import *import)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
 	ELF_(Shdr) *strtabhdr;
+	dietelf_import *importp;
 	char *string;
-	int i, j, k, cont=0;
+	int i, j, k;
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -701,75 +697,95 @@ int ELF_(dietelf_list_imports)(ELF_(dietelf_bin_t) *bin, int fd)
 				ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 			}
 
-			if (rad)
-				printf("fs imports\n");
-			else
-				printf("==> Imports:\n");
+			importp = import;
+			symp = sym;
+			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
+				if (k == 0)
+					continue;
+				if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+					memcpy(importp->name, &string[symp->st_name], ELF_NAME_LENGTH);
+					importp->offset = (symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
+					switch (ELF32_ST_BIND(symp->st_info)) {
+						case STB_LOCAL:  snprintf(importp->bind, ELF_NAME_LENGTH, "LOCAL   "); break;
+						case STB_GLOBAL: snprintf(importp->bind, ELF_NAME_LENGTH, "GLOBAL  "); break;
+						case STB_NUM:    snprintf(importp->bind, ELF_NAME_LENGTH, "NUM     "); break;
+						case STB_LOOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "LOOS    "); break;
+						case STB_HIOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "HIOS    "); break;
+						case STB_LOPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "LOPROC  "); break;
+						case STB_HIPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "HIPROC  "); break;
+						default:	     snprintf(importp->bind, ELF_NAME_LENGTH, "UNKNOWN ");
+					}
+					switch (ELF32_ST_TYPE(symp->st_info)) {
+						case STT_NOTYPE:  snprintf(importp->type, ELF_NAME_LENGTH, "NOTYPE  "); break;
+						case STT_OBJECT:  snprintf(importp->type, ELF_NAME_LENGTH, "OBJECT  "); break;
+						case STT_FUNC:    snprintf(importp->type, ELF_NAME_LENGTH, "FUNC    "); break;
+						case STT_SECTION: snprintf(importp->type, ELF_NAME_LENGTH, "SECTION "); break;
+						case STT_FILE:    snprintf(importp->type, ELF_NAME_LENGTH, "FILE    "); break;
+						case STT_COMMON:  snprintf(importp->type, ELF_NAME_LENGTH, "COMMON  "); break;
+						case STT_TLS:     snprintf(importp->type, ELF_NAME_LENGTH, "TLS     "); break;
+						case STT_NUM:     snprintf(importp->type, ELF_NAME_LENGTH, "NUM     "); break;
+						case STT_LOOS:    snprintf(importp->type, ELF_NAME_LENGTH, "LOOS    "); break;
+						case STT_HIOS:    snprintf(importp->type, ELF_NAME_LENGTH, "HIOS    "); break;
+						case STT_LOPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "LOPROC  "); break;
+						case STT_HIPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "HIPROC  "); break;
+						default:	      snprintf(importp->type, ELF_NAME_LENGTH, "UNKNOWN ");
+					}
+					importp++;
+				}
+			}
+		}
+	}
+	
+	return 0;
+}
+
+int ELF_(dietelf_get_imports_count)(ELF_(dietelf_bin_t) *bin, int fd)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+	ELF_(Sym) *sym, *symp;
+	int i, j, k, cont = 0;
+
+	shdrp = shdr;
+	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+		if (shdrp->sh_type == (bin->ehdr.e_type == ET_REL?SHT_SYMTAB:SHT_DYNSYM)) {
+			sym = (ELF_(Sym) *)malloc(shdrp->sh_size);
+			if (sym == NULL) {
+				perror("malloc");
+				return -1;
+			}
+
+			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+				perror("lseek");
+				return -1;
+			}
+
+			if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+				perror("read");
+				return -1;
+			}
 
 			symp = sym;
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
-				if (k != 0) {
-					if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
-						if (rad) {
-							printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
-							cont++;
-						} else {
-							if (verbose) {
-								printf("0x%08llx ", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k));
-								switch (ELF32_ST_BIND(symp->st_info)) {
-									case STB_LOCAL:  printf("LOCAL   "); break;
-									case STB_GLOBAL: printf("GLOBAL  "); break;
-									case STB_NUM:    printf("NUM     "); break;
-									case STB_LOOS:   printf("LOOS    "); break;
-									case STB_HIOS:   printf("HIOS    "); break;
-									case STB_LOPROC: printf("LOPROC  "); break;
-									case STB_HIPROC: printf("HIPROC  "); break;
-									default:	     printf("UNKNOWN ");
-								}
-								switch (ELF32_ST_TYPE(symp->st_info)) {
-									case STT_NOTYPE:  printf("NOTYPE  "); break;
-									case STT_OBJECT:  printf("OBJECT  "); break;
-									case STT_FUNC:    printf("FUNC    "); break;
-									case STT_SECTION: printf("SECTION "); break;
-									case STT_FILE:    printf("FILE    "); break;
-									case STT_COMMON:  printf("COMMON  "); break;
-									case STT_TLS:     printf("TLS     "); break;
-									case STT_NUM:     printf("NUM     "); break;
-									case STT_LOOS:    printf("LOOS    "); break;
-									case STT_HIOS:    printf("HIOS    "); break;
-									case STT_LOPROC:  printf("LOPROC  "); break;
-									case STT_HIPROC:  printf("HIPROC  "); break;
-									default:	     printf("UNKNOWN ");
-								}
-								printf("%s\n", &string[symp->st_name]);
-							} else {
-								printf("0x%08llx %s\n", symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k), &string[symp->st_name]);
-							}
-							if (xrefs) {
-								// TODO: use raadare >af
-								char buf[1024];
-								sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)ELF_(get_import_addr)(bin, fd, k));
-								system(buf);
-							}
-						}
-					}
+				if (k == 0)
+					continue;
+				if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+					cont++;
 				}
 			}
-
-			free(string);
 		}
 	}
 
-	if (rad) fprintf(stderr, "%i imports added\n", cont);
-	return i;
+	return cont;
 }
 
-int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *symbol)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
 	ELF_(Shdr) *strtabhdr;
+	dietelf_symbol *symbolp;
 	u64 sym_offset;
 	char *string;
 	int i, j, k, cont=0;
@@ -821,105 +837,61 @@ int ELF_(dietelf_list_symbols)(ELF_(dietelf_bin_t) *bin, int fd)
 				ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
 			}
 
-			if (rad)
-				printf("fs symbols\n");
-			else
-				printf("==> Symbols:\n");
-
+			symbolp = symbol;
 			symp = sym;
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
-				if (k != 0) {
-					if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
-						if (rad) {
-							printf("b 0x%08llx && ", (u64)symp->st_size); 
-							printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value + sym_offset);
-							printf("CF %lld @ 0x%08llx\n", (u64)symp->st_size, (u64)symp->st_value + sym_offset);
-							cont++;
-						} else { 
-							if (verbose) {
-								printf("0x%08llx size=%05lld ", (u64)symp->st_value + sym_offset, (u64)symp->st_size);
-								switch (ELF32_ST_BIND(symp->st_info)) {
-									case STB_LOCAL:		printf("LOCAL  "); break;
-									case STB_GLOBAL:	printf("GLOBAL "); break;
-									case STB_NUM:		printf("NUM    "); break;
-									case STB_LOOS:		printf("LOOS   "); break;
-									case STB_HIOS:		printf("HIOS   "); break;
-									case STB_LOPROC:	printf("LOPROC "); break;
-									case STB_HIPROC:	printf("HIPROC "); break;
-									default:			printf("UNKNOWN ");
-								}
-								switch (ELF32_ST_TYPE(symp->st_info)) {
-									case STT_NOTYPE:	printf("NOTYPE  "); break;
-									case STT_OBJECT:	printf("OBJECT  "); break;
-									case STT_FUNC:		printf("FUNC    "); break;
-									case STT_SECTION:	printf("SECTION "); break;
-									case STT_FILE:		printf("FILE    "); break;
-									case STT_COMMON:	printf("COMMON  "); break;
-									case STT_TLS:		printf("TLS     "); break;
-									case STT_NUM:		printf("NUM     "); break;
-									case STT_LOOS:		printf("LOOS    "); break;
-									case STT_HIOS:		printf("HIOS    "); break;
-									case STT_LOPROC:	printf("LOPROC  "); break;
-									case STT_HIPROC:	printf("HIPROC  "); break;
-									default:			printf("UNKNOWN ");
-								}
-								printf("%s\n", &string[symp->st_name]);
-							} else {
-								printf("0x%08llx %s\n", (u64)symp->st_value + sym_offset, &string[symp->st_name]);
-							}
-							if (xrefs) {
-								char buf[1024];
-								sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value + sym_offset);
-								system(buf);
-							}
-						}
+				if (k == 0)
+					continue;
+				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+					symbolp->size = (u64)symp->st_size; 
+					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
+					symbolp->offset = (u64)symp->st_value + sym_offset;
+					switch (ELF32_ST_BIND(symp->st_info)) {
+						case STB_LOCAL:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOCAL  "); break;
+						case STB_GLOBAL:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "GLOBAL "); break;
+						case STB_NUM:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "NUM    "); break;
+						case STB_LOOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOOS   "); break;
+						case STB_HIOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIOS   "); break;
+						case STB_LOPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOPROC "); break;
+						case STB_HIPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIPROC "); break;
+						default:			snprintf(symbolp->bind, ELF_NAME_LENGTH, "UNKNOWN ");
 					}
+					switch (ELF32_ST_TYPE(symp->st_info)) {
+						case STT_NOTYPE:	snprintf(symbolp->type, ELF_NAME_LENGTH, "NOTYPE  "); break;
+						case STT_OBJECT:	snprintf(symbolp->type, ELF_NAME_LENGTH, "OBJECT  "); break;
+						case STT_FUNC:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FUNC    "); break;
+						case STT_SECTION:	snprintf(symbolp->type, ELF_NAME_LENGTH, "SECTION "); break;
+						case STT_FILE:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FILE    "); break;
+						case STT_COMMON:	snprintf(symbolp->type, ELF_NAME_LENGTH, "COMMON  "); break;
+						case STT_TLS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "TLS     "); break;
+						case STT_NUM:		snprintf(symbolp->type, ELF_NAME_LENGTH, "NUM     "); break;
+						case STT_LOOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "LOOS    "); break;
+						case STT_HIOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "HIOS    "); break;
+						case STT_LOPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "LOPROC  "); break;
+						case STT_HIPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "HIPROC  "); break;
+						default:			snprintf(symbolp->type, ELF_NAME_LENGTH, "UNKNOWN ");
+					}
+
+					symbolp++;
 				}
 			}
-
-			free(string);
 		}
+
 	}
 
-	if (rad) {
-		printf("b 512\n");
-		fprintf(stderr, "%i symbols added\n", cont);
-	}
-	return i;
+	return 0;
 }
 
-#if 0
-	int
-ELF_(dietelf_list_others)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t) *bin, int fd)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
-	ELF_(Shdr) *strtabhdr;
-	char *string;
-	int i, j, k;
+	int i, j, k, cont=0;
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (shdrp->sh_type == (SHT_SYMTAB)) {
-			strtabhdr = &shdr[shdrp->sh_link];
-
-			string = (char *)malloc(strtabhdr->sh_size);
-			if (string == NULL) {
-				perror("malloc");
-				return -1;
-			}
-
-			if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
-				perror("lseek");
-				return -1;
-			}
-
-			if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
-				perror("read");
-				return -1;
-			}
-
+		if (shdrp->sh_type == (ELF_(dietelf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
 			sym = (ELF_(Sym) *)malloc(shdrp->sh_size);
 			if (sym == NULL) {
 				perror("malloc");
@@ -937,42 +909,17 @@ ELF_(dietelf_list_others)(ELF_(dietelf_bin_t) *bin, int fd)
 			}
 
 			symp = sym;
-			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), symp++) {
-				ELF_(aux_swap_endian)((u8*)&(symp->st_name), sizeof(ELF_(Word)));
-				ELF_(aux_swap_endian)((u8*)&(symp->st_value), sizeof(ELF_(Addr)));
-				ELF_(aux_swap_endian)((u8*)&(symp->st_size), sizeof(ELF_(Word)));
-				ELF_(aux_swap_endian)((u8*)&(symp->st_shndx), sizeof(ELF_(Section)));
-			}
-
-			if (rad)
-				printf("fs sym_others\n");
-
-			symp = sym;
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
-				if (k != 0) {
-					if (symp->st_shndx <= 10 && symp->st_shndx > 0  && ELF32_ST_BIND(symp->st_info) == STB_GLOBAL && ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
-						if (rad) {
-							if (symp->st_size != 0) printf("b %lli && ", (u64)symp->st_size); 
-							printf("f sym_oth_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(&string[symp->st_name]), (u64)symp->st_value);
-						} else { 
-							if (verbose) printf("Symbol (Other) size=%05lli: ", (u64)symp->st_size);
-							printf("0x%08llx %s\n", (u64)symp->st_value, &string[symp->st_name]);
-							if (xrefs) {
-								char buf[1024];
-								sprintf(buf, "xrefs -b 0x%08llx '%s' 0x%08llx", (u64)bin->base_addr, bin->file, (u64)symp->st_value);
-								system(buf);
-							}
-						}
-					}
-				}
+				if (k == 0)
+					continue;
+				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
+					cont++;
 			}
-
-			free(string);
 		}
 	}
-	return i;
+
+	return cont;
 }
-#endif
 
 int ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
 {
@@ -1025,7 +972,7 @@ int ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
 	return -1;
 }
 
-int ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, int fd)
+static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 {
 	ELF_(Ehdr) *ehdr;
 	ELF_(Shdr) *shdr;
@@ -1189,7 +1136,7 @@ static int ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
 	return 0;
 }
 
-int ELF_(dietelf_new)(ELF_(dietelf_bin_t) *bin, const char *file)
+int ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, const char *file)
 {
 	int fd;
 
@@ -1198,7 +1145,7 @@ int ELF_(dietelf_new)(ELF_(dietelf_bin_t) *bin, const char *file)
 		return -1;
 	}
 
-	if (ELF_(dietelf_open)(bin, fd) == -1)
+	if (ELF_(dietelf_init)(bin, fd) == -1)
 		return -1;
 
 	bin->file = file;
