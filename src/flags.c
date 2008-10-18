@@ -775,6 +775,44 @@ int flag_set_undef(const char *name, u64 addr, int dup)
 	return 0;
 }
 
+/* used to get section name for disasembly */
+const char *flag_get_here_filter(u64 at, const char *str)
+{
+	struct list_head *pos;
+	u64 ret = -1;
+	flag_t *of= NULL;
+	flag_t *f= NULL;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if ((str[0] && !strstr(flag->name, str) )|| strstr(flag->name, "end"))
+			continue;
+#if 0
+		if (at >= flag->offset)
+			continue;
+		if (flag->offset > at) {
+			if (f == NULL || flag->offset < ret) {
+				ret = flag->offset;
+				f = flag;
+#else
+		//if (flag->offset < at)
+		//	continue;
+//eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
+
+		//if (flag->offset >= at) {
+			if (f == NULL || (flag->offset >=at && flag->offset < ret)) {
+//eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
+				ret = flag->offset;
+				f = flag;
+			}
+		//}
+#endif
+	}
+	if (f == NULL)
+		return nullstr;
+	return f->name+strlen(str);
+}
+
 /* TODO: move to visual */
 void flags_visual_menu()
 {

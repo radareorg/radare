@@ -240,7 +240,6 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
         int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
-eprintf("depth=%d\n", depth);
 	if (arch_aop == NULL)
 		return -1;
 	// too deep! chop branch here!
@@ -273,15 +272,17 @@ eprintf("depth=%d\n", depth);
 			break;
 		}
 #if 1
+#if 0
 		/* splitting code lives here */
 		if ( blf != NULL ) {	
 			//printf ("Address %llx already analed\n", config.seek+bsz );
 			aop.eob = 1;
 			aop.jump = blf->tnext; //config.seek+bsz;
 			aop.fail = blf->fnext;
+//printf("POLLA EN VINAGRE RULES\n");
 			break;
 		}
-
+#endif
 		blf = program_block_split_new (prg, config.seek+bsz);
 		if ( blf != NULL ) {
 			eprintf("Block splitted at address 0x%08llx\n", config.seek+bsz);
@@ -812,6 +813,7 @@ int analyze_function(int recursive, int report)
 	}
 
 	cons_printf("fs functions\n");
+
 	if (!report) {
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);

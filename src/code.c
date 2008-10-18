@@ -245,7 +245,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 	flag_t *f = NULL;
 	int rrows = rows; /* rrows is in reality the num of bytes to be disassembled */
 	int endian;
-	int show_size, show_bytes, show_offset,show_splits,show_comments,show_lines,
+	int show_size, show_bytes, show_offset, show_splits, show_comments, show_lines, show_section,
 	show_traces,show_nbytes, show_flags, show_reladdr, show_flagsline, show_functions;
 	int folder = 0; // folder level
 
@@ -254,6 +254,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 	show_bytes    = (int) config_get("asm.bytes");
 	show_offset   = (int) config_get("asm.offset");
 	show_functions= (int) config_get("asm.functions");
+	show_section  = (int) config_get("asm.section");
 	show_splits   = (int) config_get("asm.split");
 	show_flags    = (int) config_get("asm.flags");
 	show_flagsline= (int) config_get("asm.flagsline");
@@ -319,6 +320,8 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			if (reflines && show_lines) // does nothing if not data
 				code_lines_print(reflines, sk, 0);
 		}
+		if (show_section)
+			cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 		if (show_offset)
 			print_addr(seek);
 		if (show_reladdr) {
@@ -357,6 +360,7 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			} else
 				cons_strcat(" ");
 		}
+
 		if (foo != NULL) {
 			int dt = foo->type;
 			idata = foo->to-sk;
@@ -384,8 +388,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
-						if (show_offset)
+						if (show_section)
+							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_offset) {
 							print_addr(sk+i);
+						}
 					CHECK_LINES
 					folder++;
 				}
@@ -424,8 +431,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
-						if (show_offset)
+						if (show_section)
+							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_offset) {
 							print_addr(sk+i);
+						}
 						cons_strcat("  .db  ");
 						w = 0;
 					}
@@ -449,8 +459,12 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 					code_lines_print(reflines, sk+i, 1);
 				if (show_reladdr)
 					cons_printf("        ");
-				if (show_offset)
+				if (show_section)
+					cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+				if (show_offset) {
+					cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 					print_addr(sk+i);
+				}
 			CHECK_LINES
 		}
 		__outofme2:
@@ -576,9 +590,10 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 						CHECK_LINES
 						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0);
+						if (show_section)
+							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 						if (show_offset) {
-							C cons_printf(C_GREEN"0x%08llX  "C_RESET, (unsigned long long)(seek));
-							else cons_printf("0x%08llX  ", (unsigned long long)(seek));
+							print_addr(seek);
 						}
 						if (show_reladdr)
 							cons_strcat("        ");
@@ -702,9 +717,10 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 						NEWLINE;
 						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0);
+						if (show_section)
+							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 						if (show_offset) {
-							C cons_printf(C_GREEN"0x%08llX "C_RESET, (unsigned long long)(seek));
-							else cons_printf("0x%08llX ", (unsigned long long)(seek));
+							print_addr(seek);
 						}
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf, "");

@@ -61,6 +61,7 @@ struct block_t *block_new(u64 addr)
 	return bt;
 }
 
+
 struct function_t *program_function_get(struct program_t *program, u64 addr)
 {
 	struct list_head *i;
@@ -87,23 +88,41 @@ struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 {
 	struct list_head *i;
 	struct block_t *bta;
+	struct aop_t aop;
 	unsigned int oldb;
+	int sz;
+	char *ptr;
+	u64 next;
+	u64 lnext;
 
 	list_for_each_prev(i, &(prg->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
 		if (( addr >= bt->addr ) && (addr < (bt->addr+(u64)bt->n_bytes) ) ) {
 			#if 1
-			printf ("addr: %llx , %llx-%llx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
+			eprintf ("addr: %llx , %llx-%llx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
 			#endif
 			oldb = bt->n_bytes;
 
+			lnext = bt->tnext;
+
 			bt->n_bytes = addr - bt->addr;
 			bta = program_block_get_new (prg, addr);
+			//bta = program_block_new (prg, addr); 
 			bta->n_bytes = oldb - bt->n_bytes;
 
+			next = bt->addr; //addr = calc_next_address(bt->addr, addr);
+			ptr = bt->bytes;
+			while(addr<next) {
+				sz=arch_aop(next, ptr, &aop);
+				next+=sz;
+				ptr = ptr +sz;
+				//if (aop.tnext != 0 && aop.fnext != 0) {
+				//}
+			}
+eprintf("SPLIT NODE E!!!!! next=%08llx\n", next);
 			bta->tnext = bt->tnext;
 			bta->fnext = bt->fnext;
-			bt->tnext  = addr;
+			bt->tnext  = next;
 			bt->fnext  = 0;
 			bt->type   = 0;
 
@@ -116,6 +135,27 @@ struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 			#endif
 			bta->bytes = (u8*) malloc (bta->n_bytes);
 			memcpy(bta->bytes, bt->bytes + bt->n_bytes, bta->n_bytes);
+
+			/* workaround */
+#if 0
+eprintf("bt: 0x%08llx\n", bt->addr);
+eprintf("bta: 0x%08llx\n", bta->addr);
+eprintf("nbytes: %d\n", bt->n_bytes);
+			next = bt->addr;
+			bt = program_block_get(prg, next);
+			ptr = bt->bytes;
+			while(next<bt->addr+bt->n_bytes) {
+				sz=arch_aop(next, ptr, &aop);
+				next+=sz;
+				ptr = ptr +sz;
+			}
+			bt->tnext = aop.fail;
+			if (aop.jump != 0)
+				bt->tnext = aop.jump;
+eprintf("JUMP TO: %08llx\n", bt->tnext);
+			//bt = program_block_get_new(prg, next);
+			//bt->tnext = aop.fail;
+#endif
 			return bta;
 		}
 	}
@@ -165,7 +205,8 @@ struct function_t *program_function_add_call(struct program_t *program, u64 addr
 	return fu;
 }
 
-struct block_t *program_function_get_new(struct program_t *program, u64 addr)
+struct function_t *program_function_get_new(struct program_t *program, u64 addr)
+
 {
 	struct function_t *bt;
 	bt = program_function_get(program, addr);
@@ -174,16 +215,21 @@ struct block_t *program_function_get_new(struct program_t *program, u64 addr)
 	return bt;
 }
 
+struct block_t *program_block_new(struct program_t *program, u64 addr)
+{
+	struct block_t *bt = block_new(addr);
+	program->n_blocks++;
+	list_add_tail(&(bt->list), &(program->blocks));
+	return bt;
+}
+
 struct block_t *program_block_get_new(struct program_t *program, u64 addr)
 {
 	struct block_t *bt;
 
 	bt = program_block_get(program, addr);
-	if (bt == NULL) {
-		bt = block_new(addr);
-		program->n_blocks++;
-		list_add_tail(&(bt->list), &(program->blocks));
-	}
+	if (bt == NULL)
+		bt = program_block_new(program, addr);
 
 	return bt;
 }
@@ -225,7 +271,6 @@ int prorgam_block_set_framesize(struct program_t *program, u64 addr, int size)
 	return 1;
 }
 
-// label
 int program_block_set_name(struct program_t *program, u64 addr, char *name)
 {
 	struct block_t *bt = program_block_get_new(program, addr);
@@ -405,7 +450,7 @@ struct program_t *program_open(char *file)
 
 		if (!memcmp(buf, "CF ",3)) { // function (bytes)
 			off = get_offset(ptr);
-			program_add_function(program, (u64) off, ptr2);
+			program_add_function(program, (u64) off, 0);
 		} else
 		if (!memcmp(buf, "CC framesize = ", 15)) { // framesize
 			off = get_offset(ptr);

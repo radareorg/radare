@@ -1120,6 +1120,7 @@ CMD_DECL(flag)
 	switch(input[0]) {
 	case 'o': radare_fortunes(); break;
 	case '?': flag_help(); break;
+	case 'h': cons_printf("%s\n", flag_get_here_filter(config.seek, input+2)); break;
 	case 'g': flag_grep(text); break;
 	case 'c': flag_cmd(text); break;
 	case 'r': flag_rename_str(text); break;

@@ -591,6 +591,7 @@ void config_init(int first)
 	config_set("asm.syntax", "pseudo");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
+	config_set("asm.section", "true");
 	config_set("asm.reladdr", "false"); // relative offset
 	config_set_i("asm.nbytes", 8); // show hex bytes
 	config_set("asm.bytes", "true"); // show hex bytes
@@ -767,7 +768,7 @@ void config_init(int first)
 	config_set("graph.callblocks", "false");
 	config_set("graph.flagblocks", "true");
 	config_set_i("graph.depth", 9);
-	config_set("graph.offset", "false");
+	config_set("graph.offset", "true");
 	config_set("graph.render", "cairo");    // aalib/ncurses/text
 	config_set("graph.layout", "default");  // graphviz
 
