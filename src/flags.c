@@ -56,6 +56,7 @@ void flag_help()
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
 	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
+	" fh text[*]   ; used for \"section_\"\n"
 	" fn name      ; new flag (ignores dupped names)\n"
 	" fu name      ; new flag if no one exists here (shy)\n"
 	" fm name      ; move flag to another flag space\n"
@@ -111,7 +112,7 @@ void flag_cmd(const char *text)
 		cons_printf("   > fc pd 20 @ 0x8049104\n");
 	} else
 	if (flag != NULL) {
-		flag->cmd = estrdup(flag->cmd, text);
+		flag->cmd = estrdup((char*)flag->cmd, text);
 		cons_printf("flag_cmd(%s) = '%s'\n", flag->name, text);
 	}
 }
