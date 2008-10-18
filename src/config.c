@@ -271,8 +271,12 @@ struct config_node_t *config_set_i(const char *name, const u64 i)
 		if (node->flags & CN_RO)
 			return NULL;
 		free(node->value);
-		sprintf(buf, "%lld", i); //0x%08lx", i);
-		node->value = strdup(buf);
+		if (node->flags & CN_BOOL) {
+			node->value = strdup(i?"true":"false");
+		} else {
+			sprintf(buf, "%lld", i); //0x%08lx", i);
+			node->value = strdup(buf);
+		}
 		node->flags = CN_RW | CN_INT;
 		node->i_value = i;
 	} else {
