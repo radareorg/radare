@@ -443,38 +443,38 @@ int main(int argc, const char **argv, char **envp)
 	while ((c = getopt(argc, argv, "e:hf:d")) != -1) {
 		switch( c ) {
 			case 'd': {
-					  // XXX : overflowable, must use strcatdup or stgh like that
-					  int pid = atoi(argv[optind]);
-					  char buf[4096];
-					  char buf2[4096];
-					  buf[0]='\0';
+				  // XXX : overflowable, must use strcatdup or stgh like that
+				  int pid = atoi(argv[optind]);
+				  char buf[4096];
+				  char buf2[4096];
+				  buf[0]='\0';
 
-					  /* by process-id */
-					  if (pid > 0) {
-						  sprintf(buf2, "pid://%d", pid);
-						  //plugin_load();
-						  //return radare_go();
-						  filename = strdup(buf2);
-					  } else {
-						  /* by program path */
-						  for(c=optind;argv[c];c++) {
-							  strcat(buf, argv[c]);
-							  if (argv[c+1])
-								  strcat(buf, " ");
-						  }
-						  sprintf(buf2, "dbg://%s", buf);
-						  filename = strdup(buf2);
-					  }}
-					  break;
+				  /* by process-id */
+				  if (pid > 0) {
+					  sprintf(buf2, "pid://%d", pid);
+					  //plugin_load();
+					  //return radare_go();
+					  filename = strdup(buf2);
+				  } else {
+					  /* by program path */
+					  for(c=optind;argv[c];c++) {
+						  strcat(buf, argv[c]);
+						  if (argv[c+1])
+							  strcat(buf, " ");
+					  }
+					  sprintf(buf2, "dbg://%s", buf);
+					  filename = strdup(buf2);
+				  }}
+				  break;
 			case 'h':
-					  show_help_message();
-					  break;
+				  show_help_message();
+				  break;
 			case 'e':
-					  command = optarg;
-					  break;
+				  command = optarg;
+				  break;
 			case 'f':
-					  font = optarg;
-					  break;
+				  font = optarg;
+				  break;
 		}
 	}
 
