@@ -20,6 +20,7 @@
 #include "../global.h"
 #include "main.h"
 
+
 int graph_viz(struct program_t *prg)
 {
 	struct block_t *b0;
@@ -70,6 +71,7 @@ struct mygrava_window {
 
 static struct mygrava_window *last_window = NULL;
 static int new_window = 0;
+static int gtk_is_init = 0;
 static int n_windows = 0;
 
 struct static_nodes {
@@ -79,6 +81,7 @@ struct static_nodes {
 
 struct list_head static_nodes;// = NULL;
 
+GtkWidget *mygrava_get_widget(struct program_t *prg);
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static void core_load_node_entry(void *widget, gpointer obj); //GtkWidget *obj);
@@ -374,135 +377,121 @@ void asm_state_restore()
 	config_set_i("asm.lines", cfg_lines);
 }
 
-void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
+GtkWidget *mygrava_get_widget(struct program_t *prg)
 {
-	char cmd[1024];
-	static int gtk_is_init = 0;
+	int i,j;
 	char *ptr;
-	int i;
 	GtkWidget *tw,*tw2;
+	char cmd[1024];
+	char title[256], name[128];
+	int graph_flagblocks = (int)config_get("graph.flagblocks");
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xrefs_t *c0;
-	u64 here = config.seek;
-	char title[256], name[128];
-	int graph_flagblocks = (int)config_get("graph.flagblocks");
-
+	struct mygrava_window *win;
 	GravaNode *node, *node2;
 	GravaEdge *edge;
 
-	/* create widget */
-	if (!gtk_is_init) {
-		if ( ! gtk_init_check(NULL, NULL) ) {
-			fprintf(stderr, "Oops. Cannot initialize gui\n");
-			return;
-		}
-		gtk_is_init = 1;
-		new_window = 1;
-		INIT_LIST_HEAD(&static_nodes);
-	}
+	win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
+	memset(win, '\0', sizeof(struct mygrava_window));
+	last_window = win;
 
-	if (win==NULL || new_window) {
-		win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
-		memset(win, '\0', sizeof(struct mygrava_window));
-		last_window = win;
+	win->grava = grava_widget_new();
+	g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
+	g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
+	g_signal_connect(win->grava, "run-cmd", ((GCallback) mygrava_run_cmd), win);
 
-		win->grava  = grava_widget_new();
-		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
-		g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
-		g_signal_connect(win->grava, "run-cmd", ((GCallback) mygrava_run_cmd), win);
-
-		/* TODO: add left action panel */
-		//acti = gradare_actions_new();
-		//gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
+	/* TODO: add left action panel */
+	//acti = gradare_actions_new();
+	//gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
 
 
-		/* add window */
-		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	/* add window */
+#if USE_WINDOW
+	win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if 0 && _MAEMO_
-		hildon_program_add_window(p, win->w);
+	hildon_program_add_window(p, win->w);
 #endif
-		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
-		string_flag_offset(name, config.seek);
-		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
-		gtk_window_set_title(GTK_WINDOW(win->w), title);
-		g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
+	g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
+	g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
+	string_flag_offset(name, config.seek);
+	sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
+	gtk_window_set_title(GTK_WINDOW(win->w), title);
+#endif
 
-		/* TODO: add more control widgets */
-		win->vbox = gtk_vbox_new(FALSE, 1);
-		win->entry = gtk_entry_new();
+	/* TODO: add more control widgets */
+	win->vbox = gtk_vbox_new(FALSE, 1);
+	win->entry = gtk_entry_new();
 
-		/* new button */
-		win->bnew = gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->bnew), gtk_image_new_from_stock ("gtk-new", GTK_ICON_SIZE_BUTTON));
+	/* new button */
+	win->bnew = gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->bnew), gtk_image_new_from_stock ("gtk-new", GTK_ICON_SIZE_BUTTON));
 
-		win->zoomin = gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->zoomin), gtk_image_new_from_stock ("gtk-zoom-in", GTK_ICON_SIZE_BUTTON));
+	win->zoomin = gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->zoomin), gtk_image_new_from_stock ("gtk-zoom-in", GTK_ICON_SIZE_BUTTON));
 
-		win->zoomout = gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->zoomout), gtk_image_new_from_stock ("gtk-zoom-out", GTK_ICON_SIZE_BUTTON));
+	win->zoomout = gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->zoomout), gtk_image_new_from_stock ("gtk-zoom-out", GTK_ICON_SIZE_BUTTON));
 
-		win->close = gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->close), gtk_image_new_from_stock ("gtk-close", GTK_ICON_SIZE_BUTTON));
+	win->close = gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->close), gtk_image_new_from_stock ("gtk-close", GTK_ICON_SIZE_BUTTON));
 
-		g_signal_connect(win->zoomin,"activate",((GCallback) mygrava_zoomin), (gpointer)win); 
-		g_signal_connect(win->zoomin,"button-release-event",((GCallback) mygrava_zoomin), (gpointer)win); 
-		g_signal_connect(win->zoomout,"activate",((GCallback) mygrava_zoomout), (gpointer)win); 
-		g_signal_connect(win->zoomout,"button-release-event",((GCallback) mygrava_zoomout), (gpointer)win); 
-		g_signal_connect(win->bnew,"activate",((GCallback) mygrava_new_window), (gpointer)win); 
-		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_new_window2), (gpointer)win); 
-		g_signal_connect(win->close,"activate",((GCallback) mygrava_close), (gpointer)win); 
-		g_signal_connect(win->close,"button-release-event",((GCallback) mygrava_close2), (gpointer)win); 
-		//win->back = gtk_button_new_from_stock("gtk-undo"); //go-back");
-		//g_signal_connect(win->back,"activate",((GCallback) mygrava_back), win->entry); 
-		g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_back2), win); 
-		win->hbox = gtk_hbox_new(FALSE, 2);
-		win->go = gtk_button_new_from_stock("gtk-jump-to");
+	g_signal_connect(win->zoomin,"activate",((GCallback) mygrava_zoomin), (gpointer)win); 
+	g_signal_connect(win->zoomin,"button-release-event",((GCallback) mygrava_zoomin), (gpointer)win); 
+	g_signal_connect(win->zoomout,"activate",((GCallback) mygrava_zoomout), (gpointer)win); 
+	g_signal_connect(win->zoomout,"button-release-event",((GCallback) mygrava_zoomout), (gpointer)win); 
+	g_signal_connect(win->bnew,"activate",((GCallback) mygrava_new_window), (gpointer)win); 
+	g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_new_window2), (gpointer)win); 
+	g_signal_connect(win->close,"activate",((GCallback) mygrava_close), (gpointer)win); 
+	g_signal_connect(win->close,"button-release-event",((GCallback) mygrava_close2), (gpointer)win); 
+	//win->back = gtk_button_new_from_stock("gtk-undo"); //go-back");
+	//g_signal_connect(win->back,"activate",((GCallback) mygrava_back), win->entry); 
+	g_signal_connect(win->bnew,"button-release-event",((GCallback) mygrava_back2), win); 
+	win->hbox = gtk_hbox_new(FALSE, 2);
+	win->go = gtk_button_new_from_stock("gtk-jump-to");
 
-		/* go button */
-		win->go = gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->go), gtk_image_new_from_stock ("gtk-media-play", GTK_ICON_SIZE_BUTTON));
-		g_signal_connect(win->entry,"activate",((GCallback) core_load_graph_entry), win); 
-		g_signal_connect(win->go,"activate",((GCallback) core_load_graph_entry), win); 
-		g_signal_connect(win->go,"button-release-event",((GCallback) core_load_graph_entry2), win);
+	/* go button */
+	win->go = gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->go), gtk_image_new_from_stock ("gtk-media-play", GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(win->entry,"activate",((GCallback) core_load_graph_entry), win); 
+	g_signal_connect(win->go,"activate",((GCallback) core_load_graph_entry), win); 
+	g_signal_connect(win->go,"button-release-event",((GCallback) core_load_graph_entry2), win);
 
-		/* fix button */
-		win->fix= gtk_button_new_with_mnemonic("");
-		gtk_button_set_image (GTK_BUTTON (win->fix), gtk_image_new_from_stock ("gtk-media-forward", GTK_ICON_SIZE_BUTTON));
-		g_signal_connect(win->fix,"activate",((GCallback) core_load_node_entry), win); 
-		g_signal_connect(win->fix,"button-release-event",((GCallback) core_load_node_entry2), win);
+	/* fix button */
+	win->fix= gtk_button_new_with_mnemonic("");
+	gtk_button_set_image (GTK_BUTTON (win->fix), gtk_image_new_from_stock ("gtk-media-forward", GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(win->fix,"activate",((GCallback) core_load_node_entry), win); 
+	g_signal_connect(win->fix,"button-release-event",((GCallback) core_load_node_entry2), win);
 
-		//gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->back), FALSE, FALSE, 2);
-		gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->fix), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomin), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomout), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
-		tw = gtk_expander_new("Output buffer:");
-		win->text =  gtk_text_view_new ();
-		gtk_text_view_set_editable(GTK_TEXT_VIEW(win->text), 0);
+	//gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->back), FALSE, FALSE, 2);
+	gtk_container_add(GTK_CONTAINER(win->hbox), win->entry);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->go), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->fix), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomin), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->zoomout), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->bnew), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->hbox), GTK_WIDGET(win->close), FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(win->hbox), FALSE, FALSE, 2);
+	tw = gtk_expander_new("Output buffer:");
+	win->text =  gtk_text_view_new ();
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(win->text), 0);
 //gtk_text_buffer_new(NULL);
-		tw2 = gtk_scrolled_window_new(NULL,NULL);
-		//gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_NEVER,GTK_POLICY_NEVER);
-		gtk_container_add(GTK_CONTAINER(tw2), win->text);
-		gtk_container_add(GTK_CONTAINER(tw), tw2);
-		gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);
+	tw2 = gtk_scrolled_window_new(NULL,NULL);
+	//gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tw2), GTK_POLICY_NEVER,GTK_POLICY_NEVER);
+	gtk_container_add(GTK_CONTAINER(tw2), win->text);
+	gtk_container_add(GTK_CONTAINER(tw), tw2);
+	gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);
 
-		// TODO: Add asm.arch combobox from gradare
+	// TODO: Add asm.arch combobox from gradare
 
-		gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
-		gtk_container_add(GTK_CONTAINER(win->vbox), grava_widget_get_widget(win->grava));
-
-
-	} else {
-		grava_graph_reset(win->grava->graph);
-	}
+#if USE_WINDOW
+	gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
+#endif
+	gtk_container_add(GTK_CONTAINER(win->vbox), grava_widget_get_widget(win->grava));
 
 	/* analyze code */
+
 	asm_state_save();
 
 	/* add static nodes */
@@ -629,6 +618,41 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 
 	grava_graph_update(win->grava->graph);
 
+	return win;
+}
+
+void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
+{
+	char cmd[1024];
+	char *ptr;
+	int i;
+	struct list_head *head, *head2;
+	struct block_t *b0, *b1;
+	struct xrefs_t *c0;
+	u64 here = config.seek;
+	char title[256], name[128];
+	int graph_flagblocks = (int)config_get("graph.flagblocks");
+
+	GravaNode *node, *node2;
+	GravaEdge *edge;
+
+	/* create widget */
+	if (!gtk_is_init) {
+		if ( ! gtk_init_check(NULL, NULL) ) {
+			fprintf(stderr, "Oops. Cannot initialize gui\n");
+			return;
+		}
+		gtk_is_init = 1;
+		new_window = 1;
+		INIT_LIST_HEAD(&static_nodes);
+	}
+
+	if (win==NULL || new_window) {
+		win = mygrava_get_widget(prg);
+	} else {
+		grava_graph_reset(win->grava->graph);
+	}
+
 	if (new_window) {
 		gtk_widget_show_all(GTK_WIDGET(win->w));
 		gtk_window_resize(GTK_WINDOW(win->w), 600,400);
@@ -651,3 +675,124 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	new_window = 0;
 }
 #endif
+
+int visual_gui()
+{
+#if HAVE_VALAC
+	struct mygrava_window *win = NULL;
+	GtkWidget *w, *w2;
+	char *items, *name;
+	int i, num;
+
+	/* create widget */
+	if (!gtk_is_init) {
+		if ( ! gtk_init_check(NULL, NULL) ) {
+			fprintf(stderr, "Oops. Cannot initialize gui\n");
+			return;
+		}
+		gtk_is_init = 1;
+		new_window = 1;
+		INIT_LIST_HEAD(&static_nodes);
+	}
+
+	if (win==NULL || new_window) {
+		win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
+		memset(win, '\0', sizeof(struct mygrava_window));
+	//	last_window = win;
+
+		win->grava  = grava_widget_new();
+		g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
+		g_signal_connect(win->grava, "breakpoint-at", ((GCallback) mygrava_bp_at), win);
+		g_signal_connect(win->grava, "run-cmd", ((GCallback) mygrava_run_cmd), win);
+
+		/* TODO: add left action panel */
+		//acti = gradare_actions_new();
+		//gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
+		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
+		g_signal_connect(win->w, "destroy", G_CALLBACK (mygrava_close), win);
+		gtk_window_set_title(GTK_WINDOW(win->w), "radare: visual gui");
+
+		/* TODO: add more control widgets */
+		// TODO: move hbox, topbox to win-> struct
+		win->vbox = gtk_vbox_new(FALSE, 1);
+		gtk_container_add(win->w, win->vbox);
+
+		/* fill window */
+		items = strdup(config_get("gui.top"));
+		num = set0word(items);
+		for(i=0;i<num;i++) {
+			eprintf("gui.top: %s\n", get0word(items, i));
+			w2 = plugin_get_widget(get0word(items,i));
+			if (w2 != NULL)
+				gtk_box_pack_start(GTK_BOX(win->vbox), w2, FALSE, FALSE, 0);
+		}
+		free(items);
+		win->hbox = gtk_hbox_new(FALSE, 3);
+		gtk_container_add(GTK_CONTAINER(win->vbox), win->hbox);
+		//
+		
+#if 1
+		{
+		 GtkWidget *exp =gtk_expander_new("");
+		GtkVBox *vbox = gtk_vbox_new(FALSE, 3);
+		gtk_container_add(exp,vbox);
+		gtk_box_pack_start(win->hbox,exp, FALSE, FALSE, 2);
+		items = strdup(config_get("gui.left"));
+		for(i=0;i<num;i++) {
+			eprintf("gui.tabs:(%s)\n", get0word(items, i));
+			name = get0word(items,i);
+			w2 = plugin_get_widget(get0word(items,i));
+			if (w2 != NULL)
+				gtk_container_add(GTK_BOX(vbox), w2);
+				//gtk_box_pack_start(GTK_BOX(vbox), w2, FALSE, FALSE, 0);
+		}
+		free(items);
+		}
+#endif
+		//
+		items = strdup(config_get("gui.tabs"));
+		w = gtk_notebook_new();
+		{ /* code graph tab */
+			struct mygrava_window *foo;
+			struct program_t *prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
+			list_add_tail(&prg->list, &config.rdbs);
+			foo = mygrava_get_widget(prg);
+			w2 = foo->vbox;
+			gtk_widget_show_all(GTK_WIDGET(win->vbox));
+		//	grava_widget_draw(foo->grava);
+			gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new("Graph"));
+		}
+		num = set0word(items);
+		for(i=0;i<num;i++) {
+			eprintf("gui.tabs:(%s)\n", get0word(items, i));
+			name = get0word(items,i);
+			w2 = plugin_get_widget(name);
+			if (w2 != NULL)
+				gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new(name));
+		}
+		gtk_container_add(GTK_CONTAINER(win->hbox), w);
+		free(items);
+
+		gtk_widget_show_all(win->w);
+	}
+
+	if (new_window) {
+		gtk_widget_show_all(GTK_WIDGET(win->w));
+		gtk_window_resize(GTK_WINDOW(win->w), 600,400);
+	}
+
+	if (n_windows)
+		return;
+	n_windows++;
+	new_window = 0;
+
+	gtk_main();
+	cons_set_fd(1);
+	gtk_is_init = 0;
+	new_window = 0;
+#else
+	eprintf("Compiled without GUI\n");
+#endif
+}

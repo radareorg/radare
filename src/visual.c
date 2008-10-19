@@ -1043,6 +1043,15 @@ CMD_DECL(visual)
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
+
+	switch(input[0]) {
+	case 'g':
+	case 'G':
+		eprintf("Visual GUI\n");
+		visual_gui();
+		return;
+	}
+
 	cons_get_real_columns();
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);

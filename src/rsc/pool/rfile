@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# author: pancake
+#
+
+PREFIX="/usr/share" # XXX
+MAGICS="${PREFIX}/radare/magic/"
+HOMAGIC="${HOME}/.radare/magic/"
+TARGET="$1"
+OFFSET="$2"
+MAGICF="$3"
+
+show_help() {
+	echo "Usage: rfile [-l|-h] [file] [[offset] [magic-file]]"
+	exit 0
+}
+
+mkdir -p ${HOMAGIC}
+if [ -z "${EME}" ]; then
+	EME=`find ${MAGICS} ${HOMAGIC} -type f | sed -e 's. .,.g'`
+else
+	if [ -f "${MAGICF}" ]; then
+		EME=${MAGICF}
+	else
+		if [ -f "${MAGICS}/${MAGICF}" ]; then
+			EME=${MAGICS}/${MAGICF}
+		else
+			EME=`echo ${MAGICS}/* ${HOMAGIC}/* | sed -e 's. .,.g'`
+		fi
+	fi
+fi
+
+[ "${TARGET}" = "-h" ] && TARGET=""
+if [ -n "`echo ${TARGET}| grep -e '^-'`" ]; then
+	cd ${MAGICS} && ls
+	exit 0
+fi
+[ -z "$TARGET" ] && show_help
+
+OFILE="/tmp/.rfile.$RANDOM"
+filter="cut -d : -f 2- | sed -e s,.,,"
+if [ -n "${OFFSET}" ]; then
+	out=`dd if=${TARGET} of=$OFILE bs=1 count=4096 skip=${OFFSET} 2>&1`
+	file -m ${EME} $OFILE | eval $filter
+else
+	file -m ${EME} ${TARGET} | eval $filter
+fi

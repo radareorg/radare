@@ -776,6 +776,13 @@ void config_init(int first)
 	config_set("graph.render", "cairo");    // aalib/ncurses/text
 	config_set("graph.layout", "default");  // graphviz
 
+	/* gui */
+	config_set("gui.top", "gtk-topbar");  // graphviz
+	config_set("gui.tabs", "gtk-hello gtk-prefs");  // graphviz
+	config_set("gui.left", "scriptedit");  // graphviz
+	config_set("gui.right", "gtk-hello");  // graphviz
+	config_set("gui.bottom", "gtk-hello");  // graphviz
+
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.to", config.size);
 	node = config_set("zoom.byte", "head");

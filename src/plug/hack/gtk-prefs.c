@@ -39,8 +39,10 @@ static struct {
 	int value;
 } toggles[22] = {
 	{ 0, "Show bytes",  "asm.bytes",  1 },
+	{ 0, "Show section name",  "asm.section",  1 },
 	{ 0, "Show offset", "asm.offset", 1 },
 	{ 0, "Show lines",  "asm.lines",  1 },
+	{ 0, "Show trace",  "asm.trace",  0 },
 	{ 0, "Split by rets",  "asm.split",  1 },
 	{ 0, "Split all blocks",  "asm.splitall",  0 },
 	{ 0, "Show relative address",  "asm.reladdr",  1 },

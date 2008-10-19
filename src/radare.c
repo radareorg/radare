@@ -381,7 +381,8 @@ int radare_cmd_raw(const char *tmp, int log)
 
 	eof = strchr(tmp,'\n');
 	if (eof) {
-		*eof = '\0';
+		//*eof = '\0';
+		eprintf("\n?");
 		if (eof[1]!='\0') { // OOPS :O
 			eprintf("Multiline command not yet supported (%s)\n", tmp);
 			return 0;

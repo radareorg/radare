@@ -82,6 +82,11 @@ static void scriptedit_execute()
 	case 0: lang = "lua"; break;
 	case 1: lang = "python"; break;
 	case 2: lang = "perl"; break;
+	case 3: lang = "ruby"; break;
+	case 4: lang = "radare"; 
+		sprintf(buf, ". %s", filename);
+		r(buf, 0);
+		return;
 	}
 	sprintf(buf, "H %s %s", lang, filename);
 	r(buf, 0);
@@ -145,6 +150,7 @@ static int my_hack(char *input)
 	gtk_box_pack_start(my_widget, filename_w, FALSE, FALSE, 0);
 
 	text = gtk_text_view_new();
+gtk_text_view_set_border_window_size(text,GTK_TEXT_WINDOW_TEXT, 2);
 	swin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(swin),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
@@ -160,6 +166,8 @@ static int my_hack(char *input)
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 0, "lua");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 1, "python");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 2, "perl");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 3, "ruby");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 4, "radare");
 	gtk_combo_box_set_active(lang_w, 0);
 	gtk_box_pack_end(GTK_CONTAINER(hbb), lang_w, FALSE, FALSE, 0);
 

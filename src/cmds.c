@@ -734,6 +734,8 @@ CMD_DECL(hash)
 	return 0;
 }
 
+#if 0
+// XXX this is fucking deprecate!
 CMD_DECL(interpret_perl)
 {
 	#if HAVE_PERL
@@ -784,6 +786,7 @@ CMD_DECL(interpret_perl)
 
 	return 0;
 }
+#endif
 
 CMD_DECL(interpret)
 {

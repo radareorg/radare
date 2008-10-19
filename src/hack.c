@@ -136,6 +136,23 @@ int radare_hack_init()
 	return 1;
 }
 
+void *plugin_get_widget(const char *name)
+{
+	struct list_head *pos;
+	int i;
+
+	list_for_each(pos, &hacks) {
+		struct hack_t *h = list_entry(pos, struct hack_t, list);
+		if (!strcmp(name, h->name)) {
+			h->callback(""); // to init
+			if (h->widget)
+				return *h->widget;
+			return NULL;
+		}
+	}
+
+	return NULL;
+}
 
 int radare_hack(const char *cmd)
 {
