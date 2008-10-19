@@ -320,8 +320,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			if (reflines && show_lines) // does nothing if not data
 				code_lines_print(reflines, sk, 0);
 		}
-		if (show_section)
-			cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+		if (show_section) {
+			if (config.baddr)
+				cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+			else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+		}
 		if (show_offset)
 			print_addr(seek);
 		if (show_reladdr) {
@@ -388,8 +391,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
-						if (show_section)
-							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_section) {
+							if (config.baddr)
+								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						}
 						if (show_offset) {
 							print_addr(sk+i);
 						}
@@ -431,8 +437,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 							code_lines_print(reflines, sk+i, 1);
 						if (show_reladdr)
 							cons_printf("        ");
-						if (show_section)
-							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_section) {
+							if (config.baddr)
+								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						}
 						if (show_offset) {
 							print_addr(sk+i);
 						}
@@ -459,10 +468,12 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 					code_lines_print(reflines, sk+i, 1);
 				if (show_reladdr)
 					cons_printf("        ");
-				if (show_section)
-					cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+				if (show_section) {
+					if (config.baddr)
+						cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+					else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+				}
 				if (show_offset) {
-					cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 					print_addr(sk+i);
 				}
 			CHECK_LINES
@@ -590,8 +601,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 						CHECK_LINES
 						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0);
-						if (show_section)
-							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_section){
+							if (config.baddr)
+								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						}
 						if (show_offset) {
 							print_addr(seek);
 						}
@@ -717,8 +731,11 @@ cons_printf("MYINC at 0x%02x %02x %02x\n", config.block[bytes],
 						NEWLINE;
 						if (show_lines && reflines)
 							code_lines_print(reflines, sk, 0);
-						if (show_section)
-							cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (show_section) {
+							if (config.baddr)
+								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
+							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						}
 						if (show_offset) {
 							print_addr(seek);
 						}

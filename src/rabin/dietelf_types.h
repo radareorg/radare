@@ -33,8 +33,10 @@ typedef struct {
 	char name[ELF_NAME_LENGTH];
 } dietelf_symbol;
 
-/*
 typedef struct {
-} dietelf_export;
-*/
+	u64 offset;
+	u32 size;
+	char type;
+	char string[ELF_STRING_LENGTH];
+} dietelf_string;
 #endif

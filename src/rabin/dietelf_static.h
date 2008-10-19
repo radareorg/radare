@@ -11,8 +11,7 @@
 
 static int   ELF_(aux_is_encoded)(int, unsigned char);
 static int   ELF_(aux_is_printable)(int);
-static int   ELF_(aux_stripstr_from_file)(const char*, int, int, u64, u64, u64, const char*, int*);
-static int   ELF_(aux_stripstr_iterate)(const unsigned char*, int, int, int, u64, u64, const char*, int*);
+static int   ELF_(aux_stripstr_from_file)(const char*, int, int, u64, u64, u64, const char*, int, dietelf_string*);
 static void  ELF_(aux_swap_endian)(u8*, int);
 static int   ELF_(dietelf_init)(ELF_(dietelf_bin_t)*, int);
 static int   ELF_(do_elf_checks)(ELF_(dietelf_bin_t)*);

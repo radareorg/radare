@@ -26,9 +26,6 @@ enum {
 
 static int endian=0;
 
-extern int rad;
-extern int verbose;
-
 static void ELF_(aux_swap_endian)(u8 *value, int size)
 {
 	unsigned char buffer[8];
@@ -96,62 +93,21 @@ static int ELF_(aux_is_encoded)(int encoding, unsigned char c)
 	return 0;
 }
 
-// Use from utils.c
 static int ELF_(aux_is_printable) (int c)
 {
 	if (c<' '||c>'~') return 0;
 	return 1;
 }
 
-static int ELF_(aux_stripstr_iterate)(const unsigned char *buf, int i, int min, int enc, u64 base, u64 offset, const char *filter, int *cont)
-{
-	static int unicode = 0;
-	static int matches = 0;
-	char str[4096];
-
-	if (ELF_(aux_is_printable)(buf[i]) || (ELF_(aux_is_encoded)(enc, buf[i]))) {
-		if (matches == 0)
-			offset += i;
-		str[matches] = buf[i];
-		if (matches < sizeof(str))
-			matches++;
-	} else {
-		/* wide char check \x??\x00\x??\x00 */
-		if (matches && buf[i+2]=='\0' && buf[i]=='\0' && buf[i+1]!='\0') {
-			unicode = 1;
-			return 1; // unicode
-		}
-		/* check if the length fits on our request */
-		if (matches >= min) {
-			str[matches] = '\0';
-			int len = strlen(str);
-			if (len>2) {
-				if (!filter || strstr(str, filter)) {
-					if (rad) {
-						printf("f str_%s @ 0x%08llx\n",
-								ELF_(aux_filter_rad_output)(str), offset-matches+base);
-						printf("Cs %i @ 0x%08llx\n", len, offset-matches+base);
-						if (cont) (*cont)++;
-					} else {
-						printf("0x%08llx", offset-matches+base);
-						if (verbose) printf(" %03d %c", len, (unicode)?'U':'A');
-						printf(" %s\n", str);
-					}
-				}
-			}
-		}
-		matches = 0;
-		unicode = 0;
-	}
-	return 0;
-}
-
-static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int *cont)
+static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 base, u64 seek, u64 limit, const char *filter, int str_limit, dietelf_string *strings)
 {
 	int fd = open(filename, O_RDONLY);
+	dietelf_string *stringsp;
 	unsigned char *buf;
 	u64 i = seek;
 	u64 len;
+	int unicode = 0, matches = 0, ctr = 0;
+	char str[ELF_STRING_LENGTH];
 
 	if (fd == -1) {
 		fprintf(stderr, "Cannot open target file.\n");
@@ -174,8 +130,35 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 	if (limit && limit < len)
 		len = limit;
 
-	for(i = seek; i < len; i++) 
-		ELF_(aux_stripstr_iterate)(buf, i, min, encoding, base, i, filter, cont);
+	stringsp = strings;
+	for(i = seek; i < len && ctr < str_limit; i++) { 
+		if ((ELF_(aux_is_printable)(buf[i]) || (ELF_(aux_is_encoded)(encoding, buf[i])))) {
+			str[matches] = buf[i];
+			if (matches < sizeof(str))
+				matches++;
+		} else {
+			/* wide char check \x??\x00\x??\x00 */
+			if (matches && buf[i+2]=='\0' && buf[i]=='\0' && buf[i+1]!='\0') {
+				unicode = 1;
+			}
+			/* check if the length fits on our request */
+			if (matches >= min) {
+				str[matches] = '\0';
+				int len = strlen(str);
+				if (len>2) {
+					if (!filter || strstr(str, filter)) {
+						stringsp->offset = i-matches+base;
+						stringsp->type = (unicode?'U':'A');
+						stringsp->size = len;
+						memcpy(stringsp->string, str, ELF_STRING_LENGTH);
+						ctr++; stringsp++;
+					}
+				}
+			}
+			matches = 0;
+			unicode = 0;
+		}
+	}
 
 	munmap(buf, len); 
 #elif __WINDOWS__
@@ -183,7 +166,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 #endif
 	close(fd);
 
-	return 0;
+	return ctr;
 }
 
 char* ELF_(aux_filter_rad_output)(const char *string)
@@ -194,7 +177,7 @@ char* ELF_(aux_filter_rad_output)(const char *string)
 	for (; *string != '\0' && p-buff < 255; string++) {
 		switch(*string) {
 			case ' ':
-				break;
+			case '=':
 			case '@':
 			case '%':
 			case '#':
@@ -220,7 +203,6 @@ char* ELF_(aux_filter_rad_output)(const char *string)
 				*p++ = '_';
 				break;
 			default:
-				// TODO: check if is printable char
 				*p++ = *string;
 				break;
 		}
@@ -440,44 +422,24 @@ char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 	unsigned int osabi = bin->ehdr.e_ident[EI_OSABI];
 	static char buff[32];
 
-	if (rad)
-		switch (osabi) {
-			case ELFOSABI_NONE:			return "linux"; // sysv
-			case ELFOSABI_HPUX:			return "hpux";
-			case ELFOSABI_NETBSD:		return "netbsd";
-			case ELFOSABI_LINUX:		return "linux";
-			case ELFOSABI_SOLARIS:		return "solaris";
-			case ELFOSABI_AIX:			return "aix";
-			case ELFOSABI_IRIX:			return "irix";
-			case ELFOSABI_FREEBSD:		return "freebsd";
-			case ELFOSABI_TRU64:		return "tru64";
-			case ELFOSABI_MODESTO:		return "modesto";
-			case ELFOSABI_OPENBSD:		return "openbsd";
-			case ELFOSABI_STANDALONE:	return "Standalone App";
-			case ELFOSABI_ARM:			return "arm";
-			default:
-										snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
-										return buff;
-		}
-	else
-		switch (osabi) {
-			case ELFOSABI_NONE:			return "UNIX - System V";
-			case ELFOSABI_HPUX:			return "UNIX - HP-UX";
-			case ELFOSABI_NETBSD:		return "UNIX - NetBSD";
-			case ELFOSABI_LINUX:		return "UNIX - Linux";
-			case ELFOSABI_SOLARIS:		return "UNIX - Solaris";
-			case ELFOSABI_AIX:			return "UNIX - AIX";
-			case ELFOSABI_IRIX:			return "UNIX - IRIX";
-			case ELFOSABI_FREEBSD:		return "UNIX - FreeBSD";
-			case ELFOSABI_TRU64:		return "UNIX - TRU64";
-			case ELFOSABI_MODESTO:		return "Novell - Modesto";
-			case ELFOSABI_OPENBSD:		return "UNIX - OpenBSD";
-			case ELFOSABI_STANDALONE:	return "Standalone App";
-			case ELFOSABI_ARM:			return "ARM";
-			default:
-										snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
-										return buff;
-		}
+	switch (osabi) {
+		case ELFOSABI_NONE:			return "linux"; // sysv
+		case ELFOSABI_HPUX:			return "hpux";
+		case ELFOSABI_NETBSD:		return "netbsd";
+		case ELFOSABI_LINUX:		return "linux";
+		case ELFOSABI_SOLARIS:		return "solaris";
+		case ELFOSABI_AIX:			return "aix";
+		case ELFOSABI_IRIX:			return "irix";
+		case ELFOSABI_FREEBSD:		return "freebsd";
+		case ELFOSABI_TRU64:		return "tru64";
+		case ELFOSABI_MODESTO:		return "modesto";
+		case ELFOSABI_OPENBSD:		return "openbsd";
+		case ELFOSABI_STANDALONE:	return "Standalone App";
+		case ELFOSABI_ARM:			return "arm";
+		default:
+									snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
+									return buff;
+	}
 }
 
 u64
@@ -921,50 +883,37 @@ int ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t) *bin, int fd)
 	return cont;
 }
 
-int ELF_(dietelf_list_strings)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_strings)(ELF_(dietelf_bin_t) *bin, int fd, int verbose, int str_limit, dietelf_string *strings)
 {
-	/* TODO: define callback for printing strings found */
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	const char *string = bin->string;
-	int i, cont=0;
+	int i, ctr = 0;
+
 
 	shdrp = shdr;
-	if (rad)
-		printf("fs strings\n"); //, ELF_(aux_filter_rad_output)(&string[shdrp->sh_name]));
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata")) {
-			if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
-			ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, &cont);
-			break;
-		}
+		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata"))
+			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings);
 		if (verbose == 2 && i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
-			if (!rad) printf("==> Strings in %s:\n", &string[shdrp->sh_name]);
-			ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, &cont);
+			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings);
 		}
 	}
 
-	if (rad) fprintf(stderr, "%i strings added\n", cont);
-	return i;
+	return ctr;
 }
 
-int ELF_(dietelf_list_libs)(ELF_(dietelf_bin_t) *bin, int fd)
+int ELF_(dietelf_get_libs)(ELF_(dietelf_bin_t) *bin, int fd, int str_limit, dietelf_string *strings)
 {
-	/* TODO: define callback for printing strings found */
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	const char *string = bin->string;
 	int i, cont=0;
-
-	printf("==> Libraries:\n");
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (!strcmp(&string[shdrp->sh_name], ".dynstr")) {
-			ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", &cont);
-
-			if (rad) fprintf(stderr, "%i libs added\n", cont);
-			return i;
+			return ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, bin->base_addr, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", str_limit, strings);
 		}
 	}
 
@@ -1104,12 +1053,6 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 		}
 	}
 
-#if 0
-	if (bin->bss < 0) {
-		printf("No bss section\n");
-	}
-#endif
-
 	bin->base_addr = ELF_(dietelf_get_base_addr)(bin);
 
 	return 0;
@@ -1153,42 +1096,3 @@ int ELF_(dietelf_open)(ELF_(dietelf_bin_t) *bin, const char *file)
 	return fd;
 }
 
-#if 0
-
-	int
-main(int argc, char *argv[])
-{
-	char *file;
-	int fd;
-	ELF_(dietelf_bin_t) bin;
-
-	if (argc != 2)
-	{
-		fprintf(stderr, "Usage: %s [file]\n", argv[0]);
-		return 1;
-	}
-
-	file=argv[1];
-	if ((fd=open(file, O_RDONLY)) == -1)
-	{
-		fprintf(stderr, "Error: Cannot open \"%s\"\n", file);
-		return 1;
-	}
-
-	ELF_(dietelf_open)(fd, &bin);
-	bin.file = file;
-
-	if (rad)
-		printf(" eval file.baddr=0x%08x\n", bin.base_addr);
-	else
-		printf("BASE ADDRESS: 0x%08x\n", bin.base_addr);
-
-	ELF_(dietelf_list_sections)(fd, &bin);
-	ELF_(dietelf_list_imports)(fd, &bin);
-
-	close(fd);
-
-	return 0;
-}
-
-#endif

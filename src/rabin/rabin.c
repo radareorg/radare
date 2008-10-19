@@ -244,6 +244,8 @@ void rabin_show_info(const char *file)
 void rabin_show_strings(const char *file)
 {
 	dietelf_bin_t bin;
+	dietelf_string strings[4096], *stringsp;
+	int strings_count, i;
 	char buf[1024];
 
 	if (xrefs) {
@@ -258,7 +260,28 @@ void rabin_show_strings(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_strings,bin,fd);
+
+		strings_count = ELF_CALL(dietelf_get_strings,bin,fd,verbose,4096,strings);
+
+		if (rad)
+			printf("fs strings\n");
+		else printf("==> Strings:\n");
+
+		stringsp = strings;
+		for (i = 0; i < 4096 && stringsp->type; i++, stringsp++) {
+			if (rad) {
+				printf("f str_%s @ 0x%08llx\n",
+						ELF_(aux_filter_rad_output)(stringsp->string), stringsp->offset);
+				printf("Cs %ld @ 0x%08llx\n", stringsp->size, stringsp->offset);
+			} else {
+				printf("0x%08llx", stringsp->offset);
+				if (verbose) printf(" %03d %c", stringsp->size, stringsp->type);
+				printf(" %s\n", stringsp->string);
+			}
+		}
+
+		if (rad) fprintf(stderr, "%i strings added\n", strings_count);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
@@ -501,7 +524,10 @@ void rabin_show_imports(const char *file)
 			}
 		}
 
-		if (rad) fprintf(stderr, "%i imports added\n", imports_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i imports added\n", imports_count);
+		}
 
 		ELF_(dietelf_close)(fd);
 #endif
@@ -545,7 +571,10 @@ void rabin_show_imports(const char *file)
 					   importp.pe->offset, importp.pe->rva, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 		}
 
-		if (rad) fprintf(stderr, "%i imports added\n", imports_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i imports added\n", imports_count);
+		}
 
 		dietpe_close(fd);
 		break;
@@ -602,7 +631,10 @@ void rabin_show_symbols(char *file)
 			}
 		}
 
-		if (rad) fprintf(stderr, "%i symbols added\n", symbols_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i symbols added\n", symbols_count);
+		}
 
 		ELF_(dietelf_close)(fd);
 		break;
@@ -649,31 +681,15 @@ void rabin_show_symbols(char *file)
 				printf("0x%08x rva=0x%08x ordinal=%03i forwarder=%s %s\n", symbolp.pe->offset, symbolp.pe->rva, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
 		}
 
-		if (rad) fprintf(stderr, "%i symbols added\n", symbols_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i symbols added\n", symbols_count);
+		}
 
 		dietpe_close(fd);
 		break;
 	}
 }
-
-#if 0
-void rabin_show_others(char *file)
-{
-	dietelf_bin_t bin;
-
-	switch(filetype) {
-	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_open,bin,file);
-		if (fd == -1) {
-			fprintf(stderr, "cannot open file\n");
-			return;
-		}
-		ELF_CALL(dietelf_list_others,bin,fd);
-		close(fd);
-		break;
-	}
-}
-#endif
 
 void rabin_show_sections(const char *file)
 {
@@ -725,7 +741,10 @@ void rabin_show_sections(const char *file)
 			else printf("\n");
 		}
 
-		if (rad) fprintf(stderr, "%i sections added\n", sections_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i sections added\n", sections_count);
+		}
 
 		ELF_(dietelf_close)(fd);
 		break;
@@ -770,6 +789,9 @@ void rabin_show_libs(const char *file)
 	char buf[1024];
 	int fd;
 	dietelf_bin_t bin;
+	dietelf_string strings[128], *stringsp;
+	int i;
+
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -778,7 +800,19 @@ void rabin_show_libs(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		ELF_CALL(dietelf_list_libs,bin,fd);
+
+		ELF_CALL(dietelf_get_libs,bin,fd,128,strings);
+
+		if (!rad)
+			printf("==> Libraries:\n");
+
+		stringsp = strings;
+		for (i = 0; i < 128 && stringsp->type; i++, stringsp++) {
+			if (!rad) {
+				printf("0x%08llx %s\n", stringsp->offset, stringsp->string);
+			}
+		}
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
@@ -887,9 +921,6 @@ int main(int argc, char **argv, char **envp)
 #if 0
 		case 't':
 			action |= ACTION_FILETYPE;
-			break;
-		case 'o':
-			action |= ACTION_OTHERS;
 			break;
 #endif
 		case 'S':

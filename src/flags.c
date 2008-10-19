@@ -780,14 +780,20 @@ int flag_set_undef(const char *name, u64 addr, int dup)
 const char *flag_get_here_filter(u64 at, const char *str)
 {
 	struct list_head *pos;
-	u64 ret = -1;
+	u64 ret = 0;
 	flag_t *of= NULL;
 	flag_t *f= NULL;
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-		if ((str[0] && !strstr(flag->name, str) )|| strstr(flag->name, "end"))
+		if ((str[0] && !strstr(flag->name, str)) || strstr(flag->name, "end"))
 			continue;
+		
+		if (at >= flag->offset && flag->offset > ret) {
+			f = flag;
+			ret = flag->offset;
+		}
+
 #if 0
 		if (at >= flag->offset)
 			continue;
@@ -801,11 +807,11 @@ const char *flag_get_here_filter(u64 at, const char *str)
 //eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
 
 		//if (flag->offset >= at) {
-			if (f == NULL || (flag->offset >=at && flag->offset < ret)) {
+//			if (f == NULL || (flag->offset >=at && flag->offset < ret)) {
 //eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
-				ret = flag->offset;
-				f = flag;
-			}
+//				ret = flag->offset;
+//				f = flag;
+//			}
 		//}
 #endif
 	}

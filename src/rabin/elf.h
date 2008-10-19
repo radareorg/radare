@@ -54,6 +54,7 @@ typedef Elf64_Half Elf64_Versym;
 
 
 #define ELF_NAME_LENGTH 64
+#define ELF_STRING_LENGTH 128
 
 /* The ELF file header.  This appears at the start of every ELF file.  */
 
