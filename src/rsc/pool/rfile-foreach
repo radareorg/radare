@@ -29,7 +29,7 @@ my $eta = 0;
 print "size $size\n";
 $now = get_time();
 for my $i ($offset .. $size) {
-	$str = qx(rfile $ARGV[0] $i);
+	$str = qx(rsc rfile $ARGV[0] $i);
 	$now2 = get_time() unless ($i%10);
 	printf "\n0x%08x $str\n", $i unless $str=~/data$/;
 	$teta = get_eta($now, $now2, $i, $size) unless ($i%10);

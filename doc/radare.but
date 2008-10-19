@@ -452,6 +452,10 @@ This is useful for disassembling files in architectures not supported by radare.
 
 Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel', 'att' and 'pseudo'.
 
+\c asm.section
+
+Shows or hides section name (based on flags) at the left of the address.
+
 \c asm.os
 
 Defines the target operating system of the binary to analyze. This is automatically defined by 'rabin -rI' and it's useful for switching between the different syscall tables and perform different depending on the OS.
@@ -475,6 +479,10 @@ Can get 'true' or 'false' values and makes the line analysis be performed from t
 \c asm.offset
 
 Boolean value that shows or hides the offset address of the disassembled opcode
+
+\c asm.trace
+
+Show tracing information at the left of each opcode (sequence number and counter). This is useful to read execution traces of programs.
 
 \c asm.bytes
 
