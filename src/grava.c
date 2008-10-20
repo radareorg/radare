@@ -81,8 +81,9 @@ struct static_nodes {
 
 struct list_head static_nodes;// = NULL;
 
-GtkWidget *mygrava_get_widget(struct program_t *prg);
+struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new);
 void grava_program_graph(struct program_t *prg, struct mygrava_window *);
+void do_grava_analysis(struct program_t *prg, struct mygrava_window *win);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static void core_load_node_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static struct program_t *prg = NULL; // last program code analysis
@@ -377,7 +378,7 @@ void asm_state_restore()
 	config_set_i("asm.lines", cfg_lines);
 }
 
-GtkWidget *mygrava_get_widget(struct program_t *prg)
+struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)
 {
 	int i,j;
 	char *ptr;
@@ -394,7 +395,6 @@ GtkWidget *mygrava_get_widget(struct program_t *prg)
 
 	win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
 	memset(win, '\0', sizeof(struct mygrava_window));
-	last_window = win;
 
 	win->grava = grava_widget_new();
 	g_signal_connect(win->grava, "load-graph-at", ((GCallback) core_load_graph_at), win);
@@ -405,19 +405,18 @@ GtkWidget *mygrava_get_widget(struct program_t *prg)
 	//acti = gradare_actions_new();
 	//gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
 
-
-	/* add window */
-#if USE_WINDOW
-	win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#if 0 && _MAEMO_
-	hildon_program_add_window(p, win->w);
-#endif
-	g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
-	g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
-	string_flag_offset(name, config.seek);
-	sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
-	gtk_window_set_title(GTK_WINDOW(win->w), title);
-#endif
+	if (new) {
+		/* add window */
+		win->w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	#if 0 && _MAEMO_
+		hildon_program_add_window(p, win->w);
+	#endif
+		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
+		g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
+		string_flag_offset(name, config.seek);
+		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
+		gtk_window_set_title(GTK_WINDOW(win->w), title);
+	}
 
 	/* TODO: add more control widgets */
 	win->vbox = gtk_vbox_new(FALSE, 1);
@@ -483,13 +482,28 @@ GtkWidget *mygrava_get_widget(struct program_t *prg)
 	gtk_container_add(GTK_CONTAINER(tw), tw2);
 	gtk_box_pack_start(GTK_BOX(win->vbox), GTK_WIDGET(tw), FALSE, FALSE, 2);
 
-	// TODO: Add asm.arch combobox from gradare
-
-#if USE_WINDOW
-	gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
-#endif
+	if (new)
+		gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
 	gtk_container_add(GTK_CONTAINER(win->vbox), grava_widget_get_widget(win->grava));
 
+	do_grava_analysis(prg,win);
+
+	return win;
+}
+
+void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
+{
+	int i,j;
+	char *ptr;
+	GtkWidget *tw,*tw2;
+	char cmd[1024];
+	char title[256], name[128];
+	int graph_flagblocks = (int)config_get("graph.flagblocks");
+	struct list_head *head, *head2;
+	struct block_t *b0, *b1;
+	struct xrefs_t *c0;
+	GravaNode *node, *node2;
+	GravaEdge *edge;
 	/* analyze code */
 
 	asm_state_save();
@@ -626,9 +640,11 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	char cmd[1024];
 	char *ptr;
 	int i;
+#if 0
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xrefs_t *c0;
+#endif
 	u64 here = config.seek;
 	char title[256], name[128];
 	int graph_flagblocks = (int)config_get("graph.flagblocks");
@@ -648,9 +664,11 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	}
 
 	if (win==NULL || new_window) {
-		win = mygrava_get_widget(prg);
+		win = mygrava_get_widget(prg, 1);
+		last_window = win;
 	} else {
 		grava_graph_reset(win->grava->graph);
+		do_grava_analysis(prg, win);
 	}
 
 	if (new_window) {
@@ -737,16 +755,22 @@ int visual_gui()
 		{
 		 GtkWidget *exp =gtk_expander_new("");
 		GtkVBox *vbox = gtk_vbox_new(FALSE, 3);
+
 		gtk_container_add(exp,vbox);
+
+		w = gtk_notebook_new();
+gtk_container_add(vbox,w);
 		gtk_box_pack_start(win->hbox,exp, FALSE, FALSE, 2);
 		items = strdup(config_get("gui.left"));
 		for(i=0;i<num;i++) {
 			eprintf("gui.tabs:(%s)\n", get0word(items, i));
 			name = get0word(items,i);
 			w2 = plugin_get_widget(get0word(items,i));
-			if (w2 != NULL)
-				gtk_container_add(GTK_BOX(vbox), w2);
+			if (w2 != NULL) {
+				//gtk_container_add(GTK_BOX(vbox), w2);
+				gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new(name));
 				//gtk_box_pack_start(GTK_BOX(vbox), w2, FALSE, FALSE, 0);
+			}
 		}
 		free(items);
 		}
@@ -758,7 +782,7 @@ int visual_gui()
 			struct mygrava_window *foo;
 			struct program_t *prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
 			list_add_tail(&prg->list, &config.rdbs);
-			foo = mygrava_get_widget(prg);
+			foo = mygrava_get_widget(prg, 0);
 			w2 = foo->vbox;
 			gtk_widget_show_all(GTK_WIDGET(win->vbox));
 		//	grava_widget_draw(foo->grava);

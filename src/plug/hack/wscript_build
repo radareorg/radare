@@ -38,6 +38,11 @@ if so_hello.env['HAVE_LIBLUA'] == 1:
 	so_lua.source = 'lua.c'
 	so_lua.install_path = plugindir
 
+# setup with ruby!
+#require 'mkmf'
+#LIBDIR = Config::CONFIG['rubylibdir'] + "/"+Config::CONFIG['arch']
+#puts "-I"+LIBDIR
+
 if so_hello.env['HAVE_RUBY'] == 1:
 	so_ruby = bld.new_task_gen('cc', 'shlib','ruby')
 	so_ruby.includes = '../..'
@@ -63,16 +68,23 @@ if so_hello.env['GUI'] == 1:
 	sh.source = 'gtk-hello.c'
 	sh.install_path = plugindir
 	# gtk-prefs
-	sh = bld.new_task_gen('cc', 'shlib','gtk-prefs')
-	sh.includes = '../..'
-	sh.uselib += 'GTK'
-	sh.target = 'gtk-prefs'
-	sh.source = 'gtk-prefs.c'
-	sh.install_path = plugindir
+	sp = bld.new_task_gen('cc', 'shlib','gtk-prefs')
+	sp.includes = '../..'
+	sp.uselib += 'GTK'
+	sp.target = 'gtk-prefs'
+	sp.source = 'gtk-prefs.c'
+	sp.install_path = plugindir
 	# gtk-topbar
-	sh = bld.new_task_gen('cc', 'shlib','gtk-topbar')
-	sh.includes = '../..'
-	sh.uselib += 'GTK'
-	sh.target = 'gtk-topbar'
-	sh.source = 'gtk-topbar.c'
-	sh.install_path = plugindir
+	tb = bld.new_task_gen('cc', 'shlib','gtk-topbar')
+	tb.includes = '../..'
+	tb.uselib += 'GTK'
+	tb.target = 'gtk-topbar'
+	tb.source = 'gtk-topbar.c'
+	tb.install_path = plugindir
+	# gtk-actions
+	at = bld.new_task_gen('cc', 'shlib','gtk-actions')
+	at.includes = '../..'
+	at.uselib += 'GTK'
+	at.target = 'gtk-actions'
+	at.source = 'gtk-actions.c'
+	at.install_path = plugindir

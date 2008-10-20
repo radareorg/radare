@@ -37,7 +37,7 @@ static struct {
 	const char *label;
 	const char *name;
 	int value;
-} toggles[22] = {
+} toggles[24] = {
 	{ 0, "Show bytes",  "asm.bytes",  1 },
 	{ 0, "Show section name",  "asm.section",  1 },
 	{ 0, "Show offset", "asm.offset", 1 },

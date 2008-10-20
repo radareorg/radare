@@ -778,8 +778,8 @@ void config_init(int first)
 
 	/* gui */
 	config_set("gui.top", "gtk-topbar");  // graphviz
-	config_set("gui.tabs", "gtk-hello gtk-prefs");  // graphviz
-	config_set("gui.left", "scriptedit");  // graphviz
+	config_set("gui.tabs", "gtk-prefs");  // graphviz
+	config_set("gui.left", "scriptedit gtk-actions");  // graphviz
 	config_set("gui.right", "gtk-hello");  // graphviz
 	config_set("gui.bottom", "gtk-hello");  // graphviz
 

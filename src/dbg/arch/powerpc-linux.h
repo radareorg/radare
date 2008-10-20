@@ -7,7 +7,7 @@
 #define regs_sizeof sizeof(regs_t)/4
 //#define regs_t i386_thread_state_t
 
-#define R_EIP(x) x.srr0 
+#define R_EIP(x) x.srr0
 #define R_EFLAGS(x) x.srr1
 #define R_SRR0(x) x.srr0 /* program counter */
 #define R_SRR1(x) x.srr1 /* status register  ( supervisor ) */

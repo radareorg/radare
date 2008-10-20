@@ -28,7 +28,39 @@
 +       __put_user (regs->cp0_status, data + EF_CP0_STATUS - EF_R0);
 +       __put_user (regs->cp0_cause, data + EF_CP0_CAUSE - EF_R0);
 #endif
+#if 0
 
+GETVRREGS == -1 -> no altivec registers
+GETEVRREGS == -1 -> ev0, ev31 (SPE REGISTERS)
+
+#endif
+
+#if 0
+static const struct ppc_reg_offsets ppc32_linux_reg_offsets =
+  {
+    /* General-purpose registers.  */
+    /* .r0_offset = */ 0,
+    /* .gpr_size = */ 4,
+    /* .xr_size = */ 4,
+    /* .pc_offset = */ 128,
+    /* .ps_offset = */ 132,
+    /* .cr_offset = */ 152,
+    /* .lr_offset = */ 144,
+    /* .ctr_offset = */ 140,
+    /* .xer_offset = */ 148,
+    /* .mq_offset = */ 156,
+
+    /* Floating-point registers.  */
+    /* .f0_offset = */ 0,
+    /* .fpscr_offset = */ 256,
+    /* .fpscr_size = */ 8,
+
+    /* AltiVec registers.  */
+    /* .vr0_offset = */ 0,
+    /* .vscr_offset = */ 512 + 12,
+    /* .vrsave_offset = */ 528
+  };
+#endif
 #include "../../radare.h"
 #include "../debug.h"
 #include "../libps2fd.h"
@@ -75,7 +107,7 @@ int arch_dump_registers()
 	FILE *fd;
 	int ret;
 	regs_t regs;
-	unsigned long long *llregs = &regs;
+	unsigned long *llregs = &regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
 	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
@@ -220,18 +252,22 @@ int arch_jmp(u64 ptr)
 
 u64 arch_pc()
 {
-#warning POWERPC: arch_pc is not prepared for me
-	u64 addr;
-	u8 buf[1024];
-	regs_t regs;
-	int i, ret; 
-	unsigned long long *llregs = &regs;
-		
-	ret = ptrace(PTRACE_GETREGS, ps.tid, 0, &buf);
-	if (ret == -1)
-		return -1;
-	memcpy(&addr, buf+272, sizeof(u64));
-	return addr;
+#warning XXX PowerPC arch_pc() is not ok
+        regs_t regs;
+        int i,ret; 
+        u32 buf[256];
+        u8 *b = buf;
+        u64 addr;
+        /* STUPID LINUX REVERSED GETREGS */
+        //ret = ptrace(PTRACE_GETREGS, ps.tid, &buf, 0);
+        ret = ptrace(PTRACE_GETEVRREGS, ps.tid, 0, &buf);
+        if (ret == -1)  {
+		 fprintf(stderr, "RERORR\n");
+                return -1;
+        }
+        //addr = regs.gpr[0];
+        return buf[244];
+        return buf[209];
 }
 
 int arch_set_register(const char *reg, const char *value)
@@ -276,8 +312,8 @@ int arch_print_registers(int rad, const char *mask)
 	int ret;
 	regs_t regs;
 // POWERPC: adapt regs structures..maybe is not long long
-	unsigned int *llregs = &regs;
-	unsigned int *ollregs = &oregs;
+	unsigned long *llregs = &regs;
+	unsigned long *ollregs = &oregs;
 	unsigned char *qregs = &regs;
 	int color = config_get("scr.color");
 

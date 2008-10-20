@@ -692,10 +692,14 @@ int debug_getregs(pid_t pid, regs_t *reg)
 #if __sun
 	return ptrace(PTRACE_GETREGS, pid, 0, reg);
 #elif __linux__
+    #if __powerpc__
+        return ptrace(PPC_PTRACE_GETREGS, pid, reg, NULL);
+    #else
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
+    #endif
 #else
 	memset(reg,  0 ,sizeof(regs_t));
-	int ret = ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
+	return ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
 #endif
 }
 
