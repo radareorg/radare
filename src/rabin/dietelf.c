@@ -517,6 +517,7 @@ int ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char 
 int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
+
 	return (ehdr->e_ident[EI_DATA] == ELFDATA2MSB);
 }
 
@@ -912,7 +913,7 @@ int ELF_(dietelf_get_strings)(ELF_(dietelf_bin_t) *bin, int fd, int verbose, int
 		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata"))
 			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings);
 		if (verbose == 2 && i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
-			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings);
+			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings+ctr);
 		}
 	}
 

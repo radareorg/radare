@@ -253,8 +253,8 @@ void rabin_show_strings(const char *file)
 		for (i = 0; i < strings_count; i++, stringsp++) {
 			if (rad) {
 				printf("b %li && f str_%s @ 0x%08llx\n",
-						stringsp->size, ELF_(aux_filter_rad_output)(stringsp->string), stringsp->offset);
-				printf("Cs %li @ 0x%08llx\n", stringsp->size, stringsp->offset);
+						stringsp->size, ELF_(aux_filter_rad_output)(stringsp->string), baddr + stringsp->offset);
+				printf("Cs %li @ 0x%08llx\n", stringsp->size, baddr + stringsp->offset);
 			} else {
 				switch (verbose) {
 					case 0:
@@ -349,7 +349,7 @@ void rabin_show_entrypoint()
 
 		if (rad) {
 			printf("fs symbols\n");
-			printf("f entrypoint @ 0x%08llx\n", offset);
+			printf("f entrypoint @ 0x%08llx\n", baddr + offset);
 			printf("s entrypoint\n");
 		} else {
 			printf("[Entrypoint]\n");
@@ -524,7 +524,7 @@ void rabin_show_imports(const char *file)
 		importp.elf = import.elf;
 		for (i = 0; i < imports_count; i++, importp.elf++) {
 			if (rad) {
-				printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(importp.elf->name), importp.elf->offset);
+				printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(importp.elf->name), baddr + importp.elf->offset);
 			} else {
 				switch (verbose) {
 					case 0:
@@ -642,9 +642,9 @@ void rabin_show_symbols(char *file)
 		symbolp.elf = symbol.elf;
 		for (i = 0; i < symbols_count; i++, symbolp.elf++) {
 			if (rad) {
-				printf("b %li && f sym_%s @ 0x%08llx\n", symbolp.elf->size, ELF_(aux_filter_rad_output)(symbolp.elf->name), symbolp.elf->offset);
+				printf("b %li && f sym_%s @ 0x%08llx\n", symbolp.elf->size, ELF_(aux_filter_rad_output)(symbolp.elf->name), baddr + symbolp.elf->offset);
 				if (!strncmp(symbolp.elf->type,"FUNC", 4)) 
-					printf("CF %ld @ 0x%08llx\n", symbolp.elf->size, symbolp.elf->offset);
+					printf("CF %ld @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
 			} else {
 				switch (verbose) {
 					case 0:
@@ -764,16 +764,16 @@ void rabin_show_sections(const char *file)
 		sectionp.elf = section.elf;
 		for (i = 0; i < sections_count; i++, sectionp.elf++) {
 			if (rad) {
-				printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset));
-				printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset + sectionp.elf->size));
+				printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset));
+				printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset + sectionp.elf->size));
 
 				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s @ 0x%08llx\n",
-						i, sectionp.elf->offset, sectionp.elf->size,
+						i, baddr + sectionp.elf->offset, sectionp.elf->size,
 						sectionp.elf->align,
 						ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
 						ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
 						ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
-						sectionp.elf->name, (u64)(sectionp.elf->offset));
+						sectionp.elf->name, (u64)(baddr + sectionp.elf->offset));
 			} else {
 				switch (verbose) {
 					case 0:

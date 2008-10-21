@@ -9,21 +9,29 @@
 
 === WORK FOR 1.0 ===
 
----- documentation
-* documentate the change of the execstack protection in program section of ELF
+Nibble TODO:
+============
+* update rabin documentation
 * documentate dbg.focus
-* documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc4 asm.follow or scr.seek or so..
+* documentate the change of the execstack protection in program section of ELF
+* deprecate asm.follow for scr.seek or so !!!
+* Make 'Cs' autodetect multiple strings
+* CF -addr segfaults
+* fix radiff -r patching (tests/radiff)
+* rabin -v show all flags, without it, only the .rodata ones
+* cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
+
+
+---- documentation
+* documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc4 'g' and 'x' in visual
 
 --- todo
 
 * "o /lib/libc.so 0x7f380000" -> map files on virtual addresses \o/ for teh posix pluyin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!
-* print double!!
-  - support string print mode for [len][str] formats
-* wtf with fu cmd!
-* Make 'Cs' autodetect multiple strings
+* support string print mode for [len][str] formats
 * use libasm to get metadata from each opcode
 * Use graphviz for code graphs
   - export graph information in a parseable format (svg?)
@@ -41,21 +49,15 @@
   - shows return value in eax before restoring regs
 
 ---- bugs
-* CF -addr segfaults
-* fix radiff -r patching (tests/radiff)
-* rabin -v show all flags, without it, only the .rodata ones
 * Split nodes of the graph code analysis
-* cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
     recover the 0 position
 * disasm is incorrect. always returns the negative value :OO
   - 03 e4 f0 = and esp, 0xf0
   but must be= and esp, 0xfffffff0
-* Vdf doesnt detect func size properly
 * RASM is buggy about relative/absolute offsets
-* deprecate asm.follow for scr.seek or so !!!
-
+* Vdf doesnt detect func size properly
 
 ---- debugger
 * !dall should pseudo-initialize the !maps internal structures
