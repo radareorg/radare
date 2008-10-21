@@ -137,8 +137,7 @@ u64 trace_next(u64 from)
         }
 
         if (next == 0xFFFFFFFFFFFFFFFFLL)
-                return NULL;
-
+                return 0LL;
         return next;
 }
 

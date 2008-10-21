@@ -24,7 +24,7 @@ enum {
 	ENCODING_CP850 = 1
 };
 
-static int endian=0;
+static int endian = 0;
 
 static void ELF_(aux_swap_endian)(u8 *value, int size)
 {
@@ -311,8 +311,8 @@ char* ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t) *bin)
 		case ELFDATA2LSB: return "2's complement, little endian";
 		case ELFDATA2MSB: return "2's complement, big endian";
 		default:
-						  snprintf (buff, sizeof (buff), "<unknown: %x>", encoding);
-						  return buff;
+		  snprintf (buff, sizeof (buff), "<unknown: %x>", encoding);
+		  return buff;
 	}
 }
 
@@ -516,10 +516,8 @@ int ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t) *bin, int fd, const char 
 
 int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 {
-	if (endian)
-			return LIL_ENDIAN;
-		else
-			return !LIL_ENDIAN;
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	return (ehdr->e_ident[EI_DATA] == ELFDATA2MSB);
 }
 
 static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
@@ -956,7 +954,8 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 	}
 
 	if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
-			endian = LIL_ENDIAN;
+		endian = LIL_ENDIAN;
+	else    endian = !LIL_ENDIAN;
 
 	ELF_(aux_swap_endian)((u8*)&(ehdr->e_type), sizeof(ELF_(Half)));
 	ELF_(aux_swap_endian)((u8*)&(ehdr->e_machine), sizeof(ELF_(Half)));

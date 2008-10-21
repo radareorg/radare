@@ -96,11 +96,12 @@ def configure(conf):
 	conf.define('HAVE_VALAC', conf.env['GUI'])
 	#conf.define('HAVE_GTK', conf.env['HAVE_GTK'])
 	conf.define('HAVE_LANG_LUA', False)
+	endian = True
 	try:
-		conf.env['IS_BIGENDIAN']
-		endian = True
+		if conf.env['IS_BIGENDIAN'] == 1:
+			endian = False
 	except x:
-		endian = False
+		endian = True
 	conf.define('LIL_ENDIAN', endian)
 	conf.define('HAVE_LANG_PYTHON', False)
 	conf.define('PREFIX',  Options.options.PREFIX)
