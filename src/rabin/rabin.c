@@ -62,20 +62,20 @@ static int elf64 = 0;
 int rabin_show_help()
 {
 	printf(
-"rabin [options] [bin-file]\n"
-" -a        show arch\n"
-" -e        shows entrypoints one per line\n"
-" -i        imports (symbols imported from libraries)\n"
-" -s        symbols (exports)\n"
-" -c        header checksum\n"
-" -S        show sections\n"
-" -l        linked libraries\n"
-" -L [lib]  dlopen library and show address\n"
-" -z        search for strings in elf non-executable sections\n"
-" -x        show xrefs of symbols (-s/-i/-z required)\n"
-" -I        show binary info\n"
-" -r        output in radare commands\n"
-" -v        be verbose\n");
+			"rabin [options] [bin-file]\n"
+//			" -a        show arch\n"
+			" -e        shows entrypoints one per line\n"
+			" -i        imports (symbols imported from libraries)\n"
+			" -s        symbols (exports)\n"
+			" -c        header checksum\n"
+			" -S        show sections\n"
+			" -l        linked libraries\n"
+			" -L [lib]  dlopen library and show address\n"
+			" -z        search for strings in elf non-executable sections\n"
+			" -x        show xrefs of symbols (-s/-i/-z required)\n"
+			" -I        show binary info\n"
+			" -r        output in radare commands\n"
+			" -v        be verbose\n");
 	return 1;
 }
 
@@ -98,6 +98,9 @@ void rabin_show_info(const char *file)
 
 		baddr = ELF_CALL(dietelf_get_base_addr, bin);
 		
+		if (!rad)
+			printf("[Information]\n");
+
 		if (rad) {
 			printf("e file.type = elf\n");
 			str = getenv("DEBUG");
@@ -111,29 +114,48 @@ void rabin_show_info(const char *file)
 			else printf("e dbg.dwarf = true\n");
 			printf("e asm.os = %s\n", ELF_CALL(dietelf_get_osabi_name,bin));
 			printf("e asm.arch = %s\n", ELF_CALL(dietelf_get_arch,bin));
-
-			if (verbose == 2) {
-
-			}
 		} else {
-			printf("ELF class:       %s\n"
-			       "Data enconding:  %s\n"
-			       "OS/ABI name:     %s\n"
-			       "Machine name:    %s\n"
-			       "File type:       %s\n",
-			       ELF_CALL(dietelf_get_elf_class,bin),
-			       ELF_CALL(dietelf_get_data_encoding,bin),
-			       ELF_CALL(dietelf_get_osabi_name,bin),
-			       ELF_CALL(dietelf_get_machine_name,bin),
-			       ELF_CALL(dietelf_get_file_type,bin));
-
-			printf("Stripped:        %s\n",
-				(ELF_CALL(dietelf_get_stripped,bin))?"Yes":"No");
-
-			printf("Static:          %s\n",
-				(ELF_CALL(dietelf_get_static,bin))?"Yes":"No");
-
-			printf("Base address:    0x%08llx\n", baddr);
+			switch (verbose) {
+				case 0:
+					printf("class=%s\nenconding=%s\nos=%s\nmachine=%s\narch=%s\ntype=%s\nstripped=%s\nstatic=%s\nbaddr=0x%08llx\n",
+							ELF_CALL(dietelf_get_elf_class,bin),
+							ELF_CALL(dietelf_get_data_encoding,bin),
+							ELF_CALL(dietelf_get_osabi_name,bin),
+							ELF_CALL(dietelf_get_machine_name,bin),
+							ELF_CALL(dietelf_get_arch,bin),
+							ELF_CALL(dietelf_get_file_type,bin),
+							(ELF_CALL(dietelf_get_stripped,bin))?"Yes":"No",
+						  	(ELF_CALL(dietelf_get_static,bin))?"Yes":"No",
+							baddr);
+					break;
+				case 1:
+					printf("ELF class:       %s\n"
+							"Architecture:    %s\n"
+							"File type:       %s\n",
+							ELF_CALL(dietelf_get_elf_class,bin),
+							ELF_CALL(dietelf_get_arch,bin),
+							ELF_CALL(dietelf_get_file_type,bin));
+					break;
+				default :
+					printf("ELF class:       %s\n"
+							"Data enconding:  %s\n"
+							"OS/ABI name:     %s\n"
+							"Machine name:    %s\n"
+							"Architecture:    %s\n"
+							"File type:       %s\n"
+							"Stripped:        %s\n"
+							"Static:          %s\n"
+							"Base address:    0x%08llx\n",
+							ELF_CALL(dietelf_get_elf_class,bin),
+							ELF_CALL(dietelf_get_data_encoding,bin),
+							ELF_CALL(dietelf_get_osabi_name,bin),
+							ELF_CALL(dietelf_get_machine_name,bin),
+							ELF_CALL(dietelf_get_arch,bin),
+							ELF_CALL(dietelf_get_file_type,bin),
+							(ELF_CALL(dietelf_get_stripped,bin))?"Yes":"No",
+						  	(ELF_CALL(dietelf_get_static,bin))?"Yes":"No",
+							baddr);
+			}
 		}
 
 		ELF_(dietelf_close)(fd);
@@ -349,14 +371,16 @@ void rabin_show_entrypoint()
 
 		if (rad) {
 			printf("fs symbols\n");
+		} else if (verbose != 0)
+			printf("[Entrypoint]\n");
+
+		if (rad) {
 			printf("f entrypoint @ 0x%08llx\n", baddr + offset);
 			printf("s entrypoint\n");
 		} else {
-			printf("[Entrypoint]\n");
-
 			switch (verbose) {
 				case 0:
-					printf("address=0x%08llx offset=0x%08llx name=entrypoint\n", offset, baddr + offset);
+					printf("0x%08llx\n", baddr + offset);
 					break;
 				case 1:
 					printf("Memory address:\t0x%08llx\n", baddr + offset);
@@ -366,6 +390,7 @@ void rabin_show_entrypoint()
 					printf("File offset:\t0x%08llx\n", offset);
 			}
 		}
+		
 
 		ELF_(dietelf_close)(fd);
 		break;
@@ -432,8 +457,13 @@ u64 addr_for_lib(char *name)
 	return 0LL;
 }
 
+#if 0
 void rabin_show_arch(char *file)
 {
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin    pe;
+	} bin;
 	u32 dw;
 	u16 w;
 
@@ -442,18 +472,15 @@ void rabin_show_arch(char *file)
 		dm_read_header(1);
 		break;
 	case FILETYPE_ELF:
-		lseek(fd, 16+2, SEEK_SET);
-		read(fd, &w, 2);
-		switch(w) {
-		case 3:
-			printf("arch: x86-32\n");
-			break;
-		case 0x28:
-			printf("arch: ARM\n");
-			break;
-		default:
-			printf("arch: 0x%x (unknown)\n", w);
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
 		}
+
+		if (!rad) printf("arch: %s\n", ELF_CALL(dietelf_get_arch,bin.elf));
+
+		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
 		// [[0x3c]+4]
@@ -474,6 +501,7 @@ void rabin_show_arch(char *file)
 		break;
 	}
 }
+#endif
 
 void rabin_show_imports(const char *file)
 {
@@ -966,18 +994,9 @@ int main(int argc, char **argv, char **envp)
 {
 	int c;
 
-	while ((c = getopt(argc, argv, "acerlishL:SIvxz")) != -1)
+	while ((c = getopt(argc, argv, "cerlishL:SIvxz")) != -1)
 	{
 		switch( c ) {
-		case 'a':
-			action |= ACTION_ARCH;
-			break;
-#if 0
-	/* XXX depend on sections ??? */
-		case 'b':
-			action |= ACTION_BASE;
-			break;
-#endif
 		case 'i':
 			action |= ACTION_IMPORTS;
 			break;
@@ -988,11 +1007,6 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_SYMBOLS;
 			//action |= ACTION_EXPORTS;
 			break;
-#if 0
-		case 't':
-			action |= ACTION_FILETYPE;
-			break;
-#endif
 		case 'S':
 			action |= ACTION_SECTIONS;
 			break;
@@ -1022,6 +1036,18 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_STRINGS;
 			break;
 		case 'h':
+#if 0
+		case 'a':
+			action |= ACTION_ARCH;
+			break;
+	/* XXX depend on sections ??? */
+		case 'b':
+			action |= ACTION_BASE;
+			break;
+		case 't':
+			action |= ACTION_FILETYPE;
+			break;
+#endif
 		default:
 			return rabin_show_help();
 		}
@@ -1045,20 +1071,8 @@ int main(int argc, char **argv, char **envp)
 	dm_map_file(file, fd);
 	rabin_identify_header();
 
-	if (action&ACTION_ARCH)
-		rabin_show_arch(file);
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
-#if 0
-	if (action&ACTION_BASE)
-		rabin_show_baseaddr(file);
-	if (action&ACTION_FILETYPE)
-		rabin_show_filetype();
-	if (action&ACTION_EXPORTS)
-		rabin_show_exports(file);
-	if (action&ACTION_OTHERS)
-		rabin_show_others(file);
-#endif
 	if (action&ACTION_IMPORTS)
 		rabin_show_imports(file);
 	if (action&ACTION_SYMBOLS)
@@ -1073,6 +1087,18 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_checksum(file);
 	if (action&ACTION_STRINGS)
 		rabin_show_strings(file);
+#if 0
+	if (action&ACTION_ARCH)
+		rabin_show_arch(file);
+	if (action&ACTION_BASE)
+		rabin_show_baseaddr(file);
+	if (action&ACTION_FILETYPE)
+		rabin_show_filetype();
+	if (action&ACTION_EXPORTS)
+		rabin_show_exports(file);
+	if (action&ACTION_OTHERS)
+		rabin_show_others(file);
+#endif
 
 	close(fd);
 
