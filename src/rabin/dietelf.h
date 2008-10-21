@@ -38,11 +38,11 @@ typedef struct {
 
 char* ELF_(aux_filter_rad_output)(const char*);
 int   ELF_(dietelf_close)(int);
-int   ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t)*);
+char* ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t)*);
 u64   ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t)*);
-u64   ELF_(dietelf_get_entry_addr)(ELF_(dietelf_bin_t)*);
+u64   ELF_(dietelf_get_entry_offset)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t)*);
 int   ELF_(dietelf_get_imports)(ELF_(dietelf_bin_t)*, int, dietelf_import*);
 int   ELF_(dietelf_get_imports_count)(ELF_(dietelf_bin_t)*, int);

@@ -18,6 +18,7 @@
 
 --- todo
 
+* "o /lib/libc.so 0x7f380000" -> map files on virtual addresses \o/ for teh posix pluyin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!
 * print double!!
   - support string print mode for [len][str] formats

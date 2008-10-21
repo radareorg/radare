@@ -110,27 +110,7 @@ void rabin_show_info(const char *file)
 			    printf("e dbg.dwarf = false\n");
 			else printf("e dbg.dwarf = true\n");
 			printf("e asm.os = %s\n", ELF_CALL(dietelf_get_osabi_name,bin));
-			switch (ELF_CALL(dietelf_get_arch,bin)) {
-				case EM_MIPS:
-				case EM_MIPS_RS3_LE:
-				case EM_MIPS_X:
-					printf("e asm.arch = mips\n"); break;
-				case EM_ARM:
-					printf("e asm.arch = arm\n"); break;
-				case EM_SPARC:
-				case EM_SPARC32PLUS:
-				case EM_SPARCV9:
-					printf("e asm.arch = sparc\n"); break;
-				case EM_PPC:
-				case EM_PPC64:
-					printf("e asm.arch = ppc\n"); break;
-				case EM_68K:
-					printf("e asm.arch = m68k\n"); break;
-				case EM_IA_64:
-				case EM_X86_64:
-					printf("e asm.arch = intel64\n"); break;
-				default: printf("e asm.arch = intel\n");
-			}
+			printf("e asm.arch = %s\n", ELF_CALL(dietelf_get_arch,bin));
 
 			if (verbose == 2) {
 
@@ -245,6 +225,7 @@ void rabin_show_strings(const char *file)
 {
 	dietelf_bin_t bin;
 	dietelf_string strings[4096], *stringsp;
+	u64 baddr = 0;
 	int strings_count, i;
 	char buf[1024];
 
@@ -261,26 +242,43 @@ void rabin_show_strings(const char *file)
 			return;
 		}
 
+		baddr = ELF_CALL(dietelf_get_base_addr,bin);
 		strings_count = ELF_CALL(dietelf_get_strings,bin,fd,verbose,4096,strings);
 
 		if (rad)
 			printf("fs strings\n");
-		else printf("==> Strings:\n");
+		else printf("[Strings]\n");
 
 		stringsp = strings;
-		for (i = 0; i < 4096 && stringsp->type; i++, stringsp++) {
+		for (i = 0; i < strings_count; i++, stringsp++) {
 			if (rad) {
-				printf("f str_%s @ 0x%08llx\n",
-						ELF_(aux_filter_rad_output)(stringsp->string), stringsp->offset);
-				printf("Cs %ld @ 0x%08llx\n", stringsp->size, stringsp->offset);
+				printf("b %li && f str_%s @ 0x%08llx\n",
+						stringsp->size, ELF_(aux_filter_rad_output)(stringsp->string), stringsp->offset);
+				printf("Cs %li @ 0x%08llx\n", stringsp->size, stringsp->offset);
 			} else {
-				printf("0x%08llx", stringsp->offset);
-				if (verbose) printf(" %03d %c", stringsp->size, stringsp->type);
-				printf(" %s\n", stringsp->string);
+				switch (verbose) {
+					case 0:
+						printf("address=0x%08llx offset=0x%08llx size=%08li type=%c name=%s\n",
+								baddr + stringsp->offset, stringsp->offset, stringsp->size, stringsp->type, stringsp->string);
+						break;
+					case 1:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n",
+								baddr + stringsp->offset, stringsp->offset, stringsp->string);
+						break;
+					default:
+						if (i == 0) printf("Memory address\tFile offset\tSize\t\tType\tName\n");
+						printf("0x%08llx\t0x%08llx\t%08li\t%c\t%s\n",
+								baddr + stringsp->offset, stringsp->offset, stringsp->size, stringsp->type, stringsp->string);
+				}
 			}
 		}
 
-		if (rad) fprintf(stderr, "%i strings added\n", strings_count);
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i strings added\n", strings_count);
+		} else if (verbose != 0) 
+			printf("\n%i strings\n", strings_count);
 
 		ELF_(dietelf_close)(fd);
 		break;
@@ -333,8 +331,8 @@ void rabin_show_checksum(const char *file)
 
 void rabin_show_entrypoint()
 {
-	u64 addr = 0;
-	u64 base = 0;
+	u64 offset = 0;
+	u64 baddr = 0;
 	dietelf_bin_t bin;
 
 	switch(filetype) {
@@ -345,19 +343,27 @@ void rabin_show_entrypoint()
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		addr = ELF_CALL(dietelf_get_entry_addr, bin);
-		base = ELF_CALL(dietelf_get_base_addr, bin);
+
+		offset = ELF_CALL(dietelf_get_entry_offset, bin);
+		baddr = ELF_CALL(dietelf_get_base_addr, bin);
 
 		if (rad) {
 			printf("fs symbols\n");
-			printf("f entrypoint @ 0x%08llx\n", addr);
+			printf("f entrypoint @ 0x%08llx\n", offset);
 			printf("s entrypoint\n");
 		} else {
-			if (verbose) {
-				printf("0x%08llx memory\n", addr);
-				printf("0x%08llx disk\n", addr - base);
-			} else {
-				printf("0x%08llx\n", addr);
+			printf("[Entrypoint]\n");
+
+			switch (verbose) {
+				case 0:
+					printf("address=0x%08llx offset=0x%08llx name=entrypoint\n", offset, baddr + offset);
+					break;
+				case 1:
+					printf("Memory address:\t0x%08llx\n", baddr + offset);
+					break;
+				default:
+					printf("Memory address:\t0x%08llx\n", baddr + offset);
+					printf("File offset:\t0x%08llx\n", offset);
 			}
 		}
 
@@ -392,6 +398,7 @@ Load command 9
 	case FILETYPE_MZ:
 		break;
 	case FILETYPE_PE:
+#if 0
 		lseek(fd, pebase+0x28, SEEK_SET);
 		read(fd, &addr, 4);
 	//	printf("0x%08x disk offset for ep\n", pebase+0x28);
@@ -405,6 +412,7 @@ Load command 9
 				printf("0x%08llx disk\n", addr-0xc00);
 			} else	printf("0x%08llx\n", base+addr);
 		}
+#endif
 		break;
 	}
 }
@@ -471,6 +479,7 @@ void rabin_show_imports(const char *file)
 {
 	char buf[1024];
 	int i, imports_count;
+	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin    pe;
@@ -501,7 +510,8 @@ void rabin_show_imports(const char *file)
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-
+		
+		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
 		imports_count = ELF_CALL(dietelf_get_imports_count,bin.elf,fd);
 
 		import.elf = malloc(imports_count * sizeof(dietelf_import));
@@ -509,17 +519,28 @@ void rabin_show_imports(const char *file)
 
 		if (rad)
 			printf("fs imports\n");
-		else printf("==> Imports:\n");
+		else printf("[Imports]\n");
 
 		importp.elf = import.elf;
 		for (i = 0; i < imports_count; i++, importp.elf++) {
 			if (rad) {
 				printf("f imp_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(importp.elf->name), importp.elf->offset);
 			} else {
-				if (verbose) {
-					printf("0x%08llx %s %s %s\n", importp.elf->offset, importp.elf->bind, importp.elf->type, importp.elf->name);
-				} else {
-					printf("0x%08llx %s\n", importp.elf->offset, importp.elf->name);
+				switch (verbose) {
+					case 0:
+						printf("address=0x%08llx offset=0x%08llx bind=%s type=%s name=%s\n",
+								baddr + importp.elf->offset, importp.elf->offset,
+								importp.elf->bind, importp.elf->type, importp.elf->name);
+						break;
+					case 1:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n", baddr + importp.elf->offset, importp.elf->offset, importp.elf->name);
+						break;
+					default:
+						if (i == 0) printf("Memory address\tFile offset\tBind\tType\tName\n");
+						printf("0x%08llx\t0x%08llx\t%-7s\t%-7s\t%s\n",
+								baddr + importp.elf->offset, importp.elf->offset,
+								importp.elf->bind, importp.elf->type, importp.elf->name);
 				}
 			}
 		}
@@ -527,7 +548,8 @@ void rabin_show_imports(const char *file)
 		if (rad) {
 			printf("b 512\n");
 			fprintf(stderr, "%i imports added\n", imports_count);
-		}
+		} else if (verbose != 0) 
+			printf("\n%i imports\n", imports_count);
 
 		ELF_(dietelf_close)(fd);
 #endif
@@ -584,6 +606,7 @@ void rabin_show_imports(const char *file)
 void rabin_show_symbols(char *file)
 {
 	char buf[1024];
+	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin    pe;
@@ -606,6 +629,7 @@ void rabin_show_symbols(char *file)
 			return;
 		}
 
+		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
 		symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd);
 
 		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
@@ -613,20 +637,31 @@ void rabin_show_symbols(char *file)
 
 		if (rad)
 			printf("fs symbols\n");
-		else printf("==> Symbols:\n");
+		else printf("[Symbols]\n");
 
 		symbolp.elf = symbol.elf;
 		for (i = 0; i < symbols_count; i++, symbolp.elf++) {
 			if (rad) {
-				printf("b %ld && ", symbolp.elf->size); 
-				printf("f sym_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(symbolp.elf->name), symbolp.elf->offset);
+				printf("b %li && f sym_%s @ 0x%08llx\n", symbolp.elf->size, ELF_(aux_filter_rad_output)(symbolp.elf->name), symbolp.elf->offset);
 				if (!strncmp(symbolp.elf->type,"FUNC", 4)) 
 					printf("CF %ld @ 0x%08llx\n", symbolp.elf->size, symbolp.elf->offset);
 			} else {
-				if (verbose) {
-					printf("0x%08llx size=%05ld %s %s %s\n", symbolp.elf->offset, symbolp.elf->size, symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
-				} else {
-					printf("0x%08llx %s\n", symbolp.elf->offset, symbolp.elf->name);
+				switch (verbose) {
+					case 0:
+						printf("address=0x%08llx offset=0x%08llx size=%08li bind=%s type=%s name=%s\n",
+								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
+								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
+						break;
+					case 1:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n",
+								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->name);
+						break;
+					default:
+						if (i == 0) printf("Memory address\tFile offset\tSize\t\tBind\tType\tName\n");
+						printf("0x%08llx\t0x%08llx\t%08li\t%-7s\t%-7s\t%s\n",
+								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
+								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
 				}
 			}
 		}
@@ -634,7 +669,8 @@ void rabin_show_symbols(char *file)
 		if (rad) {
 			printf("b 512\n");
 			fprintf(stderr, "%i symbols added\n", symbols_count);
-		}
+		} else if (verbose != 0)
+			printf("\n%i symbols\n", symbols_count);
 
 		ELF_(dietelf_close)(fd);
 		break;
@@ -694,6 +730,7 @@ void rabin_show_symbols(char *file)
 void rabin_show_sections(const char *file)
 {
 	int fd, i, sections_count;
+	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin    pe;
@@ -714,36 +751,64 @@ void rabin_show_sections(const char *file)
 			return;
 		}
 
+		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
 		sections_count = ELF_CALL(dietelf_get_sections_count,bin.elf);
 
 		section.elf = malloc(sections_count * sizeof(dietelf_section));
 		ELF_CALL(dietelf_get_sections,bin.elf,fd,section.elf);
-		sectionp.elf = section.elf;
+
 		if (rad)
 			printf("fs sections\n");
-		else printf("==> Sections:\n");
+		else printf("[Sections]\n");
 
+		sectionp.elf = section.elf;
 		for (i = 0; i < sections_count; i++, sectionp.elf++) {
 			if (rad) {
 				printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset));
 				printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.elf->name), (u64)(sectionp.elf->offset + sectionp.elf->size));
-				printf("CC ");
+
+				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s @ 0x%08llx\n",
+						i, sectionp.elf->offset, sectionp.elf->size,
+						sectionp.elf->align,
+						ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
+						ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
+						ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
+						sectionp.elf->name, (u64)(sectionp.elf->offset));
+			} else {
+				switch (verbose) {
+					case 0:
+						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx privileges=%c%c%c name=%s\n",
+								i, sectionp.elf->offset, baddr + sectionp.elf->offset,
+								sectionp.elf->size,	sectionp.elf->align,
+								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
+								ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
+								ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
+								sectionp.elf->name);
+						break;
+					case 1:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n",
+								sectionp.elf->offset, baddr + sectionp.elf->offset,
+								sectionp.elf->name);
+						break;
+					default:
+						if (i == 0) printf("Section index\tMemory address\tFile offset\tSize\t\tAlign\t\tPrivileges\tName\n");
+						printf("%02i\t\t0x%08llx\t0x%08llx\t%08lli\t0x%08llx\t%c%c%c\t\t%s\n",
+								i, sectionp.elf->offset, baddr + sectionp.elf->offset,
+								sectionp.elf->size,	sectionp.elf->align,
+								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
+								ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
+								ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
+								sectionp.elf->name);
+				}
 			}
-			printf("[%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s",
-					i, sectionp.elf->offset, sectionp.elf->size,
-					sectionp.elf->align,
-					ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
-					ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
-					ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
-					sectionp.elf->name);
-			if (rad)
-				printf(" @ 0x%08llx\n", (u64)(sectionp.elf->offset));
-			else printf("\n");
 		}
 
 		if (rad) {
 			printf("b 512\n");
 			fprintf(stderr, "%i sections added\n", sections_count);
+		} else if (verbose != 0){
+			printf("\n%i sections\n", sections_count);
 		}
 
 		ELF_(dietelf_close)(fd);
@@ -789,8 +854,9 @@ void rabin_show_libs(const char *file)
 	char buf[1024];
 	int fd;
 	dietelf_bin_t bin;
-	dietelf_string strings[128], *stringsp;
-	int i;
+	dietelf_string libs[128], *libsp;
+	u64 baddr = 0;
+	int i, libs_count;
 
 
 	switch(filetype) {
@@ -801,17 +867,21 @@ void rabin_show_libs(const char *file)
 			return;
 		}
 
-		ELF_CALL(dietelf_get_libs,bin,fd,128,strings);
+		baddr = ELF_CALL(dietelf_get_base_addr,bin);
+		libs_count = ELF_CALL(dietelf_get_libs,bin,fd,128,libs);
 
 		if (!rad)
-			printf("==> Libraries:\n");
+			printf("[Libraries]\n");
 
-		stringsp = strings;
-		for (i = 0; i < 128 && stringsp->type; i++, stringsp++) {
+		libsp = libs;
+		for (i = 0; i < libs_count; i++, libsp++) {
 			if (!rad) {
-				printf("0x%08llx %s\n", stringsp->offset, stringsp->string);
+				printf("%s\n", libsp->string);
 			}
 		}
+
+		if (!rad && verbose != 0) 
+			printf("\n%i libraries\n", libs_count);
 
 		ELF_(dietelf_close)(fd);
 		break;
