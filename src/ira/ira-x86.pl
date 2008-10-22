@@ -58,6 +58,11 @@ sub process {
 	$line=~s/,/ /g;
 	$line=~s/\ \ /\ /g;
 	$line=~s/\x1b.*m//g;
+	$line=~s/sarl/sar/g;
+	$line=~s/shll/sll/g;
+	$line=~s/addl/add/g;
+	$line=~s/movl/mov/g;
+	$line=~s/cmpl/cmp/g;
 	chomp($line);
 	return if ($line eq "");
 	if ($line=~/^0/) {
@@ -140,14 +145,32 @@ sub process {
 	} elsif ($line=~/add ([^ ]*) (.*)/) {
 		if (is_reg($1) && is_inmediate($2)) {
 			printf ". addi ".reg($1).", $2\n";
+		} elsif (is_addr($1) && is_inmediate($2)) {
+			printf ". adda ".reg($1).", ".reg($2)."\n";
 		} else {
 			print STDERR "Unknown ADDI '$line'\n";
 		}
 	} elsif ($line=~/shl ([^ ]*) (.*)/) {
 		if (is_reg($1) && is_inmediate($2)) {
-			printf ". sli ".reg($1).", $2\n";
+			printf ". sli ".reg($1).", ".reg($2)."\n";
 		} else {
 			print STDERR "Unknown SHL '$line'\n";
+		}
+	} elsif ($line=~/sll ([^ ]*) (.*)/) {
+		if (is_reg($1) && is_inmediate($2)) {
+			printf ". slli ".reg($1).", $2\n";
+		} elsif (is_addr($1) && is_inmediate($2)) {
+			printf ". slla ".reg($1).", $2\n";
+		} else {
+			print STDERR "Unknown SHR '$line'\n";
+		}
+	} elsif ($line=~/sar ([^ ]*) (.*)/) {
+		if (is_reg($1) && is_inmediate($2)) {
+			printf ". sari ".reg($1).", $2\n";
+		} elsif (is_addr($1) && is_inmediate($2)) {
+			printf ". sara ".reg($1).", $2\n";
+		} else {
+			print STDERR "Unknown SHR '$line'\n";
 		}
 	} elsif ($line=~/shr ([^ ]*) (.*)/) {
 		if (is_reg($1) && is_inmediate($2)) {
@@ -157,7 +180,7 @@ sub process {
 		}
 	} elsif ($line=~/sub ([^ ]*) (.*)/) {
 		if (is_reg($1) && is_inmediate($2)) {
-			printf ". addi ".reg($1).", $2\n";
+			printf ". addi ".reg($1).", ".reg($2)."\n";
 		} else {
 			print STDERR "Unknown SUB '$line'\n";
 		}
@@ -221,6 +244,8 @@ sub process {
 		} else {
 			print STDERR "Unknown CALL '$line'\n";
 		}
+	} elsif ($line=~/pop (.*)/) {
+		printf ". pop ".reg($1)."\n";
 	} elsif ($line=~/leave/) {
 		printf ". pop sp\n"; # XXX
 	} elsif ($line=~/ret/) {

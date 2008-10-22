@@ -1,7 +1,7 @@
 ; main() {
 ;   int i = 0;
 ;   while (i<3) {
-;    printf("pop");
+;    printf("hello\n");
 ;    i++;
 ;   }
 ; }
@@ -29,4 +29,4 @@
 0x3fc  leave
 0x3fd  ret
 .symbol 0x300 printf
-.string 0x80484c4 "pop"
+.string 0x80484c4 "hello\n"

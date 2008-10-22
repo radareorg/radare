@@ -20,7 +20,7 @@ while(<STDIN>) {
 	$line=~s/\.//g;
 	$line=~s/,//g;
 	$line=~s/\ \ /\ /g;
-	next if (/sp/); ## XXX BUGGY
+#	next if (/sp/); ## XXX BUGGY
 	chomp($line);
 	if ($line=~/^offset (.*)/) {
 		$addr = $1;
@@ -36,13 +36,23 @@ while(<STDIN>) {
 		$out.= "$addr  ".$lc."label_$1:$nc\n";
 	} elsif ($line=~/pushi ([^ ]*)/) {
 		push @stack, $1;
+	} elsif ($line=~/pop ([^ ]*)/) {
+		pop @stack;
 	} elsif ($line=~/push ([^ ]*)/) {
 		push @stack, $1;
+	} elsif ($line=~/sti \[([a-z.0-9]*)\] ([^ ]*)/) {
+		push @stack, $2; # if ($1=~/sp/);
+	} elsif ($line=~/sti ([^ ]*) (.*)$/) {
+		$out.="$addr  $1 = $2;\n";
+		# XXX ignored
 	} elsif ($line=~/call ([^ ]*)/) {
 		$out.= "$addr    $1 ( ";
 		for $i (0 .. $#stack) {
-			$out.= $stack[$#stack-$i];
-			$out.=", " if ($i < $#stack);
+			$op   = $stack[$#stack-$i];
+			if ($op ne "bp") {
+				$out .= $op;
+				$out .=", " if ($i < $#stack && $stack[$#stack-$i+1] eq "bp");
+			}
 		}
 		$out.= " );\n";
 		@stack=();
@@ -55,19 +65,19 @@ while(<STDIN>) {
 	} elsif ($line=~/sli ([^ ]*) (.*)/) {
 		$out.="$addr  $1 <<= $2;\n"; ## XXX nop is possible
 	} elsif ($line=~/li (.*) (.*)/) {
-		$out.="$addr  $1 = $2\n";
+		$out.="$addr  $1 = $2;\n";
 	} elsif ($line=~/la (.*) (.*)/) {
 		$la{$1}=$2;
 	} elsif ($line=~/andi ([^ ]*) (.*)/) {
-		$out.="$1 &= $2\n";
+		$out.="$addr  $1 &= $2;\n";
 	} elsif ($line=~/adda (.*) (.*)/) {
 		($o,$t)=($1,$2);
 		$o=~s/\[//g;
 		$o=~s/\]//g;
 		if ($la{$o} eq "") {
-			$out.="$addr  adda $la{$o} $t\n";
+			$out.="$addr  $o += $t;\n";
 		} else {
-			$out.="$addr  $la{$o} += $t\n";
+			$out.="$addr  $la{$o} += $t;\n";
 		}
 	} elsif ($line=~/cmpai (.*) (.*)/) {
 		$cmp0=$1;
@@ -75,7 +85,7 @@ while(<STDIN>) {
 	} elsif ($line=~/ret/) {
 		$out.="$addr  return;\n  }\n";
 	} elsif ($line=~/jmp (.*)/) {
-		$out.="$addr  $jc jmp$nc label_$1;\n";
+		$out.="$addr  $jc goto$nc label_$1;\n";
 	} elsif ($line=~/jne (.*)/) {
 		$out.="$addr  $cc if$nc ($cmp0 != $cmp1)$jc goto$nc label_$1;\n";
 	} elsif ($line=~/je (.*)/) {
@@ -110,5 +120,9 @@ while(($key, $val) = each %strings) {
 }
 
 $out=~s/bp-0x/var_/g;
+$out=~s/\[var/var/g;
+$out=~s/\]//g;
+$out=~s/0x(\d*);/$1;/g;
+$out=~s/0x(\d*)\)/$1\)/g;
 
 print $out;
