@@ -1,0 +1,262 @@
+IRA : Intermediate Raw Assembly
+-------------------------------
+
+IRA is the new intermediate representation for low level assembly
+to be used inside radare.
+
+This assembly is stored in array of bytes. Each opcode has a
+predefined length and is represented in binary form.
+
+The way to generate code from C is by using CPP macros. The
+nice trick of IRA is that each opcode is pretty simple to
+representate and parse and allows to representate a single
+opcode for any architecture by multiple instructions.
+
+The format in ascii form is:
+
+  li d0, 33             ; load inmediate on register
+  load d0, [0x8048000]  ; read from memory
+  sti [0x8048000], 33   ; store inmediate
+  str [0x8048000], d0   ; store register at address
+  int 0x80              ; call interrupt
+  nop                   ; do nothing
+  mov d0, d2            ; move from to register
+  add d0, d0, d2        ; addition
+  addi d0, d0, 33       ; addition with inmedate
+  sub d0, d2, d2        ; substraction
+  subi d0, d0, 33       ; d0-=33
+  brk                   ; breakpoint instruction
+  cmi d0, 33            ; compare with inmedate
+  cmr d0, d2
+  je
+  jmp                   ; jump
+  push
+  pop
+  call
+
+Registers:
+  2 byte length
+  [f,q,d,w,b,s,c,P,S][0-255]
+
+  f#  - floating point
+  q#  - quadword    (64 bits)
+  d#  - double word (32 bits)
+  w#  - word        (16 bits)
+  b#  - byte        ( 8 bits)
+  s#  - special register
+  cr  - compare register
+  sr  - special register (flags?, status?)
+  pc  - program counter
+  sp  - stack pointer
+  ra  - return address
+
+Attributes with '.' (dot), comments are line based and start with ';'.
+
+  .  - next opcode
+  .seek 0x80330
+  .label patata
+  .string "foo"
+  .db 33,44,55
+  .rep .endr
+  .segment cs   ; use segment cs
+
+'[' and ']' chars are ignored. also newlines and spaces.
+This way you can assemble this in a single line
+
+The conversion is done from text disassembly of any architecture by
+using a translator that can be written in perl for example.
+
+Each real opcode can be translated into one or multiple instructions
+for IRA. The creation of the IRAVM would be a really good point, so
+code analysis would be beneficiated from a stored state emulated by
+any file or process and will be possible to switch on the fly from
+the debugger mode to the emulated one.
+
+The memory is optimized to use just array of bytes to represent
+the information of each opcode. So again the conversion can be
+done very easily by parsing using a state machine engine.
+
+Once this file is generated, a second analyzer is used to parse its
+output and use a garbage remover program to drop all the unnecessary
+instructions and optimize the code in a lower level than per-opcode
+analysis.
+
+The resultant per-function optimized pseudocode should be able
+to be rewritten in another assembly language for any real architecture.
+
+
+Here's the diagram:
+
+     .----------------.
+     | .asm file for  |
+     | x86,arm,mips.. |
+     `----------------'
+           /
+          V
+    .------------.
+ .--| translator |
+ |  `------------'    
+ |       |           
+ |       V                           .-------------.   .-----------------.
+ |  .-------------.     .--------.   | compile  in |   |                 |
+ |  | .ira source | --> | parser |---| binary form |   |   APPLICATION   |
+ |  `-------------'     `--------'   `-------------'   |                 |
+ |  `-------------'    7    |              |           |                 |
+ |  `-------------'   /     |              |           |                 |
+ |                   /      |              |   .-----------------.       | 
+ |-------.          |       |              |---| instrumentation |       |
+ |  meta |          |       V              |   `-----------------'       |
+ |  data |          |  .----------.        |   .-----------.          I  |
+ |       |          |  | triggers |        |---| emulation |         P   |
+ |       |          |  `----------'        |   `-----------'        A    |
+ |  ...  |   ( N    |       |              |   .--------------.          |
+ |  ...  |   times) |       V              `---| disassembler |----------'
+ |       |          |  .---------.             `--------------'
+ |  ...  |          .__| garbage |
+ |  ...  |             | remover |
+ |       |             `---------'
+ |  ...  |                  |        .------------.    .----------------.
+ |  ...  |                  `------> | translator | -> | .asm file for  |
+ |       |                .ira       `------------'    | x86,mips,arm.. |
+ |       |                                 |           `----------------'
+ |       |                                 V
+ `-------'                           .------------.
+    .                           . . .| pseudocode |
+    .                           .    `------------'
+    .                           .          |
+    .                           .          V
+    .                           .   .---------------.    .----------.
+    . . . . . . . . . . . . . . . . | decompilation | -> | C source |
+                                    `---------------'    `----------'
+
+
+Flow analysis
+-------------
+
+Once we have serialized .ira assembly in memory you can perform a flow
+analysis by using the branch opcodes. An overview in the graph can give
+us some previous information and by having information about the task
+for this basic block (comparision, arithmetic, ..) we can determine a
+high level representation for it.
+
+Here's for example a while loop:
+$ cat a.c
+main(int argc, char **argv)
+{
+	int i=0;
+	while(i<3) {
+		printf("pop");
+		i++;
+	}
+}
+
+
+[0x080483BC]> :pd 32
+_text:0x080483BC,  /push ebp            
+_text:0x080483BD   |mov ebp, esp        
+_text:0x080483BF   |sub esp, 0x8        
+_text:0x080483C2   |and esp, 0xf0       
+_text:0x080483C5   |mov eax, 0x0        
+_text:0x080483CA   |add eax, 0xf        
+_text:0x080483CD   |add eax, 0xf        
+_text:0x080483D0,  |shr eax, 0x4        
+_text:0x080483D3   |shl eax, 0x4        
+_text:0x080483D6   |sub esp, eax        
+_text:0x080483D8,  |mov dword [ebp-0x4], 0x0
+_text:0x080483DF   |cmp dword [ebp-0x4], 0x2
+_text:0x080483E3   |jg 0x3fc            
+_text:0x080483E5   |sub esp, 0xc        
+_text:0x080483E8,  |push dword 0x80484c4
+_text:0x080483ED   |call 0x300          
+_text:0x080483F2   |add esp, 0x10       
+_text:0x080483F5   |lea eax, [ebp-0x4]  
+_text:0x080483F8,  |inc dword [eax]     
+_text:0x080483FA   |jmp 0x3df           
+_text:0x080483FC,  |leave               
+_text:0x080483FD   \ret     
+
+
+sym_main.ira:
+-------------
+  push bp
+. mov bp, sp
+. subi sp, 8
+. andi sp, 0xf0
+. li r0, 0
+. add r0, 0xf
+. add r0, 0xf
+. sri r0, 4
+. sli r0, 4
+. sub sp, r0
+. sti [bp-4], 0
+.label 0x3df:       ; while loop
+. cmpai [bp-4], 2
+. jg 0x3fc
+. subi sp, 0xc
+. pusha [0x80484c4] ; data ref to string "pop"
+. call 0x300        ; code ref to import "printf"
+. add sp, 0x10
+. load r0, [bp-4]
+. sub r0, bp, 4
+. adda [r0], 1      ; local var incrementor
+. jmp 0x3df         ; end of while loop
+.label 0x3fc
+. pop sp
+. ret
+.label str_pop      ; metadata
+.string "pop"
+.import imp_printf
+
+
+optimization
+------------
+
+  push bp
+. mov bp, sp
+. subi sp, 8
+. andi sp, 0xf0
+. add r0, 0, 0x1e
+. sub sp, r0
+. sti [bp-4], 0      ; [bp-4] = 0
+.label while:        ; while loop
+. cmpai [bp-4], 2
+. jg while_end       ; if ([bp-4] > 2) goto while_end
+. subi sp, 0xc
+. pusha str_pop
+. call imp_printf    ; printf(pop)
+. add sp, 0x10
+. adda [bp-4], 1     ; [bp-4] += 1
+. jmp 0x3df          ; } end while loop
+.label while_end
+. pop sp
+. ret                ; return;
+
+decompilation:
+--------------
+// grepping comments and processing
+
+main() {
+  while:
+  if (dword[ebp-4] > 2) {
+    printf("pop")
+    [ebp-4]++
+    goto while
+  } else {
+    return
+  }
+}
+
+
+cleanup:
+--------
+// parsing and doing some cleanup
+
+main() {
+  var0 = 0
+  while (var0 > 2) {
+    printf("pop")
+    var0++
+  }
+}
+
+                                                   --pancake

@@ -97,7 +97,7 @@ void rabin_show_info(const char *file)
 		}
 
 		baddr = ELF_CALL(dietelf_get_base_addr, bin);
-		
+
 		if (!rad)
 			printf("[Information]\n");
 
