@@ -808,14 +808,30 @@ CMD_DECL(interpret)
 
 CMD_DECL(open)
 {
-	char *ptr = strdup(input);
-	clear_string(ptr);
+	char *arg, *ptr = strdup(input);
+//	clear_string(ptr);
 
-	if (ptr[0]=='\0') {
-		cons_printf("%s\n", config.file);
-	} else {
-		config.file = ptr;
-		radare_open(0);
+	switch(ptr[0]) {
+	case '\0':
+		cons_printf("0x%08llx 0x%08llx %s\n", 0LL, config.size, config.file);
+		io_map_list();
+		break;
+	case '?':
+		cons_printf("Usage: o [file] [offset]\n");
+		cons_printf(" > o /bin/ls                  ; open file\n");
+		cons_printf(" > o /lib/libc.so 0xC848000   ; map file at offset\n");
+		cons_printf(" > o- /lib/libc.so            ; unmap\n");
+		break;
+	case ' ':
+		arg = strchr(ptr+1, ' ');
+		if (arg != NULL) {
+			arg[0]='\0';
+			io_map(ptr+1, arg+1);
+		} else {
+			/* XXX */
+			config.file = ptr+1;
+			radare_open(0);
+		}
 	}
 	free(ptr);
 

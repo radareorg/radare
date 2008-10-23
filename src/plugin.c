@@ -329,6 +329,8 @@ int io_open(const char *pathname, int flags, mode_t mode)
 
 ssize_t io_read(int fd, void *buf, size_t count)
 {
+	if (io_map_read_at(fd, off, buf, count) != 0)
+		return count;
 	FIND_FD(fd)
 		IF_HANDLED(fd, read)
 			return plugins[i].read(fd, buf, count);
@@ -368,5 +370,75 @@ int io_isdbg(int fd)
 	FIND_FD(fd)
 		IF_HANDLED(fd, open)
 			return (int)(plugins[i].debug);
+	return 0;
+}
+
+
+/* mapping */
+
+int maps_n = 0;
+int maps[10];
+
+#define IO_MAP_N 10
+struct io_maps_t {
+	int fd;
+	char name[128];
+	u64 offset;
+	u64 size;
+} io_maps[IO_MAP_N];
+
+void io_map_init()
+{
+	memset(&io_maps, '\0', sizeof(struct io_maps_t)*10);
+}
+
+int io_map_rm(const char *file)
+{
+	
+}
+
+int io_map_list()
+{
+	int i,n;
+	for(i=n=0;i<IO_MAP_N;i++) {
+		if (io_maps[i].file[0] != '\0') {
+			cons_printf("0x%08llx 0x%08llx %s\n",
+				io_maps[i].offset, 
+				io_maps[i].offset+io_maps[i].size,
+				io_maps[i].name);
+			n++;
+		}
+	}
+	return n;
+}
+
+int io_map(const char *file, u64 offset)
+{
+	int fd = open(file, O_RDONLY);
+	if (fd == -1)
+		return -1;
+	for(i=n=0;i<IO_MAP_N;i++) {
+		if (io_maps[i].file[0] == '\0') {
+			io_maps[i].fd     = fd;
+			strncpy(io_maps[i].file, file, 127);
+			io_maps[i].offset = offset;
+			io_maps[i].size   = lseek(fd, 0, SEEK_END);
+			return io_maps[] = fd;
+		}
+	}
+	eprintf("No empty slot.\n");
+}
+
+int io_map_read_at(u64 off, u8 *buf, u64 len)
+{
+	for(i=n=0;i<IO_MAP_N;i++) {
+		if (io_maps[i].file[0] == '\0') {
+			if (io_maps[i].file[0] == '\0') {
+				lseek(io_maps[i].fd, off, SEEK_SET);
+				read(fd, buf, len);
+				return len;
+			}
+		}
+	}
 	return 0;
 }

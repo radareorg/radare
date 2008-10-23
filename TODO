@@ -22,6 +22,7 @@ Nibble TODO:
 * rabin -v show all flags, without it, only the .rodata ones
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 
+* at+ [addr] [times] []
 
 ---- documentation
 * documentate zoom.from, zoom.to better (zoom.size is removed)

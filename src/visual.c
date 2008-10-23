@@ -96,6 +96,7 @@ CMD_DECL(zoom);
 CMD_DECL(zoom_reset);
 CMD_DECL(edit_screen_filter);
 CMD_DECL(zoom_reset);
+CMD_DECL(setblocksize);
 
 /* TODO: Move 'u', 't', 'e' ... here */
 command_t keystrokes[] = {
@@ -115,6 +116,7 @@ command_t keystrokes[] = {
 	COMMAND('x', 0, "show xrefs of the current offset", xrefs_here),
 	COMMAND('i', 0, "insert mode (tab to change hex,asm,ascii, q to back)", insert),
 	COMMAND('I', 0, "invert current block", invert),
+	COMMAND('_', 0, "set block size", setblocksize),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
 	COMMAND('w', 1, "write hex string", insert_hexa_string),
@@ -205,6 +207,22 @@ CMD_DECL(edit_screen_filter)
 	}
 }
 
+CMD_DECL(setblocksize)
+{
+	char bs[32];
+	if (config.cursor_mode) {
+		radare_set_block_size_i(config.cursor+1);
+	} else {
+		cons_set_raw(0);
+		dl_prompt="Block size: ";
+		bs[0]='\0';
+		cons_fgets(bs, 31, 0, NULL);
+		bs[strlen(bs)]='\0';
+		radare_set_block_size_i(get_math(bs));
+		cons_set_raw(1);
+	}
+}
+
 CMD_DECL(insert)
 {
 	if (config_get("file.write")) {
@@ -283,8 +301,8 @@ static void visual_convert_bytes(int fmt)
 		const char *op = dl_prompt;
 		print_mem_help();
 		dl_prompt="> pm ";
-		cons_fgets(argstr, 127, 0, NULL);
 		cons_set_raw(1);
+		cons_fgets(argstr, 127, 0, NULL);
 		argstr[strlen(argstr)]='\0';
 		dl_prompt=op;
 	}
