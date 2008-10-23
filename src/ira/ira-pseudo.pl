@@ -122,6 +122,8 @@ while(($key, $val) = each %strings) {
 $out=~s/bp-0x/var_/g;
 $out=~s/\[var/var/g;
 $out=~s/\]//g;
+$out=~s/\+= 1;/\+\+;/g;
+$out=~s/\-= 1;/\-\-;/g;
 $out=~s/0x(\d*);/$1;/g;
 $out=~s/0x(\d*)\)/$1\)/g;
 

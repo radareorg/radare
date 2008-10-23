@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
 	u64 offset;
-	u32 size;
+	u64 size;
 	char bind[ELF_NAME_LENGTH];
 	char type[ELF_NAME_LENGTH];
 	char name[ELF_NAME_LENGTH];
@@ -35,7 +35,7 @@ typedef struct {
 
 typedef struct {
 	u64 offset;
-	u32 size;
+	u64 size;
 	char type;
 	char string[ELF_STRING_LENGTH];
 } dietelf_string;

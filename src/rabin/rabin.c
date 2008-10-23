@@ -128,14 +128,6 @@ void rabin_show_info(const char *file)
 						  	(ELF_CALL(dietelf_get_static,bin))?"Yes":"No",
 							baddr);
 					break;
-				case 1:
-					printf("ELF class:       %s\n"
-							"Architecture:    %s\n"
-							"File type:       %s\n",
-							ELF_CALL(dietelf_get_elf_class,bin),
-							ELF_CALL(dietelf_get_arch,bin),
-							ELF_CALL(dietelf_get_file_type,bin));
-					break;
 				default :
 					printf("ELF class:       %s\n"
 							"Data enconding:  %s\n"
@@ -274,13 +266,13 @@ void rabin_show_strings(const char *file)
 		stringsp = strings;
 		for (i = 0; i < strings_count; i++, stringsp++) {
 			if (rad) {
-				printf("b %li && f str_%s @ 0x%08llx\n",
+				printf("b %lli && f str_%s @ 0x%08llx\n",
 						stringsp->size, ELF_(aux_filter_rad_output)(stringsp->string), baddr + stringsp->offset);
-				printf("Cs %li @ 0x%08llx\n", stringsp->size, baddr + stringsp->offset);
+				printf("Cs %lli @ 0x%08llx\n", stringsp->size, baddr + stringsp->offset);
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx size=%08li type=%c name=%s\n",
+						printf("address=0x%08llx offset=0x%08llx size=%08lli type=%c name=%s\n",
 								baddr + stringsp->offset, stringsp->offset, stringsp->size, stringsp->type, stringsp->string);
 						break;
 					case 1:
@@ -290,7 +282,7 @@ void rabin_show_strings(const char *file)
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tSize\t\tType\tName\n");
-						printf("0x%08llx\t0x%08llx\t%08li\t%c\t%s\n",
+						printf("0x%08llx\t0x%08llx\t%08lli\t%c\t%s\n",
 								baddr + stringsp->offset, stringsp->offset, stringsp->size, stringsp->type, stringsp->string);
 				}
 			}
@@ -355,19 +347,24 @@ void rabin_show_entrypoint()
 {
 	u64 offset = 0;
 	u64 baddr = 0;
-	dietelf_bin_t bin;
+	dietpe_entrypoint entrypoint;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin    pe;
+	} bin;
+
 
 	switch(filetype) {
 	case FILETYPE_ELF:
 		/* pW 4 @ 0x18 */
-		fd = ELF_CALL(dietelf_open,bin, file);
+		fd = ELF_CALL(dietelf_open,bin.elf, file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
 
-		offset = ELF_CALL(dietelf_get_entry_offset, bin);
-		baddr = ELF_CALL(dietelf_get_base_addr, bin);
+		offset = ELF_CALL(dietelf_get_entry_offset, bin.elf);
+		baddr = ELF_CALL(dietelf_get_base_addr, bin.elf);
 
 		if (rad) {
 			printf("fs symbols\n");
@@ -390,9 +387,57 @@ void rabin_show_entrypoint()
 					printf("File offset:\t0x%08llx\n", offset);
 			}
 		}
-		
 
 		ELF_(dietelf_close)(fd);
+		break;
+	case FILETYPE_PE:
+#if 0
+		lseek(fd, pebase+0x28, SEEK_SET);
+		read(fd, &addr, 4);
+	//	printf("0x%08x disk offset for ep\n", pebase+0x28);
+		lseek(fd, pebase+0x45, SEEK_SET);
+		read(fd, &base, 4);
+		if (rad) {
+			printf("f entrypoint @ 0x%08llx\n", addr);
+		} else {
+			if (verbose) {
+				printf("0x%08llx memory\n", base+addr);
+				printf("0x%08llx disk\n", addr-0xc00);
+			} else	printf("0x%08llx\n", base+addr);
+		}
+#endif
+		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+
+		baddr = dietpe_get_image_base(&bin.pe);
+		dietpe_get_entrypoint(&bin.pe, &entrypoint);
+
+		if (rad) {
+			printf("fs symbols\n");
+		} else if (verbose != 0)
+			printf("[Entrypoint]\n");
+
+		if (rad) {
+			printf("f entrypoint @ 0x%08llx\n", (u64) (baddr + entrypoint.rva));
+			printf("s entrypoint\n");
+		} else {
+			switch (verbose) {
+				case 0:
+					printf("0x%08llx\n", (u64) (baddr + entrypoint.rva));
+					break;
+				case 1:
+					printf("Memory address:\t0x%08llx\n", (u64) (baddr + entrypoint.rva));
+					break;
+				default:
+					printf("Memory address:\t0x%08llx\n", (u64) (baddr + entrypoint.rva));
+					printf("File offset:\t0x%08llx\n", (u64) (entrypoint.offset));
+			}
+		}
+		
+
+		dietpe_close(fd);
 		break;
 	case FILETYPE_MACHO:
 		printf("fs symbols\n");
@@ -421,23 +466,6 @@ Load command 9
 		else	printf("Entrypoint: 0\n");
 		break;
 	case FILETYPE_MZ:
-		break;
-	case FILETYPE_PE:
-#if 0
-		lseek(fd, pebase+0x28, SEEK_SET);
-		read(fd, &addr, 4);
-	//	printf("0x%08x disk offset for ep\n", pebase+0x28);
-		lseek(fd, pebase+0x45, SEEK_SET);
-		read(fd, &base, 4);
-		if (rad) {
-			printf("f entrypoint @ 0x%08llx\n", addr);
-		} else {
-			if (verbose) {
-				printf("0x%08llx memory\n", base+addr);
-				printf("0x%08llx disk\n", addr-0xc00);
-			} else	printf("0x%08llx\n", base+addr);
-		}
-#endif
 		break;
 	}
 }
@@ -676,7 +704,7 @@ void rabin_show_symbols(char *file)
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx size=%08li bind=%s type=%s name=%s\n",
+						printf("address=0x%08llx offset=0x%08llx size=%08lli bind=%s type=%s name=%s\n",
 								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
 								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
 						break;
@@ -687,7 +715,7 @@ void rabin_show_symbols(char *file)
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tSize\t\tBind\tType\tName\n");
-						printf("0x%08llx\t0x%08llx\t%08li\t%-7s\t%-7s\t%s\n",
+						printf("0x%08llx\t0x%08llx\t%08lli\t%-7s\t%-7s\t%s\n",
 								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
 								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
 				}
@@ -848,21 +876,65 @@ void rabin_show_sections(const char *file)
 		}
 		
 		sections_count = dietpe_get_sections_count(&bin.pe);
+		baddr = dietpe_get_image_base(&bin.pe);
 
 		section.pe = malloc(sections_count * sizeof(dietpe_section));
 		dietpe_get_sections(&bin.pe, section.pe);
+
+		if (rad)
+			printf("fs sections\n");
+		else printf("[Sections]\n");
+
 		sectionp.pe = section.pe;
-		if (!rad)
-			printf("==> Sections:\n");
 		for (i = 0; i < sections_count; i++, sectionp.pe++) {
-			if (!rad)
-				printf("[%02i] 0x%08x rva=0x%08x size=0x%08x privileges=%c%c%c%c %s\n",
-					   i, sectionp.pe->offset, sectionp.pe->rva, sectionp.pe->size,
-					   PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
-					   PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
-					   PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
-					   PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
-					   sectionp.pe->name);
+			if (rad) {
+				printf("f section_%s @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
+				printf("f section_%s_end @ 0x%08llx\n", ELF_(aux_filter_rad_output)(sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
+
+				printf("CC [%02i] 0x%08llx size=%08lli %c%c%c%c %s @ 0x%08llx\n",
+						i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),
+						PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+						PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+						PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+						PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+						sectionp.pe->name, (u64) (baddr + sectionp.pe->rva));
+			} else {
+				switch (verbose) {
+					case 0:
+						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli privileges=%c%c%c%c name=%s\n",
+								i, (u64) (baddr + sectionp.pe->rva),
+								(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
+								PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+								PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+								PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+								PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+								sectionp.pe->name);
+						break;
+					case 1:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n",
+								(u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->offset),
+								sectionp.pe->name);
+						break;
+					default:
+						if (i == 0) printf("Section index\tMemory address\tFile offset\tSize\t\tPrivileges\tName\n");
+						printf("%02i\t\t0x%08llx\t0x%08llx\t%08lli\t%c%c%c%c\t\t%s\n",
+								i, (u64) (baddr + sectionp.pe->rva),
+								(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
+								PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+								PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+								PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+								PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+								sectionp.pe->name);
+				}
+			}
+		}
+
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i sections added\n", sections_count);
+		} else if (verbose != 0){
+			printf("\n%i sections\n", sections_count);
 		}
 
 		dietpe_close(fd);

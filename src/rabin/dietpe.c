@@ -333,6 +333,7 @@ int dietpe_get_sections(dietpe_bin *bin, dietpe_section *section) {
 		memcpy(sectionp->name, shdrp->Name, PE_IMAGE_SIZEOF_SHORT_NAME);
 		sectionp->rva = shdrp->VirtualAddress;
 		sectionp->size = shdrp->SizeOfRawData;
+		sectionp->vsize = shdrp->Misc.VirtualSize;
 		sectionp->offset = shdrp->PointerToRawData;
 		sectionp->characteristics = shdrp->Characteristics;
 	}

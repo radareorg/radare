@@ -26,6 +26,7 @@ typedef struct {
 typedef struct {
 	PE_Byte  name[PE_IMAGE_SIZEOF_SHORT_NAME];
 	PE_DWord size;
+	PE_DWord vsize;
 	PE_DWord rva;
 	PE_DWord offset;
 	PE_DWord characteristics;

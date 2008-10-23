@@ -144,7 +144,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 			/* check if the length fits on our request */
 			if (matches >= min) {
 				str[matches] = '\0';
-				int len = strlen(str);
+				len = strlen(str);
 				if (len>2) {
 					if (!filter || strstr(str, filter)) {
 						stringsp->offset = i-matches;
