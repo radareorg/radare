@@ -89,7 +89,7 @@ install:
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
 	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
-	${INSTALL_PROGRAM} src/rabin/javasm ${BINDIR}
+	${INSTALL_PROGRAM} src/javasm/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}

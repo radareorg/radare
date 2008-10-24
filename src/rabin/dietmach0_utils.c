@@ -41,11 +41,15 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-//#include <sys/mman.h>
 #include <sys/stat.h>
 
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
+
+#if __WINDOWS__
+#else
+#include <sys/mman.h>
+#endif
 
 /*
  * Gloabal Variables

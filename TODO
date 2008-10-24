@@ -11,6 +11,7 @@
 
 Nibble TODO:
 ============
+* Added $$j, $$f, $$r (jump, fail and ref)
 * update rabin documentation
 * documentate dbg.focus
 * doc4 asm.follow or scr.seek or so..

@@ -11,9 +11,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <sys/mman.h>
-
 #include "../main.h"
+#if __UNIX__
+#include <sys/mman.h>
+#endif
 
 #include "aux.h"
 #include "elf.h"

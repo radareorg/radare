@@ -3,6 +3,7 @@
 import os
 import shutil
 import Options
+import Utils
 
 VERSION='1.0-beta'
 APPNAME='radare'
@@ -27,6 +28,25 @@ def set_options(opt):
 		default = prefix,
 		dest    = 'PREFIX')
 
+features_str = '''
+#include <stdio.h>
+int is_big_endian()
+{
+        long one = 1;
+        return !(*((char *)(&one)));
+}
+int main()
+{
+        if (is_big_endian()) printf("bigendian=1\\n");
+        else printf("bigendian=0\\n");
+        printf("int_size=%d\\n", sizeof(int));
+        printf("long_int_size=%d\\n", sizeof(long int));
+        printf("long_long_int_size=%d\\n", sizeof(long long int));
+        printf("double_size=%d\\n", sizeof(double));
+        return 0;
+}
+'''
+
 def configure(conf):
 	# Check for compiler tools
 	conf.check_tool('compiler_cc')
@@ -44,10 +64,19 @@ def configure(conf):
 	if not conf.env['CC']: fatal('C compiler not found')
 
 	# Check libraries
-        conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.10.0', mandatory=False)
-        conf.check_pkg('gtk+-2.0', destvar='GTK', vnum='2.10.0', mandatory=False)
-        conf.check_pkg('vte',      destvar='VTE', vnum='0.16', mandatory=False)
-	conf.checkEndian()
+        conf.check_cfg(package='glib-2.0', destvar='GLIB', vnum='2.10.0', mandatory=False)
+        conf.check_cfg(package='gtk+-2.0', destvar='GTK', vnum='2.10.0', mandatory=False)
+        conf.check_cfg(package='vte',      destvar='VTE', vnum='0.16', mandatory=False)
+
+	# Check endian
+	#conf.checkEndian() ## old ?? ##
+        mp = conf.check(fragment=features_str, execute=1)
+        t = Utils.to_hashtable(mp)
+	conf.env['IS_BIGENDIAN'] = 0
+	try:
+		conf.env['IS_BIGENDIAN'] = int(t['bigendian'])
+	except KeyError:
+		raise Configure.ConfigurationError('endian test failed'+code)
 
 	if Options.options.HAVE_PYTHON == True:
 		try:
@@ -63,7 +92,7 @@ def configure(conf):
 		conf.env['HAVE_PYTHON']=0
 
 	if Options.options.MAEMO == True:
-        	conf.check_pkg('hildon-1',      destvar='HILDON', vnum='0.1', mandatory=False)
+        	conf.check_cfg(package='hildon-1',      destvar='HILDON', vnum='0.1', mandatory=False)
 
 	# Generate GLOBAL.H
 	conf.env['GUI'] = False
@@ -93,6 +122,7 @@ def configure(conf):
 	conf.define('OS', conf.env['OS'])
 	conf.define('TARGET', "%s-%s"%(conf.env['CPU'],conf.env['OS']))
 
+	conf.define('HAVE_GUI', True)
 	conf.define('HAVE_VALAC', conf.env['GUI'])
 	#conf.define('HAVE_GTK', conf.env['HAVE_GTK'])
 	conf.define('HAVE_LANG_LUA', False)
@@ -106,48 +136,34 @@ def configure(conf):
 	conf.define('HAVE_LANG_PYTHON', False)
 	conf.define('PREFIX',  Options.options.PREFIX)
 	conf.define('LIBDIR',  "%s/lib"%Options.options.PREFIX)
-	conf.define('DATADIR', "%s/share/"%Options.options.PREFIX)
+	conf.define('SHAREDIR', "%s/share/"%Options.options.PREFIX)
 	conf.define('DOCDIR',  "%s/share/doc/radare"%Options.options.PREFIX)
 	conf.define('GRSCDIR', "%s/share/radare/gradare"%Options.options.PREFIX)
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
 	# Check for ruby
-	ru = conf.create_library_configurator()
-	ru.name = 'ruby'
-	ru.define = 'HAVE_RUBY'
-	ru.libs = ['ruby']
-	ru.mandatory = False
-	ru.run()
+	#ru = conf.create_library_configurator()
+	ru = conf.check(lib='ruby', uselib_store='HAVE_RUBY')
+	#ru.name = 'ruby'
+	#ru.define = 'HAVE_RUBY'
+	#ru.libs = ['ruby']
+	#ru.mandatory = False
+#	ru.run()
 	if conf.env['HAVE_RUBY'] != 1:
 		Options.options.HAVE_RUBY= False
 	conf.define('HAVE_RUBY', Options.options.HAVE_RUBY)
 
 	# Check for libreadline
-	rl = conf.create_library_configurator()
-	rl.name = 'readline'
-	rl.define = 'HAVE_READLINE'
-	rl.libs = ['readline']
-	rl.mandatory = False
-	rl.run()
-	if conf.env['HAVE_READLINE'] != 1:
+	rl = conf.check(lib='readline', uselib_store='HAVE_READLINE')
+	if rl != 0:
 		Options.options.HAVE_READLINE = False
 	conf.define('HAVE_LIB_READLINE', Options.options.HAVE_READLINE)
 
 	# Check for liblua
-	rl = conf.create_library_configurator()
-	rl.name = 'lua'
-	rl.define = 'HAVE_LIBLUA'
-	rl.libs = ['lua']
-	rl.mandatory = False
-	rl.run()
-	if conf.env['HAVE_LIBLUA'] != 1:
-		rl2 = conf.create_library_configurator()
-		rl2.name = 'lua5.1'
-		rl2.define = 'HAVE_LIBLUA51'
-		rl2.libs = ['lua5.1']
-		rl2.mandatory = False
-		rl2.run()
-		if conf.env['HAVE_LIBLUA51'] != 1:
+	rl = conf.check(lib='lua', uselib_store='HAVE_LIBLUA')
+	if rl != 0:
+		rl2 = conf.check(lib='lua5.1', uselib_store='HAVE_LIBLUA51')
+		if rl2 != 0:
 			Options.options.HAVE_LIBLUA = False
 		else:
 			conf.env['HAVE_LIBLUA_LD'] = "-llua5.1"
@@ -156,18 +172,16 @@ def configure(conf):
 		conf.env['HAVE_LIBLUA_LD'] = "-llua"
 	conf.define('HAVE_LIBLUA', Options.options.HAVE_LIBLUA)
 
-	rl2 = conf.create_library_configurator()
-	rl2.name = 'dl'
-	rl2.libs = ['dl']
-	rl2.mandatory = False
-	rl2.run()
+	rl2 = conf.check(lib='dl', uselib_store='HAVE_LIBDL')
+	#rl2 = conf.create_library_configurator()
+	#rl2.name = 'dl'
+	#rl2.libs = ['dl']
+	#rl2.mandatory = False
+	#rl2.run()
 
-	rl2 = conf.create_library_configurator()
-	rl2.name = 'ewf'
-	rl2.libs = ['ewf']
-	rl2.mandatory = False
-	rl2.run()
-	if conf.env['HAVE_EWF'] != 1:
+	rl2 = conf.check(lib='dl', uselib_store='HAVE_EWF')
+	conf.env['HAVE_EWF'] = True
+	if rl2 != 0:
 		conf.env['HAVE_EWF'] = False
 	conf.define('HAVE_LIB_EWF', conf.env['HAVE_EWF'])
 
@@ -204,7 +218,7 @@ def configure(conf):
 		print " * GUI       : enabled"
 	else:
 		print " * GUI       : disabled"
-	print "Use --without-gui : vala-waf support is not yet complete"
+	#print "Use --without-gui : vala-waf support is not yet complete"
 
 def build(bld):
 	shutil.copyfile(srcdir+"/src/utils.c", srcdir+"/src/ut.c")

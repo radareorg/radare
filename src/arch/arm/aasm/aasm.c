@@ -312,8 +312,8 @@ int main(int argc, char *argv[])
 		directive_table      = sym_create_table("Directives",      SYM_TAB_CASE_FLAG);
 
 		/* Following is crude hack for test/commissioning purposes.        @@@@@    */
-#ifdef DATADIR
-		strcpy(full_name, DATADIR"/radare/mnemonics");
+#ifdef SHAREDIR
+		strcpy(full_name, SHAREDIR"/radare/mnemonics");
 #else
 		realpath(argv[0], full_name);				// full path to binary (?) @@
 		for (pChar = full_name; *pChar != '\0'; pChar++);	// find end of string @@

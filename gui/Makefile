@@ -2,7 +2,7 @@ include ../config.mk
 
 BIN=gradare${BINSFX}
 OBJ=main.o topbar.o toolbar.o actions.o execute.o prefs.o menubar.o dialog.o
-CFLAGS+=-DPREFIX=\"${PREFIX}\" -DGRSCDIR=\"${DATADIR}/radare/gradare\"
+CFLAGS+=-DPREFIX=\"${PREFIX}\" -DGRSCDIR=\"${SHAREDIR}/radare/gradare\"
 CFLAGS+=${GTK_FLAGS} ${VTE_FLAGS}
 #`pkg-config glib-2.0 gtk+-2.0 vte --cflags`
 LDFLAGS+=${GTK_LIBS} ${VTE_LIBS}
@@ -29,10 +29,10 @@ install:
 	${E} 'Installing gradare'
 	${Q}${INSTALL_DIR} ${PREFIX}/bin
 	${Q}${INSTALL_PROGRAM} ${BIN} ${PREFIX}/bin
-	-${Q}rm -rf ${DATADIR}/radare/gradare/*
-	${Q}mkdir -p ${DATADIR}/radare/gradare/
-	${Q}cp -rf grsc/* ${DATADIR}/radare/gradare/
-	-${Q}chmod +x ${DATADIR}/radare/gradare/Shell
+	-${Q}rm -rf ${SHAREDIR}/radare/gradare/*
+	${Q}mkdir -p ${SHAREDIR}/radare/gradare/
+	${Q}cp -rf grsc/* ${SHAREDIR}/radare/gradare/
+	-${Q}chmod +x ${SHAREDIR}/radare/gradare/Shell
 
 clean:
 	${E} 'Cleaning gui'
