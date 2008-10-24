@@ -218,7 +218,8 @@ CMD_DECL(setblocksize)
 		bs[0]='\0';
 		cons_fgets(bs, 31, 0, NULL);
 		bs[strlen(bs)]='\0';
-		radare_set_block_size_i(get_math(bs));
+		if (bs[0] != '\0')
+			radare_set_block_size_i(get_math(bs));
 		cons_set_raw(1);
 	}
 }

@@ -826,7 +826,7 @@ CMD_DECL(open)
 		arg = strchr(ptr+1, ' ');
 		if (arg != NULL) {
 			arg[0]='\0';
-			io_map(ptr+1, arg+1);
+			io_map(ptr+1, get_math(arg+1));
 		} else {
 			/* XXX */
 			config.file = ptr+1;

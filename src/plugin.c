@@ -252,6 +252,7 @@ void plugin_init()
 {
 	int last = 0;
 
+	io_map_init();
 	if (plugin_init_flag)
 		return;
 
@@ -329,11 +330,15 @@ int io_open(const char *pathname, int flags, mode_t mode)
 
 ssize_t io_read(int fd, void *buf, size_t count)
 {
-	if (io_map_read_at(fd, off, buf, count) != 0)
+	if (io_map_read_at(config.seek, (u8 *)buf, count) != 0)
 		return count;
 	FIND_FD(fd)
 		IF_HANDLED(fd, read)
 			return plugins[i].read(fd, buf, count);
+#if 0
+	if (io_map_read_rest(config.seek, (u8 *)buf, count) != 0)
+		return count;
+#endif
 	return -1;
 }
 
@@ -382,30 +387,45 @@ int maps[10];
 #define IO_MAP_N 10
 struct io_maps_t {
 	int fd;
-	char name[128];
-	u64 offset;
-	u64 size;
-} io_maps[IO_MAP_N];
+	char file[128];
+	u64 from;
+	u64 to;
+	struct list_head list;
+};
+
+struct list_head io_maps;
 
 void io_map_init()
 {
-	memset(&io_maps, '\0', sizeof(struct io_maps_t)*10);
+	INIT_LIST_HEAD(&io_maps);
 }
 
 int io_map_rm(const char *file)
 {
-	
+	struct list_head *pos;
+	list_for_each_prev(pos, &io_maps) {
+		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+		if (!strcmp(im->file, file)) {
+			/* FREE THIS */
+			eprintf("TODO\n");
+			return 0;
+		}
+	}
+	eprintf("Not found\n");
+	return 0;
 }
 
 int io_map_list()
 {
 	int i,n;
-	for(i=n=0;i<IO_MAP_N;i++) {
-		if (io_maps[i].file[0] != '\0') {
+	struct list_head *pos;
+	list_for_each_prev(pos, &io_maps) {
+		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+		if (im->file[0] != '\0') {
 			cons_printf("0x%08llx 0x%08llx %s\n",
-				io_maps[i].offset, 
-				io_maps[i].offset+io_maps[i].size,
-				io_maps[i].name);
+				im->from, 
+				im->to,
+				im->file);
 			n++;
 		}
 	}
@@ -414,29 +434,48 @@ int io_map_list()
 
 int io_map(const char *file, u64 offset)
 {
-	int fd = open(file, O_RDONLY);
+	struct list_head *pos;
+	struct io_maps_t *im;
+	int i, fd = open(file, O_RDONLY);
 	if (fd == -1)
 		return -1;
-	for(i=n=0;i<IO_MAP_N;i++) {
-		if (io_maps[i].file[0] == '\0') {
-			io_maps[i].fd     = fd;
-			strncpy(io_maps[i].file, file, 127);
-			io_maps[i].offset = offset;
-			io_maps[i].size   = lseek(fd, 0, SEEK_END);
-			return io_maps[] = fd;
-		}
-	}
-	eprintf("No empty slot.\n");
+	im = (struct io_maps_t*)malloc(sizeof(struct io_maps_t));
+	im->fd     = fd;
+	strncpy(im->file, file, 127);
+	im->from = offset;
+	im->to   = offset+lseek(fd, 0, SEEK_END);
+	list_add_tail(&(im->list), &(io_maps));
+	return fd;
 }
 
 int io_map_read_at(u64 off, u8 *buf, u64 len)
 {
-	for(i=n=0;i<IO_MAP_N;i++) {
-		if (io_maps[i].file[0] == '\0') {
-			if (io_maps[i].file[0] == '\0') {
-				lseek(io_maps[i].fd, off, SEEK_SET);
-				read(fd, buf, len);
-				return len;
+	struct list_head *pos;
+	int i;
+
+	list_for_each_prev(pos, &io_maps) {
+		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+		if (im->file[0] != '\0') {
+			if (off >= im->from && off < im->to) {
+				lseek(im->fd, off-im->from, SEEK_SET);
+				return read(im->fd, buf, len);
+			}
+		}
+	}
+	return 0;
+}
+
+int io_map_read_rest(u64 off, u8 *buf, u64 len)
+{
+	struct list_head *pos;
+	int i;
+
+	list_for_each_prev(pos, &io_maps) {
+		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+		if (im->file[0] != '\0') {
+			if (off+len >= im->from && off < im->to) {
+				lseek(im->fd, 0, SEEK_SET);
+				return read(im->fd, buf+(im->from-(off+len)), len);
 			}
 		}
 	}

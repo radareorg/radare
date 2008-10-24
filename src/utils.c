@@ -493,14 +493,14 @@ u64 get_math(const char* text)
 			if (is_cmp == 0) {
 				is_cmp  = -1;
 				cmp_off = new_off;
-				new_off = get_offset(ptr);
+				new_off = get_offset(tmp+1);
 			}
 			break;
 		case '=':
 			if (is_cmp == 0) {
 				is_cmp = 1;
 				cmp_off = new_off;
-				new_off = get_offset(ptr);
+				new_off = get_offset(tmp+1);
 			}
 			break;
 #if RADARE_CORE
