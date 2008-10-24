@@ -353,9 +353,6 @@ int dietpe_get_image_size(dietpe_bin *bin) {
 int dietpe_get_machine(dietpe_bin *bin, char *str) {
 	if (str) {
 		switch (bin->nt_headers->file_header.Machine) {
-			case PE_IMAGE_FILE_MACHINE_UNKNOWN:
-				snprintf(str, PE_NAME_LENGTH, "Unknown");
-				break;
 			case PE_IMAGE_FILE_MACHINE_ALPHA:
 				snprintf(str, PE_NAME_LENGTH, "Alpha");
 				break;
@@ -440,6 +437,8 @@ int dietpe_get_machine(dietpe_bin *bin, char *str) {
 			case PE_IMAGE_FILE_MACHINE_WCEMIPSV2:
 				snprintf(str, PE_NAME_LENGTH, "WCE Mips V2");
 				break;
+			default:
+				snprintf(str, PE_NAME_LENGTH, "unknown");
 		}
 	}
 	
@@ -449,9 +448,6 @@ int dietpe_get_machine(dietpe_bin *bin, char *str) {
 int dietpe_get_os(dietpe_bin *bin, char *str) {
 	if (str) {
 		switch (bin->nt_headers->optional_header.Subsystem) {
-			case PE_IMAGE_SUBSYSTEM_UNKNOWN:
-				snprintf(str, PE_NAME_LENGTH, "unknown");
-				break;
 			case PE_IMAGE_SUBSYSTEM_NATIVE:
 				snprintf(str, PE_NAME_LENGTH, "native");
 				break;
@@ -472,6 +468,8 @@ int dietpe_get_os(dietpe_bin *bin, char *str) {
 			case PE_IMAGE_SUBSYSTEM_XBOX:
 				snprintf(str, PE_NAME_LENGTH, "xbox");
 				break;
+			default:
+				snprintf(str, PE_NAME_LENGTH, "unknown");
 		}
 	}
 

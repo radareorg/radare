@@ -978,7 +978,7 @@ void rabin_show_sections(const char *file)
 				switch (verbose) {
 					case 0:
 						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx privileges=%c%c%c name=%s\n",
-								i, sectionp.elf->offset, baddr + sectionp.elf->offset,
+								i, baddr + sectionp.elf->offset, sectionp.elf->offset,
 								sectionp.elf->size,	sectionp.elf->align,
 								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
 								ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
@@ -988,13 +988,13 @@ void rabin_show_sections(const char *file)
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
 						printf("0x%08llx\t0x%08llx\t%s\n",
-								sectionp.elf->offset, baddr + sectionp.elf->offset,
+								baddr + sectionp.elf->offset, sectionp.elf->offset,
 								sectionp.elf->name);
 						break;
 					default:
 						if (i == 0) printf("Section index\tMemory address\tFile offset\tSize\t\tAlign\t\tPrivileges\tName\n");
 						printf("%02i\t\t0x%08llx\t0x%08llx\t%08lli\t0x%08llx\t%c%c%c\t\t%s\n",
-								i, sectionp.elf->offset, baddr + sectionp.elf->offset,
+								i, baddr + sectionp.elf->offset, sectionp.elf->offset,
 								sectionp.elf->size,	sectionp.elf->align,
 								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
 								ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
