@@ -31,13 +31,28 @@
 struct list_head flags;
 static int flag_ptr = -1;
 
+// XXX optimize... FLAG SPACES MUST BE A LINKED LIST TOO!
 static struct flags_spaces_t {
 	const char *name;
 } flag_spaces[255];
 
+static u64 flag_from_i = 0;
 int flag_space_idx = -1;
 int flag_space_idx2 = -1;
 #define FLAG_SPACES 255
+
+void flag_from(const char *str)
+{
+	if (str[0]) {
+		flag_from_i = get_math(str);
+	} else
+		cons_printf("0x%08llx\n", flag_from_i);
+}
+
+void flag_init()
+{
+	INIT_LIST_HEAD(&flags);
+}
 
 const const char *flag_space_get(int idx)
 {
@@ -52,6 +67,7 @@ void flag_help()
 {
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
 	" fortune      ; show fortune message! :D\n"
+	" ff [addr]    ; flag from this address\n"
 	" fd           ; print flag delta offset\n"
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
@@ -67,11 +83,6 @@ void flag_help()
 	" f -sym_main  ; remove sym_main\n"
 	" f -*         ; remove all flags\n"
 	" f -sym_*     ; remove all flags starting with 'sym_'\n");
-}
-
-void flag_init()
-{
-	INIT_LIST_HEAD(&flags);
 }
 
 int flag_interpolation(const char *from, const char *to)
@@ -530,10 +541,9 @@ void flag_space_list()
 	int i,j = 0;
 	for(i=0;i<FLAG_SPACES;i++) {
 		if (flag_spaces[i].name) {
-			printf("%02d %c %s\n", j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+			cons_printf("%02d %c %s\n", j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
 		}
 	}
-	
 }
 
 void flag_space_init()
@@ -726,7 +736,7 @@ int flag_set(const char *name, u64 addr, int dup)
 					return 1;
 			} else {
 				flag = f;
-				f->offset = addr;
+				f->offset = addr + flag_from_i;
 				f->length = config.block_size;
 				f->format = last_print_format;
 /*
@@ -750,7 +760,7 @@ int flag_set(const char *name, u64 addr, int dup)
 
 	strncpy(flag->name, name, FLAG_BSIZE);
 	flag->name[FLAG_BSIZE-1]='\0';
-	flag->offset = addr;
+	flag->offset = addr + flag_from_i;
 	flag->space = flag_space_idx;
 	flag->length = config.block_size;
 	flag->format = last_print_format;
@@ -793,27 +803,6 @@ const char *flag_get_here_filter(u64 at, const char *str)
 			f = flag;
 			ret = flag->offset;
 		}
-
-#if 0
-		if (at >= flag->offset)
-			continue;
-		if (flag->offset > at) {
-			if (f == NULL || flag->offset < ret) {
-				ret = flag->offset;
-				f = flag;
-#else
-		//if (flag->offset < at)
-		//	continue;
-//eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
-
-		//if (flag->offset >= at) {
-//			if (f == NULL || (flag->offset >=at && flag->offset < ret)) {
-//eprintf("____> set (%s) <___ %08llx - sek %08llx\n",flag->name, flag->offset, at);
-//				ret = flag->offset;
-//				f = flag;
-//			}
-		//}
-#endif
 	}
 	if (f == NULL)
 		return nullstr;

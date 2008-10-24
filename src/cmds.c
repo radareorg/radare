@@ -1142,6 +1142,7 @@ CMD_DECL(flag)
 	case 'h': cons_printf("%s\n", flag_get_here_filter(config.seek, input+2)); break;
 	case 'g': flag_grep(text); break;
 	case 'c': flag_cmd(text); break;
+	case 'f': flag_from(text); break;
 	case 'r': flag_rename_str(text); break;
 	case 's': flag_space(input+1); break;
 	case 'u': flag_set_undef(input+2, config.seek, 0); break;

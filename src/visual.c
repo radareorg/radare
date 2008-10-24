@@ -601,13 +601,10 @@ CMD_DECL(insert_assembly)
 	dl_prompt = strdup(":> wa ");
 	/* TODO: autocomplete opcodes */
 	cons_fgets(buf+3, 120, RADARE_OPCODES, radare_opcodes);
-	sprintf(buf2, " @ 0x%llx", config.seek+ (config.cursor_mode?config.cursor:0));
-	strcat(buf, buf2);
-	if(buf[3]) {
-		radare_cmd(buf, 0);
-	} else {
-		eprintf("ignored\n");
-	}
+//	sprintf(buf2, " @ 0x%llx", config.seek+(config.cursor_mode?config.cursor:0));
+//	strcat(buf, buf2);
+	if(buf[3]) radare_cmd(buf, 0);
+	else eprintf("ignored\n");
 	
 	cons_set_raw(1);
 	free((void *)dl_prompt);

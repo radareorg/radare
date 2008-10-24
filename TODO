@@ -24,13 +24,13 @@ Nibble TODO:
 
 * at+ [addr] [times] []
 
+* wa in visual doesnt works
 ---- documentation
 * documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc4 'g' and 'x' in visual
 
 --- todo
 
-* "o /lib/libc.so 0x7f380000" -> map files on virtual addresses \o/ for teh posix pluyin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!
 * support string print mode for [len][str] formats
 * use libasm to get metadata from each opcode

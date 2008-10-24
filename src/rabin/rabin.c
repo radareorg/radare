@@ -315,8 +315,11 @@ void rabin_show_strings(const char *file)
 		stringsp = strings;
 		for (i = 0; i < strings_count; i++, stringsp.elf++) {
 			if (rad) {
-				printf("b %lli && f str_%s @ 0x%08llx\n",
-						stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
+				// XXX WTF
+				//printf("b %lli && f str_%s @ 0x%08llx\n",
+				//	stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
+				printf("b %i && f str_%s @ 0x%08llx\n",
+					strlen(stringsp.elf->string), aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
 				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size, baddr + stringsp.elf->offset);
 			} else {
 				switch (verbose) {

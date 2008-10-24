@@ -812,14 +812,7 @@ int analyze_function(int recursive, int report)
 		return -1;
 	}
 
-	cons_printf("fs functions\n");
-
-	if (!report) {
-		cons_printf("; from = 0x%08llx\n", from);
-		cons_printf("; to   = 0x%08llx\n", end);
-		cons_printf("fu fun_%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
-		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
-	} else {
+	if (report) {
 		buf[0]='\0';
 		string_flag_offset(buf, from);
 		cons_printf("offset = 0x%08llx\n", from);
@@ -834,6 +827,12 @@ int analyze_function(int recursive, int report)
 			cons_printf("%02x ", bytes[i]);
 		cons_printf("\n");
 		}
+	} else {
+		cons_printf("fs functions\n");
+		cons_printf("; from = 0x%08llx\n", from);
+		cons_printf("; to   = 0x%08llx\n", end);
+		cons_printf("fu fun_%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
 	}
 
 	for(;seek< to; seek+=inc) {
@@ -946,6 +945,6 @@ int analyze_function(int recursive, int report)
 		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
 		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
 		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
+		cons_printf("fs *\n");
 	}
-	cons_printf("fs *\n");
 }

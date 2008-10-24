@@ -230,8 +230,9 @@ The values can be numbers in many formats:
 
 There are other special syntaxes for the expressions. Here's for example some of them:
 
-\c $$   : current seek
-\c $$$  : size of opcode at current seek
+\c $$            ; current seek
+\c $$$           ; size of opcode at current seek
+\c $${file.size} ; file.size (taken from eval variable)
 
 For example:
 
@@ -716,6 +717,46 @@ To remove a section definition just prefix the from-address of the section with 
 
 After the section definition we can change the parameters of them with the Sf, St, Sc, Sb commands. After this, radare core will automatically setup the file.baddr depending on this section information
 
+\H{sections} Mapping files
+
+Radare IO allows to virtually map contents of files in the same IO space at random offsets. This is useful to open multiple files in a single view or just to 'emulate' an static environment like if it was in the debugger with the program and all its libraries mapped there.
+
+Using the 'S'ections command you'll be able to define different base address for each library loaded at different offsets.
+
+Mapping files is done with the 'o' (open) command. Let's read the help:
+
+\c [0x00000000]> o?
+\c Usage: o [file] [offset]
+\c  > o /bin/ls                  ; open file
+\c  > o /lib/libc.so 0xC848000   ; map file at offset
+\c  > o- /lib/libc.so            ; unmap
+
+Let's prepare a simple layout:
+
+\c $ rabin -l ./a.out
+\c libc.so.6
+\c $ radare -u ./a.out
+\c [0x00000000]> o /lib/libc.so.6 0x10000000
+\c [0x00000000]> o /lib/ld-2.7.so 0x465f2000
+
+NOTE: radare has been started with the -u flag to ignore file size limits and being able to seek on far places like where we have mapped our libs.
+
+Listing mapped files:
+
+\c [0x00000000]> o
+\c 0x00000000 0x000018da ./a.out
+\c 0x465f2000 0x4660cf28 /lib/ld-2.7.so
+\c 0x10000000 0x101370ec /lib/libc.so.6
+
+Let's print some strings from ld.so
+
+\c [0x00000000]> pa @ 0x465F0000+ 2469
+\c _rtld_global\x00_dl_make_stack_executable\x00__libc_stack_end\x00__libc_memalign\x00malloc\x00_dl_deallocate_tls
+\c \x00__libc_enable_secure\x00_dl_get_tls_static_info\x00calloc\x00_dl_debug_state\x00_dl_argv\x00_dl_allocate_tls
+\c _init\x00_rtld_global_ro\x00realloc\x00_dl_tls_setup\x00_dl_rtld_di_...
+
+To unmap these files just use the 'o-' command giving the mapped file name as argument.
+
 \H{print} Print modes
 
 One of the efforts in radare is the way to show the information to the user. This is interpreting the bytes and giving an almost readable output format.
@@ -1170,6 +1211,19 @@ To switch/create between flagspaces use the 'fs' command:
 
 You can create two flags with the same name with 'fn' or rename them with 'fr'.
 
+Sometimes you'll like to add some flags adding a delta base address to each of them. To do this use the command 'ff' (flag from) which is used to specify this base address. Here's an example:
+
+\c [0x00000000]> f patata
+\c [0x00000000]> ? patata
+\c 0x0 ; 0d ; 0o ; 0000 0000  
+\c [0x00000000]> ff 0x100
+\c [0x00000000]> f patata
+\c [0x00000000]> ? patata
+\c 0x100 ; 256d ; 400o ; 0000 0000  
+\c [0x00000000]> ff
+\c 0x00000100
+\c [0x00000000]> ff 0         ; reset flag from
+
 \S{flagsint} Flag intersections
 
 The '/' command for searching registers some flags for the hit results. You can use them to draw intersection vectors between these hits and be able to determine block sizes from a header and a footer search keywords.
@@ -1466,11 +1520,15 @@ The byte range selection can be used together with the 'd' key to change the dat
 
 That's useful to enhace the disassembly, add metadata or just align the code if there are bytes mixed with code.
 
+In cursor mode you can set the block size by simply moving it to the position you want and pressing '_'. Then block_size = cursor.
+
 \H{visual-mode-insert} Visual insert
 
 The insert mode allows you to write bytes at nibble-level like most common hexadecimal editors. In this mode you can press '<tab>' to switch between the hexa and ascii columns of the hexadecimal dump.
 
 To get back to the normal mode, just press '<tab>' to switch to the hexadecimal view and press 'q'. (NOTE: if you press 'q' in the ascii view...it will insert a 'q' instead of quit this mode)
+
+There are other keys for inserting and writing data in visual mode. Basically by pressing 'w' key you'll be prompted for an hexpair string or use 'a' for writing assembly where the cursor points.
 
 \H{visual-xrefs} Visual xrefs
 
