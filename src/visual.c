@@ -44,8 +44,12 @@
 #include "flags.h"
 #include "undo.h"
 
-static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
+struct binding {
+	unsigned char key;
+	char *cmd;
+};
 
+static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
 static unsigned char *yank_buffer = NULL;
 static int yank_buffer_size = 0;
 static int do_repeat=0;
@@ -53,10 +57,6 @@ static int repeat=0;
 static int repeat_weight=1;
 static int scraccel = 0;
 static int accel=1;
-struct binding {
-	unsigned char key;
-	char *cmd;
-};
 static int nbds = 0;
 static struct binding *bds = NULL;
 static int inv = 0;
@@ -163,6 +163,7 @@ void visual_show_help()
 	"H,L        scroll left, right by 2 bytes (16 bits).\n"
 	"p,P        switch between hex, bin and string formats\n"
 	"x          show xrefs of the current offset\n"
+	"w          write hexpair bytes in cursor\n"
 	"q          exits visual mode\n");
 	if (config.debug) {
 	TITLE

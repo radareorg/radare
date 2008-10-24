@@ -31,15 +31,15 @@
 struct list_head flags;
 static int flag_ptr = -1;
 
+#define FLAG_SPACES 20
 // XXX optimize... FLAG SPACES MUST BE A LINKED LIST TOO!
 static struct flags_spaces_t {
 	const char *name;
-} flag_spaces[255];
+} flag_spaces[FLAG_SPACES];
 
 static u64 flag_from_i = 0;
 int flag_space_idx = -1;
 int flag_space_idx2 = -1;
-#define FLAG_SPACES 255
 
 void flag_from(const char *str)
 {

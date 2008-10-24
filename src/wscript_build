@@ -83,6 +83,6 @@ xrefs = bld.new_task_gen('cc', 'program')
 xrefs.target = 'xrefs'
 xrefs.source = 'xrefs.c'
 
-xc = bld.new_task_gen('cc', 'program')
-xc.target = 'xc'
-xc.source = 'xc.c'
+rax = bld.new_task_gen('cc', 'program')
+rax.target = 'rax'
+rax.source = 'rax.c'

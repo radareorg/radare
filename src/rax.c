@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
  *
- * 'xc' is part of the radare project.
+ * 'rax' is part of the radare project.
  *
- * xc is free software; you can redistribute it and/or modify
+ * rax is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * xc is distributed in the hope that it will be useful,
+ * rax is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with xc; if not, write to the Free Software
+ * along with rax; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
@@ -24,9 +24,9 @@
  * Helper utility for command line for handling hexadecimal conversions
  * 
  * examples:
- *  $ xc $((`xc 0x33`+`xc 0x33`))
+ *  $ rax $((`rax 0x33`+`rax 0x33`))
  *  $ declare -i foo=0x33 && echo $foo
- *  $ xc -33 -e -33
+ *  $ rax -33 -e -33
  *
  * TODO: Endian support for all conversions!
  */
@@ -58,7 +58,7 @@ int stdin_bin_to_hex_pairs()
 	return 0;
 }
 
-void xc(char *arg)
+void rax(char *arg)
 {
 	unsigned int a = 0;
 	float f = 0;
@@ -109,18 +109,18 @@ void xc(char *arg)
 
 	if ((arg[0] == '?')
 	|| (arg[0] == 'h')) {
-		printf(" int   ->  hex           ;  xc 10\n");
-		printf(" hex   ->  int           ;  xc 0xa\n");
-		printf(" -int  ->  hex           ;  xc -77\n");
-		printf(" -hex  ->  int           ;  xc 0xffffffb3\n");
-		printf(" float ->  hex           ;  xc 3.33f\n");
-		printf(" hex   ->  float         ;  xc Fx40551ed8\n");
-		printf(" oct   ->  hex           ;  xc 035\n");
-		printf(" hex   ->  oct           ;  xc Ox12 (O is a letter)\n");
-		printf(" bin   ->  hex           ;  xc 1100011b\n");
-		printf(" hex   ->  bin           ;  xc Bx63\n");
-		printf(" -e    swap endianness   ;  xc -e 0x33\n");
-		printf(" -s    swap hex to bin   ;  xc -s 43 4a 50\n");
+		printf(" int   ->  hex           ;  rax 10\n");
+		printf(" hex   ->  int           ;  rax 0xa\n");
+		printf(" -int  ->  hex           ;  rax -77\n");
+		printf(" -hex  ->  int           ;  rax 0xffffffb3\n");
+		printf(" float ->  hex           ;  rax 3.33f\n");
+		printf(" hex   ->  float         ;  rax Fx40551ed8\n");
+		printf(" oct   ->  hex           ;  rax 035\n");
+		printf(" hex   ->  oct           ;  rax Ox12 (O is a letter)\n");
+		printf(" bin   ->  hex           ;  rax 1100011b\n");
+		printf(" hex   ->  bin           ;  rax Bx63\n");
+		printf(" -e    swap endianness   ;  rax -e 0x33\n");
+		printf(" -s    swap hex to bin   ;  rax -s 43 4a 50\n");
 		printf(" -     read data from stdin until eof\n");
 	} else
 	if (!memcmp(arg, "Bx", 2)) {
@@ -219,17 +219,17 @@ int main(int argc, char **argv)
 			fgets(buf, 1000, stdin);
 			buf[strlen(buf)-1] = '\0';
 			if (feof(stdin)) break;
-			xc(buf);
+			rax(buf);
 		}
 		return 0;
 	}
 
 	if (!strcmp(argv[1], "-h"))
-		printf("Usage: xc [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]\n");
+		printf("Usage: rax [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]\n");
 
 
 	for(i=1; i<argc; i++)
-		xc( argv[i] );
+		rax( argv[i] );
 
 	return 0;
 }

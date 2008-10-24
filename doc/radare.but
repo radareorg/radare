@@ -246,39 +246,39 @@ For example:
 \c [0x4A13B8C0]> :pd 1 @ +$$$
 \c 0x4A13B8C2   call 0x4a13c000   
 
-\H{expr-xc} Xc
+\H{expr-rax} Rax
 
-The 'xc' utility comes with the radare framework and aims to be a minimalistic expression evaluator for the shell useful for making base conversions easily between floating point values, hexadecimal representations, hexpair strings to ascii, octal to integer. It supports endianness and can be used as a shell if no arguments given.
+The 'rax' utility comes with the radare framework and aims to be a minimalistic expression evaluator for the shell useful for making base conversions easily between floating point values, hexadecimal representations, hexpair strings to ascii, octal to integer. It supports endianness and can be used as a shell if no arguments given.
 
-\c $ xc -h
-\c Usage: xc [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]
-\c  int   ->  hex           ;  xc 10
-\c  hex   ->  int           ;  xc 0xa
-\c  -int  ->  hex           ;  xc -77
-\c  -hex  ->  int           ;  xc 0xffffffb3
-\c  float ->  hex           ;  xc 3.33f
-\c  hex   ->  float         ;  xc Fx40551ed8
-\c  oct   ->  hex           ;  xc 035
-\c  hex   ->  oct           ;  xc Ox12 (O is a letter)
-\c  bin   ->  hex           ;  xc 1100011b
-\c  hex   ->  bin           ;  xc Bx63
-\c  -e    swap endianness   ;  xc -e 0x33
-\c  -s    swap hex to bin   ;  xc -s 43 4a 50
+\c $ rax -h
+\c Usage: rax [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]
+\c  int   ->  hex           ;  rax 10
+\c  hex   ->  int           ;  rax 0xa
+\c  -int  ->  hex           ;  rax -77
+\c  -hex  ->  int           ;  rax 0xffffffb3
+\c  float ->  hex           ;  rax 3.33f
+\c  hex   ->  float         ;  rax Fx40551ed8
+\c  oct   ->  hex           ;  rax 035
+\c  hex   ->  oct           ;  rax Ox12 (O is a letter)
+\c  bin   ->  hex           ;  rax 1100011b
+\c  hex   ->  bin           ;  rax Bx63
+\c  -e    swap endianness   ;  rax -e 0x33
+\c  -s    swap hex to bin   ;  rax -s 43 4a 50
 \c  -     read data from stdin until eof
 
 Some examples:
 
-\c $ xc 0x345
+\c $ rax 0x345
 \c 837
-\c $ xc 837
+\c $ rax 837
 \c 0x345
-\c $ xc 44.44f
+\c $ rax 44.44f
 \c Fx8fc23142
-\c $ xc 0xfffffffd
+\c $ rax 0xfffffffd
 \c -3
-\c $ xc -3
+\c $ rax -3
 \c 0xfffffffd
-\c $ xc -s "41 42 43 44"
+\c $ rax -s "41 42 43 44"
 \c ABCD
 
 \H{expr-cmp} Boolean expressions
@@ -1181,6 +1181,15 @@ For example. let's see some examples:
 \c 0x00013670, 0000 0000 0002 0000 0000                     ..........        
 
 In the debugger, the zoom.from and zoom.to eval variables are defined by .!maps* to fit the user code sections of memory of the target process.
+
+BTW you can determine the limits for performing a zoom on a range of bytes of the whole bytespace by using the zoom.from and zoom.to eval variables.
+
+\c [0x465D8810]> e zoom.
+\c zoom.from = 0x08048000
+\c zoom.to = 0x0805f000
+\c zoom.byte = head
+
+NOTE: These values (0x8048000-...) are defined by the debugger to limit the zoom view while debugging to only visualize the user maps of the program.
 
 \H{flagsmin} Flags
 

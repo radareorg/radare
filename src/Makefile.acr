@@ -55,7 +55,7 @@ TARGETS+=valagrava
 JAVASM_STUFF=w32utils.o -lwsock32
 ##W32##
 
-.PHONY: all pre radare radare-hash radare-xc radare-xrefs clean rsc_
+.PHONY: all pre radare radare-hash radare-rax radare-xrefs clean rsc_
 
 .SUFFIXES: .c .o
 .c.o:
@@ -64,7 +64,7 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 all: ${TARGETS} udis86 armasm _radiff \
 	lsbstego pre radare${BINSFX} _rahash plugs rsc_ \
-	xc${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
+	rax${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true
 
 ${OBJS}: %.o: %.c
@@ -125,10 +125,10 @@ _radiff:
 _rahash:
 	-cd rahash && ${MAKE} all
 
-xc${BINSFX}: xc.o
-	${E} 'Linking xc'
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xc${BINSFX} xc.o
-	@#ln -fs radare xc # ???
+rax${BINSFX}: rax.o
+	${E} 'Linking rax'
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o rax${BINSFX} rax.o
+	@#ln -fs radare rax # ???
 
 xrefs${BINSFX}: xrefs.o
 	${E} 'Linking xrefs'
@@ -146,4 +146,4 @@ clean:
 	-${Q}${MAKE} -C rasm clean
 	-${Q}${MAKE} -C rasc clean
 	-${Q}${MAKE} -C arch/x86/udis86 clean
-	-${Q}rm -rf xc.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} xc${BINSFX} a.out a.exe
+	-${Q}rm -rf rax.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} rax${BINSFX} a.out a.exe

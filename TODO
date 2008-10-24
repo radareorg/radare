@@ -24,9 +24,7 @@ Nibble TODO:
 
 * at+ [addr] [times] []
 
-* wa in visual doesnt works
 ---- documentation
-* documentate zoom.from, zoom.to better (zoom.size is removed)
 * doc4 'g' and 'x' in visual
 
 --- todo
@@ -97,7 +95,6 @@ java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)
 -> this should be a call to callme()
 
-- show xrefs to strings by using an rsc script
 
 
 ===========
@@ -109,6 +106,8 @@ WTFS DONE:
 
 >1.0 STUFF
 
+* integrate ff with rabin and so
+  - refactor baddr
 * Allow to run shellcodes on debugged process.
   (autodetect .s or raw binary)
   - read shellcode from a file 

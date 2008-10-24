@@ -47,7 +47,7 @@ clean:
 w32dist:
 	mkdir w32-build
 	cp src/radare.exe w32-build
-	cp src/xc.exe w32-build
+	cp src/rax.exe w32-build
 	cp src/xrefs.exe w32-build
 	cp src/rahash/rahash.exe w32-build
 	cp src/rabin/rabin.exe w32-build
@@ -96,7 +96,7 @@ install:
 	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${DATADIR}/radare/
 	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
 	${INSTALL_PROGRAM} src/rahash/rahash ${BINDIR}
-	${INSTALL_PROGRAM} src/xc ${BINDIR}
+	${INSTALL_PROGRAM} src/rax ${BINDIR}
 	cd src/rsc && ${MAKE} install
 	mkdir -p ${LIBDIR}
 	# install plugins
@@ -128,7 +128,7 @@ install:
 	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
-	${INSTALL_MAN} man/xc.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rax.1 ${MANDIR}/man1/
 	${INSTALL_DIR} ${DATADIR}/radare/
 	${INSTALL_DIR} ${DATADIR}/radare/magic
 	${INSTALL_DATA} magic/* ${DATADIR}/radare/magic/
@@ -147,7 +147,8 @@ deinstall:
 	-rm -f ${BINDIR}/rahash
 	-rm -f ${BINDIR}/rasm
 	-rm -f ${BINDIR}/rasc
-	-rm -f ${BINDIR}/xc
+	-rm -f ${BINDIR}/rax
+	-rm -f ${BINDIR}/xc # old
 	-rm -f ${BINDIR}/xrefs
 	-rm -f ${BINDIR}/bindiff
 	-rm -f ${BINDIR}/rsc

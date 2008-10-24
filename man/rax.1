@@ -1,11 +1,11 @@
 .Dd February 4, 2007
-.Dt XC 1
+.Dt RAX 1
 .Os
 .Sh NAME
-.Nm xc
-.Nd heXadecimal converter
+.Nm rax
+.Nd radare base converter
 .Sh SYNOPSIS
-.Nm xc
+.Nm rax
 .Op Fl e
 .Op Fl s
 .Op Fl h
@@ -16,17 +16,17 @@ This command is part of the radare project.
 .Pp
 This command allows you to convert values between positive and negative integer, float octal, binary and hexadecimal values.
 .Pp
-With no arguments, xc reads values from stdin. You can pass one or more values as arguments, and swap endiannes of the output with the '-e' flag.
+With no arguments, rax reads values from stdin. You can pass one or more values as arguments, and swap endiannes of the output with the '-e' flag.
 .Pp
-Using '-' as argument xc will read binary data from stdin and print out the hex pairs to stdout.
+Using '-' as argument rax will read binary data from stdin and print out the hex pairs to stdout.
 .Pp
-  $ xc -33 -e -33
+  $ rax -33 -e -33
   0xffffffdf
   0xdfffffff
 .Pp
 The '-s' flag converts radare into a hexpair-to-binary converter, so you can do 'unpack' hexpair encoded strings easily.
 .Pp
-  $ xc -s 41 42 43
+  $ rax -s 41 42 43
   ABC
 .Pp
 It is very useful tool for scripting, so you can read floating point values, or get the integer offset of a jump or a stack delta when analyzing programs.
