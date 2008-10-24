@@ -13,6 +13,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+
+#include "aux.h"
+
 #include "dietpe.h"
 #include "dietpe_static.h"
 #include "dietpe_types.h"
@@ -33,10 +36,113 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 	return 0;
 }
 
+static int dietpe_aux_stripstr_from_file(const char *filename, int min, int encoding, PE_DWord seek, PE_DWord limit, const char *filter, int str_limit, dietpe_string *strings) {
+	int fd = open(filename, O_RDONLY);
+	dietpe_string *stringsp;
+	unsigned char *buf;
+	PE_DWord i = seek;
+	PE_DWord len, string_len;
+	int unicode = 0, matches = 0, ctr = 0;
+	char str[PE_STRING_LENGTH];
+
+	if (fd == -1) {
+		fprintf(stderr, "Cannot open target file.\n")    ;
+		return 1;
+	}
+
+	len = lseek(fd, 0, SEEK_END);
+
+	// TODO: use read here ?!?
+	/* TODO: do not use mmap */
+#if __UNIX__
+	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+	if (((int)buf) == -1 ) {
+		perror("mmap");
+		return 1;
+	}
+	if (min <1)
+		min = 5;
+
+	if (limit && limit < len)
+		len = limit;
+
+	stringsp = strings;
+	for(i = seek; i < len && ctr < str_limit; i++) { 
+		if ((aux_is_printable(buf[i]) || (aux_is_encoded(encoding, buf[i])))) {
+			str[matches] = buf[i];
+			if (matches < sizeof(str))
+				matches++;
+		} else {
+			/* wide char check \x??\x00\x??\x00 */
+			if (matches && buf[i+2]=='\0' && buf[i]=='\0' && buf[i+1]!='\0') {
+				unicode = 1;
+			}
+			/* check if the length fits on our request */
+			if (matches >= min) {
+				str[matches] = '\0';
+				string_len = strlen(str);
+				if (string_len>2) {
+					if (!filter || strstr(str, filter)) {
+						stringsp->offset = i-matches;
+						stringsp->type = (unicode?'U':'A');
+						stringsp->size = len;
+						memcpy(stringsp->string, str, PE_STRING_LENGTH);
+						ctr++; stringsp++;
+					}
+				}
+			}
+			matches = 0;
+			unicode = 0;
+		}
+	}
+
+	munmap(buf, len); 
+#elif __WINDOWS__
+	fprintf(stderr, "Not yet implemented\n");
+#endif
+
+	return ctr;
+}
+
 int dietpe_close(int fd) {
 	close(fd);
 
 	return 0;
+}
+
+int dietpe_get_arch(dietpe_bin *bin, char *str) {
+	if (str) {
+		switch (bin->nt_headers->file_header.Machine) {
+			case PE_IMAGE_FILE_MACHINE_ALPHA:
+			case PE_IMAGE_FILE_MACHINE_ALPHA64:
+				snprintf(str, PE_NAME_LENGTH, "alpha");
+				break;
+			case PE_IMAGE_FILE_MACHINE_ARM:
+				snprintf(str, PE_NAME_LENGTH, "arm");
+				break;
+			case PE_IMAGE_FILE_MACHINE_M68K:
+				snprintf(str, PE_NAME_LENGTH, "m68k");
+				break;
+			case PE_IMAGE_FILE_MACHINE_MIPS16:
+			case PE_IMAGE_FILE_MACHINE_MIPSFPU:
+			case PE_IMAGE_FILE_MACHINE_MIPSFPU16:
+			case PE_IMAGE_FILE_MACHINE_WCEMIPSV2:
+				snprintf(str, PE_NAME_LENGTH, "mips");
+				break;
+			case PE_IMAGE_FILE_MACHINE_POWERPC:
+			case PE_IMAGE_FILE_MACHINE_POWERPCFP:
+				snprintf(str, PE_NAME_LENGTH, "ppc");
+				break;
+			case PE_IMAGE_FILE_MACHINE_AMD64:
+			case PE_IMAGE_FILE_MACHINE_IA64:
+				snprintf(str, PE_NAME_LENGTH, "intel64");
+				break;
+			default:
+				snprintf(str, PE_NAME_LENGTH, "intel");
+		}
+	}
+	
+	return bin->nt_headers->file_header.Machine;
 }
 
 static int dietpe_get_delay_import_dirs_count(dietpe_bin *bin) {
@@ -111,7 +217,7 @@ int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
 
 int dietpe_get_exports_count(dietpe_bin *bin, int fd) {
 	if (dietpe_init_exports(bin, fd) == -1)
-		return -1;
+		return 0;
 	
 	return bin->export_directory->NumberOfNames;
 }
@@ -168,7 +274,7 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 	int imports_count = 0, i, j;
 
 	if (dietpe_init_imports(bin, fd) == -1)
-		return -1;
+		return 0;
 
 	import_dirp = bin->import_directory;
 	import_table = 0;
@@ -201,6 +307,43 @@ int dietpe_get_imports_count(dietpe_bin *bin, int fd) {
 	}
 
 	return imports_count;
+}
+
+int dietpe_get_libs(dietpe_bin *bin, int fd, int limit, dietpe_string *strings) {
+	pe_image_import_directory *import_dirp;
+	pe_image_delay_import_directory *delay_import_dirp;
+	dietpe_string *stringsp;
+	char dll_name[PE_STRING_LENGTH];
+	int import_dirs_count = dietpe_get_import_dirs_count(bin), delay_import_dirs_count = dietpe_get_delay_import_dirs_count(bin);
+	int i, ctr=0;
+	
+	if (dietpe_init_imports(bin, fd) == -1)
+		return -1;
+
+	import_dirp = bin->import_directory;
+	stringsp = strings;
+	for (i = 0; i < import_dirs_count && ctr < limit; i++, import_dirp++, stringsp++) {
+		lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Name), SEEK_SET);
+    	read(fd, dll_name, PE_STRING_LENGTH);
+		memcpy(stringsp->string, dll_name, PE_STRING_LENGTH);
+		stringsp->type = 'A';
+		stringsp->offset = 0;
+		stringsp->size = 0;
+		ctr++;
+	}
+	
+	delay_import_dirp = bin->delay_import_directory;
+	for (i = 0; i < delay_import_dirs_count && ctr < limit; i++, delay_import_dirp++, stringsp++) {
+		lseek(fd, dietpe_aux_rva_to_offset(bin, delay_import_dirp->Name), SEEK_SET);
+    	read(fd, dll_name, PE_STRING_LENGTH);
+		memcpy(stringsp->string, dll_name, PE_STRING_LENGTH);
+		stringsp->type = 'A';
+		stringsp->offset = 0;
+		stringsp->size = 0;
+		ctr++;
+	}
+	
+	return ctr;
 }
 
 int dietpe_get_image_size(dietpe_bin *bin) {
@@ -303,6 +446,37 @@ int dietpe_get_machine(dietpe_bin *bin, char *str) {
 	return bin->nt_headers->file_header.Machine;
 }
 
+int dietpe_get_os(dietpe_bin *bin, char *str) {
+	if (str) {
+		switch (bin->nt_headers->optional_header.Subsystem) {
+			case PE_IMAGE_SUBSYSTEM_UNKNOWN:
+				snprintf(str, PE_NAME_LENGTH, "unknown");
+				break;
+			case PE_IMAGE_SUBSYSTEM_NATIVE:
+				snprintf(str, PE_NAME_LENGTH, "native");
+				break;
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_GUI:
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_CUI:
+			case PE_IMAGE_SUBSYSTEM_WINDOWS_CE_GUI:
+				snprintf(str, PE_NAME_LENGTH, "windows");
+				break;
+			case PE_IMAGE_SUBSYSTEM_POSIX_CUI:
+				snprintf(str, PE_NAME_LENGTH, "posix");
+				break;
+			case PE_IMAGE_SUBSYSTEM_EFI_APPLICATION:
+			case PE_IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+			case PE_IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+			case PE_IMAGE_SUBSYSTEM_EFI_ROM:
+				snprintf(str, PE_NAME_LENGTH, "efi");
+				break;
+			case PE_IMAGE_SUBSYSTEM_XBOX:
+				snprintf(str, PE_NAME_LENGTH, "xbox");
+				break;
+		}
+	}
+
+	return bin->nt_headers->optional_header.Subsystem;
+}
 int dietpe_get_class(dietpe_bin *bin, char *str) {
 	if (str) {
 		switch (bin->nt_headers->optional_header.Magic) {
@@ -343,6 +517,19 @@ int dietpe_get_sections(dietpe_bin *bin, dietpe_section *section) {
 
 int dietpe_get_sections_count(dietpe_bin *bin) {
 	return bin->nt_headers->file_header.NumberOfSections;
+}
+
+int dietpe_get_strings(dietpe_bin *bin, int fd, int verbose, int str_limit, dietpe_string *strings) {
+	pe_image_section_header *shdrp;
+	int i, ctr = 0, sections_count = dietpe_get_sections_count(bin);
+
+	shdrp = bin->section_header;
+	for (i = 0; i < sections_count; i++, shdrp++) {
+		if (!(PE_SCN_IS_EXECUTABLE(shdrp->Characteristics)))
+			ctr += dietpe_aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, shdrp->PointerToRawData, shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, str_limit, strings);
+	}
+
+	return ctr;
 }
 
 int dietpe_get_subsystem(dietpe_bin *bin, char *str) {
@@ -479,6 +666,8 @@ int dietpe_open(dietpe_bin *bin, const char *file) {
     
     if (dietpe_init(bin, fd) == -1)
 		return -1;
+
+	bin->file = file;
 
     return fd;
 }

@@ -14,15 +14,12 @@
 #include <sys/mman.h>
 
 #include "../main.h"
+
+#include "aux.h"
 #include "elf.h"
 #include "dietelf.h"
 #include "dietelf_static.h"
 #include "dietelf_types.h"
-
-enum {
-	ENCODING_ASCII = 0,
-	ENCODING_CP850 = 1
-};
 
 static int endian = 0;
 
@@ -61,56 +58,18 @@ static void ELF_(aux_swap_endian)(u8 *value, int size)
 	}
 }
 
-static int ELF_(aux_is_encoded)(int encoding, unsigned char c)
-{
-	switch(encoding) {
-		case ENCODING_ASCII:
-			break;
-		case ENCODING_CP850:
-			switch(c) {
-				// CP850
-				case 128: // cedilla
-				case 133: // a grave
-				case 135: // minicedilla
-				case 160: // a acute
-				case 161: // i acute
-				case 129: // u dieresi
-				case 130: // e acute
-				case 139: // i dieresi
-				case 162: // o acute
-				case 163: // u acute
-				case 164: // enye
-				case 165: // enyemay
-				case 181: // A acute
-				case 144: // E acute
-				case 214: // I acute
-				case 224: // O acute
-				case 233: // U acute
-					return 1;
-			}
-			break;
-	}
-	return 0;
-}
-
-static int ELF_(aux_is_printable) (int c)
-{
-	if (c<' '||c>'~') return 0;
-	return 1;
-}
-
 static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 seek, u64 limit, const char *filter, int str_limit, dietelf_string *strings)
 {
 	int fd = open(filename, O_RDONLY);
 	dietelf_string *stringsp;
 	unsigned char *buf;
 	u64 i = seek;
-	u64 len;
+	u64 len, string_len;
 	int unicode = 0, matches = 0, ctr = 0;
 	char str[ELF_STRING_LENGTH];
 
 	if (fd == -1) {
-		fprintf(stderr, "Cannot open target file.\n");
+		fprintf(stderr, "Cannot open target file.\n")    ;
 		return 1;
 	}
 
@@ -132,7 +91,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 
 	stringsp = strings;
 	for(i = seek; i < len && ctr < str_limit; i++) { 
-		if ((ELF_(aux_is_printable)(buf[i]) || (ELF_(aux_is_encoded)(encoding, buf[i])))) {
+		if ((aux_is_printable(buf[i]) || (aux_is_encoded(encoding, buf[i])))) {
 			str[matches] = buf[i];
 			if (matches < sizeof(str))
 				matches++;
@@ -144,8 +103,8 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 			/* check if the length fits on our request */
 			if (matches >= min) {
 				str[matches] = '\0';
-				len = strlen(str);
-				if (len>2) {
+				string_len = strlen(str);
+				if (string_len>2) {
 					if (!filter || strstr(str, filter)) {
 						stringsp->offset = i-matches;
 						stringsp->type = (unicode?'U':'A');
@@ -164,53 +123,8 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 #elif __WINDOWS__
 	fprintf(stderr, "Not yet implemented\n");
 #endif
-	close(fd);
 
 	return ctr;
-}
-
-char* ELF_(aux_filter_rad_output)(const char *string)
-{
-	static char buff[255];
-	char *p = buff;
-
-	for (; *string != '\0' && p-buff < 255; string++) {
-		switch(*string) {
-			case ' ':
-			case '=':
-			case '@':
-			case '%':
-			case '#':
-			case '!':
-			case '|':
-			case ':':
-			case '"':
-			case '[':
-			case ']':
-			case '&':
-			case '>':
-			case '<':
-			case ';':
-			case '`':
-			case '.':
-			case '*':
-			case '/':
-			case '+':
-			case '-':
-			case '\'':
-			case '\n':
-			case '\t':
-				*p++ = '_';
-				break;
-			default:
-				*p++ = *string;
-				break;
-		}
-	}
-
-	*p='\0';
-
-	return buff;
 }
 
 int ELF_(dietelf_close)(int fd) {
@@ -457,7 +371,7 @@ char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 		case ELFOSABI_TRU64:		return "tru64";
 		case ELFOSABI_MODESTO:		return "modesto";
 		case ELFOSABI_OPENBSD:		return "openbsd";
-		case ELFOSABI_STANDALONE:	return "Standalone App";
+		case ELFOSABI_STANDALONE:	return "standalone";
 		case ELFOSABI_ARM:			return "arm";
 		default:
 									snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
@@ -588,7 +502,7 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 		}
 	}
 
-	return -1;
+	return 0;
 }
 
 int ELF_(dietelf_get_sections)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_section *section)
@@ -911,9 +825,9 @@ int ELF_(dietelf_get_strings)(ELF_(dietelf_bin_t) *bin, int fd, int verbose, int
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata"))
-			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings);
+			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings);
 		if (verbose == 2 && i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
-			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit, strings+ctr);
+			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings+ctr);
 		}
 	}
 

@@ -331,7 +331,7 @@ u64 get_offset(const char *orig)
 		return ret;
 
 	if (arg[i]=='$') {
-			struct aop_t aop;
+		struct aop_t aop;
 		switch(arg[i+1]) {
 		case '?':
 			eprintf("Usage:\n");
@@ -340,6 +340,7 @@ u64 get_offset(const char *orig)
 			eprintf(" $$j = jump branch of opcode\n");
 			eprintf(" $$f = failover continuation of opcode\n");
 			eprintf(" $$r = pointer reference of opcode\n");
+			eprintf(" $${file.baddr} = get eval value\n");
 			break;
 		case '$':
 			arch_aop(config.seek, config.block,&aop);
@@ -356,6 +357,14 @@ u64 get_offset(const char *orig)
 		case 'r':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.ref;
+			break;
+		case '{':
+			ptr = strchr(arg+i+2, '}');
+			if (ptr != NULL) {
+				ptr[0]='\0';
+				ret = config_get_i(arg+i+2);
+				ptr[0]='}';
+			}
 			break;
 		default:
 			ret = config.seek;

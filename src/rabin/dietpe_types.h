@@ -16,6 +16,7 @@ typedef struct {
 	pe_image_export_directory       *export_directory;
 	pe_image_import_directory       *import_directory;
 	pe_image_delay_import_directory *delay_import_directory;
+    const char* file;
 } dietpe_bin;
 
 typedef struct {
@@ -47,5 +48,13 @@ typedef struct {
 	PE_DWord offset;
 	int      ordinal;
 } dietpe_export;
+
+typedef struct {
+	PE_DWord rva;
+	PE_DWord offset;
+	PE_DWord size;
+	char     type;
+	char     string[PE_STRING_LENGTH];
+} dietpe_string;
 
 #endif

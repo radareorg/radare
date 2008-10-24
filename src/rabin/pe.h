@@ -12,6 +12,7 @@
 #define PE_Byte unsigned char
 
 #define PE_NAME_LENGTH 64
+#define PE_STRING_LENGTH 128
 
 typedef struct {
 	PE_Word  e_magic;      /* 00: MZ Header signature */

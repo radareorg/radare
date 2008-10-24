@@ -15,6 +15,8 @@
 #define PE_SCN_IS_WRITABLE(x)        x & PE_IMAGE_SCN_MEM_WRITE
 
 int dietpe_close(int);
+int dietpe_get_arch(dietpe_bin*, char*);
+int dietpe_get_class(dietpe_bin*, char*);
 int dietpe_get_entrypoint(dietpe_bin*, dietpe_entrypoint*);
 int dietpe_get_exports(dietpe_bin*, int, dietpe_export*);
 int dietpe_get_exports_count(dietpe_bin*, int);
@@ -23,8 +25,9 @@ PE_DWord dietpe_get_image_base(dietpe_bin*);
 int dietpe_get_image_size(dietpe_bin*);
 int dietpe_get_imports(dietpe_bin*, int, dietpe_import*);
 int dietpe_get_imports_count(dietpe_bin*, int);
+int dietpe_get_libs(dietpe_bin*, int, int, dietpe_string*);
 int dietpe_get_machine(dietpe_bin*, char*);
-int dietpe_get_class(dietpe_bin*, char*);
+int dietpe_get_os(dietpe_bin*, char*);
 int dietpe_get_section_alignment(dietpe_bin*);
 int dietpe_get_sections(dietpe_bin*, dietpe_section*);
 int dietpe_get_sections_count(dietpe_bin*);

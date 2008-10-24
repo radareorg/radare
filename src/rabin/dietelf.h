@@ -36,7 +36,6 @@ typedef struct {
 } ELF_(dietelf_bin_t);
 
 
-char* ELF_(aux_filter_rad_output)(const char*);
 int   ELF_(dietelf_close)(int);
 char* ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t)*);
 u64   ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t)*);

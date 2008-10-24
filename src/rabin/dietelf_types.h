@@ -39,4 +39,5 @@ typedef struct {
 	char type;
 	char string[ELF_STRING_LENGTH];
 } dietelf_string;
+
 #endif
