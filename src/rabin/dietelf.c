@@ -108,7 +108,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 					if (!filter || strstr(str, filter)) {
 						stringsp->offset = i-matches;
 						stringsp->type = (unicode?'U':'A');
-						stringsp->size = len;
+						stringsp->size = string_len;
 						memcpy(stringsp->string, str, ELF_STRING_LENGTH);
 						ctr++; stringsp++;
 					}

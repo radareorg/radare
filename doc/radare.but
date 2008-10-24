@@ -717,7 +717,7 @@ To remove a section definition just prefix the from-address of the section with 
 
 After the section definition we can change the parameters of them with the Sf, St, Sc, Sb commands. After this, radare core will automatically setup the file.baddr depending on this section information
 
-\H{sections} Mapping files
+\H{iomap} Mapping files
 
 Radare IO allows to virtually map contents of files in the same IO space at random offsets. This is useful to open multiple files in a single view or just to 'emulate' an static environment like if it was in the debugger with the program and all its libraries mapped there.
 
