@@ -424,7 +424,6 @@ unsigned short read_short(FILE *fd)
 	return ntohs(sh);
 }
 
-
 static int attributes_walk(FILE *fd, int sz2, int fields)
 {
 	char buf[99999];
@@ -662,7 +661,7 @@ int java_classdump(const char *file)
 			} else {
 				char *p, buf2[256];
 				strncpy(buf2, get_cp(USHORT(buf,2)-1)->value, 255);
-				for(p = &buf2; p[0]; p = p +1){
+				for(p = (char *)&buf2; p[0]; p = p +1){
 					// XXX add if is printable
 					if (*p=='<'||*p=='>'||*p=='@'||*p==' ')
 						*p = '_';

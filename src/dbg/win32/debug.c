@@ -51,6 +51,11 @@ int debug_os_kill(int pid, int sig)
 	TerminateProcess(WIN32_PI(hProcess), 1);
 }
 
+int debug_fork()
+{
+	eprintf("TODO\n");
+	return 0;
+}
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 
@@ -317,7 +322,7 @@ int debug_fork_and_attach()
 	}
 
 	/* restore breakpoints */
-	debug_reload_bps();
+	debug_bp_reload_all();
 
 	/* load thread list */
 	debug_load_threads();
@@ -776,3 +781,12 @@ int debug_init_maps(int rest)
 	return 0;
 }
 
+int syscall_name_to_int(const char *str)
+{
+	eprintf("TODO\n");
+	return 0;
+}
+
+void debug_os_syscall_list()
+{
+}

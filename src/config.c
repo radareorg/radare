@@ -50,7 +50,7 @@ int rdb_init()
 	fd = open(rdbfile, O_APPEND|O_RDWR, 0644);
 	rdbdir = config_get("dir.project");
 	if (rdbdir&&rdbdir[0]) {
-		mkdir(rdbdir, 0755);
+		util_mkdir(rdbdir);
 		chdir(rdbdir);
 	}
 	if (fd == -1) {

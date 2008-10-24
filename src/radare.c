@@ -449,7 +449,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			/* radare_cmd_str doesn't handle system() output :( */
 			if( (strstr(input,"!regs")) ||(strstr(input,"!maps"))) {
 			//if (1) {
-				str = radare_cmd_str(input+1);
+				char *st, *str = radare_cmd_str(input+1);
 				st = str;
 				for(i=0;str && str[i];i++) {
 					if (str[i]=='\n') {

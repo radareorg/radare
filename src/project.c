@@ -37,7 +37,7 @@ int project_save(const char *file)
 
 	rdbdir = config_get("dir.project");
 	if (rdbdir&&rdbdir[0]) {
-		mkdir(rdbdir, 0755);
+		util_mkdir(rdbdir);
 		chdir(rdbdir);
 	}
 
@@ -134,7 +134,7 @@ FILE *project_open_fd(const char *file, const char *mode)
 
 	rdbdir = config_get("dir.project");
 	if (rdbdir && rdbdir[0]) {
-		mkdir(rdbdir, 0755);
+		util_mkdir(rdbdir);
 		chdir(rdbdir);
 	}
 

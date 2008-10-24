@@ -44,7 +44,7 @@ int name_to_sig(char *signame)
 		if (!strcasecmp(signame, signals[i].name))
 			return signals[i].sig;
 	for(i=0;signals[i].name;i++)
-		if (!strcasestr(signame, signals[i].name))
+		if (!strstr(signame, signals[i].name)) // XXX strcasestr!! not for w32
 			return signals[i].sig;
 	return get_offset(signame);
 	//return -1;

@@ -17,8 +17,6 @@ W32LIBS=-lwsock32
 
 MAEMO_OBJ=/usr/lib/libreadline.a /usr/lib/libtermcap.a
 
-OBJ+=plug/io/bfdbg.o
-
 ##DEBUGGER##
 include dbg/objects.mk
 OBJ+=plug/io/debug.o
@@ -41,12 +39,12 @@ CFLAGS+=-DSYSPROXY
 CFLAGS+=-DRADARE_CORE
 LDFLAGS+=${DL_LIBS} ${OSOLIBS}
 
+OBJ+=grava.o
 ##VALA##
 ##GUI##
 CFLAGS+=-I../vala/grava/ `pkg-config --cflags gtk+-2.0` -DHAVE_VALAC=1
 LDFLAGS+=`pkg-config --libs gtk+-2.0`
 OBJ2+=../vala/grava/*.o
-OBJ+=grava.o
 TARGETS+=valagrava
 ##GUI##
 ##VALA##

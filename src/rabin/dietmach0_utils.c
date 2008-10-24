@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 #include <sys/stat.h>
 
 #include "dietmach0_errors.h"
@@ -102,7 +102,7 @@ dm_map_file (char *filename, int fd)
   filesize = sb.st_size;
   //fprintf(stderr, "File size: %d\n\n", filesize);
 
-#if __APPLE__
+#if __APPLE__ || __WINDOWS__ || __BSD__
   if ( (result = map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
                         (boolean_t)TRUE, 
                         (vm_size_t)filesize)) != KERN_SUCCESS )
@@ -116,7 +116,7 @@ dm_map_file (char *filename, int fd)
 
   //if ( (result = mmap(&fileaddr, (size_t)filesize, PROT_READ|PROT_WRITE,
    //                   MAP_SHARED, (int)fd, 0)) == (int *)MAP_FAILED)
-  if ( fileaddr == MAP_FAILED )
+  if ( fileaddr == -1 )
     {
       dm_fatal("Cannot map file %s\n", filename);
       close(fd);

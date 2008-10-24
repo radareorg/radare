@@ -710,6 +710,9 @@ void rabin_show_imports(const char *file)
 #endif
 		break;
 	case FILETYPE_MACHO:
+#if __WINDOWS__
+		// XXX TODO
+#else
 		setenv("target", file, 1);
 		if (rad) {
 			printf("fs imports\n");
@@ -727,6 +730,7 @@ void rabin_show_imports(const char *file)
 		   #endif
 #endif
 		}
+#endif
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
@@ -850,6 +854,8 @@ void rabin_show_symbols(char *file)
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
+#if __WINDOWS__
+#else
 		setenv("target", file, 1);
 		if (rad) {
 			printf("fs symbols\n");
@@ -864,6 +870,7 @@ void rabin_show_symbols(char *file)
 			system(buf);
 		   #endif
 		}
+#endif
 		break;
 	case FILETYPE_CLASS:
 		// TODO: native version and support for non -r

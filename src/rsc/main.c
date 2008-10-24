@@ -28,7 +28,7 @@
 #include "../../global.h"
 
 //#define DATADIR "/usr/share/"
-#define RSCDATADIR DATADIR"/radare/rsc"
+#define RSCDATADIR SHAREDIR"/radare/rsc"
 
 static void rsc_help()
 {

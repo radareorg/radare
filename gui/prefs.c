@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include <string.h>
 #include <gtk/gtk.h>
 
 GtkWidget *pw = NULL;

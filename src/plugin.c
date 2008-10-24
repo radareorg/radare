@@ -26,7 +26,9 @@
 #include <dlfcn.h>
 #endif
 #if HAVE_VALAC
+#if GUI
 #include <gtk/gtk.h>
+#endif
 #endif
 
 static plugin_t plugins[MAXPLUGINS];
@@ -417,7 +419,7 @@ int io_map_rm(const char *file)
 
 int io_map_list()
 {
-	int i,n;
+	int n = 0;
 	struct list_head *pos;
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
@@ -434,9 +436,8 @@ int io_map_list()
 
 int io_map(const char *file, u64 offset)
 {
-	struct list_head *pos;
 	struct io_maps_t *im;
-	int i, fd = open(file, O_RDONLY);
+	int fd = open(file, O_RDONLY);
 	if (fd == -1)
 		return -1;
 	im = (struct io_maps_t*)malloc(sizeof(struct io_maps_t));
@@ -451,7 +452,6 @@ int io_map(const char *file, u64 offset)
 int io_map_read_at(u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
-	int i;
 
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
@@ -468,7 +468,6 @@ int io_map_read_at(u64 off, u8 *buf, u64 len)
 int io_map_read_rest(u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
-	int i;
 
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);

@@ -13,10 +13,15 @@
 #define DEBUGGER @DEBUGGER@
 #define SYSPROXY @SYSPROXY@
 #define GUI @GUI@
-#define HAVE_VALAC @HAVE_VALAC@
 #define HAVE_LANG_LUA @HAVE_LANG_LUA@
 #define HAVE_LANG_PYTHON @HAVE_LANG_PYTHON@
 #define SIZE_OFF_T 8
+
+#if HAVE_GUI
+#define HAVE_VALAC @HAVE_VALAC@
+#else
+#define HAVE_VALAC 0
+#endif
 
 #define LIL_ENDIAN @LIL_ENDIAN@
 #define VERSION "@VERSION@"
@@ -24,7 +29,7 @@
 /* paths */
 #define LIBDIR "@LIBDIR@"
 #define DOCDIR "@DATADIR@/doc/radare/"
-#define DATADIR "@DATADIR@"
+#define SHAREDIR "@DATADIR@"
 #define LIBEXECDIR "@LIBEXECDIR@"
 
 /* libraries */

@@ -1,5 +1,10 @@
-OBJ=../rabin/javasm.o main.o
-BIN=javasm
+include ../../config.mk
 
-all: ${OBJ}
-	${CC} ${OBJ} -o ${BIN}
+OBJ=../rabin/javasm.o main.o
+BIN=javasm${BINSFX}
+
+all: ${BIN}
+	@echo done
+
+${BIN}: ${OBJ}
+	${CC} ${OBJ} ${LDFLAGS} -o ${BIN}

@@ -20,7 +20,6 @@
 #include "../global.h"
 #include "main.h"
 
-
 int graph_viz(struct program_t *prg)
 {
 	struct block_t *b0;
@@ -634,7 +633,9 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 
 	return win;
 }
+#endif
 
+#if HAVE_VALAC
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	char cmd[1024];
@@ -691,6 +692,11 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 	config.seek = here;
 	gtk_is_init = 0;
 	new_window = 0;
+}
+#else
+void grava_program_graph(struct program_t *prg, void *win)
+{
+	eprintf("Compiled without gui\n");
 }
 #endif
 
@@ -820,3 +826,5 @@ gtk_container_add(vbox,w);
 	eprintf("Compiled without GUI\n");
 #endif
 }
+
+

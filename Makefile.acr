@@ -5,7 +5,7 @@ VERSION=@VERSION@
 
 VPATH=${DESTDIR}@VPATH@
 BINDIR=${DESTDIR}@BINDIR@
-DATADIR=${DESTDIR}@DATADIR@
+SHAREDIR=${DESTDIR}@DATADIR@
 MANDIR=${DESTDIR}@MANDIR@
 LIBDIR=${DESTDIR}@LIBDIR@
 LIBEXECDIR=${DESTDIR}@LIBEXECDIR@
@@ -51,7 +51,7 @@ w32dist:
 	cp src/xrefs.exe w32-build
 	cp src/rahash/rahash.exe w32-build
 	cp src/rabin/rabin.exe w32-build
-	cp src/rabin/javasm.exe w32-build
+	cp src/javasm/javasm.exe w32-build
 	cp src/radiff/radiff.exe w32-build
 	cp src/radiff/rdbdiff.exe w32-build
 	-cp src/radiff/bdiff/bdiff.exe w32-build
@@ -84,7 +84,7 @@ dist: mrproper
 	scp radare-$${DATE}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
 
 install:
-	mkdir -p ${BINDIR} ${MANDIR}/man1 ${DATADIR}/radare/ ${DATADIR}/doc/radare ${LIBEXECDIR}/radare
+	mkdir -p ${BINDIR} ${MANDIR}/man1 ${SHAREDIR}/radare/ ${SHAREDIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
@@ -93,7 +93,7 @@ install:
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}
-	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${DATADIR}/radare/
+	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${SHAREDIR}/radare/
 	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
 	${INSTALL_PROGRAM} src/rahash/rahash ${BINDIR}
 	${INSTALL_PROGRAM} src/rax ${BINDIR}
@@ -129,13 +129,13 @@ install:
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rax.1 ${MANDIR}/man1/
-	${INSTALL_DIR} ${DATADIR}/radare/
-	${INSTALL_DIR} ${DATADIR}/radare/magic
-	${INSTALL_DATA} magic/* ${DATADIR}/radare/magic/
-	${INSTALL_DIR} ${DATADIR}/doc/radare
-	-${INSTALL_DATA} doc/* ${DATADIR}/doc/radare/
-	${INSTALL_DIR} ${DATADIR}/doc/radare/xtra
-	${INSTALL_DATA} doc/xtra/* ${DATADIR}/doc/radare/xtra
+	${INSTALL_DIR} ${SHAREDIR}/radare/
+	${INSTALL_DIR} ${SHAREDIR}/radare/magic
+	${INSTALL_DATA} magic/* ${SHAREDIR}/radare/magic/
+	${INSTALL_DIR} ${SHAREDIR}/doc/radare
+	-${INSTALL_DATA} doc/* ${SHAREDIR}/doc/radare/
+	${INSTALL_DIR} ${SHAREDIR}/doc/radare/xtra
+	${INSTALL_DATA} doc/xtra/* ${SHAREDIR}/doc/radare/xtra
 	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
 ##GUI##
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
@@ -157,7 +157,7 @@ deinstall:
 	-rm -f ${LIBDIR}/libps2fd.so
 	-rm -f ${LIBDIR}/libaff2fd.so
 	-rm -f ${LIBDIR}/libusbsniff.so
-	-rm -rf ${DATADIR}/radare
-	-rm -rf ${DATADIR}/doc/radare
+	-rm -rf ${SHAREDIR}/radare
+	-rm -rf ${SHAREDIR}/doc/radare
 	-rm -rf ${LIBEXECDIR}/gradare/
 	-rm -rf ${LIBEXECDIR}/radare/

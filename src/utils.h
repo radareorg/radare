@@ -27,6 +27,7 @@ int _strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, const char *string);
 char *slurp(const char *str);
 int word_count(const char *string);
+int util_mkdir(const char *dir);
 
 
 enum {

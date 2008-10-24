@@ -91,7 +91,7 @@ int debug_mmap(char *arg);
 int debug_free(char *arg);
 int debug_imap(char *arg);
 int debug_waitpid(int pid, int *status);
-void debug_reload_bps();
+void debug_reload_bps_all();
 int debug_write_at(pid_t pid, void *data, int length, u64 addr);
 int debug_read_at(pid_t pid, void *addr, int length, u64 at);
 int inline debug_contp(int pid);

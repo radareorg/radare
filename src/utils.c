@@ -49,6 +49,15 @@ int iswhitespace(char ch)
    return (ch==' '||ch=='\t');
 }
 
+int util_mkdir(const char *dir)
+{
+#if __WINDOWS__
+	mkdir(dir);
+#else
+	mkdir(dir, 0755);
+#endif
+}
+
 void eprintf(const char *format, ...)
 {
 	va_list ap;

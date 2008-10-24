@@ -50,7 +50,6 @@ char* aux_filter_rad_output(const char *string)
 	return buff;
 }
 
-
 int aux_is_encoded(int encoding, unsigned char c)
 {
 	switch(encoding) {
