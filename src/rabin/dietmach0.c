@@ -49,9 +49,10 @@
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
 
-void *offset, *toff, *init_offset;
-unsigned int ncmds;
+static void *offset, *toff, *init_offset;
+static unsigned int ncmds;
 
+extern int rad;
 
 void
 dm_read_codesign (int i)
@@ -63,12 +64,23 @@ dm_read_codesign (int i)
   memcpy(ld, (char *)offset, 
          sizeof(struct linkedit_data_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_codesign @ 0x%08x\n", offset);
+      printf("f section_lc_codesign_end @ 0x%08x\n", offset
+             + sizeof(struct linkedit_data_command));
+		  printf("CC [%02i] 0x%08x size=%d",
+             i, offset, ld->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_CODE_SIGNATURE\n");
-  printf("cmd size \t\t: %d\n",       ld->cmdsize);
-  printf("dataoff \t\t: %u\n",       ld->dataoff);
-  printf("datasize \t\t: %u\n",       ld->datasize);
+      printf("\ncmd \t\t\t: LC_CODE_SIGNATURE\n");
+      printf("cmd size \t\t: %d\n",       ld->cmdsize);
+      printf("dataoff \t\t: %u\n",        ld->dataoff);
+      printf("datasize \t\t: %u\n",       ld->datasize);
+    }
 }
 
 void
@@ -81,21 +93,32 @@ dm_read_uuid (int i)
   memcpy(uuid, (char *)offset, 
          sizeof(struct uuid_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_uuid @ 0x%08x\n", offset);
+      printf("f section_lc_uuid_end @ 0x%08x\n", offset
+             + sizeof(struct uuid_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, uuid->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_UUID\n");
-  printf("cmd size \t\t: %d\n",       uuid->cmdsize);
+      printf("\ncmd \t\t\t: LC_UUID\n");
+      printf("cmd size \t\t: %d\n",       uuid->cmdsize);
 
-  printf("uuid 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-         (unsigned int)uuid->uuid[0], (unsigned int)uuid->uuid[1],
-         (unsigned int)uuid->uuid[2],  (unsigned int)uuid->uuid[3],
-         (unsigned int)uuid->uuid[4],  (unsigned int)uuid->uuid[5],
-         (unsigned int)uuid->uuid[6],  (unsigned int)uuid->uuid[7]);
-  printf("     0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-         (unsigned int)uuid->uuid[8],  (unsigned int)uuid->uuid[9],
-         (unsigned int)uuid->uuid[10], (unsigned int)uuid->uuid[11],
-         (unsigned int)uuid->uuid[12], (unsigned int)uuid->uuid[13],
-         (unsigned int)uuid->uuid[14], (unsigned int)uuid->uuid[15]);
+      printf("uuid 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+             (unsigned int)uuid->uuid[0], (unsigned int)uuid->uuid[1],
+             (unsigned int)uuid->uuid[2],  (unsigned int)uuid->uuid[3],
+             (unsigned int)uuid->uuid[4],  (unsigned int)uuid->uuid[5],
+             (unsigned int)uuid->uuid[6],  (unsigned int)uuid->uuid[7]);
+      printf("     0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+             (unsigned int)uuid->uuid[8],  (unsigned int)uuid->uuid[9],
+             (unsigned int)uuid->uuid[10], (unsigned int)uuid->uuid[11],
+             (unsigned int)uuid->uuid[12], (unsigned int)uuid->uuid[13],
+             (unsigned int)uuid->uuid[14], (unsigned int)uuid->uuid[15]);
+    }
 }
 
 void
@@ -108,18 +131,29 @@ dm_read_routines (int i)
   memcpy(routines_command, (char *)offset, 
          sizeof(struct routines_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_routines @ 0x%08x\n", offset);
+      printf("f section_lc_routines_end @ 0x%08x\n", offset
+             + sizeof(struct routines_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, routines_command->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_ROUTINES\n");
-  printf("cmd size \t\t: %d\n",       routines_command->cmdsize);
-  printf("init_address \t\t\t %d:\n", routines_command->init_address);
-  printf("init_module \t\t\t: %d\n",  routines_command->init_module);
-  printf("reserved1 \t\t\t: %d\n",    routines_command->reserved1);
-  printf("reserved2 \t\t\t: %d\n",    routines_command->reserved2);
-  printf("reserved3 \t\t\t: %d\n",    routines_command->reserved3);
-  printf("reserved4 \t\t\t: %d\n",    routines_command->reserved4);
-  printf("reserved5 \t\t\t: %d\n",    routines_command->reserved5);
-  printf("reserved6 \t\t\t: %d\n",    routines_command->reserved6);	    
+      printf("\ncmd \t\t\t: LC_ROUTINES\n");
+      printf("cmd size \t\t: %d\n",       routines_command->cmdsize);
+      printf("init_address \t\t\t %d:\n", routines_command->init_address);
+      printf("init_module \t\t\t: %d\n",  routines_command->init_module);
+      printf("reserved1 \t\t\t: %d\n",    routines_command->reserved1);
+      printf("reserved2 \t\t\t: %d\n",    routines_command->reserved2);
+      printf("reserved3 \t\t\t: %d\n",    routines_command->reserved3);
+      printf("reserved4 \t\t\t: %d\n",    routines_command->reserved4);
+      printf("reserved5 \t\t\t: %d\n",    routines_command->reserved5);
+      printf("reserved6 \t\t\t: %d\n",    routines_command->reserved6);	    
+    }
 }
 
 void
@@ -132,12 +166,23 @@ dm_read_twolevel_hints (int i)
   memcpy(tlh_command, (char *)offset,
          sizeof(struct twolevel_hints_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_twolevel_hints @ 0x%08x\n", offset);
+      printf("f section_lc_twolevel_hints_end @ 0x%08x\n", offset
+             + sizeof(struct twolevel_hints_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, tlh_command->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_TWOLEVEL_HINTS\n");
-  printf("cmd size \t\t: %d\n",       tlh_command->cmdsize);
-  printf("offset \t\t\t: %d\n",       tlh_command->offset);
-  printf("nhints \t\t\t: %d\n",       tlh_command->nhints);
+      printf("\ncmd \t\t\t: LC_TWOLEVEL_HINTS\n");
+      printf("cmd size \t\t: %d\n",       tlh_command->cmdsize);
+      printf("offset \t\t\t: %d\n",       tlh_command->offset);
+      printf("nhints \t\t\t: %d\n",       tlh_command->nhints);
+    }
 }
 
 void
@@ -152,55 +197,66 @@ dm_read_thread (int i)
   thr_command = dm_allocate(sizeof(struct thread_command));
   memcpy(thr_command, (char *)offset, sizeof(struct thread_command));
 
-  printf("\n [-] Load command %d\n", i);
-
-  if (thr_command->cmd == LC_UNIXTHREAD)
-    printf("\ncmd \t\t\t: LC_UNIXTHREAD\n");
-  else
-    printf("\ncmd \t\t\t: LC_THREAD\n");
-
-  printf("cmd size \t\t: %d\n",    	thr_command->cmdsize);
-
-  if (m_header.cputype == CPU_TYPE_I386)
+  if (rad)
     {
-      i386_thread_state_t         state;
-
-      /*
-       * Pointing to the begin of flavor field
-       */
-      p = (char *)offset + sizeof(struct thread_command);
-
-      memcpy(&flavor, p, sizeof(unsigned long));
-      printf("flavor \t\t\t: %lu\n", flavor);
-
-      /*
-       * Pointing to the count field
-       */
-      p += sizeof(unsigned long);
-
-      memcpy(&count, p, sizeof(unsigned long));
-      printf("count \t\t\t: %lu\n", count);
-
-      /*
-       * Moving on to the beginning of the 
-       * i386_thread_state structure
-       */
-      p += sizeof(unsigned long);
-
-      memset(&state, 0x0, sizeof(i386_thread_state_t));
-      memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
-
-      printf(
-             "State \t\t\t: eax 0x%08x ebx    0x%08x ecx 0x%08x edx 0x%08x\n"
-             "State \t\t\t: edi 0x%08x esi    0x%08x ebp 0x%08x esp 0x%08x\n"
-             "State \t\t\t: ss  0x%08x eflags 0x%08x eip 0x%08x cs  0x%08x\n"
-             "State \t\t\t: ds  0x%08x es     0x%08x fs  0x%08x gs  0x%08x\n",
-             state.eax, state.ebx, state.ecx, state.edx, state.edi, state.esi,
-             state.ebp, state.esp, state.ss, state.eflags, state.eip, state.cs,
-             state.ds, state.es, state.fs, state.gs);
+      printf("f section_lc_thread @ 0x%08x\n", offset);
+      printf("f section_lc_thread_end @ 0x%08x\n", offset
+             + sizeof(struct thread_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, thr_command->cmdsize);
     }
   else
-    dm_fatal(ECPU);
+    {
+      printf("\n [-] Load command %d\n", i);
+
+      if (thr_command->cmd == LC_UNIXTHREAD)
+        printf("\ncmd \t\t\t: LC_UNIXTHREAD\n");
+      else
+        printf("\ncmd \t\t\t: LC_THREAD\n");
+
+      printf("cmd size \t\t: %d\n",    	thr_command->cmdsize);
+
+      if (m_header.cputype == CPU_TYPE_I386)
+        {
+          i386_thread_state_t         state;
+
+          /*
+           * Pointing to the begin of flavor field
+           */
+          p = (char *)offset + sizeof(struct thread_command);
+
+          memcpy(&flavor, p, sizeof(unsigned long));
+          printf("flavor \t\t\t: %lu\n", flavor);
+
+          /*
+           * Pointing to the count field
+           */
+          p += sizeof(unsigned long);
+
+          memcpy(&count, p, sizeof(unsigned long));
+          printf("count \t\t\t: %lu\n", count);
+
+          /*
+           * Moving on to the beginning of the 
+           * i386_thread_state structure
+           */
+          p += sizeof(unsigned long);
+
+          memset(&state, 0x0, sizeof(i386_thread_state_t));
+          memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
+
+          printf(
+                 "State \t\t\t: eax 0x%08x ebx    0x%08x ecx 0x%08x edx 0x%08x\n"
+                 "State \t\t\t: edi 0x%08x esi    0x%08x ebp 0x%08x esp 0x%08x\n"
+                 "State \t\t\t: ss  0x%08x eflags 0x%08x eip 0x%08x cs  0x%08x\n"
+                 "State \t\t\t: ds  0x%08x es     0x%08x fs  0x%08x gs  0x%08x\n",
+                 state.eax, state.ebx, state.ecx, state.edx, state.edi, state.esi,
+                 state.ebp, state.esp, state.ss, state.eflags, state.eip, state.cs,
+                 state.ds, state.es, state.fs, state.gs);
+        }
+      else
+        dm_fatal(ECPU);
+    }
 }
     
 void
@@ -213,24 +269,35 @@ dm_read_prebound_dylib_command (int i)
   memcpy(prebound_dy_command, (char *)offset,
          sizeof(struct prebound_dylib_command));
 
-  printf("\n [-] Load command %d\n", i);
-
-  printf("\ncmd \t\t\t: LC_PREBOUND_DYLIB\n");
-  printf("cmd size \t\t: %d\n",    	prebound_dy_command->cmdsize);
-
-  pname = (char *)offset + prebound_dy_command->name.offset;
-  printf("name %s (offset %u)\n",     pname,
-         prebound_dy_command->name.offset);
-
-  printf("nmodules \t\t\t: %d\n",  prebound_dy_command->nmodules);
-
-  plinked_modules = (char *)offset + 
-    prebound_dy_command->linked_modules.offset;
-
-  for (j = 0; j < prebound_dy_command->nmodules && j < 8; j++)
+  if (rad)
     {
-      if ( ((plinked_modules[j/8] >> (j%8)) & 1) )
-        printf("%lu\n", j); 
+      printf("f section_lc_prebound_dylib @ 0x%08x\n", offset);
+      printf("f section_lc_prebound_dylib_end @ 0x%08x\n", offset
+             + sizeof(struct prebound_dylib_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, prebound_dy_command->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
+
+      printf("\ncmd \t\t\t: LC_PREBOUND_DYLIB\n");
+      printf("cmd size \t\t: %d\n",    	prebound_dy_command->cmdsize);
+
+      pname = (char *)offset + prebound_dy_command->name.offset;
+      printf("name %s (offset %u)\n",     pname,
+             prebound_dy_command->name.offset);
+
+      printf("nmodules \t\t\t: %d\n",  prebound_dy_command->nmodules);
+
+      plinked_modules = (char *)offset + 
+        prebound_dy_command->linked_modules.offset;
+
+      for (j = 0; j < prebound_dy_command->nmodules && j < 8; j++)
+        {
+          if ( ((plinked_modules[j/8] >> (j%8)) & 1) )
+            printf("%lu\n", j); 
+        }
     }
 }
 
@@ -244,13 +311,24 @@ dm_read_sub_client (int i)
   sub_client = dm_allocate(sizeof(struct sub_client_command));
   memcpy(sub_client, (char *)offset, sizeof(struct sub_client_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_sub_client @ 0x%08x\n", offset);
+      printf("f section_lc_sub_client_end @ 0x%08x\n", offset
+             + sizeof(struct sub_client_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, sub_client->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_SUB_CLIENT\n");
-  printf("cmd size \t\t: %d\n",    	sub_client->cmdsize);
+      printf("\ncmd \t\t\t: LC_SUB_CLIENT\n");
+      printf("cmd size \t\t: %d\n",    	sub_client->cmdsize);
 
-  p = (char *)offset + sub_client->client.offset;
-  printf("sub_client %s (offset %u)\n", p, sub_client->client.offset);
+      p = (char *)offset + sub_client->client.offset;
+      printf("sub_client %s (offset %u)\n", p, sub_client->client.offset);
+    }
 }
 
 void
@@ -263,13 +341,24 @@ dm_read_sub_library (int i)
   sub_library = dm_allocate(sizeof(struct sub_library_command));
   memcpy(sub_library, (char *)offset, sizeof(struct sub_library_command));
 
-  printf("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_sub_library @ 0x%08x\n", offset);
+      printf("f section_lc_sub_library_end @ 0x%08x\n", offset
+             + sizeof(struct sub_library_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, sub_library->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_SUB_LIBRARY\n");
-  printf("cmd size \t\t: %d\n",    	sub_library->cmdsize);
+      printf("\ncmd \t\t\t: LC_SUB_LIBRARY\n");
+      printf("cmd size \t\t: %d\n",    	sub_library->cmdsize);
 
-  p = (char *)offset + sub_library->sub_library.offset;
-  printf("sub_library %s (offset %u)\n", p, sub_library->sub_library.offset);
+      p = (char *)offset + sub_library->sub_library.offset;
+      printf("sub_library %s (offset %u)\n", p, sub_library->sub_library.offset);
+    }
 }
 
 void
@@ -282,13 +371,24 @@ dm_read_sub_umbrella (int i)
   sub_umbrella = dm_allocate(sizeof(struct sub_umbrella_command));
   memcpy(sub_umbrella, (char *)offset, sizeof(struct sub_umbrella_command));
 
-  printf ("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_sub_umbrella @ 0x%08x\n", offset);
+      printf("f section_lc_sub_umbrella_end @ 0x%08x\n", offset
+             + sizeof(struct sub_umbrella_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, sub_umbrella->cmdsize);
+    }
+  else
+    {
+      printf ("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_SUB_UMBRELLA\n");
-  printf("cmd size \t\t: %d\n",    	sub_umbrella->cmdsize);
+      printf("\ncmd \t\t\t: LC_SUB_UMBRELLA\n");
+      printf("cmd size \t\t: %d\n",    	sub_umbrella->cmdsize);
 
-  p = (char *)offset + sub_umbrella->sub_umbrella.offset;
-  printf("sub_umbrella %s (offset %u)\n", p, sub_umbrella->sub_umbrella.offset);
+      p = (char *)offset + sub_umbrella->sub_umbrella.offset;
+      printf("sub_umbrella %s (offset %u)\n", p, sub_umbrella->sub_umbrella.offset);
+    }
 }
 
 void
@@ -301,13 +401,24 @@ dm_read_sub_framework (int i)
   sub_framework = dm_allocate(sizeof(struct sub_framework_command));
   memcpy(sub_framework, (char *)offset, sizeof(struct sub_framework_command));
 
-  printf ("\n [-] Load command %d\n", i);
+  if (rad)
+    {
+      printf("f section_lc_sub_framework @ 0x%08x\n", offset);
+      printf("f section_lc_sub_framework_end @ 0x%08x\n", offset
+             + sizeof(struct sub_framework_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, sub_framework->cmdsize);
+    }
+  else
+    {
+      printf ("\n [-] Load command %d\n", i);
 
-  printf("\ncmd \t\t\t: LC_SUB_FRAMEWORK\n");
-  printf("cmd size \t\t: %d\n",    	sub_framework->cmdsize);
+      printf("\ncmd \t\t\t: LC_SUB_FRAMEWORK\n");
+      printf("cmd size \t\t: %d\n",    	sub_framework->cmdsize);
 
-  p = (char *)offset + sub_framework->umbrella.offset;
-  printf("umbrella %s (offset %u)\n", p, sub_framework->umbrella.offset);
+      p = (char *)offset + sub_framework->umbrella.offset;
+      printf("umbrella %s (offset %u)\n", p, sub_framework->umbrella.offset);
+    }
 }
 
 void
@@ -320,32 +431,43 @@ dm_read_dylib (int i)
   dyl_command = dm_allocate(sizeof(struct dylib_command));
   memcpy(dyl_command, (char *)offset, sizeof(struct dylib_command));
 
-  printf ("\n [-] Load command %d\n", i);
-
-  if ( dyl_command->cmd == LC_ID_DYLIB )
-    printf("\ncmd \t\t\t: LC_ID_DYLIB\n");
-  else if ( dyl_command->cmd == LC_LOAD_DYLIB )
-    printf("\ncmd \t\t\t: LC_LOAD_DYLIB\n");
+  if (rad)
+    {
+      printf("f section_lc_dylib @ 0x%08x\n", offset);
+      printf("f section_lc_dylib_end @ 0x%08x\n", offset
+             + sizeof(struct dylib_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, dyl_command->cmdsize);
+    }
   else
-    printf("\ncmd \t\t\t: LC_LOAD_WEAK_DYLIB\n");
+    {
+      printf ("\n [-] Load command %d\n", i);
 
-  printf("cmd size \t\t: %d\n",               dyl_command->cmdsize);
+      if ( dyl_command->cmd == LC_ID_DYLIB )
+        printf("\ncmd \t\t\t: LC_ID_DYLIB\n");
+      else if ( dyl_command->cmd == LC_LOAD_DYLIB )
+        printf("\ncmd \t\t\t: LC_LOAD_DYLIB\n");
+      else
+        printf("\ncmd \t\t\t: LC_LOAD_WEAK_DYLIB\n");
 
-  p = (char *)offset + dyl_command->dylib.name.offset;
-  printf("name \t\t\t: %s (offset %u)\n", p,  dyl_command->dylib.name.offset);
+      printf("cmd size \t\t: %d\n",               dyl_command->cmdsize);
 
-  printf("time stamp \t\t: %u ",              dyl_command->dylib.timestamp);
-  printf("%s", ctime((const long *)&(         dyl_command->dylib.timestamp)));
+      p = (char *)offset + dyl_command->dylib.name.offset;
+      printf("name \t\t\t: %s (offset %u)\n", p,  dyl_command->dylib.name.offset);
 
-  printf("current version \t: %u.%u.%u\n",
-         dyl_command->dylib.current_version >> 16,
-         (dyl_command->dylib.current_version >> 8) & 0xff,
-         dyl_command->dylib.current_version & 0xff);
+      printf("time stamp \t\t: %u ",              dyl_command->dylib.timestamp);
+      printf("%s", ctime((const long *)&(         dyl_command->dylib.timestamp)));
 
-  printf("compatibility version \t: %u.%u.%u\n",
-         dyl_command->dylib.compatibility_version >> 16,
-         (dyl_command->dylib.compatibility_version >> 8) & 0xff,
-         dyl_command->dylib.compatibility_version & 0xff);
+      printf("current version \t: %u.%u.%u\n",
+             dyl_command->dylib.current_version >> 16,
+             (dyl_command->dylib.current_version >> 8) & 0xff,
+             dyl_command->dylib.current_version & 0xff);
+
+      printf("compatibility version \t: %u.%u.%u\n",
+             dyl_command->dylib.compatibility_version >> 16,
+             (dyl_command->dylib.compatibility_version >> 8) & 0xff,
+             dyl_command->dylib.compatibility_version & 0xff);
+    }
 }
 
 void
@@ -358,19 +480,30 @@ dm_read_fvmlib (int i)
   fvm_command = dm_allocate(sizeof(struct fvmlib_command));
   memcpy(fvm_command, (char *)offset, sizeof(struct fvmlib_command));
 
-  printf ("\n [-] Load command %d\n", i);
-
-  if ( fvm_command->cmd == LC_IDFVMLIB )
-    printf ("\ncmd \t\t: LC_IDFVMLIB\n");
+  if (rad)
+    {
+      printf("f section_lc_fvmlib @ 0x%08x\n", offset);
+      printf("f section_lc_fvmlib_end @ 0x%08x\n", offset
+             + sizeof(struct fvmlib_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, fvm_command->cmdsize);
+    }
   else
-    printf ("\ncmd \t\t: LC_LOADFVMLIB\n");
+    {
+      printf ("\n [-] Load command %d\n", i);
 
-  printf ("cmd size \t: %d\n",            fvm_command->cmdsize);
+      if ( fvm_command->cmd == LC_IDFVMLIB )
+        printf ("\ncmd \t\t: LC_IDFVMLIB\n");
+      else
+        printf ("\ncmd \t\t: LC_LOADFVMLIB\n");
 
-  p = (char *)offset + fvm_command->fvmlib.name.offset;
-  printf("Path %s (offset %u)\n", 	p,  fvm_command->fvmlib.name.offset);
-  printf("minor version %u\n",            fvm_command->fvmlib.minor_version);
-  printf("header addr 0x%08x\n",          fvm_command->fvmlib.header_addr);
+      printf ("cmd size \t: %d\n",            fvm_command->cmdsize);
+
+      p = (char *)offset + fvm_command->fvmlib.name.offset;
+      printf("Path %s (offset %u)\n", 	p,  fvm_command->fvmlib.name.offset);
+      printf("minor version %u\n",            fvm_command->fvmlib.minor_version);
+      printf("header addr 0x%08x\n",          fvm_command->fvmlib.header_addr);
+    }
 }
 
 void
@@ -382,11 +515,22 @@ dm_read_symseg (int i)
   symseg_command = dm_allocate(sizeof(struct symseg_command));
   memcpy(symseg_command, (char *)offset, sizeof(struct symseg_command));
 
-  printf ("\n [-] Load command %d\n", i);
-  printf ("\ncmd \t\t: LC_SYMSEG\n");
-  printf ("cmd size \t: %d\n",    symseg_command->cmdsize);
-  printf ("symoff \t\t: %d\n",    symseg_command->offset);
-  printf ("size \t\t: %d\n",      symseg_command->size);
+  if (rad)
+    {
+      printf("f section_lc_symseg @ 0x%08x\n", offset);
+      printf("f section_lc_symseg_end @ 0x%08x\n", offset
+             + sizeof(struct symseg_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, symseg_command->cmdsize);
+    }
+  else
+    {
+      printf ("\n [-] Load command %d\n", i);
+      printf ("\ncmd \t\t: LC_SYMSEG\n");
+      printf ("cmd size \t: %d\n",    symseg_command->cmdsize);
+      printf ("symoff \t\t: %d\n",    symseg_command->offset);
+      printf ("size \t\t: %d\n",      symseg_command->size);
+    }
 }
 
 void
@@ -398,26 +542,37 @@ dm_read_dysymtab (int i)
   dysym_command = dm_allocate(sizeof(struct dysymtab_command));
   memcpy(dysym_command, (char *)offset, sizeof(struct dysymtab_command));
 
-  printf ("\n [-] Load command %d\n", i);
-  printf ("\nSection Name \t: LC_DYSYMTAB\n");
-  printf ("cmd size \t: %d\n",        dysym_command->cmdsize);
-  printf ("ilocalsym \t: %d\n",       dysym_command->ilocalsym);
-  printf ("nlocalsym \t: %d\n",       dysym_command->nlocalsym);
-  printf ("iextdefsym \t: %d\n",      dysym_command->iextdefsym);
-  printf ("nextdefsym \t: %d\n",      dysym_command->nextdefsym);
-  printf ("iundefsym \t: %d\n",       dysym_command->iundefsym);
-  printf ("nundefsym \t: %d\n",       dysym_command->nundefsym);
-  printf ("tocoff \t\t: %d\n",        dysym_command->tocoff);
-  printf ("ntoc \t\t: %d\n",          dysym_command->ntoc);
-  printf ("modtaboff \t: %d\n",       dysym_command->modtaboff);
-  printf ("nmodtab \t: %d\n",         dysym_command->nmodtab);
-  printf ("extrefsymoff \t: %d\n",    dysym_command->extrefsymoff);
-  printf ("indirectsymoff \t: %d\n",  dysym_command->indirectsymoff);
-  printf ("nindirectsyms \t: %d\n",   dysym_command->nindirectsyms);
-  printf ("extreloff \t: %d\n",       dysym_command->extreloff);
-  printf ("nextrel \t: %d\n",         dysym_command->nextrel);
-  printf ("locreloff \t: %d\n",       dysym_command->locreloff);
-  printf ("nlocrel \t: %d\n",         dysym_command->nlocrel);
+  if (rad)
+    {
+      printf("f section_lc_dysymtab @ 0x%08x\n", offset);
+      printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
+             + sizeof(struct dysymtab_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, dysym_command->cmdsize);
+    }
+  else
+    {
+      printf ("\n [-] Load command %d\n", i);
+      printf ("\nSection Name \t: LC_DYSYMTAB\n");
+      printf ("cmd size \t: %d\n",        dysym_command->cmdsize);
+      printf ("ilocalsym \t: %d\n",       dysym_command->ilocalsym);
+      printf ("nlocalsym \t: %d\n",       dysym_command->nlocalsym);
+      printf ("iextdefsym \t: %d\n",      dysym_command->iextdefsym);
+      printf ("nextdefsym \t: %d\n",      dysym_command->nextdefsym);
+      printf ("iundefsym \t: %d\n",       dysym_command->iundefsym);
+      printf ("nundefsym \t: %d\n",       dysym_command->nundefsym);
+      printf ("tocoff \t\t: %d\n",        dysym_command->tocoff);
+      printf ("ntoc \t\t: %d\n",          dysym_command->ntoc);
+      printf ("modtaboff \t: %d\n",       dysym_command->modtaboff);
+      printf ("nmodtab \t: %d\n",         dysym_command->nmodtab);
+      printf ("extrefsymoff \t: %d\n",    dysym_command->extrefsymoff);
+      printf ("indirectsymoff \t: %d\n",  dysym_command->indirectsymoff);
+      printf ("nindirectsyms \t: %d\n",   dysym_command->nindirectsyms);
+      printf ("extreloff \t: %d\n",       dysym_command->extreloff);
+      printf ("nextrel \t: %d\n",         dysym_command->nextrel);
+      printf ("locreloff \t: %d\n",       dysym_command->locreloff);
+      printf ("nlocrel \t: %d\n",         dysym_command->nlocrel);
+    }
 }
 
 void
@@ -429,17 +584,28 @@ dm_read_symtab (int i)
   sy_command = dm_allocate(sizeof(struct symtab_command));
   memcpy(sy_command, (char *)offset, sizeof(struct symtab_command));
 
-  printf("\n [-] Load command %d\n", i);
-  printf("\ncmd \t\t: LC_SYMTAB\n");
-  printf("cmd size \t: %d\n",    sy_command->cmdsize);
-  printf("symoff \t\t: %d\n",    sy_command->symoff);
-  printf("nsyms \t\t: %d\n",     sy_command->nsyms);
-  printf("stroff \t\t: %d\n",    sy_command->stroff);
-  printf("strsize \t: %d\n",     sy_command->strsize);
+  if (rad)
+    {
+      printf("f section_lc_dysymtab @ 0x%08x\n", offset);
+      printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
+             + sizeof(struct dysymtab_command));
+		  printf("CC [%02i] 0x%08x cmdsize=%d",
+             i, offset, dysym_command->cmdsize);
+    }
+  else
+    {
+      printf("\n [-] Load command %d\n", i);
+      printf("\ncmd \t\t: LC_SYMTAB\n");
+      printf("cmd size \t: %d\n",    sy_command->cmdsize);
+      printf("symoff \t\t: %d\n",    sy_command->symoff);
+      printf("nsyms \t\t: %d\n",     sy_command->nsyms);
+      printf("stroff \t\t: %d\n",    sy_command->stroff);
+      printf("strsize \t: %d\n",     sy_command->strsize);
+    }
 }
 
 void
-dm_read_section ()
+dm_read_section (int i)
 {
   char *stmt;
   int rc;
@@ -447,18 +613,29 @@ dm_read_section ()
   sect = dm_allocate(sizeof(struct section));
   memcpy(sect, (char *)toff, sizeof(struct section));
 
-  printf("\n [-] Section \n");
-  printf("\nSection Name \t: %s\n", sect->sectname);
-  printf("Segment Name \t: %s\n", 	sect->segname);
-  printf("Address \t: 0x%08x\n", 	  sect->addr);
-  printf("Size \t\t: 0x%08x\n",     sect->size);
-  printf("Offset \t\t: %d\n",       sect->offset);
-  printf("Align \t\t: %d\n",        sect->align);
-  printf("Reloff \t\t: %d\n",       sect->reloff);
-  printf("Nreloc \t\t: %d\n",       sect->nreloc);
-  printf("Flags \t\t: 0x%08x\n", 	  sect->flags);
-  printf("Reserved1 \t: %d\n",      sect->reserved1);
-  printf("Reserved2 \t: %d\n",      sect->reserved2);
+  if (rad)
+    {
+      printf("f section_%s @ 0x%08x\n", sect->sectname, offset);
+      printf("f section_%s_end @ 0x%08x\n", sect->sectname, offset
+             + sizeof(sect));
+      printf("CC [%02i] 0x%08x segname=%s addr=0x%08x\n\n",
+             i, sect, sect->segname, sect->addr);
+    }
+  else
+    {
+      printf("\n [-] Section \n");
+      printf("\nSection Name \t: %s\n", sect->sectname);
+      printf("Segment Name \t: %s\n", 	sect->segname);
+      printf("Address \t: 0x%08x\n", 	  sect->addr);
+      printf("Size \t\t: 0x%08x\n",     sect->size);
+      printf("Offset \t\t: %d\n",       sect->offset);
+      printf("Align \t\t: %d\n",        sect->align);
+      printf("Reloff \t\t: %d\n",       sect->reloff);
+      printf("Nreloc \t\t: %d\n",       sect->nreloc);
+      printf("Flags \t\t: 0x%08x\n", 	  sect->flags);
+      printf("Reserved1 \t: %d\n",      sect->reserved1);
+      printf("Reserved2 \t: %d\n",      sect->reserved2);
+    }
 }
 
 void
@@ -471,17 +648,28 @@ dm_read_dylinker (int i)
   dy_command = dm_allocate(sizeof(struct dylinker_command));
   memcpy(dy_command, offset, sizeof(struct dylinker_command));
 
-  printf("\n [-] Load command %d\n", i);
-
-  if (dy_command->cmd == LC_ID_DYLINKER)
-    printf("\ncmd \t\t: LC_ID_DYLINKER\n");
+  if (rad)
+    {
+      printf("f section_lc_dylinker @ 0x%08x\n", offset);
+      printf("f section_lc_dylinker_end @ 0x%08x\n", offset
+             + sizeof(struct dylinker_command));
+      printf("CC [%02i] 0x%08x cmd=%s",
+             i, dy_command, dy_command->cmd);
+    }
   else
-    printf("\ncmd \t\t: LC_LOAD_DYLINKER\n");
+    {
+      printf("\n [-] Load command %d\n", i);
 
-  printf("cmd size \t: %d\n", 	dy_command->cmdsize);
+      if (dy_command->cmd == LC_ID_DYLINKER)
+        printf("\ncmd \t\t: LC_ID_DYLINKER\n");
+      else
+        printf("\ncmd \t\t: LC_LOAD_DYLINKER\n");
 
-  p = (char *)offset + dy_command->name.offset;
-  printf("Path %s (offset %u)\n", 	p, dy_command->name.offset);
+      printf("cmd size \t: %d\n", 	dy_command->cmdsize);
+
+      p = (char *)offset + dy_command->name.offset;
+      printf("Path %s (offset %u)\n", 	p, dy_command->name.offset);
+    }
 }
 
 void
@@ -573,18 +761,29 @@ dm_read_segment (int i)
   char *stmt;
   int rc;
 
-  printf ("\n [-] Load command %d\n", i);
-  printf ("\ncmd \t\t: LC_SEGMENT\n");
-  printf ("cmd size \t: %d\n",        seg_command->cmdsize);
-  printf ("seg name \t: %s\n",        seg_command->segname);
-  printf ("VM Addr \t: 0x%08x\n",     seg_command->vmaddr);
-  printf ("VM Size \t: 0x%08x\n",     seg_command->vmsize);
-  printf ("Fileoff \t: %d\n",         seg_command->fileoff);
-  printf ("Filesize \t: %d\n",        seg_command->filesize);
-  printf ("Max Prot \t: 0x%08x\n",    seg_command->maxprot);
-  printf ("Init Prot \t: 0x%08x\n",   seg_command->initprot);
-  printf ("NSects \t\t: %d\n",        seg_command->nsects);
-  printf ("Flags \t\t: 0x%08x\n",     seg_command->flags);    
+  if (rad)
+    {
+      printf("f section_lc_segment @ 0x%08x\n", offset);
+      printf("f section_lc_segment_end @ 0x%08x\n", offset
+             + sizeof(seg_command));
+		  printf("CC [%02i] 0x%08x size=%08i nsects=%03i\n\n",
+             i, seg_command, seg_command->cmdsize, seg_command->nsects);
+    }
+  else
+    {
+      printf ("\n [-] Load command %d\n", i);
+      printf ("\ncmd \t\t: LC_SEGMENT\n");
+      printf ("cmd size \t: %d\n",        seg_command->cmdsize);
+      printf ("seg name \t: %s\n",        seg_command->segname);
+      printf ("VM Addr \t: 0x%08x\n",     seg_command->vmaddr);
+      printf ("VM Size \t: 0x%08x\n",     seg_command->vmsize);
+      printf ("Fileoff \t: %d\n",         seg_command->fileoff);
+      printf ("Filesize \t: %d\n",        seg_command->filesize);
+      printf ("Max Prot \t: 0x%08x\n",    seg_command->maxprot);
+      printf ("Init Prot \t: 0x%08x\n",   seg_command->initprot);
+      printf ("NSects \t\t: %d\n",        seg_command->nsects);
+      printf ("Flags \t\t: 0x%08x\n",     seg_command->flags);    
+    }
 }
 
 void
@@ -592,10 +791,10 @@ dm_read_command (int ctr)
 {
   int i, z, nsects;
 
-  if ( ctr )
-    dm_read_header(1);
-  else
-    dm_read_header(0);
+  /*if ( ctr )*/
+    /*dm_read_header(1);*/
+  /*else*/
+  dm_read_header(0);
 
   ncmds = m_header.ncmds;
 
@@ -607,6 +806,9 @@ dm_read_command (int ctr)
 
   // Offset to walk through the section structures
   toff    = offset;
+
+  if (rad)
+    printf("\nfs sections\n");
 
   for ( i=0; i < ncmds; i++ )
     {
@@ -630,7 +832,7 @@ dm_read_command (int ctr)
 
           for ( z=0; z < nsects; z++ )
             {
-              dm_read_section();
+              dm_read_section(z);
               toff += sizeof(struct section);
             }
           break;

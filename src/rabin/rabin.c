@@ -942,7 +942,7 @@ void rabin_show_sections(const char *file)
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
-		dm_read_command(0);
+		dm_read_command(rad);
 		break;
 	case FILETYPE_ELF:
 		fd = ELF_CALL(dietelf_open,bin.elf,file);

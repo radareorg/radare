@@ -32,7 +32,8 @@ psOBJ+=dbg/close.o dbg/debug.o dbg/lseek.o dbg/open.o
 psOBJ+=dbg/system.o dbg/signal.o
 psOBJ+=dbg/mem.o dbg/wp.o dbg/darwin/fd.o dbg/events.o
 #psOBJ+=dbg/darwin/debug.o dbg/darwin/fd.o dbg/darwin/signal.o
-psOBJ+=dbg/darwin/signal.o dbg/darwin/debug.o
+psOBJ+=dbg/darwin/signal.o dbg/darwin/debug.o dbg/darwin/syscall.o
+psOBJ+=dbg/darwin/procs.o
 psOBJ+=dbg/procs.o dbg/thread.o dbg/parser.o
 
 else
