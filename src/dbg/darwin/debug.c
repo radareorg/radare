@@ -183,7 +183,6 @@ int debug_attach(int pid)
 		fprintf(stderr, "Failed to create exception port.\n");
 		return -1;
 	}
-#endif
 	if (mach_port_insert_right(mach_task_self(), exception_port,
 				exception_port, MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to acquire insertion rights on the port.\n");
@@ -194,6 +193,7 @@ int debug_attach(int pid)
 		fprintf(stderr, "Failed to set the inferior's exception ports.\n");
 		return -1;
 	}
+#endif
 	return 0;
 }
 

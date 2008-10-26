@@ -19,6 +19,11 @@
  *
  */
 
+#include <stdio.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <stdlib.h>
+
 // XXX
 int pids_cmdline(int pid, char *cmdline)
 {

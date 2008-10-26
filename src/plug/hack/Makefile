@@ -40,7 +40,8 @@ perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
 
 ruby.${SO}:
-	-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO}
+	-ruby mkruby.rb
+	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO}
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}: lua.o
