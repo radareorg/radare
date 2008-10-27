@@ -6,8 +6,8 @@ author: pancake <nopcode.org>
 
 =end
 
-class Core
-
+# This class is instantiated as $r = Radare.new()
+class Radare
  # helpers
  def str2hash(str)
    t = {}
@@ -22,42 +22,46 @@ class Core
  end
 
  def hex2bin(str)
-   return 
+   return str
  end
 
  # core
  def seek(addr)
-  r.cmd("s %s"%addr)
+  $r.cmd("s %s"%addr)
  end
 
  def seek(addr)
-  r.cmd("s %s"%addr)
+  $r.cmd("s %s"%addr)
  end
 
  # code
  def comment_add(addr, str)
-  r.cmd("CC #{str} @ 0x%08llx"%addr)
+  $r.cmd("CC #{str} @ 0x%08llx"%addr)
  end
 
  def comment_del(str)
-  r.cmd("CC -#{str}");
+  $r.cmd("CC -#{str}");
  end
 
  def analyze_opcode(addr)
-  return str2hash(r.cmd("ao @ 0x%08llx"%addr))
+  begin
+   return str2hash($r.cmd("ao @ 0x%08x"%addr))
+  rescue
+   return str2hash($r.cmd("ao @ #{addr}"))
+  end
  end
 
  # debugger
  def step(addr)
-  r.cmd("!step")
+  $r.cmd("!step")
  end
 
  def continue()
-  r.cmd("!cont")
+  $r.cmd("!cont")
  end
 
  def until(addr)
-  r.cmd("!cont #{addr}")
+  $r.cmd("!cont #{addr}")
  end
 
 end

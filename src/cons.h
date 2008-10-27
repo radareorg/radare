@@ -80,4 +80,5 @@ int cons_palette_init(const unsigned char *pal);
 void cons_printf(const char *format, ...);
 extern const char *dl_prompt;
 
+extern int cons_noflush;
 #endif

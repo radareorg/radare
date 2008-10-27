@@ -677,7 +677,9 @@ char *radare_cmd_str(const char *cmd)
 	config_set_i("scr.buf", 1);
 
 	dcmd = strdup ( cmd );
+	cons_noflush=1;
 	radare_cmd( dcmd, 0);
+	cons_noflush=0;
 	free ( dcmd);
 	buf = cons_get_buffer();
 	if (buf)

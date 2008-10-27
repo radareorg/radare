@@ -51,26 +51,26 @@ static VALUE radare_ruby_cmd(VALUE self, VALUE string)
 	retstr = rs_cmdstr ( RSTRING(string)->ptr );
 	if (retstr == NULL || retstr[0]=='\0')
 		return rb_str_new2("");
-		//return Qnil;
-
-	return rb_str_new2("Hello message\n");
+	return rb_str_new2(retstr);//"Hello message\n");
 }
 
 #define RUBYAPI  LIBDIR"/radare/radare.rb"
 static int ruby_hack_init()
 {
+	int err;
 	ruby_init();
+	ruby_init_loadpath();
+ruby_debug=0;
+ruby_verbose=1;
 
 	VALUE rb_RadareCmd = rb_define_class("Radare", rb_cObject);
 	rb_define_method(rb_RadareCmd, "cmd", radare_ruby_cmd, 1);
-	rb_eval_string_protect("r = Radare.new()", NULL);
-
-	rb_eval_string_protect("require \"irb\"; IRB.start();", NULL);
-
+	//rb_eval_string_protect("r = Radare.new()", NULL);
 
 	printf("==> Loading radare ruby api... %s\n",
 		slurp_ruby(RUBYAPI)? "error ( "RUBYAPI" )":"ok");
 	fflush(stdout);
+
 
 	return 0;
 }
@@ -78,19 +78,20 @@ static int ruby_hack_init()
 static int ruby_hack_cya()
 {
 	/* TODO */
+	ruby_finalize();
 	return 0;
 }
 
 int ruby_hack_cmd(char *input)
 {
-	int rb_state = 0;
+	int err, rb_state = 0;
 	char str[1024];
-
-	if (rs_cmdstr == NULL)
-		rs_cmdstr = radare_plugin.resolve("radare_cmd_str");
 
 	if (rs_cmd == NULL)
 		rs_cmd = radare_plugin.resolve("radare_cmd");
+
+	if (rs_cmdstr == NULL)
+		rs_cmdstr = radare_plugin.resolve("radare_cmd_str");
 
 	if (rs_cmd == NULL || rs_cmdstr == NULL) {
 		printf("cannot find radare_cmd_str or radare_cmd\n");
@@ -105,6 +106,8 @@ int ruby_hack_cmd(char *input)
 			fflush(stderr);
 		}
 	} else {
+		rb_eval_string_protect("require 'irb'; $r = Radare.new(); IRB.start();", &err);
+		if (err != 0) 
 		while(!feof(stdin)) {
 			printf("ruby> ");
 			fflush(stdout);
@@ -139,7 +142,7 @@ int ruby_hack_cmd(char *input)
 			//ruby_exec();
 		}
 	}
-	ruby_hack_cya();
+	//ruby_hack_cya();
 	return 0;
 }
 
@@ -147,5 +150,6 @@ int radare_plugin_type = PLUGIN_TYPE_HACK;
 struct plugin_hack_t radare_plugin = {
 	.name = "ruby",
 	.desc = "ruby plugin",
+	//.init = &ruby_hack_init,
 	.callback = &ruby_hack_cmd
 };

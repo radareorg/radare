@@ -46,7 +46,7 @@ if so_hello.env['HAVE_LIBLUA'] == 1:
 
 if so_hello.env['HAVE_RUBY'] == 1:
 	#os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c src/plug/hack/ruby.so src")
-	os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c build/default/src/plug/hack/ruby.so src")
+	os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c build/default/src/plug/hack/libruby.so src")
 #	so_ruby = bld.new_task_gen('cc', 'shlib','ruby')
 #	so_ruby.includes = '../..'
 #	#so_ruby.env.append_value('LINKFLAGS','-llua')

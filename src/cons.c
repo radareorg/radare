@@ -33,6 +33,7 @@
 
 int _print_fd = 1;
 int cons_lines = 0;
+int cons_noflush = 0;
 #define CONS_BUFSZ 0x4f00
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
@@ -700,6 +701,8 @@ void cons_flush()
 	char buf[1024];
 	int i,j;
 
+	if (cons_noflush)
+		return;
 	if (!strnull(cons_buffer)) {
 		const char *file = config_get("file.scrfilter");
 		const char *tee = config_get("scr.tee");
