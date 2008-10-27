@@ -69,7 +69,7 @@ dm_read_codesign (int i)
       printf("f section_lc_codesign @ 0x%08x\n", offset);
       printf("f section_lc_codesign_end @ 0x%08x\n", offset
              + sizeof(struct linkedit_data_command));
-		  printf("CC [%02i] 0x%08x size=%d",
+		  printf("CC [%02i] 0x%08x size=%d\n\n",
              i, offset, ld->cmdsize);
     }
   else
@@ -98,7 +98,7 @@ dm_read_uuid (int i)
       printf("f section_lc_uuid @ 0x%08x\n", offset);
       printf("f section_lc_uuid_end @ 0x%08x\n", offset
              + sizeof(struct uuid_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, uuid->cmdsize);
     }
   else
@@ -136,7 +136,7 @@ dm_read_routines (int i)
       printf("f section_lc_routines @ 0x%08x\n", offset);
       printf("f section_lc_routines_end @ 0x%08x\n", offset
              + sizeof(struct routines_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, routines_command->cmdsize);
     }
   else
@@ -171,7 +171,7 @@ dm_read_twolevel_hints (int i)
       printf("f section_lc_twolevel_hints @ 0x%08x\n", offset);
       printf("f section_lc_twolevel_hints_end @ 0x%08x\n", offset
              + sizeof(struct twolevel_hints_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, tlh_command->cmdsize);
     }
   else
@@ -202,7 +202,7 @@ dm_read_thread (int i)
       printf("f section_lc_thread @ 0x%08x\n", offset);
       printf("f section_lc_thread_end @ 0x%08x\n", offset
              + sizeof(struct thread_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, thr_command->cmdsize);
     }
   else
@@ -274,7 +274,7 @@ dm_read_prebound_dylib_command (int i)
       printf("f section_lc_prebound_dylib @ 0x%08x\n", offset);
       printf("f section_lc_prebound_dylib_end @ 0x%08x\n", offset
              + sizeof(struct prebound_dylib_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, prebound_dy_command->cmdsize);
     }
   else
@@ -316,7 +316,7 @@ dm_read_sub_client (int i)
       printf("f section_lc_sub_client @ 0x%08x\n", offset);
       printf("f section_lc_sub_client_end @ 0x%08x\n", offset
              + sizeof(struct sub_client_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, sub_client->cmdsize);
     }
   else
@@ -346,7 +346,7 @@ dm_read_sub_library (int i)
       printf("f section_lc_sub_library @ 0x%08x\n", offset);
       printf("f section_lc_sub_library_end @ 0x%08x\n", offset
              + sizeof(struct sub_library_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, sub_library->cmdsize);
     }
   else
@@ -376,7 +376,7 @@ dm_read_sub_umbrella (int i)
       printf("f section_lc_sub_umbrella @ 0x%08x\n", offset);
       printf("f section_lc_sub_umbrella_end @ 0x%08x\n", offset
              + sizeof(struct sub_umbrella_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, sub_umbrella->cmdsize);
     }
   else
@@ -406,7 +406,7 @@ dm_read_sub_framework (int i)
       printf("f section_lc_sub_framework @ 0x%08x\n", offset);
       printf("f section_lc_sub_framework_end @ 0x%08x\n", offset
              + sizeof(struct sub_framework_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, sub_framework->cmdsize);
     }
   else
@@ -436,7 +436,7 @@ dm_read_dylib (int i)
       printf("f section_lc_dylib @ 0x%08x\n", offset);
       printf("f section_lc_dylib_end @ 0x%08x\n", offset
              + sizeof(struct dylib_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, dyl_command->cmdsize);
     }
   else
@@ -485,7 +485,7 @@ dm_read_fvmlib (int i)
       printf("f section_lc_fvmlib @ 0x%08x\n", offset);
       printf("f section_lc_fvmlib_end @ 0x%08x\n", offset
              + sizeof(struct fvmlib_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, fvm_command->cmdsize);
     }
   else
@@ -520,7 +520,7 @@ dm_read_symseg (int i)
       printf("f section_lc_symseg @ 0x%08x\n", offset);
       printf("f section_lc_symseg_end @ 0x%08x\n", offset
              + sizeof(struct symseg_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, symseg_command->cmdsize);
     }
   else
@@ -547,7 +547,7 @@ dm_read_dysymtab (int i)
       printf("f section_lc_dysymtab @ 0x%08x\n", offset);
       printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
              + sizeof(struct dysymtab_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, dysym_command->cmdsize);
     }
   else
@@ -589,8 +589,8 @@ dm_read_symtab (int i)
       printf("f section_lc_dysymtab @ 0x%08x\n", offset);
       printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
              + sizeof(struct dysymtab_command));
-		  printf("CC [%02i] 0x%08x cmdsize=%d",
-             i, offset, dysym_command->cmdsize);
+		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
+             i, offset, sy_command->cmdsize);
     }
   else
     {
@@ -653,7 +653,7 @@ dm_read_dylinker (int i)
       printf("f section_lc_dylinker @ 0x%08x\n", offset);
       printf("f section_lc_dylinker_end @ 0x%08x\n", offset
              + sizeof(struct dylinker_command));
-      printf("CC [%02i] 0x%08x cmd=%s",
+      printf("CC [%02i] 0x%08x cmd=%d\n\n",
              i, dy_command, dy_command->cmd);
     }
   else
@@ -693,9 +693,21 @@ dm_read_header (int p)
 #endif
       swapped = 1;
 
-      printf ("\n\n [-] fat Header\n\n");
-      printf ("Magic Number \t: 0x%08x\n", fat_header.magic);
-      printf ("fat archs \t: %d\n", fat_header.nfat_arch);
+      if (rad)
+        {
+          printf("fs header\n");
+          printf("f header_fat @ 0x%08x\n", fileaddr);
+          printf("f header_fat_end @ 0x%08x\n",
+                 fileaddr + sizeof(struct fat_header));
+          printf("CC [] %08x narchs=%d\n\n",
+                 fileaddr, fat_header.nfat_arch);
+        }
+      else
+        {
+          printf ("\n\n [-] fat Header\n\n");
+          printf ("Magic Number \t: 0x%08x\n", fat_header.magic);
+          printf ("fat archs \t: %d\n", fat_header.nfat_arch);
+        }
     }
 
   nfat = fat_header.nfat_arch;
@@ -710,6 +722,9 @@ dm_read_header (int p)
       swap_fat_arch(archs, nfat, LITTLE_ENDIAN);
 #endif
 
+      if (rad)
+        printf("fs archs\n");
+
       for(i = 0; i < nfat; i++)
         {
 #if __linux__
@@ -719,19 +734,54 @@ dm_read_header (int p)
           archs[i].size       = SWAP_LONG(archs[i].size);
           archs[i].align      = SWAP_LONG(archs[i].align);
 #endif
-          printf("\n [-] Architecture %d\n\n", i);
+          if (!rad)
+            printf("\n [-] Architecture %d\n\n", i);
 
           if (archs[i].cputype == CPU_TYPE_X86)
             {
               fileaddr += archs[i].offset;
               i386_found++;
-              printf("cputype \t: CPU_TYPE_X86\n");
-              printf("offset \t\t: %u\n", (unsigned int)archs[i].offset);
+              if (rad)
+                {
+                  printf("f arch_x86 @ 0x%08x\n",
+                         archp + sizeof(struct fat_arch) * i);
+                  printf("f arch_x86_end @ 0x%08x\n", archp
+                         + sizeof(struct fat_arch) * i
+                         + sizeof(struct fat_arch));
+                  printf("CC [] 0x%08x offset=0x%08x\n\n",
+                         archp + sizeof(struct fat_arch) * i,
+                         archs[i].offset);
+                }
+              else
+                {
+                  printf("cputype \t: CPU_TYPE_X86\n");
+                  printf("offset \t\t: %u\n", (unsigned int)archs[i].offset);
+                }
             }
           else
             {
-              printf("cputype \t: %d\n", archs[i].cputype);
-              printf("offset \t\t: %u\n", (unsigned int)archs[i].offset);
+              if (rad)
+                {
+                  /*
+                   * FIX: Add support for all the other arch name
+                   */
+                  printf("f arch_%d @ 0x%08x\n",
+                         archs[i].cputype,
+                         archp + sizeof(struct fat_arch) * i);
+                  printf("f arch_%d_end @ 0x%08x\n",
+                         archs[i].cputype,
+                         archp + sizeof(struct fat_arch) * i
+                         + sizeof(struct fat_arch));
+                  printf("CC [] 0x%08x offset=0x%08x\n\n",
+                         archp + sizeof(struct fat_arch) * i,
+                         archs[i].offset);
+
+                }
+              else
+                {
+                  printf("cputype \t: %d\n", archs[i].cputype);
+                  printf("offset \t\t: %u\n", (unsigned int)archs[i].offset);
+                }
             }
         }
     }

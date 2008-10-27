@@ -343,6 +343,8 @@ void rabin_show_strings(const char *file)
 		} else if (verbose != 0) 
 			printf("\n%i strings\n", strings_count);
 
+		free(strings.elf);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
@@ -396,6 +398,8 @@ void rabin_show_strings(const char *file)
 			fprintf(stderr, "%i strings added\n", strings_count);
 		} else if (verbose != 0) 
 			printf("\n%i strings\n", strings_count);
+
+		free(strings.pe);
 
 		dietpe_close(fd);
 #endif
@@ -706,6 +710,8 @@ void rabin_show_imports(const char *file)
 		} else if (verbose != 0) 
 			printf("\n%i imports\n", imports_count);
 
+		free(import.elf);
+
 		ELF_(dietelf_close)(fd);
 #endif
 		break;
@@ -776,6 +782,8 @@ void rabin_show_imports(const char *file)
 			fprintf(stderr, "%i imports added\n", imports_count);
 		} else if (verbose != 0) 
 			printf("\n%i imports\n", imports_count);
+
+		free(import.pe);
 
 		dietpe_close(fd);
 		break;
@@ -851,6 +859,8 @@ void rabin_show_symbols(char *file)
 		} else if (verbose != 0)
 			printf("\n%i symbols\n", symbols_count);
 
+		free(symbol.elf);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_MACHO:
@@ -921,6 +931,8 @@ void rabin_show_symbols(char *file)
 			fprintf(stderr, "%i symbols added\n", symbols_count);
 		} else if (verbose != 0)
 			printf("\n%i symbols\n", symbols_count);
+
+		free(symbol.pe);
 
 		dietpe_close(fd);
 		break;
@@ -1011,6 +1023,8 @@ void rabin_show_sections(const char *file)
 			printf("\n%i sections\n", sections_count);
 		}
 
+		free(section.elf);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
@@ -1081,6 +1095,8 @@ void rabin_show_sections(const char *file)
 			printf("\n%i sections\n", sections_count);
 		}
 
+		free(section.pe);
+
 		dietpe_close(fd);
 		break;
 #if 0
@@ -1135,6 +1151,8 @@ void rabin_show_libs(const char *file)
 		if (!rad && verbose != 0) 
 			printf("\n%i libraries\n", libs_count);
 
+		free(libs.elf);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
@@ -1150,17 +1168,17 @@ void rabin_show_libs(const char *file)
 			printf("[Libraries]\n");
 
 		libsp.pe = libs.pe;
-		for (i = 0; i < libs_count; i++, libs.pe++) {
-			if (!rad) {
-				printf("%s\n", libs.pe->string);
-			}
+		for (i = 0; i < libs_count; i++, libsp.pe++) {
+			if (!rad)
+				printf("%s\n", libsp.pe->string);
 		}
 
 		if (!rad && verbose != 0) 
 			printf("\n%i libraries\n", libs_count);
 
-		ELF_(dietelf_close)(fd);
+		free(libs.pe);
 
+		dietpe_close(fd);
 		break;
 	case FILETYPE_MACHO:
 		sprintf(buf, "otool -L '%s'", file);

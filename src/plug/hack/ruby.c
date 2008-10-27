@@ -19,7 +19,11 @@
  */
 
 #define RADARE_MODULE
+#ifdef __APPLE__
+#include "ruby/ruby.h"
+#elif
 #include "ruby.h"
+#endif
 #include <plugin.h>
 #include <main.h>
 #include "../../main.h"
