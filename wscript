@@ -218,7 +218,8 @@ def build(bld):
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.lua')
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.rb')
 	# RSC scripts
-	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/libruby.so', chmod=0755)
+	if bld.env['HAVE_RUBY'] == 1:
+		bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/libruby.so', chmod=0755)
 	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')

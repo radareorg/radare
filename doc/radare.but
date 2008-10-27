@@ -233,6 +233,9 @@ There are other special syntaxes for the expressions. Here's for example some of
 \c $$            ; current seek
 \c $$$           ; size of opcode at current seek
 \c $${file.size} ; file.size (taken from eval variable)
+\c $$j           ; jump address (branch of instruction)
+\c $$f           ; false address (continuation after branch)
+\c $$r           ; data reference from opcode
 
 For example:
 
