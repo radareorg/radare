@@ -112,14 +112,12 @@ def configure(conf):
 	#conf.define('LIBEXECDIR', '/usr/share/doc/radare') # DEPRECATED
 
 	# Check for ruby
-	ru = conf.create_library_configurator()
-	ru.name = 'ruby'
-	ru.define = 'HAVE_RUBY'
-	ru.libs = ['ruby']
-	ru.mandatory = False
-	ru.run()
-	if conf.env['HAVE_RUBY'] != 1:
-		Options.options.HAVE_RUBY= False
+	print "Checking for ruby mkmf\t\t\t    :",
+	if os.system("ruby src/plug/hack/chkruby.rb") == 0:
+		print "ok"
+		Options.options.HAVE_RUBY = False
+	else:
+		print "not found"
 	conf.define('HAVE_RUBY', Options.options.HAVE_RUBY)
 
 	# Check for libreadline
@@ -179,6 +177,7 @@ def configure(conf):
 	#print " * InstDir   : %s"%inst_var
 	print " * Target    : %s"%conf.env['TARGET']
 	print " * LilEndian : %s"%conf.env['LIL_ENDIAN']
+	print " * HaveRuby  : %s"%conf.env['HAVE_RUBY']
 
 	if conf.env['HAVE_LIB_EWF'] == 1:
 		print " * EWF       : enabled"
