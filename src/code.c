@@ -494,11 +494,11 @@ void udis_arch_buf(int arch, const u8 *block, int len, int rows)
 			memcpy(b, block+bytes, 4);
 			break;
 		case ARCH_PPC:
-			endian_memcpy_e(b, block+bytes, 4, !endian);
+			endian_memcpy_e((u8*)b, (u8*)block+bytes, 4, !endian);
 			break;
 		default:
 			//memcpy(b, config.block+bytes, 4);
-			endian_memcpy_e(b, block+bytes, 4, endian);
+			endian_memcpy_e((u8*)b, (u8*)block+bytes, 4, endian);
 		}
 
 		if (cmd_asm && cmd_asm[0]) {

@@ -38,11 +38,12 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 
 static int dietpe_aux_stripstr_from_file(const char *filename, int min, int encoding, PE_DWord seek, PE_DWord limit, const char *filter, int str_limit, dietpe_string *strings) {
 	int fd = open(filename, O_RDONLY);
-	dietpe_string *stringsp;
-	unsigned char *buf;
-	PE_DWord i = seek;
-	PE_DWord len, string_len;
-	int unicode = 0, matches = 0, ctr = 0;
+	//dietpe_string *stringsp;
+	//unsigned char *buf;
+	//PE_DWord i = seek;
+	PE_DWord len;//, string_len;
+	//int unicode = 0, matches = 0, ctr = 0;
+	int ctr = 0;
 	char str[PE_STRING_LENGTH];
 
 	if (fd == -1) {

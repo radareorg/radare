@@ -325,7 +325,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 		args = strdup(args+1);
 		nargs = set0word(args);
 		if (nargs == 0)
-			efree(&args);
+			efree((void **)&args);
 	}
 
 	/* go format */

@@ -39,10 +39,10 @@
 
 int debug_lib_load(const char *file)
 {
+#if 0
 	char tmp[1024];
 	regs_t oregs, regs;
 	u64 pc;
-#if 0
 //__linux__
 	/* use uselib syscall here! :D */
 	// XXX control strlen(fil

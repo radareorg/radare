@@ -219,8 +219,8 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 	}
 }
 
-#define C_RESET   "\e[0m"
-#define C_BWHITE  "\e[1;37m"
+//#define C_RESET   "\e[0m"
+//#define C_BWHITE  "\e[1;37m"
 #define CHK_ARGS1 if ((u->operand[0].type == UD_NONE)) break;
 #define CHK_ARGS2 if ((u->operand[0].type == UD_NONE) || (u->operand[1].type == UD_NONE)) break;
 #define CHK_ARGS3 if ((u->operand[0].type == UD_NONE) || (u->operand[1].type == UD_NONE) || (u->operand[2].type == UD_NONE)) break;

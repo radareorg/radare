@@ -52,9 +52,9 @@ int iswhitespace(char ch)
 int util_mkdir(const char *dir)
 {
 #if __WINDOWS__
-	mkdir(dir);
+	return mkdir(dir);
 #else
-	mkdir(dir, 0755);
+	return mkdir(dir, 0755);
 #endif
 }
 
@@ -146,26 +146,6 @@ void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 			dest[i++] = orig[j];
 }
 
-/* arch dependant */
-void drop_endian(u8 *dest, u8 *orig, unsigned int size)
-{
-#if LIL_ENDIAN
-	endian_memcpy_e(dest, orig, size, 0);
-#else
-	endian_memcpy_e(dest, orig, size, 1); // lilendian by default
-#endif
-}
-
-
-void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
-{
-#if RADARE_CORE
-	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.bigendian"));
-#else
-	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
-#endif
-}
-
 void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 {
 	if (endian) {
@@ -200,6 +180,26 @@ void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 			printf("Invalid size: %d\n", size);
 		}
 	}
+}
+
+/* arch dependant */
+void drop_endian(u8 *dest, u8 *orig, unsigned int size)
+{
+#if LIL_ENDIAN
+	endian_memcpy_e(dest, orig, size, 0);
+#else
+	endian_memcpy_e(dest, orig, size, 1); // lilendian by default
+#endif
+}
+
+
+void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
+{
+#if RADARE_CORE
+	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.bigendian"));
+#else
+	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
+#endif
 }
 
 static char tmpdir[1024];
@@ -273,16 +273,16 @@ u64 get_pointer(u64 addr, int size)
 	case 2:
 		io_read(config.fd, &newa16, 2);
 		ret = newa64 = newa16;
-		endian_memcpy_e(&ret, &newa16,2,endian);
+		endian_memcpy_e((u8*)&ret, (u8*)&newa16,2,endian);
 		break;
 	case 4:
 		io_read(config.fd, &newa32, 4);
 		newa64 = newa32;
-		endian_memcpy_e(&ret, &newa32,4,endian);
+		endian_memcpy_e((u8*)&ret, (u8*)&newa32,4,endian);
 		break;
 	case 8:
 		io_read(config.fd, &newa64, 8);
-		endian_memcpy_e(&ret, &newa64,8,endian);
+		endian_memcpy_e((u8*)&ret, (u8*)&newa64,8,endian);
 		break;
 	}
 	radare_seek(sk, SEEK_SET);
@@ -415,7 +415,7 @@ u64 get_offset(const char *orig)
 	return ret;
 }
 
-u32 get_offset32(u64 foo)
+u32 get_offset32(const char *foo)
 {
 	return (u32) get_offset (foo);
 }
@@ -986,7 +986,7 @@ int strccpy(char *dst, char *orig, int ch)
 u64 htonq(u64 value) {
 	u64 ret  = value;
 #if LIL_ENDIAN
-	endian_memcpy_e(&ret, &value, 8, 0);
+	endian_memcpy_e((u8*)&ret, (u8*)&value, 8, 0);
 #endif
 	return ret;
 }

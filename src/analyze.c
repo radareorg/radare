@@ -857,7 +857,11 @@ int analyze_function(int recursive, int report)
 			}
 			break;
 		default:
-			if (aop.ref != 0 && aop.type == AOP_TYPE_PUSH) {
+			if (aop.ref != 0) {
+			switch(aop.type) {
+			case AOP_TYPE_PUSH:
+			case AOP_TYPE_STORE:
+			case AOP_TYPE_LOAD:
 				if (!report) {
 					buf[0]='\0';
 					string_flag_offset(buf, aop.ref);
@@ -865,6 +869,7 @@ int analyze_function(int recursive, int report)
 					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
 				}
 				nrefs++;
+			}
 			}
 		}
 		ref = (int)aop.value;

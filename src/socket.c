@@ -72,7 +72,7 @@ int socket_ready(int fd, int secs,int usecs)
 	fds[0].fd = fd;
 	fds[0].events = POLLIN|POLLPRI;
 	fds[0].revents = POLLNVAL|POLLHUP|POLLERR;
-	ret =  poll(&fds, 1, usecs);
+	ret = poll((struct pollfd *)&fds, 1, usecs);
 	return ret;
 #elif _WINDOWS_
 	fd_set rfds;

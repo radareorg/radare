@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include "rdb.h"
 
-
 const char *block_type_names[4] =
 {
 	"head",
@@ -409,7 +408,7 @@ struct program_t *program_new(char *file)
 
 int program_save(const char *file)
 {
-	char buf[1024];
+	//char buf[1024];
 
 	eprintf("TODO\n");
 //	sprintf(buf, "C* > %s\n", file);
@@ -423,7 +422,7 @@ struct program_t *program_open(char *file)
 	FILE *fd = NULL;
 	int len;
 	char buf[1024];
-	char *ptr, *ptr2;
+	char *ptr;
 	off_t off;
 
 	if (file != NULL) {

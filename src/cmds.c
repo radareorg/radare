@@ -359,6 +359,8 @@ CMD_DECL(analyze)
 			case AOP_TYPE_RET:   cons_printf("ret\n"); break;
 			case AOP_TYPE_ILL:   cons_printf("illegal-instruction\n"); break;
 			case AOP_TYPE_MOV:   cons_printf("move\n"); break;
+			case AOP_TYPE_LOAD:  cons_printf("load\n"); break;
+			case AOP_TYPE_STORE: cons_printf("store\n"); break;
 			default: cons_printf("unknown(%d)\n", aop.type);
 			}
 			cons_printf("bytes = ");

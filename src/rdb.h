@@ -101,6 +101,8 @@ int program_function_set_vars(struct program_t *program, u64 addr, int vars);
 int program_function_set_args(struct program_t *program, u64 addr, int args);
 int program_function_set_framesize(struct program_t *program, u64 addr, int size);
 struct block_t *program_block_new(struct program_t *program, u64 addr);
+int rdb_diff(struct program_t *a, struct program_t *b, int mode);
+
 
 // XXX
 struct program_t *code_analyze(u64 seek, int depth);

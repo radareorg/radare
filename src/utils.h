@@ -111,7 +111,7 @@ char *str_first_word(const char *string);
 const char *get_tmp_dir();
 const char *strget(const char *str);
 char *strsub (char *string, char *pat, char *rep, int global);
-u32 get_offset32(u64);
+u32 get_offset32(const char *str);
 //u64 ntohq(u64 x);
 #define ntohq htonq
 u64 htonq(u64 x);
