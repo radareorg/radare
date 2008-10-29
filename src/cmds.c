@@ -919,6 +919,9 @@ CMD_DECL(blocksize)
 		cons_printf("  > b 200 ; set block size to 200\n");
 		cons_printf("  > bf sym_main && s sym_main\n");
 		break;
+	case '\0':
+		cons_printf("%d\n", config.block_size);
+		break;
 	default:
 		radare_set_block_size(input);
 	}

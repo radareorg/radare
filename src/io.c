@@ -158,12 +158,13 @@ int radare_write(const char *argro, int mode)
 			if (config_get("file.insertblock")) {
 				eprintf("file.insertblock: not yet implemented\n");
 			} else {
-				rest = config.size - (seek + (len*times));
+				rest = config.size - seek; // + (len*times));
 				if (rest > 0) {
-					char *str = malloc(rest);
+					u8 *str = malloc(rest);
 					io_read(config.fd, str, rest);
 					io_lseek(config.fd, seek+(len*times), SEEK_SET);
-					undo_write_new(seek+(len*times), str, rest);
+					//undo_write_new(seek+(len*times), str, rest);
+					config.size += len*times;
 					io_write(config.fd, str, rest);
 					free(str);
 					io_lseek(config.fd, seek, SEEK_SET);

@@ -10,12 +10,10 @@ LIBNAM = Config::CONFIG['RUBY_INSTALL_NAME']
 rb_so = 'libruby.so'
 rb_c = 'ruby.c'
 inc = '../..'
-begin
-	rb_c = ARGV[0]
-	rb_so = ARGV[1]
-	inc = ARGV[2]
-rescue
-end
+
+if ARGV[0] != nil; rb_c  = ARGV[0] end
+if ARGV[1] != nil; rb_so = ARGV[1] end
+if ARGV[2] != nil; inc   = ARGV[2] end
 
 $cc=ENV["CC"]
 if $cc == nil then
