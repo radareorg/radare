@@ -330,10 +330,8 @@ u64 get_offset(const char *orig)
 	}
 
 	ptr = strchr(arg, '[');
-	if (ptr) {
-		eprintf("UNFOOD\n");
+	if (ptr)
 		return get_pointer(get_offset(ptr+1),4);
-	}
 
 	ret = config_get_i(arg);
 	if (((int)ret) != 0)

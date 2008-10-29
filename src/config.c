@@ -719,7 +719,7 @@ void config_init(int first)
 #endif
 	config_set("dbg.forks", "false"); // stop debugger in any fork or clone
 	config_set("dbg.controlc", "true"); // stop debugger if ^C is pressed
-	config_set("dbg.focus", "false"); // focus on ps.pid or not (ignore events of rest of procs)
+	config_set_i("dbg.focus", 0); // focus on ps.pid or not (ignore events of rest of procs)
 	config_set("dbg.syms", "true");
 	config_set("dbg.dwarf", "false");
 	config_set("dbg.maps", "true");

@@ -19,7 +19,13 @@ A commandline framework for reverse engineering ala *nix-style
 
 \versionid $Id: pvc.but 2008-09-02 pancake $
 
-\C{introduction} Introduction
+\H{introduction} Introduction
+
+This book aims to cover most usage aspects of radare. A framework for reverse engineering and analyzing binaries.
+
+--pancake
+
+\H{history} History
 
 The radare project started in February of 2006 aiming to provide a Free and simple command line interface for an hexadecimal editor supporting 64 bit offsets to make searches and recovering data from hard-disks.
 
