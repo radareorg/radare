@@ -10,11 +10,14 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <sys/mman.h>
 #include <unistd.h>
 
-
+#include "../main.h"
 #include "aux.h"
+
+#if __UNIX__
+#include <sys/mman.h>
+#endif
 
 #include "dietpe.h"
 #include "dietpe_static.h"
@@ -38,12 +41,12 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 
 static int dietpe_aux_stripstr_from_file(const char *filename, int min, int encoding, PE_DWord seek, PE_DWord limit, const char *filter, int str_limit, dietpe_string *strings) {
 	int fd = open(filename, O_RDONLY);
-	//dietpe_string *stringsp;
-	//unsigned char *buf;
-	//PE_DWord i = seek;
-	PE_DWord len;//, string_len;
-	//int unicode = 0, matches = 0, ctr = 0;
-	int ctr = 0;
+	dietpe_string *stringsp;
+	unsigned char *buf;
+	PE_DWord i = seek;
+	PE_DWord len, string_len;
+	int unicode = 0, matches = 0;
+	static int ctr = 0;
 	char str[PE_STRING_LENGTH];
 
 	if (fd == -1) {
@@ -86,7 +89,7 @@ static int dietpe_aux_stripstr_from_file(const char *filename, int min, int enco
 					if (!filter || strstr(str, filter)) {
 						stringsp->offset = i-matches;
 						stringsp->type = (unicode?'U':'A');
-						stringsp->size = len;
+						stringsp->size = string_len;
 						memcpy(stringsp->string, str, PE_STRING_LENGTH);
 						ctr++; stringsp++;
 					}
@@ -524,8 +527,7 @@ int dietpe_get_strings(dietpe_bin *bin, int fd, int verbose, int str_limit, diet
 
 	shdrp = bin->section_header;
 	for (i = 0; i < sections_count; i++, shdrp++) {
-		if (!(PE_SCN_IS_EXECUTABLE(shdrp->Characteristics)))
-			ctr += dietpe_aux_stripstr_from_file(bin->file, 3, ENCODING_ASCII, shdrp->PointerToRawData, shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, str_limit, strings);
+		ctr = dietpe_aux_stripstr_from_file(bin->file, 5, ENCODING_ASCII, shdrp->PointerToRawData, shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, str_limit, strings+ctr);
 	}
 
 	return ctr;

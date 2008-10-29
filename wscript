@@ -115,9 +115,9 @@ def configure(conf):
 	print "Checking for ruby mkmf\t\t\t    :",
 	if os.system("ruby src/plug/hack/chkruby.rb") == 0:
 		print "ok"
-		Options.options.HAVE_RUBY = False
 	else:
 		print "not found"
+		Options.options.HAVE_RUBY = False
 	conf.define('HAVE_RUBY', Options.options.HAVE_RUBY)
 
 	# Check for libreadline

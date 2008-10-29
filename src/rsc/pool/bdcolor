@@ -30,7 +30,6 @@ while($line=<STDIN>) {
 	$a=$b=$c="  ";
 	$diff=1;
 	if ($line=~/\|/) {
-$type=0;
 		$line=~tr/|/ /;
 		$line=~/(\w*)\s*(\w*)/;
 		$a="\e[44m$1\e[0m";
@@ -39,7 +38,6 @@ $type=0;
 		$offa++;
 		$offb++;
 	} elsif ($line=~/>/) {
-$type=1;
 		$line=~s/(\s|>)*//g;
 		$c="\e[42m$line\e[0m";
 		$b=" >";
@@ -62,13 +60,8 @@ $type=1;
 	$line=~/(\w*)\s*(\w*)/;
 	if ("$a$c" eq "    ") { $a=$1; $c=$2; }
 
-#$offb-- if ($b=~/</);
 	$str = sprintf "0x%08x $a  $b   $c\e[0m 0x%08x\n",
 		$offa-1, $offb-1;
-if ($b=~/</) {
-	$offb-- if ($type!=2);
-	$type=2;
-}
 
 	if ($context > 0) {
 		if ($diff) {

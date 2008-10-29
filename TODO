@@ -13,13 +13,11 @@ Nibble TODO:
 ============
 * update rabin documentation
 * documentate dbg.focus
-* doc4 asm.follow or scr.seek or so..
+* documentate scr.seek
 * documentate the change of the execstack protection in program section of ELF
-* deprecate asm.follow for scr.seek or so !!!
 * Make 'Cs' autodetect multiple strings
 * CF -addr segfaults
 * fix radiff -r patching (tests/radiff)
-* rabin -v show all flags, without it, only the .rodata ones
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 
 * at+ [addr] [times] []

@@ -21,7 +21,7 @@
 #define RADARE_MODULE
 #ifdef __APPLE__
 #include "ruby/ruby.h"
-#elif
+#else
 #include "ruby.h"
 #endif
 #include <plugin.h>

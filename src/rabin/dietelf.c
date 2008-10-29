@@ -66,7 +66,8 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 	unsigned char *buf;
 	u64 i = seek;
 	u64 len, string_len;
-	int unicode = 0, matches = 0, ctr = 0;
+	int unicode = 0, matches = 0;
+	static int ctr = 0;
 	char str[ELF_STRING_LENGTH];
 
 	if (fd == -1) {
@@ -826,9 +827,9 @@ int ELF_(dietelf_get_strings)(ELF_(dietelf_bin_t) *bin, int fd, int verbose, int
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (verbose < 2 && i != 0 && !strcmp(&string[shdrp->sh_name], ".rodata"))
-			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings);
+			ctr = ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings+ctr);
 		if (verbose == 2 && i != 0 && !(shdrp->sh_flags & SHF_EXECINSTR)) {
-			ctr += ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings+ctr);
+			ctr = ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, NULL, str_limit-ctr, strings+ctr);
 		}
 	}
 
@@ -840,16 +841,16 @@ int ELF_(dietelf_get_libs)(ELF_(dietelf_bin_t) *bin, int fd, int str_limit, diet
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	const char *string = bin->string;
-	int i;
+	int i, ctr = 0;
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (!strcmp(&string[shdrp->sh_name], ".dynstr")) {
-			return ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", str_limit, strings);
+			ctr = ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", str_limit, strings);
 		}
 	}
 
-	return -1;
+	return ctr;
 }
 
 static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)

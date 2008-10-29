@@ -348,7 +348,7 @@ void rabin_show_strings(const char *file)
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
-#if 1
+#if 0
 		// TODO: native version and support for non -r
 		snprintf(buf, 1022, "rsc strings-pe-flag %s",file);
 		system(buf);
