@@ -19,6 +19,7 @@
  */
 
 #include "plugin.h"
+#define GRSCDIR "/usr/share/radare/gradare"
 
 #include "main.h"
 #include <stdlib.h>

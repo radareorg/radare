@@ -46,6 +46,7 @@ Nibble TODO:
   - shows return value in eax before restoring regs
 
 ---- bugs
+* Allow to draw new lines manually (static defined arch_aop lines_t)
 * Split nodes of the graph code analysis
 * if myinc > len myinc = 1;
   - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
@@ -103,6 +104,12 @@ WTFS DONE:
   - it is not working in all the cases
 
 >1.0 STUFF
+
+UDIS API
+--------
+
+  code_disasm(flag);
+  DIS_OFFSET & DIS_LINES & DIS_COMMENTS ..
 
 * integrate ff with rabin and so
   - refactor baddr

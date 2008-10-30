@@ -5,6 +5,7 @@
  * All rights reserved. See (LICENSE)
  * -----------------------------------------------------------------------------
  */
+#define PANCAKE 1
 
 #include "../../../radare.h"
 #include "types.h"

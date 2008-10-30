@@ -881,7 +881,7 @@ static void own(struct state *s)
 #endif
 
 // XXX lot of memory leaks
-int arch_csr_disasm(unsigned char *buf, u64 seek)
+int arch_csr_disasm(char *str, unsigned char *buf, u64 seek)
 {
 	struct state *s = get_state();
 	struct directive *d;
@@ -897,7 +897,7 @@ int arch_csr_disasm(unsigned char *buf, u64 seek)
 		s->s_ff_quirk = 0;
 	}
 #endif
-	cons_printf("%s", d->d_asm);
+	strcpy(str, d->d_asm);
 }
 #if 0
 static int main(int argc, char *argv[])

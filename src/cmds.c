@@ -324,6 +324,7 @@ CMD_DECL(analyze)
 		for(depth_i=0;depth_i<depth;depth_i++) {
 			radare_read(0);
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
+pas_aop(config.arch, config.seek, config.block, 16);
 			cons_printf("index = %d\n", depth_i);
 #if 0
 			cons_printf("opcode = ");
@@ -589,7 +590,8 @@ CMD_DECL(rdb)
 				if (b0->tnext != 0)
 					cons_printf(": 0x%08llx -> 0x%08llx",  b0->tnext, b0->fnext);
 				cons_printf("\n");
-				udis_arch_buf(config.arch, b0->bytes, b0->n_bytes, 0);
+				//udis_arch_buf(config.arch, b0->bytes, b0->n_bytes, 0);
+				radis_str_e(config.arch, b0->bytes, b0->n_bytes, 0);
 			}
 		}
 	} else

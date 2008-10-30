@@ -38,7 +38,7 @@ while($line=<STDIN>) {
 		$offa++;
 		print "e file.insert=false\n" if ($type == 1);
 		$type = 0;
-		printf ("r -1 @ 0x%x\n", $offb-1);
+		printf ("r -1 @ 0x%x\n", $offb);
 	} else {
 		$line=~/(\w*)\s*(\w*)/;
 		$a=$1;
@@ -50,14 +50,6 @@ while($line=<STDIN>) {
 
 	$line=~/(\w*)\s*(\w*)/;
 	if ("$a$c" eq "    ") { $a=$1; $c=$2; }
-
-#	$str = sprintf "0x%08x $a  $b   $c\e[0m 0x%08x\n",
-#		$offa-1, $offb-1;
-
-	if ($b=~/</) {
-		$offb-- if ($type!=2);
-		$type=2;
-	}
 
 	$odiff = $diff;
 }
