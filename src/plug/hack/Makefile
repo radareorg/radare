@@ -24,6 +24,9 @@ hello.${SO}:
 gtk-hello.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-hello.c -I ../.. -fPIC -shared -g -o gtk-hello.${SO}
 
+gtk-actions.${SO}:
+	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-actions.c -I ../.. -fPIC -shared -g -o gtk-actions.${SO}
+
 gtk-prefs.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-prefs.c -I ../.. -fPIC -shared -g -o gtk-prefs.${SO}
 

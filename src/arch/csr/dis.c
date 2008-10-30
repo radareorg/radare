@@ -561,7 +561,7 @@ static int decode_known(struct state *s, struct directive *d)
 		reg = 1;
 	}
 
-	sprintf(d->d_asm, "%s\t", op);
+	sprintf(d->d_asm, "%s ", op);
 	if (reg) {
 		char *r = regn;
 
@@ -704,7 +704,7 @@ static void add_tabs(struct state *s, struct directive *d)
 		pos++;
 
 	while (pos--)
-		strcat(d->d_asm, "\t");
+		strcat(d->d_asm, " ");
 }
 
 static void add_comment(struct state *s, struct directive *d)

@@ -105,12 +105,6 @@ WTFS DONE:
 
 >1.0 STUFF
 
-UDIS API
---------
-
-  code_disasm(flag);
-  DIS_OFFSET & DIS_LINES & DIS_COMMENTS ..
-
 * integrate ff with rabin and so
   - refactor baddr
 * Allow to run shellcodes on debugged process.

@@ -105,6 +105,7 @@ void udis_init()
 			ud_set_syntax(&ud_obj, UD_SYN_ATT);
 	}
 	ud_set_input_hook(&ud_obj, input_hook_x);
+//ud_idx=0;
 }
 
 static int jump_n = 0;
@@ -122,12 +123,14 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
-int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes)
+int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int myinc)
 {
 	//u8 b[64];
 	unsigned char *b = config.block + bytes;
 	struct aop_t aop;
 	int ret = 0;
+
+	ud_idx = bytes;
 
 	if (bytes>63)
 		bytes=63;
@@ -138,6 +141,13 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes)
 	buf[0]='\0';
 	switch(arch) {
 	case ARCH_ARM:
+		arm_mode = 32;
+		force_thumb = 0;
+		ret = gnu_disarm_str(buf, b, seek);
+		break;
+	case ARCH_ARM16:
+		arm_mode = 16;
+		force_thumb = 1;
 		ret = gnu_disarm_str(buf, b, seek);
 		break;
 	case ARCH_CSR:
@@ -150,9 +160,13 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes)
 			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
 			sprintf(buf, "%s", da.result);
 		} else {
+		udis_init();
 			ud_obj.insn_offset = seek;//;+myinc; //+bytes;
-			ud_obj.pc = seek;//+myinc;
+			ud_obj.pc = seek; //+myinc;
+	//ud_idx = myinc;
+ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
+//ud_idx+=ret;
 			sprintf(buf, "%s", ud_insn_asm(&ud_obj));
 		}
 		break;
@@ -175,8 +189,9 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes)
 		}
 	       } break;
 	case ARCH_JAVA:
+	//	endian=1;
 		if (java_disasm(b, buf)==-1)
-			strcpy(buf," ???");
+			strcpy(buf,"???");
 		break;
 	case ARCH_M68K: {
 		char opcode[128];
@@ -214,11 +229,11 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 
 	switch(arch) {
 	case ARCH_X86:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes);
+		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes, myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_CSR:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes);
+		ret = udis_arch_string(arch, buf, endian, seek, bytes,myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_AOP:
@@ -244,19 +259,19 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	       gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
 	       break;
 	case ARCH_PPC:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes );
+		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes ,myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_JAVA:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes);
+		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_M68K:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes);
+		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_MSIL:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes);
+		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_BF:
@@ -273,8 +288,10 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 extern int color;
 void udis_arch(int arch, int len, int rows)
 {
+	int foo=ud_idx;
 	radis_str_e(arch, config.block, len,rows);
 	//udis_arch_buf(arch, config.block, len, rows);
+ud_idx =foo;
 }
 
 /* aop disassembler */
@@ -411,6 +428,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	if (config.visual && rows<1)
 		rows = config.height - ((last_print_format==FMT_VISUAL)?11:0) - config.lines;
 
+#if 1
 	/* XXX dupped move */
 	switch(arch) {
 	case ARCH_X86:
@@ -429,6 +447,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		endian = 1;
 		break;
 	}
+#endif
 
 	data_reflines_init();
 	radare_controlc();
@@ -496,7 +515,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		}
 
 		if (foo != NULL) {
-			int dt = foo->type;
+			//int dt = foo->type;
 			idata = foo->to-sk;
 			myinc = idata;
 
@@ -691,7 +710,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				break;
 			case ARCH_OBJD:
 				radare_dump_and_process(DUMP_DISASM, len);
-				return 0;
+				return;
 			default:
 				// Uh?
 				myinc += 4;
@@ -886,7 +905,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
 	const char *cmd_asm;
 	int size, bytes, offset, splits, comments, lines, section,
-	traces,nbytes, flags, reladdr, flagsline, functions;
+	traces, flags, reladdr, flagsline, functions;
 
 	// cache here!
 	cmd_asm       = config_get("cmd.asm");
