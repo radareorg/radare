@@ -3,7 +3,7 @@
 
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
-static int (*r)(char *cmd, int log);
+static int (*r)(const char *cmd, int log);
 static GtkWidget *combo;
 static GtkWidget *arch;
 static GtkWidget *entry;

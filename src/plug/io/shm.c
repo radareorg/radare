@@ -29,7 +29,6 @@
 static int shm_fd = -1;
 static unsigned char *shm_buf = NULL;
 static unsigned int shm_bufsz = 32*1024*1024; /* 32MB */
-static unsigned int shm_bufread = 0;
 
 static ssize_t rshm_write(int fd, const void *buf, size_t count)
 {

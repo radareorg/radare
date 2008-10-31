@@ -89,7 +89,6 @@ static void toggle_changed(void *foo, void *data)
 static GtkWidget *draw_toggles_for(int panel_id)
 {
 	GtkWidget *bytes;
-	GtkWidget *hbbox;
 	GtkVBox *vbox = gtk_vbox_new(FALSE, 5);
 	int i;
 	

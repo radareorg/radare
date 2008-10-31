@@ -52,7 +52,7 @@ addr_t dealloc_page(addr_t addr)
 			arch_dealloc_page(mm->addr, mm->size);
 			list_del(&mm->list);
 			if(mm->tag)
-				free(mm->tag);
+				free((void*)mm->tag);
 			free(mm);
 
 			ps.mem_sz -= mm->size;
@@ -146,7 +146,6 @@ void add_regmap(MAP_REG *mr)
 {
 	unsigned long entry_alig = ps.entrypoint & ~(PAGE_SIZE-1);
 	
-
 	if(entry_alig >= mr->ini && entry_alig <= mr->end) {
 		mr->flags |= FLAG_USERCODE;
 		ps.bin_usrcode = mr->bin;

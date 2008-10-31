@@ -36,9 +36,9 @@ extern struct regs_off roff[];
 
 /* software breakpoints */
 struct arch_bp_t arch_x86_bps[] = {
-	{ "\xCC", 1 },
-	{ "\xCD\x03", 2 },
-	{ NULL, 0 }
+	{ (u8*)"\xCC",     1 },
+	{ (u8*)"\xCD\x03", 2 },
+	{ (u8*)NULL,       0 }
 };
 
 int arch_bpsize()
@@ -157,6 +157,8 @@ static u32 dr_get_control ()
 	return dr_get(DR_CONTROL);
 }
 
+#if 0
+/* NOT USED */
 static void dr_set_addr (int regnum, u32 addr)
 {
 	dr_set(regnum, addr);
@@ -171,6 +173,7 @@ static u32 dr_get_status (void)
 {
 	return dr_get(DR_STATUS);
 }
+#endif
 
 void dr_init()
 {

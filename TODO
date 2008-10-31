@@ -17,7 +17,6 @@ Nibble TODO:
 * documentate the change of the execstack protection in program section of ELF
 * Make 'Cs' autodetect multiple strings
 * CF -addr segfaults
-* fix radiff -r patching (tests/radiff)
 * cannot remove Code changes CC -addr CF -addr ... it is Cc only??!? C- can be a good alias
 
 * at+ [addr] [times] []
@@ -721,5 +720,9 @@ Split radare into libraries accessible by VAPI interfaces. (no gobject dependenc
   - pd 1 -> strstr(cons_buffer, mystr)
 
 * next pel debugger (next source line) -- needs dwarf integration?
+
+plugins
+ - small plugin descriptor that loads the real plugin
+ - avoi unnecesasry library loading (gtk and so)
 
 * total world domination

@@ -370,7 +370,7 @@ boolean      test_eol(char);
 unsigned int get_identifier(char*, unsigned int, char*, unsigned int);
 boolean      alpha_numeric(char);
 boolean      alphabetic(char);
-int          get_num(char*, int*, int*, unsigned int);
+int          get_num(char*, unsigned int*, unsigned int*, unsigned int);
 int          allow_error(unsigned int, boolean, boolean);
 
 /* GLOBAL WTFU */

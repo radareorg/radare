@@ -28,7 +28,7 @@
 //#include <dir.h>
 #include <math.h>
 #include <float.h>
-#pragma hdrstop
+//#pragma hdrstop
 
 #include "disasm.h"
 

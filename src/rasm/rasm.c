@@ -105,7 +105,7 @@ int rasm_directive(const char *arch, u64 *offset, const char **str, u8 *data)
 	char *arg;
 	u64 n;
 
-	strncpy(op, str, 120);
+	strncpy(op, *str, 120);
 
 	/* comments */
  	arg = strchr(op, ';');
@@ -164,7 +164,7 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 	if (arch == NULL||str==NULL)
 		return -1;
 
-	ret = rasm_directive(arch, offset, str, data);
+	ret = rasm_directive(arch, offset, &str, data);
 	if (ret != -1)
 		return ret;
 
@@ -172,19 +172,19 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 		return 0;
 
 	if ((!strcmp(arch, "x86")) ||(!strcmp(arch, "intel")))
-		ret = rasm_x86(offset, str, data);
+		ret = rasm_x86(*offset, str, data);
 	else
 	if (!strcmp(arch, "olly"))
-		ret = rasm_olly_x86(offset, str, data);
+		ret = rasm_olly_x86(*offset, str, data);
 	else
 	if (!strcmp(arch, "arm"))
-		ret = rasm_arm(offset, str, data);
+		ret = rasm_arm(*offset, str, data);
 	else
 	if (!strcmp(arch, "java"))
-		ret = rasm_java(offset, str, data);
+		ret = rasm_java(*offset, str, data);
 	else
 	if (!strcmp(arch, "ppc"))
-		ret = rasm_ppc(offset, str, data);
+		ret = rasm_ppc(*offset, str, data);
 	else
 	if (!strcmp(arch, "rsc")) {
 		char buf[1024];
@@ -199,7 +199,7 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 	return ret;
 }
 
-int count_bytes(char *str)
+int count_bytes(const char *str)
 {
 	int word = 0;
 	int c = 0;

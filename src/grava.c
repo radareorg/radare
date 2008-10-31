@@ -20,7 +20,7 @@
 #include "../global.h"
 #include "main.h"
 
-int graph_viz(struct program_t *prg)
+void graph_viz(struct program_t *prg)
 {
 	struct block_t *b0;
 	struct list_head *head;
@@ -215,7 +215,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 //	ptr = config_get("graph.layout");
 //	if (ptr && !strcmp(ptr, "graphviz"))
 //	else
-		grava_default_layout_reset(last_window->grava->graph->layout);
+	grava_default_layout_reset(last_window->grava->graph->layout);
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -379,18 +379,9 @@ void asm_state_restore()
 
 struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)
 {
-	int i,j;
-	char *ptr;
 	GtkWidget *tw,*tw2;
-	char cmd[1024];
 	char title[256], name[128];
-	int graph_flagblocks = (int)config_get("graph.flagblocks");
-	struct list_head *head, *head2;
-	struct block_t *b0, *b1;
-	struct xrefs_t *c0;
 	struct mygrava_window *win;
-	GravaNode *node, *node2;
-	GravaEdge *edge;
 
 	win = (struct mygrava_window*)malloc(sizeof(struct mygrava_window));
 	memset(win, '\0', sizeof(struct mygrava_window));
@@ -492,11 +483,9 @@ struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)
 
 void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 {
-	int i,j;
+	int i;
 	char *ptr;
-	GtkWidget *tw,*tw2;
 	char cmd[1024];
-	char title[256], name[128];
 	int graph_flagblocks = (int)config_get("graph.flagblocks");
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
@@ -535,11 +524,9 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		string_flag_offset(cmd, b0->addr);
 		cmd[127]='\0'; // XXX ugly string recycle hack
 		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
-		if (cmd) {
-			if (!graph_flagblocks)
-				continue;
-			grava_node_set(node, "color", "gray");
-		}
+		if (!graph_flagblocks)
+			continue;
+		grava_node_set(node, "color", "gray");
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
@@ -630,33 +617,19 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 	g_object_unref(node);
 
 	grava_graph_update(win->grava->graph);
-
-	return win;
 }
 #endif
 
 #if HAVE_VALAC
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
-	char cmd[1024];
-	char *ptr;
-	int i;
-#if 0
-	struct list_head *head, *head2;
-	struct block_t *b0, *b1;
-	struct xrefs_t *c0;
-#endif
 	u64 here = config.seek;
-	char title[256], name[128];
-	int graph_flagblocks = (int)config_get("graph.flagblocks");
-
-	GravaNode *node, *node2;
-	GravaEdge *edge;
+	//int graph_flagblocks = (int)config_get("graph.flagblocks");
 
 	/* create widget */
 	if (!gtk_is_init) {
 		if ( ! gtk_init_check(NULL, NULL) ) {
-			fprintf(stderr, "Oops. Cannot initialize gui\n");
+			eprintf("Oops. Cannot initialize gui\n");
 			return;
 		}
 		gtk_is_init = 1;
@@ -700,7 +673,7 @@ void grava_program_graph(struct program_t *prg, void *win)
 }
 #endif
 
-int visual_gui()
+void visual_gui()
 {
 #if HAVE_VALAC
 	struct mygrava_window *win = NULL;
@@ -711,7 +684,7 @@ int visual_gui()
 	/* create widget */
 	if (!gtk_is_init) {
 		if ( ! gtk_init_check(NULL, NULL) ) {
-			fprintf(stderr, "Oops. Cannot initialize gui\n");
+			eprintf("Oops. Cannot initialize gui\n");
 			return;
 		}
 		gtk_is_init = 1;
@@ -815,6 +788,7 @@ gtk_container_add(vbox,w);
 
 	if (n_windows)
 		return;
+
 	n_windows++;
 	new_window = 0;
 
@@ -826,5 +800,3 @@ gtk_container_add(vbox,w);
 	eprintf("Compiled without GUI\n");
 #endif
 }
-
-

@@ -89,7 +89,7 @@ boolean alphabetic(char c)                                          /* Crude! */
 /* Read number of specified radix into variable indicated by *value           */
 /* Return flag to say number read (value at pointer).                         */
 
-int get_num(char *line, int *position, int *value, unsigned int radix)
+int get_num(char *line, unsigned int *position, unsigned int *value, unsigned int radix)
 {
 
 	int num_char(char *line, int *pos, unsigned int radix)

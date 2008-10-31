@@ -95,8 +95,6 @@ static uint16_t i2u16(struct instruction *in)
 // NOTE: bytes should be at least 16 bytes?
 int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
-	unsigned int i;
-	int sz = 1;
 	uint16_t lol;
 	uint16_t ins;
 	struct directive d;

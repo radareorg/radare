@@ -114,12 +114,12 @@ int main(int argc, char **argv)
 					fgets(buf, 128, stdin);
 					if (!feof(stdin)) {
 						buf[strlen(buf)-1]='\0';
-						rasm_disasm(arch, offset, buf, NULL);
+						rasm_disasm(arch, &offset, buf, NULL);
 					}
 				}
 				return 0;
 			}
-			rasm_disasm(arch, offset, optarg, NULL);
+			rasm_disasm(arch, &offset, optarg, NULL);
 			break;
 		case 'f':
 			if (!verbose) printf("Compiling %s to %s.o\n", optarg, optarg);

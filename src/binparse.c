@@ -42,7 +42,8 @@ token:  Fruit for the loom
 ------------------------------
 #endif
 
-#if 1
+#if 0
+/* not necessary */
 static void print_tok_list(tokenlist* toklist) 
 {
 	int i;
@@ -63,9 +64,7 @@ static void print_tokenizer ( tokenizer* ptokenizer )
 	for (i=0 ; i < ptokenizer->nlists; i++ )
 		print_tok_list(ptokenizer->tls[i]);
 }
-#endif
 
-#if 0
 static char* fd_readline ( int fd, char* line, int maxsize )
 {
 	int i,ret ;
@@ -78,7 +77,6 @@ static char* fd_readline ( int fd, char* line, int maxsize )
 	line[i+1]=0;
 	return line;
 }
-#endif
 
 static int indent_count( int fd )
 {
@@ -95,6 +93,7 @@ static int indent_count( int fd )
 
 	return ret;
 }
+#endif
 
 static unsigned char get_num( char * str, int len )
 {
@@ -371,7 +370,7 @@ tokenizer* binparse_new_from_file(char *file)
 				free(mask); mask = NULL;
 			}
 			free(name);
-			name = str_get_arg(buf);
+			name = (const char *)str_get_arg(buf);
 		} else
 		if (!memcmp(buf, "\tstring:", 8)) {
 			str = str_get_arg(buf);

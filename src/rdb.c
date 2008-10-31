@@ -90,7 +90,7 @@ struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 	struct aop_t aop;
 	unsigned int oldb;
 	int sz;
-	char *ptr;
+	u8 *ptr;
 	u64 next;
 	u64 lnext;
 

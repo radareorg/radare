@@ -57,7 +57,7 @@ int std = 0;
 
 static int radare_close();
 /* dummy callback for dl_hist_label */
-static int cb(const char *str) { radare_cmd(str,0); }
+static int cb(const char *str) { radare_cmd_raw(str, 0); return 0;}
 
 #if !DEBUGGER
 int debug_step(int x) { return 0; }
@@ -90,15 +90,17 @@ int radare_system(const char *cmd)
 
 int radare_systemf(const char *format, ...)
 {
+	int ret;
 	va_list ap;
 	char buf[4096];
 
 	va_start(ap, format);
 	buf[0]='\0';
 	snprintf(buf, 4095, format, ap);
-	radare_system(buf);
+	ret = radare_system(buf);
 
 	va_end(ap);
+	return ret;
 }
 
 void radare_init()
@@ -774,10 +776,8 @@ void radare_nullcmd()
 
 int radare_cmd(char *input, int log)
 {
-	const char *ptr;
 	int repeat;
-	int p,i;
-	char buf[128];
+	int i;
 	char *next = NULL;
 	int ret = 0;
 

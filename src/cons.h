@@ -78,7 +78,11 @@ int cons_get_real_columns();
 int cons_get_columns();
 int cons_palette_init(const unsigned char *pal);
 void cons_printf(const char *format, ...);
+void cons_gotoxy(int x, int y);
 extern const char *dl_prompt;
+int cons_get_arrow(int ch);
+void cons_clear00();
+void cons_any_key();
 
 extern int cons_noflush;
 #endif

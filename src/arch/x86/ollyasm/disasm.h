@@ -357,4 +357,7 @@ int    Printfloat10(char *s,long double ext);
 int    Printfloat4(char *s,float f);
 int    Printfloat8(char *s,double d);
 
+char * strupr (char *a);
+char * strlwr (char *a);
+
 #endif

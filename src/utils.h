@@ -119,5 +119,6 @@ int set0word(char *str);
 const char *get0word(const char *str, int idx);
 void efree(void **ptr);
 int strsub_memcmp (char *string, char *pat, int len);
+int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset, char *match);
 
 #endif

@@ -330,7 +330,7 @@ int radare_hash_generate(char *src, char *dst)
 			printf("par:     %01x\n", hash_par(buffer+header.from, len));
 			printf("xor:     %02x\n", hash_xor(buffer+header.from, len));
 			printf("hamdist: %02x\n", hash_hamdist(buffer+header.from, len));
-			printf("xorpair: %04x\n", hash_xorpair((u16 *)buffer+header.from, len));
+			printf("xorpair: %04x\n", hash_xorpair((u8 *)buffer+header.from, len));
 			printf("entropy: %.2f\n", hash_entropy(buffer+header.from, len));
 			printf("mod255:  %02x\n", hash_mod255(buffer+header.from, len));
 			printf("crc16:   %04x\n", crc16(0, buffer, len));
@@ -546,7 +546,7 @@ int radare_hash_check(char *src, char *dst)
 			case ALGO_XORPAIR: {
 				unsigned short s;
 				unsigned char *p = (unsigned char *)&s;
-				s = hash_xorpair((unsigned short *)buffer + header.from, len);
+				s = hash_xorpair((u8*)buffer + header.from, len);
 				digest[0] = p[0]; digest[1] = p[1];
 				} break;
 			case ALGO_MD5:

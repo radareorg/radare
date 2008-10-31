@@ -76,7 +76,7 @@ int section_rm(int idx)
 
 void section_list(u64 addr, int rad)
 {
-	int i = 0, ol;
+	int i = 0;
 	char buf[128];
 	struct list_head *pos;
 	list_for_each_prev(pos, &sections) {
@@ -89,7 +89,7 @@ void section_list(u64 addr, int rad)
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
 				s->from, s->to, s->base, (u64)((s->to)-(s->from)), s->comment);
 			
-			if (string_flag_offset(&buf, s->from))
+			if (string_flag_offset(buf, s->from))
 				cons_printf(" ; %s", buf);
 #if 0
 			ol = section_overlaps(s);
@@ -107,7 +107,7 @@ void section_list_visual(u64 seek, u64 len)
 	u64 min = -1;
 	u64 max = -1;
 	u64 mul;
-	int j, i, ol;
+	int j, i;
 	struct list_head *pos;
 	int width = config.width-30;
 

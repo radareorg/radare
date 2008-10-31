@@ -23,6 +23,7 @@ static uint16_t i2u16(struct instruction *in)
 	return *((uint16_t*)in);
 }
 
+#if 0
 static void output(struct state *s, char *fmt, ...)
 {
 	va_list ap;
@@ -32,6 +33,7 @@ static void output(struct state *s, char *fmt, ...)
 	//vfprintf(s->s_out, fmt, ap);
 	va_end(ap);
 }
+#endif
 
 static void decode_unknown(struct state *s, struct directive *d)
 {
@@ -172,9 +174,9 @@ static int label_off(struct directive *d)
 	return d->d_off + off;
 }
 
+#if 0
 static void label_add_ref(struct label *l, struct directive *d)
 {
-#if 0
 	struct directive **ptr = l->l_refs;
 
 	while (*ptr) {
@@ -184,10 +186,11 @@ static void label_add_ref(struct label *l, struct directive *d)
 		ptr++;
 	}
 	*ptr = d;
-#endif
 	l->l_refc++;
 }
+#endif
 
+#if 0
 /* XXX slow */
 static struct label *find_label_add(struct state *s, struct directive *d)
 {
@@ -233,6 +236,7 @@ static void add_label(struct state *s, struct directive *d)
 	label_add_ref(l, d);
 	strcat(d->d_asm, l->l_name);
 }
+#endif
 
 static int decode_known(struct state *s, struct directive *d)
 {
@@ -680,6 +684,7 @@ out:
 		s->s_prefix_val = s->s_prefix = 0;
 }
 
+#if 0
 static void add_tabs(struct state *s, struct directive *d)
 {
 	int outlen = 0;
@@ -706,7 +711,9 @@ static void add_tabs(struct state *s, struct directive *d)
 	while (pos--)
 		strcat(d->d_asm, " ");
 }
+#endif
 
+#if 0
 static void add_comment(struct state *s, struct directive *d)
 {
 	char tmp[128];
@@ -742,6 +749,7 @@ static int read_text(struct state *s, struct directive *d)
 
 	return 1;
 }
+#endif
 
 static int read_bin(struct state *s, struct directive *d)
 {
@@ -788,11 +796,13 @@ struct directive *next_inst(struct state *s)
 	return d;
 }
 
+#if 0
 static void print_label(struct state *s, struct label *l)
 {
 	output(s, "\n%s:\t\t\t\t\t; refs: %d\n",
 	       l->l_name, l->l_refc);
 }
+#endif
 
 #if 0
 static void own(struct state *s)
@@ -898,6 +908,7 @@ int arch_csr_disasm(char *str, unsigned char *buf, u64 seek)
 	}
 #endif
 	strcpy(str, d->d_asm);
+	return 0;
 }
 #if 0
 static int main(int argc, char *argv[])

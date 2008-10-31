@@ -205,6 +205,7 @@ int debug_lib(const char *arg)
 	if (arg[0]!=' ')
 		cons_printf("Usage: !lib /path/to/lib.so\n");
 	else debug_lib_load(arg+1);
+	return 0;
 }
 
 int debug_reg(const char *arg)

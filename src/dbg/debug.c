@@ -107,7 +107,6 @@ int debug_tt(const char *arg)
 {
 	struct aop_t aop;
 	int pid;
-	u8 tmp[4];
 	u64 pc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
@@ -178,6 +177,7 @@ int debug_tt(const char *arg)
 #endif
 	free(sa);
 	free(cc);
+	return 1;
 }
 
 /// XXX looks wrong
@@ -844,13 +844,6 @@ int debug_fd(char *cmd)
 	return 0;
 }
 
-int debug_loaduri(char *cmd)
-{
-	char pids[128];
-	ps.filename = cmd;
-	debug_load();
-}
-
 int debug_load()
 {
 	int ret = 0;
@@ -892,6 +885,12 @@ int debug_load()
 	debug_getregs(ps.pid, &(WS(regs)));
 
 	return ret;
+}
+
+int debug_loaduri(char *cmd)
+{
+	ps.filename = cmd;
+	return debug_load();
 }
 
 int debug_unload()
@@ -1168,7 +1167,7 @@ int debug_step(int times)
 
 int debug_set_register(const char *args)
 {
-	char *value, *tmp;
+	char *value;
 
 	if (!args) {
 		eprintf("Usage: !set [reg] [value]\n");

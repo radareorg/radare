@@ -39,5 +39,6 @@ int dietpe_is_stripped_line_nums(dietpe_bin*);
 int dietpe_is_stripped_local_syms(dietpe_bin*);
 int dietpe_is_stripped_debug(dietpe_bin*);
 int dietpe_open(dietpe_bin*, const char*);
+int dietpe_get_strings(dietpe_bin *bin, int fd, int verbose, int str_limit, dietpe_string *strings);
 
 #endif

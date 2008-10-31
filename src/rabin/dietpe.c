@@ -577,20 +577,20 @@ int dietpe_get_subsystem(dietpe_bin *bin, char *str) {
 
 static int dietpe_init(dietpe_bin *bin, int fd) {
 	lseek(fd, 0, SEEK_SET);
-    bin->dos_header = malloc(sizeof(pe_image_dos_header));
-    read(fd, bin->dos_header, sizeof(pe_image_dos_header));
+	bin->dos_header = malloc(sizeof(pe_image_dos_header));
+	read(fd, bin->dos_header, sizeof(pe_image_dos_header));
 
 	lseek(fd, bin->dos_header->e_lfanew, SEEK_SET);
-    bin->nt_headers = malloc(sizeof(pe_image_nt_headers));
-    read(fd, bin->nt_headers, sizeof(pe_image_nt_headers));
+	bin->nt_headers = malloc(sizeof(pe_image_nt_headers));
+	read(fd, bin->nt_headers, sizeof(pe_image_nt_headers));
 
 	if (bin->nt_headers->file_header.SizeOfOptionalHeader != 224)
 		return -1;
-	
+
 	int sections_size = sizeof(pe_image_section_header) * bin->nt_headers->file_header.NumberOfSections;
 	lseek(fd, bin->dos_header->e_lfanew + sizeof(pe_image_nt_headers), SEEK_SET);
-    bin->section_header = malloc(sections_size);
-    read(fd, bin->section_header, sections_size);
+	bin->section_header = malloc(sections_size);
+	read(fd, bin->section_header, sections_size);
 
 	return 0;
 }

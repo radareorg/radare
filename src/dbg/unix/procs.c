@@ -51,7 +51,7 @@ int pids_cmdline(int pid, char *cmdline)
 int pids_ptrace_all(int pid)
 {
 // XXX lot of c&p shit here lol!1
-	int p,i;
+	int p;
 	int n = 0;
 	int mola;
 	char buf[128];
@@ -131,27 +131,18 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 	return n;
 }
 
-#if 0
-int pids_sons_of(int pid)
-{
-	char buf[512];
-	pids_cmdline(pid, buf);
-	printf("-+- %d : %s\n",pid, buf);
-	return pids_sons_of_r(pid,0,999);
-}
-#endif
-
 int pids_list()
 {
-	int i;
+	int i,n;
 	char cmdline[1025];
 
 	// TODO: use ptrace to get cmdline from esp like tuxi does
-	for(i=2;i<999999;i++) {
+	for(n=0,i=2;i<999999;i++) {
 		switch( kill(i, 0) ) {
 		case 0:
 			pids_cmdline(i, cmdline);
 			printf("%d : %s\n", i, cmdline);
+			n++;
 			break;
 //		case -1:
 //			if (errno == EPERM)
@@ -159,16 +150,8 @@ int pids_list()
 //			break;
 		}
 	}
+	return n;
 }
-
-
-#if 0
-main(int argc, char **argv)
-{
-	printf("(%d)\n", pids_sons_of(atoi(argv[1])));
-	return 0;
-}
-#endif
 
 static const char *debug_unix_pid_running  = "running";
 static const char *debug_unix_pid_stopped  = "stopped";
@@ -213,7 +196,6 @@ const char *debug_unix_pid_status(int pid)
 int debug_pstree(const char *input)
 {
 	int foo, tid = 0;
-	const char *ptr;
 
 	if (input)
 		tid = atoi(input);

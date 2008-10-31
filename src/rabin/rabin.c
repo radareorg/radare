@@ -576,10 +576,11 @@ Load command 9
 u64 addr_for_lib(char *name)
 {
 #if __UNIX__
-	u32 *addr = dlopen(name, RTLD_LAZY);
+	void *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
+		u64 foo = (u64)(u32)addr; /* 32 bit only here */
 		dlclose(addr);
-		return (u64)((addr!=NULL)?(addr):0LL);
+		return (u64)((addr!=NULL)?foo:0LL);
 	} else {
 		printf("cannot open '%s' library\n", name);
 		return 0LL;
@@ -757,7 +758,9 @@ void rabin_show_imports(const char *file)
 		importp.pe = import.pe;
 		for (i = 0; i < imports_count; i++, importp.pe++) {
 			if (rad) {
-				printf("f imp_%s @ 0x%08llx\n", aux_filter_rad_output(importp.pe->name), (u64) (baddr + importp.pe->rva));
+				printf("f imp_%s @ 0x%08llx\n",
+					aux_filter_rad_output((const char *)importp.pe->name),
+					(u64) (baddr + importp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
@@ -909,7 +912,9 @@ void rabin_show_symbols(char *file)
 		symbolp.pe = symbol.pe;
 		for (i = 0; i < symbols_count; i++, symbolp.pe++) {
 			if (rad) {
-				printf("f sym_%s @ 0x%08llx\n", aux_filter_rad_output(symbolp.pe->name), (u64) (baddr + symbolp.pe->rva));
+				printf("f sym_%s @ 0x%08llx\n",
+					aux_filter_rad_output((const char *)symbolp.pe->name),
+					(u64) (baddr + symbolp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
@@ -1046,8 +1051,8 @@ void rabin_show_sections(const char *file)
 		sectionp.pe = section.pe;
 		for (i = 0; i < sections_count; i++, sectionp.pe++) {
 			if (rad) {
-				printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
-				printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
+				printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
+				printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
 
 				printf("CC [%02i] 0x%08llx size=%08lli %c%c%c%c %s @ 0x%08llx\n",
 						i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),

@@ -72,7 +72,7 @@ int main(int argc, char **argv, char **envp)
 					help_message_short();
 					return 1;
 				}
-				sprintf(buf2, "dbg://%s", project_get_file(prj) );
+				snprintf(buf2, 4095, "dbg://%s", project_get_file(prj) );
 				config.file = estrdup( config.file, buf2 );
 				plugin_load();
 				return radare_go();

@@ -14,20 +14,19 @@
 #define MAX_MAP_SIZE (PAGE_SIZE * 8)
 
 typedef struct {
-	const char *tag;
+	u8 *tag;
 	addr_t addr;
-	unsigned long size;
-
+	u64 size;
 	struct list_head list;
 } MAP_MEM;
 
 typedef struct {
-	addr_t ini;
-	addr_t end;
-	unsigned long perms, perms_orig;
+	u64 ini;
+	u64 end;
+	u32 perms, perms_orig;
+	u8 *bin;
+	u64 size;
 	int flags;
-	const char *bin;
-	unsigned long size;
 
 	struct list_head list;
 } MAP_REG;
