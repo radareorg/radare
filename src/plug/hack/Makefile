@@ -51,13 +51,13 @@ lua.${SO}: lua.o
 	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
 
 install:
-	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${LIBDIR}/radare
-	-[ -e hello.${SO} ] && ${INSTALL_LIB} hello.${SO} ${LIBDIR}/radare
-	-[ -e gtk-hello.${SO} ] && ${INSTALL_LIB} gtk-hello.${SO} ${LIBDIR}/radare
-	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${LIBDIR}/radare
-	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${LIBDIR}/radare
-	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${LIBDIR}/radare
-	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${LIBDIR}/radare
+	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e hello.${SO} ] && ${INSTALL_LIB} hello.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e gtk-hello.${SO} ] && ${INSTALL_LIB} gtk-hello.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${DESTDIR}/${LIBDIR}/radare
 
 clean:
 	-rm -f *.${SO} *.o

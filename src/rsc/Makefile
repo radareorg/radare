@@ -27,11 +27,11 @@ miss:
 	@perl miss.pl
 
 install:
-	${INSTALL_DIR} ${DESTDIR}/${SHAREDIR}
-	${INSTALL_DIR} ${DESTDIR}/${SHAREDIR}/radare
-	${INSTALL_DIR} ${DESTDIR}/${SHAREDIR}/radare/rsc
-	rm -rf ${DESTDIR}/${SHAREDIR}/radare/rsc/*
-	for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${SHAREDIR}/radare/rsc ; done
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare
+	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare/rsc
+	rm -rf ${DESTDIR}/${DATADIR}/radare/rsc/*
+	for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 
 files:
 	@echo ${FILES}
