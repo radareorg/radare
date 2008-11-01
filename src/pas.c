@@ -19,6 +19,11 @@ void pas_set_arch(const char *str)
 {
 }
 
+#if 0
+BUGS:
+ - needs to run 'pd' once before working :??? why?
+ - current seek is not used properly or so
+#endif
 int pas_aop_aop(const char *w0, const char *w1, const char *w2, const char *w3)
 {
 	if (strstr(w0,"mov")) {
@@ -32,7 +37,6 @@ int pas_aop_aop(const char *w0, const char *w1, const char *w2, const char *w3)
 	return 0;
 }
 
-int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes);
 struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len)
 {
 	char str[64];
@@ -41,9 +45,9 @@ struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len)
 	char w2[32];
 	char w3[32];
 	char *ptr, *optr;
-	//udis_arch_opcode(arch , config.endian, seek, 0, 0);//len);
-		//radis_str_e(config.arch, bytes, len, 0);
-	udis_arch_string(arch , str, config.endian, seek, 0);//len);
+
+	udis_arch_string(arch , str, config.endian, seek, 0, 0); //len);
+
 	if (str[0]!='\0') {
 		w0[0]='\0';
 		w1[0]='\0';

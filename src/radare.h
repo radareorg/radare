@@ -151,4 +151,8 @@ int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);
 struct trace_t *trace_get(u64 addr);
 
+/* rabin.h */
+int rabin_id();
+int rabin_flag();
+
 #endif

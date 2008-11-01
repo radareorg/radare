@@ -208,8 +208,7 @@ struct bp_t *debug_bp_get_num(int num)
 
 int debug_bp_rm_num(int num)
 {
-#warning XXX THIS IS BUGGY! num != addr, addr_t != int !!
-	if (num>=0&& num<ps.bps_n)
+	if (num>=0 && num<ps.bps_n)
 		return debug_bp_rm(ps.bps[num].addr, ps.bps[num].hw);
 	return 0;
 }
@@ -332,5 +331,33 @@ void debug_bp_list()
 		}
 	} else
 		eprintf("breakpoints not set\n");
+}
+
+int debug_bp_rms()
+{
+	int i;
+	int ret, bps;
+
+	bps = ps.bps_n;
+
+	for(i = 0; i < MAX_BPS && ps.bps_n > 0; i++) {
+		if(ps.bps[i].addr > 0) { 
+		        if(ps.bps[i].hw)
+                		ret = arch_bp_rm_hw(&ps.bps[i]);
+        		else	ret = arch_bp_rm_soft(&ps.bps[i]);
+
+			if(ret < 0) {
+				eprintf(
+					":debug_bp_rms error removing bp 0x%x\n",
+					ps.bps[i].addr);
+				break;
+			}
+
+			ps.bps[i].addr = 0;
+			ps.bps_n--;
+		}
+	}
+
+	return bps - ps.bps_n;
 }
 

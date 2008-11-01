@@ -8,3 +8,6 @@ all: ${BIN}
 
 ${BIN}: ${OBJ}
 	${CC} ${OBJ} ${LDFLAGS} -o ${BIN}
+
+clean:
+	-rm -f ${BIN} ${OBJ}

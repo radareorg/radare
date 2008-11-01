@@ -50,7 +50,7 @@ int name_to_sig(char *signame)
 	//return -1;
 }
 
-char *sig_to_name(int sig)
+const char *sig_to_name(int sig)
 {
 	int i;
 	for(i=0;signals[i].name;i++)
@@ -71,7 +71,7 @@ char *sig_to_desc(int sig)
 int debug_signal(const char *args)
 {
 	int signum;
-	char *signame;
+	const char *signame;
 	char *arg;
 	u64 address;
 

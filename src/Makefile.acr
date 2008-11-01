@@ -141,7 +141,9 @@ clean:
 	-${Q}${MAKE} -C rahash clean
 	-${Q}${MAKE} -C radiff clean
 	-${Q}${MAKE} -C rabin clean
+	-${Q}${MAKE} -C javasm clean
+	-${Q}${MAKE} -C rsc clean
 	-${Q}${MAKE} -C rasm clean
 	-${Q}${MAKE} -C rasc clean
 	-${Q}${MAKE} -C arch/x86/udis86 clean
-	-${Q}rm -rf rax.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} rax${BINSFX} a.out a.exe
+	-${Q}rm -rf lsbstego.o lsbstego${BINSFX} rax.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} rax${BINSFX} a.out a.exe

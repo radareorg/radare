@@ -1332,35 +1332,6 @@ int debug_trace(char *input)
 
 	return 0;
 }
-
-int debug_bp_rms()
-{
-	int i;
-	int ret, bps;
-
-	bps = ps.bps_n;
-
-	for(i = 0; i < MAX_BPS && ps.bps_n > 0; i++) {
-		if(ps.bps[i].addr > 0) { 
-		        if(ps.bps[i].hw)
-                		ret = arch_bp_rm_hw(&ps.bps[i]);
-        		else	ret = arch_bp_rm_soft(&ps.bps[i]);
-
-			if(ret < 0) {
-				eprintf(
-					":debug_bp_rms error removing bp 0x%x\n",
-					ps.bps[i].addr);
-				break;
-			}
-
-			ps.bps[i].addr = 0;
-			ps.bps_n--;
-		}
-	}
-
-	return bps - ps.bps_n;
-}
-
 /* memory protection permissions */
 struct mp_t {
 	u64 addr;

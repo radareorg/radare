@@ -160,13 +160,14 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
 			sprintf(buf, "%s", da.result);
 		} else {
+ud_idx = 0;
 		udis_init();
 			ud_obj.insn_offset = seek;//;+myinc; //+bytes;
 			ud_obj.pc = seek; //+myinc;
-	//ud_idx = myinc;
-ud_disassemble(&ud_obj);
+			//ud_idx = myinc;
+			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
-//ud_idx+=ret;
+			//ud_idx+=ret;
 			sprintf(buf, "%s", ud_insn_asm(&ud_obj));
 		}
 		break;
