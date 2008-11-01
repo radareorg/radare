@@ -160,11 +160,10 @@ int search_from_file(char *file)
 	int i,ret;
 	u64 tmp = config.seek;
 	tokenizer *t = binparse_new_from_file(file);
-	t->callback = &radare_tsearch_callback;
 
 	if (t == NULL)
 		return 0;
-
+	t->callback = &radare_tsearch_callback;
 	nhit = 0;
 #if __UNIX__
 	D go_alarm(search_alarm);

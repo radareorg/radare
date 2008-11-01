@@ -306,7 +306,6 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 #endif
 //eprintf("polla(%s)(%s)\n", flag->name, word);
 				if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
-
 					config.seek = flag->offset;
 					radare_read(0);
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
@@ -575,7 +574,7 @@ int radare_cmd_raw(const char *tmp, int log)
 
 			/* temporally offset */
 			eof2 = strchr(input, '@');
-			if (eof2 && input && input[0]!='e') {
+			if (eof2 && input[0]!='e') {
 				char *ptr = eof2+1;
 				eof2[0] = '\0';
 
@@ -1141,7 +1140,7 @@ void radare_set_block_size_i(int sz)
 	if (config.block == NULL) {
 		if (sz == DEFAULT_BLOCK_SIZE) {
 			eprintf("Oops malloc error\n");
-			return;
+			exit(1); // XXX
 		} else {
 			eprintf("Cannot allocate %d bytes\n", config.block_size+4);
 			radare_set_block_size_i(DEFAULT_BLOCK_SIZE);

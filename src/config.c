@@ -305,10 +305,11 @@ void config_eval(char *str)
 	if (str == NULL)
 		return;
 	name = strdup(str);
-
 	str = strclean(name);
+	if (str == NULL)
+		return;
 
-	if (str && (str[0]=='\0'||!strcmp(str, "help"))) {
+	if (str[0]=='\0'||!strcmp(str, "help")) {
 		config_list(NULL);
 		return;
 	}
@@ -1000,7 +1001,8 @@ void config_visual_menu()
 				option = i-1;
 				continue;
 			}
-			cons_printf("\n Selected: %s\n\n", fs2);
+			if (fs2 != NULL)
+				cons_printf("\n Selected: %s\n\n", fs2);
 		}
 		cons_flush();
 		ch = cons_readchar();
@@ -1023,11 +1025,13 @@ void config_visual_menu()
 			break;
 		case '*':
 		case '+':
-			config_visual_hit_i(fs2, +1);
+			if (fs2 != NULL)
+				config_visual_hit_i(fs2, +1);
 			continue;
 		case '/':
 		case '-':
-			config_visual_hit_i(fs2, -1);
+			if (fs2 != NULL)
+				config_visual_hit_i(fs2, -1);
 			continue;
 		case 'l':
 		case 'e': // edit value
@@ -1035,7 +1039,8 @@ void config_visual_menu()
 		case '\r':
 		case '\n': // never happens
 			if (menu == 1) {
-				config_visual_hit(fs2);
+				if (fs2 != NULL)
+					config_visual_hit(fs2);
 			} else {
 				flag_space_set(fs);
 				menu = 1;

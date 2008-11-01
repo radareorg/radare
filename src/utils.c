@@ -914,7 +914,8 @@ char *strsub (char *string, char *pat, char *rep, int global)
 //		if (repl && !memcmp(string + i, pat, patlen)) {
 		if (repl && !strsub_memcmp(string + i, pat, patlen)) {
 			RESIZE_MALLOCED_BUFFER (temp, templen, patlen, tempsize, 4096); //UGLY HACK (patlen * 2));
-
+			if (temp == NULL)
+				return NULL;
 			for (r = rep; *r; )
 				temp[templen++] = *r++;
 
@@ -925,7 +926,8 @@ char *strsub (char *string, char *pat, char *rep, int global)
 			temp[templen++] = string[i++];
 		}
 	}
-	temp[templen] = 0;
+	if (temp != NULL)
+		temp[templen] = 0;
 	return (temp);
 }
 

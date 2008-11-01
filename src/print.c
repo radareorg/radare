@@ -308,14 +308,14 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	int nargs;
 	const char *arg = fmt;
 	i = j = 0;
-	
+
 	while(*arg && *arg==' ') arg = arg +1;
 	/* get times */
 	otimes = times = atoi(arg);
 	if (times > 0)
 		while((*arg>='0'&&*arg<='9')) arg = arg +1;
 
-	if (arg == NULL || arg[0]=='\0') {
+	if (arg[0]=='\0') {
 		print_mem_help();
 		return;
 	}

@@ -104,8 +104,7 @@ static int malloc_open(const char *pathname, int flags, mode_t mode)
 			malloc_buf = NULL;
 			malloc_bufsz = 0;
 			malloc_fd = -1;
-		}
-		memset(malloc_buf, '\0', malloc_bufsz);
+		} else memset(malloc_buf, '\0', malloc_bufsz);
 	}
 	return malloc_fd;
 }

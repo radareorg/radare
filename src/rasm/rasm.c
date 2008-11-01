@@ -159,10 +159,11 @@ printf("TODO: (%s)\n", op);
 int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data)
 {
 	int ret = -1;
-	while(str[0]==' '||str[0]=='\t') str = str + 1;
 
 	if (arch == NULL||str==NULL)
 		return -1;
+
+	while(str[0]==' '||str[0]=='\t') str = str + 1;
 
 	ret = rasm_directive(arch, offset, &str, data);
 	if (ret != -1)
