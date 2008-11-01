@@ -190,7 +190,7 @@ int cons_palette_set(const char *key, const u8 *value)
 
 int cons_palette_init(const unsigned char *pal)
 {
-	int palstrlen = strlen((const char *)pal);
+	int palstrlen;
 	int i,j=1,k;
 
 	if (pal==NULL || pal[0]=='\0') {
@@ -206,6 +206,7 @@ int cons_palette_init(const unsigned char *pal)
 		return 0;
 	}
 
+	palstrlen = strlen((const char *)pal);
 	for(i=k=0;i<CONS_PALETTE_SIZE;i++,k++)
 		if (j && pal[i]) {
 			if (pal[i] == '.') { // che! action!!

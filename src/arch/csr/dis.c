@@ -900,6 +900,9 @@ int arch_csr_disasm(char *str, unsigned char *buf, u64 seek)
 	s->s_off = seek;
 	s->s_out = NULL;
 	d = next_inst(s);
+	if (d == NULL)
+		return 0;
+
 	csr_decode(s, d);
 #if 0
 	if (s->s_ff_quirk) {

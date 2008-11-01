@@ -74,8 +74,6 @@ extern struct config_t config;
 int rdb_init();
 void config_init(int first);
 void config_fit_block_size();
-void radare_set_block_size(char *arg);
-void radare_set_block_size_i(size_t i);
 
 /* NEW STFU */
 

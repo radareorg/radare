@@ -120,6 +120,7 @@ void radare_search_aes();
 int aes_key_test(unsigned char *buf);
 int radare_system(const char *cmd);
 
+const char *project_get_file(const char *file);
 int project_save(const char *file);
 void project_close();
 int project_open(const char *file);
@@ -127,6 +128,8 @@ int project_info(const char *file);
 
 int rabin_load();
 
+void radare_set_block_size(char *arg);
+void radare_set_block_size_i(int sz);
 int radare_hack_help();
 int radare_hack(const char *cmd);
 void rdb_help();
@@ -147,6 +150,5 @@ int radare_systemf(const char *format, ...);
 int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);
 struct trace_t *trace_get(u64 addr);
-const char *project_get_file(const char *file);
 
 #endif

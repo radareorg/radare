@@ -257,7 +257,6 @@ void print_maps_regions(int rad, int two)
 	struct list_head *pos;
 	char name[128];
 	char perms[5];
-	int zoominit=0;
 	u64 from=0, to=0;
 
 	if (rad)

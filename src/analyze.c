@@ -237,7 +237,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks =(int) config_get_i("graph.callblocks");
 	int jmpblocks = (int) config_get_i("graph.jmpblocks");
-        int refblocks = (int) config_get_i("graph.refblocks");
+        //int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
 	if (arch_aop == NULL)
@@ -491,6 +491,10 @@ struct program_t *code_analyze(u64 seek, int depth)
 {
 	u64 bsize = config.block_size;
 	struct program_t *prg = program_new(NULL);
+
+	if (prg == NULL)
+		return NULL;
+
 	prg->entry = config.seek;
 
 	radare_set_block_size_i(4096); // max function size = 5000
@@ -506,9 +510,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 	//if (depth>3) depth=3;
 	if (depth>10) depth=10;
 
-	if (prg == NULL)
-		eprintf("Cannot create program\n");
-	else	code_analyze_r(prg, seek, depth);
+	code_analyze_r(prg, seek, depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
@@ -952,4 +954,6 @@ int analyze_function(int recursive, int report)
 		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
 		cons_printf("fs *\n");
 	}
+
+	return 0;
 }

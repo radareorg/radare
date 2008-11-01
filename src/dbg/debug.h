@@ -102,6 +102,9 @@ int debug_set_register(const char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
 u64 debug_get_register(char *reg);
 
+int syscall_name_to_int(const char *str);
+void debug_os_syscall_list();
+
 int dispatch_wait();
 int debug_os_init();
 int debug_os_kill(int pid, int sig);

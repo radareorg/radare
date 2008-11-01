@@ -25,7 +25,6 @@
 
 #if __UNIX__
 #include <sys/ioctl.h>
-//#include <regex.h> // NOT PARSEABLE BY TCC :O
 #include <termios.h>
 #include <sys/wait.h>
 #include <stdarg.h>
@@ -1131,16 +1130,16 @@ int radare_prompt()
 	return 1;
 }
 
-void radare_set_block_size_i(size_t i)
+void radare_set_block_size_i(int sz)
 {
-	if (i<1) i = 1;
-	if (((int)i)<0) i=1;
+	if (sz<1) sz = 1;
+	if (sz<0) sz = 1;
 
-	config.block_size = i;
+	config.block_size = sz;
 	free(config.block);
-	config.block = (unsigned char *)malloc(config.block_size + 4);
+	config.block = (u8*)malloc(config.block_size + 4);
 	if (config.block == NULL) {
-		if (i == DEFAULT_BLOCK_SIZE) {
+		if (sz == DEFAULT_BLOCK_SIZE) {
 			eprintf("Oops malloc error\n");
 			return;
 		} else {
@@ -1250,7 +1249,6 @@ int radare_open(int rst)
 	char *ptr;
 	const char *cptr;
 	char buf[4096];
-	char buf2[255];
 	struct config_t ocfg;
 	int wm = (int)config_get("file.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;

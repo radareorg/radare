@@ -1168,6 +1168,8 @@ int debug_step(int times)
 int debug_set_register(const char *args)
 {
 	char *value;
+	char *arg = alloca(strlen(args)+1);
+	strcpy(arg, args);
 
 	if (!args) {
 		eprintf("Usage: !set [reg] [value]\n");
@@ -1177,9 +1179,9 @@ int debug_set_register(const char *args)
 		eprintf(":regs No program loaded.\n");
 		return 1;
 	}
-	value = strchr(args, '=');
+	value = strchr(arg, '=');
 	if (!value)
-		value = strchr(args, ' ');
+		value = strchr(arg, ' ');
 	if (!value) {
 		eprintf("Usage: !set [reg] [value]\n");
 		eprintf("  > !set eflags PZTI\n");
@@ -1187,11 +1189,11 @@ int debug_set_register(const char *args)
 		return 1;
 	}
 	value[0]='\0';
-	args = strclean(args);
+	arg = strclean(arg);
 	value = strclean(value+1);
-	printf("%s=%s\n", args, value);
+	printf("%s=%s\n", arg, value);
 
-	return arch_set_register(args, value);
+	return arch_set_register(arg, value);
 }
 
 int debug_fpregisters(int rad)
