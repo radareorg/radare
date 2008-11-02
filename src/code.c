@@ -160,8 +160,7 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
 			sprintf(buf, "%s", da.result);
 		} else {
-ud_idx = 0;
-		udis_init();
+//			udis_init();
 			ud_obj.insn_offset = seek;//;+myinc; //+bytes;
 			ud_obj.pc = seek; //+myinc;
 			//ud_idx = myinc;
@@ -234,7 +233,7 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		cons_strcat(buf);
 		break;
 	case ARCH_CSR:
-		ret = udis_arch_string(arch, buf, endian, seek, bytes,myinc);
+		ret = udis_arch_string(arch, buf, endian, seek, bytes, myinc);
 		cons_strcat(buf);
 		break;
 	case ARCH_AOP:
@@ -243,22 +242,16 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
-{
-	char bu[4];
-	
-	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-	       //cons_printf("  %s", disarm(ins, (unsigned int)seek));
-		endian_memcpy(&bu, b, 4); //, endian);
-	       ret=gnu_disarm((unsigned char*)bu, (u64)seek+myinc);
-}
-	       break;
+		endian_memcpy(&buf, b, 4); //, endian);
+		ret=gnu_disarm((unsigned char*)buf, (u64)seek+myinc);
+		break;
 	case ARCH_MIPS:
-	       //unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-	       gnu_dismips((unsigned char*)b, (unsigned int)seek+myinc);
-	       break;
+		//unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
+		gnu_dismips((unsigned char*)b, (unsigned int)seek+myinc);
+		break;
 	case ARCH_SPARC:
-	       gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
-	       break;
+		gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
+		break;
 	case ARCH_PPC:
 		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes ,myinc);
 		cons_strcat(buf);
@@ -289,10 +282,10 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 extern int color;
 void udis_arch(int arch, int len, int rows)
 {
-	int foo=ud_idx;
+	int foo = ud_idx;
 	radis_str_e(arch, config.block, len,rows);
 	//udis_arch_buf(arch, config.block, len, rows);
-ud_idx =foo;
+	ud_idx = foo;
 }
 
 /* aop disassembler */
@@ -395,6 +388,33 @@ void radis(int len, int rows)
 #define RADIS_TRACES 0x00800
 #define RADIS_COMMENTS 0x01000
 #define RADIS_COLOR 0x02000
+#define RADIS_STACKPTR 0x04000
+
+
+static int stack_ptr = 0;
+static void print_stackptr(struct aop_t *aop, int zero)
+{
+	int ostack_ptr = stack_ptr;
+	char changed = ' ';
+	if (zero)
+		stack_ptr = 0;
+
+	if (aop->stackop == AOP_STACK_INCSTACK) {
+		stack_ptr += aop->value;
+	}
+	switch(aop->type) {
+	case AOP_TYPE_UPUSH:
+	case AOP_TYPE_PUSH:
+		stack_ptr += 8;
+		break;
+	case AOP_TYPE_POP:
+		stack_ptr -= 8;
+		break;
+	}
+	if (stack_ptr != ostack_ptr)
+		changed = '_';
+	cons_printf("%3d%c", stack_ptr, changed);
+}
 
 void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int flags)
 {
@@ -425,6 +445,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	ud_idx = 0;
 	delta = 0;
 	inc = 0;
+	stack_ptr = 0;
 
 	if (config.visual && rows<1)
 		rows = config.height - ((last_print_format==FMT_VISUAL)?11:0) - config.lines;
@@ -485,6 +506,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			else cons_printf("+%7d ", bytes);
 		}
 		/* size */
+		if (flags & RADIS_STACKPTR)
+			print_stackptr(&aop, 0);
 		if (flags & RADIS_SIZE)
 			cons_printf("%d ", aop.length);
 		/* trac information */
@@ -547,9 +570,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
 							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 						}
-						if (flags & RADIS_OFFSET) {
+						if (flags & RADIS_OFFSET)
 							print_addr(sk+i);
-						}
+						if (flags & RADIS_STACKPTR)
+							print_stackptr(&aop, 0);
 					CHECK_LINES
 					folder++;
 				}
@@ -593,9 +617,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
 							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 						}
-						if (flags & RADIS_OFFSET) {
+						if (flags & RADIS_OFFSET)
 							print_addr(sk+i);
-						}
+						if (flags & RADIS_STACKPTR)
+							print_stackptr(&aop, 0);
 						cons_strcat("  .db  ");
 						w = 0;
 					}
@@ -626,6 +651,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				}
 				if (flags & RADIS_OFFSET)
 					print_addr(sk+i);
+				if (flags & RADIS_STACKPTR)
+					print_stackptr(&aop, 0);
 			CHECK_LINES
 		}
 		__outofme2:
@@ -756,9 +783,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
 							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
 						}
-						if (flags & RADIS_OFFSET) {
+						if (flags & RADIS_OFFSET)
 							print_addr(seek);
-						}
+						if (flags & RADIS_STACKPTR)
+							print_stackptr(&aop, 0);
 						if (flags & RADIS_RELADDR)
 							cons_strcat("        ");
 						if (funline[0] != '\0')
@@ -880,6 +908,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						}
 						if (flags & RADIS_OFFSET)
 							print_addr(seek);
+						if (flags & RADIS_STACKPTR)
+							print_stackptr(&aop, 0);
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf, "");
 						cons_strcat("; ------------------------------------ ");
@@ -906,7 +936,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
 	const char *cmd_asm;
 	int size, bytes, offset, splits, comments, lines, section,
-	traces, flags, reladdr, flagsline, functions;
+	traces, flags, reladdr, flagsline, functions, stackptr;
 
 	// cache here!
 	cmd_asm       = config_get("cmd.asm");
@@ -920,6 +950,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 	flagsline= (int) config_get("asm.flagsline");
 	lines    = (int) config_get_i("asm.lines");
 	reladdr  = (int) config_get("asm.reladdr");
+	stackptr = (int) config_get("asm.stackptr");
 	traces   = (int) config_get("asm.trace");
 	comments = (int) config_get("asm.comments");
 	color    = (int) config_get("scr.color");
@@ -933,6 +964,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 	if (section) flags |= RADIS_SECTION;
 	if (splits) flags |= RADIS_SPLITS;
 	if (flags) flags |= RADIS_FLAGS;
+	if (stackptr) flags |= RADIS_STACKPTR;
 	if (flagsline) flags |= RADIS_FLAGSLINE;
 	if (lines) flags |= RADIS_LINES;
 	if (reladdr) flags |= RADIS_RELADDR;

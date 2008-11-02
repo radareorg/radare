@@ -322,9 +322,12 @@ CMD_DECL(analyze)
 	case 'o':
 		udis_init();
 		for(depth_i=0;depth_i<depth;depth_i++) {
+			char food[64];
 			radare_read(0);
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
-pas_aop(config.arch, config.seek, config.block, 16);
+			pas_aop(config.arch, config.seek, config.block, 16, NULL, food);
+
+			cons_printf("pas = %s\n", food);
 			cons_printf("index = %d\n", depth_i);
 #if 0
 			cons_printf("opcode = ");
@@ -333,9 +336,24 @@ pas_aop(config.arch, config.seek, config.block, 16);
 			radare_cmd("pd 1", 0);
 			config.verbose = j;
 #endif
+#if 1
 			cons_printf("size = %d\n", sz);
-			cons_printf("type = ");
 			// TODO: implement aop-type-to-string
+			cons_printf("stackop = ");
+			if (aop.stackop == AOP_STACK_INCSTACK) {
+				if (aop.value > 0)
+					cons_printf("inc %d\n", aop.value);
+				else cons_printf("dec %d\n", -aop.value);
+			} else {
+				switch(aop.type) {
+				case AOP_TYPE_PUSH:  cons_printf("push 8\n"); break;
+				case AOP_TYPE_UPUSH:  cons_printf("push 8\n"); break;
+				case AOP_TYPE_POP:  cons_printf("pop 8\n"); break;
+				default: cons_printf("unknown(%d)\n", aop.stackop);
+				}
+			}
+#endif
+			cons_printf("type = ");
 			switch(aop.type) {
 			case AOP_TYPE_CALL:  cons_printf("call\n"); break;
 			case AOP_TYPE_CJMP:  cons_printf("conditional-jump\n"); break;

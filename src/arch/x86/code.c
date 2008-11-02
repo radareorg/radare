@@ -231,6 +231,11 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->value = (u64)(unsigned char)bytes[2];
 			aop->type = AOP_TYPE_AND;
 			break;
+		case 0xc4:
+			/* inc $0x????????, $esp*/
+			aop->value = -(u64)(unsigned char)bytes[2];
+			aop->stackop = AOP_STACK_INCSTACK;
+			break;
 		case 0xec:
 			/* sub $0x????????, $esp*/
 			aop->value = (u64)(unsigned char)bytes[2];
