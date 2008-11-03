@@ -366,7 +366,7 @@ int java_print_opcode(int idx, unsigned char *bytes, char *output)
 	return java_ops[idx].size;
 }
 
-int java_disasm(unsigned char *bytes, char *output)
+int java_disasm(const u8 *bytes, char *output)
 {
 	int i;
 	for(i = 0;java_ops[i].name != NULL;i++)

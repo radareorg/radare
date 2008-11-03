@@ -66,7 +66,6 @@ static gint action_activated(void *item, GdkEvent *event, gpointer data)
 	char buffer[1024];
 	GtkTreeIter iter;
 	GtkTreeSelection *sel;
-	GtkTreeModel *model;
 
 	// 0x100 is left click
 	// 0x400 is right click
@@ -82,6 +81,7 @@ static gint action_activated(void *item, GdkEvent *event, gpointer data)
 			execute_command(buffer);
 		}
 	}
+	return 0;
 }
 
 void action_category_activated(
@@ -93,7 +93,6 @@ void action_category_activated(
 	char buffer[1024];
 	GtkTreeIter iter;
 	GtkTreeSelection *sel;
-	GtkTreeModel *model;
 	gchar *name = NULL;
 
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(tv_cat));
@@ -226,6 +225,7 @@ static GtkTreeModel *create_stock_icon_store (void)
 	return GTK_TREE_MODEL (store);
 }
 
+#if 0
 /* A GtkTreeViewRowSeparatorFunc that demonstrates how rows can be
  * rendered as separators. This particular function does nothing 
  * useful and just turns the fourth row into a separator.
@@ -241,6 +241,7 @@ static gboolean is_separator (GtkTreeModel *model, GtkTreeIter  *iter, gpointer 
 
 	return result;
 }
+#endif
 
 /*
 static void set_sensitive (
@@ -404,7 +405,6 @@ GtkWidget *gradare_actions_new()
 	GtkWidget *exp =gtk_expander_new("");
 	GtkWidget *vpan = gtk_vpaned_new();
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
-	GtkWidget *exec_button;
 	GtkWidget *add;
 	GtkTreeViewColumn *col;
 
@@ -450,6 +450,6 @@ GtkWidget *gradare_actions_new()
 	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(add), FALSE, FALSE, 0);
 
 	//return vbox;
-	gtk_container_add(exp,vbox);
+	gtk_container_add(GTK_CONTAINER(exp), vbox);
 	return exp;
 }

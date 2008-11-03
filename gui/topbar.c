@@ -1,5 +1,26 @@
+/*
+ * Copyright (C) 2008
+ *       pancake <@youterm.com>
+ *
+ * radare is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * radare is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with radare; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 #include "main.h"
 #include <string.h>
+#include <stdlib.h>
 
 GtkWidget *combo;
 GtkWidget *arch;
@@ -92,7 +113,7 @@ GtkWidget *gradare_topbar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 7, "hex pairs");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 8, "raw");
 
-	gtk_combo_box_set_active(GTK_COMBO(combo), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
 
 	g_signal_connect(GTK_COMBO_BOX(combo), "changed", GTK_SIGNAL_FUNC(print_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), combo, FALSE, FALSE, 0);

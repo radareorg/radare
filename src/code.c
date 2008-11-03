@@ -37,7 +37,6 @@
 //#define CHECK_LINES if ( config.visual && len != config.block_size && (cons_lines > config.height) ) break;
 #define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) break;
 
-static int last_arch = ARCH_X86;
 extern int force_thumb;
 static char funline[3];
 extern struct reflines_t *reflines;
@@ -142,9 +141,8 @@ udis_mem_ptr= 0;
 		bytes=63;
 //	radare_read_at(seek, b, bytes);
 
-//eprintf("bytes0[%02x]\n", b[0]);
 	//b = config.block + bytes;
-	buf[0]='\0';
+	string[0]='\0';
 	switch(arch) {
 	case ARCH_ARM:
 		arm_mode = 32;
@@ -225,40 +223,40 @@ udis_mem_ptr= 0;
 	return ret;
 }
 
-int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
+int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int myinc)
 {
 	char buf[128];
-	unsigned char *b = config.block + bytes; //(seek-config.seek); //+ bytes;
+	//unsigned char *b = config.block + bytes; //(seek-config.seek); //+ bytes;
 	struct aop_t aop;
 	int c, ret = 0;
-	ud_idx = bytes+myinc;
+	ud_idx = bytes; //+myinc;
 
 	buf[0]='\0';
+	if (config_get_i("asm.pseudo")) {
+		int tmp = ud_idx;
+		pas_aop(arch, seek, b, bytes, NULL, buf);
+		ud_idx = tmp;
+	} else
 	switch(arch) {
-#if 0
-	case ARCH_AOP:
-		arch_aop(seek+myinc, b, &aop);
-		ret = arch_aop_aop(seek+myinc, b, &aop);
-#endif
 	case ARCH_X86:
 	case ARCH_PPC:
 	case ARCH_JAVA:
 	case ARCH_M68K:
 	case ARCH_CSR:
 	case ARCH_MSIL:
-		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes,myinc);
+		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
 		endian_memcpy(&buf, b, 4); //, endian);
-		ret=gnu_disarm((unsigned char*)buf, (u64)seek+myinc);
+		ret = gnu_disarm((u8*)buf, (u64)seek+myinc);
 		break;
 	case ARCH_MIPS:
 		//unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-		gnu_dismips((unsigned char*)b, (unsigned int)seek+myinc);
+		gnu_dismips((u8*)b, (unsigned int)seek+myinc);
 		break;
 	case ARCH_SPARC:
-		gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
+		gnu_disparc((u8*)b, (unsigned int)seek+myinc);
 		break;
 	case ARCH_BF:
 		ret = arch_bf_dis(b, seek+myinc, 1024);
@@ -266,11 +264,6 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	default:
 		strcpy(buf, "Unknown architecture");
 		break;
-	}
-	if (config_get_i("asm.pseudo")) {
-		int tmp = ud_idx;
-		pas_aop(arch, seek, b, bytes, NULL, buf);
-		ud_idx = tmp;
 	}
 	if (buf[0]!='\0')
 		cons_strcat(buf);
@@ -685,10 +678,6 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);
 		}
-#if 0
-		if (arch==ARCH_AOP)
-			arch = last_arch;
-#endif
 		
 		// TODO: Use a single arch_aop here
 #if 1
@@ -872,7 +861,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			 *
 			 * I know that this has no sense, but computer science is not an exact one.
 			 */
-			udis_arch_opcode(arch, endian, seek, bytes, myinc); //seek+myinc, bytes, myinc);
+			udis_arch_opcode(arch, block+bytes, endian, seek, bytes, myinc); //seek+myinc, bytes, myinc);
 
 			/* show references */
 			D if (aop.ref) {
@@ -921,7 +910,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				}
 			}
 		} else {
-			udis_arch_opcode(arch, endian, sk, bytes, myinc);
+			udis_arch_opcode(arch,block+bytes, endian, sk, bytes, myinc);
 		}
 
 		cons_newline();

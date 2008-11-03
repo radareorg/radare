@@ -152,7 +152,7 @@ int data_end(u64 offset);
 int data_size(u64 offset);
 int data_list();
 void udis_jump(int n);
-int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc);
+int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int myinc);
 void udis_arch(int arch, int len, int rows);
 void udis_arch_buf(int arch, const u8 *block, int len, int rows);
 int dislen(u8* opcode0, int limit);

@@ -18,6 +18,7 @@ all: radare
 	-cd libusbsniff && ${MAKE} all
 	cd src/rabin && ${MAKE} all
 	cd src/rasm && ${MAKE} all
+	cd src && ${MAKE} all
 ##GUI##
 	cd gui && ${MAKE} all
 ##GUI##
@@ -32,7 +33,6 @@ radare:
 	cd vala/grava/ && ${MAKE} radare
 ##VALA##
 ##GUI##
-	cd src && ${MAKE} all
 
 clean:
 	${Q}cd src && ${MAKE} clean

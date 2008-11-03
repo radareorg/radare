@@ -80,7 +80,7 @@ enum {
 	OP_JB
 };
 
-int java_disasm(unsigned char *bytes, char *output);
+int java_disasm(const u8 *bytes, char *output);
 
 void metadata_comment_add(u64 offset, const char *str);
 void metadata_comment_del(u64 offset, const char *str);
