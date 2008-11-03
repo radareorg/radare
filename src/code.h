@@ -229,8 +229,7 @@ int analyze_function(int recursive, int report);
 char *metadata_comment_get(u64 offset, int lines);
 int radare_analyze(u64 seek, int size, int depth, int rad);
 void radis_str_e(int arch, const u8 *block, int len, int rows);
-//int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes);
-int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int myinc);
+int udis_arch_string(int arch, char *string, char *buf, int endian, u64 seek, int bytes, int myinc);
 
 
 #endif

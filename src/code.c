@@ -53,13 +53,15 @@ extern int arm_mode;
 extern int mips_mode;
 int ollyasm_enable = 0;
 
-
+static char *udis_mem = NULL;
+static int udis_mem_ptr = 0;
 static int input_hook_x(ud_t* u)
 {
 	if (ud_idx>length)
 		return -1;
 	if (ud_idx>=config.block_size)
 		return -1;
+	//return udis_mem[udis_mem_ptr++]; //config.block[ud_idx++];
 	return config.block[ud_idx++];
 }
 
@@ -72,6 +74,8 @@ void udis_init()
 	ptr = config_get("asm.arch");
 	syn = config_get("asm.syntax");
 
+	//udis_mem_ptr = 0;
+	udis_mem = config.block;
 	ud_init(&ud_obj);
 	ud_set_pc(&ud_obj, config.seek);
 
@@ -123,14 +127,16 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
-int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int myinc)
+int udis_arch_string(int arch, char *string, char *buf, int endian, u64 seek, int bytes, int myinc)
 {
-	//u8 b[64];
-	unsigned char *b = config.block + bytes;
+	//unsigned char *b = config.block + bytes;
+	unsigned char *b = buf; //config.block + bytes;
 	struct aop_t aop;
 	int ret = 0;
 
-	ud_idx = bytes;
+	//ud_idx = bytes;
+udis_mem= buf;
+udis_mem_ptr= 0;
 
 	if (bytes>63)
 		bytes=63;
@@ -143,22 +149,22 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 	case ARCH_ARM:
 		arm_mode = 32;
 		force_thumb = 0;
-		ret = gnu_disarm_str(buf, b, seek);
+		ret = gnu_disarm_str(string, b, seek);
 		break;
 	case ARCH_ARM16:
 		arm_mode = 16;
 		force_thumb = 1;
-		ret = gnu_disarm_str(buf, b, seek);
+		ret = gnu_disarm_str(string, b, seek);
 		break;
 	case ARCH_CSR:
 		//if (bytes<config.block_size) {
-		arch_csr_disasm(buf, (const unsigned char *)b, (u64)seek);
+		arch_csr_disasm(string, (const unsigned char *)b, (u64)seek);
 		break;
 	case ARCH_X86:
 		if (ollyasm_enable) {
 			t_disasm da;
 			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
-			sprintf(buf, "%s", da.result);
+			sprintf(string, "%s", da.result);
 		} else {
 //			udis_init();
 			ud_obj.insn_offset = seek;//;+myinc; //+bytes;
@@ -167,7 +173,7 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
 			//ud_idx+=ret;
-			sprintf(buf, "%s", ud_insn_asm(&ud_obj));
+			sprintf(string, "%s", ud_insn_asm(&ud_obj));
 		}
 		break;
 	case ARCH_PPC: {
@@ -184,14 +190,14 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 		dp.instr = bof;
 	      // dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
-		sprintf(buf, "%s %s", opcode, operands);
+		sprintf(string, "%s %s", opcode, operands);
 	       //cons_printf("  %s %s", opcode, operands);
 		}
 	       } break;
 	case ARCH_JAVA:
 	//	endian=1;
-		if (java_disasm(b, buf)==-1)
-			strcpy(buf,"???");
+		if (java_disasm(b, string)==-1)
+			strcpy(string, "???");
 		break;
 	case ARCH_M68K: {
 		char opcode[128];
@@ -204,14 +210,14 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 		dp.instr = b; //config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
 		M68k_Disassemble(&dp);
-		sprintf(buf, "%s %s", opcode, operands);
+		sprintf(string, "%s %s", opcode, operands);
 		} break;
 	case ARCH_MSIL: {
 		int n;
 		DISASMSIL_OFFSET CodeBase = seek;
 		ILOPCODE_STRUCT ilopar[8]; // XXX only uses 1
 		DisasMSIL(b,bytes,CodeBase,ilopar, 8, &n);
-		sprintf(buf, "%s", ilopar[0].Mnemonic);
+		sprintf(string, "%s", ilopar[0].Mnemonic);
 		//cons_printf("%s", ilopar[0].Mnemonic);
 		ret = ilopar[0].Size;
 		} break;
@@ -221,24 +227,26 @@ int udis_arch_string(int arch, char *buf, int endian, u64 seek, int bytes, int m
 
 int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 {
-	char buf[64];
-	unsigned char *b = config.block + bytes;
+	char buf[128];
+	unsigned char *b = config.block + bytes; //(seek-config.seek); //+ bytes;
 	struct aop_t aop;
-	int c, ret=0;
+	int c, ret = 0;
 	ud_idx = bytes+myinc;
 
+	buf[0]='\0';
 	switch(arch) {
-	case ARCH_X86:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes, myinc);
-		cons_strcat(buf);
-		break;
-	case ARCH_CSR:
-		ret = udis_arch_string(arch, buf, endian, seek, bytes, myinc);
-		cons_strcat(buf);
-		break;
+#if 0
 	case ARCH_AOP:
 		arch_aop(seek+myinc, b, &aop);
 		ret = arch_aop_aop(seek+myinc, b, &aop);
+#endif
+	case ARCH_X86:
+	case ARCH_PPC:
+	case ARCH_JAVA:
+	case ARCH_M68K:
+	case ARCH_CSR:
+	case ARCH_MSIL:
+		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes,myinc);
 		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
@@ -252,29 +260,21 @@ int udis_arch_opcode(int arch, int endian, u64 seek, int bytes, int myinc)
 	case ARCH_SPARC:
 		gnu_disparc((unsigned char*)b, (unsigned int)seek+myinc);
 		break;
-	case ARCH_PPC:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes ,myinc);
-		cons_strcat(buf);
-		break;
-	case ARCH_JAVA:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
-		cons_strcat(buf);
-		break;
-	case ARCH_M68K:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
-		cons_strcat(buf);
-		break;
-	case ARCH_MSIL:
-		ret = udis_arch_string(arch, buf, endian, seek+myinc, bytes,myinc);
-		cons_strcat(buf);
-		break;
 	case ARCH_BF:
 		ret = arch_bf_dis(b, seek+myinc, 1024);
 		break;
 	default:
-		cons_printf("Unknown architecture");
+		strcpy(buf, "Unknown architecture");
 		break;
 	}
+	if (config_get_i("asm.pseudo")) {
+		int tmp = ud_idx;
+		pas_aop(arch, seek, b, bytes, NULL, buf);
+		ud_idx = tmp;
+	}
+	if (buf[0]!='\0')
+		cons_strcat(buf);
+
 	C cons_printf(C_RESET);
 	return ret;
 }
@@ -323,7 +323,7 @@ struct radis_arch_t {
 	{ "intel64" , ARCH_X86   , &arch_x86_aop }   , 
 	{ "x86"     , ARCH_X86   , &arch_x86_aop }   , 
 	{ "mips"    , ARCH_MIPS  , &arch_mips_aop }  , 
-	//{ "aop"   , ARCH_AOP   , &arch_aop_aop }   , 
+	//{ "aop"     , ARCH_AOP   , &arch_aop_aop }   , 
 	{ "arm"     , ARCH_ARM   , &arch_arm_aop }   , 
 	{ "arm16"   , ARCH_ARM16 , &arch_arm_aop }   , 
 	{ "java"    , ARCH_JAVA  , &arch_java_aop }  , 
@@ -520,6 +520,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		//	print_function_line(foo, sk);
 		if (flags & RADIS_FUNCTIONS ) {
 			if (foo != NULL && foo->type == DATA_FUN) {
+				stack_ptr = 0;
 //eprintf("%llx %llx\n", (u64)foo->to-aop.length,(u64)sk);
 //eprintf("%llx %llx\n", (u64)foo->to,(u64)sk);
 				if (foo->from == sk)
@@ -684,8 +685,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);
 		}
+#if 0
 		if (arch==ARCH_AOP)
 			arch = last_arch;
+#endif
 		
 		// TODO: Use a single arch_aop here
 #if 1

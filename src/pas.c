@@ -51,7 +51,7 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		char *op;
 		char *str;
 		int type;
-	} ops[]= {
+	} ops[] = {
 		{ "cmp",  "cmp 1,2", AOP_TYPE_CMP },
 		{ "test", "cmp 1,2", AOP_TYPE_CMP },
 		{ "lea",  "1=2",     AOP_TYPE_MOV },
@@ -120,8 +120,7 @@ struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len, struct aop
 	char w3[32];
 	char *ptr, *optr;
 
-
-	udis_arch_string(arch , str, config.endian, seek, 0, 0); //len);
+	udis_arch_string(arch, str, bytes, config.endian, seek, 0, 0);
 
 	if (str[0]!='\0') {
 		w0[0]='\0';

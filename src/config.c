@@ -611,6 +611,7 @@ void config_init(int first)
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	// asm.os = used for syscall tables and so.. redefined with rabin -rI
+	config_set("asm.pseudo", "false"); 
 #if __linux__
 	config_set("asm.os", "linux"); 
 #elif __FreeBSD__
