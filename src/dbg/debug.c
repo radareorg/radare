@@ -1168,13 +1168,16 @@ int debug_step(int times)
 int debug_set_register(const char *args)
 {
 	char *value;
-	char *arg = alloca(strlen(args)+1);
-	strcpy(arg, args);
+	char *arg;
 
-	if (!args) {
+	if (args == NULL) {
 		eprintf("Usage: !set [reg] [value]\n");
 		return 1;
 	}
+
+	arg = alloca(strlen(args)+1);
+	strcpy(arg, args);
+
 	if (!ps.opened) {
 		eprintf(":regs No program loaded.\n");
 		return 1;

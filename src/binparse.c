@@ -322,7 +322,7 @@ int binparse_add(tokenizer *t, char *string, char *mask)
 int binparse_add_name(tokenizer *t, char *name, char *string, char *mask)
 {
 	int ret = binparse_add(t, string, mask);
-	strncpy(t->tls[ret]->name, strdup(name), 200);
+	strncpy(t->tls[ret]->name, name, 200);
 	return ret;
 }
 

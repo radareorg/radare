@@ -74,8 +74,6 @@ Nibble TODO:
     code everywhere, just BP and change regs
    - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
 * asm.regs2 or asm.regsegments = true ( to show cs, ds, gs, ... )
-* XC floating not happy
- - xc is crappy! no args, some vals are invalid
 * Watchpoints:
   - Make !wp work with ? conditionals
   - Make dbg.wptrace = make it stop when there's a breakpoint
@@ -87,7 +85,6 @@ Nibble TODO:
 * !fork should be fixed
 * powerpc OSX (also for ARM)
   - !regs must show and flag proper regs!!
-* asm.stackpointer (show stack pointer value like in IDA)
 
 java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)

@@ -126,7 +126,7 @@ void udis_jump(int n)
 
 /* -- disassemble -- */
 
-int udis_arch_string(int arch, char *string, char *buf, int endian, u64 seek, int bytes, int myinc)
+int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc)
 {
 	//unsigned char *b = config.block + bytes;
 	unsigned char *b = buf; //config.block + bytes;

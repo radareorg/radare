@@ -263,9 +263,10 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	int i=0,j;
 	char ch;
 	char *word = NULL;
-	char *str = strdup(each);
+	char *str;
 	struct list_head *pos;
 
+	str = strdup(each);
 	radare_controlc();
 	while(str[i] && !config.interrupted) {
 		j = i;
@@ -274,15 +275,15 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 		ch = str[i];
 		str[i] = '\0';
 		word = strdup(str+j);
+		if (word == NULL)
+			break;
 		str[i] = ch;
 		if (strchr(word, '*')) {
-
 			/* for all flags in current flagspace */
 			list_for_each(pos, &flags) {
 				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 				if (config.interrupted)
 					break;
-
 				/* filter per flag spaces */
 //				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 //					continue;
@@ -298,7 +299,6 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 				if (config.interrupted)
 					break;
-
 #if 0
 				/* filter per flag spaces */
 				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
@@ -331,6 +331,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	}
 	radare_controlc_end();
 
+	free(word);
+	word = NULL;
 	free(str);
 }
 

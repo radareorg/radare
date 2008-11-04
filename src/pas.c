@@ -30,6 +30,7 @@ BUGS:
 int pas_emul_init()
 {
 	vm_init();
+	return 0;
 }
 
 int pas_emul(const char *str)
@@ -42,6 +43,7 @@ int pas_emul(const char *str)
 		
 		
 	}
+	return 0;
 }
 
 int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
@@ -52,18 +54,19 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		char *str;
 		int type;
 	} ops[] = {
-		{ "cmp",  "cmp 1,2", AOP_TYPE_CMP },
-		{ "test", "cmp 1,2", AOP_TYPE_CMP },
-		{ "lea",  "1=2",     AOP_TYPE_MOV },
-		{ "mov",  "1=2",     AOP_TYPE_MOV },
-		{ "add",  "1+=2",    AOP_TYPE_MOV },
-		{ "sub",  "1-=2",    AOP_TYPE_MOV },
-		{ "mul",  "1*=2",    AOP_TYPE_MOV },
-		{ "div",  "1/=2",    AOP_TYPE_MOV },
-		{ "jmp",  "goto 1",  AOP_TYPE_MOV },
-		{ "je",   "je 1",    AOP_TYPE_CJMP },
-		{ "push", "1",       AOP_TYPE_PUSH },
-		{ "pop",  "1",       AOP_TYPE_POP },
+		{ "cmp",  "cmp 1, 2", AOP_TYPE_CMP },
+		{ "test", "cmp 1, 2", AOP_TYPE_CMP },
+		{ "lea",  "1 = 2",     AOP_TYPE_MOV },
+		{ "mov",  "1 = 2",     AOP_TYPE_MOV },
+		{ "add",  "1 += 2",    AOP_TYPE_MOV },
+		{ "sub",  "1 -= 2",    AOP_TYPE_MOV },
+		{ "mul",  "1 *= 2",    AOP_TYPE_MOV },
+		{ "div",  "1 /= 2",    AOP_TYPE_MOV },
+		{ "call", "call 1",    AOP_TYPE_MOV },
+		{ "jmp",  "goto 1",    AOP_TYPE_MOV },
+		{ "je",   "je 1",      AOP_TYPE_CJMP },
+		{ "push", "push 1",  AOP_TYPE_PUSH },
+		{ "pop",  "pop 1",   AOP_TYPE_POP },
 		{ NULL }
 	};
 
@@ -110,9 +113,10 @@ int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	return pas_aop_x86(argc, argv, aop, newstr);
 }
 
-struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len, struct aop_t *aop, char *newstr)
+struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr)
 {
 	int i;
+	const char *osyntax;
 	char str[64];
 	char w0[32];
 	char w1[32];
@@ -120,6 +124,7 @@ struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len, struct aop
 	char w3[32];
 	char *ptr, *optr;
 
+	// XXX asm.syntax should be 'intel'
 	udis_arch_string(arch, str, bytes, config.endian, seek, 0, 0);
 
 	if (str[0]!='\0') {
@@ -151,7 +156,6 @@ struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len, struct aop
 		}
 		{
 			const char *wa[] = { &w0, &w1, &w2, &w3 };
-			struct aop_t *aop;
 			int nw=0;
 
 			for(i=0;i<4;i++) {

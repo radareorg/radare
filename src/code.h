@@ -125,7 +125,7 @@ int arch_m68k_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_msil_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
 
 int gnu_disarm_str(char *str, unsigned char *inst, u64 offset);
-struct aop_t *pas_aop(int arch, u64 seek, const char *bytes, int len, struct aop_t *aop, char *newstr);
+struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr);
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);
 void code_lines_print(struct reflines_t *list, u64 addr, int expand);
@@ -229,7 +229,6 @@ int analyze_function(int recursive, int report);
 char *metadata_comment_get(u64 offset, int lines);
 int radare_analyze(u64 seek, int size, int depth, int rad);
 void radis_str_e(int arch, const u8 *block, int len, int rows);
-int udis_arch_string(int arch, char *string, char *buf, int endian, u64 seek, int bytes, int myinc);
-
+int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc);
 
 #endif

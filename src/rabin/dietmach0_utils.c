@@ -84,6 +84,7 @@ dm_fatal (const char *fmt, ...)
   /*
    * Closing all open files
    */
+  exit(1);
 }
 
 void
