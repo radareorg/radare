@@ -41,7 +41,7 @@
 #define LIBEXECDIR "@LIBEXECDIR@"
 
 /* libraries */
-#define HAVE_LIB_REDALINE @HAVE_LIB_READLINE@
+#define HAVE_LIB_READLINE @HAVE_LIB_READLINE@
 #define HAVE_LIB_EWF @HAVE_LIB_EWF@
 
 #endif

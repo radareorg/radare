@@ -16,7 +16,7 @@ a.out: $(SOURCES:.vala=.o)
 
 %.o:%.vala
 	valac --save-temps $(VALAFLAGS) -c $(SOURCES)
-	
+
 c:
 	valac --save-temps *.c --pkg gtk+-2.0 --pkg cairo -o a.out
 

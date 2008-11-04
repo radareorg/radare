@@ -389,7 +389,8 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 
         ret = radare_read(0);
 
-        for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
+	/* XXX bsz+4 fixes a segfault! (avoid reading outside the block...) */
+        for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
                 if (config.interrupted)
                         break;
 
@@ -541,7 +542,7 @@ TODO: use maps here! must be mixed with flags and so
 int radare_analyze(u64 seek, int size, int depth, int rad)
 {
 	char cmd[1024];
-	u8 str[1024];
+	char str[1024];
 	u8 word[128];
 	u64 tmp = config.seek;
 	u32 num, nume; // little endian
@@ -808,6 +809,9 @@ int analyze_function(int recursive, int report)
 		return -1;
 
 	bytes = (char *)malloc(len);
+	if (bytes == NULL)
+		return -1;
+
 	ret = radare_read_at(from, bytes, len);
 	if (ret <0) {
 		eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
@@ -836,12 +840,18 @@ int analyze_function(int recursive, int report)
 		cons_printf("fu fun_%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
 		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
 	}
+	D eprintf(".");
 
 	for(;seek< to; seek+=inc) {
-		inc = arch_aop(seek, bytes+(seek-from), &aop);
+		u64 delta = seek-from;
+		if (delta >= len) {
+			eprintf("analyze_function: oob\n");
+			break;
+		}
+		inc = arch_aop(seek, bytes+delta, &aop);
 		if (inc<1) {
 			inc = 1;
-			continue;
+			break;
 		}
 		switch(aop.type) {
 		case AOP_TYPE_CALL:

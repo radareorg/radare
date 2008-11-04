@@ -390,9 +390,9 @@ static void print_stackptr(struct aop_t *aop, int zero)
 	if (zero)
 		stack_ptr = 0;
 
-	if (aop->stackop == AOP_STACK_INCSTACK) {
+	if (aop->stackop == AOP_STACK_INCSTACK)
 		stack_ptr += aop->value;
-	}
+
 	switch(aop->type) {
 	case AOP_TYPE_UPUSH:
 	case AOP_TYPE_PUSH:
@@ -511,14 +511,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		//	print_function_line(foo, sk);
 		if (flags & RADIS_FUNCTIONS ) {
 			if (foo != NULL && foo->type == DATA_FUN) {
-				stack_ptr = 0;
-//eprintf("%llx %llx\n", (u64)foo->to-aop.length,(u64)sk);
-//eprintf("%llx %llx\n", (u64)foo->to,(u64)sk);
-				if (foo->from == sk)
+				if (foo->from == sk) {
+					// TODO stack_ptr = 0;
 					strcpy(funline,"/");
-				else
-				//if (foo->to-aop.length== sk)
-				//if (foo->to-aop.length== sk)
+				} else
 				if ((foo->to-aop.length+1 == sk) // XXX UGLY HACK
 				|| (foo->to-1 == sk))
 					strcpy(funline,"\\");
