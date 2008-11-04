@@ -129,8 +129,7 @@ void udis_jump(int n)
 int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc)
 {
 	//unsigned char *b = config.block + bytes;
-	unsigned char *b = buf; //config.block + bytes;
-	struct aop_t aop;
+	const u8 *b = buf; //config.block + bytes;
 	int ret = 0;
 
 	//ud_idx = bytes;
@@ -227,8 +226,7 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 {
 	char buf[128];
 	//unsigned char *b = config.block + bytes; //(seek-config.seek); //+ bytes;
-	struct aop_t aop;
-	int c, ret = 0;
+	int  ret = 0;
 	ud_idx = bytes; //+myinc;
 
 	buf[0]='\0';
@@ -649,7 +647,6 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					print_stackptr(&aop, 0);
 			CHECK_LINES
 		}
-		__outofme2:
 
 		switch(arch) {
 		case ARCH_X86:

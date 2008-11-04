@@ -90,7 +90,6 @@ void undo_list()
 void undo_write_new(u64 off, u8 *data, int len)
 {
 	struct undow_t *uw = (struct undow_t *)malloc(sizeof(struct undow_t));
-	struct list_head *p;
 
 	if (undo_w_lock)
 		return;
@@ -127,7 +126,6 @@ void undo_write_list()
 {
 #define BW 8 /* byte wrap */
 	struct list_head *p;
-	unsigned int oldb;
 	int i = 0, j, len;
 
 	if (undo_w_init)
@@ -156,20 +154,18 @@ int undo_write_set_t(struct undow_t *u, int set)
 		u->set = UNDO_WRITE_UNSET;
 	}
 	undo_w_lock = 0;
+	return 0;
 }
 
 void undo_write_set_all(int set)
 {
 	struct list_head *p;
-	unsigned int oldb;
-	int i = 0, j, len;
 
 	if (undo_w_init)
 	list_for_each_prev(p, &(undo_w_list)) {
 		struct undow_t *u = list_entry(p, struct undow_t, list);
 		undo_write_set_t(u, set); //UNDO_WRITE_UNSET);
 		eprintf("%s 0x%08llx\n", set?"redo":"undo", u->off);
-		i++;
 	}
 }
 
@@ -179,8 +175,7 @@ int undo_write_set(int n, int set)
 {
 	struct undow_t *u = NULL;
 	struct list_head *p;
-	unsigned int oldb;
-	int i = 0, len;
+	int i = 0;
 
 	if (undo_w_init) {
 		list_for_each_prev(p, &(undo_w_list)) {

@@ -880,7 +880,6 @@ void config_init(int first)
 
 void config_visual_hit_i(const char *name, int delta)
 {
-	char buf[1024];
 	struct config_node_t *node;
 	node = config_node_get(name);
 	if (node) {
@@ -919,7 +918,6 @@ void config_visual_menu()
 	char cmd[1024];
 	struct list_head *pos;
 #define MAX_FORMAT 2
-	int format = 0;
 	const char *ptr;
 	char *fs = NULL;
 	char *fs2 = NULL;

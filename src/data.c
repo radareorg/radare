@@ -280,7 +280,6 @@ int data_size(u64 offset)
 int data_list()
 {
 	char label[1024];
-	int verbose=config.verbose;
 	struct data_t *d;
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -567,7 +566,6 @@ int data_printd(int delta)
 	u64 offset = (u64)config.seek + (u64)delta;// - config.baddr;
 	int lines = 0;
 	const char *ptr;
-	int i = 0;
 
 	D {} else return 0;
 	if (config_get("asm.flags") && show_flagsline) {
@@ -592,7 +590,7 @@ int data_printd(int delta)
 			if (ptr[i]=='\n') lines++;
 		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
 		else 	cons_printf("%s", ptr);
-		free(ptr);
+		free((void *)ptr);
 	}
 
 	lines += data_xrefs_print(offset, -1);

@@ -27,13 +27,13 @@
 #include "demsil.h"
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_msil_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_msil_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	int n;
 
 	DISASMSIL_OFFSET CodeBase = addr;
 	ILOPCODE_STRUCT ilopar[8]; // XXX only uses 1
-	DisasMSIL(bytes,16,CodeBase, ilopar, 8, &n);
+	DisasMSIL(bytes, 16,CodeBase, ilopar, 8, &n);
 
 	if (aop == NULL)
 		return ilopar[0].Size;

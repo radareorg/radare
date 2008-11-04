@@ -181,7 +181,7 @@ plugin_t *plugin_registry(const char *file)
 		if (!gtk_is_init) {
 			if ( ! gtk_init_check(NULL, NULL) ) {
 				fprintf(stderr, "Oops. Cannot initialize gui\n");
-				return;
+				return 0;
 			}
 		gtk_is_init = 1;
 		}

@@ -86,7 +86,7 @@ int get_tok_op(const char **c, struct tok *t)
 	return t->op;
 }
 
-int get_tok_value(char **c, struct tok *t)
+int get_tok_value(const char **c, struct tok *t)
 {
 	char aux[512];
 	char *val = *c;
@@ -172,7 +172,7 @@ struct tok* get_tok(const char **c)
 {
 	struct tok *t = NULL;
 	char aux[60];
-	char *val;
+	const char *val;
 	int ret;
 
 	skip_chars((const char**)c);

@@ -100,7 +100,7 @@ u64 get_reg(const char *reg);
 u64 debug_get_regoff(regs_t *reg, int off);
 int debug_set_register(const char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
-u64 debug_get_register(char *reg);
+u64 debug_get_register(const char *reg);
 
 int syscall_name_to_int(const char *str);
 void debug_os_syscall_list();
@@ -199,5 +199,7 @@ struct debug_t {
 
 extern struct event_t events[];
 int is_code(u64 pc);
+int pids_cmdline(int pid, char *cmdline);
+int pids_sons_of_r(int pid, int recursive, int limit);
 
 #endif

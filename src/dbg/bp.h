@@ -12,6 +12,7 @@ struct arch_bp_t {
 struct arch_bp_t **arch_bps;
 
 int arch_bp_rm_soft(struct bp_t *bp);
+void debug_bp_reload_all();
 int arch_bp_rm_hw(struct bp_t *bp);
 int debug_bp_rms();
 int arch_bpsize();

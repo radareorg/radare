@@ -139,6 +139,7 @@ static int get_operand(struct state *s, struct directive *d)
 	return total;
 }
 
+#if 0
 static int label_off(struct directive *d)
 {
 #if 1
@@ -173,6 +174,7 @@ static int label_off(struct directive *d)
 
 	return d->d_off + off;
 }
+#endif
 
 #if 0
 static void label_add_ref(struct label *l, struct directive *d)

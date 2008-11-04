@@ -51,6 +51,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "disarm.h"
+#include "flags.h"
 
 static int current_offset = 0;
 int color;
@@ -810,7 +811,7 @@ char *disarm (RawInstruction rawinstruction, int offset)
 	current_offset = offset;
 
 //	instruction = (Access32)rawinstruction;
-memcpy(&instruction, rawinstruction, sizeof(RawInstruction));
+	memcpy((void *)&instruction, (const void *)rawinstruction, sizeof(RawInstruction));
 
 	sprintf(disasmstr, "Not decoded");
 	condpos = 0; /* Position in disasmstr for condition - set to 0 to inhibit insertion of condition */

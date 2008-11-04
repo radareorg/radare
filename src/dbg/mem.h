@@ -14,7 +14,7 @@
 #define MAX_MAP_SIZE (PAGE_SIZE * 8)
 
 typedef struct {
-	u8 *tag;
+	char *tag;
 	addr_t addr;
 	u64 size;
 	struct list_head list;
@@ -24,7 +24,7 @@ typedef struct {
 	u64 ini;
 	u64 end;
 	u32 perms, perms_orig;
-	u8 *bin;
+	char *bin;
 	u64 size;
 	int flags;
 

@@ -57,6 +57,9 @@ void flag_space_list();
 void flag_space_init();
 void flag_space_remove(const char *name);
 int flag_filter_name(char *name);
+void flag_from(const char *str);
+void flag_space_move(const char *name); 
 const char *flag_get_here_filter(u64 at, const char *str);
+const const char *flag_space_get(int idx);
 
 #endif

@@ -83,7 +83,7 @@ int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 int arch_bf_dis(const u8* buf, u64 addr, int len)
 {
 	int i;
-	u8 *b = buf;
+	const u8 *b = buf;
 
 	for(i=0;b[0] == b[1] && i<len; b=b+1,i++);
 

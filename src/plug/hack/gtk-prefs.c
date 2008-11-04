@@ -98,7 +98,7 @@ static GtkWidget *draw_toggles_for(int panel_id)
 {
 	GtkWidget *bytes;
 	GtkWidget *hbbox;
-	GtkVBox *vbox = gtk_vbox_new(FALSE, 5);
+	GtkWidget *vbox = GTK_WIDGET( gtk_vbox_new(FALSE, 5) );
 	int i;
 	
 	for(i=0;toggles[i].label!=NULL;i++) {
@@ -138,10 +138,10 @@ static GtkWidget *prefs_open()
 	gtk_container_add(GTK_CONTAINER(pw), vbox);
 
 	nb = gtk_notebook_new();
-	gtk_notebook_append_page(nb, draw_toggles_for(0), gtk_label_new("Disassembly"));
-	gtk_notebook_append_page(nb, draw_toggles_for(1), gtk_label_new("Global"));
-	gtk_notebook_append_page(nb, draw_toggles_for(2), gtk_label_new("Graphs"));
-	gtk_notebook_append_page(nb, draw_toggles_for(3), gtk_label_new("Debugger"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), draw_toggles_for(0), gtk_label_new("Disassembly"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), draw_toggles_for(1), gtk_label_new("Global"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), draw_toggles_for(2), gtk_label_new("Graphs"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), draw_toggles_for(3), gtk_label_new("Debugger"));
 	gtk_container_add(GTK_CONTAINER(vbox), nb);
 	//gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new("TODO O:)"), FALSE, FALSE, 5); 
 

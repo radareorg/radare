@@ -108,7 +108,6 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	unsigned long op;
 	int reg; 
-	short r;
 	char buf[10];
 
 	if (aop == NULL)

@@ -443,12 +443,11 @@ int arch_stackanal()
 
 				if ( (mr->perms & REGION_EXEC) )
 				if (addr >= mr->ini && addr <= mr->end) {
-					strcpy(name, mr->bin);
+					strncpy(name, (char *)mr->bin, 120);
 					for(j=0;name[j];j++) {
 						int ch = name[j];
-						if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-') {
+						if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-')
 							ch = '_';
-						}
 						name[j] = ch;
 					}
 					name[j]='\0';

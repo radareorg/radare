@@ -56,7 +56,7 @@ int th_list()
 
 	list_for_each_prev(pos, &ps.th_list) {
 		TH_INFO		*th = list_entry(pos, TH_INFO, list);
-		printf(" %c %d: 0x%08lx state: 0x%x\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
+		printf(" %c %d: 0x%08llx state: 0x%x\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
 		n++;
 	}
 	return n;

@@ -158,8 +158,7 @@ static int is_label(const char *str)
 
 int dl_hist_label(const char *label, void (*cb)(const char*))
 {
-	int n,i;
-//printf("food label(%s)\n", label);
+	int i;
 
 	if (label[0]=='.') {
 		if (!is_label(label+1))
@@ -182,10 +181,10 @@ int dl_hist_label(const char *label, void (*cb)(const char*))
 	for(i=0;i<dl_histsize; i++) {
 		if (dl_history[i] == NULL)
 			break;
-		printf(stderr, "%s\n", dl_history[i]);
+		fprintf(stderr, "%s\n", dl_history[i]);
 		if (cb != NULL)
 			cb(dl_history[i]);
-		else	printf(stderr, "%s\n", dl_history[i]);
+		else	fprintf(stderr, "%s\n", dl_history[i]);
 	}
 
 	return 1;
@@ -263,6 +262,7 @@ void dl_free()
 {
 	printf("Bye!\n");
 	dl_hist_free();
+	label_reset();
 	free(dl_history);
 }
 

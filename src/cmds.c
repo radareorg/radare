@@ -177,7 +177,7 @@ CMD_DECL(analyze)
 	struct list_head *head;
 	struct list_head *head2;
 	struct xrefs_t *c0;
-	int i, j, sz, n_calls=0;
+	int i, sz, n_calls=0;
 	int depth_i;
 	int delta = 0;
 	int depth = input[0]?atoi(input+1):0;
@@ -1259,7 +1259,7 @@ CMD_DECL(seek)
 		cons_printf("       > s*      ; show seek history\n");
 		cons_printf("       > .s*     ; flag them all\n");
 		cons_printf("       > s!      ; reset seek history\n");
-		return;
+		return 0;
 	}
 
 	text = input;
@@ -1292,7 +1292,7 @@ CMD_DECL(seek)
 		sign = atoi (text+1);
 		if (sign > 0)
 			udis_jump(sign-1);
-		return;
+		return 0;
 	case 'n': 
 		arch_aop(config.seek, config.block, &aop);
 		new_off = config.seek + aop.length;
@@ -1325,7 +1325,7 @@ CMD_DECL(seek)
 			undo_reset();
 			break;
 		}
-		return;
+		return 0;
 	}
 	if (new_off == 0)
 		new_off = get_math( text );

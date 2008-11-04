@@ -94,6 +94,8 @@ extern plugin_t w32_plugin;
 /* functions */
 plugin_t *plugin_registry(const char *file);
 struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)());
+int radare_hack_init();
+void *plugin_get_widget(const char *name);
 void plugin_init();
 int  plugin_list();
 

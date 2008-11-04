@@ -351,5 +351,5 @@ typedef struct _ILOPCODE_STRUCT
 } ILOPCODE_STRUCT, *PILOPCODE_STRUCT;
 
 
-int DisasMSIL(u8 *pMemory, unsigned int MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, unsigned int nOpcodeStructs, unsigned int *nDisassembledInstr);
-int GetSingleMSILInstr(u8 *pMemory, unsigned int MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop);
+int DisasMSIL(const u8 *pMemory, unsigned int MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, unsigned int nOpcodeStructs, unsigned int *nDisassembledInstr);
+int GetSingleMSILInstr(const u8 *pMemory, unsigned int MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop);

@@ -251,7 +251,6 @@ int packing_7bit_character(char *src, char *dest)
 
 int unpacking_7bit_character(char *src, char *dest)
 {
-	unsigned char buffer[256];
         unsigned char ch1, ch2 = '\0';
         int i, j;
         char buf[8];
@@ -505,7 +504,6 @@ eprintf("ignore(%c)\n", tmp);
 void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
-	int last    = 0; // used for pm xxx
 	int zoom    = 0;
 	int lines   = 0;
 	int endian  = (int)config_get("cfg.bigendian");
@@ -513,8 +511,6 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	char *str;
 	// code anal
 	struct program_t *prg;
-	struct block_t *b0;
-	struct list_head *head;
 	unsigned char buffer[256];
 	unsigned char *bufi = NULL; // inverted buffer
 	unsigned long addr = seek;
@@ -933,7 +929,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		u64 sz = 4;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
-		u64 to = config_get_i("zoom.to");
+		//u64 to = config_get_i("zoom.to");
 #if 0
 		config.size = to-ptr;
 		if (config.size<0)
@@ -1031,10 +1027,10 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {
 			V if (inc==0 && (i/inc)+4>config.height) break;
-			D { if ( fmt == FMT_HEXB )
+			D { if ( fmt == FMT_HEXB ) {
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);
-			} else { INILINE; }
+			} } else { INILINE; }
 
 			if (config.insert_mode==1)
 				config.cursor_mode = 1;

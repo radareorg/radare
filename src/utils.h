@@ -120,5 +120,7 @@ const char *get0word(const char *str, int idx);
 void efree(void **ptr);
 int strsub_memcmp (char *string, char *pat, int len);
 int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset, char *match);
+int strccmp(char *dst, char *orig, int ch);
+int strccpy(char *dst, char *orig, int ch);
 
 #endif

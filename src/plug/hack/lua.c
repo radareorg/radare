@@ -23,6 +23,7 @@
 #include <main.h>
 #include <lua.h>
 #include <lualib.h>
+#include <lauxlib.h>
 #include "../../main.h"
 #include "../../dbg/debug.h"
 
@@ -33,7 +34,7 @@ extern struct plugin_hack_t radare_plugin;
 /* static stuff */
 static lua_State *L;
 static char *(*rs)(const char *cmd) = NULL;
-static int (*rs_cmd)(char *cmd, int log) = NULL;
+static int (*rs_cmd)(const char *cmd, int log) = NULL;
 
 static int report (lua_State *L, int status) {
 	const char *msg;
@@ -48,7 +49,7 @@ static int report (lua_State *L, int status) {
 
 static int lua_cmd_str (lua_State *L) {
 	char *str;
-	char *s = lua_tostring(L, 1);  /* get argument */
+	const char *s = lua_tostring(L, 1);  /* get argument */
 	str = rs(s);
 	lua_pushstring(L, str);  /* push result */
 	free(str);
@@ -56,7 +57,7 @@ static int lua_cmd_str (lua_State *L) {
 }
 
 static int lua_cmd (lua_State *L) {
-	char *s = lua_tostring(L, 1);  /* get argument */
+	const char *s = lua_tostring(L, 1);  /* get argument */
 
 	lua_pushnumber(L, rs_cmd(s, 0));  /* push result */
 	return 1;  /* number of results */

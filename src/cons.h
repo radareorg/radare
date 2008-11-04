@@ -83,6 +83,8 @@ extern const char *dl_prompt;
 int cons_get_arrow(int ch);
 void cons_clear00();
 void cons_any_key();
+int cons_html_print(const char *ptr);
+
 
 extern int cons_noflush;
 #endif

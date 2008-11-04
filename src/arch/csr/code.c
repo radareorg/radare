@@ -99,7 +99,7 @@ int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	uint16_t ins;
 	struct directive d;
 	int rel = 0;
-	struct instruction *in = bytes;
+	struct instruction *in = (struct instruction *)bytes;
 	struct state *s = &_state;
 
 	if (aop == NULL)

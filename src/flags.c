@@ -133,7 +133,7 @@ flag_t *flag_get_by_addr(u64 addr)
 	struct list_head *pos;
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-		if (flag->offset = addr)
+		if (flag->offset == addr)
 			return flag;
 	}
 	return NULL;
@@ -170,7 +170,6 @@ void flag_show(flag_t *flag, int cmd_flag)
 // TODO: USE GLOB OR SO...
 void flag_grep(const char *grepstr) // TODO: add u64 arg to grep only certain address
 {
-	int i = 0;
 	int cmd_flag = config_get_i("cmd.flag"); /* boolean */
 	char *grep = strdup(grepstr);
 	char *mask = strchr(grep, '*');
@@ -437,7 +436,6 @@ int flag_is_empty(flag_t *flag)
 
 void flag_list(char *arg)
 {
-	int i=0;
 	struct list_head *pos;
 
 	list_for_each(pos, &flags) {
@@ -791,8 +789,7 @@ const char *flag_get_here_filter(u64 at, const char *str)
 {
 	struct list_head *pos;
 	u64 ret = 0;
-	flag_t *of= NULL;
-	flag_t *f= NULL;
+	flag_t *f = NULL;
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);

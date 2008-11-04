@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -60,9 +62,15 @@ void init_home_directory()
 	char buf[4096];
 	strcpy(buf, g_get_home_dir());
 	strcat(buf, "/.radare/");
+#if __WINDOWS__
 	mkdir(buf);
 	strcat(buf, "toolbar/");
 	mkdir(buf);
+#else
+	mkdir(buf, 0755);
+	strcat(buf, "toolbar/");
+	mkdir(buf, 0755);
+#endif
 }
 
 GtkWidget *acti;
@@ -74,8 +82,8 @@ void seek_to()
 {
 	gchar *str;
 
-	clip = gtk_widget_get_clipboard(term, 1);
-	vte_terminal_copy_clipboard(term);
+	clip = gtk_widget_get_clipboard(GTK_WIDGET(term), GDK_SELECTION_PRIMARY);
+	vte_terminal_copy_clipboard(VTE_TERMINAL(term));
 	str = gtk_clipboard_wait_for_text(clip);
 	vte_terminal_feed_child(VTE_TERMINAL(term), ":s ", 3);
 	vte_terminal_feed_child(VTE_TERMINAL(term), str, strlen(str));
@@ -88,10 +96,8 @@ void seek_to()
 
 void copy_to()
 {
-	gchar *str;
-
-	clip = gtk_widget_get_clipboard(term, 1);
-	vte_terminal_copy_clipboard(term);
+	clip = gtk_widget_get_clipboard(GTK_WIDGET(term), GDK_SELECTION_PRIMARY);
+	vte_terminal_copy_clipboard(VTE_TERMINAL(term));
 	gtk_widget_destroy(menu);
 }
 
@@ -99,8 +105,8 @@ void breakpoint_drop()
 {
 	gchar *str;
 
-	clip = gtk_widget_get_clipboard(term, 1);
-	vte_terminal_copy_clipboard(term);
+	clip = gtk_widget_get_clipboard(term, GDK_SELECTION_PRIMARY);
+	vte_terminal_copy_clipboard(VTE_TERMINAL(term));
 	str = gtk_clipboard_wait_for_text(clip);
 	vte_terminal_feed_child(VTE_TERMINAL(term), ":!bp -", 6);
 	vte_terminal_feed_child(VTE_TERMINAL(term), str, strlen(str));
@@ -115,8 +121,8 @@ void breakpoint_to()
 {
 	gchar *str;
 
-	clip = gtk_widget_get_clipboard(term, 1);
-	vte_terminal_copy_clipboard(term);
+	clip = gtk_widget_get_clipboard(term, GDK_SELECTION_PRIMARY);
+	vte_terminal_copy_clipboard(VTE_TERMINAL(term));
 	str = gtk_clipboard_wait_for_text(clip);
 	vte_terminal_feed_child(VTE_TERMINAL(term), ":!bp ", 5);
 	vte_terminal_feed_child(VTE_TERMINAL(term), str, strlen(str));
@@ -131,8 +137,8 @@ void continue_until_here()
 {
 	gchar *str;
 
-	clip = gtk_widget_get_clipboard(term, 1);
-	vte_terminal_copy_clipboard(term);
+	clip = gtk_widget_get_clipboard(term, GDK_SELECTION_PRIMARY);
+	vte_terminal_copy_clipboard(VTE_TERMINAL(term));
 	str = gtk_clipboard_wait_for_text(clip);
 	if (str && str[0]) {
 		vte_terminal_feed_child(VTE_TERMINAL(term), ":!cont ", 7);
@@ -148,11 +154,13 @@ void continue_until_here()
 gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *menu_item;
+	gboolean ret = FALSE;
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
+		ret = TRUE;
 		menu = gtk_menu_new();
 
-		gtk_container_set_border_width(menu, 2);
+		gtk_container_set_border_width(GTK_CONTAINER(menu), 2);
 
 		menu_item = gtk_image_menu_item_new_from_stock("Seek to...", "gtk-find");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(seek_to), NULL);
@@ -164,7 +172,7 @@ gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_
 
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
-	/* TODO: make these menus optional depending on the mode */
+		/* TODO: make these menus optional depending on the mode */
 		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", "gtk-add");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
@@ -172,20 +180,17 @@ gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_
 		menu_item = gtk_image_menu_item_new_from_stock("Remove breakpoint", "gtk-remove");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_drop), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
 		menu_item = gtk_image_menu_item_new_from_stock("Continue until here", "gtk-next");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(continue_until_here), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-
 		gtk_widget_show_all(menu);
 		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, NULL);
-		return 1;
 	}
 
-	return 0;
+	return ret;
 }
 
 struct gradare_mon_t {
@@ -216,7 +221,6 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 
 void gradare_save_project_as()
 {
-	char buf[1024];
         GtkWidget *fcd;
 
         fcd = gtk_file_chooser_dialog_new (
@@ -245,9 +249,7 @@ void gradare_save_project()
 #if _MAEMO_
 		hildon_banner_show_information(GTK_WIDGET(w), NULL, "Project saved...");
 #endif
-	} else
-		gradare_save_project_as();
-	
+	} else gradare_save_project_as();
 }
 
 void gradare_open_project()
@@ -263,11 +265,8 @@ void gradare_open_project()
                 NULL);
 
         gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
-        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
-        {
-                char cmd[4096];
+        if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
                 const char *filename = (const char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
-
 		sprintf(buf, ":Po %s\n\n", filename);
 		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
 	}
@@ -285,12 +284,11 @@ void gradare_new_monitor()
 	GtkWindow *w;
 	GtkWidget *vbox;
 	GtkWidget *hbox;
-	GtkWidget *hpan;
 	struct gradare_mon_t *mon;
 	mon = (struct gradare_mon_t *)malloc(sizeof(struct gradare_mon_t));
 	mon->id = mon_id++;
 
-	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	w = GTK_WINDOW( gtk_window_new(GTK_WINDOW_TOPLEVEL) );
 	w->allow_shrink=TRUE;
 #if _MAEMO_
 	hildon_program_add_window(p, w);
@@ -312,18 +310,18 @@ void gradare_new_monitor()
 	g_signal_connect(mon->but, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
 	g_signal_connect(mon->entry, "activate", (gpointer)monitor_button_clicked, (gpointer)mon);
 	gtk_container_add(GTK_CONTAINER(hbox), mon->entry);
-	gtk_box_pack_start(GTK_CONTAINER(hbox), mon->but, FALSE, FALSE, 5);
-	gtk_box_pack_start(GTK_CONTAINER(vbox), hbox, FALSE, FALSE, 5);
+	gtk_box_pack_start(GTK_BOX(hbox), mon->but, FALSE, FALSE, 5);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 5);
 
 	mon->term = vte_terminal_new();
 	//vte_terminal_set_background_transparent(term, TRUE);
 	//vte_terminal_set_opacity(term, 10);
 	//vte_terminal_set_color_background(term, (GdkColor));
 	//vte_terminal_set_color_foreground(term, (GdkColor));
-	vte_terminal_set_cursor_blinks((VteTerminal*)mon->term, TRUE);
-	vte_terminal_set_mouse_autohide((VteTerminal*)mon->term, TRUE);
-	vte_terminal_set_scrollback_lines((VteTerminal*)mon->term, 3000);
-	vte_terminal_set_font_from_string_full((VteTerminal*)mon->term, font, VTE_ANTI_ALIAS_FORCE_DISABLE);
+	vte_terminal_set_cursor_blinks(VTE_TERMINAL(mon->term), TRUE);
+	vte_terminal_set_mouse_autohide(VTE_TERMINAL(mon->term), TRUE);
+	vte_terminal_set_scrollback_lines(VTE_TERMINAL(mon->term), 3000);
+	vte_terminal_set_font_from_string_full(VTE_TERMINAL(mon->term), font, VTE_ANTI_ALIAS_FORCE_DISABLE);
 	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
 	g_signal_connect (mon->term, "button-press-event", G_CALLBACK (popup_context_menu), NULL);
 
@@ -332,8 +330,8 @@ void gradare_new_monitor()
 	   VTE_TERMINAL(term),
 	   cmd[0], cmd, NULL, ".",
 	   FALSE, FALSE, FALSE);
+	*/
 
-*/
 	gtk_container_add(GTK_CONTAINER(vbox), mon->term);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
@@ -350,7 +348,7 @@ static int console_font_size(int newsize)
 		newsize = 72;
 
 	sprintf(buf, "Sans %s%d", fontbold?"bold ":"", fontsize);
-	vte_terminal_set_font_from_string_full((VteTerminal*)term, buf, fontalias?VTE_ANTI_ALIAS_FORCE_DISABLE:0);
+	vte_terminal_set_font_from_string_full(VTE_TERMINAL(term), buf, fontalias?VTE_ANTI_ALIAS_FORCE_DISABLE:0);
 	return newsize;
 }
 
@@ -363,9 +361,16 @@ void toggle_fullscreen()
 	fs^=1;
 }
 
+#if _MAEMO_
+#define KEY_INCFONT GDK_F7
+#define KEY_DECFONT GDK_F8
+#else
+#define KEY_INCFONT GDK_KP_Add
+#define KEY_DECFONT GDK_KP_Subtract
+#endif
+
 /* Callback for hardware keys */
-gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
-		GtkWindow * window)
+gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event, GtkWindow * window)
 {
 	switch (event->keyval) {
 #if 0
@@ -393,35 +398,18 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
 			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Navigation Key select");
 			return TRUE;
 #endif
-
 		case GDK_F6:
-			//      hildon_banner_show_information(GTK_WIDGET(window), NULL, "Full screen");
 			toggle_fullscreen();
 			return TRUE;
-
-			// TODO: FONT SIZE HERE!
-#if _MAEMO_
-		case GDK_F7:
-#else
-		case GDK_KP_Add:
-#endif
-			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Increase (zoom in)");
+		case KEY_INCFONT:
 			fontsize = console_font_size(++fontsize);
 			return TRUE;
-
 		case GDK_F5:
 			gradare_refresh();
 			return TRUE;
-#if _MAEMO_
-		case GDK_F8:
-#else
-		case GDK_KP_Subtract:
-#endif
-			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Decrease (zoom out)");
+		case KEY_DECFONT:
 			fontsize = console_font_size(--fontsize);
 			return TRUE;
-			//#endif
-
 		case GDK_Escape:
 			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
 			//gtk_window_unfullscreen(window);
@@ -432,7 +420,7 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event,
 	return FALSE;
 }
 
-int main(int argc, const char **argv, char **envp)
+int main(int argc, char **argv, char **envp)
 {
 	int c;
 	char str[1024];
@@ -528,7 +516,7 @@ int main(int argc, const char **argv, char **envp)
 
 	acti = gradare_actions_new();
 	//gtk_paned_pack1(GTK_PANED(hpan), acti, TRUE, TRUE);
-	gtk_box_pack_start(GTK_HBOX(hpan), acti, TRUE, TRUE,0);
+	gtk_box_pack_start(GTK_BOX(hpan), acti, TRUE, TRUE,0);
 
 	term = vte_terminal_new();
 	//vte_terminal_set_background_transparent(term, TRUE);
@@ -545,7 +533,7 @@ int main(int argc, const char **argv, char **envp)
 
 
 	//gtk_paned_pack2(GTK_PANED(hpan), term, TRUE, TRUE);
-	gtk_container_add(GTK_HBOX(hpan),term); //, term, TRUE, TRUE);
+	gtk_container_add(GTK_CONTAINER(hpan),term); //, term, TRUE, TRUE);
 	gtk_widget_show_all(GTK_WIDGET(w));
 
 	setenv("BEP", "entry", 1); // force debugger to stop at entry point
@@ -567,7 +555,7 @@ int main(int argc, const char **argv, char **envp)
 			vte_terminal_feed_child(VTE_TERMINAL(term), "V\n", 2);
 			sprintf(str, "radare -c -b 1024 - %s", filename);
 #endif
-			char *arg[6] = { GRSCDIR"/Shell", filename, NULL};
+			const char *arg[6] = { GRSCDIR"/Shell", filename, NULL};
 			sprintf(str, "gradare: %s", filename);
 			gtk_window_set_title(GTK_WINDOW(w), str);
 			vte_terminal_fork_command(
@@ -591,12 +579,11 @@ int main(int argc, const char **argv, char **envp)
 
 	gtk_widget_show_all(GTK_WIDGET(w));
 	gtk_widget_grab_focus(term);
-
 #if 0
 	printf("Terminal size: %dx%d\n",
 			vte_terminal_get_char_width(term),
 			vte_terminal_get_char_height(term));
 #endif
-
 	gtk_main();
+	return 0;
 }

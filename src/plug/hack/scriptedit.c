@@ -56,7 +56,7 @@ static int scriptedit_save()
 	gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
 	if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
 		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
-		free(filename);
+		free((void *)filename);
 		filename = strdup(file);
 		//printf("FILE NAME IS (%s)\n", file);
 		gtk_label_set_text(filename_w, filename);
@@ -150,7 +150,7 @@ static int my_hack(char *input)
 	gtk_box_pack_start(my_widget, filename_w, FALSE, FALSE, 0);
 
 	text = gtk_text_view_new();
-gtk_text_view_set_border_window_size(text,GTK_TEXT_WINDOW_TEXT, 2);
+	gtk_text_view_set_border_window_size(text,GTK_TEXT_WINDOW_TEXT, 2);
 	swin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(swin),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );

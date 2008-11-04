@@ -266,7 +266,7 @@ struct syscall_t *syscall_by_os(const char *os)
 		sysptr = &syscalls_freebsd_x86;
 	else {
 		eprintf("Unknown/unhandled OS in asm.os for arch_print_syscall()\n");
-		return -1;
+		return NULL;
 	}
 	return sysptr;
 }

@@ -46,6 +46,7 @@ void graph_viz(struct program_t *prg)
 #include "widget.h"
 #include "node.h"
 #include "edge.h"
+#include "default_layout.h"
 
 #if _MAEMO_
 //#include <hildon/hildon.h>
@@ -481,6 +482,136 @@ struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)
 	return win;
 }
 
+#if 0
+/* new one */
+void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *win)
+{
+	int i;
+	char *ptr;
+	char cmd[1024];
+	struct list_head *head, *head2;
+	struct block_t *b0, *b1;
+	struct xrefs_t *c0;
+	GravaNode *node, *node2;
+	GravaEdge *edge;
+	/* analyze code */
+
+	asm_state_save();
+
+	/* add static nodes */
+	i = 0;
+	list_for_each_prev(head, &(static_nodes)) {
+		struct static_nodes *s0 = list_entry(head, struct static_nodes, list);
+		GravaNode *node = grava_node_new();
+		g_object_ref(node);
+		grava_node_set(node, "label", s0->command);
+		
+		ptr =  pipe_command_to_string(s0->command);
+		if (ptr)
+			grava_node_set(node, "body", ptr);
+		grava_graph_add_node(win->grava->graph, node);
+		g_object_unref(node);
+	}
+
+	/* add nodes */
+	i = 0;
+	list_for_each_prev(head, &(prg->blocks)) {
+		b0 = list_entry(head, struct block_t, list);
+
+		node = grava_node_new();
+		g_object_ref(node);
+
+		/* label */
+		// TODO: support for real labelling stuff
+		string_flag_offset(cmd, b0->addr);
+		cmd[127]='\0'; // XXX ugly string recycle hack
+		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
+		grava_node_set(node, "color", "gray");
+
+		// traced nodes are turquoise
+		if (trace_times(b0->addr)>0)
+			grava_node_set(node, "bgcolor", "beige");
+			//grava_node_set(node, "color", "darkgray");
+
+#if 0
+		// XXX this makes radare segfault with g_object_unref HUH!
+		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
+			grava_node_set(node, "bgcolor", "yellow");
+#endif
+
+		/* add call references for this node */
+		// XXX avoid dupped calls
+		list_for_each(head2, &(b0->calls)) {
+			c0 = list_entry(head2, struct xrefs_t, list);
+			grava_node_add_call(node, c0->addr);
+		}
+
+		node->baseaddr = b0->addr;
+		grava_node_set(node, "label", cmd+128);
+		grava_node_set_i(node, "offset", b0->addr);
+
+		/* disassemble body */
+		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
+		ptr =  pipe_command_to_string(cmd);
+		grava_node_set(node, "body", ptr);
+		free(ptr);
+
+		grava_graph_add_node(win->grava->graph, node);
+		b0->data = node;
+		g_object_unref(node);
+		i++;
+	}
+
+	/* add edges */
+	i = 0;
+	list_for_each_prev(head, &(prg->blocks)) {
+		b0 = list_entry(head, struct block_t, list);
+		node = b0->data;
+		g_object_ref(node);
+
+		printf("A %08llx\n", b0->addr);
+		if (b0->tnext) {
+			list_for_each(head2, &(prg->blocks)) {
+				b1 = list_entry(head2, struct block_t, list);
+				if (b0->tnext == b1->addr) {
+					printf("T %08llx\n", b0->tnext);
+					node2 = b1->data;
+					//if (!gtk_is_init)
+					//grava_node_set(node2, "color", "green");
+					edge = grava_edge_with(grava_edge_new(), node, node2);
+					grava_edge_set(edge, "color", "green");
+					edge->jmpcnd = 1; // true
+					grava_graph_add_edge(win->grava->graph, edge);
+					break;
+				}
+			}
+		}
+
+		if (b0->fnext) {
+			list_for_each(head2, &(prg->blocks)) {
+				b1 = list_entry(head2, struct block_t, list);
+				if (b0->fnext == b1->addr) {
+					printf("F %08llx\n", b0->fnext);
+					node2 = b1->data;
+					//if (!gtk_is_init)
+					//grava_node_set(node2, "color", "red");
+					edge = grava_edge_with(grava_edge_new(), node, node2);
+					grava_edge_set(edge, "color", "red");
+					edge->jmpcnd = 0; // false
+					grava_graph_add_edge(win->grava->graph, edge);
+					break;
+				}
+			}
+		}
+	}
+	program_free(prg);
+	g_object_unref(node);
+
+	grava_graph_update(win->grava->graph);
+}
+#endif
+
 void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 {
 	int i;
@@ -678,7 +809,8 @@ void visual_gui()
 #if HAVE_VALAC
 	struct mygrava_window *win = NULL;
 	GtkWidget *w, *w2;
-	char *items, *name;
+	char *items;
+	const char *name;
 	int i, num;
 
 	/* create widget */
@@ -714,7 +846,7 @@ void visual_gui()
 		/* TODO: add more control widgets */
 		// TODO: move hbox, topbox to win-> struct
 		win->vbox = gtk_vbox_new(FALSE, 1);
-		gtk_container_add(win->w, win->vbox);
+		gtk_container_add(GTK_CONTAINER(win->w), win->vbox);
 
 		/* fill window */
 		items = strdup(config_get("gui.top"));
@@ -725,33 +857,30 @@ void visual_gui()
 			if (w2 != NULL)
 				gtk_box_pack_start(GTK_BOX(win->vbox), w2, FALSE, FALSE, 0);
 		}
-		free(items);
+		free((void *)items);
 		win->hbox = gtk_hbox_new(FALSE, 3);
 		gtk_container_add(GTK_CONTAINER(win->vbox), win->hbox);
 		//
 		
 #if 1
 		{
-		 GtkWidget *exp =gtk_expander_new("");
-		GtkVBox *vbox = gtk_vbox_new(FALSE, 3);
+		GtkWidget *exp = gtk_expander_new("");
+		GtkWidget *vbx = gtk_vbox_new(FALSE, 3);
 
-		gtk_container_add(exp,vbox);
+		gtk_container_add(GTK_CONTAINER(exp), GTK_WIDGET(vbx));
 
 		w = gtk_notebook_new();
-gtk_container_add(vbox,w);
-		gtk_box_pack_start(win->hbox,exp, FALSE, FALSE, 2);
+		gtk_container_add(GTK_CONTAINER(vbx), w);
+		gtk_box_pack_start(GTK_BOX(win->hbox), exp, FALSE, FALSE, 2);
 		items = strdup(config_get("gui.left"));
 		for(i=0;i<num;i++) {
 			eprintf("gui.tabs:(%s)\n", get0word(items, i));
 			name = get0word(items,i);
 			w2 = plugin_get_widget(get0word(items,i));
-			if (w2 != NULL) {
-				//gtk_container_add(GTK_BOX(vbox), w2);
-				gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new(name));
-				//gtk_box_pack_start(GTK_BOX(vbox), w2, FALSE, FALSE, 0);
-			}
+			if (w2 != NULL)
+				gtk_notebook_append_page(GTK_NOTEBOOK(w),w2, gtk_label_new(name));
 		}
-		free(items);
+		free((void *)items);
 		}
 #endif
 		//
@@ -765,7 +894,7 @@ gtk_container_add(vbox,w);
 			w2 = foo->vbox;
 			gtk_widget_show_all(GTK_WIDGET(win->vbox));
 		//	grava_widget_draw(foo->grava);
-			gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new("Graph"));
+			gtk_notebook_append_page(GTK_NOTEBOOK(w),w2, gtk_label_new("Graph"));
 		}
 		num = set0word(items);
 		for(i=0;i<num;i++) {
@@ -773,12 +902,12 @@ gtk_container_add(vbox,w);
 			name = get0word(items,i);
 			w2 = plugin_get_widget(name);
 			if (w2 != NULL)
-				gtk_notebook_append_page(GTK_CONTAINER(w),w2, gtk_label_new(name));
+				gtk_notebook_append_page(GTK_NOTEBOOK(w),w2, gtk_label_new(name));
 		}
 		gtk_container_add(GTK_CONTAINER(win->hbox), w);
-		free(items);
+		free((void *)items);
 
-		gtk_widget_show_all(win->w);
+		gtk_widget_show_all(GTK_WIDGET(win->w));
 	}
 
 	if (new_window) {

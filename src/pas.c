@@ -116,7 +116,6 @@ int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr)
 {
 	int i;
-	const char *osyntax;
 	char str[64];
 	char w0[32];
 	char w1[32];

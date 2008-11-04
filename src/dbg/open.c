@@ -63,16 +63,17 @@ static const char *resolve_path(const char *str)
 {
 	char buf[1024];
 	char *path = getenv("PATH");
-	char *foo, *bar;
+	char *foo;
+	char *bar;
 	if (path != NULL) {
+		bar = alloca(strlen(str)+1);
+		strcpy(bar, str);
 		path = strdup(path);
 		foo = path;
-		bar = str; // dummy
 		while(bar) {
 			bar = strchr(foo, ':');
-			if (bar != NULL) {
+			if (bar != NULL)
 				bar[0]='\0';
-			}
 			snprintf(buf, 1022, "%s/%s", foo, str);
 			//printf("FINDING(%s)\n", buf);
 			if (!access(buf, X_OK)) {
@@ -111,7 +112,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 		debug_close(ps.fd);
 	}
 
-	ps.filename = resolve_path(file);
+	ps.filename = estrdup(ps.filename, resolve_path(file));
 	config.file = (char *)malloc(strlen(ps.filename)+8);
 	sprintf(config.file, "dbg://%s", ps.filename);
 

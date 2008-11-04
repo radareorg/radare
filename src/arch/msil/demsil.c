@@ -23,7 +23,7 @@ static u32 lo_dword(u64 Q)
 	return (u32) Q;
 }
 
-int GetSingleMSILInstr(u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop)
+int GetSingleMSILInstr(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop)
 {
 	u8 *pCurInstr = (u8 *) pMemory;
 	DISASMSIL_OFFSET Base = CodeBase;
@@ -1069,9 +1069,9 @@ getinstr:
 	return 1;
 }
 
-int DisasMSIL(u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, u32 nOpcodeStructs, u32 *nDisassembledInstr)
+int DisasMSIL(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, u32 nOpcodeStructs, u32 *nDisassembledInstr)
 {
-	u8 *pCurMem = pMemory;
+	const u8 *pCurMem = pMemory;
 	u32 x, RemSize = MemorySize;
 	DISASMSIL_OFFSET CurBase = CodeBase;
 

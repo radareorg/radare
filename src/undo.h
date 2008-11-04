@@ -25,5 +25,6 @@ void undo_write_set_all(int set);
 void undo_write_new(u64 off, u8 *data, int len);
 int undo_write_set(int n, int set);
 void undo_write_list();
+int undo_write_size();
 
 #endif

@@ -194,11 +194,11 @@ int debug_init_maps(int rest)
 {
 	FILE *fd;
 	MAP_REG *mr;
-	char  path[1024], unkstr[1024];
+	char  path[1024];
 	char  region[100], region2[100], perms[5], null[16];
 	char  line[1024];
 	char  *pos_c;
-	int   i, ign, unk = 0;
+	int   i, unk = 0;
 
 #if 0
  /* FOR SUN */
@@ -787,7 +787,6 @@ int debug_dispatch_wait()
 #if __i386__
 	//regs_t		regs;
 #endif
-	struct bp_t	*bp;
 	TH_INFO		*th;
 	pid_t tid = 0;
 	int ret = 0;

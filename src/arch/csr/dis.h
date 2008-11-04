@@ -88,4 +88,6 @@ int arch_csr_disasm(char *str, unsigned char *b, u64 seek);
 #define ADDR_MODE_RELATIVE	0
 #define ADDR_MODE_X_RELATIVE	2
 
+void csr_decode(struct state *s, struct directive *d);
+
 #endif

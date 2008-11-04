@@ -39,6 +39,7 @@ void gradare_redo();
 void gradare_refresh();
 void toggle_toolbar();
 void toggle_fullscreen();
+int dialog_error(const char *msg);
 
 #if _MAEMO_
 extern HildonWindow *w;

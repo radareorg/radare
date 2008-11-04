@@ -27,7 +27,6 @@ int project_save(const char *file)
 {
 	char buf[128];
 	FILE *fd;
-	struct list_head *pos;
 	flag_t *flag;
 	char *rdbdir;
 	int i, lfs;
@@ -172,7 +171,6 @@ int project_open(const char *file)
 	FILE *fd;
 	char buf[1025];
 	int len;
-	char *ptr, *ptr2;
 
 	if (strnull(file))
 		return 0;

@@ -56,7 +56,7 @@ int std = 0;
 
 static int radare_close();
 /* dummy callback for dl_hist_label */
-static int cb(const char *str) { radare_cmd_raw(str, 0); return 0;}
+//static int cb(const char *str) { radare_cmd_raw(str, 0); return 0;}
 
 #if !DEBUGGER
 int debug_step(int x) { return 0; }

@@ -1112,7 +1112,7 @@ int debug_step(int times)
 			}
 
 			if ((off=(addr_t)arch_is_soft_stepoverable((const u8*)opcode))) {
-				debug_bp_set(NULL, pc+off, config_get("dbg.hwbp"));
+				debug_bp_set(NULL, pc+off, config_get_i("dbg.hwbp"));
 				debug_cont(0);
 				debug_bp_rm_addr(pc+off);
 				ps.steps++;
@@ -1776,7 +1776,7 @@ int debug_run(char *input)
 	return 1;
 }
 
-u64 debug_get_register(char *input)
+u64 debug_get_register(const char *input)
 {
 	char *reg = input;
 	int off;

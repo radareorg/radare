@@ -56,8 +56,6 @@
  */
 int fd, fdout;
 struct stat sb;
-static char *array[256];
-
 
 void
 *dm_allocate (size_t nbytes)

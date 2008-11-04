@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GETCOLOR int color = config_get("scr.color");
+#define GETCOLOR int color = config_get_i("scr.color");
 #define TITLE if (color) cons_printf("\x1b[36m");
 #define TITLE_END if (color) cons_printf("\x1b[0m");
 
@@ -267,5 +267,5 @@ int debug_jmp(const char *str)
 
 int debug_call(const char *str)
 {
-	return arch_call(get_math(str));
+	return arch_call(str);
 }

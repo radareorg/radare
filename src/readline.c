@@ -277,7 +277,7 @@ char *rad_eval_matches(const char *text, int state)
 char *rad_flags_matches(const char *text, int state)
 {
 	static struct list_head *pos;
-        static int i, j, len;
+        static int len;
 
         if (!state) {
                 len = strlen(text);

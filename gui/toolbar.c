@@ -6,8 +6,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
+ * * radare is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -38,7 +37,7 @@ void gradare_new()
 	system("( gradare & )");
 }
 
-int is_executable(const char *file)
+static int is_executable(const char *file)
 {
 	int ret;
 	struct stat buf;
@@ -64,13 +63,12 @@ void gradare_open_program()
 		NULL);
 
 	gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
-	if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT )
-	{
+	if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
 		char cmd[4096];
 		char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
 		if (is_executable(filename)) {
 #if _MAEMO_
-hildon_banner_show_information(GTK_WIDGET(w), NULL, "Debugging new program...");
+			hildon_banner_show_information(GTK_WIDGET(w), NULL, "Debugging new program...");
 #endif
 			sprintf(cmd,"( gradare 'dbg://%s' & )", filename);
 			system(cmd);
@@ -82,7 +80,7 @@ hildon_banner_show_information(GTK_WIDGET(w), NULL, "Debugging new program...");
 	gtk_widget_destroy(fcd);
 }
 
-GtkWidget *wop = NULL;
+static GtkWidget *wop = NULL;
 GtkWidget *combo = NULL;
 
 static void cancel_cb()
@@ -219,10 +217,10 @@ void gradare_open()
 	gtk_widget_destroy(fcd);
 }
 
-void gradare_shell(const char *cmd[])
+void gradare_shell(const char **cmd)
 {
 	GtkWidget *vte;
-	GtkWindow *w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	GtkWindow *w = GTK_WINDOW ( gtk_window_new(GTK_WINDOW_TOPLEVEL) );
 	w->allow_shrink=TRUE;
 	gtk_window_resize(GTK_WINDOW(w), 600,400);
 	gtk_window_set_title(GTK_WINDOW(w), "radare manpage");
@@ -230,9 +228,9 @@ void gradare_shell(const char *cmd[])
 	gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(vte));
 	vte_terminal_fork_command(
 		VTE_TERMINAL(vte),
-		cmd[0], cmd, NULL, ".",
+		cmd[0], (char **)cmd, NULL, ".",
 		FALSE, FALSE, FALSE);
-	gtk_widget_show_all(w);
+	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void gradare_help()
@@ -277,9 +275,9 @@ void gradare_refresh()
 	GList *list = gtk_container_get_children(GTK_CONTAINER(tool));
 
 	g_list_foreach(list, (GFunc)gtk_widget_destroy, NULL);
-	gtk_toolbar_remove_space(tool, 0);
-	gtk_toolbar_remove_space(tool, 1);
-	gtk_toolbar_remove_space(tool, 2);
+	gtk_toolbar_remove_space(GTK_TOOLBAR(tool), 0);
+	gtk_toolbar_remove_space(GTK_TOOLBAR(tool), 1);
+	gtk_toolbar_remove_space(GTK_TOOLBAR(tool), 2);
 
 	tool = gradare_toolbar_new(tool);
 	vte_terminal_feed_child(VTE_TERMINAL(term), "Q\nV\n", 4);

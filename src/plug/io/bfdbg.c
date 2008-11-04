@@ -195,7 +195,7 @@ static void bfvm_poke()
 	bfvm_cpu.screen_idx = idx+1;
 }
 
-int bfvm_trace_op(u8 op)
+static int bfvm_trace_op(u8 op)
 {
 	u8 g;
 	switch(op) {
@@ -217,6 +217,7 @@ int bfvm_trace_op(u8 op)
 			cons_printf("[");
 		break;
 	}
+	return 0;
 }
 
 #define T if (bfvm_cpu.trace)
@@ -232,7 +233,7 @@ static int bfvm_step(int over)
 		switch(op) {
 		case '\0':
 			/* trap */
-			return;
+			return 1;
 		case '.':
 			buf = bfvm_get_ptr();
 			bfvm_poke();
@@ -273,6 +274,8 @@ static int bfvm_step(int over)
 		bfvm_cpu.eip++;
 		op2 = bfvm_op();
 	} while(over && op == op2);
+
+	return 0;
 }
 
 static int bfvm_contsc()
@@ -296,6 +299,7 @@ static int bfvm_contsc()
 		}
 	}
 	radare_controlc_end();
+	return 0;
 }
 
 static int bfvm_cont(u64 until)
@@ -309,6 +313,7 @@ static int bfvm_cont(u64 until)
 		}
 	}
 	radare_controlc_end();
+	return 0;
 }
 
 static int bfvm_trace(u64 until)
@@ -316,6 +321,7 @@ static int bfvm_trace(u64 until)
 	bfvm_cpu.trace=1;
 	bfvm_cont(until);
 	bfvm_cpu.trace=0;
+	return 0;
 }
 
 static void bfvm_show_regs(int rad)
@@ -359,17 +365,18 @@ static void bfvm_maps(int rad)
 	}
 }
 
-/* PLUGIN */
+/* PLUGIN CODE */
+
 static u64 cur_seek = 0;
 
 static int bfdbg_fd = -1;
 
-int bfdbg_handle_fd(int fd)
+static int bfdbg_handle_fd(int fd)
 {
 	return fd == bfdbg_fd;
 }
 
-int bfdbg_handle_open(const char *file)
+static int bfdbg_handle_open(const char *file)
 {
 	if (!memcmp(file, "bfdbg://", 8))
 		return 1;
@@ -492,6 +499,8 @@ static int bfdbg_system(const char *cmd)
 
 static int bfdbg_close(int fd)
 {
+	if (fd == bfdbg_fd)
+		bfvm_destroy(&bfvm_cpu);
 	return close(fd);
 }
 
@@ -522,16 +531,20 @@ static u64 bfdbg_lseek(int fildes, u64 offset, int whence)
 #endif
 }
 
-void bfdbg_plugin_init()
+static int bfdbg_plugin_init()
 {
-	bfvm_init(0xFFFF, 1);
+	return bfvm_init(0xFFFF, 1);
 }
+
+struct debug_t bfdbgt =  {
+  /* TODO */
+};
 
 plugin_t bfdbg_plugin = {
 	.name        = "bfdbg",
 	.desc        = "brainfuck debugger",
 	.init        = bfdbg_plugin_init,
-	.debug       = 1,
+	.debug       = &bfdbgt,
 	.system      = bfdbg_system,
 	.widget      = NULL,
 	.handle_fd   = bfdbg_handle_fd,
