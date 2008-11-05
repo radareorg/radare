@@ -46,6 +46,104 @@ int pas_emul(const char *str)
 	return 0;
 }
 
+int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
+{
+	int i,j,k;
+	struct {
+		char *op;
+		char *str;
+		int type;
+	} ops[] = {
+		{ "li",  "1 = 2", AOP_TYPE_MOV },
+		{ "lui",  "1 = 2", AOP_TYPE_MOV },
+		{ "move",  "1 = 2", AOP_TYPE_CMP },
+		{ "and",  "1 = 2 & 3",    AOP_TYPE_MOV },
+		{ "addi",  "1 = 2 + 3",    AOP_TYPE_MOV },
+		{ "addu",  "1 = 2 + 3",    AOP_TYPE_MOV },
+		{ "addiu",  "1 = 2 + 3",    AOP_TYPE_MOV },
+		{ "subu",  "1 = 2 - 3",    AOP_TYPE_MOV },
+		{ "subi",  "1 = 2 - 3",    AOP_TYPE_MOV },
+		{ "lbu",   "1 = [.8: 2 ]", AOP_TYPE_LOAD},
+		{ "lw",    "1 = [.3.2: 2 ]",    AOP_TYPE_LOAD },
+		{ "sw",    "[.3.2: 2 ] = 1",    AOP_TYPE_STORE },
+		{ "bal",   "call 1", AOP_TYPE_CALL },
+		{ "b",   "jmp 1", AOP_TYPE_JMP },
+		{ "beqzl",   "jbe 1", AOP_TYPE_CJMP },
+		{ "bnez",   "jnz 1", AOP_TYPE_CJMP },
+		{ "beqz",   "jz 1", AOP_TYPE_CJMP },
+		{ "bne",   "jne 1", AOP_TYPE_CJMP },
+		{ "nop",   "...", AOP_TYPE_NOP },
+		{ "jalr",  "call 1", AOP_TYPE_CALL },
+		{ "jr ",  "jmp 1", AOP_TYPE_CALL },
+
+#if 0
+		{ "test", "cmp 1, 2", AOP_TYPE_CMP },
+		{ "lea",  "1 = 2",     AOP_TYPE_MOV },
+		{ "mul",  "1 *= 2",    AOP_TYPE_MOV },
+		{ "div",  "1 /= 2",    AOP_TYPE_MOV },
+		{ "call", "call 1",    AOP_TYPE_MOV },
+		{ "jmp",  "goto 1",    AOP_TYPE_MOV },
+		{ "je",   "je 1",      AOP_TYPE_CJMP },
+		{ "push", "push 1",  AOP_TYPE_PUSH },
+		{ "pop",  "pop 1",   AOP_TYPE_POP },
+#endif
+		{ NULL }
+	};
+
+	if((!strcmp(argv[0], "jalr")) || (!strcmp(argv[0], "jr"))) {
+		if (!strcmp(argv[1], "ra")) {
+			strcpy(newstr, "ret");
+			if (aop != NULL)
+				aop->type = AOP_TYPE_RET;
+			return 1;
+		}
+	}
+
+	if (newstr != NULL) {
+		for(i=0;ops[i].op != NULL;i++) {
+			if (!strcmp(ops[i].op, argv[0])) {
+				/* opcode matches */
+				if (aop != NULL) {
+					aop->type = ops[i].type;
+				}
+				for(j=k=0;ops[i].str[j]!='\0';j++,k++) {
+					if (ops[i].str[j]=='.') {
+						j++;
+						newstr[k] = ops[i].str[j];
+					} else
+					if (ops[i].str[j]>='0' && ops[i].str[j]<='9') {
+						const char *w = argv[ ops[i].str[j]-'0' ];
+						if (w != NULL) {
+							strcpy(newstr+k, w);
+							k += strlen(w)-1;
+						}
+					} else newstr[k] = ops[i].str[j];
+				}
+				newstr[k]='\0';
+				return 1;
+			}
+		}
+	}
+
+	if (aop != NULL) {
+		/* XXX : we need bytes */
+	}
+
+	if (newstr != NULL) {
+		if (argv[0]) strcpy(newstr, argv[0]);
+		if (argv[1]) strcpy(newstr, " ");
+		if (argv[1]) strcpy(newstr, argv[1]);
+		if (argv[2]) strcpy(newstr, ",");
+		if (argv[2]) strcpy(newstr, argv[2]);
+		if (argv[3]) strcpy(newstr, ",");
+		if (argv[3]) strcpy(newstr, argv[3]);
+		if (argv[4]) strcpy(newstr, ",");
+		if (argv[4]) strcpy(newstr, argv[4]);
+	}
+	return 0;
+
+}
+
 int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 {
 	int i,j,k;
@@ -62,8 +160,8 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		{ "sub",  "1 -= 2",    AOP_TYPE_MOV },
 		{ "mul",  "1 *= 2",    AOP_TYPE_MOV },
 		{ "div",  "1 /= 2",    AOP_TYPE_MOV },
-		{ "call", "call 1",    AOP_TYPE_MOV },
-		{ "jmp",  "goto 1",    AOP_TYPE_MOV },
+		{ "call", "call 1",    AOP_TYPE_CALL },
+		{ "jmp",  "goto 1",    AOP_TYPE_JMP },
 		{ "je",   "je 1",      AOP_TYPE_CJMP },
 		{ "push", "push 1",  AOP_TYPE_PUSH },
 		{ "pop",  "pop 1",   AOP_TYPE_POP },
@@ -104,13 +202,21 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		if (argv[2]) strcpy(newstr, argv[2]);
 		if (argv[3]) strcpy(newstr, ",");
 		if (argv[3]) strcpy(newstr, argv[3]);
+		if (argv[4]) strcpy(newstr, ",");
+		if (argv[4]) strcpy(newstr, argv[4]);
 	}
 	return 0;
 }
 
 int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 {
-	return pas_aop_x86(argc, argv, aop, newstr);
+	switch(config.arch) {
+	case ARCH_MIPS:
+		return pas_aop_mips(argc, argv, aop, newstr);
+	case ARCH_X86:
+		return pas_aop_x86(argc, argv, aop, newstr);
+	}
+	return 0;
 }
 
 struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr)
@@ -121,6 +227,7 @@ struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t
 	char w1[32];
 	char w2[32];
 	char w3[32];
+	char w4[32];
 	char *ptr, *optr;
 
 	// XXX asm.syntax should be 'intel'
@@ -149,12 +256,15 @@ struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t
 				strcpy(w2, ptr);
 				ptr = strchr(ptr, ',');
 				if (ptr) {
+					ptr[0]='\0';
+					for(ptr=ptr+1;ptr[0]==' ';ptr=ptr+1);
+					strcpy(w2, optr);
 					strcpy(w3, ptr);
 				}
 			}
 		}
 		{
-			const char *wa[] = { &w0, &w1, &w2, &w3 };
+			const char *wa[] = { &w0, &w1, &w2, &w3, &w4 };
 			int nw=0;
 
 			for(i=0;i<4;i++) {

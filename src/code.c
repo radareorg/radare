@@ -191,6 +191,12 @@ udis_mem_ptr= 0;
 	       //cons_printf("  %s %s", opcode, operands);
 		}
 	       } break;
+	case ARCH_MIPS:
+		gnu_dismips_str(string, (u8*)b, seek+myinc);
+		break;
+	case ARCH_SPARC:
+		gnu_disparc_str(string, (u8*)b, (unsigned int)seek+myinc);
+		break;
 	case ARCH_JAVA:
 	//	endian=1;
 		if (java_disasm(b, string)==-1)
@@ -242,20 +248,15 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	case ARCH_M68K:
 	case ARCH_CSR:
 	case ARCH_MSIL:
-		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
-		break;
 	case ARCH_ARM16:
 	case ARCH_ARM:
-		endian_memcpy(&buf, b, 4); //, endian);
-		ret = gnu_disarm((u8*)buf, (u64)seek+myinc);
-		break;
 	case ARCH_MIPS:
-		//unsigned long ins = (b[0]<<24)+(b[1]<<16)+(b[2]<<8)+(b[3]);
-		gnu_dismips((u8*)b, (unsigned int)seek+myinc);
-		break;
 	case ARCH_SPARC:
-		gnu_disparc((u8*)b, (unsigned int)seek+myinc);
+		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
 		break;
+	//	endian_memcpy(&buf, b, 4); //, endian);
+	//	ret = gnu_disarm((u8*)buf, (u64)seek+myinc);
+	//	break;
 	case ARCH_BF:
 		ret = arch_bf_dis(b, seek+myinc, 1024);
 		break;
@@ -486,9 +487,12 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				code_lines_print(reflines, sk, 0);
 		}
 		if (flags & RADIS_SECTION) {
+			char *str;
 			if (config.baddr)
-				cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-			else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+				str = flag_get_here_filter(seek - config.baddr, "section_");
+			else 	str = flag_get_here_filter(seek, "section_");
+			if (*str)
+				cons_printf("%s:", str);
 		}
 		if (flags & RADIS_OFFSET)
 			print_addr(seek);
@@ -572,10 +576,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				i = 0;
 				while (i<idata) {
 					cons_strcat("\n  .string \"");
-					while (block[bytes+i] != '\0') {
+					while (block[bytes+i] != '\0' || (block[bytes+i] == '\0' && block[bytes+i+1] == '\0')) {
 						print_color_byte_i(bytes+i, "%c",
 								is_printable(block[bytes+i])?block[bytes+i]:'.');
-					i++;
+						i++;
 					}
 					cons_strcat("\"");
 					i++;

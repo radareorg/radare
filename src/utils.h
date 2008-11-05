@@ -101,8 +101,6 @@ void drop_endian(u8 *dest, u8 *orig, unsigned int size);
 int iswhitechar(char c);
 char *strclean(char *str);
 int strnull(const char *str);
-const char *gnu_disarm(unsigned char *address, u64 seek);
-char *gnu_dismips(unsigned char *inst, unsigned long offset);
 int iswhitespace(char ch);
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize);
 void getHTTPDate(char *DATE);

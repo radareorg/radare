@@ -3,11 +3,11 @@
 #include <string.h>
 #include <radare.h>
 #include <dis-asm.h>
+#include <stdarg.h>
 #include "opcode/mips.h"
 
 int mips_mode = 32;
 
-static char str[128];
 extern int cons_fprintf(void *stream, const char *format, ...);
 static unsigned long Offset = 0;
 //unsigned char *bytes = "\xe1\x2f\xff\x32";
@@ -25,21 +25,35 @@ static int symbol_at_address(bfd_vma addr, struct disassemble_info * info)
 	return 0;
 }
 
-
 static void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
 {
-
 	eprintf("hoho%llx\n",(u32)memaddr);
 }
 
-static void  print_address(bfd_vma address, struct disassemble_info *info)
+static char *buf_global = NULL;
+static void print_address(bfd_vma address, struct disassemble_info *info)
 {
-	cons_printf("0x%llx", (address)); // control flags and so
-	return ;
+	char tmp[32];
+	if (buf_global == NULL)
+		return;
+	sprintf(tmp, "0x%08llx", (u64)address);
+	strcat(buf_global, tmp);
+}
+static void buf_fprintf(FILE *stream, const char *format, ...)
+{
+	va_list ap;
+	char *tmp , *tmp2;
+	if (buf_global == NULL)
+		return;
+	va_start(ap, format);
+ 	tmp2 = alloca(strlen(format)+strlen(buf_global)+2);
+	sprintf(tmp2, "%s%s", buf_global, format);
+	vsprintf(buf_global, tmp2, ap);
+	va_end(ap);
 }
 
 /* Disassembler entry point */
-char *gnu_dismips(unsigned char *inst, unsigned long offset)
+int gnu_dismips_str(char *str, const u8 *inst, u64 offset)
 {
 	struct disassemble_info info;
 #if 0
@@ -49,6 +63,7 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 #endif
 
 	str[0] = '\0';
+	buf_global = str;
 
 	Offset = (unsigned long)offset;
 	endian_memcpy(bytes, inst, 4); // TODO handle thumb
@@ -65,7 +80,8 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 	info.buffer_vma = Offset;
 	info.buffer_length = 4;
 	info.endian = 0;//config_get_i("cfg.bigendian");
-	info.fprintf_func = &cons_fprintf;
+	info.fprintf_func = &buf_fprintf;
+	//info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 
 	//print_mips_disassembler_options(stdout);
@@ -73,8 +89,10 @@ char *gnu_dismips(unsigned char *inst, unsigned long offset)
 
 	// endian is controlled by radare
 	//if (print_insn_big_mips((bfd_vma)offset-4, &info) == -1)
-	if (print_insn_big_mips((bfd_vma)Offset, &info) == -1)
-		cons_strcat("  (data)");
+	if (print_insn_big_mips((bfd_vma)Offset, &info) == -1) {
+		strcpy(str, " (data)");
+		return 1;
+	}
 
-	return str;
+	return 0;
 }
