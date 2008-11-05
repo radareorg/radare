@@ -94,12 +94,13 @@ int is_plugin(const char *str)
 #if __WINDOWS__ && !__CYGWIN__
 	if (strstr(str, ".dll"))
 		return 1;
-#endif
-	if (strstr(str, ".so"))
-		return 1;
-// TODO __DARWIN__ ??
+#elif __DARWIN__
 	if (strstr(str, ".dylib"))
 		return 1;
+#else
+	if (strstr(str, ".so"))
+		return 1;
+#endif
 	return 0;
 }
 
