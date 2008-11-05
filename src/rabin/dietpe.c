@@ -39,8 +39,24 @@ static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin *bin, PE_DWord rva) {
 	return 0;
 }
 
-static int dietpe_aux_stripstr_from_file(const char *filename, int min, int encoding, PE_DWord seek, PE_DWord limit, const char *filter, int str_limit, dietpe_string *strings) {
-	int fd = open(filename, O_RDONLY);
+static PE_DWord dietpe_aux_offset_to_rva(dietpe_bin *bin, PE_DWord offset) {
+	pe_image_section_header *shdrp;
+	PE_DWord section_base;
+	int i, section_size;
+
+	shdrp = bin->section_header;
+	for (i = 0; i < bin->nt_headers->file_header.NumberOfSections; i++, shdrp++) {
+		section_base = shdrp->PointerToRawData;
+		section_size = shdrp->SizeOfRawData;
+		if (offset >= section_base && offset < section_base + section_size)
+			return shdrp->VirtualAddress + (offset - section_base);
+	}
+		
+	return 0;
+}
+
+static int dietpe_aux_stripstr_from_file(dietpe_bin *bin, int min, int encoding, PE_DWord seek, PE_DWord limit, const char *filter, int str_limit, dietpe_string *strings) {
+	int fd = open(bin->file, O_RDONLY);
 	dietpe_string *stringsp;
 	unsigned char *buf;
 	PE_DWord i = seek;
@@ -88,6 +104,7 @@ static int dietpe_aux_stripstr_from_file(const char *filename, int min, int enco
 				if (string_len>2) {
 					if (!filter || strstr(str, filter)) {
 						stringsp->offset = i-matches;
+						stringsp->rva = dietpe_aux_offset_to_rva(bin, i-matches);
 						stringsp->type = (unicode?'U':'A');
 						stringsp->size = string_len;
 						memcpy(stringsp->string, str, PE_STRING_LENGTH);
@@ -527,7 +544,7 @@ int dietpe_get_strings(dietpe_bin *bin, int fd, int verbose, int str_limit, diet
 
 	shdrp = bin->section_header;
 	for (i = 0; i < sections_count; i++, shdrp++) {
-		ctr = dietpe_aux_stripstr_from_file(bin->file, 5, ENCODING_ASCII, shdrp->PointerToRawData, shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, str_limit, strings+ctr);
+		ctr = dietpe_aux_stripstr_from_file(bin, 5, ENCODING_ASCII, shdrp->PointerToRawData, shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, str_limit, strings+ctr);
 	}
 
 	return ctr;

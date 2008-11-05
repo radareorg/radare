@@ -1019,7 +1019,7 @@ CMD_DECL(code)
 				case 'u': fmt = DATA_FOLD_O; break;
 				default:  fmt = DATA_HEX; break;
 			}
-			arg = strchr(arg, ' ');
+			//arg = strchr(arg, ' ');
 			if (arg != NULL)
 				arg = arg + 1;
 			tmp = config.block_size;

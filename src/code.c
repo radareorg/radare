@@ -569,12 +569,17 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				idata = 0;
 				goto __outofme;
 			case DATA_STR:
-				cons_strcat("  .string \"");
-				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i, "%c",
-						is_printable(block[bytes+i])?block[bytes+i]:'.');
+				i = 0;
+				while (i<idata) {
+					cons_strcat("\n  .string \"");
+					while (block[bytes+i] != '\0') {
+						print_color_byte_i(bytes+i, "%c",
+								is_printable(block[bytes+i])?block[bytes+i]:'.');
+					i++;
+					}
+					cons_strcat("\"");
+					i++;
 				}
-				cons_strcat("\"");
 				break;
 			case DATA_STRUCT:
 				if (*foo->arg=='\0') {
