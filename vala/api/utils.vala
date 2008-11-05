@@ -21,17 +21,17 @@ public class Radare.Utils
 	{
 		return setenv(foo, bar, 1);
 	}
-
-[Import]
-public static string getenv(string str);
-
-[Import]
-public static int setenv(string foo, string bar, int force);
-
-[Import]
-public static ulong get_offset(string str);
-
-[Import]
-public static ulong get_math(string str);
-
 }
+
+[Import]
+public extern static string getenv(string str);
+
+[Import]
+public extern static int setenv(string foo, string bar, int force);
+
+[Import]
+public extern static ulong get_offset(string str);
+
+[Import]
+public extern static ulong get_math(string str);
+

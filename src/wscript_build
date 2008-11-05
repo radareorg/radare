@@ -13,7 +13,7 @@ bld.add_subdirs('javasm')
 obj = bld.new_task_gen('cc', 'program')
 obj.target = 'radare'
 obj.includes += ' .. include '
-obj.env.append_value('CCFLAGS','-DRADARE_CORE')
+obj.env.append_value('CCFLAGS','-DRADARE_CORE -I../vala')
 obj.env.append_value('LINKFLAGS','-lm') ## XXX: only for unix
 # Linking against..
 if bld.env['OS'] == 'Linux':
@@ -30,7 +30,7 @@ if bld.env['SYSPROXY'] == 1:
 if bld.env['GUI'] == 1:
 	obj.uselib += 'GTK'
 	obj.uselib_local += ' grava'
-	obj.includes += ' ..//build/default/vala/grava '
+	obj.includes += ' ..//build/default/vala/'
 	bld.add_subdirs('../gui')
 
 if bld.env['HAVE_LIB_EWF'] == 1:

@@ -39,22 +39,22 @@ public class Radare.Config : Object
 }
 
 [Import()]
-public static void config_init();
+public extern static void config_init();
 
 [Import()]
-public static void *config_set(string key, string val);
+public extern static void *config_set(string key, string val);
 
 [Import()]
-public static void *config_set_i(string key, long i);
+public extern static void *config_set_i(string key, long i);
 
 [Import()]
-public static string config_get(string key);
+public extern static string config_get(string key);
 
 [Import()]
-public static long config_get_i(string key);
+public extern static long config_get_i(string key);
 
 [Import()]
-public static bool config_rm(string key);
+public extern static bool config_rm(string key);
 
 [Import()]
-public static void config_list(string mask);
+public extern static void config_list(string mask);

@@ -18,10 +18,10 @@ public class Radare.Project
 }
 
 [Import()]
-public static bool project_open(string file);
+public extern static bool project_open(string file);
 
 [Import()]
-public static bool project_save(string file);
+public extern static bool project_save(string file);
 
 [Import()]
-public static void project_info(string file);
+public extern static void project_info(string file);

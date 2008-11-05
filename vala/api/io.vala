@@ -29,16 +29,16 @@ public class Radare.IO
 }
 
 [Import()]
-public static int io_open(string file, int flags, int mode);
+public extern static int io_open(string file, int flags, int mode);
 
 [Import()]
-public static int io_close(int fd);
+public extern static int io_close(int fd);
 
 [Import()]
-public static int io_read(int fd, ref string buf, long size);
+public extern static int io_read(int fd, ref string buf, long size);
 
 [Import()]
-public static int io_write(int fd, string buf, long size);
+public extern static int io_write(int fd, string buf, long size);
 
 [Import()]
-public static int io_system(string command);
+public extern static int io_system(string command);

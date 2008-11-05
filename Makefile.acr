@@ -30,7 +30,7 @@ omni:
 radare:
 ##GUI##
 ##VALA##
-	cd vala/grava/ && ${MAKE} radare
+	cd vala/ && ${MAKE} all
 ##VALA##
 ##GUI##
 

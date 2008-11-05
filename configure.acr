@@ -54,9 +54,9 @@ LANG_PYTHON
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
-CHKVER vala-1.0 0.3.4
-IFNOT HAVE_VALA_1_0_VERSION_0_3_4 {
-	ECHO Needs vala 0.3.4 at least ;
+CHKVER vala-1.0 0.5.0
+IFNOT HAVE_VALA_1_0_VERSION_0_5_0 {
+	ECHO Needs vala 0.5.0 at least ;
 	VALAC = '' ;
 	VALA = 0 ;
 	GUI = 0 ;
@@ -77,7 +77,6 @@ SIZEOF off_t ;
 CFLAGS = $_CFLAGS ;
 
 CHKLIB ewf
-
 
 (( PERL 
 LANG_PERL

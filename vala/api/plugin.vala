@@ -17,4 +17,4 @@ public class Radare.Plugins : Object
 }
 
 [Import()]
-public static void plugin_list();
+public extern static void plugin_list();

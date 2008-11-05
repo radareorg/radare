@@ -54,7 +54,6 @@
 u64 tmpoff = -1;
 int std = 0;
 
-static int radare_close();
 /* dummy callback for dl_hist_label */
 static int cb(const char *str) { radare_cmd_raw(str, 0); return 0;}
 
@@ -184,7 +183,7 @@ unsigned char radare_get(int delta)
 	return config.block[delta];
 }
 
-static int radare_close()
+int radare_close()
 {
 	radare_changes_close();
 	project_close();
