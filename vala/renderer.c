@@ -42,7 +42,7 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 #line 25 "renderer.vala"
 	g_return_if_fail (ctx != NULL);
 #line 25 "renderer.vala"
-	g_return_if_fail (edge != NULL);
+	g_return_if_fail (GRAVA_IS_EDGE (edge));
 	dx = ((double) (0));
 	dy = ((double) (0));
 	oh = edge->orig->h;
@@ -245,7 +245,7 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 154 "renderer.vala"
 	g_return_if_fail (ctx != NULL);
 #line 154 "renderer.vala"
-	g_return_if_fail (node != NULL);
+	g_return_if_fail (GRAVA_IS_NODE (node));
 #line 156 "renderer.vala"
 	cairo_save (ctx);
 #line 158 "renderer.vala"
@@ -272,27 +272,25 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 	grava_renderer_set_color_str (ctx, ((const char*) (g_hash_table_lookup (node->data, "bgcolor"))));
 #line 175 "renderer.vala"
 	if (node->has_body) {
-#line 176 "renderer.vala"
-		switch (node->shape) {
-			case GRAVA_SHAPE_CIRCLE:
-			{
+		gint _tmp0;
+		_tmp0 = node->shape;
+		if (_tmp0 == GRAVA_SHAPE_CIRCLE)
+		do {
 #line 178 "renderer.vala"
-				grava_renderer_circle (ctx, node->w, node->h);
+			grava_renderer_circle (ctx, node->w, node->h);
 #line 179 "renderer.vala"
-				cairo_fill (ctx);
+			cairo_fill (ctx);
 #line 180 "renderer.vala"
-				break;
-			}
-			default:
-			{
+			break;
+		} while (0); else
+		do {
 #line 183 "renderer.vala"
-				grava_renderer_square (ctx, node->w, node->h);
+			grava_renderer_square (ctx, node->w, node->h);
 #line 184 "renderer.vala"
-				cairo_fill (ctx);
+			cairo_fill (ctx);
 #line 185 "renderer.vala"
-				break;
-			}
-		}
+			break;
+		} while (0);
 	}
 	/* title rectangle */
 #line 190 "renderer.vala"
@@ -351,12 +349,12 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 224 "renderer.vala"
 	if (node->has_body) {
 		gint y;
-		const char* _tmp0;
+		const char* _tmp1;
 		char* body;
 		y = 25;
 #line 226 "renderer.vala"
-		_tmp0 = NULL;
-		body = (_tmp0 = ((const char*) (g_hash_table_lookup (node->data, "body"))), (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
+		_tmp1 = NULL;
+		body = (_tmp1 = ((const char*) (g_hash_table_lookup (node->data, "body"))), (_tmp1 == NULL ? NULL : g_strdup (_tmp1)));
 #line 227 "renderer.vala"
 		if (body != NULL) {
 			{
@@ -367,11 +365,11 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 				str_collection = g_strsplit (body, "\n", 0);
 				str_collection_length1 = -1;
 				for (str_it = str_collection; *str_it != NULL; str_it = str_it + 1) {
-					const char* _tmp1;
+					const char* _tmp2;
 					char* str;
 #line 716 "glib-2.0.vapi"
-					_tmp1 = NULL;
-					str = (_tmp1 = *str_it, (_tmp1 == NULL ? NULL : g_strdup (_tmp1)));
+					_tmp2 = NULL;
+					str = (_tmp2 = *str_it, (_tmp2 == NULL ? NULL : g_strdup (_tmp2)));
 					{
 #line 229 "renderer.vala"
 						y = y + (10);

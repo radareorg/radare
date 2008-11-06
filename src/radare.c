@@ -264,7 +264,9 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	char *word = NULL;
 	char *str;
 	struct list_head *pos;
+	u64 oseek;
 
+	oseek = config.seek;
 	str = strdup(each);
 	radare_controlc();
 	while(str[i] && !config.interrupted) {
@@ -329,6 +331,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 		word = NULL;
 	}
 	radare_controlc_end();
+	config.seek = oseek;
 
 	free(word);
 	word = NULL;

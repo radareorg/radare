@@ -500,6 +500,66 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			if (bytes==0) cons_printf("%08llX ", seek);
 			else cons_printf("+%7d ", bytes);
 		}
+		
+		// TODO: Use a single arch_aop here
+#if 1
+		switch(arch) {
+			case ARCH_X86:
+				if (ud_disassemble(&ud_obj)<1)
+					return;
+				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
+				//ud_set_pc(&ud_obj, seek);
+				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
+				arch_x86_aop((u64)seek, (const u8*)block+bytes, &aop);
+				myinc += ud_insn_len(&ud_obj);
+				break;
+			case ARCH_ARM16:
+				arm_mode = 16;
+				myinc += 2;
+				arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
+				break;
+			case ARCH_ARM:
+				// endian stuff here
+				myinc += arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
+				break;
+			case ARCH_MIPS:
+				arch_mips_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
+				break;
+			case ARCH_SPARC:
+				arch_sparc_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
+				break;
+			case ARCH_JAVA:
+				arch_java_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
+				break;
+			case ARCH_PPC:
+				arch_ppc_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
+				break;
+			case ARCH_CSR:
+				arch_csr_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += 2;
+				break;
+			case ARCH_MSIL:
+				arch_msil_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length+1;
+				break;
+			case ARCH_BF:
+				arch_bf_aop(seek, (const u8 *)block+bytes, &aop);
+				myinc += aop.length;
+				break;
+			case ARCH_OBJD:
+				radare_dump_and_process(DUMP_DISASM, len);
+				return;
+			default:
+				// Uh?
+				myinc += 4;
+				// XXX clear aop or so
+				break;
+		}
+#endif
 		/* size */
 		if (flags & RADIS_STACKPTR)
 			print_stackptr(&aop, 0);
@@ -680,66 +740,6 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			setenv("HERE", buf, 1);
 			radare_cmd(cmd_asm, 0);
 		}
-		
-		// TODO: Use a single arch_aop here
-#if 1
-		switch(arch) {
-			case ARCH_X86:
-				if (ud_disassemble(&ud_obj)<1)
-					return;
-				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
-				//ud_set_pc(&ud_obj, seek);
-				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
-				arch_x86_aop((u64)seek, (const u8*)block+bytes, &aop);
-				myinc += ud_insn_len(&ud_obj);
-				break;
-			case ARCH_ARM16:
-				arm_mode = 16;
-				myinc += 2;
-				arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
-				break;
-			case ARCH_ARM:
-				// endian stuff here
-				myinc += arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
-				break;
-			case ARCH_MIPS:
-				arch_mips_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length;
-				break;
-			case ARCH_SPARC:
-				arch_sparc_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length;
-				break;
-			case ARCH_JAVA:
-				arch_java_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length;
-				break;
-			case ARCH_PPC:
-				arch_ppc_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length;
-				break;
-			case ARCH_CSR:
-				arch_csr_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += 2;
-				break;
-			case ARCH_MSIL:
-				arch_msil_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length+1;
-				break;
-			case ARCH_BF:
-				arch_bf_aop(seek, (const u8 *)block+bytes, &aop);
-				myinc += aop.length;
-				break;
-			case ARCH_OBJD:
-				radare_dump_and_process(DUMP_DISASM, len);
-				return;
-			default:
-				// Uh?
-				myinc += 4;
-				// XXX clear aop or so
-				break;
-		}
-#endif
 		if (myinc<1)
 			myinc = 1;
 

@@ -42,9 +42,6 @@ Nibble TODO:
 
 ---- bugs
 * Split nodes of the graph code analysis
-* if myinc > len myinc = 1;
-  - if pressing '[' multiple times myinc stills being 1, but needs lot of '] to
-    recover the 0 position
 * disasm is incorrect. always returns the negative value :OO
   - 03 e4 f0 = and esp, 0xf0
   but must be= and esp, 0xfffffff0

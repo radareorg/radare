@@ -433,6 +433,58 @@ static int config_limit_callback(void *data)
 	return 0;
 }
 
+static int asm_profile(const char *profile)
+{
+	if (!strcmp(profile, "default")) {
+		config_set("asm.bytes", "true");
+		config_set("asm.lines", "true");
+		config_set("asm.linesout", "false");
+		config_set("asm.lineswide", "false");
+		config_set("asm.offset", "true");
+		config_set("asm.comments", "true");
+		config_set("asm.flagsline", "false");
+		config_set("asm.section", "false");
+		config_set("asm.trace", "false");
+		config_set("asm.split", "true");
+		config_set("asm.flags", "true");
+		config_set("asm.size", "false");
+		config_set("asm.xrefs", "true");
+	} else
+	if (!strcmp(profile, "debug")) {
+		asm_profile("default");
+		config_set("asm.trace", "true");
+	} else
+	if (!strcmp(profile, "full")) {
+		asm_profile("default");
+		config_set("asm.bytes", "true");
+		config_set("asm.lines", "true");
+		config_set("asm.linesout", "true");
+		config_set("asm.lineswide", "true");
+		config_set("asm.section", "true");
+		config_set("asm.size", "true");
+	} else
+	if (!strcmp(profile, "simple")) {
+		asm_profile("default");
+		config_set("asm.bytes", "false");
+		config_set("asm.lines", "false");
+		config_set("asm.comments", "false");
+		config_set("asm.split", "false");
+		config_set("asm.flags", "false");
+		config_set("asm.flagsline", "true");
+		config_set("asm.xrefs", "false");
+		config_set("asm.stackptr", "false");
+		config_set("asm.section", "false");
+	}
+	return 0;
+}
+
+static int config_asm_profile(void *data)
+{
+	struct config_node_t *node = data;
+
+	return asm_profile( node->value );
+}
+
 static int config_arch_callback(void *data)
 {
 	radis_update();
@@ -578,6 +630,9 @@ void config_init(int first)
 	vm_init(1);
 
 	/* enter keys */
+	node = config_set("asm.profile", "default");
+	node->callback = &config_asm_profile;
+
 #if __POWERPC__
         node = config_set("asm.arch", "ppc");
 #elif __x86_64__
@@ -593,7 +648,7 @@ void config_init(int first)
 	config_set("asm.comments", "true"); // show comments in disassembly
 	config_set_i("asm.cmtmargin", 10); // show comments in disassembly
 	config_set_i("asm.cmtlines", 0); // show comments in disassembly
-	config_set("asm.syntax", "pseudo");
+	config_set("asm.syntax", "intel");
 	config_set("asm.objdump", "objdump -m i386 --target=binary -D");
 	config_set("asm.offset", "true"); // show offset
 	config_set("asm.section", "true");
@@ -606,7 +661,7 @@ void config_init(int first)
 	config_set("asm.functions", "true"); // show hex bytes
 	config_set("asm.lines", "true"); // show left ref lines
 	config_set_i("asm.nlines", 6); // show left ref lines
-	config_set("asm.lineswide", "true"); // show left ref lines
+	config_set("asm.lineswide", "false"); // show left ref lines
 	config_set("asm.trace", "false"); // trace counter
 	config_set("asm.linesout", "false"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev

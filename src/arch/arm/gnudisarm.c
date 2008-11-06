@@ -74,7 +74,7 @@ int gnu_disarm_str(char *str, const u8 *inst, u64 offset)
 	info.symbol_at_address_func = &symbol_at_address;
 	info.memory_error_func = &hoho;
 	info.print_address_func = &print_address;
-	info.endian = config_get_i("cfg.bigendian")?1:0;
+	info.endian = config_get_i("cfg.bigendian")?0:1;
 	info.fprintf_func = &buf_fprintf;
 	info.stream = stdout;
 

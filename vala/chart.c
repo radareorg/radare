@@ -80,7 +80,7 @@ static GType grava_chart_get_type (void);
 #line 48 "chart.vala"
 static void grava_chart_setColor (GravaChart* self, const char* color) {
 #line 48 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 #line 48 "chart.vala"
 	g_return_if_fail (color != NULL);
 }
@@ -89,14 +89,14 @@ static void grava_chart_setColor (GravaChart* self, const char* color) {
 #line 52 "chart.vala"
 static void grava_chart_setLimits (GravaChart* self, gint from, gint to) {
 #line 52 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 }
 
 
 #line 56 "chart.vala"
 static void grava_chart_setBar (GravaChart* self, const char* name, gint val) {
 #line 56 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 #line 56 "chart.vala"
 	g_return_if_fail (name != NULL);
 }
@@ -105,7 +105,7 @@ static void grava_chart_setBar (GravaChart* self, const char* name, gint val) {
 #line 60 "chart.vala"
 static void grava_chart_setColumn (GravaChart* self, const char* name, gint val) {
 #line 60 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 #line 60 "chart.vala"
 	g_return_if_fail (name != NULL);
 }
@@ -114,7 +114,7 @@ static void grava_chart_setColumn (GravaChart* self, const char* name, gint val)
 #line 64 "chart.vala"
 static void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* color) {
 #line 64 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 #line 64 "chart.vala"
 	g_return_if_fail (color != NULL);
 }
@@ -123,7 +123,7 @@ static void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* 
 #line 68 "chart.vala"
 static void grava_chart_draw (GravaChart* self) {
 #line 68 "chart.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_CHART (self));
 }
 
 

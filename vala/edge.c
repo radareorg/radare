@@ -35,7 +35,7 @@ static void grava_edge_finalize (GObject* obj);
 char* grava_edge_get (GravaEdge* self, const char* val) {
 	const char* _tmp0;
 #line 35 "edge.vala"
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_EDGE (self), NULL);
 #line 35 "edge.vala"
 	g_return_val_if_fail (val != NULL, NULL);
 #line 37 "edge.vala"
@@ -50,7 +50,7 @@ void grava_edge_set (GravaEdge* self, const char* val, const char* key) {
 	const char* _tmp1;
 	const char* _tmp0;
 #line 40 "edge.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_EDGE (self));
 #line 40 "edge.vala"
 	g_return_if_fail (val != NULL);
 #line 40 "edge.vala"
@@ -72,11 +72,11 @@ GravaEdge* grava_edge_with (GravaEdge* self, GravaNode* a, GravaNode* b) {
 	GravaNode* _tmp2;
 	GravaEdge* _tmp4;
 #line 45 "edge.vala"
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_EDGE (self), NULL);
 #line 45 "edge.vala"
-	g_return_val_if_fail (a != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_NODE (a), NULL);
 #line 45 "edge.vala"
-	g_return_val_if_fail (b != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_NODE (b), NULL);
 	_tmp1 = NULL;
 #line 47 "edge.vala"
 	_tmp0 = NULL;
@@ -108,7 +108,7 @@ return Math.sqrt( this.exp2(orig.x-dest.x) + this.exp2(orig.y-dest.y));
 #line 63 "edge.vala"
 double grava_edge_distance (GravaEdge* self) {
 #line 63 "edge.vala"
-	g_return_val_if_fail (self != NULL, 0.0);
+	g_return_val_if_fail (GRAVA_IS_EDGE (self), 0.0);
 #line 65 "edge.vala"
 	return sqrt (pow (self->orig->x - self->dest->x, ((double) (2))) + pow (self->orig->y - self->dest->y, ((double) (2))));
 }
@@ -129,7 +129,7 @@ GravaEdge* grava_edge_new (void) {
 }
 
 
-#line 178 "gobject-2.0.vapi"
+#line 955 "glib-2.0.vapi"
 static void _g_object_unref_gdestroy_notify (void* data) {
 	g_object_unref (data);
 }
