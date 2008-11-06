@@ -9,14 +9,14 @@
 
 === WORK FOR 1.0 ===
 
+* ARM endian va al reves
+
 Nibble TODO:
 ============
 * update rabin documentation
 * documentate dbg.focus
 * documentate scr.seek
 * documentate the change of the execstack protection in program section of ELF
-
-* at+ [addr] [times] []
 
 ---- documentation
 * doc4 'g' and 'x' in visual

@@ -87,7 +87,7 @@ void undo_list()
 	}
 }
 
-void undo_write_new(u64 off, u8 *data, int len)
+void undo_write_new(u64 off, const u8 *data, int len)
 {
 	struct undow_t *uw = (struct undow_t *)malloc(sizeof(struct undow_t));
 

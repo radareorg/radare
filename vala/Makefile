@@ -50,7 +50,7 @@ VALAFLAGS=-g
 
 #shell.o
 
-VOBJ=asm.o config.o core.o debug.o debugger.o disassembler.o info.o io.o line.o list.o logs.o main.o panel.o plugin.o project.o radget.o search.o term.o utils.o visor.o window.o default_layout.o edge.o graph.o layout.o main.o node.o renderer.o shape.o widget.o
+VOBJ=config.o core.o debug.o debugger.o info.o io.o line.o list.o logs.o plugin.o project.o radget.o term.o visor.o default_layout.o edge.o graph.o layout.o node.o renderer.o shape.o widget.o
 BIN=a.out
 
 all: all_vala ${VOBJ}
@@ -58,7 +58,7 @@ all: all_vala ${VOBJ}
 	#${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`
 
 all_vala:
-	-${VALAC} ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 *.vala api/*.vala panel/*.vala grava/*.vala
+	-${VALAC} ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 grava/*.vala
 #	${CC} -lewf -g ${OBJ} *.c `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 	#${CC} -lewf -g ${OBJ} *.o `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 

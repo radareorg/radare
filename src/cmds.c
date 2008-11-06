@@ -192,17 +192,23 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: at[*] [addr]\n");
-			eprintf("   > at         ; list all traced opcode ranges\n");
-			eprintf("   > at-        ; reset the tracing information\n");
-			eprintf("   > at*        ; list all traced opcode offsets\n");
+			eprintf("   > at?                ; show help message\n");
+			eprintf("   > at                 ; list all traced opcode ranges\n");
+			eprintf("   > at-                ; reset the tracing information\n");
+			eprintf("   > at*                ; list all traced opcode offsets\n");
 			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
-			eprintf("   > at [addr]  ; show trace info at address\n");
+			eprintf("   > at [addr]          ; show trace info at address\n");
 			break;
 		case '+':
 			{
-			u64 addr = get_offset(input+1);
-			// TODO: moar!
-			trace_add(addr);
+				char *ptr = input+3;
+				u64 addr = get_offset(input+3);
+				ptr = strchr(ptr, ' ');
+				if (ptr != NULL) {
+					//eprintf("at(0x%08llx)=%d (%s)\n", addr, atoi(ptr+1), ptr+1);
+					trace_add(addr);
+					trace_set_times(addr, atoi(ptr+1));
+				}
 			}
 			break;
 		case '-':
@@ -1511,14 +1517,14 @@ CMD_DECL(write)
 			/* 8 byte addr */
 			unsigned long long addr8;
 			endian_memcpy((u8*)&addr8, (u8*)&off, 8);
-			undo_write_new(config.seek, &addr8, 8);
+			undo_write_new(config.seek, (const u8*) &addr8, 8);
 			io_write(config.fd, &addr8, 8);
 		} else {
 			/* 4 byte addr */
 			unsigned long addr4_, addr4 = (unsigned long)off;
 			drop_endian((u8*)&addr4_, (u8*)&addr4, 4); /* addr4_ = addr4 */
 			endian_memcpy((u8*)&addr4, (u8*)&addr4_, 4); /* addr4 = addr4_ */
-			undo_write_new(config.seek, &addr4, 4);
+			undo_write_new(config.seek, (const u8*) &addr4, 4);
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
@@ -2021,7 +2027,7 @@ CMD_DECL(help)
 				eprintf("  > ? 0x80+44         ; calc math expression\n");
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
 				eprintf("  > ? eip==sym_main   ; compare flags\n");
-				eprintf(" The '??' is used for conditional executions after a comparision\n");
+				eprintf(" The ?? is used for conditional executions after a comparision\n");
 				eprintf("  > ? [foo] == 0x44   ; compare memory read with byte\n");
 				eprintf("  > ? eip != oeip     ; compare memory read with byte\n");
 				eprintf("  > ???               ; show result of comparision\n");

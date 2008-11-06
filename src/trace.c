@@ -68,6 +68,25 @@ int trace_index(u64 addr)
 	return idx;
 }
 
+int trace_set_times(u64 addr, int times)
+{
+	char bytes[16];
+	struct trace_t *t;
+	struct list_head *pos;
+
+	if (arch_aop == NULL)
+		return -1;
+	/* update times counter */
+	list_for_each(pos, &traces) {
+		t = list_entry(pos, struct trace_t, list);
+		if (t->addr == addr) {
+			t->times = times;
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int trace_add(u64 addr)
 {
 	char bytes[16];
