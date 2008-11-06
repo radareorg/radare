@@ -195,7 +195,15 @@ CMD_DECL(analyze)
 			eprintf("   > at         ; list all traced opcode ranges\n");
 			eprintf("   > at-        ; reset the tracing information\n");
 			eprintf("   > at*        ; list all traced opcode offsets\n");
+			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
 			eprintf("   > at [addr]  ; show trace info at address\n");
+			break;
+		case '+':
+			{
+			u64 addr = get_offset(input+1);
+			// TODO: moar!
+			trace_add(addr);
+			}
 			break;
 		case '-':
 			trace_reset();
