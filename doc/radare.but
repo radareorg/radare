@@ -19,7 +19,7 @@ A commandline framework for reverse engineering ala *nix-style
 
 \versionid $Id: pvc.but 2008-09-02 pancake $
 
-\H{introduction} Introduction
+\C{introduction} Introduction
 
 This book aims to cover most usage aspects of radare. A framework for reverse engineering and analyzing binaries.
 
@@ -488,7 +488,13 @@ Can get 'true' or 'false' values and makes the line analysis be performed from t
 
 \c asm.offset
 
-Boolean value that shows or hides the offset address of the disassembled opcode
+Boolean value that shows or hides the offset address of the disassembled opcode.
+
+\c asm.profile
+
+Set how much information is showed to the user on disassembly. Can get the values 'default', 'simple', 'debug' and 'full'.
+
+This eval will modify other asm. variables to change the visualization properties for the disassembler engine. 'simple' asm.profile will show only offset+opcode, and 'debug' will show information about traced opcodes, stack pointer delta, etc..
 
 \c asm.trace
 
@@ -496,7 +502,11 @@ Show tracing information at the left of each opcode (sequence number and counter
 
 \c asm.bytes
 
-Boolean value that shows or hides the bytes of the disassebled opcode
+Boolean value that shows or hides the bytes of the disassebled opcode.
+
+\c dbg.focus
+
+Can get a boolean value. If true, radare will ignore events from non selected PIDs.
 
 \c cfg.bigendian
 
@@ -508,11 +518,7 @@ When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the targ
 
 \c file.analyze
 
-Runs '\c{.af* @@ sym_}' and '\c{.af* @ entrypoint}' after resolving the symbols while loading the binary. This option requires file.id to be true
-
-\c file.analyze
-
-When enabled runs '.af* @@ sym_' command and other ones to determine the maximum information about the code analysis of the program. This will not be used while opening a project file, so it is preloaded.
+Runs '\c{.af* @@ sym_}' and '\c{.af* @ entrypoint}', after resolving the symbols while loading the binary, to determine the maximum information about the code analysis of the program. This will not be used while opening a project file, so it is preloaded. This option requires file.id and file.flag to be true.
 
 \c file.flag
 
@@ -523,6 +529,10 @@ This command is commonly used with file.id.
 \c scr.color
 
 This boolean variable allows to enable or disable the colorized output
+
+\c scr.seek
+
+This variable accepts an expression, a pointer (eg. eip), etc. radare will automatically seek to make sure its value is always within the limits of the screen.
 
 \c cfg.fortunes
 
@@ -2090,12 +2100,12 @@ Rabin is able to handle multiple file formats like Java CLASS, ELF, PE, MACH-O, 
 \c  -l        linked libraries
 \c  -L [lib]  dlopen library and show address
 \c  -z        search for strings in elf non-executable sections
-\c  -x        show xrefs of symbols (-s/-i required)
+\c  -x        show xrefs of symbols (-s/-i/-z required)
 \c  -I        show binary info
 \c  -r        output in radare commands
 \c  -v        be verbose
 
-In Rabin every flag can be combined with -v for a more readable and verbose human output, and -r for using this output from the radare core. Furtheremore, we can combine -s, -i and -z with -x to get xrefs.
+In Rabin every flag can be combined with -v or -vv for a more readable and verbose human output, and -r for using this output from the radare core. Furtheremore, we can combine -s, -i and -z with -x to get xrefs.
 
 \H{rabin-id} File identification
 

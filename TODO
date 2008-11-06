@@ -9,7 +9,7 @@
 
 === WORK FOR 1.0 ===
 
-* ARM endian va al reves
+* '<' and '>' commands converted in prefix modifiers
 
 Nibble TODO:
 ============
@@ -175,7 +175,6 @@ Rasm:
 	  - be like a cmdline gas. use the internal code of gnu (stripped down plz!)
 
 Core:
-	* '<' and '>' commands converted in prefix modifiers
 	* reload project file if changes
 	* do not create trace.log by default
 	* Allow to edit flags in Vt
