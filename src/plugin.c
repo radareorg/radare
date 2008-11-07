@@ -296,7 +296,9 @@ void plugin_init()
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
 	plugins[last++] = socket_plugin;
+#if __UNIX__
 	plugins[last++] = serial_plugin;
+#endif
 	plugins[last++] = gxemul_plugin;
 	plugins[last++] = bfdbg_plugin;
 #if SYSPROXY

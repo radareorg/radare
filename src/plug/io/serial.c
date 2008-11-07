@@ -20,6 +20,8 @@
 // TODO: add bitrate and hw/sw control flow and so
 // serial:///dev/ttyS0:9600
 
+#if __UNIX__
+
 #include <main.h>
 #include <termios.h>
 #include <unistd.h>
@@ -184,3 +186,5 @@ plugin_t serial_plugin = {
 	.lseek       = serial_lseek,
 	.close       = serial_close
 };
+
+#endif
