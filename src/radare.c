@@ -52,6 +52,10 @@
 
 #include "dietline.h"
 
+int stdout_fd = 6676;
+int stdout_file = -1;
+FILE *stdin_fd = &stdin;
+
 u64 tmpoff = -1;
 int std = 0;
 
@@ -864,6 +868,7 @@ int radare_cmd(char *input, int log)
 struct macro_t {
 	char *name;
 	char *code;
+	int nargs;
 	struct list_head list;
 };
 
@@ -875,22 +880,52 @@ void radare_macro_init()
 }
 
 // XXX add support single line function definitions
+// XXX add support for single name multiple nargs macros
 int radare_macro_add(const char *name)
 {
-	struct macro_t *macro;
-	macro = (struct macro_t *)malloc(sizeof(struct macro_t));
+	struct list_head *pos;
+	struct macro_t *macro = NULL;
+	char buf[1024];
+	char *bufp;
+	char *ptr;
+	int lidx;
+
+	list_for_each_prev(pos, &macros) {
+		struct macro_t *mac = list_entry(pos, struct macro_t, list);
+		if (!strcmp(name, mac->name)) {
+			macro = mac;
+			free(macro->name);
+			free(macro->code);
+		}
+	}
+	if (macro == NULL)
+		macro = (struct macro_t *)malloc(sizeof(struct macro_t));
 	macro->name = strdup(name);
 	macro->code = (char *)malloc(1024);
 	macro->code[0]='\0';
+	macro->nargs = 0;
+	ptr = strchr(macro->name, ' ');
+	if (ptr != NULL) {
+		*ptr='\0';
+		macro->nargs = set0word(ptr+1);
+	}
 	while(1) {
-		char buf[1024];
-		printf(".. ");
-		fflush(stdout);
-		fgets(buf, 1023, stdin);
+		if (stdin == stdin_fd) {
+			printf(".. ");
+			fflush(stdout);
+		}
+		fgets(buf, 1023, stdin_fd);
 		if (buf[0]==')')
 			break;
+		for(bufp=buf;*bufp==' '||*bufp=='\t';bufp=bufp+1);
+		lidx = strlen(buf)-2;
+		if (buf[lidx]==')') {
+			buf[lidx]='\0';
+			strcat(macro->code, bufp);
+			break;
+		}
 		if (buf[0] != '\n')
-			strcat(macro->code, buf);
+			strcat(macro->code, bufp);
 	}
 	list_add_tail(&(macro->list), &(macros));
 	
@@ -919,25 +954,61 @@ int radare_macro_list()
 	}
 }
 
+int radare_cmd_args(const char *ptr, const char *args, int nargs)
+{
+	int i,j;
+	char *cmd = alloca(strlen(ptr)+1024);
+//eprintf("call(%s)\n", ptr);
+
+	for(i=j=0;ptr[j];i++,j++) {
+		if (ptr[j]=='$' && ptr[j+1]>='0' && ptr[j+1]<='9') {
+			char *word = get0word(args, ptr[j+1]-'0');
+			strcat(cmd, word);
+			j++;
+			i = strlen(cmd)-1;
+		} else {
+			cmd[i]=ptr[j];
+			cmd[i+1]='\0';
+		}
+	}
+	while(*cmd==' '||*cmd=='\t')
+		cmd = cmd + 1;
+//eprintf("cmd(%s)\n", cmd);
+	return radare_cmd(cmd, 0);
+}
+
 /* TODO: add support for arguments */
 int radare_macro_call(const char *name)
 {
+	char *args;
+	int nargs = 0;
 	char *str, *ptr;
 	struct list_head *pos;
 	str = alloca(strlen(name)+1);
 	strcpy(str, name);
 	ptr = strchr(str, ')');
+
+	args = strchr(str, ' ');
+	if (args) {
+		*args='\0';
+		args = args +1;
+		nargs = set0word(args);
+	}
+
 	if (ptr != NULL) *ptr='\0';
 	list_for_each_prev(pos, &macros) {
 		struct macro_t *mac = list_entry(pos, struct macro_t, list);
 		if (!strcmp(str, mac->name)) {
 			char *ptr = mac->code;
 			char *end = strchr(ptr, '\n');
+			if (nargs != mac->nargs) {
+				eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
+				return 0;
+			}
 			do {
 				if (end) *end='\0';
-				if (*ptr) {
-					radare_cmd_raw(ptr, 0);
-				}
+				if (*ptr)
+					radare_cmd_args(ptr, args, nargs);
 				if (end) {
 					*end='\n';
 					ptr = end + 1;
@@ -982,7 +1053,7 @@ int radare_interpret(char *file)
 	fd = fopen(file, "r");
 	if (fd == NULL)
 		return 0;
-
+	stdin_fd = fd;
 	while(!feof(fd) && !config.interrupted) {
 		buf[0]='\0';
 		fgets(buf, 1024, fd);
@@ -994,12 +1065,11 @@ int radare_interpret(char *file)
 		config_set("cfg.verbose", "false");
 	}
 	fclose(fd);
+	stdin_fd = stdin;
 
 	return 1;
 }
 
-int stdout_fd = 6676;
-int stdout_file = -1;
 void stdout_open(char *file)
 {
 	int fd = open(file, O_RDONLY);

@@ -432,6 +432,8 @@ const char *get0word(const char *str, int idx)
 {
 	int i;
 	const char *ptr = str;
+	if (ptr == NULL)
+		return nullstr;
 	for (i=0;*ptr && i != idx;i++)
 		ptr = ptr + strlen(ptr) + 1;
 	return ptr;
