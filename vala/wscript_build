@@ -19,11 +19,11 @@ obj.uselib = 'GTK GLIB VTE'
 #obj = bld.new_task_gen('cc', 'program')
 obj = bld.new_task_gen('cc', 'staticlib')
 #obj.source = ' line.vala list.vala logs.vala main.vala panel.vala shell.vala term.vala visor.vala window.vala'
-obj.source = ' line.c list.c logs.c panel.c shell.c term.c visor.c window.c'
+obj.source = ' line.c list.c logs.c panel.c shell.c term.c visor.c'
 obj.source += ' core.c'
 #obj.source += ' api/asm.vala api/config.vala api/core.vala api/debugger.vala api/disassembler.vala api/io.vala api/plugin.vala api/project.vala api/utils.vala'
 obj.source += ' chart.c default_layout.c edge.c graph.c layout.c node.c renderer.c shape.c widget.c'
-obj.source += ' debug.c info.c radget.c search.c'
+obj.source += ' debug.c info.c radget.c'
 #obj.find_sources_in_dirs('. api grava panel')
 obj.packages = 'gtk+-2.0 vte'
 obj.target = 'grava'

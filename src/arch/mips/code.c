@@ -153,7 +153,7 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	//case 9: // jalr
 		reg = op>>24;
 		if (reg< 10) {
-			aop->type = AOP_TYPE_CALL;
+			aop->type = AOP_TYPE_RCALL;
 			sprintf(buf, "t%d", reg); // XXX must be rN...!regs* should be synced here
 			aop->jump = flag_get_addr(buf);
 			aop->fail = addr+8;
@@ -205,6 +205,7 @@ int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 			}
 		}
 	} 
+
 	aop->length = (mips_mode==16)?2:4;
 	return aop->length;
 }

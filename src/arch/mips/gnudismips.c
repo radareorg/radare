@@ -36,7 +36,7 @@ static void print_address(bfd_vma address, struct disassemble_info *info)
 	char tmp[32];
 	if (buf_global == NULL)
 		return;
-	sprintf(tmp, "0x%08llx", (u64)address);
+	sprintf(tmp, "0x%08llx", (u64)address-8); /* WTF ?!?! why gnu disasm doesnt do this well? */
 	strcat(buf_global, tmp);
 }
 static void buf_fprintf(FILE *stream, const char *format, ...)

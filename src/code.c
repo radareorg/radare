@@ -833,6 +833,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case AOP_TYPE_CJMP:
 				cons_strcat(cons_palette[PAL_JUMP]);
 				break;
+			case AOP_TYPE_RCALL: // green cons_strcat("\x1b[32m");
 			case AOP_TYPE_CALL: // green cons_strcat("\x1b[32m");
 				cons_strcat(cons_palette[PAL_CALL]);
 				break;
