@@ -159,11 +159,11 @@ CMD_DECL(macro)
 		eprintf(
 		"Usage: (foo\\n..cmds..\\n)\n"
 		" Record macros grouping commands\n"
-		" (foo .. )         ; define a macro\n"
+		" (foo args\\n ..)  ; define a macro\n"
 		" (-foo)            ; remove a macro\n"
 		" .(foo)            ; to call it\n"
 		"Argument support:\n"
-		" (foo x $1 @ $2)     ; define fun with args\n"
+		" (foo x y\\n$1 @ $2)     ; define fun with args\n"
 		" .(foo 128 0x804800) ; call it with args\n");
 		break;
 	default:
@@ -966,6 +966,15 @@ CMD_DECL(blocksize)
 {
 	flag_t *flag;
 	switch(input[0]) {
+	case 't': // bf = block flag size
+		flag = flag_get(input+2);
+		if (flag) {
+			radare_set_block_size_i(flag->offset-config.seek);
+			printf("block size = %d\n", flag->length);
+		} else {
+			eprintf("Unknown flag '%s'\n", input+2);
+		}
+		break;
 	case 'f': // bf = block flag size
 		flag = flag_get(input+2);
 		if (flag) {
@@ -976,9 +985,10 @@ CMD_DECL(blocksize)
 		}
 		break;
 	case '?':
-		cons_printf("Usage: b[f flag]|[size]     ; Change block size\n");
-		cons_printf("  > b 200 ; set block size to 200\n");
-		cons_printf("  > bf sym_main && s sym_main\n");
+		cons_printf("Usage: b[f flag]|[size]  ; Change block size\n");
+		cons_printf("  > b 200                ; set block size to 200\n");
+		cons_printf("  > bt next @ here       ; block size = next-here\n");
+		cons_printf("  > bf sym_main          ; block size = flag size\n");
 		break;
 	case '\0':
 		cons_printf("%d\n", config.block_size);

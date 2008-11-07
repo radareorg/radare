@@ -3984,6 +3984,41 @@ Obviously all these commands can be used from the visual mode..so press 'V<enter
 
 Enjoy!
 
+\C{debug-serial} Analyze serial protocols
+
+Since radare 1.0 it ships a serial:// IO plugin to connect to a serial port device and work with it like if it was a socket:// one.
+
+Both plugins (socket and serial) are quite similar and based on the concept of an always-growing virtual file containing the received bytes. The plugin sets flags for each read operation from the device.
+
+Let's see an example of how to use it to analyze the protocol of the Symbian's TRK debugger.
+
+1) Install TRK symbian agent into your phone:
+
+\c  http://tools.ext.nokia.com/agents/index.htm
+
+2) Prepare your laptop
+
+\c  $ rfcomm listen hci0 1
+
+3) Make your phone connect via bluetooth
+
+\c  f.ex: Options -> Connect -> BlueZ(0)
+ 
+4) Attach radare to the newly rfcomm created
+
+\c  $ sudo radare serial:///dev/rfcomm0:9600
+
+Once here we can start writing raw commands which are headed and footed by '7E'
+
+\c > wx 7E 00 00 FF 7E
+\c > wx 7E 01 01 FD 7E
+\c > wx 7E 05 02 F8 7E
+\c
+\c > x
+\c    offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF01234567
+\c 0x00000000, 7eff 0007 f97e 7220 5379 6d62 6961 6e20 ~....~r Symbian OS start
+\c 0x00000018, 6564 c7bf 0463 c24a ffff ffff ffff ffff ed...c.J................
+
 \C{debug-bochs} Debugging with bochs and python
 
 radare can be easily adapted to be a frontend for other debuggers. Ero Carrera has written a python interface for instrumentating bochs. Having python embedded on a debugger is just simple to use radare as a frontend to launch scripts.
@@ -4142,6 +4177,58 @@ You can obviously do the same by interpreting the output of a command:
 
 \c [0x00000000]> .! rsc syms-dbg-flag ${FILE}
 
+\H{macros} Macros
+
+The radare shell support macro definitions and these ones can be used to make up your own set of commands into a macro and then use it from the shell by just giving the name and arguments. You can understand a macro as a function.
+
+Let's see how to define a macro:
+
+\c [0x465D8810]> (?
+\c Usage: (foo\n..cmds..\n)
+\c  Record macros grouping commands
+\c  (foo args\n ..)  ; define a macro
+\c  (-foo)            ; remove a macro
+\c  .(foo)            ; to call it
+\c Argument support:
+\c  (foo x y\n$1 @ $2)     ; define fun with args
+\c  .(foo 128 0x804800) ; call it with args
+
+The command to manage macros is '('. The first thing we can do is a hello world:
+
+\c [0x465D8810]> (hello
+\c .. !echo Hello World
+\c .. !echo ===========
+\c .. )
+\c [0x465D8810]> .(hello)
+\c Hello World
+\c ===========
+\c [0x465D8810]> 
+
+Macros supports arguments, and their are referenced with $# expressions.
+
+Here's an example of how to define a simple oneliner function called 'foo' accepting two arguments to be used to print 8bit values from an address.
+
+\c ; Create our macro
+\c [0x465D8810]> (dump addr len
+\c .. p8 $1 @ $0)
+\c
+\c ; List defined macros
+\c [0x465D8810]> (
+\c 0 dump: p8 $1 @ $0
+\c
+\c ; Call the macro
+\c [0x465D8810]> .(dump esp 10)
+\c 01 00 00 00 e4 17 e6 bf 00 00
+\c
+\c ; Remove it!
+\c [0x465D8810]> (-dump)
+
+We can define these macros in our ~/.radarerc
+
+\c $ cat ~/.radarerc
+\c (dump addr len
+\c   p8 $1 @ $0)
+
 \H{langs} Language bindings
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
@@ -4249,11 +4336,28 @@ You can also use radare programatically from the python shell:
 
 \H{ruby} Ruby
 
-TODO: not yet implemented at all
+Use it like in python by refering a global variable called '$r'.
+
+\c [0x465D8810]> H ruby
+\c Load done
+\c ==> Loading radare ruby api... ok
+\c irb(main):001:0> $r
+\c => #<Radare:0xb703ad38>
+\c irb(main):003:0> print $r.cmd("p8 3 @ esp")
+\c 01 00 00 
+\c irb(main):004:0> 
+
+Read radare.rb for more information about the API.
 
 \C{conclussions} EOF
 
-TODO:
+This book is a work in progress documentation, so don't take all this information as static and unalterable :)
+
+Readers are welcome to feed me with bug reports, ideas, concepts, patches or any other kind of collaboration.
+
+I hope you enjoyed the reading and find it useful. Keep tuned for updates of this book at:
+
+\c http://radare.nopcode.org/get/radare.pdf
 
 \H{greetings} Greetings
 

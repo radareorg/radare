@@ -1,10 +1,21 @@
-trk debugger protocol
+TRK debugger protocol
 =====================
 
-$ rfcomm listen hci0 1
-...
-$ sudo radare serial:///dev/rfcomm0:9600
-...
+1) Install TRK symbian agent into your phone:
+
+  http://tools.ext.nokia.com/agents/index.htm
+
+2) Prepare your laptop
+
+  $ rfcomm listen hci0 1
+
+3) Make your phone connect via bluetooth
+
+  f.ex: Options -> Connect -> BlueZ(0)
+ 
+4) Attach radare to the newly rfcomm created
+
+  $ sudo radare serial:///dev/rfcomm0:9600
 
 -------------------------------------------
 

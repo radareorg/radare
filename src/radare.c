@@ -932,10 +932,24 @@ int radare_macro_add(const char *name)
 	return 0;
 }
 
-int radare_macro_rm(const char *name)
+int radare_macro_rm(const char *_name)
 {
-	/* TODO */
-	eprintf("TODO\n");
+	char *name = alloca(strlen(_name));
+	struct list_head *pos;
+	char *ptr = strchr(name, ')');
+	if (ptr) *ptr='\0';
+	list_for_each_prev(pos, &macros) {
+		struct macro_t *mac = list_entry(pos, struct macro_t, list);
+		if (!strcmp(mac->name, name)) {
+			free(mac->name);
+			free(mac->code);
+			list_del(&(mac->list));
+			free(mac);
+			eprintf("Macro '%s' removed.\n", name);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int radare_macro_list()
@@ -958,8 +972,7 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 {
 	int i,j;
 	char *cmd = alloca(strlen(ptr)+1024);
-//eprintf("call(%s)\n", ptr);
-
+	//eprintf("call(%s)\n", ptr);
 	for(i=j=0;ptr[j];i++,j++) {
 		if (ptr[j]=='$' && ptr[j+1]>='0' && ptr[j+1]<='9') {
 			char *word = get0word(args, ptr[j+1]-'0');
@@ -973,7 +986,7 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 	}
 	while(*cmd==' '||*cmd=='\t')
 		cmd = cmd + 1;
-//eprintf("cmd(%s)\n", cmd);
+	//eprintf("cmd(%s)\n", cmd);
 	return radare_cmd(cmd, 0);
 }
 
