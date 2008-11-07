@@ -67,8 +67,11 @@ def configure(conf):
 
 	# Generate GLOBAL.H
 	conf.env['GUI'] = False
-	if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and have_valac and Options.options.GUI:
+	# Vala is no longer required for building the GUI
+	if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and Options.options.GUI:
 		conf.env['GUI'] = True
+	# if conf.env['HAVE_GTK'] == 1 and conf.env['HAVE_VTE'] == 1 and have_valac and Options.options.GUI:
+	#	conf.env['GUI'] = True
 	conf.env['OS'] = os.uname()[0]
 	conf.env['CPU'] = os.uname()[4]
 	if conf.env['CPU'] == 'Power Macintosh': conf.env['CPU'] = 'powerpc' # osx
