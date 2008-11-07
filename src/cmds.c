@@ -1214,6 +1214,9 @@ CMD_DECL(flag)
 CMD_DECL(undowrite)
 {
 	switch(input[0]) {
+	case '-':
+		undo_write_clear();
+		break;
 	case 'a':
 		undo_write_set_all(0);
 		break;
@@ -1239,6 +1242,7 @@ CMD_DECL(undowrite)
 		"Usage: > u 3   ; undo write change at index 3\n"
 		"       > u -3  ; redo write change at index 3\n"
 		"       > u     ; list all write changes\n"
+		"       > u-    ; clear write history\n"
 		"       > ua    ; undo all write changes\n"
 		"       > ur    ; redo all write changes\n");
 		break;

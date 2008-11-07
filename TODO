@@ -12,6 +12,7 @@
 * '<' and '>' commands converted in prefix modifiers
 * Write serial:// for radare \o/ based on socket://
    - rfcomm listen hci0  1
+* Add !log command for serial:// and socket://
 
 
 Nibble TODO:

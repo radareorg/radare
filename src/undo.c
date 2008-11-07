@@ -110,6 +110,12 @@ void undo_write_new(u64 off, const u8 *data, int len)
 	list_add_tail(&(uw->list), &(undo_w_list));
 }
 
+void undo_write_clear()
+{
+	// XXX memory leak
+	INIT_LIST_HEAD(&(undo_w_list));
+}
+
 int undo_write_size()
 {
 	struct list_head *p;

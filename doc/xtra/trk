@@ -1,0 +1,62 @@
+trk debugger protocol
+=====================
+
+[head] [query|reply] [counter] [..data..] [foot]
+  7E      00   80       01        ...       7E
+
+CHECKSUM
+   result of the sum of all bytes (without head/foot) to reach FF
+
+   int checksum(const unsigned char buf, int bufsz) {
+     unsigned char byte = bla
+     for(i=0;i<bufsz;i++)
+       byte += buf[i];
+     return 0xFF-byte;
+   }
+
+CHAR SCAPING
+   if you want to send the char '7e' you have to scape it in this way:
+    7e -> 7d 5e
+    7d -> 7d 5d
+	
+
+Handshake
+   > 7E 00 00 FF 7E
+   < 7E 80 00 00 7F 7E
+
+   > 7E 01 01 FD 7E
+   < 7E 80 01 00 7D 5E 7E
+
+   > 7E 05 02 F8 7E
+   < 7E 80 02 00 7D 5E 00 4F 5F 01 00 00... 80 03 97 7E
+
+ -r:
+   wx 7E 00 00 FF 7E
+   wx 7E 01 01 FD 7E
+   wx 7E 05 02 F8 7E
+
+Read memory:
+   > 7E 10 03 05 01 00 64_04_D1_E0 00 00 00 00 00 00 00 01 CC 7E
+              ?? ?? ?? ..addr..    ?? ?? ?? ?? ..length..  ?? ??
+
+   < 7e 80 03 20 5c 7e 7e 80 03 20 5c 7e
+     7e 80 03 20 5c 7e 7e 80 03 20 5c 7e
+     HH TT CC .. .. .. .. .. .. .. KK ..
+
+     H = head
+     T = type
+     C = counter
+     K = checksum
+
+  READ ERROR:
+   < 7e ff 04 05 f7 7e
+     /        ?? ?? /
+
+Write command:
+
+	Fácil, ¿no? Ahora sólo tengo que generar este comando en mi programa.
+	Recordar que la dirección a escribir es 0x64000148 con el valor 0x10,
+	así que el comando es:
+
+
+   > 7E 11 04 08 00 04 64_00_01_48 00_00_00_00 00_00_00_01 10 ...

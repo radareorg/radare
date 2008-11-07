@@ -172,7 +172,7 @@ int serial_open(const char *pathname, int flags, mode_t mode)
 
 plugin_t serial_plugin = {
 	.name        = "serial",
-	.desc        = "serial port access ( serial://path/to/dev )",
+	.desc        = "serial port access ( serial://path/to/dev:speed )",
 	.init        = NULL,
 	.debug       = NULL,
 	.system      = NULL,
