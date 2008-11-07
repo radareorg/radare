@@ -16,7 +16,7 @@ crOBJ+=rasm/rasm.o rasm/olly.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o diet
 
 crOBJ+=plug/io/haret.o plug/io/winedbg.o plug/io/gxemul.o plug/io/remote.o
 crOBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o plug/io/socket.o pas.o
-crOBJ+=plug/io/shm.o plug/io/mmap.o plug/io/malloc.o plug/io/bfdbg.o
+crOBJ+=plug/io/shm.o plug/io/mmap.o plug/io/malloc.o plug/io/bfdbg.o plug/io/serial.o
 #plug/io/winegdb.o
 
 # rahash

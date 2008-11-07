@@ -10,6 +10,9 @@
 === WORK FOR 1.0 ===
 
 * '<' and '>' commands converted in prefix modifiers
+* Write serial:// for radare \o/ based on socket://
+   - rfcomm listen hci0  1
+
 
 Nibble TODO:
 ============
