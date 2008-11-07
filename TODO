@@ -9,11 +9,16 @@
 
 === WORK FOR 1.0 ===
 
+* Fix the anoying difference between GUI and HAVE_VALAC
+  - VALAC is no longer used to compile (only for developers and available in make)
+* Add disassembler for
+  - DalvikVM
+  - CUDA
+  - Flash10
 * '<' and '>' commands converted in prefix modifiers
 * Write serial:// for radare \o/ based on socket://
    - rfcomm listen hci0  1
 * Add !log command for serial:// and socket://
-
 
 Nibble TODO:
 ============

@@ -341,11 +341,13 @@ static int
  cfg_trace,
  cfg_color,
  cfg_verbose,
+ cfg_stackptr,
  cfg_lines;
 
 void asm_state_save()
 {
 	/* store values */
+	cfg_stackptr= config_get_i("asm.stackptr");
 	cfg_offset = config_get_i("asm.offset");
 	cfg_section= config_get_i("asm.section");
 	cfg_verbose= config_get_i("asm.verbose");
@@ -355,15 +357,7 @@ void asm_state_save()
 	cfg_lines  = config_get_i("asm.lines");
 
 	/* set our own config */
-	config_set("asm.offset", "false");
-	if (config_get("graph.offset"))
-		config_set("asm.offset", "true");
-	else 	config_set("asm.offset", "false");
-	config_set("asm.section", "false");
-	config_set("asm.bytes", "false");
-	config_set("asm.trace", "false");
-	config_set("scr.color", "false");
-	config_set("asm.lines", "false");
+	config_set("asm.profile", "graph");
 	config.color = 0;
 }
 
@@ -376,6 +370,7 @@ void asm_state_restore()
 	config_set_i("asm.trace", cfg_trace);
 	config_set_i("asm.bytes", cfg_bytes);
 	config_set_i("asm.lines", cfg_lines);
+	config_set_i("asm.stackptr", cfg_stackptr);
 }
 
 struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)

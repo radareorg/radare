@@ -934,21 +934,21 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 	traces, flags, reladdr, flagsline, functions, stackptr;
 
 	// cache here!
-	cmd_asm       = config_get("cmd.asm");
-	size     = (int) config_get("asm.size");
-	bytes    = (int) config_get("asm.bytes");
-	offset   = (int) config_get("asm.offset");
-	functions= (int) config_get("asm.functions");
-	section  = (int) config_get("asm.section");
-	splits   = (int) config_get("asm.split");
-	flags    = (int) config_get("asm.flags");
-	flagsline= (int) config_get("asm.flagsline");
+	cmd_asm  =       config_get("cmd.asm");
+	size     = (int) config_get_i("asm.size");
+	bytes    = (int) config_get_i("asm.bytes");
+	offset   = (int) config_get_i("asm.offset");
+	functions= (int) config_get_i("asm.functions");
+	section  = (int) config_get_i("asm.section");
+	splits   = (int) config_get_i("asm.split");
+	flags    = (int) config_get_i("asm.flags");
+	flagsline= (int) config_get_i("asm.flagsline");
 	lines    = (int) config_get_i("asm.lines");
-	reladdr  = (int) config_get("asm.reladdr");
-	stackptr = (int) config_get("asm.stackptr");
-	traces   = (int) config_get("asm.trace");
-	comments = (int) config_get("asm.comments");
-	color    = (int) config_get("scr.color");
+	reladdr  = (int) config_get_i("asm.reladdr");
+	stackptr = (int) config_get_i("asm.stackptr");
+	traces   = (int) config_get_i("asm.trace");
+	comments = (int) config_get_i("asm.comments");
+	color    = (int) config_get_i("scr.color");
 
 	flags = 0;
 	if (color) flags |= RADIS_COLOR;

@@ -24,7 +24,6 @@ IFEQ WINDOWS 1 ; {
 	SHARED_EXT = dll ;
 }
 
-
 (( Check for the GNU readline library ))
 ARG_WITHOUT READLINE readline disables the readline support ;
 CHKFNC readline rl_completion_matches

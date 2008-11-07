@@ -450,6 +450,18 @@ static int asm_profile(const char *profile)
 		config_set("asm.size", "false");
 		config_set("asm.xrefs", "true");
 	} else
+	if (!strcmp(profile, "graph")) {
+		asm_profile("default");
+		config_set("asm.section", "false");
+		config_set("asm.bytes", "false");
+		config_set("asm.trace", "false");
+		config_set("scr.color", "false");
+		config_set("asm.lines", "false");
+		config_set("asm.stackptr", "false");
+		if (config_get("graph.offset"))
+			config_set("asm.offset", "true");
+		else 	config_set("asm.offset", "false");
+	} else
 	if (!strcmp(profile, "debug")) {
 		asm_profile("default");
 		config_set("asm.trace", "true");
