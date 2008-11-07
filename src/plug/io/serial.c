@@ -21,6 +21,9 @@
 // serial:///dev/ttyS0:9600
 
 #include <main.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <plugin.h>
 #include "../../socket.h"
 
@@ -92,19 +95,52 @@ u64 serial_lseek(int fildes, u64 offset, int whence)
 	return 0;
 }
 
-int serial_handle_fd(int fd)
+static int serial_handle_fd(int fd)
 {
 	return (fd == serial_fd);
 }
 
-int serial_handle_open(const char *pathname)
+static int serial_handle_open(const char *pathname)
 {
 	return (!memcmp(pathname, "serial://", 9));
+}
+
+static int opendev(const char *device, int speed)
+{
+
+        struct termios tc;     // 115200 baud, 8n1, no flow control
+        int fd = open (device, O_RDWR | O_NOCTTY);
+        if (fd == -1)
+		return -1;
+
+        // Get serial device parameters 
+        tcgetattr(fd, &tc);
+
+        tc.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                              | INLCR | IGNCR | ICRNL | IXON );
+        tc.c_oflag &= ~OPOST;
+        tc.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+        tc.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+        tc.c_cflag |= CS8 | CREAD | CLOCAL ;
+        tc.c_cc[VMIN] = 1;
+        tc.c_cc[VTIME] = 3;
+
+        // Set port speed to 9600 baud 
+	switch(speed) {
+	default:
+		cfsetospeed(&tc, B19200);
+		cfsetispeed (&tc, B0);
+	}
+
+        // Set TCSANOW mode of serial device 
+        tcsetattr(fd, TCSANOW, &tc);
+	return fd;
 }
 
 int serial_open(const char *pathname, int flags, mode_t mode)
 {
 	char buf[1024];
+	int speed = 9600;
 	char *ptr = buf;
 
 	strncpy(buf, pathname, 1000);
@@ -112,25 +148,23 @@ int serial_open(const char *pathname, int flags, mode_t mode)
 	if (!memcmp(ptr , "serial://", 9)) {
 		ptr= ptr+9;
 		// port
-#if 0
-		char *port = strchr(ptr, ':');
-		if (port == NULL) {
-			printf("No port defined.\n");
+		char *spd = strchr(ptr, ':');
+		if (spd == NULL) {
+			printf("No speed defined.\n");
 			return -1;
 		}
-		port[0] = '\0';
-#endif
-		if (strlen(ptr)==0) {
-			// LISTEN HERE
+		speed = atoi(spd+1);
+		spd[0] = '\0';
+		if (strlen(ptr)==0)
 			return -1;
-		}
-		serial_fd = open(ptr, O_RDONLY); //socket_connect((char*)ptr, atoi(port+1));
+		
+		serial_fd = opendev(ptr, speed);
 		if (serial_fd>=0)
-			printf("Serial connection to %s done\n", ptr); //, atoi(port+1));
+			printf("Serial connection to %s (speed=%d) done\n", ptr, speed);
 		else	printf("Cannot open serial '%s'\n", ptr);
 		serial_buf = (unsigned char *)malloc(1);
 		serial_bufsz = 0;
-		config_set("file.write", "true");
+		config_set("file.write", "true"); // ???
 		buf[0]='\0';
 	}
 	return serial_fd;

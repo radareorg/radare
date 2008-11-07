@@ -16,9 +16,6 @@
 
 Nibble TODO:
 ============
-* update rabin documentation
-* documentate dbg.focus
-* documentate scr.seek
 * documentate the change of the execstack protection in program section of ELF
 
 ---- documentation
