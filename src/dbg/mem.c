@@ -168,9 +168,7 @@ void dealloc_all()
    
    p = (&ps.map_mem)->next;
 
-   while(p && p != &(ps.map_mem))
-    {
-
+   while(p && p != &(ps.map_mem)) {
 	MAP_MEM *mm = list_entry(p, MAP_MEM, list);
 
 	aux = p->next;

@@ -136,6 +136,7 @@ command_t commands[] = {
 	COMMAND('.', "[!cmd]|[ file]", ".script  interpret a script (radare, .py, .rb, .lua, .pl)", interpret),
 	COMMAND('-', "[size]",         "prev     go to previous block (-= block_size)", prev),
 	COMMAND('+', "[size]",         "next     go to next block (+= block_size)", next),
+	COMMAND('(', "name\\n...\\n)", "macro    record macros (use .(foo) to call it)", macro),
 	COMMAND('<', "",               "preva    go previous aligned block", prev_align),
 	COMMAND('>', "",               "nexta    go next aligned block", next_align),
 	COMMAND('/', "[?] [str]",      "search   find matching strings", search),
@@ -144,6 +145,32 @@ command_t commands[] = {
 	COMMAND('?', "",               "help     show the help message", help),
 	COMMAND( 0, NULL, NULL, default)
 };
+
+CMD_DECL(macro)
+{
+	switch(input[0]) {
+	case '-':
+		radare_macro_rm(input+1);
+		break;
+	case '\0':
+		radare_macro_list();
+		break;
+	case '?':
+		eprintf(
+		"Usage: (foo\\n..cmds..\\n)\n"
+		" Record macros grouping commands\n"
+		" (foo .. )         ; define a macro\n"
+		" (-foo)            ; remove a macro\n"
+		" .(foo)            ; to call it\n"
+		"Argument support:\n"
+		" (foo x $1 @ $2)     ; define fun with args\n"
+		" .(foo 128 0x804800) ; call it with args\n");
+		break;
+	default:
+		radare_macro_add(input);
+		break;
+	}
+}
 
 CMD_DECL(config_eval)
 {

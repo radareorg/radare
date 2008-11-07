@@ -1,6 +1,13 @@
 trk debugger protocol
 =====================
 
+$ rfcomm listen hci0 1
+...
+$ sudo radare serial:///dev/rfcomm0:9600
+...
+
+-------------------------------------------
+
 [head] [query|reply] [counter] [..data..] [foot]
   7E      00   80       01        ...       7E
 

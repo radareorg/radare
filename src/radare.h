@@ -157,4 +157,10 @@ int radare_close();
 int rabin_id();
 int rabin_flag();
 
+/* macros */
+void radare_macro_init();
+int radare_macro_add(const char *name);
+int radare_macro_rm(const char *name);
+int radare_macro_list();
+
 #endif

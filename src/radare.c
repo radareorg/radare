@@ -43,6 +43,7 @@
 #include <errno.h>
 #include "search.h"
 #include "plugin.h"
+#include "list.h"
 #include "config.h"
 #include "cmds.h"
 #include "readline.h"
@@ -103,6 +104,7 @@ int radare_systemf(const char *format, ...)
 
 void radare_init()
 {
+	radare_macro_init();
 	config_init(1);
 	flags_setenv();
 	plugin_init();
@@ -414,6 +416,9 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (input[0]=='.') {
 		radare_controlc();
 		switch(input[1]) {
+		case '(':
+			radare_macro_call(input+2);
+			break;
 #if 0
 		case '%': {
 			char *cmd = getenv(input+2);
@@ -855,6 +860,97 @@ int radare_cmd(char *input, int log)
 	return ret;
 }
 
+/* MACROS */
+struct macro_t {
+	char *name;
+	char *code;
+	struct list_head list;
+};
+
+struct list_head macros;
+
+void radare_macro_init()
+{
+	INIT_LIST_HEAD(&macros);
+}
+
+// XXX add support single line function definitions
+int radare_macro_add(const char *name)
+{
+	struct macro_t *macro;
+	macro = (struct macro_t *)malloc(sizeof(struct macro_t));
+	macro->name = strdup(name);
+	macro->code = (char *)malloc(1024);
+	macro->code[0]='\0';
+	while(1) {
+		char buf[1024];
+		printf(".. ");
+		fflush(stdout);
+		fgets(buf, 1023, stdin);
+		if (buf[0]==')')
+			break;
+		if (buf[0] != '\n')
+			strcat(macro->code, buf);
+	}
+	list_add_tail(&(macro->list), &(macros));
+	
+	return 0;
+}
+
+int radare_macro_rm(const char *name)
+{
+	/* TODO */
+	eprintf("TODO\n");
+}
+
+int radare_macro_list()
+{
+	int j, idx = 0;
+	struct list_head *pos;
+	list_for_each_prev(pos, &macros) {
+		struct macro_t *mac = list_entry(pos, struct macro_t, list);
+		cons_printf("%d %s: ", idx, mac->name);
+		for(j=0;mac->code[j];j++) {
+			if (mac->code[j]=='\n')
+				cons_printf(", ");
+			else cons_printf("%c", mac->code[j]);
+		}
+		cons_printf("\n");
+	}
+}
+
+/* TODO: add support for arguments */
+int radare_macro_call(const char *name)
+{
+	char *str, *ptr;
+	struct list_head *pos;
+	str = alloca(strlen(name)+1);
+	strcpy(str, name);
+	ptr = strchr(str, ')');
+	if (ptr != NULL) *ptr='\0';
+	list_for_each_prev(pos, &macros) {
+		struct macro_t *mac = list_entry(pos, struct macro_t, list);
+		if (!strcmp(str, mac->name)) {
+			char *ptr = mac->code;
+			char *end = strchr(ptr, '\n');
+			do {
+				if (end) *end='\0';
+				if (*ptr) {
+					radare_cmd_raw(ptr, 0);
+				}
+				if (end) {
+					*end='\n';
+					ptr = end + 1;
+				} else return 1;
+				end = strchr(ptr, '\n');
+			} while(1);
+		}
+	}
+	eprintf("No macro named '%s'\n", str);
+	return 0;
+}
+/* MACRO */
+
 /* TODO: move to cmds.c */
 int radare_interpret(char *file)
 {
@@ -864,7 +960,7 @@ int radare_interpret(char *file)
 
 	if (file==NULL || file[0]=='\0')
 		return 0;
-	
+
 	/* check for perl/python/lua/ */
 	buf[0]='\0';
 	if (strstr(file, ".rb"))

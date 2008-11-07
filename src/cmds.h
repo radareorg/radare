@@ -82,6 +82,7 @@ CMD_DECL(echo);
 CMD_DECL(open);
 CMD_DECL(math);
 CMD_DECL(width);
+CMD_DECL(macro);
 CMD_DECL(hash);
 CMD_DECL(config_eval);
 CMD_DECL(default);
