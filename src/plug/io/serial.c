@@ -19,16 +19,20 @@
  */
 // TODO: add bitrate and hw/sw control flow and so
 // serial:///dev/ttyS0:9600
+// fixes on !lock !unlock and !log
+// add !info
 
-#if __UNIX__
 
 #include <main.h>
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <plugin.h>
 #include "../../socket.h"
 
+#if __UNIX__
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+static int lock = 0;
 static int serial_fd = -1;
 static unsigned char *serial_buf = NULL;
 static unsigned int serial_bufsz = 0;
@@ -59,19 +63,22 @@ ssize_t serial_read(int fd, void *buf, size_t count)
 				if (serial_buf)
 					serial_buf = (u8 *)realloc(serial_buf, serial_bufsz+sz);
 				else 	serial_buf = (u8 *)malloc(serial_bufsz+sz);
-				memcpy(serial_buf+(int)serial_bufsz, data, sz);
+				if (lock)
+					memcpy(serial_buf, data, sz);
+				else
+					memcpy(serial_buf+(int)serial_bufsz, data, sz);
 				sprintf((char *)data, "_read_%d", serial_bufread++);
 				flag_set((char *)data, serial_bufsz, 0);
 				flag_set("_read_last", serial_bufsz, 0);
 				serial_bufsz += sz;
 			}
-			if (config.seek < serial_bufsz) {
-				s = count;
-				if (count+config.seek > serial_bufsz)
-					s = serial_bufsz-config.seek;
-				memcpy(buf, serial_buf+config.seek, s);
-				return s;
-			}
+		}
+		if (config.seek < serial_bufsz) {
+			s = count;
+			if (count+config.seek > serial_bufsz)
+				s = serial_bufsz-config.seek;
+			memcpy(buf, serial_buf+config.seek, s);
+			return s;
 		}
 	}
         return 0;
@@ -172,12 +179,37 @@ int serial_open(const char *pathname, int flags, mode_t mode)
 	return serial_fd;
 }
 
+int serial_show_log()
+{
+	eprintf("TODO\n");
+}
+
+int serial_system(const char *cmd)
+{
+	if (!strcmp(cmd, "lock")) {
+		lock = 1;
+	} else
+	if (!strcmp(cmd, "unlock")) {
+		lock = 0;
+	} else
+	if (!strcmp(cmd, "log")) {
+		serial_show_log();
+	} else
+	if (!strcmp(cmd, "help")) {
+		printf("serial:// IO plugin help\n");
+		printf(" !help    show this help\n");
+		printf(" !lock    lock internal read pointer\n");
+		printf(" !unlock  unlock internal read pointer\n");
+		printf(" !log     show io conversation\n");
+	}
+}
+
 plugin_t serial_plugin = {
 	.name        = "serial",
 	.desc        = "serial port access ( serial://path/to/dev:speed )",
 	.init        = NULL,
 	.debug       = NULL,
-	.system      = NULL,
+	.system      = serial_system,
 	.handle_fd   = serial_handle_fd,
 	.handle_open = serial_handle_open,
 	.open        = serial_open,

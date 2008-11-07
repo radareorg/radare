@@ -35,6 +35,11 @@ Handshake
    wx 7E 01 01 FD 7E
    wx 7E 05 02 F8 7E
 
+--- hello world ?? ---
+   offset   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0 1  2 3  4 5  6 7  0123456789ABCDEF01234567
+0x00000000, 7eff 0007 f97e 7220 5379 6d62 6961 6e20 4f53 2073 7461 7274 ~....~r Symbian OS start
+0x00000018, 6564 c7bf 0463 c24a ffff ffff ffff ffff ffff ffff ffff ffff ed...c.J................
+
 Read memory:
    > 7E 10 03 05 01 00 64_04_D1_E0 00 00 00 00 00 00 00 01 CC 7E
               ?? ?? ?? ..addr..    ?? ?? ?? ?? ..length..  ?? ??
@@ -60,3 +65,5 @@ Write command:
 
 
    > 7E 11 04 08 00 04 64_00_01_48 00_00_00_00 00_00_00_01 10 ...
+
+

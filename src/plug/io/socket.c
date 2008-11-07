@@ -58,13 +58,13 @@ ssize_t zocket_read(int fd, void *buf, size_t count)
 				flag_set("_sockread_last", socket_bufsz, 0);
 				socket_bufsz += sz;
 			}
-			if (config.seek < socket_bufsz) {
-				s = count;
-				if (count+config.seek > socket_bufsz)
-					s = socket_bufsz-config.seek;
-				memcpy(buf, socket_buf+config.seek, s);
-				return s;
-			}
+		}
+		if (config.seek < socket_bufsz) {
+			s = count;
+			if (count+config.seek > socket_bufsz)
+				s = socket_bufsz-config.seek;
+			memcpy(buf, socket_buf+config.seek, s);
+			return s;
 		}
 	}
         return 0;
