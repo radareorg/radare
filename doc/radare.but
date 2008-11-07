@@ -2088,6 +2088,235 @@ Here's an example of use:
 \c [0x465D8AB7]> H fj
 \c 0x465D8AB7   ^ jmp 0x465D8AA3   
 
+\C{script} Scripting
+
+Radare is a very versatile application which supports many kinds of scripting features in different languages.
+
+I have already explained how you can write scripts using radare commands (called 'radare scripts'). Or just interpret the output of external applications as radare commands. This kind of unidirectional scripting is interesting for data adquisition, but probably is a mess if you want to make something more interactive or complex.
+
+For this reason radare have a pluggable interface for scripting languages using the plugin-hack API (See 'language bindings' chapter for more information)
+
+\H{rsc-scripts} Radare scripts
+
+Radare scripts are just unidirectional scripts that are parsed in the core from a file or from the output of a program.
+
+This methodology is quite used for automatizing simple tasks or for data adquisition.
+
+\c [0x00000000]> !cat binpatch.rsc
+\c wx 90 90 @ 0x300
+\c
+\c [0x00000000]> . file        ; interpret this file
+
+You can obviously do the same by interpreting the output of a command:
+
+\c [0x00000000]> .! rsc syms-dbg-flag ${FILE}
+
+\H{expr-cmp} Boolean expressions
+
+These expressions can be checked for equality for later make conditional execution of commands.
+
+Here is an example that checks if current eip is 0x8048404 and skips this instruction (!jmp eip+2) if matches.
+
+\c > ? eip == 0x8048404
+\c > ??!jmp eip+2
+
+You can check the last comparision result with the '???' command. Which is the substraction of the first part of the expression and the second part of it.
+
+\c > ? 1==1   ; check equality (==)
+\c > ???
+\c 0x0
+\c > ? 1==2   ; check equality (==)
+\c > ???
+\c 0x1
+\c > ? 1!=2   ; check difference (!=)
+\c > ???
+\c 0x0
+
+The conditional command is given after the '??' command. Which is the help of the '?' command when no arguments given:
+
+\c [0xB7F9D810]> ??
+\c Usage: ?[?[?]] <expr>
+\c   > ? eip             ; get value of eip flag
+\c   > ? 0x80+44         ; calc math expression
+\c   > ? eip-23          ; ops with flags and numbers
+\c   > ? eip==sym_main   ; compare flags
+\c  The '??' is used for conditional executions after a comparision
+\c   > ? [foo] = 0x44    ; compare memory read with byte
+\c   > ???               ; show result of comparision
+\c   > ?? s +3           ; seek current seek + 3 if equal
+
+\H{macros} Macros
+
+The radare shell support macro definitions and these ones can be used to make up your own set of commands into a macro and then use it from the shell by just giving the name and arguments. You can understand a macro as a function.
+
+Let's see how to define a macro:
+
+\c [0x465D8810]> (?
+\c Usage: (foo\n..cmds..\n)
+\c  Record macros grouping commands
+\c  (foo args\n ..)  ; define a macro
+\c  (-foo)            ; remove a macro
+\c  .(foo)            ; to call it
+\c Argument support:
+\c  (foo x y\n$1 @ $2)     ; define fun with args
+\c  .(foo 128 0x804800) ; call it with args
+
+The command to manage macros is '('. The first thing we can do is a hello world:
+
+\c [0x465D8810]> (hello
+\c .. !echo Hello World
+\c .. !echo ===========
+\c .. )
+\c [0x465D8810]> .(hello)
+\c Hello World
+\c ===========
+\c [0x465D8810]> 
+
+Macros supports arguments, and they are referenced with $# expressions.
+
+Here's an example of how to define a simple oneliner function called 'foo' accepting two arguments to be used to print 8bit values from an address.
+
+\c ; Create our macro
+\c [0x465D8810]> (dump addr len
+\c .. p8 $1 @ $0)
+\c
+\c ; List defined macros
+\c [0x465D8810]> (
+\c 0 dump: p8 $1 @ $0
+\c
+\c ; Call the macro
+\c [0x465D8810]> .(dump esp 10)
+\c 01 00 00 00 e4 17 e6 bf 00 00
+\c
+\c ; Remove it!
+\c [0x465D8810]> (-dump)
+
+We can define these macros in our ~/.radarerc
+
+\c $ cat ~/.radarerc
+\c (dump addr len
+\c   p8 $1 @ $0)
+
+\H{langs} Language bindings
+
+All language bindings supported by radare to script some actions are implemented as hack plugins.
+
+LUA is probably the cleaner implementation of a language binding for radare, i recommend you to read the source at 'src/plug/hack/lua.c'. Here's the structure to register the plugin:
+
+\c int radare_plugin_type = PLUGIN_TYPE_HACK;
+\c struct plugin_hack_t radare_plugin = {
+\c         .name = "lua",
+\c         .desc = "lua plugin",
+\c         .callback = &lua_hack_cmd
+\c };
+
+The 'lua_hack_cmd' accepts a string as argument which is the argument given when calling the plugin from the radare shell:
+
+\c [0x00000000]> H lua my-script.lua
+
+If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
+
+The same happens with other language bindings like ruby, python or perl.
+
+In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
+
+The APIs in radare for language bindings are just wrappers for the basic 'r.cmd()' function handled by the core which is hooked to 'radare_cmd()'.
+
+Here's a small part of radare.py to exemplify this:
+
+\c def flag_get(name):
+\c         return r.cmd("? %s"%name).split(" ")[0].strip()
+\c
+\c def flag_set(name, addr=None):
+\c         if addr == None:
+\c                 r.cmd("f %s"%name)
+\c         else:
+\c                 r.cmd("f %s @ 0xx"%name, addr)
+\c
+\c def analyze_opcode(addr=None):
+\c         """
+\c         Returns a hashtable containing the information of the analysis of the opcode in the current seek.
+\c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
+\c         """
+\c         if addr == None:
+\c                 return __str_to_hash(r.cmd("ao"))
+\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
+
+The use of these functions is quite natural:
+
+\c from radare import *
+\c
+\c aop = analyze_opcode(flag_get("eip"))
+\c if aop["type"] == "jump":
+\c        print "Jumping to 0x%08x"%aop["jump"]
+
+Read the 'scripting' chapter to get a deeper look on this topic.
+
+The clearest example about how to implement a language binding for radare is done in Ruby. Read it at src/plug/hack/ruby.c
+
+\H{lua} LUA
+
+The LUA language aims to be small, simple and fast dynamic language with a well designed core. This was the first language binding implemented in radare for this obvious reasons, and there are some scripts and API available in 'scripts/'.
+
+The main problem of LUA is the lack of libraries and community, so.. sadly for those copypasta developers it is not a productive language.
+
+TODO:...
+
+\H{python} Python
+
+The second scripting language implemented in radare was 'python'. Lot of people ping me for adding support for python scripting. The python interface for C is not as nice as the LUA one, and it is obviously not as optimal as LUA, but it gives a very handy syntax and provides a full-featured list of libraries and modules to extend your script.
+
+Actually in python it is possible to write a radare frontend in GTK+ (for example) just calling this from inside the commandline.
+
+The basics of the scripting for any language is the same. The entrypoint between the language and the core is a 'str=r.cmd(str)' function which accepts a string representing a radare command and returns the output of this command as a string.
+
+The file 'radare.py' implements the API for accessing the raw 'r' module which is only loaded from inside the core. (So you cannot use radare-python scripts outside radare (obviously)).
+
+The file 'radapy.py' implements a pure-python radare-remote server and enables a simple interface for extending the basic IO operations thru the network in python. Read 'networking' section for more information.
+
+\S{python-hello} Python hello world
+
+to start we will write a small python script for radare to just test some of the features of the API.
+
+\c $ cat hello.py
+\c print "Hello World"
+\c seek(0)
+\c print hex(3)
+\c write("90 90 90")
+\c print hex(3)
+\c quit()
+\c 
+\c $ echo patata > file             # prepare the dummy file
+\c $ radare -i hello.py -wnv file   # launch the script
+\c Hello World
+\c 70 61 74 
+\c 90 90 90 
+
+If you want a better interface for writing your scripts inside radare use the scriptedit plugin that depends on GTK+ offering a simple editor with language selector and allows to run scripts from there. 
+
+You can also use radare programatically from the python shell:
+
+\c [0x4A13B8C0]> H python
+\c python> print dir(r)
+\c ['__doc__', '__name__', 'cmd', 'eval']
+\c python> print(r.cmd("p8 4"))
+\c 89 e0 e8 39 
+
+\H{ruby} Ruby
+
+Use it like in python by refering a global variable called '$r'.
+
+\c [0x465D8810]> H ruby
+\c Load done
+\c ==> Loading radare ruby api... ok
+\c irb(main):001:0> $r
+\c => #<Radare:0xb703ad38>
+\c irb(main):002:0> print $r.cmd("p8 3 @ esp")
+\c 01 00 00 
+\c irb(main):003:0> 
+
+Read radare.rb for more information about the API.
+
 \C{rabin} Rabin 
 
 Under this bunny-arabic-like name, radare hides the power of a wonderful tool to handle binary files and get information to show it in the command line or import it into the core.
@@ -2546,7 +2775,7 @@ Use this script to convert IDC scripts exported from an IDA database to import a
 
 \H{rsc-gokolu} gokolu
 
-Gokolu is a perl scripts that strips strings from a program and find them in google code search to try to identify which libraries or files has been linked against the target binary.
+Gokolu is a perl script that strips strings from a program and find them in google code search to try to identify which libraries or files has been linked against the target binary.
 
 Here's an usage example:
 
@@ -2558,7 +2787,7 @@ Here's an usage example:
 
 Nice huh? ;)
 
-\c http://www.openrce.org/blog/view/1001/Gokolu_-_Binary_string_source_identifier
+\c FMI: http://www.openrce.org/blog/view/1001/Gokolu_-_Binary_string_source_identifier
 
 \C{rasm} Rasm
  
@@ -3945,7 +4174,9 @@ You can change visualize and change the signal handlers of the target process:
 \c SIGIO      (DEFAULT)
 \c [0xB7FA8810]> 
 
-\C{debug-bf} Debugging brainfuck
+\C{random-stuff} Random stuff
+
+\H{debug-bf} Debugging brainfuck
 
 The 'bfdbg' IO plugin offers a debugging interface for a brainfuck virtual machine implemented inside the same plugin. Rabin can magically autodetect brainfuck files, so the 'e asm.arch=bf' will be defined if you use 'e file.id=true' in your ~/.radarerc.
 
@@ -4028,7 +4259,7 @@ Obviously all these commands can be used from the visual mode..so press 'V<enter
 
 Enjoy!
 
-\C{debug-serial} Analyze serial protocols
+\H{debug-serial} Analyze serial protocols
 
 Since radare 1.0 it ships a serial:// IO plugin to connect to a serial port device and work with it like if it was a socket:// one.
 
@@ -4063,7 +4294,7 @@ Once here we can start writing raw commands which are headed and footed by '7E'
 \c 0x00000000, 7eff 0007 f97e 7220 5379 6d62 6961 6e20 ~....~r Symbian OS start
 \c 0x00000018, 6564 c7bf 0463 c24a ffff ffff ffff ffff ed...c.J................
 
-\C{debug-bochs} Debugging with bochs and python
+\H{debug-bochs} Debugging with bochs and python
 
 radare can be easily adapted to be a frontend for other debuggers. Ero Carrera has written a python interface for instrumentating bochs. Having python embedded on a debugger is just simple to use radare as a frontend to launch scripts.
 
@@ -4080,7 +4311,7 @@ There's also another python module called 'radapy_bochs' which implements the in
 
 To open the debugger interface in radare we just have to append 'dbg://' to the end of the 'connect://' uri.
 
-\H{debug-bochs-demo} Demo
+\S{debug-bochs-demo} Demo
 
 We will need a bochs compiled with the Ero patches to provide the python instrumentation with the CVS version.
 
@@ -4178,7 +4409,6 @@ We can just enter in visual mode to make the debugging more pleasant, and obviou
 \c           0x000F0608,            89e5            mov bp, sp          
 \c           0x000F060A             53              push bx             
 
-
 The '!help' will show us the available commands
 
 \c [0x000F05F7]> !help
@@ -4198,234 +4428,6 @@ The '!help' will show us the available commands
 
 Have fun!
 
-\C{script} Scripting
-
-Radare is a very versatile application which supports many kinds of scripting features in different languages.
-
-I have already explained how you can write scripts using radare commands (called 'radare scripts'). Or just interpret the output of external applications as radare commands. This kind of unidirectional scripting is interesting for data adquisition, but probably is a mess if you want to make something more interactive or complex.
-
-For this reason radare have a pluggable interface for scripting languages using the plugin-hack API (See 'language bindings' chapter for more information)
-
-\H{rsc-scripts} Radare scripts
-
-Radare scripts are just unidirectional scripts that are parsed in the core from a file or from the output of a program.
-
-This methodology is quite used for automatizing simple tasks or for data adquisition.
-
-\c [0x00000000]> !cat binpatch.rsc
-\c wx 90 90 @ 0x300
-\c
-\c [0x00000000]> . file        ; interpret this file
-
-You can obviously do the same by interpreting the output of a command:
-
-\c [0x00000000]> .! rsc syms-dbg-flag ${FILE}
-
-\H{expr-cmp} Boolean expressions
-
-These expressions can be checked for equality for later make conditional execution of commands.
-
-Here is an example that checks if current eip is 0x8048404 and skips this instruction (!jmp eip+2) if matches.
-
-\c > ? eip == 0x8048404
-\c > ??!jmp eip+2
-
-You can check the last comparision result with the '???' command. Which is the substraction of the first part of the expression and the second part of it.
-
-\c > 1==1   ; check equality (==)
-\c > ???
-\c 0x0
-\c > 1==2   ; check equality (==)
-\c > ???
-\c 0x1
-\c > 1!=2   ; check difference (!=)
-\c > ???
-\c 0x0
-
-The conditional command is given after the '??' command. Which is the help of the '?' command when no arguments given:
-
-\c [0xB7F9D810]> ??
-\c Usage: ?[?[?]] <expr>
-\c   > ? eip             ; get value of eip flag
-\c   > ? 0x80+44         ; calc math expression
-\c   > ? eip-23          ; ops with flags and numbers
-\c   > ? eip==sym_main   ; compare flags
-\c  The '??' is used for conditional executions after a comparision
-\c   > ? [foo] = 0x44    ; compare memory read with byte
-\c   > ???               ; show result of comparision
-\c   > ?? s +3           ; seek current seek + 3 if equal
-
-\H{macros} Macros
-
-The radare shell support macro definitions and these ones can be used to make up your own set of commands into a macro and then use it from the shell by just giving the name and arguments. You can understand a macro as a function.
-
-Let's see how to define a macro:
-
-\c [0x465D8810]> (?
-\c Usage: (foo\n..cmds..\n)
-\c  Record macros grouping commands
-\c  (foo args\n ..)  ; define a macro
-\c  (-foo)            ; remove a macro
-\c  .(foo)            ; to call it
-\c Argument support:
-\c  (foo x y\n$1 @ $2)     ; define fun with args
-\c  .(foo 128 0x804800) ; call it with args
-
-The command to manage macros is '('. The first thing we can do is a hello world:
-
-\c [0x465D8810]> (hello
-\c .. !echo Hello World
-\c .. !echo ===========
-\c .. )
-\c [0x465D8810]> .(hello)
-\c Hello World
-\c ===========
-\c [0x465D8810]> 
-
-Macros supports arguments, and they are referenced with $# expressions.
-
-Here's an example of how to define a simple oneliner function called 'foo' accepting two arguments to be used to print 8bit values from an address.
-
-\c ; Create our macro
-\c [0x465D8810]> (dump addr len
-\c .. p8 $1 @ $0)
-\c
-\c ; List defined macros
-\c [0x465D8810]> (
-\c 0 dump: p8 $1 @ $0
-\c
-\c ; Call the macro
-\c [0x465D8810]> .(dump esp 10)
-\c 01 00 00 00 e4 17 e6 bf 00 00
-\c
-\c ; Remove it!
-\c [0x465D8810]> (-dump)
-
-We can define these macros in our ~/.radarerc
-
-\c $ cat ~/.radarerc
-\c (dump addr len
-\c   p8 $1 @ $0)
-
-\H{langs} Language bindings
-
-All language bindings supported by radare to script some actions are implemented as hack plugins.
-
-LUA is probably the cleaner implementation of a language binding for radare, i recommend you to read the source at 'src/plug/hack/lua.c'. Here's the structure to register the plugin:
-
-\c int radare_plugin_type = PLUGIN_TYPE_HACK;
-\c struct plugin_hack_t radare_plugin = {
-\c         .name = "lua",
-\c         .desc = "lua plugin",
-\c         .callback = &lua_hack_cmd
-\c };
-
-The 'lua_hack_cmd' accepts a string as argument which is the argument given when calling the plugin from the radare shell:
-
-\c [0x00000000]> H lua my-script.lua
-
-If no arguments given, the plugin will loop in a prompt executing the lines given as lua statements.
-
-The same happens with other language bindings like ruby, python or perl.
-
-In the same directory where the plugins are installed, there's a "radare.py" or "radare.lua" which describes the API for that language.
-
-The APIs in radare for language bindings are just wrappers for the basic 'r.cmd()' function handled by the core which is hooked to 'radare_cmd()'.
-
-Here's a small part of radare.py to exemplify this:
-
-\c def flag_get(name):
-\c         return r.cmd("? %s"%name).split(" ")[0].strip()
-\c
-\c def flag_set(name, addr=None):
-\c         if addr == None:
-\c                 r.cmd("f %s"%name)
-\c         else:
-\c                 r.cmd("f %s @ 0xx"%name, addr)
-\c
-\c def analyze_opcode(addr=None):
-\c         """
-\c         Returns a hashtable containing the information of the analysis of the opcode in the current seek.
-\c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
-\c         """
-\c         if addr == None:
-\c                 return __str_to_hash(r.cmd("ao"))
-\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
-
-The use of these functions is quite natural:
-
-\c from radare import *
-\c
-\c aop = analyze_opcode(flag_get("eip"))
-\c if aop["type"] == "jump":
-\c        print "Jumping to 0x%08x"%aop["jump"]
-
-Read the 'scripting' chapter to get a deeper look on this topic.
-
-The clearest example about how to implement a language binding for radare is done in Ruby. Read it at src/plug/hack/ruby.c
-
-\H{lua} LUA
-
-The LUA language aims to be small, simple and fast dynamic language with a well designed core. This was the first language binding implemented in radare for this obvious reasons, and there are some scripts and API available in 'scripts/'.
-
-The main problem of LUA is the lack of libraries and community, so.. sadly for those copypasta developers it is not a productive language.
-
-TODO:...
-
-\H{python} Python
-
-The second scripting language implemented in radare was 'python'. Lot of people ping me for adding support for python scripting. The python interface for C is not as nice as the LUA one, and it is obviously not as optimal as LUA, but it gives a very handy syntax and provides a full-featured list of libraries and modules to extend your script.
-
-Actually in python it is possible to write a radare frontend in GTK+ (for example) just calling this from inside the commandline.
-
-The basics of the scripting for any language is the same. The entrypoint between the language and the core is a 'str=r.cmd(str)' function which accepts a string representing a radare command and returns the output of this command as a string.
-
-The file 'radare.py' implements the API for accessing the raw 'r' module which is only loaded from inside the core. (So you cannot use radare-python scripts outside radare (obviously)).
-
-The file 'radapy.py' implements a pure-python radare-remote server and enables a simple interface for extending the basic IO operations thru the network in python. Read 'networking' section for more information.
-
-\S{python-hello} Python hello world
-
-to start we will write a small python script for radare to just test some of the features of the API.
-
-\c $ cat hello.py
-\c print "Hello World"
-\c seek(0)
-\c print hex(3)
-\c write("90 90 90")
-\c print hex(3)
-\c quit()
-\c 
-\c $ echo patata > file             # prepare the dummy file
-\c $ radare -i hello.py -wnv file   # launch the script
-\c Hello World
-\c 70 61 74 
-\c 90 90 90 
-
-If you want a better interface for writing your scripts inside radare use the scriptedit plugin that depends on GTK+ offering a simple editor with language selector and allows to run scripts from there. 
-
-You can also use radare programatically from the python shell:
-
-\c [0x4A13B8C0]> H python
-\c python> print dir(r)
-\c ['__doc__', '__name__', 'cmd', 'eval']
-\c python> print(r.cmd("p8 4"))
-\c 89 e0 e8 39 
-
-\H{ruby} Ruby
-
-Use it like in python by refering a global variable called '$r'.
-
-\c [0x465D8810]> H ruby
-\c Load done
-\c ==> Loading radare ruby api... ok
-\c irb(main):001:0> $r
-\c => #<Radare:0xb703ad38>
-\c irb(main):003:0> print $r.cmd("p8 3 @ esp")
-\c 01 00 00 
-\c irb(main):004:0> 
-
-Read radare.rb for more information about the API.
 
 \C{conclussions} EOF
 

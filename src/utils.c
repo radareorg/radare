@@ -505,12 +505,14 @@ u64 get_math(const char* text)
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
+		/* XXX this only works when there're spaces like in 1 == 1, but 1==1 */
 		tmp = mytok(ptr, "=!+-<>%*/[\\", &op);
 		switch(oop) {
 		case '!':
 			if (is_cmp == 0) {
 				is_cmp  = -1;
 				cmp_off = new_off;
+				if (tmp != NULL)
 				new_off = get_offset(tmp+1);
 			}
 			break;
@@ -518,6 +520,7 @@ u64 get_math(const char* text)
 			if (is_cmp == 0) {
 				is_cmp = 1;
 				cmp_off = new_off;
+				if (tmp != NULL)
 				new_off = get_offset(tmp+1);
 			}
 			break;
