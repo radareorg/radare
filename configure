@@ -98,12 +98,12 @@ create_environ() {
 : ${INSTALL_PROGRAM:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='1.0-beta' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='1.0' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-1.0-beta to adapt to many kinds of systems.
+'configure' configures radare-1.0 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -176,7 +176,7 @@ take_environ() {
 }
 
 show_version() {
-echo "radare-1.0-beta configuration script done with acr v0.7.
+echo "radare-1.0 configuration script done with acr v0.7.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -194,7 +194,7 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   1.0-beta"
+echo "VERSION:   1.0"
 echo "LANGS:     c ruby python lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.5.0"
 echo "OPTIONAL:  libewf"
@@ -265,7 +265,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 GUI WITH_VALA _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -278,8 +278,6 @@ split_host BUILD HOST TARGET
 echo "checking for working directories... ${WODIS}"
 echo "using prefix '${PREFIX}'"
 ACR_RMFILES=" test.c a.out a.exe"
-
-
 
 
 
@@ -435,16 +433,6 @@ printf "checking version of library vala-1.0 >= 0.5.0... "
 pkg-config --atleast-version=0.5.0 vala-1.0 >/dev/null 2>&1
 if [ $? = 0 ]; then HAVE_VALA_1_0_VERSION_0_5_0=1 ; echo ok; else
 echo "no" ; fi
-if [ "$HAVE_VALA_1_0_VERSION_0_5_0" = "0" ]; then
-echo "   Needs vala 0.5.0 at least" >&2 
-export VALAC=""
-export VALA="0"
-export GUI="0"; fi
-if [ "$VALAC" = "valac" ]; then
-export WITH_VALA="0"
-export VALA="0"
-export GUI="0"
-echo "   No valac found" >&2 ; fi
 export _CFLAGS="$CFLAGS"
 export CFLAGS="${CFLAGS} -include /usr/include/sys/types.h -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
 export SIZEOF_OFF_T="1"
@@ -522,6 +510,9 @@ echo yes; HAVE_PKGCFG_VTE=1;
 VTE_LIBS=$tmp; fi; fi
 if [ "$VTE_FLAGS" = "" ]; then
 export GUI="0"; fi
+export HAVE_VALAC="1"
+export HAVE_VALA="1"
+export VALAC="1"
 if [ "$GUI" = "0" ]; then
 export VALAC="0"
 export HAVE_VALA="0"

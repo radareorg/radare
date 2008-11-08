@@ -79,7 +79,8 @@ vala:
 	cd ../vala/ && ${MAKE} all
 
 valagrava:
-	cd ../vala/grava/ && ${MAKE} radare
+	cd ../vala/grava/ && ${MAKE} all
+	#cd ../vala/grava/ && ${MAKE} radare
 
 pre:
 	-rm -f utils.o

@@ -4,7 +4,7 @@ import os
 import shutil
 import Options
 
-VERSION='1.0-beta'
+VERSION='1.0'
 APPNAME='radare'
 
 srcdir = '.'

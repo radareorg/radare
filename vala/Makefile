@@ -58,7 +58,7 @@ all: all_vala ${VOBJ}
 	#${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`
 
 all_vala:
-	-${VALAC} ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 grava/*.vala
+	-valac --help > /dev/null && ${VALAC} ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 grava/*.vala
 #	${CC} -lewf -g ${OBJ} *.c `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 	#${CC} -lewf -g ${OBJ} *.o `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 
