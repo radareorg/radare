@@ -52,41 +52,30 @@ int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	struct {
 		char *op;
 		char *str;
+		char *str12eq;
 		int type;
 	} ops[] = {
-		{ "li",  "1 = 2", AOP_TYPE_MOV },
-		{ "lui",  "1 = 2", AOP_TYPE_MOV },
-		{ "move",  "1 = 2", AOP_TYPE_CMP },
-		{ "and",  "1 = 2 & 3",    AOP_TYPE_MOV },
-		{ "addi",  "1 = 2 + 3",    AOP_TYPE_MOV },
-		{ "addu",  "1 = 2 + 3",    AOP_TYPE_MOV },
-		{ "addiu",  "1 = 2 + 3",    AOP_TYPE_MOV },
-		{ "subu",  "1 = 2 - 3",    AOP_TYPE_MOV },
-		{ "subi",  "1 = 2 - 3",    AOP_TYPE_MOV },
-		{ "lbu",   "1 = [.8: 2 ]", AOP_TYPE_LOAD},
-		{ "lw",    "1 = [.3.2: 2 ]",    AOP_TYPE_LOAD },
-		{ "sw",    "[.3.2: 2 ] = 1",    AOP_TYPE_STORE },
-		{ "bal",   "call 1", AOP_TYPE_CALL },
-		{ "b",   "jmp 1", AOP_TYPE_JMP },
-		{ "beqzl",   "jbe 1", AOP_TYPE_CJMP },
-		{ "bnez",   "jnz 1", AOP_TYPE_CJMP },
-		{ "beqz",   "jz 1", AOP_TYPE_CJMP },
-		{ "bne",   "jne 1", AOP_TYPE_CJMP },
-		{ "nop",   "...", AOP_TYPE_NOP },
-		{ "jalr",  "call 1", AOP_TYPE_CALL },
-		{ "jr ",  "jmp 1", AOP_TYPE_CALL },
-
-#if 0
-		{ "test", "cmp 1, 2", AOP_TYPE_CMP },
-		{ "lea",  "1 = 2",     AOP_TYPE_MOV },
-		{ "mul",  "1 *= 2",    AOP_TYPE_MOV },
-		{ "div",  "1 /= 2",    AOP_TYPE_MOV },
-		{ "call", "call 1",    AOP_TYPE_MOV },
-		{ "jmp",  "goto 1",    AOP_TYPE_MOV },
-		{ "je",   "je 1",      AOP_TYPE_CJMP },
-		{ "push", "push 1",  AOP_TYPE_PUSH },
-		{ "pop",  "pop 1",   AOP_TYPE_POP },
-#endif
+		{ "li",  "1 = 2", "...", AOP_TYPE_MOV },
+		{ "lui",  "1 = 2", "...", AOP_TYPE_MOV },
+		{ "move",  "1 = 2", "...", AOP_TYPE_CMP },
+		{ "and",  "1 = 2 & 3", "and 1 &= 3",   AOP_TYPE_MOV },
+		{ "addi",  "1 = 2 + 3", "1 += 3",   AOP_TYPE_MOV },
+		{ "addu",  "1 = 2 + 3", "1 += 3",   AOP_TYPE_MOV },
+		{ "addiu",  "1 = 2 + 3", "1 += 3",   AOP_TYPE_MOV },
+		{ "subu",  "1 = 2 - 3",   "1 -= 3",  AOP_TYPE_MOV },
+		{ "subi",  "1 = 2 - 3", "1 -= 3",    AOP_TYPE_MOV },
+		{ "lbu",   "1 = [.8: 2 ]", "", AOP_TYPE_LOAD},
+		{ "lw",    "1 = [.3.2: 2 ]", "",   AOP_TYPE_LOAD },
+		{ "sw",    "[.3.2: 2 ] = 1", "",   AOP_TYPE_STORE },
+		{ "bal",   "call 1", "", AOP_TYPE_CALL },
+		{ "b",   "jmp 1", "", AOP_TYPE_JMP },
+		{ "beqzl",   "jbe 1", "", AOP_TYPE_CJMP },
+		{ "bnez",   "jnz 1", "", AOP_TYPE_CJMP },
+		{ "beqz",   "jz 1", "", AOP_TYPE_CJMP },
+		{ "bne",   "jne 1", "", AOP_TYPE_CJMP },
+		{ "nop",   "...", "", AOP_TYPE_NOP },
+		{ "jalr",  "call 1", "", AOP_TYPE_CALL },
+		{ "jr ",  "jmp 1", "", AOP_TYPE_CALL },
 		{ NULL }
 	};
 
@@ -102,22 +91,25 @@ int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	if (newstr != NULL) {
 		for(i=0;ops[i].op != NULL;i++) {
 			if (!strcmp(ops[i].op, argv[0])) {
+				const char *str = ops[i].str;
 				/* opcode matches */
 				if (aop != NULL) {
 					aop->type = ops[i].type;
 				}
+				if (argc>2 && !strcmp(argv[1], argv[2]))
+						str = ops[i].str12eq;
 				for(j=k=0;ops[i].str[j]!='\0';j++,k++) {
-					if (ops[i].str[j]=='.') {
+					if (str[j]=='.') {
 						j++;
-						newstr[k] = ops[i].str[j];
+						newstr[k] = str[j];
 					} else
-					if (ops[i].str[j]>='0' && ops[i].str[j]<='9') {
-						const char *w = argv[ ops[i].str[j]-'0' ];
+					if (str[j]>='0' && str[j]<='9') {
+						const char *w = argv[ str[j]-'0' ];
 						if (w != NULL) {
 							strcpy(newstr+k, w);
 							k += strlen(w)-1;
 						}
-					} else newstr[k] = ops[i].str[j];
+					} else newstr[k] = str[j];
 				}
 				newstr[k]='\0';
 				return 1;

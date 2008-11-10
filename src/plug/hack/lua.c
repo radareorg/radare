@@ -158,6 +158,7 @@ void lua_hack_cmd(char *input)
 			if ( lua_pcall(L,0,0,0) != 0 )
 				printf("Oops\n");
 		}
+		clearerr(stdin);
 	}
 	lua_hack_cya();
 }

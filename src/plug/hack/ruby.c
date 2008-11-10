@@ -145,6 +145,7 @@ int ruby_hack_cmd(char *input)
 			}
 			//ruby_exec();
 		}
+		clearerr(stdin);
 	}
 	//ruby_hack_cya();
 	return 0;

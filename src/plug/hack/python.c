@@ -284,7 +284,8 @@ void python_hack_cmd(const char *input)
 				break;
 			str[strlen(str)]='\0';
 			PyRun_SimpleString(str);
-		}
+		} 
+		clearerr(stdin);
 	}
 	epython_destroy();
 }

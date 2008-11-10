@@ -19,19 +19,20 @@ quit()
 # Already imported from radare's core
 import r
 import string
+import binascii
 import array
 
 def hex2bin(str):
 	"""
 	Converts an ascii-hexpair based string into a binary array of bytes
 	"""
-	return a2b_hex(str.replace(' ',''))
+	return binascii.a2b_hex(str.replace(' ',''))
 
 def bin2hex(binstr):
 	"""
 	Converts a binary array of bytes into an ascii-hexpair based string
 	"""
-	str = lower(b2a_hex(binstr))
+	str = string.lower(binascii.b2a_hex(binstr))
 	return str
 
 # TODO: skip commented lines
