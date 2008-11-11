@@ -636,7 +636,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				i = 0;
 				while (i<idata) {
 					cons_strcat("\n  .string \"");
-					while (block[bytes+i] != '\0' || (block[bytes+i] == '\0' && block[bytes+i+1] == '\0')) {
+					while ((block[bytes+i] != '\0' || (block[bytes+i] == '\0' && block[bytes+i+1] == '\0')) && i<idata) {
 						print_color_byte_i(bytes+i, "%c",
 								is_printable(block[bytes+i])?block[bytes+i]:'.');
 						i++;

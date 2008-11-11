@@ -1394,11 +1394,13 @@ int debug_mp(char *str)
 		return 1;
 	}
 
+
+	/* PROT_{EXEC, WRITE, READ} from mman.h */
 	for(ptr=buf;ptr[0];ptr=ptr+1) {
 		switch(ptr[0]) {
-		case 'r': perms |=4; break;
-		case 'w': perms |=2; break;
-		case 'x': perms |=1; break;
+		case 'r': perms |= 1; break;
+		case 'w': perms |= 2; break;
+		case 'x': perms |= 4; break;
 		}
 	}
 
