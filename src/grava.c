@@ -782,10 +782,8 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		return;
 
 	n_windows++;
-	config.graph = 1;
 	new_window = 0;
 	gtk_main();
-	config.graph = 0;
 
 	asm_state_restore();
 	// oops. tihs is not for real!
@@ -918,9 +916,7 @@ void visual_gui()
 	n_windows++;
 	new_window = 0;
 
-	config.graph = 1;
 	gtk_main();
-	config.graph = 0;
 	cons_set_fd(1);
 	gtk_is_init = 0;
 	new_window = 0;

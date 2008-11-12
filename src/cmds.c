@@ -333,9 +333,11 @@ CMD_DECL(analyze)
 		default:
 #if HAVE_GUI
 		// use graph.depth by default if not set
+		config.graph = 1;
 		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
+		config.graph = 0;
 #else
 		eprintf("Compiled without gui. Try with ag*\n");
 #endif

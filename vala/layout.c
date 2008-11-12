@@ -35,9 +35,9 @@ static gpointer grava_layout_parent_class = NULL;
 #line 23 "layout.vala"
 static void grava_layout_real_run (GravaLayout* self, GravaGraph* graph) {
 #line 23 "layout.vala"
-	g_return_if_fail (GRAVA_IS_LAYOUT (self));
+	g_return_if_fail (self != NULL);
 #line 23 "layout.vala"
-	g_return_if_fail (GRAVA_IS_GRAPH (graph));
+	g_return_if_fail (graph != NULL);
 }
 
 
@@ -51,9 +51,9 @@ void grava_layout_run (GravaLayout* self, GravaGraph* graph) {
 #line 24 "layout.vala"
 static void grava_layout_real_set_graph (GravaLayout* self, GravaGraph* graph) {
 #line 24 "layout.vala"
-	g_return_if_fail (GRAVA_IS_LAYOUT (self));
+	g_return_if_fail (self != NULL);
 #line 24 "layout.vala"
-	g_return_if_fail (GRAVA_IS_GRAPH (graph));
+	g_return_if_fail (graph != NULL);
 }
 
 
@@ -67,7 +67,7 @@ void grava_layout_set_graph (GravaLayout* self, GravaGraph* graph) {
 #line 25 "layout.vala"
 static void grava_layout_real_reset (GravaLayout* self) {
 #line 25 "layout.vala"
-	g_return_if_fail (GRAVA_IS_LAYOUT (self));
+	g_return_if_fail (self != NULL);
 }
 
 

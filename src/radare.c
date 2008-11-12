@@ -750,7 +750,7 @@ void radare_nullcmd()
 	if (config_get("dbg.regs")) {
 		C cons_printf(C_RED"Registers:\n"C_RESET);
 		else cons_printf("Registers:\n");
-		radare_cmd("!regs", 0);
+		radare_cmd("!reg", 0);
 	}
 
 	if (config_get("dbg.fpregs")) {

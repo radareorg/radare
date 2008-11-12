@@ -260,10 +260,18 @@ public class Grava.Widget : GLib.Object {
 			else graph.select_next();
 			break;
 		case ':':
+run_cmd("s eip");
 			load_graph_at("eip");
 			Graph.selected = graph.selected = null;
 			break;
 		case 'u': // undo selection
+run_cmd("s-");
+load_graph_at("$$");
+			graph.undo_select();
+			break;
+		case 'U': // undo selection
+run_cmd("s+");
+load_graph_at("$$");
 			graph.undo_select();
 			break;
 		case 't': // selected true branch
@@ -277,6 +285,12 @@ public class Grava.Widget : GLib.Object {
 			break;
 		case '-':
 			graph.zoom-=ZOOM_FACTOR;
+			break;
+		case '*':
+			graph.angle+=0.05;
+			break;
+		case '/':
+			graph.angle-=0.05;
 			break;
 		default:
 			handled = false;
@@ -293,9 +307,47 @@ public class Grava.Widget : GLib.Object {
 	{
 		ImageMenuItem imi;
  		menu = new Menu();
-		imi = new ImageMenuItem.from_stock("gtk-zoom-in", null);
+
+		/* XXX: most of this should be done in a tab panel or so */
+		imi = new ImageMenuItem.from_stock("undo seek", null);
 		imi.activate += imi => {
 			/* foo */
+			run_cmd("s-");
+			load_graph_at("$$");
+		};
+		menu.append(imi);
+
+		imi = new ImageMenuItem.from_stock("redo seek", null);
+		imi.activate += imi => {
+			/* foo */
+			run_cmd("s+");
+			load_graph_at("$$");
+		};
+		menu.append(imi);
+
+		imi = new ImageMenuItem.from_stock("Seek to eip", null);
+		imi.activate += imi => {
+			/* foo */
+			run_cmd("s eip");
+			load_graph_at("$$");
+		};
+		menu.append(imi);
+
+		imi = new ImageMenuItem.from_stock("Step", null);
+		imi.activate += imi => {
+			/* foo */
+			run_cmd("!step");
+			run_cmd(".!regs*");
+			load_graph_at("$$");
+		};
+		menu.append(imi);
+
+		imi = new ImageMenuItem.from_stock("Continue", null);
+		imi.activate += imi => {
+			/* foo */
+			run_cmd("!continue");
+			run_cmd(".!regs*");
+			load_graph_at("$$");
 		};
 		menu.append(imi);
 		menu.show_all();
