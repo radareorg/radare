@@ -99,25 +99,18 @@ match value ffffffad (ffffad) at offset 0x454
 #include <sys/ioctl.h>
 #endif
 
-typedef enum {
-	ARCH_NULL,
-	ARCH_ARM,
-	ARCH_PPC,
-	ARCH_X86
-} arch_t;
-
-off_t base    = 0;
-off_t delta   = 0;
-off_t range   = 0;
-off_t xylum   = 0;
-off_t gamme   = 0;
-off_t size    = 4;
+u32 base    = 0;
+u32 delta   = 0;
+u32 range   = 0;
+u32 xylum   = 0;
+u32 gamme   = 0;
+u32 size    = 4;
 int sysendian = 0;    // initialized in main
 int endian    = -1; // little endian by default
 int verbose   = 0;
 int found     = 0;
 int quite     = 0;
-arch_t arch   = ARCH_NULL;
+int arch   = ARCH_NULL;
 unsigned char *ma = NULL;
 
 static int show_usage()
@@ -141,20 +134,21 @@ static int show_usage()
 	return 1;
 }
 
-static off_t file_size_fd(int fd)
+static u32 file_size_fd(int fd)
 {
-	off_t curr = lseek(fd, 0, SEEK_CUR);
-	off_t size = lseek(fd, 0, SEEK_END); // XXX: this is not size, is rest!
+	u32 curr = lseek(fd, 0, SEEK_CUR);
+	u32 size = lseek(fd, 0, SEEK_END); // XXX: this is not size, is rest!
 	lseek(fd, curr, SEEK_SET);
 
 	return size;
 }
 
+#ifndef RADARE_CORE
 /* TODO: move+share in offset.c ? */
-static off_t get_offset(char *arg)
+static u32 get_offset32(const char *arg)
 {
         int i;
-        off_t ret;
+        u32 ret;
 
 	for(i=0;arg[i]==' ';i++);
 	for(;arg[i]=='\\';i++); i++;
@@ -166,6 +160,7 @@ static off_t get_offset(char *arg)
 
         return ret;
 }
+#endif
 
 int get_system_endian()
 {
@@ -302,32 +297,32 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'b':
-			base = get_offset(optarg);
+			base = get_offset32(optarg);
 			break;
 		case 'd':
-			delta = get_offset(optarg);
+			delta = get_offset32(optarg);
 			break;
 		case 'X':
-			xylum = get_offset(optarg);
+			xylum = get_offset32(optarg);
 			break;
 		case 'e':
 			endian = 1;
 			break;
 		case 'r':
-			range = get_offset(optarg);
+			range = get_offset32(optarg);
 			if (range<0) range = -range;
 			break;
 		case 'v':
 			verbose = 1;
 			break;
 		case 'f':
-			from = get_offset(optarg);
+			from = get_offset32(optarg);
 			break;
 		case 't':
-			to = get_offset(optarg);
+			to = get_offset32(optarg);
 			break;
 		case 's':
-			size = get_offset(optarg);
+			size = get_offset32(optarg);
 			break;
 		case 'h':
 			return show_usage();
@@ -346,7 +341,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	offset = get_offset(argv[optind+1]);
+	offset = get_offset32(argv[optind+1]);
 	if (offset >= base)
 		offset -= base;
 
@@ -378,9 +373,9 @@ int main(int argc, char **argv)
 
 	/* loopize looking for xrefs */
 	for(i=from; i<sa && i<to; i++) {
-		off_t value = offset - i + delta;
-		off_t ovalue = value;
-		off_t tmpvalue = 0;
+		u32 value = offset - i + delta;
+		u32 ovalue = value;
+		u32 tmpvalue = 0;
 		unsigned char *buf = (unsigned char *)&value;
 
 		if (range!=0) {
@@ -458,7 +453,7 @@ int main(int argc, char **argv)
 				printf("match value 0x%08llx (%02x%02x%02x) at offset 0x%08llx\n",
 					(u64)ovalue,
 					buf[0+(4-size)], buf[1+(4-size)], buf[2+(4-size)],
-					(u64)((off_t)i)+((gamme<0)?-1:0));
+					(u64)((u32)i)+((gamme<0)?-1:0));
 			found++;
 		}
 	}

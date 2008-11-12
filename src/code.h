@@ -33,18 +33,19 @@ enum {
 };
 
 enum {
-	ARCH_X86   = 0,
-	ARCH_ARM   = 1,
-	ARCH_ARM16 = 2,
-	ARCH_PPC   = 3,
-	ARCH_M68K  = 4,
-	ARCH_JAVA  = 5,
-	ARCH_MIPS  = 6,
-	ARCH_SPARC = 7,
-	ARCH_CSR   = 8,
-	ARCH_MSIL  = 9,
-	ARCH_OBJD  = 10,
-	ARCH_BF    = 11,
+	ARCH_NULL  = 0,
+	ARCH_X86   = 1,
+	ARCH_ARM   = 2,
+	ARCH_ARM16 = 3,
+	ARCH_PPC   = 4,
+	ARCH_M68K  = 5,
+	ARCH_JAVA  = 6,
+	ARCH_MIPS  = 7,
+	ARCH_SPARC = 8,
+	ARCH_CSR   = 9,
+	ARCH_MSIL  = 10,
+	ARCH_OBJD  = 11,
+	ARCH_BF    = 12,
 	ARCH_AOP   = 0x10000
 };
 

@@ -320,6 +320,11 @@ CMD_DECL(analyze)
 	case 'g':
 		depth = 10;
 		switch(input[1]) {
+		case '?':
+			eprintf("Usage: ag[.]\n");
+			eprintf("  ag - open graph window\n");
+			eprintf("  ag. - outputs dot graph format for code analysis\n");
+			break;
 		case '.':
 			prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 			list_add_tail(&prg->list, &config.rdbs);

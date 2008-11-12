@@ -274,7 +274,7 @@ void grava_toggle_fullscreen(GtkWindow *w)
 {
 	if (fs) gtk_window_unfullscreen(w);
 	else gtk_window_fullscreen(w);
-	fs^=1;
+	fs ^= 1;
 }
 
 #ifndef GRAVA_WIDGET_ZOOM_FACTOR
@@ -615,6 +615,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
 	struct xrefs_t *c0;
+	int set =0;
 	GravaNode *node, *node2;
 	GravaEdge *edge;
 	/* analyze code */
@@ -630,8 +631,9 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set(node, "label", s0->command);
 		
 		ptr =  pipe_command_to_string(s0->command);
-		if (ptr)
+		if (ptr) {
 			grava_node_set(node, "body", ptr);
+		}
 		grava_graph_add_node(win->grava->graph, node);
 		g_object_unref(node);
 	}
@@ -651,11 +653,10 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
 		if (!graph_flagblocks)
 			continue;
-		grava_node_set(node, "color", "gray");
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
-			grava_node_set(node, "bgcolor", "beige");
+			grava_node_set(node, strdup("bgcolor"), strdup("beige"));
 			//grava_node_set(node, "color", "darkgray");
 
 #if 0
@@ -677,14 +678,14 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 
 		/* disassemble body */
 		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
+
 		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
-#if 0
-		config.seek = b0->addr;
-		radare_read(0);
-#endif
 		ptr =  pipe_command_to_string(cmd);
 		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
 		grava_node_set(node, "body", ptr);
+		if (strstr(ptr, "eip:"))
+			grava_node_set(node, "color", "red");
+		else grava_node_set(node, strdup("color"), strdup("gray"));
 		//printf("cmd_str = %x\n", grava_graph_get(win->grava->graph, "cmd"));
 		//grava_graph_set(win->grava->graph, "cmd", "; XXX LOL!!!");
 		//printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
@@ -781,8 +782,10 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		return;
 
 	n_windows++;
+	config.graph = 1;
 	new_window = 0;
 	gtk_main();
+	config.graph = 0;
 
 	asm_state_restore();
 	// oops. tihs is not for real!
@@ -915,7 +918,9 @@ void visual_gui()
 	n_windows++;
 	new_window = 0;
 
+	config.graph = 1;
 	gtk_main();
+	config.graph = 0;
 	cons_set_fd(1);
 	gtk_is_init = 0;
 	new_window = 0;

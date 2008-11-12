@@ -792,7 +792,15 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						sprintf(buf, " %%%ds ", show_nbytes+((funline[0]!='\0')?0:1)); //show_nbytes);
 						cons_printf(buf,"");
 					} else {
-						cons_printf(buf, flag);
+						if (!config.graph) {
+							int is_eip = !strcmp(flag, "eip");
+							if (is_eip)
+								cons_invert(1);
+							cons_printf(buf, flag);
+							if (is_eip)
+								cons_invert(0);
+						} else
+							cons_printf(buf, flag);
 					}
 				} else {
 					sprintf(buf, " %%%ds ", show_nbytes);
@@ -933,9 +941,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
   const char *cmd_asm;
-  int flags;
 
   if (code_flags_cache == -1) {
+    int flags;
     int size, bytes, offset, splits, comments, lines, section,
         traces, reladdr, flagsline, functions, stackptr;
     cmd_asm  =       config_get("cmd.asm");

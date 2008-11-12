@@ -170,9 +170,9 @@ void print_color_byte_i(int i, char *str, int c)
 		else cons_strcat("\x1b[0m");
 	}
 	if (is_cursor(i,1)) {
-		cons_strcat("\x1b[7m");
+		cons_invert(1);
 		print_color_byte(str, c);
-		cons_strcat("\x1b[0m");
+		cons_invert(0);
 	} else print_color_byte(str, c);
 }
 

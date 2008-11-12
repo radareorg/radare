@@ -42,6 +42,7 @@ struct config_t {
 	int buf; // scr.buf
 	/* modes */
 	int visual;
+	int graph;
 	int cursor_mode; // visual cursor toggle
 	int insert_mode; // visual insert toggle
 	/* ... */

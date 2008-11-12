@@ -92,6 +92,7 @@ static void config_old_init()
   config.block       = (unsigned char *)malloc(config.block_size);
   config.verbose     = 1;
   config.interrupted = 1;
+  config.graph       = 0;
   config.visual      = 0;
   config.lang        = 0;
   config.fd          = -1;
@@ -450,6 +451,13 @@ static int asm_profile(const char *profile)
     config_set("asm.size", "false");
     config_set("asm.xrefs", "true");
   } else
+  if (!strcmp(profile, "smart")) {
+    asm_profile("default");
+    config_set("asm.section", "false");
+    config_set("asm.trace", "false");
+    config_set("asm.bytes", "false");
+    config_set("asm.stackptr", "false");
+  }
   if (!strcmp(profile, "graph")) {
     asm_profile("default");
     config_set("asm.section", "false");
