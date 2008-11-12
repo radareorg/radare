@@ -150,7 +150,6 @@ void visual_show_help()
 	"n,N        seek between hits of the hit0 search\n"
 	"t          visual track/browse flagspaces and flags\n"
 	"e          visual eval configuration variables\n"
-	"c          toggle cursor mode\n"
 	"C          toggle scr.color\n"
 	"d          convert cursor selected bytes to ascii, code or hex\n"
 //	"b[k][cmd]  binds key 'k' to the specified command\n"
@@ -165,6 +164,14 @@ void visual_show_help()
 	"x          show xrefs of the current offset\n"
 	"w          write hexpair bytes in cursor\n"
 	"q          exits visual mode\n");
+	TITLE
+	cons_printf("\nCursor mode:\n");
+	TITLE
+	cons_printf(
+	"c          toggle cursor mode\n"
+	"hjkl       move cursor (also arrows)\n"
+	"HJKL       select bytes (shift+arrows)\n"
+	"f/F        set/unset flag at cursor\n");
 	if (config.debug) {
 	TITLE
 	cons_printf("\nDebugger keybindings:\n");
@@ -256,16 +263,6 @@ CMD_DECL(zoom_reset)
 	config.zoom.piece = config.zoom.size/config.block_size;
 	return 0;
 }
-
-#if 0
-CMD_DECL(trace)
-{
-	if (config.cursor_mode)
-		trace_add(config.seek+config.cursor);
-	else	trace_add(get_offset("eip"));
-	return 0;
-}
-#endif
 
 static void visual_convert_bytes(int fmt)
 {
@@ -479,6 +476,7 @@ CMD_DECL(yank_paste)
 			}
 		}
 	}
+	return 0;
 }
 
 /* deprecated!! */
@@ -1099,7 +1097,7 @@ CMD_DECL(visual)
 		dec = inc;
 		setenv("VISUAL", "1", 1);
 		scraccel = config_get_i("scr.accel");
-		update_environment();
+		env_update();
 		radare_sync();
 		if (config.debug)
 			radare_cmd(".!regs*", 0);

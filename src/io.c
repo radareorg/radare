@@ -19,351 +19,169 @@
  */
 
 #include "main.h"
+#include <dirent.h>
 
-#if DEBUGGER
-int radare_dump_section(char *tmpfile)
+int io_system(const char *command)
 {
-	u64 f, t, s;
-	int ret = radare_get_region(&f, &t);
-	s = t-f;
-
-	if (ret == 0 || f == 0 || t == 0) {
-		cons_printf("Cannot get region range\n");
-		return 1;
-	}
-	cons_printf("Current section is: 0x%08llx 0x%08llx\n", f, t);
-	make_tmp_file(tmpfile);
-	radare_dump(tmpfile, s);
-
-	return 0;
+  FIND_FD(config.fd)
+    IF_HANDLED( config.fd, system )
+      return (plugins[i].system)(command);
+  
+  if (!memcmp(command, "help", 4)) {
+    eprintf("Not in debugger.\n");
+    return 0;
+  }
+  return radare_system(command);
 }
+
+/* io wrappers */
+int io_open(const char *pathname, int flags, mode_t mode)
+{
+  FIND_OPEN(pathname)
+    IF_HANDLED(0, open)
+      return plugins[i].open(pathname, flags, mode);
+  return -1;
+}
+
+ssize_t io_read(int fd, void *buf, size_t count)
+{
+  if (io_map_read_at(config.seek, (u8 *)buf, count) != 0)
+    return count;
+  FIND_FD(fd)
+    IF_HANDLED(fd, read)
+      return plugins[i].read(fd, buf, count);
+#if 0
+  if (io_map_read_rest(config.seek, (u8 *)buf, count) != 0)
+    return count;
 #endif
-
-int radare_read_at(u64 offset, unsigned char *data, int len)
-{
-	int ret;
-	u64 cur = config.seek;
-	radare_seek(offset,SEEK_SET);
-	ret = io_read(config.fd, data, len);
-	radare_seek(cur, SEEK_SET);
-	return ret;
+  return -1;
 }
 
-int radare_write_at(u64 offset, unsigned char *data, int len)
+u64 io_lseek(int fd, u64 offset, int whence)
 {
-	u64 cur = config.seek;
-	radare_seek(offset,SEEK_SET);
-	undo_write_new(offset, data, len);
-	io_write(config.fd, data, len);
-	radare_seek(cur, SEEK_SET);
-	radare_read(0);
-
-	return len;
+  FIND_FD(fd)
+    IF_HANDLED(fd, lseek)
+      return plugins[i].lseek(fd, offset, whence);
+  return -1;
 }
 
-int radare_write_op(const char *arg, char op)
+ssize_t io_write(int fd, const void *buf, size_t count)
 {
-	int i,j;
-	int len;
-	u8 *buf;
-	char *str;
-
-	// XXX we can work with config.block instead of dupping it
-	buf = (char *)malloc(config.block_size);
-	memcpy(buf, config.block, config.block_size);
-	str = (char *)malloc(strlen(arg));
-	len = hexstr2binstr(arg, (unsigned char *)str);
-
-	for(i=j=0;i<config.block_size;i++) {
-		switch(op) {
-		case 'x': buf[i] ^= str[j]; break;
-		case 'a': buf[i] += str[j]; break;
-		case 's': buf[i] -= str[j]; break;
-		case 'm': buf[i] *= str[j]; break;
-		case 'd': buf[i] /= str[j]; break;
-		case 'r': buf[i] >>= str[j]; break;
-		case 'l': buf[i] <<= str[j]; break;
-		case 'o': buf[i] |= str[j]; break;
-		case 'A': buf[i] &= str[j]; break;
-		}
-		j++; if (j>=len) j=0; /* cyclic key */
-	}
-
-	radare_write_at(config.seek, buf, config.block_size);
-
-	free(buf);
+  if (!config_get("file.write")) {
+    eprintf("Not in write mode\n");
+    return -1;
+  }
+  FIND_FD(fd)
+    IF_HANDLED(fd, write)
+      return plugins[i].write(fd, buf, count);
+  return -1;
 }
 
-int radare_write(const char *argro, int mode)
+int io_close(int fd)
 {
-	int fmt = last_print_format;
-	u64 oseek = config.seek;
-	u64 seek = config.seek;
-	int times = config_get_i("cfg.count");
-	int i, bytes = 0;
-	int len   = 0;
-	char *str, *tmp, *arg;
-
-	arg = strdup(argro);
-
-	if (times<=0)
-		times = 1;
-
-	if (!config_get("file.write")) {
-		eprintf("Not in write mode. Type 'eval file.write = true'.\n");
-		return 0;
-	}
-
-	str = strdup(arg);
-	if (arg[0]=='0' && arg[1]=='x')
-		mode = WMODE_HEX;
-
-	switch(mode) {
-	case WMODE_WSTRING:
-		tmp = malloc((len = escape_buffer(str)<<1));
-		for(i=0;i<len;i++) {
-			if (i%2) tmp[i] = 0;
-			else tmp[i] = str[i>>1];
-		}
-		free(str); str = tmp;
-		break;
-	case WMODE_STRING:
- 		len = escape_buffer(str);
-		break;
-	case WMODE_HEX:
-		len = hexstr2binstr(str, (unsigned char *)str);
-		break;
-	}
-	
-	if (len == 0) {
-		D eprintf("warning: zero length string.\n");
-		free(str);
-		free(arg);
-		return 0;
-	}
-
-	arg[len]='\0';
-
-	radare_seek(seek, SEEK_SET);
-
-	if (config_get("file.insert")) {
-		u64 rest;
-		/* resize file here */
-		if (config.size == -1) {
-			eprintf("Cannot use file.insert: unknown file size\n");
-		} else {
-			/* TODO must take care about search mode for replacements */
-			/* TODO check cfg.running or so? */
-			/* TODO: SUPPORT WRITE WITH DELTA HERE!!! */
-			if (config_get("file.insertblock")) {
-				eprintf("file.insertblock: not yet implemented\n");
-			} else {
-				rest = config.size - seek; // + (len*times));
-				if (rest > 0) {
-					u8 *str = malloc(rest);
-					io_read(config.fd, str, rest);
-					io_lseek(config.fd, seek+(len*times), SEEK_SET);
-					//undo_write_new(seek+(len*times), str, rest);
-					config.size += len*times;
-					io_write(config.fd, str, rest);
-					free(str);
-					io_lseek(config.fd, seek, SEEK_SET);
-				}
-			}
-		}
-	}
-	for(bytes=0;times--;) {
-		undo_write_new(seek, str, len);
-		bytes += io_write(config.fd, str, len);
-	}
-
-	if (!config.debug)
-	if (!config.unksize && seek + len > config.size)
-		radare_open(1);
-
-	radare_seek(oseek, SEEK_SET);
-	radare_read(0);
-
-	last_print_format = fmt;
-	free(arg);
-	free(str);
-
-	return 1;
+  FIND_FD(fd)
+    IF_HANDLED(fd, close)
+      return plugins[i].close(fd);
+  return -1;
 }
 
-void radare_poke(const char *arg)
+int io_isdbg(int fd)
 {
-	int fd;
-	char key;
-	int otimes, times = config_get_i("cfg.count");
-	char *buf = NULL;
-	u64 ret = 0;
-
-	if (times<1)
-		times = 1;
-	otimes = times;
-
-	if (!config_get("file.write")) {
-		eprintf("You are not in read-write mode. Use 'eval file.write = true'\n");
-		return;
-	}
-
-	if (arg[0]=='\0') {
-		eprintf("Usage: Poke [filename]\n");
-		return;
-	}
-	fd = io_open(arg, O_RDONLY, 0644);
-	if (fd > -1) {
-		buf = malloc(config.block_size);
-		ret = io_read(fd, buf, config.block_size);
-
-		D { printf("\n");
-		data_print(config.seek, "", (unsigned char *)buf, ret, FMT_HEXB);
-		printf("\nPoke %d bytes from %s %d times? (y/N)",
-			config.block_size, arg, times); fflush(stdout);
-		cons_set_raw(1); read(0, &key, 1); printf("\n");
-		cons_set_raw(0); } else key='y';
-
-		if (key=='y' || key=='Y') {
-			memcpy(config.block, buf, ret);
-
-			undo_write_new(config.seek, buf, ret);
-			radare_seek(config.seek, SEEK_SET);
-			while(times--) {
-				undo_write_new(config.seek, buf, ret);
-				io_write(config.fd, buf, ret);
-			}
-
-			if ((config.seek + (ret * otimes)) > config.size) {
-				if (config.limit == config.size)
-					config.limit = config.seek + ret * otimes;
-				config.size = config.seek + ret * otimes;
-				D eprintf("file has growed.\n");
-			}
-
-			radare_seek(config.seek, SEEK_SET);
-
-			if (config.size != -1)
-				if (ret > config.size)
-					config.size = ret;
-
-			radare_read(0);
-			D eprintf("file poked.\n");
-		} else {
-			D eprintf("nothing changed.\n");
-		}
-		io_close(fd);
-	} else {
-		D eprintf("Cannot open for read '%s'\n", arg);
-	}
-	free(buf);
+  FIND_FD(fd)
+    IF_HANDLED(fd, open)
+      return (int)(plugins[i].debug);
+  return 0;
 }
 
-int radare_dump(const char *arg, int size)
+
+/* mapping */
+
+int maps_n = 0;
+int maps[10];
+
+
+struct list_head io_maps;
+
+void io_map_init()
 {
-	int fd;
-	u64 ret = 0;
-	int bs = config.block_size;
-
-	if (arg[0]=='\0') {
-		eprintf("Usage: dump [filename]\n");
-	} else {
-		fd = open(arg, O_CREAT|O_WRONLY|O_TRUNC, 0644);
-		if (fd < 0) {
-			eprintf("Cannot open for write '%s'\n", arg);
-			return 0;
-		}
-
-		radare_set_block_size_i(size);
-		if ((ret = radare_read(0)) < 0) {
-			eprintf("Error reading: %s\n", strerror(errno));
-			return 0;
-		}
-
-		undo_write_new(config.seek, config.block, size);
-		ret = io_write(fd, config.block, size);
-
-		io_close(fd);
-		radare_set_block_size_i(bs);
-	}
-	return 1;
+  INIT_LIST_HEAD(&io_maps);
 }
 
-u64 radare_seek(u64 offset, int whence)
+int io_map_rm(const char *file)
 {
-	u64 seek = 0;
-
-	if (offset==-1)
-		return (u64)-1;
-
-	if (whence == SEEK_SET && config.baddr && offset>=config.size && offset >= config.baddr)
-		offset-=config.baddr;
-	
-	seek = io_lseek(config.fd, offset, whence);
-
-	switch(whence) {
-	case SEEK_SET:
-		if ((config.seek + offset) < 0)
-			seek = 0;
-		break;
-	case SEEK_CUR:
-		if ((config.seek + offset) < 0)
-			offset = config.seek = 0;
-		break;
-	case SEEK_END:
-		if (seek == -1 || config.size == -1) {
-			D printf("Warning: file size is unknown\n");
-			return -1;
-		} else
-			config.seek = config.size;
-		break;
-	}
-	
-	seek = io_lseek(config.fd, offset, whence);
-	if (seek == -1)
-		return config.seek = offset;
-
-	if (whence != SEEK_END) {
-		seek = io_lseek(config.fd, offset, whence);
-		if (seek < 0) {
-			seek = 0;
-			return -1;
-		}
-	}
-
-	if (whence == SEEK_SET)
-		config.seek = seek;
-	else	config.seek+= offset;
-
-	if (config.seek <0)
-		config.seek = 0;
-
-	io_lseek(config.fd, config.seek, SEEK_SET);
-
-	//undo_push();
-
-	return seek;
+  struct list_head *pos;
+  list_for_each_prev(pos, &io_maps) {
+    struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+    if (!strcmp(im->file, file)) {
+      /* FREE THIS */
+      eprintf("TODO\n");
+      return 0;
+    }
+  }
+  eprintf("Not found\n");
+  return 0;
 }
 
-/* read a block from current or next seek */
-int radare_read(int next)
+int io_map_list()
 {
-	int ret = 0;
+  int n = 0;
+  struct list_head *pos;
+  list_for_each_prev(pos, &io_maps) {
+    struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+    if (im->file[0] != '\0') {
+      cons_printf("0x%08llx 0x%08llx %s\n",
+        im->from, 
+        im->to,
+        im->file);
+      n++;
+    }
+  }
+  return n;
+}
 
-	if (config.fd == -1)
-		return 0;
+int io_map(const char *file, u64 offset)
+{
+  struct io_maps_t *im;
+  int fd = open(file, O_RDONLY);
+  if (fd == -1)
+    return -1;
+  im = (struct io_maps_t*)malloc(sizeof(struct io_maps_t));
+  im->fd     = fd;
+  strncpy(im->file, file, 127);
+  im->from = offset;
+  im->to   = offset+lseek(fd, 0, SEEK_END);
+  list_add_tail(&(im->list), &(io_maps));
+  return fd;
+}
 
-	if (config.seek == -1) {
-		config.seek = 0;
-		ret = config.block_size;
-	} else {
-		if (next)
-			radare_seek(config.seek+config.block_size, SEEK_SET);
-		else	radare_seek(config.seek, SEEK_SET);
+int io_map_read_at(u64 off, u8 *buf, u64 len)
+{
+  struct list_head *pos;
 
-		memset(config.block, '\xff', config.block_size);
-		ret = io_read(config.fd, config.block, config.block_size);
-	}
+  list_for_each_prev(pos, &io_maps) {
+    struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+    if (im->file[0] != '\0') {
+      if (off >= im->from && off < im->to) {
+        lseek(im->fd, off-im->from, SEEK_SET);
+        return read(im->fd, buf, len);
+      }
+    }
+  }
+  return 0;
+}
 
-	return ret;
+int io_map_read_rest(u64 off, u8 *buf, u64 len)
+{
+  struct list_head *pos;
+
+  list_for_each_prev(pos, &io_maps) {
+    struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+    if (im->file[0] != '\0') {
+      if (off+len >= im->from && off < im->to) {
+        lseek(im->fd, 0, SEEK_SET);
+        return read(im->fd, buf+(im->from-(off+len)), len);
+      }
+    }
+  }
+  return 0;
 }

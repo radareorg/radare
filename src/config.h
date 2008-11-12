@@ -110,7 +110,7 @@ int config_rm(const char *name);
 struct config_node_t *config_set(const char *name, const char *value);
 u64 config_get_i(const char *name);
 const char *config_get(const char *name);
-void config_list(char *str);
+void config_list(const char *str);
 struct config_node_t *config_node_get(const char *name);
 struct config_node_t *config_node_new(const char *name, const char *value);
 

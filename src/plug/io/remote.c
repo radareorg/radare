@@ -175,7 +175,7 @@ int remote_handle_client( int fd ){
 				ptr[5]='!';
 				read(c, ptr+6, i);
 				ptr[6+i]='\0';
-				update_environment();
+				//env_update();
 				pipe_stdout_to_tmp_file((char*)&buf, (char*)ptr+5);
 				{
 					FILE *fd = fopen((char*)buf, "r");

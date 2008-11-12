@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_PRINT_H_
 #define _INCLUDE_PRINT_H_
 
-void print_color_byte_i(int i, char *str, int c);
-void radare_dump_and_process(int type, int size);
+#include "types.h"
+
 #define PRINT_BIN(x) D cons_printf("%d%d%d%d %d%d%d%d  ",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0); else \
@@ -55,5 +55,8 @@ extern print_fmt_t last_print_format;
 print_fmt_t format_get (char fmt);
 void format_show_help (print_mode_t mode);
 void print_addr(u64 off);
+void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t print_fmt);
+void print_color_byte_i(int i, char *str, int c);
+void radare_dump_and_process(int type, int size);
 
 #endif

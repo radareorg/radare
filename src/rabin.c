@@ -22,36 +22,31 @@
 
 int rabin_id()
 {
-	char buf[1024];
+  char buf[1024];
 
-	fprintf(stderr, "Automagically identifying file...\n");
+  fprintf(stderr, "Automagically identifying file...\n");
 
-    	snprintf(buf, 1022, ".!!rabin -rIe '%s'", config.file);
-	radare_cmd_raw(buf, 0);
-    	snprintf(buf, 1022, "!!rabin -Iv '%s'", config.file);
-	radare_cmd_raw(buf, 0);
+  snprintf(buf, 1022, ".!!rabin -rIe '%s'", config.file);
+  radare_cmd_raw(buf, 0);
+  D {
+    snprintf(buf, 1022, "!!rabin -Iv '%s'", config.file);
+    radare_cmd_raw(buf, 0);
+  }
 
-	return 0;
+  return 0;
 }
-
-int java_classdump(const char *file);
 
 int rabin_flag()
 {
-	char buf[1024];
+  char buf[1024];
 
-	fprintf(stderr, "Automagically flagging file...\n");
+  D fprintf(stderr, "Automagically flagging file...\n");
+      snprintf(buf, 1022, ".!!rabin -rSisz '%s'", config.file);
+  radare_cmd_raw(buf, 0);
 
-    	snprintf(buf, 1022, ".!!rabin -rSisz '%s'", config.file);
-	radare_cmd_raw(buf, 0);
-	if (!strcmp("java", config_get("asm.arch"))) {
-		java_classdump(config.file);
-#if 0
-	} else {
-		snprintf(buf, 1022, ".!!rsc syscall-flag '%s'", config.file);
-		radare_cmd_raw(buf, 0);
-#endif
-	}
+  /* TODO: move into rabin dietjava */
+  if (!strcmp("java", config_get("asm.arch")))
+    java_classdump(config.file);
 
-	return 0;
+  return 0;
 }

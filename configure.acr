@@ -59,12 +59,12 @@ IFNOT HAVE_VALA_1_0_VERSION_0_5_0 {
 	ECHO Needs vala 0.5.0 at least ;
 	VALAC = '' ;
 	VALA = 0 ;
-	GUI = 0 ;
+	HAVE_GUI = 0 ;
 }
 IFEQ VALAC valac ; {
 	WITH_VALA = 0 ;
 	VALA = 0 ;
-	GUI = 0 ;
+	HAVE_GUI = 0 ;
 	ECHO No valac found ;
 }
 ))
@@ -92,22 +92,22 @@ ARG_WITH HAVE_PYTHON python build with embedded python extension ;
 
 ARG_WITH MAEMO maemo build hildon interface ;
 
-(( GUI ))
-ARG_WITHOUT GUI gui radare without the gtk frontend ;
+(( HAVE_GUI ))
+ARG_WITHOUT HAVE_GUI gui radare without the gtk frontend ;
 CHKPRG GTKDIALOG gtkdialog
-(( IFEQ GTKDIALOG gtkdialog ; GUI = 0 ; ))
+(( IFEQ GTKDIALOG gtkdialog ; HAVE_GUI = 0 ; ))
 IFEQ GTKDIALOG gtkdialog ; {
 	ECHO You will need gtkdialog for the gui ;
 }
 PKGCFG GTK_FLAGS GTK_LIBS gtk+-2.0
-IFNULL GTK_FLAGS { GUI = 0 ; }
+IFNULL GTK_FLAGS { HAVE_GUI = 0 ; }
 PKGCFG VTE_FLAGS VTE_LIBS vte
-IFNULL VTE_FLAGS { GUI = 0 ; }
+IFNULL VTE_FLAGS { HAVE_GUI = 0 ; }
 
 HAVE_VALAC = 1 ;
 HAVE_VALA = 1 ;
 VALAC = 1 ;
-IFNOT GUI {
+IFNOT HAVE_GUI {
 	VALAC = 0 ;
 	HAVE_VALA = 0 ;
 	ECHO Vala build disabled, no gtk-dev or libvte-dev found ;
@@ -115,7 +115,7 @@ IFNOT GUI {
 
 LANG_LUA
 
-REPORT GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
+REPORT HAVE_GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ;
 
 (( subdirectories ))
 SUBDIRS . ./global.h ./config.mk src src/rsc/rsc src/rfile ;

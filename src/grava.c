@@ -17,7 +17,6 @@
  *
  */
 
-#include "../global.h"
 #include "main.h"
 
 void graph_viz(struct program_t *prg)
@@ -40,7 +39,7 @@ void graph_viz(struct program_t *prg)
 	cons_printf("}\n");
 }
 
-#if HAVE_VALAC
+#if HAVE_GUI
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "widget.h"
@@ -204,7 +203,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 	u64 off;
 
 	if (w) {
-		str =  gtk_entry_get_text(GTK_ENTRY(w->entry));
+		str = gtk_entry_get_text(GTK_ENTRY(w->entry));
 		last_window = w;
 	} else {
 		eprintf("NullObj\n");

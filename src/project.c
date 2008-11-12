@@ -182,7 +182,7 @@ int project_open(const char *file)
 	}
 
 	/* clear stuff */
-	flag_clear("*");
+	flag_remove("*");
 	fgets(buf, 1024, fd);
 
 	if (memcmp(buf, ";RP;", 4)) {

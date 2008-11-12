@@ -21,6 +21,8 @@
 #ifndef _INCLUDE_MAIN_H_
 #define _INCLUDE_MAIN_H_
 
+#include "../global.h"
+
 #if __CYGWIN__ 
 #define __addr_t_defined
 #endif
@@ -55,15 +57,17 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include "types.h"
+#include "print.h"
+#include "list.h"
 #include "config.h"
 #include "radare.h"
-#include "code.h"
 #include "data.h"
 #include "flags.h"
 #include "utils.h"
-#include "print.h"
+#include "code.h"
+#include "io.h"
 #include "plugin.h"
-
-#include "../global.h"
+#include "section.h"
 
 #endif

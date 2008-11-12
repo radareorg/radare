@@ -586,7 +586,7 @@ void flag_space(const char *name)
 	}
 }
 
-void flag_clear(const char *name)
+void flag_remove(const char *name)
 {
 	struct list_head *pos;
 	char *str, *mask;
@@ -935,6 +935,7 @@ void flags_visual_menu()
 			}
 			break;
 		case 'd':
+			flag_remove(fs2);
 			break;
 		case 'e':
 			/* TODO: prompt for addr, size, name */

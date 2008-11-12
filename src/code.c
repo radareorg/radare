@@ -32,10 +32,11 @@
 #include "arch/x86/udis86/types.h"
 #include "arch/x86/udis86/extern.h"
 #include "arch/x86/ollyasm/disasm.h"
-#include "list.h"
 
 //#define CHECK_LINES if ( config.visual && len != config.block_size && (cons_lines > config.height) ) break;
 #define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) break;
+
+static int code_flags_cache = -1;
 
 extern int force_thumb;
 static char funline[3];
@@ -164,8 +165,8 @@ udis_mem_ptr= 0;
 			sprintf(string, "%s", da.result);
 		} else {
 //			udis_init();
-			ud_obj.insn_offset = seek;//;+myinc; //+bytes;
-			ud_obj.pc = seek; //+myinc;
+			ud_obj.insn_offset = seek+myinc; //+bytes;
+			ud_obj.pc = seek+myinc;
 			//ud_idx = myinc;
 			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
@@ -174,6 +175,7 @@ udis_mem_ptr= 0;
 		}
 		break;
 	case ARCH_PPC: {
+	       char bof[1024];
 	       char opcode[128];
 	       char operands[128];
 	       struct DisasmPara_PPC dp;
@@ -181,15 +183,12 @@ udis_mem_ptr= 0;
 	       dp.opcode = opcode;
 	       dp.operands = operands;
 	       dp.iaddr = seek; //config.baddr + config.seek + i;
-		{
-		char bof[1024];
-		endian_memcpy(bof, b, 4);
-		dp.instr = bof;
-	      // dp.instr = b; //config.block + i;
+	       endian_memcpy(bof, b, 4);
+	       dp.instr = bof;
+	       // dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
-		sprintf(string, "%s %s", opcode, operands);
+	       sprintf(string, "%s %s", opcode, operands);
 	       //cons_printf("  %s %s", opcode, operands);
-		}
 	       } break;
 	case ARCH_MIPS:
 		gnu_dismips_str(string, (u8*)b, seek+myinc);
@@ -243,6 +242,9 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	} else
 	switch(arch) {
 	case ARCH_X86:
+		/* ultra ugly hack */
+		ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
+		break;
 	case ARCH_PPC:
 	case ARCH_JAVA:
 	case ARCH_M68K:
@@ -360,6 +362,7 @@ void radis(int len, int rows)
 	/* not always necesary */
 	// radis_update();
 
+	code_flags_cache = -1;
 	radare_controlc();
 	udis_arch(config.arch, len, rows);
 	radare_controlc_end();
@@ -929,44 +932,48 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
-	const char *cmd_asm;
-	int size, bytes, offset, splits, comments, lines, section,
-	traces, flags, reladdr, flagsline, functions, stackptr;
+  const char *cmd_asm;
+  int flags;
 
-	// cache here!
-	cmd_asm  =       config_get("cmd.asm");
-	size     = (int) config_get_i("asm.size");
-	bytes    = (int) config_get_i("asm.bytes");
-	offset   = (int) config_get_i("asm.offset");
-	functions= (int) config_get_i("asm.functions");
-	section  = (int) config_get_i("asm.section");
-	splits   = (int) config_get_i("asm.split");
-	flags    = (int) config_get_i("asm.flags");
-	flagsline= (int) config_get_i("asm.flagsline");
-	lines    = (int) config_get_i("asm.lines");
-	reladdr  = (int) config_get_i("asm.reladdr");
-	stackptr = (int) config_get_i("asm.stackptr");
-	traces   = (int) config_get_i("asm.trace");
-	comments = (int) config_get_i("asm.comments");
-	color    = (int) config_get_i("scr.color");
+  if (code_flags_cache == -1) {
+    int size, bytes, offset, splits, comments, lines, section,
+        traces, reladdr, flagsline, functions, stackptr;
+    cmd_asm  =       config_get("cmd.asm");
+    size     = (int) config_get_i("asm.size");
+    bytes    = (int) config_get_i("asm.bytes");
+    offset   = (int) config_get_i("asm.offset");
+    functions= (int) config_get_i("asm.functions");
+    section  = (int) config_get_i("asm.section");
+    splits   = (int) config_get_i("asm.split");
+    flags    = (int) config_get_i("asm.flags");
+    flagsline= (int) config_get_i("asm.flagsline");
+    lines    = (int) config_get_i("asm.lines");
+    reladdr  = (int) config_get_i("asm.reladdr");
+    stackptr = (int) config_get_i("asm.stackptr");
+    traces   = (int) config_get_i("asm.trace");
+    comments = (int) config_get_i("asm.comments");
+    color    = (int) config_get_i("scr.color");
 
-	flags = 0;
-	if (color) flags |= RADIS_COLOR;
-	if (size) flags |= RADIS_SIZE;
-	if (bytes) flags |= RADIS_BYTES;
-	if (offset) flags |= RADIS_OFFSET;
-	if (functions) flags |= RADIS_FUNCTIONS;
-	if (section) flags |= RADIS_SECTION;
-	if (splits) flags |= RADIS_SPLITS;
-	if (flags) flags |= RADIS_FLAGS;
-	if (stackptr) flags |= RADIS_STACKPTR;
-	if (flagsline) flags |= RADIS_FLAGSLINE;
-	if (lines) flags |= RADIS_LINES;
-	if (reladdr) flags |= RADIS_RELADDR;
-	if (traces) flags |= RADIS_TRACES;
-	if (comments) flags |= RADIS_COMMENTS;
-	if (color) flags |= RADIS_COLOR;
-	
-	radis_str(arch, block, len, rows, cmd_asm, flags);
+    flags = 0;
+    if (color) flags |= RADIS_COLOR;
+    if (size) flags |= RADIS_SIZE;
+    if (bytes) flags |= RADIS_BYTES;
+    if (offset) flags |= RADIS_OFFSET;
+    if (functions) flags |= RADIS_FUNCTIONS;
+    if (section) flags |= RADIS_SECTION;
+    if (splits) flags |= RADIS_SPLITS;
+    if (flags) flags |= RADIS_FLAGS;
+    if (stackptr) flags |= RADIS_STACKPTR;
+    if (flagsline) flags |= RADIS_FLAGSLINE;
+    if (lines) flags |= RADIS_LINES;
+    if (reladdr) flags |= RADIS_RELADDR;
+    if (traces) flags |= RADIS_TRACES;
+    if (comments) flags |= RADIS_COMMENTS;
+    if (color) flags |= RADIS_COLOR;
+
+    code_flags_cache = flags;
+  }
+  
+  radis_str(arch, block, len, rows, cmd_asm, code_flags_cache);
 }
 

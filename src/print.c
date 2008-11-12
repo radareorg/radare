@@ -388,7 +388,7 @@ int oldfmt= last_print_format;
 u64 old = config.seek;
 radare_seek(config.seek+i, SEEK_SET);
 radare_read(0);
-data_print(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
+print_data(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
 last_print_format=oldfmt;
 radare_seek(old, SEEK_SET);
 }
@@ -488,7 +488,7 @@ eprintf("ignore(%c)\n", tmp);
 		arg = orig;
 		idx=0;
 	}
-	efree(&args);
+	efree((void *)&args);
 	D {} else cons_newline();
 }
 
@@ -501,7 +501,7 @@ eprintf("ignore(%c)\n", tmp);
  * mode: print mode
  *
  */
-void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fmt)
+void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j;
 	int zoom    = 0;
@@ -555,7 +555,7 @@ void data_print(u64 seek, char *arg, unsigned char *buf, int len, print_fmt_t fm
 	case FMT_COMMENT:
 		//data_comment_list();
 		data_xrefs_print(config.seek,-1);
-			//data_printd(0);
+			//print_datad(0);
 		break;
 	case FMT_PERCENT: {
 			int w = config.width-4;
@@ -1114,7 +1114,7 @@ void radare_print(char *arg, print_fmt_t fmt)
 		return;
 	}
 
-	data_print(config.seek, arg, config.block, bs, fmt);
+	print_data(config.seek, arg, config.block, bs, fmt);
 
 	if (obs != 0)
 		radare_set_block_size_i (obs);

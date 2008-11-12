@@ -12,7 +12,7 @@
 /* features */
 #define DEBUGGER @DEBUGGER@
 #define SYSPROXY @SYSPROXY@
-#define GUI @GUI@
+#define HAVE_GUI @HAVE_GUI@
 #define HAVE_LANG_LUA @HAVE_LANG_LUA@
 #define HAVE_LANG_PYTHON @HAVE_LANG_PYTHON@
 #define SIZE_OFF_T 8

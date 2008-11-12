@@ -25,7 +25,7 @@
 #endif
 
 /* spaghetti implementation */
-int var_required(char *str, char *var)
+static int env_var_required(const char *str, const char *var)
 {
 	char *a = str, *b;
 
@@ -49,7 +49,7 @@ int var_required(char *str, char *var)
 	return 0;
 }
 
-void prepare_environment(char *line)
+void env_prepare(const char *line)
 {
 	int i;
 	char *offset = (char *)malloc((config.block_size*3)+2);
@@ -89,7 +89,7 @@ void prepare_environment(char *line)
 	sprintf(offset,  "%d", config.block_size);
 	setenv("BSIZE",  offset, 1);
 
-	if (var_required(line, "BYTES")) {
+	if (env_var_required(line, "BYTES")) {
 		*offset = '\0';
 		for(i=0;i<config.block_size;i++) {
 			char str[128];
@@ -99,30 +99,30 @@ void prepare_environment(char *line)
 		setenv("BYTES",  offset, 1);
 	}
 
-	if (var_required(line, "BLOCK")) {
+	if (env_var_required(line, "BLOCK")) {
 		char file[TMPFILE_MAX];
 		make_tmp_file(file);
 		CHECK_TMP_FILE(file);
 		radare_dump(file, config.block_size);
 		setenv("BLOCK", file, 1);
 	}
-	update_environment();
+	env_update();
 
 	free(offset);
 }
 
 // ugly hack for usability
-void init_environment()
+void env_init()
 {
 	setenv("VISUAL", "0", 1);
-	prepare_environment("");
+	env_prepare("");
 }
 
-void destroy_environment(char *line)
+void env_destroy(const char *line)
 {
 	char *file = getenv("BLOCK");
 
-	if (var_required(line, "BLOCK")) {
+	if (env_var_required(line, "BLOCK")) {
 		file = getenv("BLOCK");
 		if (file) {
 			unlink(file);
@@ -131,7 +131,7 @@ void destroy_environment(char *line)
 	}
 }
 
-void update_environment()
+void env_update()
 {
 	char *ptr;
 

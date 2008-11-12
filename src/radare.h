@@ -7,38 +7,18 @@
 #define __addr_t_defined
 
 #include "../global.h"
-
-/* basic data types */
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
-typedef u64 addr_t;
-#define uchar unsigned char
-
-#ifndef SIZEOF_OFF_T
-#define SIZEOF_OFF_T 8
-#endif
+#include "types.h"
 #include "cmds.h"
-#if 0
-#if SIZEOF_OFF_T == 1
-#warning Oops. SIZEOF_OFF_T = 1 means invalid autodetection. Using 8
-#endif
-#endif
-
 
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
 
-#include "list.h"
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <fcntl.h>
-#include "cmds.h"
-#include "section.h"
-#include "print.h"
 
 extern struct list_head hacks;
 #undef SIZEOF_OFF_T
@@ -49,8 +29,11 @@ extern struct list_head hacks;
 #undef OFF_FMT
 #endif
 #define OFF_FMT "0x%08llX"
+#undef OFF_FMTs
 #define OFF_FMTs "0x%08llX"
+#undef OFF_FMTx
 #define OFF_FMTx "%llX"
+#undef OFF_FMTd
 #define OFF_FMTd "%lld"
 #define offtd long long
 #define offtx long long
@@ -105,13 +88,9 @@ int radare_cmd(char *command, int log);
 int radare_cmd_raw(const char *tmp, int log);
 char *pipe_command_to_string(char *cmd);
 char *radare_cmd_str(const char *cmd);
-int radare_interpret(char *file);
+int radare_interpret(const char *file);
 void radare_controlc();
 void radare_controlc_end();
-void init_environment();
-void update_environment();
-void prepare_environment(char *line);
-void destroy_environment(char *line);
 void udis(int len, int rows);
 int monitor_init();
 int radare_move(char *arg);
@@ -147,6 +126,7 @@ int radare_get_region(u64 *from, u64 *to);
 int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);
 int radare_cmdf(const char *cmd, ...);
 int radare_systemf(const char *format, ...);
+u8 *radare_block();
 
 int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);
@@ -156,11 +136,19 @@ int radare_close();
 /* rabin.h */
 int rabin_id();
 int rabin_flag();
+int java_classdump(const char *file);
 
 /* macros */
 void radare_macro_init();
 int radare_macro_add(const char *name);
 int radare_macro_rm(const char *name);
 int radare_macro_list();
+
+/* env.h */
+void env_init();
+void env_update();
+void env_prepare(const char *line);
+void env_destroy(const char *line);
+int env_var_required(const char *str, const char *var);
 
 #endif

@@ -156,6 +156,7 @@ def configure(conf):
 	else:
 		conf.env['HAVE_LIBLUA_LD'] = "-llua"
 	conf.define('HAVE_LIBLUA', Options.options.HAVE_LIBLUA)
+	conf.define('HAVE_GUI', conf.env['GUI'])
 
 	rl2 = conf.create_library_configurator()
 	rl2.name = 'dl'

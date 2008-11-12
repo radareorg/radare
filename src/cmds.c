@@ -365,8 +365,8 @@ CMD_DECL(analyze)
 		for(depth_i=0;depth_i<depth;depth_i++) {
 			char food[64];
 			radare_read(0);
-			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 			pas_aop(config.arch, config.seek, config.block, 16, NULL, food);
+			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 
 			cons_printf("pas = %s\n", food);
 			cons_printf("index = %d\n", depth_i);
@@ -909,7 +909,7 @@ CMD_DECL(envvar)
 	char *ptr, *ptro;
 
 	if (text[0]=='\0') {
-		prepare_environment("");
+		env_prepare("");
 		printf("%%FILE        %s\n", getenv("FILE"));
 		if (config.debug)
 		printf("%%DPID        %s\n", getenv("DPID"));
@@ -956,7 +956,7 @@ CMD_DECL(envvar)
 	}
 	ptro[0]=' ';
 
-	update_environment();
+	env_update();
 	free(text2);
 
 	return 0;
@@ -1239,7 +1239,7 @@ CMD_DECL(flag)
 		switch(text[0]) {
 		case '\0': flag_list(text); break;
 		case '*': flag_set("*",0,0); break;
-		case '-': flag_clear(text+1); break;
+		case '-': flag_remove(text+1); break;
 		default:
 			ret = flag_set(text, config.seek, input[0]=='n');
 			D { if (!ret) { flags_setenv(); } } }
@@ -2045,11 +2045,11 @@ CMD_DECL(shell)
 {
 	int ret = 0;
 
-	prepare_environment(input);
+	env_prepare(input);
 	if (input[0]=='!')
 		ret = radare_system(input+1);
 	else ret = io_system(input);
-	destroy_environment(input);
+	env_destroy(input);
 
 	return ret;
 }

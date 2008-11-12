@@ -2,8 +2,6 @@
 #define _INCLUDE_CODE_H_
 
 #include "main.h"
-#include "list.h"
-
 
 int trace_count(u64 addr);
 int trace_times(u64 addr);
