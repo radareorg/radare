@@ -20,7 +20,8 @@
 
 #include "../radare.h"
 
-static inline int is_printable (int c)
+// XXX recycle is_printable?
+static int is_pr (int c)
 {
         if (c<' '||c>'~') return 0;
         return 1;
@@ -33,7 +34,7 @@ int hash_pcprint(unsigned char *buffer, u64 len)
 	int n = 0;
 
 	for(;buffer<end; buffer = buffer + 1)
-		if (is_printable(buffer[0]))
+		if (is_pr(buffer[0]))
 			n++;
 
 	return ((100*n)/len);

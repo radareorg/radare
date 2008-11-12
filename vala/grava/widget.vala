@@ -522,8 +522,8 @@ load_graph_at("$$");
 	public void draw()
 	{
 		Context ctx = Gdk.cairo_create(da.window);
-		if (graph.zoom < 0.2)
-			graph.zoom = 0.2;
+		if (graph.zoom < 0.05)
+			graph.zoom = 0.05;
 		graph.draw(ctx);
 	}
 

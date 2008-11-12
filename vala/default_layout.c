@@ -48,7 +48,7 @@ static void grava_default_layout_finalize (GObject* obj);
 #line 34 "default_layout.vala"
 void grava_default_layout_reset (GravaDefaultLayout* self) {
 #line 34 "default_layout.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self));
 #line 36 "default_layout.vala"
 	fprintf (stdout, "RESETING LAYOUT\n");
 	{
@@ -74,7 +74,7 @@ void grava_default_layout_reset (GravaDefaultLayout* self) {
 #line 43 "default_layout.vala"
 void grava_default_layout_reset_real (GravaDefaultLayout* self) {
 #line 43 "default_layout.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self));
 	{
 		GSList* node_collection;
 		GSList* node_it;
@@ -104,9 +104,9 @@ static void grava_default_layout_treenodes (GravaDefaultLayout* self, GravaNode*
 	gint ox;
 	GSList* nodes;
 #line 50 "default_layout.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self));
 #line 50 "default_layout.vala"
-	g_return_if_fail (n != NULL);
+	g_return_if_fail (GRAVA_IS_NODE (n));
 	ox = 0;
 	nodes = grava_graph_outer_nodes (self->priv->graph, n);
 	{
@@ -141,9 +141,9 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 	GravaNode* _tmp2;
 	GravaNode* m;
 #line 62 "default_layout.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self));
 #line 62 "default_layout.vala"
-	g_return_if_fail (n != NULL);
+	g_return_if_fail (GRAVA_IS_NODE (n));
 #line 64 "default_layout.vala"
 	_tmp1 = NULL;
 #line 61 "node.vala"
@@ -198,9 +198,9 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 	char* _tmp5;
 	gboolean _tmp6;
 #line 81 "default_layout.vala"
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self), FALSE);
 #line 81 "default_layout.vala"
-	g_return_val_if_fail (n != NULL, FALSE);
+	g_return_val_if_fail (GRAVA_IS_NODE (n), FALSE);
 #line 83 "default_layout.vala"
 	_tmp1 = NULL;
 #line 61 "node.vala"
@@ -241,9 +241,9 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 #line 97 "default_layout.vala"
 void grava_default_layout_walkChild (GravaDefaultLayout* self, GravaNode* node, gint level) {
 #line 97 "default_layout.vala"
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self));
 #line 97 "default_layout.vala"
-	g_return_if_fail (node != NULL);
+	g_return_if_fail (GRAVA_IS_NODE (node));
 #line 99 "default_layout.vala"
 	if (level < 1) {
 #line 99 "default_layout.vala"
@@ -275,9 +275,9 @@ void grava_default_layout_walkChild (GravaDefaultLayout* self, GravaNode* node, 
 #line 108 "default_layout.vala"
 GravaNode* grava_default_layout_get_parent (GravaDefaultLayout* self, GravaNode* node) {
 #line 108 "default_layout.vala"
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_DEFAULT_LAYOUT (self), NULL);
 #line 108 "default_layout.vala"
-	g_return_val_if_fail (node != NULL, NULL);
+	g_return_val_if_fail (GRAVA_IS_NODE (node), NULL);
 	{
 		GSList* edge_collection;
 		GSList* edge_it;
@@ -304,9 +304,9 @@ GravaNode* grava_default_layout_get_parent (GravaDefaultLayout* self, GravaNode*
 #line 117 "default_layout.vala"
 static void grava_default_layout_real_set_graph (GravaLayout* base, GravaGraph* graph) {
 	GravaDefaultLayout * self;
-	self = ((GravaDefaultLayout*) (base));
+	self = GRAVA_DEFAULT_LAYOUT (base);
 #line 117 "default_layout.vala"
-	g_return_if_fail (graph != NULL);
+	g_return_if_fail (GRAVA_IS_GRAPH (graph));
 #line 119 "default_layout.vala"
 	self->priv->graph = graph;
 }
@@ -326,9 +326,9 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 	GravaNode* destn;
 	GravaEdge* e;
 	gboolean found;
-	self = ((GravaDefaultLayout*) (base));
+	self = GRAVA_DEFAULT_LAYOUT (base);
 #line 122 "default_layout.vala"
-	g_return_if_fail (graph != NULL);
+	g_return_if_fail (GRAVA_IS_GRAPH (graph));
 #line 124 "default_layout.vala"
 	self->priv->graph = graph;
 	last_y = 0.0;
@@ -563,7 +563,7 @@ GravaDefaultLayout* grava_default_layout_new (void) {
 }
 
 
-#line 178 "gobject-2.0.vapi"
+#line 955 "glib-2.0.vapi"
 static void _g_object_unref_gdestroy_notify (void* data) {
 	g_object_unref (data);
 }

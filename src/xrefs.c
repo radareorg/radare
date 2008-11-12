@@ -145,7 +145,7 @@ static u32 file_size_fd(int fd)
 
 #ifndef RADARE_CORE
 /* TODO: move+share in offset.c ? */
-static u32 get_offset32(const char *arg)
+static u32 get_value32(const char *arg)
 {
         int i;
         u32 ret;
@@ -297,32 +297,32 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'b':
-			base = get_offset32(optarg);
+			base = get_value32(optarg);
 			break;
 		case 'd':
-			delta = get_offset32(optarg);
+			delta = get_value32(optarg);
 			break;
 		case 'X':
-			xylum = get_offset32(optarg);
+			xylum = get_value32(optarg);
 			break;
 		case 'e':
 			endian = 1;
 			break;
 		case 'r':
-			range = get_offset32(optarg);
+			range = get_value32(optarg);
 			if (range<0) range = -range;
 			break;
 		case 'v':
 			verbose = 1;
 			break;
 		case 'f':
-			from = get_offset32(optarg);
+			from = get_value32(optarg);
 			break;
 		case 't':
-			to = get_offset32(optarg);
+			to = get_value32(optarg);
 			break;
 		case 's':
-			size = get_offset32(optarg);
+			size = get_value32(optarg);
 			break;
 		case 'h':
 			return show_usage();
@@ -341,7 +341,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	offset = get_offset32(argv[optind+1]);
+	offset = get_value32(argv[optind+1]);
 	if (offset >= base)
 		offset -= base;
 

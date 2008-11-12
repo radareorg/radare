@@ -149,6 +149,6 @@ void env_init();
 void env_update();
 void env_prepare(const char *line);
 void env_destroy(const char *line);
-int env_var_required(const char *str, const char *var);
+//int env_var_required(const char *str, const char *var);
 
 #endif
