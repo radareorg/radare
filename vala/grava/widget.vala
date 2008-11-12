@@ -333,6 +333,8 @@ load_graph_at("$$");
 		};
 		menu.append(imi);
 
+		menu.append(new SeparatorMenuItem());
+
 		imi = new ImageMenuItem.from_stock("Step", null);
 		imi.activate += imi => {
 			/* foo */

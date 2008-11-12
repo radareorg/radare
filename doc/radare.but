@@ -2197,6 +2197,14 @@ We can define these macros in our ~/.radarerc
 \c (dump addr len
 \c   p8 $1 @ $0)
 
+It is also possible to recursively call a macro to emulate a loop. Here's a simple example of a recursive loop using macros in radare:
+
+\c (loop times cmd
+\c   ? $0 == 0
+\c   ?? ()
+\c   $1
+\c   .(loop $0-1 $1))
+
 \H{langs} Language bindings
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
@@ -3329,6 +3337,40 @@ radare offers a graphical interface for browsing the code graphs. It uses an own
 The grava window permits opening new nodes with the content executing a certain command (!regs, x@esp, ..), and offers a simple interface for debugging allowing to browse the code with the mouse and set breakpoints with the contextual menu over the nodes.
 
 TODO: screenshots
+
+\H{rsc-graph} Graphing code with rsc
+
+Sometimes you've to analize large blobs and you're not going to read in hex and assembly the entire file to understand globally what it does.
+
+Or probably you're looking for a poster of your favorite binary program.
+
+You can use the bin2tab/tab2gml or gdl2gml rsc scripts:
+
+\c $ rsc bin2tab /bin/false | rsc tab2gml > false.gml
+
+The GML files can be opened with yEd.
+
+IDA generates a nice graphos of binaries, but they're in wingraph format and it's not possible to open these files (GDL) on non-w32 systems. So, you can convert them with gdl2gml and later use yEd in the same fashion:
+
+\c $ cat my-ida-graph.gdl | rsc gdl2gml > my-ida-graph.gml
+
+\H{bus-sniff} Bus sniffers
+
+Build radare with --with-usb-sniffer flag to get the libusbsniff.so library. Note that you need libusb-dev to get this.
+
+The libusbsniff and libfdsniff libraries are used to capture and pretty print the data transfered via libUSB or a desired file descriptor:
+
+\c $ LD_PRELOAD=/usr/lib/libusbsniff.so ./my-usb-program
+
+or
+
+\c $ FDSNIFF=3 LD_PRELOAD=/usr/lib/libfdsniff.so ./my-program
+
+The FDSNIFF environment variable is handled by libfdsniff and allows you to choose the filedescriptor you want to analize.
+
+These libraries dumps the captured data to stderr, so you'll probably find useful to pipe stdout and stderr to a file and get a complete dump file.
+
+\c $ LD_PRELOAD=/usr/lib/libusbsniff.so ./my-usb-program 2>&1 | tee my-usb-log
 
 \C{gradare} Gradare
 

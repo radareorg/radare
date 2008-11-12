@@ -1164,6 +1164,7 @@ CMD_DECL(move)
 CMD_DECL(print)
 {
 	print_fmt_t fmt = MD_BLOCK;
+	int bs = -1;
 
 	switch(input[0]) {
 	case '\0':
@@ -1177,11 +1178,20 @@ CMD_DECL(print)
 		else	radare_print(input+1, fmt);
 		break;
 	default:
+		if (input[1]=='f') {
+			struct data_t *data = data_get(config.seek); // TODO: use get_math(input+2) ???
+			if (data) {
+				bs = config.block_size;
+				radare_set_block_size_i(data->size);
+			}
+		}
 		fmt = format_get(input[0]); //, fmt);
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
 		else	radare_print(input+1, fmt);
 	}
+	if (bs != -1)
+		radare_set_block_size_i(bs);
 
 	return 0;
 }

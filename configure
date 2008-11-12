@@ -25,7 +25,7 @@ W32=0
 SYSPROXY=0
 VALA=1
 MAEMO=0
-GUI=1
+HAVE_GUI=1
 split_host() {
 S="$"
 while : ; do
@@ -141,7 +141,8 @@ System types:
   --target=TARGET        configure for building compilers for TARGET [HOST]
 EOF2
 
-printf "\nOptional Features:
+printf "
+Optional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
   --without-debugger     disables the debugger layer 
@@ -151,8 +152,10 @@ printf "\nOptional Features:
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-maemo           build hildon interface 
-  --without-gui          radare without the gtk frontend \n"
-printf "\nSome influential environment variables:
+  --without-gui          radare without the gtk frontend 
+"
+printf "
+Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -161,8 +164,10 @@ printf "\nSome influential environment variables:
               headers in a nonstandard directory <include dir>
   CPP         C preprocessor
   RUBY        Ruby interpreter path or binary name.
-  LUA         path to lua interpreter\n"
-printf "\nReport bugs to: pancake <pancake@youterm.com>"
+  LUA         path to lua interpreter
+"
+printf "
+Report bugs to: pancake <pancake@youterm.com>"
 echo ""
 exit 0
 }
@@ -250,7 +255,7 @@ echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --w
 "--with-sysproxy") SYSPROXY="1"; ;;
 "--without-vala") VALA="0"; ;;
 "--with-maemo") MAEMO="1"; ;;
-"--without-gui") GUI="0"; ;;
+"--without-gui") HAVE_GUI="0"; ;;
 *) if [ "$value" ]; then eval "`echo $flag2=$value`" ; 
 else echo ; echo "WARNING: Unknown flag '$flag'." >&2 ; echo ; fi ;;
 esac
@@ -265,7 +270,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LDFLAGS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO HAVE_GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -499,7 +504,7 @@ if [ ! $? = 1 ]; then
 echo yes; HAVE_PKGCFG_GTK_2_0=1; 
 GTK_LIBS=$tmp; fi; fi
 if [ "$GTK_FLAGS" = "" ]; then
-export GUI="0"; fi
+export HAVE_GUI="0"; fi
 printf 'checking pkg-config flags for vte... '
 tmp=`pkg-config --cflags vte 2>/dev/null`
 if [ $? = 1 ]; then echo no ; HAVE_PKGCFG_VTE=0; else 
@@ -509,11 +514,11 @@ if [ ! $? = 1 ]; then
 echo yes; HAVE_PKGCFG_VTE=1; 
 VTE_LIBS=$tmp; fi; fi
 if [ "$VTE_FLAGS" = "" ]; then
-export GUI="0"; fi
+export HAVE_GUI="0"; fi
 export HAVE_VALAC="1"
 export HAVE_VALA="1"
 export VALAC="1"
-if [ "$GUI" = "0" ]; then
+if [ "$HAVE_GUI" = "0" ]; then
 export VALAC="0"
 export HAVE_VALA="0"
 echo "   Vala build disabled, no gtk-dev or libvte-dev found" >&2 ; fi
@@ -579,7 +584,7 @@ done
 do_remove
 echo
 echo "Final report:"
-for A in  GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ; do # REPORT
+for A in  HAVE_GUI WII LUA_LIBS HAVE_LIB_LUA MAEMO VALA JAVA USBSNF SYSPROXY DEBUGGER HAVE_LIB_EWF HAVE_LIB_READLINE ; do # REPORT
 eval VAL="\$${A}"
 [ -z "${VAL}" ] && VAL="(null)"
 echo " - ${A} = ${VAL}"

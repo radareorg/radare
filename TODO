@@ -9,6 +9,8 @@
 
 === WORK FOR 1.0 ===
 
+* Fix 'pdf' command.(should also work for pxf and so on..)
+  - set temporally block size to function size
 * Fix the anoying difference between GUI and HAVE_VALAC
   - VALAC is no longer used to compile (only for developers and available in make)
 * Add disassembler for
