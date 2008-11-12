@@ -943,14 +943,16 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
     bytes    = (int) config_get_i("asm.bytes");
     offset   = (int) config_get_i("asm.offset");
     functions= (int) config_get_i("asm.functions");
-    section  = (int) config_get_i("asm.section");
-    splits   = (int) config_get_i("asm.split");
-    flags    = (int) config_get_i("asm.flags");
-    flagsline= (int) config_get_i("asm.flagsline");
+    if (config.verbose) {
+      section  = (int) config_get_i("asm.section");
+      splits   = (int) config_get_i("asm.split");
+      flags    = (int) config_get_i("asm.flags");
+      flagsline= (int) config_get_i("asm.flagsline");
+      traces   = (int) config_get_i("asm.trace");
+    }
     lines    = (int) config_get_i("asm.lines");
     reladdr  = (int) config_get_i("asm.reladdr");
     stackptr = (int) config_get_i("asm.stackptr");
-    traces   = (int) config_get_i("asm.trace");
     comments = (int) config_get_i("asm.comments");
     color    = (int) config_get_i("scr.color");
 

@@ -149,6 +149,9 @@ command_t commands[] = {
 CMD_DECL(macro)
 {
 	switch(input[0]) {
+	case ')':
+		radare_macro_break();
+		break;
 	case '-':
 		radare_macro_rm(input+1);
 		break;
@@ -162,6 +165,7 @@ CMD_DECL(macro)
 		" (foo args\\n ..)  ; define a macro\n"
 		" (-foo)            ; remove a macro\n"
 		" .(foo)            ; to call it\n"
+		" ()                ; break inside macro\n"
 		"Argument support:\n"
 		" (foo x y\\n$1 @ $2)     ; define fun with args\n"
 		" .(foo 128 0x804800) ; call it with args\n");
@@ -322,13 +326,13 @@ CMD_DECL(analyze)
 			graph_viz(prg);
 			break;
 		default:
-#if HAVE_VALAC
+#if HAVE_GUI
 		// use graph.depth by default if not set
 		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
 #else
-		eprintf("Compiled without valac/gtk/cairo. Try with ag*\n");
+		eprintf("Compiled without gui. Try with ag*\n");
 #endif
 		}
 		break;
@@ -703,7 +707,7 @@ CMD_DECL(rdb)
 	}
 	/* draw graph */
 	if (input[0] =='G') {
-#if HAVE_VALAC
+#if HAVE_GUI
 		int num = atoi(text);
 		int i = 0;
 		struct list_head *pos;

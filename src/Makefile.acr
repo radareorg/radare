@@ -33,7 +33,7 @@ OBJ2+=rasc/sysproxy.o rasc/syscall-linux.o rasc/rpc.o
 CFLAGS+=-DSYSPROXY
 ##SYSPROXY##
 
-#CFLAGS+=-DHAVE_VALAC=${HAVE_VALAC} -DLIBDIR=\"${LIBDIR}\" -DDOCDIR=\"${DATADIR}/doc/radare/\"
+#CFLAGS+=-DLIBDIR=\"${LIBDIR}\" -DDOCDIR=\"${DATADIR}/doc/radare/\"
 #CFLAGS+=-DHAVE_LIB_READLINE=${HAVE_LIB_READLINE} -DLIBEXECDIR=\"${LIBEXECDIR}\"
 #CFLAGS+=-DSIZEOF_OFF_T=${SIZEOF_OFF_T} -DDEBUGGER=${DEBUGGER} -DTARGET=\"${TARGET}\" -DRADARE_CORE -DHAVE_LIB_EWF=${HAVE_LIB_EWF}
 CFLAGS+=-DRADARE_CORE
@@ -41,12 +41,12 @@ LDFLAGS+=${DL_LIBS} ${OSOLIBS}
 
 OBJ+=grava.o
 ##VALA##
-##GUI##
-CFLAGS+=-I../vala/ `pkg-config --cflags gtk+-2.0` -DHAVE_VALAC=1
+##HAVE_GUI##
+CFLAGS+=-I../vala/ `pkg-config --cflags gtk+-2.0` -DHAVE_GUI=1
 LDFLAGS+=`pkg-config --libs gtk+-2.0`
 OBJ2+=../vala/*.o
 TARGETS+=valagrava
-##GUI##
+##HAVE_GUI##
 ##VALA##
 
 ##W32##

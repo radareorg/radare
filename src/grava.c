@@ -745,7 +745,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 }
 #endif
 
-#if HAVE_VALAC
+#if HAVE_GUI
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	u64 here = config.seek;
@@ -800,7 +800,7 @@ void grava_program_graph(struct program_t *prg, void *win)
 
 void visual_gui()
 {
-#if HAVE_VALAC
+#if HAVE_GUI
 	struct mygrava_window *win = NULL;
 	GtkWidget *w, *w2;
 	char *items;

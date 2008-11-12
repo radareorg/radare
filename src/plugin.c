@@ -24,10 +24,8 @@
 #if __UNIX__ || __CYGWIN__
 #include <dlfcn.h>
 #endif
-#if HAVE_VALAC
-#if GUI
+#if HAVE_GUI
 #include <gtk/gtk.h>
-#endif
 #endif
 
 static plugin_t plugins[MAXPLUGINS];

@@ -3,7 +3,8 @@
 
 #include "list.h"
 
-/* MACROS */
+#define MACRO_LIMIT 4096
+
 struct macro_t {
 	char *name;
 	char *code;

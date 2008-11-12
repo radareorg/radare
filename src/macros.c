@@ -19,9 +19,10 @@
  */
 
 #include <stdio.h>
+#include "main.h"
 #include "macros.h"
-extern FILE *stdin_fd;
 
+static int macro_break;
 static struct list_head macros;
 
 void radare_macro_init()
@@ -69,7 +70,7 @@ int radare_macro_add(const char *name)
       break;
     for(bufp=buf;*bufp==' '||*bufp=='\t';bufp=bufp+1);
     lidx = strlen(buf)-2;
-    if (buf[lidx]==')') {
+    if (buf[lidx]==')' && buf[lidx-1]!='(') {
       buf[lidx]='\0';
       strcat(macro->code, bufp);
       break;
@@ -116,12 +117,14 @@ int radare_macro_list()
     }
     cons_printf("\n");
   }
+  return 0;
 }
 
 int radare_cmd_args(const char *ptr, const char *args, int nargs)
 {
   int i,j;
   char *cmd = alloca(strlen(ptr)+1024);
+  cmd[0]='\0';
   //eprintf("call(%s)\n", ptr);
   for(i=j=0;ptr[j];i++,j++) {
     if (ptr[j]=='$' && ptr[j+1]>='0' && ptr[j+1]<='9') {
@@ -140,13 +143,14 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
   return radare_cmd(cmd, 0);
 }
 
-/* TODO: add support for arguments */
+/* TODO: add support for spaced arguments */
 int radare_macro_call(const char *name)
 {
   char *args;
   int nargs = 0;
   char *str, *ptr;
   struct list_head *pos;
+  static int macro_level = 0;
   str = alloca(strlen(name)+1);
   strcpy(str, name);
   ptr = strchr(str, ')');
@@ -158,16 +162,27 @@ int radare_macro_call(const char *name)
     nargs = set0word(args);
   }
 
+  macro_level ++;
+  if (macro_level > MACRO_LIMIT) {
+    eprintf("Maximum macro recursivity reached.\n");
+    return 0;
+  }
+
   if (ptr != NULL) *ptr='\0';
   list_for_each_prev(pos, &macros) {
     struct macro_t *mac = list_entry(pos, struct macro_t, list);
+
     if (!strcmp(str, mac->name)) {
       char *ptr = mac->code;
       char *end = strchr(ptr, '\n');
+
       if (nargs != mac->nargs) {
         eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
+        macro_level --;
         return 0;
       }
+
+      macro_break = 0;
       do {
         if (end) *end='\0';
         if (*ptr)
@@ -175,11 +190,22 @@ int radare_macro_call(const char *name)
         if (end) {
           *end='\n';
           ptr = end + 1;
-        } else return 1;
+        } else {
+          macro_level --;
+          return 1;
+        }
         end = strchr(ptr, '\n');
-      } while(1);
+      } while(!macro_break);
+      if (macro_break)
+        return 0;
     }
   }
   eprintf("No macro named '%s'\n", str);
+  macro_level --;
   return 0;
+}
+
+int radare_macro_break()
+{
+	macro_break = 1;
 }

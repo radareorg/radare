@@ -141,7 +141,7 @@ int main(int argc, char **argv, char **envp)
 		case 'V':
 			printf("radare %s %dbit on %s%dbit "TARGET" %s%s\n", VERSION,
 				sizeof(u64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
-				(DEBUGGER)?   "dbg "   :"", (HAVE_VALAC)? "vala"   :"");
+				(DEBUGGER)?   "dbg "   :"", (HAVE_GUI)? "gui"   :"");
 			return 0;
 		case 'u':
 			config.unksize = 1;

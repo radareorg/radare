@@ -382,16 +382,16 @@ config.interrupted =1;
 			case 't':
 				/* unix timestamp */
 				D cons_printf("0x%08x = ", config.seek+i);
-{
-/* dirty hack */
-int oldfmt= last_print_format;
-u64 old = config.seek;
-radare_seek(config.seek+i, SEEK_SET);
-radare_read(0);
-print_data(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
-last_print_format=oldfmt;
-radare_seek(old, SEEK_SET);
-}
+				{
+				/* dirty hack */
+				int oldfmt= last_print_format;
+				u64 old = config.seek;
+				radare_seek(config.seek+i, SEEK_SET);
+				radare_read(0);
+				print_data(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
+				last_print_format=oldfmt;
+				radare_seek(old, SEEK_SET);
+				}
 				break;
 			case 'e': {
 				double doub;
@@ -618,7 +618,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		break;
 	case FMT_CODEGRAPH:
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
-#if HAVE_VALAC
+#if HAVE_GUI
 		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);

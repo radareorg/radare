@@ -1,0 +1,14 @@
+; hello world
+(hello name
+  !hello $0)
+
+; executes a command N times using a recursive macro
+(loop times cmd
+  ? $0 == 0
+  ?? ()
+  $1
+  .(loop $0-1 $1))
+
+; dummy hello world
+(foo one two
+  x $0 @ $1)

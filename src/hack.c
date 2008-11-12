@@ -28,11 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if !HAVE_GUI
-#define HAVE_VALAC 0
-#endif
-
-#if HAVE_VALAC
+#if HAVE_GUI
 #include <gtk/gtk.h>
 
 static int gtk_is_init = 0;
@@ -57,14 +53,14 @@ static int radare_hack_call(struct hack_t *h, const char *arg)
     }
 
     // XXX hacky :(
-    h->callback(arg);
+    h->callback((void *)arg);
     w = (GtkWindow *)gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_add(GTK_CONTAINER(w), *h->widget);
     gtk_widget_show_all(GTK_WIDGET(w));
     g_signal_connect (w, "destroy", G_CALLBACK (hack_close_window), w);
     gtk_main();
   } else
-    h->callback(arg);
+    h->callback((void *)arg);
 
   return 0;
 }
