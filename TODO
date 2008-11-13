@@ -7,29 +7,45 @@
 
 ===========================================================
 
-=== WORK FOR 1.0 ===
+Refactoring
+===========
 
-* Fix 'pdf' command.(should also work for pxf and so on..)
-  - set temporally block size to function size
-* Fix the anoying difference between GUI and HAVE_VALAC
-  - VALAC is no longer used to compile (only for developers and available in make)
+- librasm
+  - assemble/disassemble for multiple archs
+  - support for endianness
+- libraca
+  - code analysis for various archs
+- dietline
+  - readline replacement
+- dietcons
+  - curses replacement
+- dietbin
+  - elf, pe, ...
+
+===========================================================
+
+
+TheBook
+=======
+* Documentate visual cursor with marks ',' and '.' keys
+* documentate the change of the execstack protection in program section of ELF
+* doc4 'g' and 'x' in visual
+
+
+===========================================================
+
+Things to be done
+=================
+
+* !maps? @ esp -> doesnt works
+  - !step @ eip -> !!!
 * Add disassembler for
   - DalvikVM
   - CUDA
   - Flash10
 * '<' and '>' commands converted in prefix modifiers
-* Write serial:// for radare \o/ based on socket://
-   - rfcomm listen hci0  1
 * Add !log command for serial:// and socket://
 
-Nibble TODO:
-============
-* documentate the change of the execstack protection in program section of ELF
-
----- documentation
-* doc4 'g' and 'x' in visual
-
---- todo
 
 * rsc monitor implemented as a gui plugin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!

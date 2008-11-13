@@ -771,7 +771,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					sprintf(buf, " %%%ds:", show_nbytes);
 					if (strlen(flag)>show_nbytes) {
 						cons_printf(buf, flag);
-						NEWLINE;
+						cons_newline();
 						CHECK_LINES
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
@@ -904,7 +904,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				char buf[1024];
 				if (aop.jump||aop.eob) {
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
-						NEWLINE;
+						cons_newline();
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {

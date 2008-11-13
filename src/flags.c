@@ -163,7 +163,7 @@ void flag_show(flag_t *flag, int cmd_flag)
 		radare_seek(flag->offset, SEEK_SET);
 		radare_cmd_raw(flag->cmd, 0);
 		radare_seek(seek, SEEK_SET);
-		NEWLINE;
+		cons_newline();
 	}
 }
 

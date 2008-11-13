@@ -37,6 +37,9 @@
 #include "string.h"
 #include "debug.h"
 
+static int dump_num = 0;
+static char dumpdir[128];
+
 addr_t dealloc_page(addr_t addr)
 {
 	struct list_head *pos;
@@ -291,25 +294,22 @@ void print_maps_regions(int rad, int two)
 			perms[1] = (mr->perms & REGION_WRITE)?  'w' : '-';
 			perms[2] = (mr->perms & REGION_EXEC)?   'x' : '-';
 			perms[3] = (mr->flags & FLAG_USERCODE)? 'u' : '-';
-			perms[4] = 0;
+			perms[4] = '\0';
 
 			if ((!two) || (two && ((config.seek>mr->ini) && (config.seek < mr->end))))
 			cons_printf("0x%.8llx %c 0x%.8llx %s 0x%.8llx %s\n",
-				(unsigned long long)mr->ini, 
+				(u64) mr->ini, 
 				((config.seek>=mr->ini) && (config.seek <= mr->end))?'*':'-',
-				(unsigned long long)mr->end, perms,
-				(unsigned long long)mr->size, mr->bin? mr->bin : "");
+				(u64) mr->end, perms,
+				(u64) mr->size, mr->bin? mr->bin : "");
 		}
 	}
 
-	if (rad) {
-		cons_printf("e zoom.from = 0x%08llx\n", from);
-		cons_printf("e zoom.to = 0x%08llx\n", to);
-	}
+	if (rad)
+		cons_printf(
+		"e zoom.from = 0x%08llx\n"
+		"e zoom.to = 0x%08llx\n", from, to);
 }
-
-static int dump_num = 0;
-static char dumpdir[128];
 
 void page_restore(const char *dir)
 {

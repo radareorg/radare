@@ -80,10 +80,8 @@ void undo_list()
 		eprintf("-no seeks done-\n");
 	else {
 		cons_printf("f undo_idx @ %d\n", undos_idx);
-		for(i=undos_idx-1;i!=0;i--) {
-			cons_printf("f undo_%d @ 0x%llx", undos_idx-1-i, undos[i-1]);
-			NEWLINE;
-		}
+		for(i=undos_idx-1;i!=0;i--)
+			cons_printf("f undo_%d @ 0x%llx\n", undos_idx-1-i, undos[i-1]);
 	}
 }
 

@@ -503,7 +503,7 @@ eprintf("ignore(%c)\n", tmp);
  */
 void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 {
-	int tmp, i, j;
+	int tmp, i, j, k;
 	int zoom    = 0;
 	int lines   = 0;
 	int endian  = (int)config_get("cfg.bigendian");
@@ -590,7 +590,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		}
 		break;
 	case FMT_PRINT:
-		INILINE;
 		i = last_print_format;
 		radare_cmd( config_get("cmd.print"), 0);
 		last_print_format = i;
@@ -635,7 +634,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(buffer, buf+i, sizeof(short));
 			s = (short *)buffer;
 			print_color_byte("%hd", s[0]);
-			NEWLINE;
+			cons_newline();
 		} } break;
 	case FMT_DOUBLE: {
 		double f;
@@ -655,18 +654,17 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(buffer, buf+i, sizeof(int));
 			iv = (int *)buffer;
 			print_color_byte("%d", iv[0]);
-			NEWLINE;
+			cons_newline();
 		} } break;
 	case FMT_LONG: {
 		int i;
 		long *l;
-		INILINE;
 		for(i=0;!config.interrupted && i<len;i+=sizeof(long)) {
 			endian_memcpy(buffer, config.block+i, sizeof(long));
 			l = (long *)buffer;
 			print_color_byte("%ld", *l);
 			//printf("%ld", *l);
-			D { NEWLINE; } else cons_printf(" ");
+			D { cons_newline(); } else cons_printf(" ");
 		} }
 		break;
 	case FMT_LSB: {
@@ -698,7 +696,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			if (is_printable(dbyte))
 				cons_printf ("%c", dbyte);
 		}
-		NEWLINE;
+		cons_newline();
 		} break;
 	case FMT_USER: {
 		const char *ptr = config_get("cmd.user");
@@ -707,12 +705,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		} break;
 	case FMT_LLONG: {
 		long long *ll;
-		INILINE;
 		for(i=0;!config.interrupted && i<len;i+=sizeof(long long)) {
 			endian_memcpy(buffer, config.block+i, sizeof(long long));
  			ll = (long long *)buffer;
 			cons_printf("%lld", *ll);
-			D { NEWLINE; } else cons_printf(" ");
+			D { cons_newline(); } else cons_strcat(" ");
 		} } break;
 	/*   DATES   */
 	case FMT_TIME_DOS: {
@@ -722,13 +719,12 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(_time, config.block+i, 2);
 			endian_memcpy(_date, config.block+i+2, 2);
 			print_msdos_date(_time, _date);
-			NEWLINE;
+			cons_newline();
 		} } break;
 	case FMT_TIME_UNIX: {
 		time_t t;
 		char datestr[256];
 		const char *datefmt;
-		INILINE;
 		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
 			//printf("%s", (char *)ctime((const time_t*)&t));
@@ -741,14 +737,13 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 					(const struct tm*)gmtime((const time_t*)&t));
 			// TODO colorize depending on the distance between dates
 			if (tmp) cons_printf("%s",datestr); else printf("*failed*");
-			NEWLINE;
+			cons_newline();
 		} } break;
 	case FMT_TIME_FTIME: {
 		unsigned long long l, L = 0x2b6109100LL;
 		time_t t;
 		char datestr[256];
 		const char *datefmt;
-		INILINE;
 		for(i=0;!config.interrupted && i<len;i+=8) {
 			endian_memcpy((unsigned char*)&l, config.block+i, sizeof(unsigned long long));
 			l /= 10000000; // 100ns to s
@@ -761,7 +756,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			else 	tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z",
 					(const struct tm*)gmtime((const time_t*)&t));
 			if (tmp) cons_printf("%s", datestr); else cons_printf("*failed*");
-			NEWLINE;
+			cons_newline();
 		} } break;
 	case FMT_RAW:
 		// XXX TODO: measure the string length and make it fit properly
@@ -769,18 +764,16 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		write(1, buf, (len>i)?i:len);
 		break;
 	case FMT_URLE:
-		INILINE;
 		for(i = 0; i < len; i++) {
 			if (config.verbose&&is_printable(config.block[i]))
 				print_color_byte_i(i, "%c", config.block[i]);
 			else 	print_color_byte_i(i, "%%%02x", config.block[i]);
 		}
-		NEWLINE;
+		cons_newline();
 		break;
 	case FMT_ASHC:
 		str = flag_name_by_offset(seek);
 		if (!*str) str = "shellcode";
-		INILINE;
                 cons_printf("%s:", str);
 		inc = config.width/7;
 		lines = 0;
@@ -790,24 +783,23 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
                         if (!(i%inc)) {
 				if (++lines>config.height-4) 
 					break;
-				NEWLINE; cons_printf(".byte ");
+				cons_newline(); cons_printf(".byte ");
 			}
 			print_color_byte_i(i, "0x%02x", config.block[i]);
                         if (((i+1)%inc) && i+1<len) cons_printf(", ");
                 }
-		NEWLINE;
-                cons_printf(".equ %s_len, %d", str, len); NEWLINE;
+		cons_newline();
+                cons_printf(".equ %s_len, %d", str, len); cons_newline();
                 break;
 	case FMT_CSTR:
-		D { INILINE; }
 		inc = config.width/6;
-		cons_printf("#define _BUFFER_SIZE %d", len); NEWLINE;
-		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); NEWLINE;
+		cons_printf("#define _BUFFER_SIZE %d", len); cons_newline();
+		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); cons_newline();
 		for(j = i = 0; !config.interrupted && i < len;) {
 			print_color_byte_i(i, "0x%02x", config.block[i]);
 			if (++i<len)  cons_printf(", ");
 			if (!(i%inc)) {
-				NEWLINE; 
+				cons_newline(); 
 				V if (++j+5>config.height)
 					D if ((i/inc)+5 > config.height )
 						break;
@@ -820,12 +812,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			break;
 		inc = (int)((config.width-17)/11);
 		D {
-			INILINE;
 			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset");
 			for(i=0;i<inc;i++)
 				cons_printf("       +0x%x",i);
-			NEWLINE;
+			cons_newline();
 			C cons_strcat(C_RESET);
 		}
 		for(i=0; !config.interrupted && i<len; i++) {
@@ -839,7 +830,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 				C cons_printf(C_RESET);
 			}
 			i--;
-			D { NEWLINE; }
+			D { cons_newline(); }
 		}
 		break;
 	case FMT_OCT:
@@ -851,7 +842,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 				cons_printf("+%02x ",i);
 			for(i=0;i<inc;i++)
 				cons_printf("%c",hex[i%16]);
-			NEWLINE;
+			cons_newline();
 		}
 		for(i=0;!config.interrupted && i<len;i++) {
 			V if ((i/inc)+6>config.height) break;
@@ -871,19 +862,19 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 					print_color_byte_i(i, "%c", buf[i]);
 				else	print_color_byte_i(i, ".", buf[i]);
 			i--;
-			NEWLINE; }
+			cons_newline(); }
 		}
 		break;
 	case FMT_ASCP:
 		for(i=0;!config.interrupted && i<len;i++)
 			if ( is_printable(buf[i]) )
 				print_color_byte_i(i, "%c", buf[i]);
-		NEWLINE;
+		cons_newline();
 		break;
 	case FMT_WASC0:
 		for(i=0;!config.interrupted && i<len && (buf[i]&&!buf[i+1]);i+=2)
 			print_color_byte_i(i, "%c", buf[i]);
-		NEWLINE;
+		cons_newline();
 		break;
 	case FMT_ASC0:
 		cons_printf("%s\n", buf);
@@ -893,7 +884,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			if ( !is_printable(buf[i]) )
 				print_color_byte_i(i, "\\x%02x", buf[i]);
 			else	cons_printf("%c", buf[i]);
-		NEWLINE;
+		cons_newline();
 		break;
 	case FMT_HEXQ: {
 		long long int *sh;
@@ -901,8 +892,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(buffer, buf+i, 8);
 			sh = (long long int*)&buffer;
 			cons_printf("0x%016llx ", (long long int)sh[0]);
-			D {NEWLINE;}
-		} D{}else NEWLINE;
+			D {cons_newline();}
+		} D{}else cons_newline();
 		} break;
 	case FMT_HEXD: {
 		unsigned int *sh;
@@ -910,8 +901,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(buffer, buf+i, 4);
 			sh = (unsigned int *)buffer;
 			cons_printf("0x%02x%02x%02x%02x ", buffer[0],buffer[1],buffer[2],buffer[3]);
-			D { NEWLINE; }
-		} D{}else NEWLINE;
+			D { cons_newline(); }
+		} D{}else cons_newline();
 		} break;
 	case FMT_HEXW: {
 		unsigned short *sh;
@@ -919,10 +910,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy(buffer, buf+i, 2); //sizeof(short));
 			sh = (unsigned short *)&buffer;
 			cons_printf("0x%02x%02x ", buffer[0],buffer[1]);
-			//print_color_byte_i(i, "%04x ", sh[0]);
-			//cons_printf("0x%04x", sh[0]);
-			D { NEWLINE; }
-		}  D{}else NEWLINE;
+			D { cons_newline(); }
+		}  D{}else cons_newline();
 		} break;
 	case FMT_ZOOM: {
 		u8 *buf = NULL;
@@ -1012,25 +1001,22 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		tmp = config.cursor_mode;
 		D if ( fmt == FMT_HEXB ) {
 			C cons_printf(cons_palette[PAL_HEADER]);
-			cons_printf("   offset  ");
+			cons_strcat("   offset   ");
+			k = 0; // TODO: ??? SURE??? config.seek & 0xF;
 			for (i=0; i<inc; i++) {
-				for(j=i; j>15; j-=15) j--;
-				cons_printf(" %c", hex[j]);
-				if (j%2) cons_printf(" ");
+				cons_printf(" %c", hex[(i+k)%15]);
+				if (i&1) cons_strcat(" ");
 			}
-			cons_printf(" ");
-			for (i=0; i<inc; i++) {
-				for(j=i; j>15; j-=15) j--;
-				cons_printf("%c", hex[j]);
-			}
-			NEWLINE;
+			for (i=0; i<inc; i++)
+				cons_printf("%c", hex[(i+k)%15]);
+			cons_newline();
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {
 			V if (inc==0 && (i/inc)+4>config.height) break;
 			D { if ( fmt == FMT_HEXB ) {
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
 				else print_addr(seek+i+config.baddr);
-			} } else { INILINE; }
+			} }
 
 			if (config.insert_mode==1)
 				config.cursor_mode = 1;
@@ -1064,12 +1050,12 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 						print_color_byte_i(j, "%c", buf[j]);
 					else	print_color_byte_i(j, ".", buf[j]);
 				}
-				NEWLINE;
+				cons_newline();
 			}
 		}
 		config.cursor_mode = tmp;
-		if (fmt == FMT_HEXBS) { NEWLINE; }
-		INILINE;
+		if (fmt == FMT_HEXBS)
+			cons_newline();
 		break;
 	default:
 		eprintf("Don't know how to print %d\n", fmt);

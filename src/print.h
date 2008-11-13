@@ -11,11 +11,6 @@ cons_printf("%d%d%d%d%d%d%d%d",\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0);
 extern int dec;
 
-//#define INILINE D { int i; if(config.x) printf("\r"); for(i=1;i<config.x;i++) printf(" "); } 
-#define INILINE
-#undef NEWLINE
-#define NEWLINE cons_newline();
-
 #define CLRSCR() cons_strcat("\x1b[2J\x1b[0;0H");
 int is_cursor(int from, int len);
 

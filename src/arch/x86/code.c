@@ -219,7 +219,8 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x81:
 		if (bytes[1] == 0xec) {
 			/* sub $0x????????, $esp*/
-			aop->ref = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);
+  			// 81ece00d0000    sub esp, 0xde0 ; 
+			aop->value = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);
 			aop->stackop = AOP_STACK_INCSTACK;
 			break;
 		}

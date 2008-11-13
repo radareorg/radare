@@ -924,7 +924,9 @@ int analyze_function(int recursive, int report)
 		case AOP_STACK_INCSTACK:
 			if (!report) {
 				char buf[1024];
-				sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
+				if (ref<0)
+					sprintf(buf, "CC Stack size %d @ 0x%08llx\n", (int)ref, seek);
+				else sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
 				framesize += aop.value;
 			}

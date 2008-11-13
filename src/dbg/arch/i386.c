@@ -757,7 +757,7 @@ int arch_print_registers(int rad, const char *mask)
 			if (R_EBP(regs)!=R_EBP(oregs)) cons_printf("ebp = 0x%08x (0x%08x) ", R_EBP(regs), R_EBP(oregs));
 			if (R_ESP(regs)!=R_ESP(oregs)) cons_printf("esp = 0x%08x (0x%08x) ", R_ESP(regs), R_ESP(oregs));
 			if (R_EFLAGS(regs)!=R_EFLAGS(oregs)) cons_printf("eflags = 0x%04x (0x%04x)", R_EFLAGS(regs), R_EFLAGS(oregs));
-			NEWLINE;
+			cons_newline();
 	} else {
 		if (color) {
 			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("\x1b[35m");

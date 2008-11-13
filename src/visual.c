@@ -893,17 +893,17 @@ void visual_draw_screen()
 		inc = config.block_size;
 
 	if (config.cursor_mode)
-	cons_printf("[ 0x%llx (inc=%d, bs=%d cur=%d sz=%d mark=0x%llx) %s %s] %s -> %s         \n",
-		(config.seek+config.baddr), inc,
+	cons_printf("[ 0x%llx+%d (0x%08llx+%d) (bs=%d mark=0x%llx) %s %s] %s -> %s         \n",
+		(config.seek+config.baddr), 
+		config.cursor, config.seek+config.cursor,
+		(config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		(unsigned int)config.block_size,
-		config.cursor, (config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf, buf2);
 	else
-	cons_printf("[ 0x%llx (inc=%d, bs=%d sz=%d mark=0x%llx) %s %s] %s            \n",
-		(config.seek+config.baddr), inc,
+	cons_printf("[ 0x%llx (bs=%d mark=0x%llx) %s %s] %s            \n",
+		(config.seek+config.baddr),
 		(unsigned int)config.block_size,
-		(config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
 
@@ -1483,11 +1483,9 @@ CMD_DECL(visual)
 			cons_clear();
 			continue;
 		case ',':
-			if (config.seek == mark) {
-				mark = 0;
-			} else {
+			if (config.seek != mark)
 				mark = config.seek + ((config.cursor_mode)?config.cursor:0);
-			}
+			else	mark = 0;
 			break;
 		case '.':
 			// TODO: WHAT IS THIS DOING? I THINK '.' is better for seek to (nice with cursor)
