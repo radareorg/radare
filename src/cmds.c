@@ -1681,6 +1681,9 @@ CMD_DECL(write)
 		}
 		ret = radare_write(input+2, WMODE_WSTRING);
 		break;
+	case 't':
+		eprintf("TODO\n");
+		break;
 	case ' ':
 		ret = radare_write(input+1, WMODE_STRING);
 		break;
@@ -1694,6 +1697,7 @@ CMD_DECL(write)
 		"  wb [hexpair]       ; circulary fill the block with these bytes\n"
 		"  wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		"  ww [string]        ; write wide chars (interlace 00s in string)\n"
+		"  wt [file] [off]    ; write current block to file at offset\n"
 		"  wf [file]          ; write contents of file at current seek\n"
 		"  wF [hexfile]       ; write hexpair contents of file\n"
 		"  wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
