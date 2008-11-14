@@ -19,3 +19,19 @@
  */
 
 #include "r_io.h"
+
+int r_io_handle_open()
+{
+}
+
+int r_io_handle_generate()
+{
+}
+
+int r_io_handle_close()
+{
+}
+
+int r_io_handle_list()
+{
+}

@@ -214,7 +214,7 @@ int dl_hist_up()
 {
 	if (dl_histidx>0) {
 		strncpy(dl_buffer, dl_history[--dl_histidx], DL_BUFSIZE-1);
-		dl_buffer_idx=
+		dl_buffer_idx = \
 		dl_buffer_len = strlen(dl_buffer);
 		return 1;
 	}
@@ -666,76 +666,3 @@ _end:
 	//write(1,"\n",1);
 	return dl_buffer;
 }
-
-#if 0
-
-
-#if __UNIX__
-static struct termios tio_old, tio_new;
-#include "main.h"
-#include <stdarg.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#endif
-
-static void cons_set_raw(int b)
-{
-#if __UNIX__
-	if (b) {
-		tcgetattr(0, &tio_old);
-		memcpy ((char *)&tio_new, (char *)&tio_old, sizeof(struct termios));
-		tio_new.c_iflag &= ~(BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
-		tio_new.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
-		tio_new.c_cflag &= ~(CSIZE|PARENB);
-		tio_new.c_cflag |= CS8;
-		tio_new.c_cc[VMIN]=1; // Solaris stuff hehe
-		tcsetattr(0, TCSANOW, &tio_new);
-		fflush(stdout);
-		return;
-	}
-
-	tcsetattr(0, TCSANOW, &tio_old);
-	fflush(stdout);
-#endif
-}
-
-static int cons_get_real_columns()
-{
-#if __WINDOWS__
-        return 78;
-#endif
-        struct winsize win;
-
-        if (ioctl(1, TIOCGWINSZ, &win)) {
-                /* default values */
-//                win.ws_col = 80;
- //               win.ws_row = 23;
-        }
-
-        return win.ws_col;
-}
-
-int main(int argc, const char **argv)
-{
-	char *ret;
-
-	dl_histsize = 100;
-	dl_prompt = "$ ";
-	dl_init();
-
-	dl_printchar();
-
-	do {
-		ret = dl_readline(argc, argv);
-		if (ret) {
-			printf(" [line] '%s'\n", ret);
-			dl_hist_add(ret);
-		}
-	} while(ret!=NULL);
-	dl_free();
-	return 0;
-}
-
-#endif

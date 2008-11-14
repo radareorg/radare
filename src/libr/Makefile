@@ -4,6 +4,7 @@ LIBLIST=io hash line
 # Under development
 #LIBLIST+=print
 #LIBLIST+=cons
+#LIBLIST+=util
 #LIBLIST+=bin
 
 # TODO : generate single library linking against the rest
@@ -12,6 +13,7 @@ LIBLIST=io hash line
 
 all:
 	for lib in ${LIBLIST}; do ( cd $${lib} && ${MAKE} all ); done
+	echo Build done for: ${LIBLIST}
 
 clean:
 	for lib in ${LIBLIST}; do ( cd $${lib} && ${MAKE} clean ); done

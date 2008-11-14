@@ -20,6 +20,12 @@
 
 #include "r_io.h"
 
+int r_io_init()
+{
+	r_io_map_init();
+	/* load default IO plugins here */
+}
+
 int r_io_open(const char *file, int flags)
 {
 }

@@ -32,7 +32,7 @@ int debug_close(int fd)
 
 	if (ps.opened)
 	if (fd == ps.fd) {
-		eprintf("Do you want to kill the process? (Y/n/c) ");
+		eprintf("Do you want to kill the process? (Y/n/c/d) (yes,no,cancel,detach+continue)");
 
 		cons_set_raw(1);
 		while(read(0,buf,1)>0) {
@@ -43,6 +43,9 @@ int debug_close(int fd)
 			dealloc_all();
 
 			switch(buf[0]) {
+			case 'd':
+				eprintf("TODO\n");
+				break;
 			case 'c': case 'C':
 				eprintf("Cancelled\n");
 				cons_set_raw(0);

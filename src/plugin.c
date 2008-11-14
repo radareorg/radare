@@ -242,6 +242,7 @@ void plugin_init()
 {
 	int last = 0;
 
+	/* r_io_init() */
 	io_map_init();
 	if (plugin_init_flag)
 		return;
