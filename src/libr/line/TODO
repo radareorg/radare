@@ -1,0 +1,3 @@
+* Link against libreadline
+* Remove all label-related stuff
+* Define API outside as r_line_... in ../include/

@@ -23,11 +23,6 @@
 
 #include "../global.h"
 
-#if __CYGWIN__ 
-#define __addr_t_defined
-#endif
-
-
 #undef __BSD__
 #undef __UNIX__
 #undef __WINDOWS__
@@ -38,6 +33,7 @@
 
 #if __WIN32__ || __CYGWIN__ || MINGW32
 
+#define __addr_t_defined
 #include <windows.h>
 #ifdef USE_SOCKETS
 #include <winsock.h>

@@ -118,6 +118,7 @@ void print_addr(u64 off)
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
 
+// TODO: move to console
 const char *get_color_for(int c)
 {
 	if (c==0)    return cons_palette[PAL_00];
@@ -1004,11 +1005,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			cons_strcat("   offset   ");
 			k = 0; // TODO: ??? SURE??? config.seek & 0xF;
 			for (i=0; i<inc; i++) {
-				cons_printf(" %c", hex[(i+k)%15]);
+				cons_printf(" %c", hex[(i+k)%16]);
 				if (i&1) cons_strcat(" ");
 			}
 			for (i=0; i<inc; i++)
-				cons_printf("%c", hex[(i+k)%15]);
+				cons_printf("%c", hex[(i+k)%16]);
 			cons_newline();
 		}
 		for(i=0; !config.interrupted && i<len; i+=inc) {

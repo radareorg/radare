@@ -370,21 +370,21 @@ void radis(int len, int rows)
 
 /* ------------------------------  refactor ----------------------------------*/
 
-#define RADIS_SIZE  0x00001
-#define RADIS_BYTES 0x00002
-#define RADIS_OFFSET 0x00004
+#define RADIS_SIZE      0x00001
+#define RADIS_BYTES     0x00002
+#define RADIS_OFFSET    0x00004
 #define RADIS_FUNCTIONS 0x00008
-#define RADIS_SECTION 0x00010
-#define RADIS_SPLITS 0x00040
-#define RADIS_FLAGS 0x00080
+#define RADIS_SECTION   0x00010
+#define RADIS_SPLITS    0x00040
+#define RADIS_FLAGS     0x00080
 #define RADIS_FLAGSLINE 0x00100
-#define RADIS_LINES 0x00200
-#define RADIS_RELADDR 0x00400
-#define RADIS_TRACES 0x00800
-#define RADIS_COMMENTS 0x01000
-#define RADIS_COLOR 0x02000
-#define RADIS_STACKPTR 0x04000
-
+#define RADIS_LINES     0x00200
+#define RADIS_RELADDR   0x00400
+#define RADIS_TRACES    0x00800
+#define RADIS_COMMENTS  0x01000
+#define RADIS_COLOR     0x02000
+#define RADIS_STACKPTR  0x04000
+#define RADIS_ADDRMOD   0x08000
 
 static int stack_ptr = 0;
 static void print_stackptr(struct aop_t *aop, int zero)

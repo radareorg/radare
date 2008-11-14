@@ -166,7 +166,7 @@ void visual_show_help()
 	"q          exits visual mode\n");
 	TITLE
 	cons_printf("\nCursor mode:\n");
-	TITLE
+	TITLE_END
 	cons_printf(
 	"c          toggle cursor mode\n"
 	"hjkl       move cursor (also arrows)\n"

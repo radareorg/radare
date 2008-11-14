@@ -1,0 +1,23 @@
+libr
+====
+
+This library is the base for the refactorization of radare into
+multiple sub-libraries used by the core.
+
+- libr_asm
+  - assemble/disassemble for multiple archs
+  - support for endianness
+- libr_aca
+  - code analysis for various archs
+- libr_cons
+  - curses replacement
+- libr_line
+  - readline replacement
+- libr_bin
+  - elf, pe, ...
+
+All APIs should be prefixed with 'r_' following its lib name:
+
+  f.ex: r_io_open()
+
+The new core will link against all those libraries.

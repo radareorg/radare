@@ -4,24 +4,6 @@
     \'   '//        \   '   \       \  for radare
      \___/ \________/.______/_______/
 
-
-===========================================================
-
-Refactoring
-===========
-
-- librasm
-  - assemble/disassemble for multiple archs
-  - support for endianness
-- libraca
-  - code analysis for various archs
-- dietline
-  - readline replacement
-- dietcons
-  - curses replacement
-- dietbin
-  - elf, pe, ...
-
 ===========================================================
 
 
