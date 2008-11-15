@@ -12,7 +12,7 @@ LIBSO=${LIB}.${EXT_SO}
 
 # Rules
 all: ${OBJ} ${LIBSO} ${LIBAR}
-	@([ -e t/Makefile ] && cd t && ${MAKE} all)
+	-@([ -e t/Makefile ] && cd t && ${MAKE} all)
 
 ${LIBSO}:
 	${CC_LIB} ${LDFLAGS} ${OBJ}
@@ -22,4 +22,4 @@ ${LIBAR}:
 
 clean:
 	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN}
-	@([ -e t/Makefile ] && cd t && ${MAKE} clean)
+	-@([ -e t/Makefile ] && cd t && ${MAKE} clean)
