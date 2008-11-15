@@ -33,7 +33,6 @@ struct io_maps_t {
         struct list_head list;
 };
 
-
 static int maps_n = 0;
 static int maps[10];
 
@@ -44,18 +43,19 @@ void r_io_map_init()
 	INIT_LIST_HEAD(&io_maps);
 }
 
-int r_io_map_rm(const char *file)
+int r_io_map_rm(int fd)
 {
 	struct list_head *pos;
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
-		if (!strcmp(im->file, file)) {
+		if (im->fd == fd) {
 			/* FREE THIS */
-			eprintf("TODO\n");
+			r_io_handle_close(fd, r_io_handle_resolve_fd(fd));
+			fprintf(stderr, "r_io_map_rm: TODO\n");
 			return 0;
 		}
 	}
-	eprintf("Not found\n");
+	fprintf(stderr, "Not found\n");
 	return 0;
 }
 
@@ -66,7 +66,7 @@ int r_io_map_list()
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
-			cons_printf("0x%08llx 0x%08llx %s\n",
+			printf("0x%08llx 0x%08llx %s\n",
 				im->from, im->to, im->file);
 			n++;
 		}
@@ -77,10 +77,11 @@ int r_io_map_list()
 int r_io_map(const char *file, u64 offset)
 {
 	struct io_maps_t *im;
-	int fd = r_io_open(file, R_IO_READ);
+	int fd = r_io_open(file, R_IO_READ, 0644);
 	if (fd == -1)
 		return -1;
-	im = (struct io_maps_t*)malloc(sizeof(struct io_maps_t));
+	im = malloc_struct(struct io_maps_t);
+//(struct io_maps_t*)malloc(sizeof(struct io_maps_t));
 	if (im == NULL) {
 		r_io_close(fd);
 		return -1;
@@ -100,8 +101,22 @@ int r_io_map_read_at(u64 off, u8 *buf, u64 len)
 	list_for_each_prev(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0' && off >= im->from && off < im->to) {
-			lseek(im->fd, off-im->from, SEEK_SET);
-			return read(im->fd, buf, len);
+			r_io_lseek(im->fd, off-im->from, SEEK_SET);
+			return r_io_read(im->fd, buf, len);
+		}
+	}
+	return 0;
+}
+
+int r_io_map_write_at(u64 off, u8 *buf, u64 len)
+{
+	struct list_head *pos;
+
+	list_for_each_prev(pos, &io_maps) {
+		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+		if (im->file[0] != '\0' && off >= im->from && off < im->to) {
+			r_io_lseek(im->fd, off-im->from, SEEK_SET);
+			return r_io_write(im->fd, buf, len);
 		}
 	}
 	return 0;

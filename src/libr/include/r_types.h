@@ -8,6 +8,17 @@
 #define u16 unsigned short
 #define u8  unsigned char
 
+/* types */
+
+#undef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64
+#undef _GNU_SOURCE
+#define _GNU_SOURCE
+
+/* allocating */
+//#define eprintf(...) fprintf(stderr, ...)
+#define malloc_struct(x) (x*)malloc(sizeof(x))
+
 /* operating system */
 
 #undef __BSD__

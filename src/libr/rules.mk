@@ -1,6 +1,6 @@
 # Compiler
 CC?=gcc
-CFLAGS+=-I../include
+CFLAGS+=-I../include -fPIC
 CC_LIB=${CC} -shared -o ${LIBSO}
 CC_AR=ar -r ${LIBAR} ${OBJ}
 
@@ -12,6 +12,7 @@ LIBSO=${LIB}.${EXT_SO}
 
 # Rules
 all: ${OBJ} ${LIBSO} ${LIBAR}
+	@([ -e t/Makefile ] && cd t && ${MAKE} all)
 
 ${LIBSO}:
 	${CC_LIB} ${LDFLAGS} ${OBJ}
@@ -21,3 +22,4 @@ ${LIBAR}:
 
 clean:
 	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN}
+	@([ -e t/Makefile ] && cd t && ${MAKE} clean)
