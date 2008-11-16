@@ -122,16 +122,12 @@ int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	}
 
 	if (newstr != NULL) {
-		if (argv[0]) strcpy(newstr, argv[0]);
-		if (argv[1]) strcpy(newstr, " ");
-		if (argv[1]) strcpy(newstr, argv[1]);
-		if (argv[2]) strcpy(newstr, ",");
-		if (argv[2]) strcpy(newstr, argv[2]);
-		if (argv[3]) strcpy(newstr, ",");
-		if (argv[3]) strcpy(newstr, argv[3]);
-		if (argv[4]) strcpy(newstr, ",");
-		if (argv[4]) strcpy(newstr, argv[4]);
+		for (i=0; i<argc; i++) {
+			strcat(newstr, argv[i]);
+			strcat(newstr, (i == 0 || i== argc - 1)?" ":",");
+		}
 	}
+
 	return 0;
 
 }
@@ -187,16 +183,12 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	}
 
 	if (newstr != NULL) {
-		if (argv[0]) strcpy(newstr, argv[0]);
-		if (argv[1]) strcpy(newstr, " ");
-		if (argv[1]) strcpy(newstr, argv[1]);
-		if (argv[2]) strcpy(newstr, ",");
-		if (argv[2]) strcpy(newstr, argv[2]);
-		if (argv[3]) strcpy(newstr, ",");
-		if (argv[3]) strcpy(newstr, argv[3]);
-		if (argv[4]) strcpy(newstr, ",");
-		if (argv[4]) strcpy(newstr, argv[4]);
+		for (i=0; i<argc; i++) {
+			strcat(newstr, argv[i]);
+			strcat(newstr, (i == 0 || i== argc - 1)?" ":",");
+		}
 	}
+
 	return 0;
 }
 

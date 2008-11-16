@@ -98,16 +98,17 @@ void udis_init()
 
 	/* set syntax */
 	ud_set_syntax(&ud_obj, UD_SYN_INTEL);
+	
 	if (syn) {
 		ollyasm_enable = 0;
 		if (!strcmp(syn,"olly")) {
 			ollyasm_enable = 1;
-		} else
-		if (!strcmp(syn,"pseudo")) 
-			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
-		else if (!strcmp(syn,"att")) 
+		} else if (!strcmp(syn,"att")) {
 			ud_set_syntax(&ud_obj, UD_SYN_ATT);
+		} else if (!strcmp(syn,"pseudo") && !config_get_i("asm.pseudo"))
+			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
 	}
+
 	ud_set_input_hook(&ud_obj, input_hook_x);
 //ud_idx=0;
 }
