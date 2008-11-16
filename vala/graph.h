@@ -26,8 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cairo.h>
-#include "layout.h"
 #include "node.h"
+#include "layout.h"
 #include "edge.h"
 
 G_BEGIN_DECLS

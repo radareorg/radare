@@ -58,11 +58,12 @@ crOBJ+=arch/x86/code.o
 crOBJ+=arch/x86/dislen.o
 crOBJ+=arch/x86/udis86/syn.o
 crOBJ+=arch/x86/udis86/input.o
-crOBJ+=arch/x86/udis86/opcmap.o
+#crOBJ+=arch/x86/udis86/opcmap.o
 crOBJ+=arch/x86/udis86/udis86.o
 crOBJ+=arch/x86/udis86/decode.o
 crOBJ+=arch/x86/udis86/syn-att.o
-crOBJ+=arch/x86/udis86/mnemonics.o
+crOBJ+=arch/x86/udis86/itab.o
+#crOBJ+=arch/x86/udis86/mnemonics.o
 crOBJ+=arch/x86/udis86/syn-intel.o
 crOBJ+=arch/x86/udis86/syn-pseudo.o
 

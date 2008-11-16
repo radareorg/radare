@@ -22,10 +22,10 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <cairo.h>
-#include <stdlib.h>
-#include <string.h>
 #include <float.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "edge.h"
 #include "node.h"
 

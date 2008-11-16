@@ -1,5 +1,5 @@
 PKGNAME radare
-VERSION 1.0
+VERSION 1.1
 CONTACT pancake ; pancake@youterm.com
 
 LANG_C!
@@ -54,13 +54,13 @@ LANG_PYTHON
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
 CHKVER vala-1.0 0.5.0
-(( temporary fix to avoid vala
+(( temporary fix to avoid vala ))
 IFNOT HAVE_VALA_1_0_VERSION_0_5_0 {
 	ECHO Needs vala 0.5.0 at least ;
+	HAVE_VALAC = 0
 	VALAC = '' ;
-	VALA = 0 ;
-	HAVE_GUI = 0 ;
 }
+((
 IFEQ VALAC valac ; {
 	WITH_VALA = 0 ;
 	VALA = 0 ;

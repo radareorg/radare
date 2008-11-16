@@ -21,15 +21,7 @@
 #undef HAVE_VALAC
 #endif
 
-#if defined(HAVE_GUI)
-#if HAVE_GUI
 #define HAVE_VALAC @HAVE_VALAC@
-#else
-#define HAVE_VALAC 0
-#endif
-#else
-#define HAVE_VALAC @HAVE_VALAC@
-#endif
 
 #define LIL_ENDIAN @LIL_ENDIAN@
 #define VERSION "@VERSION@"
