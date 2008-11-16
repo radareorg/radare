@@ -895,7 +895,7 @@ void visual_draw_screen()
 	if (config.cursor_mode)
 	cons_printf("[ 0x%llx+%d (0x%08llx+%d) (bs=%d mark=0x%llx) %s %s] %s -> %s         \n",
 		(config.seek+config.baddr), 
-		config.cursor, config.seek+config.cursor,
+		config.cursor, config.baddr+config.seek+config.cursor,
 		(config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		(unsigned int)config.block_size,
 		mark, get_print_format_name(last_print_format),

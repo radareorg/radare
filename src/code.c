@@ -165,8 +165,9 @@ udis_mem_ptr= 0;
 			sprintf(string, "%s", da.result);
 		} else {
 //			udis_init();
-			ud_obj.insn_offset = seek+myinc; //+bytes;
-			ud_obj.pc = seek+myinc;
+			//ud_obj.insn_offset = seek+myinc; //+bytes;
+			//ud_obj.pc = seek+myinc;
+			ud_obj.pc = seek;
 			//ud_idx = myinc;
 			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
@@ -243,7 +244,8 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	switch(arch) {
 	case ARCH_X86:
 		/* ultra ugly hack */
-		ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
+		//ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
+		ret = udis_arch_string(arch, buf, b, endian, seek, bytes, myinc);
 		break;
 	case ARCH_PPC:
 	case ARCH_JAVA:
@@ -888,11 +890,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
+						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %d = %s", jump_n,buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
+						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
