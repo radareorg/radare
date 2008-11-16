@@ -98,31 +98,39 @@ ud_input_end(struct ud* u)
  *
  * inp_curr and inp_fill are pointers to the cache. The program is written based
  * on the property that they are 8-bits in size, and will eventually wrap around
- * forminh a circular buffer. So, the size of the cache is 256 in size, kind of
+ * forming a circular buffer. So, the size of the cache is 256 in size, kind of
  * unnecessary yet optimized.
  *
  * A buffer inp_sess stores the bytes disassembled for a single session.
  * -----------------------------------------------------------------------------
  */
-extern uint8_t 
-inp_next(struct ud* u) 
+extern uint8_t inp_next(struct ud* u) 
 {
-  int c;
-
-  if (u->inp_curr != u->inp_fill)
-	c = u->inp_cache[++u->inp_curr];
-  else if (u->inp_end || (c = u->inp_hook(u)) == -1) {
+  int c = -1;
+  /* if current pointer is not upto the fill point in the 
+   * input cache.
+   */
+  if ( u->inp_curr != u->inp_fill ) {
+	c = u->inp_cache[ ++u->inp_curr ];
+  /* if !end-of-input, call the input hook and get a byte */
+  } else if ( u->inp_end || ( c = u->inp_hook( u ) ) == -1 ) {
+	/* end-of-input, mark it as an error, since the decoder,
+	 * expected a byte more.
+	 */
 	u->error = 1;
+	/* flag end of input */
 	u->inp_end = 1;
 	return 0;
   } else {
+	/* increment pointers, we have a new byte.  */
 	u->inp_curr = ++u->inp_fill;
-	u->inp_cache[u->inp_fill] = c;
+	/* add the byte to the cache */
+	u->inp_cache[ u->inp_fill ] = c;
   }
-
-  u->inp_sess[u->inp_ctr++] = c;
-
-  return (uint8_t)c;
+  /* record bytes input per decode-session. */
+  u->inp_sess[ u->inp_ctr++ ] = c;
+  /* return byte */
+  return ( uint8_t ) c;
 }
 
 /* -----------------------------------------------------------------------------
@@ -132,7 +140,7 @@ inp_next(struct ud* u)
 extern void
 inp_back(struct ud* u) 
 {
-  if (u->inp_ctr > 0) {
+  if ( u->inp_ctr > 0 ) {
 	--u->inp_curr;
 	--u->inp_ctr;
   }
@@ -146,7 +154,7 @@ extern uint8_t
 inp_peek(struct ud* u) 
 {
   uint8_t r = inp_next(u);
-  inp_back(u);
+  if ( !u->error ) inp_back(u); /* Don't backup if there was an error */
   return r;
 }
 

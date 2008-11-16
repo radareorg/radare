@@ -16,6 +16,12 @@ TheBook
 
 ===========================================================
 
+* r_io_map_join()
+  > o connect://1.1.1.3:9999//bin/ls 0x100000
+  > o /bin/ls 0x200000
+  > join 0x200000 // WTF
+    writes /bin/ls file info over under io layers
+
 Things to be done
 =================
 

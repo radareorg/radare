@@ -25,7 +25,7 @@
 # include <inttypes.h>
 #endif
 
-#include "mnemonics.h"
+#include "itab.h"
 
 /* -----------------------------------------------------------------------------
  * All possible "types" of objects in udis86. Order is Important!
@@ -167,12 +167,13 @@ struct ud
   uint8_t		adr_mode;
   uint8_t		br_far;
   uint8_t		br_near;
+  uint8_t		implicit_addr;
   uint8_t		c1;
   uint8_t		c2;
   uint8_t		c3;
   uint8_t 		inp_cache[256];
   uint8_t		inp_sess[64];
-
+  struct ud_itab_entry * itab_entry;
 };
 
 /* -----------------------------------------------------------------------------
@@ -192,4 +193,9 @@ typedef struct ud_operand 	ud_operand_t;
 #define UD_INP_CACHE_SZ		32
 #define UD_VENDOR_AMD		0
 #define UD_VENDOR_INTEL		1
+
+#define bail_out(ud,error_code) longjmp( (ud)->bailout, error_code )
+#define try_decode(ud) if ( setjmp( (ud)->bailout ) == 0 )
+#define catch_error() else
+
 #endif
