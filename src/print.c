@@ -202,7 +202,12 @@ void print_addr(u64 off)
 {
 	int mod = config_get_i("cfg.addrmod");
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
-	C	cons_printf("%s"OFF_FMT""C_RESET"%c ", cons_palette[PAL_ADDRESS], off, ch);
+	
+	if (off==config.cursor_ptr)
+		cons_invert();
+	C	cons_printf("%s0x%08llx"C_RESET"%c ", 
+			(off==config.cursor_ptr)?C_WHITE:
+			cons_palette[PAL_ADDRESS], off, ch);
 	else	cons_printf(OFF_FMT"%c ", off, ch);
 }
 

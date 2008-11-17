@@ -359,7 +359,7 @@ void radis_update()
 		if (!strcmp(arch, radis_arches[i].name)) {
 			config.arch = radis_arches[i].id;
 			if (radis_arches[i].fun != NULL)
-				arch_aop    = radis_arches[i].fun;
+				arch_aop = radis_arches[i].fun;
 			break;
 		}
 	}
@@ -477,6 +477,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	data_reflines_init();
 	radare_controlc();
 
+	config.acursor = 0;
 	// XXX remove rows
 	myinc = 0;
 	if (rrows>0) rrows ++;
@@ -757,6 +758,16 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		if (config.cursor_mode) {
 			if (config.cursor == bytes)
 				inc = myinc;
+			/* in-the-middle-opcode trick */
+			// XXX dupped in analyze.c:95
+			if (bytes <= config.cursor) {
+				config.acursor = bytes;
+//				config.cursor_ptr = aop.jump;
+#if 0
+				if (bytes + myinc > config.cursor) {
+				}
+#endif
+			}
 		} else {
 			if (inc == 0)
 				inc = myinc;

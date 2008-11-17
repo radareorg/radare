@@ -88,6 +88,7 @@ static void config_old_init()
   config.file        = NULL;
   config.block_size  = DEFAULT_BLOCK_SIZE;
   config.cursor      = 0;
+  config.acursor     = 0;
   config.ocursor     = -1;
   config.block       = (unsigned char *)malloc(config.block_size);
   config.verbose     = 1;

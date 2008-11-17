@@ -164,6 +164,16 @@ u64 arch_syscall(int pid, int sc, ...)
 		R_EBX(reg) = va_arg(ap, int);
 		R_ECX(reg) = va_arg(ap, int);
 		break;
+	case SYS_read:
+		R_EBX(reg) = va_arg(ap, int);
+		R_ECX(reg) = va_arg(ap, addr_t);
+		R_EDX(reg) = va_arg(ap, int);
+		break;
+	case SYS_write:
+		R_EBX(reg) = va_arg(ap, int);
+		R_ECX(reg) = va_arg(ap, addr_t);
+		R_EDX(reg) = va_arg(ap, int);
+		break;
 	case SYS_lseek:
 		R_EBX(reg) = va_arg(ap, int);
 		R_ECX(reg) = va_arg(ap, addr_t);
@@ -177,6 +187,7 @@ u64 arch_syscall(int pid, int sc, ...)
 	}
 	va_end(ap);
 
+//printf("%x %x %x\n", R_EBX(reg), R_ECX(reg), R_EDX(reg));
 	/* write SYSCALL OPS */
 	debug_write_at(pid, (long *)SYSCALL_OPS, 4, R_EIP(reg));
 

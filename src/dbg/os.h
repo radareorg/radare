@@ -35,6 +35,8 @@ int debug_write_at(pid_t tid, void *buff, int len, u64 addr);
 
 /* file descriptors */
 u64 debug_fd_seek(int pid, int fd, u64 addr, int whence);
+u64 debug_fd_read(int pid, int fd, u64 addr, int len);
+u64 debug_fd_write(int pid, int fd, u64 addr, int len);
 int debug_fd_list(int pid);
 int debug_fd_dup2(int pid, int oldfd, int newfd);
 int debug_fd_open(int pid, char *file, int mode);

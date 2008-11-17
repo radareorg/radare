@@ -56,6 +56,25 @@ u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 	return ret;
 }
 
+u64 debug_fd_write(int pid, int fd, u64 addr, int len)
+{
+	u64 ret = 0;
+#if __UNIX__
+	ret = arch_syscall(pid, SYS_write, fd, addr, len);
+#endif
+	return ret;
+}
+
+u64 debug_fd_read(int pid, int fd, u64 addr, int len)
+{
+	u64 ret = 0;
+#if __UNIX__
+	ret = arch_syscall(pid, SYS_read, fd, addr, len);
+#endif
+	//printf("seek(%d,%d,%d)->%06x\n", fd, (int)addr, whence, ret);
+	return ret;
+}
+
 int debug_fd_list(int pid)
 {
 	char path[1024];

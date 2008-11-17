@@ -789,12 +789,16 @@ int debug_fd(char *cmd)
 	     *ptr2 = NULL,
 	     *ptr3 = NULL;
 	int whence = 0;
+	int len = 0;
 
 	if (cmd[0]=='?') {
 		cons_printf("Usage: !fd[s|d] [-#] [file | host:port]\n"
 		"  !fd                   ; list filedescriptors\n"
 		"  !fdd 2 7              ; dup2(2, 7)\n"
 		"  !fds 3 0x840          ; seek filedescriptor\n"
+		"  !fdr 3 0x8048000 100  ; read 100 bytes from fd=3 at 0x80..\n"
+		"  !fdw 3 0x8048000 100  ; write 100 bytes from fd=3 at 0x80..\n"
+		"  !fdio [fdnum]         ; enter fd-io mode on a fd, no args = back to dbg-io\n"
 		"  !fd -1                ; close stdout\n"
 		"  !fd /etc/motd         ; open file at fd=3\n"
 		"  !fd 127.0.0.1:9999    ; open socket at fd=5\n");
@@ -803,6 +807,45 @@ int debug_fd(char *cmd)
 
 	if ((ptr=strchr(cmd,'-'))) {
 		debug_fd_close(ps.tid, atoi(ptr+1));
+	} else
+	if (cmd[0]=='r') {
+		ptr = strchr(cmd, ' ');
+		if (ptr) {
+			*ptr = '\0';
+			ptr2 = strchr(ptr+1, ' ');
+		}
+		if (ptr2) {
+			*ptr2 = '\0';
+			ptr3 = strchr(ptr2+1, ' ');
+		}
+		if (ptr3) {
+			*ptr3 = '\0';
+			len = atoi(ptr3+1);
+		}
+		if (!ptr||!ptr2||!ptr3)
+			eprintf("Usage: !fdr [fd] [offset] [len])\n");
+		else debug_fd_read(ps.tid, atoi(ptr+1), get_math(ptr2+1), len);
+	} else
+	if (cmd[0]=='w') {
+		ptr = strchr(cmd, ' ');
+		if (ptr) {
+			*ptr = '\0';
+			ptr2 = strchr(ptr+1, ' ');
+		}
+		if (ptr2) {
+			*ptr2 = '\0';
+			ptr3 = strchr(ptr2+1, ' ');
+		}
+		if (ptr3) {
+			*ptr3 = '\0';
+			len = atoi(ptr3+1);
+		}
+		if (!ptr||!ptr2||!ptr3)
+			eprintf("Usage: !fdw [fd] [offset] [len])\n");
+		else debug_fd_write(ps.tid, atoi(ptr+1), get_math(ptr2+1), len);
+	} else
+	if (cmd[0]=='i') {
+		eprintf("TODO\n");
 	} else
 	if (cmd[0]=='s') {
 		ptr = strchr(cmd, ' ');

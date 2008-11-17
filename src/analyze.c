@@ -93,6 +93,10 @@ struct reflines_t *code_lines_init()
 					if (aop.jump == 0)
 						goto __next;
 				}
+				if (ptr-config.block <= config.cursor) {
+					config.acursor = ptr-config.block;
+					config.cursor_ptr = aop.jump;
+				}
 				list2 = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 				list2->from = seek;
 				list2->to = aop.jump;
@@ -202,7 +206,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 				cons_printf("%c", ch);
 				break;
 			default:
-				cons_printf(" ");
+				cons_strcat(" ");
 				break;
 			}
 		}
@@ -221,7 +225,7 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 	}
 	else cons_strcat("   ");
 
-	C cons_printf(C_RESET);
+	C cons_strcat(C_RESET);
 }
 
 /* XXX not working properly */

@@ -997,7 +997,7 @@ void visual_f(int f)
 			break;
 #if DEBUGGER
 		case 2:
-			addr = config.seek + (config.cursor_mode?config.cursor:0);
+			addr = config.seek + (config.cursor_mode?config.acursor:0);
 			bp = debug_bp_get(addr);
 			if (bp) {
 				sprintf(line, "!bp -0x%08x", (unsigned int)addr);
@@ -1029,7 +1029,7 @@ void visual_f(int f)
 			break;
 #if DEBUGGER
 		case 5:
-			arch_jmp(config.seek + (config.cursor_mode?config.cursor:0));
+			arch_jmp(config.seek + (config.cursor_mode?config.acursor:0));
 			break;
 #endif
 		case 6:
@@ -1562,7 +1562,7 @@ CMD_DECL(visual)
 					config.ocursor = config.cursor;
 				config.cursor ++;
 				if (cursorseek && config.cursor >= config.block_size) {
-inc = 1;
+					inc = 1;
 					radare_seek(config.seek+inc, SEEK_SET);
 					config.cursor-=inc;
 					if (config.ocursor != -1)
@@ -1574,6 +1574,15 @@ inc = 1;
 				config.seek += 2;
 			break;
 		case 0xd:
+			if (config.cursor_mode) {
+				struct aop_t aop;
+				arch_aop(config.seek+config.acursor, config.block+config.acursor, &aop);
+				if (aop.jump) {
+				//if (config.cursor_ptr) {
+					radare_seek(aop.jump, SEEK_SET);
+					undo_push();
+				}
+			}
 		case 'j':
 			if (config.cursor_mode) {
 				config.cursor += inc;

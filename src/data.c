@@ -573,12 +573,10 @@ int data_printd(int delta)
 		if (ptr == NULL && config.baddr)
 			ptr = flag_name_by_offset( config.seek + delta);
 		if (ptr && ptr[0]) {
-			if (show_lines&&reflines)
+			if (show_lines && reflines)
 				code_lines_print(reflines, offset, 1);
-			C
-				cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", offset, ptr);
-			else
-				cons_printf(OFF_FMTs" %s:\n", offset, ptr);
+			C cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", offset, ptr);
+			else cons_printf(OFF_FMTs" %s:\n", offset, ptr);
 			lines++;
 		}
 	}

@@ -55,9 +55,11 @@ struct config_t {
 	int unksize;
 	char *file;
 	unsigned char *block; // data block
-	size_t block_size; // size of the data block
-	size_t cursor; // position of the cursor inside the block XXX THIS IS UNSIGNED :O -1 must be funny
-	size_t ocursor; // position of the cursor inside the block
+	int block_size; // size of the data block
+	int cursor; // position of the cursor inside the block XXX THIS IS UNSIGNED :O -1 must be funny
+	u64 cursor_ptr; // where arch_aop makes point with cursor
+	int acursor; // position of the cursor inside the block
+	int ocursor; // position of the cursor inside the block
 	u64 size;
 	u64 baddr;
 	u64 seek;

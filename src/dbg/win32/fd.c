@@ -39,6 +39,16 @@ u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 	return 0;
 }
 
+u64 debug_fd_read(int pid, int fd, u64 addr, int len)
+{
+	return 0;
+}
+
+u64 debug_fd_write(int pid, int fd, u64 addr, int len)
+{
+	return 0;
+}
+
 int debug_fd_list(int pid)
 {
 	return 0;
