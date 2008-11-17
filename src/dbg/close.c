@@ -28,57 +28,57 @@
 
 int debug_close(int fd)
 {
+	int ret = 1;
 	char buf[16];
 
-	if (ps.opened)
-	if (fd == ps.fd) {
-		eprintf("Do you want to kill the process? (Y/n/c/d) (yes,no,cancel,detach+continue)");
+	if (!ps.opened || fd != ps.fd)
+		return -1;
 
-		cons_set_raw(1);
-		while(read(0,buf,1)>0) {
-			buf[1] = '\n';
-			write(1, buf, 2);
-	
-			/* free mapped memory */
-			dealloc_all();
+	eprintf("Do you want to kill the process? (Y/n/c)");
 
-			switch(buf[0]) {
-			case 'd':
-				eprintf("TODO\n");
-				break;
-			case 'c': case 'C':
-				eprintf("Cancelled\n");
-				cons_set_raw(0);
-				return -2;
+	cons_set_raw(1);
+	while( ret == 1 && read(0,buf,1)>0 ) {
+		buf[1] = '\n';
+		write(1, buf, 2);
 
-			case 'y': case 'Y': case '\n': case '\r':
-				/* TODO: w32 stuff here */
+		/* free mapped memory */
+		dealloc_all();
+
+		switch(buf[0]) {
+		case 'c': case 'C':
+			eprintf("Cancelled\n");
+			cons_set_raw(0);
+			ret = -2;
+			break;
+		case 'y': case 'Y': case '\n': case '\r':
+			/* TODO: w32 stuff here */
 #if __UNIX__
-				ptrace(PTRACE_KILL, ps.pid, 0, 0);
-				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
-				ptrace(PTRACE_KILL, ps.tid, 0, 0);
-				ptrace(PTRACE_DETACH, ps.tid, 0, 0);
-				/* TODO: Do it properly for all the childs! */
+			ptrace(PTRACE_KILL, ps.pid, 0, 0);
+			ptrace(PTRACE_DETACH, ps.pid, 0, 0);
+			ptrace(PTRACE_KILL, ps.tid, 0, 0);
+			ptrace(PTRACE_DETACH, ps.tid, 0, 0);
+			/* TODO: Do it properly for all the childs! */
 #endif
 #ifndef SIGKILL
 #define SIGKILL 9
 #endif
-				debug_os_kill(ps.pid, SIGKILL);
-				debug_os_kill(ps.tid, SIGKILL);
+			debug_os_kill(ps.pid, SIGKILL);
+			debug_os_kill(ps.tid, SIGKILL);
 
-			case 'n': case 'N':
-				/* TODO: w32 stuff here */
+		case 'n': case 'N':
+//			radare_cmd("!detach", 0);
+/* TODO: w32 stuff here */
 #if __UNIX__
-				ptrace(PTRACE_CONT, ps.pid, 0, 0);
-				ptrace(PTRACE_DETACH, ps.pid, 0, 0);
+			ptrace(PTRACE_CONT, ps.pid, 0, 0);
+			ptrace(PTRACE_DETACH, ps.pid, 0, 0);
 #endif
-				free(ps.filename);
-				ps.opened = 0;
-				cons_set_raw(0);
-				return 0;
-			}
+			free(ps.filename);
+			ps.opened = 0;
+			ret = 0;
+			break;
 		}
 	}
+	cons_set_raw(0);
 
-	return 1;
+	return ret;
 }

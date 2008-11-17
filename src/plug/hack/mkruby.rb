@@ -32,7 +32,7 @@ rescue
 end
 
 if tobeup then
-	$line="#{$cc} -I #{inc} -I#{INCDIR} #{rb_c} -shared #{LIBDIR}" \
+	$line="#{$cc} -I #{inc} -I#{INCDIR} #{rb_c} -fPIC -shared #{LIBDIR}" \
 	" -l#{LIBNAM} #{ENV['CFLAGS']} #{ENV['LDFLAGS']} -o #{rb_so}"
 	puts $line
 	system($line)

@@ -60,7 +60,8 @@ JAVASM_STUFF=w32utils.o -lwsock32
 	${E} 'Compiling $<'
 	${Q}$(CC) -c $(CFLAGS) -o $@ $<
 
-all: ${TARGETS} udis86 armasm _radiff \
+#udis86 
+all: ${TARGETS} armasm _radiff \
 	lsbstego pre radare${BINSFX} _rahash plugs rsc_ \
 	rax${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true

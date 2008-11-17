@@ -21,10 +21,10 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <float.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+#include <math.h>
 
 G_BEGIN_DECLS
 

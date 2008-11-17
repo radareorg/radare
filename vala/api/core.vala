@@ -17,7 +17,7 @@ public class Radare.Core : Object
 	private static void _init_() {
 		radare_init();
 		plugin_init();
-		prepare_environment("");
+		env_prepare("");
 		isinit = true;
 	}
 
@@ -88,7 +88,7 @@ public extern static int radare_close();
 public extern static int radare_open(string file, int allow_write);
 
 [Import()]
-public extern static void prepare_environment(string str);
+public extern static void env_prepare(string str);
 
 [Import()]
 public extern static bool radare_seek(ulong offset, int which);

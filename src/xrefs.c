@@ -143,7 +143,6 @@ static u32 file_size_fd(int fd)
 	return size;
 }
 
-#ifndef RADARE_CORE
 /* TODO: move+share in offset.c ? */
 static u32 get_value32(const char *arg)
 {
@@ -160,7 +159,6 @@ static u32 get_value32(const char *arg)
 
         return ret;
 }
-#endif
 
 int get_system_endian()
 {

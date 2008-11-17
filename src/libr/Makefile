@@ -1,5 +1,5 @@
 # Libraries
-LIBLIST=io hash line
+LIBLIST=io hash line lib
 
 # Under development
 #LIBLIST+=print

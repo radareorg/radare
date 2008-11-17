@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------------
  * udcli.c - front end to udis86.
  *
- * Copyright (c) 2004, 2005, 2006 Vivek Mohan <vivek@sig9.com>
+ * Copyright (c) 2004,2005,2006,2007 Vivek Mohan <vivek@sig9.com>
  * All rights reserved.
  * See (LICENSE)
  * -----------------------------------------------------------------------------
@@ -11,23 +11,25 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-//#include "../udis86.h"
-#include "../extern.h"
+#include <udis86.h>
+#include <config.h>
 
-int udis86_color = 0;
-char *string_flag_offset(off_t off)
-{
-	return NULL;
-}
 #if defined(__amd64__) || defined(__x86_64__)
 #  define FMT "l"
 #else
 #  define FMT "ll"
 #endif
 
-#ifdef _WIN32
+#if defined(__DJGPP__) || defined(_WIN32)
 # include <io.h>
 # include <fcntl.h>
+#endif 
+
+#ifdef __DJGPP__
+# include <unistd.h>  /* for isatty() */
+# define _setmode setmode
+# define _fileno fileno
+# define _O_BINARY O_BINARY
 #endif
 
 /* help string */
@@ -39,7 +41,6 @@ static char help[] =
   "    -32      : Set the disassembly mode to 32 bits. (default)\n"
   "    -64      : Set the disassembly mode to 64 bits.\n"
   "    -intel   : Set the output to INTEL (NASM like) syntax. (default)\n"
-  "    -pseudo  : Set the output to pseudo language syntax.\n"
   "    -att     : Set the output to AT&T (GAS like) syntax.\n"
   "    -v <v>   : Set vendor. <v> = {intel, amd}.\n"
   "    -o <pc>  : Set the value of program counter to <pc>. (default = 0)\n"
@@ -50,6 +51,7 @@ static char help[] =
   "    -noff    : Do not display the offset of instructions.\n"
   "    -nohex   : Do not display the hexadecimal code of instructions.\n"
   "    -h       : Display this help message.\n"
+  "    --version: Show version.\n"
   "\n"
   "Udcli is a front-end to the Udis86 Disassembler Library.\n" 
   "http://udis86.sourceforge.net/\n"
@@ -67,35 +69,6 @@ unsigned o_vendor = UD_VENDOR_AMD;
 int input_hook_x(ud_t* u);
 int input_hook_file(ud_t* u);
 
-static void print_metadata(struct ud* u)
-{
-	unsigned long long off;
-	char buf[1024];
-	char type[1024];
-	FILE *fd = fopen("metadata","r");
-	if (fd == NULL) {
-		return;	
-	}
-	while(!feof(fd)) {
-		fgets(buf, 1023, fd);
-		buf[strlen(buf)-1]='\0';
-		if (feof(fd)) break;
-		sscanf(buf, "0x%x %s", (unsigned int*)&off, type);
-		if ((int)ud_insn_off(u) == (int)off) {
-			char *ptr = strchr(buf+14,' ');
-			if (ptr) {
-				ptr[0]='\0';
-				if (!strcmp(type, "label")) {
-					printf("\n%s:\n", ptr+1);
-					fflush(stdout);
-				} else
-					printf("  ; %s\n", ptr+1);
-			}
-		}
-	}
-	fclose(fd);
-}
-
 int main(int argc, char **argv)
 {
   char *prog_path = *argv;
@@ -108,7 +81,10 @@ int main(int argc, char **argv)
   ud_set_mode(&ud_obj, 32);
   ud_set_syntax(&ud_obj, UD_SYN_INTEL);
 
-#ifdef _WIN32
+#ifdef __DJGPP__
+  if ( !isatty( fileno( stdin ) ) )
+#endif
+#if defined(__DJGPP) || defined(_WIN32)
   _setmode(_fileno(stdin), _O_BINARY);
 #endif  
 
@@ -131,8 +107,6 @@ int main(int argc, char **argv)
 		ud_set_syntax(&ud_obj, UD_SYN_INTEL);
 	else if (strcmp(*argv,"-att") == 0)
 		ud_set_syntax(&ud_obj, UD_SYN_ATT);
-	else if (strcmp(*argv,"-pseudo") == 0)
-		ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
 	else if (strcmp(*argv,"-noff") == 0)
 		o_do_off = 0;
 	else if (strcmp(*argv,"-nohex") == 0)
@@ -182,6 +156,9 @@ int main(int argc, char **argv)
 			printf(help, prog_path);
 			exit(EXIT_FAILURE);
 		}
+	} else if ( strcmp( *argv, "--version" ) == 0 ) {
+		fprintf(stderr, "%s\n", PACKAGE_STRING );
+		exit(0);
 	} else if((*argv)[0] == '-') {
 		fprintf(stderr, "Invalid option %s.\n", *argv);
 		printf(help, prog_path);
@@ -212,9 +189,8 @@ int main(int argc, char **argv)
 
   /* disassembly loop */
   while (ud_disassemble(&ud_obj)) {
-	print_metadata(&ud_obj);
 	if (o_do_off)
-		printf("0x%08" FMT "x ", ud_insn_off(&ud_obj));
+		printf("%016" FMT "x ", ud_insn_off(&ud_obj));
 	if (o_do_hex) {
 		char* hex1, *hex2;
 		char c;

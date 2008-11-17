@@ -98,16 +98,17 @@ void udis_init()
 
 	/* set syntax */
 	ud_set_syntax(&ud_obj, UD_SYN_INTEL);
+	
 	if (syn) {
 		ollyasm_enable = 0;
 		if (!strcmp(syn,"olly")) {
 			ollyasm_enable = 1;
-		} else
-		if (!strcmp(syn,"pseudo")) 
-			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
-		else if (!strcmp(syn,"att")) 
+		} else if (!strcmp(syn,"att")) {
 			ud_set_syntax(&ud_obj, UD_SYN_ATT);
+		} else if (!strcmp(syn,"pseudo") && !config_get_i("asm.pseudo"))
+			ud_set_syntax(&ud_obj, UD_SYN_PSEUDO);
 	}
+
 	ud_set_input_hook(&ud_obj, input_hook_x);
 //ud_idx=0;
 }
@@ -172,8 +173,10 @@ udis_mem_ptr= 0;
 			ret = ud_insn_len(&ud_obj);
 		} else {
 //			udis_init();
-			ud_obj.insn_offset = seek+myinc; //+bytes;
-			ud_obj.pc = seek+myinc;
+			//ud_obj.insn_offset = seek+myinc; //+bytes;
+			//ud_obj.pc = seek+myinc;
+			ud_obj.pc = seek;
+			//ud_idx = myinc;
 			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
 			//ud_idx+=ret;
@@ -247,7 +250,8 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	switch(arch) {
 	case ARCH_X86:
 		/* ultra ugly hack */
-		ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
+		//ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
+		ret = udis_arch_string(arch, buf, b, endian, seek, bytes, myinc);
 		break;
 	case ARCH_PPC:
 	case ARCH_JAVA:
@@ -892,11 +896,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
+						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %d = %s", jump_n,buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if (string_flag_offset(buf, aop.jump) || (config.baddr && string_flag_offset(buf, aop.jump-config.baddr)))
+						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
@@ -990,4 +994,3 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
   
   radis_str(arch, block, len, rows, cmd_asm, code_flags_cache);
 }
-

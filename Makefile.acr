@@ -19,20 +19,18 @@ all: radare
 	cd src/rabin && ${MAKE} all
 	cd src/rasm && ${MAKE} all
 	cd src && ${MAKE} all
-##GUI##
+##HAVE_GUI##
 	cd gui && ${MAKE} all
-##GUI##
+##HAVE_GUI##
 
 # Use ^X^O and ^N / ^P in vim
 omni:
 	exuberant-ctags **/*.c **/*.h
 
 radare:
-##GUI##
-##VALA##
+##HAVE_GUI##
 	cd vala/ && ${MAKE} all
-##VALA##
-##GUI##
+##HAVE_GUI##
 
 clean:
 	${Q}cd src && ${MAKE} clean
@@ -137,9 +135,9 @@ install:
 	${INSTALL_DIR} ${SHAREDIR}/doc/radare/xtra
 	${INSTALL_DATA} doc/xtra/* ${SHAREDIR}/doc/radare/xtra
 	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
-##GUI##
+##HAVE_GUI##
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
-##GUI##
+##HAVE_GUI##
 
 deinstall:
 	-rm -f ${BINDIR}/gradare

@@ -4,53 +4,33 @@
  * Copyright (c) 2002, 2003, 2004 Vivek Mohan <vivek@sig9.com>
  * All rights reserved. See (LICENSE)
  * -----------------------------------------------------------------------------
- *
- * syn-pseudo.c
- * 
- * Copyright (c) 2007, 2008
- * Modification of the original source from Vivek Mohan by pancake <youterm.com>
  */
 
-#include "../../../radare.h"
-#include "../../../utils.h"
-#include <stdlib.h>
-#include <string.h>
 #include "types.h"
 #include "extern.h"
-#include "opcmap.h"
+#include "decode.h"
+#include "itab.h"
 #include "syn.h"
-
-#define MAXREFLEN 30
-
-/* =============================================================================
- * ud_lookup_mnemonic() - Looks-up the mnemonic code.
- * =============================================================================
- */
-const char* ud_lookup_pseudo(ud_mnemonic_code_t c)
-{
-	if (c < UD_I3vil)
-		return ud_mnemonics[c];
-	return NULL;
-}
 
 /* -----------------------------------------------------------------------------
  * opr_cast() - Prints an operand cast.
  * -----------------------------------------------------------------------------
  */
-static void opr_cast(struct ud* u, struct ud_operand* op)
+static void 
+opr_cast(struct ud* u, struct ud_operand* op)
 {
-	switch(op->size) {
-		case  8: mkasm(u, "byte " ); break;
-		case 16: mkasm(u, "word " ); break;
-		case 32: mkasm(u, "dword "); break;
-		case 64: mkasm(u, "qword "); break;
-		case 80: mkasm(u, "tbyte "); break;
-		default: break;
-	}
-	if (u->br_far)
-		mkasm(u, "far "); 
-	else if (u->br_near)
-		mkasm(u, "near ");
+  switch(op->size) {
+	case  8: mkasm(u, "byte " ); break;
+	case 16: mkasm(u, "word " ); break;
+	case 32: mkasm(u, "dword "); break;
+	case 64: mkasm(u, "qword "); break;
+	case 80: mkasm(u, "tword "); break;
+	default: break;
+  }
+  if (u->br_far)
+	mkasm(u, "far "); 
+  else if (u->br_near)
+	mkasm(u, "near ");
 }
 
 /* -----------------------------------------------------------------------------
@@ -59,164 +39,107 @@ static void opr_cast(struct ud* u, struct ud_operand* op)
  */
 static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 {
-	int op_f = 0;
+  switch(op->type) {
+	case UD_OP_REG:
+		mkasm(u, ud_reg_tab[op->base - UD_R_AL]);
+		break;
 
-	switch(op->type) {
-		case UD_OP_REG:
-			mkasm(u, ud_reg_tab[op->base - UD_R_AL]);
-			break;
+	case UD_OP_MEM: {
 
-		case UD_OP_MEM:
-			// f.ex mov [eax+0x80488], 33
-			if (syn_cast) 
-				opr_cast(u, op);
+		int op_f = 0;
 
-			mkasm(u, "[");
+		if (syn_cast) 
+			opr_cast(u, op);
 
-			if (u->pfx_seg)
-				mkasm(u, "%s:", ud_reg_tab[u->pfx_seg - UD_R_AL]);
+		mkasm(u, "[");
 
-			if (op->base) {
-				mkasm(u, "%s", ud_reg_tab[op->base - UD_R_AL]);
-				op_f = 1;
-			}
+		if (u->pfx_seg)
+			mkasm(u, "%s:", ud_reg_tab[u->pfx_seg - UD_R_AL]);
 
-			if (op->index) {
-				if (op_f)
-					mkasm(u, "+");
-				mkasm(u, "%s", ud_reg_tab[op->index - UD_R_AL]);
-				op_f = 1;
-			}
+		if (op->base) {
+			mkasm(u, "%s", ud_reg_tab[op->base - UD_R_AL]);
+			op_f = 1;
+		}
 
-			if (op->scale)
-				mkasm(u, "*%d", op->scale);
+		if (op->index) {
+			if (op_f)
+				mkasm(u, "+");
+			mkasm(u, "%s", ud_reg_tab[op->index - UD_R_AL]);
+			op_f = 1;
+		}
 
-			switch(op->offset) {
-			case 8:
-				if (op->lval.sbyte < 0) // 8b75fc |  esi = [ebp-0x4]
-					mkasm(u, "-0x%x", -op->lval.sbyte);
-				else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sbyte);
+		if (op->scale)
+			mkasm(u, "*%d", op->scale);
+
+		if (op->offset == 8) {
+			if (op->lval.sbyte < 0)
+				mkasm(u, "-0x%x", -op->lval.sbyte);
+			else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sbyte);
+		}
+		else if (op->offset == 16)
+			mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.uword);
+		else if (op->offset == 32) {
+			if (u->adr_mode == 64) {
+				if (op->lval.sdword < 0)
+					mkasm(u, "-0x%x", -op->lval.sdword);
+				else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sdword);
+			} 
+			else	mkasm(u, "%s0x%lx", (op_f) ? "+" : "", op->lval.udword);
+		}
+		else if (op->offset == 64) 
+			mkasm(u, "%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);
+
+		mkasm(u, "]");
+		break;
+	}
+			
+	case UD_OP_IMM:
+		if (syn_cast) opr_cast(u, op);
+		switch (op->size) {
+			case  8: mkasm(u, "0x%x", op->lval.ubyte);    break;
+			case 16: mkasm(u, "0x%x", op->lval.uword);    break;
+			case 32: mkasm(u, "0x%lx", op->lval.udword);  break;
+			case 64: mkasm(u, "0x" FMT64 "x", op->lval.uqword); break;
+			default: break;
+		}
+		break;
+
+	case UD_OP_JIMM:
+		if (syn_cast) opr_cast(u, op);
+		switch (op->size) {
+			case  8:
+				mkasm(u, "0x" FMT64 "x", u->pc + op->lval.sbyte); 
 				break;
 			case 16:
-				mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.uword);
+				mkasm(u, "0x" FMT64 "x", u->pc + op->lval.sword);
 				break;
 			case 32:
-				if (u->adr_mode == 64) {
-					if (op->lval.sdword < 0)
-						mkasm(u, "-0x%x", -op->lval.sdword);
-					else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sdword);
-				} else {
-					// f.ex: eax = [ebx-0xf8]
-					if (((long)op->lval.udword) < 0) //XXX an unsigned value should always be >= 0
-						mkasm(u, "-0x%x", -op->lval.udword);
-					else
-						mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.udword,op->lval.udword);
-				}
+				mkasm(u, "0x" FMT64 "x", u->pc + op->lval.sdword);
 				break;
-			case 64:
-				mkasm(u, "%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);
-			}
+			default:break;
+		}
+		break;
 
-			mkasm(u, "]");
-			break;
+	case UD_OP_PTR:
+		switch (op->size) {
+			case 32:
+				mkasm(u, "word 0x%x:0x%x", op->lval.ptr.seg, 
+					op->lval.ptr.off & 0xFFFF);
+				break;
+			case 48:
+				mkasm(u, "dword 0x%x:0x%lx", op->lval.ptr.seg, 
+					op->lval.ptr.off);
+				break;
+		}
+		break;
 
-		case UD_OP_IMM:
-			// ADD EAX, 3 (f.ex)
-			if (syn_cast) opr_cast(u, op);
-			switch (op->size) {
-				// TODO: if is printable show char or DWORD or QWORD
-				case  8: if (op->lval.ubyte != 0) {
-						mkasm(u, "0x%x  ; %d '%c'", op->lval.ubyte, op->lval.ubyte,
-					 		is_printable(op->lval.ubyte)?op->lval.ubyte:' ');
-					} else  {
-						mkasm(u, "0x%x", op->lval.ubyte);
-					}
-					break;
-				case 16: mkasm(u, "0x%x", op->lval.uword);    break;
-				case 32: mkasm(u, "0x%x", op->lval.udword, op->lval.udword);  break;
-				case 64: mkasm(u, "0x" FMT64 "x", op->lval.uqword); break;
-				default: break;
-			}
-#if 0
-			/* get flag only (32 bits) ? */
-			//if (op->size==32)
-			if ((unsigned int)(op->lval.udword) != 0) {
-				char label[1024];
-				unsigned int l = (unsigned int)(op->lval.udword);
-				label[0]='\0';
-				string_flag_offset(label, (u64)l);
-				label[MAXREFLEN]='\0'; // no more than 20
-				if (label[0]!='\0')
-					mkasm(u, " ; %s", label);
-			}
-#endif
-			break;
+	case UD_OP_CONST:
+		if (syn_cast) opr_cast(u, op);
+		mkasm(u, "%d", op->lval.udword);
+		break;
 
-		case UD_OP_JIMM:
-			// CALL - relative
-			if (syn_cast) opr_cast(u, op);
-			switch (op->size) {
-				case  8:
-					{
-						char label[1024];
-						long long l = (long long)((u->pc+op->lval.sdword));
-						string_flag_offset(label, (u64)l);
-						label[MAXREFLEN]='\0'; // no more than 20
-						//mkasm(u, "0x" FMT64 "X   ; %s", u->pc + op->lval.sbyte, label); 
-						mkasm(u, "0x" FMT64 "X", u->pc + op->lval.sbyte);
-					}
-					break;
-				case 16:
-					{
-						char label[1024];
-						long long l = (long long)((u->pc+op->lval.sdword));
-						string_flag_offset(label, (unsigned long long)l);
-						label[MAXREFLEN]='\0'; // no more than 20
-						//mkasm(u, "0x" FMT64 "X  ;  %s", u->pc + op->lval.sword, label);
-						mkasm(u, "0x" FMT64 "X", u->pc + op->lval.sword);
-					}
-					break;
-				case 32:
-					{
-						char label[1024];
-						long long l = (long long)((u->pc+op->lval.sdword));
-
-						memset(label, '\0', 1023);
-						string_flag_offset(label, (unsigned long long)l);
-						if (strlen(label)>MAXREFLEN) {
-							label[0]=label[1]='.';
-							strcpy(label+2, label+strlen(label)-16);
-						}
-						label[MAXREFLEN]='\0'; // no more than 20
-						//mkasm(u, "0x%X  ; %s", (unsigned int)l, label);
-						mkasm(u, "0x%X", (unsigned int)l);
-					}
-					break;
-				default:break;
-			}
-			break;
-
-		case UD_OP_PTR:
-			switch (op->size) {
-				case 32:
-					mkasm(u, "word 0x%x:0x%x", op->lval.ptr.seg, 
-							op->lval.ptr.off & 0xFFFF);
-					break;
-				case 48:
-					mkasm(u, "dword 0x%x:0x%lx", op->lval.ptr.seg, 
-							op->lval.ptr.off);
-					break;
-			}
-			break;
-
-		case UD_OP_CONST:
-			if (syn_cast) opr_cast(u, op);
-			mkasm(u, "%d ; '%c'", op->lval.udword, (op->lval.udword<100 && is_printable(op->lval.udword)?op->lval.udword:'?'));
-			break;
-
-		default:
- 			return;
-	}
+	default: return;
+  }
 }
 
 //#define C_RESET   "\e[0m"
@@ -234,10 +157,9 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 extern int udis86_color;
 
 /* =============================================================================
- * translates to intel syntax 
+ * translates to pseudo syntax 
  * =============================================================================
  */
-extern void ud_translate_intel(struct ud* u);
 extern void ud_translate_pseudo(struct ud* u)
 {
 	struct ud_operand *op = &u->operand[0];

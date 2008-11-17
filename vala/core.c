@@ -31,7 +31,7 @@ static void _radare_core_init_ (void) {
 #line 19 "core.vala"
 	plugin_init ();
 #line 20 "core.vala"
-	prepare_environment ("");
+	env_prepare ("");
 #line 21 "core.vala"
 	radare_core_isinit = TRUE;
 }

@@ -45,7 +45,7 @@ void grava_node_set (GravaNode* self, const char* key, const char* val) {
 	const char* _tmp1;
 	const char* _tmp0;
 #line 50 "node.vala"
-	g_return_if_fail (GRAVA_IS_NODE (self));
+	g_return_if_fail (self != NULL);
 #line 50 "node.vala"
 	g_return_if_fail (key != NULL);
 #line 50 "node.vala"
@@ -65,7 +65,7 @@ void grava_node_set_i (GravaNode* self, const char* key, guint64 val) {
 	const char* _tmp1;
 	const char* _tmp0;
 #line 55 "node.vala"
-	g_return_if_fail (GRAVA_IS_NODE (self));
+	g_return_if_fail (self != NULL);
 #line 55 "node.vala"
 	g_return_if_fail (key != NULL);
 	str = g_strdup_printf ("0x%llx", val);
@@ -83,7 +83,7 @@ void grava_node_set_i (GravaNode* self, const char* key, guint64 val) {
 char* grava_node_get (GravaNode* self, const char* key) {
 	const char* _tmp0;
 #line 61 "node.vala"
-	g_return_val_if_fail (GRAVA_IS_NODE (self), NULL);
+	g_return_val_if_fail (self != NULL, NULL);
 #line 61 "node.vala"
 	g_return_val_if_fail (key != NULL, NULL);
 #line 63 "node.vala"
@@ -98,7 +98,7 @@ void grava_node_add_call (GravaNode* self, guint64 addr) {
 	char* str;
 	const char* _tmp0;
 #line 66 "node.vala"
-	g_return_if_fail (GRAVA_IS_NODE (self));
+	g_return_if_fail (self != NULL);
 	str = g_strdup_printf ("0x%08llx", addr);
 #line 69 "node.vala"
 	_tmp0 = NULL;
@@ -113,7 +113,7 @@ void grava_node_add_xref (GravaNode* self, guint64 addr) {
 	char* str;
 	const char* _tmp0;
 #line 72 "node.vala"
-	g_return_if_fail (GRAVA_IS_NODE (self));
+	g_return_if_fail (self != NULL);
 	str = g_strdup_printf ("0x%08llx", addr);
 #line 75 "node.vala"
 	_tmp0 = NULL;
@@ -126,9 +126,9 @@ void grava_node_add_xref (GravaNode* self, guint64 addr) {
 #line 78 "node.vala"
 gboolean grava_node_overlaps (GravaNode* self, GravaNode* n) {
 #line 78 "node.vala"
-	g_return_val_if_fail (GRAVA_IS_NODE (self), FALSE);
+	g_return_val_if_fail (self != NULL, FALSE);
 #line 78 "node.vala"
-	g_return_val_if_fail (GRAVA_IS_NODE (n), FALSE);
+	g_return_val_if_fail (n != NULL, FALSE);
 #line 80 "node.vala"
 	return (n->x >= self->x && n->x <= self->x + self->w && n->y <= self->y && n->y <= self->y + self->h);
 }
@@ -143,7 +143,7 @@ void grava_node_fit (GravaNode* self) {
 	double _y;
 	double _w;
 #line 83 "node.vala"
-	g_return_if_fail (GRAVA_IS_NODE (self));
+	g_return_if_fail (self != NULL);
 #line 85 "node.vala"
 	_tmp0 = NULL;
 	label = (_tmp0 = ((const char*) (g_hash_table_lookup (self->data, "label"))), (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
@@ -211,7 +211,7 @@ GravaNode* grava_node_new (void) {
 }
 
 
-#line 955 "glib-2.0.vapi"
+#line 178 "gobject-2.0.vapi"
 static void _g_object_unref_gdestroy_notify (void* data) {
 	g_object_unref (data);
 }

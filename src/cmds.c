@@ -1682,7 +1682,27 @@ CMD_DECL(write)
 		ret = radare_write(input+2, WMODE_WSTRING);
 		break;
 	case 't':
-		eprintf("TODO\n");
+		/* TODO: Use libr_io here */
+		if (input[1]!=' ') {
+			eprintf("Please. use 'wt file [offset]'.\n");
+			return 0;
+		} else {
+			char *off = strchr(input+2, ' ');
+			int fd;
+			if (off) {
+				*off = '\0';
+				off = off + 1;
+			}
+			fd = open(input+2, off?O_RDWR|O_CREAT:O_RDWR|O_TRUNC|O_CREAT, 0644);
+			if (fd == -1) {
+				eprintf("Cannot open file '%s'\n", input+2);
+			} else {
+				if (off)
+					lseek(fd, get_math(off), SEEK_SET);
+				write(fd, config.block, config.block_size);
+				close(fd);
+			}
+		}
 		break;
 	case ' ':
 		ret = radare_write(input+1, WMODE_STRING);
@@ -1697,7 +1717,7 @@ CMD_DECL(write)
 		"  wb [hexpair]       ; circulary fill the block with these bytes\n"
 		"  wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		"  ww [string]        ; write wide chars (interlace 00s in string)\n"
-		"  wt [file] [off]    ; write current block to file at offset\n"
+		"  wt [file] ([off])  ; write current block to file at offset\n"
 		"  wf [file]          ; write contents of file at current seek\n"
 		"  wF [hexfile]       ; write hexpair contents of file\n"
 		"  wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
