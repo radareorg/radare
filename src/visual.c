@@ -892,6 +892,7 @@ void visual_draw_screen()
 	if (inc >config.block_size)
 		inc = config.block_size;
 
+	/* prompt */
 	if (config.cursor_mode)
 	cons_printf("[ 0x%llx+%d (0x%08llx+%d) (bs=%d mark=0x%llx) %s %s] %s -> %s         \n",
 		(config.seek+config.baddr), 

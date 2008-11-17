@@ -39,11 +39,6 @@ void show_help_message(int v)
 	exit(0);
 }
 
-void string_flag_offset(unsigned long long off, char *buf)
-{
-	buf[0]='\0';
-}
-
 void show_version()
 {
 	printf("0.1\n");
