@@ -161,13 +161,19 @@ udis_mem_ptr= 0;
 	case ARCH_X86:
 		if (ollyasm_enable) {
 			t_disasm da;
-			ret = Disasm(b, seek, seek, &da, DISASM_CODE);
+			// TODO: use 8 instead of 4 for x86-64
+			ret = Disasm(b, 4, seek, &da, DISASM_FILE);
 			sprintf(string, "%s", da.result);
+			if (da.error)
+				sprintf(string, "%02x %02x %02x (error)",b[0],b[1],b[2]);
+			//ret = arch_x86_aop(ARCH_X86, b, NULL);
+
+			ud_idx = myinc;
+			ret = ud_insn_len(&ud_obj);
 		} else {
 //			udis_init();
 			ud_obj.insn_offset = seek+myinc; //+bytes;
 			ud_obj.pc = seek+myinc;
-			//ud_idx = myinc;
 			ud_disassemble(&ud_obj);
 			ret = ud_insn_len(&ud_obj);
 			//ud_idx+=ret;
@@ -236,9 +242,7 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 
 	buf[0]='\0';
 	if (config_get_i("asm.pseudo")) {
-		int tmp = ud_idx;
 		pas_aop(arch, seek, b, bytes, NULL, buf);
-		ud_idx = tmp;
 	} else
 	switch(arch) {
 	case ARCH_X86:
