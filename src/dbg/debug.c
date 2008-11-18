@@ -924,6 +924,7 @@ int debug_trace(char *input)
 	long slip = (int)config_get_i("trace.sleep");
 	int smart = (int)config_get("trace.smart");
 	int tracelibs = (int)config_get("trace.libs");
+	int tracecalls = (int)config_get("trace.calls");
 	int level = atoi(input+1);
 	unsigned long pc;
 
@@ -934,8 +935,9 @@ int debug_trace(char *input)
 		printf("  2  address and disassembly\n");
 		printf("  3  address, disassembly and registers\n");
 		printf("  4  address, disassembly and registers and stack\n");
-		printf("  > eval trace.bt = true ; to show backtrace\n");
-		printf("  > eval trace.sleep = 1 ; animated stepping\n");
+		printf("  > eval trace.calls = true ; only trace calls\n");
+		printf("  > eval trace.bt = true    ; to show backtrace\n");
+		printf("  > eval trace.sleep = 1    ; animated stepping\n");
 		return 0;
 	}
 
@@ -952,6 +954,7 @@ int debug_trace(char *input)
 
 	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_step(1)) {
+		/* XXX : if bp in addr stop! */
 		radare_cmd(".!regs*", 0);
 		if (smart) {
 			cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
@@ -959,6 +962,26 @@ int debug_trace(char *input)
 			radare_cmd("pd 4 @ eip", 0);
 			//disassemble(20, 2);
 		} else {
+			int show = !tracecalls;
+			if (tracecalls) {
+				char label[128];
+				struct aop_t aop;
+				char buf[32];
+				u64 addr = arch_pc(ps.tid);
+				radare_read_at(addr, buf, 32);
+				arch_aop(addr, buf, &aop);
+				switch(aop.type) {
+				case AOP_TYPE_CALL:
+				case AOP_TYPE_RCALL:
+					label[0] = '\0';
+					string_flag_offset(label, aop.jump);
+					cons_printf("[>] call 0x%08llx ; %s\n", aop.jump, label);
+					show = 1;
+					break;
+				}
+			}
+
+			if (show)
 			switch(level) {
 			case 1:
 				radare_cmd("!dregs", 0);
@@ -969,6 +992,7 @@ int debug_trace(char *input)
 				cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
 				radare_cmd("!regs", 0);
 			case 4:
+				radare_cmd(".!regs*", 0);
 				radare_cmd("px 64 @ esp",0);
 			case 2:
 			case 3:

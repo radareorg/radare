@@ -80,7 +80,7 @@ int help_message()
 	TITLE
 	cons_printf(" Tracing\n");
 	TITLE_END
-	cons_printf("  trace [N]          trace until bp or eof at N debug level\n");
+	cons_printf("  trace [N]          trace until bp or eof at N debug level (!trace? for help)\n");
 	cons_printf("  tt [size]          touch trace using a swapable bps area\n");
 #if __NetBSD__ || __OpenBSD__ || __APPLE__
 	cons_printf("  ktrace             follow app until ktrace event occurs\n");
