@@ -36,3 +36,37 @@ int pids_sons_of(int pid)
 	printf("-+- %d : %s\n",pid, buf);
 	return pids_sons_of_r(pid,0,999);
 }
+
+int debug_pids()
+{
+#if __UNIX__
+	int i, fd;
+	int n = 0;
+	char cmdline[1025];
+
+	// TODO: use ptrace to get cmdline from esp like tuxi does
+	for(i=2;i<999999;i++) {
+		switch( debug_os_kill(i, 0) ) {
+		case 0:
+			sprintf(cmdline, "/proc/%d/cmdline", i);
+			fd = open(cmdline, O_RDONLY);
+			cmdline[0] = '\0';
+			if (fd != -1) {
+				read(fd, cmdline, 1024);
+				cmdline[1024] = '\0';
+				close(fd);
+			}
+			printf("%d %s\n", i, cmdline);
+			n++;
+			break;
+//		case -1:
+//			if (errno == EPERM)
+//				printf("%d [not owned]\n", i);
+//			break;
+		}
+	}
+	return n;
+#else
+	return -1;
+#endif
+}

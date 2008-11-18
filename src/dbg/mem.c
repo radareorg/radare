@@ -587,3 +587,169 @@ err_map:
 
 	return ret;
 }
+
+/* memory protection permissions */
+struct mp_t {
+	u64 addr;
+	unsigned int size;
+	int perms;
+	struct list_head list;
+};
+
+static int mp_is_init = 0;
+
+struct list_head mps;
+
+// TODO: support to remove ( store old page permissions )
+// TODO: remove overlapped memory map changes
+int debug_mp(char *str)
+{
+	struct list_head *i;
+	struct mp_t *mp;
+	char buf[128];
+	char buf2[128];
+	char buf3[128];
+	char *ptr = buf;
+	u64 addr;
+	u64 size;
+	int perms = 0;
+
+	// TODO: move this to debug_init .. must be reinit when !load is called
+	if (!mp_is_init) {
+		INIT_LIST_HEAD(&mps);
+		mp_is_init = 1;
+	}
+
+	if (str[0]=='\0') {
+		list_for_each(i, &(mps)) {
+			struct mp_t *m = list_entry(i, struct mp_t, list);
+			cons_printf("0x%08llx %d %c%c%c\n", m->addr, m->size,
+			m->perms&4?'r':'-', m->perms&2?'w':'-', m->perms&1?'x':'-');
+		}
+		return 0;
+	}
+
+	if (strchr(str, '?')) {
+		cons_printf("Usage: !mp [rwx] [addr] [size]\n");
+		cons_printf("  > !mp       - lists all memory protection changes\n");
+		cons_printf("  > !mp --- 0x8048100 4096\n");
+		cons_printf("  > !mp rwx 0x8048100 4096\n");
+		cons_printf("- addr and size are aligned to memory (-=%%4).\n");
+		return 0;
+	}
+
+	sscanf(str, "%127s %127s %127s", buf, buf2, buf3);
+	addr = get_math(buf2);
+	size = get_math(buf3);
+
+	if (size == 0) {
+		eprintf("Invalid arguments\n");
+		return 1;
+	}
+
+
+	/* PROT_{EXEC, WRITE, READ} from mman.h */
+	for(ptr=buf;ptr[0];ptr=ptr+1) {
+		switch(ptr[0]) {
+		case 'r': perms |= 1; break;
+		case 'w': perms |= 2; break;
+		case 'x': perms |= 4; break;
+		}
+	}
+
+	// align to bottom
+	addr = addr - (addr%4);
+	size = size + (size-(size%4));
+
+	mp = (struct mp_t*)malloc(sizeof(struct mp_t));
+	mp->addr  = addr;
+	mp->size  = (unsigned int)size;
+	mp->perms = perms;
+	list_add_tail(&(mp->list), &(mps));
+	
+	arch_mprotect((addr_t)mp->addr, mp->size, mp->perms);
+
+	return 0;
+}
+
+
+int debug_mmap(char *args)
+{
+	char *arg;
+	char *file = args + 1;
+	addr_t addr;
+	addr_t size;
+#if 0
+Dump of assembler code for function mmap:
+0xb7ec0110 <mmap+0>:    push   %ebp
+0xb7ec0111 <mmap+1>:    push   %ebx
+0xb7ec0112 <mmap+2>:    push   %esi
+0xb7ec0113 <mmap+3>:    push   %edi
+0xb7ec0114 <mmap+4>:    mov    0x14(%esp),%ebx
+0xb7ec0118 <mmap+8>:    mov    0x18(%esp),%ecx
+0xb7ec011c <mmap+12>:   mov    0x1c(%esp),%edx
+0xb7ec0120 <mmap+16>:   mov    0x20(%esp),%esi
+0xb7ec0124 <mmap+20>:   mov    0x24(%esp),%edi
+0xb7ec0128 <mmap+24>:   mov    0x28(%esp),%ebp
+0xb7ec012c <mmap+28>:   test   $0xfff,%ebp
+0xb7ec0132 <mmap+34>:   mov    $0xffffffea,%eax
+0xb7ec0137 <mmap+39>:   jne    0xb7ec0143 <mmap+51>
+0xb7ec0139 <mmap+41>:   shr    $0xc,%ebp
+0xb7ec013c <mmap+44>:   mov    $0xc0,%eax
+0xb7ec0141 <mmap+49>:   int    $0x80
+#endif
+
+	if (!ps.opened) {
+		eprintf(":signal No program loaded.\n");
+		return 1;
+	}
+
+	if(!args)
+		return debug_alloc_status();
+
+	if ((arg = strchr(file, ' '))) {
+		arg[0]='\0';
+		addr = get_math(arg+1);
+		size = 0; // TODO: not yet implemented
+		if (strchr(arg+1, ' '))
+			eprintf("TODO: optional size not yet implemented\n");
+		//signal_set(signum, address);
+		mmap_tagged_page(file, addr, size);
+	} else {
+		eprintf("Usage: !mmap [file] [address] ([size])\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+u64 debug_alloc(char *args)
+{
+	int sz;
+	char *param;
+	addr_t addr;
+
+	if(!args)
+		return debug_alloc_status();
+
+	param = args + 1;
+	if(!strcmp(param, "status")) {
+		print_status_alloc();
+	} else {
+		sz = get_math(param);
+		if(sz <= 0) {
+			eprintf(":alloc invalid size\n");
+			return -1;
+		}
+
+		addr = alloc_page(sz);
+		if(addr == (addr_t)-1) {
+			eprintf(":alloc can not alloc region!\n");
+			return -1;
+		}
+		printf("0x%08x\n", (unsigned int)addr);
+	}
+
+	return addr;
+}
+

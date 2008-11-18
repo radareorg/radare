@@ -13,9 +13,9 @@ TheBook
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
 
-
 ===========================================================
 
+* !contsc should allow return value not error
 * r_io_map_join()
   > o connect://1.1.1.3:9999//bin/ls 0x100000
   > o /bin/ls 0x200000

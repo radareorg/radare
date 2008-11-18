@@ -50,10 +50,6 @@
 #include "events.h"
 #include "debug.h"
 
-extern struct regs_off roff[];
-
-int debug_alloc_status();
-
 void debug_dumpcore()
 {
 #if __NetBSD__
@@ -281,33 +277,6 @@ void debug_msg_set(const char *format, ...)
 	va_end(ap);
 }
 
-int hijack_fd(int fd, const char *file)
-{
-	int f;
-
-	if (strnull(file) || fd==-1)
-		return -1;
-
-#if __UNIX__
-	f = open(file, (fd?O_RDWR:O_RDONLY) | O_NOCTTY);
-#else
-	f = open(file, (fd?O_RDWR:O_RDONLY));
-#endif
-	// TODO handle pipes to programs
-	// does not works
-	if (f == -1) {
-		f = open(file, (fd?O_RDWR:O_RDONLY)|O_CREAT ,0644);
-		if (f == -1) {
-			eprintf("Cannot open child.uh '%s'\n", file);
-			return -1;
-		}
-	}
-	close(fd);
-	dup2(f, fd);
-
-	return fd;
-}
-
 void debug_environment()
 {
 	const char *ptr;
@@ -375,7 +344,6 @@ a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 		hijack_fd(2, config_get("child.stderr"));
 	}
 }
-
 
 int debug_bt()
 {
@@ -607,86 +575,6 @@ int debug_until(const char *addr)
 	return 0;
 }
 
-int debug_mmap(char *args)
-{
-	char *arg;
-	char *file = args + 1;
-	addr_t addr;
-	addr_t size;
-#if 0
-Dump of assembler code for function mmap:
-0xb7ec0110 <mmap+0>:    push   %ebp
-0xb7ec0111 <mmap+1>:    push   %ebx
-0xb7ec0112 <mmap+2>:    push   %esi
-0xb7ec0113 <mmap+3>:    push   %edi
-0xb7ec0114 <mmap+4>:    mov    0x14(%esp),%ebx
-0xb7ec0118 <mmap+8>:    mov    0x18(%esp),%ecx
-0xb7ec011c <mmap+12>:   mov    0x1c(%esp),%edx
-0xb7ec0120 <mmap+16>:   mov    0x20(%esp),%esi
-0xb7ec0124 <mmap+20>:   mov    0x24(%esp),%edi
-0xb7ec0128 <mmap+24>:   mov    0x28(%esp),%ebp
-0xb7ec012c <mmap+28>:   test   $0xfff,%ebp
-0xb7ec0132 <mmap+34>:   mov    $0xffffffea,%eax
-0xb7ec0137 <mmap+39>:   jne    0xb7ec0143 <mmap+51>
-0xb7ec0139 <mmap+41>:   shr    $0xc,%ebp
-0xb7ec013c <mmap+44>:   mov    $0xc0,%eax
-0xb7ec0141 <mmap+49>:   int    $0x80
-#endif
-
-	if (!ps.opened) {
-		eprintf(":signal No program loaded.\n");
-		return 1;
-	}
-
-	if(!args)
-		return debug_alloc_status();
-
-	if ((arg = strchr(file, ' '))) {
-		arg[0]='\0';
-		addr = get_math(arg+1);
-		size = 0; // TODO: not yet implemented
-		if (strchr(arg+1, ' '))
-			eprintf("TODO: optional size not yet implemented\n");
-		//signal_set(signum, address);
-		mmap_tagged_page(file, addr, size);
-	} else {
-		eprintf("Usage: !mmap [file] [address] ([size])\n");
-		return 1;
-	}
-
-	return 0;
-}
-
-u64 debug_alloc(char *args)
-{
-	int sz;
-	char *param;
-	addr_t addr;
-
-	if(!args)
-		return debug_alloc_status();
-
-	param = args + 1;
-	if(!strcmp(param, "status")) {
-		print_status_alloc();
-	} else {
-		sz = get_math(param);
-		if(sz <= 0) {
-			eprintf(":alloc invalid size\n");
-			return -1;
-		}
-
-		addr = alloc_page(sz);
-		if(addr == (addr_t)-1) {
-			eprintf(":alloc can not alloc region!\n");
-			return -1;
-		}
-		printf("0x%08x\n", (unsigned int)addr);
-	}
-
-	return addr;
-}
-
 int debug_free(char *args)
 {
 	addr_t addr;
@@ -781,186 +669,6 @@ int debug_th(char *cmd)
 	th_info_bsd(ps.tid);
 #endif
 	return th_list();
-}
-
-int debug_fd(char *cmd)
-{
-	char *ptr  = NULL,
-	     *ptr2 = NULL,
-	     *ptr3 = NULL;
-	int whence = 0;
-	int len = 0;
-
-	if (cmd[0]=='?') {
-		cons_printf("Usage: !fd[s|d] [-#] [file | host:port]\n"
-		"  !fd                   ; list filedescriptors\n"
-		"  !fdd 2 7              ; dup2(2, 7)\n"
-		"  !fds 3 0x840          ; seek filedescriptor\n"
-		"  !fdr 3 0x8048000 100  ; read 100 bytes from fd=3 at 0x80..\n"
-		"  !fdw 3 0x8048000 100  ; write 100 bytes from fd=3 at 0x80..\n"
-		"  !fdio [fdnum]         ; enter fd-io mode on a fd, no args = back to dbg-io\n"
-		"  !fd -1                ; close stdout\n"
-		"  !fd /etc/motd         ; open file at fd=3\n"
-		"  !fd 127.0.0.1:9999    ; open socket at fd=5\n");
-		return 0;
-	}
-
-	if ((ptr=strchr(cmd,'-'))) {
-		debug_fd_close(ps.tid, atoi(ptr+1));
-	} else
-	if (cmd[0]=='r') {
-		ptr = strchr(cmd, ' ');
-		if (ptr) {
-			*ptr = '\0';
-			ptr2 = strchr(ptr+1, ' ');
-		}
-		if (ptr2) {
-			*ptr2 = '\0';
-			ptr3 = strchr(ptr2+1, ' ');
-		}
-		if (ptr3) {
-			*ptr3 = '\0';
-			len = atoi(ptr3+1);
-		}
-		if (!ptr||!ptr2||!ptr3)
-			eprintf("Usage: !fdr [fd] [offset] [len])\n");
-		else debug_fd_read(ps.tid, atoi(ptr+1), get_math(ptr2+1), len);
-	} else
-	if (cmd[0]=='w') {
-		ptr = strchr(cmd, ' ');
-		if (ptr) {
-			*ptr = '\0';
-			ptr2 = strchr(ptr+1, ' ');
-		}
-		if (ptr2) {
-			*ptr2 = '\0';
-			ptr3 = strchr(ptr2+1, ' ');
-		}
-		if (ptr3) {
-			*ptr3 = '\0';
-			len = atoi(ptr3+1);
-		}
-		if (!ptr||!ptr2||!ptr3)
-			eprintf("Usage: !fdw [fd] [offset] [len])\n");
-		else debug_fd_write(ps.tid, atoi(ptr+1), get_math(ptr2+1), len);
-	} else
-	if (cmd[0]=='i') {
-		eprintf("TODO\n");
-	} else
-	if (cmd[0]=='s') {
-		ptr = strchr(cmd, ' ');
-		if (ptr)
-			ptr2 = strchr(ptr+1, ' ');
-		if (ptr2)
-			ptr3 = strchr(ptr2+1, ' ');
-		if (!ptr||!ptr2) {
-			eprintf("Usage: !fds [fd] [seek] ([whence])\n");
-		} else {
-			if (ptr3)
-				whence = atoi(ptr3+1);
-
-			printf("curseek = %08x\n", 
-			(unsigned int)
-			debug_fd_seek(ps.tid, atoi(ptr+1), get_math(ptr2+1), whence));
-		}
-	} else
-	if (cmd[0]=='d') {
-		ptr = strchr(cmd, ' ');
-		if (ptr)
-		ptr2 = strchr(ptr+1, ' ');
-		if (!ptr||!ptr2)
-			eprintf("Usage: !fdd [oldfd] [newfd]\n");
-		else
-			debug_fd_dup2(ps.tid, atoi(ptr+1), atoi(ptr2+1));
-	} else
-	if ((ptr=strchr(cmd, ' '))) {
-		ptr = ptr+1;
-		if (ptr)
-		ptr2 = strchr(ptr, ':');
-		if (ptr2)
-			eprintf("SOCKET NOT YET\n");
-		else
-			eprintf("new fd = %d\n", debug_fd_open(ps.tid, ptr, 0));
-	} else
-		debug_fd_list(ps.tid);
-
-	return 0;
-}
-
-int debug_load()
-{
-	int ret = 0;
-	char pids[128];
-
-	if (ps.pid!=0) {
-		/* TODO: check if pid is still running */
-		// use signal(0) to check if its already there
-		/* TODO: ask before kill */
-	//	if (ps.is_file)
-	//		debug_os_kill(ps.tid, SIGKILL);
-	//	else return 0;
-	}
-
-	WS(event)   = UNKNOWN_EVENT;
-	ps.bin_usrcode = NULL;
-
-	ps_parse_argv();
-
-	if (ps.argv[0]== NULL) {
-		eprintf("No argv[0] available\n");
-		return 1;
-	}
-	ps.is_file = !atoi(ps.filename);
-	if (ps.is_file) 
-		ret = debug_fork_and_attach();
-	else
-		ret = debug_attach(atoi(ps.filename));
-
-	ps.entrypoint = arch_get_entrypoint();
-	ps.th_active = 0;
-
-	sprintf(pids, "%d", ps.tid);
-	setenv("DPID", pids, 1);
-	debug_init_maps(0);
-	events_init();
-	debug_until( config_get("dbg.bep") );
-
-	debug_getregs(ps.pid, &(WS(regs)));
-
-	return ret;
-}
-
-int debug_loaduri(char *cmd)
-{
-	ps.filename = cmd;
-	return debug_load();
-}
-
-int debug_unload()
-{
-	ps.opened = 0;
-#if __UNIX__
-	debug_os_kill(ps.tid, SIGKILL);
-#endif
-	ps.pid = ps.tid = 0;
-
-	return 0; //for warning message
-}
-
-#define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
-
-#define ALIGN_SIZE 4096
-
-int debug_read(pid_t pid, void *addr, int length)
-{
-	if (length<0)
-		return -1;
-	return debug_read_at(pid, addr, length, ps.offset);
-}
-
-int debug_write(pid_t pid, void *data, int length)
-{
-	return debug_write_at(ps.tid, data, length, ps.offset);
 }
 
 int debug_skip(int times)
@@ -1208,87 +916,6 @@ int debug_step(int times)
 	return (WS(event) != BP_EVENT);
 }
 
-int debug_set_register(const char *args)
-{
-	char *value;
-	char *arg;
-
-	if (args == NULL) {
-		eprintf("Usage: !set [reg] [value]\n");
-		return 1;
-	}
-
-	arg = alloca(strlen(args)+1);
-	strcpy(arg, args);
-
-	if (!ps.opened) {
-		eprintf(":regs No program loaded.\n");
-		return 1;
-	}
-	value = strchr(arg, '=');
-	if (!value)
-		value = strchr(arg, ' ');
-	if (!value) {
-		eprintf("Usage: !set [reg] [value]\n");
-		eprintf("  > !set eflags PZTI\n");
-		eprintf("  > !set r0 0x33\n");
-		return 1;
-	}
-	value[0]='\0';
-	arg = strclean(arg);
-	value = strclean(value+1);
-	printf("%s=%s\n", arg, value);
-
-	return arch_set_register(arg, value);
-}
-
-int debug_fpregisters(int rad)
-{
-	if (!ps.opened) {
-		eprintf(":fpregs No program loaded.\n");
-		return 1;
-	}
-
-	if (rad)
-		cons_printf("fs fpregs\n");
-	return arch_print_fpregisters(rad, "");
-}
-
-int debug_dregisters(int rad)
-{
-	if (!ps.opened) {
-		eprintf(":regs No program loaded.\n");
-		return 1;
-	}
-
-	return arch_print_registers(rad, "line");
-}
-
-int debug_oregisters(int rad)
-{
-	if (!ps.opened) {
-		eprintf(":regs No program loaded.\n");
-		return 1;
-	}
-
-	return arch_print_registers(rad, "orig");
-}
-
-int debug_registers(int rad)
-{
-	int fs, ret = 1;
-
-	if (!ps.opened) {
-		eprintf(":regs No program loaded.\n");
-	} else {
-		fs = flag_space_idx;
-		flag_space_set("regs");
-		ret = arch_print_registers(rad, "");
-		flag_space_idx = fs;
-	}
-	return ret;
-}
-
 int debug_trace(char *input)
 {
 	// TODO: file.trace ???
@@ -1375,89 +1002,6 @@ int debug_trace(char *input)
 
 	if (ps.opened==0)
 		debug_load();
-
-	return 0;
-}
-/* memory protection permissions */
-struct mp_t {
-	u64 addr;
-	unsigned int size;
-	int perms;
-	struct list_head list;
-};
-
-static int mp_is_init = 0;
-
-struct list_head mps;
-
-// TODO: support to remove ( store old page permissions )
-// TODO: remove overlapped memory map changes
-int debug_mp(char *str)
-{
-	struct list_head *i;
-	struct mp_t *mp;
-	char buf[128];
-	char buf2[128];
-	char buf3[128];
-	char *ptr = buf;
-	u64 addr;
-	u64 size;
-	int perms = 0;
-
-	// TODO: move this to debug_init .. must be reinit when !load is called
-	if (!mp_is_init) {
-		INIT_LIST_HEAD(&mps);
-		mp_is_init = 1;
-	}
-
-	if (str[0]=='\0') {
-		list_for_each(i, &(mps)) {
-			struct mp_t *m = list_entry(i, struct mp_t, list);
-			cons_printf("0x%08llx %d %c%c%c\n", m->addr, m->size,
-			m->perms&4?'r':'-', m->perms&2?'w':'-', m->perms&1?'x':'-');
-		}
-		return 0;
-	}
-
-	if (strchr(str, '?')) {
-		cons_printf("Usage: !mp [rwx] [addr] [size]\n");
-		cons_printf("  > !mp       - lists all memory protection changes\n");
-		cons_printf("  > !mp --- 0x8048100 4096\n");
-		cons_printf("  > !mp rwx 0x8048100 4096\n");
-		cons_printf("- addr and size are aligned to memory (-=%%4).\n");
-		return 0;
-	}
-
-	sscanf(str, "%127s %127s %127s", buf, buf2, buf3);
-	addr = get_math(buf2);
-	size = get_math(buf3);
-
-	if (size == 0) {
-		eprintf("Invalid arguments\n");
-		return 1;
-	}
-
-
-	/* PROT_{EXEC, WRITE, READ} from mman.h */
-	for(ptr=buf;ptr[0];ptr=ptr+1) {
-		switch(ptr[0]) {
-		case 'r': perms |= 1; break;
-		case 'w': perms |= 2; break;
-		case 'x': perms |= 4; break;
-		}
-	}
-
-	// align to bottom
-	addr = addr - (addr%4);
-	size = size + (size-(size%4));
-
-	mp = (struct mp_t*)malloc(sizeof(struct mp_t));
-	mp->addr  = addr;
-	mp->size  = (unsigned int)size;
-	mp->perms = perms;
-	list_add_tail(&(mp->list), &(mps));
-	
-	arch_mprotect((addr_t)mp->addr, mp->size, mp->perms);
 
 	return 0;
 }
@@ -1742,58 +1286,6 @@ int debug_cont(const char *input)
 	return 0;
 }
 
-int debug_pids()
-{
-#if __UNIX__
-	int i, fd;
-	int n = 0;
-	char cmdline[1025];
-
-	// TODO: use ptrace to get cmdline from esp like tuxi does
-	for(i=2;i<999999;i++) {
-		switch( debug_os_kill(i, 0) ) {
-		case 0:
-			sprintf(cmdline, "/proc/%d/cmdline", i);
-			fd = open(cmdline, O_RDONLY);
-			cmdline[0] = '\0';
-			if (fd != -1) {
-				read(fd, cmdline, 1024);
-				cmdline[1024] = '\0';
-				close(fd);
-			}
-			printf("%d %s\n", i, cmdline);
-			n++;
-			break;
-//		case -1:
-//			if (errno == EPERM)
-//				printf("%d [not owned]\n", i);
-//			break;
-		}
-	}
-	return n;
-#else
-	return -1;
-#endif
-}
-
-u64 debug_get_regoff(regs_t *regs, int off)
-{
-	char *c = (char *)regs;
-	debug_getregs(ps.tid, regs);
-	return *(unsigned long *)(c + off);	
-}
-
-void debug_set_regoff(regs_t *regs, int off, unsigned long val)
-{
-	char *c = (char *)regs;
-	*(unsigned long *)(c + off) = val;	
-
-#if __WINDOWS__
-	regs->ContextFlags = CONTEXT_FULL;
-#endif
-	debug_setregs(ps.tid, regs);
-}
-
 int debug_run(char *input)
 {
 	char *buf;
@@ -1820,28 +1312,6 @@ int debug_run(char *input)
 	eprintf("No program loaded.\n");
 	return 1;
 }
-
-u64 debug_get_register(const char *input)
-{
-	char *reg = input;
-	int off;
-	u64 ret;
-
-	// TODO: user streclean
-	if(*input == ' ')
-		reg = input + 1;
-
-	if((off = get_reg(reg)) == -1)
-		return -1;
-
-	/* TODO: debug_get_regoff must return a value addr_t */
-	ret = (u64)debug_get_regoff(&WS(regs), roff[off].off); 
-
-	printf("0x%08llx\n", ret);
-
-	return ret;
-}
-
 
 /* do loop */
 int debug_loop(char *addr_str)

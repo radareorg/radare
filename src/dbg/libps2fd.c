@@ -26,6 +26,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/ptrace.h>
+#if 0
 
 struct debug_t ps;
 
@@ -90,3 +91,5 @@ int system(const char *command)
 {
 	return ptrace_system(command);
 }
+
+#endif

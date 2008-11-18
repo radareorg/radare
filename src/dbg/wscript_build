@@ -3,7 +3,7 @@
 obj = bld.new_task_gen('cc', 'staticlib')
 obj.target  = 'debugger'
 obj.includes = '../arch ..'
-obj.source  = ' bp.c lib.c close.c debug.c events.c lseek.c mem.c open.c parser.c procs.c signal.c system.c thread.c wp.c'
+obj.source  = ' bp.c lib.c close.c debug.c events.c lseek.c mem.c open.c parser.c procs.c signal.c system.c thread.c wp.c regs.c io.c fd.c'
 # XXX UNUSED FILES : watchpoint.c ptrace.c, libps2fd.c dosdebug.c # must be removed
 cpu = bld.env['CPU']
 #obj.source += ' arch/i386.c arch/i386-bp.c arch/i386-hack.c'

@@ -6,6 +6,13 @@
 #include "arch/arch.h"
 #include "parser.h"
 
+extern int fdio_type; // stream or file?
+extern int fdio_enabled;
+extern int fdio_fd;
+int debug_fd_io_mode(int set, int fd);
+int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr);
+int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr);
+
 /* lib.c */
 int debug_lib(const char *arg);
 int debug_lib_load(const char *file);
