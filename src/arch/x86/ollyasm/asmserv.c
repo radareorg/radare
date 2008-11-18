@@ -96,7 +96,7 @@ const t_cmddata cmddata[] = {
   { 0x0000FE, 0x00003A, 1,WW,  REG,MRG,NNN, C_CMD+0,        "CMP" },
   { 0x0038FC, 0x003880, 1,WS,  MRG,IMM,NNN, C_CMD+1,        "CMP" },
   { 0x0038FF, 0x0010FF, 1,00,  MRJ,NNN,NNN, C_CAL+0,        "CALL" },
-  { 0x0000FF, 0x0000C3, 1,00,  PRN,NNN,NNN, C_RET+0,        "RETN,RET" },
+  { 0x0000FF, 0x0000C3, 1,00,  NNN,NNN,NNN, C_RET+0,        "RETN,RET" },
   { 0x0000F0, 0x0000B0, 1,W3,  RCM,IMM,NNN, C_CMD+0,        "MOV" },
   { 0x0000FE, 0x0000A0, 1,WW,  RAC,IMA,NNN, C_CMD+0,        "MOV" },
   { 0x00FFFF, 0x00840F, 2,CC,  JOW,NNN,NNN, C_JMC+0,        "JE,JZ" },

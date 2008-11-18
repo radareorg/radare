@@ -538,9 +538,9 @@ static void DecodeIM(int constsize,int sxt,int type) {
     if (i!=0 && symbolic!=0) {
       strcpy(da->result+nresult,name); nresult+=i; }
     else if (type==IMU || type==IMS || type==IM2 || data>=0 || data<NEGLIMIT)
-      nresult+=sprintf(da->result+nresult,"%lX",data);
+      nresult+=sprintf(da->result+nresult,"0x%lX",data);
     else
-      nresult+=sprintf(da->result+nresult,"-%lX",-data);
+      nresult+=sprintf(da->result+nresult,"-0x%lX",-data);
     if (addcomment && comment[0]!='\0') strcpy(da->comment,comment);
   };
 };
@@ -561,7 +561,7 @@ static void DecodeVX(void) {
   if (mode>=DISASM_FILE && da->error==DAE_NOERR) {
     if ((data & 0x00008000)!=0 && memicmp("VxDCall",da->result,7)==0)
       memcpy(da->result,lowercase?"vxdjump":"VxDJump",7);
-    nresult+=sprintf(da->result+nresult,"%lX",data);
+    nresult+=sprintf(da->result+nresult,"0x%lX",data);
   };
 };
 
@@ -625,7 +625,7 @@ static void DecodeRJ(ulong offsize,ulong nextip) {
     else
       i=0;
     if (symbolic==0 || i==0)
-      nresult+=sprintf(da->result+nresult,"%08lX",addr);
+      nresult+=sprintf(da->result+nresult,"0x%08lX",addr);
     else
       nresult+=sprintf(da->result+nresult,"%.*s",TEXTLEN-nresult-25,s);
     if (symbolic==0 && i!=0 && da->comment[0]=='\0')
@@ -654,7 +654,7 @@ static void DecodeJF(void) {
   da->immconst=seg;
   if (addr==0 || seg==0) da->zeroconst=1;
   if (mode>=DISASM_FILE) {
-    nresult+=sprintf(da->result+nresult,"%s %04X:%08X",
+    nresult+=sprintf(da->result+nresult,"%s 0x%04X:0x%08X",
     (lowercase==0?"FAR":"far"),seg,addr);
   };
 };
