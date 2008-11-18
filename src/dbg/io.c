@@ -40,20 +40,29 @@
 
 #define ALIGN_SIZE 4096
 
-/* XXX: Move fdio into debug_read_at ?? why it is system indepenent?? */
+int debug_read_at(pid_t pid, void *data, int length, u64 addr)
+{
+	if (fdio_enabled)
+		return debug_fd_read_at(pid, data, length, addr);
+	return debug_os_read_at(ps.tid, data, length, addr);
+}
+
 int debug_read(pid_t pid, void *data, int length)
 {
 	if (length<0)
 		return -1;
-	if (fdio_enabled)
-		return debug_fd_read_at(pid, data, length, ps.offset);
 	return debug_read_at(pid, data, length, ps.offset);
+}
+
+int debug_write_at(pid_t pid, void *data, int length, u64 addr)
+{
+	if (fdio_enabled)
+		return debug_fd_write_at(pid, data, length, addr);
+	return debug_os_write_at(ps.tid, data, length, addr);
 }
 
 int debug_write(pid_t pid, void *data, int length)
 {
-	if (fdio_enabled)
-		return debug_fd_write_at(pid, data, length, ps.offset);
 	return debug_write_at(ps.tid, data, length, ps.offset);
 }
 

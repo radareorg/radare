@@ -40,26 +40,35 @@ static u64 bufaddr = 0;
 int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr)
 {
 	int len;
+	fdio_enabled = 0;
 	if (bufaddr == 0)
 		bufaddr = alloc_page(1024*32); // 32K
-	if (bufaddr == 0)
+	if (bufaddr == 0) {
+		eprintf("null addr\n");
+		fdio_enabled = 1;
 		return -1;
+	}
 	debug_fd_seek(pid, fdio_fd, addr, SEEK_SET);
 	len = debug_fd_read(pid, fdio_fd, bufaddr, length);
-	debug_read_at(pid, buf, len, bufaddr);
+	debug_os_read_at(pid, buf, len, bufaddr);
+	fdio_enabled = 1;
 	return len;
 }
 
 int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr)
 {
 	int len;
+	fdio_enabled = 0;
 	if (bufaddr == 0)
 		bufaddr = alloc_page(1024*32); // 32K
-	if (bufaddr == 0)
+	if (bufaddr == 0) {
+		fdio_enabled = 1;
 		return -1;
+	}
+	debug_os_write_at(pid, buf, len, bufaddr);
 	debug_fd_seek(pid, fdio_fd, addr, SEEK_SET);
 	len = debug_fd_write(pid, fdio_fd, bufaddr, length);
-	debug_write_at(pid, buf, len, bufaddr);
+	fdio_enabled = 1;
 	return len;
 }
 
@@ -73,6 +82,7 @@ int debug_fd_io_mode(int set, int fd)
 	} else {
 		config.seek = oseek;
 	}
+	/* TODO: Autodetect fd type */
 	return 0;
 }
 

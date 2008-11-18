@@ -405,7 +405,7 @@ http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/vm_map.html
 
 #endif
 
-int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	unsigned int size= 0;
 	int err = vm_read_overwrite(pid_to_task(tid), (unsigned int)addr, len, (pointer_t)buff, &size);
@@ -416,7 +416,7 @@ int debug_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return size;
 }
 
-int debug_write_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_write_at(pid_t tid, void *buff, int len, u64 addr)
 {
 	// XXX SHOULD RESTORE PERMS LATER!!!
 	vm_protect(pid_to_task(tid), addr, len, 0, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);

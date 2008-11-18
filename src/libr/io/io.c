@@ -56,6 +56,21 @@ int r_io_read(int fd, u8 *buf, int len)
 	return read(fd, buf, len);
 }
 
+int r_io_resize(const char *file, int flags, int mode)
+{
+#if 0
+	/* TODO */
+	struct r_io_handle_t *plugin = r_io_handle_resolve(file);
+	if (plugin) {
+		int fd = plugin->open(file, flags, mode);
+		if (fd != -1)
+			r_io_handle_open(fd, plugin);
+		return fd;
+	}
+#endif
+	return -1;
+}
+
 int r_io_write(int fd, const u8 *buf, int len)
 {
 	if (r_io_map_write_at(r_io_seek, buf, len) != 0)

@@ -516,12 +516,15 @@ int debug_detach()
 /* copied from patan */
 extern int errno;
 
-static int ReadMem(int pid,  addr_t addr, size_t sz, void *buff)
+int debug_os_read_at(int pid, void *buff, int sz, u64 addr)
 {
 	unsigned long words = sz / sizeof(long) ;
 	unsigned long last = sz % sizeof(long) ;
 	long x, lr ;
 	int ret ;
+
+	if (sz<0)
+		return -1;
 
 	if (addr==-1)
 		return 0;
@@ -550,38 +553,8 @@ err:
 	return ret ;
 }
 
-#define ALIGN_SIZE 4096
-int debug_read_at(pid_t pid, void *buf, int length, u64 addr)
-{
-	if (length<0)
-		return -1;
-	return ReadMem(pid, (addr_t)addr, length, buf);
-#if 0
-	long dword;
-        int len, i = length;
-	int align = ALIGN_SIZE-at%ALIGN_SIZE;
 
-
-	if (align!=0) {
-		unsigned char four[ALIGN_SIZE];
-		//if (debug_read_at(pid, &four, ALIGN_SIZE, (unsigned long)(at-align))==-1)
-		//	return 0;
-		//memcpy(addr, four+align, ALIGN_SIZE-align);
-	}
-
-	for(i=4-align; i<length; i+=4) {
-		dword = debug_raw_read(pid, (unsigned long)(at+i));
-		if (dword == -1)
-			return 0;
-		len = (i+4>length)?length-i:4;
-		memcpy(addr+i, &dword, len); // XXX padding control?
-	}
-
-        return i;
-#endif
-}
-
-int WriteMem(int pid,  u64 addr, int sz, u8 *buff)
+int debug_os_write_at(int pid, u8 *buff, int sz, u64 addr)
 {
         long words = sz / sizeof(long) ;
         long last = (sz % sizeof(long))*8;
@@ -679,12 +652,6 @@ int putdata(pid_t child, unsigned long addr, char *data, int len)
 	}
 
 	return 0;
-}
-
-int debug_write_at(pid_t pid, void *data, int length, u64 addr)
-{
-//	return putdata(pid,(unsigned long)addr, data, length);
-	return WriteMem(pid, addr, length, data);
 }
 
 int debug_getregs(pid_t pid, regs_t *reg)
