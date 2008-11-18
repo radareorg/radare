@@ -670,6 +670,7 @@ void config_init(int first)
   config_set_i("asm.cmtmargin", 10); // show comments in disassembly
   config_set_i("asm.cmtlines", 0); // show comments in disassembly
   config_set("asm.syntax", "intel");
+  config_set("asm.case", "false"); // uppercase = true
   config_set("asm.objdump", "objdump -m i386 --target=binary -D");
   config_set("asm.offset", "true"); // show offset
   config_set("asm.section", "true");

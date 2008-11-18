@@ -230,6 +230,17 @@ udis_mem_ptr= 0;
 		ret = ilopar[0].Size;
 		} break;
 	}
+
+	/* XXX doesn't works for pseudo */
+	/* XXX add cache to avoid looking for asm.case all the time */
+	if (config_get("asm.case")) {
+		while(*string) {
+			if (string[0]=='0'&&string[1]=='x')
+				string = string + 1;
+			else *string = toupper( *string );
+			string = string + 1;
+		}
+	}
 	return ret;
 }
 
