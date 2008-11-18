@@ -656,9 +656,10 @@ Here's a seesion example:
 The block size is the default view size for radare. All commands will work with this constraint, but you can always temporally change the block size just giving a numeric argument to the print commands for example (px 20)
 
 \c [0xB7F9D810]> b?
-\c Usage: b[f flag]|[size]     ; Change block size
-\c   > b 200 ; set block size to 200
-\c   > bf sym_main && s sym_main
+\c Usage: b[f flag]|[size]  ; Change block size
+\c   > b 200                ; set block size to 200
+\c   > bt next @ here       ; block size = next-here
+\c   > bf sym_main          ; block size = flag size
 
 The 'b' command is used to change the block size:
 
@@ -671,6 +672,18 @@ The 'bf' command is used to change the block size to the one specified by a flag
 \c [0x00000000]> bf sym_main    ; block size = sizeof(sym_main)
 \c [0x00000000]> pd @ sym_main  ; disassemble sym_main
 \c   ...
+
+You can perform these two operations in a single one (pdf):
+
+\c [0x00000000]> pdf @ sym_main
+
+Another useful block-size related is 'bt' that will set a new block size depending on the current offset and a 'end' address. This is useful when working with io-streams like sockets or serial ports, because you can easily set the block size to fit just a single read. For example
+
+\c $ radare socket://www.gogle.com:80/
+\c [0x0000000]> w GET /\r\n\r\n
+\c [0x0000000]> bt _sockread_2 @ _sockread_1
+
+You can also use this command to manually get the interpolation between two search hits (for example when looking for headers and footers in a raw disk image).
 
 \H{sections} Sections
 
@@ -1941,6 +1954,54 @@ The \c{Cm} command is used to define a memory format string (the same used by th
 This way it is possible to define structures by just using simple oneliners. See 'print memory' for more information.
 
 All those C* commands can also be accessed from the visual mode by pressing 'd' (data conversion) key.
+
+\H{dwarf} DWARF integration
+
+Actually the dwarf support is activated by rabin when the binary have this information. This is just asm.dwarf=true, so when loading radare will add comments inside the assembly lines referencing the C/C++/Vala/Java.. sources lines.
+
+Here's an example:
+
+\c $ cat hello.c
+\c main() {
+\c   printf("Hello World\n");
+\c }
+\c $ gcc -g hello.c
+\c 
+\c $ rabin -rI ~/a.out| grep dwarf
+\c e dbg.dwarf = true
+\c
+\c $ rsc dwarf-lines a.out
+\c CC      1       main() { @ 0x8048374
+\c CC      2         printf("Hello World\n"); @ 0x8048385
+\c CC      3       } @ 0x8048391
+\c CC      3       } @ 0x804839a
+
+This rsc script uses addr2line to get the correspondencies between source code line and memory address when the program is loaded in memory by the ELF loader.
+
+And the result is:
+
+\c [0x080482F0]> pdf @ sym_main
+\c      ; 1        main() { 
+\c 0x08048374, / sym_main: lea ecx, [esp+0x4]
+\c 0x08048378, |           and esp, 0xf0
+\c 0x0804837b  |           push dword [ecx-0x4]
+\c 0x0804837e  |           push ebp
+\c 0x0804837f  |           mov ebp, esp
+\c 0x08048381  |           push ecx
+\c      ; Stack size +4 
+\c 0x08048382  |           sub esp, 0x4
+\c      ; 2          printf("Hello World\n"); 
+\c 0x08048385  |           mov dword [esp], 0x8048460 ; str_Hello_World
+\c 0x0804838c, |           call 0x80482d4  ; 1 = imp_puts
+\c      ; Stack size -4 
+\c      ; 3        } 
+\c 0x08048391  |           add esp, 0x4
+\c 0x08048394, |           pop ecx
+\c 0x08048395  |           pop ebp
+\c 0x08048396  |           lea esp, [ecx-0x4]
+\c 0x08048399  \           ret 
+\c 0x08048399           ; ------------------------------------ 
+\c      ; 3        } 
 
 \C{projects} Projects
 
@@ -4125,6 +4186,9 @@ It is handled by the '!fd' command:
 \c   !fd                   ; list filedescriptors
 \c   !fdd 2 7              ; dup2(2, 7)
 \c   !fds 3 0x840          ; seek filedescriptor
+\c   !fdr 3 0x8048000 100  ; read 100 bytes from fd=3 at 0x80..
+\c   !fdw 3 0x8048000 100  ; write 100 bytes from fd=3 at 0x80..
+\c   !fdio [fdnum]         ; enter fd-io mode on a fd, no args = back to dbg-io
 \c   !fd -1                ; close stdout
 \c   !fd /etc/motd         ; open file at fd=3
 \c   !fd 127.0.0.1:9999    ; open socket at fd=5
@@ -4142,6 +4206,29 @@ Now we can close the stdout of the program or just redirect them to a file openi
 \c [0x4A13C00E]> !fd -1               ; close stdout
 \c [0x4A13C00E]> !fdd 3 1             ; stdout = new_fd
 \c [0x4A13C00E]> !fd -3               ; close file
+
+There are three commands for reading and writing from/to filedescriptors of the child process from the debugger. !fdr and !fdw are the basic ones. As a simple example you can just use the child stdout filedescriptor for dumping the ELF signature to stdout.
+
+\c [0x465D8810]> !fdw 1 0x8048001 3
+\c ELF
+
+Cool right? :)
+
+Now you can do the same with !fdr. Both commands are used to inject a simple syscall instruction on the child process, so the addresses should be accessible from the target process.
+
+Be aware if you are trying to read from stdin or from a socket, because this can break the program execution or trash your terminal.
+
+The latest experimental but really interesting command is the \c{'!fdio'} one. It is used to abstract the debugger IO layer to work transparently by using a simple syscall proxying using read and write over the child file descriptors and let the developer read and write on child filedescriptors.
+
+\c [0x465D8810]> !fdio 3
+\c FDIO enabled on 3
+\c ...
+\c [0x465D8810]> !fdio
+\c FDIO disabled
+
+Once FDIO is enabled, radare will read and write over the child, so you'll loss the view of the process memory layout to have access to the file opened by the process.
+
+This is useful for debugging remote programs, because this way you can access to these files. In the same way you can open a new file and access it thru the remote debugger like if it was a local one.
 
 \H{events} Events
 
