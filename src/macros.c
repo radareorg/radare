@@ -139,18 +139,10 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 	char *cmd = alloca(strlen(ptr)+1024);
 	cmd[0]='\0';
 
-	if (ptr[strlen(ptr)-1]==':') {
-		/* label detected */
-		if (ptr[0]=='.') {
-			/* goto */
-		}
-		/* think about conditional goto */
-	}
-
 //	eprintf("call(%s)\n", ptr);
 	for(i=j=0;ptr[j];i++,j++) {
 		if (ptr[j]=='$' && ptr[j+1]>='0' && ptr[j+1]<='9') {
-			char *word = get0word(args, ptr[j+1]-'0');
+			const char *word = get0word(args, ptr[j+1]-'0');
 			strcat(cmd, word);
 			j++;
 			i = strlen(cmd)-1;
@@ -165,14 +157,69 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 	return radare_cmd(cmd, 0);
 }
 
+#define MAX_LABELS 20
+struct macro_label_t {
+  char name[80];
+  char *ptr;
+};
+
+char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr)
+{
+	int i;
+	for(;ptr[0]==' ';ptr=ptr+1);
+
+	if (ptr[strlen(ptr)-1]==':') {
+		/* label detected */
+		if (ptr[0]=='.') {
+		//	eprintf("---> GOTO '%s'\n", ptr+1);
+			/* goto */
+			for(i=0;i<*labels_n;i++) {
+		//	eprintf("---| chk '%s'\n", labels[i].name);
+				if (!strcmp(ptr+1, labels[i].name)) {
+					return labels[i].ptr;
+				}
+			}
+			return NULL;
+		} else
+		/* conditional goto */
+		if (ptr[0]=='?' && ptr[1]=='?' && ptr[2] != '?') {
+			if (config.last_cmp == 0) {
+				char *label = ptr + 3;
+				for(;label[0]==' '||label[0]=='.';label=label+1);
+		//		eprintf("===> GOTO %s\n", label);
+				/* goto label ptr+3 */
+				for(i=0;i<*labels_n;i++) {
+					if (!strcmp(label, labels[i].name)) {
+						return labels[i].ptr;
+					}
+				}
+				return NULL;
+			}
+		} else {
+			/* Add label */
+		//	eprintf("===> ADD LABEL(%s)\n", ptr);
+			strncpy(labels[*labels_n].name, ptr, 64);
+			labels[*labels_n].ptr = ptr+strlen(ptr)+1;
+			*labels_n = *labels_n + 1;
+		}
+		return ptr + strlen(ptr)+1;
+	}
+
+	return ptr;
+}
+
 /* TODO: add support for spaced arguments */
 int radare_macro_call(const char *name)
 {
 	char *args;
 	int nargs = 0;
-	char *str, *ptr;
+	char *str, *ptr, *ptr2;
 	struct list_head *pos;
 	static int macro_level = 0;
+	/* labels */
+	int labels_n = 0;
+	struct macro_label_t labels[MAX_LABELS];
+
 	str = alloca(strlen(name)+1);
 	strcpy(str, name);
 	ptr = strchr(str, ')');
@@ -198,6 +245,7 @@ int radare_macro_call(const char *name)
 			char *ptr = mac->code;
 			char *end = strchr(ptr, '\n');
 
+
 			if (nargs != mac->nargs) {
 				eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
 				macro_level --;
@@ -207,6 +255,21 @@ int radare_macro_call(const char *name)
 			macro_break = 0;
 			do {
 				if (end) *end='\0';
+
+				/* Label handling */
+				ptr2 = macro_label_process(&(labels[0]), &labels_n, ptr);
+				if (ptr2 == NULL) {
+					eprintf("Oops. invalid label name\n");
+					break;
+				} else
+				if (ptr != ptr2 && end) {
+					*end='\n';
+					ptr = ptr2;
+					end = strchr(ptr, '\n');
+					continue;
+				}
+
+				/* Command execution */
 				if (*ptr)
 					radare_cmd_args(ptr, args, nargs);
 				if (end) {
@@ -216,6 +279,8 @@ int radare_macro_call(const char *name)
 					macro_level --;
 					return 1;
 				}
+
+				/* Fetch next command */
 				end = strchr(ptr, '\n');
 			} while(!macro_break);
 			if (macro_break)

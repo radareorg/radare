@@ -12,3 +12,14 @@
 ; dummy hello world
 (foo one two
   x $0 @ $1)
+
+(disasm x
+  f foo @ $0
+  label:
+  pd 1
+  s +$$$
+  f foo @ foo-1
+  ? foo != 0
+  ??.label:
+)
+

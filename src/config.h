@@ -65,6 +65,7 @@ struct config_t {
 	u64 seek;
 	u64 last_seek;
 	u64 limit;
+	u64 last_cmp;
 	struct zoom_t zoom;
 	struct list_head rdbs; // linked list with all opened rdbs
 };

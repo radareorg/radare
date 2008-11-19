@@ -48,7 +48,6 @@
 #include "flags.h"
 #include "undo.h"
 
-u64 last_cmp = 0;
 print_fmt_t last_print_format = FMT_HEXB;
 //int fixed_width = 0;
 extern char **environ;
@@ -814,60 +813,6 @@ CMD_DECL(hash)
 
 	return 0;
 }
-
-#if 0
-// XXX this is fucking deprecate!
-CMD_DECL(interpret_perl)
-{
-	#if HAVE_PERL
-	char *ptr;
-	char *cmd[] = { "perl", "-e", ptr, 0 };
-	#endif
-
-	if (input==NULL || *input== '\0' || strchr(input,'?')) {
-	#if HAVE_PERL
-		eprintf("Usage: > #!perl\n");
-		eprintf("       > _print \"hello world\";\n");
-		eprintf("       > _require \"my-camel.pl\";\n");
-	#endif
-	#if HAVE_PYTHON
-		eprintf("Usage: > #!python\n");
-		eprintf("       > _print \"hello world\\n\"\n");
-		eprintf("       > _import my-snake.py\n");
-	#endif
-	#if !HAVE_PERL && !HAVE_PYTHON
-		eprintf("Build with no scripting support.\n");
-	#endif
-		return 0;
-	}
-
-	switch(config.lang) {
-	#if HAVE_PERL
-	case LANG_PERL:
-		ptr = strdup(input);
-		cmd[2] = ptr;
-		eperl_init();
-		perl_parse(my_perl, xs_init, 3, cmd, (char **)NULL);
-		perl_run(my_perl);
-		eperl_destroy();
-		free(ptr);
-		break;
-	#endif
-	#if HAVE_PYTHON
-	case LANG_PYTHON:
-		epython_init();
-		epython_eval(input);
-		epython_destroy(); // really??? why not keep the dream on?
-		break;
-	#endif
-	default:
-		eprintf("No scripting support.\n");
-		break;
-	}
-
-	return 0;
-}
-#endif
 
 CMD_DECL(interpret)
 {
@@ -2110,7 +2055,7 @@ CMD_DECL(help)
 	if (strlen(input)>0) {
 		if (input[0]=='?') {
 			if (input[1]=='?') {
-				cons_printf("0x%llx\n", last_cmp);
+				cons_printf("0x%llx\n", config.last_cmp);
 			} else
 			if (input[1]=='\0') {
 				eprintf("Usage: ?[?[?]] <expr>\n");
@@ -2125,7 +2070,7 @@ CMD_DECL(help)
 				eprintf("  > ???               ; show result of comparision\n");
 				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
 			} else
-			if (last_cmp == 0) {
+			if (config.last_cmp == 0) {
 				radare_cmd(input+1, 0);
 			}
 		} else
@@ -2138,7 +2083,7 @@ CMD_DECL(help)
 		} else {
 			u64 res = get_math(input);
 			if (strchr(input,'=') || strchr(input,'!')) {
-				last_cmp = res;
+				config.last_cmp = res;
 			} else {
 				D {cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
 					PRINT_BIN(res); NEWLINE;

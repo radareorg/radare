@@ -19,6 +19,17 @@
  */
 
 /* THIS PLUGIS IS BROKEN! */
+	#if 0
+	case LANG_PERL:
+		ptr = strdup(input);
+		cmd[2] = ptr;
+		eperl_init();
+		perl_parse(my_perl, xs_init, 3, cmd, (char **)NULL);
+		perl_run(my_perl);
+		eperl_destroy();
+		free(ptr);
+		break;
+	#endif
 
 #include "plugin.h"
 #include "main.h"
