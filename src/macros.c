@@ -196,11 +196,20 @@ char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr
 				return NULL;
 			}
 		} else {
+			for(i=0;i<*labels_n;i++) {
+		//	eprintf("---| chk '%s'\n", labels[i].name);
+				if (!strcmp(ptr+1, labels[i].name)) {
+					i = 0;
+					break;
+				}
+			}
 			/* Add label */
 		//	eprintf("===> ADD LABEL(%s)\n", ptr);
-			strncpy(labels[*labels_n].name, ptr, 64);
-			labels[*labels_n].ptr = ptr+strlen(ptr)+1;
-			*labels_n = *labels_n + 1;
+			if (i == 0) {
+				strncpy(labels[*labels_n].name, ptr, 64);
+				labels[*labels_n].ptr = ptr+strlen(ptr)+1;
+				*labels_n = *labels_n + 1;
+			}
 		}
 		return ptr + strlen(ptr)+1;
 	}
