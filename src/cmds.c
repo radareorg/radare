@@ -208,6 +208,7 @@ CMD_DECL(analyze)
 	struct list_head *head;
 	struct list_head *head2;
 	struct xrefs_t *c0;
+	const char *ptr;
 	int i, sz, n_calls=0;
 	int depth_i;
 	int delta = 0;
@@ -229,17 +230,23 @@ CMD_DECL(analyze)
 			eprintf("   > at*                ; list all traced opcode offsets\n");
 			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
 			eprintf("   > at [addr]          ; show trace info at address\n");
+			eprintf("   > atd                ; show disassembly trace\n");
+			eprintf("   > atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
+			break;
+		case 'd':
+			trace_show(2);
+			break;
+		case 'D':
+			radare_cmd("at*|rsc dwarf-traces $FILE", 0);
 			break;
 		case '+':
-			{
-				char *ptr = input+3;
-				u64 addr = get_offset(input+3);
-				ptr = strchr(ptr, ' ');
-				if (ptr != NULL) {
-					//eprintf("at(0x%08llx)=%d (%s)\n", addr, atoi(ptr+1), ptr+1);
-					trace_add(addr);
-					trace_set_times(addr, atoi(ptr+1));
-				}
+			ptr = input+3;
+			u64 addr = get_offset(input+3);
+			ptr = strchr(ptr, ' ');
+			if (ptr != NULL) {
+				//eprintf("at(0x%08llx)=%d (%s)\n", addr, atoi(ptr+1), ptr+1);
+				trace_add(addr);
+				trace_set_times(addr, atoi(ptr+1));
 			}
 			break;
 		case '-':

@@ -195,9 +195,12 @@ void trace_show(int plain)
 {
 	u64 from = 0LL;
 	u64 last;
+	char bytes[32];
+	char opcode[64];
 	struct list_head *pos;
 	struct trace_t *h;
 
+	opcode[0]='\0';
 	/* get the lower address */
 	list_for_each(pos, &traces) {
 		h = list_entry(pos, struct trace_t, list);
@@ -205,8 +208,19 @@ void trace_show(int plain)
 			from = h->addr;
 		if (h->addr < from)
 			from = h->addr;
-		if (plain)
+		switch(plain) {
+		case 1:
 			cons_printf("0x%08llx %d %d\n", h->addr, h->times, h->count);
+			break;
+		case 2:
+			config.verbose=0;
+			cons_printf("%03d %03d  ", h->times, h->count);
+			sprintf(opcode, "pd 1 @ 0x%08llx", h->addr);
+			radare_cmd_raw(opcode, 0);
+			//radare_read_at(h->addr, bytes, 32);
+			//udis_arch_string(config.arch, opcode, bytes, config.endian, h->addr, 32, 0);
+			break;
+		}
 	}
 	if (plain)
 		return;

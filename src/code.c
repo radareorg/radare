@@ -135,8 +135,8 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	int ret = 0;
 
 	//ud_idx = bytes;
-udis_mem= buf;
-udis_mem_ptr= 0;
+	udis_mem = buf;
+	udis_mem_ptr = 0;
 
 	if (bytes>63)
 		bytes=63;
