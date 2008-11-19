@@ -3058,6 +3058,24 @@ The shellcode can be easily modified to have different prefixes and suffixes to 
 \c -C [n]       suffix shellcode with N traps
 \c -E [n]       prefix with enumeration 01 02 03..
 
+Here there are some examples:
+
+\c  $ rasc -i x86.freebsd.reboot -e -A 20
+\c "\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41\x41
+\c  \x41\x41\x41\x41\x41\x31\xc0\x50\xb0\x37\xcd\x80"
+\c 
+\c  $ rasc -i x86.freebsd.reboot -e -N 20
+\c "\x40\x48\x40\x48\x40\x48\x40\x48\x40\x48\x40\x48\x40\x48\x40\x48
+\c  \x40\x48\x40\x48\x41\x31\xc0\x50\xb0\x37\xcd\x80"
+\c 
+\c  $ rasc -i x86.freebsd.reboot -e -E 20
+\c "\x41\x41\x41\x41\x42\x42\x42\x42\x43\x43\x43\x43\x44\x44\x44\x44
+\c  \x45\x45\x45\x45\x46\x31\xc0\x50\xb0\x37\xcd\x80"
+\c
+\c $ rasc -i x86.freebsd.reboot -e -C 20
+\c "\x41\x31\xc0\x50\xb0\x37\xcd\x80\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc
+\c  \xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc"
+
 \H{rasc-sysproxy} Syscall proxying
 
 TODO
@@ -4062,6 +4080,89 @@ The same operations can be done by using the '!th' command for the threads.
 
 In the same way you can hackily 'attach' and 'detach' from to a pid.
 
+\S{tracing} Tracing facilities
+
+The '!trace' command provides a simple way to get execution traces of opcodes.
+
+This command accepts a numeric argument specifying the verbose level. But you can also tune its output using eval variables.
+
+\c [0x4A13B8C0]> !trace?
+\c !trace [level]
+\c   0  no output
+\c   1  show addresses
+\c   2  address and disassembly
+\c   3  address, disassembly and registers
+\c   4  address, disassembly and registers and stack
+\c   > eval trace.calls = true ; only trace calls
+\c   > eval trace.smart = true ; smart output
+\c   > eval trace.bps = true   ; do not stop on breakpoints
+\c   > eval trace.libs = true  ; trace into libraries
+\c   > eval trace.bt = true    ; to show backtrace
+\c   > eval trace.sleep = 1    ; animated stepping (1fps)
+\c   > eval cmd.trace = x@eip  ; execute a cmd on every traced opcode
+
+The nice thing is that with cmd.trace you can extend its functionality with your own code. For example. you can for example !dump if the traced opcode is a call and then you will be able to read the program log and be able to perform a 'stepback' using !restore <id> command, restoring the process memory and registers.
+
+Let's make a test:
+
+\c [0x4A13C000]> !bp 0x4a13c009
+\c new hw breakpoint 0 at 0x4a13c009
+\c
+\c [0x4A13C000]> !trace 3
+\c Trace level: 3
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c000
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae23ac    eflags 0x200382  
+\c   edx  0x00000000    ebp  0x00000000    cpazSTIdor0 (STI)
+\c _shstrtab:0x4a13c001    0        eip: 89e5            mov ebp, esp
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c001
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae23a8    eflags 0x200382  
+\c   edx  0x00000000    ebp  0x00000000    cpazSTIdor0 (STI)
+\c 
+\c _shstrtab:0x4a13c003    8_       eip: 57              push edi
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c003
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae23a8    eflags 0x200382  
+\c   edx  0x00000000    ebp  0xbfae23a8    cpazSTIdor0 (STI)
+\c 
+\c _shstrtab:0x4a13c004,   8_       eip: 56              push esi
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c004
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae23a4    eflags 0x200382  
+\c   edx  0x00000000    ebp  0xbfae23a8    cpazSTIdor0 (STI)
+\c 
+\c _shstrtab:0x4a13c005    8_       eip: 53              push ebx
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c005
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae23a0    eflags 0x200382  
+\c   edx  0x00000000    ebp  0xbfae23a8    cpazSTIdor0 (STI)
+\c 
+\c _shstrtab:0x4a13c006   64_       eip: 83ec40          sub esp, 0x40
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c006
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae239c    eflags 0x200382  
+\c   edx  0x00000000    ebp  0xbfae23a8    cpazSTIdor0 (STI)
+\c 
+\c HW breakpoint hit!
+\c _shstrtab:0x4a13c009    0        eip: e8bd480100      call 0x4a1508cb
+\c   eax  0xbfae23b0    esi  0x00000000    eip    0x4a13c009
+\c   ebx  0x00000000    edi  0x00000000    oeax   0xffffffff
+\c   ecx  0x00000000    esp  0xbfae235c    eflags 0x200386  
+\c   edx  0x00000000    ebp  0xbfae23a8    cPazSTIdor0 (PSTI)
+\c Breakpoint!
+\c
+\c 7 traced opcodes
+\c
+\c [0x4A13C000]> :pd 7
+\c 0x4a13c000,   8_ push ebp
+\c 0x4a13c001    8  mov ebp, esp
+\c 0x4a13c003   16_ push edi
+\c 0x4a13c004,  24_ push esi
+\c 0x4a13c005   32_ push ebx
+\c 0x4a13c006   96_ sub esp, 0x40
+\c 0x4a13c009   96  call 0x4a1508cb
+
 \S{tt} Touch Tracing
 
 The 'touch trace' is a special tracing engine that was born from an idea of Gadix (Thanks! ;D)
@@ -4232,24 +4333,14 @@ This is useful for debugging remote programs, because this way you can access to
 
 \H{events} Events
 
-You can even configure radare to handle or ignore multiple types of events. This is useful to avoid stopping when an event is received from the child process.
+While debugging, the kernel can handle multiple events that the child process generates or receives. This are signals and exceptions.
 
-\c [0xB7FA8810]> !ie?
-\c Usage: !ie [-]<event>
-\c  - enables or disables the 'ignore event' 
-\c [0xB7FA8810]> !ie
-\c  0 stop
-\c  0 trap
-\c  0 pipe
-\c  0 alarm
-\c  0 fpe
-\c  0 ill
-
-This is usually used to bypass some packer protections that relay on some events. So this way you can skip them just with '!ie stop' or '!ie -stop'.
 
 \S{dbg-events} Event handling
 
-It is possible to configure which events should be ignored by the debugger
+It is possible to configure which events should be ignored by the debugger. Aka exceptions.
+
+The 'ie' command refers to 'ignore events'
 
 \c [0x4A13B8C0]> !ie
 \c  0 stop
@@ -4263,7 +4354,7 @@ It is possible to configure which events should be ignored by the debugger
 \c [0x4A13B8C0]> !ie | grep stop
 \c  1 stop
 
-The 'ie' command refers to 'ignore events'
+This is usually used to bypass some packer protections that relay on some events. So this way you can skip them just with '!ie stop' or '!ie -stop'.
 
 \S{dbg-signal} Signal handling
 

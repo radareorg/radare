@@ -710,6 +710,7 @@ void config_init(int first)
   config_set("cmd.flag", "true");
   config_set("cmd.asm", "");
   config_set("cmd.user", "");
+  config_set("cmd.trace", "");
   config_set("cmd.visual", "");
   config_set("cmd.hit", "");
   config_set("cmd.prompt", "");
@@ -737,6 +738,7 @@ void config_init(int first)
   node->callback = &config_baddr_callback;
 
   config_set("trace.bt", "false");
+  config_set("trace.bps", "false");
   config_set("trace.calls", "false");
   config_set_i("trace.sleep", 0);
   config_set("trace.smart", "false");

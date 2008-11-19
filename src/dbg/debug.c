@@ -920,24 +920,31 @@ int debug_trace(char *input)
 {
 	// TODO: file.trace ???
 	// TODO: show stack and backtrace only when is different
+	int counter = 0;
 	int tbt = (int)config_get("trace.bt");
 	long slip = (int)config_get_i("trace.sleep");
 	int smart = (int)config_get("trace.smart");
+	int tracebps = (int)config_get("trace.bps");
 	int tracelibs = (int)config_get("trace.libs");
 	int tracecalls = (int)config_get("trace.calls");
+	char *cmdtrace = config_get("cmd.trace");
 	int level = atoi(input+1);
 	unsigned long pc;
 
 	if (strchr(input,'?')) {
-		printf("!trace levels\n");
+		printf("!trace [level]\n");
 		printf("  0  no output\n");
 		printf("  1  show addresses\n");
 		printf("  2  address and disassembly\n");
 		printf("  3  address, disassembly and registers\n");
 		printf("  4  address, disassembly and registers and stack\n");
 		printf("  > eval trace.calls = true ; only trace calls\n");
+		printf("  > eval trace.smart = true ; smart output\n");
+		printf("  > eval trace.bps = true   ; do not stop on breakpoints\n");
+		printf("  > eval trace.libs = true  ; trace into libraries\n");
 		printf("  > eval trace.bt = true    ; to show backtrace\n");
-		printf("  > eval trace.sleep = 1    ; animated stepping\n");
+		printf("  > eval trace.sleep = 1    ; animated stepping (1fps)\n");
+		printf("  > eval cmd.trace = x@eip  ; execute this cmd on every traced opcode\n");
 		return 0;
 	}
 
@@ -952,9 +959,11 @@ int debug_trace(char *input)
 		radare_cmd("px  64 @ esp",0);
 	}
 
-	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_step(1)) {
 		/* XXX : if bp in addr stop! */
+		counter++;
+		radare_controlc();
+		u64 pc = arch_pc(ps.tid);
 		radare_cmd(".!regs*", 0);
 		if (smart) {
 			cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
@@ -1018,9 +1027,22 @@ int debug_trace(char *input)
 			}
 		}
 		cons_flush();
+
+		if (cmdtrace && cmdtrace[0]!='\0') {
+			radare_cmd_raw(cmdtrace, 0);
+		}
+
 		if (slip)
 			sleep(slip);
+		if (tracebps) {
+			eprintf("BREAKPOINT TRACED AT 0x%08llx!\n", pc);
+		}
+		if (debug_bp_get(pc) != NULL) {
+			eprintf("Breakpoint!\n");
+			break;
+		}
 	}
+	eprintf("%d traced opcodes\n");
 
 	radare_controlc_end();
 
