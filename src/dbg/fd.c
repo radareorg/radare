@@ -86,7 +86,19 @@ int debug_fd_io_mode(int set, int fd)
 	return 0;
 }
 
-int hijack_fd(int fd, const char *file)
+int debug_fd_dump()
+{
+	/* XXX */
+	return radare_cmd("fd* > fd.state", 0);
+}
+
+int debug_fd_restore()
+{
+	/* TODO : close all fds before anything */
+	return radare_cmd(".fd.state", 0);
+}
+
+int debug_fd_hijack(int fd, const char *file)
 {
 	int f;
 

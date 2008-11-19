@@ -15,6 +15,9 @@ TheBook
 
 ===========================================================
 
+* !step 10 only traces 1 opcode
+  But 10!step traces all of them
+
 * !contsc should allow return value not error
 * r_io_map_join()
   > o connect://1.1.1.3:9999//bin/ls 0x100000
@@ -27,6 +30,8 @@ Things to be done
 
 * !maps? @ esp -> doesnt works
   - !step @ eip -> !!!
+  - !fd > file -> file is empty!!
+  - prefixed with '!' all io is passed thru
 * Add disassembler for
   - DalvikVM
   - CUDA

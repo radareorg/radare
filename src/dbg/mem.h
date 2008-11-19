@@ -41,8 +41,6 @@ void print_status_alloc();
 void free_regmaps();
 void up_regions(int usrcode);
 void rest_region(MAP_REG *mr);
-void page_dumper(const char *dir);
-void page_restore(const char *dir);
 addr_t dealloc_page(addr_t addr);
 addr_t arch_alloc_page(unsigned long size, unsigned long *rsize);
 inline addr_t alloc_page(int size);
@@ -50,12 +48,18 @@ inline void add_regmap(MAP_REG *mr);
 void print_status_alloc();
 void free_regmaps(int rest);
 void print_maps_regions(int rad, int two);
-void page_restore(const char *dir);
-void page_dumper(const char *dir);
+void page_restore();
+void page_dumper();
 void up_regions(int usrcode);
 void rest_region(MAP_REG *mr);
 void rest_all_regions();
 int arch_mprotect(addr_t addr, unsigned int size, int perms);
+
+/* dump.c */
+void page_dumper();
+void page_restore();
+int process_dump(const char *dir);
+int process_restore(const char *dir);
 
 
 #define REGION_NONE	0

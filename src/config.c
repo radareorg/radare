@@ -738,6 +738,11 @@ void config_init(int first)
   node = config_set_i("file.baddr", 0);
   node->callback = &config_baddr_callback;
 
+  config_set("dump.regs", "true");
+  config_set("dump.user", "true");
+  config_set("dump.libs", "true");
+  config_set("dump.fds", "true");
+
   config_set("trace.bt", "false");
   config_set("trace.bps", "false");
   config_set("trace.calls", "false");

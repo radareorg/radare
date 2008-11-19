@@ -12,6 +12,8 @@ extern int fdio_fd;
 int debug_fd_io_mode(int set, int fd);
 int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr);
 int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr);
+int debug_fd_dump();
+int debug_fd_restore();
 
 /* lib.c */
 int debug_lib(const char *arg);

@@ -37,8 +37,6 @@
 #include "string.h"
 #include "debug.h"
 
-static int dump_num = 0;
-static char dumpdir[128];
 
 addr_t dealloc_page(addr_t addr)
 {
@@ -311,34 +309,12 @@ void print_maps_regions(int rad, int two)
 		"e zoom.to = 0x%08llx\n", from, to);
 }
 
-void page_restore(const char *dir)
+void page_restore()
 {
 	struct list_head *pos;
 	char *buf;
 	FILE *fd;
 
-	if (strnull(dir)) {
-		dump_num--;
-		if (dump_num<0) {
-			eprintf("No dumps to restore from. Sorry\n");
-			return;
-		}
-		sprintf(dumpdir, "dump%d", dump_num);
-		dir = dumpdir;
-	} else
-	if (dir&&*dir) {
-		dir = dir + 1;
-		if (strchr(dir,'/')) {
-			eprintf("No '/' permitted here.\n");
-			return;
-		}
-	}
-	if ( chdir(dir) == -1 ) {
-		eprintf("Cannot chdir to '%s'\n", dir);
-		return;
-	}
-
-	printf("Restore directory: %s\n", dir);
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG *mr = list_entry(pos, MAP_REG, list);
 
@@ -363,9 +339,6 @@ void page_restore(const char *dir)
 			free(buf);
 		}
 	}
-	arch_restore_registers();
-	if (dir&&*dir)
-		chdir("..");
 }
 
 void page_dumper(const char *dir)
@@ -373,29 +346,6 @@ void page_dumper(const char *dir)
 	struct list_head *pos;
 	char *buf;
 	FILE *fd;
-
-	if (strnull(dir)) {
-		sprintf(dumpdir, "dump%d", dump_num);
-		dir = dumpdir;
-		dump_num++;
-	} else
-	if (dir&&*dir) {
-		dir = dir + 1;
-		if (strchr(dir,'/')) {
-			eprintf("No '/' permitted here.\n");
-			return;
-		}
-	}
-#if __WINDOWS__ && !__CYGWIN__
-	mkdir(dir);
-#else
-	mkdir(dir, 0755);
-#endif
-	if ( chdir(dir) == -1) {
-		eprintf("No '/' permitted here.\n");
-		return;
-	}
-	printf("Dump directory: %s\n", dir);
 
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG	*mr = (MAP_REG *)((char *)pos + \
@@ -423,10 +373,6 @@ void page_dumper(const char *dir)
 			free(buf);
 		}
 	}
-	arch_dump_registers();
-
-	if (dir&&*dir)
-		chdir("..");
 }
 
 unsigned int prot2reg_perm(unsigned int prot_perms)
