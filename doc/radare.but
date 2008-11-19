@@ -2266,6 +2266,34 @@ It is also possible to recursively call a macro to emulate a loop. Here's a simp
 \c   $1
 \c   .(loop $0-1 $1))
 
+\S{macros-labels} Labels in macros
+
+Here there are two macro implementations for a user-defined disassembler:
+
+\c (disasm-recursive times
+\c  ? $0 == 0               ; check if arg0 == 0
+\c  ?? ()                   ; if matches break
+\c  pd 1                    ; disassemble 1 opcode
+\c  s +$$$                  ; seek curseek+opcodesize
+\c  .(disasm-recursive $0-1))           ; recursive call to me
+
+The problem with the recursive implementation is that will easily eat the stack if you
+plan to feed the macro with a large number as argument.
+
+It is also possible to write the same loop in an iterative format:
+
+\c (disasm-iterative x
+\c  f foo @ $0          ; foo = arg0
+\c  label:              ; define label
+\c  pd 1                ; disasm 1 opcode
+\c  s +$$$              ; seek to next opcode
+\c  f foo @ foo-1       ; foo--
+\c  ? foo != 0          ; if (foo != 0)
+\c  ??.label:           ;   goto label
+\c )
+
+I know that this syntax looks like a mix of lisp, perl and brainfuck :) cool huh? ;)
+
 \H{langs} Language bindings
 
 All language bindings supported by radare to script some actions are implemented as hack plugins.
