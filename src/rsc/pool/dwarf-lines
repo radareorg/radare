@@ -14,7 +14,7 @@ for my $line (@lines) {
 	$line=~/\[\ *(\d*),/; my $cline=$1;
 	$line=~/0x([a-f0-9]*)/; my $addr="0x$1";
 	#print "$file\t$cline\n";
-	chomp(my $code=`nl $file| grep -e ' $cline' |head -n 1`);
+	chomp(my $code=`nl $file 2>/dev/null | grep -e ' $cline' |head -n 1`);
 	$code=~s/@//g;
 	$code=~s/>//g;
 	$code=~s/|//g;

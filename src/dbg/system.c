@@ -138,7 +138,7 @@ static struct commads_t {
 	CB_CMD( "stepret"  , CB_NOARGS   , debug_stepret )      , 
 	CB_CMD( "stepbp"   , CB_INT      , debug_stepbp)        , 
 	CB_CMD( "stepo"    , CB_NOARGS   , debug_stepo )        , 
-	CB_CMD( "stepu"    , CB_NOARGS   , debug_stepu )        , 
+	CB_CMD( "stepu"    , CB_NORMAL   , debug_stepu )        , 
 	CB_CMD( "step"     , CB_INT      , debug_step)          , 
 	CB_CMD( "bp"       , CB_NORMAL   , debug_bp )           , 
 	CB_CMD( "bt"       , CB_NORMAL   , debug_bt )           , 

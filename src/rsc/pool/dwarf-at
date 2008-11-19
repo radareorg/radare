@@ -1,0 +1,9 @@
+#!/bin/sh
+# addr2line wrapper
+# --pancake
+
+if [ -z "$2" ]; then
+  echo "Usage: rsc dwarf-at [file] [addr]"
+  exit 1
+fi
+addr2line -e $1 $2

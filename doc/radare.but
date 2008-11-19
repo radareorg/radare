@@ -4163,6 +4163,105 @@ Let's make a test:
 \c 0x4a13c006   96_ sub esp, 0x40
 \c 0x4a13c009   96  call 0x4a1508cb
 
+\S{dwarf-trace} Dwarf and traces
+
+If you have the source code of the program you are debugging you can just use the rsc dwarf- helpers to get a source trace of the program. Here's a sample session:
+
+\c $ nl hello.c
+\c   1  main(int argc, char **argv)
+\c   2  {
+\c   3    int a = 3;
+\c   4    if (a < argc) {
+\c   5      printf("Fuck World\n");
+\c   6    } else {
+\c   7      printf("Hello World\n");
+\c   8    }
+\c   9  }
+\c 
+\c $ gcc -g hello.c
+\c 
+\c $ radare -d ./a.out
+\c [0x465D8810]> !cont sym_main
+\c Continue until (sym_main) = 0x08048374
+\c pre-Breakpoint restored 465d8810
+\c 
+\c [0x465D8810]>
+\c     1   main(int argc, char **argv)
+\c   * 2   {
+\c     3     int a = 3;
+\c     4     if (a < argc) {
+\c     5       printf("Fuck World\n");
+\c     6     } else {
+\c 
+\c ; 0x08048374 DATA xref from 0x08048307 (entrypoint+0x17)
+\c 0x08048374,  oeip: lea ecx, [esp+0x4]
+\c 0x08048378,   eip: and esp, 0xf0
+\c 0x0804837b         push dword [ecx-0x4]
+\c 0x0804837e         push ebp
+\c 0x0804837f         mov ebp, esp
+\c 0x08048381         push ecx
+\c               ; Stack size +20 
+\c 0x08048382         sub esp, 0x14
+\c               ; Set var0 
+\c 0x08048385         mov dword [ebp-0x8], 0x3 ; eax+0x7
+\c               ; Set var0 
+\c 0x0804838c,        mov eax, [ebp-0x8] ; eax+0x7
+\c               ; Get var0 
+\c 0x0804838f         cmp eax, [ecx] ; oeax+0xffffff84
+\c 0x08048391         jge 0x80483a1  ; 1 = eip+0x29
+\c 0x08048393         mov dword [esp], 0x8048480 ; str_Fuck_World
+\c 0x0804839a         call 0x80482d4  ; 2 = imp_puts
+\c 0x0804839f         jmp 0x80483ad  ; 3 = eip+0x35
+\c 0x080483a1         mov dword [esp], 0x804848b ; str_Hello_World
+\c 0x080483a8,        call 0x80482d4  ; 4 = imp_puts
+\c               ; Stack size -20 
+\c 0x080483ad         add esp, 0x14
+\c 0x080483b0,        pop ecx
+\c 0x080483b1         pop ebp
+\c 0x080483b2         lea esp, [ecx-0x4]
+\c 0x080483b5         ret 
+\c 0x080483b5      ; ------------------------------------ 
+
+So now we can step until reach the last opcode of sym_main at 0x080483b5:
+
+\c [0x08048374]> !stepu 0x080483b5
+\c [0x08048374]> at
+\c 0x080482d4 - 0x080482da
+\c 0x08048374 - 0x08048393
+\c 0x080483a1 - 0x080483b2
+\c  ... (library code ) ...
+
+We can get a one-opcode-trace per line by using the 'at*' command:
+
+\c [0x080483AD]> at*
+\c 0x08048374 1 1
+\c 0x08048378 1 2
+\c 0x0804837b 1 3
+\c 0x0804837e 1 4
+\c 0x0804837f 1 5
+\c 0x08048381 1 6
+\c 0x08048382 1 7
+\c 0x08048385 1 8
+\c 0x0804838c 1 9
+\c 0x0804838f 1 10
+\c 0x08048391 1 11
+\c 0x080483a1 1 12
+\c 0x080483a8 1 13
+\c 0x080482d4 1 14
+\c ...
+
+We're obviously skipping the library opcodes here, because they do not matter too much now..we have no source code for these libs.
+
+With this output we can feed the 'rsc dwarf-traces' command and get a human-readable output.
+
+\c [0x080483AD]> at* | rsc dwarf-traces $FILE
+\c      2  {
+\c      3    int a = 3;
+\c      4    if (a < argc) {
+\c      7      printf("Hello World\n");
+
+You can modify dwarf-traces to get information about the addr -> file:line from another database and be able to add your own comments here.
+
 \S{tt} Touch Tracing
 
 The 'touch trace' is a special tracing engine that was born from an idea of Gadix (Thanks! ;D)

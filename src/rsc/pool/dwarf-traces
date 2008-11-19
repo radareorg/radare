@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+# --pancake
+
+die "Usage: rsc dwarf-traces [file]\n".
+    " or:  > at* | rsc dwarf-traces $FILE\n"
+  if ($ARGV[0] eq "");
+
+my $file = $ARGV[0];
+my $ostr = "";
+
+while(<STDIN>) {
+  /^0x([^ ]*)/;
+  my $addr = $1;
+  $str = `rsc dwarf-addr $file 0x$addr`;
+  print $str if ($str ne $ostr);
+  $ostr = $str;
+}
+
+0;

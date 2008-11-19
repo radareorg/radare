@@ -697,13 +697,28 @@ int debug_skip(int times)
 	return 0;
 }
 
-int debug_stepu()
+int debug_stepu(const char *arg)
 {
+	u64 until = get_math(arg);
 	unsigned long pc = arch_pc(ps.tid); //WS_PC();
 	int i;
 
+	/* step until address */
+	if (arg && arg[0] && until != 0) {
+		radare_controlc();
+		do {
+			debug_step(1);
+			ps.steps++;
+			pc = arch_pc(ps.tid);
+			i++;
+		} while (!config.interrupted && pc != until);
+
+		return 0;
+	}
+
 	radare_controlc();
 
+	/* step until user-code*/
 	do {
 		debug_step(1);
 		ps.steps++;
