@@ -713,6 +713,7 @@ void config_init(int first)
   config_set("cmd.trace", "");
   config_set("cmd.visual", "");
   config_set("cmd.hit", "");
+  config_set("cmd.visualbind", "");
   config_set("cmd.prompt", "");
   config_set("cmd.vprompt", "p%");
   config_set("cmd.vprompt2", "");

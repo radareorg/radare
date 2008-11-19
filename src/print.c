@@ -203,7 +203,7 @@ void print_addr(u64 off)
 	int mod = config_get_i("cfg.addrmod");
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
 	
-	if (off==config.cursor_ptr)
+	if (off==config.cursor_ptr+config.baddr)
 		cons_invert();
 	C	cons_printf("%s0x%08llx"C_RESET"%c ", 
 			(off==config.cursor_ptr)?C_WHITE:

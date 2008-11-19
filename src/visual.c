@@ -97,11 +97,13 @@ CMD_DECL(zoom_reset);
 CMD_DECL(edit_screen_filter);
 CMD_DECL(zoom_reset);
 CMD_DECL(setblocksize);
+CMD_DECL(visual_bind_run);
 
 /* TODO: Move 'u', 't', 'e' ... here */
 command_t keystrokes[] = {
 	/*   key, wait, description, callback */
 	COMMAND('#', 0, "edit screen filter", edit_screen_filter),
+	COMMAND('b', 0, "execute cmd.visualbind", visual_bind_run),
 	COMMAND('g', 0, "seek to offset 0", seek0),
 	COMMAND('G', 0, "seek to end of file", seek_to_end),
 	COMMAND(';', 0, "add a comment", add_comment),
@@ -192,6 +194,12 @@ void visual_show_help()
 	cons_flush();
 }
 
+CMD_DECL(visual_bind_run)
+{
+	const char *cmd = config_get("cmd.visualbind");
+	if (cmd && cmd[0])
+		radare_cmd_raw(cmd, 0);
+}
 
 CMD_DECL(edit_screen_filter)
 {
