@@ -49,7 +49,7 @@ u64 debug_fd_write(int pid, int fd, u64 addr, int len)
 	return 0;
 }
 
-int debug_fd_list(int pid)
+int debug_fd_list(int pid, int rad)
 {
 	return 0;
 }

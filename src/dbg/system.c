@@ -211,6 +211,9 @@ int debug_lib(const char *arg)
 int debug_reg(const char *arg)
 {
 	if (arg[0]) {
+		if (arg[0]=='?') {
+			eprintf("Usage: !reg[*] [reg [=value]]\n");
+		} else
 		if ((arg[0]=='s' && arg[1]=='*') || arg[0] == '*')
 			debug_registers(1);
 		else {

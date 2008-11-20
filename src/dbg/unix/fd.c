@@ -75,7 +75,7 @@ u64 debug_fd_read(int pid, int fd, u64 addr, int len)
 	return ret;
 }
 
-int debug_fd_list(int pid)
+int debug_fd_list(int pid, int rad)
 {
 	char path[1024];
 	char buf[1024];
@@ -84,6 +84,9 @@ int debug_fd_list(int pid)
 	int r,w, t;
 	struct dirent *de;
 	DIR *dd;
+
+	if (rad)
+		cons_printf("!fd -*\n");
 
 	sprintf(path, "/proc/%d/fd/", pid);
 	dd = opendir(path);
@@ -107,12 +110,20 @@ int debug_fd_list(int pid)
 			r = st.st_mode & S_IRUSR  ? 'r':'-';
 			w = st.st_mode & S_IWUSR  ? 'w':'-';
 		} else r = w = '-';
-		if (readlink(buf, buf2, 1023) != -1) /* never happens ? */
-		printf("%2s 0x%08x %c%c%c %s -> %s \n", de->d_name, 
-			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf,buf2);
-		else
-		printf("%2s 0x%08x %c%c%c %s\n", de->d_name, 
-			(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf);
+
+		/* output */
+		if (rad) {
+			cons_printf("; %2s 0x%08x %c%c%c %s\n", de->d_name, 
+				(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf);
+			cons_printf("!fd %s", buf);
+		} else {
+			if (readlink(buf, buf2, 1023) != -1) /* never happens ? */
+			cons_printf("%2s 0x%08x %c%c%c %s -> %s \n", de->d_name, 
+				(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf,buf2);
+			else
+			cons_printf("%2s 0x%08x %c%c%c %s\n", de->d_name, 
+				(unsigned int)debug_fd_seek(pid,atoi(de->d_name),0,1),r,w,t,buf);
+		}
 	}
 	closedir(dd);
 

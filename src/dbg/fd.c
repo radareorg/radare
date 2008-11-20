@@ -125,6 +125,14 @@ int debug_fd_hijack(int fd, const char *file)
 	return fd;
 }
 
+int debug_fd_close_all(int pid)
+{
+	int i=0;
+	/* TODO : WTF*/
+	for (i=0;i<200;i++)
+		debug_fd_close(pid, i);
+}
+
 int debug_fd(char *cmd)
 {
 	char *ptr  = NULL,
@@ -136,19 +144,23 @@ int debug_fd(char *cmd)
 	if (cmd[0]=='?') {
 		cons_printf("Usage: !fd[s|d] [-#] [file | host:port]\n"
 		"  !fd                   ; list filedescriptors\n"
+		"  !fd*                  ; list fds in radare commands\n"
 		"  !fdd 2 7              ; dup2(2, 7)\n"
 		"  !fds 3 0x840          ; seek filedescriptor\n"
 		"  !fdr 3 0x8048000 100  ; read 100 bytes from fd=3 at 0x80..\n"
 		"  !fdw 3 0x8048000 100  ; write 100 bytes from fd=3 at 0x80..\n"
 		"  !fdio [fdnum]         ; enter fd-io mode on a fd, no args = back to dbg-io\n"
 		"  !fd -1                ; close stdout\n"
+		"  !fd -*                ; close all filedescriptors\n"
 		"  !fd /etc/motd         ; open file at fd=3\n"
 		"  !fd 127.0.0.1:9999    ; open socket at fd=5\n");
 		return 0;
 	}
 
 	if ((ptr=strchr(cmd,'-'))) {
-		debug_fd_close(ps.tid, atoi(ptr+1));
+		if (ptr[1]=='*')
+			debug_fd_close_all(ps.tid);
+		else debug_fd_close(ps.tid, atoi(ptr+1));
 	} else
 	if (cmd[0]=='r') {
 		ptr = strchr(cmd, ' ');
@@ -216,6 +228,9 @@ int debug_fd(char *cmd)
 			debug_fd_seek(ps.tid, atoi(ptr+1), get_math(ptr2+1), whence));
 		}
 	} else
+	if (cmd[0]=='*') {
+		debug_fd_list(ps.tid, 1);
+	} else
 	if (cmd[0]=='d') {
 		ptr = strchr(cmd, ' ');
 		if (ptr)
@@ -227,14 +242,16 @@ int debug_fd(char *cmd)
 	} else
 	if ((ptr=strchr(cmd, ' '))) {
 		ptr = ptr+1;
-		if (ptr)
-		ptr2 = strchr(ptr, ':');
-		if (ptr2)
-			eprintf("SOCKET NOT YET\n");
-		else
-			eprintf("new fd = %d\n", debug_fd_open(ps.tid, ptr, 0));
+		if (ptr[0]!='\0'&&ptr[0]==' ') {
+			if (ptr)
+				ptr2 = strchr(ptr, ':');
+			if (ptr2)
+				eprintf("SOCKET NOT YET\n");
+			else eprintf("new fd = %d\n", debug_fd_open(ps.tid, ptr, 0));
+		} else 
+			debug_fd_list(ps.tid, 0);
 	} else
-		debug_fd_list(ps.tid);
+		debug_fd_list(ps.tid, 0);
 
 	return 0;
 }

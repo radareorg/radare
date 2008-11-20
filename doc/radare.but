@@ -183,7 +183,7 @@ In the visual mode you can insert (alterate bytes) pressing 'i' and then <tab> t
 
 The format of the commands looks something like that:
 
-\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...]
+\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...] [; comment]
 
 Some examples:
 
@@ -1082,6 +1082,23 @@ You can also define a name for each field of the structure by giving them as opt
 \c }
 
 If you want to store this information as metadata for the binary file just use the same arguments, but instead of using \c{pm}, use \c{Cm}. To store all the metadata stored while analyzing use the 'Ps <filename>' command to save the project and then run \c{radare -p project-file} to restore the session. Read 'projects' section for more information.
+
+A practical example for using pm on a binary GStreamer plugin:
+
+\c $ radare ~/.gstreamer-0.10/plugins/libgstflumms.so
+\c [0x000028A0]> seek sym_gst_plugin_desc
+\c [0x000185E0]> pm iissxsssss major minor name desc _init version \
+\c  license source package origin
+\c      major : 0x000185e0 = 0
+\c      minor : 0x000185e4 = 10
+\c       name : 0x000185e8 = 0x000185e8 flumms 
+\c       desc : 0x000185ec = 0x000185ec Fluendo MMS source 
+\c      _init : 0x000185f0 = 0x00002940 
+\c    version : 0x000185f4 = 0x000185f4 0.10.15.1 
+\c    license : 0x000185f8 = 0x000185f8 unknown 
+\c     source : 0x000185fc = 0x000185fc gst-fluendo-mms 
+\c    package : 0x00018600 = 0x00018600 Fluendo MMS source 
+\c     origin : 0x00018604 = 0x00018604 http://www.fluendo.com 
 
 \S{print-code} Disassembly
 
@@ -4813,6 +4830,104 @@ The '!help' will show us the available commands
 Have fun!
 
 \C{Appendix} Appendix
+
+\H{cheatsheet} Cheat Sheet
+
+Command syntax
+
+\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...]
+
+All commands will show its help when '?' is appended. (pm -> pm?)
+
+Examples
+
+\c 10!step ; this will perform 10 steps
+\c s +3 && 4x
+\c pd 4 @@ sym_ > file
+
+Movement
+
+\c >, <      ; seek = block_aligned( seek + block_size )
+\c s 0x3000  ; absolute seek
+\c s +20     ; relative seek
+\c x @ 0x300 ; print hexdump at temporal 0x300 seek
+\c b 10K     ; set block size to 10 * 1024
+
+Print command (p)
+
+By default will print block size, all print commands accept a numeric argument to specify another size.
+
+\c px         ; print hexa (aliased as 'x')
+\c p8, p16, p32, p64 ; print byte, word, dword, qword list
+\c pz         ; print until \0 reached (zero-end strings)
+\c pr         ; raw print
+\c pc         ; print block as C array
+\c ps         ; GAS assembly byte buffer
+\c pt, pT, pF ; print unix, dos and windows file times
+\c pi, pl, pf ; print integer, long or float
+
+\c pm [format] ; print formatted buffer
+\c  e - temporally swap endian
+\c  d - double (8 bytes)
+\c  f - float value
+\c  b - one byte 
+\c  B - show 10 first bytes of buffer
+\c  i - %d integer value (4 byets)
+\c  w - word (16 bit hexa)
+\c  q - quadword (8 bytes)
+\c  p - pointer reference
+\c  x - 0x%08x hexadecimal value
+\c  z - \0 terminated string
+\c  Z - \0 terminated wide string
+\c  s - pointer to string
+\c  t - unix timestamp string
+\c  * - next char is pointer
+\c  . - skip 1 byte
+
+Visual keys
+
+Use 'V' command to enter into visual mode.
+
+\c hjkl  ; for moving
+\c HJKL  ; for page scrolling or byte selection in cursor mode
+\c c     ; to toggle cursor mode
+\c C     ; toggle scr.color
+\c t     ; track flags (visual flag browser)
+\c e     ; visual eval configurator
+\c b     ; runs cmd.visualbind command
+
+Plugins
+
+\c H                  ; list plugins
+\c H plugin-name args ; launch plugin with args
+
+Debugger commands
+
+\c !pid <pid>  ; choose working process
+\c !th <tid>   ; choose working thread
+\c !step       ; one step
+\c !stepbp     ; one step using code analysis and soft breakpoints
+\c !cont       ; continue until exception
+\c !bt         ; show backtrace
+\c !wp         ; manage watchpoints
+\c !maps       ; show memory regions
+\c !mp rw- addr len ; change memory protections
+\c !reg        ; list registers
+\c !oregs      ; show previous cached value of registers
+\c !fpregs     ; display floating point or extended registers
+\c !reg eax    ; view register value
+\c !reg eax=33 ; set register value
+\c !bp addr    ; set breakpoint
+\c !bp -addr   ; unset breakpoint
+\c !dr         ; manual setup of DRx registers
+\c !trace      ; perform traces
+\c !alloc size ; allocate 'size' bytes
+\c !free addr  ; free region
+\c !fd         ; list filedescriptors
+\c !dump/!restore ; dump or restore process state
+\c !dall       ; dump all pages
+\c !core       ; force core generation
+\c !signal     ; manage signals
 
 \H{ioliscrackme} IOLIs crackme tutorial
 

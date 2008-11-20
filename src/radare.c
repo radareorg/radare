@@ -533,7 +533,8 @@ int radare_cmd_raw(const char *tmp, int log)
 		fd = -1;
 		fdi = -1;
 		std = -1;
-		if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
+		//if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
+		if (input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			/* inline pipe */
 			piped = strchr(input, '`');
 			if (piped) {
@@ -629,23 +630,18 @@ int radare_cmd_raw(const char *tmp, int log)
 
 		if (fdi!=-1) {
 			fflush(stdout);
-			if (std)
-			dup2(std, 1);
 			if (fdi != 0)
 				close(fdi);
-		} else
+		}
 		if (fd!=-1) {
 			fflush(stdout);
-			if (std)
-			dup2(std, 1);
 			if (fd != 0)
 				close(fd);
 		}
-
 		if (std!=-1) {
 			fflush(stdout);
 			dup2(std, 1);
-			std = 0;
+			std = -1;
 		}
 
 		/* restore seek */
