@@ -277,69 +277,94 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	struct list_head *pos;
 	u64 oseek;
 
+	for(;*each==' ';each=each+1);
+	for(;*cmd==' ';cmd=cmd+1);
+
 	oseek = config.seek;
 	str = strdup(each);
 	radare_controlc();
-	while(str[i] && !config.interrupted) {
-		j = i;
-		for(;str[j]&&str[j]==' ';j++); // skip spaces
-		for(i=j;str[i]&&str[i]!=' ';i++); // find EOS
-		ch = str[i];
-		str[i] = '\0';
-		word = strdup(str+j);
-		if (word == NULL)
-			break;
-		str[i] = ch;
-		if (strchr(word, '*')) {
-			/* for all flags in current flagspace */
-			list_for_each(pos, &flags) {
-				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-				if (config.interrupted)
-					break;
-				/* filter per flag spaces */
-//				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
-//					continue;
 
-				config.seek = flag->offset;
-				radare_read(0);
-				cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
-				radare_cmd_raw(cmd,0);
-			}
+	if (each[0]=='.') {
+		u64 addr;
+		char buf[1024];
+		char cmd2[1024];
+		FILE *fd = fopen(each+1, "r");
+		if (fd == NULL) {
+			eprintf("Cannot open file '%s'\n", each+1);
 		} else {
-			/* for all flags in current flagspace */
-			list_for_each(pos, &flags) {
-				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-				if (config.interrupted)
-					break;
-#if 0
-				/* filter per flag spaces */
-				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
-					continue;
-#endif
-//eprintf("polla(%s)(%s)\n", flag->name, word);
-				if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
+			while(!feof(fd)) {
+				buf[0]='\0';
+				fgets(buf, 1024, fd);
+				addr = get_math(buf);
+				eprintf("0x%08llx\n", addr, cmd);
+				sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
+				radare_seek(buf, SEEK_SET);
+				radare_cmd_raw(cmd2, 0);
+			}
+			fclose(fd);
+		}
+	} else {
+		while(str[i] && !config.interrupted) {
+			j = i;
+			for(;str[j]&&str[j]==' ';j++); // skip spaces
+			for(i=j;str[i]&&str[i]!=' ';i++); // find EOS
+			ch = str[i];
+			str[i] = '\0';
+			word = strdup(str+j);
+			if (word == NULL)
+				break;
+			str[i] = ch;
+			if (strchr(word, '*')) {
+				/* for all flags in current flagspace */
+				list_for_each(pos, &flags) {
+					flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+					if (config.interrupted)
+						break;
+					/* filter per flag spaces */
+	//				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+	//					continue;
+
 					config.seek = flag->offset;
 					radare_read(0);
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
 					radare_cmd_raw(cmd,0);
 				}
+			} else {
+				/* for all flags in current flagspace */
+				list_for_each(pos, &flags) {
+					flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+					if (config.interrupted)
+						break;
+	#if 0
+					/* filter per flag spaces */
+					if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
+						continue;
+	#endif
+	//eprintf("polla(%s)(%s)\n", flag->name, word);
+					if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
+						config.seek = flag->offset;
+						radare_read(0);
+						cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
+						radare_cmd_raw(cmd,0);
+					}
+				}
+	#if 0
+				/* ugly copypasta from tmpseek .. */
+				if (strstr(word, each)) {
+					if (word[i]=='+'||word[i]=='-')
+						config.seek = config.seek + get_math(word);
+					else	config.seek = get_math(word);
+					radare_read(0);
+					cons_printf("; @@ 0x%08llx\n", config.seek);
+					radare_cmd(cmd,0);
+				}
+	#endif
 			}
-#if 0
-			/* ugly copypasta from tmpseek .. */
-			if (strstr(word, each)) {
-				if (word[i]=='+'||word[i]=='-')
-					config.seek = config.seek + get_math(word);
-				else	config.seek = get_math(word);
-				radare_read(0);
-				cons_printf("; @@ 0x%08llx\n", config.seek);
-				radare_cmd(cmd,0);
-			}
-#endif
-		}
-		radare_controlc();
+			radare_controlc();
 
-		free(word);
-		word = NULL;
+			free(word);
+			word = NULL;
+		}
 	}
 	radare_controlc_end();
 	config.seek = oseek;
