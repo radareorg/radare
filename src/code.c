@@ -581,10 +581,12 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		}
 #endif
 		/* size */
-		if (flags & RADIS_STACKPTR)
-			print_stackptr(&aop, 0);
-		if (flags & RADIS_SIZE)
-			cons_printf("%d ", aop.length);
+		D {
+			if (flags & RADIS_STACKPTR)
+				print_stackptr(&aop, 0);
+			if (flags & RADIS_SIZE)
+				cons_printf("%d ", aop.length);
+		}
 		/* trac information */
 		if (flags & RADIS_TRACES)
 			cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));

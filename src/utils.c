@@ -494,7 +494,10 @@ u64 get_math(const char* text)
 			strcpy(txt+1, txt+2);
 		else
 #endif
-		if ((txt[0]=='=' && txt[1]=='=') || (txt[0]==' '))
+		if ((txt[0]=='=' && txt[1]=='='))
+			txt[0]==' ';
+		else
+		if ((txt[0]==' '))
 			strcpy(txt, txt+1);
 	}
 	txt = tmp;
@@ -503,6 +506,7 @@ u64 get_math(const char* text)
 	txt2 = strdup(txt);
 #endif
 	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
+	cmp_off  = get_offset(ptr);
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
 		/* XXX this only works when there're spaces like in 1 == 1, but 1==1 */

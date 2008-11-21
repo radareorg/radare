@@ -2070,26 +2070,22 @@ CMD_DECL(help)
 				eprintf("  > ???               ; show result of comparision\n");
 				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
 			} else
-			if (config.last_cmp == 0) {
+			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);
-			}
 		} else
 		if (input[0]=='x') {
 			u64 res = get_math(input+1);
 			if (res > 0xffffffff)
 				cons_printf("0x%llx\n", -res);
-			else
-				cons_printf("0x%llx\n", res);
+			else cons_printf("0x%llx\n", res);
 		} else {
 			u64 res = get_math(input);
-			if (strchr(input,'=') || strchr(input,'!')) {
-				config.last_cmp = res;
-			} else {
-				D {cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
-					PRINT_BIN(res); cons_newline();
-				} else { cons_printf("0x%llx\n", res);
-				}
-			}
+			config.last_cmp = res;
+		//	if (!strchr(input, '!') && !strchr(input, '=')) {
+			D { cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
+				PRINT_BIN(res); cons_newline();
+			} else cons_printf("0x%llx\n", res);
+			//}
 		}
 	}
 	else show_help_message();
@@ -2100,6 +2096,5 @@ CMD_DECL(help)
 CMD_DECL(default)
 {
 	D eprintf("Invalid command '%s'. Try '?'.\n", input);
-
 	return 0;
 }

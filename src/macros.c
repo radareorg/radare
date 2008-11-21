@@ -184,9 +184,8 @@ char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr
 			/* goto */
 			for(i=0;i<*labels_n;i++) {
 		//	eprintf("---| chk '%s'\n", labels[i].name);
-				if (!strcmp(ptr+1, labels[i].name)) {
+				if (!strcmp(ptr+1, labels[i].name))
 					return labels[i].ptr;
-				}
 			}
 			return NULL;
 		} else
@@ -198,9 +197,8 @@ char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr
 		//		eprintf("===> GOTO %s\n", label);
 				/* goto label ptr+3 */
 				for(i=0;i<*labels_n;i++) {
-					if (!strcmp(label, labels[i].name)) {
+					if (!strcmp(label, labels[i].name))
 						return labels[i].ptr;
-					}
 				}
 				return NULL;
 			}
@@ -289,8 +287,9 @@ int radare_macro_call(const char *name)
 				}
 
 				/* Command execution */
-				if (*ptr)
+				if (*ptr) {
 					radare_cmd_args(ptr, args, nargs);
+				}
 				if (end) {
 					*end='\n';
 					ptr = end + 1;

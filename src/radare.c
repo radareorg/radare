@@ -288,17 +288,22 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	if (each[0]=='.') {
 		if (each[1]=='(') {
 			char cmd2[1024];
-			for(macro_counter=0;i<10;macro_counter++) {
-				sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
+			// TODO: use controlc() here
+			for(macro_counter=0;i<999;macro_counter++) {
+
 				radare_macro_call(each+2);
-				if (macro_break_value == NULL)
+
+				if (macro_break_value == NULL) {
+					//eprintf("==>breaks(%s)\n", each);
 					break;
+				}
 
 				addr = *macro_break_value;
+				sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
 				eprintf("0x%08llx (%s)\n", addr, cmd2);
 				radare_seek(addr, SEEK_SET);
 				radare_cmd_raw(cmd2, 0);
-i++;
+				i++;
 			}
 		} else {
 			char buf[1024];
@@ -433,6 +438,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *piped;
 	char file[1024], buf[1024];
 	char *input, *oinput;
+	char *grep = NULL;
 	char *next = NULL;
 	int ret = 0;
 
@@ -465,6 +471,12 @@ int radare_cmd_raw(const char *tmp, int log)
 
 	next = strstr(input, "&&");
 	if (next) next[0]='\0';
+
+	grep = strchr(input, '~');
+	if (grep) {
+		grep[0]='\0';
+		cons_grep(grep+1);
+	}
 
 	/* interpret stdout of a process executed */
 	if (input[0]=='.') {
@@ -697,6 +709,10 @@ int radare_cmd_raw(const char *tmp, int log)
 			config.seek = tmpoff;
 			tmpoff = -1;
 		}
+	}
+	if (grep) {
+		grep[0]='~';
+		cons_grep(NULL);
 	}
 	
 	if (next && next[1]=='&') {
@@ -1428,14 +1444,12 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 	int i, eq = 0;
 
 	for(i=0;i<len;i++)
-		if (f[i]==d[i]) {
-			eq++;
-		} else {
+		if (f[i]!=d[i]) {
 			D cons_printf("0x%08llx (byte=%.2d)   %02x '%c'  ->  %02x '%c'\n",
 				config.seek+i, i+1,
 				f[i], (is_printable(f[i]))?f[i]:' ',
 				d[i], (is_printable(d[i]))?d[i]:' ');
-		}
+		} else eq++;
 
 	eprintf("Compare %d/%d equal bytes\n", eq, len);
 	return len-eq;

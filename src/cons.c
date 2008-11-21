@@ -704,6 +704,17 @@ void palloc(int moar)
 	}
 }
 
+static char *grepstr = NULL;
+
+void cons_grep(const char *str)
+{
+	/* set grep string */
+	if (str != NULL && *str) {
+		for(;*str==' ';str=str+1);
+		grepstr = estrdup(grepstr, str);
+	} else efree(&grepstr);
+}
+
 void cons_flush()
 {
 	FILE *fd;
@@ -742,6 +753,8 @@ void cons_flush()
 				fclose(d);
 			}
 		}
+
+		// XXX merge grepstr with cons_lines loop //
 		for(i=j=0;cons_buffer[i];i++) {
 #if 0
 			if (cons_buffer[i]=='\x1b') {
@@ -753,7 +766,22 @@ void cons_flush()
 			}
 		}
 
-		cons_print_real(cons_buffer);
+		if (grepstr != NULL) {
+			char *one = cons_buffer;
+			char *two;
+			while(1) {
+				two = strchr(one, '\n');
+				if (two) {
+					two[0] = '\0';
+					if (strstr(one, grepstr)) {
+						cons_print_real(one);
+						cons_print_real("\n");
+					}
+					two[0] = '\n';
+					one = two + 1;
+				} else break;
+			}
+		} else cons_print_real(cons_buffer);
 
 		cons_buffer[0] = '\0';
 		//cons_buffer_sz=0;
