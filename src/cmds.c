@@ -759,7 +759,7 @@ CMD_DECL(baddr)
 	for(i=0;input[i]&&input[i]!=' ';i++);
 	if (input[i]!='\0')
 		config.baddr = get_math(input+i+1);
-	D { printf("0x"OFF_FMTx, config.baddr); NEWLINE; }
+	D { cons_printf("0x%08llx\n", config.baddr); }
 
 	return 0;
 }
@@ -899,7 +899,7 @@ CMD_DECL(envvar)
 			text[0]='\0';
 			cons_printf("%s\n", tmp);
 			free(text2);
-		} else 	{ NEWLINE; }
+		} else 	{ cons_newline(); }
 		return 0;
 	}
 
@@ -1196,7 +1196,7 @@ CMD_DECL(flag)
 	case 's': flag_space(input+1); break;
 	case 'u': flag_set_undef(input+2, config.seek, 0); break;
 	case 'm': flag_space_move(text); break;
-	case 'd': print_flag_offset(config.seek); NEWLINE; break;
+	case 'd': print_flag_offset(config.seek); cons_newline(); break;
 	case 'i': {
 		text2=strchr(text,' ');
 		if (text2) {
@@ -1390,24 +1390,24 @@ CMD_DECL(info)
 	}
 #endif
 
-	cons_printf(" file    %s",   strget(config.file)); NEWLINE;
-	cons_printf(" rdb     %s",   strget(config_get("file.rdb"))); NEWLINE;
-	cons_printf(" project %s",   strget(config_get("file.project"))); NEWLINE;
-	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); NEWLINE;
-	cons_printf(" debug   %d",   config.debug); NEWLINE;
-	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); NEWLINE;
-	cons_printf(" baddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.baddr, config.baddr); NEWLINE;
-	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); NEWLINE;
+	cons_printf(" file    %s",   strget(config.file)); cons_newline();
+	cons_printf(" rdb     %s",   strget(config_get("file.rdb"))); cons_newline();
+	cons_printf(" project %s",   strget(config_get("file.project"))); cons_newline();
+	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); cons_newline();
+	cons_printf(" debug   %d",   config.debug); cons_newline();
+	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); cons_newline();
+	cons_printf(" baddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.baddr, config.baddr); cons_newline();
+	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); cons_newline();
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
-		(u64)config.seek, (u64)config.seek); NEWLINE;
+		(u64)config.seek, (u64)config.seek); cons_newline();
 	cons_printf(" delta   %lld\n", config_get_i("cfg.delta")); 
 	cons_printf(" count   %lld\n", config_get_i("cfg.count")); 
 	//fflush(stdout);
 	//print_flag_offset(config.seek);
 	cons_printf(" size    "OFF_FMTd" \t 0x"OFF_FMTx,
-		(u64)config.size, (u64)config.size); NEWLINE;
+		(u64)config.size, (u64)config.size); cons_newline();
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
-		(u64)config.limit, (u64)config.limit); NEWLINE;
+		(u64)config.limit, (u64)config.limit); cons_newline();
 
 	if (config.debug) {
 		cons_printf("Debugger:\n");

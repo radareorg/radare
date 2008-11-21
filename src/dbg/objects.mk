@@ -50,4 +50,4 @@ endif
 
 endif
 
-psOBJ+=dbg/bp.o dbg/lib.o dbg/regs.o dbg/io.o dbg/dump.o
+psOBJ+=dbg/bp.o dbg/lib.o dbg/regs.o dbg/io.o dbg/dump.o dbg/fd.o

@@ -12,7 +12,7 @@
 
 # These fields are used to build the control file.
 PACKAGE = radare
-VERSION = 1.0-beta
+VERSION = 1.1
 ARCH = armel
 SECTION = user/shell
 PRIORITY = optional
@@ -26,6 +26,7 @@ PACKAGE_DIR=${PWD}
 ICON_SOURCE =
 #ICON_SOURCE =${SOURCE_DIR}/maemo_deb/exaile26.png
 PRG=../../build/default/
+PRG=../../
 SPRG=../../
 
 
@@ -35,7 +36,7 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/share/radare/ $@/usr/libexec/gradare $@/usr/share/radare/rsc $@/usr/lib $@/usr/share/radare/magic
 	#radare
 	-cp ${PRG}/src/radiff/radiff $@/usr/bin/radiff
-	-cp ${PRG}/src/radiff/bindiff $@/usr/bin/bindiff
+	-cp ${PRG}/src/rsc/pool/bindiff $@/usr/bin/bindiff
 	-cp ${PRG}/src/radare $@/usr/bin/radare
 	-cp ${PRG}/src/rabin/rabin $@/usr/bin/rabin
 	-cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm
@@ -43,13 +44,13 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	-cp ${PRG}/src/arch/arm/aasm/armasm $@/usr/bin/armasm
 	-cp ${PRG}/src/rsc/rsc $@/usr/bin/rsc
 	-cp ${PRG}/src/rfile $@/usr/bin/rfile
-	-cp ${PRG}/src/hasher/hasher $@/usr/bin/hasher
-	-cp ${PRG}/src/xc $@/usr/bin/xc
+	-cp ${PRG}/src/rahash/rahash $@/usr/bin/rahash
+	-cp ${PRG}/src/rax $@/usr/bin/rax
 	-cp ${PRG}/src/xrefs $@/usr/bin/xrefs
 	-cp ${PRG}/src/javasm/javasm $@/usr/bin/javasm
 	-cp ${PRG}/gui/gradare $@/usr/bin/gradare
 	-cp /usr/bin/gtkdialog $@/usr/bin/gtkdialog
-	-cp /usr/lib/libvte.so.9 $@/usr/lib
+	#-cp /usr/lib/libvte.so.4 $@/usr/lib
 	mkdir -p $@/usr/share/radare/gradare
 	-cp -rf ${SPRG}/gui/grsc/* $@/usr/share/radare/gradare
 	-cp -rf ${SPRG}/src/rsc/pool/* $@/usr/share/radare/rsc

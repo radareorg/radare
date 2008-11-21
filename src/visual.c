@@ -780,7 +780,7 @@ static void visual_bind_key()
 	fflush(stdout);
 	key = cons_readchar();
 	if (!is_printable(key)) {
-		printf("\n\nInvalid keystroke\n");
+		cons_printf("\n\nInvalid keystroke\n");
 		cons_any_key();
 		return;
 	}
@@ -788,20 +788,20 @@ static void visual_bind_key()
 	fflush(stdout);
 	for(i=0;keystrokes[i].sname;i++) {
 		if (key == keystrokes[i].sname) {
-			printf("\n\nInvalid keystroke (handled by radare)\n");
+			cons_printf("\n\nInvalid keystroke (handled by radare)\n");
 			cons_any_key();
 			return;
 		}
 	}
 	if (key=='?') {
 		if (nbds == 0) {
-			printf("No user keybindings defined.\n");
+			cons_printf("No user keybindings defined.\n");
 		} else {
-			printf("Keybindings:");
-			NEWLINE;
+			cons_printf("Keybindings:");
+			cons_newline();
 			for(i=0;i<nbds;i++) {
-				printf(" key '%c' = \"%s\"", bds[i].key, bds[i].cmd);
-				NEWLINE;
+				cons_printf(" key '%c' = \"%s\"", bds[i].key, bds[i].cmd);
+				cons_newline();
 			}
 		}
 		cons_any_key();
