@@ -22,7 +22,10 @@
 #include "main.h"
 #include "macros.h"
 
+static u64 _macro_break_value = 0;
+u64 *macro_break_value = NULL;
 static int macro_break;
+int macro_counter = 0;
 static struct list_head macros;
 
 void radare_macro_init()
@@ -141,11 +144,23 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 
 //	eprintf("call(%s)\n", ptr);
 	for(i=j=0;ptr[j];i++,j++) {
-		if (ptr[j]=='$' && ptr[j+1]>='0' && ptr[j+1]<='9') {
-			const char *word = get0word(args, ptr[j+1]-'0');
-			strcat(cmd, word);
-			j++;
-			i = strlen(cmd)-1;
+		if (ptr[j]=='$') {
+			if (ptr[j+1]>='0' && ptr[j+1]<='9') {
+				const char *word = get0word(args, ptr[j+1]-'0');
+				strcat(cmd, word);
+				j++;
+				i = strlen(cmd)-1;
+			} else
+			if (ptr[j+1]=='@') {
+				char off[32];
+				sprintf(off, "%d", macro_counter);
+				strcat(cmd, off);
+				j++;
+				i = strlen(cmd)-1;
+			} else {
+				cmd[i]=ptr[j];
+				cmd[i+1]='\0';
+			}
 		} else {
 			cmd[i]=ptr[j];
 			cmd[i+1]='\0';
@@ -156,12 +171,6 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 	//eprintf("cmd(%s)\n", cmd);
 	return radare_cmd(cmd, 0);
 }
-
-#define MAX_LABELS 20
-struct macro_label_t {
-  char name[80];
-  char *ptr;
-};
 
 char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr)
 {
@@ -243,6 +252,7 @@ int radare_macro_call(const char *name)
 	macro_level ++;
 	if (macro_level > MACRO_LIMIT) {
 		eprintf("Maximum macro recursivity reached.\n");
+		macro_level --;
 		return 0;
 	}
 
@@ -255,7 +265,7 @@ int radare_macro_call(const char *name)
 			char *end = strchr(ptr, '\n');
 
 
-			if (nargs != mac->nargs) {
+			if (mac->nargs != 0 && nargs != mac->nargs) {
 				eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
 				macro_level --;
 				return 0;
@@ -292,8 +302,11 @@ int radare_macro_call(const char *name)
 				/* Fetch next command */
 				end = strchr(ptr, '\n');
 			} while(!macro_break);
-			if (macro_break)
+
+			if (macro_break) {
+				macro_level --;
 				return 0;
+			}
 		}
 	}
 	eprintf("No macro named '%s'\n", str);
@@ -301,7 +314,12 @@ int radare_macro_call(const char *name)
 	return 0;
 }
 
-int radare_macro_break()
+int radare_macro_break(const char *value)
 {
 	macro_break = 1;
+	_macro_break_value = 0LL;
+	_macro_break_value = (u64)get_math(value);
+	if (value && *value)
+		macro_break_value = &_macro_break_value;
+	else macro_break_value = NULL;
 }

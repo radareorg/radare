@@ -49,6 +49,7 @@
 #include "readline.h"
 #include "flags.h"
 #include "radare.h"
+#include "macros.h"
 
 #include "dietline.h"
 
@@ -275,7 +276,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	char *word = NULL;
 	char *str;
 	struct list_head *pos;
-	u64 oseek;
+	u64 oseek, addr;
 
 	for(;*each==' ';each=each+1);
 	for(;*cmd==' ';cmd=cmd+1);
@@ -285,25 +286,43 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	radare_controlc();
 
 	if (each[0]=='.') {
-		u64 addr;
-		char buf[1024];
-		char cmd2[1024];
-		FILE *fd = fopen(each+1, "r");
-		if (fd == NULL) {
-			eprintf("Cannot open file '%s'\n", each+1);
-		} else {
-			while(!feof(fd)) {
-				buf[0]='\0';
-				fgets(buf, 1024, fd);
-				addr = get_math(buf);
-				eprintf("0x%08llx\n", addr, cmd);
+		if (each[1]=='(') {
+			char cmd2[1024];
+			for(macro_counter=0;i<10;macro_counter++) {
 				sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
-				radare_seek(buf, SEEK_SET);
+				radare_macro_call(each+2);
+				if (macro_break_value == NULL)
+					break;
+
+				addr = *macro_break_value;
+				eprintf("0x%08llx (%s)\n", addr, cmd2);
+				radare_seek(addr, SEEK_SET);
 				radare_cmd_raw(cmd2, 0);
+i++;
 			}
-			fclose(fd);
+		} else {
+			char buf[1024];
+			char cmd2[1024];
+			FILE *fd = fopen(each+1, "r");
+			if (fd == NULL) {
+				eprintf("Cannot open file '%s'\n", each+1);
+			} else {
+				macro_counter=0;
+				while(!feof(fd)) {
+					buf[0]='\0';
+					fgets(buf, 1024, fd);
+					addr = get_math(buf);
+					eprintf("0x%08llx\n", addr, cmd);
+					sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
+					radare_seek(buf, SEEK_SET);
+					radare_cmd_raw(cmd2, 0);
+					macro_counter++;
+				}
+				fclose(fd);
+			}
 		}
 	} else {
+		macro_counter = 0;
 		while(str[i] && !config.interrupted) {
 			j = i;
 			for(;str[j]&&str[j]==' ';j++); // skip spaces
@@ -327,7 +346,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					config.seek = flag->offset;
 					radare_read(0);
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
-					radare_cmd_raw(cmd,0);
+					radare_cmd(cmd,0);
 				}
 			} else {
 				/* for all flags in current flagspace */
@@ -345,7 +364,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 						config.seek = flag->offset;
 						radare_read(0);
 						cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
-						radare_cmd_raw(cmd,0);
+						radare_cmd(cmd,0);
 					}
 				}
 	#if 0
@@ -359,11 +378,12 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					radare_cmd(cmd,0);
 				}
 	#endif
-			}
 			radare_controlc();
 
+			macro_counter++ ;
 			free(word);
 			word = NULL;
+			}
 		}
 	}
 	radare_controlc_end();
@@ -452,6 +472,9 @@ int radare_cmd_raw(const char *tmp, int log)
 		switch(input[1]) {
 		case '(':
 			radare_macro_call(input+2);
+			if (macro_break_value)
+				config.last_cmp = *macro_break_value;
+			else config.last_cmp = 0;
 			break;
 #if 0
 		case '%': {

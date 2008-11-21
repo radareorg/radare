@@ -75,8 +75,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			}
 			return 2;
 		}
-		dst-=offset;
-		addr = addr - 5;
+		addr = addr - offset - 5;
 
 		data[0] = '\xe8';
 		data[1] = ptr[0];

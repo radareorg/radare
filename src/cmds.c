@@ -149,7 +149,7 @@ CMD_DECL(macro)
 {
 	switch(input[0]) {
 	case ')':
-		radare_macro_break();
+		radare_macro_break(input+1);
 		break;
 	case '-':
 		radare_macro_rm(input+1);
@@ -1570,7 +1570,7 @@ CMD_DECL(write)
 	case 'a': {
 		unsigned char data[256];
 		char* aux = strdup ( config_get("asm.arch") );
-		u64 seek = config.seek;
+		u64 seek = config.seek + config.baddr;
 		int ret = rasm_asm(aux, &seek, input+2, data);
 		free ( aux );
 		if (ret<1)
@@ -2086,7 +2086,7 @@ CMD_DECL(help)
 				config.last_cmp = res;
 			} else {
 				D {cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
-					PRINT_BIN(res); NEWLINE;
+					PRINT_BIN(res); cons_newline();
 				} else { cons_printf("0x%llx\n", res);
 				}
 			}

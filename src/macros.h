@@ -12,11 +12,21 @@ struct macro_t {
 	struct list_head list;
 };
 
+#define MAX_LABELS 20
+struct macro_label_t {
+  char name[80];
+  char *ptr;
+};
+
+
+extern int macro_counter;
+extern u64 *macro_break_value;
+
 void radare_macro_init();
 int radare_macro_add(const char *name);
 int radare_macro_rm(const char *_name);
 int radare_macro_list();
-int radare_cmd_args(const char *ptr, const char *args, int nargs);
 int radare_macro_call(const char *name);
+int radare_macro_break(const char *value);
 
 #endif
