@@ -2283,6 +2283,28 @@ It is also possible to recursively call a macro to emulate a loop. Here's a simp
 \c   $1
 \c   .(loop $0-1 $1))
 
+\H{macros} Iterators
+
+Iterators are macros that return a value or NULL to terminate the loop. A macro is handled as an iterator when called after the foreach (@@) mark.
+
+Here's an implementation of a generic numeric for loop using an iterator
+
+\c ; implementation of a numeric range 'for' loop in radare script
+\c ; usage:  x @@ .(for 10 100)
+\c 
+\c (for from to
+\c   ?$@+$0==$1  ; if (from+iter == to)
+\c   ??()        ;   return NULL
+\c   ()$@+$0     ; return from+iter
+\c )
+
+So now we can write something like this:
+
+\c x @@ .(for 0x300 0x400)
+\c ...
+
+To execute the 'x' command at every offset from 0x300 to 0x400.
+
 \S{macros-labels} Labels in macros
 
 Here there are two macro implementations for a user-defined disassembler:

@@ -1,17 +1,20 @@
 ; hello world
 (hello name
-  !hello $0)
+  !hello $0
+)
 
 ; executes a command N times using a recursive macro
 (loop times cmd
   ? $0 == 0
   ?? ()
   $1
-  .(loop $0-1 $1))
+  .(loop $0-1 $1)
+)
 
 ; dummy hello world
 (foo one two
-  x $0 @ $1)
+  x $0 @ $1
+)
 
 (disasm x
   f foo @ $0
@@ -23,3 +26,12 @@
   ??.label:
 )
 
+
+; implementation of a numeric range 'for' loop in radare script
+; usage:  x @@ .(for 10 100)
+
+(for from to
+  ?$@+$0==$1
+  ??()
+  ()$@+$0
+)

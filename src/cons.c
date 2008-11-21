@@ -704,15 +704,31 @@ void palloc(int moar)
 	}
 }
 
+static int grepline = -1;
 static char *grepstr = NULL;
 
 void cons_grep(const char *str)
 {
+	char *ptr, *ptr2;
 	/* set grep string */
 	if (str != NULL && *str) {
 		for(;*str==' ';str=str+1);
-		grepstr = estrdup(grepstr, str);
-	} else efree(&grepstr);
+		if (str[0]=='#') {
+			grepline = get_offset(str+1);
+		} else {
+			ptr = alloca(strlen(str)+2);
+			strcpy(ptr, str);
+			ptr2 = strchr(ptr, '#');
+			if (ptr2) {
+				ptr2[0]='\0';
+				grepline = get_offset(ptr2+1);
+				grepstr = estrdup(grepstr, ptr);
+			} else grepstr = estrdup(grepstr, ptr);
+		}
+	} else {
+		efree(&grepstr);
+		grepline = -1;
+	}
 }
 
 void cons_flush()
@@ -767,21 +783,43 @@ void cons_flush()
 		}
 
 		if (grepstr != NULL) {
+			int line;
 			char *one = cons_buffer;
 			char *two;
-			while(1) {
+			for(line=0;;) {
 				two = strchr(one, '\n');
 				if (two) {
 					two[0] = '\0';
 					if (strstr(one, grepstr)) {
-						cons_print_real(one);
-						cons_print_real("\n");
+						if (grepline ==-1 || grepline==line) {
+							cons_print_real(one);
+							cons_print_real("\n");
+						}
+						line++;
 					}
 					two[0] = '\n';
 					one = two + 1;
 				} else break;
 			}
-		} else cons_print_real(cons_buffer);
+		} else {
+			if (grepline != -1) {
+				int line;
+				char *one = cons_buffer;
+				char *two;
+				for(line=0;;line++) {
+					two = strchr(one, '\n');
+					if (two) {
+						if (grepline ==-1 || grepline==line) {
+							two[0] = '\0';
+							cons_print_real(one);
+							cons_print_real("\n");
+							two[0] = '\n';
+						}
+						one = two + 1;
+					} else break;
+				}
+			} else cons_print_real(cons_buffer);
+		}
 
 		cons_buffer[0] = '\0';
 		//cons_buffer_sz=0;
