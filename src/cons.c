@@ -914,9 +914,11 @@ void cons_newline()
 	if (config_get("scr.html"))
 		cons_printf("<br />");
 	else cons_printf("\n");
+#if 0
 #if RADARE_CORE
 	if (!config.buf)
 		cons_flush();
+#endif
 #endif
 }
 

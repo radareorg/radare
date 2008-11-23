@@ -275,8 +275,8 @@ void print_maps_regions(int rad, int two)
 					name[i] = ch;
 				}
 				name[i]='\0';
-				cons_printf("f map_%s @ 0x%08llx\n", name, (u64)mr->ini);
-				cons_printf("f map_%s_end @ 0x%08llx\n", name, (u64)mr->end);
+				cons_printf("f map.%s @ 0x%08llx\n", name, (u64)mr->ini);
+				cons_printf("f map.%s_end @ 0x%08llx\n", name, (u64)mr->end);
 				
 				// TODO: control limits..needs >= comparisions
 				//cons_printf("? $zoom.from >= 0x%08llx && ?? e zoom.from = 0x%08llx\n", mr->ini);

@@ -796,6 +796,7 @@ void radare_nullcmd()
 	/* NOT REQUIRED update flag registers NOT REQUIRED */
 	//radare_cmd(":.!regs*", 0);
 
+	cons_noflush=1;
 	if (config_get("dbg.stack")) {
 		C cons_printf(C_RED"Stack: "C_RESET);
 		else cons_printf("Stack: ");
@@ -832,6 +833,7 @@ void radare_nullcmd()
 		}
 	}
 
+	cons_noflush=0;
 	C cons_printf(C_RED"Disassembly:\n"C_RESET);
 	else cons_printf("Disassembly:\n");
 	if (config_get("dbg.dwarf"))

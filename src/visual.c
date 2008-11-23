@@ -895,7 +895,7 @@ void visual_draw_screen()
 
 	/* HUH */
 	cons_clear00();
-	V cons_printf("\x1b[0m");
+	//V cons_printf("\x1b[0m");
 
 	if (inc >config.block_size)
 		inc = config.block_size;
