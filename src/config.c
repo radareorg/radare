@@ -1030,6 +1030,9 @@ void config_visual_menu()
       last_print_format = tmp;
     }
 
+    if (fs&&!memcmp(fs, "asm.", 4))
+	    radare_cmd_raw("pd 5", 0);
+
     switch(menu) {
     case 0: // flag space
       cons_printf("\n Eval spaces:\n\n");

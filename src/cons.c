@@ -796,6 +796,8 @@ void cons_flush()
 			char *one = cons_buffer;
 			char *two;
 			char *ptr, *tok;
+			char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
+
 			for(line=0;;) {
 				two = strchr(one, '\n');
 				if (two) {
@@ -805,24 +807,30 @@ void cons_flush()
 							if (greptoken != -1) {
 								ptr = alloca(strlen(one)+2);
 								strcpy(ptr, one);
+
+								for (i=0; i<strlen(ptr); i++)
+									for (j=0;j<6;j++)
+										if (ptr[i] == delims[j][0])
+											ptr[i] = ' ';
+
 								tok = ptr;
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
-										tok = strtok_r(ptr, " ", &ptr);
+										tok = strtok(ptr, " ");
 									else
-										tok = strtok_r(NULL, " ", &ptr);
-
+										tok = strtok(NULL, " ");
 								}
 
 								if (tok)
-									one = tok;
-
-							}
-							cons_print_real(one);
+									ptr = tok;
+								else ptr = one;
+							} else ptr = one;
+							cons_print_real(ptr);
 							cons_print_real("\n");
 						}
 						line++;
 					}
+					two = one + strlen(one);
 					two[0] = '\n';
 					one = two + 1;
 				} else break;
@@ -833,13 +841,21 @@ void cons_flush()
 				char *one = cons_buffer;
 				char *two;
 				char *ptr, *tok;
+				char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
 				for(line=0;;line++) {
 					two = strchr(one, '\n');
 					if (two) {
+						two[0] = '\0';
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
 								ptr = alloca(strlen(one)+2);
 								strcpy(ptr, one);
+
+								for (i=0; i<strlen(ptr); i++)
+									for (j=0;j<6;j++)
+										if (ptr[i] == delims[j][0])
+											ptr[i] = ' ';
+
 								tok = ptr;
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
@@ -849,14 +865,15 @@ void cons_flush()
 								}
 
 								if (tok)
-									one = tok;
+									ptr = tok;
+								else ptr = one;
 
-							}
-							two[0] = '\0';
-							cons_print_real(one);
+							} else ptr = one;
+							cons_print_real(ptr);
 							cons_print_real("\n");
-							two[0] = '\n';
 						}
+						two = one + strlen(one);
+						two[0] = '\n';
 						one = two + 1;
 					} else break;
 				}
