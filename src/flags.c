@@ -214,6 +214,19 @@ u64 flag_get_addr(const char *name)
 	return 0;
 }
 
+u64 flag_delta_between(u64 from, u64 to)
+{
+	struct list_head *pos;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = list_entry(pos, flag_t, list);
+		if (flag->offset > from && flag->offset <= to) {
+			return flag->offset - from;
+		}
+	}
+	return 0;
+}
+
 flag_t *flag_get_next(int delta)
 {
 	flag_t *nice = NULL;

@@ -195,6 +195,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 	int hex = 0;
 	int str = 0;
 	int fun = 0;
+	int stc = 0;
 	int code = 0;
 	struct list_head *pos;
 	struct data_t *d = NULL;
@@ -208,6 +209,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 			case DATA_STR: str++; break;
 			case DATA_CODE: code++; break;
 			case DATA_FUN: fun++; break;
+			case DATA_STRUCT: stc++; break;
 			}
 		}
 	}
@@ -215,22 +217,27 @@ struct data_t *data_get_between(u64 from, u64 to)
 	if (d == NULL)
 		return NULL;
 
-	if (hex>=str && hex>=code && hex>=fun) {
+	if (hex>=str && hex>=code && hex>=fun && hex >= stc) {
 		d->type = DATA_HEX;
 		d->times = hex;
 	} else
-	if (str>=hex && str>=code && str>=fun) {
+	if (str>=hex && str>=code && str>=fun && str >= stc) {
 		d->type = DATA_STR;
 		d->times = str;
 	} else
-	if (fun>=hex && fun>=str && fun>=code) {
+	if (fun>=hex && fun>=str && fun>=code && fun >= stc) {
 		d->type = DATA_FUN;
 		d->times = fun;
 	} else
-	if (code>=hex && code>=str && code>=fun) {
+	if (code>=hex && code>=str && code>=fun && code >=stc) {
 		d->type = DATA_CODE;
 		d->times = code;
+	} else
+	if (stc>=hex && stc>=str && stc>=fun && stc>=code) {
+		d->type = DATA_STRUCT;
+		d->times = stc;
 	}
+	// TODO add struct
 //printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
@@ -279,6 +286,7 @@ int data_size(u64 offset)
 
 int data_list()
 {
+	char *arg;
 	char label[1024];
 	struct data_t *d;
 	struct list_head *pos;
@@ -292,8 +300,9 @@ int data_list()
 		case DATA_FUN:    cons_strcat("CF "); break;
 		case DATA_HEX:    cons_strcat("Cd "); break;
 		case DATA_STR:    cons_strcat("Cs "); break;
+		case DATA_STRUCT: cons_strcat("Cm "); arg = d->arg; break;
 		default:          cons_strcat("Cc "); break; }
-		cons_printf("%lld @ 0x%08llx ; %s", d->to-d->from, d->from, label);
+		cons_printf("%lld %s@ 0x%08llx ; %s", d->to-d->from, arg?arg:"", d->from, label);
 #if 0
 		if (verbose)
 		if (d->type == DATA_STR) {
@@ -562,24 +571,11 @@ void data_reflines_init()
 int data_printd(int delta)
 {
 	int show_lines = (int)config_get("asm.lines");
-	int show_flagsline = (int)config_get("asm.flagsline");
 	u64 offset = (u64)config.seek + (u64)delta;// - config.baddr;
 	int lines = 0;
 	const char *ptr;
 
 	D {} else return 0;
-	if (config_get("asm.flags") && show_flagsline) {
-		ptr = flag_name_by_offset( offset );
-		if (ptr == NULL && config.baddr)
-			ptr = flag_name_by_offset( config.seek + delta);
-		if (ptr && ptr[0]) {
-			if (show_lines && reflines)
-				code_lines_print(reflines, offset, 1);
-			C cons_printf(C_RESET C_BWHITE""OFF_FMT" %s:"C_RESET"\n", offset, ptr);
-			else cons_printf(OFF_FMTs" %s:\n", offset, ptr);
-			lines++;
-		}
-	}
 
 	ptr = data_comment_get(offset, config.height-cons_lines);
 	if (ptr && ptr[0]) {

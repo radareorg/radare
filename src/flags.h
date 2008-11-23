@@ -61,5 +61,6 @@ void flag_from(const char *str);
 void flag_space_move(const char *name); 
 const char *flag_get_here_filter(u64 at, const char *str);
 const const char *flag_space_get(int idx);
+u64 flag_delta_between(u64 from, u64 to);
 
 #endif

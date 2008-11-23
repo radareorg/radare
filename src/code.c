@@ -401,6 +401,7 @@ void radis(int len, int rows)
 #define RADIS_COLOR     0x02000
 #define RADIS_STACKPTR  0x04000
 #define RADIS_ADDRMOD   0x08000
+#define RADIS_FLAGSALL  0x10000
 
 static int stack_ptr = 0;
 static void print_stackptr(struct aop_t *aop, int zero)
@@ -501,6 +502,15 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		CHECK_LINES
 
 		D {
+			if (flags & RADIS_FLAGSLINE) {
+				char *ptr = flag_name_by_offset( sk );
+				if (ptr == NULL && config.baddr)
+					ptr = flag_name_by_offset( seek );
+				if (ptr && ptr[0]) {
+					C cons_printf(C_RESET C_BWHITE"0x%08llx %s:"C_RESET"\n", seek, ptr);
+					else cons_printf("0x%08llx %s:\n", seek, ptr);
+				}
+			}
 			if (flags & RADIS_COMMENTS)
 				data_printd(bytes);
 			if ((reflines) &&  (flags & RADIS_LINES))
@@ -672,7 +682,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					cons_printf("(struct: undefined memory format)\n");
 				} else {
 					int ofmt = last_print_format;
-					cons_printf("(pm %s)\n", foo->arg);
+					cons_printf("(pm %s) ", foo->arg);
 					/* TODO: implement scrolling delta */
 					radare_cmdf("pm %s @ 0x%08llx", foo->arg, foo->from);
 					last_print_format = ofmt;
@@ -785,9 +795,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		D { 
 			if (flags & RADIS_FLAGS && !(flags&RADIS_FLAGSLINE)) {
 				char buf[1024];
-				f = flag_by_offset( seek );
-				
 				const char *flag = nullstr;
+
+				f = flag_by_offset( seek );
 				if (f != NULL)
 					flag = f->name;
 				//cons_printf("(%08x) ", seek-config.baddr);
@@ -960,6 +970,12 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		if (f && f->cmd != NULL)
 			radare_cmd(f->cmd, 0);
 
+		/* */
+		if (flags & RADIS_FLAGSALL) {
+			u64 ptr = flag_delta_between(sk,sk+myinc);
+			if (ptr != 0LL)
+				myinc = ptr;
+		}
 		bytes+=myinc;
 		myinc = 0;
 	}
@@ -974,12 +990,13 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
   if (code_flags_cache == -1) {
     int flags;
     int size, bytes, offset, splits, comments, lines, section,
-        traces, reladdr, flagsline, functions, stackptr;
+        traces, reladdr, flagsline, functions, stackptr, flagsall;
     cmd_asm  =       config_get("cmd.asm");
     size     = (int) config_get_i("asm.size");
     bytes    = (int) config_get_i("asm.bytes");
     offset   = (int) config_get_i("asm.offset");
     functions= (int) config_get_i("asm.functions");
+    flagsall = (int) config_get_i("asm.flagsall");
     if (config.verbose) {
       section  = (int) config_get_i("asm.section");
       splits   = (int) config_get_i("asm.split");
@@ -1001,9 +1018,10 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
     if (functions) flags |= RADIS_FUNCTIONS;
     if (section) flags |= RADIS_SECTION;
     if (splits) flags |= RADIS_SPLITS;
-    if (flags) flags |= RADIS_FLAGS;
     if (stackptr) flags |= RADIS_STACKPTR;
+    if (flags) flags |= RADIS_FLAGS;
     if (flagsline) flags |= RADIS_FLAGSLINE;
+    if (flagsall) flags |= RADIS_FLAGSALL;
     if (lines) flags |= RADIS_LINES;
     if (reladdr) flags |= RADIS_RELADDR;
     if (traces) flags |= RADIS_TRACES;

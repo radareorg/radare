@@ -678,9 +678,10 @@ void config_init(int first)
   config_set("asm.reladdr", "false"); // relative offset
   config_set_i("asm.nbytes", 8); // show hex bytes
   config_set("asm.bytes", "true"); // show hex bytes
-  config_set("asm.flags", "true"); // show hex bytes
-  config_set("asm.flagsline", "false"); // show hex bytes
-  config_set("asm.functions", "true"); // show hex bytes
+  config_set("asm.flags", "true");
+  config_set("asm.flagsall", "true");
+  config_set("asm.flagsline", "false");
+  config_set("asm.functions", "true");
   config_set("asm.lines", "true"); // show left ref lines
   config_set_i("asm.nlines", 6); // show left ref lines
   config_set("asm.lineswide", "false"); // show left ref lines

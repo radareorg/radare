@@ -704,30 +704,39 @@ void palloc(int moar)
 	}
 }
 
-static int grepline = -1;
+static int grepline = -1, greptoken = -1;
 static char *grepstr = NULL;
 
 void cons_grep(const char *str)
 {
-	char *ptr, *ptr2;
+	char *ptr, *ptr2, *ptr3;
 	/* set grep string */
 	if (str != NULL && *str) {
-		for(;*str==' ';str=str+1);
-		if (str[0]=='#') {
-			grepline = get_offset(str+1);
-		} else {
+		//for(;*str==' ';str=str+1);
+		//if (str[0]=='#') {
+		//	grepline = get_offset(str+1);
+		//} else {
 			ptr = alloca(strlen(str)+2);
 			strcpy(ptr, str);
+
+			ptr3 = strchr(ptr, '[');
 			ptr2 = strchr(ptr, '#');
+
+			if (ptr3) {
+				ptr3[0]='\0';
+				greptoken = get_offset(ptr3+1);
+			}
 			if (ptr2) {
 				ptr2[0]='\0';
 				grepline = get_offset(ptr2+1);
-				grepstr = estrdup(grepstr, ptr);
-			} else grepstr = estrdup(grepstr, ptr);
-		}
+			}
+
+			grepstr = estrdup(grepstr, ptr);
+		//}
 	} else {
-		efree(&grepstr);
+		greptoken = -1;
 		grepline = -1;
+		efree(&grepstr);
 	}
 }
 
@@ -786,12 +795,28 @@ void cons_flush()
 			int line;
 			char *one = cons_buffer;
 			char *two;
+			char *ptr, *tok;
 			for(line=0;;) {
 				two = strchr(one, '\n');
 				if (two) {
 					two[0] = '\0';
 					if (strstr(one, grepstr)) {
 						if (grepline ==-1 || grepline==line) {
+							if (greptoken != -1) {
+								ptr = alloca(strlen(one)+2);
+								strcpy(ptr, one);
+
+								for (i=0;tok != NULL && i<=greptoken;i++) {
+									if (i==0)
+										tok = strtok(ptr, " ");
+									else
+										tok = strtok(NULL," ");
+								}
+
+								if (tok)
+									one = tok;
+
+							}
 							cons_print_real(one);
 							cons_print_real("\n");
 						}
@@ -806,10 +831,26 @@ void cons_flush()
 				int line;
 				char *one = cons_buffer;
 				char *two;
+				char *ptr, *tok;
 				for(line=0;;line++) {
 					two = strchr(one, '\n');
 					if (two) {
 						if (grepline ==-1 || grepline==line) {
+							if (greptoken != -1) {
+								ptr = alloca(strlen(one)+2);
+								strcpy(ptr, one);
+
+								for (i=0;tok != NULL && i<=greptoken;i++) {
+									if (i==0)
+										tok = strtok(ptr, " ");
+									else
+										tok = strtok(NULL," ");
+								}
+
+								if (tok)
+									one = tok;
+
+							}
 							two[0] = '\0';
 							cons_print_real(one);
 							cons_print_real("\n");
