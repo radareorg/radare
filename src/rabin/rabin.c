@@ -315,7 +315,7 @@ void rabin_show_strings(const char *file)
 		stringsp = strings;
 		for (i = 0; i < strings_count; i++, stringsp.elf++) {
 			if (rad) {
-				printf("b %lli && f str_%s @ 0x%08llx\n",
+				printf("b %lli && f str.%s @ 0x%08llx\n",
 					stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
 				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size, baddr + stringsp.elf->offset);
 			} else {
@@ -370,7 +370,7 @@ void rabin_show_strings(const char *file)
 		stringsp.pe = strings.pe;
 		for (i = 0; i < strings_count; i++, stringsp.pe++) {
 			if (rad) {
-				printf("b %lli && f str_%s @ 0x%08llx\n",
+				printf("b %lli && f str.%s @ 0x%08llx\n",
 						(u64) stringsp.pe->size, aux_filter_rad_output(stringsp.pe->string), (u64) (baddr + stringsp.pe->rva));
 				printf("Cs %lli @ 0x%08llx\n", (u64) stringsp.pe->size, (u64) (baddr + stringsp.pe->rva));
 			} else {
@@ -650,7 +650,7 @@ void rabin_show_imports(const char *file)
 	} import, importp;
 
 	if (xrefs) {
-		snprintf(buf,1023, "printf \"pC @@ imp_\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		snprintf(buf,1023, "printf \"pC @@ imp.\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
 		system(buf);
 		return;
 	}
@@ -684,7 +684,7 @@ void rabin_show_imports(const char *file)
 		importp.elf = import.elf;
 		for (i = 0; i < imports_count; i++, importp.elf++) {
 			if (rad) {
-				printf("f imp_%s @ 0x%08llx\n", aux_filter_rad_output(importp.elf->name), baddr + importp.elf->offset);
+				printf("f imp.%s @ 0x%08llx\n", aux_filter_rad_output(importp.elf->name), baddr + importp.elf->offset);
 			} else {
 				switch (verbose) {
 					case 0:
@@ -724,7 +724,7 @@ void rabin_show_imports(const char *file)
 		if (rad) {
 			printf("fs imports\n");
 			fflush(stdout);
-			system("otool -vI $target | grep 0x | awk '{ print \"f imp_\"$3\" @ \"$1 }'");
+			system("otool -vI $target | grep 0x | awk '{ print \"f imp.\"$3\" @ \"$1 }'");
 		} else {
 			system("otool -vI $target | grep 0x");
 #if 0
@@ -758,7 +758,7 @@ void rabin_show_imports(const char *file)
 		importp.pe = import.pe;
 		for (i = 0; i < imports_count; i++, importp.pe++) {
 			if (rad) {
-				printf("f imp_%s @ 0x%08llx\n",
+				printf("f imp.%s @ 0x%08llx\n",
 					aux_filter_rad_output((const char *)importp.pe->name),
 					(u64) (baddr + importp.pe->rva));
 			} else {
@@ -832,7 +832,7 @@ void rabin_show_symbols(char *file)
 		symbolp.elf = symbol.elf;
 		for (i = 0; i < symbols_count; i++, symbolp.elf++) {
 			if (rad) {
-				printf("b %lli && f sym_%s @ 0x%08llx\n", symbolp.elf->size, aux_filter_rad_output(symbolp.elf->name), baddr + symbolp.elf->offset);
+				printf("b %lli && f sym.%s @ 0x%08llx\n", symbolp.elf->size, aux_filter_rad_output(symbolp.elf->name), baddr + symbolp.elf->offset);
 				if (!strncmp(symbolp.elf->type,"FUNC", 4)) 
 					printf("CF %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
 			} else {
@@ -912,7 +912,7 @@ void rabin_show_symbols(char *file)
 		symbolp.pe = symbol.pe;
 		for (i = 0; i < symbols_count; i++, symbolp.pe++) {
 			if (rad) {
-				printf("f sym_%s @ 0x%08llx\n",
+				printf("f sym.%s @ 0x%08llx\n",
 					aux_filter_rad_output((const char *)symbolp.pe->name),
 					(u64) (baddr + symbolp.pe->rva));
 			} else {
@@ -981,8 +981,8 @@ void rabin_show_sections(const char *file)
 		sectionp.elf = section.elf;
 		for (i = 0; i < sections_count; i++, sectionp.elf++) {
 			if (rad) {
-				printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset));
-				printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset + sectionp.elf->size));
+				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset));
+				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset + sectionp.elf->size));
 
 				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s @ 0x%08llx\n",
 						i, baddr + sectionp.elf->offset, sectionp.elf->size,
@@ -1051,8 +1051,8 @@ void rabin_show_sections(const char *file)
 		sectionp.pe = section.pe;
 		for (i = 0; i < sections_count; i++, sectionp.pe++) {
 			if (rad) {
-				printf("f section_%s @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
-				printf("f section_%s_end @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
+				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
+				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
 
 				printf("CC [%02i] 0x%08llx size=%08lli %c%c%c%c %s @ 0x%08llx\n",
 						i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),

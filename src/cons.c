@@ -805,12 +805,13 @@ void cons_flush()
 							if (greptoken != -1) {
 								ptr = alloca(strlen(one)+2);
 								strcpy(ptr, one);
-
+								tok = ptr;
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
-										tok = strtok(ptr, " ");
+										tok = strtok_r(ptr, " ", &ptr);
 									else
-										tok = strtok(NULL," ");
+										tok = strtok_r(NULL, " ", &ptr);
+
 								}
 
 								if (tok)
@@ -839,7 +840,7 @@ void cons_flush()
 							if (greptoken != -1) {
 								ptr = alloca(strlen(one)+2);
 								strcpy(ptr, one);
-
+								tok = ptr;
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
 										tok = strtok(ptr, " ");
