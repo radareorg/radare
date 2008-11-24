@@ -466,17 +466,26 @@ int radare_cmd_raw(const char *tmp, int log)
 //	if (dl_hist_label(input, &cb)) {
 //		return 0;
 //	}
+#if 0
+	if (input[0]=='(' && input[1]!='\0') {
+		return cmd_macro(input+1);
+	}
+#endif
+	if (!strchr(input,'\\')) {
+		next = strstr(input, "&&");
+		if (next) next[0]='\0';
+
+		grep = strchr(input, '~');
+		if (grep) {
+			grep[0]='\0';
+			cons_grep(grep+1);
+		}
+	} else {
+		next = NULL;
+		grep = NULL;
+	}
 
  	eof = input+strlen(input)-1;
-
-	next = strstr(input, "&&");
-	if (next) next[0]='\0';
-
-	grep = strchr(input, '~');
-	if (grep) {
-		grep[0]='\0';
-		cons_grep(grep+1);
-	}
 
 	/* interpret stdout of a process executed */
 	if (input[0]=='.') {
@@ -575,6 +584,9 @@ int radare_cmd_raw(const char *tmp, int log)
 		}
 		radare_controlc_end();
 	/* other commands */
+	} else 
+	if (input[0]=='(' &&input[1]!=')') {
+		cmd_macro(input+1);
 	} else {
 		/* pipe */
 		piped = strchr(input, '|');
@@ -595,6 +607,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		std = -1;
 		//if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 		if (input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
+		//if (input[0]!='(' && input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			/* inline pipe */
 			piped = strchr(input, '`');
 			if (piped) {

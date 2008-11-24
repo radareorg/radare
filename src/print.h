@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define PRINT_BIN(x) D cons_printf("%d%d%d%d %d%d%d%d  ",\
+#define PRINT_BIN(x) D cons_printf("%d%d%d%d%d%d%d%d  ",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
 (x&8)?1:0, (x&4)?1:0, (x&2)?1:0, (x&1)?1:0); else \
 cons_printf("%d%d%d%d%d%d%d%d",\

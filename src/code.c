@@ -511,8 +511,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (ptr && ptr[0]) {
 					C cons_printf(C_RESET C_BWHITE"0x%08llx %s:"C_RESET"\n", seek, ptr);
 					else cons_printf("0x%08llx %s:\n", seek, ptr);
+					myrow++;
 				}
-				myrow++;
 			}
 			if (flags & RADIS_COMMENTS)
 				myrow+=data_printd(bytes);
@@ -648,19 +648,20 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					for(i=0;i<folder;i++)
 						cons_strcat("  ");
 					cons_strcat("  {\n");
-						if (reflines && flags & RADIS_LINES)
-							code_lines_print(reflines, sk+i, 1);
-						if (flags & RADIS_RELADDR)
-							cons_printf("        ");
-						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
-							if (flag && *flag)
-								cons_printf("%s:", flag);
-						}
-						if (flags & RADIS_OFFSET)
-							print_addr(sk+i);
-						if (flags & RADIS_STACKPTR)
-							print_stackptr(&aop, 0);
+					myrow++;
+					if (reflines && flags & RADIS_LINES)
+						code_lines_print(reflines, sk+i, 1);
+					if (flags & RADIS_RELADDR)
+						cons_printf("        ");
+					if (flags & RADIS_SECTION) {
+						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						if (flag && *flag)
+							cons_printf("%s:", flag);
+					}
+					if (flags & RADIS_OFFSET)
+						print_addr(sk+i);
+					if (flags & RADIS_STACKPTR)
+						print_stackptr(&aop, 0);
 					CHECK_LINES
 					folder++;
 				}
@@ -670,6 +671,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case DATA_STR:
 				i = 0;
 				while (i<idata) {
+					myrow++;
 					cons_strcat("\n  .string \"");
 					while ((block[bytes+i] != '\0' || (block[bytes+i] == '\0' && block[bytes+i+1] == '\0')) && i<idata) {
 						print_color_byte_i(bytes+i, "%c",
@@ -683,6 +685,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case DATA_STRUCT:
 				if (*foo->arg=='\0') {
 					cons_printf("(struct: undefined memory format)\n");
+					myrow++;
 				} else {
 					int ofmt = last_print_format;
 					cons_printf("(pm %s) ", foo->arg);
@@ -700,6 +703,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					w+=4;
 					if (w >= config.height) {
 						cons_printf("\n");
+						myrow++;
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk+i, 1);
 						if (flags & RADIS_RELADDR)
@@ -733,19 +737,20 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			folder--;
 			for(i=0;i<folder;i++) cons_strcat("  ");
 			cons_strcat("  }\n");
-				if (reflines && flags & RADIS_LINES)
-					code_lines_print(reflines, sk+i, 1);
-				if (flags & RADIS_RELADDR)
-					cons_printf("        ");
-				if (flags & RADIS_SECTION) {
-					const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
-					if (flag && *flag)
-						cons_printf("%s:", flag);
-				}
-				if (flags & RADIS_OFFSET)
-					print_addr(sk+i);
-				if (flags & RADIS_STACKPTR)
-					print_stackptr(&aop, 0);
+						myrow++;
+			if (reflines && flags & RADIS_LINES)
+				code_lines_print(reflines, sk+i, 1);
+			if (flags & RADIS_RELADDR)
+				cons_printf("        ");
+			if (flags & RADIS_SECTION) {
+				const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+				if (flag && *flag)
+					cons_printf("%s:", flag);
+			}
+			if (flags & RADIS_OFFSET)
+				print_addr(sk+i);
+			if (flags & RADIS_STACKPTR)
+				print_stackptr(&aop, 0);
 			CHECK_LINES
 		}
 
@@ -978,8 +983,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		/* */
 		if (flags & RADIS_FLAGSALL) {
 			u64 ptr = flag_delta_between(sk,sk+myinc);
-			if (ptr != 0LL)
+			if (ptr != 0LL) {
 				myinc = ptr;
+				myrow++;
+			}
 		}
 		bytes+=myinc;
 		myinc = 0;

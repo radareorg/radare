@@ -35,14 +35,23 @@ void radare_macro_init()
 
 // XXX add support single line function definitions
 // XXX add support for single name multiple nargs macros
-int radare_macro_add(const char *name)
+int radare_macro_add(const char *oname)
 {
 	struct list_head *pos;
 	struct macro_t *macro = NULL;
 	char buf[1024];
 	char *bufp;
+	char *pbody;
 	char *ptr;
 	int lidx;
+	char *name = alloca(strlen(oname)+1);
+
+	strcpy(name, oname);
+	pbody = strchr(name, '\\');
+	if (pbody) {
+		pbody[0]='\0';
+		pbody = pbody + 1;
+	}
 
 	list_for_each_prev(pos, &macros) {
 		struct macro_t *mac = list_entry(pos, struct macro_t, list);
@@ -63,23 +72,32 @@ int radare_macro_add(const char *name)
 		*ptr='\0';
 		macro->nargs = set0word(ptr+1);
 	}
-	while(1) {
-		if (stdin == stdin_fd) {
-			printf(".. ");
-			fflush(stdout);
+
+	if (pbody) {
+		for(lidx=0;pbody[lidx];lidx++) {
+			if (pbody[lidx]=='\\')
+				pbody[lidx]='\n';
 		}
-		fgets(buf, 1023, stdin_fd);
-		if (buf[0]==')')
-			break;
-		for(bufp=buf;*bufp==' '||*bufp=='\t';bufp=bufp+1);
-		lidx = strlen(buf)-2;
-		if (buf[lidx]==')' && buf[lidx-1]!='(') {
-			buf[lidx]='\0';
-			strcat(macro->code, bufp);
-			break;
+		strcpy(macro->code, pbody);
+	} else {
+		while(1) {
+			if (stdin == stdin_fd) {
+				printf(".. ");
+				fflush(stdout);
+			}
+			fgets(buf, 1023, stdin_fd);
+			if (buf[0]==')')
+				break;
+			for(bufp=buf;*bufp==' '||*bufp=='\t';bufp=bufp+1);
+			lidx = strlen(buf)-2;
+			if (buf[lidx]==')' && buf[lidx-1]!='(') {
+				buf[lidx]='\0';
+				strcat(macro->code, bufp);
+				break;
+			}
+			if (buf[0] != '\n')
+				strcat(macro->code, bufp);
 		}
-		if (buf[0] != '\n')
-			strcat(macro->code, bufp);
 	}
 	list_add_tail(&(macro->list), &(macros));
 	
