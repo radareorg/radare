@@ -12,7 +12,7 @@ TheBook
 * Documentate visual cursor with marks ',' and '.' keys
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
-* Documentation for grep
+* Documentation for grep ~#[N]
 
 OPTIMIZATIONS
 =============

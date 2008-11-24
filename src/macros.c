@@ -44,9 +44,14 @@ int radare_macro_add(const char *oname)
 	char *pbody;
 	char *ptr;
 	int lidx;
-	char *name = alloca(strlen(oname)+1);
+	char *name;
 
+	if (oname[0]=='\0')
+		return radare_macro_list();
+
+	name = alloca(strlen(oname)+1);
 	strcpy(name, oname);
+
 	pbody = strchr(name, '\\');
 	if (pbody) {
 		pbody[0]='\0';
@@ -186,6 +191,8 @@ int radare_cmd_args(const char *ptr, const char *args, int nargs)
 	}
 	while(*cmd==' '||*cmd=='\t')
 		cmd = cmd + 1;
+	if (*cmd==')')
+		return 0;
 	//eprintf("cmd(%s)\n", cmd);
 	return radare_cmd(cmd, 0);
 }

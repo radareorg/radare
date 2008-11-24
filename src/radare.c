@@ -449,6 +449,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (eof) {
 		//*eof = '\0';
 		if (eof[1]!='\0') { // OOPS :O
+			// TODO: use it like in &&
 			eprintf("Multiline command not yet supported (%s)\n", tmp);
 			return 0;
 		}
@@ -463,14 +464,6 @@ int radare_cmd_raw(const char *tmp, int log)
 		input = input+1;
 	}
 
-//	if (dl_hist_label(input, &cb)) {
-//		return 0;
-//	}
-#if 0
-	if (input[0]=='(' && input[1]!='\0') {
-		return cmd_macro(input+1);
-	}
-#endif
 	if (!strchr(input,'\\')) {
 		next = strstr(input, "&&");
 		if (next) next[0]='\0';
@@ -487,9 +480,36 @@ int radare_cmd_raw(const char *tmp, int log)
 
  	eof = input+strlen(input)-1;
 
+
 	/* interpret stdout of a process executed */
 	if (input[0]=='.') {
 		radare_controlc();
+// SPAGUETI!
+#if 1
+		/* temporally offset */
+		eof2 = strchr(input, '@');
+		if (eof2 && input[0]!='e') {
+			char *ptr = eof2+1;
+			eof2[0] = '\0';
+
+			if (eof2[1]=='@') {
+				/* @@ is for foreaching */
+				tmpoff = config.seek;
+				radare_cmd_foreach(input ,eof2+2);
+				//config.seek = tmpoff;
+				radare_seek(tmpoff, SEEK_SET);
+				
+				return 0;
+			} else {
+				tmpoff = config.seek;
+				for(;*ptr==' ';ptr=ptr+1);
+				if (*ptr=='+'||*ptr=='-')
+					config.seek = config.seek + get_math(ptr);
+				else	config.seek = get_math(ptr);
+				radare_read(0);
+			}
+		}
+#endif
 		switch(input[1]) {
 		case '(':
 			radare_macro_call(input+2);

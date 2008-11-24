@@ -190,7 +190,7 @@ Some examples:
 \c !step                 ; call debugger 'step' command
 \c px 200 @ esp          ; show 200 hex bytes at esp
 \c pc > file.c           ; dump buffer as a C byte array to file
-\c wx 90 @@ sym_*        ; write a nop on every symbol
+\c wx 90 @@ sym.*        ; write a nop on every symbol
 \c pd 2000 | grep eax    ; grep opcodes using 'eax' register
 \c x 20 && s +3 && x 40  ; multiple commands in a single line
 
@@ -230,7 +230,7 @@ The values can be numbers in many formats:
 
 \c 0x033   : hexadecimal
 \c 3334    : decimal
-\c sym_fo  : resolve flag offset
+\c sym.fo  : resolve flag offset
 \c 10K     : KBytes  10*1024
 \c 10M     : MBytes  10*1024*1024
 
@@ -522,7 +522,7 @@ When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the targ
 
 \c file.analyze
 
-Runs '\c{.af* @@ sym_}' and '\c{.af* @ entrypoint}', after resolving the symbols while loading the binary, to determine the maximum information about the code analysis of the program. This will not be used while opening a project file, so it is preloaded. This option requires file.id and file.flag to be true.
+Runs '\c{.af* @@ sym.}' and '\c{.af* @ entrypoint}', after resolving the symbols while loading the binary, to determine the maximum information about the code analysis of the program. This will not be used while opening a project file, so it is preloaded. This option requires file.id and file.flag to be true.
 
 \c file.flag
 
@@ -584,8 +584,8 @@ The '>' is used to pipe the output of the command to a file (truncating to 0 if 
 The '|' pipe is used to dump the output of the command to another program.
 
 \c [0x4A13B8C0]> f | grep section | grep text
-\c 0x0805f3b0 512 section__text
-\c 0x080d24b0 512 section__text_end
+\c 0x0805f3b0 512 section._text
+\c 0x080d24b0 512 section._text_end
 
 Using the '&&' chars you can concatenate multiple commands in a single line:
 
@@ -659,7 +659,7 @@ The block size is the default view size for radare. All commands will work with 
 \c Usage: b[f flag]|[size]  ; Change block size
 \c   > b 200                ; set block size to 200
 \c   > bt next @ here       ; block size = next-here
-\c   > bf sym_main          ; block size = flag size
+\c   > bf sym.main          ; block size = flag size
 
 The 'b' command is used to change the block size:
 
@@ -669,13 +669,13 @@ The 'b' command is used to change the block size:
 
 The 'bf' command is used to change the block size to the one specified by a flag. For example in symbols, the block size of the flag represents the size of the function.
 
-\c [0x00000000]> bf sym_main    ; block size = sizeof(sym_main)
-\c [0x00000000]> pd @ sym_main  ; disassemble sym_main
+\c [0x00000000]> bf sym.main    ; block size = sizeof(sym.main)
+\c [0x00000000]> pd @ sym.main  ; disassemble sym.main
 \c   ...
 
 You can perform these two operations in a single one (pdf):
 
-\c [0x00000000]> pdf @ sym_main
+\c [0x00000000]> pdf @ sym.main
 
 Another useful block-size related is 'bt' that will set a new block size depending on the current offset and a 'end' address. This is useful when working with io-streams like sockets or serial ports, because you can easily set the block size to fit just a single read. For example
 
@@ -700,7 +700,7 @@ For files with more than one base address. The 'S'ection command will do the job
 \c  > S                ; list sections
 \c  > S*               ; list sections (in radare commands
 \c  > S=               ; list sections (in visual)
-\c  > S 4096 0x80000 rwx section_text  @ 0x8048000 ; adds new section
+\c  > S 4096 0x80000 rwx section.text  @ 0x8048000 ; adds new section
 \c  > S 4096 0x80000   ; 4KB of section at current seek with base 0x.
 \c  > S 10K @ 0x300    ; create 10K section at 0x300
 \c  > S -0x300         ; remove this section definition
@@ -725,7 +725,7 @@ We can specify a section in a single line in this way:
 
 For example:
 
-\c S section_text_end-section_text 0x8048500 r-x section_text @ 0x4300
+\c S section.text_end-section.text 0x8048500 r-x section.text @ 0x4300
 
 Displaying the sections information:
 
@@ -1086,7 +1086,7 @@ If you want to store this information as metadata for the binary file just use t
 A practical example for using pm on a binary GStreamer plugin:
 
 \c $ radare ~/.gstreamer-0.10/plugins/libgstflumms.so
-\c [0x000028A0]> seek sym_gst_plugin_desc
+\c [0x000028A0]> seek sym.gst_plugin_desc
 \c [0x000185E0]> pm iissxsssss major minor name desc _init version \
 \c  license source package origin
 \c      major : 0x000185e0 = 0
@@ -1597,13 +1597,13 @@ There are other keys for inserting and writing data in visual mode. Basically by
 radare implements many user-friendly features for the visual interface to walk thru the assembly code. One of them is the 'x' key that popups a menu for selecting the xref (data or code) against the current seek and then jump there. In this example, we are displaying the import getenv and displaying the CODE xreferences to this external symbol.
 
 \c [0x08048700]> pd @ imp_getenv
-\c ; CODE xref 0x08048e30 (sym_otf_patch+0x1d9)
-\c ; CODE xref 0x08048d53 (sym_otf_patch+0xfc)
-\c ; CODE xref 0x08048c90 (sym_otf_patch+0x39)
+\c ; CODE xref 0x08048e30 (sym.otf_patch+0x1d9)
+\c ; CODE xref 0x08048d53 (sym.otf_patch+0xfc)
+\c ; CODE xref 0x08048c90 (sym.otf_patch+0x39)
 \c       |    0x08048700,   imp_getenv:
 \c       |    0x08048700           jmp dword near [0x804c00c]
 \c       |    0x08048706           push dword 0x18       ; oeax+0xd
-\c       `==< 0x0804870B           jmp 0x80486c0         ; 1 = section__plt
+\c       `==< 0x0804870B           jmp 0x80486c0         ; 1 = section._plt
 
 Use the 'sx' and 'sX' command to seek tot he xrefs for code and Xrefs for data indexed by numbers.
 
@@ -1997,9 +1997,9 @@ This rsc script uses addr2line to get the correspondencies between source code l
 
 And the result is:
 
-\c [0x080482F0]> pdf @ sym_main
+\c [0x080482F0]> pdf @ sym.main
 \c      ; 1        main() { 
-\c 0x08048374, / sym_main: lea ecx, [esp+0x4]
+\c 0x08048374, / sym.main: lea ecx, [esp+0x4]
 \c 0x08048378, |           and esp, 0xf0
 \c 0x0804837b  |           push dword [ecx-0x4]
 \c 0x0804837e  |           push ebp
@@ -2008,7 +2008,7 @@ And the result is:
 \c      ; Stack size +4 
 \c 0x08048382  |           sub esp, 0x4
 \c      ; 2          printf("Hello World\n"); 
-\c 0x08048385  |           mov dword [esp], 0x8048460 ; str_Hello_World
+\c 0x08048385  |           mov dword [esp], 0x8048460 ; str.Hello_World
 \c 0x0804838c, |           call 0x80482d4  ; 1 = imp_puts
 \c      ; Stack size -4 
 \c      ; 3        } 
@@ -2030,7 +2030,7 @@ The 'P' command is the one used inside the core to store and load project files.
 
 These files are just radare scripts with some extra metadata as comments ';'.
 
-If you want to make a full analysis when opening a file try setting 'e file.analyze=true' in your .radarerc. It will run '.af* @@ sym_' and more..
+If you want to make a full analysis when opening a file try setting 'e file.analyze=true' in your .radarerc. It will run '.af* @@ sym.' and more..
 
 Once the program is analyzed (there is no difference between opening the program as a file or debug it) you can store this information in a project file:
 
@@ -2217,7 +2217,7 @@ The conditional command is given after the '??' command. Which is the help of th
 \c   > ? eip             ; get value of eip flag
 \c   > ? 0x80+44         ; calc math expression
 \c   > ? eip-23          ; ops with flags and numbers
-\c   > ? eip==sym_main   ; compare flags
+\c   > ? eip==sym.main   ; compare flags
 \c  The '??' is used for conditional executions after a comparision
 \c   > ? [foo] = 0x44    ; compare memory read with byte
 \c   > ???               ; show result of comparision
@@ -2375,8 +2375,8 @@ Here's a small part of radare.py to exemplify this:
 \c         This is: 'opcode', 'size', 'type', 'bytes', 'offset', 'ref', 'jump' and 'fail'
 \c         """
 \c         if addr == None:
-\c                 return __str_to_hash(r.cmd("ao"))
-\c         return __str_to_hash(r.cmd("ao @ 0x%x"%addr))
+\c                 return __str.to_hash(r.cmd("ao"))
+\c         return __str.to_hash(r.cmd("ao @ 0x%x"%addr))
 
 The use of these functions is quite natural:
 
@@ -2626,11 +2626,11 @@ And, finally, with -r radare core can flag automatically all these symbols and d
 
 \c $ rabin -sr /bin/ls
 \c fs symbols
-\c b 4 && f sym_stdout @ 0x0805e3c0
-\c b 4 && f sym__IO_stdin_used @ 0x08059b04
-\c b 4 && f sym_stderr @ 0x0805e3a4
-\c b 4 && f sym_optind @ 0x0805e3a0
-\c b 4 && f sym_optarg @ 0x0805e3c4
+\c b 4 && f sym.stdout @ 0x0805e3c0
+\c b 4 && f sym._IO_stdin_used @ 0x08059b04
+\c b 4 && f sym.stderr @ 0x0805e3a4
+\c b 4 && f sym.optind @ 0x0805e3a0
+\c b 4 && f sym.optarg @ 0x0805e3c4
 \c b 512
 \c 5 symbols added
 
@@ -2687,9 +2687,9 @@ With -r all this information is converted to radare commands, which will create 
 
 \c $ rabin -zr /bin/ls
 \c fs strings
-\c b 37 && f str_Try___s___help__for_more_information_ @ 0x08059b08
+\c b 37 && f str.Try___s___help__for_more_information_ @ 0x08059b08
 \c Cs 37 @ 0x08059b08
-\c b 31 && f str_Usage___s__OPTION______FILE____ @ 0x08059b30
+\c b 31 && f str.Usage___s__OPTION______FILE____ @ 0x08059b30
 \c Cs 31 @ 0x08059b30
 \c (...)
 
@@ -2734,23 +2734,23 @@ Also, using -r, radare will flag the beginning and end of each section, as well 
 
 \c $ rabin -Sr /bin/ls
 \c fs sections
-\c f section_ @ 0x08048000
-\c f section__end @ 0x08048000
+\c f section. @ 0x08048000
+\c f section._end @ 0x08048000
 \c CC [00] 0x08048000 size=00000000 align=0x00000000 ---  @ 0x08048000
-\c f section__interp @ 0x08048134
-\c f section__interp_end @ 0x08048147
+\c f section._interp @ 0x08048134
+\c f section._interp_end @ 0x08048147
 \c CC [01] 0x08048134 size=00000019 align=0x00000001 r-- .interp @ 0x08048134
-\c f section__note_ABI_tag @ 0x08048148
-\c f section__note_ABI_tag_end @ 0x08048168
+\c f section._note_ABI_tag @ 0x08048148
+\c f section._note_ABI_tag_end @ 0x08048168
 \c CC [02] 0x08048148 size=00000032 align=0x00000004 r-- .note.ABI-tag @ 0x08048148
-\c f section__hash @ 0x08048168
-\c f section__hash_end @ 0x08048490
+\c f section._hash @ 0x08048168
+\c f section._hash_end @ 0x08048490
 \c CC [03] 0x08048168 size=00000808 align=0x00000004 r-- .hash @ 0x08048168
-\c f section__gnu_hash @ 0x08048490
-\c f section__gnu_hash_end @ 0x080484ec
+\c f section._gnu_hash @ 0x08048490
+\c f section._gnu_hash_end @ 0x080484ec
 \c CC [04] 0x08048490 size=00000092 align=0x00000004 r-- .gnu.hash @ 0x08048490
-\c f section__dynsym @ 0x080484ec
-\c f section__dynsym_end @ 0x08048b5c
+\c f section._dynsym @ 0x080484ec
+\c f section._dynsym.end @ 0x08048b5c
 \c (...)
 
 Take care of adding "eval file.flag = true" to .radarerc radare executes rabin -risSz at startup, automatically flaging the file.
@@ -3179,9 +3179,9 @@ Rabin will mark each function with 'CF <size> @ <fun-addr>', add comments for st
 
 To make a function analysis use the 'af' command which will analyze the code from the current seek and tries to identify the end of the function. The command will just output some radare commands, Use '.af*' to interpret them.
 
-\c [0xB7F94810]> af @ sym_main
+\c [0xB7F94810]> af @ sym.main
 \c offset = 0x080499b7
-\c label = sym_main
+\c label = sym.main
 \c size = 832
 \c blocks = 2
 \c framesize = 0
@@ -3210,16 +3210,16 @@ The function analysis stops when reaching calls, use the 'aF' command to analyze
 
 You can also analyze all the symbols of a binary using the '@@' operator.
 
-\c [0xB7F94A60]> .af* @@ sym_
+\c [0xB7F94A60]> .af* @@ sym.
 
 To read the xref information try with:
 
 \c [0xB7F94A60]> pd 1 @@ imp_printf
-\c ; CODE xref 0804923e (sym_main+0x1a2)
+\c ; CODE xref 0804923e (sym.main+0x1a2)
 \c 0x08048CB8,  imp_printf:
 \c 0x08048CB8      v goto dword near [0x805e164]
 
-\c [0xB7FD9810]> pd 1 @ sym_main+0x1a2
+\c [0xB7FD9810]> pd 1 @ sym.main+0x1a2
 \c 0x0804923E     ^ call 0x8048CB8     ; 1 = imp_printf
 
 \S{codeanal-block} Basic blocks
@@ -3580,8 +3580,8 @@ The it is quite easy to calculate a hash checksum of the current block using the
 Change the block size, seek to the interesting offset and calculate the md5 of it.
 
 \c $ radare /bin/ls
-\c [0x08048000]> s section__text
-\c [0x08049790]> b section__text_end-section__text
+\c [0x08048000]> s section._text
+\c [0x08049790]> b section._text_end-section._text
 \c [0x08049790]> #md5
 \c d2994c75adaa58392f953a448de5fba7
 
@@ -4047,15 +4047,15 @@ The '!maps' command will list all the regions mapped in the target process. For 
 \c 0x0805c000 - 0x0805d000 rw-u 0x00001000 /bin/ls
 \c 0x08048000 - 0x0805c000 r-xu 0x00014000 /bin/ls
 
-The columns are start address, end address, permissions, size and name of region. At the same time all the proper flags are registered in the core named as 'section_foo' and 'section_foo_end'.
+The columns are start address, end address, permissions, size and name of region. At the same time all the proper flags are registered in the core named as 'section.foo' and 'section.foo_end'.
 
 This way it is possible to iterate in scripts from these ranges easily. The '*' between the from-to addresses allows you to easily view where you are located
 
 \c -- analyze a section
 \c function opcleaner_section(name)
-\c   print("FROM: "..r.get("section_"..name))
-\c   from = r.get("section_"..name)
-\c   to   = r.get("section_"..name.."_end")
+\c   print("FROM: "..r.get("section."..name))
+\c   from = r.get("section."..name)
+\c   to   = r.get("section."..name.."_end")
 \c   old_opcode = '' 
 \c 
 \c   print (string.format("Segment "..name.." at 0x%x",from))
@@ -4283,8 +4283,8 @@ If you have the source code of the program you are debugging you can just use th
 \c $ gcc -g hello.c
 \c 
 \c $ radare -d ./a.out
-\c [0x465D8810]> !cont sym_main
-\c Continue until (sym_main) = 0x08048374
+\c [0x465D8810]> !cont sym.main
+\c Continue until (sym.main) = 0x08048374
 \c pre-Breakpoint restored 465d8810
 \c 
 \c [0x465D8810]>
@@ -4311,10 +4311,10 @@ If you have the source code of the program you are debugging you can just use th
 \c               ; Get var0 
 \c 0x0804838f         cmp eax, [ecx] ; oeax+0xffffff84
 \c 0x08048391         jge 0x80483a1  ; 1 = eip+0x29
-\c 0x08048393         mov dword [esp], 0x8048480 ; str_Fuck_World
+\c 0x08048393         mov dword [esp], 0x8048480 ; str.Fuck_World
 \c 0x0804839a         call 0x80482d4  ; 2 = imp_puts
 \c 0x0804839f         jmp 0x80483ad  ; 3 = eip+0x35
-\c 0x080483a1         mov dword [esp], 0x804848b ; str_Hello_World
+\c 0x080483a1         mov dword [esp], 0x804848b ; str.Hello_World
 \c 0x080483a8,        call 0x80482d4  ; 4 = imp_puts
 \c               ; Stack size -20 
 \c 0x080483ad         add esp, 0x14
@@ -4324,7 +4324,7 @@ If you have the source code of the program you are debugging you can just use th
 \c 0x080483b5         ret 
 \c 0x080483b5      ; ------------------------------------ 
 
-So now we can step until reach the last opcode of sym_main at 0x080483b5:
+So now we can step until reach the last opcode of sym.main at 0x080483b5:
 
 \c [0x08048374]> !stepu 0x080483b5
 \c [0x08048374]> at
@@ -4408,9 +4408,9 @@ This way the debugger can catch the event and identify if this address is handle
 
 To add a software breakpoint type:
 
-\c [0xB7F75810]> !bp sym_main       ; set breakpoint at flag 'sym_main'
+\c [0xB7F75810]> !bp sym.main       ; set breakpoint at flag 'sym.main'
 \c [0xB7F75810]> !cont              ; continue execution
-\c [0x08048910]> !bp -sym_main      ; remove breakpoint
+\c [0x08048910]> !bp -sym.main      ; remove breakpoint
 
 You can directly specify which kind of breakpoint you want to use, just using the same syntax for "!bp", but using "!bps" or "!bph" to not let radare decide for you which is the better option. (or just define dbg.hwbp to true or false)
 
@@ -4865,7 +4865,7 @@ Examples
 
 \c 10!step ; this will perform 10 steps
 \c s +3 && 4x
-\c pd 4 @@ sym_ > file
+\c pd 4 @@ sym. > file
 
 Movement
 
@@ -5033,20 +5033,20 @@ We can dump the flags, to see what has been flagged:
 
 \c  [0x08048360]> flag
 \c  000 0x00000360 512 entrypoint
-\c  002 0x000002f8 512 sym__init
-\c  003 0x00000320 512 sym___libc_start_main
-\c  004 0x00000330 512 sym_scanf
-\c  005 0x00000340 512 sym_printf
-\c  006 0x00000350 512 sym_strcmp
-\c  007 0x00000360 512 sym__start
-\c  008 0x000003b0 512 sym___do_global_dtors_aux
-\c  009 0x000003e0 512 sym_frame_dummy
-\c  010 0x00000414 512 sym_main
-\c  011 0x000004a0 512 sym___libc_csu_init
-\c  012 0x00000510 512 sym___libc_csu_fini
-\c  013 0x00000515 512 sym___i686.get_pc_thunk.bx
-\c  014 0x00000520 512 sym___do_global_ctors_aux
-\c  015 0x00000544 512 sym__fini
+\c  002 0x000002f8 512 sym._init
+\c  003 0x00000320 512 sym.__libc_start_main
+\c  004 0x00000330 512 sym.scanf
+\c  005 0x00000340 512 sym.printf
+\c  006 0x00000350 512 sym.strcmp
+\c  007 0x00000360 512 sym._start
+\c  008 0x000003b0 512 sym.__do_global_dtors_aux
+\c  009 0x000003e0 512 sym.frame_dummy
+\c  010 0x00000414 512 sym.main
+\c  011 0x000004a0 512 sym.__libc_csu_init
+\c  012 0x00000510 512 sym.__libc_csu_fini
+\c  013 0x00000515 512 sym.__i686.get_pc_thunk.bx
+\c  014 0x00000520 512 sym.__do_global_ctors_aux
+\c  015 0x00000544 512 sym._fini
 \c  016 0x08048368 512 "PTRh"
 \c  017 0x08048568 512 "IOLI.Crackme.Level.0x00"
 \c  018 0x08048581 512 "Password:."
@@ -5056,21 +5056,21 @@ We can dump the flags, to see what has been flagged:
 \c  022 0x0804858c 512 "%
 \c  [0x08048360]> 
 
-Now we can print a disassembly of the main() function, to do this we will change the seek to the position of sym_main and use the "pD" command to print disassembly:
+Now we can print a disassembly of the main() function, to do this we will change the seek to the position of sym.main and use the "pD" command to print disassembly:
 
-\c  [0x08048360]> s sym_main
+\c  [0x08048360]> s sym.main
 \c  [0x08048414]> pd
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x00_pD_sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x00_pD_sym.main.png
 
-For example, to print a disassembly of 126 bytes starting at position sym_main, we would do: 
+For example, to print a disassembly of 126 bytes starting at position sym.main, we would do: 
 
 If we just type pd, it will print the disassembly from the current seek until the end of the block.
 
-Now let's print a code graph of the main() function, as our current seek is sym_main, we just type "ag": 
+Now let's print a code graph of the main() function, as our current seek is sym.main, we just type "ag": 
 
 TODO: Add graph in ascii art here
-TODO: http://radare.nopcode.org/img/wk/crackme0x00-sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x00-sym.main.png
 
 Now let's do the real work here...
 
@@ -5086,12 +5086,12 @@ First we change the current seek to the position of the instruction we want to p
 Now we can print the instruction in this position, for example we will print 15 bytes at the current seek:
 
 \c  [0x08048470]> pD 15
-\c  0x08048470 740e                    v jz 0x480   ; sym_main+0x6c
+\c  0x08048470 740e                    v jz 0x480   ; sym.main+0x6c
 \c  ; ------------------------------------ 
 \c  0x08048472 c7042496850408            dword [esp] = 0x8048596 ; "Invalid.Password!"
-\c  0x08048479 e8c2feffff              ^ call 0x340  ; sym_printf
+\c  0x08048479 e8c2feffff              ^ call 0x340  ; sym.printf
 \c  ; ------------------------------------ 
-\c  0x0804847E eb0c                    v goto 0x48C   ; sym_main+0x78
+\c  0x0804847E eb0c                    v goto 0x48C   ; sym.main+0x78
 \c  ; ------------------------------------ 
 \c  [0x08048470]> 
 
@@ -5116,18 +5116,18 @@ And now we're ready to patch, just use the 'wx' command to write hex values and 
 Now let's see the disassembly again, to see everything was patched as we expected:
 
 \c  [0x08048470]> pD 15
-\c  0x08048470 eb0e                    v goto 0x480   ; sym_main+0x6c
+\c  0x08048470 eb0e                    v goto 0x480   ; sym.main+0x6c
 \c  ; ------------------------------------ 
 \c  0x08048472 c7042496850408            dword [esp] = 0x8048596 ; "Invalid.Password!"
-\c  0x08048479 e8c2feffff              ^ call 0x340  ; sym_printf
+\c  0x08048479 e8c2feffff              ^ call 0x340  ; sym.printf
 \c  ; ------------------------------------ 
-\c  0x0804847E eb0c                    v goto 0x48C   ; sym_main+0x78
+\c  0x0804847E eb0c                    v goto 0x48C   ; sym.main+0x78
 \c  ; ------------------------------------ 
 \c  [0x08048470]> 
 
 And let's graph it again using the PG command, to see the code will flow only through the "Password OK" branch:
 
-\c  [0x08048470]> s sym_main
+\c  [0x08048470]> s sym.main
 \c  [0x08048414]> ag
 
 TODO: Add ascii-art disassembly here
@@ -5150,21 +5150,21 @@ Let's run the crackme:
 \c  Password: foo
 \c  Invalid Password!
 
-As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym_main and create a code graph:
+As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym.main and create a code graph:
 
 \c  $ radare crackme0x01
 \c  open ro crackme0x01
 \c  Adding strings & symbol flags for crackme0x01
 \c  14 symbols added.
 \c  6 strings added.
-\c  [0x08048330]> s sym_main
+\c  [0x08048330]> s sym.main
 \c  [0x080483E4]> ag
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x01-sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x01-sym.main.png
 
 Let's take a closer look into the disassembly:
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x01_pD_sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x01_pD_sym.main.png
 
 As you can see, it calls scanf() with "%d" so this time it expects an integer instead of a string, at offset 0x804842b it compares the value got by scanf with 0x149a and branches to password ok or password invalid depending on the result of this comparison.
 
@@ -5185,12 +5185,12 @@ Here we change the seek to the right offset, switch to write mode, patch the opc
 \c  warning: Opening file in read-write mode
 \c  open rw crackme0x01
 \c  [0x08048432]> wx eb
-\c  [0x08048432]> s sym_main
+\c  [0x08048432]> s sym.main
 \c  [0x080483E4]> ag
 
 Here's the resulting graph: 
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x01-sym_main_cracked.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x01-sym.main_cracked.png
 
 And finally try it:
 
@@ -5210,21 +5210,21 @@ Let's run the crackme:
 \c  Password: foo
 \c  Invalid Password!
 
-As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym_main and create a code graph:
+As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym.main and create a code graph:
 
 \c  $ radare crackme0x02
 \c  open ro crackme0x02
 \c  Adding strings & symbol flags for crackme0x02
 \c  14 symbols added.
 \c  6 strings added.
-\c  [0x08048330]> s sym_main
+\c  [0x08048330]> s sym.main
 \c  [0x080483E4]> ag
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x02-sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x02-sym.main.png
 
 Let's take a closer look at the disassembly: 
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x02_pD_sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x02_pD_sym.main.png
 
 This time the condition that makes the code branch is a jnz (jump if not zero), so if we make the jump we'll go through the "invalid password" block. We have to nop the jump to make the instruction pointer go to the next instruction, which will make the code flow to the "password ok" block.
 
@@ -5234,7 +5234,7 @@ TODO: http://radare.nopcode.org/img/wk/crackme0x02-patch.png
 
 Here's the graph output of the cracked program: 
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x02-sym_main_cracked.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x02-sym.main_cracked.png
 
 Now just try if it works:
 
@@ -5254,28 +5254,28 @@ Let's run the crackme:
 \c  Password: foo
 \c  Invalid Password!
 
-As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym_main and create a code graph:
+As we can see, the goal is to patch the binary file to accept any password. We will proceed as in the previous level, first we open the file with radare, change the seek to sym.main and create a code graph:
 
 \c  $ radare crackme0x03
 \c  open ro crackme0x03
 \c  Adding strings & symbol flags for crackme0x03
 \c  17 symbols added.
 \c  7 strings added.
-\c  [0x08048360]> s sym_main
+\c  [0x08048360]> s sym.main
 \c  [0x08048498]> ag
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x03-sym_main.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x03-sym.main.png
 
 We can see here that the main function calls a new function test() before exiting, let's graph it:
 
-\c  [0x08048498]> s sym_test
+\c  [0x08048498]> s sym.test
 \c  [0x0804846E]> pG
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x03-sym_test.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x03-sym.test.png
 
 Let's have a look at the disassembly: 
 
-TODO: http://radare.nopcode.org/img/wk/crackme0x03-pD_sym_test.png
+TODO: http://radare.nopcode.org/img/wk/crackme0x03-pD_sym.test.png
 
 As you might have noticed, here the strings have been scrambled so we don't know which code block is the one we have to force the flow go through. Instead of printf() here the crackme uses the function shift() which will unscramble the strings, containing the "password OK" or "Invalid password" messages.
 
