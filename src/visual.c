@@ -884,12 +884,15 @@ void visual_draw_screen()
 		if (config.cursor!=-1)
 			string_flag_offset(buf2, config.seek+config.cursor);
 	}
+
+#if 0
 	ptr = config_get("scr.seek");
 	if (ptr&&ptr[0]&&last_print_format==FMT_REF) {
 		u64 off = get_math(ptr);
 		if (off != 0)
 		radare_seek(off, SEEK_SET);
 	}
+#endif
 
 	monitors_run();
 
@@ -1113,13 +1116,13 @@ CMD_DECL(visual)
 		radare_prompt_command();
 		visual_draw_screen();
 
-		if (last_print_format == FMT_UDIS) {
-			const char *ptr = config_get("scr.seek");
-			if (ptr&&ptr[0]) {
-				u64 off = get_math(ptr);
-				if ((off < config.seek) || ((config.seek+config.block_size)<off))
+		//if (last_print_format == FMT_UDIS || last_print_format == FMT_VISUAL) {
+			const char *scrseek = config_get("scr.seek");
+			if (scrseek&&scrseek[0]) {
+				u64 off = get_math(scrseek);
+				if ((off < config.seek) || ((config.seek+config.block_size) < off))
 					radare_seek(off, SEEK_SET);
-			}
+		//	}
 #if 0
 			const char *follow = config_get("asm.follow");
 			if (follow&&follow[0]) {
