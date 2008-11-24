@@ -262,7 +262,6 @@ int radare_macro_call(const char *name)
 			char *ptr = mac->code;
 			char *end = strchr(ptr, '\n');
 
-
 			if (mac->nargs != 0 && nargs != mac->nargs) {
 				eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
 				macro_level --;
@@ -316,9 +315,10 @@ int radare_macro_call(const char *name)
 int radare_macro_break(const char *value)
 {
 	macro_break = 1;
+	macro_break_value = NULL;
 	_macro_break_value = 0LL;
 	_macro_break_value = (u64)get_math(value);
-	if (value && *value)
+	if (value && *value) {
 		macro_break_value = &_macro_break_value;
-	else macro_break_value = NULL;
+	} 
 }

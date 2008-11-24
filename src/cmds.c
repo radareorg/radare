@@ -166,8 +166,12 @@ CMD_DECL(macro)
 		" .(foo)            ; to call it\n"
 		" ()                ; break inside macro\n"
 		"Argument support:\n"
-		" (foo x y\\n$1 @ $2)     ; define fun with args\n"
-		" .(foo 128 0x804800) ; call it with args\n");
+		" (foo x y\\n$1 @ $2) ; define fun with args\n"
+		" .(foo 128 0x804800) ; call it with args\n"
+		"Iterations:\n"
+		" .(foo\\n() $@)      ; define iterator returning iter index\n"
+		" x @@ .(foo)         ; iterate over them\n"
+		);
 		break;
 	default:
 		radare_macro_add(input);

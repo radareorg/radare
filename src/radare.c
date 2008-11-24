@@ -614,14 +614,15 @@ int radare_cmd_raw(const char *tmp, int log)
 				memset(filebuf, '\0', 2048);
 				len = read(fdi, filebuf, 1024);
 				if (len<1) {
-					eprintf("cannot read?\n");
-					return 0;
+					eprintf("error: (%s)\n", input);
+				//	return 0;
+				} else {
+					len += strlen(input) + 5;
+					oinput = malloc(len);
+					sprintf(oinput, "%s %s", input, filebuf);
+					free(input);
+					input = oinput;
 				}
-				len += strlen(input) + 5;
-				oinput = malloc(len);
-				sprintf(oinput, "%s %s", input, filebuf);
-				free(input);
-				input = oinput;
 			}
 
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
@@ -796,7 +797,7 @@ void radare_nullcmd()
 	/* NOT REQUIRED update flag registers NOT REQUIRED */
 	//radare_cmd(":.!regs*", 0);
 
-	cons_noflush=1;
+	cons_noflush=0;
 	if (config_get("dbg.stack")) {
 		C cons_printf(C_RED"Stack: "C_RESET);
 		else cons_printf("Stack: ");
@@ -833,7 +834,6 @@ void radare_nullcmd()
 		}
 	}
 
-	cons_noflush=0;
 	C cons_printf(C_RED"Disassembly:\n"C_RESET);
 	else cons_printf("Disassembly:\n");
 	if (config_get("dbg.dwarf"))
@@ -1589,6 +1589,7 @@ int radare_go()
 }
 
 // TODO: move to cons.c
+// XXX WTF OMFG!!
 //static int pipe_fd = -1;
 int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 {
@@ -1606,9 +1607,10 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	dup2(fd, 1);
 
 	if (cmd[0]) {
-		char *ptr = strdup(cmd);
+		char *ptr = alloca(strlen(cmd)+1);
+		strcpy(ptr, cmd);
+//eprintf("CMD(%s)\n", ptr);
 		radare_cmd_raw(ptr, 0);
-		free(ptr);
 	}
 
 	cons_reset();

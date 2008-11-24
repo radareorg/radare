@@ -691,7 +691,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	case FMT_REF: {
 		char buf[128];
 		char *str;
-		sprintf(buf, "!!rsc list `addr2line -e $FILE 0x%llx`", config.seek);
+		buf[0]='\0';
+		sprintf(buf, "!!rsc list `addr2line -e $FILE 0x%llx", config.seek);
 		str = pipe_command_to_string(buf);
 		if (str) {
 			cons_printf(str);

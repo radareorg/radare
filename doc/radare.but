@@ -2283,7 +2283,7 @@ It is also possible to recursively call a macro to emulate a loop. Here's a simp
 \c   $1
 \c   .(loop $0-1 $1))
 
-\H{macros} Iterators
+\S{iterators} Iterators
 
 Iterators are macros that return a value or NULL to terminate the loop. A macro is handled as an iterator when called after the foreach (@@) mark.
 

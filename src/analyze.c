@@ -589,7 +589,7 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 				u64 addr = (u64)(seek+i-str_i);
 				cons_printf("Cs %d @ 0x%08llx\n", strlen(str), addr);
 				flag_filter_name(str);
-				cons_printf("f str_%s @ 0x%08llx\n", str, addr);
+				cons_printf("f str.%s @ 0x%08llx\n", str, addr);
 				//cons_printf("; TODO (if exists) f str_%s\n", str);
 			} else {
 				print_addr((u64)(seek+i-str_i));
@@ -841,7 +841,7 @@ int analyze_function(int recursive, int report)
 		cons_printf("fs functions\n");
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
-		cons_printf("fu fun_%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+		cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
 		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
 	}
 	D eprintf(".");

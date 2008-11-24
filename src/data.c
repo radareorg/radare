@@ -294,6 +294,7 @@ int data_list()
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
 		label[0]='\0';
 		string_flag_offset(label, d->from);
+		arg = NULL;
 		switch(d->type) {
 		case DATA_FOLD_O: cons_strcat("Cu "); break;
 		case DATA_FOLD_C: cons_strcat("Cf "); break;

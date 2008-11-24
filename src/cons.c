@@ -792,7 +792,7 @@ void cons_flush()
 		}
 
 		if (grepstr != NULL) {
-			int line;
+			int line, len;
 			char *one = cons_buffer;
 			char *two;
 			char *ptr, *tok;
@@ -802,17 +802,16 @@ void cons_flush()
 				two = strchr(one, '\n');
 				if (two) {
 					two[0] = '\0';
+					len = strlen(one);
 					if (strstr(one, grepstr)) {
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
-								ptr = alloca(strlen(one)+2);
+								ptr = alloca(len+1);
 								strcpy(ptr, one);
-
-								for (i=0; i<strlen(ptr); i++)
+								for (i=0; i<len; i++)
 									for (j=0;j<6;j++)
 										if (ptr[i] == delims[j][0])
 											ptr[i] = ' ';
-
 								tok = ptr;
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
@@ -837,7 +836,7 @@ void cons_flush()
 			}
 		} else {
 			if (grepline != -1) {
-				int line;
+				int len, line;
 				char *one = cons_buffer;
 				char *two;
 				char *ptr, *tok;
@@ -846,12 +845,13 @@ void cons_flush()
 					two = strchr(one, '\n');
 					if (two) {
 						two[0] = '\0';
+						len = strlen(one);
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
-								ptr = alloca(strlen(one)+2);
+								ptr = alloca(len+1);
 								strcpy(ptr, one);
 
-								for (i=0; i<strlen(ptr); i++)
+								for (i=0; i<len; i++)
 									for (j=0;j<6;j++)
 										if (ptr[i] == delims[j][0])
 											ptr[i] = ' ';
