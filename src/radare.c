@@ -834,11 +834,12 @@ void radare_nullcmd()
 		}
 	}
 
+#if 0
 	C cons_printf(C_RED"Disassembly:\n"C_RESET);
 	else cons_printf("Disassembly:\n");
-	if (config_get("dbg.dwarf"))
+#endif
+	if (config_get("dbg.dwarf")) {
 		radare_cmd("pR @ eip",0);
-	{
 		u64 pc = flag_get_addr("eip");
 		if (pc<config.seek || pc > config.seek+config.block_size)
 			radare_seek(pc, SEEK_SET);
@@ -1596,6 +1597,8 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	/* WORKS BUT IT IS UGLY */
 	int fd = make_tmp_file(tmpfile);
 	int std;
+
+//eprintf("DUMP(%s)\n", cmd);
 	cons_reset();
 	//cons_flush();
 	if (fd == -1) {

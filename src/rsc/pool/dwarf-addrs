@@ -18,6 +18,6 @@ if [ -z "`echo $FL| grep ??`" ]; then
 #	[ -n "`echo $FL` | grep Binary" ] && exit
 	FILE=`echo $FL|cut -d : -f 1`
 	LINE=`echo $FL|cut -d : -f 2`
-#	rsc list ${FILE} ${LINE}
-	nl $FILE | grep -e " $LINE" | head -n 1
+	rsc list ${FILE} ${LINE}
+#	nl $FILE | grep -e " $LINE" | head -n 1
 fi

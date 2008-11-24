@@ -14,6 +14,16 @@ TheBook
 * doc4 'g' and 'x' in visual
 * Documentation for grep
 
+OPTIMIZATIONS
+=============
+* do not dump on tmp files (use popen or so)
+* flag_get (23%)
+* cache io_lseek (1%)
+* Do not use strcat in cons_* (67%)
+* Optimize string_flag_offset (24%)
+  - abuses strstr
+* config_node_get (1%)
+
 ===========================================================
 * .(foo) @@ .(bar) doesnt works
 * x @@ .(iter-functions)

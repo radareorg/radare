@@ -35,3 +35,9 @@
   ??()
   ()$@+$0
 )
+
+; function iterator
+; x @@ .(for-fun)
+(for-fun
+ ()`C*~CF [3]#$@
+)

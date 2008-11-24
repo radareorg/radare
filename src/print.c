@@ -79,70 +79,28 @@ format_info_t formats[] = {
 
 void getHTTPDate(char *DATE)
 {
+	DATE[0]=0;
 #if __UNIX__
 	struct tm curt; /* current time */
 	time_t l;
 	char week_day[4], month[4];
+	char *week_str[7]= { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+	char *month_str[7]= { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+		"Aug", "Sep", "Oct", "Nov", "Dec" };
 
-	l=time(0);
-	localtime_r(&l,&curt);
+	l = time(0);
+	localtime_r(&l, &curt);
 
-	DATE[0]=0;
-	switch(curt.tm_wday)
-	{
-		case 0: strcpy(week_day, "Sun");
-			break;
-		case 1: strcpy(week_day, "Mon");
-			break;
-		case 2:	strcpy(week_day, "Tue");
-			break;
-		case 3:	strcpy(week_day, "Wed");
-			break;
-		case 4:	strcpy(week_day, "Thu");
-			break;
-		case 5:	strcpy(week_day, "Fri");
-			break;
-		case 6:	strcpy(week_day, "Sat");
-			break;
-		default: return;
-	}
-	
-	switch(curt.tm_mon)
-	{
-		case 0: strcpy(month, "Jan");
-			break;
-		case 1: strcpy(month, "Feb");
-			break;
-		case 2: strcpy(month, "Mar");
-			break;
-		case 3: strcpy(month, "Apr");
-			break;
-		case 4: strcpy(month, "May");
-			break;
-		case 5: strcpy(month, "Jun");
-			break;
-		case 6: strcpy(month, "Jul");
-			break;
-		case 7: strcpy(month, "Aug");
-			break;
-		case 8: strcpy(month, "Sep");
-			break;
-		case 9: strcpy(month, "Oct");
-			break;
-		case 10: strcpy(month, "Nov");
-			break;
-		case 11: strcpy(month, "Dec");
-			break;
-		default: return;
-	}
-	
+	if ((curt.tm_wday <0 || curt.tm_wday > 6)
+	||  (curt.tm_mon < 0 || curt.tm_mon > 11))
+		return;
+
 	sprintf(DATE, "%s, %02d %s %d %02d:%02d:%02d GMT", 
-			week_day, curt.tm_mday, month, 
-			curt.tm_year + 1900, curt.tm_hour, 
-			curt.tm_min, curt.tm_sec);
-#else
-	DATE[0]='\0';
-
+		week_str[curt.tm_wday],
+		curt.tm_mday,
+		month_str[curt.tm_mon],
+		curt.tm_year + 1900, curt.tm_hour, 
+		curt.tm_min, curt.tm_sec);
 #endif
 }
 
@@ -263,7 +221,7 @@ void print_color_byte_i(int i, char *str, int c)
 		if (f) cons_strcat("\x1b[44m");
 		else cons_strcat("\x1b[0m");
 	}
-	if (is_cursor(i,1)) {
+	if (is_cursor(i, 1)) {
 		cons_invert(1);
 		print_color_byte(str, c);
 		cons_invert(0);
@@ -690,9 +648,9 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		break;
 	case FMT_REF: {
 		char buf[128];
-		char *str;
+		char *str = NULL;
 		buf[0]='\0';
-		sprintf(buf, "!!rsc list `addr2line -e $FILE 0x%llx", config.seek);
+		sprintf(buf, "!!rsc dwarf-addrs '$FILE' 0x%llx", config.seek);
 		str = pipe_command_to_string(buf);
 		if (str) {
 			cons_printf(str);
@@ -768,24 +726,13 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		char dbyte;
 		int lsb = 0;
 		/* original code from lsbstego.c of Roman Medina */
-		for ( byte = 0 ; byte < length ; )
-		{
+		for ( byte = 0 ; byte < length ; ) {
 			dbyte = 0;
-
-			for (bit = 0; bit <= 7; bit++, byte++)
-			{
+			for (bit = 0; bit <= 7; bit++, byte++) {
 				// TODO handle inverse (backward)
-
 				/* Obtain Least Significant Bit */
 				lsb = config.block[byte] & 1;
-
-				/* Add lsb to decrypted message */
-				#if 0
-				if (downward)
-					dbyte = dbyte | lsb << (7-bit) ;
-				else
-				#endif
-					dbyte = dbyte | lsb << bit ;
+				dbyte = dbyte | lsb << bit ;
 			}
 
 			if (is_printable(dbyte))

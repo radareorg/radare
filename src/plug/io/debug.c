@@ -25,11 +25,16 @@ struct debug_t ps;
 
 struct debug_t debug_debugt;
 
+static u64 old_lseek = -1;
 u64 dbg_lseek(int fildes, u64 offset, int whence)
 {
+	if (old_lseek == offset && whence == SEEK_SET)
+		return old_lseek;
+
 	if (ps.opened && ps.fd == fildes)
 		switch(whence) {
 		case SEEK_SET:
+			old_lseek = offset;
 			ps.offset = offset;
 			return ps.offset;
 		case SEEK_CUR:

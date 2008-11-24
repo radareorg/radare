@@ -34,7 +34,8 @@
 #include "arch/x86/ollyasm/disasm.h"
 
 //#define CHECK_LINES if ( config.visual && len != config.block_size && (cons_lines > config.height) ) break;
-#define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) break;
+//#define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) { eprintf("too large %d\n", cons_lines); break;}
+#define CHECK_LINES if ( config.visual && (cons_lines+myrow > config.height) ) { break;}
 
 static int code_flags_cache = -1;
 
@@ -436,6 +437,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	u64 seek = 0;
 	u64 sk = 0;
 	int bytes = 0;
+	int myrow = 0;
 	u64 myinc = 0;
 	unsigned char b[32];
 	char buf[1024];
@@ -492,7 +494,6 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	if (rrows>0) rrows ++;
 	/* DISASSEMBLY LOOP */
 	while (!config.interrupted) {
-		CHECK_LINES
 		if (bytes >= length ) break;
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
@@ -500,6 +501,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		seek = config.seek+bytes + config.baddr;
 		sk   = config.seek+bytes;
 		CHECK_LINES
+		myrow++;
 
 		D {
 			if (flags & RADIS_FLAGSLINE) {
@@ -510,6 +512,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					C cons_printf(C_RESET C_BWHITE"0x%08llx %s:"C_RESET"\n", seek, ptr);
 					else cons_printf("0x%08llx %s:\n", seek, ptr);
 				}
+				myrow++;
 			}
 			if (flags & RADIS_COMMENTS)
 				data_printd(bytes);
@@ -649,10 +652,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 							code_lines_print(reflines, sk+i, 1);
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
-						if (flags & RADIS_SECTION ) {
-							if (config.baddr)
-								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (flags & RADIS_SECTION) {
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							if (flag && *flag)
+								cons_printf("%s:", flag);
 						}
 						if (flags & RADIS_OFFSET)
 							print_addr(sk+i);
@@ -702,9 +705,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
 						if (flags & RADIS_SECTION) {
-							if (config.baddr)
-								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							if (flag && *flag)
+								cons_printf("%s:", flag);
 						}
 						if (flags & RADIS_OFFSET)
 							print_addr(sk+i);
@@ -718,6 +721,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			}
 			if (foo->type!=DATA_STRUCT)
 				cons_newline();
+			myrow++;
 			CHECK_LINES
 			bytes+=idata;
 			ud_idx+=idata;
@@ -734,9 +738,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (flags & RADIS_RELADDR)
 					cons_printf("        ");
 				if (flags & RADIS_SECTION) {
-					if (config.baddr)
-						cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-					else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+					const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+					if (flag && *flag)
+						cons_printf("%s:", flag);
 				}
 				if (flags & RADIS_OFFSET)
 					print_addr(sk+i);
@@ -814,10 +818,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						CHECK_LINES
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
-						if (flags & RADIS_SECTION){
-							if (config.baddr)
-								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+						if (flags & RADIS_SECTION) {
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							if (flag && *flag)
+								cons_printf("%s:", flag);
 						}
 						if (flags & RADIS_OFFSET)
 							print_addr(seek);
@@ -947,9 +951,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
-							if (config.baddr)
-								cons_printf("%s:", flag_get_here_filter(seek - config.baddr, "section_"));
-							else cons_printf("%s:", flag_get_here_filter(seek, "section_"));
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							if (flag && *flag)
+								cons_printf("%s:", flag);
 						}
 						if (flags & RADIS_OFFSET)
 							print_addr(seek);
@@ -958,6 +962,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						sprintf(buf, "%%%ds ", show_nbytes);
 						cons_printf(buf, "");
 						cons_strcat("; ------------------------------------ ");
+						myrow++;
 						CHECK_LINES
 					}
 				}
@@ -985,51 +990,51 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
-  const char *cmd_asm;
+	const char *cmd_asm;
+	int flags;
+	int size, bytes, offset, splits, comments, lines, section,
+	traces, reladdr, flagsline, functions, stackptr, flagsall;
 
-  if (code_flags_cache == -1) {
-    int flags;
-    int size, bytes, offset, splits, comments, lines, section,
-        traces, reladdr, flagsline, functions, stackptr, flagsall;
-    cmd_asm  =       config_get("cmd.asm");
-    size     = (int) config_get_i("asm.size");
-    bytes    = (int) config_get_i("asm.bytes");
-    offset   = (int) config_get_i("asm.offset");
-    functions= (int) config_get_i("asm.functions");
-    flagsall = (int) config_get_i("asm.flagsall");
-    if (config.verbose) {
-      section  = (int) config_get_i("asm.section");
-      splits   = (int) config_get_i("asm.split");
-      flags    = (int) config_get_i("asm.flags");
-      flagsline= (int) config_get_i("asm.flagsline");
-      traces   = (int) config_get_i("asm.trace");
-    }
-    lines    = (int) config_get_i("asm.lines");
-    reladdr  = (int) config_get_i("asm.reladdr");
-    stackptr = (int) config_get_i("asm.stackptr");
-    comments = (int) config_get_i("asm.comments");
-    color    = (int) config_get_i("scr.color");
+	if (code_flags_cache == -1) {
+		cmd_asm  =       config_get("cmd.asm");
+		size     = (int) config_get_i("asm.size");
+		bytes    = (int) config_get_i("asm.bytes");
+		offset   = (int) config_get_i("asm.offset");
+		functions= (int) config_get_i("asm.functions");
+		flagsall = (int) config_get_i("asm.flagsall");
+		if (config.verbose) {
+			section  = (int) config_get_i("asm.section");
+			splits   = (int) config_get_i("asm.split");
+			flags    = (int) config_get_i("asm.flags");
+			flagsline= (int) config_get_i("asm.flagsline");
+			traces   = (int) config_get_i("asm.trace");
+		}
+		lines    = (int) config_get_i("asm.lines");
+		reladdr  = (int) config_get_i("asm.reladdr");
+		stackptr = (int) config_get_i("asm.stackptr");
+		comments = (int) config_get_i("asm.comments");
+		color    = (int) config_get_i("scr.color");
 
-    flags = 0;
-    if (color) flags |= RADIS_COLOR;
-    if (size) flags |= RADIS_SIZE;
-    if (bytes) flags |= RADIS_BYTES;
-    if (offset) flags |= RADIS_OFFSET;
-    if (functions) flags |= RADIS_FUNCTIONS;
-    if (section) flags |= RADIS_SECTION;
-    if (splits) flags |= RADIS_SPLITS;
-    if (stackptr) flags |= RADIS_STACKPTR;
-    if (flags) flags |= RADIS_FLAGS;
-    if (flagsline) flags |= RADIS_FLAGSLINE;
-    if (flagsall) flags |= RADIS_FLAGSALL;
-    if (lines) flags |= RADIS_LINES;
-    if (reladdr) flags |= RADIS_RELADDR;
-    if (traces) flags |= RADIS_TRACES;
-    if (comments) flags |= RADIS_COMMENTS;
-    if (color) flags |= RADIS_COLOR;
+		flags = 0;
+		if (color) flags |= RADIS_COLOR;
+		if (size) flags |= RADIS_SIZE;
+		if (bytes) flags |= RADIS_BYTES;
+		if (offset) flags |= RADIS_OFFSET;
+		if (functions) flags |= RADIS_FUNCTIONS;
+		if (section) flags |= RADIS_SECTION;
+		if (splits) flags |= RADIS_SPLITS;
+		if (stackptr) flags |= RADIS_STACKPTR;
+		if (flags) flags |= RADIS_FLAGS;
+		if (flagsline) flags |= RADIS_FLAGSLINE;
+		if (flagsall) flags |= RADIS_FLAGSALL;
+		if (lines) flags |= RADIS_LINES;
+		if (reladdr) flags |= RADIS_RELADDR;
+		if (traces) flags |= RADIS_TRACES;
+		if (comments) flags |= RADIS_COMMENTS;
+		if (color) flags |= RADIS_COLOR;
 
-    code_flags_cache = flags;
-  }
-  
-  radis_str(arch, block, len, rows, cmd_asm, code_flags_cache);
+		code_flags_cache = flags;
+	}
+	
+	radis_str(arch, block, len, rows, cmd_asm, code_flags_cache);
 }

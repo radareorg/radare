@@ -31,6 +31,9 @@
 #include <windows.h>
 #endif
 
+static int cons_buffer_sz = 0;
+static int cons_buffer_len = 0;
+static char *cons_buffer = NULL;
 int _print_fd = 1;
 int cons_lines = 0;
 int cons_noflush = 0;
@@ -167,6 +170,16 @@ static const char *cons_get_color_by_name(const char *str)
 	return nullstr;
 }
 
+static inline int cons_lines_count(const char *str)
+{
+	int i,ctr = 0;
+	for(i=0;cons_buffer[i];i++) {
+		if (cons_buffer[i] == '\n')
+			ctr++;
+	}
+	return ctr;
+}
+
 static void cons_print_real(const char *buf)
 {
 #if __WINDOWS__
@@ -299,6 +312,7 @@ void cons_gotoxy(int x, int y)
 
 void cons_clear00()
 {
+	cons_lines = 0;
 	cons_clear();
 	cons_gotoxy(0,0);
 }
@@ -676,9 +690,6 @@ int cons_fgets(char *buf, int len, int argc, const char **argv)
 	return strlen(buf);
 }
 
-static int cons_buffer_len = 0;
-static char *cons_buffer = NULL;
-
 void cons_reset()
 {
 	if (cons_buffer)
@@ -691,16 +702,16 @@ char *cons_get_buffer()
 	return cons_buffer;
 }
 
-void palloc(int moar)
+static inline void palloc(int moar)
 {
 	if (cons_buffer == NULL) {
-		cons_buffer_len = moar+1024;
-		cons_buffer = (char *)malloc(cons_buffer_len);
+		cons_buffer_sz = moar+128;
+		cons_buffer = (char *)malloc(cons_buffer_sz);
 		cons_buffer[0]='\0';
 	} else
-	if (moar + strlen(cons_buffer)>cons_buffer_len) {
-		cons_buffer = (char *)realloc(cons_buffer,
-			cons_buffer_len+moar+strlen(cons_buffer)+1);
+	if (moar + cons_buffer_len > cons_buffer_sz) {
+		cons_buffer_sz += moar+1024;
+		cons_buffer = (char *)realloc(cons_buffer, cons_buffer_sz);
 	}
 }
 
@@ -780,17 +791,9 @@ void cons_flush()
 		}
 
 		// XXX merge grepstr with cons_lines loop //
-		for(i=j=0;cons_buffer[i];i++) {
-#if 0
-			if (cons_buffer[i]=='\x1b') {
-				for(++i;cons_buffer[i] != '\0' && cons_buffer[i] != 'H' && cons_buffer[i] != 'm'; i++, j++);
-			}
-#endif
-			if (cons_buffer[i] == '\n') {
-				cons_lines++;
-			}
-		}
+		cons_lines += cons_lines_count(buf);
 
+		// XXX major cleanup here!
 		if (grepstr != NULL) {
 			int line, len;
 			char *one = cons_buffer;
@@ -889,6 +892,7 @@ void cons_flush()
 void cons_fprintf(FILE *stream, const char *format, ...)
 {
 	/* dupped */
+	int len;
 	char buf[CONS_BUFSZ];
 	va_list ap;
 
@@ -898,7 +902,10 @@ void cons_fprintf(FILE *stream, const char *format, ...)
 	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
 		buf[0]='\0';
 
-	palloc(strlen(buf)+1000);
+	len = strlen(buf);
+	palloc(len);
+
+	cons_buffer_len += len;
 	strcat(cons_buffer, buf);
 
 	va_end(ap);
@@ -906,6 +913,7 @@ void cons_fprintf(FILE *stream, const char *format, ...)
 
 void cons_printf(const char *format, ...)
 {
+	int len;
 	char buf[CONS_BUFSZ];
 	va_list ap;
 
@@ -920,10 +928,23 @@ void cons_printf(const char *format, ...)
 	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
 		buf[0]='\0';
 
-	palloc(strlen(buf)+1000);
+	len = strlen(buf);
+	palloc(len);
+
+//	cons_lines += cons_lines_count(buf);
+	cons_buffer_len += len;
 	strcat(cons_buffer, buf);
 
 	va_end(ap);
+}
+
+void cons_strcat(const char *str)
+{
+	int len = strlen(str);
+	palloc(len);
+//	cons_lines += cons_lines_count(str);
+	strcat(cons_buffer, str);
+	cons_buffer_len += len;
 }
 
 void cons_newline()
@@ -937,13 +958,6 @@ void cons_newline()
 		cons_flush();
 #endif
 #endif
-}
-
-
-void cons_strcat(const char *str)
-{
-	palloc(strlen(str));
-	strcat(cons_buffer, str);
 }
 
 int cons_get_columns()
