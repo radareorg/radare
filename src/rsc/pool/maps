@@ -29,7 +29,7 @@ parse() {
 				inc=0
 			fi
 			a=`basename $a`
-			echo "f maps_${a}_${inc} @ 0x$addr" | tr -- '-][/' ',___'
+			echo "f maps.${a}_${inc} @ 0x$addr" | tr -- '-][/' ',___'
 		fi
 	done
 	done
@@ -55,7 +55,7 @@ parse2() {
 				inc=0
 			fi
 			a=`basename $a`
-			echo "f maps_${a}_${inc} @ 0x$addr" |  tr -- '-][/' ',___'
+			echo "f maps.${a}_${inc} @ 0x$addr" |  tr -- '-][/' ',___'
 		fi
 	done
 	done

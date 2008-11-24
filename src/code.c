@@ -515,15 +515,15 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				myrow++;
 			}
 			if (flags & RADIS_COMMENTS)
-				data_printd(bytes);
+				myrow+=data_printd(bytes);
 			if ((reflines) &&  (flags & RADIS_LINES))
 				code_lines_print(reflines, sk, 0);
 		}
 		if (flags & RADIS_SECTION) {
 			char *str;
 			if (config.baddr)
-				str = flag_get_here_filter(seek - config.baddr, "section_");
-			else 	str = flag_get_here_filter(seek, "section_");
+				str = flag_get_here_filter(seek - config.baddr, "section.");
+			else 	str = flag_get_here_filter(seek, "section.");
 			if (*str)
 				cons_printf("%s:", str);
 		}
@@ -653,7 +653,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}
@@ -705,7 +705,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}
@@ -738,7 +738,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (flags & RADIS_RELADDR)
 					cons_printf("        ");
 				if (flags & RADIS_SECTION) {
-					const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+					const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
 					if (flag && *flag)
 						cons_printf("%s:", flag);
 				}
@@ -819,7 +819,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}
@@ -951,7 +951,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section_");
+							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}

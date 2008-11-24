@@ -10,7 +10,7 @@ FILES+=bin2tab tab2asm tab2gml move bytediff Display net-tcp net-udp net-icmp
 FILES+=strings-flag syms-pe-flag flag gokolu bin2xml search-asm strings-flag
 FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
 FILES+=boomerang flag-sections elf-prg-maps flag-kallsyms spcc-fe asmcolor
-FILES+=signsrch fds symdiff idc2rdb
+FILES+=signsrch fds symdiff idc2rdb dwarf-addrs dwarf-at
 
 BIN=rsc
 
@@ -31,7 +31,8 @@ install:
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare/rsc
 	rm -rf ${DESTDIR}/${DATADIR}/radare/rsc/*
-	for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
+	for A in pool/$$A ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
+	#for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 
 files:
 	@echo ${FILES}

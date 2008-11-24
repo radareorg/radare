@@ -476,7 +476,7 @@ struct program_t *program_open(char *file)
 			off = get_offset(ptr);
 			program->entry = off; // XXX only one entry point ???
 		} else
-		if (!memcmp(buf, "f sym_",6)) { // label
+		if (!memcmp(buf, "f sym.",6)) { // label
 			off = get_offset(ptr);
 			program_function_set_name(program, (u64) off, buf+6);
 			program_block_set_name(program, (u64) off, buf+2);

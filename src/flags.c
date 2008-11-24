@@ -78,11 +78,11 @@ void flag_help()
 	" fm name      ; move flag to another flag space\n"
 	" fs spacename ; create/list/switch flag spaces\n"
 	" fr old new   ; rename a flag or more with '*'\n"
-	" f sym_main   ; flag current offset as sym_main\n"
+	" f sym.main   ; flag current offset as sym.main\n"
 	" f foo @ 0x23 ; flag 0x23 offset as foo\n"
-	" f -sym_main  ; remove sym_main\n"
+	" f -sym.main  ; remove sym.main\n"
 	" f -*         ; remove all flags\n"
-	" f -sym_*     ; remove all flags starting with 'sym_'\n");
+	" f -sym.*     ; remove all flags starting with 'sym.'\n");
 }
 
 int flag_interpolation(const char *from, const char *to)

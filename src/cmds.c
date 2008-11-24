@@ -955,7 +955,7 @@ CMD_DECL(blocksize)
 		cons_printf("Usage: b[f flag]|[size]  ; Change block size\n");
 		cons_printf("  > b 200                ; set block size to 200\n");
 		cons_printf("  > bt next @ here       ; block size = next-here\n");
-		cons_printf("  > bf sym_main          ; block size = flag size\n");
+		cons_printf("  > bf sym.main          ; block size = flag size\n");
 		break;
 	case '\0':
 		cons_printf("%d\n", config.block_size);
@@ -2067,7 +2067,7 @@ CMD_DECL(help)
 				eprintf("  > ?x eip            ; show hex result of math expression\n");
 				eprintf("  > ? 0x80+44         ; calc math expression\n");
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
-				eprintf("  > ? eip==sym_main   ; compare flags\n");
+				eprintf("  > ? eip==sym.main   ; compare flags\n");
 				eprintf(" The ?? is used for conditional executions after a comparision\n");
 				eprintf("  > ? [foo] == 0x44   ; compare memory read with byte\n");
 				eprintf("  > ? eip != oeip     ; compare memory read with byte\n");
