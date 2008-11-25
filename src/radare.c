@@ -832,6 +832,8 @@ void radare_nullcmd()
 
 	cons_noflush=0;
 	if (config_get("dbg.stack")) {
+		int c = config.cursor;
+		config.cursor=-1;
 		C cons_printf(C_RED"Stack: "C_RESET);
 		else cons_printf("Stack: ");
 		radare_cmd("?x ebp-esp", 0); //":px 66@esp", 0);
@@ -840,6 +842,7 @@ void radare_nullcmd()
 			(int)config_get_i("dbg.stacksize"),
 			config_get("dbg.stackreg"));
 		radare_cmd(buf, 0); //":px 66@esp", 0);
+		config.cursor=c;
 	}
 
 	if (config_get("dbg.regs")) {
