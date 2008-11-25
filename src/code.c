@@ -509,8 +509,17 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (ptr == NULL && config.baddr)
 					ptr = flag_name_by_offset( seek );
 				if (ptr && ptr[0]) {
-					C cons_printf(C_RESET C_BWHITE"0x%08llx %s:"C_RESET"\n", seek, ptr);
-					else cons_printf("0x%08llx %s:\n", seek, ptr);
+					if ((reflines) &&  (flags & RADIS_LINES))
+						code_lines_print(reflines, sk, 0);
+					if (flags & RADIS_SECTION) {
+						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						if (flag && *flag)
+							cons_printf("%s:", flag);
+					}
+					if (flags & RADIS_OFFSET)
+						print_addr(seek);
+					C cons_printf(C_RESET C_BWHITE"%s:"C_RESET"\n", ptr);
+					else cons_printf("%s:\n", ptr);
 					myrow++;
 				}
 			}
@@ -838,7 +847,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 							cons_strcat("|");
 							//cons_strcat(funline);
 						sprintf(buf, " %%%ds ", show_nbytes+((funline[0]!='\0')?0:1)); //show_nbytes);
-						cons_printf(buf,"");
+						cons_printf(buf, "");
 					} else {
 						if (!config.graph) {
 							int is_eip = !strcmp(flag, "eip");

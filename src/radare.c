@@ -452,11 +452,11 @@ int radare_cmd_raw(const char *tmp, int log)
 		}
 	}
 
-	if (input[0]=='!'&&input[1]=='!')
-		return radare_system(input+2);
-
 	input = oinput = strdup(tmp);
 	input = strclean(input);
+
+	if (input[0]=='!'&&input[1]=='!')
+		return radare_system(input+2);
 
 	if (input[0] == ':') {
 		config.verbose = config_get_i("cfg.verbose")^1;
