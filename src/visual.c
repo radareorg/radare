@@ -1105,6 +1105,7 @@ CMD_DECL(visual)
 	cons_clear();
 	cons_set_raw(1);
 	while(1) {
+		const char *scrseek = config_get("scr.seek");
 		if (inc<1) inc = 1;
 		dec = inc;
 		setenv("VISUAL", "1", 1);
@@ -1116,21 +1117,13 @@ CMD_DECL(visual)
 		radare_prompt_command();
 		visual_draw_screen();
 
-		//if (last_print_format == FMT_UDIS || last_print_format == FMT_VISUAL) {
-			const char *scrseek = config_get("scr.seek");
-			if (scrseek&&scrseek[0]) {
-				u64 off = get_math(scrseek);
-				if ((off < config.seek) || ((config.seek+config.block_size) < off))
-					radare_seek(off, SEEK_SET);
-		//	}
-#if 0
-			const char *follow = config_get("asm.follow");
-			if (follow&&follow[0]) {
-				u64 addr = get_offset(follow);
-				if ((addr < config.seek) || ((config.seek+config.block_size)<addr))
-					radare_seek(addr, SEEK_SET);
+			// XXX 
+		if (scrseek&&scrseek[0]) {
+			u64 off = get_math(scrseek);
+			if ((off < config.seek) || ((config.seek+config.block_size) < off)) {
+				radare_seek(off, SEEK_SET);
+				continue;
 			}
-#endif
 		}
 
 	__go_read_a_key:

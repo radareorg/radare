@@ -20,7 +20,7 @@
 
 #include "code.h"
 #include "main.h"
-#include "code.h"
+#include "cons.h"
 #include "radare.h"
 #include "utils.h"
 #include "config.h"
@@ -348,6 +348,31 @@ static int config_bigendian_callback(void *data)
   struct config_node_t *node = data;
   config.endian = node->i_value?1:0;
   return 1;
+}
+
+static int config_scrhtml_callback(void *data)
+{
+	struct config_node_t *node = data;
+	cons_is_html = node->i_value?1:0;
+	return 1;
+}
+
+static int config_filterfile_callback(void *data)
+{
+	struct config_node_t *node = data;
+	if (!node->value || node->value[0]=='\0') {
+		efree(&cons_filterline);
+	} else cons_filterline = estrdup(cons_filterline, node->value);
+	return 1;
+}
+
+static int config_teefile_callback(void *data)
+{
+	struct config_node_t *node = data;
+	if (!node->value || node->value[0]=='\0') {
+		efree(&cons_teefile);
+	} else cons_teefile = estrdup(cons_teefile, node->value);
+	return 1;
 }
 
 static int config_zoombyte_callback(void *data)
@@ -734,7 +759,8 @@ void config_init(int first)
   config_set("file.trace", "trace.log");
   config_set("file.project", "");
   config_set("file.entrypoint", "");
-  config_set("file.scrfilter", "");
+  node = config_set("file.scrfilter", "");
+  node->callback = &config_filterfile_callback;
   config_set_i("file.size", 0);
   node = config_set_i("file.baddr", 0);
   node->callback = &config_baddr_callback;
@@ -878,7 +904,8 @@ void config_init(int first)
   node = config_set("zoom.byte", "head");
   node->callback = &config_zoombyte_callback;
 
-  config_set("scr.html", "false");
+  node = config_set("scr.html", "false");
+  node->callback = &config_scrhtml_callback;
   config_set_i("scr.accel", 0);
 
   node = config_set("scr.palette", cons_palette_default);
@@ -910,10 +937,11 @@ void config_init(int first)
   config_set_scr_pal("00","white")
   config_set_scr_pal("7f","magenta")
 
-  config_set("scr.seek", "");
+  config_set("scr.seek", "eip");
   node = config_set("scr.color", (config.color)?"true":"false");
   node->callback = &config_color_callback;
-  config_set("scr.tee", "");
+  node = config_set("scr.tee", "");
+  node->callback = &config_teefile_callback;
   node = config_set("scr.buf", "false");
   node->callback = &config_scrbuf_callback;
   node = config_set_i("scr.width", config.width);

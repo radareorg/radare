@@ -34,6 +34,9 @@
 static int cons_buffer_sz = 0;
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
+char *cons_filterline = NULL;
+char *cons_teefile = NULL;
+int cons_is_html = 0;
 int _print_fd = 1;
 int cons_lines = 0;
 int cons_noflush = 0;
@@ -187,9 +190,9 @@ static void cons_print_real(const char *buf)
 		cons_w32_print(buf);
 	else
 #endif
-	if (config_get("scr.html"))
+	if (cons_is_html)
 		cons_html_print(buf);
-	else write(_print_fd, buf, strlen(buf)); //buf_len);
+	else write(_print_fd, buf, cons_buffer_len);
 }
 
 int cons_palette_set(const char *key, const u8 *value)
@@ -276,7 +279,7 @@ int cons_readchar()
 		return -1;
 	SetConsoleMode(h, mode);
 #else
-	if (read(0,buf,1)==-1)
+	if (read(0, buf, 1)==-1)
 		return -1;
 #endif
 	return buf[0];
@@ -306,7 +309,7 @@ void cons_gotoxy(int x, int y)
 #else
 void cons_gotoxy(int x, int y)
 {
-	cons_printf("\x1b[0;0H");
+	cons_strcat("\x1b[0;0H");
 }
 #endif
 
@@ -333,7 +336,7 @@ void cons_clear()
         FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
         cons_gotoxy(0,0);
 #else
-	write(1, "\x1b[2J", 4);
+	cons_strcat("\x1b[2J");
 #endif
 	cons_lines = 0;
 }
@@ -697,7 +700,7 @@ void cons_reset()
 	cons_buffer_len = 0;
 }
 
-char *cons_get_buffer()
+const char *cons_get_buffer()
 {
 	return cons_buffer;
 }
@@ -723,27 +726,22 @@ void cons_grep(const char *str)
 	char *ptr, *ptr2, *ptr3;
 	/* set grep string */
 	if (str != NULL && *str) {
-		//for(;*str==' ';str=str+1);
-		//if (str[0]=='#') {
-		//	grepline = get_offset(str+1);
-		//} else {
-			ptr = alloca(strlen(str)+2);
-			strcpy(ptr, str);
+		ptr = alloca(strlen(str)+2);
+		strcpy(ptr, str);
 
-			ptr3 = strchr(ptr, '[');
-			ptr2 = strchr(ptr, '#');
+		ptr3 = strchr(ptr, '[');
+		ptr2 = strchr(ptr, '#');
 
-			if (ptr3) {
-				ptr3[0]='\0';
-				greptoken = get_offset(ptr3+1);
-			}
-			if (ptr2) {
-				ptr2[0]='\0';
-				grepline = get_offset(ptr2+1);
-			}
+		if (ptr3) {
+			ptr3[0]='\0';
+			greptoken = get_offset(ptr3+1);
+		}
+		if (ptr2) {
+			ptr2[0]='\0';
+			grepline = get_offset(ptr2+1);
+		}
 
-			grepstr = estrdup(grepstr, ptr);
-		//}
+		grepstr = estrdup(grepstr, ptr);
 	} else {
 		greptoken = -1;
 		grepline = -1;
@@ -759,9 +757,10 @@ void cons_flush()
 
 	if (cons_noflush)
 		return;
+
 	if (!strnull(cons_buffer)) {
-		const char *file = config_get("file.scrfilter");
-		const char *tee = config_get("scr.tee");
+		char *file = cons_filterline;
+		char *tee = cons_teefile;
 		if (!strnull(file)) {
 			fd = fopen(file, "r");
 			if (fd) {
@@ -805,7 +804,8 @@ void cons_flush()
 				two = strchr(one, '\n');
 				if (two) {
 					two[0] = '\0';
-					len = strlen(one);
+					len = two-one;
+				//	len = strlen(one);
 					if (strstr(one, grepstr)) {
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
@@ -823,16 +823,20 @@ void cons_flush()
 										tok = strtok(NULL, " ");
 								}
 
-								if (tok)
+								if (tok) {
 									ptr = tok;
-								else ptr = one;
-							} else ptr = one;
+									cons_buffer_len=strlen(tok);
+								}
+							} else {
+								ptr = one;
+								cons_buffer_len=len;
+							}
 							cons_print_real(ptr);
+							cons_buffer_len=1;
 							cons_print_real("\n");
 						}
 						line++;
 					}
-					two = one + strlen(one);
 					two[0] = '\n';
 					one = two + 1;
 				} else break;
@@ -848,7 +852,7 @@ void cons_flush()
 					two = strchr(one, '\n');
 					if (two) {
 						two[0] = '\0';
-						len = strlen(one);
+						len=two-one;
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
 								ptr = alloca(len+1);
@@ -867,15 +871,18 @@ void cons_flush()
 										tok = strtok(NULL," ");
 								}
 
-								if (tok)
+								if (tok) {
 									ptr = tok;
-								else ptr = one;
-
-							} else ptr = one;
+									cons_buffer_len=strlen(tok);
+								}
+							} else {
+								ptr = one;
+								cons_buffer_len=len;
+							}
 							cons_print_real(ptr);
+							cons_buffer_len=1;
 							cons_print_real("\n");
 						}
-						two = one + strlen(one);
 						two[0] = '\n';
 						one = two + 1;
 					} else break;
@@ -884,8 +891,9 @@ void cons_flush()
 		}
 
 		cons_buffer[0] = '\0';
-		//cons_buffer_sz=0;
 	}
+	//cons_buffer_sz=0;
+	cons_buffer_len=0;
 }
 
 /* stream is ignored */
@@ -898,15 +906,13 @@ void cons_fprintf(FILE *stream, const char *format, ...)
 
 	va_start(ap, format);
 
-	buf[0]='\0';
-	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
-		buf[0]='\0';
-
-	len = strlen(buf);
-	palloc(len);
-
-	cons_buffer_len += len;
-	strcat(cons_buffer, buf);
+	len = vsnprintf(buf, CONS_BUFSZ-1, format, ap);
+	if (len>0) {
+		len = strlen(buf);
+		palloc(len);
+		memcpy(cons_buffer+cons_buffer_len, buf, len+1);
+		cons_buffer_len += len;
+	}
 
 	va_end(ap);
 }
@@ -924,16 +930,13 @@ void cons_printf(const char *format, ...)
 
 	va_start(ap, format);
 
-	buf[0]='\0';
-	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
-		buf[0]='\0';
-
-	len = strlen(buf);
-	palloc(len);
-
-//	cons_lines += cons_lines_count(buf);
-	cons_buffer_len += len;
-	strcat(cons_buffer, buf);
+	len = vsnprintf(buf, CONS_BUFSZ-1, format, ap);
+	if (len>0) {
+		palloc(len);
+	//	cons_lines += cons_lines_count(buf);
+		memcpy(cons_buffer+cons_buffer_len, buf, len+1);
+		cons_buffer_len += len;
+	}
 
 	va_end(ap);
 }
@@ -941,17 +944,19 @@ void cons_printf(const char *format, ...)
 void cons_strcat(const char *str)
 {
 	int len = strlen(str);
-	palloc(len);
-//	cons_lines += cons_lines_count(str);
-	strcat(cons_buffer, str);
-	cons_buffer_len += len;
+	if (len>0) {
+		palloc(len);
+	//	cons_lines += cons_lines_count(str);
+		memcpy(cons_buffer+cons_buffer_len, str, len+1);
+		cons_buffer_len += len;
+	}
 }
 
 void cons_newline()
 {
-	if (config_get("scr.html"))
-		cons_printf("<br />");
-	else cons_printf("\n");
+	if (cons_is_html)
+		cons_strcat("<br />\n");
+	else cons_strcat("\n");
 #if 0
 #if RADARE_CORE
 	if (!config.buf)
@@ -1086,7 +1091,7 @@ int cons_get_arrow(int ch)
 
 void cons_any_key()
 {
-	D cons_printf("\n--press any key--\n");
+	D cons_strcat("\n--press any key--\n");
 	cons_flush();
 	cons_readchar();
 	cons_strcat("\x1b[2J\x1b[0;0H");

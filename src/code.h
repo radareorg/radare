@@ -9,8 +9,6 @@ u64 data_seek_to(u64 offset, int type, int idx);
 int trace_add(u64 addr);
 void trace_init();
 
-extern int _print_fd;
-extern int cons_lines;
 
 struct trace_t {
 	u64 addr;
