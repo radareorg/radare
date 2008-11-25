@@ -38,12 +38,13 @@ void radare_macro_init()
 int radare_macro_add(const char *oname)
 {
 	struct list_head *pos;
-	struct macro_t *macro = NULL;
+	struct macro_t *macro;
 	char buf[1024];
 	char *bufp;
 	char *pbody;
 	char *ptr;
 	int lidx;
+	int macro_update;
 	char *name;
 
 	if (oname[0]=='\0')
@@ -52,27 +53,38 @@ int radare_macro_add(const char *oname)
 	name = alloca(strlen(oname)+1);
 	strcpy(name, oname);
 
-	pbody = strchr(name, '\\');
+	pbody = strchr(name, ',');
 	if (pbody) {
 		pbody[0]='\0';
 		pbody = pbody + 1;
 	}
 
+	if (name[strlen(name)-1]==')') {
+		eprintf("No body?\n");
+		return -1;
+	}
+
+	macro = NULL;
+	macro_update = 0;
 	list_for_each_prev(pos, &macros) {
 		struct macro_t *mac = list_entry(pos, struct macro_t, list);
 		if (!strcmp(name, mac->name)) {
 			macro = mac;
 			free(macro->name);
 			free(macro->code);
+			macro_update = 1;
+			break;
 		}
 	}
 	if (macro == NULL)
 		macro = (struct macro_t *)malloc(sizeof(struct macro_t));
 	macro->name = strdup(name);
-	macro->code = (char *)malloc(1024);
+	if (pbody) macro->code = (char *)malloc(strlen(pbody)+2);
+	else macro->code = (char *)malloc(1024);
 	macro->code[0]='\0';
 	macro->nargs = 0;
 	ptr = strchr(macro->name, ' ');
+
 	if (ptr != NULL) {
 		*ptr='\0';
 		macro->nargs = set0word(ptr+1);
@@ -80,17 +92,20 @@ int radare_macro_add(const char *oname)
 
 	if (pbody) {
 		for(lidx=0;pbody[lidx];lidx++) {
-			if (pbody[lidx]=='\\')
+			if (pbody[lidx]==',')
 				pbody[lidx]='\n';
+			else
+			if (pbody[lidx]==')' && pbody[lidx-1]=='\n')
+				pbody[lidx]='\0';
 		}
 		strcpy(macro->code, pbody);
 	} else {
 		while(1) {
-			if (stdin == stdin_fd) {
+			if (stdin == cons_stdin_fd) {
 				printf(".. ");
 				fflush(stdout);
 			}
-			fgets(buf, 1023, stdin_fd);
+			fgets(buf, 1023, cons_stdin_fd);
 			if (buf[0]==')')
 				break;
 			for(bufp=buf;*bufp==' '||*bufp=='\t';bufp=bufp+1);
@@ -104,7 +119,8 @@ int radare_macro_add(const char *oname)
 				strcat(macro->code, bufp);
 		}
 	}
-	list_add_tail(&(macro->list), &(macros));
+	if (macro_update == 0)
+		list_add_tail(&(macro->list), &(macros));
 	
 	return 0;
 }
@@ -135,13 +151,14 @@ int radare_macro_list()
 	struct list_head *pos;
 	list_for_each_prev(pos, &macros) {
 		struct macro_t *mac = list_entry(pos, struct macro_t, list);
-		cons_printf("%d %s: ", idx, mac->name);
+		cons_printf("%d (%s, ", idx, mac->name);
 		for(j=0;mac->code[j];j++) {
 			if (mac->code[j]=='\n')
 				cons_printf(", ");
 			else cons_printf("%c", mac->code[j]);
 		}
-		cons_printf("\n");
+		cons_strcat(")\n");
+		idx++;
 	}
 	return 0;
 }

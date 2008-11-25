@@ -18,8 +18,10 @@
  *
  */
 
-#include "main.h"
-#include "print.h"
+#include "r_types.h"
+//#include "main.h"
+//#include "print.h"
+#include "r_cons.h"
 #include <stdarg.h>
 #if __UNIX__
 #include <termios.h>
@@ -31,13 +33,41 @@
 #include <windows.h>
 #endif
 
+int r_cons_stdout_fd = 6676;
+int r_cons_stdout_file = -1;
+FILE *r_cons_stdin_fd = (FILE*)&stdin;
+static int r_cons_buffer_sz = 0;
+static int r_cons_buffer_len = 0;
+static char *r_cons_buffer = NULL;
+char *r_cons_filterline = NULL;
+char *r_cons_teefile = NULL;
+int r_cons_is_html = 0;
 int _print_fd = 1;
-int cons_lines = 0;
-int cons_noflush = 0;
+int r_cons_lines = 0;
+int r_cons_noflush = 0;
 #define CONS_BUFSZ 0x4f00
 
-const char *cons_palette_default = "7624 6646 2378 6824 3623";
-char cons_palette[CONS_PALETTE_SIZE][8] = {
+// XXX rename to r_cons_stdout_open
+void stdout_open(char *file)
+{
+	int fd = open(file, O_RDONLY);
+	if (fd==-1)
+		return;
+	r_cons_stdout_file = fd;
+	dup2(1, r_cons_stdout_fd);
+	//close(1);
+	dup2(fd, 1);
+}
+
+void stdout_close()
+{
+	dup2(r_cons_stdout_fd, 1);
+	//close(stdout_file);
+}
+
+
+const char *r_cons_palette_default = "7624 6646 2378 6824 3623";
+char r_cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
 	/* ADDRESS */
 	/* DEFAULT */
@@ -64,7 +94,7 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-const char *cons_color_names[CONS_COLORS_SIZE+1] = {
+const char *r_cons_color_names[CONS_COLORS_SIZE+1] = {
 	"black",
 	"gray",
 	"white",
@@ -89,15 +119,15 @@ const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	NULL
 };
 
-void cons_invert(int set)
+void r_cons_invert(int set)
 {
   if (set)
-    cons_strcat("\x1b[7m");
+    r_cons_strcat("\x1b[7m");
   else
-    cons_strcat("\x1b[0m");
+    r_cons_strcat("\x1b[0m");
 }
 
-const char *cons_colors[CONS_COLORS_SIZE+1] = {
+const char *r_cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2
@@ -148,48 +178,58 @@ const char *pal_names[CONS_PALETTE_SIZE]={
 	NULL
 };
 
-const char *cons_get_color(int ch)
+const char *r_cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
-		return cons_colors[ch-'0'];
+		return r_cons_colors[ch-'0'];
 	if (ch>='a' && ch<='i')
-		return cons_colors['8'-'0'+ch-'a'];
+		return r_cons_colors['8'-'0'+ch-'a'];
 	return NULL;
 }
 
 static const char *nullstr = "";
-static const char *cons_get_color_by_name(const char *str)
+static const char *r_cons_get_color_by_name(const char *str)
 {
 	int i;
-	for(i=0;cons_color_names[i];i++) {
-		if (!strcmp(str, cons_color_names[i]))
-			return cons_colors[i];
+	for(i=0;r_cons_color_names[i];i++) {
+		if (!strcmp(str, r_cons_color_names[i]))
+			return r_cons_colors[i];
 	}
 	return nullstr;
 }
 
-static void cons_print_real(const char *buf)
+static inline int r_cons_lines_count(const char *str)
+{
+	int i,ctr = 0;
+	for(i=0;r_cons_buffer[i];i++) {
+		if (r_cons_buffer[i] == '\n')
+			ctr++;
+	}
+	return ctr;
+}
+
+static void r_cons_print_real(const char *buf)
 {
 #if __WINDOWS__
 	if (_print_fd == 1)
-		cons_w32_print(buf);
+		r_cons_w32_print(buf);
 	else
 #endif
-	if (config_get("scr.html"))
-		cons_html_print(buf);
-	else write(_print_fd, buf, strlen(buf)); //buf_len);
+	if (r_cons_is_html)
+		r_cons_html_print(buf);
+	else write(_print_fd, buf, r_cons_buffer_len);
 }
 
-int cons_palette_set(const char *key, const u8 *value)
+int r_cons_palette_set(const char *key, const u8 *value)
 {
 	const char *str;
 	int i;
 
 	for(i=0;pal_names[i];i++) {
 		if (!strcmp(key, pal_names[i])) {
-			str = cons_get_color_by_name(value);
+			str = r_cons_get_color_by_name(value);
 			if (str != NULL) {
-				strcpy(cons_palette[i], str);
+				strcpy(r_cons_palette[i], str);
 				return 0;
 			}
 		}
@@ -197,21 +237,21 @@ int cons_palette_set(const char *key, const u8 *value)
 	return 1;
 }
 
-int cons_palette_init(const unsigned char *pal)
+int r_cons_palette_init(const unsigned char *pal)
 {
 	int palstrlen;
 	int i,j=1,k;
 
 	if (pal==NULL || pal[0]=='\0') {
-		cons_printf("\n=>( Targets ):");
+		r_cons_printf("\n=>( Targets ):");
 		for(j=0;pal_names[j]&&*pal_names[j];j++)
-			cons_printf("%s .%s\x1b[0m ", cons_palette[j], pal_names[j]);
-		cons_printf("\n\n=>( Colors ): "
+			r_cons_printf("%s .%s\x1b[0m ", r_cons_palette[j], pal_names[j]);
+		r_cons_printf("\n\n=>( Colors ): "
 		"/*normal*/, " "black, = 0, " "gray, = 1, " "white, = 2, " "red, = 3, " "magenta, = 4, "
 		"blue, = 5, " "green, = 6, " "yellow, = 7, " "turqoise, = 8, " "/*bold*/, " "bblack, = a, "
 		"bgray, = b, " "bwhite, = c, " "bred, = d, " "bmagenta, = e, " "bblue, = f, " "bgreen, = g, "
 		"byellow, = h, " "bturqoise, = i, " "/*special*/, " "reset, = r\n");
-		cons_printf("\nExample: eval scr.palette = .prompt=3.address=4\n\n");
+		r_cons_printf("\nExample: eval scr.palette = .prompt=3.address=4\n\n");
 		return 0;
 	}
 
@@ -233,23 +273,23 @@ int cons_palette_init(const unsigned char *pal)
 							continue;
 						}
 				//		printf("KEYWORD FOUND = %s (value = %c)\n", pal_names[j], pal[i+1]);
-						strcpy(cons_palette[j], cons_get_color(pal[i+1]));
+						strcpy(r_cons_palette[j], r_cons_get_color(pal[i+1]));
 					}
 				}
 			} else {
-				const char *ptr = cons_get_color(pal[i]);
+				const char *ptr = r_cons_get_color(pal[i]);
 				if (ptr)
-					strcpy(cons_palette[k], ptr);
+					strcpy(r_cons_palette[k], ptr);
 				else k--;
 			}
 		} else {
 			j = 0;
-			strcpy(cons_palette[i], C_RESET);
+			strcpy(r_cons_palette[i], C_RESET);
 		}
 	return 1;
 }
 
-int cons_readchar()
+int r_cons_readchar()
 {
 	char buf[2];
 #if __WINDOWS__
@@ -264,13 +304,13 @@ int cons_readchar()
 		return -1;
 	SetConsoleMode(h, mode);
 #else
-	if (read(0,buf,1)==-1)
+	if (read(0, buf, 1)==-1)
 		return -1;
 #endif
 	return buf[0];
 }
 
-int cons_set_fd(int fd)
+int r_cons_set_fd(int fd)
 {
 	if (_print_fd == 0)
 		return fd;
@@ -278,7 +318,7 @@ int cons_set_fd(int fd)
 }
 
 #if __WINDOWS__
-void cons_gotoxy(int x, int y)
+void r_cons_gotoxy(int x, int y)
 {
         static HANDLE hStdout = NULL;
         COORD coord;
@@ -292,19 +332,20 @@ void cons_gotoxy(int x, int y)
         SetConsoleCursorPosition(hStdout,coord);
 }
 #else
-void cons_gotoxy(int x, int y)
+void r_cons_gotoxy(int x, int y)
 {
-	cons_printf("\x1b[0;0H");
+	r_cons_strcat("\x1b[0;0H");
 }
 #endif
 
-void cons_clear00()
+void r_cons_clear00()
 {
-	cons_clear();
-	cons_gotoxy(0,0);
+	r_cons_lines = 0;
+	r_cons_clear();
+	r_cons_gotoxy(0,0);
 }
 
-void cons_clear()
+void r_cons_clear()
 {
 #if __WINDOWS__
         static HANDLE hStdout = NULL;
@@ -318,14 +359,14 @@ void cons_clear()
         }
 
         FillConsoleOutputCharacter(hStdout, ' ', csbi.dwSize.X * csbi.dwSize.Y, startCoords, &dummy);
-        cons_gotoxy(0,0);
+        r_cons_gotoxy(0,0);
 #else
-	write(1, "\x1b[2J", 4);
+	r_cons_strcat("\x1b[2J");
 #endif
-	cons_lines = 0;
+	r_cons_lines = 0;
 }
 
-int cons_html_print(const char *ptr)
+int r_cons_html_print(const char *ptr)
 {
 	int esc = 0;
 	const char *str = (char *)ptr;
@@ -365,7 +406,7 @@ int cons_html_print(const char *ptr)
 			} else
 			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
 				ptr = ptr + 4;
-				cons_gotoxy(0,0);
+				r_cons_gotoxy(0,0);
 				esc = 0;
 				str = ptr;
 				continue;
@@ -466,7 +507,7 @@ int cons_html_print(const char *ptr)
 }
 
 #if __WINDOWS__
-int cons_w32_print(unsigned char *ptr)
+int r_cons_w32_print(unsigned char *ptr)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	int esc = 0;
@@ -496,14 +537,14 @@ int cons_w32_print(unsigned char *ptr)
 		if (esc == 2) {
 			if (ptr[0]=='2'&&ptr[1]=='J') {
 				ptr = ptr +1;
-				cons_clear();
+				r_cons_clear();
 				esc = 0;
 				str = ptr;
 				continue;
 			} else
 			if (ptr[0]=='0'&&ptr[1]==';'&&ptr[2]=='0') {
 				ptr = ptr + 4;
-				cons_gotoxy(0,0);
+				r_cons_gotoxy(0,0);
 				esc = 0;
 				str = ptr;
 				continue;
@@ -665,7 +706,7 @@ static const char *radare_argv[CMDS] ={
 };
 
 char *dl_readline(int argc, const char **argv);
-int cons_fgets(char *buf, int len, int argc, const char **argv)
+int r_cons_fgets(char *buf, int len, int argc, const char **argv)
 {
 	char *ptr;
 	buf[0]='\0';
@@ -677,45 +718,74 @@ int cons_fgets(char *buf, int len, int argc, const char **argv)
 	return strlen(buf);
 }
 
-static int cons_buffer_len = 0;
-static char *cons_buffer = NULL;
-
-void cons_reset()
+void r_cons_reset()
 {
-	if (cons_buffer)
-		cons_buffer[0]='\0';
-	cons_buffer_len = 0;
+	if (r_cons_buffer)
+		r_cons_buffer[0]='\0';
+	r_cons_buffer_len = 0;
 }
 
-char *cons_get_buffer()
+const char *r_cons_get_buffer()
 {
-	return cons_buffer;
+	return r_cons_buffer;
 }
 
-void palloc(int moar)
+static inline void palloc(int moar)
 {
-	if (cons_buffer == NULL) {
-		cons_buffer_len = moar+1024;
-		cons_buffer = (char *)malloc(cons_buffer_len);
-		cons_buffer[0]='\0';
+	if (r_cons_buffer == NULL) {
+		r_cons_buffer_sz = moar+128;
+		r_cons_buffer = (char *)malloc(r_cons_buffer_sz);
+		r_cons_buffer[0]='\0';
 	} else
-	if (moar + strlen(cons_buffer)>cons_buffer_len) {
-		cons_buffer = (char *)realloc(cons_buffer,
-			cons_buffer_len+moar+strlen(cons_buffer)+1);
+	if (moar + r_cons_buffer_len > r_cons_buffer_sz) {
+		r_cons_buffer_sz += moar+1024;
+		r_cons_buffer = (char *)realloc(r_cons_buffer, r_cons_buffer_sz);
 	}
 }
 
-void cons_flush()
+static int grepline = -1, greptoken = -1;
+static char *grepstr = NULL;
+
+void r_cons_grep(const char *str)
+{
+	char *ptr, *ptr2, *ptr3;
+	/* set grep string */
+	if (str != NULL && *str) {
+		ptr = alloca(strlen(str)+2);
+		strcpy(ptr, str);
+
+		ptr3 = strchr(ptr, '[');
+		ptr2 = strchr(ptr, '#');
+
+		if (ptr3) {
+			ptr3[0]='\0';
+			greptoken = get_offset(ptr3+1);
+		}
+		if (ptr2) {
+			ptr2[0]='\0';
+			grepline = get_offset(ptr2+1);
+		}
+
+		grepstr = (char *)estrdup(grepstr, ptr);
+	} else {
+		greptoken = -1;
+		grepline = -1;
+		efree(&grepstr);
+	}
+}
+
+void r_cons_flush()
 {
 	FILE *fd;
 	char buf[1024];
 	int i,j;
 
-	if (cons_noflush)
+	if (r_cons_noflush)
 		return;
-	if (!strnull(cons_buffer)) {
-		const char *file = config_get("file.scrfilter");
-		const char *tee = config_get("scr.tee");
+
+	if (!strnull(r_cons_buffer)) {
+		char *file = r_cons_filterline;
+		char *tee = r_cons_teefile;
 		if (!strnull(file)) {
 			fd = fopen(file, "r");
 			if (fd) {
@@ -727,8 +797,8 @@ void cons_flush()
 						char *ptr = strchr(buf, '\t');;
 						if (ptr) {
 							ptr[0]='\0'; ptr = ptr +1;
-							cons_buffer = (char *)strsub(cons_buffer, buf, ptr, 1);
-							cons_buffer_len = strlen(cons_buffer);
+							r_cons_buffer = (char *)strsub(r_cons_buffer, buf, ptr, 1);
+							r_cons_buffer_len = strlen(r_cons_buffer);
 						}
 					}
 				}
@@ -739,90 +809,190 @@ void cons_flush()
 		if (tee&&tee[0]) {
 			FILE *d = fopen(tee, "a+");
 			if (d != NULL) {
-				fwrite(cons_buffer, strlen(cons_buffer),1, d);
+				fwrite(r_cons_buffer, strlen(r_cons_buffer),1, d);
 				fclose(d);
 			}
 		}
-		for(i=j=0;cons_buffer[i];i++) {
-#if 0
-			if (cons_buffer[i]=='\x1b') {
-				for(++i;cons_buffer[i] != '\0' && cons_buffer[i] != 'H' && cons_buffer[i] != 'm'; i++, j++);
+
+		// XXX merge grepstr with r_cons_lines loop //
+		r_cons_lines += r_cons_lines_count(buf);
+
+		// XXX major cleanup here!
+		if (grepstr != NULL) {
+			int line, len;
+			char *one = r_cons_buffer;
+			char *two;
+			char *ptr, *tok;
+			char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
+
+			for(line=0;;) {
+				two = strchr(one, '\n');
+				if (two) {
+					two[0] = '\0';
+					len = two-one;
+				//	len = strlen(one);
+					if (strstr(one, grepstr)) {
+						if (grepline ==-1 || grepline==line) {
+							if (greptoken != -1) {
+								ptr = alloca(len+1);
+								strcpy(ptr, one);
+								for (i=0; i<len; i++)
+									for (j=0;j<6;j++)
+										if (ptr[i] == delims[j][0])
+											ptr[i] = ' ';
+								tok = ptr;
+								for (i=0;tok != NULL && i<=greptoken;i++) {
+									if (i==0)
+										tok = (char *)strtok(ptr, " ");
+									else
+										tok = (char *)strtok(NULL, " ");
+								}
+
+								if (tok) {
+									ptr = tok;
+									r_cons_buffer_len=strlen(tok);
+								}
+							} else {
+								ptr = one;
+								r_cons_buffer_len=len;
+							}
+							r_cons_print_real(ptr);
+							r_cons_buffer_len=1;
+							r_cons_print_real("\n");
+						}
+						line++;
+					}
+					two[0] = '\n';
+					one = two + 1;
+				} else break;
 			}
-#endif
-			if (cons_buffer[i] == '\n') {
-				cons_lines++;
-			}
+		} else {
+			if (grepline != -1) {
+				int len, line;
+				char *one = r_cons_buffer;
+				char *two;
+				char *ptr, *tok;
+				char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
+				for(line=0;;line++) {
+					two = strchr(one, '\n');
+					if (two) {
+						two[0] = '\0';
+						len=two-one;
+						if (grepline ==-1 || grepline==line) {
+							if (greptoken != -1) {
+								ptr = alloca(len+1);
+								strcpy(ptr, one);
+
+								for (i=0; i<len; i++)
+									for (j=0;j<6;j++)
+										if (ptr[i] == delims[j][0])
+											ptr[i] = ' ';
+
+								tok = ptr;
+								for (i=0;tok != NULL && i<=greptoken;i++) {
+									if (i==0)
+										tok = (char *)strtok(ptr, " ");
+									else
+										tok = (char *)strtok(NULL," ");
+								}
+
+								if (tok) {
+									ptr = tok;
+									r_cons_buffer_len=strlen(tok);
+								}
+							} else {
+								ptr = one;
+								r_cons_buffer_len=len;
+							}
+							r_cons_print_real(ptr);
+							r_cons_buffer_len=1;
+							r_cons_print_real("\n");
+						}
+						two[0] = '\n';
+						one = two + 1;
+					} else break;
+				}
+			} else r_cons_print_real(r_cons_buffer);
 		}
 
-		cons_print_real(cons_buffer);
-
-		cons_buffer[0] = '\0';
-		//cons_buffer_sz=0;
+		r_cons_buffer[0] = '\0';
 	}
+	//r_cons_buffer_sz=0;
+	r_cons_buffer_len=0;
 }
 
 /* stream is ignored */
-void cons_fprintf(FILE *stream, const char *format, ...)
+void r_cons_fprintf(FILE *stream, const char *format, ...)
 {
 	/* dupped */
+	int len;
 	char buf[CONS_BUFSZ];
 	va_list ap;
 
 	va_start(ap, format);
 
-	buf[0]='\0';
-	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
-		buf[0]='\0';
-
-	palloc(strlen(buf)+1000);
-	strcat(cons_buffer, buf);
+	len = vsnprintf(buf, CONS_BUFSZ-1, format, ap);
+	if (len>0) {
+		len = strlen(buf);
+		palloc(len);
+		memcpy(r_cons_buffer+r_cons_buffer_len, buf, len+1);
+		r_cons_buffer_len += len;
+	}
 
 	va_end(ap);
 }
 
-void cons_printf(const char *format, ...)
+void r_cons_printf(const char *format, ...)
 {
+	int len;
 	char buf[CONS_BUFSZ];
 	va_list ap;
 
 	if (strchr(format,'%')==NULL) {
-		cons_strcat(format);
+		r_cons_strcat(format);
 		return;
 	}
 
 	va_start(ap, format);
 
-	buf[0]='\0';
-	if (vsnprintf(buf, CONS_BUFSZ-1, format, ap)<0)
-		buf[0]='\0';
-
-	palloc(strlen(buf)+1000);
-	strcat(cons_buffer, buf);
+	len = vsnprintf(buf, CONS_BUFSZ-1, format, ap);
+	if (len>0) {
+		palloc(len);
+	//	r_cons_lines += r_cons_lines_count(buf);
+		memcpy(r_cons_buffer+r_cons_buffer_len, buf, len+1);
+		r_cons_buffer_len += len;
+	}
 
 	va_end(ap);
 }
 
-void cons_newline()
+void r_cons_strcat(const char *str)
 {
-	if (config_get("scr.html"))
-		cons_printf("<br />");
-	else cons_printf("\n");
+	int len = strlen(str);
+	if (len>0) {
+		palloc(len);
+	//	r_cons_lines += r_cons_lines_count(str);
+		memcpy(r_cons_buffer+r_cons_buffer_len, str, len+1);
+		r_cons_buffer_len += len;
+	}
+}
+
+void r_cons_newline()
+{
+	if (r_cons_is_html)
+		r_cons_strcat("<br />\n");
+	else r_cons_strcat("\n");
+#if 0
 #if RADARE_CORE
 	if (!config.buf)
-		cons_flush();
+		r_cons_flush();
+#endif
 #endif
 }
 
-
-void cons_strcat(const char *str)
+int r_cons_get_columns()
 {
-	palloc(strlen(str));
-	strcat(cons_buffer, str);
-}
-
-int cons_get_columns()
-{
-	int columns_i = cons_get_real_columns();
+	int columns_i = r_cons_get_real_columns();
 	char buf[64];
 
 	if (columns_i<2)
@@ -834,7 +1004,7 @@ int cons_get_columns()
 	return columns_i;
 }
 
-int cons_get_real_columns()
+int r_cons_get_real_columns()
 {
 #if __UNIX__
         struct winsize win;
@@ -867,9 +1037,9 @@ int yesno(int def, const char *fmt, ...)
 		vfprintf(stderr, fmt, ap);
 		va_end(ap);
 		fflush(stderr);
-		cons_set_raw(1);
+		r_cons_set_raw(1);
 		read(0, &key, 1); write(2, "\n", 1);
-		cons_set_raw(0);
+		r_cons_set_raw(0);
 		if (key=='\n'||key=='\r')
 			key = def;
 	} else
@@ -881,12 +1051,12 @@ int yesno(int def, const char *fmt, ...)
 
 /**
  *
- * void cons_set_raw( [0,1] )
+ * void r_cons_set_raw( [0,1] )
  *
  *   Change canonicality of the terminal
  *
  * For optimization reasons, there's no initialization flag, so you need to
- * ensure that the make the first call to cons_set_raw() with '1' and
+ * ensure that the make the first call to r_cons_set_raw() with '1' and
  * the next calls ^=1, so: 1, 0, 1, 0, 1, ...
  *
  * If you doesn't use this order you'll probably loss your terminal properties.
@@ -897,7 +1067,7 @@ static struct termios tio_old, tio_new;
 #endif
 static int termios_init = 0;
 
-void cons_set_raw(int b)
+void r_cons_set_raw(int b)
 {
 #if __UNIX__
 	if (b) {
@@ -920,13 +1090,13 @@ void cons_set_raw(int b)
 	fflush(stdout);
 }
 
-int cons_get_arrow(int ch)
+int r_cons_get_arrow(int ch)
 {
 	if (ch==0x1b) {
-		ch = cons_readchar();
+		ch = r_cons_readchar();
 		if (ch==0x5b) {
 			// TODO: must also work in interactive visual write ascii mode
-			ch = cons_readchar();
+			ch = r_cons_readchar();
 			switch(ch) {
 				case 0x35: ch='K'; break; // re.pag
 				case 0x36: ch='J'; break; // av.pag
@@ -944,10 +1114,10 @@ int cons_get_arrow(int ch)
 	return ch;
 }
 
-void cons_any_key()
+void r_cons_any_key()
 {
-	D cons_printf("\n--press any key--\n");
-	cons_flush();
-	cons_readchar();
-	cons_strcat("\x1b[2J\x1b[0;0H");
+	r_cons_strcat("\n--press any key--\n");
+	r_cons_flush();
+	r_cons_readchar();
+	r_cons_strcat("\x1b[2J\x1b[0;0H");
 }

@@ -23,3 +23,5 @@ ${LIBAR}:
 clean:
 	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN}
 	-@([ -e t/Makefile ] && cd t && ${MAKE} clean)
+
+.PHONY: all clean ${LIBSO} ${LIBAR}

@@ -1,3 +1,5 @@
+#include "r_types.h"
+
 #define __htonq(x) (\
         (((x) & 0xff00000000000000LL) >> 56)  | \
         (((x) & 0x00ff000000000000LL) >> 40)  | \

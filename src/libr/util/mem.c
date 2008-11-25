@@ -18,22 +18,9 @@
  *
  */
 
+#include "r_types.h"
 #include "r_util.h"
 #include <stdlib.h>
-
-char *estrdup(char *ptr, const char *string)
-{
-        if (ptr)
-                free(ptr);
-        ptr = strdup(string);
-        return ptr;
-}
-
-void efree(void **ptr)
-{
-        free (*ptr);
-        *ptr = NULL;
-}
 
 void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 {

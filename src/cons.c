@@ -31,6 +31,9 @@
 #include <windows.h>
 #endif
 
+int cons_stdout_fd = 6676;
+int cons_stdout_file = -1;
+FILE *cons_stdin_fd = &stdin;
 static int cons_buffer_sz = 0;
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
@@ -41,6 +44,25 @@ int _print_fd = 1;
 int cons_lines = 0;
 int cons_noflush = 0;
 #define CONS_BUFSZ 0x4f00
+
+// XXX rename to cons_stdout_open
+void stdout_open(char *file)
+{
+	int fd = open(file, O_RDONLY);
+	if (fd==-1)
+		return;
+	cons_stdout_file = fd;
+	dup2(1, cons_stdout_fd);
+	//close(1);
+	dup2(fd, 1);
+}
+
+void stdout_close()
+{
+	dup2(cons_stdout_fd, 1);
+	//close(stdout_file);
+}
+
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
 char cons_palette[CONS_PALETTE_SIZE][8] = {

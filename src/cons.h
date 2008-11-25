@@ -85,6 +85,9 @@ void cons_clear00();
 void cons_any_key();
 int cons_html_print(const char *ptr);
 
+extern FILE *cons_stdin_fd;
+extern int cons_stdout_fd;
+extern int cons_stdout_file;
 extern int cons_lines;
 extern int cons_is_html;
 extern int cons_noflush;

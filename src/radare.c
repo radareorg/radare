@@ -53,9 +53,6 @@
 
 #include "dietline.h"
 
-int stdout_fd = 6676;
-int stdout_file = -1;
-FILE *stdin_fd = &stdin;
 
 u64 tmpoff = -1;
 int std = 0;
@@ -464,7 +461,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		input = input+1;
 	}
 
-	if (!strchr(input,'\\')) {
+	if (input[0]!='(' | !strchr(input+1, ',')) {
 		next = strstr(input, "&&");
 		if (next) next[0]='\0';
 
@@ -999,7 +996,7 @@ int radare_interpret(const char *file)
 	fd = fopen(file, "r");
 	if (fd == NULL)
 		return 0;
-	stdin_fd = fd;
+	cons_stdin_fd = fd;
 	while(!feof(fd) && !config.interrupted) {
 		buf[0]='\0';
 		fgets(buf, 1024, fd);
@@ -1011,26 +1008,9 @@ int radare_interpret(const char *file)
 		config_set("cfg.verbose", "false");
 	}
 	fclose(fd);
-	stdin_fd = stdin;
+	cons_stdin_fd = stdin;
 
 	return 1;
-}
-
-void stdout_open(char *file)
-{
-	int fd = open(file, O_RDONLY);
-	if (fd==-1)
-		return;
-	stdout_file = fd;
-	dup2(1, stdout_fd);
-	//close(1);
-	dup2(fd, 1);
-}
-
-void stdout_close()
-{
-	dup2(stdout_fd, 1);
-	//close(stdout_file);
 }
 
 int radare_move(char *arg)
@@ -1298,8 +1278,8 @@ void radare_resize(const char *arg)
 		D cons_printf("Usage: r[?] [#|-#]\n");
 		D cons_printf("  positive value means resize\n");
 		D cons_printf("  negative value is used to remove N bytes from the current seek\n");
-		D cons_printf("size:  "OFF_FMTd"\n", config.size);
-		D cons_printf("limit: "OFF_FMTd"\n", config.limit);
+		D cons_printf("size:  %lld\n", config.size);
+		D cons_printf("limit: %lld\n", config.limit);
 		return;
 	}
 

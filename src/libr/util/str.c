@@ -1,3 +1,9 @@
+#include "r_types.h"
+#include <stdio.h>
+
+static const char *nullstr="";
+static const char *nullstr_c="(null)";
+
 char *lstrchr(char *str, char chr)
 {
         int len = strlen(str);
@@ -226,4 +232,19 @@ const char *strget(const char *str)
         if (str == NULL)
                 return nullstr_c;
         return str;
+}
+
+
+char *estrdup(char *ptr, const char *string)
+{
+        if (ptr)
+                free(ptr);
+        ptr = strdup(string);
+        return ptr;
+}
+
+void efree(void **ptr)
+{
+        free (*ptr);
+        *ptr = NULL;
 }
