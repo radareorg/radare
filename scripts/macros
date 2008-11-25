@@ -41,3 +41,15 @@
 (for-fun
  ()`C*~CF [3]#$@
 )
+
+; Likely/Unlikely branch commenter
+; (step-post-anal,?z`ao@oeip~type = cond,??(),?eip==`ao@oeip~jump =[2],??CC likely@oeip,??(),CC unlikely@oeip,)
+
+(step-post-anal
+ ?z`ao@oeip~type = cond
+  ??()
+ ?eip==`ao@oeip~jump =[2]
+  ??CC likely@oeip
+  ??()
+ CC unlikely@oeip
+)

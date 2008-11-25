@@ -2064,6 +2064,7 @@ CMD_DECL(help)
 			if (input[1]=='\0') {
 				eprintf("Usage: ?[?[?]] <expr>\n");
 				eprintf("  > ? eip             ; get value of eip flag\n");
+				eprintf("  > ?z`str            ; sets false if string is zero length\n");
 				eprintf("  > ?x eip            ; show hex result of math expression\n");
 				eprintf("  > ? 0x80+44         ; calc math expression\n");
 				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
@@ -2076,6 +2077,11 @@ CMD_DECL(help)
 			} else
 			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);
+		} else
+		if (input[0]=='z') {
+			char *ptr;
+			for(ptr=input+1;*ptr==' ';ptr=ptr+1);
+			config.last_cmp = strlen(ptr);
 		} else
 		if (input[0]=='x') {
 			u64 res = get_math(input+1);
