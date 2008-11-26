@@ -1118,7 +1118,7 @@ CMD_DECL(visual)
 		visual_draw_screen();
 
 			// XXX 
-		if (scrseek&&scrseek[0]) {
+		if (config.debug&&last_print_format == FMT_VISUAL&&scrseek&&scrseek[0]) {
 			u64 off = get_math(scrseek);
 			if ((off < config.seek) || ((config.seek+config.block_size) < off)) {
 				radare_seek(off, SEEK_SET);

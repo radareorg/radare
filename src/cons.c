@@ -34,7 +34,7 @@
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
 FILE *cons_stdin_fd = &stdin;
-static int cons_buffer_sz = 0;
+static unsigned int cons_buffer_sz = 0;
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
 char *cons_filterline = NULL;
@@ -727,15 +727,15 @@ const char *cons_get_buffer()
 	return cons_buffer;
 }
 
-static inline void palloc(int moar)
+static void palloc(int moar)
 {
 	if (cons_buffer == NULL) {
-		cons_buffer_sz = moar+128;
+		cons_buffer_sz = moar+4096;
 		cons_buffer = (char *)malloc(cons_buffer_sz);
 		cons_buffer[0]='\0';
 	} else
 	if (moar + cons_buffer_len > cons_buffer_sz) {
-		cons_buffer_sz += moar+1024;
+		cons_buffer_sz += moar+4096;
 		cons_buffer = (char *)realloc(cons_buffer, cons_buffer_sz);
 	}
 }

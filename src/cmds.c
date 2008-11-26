@@ -58,7 +58,7 @@ extern void show_help_message();
 int commands_parse (const char *_cmdline)
 {
 	char *cmdline = (char *)_cmdline;
-	command_t *cmd;
+	command_t *cmd = NULL;
 
 	for(;cmdline[0]&&(cmdline[0]=='\x1b'||cmdline[0]==' ');
 	cmdline=cmdline+1);
@@ -72,12 +72,15 @@ int commands_parse (const char *_cmdline)
 		return 0;
 	}
 
-	for (cmd = commands; cmd->sname != 0; cmd++)
+	for (cmd = commands; cmd->sname != 0; cmd++) {
 		if (cmd->sname == cmdline[0])
 		    return cmd->hook(cmdline+1);
+	}
 
 	/* default hook */
-	return cmd->hook(cmdline);
+	if (cmd)
+		return cmd->hook(cmdline);
+	return -1;
 }
 
 void show_help_message()

@@ -529,7 +529,6 @@ config.interrupted =1;
 				break;
 			default:
 				/* ignore unknown chars */
-eprintf("ignore(%c)\n", tmp);
 				continue;
 			}
 		D cons_newline();
@@ -585,7 +584,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		config.height = config_get_i("scr.height");
 		config.height -= 3;
 	}
-
 	switch(fmt) {
 	case FMT_7BIT:
 		// TODO : use inverse for decoding
