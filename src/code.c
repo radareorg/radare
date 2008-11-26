@@ -254,7 +254,10 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 
 	buf[0]='\0';
 	if (config_get_i("asm.pseudo")) {
-		pas_aop(arch, seek, b, bytes, NULL, buf);
+		pas_aop(arch, seek, b, bytes, NULL, buf, 1);
+	} else
+	if (config_get_i("asm.jmpflags")) {
+		pas_aop(arch, seek, b, bytes, NULL, buf, 0);
 	} else
 	switch(arch) {
 	case ARCH_X86:
@@ -691,6 +694,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					i++;
 				}
 				break;
+			case DATA_FUN:
+				break;
 			case DATA_STRUCT:
 				if (*foo->arg=='\0') {
 					cons_printf("(struct: undefined memory format)\n");
@@ -705,10 +710,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				break;
 			case DATA_HEX:
 			default:
-				cons_strcat("  .db  ");
+				cons_strcat("  .byte ");
 				int w = 0;
 				for(i=0;i<idata;i++) {
-					print_color_byte_i(bytes+i,"%02x ", block[bytes+i]);
+					print_color_byte_i(bytes+i,"0x%02x,", block[bytes+i]);
 					w+=4;
 					if (w >= config.height) {
 						cons_printf("\n");
@@ -726,7 +731,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 							print_addr(sk+i);
 						if (flags & RADIS_STACKPTR)
 							print_stackptr(&aop, 0);
-						cons_strcat("  .db  ");
+						cons_strcat("  .byte ");
 						w = 0;
 					}
 				}

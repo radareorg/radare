@@ -132,6 +132,68 @@ int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 
 }
 
+/* beutify assembly to be compilable by gas :) */
+int pas_aop_x86_gas(int argc, const char *argv[], struct aop_t *aop, char *newstr)
+{
+	int i,j,k;
+	struct {
+		char *op;
+		char *str;
+		int type;
+	} ops[] = {
+		{ "call", "call 1",   AOP_TYPE_CALL },
+		{ "jmp",  "jmp 1",   AOP_TYPE_JMP },
+		{ "je",   "je 1",     AOP_TYPE_CJMP },
+		{ "jz",   "jz 1",     AOP_TYPE_CJMP },
+		{ "jnz",  "jnz 1",     AOP_TYPE_CJMP },
+		{ "jg",   "jg 1",     AOP_TYPE_CJMP },
+		{ "jge",  "jge 1",     AOP_TYPE_CJMP },
+// not implemented !!!
+// 0x00001269   -8             e30f            jecxz 0x127a
+
+		{ NULL }
+	};
+
+	for(i=0;ops[i].op != NULL;i++) {
+		if (!strcmp(ops[i].op, argv[0])) {
+			/* opcode matches */
+			if (aop != NULL) {
+				aop->type = ops[i].type;
+			}
+			if (newstr != NULL) {
+				char *p = strchr(argv[1], ' ');
+				char flagstr[256];
+				u64 val;
+				if (p != NULL) {
+					p = p + 1;
+				} else p = argv[1];
+				val = get_offset(p);
+				flagstr[0]='\0';
+				string_flag_offset(flagstr, val);
+				if (flagstr[0]=='\0' || strchr(flagstr,'+')) {
+					sprintf(flagstr, "sub_0x%08llx", val);
+					flag_set(flagstr, val, 0);
+				}
+				sprintf(newstr, "%s %s", argv[0], flagstr);
+			}
+			return 1;
+		}
+	}
+
+	if (aop != NULL) {
+		/* XXX : we need bytes */
+	}
+
+	if (newstr != NULL) {
+		for (i=0; i<argc; i++) {
+			strcat(newstr, argv[i]);
+			strcat(newstr, (i == 0 || i== argc - 1)?" ":",");
+		}
+	}
+
+	return 0;
+}
+
 int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 {
 	int i,j,k;
@@ -195,6 +257,17 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	return 0;
 }
 
+int pas_aop_gas(int argc, const char *argv[], struct aop_t *aop, char *newstr)
+{
+	switch(config.arch) {
+	case ARCH_MIPS:
+		//return pas_aop_mips(argc, argv, aop, newstr);
+	case ARCH_X86:
+		return pas_aop_x86_gas(argc, argv, aop, newstr);
+	}
+	return 0;
+}
+
 int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 {
 	switch(config.arch) {
@@ -206,7 +279,7 @@ int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	return 0;
 }
 
-struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr)
+struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo)
 {
 	int i;
 	char str[64];
@@ -258,7 +331,9 @@ struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t
 				if (wa[i][0] != '\0')
 				nw++;
 			}
-			pas_aop_aop(nw, wa, aop, newstr);
+			if (pseudo)
+				pas_aop_aop(nw, wa, aop, newstr);
+			else pas_aop_gas(nw, wa, aop, newstr);
 		}
 	}
 	return NULL;

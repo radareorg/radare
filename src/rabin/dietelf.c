@@ -737,7 +737,7 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 					symbolp->size = (u64)symp->st_size; 
 					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
 					symbolp->offset = (u64)symp->st_value + sym_offset - bin->base_addr;
@@ -807,7 +807,7 @@ int ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t) *bin, int fd)
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
+				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
 					ctr++;
 			}
 		}

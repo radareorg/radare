@@ -832,14 +832,24 @@ void rabin_show_symbols(char *file)
 		symbolp.elf = symbol.elf;
 		for (i = 0; i < symbols_count; i++, symbolp.elf++) {
 			if (rad) {
-				printf("b %lli && f sym.%s @ 0x%08llx\n", symbolp.elf->size, aux_filter_rad_output(symbolp.elf->name), baddr + symbolp.elf->offset);
-				if (!strncmp(symbolp.elf->type,"FUNC", 4)) 
-					printf("CF %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
+				if (symbolp.elf->size) printf("b %lli && ", symbolp.elf->size);
+				printf("f sym.%s @ 0x%08llx\n", aux_filter_rad_output(symbolp.elf->name), baddr + symbolp.elf->offset);
+				if (symbolp.elf->size) {
+					if (!strncmp(symbolp.elf->type,"FUNC", 4))
+						printf("CF %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
+					else
+						printf("Cd %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
+				}
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx size=%08lli bind=%s type=%s name=%s\n",
-								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
+						printf("address=0x%08llx offset=0x%08llx size=", 
+								baddr + symbolp.elf->offset, symbolp.elf->offset);
+						if (symbolp.elf->size)
+							printf("%08lli", symbolp.elf->size);
+						else
+							printf("unknown");
+						printf(" bind=%s type=%s name=%s\n",
 								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
 						break;
 					case 1:
@@ -849,8 +859,13 @@ void rabin_show_symbols(char *file)
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tSize\t\tBind\tType\tName\n");
-						printf("0x%08llx\t0x%08llx\t%08lli\t%-7s\t%-7s\t%s\n",
-								baddr + symbolp.elf->offset, symbolp.elf->offset, symbolp.elf->size,
+						printf("0x%08llx\t0x%08llx\t",
+								baddr + symbolp.elf->offset, symbolp.elf->offset);
+						if (symbolp.elf->size)
+							printf("%08lli", symbolp.elf->size);
+						else
+							printf("unknown\t");
+						printf("\t%-7s\t%-7s\t%s\n",
 								symbolp.elf->bind, symbolp.elf->type, symbolp.elf->name);
 				}
 			}
