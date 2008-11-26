@@ -837,7 +837,7 @@ void rabin_show_symbols(char *file)
 				if (symbolp.elf->size) {
 					if (!strncmp(symbolp.elf->type,"FUNC", 4))
 						printf("CF %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
-					else
+					else if (!strncmp(symbolp.elf->type,"OBJECT", 6))
 						printf("Cd %lli @ 0x%08llx\n", symbolp.elf->size, baddr + symbolp.elf->offset);
 				}
 			} else {

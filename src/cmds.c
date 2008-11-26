@@ -389,7 +389,7 @@ CMD_DECL(analyze)
 		for(depth_i=0;depth_i<depth;depth_i++) {
 			char food[64];
 			radare_read(0);
-			pas_aop(config.arch, config.seek, config.block, 16, NULL, food);
+			pas_aop(config.arch, config.seek, config.block, 16, NULL, food, 0);
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 
 			cons_printf("pas = %s\n", food);
