@@ -584,7 +584,7 @@ int data_printd(int delta)
 		for(i=0;ptr[i];i++)
 			if (ptr[i]=='\n') lines++;
 		C 	cons_printf(C_MAGENTA"%s"C_RESET, ptr);
-		else 	cons_printf("%s", ptr);
+		else 	cons_strcat(ptr);
 		free((void *)ptr);
 	}
 

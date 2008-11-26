@@ -449,6 +449,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	int rrows = rows; /* rrows is in reality the num of bytes to be disassembled */
 	int endian;
 	int show_nbytes;
+	int w = 0;
 	int folder = 0; // folder level
 
 	// XXX
@@ -645,8 +646,27 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			flag = flag_name_by_offset(seek);
 			if (flag == NULL && config.baddr)
 				flag = flag_name_by_offset(seek-config.baddr);
-			if (!strnull(flag))
-				cons_printf("%s: ", flag);
+			if (!strnull(flag)) {
+				cons_printf("%s:\n", flag);
+#if 1
+/* spaguetti */
+					if ((reflines) &&  (flags & RADIS_LINES))
+						code_lines_print(reflines, sk, 0);
+					if (flags & RADIS_SECTION) {
+						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						if (flag && *flag)
+							cons_printf("%s:", flag);
+					}
+					if (flags & RADIS_OFFSET)
+						print_addr(seek);
+					D {
+						if (flags & RADIS_STACKPTR)
+							print_stackptr(&aop, 0);
+						if (flags & RADIS_SIZE)
+							cons_printf("%d ", aop.length);
+					}
+#endif
+			}
 
 			//if (foo->from != sk)
 			//	cons_printf("<< %d <<", sk-foo->from);
@@ -711,15 +731,18 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case DATA_HEX:
 			default:
 				cons_strcat("  .byte ");
-				int w = 0;
+				inc = 0;
+				w = 40;
 				for(i=0;i<idata;i++) {
 					print_color_byte_i(bytes+i,"0x%02x,", block[bytes+i]);
-					w+=4;
-					if (w >= config.height) {
+					w+=6;
+					if (w > config.width) {
 						cons_printf("\n");
+						if (inc == 0)
+							inc = (w-40)/6;
 						myrow++;
 						if (reflines && flags & RADIS_LINES)
-							code_lines_print(reflines, sk+i, 1);
+							cons_printf("          ");
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
 						if (flags & RADIS_SECTION) {
@@ -732,7 +755,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (flags & RADIS_STACKPTR)
 							print_stackptr(&aop, 0);
 						cons_strcat("  .byte ");
-						w = 0;
+						w = 40;
 					}
 				}
 				break;
@@ -743,7 +766,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			CHECK_LINES
 			bytes+=idata;
 			ud_idx+=idata;
-			myinc = 0;
+			//myinc = 0;
 			continue;
 		}
 		__outofme:
