@@ -199,6 +199,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 	int code = 0;
 	struct list_head *pos;
 	struct data_t *d = NULL;
+	static struct data_t ret;
 
 	list_for_each(pos, &data) {
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
@@ -214,6 +215,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 		}
 	}
 
+#if 0
 	if (d == NULL)
 		return NULL;
 
@@ -241,6 +243,30 @@ struct data_t *data_get_between(u64 from, u64 to)
 //printf("0x%llx-0x%llx: %d %d %d = %d\n", from, to, hex, str, code, d->type);
 
 	return d;
+#endif
+	
+	if (hex>=str && hex>=code && hex>=fun && hex >= stc) {
+		ret.type = DATA_HEX;
+		ret.times = hex;
+	} else
+	if (str>=hex && str>=code && str>=fun && str >= stc) {
+		ret.type = DATA_STR;
+		ret.times = str;
+	} else
+	if (fun>=hex && fun>=str && fun>=code && fun >= stc) {
+		ret.type = DATA_FUN;
+		ret.times = fun;
+	} else
+	if (code>=hex && code>=str && code>=fun && code >=stc) {
+		ret.type = DATA_CODE;
+		ret.times = code;
+	} else
+	if (stc>=hex && stc>=str && stc>=fun && stc>=code) {
+		ret.type = DATA_STRUCT;
+		ret.times = stc;
+	}
+
+	return &ret;
 }
 
 int data_type_range(u64 offset)
