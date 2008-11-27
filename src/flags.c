@@ -181,22 +181,21 @@ void flag_grep_np(const char *str, u64 addr, int next)
 	flag_t *fag = NULL;
 	u64 newaddr;
 
-	next = !next; // XXX code is implemented using prev
-	newaddr  = next?0xffffffffffffffffLL:0;
+	newaddr  = next?0:0xffffffffffffffffLL;
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
-		if (prev) {
+		if (next) {
 			if (str_grep(flag->name, str)) {
-				if (flag->offset > addr && flag->offset < newaddr) {
+				if (flag->offset < addr && flag->offset > newaddr) {
 					newaddr = flag->offset;
 					fag = flag;
 				}
 			}
 		} else {
 			if (str_grep(flag->name, str)) {
-				if (flag->offset < addr && flag->offset > newaddr) {
+				if (flag->offset > addr && flag->offset < newaddr) {
 					newaddr = flag->offset;
 					fag = flag;
 				}
