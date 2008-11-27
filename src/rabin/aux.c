@@ -50,6 +50,15 @@ char* aux_filter_rad_output(const char *string)
 	return buff;
 }
 
+int aux_atoi32(const char *str)
+{
+	int ret;
+	if (str[0]=='0'&&str[1]=='x')
+		sscanf(str,"0x%x",&ret);
+	else ret = atoi(str);
+	return ret;
+}
+
 int aux_is_encoded(int encoding, unsigned char c)
 {
 	switch(encoding) {

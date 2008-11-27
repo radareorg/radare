@@ -12,3 +12,4 @@ enum {
 char* aux_filter_rad_output(const char*);
 int   aux_is_encoded(int, unsigned char);
 int   aux_is_printable(int);
+int aux_atoi32(const char *str);

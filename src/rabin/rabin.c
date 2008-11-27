@@ -64,20 +64,21 @@ static int elf64 = 0;
 int rabin_show_help()
 {
 	printf(
-			"rabin [options] [bin-file]\n"
+	"rabin [options] [bin-file]\n"
 //			" -a        show arch\n"
-			" -e        shows entrypoints one per line\n"
-			" -i        imports (symbols imported from libraries)\n"
-			" -s        symbols (exports)\n"
-			" -c        header checksum\n"
-			" -S        show sections\n"
-			" -l        linked libraries\n"
-			" -L [lib]  dlopen library and show address\n"
-			" -z        search for strings in elf non-executable sections\n"
-			" -x        show xrefs of symbols (-s/-i/-z required)\n"
-			" -I        show binary info\n"
-			" -r        output in radare commands\n"
-			" -v        be verbose\n");
+	" -e        shows entrypoints one per line\n"
+	" -i        imports (symbols imported from libraries)\n"
+	" -s        symbols (exports)\n"
+	" -c        header checksum\n"
+	" -S        show sections\n"
+	" -l        linked libraries\n"
+	" -L [lib]  dlopen library and show address\n"
+	" -z        search for strings in elf non-executable sections\n"
+	" -x        show xrefs of symbols (-s/-i/-z required)\n"
+	" -I        show binary info\n"
+	" -r        output in radare commands\n"
+	" -o [str]  operation action (str=help for help)\n"
+	" -v        be verbose\n");
 	return 1;
 }
 
@@ -123,35 +124,35 @@ void rabin_show_info(const char *file)
 			switch (verbose) {
 				case 0:
 					printf("class=%s\nenconding=%s\nos=%s\nmachine=%s\narch=%s\ntype=%s\nstripped=%s\nstatic=%s\nbaddr=0x%08llx\n",
-							ELF_CALL(dietelf_get_elf_class,bin.elf),
-							ELF_CALL(dietelf_get_data_encoding,bin.elf),
-							ELF_CALL(dietelf_get_osabi_name,bin.elf),
-							ELF_CALL(dietelf_get_machine_name,bin.elf),
-							ELF_CALL(dietelf_get_arch,bin.elf),
-							ELF_CALL(dietelf_get_file_type,bin.elf),
-							(ELF_CALL(dietelf_get_stripped,bin.elf))?"Yes":"No",
-						  	(ELF_CALL(dietelf_get_static,bin.elf))?"Yes":"No",
-							baddr);
+						ELF_CALL(dietelf_get_elf_class,bin.elf),
+						ELF_CALL(dietelf_get_data_encoding,bin.elf),
+						ELF_CALL(dietelf_get_osabi_name,bin.elf),
+						ELF_CALL(dietelf_get_machine_name,bin.elf),
+						ELF_CALL(dietelf_get_arch,bin.elf),
+						ELF_CALL(dietelf_get_file_type,bin.elf),
+						(ELF_CALL(dietelf_get_stripped,bin.elf))?"Yes":"No",
+						(ELF_CALL(dietelf_get_static,bin.elf))?"Yes":"No",
+						baddr);
 					break;
 				default :
 					printf("ELF class:       %s\n"
-							"Data enconding:  %s\n"
-							"OS/ABI name:     %s\n"
-							"Machine name:    %s\n"
-							"Architecture:    %s\n"
-							"File type:       %s\n"
-							"Stripped:        %s\n"
-							"Static:          %s\n"
-							"Base address:    0x%08llx\n",
-							ELF_CALL(dietelf_get_elf_class,bin.elf),
-							ELF_CALL(dietelf_get_data_encoding,bin.elf),
-							ELF_CALL(dietelf_get_osabi_name,bin.elf),
-							ELF_CALL(dietelf_get_machine_name,bin.elf),
-							ELF_CALL(dietelf_get_arch,bin.elf),
-							ELF_CALL(dietelf_get_file_type,bin.elf),
-							(ELF_CALL(dietelf_get_stripped,bin.elf))?"Yes":"No",
-						  	(ELF_CALL(dietelf_get_static,bin.elf))?"Yes":"No",
-							baddr);
+						"Data enconding:  %s\n"
+						"OS/ABI name:     %s\n"
+						"Machine name:    %s\n"
+						"Architecture:    %s\n"
+						"File type:       %s\n"
+						"Stripped:        %s\n"
+						"Static:          %s\n"
+						"Base address:    0x%08llx\n",
+						ELF_CALL(dietelf_get_elf_class,bin.elf),
+						ELF_CALL(dietelf_get_data_encoding,bin.elf),
+						ELF_CALL(dietelf_get_osabi_name,bin.elf),
+						ELF_CALL(dietelf_get_machine_name,bin.elf),
+						ELF_CALL(dietelf_get_arch,bin.elf),
+						ELF_CALL(dietelf_get_file_type,bin.elf),
+						(ELF_CALL(dietelf_get_stripped,bin.elf))?"Yes":"No",
+						(ELF_CALL(dietelf_get_static,bin.elf))?"Yes":"No",
+						baddr);
 			}
 		}
 
@@ -193,48 +194,48 @@ void rabin_show_info(const char *file)
 			switch (verbose) {
 				case 0:
 					printf("class=%s\n"
-							"dll=%s\n"
-							"machine=%s\n"
-							"big_endian=%s\n"
-							"subsystem=%s\n"
-							"relocs=%s\n"
-							"line_nums=%s\n"
-							"local_syms=%s\n"
-							"debug=%s\n"
-							"number_of_sections=%i\n"
-							"baddr=0x%08llx\n"
-							"section_alignment=%i\n"
-							"file_alignment=%i\n"
-							"image_size=%i\n",
-							pe_class_str, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str,
-							dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str,
-							dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
-							dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
-							dietpe_get_sections_count(&bin.pe), (u64) dietpe_get_image_base(&bin.pe),
-							dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
+						"dll=%s\n"
+						"machine=%s\n"
+						"big_endian=%s\n"
+						"subsystem=%s\n"
+						"relocs=%s\n"
+						"line_nums=%s\n"
+						"local_syms=%s\n"
+						"debug=%s\n"
+						"number_of_sections=%i\n"
+						"baddr=0x%08llx\n"
+						"section_alignment=%i\n"
+						"file_alignment=%i\n"
+						"image_size=%i\n",
+						pe_class_str, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str,
+						dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str,
+						dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
+						dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
+						dietpe_get_sections_count(&bin.pe), (u64) dietpe_get_image_base(&bin.pe),
+						dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
 					break;
 				default:
 					printf("PE Class: %s (0x%x)\n"
-							"DLL: %s\n"
-							"Machine: %s (0x%x)\n"
-							"Big endian: %s\n"
-							"Subsystem: %s (0x%x)\n"
-							"Stripped:\n"
-							"  - Relocs: %s\n"
-							"  - Line numbers: %s\n"
-							"  - Local symbols: %s\n"
-							"  - Debug: %s\n"
-							"Number of sections: %i\n"
-							"Image base: 0x%08x\n"
-							"Section alignment: %i\n"
-							"File alignment: %i\n"
-							"Image size: %i\n",
-							pe_class_str, pe_class, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str, pe_machine,
-							dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str, pe_subsystem,
-							dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
-							dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
-							dietpe_get_sections_count(&bin.pe), dietpe_get_image_base(&bin.pe),
-							dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
+						"DLL: %s\n"
+						"Machine: %s (0x%x)\n"
+						"Big endian: %s\n"
+						"Subsystem: %s (0x%x)\n"
+						"Stripped:\n"
+						"  - Relocs: %s\n"
+						"  - Line numbers: %s\n"
+						"  - Local symbols: %s\n"
+						"  - Debug: %s\n"
+						"Number of sections: %i\n"
+						"Image base: 0x%08x\n"
+						"Section alignment: %i\n"
+						"File alignment: %i\n"
+						"Image size: %i\n",
+						pe_class_str, pe_class, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str, pe_machine,
+						dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str, pe_subsystem,
+						dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
+						dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
+						dietpe_get_sections_count(&bin.pe), dietpe_get_image_base(&bin.pe),
+						dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
 			}
 		}
 
@@ -1277,11 +1278,70 @@ int rabin_identify_header()
 	return filetype;
 }
 
+int operation_resize(const char *section, u32 newsize)
+{
+	dietelf_bin_t elf;
+	int delta, fd;
+	u32 size;
+	printf("Resizing section '%s' '%d'\n", section, newsize);
+
+	switch(filetype){
+	case FILETYPE_ELF:
+		// ..
+		fd = ELF_CALL(dietelf_open,elf,file);
+		/* get section by name */
+		size = ELF_CALL(dietelf_get_section_size,elf, fd, section);
+		if (size == -1) {
+			printf("Unknown section\n");
+			return 1;
+		}
+		delta = newsize - size;
+		printf("size delta = %d\n", delta);
+		
+		/* get size and move the rest of the file up N bytes */
+		/* get size and move the rest of the file up N bytes */
+		break;
+	default:
+		printf("Not supported for this file format\n");
+	}
+	
+	return 0;
+}
+
+int operation_do(const char *str)
+{
+	char *arg, *ptr, *ptr2;
+
+	if (!strcmp(str, "help")) {
+		printf("Operation string:\n"
+			" -o r,.text,1024\n");
+		return 1;
+	}
+	arg = alloca(strlen(str)+1);
+	strcpy(arg, str);
+
+	ptr = strchr(str, ',');
+	if (!ptr) {
+		printf("Unknown action. use -o help\n");
+		return 1;
+	}
+
+	ptr = ptr+1;
+	switch(arg[0]) {
+	case 'r':
+		ptr2 = strchr(ptr, ',');
+		ptr2[0]='\0';
+		return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
+	}
+	return 0;
+}
+
 int main(int argc, char **argv, char **envp)
 {
+	const char *op = NULL;
 	int c;
 
-	while ((c = getopt(argc, argv, "cerlishL:SIvxz")) != -1)
+	while ((c = getopt(argc, argv, "cerlishL:SIvxzo:")) != -1)
 	{
 		switch( c ) {
 		case 'i':
@@ -1322,6 +1382,10 @@ int main(int argc, char **argv, char **envp)
 		case 'z':
 			action |= ACTION_STRINGS;
 			break;
+		case 'o':
+			op = optarg;
+			action |= ACTION_OPERATE;
+			break;
 		case 'h':
 #if 0
 		case 'a':
@@ -1358,6 +1422,8 @@ int main(int argc, char **argv, char **envp)
 	dm_map_file(file, fd);
 	rabin_identify_header();
 
+	if (op != NULL)
+		operation_do( op );
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
 	if (action&ACTION_IMPORTS)
