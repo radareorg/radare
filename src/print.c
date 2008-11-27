@@ -583,6 +583,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	if (config.visual) {
 		config.height = config_get_i("scr.height");
 		config.height -= 3;
+		config.height -= config.scrdelta;
+
 	}
 	switch(fmt) {
 	case FMT_7BIT:

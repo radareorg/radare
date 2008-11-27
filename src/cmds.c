@@ -1199,10 +1199,10 @@ CMD_DECL(flag)
 	case 'g': 
 		switch(input[1]) {
 		case 'n':
-			flag_grep_np(text, config.seek, 1);
+			flag_grep_np(text, config.seek, 0);
 			break;
 		case 'p':
-			flag_grep_np(text, config.seek, 0);
+			flag_grep_np(text, config.seek, 1);
 			break;
 		case ' ':
 			flag_grep(text);

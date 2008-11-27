@@ -95,6 +95,7 @@ static void config_old_init()
   config.interrupted = 1;
   config.graph       = 0;
   config.visual      = 0;
+  config.scrdelta    = 0;
   config.lang        = 0;
   config.fd          = -1;
   config.zoom.size   = config.size;

@@ -175,11 +175,14 @@ void flag_grep_help()
 	eprintf("  fgn imp.\n");
 }
 
-void flag_grep_np(const char *str, u64 addr, int prev)
+void flag_grep_np(const char *str, u64 addr, int next)
 {
 	struct list_head *pos;
 	flag_t *fag = NULL;
-	u64 newaddr = prev?0xffffffffffffffffLL:0;
+	u64 newaddr;
+
+	next = !next; // XXX code is implemented using prev
+	newaddr  = next?0xffffffffffffffffLL:0;
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
@@ -202,7 +205,7 @@ void flag_grep_np(const char *str, u64 addr, int prev)
 	}
 
 	if (fag)
-		cons_printf("%s\n", fag->name);
+		cons_printf("0x%08llx %s\n", fag->offset, fag->name);
 }
 
 // TODO: USE GLOB OR SO...

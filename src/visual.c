@@ -1704,7 +1704,9 @@ CMD_DECL(visual)
 			config_visual_menu();
 			break;
 		case 't':
+			config.scrdelta += 20;
 			flags_visual_menu();
+			config.scrdelta -= 20;
 			break;
 		case '<':
 			// fold

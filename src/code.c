@@ -737,6 +737,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					print_color_byte_i(bytes+i,"0x%02x,", block[bytes+i]);
 					w+=6;
 					if (w > config.width) {
+						CHECK_LINES
 						cons_printf("\n");
 						if (inc == 0)
 							inc = (w-40)/6;
