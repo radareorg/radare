@@ -167,17 +167,60 @@ void flag_show(flag_t *flag, int cmd_flag)
 	}
 }
 
+void flag_grep_help()
+{
+	eprintf("Usage: fg[n|p] [string]\n");
+	eprintf("  fg       - List flags matching a string\n");
+	eprintf("  fgn, fgp - List next/previous flag matching string\n");
+	eprintf("  fgn imp.\n");
+}
+
+void flag_grep_np(const char *str, u64 addr, int prev)
+{
+	struct list_head *pos;
+	flag_t *fag = NULL;
+	u64 newaddr = prev?0xffffffffffffffffLL:0;
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
+		if (prev) {
+			if (str_grep(flag->name, str)) {
+				if (flag->offset > addr && flag->offset < newaddr) {
+					newaddr = flag->offset;
+					fag = flag;
+				}
+			}
+		} else {
+			if (str_grep(flag->name, str)) {
+				if (flag->offset < addr && flag->offset > newaddr) {
+					newaddr = flag->offset;
+					fag = flag;
+				}
+			}
+		}
+	}
+
+	if (fag)
+		cons_printf("%s\n", fag->name);
+}
+
 // TODO: USE GLOB OR SO...
 void flag_grep(const char *grepstr) // TODO: add u64 arg to grep only certain address
 {
 	int cmd_flag = config_get_i("cmd.flag"); /* boolean */
-	char *grep = strdup(grepstr);
-	char *mask = strchr(grep, '*');
+	char *grep;
+	char *mask;
 	struct list_head *pos;
+
+ 	grep = alloca(strlen(grepstr)+1);
+	strcpy(grep, grepstr);
+	mask = strchr(grep, '*');
 
 	if (mask)
 		mask[0]='\0';
-	
+
+	// TODO: Use str_grep here
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
@@ -189,8 +232,6 @@ void flag_grep(const char *grepstr) // TODO: add u64 arg to grep only certain ad
 				flag_show(flag, cmd_flag);
 		}
 	}
-
-	free(grep);
 }
 
 flag_t *flag_get(const char *name)

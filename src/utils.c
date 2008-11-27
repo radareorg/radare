@@ -918,3 +918,20 @@ const char *strget(const char *str)
 		return nullstr_c;
 	return str;
 }
+
+int str_grep(const char *str, const char *needle)
+{
+	int len = strlen(needle);
+	int lenstr = strlen(str);
+	if (*needle=='^') {
+		if (len > lenstr)
+			return 0;
+		return !memcmp(str, needle+1, len-1);
+	}
+	if (needle[strlen(needle)-1]=='$') {
+		if (len > lenstr)
+			return 0;
+		return !memcmp(str+(lenstr-len+1), needle, len-1);
+	}
+	return (strstr(str, needle) != NULL)?1:0;
+}

@@ -1196,7 +1196,22 @@ CMD_DECL(flag)
 	case 'o': radare_fortunes(); break;
 	case '?': flag_help(); break;
 	case 'h': cons_printf("%s\n", flag_get_here_filter(config.seek, input+2)); break;
-	case 'g': flag_grep(text); break;
+	case 'g': 
+		switch(input[1]) {
+		case 'n':
+			flag_grep_np(text, config.seek, 1);
+			break;
+		case 'p':
+			flag_grep_np(text, config.seek, 0);
+			break;
+		case ' ':
+			flag_grep(text);
+			break;
+		case '?':
+			flag_grep_help();
+			break;
+		}
+		break;
 	case 'c': flag_cmd(text); break;
 	case 'f': flag_from(text); break;
 	case 'r': flag_rename_str(text); break;

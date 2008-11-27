@@ -29,6 +29,7 @@ void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
 void flag_clear_by_addr(u64 addr);
+void flag_grep_np(const char *str, u64 addr, int next);
 u64 flag_get_addr(const char *name);
 flag_t *flag_by_offset(u64 offset);
 flag_t *flag_get(const char *name);
