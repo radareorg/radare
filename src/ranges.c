@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -260,7 +260,7 @@ int ranges_list(int rad)
 	list_for_each(pos, &ranges) {
 		struct range_t *r = list_entry(pos, struct range_t, list);
 		if (rad) cons_printf("ra+ 0x%08llx 0x%08llx\n", r->from, r->to);
-		else cons_printf("0x%08llx 0x%08llx\n", r->from, r->to);
+		else cons_printf("0x%08llx 0x%08llx ; %lld\n", r->from, r->to, r->to-r->from);
 		total += (r->to-r->from);
 	}
 	eprintf("Total bytes: %lld\n", total);

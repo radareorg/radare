@@ -6,6 +6,7 @@
 
 ===========================================================
 
+* Check for eof and eob
 
 TheBook
 =======
@@ -14,6 +15,7 @@ TheBook
 * doc4 'g' and 'x' in visual
 * Documentation for grep ~#[N]
 
+* i* -> not implemented??
 * at* -> show ar+ commands
 * g*  -> import graph information as ar+ commands
 * CF* -> Code metadata (functions) range as ar+ commands
@@ -23,19 +25,11 @@ OPTIMIZATIONS
 =============
 * do not dump on tmp files (use popen or so)
 * flag_get (23%)
-* cache io_lseek (1%)
-* Do not use strcat in cons_* (67%)
 * Optimize string_flag_offset (24%)
   - abuses strstr
 * config_node_get (1%)
 
 ===========================================================
-* .(foo) @@ .(bar) doesnt works
-* x @@ .(iter-functions)
-* Check for eof and eob
-
-* !step 10 only traces 1 opcode
-  But 10!step traces all of them
 
 * !contsc should allow return value not error
 * r_io_map_join()
@@ -47,17 +41,12 @@ OPTIMIZATIONS
 Things to be done
 =================
 
-* !maps? @ esp -> doesnt works
-  - !step @ eip -> !!!
-  - !fd > file -> file is empty!!
-  - prefixed with '!' all io is passed thru
 * Add disassembler for
   - DalvikVM
   - CUDA
   - Flash10
 * '<' and '>' commands converted in prefix modifiers
 * Add !log command for serial:// and socket://
-
 
 * rsc monitor implemented as a gui plugin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!

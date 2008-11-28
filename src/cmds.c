@@ -238,6 +238,7 @@ CMD_DECL(analyze)
 			eprintf("   > at*                ; list all traced opcode offsets\n");
 			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
 			eprintf("   > at [addr]          ; show trace info at address\n");
+			eprintf("   > atr                ; show traces as range commands (ar+)\n");
 			eprintf("   > atd                ; show disassembly trace\n");
 			eprintf("   > atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
 			break;
@@ -272,6 +273,9 @@ CMD_DECL(analyze)
 			} } break;
 		case '*':
 			trace_show(1);
+			break;
+		case 'r':
+			trace_show(-1);
 			break;
 		default:
 			trace_show(0);
@@ -1036,17 +1040,15 @@ CMD_DECL(code)
 		u64 tmp = config.block_size;
 		int fmt;
 		int len;
+
+
 		for(; *arg==' ';arg=arg+1);
 		if (arg[0]=='\0') {
-			switch(text[0]) {
-				case 'm': radare_cmd("C* | grep Cm", 0); break;
-				case 'c': radare_cmd("C* | grep Cc", 0); break;
-				case 'd': radare_cmd("C* | grep Cd", 0); break;
-				case 's': radare_cmd("C* | grep Cs", 0); break;
-				case 'F': radare_cmd("C* | grep CF", 0); break;
-				case 'f': radare_cmd("C* | grep Cf", 0); break;
-				case 'u': radare_cmd("C* | grep Cu", 0); break;
-			}
+			radare_cmdf("C*~C%c", text[0]);
+		} else
+		if (arg[0]=='*') {
+			/* ranges */
+			data_list_ranges();
 		} else {
 			len = get_math(arg);
 			switch(text[0]) {
@@ -1087,6 +1089,7 @@ CMD_DECL(code)
 		"  Cs [num]         ; converts to string\n"
 		"  Cf [num]         ; folds num bytes\n"
 		"  Cu [num]         ; unfolds num bytes\n"
+		"  CF*              ; list function ranges as ar cmds\n"
 		"  C*               ; list metadata database\n");
 	}
 

@@ -848,6 +848,8 @@ int debug_step(int times)
 			}
 			ret = debug_dispatch_wait();
 			printf("DISPATH WAIT: %d\n", ret);
+	trace_add((addr_t)pc);
+	ps.steps++;
 		}
 		debug_print_wait("step");
 	} else {
@@ -915,10 +917,10 @@ int debug_step(int times)
 				}
 			}
 			old_pc = pc;
-		}
-	}
 	trace_add((addr_t)pc);
 	ps.steps++;
+		}
+	}
 
 	return (WS(event) != BP_EVENT);
 }

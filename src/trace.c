@@ -222,13 +222,15 @@ void trace_show(int plain)
 			break;
 		}
 	}
-	if (plain)
+	if (plain>0)
 		return;
 
 	while(from) {
 		last = trace_range(from);
 		// TODO: show timestamps
-		cons_printf("0x%08llx - 0x%08llx\n", from, last);
+		if (plain==0)
+			cons_printf("0x%08llx - 0x%08llx\n", from, last);
+		else cons_printf("ar+ 0x%08llx 0x%08llx\n", from, last);
 		from = trace_next(last);
 		cons_flush();
 	}

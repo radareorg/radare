@@ -310,12 +310,31 @@ int data_size(u64 offset)
 	return 0;
 }
 
+// TODO: add grep flags here
+int data_list_ranges()
+{
+	struct data_t *d;
+	struct list_head *pos;
+
+	list_for_each(pos, &data) {
+		d = (struct data_t *)list_entry(pos, struct data_t, list);
+		switch(d->type) {
+		case DATA_FUN:
+			cons_printf("ar+ 0x%08llx 0x%08llx\n",
+				d->from, d->to);
+			break;
+		}
+	}
+}
+
+/* TODO: add grep flags argument */
 int data_list()
 {
 	char *arg;
 	char label[1024];
 	struct data_t *d;
 	struct list_head *pos;
+
 	list_for_each(pos, &data) {
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
 		label[0]='\0';
