@@ -7,7 +7,7 @@ LIBDIR = Config::CONFIG['LIBRUBY_ARG_SHARED']
 LIBNAM = Config::CONFIG['RUBY_INSTALL_NAME']
 #LDSHARED=compilername -shared..."
 
-rb_so = 'libruby.so'
+rb_so = 'ruby.so'
 rb_c = 'ruby.c'
 inc = '../..'
 

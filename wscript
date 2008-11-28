@@ -223,10 +223,13 @@ def build(bld):
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.rb')
 	# RSC scripts
 	#if bld.env['HAVE_RUBY'] == 1:
-	if os.path.exists('src/plug/hack/libruby.so'):
-		bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/libruby.so', chmod=0755)
-	else:
-		print "no ruby?"
+	try:
+		if os.path.exists('src/plug/hack/ruby.so'):
+			bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/ruby.so', chmod=0755)
+		else:
+			print "no ruby?"
+	except:
+		print "WTF with ruby!!"
 	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')

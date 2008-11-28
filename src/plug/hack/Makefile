@@ -15,7 +15,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO}  gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO}
+all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO}
 #perl.${SO}
 
 hello.${SO}:
@@ -47,8 +47,8 @@ ruby.${SO}:
 	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO}
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
-lua.${SO}: lua.o
-	-${CC} lua.o ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
+lua.${SO}:
+	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LDFLAGS} ${LUA_LIBS} -o lua.so
 
 install:
 	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${DESTDIR}/${LIBDIR}/radare
