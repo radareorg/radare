@@ -14,6 +14,11 @@ TheBook
 * doc4 'g' and 'x' in visual
 * Documentation for grep ~#[N]
 
+* at* -> show ar+ commands
+* g*  -> import graph information as ar+ commands
+* CF* -> Code metadata (functions) range as ar+ commands
+* Add CF? command
+
 OPTIMIZATIONS
 =============
 * do not dump on tmp files (use popen or so)
