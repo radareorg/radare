@@ -14,11 +14,14 @@ INSTALL_SCRIPT=@INSTALL_SCRIPT@
 
 .PHONY: all clean mrproper install deinstall
 
-all: radare
+all:
+##HAVE_GUI##
+	cd vala/ && ${MAKE} all
+##HAVE_GUI##
+	cd src && ${MAKE} all
 	-cd libusbsniff && ${MAKE} all
 	cd src/rabin && ${MAKE} all
 	cd src/rasm && ${MAKE} all
-	cd src && ${MAKE} all
 ##HAVE_GUI##
 	cd gui && ${MAKE} all
 ##HAVE_GUI##
@@ -27,19 +30,14 @@ all: radare
 omni:
 	exuberant-ctags **/*.c **/*.h
 
-radare:
-##HAVE_GUI##
-	cd vala/ && ${MAKE} all
-##HAVE_GUI##
-
 clean:
+	${Q}cd vala/ && ${MAKE} clean
 	${Q}cd src && ${MAKE} clean
 	${Q}cd src/rabin && ${MAKE} clean
 	${Q}cd gui && ${MAKE} clean
 	${Q}cd libusbsniff && ${MAKE} clean
 	${Q}cd src/dbg && ${MAKE} clean
 	${Q}cd java && ${MAKE} clean
-	${Q}cd vala/ && ${MAKE} clean
 	${Q}cd vala/grava && ${MAKE} clean
 
 w32dist:
