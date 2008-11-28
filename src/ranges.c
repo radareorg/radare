@@ -31,7 +31,7 @@ int ranges_init()
 	return 0;
 }
 
-void trace_free()
+void ranges_free()
 {
 	struct list_head *pos;
 	struct range_t *h;
@@ -45,13 +45,16 @@ void trace_free()
 static int ranges_get_flags()
 {
 	int flags = 0;
+// TODO: not yet implemented
+#if 0
 	flags |= config_get("range.traces")?RANGE_TRACES:0;
 	flags |= config_get("range.graphs")?RANGE_GRAPHS:0;
 	flags |= config_get("range.functions")?RANGE_FUNCTIONS:0;
+#endif
 	return flags;
 }
 
-void ranges_abs(u64 *f, u64 *t)
+static void ranges_abs(u64 *f, u64 *t)
 {
 	u64 tmp;
 	if (*f>*t) {
@@ -62,44 +65,55 @@ void ranges_abs(u64 *f, u64 *t)
 }
 
 #if 0
-    update to      new one     update from   update from/to
+    update to      new one     update from   update from/to  ignore
 
-   |______|        |___|           |_____|      |____|      range_t
-+     |______|   +      |__|   + |___|      + |_________|   from/to
-  ------------   -----------   -----------  -------------
-=  |_________|   = |___||__|   = |_______|  = |_________|   result
+   |______|        |___|           |_____|      |____|      |_______|  range_t
++     |______|   +      |__|   + |___|      + |_________|  +  |__|     from/to
+  ------------   -----------   -----------  -------------  -----------
+=  |_________|   = |___||__|   = |_______|  = |_________|   |_______|  result
 #endif
 
-int ranges_add(u64 from, u64 to)
+/* TODO: we need a merging operation over ranges here */
+int ranges_add(struct list_head *rang, u64 from, u64 to)
 {
 	struct range_t *r;
 	struct list_head *pos;
-	int new = 1;
+	int add = 1;
+
+	if (rang == NULL)
+		rang = &ranges;
 
 	ranges_abs(&from, &to);
 
-	list_for_each(pos, &ranges) {
+	list_for_each(pos, rang) {
 		r = list_entry(pos, struct range_t, list);
-		if (r->from<from && r->from < to && r->to>from && r->to < to) {
-			r->to = to;
-			new = 0;
+		if (r->from == from && r->to==to) {
+			add = 0;
 		} else
-		if (r->from>from && r->from < to && r->to>from && r->to > to) {
-			r->from = from;
-			new = 0;
+		if (r->from<=from && r->from <= to && r->to>=from && r->to <= to) {
+			r->to = to;
+			add = 0;
 		} else
-		if (r->from>from && r->from < to && r->to>from && r->to < to) {
+		if (r->from>=from && r->from<=to && r->to>=from && r->to >= to) {
+			r->from = from;
+			add = 0;
+		} else
+		if (r->from<=from && r->from<=to && r->to>=from && r->to >= to) {
+			/* ignore */
+			add = 0;
+		} else
+		if (r->from>=from && r->from<=to && r->to>=from && r->to <= to) {
 			r->from = from;
 			r->to = to;
-			new = 0;
+			add = 0;
 		}
 	}
 
-	if (new) {
+	if (add) {
 		r = (struct range_t *)malloc(sizeof(struct range_t));
 		r->from = from;
 		r->to = to;
-		list_add_tail(&(r->list), &ranges);
+		list_add_tail(&(r->list), rang);
 	}
 }
 
@@ -112,15 +126,20 @@ int ranges_add(u64 from, u64 to)
 =  |__|          =     ||      =     |___|  =                |__|  |__|   result
 #endif
 
-int ranges_sub(u64 from, u64 to)
+/* TODO: is this wurking properly ? */
+int ranges_sub(struct list_head *rang, u64 from, u64 to)
 {
 	struct range_t *r;
 	struct list_head *pos;
 	u64 f = 0, t = 0;
 
+	if (rang == NULL)
+		rang = &ranges;
+
 	ranges_abs(&from, &to);
 
-	list_for_each(pos, &ranges) {
+	__reloop:
+	list_for_each(pos, rang) {
 		r = list_entry(pos, struct range_t, list);
 		/* update to */
 		if (r->from<from && r->from < to && r->to>from && r->to < to) {
@@ -128,7 +147,8 @@ int ranges_sub(u64 from, u64 to)
 		} else
 		/* new one */
 		if (r->from<from && r->from < to && r->to>from && r->to < to) {
-			ranges_add(f, t);
+			ranges_add(rang, f, t);
+			goto __reloop;
 			// TODO: reinit foreach loop
 		}
 		/* update from */
@@ -139,14 +159,15 @@ int ranges_sub(u64 from, u64 to)
 		if (r->from>from && r->from<to && r->to>from && r->to < to) {
 			/* delete */
 			list_del(&(r->list));
-			// TODO: reinit foreach loop
+			goto __reloop;
 		}
 		/* split */
 		if (r->from<from && r->from<to && r->to>from && r->to > to) {
 			t = r->to;
 			r->to = from;
-			ranges_add(to, t);
-			// TODO: reinit foreach loop
+			ranges_add(rang, to, t);
+		//	eprintf("split\n");
+			goto __reloop;
 		}
 	}
 	return 0;
@@ -165,37 +186,50 @@ int ranges_cmd(const char *arg)
 	case '?':
 		eprintf("Usage: ar[b] [args]\n");
 		eprintf("ar                ; show all ranges\n");
+		eprintf("ar%%               ; show ranges in a visual percentage\n");
+		eprintf("ar*               ; show ranges in radare commands\n");
 		eprintf("arb [[from] [to]] ; boolean ranges against\n");
+		eprintf("arb%% [[from] [to]]; boolean ranges against in visual pcent\n");
 		eprintf("ar+ [from] [to]   ; add new range\n");
 		eprintf("ar- [from] [to]   ; drop range\n");
+		eprintf("ar-*              ; reset range tables\n");
 		eprintf(" ; range.from     ; default boolean from address\n");
 		eprintf(" ; range.to       ; default boolean to address\n");
+#if 0
 		eprintf(" ; range.traces   ; (true) join trace information (at?)\n");
 		eprintf(" ; range.graphs   ; (true) join graph information (g?)\n");
 		eprintf(" ; range.functions; (true) join functions information (CF)\n");
+#endif
 		eprintf(" ; e range.       ; show range config vars\n");
 		break;
 	case '+':
-		if (*a==' ')a=a+1;
+		if (*a==' ') a=a+1;
 		ptr = strchr(a, ' ');
 		if (ptr) {
 			ptr[0]='\0';
 			from = get_math(a);
 			to = get_math(ptr+1);
-			ranges_add(from, to);
+			ranges_add(NULL, from, to);
 		} else {
 			eprintf("Usage: ar+ [from] [to]\n");
 		}
 		break;
+	case '%':
+		eprintf("TODO\n");
+		break;
 	case '-':
-		ptr = strchr(a, ' ');
-		if (ptr) {
-			ptr[0]='\0';
-			from = get_math(a);
-			to = get_math(ptr+1);
-			ranges_sub(from, to);
+		if (arg[1]=='*') {
+			ranges_free();
 		} else {
-			eprintf("Usage: ar- [from] [to]\n");
+			ptr = strchr(a, ' ');
+			if (ptr) {
+				ptr[0]='\0';
+				from = get_math(a);
+				to = get_math(ptr+1);
+				ranges_sub(NULL, from, to);
+			} else {
+				eprintf("Usage: ar- [from] [to]\n");
+			}
 		}
 		break;
 	case 'b': // bolean
@@ -210,19 +244,26 @@ int ranges_cmd(const char *arg)
 		}
 		ranges_boolean(from, to, ranges_get_flags());
 		break;
+	case '*':
+		ranges_list(1);
+		break;
 	default:
-		ranges_list();
+		ranges_list(0);
 		break;
 	}
 }
 
-int ranges_list()
+int ranges_list(int rad)
 {
+	u64 total = 0;
 	struct list_head *pos;
 	list_for_each(pos, &ranges) {
 		struct range_t *r = list_entry(pos, struct range_t, list);
-		cons_printf("0x%08llx 0x%08llx\n", r->from, r->to);
+		if (rad) cons_printf("ra+ 0x%08llx 0x%08llx\n", r->from, r->to);
+		else cons_printf("0x%08llx 0x%08llx\n", r->from, r->to);
+		total += (r->to-r->from);
 	}
+	eprintf("Total bytes: %lld\n", total);
 	return 0;
 }
 

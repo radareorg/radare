@@ -554,6 +554,7 @@ void rdb_help()
 	"  g  [rdb-file]  ; load graph rdb file as graph\n"
 	"  g -[idx]       ; removes an rdb indexed\n"
 	"  ga 0xaddr      ; generate graph at address\n"
+	"  gr[*]          ; show basic block information in raw or ra+\n"
 	"  gs [rdb-file]  ; save graph analysis as rdb\n"
 	"  gc [num]       ; show block disassembles of graph num\n"
 	"  gg [num]       ; graph graph number 'num'\n"

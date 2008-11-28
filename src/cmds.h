@@ -59,7 +59,7 @@ CMD_DECL(resize);
 CMD_DECL(seek);
 CMD_DECL(undowrite);
 CMD_DECL(info);
-CMD_DECL(rdb);
+CMD_DECL(graph);
 CMD_DECL(sections);
 CMD_DECL(project);
 CMD_DECL(yank);

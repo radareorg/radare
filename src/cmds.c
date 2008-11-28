@@ -127,7 +127,7 @@ command_t commands[] = {
 	COMMAND('q', "[!]",            "quit     close radare shell", quit),
 	COMMAND('P', "[so][i [file]]", "Project  project Open, Save, Info", project),
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
-	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", rdb),
+	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", graph),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
 	COMMAND('S', "[len] [baddr]",  "Section  manage file.baddr sections", sections),
 	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
@@ -221,7 +221,9 @@ CMD_DECL(analyze)
 	int depth = input[0]?atoi(input+1):0;
 	u64 oseek = config.seek;
 
-	if (depth<1)depth=1;
+	if (depth<1)
+		depth = config_get_i("graph.depth");
+	if (depth<1) depth=1;
 	//eprintf("depth = %d\n", depth);
 	memset(&aop, '\0', sizeof(struct aop_t));
 
@@ -589,14 +591,14 @@ CMD_DECL(menu)
 			sprintf(buf2, "e %s.%s", pfx, buf);
 			radare_cmd(buf2, 0);
 		} else
-			if (!pfx[0]) {
-				strcpy(pfx, buf);
-			} else {
-				cons_printf("%s.%s = ", pfx, buf);
-				sprintf(buf2, "e %s.%s", pfx, buf);
-				radare_cmd(buf2, 0);
-				goto noprint;
-			}
+		if (!pfx[0]) {
+			strcpy(pfx, buf);
+		} else {
+			cons_printf("%s.%s = ", pfx, buf);
+			sprintf(buf2, "e %s.%s", pfx, buf);
+			radare_cmd(buf2, 0);
+			goto noprint;
+		}
 	}
 
 	return 0;
@@ -610,7 +612,7 @@ CMD_DECL(hack)
 	return radare_hack(input);
 }
 
-CMD_DECL(rdb)
+CMD_DECL(graph)
 {
 	char *text = input;
 	char *eof = input + strlen(input)-1;
@@ -624,47 +626,31 @@ CMD_DECL(rdb)
 		return 0;
 	}
 	switch(input[0]) {
-	case 'm':
-		break;
-	case 'g':
-		break;
-	case 'd':
-		break;
-	}
-
-	/* list */
-	if (text[0]=='\0') {
-		int i = 0;
-		char offstr[245];
-		struct list_head *pos;
-		list_for_each(pos, &config.rdbs) {
-			struct program_t *mr = list_entry(pos, struct program_t, list);
-			fflush(stdout);
-			offstr[0]='\0';
-			string_flag_offset(offstr, mr->entry);
-
-			cons_printf("%02d 0x%08llx %s \n", i, (u64)mr->entry, offstr);
-			i++;
-		}
+	case ' ': {
+		struct program_t *prg = program_open(input+1); // XXX FIX stripstring and so
+		if (prg != NULL)
+			list_add_tail(&prg->list, &config.rdbs);
 		return 0;
-	}
-	/* remove */
-	if (text[0]=='-') {
+		}
+	case 'a':
+		return radare_cmdf("ac %d@%s", (int)config_get_i("graph.depth"), input+1);
+	case 's': {
 		int num = atoi(text+1);
 		int i = 0;
 		struct list_head *pos;
 		list_for_each(pos, &config.rdbs) {
-			struct program_t *mr = list_entry(pos, struct program_t, list);
+			struct program_t *prg = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
-				list_del(&(mr->list));
+				program_save(prg);
 				return 0;
 			}
 			i++;
 		}
 		eprintf("Not found\n");
 		return 0;
-	} else
-	if (input[0] =='c') {
+		}
+	case 'c': {
+		/* XXX segfaults ?? */
 		struct list_head *pos, *head;
 		list_for_each(pos, &config.rdbs) {
 			struct program_t *prg = list_entry(pos, struct program_t, list);
@@ -681,33 +667,56 @@ CMD_DECL(rdb)
 				radis_str_e(config.arch, b0->bytes, b0->n_bytes, 0);
 			}
 		}
-	} else
-	if (input[0] =='a') {
-		return radare_cmdf("ac %d@%s", (int)config_get_i("graph.depth"), input+1);
-	} else
-	if (input[0] =='s') {
-		int num = atoi(text+1);
+		}
+		break;
+	case 'g': {
+#if HAVE_GUI
+		int num = atoi(text);
 		int i = 0;
 		struct list_head *pos;
 		list_for_each(pos, &config.rdbs) {
-			struct program_t *prg = list_entry(pos, struct program_t, list);
+			struct program_t *mr = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
-				program_save(prg);
+				grava_program_graph(mr);
 				return 0;
 			}
 			i++;
 		}
 		eprintf("Not found\n");
-	} else
-	/* open */
-	if (input[0] ==' ') {
-		struct program_t *prg = program_open(input+1); // XXX FIX stripstring and so
-		if (prg != NULL)
-			list_add_tail(&prg->list, &config.rdbs);
+#else
+		eprintf("Compiled without vala-gtk\n");
+#endif
 		return 0;
-	} else
-	/* grefusa diffing */
-	if (input[0] =='d') {
+		}
+	case 'r':
+		switch(input[1]) {
+		case '*': {
+			/* SHOW LIST IN ar+ format */
+			struct list_head *pos, *head;
+			list_for_each(pos, &config.rdbs) {
+				struct program_t *prg = list_entry(pos, struct program_t, list);
+				list_for_each_prev(head, &(prg->blocks)) {
+					struct block_t *b0 = list_entry(head, struct block_t, list);
+					cons_printf("ar+ 0x%08llx 0x%08llx\n",
+						b0->addr, b0->addr+b0->n_bytes);
+				}
+			} }
+			break;
+		default: {
+			/* SHOW LIST IN ar+ format */
+			struct list_head *pos, *head;
+			list_for_each(pos, &config.rdbs) {
+				struct program_t *prg = list_entry(pos, struct program_t, list);
+				list_for_each_prev(head, &(prg->blocks)) {
+					struct block_t *b0 = list_entry(head, struct block_t, list);
+					cons_printf("0x%08llx 0x%08llx branch 0x%08llx, 0x%08llx\n",
+						b0->addr, b0->addr+b0->n_bytes, b0->tnext, b0->fnext);
+				}
+			}
+			}
+		}
+		break;
+	case 'd': {
 		int a, b;
 		int i = 0;
 		struct list_head *pos;
@@ -728,39 +737,45 @@ CMD_DECL(rdb)
 			rdb_diff(mr0, mr1, 0);
 		else eprintf("!mr0 || !mr1 ??\n");
 		return 0;
-	}
-	/* draw graph */
-	if (input[0] =='G') {
-#if HAVE_GUI
-		int num = atoi(text);
-		int i = 0;
-		struct list_head *pos;
-		list_for_each(pos, &config.rdbs) {
-			struct program_t *mr = list_entry(pos, struct program_t, list);
-			if (i ==  num) {
-				grava_program_graph(mr);
-				return 0;
-			}
-			i++;
 		}
-		eprintf("Not found\n");
-#else
-		eprintf("Compiled without vala-gtk\n");
-#endif
-		return 0;
-	}
-#if 0
+		break;
+	default:
+		/* list */
+		switch(text[0]) {
+		case '-': { /* remove */
+			int num = atoi(text+1);
+			int i = 0;
+			struct list_head *pos;
+			list_for_each(pos, &config.rdbs) {
+				struct program_t *mr = list_entry(pos, struct program_t, list);
+				if (i ==  num) {
+					list_del(&(mr->list));
+					return 0;
+				}
+				i++;
+			}
+			eprintf("Not found\n");
+			return 0;
+			}
+		default: {
+			int i = 0;
+			char offstr[245];
+			struct list_head *pos;
+			list_for_each(pos, &config.rdbs) {
+				struct program_t *mr = list_entry(pos, struct program_t, list);
+				fflush(stdout);
+				offstr[0]='\0';
+				string_flag_offset(offstr, mr->entry);
 
-	ret = flag_set(text, config.seek, input[0]=='n');
-	D if (ret) {
-		if (!config.debug)
-			eprintf("flag '%s' redefined to "OFF_FMTs"\n", text, config.seek);
-	} else {
-		flags_setenv();
-		eprintf("flag '%s' at "OFF_FMT" and size %d\n",
-			text, config.seek, config.block_size);
+				cons_printf("%02d 0x%08llx %s \n", i, (u64)mr->entry, offstr);
+				i++;
+			}
+			return 0;
+			}
+		}
 	}
-#endif
+
+
 	return 0;
 }
 
@@ -1097,8 +1112,7 @@ static void radare_set_limit(char *arg)
 {
 	if ( arg[0] != '\0' )
 		config.limit = get_math(arg);
-
-	D eprintf("limit = "OFF_FMTd"\n", config.limit);
+	D eprintf("limit = %lld\n", config.limit);
 }
 
 CMD_DECL(limit)

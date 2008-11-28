@@ -1314,13 +1314,13 @@ int operation_do(const char *str)
 
 	if (!strcmp(str, "help")) {
 		printf("Operation string:\n"
-			" -o r,.text,1024\n");
+			" -o r/.text/1024\n");
 		return 1;
 	}
 	arg = alloca(strlen(str)+1);
 	strcpy(arg, str);
 
-	ptr = strchr(str, ',');
+	ptr = strchr(str, '/');
 	if (!ptr) {
 		printf("Unknown action. use -o help\n");
 		return 1;
@@ -1329,7 +1329,7 @@ int operation_do(const char *str)
 	ptr = ptr+1;
 	switch(arg[0]) {
 	case 'r':
-		ptr2 = strchr(ptr, ',');
+		ptr2 = strchr(ptr, '/');
 		ptr2[0]='\0';
 		return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
 	}
@@ -1422,7 +1422,7 @@ int main(int argc, char **argv, char **envp)
 	dm_map_file(file, fd);
 	rabin_identify_header();
 
-	if (op != NULL)
+	if (op != NULL && action&ACTION_OPERATE)
 		operation_do( op );
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
