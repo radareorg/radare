@@ -45,8 +45,12 @@ if so_hello.env['HAVE_LIBLUA'] == 1:
 #puts "-I"+LIBDIR
 
 if so_hello.env['HAVE_RUBY'] == 1:
-	#os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c src/plug/hack/ruby.so src")
-	os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c src/plug/hack/libruby.so src")
+	try:
+		os.system("ruby src/plug/hack/mkruby.rb src/plug/hack/ruby.c src/plug/hack/libruby.so src")
+	except:
+		pass
+else:
+	print "ruby disabled"
 #	so_ruby = bld.new_task_gen('cc', 'shlib','ruby')
 #	so_ruby.includes = '../..'
 #	#so_ruby.env.append_value('LINKFLAGS','-llua')

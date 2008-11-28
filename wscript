@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import os
+import os.path
 import shutil
 import Options
 
@@ -222,8 +223,12 @@ def build(bld):
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.rb')
 	# RSC scripts
 	if bld.env['HAVE_RUBY'] == 1:
-		if os.access('src/plug/hack/libruby.so', 0755):
+		if os.path.exists('src/plug/hack/libruby.so'):
 			bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/libruby.so', chmod=0755)
+		else:
+			print "no ruby?"
+	else:
+		print "ruby disabled"
 	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')

@@ -31,7 +31,7 @@ install:
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare
 	${INSTALL_DIR} ${DESTDIR}/${DATADIR}/radare/rsc
 	rm -rf ${DESTDIR}/${DATADIR}/radare/rsc/*
-	for A in pool/$$A ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
+	for A in pool/$$A ; do cp $$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 	#for A in ${FILES} ; do cp pool/$$A ${DESTDIR}/${DATADIR}/radare/rsc ; done
 
 files:
