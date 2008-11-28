@@ -65,5 +65,6 @@
 #include "io.h"
 #include "plugin.h"
 #include "section.h"
+#include "ranges.h"
 
 #endif

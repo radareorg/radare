@@ -463,6 +463,9 @@ CMD_DECL(analyze)
 		eprintf("WIP: av . analyze N opcodes using code emulation\n");
 		vm_emulate(depth);
 		break;
+	case 'r':
+		ranges_cmd(input+1);
+		break;
 	case 's':
 		analyze_spcc(input+1);
 		break;
@@ -497,6 +500,7 @@ CMD_DECL(analyze)
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code (ag. = dot format)\n");
+		cons_printf(" ar [args]    analyze ranges\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
 		cons_printf(" at [args]    analyze opcode traces\n");
 		cons_printf(" av [nops]    analyze virtual machine (negative resets before)\n");

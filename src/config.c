@@ -847,6 +847,12 @@ void config_init(int first)
   config_set_i("cfg.vbsize", 1024);
   config_set("cfg.vbsize_enabled", "false");
 
+  config_set_i("range.from", 0);
+  config_set_i("range.to", 0xffff);
+  config_set("range.traces", "true");
+  config_set("range.graphs", "true");
+  config_set("range.functions", "true");
+
   config_set("child.stdio", "");
   config_set("child.stdin", "");
   config_set("child.stdout", "");
@@ -1017,6 +1023,7 @@ void config_init(int first)
     data_comment_init(1);
     radare_hack_init();
     trace_init();
+    ranges_init();
   }
 }
 
