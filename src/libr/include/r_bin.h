@@ -1,27 +1,27 @@
-#ifndef _LIB_R_BIN_H_
-#define _LIB_R_BIN_H_
+#ifndef _INCLUDE_R_BIN_H_
+#define _INCLUDE_R_BIN_H_
 
-#include "r_bin_dietelf.h"
-#include "r_bin_dietelf64.h"
-#include "r_bin_dietpe.h"
+#include "r_bin_elf.h"
+#include "r_bin_elf64.h"
+#include "r_bin_pe.h"
 
-#define BIN_SCN_IS_EXECUTABLE(x) x & 0x1
-#define BIN_SCN_IS_WRITABLE(x)   x & 0x2
-#define BIN_SCN_IS_READABLE(x)   x & 0x4
-#define BIN_SCN_IS_SHAREABLE(x)  x & 0x8
+#define R_BIN_SCN_IS_EXECUTABLE(x) x & 0x1
+#define R_BIN_SCN_IS_WRITABLE(x)   x & 0x2
+#define R_BIN_SCN_IS_READABLE(x)   x & 0x4
+#define R_BIN_SCN_IS_SHAREABLE(x)  x & 0x8
 
-#define SIZEOF_NAMES 64
+#define R_BIN_SIZEOF_NAMES 64
 
 /* types */
 typedef union {
-    Elf32_dietelf_bin_t e32;
-    Elf64_dietelf_bin_t e64;
-} dietelf_bin;
+    Elf32_r_bin_elf_obj e32;
+	Elf64_r_bin_elf_obj e64;
+} r_bin_elf_obj;
 
 typedef struct {
 	union {
-		dietelf_bin elf;
-		dietpe_bin pe;
+		r_bin_elf_obj elf;
+		r_bin_pe_obj pe;
 	} object;
 	u32 format;
 	char *file;
@@ -34,7 +34,7 @@ typedef struct {
 } r_bin_entry;
 
 typedef struct {
-	char name[SIZEOF_NAMES];
+	char name[R_BIN_SIZEOF_NAMES];
 	u32 size;
 	u32 vsize;
 	u64 rva;
@@ -44,10 +44,10 @@ typedef struct {
 } r_bin_section;
 
 typedef struct {
-	char name[SIZEOF_NAMES];
-	char forwarder[SIZEOF_NAMES];
-	char bind[SIZEOF_NAMES];
-	char type[SIZEOF_NAMES];
+	char name[R_BIN_SIZEOF_NAMES];
+	char forwarder[R_BIN_SIZEOF_NAMES];
+	char bind[R_BIN_SIZEOF_NAMES];
+	char type[R_BIN_SIZEOF_NAMES];
 	u64 rva;
 	u64 offset;
 	u32 size;
@@ -56,9 +56,9 @@ typedef struct {
 } r_bin_symbol;
 
 typedef struct {
-	char name[SIZEOF_NAMES];
-	char bind[SIZEOF_NAMES];
-	char type[SIZEOF_NAMES];
+	char name[R_BIN_SIZEOF_NAMES];
+	char bind[R_BIN_SIZEOF_NAMES];
+	char type[R_BIN_SIZEOF_NAMES];
 	u64 rva;
 	u64 offset;
 	u32 ordinal;

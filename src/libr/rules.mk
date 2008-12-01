@@ -2,7 +2,7 @@
 CC?=gcc
 CFLAGS+=-I../include -fPIC
 CC_LIB=${CC} -shared -o ${LIBSO}
-CC_AR=ar -r ${LIBAR} ${OBJ}
+CC_AR=ar -r ${LIBAR}
 
 # Output
 EXT_AR=a
