@@ -5,7 +5,7 @@ LIBLIST=io hash line lib
 #LIBLIST+=print
 #LIBLIST+=cons
 #LIBLIST+=util
-#LIBLIST+=bin
+LIBLIST+=bin
 
 # TODO : generate single library linking against the rest
 #LIBSO=libr.so
@@ -13,7 +13,7 @@ LIBLIST=io hash line lib
 
 all:
 	for lib in ${LIBLIST}; do ( cd $${lib} && ${MAKE} all ); done
-	echo Build done for: ${LIBLIST}
+	@echo Build done for: ${LIBLIST}
 
 clean:
 	for lib in ${LIBLIST}; do ( cd $${lib} && ${MAKE} clean ); done

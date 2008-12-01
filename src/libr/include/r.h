@@ -7,5 +7,6 @@
 #include "r_print.h"
 #include "r_types.h"
 #include "r_utils.h"
+#include "r_bin.h"
 
 #endif
