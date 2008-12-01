@@ -7,8 +7,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define CONS_BUFSZ 0x4f00
+#define STR_IS_NULL(x) (!x || !x[0])
+
 /* XXX */
-extern int _print_fd;
 extern FILE *stdin_fd;
 extern FILE *r_cons_stdin_fd;
 extern int r_cons_stdout_fd;
@@ -38,6 +40,7 @@ extern int r_cons_stdout_file;
 #define C_BTURQOISE "\x1b[1;36m"
 #define C_BBLUE     "\x1b[1;34m"
 #define C_BGRAY     "\x1b[1;38m"
+
 /* default byte colors */
 #if 0
 #define COLOR_00 C_TURQOISE
@@ -48,6 +51,47 @@ extern int r_cons_stdout_file;
 // addresses
 #define COLOR_AD C_GREEN
 #endif
+
+/* constructor */
+int  r_cons_init();
+
+/* control */
+void r_cons_reset();
+void r_cons_clear();
+void r_cons_clear00();
+void r_cons_stdout_open(const char *file);
+int  r_cons_stdout_set_fd(int fd);
+void r_cons_gotoxy(int x, int y);
+void r_cons_set_raw(int b);
+
+/* output */
+void r_cons_printf(const char *format, ...);
+void r_cons_strcat(const char *str);
+void r_cons_newline();
+void r_cons_flush();
+
+/* input */
+int  r_cons_fgets(char *buf, int len, int argc, const char **argv);
+int  r_cons_readchar();
+void r_cons_any_key();
+int  r_cons_eof();
+
+/* colors */
+int r_cons_palette_init(const unsigned char *pal);
+
+int r_cons_get_real_columns();
+int r_cons_get_columns();
+extern const char *dl_prompt;
+int r_cons_get_arrow(int ch);
+int r_cons_html_print(const char *ptr);
+
+extern int r_cons_lines;
+extern int r_cons_is_html;
+extern int r_cons_noflush;
+extern char *r_cons_filterline;
+extern char *r_cons_teefile;
+
+/* palette */
 
 #define CONS_PALETTE_SIZE 22
 #define CONS_COLORS_SIZE 21
@@ -78,31 +122,5 @@ extern const char *r_cons_palette_default;
 const char *r_cons_colors[CONS_COLORS_SIZE+1];
 extern char r_cons_palette[CONS_PALETTE_SIZE][8];
 const char *r_cons_get_buffer();
-void r_cons_reset();
-void r_cons_clear();
-int r_cons_readchar();
-void r_cons_flush();
-int r_cons_fgets(char *buf, int len, int argc, const char **argv);
-int r_cons_set_fd(int fd);
-void r_cons_strcat(const char *str);
-void r_cons_newline();
-void r_cons_set_raw(int b);
-int r_cons_get_real_columns();
-int r_cons_get_columns();
-int r_cons_palette_init(const unsigned char *pal);
-void r_cons_printf(const char *format, ...);
-void r_cons_gotoxy(int x, int y);
-extern const char *dl_prompt;
-int r_cons_get_arrow(int ch);
-void r_cons_clear00();
-void r_cons_any_key();
-int r_cons_html_print(const char *ptr);
-
-
-extern int r_cons_lines;
-extern int r_cons_is_html;
-extern int r_cons_noflush;
-extern char *r_cons_filterline;
-extern char *r_cons_teefile;
 
 #endif

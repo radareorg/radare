@@ -74,7 +74,7 @@ static void ranges_abs(u64 *f, u64 *t)
 #endif
 
 /* TODO: we need a merging operation over ranges here */
-int ranges_add(struct list_head *rang, u64 from, u64 to)
+int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 {
 	struct range_t *r;
 	struct list_head *pos;
@@ -109,7 +109,7 @@ int ranges_add(struct list_head *rang, u64 from, u64 to)
 		}
 	}
 
-	if (add) {
+	if (rw && add) {
 		r = (struct range_t *)malloc(sizeof(struct range_t));
 		r->from = from;
 		r->to = to;
@@ -118,20 +118,18 @@ int ranges_add(struct list_head *rang, u64 from, u64 to)
 }
 
 #if 0
-    update to      new one     update from      delete        split
+    update to      ignore      update from      delete        split
 
    |______|        |___|           |_____|      |____|       |________|  range_t
 -     |______|   -      |__|   - |___|      - |_________|  -    |__|     from/to
   ------------   -----------   -----------  -------------  ------------
-=  |__|          =     ||      =     |___|  =                |__|  |__|   result
+=  |__|          =             =     |___|  =                |__|  |__|   result
 #endif
 
-/* TODO: is this wurking properly ? */
 int ranges_sub(struct list_head *rang, u64 from, u64 to)
 {
 	struct range_t *r;
 	struct list_head *pos;
-	u64 f = 0, t = 0;
 
 	if (rang == NULL)
 		rang = &ranges;
@@ -145,16 +143,10 @@ int ranges_sub(struct list_head *rang, u64 from, u64 to)
 		if (r->from<from && r->from < to && r->to>from && r->to < to) {
 			r->to = from;
 		} else
-		/* new one */
-		if (r->from<from && r->from < to && r->to>from && r->to < to) {
-			ranges_add(rang, f, t);
-			goto __reloop;
-			// TODO: reinit foreach loop
-		}
 		/* update from */
-		if (r->from>from && r->from<to && r->to>from && r->to > to) {
+		if (r->from>from && r->from<to && r->to>from && r->to>to) {
 			r->from = to;
-		} else
+		}
 		/* delete */
 		if (r->from>from && r->from<to && r->to>from && r->to < to) {
 			/* delete */
@@ -163,12 +155,25 @@ int ranges_sub(struct list_head *rang, u64 from, u64 to)
 		}
 		/* split */
 		if (r->from<from && r->from<to && r->to>from && r->to > to) {
-			t = r->to;
 			r->to = from;
-			ranges_add(rang, to, t);
-		//	eprintf("split\n");
+			ranges_add(rang, to, r->to, 1);
 			goto __reloop;
 		}
+	}
+	return 0;
+}
+
+/* TODO: should remove some of them right? */
+int ranges_merge(struct list_head *rang)
+{
+	struct list_head *pos;
+
+	if (rang == NULL)
+		rang = &ranges;
+
+	list_for_each(pos, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		ranges_add(rang, r->from, r->to, 0);
 	}
 	return 0;
 }
@@ -188,6 +193,7 @@ int ranges_cmd(const char *arg)
 		eprintf("ar                ; show all ranges\n");
 		eprintf("ar%%               ; show ranges in a visual percentage\n");
 		eprintf("ar*               ; show ranges in radare commands\n");
+		eprintf("arm               ; merge ranges (optimize linked list)\n");
 		eprintf("arb [[from] [to]] ; boolean ranges against\n");
 		eprintf("arb%% [[from] [to]]; boolean ranges against in visual pcent\n");
 		eprintf("ar+ [from] [to]   ; add new range\n");
@@ -202,6 +208,9 @@ int ranges_cmd(const char *arg)
 #endif
 		eprintf(" ; e range.       ; show range config vars\n");
 		break;
+	case 'm':
+		ranges_merge(NULL);
+		break;
 	case '+':
 		if (*a==' ') a=a+1;
 		ptr = strchr(a, ' ');
@@ -209,7 +218,7 @@ int ranges_cmd(const char *arg)
 			ptr[0]='\0';
 			from = get_math(a);
 			to = get_math(ptr+1);
-			ranges_add(NULL, from, to);
+			ranges_add(NULL, from, to, 1);
 		} else {
 			eprintf("Usage: ar+ [from] [to]\n");
 		}
@@ -218,6 +227,7 @@ int ranges_cmd(const char *arg)
 		eprintf("TODO\n");
 		break;
 	case '-':
+		if (*a==' ') a=a+1;
 		if (arg[1]=='*') {
 			ranges_free();
 		} else {
@@ -259,7 +269,7 @@ int ranges_list(int rad)
 	struct list_head *pos;
 	list_for_each(pos, &ranges) {
 		struct range_t *r = list_entry(pos, struct range_t, list);
-		if (rad) cons_printf("ra+ 0x%08llx 0x%08llx\n", r->from, r->to);
+		if (rad) cons_printf("ar+ 0x%08llx 0x%08llx\n", r->from, r->to);
 		else cons_printf("0x%08llx 0x%08llx ; %lld\n", r->from, r->to, r->to-r->from);
 		total += (r->to-r->from);
 	}
@@ -269,8 +279,32 @@ int ranges_list(int rad)
 
 int ranges_boolean(u64 from, u64 to, int flags)
 {
+	u64 total = 0;
+	u64 min = to;
+	u64 max = from;
+	struct list_head *pos;
+
 	eprintf("; ranges from 0x%08llx to 0x%08llx (flags=%d)\n",
 		from, to, flags);
+#if 0
+     .....|______________________|...
+      |_____|  |____|  |_______|
+    ---------------------------------
+            |__|    |__|       |_|      
+#endif
+
+	list_for_each(pos, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		if (r->from > from && r->from < min) {
+			min = r->from;
+		}
+		if (r->to > to && r->to < max) {
+			max = r->to;
+		}
+		if (r->from<from && r->to>from) { // chop from
+			min = r->to;
+		}
+	}
 	// TODO
 	// show ranges
 	// show total bytes

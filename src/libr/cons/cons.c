@@ -19,9 +19,10 @@
  */
 
 #include "r_types.h"
-//#include "main.h"
-//#include "print.h"
 #include "r_cons.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #if __UNIX__
 #include <termios.h>
@@ -33,30 +34,38 @@
 #include <windows.h>
 #endif
 
-int r_cons_stdout_fd = 6676;
-int r_cons_stdout_file = -1;
-FILE *r_cons_stdin_fd = (FILE*)&stdin;
+// WTF //
+int r_cons_stdout_fd = 1;
+FILE *r_cons_stdin_fd = NULL; // TODO use int fd here too!
+
 static int r_cons_buffer_sz = 0;
 static int r_cons_buffer_len = 0;
 static char *r_cons_buffer = NULL;
 char *r_cons_filterline = NULL;
 char *r_cons_teefile = NULL;
 int r_cons_is_html = 0;
-int _print_fd = 1;
 int r_cons_lines = 0;
 int r_cons_noflush = 0;
-#define CONS_BUFSZ 0x4f00
+
+static const char *nullstr = "";
+static int grepline = -1, greptoken = -1;
+static char *grepstr = NULL;
 
 // XXX rename to r_cons_stdout_open
-void stdout_open(char *file)
+void r_cons_stdout_open(const char *file)
 {
 	int fd = open(file, O_RDONLY);
 	if (fd==-1)
 		return;
-	r_cons_stdout_file = fd;
+	r_cons_stdout_fd = fd;
 	dup2(1, r_cons_stdout_fd);
 	//close(1);
 	dup2(fd, 1);
+}
+
+int r_cons_eof()
+{
+	return feof(r_cons_stdin_fd);
 }
 
 void stdout_close()
@@ -64,7 +73,6 @@ void stdout_close()
 	dup2(r_cons_stdout_fd, 1);
 	//close(stdout_file);
 }
-
 
 const char *r_cons_palette_default = "7624 6646 2378 6824 3623";
 char r_cons_palette[CONS_PALETTE_SIZE][8] = {
@@ -187,7 +195,6 @@ const char *r_cons_get_color(int ch)
 	return NULL;
 }
 
-static const char *nullstr = "";
 static const char *r_cons_get_color_by_name(const char *str)
 {
 	int i;
@@ -211,13 +218,13 @@ static inline int r_cons_lines_count(const char *str)
 static void r_cons_print_real(const char *buf)
 {
 #if __WINDOWS__
-	if (_print_fd == 1)
+	if (r_cons_stdout_fd == 1)
 		r_cons_w32_print(buf);
 	else
 #endif
 	if (r_cons_is_html)
 		r_cons_html_print(buf);
-	else write(_print_fd, buf, r_cons_buffer_len);
+	else write(r_cons_stdout_fd, buf, r_cons_buffer_len);
 }
 
 int r_cons_palette_set(const char *key, const u8 *value)
@@ -235,6 +242,12 @@ int r_cons_palette_set(const char *key, const u8 *value)
 		}
 	}
 	return 1;
+}
+
+int r_cons_init()
+{
+	r_cons_stdin_fd = stdin;
+	//r_cons_palette_init(NULL);
 }
 
 int r_cons_palette_init(const unsigned char *pal)
@@ -310,11 +323,11 @@ int r_cons_readchar()
 	return buf[0];
 }
 
-int r_cons_set_fd(int fd)
+int r_cons_stdout_set_fd(int fd)
 {
-	if (_print_fd == 0)
+	if (r_cons_stdout_fd == 0)
 		return fd;
-	return _print_fd = fd;
+	return r_cons_stdout_fd = fd;
 }
 
 #if __WINDOWS__
@@ -388,7 +401,7 @@ int r_cons_html_print(const char *ptr)
 		if (esc == 1) {
 			// \x1b[2J
 			if (ptr[0] != '[') {
-				eprintf("Oops invalid escape char\n");
+				fprintf(stderr, "Oops invalid escape char\n");
 				esc = 0;
 				str = ptr + 1;
 				continue;
@@ -708,20 +721,25 @@ static const char *radare_argv[CMDS] ={
 char *dl_readline(int argc, const char **argv);
 int r_cons_fgets(char *buf, int len, int argc, const char **argv)
 {
+#if HAVE_DIETLINE
+	/* TODO: link against dietline if possible for autocompletion */
 	char *ptr;
 	buf[0]='\0';
 	ptr = dl_readline((argv)?argc:CMDS, (argv)?argv:radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);
-
+#else
+	buf[0]='\0';
+	fgets(buf, len, r_cons_stdin_fd);
+#endif
 	return strlen(buf);
 }
 
 void r_cons_reset()
 {
 	if (r_cons_buffer)
-		r_cons_buffer[0]='\0';
+		r_cons_buffer[0] = '\0';
 	r_cons_buffer_len = 0;
 }
 
@@ -743,9 +761,6 @@ static inline void palloc(int moar)
 	}
 }
 
-static int grepline = -1, greptoken = -1;
-static char *grepstr = NULL;
-
 void r_cons_grep(const char *str)
 {
 	char *ptr, *ptr2, *ptr3;
@@ -759,21 +774,24 @@ void r_cons_grep(const char *str)
 
 		if (ptr3) {
 			ptr3[0]='\0';
-			greptoken = get_offset(ptr3+1);
+			greptoken = atoi(ptr3+1);
 		}
 		if (ptr2) {
 			ptr2[0]='\0';
-			grepline = get_offset(ptr2+1);
+			grepline = atoi(ptr2+1);
 		}
 
-		grepstr = (char *)estrdup(grepstr, ptr);
+		free(grepstr);
+		grepstr = (char *)strdup(ptr);
 	} else {
 		greptoken = -1;
 		grepline = -1;
-		efree(&grepstr);
+		free(grepstr);
+		grepstr = NULL;
 	}
 }
 
+/* TODO: refactorize */
 void r_cons_flush()
 {
 	FILE *fd;
@@ -783,10 +801,10 @@ void r_cons_flush()
 	if (r_cons_noflush)
 		return;
 
-	if (!strnull(r_cons_buffer)) {
+	if (!STR_IS_NULL(r_cons_buffer)) {
 		char *file = r_cons_filterline;
 		char *tee = r_cons_teefile;
-		if (!strnull(file)) {
+		if (!STR_IS_NULL(file)) {
 			fd = fopen(file, "r");
 			if (fd) {
 				while(!feof(fd)) {

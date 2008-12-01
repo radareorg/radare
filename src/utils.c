@@ -928,7 +928,12 @@ int str_grep(const char *str, const char *needle)
 			return 0;
 		return !memcmp(str, needle+1, len-1);
 	}
-	if (needle[strlen(needle)-1]=='$') {
+	if (needle[lenstr-1]=='*') {
+		if (len > lenstr)
+			return 0;
+		return !memcmp(str, needle, lenstr);
+	}
+	if (needle[lenstr-1]=='$') {
 		if (len > lenstr)
 			return 0;
 		return !memcmp(str+(lenstr-len+1), needle, len-1);

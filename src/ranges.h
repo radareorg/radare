@@ -9,7 +9,7 @@ struct range_t {
 
 int ranges_init();
 void ranges_free();
-int ranges_add(struct list_head *rang, u64 from, u64 to);
+int ranges_add(struct list_head *rang, u64 from, u64 to, int rw);
 int ranges_sub(struct list_head *rang, u64 from, u64 to);
 int ranges_list();
 int ranges_boolean(u64 from, u64 to, int flags);

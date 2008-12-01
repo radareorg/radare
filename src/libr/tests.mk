@@ -1,6 +1,6 @@
 # Compiler
 CC?=gcc
-CFLAGS+=-I../include -fPIC
+CFLAGS+=-I../../include -fPIC
 LIBS?=
 
 # Output

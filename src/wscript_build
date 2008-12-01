@@ -49,7 +49,7 @@ if bld.env['OS'] == 'SunOS':
 	obj.env.append_value('LINKFLAGS','-lnsl')
 
 # sources for radare-core
-obj.source = 'aes-find.c analyze.c binparse.c bytepat.c cmds.c code.c config.c cons.c dietline.c environ.c flags.c grava.c hack.c rio.c main.c plugin.c print.c project.c rabin.c radare.c rdb.c readline.c search.c socket.c stripstr.c trace.c undo.c visual.c utils.c hist.c radiff/rdbdiff.c rahash/hash.c vm.c rahash/entropy.c rahash/crc16.c rabin/javasm.c section.c data.c pas.c macros.c ranges.c'
+obj.source = 'aes-find.c analyze.c binparse.c bytepat.c cmds.c code.c config.c cons.c dietline.c environ.c flags.c grava.c hack.c rio.c main.c plugin.c print.c project.c rabin.c radare.c rdb.c readline.c search.c socket.c stripstr.c trace.c undo.c visual.c utils.c radiff/rdbdiff.c rahash/hash.c vm.c rahash/entropy.c rahash/crc16.c rabin/javasm.c section.c data.c pas.c macros.c ranges.c'
 # olly assembler
 obj.source += ' arch/x86/ollyasm/assembl.c'
 obj.source += ' arch/x86/ollyasm/asmserv.c'

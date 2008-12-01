@@ -19,7 +19,7 @@
  */
 
 #include "r_types.h"
-#include "dietline.h"
+#include "r_line.h"
 
 /* dietline is a lighweight and portable library similar to GNU readline */
 
@@ -27,8 +27,8 @@
 #if RADARE_CORE
 #include "main.h"
 #else
-static void cons_set_raw(int b);
-static int cons_get_real_columns();
+static void r_cons_set_raw(int b);
+static int r_cons_get_real_columns();
 #define __UNIX__ 1
 #endif
 #endif
@@ -45,30 +45,30 @@ static int cons_get_real_columns();
 #endif
 
 /* line input */
-int dl_echo = 1;
-const char *dl_prompt = "> ";
-const char *dl_clipboard = NULL;
-static char *dl_nullstr = "";
-static char dl_buffer[DL_BUFSIZE];
-static int dl_buffer_len = 0;
-static int dl_buffer_idx = 0;
+int r_line_echo = 1;
+const char *r_line_prompt = "> ";
+const char *r_line_clipboard = NULL;
+static char *r_line_nullstr = "";
+static char r_line_buffer[R_LINE_BUFSIZE];
+static int r_line_buffer_len = 0;
+static int r_line_buffer_idx = 0;
 
 /* autocompletion callback */
-char **(*dl_callback)(const char *text, int start, int end) = NULL;
+char **(*r_line_callback)(const char *text, int start, int end) = NULL;
 
 /* history */
-char **dl_history = NULL;
-int dl_histsize = DL_HISTSIZE;
-int dl_histidx = 0;
-int dl_autosave = 0; // TODO
-int dl_disable = 0; // TODO use fgets..no autocompletion
+char **r_line_history = NULL;
+int r_line_histsize = R_LINE_HISTSIZE;
+int r_line_histidx = 0;
+int r_line_autosave = 0; // TODO
+int r_line_disable = 0; // TODO use fgets..no autocompletion
 
 // TODO : FULL READLINE COMPATIBILITY
 // rl_attempted_completion_function = rad_autocompletion;
 // char **rad_autocompletion(const char *text, int start, int end)
 // return  matches = rl_completion_matches (text, rad_offset_matches);
 
-int dl_readchar()
+int r_line_readchar()
 {
 	char buf[2];
 #if __WINDOWS__
@@ -116,17 +116,17 @@ static int label_get(char *name)
 }
 
 static void label_add (const char *str) {
-	u32 size = dl_histidx;
+	u32 size = r_line_histidx;
 	u32 len = strlen(str)-1;
 
-	eprintf("New label(%s)\n",str);
+	fprintf(stderr, "New label(%s)\n",str); // XXX debug
 	memset(labels+lsize+4, '\0', BLOCK-((lsize+len+4)%BLOCK));
 	memcpy(labels+lsize, &size, 4);
 	memcpy(labels+lsize+4, str, len);
 	lsize+=len+4+1;
 }
 
-void dl_label_show()
+void r_line_label_show()
 {
 	u32 i, p, n = 0;
 	for(i=0;i<lsize;i++,n++) {
@@ -149,7 +149,7 @@ static int is_label(const char *str)
 		return 0;
 	if (str[strlen(str)-1]==':') {
 		if (str[0]==':') {
-			dl_label_show();
+			r_line_label_show();
 			return 2;
 		}
 		return 1;
@@ -159,7 +159,7 @@ static int is_label(const char *str)
 
 /* history stuff */
 
-int dl_hist_label(const char *label, void (*cb)(const char*))
+int r_line_hist_label(const char *label, void (*cb)(const char*))
 {
 	int i;
 
@@ -182,97 +182,97 @@ int dl_hist_label(const char *label, void (*cb)(const char*))
 	}
 #endif
 
-	if (dl_history != NULL)
-	for(i=0;i<dl_histsize; i++) {
-		if (dl_history[i] == NULL)
+	if (r_line_history != NULL)
+	for(i=0;i<r_line_histsize; i++) {
+		if (r_line_history[i] == NULL)
 			break;
-		fprintf(stderr, "%s\n", dl_history[i]);
+		fprintf(stderr, "%s\n", r_line_history[i]);
 		if (cb != NULL)
-			cb(dl_history[i]);
-		else	fprintf(stderr, "%s\n", dl_history[i]);
+			cb(r_line_history[i]);
+		else	fprintf(stderr, "%s\n", r_line_history[i]);
 	}
 
 	return 1;
 }
 
-int dl_hist_add(const char *line)
+int r_line_hist_add(const char *line)
 {
 #if HAVE_LIB_READLINE
 	add_history(line);
 #endif
-	if (dl_histidx>=dl_histsize)
-		dl_histidx = 0; // workaround
-	if (*line) { // && dl_histidx < dl_histsize) {
-		dl_history[dl_histidx++] = strdup(line);
+	if (r_line_histidx>=r_line_histsize)
+		r_line_histidx = 0; // workaround
+	if (*line) { // && r_line_histidx < r_line_histsize) {
+		r_line_history[r_line_histidx++] = strdup(line);
 		return 1;
 	}
 	return 0;
 //#endif
 }
 
-int dl_hist_up()
+int r_line_hist_up()
 {
-	if (dl_histidx>0) {
-		strncpy(dl_buffer, dl_history[--dl_histidx], DL_BUFSIZE-1);
-		dl_buffer_idx = \
-		dl_buffer_len = strlen(dl_buffer);
+	if (r_line_histidx>0) {
+		strncpy(r_line_buffer, r_line_history[--r_line_histidx], R_LINE_BUFSIZE-1);
+		r_line_buffer_idx = \
+		r_line_buffer_len = strlen(r_line_buffer);
 		return 1;
 	}
 	return 0;
 }
 
-int dl_hist_down()
+int r_line_hist_down()
 {
-	dl_buffer_idx=0;
-	if (dl_histidx<dl_histsize) {
-		if (dl_history[dl_histidx] == NULL) {
-			dl_buffer[0]='\0';
-			dl_buffer_idx = dl_buffer_len = 0;
+	r_line_buffer_idx=0;
+	if (r_line_histidx<r_line_histsize) {
+		if (r_line_history[r_line_histidx] == NULL) {
+			r_line_buffer[0]='\0';
+			r_line_buffer_idx = r_line_buffer_len = 0;
 			return 0;
 		}
-		strncpy(dl_buffer, dl_history[dl_histidx++], DL_BUFSIZE-1);
-		dl_buffer_idx=
-		dl_buffer_len = strlen(dl_buffer);
+		strncpy(r_line_buffer, r_line_history[r_line_histidx++], R_LINE_BUFSIZE-1);
+		r_line_buffer_idx=
+		r_line_buffer_len = strlen(r_line_buffer);
 		return 1;
 	}
 	return 0;
 }
 
-int dl_hist_list()
+int r_line_hist_list()
 {
 	int i = 0;
 
-	if (dl_history != NULL)
-	for(i=0;i<dl_histsize; i++) {
-		if (dl_history[i] == NULL)
+	if (r_line_history != NULL)
+	for(i=0;i<r_line_histsize; i++) {
+		if (r_line_history[i] == NULL)
 			break;
-		printf("%.3d  %s\n", i, dl_history[i]);
+		printf("%.3d  %s\n", i, r_line_history[i]);
 	}
 
 	return i;
 }
 
-int dl_hist_free()
+int r_line_hist_free()
 {
 	int i;
-	if (dl_history != NULL)
-	for(i=0;i<dl_histsize; i++) {
-		free(dl_history[i]);
-		dl_history[i] = NULL;
+	if (r_line_history != NULL)
+	for(i=0;i<r_line_histsize; i++) {
+		free(r_line_history[i]);
+		r_line_history[i] = NULL;
 	}
-	return dl_histidx=0, dl_histsize;
+	return r_line_histidx=0, r_line_histsize;
 }
 
-void dl_free()
+void r_line_free()
 {
 	printf("Bye!\n");
-	dl_hist_free();
+	r_line_hist_free();
 	label_reset();
-	free(dl_history);
+	free(r_line_history);
 }
 
 /* load history from file. if file == NULL load from ~/.<prg>.history or so */
-int dl_hist_load(const char *file)
+int r_line_hist_load(const char *file)
 {
 #if HAVE_LIB_READLINE
 	rad_readline_init();
@@ -289,7 +289,7 @@ int dl_hist_load(const char *file)
 	fgets(buf, 1023, fd);
 	while (!feof(fd)) {
 		buf[strlen(buf)-1]='\0';
-		dl_hist_add(buf);
+		r_line_hist_add(buf);
 		fgets(buf, 1023, fd);
 	}
 	fclose(fd);
@@ -298,7 +298,7 @@ int dl_hist_load(const char *file)
 #endif
 }
 
-int dl_hist_save(const char *file)
+int r_line_hist_save(const char *file)
 {
 #if HAVE_LIB_READLINE
 	rad_readline_finish();
@@ -311,8 +311,8 @@ int dl_hist_save(const char *file)
 	fd = fopen(buf, "w");
 	if (fd == NULL)
 		return 0;
-	for(i=0;i<dl_histidx;i++) {
-		fputs(dl_history[i], fd);
+	for(i=0;i<r_line_histidx;i++) {
+		fputs(r_line_history[i], fd);
 		fputs("\n", fd);
 	}
 	fclose(fd);
@@ -321,46 +321,46 @@ int dl_hist_save(const char *file)
 #endif
 }
 
-int dl_hist_chop(const char *file, int limit)
+int r_line_hist_chop(const char *file, int limit)
 {
 	/* TODO */
 	return 0;
 }
 
 /* initialize history stuff */
-int dl_init()
+int r_line_init()
 {
 #if HAVE_LIB_READLINE
 	rad_readline_init();
 #endif
 	if (labels==NULL)
 		labels = malloc(BLOCK);
-	dl_history = (char **)malloc(dl_histsize*sizeof(char *));
-	if (dl_history==NULL)
+	r_line_history = (char **)malloc(r_line_histsize*sizeof(char *));
+	if (r_line_history==NULL)
 		return 0;
-	memset(dl_history, '\0', dl_histsize*sizeof(char *));
-	dl_histidx = 0;
-	dl_histsize = DL_HISTSIZE;
-	dl_histidx = 0;
-	dl_autosave = 0;
-	dl_disable = 0;
+	memset(r_line_history, '\0', r_line_histsize*sizeof(char *));
+	r_line_histidx = 0;
+	r_line_histsize = R_LINE_HISTSIZE;
+	r_line_histidx = 0;
+	r_line_autosave = 0;
+	r_line_disable = 0;
 	return 1;
 }
 
 /* test */
-int dl_printchar()
+int r_line_printchar()
 {
 	unsigned char buf[10];
 
-	cons_set_raw(1);
-	buf[0]=dl_readchar();
+	r_cons_set_raw(1);
+	buf[0]=r_line_readchar();
 
 	switch(buf[0]) {
 		case 226:
 		case 197:
 		case 195:
 		case 194:
-			buf[0] = dl_readchar();
+			buf[0] = r_line_readchar();
 			printf("unicode-%02x-%02x\n", buf[0],buf[1]);
 			break;
 		case 8: // wtf is 127?
@@ -382,38 +382,36 @@ int dl_printchar()
 			break;
 	}
 
-	cons_set_raw(0);
+	r_cons_set_raw(0);
 
 	return buf[0];
 }
 
 /* main readline function */
-char *dl_readline(int argc, const char **argv)
+char *r_line_readline(int argc, const char **argv)
 {
 	int buf[10];
 	int i, len = 0;
 	int opt = 0;
-	int columns = cons_get_real_columns()-2;
+	int columns = r_cons_get_real_columns()-2;
 
-	dl_buffer_idx = dl_buffer_len = 0;
-	dl_buffer[0]='\0';
-
+	r_line_buffer_idx = r_line_buffer_len = 0;
+	r_line_buffer[0]='\0';
 #if RADARE_CORE
-	dl_echo = config.verbose;
+	r_line_echo = config.verbose;
 #endif
-
-	if (dl_disable) {
-		dl_buffer[0]='\0';
-		fgets(dl_buffer, DL_BUFSIZE-1, stdin);
-		dl_buffer[strlen(dl_buffer)] = '\0';
-		return (*dl_buffer)? dl_buffer : NULL;
+	if (r_line_disable) {
+		r_line_buffer[0]='\0';
+		fgets(r_line_buffer, R_LINE_BUFSIZE-1, stdin);
+		r_line_buffer[strlen(r_line_buffer)] = '\0';
+		return (*r_line_buffer)? r_line_buffer : NULL;
 	}
 
 	memset(&buf,0,sizeof buf);
-	cons_set_raw(1);
+	r_cons_set_raw(1);
 
-	if (dl_echo) {
-		printf("%s", dl_prompt);
+	if (r_line_echo) {
+		printf("%s", r_line_prompt);
 		fflush(stdout);
 	}
 
@@ -424,12 +422,12 @@ char *dl_readline(int argc, const char **argv)
 
 	while(1) {
 #if 0
-		if (dl_echo) {
+		if (r_line_echo) {
 			printf("  (");
 			for(i=1;i<argc;i++) {
-				if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
+				if (r_line_buffer_len==0||!strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
 					len+=strlen(argv[i])+1;
-					if (len+dl_buffer_len+4 >= columns) break;
+					if (len+r_line_buffer_len+4 >= columns) break;
 					printf("%s ", argv[i]);
 				}
 			}
@@ -438,14 +436,14 @@ char *dl_readline(int argc, const char **argv)
 		}
 #endif
 
-		dl_buffer[dl_buffer_len]='\0';
-		buf[0] = dl_readchar();
+		r_line_buffer[r_line_buffer_len]='\0';
+		buf[0] = r_line_readchar();
 		
 //		printf("\x1b[K\r");
-		columns = cons_get_real_columns()-2;
+		columns = r_cons_get_real_columns()-2;
 		if (columns <1)
 			columns = 40;
-		if (dl_echo)
+		if (r_line_echo)
 		printf("\r%*c\r", columns, ' ');
 
 		switch(buf[0]) {
@@ -455,94 +453,94 @@ char *dl_readline(int argc, const char **argv)
 				/* ignore atm */
 				break;
 			case 1: // ^A
-				dl_buffer_idx = 0;
+				r_line_buffer_idx = 0;
 				break;
 			case 5: // ^E
-				dl_buffer_idx = dl_buffer_len;
+				r_line_buffer_idx = r_line_buffer_len;
 				break;
 			case 3: // ^C 
-				if (dl_echo)
+				if (r_line_echo)
 					printf("\n^C\n");
-				dl_buffer[dl_buffer_idx = dl_buffer_len = 0] = '\0';
+				r_line_buffer[r_line_buffer_idx = r_line_buffer_len = 0] = '\0';
 				goto _end;
 			case 4: // ^D
-				if (dl_echo)
+				if (r_line_echo)
 					printf("^D\n");
-				if (!dl_buffer[0]) { /* eof */
-					cons_set_raw(0);
+				if (!r_line_buffer[0]) { /* eof */
+					r_cons_set_raw(0);
 					return NULL;
 				}
 				break;
 			case 10: // ^J -- ignore
-				return dl_buffer;
+				return r_line_buffer;
 			case 11: // ^K -- ignore
 				break;
 			case 19: // ^S -- backspace
-				dl_buffer_idx = dl_buffer_idx?dl_buffer_idx-1:0;
+				r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
 				break;
 			case 12: // ^L -- right
-				dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
-				if (dl_echo)
+				r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
+				if (r_line_echo)
 					printf("\x1b[2J\x1b[0;0H");
 				fflush(stdout);
 				break;
 			case 21: // ^U - cut
-				dl_clipboard = strdup(dl_buffer);
-				dl_buffer[0]='\0';
-				dl_buffer_len = 0;
-				dl_buffer_idx = 0;
+				r_line_clipboard = strdup(r_line_buffer);
+				r_line_buffer[0]='\0';
+				r_line_buffer_len = 0;
+				r_line_buffer_idx = 0;
 				break;
 			case 23: // ^W
-				if (dl_buffer_idx>0) {
-					for(i=dl_buffer_idx-1;i&&dl_buffer[i]==' ';i--);
-					for(;i&&dl_buffer[i]!=' ';i--);
-					for(;i>0&&dl_buffer[i]==' ';i--);
+				if (r_line_buffer_idx>0) {
+					for(i=r_line_buffer_idx-1;i&&r_line_buffer[i]==' ';i--);
+					for(;i&&r_line_buffer[i]!=' ';i--);
+					for(;i>0&&r_line_buffer[i]==' ';i--);
 					if (i>1) {
-						if (dl_buffer[i+1]==' ')
+						if (r_line_buffer[i+1]==' ')
 						i+=2;
 					} else if (i<0) i=0;
-					strcpy(dl_buffer+i, dl_buffer+dl_buffer_idx);
-					dl_buffer_len = strlen(dl_buffer);
-					dl_buffer_idx = i;
+					strcpy(r_line_buffer+i, r_line_buffer+r_line_buffer_idx);
+					r_line_buffer_len = strlen(r_line_buffer);
+					r_line_buffer_idx = i;
 				}
 				break;
 			case 25: // ^Y - paste
-				if (dl_clipboard != NULL) {
-					dl_buffer_len += strlen(dl_clipboard);
+				if (r_line_clipboard != NULL) {
+					r_line_buffer_len += strlen(r_line_clipboard);
 					// TODO: support endless strings
-					if (dl_buffer_len < DL_BUFSIZE) {
-						dl_buffer_idx = dl_buffer_len;
-						strcat(dl_buffer, dl_clipboard);
-					} else dl_buffer_len -= strlen(dl_clipboard);
+					if (r_line_buffer_len < R_LINE_BUFSIZE) {
+						r_line_buffer_idx = r_line_buffer_len;
+						strcat(r_line_buffer, r_line_clipboard);
+					} else r_line_buffer_len -= strlen(r_line_clipboard);
 				}
 				break;
 			case 16:
-				dl_hist_up();
+				r_line_hist_up();
 				break;
 			case 14:
-				dl_hist_down();
+				r_line_hist_down();
 				break;
 			case 27: //esc-5b-41-00-00
-				buf[0] = dl_readchar();
-				buf[1] = dl_readchar();
+				buf[0] = r_line_readchar();
+				buf[1] = r_line_readchar();
 				if (buf[0]==0x5b) {
 					switch(buf[1]) {
 					case 0x33: // supr
-						if (dl_buffer_idx<dl_buffer_len)
-							strcpy(dl_buffer, dl_buffer+1);
+						if (r_line_buffer_idx<r_line_buffer_len)
+							strcpy(r_line_buffer, r_line_buffer+1);
 						break;
 					/* arrows */
 					case 0x41:
-						dl_hist_up();
+						r_line_hist_up();
 						break;
 					case 0x42:
-						dl_hist_down();
+						r_line_hist_down();
 						break;
 					case 0x43:
-						dl_buffer_idx = dl_buffer_idx<dl_buffer_len?dl_buffer_idx+1:dl_buffer_len;
+						r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
 						break;
 					case 0x44:
-						dl_buffer_idx = dl_buffer_idx?dl_buffer_idx-1:0;
+						r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
 						break;
 					}
 				}
@@ -550,60 +548,60 @@ char *dl_readline(int argc, const char **argv)
 				break;
 			case 8:
 			case 127:
-				if (dl_buffer_idx < dl_buffer_len) {
-					if (dl_buffer_idx>0) {
-						dl_buffer_idx--;
-						memcpy(dl_buffer+dl_buffer_idx, dl_buffer+dl_buffer_idx+1,strlen(dl_buffer+dl_buffer_idx));
+				if (r_line_buffer_idx < r_line_buffer_len) {
+					if (r_line_buffer_idx>0) {
+						r_line_buffer_idx--;
+						memcpy(r_line_buffer+r_line_buffer_idx, r_line_buffer+r_line_buffer_idx+1,strlen(r_line_buffer+r_line_buffer_idx));
 					}
 				} else {
-					dl_buffer_idx = --dl_buffer_len;
-					if (dl_buffer_len<0) dl_buffer_len=0;
-					dl_buffer[dl_buffer_len]='\0';
+					r_line_buffer_idx = --r_line_buffer_len;
+					if (r_line_buffer_len<0) r_line_buffer_len=0;
+					r_line_buffer[r_line_buffer_len]='\0';
 				}
-				if (dl_buffer_idx<0)
-					dl_buffer_idx = 0;
+				if (r_line_buffer_idx<0)
+					r_line_buffer_idx = 0;
 				break;
 			case 9:// tab
 				/* autocomplete */
 				// XXX does not autocompletes correctly
 				// XXX needs to check if valid results have the same prefix (from 1 to N)
-				if (dl_callback != NULL) {
-					//const char *from = strrchr(dl_buffer, ' ');
-					//char **res = dl_callback(dl_buffer, (from==NULL)?dl_buffer_idx:from-dl_buffer, dl_buffer_len);
+				if (r_line_callback != NULL) {
+					//const char *from = strrchr(r_line_buffer, ' ');
+					//char **res = r_line_callback(r_line_buffer, (from==NULL)?r_line_buffer_idx:from-r_line_buffer, r_line_buffer_len);
 					/* TODO: manage res */
 				} else {
-					if (dl_buffer_idx>0)
+					if (r_line_buffer_idx>0)
 					for(i=1,opt=0;i<argc;i++)
-						if (!strncmp(argv[i], dl_buffer, dl_buffer_idx))
+						if (!strncmp(argv[i], r_line_buffer, r_line_buffer_idx))
 							opt++;
 
-					if (dl_buffer_len>0&&opt==1)
+					if (r_line_buffer_len>0&&opt==1)
 						for(i=1;i<argc;i++) {
-							if (!strncmp(dl_buffer, argv[i], dl_buffer_len)) {
-								strcpy(dl_buffer, argv[i]);
-								dl_buffer_idx = dl_buffer_len = strlen(dl_buffer);
+							if (!strncmp(r_line_buffer, argv[i], r_line_buffer_len)) {
+								strcpy(r_line_buffer, argv[i]);
+								r_line_buffer_idx = r_line_buffer_len = strlen(r_line_buffer);
 								// TODO: if only 1 keyword hits:
-								//		if (argv[i][dl_buffer_len]=='\0') {
-								//			strcat(dl_buffer, " ");
-								//			dl_buffer_len++;
+								//		if (argv[i][r_line_buffer_len]=='\0') {
+								//			strcat(r_line_buffer, " ");
+								//			r_line_buffer_len++;
 								//		}
 								break;
 							}
 						}
 
 					/* show options */
-					if (dl_buffer_idx==0 || opt>1) {
-						if (dl_echo)
-							printf("%s%s\n",dl_prompt,dl_buffer);
+					if (r_line_buffer_idx==0 || opt>1) {
+						if (r_line_echo)
+							printf("%s%s\n",r_line_prompt,r_line_buffer);
 						for(i=1;i<argc;i++) {
-							if (dl_buffer_len==0||!strncmp(argv[i], dl_buffer, dl_buffer_len)) {
+							if (r_line_buffer_len==0||!strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
 								len+=strlen(argv[i]);
-					//			if (len+dl_buffer_len+4 >= columns) break;
-								if (dl_echo)
+					//			if (len+r_line_buffer_len+4 >= columns) break;
+								if (r_line_echo)
 									printf("%s ", argv[i]);
 							}
 						}
-						if (dl_echo)
+						if (r_line_echo)
 							printf("\n");
 					}
 					fflush(stdout);
@@ -617,52 +615,52 @@ char *dl_readline(int argc, const char **argv)
 #if 0
 				// force command fit
 				for(i=1;i<argc;i++) {
-					if (dl_buffer_len==0 || !strncmp(argv[i], dl_buffer, dl_buffer_len)) {
+					if (r_line_buffer_len==0 || !strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
 						printf("%*c", columns, ' ');
 						printf("\r");
-						printf("\n\n(%s)\n\n", dl_buffer);
-						cons_set_raw(0);
-						return dl_buffer;
+						printf("\n\n(%s)\n\n", r_line_buffer);
+						r_cons_set_raw(0);
+						return r_line_buffer;
 					}
 				}
 #endif
 			default:
 				/* XXX use ^A & ^E */
-				if (dl_buffer_idx<dl_buffer_len) {
-					for(i = ++dl_buffer_len;i>dl_buffer_idx;i--)
-						dl_buffer[i] = dl_buffer[i-1];
-					dl_buffer[dl_buffer_idx] = buf[0];
+				if (r_line_buffer_idx<r_line_buffer_len) {
+					for(i = ++r_line_buffer_len;i>r_line_buffer_idx;i--)
+						r_line_buffer[i] = r_line_buffer[i-1];
+					r_line_buffer[r_line_buffer_idx] = buf[0];
 				} else {
-					dl_buffer[dl_buffer_len]=buf[0];
-					dl_buffer_len++;
-					if (dl_buffer_len>1000)
-						dl_buffer_len--;
-					dl_buffer[dl_buffer_len]='\0';
+					r_line_buffer[r_line_buffer_len]=buf[0];
+					r_line_buffer_len++;
+					if (r_line_buffer_len>1000)
+						r_line_buffer_len--;
+					r_line_buffer[r_line_buffer_len]='\0';
 				}
-				dl_buffer_idx++;
+				r_line_buffer_idx++;
 				break;
 		}
-		if (dl_echo) {
-			printf("\r%s%s", dl_prompt, dl_buffer);
-			printf("\r%s", dl_prompt);
+		if (r_line_echo) {
+			printf("\r%s%s", r_line_prompt, r_line_buffer);
+			printf("\r%s", r_line_prompt);
 		
-			for(i=0;i<dl_buffer_idx;i++)
-				printf("%c", dl_buffer[i]);
+			for(i=0;i<r_line_buffer_idx;i++)
+				printf("%c", r_line_buffer[i]);
 			fflush(stdout);
 		}
 	}
 
 _end:
-	cons_set_raw(0);
-	if (dl_echo) {
-		printf("\r%s%s\n", dl_prompt, dl_buffer);
+	r_cons_set_raw(0);
+	if (r_line_echo) {
+		printf("\r%s%s\n", r_line_prompt, r_line_buffer);
 		fflush(stdout);
 	}
 
-	if (dl_buffer[0]=='!' && dl_buffer[1]=='\0') {
-		dl_hist_list();
-		return dl_nullstr;
+	if (r_line_buffer[0]=='!' && r_line_buffer[1]=='\0') {
+		r_line_hist_list();
+		return r_line_nullstr;
 	}
 	//write(1,"\n",1);
-	return dl_buffer;
+	return r_line_buffer;
 }

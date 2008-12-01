@@ -3,6 +3,10 @@ CC?=gcc
 CFLAGS+=-I../include -fPIC
 CC_LIB=${CC} -shared -o ${LIBSO}
 CC_AR=ar -r ${LIBAR}
+LINK?=
+
+# Debug
+CFLAGS+=-g
 
 # Output
 EXT_AR=a
@@ -12,16 +16,16 @@ LIBSO=${LIB}.${EXT_SO}
 
 # Rules
 all: ${OBJ} ${LIBSO} ${LIBAR}
-	-@([ -e t/Makefile ] && cd t && ${MAKE} all)
+	@if [ -e t/Makefile ]; then (cd t && ${MAKE} all) ; else true ; fi
 
 ${LIBSO}:
-	${CC_LIB} ${LDFLAGS} ${OBJ}
+	${CC_LIB} ${LDFLAGS} ${LINK} ${OBJ}
 
 ${LIBAR}:
 	${CC_AR} ${OBJ}
 
 clean:
 	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN}
-	-@([ -e t/Makefile ] && cd t && ${MAKE} clean)
+	@if [ -e t/Makefile ]; then (cd t && ${MAKE} clean) ; else true ; fi
 
 .PHONY: all clean ${LIBSO} ${LIBAR}
