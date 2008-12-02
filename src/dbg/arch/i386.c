@@ -424,6 +424,7 @@ int arch_stackanal()
 	%ebp+4 points to ret
 	*/
 	int ret, i,j;
+	u64 last;
 	unsigned long long ptr;
 	unsigned long long ebp2;
 	regs_t regs;
@@ -433,6 +434,7 @@ int arch_stackanal()
 
         ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) return 1;
+ 	last = config_get_i("dbg.btlast");
 
 	// TODO: implement [stack] map uptrace method too
 	cons_printf("esp backtrace\n");
@@ -442,6 +444,10 @@ int arch_stackanal()
 		debug_read_at(ps.tid, &ptr, 4, R_ESP(regs)+4);
 //		if (ptr == 0xffffffff || R_ESP(regs) == 0x0) break;
 //cons_printf("%d %08x\n", i, addr);
+		if (last != 0 && addr == last) {
+			cons_printf("--dbg.btlast--\n");
+			break;
+		}
 
 		{
 			struct list_head *pos;
@@ -499,10 +505,11 @@ int arch_stackanal()
 int arch_backtrace()
 {
 	int ret, i,j;
+	u64 last;
 	unsigned long esp;
 	unsigned long ebp2;
-	regs_t regs;
 	unsigned char buf[4];
+	regs_t regs;
 
 	if (ps.opened == 0)
 		return 0;
@@ -510,6 +517,7 @@ int arch_backtrace()
 	ret = debug_getregs(ps.tid, &regs);
 	if (ret < 0) return 1;
 
+ 	last = config_get_i("dbg.btlast");
 	// TODO: implement [stack] map uptrace method too
 	esp = R_ESP(regs);
 	for(i=0;i<1024;i++) {
@@ -519,6 +527,10 @@ int arch_backtrace()
 		debug_read_at(ps.tid, &buf, 4, (ebp2-5)-(ebp2-5)%4);
 
 		addr = ebp2;
+		if (last != 0 && addr == last) {
+			cons_printf("--dbg.btlast--\n");
+			break;
+		}
 		// TODO: arch_is_call() here and this fun will be portable
 		if (buf[(ebp2-5)%4]==0xe8) {
 			// is call
@@ -540,9 +552,8 @@ int arch_backtrace()
 						c = (mr->flags & FLAG_USERCODE)?'u':'.';
 						for(j=0;name[j];j++) {
 							int ch = name[j];
-							if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-') {
+							if (!is_printable(ch)||ch=='/'||ch=='.'||ch=='-')
 								ch = '_';
-							}
 							name[j] = ch;
 						}
 						name[j]='\0';

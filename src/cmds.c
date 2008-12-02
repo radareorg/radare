@@ -221,7 +221,7 @@ CMD_DECL(analyze)
 	int depth = input[0]?atoi(input+1):0;
 	u64 oseek = config.seek;
 
-	if (depth<1)
+	if (input[0]=='c'&&depth<1) // only for 'ac'
 		depth = config_get_i("graph.depth");
 	if (depth<1) depth=1;
 	//eprintf("depth = %d\n", depth);

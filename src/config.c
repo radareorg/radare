@@ -886,6 +886,7 @@ void config_init(int first)
   config_set_i("dbg.stacksize", 66);
   config_set("dbg.stackreg", "esp");
   config_set("dbg.bt", "false");
+  config_set_i("dbg.btlast", 0);
   config_set("dbg.fullbt", "false"); // user backtrace or lib+user backtrace
   config_set("dbg.bttype", "default"); // default, st and orig or so!
 #if __APPLE__ || __ARM__ || __mips__
