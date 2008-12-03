@@ -12,6 +12,7 @@ void trace_init();
 
 struct trace_t {
 	u64 addr;
+	u64 tags;
 	int opsize;
 	int times;
 	int count;

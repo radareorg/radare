@@ -20,6 +20,9 @@
 
 #include "main.h"
 
+// TODO: add tags to ranges
+//    >> art command
+
 static struct list_head ranges;
 static int ranges_is_init = 0;
 static int ranges_changed = 0;
@@ -387,16 +390,19 @@ int ranges_boolean(u64 from, u64 to, int flags)
 		if (r->from > from && r->from < to) {
 			cons_printf("0x%08llx .. 0x%08llx\n",
 				from, r->from);
+			total += (r->from - from);
 			from = r->to;
 		}
 	}
 	if (from < to) {
 		cons_printf("0x%08llx .. 0x%08llx\n",
 			from, to);
+		total += (to-from);
 	}
 	// TODO
 	// show ranges
 	// show total bytes
 	// show total booleaned bytes
+	eprintf("Total bytes: %lld\n", total);
 	return 0;
 }

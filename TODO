@@ -15,6 +15,8 @@ TheBook
 * doc4 'g' and 'x' in visual
 * Documentation for grep ~#[N]
 
+* Added at% like ar%
+
 * i* -> not implemented??
 * at* -> show ar+ commands
 * g*  -> import graph information as ar+ commands

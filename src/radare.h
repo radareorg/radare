@@ -130,7 +130,7 @@ u8 *radare_block();
 
 int resolve_encoding(const char *name);
 int trace_get_between(u64 from, u64 to);
-struct trace_t *trace_get(u64 addr);
+struct trace_t *trace_get(u64 addr, int tag);
 int radare_close();
 
 /* rabin.h */

@@ -238,12 +238,21 @@ CMD_DECL(analyze)
 			eprintf("   > at*                ; list all traced opcode offsets\n");
 			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
 			eprintf("   > at [addr]          ; show trace info at address\n");
+			eprintf("   > att [tag]          ; select trace tag (no arg unsets)\n");
+			eprintf("   > at%%                ; TODO\n");
 			eprintf("   > atr                ; show traces as range commands (ar+)\n");
 			eprintf("   > atd                ; show disassembly trace\n");
 			eprintf("   > atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
+			eprintf("Current Tag: %d\n", trace_tag_get());
+			break;
+		case 't':
+			sz = atoi(input+2);
+			if (sz>0) {
+				trace_tag_set(sz-1);
+			} else trace_tag_set(-1);
 			break;
 		case 'd':
-			trace_show(2);
+			trace_show(2, trace_tag_get());
 			break;
 		case 'D':
 			radare_cmd("at*|rsc dwarf-traces $FILE", 0);
@@ -263,7 +272,7 @@ CMD_DECL(analyze)
 			break;
 		case ' ': {
 			u64 foo = get_math(input+1);
-			struct trace_t *t = (struct trace_t *)trace_get(foo);
+			struct trace_t *t = (struct trace_t *)trace_get(foo, trace_tag_get());
 			if (t != NULL) {
 				cons_printf("offset = 0x%llx\n", t->addr);
 				cons_printf("opsize = %d\n", t->opsize);
@@ -272,13 +281,13 @@ CMD_DECL(analyze)
 				//TODO cons_printf("time = %d\n", t->tm);
 			} } break;
 		case '*':
-			trace_show(1);
+			trace_show(1, trace_tag_get());
 			break;
 		case 'r':
-			trace_show(-1);
+			trace_show(-1, trace_tag_get());
 			break;
 		default:
-			trace_show(0);
+			trace_show(0, trace_tag_get());
 		}
 		break;
 	case 'd':

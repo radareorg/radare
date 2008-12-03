@@ -30,12 +30,52 @@
 
 struct list_head traces;
 static unsigned int n_traces = 0;
+static int trace_changed = 0;
+static int trace_tag = -1;
 
-struct trace_t *trace_get(u64 addr)
+int trace_tag_get()
+{
+	return trace_tag;
+}
+
+int trace_tag_set(int id)
+{
+	if (id>=-1&&id<64) {
+		trace_tag = id;
+		return 1;
+	}
+	return 0;
+}
+
+int trace_sort()
+{
+	struct list_head *pos, *pos2;
+	struct list_head *n, *n2;
+	int ch=0;
+
+	if (trace_changed==0)
+		return 0;
+
+	list_for_each_safe(pos, n, &traces) {
+		struct trace_t *r = list_entry(pos, struct trace_t, list);
+		list_for_each_safe(pos2, n2, &traces) {
+			struct trace_t *r2 = list_entry(pos2, struct trace_t, list);
+			if ((r != r2) && (r->addr > r2->addr)) {
+				list_move(pos, pos2);
+				ch=1;
+			}
+		}
+	}
+	return trace_changed = ch;
+}
+
+struct trace_t *trace_get(u64 addr, int tag)
 {
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
 		struct trace_t *h= list_entry(pos, struct trace_t, list);
+		if (tag != -1 && !(h->tags & (1<<tag)))
+			continue;
 		if (h->addr == addr)
 			return h;
 	}
@@ -45,13 +85,13 @@ struct trace_t *trace_get(u64 addr)
 // num of traces for an address
 int trace_times(u64 addr)
 {
-	struct trace_t *t = trace_get(addr);
+	struct trace_t *t = trace_get(addr, trace_tag);
 	return t?t->times:0;
 }
 
 int trace_count(u64 addr)
 {
-	struct trace_t *t = trace_get(addr);
+	struct trace_t *t = trace_get(addr, trace_tag);
 	return t?t->count:0;
 }
 
@@ -60,7 +100,7 @@ int trace_index(u64 addr)
 	int idx = -1;
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
-		struct trace_t *h= list_entry(pos, struct trace_t, list);
+		struct trace_t *h = list_entry(pos, struct trace_t, list);
 		idx++;
 		if (h->addr == addr)
 			return idx;
@@ -95,12 +135,16 @@ int trace_add(u64 addr)
 
 	if (arch_aop == NULL)
 		return -1;
+
 	if (config_get("trace.dup")) {
 		/* update times counter */
 		list_for_each(pos, &traces) {
 			t = list_entry(pos, struct trace_t, list);
-			if (t->addr == addr)
+			if (t->addr == addr) {
+				if (trace_tag != -1)
+					t->tags |= trace_tag;
 				++(t->times);
+			}
 		}
 	} else {
 		list_for_each(pos, &traces) {
@@ -108,6 +152,8 @@ int trace_add(u64 addr)
 			if (t->addr == addr) {
 				t->count = ++n_traces;
 				gettimeofday(&(t->tm), NULL);
+				if (trace_tag != -1)
+					t->tags |= trace_tag;
 				return ++(t->times);
 			}
 		}
@@ -121,29 +167,36 @@ int trace_add(u64 addr)
 	t->opsize = arch_aop(addr, bytes, NULL);
 	gettimeofday(&(t->tm), NULL);
 	t->count = ++n_traces;
+	if (trace_tag != -1)
+		t->tags |= trace_tag;
+	trace_changed = 1;
 	list_add_tail(&(t->list), &traces);
 
 	//eprintf("new trace (0x%08x)\n", (unsigned long)addr);
 	return t->times;
 }
 
-u64 trace_range(u64 from)
+u64 trace_range(u64 from, int tag)
 {
+	struct trace_t *h;
 	u64 last = from;
 	u64 last2 = 0LL;
-	struct trace_t *h;
 	
 	while(last != last2) {
 		last2 = last;
-		h = trace_get(last);
-		if (h) last = last + h->opsize;
+		h = trace_get(last, tag);
+		if (h) {
+			if (tag != -1 && !(h->tags & (1<<tag)))
+				continue;
+			last = last + h->opsize;
+		}
 	}
 
 	return last;
 }
 
 #if 1
-u64 trace_next(u64 from)
+u64 trace_next(u64 from, int tag)
 {
         u64 next = 0xFFFFFFFFFFFFFFFFLL;
         struct list_head *pos;
@@ -151,6 +204,8 @@ u64 trace_next(u64 from)
 
         list_for_each(pos, &traces) {
                 h = list_entry(pos, struct trace_t, list);
+		if (tag != -1 && !(h->tags & (1<<tag)))
+			continue;
                 if (h->addr > from && h->addr < next)
                         next = h->addr;
         }
@@ -159,7 +214,6 @@ u64 trace_next(u64 from)
                 return 0LL;
         return next;
 }
-
 #endif
 
 #if 0
@@ -191,7 +245,7 @@ u64 trace_next(u64 from)
 }
 #endif
 
-void trace_show(int plain)
+void trace_show(int plain, int tag)
 {
 	u64 from = 0LL;
 	u64 last;
@@ -200,6 +254,8 @@ void trace_show(int plain)
 	struct list_head *pos;
 	struct trace_t *h;
 
+	eprintf("Displaying tag: %d\n", tag);
+	trace_sort();
 	opcode[0]='\0';
 	/* get the lower address */
 	list_for_each(pos, &traces) {
@@ -208,9 +264,12 @@ void trace_show(int plain)
 			from = h->addr;
 		if (h->addr < from)
 			from = h->addr;
+		if (tag != -1 && !(h->tags & (1<<tag)))
+			continue;
 		switch(plain) {
 		case 1:
-			cons_printf("0x%08llx %d %d\n", h->addr, h->times, h->count);
+			cons_printf("0x%08llx %d %d tags=%08llx\n",
+				h->addr, h->times, h->count, h->tags);
 			break;
 		case 2:
 			config.verbose=0;
@@ -226,12 +285,14 @@ void trace_show(int plain)
 		return;
 
 	while(from) {
-		last = trace_range(from);
+		last = trace_range(from, tag);
+		if (last == from)
+			break;
 		// TODO: show timestamps
 		if (plain==0)
 			cons_printf("0x%08llx - 0x%08llx\n", from, last);
 		else cons_printf("ar+ 0x%08llx 0x%08llx\n", from, last);
-		from = trace_next(last);
+		from = trace_next(last, tag);
 		cons_flush();
 	}
 }
@@ -261,6 +322,8 @@ int trace_get_between(u64 from, u64 to)
 	/* get the lower address */
 	list_for_each(pos, &traces) {
 		h = list_entry(pos, struct trace_t, list);
+		if (trace_tag != -1 && !(h->tags & (1<<trace_tag)))
+			continue;
 		if (h->addr >= from && h->addr <=to)
 			ctr++;
 	}
