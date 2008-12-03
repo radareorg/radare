@@ -94,14 +94,14 @@ int getv()
 int debug_tt(const char *arg)
 {
 	struct aop_t aop;
-	int pid;
+	int pid, bpsz;
 	u64 pc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
 	u64 ba = config.seek; // base address
 	u64 sz = get_math(arg+1); // size
 	int status;
-	if (sz <1) {
+	if (sz<1) {
 		cons_printf("Usage: !tt [size] @ [base_address]\n");
 		cons_printf("Touch trace a section of N bytes starting at seek\n");
 		return 0;
@@ -113,9 +113,22 @@ int debug_tt(const char *arg)
 	sa = (u8 *)malloc(sz);
 	cc = (u8 *)malloc(sz);
 	debug_read_at(ps.tid, sa, (int)sz, ba);
-	/* TODO: make it depend on asm.arch */
-	/* TODO: use memcpy_loop with get_arch_breakpoint() or whatever */
-	memset(cc, '\xCC', sz);
+	/* TODO: use get_arch_breakpoint() or whatever */
+	switch(config.arch) {
+	case ARCH_ARM:
+		bpsz = 4;
+		memcpy_loop(cc,"\x01\x00\x9f\xef", sz, bpsz);
+		break;
+	case ARCH_MIPS:
+		bpsz = 4;
+		memcpy_loop(cc,"\x0d\x00\x00\x00", sz, bpsz);
+		break;
+	case ARCH_X86:
+	default:
+		memset(cc, '\xCC', sz);
+		bpsz = 1;
+		break;
+	}
 	debug_write_at(ps.tid, cc, (int)sz,ba);
 
 	while(!config.interrupted) {
@@ -130,7 +143,6 @@ int debug_tt(const char *arg)
 		}
 		if (pc >= ba && pc <= ba+sz) {
 			/* swap area and continue */
-			int bpsz = 1; // XXX for intel
 			int delta = pc-ba-bpsz;
 
 #if 0
