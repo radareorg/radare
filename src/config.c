@@ -849,11 +849,9 @@ void config_init(int first)
 
   config_set_i("range.from", 0);
   config_set_i("range.to", 0xffff);
-#if 0
   config_set("range.traces", "true");
   config_set("range.graphs", "true");
   config_set("range.functions", "true");
-#endif
 
   config_set("child.stdio", "");
   config_set("child.stdin", "");

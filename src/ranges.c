@@ -22,6 +22,7 @@
 
 static struct list_head ranges;
 static int ranges_is_init = 0;
+static int ranges_changed = 0;
 
 int ranges_init()
 {
@@ -42,11 +43,13 @@ void ranges_free()
 	INIT_LIST_HEAD(&ranges);
 }
 
+// static int rflags;
+// int ranges_set_flags()
 static int ranges_get_flags()
 {
 	int flags = 0;
 // TODO: not yet implemented
-#if 0
+#if 1
 	flags |= config_get("range.traces")?RANGE_TRACES:0;
 	flags |= config_get("range.graphs")?RANGE_GRAPHS:0;
 	flags |= config_get("range.functions")?RANGE_FUNCTIONS:0;
@@ -56,9 +59,8 @@ static int ranges_get_flags()
 
 static void ranges_abs(u64 *f, u64 *t)
 {
-	u64 tmp;
 	if (*f>*t) {
-		tmp = *f;
+		u64 tmp = *f;
 		*f = *t;
 		*t = tmp;
 	}
@@ -114,6 +116,7 @@ int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 		r->from = from;
 		r->to = to;
 		list_add_tail(&(r->list), rang);
+		ranges_changed = 1;
 	}
 }
 
@@ -151,6 +154,7 @@ int ranges_sub(struct list_head *rang, u64 from, u64 to)
 		if (r->from>from && r->from<to && r->to>from && r->to < to) {
 			/* delete */
 			list_del(&(r->list));
+			ranges_changed = 1;
 			goto __reloop;
 		}
 		/* split */
@@ -178,6 +182,79 @@ int ranges_merge(struct list_head *rang)
 	return 0;
 }
 
+int ranges_is_used(u64 addr)
+{
+	struct list_head *pos;
+	list_for_each(pos, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		if (addr >= r->from && addr <= r->to)
+			return 1;
+	}
+	return 0;
+}
+
+int ranges_sort()
+{
+	struct list_head *pos, *pos2;
+	struct list_head *n, *n2;
+	int ch=0;
+
+	if (ranges_changed==0)
+		return 0;
+
+	list_for_each_safe(pos, n, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		list_for_each_safe(pos2, n2, &ranges) {
+			struct range_t *r2 = list_entry(pos2, struct range_t, list);
+			if ((r != r2) && (r->from > r2->from)) {
+				list_move(pos, pos2);
+				ch=1;
+			}
+		}
+	}
+	return ranges_changed = ch;
+}
+
+int ranges_percent()
+{
+	struct list_head *pos;
+	int w, i;
+	u64 seek, step;
+	u64 dif, from = -1, to = -1;
+
+	list_for_each(pos, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		if (from == -1) {
+			/* init */
+			from = r->from;
+			to = r->to;
+		} else {
+			if (from>r->from)
+				from = r->from;
+			if (to<r->to)
+				to = r->to;
+		}
+	}
+	w = 65 ; // columns
+	if (from == -1) {
+		step = from = to = 0;
+	} else {
+		dif = to-from;
+		if (dif<w) step = 1; // XXX
+		else step = dif/w;
+		seek = 0;
+	}
+	seek = 0;
+	cons_printf("0x%08llx [", from);
+	for(i=0;i<w;i++) {
+		if (ranges_is_used(seek))
+			cons_strcat("#");
+		else cons_strcat(".");
+		seek += step;
+	}
+	cons_printf("] 0x%08llx\n", to);
+}
+
 int ranges_cmd(const char *arg)
 {
 	int flags;
@@ -201,12 +278,20 @@ int ranges_cmd(const char *arg)
 		eprintf("ar-*              ; reset range tables\n");
 		eprintf(" ; range.from     ; default boolean from address\n");
 		eprintf(" ; range.to       ; default boolean to address\n");
-#if 0
+		eprintf("ari               ; import ranges from:\n");
 		eprintf(" ; range.traces   ; (true) join trace information (at?)\n");
 		eprintf(" ; range.graphs   ; (true) join graph information (g?)\n");
 		eprintf(" ; range.functions; (true) join functions information (CF)\n");
-#endif
 		eprintf(" ; e range.       ; show range config vars\n");
+		break;
+	case 'i':
+		flags = ranges_get_flags();
+		if (flags & RANGE_TRACES)
+			radare_cmd_raw(".atr*", 0);
+		if (flags & RANGE_GRAPHS)
+			radare_cmd_raw(".gr*", 0);
+		if (flags & RANGE_FUNCTIONS)
+			radare_cmd_raw(".CF*", 0);
 		break;
 	case 'm':
 		ranges_merge(NULL);
@@ -224,7 +309,7 @@ int ranges_cmd(const char *arg)
 		}
 		break;
 	case '%':
-		eprintf("TODO\n");
+		ranges_percent();
 		break;
 	case '-':
 		if (*a==' ') a=a+1;
@@ -267,6 +352,7 @@ int ranges_list(int rad)
 {
 	u64 total = 0;
 	struct list_head *pos;
+	ranges_sort();
 	list_for_each(pos, &ranges) {
 		struct range_t *r = list_entry(pos, struct range_t, list);
 		if (rad) cons_printf("ar+ 0x%08llx 0x%08llx\n", r->from, r->to);
@@ -283,6 +369,7 @@ int ranges_boolean(u64 from, u64 to, int flags)
 	u64 min = to;
 	u64 max = from;
 	struct list_head *pos;
+	struct range_t *r = NULL;
 
 	eprintf("; ranges from 0x%08llx to 0x%08llx (flags=%d)\n",
 		from, to, flags);
@@ -293,17 +380,19 @@ int ranges_boolean(u64 from, u64 to, int flags)
             |__|    |__|       |_|      
 #endif
 
+	ranges_sort();
+
 	list_for_each(pos, &ranges) {
-		struct range_t *r = list_entry(pos, struct range_t, list);
-		if (r->from > from && r->from < min) {
-			min = r->from;
+		r = list_entry(pos, struct range_t, list);
+		if (r->from > from && r->from < to) {
+			cons_printf("0x%08llx .. 0x%08llx\n",
+				from, r->from);
+			from = r->to;
 		}
-		if (r->to > to && r->to < max) {
-			max = r->to;
-		}
-		if (r->from<from && r->to>from) { // chop from
-			min = r->to;
-		}
+	}
+	if (from < to) {
+		cons_printf("0x%08llx .. 0x%08llx\n",
+			from, to);
 	}
 	// TODO
 	// show ranges
