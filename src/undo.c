@@ -34,12 +34,18 @@ static u64 undos[UNDOS];
 static int undos_idx = 0;
 static int undos_lim = 0;
 
+u64 undo_get_last_seek()
+{
+	if (undos_idx==0)
+		return config.seek;
+	return undos[undos_idx-2];
+}
+
 void undo_seek()
 {
 	if (--undos_idx<0)
 		undos_idx = 0;
-	else
-		config.seek = undos[undos_idx-1];
+	else config.seek = undos[undos_idx-1];
 }
 
 void undo_redo()

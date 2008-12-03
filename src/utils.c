@@ -347,11 +347,24 @@ u64 get_offset(const char *orig)
 			eprintf(" $$j = jump branch of opcode\n");
 			eprintf(" $$f = failover continuation of opcode\n");
 			eprintf(" $$r = pointer reference of opcode\n");
+			eprintf(" $$e = end of basic block\n");
+			eprintf(" $$F = beggining of the function\n");
+			eprintf(" $$l = last seek done\n");
 			eprintf(" $${file.baddr} = get eval value\n");
 			break;
 		case '$':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;
+			break;
+		case 'e':
+			arch_aop(config.seek, config.block,&aop);
+			ret = aop.eob;
+			break;
+		case 'l':
+			ret = undo_get_last_seek();
+			break;
+		case 'F':
+			ret = data_prev(config.seek, DATA_FUN);
 			break;
 		case 'j':
 			arch_aop(config.seek, config.block,&aop);

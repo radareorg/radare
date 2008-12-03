@@ -254,7 +254,9 @@ void trace_show(int plain, int tag)
 	struct list_head *pos;
 	struct trace_t *h;
 
-	eprintf("Displaying tag: %d\n", tag);
+	if (tag != -1)
+		eprintf("Displaying tag: %d\n", tag+1);
+
 	trace_sort();
 	opcode[0]='\0';
 	/* get the lower address */

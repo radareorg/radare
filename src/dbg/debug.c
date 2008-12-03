@@ -98,14 +98,17 @@ int debug_tt(const char *arg)
 	u64 pc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
+	char *cmd = NULL;
 	u64 ba = config.seek; // base address
 	u64 sz = get_math(arg+1); // size
 	int status;
+
 	if (sz<1) {
 		cons_printf("Usage: !tt [size] @ [base_address]\n");
 		cons_printf("Touch trace a section of N bytes starting at seek\n");
 		return 0;
 	}
+	cmd = config_get("cmd.touchtrace");
 	cons_printf("TouchTracing %lld bytes from 0x%08llx..\n", sz, ba);
 	cons_flush();
 	/* */
@@ -157,6 +160,8 @@ int debug_tt(const char *arg)
 			//	continue;
 			}
 #endif
+			if (cmd && *cmd)
+				radare_cmd_raw(cmd, 0);
 			arch_aop(pc-bpsz, sa+delta, &aop);
 			debug_write_at(ps.tid, sa+delta, aop.length, ba+delta);
 			arch_jmp(pc-bpsz); // restore pc // XXX this is x86 only!!!

@@ -51,6 +51,21 @@ int data_set_len(u64 off, u64 len)
 	return -1;
 }
 
+u64 data_prev(u64 off, int type)
+{
+	struct list_head *pos;
+	u64 ret = 0;
+
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->type == type) {
+			if (d->from < off && d->to > off)
+				ret = d->from;
+		}
+	}
+	return ret;
+}
+
 void data_info()
 {
 	struct list_head *pos;

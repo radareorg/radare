@@ -49,6 +49,7 @@ int data_type_range(u64 offset);
 int data_type(u64 offset);
 int data_end(u64 offset);
 int data_size(u64 offset);
+u64 data_prev(u64 off, int type);
 int data_list();
 int data_xrefs_print(u64 addr, int type);
 int data_xrefs_add(u64 addr, u64 from, int type);
