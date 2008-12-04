@@ -942,10 +942,12 @@ int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symb
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 					symbolp->size = (u64)symp->st_size; 
 					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
-					symbolp->offset = (u64)symp->st_value + sym_offset - bin->base_addr;
+					symbolp->offset = (u64)symp->st_value + sym_offset;
+					if (symbolp->offset >= bin->base_addr)
+						symbolp->offset -= bin->base_addr;
 					switch (ELF32_ST_BIND(symp->st_info)) {
 						case STB_LOCAL:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
 						case STB_GLOBAL:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "GLOBAL"); break;
@@ -1013,7 +1015,7 @@ int ELF_(r_bin_elf_get_symbols_count)(ELF_(r_bin_elf_obj) *bin)
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_size != 0 && symp->st_shndx != STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
+				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
 					ctr++;
 			}
 		}
