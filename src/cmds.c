@@ -101,7 +101,7 @@ void show_help_message()
 		cmdaux[0] = '\0';
 		cons_printf(" %-17s %s\n", cmdstr, cmd->help);
 	}
-	cons_printf(" ?[?]<expr>        calc     math expr and show result in hex,oct,dec,bin\n");
+	cons_printf(" ?[?]<expr>        calc     evaluate math expression\n");
 }
 
 	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
@@ -194,10 +194,10 @@ CMD_DECL(config_eval)
 		CMD_CALL(menu, input);
 		break;
 	case '?':
-		cons_printf("Usage: e[m] key=value\n");
-		cons_printf("   > ereset           ; reset configuration\n");
-		cons_printf("   > emenu            ; opens menu for eval\n");
-		cons_printf("   > e scr.color = 1  ; sets color for terminal\n");
+		cons_printf( "Usage: e[m] key=value\n"
+		" ereset           ; reset configuration\n"
+		" emenu            ; opens menu for eval\n"
+		" e scr.color = 1  ; sets color for terminal\n");
 		break;
 	default:
 		config_eval(input+i);
@@ -231,18 +231,18 @@ CMD_DECL(analyze)
 	case 't':
 		switch(input[1]) {
 		case '?':
-			eprintf("Usage: at[*] [addr]\n");
-			eprintf("   > at?                ; show help message\n");
-			eprintf("   > at                 ; list all traced opcode ranges\n");
-			eprintf("   > at-                ; reset the tracing information\n");
-			eprintf("   > at*                ; list all traced opcode offsets\n");
-			eprintf("   > at+ [addr] [times] ; add trace for address N times\n");
-			eprintf("   > at [addr]          ; show trace info at address\n");
-			eprintf("   > att [tag]          ; select trace tag (no arg unsets)\n");
-			eprintf("   > at%%                ; TODO\n");
-			eprintf("   > atr                ; show traces as range commands (ar+)\n");
-			eprintf("   > atd                ; show disassembly trace\n");
-			eprintf("   > atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
+			cons_strcat("Usage: at[*] [addr]\n"
+			" at?                ; show help message\n"
+			" at                 ; list all traced opcode ranges\n"
+			" at-                ; reset the tracing information\n"
+			" at*                ; list all traced opcode offsets\n"
+			" at+ [addr] [times] ; add trace for address N times\n"
+			" at [addr]          ; show trace info at address\n"
+			" att [tag]          ; select trace tag (no arg unsets)\n"
+			" at%%                ; TODO\n"
+			" atr                ; show traces as range commands (ar+)\n"
+			" atd                ; show disassembly trace\n"
+			" atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
 			eprintf("Current Tag: %d\n", trace_tag_get());
 			break;
 		case 't':
@@ -335,8 +335,8 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: af[*] @ addr\n");
-			eprintf(" > af    - show function report (fun metrics)\n");
-			eprintf(" > .af*  - import function analysis (same as Vdf)\n");
+			eprintf(" af    - show function report (fun metrics)\n");
+			eprintf(" .af*  - import function analysis (same as Vdf)\n");
 			break;
 		case '*':
 			analyze_function(0,0);
@@ -350,8 +350,8 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: ag[.]\n");
-			eprintf("  ag - open graph window\n");
-			eprintf("  ag. - outputs dot graph format for code analysis\n");
+			eprintf(" ag - open graph window\n");
+			eprintf(" ag. - outputs dot graph format for code analysis\n");
 			break;
 		case '.':
 			prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
@@ -400,10 +400,11 @@ CMD_DECL(analyze)
 				config.verbose=c;
 		} break;
 	case 'o':
-		udis_init();
 		for(depth_i=0;depth_i<depth;depth_i++) {
 			char food[64];
+			food[0] = '\0';
 			radare_read(0);
+			udis_init();
 			pas_aop(config.arch, config.seek, config.block, 16, NULL, food, 0);
 			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
 
@@ -544,22 +545,23 @@ CMD_DECL(project)
 		if (input[1])
 			project_save(arg);
 		else {
-			str = strdup ( config_get("file.project") );
+			str = strdup(config_get("file.project") );
 			project_save(str);
-			free ( str );
+			free(str);
 		}
 		break;
 	case 'i':
 		if (input[1]) {
 			project_info(arg);
 		} else {
-			str = strdup ( config_get("file.project"));
+			str = strdup(config_get("file.project"));
 			project_info(str);
-			free ( str );
+			free(str);
 		}
 		break;
 	default:
-		cons_printf(
+		cons_strcat(
+		"Usage: P[osi] [file]\n"
 		" Po [file]  open project\n"
 		" Ps [file]  save project\n"
 		" Pi [file]  info\n");
@@ -882,10 +884,10 @@ CMD_DECL(open)
 		io_map_list();
 		break;
 	case '?':
-		cons_printf("Usage: o [file] [offset]\n");
-		cons_printf(" > o /bin/ls                  ; open file\n");
-		cons_printf(" > o /lib/libc.so 0xC848000   ; map file at offset\n");
-		cons_printf(" > o- /lib/libc.so            ; unmap\n");
+		cons_printf("Usage: o[-] [file] [offset]\n");
+		cons_printf(" o /bin/ls                  ; open file\n");
+		cons_printf(" o /lib/libc.so 0xC848000   ; map file at offset\n");
+		cons_printf(" o- /lib/libc.so            ; unmap\n");
 		break;
 	case ' ':
 		arg = strchr(ptr+1, ' ');
@@ -973,24 +975,20 @@ CMD_DECL(blocksize)
 		if (flag) {
 			radare_set_block_size_i(flag->offset-config.seek);
 			printf("block size = %d\n", flag->length);
-		} else {
-			eprintf("Unknown flag '%s'\n", input+2);
-		}
+		} else eprintf("Unknown flag '%s'\n", input+2);
 		break;
 	case 'f': // bf = block flag size
 		flag = flag_get(input+2);
 		if (flag) {
 			radare_set_block_size_i(flag->length);
 			printf("block size = %d\n", flag->length);
-		} else {
-			eprintf("Unknown flag '%s'\n", input+2);
-		}
+		} else eprintf("Unknown flag '%s'\n", input+2);
 		break;
 	case '?':
-		cons_printf("Usage: b[f flag]|[size]  ; Change block size\n");
-		cons_printf("  > b 200                ; set block size to 200\n");
-		cons_printf("  > bt next @ here       ; block size = next-here\n");
-		cons_printf("  > bf sym.main          ; block size = flag size\n");
+		cons_printf("Usage: b[t,f flag]|[size]  ; Change block size\n");
+		cons_printf(" b 200                ; set block size to 200\n");
+		cons_printf(" bt next @ here       ; block size = next-here\n");
+		cons_printf(" bf sym.main          ; block size = flag size\n");
 		break;
 	case '\0':
 		cons_printf("%d\n", config.block_size);
@@ -1087,19 +1085,19 @@ CMD_DECL(code)
 	default:
 		cons_printf(
 		"Usage: C[op] [arg] <@ offset>\n"
-		"  Ci               ; show info about metadata\n"
-		"  CC [-][comment] @ here ; add/rm comment\n"
-		"  CF [-][len]  @ here    ; add/rm function\n"
-		"  Cx [-][addr] @ here    ; add/rm code xref\n"
-		"  CX [-][addr] @ here    ; add/rm data xref\n"
-		"  Cm [num] [expr]  ; define memory format (pm?)\n"
-		"  Cc [num]         ; converts num bytes to code\n"
-		"  Cd [num]         ; converts to data bytes\n"
-		"  Cs [num]         ; converts to string\n"
-		"  Cf [num]         ; folds num bytes\n"
-		"  Cu [num]         ; unfolds num bytes\n"
-		"  CF*              ; list function ranges as ar cmds\n"
-		"  C*               ; list metadata database\n");
+		" Ci               ; show info about metadata\n"
+		" CC [-][comment] @ here ; add/rm comment\n"
+		" CF [-][len]  @ here    ; add/rm function\n"
+		" Cx [-][addr] @ here    ; add/rm code xref\n"
+		" CX [-][addr] @ here    ; add/rm data xref\n"
+		" Cm [num] [expr]  ; define memory format (pm?)\n"
+		" Cc [num]         ; converts num bytes to code\n"
+		" Cd [num]         ; converts to data bytes\n"
+		" Cs [num]         ; converts to string\n"
+		" Cf [num]         ; folds num bytes\n"
+		" Cu [num]         ; unfolds num bytes\n"
+		" CF*              ; list function ranges as ar cmds\n"
+		" C*               ; list metadata database\n");
 	}
 
 	return 0;
@@ -1187,9 +1185,18 @@ CMD_DECL(print)
 
 CMD_DECL(quit)
 {
-	if (input[0]=='!')
+	switch(input[0]) {
+	case '!':
 		exit(1);
-	radare_exit();
+	case '?':
+		cons_strcat(
+		"Usage: q[!]\n"
+		" q      ; quit radare\n"
+		" q!     ; quit radare NOW!\n");
+		break;
+	default:
+		radare_exit();
+	}
 	return 0;
 }
 
@@ -1255,9 +1262,7 @@ CMD_DECL(flag)
 			text2[0]='\0';
 			text2 = text2+1;
 			flag_interpolation(text, text2); 
-		} else {
-			eprintf("Usage: fi hit0_ hit1_\n");
-		}
+		} else eprintf("Usage: fi hit0_ hit1_\n");
 	}
 		break;
 	default:
@@ -1300,13 +1305,14 @@ CMD_DECL(undowrite)
 		break;
 	case '?':
 	default:
-		cons_printf(
-		"Usage: > u 3   ; undo write change at index 3\n"
-		"       > u -3  ; redo write change at index 3\n"
-		"       > u     ; list all write changes\n"
-		"       > u-    ; clear write history\n"
-		"       > ua    ; undo all write changes\n"
-		"       > ur    ; redo all write changes\n");
+		cons_strcat(
+		"Usage: u[-ar] [arg]\n"
+		" u 3   ; undo write change at index 3\n"
+		" u -3  ; redo write change at index 3\n"
+		" u     ; list all write changes\n"
+		" u-    ; clear write history\n"
+		" ua    ; undo all write changes\n"
+		" ur    ; redo all write changes\n");
 		break;
 	}
 
@@ -1326,19 +1332,20 @@ CMD_DECL(seek)
 	for(;*text&&iswhitespace(*text);text=text+1);
 
 	if (strchr(input, '?')) {
-		cons_printf("Usage: > s 0x128 ; absolute seek\n");
-		cons_printf("       > s +33   ; relative seek\n");
-		cons_printf("       > sn      ; seek to next opcode\n");
-		cons_printf("       > sb      ; seek to opcode branch\n");
-		cons_printf("       > sc      ; seek to call index (pd)\n");
-		cons_printf("       > sx N    ; seek to code xref N\n");
-		cons_printf("       > sX N    ; seek to data reference N\n");
-		cons_printf("       > sS N    ; seek to section N (fmi: 'S?')\n");
-		cons_printf("       > s-      ; undo seek\n");
-		cons_printf("       > s+      ; redo seek\n");
-		cons_printf("       > s*      ; show seek history\n");
-		cons_printf("       > .s*     ; flag them all\n");
-		cons_printf("       > s!      ; reset seek history\n");
+		cons_printf("Usage: s[nbcxXS-+*!] [arg]\n");
+		cons_strcat(" s 0x128 ; absolute seek\n");
+		cons_printf(" s +33   ; relative seek\n");
+		cons_printf(" sn      ; seek to next opcode\n");
+		cons_printf(" sb      ; seek to opcode branch\n");
+		cons_printf(" sc      ; seek to call index (pd)\n");
+		cons_printf(" sx N    ; seek to code xref N\n");
+		cons_printf(" sX N    ; seek to data reference N\n");
+		cons_printf(" sS N    ; seek to section N (fmi: 'S?')\n");
+		cons_printf(" s-      ; undo seek\n");
+		cons_printf(" s+      ; redo seek\n");
+		cons_printf(" s*      ; show seek history\n");
+		cons_printf(" .s*     ; flag them all\n");
+		cons_printf(" s!      ; reset seek history\n");
 		return 0;
 	}
 
@@ -1514,10 +1521,10 @@ CMD_DECL(compare)
 	case '?':
 		eprintf(
 		"Usage: c[?|d|x|f] [argument]\n"
-		"  c  [string]   - compares a plain with escaped chars string\n"
-		"  cd [offset]   - compare a doubleword from a math expression\n"
-		"  cx [hexpair]  - compare hexpair string\n"
-		"  cf [file]     - compare contents of file at current seek\n");
+		" c  [string]   - compares a plain with escaped chars string\n"
+		" cd [offset]   - compare a doubleword from a math expression\n"
+		" cx [hexpair]  - compare hexpair string\n"
+		" cf [file]     - compare contents of file at current seek\n");
 		break;
 	default:
 		eprintf("Usage: c[?|d|x|f] [argument]\n");
@@ -1595,7 +1602,7 @@ CMD_DECL(write)
 		break;
 	case 'b': {
 		char *tmp;
-		char out[9999]; // XXX
+		u8 out[9999]; // XXX
 		int size, osize = hexstr2binstr(input+1, out);
 		if (osize>0) {
 			tmp = (char *)malloc(config.block_size);
@@ -1715,16 +1722,16 @@ CMD_DECL(write)
 	default:
 		eprintf(
 		"Usage: w[?|*] [argument]\n"
-		"  w  [string]        ; write plain with escaped chars string\n"
-		"  wa [opcode]        ; write assembly using asm.arch and rasm\n"
-		"  wA '[opcode]'      ; write assembly using asm.arch and rsc asm\n"
-		"  wb [hexpair]       ; circulary fill the block with these bytes\n"
-		"  wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
-		"  ww [string]        ; write wide chars (interlace 00s in string)\n"
-		"  wt [file] ([off])  ; write current block to file at offset\n"
-		"  wf [file]          ; write contents of file at current seek\n"
-		"  wF [hexfile]       ; write hexpair contents of file\n"
-		"  wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
+		" w  [string]        ; write plain with escaped chars string\n"
+		" wa [opcode]        ; write assembly using asm.arch and rasm\n"
+		" wA '[opcode]'      ; write assembly using asm.arch and rsc asm\n"
+		" wb [hexpair]       ; circulary fill the block with these bytes\n"
+		" wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
+		" ww [string]        ; write wide chars (interlace 00s in string)\n"
+		" wt [file] ([off])  ; write current block to file at offset\n"
+		" wf [file]          ; write contents of file at current seek\n"
+		" wF [hexfile]       ; write hexpair contents of file\n"
+		" wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
 		return 0;
 	}
 	radare_seek(back, SEEK_SET);
@@ -1736,18 +1743,18 @@ CMD_DECL(sections)
 {
 	switch(input[0]) {
 	case '?':
-		eprintf("Usage: S len [base [comment]] @ address\n");
-		eprintf(" > S                ; list sections\n");
-		eprintf(" > S*               ; list sections (in radare commands\n");
-		eprintf(" > S=               ; list sections (in visual)\n");
-		eprintf(" > S 4096 0x80000 rwx section_text  @ 0x8048000 ; adds new section\n");
-		eprintf(" > S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
-		eprintf(" > S 10K @ 0x300    ; create 10K section at 0x300\n");
-		eprintf(" > S -0x300         ; remove this section definition\n");
-		eprintf(" > Sc rwx _text     ; add comment to the current section\n");
-		eprintf(" > Sb 0x100000      ; change base address\n");
-		eprintf(" > St 0x500         ; set end of section at this address\n");
-		eprintf(" > Sf 0x100         ; set from address of the current section\n");
+		eprintf("Usage: S[cbtf=*] len [base [comment]] @ address\n");
+		eprintf(" S                ; list sections\n");
+		eprintf(" S*               ; list sections (in radare commands\n");
+		eprintf(" S=               ; list sections (in visual)\n");
+		eprintf(" S 4096 0x80000 rwx section_text  @ 0x8048000 ; adds new section\n");
+		eprintf(" S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
+		eprintf(" S 10K @ 0x300    ; create 10K section at 0x300\n");
+		eprintf(" S -0x300         ; remove this section definition\n");
+		eprintf(" Sc rwx _text     ; add comment to the current section\n");
+		eprintf(" Sb 0x100000      ; change base address\n");
+		eprintf(" St 0x500         ; set end of section at this address\n");
+		eprintf(" Sf 0x100         ; set from address of the current section\n");
 		break;
 	case ' ':
 		switch(input[1]) {
@@ -2110,18 +2117,19 @@ CMD_DECL(help)
 				cons_printf("0x%llx\n", config.last_cmp);
 			} else
 			if (input[1]=='\0') {
-				eprintf("Usage: ?[?[?]] <expr>\n");
-				eprintf("  > ? eip             ; get value of eip flag\n");
-				eprintf("  > ?z`str            ; sets false if string is zero length\n");
-				eprintf("  > ?x eip            ; show hex result of math expression\n");
-				eprintf("  > ? 0x80+44         ; calc math expression\n");
-				eprintf("  > ? eip-23          ; ops with flags and numbers\n");
-				eprintf("  > ? eip==sym.main   ; compare flags\n");
-				eprintf(" The ?? is used for conditional executions after a comparision\n");
-				eprintf("  > ? [foo] == 0x44   ; compare memory read with byte\n");
-				eprintf("  > ? eip != oeip     ; compare memory read with byte\n");
-				eprintf("  > ???               ; show result of comparision\n");
-				eprintf("  > ?? s +3           ; seek current seek + 3 if equal\n");
+				cons_strcat(
+				"Usage: ?[?[?]] <expr>\n"
+				" ? eip             ; get value of eip flag\n"
+				" ?z`str            ; sets false if string is zero length\n"
+				" ?x eip            ; show hex result of math expression\n"
+				" ? 0x80+44         ; calc math expression\n"
+				" ? eip-23          ; ops with flags and numbers\n"
+				" ? eip==sym.main   ; compare flags\n"
+				"The ?? is used for conditional executions after a comparision\n"
+				" ? [foo] == 0x44   ; compare memory read with byte\n"
+				" ? eip != oeip     ; compare memory read with byte\n"
+				" ???               ; show result of comparision\n"
+				" ?? s +3           ; seek current seek + 3 if equal\n");
 			} else
 			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);

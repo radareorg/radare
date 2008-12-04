@@ -111,7 +111,8 @@ void udis_init()
 	}
 
 	ud_set_input_hook(&ud_obj, input_hook_x);
-//ud_idx=0;
+	
+	ud_idx=0;
 }
 
 static int jump_n = 0;

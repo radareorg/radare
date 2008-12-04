@@ -740,14 +740,19 @@ static void palloc(int moar)
 	}
 }
 
-static int grepline = -1, greptoken = -1;
+static int grepline = -1, greptoken = -1, grepcounter = 0;
 static char *grepstr = NULL;
 
 void cons_grep(const char *str)
 {
 	char *ptr, *ptr2, *ptr3;
+	grepcounter = 0;
 	/* set grep string */
 	if (str != NULL && *str) {
+		if (*str == '?') {
+			grepcounter = 1;
+			str = str + 1;
+		}
 		ptr = alloca(strlen(str)+2);
 		strcpy(ptr, str);
 
@@ -762,8 +767,8 @@ void cons_grep(const char *str)
 			ptr2[0]='\0';
 			grepline = get_offset(ptr2+1);
 		}
-
-		grepstr = estrdup(grepstr, ptr);
+		if (*ptr)
+			grepstr = estrdup(grepstr, ptr);
 	} else {
 		greptoken = -1;
 		grepline = -1;
@@ -776,6 +781,7 @@ void cons_flush()
 	FILE *fd;
 	char buf[1024];
 	int i,j;
+	int lines_counter = 0;
 
 	if (cons_noflush)
 		return;
@@ -853,9 +859,11 @@ void cons_flush()
 								ptr = one;
 								cons_buffer_len=len;
 							}
-							cons_print_real(ptr);
-							cons_buffer_len=1;
-							cons_print_real("\n");
+							if (grepcounter==0) {
+								cons_print_real(ptr);
+								cons_buffer_len=1;
+								cons_print_real("\n");
+							} else lines_counter++;
 						}
 						line++;
 					}
@@ -864,7 +872,7 @@ void cons_flush()
 				} else break;
 			}
 		} else {
-			if (grepline != -1) {
+			if (grepline != -1 || grepcounter) {
 				int len, line;
 				char *one = cons_buffer;
 				char *two;
@@ -901,9 +909,11 @@ void cons_flush()
 								ptr = one;
 								cons_buffer_len=len;
 							}
-							cons_print_real(ptr);
-							cons_buffer_len=1;
-							cons_print_real("\n");
+							if (grepcounter==0) {
+								cons_print_real(ptr);
+								cons_buffer_len=1;
+								cons_print_real("\n");
+							} else lines_counter++;
 						}
 						two[0] = '\n';
 						one = two + 1;
@@ -916,6 +926,13 @@ void cons_flush()
 	}
 	//cons_buffer_sz=0;
 	cons_buffer_len=0;
+
+	if (grepcounter) {
+		char buf[64];
+		sprintf(buf, "%d\n", lines_counter);
+		cons_buffer_len=strlen(buf);
+		cons_print_real(buf);
+	}
 }
 
 /* stream is ignored */
