@@ -48,7 +48,7 @@ int r_cons_lines = 0;
 int r_cons_noflush = 0;
 
 static const char *nullstr = "";
-static int grepline = -1, greptoken = -1;
+static int grepline = -1, greptoken = -1, grepcounter = 0;
 static char *grepstr = NULL;
 
 // XXX rename to r_cons_stdout_open
@@ -764,8 +764,13 @@ static inline void palloc(int moar)
 void r_cons_grep(const char *str)
 {
 	char *ptr, *ptr2, *ptr3;
+	grepcounter=0;
 	/* set grep string */
 	if (str != NULL && *str) {
+		if (*str == '?') {
+			grepcounter = 1;
+			str = str + 1;
+		}
 		ptr = alloca(strlen(str)+2);
 		strcpy(ptr, str);
 
@@ -781,8 +786,10 @@ void r_cons_grep(const char *str)
 			grepline = atoi(ptr2+1);
 		}
 
-		free(grepstr);
-		grepstr = (char *)strdup(ptr);
+		if (*ptr) {
+			free(grepstr);
+			grepstr = (char *)strdup(ptr);
+		}
 	} else {
 		greptoken = -1;
 		grepline = -1;
@@ -797,6 +804,7 @@ void r_cons_flush()
 	FILE *fd;
 	char buf[1024];
 	int i,j;
+	int lines_counter = 0;
 
 	if (r_cons_noflush)
 		return;
@@ -874,9 +882,11 @@ void r_cons_flush()
 								ptr = one;
 								r_cons_buffer_len=len;
 							}
-							r_cons_print_real(ptr);
-							r_cons_buffer_len=1;
-							r_cons_print_real("\n");
++							if (grepcounter==0) {
+								r_cons_print_real(ptr);
+								r_cons_buffer_len=1;
+								r_cons_print_real("\n");
++							} else lines_counter++;
 						}
 						line++;
 					}
@@ -922,9 +932,11 @@ void r_cons_flush()
 								ptr = one;
 								r_cons_buffer_len=len;
 							}
-							r_cons_print_real(ptr);
-							r_cons_buffer_len=1;
-							r_cons_print_real("\n");
++							if (grepcounter==0) {
+								r_cons_print_real(ptr);
+								r_cons_buffer_len=1;
+								r_cons_print_real("\n");
++							} else lines_counter++;
 						}
 						two[0] = '\n';
 						one = two + 1;
@@ -934,6 +946,13 @@ void r_cons_flush()
 		}
 
 		r_cons_buffer[0] = '\0';
+	}
+
+	if (grepcounter) {
+		char buf[64];
+		sprintf(buf, "%d\n", lines_counter);
+		cons_buffer_len=strlen(buf);
+		cons_print_real(buf);
 	}
 	//r_cons_buffer_sz=0;
 	r_cons_buffer_len=0;

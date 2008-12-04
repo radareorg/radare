@@ -925,14 +925,15 @@ void cons_flush()
 		cons_buffer[0] = '\0';
 	}
 	//cons_buffer_sz=0;
-	cons_buffer_len=0;
 
 	if (grepcounter) {
 		char buf[64];
 		sprintf(buf, "%d\n", lines_counter);
-		cons_buffer_len=strlen(buf);
+		cons_buffer_len = strlen(buf);
 		cons_print_real(buf);
 	}
+
+	cons_buffer_len=0;
 }
 
 /* stream is ignored */

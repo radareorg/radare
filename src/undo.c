@@ -95,6 +95,9 @@ void undo_write_new(u64 off, const u8 *data, int len)
 {
 	struct undow_t *uw = (struct undow_t *)malloc(sizeof(struct undow_t));
 
+	if (!config_get_i("file.undowrite"))
+		return;
+
 	if (undo_w_lock)
 		return;
 

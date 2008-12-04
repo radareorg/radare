@@ -49,11 +49,65 @@ int radare_read_at(u64 offset, unsigned char *data, int len)
 	return ret;
 }
 
-int radare_write_at(u64 offset, unsigned char *data, int len)
+static u8 *write_mask = NULL;
+static int write_mask_len = 0;
+
+int radare_write_mask(const u8 *mask, int len)
 {
+	if (mask == NULL) {
+		free(write_mask);
+		write_mask = NULL;
+		write_mask_len = 0;
+		return 0;
+	}
+
+	write_mask = (u8*)malloc(len);
+	write_mask_len = len;
+	memcpy(write_mask, mask, len);
+	return 1;
+}
+
+int radare_write_mask_str(const char *str)
+{
+	int i, len;
+	u8 mask[1024]; // XXX
+	switch(str[0]) {
+	case '\0':
+	case '?':
+		cons_strcat("Usage: wm[-] [hexpair-string]\n"
+		" wm ff00ff  ; set binary mask for write ops\n"
+		" wm-        ; unset current write binmask\n"
+		"Current mask: ");
+		for(i=0;i<write_mask_len;i++)
+			cons_printf(" %02x", write_mask[i]);
+		cons_newline();
+		return 0;
+	case '-':
+		return radare_write_mask(NULL, 0);
+	}
+	len = hexstr2binstr(str, (u8 *)mask);
+	if (len == -1)
+			return 0;
+	return radare_write_mask(mask, len);
+}
+
+int radare_write_at(u64 offset, u8 *data, int len)
+{
+	int i;
 	u64 cur = config.seek;
 	radare_seek(offset,SEEK_SET);
 	undo_write_new(offset, data, len);
+
+	/* Apply write binary mask here */
+	if (write_mask != NULL) {
+		u8 *data2 = alloca(len);
+		radare_read_at(offset, data2, len);
+		for(i=0;i<len;i++) {
+			data2[i] = data[i] & write_mask[i%write_mask_len];
+		}
+		data = data2;
+	}
+
 	len = io_write(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
 	radare_read(0);
@@ -179,8 +233,19 @@ int radare_write(const char *argro, int mode)
 		}
 	}
 	for(bytes=0;times--;) {
-		undo_write_new(seek, str, len);
-		bytes += io_write(config.fd, str, len);
+		u8 *mystr = str;
+		/* Apply write binary mask here */
+		if (write_mask != NULL) {
+			u8 *str2 = alloca(len);
+			radare_read_at(config.seek, str2, len);
+			for(i=0;i<len;i++) {
+				str2[i] = str[i] & write_mask[i%write_mask_len];
+			}
+			mystr = str2;
+		}
+		undo_write_new(seek, mystr, len);
+		bytes += io_write(config.fd, mystr, len);
+		config.seek += len;
 	}
 
 	if (!config.debug)

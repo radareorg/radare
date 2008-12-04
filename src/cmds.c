@@ -1685,6 +1685,9 @@ CMD_DECL(write)
 			break;
 		}
 		break;
+	case 'm':
+		radare_write_mask_str(input+1);
+		break;
 	case 'w':
 		if (input[1]!=' ') {
 			eprintf("Please. use 'ww string-with-scaped-hex'. (%s)\n", input);
@@ -1726,6 +1729,7 @@ CMD_DECL(write)
 		" wa [opcode]        ; write assembly using asm.arch and rasm\n"
 		" wA '[opcode]'      ; write assembly using asm.arch and rsc asm\n"
 		" wb [hexpair]       ; circulary fill the block with these bytes\n"
+		" wm [hexpair]       ; write mask (default: FF FF FF..)\n"
 		" wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		" ww [string]        ; write wide chars (interlace 00s in string)\n"
 		" wt [file] ([off])  ; write current block to file at offset\n"
@@ -1934,7 +1938,7 @@ CMD_DECL(search) {
 		break;
 	case 'm':
 		if (text[1]=='?') {
-			eprintf("/k[number] [keyword]\n");
+			eprintf("/m [binary-search-mask]\n");
 			break;
 		}
 		i = atoi(text+1);
