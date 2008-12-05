@@ -699,7 +699,6 @@ void config_init(int first)
     INIT_LIST_HEAD(&(config_new.nodes));
   }
 
-  vm_init(1);
 
   /* enter keys */
   node = config_set("asm.profile", "default");
@@ -1020,6 +1019,7 @@ void config_init(int first)
 
   /* lock */
   config_lock(1);
+  vm_init(1);
 
   radis_update();
 

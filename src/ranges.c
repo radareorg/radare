@@ -81,8 +81,8 @@ static void ranges_abs(u64 *f, u64 *t)
 /* TODO: we need a merging operation over ranges here */
 int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 {
-	struct range_t *r;
 	struct list_head *pos;
+	struct range_t *r;
 	int add = 1;
 
 	if (rang == NULL)

@@ -79,7 +79,7 @@ int debug_syms()
 	return radare_cmd_raw(buf, 0);
 }
 
-// TODO : helper
+// TODO : stupid helper
 int getv()
 {
 	return (int)config_get("cfg.verbose");
@@ -91,6 +91,8 @@ int getv()
 #endif
 }
 
+
+/* TODO: add ranges support here */
 int debug_tt(const char *arg)
 {
 	struct aop_t aop;

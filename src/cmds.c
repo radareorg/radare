@@ -476,8 +476,41 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'v':
-		eprintf("WIP: av . analyze N opcodes using code emulation\n");
-		vm_emulate(depth);
+		switch(input[1]) {
+		case 'e':
+			vm_eval(input+2);
+			break;
+		case 'r':
+			vm_cmd_reg(input+2);
+			break;
+		case 'i':
+			vm_import();
+			break;
+		case '-':
+			vm_init(1);
+			break;
+		case '\0':
+		case '?':
+			cons_printf("Usage: av[eri] [arg]\n"
+			" ave eax=33   ; evaluate expression in vm\n"
+			" avi          ; import register values from flags\n"
+			" avm          ; select MMU (default current one)\n"
+			" avr          ; show registers\n"
+			" avx N        ; execute N instructions from cur seek\n"
+			" av-          ; restart vm using asm.arch\n"
+			" avr eax      ; show register eax\n");
+			break;
+		case 'm':
+			eprintf("TODO\n");
+			break;
+		case 'x':
+			//vm_emulate(depth);
+			eprintf("TODO\n");
+			break;
+		default:
+			vm_print();
+			break;
+		}
 		break;
 	case 'r':
 		ranges_cmd(input+1);
