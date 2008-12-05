@@ -12,6 +12,15 @@
 #define R_RSI(x) x.rsi
 #define R_RDI(x) x.rdi
 
+#if 0
+#define R_CS(x) x.xcs
+#define R_DS(x) x.xds
+#define R_FS(x) x.xfs
+#define R_SS(x) x.xss
+#define R_GS(x) x.xgs
+#define R_ES(x) x.xes
+#endif
+
 #define R_R8(x) x.r8
 #define R_R9(x) x.r9
 #define R_R10(x) x.r10

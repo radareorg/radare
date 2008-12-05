@@ -1,3 +1,30 @@
+// SEGMENTS USAGE:
+// http://software.intel.com/en-us/forums/watercooler-catchall/topic/48484/reply/28314/
+
+The BIOS interface will clearly specify what is required to be placed 
+into your segment registers prior to call. Also, sepcific registers when
+used for base address\001have a default segment register.
+
+Instruction fetch uses CS, ESP or EBP defaults to SS, destination strings
+(using EDI) default to ES, and\001all others default to DS. For 16-bit
+BIOS calls where argument is located below 64KB then leave 0.
+
+Else if argument below 640KB then fill required segment register with
+shifted value of argument address and then fixup offset. Then on return
+deal with return argument then reset DS or other segment register back
+to 0. Doing this in a BIOS interface module that you write will give you
+the most control. e.g. if argument in your code is above 640KB then copy
+to low memory intermediary buffer prior to BIOS call then return if
+necessary after the call.
+
+You may need to hook some of the interrupt vectors to take care of some
+exception conditions. Such as to handle sleep mode transitions.
+
+   If you get stuck and need some help we can discuss this offline.
+
+   Jim Dempsey                                  March 3, 2006 8:07 PM PST
+
+
 // http://lorca.act.uji.es/e08/ayudas/intel/80386.HTM
 
 CR0

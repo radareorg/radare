@@ -10,9 +10,14 @@ buffer:
 .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
+#define FROM 0
 #define LEN 128
-#define TIMES 200
+#define TIMES 1
 #define SEGMENT %gs
+/* 
+#define SEGMENT %ds
+#define FROM 0x8048000
+*/
 
 .text
 
@@ -26,6 +31,7 @@ main:
 	movl $LEN, %eax
 	imul %eax, %ecx
 	movl %ecx, %esi /* esi = ($TIMES-%ecx)*$LEN */
+	addl $FROM, %esi
 	lea buffer, %edi
 	movl $LEN, %ecx
 

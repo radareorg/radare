@@ -12,6 +12,13 @@
 #define R_ESI(x) x.r_esi
 #define R_EDI(x) x.r_edi
 
+#define R_CS(x) x.r_cs
+#define R_DS(x) x.r_ds
+#define R_FS(x) x.r_fs
+#define R_SS(x) x.r_ss
+#define R_GS(x) x.r_gs
+#define R_ES(x) x.r_es
+
 /* registers offset */
 
 #define R_EIP_OFF offsetof(struct reg, r_eip)

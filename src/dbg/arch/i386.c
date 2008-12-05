@@ -749,6 +749,20 @@ int arch_print_registers(int rad, const char *mask)
 		}
 	}
 
+	if (rad == 2) {
+#ifdef R_ES
+		cons_printf("  cs 0x%08x", R_CS(regs));
+		cons_printf("  ds 0x%08x", R_DS(regs));
+		cons_printf("  es 0x%08x", R_ES(regs));
+		cons_newline();
+		cons_printf("  ss 0x%08x", R_SS(regs));
+		cons_printf("  gs 0x%08x", R_GS(regs));
+		cons_printf("  fs 0x%08x", R_FS(regs));
+		cons_newline();
+#endif
+		return 0;
+	}
+
 	if (rad)
 		rad = 1;
 	if (mask&&mask[0]=='l')

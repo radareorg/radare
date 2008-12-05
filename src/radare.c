@@ -850,6 +850,10 @@ void radare_nullcmd()
 		else cons_printf("Registers:\n");
 		radare_cmd("!reg", 0);
 	}
+	if (config_get("dbg.regs2")) {
+		radare_cmd("!reg2", 0);
+		// XXX cons_lines -- 
+	}
 
 	if (config_get("dbg.fpregs")) {
 		C cons_printf(C_RED"Floating registers:\n"C_RESET);

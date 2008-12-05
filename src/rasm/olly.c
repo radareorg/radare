@@ -35,13 +35,18 @@
 int rasm_olly_x86(u64 offset, const char *str, u8 *data)
 {
 	char errtext[TEXTLEN];
-	char *opstring = alloca(strlen(str));
+	char *opstring;
 	t_asmmodel am;
-	int len;
+	int len = strlen(str)+1;
 
+	opstring = alloca(len);
 	// am.code = data ?
+	memcpy(opstring, str, len);
 	len = Assemble(opstring, (u32)offset, &am, 0, 4, errtext);
-	memcpy(data, am.code, len);
+	if (len <1) {
+		fprintf(stderr, "Error assembling\n");
+		return -1;
+	} else memcpy(data, am.code, len);
 
 	return len;
 }

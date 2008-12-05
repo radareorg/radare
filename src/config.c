@@ -880,6 +880,7 @@ void config_init(int first)
   config_set("dbg.threads", "false");
   config_set("dbg.contscbt", "true");
   config_set("dbg.regs", "true");
+  config_set("dbg.regs2", "true");
   config_set("dbg.stack", "true");
   config_set("dbg.vstack", "true");
   config_set("dbg.wptrace", "false");

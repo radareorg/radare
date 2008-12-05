@@ -212,7 +212,10 @@ int debug_reg(const char *arg)
 {
 	if (arg[0]) {
 		if (arg[0]=='?') {
-			eprintf("Usage: !reg[*] [reg [=value]]\n");
+			eprintf("Usage: !reg[2][*] [reg [=value]]\n");
+		} else
+		if (arg[0]=='2') {
+			debug_registers(2);
 		} else
 		if ((arg[0]=='s' && arg[1]=='*') || arg[0] == '*')
 			debug_registers(1);
