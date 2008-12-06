@@ -4,12 +4,18 @@
 struct range_t {
   u64 from;
   u64 to;
+  u8 *data;
+  int datalen;
   struct list_head list;
 };
 
+extern void (*ranges_new_callback)(struct range_t *r);
+
 int ranges_init();
 void ranges_free();
-int ranges_add(struct list_head *rang, u64 from, u64 to, int rw);
+u64 ranges_size(struct list_head *rang);
+struct range_t *ranges_get(struct list_head *rang, u64 addr);
+struct range_t *ranges_add(struct list_head *rang, u64 from, u64 to, int rw);
 int ranges_sub(struct list_head *rang, u64 from, u64 to);
 int ranges_list();
 int ranges_boolean(u64 from, u64 to, int flags);

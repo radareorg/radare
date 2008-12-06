@@ -150,10 +150,27 @@ deinstall:
 	-rm -f ${BINDIR}/rsc
 	-rm -f ${BINDIR}/rfile
 	-rm -f ${BINDIR}/rabin
+	-rm -f ${BINDIR}/bdiff
+	-rm -f ${BINDIR}/lsbstego
+	-rm -f ${BINDIR}/armasm
+	-rm -f ${BINDIR}/javasm
+	-rm -f ${BINDIR}/radiff
 	-rm -f ${LIBDIR}/libps2fd.so
 	-rm -f ${LIBDIR}/libaff2fd.so
 	-rm -f ${LIBDIR}/libusbsniff.so
+	-rm -f ${LIBDIR}/libfdsniff.so
+	-rm -f ${LIBDIR}/python2.5/radare.py
+	-rm -rf ${LIBDIR}/radare
 	-rm -rf ${SHAREDIR}/radare
 	-rm -rf ${SHAREDIR}/doc/radare
 	-rm -rf ${LIBEXECDIR}/gradare/
 	-rm -rf ${LIBEXECDIR}/radare/
+	-rm -f ${MANDIR}/man1/rabin.1
+	-rm -f ${MANDIR}/man1/rfile.1
+	-rm -f ${MANDIR}/man1/xrefs.1
+	-rm -f ${MANDIR}/man1/rax.1
+	-rm -f ${MANDIR}/man1/rsc.1
+	-rm -f ${MANDIR}/man1/radare.1
+	-rm -f ${MANDIR}/man1/rahash.1
+	-rm -f ${MANDIR}/man1/rasc.1
+

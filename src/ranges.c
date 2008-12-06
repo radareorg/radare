@@ -51,12 +51,9 @@ void ranges_free()
 static int ranges_get_flags()
 {
 	int flags = 0;
-// TODO: not yet implemented
-#if 1
 	flags |= config_get("range.traces")?RANGE_TRACES:0;
 	flags |= config_get("range.graphs")?RANGE_GRAPHS:0;
 	flags |= config_get("range.functions")?RANGE_FUNCTIONS:0;
-#endif
 	return flags;
 }
 
@@ -69,6 +66,106 @@ static void ranges_abs(u64 *f, u64 *t)
 	}
 }
 
+struct range_t *ranges_get(struct list_head *rang, u64 addr)
+{
+	struct range_t *r;
+	struct list_head *pos;
+
+	if (rang == NULL)
+		rang = &ranges;
+
+	list_for_each(pos, rang) {
+		r = list_entry(pos, struct range_t, list);
+		if (addr >= r->from && addr < r->to)
+			return r;
+	}
+
+	return NULL;
+}
+
+u64 ranges_size(struct list_head *rang)
+{
+	struct list_head *pos;
+	struct range_t *r;
+	u64 sum = 0;
+
+	if (rang == NULL)
+		rang = &ranges;
+
+	list_for_each(pos, rang) {
+		r = list_entry(pos, struct range_t, list);
+		sum += r->to - r->from;
+	}
+
+	return sum;
+}
+
+void (*ranges_new_callback)(struct range_t *r) = NULL;
+
+/* TODO: merge with ranges_init */
+struct list_head *ranges_new(const char *string)
+{
+	u64 addr, addr2;
+	struct list_head *rgs;
+	int i, len = strlen(string)+1;
+	char *str = alloca(len);
+	char *p = str;
+	char *p2 = NULL;
+	struct range_t *r;
+
+	memcpy(str, string, len);
+
+	rgs = (struct list_head *)malloc(sizeof(struct list_head));
+	INIT_LIST_HEAD(rgs);
+
+	for(i=0;i<len;i++) {
+		switch(str[i]) {
+		case '-':
+			str[i]='\0';
+			p2 = p;
+			p = str+i+1;
+			break;
+		case ',':
+			str[i]='\0';
+			if (p2) {
+				addr = get_offset(p);
+				addr2 = get_offset(p2);
+				//printf("range: %s-%s\n",p2,p);
+				r = ranges_add(rgs, addr, addr2, 1);
+				if (ranges_new_callback != NULL)
+					ranges_new_callback(r);
+				p2 = NULL;
+			} else {
+				addr = get_offset(p);
+				//printf("%s\n", p);
+				r = ranges_add(rgs, addr, addr+1, 1);
+				if (ranges_new_callback != NULL)
+					ranges_new_callback(r);
+			}
+			p = str+i+1;
+			str[i]=',';
+			break;
+		}
+	}
+	if (p2) {
+		addr = get_offset(p);
+		addr2 = get_offset(p2);
+		//printf("range: %s-%s\n",p2,p);
+		r = ranges_add(rgs, addr, addr2, 1);
+		if (ranges_new_callback != NULL)
+			ranges_new_callback(r);
+	} else 
+	if (p) {
+		addr = get_offset(p);
+		//printf("offset: %s\n",p);
+		r = ranges_add(rgs, addr, addr+1, 1);
+		if (ranges_new_callback != NULL)
+			ranges_new_callback(r);
+	}
+
+	return rgs;
+}
+
 #if 0
     update to      new one     update from   update from/to  ignore
 
@@ -78,11 +175,11 @@ static void ranges_abs(u64 *f, u64 *t)
 =  |_________|   = |___||__|   = |_______|  = |_________|   |_______|  result
 #endif
 
-/* TODO: we need a merging operation over ranges here */
-int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
+struct range_t *ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 {
 	struct list_head *pos;
 	struct range_t *r;
+	struct range_t *ret;
 	int add = 1;
 
 	if (rang == NULL)
@@ -97,10 +194,12 @@ int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 		} else
 		if (r->from<=from && r->from <= to && r->to>=from && r->to <= to) {
 			r->to = to;
+			ret = r;
 			add = 0;
 		} else
 		if (r->from>=from && r->from<=to && r->to>=from && r->to >= to) {
 			r->from = from;
+			ret = r;
 			add = 0;
 		} else
 		if (r->from<=from && r->from<=to && r->to>=from && r->to >= to) {
@@ -110,17 +209,22 @@ int ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 		if (r->from>=from && r->from<=to && r->to>=from && r->to <= to) {
 			r->from = from;
 			r->to = to;
+			ret = r;
 			add = 0;
 		}
 	}
 
 	if (rw && add) {
-		r = (struct range_t *)malloc(sizeof(struct range_t));
-		r->from = from;
-		r->to = to;
-		list_add_tail(&(r->list), rang);
+		ret = (struct range_t *)malloc(sizeof(struct range_t));
+		ret->from = from;
+		ret->to = to;
+		ret->datalen = 0;
+		ret->data = NULL;
+		list_add_tail(&(ret->list), rang);
 		ranges_changed = 1;
 	}
+
+	return ret;
 }
 
 #if 0

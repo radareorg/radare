@@ -91,6 +91,122 @@ int getv()
 #endif
 }
 
+void debug_tt_ranges_new_callback(struct range_t *r)
+{
+	u8 bytes[64];
+	struct aop_t aop;
+
+	if (r == NULL) {
+		printf("null range?\n");
+		return;
+	}
+	if (r->from +1 == r->to) {
+		debug_read_at(ps.tid, bytes, 32, r->from);
+		arch_aop(r->from, bytes, &aop);
+		r->datalen = aop.length;
+		r->to = r->from + r->datalen;
+		r->data = (u8*)malloc(r->datalen);
+		debug_read_at(ps.tid, r->data, r->datalen, r->from);
+	} else {
+		r->datalen = r->to - r->from;
+		r->data = (u8*)malloc(r->datalen);
+		debug_read_at(ps.tid, r->data, r->datalen, r->from);
+	}
+	fprintf(stderr, " add 0x%llx - 0x%llx\n", r->from, r->to);
+}
+
+/* TODO: add ranges support here */
+int debug_tt_range(const char *arg)
+{
+	struct aop_t aop;
+	int pid, bpsz;
+	u64 pc, rpc; // program counter
+	u8 *sa; // swap area
+	u8 *cc; // breakpoint area
+	u64 sz;
+	char *cmd = NULL;
+	u64 ba = config.seek; // base address
+	struct list_head *rgs, *pos;
+	struct range_t *r;
+	int status;
+
+	if (arg[0]=='\0') {
+		cons_printf("Usage: !ttr [ranges..]\n");
+		return 0;
+	}
+	ranges_new_callback = &debug_tt_ranges_new_callback;
+	rgs = ranges_new(arg);
+
+	sz = ranges_size(rgs);
+	cons_printf("TouchTracing %lld bytes using ranges\n", sz);
+	cons_flush();
+	cmd = config_get("cmd.touchtrace");
+	/* */
+	radare_controlc();
+	cc = (u8 *)malloc(sz);
+	/* TODO: use get_arch_breakpoint() or whatever */
+	switch(config.arch) {
+	case ARCH_ARM:
+		bpsz = 4;
+		memcpy_loop(cc,"\x01\x00\x9f\xef", sz, bpsz);
+		break;
+	case ARCH_MIPS:
+		bpsz = 4;
+		memcpy_loop(cc,"\x0d\x00\x00\x00", sz, bpsz);
+		break;
+	case ARCH_X86:
+	default:
+		memset(cc, '\xCC', sz);
+		bpsz = 1;
+		break;
+	}
+	list_for_each(pos, rgs) {
+		r = list_entry(pos, struct range_t, list);
+		debug_write_at(ps.tid, cc, r->datalen, r->from);
+	}
+	free(cc);
+
+	while(!config.interrupted) {
+		debug_contp(ps.tid);
+		pid = debug_waitpid(-1, &status);
+		ps.tid = pid;
+
+		pc = arch_pc(ps.tid);
+		if ((pc & 0xffffffff) == 0xffffffff) {
+			perror("arch_pc");
+			break;
+		}
+		r = ranges_get(rgs,pc);
+		if (r != NULL) {
+			int delta;
+			rpc = pc-bpsz;
+			delta= rpc-r->from;
+		//if (pc >= ba && pc <= ba+sz) {
+			/* swap area and continue */
+			if (cmd && *cmd)
+				radare_cmd_raw(cmd, 0);
+			arch_aop(rpc, r->data+delta, &aop);
+			debug_write_at(ps.tid, r->data+delta, aop.length, rpc);
+			arch_jmp(rpc); // restore pc // XXX this is x86 only!!!
+			printf("0x%llx %d\n", rpc, aop.length);
+			trace_add(rpc);
+			continue;
+		} else {
+			/* unexpected stop */
+			cons_printf("Oops: Unexpected stop oustide tracing area pid=%d at 0x%08llx\n", ps.tid, pc);
+			break;
+		}
+	}
+	radare_controlc_end();
+
+	/* restore memory */
+	list_for_each(pos, rgs) {
+		r = list_entry(pos, struct range_t, list);
+		debug_write_at(ps.tid, r->data, r->datalen, r->from);
+	}
+
+	return 1;
+}
 
 /* TODO: add ranges support here */
 int debug_tt(const char *arg)
@@ -100,14 +216,19 @@ int debug_tt(const char *arg)
 	u64 pc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
-	char *cmd = NULL;
+	const char *cmd = NULL;
 	u64 ba = config.seek; // base address
 	u64 sz = get_math(arg+1); // size
 	int status;
 
+	// XXX
+	if (*arg == 'r')
+		return debug_tt_range(arg+1);
+
 	if (sz<1) {
-		cons_printf("Usage: !tt [size] @ [base_address]\n");
-		cons_printf("Touch trace a section of N bytes starting at seek\n");
+		cons_printf("Usage: !tt[r ranges] | [size @ base_address]\n");
+		cons_printf(" !tt 1024 @ eip                     ; touchtraces 1024 bytes from eip\n");
+		cons_printf(" !ttr eip-eip+40,0x804800-0x8049000 ; touchtraces defined ranges (, and -)\n");
 		return 0;
 	}
 	cmd = config_get("cmd.touchtrace");
@@ -872,6 +993,9 @@ int debug_step(int times)
 		}
 		debug_print_wait("step");
 	} else {
+		flagregs = config_get("trace.cmtregs");
+		tracefile = config_get("file.trace");
+
 		/* accelerate soft stepoverables */
 		for(;WS(event) == UNKNOWN_EVENT && times; times--) {
 			pc = arch_pc(ps.tid);
@@ -905,22 +1029,21 @@ int debug_step(int times)
 			//	printf("DISPATH WAIT 2: %d\n", ret);
 			}
 
-			flagregs = config_get("trace.cmtregs");
 			if (flagregs) {
 				char buf[1024];
 				char *ptr;
 			//	radare_cmd("!dregs", 0);
-				config_set("scr.buf", "true");
+			//	config_set("scr.buf", "true");
 				arch_print_registers(0, "line");
 				ptr = cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
 				sprintf(buf, "CC %d %s @ 0x%08llx", ps.steps, strget(ptr), pc);
-				config_set("scr.buf", "false"); // XXX
+			//	config_set("scr.buf", "false"); // XXX
 				radare_cmd(buf, 0);
 				ptr[0]='\0'; // reset buffer
+				cons_flush();
 			}
 
-			tracefile = config_get("file.trace");
 			if (tracefile) {
 				int fd = open(tracefile, O_WRONLY|O_APPEND);
 				if (fd == -1)
@@ -966,13 +1089,13 @@ int debug_trace(char *input)
 		printf("  2  address and disassembly\n");
 		printf("  3  address, disassembly and registers\n");
 		printf("  4  address, disassembly and registers and stack\n");
-		printf("  > eval trace.calls = true ; only trace calls\n");
-		printf("  > eval trace.smart = true ; smart output\n");
-		printf("  > eval trace.bps = true   ; do not stop on breakpoints\n");
-		printf("  > eval trace.libs = true  ; trace into libraries\n");
-		printf("  > eval trace.bt = true    ; to show backtrace\n");
-		printf("  > eval trace.sleep = 1    ; animated stepping (1fps)\n");
-		printf("  > eval cmd.trace = x@eip  ; execute this cmd on every traced opcode\n");
+		printf(" > eval trace.calls = true ; only trace calls\n");
+		printf(" > eval trace.smart = true ; smart output\n");
+		printf(" > eval trace.bps = true   ; do not stop on breakpoints\n");
+		printf(" > eval trace.libs = true  ; trace into libraries\n");
+		printf(" > eval trace.bt = true    ; to show backtrace\n");
+		printf(" > eval trace.sleep = 1    ; animated stepping (1fps)\n");
+		printf(" > eval cmd.trace = x@eip  ; execute this cmd on every traced opcode\n");
 		return 0;
 	}
 
@@ -1056,15 +1179,13 @@ int debug_trace(char *input)
 		}
 		cons_flush();
 
-		if (cmdtrace && cmdtrace[0]!='\0') {
+		if (cmdtrace && cmdtrace[0]!='\0')
 			radare_cmd_raw(cmdtrace, 0);
-		}
 
 		if (slip)
 			sleep(slip);
-		if (tracebps) {
+		if (tracebps)
 			eprintf("BREAKPOINT TRACED AT 0x%08llx!\n", pc);
-		}
 		if (debug_bp_get(pc) != NULL) {
 			eprintf("Breakpoint!\n");
 			break;
@@ -1113,9 +1234,9 @@ int debug_wp(const char *str)
 	/* print watchpoints */
 	case '?':
 		eprintf("Usage: !wp[?|*] ([expression|-idx])\n"
-		"  !wp           list all watchpoints (limit = 4)\n"
-		"  !wp*          remove all watchpoints\n"
-		"  !wp -#        removes watchpoint number\n"
+		"  !wp         ; list all watchpoints (limit = 4)\n"
+		"  !wp*        ; remove all watchpoints\n"
+		"  !wp -#      ; removes watchpoint number\n"
 		" Expression example:\n"
 		"  !wp %%eax = 0x8048393 and ( [%%edx] > 0x100 )\n");
 /*
@@ -1129,10 +1250,9 @@ int debug_wp(const char *str)
 	default:
 		skip_chars(&str);
 		if(!*str) {
-			if (sizeof(ps.wps)==0) {
+			if (sizeof(ps.wps)==0)
 				eprintf("No watchpoints defined. Try !wp?\n");
-			} else
-				debug_wp_list();
+			else debug_wp_list();
 		} else {
 			for(i = 0; i < sizeof(ps.wps); i++) {
 				if(!ps.wps[i].cond) {
@@ -1141,7 +1261,6 @@ int debug_wp(const char *str)
 						eprintf("Invalid conditional string (%s)\n", str);
 						return -1;
 					}
-
 					ps.wps[i].str_cond = strdup(str);
 					ps.wps_n++;
 					cons_printf("%d: %s\n", i, str);
@@ -1412,10 +1531,7 @@ int debug_loop(char *addr_str)
 		return -1;
 	}
 
-	do {
-		/* continue execution */
-		debug_cont(0);
-
+	do { debug_cont(0);
 		/* matched ret address or fatal exception */
 	} while(!(WS(event) == BP_EVENT && WS(bp)->addr == ret_addr) && 
 		  WS(event) != FATAL_EVENT && WS(event) != EXIT_EVENT &&
@@ -1423,24 +1539,20 @@ int debug_loop(char *addr_str)
 
 	/* get return code */
 	switch(WS(event)) {
-		case FATAL_EVENT:
-			ret = 3;
-			break;
-
-		case EXIT_EVENT:
-			ret = 2;
-			break;
-
-		case INT_EVENT:
-			ret = 1;
-			break;
-
-		case BP_EVENT:
-			ret = 0;
-			break;
-
-		default:
-			ret = -2;
+	case FATAL_EVENT:
+		ret = 3;
+		break;
+	case EXIT_EVENT:
+		ret = 2;
+		break;
+	case INT_EVENT:
+		ret = 1;
+		break;
+	case BP_EVENT:
+		ret = 0;
+		break;
+	default:
+		ret = -2;
 	}
 
 	/* remove HW bp */

@@ -6,9 +6,6 @@
 
 ===========================================================
 
-* !tt with ranges
-* dbg.stacksize ... or so
-
 TheBook
 =======
 * Documentate visual cursor with marks ',' and '.' keys
@@ -17,12 +14,6 @@ TheBook
 * Documentation for grep ~#[N]
 
 * Added at% like ar%
-
-* i* -> not implemented??
-* at* -> show ar+ commands
-* g*  -> import graph information as ar+ commands
-* CF* -> Code metadata (functions) range as ar+ commands
-* Add CF? command
 
 OPTIMIZATIONS
 =============
