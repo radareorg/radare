@@ -149,6 +149,11 @@ int vm_import()
 }
 
 
+void vm_configure_flags(const char *zf)
+{
+	vm_cpu.zf = strdup(zf);
+}
+
 void vm_configure_cpu(const char *eip, const char *esp, const char *ebp)
 {
 	vm_cpu.pc = strdup(eip);
@@ -222,6 +227,7 @@ int vm_init(int init)
 		vm_reg_add("cf",  VMREG_BIT, 0); // ...
 
 		vm_configure_cpu("eip", "esp", "ebp");
+		vm_configure_flags("zf");
 		//vm_configure_call("[ebp-4]", "[ebp-8]", "[ebp-12]", "edx");
 		vm_configure_fastcall("eax", "ebx", "ecx", "edx");
 		//vm_configure_loop("ecx");
@@ -311,6 +317,24 @@ static u64 vm_get_math(const char *str)
 	return vm_get_value(str);
 }
 
+int vm_eval_cmp(const char *str)
+{
+	int len;
+	char *p, *ptr;
+	for(;*str==' ';str=str+1);
+	len = strlen(str)+1;
+	ptr = alloca(len);
+	memcpy(ptr, str, len);
+	p = strchr(ptr, ',');
+	if (!p) p = strchr(ptr, ' ');
+	if (p) {
+		vm_reg_set(vm_cpu.zf,(vm_get_math(ptr)-vm_get_math(p+1)));
+		p='\0';
+		return 0;
+	}
+	return 1;
+}
+
 int vm_eval_eq(const char *str, const char *val)
 {
 	for(;*str==' ';str=str+1);
@@ -397,11 +421,29 @@ int vm_eval_single(const char *str)
 			printf("CALL(%s)\n", ptr+4);
 			vm_reg_set(vm_cpu.pc, vm_get_value(ptr+4));
 		} else
+		if (!memcmp(ptr, "jz ", 3)){
+			if (vm_reg_get(ptr+3)==0)
+				vm_reg_set(vm_cpu.pc, vm_get_value(ptr+3));
+		} else
+		if (!memcmp(ptr, "jnz ", 4)){
+			if (vm_reg_get(ptr+4)==0)
+				vm_reg_set(vm_cpu.pc, vm_get_value(ptr+4));
+		} else
+		if (!memcmp(ptr, "ifnot ", 6)) {
+			if (vm_reg_get(ptr+6)==0)
+				return -1;
+		} else
+		if (!memcmp(ptr, "cmp ", 4)) {
+			vm_eval_cmp(str+5);
+		} else
 		if (!memcmp(ptr, "push ", 5)) {
 			vm_stack_push(str+5);
 		} else
 		if (!memcmp(str, "pop ", 4)) {
 			vm_stack_pop(str+5);
+		} else
+		if (!memcmp(ptr, "ret", 3)) {
+			vm_stack_pop(vm_cpu.pc);
 		} else
 			eprintf("Unknown opcode\n");
 	}
@@ -443,12 +485,16 @@ int vm_emulate(int n)
 	radare_cmd("avi", 0);
 	config_set("asm.pseudo", "true");
 	config_set("asm.syntax", "intel");
-	udis_init();
+	config_set("asm.profile", "simple");
 	while(n--) {
 		pc = vm_reg_get(vm_cpu.pc);
+	udis_init();
 		udis_set_pc(pc);
 		vm_mmu_read(pc, buf, 32);
+		radare_cmdf("pd 1 @ 0x%08llx", pc);
+		cons_newline();
 		pas_aop(config.arch, pc, buf, 32, &aop, str, 1);
+		arch_aop(pc, buf, &aop);
 		opsize = aop.length;
 		printf("=> 0x%08llx '%s' (%d)\n", vm_reg_get(vm_cpu.pc), str, opsize);
 		vm_reg_set(vm_cpu.pc, vm_reg_get(vm_cpu.pc)+opsize);

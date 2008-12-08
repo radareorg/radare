@@ -206,6 +206,7 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		{ "test", "cmp 1, 2", AOP_TYPE_CMP },
 		{ "lea",  "1 = 2",    AOP_TYPE_MOV },
 		{ "mov",  "1 = 2",    AOP_TYPE_MOV },
+		{ "cmovl","ifnot zf,1 = 2",    AOP_TYPE_MOV },
 		{ "xor",  "1 ^= 2",   AOP_TYPE_XOR },
 		{ "and",  "1 &= 2",   AOP_TYPE_AND},
 		{ "or",   "1 |= 2",   AOP_TYPE_OR },

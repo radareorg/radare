@@ -31,6 +31,7 @@ struct vm_cpu_t {
 	const char *a2;
 	const char *a3;
 	const char *ret;
+	const char *zf;
 };
 
 #endif
