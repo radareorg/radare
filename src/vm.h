@@ -13,6 +13,8 @@ struct vm_reg_t {
 	char name[16];
 	u64 value;
 	int type;
+	char *get;
+	char *set;
 	struct list_head list;
 };
 
@@ -33,5 +35,14 @@ struct vm_cpu_t {
 	const char *ret;
 	const char *zf;
 };
+
+struct vm_change_t {
+	u64 from;
+	u64 to;
+	u8 *data;
+	struct list_head list;
+};
+
+u64 vm_reg_get(const char *name);
 
 #endif

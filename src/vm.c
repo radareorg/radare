@@ -25,6 +25,9 @@
 
 struct list_head vm_regs;
 struct vm_cpu_t vm_cpu;
+static u64 vm_stack_base = 0;
+static u8 *vm_stack = NULL;
+static struct list_head vm_mmu_cache;
 
 struct vm_reg_type vm_reg_types[] = {
 	{ VMREG_BIT, "bit" },
@@ -60,6 +63,71 @@ const int vm_reg_type_i(const char *str)
 	return -1;
 }
 
+static u64 vm_get_value(const char *str)
+{
+	u64 ret = 0LL;
+	for(;*str&&*str==' ';str=str+1);
+
+	if (str[0]=='0' && str[1]=='x')
+		sscanf(str, "0x%llx", &ret);
+	else
+	if (str[0]>='0' && str[0]<='9')
+		sscanf(str, "%lld", &ret);
+	else ret = vm_reg_get(str);
+	return ret;
+}
+
+static u64 vm_get_math(const char *str)
+{
+	int len;
+	char *p,*a;
+
+	len = strlen(str)+1;
+	p=alloca(len);
+	memcpy(p, str, len);
+	a = strchr(p,'+');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) + vm_get_value(a+1);
+	}
+	a = strchr(p,'-');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) - vm_get_value(a+1);
+	}
+	a = strchr(p,'*');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) * vm_get_value(a+1);
+	}
+	a = strchr(p,'/');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) / vm_get_value(a+1);
+	}
+	a = strchr(p,'&');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) & vm_get_value(a+1);
+	}
+	a = strchr(p,'|');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) | vm_get_value(a+1);
+	}
+	a = strchr(p,'^');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) ^ vm_get_value(a+1);
+	}
+	a = strchr(p,'%');
+	if (a) {
+		*a='\0';
+		return vm_get_value(str) % vm_get_value(a+1);
+	}
+	return vm_get_value(str);
+}
+
 void vm_print()
 {
 	int i;
@@ -68,9 +136,37 @@ void vm_print()
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		cons_printf("%s %s 0x%08llx\n",
-			r->name, vm_reg_type(r->type), r->value);
+			r->name, vm_reg_type(r->type), 
+			(r->get!=NULL)?vm_reg_get(r->name):r->value);
 	}
 }
+int vm_mmu_cache_write(u64 addr, u8 *buf, int len)
+{
+	struct vm_change_t *ch = (struct range_t *)malloc(sizeof(struct range_t));
+	ch->from = addr;
+	ch->to = addr + len;
+	ch->data = (u8*)malloc(len);
+	memcpy(ch->data, buf, len);
+	list_add_tail(&(ch->list), &vm_mmu_cache);
+	return 0;
+}
+
+int vm_mmu_cache_read(u64 addr, u8 *buf, int len)
+{
+	struct vm_change_t *c;
+	struct list_head *pos;
+
+	// TODO: support for unaligned and partial accesses
+	list_for_each(pos, &vm_mmu_cache) {
+		c = list_entry(pos, struct vm_change_t, list);
+		if (addr >= c->from && addr+len <= c->to) {
+			memcpy(buf, c->data, len);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 
 int vm_mmu_read(u64 off, u8 *data, int len)
 {
@@ -79,7 +175,9 @@ int vm_mmu_read(u64 off, u8 *data, int len)
 
 int vm_mmu_write(u64 off, u8 *data, int len)
 {
-	return radare_write_at(off, data, len);
+	return vm_mmu_cache_write(off, data, len);
+	/* REAL IO */
+	//return radare_write_at(off, data, len);
 }
 
 int vm_reg_add(const char *name, int type, u64 value)
@@ -92,6 +190,8 @@ int vm_reg_add(const char *name, int type, u64 value)
 	strncpy(r->name, name, 15);
 	r->type = type;
 	r->value = value;
+	r->get = NULL;
+	r->set = NULL;
 	list_add_tail(&(r->list), &vm_regs);
 	return 1;
 }
@@ -103,8 +203,13 @@ u64 vm_reg_get(const char *name)
 
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
-		if (!strcmp(name, r->name))
+		if (!strcmp(name, r->name)) {
+			if (r->get != NULL) {
+				printf("GET! (%s)\n", r->get);
+				return vm_get_math(r->get);
+			}
 			return r->value;
+		}
 	}
 	return -1LL;
 }
@@ -179,19 +284,18 @@ void vm_cpu_call(u64 addr)
 	/* x86 style */
 }
 
-static u64 vm_stack_base = 0;
-static u8 *vm_stack = NULL;
-
 void vm_stack_push(u32 val)
 {
 	// XXX do not write while emulating zomfg
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)+4);
-	vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
+	//vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
 }
 
 void vm_stack_pop(const char *reg)
 {
 	u32 val = 0;
+	if (vm_mmu_cache_read(vm_reg_get(vm_cpu.sp), &val, 4))
+		return;
 	vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4);
 	vm_reg_set(reg, val);
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)-4);
@@ -204,6 +308,7 @@ int vm_init(int init)
 		init = 1;
 
 	if (init) {
+		INIT_LIST_HEAD(&vm_mmu_cache);
 		INIT_LIST_HEAD(&vm_regs);
 		memset(&vm_cpu, '\0', sizeof(struct vm_cpu_t));
 	}
@@ -214,6 +319,8 @@ int vm_init(int init)
 	case ARCH_X86:
 		//eprintf("VM: Initialized\n");
 		vm_reg_add("eax", VMREG_INT32, 0);
+		vm_reg_add("al", VMREG_INT32, 0);
+		vm_reg_alias("al","eax&0xff", "eax&=0xFFFFff00");
 		vm_reg_add("ebx", VMREG_INT32, 0);
 		vm_reg_add("ecx", VMREG_INT32, 0);
 		vm_reg_add("edx", VMREG_INT32, 0);
@@ -252,70 +359,6 @@ int vm_init(int init)
 	return 0;
 }
 
-static u64 vm_get_value(const char *str)
-{
-	u64 ret = 0LL;
-	for(;*str&&*str==' ';str=str+1);
-
-	if (str[0]=='0' && str[1]=='x')
-		sscanf(str, "0x%llx", &ret);
-	else
-	if (str[0]>='0' && str[0]<='9')
-		sscanf(str, "%lld", &ret);
-	else ret = vm_reg_get(str);
-	return ret;
-}
-
-static u64 vm_get_math(const char *str)
-{
-	int len;
-	char *p,*a;
-
-	len = strlen(str)+1;
-	p=alloca(len);
-	memcpy(p, str, len);
-	a = strchr(p,'+');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) + vm_get_value(a+1);
-	}
-	a = strchr(p,'-');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) - vm_get_value(a+1);
-	}
-	a = strchr(p,'*');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) * vm_get_value(a+1);
-	}
-	a = strchr(p,'/');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) / vm_get_value(a+1);
-	}
-	a = strchr(p,'&');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) & vm_get_value(a+1);
-	}
-	a = strchr(p,'|');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) | vm_get_value(a+1);
-	}
-	a = strchr(p,'^');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) ^ vm_get_value(a+1);
-	}
-	a = strchr(p,'%');
-	if (a) {
-		*a='\0';
-		return vm_get_value(str) % vm_get_value(a+1);
-	}
-	return vm_get_value(str);
-}
 
 int vm_eval_cmp(const char *str)
 {
@@ -492,11 +535,10 @@ int vm_emulate(int n)
 		udis_set_pc(pc);
 		vm_mmu_read(pc, buf, 32);
 		radare_cmdf("pd 1 @ 0x%08llx", pc);
-		cons_newline();
 		pas_aop(config.arch, pc, buf, 32, &aop, str, 1);
 		arch_aop(pc, buf, &aop);
 		opsize = aop.length;
-		printf("=> 0x%08llx '%s' (%d)\n", vm_reg_get(vm_cpu.pc), str, opsize);
+		//printf("=> 0x%08llx '%s' (%d)\n", vm_reg_get(vm_cpu.pc), str, opsize);
 		vm_reg_set(vm_cpu.pc, vm_reg_get(vm_cpu.pc)+opsize);
 		vm_eval(str);
 	}
@@ -510,6 +552,28 @@ int vm_emulate(int n)
 // TODO: perform asm-to-pas-eval
 // TODO: evaluate string
 	return n;
+}
+
+int vm_reg_alias(const char *name, const char *get, const char *set)
+{
+	struct vm_reg_t *reg;
+	struct list_head *pos;
+
+	list_for_each(pos, &vm_regs) {
+		reg = list_entry(pos, struct vm_reg_t, list);
+		if (!strcmp(name, reg->name)) {
+			free(reg->get);
+			reg->get = NULL;
+			if (get) reg->get = strdup(get);
+
+			free(reg->set);
+			reg->set = NULL;
+			if (set) reg->set = strdup(set);
+			return 1;
+		}
+	}
+	fprintf(stderr, "Register '%s' not defined.\n", name);
+	return 0;
 }
 
 int vm_cmd_reg(const char *_str)
@@ -528,6 +592,22 @@ int vm_cmd_reg(const char *_str)
 		vm_print();
 	} else {
 		switch(str[0]) {
+		case 'a':
+			if (str[1]==' ') {
+				char *get,*set;
+				get = strchr(str+2, ' ');
+				if (get) {
+					get[0]='\0';
+					get = get+1;
+					set = strchr(get, ' ');
+					if (set) {
+						set[0]='\0';
+						set = set +1;
+						vm_reg_alias(str+2, get, set);
+					}
+				}
+			}
+			break;
 		case '+':
 			// add register
 			// avr+ eax int32
