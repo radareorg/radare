@@ -39,7 +39,7 @@ int radare_dump_section(char *tmpfile)
 }
 #endif
 
-int radare_read_at(u64 offset, unsigned char *data, int len)
+int radare_read_at(u64 offset, u8 *data, int len)
 {
 	int ret;
 	u64 cur = config.seek;

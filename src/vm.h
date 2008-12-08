@@ -21,4 +21,16 @@ struct vm_reg_type {
 	char *str;
 };
 
+struct vm_cpu_t {
+	const char *pc;
+	const char *sp;
+	const char *bp;
+	const char *ctr;
+	const char *a0;
+	const char *a1;
+	const char *a2;
+	const char *a3;
+	const char *ret;
+};
+
 #endif

@@ -66,6 +66,12 @@ static int input_hook_x(ud_t* u)
 	return config.block[ud_idx++];
 }
 
+void udis_set_pc(u64 pc)
+{
+//	ud_idx = 0;
+	ud_set_pc(&ud_obj, pc);
+}
+
 void udis_init()
 {
 	const char *syn;

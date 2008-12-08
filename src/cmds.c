@@ -504,8 +504,7 @@ CMD_DECL(analyze)
 			eprintf("TODO\n");
 			break;
 		case 'x':
-			//vm_emulate(depth);
-			eprintf("TODO\n");
+			vm_emulate(atoi(input+2));
 			break;
 		default:
 			vm_print();

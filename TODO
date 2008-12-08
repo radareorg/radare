@@ -14,6 +14,7 @@ TheBook
 * Documentation for grep ~#[N]
 
 * Added at% like ar%
+* 'm' in visual should be used as mark like in vim
 
 OPTIMIZATIONS
 =============
