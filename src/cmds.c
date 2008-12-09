@@ -480,6 +480,9 @@ CMD_DECL(analyze)
 		case 'e':
 			vm_eval(input+2);
 			break;
+		case 'f':
+			vm_eval_file(input+2);
+			break;
 		case 'r':
 			vm_cmd_reg(input+2);
 			break;
@@ -493,6 +496,7 @@ CMD_DECL(analyze)
 		case '?':
 			cons_printf("Usage: av[eri] [arg]\n"
 			" ave eax=33   ; evaluate expression in vm\n"
+			" avf file     ; evaluate expressions from file\n"
 			" avi          ; import register values from flags\n"
 			" avm          ; select MMU (default current one)\n"
 			" avr          ; show registers\n"

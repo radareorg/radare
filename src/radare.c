@@ -658,6 +658,8 @@ int radare_cmd_raw(const char *tmp, int log)
 				}
 			}
 
+			// Hack to allow 'ave eax=eax>16'
+			if (input[0]!='a'&&input[1]!='v'&&input[2]!='e')
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
 				char *pos = strchr(input+1, '>');
 				char *file = pos + 1;

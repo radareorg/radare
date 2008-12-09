@@ -83,49 +83,59 @@ static u64 vm_get_math(const char *str)
 	char *p,*a;
 
 	len = strlen(str)+1;
-	p=alloca(len);
+	p = alloca(len);
 	memcpy(p, str, len);
 	a = strchr(p,'+');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) + vm_get_value(a+1);
+		return vm_get_value(p) + vm_get_value(a+1);
 	}
 	a = strchr(p,'-');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) - vm_get_value(a+1);
+		return vm_get_value(p) - vm_get_value(a+1);
 	}
 	a = strchr(p,'*');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) * vm_get_value(a+1);
+		return vm_get_value(p) * vm_get_value(a+1);
 	}
 	a = strchr(p,'/');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) / vm_get_value(a+1);
+		return vm_get_value(p) / vm_get_value(a+1);
 	}
 	a = strchr(p,'&');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) & vm_get_value(a+1);
+		return vm_get_value(p) & vm_get_value(a+1);
 	}
 	a = strchr(p,'|');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) | vm_get_value(a+1);
+		return vm_get_value(p) | vm_get_value(a+1);
 	}
 	a = strchr(p,'^');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) ^ vm_get_value(a+1);
+		return vm_get_value(p) ^ vm_get_value(a+1);
 	}
 	a = strchr(p,'%');
 	if (a) {
 		*a='\0';
-		return vm_get_value(str) % vm_get_value(a+1);
+		return vm_get_value(p) % vm_get_value(a+1);
 	}
-	return vm_get_value(str);
+	a = strchr(p,'>');
+	if (a) {
+		*a='\0';
+		return vm_get_value(p) >> vm_get_value(a+1);
+	}
+	a = strchr(p,'<');
+	if (a) {
+		*a='\0';
+		return vm_get_value(p) << vm_get_value(a+1);
+	}
+	return vm_get_value(p);
 }
 
 void vm_print()
@@ -196,6 +206,7 @@ int vm_reg_add(const char *name, int type, u64 value)
 	return 1;
 }
 
+struct vm_reg_t *rec = NULL;
 
 u64 vm_reg_get(const char *name)
 {
@@ -204,9 +215,12 @@ u64 vm_reg_get(const char *name)
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		if (!strcmp(name, r->name)) {
-			if (r->get != NULL) {
-				printf("GET! (%s)\n", r->get);
-				return vm_get_math(r->get);
+			if (rec==NULL && r->get != NULL) {
+				u64 val;
+				rec = r;
+				vm_eval(r->get);
+				rec = NULL;
+				return r->value;
 			}
 			return r->value;
 		}
@@ -235,6 +249,11 @@ int vm_reg_set(const char *name, u64 value)
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		if (!strcmp(name, r->name)) {
+			if (rec == NULL && r->set != NULL) {
+				rec = r;
+				vm_eval(r->set);
+				rec = NULL;
+			}
 			r->value = value;
 			return 1;
 		}
@@ -314,13 +333,14 @@ int vm_init(int init)
 	}
 
 	/* vm_dbg_arch_x86_nregs */
-//	const char *arch = config_get("asm.arch");
 	switch (config.arch) {
 	case ARCH_X86:
 		//eprintf("VM: Initialized\n");
 		vm_reg_add("eax", VMREG_INT32, 0);
-		vm_reg_add("al", VMREG_INT32, 0);
-		vm_reg_alias("al","eax&0xff", "eax&=0xFFFFff00");
+		vm_reg_add("al", VMREG_INT8, 0);
+		vm_reg_alias("al","al=eax&0xff", "al=al&0xff,eax=eax>16,eax=eax<16,eax=eax|al");
+		vm_reg_add("ah", VMREG_INT8, 0);
+		vm_reg_alias("ah","ah=eax&0xff00,ah=ah>8", "ah=eax&0xFFFFff00,eax|=");
 		vm_reg_add("ebx", VMREG_INT32, 0);
 		vm_reg_add("ecx", VMREG_INT32, 0);
 		vm_reg_add("edx", VMREG_INT32, 0);
@@ -442,6 +462,8 @@ int vm_eval_single(const char *str)
 		case '^':
 		case '%':
 		case '|':
+		case '<':
+		case '>':
 			snprintf(buf, 127, "%s%c%s", ptr, eq[-1], eq+1);
 			vm_eval_eq(ptr, buf);
 			break;
@@ -501,17 +523,44 @@ int vm_eval(const char *str)
 	ptr = alloca(len);
 	memcpy(ptr, str, len);
 
-	next = strchr(ptr, ',');
-	if (next) {
-		next[0]='\0';
-		ret = vm_eval_single(str);
-		if (ret == -1)
-			return 0;
-		vm_eval(ptr+1);
-		next[0]=',';
-	} else
-		return vm_eval_single(str);
+#if 0
+	.int32 eax alias-get alias-set
+	.alias eax get set
+#endif
+
+	do {
+		next = strchr(ptr, ',');
+		if (next) {
+			next[0]='\0';
+			ret = vm_eval_single(ptr);
+			if (ret == -1)
+				return 0;
+			vm_eval(ptr+1);
+			next[0]=',';
+			ptr = next +1;
+		} else
+			return vm_eval_single(ptr);
+	} while(next);
 	return 1;
+}
+
+int vm_eval_file(const char *str)
+{
+	char buf[1024];
+	FILE *fd = fopen(str, "r");
+	if (fd) {
+		while(!feof(fd)) {
+			*buf='\0';
+			fgets(buf, 1023, fd);
+			if (*buf) {
+				buf[strlen(buf)-1]='\0';
+				vm_eval(buf);
+			}
+		}
+		fclose(fd);
+		return 1;
+	}
+	return 0;
 }
 
 /* emulate n opcodes */
@@ -582,7 +631,6 @@ int vm_cmd_reg(const char *_str)
 	char *str, *ptr;
 	int len;
 
-	for(;_str&&*_str==' ';_str=_str+1);
 	len = strlen(_str)+1;
 	str = alloca(len);
 	memcpy(str, _str, len);
@@ -628,6 +676,7 @@ int vm_cmd_reg(const char *_str)
 			else vm_reg_del(str);
 			break;
 		default:
+			for(;str&&*str==' ';str=str+1);
 			ptr = strchr(str, '=');
 			if (ptr) {
 				vm_eval(str);
