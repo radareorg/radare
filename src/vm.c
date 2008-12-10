@@ -138,15 +138,16 @@ static u64 vm_get_math(const char *str)
 	return vm_get_value(p);
 }
 
-void vm_print()
+void vm_print(int type)
 {
 	int i;
 	struct list_head *pos;
 
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
-		cons_printf("%s %s 0x%08llx\n",
-			r->name, vm_reg_type(r->type), 
+		if (type == -1 || type == r->type)
+		printf(".%s\t%s = 0x%08llx\n",
+			vm_reg_type(r->type), r->name,
 			(r->get!=NULL)?vm_reg_get(r->name):r->value);
 	}
 }
@@ -249,12 +250,12 @@ int vm_reg_set(const char *name, u64 value)
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		if (!strcmp(name, r->name)) {
+			r->value = value;
 			if (rec == NULL && r->set != NULL) {
 				rec = r;
 				vm_eval(r->set);
 				rec = NULL;
 			}
-			r->value = value;
 			return 1;
 		}
 	}
@@ -301,13 +302,18 @@ void vm_configure_ret(const char *eax)
 void vm_cpu_call(u64 addr)
 {
 	/* x86 style */
+	vm_stack_push(vm_reg_get(vm_cpu.pc));
+	vm_reg_set(vm_cpu.pc, addr);
+	// XXX this should be the next instruction after pc (we need insn length here)
 }
 
-void vm_stack_push(u32 val)
+void vm_stack_push(u64 _val)
 {
+	// XXX determine size of stack here
 	// XXX do not write while emulating zomfg
+	u32 val = _val;
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)+4);
-	//vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
+	vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
 }
 
 void vm_stack_pop(const char *reg)
@@ -334,13 +340,25 @@ int vm_init(int init)
 
 	/* vm_dbg_arch_x86_nregs */
 	switch (config.arch) {
+#if 0
+	case ARCH_X86_64:
+		vm_reg_add("rax", VMREG_INT64, 0);
+		vm_reg_add("rbx", VMREG_INT64, 0);
+		vm_reg_add("rcx", VMREG_INT64, 0);
+		vm_reg_add("rdx", VMREG_INT64, 0);
+		vm_reg_add("rdi", VMREG_INT64, 0);
+		vm_reg_add("rsi", VMREG_INT64, 0);
+		vm_reg_add("rip", VMREG_INT64, 0);
+#endif
 	case ARCH_X86:
 		//eprintf("VM: Initialized\n");
 		vm_reg_add("eax", VMREG_INT32, 0);
+		vm_reg_add("ax", VMREG_INT16, 0);
+		vm_reg_alias("ax","ax=eax&0xffff", "eax=eax>16,eax=eax<16,eax=eax|ax");
 		vm_reg_add("al", VMREG_INT8, 0);
 		vm_reg_alias("al","al=eax&0xff", "al=al&0xff,eax=eax>16,eax=eax<16,eax=eax|al");
 		vm_reg_add("ah", VMREG_INT8, 0);
-		vm_reg_alias("ah","ah=eax&0xff00,ah=ah>8", "ah=eax&0xFFFFff00,eax|=");
+		vm_reg_alias("ah","ah=eax&0xff00,ah=ah>8", "eax=eax&0xFFFF00ff,ah=ah<8,eax=eax|ah,ah=ah>8");
 		vm_reg_add("ebx", VMREG_INT32, 0);
 		vm_reg_add("ecx", VMREG_INT32, 0);
 		vm_reg_add("edx", VMREG_INT32, 0);
@@ -350,7 +368,6 @@ int vm_init(int init)
 		vm_reg_add("esp", VMREG_INT32, 0);
 		vm_reg_add("ebp", VMREG_INT32, 0);
 		vm_reg_add("zf",  VMREG_BIT, 0);
-		vm_reg_add("cf",  VMREG_BIT, 0); // ...
 		vm_reg_add("cf",  VMREG_BIT, 0); // ...
 
 		vm_configure_cpu("eip", "esp", "ebp");
@@ -432,9 +449,7 @@ int vm_eval_eq(const char *str, const char *val)
 			u32 _int32 = 0;
 			vm_mmu_read(off, (u8*)&_int32, 4);
 			vm_reg_set(str, (u64)_int32);
-		} else {
-			vm_reg_set(str, vm_get_math(val));
-		}
+		} else vm_reg_set(str, vm_get_math(val));
 	}
 	return 0;
 }
@@ -445,6 +460,7 @@ int vm_eval_single(const char *str)
 	char buf[128];
 	int i, len;
 
+	//eprintf("EVAL(%s)\n", str);
 	for(;str&&str[0]==' ';str=str+1);
 	len = strlen(str)+1;
 	ptr = alloca(len);
@@ -466,18 +482,18 @@ int vm_eval_single(const char *str)
 		case '>':
 			snprintf(buf, 127, "%s%c%s", ptr, eq[-1], eq+1);
 			vm_eval_eq(ptr, buf);
+			//printf("EQ(%s)(%s)\n", ptr, buf);
 			break;
 		case ' ':
-			i=-1;
-			do { eq[i--]='\0';
-			} while(eq[i]==' ');
+			i=-1; do { eq[i--]='\0'; } while(eq[i]==' ');
 		default:
+			//printf("EQ(%s)(%s)\n", ptr, eq+1);
 			vm_eval_eq(ptr, eq+1);
 		}
 		eq[0]='=';
 	} else {
 		if (!memcmp(ptr, "syscall", 6)) {
-			eprintf("TODO\n");
+			eprintf("TODO: syscall interface not yet implemented\n");
 		} else
 		if((!memcmp(ptr, "call ", 4))
 		|| (!memcmp(ptr, "jmp ", 4))){
@@ -527,7 +543,6 @@ int vm_eval(const char *str)
 	.int32 eax alias-get alias-set
 	.alias eax get set
 #endif
-
 	do {
 		next = strchr(ptr, ',');
 		if (next) {
@@ -535,12 +550,13 @@ int vm_eval(const char *str)
 			ret = vm_eval_single(ptr);
 			if (ret == -1)
 				return 0;
-			vm_eval(ptr+1);
 			next[0]=',';
 			ptr = next +1;
-		} else
-			return vm_eval_single(ptr);
+		} else {
+		}
 	} while(next);
+	vm_eval_single(ptr);
+
 	return 1;
 }
 
@@ -637,7 +653,7 @@ int vm_cmd_reg(const char *_str)
 
 	if (str==NULL ||str[0]=='\0') {
 		/* show all registers */
-		vm_print();
+		vm_print(-1);
 	} else {
 		switch(str[0]) {
 		case 'a':
@@ -687,8 +703,12 @@ int vm_cmd_reg(const char *_str)
 				ptr[0]='=';
 	#endif
 			} else {
-				/* show single registers */
-				cons_printf("%s = 0x%08llx\n", str, vm_reg_get(str));
+				if (*str=='.') {
+					vm_print(vm_reg_type_i(str+1));
+				} else {
+					/* show single registers */
+					cons_printf("%s = 0x%08llx\n", str, vm_reg_get(str));
+				}
 			}
 		}
 	}

@@ -555,7 +555,6 @@ int radare_cmd_raw(const char *tmp, int log)
 			/* maybe everything but debug commands must be in this way */
 			/* radare_cmd_str doesn't handle system() output :( */
 			if( (strstr(input,"!regs")) ||(strstr(input,"!maps"))) {
-			//if (1) {
 				char *st, *str = radare_cmd_str(input+1);
 				st = str;
 				for(i=0;str && str[i];i++) {
@@ -659,7 +658,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			}
 
 			// Hack to allow 'ave eax=eax>16'
-			if (input[0]!='a'&&input[1]!='v'&&input[2]!='e')
+			if (input[0]!='a'&&input[1]!='v')//&&input[2]!='e')
 			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
 				char *pos = strchr(input+1, '>');
 				char *file = pos + 1;

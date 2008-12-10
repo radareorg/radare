@@ -44,5 +44,6 @@ struct vm_change_t {
 };
 
 u64 vm_reg_get(const char *name);
+void vm_stack_push(u64 _val);
 
 #endif

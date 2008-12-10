@@ -481,10 +481,14 @@ CMD_DECL(analyze)
 			vm_eval(input+2);
 			break;
 		case 'f':
-			vm_eval_file(input+2);
+			if (input[2]=='\0')
+				cons_printf("Usage: avf [file]\n");
+			else vm_eval_file(input+2);
 			break;
 		case 'r':
-			vm_cmd_reg(input+2);
+			if (input[2]=='?')
+				cons_printf("Usage: avr [reg|type]\n");
+			else vm_cmd_reg(input+2);
 			break;
 		case 'i':
 			vm_import();
@@ -555,7 +559,7 @@ CMD_DECL(analyze)
 		cons_printf(" ar [args]    analyze ranges\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
 		cons_printf(" at [args]    analyze opcode traces\n");
-		cons_printf(" av [nops]    analyze virtual machine (negative resets before)\n");
+		cons_printf(" av [nops]    analyze virtual machine\n");
 		cons_printf(" ax           analyze xrefs\n");
 		break;
 	}

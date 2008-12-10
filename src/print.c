@@ -399,8 +399,8 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 			/* skip chars */
 			switch(tmp) {
 			case ' ':
-config.interrupted =1;
-				i=len; // exit
+//config.interrupted =1;
+				//i = len; // exit
 				continue;
 			case '*':
 				if (i<=0) break;
@@ -436,7 +436,7 @@ config.interrupted =1;
 				D cons_printf("0x%08x = ", config.seek+i);
 				{
 				/* dirty hack */
-				int oldfmt= last_print_format;
+				int oldfmt = last_print_format;
 				u64 old = config.seek;
 				radare_seek(config.seek+i, SEEK_SET);
 				radare_read(0);
