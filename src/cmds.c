@@ -626,9 +626,7 @@ CMD_DECL(menu)
 			cons_printf("* %s\n", pfx);
 			sprintf(buf2, "e %s. | cut -d . -f 2 | sort | awk '{print \" - \"$1\"   \t\"$2\"\t\"$3$4$5$6}'", pfx);
 			radare_cmd(buf2, 0);
-		} else {
-			radare_cmd("e | sort | cut -d . -f 1 | uniq | awk '{print \" - \"$1}'", 0);
-		}
+		} else  radare_cmd("e | sort | cut -d . -f 1 | uniq | awk '{print \" - \"$1}'", 0);
 	noprint:
 		cons_printf("> ");
 		cons_flush();

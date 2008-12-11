@@ -428,6 +428,7 @@ void radare_fortunes()
 int radare_cmd_raw(const char *tmp, int log)
 {
 	int fd;
+	int quoted = 0;
 	FILE* filef;
 	int i,f,fdi = 0;
 	char *eof;
@@ -442,6 +443,8 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (strnull(tmp))
 		return 0;
 
+	// TODO: chop string by ';'
+
 	eof = strchr(tmp,'\n');
 	if (eof) {
 		//*eof = '\0';
@@ -452,8 +455,15 @@ int radare_cmd_raw(const char *tmp, int log)
 		}
 	}
 
-	input = oinput = strdup(tmp);
+	i = strlen(tmp)+1;
+	input = oinput = alloca( i );
+	memcpy(input, tmp, i);
 	input = strclean(input);
+
+	if (*input == '"') {
+		quoted = 1;
+		input=input+1;
+	}
 
 	if (input[0]=='!'&&input[1]=='!')
 		return radare_system(input+2);
@@ -487,26 +497,28 @@ int radare_cmd_raw(const char *tmp, int log)
 // SPAGUETI!
 #if 1
 		/* temporally offset */
-		eof2 = strchr(input, '@');
-		if (eof2 && input[0]!='e') {
-			char *ptr = eof2+1;
-			eof2[0] = '\0';
+		if (!quoted) {
+			eof2 = strchr(input, '@');
+			if (eof2 && input[0]!='e') {
+				char *ptr = eof2+1;
+				eof2[0] = '\0';
 
-			if (eof2[1]=='@') {
-				/* @@ is for foreaching */
-				tmpoff = config.seek;
-				radare_cmd_foreach(input ,eof2+2);
-				//config.seek = tmpoff;
-				radare_seek(tmpoff, SEEK_SET);
-				
-				return 0;
-			} else {
-				tmpoff = config.seek;
-				for(;*ptr==' ';ptr=ptr+1);
-				if (*ptr=='+'||*ptr=='-')
-					config.seek = config.seek + get_math(ptr);
-				else	config.seek = get_math(ptr);
-				radare_read(0);
+				if (eof2[1]=='@') {
+					/* @@ is for foreaching */
+					tmpoff = config.seek;
+					radare_cmd_foreach(input ,eof2+2);
+					//config.seek = tmpoff;
+					radare_seek(tmpoff, SEEK_SET);
+					
+					return 0;
+				} else {
+					tmpoff = config.seek;
+					for(;*ptr==' ';ptr=ptr+1);
+					if (*ptr=='+'||*ptr=='-')
+						config.seek = config.seek + get_math(ptr);
+					else	config.seek = get_math(ptr);
+					radare_read(0);
+				}
 			}
 		}
 #endif
@@ -530,10 +542,10 @@ int radare_cmd_raw(const char *tmp, int log)
 			cons_printf(
 			"Usage [.][command| file]\n"
 			"- Interpret radare commands from file or command\n"
-			"  > .!regs*               ; interpret the output of a command\n"
-			"  > .(func arg1 arg2)     ; call macro (see '(?' for more information)\n"
-			"  > . /tmp/flags-saved    ; load radare script file\n"
-			"  > . my-script.py        ; depends on file extension\n");
+			" .!regs*               ; interpret the output of a command\n"
+			" .(func arg1 arg2)     ; call macro (see '(?' for more information)\n"
+			" . /tmp/flags-saved    ; load radare script file\n"
+			" . my-script.py        ; depends on file extension\n");
 			break;
 		case ' ':
 			filef = fopen(input+2,"r");
@@ -565,7 +577,6 @@ int radare_cmd_raw(const char *tmp, int log)
 					}
 				}
 				config_set_i("cfg.verbose", 1);
-				free(oinput);
 				return 0;
 			}
 			#endif
@@ -575,7 +586,6 @@ int radare_cmd_raw(const char *tmp, int log)
 			if (f == -1) {
 				eprintf("radare_cmd_raw: Cannot open.\n");
 				config_set_i("cfg.verbose", 1);
-				free(oinput);
 				return 0;
 			}
 			for(;!config.interrupted;) {
@@ -607,110 +617,110 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (input[0]=='(' &&input[1]!=')') {
 		cmd_macro(input+1);
 	} else {
-		/* pipe */
-		piped = strchr(input, '|');
-		if (piped && input != piped && piped[-1]!='\\') {
-			char tmp[1024];
-			char cmd[1024];
-			piped[0]='\0';
-			pipe_stdout_to_tmp_file(tmp, input);
-			snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
-			ret = io_system(cmd);
-			unlink(tmp);
-			piped[0]='|';
-			free(oinput);
-			return 1;
+		if (!quoted) {
+			/* pipe */
+			piped = strchr(input, '|');
+			if (piped && input != piped && piped[-1]!='\\') {
+				char tmp[1024];
+				char cmd[1024];
+				piped[0]='\0';
+				pipe_stdout_to_tmp_file(tmp, input);
+				snprintf(cmd, 1023 ,"cat '%s' | %s", tmp, piped+1);
+				ret = io_system(cmd);
+				unlink(tmp);
+				piped[0]='|';
+				return 1;
+			}
 		}
+
 		fd = -1;
 		fdi = -1;
 		std = -1;
 		//if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 		if (input[0]!='%' && input[0]!='_' && input[0]!=';' ) {
 		//if (input[0]!='(' && input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
-			/* inline pipe */
-			piped = strchr(input, '`');
-			if (piped) {
-				int len;
-				char tmp[128];
-				char filebuf[4096];
-				piped[0]='\0';
+			if (!quoted) {
+				/* inline pipe */
+				piped = strchr(input, '`');
+				if (piped) {
+					int len;
+					char tmp[128];
+					char filebuf[4096];
+					piped[0]='\0';
 
-				pipe_stdout_to_tmp_file(tmp, piped+1);
-				fdi = open(tmp, O_RDONLY);
-				if (fdi == -1) {
-					perror("open");
-					free(oinput);
-					return 0;
-				}
+					pipe_stdout_to_tmp_file(tmp, piped+1);
+					fdi = open(tmp, O_RDONLY);
+					if (fdi == -1) {
+						perror("open");
+						return 0;
+					}
 
-				memset(filebuf, '\0', 2048);
-				len = read(fdi, filebuf, 1024);
-				if (len<1) {
-					eprintf("error: (%s)\n", input);
-				//	return 0;
-				} else {
-					len += strlen(input) + 5;
-					oinput = malloc(len);
-					sprintf(oinput, "%s %s", input, filebuf);
-					free(input);
-					input = oinput;
-				}
-			}
-
-			// Hack to allow 'ave eax=eax>16'
-			if (input[0]!='a'&&input[1]!='v')//&&input[2]!='e')
-			if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
-				char *pos = strchr(input+1, '>');
-				char *file = pos + 1;
-				char *end;
-				if (pos != NULL) {
-					for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
-					if (*file == '\0') {
-						eprintf("No target file (%s)\n", input);
+					memset(filebuf, '\0', 2048);
+					len = read(fdi, filebuf, 1024);
+					if (len<1) {
+						eprintf("error: (%s)\n", input);
+					//	return 0;
 					} else {
-						for(end = file+strlen(file);
-							end[0]&&!iswhitespace(end[0]);
-							end = end-1); end[0]='\0';
-						if (pos[1] == '>')
-							fd = io_open(file, O_APPEND|O_WRONLY, 0644);
-						else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
-						if (fd == -1) {
-							eprintf("Cannot open '%s' for writing\n", file);
-							config_set("file.write", "false");
-							tmpoff = config.seek;
-							free(oinput);
-							return 1;
+						len += strlen(input) + 5;
+						oinput = alloca(len);
+						strcpy(oinput, input);
+						sprintf(oinput, "%s %s", input, filebuf);
+						input = oinput;
+					}
+				}
+
+				// Hack to allow 'ave eax=eax>16'
+				if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
+					char *pos = strchr(input+1, '>');
+					char *file = pos + 1;
+					char *end;
+					if (pos != NULL) {
+						for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
+						if (*file == '\0') {
+							eprintf("No target file (%s)\n", input);
+						} else {
+							for(end = file+strlen(file);
+								end[0]&&!iswhitespace(end[0]);
+								end = end-1); end[0]='\0';
+							if (pos[1] == '>')
+								fd = io_open(file, O_APPEND|O_WRONLY, 0644);
+							else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
+							if (fd == -1) {
+								eprintf("Cannot open '%s' for writing\n", file);
+								config_set("file.write", "false");
+								tmpoff = config.seek;
+								return 1;
+							}
+							std = dup(1); // store stdout
+							dup2(fd, 1);
 						}
-						std = dup(1); // store stdout
-						dup2(fd, 1);
+					}
+				}
+
+				/* temporally offset */
+				eof2 = strchr(input, '@');
+				if (eof2 && input[0]!='e') {
+					char *ptr = eof2+1;
+					eof2[0] = '\0';
+
+					if (eof2[1]=='@') {
+						/* @@ is for foreaching */
+						tmpoff = config.seek;
+						radare_cmd_foreach(input ,eof2+2);
+						//config.seek = tmpoff;
+						radare_seek(tmpoff, SEEK_SET);
+						
+						return 0;
+					} else {
+						tmpoff = config.seek;
+						for(;*ptr==' ';ptr=ptr+1);
+						if (*ptr=='+'||*ptr=='-')
+							config.seek = config.seek + get_math(ptr);
+						else	config.seek = get_math(ptr);
+						radare_read(0);
 					}
 				}
 			}
-
-			/* temporally offset */
-			eof2 = strchr(input, '@');
-			if (eof2 && input[0]!='e') {
-				char *ptr = eof2+1;
-				eof2[0] = '\0';
-
-				if (eof2[1]=='@') {
-					/* @@ is for foreaching */
-					tmpoff = config.seek;
-					radare_cmd_foreach(input ,eof2+2);
-					//config.seek = tmpoff;
-					radare_seek(tmpoff, SEEK_SET);
-					
-					return 0;
-				} else {
-					tmpoff = config.seek;
-					for(;*ptr==' ';ptr=ptr+1);
-					if (*ptr=='+'||*ptr=='-')
-						config.seek = config.seek + get_math(ptr);
-					else	config.seek = get_math(ptr);
-					radare_read(0);
-				}
-			}
-
 		}
 
 		// XXX fuckmenot
@@ -750,7 +760,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		cons_grep(NULL);
 	}
 	
-	if (next && next[1]=='&') {
+	if (!quoted && next && next[1]=='&') {
 		int ret;
 		next[0] = '&';
 		for(next=next+2;*next==' ';next=next+1);
@@ -761,7 +771,6 @@ int radare_cmd_raw(const char *tmp, int log)
 		return ret; 
 	}
 
-	free(oinput);
 	return ret; /* error */
 }
 
@@ -901,37 +910,39 @@ int radare_cmd(char *input, int log)
 	int i;
 	char *next = NULL;
 	int ret = 0;
+	int quoted = 0; /* ignore '>', '|', '@' and '`' */
 
 	/* silently skip lines begginging with 0 */
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
-
-#if 0
-	if (dl_hist_label(input, &cb))
-		return 0;
-#endif
-//fprintf(stderr, "CMD: (%s)\n", input);
 	if (log)
 		dl_hist_add(input);
 
-	next = strstr(input, "&&");
-	if (next) next[0]='\0';
-
-// XXX not handled !?!?
-	if (input[0]=='!'&&input[1]=='!')
-		return radare_system(input+2);
-
-	// bypass radare inputline hack ;D
+	/* skipping copypasta from the shell */
 	if (!memcmp(input, "[0x", 3)) {
 		char *foo = strchr(input, '>');
 		if (foo)
 			input = foo+2;
-	}
-
-	if (input && input[0]=='\0') {
+	} else if (*input=='\0') {
 		radare_nullcmd();
 		return 0;
+	} else if (*input == '"') {
+		//input = input + 1;
+		quoted = 1;
+	} else {
+		next = strstr(input, "&&");
+		if (next) next[0]='\0';
+
 	}
+
+#if 0
+// XXX already handled in _raw
+	if (input[0]=='!'&&input[1]=='!')
+		return radare_system(input+2);
+#endif
+
+	// bypass radare inputline hack ;D
+
 
 	if (config.skip) return 0;
 
@@ -962,7 +973,7 @@ int radare_cmd(char *input, int log)
 	radare_controlc_end();
 
 	// TODO: Use ',' everywhere ??
-	if (next && next[1]=='&') {
+	if (!quoted && next && next[1]=='&') {
 		int ret;
 		next[0] = '&';
 		for(next=next+2;*next==' ';next=next+1);
@@ -1173,11 +1184,11 @@ int radare_prompt()
 	config.interrupted = 0;
 
 	/* run the visual command */
-	if ( (ptr = config_get("cmd.visual")) && ptr[0])
-	{
-		aux = strdup ( ptr );
+	if ((ptr = config_get("cmd.visual")) && ptr[0]) {
+		t = strlen(ptr)+1;
+		aux = alloca(t);
+		memcpy(aux,ptr,t);
 		radare_cmd( aux, 0 );
-		free ( aux );
 	}
 	cons_flush();
 	radare_prompt_command();
