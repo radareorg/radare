@@ -111,7 +111,7 @@ struct data_t *data_add_arg(u64 off, int type, const char *arg)
 		return NULL;
 	d = data_add(off, type);
 	if (d != NULL)
-		strncpy(d->arg , arg, 128);
+		strncpy(d->arg , arg, sizeof(d->arg));
 	return d;
 }
 
@@ -122,10 +122,11 @@ struct data_t *data_add(u64 off, int type)
 	struct list_head *pos;
 
 	__reloop:
+	// TODO: use safe foreach here
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
-		if (d && (off>= d->from && off< d->to) ) {//&& d->type != type ) {
-			list_del((&d->list)); //->list));
+		if (d && (off>= d->from && off< d->to) ) {
+			list_del((&d->list));
 			goto __reloop;
 		}
 	}
@@ -650,4 +651,21 @@ int data_printd(int delta)
 
 	lines += data_xrefs_print(offset, -1);
 	return lines;
+}
+
+/* variables */
+int data_var_cmd(const char *str)
+{
+	int len;
+	char *vstr;
+	if (*str=='?') {
+		cons_printf(
+			"Usage: Cv [name] [size] [pm-format-string]\n"
+			"  Cv int 4 d\n"
+			"  Cv float 4 f\n");
+		return 0;
+	}
+	STRALLOC(vstr, str, len);
+	
+	return 0;
 }

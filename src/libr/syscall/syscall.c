@@ -36,6 +36,11 @@ int r_syscall_setup(const char *arch, const char *os)
 	return 0;
 }
 
+int r_syscall_setup_file(const char *path)
+{
+	
+}
+
 int r_syscall_get(const char *str)
 {
 	int i;

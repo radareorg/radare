@@ -36,7 +36,7 @@ ${PACKAGE_DIR}/data: ${SOURCE_DIR}
 	mkdir -p $@/usr/bin $@/usr/share/doc/radare $@/usr/share/radare/ $@/usr/libexec/gradare $@/usr/share/radare/rsc $@/usr/lib $@/usr/share/radare/magic
 	#radare
 	-cp ${PRG}/src/radiff/radiff $@/usr/bin/radiff
-	-cp ${PRG}/src/rsc/pool/bindiff $@/usr/bin/bindiff
+	#-cp ${PRG}/src/rsc/pool/bindiff $@/usr/bin/bindiff
 	-cp ${PRG}/src/radare $@/usr/bin/radare
 	-cp ${PRG}/src/rabin/rabin $@/usr/bin/rabin
 	-cp ${PRG}/src/rasm/rasm $@/usr/bin/rasm

@@ -16,6 +16,9 @@ TheBook
 * Added at% like ar%
 * 'm' in visual should be used as mark like in vim
 
+grep multiple strings:
+  pdf ~call,ebp
+
 OPTIMIZATIONS
 =============
 * do not dump on tmp files (use popen or so)
@@ -84,7 +87,6 @@ Things to be done
     A hook to an api can be emulated from the debugger, no need to inject
     code everywhere, just BP and change regs
    - ptrace layer make't support syscall proxying for remote debugging!!1 rasc -l rulez
-* asm.regs2 or asm.regsegments = true ( to show cs, ds, gs, ... )
 * Watchpoints:
   - Make !wp work with ? conditionals
   - Make dbg.wptrace = make it stop when there's a breakpoint

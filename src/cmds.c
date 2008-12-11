@@ -559,7 +559,7 @@ CMD_DECL(analyze)
 		cons_printf(" ar [args]    analyze ranges\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
 		cons_printf(" at [args]    analyze opcode traces\n");
-		cons_printf(" av [nops]    analyze virtual machine\n");
+		cons_printf(" av[?] [arg]  analyze code with virtual machine\n");
 		cons_printf(" ax           analyze xrefs\n");
 		break;
 	}
@@ -1072,8 +1072,28 @@ CMD_DECL(code)
 	case 'i':
 		data_info();
 		break;
+	case 'v': /* var types */
+		// Cv int 4 d
+		// Cv float 4 f
+		data_var_cmd(text+1);
+		break;
 	case 'F':
 		/* do code analysis here */
+		switch(text[1]) {
+		case 'v': // function var
+		case 'r': // function ranges
+		case 'f': // function frame size
+		case 'a': // function args
+		case '?': // function help
+			cons_printf(
+			"Usage: CF[afrv] [args]\n"
+			" CFa 0 int argc\n"
+			" CFa 4 char** argv\n"
+			" CFf 320 @ fun.8058400\n"
+			" CFv 20 int \n"
+			" CFr 10-20,3040 @ fun.8048300\n");
+			break;
+		}
 	case 'm':
 	case 'c':
 	case 'd':

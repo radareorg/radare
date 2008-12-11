@@ -9,6 +9,7 @@
 #define TMPFILE_MAX 50
 #define BUFLEN 4096
 #define CMPMIN(a,b) (a<b? a : b)
+#define STRALLOC(dst,str,len) len=strlen(str)+1; dst=alloca(len); memcpy(dst,str,len)
 
 extern u64 last_cmp;
 extern const char hex[16];
