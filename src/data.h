@@ -16,6 +16,13 @@ struct data_t {
 	struct list_head list;
 };
 
+struct var_type_t {
+	char name[128];
+	char fmt[128];
+	unsigned int size;
+	struct list_head list;
+};
+
 struct comment_t {
 	u64 offset;
 	const char *comment;

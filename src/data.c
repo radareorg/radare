@@ -33,6 +33,7 @@
 
 struct reflines_t *reflines = NULL;
 
+static struct list_head vartypes;
 static struct list_head data;
 static struct list_head comments;
 static struct list_head xrefs;
@@ -617,9 +618,11 @@ char *data_comment_get(u64 offset, int lines)
 
 void data_comment_init(int new)
 {
+	INIT_LIST_HEAD(&(vartypes));
 	INIT_LIST_HEAD(&(xrefs));
 	INIT_LIST_HEAD(&(comments));
 	INIT_LIST_HEAD(&(data));
+	var_init();
 }
 
 void data_reflines_init()
@@ -654,18 +657,90 @@ int data_printd(int delta)
 }
 
 /* variables */
+
+int data_var_type_add(const char *typename, int size, const char *fmt)
+{
+	struct var_type_t *d = (struct var_type_t *)
+		malloc(sizeof(struct var_type_t));
+	strncpy(d->name, typename, sizeof(d->name));
+	strncpy(d->fmt, fmt, sizeof(d->fmt));
+	d->size = size;
+	list_add(&(d->list), &vartypes);
+	
+	return 0;
+}
+
+int data_var_type_del(const char *typename)
+{
+	struct list_head *pos;
+	u64 ret = 0;
+
+	if (*typename==' ')typename=typename+1;
+
+	list_for_each(pos, &vartypes) {
+		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
+		if (!strcmp(typename, d->name)) {
+			list_del(&(d->list));
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+
+int data_var_type_list()
+{
+	struct list_head *pos;
+	u64 ret = 0;
+
+	list_for_each(pos, &vartypes) {
+		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
+		cons_printf("%s %d %s\n", d->name, d->size, d->fmt);
+	}
+	return ret;
+	
+}
+
+int data_var_help()
+{
+	cons_printf(
+		"Usage: Cv [name] [size] [pm-format-string]\n"
+		"  Cv int 4 d   ; define 'int' type\n"
+		"  Cv- int      ; remove 'int' var type\n"
+		"  Cv float 4 f\n");
+	return 0;
+}
+
 int data_var_cmd(const char *str)
 {
 	int len;
 	char *vstr;
-	if (*str=='?') {
-		cons_printf(
-			"Usage: Cv [name] [size] [pm-format-string]\n"
-			"  Cv int 4 d\n"
-			"  Cv float 4 f\n");
-		return 0;
-	}
+	char *arg, *arg2;
 	STRALLOC(vstr, str, len);
+
+	if (*str==' ')str=str+1;
+	switch(*str) {
+	case '?':
+		return data_var_help();
+	case '\0':
+		/* list var types */
+		data_var_type_list();
+		break;
+	case '-':
+		data_var_type_del(str+1);
+		break;
+	default:
+		arg = strchr(str, ' ');
+		if (arg==NULL)
+			return data_var_help();
+		*arg='\0'; arg=arg+1;
+		arg2 = strchr(arg, ' ');
+		if (arg2==NULL)
+			return data_var_help();
+		*arg2='\0'; arg2=arg2+1;
+		data_var_type_add(str, atoi(arg), arg2);
+		break;
+	}
 	
 	return 0;
 }

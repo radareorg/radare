@@ -11,6 +11,7 @@ crOBJ+=radare.o stripstr.o readline.o search.o undo.o rio.o cons.o trace.o vm.o 
 crOBJ+=config.o flags.o utils.o environ.o visual.o print.o cmds.o binparse.o section.o
 crOBJ+=plugin.o socket.o analyze.o code.o rabin.o project.o hack.o bytepat.o macros.o
 crOBJ+=rasm/rasm.o rasm/olly.o rasm/x86.o rasm/ppc.o rasm/arm.o rasm/java.o dietline.o
+crOBJ+=vars.o rdb.o radiff/rdbdiff.o
 
 # plug/io
 
@@ -72,8 +73,6 @@ crOBJ+=rabin/javasm.o
 
 crOBJ+=arch/m68k/code.o
 crOBJ+=arch/m68k/m68k_disasm.o
-
-crOBJ+=rdb.o radiff/rdbdiff.o
 
 # plugins and so
 

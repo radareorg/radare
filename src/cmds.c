@@ -1081,17 +1081,31 @@ CMD_DECL(code)
 		/* do code analysis here */
 		switch(text[1]) {
 		case 'v': // function var
-		case 'r': // function ranges
-		case 'f': // function frame size
 		case 'a': // function args
+		case 'A':
+			var_cmd(text);
+			break;
+#if 0
+		case 's':
+		case 'g': // set/get
+			break;
+#endif
+		case 'r': // function ranges
+			eprintf("TODO\n");
+			break;
+		case 'f': // function frame size
+			eprintf("TODO\n");
+			break;
 		case '?': // function help
 			cons_printf(
 			"Usage: CF[afrv] [args]\n"
-			" CFa 0 int argc\n"
-			" CFa 4 char** argv\n"
+			" CFv 20 int             ; define local var\n"
+			" CFa 0 int argc         ; define arg[0]\n"
+			" CFa 4 char** argv      ; define arg[1]\n"
+			" CFA 0 char** argv      ; define arg[1] (fastcall)\n"
 			" CFf 320 @ fun.8058400\n"
-			" CFv 20 int \n"
-			" CFr 10-20,3040 @ fun.8048300\n");
+			" CFr 10-20,3040 @ fun.8048300\n"
+			"TODO: get/set access vars\n");
 			break;
 		}
 	case 'm':
@@ -1148,14 +1162,15 @@ CMD_DECL(code)
 		" CF [-][len]  @ here    ; add/rm function\n"
 		" Cx [-][addr] @ here    ; add/rm code xref\n"
 		" CX [-][addr] @ here    ; add/rm data xref\n"
-		" Cm [num] [expr]  ; define memory format (pm?)\n"
-		" Cc [num]         ; converts num bytes to code\n"
-		" Cd [num]         ; converts to data bytes\n"
-		" Cs [num]         ; converts to string\n"
-		" Cf [num]         ; folds num bytes\n"
-		" Cu [num]         ; unfolds num bytes\n"
-		" CF*              ; list function ranges as ar cmds\n"
-		" C*               ; list metadata database\n");
+		" Cm [num] [expr]        ; define memory format (pm?)\n"
+		" Cc [num]               ; converts num bytes to code\n"
+		" Cd [num]               ; converts to data bytes\n"
+		" Cs [num]               ; converts to string\n"
+		" Cf [num]               ; folds num bytes\n"
+		" Cu [num]               ; unfolds num bytes\n"
+		" Cv [type] [sz] [fmt]   ; define var type (Cv?)\n"
+		" CF*                    ; list function ranges as ar cmds\n"
+		" C*                     ; list metadata database\n");
 	}
 
 	return 0;
