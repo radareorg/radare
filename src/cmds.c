@@ -329,7 +329,7 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'F':
-		analyze_function(4,0); // XXX move to afr ?!?
+		analyze_function(config.seek, 4,0); // XXX move to afr ?!?
 		break;
 	case 'f':
 		switch(input[1]) {
@@ -339,10 +339,10 @@ CMD_DECL(analyze)
 			eprintf(" .af*  - import function analysis (same as Vdf)\n");
 			break;
 		case '*':
-			analyze_function(0,0);
+			analyze_function(config.seek, 0,0);
 			break;
 		default:
-			analyze_function(0,1);
+			analyze_function(config.seek, 0,1);
 		}
 		break;
 	case 'g':
@@ -1099,12 +1099,12 @@ CMD_DECL(code)
 		case '?': // function help
 			cons_printf(
 			"Usage: CF[afrv] [args]\n"
-			" CFv 20 int             ; define local var\n"
-			" CFa 0 int argc         ; define arg[0]\n"
-			" CFa 4 char** argv      ; define arg[1]\n"
-			" CFA 0 char** argv      ; define arg[1] (fastcall)\n"
-			" CFf 320 @ fun.8058400\n"
-			" CFr 10-20,3040 @ fun.8048300\n"
+			" CFv 20 int                    ; define local var\n"
+			" CFa 0 int argc                ; define arg[0]\n"
+			" CFa 4 char** argv             ; define arg[1]\n"
+			" CFA 0 char** argv             ; define arg[1] (fastcall)\n"
+			" CFf 320 @ fun.8058400         ; set frame size for function\n"
+			" CFr 10-20,3040 @ fun.8048300  ; define ranges for non-linear function\n"
 			"TODO: get/set access vars\n");
 			break;
 		}
@@ -1114,11 +1114,10 @@ CMD_DECL(code)
 	case 's':
 	case 'f':
 	case 'u': {
-		char *arg=text+1;
 		struct data_t *d;
+		int fmt, len;
+		char *arg = text + 1;
 		u64 tmp = config.block_size;
-		int fmt;
-		int len;
 
 
 		for(; *arg==' ';arg=arg+1);
@@ -1159,7 +1158,7 @@ CMD_DECL(code)
 		"Usage: C[op] [arg] <@ offset>\n"
 		" Ci               ; show info about metadata\n"
 		" CC [-][comment] @ here ; add/rm comment\n"
-		" CF [-][len]  @ here    ; add/rm function\n"
+		" CF [-][len]  @ here    ; add/rm linear function\n"
 		" Cx [-][addr] @ here    ; add/rm code xref\n"
 		" CX [-][addr] @ here    ; add/rm data xref\n"
 		" Cm [num] [expr]        ; define memory format (pm?)\n"
@@ -1169,6 +1168,7 @@ CMD_DECL(code)
 		" Cf [num]               ; folds num bytes\n"
 		" Cu [num]               ; unfolds num bytes\n"
 		" Cv [type] [sz] [fmt]   ; define var type (Cv?)\n"
+		" CF[afrv] [args] @ addr ; function-level local variable\n"
 		" CF*                    ; list function ranges as ar cmds\n"
 		" C*                     ; list metadata database\n");
 	}

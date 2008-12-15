@@ -1,5 +1,6 @@
 /* Copyleft 2009 - pancake<AT>youterm.com */
 
+
 #include "main.h"
 #include "list.h"
 
@@ -45,7 +46,7 @@ struct var_t {
 int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize)
 {
 	struct var_t *var = (struct var_t *)malloc(sizeof(struct var_t));
-	/* check of delta */
+	/* TODO: check of delta inside funframe */
 	strncpy(var->name, name, sizeof(var->name));
 	strncpy(var->vartype, vartype, sizeof(var->vartype));
 	var->delta = delta;
@@ -72,7 +73,7 @@ int var_add_access(u64 addr, int delta, int set)
 				xs->addr = addr;
 				xs->set = set;
 				/* add var access here */
-				list_add(&(v->access), xs);
+				list_add(&(v->access), &xs);
 				return 1;
 			}
 		}
@@ -83,7 +84,6 @@ int var_add_access(u64 addr, int delta, int set)
 /* 0,0 to list all */
 int var_list(u64 addr, int delta)
 {
-	/* */
 	struct list_head *pos;
 	struct var_t *v;
 	struct var_xs_t *x;
@@ -99,6 +99,8 @@ int var_list(u64 addr, int delta)
 			}
 		}
 	}
+
+	return 0;
 }
 
 int var_init()

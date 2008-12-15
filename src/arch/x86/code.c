@@ -40,12 +40,13 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	switch(bytes[0]) {
 	case 0x8a:
 	case 0x8b:
+	case 0x03: //  034518          add eax, [ebp+0x18]
 		switch(bytes[1]) {
 		case 0x45:
 		case 0x46:
 		case 0x55:
 			/* mov -0xc(%ebp, %eax */
-			aop->ref = (u64)(-((char)bytes[2]));
+			aop->ref = (u64)(int)(-((char)bytes[2]));
 			aop->stackop = AOP_STACK_LOCAL_GET;
 			break;
 		case 0xbd:
@@ -54,6 +55,8 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->stackop = AOP_STACK_LOCAL_GET;
 			break;
 		}
+		break;
+	case 0x88:
 	case 0x89: // move
 		switch(bytes[1]) {
 		case 0x45:
@@ -103,6 +106,11 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->length = 1;
 		break;
 	case 0x0f: // 3 byte nop
+		//0fbe55ff        movsx edx, byte [ebp-0x1]
+		if (bytes[1]==0xbe) {
+			aop->ref = (u64)(int)(-((char)bytes[3]));
+			aop->stackop = AOP_STACK_LOCAL_GET;
+		} else
 		if (bytes[1]==0x31) {
 			// RDTSC // colorize or sthg?
 			aop->eob = 0;
@@ -248,6 +256,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->type = AOP_TYPE_CMP;
 			break;
 		}
+		break;
 	case 0x8d:
 		/* LEA */
 		if (bytes[1] == 0x85) {

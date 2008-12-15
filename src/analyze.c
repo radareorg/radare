@@ -755,7 +755,7 @@ int analyze_var_get(int type)
 	return ctr;
 }
 
-int analyze_function(int recursive, int report)
+int analyze_function(u64 from, int recursive, int report)
 {
 	struct aop_t aop;
 	struct list_head *head;
@@ -765,7 +765,7 @@ int analyze_function(int recursive, int report)
 	char buf[1024];
 	/*--*/
 	u8 *bytes;
-	u64 from = config.baddr + config.seek;
+	//u64 from = config.baddr + config.seek;
 	u64 seek = from; // to place comments
 	u64 end  = 0;
 	int i, inc = 0;
@@ -832,13 +832,13 @@ int analyze_function(int recursive, int report)
 		{
 		int len = to-from;
 		cons_printf("bytes = ");
-		if (len>32)len=32; // anal.limitbytes
+	//	if (len>32)len=32; // anal.limitbytes
 		for(i=0;i<len;i++) 
 			cons_printf("%02x ", bytes[i]);
-		cons_printf("\n");
+		cons_newline();
 		}
 	} else {
-		cons_printf("fs functions\n");
+		cons_strcat("fs functions\n");
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
 		cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
@@ -889,11 +889,13 @@ int analyze_function(int recursive, int report)
 			}
 		}
 		ref = (int)aop.value;
+		if (ref==0)
+			ref = aop.ref;
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:
 			if (!report) {
 				if (ref<0)
-					sprintf(buf, "CC Set arg%d @ 0x%08llx\n", -ref, seek);
+					sprintf(buf, "CC Set var%d @ 0x%08llx\n", -ref, seek);
 				else sprintf(buf, "CC Set var%d @ 0x%08llx\n", ref, seek);
 				cons_strcat(buf);
 			}
@@ -912,6 +914,8 @@ int analyze_function(int recursive, int report)
 				char buf[1024];
 				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
 				cons_strcat(buf);
+				//sprintf(buf, "CCC Get arg%d @ 0x%08llx\n", ref, seek);
+				//cons_strcat(buf);
 			}
 			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
@@ -933,6 +937,8 @@ int analyze_function(int recursive, int report)
 				else sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
 				framesize += aop.value;
+				if (!report)
+					cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
 			}
 			break;
 		}
@@ -949,7 +955,7 @@ int analyze_function(int recursive, int report)
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(recursive, report);
+				analyze_function(seek, recursive, report);
 				break;
 			}
 		}

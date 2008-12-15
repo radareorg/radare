@@ -631,13 +631,14 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		if (flags & RADIS_FUNCTIONS ) {
 			if (foo != NULL && foo->type == DATA_FUN) {
 				if (foo->from == sk) {
-					// TODO stack_ptr = 0;
+					stack_ptr = 0;
 					strcpy(funline,"/");
 				} else
-				if ((foo->to-aop.length+1 == sk) // XXX UGLY HACK
-				|| (foo->to-1 == sk))
+				if ((foo->to-aop.length == sk) // XXX UGLY HACK
+				|| (foo->to-1 == sk)) {
 					strcpy(funline,"\\");
-				else
+					stack_ptr = 0;
+				} else
 					strcpy(funline,"|");
 				cons_strcat(funline);
 				foo = NULL;
