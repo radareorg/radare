@@ -1,0 +1,12 @@
+put these lines in your .vmx file:
+
+   debugStub.listen.guest32=1
+or
+   debugStub.listen.guest64=1
+
+
+Then just run radare with:
+
+  gdbwrap://127.0.0.1:8832
+
+.. and enjoy virtualized kernel debugging!

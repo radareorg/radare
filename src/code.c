@@ -395,7 +395,7 @@ void radis(int len, int rows)
 	radare_controlc_end();
 }
 
-/* ------------------------------  refactor ----------------------------------*/
+/* ------------------------------ refactor ----------------------------------*/
 
 #define RADIS_SIZE      0x00001
 #define RADIS_BYTES     0x00002
@@ -449,6 +449,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	int bytes = 0;
 	int myrow = 0;
 	u64 myinc = 0;
+	struct data_t *foo;
 	unsigned char b[32];
 	char buf[1024];
 	const char *flag;
@@ -624,7 +625,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		if (flags & RADIS_TRACES)
 			cons_printf("%04x %02x ", trace_count(seek), trace_times(seek));
 
-		struct data_t *foo = data_get_range(sk);
+		foo = data_get_range(sk);
 		funline[0]='\0';
 		/* handle data type block */
 		//	print_function_line(foo, sk);

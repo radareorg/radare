@@ -20,6 +20,7 @@ crOBJ+=plug/io/gdb.o plug/io/posix.o plug/io/gdbx.o plug/io/socket.o pas.o range
 crOBJ+=plug/io/shm.o plug/io/mmap.o plug/io/malloc.o plug/io/bfdbg.o plug/io/serial.o
 #plug/io/winegdb.o
 #GDBWRAP
+CFLAGS+=-Iplug/io/libgdbwrap/include
 crOBJ+=plug/io/gdbwrap.o plug/io/libgdbwrap/interface.o plug/io/libgdbwrap/gdbwrapper.o
 
 

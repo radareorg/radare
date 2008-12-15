@@ -20,9 +20,6 @@
 
 #include <plugin.h>
 #include <socket.h>
-//#include "../dbg/debug.h"
-#include "gdb.h"
-
 #include "libgdbwrap/include/gdbwrapper.h"
 
 static u64 off = 0;
@@ -33,8 +30,6 @@ ssize_t r_gdbwrap_write(int fd, const void *buf, size_t count)
 {
 	return gdbwrap_writememory((la32)off, buf, count, desc);
 }
-
-static char hexchars[]="0123456789abcdef";
 
 ssize_t r_gdbwrap_read(int fd, unsigned char *buf, size_t count)
 {
@@ -109,7 +104,38 @@ void r_gdbwrap_system(char *str)
 	} else
 	if (!memcmp(str, "step",4)) {
 		gdbwrap_stepi(desc);
-		return;
+	} else
+	if (!memcmp(str, "cont", 4)) {
+		gdbwrap_continue(desc);
+	} else
+	if (!memcmp(str, "info", 4)) {
+		printf("Last signal : %d\n", gdbwrap_lastsignal(desc));
+		printf("Active: %d\n", gdbwrap_is_active(desc));
+		gdbwrap_reason_halted(desc); // XXX showing info .. where?!?
+	} else
+	if (!memcmp(str, "help", 4)) {
+		printf("gdbwrap help:\n"
+		" !vm          ; run vmware initialization stuff (???)\n"
+		" !step        ; perform a step into\n"
+		" !cont        ; continue\n"
+		" !stop        ; stop running process\n"
+		" !bp 0x804800 ; add breakpoint\n"
+		" !bp-0x804800 ; remove breakpoint\n"
+		" !info        ; show status of process\n"
+		" !reg[*]      ; show register values\n");
+	} else
+	if (!memcmp(str, "stop", 4)) {
+		gdbwrap_ctrl_c(desc);
+	} else
+	if (!memcmp(str, "bp ", 3)) {
+		unsigned int addr = get_offset(str+3);
+		printf("Add bp\n");
+		gdbwrap_simplesetbp(addr, desc);
+	} else
+	if (!memcmp(str, "bp-", 3)) {
+		unsigned int addr = get_offset(str+3);
+		printf("Delete bp\n");
+		gdbwrap_simpledelbp(addr, desc);
 	} else
 	if (!memcmp(str, "reg",3)) {
 		gdbwrap_gdbreg32 *reg = gdbwrap_readgenreg(desc);
@@ -132,8 +158,7 @@ void r_gdbwrap_system(char *str)
 			printf("edx 0x%08x   ebp 0x%08x\n", reg->edx, reg->ebp);
 		}
 	} else
-	if (!strstr(str, "info")
-	&&  !strstr(str, "maps")) {
+	if (!strstr(str, "maps")) {
 		eprintf("TODO (%s)\n", str);
 	}
 }

@@ -331,6 +331,7 @@ void print_mem_help()
 	eprintf(
 	"Usage: pm [times][format] [arg0 arg1]\n"
 	"Example: pm 10xiz pointer length string\n"
+	"Example: pm {array_size}b @ array_base\n"
 	" e - temporally swap endian\n"
 	" d - double (8 bytes)\n"
 	" f - float value\n"
@@ -355,7 +356,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	int i,j,idx;
 	int times, otimes;
 	char tmp, last;
-	char *args;
+	char *args, *bracket;
 	int nargs;
 	const char *arg = fmt;
 	i = j = 0;
@@ -365,6 +366,17 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	otimes = times = atoi(arg);
 	if (times > 0)
 		while((*arg>='0'&&*arg<='9')) arg = arg +1;
+	bracket = strchr(arg,'{');
+	if (bracket) {
+		char *end = strchr(arg,'}');
+		if (end == NULL) {
+			eprintf("No end bracket. Try pm {ecx}b @ esi\n");
+			return;
+		}
+		*end='\0';
+		times = get_math(bracket+1);
+		arg = end+1;
+	}
 
 	if (arg[0]=='\0') {
 		print_mem_help();
