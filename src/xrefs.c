@@ -270,10 +270,8 @@ int main(int argc, char **argv)
 		return show_usage();
 
 	/* parse arguments */
-	while ((c = getopt(argc, argv, "qa:d:hves:f:t:r:X:b:")) != -1)
-	{
-		switch( c )
-		{
+	while ((c = getopt(argc, argv, "qa:d:hves:f:t:r:X:b:")) != -1) {
+		switch( c ) {
 		case 'q':
 			quite = 1;
 			break;

@@ -35,10 +35,10 @@ struct var_t {
 	int type;      /* global, local... */
 	u64 addr;      /* address where it is used */
 	u64 eaddr;      /* address where it is used */
-	u64 delta;     /* */
+	int delta;     /* */
+	int arraysize; /* size of array var in bytes , 0 is no-array */
 	char name[128];
 	char vartype[128];
-	int arraysize; /* size of array var in bytes , 0 is no-array */
 	struct list_head access; /* list of accesses for this var */
 	struct list_head list;
 };
@@ -47,6 +47,10 @@ int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const
 {
 	struct var_t *var = (struct var_t *)malloc(sizeof(struct var_t));
 	/* TODO: check of delta inside funframe */
+	if (strchr(name, ' ') || strchr(vartype,' ')) {
+		eprintf("Invalid name/type\n");
+		return 0;
+	}
 	strncpy(var->name, name, sizeof(var->name));
 	strncpy(var->vartype, vartype, sizeof(var->vartype));
 	var->delta = delta;
@@ -54,22 +58,21 @@ int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const
 	var->addr = addr;
 	var->eaddr = eaddr;
 	var->arraysize = arraysize;
-printf("vartype: %s\n", vartype);
 	INIT_LIST_HEAD(&(var->access));
 	list_add(&(var->list), &vars);
-	return 0;
+	return 1;
 }
 
-int var_add_access(u64 addr, int delta, int set)
+int var_add_access(u64 addr, int delta, int type, int set)
 {
 	struct list_head *pos;
 	struct var_t *v;
 
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
-		if (addr>v->addr) {
+		if (addr>=v->addr) {
 			//if (!strcmp(name, v->name)) {
-			if (delta == v->delta) {
+			if (delta == v->delta && type == v->type) {
 				struct var_xs_t *xs = (struct var_xs_t *)malloc(sizeof(struct var_xs_t));
 				xs->addr = addr;
 				xs->set = set;
@@ -85,15 +88,10 @@ int var_add_access(u64 addr, int delta, int set)
 const char *var_type_str(int fd)
 {
 	switch(fd) {
-	case VAR_T_GLOBAL:
-		return "global";
-	case VAR_T_LOCAL:
-		return "local";
-		break;
-	case VAR_T_ARG:
-		return "arg";
-	case VAR_T_ARGREG:
-		return "fastarg";
+	case VAR_T_GLOBAL: return "global";
+	case VAR_T_LOCAL:  return "local";
+	case VAR_T_ARG:    return "arg";
+	case VAR_T_ARGREG: return "fastarg";
 	}
 	return "(?)";
 }
@@ -108,9 +106,9 @@ int var_list(u64 addr, int delta)
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
 		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
-			cons_printf("0x%08llx - 0x%08llx type=%s Cv=%s name=%s delta=%d\n",
-				v->addr, v->eaddr, var_type_str(v->type), v->vartype, v->name, v->delta);
-
+			cons_printf("0x%08llx - 0x%08llx type=%s type=%s name=%s delta=%d array=%d\n",
+				v->addr, v->eaddr, var_type_str(v->type),
+				v->vartype, v->name, v->delta, v->arraysize);
 			list_for_each(pos2, &v->access) {
 				x = (struct var_xs_t *)list_entry(pos, struct var_xs_t, list);
 				cons_printf("  0x%08llx %s\n", x->addr, x->set?"set":"get");
@@ -135,20 +133,28 @@ int var_help()
 
 int var_cmd(const char *str)
 {
-	char *p,*p2,*p3, *ostr;
-	int delta, len = strlen(str)+1;
+	char *p,*p2,*p3;
+	int type, delta, len = strlen(str)+1;
 
 	p = alloca(len);
 	memcpy(p, str, len);
-	ostr = str = p;
+	str = p;
 
 	switch(*str) {
 	case 'v': // frame variable
 	case 'a': // stack arg
 	case 'A': // fastcall arg
-		if (str[1]=='\0') {
-			var_list(0,0);
-			return 0;
+		// XXX nested dup
+		switch(*str) {
+		case 'v': type = VAR_T_LOCAL; break;
+		case 'a': type = VAR_T_ARG; break;
+		case 'A': type = VAR_T_ARGREG; break;
+		}
+		/* Variable access CFvs = set fun var */
+		switch(str[1]) {
+		case '\0': return var_list(0,0);
+		case 's':  return var_add_access(config.seek, atoi(str+2), type, 1);
+		case 'g':  return var_add_access(config.seek, atoi(str+2), type, 0);
 		}
 		str = str+1;
 		if (str[0]==' ')str=str+1;
@@ -166,17 +172,7 @@ int var_cmd(const char *str)
 			p3[0]='\0';
 			p3=p3+1;
 		}
-		switch(*ostr) {
-		case 'v':
-			var_add(config.seek, config.seek, delta, VAR_T_LOCAL, p, p2, p3?atoi(p3):0);
-			break;
-		case 'a': // stack arg
-			var_add(config.seek, config.seek, delta, VAR_T_ARGREG, p, p2, p3?atoi(p3):0);
-			break;
-		case 'A': // fastcall arg
-			var_add(config.seek, config.seek, delta, VAR_T_ARG, p, p2, p3?atoi(p3):0);
-			break;
-		}
+		var_add(config.seek, config.seek, delta, type, p, p2, p3?atoi(p3):0);
 		break;
 	default:
 		var_help();
