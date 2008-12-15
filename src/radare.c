@@ -1429,6 +1429,7 @@ int radare_open(int rst)
 	|| (strstr(config.file, "winedbg://"))
 	|| (strstr(config.file, "gxemul://"))
 	|| (strstr(config.file, "gdb://"))
+	|| (strstr(config.file, "gdbwrap://"))
 	|| (strstr(config.file, "gdbx://")))
 		config.debug = 1;
 	else	config.debug = 0;

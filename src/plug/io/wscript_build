@@ -15,4 +15,9 @@ if bld.env['SYSPROXY'] == True:
 	plug_io.source += ' sysproxy.c'
 	plug_io.source += ' ../../rasc/rpc.c ../../rasc/syscall-linux.c'
 
+# ERESI GDBWRAP
+plug_io.env.append_value('CCFLAGS','-I../src/plug/io/libgdbwrap/include')
+plug_io.source += ' gdbwrap.c'
+plug_io.source += ' libgdbwrap/gdbwrapper.c'
+plug_io.source += ' libgdbwrap/interface.c'
 #plug_io.packages='gtk+-2.0'

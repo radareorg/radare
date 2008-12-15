@@ -1,0 +1,83 @@
+
+:::SPARC:::
+
+Number 	MIPS 	Function 	SPARC
+0	$zero	Always returns zero	%g0	Always returns zero
+1	$at	Reserved for Assembler	%g1	Global 1
+2	$v0	Func Return 1	%g2	Global 2
+3	$v1	Func Return 2	%g3	Global 3
+4	$a0	Func Arg 1	%g4	Global 4
+5	$a1	Func Arg 2	%g5	Global 5
+6	$a2	Func Arg 3	%g6	Global 6
+7	$a3	Func Arg 4	%g7	Global 7
+8	$t0	Temp 1	%o0	For Sub Arg 1
+9	$t1	Temp 2	%o1	For Sub Arg 2
+10	$t2	Temp 3	%o2	For Sub Arg 3
+11	$t3	Temp 4	%o3	For Sub Arg 4
+12	$t4	Temp 5	%o4	For Sub Arg 5
+13	$t5	Temp 6	%o5	For Sub Arg 6
+14	$t6	Temp 7	%sp	Stack Pointer
+15	$t7	Temp 8	%o7	Subroutine Return Address
+16	$s0	Saved 1	%l0	Local 1
+17	$s1	Saved 2	%l1	Local 2
+18	$s2	Saved 3	%l2	Local 3
+19	$s3	Saved 4	%l3	Local 4
+20	$s4	Saved 5	%l4	Local 5
+21	$s5	Saved 6	%l5	Local 6
+22	$s6	Saved 7	%l6	Local 7
+23	$s7	Saved 8	%l7	Local 8
+24	$t8	Temp 9	%i0	Func Arg 1
+25	$t9	Temp 10	%i1	Func Arg 2
+26	$k0	OS Kernel 1	%i2	Func Arg 3
+27	$k1	OS Kernel 2	%i3	Func Arg 4
+28	$gp	Ptr To Global Mem	%i4	Func Arg 5
+29	$sp	Stack Pointer	%i5	Local 6
+30	$fp	Frame Pointer	%fp	Frame Pointer
+31	$ra	Func Return Address	%i7	Func Return Address
+
+
+JUMP INSTRUCTION
+	+-------------------------------------------------------------+
+	| 01 |         30 bit constant                                |
+	+-------------------------------------------------------------+
+
+Format Two -- Branch and Sethi Instructions:
+
+	+-------------------------------------------------------------+
+	| 00 |a(1)| cond(4) | op2(3)| 22 bit constant                 |
+	+-------------------------------------------------------------+
+
+	Another, non-branch format two instruction is:
+
+	+-------------------------------------------------------------+
+	| 00 |rd (5)  |100|           22 bit constant                 |
+	+-------------------------------------------------------------+
+    
+ALGEBRAIC:
+	Two Source Register Instruction:
+	+-------------------------------------------------------------+
+	| 10 | rd (5) |  op3 (6) | rs1 (5) |0|   unused (8) | rs2 (5) |
+	+-------------------------------------------------------------+
+
+	One Source Register and Constant Instruction:
+	+-------------------------------------------------------------+
+	| 11 | rd (5) | op3 (6) | rs1 (5)  |1|   signed 13 bit const  |
+	+-------------------------------------------------------------+
+
+
+
+SPARC Subroutine Register Allocation
+
+In a typical machine, if a subroutine is called the program needs to save the state of the machine at the time of the subroutine call. In particular, a number of registers need to be saved. These include the stack pointer, frame pointer, program counter and a number of general use registers.
+
+On the MIPS machine, the processor depends upon the program to save the registers that are in use by the subroutine. Therefore, when a subroutine is called, the program must adjusts the stack pointer to make space for the registers that must be saved and then it pushes the registers to save onto the stack.
+
+Typically, the MIPS program will push the global pointer ($gp), the return address ($ra), and the saved registers ($s0-$s7) onto the stack when entering a subroutine. Then when the subroutine is complete, the registers that were saved should be restored ("popped" from the stack) and the subroutine will jump to the return address.
+
+The MIPS machine assumes that the subroutine arguments will be in the argument registers ($a0-$a3) and the return values will be in the return value registers ($v0-$v1). Therefore, the program must ensure that the arguments are in the correct registers when the subroutine is called and that the return values are in the correct registers when the subroutine is complete.
+
+Since the MIPS machine must relie on the program to handle the register saving and restoring, the MIPS machine spends a number of clock cycles saving the machine state before the subroutine is called and a number of machine cycles to restore the state once the subroutine is complete.
+
+Since the saving and restoring of registers can take a significant amount of clock cycles, SUN created a large number registers for their SPARC machine of which a particular subroutine can only see thrity-two registers. These registers consist of the normal in (%i0-%i7), out (%o0-%07), local (%l0-%l7), and global (%g0-%g7) registers. By creating the "register file", the SPARC machine can save the machine state without requiring the program to push the register states to the stack. The SPARC machince does this by creating a "window" over the registers in such a way that the previous subroutine registers and the new allocated registers overlap slightly.
+
+In essence, when a subroutine is called, the SPARC processor renames the out registers (%o0-%o7) before the subroutine as the input registers (%i0-%i7) inside the subroutine and it creates new local (%l0-%l7) and output registers (%o0-%o7) for the subroutine. These new output registers could then become input registers in for a subroutine call inside this subroutine.

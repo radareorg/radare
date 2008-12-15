@@ -1,0 +1,21 @@
+OBJ=interface.o gdbwrapper.o client.o
+CFLAGS=-Iinclude
+ERESIPATH=${HOME}/prg/eresi
+BIN=client
+
+all: ${BIN} ${LIB}
+
+${BIN}: ${OBJ}
+	 ${CC} ${OBJ} -o ${BIN}
+
+sync:
+	@if [ -d ${ERESIPATH} ]; then \
+	cp ${ERESIPATH}/libgdbwrap/*.c . ; \
+	cp ${ERESIPATH}/libgdbwrap/include/*.h include ; \
+	echo Sync done ; \
+	else \
+	echo Give me ERESIPATH ; \
+	fi
+
+clean:
+	-rm -f client ${OBJ} *.o a.out

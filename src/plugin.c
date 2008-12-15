@@ -270,8 +270,6 @@ void plugin_init()
    #if DEBUGGER
 	plugins[last++] = debug_plugin;
 	(debug_plugin.init)();
-	plugins[last++] = gdb_plugin;
-	plugins[last++] = gdbx_plugin;
     #if SYSPROXY
 	plugins[last++] = sysproxy_plugin;
     #endif
@@ -291,6 +289,9 @@ void plugin_init()
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
 	plugins[last++] = bfdbg_plugin;
+	plugins[last++] = gdbwrap_plugin;
+	plugins[last++] = gdb_plugin;
+	plugins[last++] = gdbx_plugin;
 
 	/* must be dupped or will die */
 	plugins[last++] = posix_plugin;
