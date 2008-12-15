@@ -1083,7 +1083,7 @@ CMD_DECL(code)
 		case 'v': // function var
 		case 'a': // function args
 		case 'A':
-			var_cmd(text);
+			var_cmd(text+1);
 			break;
 #if 0
 		case 's':

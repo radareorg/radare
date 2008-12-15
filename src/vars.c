@@ -54,6 +54,7 @@ int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const
 	var->addr = addr;
 	var->eaddr = eaddr;
 	var->arraysize = arraysize;
+printf("vartype: %s\n", vartype);
 	INIT_LIST_HEAD(&(var->access));
 	list_add(&(var->list), &vars);
 	return 0;
@@ -73,7 +74,7 @@ int var_add_access(u64 addr, int delta, int set)
 				xs->addr = addr;
 				xs->set = set;
 				/* add var access here */
-				list_add(&(v->access), &xs);
+				list_add(&(xs->list), &(v->access));
 				return 1;
 			}
 		}
@@ -81,19 +82,36 @@ int var_add_access(u64 addr, int delta, int set)
 	return 0;
 }
 
+const char *var_type_str(int fd)
+{
+	switch(fd) {
+	case VAR_T_GLOBAL:
+		return "global";
+	case VAR_T_LOCAL:
+		return "local";
+		break;
+	case VAR_T_ARG:
+		return "arg";
+	case VAR_T_ARGREG:
+		return "fastarg";
+	}
+	return "(?)";
+}
+
 /* 0,0 to list all */
 int var_list(u64 addr, int delta)
 {
-	struct list_head *pos;
+	struct list_head *pos, *pos2;
 	struct var_t *v;
 	struct var_xs_t *x;
 
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
 		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
-			cons_printf("0x%08llx - %0x%08llx %s %s %d\n",
-				v->addr, v->eaddr, v->vartype, v->name, v->delta);
-			list_for_each(pos, &v->access) {
+			cons_printf("0x%08llx - 0x%08llx type=%s Cv=%s name=%s delta=%d\n",
+				v->addr, v->eaddr, var_type_str(v->type), v->vartype, v->name, v->delta);
+
+			list_for_each(pos2, &v->access) {
 				x = (struct var_xs_t *)list_entry(pos, struct var_xs_t, list);
 				cons_printf("  0x%08llx %s\n", x->addr, x->set?"set":"get");
 			}
@@ -108,14 +126,60 @@ int var_init()
 	INIT_LIST_HEAD(&vars);
 }
 
+int var_help()
+{
+	eprintf("Try Cv?\n");
+	eprintf(" Cv 12 int buffer[3]\n");
+	eprintf(" Cv 12 byte buffer[1024]\n");
+}
+
 int var_cmd(const char *str)
 {
+	char *p,*p2,*p3, *ostr;
+	int delta, len = strlen(str)+1;
+
+	p = alloca(len);
+	memcpy(p, str, len);
+	ostr = str = p;
+
 	switch(*str) {
 	case 'v': // frame variable
-		break;
 	case 'a': // stack arg
-		break;
 	case 'A': // fastcall arg
+		if (str[1]=='\0') {
+			var_list(0,0);
+			return 0;
+		}
+		str = str+1;
+		if (str[0]==' ')str=str+1;
+		delta = atoi(str);
+		p = strchr(str, ' ');
+		if (p==NULL)
+			return var_help();
+		p[0]='\0'; p=p+1;
+		p2 = strchr(p, ' ');
+		if (p2==NULL)
+			return var_help();
+		p2[0]='\0'; p2=p2+1;
+		p3 = strchr(p2,'[');
+		if (p3 != NULL) {
+			p3[0]='\0';
+			p3=p3+1;
+		}
+		switch(*ostr) {
+		case 'v':
+			var_add(config.seek, config.seek, delta, VAR_T_LOCAL, p, p2, p3?atoi(p3):0);
+			break;
+		case 'a': // stack arg
+			var_add(config.seek, config.seek, delta, VAR_T_ARGREG, p, p2, p3?atoi(p3):0);
+			break;
+		case 'A': // fastcall arg
+			var_add(config.seek, config.seek, delta, VAR_T_ARG, p, p2, p3?atoi(p3):0);
+			break;
+		}
+		break;
+	default:
+		var_help();
 		break;
 	}
 	return 0;
