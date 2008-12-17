@@ -74,6 +74,7 @@ typedef struct {
 
 typedef struct {
 	char type[R_BIN_SIZEOF_NAMES];
+	char class[R_BIN_SIZEOF_NAMES];
 	char arch[R_BIN_SIZEOF_NAMES];
 	char machine[R_BIN_SIZEOF_NAMES];
 	char os[R_BIN_SIZEOF_NAMES];
@@ -88,6 +89,8 @@ int r_bin_close(r_bin_obj *bin);
 u64 r_bin_get_baddr(r_bin_obj *bin);
 r_bin_entry* r_bin_get_entry(r_bin_obj *bin);
 r_bin_section* r_bin_get_sections(r_bin_obj *bin);
+u64 r_bin_get_section_offset(r_bin_obj *bin, char *name);
+u32 r_bin_get_section_size(r_bin_obj *bin, char *name);
 r_bin_symbol* r_bin_get_symbols(r_bin_obj *bin);
 r_bin_import* r_bin_get_imports(r_bin_obj *bin);
 r_bin_info* r_bin_get_info(r_bin_obj *bin);

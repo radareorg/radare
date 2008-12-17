@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 	printf("[File info]\n");
 
 	printf("Type: %s\n"
+			"Class: %s\n"
 			"Arch: %s\n"
 			"Machine: %s\n"
 			"OS: %s\n"
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
 			"Line_nums: %s\n"
 			"Local_syms: %s\n"
 			"Relocs: %s\n",
-			info->type, info->arch, info->machine, info->os, 
+			info->type, info->class, info->arch, info->machine, info->os, 
 			info->subsystem, info->big_endian?"True":"False",
 			R_BIN_DBG_STRIPPED(info->dbg_info)?"True":"False",
 			R_BIN_DBG_STATIC(info->dbg_info)?"True":"False",

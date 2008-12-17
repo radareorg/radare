@@ -412,6 +412,22 @@ static u64 ELF_(get_import_addr)(ELF_(r_bin_elf_obj) *bin, int sym)
 	return 0;
 }
 
+static u64 ELF_(r_bin_elf_get_section_offset)(ELF_(r_bin_elf_obj) *bin, const char *section_name)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+	const char *string = bin->string;
+	int i;
+
+	shdrp = shdr;
+	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
+		if (!strcmp(&string[shdrp->sh_name], section_name))
+			return shdrp->sh_offset;
+	}
+
+	return -1;
+}
+
 int ELF_(r_bin_elf_close)(ELF_(r_bin_elf_obj) *bin) {
 	close(bin->fd);
 
@@ -645,55 +661,6 @@ char* ELF_(r_bin_elf_get_osabi_name)(ELF_(r_bin_elf_obj) *bin)
 									snprintf (buff, sizeof (buff), "<unknown: %x>", osabi);
 									return buff;
 	}
-}
-
-u64
-ELF_(r_bin_elf_get_section_index)(ELF_(r_bin_elf_obj) *bin, const char *section_name)
-{
-	ELF_(Ehdr) *ehdr = &bin->ehdr;
-	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
-	const char *string = bin->string;
-	int i;
-
-	shdrp = shdr;
-	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (!strcmp(&string[shdrp->sh_name], section_name))
-			return i;
-	}
-
-	return -1;
-}
-
-u64 ELF_(r_bin_elf_get_section_offset)(ELF_(r_bin_elf_obj) *bin, const char *section_name)
-{
-	ELF_(Ehdr) *ehdr = &bin->ehdr;
-	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
-	const char *string = bin->string;
-	int i;
-
-	shdrp = shdr;
-	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (!strcmp(&string[shdrp->sh_name], section_name))
-			return shdrp->sh_offset;
-	}
-
-	return -1;
-}
-
-int ELF_(r_bin_elf_get_section_size)(ELF_(r_bin_elf_obj) *bin, const char *section_name)
-{
-	ELF_(Ehdr) *ehdr = &bin->ehdr;
-	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
-	const char *string = bin->string;
-	int i;
-
-	shdrp = shdr;
-	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (!strcmp(&string[shdrp->sh_name], section_name))
-			return shdrp->sh_size;
-	}
-
-	return -1;
 }
 
 int ELF_(r_bin_elf_is_big_endian)(ELF_(r_bin_elf_obj) *bin)
