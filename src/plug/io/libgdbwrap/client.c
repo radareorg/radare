@@ -124,21 +124,21 @@ int main( int argc, char **argv )
 	gdbwrap_continue(desc);
       else if(!strncmp("dump", buffer,  4))
 	dumpreg(desc);
-      else if(!strncmp("vm", buffer, 2))
-	gdbwrap_vmwareinit(desc);
       else if(!strncmp("stepi", buffer, 5))
 	gdbwrap_stepi(desc);
       else if(!strncmp("signal", buffer, 5))
-	gdbwrap_signal(0x1, desc);
+	gdbwrap_signal(desc, 0x1);
       else if(!strncmp("muuu", buffer, 4))
-	gdbwrap_writereg2(6, 0x12345678, desc);
+	gdbwrap_writereg2(desc, 6, 0x12345678);
       else if(!strncmp("ship", buffer, 4))
 	gdbwrap_shipallreg(desc);
+      else if(!strncmp("cr0", buffer, 4))
+	printf("Value: %s\n", gdbwrap_remotecmd(desc, "r cr0"));
       else if(!strncmp("mem", buffer, 3))
 	{
 	  char *c;
 	  char u = 0xff;
-	  c = gdbwrap_writememory(0xb7fe49a0, &u, 0x1, desc);
+	  c = gdbwrap_writememory(desc, 0xb7fe49a0, &u, 0x1);
 	  printf("Returned from memorycontent: %s\n", c);
 	  fflush(stdout);
 	}

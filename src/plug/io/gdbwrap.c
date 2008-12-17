@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2008
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -28,14 +28,14 @@ static int _fd = -1;
 
 ssize_t r_gdbwrap_write(int fd, const void *buf, size_t count)
 {
-	return gdbwrap_writememory((la32)off, buf, count, desc);
+	return gdbwrap_writememory(desc, (la32)off, buf, count);
 }
 
 ssize_t r_gdbwrap_read(int fd, unsigned char *buf, size_t count)
 {
 	int i=0;
 	if (r_gdbwrap_handle_fd(fd)) {
-		unsigned char *ptr = gdbwrap_readmemory((la32)off, count, desc);
+		unsigned char *ptr = gdbwrap_readmemory(desc, (la32)off, count);
 		if (ptr == NULL)
 			return -1;
 		memset(buf, '\0', count);
@@ -130,12 +130,12 @@ void r_gdbwrap_system(char *str)
 	if (!memcmp(str, "bp ", 3)) {
 		unsigned int addr = get_offset(str+3);
 		printf("Add bp\n");
-		gdbwrap_simplesetbp(addr, desc);
+		gdbwrap_simplesetbp(desc, addr);
 	} else
 	if (!memcmp(str, "bp-", 3)) {
 		unsigned int addr = get_offset(str+3);
 		printf("Delete bp\n");
-		gdbwrap_simpledelbp(addr, desc);
+		gdbwrap_simpledelbp(desc, addr);
 	} else
 	if (!memcmp(str, "reg",3)) {
 		gdbwrap_gdbreg32 *reg = gdbwrap_readgenreg(desc);

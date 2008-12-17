@@ -371,6 +371,8 @@ u64 radare_seek(u64 offset, int whence)
 		offset-=config.baddr;
 	
 	seek = io_lseek(config.fd, offset, whence);
+	if (seek==-1)
+		return -1;
 
 	switch(whence) {
 	case SEEK_SET:
@@ -385,9 +387,7 @@ u64 radare_seek(u64 offset, int whence)
 		if (seek == -1 || config.size == -1) {
 			D printf("Warning: file size is unknown\n");
 			return -1;
-		} else
-			config.seek = config.size;
-		break;
+		} else config.seek = config.size;
 	}
 	
 	seek = io_lseek(config.fd, offset, whence);

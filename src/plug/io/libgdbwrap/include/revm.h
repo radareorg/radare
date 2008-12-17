@@ -13,6 +13,7 @@
 #define QWORD_IN_BYTE 8
 #define DWORD_IN_BYTE 4
 #define BYTE_IN_BIT 8
+#define BYTE_IN_CHAR 2
 #define TRUE 1
 #define FALSE 0
 #define ASSERT //

@@ -19,7 +19,9 @@ all:
 	cd vala/ && ${MAKE} all
 ##HAVE_GUI##
 	cd src && ${MAKE} all
+##USBSNF##
 	-cd libusbsniff && ${MAKE} all
+##USBSNF##
 	cd src/rabin && ${MAKE} all
 	cd src/rasm && ${MAKE} all
 ##HAVE_GUI##
@@ -35,10 +37,10 @@ clean:
 	${Q}cd src && ${MAKE} clean
 	${Q}cd src/rabin && ${MAKE} clean
 	${Q}cd gui && ${MAKE} clean
-	${Q}cd libusbsniff && ${MAKE} clean
 	${Q}cd src/dbg && ${MAKE} clean
 	${Q}cd java && ${MAKE} clean
 	${Q}cd vala/grava && ${MAKE} clean
+	${Q}cd libusbsniff && ${MAKE} clean
 
 w32dist:
 	mkdir w32-build

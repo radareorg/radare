@@ -1396,10 +1396,13 @@ CMD_DECL(seek)
 {
 	u64 new_off = 0;
 	struct aop_t aop;
-	char *input2  = strdup(input);
-	char *text    = input2;
+	char *input2, *text;
 	int whence    = SEEK_SET;
-	int sign      = 1;
+	int len,sign  = 1;
+	
+	len = strlen(input)+1;
+	text = input2 = alloca(len);
+	memcpy(input2, input, len);
 
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
@@ -1431,7 +1434,6 @@ CMD_DECL(seek)
 	if (text[0] == '\0') {
 		D printf(OFF_FMT"\n", (u64)config.seek);
 		return 0;
-		free(input2);
 	}
 	for(;text[0]==' ';text = text +1);
 
@@ -1497,14 +1499,13 @@ CMD_DECL(seek)
 	}
 
 	if (new_off<0) new_off = 0;
-	if (text[0]=='0'&&new_off==0 || new_off != 0)
+	if (text[0]=='0' && new_off==0 || new_off != 0) {
 		if (radare_seek(new_off, whence) < 0)
 			eprintf("Couldn't seek: %s\n", strerror(errno));
+	}
 	undo_push();
 
 	radare_read(0);
-
-	free(input2);
 
 	return 0;
 }

@@ -6,7 +6,8 @@
               assert(_tocmp);                                   \
               _ptr = (strstr(_tocmp, GDBWRAP_BEGIN_PACKET) + 1)
 
-#define __DEBUG_GDBWRAP__   FALSE
+#define     __DEBUG_GDBWRAP__   FALSE
+#define     MSG_BUF                80
 
 #if __DEBUG_GDBWRAP__
 #define DEBUGMSG(_command)				\
@@ -50,13 +51,16 @@ CONSTSTRDEC(GDBWRAP_REPLAY_OK,       "OK");
 CONSTSTRDEC(GDBWRAP_NO_SPACE,        "nospace");
 CONSTSTRDEC(GDBWRAP_NO_TABLE,        "notable");
 CONSTSTRDEC(GDBWRAP_DEAD,            "dead");
+CONSTSTRDEC(GDBWRAP_RCMD,            "qRcmd");
 
 CONSTCHRDEC(GDBWRAP_NULL_CHAR,      '\0');
 CONSTCHRDEC(GDBWRAP_REPLAY_ERROR,    'E');
 CONSTCHRDEC(GDBWRAP_SIGNAL_RECV,     'T');
-CONSTCHRDEC(GDBWRAP_SIGNAL_RECV2,     'S');
+CONSTCHRDEC(GDBWRAP_SIGNAL_RECV2,    'S');
 CONSTCHRDEC(GDBWRAP_EXIT_W_STATUS,   'W');
 CONSTCHRDEC(GDBWRAP_EXIT_W_SIGNAL,   'X');
 CONSTCHRDEC(GDBWRAP_END_PACKETC,     '#');
+CONSTCHRDEC(GDBWRAP_START_ENCODC,    '*');
+CONSTCHRDEC(GDBWRAP_COR_CHECKSUMC,   '+');
 
 extern int errno;
