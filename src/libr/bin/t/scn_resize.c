@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	int fd;
 	char *file, *section;
 	u32 size, new_size, delta;
-	u64 baddr, offset;
+	u64 baddr, rva;
 	
 	if (argc != 4) {
 		fprintf(stderr, "Usage: %s elf32_file section_name new_size\n", argv[0]);
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if ((offset = r_bin_get_section_offset(&bin, section)) == -1) {
+	if ((rva = r_bin_get_section_rva(&bin, section)) == -1) {
 		fprintf(stderr, "Unknown section\n");
 		return 1;
 	}
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	printf("old size = %d\n", size);
 	printf("new size = %d\n", new_size);
 	printf("size delta = %d\n", delta);
-	printf("section address = 0x%08llx\n", baddr + offset);
+	printf("section address = 0x%08llx\n", baddr + rva);
 
 	r_bin_close(&bin);
 

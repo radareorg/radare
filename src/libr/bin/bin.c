@@ -448,6 +448,28 @@ u64 r_bin_get_section_offset(r_bin_obj *bin, char *name)
 	return ret;
 }
 
+u64 r_bin_get_section_rva(r_bin_obj *bin, char *name)
+{
+	r_bin_section *sections, *sectionsp;
+	u64 ret = -1;
+
+	sections = r_bin_get_sections(bin);
+
+	sectionsp = sections;
+	while (!sectionsp->last) {
+		if (!strcmp(sectionsp->name, name)) {
+			ret = sectionsp->rva;
+			break;
+		}
+
+		sectionsp++;
+	}
+
+	free(sections);
+
+	return ret;
+}
+
 u32 r_bin_get_section_size(r_bin_obj *bin, char *name)
 {
 	r_bin_section *sections, *sectionsp;

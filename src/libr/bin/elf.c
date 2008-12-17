@@ -30,34 +30,34 @@ enum {
 
 static void ELF_(aux_swap_endian)(u8 *value, int size)
 {
-	unsigned char bufer[8];
+	unsigned char buffer[8];
 
 	if (!endian)
 		return;
 
 	switch(size) {
 	case 2:
-		memcpy(bufer, value, 2);
-		value[0] = bufer[1];
-		value[1] = bufer[0];
+		memcpy(buffer, value, 2);
+		value[0] = buffer[1];
+		value[1] = buffer[0];
 		break;
 	case 4:
-		memcpy(bufer, value, 4);
-		value[0] = bufer[3];
-		value[1] = bufer[2];
-		value[2] = bufer[1];
-		value[3] = bufer[0];
+		memcpy(buffer, value, 4);
+		value[0] = buffer[3];
+		value[1] = buffer[2];
+		value[2] = buffer[1];
+		value[3] = buffer[0];
 		break;
 	case 8:
-		memcpy(bufer, value, 8);
-		value[0] = bufer[7];
-		value[1] = bufer[6];
-		value[2] = bufer[5];
-		value[3] = bufer[4];
-		value[4] = bufer[3];
-		value[5] = bufer[2];
-		value[6] = bufer[1];
-		value[7] = bufer[0];
+		memcpy(buffer, value, 8);
+		value[0] = buffer[7];
+		value[1] = buffer[6];
+		value[2] = buffer[5];
+		value[3] = buffer[4];
+		value[4] = buffer[3];
+		value[5] = buffer[2];
+		value[6] = buffer[1];
+		value[7] = buffer[0];
 		break;
 	default:
 		printf("Invalid size: %d\n", size);
@@ -203,7 +203,6 @@ static int ELF_(load_section)(char **section, int fd, ELF_(Shdr) *shdr)
 
 static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr;
 	ELF_(Shdr) *shdr;
 	ELF_(Shdr) *strtabhdr;
@@ -214,7 +213,7 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 	bin->base_addr = 0;
 	ehdr = &bin->ehdr;
 
-	if (read(fd, ehdr, sizeof(ELF_(Ehdr))) != sizeof(ELF_(Ehdr))) {
+	if (read(bin->fd, ehdr, sizeof(ELF_(Ehdr))) != sizeof(ELF_(Ehdr))) {
 		perror("read");
 		return -1;
 	}
@@ -246,12 +245,12 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 		return -1;
 	}
 
-	if (lseek(fd, ehdr->e_phoff, SEEK_SET) < 0) {
+	if (lseek(bin->fd, ehdr->e_phoff, SEEK_SET) < 0) {
 		perror("lseek");
 		return -1;
 	}
 
-	if (read(fd, bin->phdr, bin->plen) != bin->plen) {
+	if (read(bin->fd, bin->phdr, bin->plen) != bin->plen) {
 		perror("read");
 		return -1;
 	}
@@ -279,12 +278,12 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 		return -1;
 	}
 
-	if (lseek(fd, ehdr->e_shoff, SEEK_SET) < 0) {
+	if (lseek(bin->fd, ehdr->e_shoff, SEEK_SET) < 0) {
 		perror("lseek");
 		return -1;
 	}
 
-	if (read(fd, bin->shdr, slen) != slen) {
+	if (read(bin->fd, bin->shdr, slen) != slen) {
 		perror("read");
 		return -1;
 	}
@@ -310,12 +309,12 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 		return -1;
 	}
 
-	if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
+	if (lseek(bin->fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
 		perror("lseek");
 		return -1;
 	}
 
-	if (read(fd, bin->string, strtabhdr->sh_size) != strtabhdr->sh_size) {
+	if (read(bin->fd, bin->string, strtabhdr->sh_size) != strtabhdr->sh_size) {
 		perror("read");
 		return -1;
 	}
@@ -326,7 +325,7 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 		if (shdr[i].sh_type == SHT_NOBITS) {
 			bin->bss = i;
 		} else {
-			if (ELF_(load_section)(sectionp, fd, &shdr[i]) == -1)
+			if (ELF_(load_section)(sectionp, bin->fd, &shdr[i]) == -1)
 				return -1;
 		}
 	}
@@ -338,7 +337,6 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 
 static u64 ELF_(get_import_addr)(ELF_(r_bin_elf_obj) *bin, int sym)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Rel) *rel, *relp;
@@ -365,12 +363,12 @@ static u64 ELF_(get_import_addr)(ELF_(r_bin_elf_obj) *bin, int sym)
 				return -1;
 			}
 
-			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+			if (lseek(bin->fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, rel, shdrp->sh_size) != shdrp->sh_size) {
+			if (read(bin->fd, rel, shdrp->sh_size) != shdrp->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -386,13 +384,13 @@ static u64 ELF_(get_import_addr)(ELF_(r_bin_elf_obj) *bin, int sym)
 			relp = rel;
 			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
 				if (ELF32_R_SYM(relp->r_info) == sym) {
-					if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET)
+					if (lseek(bin->fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET)
 					!= relp->r_offset-bin->base_addr-got_offset) {
 						perror("lseek");
 						return -1;
 					}
 
-					if (read(fd, &plt_sym_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
+					if (read(bin->fd, &plt_sym_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
 						perror("read");
 						return -1;
 					}
@@ -541,13 +539,13 @@ const char* ELF_(r_bin_elf_get_machine_name)(ELF_(r_bin_elf_obj) *bin)
 	case EM_H8_500: 	return "Hitachi H8/500";
 	case EM_IA_64: 		return "Intel Merced";
 	case EM_MIPS_X: 	return "Stanford MIPS-X";
-	case EM_COLDFIRE	return "Motorola Coldfire";
+	case EM_COLDFIRE:	return "Motorola Coldfire";
 	case EM_68HC12: 	return "Motorola M68HC12";
 	case EM_MMA: 		return "Fujitsu MMA Multimedia Accelerator";
 	case EM_PCP: 		return "Siemens PCP";
 	case EM_NCPU: 		return "Sony nCPU embeeded RISC";
 	case EM_NDR1: 		return "Denso NDR1 microprocessor";
-	case EM_STARCORE 	return "Motorola Start*Core processor";
+	case EM_STARCORE: 	return "Motorola Start*Core processor";
 	case EM_ME16: 		return "Toyota ME16 processor";
 	case EM_ST100: 		return "STMicroelectronic ST100 processor";
 	case EM_TINYJ: 		return "Advanced Logic Corp. Tinyj emb.fam";
@@ -565,7 +563,7 @@ const char* ELF_(r_bin_elf_get_machine_name)(ELF_(r_bin_elf_obj) *bin)
 	case EM_VAX: 		return "Digital VAX";
 	case EM_CRIS: 		return "Axis Communications 32-bit embedded processor";
 	case EM_JAVELIN:	return "Infineon Technologies 32-bit embedded processor";
-	case EM_FIREPATH	return "Element 14 64-bit DSP Processor";
+	case EM_FIREPATH:	return "Element 14 64-bit DSP Processor";
 	case EM_ZSP: 		return "LSI Logic 16-bit DSP Processor";
 	case EM_MMIX: 		return "Donald Knuth's educational 64-bit processor";
 	case EM_HUANY: 		return "Harvard University machine-independent object files";
@@ -683,7 +681,6 @@ int ELF_(r_bin_elf_get_sections_count)(ELF_(r_bin_elf_obj) *bin)
 
 int ELF_(r_bin_elf_get_imports)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_import *import)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
@@ -703,12 +700,12 @@ int ELF_(r_bin_elf_get_imports)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_import *impo
 				return -1;
 			}
 
-			if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
+			if (lseek(bin->fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
+			if (read(bin->fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -719,12 +716,12 @@ int ELF_(r_bin_elf_get_imports)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_import *impo
 				return -1;
 			}
 
-			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+			if (lseek(bin->fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+			if (read(bin->fd, sym, shdrp->sh_size) != shdrp->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -787,7 +784,6 @@ int ELF_(r_bin_elf_get_imports)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_import *impo
 
 int ELF_(r_bin_elf_get_imports_count)(ELF_(r_bin_elf_obj) *bin)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
@@ -802,12 +798,12 @@ int ELF_(r_bin_elf_get_imports_count)(ELF_(r_bin_elf_obj) *bin)
 				return -1;
 			}
 
-			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+			if (lseek(bin->fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+			if (read(bin->fd, sym, shdrp->sh_size) != shdrp->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -828,7 +824,6 @@ int ELF_(r_bin_elf_get_imports_count)(ELF_(r_bin_elf_obj) *bin)
 
 int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symbol)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
@@ -851,12 +846,12 @@ int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symb
 				return -1;
 			}
 
-			if (lseek(fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
+			if (lseek(bin->fd, strtabhdr->sh_offset, SEEK_SET) != strtabhdr->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
+			if (read(bin->fd, string, strtabhdr->sh_size) != strtabhdr->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -867,12 +862,12 @@ int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symb
 				return -1;
 			}
 
-			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+			if (lseek(bin->fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+			if (read(bin->fd, sym, shdrp->sh_size) != shdrp->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -933,7 +928,6 @@ int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symb
 
 int ELF_(r_bin_elf_get_symbols_count)(ELF_(r_bin_elf_obj) *bin)
 {
-	int fd = bin->fd;
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Sym) *sym, *symp;
@@ -948,12 +942,12 @@ int ELF_(r_bin_elf_get_symbols_count)(ELF_(r_bin_elf_obj) *bin)
 				return -1;
 			}
 
-			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+			if (lseek(bin->fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
 				perror("lseek");
 				return -1;
 			}
 
-			if (read(fd, sym, shdrp->sh_size) != shdrp->sh_size) {
+			if (read(bin->fd, sym, shdrp->sh_size) != shdrp->sh_size) {
 				perror("read");
 				return -1;
 			}
@@ -971,7 +965,7 @@ int ELF_(r_bin_elf_get_symbols_count)(ELF_(r_bin_elf_obj) *bin)
 	return ctr;
 }
 
-int ELF_(r_bin_elf_get_strings)(ELF_(r_bin_elf_obj) *bin, int fd, int verbose, int str_limit, r_bin_elf_string *strings)
+int ELF_(r_bin_elf_get_strings)(ELF_(r_bin_elf_obj) *bin, int verbose, int str_limit, r_bin_elf_string *strings)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -992,7 +986,7 @@ int ELF_(r_bin_elf_get_strings)(ELF_(r_bin_elf_obj) *bin, int fd, int verbose, i
 	return ctr;
 }
 
-int ELF_(r_bin_elf_get_libs)(ELF_(r_bin_elf_obj) *bin, int fd, int str_limit, r_bin_elf_string *strings)
+int ELF_(r_bin_elf_get_libs)(ELF_(r_bin_elf_obj) *bin, int str_limit, r_bin_elf_string *strings)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;

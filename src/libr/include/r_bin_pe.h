@@ -80,6 +80,7 @@ int r_bin_pe_get_os(r_bin_pe_obj*, char*);
 int r_bin_pe_get_section_alignment(r_bin_pe_obj*);
 int r_bin_pe_get_sections(r_bin_pe_obj*, r_bin_pe_section*);
 int r_bin_pe_get_sections_count(r_bin_pe_obj*);
+int r_bin_pe_get_strings(r_bin_pe_obj*, int, int, r_bin_pe_string*);
 int r_bin_pe_get_subsystem(r_bin_pe_obj*, char*);
 int r_bin_pe_is_dll(r_bin_pe_obj*);
 int r_bin_pe_is_big_endian(r_bin_pe_obj*);
@@ -88,6 +89,5 @@ int r_bin_pe_is_stripped_line_nums(r_bin_pe_obj*);
 int r_bin_pe_is_stripped_local_syms(r_bin_pe_obj*);
 int r_bin_pe_is_stripped_debug(r_bin_pe_obj*);
 int r_bin_pe_open(r_bin_pe_obj*, const char*);
-int r_bin_pe_get_strings(r_bin_pe_obj *bin, int fd, int verbose, int str_limit, r_bin_pe_string *strings);
 
 #endif
