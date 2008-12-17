@@ -1423,6 +1423,7 @@ int radare_open(int rst)
 	/* handles all registered debugger prefixes */
 	// ugly hack? :) a plugin should have a field specifying
 	// if it's for debug or not
+#if 0
 	if((strstr(config.file, "dbg://"))
 	|| (strstr(config.file, "pid://"))
 	|| (strstr(config.file, "bfdbg://"))
@@ -1433,6 +1434,7 @@ int radare_open(int rst)
 	|| (strstr(config.file, "gdbx://")))
 		config.debug = 1;
 	else	config.debug = 0;
+#endif
 
 	if (config.debug) {
 		config_set("file.write", "true");
@@ -1509,7 +1511,7 @@ int radare_go()
 			config.file = estrdup(config.file, project_get_file(project));
 
 		if (strnull(config.file)) {
-			help_message_short();
+			help_message(1);
 			return 1;
 		}
 	}

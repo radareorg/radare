@@ -31,7 +31,7 @@
 #define TITLE if (color) cons_printf("\x1b[36m");
 #define TITLE_END if (color) cons_printf("\x1b[0m");
 
-int help_message()
+static int help_message()
 {
 	GETCOLOR
 	TITLE

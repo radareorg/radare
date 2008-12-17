@@ -564,6 +564,16 @@ static int config_arch_callback(void *data)
   return 0;
 }
 
+static int config_debug_callback(void *data)
+{
+  struct config_node_t *node = data;
+
+  if (node && node->i_value)
+    config.debug = node->i_value;
+
+  return 0;
+}
+
 static int config_verbose_callback(void *data)
 {
   struct config_node_t *node = data;
@@ -808,6 +818,8 @@ void config_init(int first)
   config_set("trace.cmtregs", "false");
 
   config_set("cfg.editor", "vi");
+  node = config_set("cfg.debug", "false");
+  node->callback = &config_debug_callback;
   config_set("cfg.noscript", "false");
   config_set("cfg.sections", "true");
   config_set("cfg.encoding", "ascii"); // cp850

@@ -21,13 +21,11 @@
 #include "main.h"
 #include <getopt.h>
 
-void help_message_short()
+int help_message(int line)
 {
-	eprintf("radare [-fhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
-}
-
-static void help_message()
-{
+	if (line) 
+		eprintf("radare [-dfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
+	else
 	printf(
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
@@ -36,12 +34,9 @@ static void help_message()
 	"  -p [project]     load metadata from project file\n"
 	"  -l [plugin.so]   link against a plugin (.so or .dll)\n"
 	"  -e [key=val]     evaluates a configuration string\n"
-#if DEBUGGER
-	"  -d [program|pid] debug a program. same as --args in gdb\n"
-#endif
+	"  -d [program|pid] debug a program. same as --args in gdb\n" /* TODO: fix this help */
 	"  -f               set block size to fit file size\n"
 	"  -L               list all available plugins\n"
-	//"  -c               same as -e scr.color=true\n"
 	"  -w               open file in read-write mode\n"
 	"  -x               dump block in hexa and exit\n"
 	"  -n               do not load ~/.radarerc and ./radarerc\n"
@@ -49,6 +44,7 @@ static void help_message()
 	"  -V               show version information\n"
 	"  -u               unknown size (no seek limits)\n"
 	"  -h               this help message\n");
+	return 1;
 }
 
 int main(int argc, char **argv, char **envp)
@@ -57,6 +53,8 @@ int main(int argc, char **argv, char **envp)
 	const char *prj;
 	char buf[4096];
 	char buf2[4096];
+	int flag_d = 0;
+	int __optind = 0;
 
 	environ = envp;
 	radare_init();
@@ -64,56 +62,16 @@ int main(int argc, char **argv, char **envp)
 	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVnxi:e:p:d")) != -1)
 	{
 		switch( c ) {
-#if DEBUGGER
-		case 'd': {
-			prj = config_get("file.project");
-			if (optind==argc) {
-				if (prj == NULL) {
-					help_message_short();
-					return 1;
-				}
-				snprintf(buf2, 4095, "dbg://%s", project_get_file(prj) );
-				config.file = estrdup( config.file, buf2 );
-				plugin_load();
-				return radare_go();
-			}
-			// XXX : overflowable, must use strcatdup or stgh like that
-			pid = atoi(argv[optind]);
-			buf[0]='\0';
-
-			/* by process-id */
-			if (pid > 0) {
-				sprintf(buf2, "pid://%d", pid);
-				config.file = strdup(buf2);
-				plugin_load();
-				return radare_go();
-			}
-
-			/* by program path */
-			for(c=optind;argv[c];c++) {
-				ps.argv[c-optind] = argv[c];
-				strcat(buf, argv[c]);
-				if (argv[c+1])
-					strcat(buf, " ");
-			}
-			ps.args = strdup(buf);
-			sprintf(buf2, "dbg://%s", buf);
-			config.file = strdup(buf2);
-			plugin_load(); // from dir.plugins
-			return radare_go();
-			}
-#endif
+		case 'd':
+			flag_d = 1;
+			__optind = optind;
+			break;
 		case 'i':
 			config.script = optarg;
 			break;
 		case 'f':
 			config.block_size = 0;
 			break;
-#if 0
-		case 'c':
-			config_set("scr.color", "true");
-			break;
-#endif
 		case 'n':
 			config.noscript = 1;
 			break;
@@ -153,7 +111,7 @@ int main(int argc, char **argv, char **envp)
 			config_eval(optarg);
 			break;
 		case 'h':
-			help_message();
+			help_message(0);
 			return 0;
 		case 'v':
 			config_set("cfg.verbose", "false");
@@ -169,7 +127,42 @@ int main(int argc, char **argv, char **envp)
 	if (optind < argc)
 		eprintf("warning: Only the first file has been opened.\n");
 
-	plugin_load(); // from dir.plugins
+	/* TODO: we have to recheck this :) */
+	if (flag_d) {
+		optind--;
+		config.debug = 1;
+		prj = config_get("file.project");
+		if (__optind==argc) {
+			if (prj == NULL)
+				return help_message(1);
+			snprintf(buf2, 4095, "dbg://%s", project_get_file(prj) );
+			config.file = strdup(buf2);
+		} else {
+			// XXX : overflowable, must use strcatdup or stgh like that
+			// TODO: support hex pids too
+			pid = atoi(argv[optind]);
+			buf[0]='\0';
+
+			/* by process-id */
+			if (pid > 0) {
+				sprintf(buf2, "pid://%d", pid);
+				config.file = strdup(buf2);
+			} else {
+				/* by program path */
+				for(c=optind;argv[c];c++) {
+					ps.argv[c-optind] = argv[c];
+					strcat(buf, argv[c]);
+					if (argv[c+1])
+						strcat(buf, " ");
+				}
+				ps.args = strdup(buf);
+				sprintf(buf2, "dbg://%s", buf);
+				config.file = strdup(buf2);
+			}
+		}
+	}
+
+	plugin_load();
 
 	return radare_go();
 }

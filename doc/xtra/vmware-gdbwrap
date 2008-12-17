@@ -1,3 +1,6 @@
+Debugging VMware nodes with radare
+==================================
+
 put these lines in your .vmx file:
 
    debugStub.listen.guest32=1
@@ -9,4 +12,18 @@ Then just run radare with:
 
   gdbwrap://127.0.0.1:8832
 
+The port for the 64 bit stuf is 8864
+
 .. and enjoy virtualized kernel debugging!
+
+-----------------------------------------
+
+VMware closes the socket when the debugger is detached and forces you to restart the VM
+to get the port listening again. To bypass this stupid bug you can use this script:
+
+$ cat bouncer.sh
+LISTEN=8000
+CONNECT=8832
+socat udp-recv:9000,ignoreeof tcp-connect:127.0.0.1:${CONNECT},end-close,forever &
+echo Listening at $LISTEN connections to be bounced to $CONNECT
+socat tcp-listen:${LISTEN},fork,forever udp-sendto:127.0.0.1:9000
