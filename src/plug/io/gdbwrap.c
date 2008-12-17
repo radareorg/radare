@@ -99,9 +99,11 @@ int r_gdbwrap_seek(int fd, u64 offset, int whence)
 
 void r_gdbwrap_system(char *str)
 {
+#if 0
 	if (!memcmp(str, "vmware",6)) {
 		gdbwrap_vmwareinit(desc);
 	} else
+#endif
 	if (!memcmp(str, "step",4)) {
 		gdbwrap_stepi(desc);
 	} else

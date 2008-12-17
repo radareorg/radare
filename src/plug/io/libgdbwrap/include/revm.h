@@ -24,5 +24,6 @@
 #define PROFILER_OUT(fd,fun,line,str,ret) //
 #define PROFILER_ROUT(fd,fun,line,ret) return ret
 #define PROFILER_ERR(fd,fun,line,str,ret) { fprintf(stderr, str"\n"); return ret; }
+#define u_char unsigned char
 
 #endif
