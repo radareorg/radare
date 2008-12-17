@@ -520,14 +520,14 @@ int r_bin_pe_get_imports_count(r_bin_pe_obj *bin)
 	return imports_count;
 }
 
-int r_bin_pe_get_libs(r_bin_pe_obj *bin, int fd, int limit, r_bin_pe_string *strings)
+int r_bin_pe_get_libs(r_bin_pe_obj *bin, int limit, r_bin_pe_string *strings)
 {
 	pe_image_import_directory *import_dirp;
 	pe_image_delay_import_directory *delay_import_dirp;
 	r_bin_pe_string *stringsp;
 	char dll_name[PE_STRING_LENGTH];
 	int import_dirs_count = r_bin_pe_get_import_dirs_count(bin), delay_import_dirs_count = r_bin_pe_get_delay_import_dirs_count(bin);
-	int i, ctr=0;
+	int i, fd=bin->fd, ctr=0;
 	
 	if (r_bin_pe_init_imports(bin) == -1)
 		return -1;

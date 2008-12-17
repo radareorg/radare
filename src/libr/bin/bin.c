@@ -380,6 +380,71 @@ r_bin_import* r_bin_get_imports(r_bin_obj *bin)
 	return NULL;
 }
 
+r_bin_info* r_bin_get_info(r_bin_obj *bin)
+{
+	char pe_os_str[PE_NAME_LENGTH], pe_arch_str[PE_NAME_LENGTH],
+		 pe_subsystem_str[PE_NAME_LENGTH], pe_machine_str[PE_NAME_LENGTH];
+	r_bin_info *ret = NULL;
+
+	if((ret = malloc(sizeof(r_bin_info))) == NULL)
+		return NULL;
+	memset(ret, '\0', sizeof(r_bin_info));
+
+	switch (bin->format) {
+		case R_BIN_FMT_ELF32:
+		case R_BIN_FMT_ELF64:
+			strncpy(ret->type, ELF_CALL(r_bin_elf_get_file_type,bin), R_BIN_SIZEOF_NAMES);
+			strncpy(ret->os, ELF_CALL(r_bin_elf_get_osabi_name,bin), R_BIN_SIZEOF_NAMES);
+			strncpy(ret->subsystem, ELF_CALL(r_bin_elf_get_osabi_name,bin), R_BIN_SIZEOF_NAMES);
+			strncpy(ret->machine, ELF_CALL(r_bin_elf_get_machine_name,bin), R_BIN_SIZEOF_NAMES);
+			strncpy(ret->arch, ELF_CALL(r_bin_elf_get_arch,bin), R_BIN_SIZEOF_NAMES);
+			ret->big_endian=ELF_CALL(r_bin_elf_is_big_endian,bin);
+			
+			ret->dbg_info = 0;
+			if (ELF_CALL(r_bin_elf_get_stripped,bin)) {
+				ret->dbg_info |= 0x01;
+			} else {
+				ret->dbg_info |= 0x04;
+				ret->dbg_info |= 0x08;
+				ret->dbg_info |= 0x10;
+			}
+			if (ELF_CALL(r_bin_elf_get_static,bin))
+				ret->dbg_info |= 0x02;
+			
+			return ret;
+			break;
+		case R_BIN_FMT_PE:
+			if (r_bin_pe_get_os(&bin->object.pe, pe_os_str))
+				strncpy(ret->os, pe_os_str, R_BIN_SIZEOF_NAMES);
+			if (r_bin_pe_get_arch(&bin->object.pe, pe_arch_str))
+				strncpy(ret->arch, pe_arch_str, R_BIN_SIZEOF_NAMES);
+			if (r_bin_pe_get_machine(&bin->object.pe, pe_machine_str))
+				strncpy(ret->machine, pe_machine_str, R_BIN_SIZEOF_NAMES);
+			if (r_bin_pe_get_subsystem(&bin->object.pe, pe_subsystem_str))
+				strncpy(ret->subsystem, pe_subsystem_str, R_BIN_SIZEOF_NAMES);
+			if (r_bin_pe_is_dll(&bin->object.pe))
+				strncpy(ret->type, "DLL (Dynamic Link Library)", R_BIN_SIZEOF_NAMES);
+			else
+				strncpy(ret->type, "EXEC (Executable file)", R_BIN_SIZEOF_NAMES);
+			ret->big_endian = r_bin_pe_is_big_endian(&bin->object.pe);
+
+			ret->dbg_info = 0;
+			if (!r_bin_pe_is_stripped_debug(&bin->object.pe))
+				ret->dbg_info |= 0x01;
+			if (r_bin_pe_is_stripped_line_nums(&bin->object.pe))
+				ret->dbg_info |= 0x04;
+			if (r_bin_pe_is_stripped_local_syms(&bin->object.pe))
+				ret->dbg_info |= 0x08;
+			if (r_bin_pe_is_stripped_relocs(&bin->object.pe))
+				ret->dbg_info |= 0x10;
+
+			return ret;
+			break;
+	}
+
+	return NULL;
+}
+
 #if 0
 int r_bin_get_libs()
 {
@@ -387,30 +452,6 @@ int r_bin_get_libs()
 }
 
 int r_bin_get_strings()
-{
-
-}
-
-int r_bin_get_arch()
-{
-
-}
-
-int r_bin_get_machine()
-{
-
-}
-
-int r_bin_get_os()
-{
-
-}
-
-int r_bin_get_class(){
-
-}
-
-int r_bin_get_dbg()
 {
 
 }

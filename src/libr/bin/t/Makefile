@@ -1,9 +1,11 @@
-all: baddr entry sections symbols imports
+all: baddr entry info sections symbols imports
 
 baddr:
 	${CC} -g -I ../../include baddr.c ../*.o -o baddr
 entry:
 	${CC} -g -I ../../include entry.c ../*.o -o entry
+info:
+	${CC} -g -I ../../include info.c ../*.o -o info
 sections:
 	${CC} -g -I ../../include sections.c ../*.o -o sections
 symbols:
@@ -12,4 +14,4 @@ imports:
 	${CC} -g -I ../../include imports.c ../*.o -o imports
 
 clean:
-	rm -f baddr entry sections symbols imports
+	rm -f baddr entry info sections symbols imports

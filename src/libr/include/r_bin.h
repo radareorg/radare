@@ -5,10 +5,16 @@
 #include "r_bin_elf64.h"
 #include "r_bin_pe.h"
 
-#define R_BIN_SCN_IS_EXECUTABLE(x) x & 0x1
-#define R_BIN_SCN_IS_WRITABLE(x)   x & 0x2
-#define R_BIN_SCN_IS_READABLE(x)   x & 0x4
-#define R_BIN_SCN_IS_SHAREABLE(x)  x & 0x8
+#define R_BIN_SCN_EXECUTABLE(x) x & 0x1
+#define R_BIN_SCN_WRITABLE(x)   x & 0x2
+#define R_BIN_SCN_READABLE(x)   x & 0x4
+#define R_BIN_SCN_SHAREABLE(x)  x & 0x8
+
+#define R_BIN_DBG_STRIPPED(x) x & 0x01
+#define R_BIN_DBG_STATIC(x)   x & 0x02
+#define R_BIN_DBG_LINENUMS(x) x & 0x04
+#define R_BIN_DBG_SYMS(x)     x & 0x08
+#define R_BIN_DBG_RELOCS(x)   x & 0x10
 
 #define R_BIN_SIZEOF_NAMES 64
 
@@ -66,6 +72,16 @@ typedef struct {
 	int last;
 } r_bin_import;
 
+typedef struct {
+	char type[R_BIN_SIZEOF_NAMES];
+	char arch[R_BIN_SIZEOF_NAMES];
+	char machine[R_BIN_SIZEOF_NAMES];
+	char os[R_BIN_SIZEOF_NAMES];
+	char subsystem[R_BIN_SIZEOF_NAMES];
+	int big_endian;
+	u32 dbg_info;
+} r_bin_info;
+
 /* bin/r_bin.c */
 int r_bin_open(r_bin_obj *bin, char *file);
 int r_bin_close(r_bin_obj *bin);
@@ -74,5 +90,6 @@ r_bin_entry* r_bin_get_entry(r_bin_obj *bin);
 r_bin_section* r_bin_get_sections(r_bin_obj *bin);
 r_bin_symbol* r_bin_get_symbols(r_bin_obj *bin);
 r_bin_import* r_bin_get_imports(r_bin_obj *bin);
+r_bin_info* r_bin_get_info(r_bin_obj *bin);
 
 #endif

@@ -33,10 +33,10 @@ int main(int argc, char *argv[])
 		printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli privileges=%c%c%c%c name=%s\n",
 				ctr, (u64) (baddr + sectionsp->rva),
 				(u64) (sectionsp->offset), (u64) (sectionsp->size),
-				R_BIN_SCN_IS_SHAREABLE(sectionsp->characteristics)?'s':'-',
-				R_BIN_SCN_IS_READABLE(sectionsp->characteristics)?'r':'-',
-				R_BIN_SCN_IS_WRITABLE(sectionsp->characteristics)?'w':'-',
-				R_BIN_SCN_IS_EXECUTABLE(sectionsp->characteristics)?'x':'-',
+				R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
+				R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
+				R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
+				R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
 				sectionsp->name);
 		sectionsp++; ctr++;
 	}

@@ -74,7 +74,7 @@ PE_DWord r_bin_pe_get_image_base(r_bin_pe_obj*);
 int r_bin_pe_get_image_size(r_bin_pe_obj*);
 int r_bin_pe_get_imports(r_bin_pe_obj*, r_bin_pe_import*);
 int r_bin_pe_get_imports_count(r_bin_pe_obj*);
-int r_bin_pe_get_libs(r_bin_pe_obj*, int, int, r_bin_pe_string*);
+int r_bin_pe_get_libs(r_bin_pe_obj*, int, r_bin_pe_string*);
 int r_bin_pe_get_machine(r_bin_pe_obj*, char*);
 int r_bin_pe_get_os(r_bin_pe_obj*, char*);
 int r_bin_pe_get_section_alignment(r_bin_pe_obj*);
