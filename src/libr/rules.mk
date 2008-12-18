@@ -1,3 +1,5 @@
+include ../config.mk
+
 # Compiler
 CC?=gcc
 CFLAGS+=-I../include -fPIC

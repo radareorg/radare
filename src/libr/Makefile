@@ -1,5 +1,5 @@
 # Libraries
-LIBLIST=io hash line lib syscall
+LIBLIST=io hash line lib syscall socket
 
 # Under development
 #LIBLIST+=print

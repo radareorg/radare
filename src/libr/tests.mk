@@ -14,7 +14,7 @@ all: ${BIN}
 	@true
 
 ${BIN}: ${OBJ}
-	${CC} ${OBJ} -o ${BIN} ${LIBS}
+	${CC} ${LDFLAGS} ${OBJ} -o ${BIN} ${LIBS}
 
 clean:
 	-rm -f ${OBJ} ${BIN}
