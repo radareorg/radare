@@ -882,11 +882,11 @@ void r_cons_flush()
 								ptr = one;
 								r_cons_buffer_len=len;
 							}
-+							if (grepcounter==0) {
+							if (grepcounter==0) {
 								r_cons_print_real(ptr);
 								r_cons_buffer_len=1;
 								r_cons_print_real("\n");
-+							} else lines_counter++;
+							} else lines_counter++;
 						}
 						line++;
 					}
@@ -932,11 +932,11 @@ void r_cons_flush()
 								ptr = one;
 								r_cons_buffer_len=len;
 							}
-+							if (grepcounter==0) {
+							if (grepcounter==0) {
 								r_cons_print_real(ptr);
 								r_cons_buffer_len=1;
 								r_cons_print_real("\n");
-+							} else lines_counter++;
+							} else lines_counter++;
 						}
 						two[0] = '\n';
 						one = two + 1;
@@ -951,8 +951,8 @@ void r_cons_flush()
 	if (grepcounter) {
 		char buf[64];
 		sprintf(buf, "%d\n", lines_counter);
-		cons_buffer_len=strlen(buf);
-		cons_print_real(buf);
+		r_cons_buffer_len = strlen(buf);
+		r_cons_print_real(buf);
 	}
 	//r_cons_buffer_sz=0;
 	r_cons_buffer_len=0;

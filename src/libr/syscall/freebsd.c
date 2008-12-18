@@ -3,7 +3,7 @@
 /* there are LOT of magic syscalls in freebsd...ill really have to look on it */
 /* jail, jail_attach, utrace, kqueue->EV_FILTER_PROC->NOTE_FORK, nfsclnt */
 /* syscall-freebsd */
-struct syscall_t syscalls_freebsd_x86[] = {
+struct r_syscall_list_t syscalls_freebsd_x86[] = {
   { "syscall", 0x80, 0, 4 },
   { "exit", 0x80, 1, 1 },
   { "fork", 0x80, 2, 0 },

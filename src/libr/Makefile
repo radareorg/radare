@@ -1,10 +1,10 @@
 # Libraries
-LIBLIST=io hash line lib syscall socket
+LIBLIST=io hash line lib syscall socket cons
 
 # Under development
 #LIBLIST+=print
-#LIBLIST+=cons
 #LIBLIST+=util
+#LIBLIST+=search
 LIBLIST+=bin
 
 # TODO : generate single library linking against the rest

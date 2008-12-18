@@ -8,7 +8,7 @@ CC_AR=ar -r ${LIBAR}
 LINK?=
 
 # Debug
-CFLAGS+=-g
+CFLAGS+=-g -Wall
 
 # Output
 EXT_AR=a

@@ -42,4 +42,14 @@
   #define __UNIX__ 1
 #endif
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#if __UNIX__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+#include <unistd.h>
+
 #endif

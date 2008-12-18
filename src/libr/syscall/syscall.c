@@ -5,12 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 
-extern struct syscall_t syscalls_netbsd_x86[];
-extern struct syscall_t syscalls_linux_x86[];
-extern struct syscall_t syscalls_freebsd_x86[];
-extern struct syscall_t syscalls_darwin_x86[];
+extern struct r_syscall_list_t syscalls_netbsd_x86[];
+extern struct r_syscall_list_t syscalls_linux_x86[];
+extern struct r_syscall_list_t syscalls_freebsd_x86[];
+extern struct r_syscall_list_t syscalls_darwin_x86[];
 
-static struct syscall_t *sysptr = syscalls_linux_x86;
+// XXX move into r_r_syscall_list_t
+static struct r_syscall_list_t *sysptr = syscalls_linux_x86;
 
 /* TODO: move to default debug_os namespace */
 int r_syscall_setup(const char *arch, const char *os)
@@ -38,7 +39,8 @@ int r_syscall_setup(const char *arch, const char *os)
 
 int r_syscall_setup_file(const char *path)
 {
-	
+	// TODO
+	return 0;
 }
 
 int r_syscall_get(const char *str)
@@ -51,7 +53,7 @@ int r_syscall_get(const char *str)
 	return 0;
 }
 
-struct syscall_t *r_syscall_get_n(int n)
+struct r_syscall_list_t *r_syscall_get_n(int n)
 {
 	int i;
 	for(i=0;sysptr[i].num && i!=n;i++)

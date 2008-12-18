@@ -275,12 +275,12 @@ int r_socket_fgets(int fd, char *buf,  int size)
 		return -1;
 
 	while(i<size-1) {
-		ret = socket_read(fd, (u8 *)buf+i, 1);
+		ret = r_socket_read(fd, (u8 *)buf+i, 1);
 		if (ret==0) {
 			return -1;
 		}
-		if (ret<0 ) {
-			socket_close(fd);
+		if (ret<0) {
+			r_socket_close(fd);
 			return -1;
 		}
 		if (buf[i]=='\r'||buf[i]=='\n')

@@ -29,6 +29,7 @@ int r_io_init()
 {
 	r_io_map_init();
 	r_io_handle_init();
+	return 0;
 }
 
 int r_io_open(const char *file, int flags, int mode)
@@ -84,17 +85,17 @@ int r_io_write(int fd, const u8 *buf, int len)
 	return write(fd, buf, len);
 }
 
-int r_io_lseek(int fd, u64 offset, int whence)
+u64 r_io_lseek(int fd, u64 offset, int whence)
 {
 	/* pwn seek value */
 	switch(whence) {
-	case SEEK_SET:
+	case R_IO_SEEK_SET:
 		r_io_seek = offset;
 		break;
-	case SEEK_CUR:
+	case R_IO_SEEK_CUR:
 		r_io_seek += offset;
 		break;
-	case SEEK_END:
+	case R_IO_SEEK_END:
 		r_io_seek = 0xffffffff;
 		break;
 	}
@@ -105,6 +106,7 @@ int r_io_lseek(int fd, u64 offset, int whence)
 		cache_fd = fd;
 		return plugin->lseek(fd, offset, whence);
 	}
+	// XXX can be problematic on w32..so no 64 bit offset?
 	return lseek(fd, offset, whence);
 }
 

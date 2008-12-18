@@ -1,7 +1,7 @@
 #include "r_syscall.h"
 
 /* syscall-linux */
-struct syscall_t syscalls_linux_x86[] = {
+struct r_syscall_list_t syscalls_linux_x86[] = {
   { "exit", 0x80, 1, 1 },
   { "fork", 0x80, 2, 0 },
   { "read", 0x80, 3, 3 },

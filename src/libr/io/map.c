@@ -33,8 +33,10 @@ struct io_maps_t {
         struct list_head list;
 };
 
+#if 0
 static int maps_n = 0;
 static int maps[10];
+#endif
 
 static struct list_head io_maps;
 
