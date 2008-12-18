@@ -33,9 +33,7 @@
 #include "arch/x86/udis86/extern.h"
 #include "arch/x86/ollyasm/disasm.h"
 
-//#define CHECK_LINES if ( config.visual && len != config.block_size && (cons_lines > config.height) ) break;
-//#define CHECK_LINES if ( config.visual && (cons_lines > config.height) ) { eprintf("too large %d\n", cons_lines); break;}
-#define CHECK_LINES if ( config.visual && (cons_lines+myrow > config.height) ) { break;}
+#define CHECK_LINES if ( config.visual && (cons_lines+myrow > config.height) ) { break; }
 
 static int code_flags_cache = -1;
 

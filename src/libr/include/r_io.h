@@ -49,6 +49,7 @@ int r_io_write(int fd, const u8 *buf, int len);
 u64 r_io_lseek(int fd, u64 offset, int whence);
 int r_io_system(int fd, const char *cmd);
 int r_io_close(int fd);
+u64 r_io_size(int fd);
 
 /* io/map.c */
 void r_io_map_init();
@@ -57,6 +58,6 @@ int r_io_map_list();
 int r_io_map(const char *file, u64 offset);
 int r_io_map_read_at(u64 off, u8 *buf, u64 len);
 int r_io_map_read_rest(u64 off, u8 *buf, u64 len);
-int r_io_map_write_at(u64 off, u8 *buf, u64 len);
+int r_io_map_write_at(u64 off, const u8 *buf, u64 len);
 
 #endif

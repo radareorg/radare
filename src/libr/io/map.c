@@ -110,7 +110,7 @@ int r_io_map_read_at(u64 off, u8 *buf, u64 len)
 	return 0;
 }
 
-int r_io_map_write_at(u64 off, u8 *buf, u64 len)
+int r_io_map_write_at(u64 off, const u8 *buf, u64 len)
 {
 	struct list_head *pos;
 

@@ -110,6 +110,14 @@ u64 r_io_lseek(int fd, u64 offset, int whence)
 	return lseek(fd, offset, whence);
 }
 
+u64 r_io_size(int fd)
+{
+	u64 size, here = r_io_lseek(fd, 0, R_IO_SEEK_CUR);
+	size = r_io_lseek(fd, 0, R_IO_SEEK_END);
+	r_io_lseek(fd, here, R_IO_SEEK_SET);
+	return size;
+}
+
 int r_io_system(int fd, const char *cmd)
 {
 	if (fd != cache_fd)

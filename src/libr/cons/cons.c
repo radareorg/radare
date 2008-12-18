@@ -35,6 +35,7 @@
 #endif
 
 // WTF //
+char *strsub (char *string, char *pat, char *rep, int global);
 int r_cons_stdout_fd = 1;
 FILE *r_cons_stdin_fd = NULL; // TODO use int fd here too!
 
@@ -48,7 +49,7 @@ int r_cons_lines = 0;
 int r_cons_noflush = 0;
 
 static const char *nullstr = "";
-static int grepline = -1, greptoken = -1, grepcounter = 0;
+static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;
 
 // XXX rename to r_cons_stdout_open
@@ -186,7 +187,7 @@ const char *pal_names[CONS_PALETTE_SIZE]={
 	NULL
 };
 
-const char *r_cons_get_color(int ch)
+static const char *r_cons_get_color(int ch)
 {
 	if (ch>='0' && ch<='8')
 		return r_cons_colors[ch-'0'];
@@ -227,7 +228,7 @@ static void r_cons_print_real(const char *buf)
 	else write(r_cons_stdout_fd, buf, r_cons_buffer_len);
 }
 
-int r_cons_palette_set(const char *key, const u8 *value)
+int r_cons_palette_set(const char *key, const char *value)
 {
 	const char *str;
 	int i;
@@ -248,6 +249,7 @@ int r_cons_init()
 {
 	r_cons_stdin_fd = stdin;
 	//r_cons_palette_init(NULL);
+	return 0;
 }
 
 int r_cons_palette_init(const unsigned char *pal)
@@ -658,8 +660,8 @@ int r_cons_w32_print(unsigned char *ptr)
 	write(1, str, ptr-str);
 	return len;
 }
-
 #endif
+
 #define CMDS 54
 static const char *radare_argv[CMDS] ={
 	NULL, // padding
@@ -767,6 +769,10 @@ void r_cons_grep(const char *str)
 	grepcounter=0;
 	/* set grep string */
 	if (str != NULL && *str) {
+		if (*str == '!') {
+			grepneg = 1;
+			str = str + 1;
+		} else grepneg = 0;
 		if (*str == '?') {
 			grepcounter = 1;
 			str = str + 1;
@@ -857,7 +863,9 @@ void r_cons_flush()
 					two[0] = '\0';
 					len = two-one;
 				//	len = strlen(one);
-					if (strstr(one, grepstr)) {
+//					if (strstr(one, grepstr)) {
+					if ( (!grepneg && strstr(one, grepstr))
+					|| (grepneg && !strstr(one, grepstr))) {
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
 								ptr = alloca(len+1);

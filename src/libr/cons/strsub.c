@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* XXX buggy gnu code */
@@ -15,7 +16,7 @@
    replace all occurrences, otherwise replace only the first.
    This returns a new string; the caller should free it. */
 
-int strsub_memcmp (char *string, char *pat, int len)
+static int strsub_memcmp (char *string, char *pat, int len)
 {
 	int res = 0;
 	while(len--) {

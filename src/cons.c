@@ -63,7 +63,6 @@ void stdout_close()
 	//close(stdout_file);
 }
 
-
 const char *cons_palette_default = "7624 6646 2378 6824 3623";
 char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* PROMPT */
@@ -740,7 +739,7 @@ static void palloc(int moar)
 	}
 }
 
-static int grepline = -1, greptoken = -1, grepcounter = 0;
+static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;
 
 void cons_grep(const char *str)
@@ -749,6 +748,10 @@ void cons_grep(const char *str)
 	grepcounter = 0;
 	/* set grep string */
 	if (str != NULL && *str) {
+		if (*str == '!') {
+			grepneg = 1;
+			str = str + 1;
+		} else grepneg = 0;
 		if (*str == '?') {
 			grepcounter = 1;
 			str = str + 1;
@@ -834,7 +837,8 @@ void cons_flush()
 					two[0] = '\0';
 					len = two-one;
 				//	len = strlen(one);
-					if (strstr(one, grepstr)) {
+					if ( (!grepneg && strstr(one, grepstr))
+					|| (grepneg && !strstr(one, grepstr))) {
 						if (grepline ==-1 || grepline==line) {
 							if (greptoken != -1) {
 								ptr = alloca(len+1);

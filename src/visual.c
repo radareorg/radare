@@ -49,6 +49,8 @@ struct binding {
 	char *cmd;
 };
 
+static u64 visual_seeks[255];
+static int visual_seeks_init = 0;
 static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
 static unsigned char *yank_buffer = NULL;
 static int yank_buffer_size = 0;
@@ -142,6 +144,7 @@ void visual_show_help()
 	":<cmd>     radare command (vi like)\n"
 	";          edit or add comment\n"
 	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
+	"m'         m1 -> mark current position as char '1'. '1 will jump to mark 1\n"
 	"g,G        seek to beggining or end of file\n"
 	"+-*/       +1, -1, +width, -width -> block size\n"
 	"<>         seek block aligned (cursor mode = folder code)\n"
@@ -1516,11 +1519,32 @@ CMD_DECL(visual)
 			visual_bind_key();
 			break;
 #endif
+		case '\'':
+			{
+			u8 buf = (u8)cons_readchar();
+			if (visual_seeks_init && visual_seeks[buf] != 0xFFFFFFFF)
+				undo_push();
+				radare_seek(visual_seeks[buf], SEEK_SET);
+			}
+			break;
 		case 'm':
+			{
+			u8 buf = (u8)cons_readchar();
+			if (visual_seeks_init == 0) {
+				int i;
+				for (i=0;i<255;i++)
+					visual_seeks[i] = 0xFFFFFFFF;
+				visual_seeks_init = 1;
+			}
+			visual_seeks[buf] = config.seek;
+			}
+			break;
+#if 0
 			printf("\nrfile magic:\n\n");
 			radare_dump_and_process( DUMP_MAGIC, config.block_size);
 			cons_any_key();
 			break;
+#endif
 		case 'd':
 			visual_convert_bytes(-1);
 			break;
