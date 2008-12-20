@@ -53,9 +53,10 @@ struct vm_change_t {
 struct r_vm_t {
 	struct list_head vm_regs;
 	struct vm_cpu_t vm_cpu;
-	static u64 vm_stack_base = 0;
-	static u8 *vm_stack = NULL;
-	static struct list_head vm_mmu_cache;
+	u64 vm_stack_base = 0;
+	u8 *vm_stack = NULL;
+	struct list_head vm_mmu_cache;
+	int realio = 0;
 }
 #endif
 

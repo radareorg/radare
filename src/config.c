@@ -1020,6 +1020,8 @@ void config_init(int first)
 	node->callback = &config_scrwidth;
 	node = config_set_i("scr.height", config.height);
 	node->callback = &config_scrheight;
+
+	config_set("vm.realio", "false");
 #if 0
 
 	/* core commands */

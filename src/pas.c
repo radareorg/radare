@@ -219,6 +219,7 @@ int pas_aop_x86(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 		{ "je",   "je 1",     AOP_TYPE_CJMP },
 		{ "push", "push 1",   AOP_TYPE_PUSH },
 		{ "pop",  "pop 1",    AOP_TYPE_POP },
+		{ "ret",  "ret",      AOP_TYPE_RET},
 		{ NULL }
 	};
 

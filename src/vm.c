@@ -30,6 +30,8 @@ static u8 *vm_stack = NULL;
 static struct list_head vm_ops;
 static struct list_head vm_mmu_cache;
 
+static int realio = 1;
+
 struct vm_reg_type vm_reg_types[] = {
 	{ VMREG_BIT, "bit" },
 	{ VMREG_INT64, "int64" },
@@ -40,6 +42,11 @@ struct vm_reg_type vm_reg_types[] = {
 	{ VMREG_FLOAT64, "float64" },
 	{ 0, NULL }
 };
+
+int vm_mmu_real(int set)
+{
+	return realio = set;
+}
 
 static char *unkreg="(unk)";
 const char *vm_reg_type(int type)
@@ -182,14 +189,16 @@ int vm_mmu_cache_read(u64 addr, u8 *buf, int len)
 
 int vm_mmu_read(u64 off, u8 *data, int len)
 {
-	return radare_read_at(off, data, len);
+	if (realio)
+		return radare_read_at(off, data, len);
+	return vm_mmu_cache_read(off, data, len);
 }
 
 int vm_mmu_write(u64 off, u8 *data, int len)
 {
+	if (realio)
+		return radare_write_at(off, data, len);
 	return vm_mmu_cache_write(off, data, len);
-	/* REAL IO */
-	//return radare_write_at(off, data, len);
 }
 
 int vm_reg_add(const char *name, int type, u64 value)
@@ -323,6 +332,7 @@ void vm_stack_pop(const char *reg)
 	u32 val = 0;
 	if (vm_mmu_cache_read(vm_reg_get(vm_cpu.sp), &val, 4))
 		return;
+//printf("POP (%s)\n", reg);
 	vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4);
 	vm_reg_set(reg, val);
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)-4);
@@ -341,6 +351,7 @@ int vm_init(int init)
 		memset(&vm_cpu, '\0', sizeof(struct vm_cpu_t));
 	}
 
+	vm_mmu_real(config_get_i("vm.realio"));
 	/* vm_dbg_arch_x86_nregs */
 	switch (config.arch) {
 #if 0
@@ -361,7 +372,7 @@ int vm_init(int init)
 		vm_op_add("sub", "$1=$1-$2");
 		vm_op_add("jmp", "eip=$1");
 		vm_op_add("call", "[esp]=eip+$$,esp=esp+4,eip=$1");
-		vm_op_add("ret", "eip=[esp],esp=esp-4");
+		//vm_op_add("ret", "eip=[esp],esp=esp-4");
 		vm_reg_add("eax", VMREG_INT32, 0);
 		vm_reg_add("ax", VMREG_INT16, 0);
 		vm_reg_alias("ax","ax=eax&0xffff", "eax=eax>16,eax=eax<16,eax=eax|ax");
@@ -553,6 +564,7 @@ int vm_eval_single(const char *str)
 		}
 		eq[0]='=';
 	} else {
+		printf("PTR(%s)\n", ptr);
 		if (!memcmp(ptr, "syscall", 6)) {
 			eprintf("TODO: syscall interface not yet implemented\n");
 		} else
@@ -586,6 +598,7 @@ int vm_eval_single(const char *str)
 		} else
 		if (!memcmp(ptr, "ret", 3)) {
 			vm_stack_pop(vm_cpu.pc);
+			printf("RET (%x)\n", vm_cpu.pc);
 		} else
 			eprintf("Unknown opcode\n");
 	}
@@ -656,6 +669,7 @@ int vm_emulate(int n)
 	config_set("asm.pseudo", "true");
 	config_set("asm.syntax", "intel");
 	config_set("asm.profile", "simple");
+	config_set("scr.color", "false");
 	while(n--) {
 		pc = vm_reg_get(vm_cpu.pc);
 	udis_init();
