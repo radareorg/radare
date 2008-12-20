@@ -329,6 +329,7 @@ int r_bin_pe_get_arch(r_bin_pe_obj *bin, char *str)
 		snprintf(str, PE_NAME_LENGTH, "alpha");
 		break;
 	case PE_IMAGE_FILE_MACHINE_ARM:
+	case PE_IMAGE_FILE_MACHINE_THUMB:
 		snprintf(str, PE_NAME_LENGTH, "arm");
 		break;
 	case PE_IMAGE_FILE_MACHINE_M68K:

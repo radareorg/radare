@@ -6,12 +6,13 @@ struct section_t{
 	u64 from;
 	u64 to;
 	u64 base;
+	u64 ondisk; // offset on disk
 	struct list_head list;
 } ;
 
 int section_rm(int idx);
-void section_add(u64 from, u64 to, u64 base, const char *comment);
-void section_set(u64 from, u64 to, u64 base, const char *comment);
+void section_add(u64 from, u64 to, u64 base, u64 ondisk, const char *comment);
+void section_set(u64 from, u64 to, u64 base, u64 ondisk, const char *comment);
 void section_list(u64 addr, int rad);
 struct section_t *section_get(u64 addr);
 void section_list_visual(u64 seek, u64 len);

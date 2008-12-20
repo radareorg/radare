@@ -1849,6 +1849,7 @@ CMD_DECL(sections)
 		eprintf(" S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
 		eprintf(" S 10K @ 0x300    ; create 10K section at 0x300\n");
 		eprintf(" S -0x300         ; remove this section definition\n");
+		eprintf(" Sd 0x400 @ here  ; set ondisk start address for current section\n");
 		eprintf(" Sc rwx _text     ; add comment to the current section\n");
 		eprintf(" Sb 0x100000      ; change base address\n");
 		eprintf(" St 0x500         ; set end of section at this address\n");
@@ -1867,6 +1868,7 @@ CMD_DECL(sections)
 			u64 from = config.seek;
 			u64 to   = config.seek + config.block_size;
 			u64 base = config_get_i("file.baddr");
+			u64 ondisk = 0;
 			
 			i = set0word(ptr);
 			switch(i) {
@@ -1877,7 +1879,7 @@ CMD_DECL(sections)
 			case 0: // get length
 				to = from + get_math(get0word(ptr,0));
 			}
-			section_add(from, to, base, comment);
+			section_add(from, to, base, ondisk, comment);
 			free(ptr);
 			}
 			break;
@@ -1892,14 +1894,17 @@ CMD_DECL(sections)
 	case '*':
 		section_list(config.seek, 1);
 		break;
+	case 'd':
+		section_set(config.seek, -1, -1, get_math(input+1), NULL);
+		break;
 	case 'c':
-		section_set(config.seek, -1, -1, input+(input[1]==' '?2:1));
+		section_set(config.seek, -1, -1, -1, input+(input[1]==' '?2:1));
 		break;
 	case 'b':
-		section_set(config.seek, -1, get_math(input+1), NULL);
+		section_set(config.seek, -1, get_math(input+1), -1, NULL);
 		break;
 	case 't':
-		section_set(config.seek, get_math(input+1), -1, NULL);
+		section_set(config.seek, get_math(input+1), -1, -1, NULL);
 		break;
 	case 'f':
 		eprintf("TODO\n");

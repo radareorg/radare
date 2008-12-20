@@ -367,8 +367,11 @@ u64 radare_seek(u64 offset, int whence)
 	if (offset==-1)
 		return (u64)-1;
 
-	if (whence == SEEK_SET && config.baddr && offset>=config.size && offset >= config.baddr)
-		offset-=config.baddr;
+	if (whence == SEEK_SET && config.baddr ) //&& offset>=config.size && offset >= config.baddr)
+	{
+		offset = section_align(offset, config.baddr);
+		//offset-=config.baddr;
+	}
 	
 	seek = io_lseek(config.fd, offset, whence);
 	if (seek==-1)

@@ -420,6 +420,12 @@ int vm_eval_cmp(const char *str)
 
 int vm_eval_eq(const char *str, const char *val)
 {
+	char *p;
+	u8 buf[64];
+	u64 _int8  = 0;
+	u16 _int16 = 0;
+	u32 _int32 = 0;
+	u64 _int64 = 0;
 	for(;*str==' ';str=str+1);
 	for(;*val==' ';val=val+1);
 
@@ -427,13 +433,34 @@ int vm_eval_eq(const char *str, const char *val)
 		// USE MMU
 		// [foo] = 33, [reg] = 33
 		if (*val=='[') {
-			// TODO: support for size 8:addr
-			// if (strchr(val, ':')) ..
 			u8 data[8];
 			u64 off = vm_get_math(val+1);
-			u32 _int32 = 0;
+			p = strchr(val+1,':');
+			// TODO: support for size 8:addr
+			// if (strchr(val, ':')) ..
 
-			vm_mmu_read(off, (u8*)&_int32, 4);
+			if (p) {
+				int size = atoi(val+1);
+				off = vm_get_math(p+1);
+				switch(size) {
+				case 8:
+					vm_mmu_read(off, buf, 1);
+					vm_mmu_write(off, buf, 1);
+					break;
+				case 16:
+					vm_mmu_read(off, buf, 2);
+					vm_mmu_write(off, buf, 2);
+					break;
+				case 64:
+					vm_mmu_read(off, buf, 8);
+					vm_mmu_write(off, buf, 8);
+					break;
+				default:
+					vm_mmu_read(off, buf, 4);
+					vm_mmu_write(off, buf, 4);
+				}
+				
+			} else vm_mmu_read(off, (u8*)&_int32, 4);
 			off = vm_get_math(str+1);
 			vm_mmu_write(off, (u8*)&_int32, 4);
 		} else {
@@ -448,10 +475,34 @@ int vm_eval_eq(const char *str, const char *val)
 		if (*val=='[') {
 			// use mmu
 			u8 data[8];
-			u64 off = vm_get_math(val+1);
+			u64 off;
 			u32 _int32 = 0;
-			vm_mmu_read(off, (u8*)&_int32, 4);
-			vm_reg_set(str, (u64)_int32);
+			p = strchr(val+1,':');
+			if (p) {
+				int size = atoi(val+1);
+				off = vm_get_math(p+1);
+				switch(size) {
+				case 8:
+					vm_mmu_read(off, (u8*)&_int8, 1);
+					vm_reg_set(str, (u64)_int8);
+					break;
+				case 16:
+					vm_mmu_read(off, (u8*)&_int16, 2);
+					vm_reg_set(str, (u64)_int16);
+					break;
+				case 64:
+					vm_mmu_read(off, (u8*)&_int64, 8);
+					vm_reg_set(str, (u64)_int64);
+					break;
+				default:
+					vm_mmu_read(off, (u8*)&_int32, 4);
+					vm_reg_set(str, (u64)_int32);
+				}
+			} else {
+ 				off = vm_get_math(val+1);
+				vm_mmu_read(off, (u8*)&_int32, 4);
+				vm_reg_set(str, (u64)_int32);
+			}
 		} else vm_reg_set(str, vm_get_math(val));
 	}
 	return 0;

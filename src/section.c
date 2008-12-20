@@ -22,7 +22,7 @@
 
 static struct list_head sections;
 
-void section_set(u64 from, u64 to, u64 base, const char *comment)
+void section_set(u64 from, u64 to, u64 base, u64 ondisk, const char *comment)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -32,18 +32,21 @@ void section_set(u64 from, u64 to, u64 base, const char *comment)
 				s->to = to;
 			if (base != -1)
 				s->base = base;
+			if (ondisk != -1)
+				s->ondisk = ondisk;
 			if (comment)
 				strncpy(s->comment, comment, 254);
 		}
 	}
 }
 
-void section_add(u64 from, u64 to, u64 base, const char *comment)
+void section_add(u64 from, u64 to, u64 base, u64 ondisk, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
 	s->from = from;
 	s->to = to;
 	s->base = base;
+	s->ondisk = ondisk;
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';
@@ -185,6 +188,25 @@ int section_overlaps(struct section_t *s)
 		i++;
 	}
 	return -1;
+}
+
+// seek 
+u64 section_align(u64 addr, u64 baddr)
+{
+	int i = 0;
+	struct list_head *pos;
+	list_for_each_prev(pos, &sections) {
+		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
+		if (addr >= s->from && addr <= s->to) {
+#if 0
+			saltem a 0x24324
+			comença a 0x11000; (adreça virtual)
+			equival a la 0x400 (real de disc)
+#endif
+			return ( addr - s->from + s->ondisk ); //+ s->base);
+		}
+	}
+	return addr-baddr;
 }
 
 void section_init(int foo)
