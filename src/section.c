@@ -200,10 +200,14 @@ int section_overlaps(struct section_t *s)
 }
 
 // seek 
+u64 last_align = 0;
 u64 section_align(u64 addr, u64 vaddr, u64 paddr)
 {
 	int i = 0;
 	struct list_head *pos;
+	if (addr == last_align)
+		return last_align;
+
 	list_for_each_prev(pos, &sections) {
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
 		if (addr >= s->from && addr <= s->to) {
@@ -215,7 +219,9 @@ u64 section_align(u64 addr, u64 vaddr, u64 paddr)
 			return ( addr - s->vaddr + s->paddr ); 
 		}
 	}
-	return addr-vaddr+paddr;
+	last_align = addr-vaddr+paddr;
+	//printf("? 0x%llx-0x%llx+0x%llx\n", addr, vaddr, paddr);
+	return last_align;
 }
 
 void section_init(int foo)

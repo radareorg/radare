@@ -362,16 +362,22 @@ int radare_dump(const char *arg, int size)
 
 u64 radare_seek(u64 offset, int whence)
 {
+	u64 preoffset = 0;
 	u64 seek = 0;
+	int bip = 0;
 
 	if (offset==-1)
 		return (u64)-1;
 
+#if 1
 	if (whence == SEEK_SET && config.vaddr && offset>=config.vaddr)//&& offset >= config.vaddr)
 	{
+		preoffset = offset;
 		offset = section_align(offset, config.vaddr, config.paddr);
+		bip = 1;
 		//offset-=config.vaddr;
 	}
+#endif
 	
 	seek = io_lseek(config.fd, offset, whence);
 	if (seek==-1)
@@ -405,13 +411,20 @@ u64 radare_seek(u64 offset, int whence)
 		}
 	}
 
-	if (whence == SEEK_SET)
-		config.seek = seek;
-	else	config.seek+= offset;
+	if (bip) {
+		if (whence == SEEK_SET)
+			config.seek = seek;
+		else	config.seek+= preoffset;
+	} else {
+		if (whence == SEEK_SET)
+			config.seek = seek;
+		else	config.seek+= offset;
+	}
 
 	if (config.seek <0)
 		config.seek = 0;
 
+//eprintf("RAL SEEK %llx\n", config.seek);
 	io_lseek(config.fd, config.seek, SEEK_SET);
 
 	//undo_push();

@@ -1067,27 +1067,32 @@ void rabin_show_sections(const char *file)
 		sectionp.pe = section.pe;
 		for (i = 0; i < sections_count; i++, sectionp.pe++) {
 			if (rad) {
-				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64) (baddr + sectionp.pe->rva));
-				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output((const char *)sectionp.pe->name), (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
+				char *name = aux_filter_rad_output((const char *)sectionp.pe->name);
+				if (strstr(name, "text")) {
+					printf("e io.vaddr=0x%08llx\n",(baddr+section.pe->rva));
+					printf("e io.paddr=0x%08llx\n",(u64)(section.pe->offset));
+				} // XXX should be output in sections
+				printf("f section.%s @ 0x%08llx\n", name, (u64) (baddr + sectionp.pe->rva));
+				printf("f section.%s_end @ 0x%08llx\n", name, (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
 
 				printf("CC [%02i] 0x%08llx size=%08lli %c%c%c%c %s @ 0x%08llx\n",
-						i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),
-						PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
-						PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
-						PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
-						PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
-						sectionp.pe->name, (u64) (baddr + sectionp.pe->rva));
+					i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),
+					PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+					PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+					PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+					PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+					sectionp.pe->name, (u64) (baddr + sectionp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
 						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli privileges=%c%c%c%c name=%s\n",
-								i, (u64) (baddr + sectionp.pe->rva),
-								(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
-								PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
-								PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
-								PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
-								PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
-								sectionp.pe->name);
+							i, (u64) (baddr + sectionp.pe->rva),
+							(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
+							PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
+							PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
+							PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
+							PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
+							sectionp.pe->name);
 						break;
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");

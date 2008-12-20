@@ -419,6 +419,8 @@ const char *flag_name_by_offset(u64 offset)
 {
 	struct list_head *pos;
 
+	//if (offset > config.vaddr)
+	offset=offset-config.paddr+config.vaddr;
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == offset)

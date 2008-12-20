@@ -777,6 +777,8 @@ int analyze_function(u64 from, int recursive, int report)
 	int framesize = 0;
 	int nblocks = 0;
 
+	from += config.vaddr-config.paddr;
+printf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
 		return -1;
 #if 0
@@ -832,7 +834,9 @@ int analyze_function(u64 from, int recursive, int report)
 		{
 		int len = to-from;
 		cons_printf("bytes = ");
-	//	if (len>32)len=32; // anal.limitbytes
+		if (len>32){len=32; // anal.limitbytes
+			cons_strcat("(truncated)");
+		}
 		for(i=0;i<len;i++) 
 			cons_printf("%02x ", bytes[i]);
 		cons_newline();
