@@ -909,15 +909,15 @@ void visual_draw_screen()
 	/* prompt */
 	if (config.cursor_mode)
 	cons_printf("[ 0x%llx+%d (0x%08llx+%d) (bs=%d mark=0x%llx) %s %s] %s -> %s         \n",
-		(config.seek+config.baddr), 
-		config.cursor, config.baddr+config.seek+config.cursor,
+		(config.seek+config.vaddr), 
+		config.cursor, config.vaddr+config.seek+config.cursor,
 		(config.ocursor==-1)?0:config.cursor-config.ocursor+1,
 		(unsigned int)config.block_size,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf, buf2);
 	else
 	cons_printf("[ 0x%llx (bs=%d mark=0x%llx) %s %s] %s            \n",
-		(config.seek+config.baddr),
+		(config.seek+config.vaddr),
 		(unsigned int)config.block_size,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
@@ -1708,7 +1708,7 @@ CMD_DECL(visual)
 				cons_fgets(name, 1000, 0, NULL);
 				cons_set_raw(1);
 				if (name[0])
-					flag_set(name, config.baddr+ config.seek+config.cursor, 1);
+					flag_set(name, config.vaddr+ config.seek+config.cursor, 1);
 			} else {
 				flag_t *flag = flag_get_next(1);
 				if (flag) { config.seek = flag->offset;

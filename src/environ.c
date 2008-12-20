@@ -75,7 +75,7 @@ void env_prepare(const char *line)
 	if (config.cursor_mode)
 		sprintf(offset,  OFF_FMTd, (u64)config.seek+config.cursor);
 	setenv("CURSOR", offset,   1);
-	sprintf(offset,  "%d", (int)config_get_i("file.baddr")); //(u64)config.baddr);
+	sprintf(offset,  "%d", (int)config_get_i("io.vaddr")); //(u64)config.vaddr);
 	setenv("BADDR",  offset,   1);
 	sprintf(offset,  "%d",     config.color);
 	setenv("COLOR",  offset,   1);

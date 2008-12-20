@@ -161,10 +161,10 @@ void print_addr(u64 off)
 	int mod = config_get_i("cfg.addrmod");
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
 	
-	if (off==config.cursor_ptr+config.baddr)
+	if (off==config.cursor_ptr+config.vaddr)
 		cons_invert();
 	C	cons_printf("%s0x%08llx"C_RESET"%c ", 
-			(off==config.cursor_ptr+config.baddr)?C_WHITE:
+			(off==config.cursor_ptr+config.vaddr)?C_WHITE:
 			cons_palette[PAL_ADDRESS], off, ch);
 	else	cons_printf("0x%08llx%c ", off, ch);
 }
@@ -217,7 +217,7 @@ int is_cursor(int from, int len)
 void print_color_byte_i(int i, char *str, int c)
 {
 	C {
-		flag_t *f = flag_by_offset(config.seek+config.baddr+i);
+		flag_t *f = flag_by_offset(config.seek+config.vaddr+i);
 		if (f) cons_strcat("\x1b[44m");
 		else cons_strcat("\x1b[0m");
 	}
@@ -684,7 +684,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	case FMT_CODEGRAPH:
 		eprintf("THIS COMMAND IS GOING TO BE DEPRECATED. PLEASE USE 'ag'\n");
 #if HAVE_GUI
-		prg = code_analyze(config.baddr + config.seek, config_get_i("graph.depth"));
+		prg = code_analyze(config.vaddr + config.seek, config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
 #else
@@ -876,7 +876,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		}
 		for(i=0; !config.interrupted && i<len; i++) {
 			V if ((i/inc)+5>config.height) break;
-			D print_addr(seek+i+config.baddr);
+			D print_addr(seek+i+config.vaddr);
 			for(j = i+inc; i<j && i<len; i++) {
 				C cons_printf(get_color_for(buf[i]));
 				if (is_cursor(i,1))
@@ -901,7 +901,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		}
 		for(i=0;!config.interrupted && i<len;i++) {
 			V if ((i/inc)+6>config.height) break;
-			D print_addr(seek+i+config.baddr);
+			D print_addr(seek+i+config.vaddr);
 			tmp = i;
 			for(j=i+inc;i<j && i<len;i++) {
 				print_color_byte_i(i, "%03o", (int)buf[i]);
@@ -1070,7 +1070,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			V if (inc==0 && (i/inc)+4>config.height) break;
 			D { if ( fmt == FMT_HEXB ) {
 				if (zoom) print_addr(seek+(config.zoom.piece*i));
-				else print_addr(seek+i+config.baddr);
+				else print_addr(seek+i+config.vaddr);
 			} }
 
 			if (config.insert_mode==1)

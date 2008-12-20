@@ -636,7 +636,7 @@ void data_reflines_init()
 int data_printd(int delta)
 {
 	int show_lines = (int)config_get("asm.lines");
-	u64 offset = (u64)config.seek + (u64)delta;// - config.baddr;
+	u64 offset = (u64)config.seek + (u64)delta;// - config.vaddr;
 	int lines = 0;
 	const char *ptr;
 

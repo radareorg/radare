@@ -111,7 +111,7 @@ void rabin_show_info(const char *file)
 			printf("e file.type = elf\n");
 			str = getenv("DEBUG");
 			if (str == NULL || (str && strncmp(str, "1", 1)))
-				printf("e file.baddr = 0x%08llx\n", baddr);
+				printf("e io.vaddr = 0x%08llx\n", baddr);
 			if (ELF_CALL(dietelf_is_big_endian,bin.elf))
 				printf("e cfg.bigendian = true\n");
 			else printf("e cfg.bigendian = false\n");
@@ -185,7 +185,7 @@ void rabin_show_info(const char *file)
 			printf("e file.type = pe\n");
 			str = getenv("DEBUG");
 			if (str == NULL || (str && strncmp(str, "1", 1)))
-				printf("e file.baddr = 0x%08llx\n", (u64) dietpe_get_image_base(&bin.pe));
+				printf("e io.vaddr = 0x%08llx\n", (u64) dietpe_get_image_base(&bin.pe));
 				printf("e cfg.bigendian = %s\n",
 						dietpe_is_big_endian(&bin.pe)?"true":"false");
 				printf("e asm.os = %s\n", pe_os_str);

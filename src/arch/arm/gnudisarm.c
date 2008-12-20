@@ -79,7 +79,7 @@ int gnu_disarm_str(char *str, const u8 *inst, u64 offset)
 	info.stream = stdout;
 
 	//if (print_insn_arm((unsigned long)offset, &info) == -1)
-	//if (print_insn_arm((unsigned long)config_get_i("file.baddr"), &info) == -1)
+	//if (print_insn_arm((unsigned long)config_get_i("io.vaddr"), &info) == -1)
 	if (print_insn_arm((unsigned long)0, &info) == -1) {
 		strcpy(str, " (data)");
 		return 1;
@@ -113,7 +113,7 @@ const char *gnu_disarm(unsigned char *inst, u64 offset)
 	info.stream = stdout;
 
 	//if (print_insn_arm((unsigned long)offset, &info) == -1)
-	//if (print_insn_arm((unsigned long)config_get_i("file.baddr"), &info) == -1)
+	//if (print_insn_arm((unsigned long)config_get_i("io.vaddr"), &info) == -1)
 //	if (print_insn_arm((unsigned long)0, &info) == -1)
 //		return str_data;
 

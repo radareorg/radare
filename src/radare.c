@@ -201,13 +201,16 @@ int radare_close()
 
 void radare_sync()
 {
-	u64 base;
+	u64 base, phys;
 	int limit = DEFAULT_BLOCK_SIZE;
 
 	if (config_get_i("cfg.sections")) {
-		base = section_get_base(config.seek);
+		base = section_get_vaddr(config.seek);
 		if (base != -1)
-			config_set_i("file.baddr", base);
+			config_set_i("io.vaddr", base);
+		phys = section_get_paddr(config.seek);
+		if (phys != -1)
+			config_set_i("io.paddr", phys);
 	}
 
 	if (config.debug||config.unksize)
@@ -1196,13 +1199,13 @@ int radare_prompt()
 
 #if __UNIX__
 	C	sprintf(prompt, "%s["OFF_FMT"]> "C_RESET,
-			cons_palette[PAL_PROMPT], (offtx)config.seek+config.baddr); 
+			cons_palette[PAL_PROMPT], (offtx)config.seek+config.vaddr); 
 	else
 	sprintf(prompt, "["OFF_FMT"]> ",
-			(offtx)config.seek+config.baddr); 
+			(offtx)config.seek+config.vaddr); 
 #else
 	sprintf(prompt, "["OFF_FMT"]> ",
-			(offtx)config.seek+config.baddr); 
+			(offtx)config.seek+config.vaddr); 
 #endif
 
 	memset(input, 0, BUFLEN);

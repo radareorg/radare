@@ -518,7 +518,7 @@ Choose the endian flavour 'true' for big, 'false' for little.
 
 \c file.id
 
-When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the base address and stuff like that.
+When enabled (set it up to '1' or 'true'). Runs rabin -rI after opening the target file and tries to identify the file type and setup the virtual, physical address (io.vaddr, io.paddr) and stuff like that.
 
 \c file.analyze
 
@@ -689,11 +689,11 @@ You can also use this command to manually get the interpolation between two sear
 
 It is usually on firmware images, bootloaders and binary files to find sections that are loaded in memory at different addresses than the one in the disk.
 
-To solve this issue, radare implements two utilities: 'file.baddr' and 'S'.
+To solve this issue, radare implements two utilities: 'io.vaddr' and 'S'.
 
-The file.baddr specifies the current base address to be used for disassembling and displaying offsets. In the same way all offsets used in expressions are also affected by this eval variable.
+The io.vaddr specifies the current virtual address to be used for disassembling and displaying offsets. In the same way all offsets used in expressions are also affected by this eval variable.
 
-For files with more than one base address. The 'S'ection command will do the job. Here's the help message:
+For files with more than one virtual address. The 'S'ection command will do the job. Here's the help message:
 
 \c [0xB7EE8810]> S?
 \c Usage: S len [base [comment]] @ address
@@ -705,11 +705,11 @@ For files with more than one base address. The 'S'ection command will do the job
 \c  > S 10K @ 0x300    ; create 10K section at 0x300
 \c  > S -0x300         ; remove this section definition
 \c  > Sc rwx _text     ; add comment to the current section
-\c  > Sb 0x100000      ; change base address
+\c  > Sv 0x100000      ; change virtual address
 \c  > St 0x500         ; set end of section at this address
 \c  > Sf 0x100         ; set from address of the current section
 
-This command allows you to manage multiple base addresses depending on the current seek, and enables the possibility to add comments to them. So the debugger information can be imported to the core in a simple way, adding information about the page protections of each section and so.
+This command allows you to manage multiple virtual and physical addresses correspondencies depending on the current seek, and enables the possibility to add comments to them. So the debugger information can be imported to the core in a simple way, adding information about the page protections of each section and so.
 
 Here's a sample dummy session.
 
@@ -751,7 +751,7 @@ To remove a section definition just prefix the from-address of the section with 
 \c 00 . 0xb7ee9c10 - 0xb7eeec10 bs=0x00000000 sz=0x00005000  
 \c 01 . 0xb7eea810 - 0xb7eebc10 bs=0x00000000 sz=0x00001400
 
-After the section definition we can change the parameters of them with the Sf, St, Sc, Sb commands. After this, radare core will automatically setup the file.baddr depending on this section information
+After the section definition we can change the parameters of them with the Sf, St, Sc, Sb commands. After this, radare core will automatically setup the io.vaddr depending on this section information
 
 \H{iomap} Mapping files
 
@@ -2496,7 +2496,7 @@ As it was said we can add the -r flag to use all this information in radare:
 
 \c $ rabin -Ir /bin/ls
 \c e file.type = elf
-\c e file.baddr = 0x08048000
+\c e io.vaddr = 0x08048000
 \c e cfg.bigendian = false
 \c e dbg.dwarf = false
 \c e asm.os = linux
@@ -4967,7 +4967,7 @@ Let's start by setting up some reasonable defaults on our ~./radarerc file, we w
 \c  eval graph.depth = 7
 \c  eval graph.callblocks = false
 
-Here we've set the file.identify variable to true, this way when whe open a binary file (PE or ELF executable), radare will detect the base address and rebase the file accordingly. We've also set file.flag to true, so radare will also flag the strings and symbols found inside the binary to make the disassembly more readable, and change the seek to the file entry point. We've set it as default because it will save us typing some commands, however if you use the defaults (file.identify and file.flag set to false) you can still do such things manually (see !rsc and rabin commands).
+Here we've set the file.identify variable to true, this way when whe open a binary file (PE or ELF executable), radare will detect the virtual address (io.vaddr), physical address (io.paddr) and visually rebase the disassembly. We've also set file.flag to true, so radare will also flag the strings and symbols found inside the binary to make the disassembly more readable, and change the seek to the file entry point. We've set it as default because it will save us typing some commands, however if you use the defaults (file.identify and file.flag set to false) you can still do such things manually (see !rsc and rabin commands).
 
 IOLI Crackme
 

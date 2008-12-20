@@ -22,7 +22,7 @@
 
 static struct list_head sections;
 
-void section_set(u64 from, u64 to, u64 base, u64 ondisk, const char *comment)
+void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -30,23 +30,23 @@ void section_set(u64 from, u64 to, u64 base, u64 ondisk, const char *comment)
 		if (s->from == from) {
 			if (to != -1)
 				s->to = to;
-			if (base != -1)
-				s->base = base;
-			if (ondisk != -1)
-				s->ondisk = ondisk;
+			if (vaddr != -1)
+				s->vaddr = vaddr;
+			if (paddr != -1)
+				s->paddr = paddr;
 			if (comment)
 				strncpy(s->comment, comment, 254);
 		}
 	}
 }
 
-void section_add(u64 from, u64 to, u64 base, u64 ondisk, const char *comment)
+void section_add(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
 	s->from = from;
 	s->to = to;
-	s->base = base;
-	s->ondisk = ondisk;
+	s->vaddr = vaddr;
+	s->paddr = paddr;
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';
@@ -86,12 +86,12 @@ void section_list(u64 addr, int rad)
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
 		if (rad) {
 			cons_printf("S 0x%08llx 0x%08llx %s @ 0x%08llx\n",
-				s->to-s->from, s->base, s->comment, s->from);
-			cons_printf("Sd 0x%08llx @ 0x%08llx\n", s->ondisk, s->from);
+				s->to-s->from, s->vaddr, s->comment, s->from);
+			cons_printf("Sd 0x%08llx @ 0x%08llx\n", s->paddr, s->from);
 		} else {
 			cons_printf("%02d %c 0x%08llx - 0x%08llx bs=0x%08llx sz=0x%08llx phy=0x%08llx %s",
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
-				s->from, s->to, s->base, (u64)((s->to)-(s->from)), s->ondisk, s->comment);
+				s->from, s->to, s->vaddr, (u64)((s->to)-(s->from)), s->paddr, s->comment);
 			
 			if (string_flag_offset(buf, s->from))
 				cons_printf(" ; %s", buf);
@@ -163,11 +163,19 @@ struct section_t *section_get(u64 addr)
 	return NULL;
 }
 
-u64 section_get_base(u64 addr)
+u64 section_get_paddr(u64 addr)
 {
 	struct section_t *s = section_get(addr);
 	if (s != NULL)
-		return s->base;
+		return s->paddr;
+	return -1;
+}
+
+u64 section_get_vaddr(u64 addr)
+{
+	struct section_t *s = section_get(addr);
+	if (s != NULL)
+		return s->vaddr;
 	return -1;
 }
 
@@ -192,7 +200,7 @@ int section_overlaps(struct section_t *s)
 }
 
 // seek 
-u64 section_align(u64 addr, u64 baddr)
+u64 section_align(u64 addr, u64 vaddr, u64 paddr)
 {
 	int i = 0;
 	struct list_head *pos;
@@ -201,13 +209,13 @@ u64 section_align(u64 addr, u64 baddr)
 		if (addr >= s->from && addr <= s->to) {
 #if 0
 			saltem a 0x24324
-			comença a 0x11000; (adreça virtual)
+			comença a 0x11000; (adreça vaddr)
 			equival a la 0x400 (real de disc)
 #endif
-			return ( addr - s->from + s->ondisk ); //+ s->base);
+			return ( addr - s->vaddr + s->paddr ); 
 		}
 	}
-	return addr-baddr;
+	return addr-vaddr+paddr;
 }
 
 void section_init(int foo)

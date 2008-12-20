@@ -104,7 +104,7 @@ void core_load_graph_at(void *obj, const char *str)
 	eprintf("Loading graph... (%s)\n", str);
 	radare_seek(off, SEEK_SET);
 	//gtk_widget_destroy(w);
-	prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
+	prg = code_analyze(config.vaddr + config.seek, (int)config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 	new_window = 1;
 	
@@ -245,7 +245,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 	}
 	//gtk_widget_destroy(w);
 	radare_seek(off, SEEK_SET);
-	prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
+	prg = code_analyze(config.vaddr + config.seek, (int)config_get_i("graph.depth"));
 	list_add_tail(&prg->list, &config.rdbs);
 
 	grava_program_graph(prg, w);
@@ -883,7 +883,7 @@ void visual_gui()
 		w = gtk_notebook_new();
 		{ /* code graph tab */
 			struct mygrava_window *foo;
-			struct program_t *prg = code_analyze(config.baddr + config.seek, (int)config_get_i("graph.depth"));
+			struct program_t *prg = code_analyze(config.vaddr + config.seek, (int)config_get_i("graph.depth"));
 			list_add_tail(&prg->list, &config.rdbs);
 			foo = mygrava_get_widget(prg, 0);
 			w2 = foo->vbox;

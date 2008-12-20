@@ -62,7 +62,8 @@ struct config_t {
 	int acursor; // position of the cursor inside the block
 	int ocursor; // position of the cursor inside the block
 	u64 size;
-	u64 baddr;
+	u64 vaddr; // virtual addr
+	u64 paddr; // physical addr
 	u64 seek;
 	u64 last_seek;
 	u64 limit;
@@ -75,6 +76,7 @@ struct config_t {
 #define C if (config.color)
 #define V if (config.visual)
 extern struct config_t config;
+extern int config_get_notfound;
 
 int rdb_init();
 void config_init(int first);

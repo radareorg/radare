@@ -129,7 +129,7 @@ command_t commands[] = {
 	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
 	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", graph),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
-	COMMAND('S', "[len] [baddr]",  "Section  manage file.baddr sections", sections),
+	COMMAND('S', "[len] [vaddr]",  "Section  manage io.vaddr sections", sections),
 	COMMAND('u', "[[+,-]idx]",     "undo     undo/redo indexed write change", undowrite),
 	COMMAND('V', "",               "Visual   enter visual mode", visual),
 	COMMAND('w', "[?aAdwxfF] [str]","write    write ascii/hexpair string here", write),
@@ -354,7 +354,7 @@ CMD_DECL(analyze)
 			eprintf(" ag. - outputs dot graph format for code analysis\n");
 			break;
 		case '.':
-			prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
+			prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
 			list_add_tail(&prg->list, &config.rdbs);
 			graph_viz(prg);
 			break;
@@ -362,7 +362,7 @@ CMD_DECL(analyze)
 #if HAVE_GUI
 		// use graph.depth by default if not set
 		config.graph = 1;
-		prg = code_analyze(config.baddr + config.seek, depth ); //config_get_i("graph.depth"));
+		prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		grava_program_graph(prg, NULL);
 		config.graph = 0;
@@ -375,7 +375,7 @@ CMD_DECL(analyze)
 		int c = config.verbose;
 		char cmd[1024];
 		config.verbose = 1;
-		prg = code_analyze(config.seek+config.baddr, depth); //config_get_i("graph.depth"));
+		prg = code_analyze(config.seek+config.vaddr, depth); //config_get_i("graph.depth"));
 		list_add_tail(&prg->list, &config.rdbs);
 		list_for_each(head, &(prg->blocks)) {
 			b0 = list_entry(head, struct block_t, list);
@@ -406,7 +406,7 @@ CMD_DECL(analyze)
 			radare_read(0);
 			udis_init();
 			pas_aop(config.arch, config.seek, config.block, 16, NULL, food, 0);
-			sz = arch_aop(config.baddr + config.seek, config.block, &aop);
+			sz = arch_aop(config.vaddr + config.seek, config.block, &aop);
 
 			cons_printf("pas = %s\n", food);
 			cons_printf("index = %d\n", depth_i);
@@ -466,7 +466,7 @@ CMD_DECL(analyze)
 			cons_printf("bytes = ");
 			for (i=0;i<sz;i++) cons_printf("%02x ", config.block[i]);
 			cons_printf("\n");
-			cons_printf("offset = 0x%08llx\n", config.baddr+config.seek);
+			cons_printf("offset = 0x%08llx\n", config.vaddr+config.seek);
 			cons_printf("ref = 0x%08llx\n", aop.ref);
 			cons_printf("jump = 0x%08llx\n", aop.jump);
 			cons_printf("fail = 0x%08llx\n", aop.fail);
@@ -852,13 +852,13 @@ CMD_DECL(graph)
 	return 0;
 }
 
-CMD_DECL(baddr)
+CMD_DECL(vaddr)
 {
 	int i;
 	for(i=0;input[i]&&input[i]!=' ';i++);
 	if (input[i]!='\0')
-		config.baddr = get_math(input+i+1);
-	D { cons_printf("0x%08llx\n", config.baddr); }
+		config.vaddr = get_math(input+i+1);
+	D { cons_printf("0x%08llx\n", config.vaddr); }
 
 	return 0;
 }
@@ -1537,7 +1537,7 @@ CMD_DECL(info)
 		printf("b %d\n", config.block_size);
 		printf("e %d\n", config.endian);
 		printf("s 0x"OFF_FMTx"\n", config.seek);
-		printf("B 0x"OFF_FMTx"\n", config.baddr);
+		printf("B 0x"OFF_FMTx"\n", config.vaddr);
 		printf("l 0x"OFF_FMTx"\n", config.limit);
 		return 0;
 	}
@@ -1549,7 +1549,7 @@ CMD_DECL(info)
 	cons_printf(" mode    %s",   config_get("file.write")?"read-write":"read-only"); cons_newline();
 	cons_printf(" debug   %d",   config.debug); cons_newline();
 	cons_printf(" endian  %d  ( %s )",   config.endian, config.endian?"big":"little"); cons_newline();
-	cons_printf(" baddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.baddr, config.baddr); cons_newline();
+	cons_printf(" vaddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.vaddr, config.vaddr); cons_newline();
 	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); cons_newline();
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
 		(u64)config.seek, (u64)config.seek); cons_newline();
@@ -1723,7 +1723,7 @@ CMD_DECL(write)
 	case 'a': {
 		unsigned char data[256];
 		char* aux = strdup ( config_get("asm.arch") );
-		u64 seek = config.seek + config.baddr;
+		u64 seek = config.seek + config.vaddr;
 		int ret = rasm_asm(aux, &seek, input+2, data);
 		free ( aux );
 		if (ret<1)
@@ -1867,8 +1867,8 @@ CMD_DECL(sections)
 			const char *comment = NULL;
 			u64 from = config.seek;
 			u64 to   = config.seek + config.block_size;
-			u64 base = config_get_i("file.baddr");
-			u64 ondisk = 0;
+			u64 base = config.vaddr; //config_get_i("io.vaddr");
+			u64 ondisk = config.paddr;
 			
 			i = set0word(ptr);
 			switch(i) {
@@ -2232,7 +2232,19 @@ CMD_DECL(help)
 				" ? [foo] == 0x44   ; compare memory read with byte\n"
 				" ? eip != oeip     ; compare memory read with byte\n"
 				" ???               ; show result of comparision\n"
-				" ?? s +3           ; seek current seek + 3 if equal\n");
+				" ?? s +3           ; seek current seek + 3 if equal\n"
+				"Special $$ variables that can be used in expressions\n"
+				" $$  = current seek\n"
+				" $$$ = size of opcode\n"
+				" $$j = jump branch of opcode\n"
+				" $$f = failover continuation of opcode\n"
+				" $$r = pointer reference of opcode\n"
+				" $$e = end of basic block\n"
+				" $$F = beggining of the function\n"
+				" $$l = last seek done\n"
+				" $${io.vaddr} = get eval value\n"
+				"Note: Prefix the command with '\"' to skip pipes ('|','>'..)\n"
+				);
 			} else
 			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);

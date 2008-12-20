@@ -844,15 +844,27 @@ int flag_set_undef(const char *name, u64 addr, int dup)
 /* used to get section name for disasembly */
 const char *flag_get_here_filter(u64 at, const char *str)
 {
+	static u64 sec_start=0, sec_end=0;
+	static char sec_str[64];
 	struct list_head *pos;
 	u64 ret = 0;
+	u64 nextflag = 0xFFFFFFFFFFFFFFFFFFLL;
 	flag_t *f = NULL;
+
+	if (at >=sec_start && at <sec_end) {
+		/* ADDED CACHE PAWAH */
+		return sec_str;
+	}
+	sec_str[0]='\0';
 
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if ((str[0] && !strstr(flag->name, str)) || strstr(flag->name, "end"))
 			continue;
 		
+		if (flag->offset < nextflag && flag->offset > at) {
+			nextflag = flag->offset;
+		} else
 		if (at >= flag->offset && flag->offset > ret) {
 			f = flag;
 			ret = flag->offset;
@@ -860,7 +872,51 @@ const char *flag_get_here_filter(u64 at, const char *str)
 	}
 	if (f == NULL)
 		return nullstr;
-	return f->name+strlen(str);
+	sec_start = f->offset;
+	sec_end = nextflag;
+	strcpy(sec_str, f->name+strlen(str));
+	return sec_str;
+}
+
+//XXX ugly hack
+const char *flag_get_here_filter2(u64 at, const char *str, const char *str2)
+{
+	static u64 sec_start=0, sec_end=0;
+	static char sec_str[64];
+	struct list_head *pos;
+	u64 ret = 0;
+	u64 nextflag = 0xFFFFFFFFFFFFFFFFFFLL;
+	flag_t *f = NULL;
+	char *s1,*s2,*s=NULL;
+
+	if (at >=sec_start && at <sec_end) {
+		/* ADDED CACHE PAWAH */
+		return sec_str;
+	}
+	sec_str[0]='\0';
+
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		s1 = strstr(flag->name, str);
+		s2 = strstr(flag->name, str2);
+		if ((!s1 && !s2) || strstr(flag->name, "_end"))
+			continue;
+		
+		if (flag->offset < nextflag && flag->offset > at) {
+			nextflag = flag->offset;
+		} else
+		if (at >= flag->offset && flag->offset > ret) {
+			s = s1?str:str2;
+			f = flag;
+			ret = flag->offset;
+		}
+	}
+	if (f == NULL)
+		return nullstr;
+	sec_start = f->offset;
+	sec_end = nextflag;
+	strcpy(sec_str, f->name+((s!=NULL)?strlen(s):0));
+	return sec_str;
 }
 
 /* TODO: move to visual */

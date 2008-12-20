@@ -194,7 +194,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	       /* initialize DisasmPara */
 	       dp.opcode = opcode;
 	       dp.operands = operands;
-	       dp.iaddr = seek; //config.baddr + config.seek + i;
+	       dp.iaddr = seek; //config.vaddr + config.seek + i;
 	       endian_memcpy(bof, b, 4);
 	       dp.instr = bof;
 	       // dp.instr = b; //config.block + i;
@@ -220,7 +220,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 		/* initialize DisasmPara */
 		dp.opcode = opcode;
 		dp.operands = operands;
-		dp.iaddr = seek; //config.baddr + config.seek + i;
+		dp.iaddr = seek; //config.vaddr + config.seek + i;
 		dp.instr = b; //config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
 		M68k_Disassemble(&dp);
@@ -437,6 +437,13 @@ static void print_stackptr(struct aop_t *aop, int zero)
 	cons_printf("%3d%c", stack_ptr, changed);
 }
 
+const char *get_section_name_at(u64 addr)
+{
+	char *str;
+	str = flag_get_here_filter2(addr - config.vaddr, "maps.", "section.");
+	return str;
+}
+
 void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int flags)
 {
 	struct aop_t aop;
@@ -508,7 +515,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		if (rrows>0 && --rrows == 0) break;
 		if (bytes>=config.block_size)
 			break;
-		seek = config.seek+bytes + config.baddr;
+		seek = config.seek+bytes + config.vaddr;
 		sk   = config.seek+bytes;
 		CHECK_LINES
 		myrow++;
@@ -516,13 +523,13 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		D {
 			if (flags & RADIS_FLAGSLINE) {
 				char *ptr = flag_name_by_offset( sk );
-				if (ptr == NULL && config.baddr)
+				if (ptr == NULL && config.vaddr)
 					ptr = flag_name_by_offset( seek );
 				if (ptr && ptr[0]) {
 					if ((reflines) &&  (flags & RADIS_LINES))
 						code_lines_print(reflines, sk, 0);
 					if (flags & RADIS_SECTION) {
-						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						const char * flag = get_section_name_at(seek-config.vaddr);
 						if (flag && *flag)
 							cons_printf("%s:", flag);
 					}
@@ -540,9 +547,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		}
 		if (flags & RADIS_SECTION) {
 			char *str;
-			if (config.baddr)
-				str = flag_get_here_filter(seek - config.baddr, "section.");
-			else 	str = flag_get_here_filter(seek, "section.");
+			str = get_section_name_at(seek-config.vaddr);
 			if (*str)
 				cons_printf("%s:", str);
 		}
@@ -651,8 +656,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			myinc = idata;
 
 			flag = flag_name_by_offset(seek);
-			if (flag == NULL && config.baddr)
-				flag = flag_name_by_offset(seek-config.baddr);
+			if (flag == NULL && config.vaddr)
+				flag = flag_name_by_offset(seek-config.vaddr);
 			if (!strnull(flag)) {
 				cons_printf("%s:\n", flag);
 #if 1
@@ -660,7 +665,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					if ((reflines) &&  (flags & RADIS_LINES))
 						code_lines_print(reflines, sk, 0);
 					if (flags & RADIS_SECTION) {
-						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						const char * flag ;
+						flag= get_section_name_at(seek-config.vaddr);
 						if (flag && *flag)
 							cons_printf("%s:", flag);
 					}
@@ -693,7 +699,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					if (flags & RADIS_RELADDR)
 						cons_printf("        ");
 					if (flags & RADIS_SECTION) {
-						const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+						const char * flag = get_section_name_at(seek-config.vaddr);
 						if (flag && *flag)
 							cons_printf("%s:", flag);
 					}
@@ -754,7 +760,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (flags & RADIS_RELADDR)
 							cons_printf("        ");
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+							const char * flag = get_section_name_at(seek-config.vaddr);
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}
@@ -788,7 +794,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			if (flags & RADIS_RELADDR)
 				cons_printf("        ");
 			if (flags & RADIS_SECTION) {
-				const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+				const char * flag = get_section_name_at(seek-config.vaddr);
 				if (flag && *flag)
 					cons_printf("%s:", flag);
 			}
@@ -854,12 +860,12 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				f = flag_by_offset( seek );
 				if (f != NULL)
 					flag = f->name;
-				//cons_printf("(%08x) ", seek-config.baddr);
+				//cons_printf("(%08x) ", seek-config.vaddr);
 				if (flag == NULL || !flag[0])
-					flag = flag_name_by_offset(seek -config.baddr);
+					flag = flag_name_by_offset(seek -config.vaddr);
 				//if (flag == NULL)
-				//	flag = flag_name_by_offset(seek +config.baddr);
-				//config.baddr?(config.seek+bytes-myinc-myinc):seek);
+				//	flag = flag_name_by_offset(seek +config.vaddr);
+				//config.vaddr?(config.seek+bytes-myinc-myinc):seek);
 				if (flag && flag[0]) {
 					sprintf(buf, " %%%ds:", show_nbytes);
 					if (strlen(flag)>show_nbytes) {
@@ -869,7 +875,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+							const char * flag = get_section_name_at(seek-config.vaddr);
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}
@@ -972,7 +978,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 			/* show references */
 			D if (aop.ref) {
-				if (string_flag_offset(buf, aop.ref-config.baddr));
+				if (string_flag_offset(buf, aop.ref-config.vaddr));
 					cons_printf(" ; %s",buf);
 			}
 
@@ -981,11 +987,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
+						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %d = %s", jump_n,buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if ((config.baddr && string_flag_offset(buf, aop.jump-config.baddr)) || string_flag_offset(buf, aop.jump))
+						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr)) || string_flag_offset(buf, aop.jump))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
@@ -1001,7 +1007,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (reflines && flags & RADIS_LINES)
 							code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
-							const char * flag = flag_get_here_filter(seek - config.baddr, "section.");
+							const char * flag = get_section_name_at(seek-config.vaddr);
 							if (flag && *flag)
 								cons_printf("%s:", flag);
 						}

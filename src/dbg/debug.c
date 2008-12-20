@@ -564,9 +564,16 @@ int debug_contu(const char *input)
 {
 	int is_user;
 
-	if (debug_cont_until(input))
-		return 0;
+	if (input) {
+		for(;*input==' ';input=input+1);
+		if (*input) {
+			eprintf("Stepping until %s...\n", input);
+			debug_cont_until(input);
+			return 0;
+		}
+	}
 
+	eprintf("Stepping until user code...\n");
 	radare_controlc();
 	ps.verbose = 0;
 	while(!config.interrupted && ps.opened && debug_step(1)) {
@@ -1014,7 +1021,7 @@ int debug_step(int times)
 			#endif
 			}
 
-			if ((off=(addr_t)arch_is_soft_stepoverable((const u8*)opcode))) {
+			if (config_get("dbg.stepo") && (off=(addr_t)arch_is_soft_stepoverable((const u8*)opcode))) {
 				debug_bp_set(NULL, pc+off, config_get_i("dbg.hwbp"));
 				debug_cont(0);
 				debug_bp_rm_addr(pc+off);

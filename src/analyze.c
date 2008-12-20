@@ -765,7 +765,7 @@ int analyze_function(u64 from, int recursive, int report)
 	char buf[1024];
 	/*--*/
 	u8 *bytes;
-	//u64 from = config.baddr + config.seek;
+	//u64 from = config.vaddr + config.seek;
 	u64 seek = from; // to place comments
 	u64 end  = 0;
 	int i, inc = 0;
@@ -781,7 +781,7 @@ int analyze_function(u64 from, int recursive, int report)
 		return -1;
 #if 0
 	struct data_t *d;
-	d = data_get(config.baddr+config.seek);
+	d = data_get(config.vaddr+config.seek);
 	if (d && d->type == DATA_FUN) {
 		//cons_printf("; already analyzed\n");
 	//	return 0;
@@ -795,7 +795,7 @@ int analyze_function(u64 from, int recursive, int report)
 
 	analyze_var_reset(); // ??? control recursivity here ??
 
-	prg = code_analyze(config.baddr + config.seek, 1024);
+	prg = code_analyze(config.vaddr + config.seek, 1024);
 	list_add_tail(&prg->list, &config.rdbs);
 
 	list_for_each(head, &(prg->blocks)) {

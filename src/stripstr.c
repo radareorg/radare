@@ -151,7 +151,7 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 				int len = strlen(str);
 				if (len>2) {
 					cons_printf("0x%08llx %3d %c %s\n",
-						(u64)config.baddr+ offset-matches, len, (unicode)?'U':'A', str);
+						(u64)config.vaddr+ offset-matches, len, (unicode)?'U':'A', str);
 				}
 				cons_flush();
 			}

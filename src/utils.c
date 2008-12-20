@@ -340,6 +340,8 @@ u64 get_offset(const char *orig)
 	if (arg[i]=='$') {
 		struct aop_t aop;
 		switch(arg[i+1]) {
+#if 0
+	// XXX already in ?? help ..not necesary here
 		case '?':
 			eprintf("Usage:\n");
 			eprintf(" $$  = current seek\n");
@@ -350,8 +352,9 @@ u64 get_offset(const char *orig)
 			eprintf(" $$e = end of basic block\n");
 			eprintf(" $$F = beggining of the function\n");
 			eprintf(" $$l = last seek done\n");
-			eprintf(" $${file.baddr} = get eval value\n");
+			eprintf(" $${io.vaddr} = get eval value\n");
 			break;
+#endif
 		case '$':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;
@@ -392,7 +395,7 @@ u64 get_offset(const char *orig)
 	} else {
 		flag = flag_get(arg);
 		if (flag)
-			return flag->offset; // - config.baddr;
+			return flag->offset; // - config.vaddr;
 	}
 #endif
 	if (arg[i] == 'x' && i>0 && arg[i-1]=='0') {
