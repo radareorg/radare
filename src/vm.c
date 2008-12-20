@@ -355,6 +355,13 @@ int vm_init(int init)
 #endif
 	case ARCH_X86:
 		//eprintf("VM: Initialized\n");
+		vm_op_add("mov", "$1=$2");
+		vm_op_add("lea", "$1=$2");
+		vm_op_add("add", "$1=$1+$2");
+		vm_op_add("sub", "$1=$1-$2");
+		vm_op_add("jmp", "eip=$1");
+		vm_op_add("call", "[esp]=eip+$$,esp=esp+4,eip=$1");
+		vm_op_add("ret", "eip=[esp],esp=esp-4");
 		vm_reg_add("eax", VMREG_INT32, 0);
 		vm_reg_add("ax", VMREG_INT16, 0);
 		vm_reg_alias("ax","ax=eax&0xffff", "eax=eax>16,eax=eax<16,eax=eax|ax");
@@ -809,7 +816,7 @@ int vm_op_eval(const char *str)
 					}
 					if (str[j]=='$') {
 						/* opcode size */
-						printf("opcode size\n");
+						printf("TODO: opcode size\n");
 					}
 					if (str[j]>='0' && str[j]<='9') {
 						const char *w = get0word(s,str[j]-'0');

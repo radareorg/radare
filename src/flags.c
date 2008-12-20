@@ -31,7 +31,7 @@
 struct list_head flags;
 static int flag_ptr = -1;
 
-#define FLAG_SPACES 20
+#define FLAG_SPACES 32
 // XXX optimize... FLAG SPACES MUST BE A LINKED LIST TOO!
 static struct flags_spaces_t {
 	const char *name;

@@ -1,5 +1,7 @@
 include ../config.mk
 
+CFLAGS+=-DUSE_RIO=${USE_RIO}
+
 # Compiler
 CC?=gcc
 CFLAGS+=-I../include -fPIC

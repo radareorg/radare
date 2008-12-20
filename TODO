@@ -22,7 +22,6 @@ TheBook
 * 'm' in visual should be used as mark like in vim
 * fer q libr.syscall suporti lectura dsd fitxers
 
-
 grep multiple strings:
   pdf ~call,ebp
 
