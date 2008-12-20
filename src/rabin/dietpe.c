@@ -141,6 +141,7 @@ int dietpe_get_arch(dietpe_bin *bin, char *str)
 				snprintf(str, PE_NAME_LENGTH, "alpha");
 				break;
 			case PE_IMAGE_FILE_MACHINE_ARM:
+			case PE_IMAGE_FILE_MACHINE_THUMB:
 				snprintf(str, PE_NAME_LENGTH, "arm");
 				break;
 			case PE_IMAGE_FILE_MACHINE_M68K:

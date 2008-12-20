@@ -51,6 +51,8 @@ ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 LANG_RUBY
 LANG_PYTHON
 
+CHKPRG INSTALL install
+
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac
 CHKVER vala-1.0 0.5.0

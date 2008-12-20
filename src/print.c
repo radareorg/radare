@@ -342,6 +342,7 @@ void print_mem_help()
 	" q - quadword (8 bytes)\n"
 	" p - pointer reference\n"
 	" x - 0x%%08x hexadecimal value\n"
+	" X - 0x%%08x hexadecimal value and flag (fd @ addr)\n"
 	" z - \\0 terminated string\n"
 	" Z - \\0 terminated wide string\n"
 	" s - pointer to string\n"

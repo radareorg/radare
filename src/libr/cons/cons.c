@@ -903,7 +903,7 @@ void r_cons_flush()
 				} else break;
 			}
 		} else {
-			if (grepline != -1) {
+			if (grepline != -1 || grepcounter || greptoken != -1) {
 				int len, line;
 				char *one = r_cons_buffer;
 				char *two;

@@ -478,7 +478,10 @@ CMD_DECL(analyze)
 	case 'v':
 		switch(input[1]) {
 		case 'e':
-			vm_eval(input+2);
+			if (input[2]=='\0')
+				cons_printf("Usage: \"ave [expression]\n"
+				"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
+			else vm_eval(input+2);
 			break;
 		case 'f':
 			if (input[2]=='\0')
@@ -487,7 +490,15 @@ CMD_DECL(analyze)
 			break;
 		case 'r':
 			if (input[2]=='?')
-				cons_printf("Usage: avr [reg|type]\n");
+				cons_printf(
+				"Usage: avr [reg|type]\n"
+				" avr+ eax int32  ; add register\n"
+				" avr- eax        ; remove register\n"
+				" \"avra al al=eax&0xff al=al&0xff,eax=eax>16,eax=eax<16,eax=eax|al\n"
+				"                 ; set register alias\n"
+				" avr eax         ; view register\n"
+				" avr eax=33      ; set register value\n"
+				"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			else vm_cmd_reg(input+2);
 			break;
 		case 'i':
@@ -496,17 +507,26 @@ CMD_DECL(analyze)
 		case '-':
 			vm_init(1);
 			break;
+		case 'o':
+			if (input[2]=='\0')
+				vm_op_list();
+			else if (input[2]=='?')
+				vm_cmd_op_help();
+			else vm_cmd_op(input+2);
+			break;
 		case '\0':
 		case '?':
-			cons_printf("Usage: av[eri] [arg]\n"
+			cons_printf("Usage: av[ier] [arg]\n"
 			" ave eax=33   ; evaluate expression in vm\n"
 			" avf file     ; evaluate expressions from file\n"
 			" avi          ; import register values from flags\n"
 			" avm          ; select MMU (default current one)\n"
+			" avo op expr  ; define new opcode (avo? for help)\n"
 			" avr          ; show registers\n"
 			" avx N        ; execute N instructions from cur seek\n"
 			" av-          ; restart vm using asm.arch\n"
-			" avr eax      ; show register eax\n");
+			" avr eax      ; show register eax\n"
+			"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			break;
 		case 'm':
 			eprintf("TODO\n");

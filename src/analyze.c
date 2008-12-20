@@ -716,7 +716,7 @@ struct vars_t {
 	int count;
 }; 
 
-#define VAR_MAX 64
+#define VAR_MAX 256
 struct vars_t vars[VAR_MAX];
 
 void analyze_var_reset()
@@ -737,7 +737,7 @@ int analyze_var_add(int type, int delta)
 		}
 	}
 	if (hole==-1) {
-		eprintf("No space left in var pool\n");
+		eprintf("analyze.c: No space left in var pool\n");
 		return -1;
 	}
 	vars[hole].type  = type;

@@ -18,6 +18,12 @@ struct vm_reg_t {
 	struct list_head list;
 };
 
+struct vm_op_t {
+	const char opcode[32];
+	const char code[1024];
+	struct list_head list;
+};
+
 struct vm_reg_type {
 	int type;
 	char *str;
@@ -42,6 +48,16 @@ struct vm_change_t {
 	u8 *data;
 	struct list_head list;
 };
+
+#if LIBR
+struct r_vm_t {
+	struct list_head vm_regs;
+	struct vm_cpu_t vm_cpu;
+	static u64 vm_stack_base = 0;
+	static u8 *vm_stack = NULL;
+	static struct list_head vm_mmu_cache;
+}
+#endif
 
 u64 vm_reg_get(const char *name);
 void vm_stack_push(u64 _val);

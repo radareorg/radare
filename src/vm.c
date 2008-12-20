@@ -23,10 +23,11 @@
 #include "list.h"
 #include "vm.h"
 
-struct list_head vm_regs;
-struct vm_cpu_t vm_cpu;
+static struct list_head vm_regs;
+static struct vm_cpu_t vm_cpu;
 static u64 vm_stack_base = 0;
 static u8 *vm_stack = NULL;
+static struct list_head vm_ops;
 static struct list_head vm_mmu_cache;
 
 struct vm_reg_type vm_reg_types[] = {
@@ -220,6 +221,7 @@ u64 vm_reg_get(const char *name)
 				u64 val;
 				rec = r;
 				vm_eval(r->get);
+				//vm_op_eval(r->get);
 				rec = NULL;
 				return r->value;
 			}
@@ -335,6 +337,7 @@ int vm_init(int init)
 	if (init) {
 		INIT_LIST_HEAD(&vm_mmu_cache);
 		INIT_LIST_HEAD(&vm_regs);
+		INIT_LIST_HEAD(&vm_ops);
 		memset(&vm_cpu, '\0', sizeof(struct vm_cpu_t));
 	}
 
@@ -570,7 +573,8 @@ int vm_eval_file(const char *str)
 			fgets(buf, 1023, fd);
 			if (*buf) {
 				buf[strlen(buf)-1]='\0';
-				vm_eval(buf);
+				//vm_eval(buf);
+				vm_op_eval(buf);
 			}
 		}
 		fclose(fd);
@@ -695,7 +699,8 @@ int vm_cmd_reg(const char *_str)
 			for(;str&&*str==' ';str=str+1);
 			ptr = strchr(str, '=');
 			if (ptr) {
-				vm_eval(str);
+				//vm_eval(str);
+				vm_op_eval(str);
 	#if 0
 				/* set register value */
 				ptr[0]='\0';
@@ -712,5 +717,100 @@ int vm_cmd_reg(const char *_str)
 			}
 		}
 	}
+	return 0;
+}
+
+int vm_op_add(const char *op, const char *str)
+{
+	struct vm_op_t *o;
+	o = (struct vm_op_t *)malloc(sizeof(struct vm_op_t));
+	strncpy(o->opcode, op, sizeof(o->opcode));
+	strncpy(o->code, str, sizeof(o->code));
+	list_add_tail(&(o->list), &vm_ops);
+	return 0;
+}
+
+int vm_op_eval(const char *str)
+{
+	char *p,*s;
+	int i,j,k,len = strlen(str)+256;
+	int nargs = 0;
+	char *arg0;
+
+	p = alloca(len);
+	s = alloca(len);
+	memcpy(p, str, len);
+	memcpy(s, str, len);
+
+	struct list_head *pos;
+	nargs = set0word(s);
+	arg0 = get0word(s,0);
+
+	list_for_each(pos, &vm_ops) {
+		struct vm_op_t *o = list_entry(pos, struct vm_op_t, list);
+		if (!strcmp(arg0, o->opcode)) {
+			for(j=k=0;str[j]!='\0';j++,k++) {
+				if (str[j]=='$') {
+					j++;
+					if (str[j]=='\0') {
+						fprintf(stderr, "invalid string\n");
+						return 0;
+					}
+					if (str[j]=='$') {
+						/* opcode size */
+						printf("opcode size\n");
+					}
+					if (str[j]>='0' && str[j]<='9') {
+						const char *w = get0word(s,str[j]-'0');
+						if (w != NULL) {
+							strcpy(p+k, w);
+							k += strlen(w)-1;
+						}
+					}
+				} else p[k] = str[j];
+			}
+			p[k]='\0';
+		}
+	}
+
+	return vm_eval(p);
+}
+
+int vm_op_list()
+{
+	struct list_head *pos;
+
+	cons_printf("oplist\n");
+	list_for_each(pos, &vm_ops) {
+		struct vm_op_t *o = list_entry(pos, struct vm_op_t, list);
+		cons_printf("%s = %s\n", o->opcode, o->code);
+	}
+	return 0;
+}
+
+int vm_cmd_op_help()
+{
+	cons_printf("avo [op] [expr]\n"
+	" \"avo call [esp]=eip+$$,esp=esp+4,eip=$1\n"
+	" \"avo jmp eip=$1\n"
+	" \"avo mov $1=$2\n"
+	"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
+}
+
+/* TODO : Allow to remove and so on */
+int vm_cmd_op(const char *op)
+{
+	char *cmd, *ptr;
+	int len = strlen(op)+1;
+	if (*op==' ')
+		op = op + 1;
+	cmd = alloca(len);
+	memcpy(cmd, op, len);
+	ptr = strchr(cmd, ' ');
+	if (ptr) {
+		ptr[0]='\0';
+		eprintf("vm: opcode '%s' added\n", cmd);
+		vm_op_add(cmd, ptr+1);
+	} else vm_cmd_op_help();
 	return 0;
 }
