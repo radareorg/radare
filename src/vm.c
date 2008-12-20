@@ -76,6 +76,14 @@ static u64 vm_get_value(const char *str)
 	u64 ret = 0LL;
 	for(;*str&&*str==' ';str=str+1);
 
+	if (str[0]=='$' && str[1]=='$') {
+		struct aop_t aop;
+		char w[32];
+		ret = vm_reg_get(vm_cpu.pc);
+		arch_aop(ret , config.block,&aop);
+		return aop.length;
+	}
+
 	if (str[0]=='0' && str[1]=='x')
 		sscanf(str, "0x%llx", &ret);
 	else
@@ -154,7 +162,7 @@ void vm_print(int type)
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		if (type == -1 || type == r->type)
-		printf(".%s\t%s = 0x%08llx\n",
+		cons_printf(".%s\t%s = 0x%08llx\n",
 			vm_reg_type(r->type), r->name,
 			(r->get!=NULL)?vm_reg_get(r->name):r->value);
 	}
@@ -186,19 +194,19 @@ int vm_mmu_cache_read(u64 addr, u8 *buf, int len)
 	return 0;
 }
 
-
 int vm_mmu_read(u64 off, u8 *data, int len)
 {
-	if (realio)
-		return radare_read_at(off, data, len);
-	return vm_mmu_cache_read(off, data, len);
+	if (!realio && vm_mmu_cache_read(off, data, len))
+		return len;
+	return radare_read_at(off, data, len);
 }
 
 int vm_mmu_write(u64 off, u8 *data, int len)
 {
-	if (realio)
-		return radare_write_at(off, data, len);
-	return vm_mmu_cache_write(off, data, len);
+	if (!realio)
+		return vm_mmu_cache_write(off, data, len);
+	printf("WIte¡\n");
+	return radare_write_at(off, data, len);
 }
 
 int vm_reg_add(const char *name, int type, u64 value)
@@ -222,10 +230,13 @@ struct vm_reg_t *rec = NULL;
 u64 vm_reg_get(const char *name)
 {
 	struct list_head *pos;
+	int len = strlen(name);
+	if (name[len-1]==']')
+		len--;
 
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
-		if (!strcmp(name, r->name)) {
+		if (!strncmp(name, r->name, len)) {
 			if (rec==NULL && r->get != NULL) {
 				u64 val;
 				rec = r;
@@ -277,6 +288,8 @@ int vm_import()
 {
 	struct list_head *pos;
 
+	printf("MMU: %s\n" , realio?"real":"cached");
+	eprintf("Importing register values\n");
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		r->value = get_offset(r->name); // XXX doesnt work for eflags and so
@@ -330,7 +343,7 @@ void vm_stack_push(u64 _val)
 void vm_stack_pop(const char *reg)
 {
 	u32 val = 0;
-	if (vm_mmu_cache_read(vm_reg_get(vm_cpu.sp), &val, 4))
+	if (vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4))
 		return;
 //printf("POP (%s)\n", reg);
 	vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4);
@@ -371,8 +384,11 @@ int vm_init(int init)
 		vm_op_add("add", "$1=$1+$2");
 		vm_op_add("sub", "$1=$1-$2");
 		vm_op_add("jmp", "eip=$1");
-		vm_op_add("call", "[esp]=eip+$$,esp=esp+4,eip=$1");
-		//vm_op_add("ret", "eip=[esp],esp=esp-4");
+		vm_op_add("push", "esp=esp-4,[esp]=$1");
+		vm_op_add("pop", "$1=[esp],esp=esp+4");
+		vm_op_add("call", "esp=esp-4,[esp]=eip+$$,eip=$1");
+		vm_op_add("ret", "eip=[esp],esp=esp+4");
+
 		vm_reg_add("eax", VMREG_INT32, 0);
 		vm_reg_add("ax", VMREG_INT16, 0);
 		vm_reg_alias("ax","ax=eax&0xffff", "eax=eax>16,eax=eax<16,eax=eax|ax");
@@ -451,6 +467,7 @@ int vm_eval_eq(const char *str, const char *val)
 		// USE MMU
 		// [foo] = 33, [reg] = 33
 		if (*val=='[') {
+			// [0x804800] = [0x30480]
 			u8 data[8];
 			u64 off = vm_get_math(val+1);
 			p = strchr(val+1,':');
@@ -477,15 +494,38 @@ int vm_eval_eq(const char *str, const char *val)
 					vm_mmu_read(off, buf, 4);
 					vm_mmu_write(off, buf, 4);
 				}
-				
-			} else vm_mmu_read(off, (u8*)&_int32, 4);
-			off = vm_get_math(str+1);
-			vm_mmu_write(off, (u8*)&_int32, 4);
+			} else {
+				vm_mmu_read(off, (u8*)&_int32, 4);
+				//off = vm_get_math(val);
+				vm_mmu_write(off, (const u8*)&_int32, 4);
+			}
 		} else {
+			// [0x804800] = eax
 			// use ssssskcvtgvmu
 			u64 off = vm_get_math(str+1);
+			// XXX support 64 bits here
 			u32 v = (u32)vm_get_math(val); // TODO control endian
-			vm_mmu_write(off, (u8*)&v, 4);
+			p = strchr(str+1,':');
+			eprintf("   ;==> [0x%08llx] = %x  ((%s))\n", off, v, str+1);
+
+			if (p) {
+				int size = atoi(val+1);
+				off = vm_get_math(p+1);
+				printf(" write size: %d\n", size);
+				switch(size) {
+				case 8: vm_mmu_write(off, buf, 1);
+					break;
+				case 16: vm_mmu_write(off, buf, 2);
+					break;
+				case 64: vm_mmu_write(off, buf, 8);
+					break;
+				default:
+					vm_mmu_write(off, buf, 4);
+				}
+			} else {
+				printf("   ; write %x @ 0x%08llx\n", v, off);
+				vm_mmu_write(off, (u8*)&v, 4);
+			}
 		}
 	} else {
 		// USE REG
@@ -532,7 +572,8 @@ int vm_eval_single(const char *str)
 	char buf[128];
 	int i, len;
 
-	//eprintf("EVAL(%s)\n", str);
+//	if (log)
+	eprintf("   ; %s\n", str);
 	for(;str&&str[0]==' ';str=str+1);
 	len = strlen(str)+1;
 	ptr = alloca(len);
@@ -564,7 +605,20 @@ int vm_eval_single(const char *str)
 		}
 		eq[0]='=';
 	} else {
-		printf("PTR(%s)\n", ptr);
+		eprintf("Unknown opcode\n");
+		if (!memcmp(ptr, "if ", 3)) {
+			if (vm_reg_get(ptr+3)!=0)
+				return -1;
+		} else
+		if (!memcmp(ptr, "ifnot ", 6)) {
+			if (vm_reg_get(ptr+6)==0)
+				return -1;
+		} else
+		if (!memcmp(ptr, "cmp ", 4)) {
+			vm_eval_cmp(str+5);
+		} else
+		return 0;
+
 		if (!memcmp(ptr, "syscall", 6)) {
 			eprintf("TODO: syscall interface not yet implemented\n");
 		} else
@@ -582,13 +636,6 @@ int vm_eval_single(const char *str)
 		if (!memcmp(ptr, "jnz ", 4)){
 			if (vm_reg_get(ptr+4)==0)
 				vm_reg_set(vm_cpu.pc, vm_get_value(ptr+4));
-		} else
-		if (!memcmp(ptr, "ifnot ", 6)) {
-			if (vm_reg_get(ptr+6)==0)
-				return -1;
-		} else
-		if (!memcmp(ptr, "cmp ", 4)) {
-			vm_eval_cmp(str+5);
 		} else
 		if (!memcmp(ptr, "push ", 5)) {
 			vm_stack_push(str+5);
@@ -612,6 +659,7 @@ int vm_eval(const char *str)
 
 	ptr = alloca(len);
 	memcpy(ptr, str, len);
+	vm_mmu_real(config_get_i("vm.realio"));
 
 #if 0
 	.int32 eax alias-get alias-set
@@ -665,23 +713,27 @@ int vm_emulate(int n)
 	struct aop_t aop;
 
 	printf("Emulating %d opcodes\n", n);
-	radare_cmd("avi", 0);
+	///vm_init(1);
+	vm_mmu_real(config_get_i("vm.realio"));
+	vm_import();
 	config_set("asm.pseudo", "true");
 	config_set("asm.syntax", "intel");
 	config_set("asm.profile", "simple");
-	config_set("scr.color", "false");
 	while(n--) {
 		pc = vm_reg_get(vm_cpu.pc);
 	udis_init();
 		udis_set_pc(pc);
 		vm_mmu_read(pc, buf, 32);
+//eprintf("(%02x %02x)\n",  buf[0], buf[1]);
 		radare_cmdf("pd 1 @ 0x%08llx", pc);
 		pas_aop(config.arch, pc, buf, 32, &aop, str, 1);
+
 		arch_aop(pc, buf, &aop);
 		opsize = aop.length;
+//eprintf("%llx +  %d (%02x %02x)\n", pc, opsize, buf[0], buf[1]);
 		//printf("=> 0x%08llx '%s' (%d)\n", vm_reg_get(vm_cpu.pc), str, opsize);
 		vm_reg_set(vm_cpu.pc, vm_reg_get(vm_cpu.pc)+opsize);
-		vm_eval(str);
+		vm_op_eval(str);
 	}
 	config_set("asm.pseudo", op?"true":"false");
 	
@@ -693,6 +745,29 @@ int vm_emulate(int n)
 // TODO: perform asm-to-pas-eval
 // TODO: evaluate string
 	return n;
+}
+
+#define ALEN 5
+int vm_reg_alias_list()
+{
+	struct vm_reg_t *reg;
+	struct list_head *pos;
+	int len,space;
+
+	eprintf("Register alias:\n");
+	list_for_each(pos, &vm_regs) {
+		reg= list_entry(pos, struct vm_reg_t, list);
+		if (reg->get == NULL && reg->set == NULL)
+			continue;
+		len = strlen(reg->name)+1;
+		cons_printf("%s:", reg->name);
+		if (len>=ALEN) {
+			space = ALEN;
+			cons_newline();
+		} else space = ALEN-len;
+		cons_printf("%*cget = %s\n%*cset = %s\n", space, ' ', reg->get, ALEN,' ', reg->set);
+	}
+	return 0;
 }
 
 int vm_reg_alias(const char *name, const char *get, const char *set)
@@ -746,7 +821,7 @@ int vm_cmd_reg(const char *_str)
 						vm_reg_alias(str+2, get, set);
 					}
 				}
-			}
+			} else vm_reg_alias_list();
 			break;
 		case '+':
 			// add register
@@ -809,6 +884,7 @@ int vm_op_eval(const char *str)
 	int nargs = 0;
 	char *arg0;
 
+//	eprintf("vmopeval(%s)\n", str);
 	p = alloca(len);
 	s = alloca(len);
 	memcpy(p, str, len);
@@ -821,6 +897,9 @@ int vm_op_eval(const char *str)
 	list_for_each(pos, &vm_ops) {
 		struct vm_op_t *o = list_entry(pos, struct vm_op_t, list);
 		if (!strcmp(arg0, o->opcode)) {
+			str = o->code;
+			p = alloca(strlen(o->code)+128);
+			strcpy(p,str);
 			for(j=k=0;str[j]!='\0';j++,k++) {
 				if (str[j]=='$') {
 					j++;
@@ -830,7 +909,14 @@ int vm_op_eval(const char *str)
 					}
 					if (str[j]=='$') {
 						/* opcode size */
-						printf("TODO: opcode size\n");
+						struct aop_t aop;
+						char w[32];
+						arch_aop(config.seek, config.block,&aop);
+						sprintf(w, "%d", aop.length);
+						if (w[0]) {
+							strcpy(p+k, w);
+							k += strlen(w)-1;
+						}
 					}
 					if (str[j]>='0' && str[j]<='9') {
 						const char *w = get0word(s,str[j]-'0');
@@ -852,7 +938,7 @@ int vm_op_list()
 {
 	struct list_head *pos;
 
-	cons_printf("oplist\n");
+	eprintf("Oplist\n");
 	list_for_each(pos, &vm_ops) {
 		struct vm_op_t *o = list_entry(pos, struct vm_op_t, list);
 		cons_printf("%s = %s\n", o->opcode, o->code);

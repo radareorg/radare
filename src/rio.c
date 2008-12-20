@@ -91,7 +91,7 @@ int radare_write_mask_str(const char *str)
 	return radare_write_mask(mask, len);
 }
 
-int radare_write_at(u64 offset, u8 *data, int len)
+int radare_write_at(u64 offset, const u8 *data, int len)
 {
 	int i;
 	u64 cur = config.seek;

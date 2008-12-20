@@ -118,7 +118,7 @@ int radare_compare(unsigned char *f, unsigned char *d, int len);
 int search_range(char *range);
 int search_from_file(char *file);
 int radare_read_at(u64 offset, unsigned char *data, int len);
-int radare_write_at(u64 offset, unsigned char *data, int len);
+int radare_write_at(u64 offset, const u8 *data, int len);
 int radare_write(const char *arg, int mode);
 int radare_write_xor(const char *arg);
 void radare_poke(const char *arg);

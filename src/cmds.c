@@ -526,6 +526,9 @@ CMD_DECL(analyze)
 			" avx N        ; execute N instructions from cur seek\n"
 			" av-          ; restart vm using asm.arch\n"
 			" avr eax      ; show register eax\n"
+			" avra         ; show register aliases\n"
+			" avra al eax=0xff ; define 'get' alias for register 'al'\n"
+			" e vm.realio  ; if true enables real write changes\n"
 			"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			break;
 		case 'm':
