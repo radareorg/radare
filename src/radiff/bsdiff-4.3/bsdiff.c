@@ -213,7 +213,7 @@ int main(int argc,char *argv[])
 	BZFILE * pfbz2;
 	int bz2err;
 
-	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile\n",argv[0]);
+	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile",argv[0]);
 
 	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
 		that we never try to malloc(0) and get a NULL pointer */
