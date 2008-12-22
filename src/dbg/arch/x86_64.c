@@ -493,8 +493,26 @@ int arch_print_fpregisters(int rad, const char *mask)
 #if __linux__
 #warning THIS CODE IS BUGGY! LINUX AND GNU SUX A LOT
 	ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, &regs);
-	for(i=0;i<8;i++)
-		cons_printf("  st%d %f\n", i, regs.st_space[i]);
+
+	cons_printf(" cwd = 0x%04lx  ; control   ", regs.cwd);
+	cons_printf(" swd = 0x%04lx  ; status\n", regs.swd);
+	cons_printf(" ftw = 0x%04lx              ", regs.ftw); /* For The Winners */
+	cons_printf(" fop = 0x%04lx\n", regs.fop);
+	cons_printf(" rip = 0x%016llx  ", regs.rip);
+	cons_printf(" rdp = 0x%016llx\n", regs.rdp);
+	cons_printf(" mxcsr = 0x%08lx        ", regs.mxcsr);
+	cons_printf(" mxcr_mask = 0x%08lx\n", regs.mxcr_mask);
+
+#define FADDR ((double*)&regs.st_space[i*4])
+
+	for(i=0;i<8;i++) {
+		u16 *a = (u16*)&regs.xmm_space;
+		a = a + (i * 4);
+
+		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);
+		cons_printf(" st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+	}
+
 #else
 	ret = ptrace(PTRACE_GETFPREGS, ps.tid, &regs, sizeof(regs_t));
 	for(i=0;i<8;i++)
