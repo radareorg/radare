@@ -148,6 +148,7 @@ int main(int argc, char **argv, char **envp)
 				sprintf(buf2, "pid://%d", pid);
 				config.file = strdup(buf2);
 			} else {
+#if DEBUGGER
 				/* by program path */
 				for(c=optind;argv[c];c++) {
 					ps.argv[c-optind] = argv[c];
@@ -158,6 +159,9 @@ int main(int argc, char **argv, char **envp)
 				ps.args = strdup(buf);
 				sprintf(buf2, "dbg://%s", buf);
 				config.file = strdup(buf2);
+#else
+				eprintf("TODO: Needs debugger\n");
+#endif
 			}
 		}
 	}

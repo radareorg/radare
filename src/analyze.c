@@ -778,7 +778,7 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 
 	from += config.vaddr-config.paddr;
-printf("ANAL FROM (%llx)\n", from);
+eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
 		return -1;
 #if 0

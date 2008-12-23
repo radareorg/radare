@@ -30,7 +30,7 @@
 #endif
 
 #if __linux__
-#include <asm/ptrace.h>
+//#include <asm/ptrace.h>
 #endif
 #include <unistd.h>
 #include "signals.h"

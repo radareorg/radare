@@ -29,7 +29,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/ptrace.h>
-#include <asm/ptrace.h>
+//#include <asm/ptrace.h>
 #include <sys/procfs.h>
 #include <sys/syscall.h>
 
@@ -233,11 +233,75 @@ int arch_restore_registers()
 
 	return;
 }
+extern unsigned char *arm_bps[];
 
 int arch_mprotect(u64 addr, unsigned int size, int perms)
 {
-	fprintf(stderr, "TODO: arch_mprotect\n");
-	return 0;
+#if __APPLE__
+	/* OSX: Apple Darwin */
+	debug_os_mprotect(addr, size, perms);
+#else
+#if __linux__ || __BSD__
+	elf_gregset_t reg, reg_saved;
+        int     status;
+	u8 buf[4];
+        u8 bak[8];
+        int   ret = -1;
+
+        /* save old registers */
+        debug_getregs(ps.tid, &reg_saved);
+        memcpy(&reg, &reg_saved, sizeof(reg));
+
+	//CPU_ARG0(reg) = 0x7d; // ??? SEGUR ???
+        CPU_ARG0(reg) = (int)addr;
+        CPU_ARG1(reg) = size;
+        CPU_ARG2(reg) = perms;
+
+#if __BSD__
+	/* IS THIS OK ? */
+	CPU_SP(reg) += 4;
+	debug_write_at(ps.tid, &(CPU_ARG0(reg)), 4, CPU_SP(reg));
+#endif
+        CPU_PC(reg) = CPU_SP(reg) - 4;
+
+	/* read stack values */
+	debug_read_at(ps.tid, bak, 8, CPU_PC(reg));
+
+        /* write syscall interrupt code */
+	if (config_get("cfg.bigendian")) {
+		memcpy(buf, SYSCALL_OPS, 4);
+		buf[3] = 0x7d; // SYSCALL HERE
+	} else {
+		memcpy(buf, SYSCALL_OPS_little, 4);
+		buf[0] = 0x7d; // SYSCALL HERE
+	}
+	debug_write_at(ps.tid, (long *)SYSCALL_OPS_little, 4, CPU_PC(reg));
+	debug_write_at(ps.tid, (long *)arm_bps[0], 4, CPU_PC(reg)+4);
+
+        /* set new registers value */
+        debug_setregs(ps.tid, &reg);
+
+        /* continue */
+        debug_contp(ps.tid);
+
+        /* wait to stop process */
+        waitpid(ps.tid, &status, 0);
+	if(WIFSTOPPED(status)) {
+        	/* get new registers value */
+        	debug_getregs(ps.tid, &reg);
+        	/* get return code */
+        	ret = (int)CPU_RET(reg);
+	}
+
+        /* restore memory */
+	debug_write_at(ps.tid, (long *)bak, 8, CPU_SP(reg_saved) - 4);
+
+        /* restore registers */
+        debug_setregs(ps.tid, &reg_saved);
+
+	return ret;
+#endif
+#endif
 }
 
 int arch_is_soft_stepoverable(const unsigned char *opcode)
@@ -263,13 +327,16 @@ int arch_call(const char *arg)
    >  * `xregset' for any "extra" registers.
 #endif
 
+#define ARM_pc 15
+#define ARM_lr 14
 int arch_ret()
 {
 #define uregs regs
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
-	ARM_pc = ARM_lr;
+	regs[ARM_pc]=regs[ARM_lr];
+	//ARM_pc = ARM_lr;
 	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 	return ARM_lr;
 }
@@ -279,7 +346,7 @@ int arch_jmp(u64 ptr)
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
-	ARM_pc = ptr;
+	regs[ARM_pc]=ptr;
 	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 	return 0;
 }
@@ -295,28 +362,73 @@ u64 arch_pc(int tid)
 int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
-	elf_gregset_t regs;
 
 	if (ps.opened == 0)
 		return 0;
 
-	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
-	if (ret < 0) return 1;
+	if (!strcmp(reg, "cpsr"))
+		reg = "r16";
+	else
+	if (!strcmp(reg, "pc"))
+		reg = "r15";
+	else
+	if (!strcmp(reg, "lr"))
+		reg = "r14";
+	else
+	if (!strcmp(reg, "sp"))
+		reg = "r13";
+	else
+	if (!strcmp(reg, "ip"))
+		reg = "r12";
 
-	ret = atoi(reg+1);
-	if (ret > 17 || ret < 0) {
-		eprintf("Invalid register\n");
-	}
-	regs[atoi(reg+1)] = (int)get_offset(value);
-
-	ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
+	if (*reg=='r') {
+		elf_gregset_t regs;
+		ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
+		if (ret < 0) return 1;
+		ret = atoi(reg+1);
+		if (ret > 17 || ret < 0) {
+			eprintf("Invalid register\n");
+		} else regs[ret] = (int)get_offset(value);
+		ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
+	} else
+	if (*reg=='f') {
+		unsigned long long fregs[8];
+		ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, &fregs);
+		if (ret < 0) return 1;
+		ret = atoi(reg+1);
+		if (ret > 7|| ret < 0) {
+			eprintf("Invalid register\n");
+		} else fregs[ret] = get_offset(value);
+		ret = ptrace(PTRACE_SETFPREGS, ps.tid, NULL, &fregs);
+	} else
+		eprintf("Invalid register name. Try r## or f##\n");
 
 	return 0;
 }
 
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	eprintf("TODO\n");
+	unsigned long long fregs[8];
+	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, &fregs);
+	if (rad) {
+		for (i=0;i<8;i++)
+			cons_printf("f f%d @ 0x%08llx\n", fregs[i]);
+	} else {
+		for (i=0;i<8;i++)
+			cons_printf(" f%d @ 0x%08llx\n", fregs[i]);
+	}
+#if 0
+	/* TODO: fps ? */
+f0             0        (raw 0x000000000000000000000000)
+f1             0        (raw 0x000000000000000000000000)
+f2             0        (raw 0x000000000000000000000000)
+f3             0        (raw 0x000000000000000000000000)
+f4             0        (raw 0x000000000000000000000000)
+f5             0        (raw 0x000000000000000000000000)
+f6             0        (raw 0x000000000000000000000000)
+f7             0        (raw 0x000000000000000000000000)
+fps            0x0      0
+#endif
 	return 0;
 }
 
@@ -438,8 +550,7 @@ int arch_print_registers(int rad, const char *mask)
 	if (memcmp(&cregs,&regs, sizeof(elf_gregset_t))) {
 		memcpy(&oregs, &cregs, sizeof(elf_gregset_t));
 		memcpy(&cregs, &regs, sizeof(elf_gregset_t));
-	} else
-		memcpy(&cregs, &regs, sizeof(elf_gregset_t));
+	} else memcpy(&cregs, &regs, sizeof(elf_gregset_t));
 
 	return 0;
 }
@@ -629,4 +740,5 @@ u64 get_reg(const char *reg)
 		if (r<0)r = 0;
 		return regs[r];
 	}
+	return 0LL;
 }

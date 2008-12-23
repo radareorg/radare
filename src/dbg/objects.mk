@@ -11,6 +11,9 @@ endif
 ifeq ($(CPU),i86pc)
 CPU=i386
 endif
+ifeq ($(CPU),armv5tejl)
+CPU=arm
+endif
 
 
 ifeq ($(W32),1)

@@ -536,15 +536,17 @@ static int bfdbg_plugin_init()
 	return bfvm_init(0xFFFF, 1);
 }
 
+#if  0
 struct debug_t bfdbgt =  {
   /* TODO */
 };
+#endif
 
 plugin_t bfdbg_plugin = {
 	.name        = "bfdbg",
 	.desc        = "brainfuck debugger",
 	.init        = bfdbg_plugin_init,
-	.debug       = &bfdbgt,
+	.debug       = NULL, //&bfdbgt,
 	.system      = bfdbg_system,
 	.widget      = NULL,
 	.handle_fd   = bfdbg_handle_fd,
