@@ -163,8 +163,14 @@ int main(int argc,char * argv[])
 
 		/* Add old data to diff string */
 		for(i=0;i<ctrl[0];i++)
-			if((oldpos+i>=0) && (oldpos+i<oldsize))
+			if((oldpos+i>=0) && (oldpos+i<oldsize)) {
+				printf("0x%08x %02x ", oldpos+i, old[oldpos+i]);
+				if (new[newpos+i]==0)
+					printf("=");
+				else printf("|");
 				new[newpos+i]+=old[oldpos+i];
+				printf(" %02x %08x\n", new[newpos+i], newpos+i);
+			}
 
 		/* Adjust pointers */
 		newpos+=ctrl[0];
@@ -176,6 +182,9 @@ int main(int argc,char * argv[])
 
 		/* Read extra string */
 		lenread = BZ2_bzRead(&ebz2err, epfbz2, new + newpos, ctrl[1]);
+		for(i=0;i<ctrl[1];i++)
+				printf("              > %02x %08x\n", new[newpos+i], newpos+i);
+
 		if ((lenread < ctrl[1]) ||
 		    ((ebz2err != BZ_OK) && (ebz2err != BZ_STREAM_END)))
 			errx(1, "Corrupt patch\n");
