@@ -48,6 +48,17 @@ int vm_mmu_real(int set)
 	return realio = set;
 }
 
+void vm_reg_type_list()
+{
+	struct vm_reg_type *p = vm_reg_types;
+	while(p) {
+		if (p->str==NULL)
+			break;
+		cons_printf(" .%s\n", p->str);
+		p++;
+	}
+}
+
 static char *unkreg="(unk)";
 const char *vm_reg_type(int type)
 {
@@ -826,6 +837,9 @@ int vm_cmd_reg(const char *_str)
 					}
 				}
 			} else vm_reg_alias_list();
+			break;
+		case 't':
+			vm_reg_type_list();
 			break;
 		case '+':
 			// add register

@@ -498,6 +498,7 @@ CMD_DECL(analyze)
 				"                 ; set register alias\n"
 				" avr eax         ; view register\n"
 				" avr eax=33      ; set register value\n"
+				" avrt            ; list valid register types\n"
 				"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			else vm_cmd_reg(input+2);
 			break;
@@ -528,6 +529,7 @@ CMD_DECL(analyze)
 			" avr eax      ; show register eax\n"
 			" avra         ; show register aliases\n"
 			" avra al eax=0xff ; define 'get' alias for register 'al'\n"
+			" avrt         ; list valid register types\n"
 			" e vm.realio  ; if true enables real write changes\n"
 			"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			break;
