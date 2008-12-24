@@ -1759,6 +1759,8 @@ CMD_DECL(write)
 				eprintf("Usage: 'wo%c 00 11 22'\n",input[1]);
 				return 0;
 			}
+		case '2':
+		case '4':
 			ret = radare_write_op(input+3, input[1]);
 			break;
 		case '\0':
@@ -1769,15 +1771,17 @@ CMD_DECL(write)
 			"Example: wox 90    ; xor cur block with 90\n"
 			"Example: woa 02 03 ; add 2, 3 to all bytes of cur block\n"
 			"Supported operations:\n"
-			"  woa  addition        +=\n"
-			"  wos  substraction    -=\n"
-			"  wom  multiply        *=\n"
-			"  wod  divide          /=\n"
-			"  wox  xor             ^=\n"
-			"  woo  or              |=\n"
-			"  woA  and             &=\n"
-			"  wor  shift right    >>=\n"
-			"  wol  shift left     <<=\n"
+			"  woa  addition            +=\n"
+			"  wos  substraction        -=\n"
+			"  wom  multiply            *=\n"
+			"  wod  divide              /=\n"
+			"  wox  xor                 ^=\n"
+			"  woo  or                  |=\n"
+			"  woA  and                 &=\n"
+			"  wor  shift right         >>=\n"
+			"  wol  shift left          <<=\n"
+			"  wo2  2 byte endian swap  2=\n"
+			"  wo4  4 byte endian swap  4=\n"
 			);
 			break;
 		}

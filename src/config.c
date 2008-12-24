@@ -1012,6 +1012,7 @@ void config_init(int first)
 		config_set("scr.seek", "eip");
 	node = config_set("scr.color", (config.color)?"true":"false");
 	node->callback = &config_color_callback;
+	config_set("scr.grephigh", "");
 	node = config_set("scr.tee", "");
 	node->callback = &config_teefile_callback;
 	node = config_set("scr.buf", "false");

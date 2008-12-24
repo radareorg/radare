@@ -133,19 +133,37 @@ int radare_write_op(const char *arg, char op)
 	memcpy(buf, config.block, config.block_size);
 	len = hexstr2binstr(arg, (unsigned char *)str);
 
-	for(i=j=0;i<config.block_size;i++) {
-		switch(op) {
-		case 'x': buf[i] ^= str[j]; break;
-		case 'a': buf[i] += str[j]; break;
-		case 's': buf[i] -= str[j]; break;
-		case 'm': buf[i] *= str[j]; break;
-		case 'd': buf[i] /= str[j]; break;
-		case 'r': buf[i] >>= str[j]; break;
-		case 'l': buf[i] <<= str[j]; break;
-		case 'o': buf[i] |= str[j]; break;
-		case 'A': buf[i] &= str[j]; break;
+	switch(op) {
+	case '2':
+	case '4':
+		op-='0';
+		for(i=0;i<config.block_size;i+=op) {
+			/* endian swap */
+			u8 tmp = buf[i];
+			buf[i]=buf[i+3];
+			buf[i+3]=tmp;
+			if (op==4) {
+				tmp = buf[i+1];
+				buf[i+1]=buf[i+2];
+				buf[i+2]=tmp;
+			}
 		}
-		j++; if (j>=len) j=0; /* cyclic key */
+		break;
+	default:
+		for(i=j=0;i<config.block_size;i++) {
+			switch(op) {
+			case 'x': buf[i] ^= str[j]; break;
+			case 'a': buf[i] += str[j]; break;
+			case 's': buf[i] -= str[j]; break;
+			case 'm': buf[i] *= str[j]; break;
+			case 'd': buf[i] /= str[j]; break;
+			case 'r': buf[i] >>= str[j]; break;
+			case 'l': buf[i] <<= str[j]; break;
+			case 'o': buf[i] |= str[j]; break;
+			case 'A': buf[i] &= str[j]; break;
+			}
+			j++; if (j>=len) j=0; /* cyclic key */
+		}
 	}
 
 	ret = radare_write_at(config.seek, buf, config.block_size);

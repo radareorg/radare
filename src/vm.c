@@ -79,9 +79,13 @@ static u64 vm_get_value(const char *str)
 	if (str[0]=='$' && str[1]=='$') {
 		struct aop_t aop;
 		char w[32];
-		ret = vm_reg_get(vm_cpu.pc);
-		arch_aop(ret , config.block,&aop);
-		return aop.length;
+		if (str[2]=='$') { // $$$
+			ret = vm_reg_get(vm_cpu.pc);
+			arch_aop(ret , config.block,&aop);
+			return aop.length;
+		} else { // $$
+			return config.seek;
+		}
 	}
 
 	if (str[0]=='0' && str[1]=='x')
@@ -909,13 +913,23 @@ int vm_op_eval(const char *str)
 					}
 					if (str[j]=='$') {
 						/* opcode size */
-						struct aop_t aop;
-						char w[32];
-						arch_aop(config.seek, config.block,&aop);
-						sprintf(w, "%d", aop.length);
-						if (w[0]) {
-							strcpy(p+k, w);
-							k += strlen(w)-1;
+						if (str[j+1]=='$') {
+							struct aop_t aop;
+							char w[32];
+							j++;
+							arch_aop(config.seek, config.block,&aop);
+							sprintf(w, "%d", aop.length);
+							if (w[0]) {
+								strcpy(p+k, w);
+								k += strlen(w)-1;
+							}
+						} else {
+							char w[32];
+							sprintf(w, "0x%08llx", config.seek);
+							if (w[0]) {
+								strcpy(p+k, w);
+								k += strlen(w)-1;
+							}
 						}
 					}
 					if (str[j]>='0' && str[j]<='9') {

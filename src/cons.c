@@ -741,12 +741,20 @@ static void palloc(int moar)
 
 static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;
+static char *grephigh = NULL;
 
 void cons_grep(const char *str)
 {
-	char *ptr, *ptr2, *ptr3;
+	char *ptr, *ptr2, *ptr3, *ptr4;
 	grepcounter = 0;
+
 	/* set grep string */
+	greptoken = -1;
+	grepline = -1;
+	efree(&grepstr);
+	efree(&grephigh);
+	grephigh = strdup(config_get("scr.grephigh"));
+
 	if (str != NULL && *str) {
 		if (*str == '!') {
 			grepneg = 1;
@@ -761,7 +769,12 @@ void cons_grep(const char *str)
 
 		ptr3 = strchr(ptr, '[');
 		ptr2 = strchr(ptr, '#');
+		ptr4 = strchr(ptr, '*');
 
+		if (ptr4) {
+			ptr4[0]='\0';
+			grephigh = estrdup(grephigh, ptr4+1);
+		}
 		if (ptr3) {
 			ptr3[0]='\0';
 			greptoken = get_offset(ptr3+1);
@@ -776,7 +789,49 @@ void cons_grep(const char *str)
 		greptoken = -1;
 		grepline = -1;
 		efree(&grepstr);
+		efree(&grephigh);
 	}
+}
+
+char *str_replace(char *str, char *from, char *to)
+{
+	char *ostr = str;
+	char *ofrom = from;
+	char *p, *tstr;
+	int len, olen = strlen(str);
+	int flen = strlen(from);
+	int tlen = strlen(to);
+	int ftdelta = tlen-flen;
+	while(*str) {
+		if (*str == *from) {
+			from = from +1;
+		} else {
+			from = ofrom;
+		}
+		if (*from == '\0') {
+			str = str - strlen(ofrom);
+			tstr = str;
+			/* realloc */
+			if (flen > tlen) {
+				strcpy(str+tlen, str+flen);
+				memcpy(str, to, tlen);
+			} else {
+				int strdelta = str-ostr;
+				len = olen;
+				olen += flen+tlen;
+				ostr = realloc(ostr, olen);
+				str = ostr+strdelta;
+				for(p=ostr+len; p>str;p=p-1) {
+					p[ftdelta] = *p;
+				}
+				memcpy(str, to, tlen);
+				str =tstr+flen;
+			}
+			from = ofrom;
+		}
+		str = str+1;
+	}
+	return ostr;
 }
 
 void cons_flush()
@@ -788,6 +843,23 @@ void cons_flush()
 
 	if (cons_noflush)
 		return;
+
+	if (grephigh == NULL) {
+		grephigh = config_get("scr.grephigh");
+		if (grephigh &&*grephigh) {
+			char *new, *old;
+			char bat[64];
+			sprintf(bat, "\x1b[7m%s\x1b[0m", grephigh);
+			//sprintf(bat, "**");
+			
+			old = cons_buffer;
+			cons_buffer = str_replace(cons_buffer, grephigh, bat);
+			//new = strsub(strdup(cons_buffer), grephigh, bat, 1);
+			//cons_buffer = new;
+			//free(cons_buffer);
+		}
+		grephigh = NULL;
+	}
 
 	if (!strnull(cons_buffer)) {
 		char *file = cons_filterline;
