@@ -390,7 +390,7 @@ int vm_init(int init)
 		vm_op_add("jmp", "eip=$1");
 		vm_op_add("push", "esp=esp-4,[esp]=$1");
 		vm_op_add("pop", "$1=[esp],esp=esp+4");
-		vm_op_add("call", "esp=esp-4,[esp]=eip+$$,eip=$1");
+		vm_op_add("call", "esp=esp-4,[esp]=eip+$$$,eip=$1");
 		vm_op_add("ret", "eip=[esp],esp=esp+4");
 
 		vm_reg_add("eax", VMREG_INT32, 0);
@@ -963,7 +963,7 @@ int vm_op_list()
 int vm_cmd_op_help()
 {
 	cons_printf("avo [op] [expr]\n"
-	" \"avo call [esp]=eip+$$,esp=esp+4,eip=$1\n"
+	" \"avo call [esp]=eip+$$$,esp=esp+4,eip=$1\n"
 	" \"avo jmp eip=$1\n"
 	" \"avo mov $1=$2\n"
 	"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");

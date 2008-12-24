@@ -753,7 +753,6 @@ void cons_grep(const char *str)
 	grepline = -1;
 	efree(&grepstr);
 	efree(&grephigh);
-	grephigh = strdup(config_get("scr.grephigh"));
 
 	if (str != NULL && *str) {
 		if (*str == '!') {
@@ -791,9 +790,13 @@ void cons_grep(const char *str)
 		efree(&grepstr);
 		efree(&grephigh);
 	}
+#if 0
+	if (grephigh == NULL || *grephigh == '\0')
+		grephigh = strdup(config_get("scr.grephigh"));
+#endif
 }
 
-char *str_replace(char *str, char *from, char *to)
+char *str_replace(char *str, char *from, char *to, int str_len)
 {
 	char *ostr = str;
 	char *ofrom = from;
@@ -802,6 +805,7 @@ char *str_replace(char *str, char *from, char *to)
 	int flen = strlen(from);
 	int tlen = strlen(to);
 	int ftdelta = tlen-flen;
+
 	while(*str) {
 		if (*str == *from) {
 			from = from +1;
@@ -809,25 +813,29 @@ char *str_replace(char *str, char *from, char *to)
 			from = ofrom;
 		}
 		if (*from == '\0') {
-			str = str - strlen(ofrom);
+			str = str - flen;
 			tstr = str;
 			/* realloc */
-			if (flen > tlen) {
+			if (flen >= tlen) {
 				strcpy(str+tlen, str+flen);
 				memcpy(str, to, tlen);
 			} else {
 				int strdelta = str-ostr;
 				len = olen;
-				olen += flen+tlen;
-				ostr = realloc(ostr, olen);
-				str = ostr+strdelta;
-				for(p=ostr+len; p>str;p=p-1) {
-					p[ftdelta] = *p;
+				olen += (tlen-flen);
+				if (olen > str_len) {
+					//eprintf("FUCK!!! %d %d\n", str_len, olen);
+					// XXX use palloc() here
+					ostr = realloc(ostr, olen+4096);
+					str_len = olen+4096;
+					str = ostr+strdelta;
 				}
-				memcpy(str, to, tlen);
-				str =tstr+flen;
+				for(p=ostr+olen; p>str;p=p-1)
+					p[ftdelta] = *p;
+				memcpy(str+1, to, tlen);
 			}
 			from = ofrom;
+			str = str+tlen;
 		}
 		str = str+1;
 	}
@@ -850,15 +858,16 @@ void cons_flush()
 			char *new, *old;
 			char bat[64];
 			sprintf(bat, "\x1b[7m%s\x1b[0m", grephigh);
-			//sprintf(bat, "**");
-			
-			old = cons_buffer;
-			cons_buffer = str_replace(cons_buffer, grephigh, bat);
-			//new = strsub(strdup(cons_buffer), grephigh, bat, 1);
-			//cons_buffer = new;
-			//free(cons_buffer);
+			cons_buffer = str_replace(cons_buffer, grephigh, bat, cons_buffer_sz);
 		}
 		grephigh = NULL;
+	} else {
+		if (grephigh &&*grephigh) {
+			char *new, *old;
+			char bat[64];
+			sprintf(bat, "\x1b[7m%s\x1b[0m", grephigh);
+			cons_buffer = str_replace(cons_buffer, grephigh, bat, cons_buffer_sz);
+		}
 	}
 
 	if (!strnull(cons_buffer)) {
