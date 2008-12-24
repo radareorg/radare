@@ -1332,6 +1332,11 @@ int debug_contsc(char *arg)
 		/* launch continue */
 		debug_contscp();
 		debug_dispatch_wait();
+		/* should be aligned.. or so */
+		if (config_get("dbg.contsc2")) {
+			debug_contscp();
+			debug_dispatch_wait();
+		}
 
 		/* print status */
 		debug_print_wait(NULL);

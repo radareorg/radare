@@ -19,7 +19,6 @@ TheBook
 * Use modify_ldt(2) on x86 as IO for the debugger
 
 * Added at% like ar%
-* 'm' in visual should be used as mark like in vim
 * fer q libr.syscall suporti lectura dsd fitxers
 
 grep multiple strings:

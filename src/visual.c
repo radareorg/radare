@@ -186,7 +186,7 @@ void visual_show_help()
 	"F1         commands help\n"
 	"F2         set breakpoint (execute)\n"
 	"F3         set watchpoint (read)\n"
-	"F4         continue until here (!contuh)\n"
+	"F4         continue until cursor or here (for loops)\n"
 	"F6         continue until syscall (!contsc)\n"
 	"F7         step in debugger user code (!step)\n"
 	"F8         step over in debugger (!stepo)\n"
@@ -1036,12 +1036,18 @@ void visual_f(int f)
 			cons_any_key();
 			cons_clear();
 			break;
-#endif
 		case 4:
-			radare_cmd("!contuh", 0);
-			cons_clear();
+			if (config.cursor_mode) {
+				sprintf(line, "!bp 0x%08llx", config.seek+config.cursor);
+				radare_cmd_raw(line, 0);
+				radare_cmd_raw("!cont", 0);
+				sprintf(line, "!bp -0x%08llx", config.seek+config.cursor);
+				radare_cmd_raw(line, 0);
+			} else {
+				radare_cmd("!contuh", 0);
+				cons_clear();
+			}
 			break;
-#if DEBUGGER
 		case 5:
 			arch_jmp(config.seek + (config.cursor_mode?config.acursor:0));
 			break;
