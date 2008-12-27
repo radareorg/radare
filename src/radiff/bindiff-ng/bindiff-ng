@@ -73,9 +73,6 @@ while (my $line = <DIFF>) {
 	my $to = 0;
 	my $ret = "";
 
-	seek A_DIS_OFF, 0, 0;
-	seek B_DIS_OFF, 0, 0;
-
 	if ($line =~ /^(.*)c(.*)$/) {
 		$a_lines = $1;
 		$b_lines = $2;
