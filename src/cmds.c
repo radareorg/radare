@@ -1105,6 +1105,7 @@ CMD_DECL(code)
 	case 'F':
 		/* do code analysis here */
 		switch(text[1]) {
+		case 'V':
 		case 'v': // function var
 		case 'a': // function args
 		case 'A':
@@ -1121,18 +1122,42 @@ CMD_DECL(code)
 		case 'f': // function frame size
 			eprintf("TODO\n");
 			break;
+		case '\0':
+			radare_cmdf("C*~C%c", text[0]);
+			break;
+		case '*':
+			/* ranges */
+			data_list_ranges();
+			break;
+		case ' ':
+			if (text[2]=='\0') {
+				eprintf("Oops. missing argument?\n");
+			} else {
+				u64 len, tmp = config.block_size;
+				len = get_math(text+2);
+				radare_set_block_size_i(len);
+				data_add_arg(config.seek+(config.cursor_mode?config.cursor:0), DATA_FUN, text+2);
+				radare_set_block_size_i(tmp);
+			}
+			break;
 		case '?': // function help
 			cons_printf(
-			"Usage: CF[afrv] [args]\n"
+			"Usage: CF[afrv.][gs] [args]\n"
+			" CFv.                          ; show variables for current function\n"
 			" CFv 20 int                    ; define local var\n"
+			" CFvg 20 @ 0x8048000           ; access 'get' to delta 20 var (creates var if not exist)\n"
+			" CFvs 20 @ 0x8049000           ; access 'set' to delta 20 var (\"\")\n"
+			" CFV @ 0x8049000               ; Show local variables and arg values at function\n"
 			" CFa 0 int argc                ; define arg[0]\n"
 			" CFa 4 char** argv             ; define arg[1]\n"
 			" CFA 0 char** argv             ; define arg[1] (fastcall)\n"
 			" CFf 320 @ fun.8058400         ; set frame size for function\n"
 			" CFr 10-20,3040 @ fun.8048300  ; define ranges for non-linear function\n"
-			"TODO: get/set access vars\n");
+			" CFr 10-20,3040 @ fun.8048300  ; define ranges for non-linear function\n"
+			);
 			break;
 		}
+		break;
 	case 'm':
 	case 'c':
 	case 'd':
@@ -1143,7 +1168,6 @@ CMD_DECL(code)
 		int fmt, len;
 		char *arg = text + 1;
 		u64 tmp = config.block_size;
-
 
 		for(; *arg==' ';arg=arg+1);
 		if (arg[0]=='\0') {

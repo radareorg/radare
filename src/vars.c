@@ -4,6 +4,7 @@
 #include "main.h"
 #include "list.h"
 
+int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize);
 // this can be nested inside the function_t which is not defined..
 
 #if 0
@@ -70,17 +71,30 @@ int var_add_access(u64 addr, int delta, int type, int set)
 
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
-		if (addr>=v->addr) {
+		if (addr >= v->addr) {
 			//if (!strcmp(name, v->name)) {
 			if (delta == v->delta && type == v->type) {
 				struct var_xs_t *xs = (struct var_xs_t *)malloc(sizeof(struct var_xs_t));
 				xs->addr = addr;
 				xs->set = set;
+//eprintf("==> %llx\n", addr);
 				/* add var access here */
 				list_add(&(xs->list), &(v->access));
 				return 1;
 			}
 		}
+	}
+	/* automatic init */
+	/* detect function in CF list */
+	{
+		u64 from = 0LL, to = 0LL;
+		if ( data_get_fun_for(addr, &from, &to) ) {
+			char varname[32];
+			sprintf(varname, "var_%d", delta);
+			//eprintf("0x%08llx: NEW LOCAL VAR %d\n", from, delta);
+			var_add(from, to, delta, VAR_T_LOCAL, "int32", varname, 1);
+			return var_add_access(addr, delta, type, set);
+		} else eprintf("Cannot find bounding function at 0x%08llx\n", addr);
 	}
 	return 0;
 }
@@ -94,6 +108,36 @@ const char *var_type_str(int fd)
 	case VAR_T_ARGREG: return "fastarg";
 	}
 	return "(?)";
+}
+
+u32 var_dbg_read(int delta)
+{
+	/* XXX: EBP ONLY FOR X86 */
+	u32 ret;
+	u64 foo = get_offset("ebp");
+	foo-=delta;
+	radare_read_at(foo, (u8*)&ret, 4);
+	return ret;
+}
+
+int var_list_show(u64 addr)
+{
+	struct list_head *pos, *pos2;
+	struct var_t *v;
+	struct var_xs_t *x;
+
+	list_for_each(pos, &vars) {
+		v = (struct var_t *)list_entry(pos, struct var_t, list);
+		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
+			u32 value = var_dbg_read(v->delta);
+			if (v->arraysize>1)
+				cons_printf("%s %s %s[%d] = %x\n", var_type_str(v->type), v->vartype, v->arraysize, v->name, value);
+			else cons_printf("%s %s %s = %x\n", var_type_str(v->type), v->vartype, v->name, value);
+			/* TODO: show pointer to strings and so on */
+		}
+	}
+
+	return 0;
 }
 
 /* 0,0 to list all */
@@ -110,7 +154,7 @@ int var_list(u64 addr, int delta)
 				v->addr, v->eaddr, var_type_str(v->type),
 				v->vartype, v->name, v->delta, v->arraysize);
 			list_for_each(pos2, &v->access) {
-				x = (struct var_xs_t *)list_entry(pos, struct var_xs_t, list);
+				x = (struct var_xs_t *)list_entry(pos2, struct var_xs_t, list);
 				cons_printf("  0x%08llx %s\n", x->addr, x->set?"set":"get");
 			}
 		}
@@ -131,6 +175,14 @@ int var_help()
 	eprintf(" Cv 12 byte buffer[1024]\n");
 }
 
+int var_cmd_help()
+{
+	eprintf("Try CF[aAv][gs] [delta]\n");
+	eprintf(" CFag 0  = arg0 get\n");
+	eprintf(" CFvs 12 = var12 set\n");
+	eprintf("a = arg, A = fastarg, v = var\n");
+}
+
 int var_cmd(const char *str)
 {
 	char *p,*p2,*p3;
@@ -141,6 +193,8 @@ int var_cmd(const char *str)
 	str = p;
 
 	switch(*str) {
+	case 'V': // show vars in human readable format
+		return var_list_show(config.seek);
 	case 'v': // frame variable
 	case 'a': // stack arg
 	case 'A': // fastcall arg
@@ -152,7 +206,8 @@ int var_cmd(const char *str)
 		}
 		/* Variable access CFvs = set fun var */
 		switch(str[1]) {
-		case '\0': return var_list(0,0);
+		case '\0': return var_list(0, 0);
+		case '.':  return var_list(config.seek, 0);
 		case 's':  return var_add_access(config.seek, atoi(str+2), type, 1);
 		case 'g':  return var_add_access(config.seek, atoi(str+2), type, 0);
 		}
@@ -161,7 +216,7 @@ int var_cmd(const char *str)
 		delta = atoi(str);
 		p = strchr(str, ' ');
 		if (p==NULL)
-			return var_help();
+			return var_cmd_help();
 		p[0]='\0'; p=p+1;
 		p2 = strchr(p, ' ');
 		if (p2==NULL)

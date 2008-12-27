@@ -67,6 +67,31 @@ u64 data_prev(u64 off, int type)
 	return ret;
 }
 
+int data_get_fun_for(u64 addr, u64 *from, u64 *to)
+{
+	struct list_head *pos;
+	int n_functions = 0;
+	int n_xrefs = 0;
+	int n_dxrefs = 0;
+	struct data_t *rd = NULL;
+	u64 lastfrom = 0LL;
+
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->type == DATA_FUN) {
+			if (d->from < addr && d->from > lastfrom) {
+				rd = d;
+			}
+		}
+	}
+	if (rd) {
+		*from = rd->from;
+		*to = rd->to;
+		return 1;
+	}
+	return 0;
+}
+
 void data_info()
 {
 	struct list_head *pos;
