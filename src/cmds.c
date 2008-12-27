@@ -2269,6 +2269,7 @@ CMD_DECL(help)
 				"Special $$ variables that can be used in expressions\n"
 				" $$  = current seek\n"
 				" $$$ = size of opcode\n"
+				" $$? = last compare (? 1==1) or read (?<) value\n"
 				" $$j = jump branch of opcode\n"
 				" $$f = failover continuation of opcode\n"
 				" $$r = pointer reference of opcode\n"
@@ -2281,6 +2282,22 @@ CMD_DECL(help)
 			} else
 			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);
+		} else
+		if (input[0]=='<') {
+			char buf[1024];
+			cons_printf("%s?\n", input+1);
+			cons_flush();
+			cons_fgets(buf, 1023, 0, NULL);
+			if (buf[0]=='\0') {
+				config.last_cmp = 1; // true
+			} else
+			if (!strcmp(buf, "y")) {
+				config.last_cmp = 1;
+			} else
+			if (!strcmp(buf, "n")) {
+				config.last_cmp = 0;
+			} else
+				config.last_cmp = get_math(buf);
 		} else
 		if (input[0]=='z') {
 			char *ptr;

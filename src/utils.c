@@ -359,6 +359,9 @@ u64 get_offset(const char *orig)
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;
 			break;
+		case '?':
+			ret = config.last_cmp;
+			break;
 		case 'e':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.eob;
