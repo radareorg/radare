@@ -58,7 +58,7 @@ static VALUE radare_ruby_cmd(VALUE self, VALUE string)
 	return rb_str_new2(retstr);//"Hello message\n");
 }
 
-#define RUBYAPI  LIBDIR"/radare/radare.rb"
+#define RUBYAPI  LIBDIR"/ruby1.8/radare.rb"
 static int ruby_hack_init()
 {
 	int err;

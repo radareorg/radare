@@ -944,7 +944,7 @@ int analyze_function(u64 from, int recursive, int report)
 				cons_strcat(buf);
 				framesize += aop.value;
 				if (!report)
-					cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
+					cons_printf("CC +%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
 			}
 			break;
 		}

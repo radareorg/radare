@@ -931,6 +931,18 @@ u64 htonq(u64 value) {
 	return ret;
 }
 
+int memcpy_r(u8 *from, u8 *to, int len)
+{
+	u8 *p = from+len;
+	u8 *d = to + len;
+	while(p>from) {
+		*d = *p;
+		p = p - 1;
+		d = d - 1;
+	}
+	return len;
+}
+
 const char *strget(const char *str)
 {
 	if (str == NULL)

@@ -26,7 +26,7 @@ class Radare
  end
 
  def bin2hex(binstr)
-   return binstr.to_i(16)
+   return binstr.to_i(2).to_s(16).upcase
  end
 
  def slurp_hexpair(file)
@@ -39,10 +39,11 @@ class Radare
    f = File.open(file)
    str = ""
 
-   f.each_line do |l|
-	l.strip!
-	str.concat(bin2hex(l))
-   end
+   str = bin2hex(f.read)
+# f.each_line do |l|
+#	l.strip!
+#	str.concat(bin2hex(l))
+#   end
 
    return str 
  end
