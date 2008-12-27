@@ -71,5 +71,6 @@ char *data_comment_get(u64 offset, int lines);
 void data_comment_init(int new);
 void data_reflines_init();
 int data_printd(int delta);
+const char *data_var_type_format(const char *datatype);
 
 #endif

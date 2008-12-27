@@ -75,7 +75,7 @@ int debug_syms()
 {
 	char buf[1024];
 	//snprintf(buf, 1022, ".!!rsc syms-dbg-flag '%s'", config.file);
-	snprintf(buf, 1022, ".!!rabin -ris '%s'", config.file);
+	snprintf(buf, 1022, ".!!rabin -ris '%s'", ps.argv[0]); //config.file);
 	return radare_cmd_raw(buf, 0);
 }
 

@@ -799,7 +799,7 @@ void config_init(int first)
 	config_set("cmd.touchtrace", "");
 	config_set("cmd.prompt", "");
 	config_set("cmd.vprompt", "p%");
-	config_set("cmd.vprompt2", "");
+	config_set("cmd.vprompt2", "CFV");
 	config_set("cmd.vprompt3", "");
 	config_set("cmd.bp", "");
 

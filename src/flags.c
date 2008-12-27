@@ -470,9 +470,9 @@ int string_flag_offset(char *buf, u64 seek)
 
 void print_flag_offset(u64 seek)
 {
-	char buf[1024];
+	char buf[256];
 
-	if (string_flag_offset(buf, seek) )
+	if ( string_flag_offset(buf, seek) )
 		cons_strcat(buf);
 }
 

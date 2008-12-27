@@ -55,6 +55,7 @@ int main(int argc, char **argv, char **envp)
 	char buf2[4096];
 	int flag_d = 0;
 	int __optind = 0;
+	char *ptr;
 
 	environ = envp;
 	radare_init();
@@ -159,6 +160,10 @@ int main(int argc, char **argv, char **envp)
 				ps.args = strdup(buf);
 				sprintf(buf2, "dbg://%s", buf);
 				config.file = strdup(buf2);
+				ps.filename = strdup(buf2);
+			//ptr = strchr(config.file, ' ');
+			//if (ptr) *ptr = '\0';
+			//config.file = strdup(buf2);
 #else
 				eprintf("TODO: Needs debugger\n");
 #endif

@@ -27,6 +27,7 @@
 
 /* arch_aop for x86 */
 
+
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love
 int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
@@ -251,8 +252,14 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->stackop = AOP_STACK_INCSTACK;
 			break;
 		case 0x7d: // cmp dword [ebp+0x8], 0x1f
-			aop->value = (u64)(unsigned char)bytes[2];
-			aop->stackop = AOP_STACK_ARG_GET;
+			//837dfc02        cmp dword [ebp-0x4], 0x2
+			if ((char)bytes[2]>0) {
+				aop->stackop = AOP_STACK_ARG_GET;
+				aop->value = (u64)(char)bytes[2];
+			} else {
+				aop->stackop = AOP_STACK_LOCAL_GET;
+				aop->value = (u64)-(char)bytes[2];
+			}
 			aop->type = AOP_TYPE_CMP;
 			break;
 		}

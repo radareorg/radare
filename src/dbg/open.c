@@ -56,6 +56,9 @@ void ps_parse_argv()
 	ps.argv[i] = tmp2;
 	ps.argv[i+1] = 0;
 
+	tmp = strchr(config.file, ' ');
+	if (tmp) *tmp = '\0';
+	//config.file = strdup("/bin/ls"); //ps.argv[0];
 	//eprintf("ppa:A0(%s)\n", ps.argv[0]);
 }
 

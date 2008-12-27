@@ -726,6 +726,20 @@ int data_var_type_list()
 	
 }
 
+const char *data_var_type_get(const char *datatype)
+{
+	struct list_head *pos;
+	u64 ret = 0;
+
+	list_for_each(pos, &vartypes) {
+		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
+		//eprintf("---(%s)(%s)\n", d->name, datatype);
+		if (!strcmp(datatype, d->name))
+			return d;
+	}
+	return NULL;
+}
+
 int data_var_help()
 {
 	cons_printf(

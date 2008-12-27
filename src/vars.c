@@ -90,7 +90,12 @@ int var_add_access(u64 addr, int delta, int type, int set)
 		u64 from = 0LL, to = 0LL;
 		if ( data_get_fun_for(addr, &from, &to) ) {
 			char varname[32];
-			sprintf(varname, "var_%d", delta);
+			if (delta > 0) {
+				sprintf(varname, "var_%d", delta);
+			} else {
+				delta = -delta;
+				sprintf(varname, "arg_%d", delta);
+			}
 			//eprintf("0x%08llx: NEW LOCAL VAR %d\n", from, delta);
 			var_add(from, to, delta, VAR_T_LOCAL, "int32", varname, 1);
 			return var_add_access(addr, delta, type, set);
@@ -120,8 +125,35 @@ u32 var_dbg_read(int delta)
 	return ret;
 }
 
+
+void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian);
+
+int var_print_value(struct var_t *v)
+{
+	struct var_type_t *t = data_var_type_get(v->vartype);
+	if (t == NULL) {
+		u32 value = var_dbg_read(v->delta);
+		// TODO: use var type to 
+		cons_printf("%x", value);
+	} else {
+		u8 buf[1024];
+		int verbose = config.verbose;
+		int size = v->arraysize * t->size;
+		u64 foo = get_offset("ebp");
+		foo -= v->delta;
+		radare_read_at(foo, buf, size);
+		//eprintf("PRINT_MEM(%llx,%d,%s)\n", foo, size, t->fmt);
+		config.verbose = 0;
+		print_mem(foo, buf, size, t->fmt, config.endian);
+		config.verbose = verbose;
+	}
+	return 0;
+}
+
+/* CFV */
 int var_list_show(u64 addr)
 {
+	char buf[256];
 	struct list_head *pos, *pos2;
 	struct var_t *v;
 	struct var_xs_t *x;
@@ -131,9 +163,13 @@ int var_list_show(u64 addr)
 		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
 			u32 value = var_dbg_read(v->delta);
 			if (v->arraysize>1)
-				cons_printf("%s %s %s[%d] = %x\n", var_type_str(v->type), v->vartype, v->arraysize, v->name, value);
-			else cons_printf("%s %s %s = %x\n", var_type_str(v->type), v->vartype, v->name, value);
-			/* TODO: show pointer to strings and so on */
+				cons_printf("%s %s %s[%d] = ", var_type_str(v->type), v->vartype, v->arraysize, v->name);
+			else cons_printf("%s %s %s = ", var_type_str(v->type), v->vartype, v->name);
+			var_print_value(v);
+			/* TODO: detect pointer to strings and so on */
+			if (string_flag_offset(buf, value))
+				cons_printf(" ; points to: %s\n", buf);
+			else cons_newline();
 		}
 	}
 
@@ -153,7 +189,7 @@ int var_list(u64 addr, int delta)
 			cons_printf("0x%08llx - 0x%08llx type=%s type=%s name=%s delta=%d array=%d\n",
 				v->addr, v->eaddr, var_type_str(v->type),
 				v->vartype, v->name, v->delta, v->arraysize);
-			list_for_each(pos2, &v->access) {
+			list_for_each_prev(pos2, &v->access) {
 				x = (struct var_xs_t *)list_entry(pos2, struct var_xs_t, list);
 				cons_printf("  0x%08llx %s\n", x->addr, x->set?"set":"get");
 			}
@@ -166,6 +202,12 @@ int var_list(u64 addr, int delta)
 int var_init()
 {
 	INIT_LIST_HEAD(&vars);
+	data_var_type_add("char", 1, "b");
+	data_var_type_add("byte", 1, "b");
+	data_var_type_add("int", 4, "d");
+	data_var_type_add("int32", 4, "d");
+	data_var_type_add("dword", 4, "x");
+	data_var_type_add("float", 4, "f");
 }
 
 int var_help()

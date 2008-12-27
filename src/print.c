@@ -333,11 +333,11 @@ void print_mem_help()
 	"Example: pm 10xiz pointer length string\n"
 	"Example: pm {array_size}b @ array_base\n"
 	" e - temporally swap endian\n"
-	" d - double (8 bytes)\n"
+	//" D - double (8 bytes)\n"
 	" f - float value\n"
 	" b - one byte \n"
 	" B - show 10 first bytes of buffer\n"
-	" i - %%d integer value (4 byets)\n"
+	" d - %%d integer value (4 bytes)\n"
 	" w - word (16 bit hexa)\n"
 	" q - quadword (8 bytes)\n"
 	" p - pointer reference\n"
@@ -350,6 +350,7 @@ void print_mem_help()
 	" * - next char is pointer\n"
 	" . - skip 1 byte\n");
 }
+
 
 void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 {
@@ -489,7 +490,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				cons_strcat(")");
 				i+=4;
 				break;
-			case 'i':
+			case 'd':
 				D cons_printf("0x%08x = ", config.seek+i);
 				cons_printf("%d", addr);
 				i+=4;
@@ -553,7 +554,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 		idx=0;
 	}
 	efree((void *)&args);
-	D {} else cons_newline();
+	//D {} else cons_newline();
 }
 
 /** Print some data.
