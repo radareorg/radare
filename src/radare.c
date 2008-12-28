@@ -1486,6 +1486,18 @@ int radare_open(int rst)
 	return 0;
 }
 
+int radare_compare_code(u64 off, const u8 *a, int len)
+{
+	u8 *b = alloca(len);
+	radare_read_at(off, b, len);
+	file_dump(".a", a, len);
+	file_dump(".b", b, len);
+	//eprintf("radiff -c .a .b\n");
+	system("radiff -c .a .b");
+	unlink(".a");
+	unlink(".b");
+}
+
 int radare_compare(unsigned char *f, unsigned char *d, int len)
 {
 	int i, eq = 0;

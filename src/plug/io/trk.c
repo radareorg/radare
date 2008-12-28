@@ -136,8 +136,9 @@ ssize_t trk_write_at(int fd, u32 addr, const void *buf, u32 count)
 	b[5]=0x04; // 
 	memcpy(b+5, &addr, 4);
 	memset(b+5+4, '\0', 4);
-	memset(b+5+4, '\0', 4);
 	memcpy(b+5+4+4, &count, 4);
+        b[5+4+4+4] = 0x00; // checksum
+	b[5+4+4+4+1] = 0x7e;
    // > 7E 11 04 08 00 04 64_00_01_48 00_00_00_00 00_00_00_01 10 ...
 	trk_write_raw(fd, b, count);
 }
@@ -210,7 +211,7 @@ static int trk_handle_fd(int fd)
 
 static int trk_handle_open(const char *pathname)
 {
-	return (!memcmp(pathname, "trk://", 9));
+	return (!memcmp(pathname, "trk://", 6));
 }
 
 static int opendev(const char *device, int speed)
@@ -225,7 +226,7 @@ static int opendev(const char *device, int speed)
         tcgetattr(fd, &tc);
 
         tc.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-                              | INLCR | IGNCR | ICRNL | IXON );
+		      | INLCR | IGNCR | ICRNL | IXON );
         tc.c_oflag &= ~OPOST;
         tc.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
         tc.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
@@ -253,8 +254,8 @@ int trk_open(const char *pathname, int flags, mode_t mode)
 
 	strncpy(buf, pathname, 1000);
 
-	if (!memcmp(ptr , "trk://", 9)) {
-		ptr= ptr+9;
+	if (!memcmp(ptr , "trk://", 6)) {
+		ptr= ptr+6;
 		// port
 		char *spd = strchr(ptr, ':');
 		if (spd == NULL) {
@@ -305,7 +306,7 @@ int trk_system(const char *cmd)
 
 plugin_t trk_plugin = {
 	.name        = "trk",
-	.desc        = "trk port access ( trk://path/to/dev:speed )",
+	.desc        = "trk debugger access ( trk://path/to/dev:speed )",
 	.init        = NULL,
 	.debug       = NULL,
 	.system      = trk_system,

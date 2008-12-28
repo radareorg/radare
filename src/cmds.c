@@ -1608,9 +1608,12 @@ CMD_DECL(compare)
 
 	//radare_read(0);
 	switch (input[0]) {
+	case 'c':
+		radare_compare_code(get_offset(input+1), config.block, config.block_size);
+		break;
 	case 'd':
 		off = (unsigned int) get_offset(input+1);
-		radare_compare((unsigned char*)&off, config.block, 4);
+		radare_compare((u8*)&off, config.block, 4);
 		break;
 	case 'f':
 		if (input[1]!=' ') {
@@ -1643,8 +1646,9 @@ CMD_DECL(compare)
 		break;
 	case '?':
 		eprintf(
-		"Usage: c[?|d|x|f] [argument]\n"
+		"Usage: c[?cdfx] [argument]\n"
 		" c  [string]   - compares a plain with escaped chars string\n"
+		" cc [offset]   - code bindiff current block against offset\n"
 		" cd [offset]   - compare a doubleword from a math expression\n"
 		" cx [hexpair]  - compare hexpair string\n"
 		" cf [file]     - compare contents of file at current seek\n");

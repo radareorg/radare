@@ -146,6 +146,18 @@ void memcpy_loop(u8 *dest, u8 *orig, int dsize, int osize)
 			dest[i++] = orig[j];
 }
 
+int file_dump(const char *file, const u8 *buf, int len)
+{
+	FILE *fd;
+	fd = fopen(file, "w");
+	if (fd) {
+		fwrite(buf, len, 1, fd);
+		fclose(fd);
+		return 1;
+	}
+	return 0;
+}
+
 void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 {
 	if (endian) {

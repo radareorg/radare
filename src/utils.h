@@ -119,5 +119,6 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 int strccmp(char *dst, char *orig, int ch);
 int strccpy(char *dst, char *orig, int ch);
 int str_grep(const char *str, const char *needle);
+int file_dump(const char *file, const u8 *buf, int len);
 
 #endif
