@@ -38,7 +38,74 @@ static unsigned char *trk_buf = NULL;
 static unsigned int trk_bufsz = 0;
 static unsigned int trk_bufread = 0;
 
-ssize_t trk_write(int fd, u8 *b, size_t count)
+int trk_read_raw(int fd, u8 *b, int len);
+ssize_t trk_write_raw(int fd, u8 *b, size_t count);
+
+#if 0
+/* handshake */
+trk_write(trk_fd, "\x7e\x00\x00\xff\x7e", 5);
+read(trk_fd, buf, 6); // < 7E 80 00 00 7F 7E
+trk_write(trk_fd, "\x7e\x00\x00\xfd\x7e", 5);
+read(trk_fd, buf, 7); // < 7E 80 01 00 7D 5E 7E
+
+/* read memory */
+//   > 7E 10 03 05 01 00 64_04_D1_E0 00 00 00 00 00 00 00 01 CC 7E
+
+#endif
+
+int trk_read(int fd, u64 addr, u8 *buf, int len)
+{
+	u8 reply[4096];
+	u32 addr32 = (u32)addr;
+	u32 len32 = (u32)len;
+	u8 cmd[1024];
+
+	cmd[0]=0x7e;
+	cmd[1]=0x10;
+	cmd[2]=0x03; // ____
+	cmd[3]=0x05;
+	cmd[4]=0x01;
+	cmd[5]=0x00;
+	endian_memcpy_e(cmd+5, &addr32, 4);
+	cmd[9]=0x00;
+	cmd[10]=0x00;
+	cmd[11]=0x00;
+	cmd[12]=0x00;
+	endian_memcpy_e(cmd+12, &addr32, 4);
+	cmd[16]=0xcc;
+	cmd[17]=0x7e;
+	trk_write_raw(fd, cmd, 17);
+
+	return trk_read_raw(fd, buf, len);
+}
+
+int trk_read_raw(int fd, u8 *b, int len)
+{
+	u8 tmp[64];
+	// READ ERROR: < 7e ff 04 05 f7 7e
+	// READ MEM  7e 80 03   20 5c 7e 7e   80 03 20   5c   7e
+	read(fd, b, 2);
+	if (b[0] != 0x7e) {
+		eprintf("protocol error: no header mark found\n");
+		// TODO: call to skip until header
+		return 0;
+	}
+	if (b[1] == 0x80){
+		/* read ok */
+		read(fd, b, 4); // skip 4 unknown bytes
+		read(fd, b, len);
+		read(fd, tmp, 2); // read checksum and footer
+		
+	} else {
+		//if (b[1]==0xff) {
+		eprintf("trk error received %02x %02x %02x\n",
+			b[2],b[3],b[4]);
+		return 1;
+	}
+	return 0;
+}
+
+ssize_t trk_write_raw(int fd, u8 *b, size_t count)
 {
 	char *buf = alloca(count*2);
 	memcpy(buf, b, count);
@@ -57,41 +124,22 @@ ssize_t trk_write(int fd, u8 *b, size_t count)
         return write(fd, (u8 *)buf, count);
 }
 
-#if 0
-/* handshake */
-trk_write(trk_fd, "\x7e\x00\x00\xff\x7e", 5);
-read(trk_fd, buf, 6); // < 7E 80 00 00 7F 7E
-trk_write(trk_fd, "\x7e\x00\x00\xfd\x7e", 5);
-read(trk_fd, buf, 7); // < 7E 80 01 00 7D 5E 7E
-
-/* read memory */
-//   > 7E 10 03 05 01 00 64_04_D1_E0 00 00 00 00 00 00 00 01 CC 7E
-
-#endif
-
-int trk_read(int fd, u64 addr, u8 *buf, int len)
+ssize_t trk_write_at(int fd, u32 addr, const void *buf, u32 count)
 {
-	u32 addr32 = (u32)addr;
-	u32 len32 = (u32)len;
-	u8 cmd[1024];
-	cmd[0]=0x7e;
-	cmd[1]=0x10;
-	cmd[2]=0x03; // ____
-	cmd[3]=0x05;
-	cmd[4]=0x01;
-	cmd[5]=0x00;
-	endian_memcpy_e(cmd+5, &addr32, 4);
-	cmd[9]=0x00;
-	cmd[10]=0x00;
-	cmd[11]=0x00;
-	cmd[11]=0x00;
-	endian_memcpy_e(cmd+11, &addr32, 4);
-}
-
-ssize_t trk_write(int fd, const void *buf, size_t count)
-{
+	u8 b[4096];
 	/* TODO */
-	
+	b[0]=0x7e; // head
+	b[1]=0x11; // write
+	b[2]=0x04; // 
+	b[3]=0x08; // 
+	b[4]=0x00; // 
+	b[5]=0x04; // 
+	memcpy(b+5, &addr, 4);
+	memset(b+5+4, '\0', 4);
+	memset(b+5+4, '\0', 4);
+	memcpy(b+5+4+4, &count, 4);
+   // > 7E 11 04 08 00 04 64_00_01_48 00_00_00_00 00_00_00_01 10 ...
+	trk_write_raw(fd, b, count);
 }
 
 ssize_t trk_read(int fd, void *buf, size_t count)

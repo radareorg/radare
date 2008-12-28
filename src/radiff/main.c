@@ -29,8 +29,9 @@ int radiff_bytediff(const char *a, const char *b);
 
 void radiff_help()
 {
-	printf("Usage: radiff [-c] [-bgeirp] [file-a] [file-b]\n");
+	printf("Usage: radiff [-bcdgerpsS] [file-a] [file-b]\n");
 	printf("  -b   bytediff (faster but doesnt support displacements)\n");
+	printf("  -c   code differences (with disassembly and delta support)\n");
 	printf("  -d   use gnu diff as backend (default)\n");
 	printf("  -e   use erg0ts bdiff (c++) as backend\n");
 	printf("  -p   use program diff (code analysis diff)\n");
@@ -101,10 +102,17 @@ int radiff_bindiff(const char *a, const char *b)
 	return system(buf);
 }
 
+int radiff_ng_bindiff(const char *a, const char *b)
+{
+	char buf[8096];
+	snprintf(buf, 8095, "rsc bindiff-ng '%s' '%s'", a, b);
+	return system(buf);
+}
+
 int radiff_ergodiff(const char *a, const char *b)
 {
 	char buf[8096];
-	snprintf(buf, 8095, "bdiff %s %s", a, b);
+	snprintf(buf, 8095, "bdiff '%s' '%s'", a, b);
 	return system(buf);
 }
 
@@ -113,7 +121,7 @@ int main(int argc, char **argv)
 	int c;
 	int action = 'd';
 
-	while ((c = getopt(argc, argv, "bderiph")) != -1)
+	while ((c = getopt(argc, argv, "cbdesSriph")) != -1)
 	{
 		switch( c ) {
 		case 'r':
@@ -123,8 +131,9 @@ int main(int argc, char **argv)
 			radiff_help();
 			return 0;
 		case 'b':
-		case 'p':
 		case 'd':
+		case 'c':
+		case 'p':
 		case 'e':
 		case 's':
 		case 'S':
@@ -140,6 +149,8 @@ int main(int argc, char **argv)
 	switch(action) {
 	case 'e': // erg0t c++ bin diff
 		return radiff_ergodiff(argv[optind], argv[optind+1]);
+	case 'c': // gnu diff
+		return radiff_ng_bindiff(argv[optind], argv[optind+1]);
 	case 'd': // gnu diff
 		return radiff_bindiff(argv[optind], argv[optind+1]);
 	case 'b': // bytediff

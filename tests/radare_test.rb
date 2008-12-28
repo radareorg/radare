@@ -1,3 +1,4 @@
+# $ ruby tests/radare_test.rb 
 require 'test/unit'
 require 'src/plug/hack/radare.rb'
 

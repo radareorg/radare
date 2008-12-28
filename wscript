@@ -231,6 +231,7 @@ def build(bld):
 	except:
 		print "WTF with ruby!!"
 	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
+	bld.install_files('${PREFIX}/share/radare/rsc', 'src/radiff/bindiff-ng/bindiff-ng', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')
 	bld.install_files('${PREFIX}/share/doc/radare', 'COPYING')
