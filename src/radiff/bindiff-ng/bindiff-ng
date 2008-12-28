@@ -7,22 +7,27 @@
 # a temporary file called $dis
 sub disasm {
 	my ($bin, $dis, $dis_off) = @_;
-	$radare_cmd = "echo \'";
+	my $radare_cmd="";
+	my $radare_cmd_pD = "";
 	foreach (split /[\n\r]+/, `rabin -S $bin`) {
 		if (/.*offset=(\w*).*size=(\w*).*privileges=..x.*/) {
-			$radare_cmd.="pD $2 @ $1 &&";
+			$radare_cmd_pD.="pD $2 @ $1 &&";
 		}
 	}
-	$radare_cmd .= "\' | radare -nv -e \'asm.offset = ";
-	$radare_cmd_true = $radare_cmd."false\' $bin > $dis";
-	$radare_cmd_false = $radare_cmd."true\' $bin > $dis_off";
+	if ($radare_cmd_pD ne "") {
+		$radare_cmd = "echo \'".$radare_cmd_pD."\' | radare -nv -e \'asm.offset = ";
+	} else {
+		$radare_cmd = "echo \'pD\' | radare -nvf -e \'asm.offset = ";
+	}
+	my $radare_cmd_true = $radare_cmd."false\' $bin > $dis";
+	my $radare_cmd_false = $radare_cmd."true\' $bin > $dis_off";
 	system $radare_cmd_true;
 	system $radare_cmd_false;
 }
 
 # Print a range of lines from a file
 sub print_lines {
-	my ($file, $from, $to, $context, $prefix) = @_;
+	my ($file, $from, $to, $context, $prefix, $color) = @_;
 	my $i = 1;
 
 	open FILE, "<$file";
@@ -30,7 +35,13 @@ sub print_lines {
 		if (($i >= $from-$context && $i < $from) || ($i > $to && $i <= $to + $context)) {
 			print "  $ret";
 		} elsif ($i >= $from && $i <= $to) {
-			print "$prefix $ret";
+			$ret = "$prefix $ret";
+			if ($color) {
+				$ret =~ s/^\+/\x1b[32m+/;
+				$ret =~ s/^-/\x1b[31m-/;
+				$ret =~ s/$/\x1b[m/;
+			}
+			print $ret;
 		} elsif ($i > $to) {
 			last;
 		}
@@ -46,6 +57,18 @@ sub rm_tmp {
 	unlink $a_dis_off;
 	unlink $b_dis_off;
 	unlink $diff;
+
+	exit 0;
+}
+
+# Print usage
+sub usage {
+	print "Usage: $0 <file a> <file b> [options]\n",
+		  "Options:\n",
+		  "-c int: Number of context lines\n",
+		  "-C: Color output\n",
+		  "-h: This help";
+	exit 1;
 }
 
 # Signal handling
@@ -53,11 +76,16 @@ $SIG{INT} = \&rm_tmp;
 
 
 # Get args
-die "Usage: $0 <file a> <file b> [context]\n" if ($#ARGV > 2);
 $a_bin = $ARGV[0];
 $b_bin = $ARGV[1];
-$context = $ARGV[2];
-$context = 2 if ($context == "");
+$context = 2;
+$color = 0;
+foreach (0 .. $#ARGV) {
+    $context = $ARGV[$_]	if ($ARGV[$_-1] eq "-c"); 
+    $color = 1				if ($ARGV[$_] eq "-C");
+	&usage					if ($ARGV[$_] eq "-h");
+}
+&usage unless (defined($a_bin) && defined($b_bin));
 
 # File A
 $a_dis="/tmp/.a.$$.".int rand(0xC0D3);
@@ -91,7 +119,7 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, $context, "-");
+		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
 
 		print "----\n";
 
@@ -102,7 +130,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, $context, "+");
+		&print_lines($b_dis_off, $from, $to, $context, "+", $color);
 
 	} elsif ($line =~ /(.*)a(.*)/) {
 		$b_lines = $2;
@@ -114,7 +142,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, $context, "+");
+		&print_lines($b_dis_off, $from, $to, $context, "+", $color);
 
 	} elsif ($line =~ /(.*)d(.*)/) {
 		$a_lines = $1;
@@ -126,7 +154,7 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, $context, "-");
+		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
 	}
 
 	print "------------\n";
