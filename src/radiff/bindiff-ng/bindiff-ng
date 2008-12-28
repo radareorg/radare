@@ -22,12 +22,18 @@ sub disasm {
 
 # Print a range of lines from a file
 sub print_lines {
-	my ($file, $from, $to, $prefix) = @_;
+	my ($file, $from, $to, $context, $prefix) = @_;
 	my $i = 1;
 
 	open FILE, "<$file";
 	while (my $ret = <FILE>) {	
-		print "$prefix $ret" if ($i >= $from && $i <= $to);
+		if (($i >= $from-$context && $i < $from) || ($i > $to && $i <= $to + $context)) {
+			print "  $ret";
+		} elsif ($i >= $from && $i <= $to) {
+			print "$prefix $ret";
+		} elsif ($i > $to) {
+			last;
+		}
 		$i++;
 	}
 	close FILE;
@@ -45,12 +51,13 @@ sub rm_tmp {
 # Signal handling
 $SIG{INT} = \&rm_tmp;
 
-# Die if the number of args != 2
-die "Usage: $0 [file a] [file b]\n" if ($#ARGV != 1);
 
 # Get args
-$a_bin=$ARGV[0];
-$b_bin=$ARGV[1];
+die "Usage: $0 <file a> <file b> [context]\n" if ($#ARGV > 2);
+$a_bin = $ARGV[0];
+$b_bin = $ARGV[1];
+$context = $ARGV[2];
+$context = 2 if ($context == "");
 
 # File A
 $a_dis="/tmp/.a.$$.".int rand(0xC0D3);
@@ -84,7 +91,9 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, "-");
+		&print_lines($a_dis_off, $from, $to, $context, "-");
+
+		print "----\n";
 
 		if ($b_lines =~ /(\d+),(\d+)/) {
 			$from = $1;
@@ -93,7 +102,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, "+");
+		&print_lines($b_dis_off, $from, $to, $context, "+");
 
 	} elsif ($line =~ /(.*)a(.*)/) {
 		$b_lines = $2;
@@ -105,7 +114,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, "+");
+		&print_lines($b_dis_off, $from, $to, $context, "+");
 
 	} elsif ($line =~ /(.*)d(.*)/) {
 		$a_lines = $1;
@@ -117,7 +126,7 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, "-");
+		&print_lines($a_dis_off, $from, $to, $context, "-");
 	}
 
 	print "------------\n";
