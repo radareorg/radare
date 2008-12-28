@@ -1482,10 +1482,11 @@ You can compare data using the 'c' command that accepts different input formats 
 
 \c > c?
 \c Usage: c[?|d|x|f] [argument]
-\c   c  [string]   - compares a plain with escaped chars string
-\c   cd [offset]   - compare a doubleword from a math expression
-\c   cx [hexpair]  - compare hexpair string
-\c   cf [file]     - compare contents of file at current seek
+\c  c  [string]   - compares a plain with escaped chars string
+\c  cc [offset]   - code bindiff current block against offset
+\c  cd [offset]   - compare a doubleword from a math expression
+\c  cx [hexpair]  - compare hexpair string
+\c  cf [file]     - compare contents of file at current seek
 
 An example of memory comparision:
 
@@ -1518,6 +1519,14 @@ We can use the compare command against a file previously dumped to disk from the
 \c [0x08049A80]> s 0
 \c [0x08048000]> cf /bin/true
 \c Compare 512/512 equal bytes
+
+\H{comparing-code} Comparing code
+
+Another subcommand of 'c' (compare) command is the 'cc' which stands for 'compare code'.
+
+This command accepts a numeric expression as argument and compares the blocks (block size) found in current seek and the given one. For example:
+
+\c [0x08049A80]> cc sym.main2 @ sym.main
 
 \C{visual-mode} Visual mode
 
@@ -3427,14 +3436,194 @@ You can also get detailed information of a certain offset:
 \c times = 5
 \c count = 55
 
-You can get traces
-
-
-\S{codeanal-vm} Opcode emulation
+\H{codeanal-vm} Opcode emulation
 
 The 'av' stands for 'Analyze' using 'Virtual machine'. It is used to emulate machine code to determine values of registers at a certain part of the program. This is used to resolve register branches and similar stuff.
 
-TODO : actually it is in a very newborn state.
+Here is the help of the command:
+
+\c [0x4A13B8C0]> av?
+\c Usage: av[ier] [arg]
+\c  ave eax=33   ; evaluate expression in vm
+\c  avf file     ; evaluate expressions from file
+\c  avi          ; import register values from flags
+\c  avm          ; select MMU (default current one)
+\c  avo op expr  ; define new opcode (avo? for help)
+\c  avr          ; show registers
+\c  avx N        ; execute N instructions from cur seek
+\c  av-          ; restart vm using asm.arch
+\c  avr eax      ; show register eax
+\c  avra         ; show register aliases
+\c  avra al eax=0xff ; define 'get' alias for register 'al'
+\c  avrt         ; list valid register types
+\c  e vm.realio  ; if true enables real write changes
+\c Note: The prefix '"' quotes the command and does not parses pipes and so
+
+The virtual machine implemented in radare permits to define opcodes and registers and then execute them. Real code can be converted into radare virtual machine expressions by using the 'pas' (codename) engine that parses ascii representations of opcodes to extract data from them and generate evaluable strings for the virtual machine.
+
+\S{codeanal-vm-regs} Virtual machine registers
+
+The radare virtual machine implementation allows infinite number of register definitions. These registers also allow get and set callbacks that permit to generate register dependencies to emulate architectures like x86 that have EAX, AX, AH and AL that are subregisters and reading/writing from/to them should imply a recursive dependency.
+
+The registers can have different types:
+
+\c [0x4A13B8C0]> avrt
+\c  .bit
+\c  .int64
+\c  .int32
+\c  .int16
+\c  .int8
+\c  .float32
+\c  .float64
+
+By default they are initialized by asm.arch value. For example:
+
+\c [0x4A13B8C0]> avr
+\c .int32  eax = 0x00000000
+\c .int16  ax = 0x00000000
+\c .int8   al = 0x00000000
+\c .int8   ah = 0x00000000
+\c .int32  ebx = 0x00000000
+\c .int32  ecx = 0x00000000
+\c .int32  edx = 0x00000000
+\c .int32  esi = 0x00000000
+\c .int32  edi = 0x00000000
+\c .int32  eip = 0x00000000
+\c .int32  esp = 0x00000000
+\c .int32  ebp = 0x00000000
+\c .bit    zf = 0x00000000
+\c .bit    cf = 0x00000000
+
+These dependencies (for x86) can be defined with the 'avra' command which stands for 'analyze vm register aliases'). Here's the list for x86:
+
+\c [0x4A13B8C0]> avra
+\c Register alias:
+\c ax:  get = ax=eax&0xffff
+\c      set = eax=eax>16,eax=eax<16,eax=eax|ax
+\c al:  get = al=eax&0xff
+\c      set = al=al&0xff,eax=eax>16,eax=eax<16,eax=eax|al
+\c ah:  get = ah=eax&0xff00,ah=ah>8
+\c      set = eax=eax&0xFFFF00ff,ah=ah<8,eax=eax|ah,ah=ah>8
+
+Here you see some expressions evaluable by the virtual machine.
+
+You can import the register values from the debugger by using the 'avi' command (analyze vm import)
+
+TODO: explain some examples
+
+All these values can be resetted with the 'av-' command.
+
+\S{codeanal-vm-code} Virtual machine code
+
+The virtual machine code is just a bunch of evaluable expressions that permit read/write from memory and registers and also supports the definition of new opcodes. Each expression can be delimited with a comma to permite multiple expressions to be executed in one line.
+
+This feature is nice for emulating opcodes that internally do more than one microoperation (a radare virtual machine expression) at once. For example 'call' that is a push+jmp
+
+WIth the 'avo' command we can create, remove and list defined virtual opcodes for the virtual machine.
+
+\c [0x4A13B8C0]> avo
+\c mov = $1=$2
+\c lea = $1=$2
+\c add = $1=$1+$2
+\c sub = $1=$1-$2
+\c jmp = eip=$1
+\c push = esp=esp-4,[esp]=$1
+\c pop = $1=[esp],esp=esp+4
+\c call = esp=esp-4,[esp]=eip+$$$,eip=$1
+\c ret = eip=[esp],esp=esp+4
+
+\S{codeanal-vm-code-exec} Virtual machine execution
+
+The 'av' command have single line, memory and file input commands to evaluate expressions.
+
+Here's a simple example of an evaluation of a virtual machine expression
+
+\c [0x4A13B8C0]> "ave eax=33  ; evalueate expression
+\c    ;  eax=33
+\c [0x4A13B8C0]> avr eax      ; show eax register value
+\c eax = 0x00000021
+
+The prefix '"' in the 'ave' command allows us to write special characters on the string without being interpreted by radare. These characters are '|', '>', ...
+
+If you write a set of expressions splitted by commands and newlines in a file they can be evaluated with the 'avf' command:
+
+\c [0x4A13B8C0]> avf script.ravm
+
+But maybe, the more interesting source of code evaluation is to evaluate real code. You can achieve this with the 'avx' command. This command makes the disassembler output be parsed by some pas rules that convert the real code into evaluable expressions for the virtual machine. Here's an example:
+
+\c [0x4A13B8C0]> avx 10
+\c Emulating 10 opcodes
+\c MMU: cached
+\c Importing register values
+\c 0x4a13b8c0, eip:
+\c 0x4a13b8c0,   eax = esp
+\c    ; eax = esp
+\c 0x4a13b8c2    call 0x4a13c000
+\c    ; esp=esp-4
+\c    ; [esp]=eip+5
+\c    ;==> [0xbfeb4fac] = 4a13b8cc  ((esp]))
+\c    ; write 4a13b8cc @ 0xbfeb4fac
+\c    ; eip=0x4a13c000
+\c 0x4a13c000,   push ebp
+\c    ; esp=esp-4
+\c    ; [esp]=ebp
+\c    ;==> [0xbfeb4fa8] = 0  ((esp]))
+\c    ; write 0 @ 0xbfeb4fa8
+\c 0x4a13c001    ebp = esp
+\c    ; ebp = esp
+\c 0x4a13c003    push edi
+\c    ; esp=esp-4
+\c    ; [esp]=edi
+\c    ;==> [0xbfeb4fa4] = 0  ((esp]))
+\c    ; write 0 @ 0xbfeb4fa4
+\c 0x4a13c004,   push esi
+\c    ; esp=esp-4
+\c    ; [esp]=esi
+\c    ;==> [0xbfeb4fa0] = 0  ((esp]))
+\c    ; write 0 @ 0xbfeb4fa0
+\c 0x4a13c005    push ebx
+\c    ; esp=esp-4
+\c    ; [esp]=ebx
+\c    ;==> [0xbfeb4f9c] = 0  ((esp]))
+\c    ; write 0 @ 0xbfeb4f9c
+\c 0x4a13c006    esp -= 0x40
+\c    ; esp -= 0x40
+\c 0x4a13c009    call 0x4a1508cb
+\c    ; esp=esp-4
+\c    ; [esp]=eip+5
+\c    ;==> [0xbfeb4f98] = 4a13c013  ((esp]))
+\c    ; write 4a13c013 @ 0xbfeb4f98
+\c    ; eip=0x4a1508cb
+\c 0x4a1508cb    ebx = [esp]
+\c    ; ebx = [esp]
+
+and now review the registers again:
+
+\c [0x4A13B8C0]> avr 
+\c .int32  eax = 0xbfeb4fb0
+\c .int16  ax = 0x00004fb0
+\c .int8   al = 0x000000b0
+\c .int8   ah = 0x0000004f
+\c .int32  ebx = 0x4a13c013
+\c .int32  ecx = 0x00000000
+\c .int32  edx = 0x00000000
+\c .int32  esi = 0x00000000
+\c .int32  edi = 0x00000000
+\c .int32  eip = 0x4a1508ce
+\c .int32  esp = 0xbfeb4f98
+\c .int32  ebp = 0xbfeb4fa8
+\c .bit    zf = 0x00000000
+\c .bit    cf = 0x00000000
+
+\S{codeanal-mmu} Virtual machine MMU
+
+The MMU of the virtual machine is linked with the internal radare IO. This means that you can use for example map multiple files in a virtual space with 'o file <virtual-address>' to create a static environment of a debugger one.
+
+If you are using the radare virtual machine to evaluate code and determine register values and so on you will not be interested into real memory writes because this will make the memory of the debugged program be modified without executing real code and then probably segfault.
+
+To solve this problem. The radare virtual machine implements a cache system that records all the write operations and map them into the read operations. This option can be enabled and disabled with tme 'vm.realio' eval variable:
+
+\c [0x4A13B8C0]> e vm.realio = true    ; disable cache write protection
 
 \H{dataanal} Data analysis
 

@@ -67,7 +67,7 @@ sub usage {
 		  "Options:\n",
 		  "-c int: Number of context lines\n",
 		  "-C: Color output\n",
-		  "-h: This help";
+		  "-h: This help\n";
 	exit 1;
 }
 
@@ -81,9 +81,9 @@ $b_bin = $ARGV[1];
 $context = 2;
 $color = 0;
 foreach (0 .. $#ARGV) {
-    $context = $ARGV[$_]	if ($ARGV[$_-1] eq "-c"); 
-    $color = 1				if ($ARGV[$_] eq "-C");
-	&usage					if ($ARGV[$_] eq "-h");
+    $context = $ARGV[$_] if ($ARGV[$_-1] eq "-c"); 
+    $color = 1		 if ($ARGV[$_] eq "-C");
+	&usage		 if ($ARGV[$_] eq "-h");
 }
 &usage unless (defined($a_bin) && defined($b_bin));
 
