@@ -566,8 +566,13 @@ CMD_DECL(analyze)
 			base = 0x8048000; // XXX must be section base
 		}
 #endif
-		radare_systemf("%s -a %s -b %lld %s %lld",
+		{
+		char buf[4096];
+			
+		sprintf(buf,"%s -a %s -b %lld %s %lld",
 			config_get("asm.xrefs"), config_get("asm.arch"), base, file, seek);
+		radare_system(buf);
+		}
 #if DEBUGGER
 		if (config.debug) {
 			unlink(file);
