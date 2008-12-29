@@ -1609,7 +1609,7 @@ CMD_DECL(compare)
 	//radare_read(0);
 	switch (input[0]) {
 	case 'c':
-		radare_compare_code(get_offset(input+1), config.block, config.block_size);
+		radare_compare_code(get_math(input+1), config.block, config.block_size);
 		break;
 	case 'd':
 		off = (unsigned int) get_offset(input+1);

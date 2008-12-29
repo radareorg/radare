@@ -105,7 +105,7 @@ int radiff_bindiff(const char *a, const char *b)
 int radiff_ng_bindiff(const char *a, const char *b)
 {
 	char buf[8096];
-	snprintf(buf, 8095, "rsc bindiff-ng '%s' '%s' -C", a, b);
+	snprintf(buf, 8095, "rsc bindiff-ng '%s' '%s'", a, b);
 	return system(buf);
 }
 

@@ -1493,7 +1493,7 @@ int radare_compare_code(u64 off, const u8 *a, int len)
 	file_dump(".a", a, len);
 	file_dump(".b", b, len);
 	//eprintf("radiff -c .a .b\n");
-	system("radiff -c .a .b");
+	radare_cmd("!radiff -c .a .b", 0);
 	unlink(".a");
 	unlink(".b");
 }

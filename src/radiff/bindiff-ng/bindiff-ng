@@ -1,12 +1,14 @@
 #!/usr/bin/perl
 
 # bindiff
+# Author: nibble <.ds@gmail.com>
+# License: GPL >= 2
 # TODO: Diff data sections
 
 # Get offset and size of the $bin executable sections and dump the disassembly to
 # a temporary file called $dis
 sub disasm {
-	my ($bin, $dis, $dis_off) = @_;
+	my ($bin, $dis, $dis_off, $arch) = @_;
 	my $radare_cmd="";
 	my $radare_cmd_pD = "";
 	foreach (split /[\n\r]+/, `rabin -S $bin`) {
@@ -15,12 +17,13 @@ sub disasm {
 		}
 	}
 	if ($radare_cmd_pD ne "") {
-		$radare_cmd = "echo \'".$radare_cmd_pD."\' | radare -nv -e \'asm.offset = ";
+		$radare_cmd = "echo \'".$radare_cmd_pD."\' | radare -nv";
 	} else {
-		$radare_cmd = "echo \'pD\' | radare -nvf -e \'asm.offset = ";
+		$radare_cmd = "echo \'pD\' | radare -nvf";
 	}
-	my $radare_cmd_true = $radare_cmd."false\' $bin > $dis";
-	my $radare_cmd_false = $radare_cmd."true\' $bin > $dis_off";
+	$radare_cmd .= " -e \'asm.arch = $arch\'";
+	my $radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dis";
+	my $radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dis_off";
 	system $radare_cmd_true;
 	system $radare_cmd_false;
 }
@@ -28,21 +31,24 @@ sub disasm {
 # Print a range of lines from a file
 sub print_lines {
 	my ($file, $from, $to, $context, $prefix, $color) = @_;
+	$context = 0 if ($context == -1);
 	my $i = 1;
 
 	open FILE, "<$file";
 	while (my $ret = <FILE>) {	
-		if (($i >= $from-$context && $i < $from) || ($i > $to && $i <= $to + $context)) {
+		if (($i >= $from-$context && $i < $from) ||
+			($i > $to && $i <= $to + $context)) {
 			print "  $ret";
 		} elsif ($i >= $from && $i <= $to) {
 			$ret = "$prefix $ret";
 			if ($color) {
+				$ret =~ s/\x1b\[.*m//;
 				$ret =~ s/^\+/\x1b[32m+/;
 				$ret =~ s/^-/\x1b[31m-/;
 				$ret =~ s/$/\x1b[m/;
 			}
 			print $ret;
-		} elsif ($i > $to) {
+		} elsif ($i > $to + $context) {
 			last;
 		}
 		$i++;
@@ -65,7 +71,8 @@ sub rm_tmp {
 sub usage {
 	print "Usage: $0 <file a> <file b> [options]\n",
 		  "Options:\n",
-		  "-c int: Number of context lines\n",
+		  "-a arch: Force arch\n",
+		  "-c int: Number of context lines (-1 is full context)\n",
 		  "-C: Color output\n",
 		  "-h: This help\n";
 	exit 1;
@@ -74,27 +81,36 @@ sub usage {
 # Signal handling
 $SIG{INT} = \&rm_tmp;
 
-
 # Get args
 $a_bin = $ARGV[0];
 $b_bin = $ARGV[1];
-$context = 2;
-$color = 0;
-foreach (0 .. $#ARGV) {
-    $context = $ARGV[$_] if ($ARGV[$_-1] eq "-c"); 
-    $color = 1		 if ($ARGV[$_] eq "-C");
-	&usage		 if ($ARGV[$_] eq "-h");
+$context = 0;
+if (defined $ENV{'ARCH'}) {
+	$arch = $ENV{'ARCH'};
+} else {
+	$arch = "intel";
 }
+if (defined $ENV{'COLOR'}) {
+	$color = $ENV{'COLOR'};
+} else {
+	$color = 0;
+}
+foreach (0 .. $#ARGV) {
+    $arch = $ARGV[$_] if ($ARGV[$_-1] eq "-a"); 
+    $context = $ARGV[$_] if ($ARGV[$_-1] eq "-c"); 
+    $color = 1 if ($ARGV[$_] eq "-C");
+	&usage if ($ARGV[$_] eq "-h");
+} 
 &usage unless (defined($a_bin) && defined($b_bin));
 
 # File A
 $a_dis="/tmp/.a.$$.".int rand(0xC0D3);
 $a_dis_off=$a_dis.".off";
-&disasm($a_bin, $a_dis, $a_dis_off);
+&disasm($a_bin, $a_dis, $a_dis_off, $arch);
 # File B
 $b_dis="/tmp/.b.$$.".int rand(0xCAFE);
 $b_dis_off=$b_dis.".off";
-&disasm($b_bin, $b_dis, $b_dis_off);
+&disasm($b_bin, $b_dis, $b_dis_off, $arch);
 
 # Diff dumps and remove temporary files
 $diff="/tmp/.diff.$$.".int rand(0xBABE);
@@ -106,6 +122,7 @@ while (my $line = <DIFF>) {
 	my $b_lines = 0;
 	my $from = 0;
 	my $to = 0;
+	my $old_to = 0;
 	my $ret = "";
 
 	if ($line =~ /^(.*)c(.*)$/) {
@@ -121,7 +138,7 @@ while (my $line = <DIFF>) {
 		}
 		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
 
-		print "----\n";
+		print "----\n" unless ($context == -1);
 
 		if ($b_lines =~ /(\d+),(\d+)/) {
 			$from = $1;
@@ -157,7 +174,14 @@ while (my $line = <DIFF>) {
 		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
 	}
 
-	print "------------\n";
+	if ($context == -1) {
+		if ($old_to < $from)  {	
+			&print_lines($a_dis_off, $old_to, $from, $context, " ", $color);
+		}
+		$old_to = $to;
+	} else {
+		print "------------\n";
+	}
 }
 close DIFF;
 
