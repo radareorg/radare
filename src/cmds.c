@@ -328,9 +328,11 @@ CMD_DECL(analyze)
 			eprintf("oops\n");
 		}
 		break;
+#if 0
 	case 'F':
-		analyze_function(config.seek, 4,0); // XXX move to afr ?!?
+		analyze_function(config.seek, (int)config_get_i("cfg.analdepth"), 0); // XXX move to afr ?!?
 		break;
+#endif
 	case 'f':
 		switch(input[1]) {
 		case '?':
@@ -577,7 +579,7 @@ CMD_DECL(analyze)
 		cons_printf(" ao [nops]    analyze N opcodes\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
 		cons_printf(" af [size]    analyze function\n");
-		cons_printf(" aF [size]    analyze function (recursively)\n");
+		//cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code (ag. = dot format)\n");

@@ -49,10 +49,7 @@ int strbin = 0;
 int stdin_bin_to_hex_pairs()
 {
 	unsigned char c;
-
-	for(;;) {
-		if (read(0, &c, 1) <=0)
-			break;
+	while(read(0, &c, 1) >0) {
 		printf("%02x ", c);
 	}
 	return 0;
@@ -71,7 +68,6 @@ void rax(char *arg)
 		strbin ^= 1;
 		return;
 	}
-
 	if (!strcmp(arg, "-e")) {
 		endian ^= 1;
 		return;
@@ -107,21 +103,21 @@ void rax(char *arg)
 		return;
 	}
 
-	if ((arg[0] == '?')
-	|| (arg[0] == 'h')) {
-		printf(" int   ->  hex           ;  rax 10\n");
-		printf(" hex   ->  int           ;  rax 0xa\n");
-		printf(" -int  ->  hex           ;  rax -77\n");
-		printf(" -hex  ->  int           ;  rax 0xffffffb3\n");
-		printf(" float ->  hex           ;  rax 3.33f\n");
-		printf(" hex   ->  float         ;  rax Fx40551ed8\n");
-		printf(" oct   ->  hex           ;  rax 035\n");
-		printf(" hex   ->  oct           ;  rax Ox12 (O is a letter)\n");
-		printf(" bin   ->  hex           ;  rax 1100011b\n");
-		printf(" hex   ->  bin           ;  rax Bx63\n");
-		printf(" -e    swap endianness   ;  rax -e 0x33\n");
-		printf(" -s    swap hex to bin   ;  rax -s 43 4a 50\n");
-		printf(" -     read data from stdin until eof\n");
+	if ((arg[0] == '?') || (arg[0] == 'h')) {
+		printf(
+		" int   ->  hex           ;  rax 10\n"
+		" hex   ->  int           ;  rax 0xa\n"
+		" -int  ->  hex           ;  rax -77\n"
+		" -hex  ->  int           ;  rax 0xffffffb3\n"
+		" float ->  hex           ;  rax 3.33f\n"
+		" hex   ->  float         ;  rax Fx40551ed8\n"
+		" oct   ->  hex           ;  rax 035\n"
+		" hex   ->  oct           ;  rax Ox12 (O is a letter)\n"
+		" bin   ->  hex           ;  rax 1100011b\n"
+		" hex   ->  bin           ;  rax Bx63\n"
+		" -e    swap endianness   ;  rax -e 0x33\n"
+		" -s    swap hex to bin   ;  rax -s 43 4a 50\n"
+		" -     read data from stdin until eof\n");
 	} else
 	if (!memcmp(arg, "Bx", 2)) {
 		/* hex -> bin */
@@ -226,7 +222,6 @@ int main(int argc, char **argv)
 
 	if (!strcmp(argv[1], "-h"))
 		printf("Usage: rax [-] | [-s] [-e] [int|0x|Fx|.f|.o] [...]\n");
-
 
 	for(i=1; i<argc; i++)
 		rax( argv[i] );
