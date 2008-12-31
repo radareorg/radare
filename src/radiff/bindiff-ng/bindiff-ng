@@ -85,16 +85,22 @@ $SIG{INT} = \&rm_tmp;
 $a_bin = $ARGV[0];
 $b_bin = $ARGV[1];
 $context = 0;
+
+$_ = `rabin -I $a_bin`;
 if (defined $ENV{'ARCH'}) {
 	$arch = $ENV{'ARCH'};
+} elsif (/arch=(.*)/) {
+	$arch = $1;
 } else {
 	$arch = "intel";
 }
+
 if (defined $ENV{'COLOR'}) {
 	$color = $ENV{'COLOR'};
 } else {
 	$color = 0;
 }
+
 foreach (0 .. $#ARGV) {
     $arch = $ARGV[$_] if ($ARGV[$_-1] eq "-a"); 
     $context = $ARGV[$_] if ($ARGV[$_-1] eq "-c"); 
