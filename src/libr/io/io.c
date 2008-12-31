@@ -87,6 +87,9 @@ int r_io_write(int fd, const u8 *buf, int len)
 
 u64 r_io_lseek(int fd, u64 offset, int whence)
 {
+	if (whence == SEEK_SET)
+		offset = r_io_section_align(offset, 0, 0);
+
 	/* pwn seek value */
 	switch(whence) {
 	case R_IO_SEEK_SET:
