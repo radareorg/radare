@@ -10,14 +10,14 @@
 sub disasm {
 	my ($bin, $dis, $dis_off, $arch) = @_;
 	my $radare_cmd="";
-	my $radare_cmd_pD = "";
+	my $radare_cmd_p = "";
 	foreach (split /[\n\r]+/, `rabin -S $bin`) {
-		if (/.*offset=(\w*).*size=(\w*).*privileges=..x.*/) {
-			$radare_cmd_pD.="pD $2 @ $1 &&";
+		if (/.*offset=(\w*).*size=(\w*).*privileges=...x.*/) {
+			$radare_cmd_p.="pD $2 @ $1 &&";
 		}
 	}
-	if ($radare_cmd_pD ne "") {
-		$radare_cmd = "echo \'".$radare_cmd_pD."\' | radare -nv";
+	if ($radare_cmd_p ne "") {
+		$radare_cmd = "echo \'".$radare_cmd_p."\' | radare -nv";
 	} else {
 		$radare_cmd = "echo \'pD\' | radare -nvf";
 	}

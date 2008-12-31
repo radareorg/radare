@@ -1000,7 +1000,7 @@ void rabin_show_sections(const char *file)
 				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset));
 				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset + sectionp.elf->size));
 
-				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx %c%c%c %s @ 0x%08llx\n",
+				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx -%c%c%c %s @ 0x%08llx\n",
 						i, baddr + sectionp.elf->offset, sectionp.elf->size,
 						sectionp.elf->align,
 						ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
@@ -1010,7 +1010,7 @@ void rabin_show_sections(const char *file)
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx privileges=%c%c%c name=%s\n",
+						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx privileges=-%c%c%c name=%s\n",
 								i, baddr + sectionp.elf->offset, sectionp.elf->offset,
 								sectionp.elf->size,	sectionp.elf->align,
 								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
