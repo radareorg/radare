@@ -1,3 +1,1654 @@
+=== 1.1 ===
+
+changeset:   760:1ee333cdfd71
+tag:         tip
+user:        nibble
+date:        Wed Dec 31 12:48:35 2008 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - Add arch autodetection
+
+
+changeset:   759:700879c7799a
+user:        nibble
+date:        Wed Dec 31 12:23:35 2008 +0100
+files:       src/rabin/rabin.c src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - fix PE support
+
+
+changeset:   758:cac692f9f997
+user:        pancake <youterm.com>
+date:        Wed Dec 31 02:53:28 2008 +0100
+files:       src/libr/include/r_io_section.h src/libr/io/Makefile src/libr/io/io.c src/libr/io/section.c
+description:
+* Added vaddr/paddr support to r_io
+  - Also added support for sections
+  - Needs test
+
+
+changeset:   757:d442e8bb4369
+user:        pancake <youterm.com>
+date:        Mon Dec 29 03:35:20 2008 +0100
+files:       src/cmds.c
+description:
+* Fix a segfault for 'ax' command.
+
+
+changeset:   756:21c8d0172b35
+user:        pancake <youterm.com>
+date:        Mon Dec 29 03:27:10 2008 +0100
+files:       src/cmds.c src/rax.c
+description:
+* Remove 'aF' command. It makes the same as 'af'
+* Simplify a bit rax.c
+
+
+changeset:   755:cb24d3f0dbbe
+user:        nibble
+date:        Mon Dec 29 01:29:46 2008 +0100
+files:       src/cmds.c src/radare.c src/radiff/bindiff-ng/bindiff-ng src/radiff/main.c
+description:
+* bindiff-ng
+  - add '-a arch'
+  - add full context support with '-c -1'
+  - get defaults from environment
+* radiff
+  - minor fix
+* radare core
+  - fix cc
+
+
+changeset:   754:f8da898df16e
+user:        pancake <youterm.com>
+date:        Sun Dec 28 04:29:45 2008 +0100
+files:       doc/radare.but src/radiff/bindiff-ng/bindiff-ng src/radiff/main.c
+description:
+* Use color bindiff-ng from radiff by default
+* Added documentation for 'cc' command
+* Added documentation for the 'av' command
+  - Virtual machine regs, code and mmu
+
+
+changeset:   753:519ffaf6c568
+user:        nibble
+date:        Sun Dec 28 03:11:04 2008 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - Color output
+  - Configurable context
+  - Support for raw files
+
+
+changeset:   752:e26e32514e2a
+user:        pancake <youterm.com>
+date:        Sun Dec 28 03:10:29 2008 +0100
+files:       doc/xtra/trk src/cmds.c src/plug/io/trk.c src/radare.c src/radare.h src/utils.c src/utils.h
+description:
+* Added 'cc' command for code compare
+  - Uses radiff -c as backend
+* Some more enhacements for trk
+* Added 'file_dump' helper in utils.c
+
+
+changeset:   751:8e971d4842e3
+user:        nibble
+date:        Sun Dec 28 01:58:04 2008 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - Context support
+
+
+changeset:   750:efd81e0da5fb
+user:        pancake <youterm.com>
+date:        Sun Dec 28 02:31:22 2008 +0100
+files:       Makefile.acr src/plug/io/trk.c src/radiff/main.c tests/radare_test.rb wscript
+description:
+* Some more advances for the TRK IO plugin (symbian debugger)
+  - Not yet working, interface is being started
+* Integrate bindiff-ng into radiff (-c flag)
+  - Fix flag parsing bugs in radiff
+  - Install bindiff-ng as rsc
+
+
+changeset:   749:ea906d4ed784
+user:        nibble
+date:        Sat Dec 27 23:22:54 2008 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - Minor fix
+
+
+changeset:   748:12551baf1806
+user:        nibble
+date:        Sat Dec 27 23:12:40 2008 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* radiff-ng
+  - Initial working implementation
+
+
+changeset:   747:707f68fd67a7
+user:        pancake <youterm.com>
+date:        Sat Dec 27 22:36:57 2008 +0100
+files:       Makefile.acr src/analyze.c src/plug/hack/radare.rb src/plug/hack/ruby.c src/plug/io/trk.c src/utils.c tests/radare_test.rb
+description:
+* Apply brainstorm patch for ruby
+  - Fix build on ubuntu and other systems
+  - Add some tests for ruby
+* Initial import of trk.c io plugin
+  - Just a sketch ( not working or implemented )
+  - Should be easy to do. (fork from serial://)
+* Show delta where framesize changes in comments when analyze
+
+
+changeset:   746:aa377fdb4302
+user:        pancake <youterm.com>
+date:        Sat Dec 27 21:21:59 2008 +0100
+files:       scripts/shell.ra src/cmds.c src/utils.c
+description:
+* Added pseudoshell in radare script
+* Added '?<' command to ask values to the user
+  - The result is stored in '$$?' which is config.last_cmp
+
+
+changeset:   745:95aaeabaf30b
+user:        pancake <youterm.com>
+date:        Sat Dec 27 20:58:45 2008 +0100
+files:       src/arch/x86/code.c src/config.c src/data.c src/data.h src/dbg/debug.c src/dbg/open.c src/flags.c src/main.c src/print.c src/vars.c
+description:
+* Fixes for the 'cmp' x86 opcode analysis
+  - Fix local/arg bug and CFV support
+* Set CFV into cmd.vprompt2
+  - Show flag offset string as comment
+  - default print format is hex 32bit dword
+* Fix var access list order in CFv
+* Implement support for format of var types (Cv) in CFV)
+  - Initialize some var types in var_init
+* Fix config.file when using debugger+args
+
+
+changeset:   744:76e08d7c0a77
+user:        pancake <youterm.com>
+date:        Sat Dec 27 15:28:11 2008 +0100
+files:       src/analyze.c src/cmds.c src/data.c src/vars.c
+description:
+* Initial working implementation of the variable support
+  - CFV: Code Function Variables: shows local vars and args of
+    current function (previosly analyzed Vdf or .aF)
+  - Uses 'ebp'-delta by default for x86
+* Creates new variables within function bounds on access
+  - Supports get/set
+  - Defaults to int32 variables
+* Integrate code analysis with variables facilities
+
+
+changeset:   743:e5e517334d54
+user:        pancake <youterm.com>
+date:        Wed Dec 24 15:40:29 2008 +0100
+files:       TODO src/config.c src/dbg/debug.c src/visual.c
+description:
+* Added dbg.contsc2 (true by default)
+  - Makes dupped !contsc to avoid contsc before syscalls
+  - Needs more love
+* Make F4 key in visual continue until cursor if cursor
+  mode is enabled.
+
+
+changeset:   742:2880e1ace414
+user:        pancake <youterm.com>
+date:        Wed Dec 24 15:21:56 2008 +0100
+files:       src/cmds.c src/vm.c
+description:
+* Added 'avrt' command to list variable types
+
+
+changeset:   741:71f805d17272
+user:        pancake <youterm.com>
+date:        Wed Dec 24 15:05:21 2008 +0100
+files:       src/cons.c src/vm.c
+description:
+* Fix 'call' opcode declaration for 'avo'
+  - $$ -> $$$ for opcode size
+* Make scr.grephigh work
+* Make ~* grephigh work
+* Fix str_replace helper (not segfaulting anymore :)
+
+
+changeset:   740:fab66f7642d8
+user:        nibble
+date:        Wed Dec 24 13:22:34 2008 +0100
+files:       src/radiff/bsdiff-4.3/bspatch.c
+description:
+* bsdiff
+  - Experimental radiff like output
+
+
+changeset:   739:5f9ce8c9e429
+user:        pancake <youterm.com>
+date:        Wed Dec 24 04:18:01 2008 +0100
+files:       src/cmds.c src/config.c src/cons.c src/rio.c src/vm.c
+description:
+* Added 'wo2' and 'wo4' for 2 and 4 byte endian swap
+  - write operation command
+* Added 'grephigh' experimental feature
+  - Usable with ~*highword
+  - Added new str_replace to replace gnu's strsub
+* Fix $$ and $$$ meanings in vm code
+
+
+changeset:   738:8f9e08216143
+user:        pancake <youterm.com>
+date:        Tue Dec 23 18:56:55 2008 +0100
+files:       src/analyze.c src/dbg/arch/arm.c src/dbg/arch/arm.h src/dbg/libps2fd.h src/dbg/objects.mk src/main.c src/plug/io/bfdbg.c src/plugin.h
+description:
+* Fixes for CH3S NAS ARM5 Linux
+  - Added initial nonworking implementation for arm-mprotect
+* Enhacements for the arm debugger (syscall and regs facilities)
+* Get and set cpu and fpu registers (r##) (f##)
+  - Added support for some aliases 'pc', 'lr', 'sp, 'ip', 'cpsr'
+* Fix build for non-debugger
+
+
+changeset:   737:b468117209ea
+user:        pancake <youterm.com>
+date:        Mon Dec 22 01:50:54 2008 +0100
+files:       src/radiff/bsdiff-4.3/Makefile src/radiff/bsdiff-4.3/bsdiff.c src/radiff/bsdiff-4.3/bspatch.c
+description:
+* Fix build and usage message for bsdiff
+
+
+changeset:   736:ab5829401df2
+user:        pancake <youterm.com>
+date:        Mon Dec 22 01:41:30 2008 +0100
+files:       src/dbg/arch/x86_64.c
+description:
+* Apply erg0t patches for x86-64 debugger
+  - fpu related.. sync with i386 code
+
+
+changeset:   735:04fb955e62d6
+user:        pancake <youterm.com>
+date:        Sat Dec 20 21:05:59 2008 +0100
+files:       src/radiff/bsdiff-4.3/Makefile src/radiff/bsdiff-4.3/README src/radiff/bsdiff-4.3/bsdiff.1 src/radiff/bsdiff-4.3/bsdiff.c src/radiff/bsdiff-4.3/bspatch.1 src/radiff/bsdiff-4.3/bspatch.c
+description:
+* Initial import of the bsdiff and bspatch utilities
+  - Not yet linked with radiff :)
+
+
+changeset:   734:89d6ebf638ac
+user:        pancake <youterm.com>
+date:        Sat Dec 20 19:23:09 2008 +0100
+files:       src/analyze.c src/flags.c src/rabin/rabin.c src/rio.c src/section.c
+description:
+* Initial pseudo working implementation of vaddr+paddr
+  - Tested on esteve's minickme.exe for ARM-WCE
+* Adapt flags and analyze...but should work different
+  - Needs more love
+
+
+changeset:   733:295ee586534c
+user:        pancake <youterm.com>
+date:        Sat Dec 20 18:46:58 2008 +0100
+files:       src/cmds.c src/radare.h src/rio.c src/vm.c
+description:
+* Added vm.realio to choose real write or cached for the VM
+* Added support for '$$' in evals
+* Make the VM work again with real writes and virtual opcodes
+  - vm_get_reg now works with end ']'
+* Define some default opcodes for x86 arch (call, ret ...)
+* Added cleaner debug output (needs more cleanup)
+* 'avra' lists all defined register aliases
+
+
+changeset:   732:8d74dd57c0a7
+user:        pancake <youterm.com>
+date:        Sat Dec 20 16:54:43 2008 +0100
+files:       src/config.c src/pas.c src/vm.c src/vm.h
+description:
+* Added vm.realio to allow write memory changes
+  - Added vm_mmu_real() to select real or cached modes
+  - 'ret' opcode is not working..emulation is broken now
+
+
+changeset:   731:2133d629d39b
+user:        pancake <youterm.com>
+date:        Sat Dec 20 16:32:36 2008 +0100
+files:       doc/radare.but src/analyze.c src/arch/arm/gnudisarm.c src/cmds.c src/code.c src/config.c src/config.h src/data.c src/dbg/debug.c src/environ.c src/flags.c src/grava.c src/print.c src/rabin/rabin.c src/radare.c src/rio.c src/section.c src/section.h src/stripstr.c src/utils.c src/visual.c
+description:
+* Rename file.baddr into io.vaddr
+  - Base address is now known as Virtual Address
+  - A new io.paddr has been added for Physical Address
+  - Sections code has been partially updated to support this.
+  - You can just use these vars to hardcode it
+  - Sync part of the documentation
+* Accelerate asm.section resolution
+  - Handles from-to ranges for this section
+  - Only updates when necessary (much faster!)
+* Fix build O:)
+* Reindent config.c with tabs
+* Enhaced 'e' .. now 'e str.' is the same as 'e str'
+  - Lists eval config vars starting with 'str'
+* Added dbg.stepo to make !contu work with step into or step over
+  - Fixes !contu when starting outside the user code (ld.so f.ex)
+
+
+changeset:   730:0e9f21845b85
+user:        pancake <youterm.com>
+date:        Sat Dec 20 05:23:34 2008 +0100
+files:       TODO src/flags.c src/libr/config.mk src/libr/rules.mk src/libr/syscall/freebsd.o src/libr/syscall/linux.o src/vm.c
+description:
+* Added few default opcodes
+* FLAGSPACES=32
+
+
+changeset:   729:aae9ee1b4586
+user:        pancake <youterm.com>
+date:        Sat Dec 20 05:12:11 2008 +0100
+files:       src/section.c
+description:
+* Show ondisk section info in section list command
+
+
+changeset:   728:3a8283fc8c51
+user:        pancake <youterm.com>
+date:        Sat Dec 20 05:05:34 2008 +0100
+files:       src/cmds.c src/libr/bin/pe.c src/rio.c src/section.c src/section.h src/vm.c
+description:
+* Added 'Sd' to define ondisk access offset for sections
+  - added 'ondisk' attribute
+  - Thanks esteve! :D
+  - On the way to fix the problems with PE RVA's
+* rio.c: radare_seek now uses section-align before seeking
+* Fix PE-THUMB problem in libr/bin
+* Added support for 8,16,32,64 read and write eval operations
+  for the virtual machine.
+  > ave eax=[8:0x8048000]
+
+
+changeset:   727:ec0af28a3d92
+user:        pancake <youterm.com>
+date:        Sat Dec 20 04:23:34 2008 +0100
+files:       Makefile.acr config.mk.acr configure configure.acr src/analyze.c src/cmds.c src/cons.c src/libr/cons/cons.c src/libr/syscall/freebsd.c src/libr/syscall/linux.c src/print.c src/rabin/dietpe.c src/readline.c src/vm.c src/vm.h tests/Makefile
+description:
+* Fix ${INSTALL} path problem (thanks erg0t)
+* Added 'avo' command to manage opcodes
+  - add, list opcodes
+  - Allows to generate new userdefined opcodes
+  - Semi replaces the pas functionality
+* Remove 'time' in tests/
+* Fix greptoken bug f~[0] now works
+* Make !bp autocomplete with flags (readline)
+* Documentate the X format for pm command
+* Fix THUMB PE binaries support for dietpe in rabin
+
+
+changeset:   726:8f72dcbcc28e
+user:        pancake <@youterm.com>
+date:        Thu Dec 18 20:02:26 2008 +0100
+files:       src/code.c src/cons.c src/io.c src/libr/cons/cons.c src/libr/cons/strsub.c src/libr/include/r_io.h src/libr/io/io.c src/libr/io/map.c src/libr/line/TODO src/libr/syscall/darwin.o src/libr/syscall/freebsd.o src/libr/syscall/linux.o src/libr/syscall/netbsd.o src/libr/syscall/syscall.o src/visual.c
+description:
+* Added grepneg with ~! into cons and libr_cons
+* Fix some signatures in r_io
+  - Added r_io_size() to return maximum size for a fd
+* Added 'm' and ''' chars in visual like in vim (mark and go)
+
+
+changeset:   725:102292b65b84
+user:        pancake <@youterm.com>
+date:        Thu Dec 18 17:28:24 2008 +0100
+files:       src/libr/Makefile src/libr/cons/cons.c src/libr/hash/Makefile src/libr/hash/t/Makefile src/libr/hash/t/hello.c src/libr/include/r_io.h src/libr/include/r_search.h src/libr/include/r_socket.h src/libr/include/r_syscall.h src/libr/include/r_types.h src/libr/io/Makefile src/libr/io/io.c src/libr/io/map.c src/libr/rules.mk src/libr/search/Makefile src/libr/search/search.c src/libr/socket/socket.c src/libr/syscall/darwin.c src/libr/syscall/freebsd.c src/libr/syscall/linux.c src/libr/syscall/netbsd.c src/libr/syscall/syscall.c src/radare.c
+description:
+* Create default ~/.radarerc if does not exists
+  - Thanks jfv for the tip :)
+* Some build fixups on libr
+  - Added some missing include files
+  - Added test for r_hash using r_io
+  - Use -Wall by default
+  - Fix build for r_cons
+* Initial dummy r_search interface (not yet implemented)
+* Some redesign for r_syscall
+
+
+changeset:   724:dd11208a4978
+user:        pancake <youterm.com>
+date:        Thu Dec 18 11:14:02 2008 +0100
+files:       src/libr/Makefile src/libr/config.mk src/libr/io_plugins/README src/libr/rules.mk src/libr/socket/Makefile src/libr/socket/socket.c src/libr/syscall/syscall.o src/libr/tests.mk
+description:
+* Added r_socket and r_io_plugins
+* Dummy config.mk for libr
+
+
+changeset:   723:a6c18520673b
+user:        pedro@dhcp-237.fluendo.lan
+date:        Wed Dec 17 15:40:49 2008 +0100
+files:       src/plug/io/gdbwrap.c src/plug/io/libgdbwrap/include/revm.h
+description:
+* Fix build on osx
+
+
+changeset:   722:e0ab1a594cae
+user:        pancake <@youterm.com>
+date:        Wed Dec 17 14:04:46 2008 +0100
+files:       Makefile.acr src/cmds.c src/plug/io/gdbwrap.c src/plug/io/libgdbwrap/client.c src/plug/io/libgdbwrap/gdbwrapper.c src/plug/io/libgdbwrap/include/gdbwrapper-internals.h src/plug/io/libgdbwrap/include/gdbwrapper.h src/plug/io/libgdbwrap/include/revm.h src/rio.c
+description:
+* Source-sync with ERESI's gdbwrap library
+  - Sync gdbwrap arg order
+* Do not build libusbsniff when --without-usb..
+* Use alloca in radare_seek
+  - Be more restrictive
+
+
+changeset:   721:a492cfcab48f
+user:        nibble
+date:        Wed Dec 17 14:00:57 2008 +0100
+files:       src/libr/bin/bin.c src/libr/bin/elf.c src/libr/bin/pe.c src/libr/bin/t/scn_resize.c src/libr/include/r_bin.h src/libr/include/r_bin_elf.h src/libr/include/r_bin_pe.h
+description:
+* r_bin
+  - Adds get_section_rva, useful for PE bins
+* r_bin_elf, r_bin_pe
+  - Fixes minor bugs
+  - Minor refactoring
+
+
+changeset:   720:73c29d2c53e0
+user:        pancake <@youterm.com>
+date:        Wed Dec 17 12:49:02 2008 +0100
+files:       doc/xtra/vmware-gdbwrap src/config.c src/dbg/system.c src/libr/bin/bin.c src/libr/bin/elf.c src/libr/bin/pe.c src/main.c src/radare.c
+description:
+* Added bouncer helper script for vmware debugging
+* Added cfg.debug (can be changed in runtime :D)
+  - The -d flag is now just setting cfg.debug to true
+  - Any IO layer can be manually defined to be a debug
+* Syntax and indent fixups for libr.bin
+  - Some minor cleanup and added few tips
+
+
+changeset:   719:4d7b78dc02ae
+user:        nibble
+date:        Wed Dec 17 03:23:50 2008 +0100
+files:       src/libr/bin/bin.c src/libr/bin/elf.c src/libr/bin/t/Makefile src/libr/bin/t/info.c src/libr/bin/t/scn_resize.c src/libr/include/r_bin.h src/libr/include/r_bin_elf.h
+description:
+* r_bin
+  - Adds get_section_size and get_section_offset
+  - Adds "class" in r_bin_info
+  - Dummy section resizing example using libr_bin
+* r_bin_elf
+  - Minor refactoring
+
+
+changeset:   718:9e7b0d94efbc
+user:        nibble
+date:        Wed Dec 17 01:10:30 2008 +0100
+files:       src/libr/bin/bin.c src/libr/bin/pe.c src/libr/bin/t/Makefile src/libr/bin/t/info.c src/libr/bin/t/sections.c src/libr/include/r_bin.h src/libr/include/r_bin_pe.h
+description:
+* libr_bin
+  - Add get_info function
+  - Add examples
+
+
+changeset:   717:fe3e57b67a36
+user:        pancake <@youterm.com>
+date:        Mon Dec 15 17:56:25 2008 +0100
+files:       TODO doc/xtra/vmware-gdbwrap src/code.c src/objects.mk src/plug/io/gdbwrap.c src/print.c
+description:
+* Added documentation for connecting to vmware/gdb
+* Added cont, info, help, stop, bp commands to gdbwrap plugin
+* Added variable based 'pm' repeater using brackets
+  - pm {ecx/8}xx @ esi
+
+
+changeset:   716:b20f1af2515c
+user:        pancake <@youterm.com>
+date:        Mon Dec 15 16:10:02 2008 +0100
+files:       TODO doc/xtra/macho doc/xtra/sparc src/objects.mk src/plug/io/gdbwrap.c src/plug/io/libgdbwrap/Makefile src/plug/io/libgdbwrap/README src/plug/io/libgdbwrap/client.c src/plug/io/libgdbwrap/gdbwrapper.c src/plug/io/libgdbwrap/include/gdbwrapper-internals.h src/plug/io/libgdbwrap/include/gdbwrapper-stddef.h src/plug/io/libgdbwrap/include/gdbwrapper.h src/plug/io/libgdbwrap/include/libaspect.h src/plug/io/libgdbwrap/include/libe2dbg.h src/plug/io/libgdbwrap/include/revm.h src/plug/io/libgdbwrap/interface.c src/plug/io/wscript_build src/plugin.c src/plugin.h src/radare.c
+description:
+* Initial import of gdbwrapper ERESI's library
+  - 'make sync' to keep in sync with eresi source
+  - Added gdbwrap:// URI to connect to gdb using gdbwrap api
+  - makes gdb-server segfault easily LOL!
+  - move gdb and gdbx
+* Added missing docu for macho and sparc
+
+
+changeset:   715:9730ffd788f1
+user:        pancake <youterm.com>
+date:        Mon Dec 15 12:33:35 2008 +0100
+files:       src/vars.c src/xrefs.c
+description:
+* Mostly implemented the raw variable access user interface
+  - CF[aAv][gs] - arg,fastarg,var - get,set
+
+
+changeset:   714:6b06820914cb
+user:        pancake <youterm.com>
+date:        Mon Dec 15 02:18:23 2008 +0100
+files:       src/cmds.c src/vars.c
+description:
+* Added better CFv list (function variables)
+  - CFv is working now
+  - Supports arrays, needs some better help messages
+  - Lot of parsing
+
+
+changeset:   713:bb94db9ca03b
+user:        pancake <youterm.com>
+date:        Mon Dec 15 01:04:25 2008 +0100
+files:       src/analyze.c src/arch/x86/code.c src/cmds.c src/code.c src/code.h src/dbg/debug.c src/vars.c
+description:
+* Add 'from' address to analyze_function
+* Fixups for the get/set var code analysis on x86
+  - Other fixups for code analysis
+* Proper function-length detection with Vdf
+* Pseudofix for framesize comment
+
+
+changeset:   712:eb3b58c21092
+user:        pancake <youterm.com>
+date:        Sun Dec 14 15:12:22 2008 +0100
+files:       src/cmds.c src/data.c src/data.h src/objects.mk src/vars.c src/wscript_build
+description:
+* Added 'vars' into waf and make
+* Initial base code for variable definition
+  - Needs more love and a bit of rethinking
+  - Initial draft for variable access tracking
+  - Cv, CF? ..
+
+
+changeset:   711:1c37027a7394
+user:        pancake <youterm.com>
+date:        Thu Dec 11 23:22:55 2008 +0100
+files:       TODO dist/maemo/Makefile src/cmds.c src/data.c src/libr/syscall/syscall.c src/utils.h src/vars.c
+description:
+* Initial dummy code for variable support
+  - Must think more on the design
+* Do not install bindiff on maemo
+
+
+changeset:   710:5474887ca96a
+user:        pancake <youterm.com>
+date:        Thu Dec 11 11:05:08 2008 +0100
+files:       AUTHORS src/cmds.c src/radare.c
+description:
+* Use alloca in _cmd() -- faster and safer
+* Added '"' quoted prefix for commands to disable '>,|,@,`,&' pipes
+
+
+changeset:   709:8fda74e6b421
+user:        pancake <youterm.com>
+date:        Wed Dec 10 22:32:30 2008 +0100
+files:       src/cmds.c src/libr/syscall/TODO src/print.c src/radare.c src/vm.c src/vm.h
+description:
+* Fix get/set for subregisters (ax/ah/al)
+* Fix 'pm' issue when giving field names
+* Added some more help for 'av' command
+* Allow type grepping for 'avr'
+
+
+changeset:   708:4de8ccdde652
+user:        pancake <youterm.com>
+date:        Tue Dec 09 12:23:33 2008 +0100
+files:       src/cmds.c src/radare.c src/vm.c
+description:
+* Added 'avf' to evaluate expressions from a file
+* Fixed '>' and '<' usage for 'ave' command (hacky way)
+* Fixed math expressions, multiple concatenated exprs too
+* Fix infinite loop for get/set expressions
+* Added 'al' and 'ah' aliased registers
+* Fix a parsing bug in 'av' command
+
+
+changeset:   707:e2844c6a680c
+user:        pancake <youterm.com>
+date:        Mon Dec 08 20:20:51 2008 +0100
+files:       src/vm.c src/vm.h
+description:
+* Added mmu_cache for writes
+* Added basic reg-alias for get/set evals
+  - Added pseudo 'al' register (not yet working)
+  - Work in progress commit ... O:)
+
+
+changeset:   706:4954519ffc86
+user:        pancake <youterm.com>
+date:        Mon Dec 08 04:34:51 2008 +0100
+files:       src/libr/Makefile src/libr/syscall/Makefile src/libr/syscall/TODO src/libr/syscall/darwin.c src/libr/syscall/darwin.o src/libr/syscall/freebsd.c src/libr/syscall/freebsd.o src/libr/syscall/linux.c src/libr/syscall/linux.o src/libr/syscall/netbsd.c src/libr/syscall/netbsd.o src/libr/syscall/syscall.c src/libr/syscall/syscall.o src/libr/syscall/t/Makefile src/libr/syscall/t/hello.c
+description:
+* Initial import of libr.syscall
+  - Stable api for getting information from
+    syscall numbers and strings
+  - Should be used from the core and the debugger
+  - Added test program
+
+
+changeset:   705:9ebce7835c1e
+user:        pancake <youterm.com>
+date:        Mon Dec 08 03:58:56 2008 +0100
+files:       src/pas.c src/vm.c src/vm.h
+description:
+* Added cmovl opcode for pas.x86
+* Added 'cmp' and 'jz/jnz' opcodes to the VM
+  - cmp uses vm_cpu.zf.
+* Added 'ifnot' pseudo-preprocessor assembly directive
+  for conditional opcodes
+* Added 'ret' opcode.
+  - Stack access stills being 'real'
+* Fix track of disassembly by using 'pd 1 @ pc'
+
+
+changeset:   704:5c9068bb15c4
+user:        pancake <youterm.com>
+date:        Mon Dec 08 03:30:26 2008 +0100
+files:       TODO src/cmds.c src/code.c src/rio.c src/vm.c src/vm.h
+description:
+* Initial pseudo working implementation of the VM with real code
+  - Added peek and poke from memory using '[]' expressions
+    > avr eax = [0x8048000]
+    > avr [ebp-4]=0x33
+  - Stack access is not emulated yet. (should be previously dumped)
+  - Aims to support multiple function calling systems
+  - Aims to implement syscalls for asm.os and asm.arch
+  - Implemented jmp, call and syscall psuedoopcodes
+  - All basic arithmetic and logical operations are now supported
+    - vm_get_math +-*/%&|^
+  - Allow to add and remove registers in runtime (avr+, avr-)
+    > avr+ eax int32
+    > avr+ rip int64
+  - Added 'avx' command that emulates using pas_aop with pseudo
+    - Not yet working at all (udis pseudo-disasm is broken)
+
+
+changeset:   703:0ba49e9cb104
+user:        pancake <youterm.com>
+date:        Sat Dec 06 19:28:06 2008 +0100
+files:       Makefile.acr TODO src/dbg/debug.c src/ranges.c src/ranges.h
+description:
+* Added some missing rmfiles for make deinstall (thx ianis!)
+* Initial implementation of the touchtrace with ranges (!ttr)
+  - !tt is the same as before
+* Minor optimization for debug_trace()
+* Added indirect enhacements for the ranges api
+
+
+changeset:   702:8c9657e7c8c1
+user:        pancake <@youterm.com>
+date:        Fri Dec 05 17:12:18 2008 +0100
+files:       TODO src/cmds.c src/config.c src/dbg/debug.c src/ranges.c src/vm.c src/vm.h
+description:
+* Make 'av' command happy with vm.c
+  - Basic register allocation and asignation for the vm
+  - Soon will be integrated with PAS to evaluate real code
+
+
+changeset:   701:e8d9f1b7a49f
+user:        pancake <youterm.com>
+date:        Fri Dec 05 10:49:18 2008 +0100
+files:       src/config.c
+description:
+* dbg.regs2 is false by default
+
+
+changeset:   700:6672af4def37
+user:        pancake <youterm.com>
+date:        Fri Dec 05 10:48:56 2008 +0100
+files:       doc/xtra/segdump.S doc/xtra/x86-flags src/config.c src/dbg/arch/i386-bsd.h src/dbg/arch/i386-linux.h src/dbg/arch/i386-linux64.h src/dbg/arch/i386.c src/dbg/system.c src/radare.c src/rasm/olly.c
+description:
+* Added $FROM to dumpseg.S
+* Added !reg2 to show segment registers on x86
+  - Linux and BSD support atm
+* Fixed ollydbg assembler with 'rasm -a olly'
+
+
+changeset:   699:649c89c9109e
+user:        pancake <@youterm.com>
+date:        Thu Dec 04 16:22:38 2008 +0100
+files:       src/cmds.c src/config.c src/cons.c src/libr/cons/cons.c src/rio.c src/undo.c
+description:
+* Initial implementation of 'wm'
+  - Binary write mask (f.ex: wm ff00ff)
+* Added file.undowrite toggle to disable undos
+* Merged grepcounter into libr.cons
+
+
+changeset:   698:8cf0aa4314f4
+user:        pancake <@youterm.com>
+date:        Thu Dec 04 13:14:22 2008 +0100
+files:       TODO src/cmds.c src/code.c src/cons.c
+description:
+* Fix indentation of command help messages
+* Apply Nibble patch partially fixing 'pas'
+* Added help for 'q' command. (q?)
+* Added line counter in cons_grep as ~?
+  - f~?  = 740
+  - f~?sym  = 80
+
+
+changeset:   697:aa11fbcb3f63
+user:        nibble
+date:        Thu Dec 04 01:39:25 2008 +0100
+files:       src/libr/bin/elf.c
+description:
+* r_bin_elf
+  - fix r_bin_elf_get_symbols
+
+
+changeset:   696:0e9d75825f8c
+user:        pancake <@youterm.com>
+date:        Wed Dec 03 19:55:08 2008 +0100
+files:       src/config.c src/data.c src/data.h src/dbg/debug.c src/trace.c src/undo.c src/utils.c
+description:
+* Added cmd.touchtrace
+  - Fixed "Displaying..." message index
+* Added $$F and data_prev helper for it
+* Added undo_get_last_seek() helper for $$l
+* Added $$e for end of basic block boolean check
+
+
+changeset:   695:91c99bceed8f
+user:        pancake <@youterm.com>
+date:        Wed Dec 03 14:05:26 2008 +0100
+files:       TODO src/cmds.c src/code.h src/radare.h src/ranges.c src/trace.c
+description:
+* Initial implementation of the 'att' command
+  - Analyze Trace Tag set. Receives a number as argument.
+  - Tag is one bit of 64.
+  - Each trace is tagged when added or modified
+  - Tag is used as filtering for trace processing
+* Added trace_sort()
+* Display total unused bytes in arb (boolean ranges)
+
+
+changeset:   694:a9db358fca83
+user:        pancake <youterm.com>
+date:        Wed Dec 03 10:46:39 2008 +0100
+files:       src/dbg/debug.c
+description:
+* Port touchtrace to mips and arm
+* Initial rethink for ranging support
+
+
+changeset:   693:64b51eb7b62d
+user:        pancake <youterm.com>
+date:        Wed Dec 03 10:34:21 2008 +0100
+files:       src/config.c src/ranges.c src/ranges.h
+description:
+* Full implementation of ranges
+  - Added 'ari' command to import ranges
+  - Uses range.trace,graphs,functions
+  - Working implementation of ranges_boolean()
+  - Added ranges_sort()
+  - Caches changes in ranges list to avoid unnecesary sorts
+  - Added ar% (percentatge visual ranges)
+
+
+changeset:   692:2e9fdc583d27
+user:        pancake <@youterm.com>
+date:        Tue Dec 02 19:59:47 2008 +0100
+files:       src/cmds.c src/config.c src/dbg/arch/i386.c
+description:
+* Added 'dbg.btlast' to avoid ultra-large backtraces
+* Use graph.depth only for 'ac', not for a*
+
+
+changeset:   691:48d476760ad7
+user:        pancake <@youterm.com>
+date:        Mon Dec 01 19:46:14 2008 +0100
+files:       src/hist.c src/libr/cons/Makefile src/libr/cons/cons.c src/libr/cons/strsub.c src/libr/cons/t/hello.c src/libr/include/r_cons.h src/libr/include/r_line.h src/libr/line/Makefile src/libr/line/TODO src/libr/line/dietline.c src/libr/line/dietline.h src/libr/line/t/Makefile src/libr/line/t/hello.c src/libr/rules.mk src/libr/tests.mk src/objects.mk src/ranges.c src/ranges.h src/utils.c src/wscript_build
+description:
+* Remove unused/deprecated hist.c
+* Fix ignored error for libr
+* Initial working implementation of r_cons and r_line
+  - Added hello world examples for both
+  - r_line depends on r_cons
+  - r_cons is independent
+  - We need to optionally link against readline
+* Some minor fixups for ar command
+  - arm -> merge ranges
+  - fixups for ranges_sub
+  - str_grep is now handling '*' endchar
+
+
+changeset:   690:e8211d1a6dc8
+user:        nibble
+date:        Mon Dec 01 13:16:36 2008 +0100
+files:       src/libr/bin/Makefile src/libr/bin/bin.c src/libr/bin/dietelf.c src/libr/bin/dietelf64.c src/libr/bin/dietpe.c src/libr/bin/elf.c src/libr/bin/elf64.c src/libr/bin/pe.c src/libr/bin/t/sections.c src/libr/include/r_bin.h src/libr/include/r_bin_dietelf.h src/libr/include/r_bin_dietelf64.h src/libr/include/r_bin_dietelf_static.h src/libr/include/r_bin_dietelf_types.h src/libr/include/r_bin_dietpe.h src/libr/include/r_bin_dietpe_static.h src/libr/include/r_bin_dietpe_types.h src/libr/include/r_bin_elf.h src/libr/include/r_bin_elf64.h src/libr/include/r_bin_elf_specs.h src/libr/include/r_bin_pe.h src/libr/include/r_bin_pe_specs.h src/libr/rules.mk
+description:
+* r_bin
+  - r_bin_dietelf -> r_bin_elf
+  - r_bin_dietpe -> r_bin_pe
+  - merge headers
+* libr
+  - fix .a generation
+
+
+changeset:   689:af97306bf150
+user:        pancake <@youterm.com>
+date:        Mon Dec 01 11:08:31 2008 +0100
+files:       src/libr/Makefile src/libr/bin/Makefile src/libr/bin/bin.c src/libr/bin/dietelf.c src/libr/bin/dietelf64.c src/libr/bin/dietpe.c src/libr/bin/t/Makefile src/libr/bin/t/baddr.c src/libr/bin/t/entry.c src/libr/bin/t/imports.c src/libr/bin/t/sections.c src/libr/bin/t/symbols.c src/libr/include/r.h src/libr/include/r_bin.h src/libr/include/r_bin_dietelf.h src/libr/include/r_bin_dietelf64.h src/libr/include/r_bin_dietelf_static.h src/libr/include/r_bin_dietelf_types.h src/libr/include/r_bin_dietpe.h src/libr/include/r_bin_dietpe_static.h src/libr/include/r_bin_dietpe_types.h src/libr/include/r_bin_elf.h src/libr/include/r_bin_pe.h
+description:
+* Import r_bin library patch from Nibble
+  - Mostly working implementation for ELF32/64 and PE
+  - Added some usage examples
+
+
+changeset:   688:a144de1069a3
+user:        pancake <@youterm.com>
+date:        Fri Nov 28 20:06:09 2008 +0100
+files:       src/plug/hack/Makefile src/plug/hack/mkruby.rb wscript
+description:
+* Rename libruby.so to ruby.so
+* Fix again the installer for ruby
+
+
+changeset:   687:bbd8e11e4079
+user:        pancake <@youterm.com>
+date:        Fri Nov 28 19:17:19 2008 +0100
+files:       Makefile.acr src/rsc/Makefile wscript
+description:
+* Theorically fix the build order bug for make
+* Ignore --without-ruby wscript option (brainstorm test plz :)
+* Finally fix the make+rsc install problem
+
+
+changeset:   686:4090cd869adb
+user:        pancake <@youterm.com>
+date:        Fri Nov 28 19:00:36 2008 +0100
+files:       src/plug/hack/wscript_build src/rsc/Makefile wscript
+description:
+* Fix ruby plugin build+install for waf (thx brainstorm!)
+* FIx make+rsc install
+
+
+changeset:   685:a39705ea8d40
+user:        pancake <@youterm.com>
+date:        Fri Nov 28 17:11:43 2008 +0100
+files:       TODO src/cmds.c src/data.c src/dbg/debug.c src/ranges.c src/trace.c
+description:
+* Update TODO
+* Added 'atr' to import traces as ranges
+* Simplify CF grep
+* Added data_list_ranges
+
+
+changeset:   684:98a637cbcc24
+user:        pancake <@youterm.com>
+date:        Fri Nov 28 16:44:06 2008 +0100
+files:       src/cmds.c src/cmds.h src/config.c src/main.h src/rabin/rabin.c src/ranges.c src/ranges.h src/rdb.c
+description:
+* Use / splitter for rabin -o
+* Use graph.depth for 'ac' by default
+* Refactor 'g' command usage.
+  - gr outputs ranges
+  - gr* outputs range commands
+  (basic block byte ranges)
+* Added missing ranges.h
+* Make ranges api work independently from the owned
+  ranges linked list
+  - fix a bug about dupped items
+  - Added ar-* to reset ranges table
+  - Added ar* to output in ar+ format
+
+
+changeset:   683:217210eeb91b
+user:        pancake <youterm.com>
+date:        Fri Nov 28 11:01:27 2008 +0100
+files:       TODO
+description:
+* Added todo tip to import trace, func and
+  graph info into ranges
+
+
+changeset:   682:84a42413b070
+user:        pancake <youterm.com>
+date:        Fri Nov 28 10:58:12 2008 +0100
+files:       src/cmds.c src/config.c src/main.h src/objects.mk src/ranges.c src/wscript_build
+description:
+* Initial implementation of 'ar' command
+  - Analyze ranges
+  - _add, _sub and _list implemented
+  - traces,functions,graphs info not yet integrated
+  - dummy boolean op todo
+
+
+changeset:   681:fed3e60f7e1a
+user:        pancake <@youterm.com>
+date:        Thu Nov 27 14:13:56 2008 +0100
+files:       src/data.c
+description:
+* Apply nibble patch fixing the data corruption bug
+  - related to p% zomfg :)
+
+
+changeset:   680:aefd85306902
+user:        pancake <@youterm.com>
+date:        Thu Nov 27 12:46:45 2008 +0100
+files:       src/flags.c
+description:
+* Oops..fix build dont blame me
+
+
+changeset:   679:41840c9f0575
+user:        pancake <@youterm.com>
+date:        Thu Nov 27 12:44:30 2008 +0100
+files:       src/cmds.c src/code.c src/config.c src/config.h src/flags.c src/print.c src/visual.c
+description:
+* Apply nibble patch fixing height in Ve
+* Fix 3rd arg of flag_grep_np function
+
+
+changeset:   678:b527760939c4
+user:        pancake <youterm.com>
+date:        Thu Nov 27 11:14:39 2008 +0100
+files:       src/cmds.c src/flags.c src/flags.h src/utils.c src/utils.h
+description:
+* Added fgp and fgn commands
+  - Flag grep next and previous commands
+* Drop 'malloc' from flag_grep
+* Added str_grep helper functions in utils
+
+
+changeset:   677:e74b2eef2939
+user:        pancake <youterm.com>
+date:        Thu Nov 27 01:04:30 2008 +0100
+files:       src/rabin/aux.c src/rabin/aux.h src/rabin/rabin.c src/rabin/rabin.h
+description:
+* Add -o flag to rabin
+  - to 'Operate' binaries
+  - Initial implementation of the section resizer
+  - fix some printf indentations
+
+
+changeset:   676:82cb2a67168b
+user:        pancake <@youterm.com>
+date:        Wed Nov 26 12:10:28 2008 +0100
+files:       src/code.c src/data.c
+description:
+* Beutify .byte (DATA_HEX) output in disassembly
+  - Fix jk scrolling keys for cursor
+  - Start dumping under the flag
+
+
+changeset:   675:e1f265bf843c
+user:        pancake <@youterm.com>
+date:        Wed Nov 26 11:13:29 2008 +0100
+files:       src/cmds.c src/print.c src/rabin/rabin.c
+description:
+* Recognize OBJECT type for ELF data
+* Fix build
+
+
+changeset:   674:3cc01e20763b
+user:        pancake <youterm.com>
+date:        Wed Nov 26 10:28:12 2008 +0100
+files:       src/code.c src/code.h src/config.c src/pas.c src/rabin/dietelf.c src/rabin/rabin.c
+description:
+* Apply nibble patch fixing problems for loading symbols from .o
+  - Sets CF and Cd depending of symbol type
+  - Needs more work on this area
+  - code view by default
+* Add new asm.profile 'gas'
+  - Enables 'asm.jmpflags'
+  - Uses aop_gas to display flags instead of offsets
+  - automatically set flags for flags
+  - only showing opcodes and flags
+* Use '.byte' and '0x%02x,' for Cd in disas (gas format)
+
+
+changeset:   673:c05cc4e397b8
+user:        pancake <youterm.com>
+date:        Wed Nov 26 01:01:16 2008 +0100
+files:       src/cmds.c src/cons.c src/print.c src/visual.c
+description:
+* Fix segmentation fault when entering in Visual without previous print (???)
+* Fix scr.seek (nibble patch)
+
+
+changeset:   672:f0a73c93984c
+user:        pancake <@youterm.com>
+date:        Tue Nov 25 20:15:57 2008 +0100
+files:       src/code.c src/radare.c
+description:
+* Properly display asm.flagsline=true
+* Fix segfault for !! in _raw
+
+
+changeset:   671:c7c38f6a0c1f
+user:        pancake <@youterm.com>
+date:        Tue Nov 25 14:33:02 2008 +0100
+files:       scripts/macros src/cmds.c src/radare.c
+description:
+* Add ?z strlen strings
+* Add branch-analysis macro example
+  > (step-post-anal,?z`ao@oeip~type = cond, \
+    ??(),?eip==`ao@oeip~jump =[2], \
+    ??CC likely@oeip,??(),CC unlikely@oeip,)
+
+
+changeset:   670:9d055a107f4f
+user:        pancake <youterm.com>
+date:        Tue Nov 25 10:59:55 2008 +0100
+files:       src/cons.c src/cons.h src/libr/cons/TODO src/libr/cons/cons.c src/libr/cons/t/Makefile src/libr/cons/t/hello.c src/libr/include/r_cons.h src/libr/include/r_util.h src/libr/rules.mk src/libr/tests.mk src/libr/util/Makefile src/libr/util/mem.c src/libr/util/num.c src/libr/util/str.c src/libr/util/string.c src/macros.c src/radare.c
+description:
+* r_cons initial build
+  - Some more refactoring needed
+  - Depends on libr_util
+* Add tests.mk to ease tests build
+* Fix build for libr_util
+* Use ',' as separator for oneliner macros
+  - Fix infinite loop bug in macros_add when replacing a macro
+
+
+changeset:   669:fd48bf6ae1e8
+user:        pancake <youterm.com>
+date:        Tue Nov 25 03:55:16 2008 +0100
+files:       src/radare.c
+description:
+* Do not show cursor in stack view of debugger
+
+
+changeset:   668:59151080af34
+user:        pancake <youterm.com>
+date:        Tue Nov 25 03:39:42 2008 +0100
+files:       src/code.h src/config.c src/cons.c src/cons.h src/visual.c
+description:
+* Major refactoring and optimizations for cons.c
+  - Prepared to be moved into libr!
+  - Externalize config_ stuff to avoid excessive linkedlist abuse
+  - Make cons_print_real work with buffer_len
+  - Remove strcat! use hand-made memcpy version (speed++)
+  - Recicle vsnprintf return values to get length
+  - More optimal management of console buffer allocation
+  - Avoid strlen as much as possible
+  - Remove noisy code
+* Fix scrseek to _always_ seek to scr.seek
+
+
+changeset:   667:b837cb35d5a5
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 18:53:55 2008 +0100
+files:       src/visual.c
+description:
+* Apply Nibble's patch to make scrseek work again
+
+
+changeset:   666:58f0194ef83f
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 18:43:29 2008 +0100
+files:       TODO doc/radare.but src/macros.c src/radare.c
+description:
+* Fix flag underline for the book
+* Fix the use of for '.' command in for-each
+
+
+changeset:   665:4f0e5e0dd9d7
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 18:10:32 2008 +0100
+files:       src/code.c src/macros.c src/print.h src/radare.c
+description:
+* Add support for oneliner macro definitions
+  - f.ex: (for-fun\()`C*~CF[3]#$@\)
+  - Using '\' for newlines
+  - Some nasty hacks in radare_cmd to make it work
+* Add some more myrow++
+
+
+changeset:   664:65efdf7a5b7d
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 17:15:11 2008 +0100
+files:       src/cmds.c src/code.c src/flags.c src/rdb.c src/rsc/Makefile src/rsc/pool/maps
+description:
+* Enforce the use of '.' instead of '_' for flags
+  - maps_ -> map_
+  - asm.section fixed again
+* Measure cons lines for comments in disassembly
+
+
+changeset:   663:8c6d551d6a3f
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 14:34:02 2008 +0100
+files:       TODO scripts/macros src/code.c src/cons.c src/plug/io/debug.c src/print.c src/radare.c src/rsc/pool/dwarf-addr src/rsc/pool/dwarf-addrs
+description:
+* Added for-fun macro to iterate over functions
+* Added TODO tips for optimizations (thx callgrind)
+* Use dwarf-addrs script to use rsc line
+  - Adaptation of dwarf-addr
+* Fixed disassembly CHECK_LINES for visual
+  - avoid disasm more lines than screen height
+* Cleanup getHTTPdate function
+* Better handler of cons_buffer_sz and _len
+  - Always growing console buffer
+  - Avoid strlen'ing too many times
+  - We should destroy strcat too
+* Use cache for dbg_lseek
+
+
+changeset:   662:867ec99a721a
+user:        pancake <@youterm.com>
+date:        Mon Nov 24 12:38:07 2008 +0100
+files:       doc/fortunes doc/radare.but src/analyze.c src/cmds.c src/cons.c src/data.c src/macros.c src/print.c src/radare.c
+description:
+* Use fun. instead of fun_
+* Add help for iterators in (?
+* Minor optimizations in cons.c
+* Fix segfault in data_list
+* Problem found in print.c related to dwarf
+
+
+changeset:   661:e145308eed24
+user:        pancake <youterm.com>
+date:        Mon Nov 24 00:24:42 2008 +0100
+files:       src/config.c src/cons.c
+description:
+* Show 'pd 5' in Ve -> asm.
+* Fix pd~[N] single-line bug
+
+
+changeset:   660:45d734e262d7
+user:        pancake <youterm.com>
+date:        Mon Nov 24 00:01:13 2008 +0100
+files:       src/cons.c src/dbg/mem.c src/radare.c src/visual.c
+description:
+* Reduce cons_ usage in visual
+  - Use pseudobuffering for nullcmd (dbg basic view)
+  - Fix grepline for pd
+* Use map. instead of map_
+
+
+changeset:   659:c679a946ff38
+user:        pancake <youterm.com>
+date:        Sun Nov 23 20:59:27 2008 +0100
+files:       src/cons.c src/rabin/rabin.c
+description:
+* Fix ptr to make ~[N] work
+* Rename '_' into '.' for rabin output
+  - sym_main is now sym.main
+  - ...
+
+
+changeset:   658:611552f3f94d
+user:        pancake <youterm.com>
+date:        Sun Nov 23 20:35:37 2008 +0100
+files:       src/code.c src/config.c src/cons.c src/data.c src/flags.c src/flags.h
+description:
+* Added asm.flagsall
+  - Useful to bypass anti-disassembly tricks
+* Better support for Cm
+  - Listed properly in C* now
+  - Displayed better in pd
+* Fix asm.flagsline to not depend on asm.comments
+* Initial implementation of awk-like word grepping with ~[#]
+  > pd 20~mov#$@[2]
+
+
+changeset:   657:6ccfd33802bc
+user:        pancake@flubox
+date:        Fri Nov 21 17:40:19 2008 +0100
+files:       dist/maemo/Makefile src/cmds.c src/dbg/arch/arm-bp.c src/dbg/objects.mk src/visual.c src/w32utils.c
+description:
+* Fixups for building on maemo
+
+
+changeset:   656:0fe3293aebb5
+user:        pancake <@youterm.com>
+date:        Fri Nov 21 13:31:22 2008 +0100
+files:       TODO doc/radare.but scripts/macros src/cons.c
+description:
+* Added documentation for iterators
+* Added support for greplines in cons
+  > f ~sym_#4   ; get 4rt symbol
+  > :pd ~#3     ; get 3rd opcode
+
+
+changeset:   655:6f0894bbbf95
+user:        pancake <@youterm.com>
+date:        Fri Nov 21 12:30:48 2008 +0100
+files:       src/cmds.c src/code.c src/cons.c src/macros.c src/radare.c src/utils.c
+description:
+* Fix comparision without spaces (?$@==3) works
+* Make :pd disassembly without opsize or stackptr
+* Add cons_grep natively with ~ from the shell
+  > "f ~ sym_" is the same as "f | grep sym_"
+* Make macro iterators work!
+
+
+changeset:   654:706aa9af3378
+user:        pancake <youterm.com>
+date:        Fri Nov 21 10:44:25 2008 +0100
+files:       TODO src/cmds.c src/macros.c src/macros.h src/print.c src/radare.c src/rasm/x86.c
+description:
+* Apply Nibble patch fixing wa seek address
+  - Also applied the branch cursor highlighting for baddr
+* Initial implementation of macro iterators
+  - Macros now can return u64 values or NULL
+  - Not yet working but infrastructure is done
+  - Fix recursivity limit when using breaks in macros
+
+
+changeset:   653:555737379cd1
+user:        pancake <youterm.com>
+date:        Fri Nov 21 00:25:01 2008 +0100
+files:       src/radare.c
+description:
+* Implement @@.file foreach iteration with files
+
+
+changeset:   652:6b5e59f3b9f7
+user:        pancake <@youterm.com>
+date:        Thu Nov 20 19:54:54 2008 +0100
+files:       doc/radare.but src/dbg/darwin/fd.c src/dbg/fd.c src/dbg/os.h src/dbg/system.c src/dbg/unix/fd.c src/dbg/win32/fd.c src/radare.c
+description:
+* Fix !fd > file (All debugger commands now can dump to file :D)
+* Add example for pm with GStreamer
+* Added minimal cheat sheet in documentation
+* Add !fd* to list filedescriptors as radare commands
+  - Add !fd -* to close all filedescriptors
+* Add help for !reg?
+
+
+changeset:   651:5eaee632a126
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 19:03:00 2008 +0100
+files:       doc/radare.but
+description:
+* Added documentation for labels in macros for the book
+
+
+changeset:   650:a2c9890ee200
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 18:41:23 2008 +0100
+files:       src/macros.c
+description:
+* Avoid dupped label additions
+
+
+changeset:   649:9d2f38df668a
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 18:16:55 2008 +0100
+files:       scripts/macros src/arch/dalvik/code.c src/arch/dalvik/dexdump/DexDump.c src/arch/dalvik/dexdump/Makefile src/arch/dalvik/dexdump/OpCodeNames.c src/arch/dalvik/dexdump/OpCodeNames.h src/arch/dalvik/dexdump/include/libdex/CmdUtils.h src/arch/dalvik/dexdump/include/libdex/DexCatch.h src/arch/dalvik/dexdump/include/libdex/DexClass.h src/arch/dalvik/dexdump/include/libdex/DexDataMap.h src/arch/dalvik/dexdump/include/libdex/DexFile.h src/arch/dalvik/dexdump/include/libdex/DexProto.h src/arch/dalvik/dexdump/include/libdex/InstrUtils.h src/arch/dalvik/dexdump/include/libdex/Leb128.h src/arch/dalvik/dexdump/include/libdex/OpCode.h src/arch/dalvik/dexdump/include/libdex/OptInvocation.h src/arch/dalvik/dexdump/include/libdex/SysUtil.h src/arch/dalvik/dexdump/include/libdex/ZipArchive.h src/arch/dalvik/dexdump/include/libdex/sha1.h src/arch/dalvik/dexdump/include/vm/Common.h src/cmds.c src/config.h src/macros.c src/plug/hack/perl.c
+description:
+* Added support for labels in macros for scripting
+  - Added a simple loopy program in scripts/macros
+* Added dummy dexdump and basic code analysis for DalvikVM
+
+
+changeset:   648:4f335775ec11
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 14:31:45 2008 +0100
+files:       TODO src/config.c src/dbg/debug.c src/dbg/debug.h src/dbg/dump.c src/dbg/fd.c src/dbg/mem.c src/dbg/mem.h src/dbg/objects.mk src/dbg/system.c src/dbg/wscript_build
+description:
+* Initial non-working implementation of fd dumper/restorer
+  - Added dump.c (takes stuff from debug.c, mem.c ,..)
+  - Adds dump.regs, dump.user, dump.libs, dump.fds
+
+
+changeset:   647:44477984a712
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 14:02:16 2008 +0100
+files:       doc/radare.but src/cmds.c src/code.c src/trace.c
+description:
+* Update documentation for 'at' command
+  - Added ioli's and pcme0's crackmes as appendix in the book
+* Added atd and atD commands
+  - Show trace of executed code for assembly or dwarf
+
+
+changeset:   646:bb044ffcdcd0
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 12:45:13 2008 +0100
+files:       doc/radare.but src/dbg/debug.c src/dbg/system.c src/rsc/pool/dwarf-addr src/rsc/pool/dwarf-at src/rsc/pool/dwarf-lines src/rsc/pool/dwarf-traces
+description:
+* Added rsc helpers for dwarf
+  - dwarf-traces uses 'at' information to
+    show source-level traces
+  - Fix dwarf-addr script
+  - Added dwarf-at addr2line wrapper
+* Added documentation for dwarf-traces
+* Make '!stepu' work in two ways:
+  - step until address (address as argument)
+  - step until user code (no arguments)
+
+
+changeset:   645:1a4687569751
+user:        pancake <@youterm.com>
+date:        Wed Nov 19 12:01:15 2008 +0100
+files:       src/config.c src/macros.c src/print.c src/visual.c
+description:
+* Add cmd.visualbind
+  - Bind 'b' key in visual to run this eval
+* Use tabs again in macros.c
+  - Some minor work on labelling
+* Fix cursor over jumps to use config.baddr
+
+
+changeset:   644:54e1194b681c
+user:        pancake <youterm.com>
+date:        Wed Nov 19 10:38:37 2008 +0100
+files:       doc/radare.but src/config.c src/dbg/debug.c
+description:
+* Added documentation for !trace debugger command
+  - Added examples for rasc
+* New options for !trace debugger command
+  - e trace.bps -> do not stop on breakpoints (trace them)
+  - e cmd.trace -> execute this command at every traced opcode
+  - Shows counter of executed opcodes
+  - Fix 'stop in breakpoints' problem
+
+
+changeset:   643:e670d007f3d4
+user:        pancake <@youterm.com>
+date:        Tue Nov 18 19:35:39 2008 +0100
+files:       doc/radare.but
+description:
+* Added documentation for !fdio bt and dwarf
+
+
+changeset:   642:db85ae8d0706
+user:        pancake <@youterm.com>
+date:        Tue Nov 18 18:12:00 2008 +0100
+files:       src/config.c src/dbg/debug.c src/dbg/system.c
+description:
+* Added trace.calls option for !trace command
+  - Only traces 'call' instructions
+
+
+changeset:   641:72512ab82c05
+user:        pancake <@youterm.com>
+date:        Tue Nov 18 17:47:22 2008 +0100
+files:       src/code.c src/config.c
+description:
+* Implement asm.case to get uppercase disassemblies
+
+
+changeset:   640:8dba4b03dcb0
+user:        pancake <@youterm.com>
+date:        Tue Nov 18 16:59:03 2008 +0100
+files:       src/arch/x86/ollyasm/asmserv.c src/arch/x86/ollyasm/disasm.c src/code.c
+description:
+* Apply Nibble patches to make OLLY disassembler work
+  - lowercase by default
+  - Use 0x for hex values to avoid confusing people
+
+
+changeset:   639:dc0264e3c55d
+user:        pancake <youterm.com>
+date:        Tue Nov 18 10:53:55 2008 +0100
+files:       src/dbg/darwin/debug.c src/dbg/fd.c src/dbg/io.c src/dbg/unix/debug.c src/dbg/win32/debug.c src/libr/io/io.c
+description:
+* New debug_os_write and debug_os_read
+  - Under layer for debug_read and debug_read_at
+  - debug_fd_read is also handled from read_at
+  - Fix infinite loop
+  - Not yet working :/
+* Added dummy r_io_resize in r_io
+
+
+changeset:   638:528b6577f526
+user:        pancake <youterm.com>
+date:        Tue Nov 18 10:24:50 2008 +0100
+files:       TODO src/dbg/debug.c src/dbg/debug.h src/dbg/fd.c src/dbg/io.c src/dbg/libps2fd.c src/dbg/mem.c src/dbg/objects.mk src/dbg/procs.c src/dbg/regs.c src/dbg/wscript_build
+description:
+* Some refactoring for the debugger
+  - Initial not yet fully working of fdio
+    - We have to also wrap read_at and write_at
+  - Added fd.c io.c and regs.c
+
+
+changeset:   637:de20f8f44f83
+user:        pancake <@youterm.com>
+date:        Mon Nov 17 17:53:30 2008 +0100
+files:       src/analyze.c src/code.c src/config.c src/config.h src/data.c src/dbg/arch/i386.c src/dbg/darwin/fd.c src/dbg/debug.c src/dbg/os.h src/dbg/unix/fd.c src/dbg/win32/fd.c src/print.c src/visual.c
+description:
+* Initial implementation of config.acursor
+  - Aligned cursor to opcode
+  - Used to colorize target offset for jumps
+    (visual+cursor over a branch)
+  - Also used for '<enter>' key over an opcode
+    to jump there and F2 for adding breakpoints
+    (Fixes the problem of adding breakpoints in
+    the middle of an instruction visually)
+* Added !fdr and !fdw commands.
+  - Read and write on filedescriptors of debugged child process
+
+
+changeset:   636:d3bc0b94b618
+parent:      635:cf33696efd24
+parent:      634:14a9b6f585d7
+user:        pancake <@youterm.com>
+date:        Mon Nov 17 15:08:21 2008 +0100
+files:       src/arch/x86/udis86/Makefile src/arch/x86/udis86/Makefile.in src/arch/x86/udis86/Makefile.standalone src/arch/x86/udis86/mnemonics.c src/arch/x86/udis86/mnemonics.dat src/arch/x86/udis86/mnemonics.h src/arch/x86/udis86/mnemonics.pl src/arch/x86/udis86/opcmap.c src/arch/x86/udis86/opcmap.h src/arch/x86/udis86/udcli/Makefile src/code.c
+description:
+* Merge heads
+
+
+changeset:   635:cf33696efd24
+parent:      627:6ca6bc467e85
+user:        pancake <@youterm.com>
+date:        Mon Nov 17 15:04:55 2008 +0100
+files:       doc/fortunes src/code.c
+description:
+* Handle 'error' field for olly disassembler
+  - Stills broken..grr
+* Fix asm.pseudo=true for x86
+
+
+changeset:   634:14a9b6f585d7
+user:        pancake <youterm.com>
+date:        Mon Nov 17 10:00:46 2008 +0100
+files:       src/cmds.c src/dbg/close.c src/plug/hack/mkruby.rb src/radiff/rdbdiff_main.c src/visual.c
+description:
+* Initial implementation of 'wt' command
+* Fix debug_close() : refactoring
+* Build ruby plugin with -fPIC
+* Apply Anderson patch fixing build of rdbdiff
+
+
+changeset:   633:9ac7ce1bb0de
+user:        pancake <youterm.com>
+date:        Sun Nov 16 21:58:54 2008 +0100
+files:       Makefile.acr config.mk.acr configure configure.acr global.h.acr src/Makefile.acr src/objects.mk src/pas.c src/xrefs.c vala/api/core.vala vala/chart.c vala/core.c vala/default_layout.c vala/edge.c vala/graph.c vala/graph.h vala/layout.c vala/node.c vala/node.h vala/renderer.c vala/renderer.h vala/widget.c wscript
+description:
+* Lot of fixups related to make with/out gui
+  - Up waf/acr to version to 1.1
+  - Some GUI->HAVE_GUI
+  - Fix build of udis1.7 for make
+  - fix api/core.vala to use env_udpate()
+* Stupid rebuild of vala C files for vala
+
+
+changeset:   632:fe55d271db03
+user:        pancake <youterm.com>
+date:        Sun Nov 16 19:12:53 2008 +0100
+files:       src/code.c src/pas.c
+description:
+* Apply Nibble patch fixing asm.pseudo
+  - asm.syntax=pseudo is working too :D
+
+
+changeset:   631:e76eeeecb1be
+user:        pancake <youterm.com>
+date:        Sun Nov 16 19:09:24 2008 +0100
+files:       TODO src/arch/x86/udis86/Makefile src/arch/x86/udis86/Makefile.in src/arch/x86/udis86/Makefile.standalone src/arch/x86/udis86/decode.c src/arch/x86/udis86/decode.h src/arch/x86/udis86/input.c src/arch/x86/udis86/itab.c src/arch/x86/udis86/itab.h src/arch/x86/udis86/mnemonics.c src/arch/x86/udis86/mnemonics.dat src/arch/x86/udis86/mnemonics.h src/arch/x86/udis86/mnemonics.pl src/arch/x86/udis86/opcmap.c src/arch/x86/udis86/opcmap.h src/arch/x86/udis86/syn-att.c src/arch/x86/udis86/syn-intel.c src/arch/x86/udis86/syn-pseudo.c src/arch/x86/udis86/types.h src/arch/x86/udis86/udcli/Makefile src/arch/x86/udis86/udcli/udcli.c src/arch/x86/udis86/udis86.c
+description:
+* Apply Nibble's patch upgrading udis86 to version 1.7
+
+
+changeset:   630:31d62cb197c3
+user:        pancake <youterm.com>
+date:        Sun Nov 16 02:52:08 2008 +0100
+files:       src/code.c src/visual.c
+description:
+* Apply Nibble patch to fix x86 disassembler
+  - fix disassembler
+  - fix call's comments
+
+
+changeset:   629:ff0ba4b31d2c
+user:        pancake <youterm.com>
+date:        Sat Nov 15 15:49:16 2008 +0100
+files:       src/libr/Makefile src/libr/include/r_lib.h src/libr/lib/Makefile src/libr/lib/lib.c src/libr/rules.mk
+description:
+* Initial import of libr_lib for portable dynlib support
+
+
+changeset:   628:13a23cec2a23
+user:        pancake <youterm.com>
+date:        Sat Nov 15 15:06:42 2008 +0100
+files:       src/libr/include/r_io.h src/libr/include/r_types.h src/libr/io/handle.c src/libr/io/io.c src/libr/io/map.c src/libr/io/t/Makefile src/libr/io/t/cat.c src/libr/rules.mk
+description:
+* Initial full implementation of libr_io
+  - Implements a full handle plugin
+  - Adds per-plugin handled file-descriptor list
+  - Adds cache for plugins use
+  - Add test example program ('cat' using r_io)
+  - Cache last seek information
+  - Build libs using -fPIC to avoid data relocations
+
+
+changeset:   627:6ca6bc467e85
+user:        pancake <@youterm.com>
+date:        Fri Nov 14 19:28:43 2008 +0100
+files:       src/cmds.c src/libr/hash/rahash.c src/libr/hash/sha1.c
+description:
+* Add 'wt' dummy command
+* Some indent for libr_hash
+
+
+changeset:   626:da1f0c2f2a74
+user:        pancake <@youterm.com>
+date:        Fri Nov 14 16:18:53 2008 +0100
+files:       src/dbg/close.c src/libr/Makefile src/libr/include/list.h src/libr/include/r.h src/libr/include/r_io.h src/libr/include/r_util.h src/libr/io/Makefile src/libr/io/handle.c src/libr/io/io.c src/libr/io/map.c src/libr/line/dietline.c src/libr/util/Makefile src/libr/util/mem.c src/libr/util/num.c src/libr/util/string.c src/plugin.c src/print.c src/utils.c
+description:
+* Initial import of libr_util
+* Some more work on libr
+
+
+changeset:   625:9a82e506b5b1
+user:        pancake <@youterm.com>
+date:        Fri Nov 14 12:30:01 2008 +0100
+files:       TODO src/code.c src/libr/Makefile src/libr/README src/libr/cons/Makefile src/libr/cons/cons.c src/libr/hash/Makefile src/libr/hash/crc16.c src/libr/hash/crc32.c src/libr/hash/crc32.h src/libr/hash/crca.c src/libr/hash/entropy.c src/libr/hash/hamdist.c src/libr/hash/hash.c src/libr/hash/hash.h src/libr/hash/md4.c src/libr/hash/md5.h src/libr/hash/md5c.c src/libr/hash/rahash.c src/libr/hash/sha1.c src/libr/hash/sha1.h src/libr/hash/sha2.c src/libr/hash/sha2.h src/libr/include/r_cons.h src/libr/include/r_hash.h src/libr/include/r_io.h src/libr/include/r_print.h src/libr/include/r_types.h src/libr/io/Makefile src/libr/io/handle.c src/libr/io/io.c src/libr/line/Makefile src/libr/line/TODO src/libr/line/dietline.c src/libr/line/dietline.h src/libr/print/Makefile src/libr/print/print.c src/libr/rules.mk src/main.h src/print.c src/rabin/dietmach0.c src/rabin/dietpe.c src/rahash/md5c.c src/visual.c
+description:
+* Initial import of libr
+  - libr is composed by multiple sublibs
+  - libr_hash fully implemented
+  * io, hash, line, print, asm...
+* Some syntax fixups for dietmach0 and dietpe
+* Oops for px % (15 -> 16)
+
+
+changeset:   624:9c4ee971ee6d
+user:        pancake <@youterm.com>
+date:        Thu Nov 13 17:23:30 2008 +0100
+files:       TODO src/analyze.c src/arch/x86/code.c src/cmds.c src/code.c src/dbg/arch/i386.c src/dbg/mem.c src/flags.c src/print.c src/print.h src/undo.c src/visual.c
+description:
+* Fixes for stack-inc with sub for x86 code analysis
+* Minor cleanup for TODO
+* Cleaner and more flexible implementation of 'px'
+* Better feedback at visual's top bar
+* Remove INILINE and NEWLINE (use cons_ api directly)
+
+
+changeset:   623:b02475a547ef
+user:        pancake <@youterm.com>
+date:        Wed Nov 12 18:48:12 2008 +0100
+files:       TODO configure doc/radare.but src/cmds.c vala/grava/widget.vala vala/widget.c
+description:
+* Added p?f modifier to temporally set block size to func size
+  - pdf @ sym_main will show the whole main
+  - p8f @ sym_main will dump the sym_main symbol
+* Sync configure with configure.acr for HAVE_GUI
+* Add wiki stuff to the book
+  - usb sniffer documentation
+  - rsc graphing with yed
+* Added separators to popup menu in grava widget
+
+
+changeset:   622:e05b7d0d1802
+user:        pancake <@youterm.com>
+date:        Wed Nov 12 17:28:46 2008 +0100
+files:       src/radare.h src/rahash/hash.c src/xrefs.c vala/chart.c vala/default_layout.c vala/edge.c vala/graph.c vala/graph.h vala/grava/widget.vala vala/layout.c vala/node.c vala/node.h vala/renderer.c vala/renderer.h vala/widget.c
+description:
+* Fix build
+* Reduce zoom limit in vala
+
+
+changeset:   621:96abeb10314c
+user:        pancake <youterm.com>
+date:        Wed Nov 12 05:47:27 2008 +0100
+files:       src/cmds.c src/grava.c src/radare.c vala/Makefile vala/chart.c vala/default_layout.c vala/edge.c vala/graph.c vala/graph.h vala/grava/widget.vala vala/layout.c vala/node.c vala/node.h vala/renderer.c vala/renderer.h vala/widget.c
+description:
+* Update .c files for valac 0.5.1
+* '/' and '*' rotate graph with the keyboard
+* Better management of the config.graph variable
+* Make 'u' and 'U' work in graph view (undo/redo seek)
+* Fix build of vala files with make
+
+
+changeset:   620:e63e7a7c2ac9
+user:        pancake <youterm.com>
+date:        Wed Nov 12 05:20:44 2008 +0100
+files:       src/cmds.c src/code.c src/code.h src/config.c src/config.h src/cons.c src/flags.c src/grava.c src/print.c src/xrefs.c
+description:
+* Add help for 'ag' command
+  - ag. outputs graph 'dot' format
+* Fix build for xrefs
+* Added 'smart' profile
+* Added cons_invert() to be used for cursor and eip
+* Add config.graph to stilyze the graph disassembly
+
+
+changeset:   619:bae97948396b
+user:        pancake <youterm.com>
+date:        Wed Nov 12 04:38:17 2008 +0100
+files:       scripts/macros src/Makefile.acr src/cmds.c src/cmds.h src/code.c src/cons.h src/grava.c src/hack.c src/macros.c src/macros.h src/main.c src/plugin.c src/print.c
+description:
+* Add scripts/macros as examples for radare scripts
+* Refactor HAVE_VALAC and GUI to HAVE_GUI for waf+make
+* Add () command to 'break' macros
+* Another minor optimization for the disassembler
+* Added macro limit to avoid recursivity segfaults
+
+
+changeset:   618:9c2dc82bf2d8
+user:        pancake <youterm.com>
+date:        Wed Nov 12 03:49:23 2008 +0100
+files:       configure.acr global.h.acr src/cmds.c src/code.c src/code.h src/config.c src/config.h src/environ.c src/flags.c src/grava.c src/io.c src/io.h src/list.h src/macros.c src/macros.h src/main.h src/objects.mk src/plug/io/remote.c src/plugin.c src/plugin.h src/print.c src/print.h src/project.c src/rabin.c src/radare.c src/radare.h src/rio.c src/types.h src/utils.h src/visual.c src/wscript_build wscript
+description:
+* Minor optimization for disassembly using a flags_cache
+* Lot of refactoring
+  - HAVE_GUI added for waf and acr
+  - source splitted in more files
+  - api core functions renamed
+  - reorganization of .h files
+  - clean plugins.c code
+* Fix x86 disassembly offset (correct jump addresses)
+* Try 2 space indentation
+
+
+changeset:   617:65b67aa03405
+user:        pancake <youterm.com>
+date:        Tue Nov 11 10:33:37 2008 +0100
+files:       src/code.c src/dbg/debug.c
+description:
+* Apply nibble's patch fixing !mp xwr->rwx bug
+
+
+changeset:   616:28148adeb40b
+user:        pancake <youterm.com>
+date:        Mon Nov 10 10:25:31 2008 +0100
+files:       src/pas.c src/plug/hack/lua.c src/plug/hack/python.c src/plug/hack/radare.py src/plug/hack/ruby.c
+description:
+* Fix stdin eof issue for lua, python and ruby plugins
+  - Safe ^D exit
+* Added op= syntax sugar for pas decompiler with mips
+
+
+
+
 === 1.0 ===
 
 changeset:   614:dfd0c6fd7ded
