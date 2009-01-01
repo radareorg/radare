@@ -3,34 +3,68 @@
 # bindiff
 # Author: nibble <.ds@gmail.com>
 # License: GPL >= 2
-# TODO: Diff data sections
 
-# Get offset and size of the $bin executable sections and dump the disassembly to
-# a temporary file called $dis
-sub disasm {
-	my ($bin, $dis, $dis_off, $arch) = @_;
-	my $radare_cmd="";
-	my $radare_cmd_p = "";
-	foreach (split /[\n\r]+/, `rabin -S $bin`) {
-		if (/.*offset=(\w*).*size=(\w*).*privileges=...x.*/) {
-			$radare_cmd_p.="pD $2 @ $1 &&";
-		}
-	}
-	if ($radare_cmd_p ne "") {
-		$radare_cmd = "echo \'".$radare_cmd_p."\' | radare -nv";
-	} else {
-		$radare_cmd = "echo \'pD\' | radare -nvf";
-	}
+# TODO: Diff data
+
+use strict;
+
+# Construct and execute radare command
+sub radare_cmd {
+	my ($bin, $dump, $dump_off, $cmd, $arch) = @_;
+
+	my $radare_cmd = "echo \'".$cmd."\' | radare -nv";
+	$radare_cmd .= " -f" if ($cmd !~ /@/);
 	$radare_cmd .= " -e \'asm.arch = $arch\'";
-	my $radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dis";
-	my $radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dis_off";
+	my $radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dump";
+	my $radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dump_off";
 	system $radare_cmd_true;
 	system $radare_cmd_false;
+}
+
+# Dump bin
+sub dump_bin {
+	my ($bin, $dump, $dump_off, $arch) = @_;
+
+	my $cmd = "";
+	foreach (split /[\n\r]+/, `rabin -S $bin`) {
+		if (/^.*offset=(\w*).*size=(\w*).*privileges=...x.*$/) {
+			$cmd.="pD $2 @ $1 &&";
+		}
+	}
+	$cmd = "pD" if ($cmd eq "");
+	&radare_cmd($bin, $dump, $dump_off, $cmd, $arch);
+}
+
+# Dump symbol
+sub dump_sym {
+	my ($sym, $bin, $dump, $dump_off, $arch) = @_;
+
+	my $cmd = "";
+	foreach (split /[\n\r]+/, `rabin -s $bin`) {
+		if (/^.*offset=(\w+).*size=(\w+).*name=$sym$/i) {
+			$cmd.="pD $2 @ $1 &&";
+		}
+	}
+	&radare_cmd($bin, $dump, $dump_off, $cmd, $arch);
+}
+
+# Dump section
+sub dump_scn {
+	my ($scn, $bin, $dump, $dump_off, $arch) = @_;
+
+	my $cmd = "";
+	foreach (split /[\n\r]+/, `rabin -S $bin`) {
+		if (/^.*offset=(\w+).*size=(\w+).*name=$scn$/) {
+			$cmd.="pD $2 @ $1 &&";
+		}
+	}
+	&radare_cmd($bin, $dump, $dump_off, $cmd, $arch);
 }
 
 # Print a range of lines from a file
 sub print_lines {
 	my ($file, $from, $to, $context, $prefix, $color) = @_;
+
 	$context = 0 if ($context == -1);
 	my $i = 1;
 
@@ -58,11 +92,7 @@ sub print_lines {
 
 # Remove temporary files
 sub rm_tmp {
-	unlink $a_dis;
-	unlink $b_dis;
-	unlink $a_dis_off;
-	unlink $b_dis_off;
-	unlink $diff;
+	unlink @_;
 
 	exit 0;
 }
@@ -71,56 +101,68 @@ sub rm_tmp {
 sub usage {
 	print "Usage: $0 <file a> <file b> [options]\n",
 		  "Options:\n",
-		  "-a arch: Force arch\n",
-		  "-c int: Number of context lines (-1 is full context)\n",
-		  "-C: Color output\n",
-		  "-h: This help\n";
+		  "  -a arch     Force arch\n",
+		  "  -c int      Number of context lines (-1 is full context)\n",
+		  "  -C          Color output\n",
+		  "  -s symbol   Diff specified symbol\n",
+		  "  -S section  Diff specified section\n",
+		  "  -h          This help\n";
 	exit 1;
 }
 
-# Signal handling
-$SIG{INT} = \&rm_tmp;
-
 # Get args
-$a_bin = $ARGV[0];
-$b_bin = $ARGV[1];
-$context = 0;
+my $a_bin = $ARGV[0];
+my $b_bin = $ARGV[1];
+my $arch = "intel";
+my $symbol = "";
+my $section = "";
+my $context = 0;
+my $color = 0;
 
 $_ = `rabin -I $a_bin`;
 if (defined $ENV{'ARCH'}) {
 	$arch = $ENV{'ARCH'};
 } elsif (/arch=(.*)/) {
 	$arch = $1;
-} else {
-	$arch = "intel";
 }
 
-if (defined $ENV{'COLOR'}) {
-	$color = $ENV{'COLOR'};
-} else {
-	$color = 0;
-}
+$color = $ENV{'COLOR'} if (defined $ENV{'COLOR'});
 
 foreach (0 .. $#ARGV) {
     $arch = $ARGV[$_] if ($ARGV[$_-1] eq "-a"); 
     $context = $ARGV[$_] if ($ARGV[$_-1] eq "-c"); 
     $color = 1 if ($ARGV[$_] eq "-C");
+    $symbol = $ARGV[$_] if ($ARGV[$_-1] eq "-s");
+    $section = $ARGV[$_] if ($ARGV[$_-1] eq "-S");
 	&usage if ($ARGV[$_] eq "-h");
 } 
+
 &usage unless (defined($a_bin) && defined($b_bin));
 
-# File A
-$a_dis="/tmp/.a.$$.".int rand(0xC0D3);
-$a_dis_off=$a_dis.".off";
-&disasm($a_bin, $a_dis, $a_dis_off, $arch);
-# File B
-$b_dis="/tmp/.b.$$.".int rand(0xCAFE);
-$b_dis_off=$b_dis.".off";
-&disasm($b_bin, $b_dis, $b_dis_off, $arch);
+# Names for temporary files
+my $a_dump="/tmp/.a.$$.".int rand(0xC0D3);
+my $a_dump_off=$a_dump.".off";
+my $b_dump="/tmp/.b.$$.".int rand(0xCAFE);
+my $b_dump_off=$b_dump.".off";
+my $diff="/tmp/.diff.$$.".int rand(0xBABE);
 
-# Diff dumps and remove temporary files
-$diff="/tmp/.diff.$$.".int rand(0xBABE);
-system "diff -Hb $a_dis $b_dis | grep -E \'^(\\w|,)*\$\' > $diff";
+# Signal handling
+$SIG{INT} = sub { &rm_tmp($a_dump, $a_dump_off, $b_dump, $b_dump_off, $diff) };
+
+# Generate dumps
+if ($symbol ne "") {
+	&dump_sym($symbol, $a_bin, $a_dump, $a_dump_off, $arch);
+	&dump_sym($symbol, $b_bin, $b_dump, $b_dump_off, $arch);
+} elsif ($section ne "") {
+	&dump_scn($section, $a_bin, $a_dump, $a_dump_off, $arch);
+	&dump_scn($section, $b_bin, $b_dump, $b_dump_off, $arch);
+} else {
+	&dump_bin($a_bin, $a_dump, $a_dump_off, $arch);
+	&dump_bin($b_bin, $b_dump, $b_dump_off, $arch);
+}
+
+# Diff dumps
+system "diff -Hb $a_dump $b_dump | grep -E \'^(\\w|,)*\$\' > $diff";
 
 open DIFF, "<$diff";
 while (my $line = <DIFF>) {
@@ -142,7 +184,7 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
+		&print_lines($a_dump_off, $from, $to, $context, "-", $color);
 
 		print "----\n" unless ($context == -1);
 
@@ -153,7 +195,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, $context, "+", $color);
+		&print_lines($b_dump_off, $from, $to, $context, "+", $color);
 
 	} elsif ($line =~ /(.*)a(.*)/) {
 		$b_lines = $2;
@@ -165,7 +207,7 @@ while (my $line = <DIFF>) {
 			$from = $b_lines;
 			$to = $b_lines;
 		}
-		&print_lines($b_dis_off, $from, $to, $context, "+", $color);
+		&print_lines($b_dump_off, $from, $to, $context, "+", $color);
 
 	} elsif ($line =~ /(.*)d(.*)/) {
 		$a_lines = $1;
@@ -177,12 +219,12 @@ while (my $line = <DIFF>) {
 			$from = $a_lines;
 			$to = $a_lines;
 		}
-		&print_lines($a_dis_off, $from, $to, $context, "-", $color);
+		&print_lines($a_dump_off, $from, $to, $context, "-", $color);
 	}
 
 	if ($context == -1) {
 		if ($old_to < $from)  {	
-			&print_lines($a_dis_off, $old_to, $from, $context, " ", $color);
+			&print_lines($a_dump_off, $old_to, $from, $context, " ", $color);
 		}
 		$old_to = $to;
 	} else {
@@ -191,4 +233,5 @@ while (my $line = <DIFF>) {
 }
 close DIFF;
 
-&rm_tmp;
+# Remove temporary files
+&rm_tmp($a_dump, $a_dump_off, $b_dump, $b_dump_off, $diff);
