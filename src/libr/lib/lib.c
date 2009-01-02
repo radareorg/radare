@@ -32,7 +32,6 @@
 #include <windows.h>
 #endif
 
-
 void *r_lib_open(const char *libname)
 {
 #if __WINDOWS__ && !__CYGWIN__

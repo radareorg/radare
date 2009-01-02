@@ -10,34 +10,64 @@ extern struct r_syscall_list_t syscalls_linux_x86[];
 extern struct r_syscall_list_t syscalls_freebsd_x86[];
 extern struct r_syscall_list_t syscalls_darwin_x86[];
 
-// XXX move into r_r_syscall_list_t
-/* TODO: move to default debug_os namespace */
-int r_syscall_setup(struct r_syscall_t *ctx, const char *arch, const char *os)
+struct r_syscall_t *r_syscall_new()
 {
-	if (!strcmp(os, "linux"))
-		ctx->sysptr = syscalls_linux_x86;
-	else
-	if (!strcmp(os, "netbsd"))
-		ctx->sysptr = syscalls_netbsd_x86;
-	else
-	if (!strcmp(os, "openbsd"))
-		ctx->sysptr = syscalls_netbsd_x86; // XXX
-	else
-	if (!strcmp(os, "freebsd"))
-		ctx->sysptr = syscalls_freebsd_x86;
-	else
-	if (!strcmp(os, "darwin"))
-		ctx->sysptr = syscalls_darwin_x86;
-	else {
-		fprintf(stderr, "Unknown/unhandled OS in asm.os for arch_print_syscall()\n");
-		return 1;
+	struct r_syscall_t *ctx;
+	ctx = (struct r_syscall_t *)malloc(sizeof(struct r_syscall_t));
+	if (ctx == NULL)
+		return NULL;
+	ctx->fd = NULL;
+	ctx->sysptr = syscalls_linux_x86;
+	return ctx;
+}
+
+void r_syscall_init(struct r_syscall_t *ctx)
+{
+	ctx->fd = NULL;
+	ctx->sysptr = syscalls_linux_x86;
+}
+
+void r_syscall_free(struct r_syscall_t *ctx)
+{
+	free(ctx);
+}
+
+int r_syscall_setup(struct r_syscall_t *ctx, int os, int arch)
+{
+	switch(arch) {
+	case R_SYSCALL_ARCH_X86:
+	default:
+		switch(os) {
+		case R_SYSCALL_OS_LINUX:
+			ctx->sysptr = syscalls_linux_x86;
+			break;
+		case R_SYSCALL_OS_NETBSD:
+		case R_SYSCALL_OS_OPENBSD:
+			ctx->sysptr = syscalls_netbsd_x86;
+			break;
+		case R_SYSCALL_OS_FREEBSD:
+			ctx->sysptr = syscalls_freebsd_x86;
+			break;
+		case R_SYSCALL_OS_DARWIN:
+			ctx->sysptr = syscalls_darwin_x86;
+			break;
+		}
+		break;
 	}
+	if (ctx->fd)
+		fclose(ctx->fd);
+	ctx->fd = NULL;
 	return 0;
 }
 
 int r_syscall_setup_file(struct r_syscall_t *ctx, const char *path)
 {
-	// TODO
+	if (ctx->fd)
+		fclose(ctx->fd);
+	ctx->fd = fopen(path, "r");
+	if (ctx->fd == NULL)
+		return 1;
+	/* TODO: load info from file */
 	return 0;
 }
 

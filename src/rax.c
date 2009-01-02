@@ -82,9 +82,8 @@ void rax(char *arg)
 				c = (int)ci;
 				write(1,&c, 1);
 			}
-			exit(0);
-		} else
-			exit(stdin_bin_to_hex_pairs());
+		} else stdin_bin_to_hex_pairs();
+		return;
 	}
 
 	if (arg[0]=='-') {

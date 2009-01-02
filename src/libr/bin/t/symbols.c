@@ -4,7 +4,6 @@
 #include "r_types.h"
 #include "r_bin.h"
 
-
 int main(int argc, char *argv[])
 {
 	int ctr = 0;
