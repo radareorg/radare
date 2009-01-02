@@ -40,7 +40,8 @@ const u8 *r_hash_state_md5(struct r_hash_t *ctx, const u8 *input, u32 len)
 	if (ctx->init)
 		MD5Init(&ctx->sha256);
 	MD5Update(&ctx->md5, input, len);
-	MD5Final(&ctx->digest, &ctx->md5);
+	if (ctx->init || len == 0)
+		MD5Final(&ctx->digest, &ctx->md5);
 	return ctx->digest;
 }
 
@@ -49,7 +50,8 @@ const u8 *r_hash_state_sha1(struct r_hash_t *ctx, const u8 *input, u32 len)
 	if (ctx->init)
 		SHA1_Init(&ctx->sha1);
 	SHA1_Update(&ctx->sha1, input, len);
-	SHA1_Final(ctx->digest, &ctx->sha1);
+	if (ctx->init || len == 0)
+		SHA1_Final(ctx->digest, &ctx->sha1);
 	return ctx->digest;
 }
 
@@ -64,7 +66,8 @@ const u8 *r_hash_state_sha256(struct r_hash_t *ctx, const u8 *input, u32 len)
 	if (ctx->init)
 		SHA256_Init(&ctx->sha256);
 	SHA256_Update(&ctx->sha256, input, len);
-	SHA256_Final(ctx->digest, &ctx->sha256);
+	if (ctx->init || len == 0)
+		SHA256_Final(ctx->digest, &ctx->sha256);
 	return ctx->digest;
 }
 
@@ -73,7 +76,8 @@ const u8 *r_hash_state_sha384(struct r_hash_t *ctx, const u8 *input, u32 len)
 	if (ctx->init)
 		SHA384_Init(&ctx->sha384);
 	SHA384_Update(&ctx->sha384, input, len);
-	SHA384_Final(ctx->digest, &ctx->sha384);
+	if (ctx->init || len == 0)
+		SHA384_Final(ctx->digest, &ctx->sha384);
 	return ctx->digest;
 }
 
@@ -82,6 +86,7 @@ const u8 *r_hash_state_sha512(struct r_hash_t *ctx, const u8 *input, u32 len)
 	if (ctx->init)
 		SHA512_Init(&ctx->sha512);
 	SHA512_Update(&ctx->sha512, input, len);
-	SHA512_Final(ctx->digest, &ctx->sha512);
+	if (ctx->init || len == 0)
+		SHA512_Final(ctx->digest, &ctx->sha512);
 	return ctx->digest;
 }

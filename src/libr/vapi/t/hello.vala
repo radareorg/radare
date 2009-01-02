@@ -1,5 +1,5 @@
 using GLib;
-using Radare; //.Hash;
+using Radare; /* Radare.Hash */
 
 public class HashExample
 {
@@ -13,19 +13,18 @@ public class HashExample
 
 	public static void main(string[] args)
 	{
-		/* vala bug: this should be const! */
-		uint8 *md;
-		Hash.State st = new Hash.State(false);
-
 		/* calculate crc32 */
 		stdout.printf("CRC32: %x\n", Hash.crc32("hello", 5));
 
-		/* calculate md5 */
-		md = st.md5("hello", 5);
-		printChecksum("MD5: ", md, Hash.Size.MD5);
+		/* directly calculate md5 */
+		Hash.State st = new Hash.State(true);
+		printChecksum("MD5: ", st.md5("helloworld", 10), Hash.Size.MD5);
 
+		/* incrementally calculate md5 */
+		st = new Hash.State(false);
+		st.md5("hello", 5);
+		st.md5("world", 5);
+		printChecksum("MD5: ", st.md5(null,0), Hash.Size.MD5);
 		st.init(Hash.Algorithm.ALL);
-		md = st.md5("hello", 5);
-		printChecksum("MD5: ", md, Hash.Size.MD5);
 	}
 }

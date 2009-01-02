@@ -49,9 +49,9 @@ int strbin = 0;
 int stdin_bin_to_hex_pairs()
 {
 	unsigned char c;
-	while(read(0, &c, 1) >0) {
+	while(read(0, &c, 1) >0)
 		printf("%02x ", c);
-	}
+	printf("\n");
 	return 0;
 }
 
@@ -121,6 +121,7 @@ void rax(char *arg)
 	} else
 	if (!memcmp(arg, "Bx", 2)) {
 		/* hex -> bin */
+		// TODO: use alloca here
 		char *bin1 = malloc((strlen(arg)-2)*4);
 		char *bin2 = malloc((strlen(arg)-2)*4);
 		char *aux;
