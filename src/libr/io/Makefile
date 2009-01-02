@@ -1,4 +1,4 @@
-LIB=libr_io
+NAME=r_io
 OBJ=io.o handle.o map.o section.o
 CFLAGS+=-Wall
 

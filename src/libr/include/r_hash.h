@@ -4,17 +4,18 @@
 #include "r_types.h"
 
 /* checksums */
-u16 r_hash_crc16(u16 crc, u8 const *buffer, u64 len);
+/* XXX : crc16 should use 0 as arg0 by default */
+u16 r_hash_crc16(u16 crc, const u8 *buffer, u64 len);
 u32 r_hash_crc32(const u8 *buf, u64 len);
-u16 r_hash_xorpair(const u8 *a, u64 len);
-int r_hash_par(u8 *buf, u64 len);
 u8  r_hash_xor(const u8 *b, u64 len);
+u16 r_hash_xorpair(const u8 *a, u64 len);
+u8  r_hash_parity(u8 *buf, u64 len);
 u8  r_hash_mod255(const u8 *b, u64 len);
 
 /* analysis */
 u8  r_hash_hamdist(const u8 *buf, u64 len);
-double r_hash_entropy(const u8 *data, u64 size);
-u32 r_hash_pcprint(u8 *buffer, u64 len);
+double r_hash_entropy(const u8 *data, u64 len);
+int r_hash_pcprint(u8 *buffer, u64 len);
 
 /* hashing */
 typedef struct {
@@ -53,12 +54,12 @@ struct r_hash_t {
 	u8 digest[128];
 };
 
-#define R_HASH_SHA1_SIZE 16
-#define R_HASH_SHA256_SIZE 32
-#define R_HASH_SHA384_SIZE 64
-#define R_HASH_SHA512_SIZE 64
-#define R_HASH_MD5_SIZE 16
-#define R_HASH_MD4_SIZE 16
+#define R_HASH_SIZE_MD4 16
+#define R_HASH_SIZE_MD5 16
+#define R_HASH_SIZE_SHA1 16
+#define R_HASH_SIZE_SHA256 32
+#define R_HASH_SIZE_SHA384 64
+#define R_HASH_SIZE_SHA512 64
 
 #define R_HASH_ALL 0
 #define R_HASH_MD5 1
@@ -67,12 +68,16 @@ struct r_hash_t {
 #define R_HASH_SHA384 8
 #define R_HASH_SHA512 16
 
+const u8 *r_hash_state_md4(struct r_hash_t *ctx, const u8 *input, u32 len);
+const u8 *r_hash_state_md5(struct r_hash_t *ctx, const u8 *input, u32 len);
+const u8 *r_hash_state_sha1(struct r_hash_t *ctx, const u8 *input, u32 len);
+const u8 *r_hash_state_sha256(struct r_hash_t *ctx, const u8 *input, u32 len);
+const u8 *r_hash_state_sha384(struct r_hash_t *ctx, const u8 *input, u32 len);
+const u8 *r_hash_state_sha512(struct r_hash_t *ctx, const u8 *input, u32 len);
+
+/* OO */
+struct r_hash_t *r_hash_state_new();
 void r_hash_init(struct r_hash_t *ptr, int flags);
-const u8 *r_hash_md4(struct r_hash_t *ctx, const u8 *input, u32 len);
-const u8 *r_hash_md5(struct r_hash_t *ctx, const u8 *input, u32 len);
-const u8 *r_hash_sha1(struct r_hash_t *ctx, const u8 *input, u32 len);
-const u8 *r_hash_sha256(struct r_hash_t *ctx, const u8 *input, u32 len);
-const u8 *r_hash_sha384(struct r_hash_t *ctx, const u8 *input, u32 len);
-const u8 *r_hash_sha512(struct r_hash_t *ctx, const u8 *input, u32 len);
+void r_hash_state_free(struct r_hash_t *ctx);
 
 #endif

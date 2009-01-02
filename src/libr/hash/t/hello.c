@@ -45,20 +45,20 @@ int main(int argc, char **argv)
 		struct r_hash_t ctx;
 		const u8 *c;
 		int i;
-		r_hash_init(&ctx, R_HASH_ALL);
-		c = r_hash_md5(&ctx, buf, size);
+		r_hash_state_init(&ctx, R_HASH_ALL);
+		c = r_hash_state_md5(&ctx, buf, size);
 		printf("MD5: ");
-		for(i=0;i<R_HASH_MD5_SIZE;i++) { printf("%02x", c[i]); }
+		for(i=0;i<R_HASH_SIZE_MD5;i++) { printf("%02x", c[i]); }
 		printf("\n");
 
-		c = r_hash_sha1(&ctx, buf, size);
+		c = r_hash_state_sha1(&ctx, buf, size);
 		printf("SHA1: ");
-		for(i=0;i<R_HASH_SHA1_SIZE;i++) { printf("%02x", c[i]); }
+		for(i=0;i<R_HASH_SIZE_SHA1;i++) { printf("%02x", c[i]); }
 		printf("\n");
 
-		c = r_hash_sha256(&ctx, buf, size);
+		c = r_hash_state_sha256(&ctx, buf, size);
 		printf("SHA256: ");
-		for(i=0;i<R_HASH_SHA256_SIZE;i++) { printf("%02x", c[i]); }
+		for(i=0;i<R_HASH_SIZE_SHA256;i++) { printf("%02x", c[i]); }
 		printf("\n");
 	}
 

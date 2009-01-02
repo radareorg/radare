@@ -15,6 +15,7 @@ CFLAGS+=-g -Wall
 # Output
 EXT_AR=a
 EXT_SO=so
+LIB=lib${NAME}
 LIBAR=${LIB}.${EXT_AR}
 LIBSO=${LIB}.${EXT_SO}
 
@@ -24,12 +25,13 @@ all: ${OBJ} ${LIBSO} ${LIBAR}
 
 ${LIBSO}:
 	${CC_LIB} ${LDFLAGS} ${LINK} ${OBJ}
+	@sh ../stripsyms.sh ${LIBSO} ${NAME}
 
 ${LIBAR}:
 	${CC_AR} ${OBJ}
 
 clean:
-	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN}
+	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN} *.so a.out
 	@if [ -e t/Makefile ]; then (cd t && ${MAKE} clean) ; else true ; fi
 
 .PHONY: all clean ${LIBSO} ${LIBAR}

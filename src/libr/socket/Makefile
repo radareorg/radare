@@ -1,4 +1,4 @@
-LIB=libr_socket
+NAME=r_socket
 OBJ=socket.o
 # on solaris only
 #LINK=-lsocket

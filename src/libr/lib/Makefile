@@ -1,4 +1,4 @@
-LIB=libr_lib
+NAME=r_lib
 OBJ=lib.o
 
 # XXX only for linux
