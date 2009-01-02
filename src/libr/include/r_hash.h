@@ -51,6 +51,7 @@ struct r_hash_t {
 	SHA256_CTX sha256;
 	SHA384_CTX sha384;
 	SHA512_CTX sha512;
+	int init;
 	u8 digest[128];
 };
 
@@ -76,7 +77,7 @@ const u8 *r_hash_state_sha384(struct r_hash_t *ctx, const u8 *input, u32 len);
 const u8 *r_hash_state_sha512(struct r_hash_t *ctx, const u8 *input, u32 len);
 
 /* OO */
-struct r_hash_t *r_hash_state_new();
+struct r_hash_t *r_hash_state_new(int init);
 void r_hash_init(struct r_hash_t *ptr, int flags);
 void r_hash_state_free(struct r_hash_t *ctx);
 

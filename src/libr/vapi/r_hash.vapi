@@ -3,8 +3,13 @@
 namespace Radare.Hash {
 
 	[CCode (cprefix="R_HASH_")]
-	public enum Flags {
+	public enum Algorithm {
 		ALL = 0,
+		MD5 = 0,
+		SHA1 = 2,
+		SHA256 = 4,
+		SHA384 = 8,
+		SHA512 = 16,
 	}
 
 	[CCode (cname="int")]
@@ -34,7 +39,8 @@ namespace Radare.Hash {
 	[CCode (cname="struct r_hash_t", free_function="r_hash_state_free")]
 	public class State {
 		//[CCode (cname="r_hash_new")]
-		public State();
+		public State(bool init);
+		public void init(Algorithm bits);
 		public uint8 *md4(uint8 *input, uint32 len);
 		public uint8 *md5(uint8 *input, uint32 len);
 		public uint8 *sha1(uint8 *input, uint32 len);
