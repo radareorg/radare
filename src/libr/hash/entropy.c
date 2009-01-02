@@ -4,7 +4,6 @@
  * ------------------------
  * That's pure mathematics, so no sense to adding license shit here.
  *
- * TODO: float to double (to get more precission)
  */
 
 #include <stdlib.h>
@@ -28,10 +27,9 @@ double r_hash_entropy(const u8 *data, u64 size)
         double h = 0, px, log2;
         unsigned char x;
 
-        log2 = logf((float)2);
+        log2 = logf((double)2);
 
-        for (x = 0; x < 255; x++)
-        {
+        for (x = 0; x < 255; x++) {
                 px = get_px(x, data, size);
                 if (px > 0)
                         h += -px * (log(px)/log2);

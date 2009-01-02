@@ -20,12 +20,7 @@
 
 #include "r_types.h"
 
-// XXX recycle is_printable?
-static int is_pr (int c)
-{
-        if (c<' '||c>'~') return 0;
-        return 1;
-}
+#define IS_PRINTABLE(x) (x>=' '&&x<='~')
 
 /* returns 0-100 */
 int r_hash_pcprint(u8 *buffer, u64 len)
@@ -34,7 +29,7 @@ int r_hash_pcprint(u8 *buffer, u64 len)
 	int n;
 
 	for(n=0; buffer<end; buffer = buffer + 1)
-		if (is_pr(buffer[0]))
+		if (IS_PRINTABLE(buffer[0]))
 			n++;
 
 	return ((100*n)/len);
@@ -42,10 +37,10 @@ int r_hash_pcprint(u8 *buffer, u64 len)
 
 int r_hash_par(u8 *buf, u64 len)
 {
-	unsigned char *end = buf+len;
-	unsigned int ones = 0;
+	u8 *end = buf+len;
+	u32 ones = 0;
 	for(;buf<end; buf = buf + 1) {
-		#define x buf[0]
+		u8 x = buf[0];
 		ones += ((x&128)?1:0) + ((x&64)?1:0) + ((x&32)?1:0) + ((x&16)?1:0) +
 			((x&8)?1:0) + ((x&4)?1:0) + ((x&2)?1:0) + ((x&1)?1:0);
 	}
@@ -56,8 +51,8 @@ int r_hash_par(u8 *buf, u64 len)
 /* fmi: nopcode.org/0xFFFF */
 u16 r_hash_xorpair(const u8 *a, u64 len)
 {
-	unsigned short *b = (unsigned short *)a;
-	unsigned short result = 0;
+	u16 *b = (u16 *)a;
+	u16 result = 0;
 	for(len>>=1;len--;b=b+1)
 		result^=b[0];
 	return result;
@@ -65,7 +60,7 @@ u16 r_hash_xorpair(const u8 *a, u64 len)
 
 u8 r_hash_xor(const u8 *b, u64 len)
 {
-	unsigned char res = 0;
+	u8 res = 0;
 	for(;len--;b=b+1)
 		res^=b[0];
 	return res;

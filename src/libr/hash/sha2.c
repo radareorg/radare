@@ -34,6 +34,7 @@
 
 #include <string.h>	/* memcpy()/memset() or bcopy()/bzero() */
 #include <assert.h>	/* assert() */
+#include "r_hash.h"
 #include "sha2.h"
 
 /*

@@ -98,6 +98,7 @@ typedef unsigned long long u_int64_t;	/* 8-bytes (64-bits) */
  *
  *   cc -DSHA2_USE_INTTYPES_H ...
  */
+#if 0
 #ifdef SHA2_USE_INTTYPES_H
 
 typedef struct _SHA256_CTX {
@@ -127,6 +128,7 @@ typedef struct _SHA512_CTX {
 #endif /* SHA2_USE_INTTYPES_H */
 
 typedef SHA512_CTX SHA384_CTX;
+#endif
 
 
 /*** SHA-256/384/512 Function Prototypes ******************************/

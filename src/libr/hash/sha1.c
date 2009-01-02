@@ -33,6 +33,7 @@
  * GPL.
  */
 
+#include "r_hash.h"
 #include "sha1.h"
 
 #define SHA_ROT(X,n) (((X) << (n)) | ((X) >> (32-(n))))

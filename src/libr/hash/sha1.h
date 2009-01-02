@@ -33,12 +33,14 @@
  * GPL.
  */
 
+#if 0
 typedef struct {
   unsigned int H[5];
   unsigned int W[80];
   int lenW;
   unsigned int sizeHi,sizeLo;
 } SHA_CTX;
+#endif
 
 void SHA1_Init(SHA_CTX *ctx);
 void SHA1_Update(SHA_CTX *ctx, const void *dataIn, int len);
