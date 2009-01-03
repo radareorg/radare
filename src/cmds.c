@@ -337,8 +337,12 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: af[*] @ addr\n");
-			eprintf(" af    - show function report (fun metrics)\n");
-			eprintf(" .af*  - import function analysis (same as Vdf)\n");
+			eprintf(" af         - show function report (fun metrics)\n");
+			eprintf(" afu @ addr - undefine function at address\n");
+			eprintf(" .af*       - import function analysis (same as Vdf)\n");
+			break;
+		case 'u':
+			analyze_function(config.seek, 0,2);
 			break;
 		case '*':
 			analyze_function(config.seek, 0,0);
@@ -504,8 +508,11 @@ CMD_DECL(analyze)
 				"Note: The prefix '\"' quotes the command and does not parses pipes and so\n");
 			else vm_cmd_reg(input+2);
 			break;
+		case 'I':
+			vm_import(1);
+			break;
 		case 'i':
-			vm_import();
+			vm_import(0);
 			break;
 		case '-':
 			vm_init(1);
@@ -522,7 +529,8 @@ CMD_DECL(analyze)
 			cons_printf("Usage: av[ier] [arg]\n"
 			" ave eax=33   ; evaluate expression in vm\n"
 			" avf file     ; evaluate expressions from file\n"
-			" avi          ; import register values from flags\n"
+			" avi          ; import register values from flags (eax, ..)\n"
+			" avI          ; import register values from vm flags (vm.eax, ..)\n"
 			" avm          ; select MMU (default current one)\n"
 			" avo op expr  ; define new opcode (avo? for help)\n"
 			" avr          ; show registers\n"
@@ -541,8 +549,11 @@ CMD_DECL(analyze)
 		case 'x':
 			vm_emulate(atoi(input+2));
 			break;
+		case '*':
+			vm_print(-2);
+			break;
 		default:
-			vm_print();
+			vm_print(0);
 			break;
 		}
 		break;

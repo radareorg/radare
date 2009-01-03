@@ -824,7 +824,12 @@ int analyze_function(u64 from, int recursive, int report)
 		return -1;
 	}
 
-	if (report) {
+	switch(report) {
+	case 2:
+		cons_printf("fu -fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+		cons_printf("CF -%lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
+		break;
+	case 1:
 		buf[0]='\0';
 		string_flag_offset(buf, from);
 		cons_printf("offset = 0x%08llx\n", from);
@@ -841,7 +846,7 @@ int analyze_function(u64 from, int recursive, int report)
 			cons_printf("%02x ", bytes[i]);
 		cons_newline();
 		}
-	} else {
+	case 0:
 		cons_strcat("fs functions\n");
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
@@ -863,7 +868,11 @@ int analyze_function(u64 from, int recursive, int report)
 		}
 		switch(aop.type) {
 		case AOP_TYPE_CALL:
-			if (!report) {
+			switch(report) {
+			case 2:
+				cons_printf("Cx -0x%08llx @ 0x%08llx\n", seek, aop.jump);
+				break;
+			case 0:
 				buf[0]='\0';
 				string_flag_offset(buf, aop.jump);
 				// if resolved as sym_ add its call
@@ -872,24 +881,29 @@ int analyze_function(u64 from, int recursive, int report)
 			ncalls++;
 			break;
 		case AOP_TYPE_SWI:
-			if (!report) {
-				cons_printf("CC syscall %s @ 0x%08llx\n", "(todo)", seek);
+			switch(report) {
+			case 2: cons_printf("CC -syscall %s @ 0x%08llx\n", "(todo)", seek);
+				break;
+			case 0: cons_printf("CC syscall %s @ 0x%08llx\n", "(todo)", seek);
 			}
 			break;
 		default:
-			if (aop.ref != 0) {
+			if (aop.ref != 0)
 			switch(aop.type) {
 			case AOP_TYPE_PUSH:
 			case AOP_TYPE_STORE:
 			case AOP_TYPE_LOAD:
-				if (!report) {
+				switch(report) {
+				case 2:
+					cons_printf("CX -0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
+					break;
+				case 0:
 					buf[0]='\0';
-					string_flag_offset(buf, aop.ref);
-					//cons_printf("CC data ref 0x%08llx @ 0x%08llx ; %s\n", seek, aop.ref, buf);
+					string_flag_offset(buf, aop.jump);
+					// if resolved as sym_ add its call
 					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
 				}
 				nrefs++;
-			}
 			}
 		}
 		ref = (int)aop.value;
@@ -897,6 +911,10 @@ int analyze_function(u64 from, int recursive, int report)
 			ref = aop.ref;
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:
+			if (report == 2) {
+				sprintf(buf, "CC -* @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
+			} else
 			if (!report) {
 				if (ref<0)
 					sprintf(buf, "CC Set var%d @ 0x%08llx\n", -ref, seek);
@@ -908,6 +926,10 @@ int analyze_function(u64 from, int recursive, int report)
 			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_ARG_SET:
+			if (report == 2) {
+				sprintf(buf, "CC -Set arg%d @ 0x%08llx\n", ref, seek);
+				cons_strcat(buf);
+			} else
 			if (!report) {
 				sprintf(buf, "CC Set arg%d @ 0x%08llx\n", ref, seek);
 				cons_strcat(buf);
@@ -915,6 +937,10 @@ int analyze_function(u64 from, int recursive, int report)
 			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_ARG_GET:
+			if (report == 2) {
+				sprintf(buf, "CC -* @ 0x%08llx\n", seek);
+				cons_strcat(buf);
+			} else
 			if (!report) {
 				char buf[1024];
 				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
@@ -925,6 +951,11 @@ int analyze_function(u64 from, int recursive, int report)
 			analyze_var_add(VAR_TYPE_ARG, ref);
 			break;
 		case AOP_STACK_LOCAL_GET:
+			if (report == 2) {
+				sprintf(buf, "CC -* @ 0x%08llx\n", seek);
+				cons_strcat(buf);
+				//cons_printf("CFvg %d @ 0x%08llx\n", ref, seek);
+			} else
 			if (!report) {
 				if (ref<0)
 					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
@@ -936,15 +967,23 @@ int analyze_function(u64 from, int recursive, int report)
 			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_INCSTACK:
-			if (!report) {
-				char buf[1024];
+			switch(report) {
+			case 0:
 				if (ref<0)
 					sprintf(buf, "CC Stack size %d @ 0x%08llx\n", (int)ref, seek);
 				else sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
 				framesize += aop.value;
-				if (!report)
-					cons_printf("CC +%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
+				cons_printf("CC +%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
+				break;
+			case 2:
+				if (ref<0)
+					sprintf(buf, "CC -Stack size %d @ 0x%08llx\n", (int)ref, seek);
+				else sprintf(buf, "CC -Stack size +%d @ 0x%08llx\n", (int)ref, seek);
+				cons_strcat(buf);
+				framesize += aop.value;
+				cons_printf("CC -+%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
+				break;
 			}
 			break;
 		}
@@ -968,18 +1007,27 @@ int analyze_function(u64 from, int recursive, int report)
 	}
 	free(bytes);
 
-	if (report) {
+	switch(report) {
+	case 0:
+		cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
+		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
+		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
+		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
+		cons_printf("fs *\n");
+		break;
+	case 1:
 		cons_printf("framesize = %d\n", framesize);
 		cons_printf("ncalls = %d\n", ncalls);
 		cons_printf("drefs = %d\n", nrefs);
 		cons_printf("xrefs = %d\n", data_xrefs_at(from));
 		cons_printf("args = %d\n", analyze_var_get(VAR_TYPE_ARG));
 		cons_printf("vars = %d\n", analyze_var_get(VAR_TYPE_LOCAL));
-	} else {
-		cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
-		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
-		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
-		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
+		break;
+	case 2:
+		cons_printf("CC -framesize = %d @ 0x%08llx\n", framesize, from);
+		cons_printf("CC -args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
+		cons_printf("CC -vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
+		cons_printf("CC -drefs = %d @ 0x%08llx\n", nrefs);
 		cons_printf("fs *\n");
 	}
 

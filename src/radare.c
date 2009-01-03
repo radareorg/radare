@@ -957,7 +957,19 @@ int radare_cmd(char *input, int log)
 	}
 
 	/* repeat stuff */
-	if (input)
+	repeat = 1;
+	if (*input=='{') {
+		char *ptr = strchr(input, '}');
+		if (ptr) {
+			*ptr='\0';
+			repeat = get_math(input+1);
+			input = ptr+1;
+		} else {
+			eprintf("Unmatching '}' bracket.");
+			return 1;
+		}
+	} else
+	if (*input>='0'&&*input<='9')
 		repeat = atoi(input);
 	if (repeat<1)
 		repeat = 1;

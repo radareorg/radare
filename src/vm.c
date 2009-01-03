@@ -174,13 +174,23 @@ void vm_print(int type)
 	int i;
 	struct list_head *pos;
 
+	if (type == -2)
+		cons_printf("fs vm\n");
+
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
-		if (type == -1 || type == r->type)
-		cons_printf(".%s\t%s = 0x%08llx\n",
-			vm_reg_type(r->type), r->name,
-			(r->get!=NULL)?vm_reg_get(r->name):r->value);
+		if (type == -2) {
+			cons_printf("f vm.%s @ 0x%08llx\n", r->name, r->value);
+		} else {
+			if (type == -1 || type == r->type)
+			cons_printf(".%s\t%s = 0x%08llx\n",
+				vm_reg_type(r->type), r->name,
+				(r->get!=NULL)?vm_reg_get(r->name):r->value);
+		}
 	}
+
+	if (type == -2)
+		cons_printf("fs *\n");
 }
 int vm_mmu_cache_write(u64 addr, u8 *buf, int len)
 {
@@ -299,7 +309,7 @@ int vm_reg_set(const char *name, u64 value)
 	return 0;
 }
 
-int vm_import()
+int vm_import(int vm)
 {
 	struct list_head *pos;
 
@@ -307,7 +317,11 @@ int vm_import()
 	eprintf("Importing register values\n");
 	list_for_each(pos, &vm_regs) {
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
-		r->value = get_offset(r->name); // XXX doesnt work for eflags and so
+		if (vm) {
+			char name[64];
+			snprintf(name, 63, "vm.%s", r->name);
+			r->value = get_offset(name); // XXX doesnt work for eflags and so
+		} else r->value = get_offset(r->name); // XXX doesnt work for eflags and so
 	}
 	return 0;
 }
@@ -730,7 +744,7 @@ int vm_emulate(int n)
 	printf("Emulating %d opcodes\n", n);
 	///vm_init(1);
 	vm_mmu_real(config_get_i("vm.realio"));
-	vm_import();
+	vm_import(0);
 	config_set("asm.pseudo", "true");
 	config_set("asm.syntax", "intel");
 	config_set("asm.profile", "simple");

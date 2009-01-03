@@ -8,6 +8,9 @@
 
 TheBook
 =======
+* Add 'afu' to undefine a function
+  - Cannot undefine variables
+  - Cannot undefine functions (resized to 1 O_o?)
 * Documentate visual cursor with marks ',' and '.' keys
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
