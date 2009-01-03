@@ -5,18 +5,21 @@
 # License: GPL >= 2
 
 # TODO: Diff data
+# TODO: Fix delta bugs
 
 use strict;
 
 # Construct and execute radare command
 sub radare_cmd {
 	my ($bin, $dump, $dump_off, $cmd, $arch) = @_;
+	my $radare_cmd = "";
+	my $radare_cmd_true = "";
+	my $radare_cmd_false = "";
 
-	my $radare_cmd = "echo \'".$cmd."\' | radare -nv";
+	$radare_cmd = "echo \'".$cmd."\' | radare -nv -e \'asm.arch = $arch\'";
 	$radare_cmd .= " -f" if ($cmd !~ /@/);
-	$radare_cmd .= " -e \'asm.arch = $arch\'";
-	my $radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dump";
-	my $radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dump_off";
+	$radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dump";
+	$radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dump_off";
 	system $radare_cmd_true;
 	system $radare_cmd_false;
 }
@@ -24,8 +27,8 @@ sub radare_cmd {
 # Dump bin
 sub dump_bin {
 	my ($bin, $dump, $dump_off, $arch) = @_;
-
 	my $cmd = "";
+
 	foreach (split /[\n\r]+/, `rabin -S $bin`) {
 		if (/^.*offset=(\w*).*size=(\w*).*privileges=...x.*$/) {
 			$cmd.="pD $2 @ $1 &&";
@@ -38,8 +41,8 @@ sub dump_bin {
 # Dump symbol
 sub dump_sym {
 	my ($sym, $bin, $dump, $dump_off, $arch) = @_;
-
 	my $cmd = "";
+
 	foreach (split /[\n\r]+/, `rabin -s $bin`) {
 		if (/^.*offset=(\w+).*size=(\w+).*name=$sym$/i) {
 			$cmd.="pD $2 @ $1 &&";
@@ -51,8 +54,8 @@ sub dump_sym {
 # Dump section
 sub dump_scn {
 	my ($scn, $bin, $dump, $dump_off, $arch) = @_;
-
 	my $cmd = "";
+
 	foreach (split /[\n\r]+/, `rabin -S $bin`) {
 		if (/^.*offset=(\w+).*size=(\w+).*name=$scn$/) {
 			$cmd.="pD $2 @ $1 &&";
@@ -64,14 +67,15 @@ sub dump_scn {
 # Print a range of lines from a file
 sub print_lines {
 	my ($file, $from, $to, $context, $prefix, $color) = @_;
+	my $i = 1;
+	my $ret = "";
 
 	$context = 0 if ($context == -1);
-	my $i = 1;
 
 	open FILE, "<$file";
-	while (my $ret = <FILE>) {	
-		if (($i >= $from-$context && $i < $from) ||
-			($i > $to && $i <= $to + $context)) {
+	while ($ret = <FILE>) {	
+		if (($i >= $from-$context && $i < $from && $prefix =~ /-/) ||
+			($i > $to && $i <= $to + $context && $prefix =~ /\+/)) {
 			print "  $ret";
 		} elsif ($i >= $from && $i <= $to) {
 			$ret = "$prefix $ret";
@@ -164,73 +168,76 @@ if ($symbol ne "") {
 # Diff dumps
 system "diff -Hb $a_dump $b_dump | grep -E \'^(\\w|,)*\$\' > $diff";
 
-open DIFF, "<$diff";
-while (my $line = <DIFF>) {
-	my $a_lines = 0;
-	my $b_lines = 0;
-	my $from = 0;
-	my $to = 0;
-	my $old_to = 0;
-	my $ret = "";
+my $line = "";
+my $a_lines = 0;
+my $b_lines = 0;
+my $a_from = 0;
+my $a_to = 0;
+my $b_from = 0;
+my $b_to = 0;
+my $old_to = 0;
 
+open DIFF, "<$diff";
+while ($line = <DIFF>) {
 	if ($line =~ /^(.*)c(.*)$/) {
 		$a_lines = $1;
 		$b_lines = $2;
 
 		if ($a_lines =~ /(\d+),(\d+)/) {
-			$from = $1;
-			$to = $2;
+			$a_from = $1;
+			$a_to = $2;
 		} else {
-			$from = $a_lines;
-			$to = $a_lines;
+			$a_from = $a_lines;
+			$a_to = $a_lines;
 		}
-		&print_lines($a_dump_off, $from, $to, $context, "-", $color);
-
-		print "----\n" unless ($context == -1);
 
 		if ($b_lines =~ /(\d+),(\d+)/) {
-			$from = $1;
-			$to = $2;
+			$b_from = $1;
+			$b_to = $2;
 		} else {
-			$from = $b_lines;
-			$to = $b_lines;
+			$b_from = $b_lines;
+			$b_to = $b_lines;
 		}
-		&print_lines($b_dump_off, $from, $to, $context, "+", $color);
-
 	} elsif ($line =~ /(.*)a(.*)/) {
+		$a_lines = $1;
 		$b_lines = $2;
 
-		if ($b_lines =~ /(\d+),(\d+)/) {
-			$from = $1;
-			$to = $2;
-		} else {
-			$from = $b_lines;
-			$to = $b_lines;
-		}
-		&print_lines($b_dump_off, $from, $to, $context, "+", $color);
+		$a_from = $a_lines + 1;
+		$a_to = $a_lines;
 
+		if ($b_lines =~ /(\d+),(\d+)/) {
+			$b_from = $1;
+			$b_to = $2;
+		} else {
+			$b_from = $b_lines;
+			$b_to = $b_lines;
+		}
 	} elsif ($line =~ /(.*)d(.*)/) {
 		$a_lines = $1;
+		$b_lines = $2;
 
 		if ($a_lines =~ /(\d+),(\d+)/) {
-			$from = $1;
-			$to = $2;
+			$a_from = $1;
+			$a_to = $2;
 		} else {
-			$from = $a_lines;
-			$to = $a_lines;
+			$a_from = $a_lines;
+			$a_to = $a_lines;
 		}
-		&print_lines($a_dump_off, $from, $to, $context, "-", $color);
+
+		$b_from = $b_lines + 1;
+		$b_to = $b_lines;
 	}
 
 	if ($context == -1) {
-		if ($old_to < $from)  {	
-			&print_lines($a_dump_off, $old_to, $from, $context, " ", $color);
-		}
-		$old_to = $to;
-	} else {
-		print "------------\n";
-	}
+		&print_lines($a_dump_off, $old_to + 1, $a_from - 1, $context, " ", $color);
+		$old_to = $a_to;
+	} 
+
+	&print_lines($a_dump_off, $a_from, $a_to, $context, "-", $color);
+	&print_lines($b_dump_off, $b_from, $b_to, $context, "+", $color);
+	print "------------\n" unless ($context == -1);
 }
+&print_lines($a_dump_off, $a_to + 1, 1e12, $context, " ", $color) if ($context == -1);
 close DIFF;
 
 # Remove temporary files
