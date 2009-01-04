@@ -1,22 +1,15 @@
+#define FROM 0 /* 0x8048000 */
+#define LEN 0x940
+#define TIMES 1
+#define SEGMENT %gs /* %ds */
+
 .global main
 
 .data
-
-
-#define FROM 0
-#define LEN 0x940
-#define TIMES 1
-#define SEGMENT %gs
-/* 
-#define SEGMENT %ds
-#define FROM 0x8048000
-*/
-
 buffer:
-.fill LEN,1,0
+.fill LEN, TIMES, 0x00
 
 .text
-
 main:
 	
 	mov $TIMES, %ecx

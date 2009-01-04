@@ -846,7 +846,7 @@ void config_init(int first)
 	config_set("cfg.noscript", "false");
 	config_set("cfg.sections", "true");
 	config_set("cfg.encoding", "ascii"); // cp850
-	config_set_i("cfg.delta", 1024); // cp850
+	config_set_i("cfg.delta", 4096); // cp850
 	node = config_set("cfg.verbose", "true");
 	node->callback = &config_verbose_callback;
 #if LIL_ENDIAN

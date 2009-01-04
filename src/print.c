@@ -351,7 +351,6 @@ void print_mem_help()
 	" . - skip 1 byte\n");
 }
 
-
 void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
@@ -402,6 +401,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 			cons_printf("0x%08llx [%d] {\n", config.seek+i, otimes-times);
 		config.interrupted = 0;
 		for(idx=0;!config.interrupted && idx<len;idx++, arg=arg+1) {
+			addr = 0LL;
 			if (endian)
 				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
 			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
@@ -501,10 +501,11 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				i+=4;
 				break;
 			case 'X': {
+				u32 addr32 = (u32)addr;
 				char buf[128];
 				D cons_printf("0x%08x = ", config.seek+i);
-				cons_printf("0x%08x ", addr);
-				if (string_flag_offset(buf, addr))
+				cons_printf("0x%08llx ", addr32);
+				if (string_flag_offset(buf, (u64)addr32))
 					cons_printf("; %s", buf);
 				i+=4;
 				} break;

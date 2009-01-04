@@ -448,8 +448,7 @@ int string_flag_offset(char *buf, u64 seek)
 		}
 		if (!flag->offset)
 			continue;
-		if (flag->offset && flag->offset <= seek
-		&& (!ref || flag->offset>ref->offset))
+		if (flag->offset <= seek && (!ref || flag->offset > ref->offset))
 			ref = flag;
 	}
 

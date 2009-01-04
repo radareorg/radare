@@ -189,7 +189,7 @@ void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
 			dest[7] = buffer[0];
 			break;
 		default:
-			printf("Invalid size: %d\n", size);
+			eprintf("Invalid size: %d\n", size);
 		}
 	}
 }
@@ -269,12 +269,12 @@ void progressbar(int pc)
 #if RADARE_CORE
 u64 get_pointer(u64 addr, int size)
 {
-	int endian = config_get_i("cfg.bigendian");
-	u64 ret;
-	u8 newa8;
-	u16 newa16;
-	u32 newa32;
-	u64 newa64;
+	int endian = !config_get_i("cfg.bigendian"); // XXX -?
+	u64 ret = 0;
+	u8 newa8 = 0;
+	u16 newa16 = 0;
+	u32 newa32 = 0;
+	u64 newa64 = 0;
 	u64 sk = config.seek;
 	radare_seek(addr, SEEK_SET);
 	switch(size) {
@@ -533,11 +533,21 @@ u64 get_math(const char* text)
 	}
 	txt = tmp;
 
+	// TODO: use alloca here
+	sign = 0;
 #if RADARE_CORE
 	txt2 = strdup(txt);
+	if (*txt=='+') {
+		new_off = config.seek;
+	} else
+	if (*txt=='-')
+		new_off = config.seek;
 #endif
-	sign = (*txt=='+')?1:(*txt=='-')?-1:0;
-	cmp_off  = get_offset(ptr);
+		//sign = -1;
+	//sign = (*txt=='+')?1:(*txt=='-')?-1:0;
+	if (cmp_off == 0)
+		cmp_off  = get_offset(ptr);
+
 	for(ptr = txt; ptr && ptr[0]; ptr = ptr + strlen(ptr)+1)
 	{
 		/* XXX this only works when there're spaces like in 1 == 1, but 1==1 */
@@ -560,7 +570,8 @@ u64 get_math(const char* text)
 			}
 			break;
 #if RADARE_CORE
-		case '[': end = strchr(txt2+(ptr-txt+1),']');
+		case '[':
+			end = strchr(txt2+(ptr-txt+1),']');
 			// todo. support nested lol
 			if (end) {
 				int ptrsize = 4; // XXX use 8 for 64bit boxes ??
@@ -574,10 +585,9 @@ u64 get_math(const char* text)
 					p = txt2+(ptr-txt);
 
 				end[0]='\0';
-				new_off += get_pointer(get_math(p), ptrsize);
-				//eprintf("ADDR 0x%08llx\nPTRSZ %d\n", new_off, ptrsize);
+				new_off = get_pointer(get_math(p), ptrsize);
 				end[0]=']';
-				ptr = ptr + (end-txt2);
+				tmp = ptr + (end-txt2);
 			} else {
 				eprintf("Unbalanced ']' (%s)\n", text);
 			}
@@ -605,7 +615,7 @@ u64 get_math(const char* text)
 				break;
 			} else new_off /= t; break;
 		case '*': new_off *= get_offset(ptr); break;
-		default : new_off  = get_offset(ptr); break;
+		default : new_off += get_offset(ptr); break;
 		}
 		if (tmp == NULL) break;
 		ptr = tmp;
@@ -616,7 +626,7 @@ u64 get_math(const char* text)
 	free(txt2);
 #endif
 	level--;
-//eprintf("CMP(%d)(%llx-%llx)\n", is_cmp,new_off,cmp_off);
+
 	if (is_cmp>0)
 		return (new_off - cmp_off);
 	else
