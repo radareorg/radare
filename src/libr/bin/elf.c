@@ -2,6 +2,7 @@
  * --------------
  * Licensed under GPLv2
  * This file is part of radare
+ * 2008-2009
  */
 
 #include <stdio.h>
@@ -236,6 +237,7 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 	ELF_(aux_swap_endian)((u8*)&(ehdr->e_shnum), sizeof(ELF_(Half)));
 	ELF_(aux_swap_endian)((u8*)&(ehdr->e_shstrndx), sizeof(ELF_(Half)));
 
+//printf("E_SHOFF: %x\n", ehdr->e_shoff);
 	if (ELF_(do_elf_checks)(bin) == -1)
 		return -1;
 
@@ -251,8 +253,10 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 	}
 
 	if (read(bin->fd, bin->phdr, bin->plen) != bin->plen) {
+		fprintf(stderr, "Warning: Cannot read program headers (0x%08x->0x%08x)\n",
+			ehdr->e_phoff, (long)&ehdr->e_phoff-(long)&ehdr->e_ident);
 		perror("read");
-		return -1;
+		//return -1;
 	}
 
 	for (i = 0, phdr = bin->phdr; i < ehdr->e_phnum; i++) {
@@ -278,14 +282,20 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 		return -1;
 	}
 
+	//printf("shtoff = %d\n", ehdr->e_shoff);
 	if (lseek(bin->fd, ehdr->e_shoff, SEEK_SET) < 0) {
 		perror("lseek");
-		return -1;
+		//return -1;
 	}
 
+	//printf("shtlen = %d\n", slen);
 	if (read(bin->fd, bin->shdr, slen) != slen) {
+		fprintf(stderr, "Warning: Cannot read section headers (0x%08x->0x%08x)\n",
+			ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
 		perror("read");
-		return -1;
+		fprintf(stderr, "Warning: Cannot read %d sections.\n", ehdr->e_shnum);
+		ehdr->e_shnum=0;
+		//return -1;
 	}
 
 	for (i = 0, shdr = bin->shdr; i < ehdr->e_shnum; i++) {
@@ -836,6 +846,10 @@ int ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_symbol *symb
 	sym_offset = (bin->ehdr.e_type == ET_REL ? ELF_(r_bin_elf_get_section_offset)(bin, ".text") : 0);
 
 	shdrp = shdr;
+
+	/* No section headers found */
+	if (ehdr->e_shnum == 0) {
+	} else
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (shdrp->sh_type == (ELF_(r_bin_elf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
 			strtabhdr = &shdr[shdrp->sh_link];

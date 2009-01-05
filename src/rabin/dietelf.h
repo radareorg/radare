@@ -9,6 +9,7 @@
 #include "elf.h"
 
 #undef ELF_
+#undef ELFe
 	
 #ifdef DIETELF64
     #define ELF_(name) Elf64_##name 

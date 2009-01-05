@@ -904,7 +904,9 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	if (read(fd, bin->phdr, bin->plen) != bin->plen) {
 		perror("read");
-		return -1;
+		fprintf(stderr, "Warning: Cannot read program headers (0x%08x->0x%08x)\n",
+			ehdr->e_phoff, (long)&ehdr->e_phoff-(long)&ehdr->e_ident);
+		//return -1;
 	}
 
 	for (i = 0, phdr = bin->phdr; i < ehdr->e_phnum; i++) {
@@ -937,7 +939,11 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	if (read(fd, bin->shdr, slen) != slen) {
 		perror("read");
-		return -1;
+		fprintf(stderr, "Warning: Cannot read section headers (0x%08x->0x%08x)\n",
+			ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
+		fprintf(stderr, "Warning: Cannot read %d sections.\n", ehdr->e_shnum);
+		ehdr->e_shnum=0;
+		//return -1;
 	}
 
 	for (i = 0, shdr = bin->shdr; i < ehdr->e_shnum; i++) {

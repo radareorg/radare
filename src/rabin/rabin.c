@@ -990,8 +990,15 @@ void rabin_show_sections(const char *file)
 		section.elf = malloc(sections_count * sizeof(dietelf_section));
 		ELF_CALL(dietelf_get_sections,bin.elf,fd,section.elf);
 
-		if (rad)
+		if (rad) {
+			printf("fs elf\n");
+			printf("f elf.program_headers_off @ 0x1c\n");
+			printf("f elf.program_headers @ 0x%x\n", bin.elf.e32.ehdr.e_phoff);
+			printf("f elf.section_headers_off @ 0x%x\n",0x1c+sizeof(void*)); // XXX 32/64bits
+			printf("f elf.section_headers @ 0x%x\n", bin.elf.e32.ehdr.e_shoff);
 			printf("fs sections\n");
+			/* XXX: broken for 64 bits */
+		}
 		else printf("[Sections]\n");
 
 		sectionp.elf = section.elf;

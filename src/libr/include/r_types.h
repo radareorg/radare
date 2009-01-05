@@ -1,6 +1,11 @@
 #ifndef _INCLUDE_R_TYPES_H_
 #define _INCLUDE_R_TYPES_H_
 
+/* Move outside */
+#define _perror(str,file,line) \
+  { char buf[128];sprintf(buf, "%s:%d %s", file,line,str);perror(buf); }
+#define perror(x) _perror(x,__FILE__,__LINE__)
+
 /* basic types */
 
 #define u64 unsigned long long
