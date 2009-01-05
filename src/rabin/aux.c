@@ -4,6 +4,7 @@
  * This file is part of radare
  */
 
+#include <string.h>
 #include "aux.h"
 
 char* aux_filter_rad_output(const char *string)

@@ -1007,6 +1007,8 @@ int ELF_(r_bin_elf_get_libs)(ELF_(r_bin_elf_obj) *bin, int str_limit, r_bin_elf_
 	const char *string = bin->string;
 	int i, ctr = 0;
 
+	// TODO: use system() hack..read rabin code!
+	// LD_TRACE_LOADED_OBJECTS=1 ./vim 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (!strcmp(&string[shdrp->sh_name], ".dynstr")) {

@@ -1174,10 +1174,23 @@ void rabin_show_libs(const char *file)
 		if (!rad)
 			printf("[Libraries]\n");
 
-		libsp.elf = libs.elf;
-		for (i = 0; i < libs_count; i++, libsp.elf++) {
-			if (!rad) {
-				printf("%s\n", libsp.elf->string);
+		if (libs_count == 0) {
+			char buf[1024];
+			if (rad) {
+				snprintf(buf, 1023, "LD_TRACE_LOADED_OBJECTS=1 ~/vim | sed -e \"s,\t,,g\" -e 's,=>,,g' -e 's,),,' -e 's,/.*(,,g' -e 's,(,,g' -e 's,  , @ ,g' -e 's,^,f ,g'", file);
+
+			} else snprintf(buf,1023, "LD_TRACE_LOADED_OBJECTS=1 %s | sed -e 's,\\t,,g", file);
+			system(buf);
+		} else {
+			libsp.elf = libs.elf;
+			if (rad) {
+				char buf[1024];
+				snprintf(buf, 1023, "LD_TRACE_LOADED_OBJECTS=1 ~/vim | sed -e \"s,\t,,g\" -e 's,=>,,g' -e 's,),,' -e 's,/.*(,,g' -e 's,(,,g' -e 's,  , @ ,g' -e 's,^,f ,g'", file);
+				system(buf);
+			} else {
+				for (i = 0; i < libs_count; i++, libsp.elf++) {
+					printf("%s\n", libsp.elf->string);
+				}
 			}
 		}
 

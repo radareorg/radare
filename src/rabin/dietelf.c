@@ -846,7 +846,8 @@ int ELF_(dietelf_get_libs)(ELF_(dietelf_bin_t) *bin, int fd, int str_limit, diet
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (!strcmp(&string[shdrp->sh_name], ".dynstr")) {
-			ctr = ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset, shdrp->sh_offset+shdrp->sh_size, ".so.", str_limit, strings+ctr);
+			ctr = ELF_(aux_stripstr_from_file)(bin->file, 3, ENCODING_ASCII, shdrp->sh_offset,
+				shdrp->sh_offset+shdrp->sh_size, ".so.", str_limit, strings+ctr);
 		}
 	}
 
@@ -899,7 +900,9 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	if (lseek(fd, ehdr->e_phoff, SEEK_SET) < 0) {
 		perror("lseek");
-		return -1;
+		fprintf(stderr, "Warning: Cannot read program headers (0x%08x->0x%08x)\n",
+			ehdr->e_phoff, (long)&ehdr->e_phoff-(long)&ehdr->e_ident);
+		//return -1;
 	}
 
 	if (read(fd, bin->phdr, bin->plen) != bin->plen) {
@@ -934,14 +937,16 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 
 	if (lseek(fd, ehdr->e_shoff, SEEK_SET) < 0) {
 		perror("lseek");
-		return -1;
+		ehdr->e_shnum=0;
+		fprintf(stderr, "Warning: Cannot read %d section headers (0x%08x->0x%08x)\n",
+			ehdr->e_shnum, ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
+	//	return -1;
 	}
 
 	if (read(fd, bin->shdr, slen) != slen) {
 		perror("read");
-		fprintf(stderr, "Warning: Cannot read section headers (0x%08x->0x%08x)\n",
-			ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
-		fprintf(stderr, "Warning: Cannot read %d sections.\n", ehdr->e_shnum);
+		fprintf(stderr, "Warning: Cannot read %d section headers (0x%08x->0x%08x)\n",
+			ehdr->e_shnum, ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
 		ehdr->e_shnum=0;
 		//return -1;
 	}
