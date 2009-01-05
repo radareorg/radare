@@ -33,7 +33,7 @@
 
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
-FILE *cons_stdin_fd = &stdin;
+FILE *cons_stdin_fd = (FILE *)&stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
 static unsigned int cons_buffer_sz = 0;
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
@@ -238,6 +238,7 @@ int cons_palette_init(const unsigned char *pal)
 	int palstrlen;
 	int i,j=1,k;
 
+	cons_stdin_fd = stdin;
 	if (pal==NULL || pal[0]=='\0') {
 		cons_printf("\n=>( Targets ):");
 		for(j=0;pal_names[j]&&*pal_names[j];j++)
@@ -1070,7 +1071,7 @@ void cons_strcat(const char *str)
 {
 	int len = strlen(str);
 	if (len>0) {
-		palloc(len);
+		palloc(len+1024);
 	//	cons_lines += cons_lines_count(str);
 		memcpy(cons_buffer+cons_buffer_len, str, len+1);
 		cons_buffer_len += len;

@@ -88,7 +88,7 @@ void radare_search_aes()
 			}
 		}
 
-		radare_seek(config.seek + 256,SEEK_SET);
+		radare_seek(config.seek + 256, SEEK_SET);
 	}
 	eprintf("%d AES keys found\n",found );
 	radare_controlc_end();

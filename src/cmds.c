@@ -1478,6 +1478,8 @@ CMD_DECL(seek)
 		cons_printf("Usage: s[nbcxXS-+*!] [arg]\n");
 		cons_strcat(" s 0x128 ; absolute seek\n");
 		cons_printf(" s +33   ; relative seek\n");
+		cons_printf(" s/ lib  ; seek to first hit of search\n");
+		cons_printf(" s/x 00  ; seek to first hit of search\n");
 		cons_printf(" sn      ; seek to next opcode\n");
 		cons_printf(" sb      ; seek to opcode branch\n");
 		cons_printf(" sc      ; seek to call index (pd)\n");
@@ -1505,6 +1507,9 @@ CMD_DECL(seek)
 	for(;text[0]==' ';text = text +1);
 
 	switch(text[0]) {
+	case '/':
+		radare_seek_search(text+1);
+		return;
 	case 'x': 
 		new_off = data_seek_to(config.seek, 0, atoi(text+1));
 		break;
@@ -1742,6 +1747,7 @@ CMD_DECL(write)
 			drop_endian((u8*)&addr4_, (u8*)&addr4, 4); /* addr4_ = addr4 */
 			endian_memcpy((u8*)&addr4, (u8*)&addr4_, 4); /* addr4 = addr4_ */
 			undo_write_new(config.seek, (const u8*) &addr4, 4);
+			//eprintf("VALUE: %x\n", addr4);
 			io_write(config.fd, &addr4, 4);
 		}
 		break;
@@ -2256,20 +2262,22 @@ CMD_DECL(search) {
 
 CMD_DECL(shell)
 {
-	int ret = 0;
-
+	int ret;
 	env_prepare(input);
 	if (input[0]=='!')
 		ret = radare_system(input+1);
 	else ret = io_system(input);
 	env_destroy(input);
-
 	return ret;
 }
 
 CMD_DECL(help)
 {
 	if (strlen(input)>0) {
+		if (input[0]=='!') {
+			if (config.last_cmp != 0)
+				radare_cmd(input+1, 0);
+		} else
 		if (input[0]=='?') {
 			if (input[1]=='?') {
 				cons_printf("0x%llx\n", config.last_cmp);
@@ -2288,6 +2296,7 @@ CMD_DECL(help)
 				" ? eip != oeip     ; compare memory read with byte\n"
 				" ???               ; show result of comparision\n"
 				" ?? s +3           ; seek current seek + 3 if equal\n"
+				" ?! s +3           ; seek current seek + 3 if not equal\n"
 				"Special $$ variables that can be used in expressions\n"
 				" $$  = current seek\n"
 				" $$$ = size of opcode\n"

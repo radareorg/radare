@@ -232,6 +232,20 @@ char *macro_label_process(struct macro_label_t *labels, int *labels_n, char *ptr
 			return NULL;
 		} else
 		/* conditional goto */
+		if (ptr[0]=='?' && ptr[1]=='!' && ptr[2] != '?') {
+			if (config.last_cmp != 0) {
+				char *label = ptr + 3;
+				for(;label[0]==' '||label[0]=='.';label=label+1);
+		//		eprintf("===> GOTO %s\n", label);
+				/* goto label ptr+3 */
+				for(i=0;i<*labels_n;i++) {
+					if (!strcmp(label, labels[i].name))
+						return labels[i].ptr;
+				}
+				return NULL;
+			}
+		} else
+		/* conditional goto */
 		if (ptr[0]=='?' && ptr[1]=='?' && ptr[2] != '?') {
 			if (config.last_cmp == 0) {
 				char *label = ptr + 3;
