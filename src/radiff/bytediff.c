@@ -10,13 +10,34 @@
 extern int radare_fmt;
 #define R if (radare_fmt)
 #define NR if (!radare_fmt)
+#define BS 4096
+
+static int do_byte_diff_count (int fd1, int fd2, u64 bytes) 
+{
+	unsigned char block1[BS];
+	unsigned char block2[BS];
+	u64 rb, bproc = 0;
+	int i, nr, count = 0;
+
+	while ( bproc < bytes ) {
+		nr = ( (bytes-bproc) < BS )?(bytes-bproc):BS ;
+		rb = read ( fd1, block1 , nr );
+		rb = read ( fd2, block2 , nr );
+		for ( i = 0 ; i < nr ; i ++ ) {
+			if ( block1[i] != block2[i] )
+				count++;
+		}
+		bproc +=  nr;
+	}
+	printf("%d\n", count);
+	return count;
+}
 
 static int do_byte_diff (int fd1, int fd2, u64 bytes) 
 {
-	unsigned char block1[4096];
-	unsigned char block2[4096];
-	off_t bproc = 0;
-	ssize_t rb;
+	unsigned char block1[BS];
+	unsigned char block2[BS];
+	u64 rb, bproc = 0;
 	int nr;
 
 	unsigned char bufb[CTXMAXB];
@@ -29,7 +50,7 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 	int cf=0;
 
 	while ( bproc < bytes ) {
-		nr = ( (bytes-bproc) < 4096 )?(bytes-bproc):4096 ;
+		nr = ( (bytes-bproc) < BS )?(bytes-bproc):BS ;
 		rb = read ( fd1, block1 , nr );
 		rb = read ( fd2, block2 , nr );
 		
@@ -64,31 +85,36 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 	return cf;
 }
 
-int radiff_bytediff(const char *a, const char *b)
+int radiff_bytediff(const char *a, const char *b, int count)
 {
 	int fd1,fd2;
-	off_t size1, size2;
+	u64 size1, size2;
 	int r;
 
 	fd1 = open (a , O_RDONLY);
 	if ( fd1 < 0 ) {	
-		printf ( "Could not open %s\n", a);
+		fprintf(stderr, "Could not open %s\n", a);
 		return -1; 
 	}	
 	
 	fd2 = open (b , O_RDONLY);
 	if ( fd2 < 0 ) {	
-		printf ( "Could not open %s\n", b);
+		fprintf(stderr, "Could not open %s\n", b);
 		return -1; 
 	}	
 
-	size1 = lseek (fd1 , 0 , SEEK_END);
-	size2 = lseek (fd2 , 0 , SEEK_END);
+	size1 = lseek(fd1 , 0 , SEEK_END);
+	size2 = lseek(fd2 , 0 , SEEK_END);
 	
-	lseek ( fd1 , 0 , SEEK_SET);
-	lseek ( fd2 , 0 , SEEK_SET);
+	lseek(fd1 , 0 , SEEK_SET);
+	lseek(fd2 , 0 , SEEK_SET);
 
-	r = do_byte_diff (fd1, fd2, (size1>size2)?size2:size1);
+	if (size1 != size2)
+		fprintf(stderr, "Warning: Files have different size %lld vs %lld\n", size1, size2);
+
+	if (count)
+		r = do_byte_diff_count(fd1, fd2, (size1>size2)?size2:size1);
+	else r = do_byte_diff (fd1, fd2, (size1>size2)?size2:size1);
 
 	if ( ( r == 0) && ( size1 == size2 ) )
 		fprintf (stderr, "Files are the same\n");
