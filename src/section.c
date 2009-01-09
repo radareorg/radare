@@ -22,7 +22,7 @@
 
 static struct list_head sections;
 
-void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
+void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -34,19 +34,22 @@ void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
 				s->vaddr = vaddr;
 			if (paddr != -1)
 				s->paddr = paddr;
+			if (rwx != -1)
+				s->rwx = rwx;
 			if (comment)
 				strncpy(s->comment, comment, 254);
 		}
 	}
 }
 
-void section_add(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
+void section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
 	s->from = from;
 	s->to = to;
 	s->vaddr = vaddr;
 	s->paddr = paddr;
+	s->rwx = SECTION_R | SECTION_W | SECTION_X;
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';

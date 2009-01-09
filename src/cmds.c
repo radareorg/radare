@@ -1940,7 +1940,7 @@ CMD_DECL(sections)
 			case 0: // get length
 				to = from + get_math(get0word(ptr,0));
 			}
-			section_add(from, to, base, ondisk, comment);
+			section_add(from, to, base, ondisk, 7, comment);
 			free(ptr);
 			}
 			break;
@@ -1956,16 +1956,19 @@ CMD_DECL(sections)
 		section_list(config.seek, 1);
 		break;
 	case 'd':
-		section_set(config.seek, -1, -1, get_math(input+1), NULL);
+		section_set(config.seek, -1, -1, get_math(input+1), -1, NULL);
 		break;
 	case 'c':
-		section_set(config.seek, -1, -1, -1, input+(input[1]==' '?2:1));
+		section_set(config.seek, -1, -1, -1, -1, input+(input[1]==' '?2:1));
 		break;
 	case 'b':
-		section_set(config.seek, -1, get_math(input+1), -1, NULL);
+		section_set(config.seek, -1, get_math(input+1), -1, -1, NULL);
 		break;
 	case 't':
-		section_set(config.seek, get_math(input+1), -1, -1, NULL);
+		section_set(config.seek, get_math(input+1), -1, -1,-1, NULL);
+		break;
+	case 'p':
+		section_set(config.seek, -1, -1, -1, atoi(input+1), NULL);
 		break;
 	case 'f':
 		eprintf("TODO\n");
