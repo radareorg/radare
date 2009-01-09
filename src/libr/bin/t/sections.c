@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (r_bin_open(&bin, argv[1]) == -1) {
+	if (r_bin_open(&bin, argv[1], 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}

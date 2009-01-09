@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	section = argv[2];
 	new_size = atoi(argv[3]);
 
-	if ((fd = r_bin_open(&bin, file)) == -1) {
+	if ((fd = r_bin_open(&bin, file, 0)) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}

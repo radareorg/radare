@@ -52,7 +52,7 @@ static int r_bin_init(r_bin_obj *bin)
 	return -1;
 }
 
-int r_bin_open(r_bin_obj *bin, char *file)
+int r_bin_open(r_bin_obj *bin, char *file, int rw)
 {
 	int fd;
 
@@ -64,7 +64,7 @@ int r_bin_open(r_bin_obj *bin, char *file)
 	switch (bin->format) {
 	case R_BIN_FMT_ELF32:
 	case R_BIN_FMT_ELF64:
-		if ((fd = ELF_CALL(r_bin_elf_open,bin,file)) != -1) {
+		if ((fd = ELF_CALL(r_bin_elf_open,bin,file,rw)) != -1) {
 			bin->fd = fd;
 			return fd;
 		}

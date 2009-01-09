@@ -1,4 +1,4 @@
-all: baddr entry info sections symbols imports scn_resize
+all: baddr entry info sections symbols imports scn_resize data_resize
 
 baddr:
 	${CC} -g -I ../../include baddr.c ../*.o -o baddr
@@ -14,6 +14,8 @@ imports:
 	${CC} -g -I ../../include imports.c ../*.o -o imports
 scn_resize:
 	${CC} -g -I ../../include scn_resize.c ../*.o -o scn_resize
+data_resize:
+	${CC} -g -I ../../include data_resize.c ../*.o -o data_resize
 
 clean:
-	rm -f baddr entry info sections symbols imports scn_resize
+	rm -f baddr entry info sections symbols imports scn_resize data_resize

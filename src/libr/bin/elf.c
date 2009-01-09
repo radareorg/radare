@@ -662,6 +662,49 @@ int ELF_(r_bin_elf_is_big_endian)(ELF_(r_bin_elf_obj) *bin)
 	return (ehdr->e_ident[EI_DATA] == ELFDATA2MSB);
 }
 
+int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u64 size)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
+	const char *string = bin->string;
+	ELF_(Word) new_size = (ELF_(Word)) size;
+	ELF_(Off) new_offset;
+	ELF_(Addr) new_addr;
+	u64 off, delta = 0;
+	int i, done = 0;
+
+	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) {
+		if (!done && !strncmp(name, &string[shdrp->sh_name], ELF_NAME_LENGTH)) {
+			delta =  new_size - shdrp->sh_size;
+			off = ehdr->e_shoff + i * sizeof(ELF_(Shdr)) + 3 * sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
+
+			if (lseek(bin->fd, off, SEEK_SET) < 0)
+				perror("lseek");
+
+			if (write(bin->fd, &new_size, sizeof(ELF_(Word))) != sizeof(ELF_(Word))) {
+				perror("write (size)");
+			}
+			done = 1;
+		} else {
+			new_offset = (ELF_(Off)) (shdrp->sh_offset + delta);
+			new_addr = (ELF_(Addr)) (shdrp->sh_addr ? shdrp->sh_addr + delta : 0);
+			off = ehdr->e_shoff + i * sizeof(ELF_(Shdr)) + 3 * sizeof(ELF_(Word));
+
+			if (lseek(bin->fd, off, SEEK_SET) < 0)
+				perror("lseek");
+
+			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
+				perror("write (addr)");
+			}
+			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+				perror("write (off)");
+			}
+		}
+	}
+
+	return i;
+}
+
 int ELF_(r_bin_elf_get_sections)(ELF_(r_bin_elf_obj) *bin, r_bin_elf_section *section)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
@@ -1020,9 +1063,9 @@ int ELF_(r_bin_elf_get_libs)(ELF_(r_bin_elf_obj) *bin, int str_limit, r_bin_elf_
 	return ctr;
 }
 
-int ELF_(r_bin_elf_open)(ELF_(r_bin_elf_obj) *bin, const char *file)
+int ELF_(r_bin_elf_open)(ELF_(r_bin_elf_obj) *bin, const char *file, int rw)
 {
-	if ((bin->fd=open(file, O_RDONLY)) == -1) {
+	if ((bin->fd=open(file, rw?O_RDWR:O_RDONLY)) == -1) {
 		fprintf(stderr, "Error: Cannot open \"%s\"\n", file);
 		return -1;
 	}
