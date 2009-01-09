@@ -667,25 +667,30 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	const char *string = bin->string;
-	ELF_(Word) new_size = (ELF_(Word)) size;
-	ELF_(Off) new_offset;
+	ELF_(Word) rsz_size = (ELF_(Word)) size;
+	ELF_(Off) rsz_offset, new_offset;
 	ELF_(Addr) new_addr;
 	u64 off, delta = 0;
 	int i, done = 0;
 
-	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) {
+	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) 
+		if (!strncmp(name, &string[shdrp->sh_name], ELF_NAME_LENGTH)) {
+			delta =  rsz_size - shdrp->sh_size;
+			rsz_offset = shdrp->sh_offset;
+		}
+
+	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) 
 		if (!done && !strncmp(name, &string[shdrp->sh_name], ELF_NAME_LENGTH)) {
-			delta =  new_size - shdrp->sh_size;
 			off = ehdr->e_shoff + i * sizeof(ELF_(Shdr)) + 3 * sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
 
 			if (lseek(bin->fd, off, SEEK_SET) < 0)
 				perror("lseek");
 
-			if (write(bin->fd, &new_size, sizeof(ELF_(Word))) != sizeof(ELF_(Word))) {
+			if (write(bin->fd, &rsz_size, sizeof(ELF_(Word))) != sizeof(ELF_(Word))) {
 				perror("write (size)");
 			}
 			done = 1;
-		} else {
+		} else if (shdrp->sh_offset > rsz_offset) {
 			new_offset = (ELF_(Off)) (shdrp->sh_offset + delta);
 			new_addr = (ELF_(Addr)) (shdrp->sh_addr ? shdrp->sh_addr + delta : 0);
 			off = ehdr->e_shoff + i * sizeof(ELF_(Shdr)) + 3 * sizeof(ELF_(Word));
@@ -699,6 +704,41 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
 				perror("write (off)");
 			}
+		}
+
+	if (ehdr->e_entry > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_entry + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+			perror("write (off)");
+		}
+	}
+
+	if (ehdr->e_phoff > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_phoff + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+			perror("write (off)");
+		}
+	}
+
+	if (ehdr->e_shoff > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_shoff + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+			perror("write (off)");
 		}
 	}
 
