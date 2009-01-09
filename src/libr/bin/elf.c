@@ -721,6 +721,61 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			printf("-> elf section (%s)\n", &string[shdrp->sh_name]);
 		}
 
+	/* rewrite program headers here */
+	for (i = 0, phdrp = phdr; i < ehdr->e_phnum; i++, phdrp++)
+		if (phdrp->p_offset > rsz_offset) {
+			new_offset = (ELF_(Off)) (phdrp->p_offset + delta);
+			off = ehdr->e_phoff + i * sizeof(ELF_(Phdr)) + sizeof(ELF_(Word));
+
+			if (lseek(bin->fd, off, SEEK_SET) < 0)
+				perror("lseek");
+
+			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
+				perror("write (off)");
+
+			new_addr = (ELF_(Addr)) (phdrp->p_vaddr ? phdrp->p_vaddr + delta : 0);
+			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr)))
+				perror("write (addr)");
+			new_addr = (ELF_(Addr)) (phdrp->p_paddr ? phdrp->p_paddr + delta : 0);
+			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr)))
+				perror("write (addr)");
+
+			printf("-> program header (%08llx)\n", (u64) phdrp->p_offset);
+		}
+
+	/* rewrite other elf pointers (entrypoint, phoff, shoff) */
+	if (ehdr->e_entry - bin->base_addr > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_entry + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
+			perror("write (off)");
+	}
+
+	if (ehdr->e_phoff > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_phoff + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
+			perror("write (off)");
+	}
+
+	if (ehdr->e_shoff > rsz_offset) {
+		new_offset = (ELF_(Off)) (ehdr->e_shoff + delta);
+		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
+
+		if (lseek(bin->fd, off, SEEK_SET) < 0)
+			perror("lseek");
+
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
+			perror("write (off)");
+	}
 
 	/* inverse order to write bodies .. avoid overlapping here */
 	// XXX Check when delta is negative
@@ -760,53 +815,6 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			free(buf);
 		}
 #endif
-
-	// TODO: rewrite program headers here
-	for (i = 0, phdr = bin->phdr; i < ehdr->e_phnum; i++) {
-		u64 off = phdr[i].p_offset;
-		if (off > rsz_offset) {
-			printf(" * ");
-		} else printf("   ");
-		printf("%08llx\n", off);
-	}
-
-	/* rewrite other elf pointers (entrypoint, phoff, shoff) */
-	// spaguetti code :)
-	//  XXX e_entry should substract the virtual base address of .text section */
-#if 0
-	if (ehdr->e_entry > rsz_offset) {
-		new_offset = (ELF_(Off)) (ehdr->e_entry + delta);
-		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word));
-
-		if (lseek(bin->fd, off, SEEK_SET) < 0)
-			perror("lseek");
-
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
-			perror("write (off)");
-	}
-#endif
-
-	if (ehdr->e_phoff > rsz_offset) {
-		new_offset = (ELF_(Off)) (ehdr->e_phoff + delta);
-		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr));
-
-		if (lseek(bin->fd, off, SEEK_SET) < 0)
-			perror("lseek");
-
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
-			perror("write (off)");
-	}
-
-	if (ehdr->e_shoff > rsz_offset) {
-		new_offset = (ELF_(Off)) (ehdr->e_shoff + delta);
-		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
-
-		if (lseek(bin->fd, off, SEEK_SET) < 0)
-			perror("lseek");
-
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
-			perror("write (off)");
-	}
 
 	return i;
 }
