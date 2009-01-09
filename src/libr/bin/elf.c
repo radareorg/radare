@@ -665,21 +665,39 @@ int ELF_(r_bin_elf_is_big_endian)(ELF_(r_bin_elf_obj) *bin)
 int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u64 size)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	ELF_(Phdr) *phdr = bin->phdr, *phdrp;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	const char *string = bin->string;
+	ELF_(Word) rsz_osize = 0, rsz_fsize;
 	ELF_(Word) rsz_size = (ELF_(Word)) size;
 	ELF_(Off) rsz_offset, new_offset;
 	ELF_(Addr) new_addr;
 	u64 off, delta = 0;
 	int i, done = 0;
 
+	if (size == 0) {
+		printf("0 size section?\n");
+		return 0;
+	}
+	rsz_fsize = lseek(bin->fd, 0, SEEK_END);
+
+	/* calculate delta */
 	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) 
 		if (!strncmp(name, &string[shdrp->sh_name], ELF_NAME_LENGTH)) {
 			delta =  rsz_size - shdrp->sh_size;
 			rsz_offset = shdrp->sh_offset;
+			rsz_osize = shdrp->sh_size;
 		}
 
-	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++) 
+	if (delta == 0) {
+		printf("Cannot find section\n");
+		return 0;
+	}
+
+	printf("delta: %lld\n", delta);
+
+	/* rewrite section headers */
+	for (i = 0, shdrp = shdr; i < ehdr->e_shnum; i++, shdrp++)
 		if (!done && !strncmp(name, &string[shdrp->sh_name], ELF_NAME_LENGTH)) {
 			off = ehdr->e_shoff + i * sizeof(ELF_(Shdr)) + 3 * sizeof(ELF_(Word)) + sizeof(ELF_(Addr)) + sizeof(ELF_(Off));
 
@@ -696,13 +714,66 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 
 			if (lseek(bin->fd, off, SEEK_SET) < 0)
 				perror("lseek");
-
 			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr)))
 				perror("write (addr)");
 			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 				perror("write (off)");
+			printf("-> elf section (%s)\n", &string[shdrp->sh_name]);
 		}
 
+
+	/* inverse order to write bodies .. avoid overlapping here */
+	// XXX Check when delta is negative
+	/* rewrite section contents */
+	{
+		u64 rest_size = rsz_fsize - rsz_offset;
+		u8 *buf = (u8 *)malloc(rest_size);
+		printf("COPY FROM 0x%08llx\n", (u64) rsz_offset+rsz_osize);
+		lseek(bin->fd, rsz_offset+rsz_osize, SEEK_SET);
+		read(bin->fd, buf, rest_size);
+
+		printf("COPY TO 0x%08llx\n", (u64) rsz_offset+rsz_size);
+		lseek(bin->fd, rsz_offset+rsz_size, SEEK_SET);
+		write(bin->fd, buf, rest_size);
+		printf("Shifted %d bytes\n", (int)delta);
+		free(buf);
+	}
+#if 0
+	for (i = ehdr->e_shnum, shdrp--; i>0; i--, shdrp--)
+		if (shdrp->sh_offset > rsz_offset) {
+			int ret;
+			u8 *buf = (u8 *)malloc(shdrp->sh_size);
+			lseek(bin->fd, shdrp->sh_offset, SEEK_SET);
+			ret = read(bin->fd, buf, shdrp->sh_size);
+			if (ret != shdrp->sh_size) {
+				printf("Cannot read %d byets\n", ret);
+			}
+
+			printf("Write %d bytes at 0x%08llx\n", (int)shdrp->sh_size, shdrp->sh_offset+delta);
+			lseek(bin->fd, shdrp->sh_offset+delta, SEEK_SET);
+			ret = write(bin->fd, buf, shdrp->sh_size);
+			if (ret != shdrp->sh_size) {
+				printf("Cannot write %d byets\n", ret);
+			}
+			
+			printf("=> bin section (%s) (%d)\n", &string[shdrp->sh_name], shdrp->sh_size);
+			free(buf);
+		}
+#endif
+
+	// TODO: rewrite program headers here
+	for (i = 0, phdr = bin->phdr; i < ehdr->e_phnum; i++) {
+		u64 off = phdr[i].p_offset;
+		if (off > rsz_offset) {
+			printf(" * ");
+		} else printf("   ");
+		printf("%08llx\n", off);
+	}
+
+	/* rewrite other elf pointers (entrypoint, phoff, shoff) */
+	// spaguetti code :)
+	//  XXX e_entry should substract the virtual base address of .text section */
+#if 0
 	if (ehdr->e_entry > rsz_offset) {
 		new_offset = (ELF_(Off)) (ehdr->e_entry + delta);
 		off = EI_NIDENT * sizeof(unsigned char) + 2 * sizeof(ELF_(Half)) + sizeof(ELF_(Word));
@@ -713,6 +784,7 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 			perror("write (off)");
 	}
+#endif
 
 	if (ehdr->e_phoff > rsz_offset) {
 		new_offset = (ELF_(Off)) (ehdr->e_phoff + delta);

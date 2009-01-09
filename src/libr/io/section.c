@@ -22,12 +22,13 @@
 #include "r_io_section.h"
 #include "list.h"
 
-// XXX
+// TODO: io sections should not be global!! (per io sections)
+// XXX use section->foo
 #define cons_printf printf
 
 static struct list_head sections;
 
-void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
+void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -39,19 +40,22 @@ void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 paddr, const char *commen
 				s->vaddr = vaddr;
 			if (paddr != -1)
 				s->paddr = paddr;
+			if (rwx != -1)
+				s->rwx = rwx;
 			if (comment)
 				strncpy(s->comment, comment, 254);
 		}
 	}
 }
 
-void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 paddr, const char *comment)
+void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct r_io_section_t *s = (struct r_io_section_t *)malloc(sizeof(struct r_io_section_t));
 	s->from = from;
 	s->to = to;
 	s->vaddr = vaddr;
 	s->paddr = paddr;
+	s->rwx = rwx;
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';

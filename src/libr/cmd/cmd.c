@@ -2,6 +2,11 @@
 
 #include "r_cmd.h"
 
+/* binary/byte tree storage for commands */
+#if 0
+  r_cmd_add(cmd, "s/", &seek_search);
+
+#endif
 
 int r_cmd_add(struct r_cmd_t *cmd, const char *prefix, r_cmd_callback callback)
 {

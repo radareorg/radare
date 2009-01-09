@@ -18,3 +18,15 @@ u64 htonq(u64 value) {
         return ret;
 }
 
+
+#warning get_offset MUST be renamed
+u64 get_offset(const char *str)
+{
+	return atoi(str);
+}
+
+#warning get_math MUST be renamed
+u64 get_math(const char *str)
+{
+	return get_offset(str);
+}

@@ -1,6 +1,8 @@
 #include "r_types.h"
 #include <stdio.h>
 
+#define iswhitespace(x) (x==' '||x=='\t')
+
 static const char *nullstr="";
 static const char *nullstr_c="(null)";
 
@@ -108,15 +110,9 @@ char *strclean(char *str)
         for(ptr = str+len-1;ptr!=str;ptr = ptr - 1) {
                 if (iswhitechar(ptr[0])) 
                         ptr[0]='\0';
-                else    
-                        break;
+                else    break;
         }               
         return str;
-}
-
-int strnull(const char *str)
-{
-        return (!str || !str[0]);
 }
 
 int strhash(const char *str)

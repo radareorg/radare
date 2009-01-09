@@ -2,6 +2,7 @@
 #define _INCLUDE_R_CONFIG_H_
 
 #include "r_types.h"
+#include "r_util.h"
 #include "list.h"
 
 #define CN_BOOL  0x000001
@@ -28,11 +29,14 @@ struct r_config_t {
 	int lock;
 	int last_notfound;
 	int n_nodes;
+	void (*printf)(const char *str, ...);
 	struct list_head nodes;
 };
 
 #define O struct r_config_t *obj
 
+struct r_config_t *r_config_new();
+int r_config_free(struct r_config_t *cfg);
 int r_config_init(O);
 void r_config_lock(O, int l);
 int r_config_eval(O, const char *str);

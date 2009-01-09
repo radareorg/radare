@@ -12,7 +12,7 @@ int r_core_init(struct r_core_t *core)
 int r_core_config_init(struct r_core_t *core)
 {
 	r_config_init(&core->config);
-	r_config_callback_int("
+	r_config_callback_int("")
 	
 	node = config_set("asm.profile", "default");
 	node->callback = &config_asm_profile;

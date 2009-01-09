@@ -9,12 +9,19 @@ struct r_io_section_t {
 	u64 to;
 	u64 vaddr;
 	u64 paddr; // offset on disk
+	int rwx;
 	struct list_head list;
 };
 
+enum {
+	R_IO_SECTION_R = 4,
+	R_IO_SECTION_W = 2,
+	R_IO_SECTION_X = 1,
+};
+
 int r_io_section_rm(int idx);
-void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 physical, const char *comment);
-void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 physical, const char *comment);
+void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 physical, int rwx, const char *comment);
+void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 physical, int rwx, const char *comment);
 void r_io_section_list(u64 addr, int rad);
 struct r_io_section_t * r_io_section_get(u64 addr);
 void r_io_section_list_visual(u64 seek, u64 len);
