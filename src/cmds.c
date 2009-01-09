@@ -1915,6 +1915,7 @@ CMD_DECL(sections)
 		eprintf(" Sb 0x100000      ; change base address\n");
 		eprintf(" St 0x500         ; set end of section at this address\n");
 		eprintf(" Sf 0x100         ; set from address of the current section\n");
+		eprintf(" Sp 7             ; set rwx (r=4 + w=2 + x=1)\n");
 		break;
 	case ' ':
 		switch(input[1]) {

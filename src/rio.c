@@ -95,8 +95,18 @@ int radare_write_at(u64 offset, const u8 *data, int len)
 {
 	int i;
 	u64 cur = config.seek;
+	struct section_t *s;
 	radare_seek(offset,SEEK_SET);
-	undo_write_new(offset, data, len);
+	s = section_get(offset);
+	if (s != NULL) {
+		if (s->rwx & SECTION_W) {
+			fprintf(stderr, "Cannot write in this section\n");
+			return -1;
+		}
+	}
+	
+	if (config_get_i("file.undowrite"))
+		undo_write_new(offset, data, len);
 
 	/* Apply write binary mask here */
 	if (write_mask != NULL) {
@@ -110,7 +120,7 @@ int radare_write_at(u64 offset, const u8 *data, int len)
 
 	len = io_write(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
-	radare_read(0);
+//	radare_read(0);
 	return len;
 }
 

@@ -254,7 +254,7 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 
 	if (read(bin->fd, bin->phdr, bin->plen) != bin->plen) {
 		fprintf(stderr, "Warning: Cannot read program headers (0x%08x->0x%08x)\n",
-			ehdr->e_phoff, (long)&ehdr->e_phoff-(long)&ehdr->e_ident);
+			(unsigned int)ehdr->e_phoff, (unsigned int)((long)&ehdr->e_phoff-(long)&ehdr->e_ident));
 		perror("read");
 		//return -1;
 	}
@@ -291,7 +291,7 @@ static int ELF_(r_bin_elf_init)(ELF_(r_bin_elf_obj) *bin)
 	//printf("shtlen = %d\n", slen);
 	if (read(bin->fd, bin->shdr, slen) != slen) {
 		fprintf(stderr, "Warning: Cannot read section headers (0x%08x->0x%08x)\n",
-			ehdr->e_shoff, (long)&ehdr->e_shoff-(long)&ehdr->e_ident);
+			(unsigned int)ehdr->e_shoff, (unsigned int)((long)&ehdr->e_shoff-(long)&ehdr->e_ident));
 		perror("read");
 		fprintf(stderr, "Warning: Cannot read %d sections.\n", ehdr->e_shnum);
 		ehdr->e_shnum=0;
@@ -686,9 +686,8 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			if (lseek(bin->fd, off, SEEK_SET) < 0)
 				perror("lseek");
 
-			if (write(bin->fd, &rsz_size, sizeof(ELF_(Word))) != sizeof(ELF_(Word))) {
+			if (write(bin->fd, &rsz_size, sizeof(ELF_(Word))) != sizeof(ELF_(Word)))
 				perror("write (size)");
-			}
 			done = 1;
 		} else if (shdrp->sh_offset > rsz_offset) {
 			new_offset = (ELF_(Off)) (shdrp->sh_offset + delta);
@@ -698,12 +697,10 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			if (lseek(bin->fd, off, SEEK_SET) < 0)
 				perror("lseek");
 
-			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
+			if (write(bin->fd, &new_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr)))
 				perror("write (addr)");
-			}
-			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+			if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 				perror("write (off)");
-			}
 		}
 
 	if (ehdr->e_entry > rsz_offset) {
@@ -713,9 +710,8 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 		if (lseek(bin->fd, off, SEEK_SET) < 0)
 			perror("lseek");
 
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 			perror("write (off)");
-		}
 	}
 
 	if (ehdr->e_phoff > rsz_offset) {
@@ -725,9 +721,8 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 		if (lseek(bin->fd, off, SEEK_SET) < 0)
 			perror("lseek");
 
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 			perror("write (off)");
-		}
 	}
 
 	if (ehdr->e_shoff > rsz_offset) {
@@ -737,9 +732,8 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 		if (lseek(bin->fd, off, SEEK_SET) < 0)
 			perror("lseek");
 
-		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off))) {
+		if (write(bin->fd, &new_offset, sizeof(ELF_(Off))) != sizeof(ELF_(Off)))
 			perror("write (off)");
-		}
 	}
 
 	return i;

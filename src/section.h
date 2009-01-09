@@ -12,9 +12,9 @@ struct section_t{
 };
 
 enum {
-	SECTION_R = 1,
+	SECTION_R = 4,
 	SECTION_W = 2,
-	SECTION_X = 4,
+	SECTION_X = 1,
 };
 
 int section_rm(int idx);

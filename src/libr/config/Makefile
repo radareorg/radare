@@ -1,5 +1,5 @@
 NAME=r_config
 
-OBJ=config.c
+OBJ=config.o callback.o
 
 include ../rules.mk
