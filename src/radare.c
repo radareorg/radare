@@ -1256,7 +1256,7 @@ int radare_prompt()
 {
 	char input[BUFLEN];
 	const char *ptr;
-	char* aux;
+	char* aux, *inp;
 	char prompt[1024]; // XXX avoid 1024 limit
 	int t, ret;
 
@@ -1295,8 +1295,26 @@ int radare_prompt()
 			printf("\n");
 			return 0;
 		}
+		inp = aux;
+		input[0]='\0';
+		while(1) {
+			if (inp[strlen(inp)-1]=='\\') {
+				char *oinp = inp;
+				inp = inp+strlen(inp)-1;
+				inp[0]='&';
+				inp[1]='&';
+				inp[2]='\0';
+				inp = inp+2;
+				inp = oinp;
+			}  else {
+				strncat(input, inp, sizeof(input));
+				break;
+			}
+			strncat(input, inp, sizeof(input));
+			inp = prompt;
+			cons_fgets(inp, 128, 0, NULL);
+		}
 
-		strncpy(input, aux, sizeof(input));
 	//	dl_hist_add(ret);
 		if (dl_hist_label(input, &cb)) {
 			return 1;
@@ -1313,7 +1331,17 @@ int radare_prompt()
 #endif
 		//D { printf(prompt); fflush(stdout); }
 		dl_prompt = prompt;
-		ret = cons_fgets(input, BUFLEN-1, 0, NULL);
+		inp = input;
+		/* XXX: This code can be buggy */
+		while(1) {
+			ret = cons_fgets(inp, BUFLEN-1, 0, NULL);
+			if (inp[strlen(inp)-2=='\\']) {
+				inp = inp+strlen(inp)-2;
+				inp[0]='&';
+				inp[1]='&';
+				inp = inp+2;
+			} else break;
+		}
 		if (ret == -1)
 			exit(0);
 		radare_cmd(input, 1);

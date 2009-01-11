@@ -8,6 +8,8 @@
 
 TheBook
 =======
+* Screen column grep should skip scape sequences
+* Add '\' eos to support more than one line .. replace /\n -> &&
 * Add 'afu' to undefine a function
   - Cannot undefine variables
   - Cannot undefine functions (resized to 1 O_o?)

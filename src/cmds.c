@@ -1890,7 +1890,8 @@ CMD_DECL(write)
 		" wt [file] ([off])  ; write current block to file at offset\n"
 		" wf [file]          ; write contents of file at current seek\n"
 		" wF [hexfile]       ; write hexpair contents of file\n"
-		" wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n");
+		" wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n"
+		"NOTE: Use 'yt' (yank to) command to copy data from one place to other. y? fmi\n");
 		return 0;
 	}
 	radare_seek(back, SEEK_SET);

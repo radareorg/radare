@@ -911,7 +911,7 @@ void cons_flush()
 			char *one = cons_buffer;
 			char *two;
 			char *ptr, *tok;
-			char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
+			char delims[6][2] = {"|", "/", "\\", ",", ";", "\t" };
 
 			for(line=0;;) {
 				two = strchr(one, '\n');

@@ -1073,11 +1073,12 @@ void visual_f(int f)
 CMD_DECL(visual)
 {
 	unsigned char key;
-	int i, lpf;
+	int i, lpf, ret;
 	int nibble;
 	char line[1024];
+	char tmpbuf[512];
 #if HAVE_LIB_READLINE
-	char *ptr;
+	char *ptr, *optr;
 #endif
 
 	switch(input[0]) {
@@ -1474,12 +1475,34 @@ CMD_DECL(visual)
 			config.visual=0;
 #if HAVE_LIB_READLINE
 			ptr = readline(VISUAL_PROMPT);
-			if (ptr) {
-				strncpy(line, ptr, sizeof(line));
-				radare_cmd(line, 1);
-				//commands_parse(line);
-				free(ptr);
-			}
+			line[0]='\0';
+			if (ptr == NULL)
+				break;
+			//strcpy(line, ptr);
+			//ptr = line;
+			optr = ptr;
+			
+			tmpbuf[0]='\0';
+			do {
+				if (ptr[strlen(ptr)-1]=='\\') {
+					char *optr = ptr;
+					ptr = ptr+strlen(ptr)-1;
+					ptr[0]='&';
+					ptr[1]='&';
+					ptr[2]='\0';
+					ptr = ptr+2;
+					ptr = optr;
+				}  else {
+					strncat(line, ptr, sizeof(line));
+					break;
+				}
+				// XXX . control negative value
+				strncat(line, ptr, 128); //sizeof(line)-strlen(line));
+				ptr = tmpbuf;
+				ret = cons_fgets(ptr, 128, 0, NULL);
+			} while(ret);
+			free(optr);
+			radare_cmd(line, 1);
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
