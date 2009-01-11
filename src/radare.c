@@ -428,6 +428,7 @@ void radare_fortunes()
 	}
 }
 
+int cmd_level = 0;
 int radare_cmd_raw(const char *tmp, int log)
 {
 	int fd;
@@ -446,6 +447,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (strnull(tmp))
 		return 0;
 
+	cmd_level++;
 	// TODO: chop string by ';'
 
 	eof = strchr(tmp,'\n');
@@ -454,7 +456,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		if (eof[1]!='\0') { // OOPS :O
 			// TODO: use it like in &&
 			eprintf("Multiline command not yet supported (%s)\n", tmp);
-			return 0;
+			goto __end;
 		}
 	}
 
@@ -468,8 +470,10 @@ int radare_cmd_raw(const char *tmp, int log)
 		input=input+1;
 	}
 
-	if (input[0]=='!'&&input[1]=='!')
-		return radare_system(input+2);
+	if (input[0]=='!'&&input[1]=='!') {
+		ret = radare_system(input+2);
+		goto __end;
+	}
 
 	if (input[0] == ':') {
 		config.verbose = config_get_i("cfg.verbose")^1;
@@ -477,7 +481,43 @@ int radare_cmd_raw(const char *tmp, int log)
 		input = input+1;
 	}
 
-	if (input[0]!='(' | !strchr(input+1, ',')) {
+	if (cmd_level==1){
+		fd = -1;
+		fdi = -1;
+		std = -1;
+	}
+#if 1
+	// Hack to allow 'ave eax=eax>16'
+	if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
+		char *pos = strchr(input+1, '>');
+		char *file = pos + 1;
+		char *end;
+
+		if (pos != NULL) {
+			for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
+			if (*file == '\0') {
+				eprintf("No target file (%s)\n", input);
+			} else {
+				for(end = file+strlen(file);
+					end[0]&&!iswhitespace(end[0]);
+					end = end-1); end[0]='\0';
+				if (pos[1] == '>')
+					fd = io_open(file, O_APPEND|O_WRONLY, 0644);
+				else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
+				if (fd == -1) {
+					eprintf("Cannot open '%s' for writing\n", file);
+					config_set("file.write", "false");
+					tmpoff = config.seek;
+					return 1;
+				}
+				std = dup(1); // store stdout
+				dup2(fd, 1);
+			}
+		}
+	}
+#endif
+
+	if (input[0]!='(' || !strchr(input+1, ',')) {
 		next = strstr(input, "&&");
 		if (next) next[0]='\0';
 
@@ -513,7 +553,7 @@ int radare_cmd_raw(const char *tmp, int log)
 					//config.seek = tmpoff;
 					radare_seek(tmpoff, SEEK_SET);
 					
-					return 0;
+					goto __end;
 				} else {
 					tmpoff = config.seek;
 					for(;*ptr==' ';ptr=ptr+1);
@@ -580,7 +620,7 @@ int radare_cmd_raw(const char *tmp, int log)
 					}
 				}
 				config_set_i("cfg.verbose", 1);
-				return 0;
+				goto __end;
 			}
 			#endif
 			// this way doesnt workz
@@ -589,7 +629,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			if (f == -1) {
 				eprintf("radare_cmd_raw: Cannot open.\n");
 				config_set_i("cfg.verbose", 1);
-				return 0;
+				goto __end;
 			}
 			for(;!config.interrupted;) {
 				buf[0]='\0';
@@ -632,13 +672,10 @@ int radare_cmd_raw(const char *tmp, int log)
 				ret = io_system(cmd);
 				unlink(tmp);
 				piped[0]='|';
-				return 1;
+				goto __end;
 			}
 		}
 
-		fd = -1;
-		fdi = -1;
-		std = -1;
 		//if (input[0]!='%' && input[0]!='!' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 		if (input[0]!='%' && input[0]!='_' && input[0]!=';' ) {
 		//if (input[0]!='(' && input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
@@ -655,7 +692,7 @@ int radare_cmd_raw(const char *tmp, int log)
 					fdi = open(tmp, O_RDONLY);
 					if (fdi == -1) {
 						perror("open");
-						return 0;
+						goto __end;
 					}
 
 					memset(filebuf, '\0', 2048);
@@ -672,6 +709,7 @@ int radare_cmd_raw(const char *tmp, int log)
 					}
 				}
 
+#if 0
 				// Hack to allow 'ave eax=eax>16'
 				if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
 					char *pos = strchr(input+1, '>');
@@ -699,6 +737,7 @@ int radare_cmd_raw(const char *tmp, int log)
 						}
 					}
 				}
+#endif
 
 				/* temporally offset */
 				eof2 = strchr(input, '@');
@@ -712,8 +751,8 @@ int radare_cmd_raw(const char *tmp, int log)
 						radare_cmd_foreach(input ,eof2+2);
 						//config.seek = tmpoff;
 						radare_seek(tmpoff, SEEK_SET);
+						goto __end;
 						
-						return 0;
 					} else {
 						tmpoff = config.seek;
 						for(;*ptr==' ';ptr=ptr+1);
@@ -734,8 +773,9 @@ int radare_cmd_raw(const char *tmp, int log)
 		for(eof=input;eof[0];eof=eof+1)
 			if (eof[0]=='\n') eof[0]=' ';
 		ret = commands_parse(input);
-		cons_flush();
 
+#if 0
+		cons_flush();
 		if (fdi!=-1) {
 			fflush(stdout);
 			if (fdi != 0)
@@ -751,6 +791,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			dup2(std, 1);
 			std = -1;
 		}
+#endif
 
 		/* restore seek */
 		if (tmpoff != -1) {
@@ -758,6 +799,28 @@ int radare_cmd_raw(const char *tmp, int log)
 			tmpoff = -1;
 		}
 	}
+	__end:
+#if 1
+	cons_flush();
+	if (cmd_level==1) {
+		if (fdi!=-1) {
+			fflush(stdout);
+			if (fdi != 0)
+				close(fdi);
+		}
+		if (fd!=-1) {
+			fflush(stdout);
+			if (fd != 0)
+				close(fd);
+		}
+		if (std!=-1) {
+			fflush(stdout);
+			dup2(std, 1);
+			std = -1;
+		}
+	}
+#endif
+
 	if (grep) {
 		grep[0]='~';
 		cons_grep(NULL);
@@ -771,8 +834,8 @@ int radare_cmd_raw(const char *tmp, int log)
 		//free(oinput);
 		ret = radare_cmd(next, 0);
 	//	cons_flush();
-		return ret; 
 	}
+	cmd_level--;
 
 	return ret; /* error */
 }

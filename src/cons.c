@@ -933,8 +933,7 @@ void cons_flush()
 								for (i=0;tok != NULL && i<=greptoken;i++) {
 									if (i==0)
 										tok = strtok(ptr, " ");
-									else
-										tok = strtok(NULL, " ");
+									else tok = strtok(NULL, " ");
 								}
 
 								if (tok) {
