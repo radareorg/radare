@@ -398,7 +398,7 @@ struct mygrava_window *mygrava_get_widget(struct program_t *prg, int new)
 	#endif
 		g_signal_connect(G_OBJECT(win->w), "key_press_event", G_CALLBACK(grava_key_press_cb), win);
 		g_signal_connect (win->w, "destroy", G_CALLBACK (mygrava_close), win);
-		string_flag_offset(name, config.seek);
+		string_flag_offset(name, config.seek, -1);
 		sprintf(title, "code graph: %s (0x%08x) %s", config.file, (unsigned int )config.seek, name);
 		gtk_window_set_title(GTK_WINDOW(win->w), title);
 	}
@@ -648,7 +648,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 
 		/* label */
 		// TODO: support for real labelling stuff
-		string_flag_offset(cmd, b0->addr);
+		string_flag_offset(cmd, b0->addr, -1);
 		cmd[127]='\0'; // XXX ugly string recycle hack
 		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
 		if (!graph_flagblocks)

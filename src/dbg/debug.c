@@ -1141,7 +1141,7 @@ int debug_trace(char *input)
 				case AOP_TYPE_CALL:
 				case AOP_TYPE_RCALL:
 					label[0] = '\0';
-					string_flag_offset(label, aop.jump);
+					string_flag_offset(label, aop.jump, 0);
 					cons_printf("[>] call 0x%08llx ; %s\n", aop.jump, label);
 					show = 1;
 					break;

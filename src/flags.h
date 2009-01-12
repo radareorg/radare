@@ -46,7 +46,7 @@ void flags_setenv();
 void flag_list(char *arg);
 void flag_help();
 int flag_rename_str(char *text);
-int string_flag_offset(char *buf, u64 seek);
+int string_flag_offset(char *buf, u64 seek, int idx);
 int flag_interpolation(const char *from, const char *to);
 struct list_head flags;
 void flag_grep(const char *grep);

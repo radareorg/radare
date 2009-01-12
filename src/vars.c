@@ -167,7 +167,7 @@ int var_list_show(u64 addr)
 			else cons_printf("%s %s %s = ", var_type_str(v->type), v->vartype, v->name);
 			var_print_value(v);
 			/* TODO: detect pointer to strings and so on */
-			if (string_flag_offset(buf, value))
+			if (string_flag_offset(buf, value, 0))
 				cons_printf(" ; points to: %s\n", buf);
 			else cons_newline();
 		}

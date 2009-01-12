@@ -505,7 +505,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				char buf[128];
 				D cons_printf("0x%08x = ", config.seek+i);
 				cons_printf("0x%08llx ", addr32);
-				if (string_flag_offset(buf, (u64)addr32))
+				if (string_flag_offset(buf, (u64)addr32, -1))
 					cons_printf("; %s", buf);
 				i+=4;
 				} break;

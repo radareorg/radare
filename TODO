@@ -8,8 +8,12 @@
 
 TheBook
 =======
+
+* udis86 bug:
+  --> 8b8308ffffff    mov eax, [ebx+0xffffff08]
+  --> should be displayed as negative values
+
 * Screen column grep should skip scape sequences
-* Add '\' eos to support more than one line .. replace /\n -> &&
 * Add 'afu' to undefine a function
   - Cannot undefine variables
   - Cannot undefine functions (resized to 1 O_o?)

@@ -169,7 +169,7 @@ int pas_aop_x86_gas(int argc, const char *argv[], struct aop_t *aop, char *newst
 				} else p = argv[1];
 				val = get_offset(p);
 				flagstr[0]='\0';
-				string_flag_offset(flagstr, val);
+				string_flag_offset(flagstr, val, 0);
 				if (flagstr[0]=='\0' || strchr(flagstr,'+')) {
 					sprintf(flagstr, "sub_0x%08llx", val);
 					flag_set(flagstr, val, 0);

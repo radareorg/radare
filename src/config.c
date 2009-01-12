@@ -647,7 +647,7 @@ static int config_paddr_callback(void *data)
 
 	if (node) {
 		config.paddr = (u64)node->i_value;
-		section_set(config.seek, -1, config.paddr, -1, NULL);
+		section_set(config.seek, -1, config.paddr, -1, -1, NULL);
 	}
 	return 1;
 }
@@ -658,7 +658,7 @@ static int config_vaddr_callback(void *data)
 
 	if (node) {
 		config.vaddr = (u64)node->i_value;
-		section_set(config.seek, -1, config.vaddr, -1, NULL);
+		section_set(config.seek, -1, config.vaddr, -1, -1, NULL);
 	}
 	return 1;
 }

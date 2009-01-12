@@ -380,7 +380,7 @@ int data_list()
 	list_for_each(pos, &data) {
 		d = (struct data_t *)list_entry(pos, struct data_t, list);
 		label[0]='\0';
-		string_flag_offset(label, d->from);
+		string_flag_offset(label, d->from, 0);
 		arg = NULL;
 		switch(d->type) {
 		case DATA_FOLD_O: cons_strcat("Cu "); break;
@@ -414,7 +414,7 @@ int data_xrefs_print(u64 addr, int type)
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		if (x->addr == addr) {
 			str[0]='\0';
-			string_flag_offset(str, x->from);
+			string_flag_offset(str, x->from, 0);
 			switch(type) {
 			case 0: if (x->type == type) { cons_printf("; 0x%08llx CODE xref 0x%08llx (%s)\n", addr, x->from, str); n++; } break;
 			case 1: if (x->type == type) { cons_printf("; 0x%08llx DATA xref 0x%08llx (%s)\n", addr, x->from), str; n++; } break;
@@ -564,7 +564,7 @@ void data_xrefs_here(u64 addr)
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		if (addr = x->addr) {
 			label[0]='\0';
-			string_flag_offset(label, x->from);
+			string_flag_offset(label, x->from, 0);
 			cons_printf("%d %s xref 0x%08llx @ 0x%08llx ; %s\n",
 				count+1, x->type?"data":"code", x->from, x->addr, label);
 			count++;
@@ -584,7 +584,7 @@ void data_xrefs_list()
 	list_for_each(pos, &xrefs) {
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		label[0]='\0';
-		string_flag_offset(label, x->from);
+		string_flag_offset(label, x->from, 0);
 		cons_printf("C%c 0x%08llx @ 0x%08llx ; %s\n", x->type?'d':'x', x->from, x->addr, label);
 	}
 }

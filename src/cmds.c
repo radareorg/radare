@@ -753,7 +753,7 @@ CMD_DECL(graph)
 			list_for_each_prev(head, &(prg->blocks)) {
 				char str[128];
 				struct block_t *b0 = list_entry(head, struct block_t, list);
-				string_flag_offset(str, b0->addr);
+				string_flag_offset(str, b0->addr, -1);
 				cons_printf("0x%08llx : %s ",
 					b0->addr, str);
 				if (b0->tnext != 0)
@@ -861,9 +861,9 @@ CMD_DECL(graph)
 				struct program_t *mr = list_entry(pos, struct program_t, list);
 				fflush(stdout);
 				offstr[0]='\0';
-				string_flag_offset(offstr, mr->entry);
+				string_flag_offset(offstr, mr->entry, 0);
 
-				cons_printf("%02d 0x%08llx %s \n", i, (u64)mr->entry, offstr);
+				cons_printf("%02d 0x%08llx %s\n", i, (u64)mr->entry, offstr);
 				i++;
 			}
 			return 0;

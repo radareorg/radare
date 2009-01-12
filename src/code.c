@@ -447,7 +447,6 @@ const char *get_section_name_at(u64 addr)
 void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int flags)
 {
 	struct aop_t aop;
-	//char c;
 	int i,idata,delta;
 	u64 seek = 0;
 	u64 sk = 0;
@@ -522,7 +521,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 		D {
 			if (flags & RADIS_FLAGSLINE) {
-				char *ptr = flag_name_by_offset( sk );
+				char buf[1024];
+				char *ptr = buf;
+				//char *ptr = flag_name_by_offset( sk );
+				buf[0]='\0';
+				string_flag_offset(buf, seek, -1);
 				if (ptr == NULL && config.vaddr)
 					ptr = flag_name_by_offset( seek );
 				if (ptr && ptr[0]) {
@@ -855,14 +858,20 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		D { 
 			if (flags & RADIS_FLAGS && !(flags&RADIS_FLAGSLINE)) {
 				char buf[1024];
-				const char *flag = nullstr;
+				char flag[1024];
+				//const char *flag = nullstr;
 
+				string_flag_offset(flag, seek, -1);
+				if (flag[0]=='\0')
+					string_flag_offset(flag, seek-config.vaddr, -1);
+#if 0
 				f = flag_by_offset( seek );
 				if (f != NULL)
 					flag = f->name;
+#endif
 				//cons_printf("(%08x) ", seek-config.vaddr);
-				if (flag == NULL || !flag[0])
-					flag = flag_name_by_offset(seek -config.vaddr);
+				//if (flag == NULL || !flag[0])
+				//	flag = flag_name_by_offset(seek -config.vaddr);
 				//if (flag == NULL)
 				//	flag = flag_name_by_offset(seek +config.vaddr);
 				//config.vaddr?(config.seek+bytes-myinc-myinc):seek);
@@ -978,7 +987,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 			/* show references */
 			D if (aop.ref) {
-				if (string_flag_offset(buf, aop.ref-config.vaddr));
+				if (string_flag_offset(buf, aop.ref-config.vaddr, 0));
 					cons_printf(" ; %s",buf);
 			}
 
@@ -987,11 +996,13 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr)) || string_flag_offset(buf, aop.jump))
+						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr, 0))
+						|| string_flag_offset(buf, aop.jump, 0))
 							cons_printf("  ; %d = %s", jump_n,buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr)) || string_flag_offset(buf, aop.jump))
+						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr, 0))
+						|| string_flag_offset(buf, aop.jump, 0))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}

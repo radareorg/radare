@@ -322,7 +322,7 @@ void debug_bp_list()
 		bps = ps.bps_n;
 		for(i = 0; i < MAX_BPS && bps > 0; i++) {
 			if(ps.bps[i].addr > 0) { 
-				string_flag_offset(str, ps.bps[i].addr);
+				string_flag_offset(str, ps.bps[i].addr, -1);
 				eprintf(" 0x%08llx %s %s (hits=%d)%s\n",
 					ps.bps[i].addr, (ps.bps[i].hw)?"HARD":"SOFT",
 					str, ps.bps[i].count, (ps.bps[i].trace)?" (trace)":""); 

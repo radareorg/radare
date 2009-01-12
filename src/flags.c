@@ -431,7 +431,12 @@ const char *flag_name_by_offset(u64 offset)
 	return nullstr;
 }
 
-int string_flag_offset(char *buf, u64 seek)
+/* TODO
+ * idx = -1 : return all flags at given seek separated by comma
+ * idx =  0 : just return the first one found
+ * idx =  1 : continue searching for flag after the first one
+ */
+int string_flag_offset(char *buf, u64 seek, int idx)
 {
 	int delta = (int)config_get_i("cfg.delta");
 	flag_t *ref = NULL;
@@ -444,23 +449,29 @@ int string_flag_offset(char *buf, u64 seek)
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == seek) {
 			ref = flag;
-			break;
-		}
+			if (idx==-1) {
+				if (buf[0])
+					strcat(buf, ",");
+				strcat(buf, ref->name);
+			} else break;
+		} else
 		if (!flag->offset)
 			continue;
+		else
 		if (flag->offset <= seek && (!ref || flag->offset > ref->offset))
 			ref = flag;
 	}
+	if (idx==-1)
+		return 1;
 
 	if (ref) {
 		long ul = (seek-ref->offset);
 		if (ul == 0)
-			sprintf(buf, "%s", ref->name);
+			strcpy(buf, ref->name);
 		else
 		if (ul >-delta && ul<delta)
 			sprintf(buf, "%s+0x%lx", ref->name, ul);
-		else
-			return 0;
+		else return 0;
 		return 1;
 	}
 
@@ -471,7 +482,7 @@ void print_flag_offset(u64 seek)
 {
 	char buf[256];
 
-	if ( string_flag_offset(buf, seek) )
+	if ( string_flag_offset(buf, seek, -1) )
 		cons_strcat(buf);
 }
 

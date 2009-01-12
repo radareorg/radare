@@ -418,10 +418,9 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 				aop.jump = aop.ref;
 				aop.fail = oseek+bsz+sz;
 			}
-		//		block_add_ref(prg, oseek, aop.ref);
-				//block_add_call(prg, oseek, aop.ref);
+		//block_add_ref(prg, oseek, aop.ref);
+		//block_add_call(prg, oseek, aop.ref);
 		}
-
                 memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
         }
 	bsz--;
@@ -637,7 +636,7 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 				if (rad) {
 					u32 n = (config.endian)?num:nume;
 					str[0]='\0';
-					string_flag_offset(str, (u64)n);
+					string_flag_offset(str, (u64)n, 0);
 					if (!strnull(str)) {
 						/* reference by pointer */
 						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)n, (u64)(seek+i-3), str);
@@ -797,7 +796,8 @@ int analyze_function(u64 from, int recursive, int report)
 
 	analyze_var_reset(); // ??? control recursivity here ??
 
-	prg = code_analyze(config.vaddr + config.seek, 1024);
+	//prg = code_analyze(config.vaddr + config.seek, 1024);
+	prg = code_analyze(from, 1024);
 	list_add_tail(&prg->list, &config.rdbs);
 
 	list_for_each(head, &(prg->blocks)) {
@@ -831,17 +831,19 @@ int analyze_function(u64 from, int recursive, int report)
 		break;
 	case 1:
 		buf[0]='\0';
-		string_flag_offset(buf, from);
+		string_flag_offset(buf, from, 0);
 		cons_printf("offset = 0x%08llx\n", from);
 		cons_printf("label = %s\n", buf);
 		cons_printf("size = %lld\n", to-from);
 		cons_printf("blocks = %lld\n", nblocks);
 		{
-		int len = to-from;
+	//	int len = to-from;
 		cons_printf("bytes = ");
+#if 0
 		if (len>32){len=32; // anal.limitbytes
 			cons_strcat("(truncated)");
 		}
+#endif
 		for(i=0;i<len;i++) 
 			cons_printf("%02x ", bytes[i]);
 		cons_newline();
@@ -855,13 +857,15 @@ int analyze_function(u64 from, int recursive, int report)
 	}
 	D eprintf(".");
 
+eprintf("LEN=%d\n", len);
 	for(;seek< to; seek+=inc) {
-		u64 delta = seek-from;
+		u64 delta = seek+config.vaddr-from;
+	eprintf("0x%08llx\n", seek+config.vaddr);
 		if (delta >= len) {
-			eprintf("analyze_function: oob\n");
+			eprintf("analyze_function: oob %lld > %lld\n", delta, len);
 			break;
 		}
-		inc = arch_aop(seek, bytes+delta, &aop);
+		inc = arch_aop(seek+config.vaddr, bytes+delta, &aop);
 		if (inc<1) {
 			inc = 1;
 			break;
@@ -874,7 +878,7 @@ int analyze_function(u64 from, int recursive, int report)
 				break;
 			case 0:
 				buf[0]='\0';
-				string_flag_offset(buf, aop.jump);
+				string_flag_offset(buf, aop.jump, 0);
 				// if resolved as sym_ add its call
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, buf);
 			}
@@ -899,7 +903,7 @@ int analyze_function(u64 from, int recursive, int report)
 					break;
 				case 0:
 					buf[0]='\0';
-					string_flag_offset(buf, aop.jump);
+					string_flag_offset(buf, aop.jump, 0);
 					// if resolved as sym_ add its call
 					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
 				}
@@ -1000,7 +1004,7 @@ int analyze_function(u64 from, int recursive, int report)
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(seek, recursive, report);
+				analyze_function(seek+config.vaddr, recursive, report);
 				break;
 			}
 		}
