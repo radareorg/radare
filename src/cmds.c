@@ -320,7 +320,7 @@ CMD_DECL(analyze)
 					cons_printf("false = 0x%08llx\n", b0->fnext);
 				cons_printf("bytes = ");
 				for (i=0;i<b0->n_bytes;i++)
-					cons_printf("%02x ", b0->bytes[i]);
+					cons_printf("%02x", b0->bytes[i]);
 				cons_newline();
 				cons_newline();
 			}
@@ -470,7 +470,7 @@ CMD_DECL(analyze)
 			default: cons_printf("unknown(%d)\n", aop.type);
 			}
 			cons_printf("bytes = ");
-			for (i=0;i<sz;i++) cons_printf("%02x ", config.block[i]);
+			for (i=0;i<sz;i++) cons_printf("%02x", config.block[i]);
 			cons_printf("\n");
 			cons_printf("offset = 0x%08llx\n", config.vaddr+config.seek);
 			cons_printf("ref = 0x%08llx\n", aop.ref);

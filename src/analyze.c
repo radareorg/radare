@@ -836,18 +836,10 @@ int analyze_function(u64 from, int recursive, int report)
 		cons_printf("label = %s\n", buf);
 		cons_printf("size = %lld\n", to-from);
 		cons_printf("blocks = %lld\n", nblocks);
-		{
-	//	int len = to-from;
 		cons_printf("bytes = ");
-#if 0
-		if (len>32){len=32; // anal.limitbytes
-			cons_strcat("(truncated)");
-		}
-#endif
 		for(i=0;i<len;i++) 
-			cons_printf("%02x ", bytes[i]);
+			cons_printf("%02x", bytes[i]);
 		cons_newline();
-		}
 	case 0:
 		cons_strcat("fs functions\n");
 		cons_printf("; from = 0x%08llx\n", from);
@@ -857,10 +849,10 @@ int analyze_function(u64 from, int recursive, int report)
 	}
 	D eprintf(".");
 
-eprintf("LEN=%d\n", len);
+//eprintf("LEN=%d\n", len);
 	for(;seek< to; seek+=inc) {
 		u64 delta = seek+config.vaddr-from;
-	eprintf("0x%08llx\n", seek+config.vaddr);
+	//eprintf("0x%08llx\n", seek+config.vaddr);
 		if (delta >= len) {
 			eprintf("analyze_function: oob %lld > %lld\n", delta, len);
 			break;

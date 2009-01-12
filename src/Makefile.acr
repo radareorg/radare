@@ -29,7 +29,7 @@ OBJ+=plug/io/wii/wii.o
 ##WII##
 
 ##SYSPROXY##
-OBJ2+=rasc/sysproxy.o rasc/syscall-linux.o rasc/rpc.o
+OBJ2+=plug/io/sysproxy.o rasc/syscall-linux.o rasc/rpc.o
 CFLAGS+=-DSYSPROXY
 ##SYSPROXY##
 

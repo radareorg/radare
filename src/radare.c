@@ -285,14 +285,40 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	str = strdup(each);
 	radare_controlc();
 
-	if (each[0]=='.') {
+	switch(each[0]) {
+	case '?':
+		eprintf("Foreach '@@' iterator command:\n");
+		eprintf(" This command is used to repeat a command over a list of offsets.\n");
+		eprintf(" x @@ sym.         ; run 'x' over all flags matching 'sym.'\n");
+		eprintf(" x @@.file         ; \"\" over the offsets specified in the file (one offset per line)\n");
+		eprintf(" x @@=off1 off2 .. ; manual list of offsets\n");
+		eprintf(" x @@=`pdf~call[0] ; run 'x' at every call offset of the current function\n");
+		break;
+	case '=':
+		/* foreach list of items */
+		each = each+1;
+		do {
+			while(each[0]==' ') each=each+1;
+			str = strchr(each, ' ');
+			if (str == NULL) {
+				addr = get_math(each);
+			} else {
+				str[0]='\0';
+				addr = get_math(each);
+				str[0]=' ';
+			}
+			each = str+1;
+			radare_seek(addr, SEEK_SET);
+			eprintf("\n"); //eprintf("===(%s)at(0x%08llx)\n", cmd, addr);
+			radare_cmd(cmd, 0);
+		} while(str != NULL);
+		break;
+	case '.':
 		if (each[1]=='(') {
 			char cmd2[1024];
 			// TODO: use controlc() here
 			for(macro_counter=0;i<999;macro_counter++) {
-
 				radare_macro_call(each+2);
-
 				if (macro_break_value == NULL) {
 					//eprintf("==>breaks(%s)\n", each);
 					break;
@@ -302,7 +328,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
 				eprintf("0x%08llx (%s)\n", addr, cmd2);
 				radare_seek(addr, SEEK_SET);
-				radare_cmd_raw(cmd2, 0);
+				radare_cmd(cmd2, 0);
 				i++;
 			}
 		} else {
@@ -320,13 +346,14 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					eprintf("0x%08llx\n", addr, cmd);
 					sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
 					radare_seek(buf, SEEK_SET);
-					radare_cmd_raw(cmd2, 0);
+					radare_cmd(cmd2, 0);
 					macro_counter++;
 				}
 				fclose(fd);
 			}
 		}
-	} else {
+		break;
+	default:
 		macro_counter = 0;
 		while(str[i] && !config.interrupted) {
 			j = i;
@@ -486,36 +513,69 @@ int radare_cmd_raw(const char *tmp, int log)
 		fdi = -1;
 		std = -1;
 	}
-#if 1
-	// Hack to allow 'ave eax=eax>16'
-	if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
-		char *pos = strchr(input+1, '>');
-		char *file = pos + 1;
-		char *end;
 
-		if (pos != NULL) {
-			for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
-			if (*file == '\0') {
-				eprintf("No target file (%s)\n", input);
+	if (!quoted) {
+		/* inline pipe */
+		piped = strchr(input, '`');
+		if (piped) {
+			int len;
+			char tmp[128];
+			char filebuf[4096];
+			piped[0]='\0';
+
+			pipe_stdout_to_tmp_file(tmp, piped+1);
+			fdi = open(tmp, O_RDONLY);
+			if (fdi == -1) {
+				perror("open");
+				goto __end;
+			}
+
+			memset(filebuf, '\0', 2048);
+			len = read(fdi, filebuf, 1024);
+			if (len<1) {
+				eprintf("error: (%s)\n", input);
+			//	return 0;
 			} else {
-				for(end = file+strlen(file);
-					end[0]&&!iswhitespace(end[0]);
-					end = end-1); end[0]='\0';
-				if (pos[1] == '>')
-					fd = io_open(file, O_APPEND|O_WRONLY, 0644);
-				else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
-				if (fd == -1) {
-					eprintf("Cannot open '%s' for writing\n", file);
-					config_set("file.write", "false");
-					tmpoff = config.seek;
-					return 1;
+				len += strlen(input) + 5;
+				oinput = alloca(len);
+				strcpy(oinput, input);
+				sprintf(oinput, "%s %s", input, filebuf);
+				input = oinput;
+			}
+			for(i=0;input[i];i++) {
+				if (input[i]=='\n')
+					input[i]=' ';
+			}
+		}
+		// Hack to allow 'ave eax=eax>16'
+		if (input[0] && input[0]!='>' && input[0]!='/') { // first '>' is '!'
+			char *pos = strchr(input+1, '>');
+			char *file = pos + 1;
+			char *end;
+
+			if (pos != NULL) {
+				for(pos[0]='\0';iswhitespace(file[0]); file = file + 1);
+				if (*file == '\0') {
+					eprintf("No target file (%s)\n", input);
+				} else {
+					for(end = file+strlen(file);
+						end[0]&&!iswhitespace(end[0]);
+						end = end-1); end[0]='\0';
+					if (pos[1] == '>')
+						fd = io_open(file, O_APPEND|O_WRONLY, 0644);
+					else	fd = io_open(file, O_TRUNC|O_WRONLY|O_CREAT, 0644);
+					if (fd == -1) {
+						eprintf("Cannot open '%s' for writing\n", file);
+						config_set("file.write", "false");
+						tmpoff = config.seek;
+						return 1;
+					}
+					std = dup(1); // store stdout
+					dup2(fd, 1);
 				}
-				std = dup(1); // store stdout
-				dup2(fd, 1);
 			}
 		}
 	}
-#endif
 
 	if (input[0]!='(' || !strchr(input+1, ',')) {
 		next = strstr(input, "&&");
@@ -680,6 +740,7 @@ int radare_cmd_raw(const char *tmp, int log)
 		if (input[0]!='%' && input[0]!='_' && input[0]!=';' ) {
 		//if (input[0]!='(' && input[0]!='%' && input[0]!='_' && input[0]!=';' && input[0]!='?') {
 			if (!quoted) {
+#if 0
 				/* inline pipe */
 				piped = strchr(input, '`');
 				if (piped) {
@@ -708,6 +769,7 @@ int radare_cmd_raw(const char *tmp, int log)
 						input = oinput;
 					}
 				}
+#endif
 
 #if 0
 				// Hack to allow 'ave eax=eax>16'
