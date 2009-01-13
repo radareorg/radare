@@ -299,3 +299,60 @@ int search_range(char *range)
 
 	return 1;
 }
+
+// XXX rewrite in a proper way :P
+int radare_search_replace_hex(const char *str, const char *rep)
+{
+	char buf[1024];
+	char *osearch = strdup(config_get("cmd.hit"));
+	sprintf(buf, "wx %s", rep);
+	config_set("cmd.hit", buf);
+	sprintf(buf, "/x %s", str);
+	radare_cmd(buf, 0);
+//eprintf("SEARCH(%s)REPLACE(%s)\n", str, rep);
+	config_set("cmd.hit", osearch);
+	free(osearch);
+	return 1;
+}
+
+int radare_search_replace_str(const char *str, const char *rep)
+{
+	char buf[1024];
+	char *osearch = strdup(config_get("cmd.hit"));
+	sprintf(buf, "w %s", rep);
+	config_set("cmd.hit", buf);
+	sprintf(buf, "/ %s", str);
+	radare_cmd(buf, 0);
+//eprintf("SEARCH(%s)REPLACE(%s)\n", str, rep);
+	config_set("cmd.hit", osearch);
+	free(osearch);
+	return 1;
+}
+
+int radare_search_replace(const char *input, int hex)
+{
+	int len = strlen(input)+1;
+	char *text = alloca(len);
+	char *ptr;
+	memcpy(text, input, len);
+	ptr = strchr(text, ',');
+	if (ptr == NULL) {
+		ptr = strchr(text, '/');
+		if (ptr == NULL) {
+			ptr = strchr(text, ' ');
+			if (ptr == NULL) {
+				ptr = strchr(text, '=');
+				if (ptr == NULL) {
+					eprintf(
+					"Invalid search and replace string. Try '/s cafe babe\n"
+					"Field separator chars are: ',' ' ' '='\n");
+					return 0;
+				}
+			}
+		}
+	}
+	ptr[0]='\0';
+	if (hex)
+		return radare_search_replace_hex(text, ptr+1);
+	return radare_search_replace_str(text, ptr+1);
+}

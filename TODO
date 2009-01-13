@@ -9,6 +9,8 @@
 TheBook
 =======
 
+* /p output should be nicer
+  - support max pattern length as second argument
 * udis86 bug:
   --> 8b8308ffffff    mov eax, [ebx+0xffffff08]
   --> should be displayed as negative values

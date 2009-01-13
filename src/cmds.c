@@ -2085,17 +2085,23 @@ CMD_DECL(search) {
 		eprintf(
 		" / \\x7FELF      ; plain string search (supports \\x).\n"
 		" /. [file]      ; search using the token file rules\n"
-		" /s [string]    ; strip strings matching optional string\n"
-		" /x A0 B0 43    ; hex byte pair binary search.\n"
+		" /-             ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
+		" //             ; repeat last search\n"
+		" /a [opcode]    ; Look for a string in disasembly\n"
+		" /A             ; Find expanded AES keys from current seek(*)\n"
 		" /k# keyword    ; keyword # to search\n"
 		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
 		" /n[-]          ; seek to hit index N (/n : next, /n- : prev)\n"
-		" /a [opcode]    ; Look for a string in disasembly\n"
-		" /A             ; Find expanded AES keys from current seek(*)\n"
-		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /r 0,2-10      ; launch range searches 0-10\n"
+		" /s [str] [str] ; replace first string with the second one\n"
+		" /S [hex] [hex] ; replace first hexpair string with the second one\n"
 		" /p len         ; search pattern of length = len\n"
-		" //             ; repeat last search\n");
+		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
+		" /x A0 B0 43    ; hex byte pair binary search. (space between bytes are optional)\n"
+		" /z [str]       ; find zero terminated strings matching 'str'\n"
+		" /0, /1, /2..   ; launch search using keyword number\n"
+		"NOTE: This command will run from current seek unless we had previosly defined\n"
+		"      The initial and end offsets in the search.from and search.to eval vars.\n");
 		break;
 	case 'p':
 		do_byte_pat(atoi(text+1));
@@ -2174,6 +2180,12 @@ CMD_DECL(search) {
 		radare_search_aes();
 		break;
 	case 's':
+		radare_search_replace(text+2, 0);
+		break;
+	case 'S':
+		radare_search_replace(text+2, 1);
+		break;
+	case 'z':
 		radare_strsearch(strchr(text,' '));
 		break;
 	case 'r':

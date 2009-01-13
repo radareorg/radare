@@ -1,7 +1,7 @@
 include ../../config.mk
 
 OBJ=shellcodes.o test.o rasc.o ${SYSPROXY_OBJ}
-# only for sysproxy example
+# XXX: only for sysproxy example. to be removed
 OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
 
 all: ${OBJ}

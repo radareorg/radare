@@ -43,7 +43,8 @@ OSOLIBS=-lsocket -lnsl
 
 ##SYSPROXY##
 CFLAGS+=-DSYSPROXY 
-SYSPROXY_OBJ+=sysproxy.o rpc.o syscall.S syscall-linux.o
+#SYSPROXY_OBJ+=sysproxy.o rpc.o syscall.S syscall-linux.o
+SYSPROXY_OBJ+=syscall.o rpc.o syscall-linux.o
 ##SYSPROXY##
 
 ##SOLARIS##

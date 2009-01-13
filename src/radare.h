@@ -151,5 +151,6 @@ void env_prepare(const char *line);
 void env_destroy(const char *line);
 int radare_compare_code(u64 off, const u8 *a, int len);
 //int env_var_required(const char *str, const char *var);
+int radare_search_replace(const char *input, int hex);
 
 #endif

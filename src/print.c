@@ -162,11 +162,12 @@ void print_addr(u64 off)
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
 	
 	if (off==config.cursor_ptr+config.vaddr)
+	C {
 		cons_invert();
-	C	cons_printf("%s0x%08llx"C_RESET"%c ", 
+		cons_printf("%s0x%08llx"C_RESET"%c ", 
 			(off==config.cursor_ptr+config.vaddr)?C_WHITE:
 			cons_palette[PAL_ADDRESS], off, ch);
-	else	cons_printf("0x%08llx%c ", off, ch);
+	} else	cons_printf("0x%08llx%c ", off, ch);
 }
 
 // TODO: move to console
