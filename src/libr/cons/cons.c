@@ -786,6 +786,8 @@ void r_cons_grep(const char *str)
 		if (ptr3) {
 			ptr3[0]='\0';
 			greptoken = atoi(ptr3+1);
+			if (greptoken<0)
+				greptoken--;
 		}
 		if (ptr2) {
 			ptr2[0]='\0';
@@ -875,11 +877,23 @@ void r_cons_flush()
 										if (ptr[i] == delims[j][0])
 											ptr[i] = ' ';
 								tok = ptr;
-								for (i=0;tok != NULL && i<=greptoken;i++) {
-									if (i==0)
-										tok = (char *)strtok(ptr, " ");
-									else
-										tok = (char *)strtok(NULL, " ");
+								if (greptoken<0) {
+									int i, idx = greptoken+1;
+									for(i = 0;ptr[i]; i++) {
+										if (ptr[i]==' ')
+											idx++;
+										if (idx == 0) {
+											ptr = ptr +i;
+											r_cons_buffer_len = strlen(ptr);
+											break;
+										}
+									}
+								} else {
+									for (i=0;tok != NULL && i<=greptoken;i++) {
+										if (i==0)
+											tok = (char *)strtok(ptr, " ");
+										else tok = (char *)strtok(NULL, " ");
+									}
 								}
 
 								if (tok) {
@@ -925,11 +939,23 @@ void r_cons_flush()
 											ptr[i] = ' ';
 
 								tok = ptr;
-								for (i=0;tok != NULL && i<=greptoken;i++) {
-									if (i==0)
-										tok = (char *)strtok(ptr, " ");
-									else
-										tok = (char *)strtok(NULL," ");
+								if (greptoken<0) {
+									int i, idx = greptoken+1;
+									for(i = 0;ptr[i]; i++) {
+										if (ptr[i]==' ')
+											idx++;
+										if (idx == 0) {
+											ptr = ptr +i;
+											r_cons_buffer_len = strlen(ptr);
+											break;
+										}
+									}
+								} else {
+									for (i=0;tok != NULL && i<=greptoken;i++) {
+										if (i==0)
+											tok = (char *)strtok(ptr, " ");
+										else tok = (char *)strtok(NULL," ");
+									}
 								}
 
 								if (tok) {
@@ -957,7 +983,7 @@ void r_cons_flush()
 	}
 
 	if (grepcounter) {
-		char buf[64];
+		char buf[32];
 		sprintf(buf, "%d\n", lines_counter);
 		r_cons_buffer_len = strlen(buf);
 		r_cons_print_real(buf);

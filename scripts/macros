@@ -53,3 +53,12 @@
   ??()
  CC unlikely@oeip
 )
+
+(label-test
+ f foo @ 3
+ loop:
+ !! echo LOOP
+ f foo @ foo-1
+ ? foo
+ ?!.loop:
+)

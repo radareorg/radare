@@ -142,6 +142,9 @@ static void label_reset()
 
 static int is_label(const char *str)
 {
+	/* crappy hack */
+	return 0;
+
 	if (str[0]=='\0')
 		return 0;
 	if (str[strlen(str)-1]==':') {
