@@ -161,9 +161,9 @@ void print_addr(u64 off)
 	int mod = config_get_i("cfg.addrmod");
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
 	
-	if (off==config.cursor_ptr+config.vaddr)
 	C {
-		cons_invert();
+		if (off==config.cursor_ptr+config.vaddr)
+			cons_invert();
 		cons_printf("%s0x%08llx"C_RESET"%c ", 
 			(off==config.cursor_ptr+config.vaddr)?C_WHITE:
 			cons_palette[PAL_ADDRESS], off, ch);

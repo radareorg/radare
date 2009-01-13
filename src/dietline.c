@@ -160,6 +160,8 @@ int dl_hist_label(const char *label, void (*cb)(const char*))
 {
 	int i;
 
+#if 1
+	/* labelling stuff */
 	if (label[0]=='.') {
 		if (!is_label(label+1))
 			return 0;
@@ -176,6 +178,7 @@ int dl_hist_label(const char *label, void (*cb)(const char*))
 		label_add(label);
 		return 1;
 	}
+#endif
 
 	if (dl_history != NULL)
 	for(i=0;i<dl_histsize; i++) {

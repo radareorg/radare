@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       esteve <eslack.org>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -33,7 +33,10 @@
 
 #define BSIZE (1024*1024)
 
-#define MAX_PATLEN 10
+#define MAX_PATLEN 1024
+/* XXX if pat > MAX_PATHLEN can crash */
+/* XXX malloc-ed data not free'd */
+/* TODO: do not repeat insider matching patterns (reduce list of results) */
 
 typedef struct _fnditem
 {
@@ -65,33 +68,34 @@ void add_fi ( fnditem* n, unsigned char* blk, int patlen )
 
 }
 
-int is_fi_present ( fnditem* n, unsigned char* blk , int patlen)
+int is_fi_present(fnditem* n, unsigned char* blk , int patlen)
 {
 	fnditem* p;
-
-	p = n;
-	while ( p->next != NULL ) {
+	for(p=n;p->next!=NULL; p=p->next) {
 		if ( !memcmp ( blk, p->str, patlen ) )
 			return 1;
-		p=p->next;
 	}
-
 	return 0;
 }
 
-int do_byte_pat ( int patlen) 
+/* TODO: drop overlapped patterns */
+int do_byte_pat(int patlen) 
 {
 	unsigned char block[BSIZE+MAX_PATLEN];
 	unsigned char sblk[MAX_PATLEN+1];
 	static fnditem* root;
 	u64 bproc = 0;
-	ssize_t rb;
-
-	int nr,i;
+	u64 rb;
+	int nr,i, moar;
 	int pcnt, cnt=0, k =0 ;
 	u64 intaddr;
 	u64 bytes =  (config.limit!=0)?(config.limit-config.seek):config.block_size;
 	u64 bact = config.seek ;
+
+	if (patlen < 1 || patlen > MAX_PATLEN) {
+		eprintf("Invalid pattern length (must be > 1 and < %d)\n", MAX_PATLEN);
+		return 0;
+	}
 
 	bytes += bact;
 
@@ -99,7 +103,7 @@ int do_byte_pat ( int patlen)
 
 	radare_controlc();
 
-	pcnt = 0;
+	pcnt = -1;
 	while ( !config.interrupted && bact < bytes ) {
 	//	radare_seek ( bact , SEEK_SET );
 		bproc = bact + patlen ;
@@ -110,36 +114,37 @@ int do_byte_pat ( int patlen)
 		intaddr = bact;
 		cnt = 0;
 		while ( !config.interrupted && bproc < bytes ) {
-			nr = ( (bytes-bproc) < BSIZE)?(bytes-bproc):BSIZE;
+			radare_controlc();
+			nr = ((bytes-bproc) < BSIZE)?(bytes-bproc):BSIZE;
 			nr = nr + ( patlen - (nr % patlen) ); // tamany de bloc llegit multiple superior de tamany busqueda
 			//rb = read ( fd, block, nr );
-			rb = radare_read_at ( bproc , block, nr );
-			for ( i = 0 ; i < nr ; i ++ ) {
-				if ( !memcmp ( &block[i] , sblk	, patlen ) && !is_fi_present ( root, sblk, patlen) ) {	
-					if ( cnt == 0) {
-						cons_printf ( "\n");
+			rb = radare_read_at(bproc, block, nr);
+			moar = 0;
+			for(i=0; i<nr; i++){
+				if (!memcmp(&block[i], sblk, patlen) && !is_fi_present(root, sblk, patlen)){
+					if (cnt == 0) {
+						cons_newline();
 						add_fi( root, sblk , patlen);
-						cons_printf("pattern %d\n", ++pcnt);
-						for ( k = 0 ; k < patlen ; k++ )
-							cons_printf ( "%02x ", sblk[k] );
-						cons_printf ( "\n   0x%08lx\n", intaddr );
-
-						if (1) {
-							char cmd[1024];
-							sprintf(cmd, "pD %d @ 0x%08llx", patlen, intaddr);
-							radare_cmd(cmd,0);
-							radare_controlc();
-						}
+						pcnt++;
+						cons_printf("bytes:%d: ", pcnt);
+						for(k = 0; k<patlen; k++)
+							cons_printf("%02x", sblk[k]);
+						cons_printf("\nfound:%d: 0x%08llx ", pcnt, intaddr);
 					}
+					moar++;
 					cnt++;
-					cons_printf ( "   %.2d  0x%8.8lx\n", cnt, bproc+i );
+					cons_printf("0x%08llx ", bproc+i );
 				}
 			}
-			bproc +=  rb;
+			if (moar>0) {
+				cons_printf("\ncount:%d: %d\n", pcnt, moar+1);
+				cons_flush();
+			}
+			bproc += rb;
 		}
-
 		bact++;
 	}
+	cons_newline();
 	radare_controlc_end();
 	return 0;
 }
