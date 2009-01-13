@@ -2,6 +2,7 @@ include ../../config.mk
 
 OBJ=shellcodes.o test.o rasc.o ${SYSPROXY_OBJ}
 # XXX: only for sysproxy example. to be removed
+CFLAGS+=-DMKPFX=\"../\"
 OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
 
 all: ${OBJ}
