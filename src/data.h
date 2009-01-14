@@ -72,5 +72,6 @@ void data_comment_init(int new);
 void data_reflines_init();
 int data_printd(int delta);
 const char *data_var_type_format(const char *datatype);
+void data_del(u64 addr, int type,int len/* data or code */);
 
 #endif

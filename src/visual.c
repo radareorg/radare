@@ -286,11 +286,16 @@ static void visual_convert_bytes(int fmt)
 		"d - data bytes\n"
 		"s - string\n"
 		"f - function\n"
+		"u - undefine function\n"
 		"m - memory format (pm)\n"
 		"< - close folder\n"
 		"> - open folder\n");
 		cons_flush();
 		c = cons_readchar();
+		if (c == 'u') {
+			radare_cmd_raw(".afu*", 0);
+			return;
+		}
 		if (c != 'm' && c != 'c' && c!='d' && c!='s' && c!='f' && c!='<' && c!='>')
 			return;
 		fmt = FMT_HEXB;

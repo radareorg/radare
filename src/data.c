@@ -141,6 +141,19 @@ struct data_t *data_add_arg(u64 off, int type, const char *arg)
 	return d;
 }
 
+void data_del(u64 addr, int type,int len/* data or code */)
+{
+	struct data_t *d;
+	struct list_head *pos;
+	list_for_each(pos, &data) {
+		d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->from == addr && type == d->type && (len==0||len==d->size)) {
+			list_del(&(d->list));
+			break;
+		}
+	}
+}
+
 struct data_t *data_add(u64 off, int type)
 {
 	u64 tmp;
@@ -161,6 +174,7 @@ struct data_t *data_add(u64 off, int type)
 		return d;
 
 	d = (struct data_t *)malloc(sizeof(struct data_t));
+	memset(d, '\0', sizeof(d));
 	d->arg[0]='\0';
 	d->from = off;
 	d->to = d->from + config.block_size;  // 1 byte if no cursor // on strings should autodetect

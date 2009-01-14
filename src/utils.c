@@ -305,8 +305,7 @@ u64 get_pointer(u64 addr, int size)
 /* Converts a string to u64 type. u64 jmp = get_offset("0x123456"); */
 u64 get_offset(const char *orig)
 {
-	char arga[1024];
-	char *arg = (char *)&arga;
+	char *arg;
 	u64 ret = 0;
 	int i, j;
 #if RADARE_CORE
@@ -315,8 +314,8 @@ u64 get_offset(const char *orig)
 #endif
 	if (orig==NULL||orig[0]=='\0')
 		return 0;
-
-	strncpy(arg, orig, 1023);
+	arg = alloca(strlen(orig)+32);
+	strcpy(arg, orig);
 
 	for(;*arg==' ';arg=arg+1);
 	for(i=0;arg[i]==' ';i++);
@@ -352,21 +351,6 @@ u64 get_offset(const char *orig)
 	if (arg[i]=='$') {
 		struct aop_t aop;
 		switch(arg[i+1]) {
-#if 0
-	// XXX already in ?? help ..not necesary here
-		case '?':
-			eprintf("Usage:\n");
-			eprintf(" $$  = current seek\n");
-			eprintf(" $$$ = size of opcode\n");
-			eprintf(" $$j = jump branch of opcode\n");
-			eprintf(" $$f = failover continuation of opcode\n");
-			eprintf(" $$r = pointer reference of opcode\n");
-			eprintf(" $$e = end of basic block\n");
-			eprintf(" $$F = beggining of the function\n");
-			eprintf(" $$l = last seek done\n");
-			eprintf(" $${io.vaddr} = get eval value\n");
-			break;
-#endif
 		case '$':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;
@@ -375,8 +359,11 @@ u64 get_offset(const char *orig)
 			ret = config.last_cmp;
 			break;
 		case 'e':
-			arch_aop(config.seek, config.block,&aop);
+			arch_aop(config.seek, config.block, &aop);
 			ret = aop.eob;
+			break;
+		case 'b':
+			ret = config.block_size;
 			break;
 		case 'l':
 			ret = undo_get_last_seek();
@@ -407,6 +394,7 @@ u64 get_offset(const char *orig)
 		default:
 			ret = config.seek;
 		}
+		return ret;
 	} else {
 		flag = flag_get(arg);
 		if (flag)

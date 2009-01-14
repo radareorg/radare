@@ -604,25 +604,23 @@ void flag_space_remove(const char *name)
 
 void flag_space_list()
 {
-  int i,j = 0;
-  for(i=0;i<FLAG_SPACES;i++) {
-    if (flag_spaces[i].name) {
-      cons_printf("%02d %c %s\n",
-          j++, (i==flag_space_idx)?'*':' ', flag_spaces[i].name);
-    }
-  }
+	int i,j = 0;
+	for(i=0;i<FLAG_SPACES;i++) {
+		if (flag_spaces[i].name)
+			cons_printf("%02d %c %s\n", j++,
+				(i==flag_space_idx)?'*':' ', flag_spaces[i].name);
+	}
 }
 
 void flag_space_init()
 {
-  static int init = 0;
-  int i;
-  if (init)
-    return;
-  init = 1;
-  for(i=0;i<FLAG_SPACES;i++) {
-    flag_spaces[i].name = NULL;
-  }
+	static int init = 0;
+	int i;
+	if (init)
+		return;
+	init = 1;
+	for(i=0;i<FLAG_SPACES;i++)
+		flag_spaces[i].name = NULL;
 }
 
 void flag_space(const char *name)
@@ -981,7 +979,8 @@ void flags_visual_menu()
 			}
 			break;
 		case 1: // flag selection
-			cons_printf("\n Flags in flagspace '%s'\n\n", fs);
+			cons_printf("\n Flags in flagspace '%s'. Press '?' for help.\n\n",
+				flag_spaces[flag_space_idx]);
 			hit = 0;
 			i = j = 0;
 			list_for_each(pos, &flags) {

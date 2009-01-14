@@ -775,11 +775,14 @@ int analyze_function(u64 from, int recursive, int report)
 	int nrefs = 0;
 	int framesize = 0;
 	int nblocks = 0;
+	char tmpstr[16], fszstr[256];
+
 
 	from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
 		return -1;
+	fszstr[0]='\0';
 #if 0
 	struct data_t *d;
 	d = data_get(config.vaddr+config.seek);
@@ -826,8 +829,9 @@ int analyze_function(u64 from, int recursive, int report)
 
 	switch(report) {
 	case 2:
-		cons_printf("fu -fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
-		cons_printf("CF -%lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
+		cons_printf("f -fun.%08llx\n", from);
+		//cons_printf("fu -fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+		cons_printf("CF-0 @ 0x%08llx\n", from); // XXX can be recursive
 		break;
 	case 1:
 		buf[0]='\0';
@@ -939,7 +943,13 @@ int analyze_function(u64 from, int recursive, int report)
 			} else
 			if (!report) {
 				char buf[1024];
-				sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
+				if (ref<0) {
+					cons_printf("CFvg %d @ 0x%08llx\n", -ref, seek);
+					sprintf(buf, "CC Get var%d @ 0x%08llx\n", -ref, seek);
+				} else {
+					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", ref, seek);
+					cons_printf("CFag %d @ 0x%08llx\n", ref, seek);
+				}
 				cons_strcat(buf);
 				//sprintf(buf, "CCC Get arg%d @ 0x%08llx\n", ref, seek);
 				//cons_strcat(buf);
@@ -953,16 +963,20 @@ int analyze_function(u64 from, int recursive, int report)
 				//cons_printf("CFvg %d @ 0x%08llx\n", ref, seek);
 			} else
 			if (!report) {
-				if (ref<0)
+				if (ref<0) {
 					sprintf(buf, "CC Get arg%d @ 0x%08llx\n", -ref, seek);
-				else sprintf(buf, "CC Get var%d @ 0x%08llx\n", ref, seek);
+					cons_printf("CFag %d @ 0x%08llx\n", -ref, seek);
+				} else {
+					sprintf(buf, "CC Get var%d @ 0x%08llx\n", ref, seek);
+					cons_printf("CFvg %d @ 0x%08llx\n", ref, seek);
+				}
 				cons_strcat(buf);
-				cons_printf("CFvg %d @ 0x%08llx\n", ref, seek);
 			}
 			if (ref<0) analyze_var_add(VAR_TYPE_ARG, -ref);
 			else analyze_var_add(VAR_TYPE_LOCAL, ref);
 			break;
 		case AOP_STACK_INCSTACK:
+			// XXX ugly output
 			switch(report) {
 			case 0:
 				if (ref<0)
@@ -970,7 +984,8 @@ int analyze_function(u64 from, int recursive, int report)
 				else sprintf(buf, "CC Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
 				framesize += aop.value;
-				cons_printf("CC +%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
+				sprintf(tmpstr, "%c%d",fszstr[0]?',':' ', framesize);
+				strcat(fszstr, tmpstr); // XXX control overflow
 				break;
 			case 2:
 				if (ref<0)
@@ -978,7 +993,8 @@ int analyze_function(u64 from, int recursive, int report)
 				else sprintf(buf, "CC -Stack size +%d @ 0x%08llx\n", (int)ref, seek);
 				cons_strcat(buf);
 				framesize += aop.value;
-				cons_printf("CC -+%d framesize = %d @ 0x%08llx\n", (int)(seek-from), framesize, from);
+				sprintf(tmpstr, "%c%d",fszstr[0]?',':' ', framesize);
+				strcat(fszstr, tmpstr); // XXX control overflow
 				break;
 			}
 			break;
@@ -1005,7 +1021,8 @@ int analyze_function(u64 from, int recursive, int report)
 
 	switch(report) {
 	case 0:
-		cons_printf("CC framesize = %d @ 0x%08llx\n", framesize, from);
+		if (fszstr[0])
+			cons_printf("CC framesize =%s @ 0x%08llx\n", fszstr, from);
 		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
 		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
 		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
@@ -1020,7 +1037,7 @@ int analyze_function(u64 from, int recursive, int report)
 		cons_printf("vars = %d\n", analyze_var_get(VAR_TYPE_LOCAL));
 		break;
 	case 2:
-		cons_printf("CC -framesize = %d @ 0x%08llx\n", framesize, from);
+		cons_printf("CC -framesize = %s @ 0x%08llx\n", fszstr, from);
 		cons_printf("CC -args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
 		cons_printf("CC -vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
 		cons_printf("CC -drefs = %d @ 0x%08llx\n", nrefs);

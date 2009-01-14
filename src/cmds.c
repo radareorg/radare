@@ -1158,9 +1158,15 @@ CMD_DECL(code)
 				radare_set_block_size_i(tmp);
 			}
 			break;
+		case '-':
+			data_del(config.seek+(config.cursor_mode?config.cursor:0), DATA_FUN, atoi(text+2));
+			break;
 		case '?': // function help
+		default:
 			cons_printf(
 			"Usage: CF[afrv.][gs] [args]\n"
+			" CF 20 @ eip                   ; create new function of 50 byte length at eip\n"
+			" CF- @ eip                     ; remove function definition at eip\n"
 			" CFv.                          ; show variables for current function\n"
 			" CFv 20 int                    ; define local var\n"
 			" CFvg 20 @ 0x8048000           ; access 'get' to delta 20 var (creates var if not exist)\n"
@@ -2179,6 +2185,9 @@ CMD_DECL(search) {
 	case 'A':
 		radare_search_aes();
 		break;
+	case 'b':
+		eprintf("Sorry. This is not 4chan =)\n");
+		break;
 	case 's':
 		radare_search_replace(text+2, 0);
 		break;
@@ -2317,6 +2326,7 @@ CMD_DECL(help)
 				"Special $$ variables that can be used in expressions\n"
 				" $$  = current seek\n"
 				" $$$ = size of opcode\n"
+				" $$b = block size\n"
 				" $$? = last compare (? 1==1) or read (?<) value\n"
 				" $$j = jump branch of opcode\n"
 				" $$f = failover continuation of opcode\n"
@@ -2363,11 +2373,10 @@ CMD_DECL(help)
 		//	if (!strchr(input, '!') && !strchr(input, '=')) {
 			D { cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
 				PRINT_BIN(res); cons_newline();
-			} else cons_printf("0x%llx\n", res);
+			}// else cons_printf("0x%llx\n", res);
 			//}
 		}
-	}
-	else show_help_message();
+	} else show_help_message();
 
 	return 0;
 }
