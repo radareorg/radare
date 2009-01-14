@@ -31,7 +31,7 @@
 
 #define CTXMINB 5
 
-#define BSIZE (4096)
+#define BSIZE (1024*1024)
 
 #define MAX_PATLEN 1024
 
@@ -80,12 +80,13 @@ int do_byte_pat(int patlen)
 	unsigned char sblk[MAX_PATLEN+1];
 	static fnditem* root;
 	u64 bproc = 0;
-	int rb, nr;
-	int i, moar;
+	u64 rb;
+	const char *str;
+	int nr,i, moar;
 	int pcnt, cnt=0, k=0;
 	u64 intaddr;
 	/* end addr */
-	u64 bytes;
+	u64 bytes =  (config.limit!=0)?(config.limit-config.seek):config.block_size;
  	/* start addr */
 	u64 bact = config.seek;
 
@@ -93,17 +94,16 @@ int do_byte_pat(int patlen)
 		eprintf("Invalid pattern length (must be > 1 and < %d)\n", MAX_PATLEN);
 		return 0;
 	}
-	if (!strnull(config_get("search.from")))
+	str = config_get("search.from");
+	if (str&&str[0]) {
 		bact = config_get_i("search.from");
-	if (!strnull(config_get("search.to")))
+		eprintf("Searching from 0x%08llx\n", bact);
+	}
+	str = config_get("search.to");
+	if (str&&str[0]) {
 		bytes = config_get_i("search.to");
-	if (bact==0)
-		bact = config.seek;
- 	if (bytes==0)
-		bytes = (config.limit!=0)?(config.limit-config.seek):config.block_size;
-	if (bytes==0)
-		bytes = 0xFFFFFFFF; /* default end */
-	eprintf("Searching from 0x%08llx to 0x%08llx\n", bact, bytes);
+		eprintf("Searching from 0x%08llx\n", bytes);
+	}
 
 	bytes += bact;
 
@@ -127,12 +127,6 @@ int do_byte_pat(int patlen)
 			nr = nr + ( patlen - (nr % patlen) ); // tamany de bloc llegit multiple superior de tamany busqueda
 			//rb = read ( fd, block, nr );
 			rb = radare_read_at(bproc, block, nr);
-			if (rb<1) {
-			//	eprintf("skip %d vs %d at 0x%08llx\n", rb, nr, bact);
-				bproc+=nr;
-				break;
-			}
-			nr = rb;
 			moar = 0;
 			for(i=0; i<nr; i++){
 				if (!memcmp(&block[i], sblk, patlen) && !is_fi_present(root, sblk, patlen)){
