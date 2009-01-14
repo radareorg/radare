@@ -11,4 +11,4 @@ hash:
 	gcc hash.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_hash -Wl,-R../../hash -L../../hash -o hash
 
 clean:
-	-rm -f *.c hello *.o *.h
+	-rm -f *.c hash sc *.o *.h

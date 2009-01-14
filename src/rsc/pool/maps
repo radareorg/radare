@@ -20,7 +20,7 @@ parse() {
 	for a in $A ; do
 		i=$(($i+1))
 		#[ $i = 1 ] && addr=`echo $a|sed -e s/-/,/ |cut -d , -f 1`
-		[ $i = 1 ] && addr=`echo $a|tr -- '-][' ',__' | cut -d , -f 1`
+		[ $i = 1 ] && addr=`echo $a|tr -- '-]/[+' ',____' | cut -d , -f 1`
 		if [ $i = 6 ]; then
 			if [ $a = $b ]; then
 				inc=$(($inc+1))
@@ -29,7 +29,7 @@ parse() {
 				inc=0
 			fi
 			a=`basename $a`
-			echo "f maps.${a}_${inc} @ 0x$addr" | tr -- '-][/' ',___'
+			echo "f maps.${a}_${inc} @ 0x$addr" | tr -- '-][/+' ',____'
 		fi
 	done
 	done
@@ -46,7 +46,7 @@ parse2() {
 	i=0
 	for a in $A ; do
 		i=$(($i+1))
-		[ $i = 1 ] && addr=`echo $a|tr -- '-][' ',__' | cut -d , -f 1`
+		[ $i = 1 ] && addr=`echo $a|tr -- '-]/[+' ',____' | cut -d , -f 1`
 		if [ $i = 13 ]; then
 			if [ $a = $b ]; then
 				inc=$(($inc+1))
@@ -55,7 +55,7 @@ parse2() {
 				inc=0
 			fi
 			a=`basename $a`
-			echo "f maps.${a}_${inc} @ 0x$addr" |  tr -- '-][/' ',___'
+			echo "f maps.${a}_${inc} @ 0x$addr" |  tr -- '-][/+' ',____'
 		fi
 	done
 	done

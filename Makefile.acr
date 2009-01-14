@@ -80,11 +80,13 @@ dist: mrproper
 	scp radare-$${DATE}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
 
 install:
+	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
+	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	mkdir -p ${BINDIR} ${MANDIR}/man1 ${SHAREDIR}/radare/ ${SHAREDIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
-	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${DESTDIR}/${DATADIR}/radare/rsc
+	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
 	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
 	${INSTALL_PROGRAM} src/javasm/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
@@ -114,7 +116,6 @@ install:
 	-${INSTALL_LIB} libusbsniff/libusbsniff.so ${LIBDIR}
 ##USBSNF##
 	if [ -e libusbsniff/libfdsniff.so ]; then ${INSTALL_LIB} libusbsniff/libfdsniff.so ${LIBDIR} ; fi
-	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	${INSTALL_SCRIPT} src/xrefs ${BINDIR}
 	${INSTALL_SCRIPT} src/radiff/radiff ${BINDIR}
 	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
@@ -135,7 +136,6 @@ install:
 	-${INSTALL_DATA} doc/* ${SHAREDIR}/doc/radare/
 	${INSTALL_DIR} ${SHAREDIR}/doc/radare/xtra
 	${INSTALL_DATA} doc/xtra/* ${SHAREDIR}/doc/radare/xtra
-	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
 ##HAVE_GUI##
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##HAVE_GUI##
@@ -163,6 +163,7 @@ deinstall:
 	-rm -f ${LIBDIR}/libusbsniff.so
 	-rm -f ${LIBDIR}/libfdsniff.so
 	-rm -f ${LIBDIR}/python2.5/radare.py
+	-rm -f ${DESTDIR}/${SHAREDIR}/radare
 	-rm -rf ${LIBDIR}/radare
 	-rm -rf ${SHAREDIR}/radare
 	-rm -rf ${SHAREDIR}/doc/radare
