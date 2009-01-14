@@ -258,7 +258,6 @@ int search_range(char *range)
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
-
 	/* search loop */
 	radare_controlc();
 	if (search_from!=0)
@@ -267,6 +266,7 @@ int search_range(char *range)
 	if (search_to!=0)
 		limit = search_to;
 
+	D eprintf("Searching from 0x%08llx to 0x%08llx\n", search_from, (search_to==0)?-1:search_to);
 	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
 		s = config.seek;
 		if (i==0) {
