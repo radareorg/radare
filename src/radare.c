@@ -53,7 +53,6 @@
 
 #include "dietline.h"
 
-
 u64 tmpoff = -1;
 int std = 0;
 
@@ -1317,9 +1316,10 @@ void monitors_run()
 int radare_prompt()
 {
 	char input[BUFLEN];
+	char buf[BUFLEN];
 	const char *ptr;
 	char* aux, *inp;
-	char prompt[1024]; // XXX avoid 1024 limit
+	char prompt[64]; // XXX avoid 1024 limit
 	int t, ret;
 
 	config.interrupted = 0;
@@ -1373,14 +1373,13 @@ int radare_prompt()
 				break;
 			}
 			strncat(input, inp, sizeof(input));
-			inp = prompt;
+			inp = buf;
 			cons_fgets(inp, 128, 0, NULL);
 		}
 
 	//	dl_hist_add(ret);
-		if (dl_hist_label(input, &cb)) {
-			return 1;
-		}
+		//if (dl_hist_label(input, &cb))
+		//	return 1;
 
 		flag_space_pop();
 
@@ -1393,19 +1392,37 @@ int radare_prompt()
 #endif
 		//D { printf(prompt); fflush(stdout); }
 		dl_prompt = prompt;
+		//memset(input,'\0', sizeof(input));
+		input[0]=buf[0]='\0';
 		inp = input;
-		/* XXX: This code can be buggy */
-		while(1) {
-			ret = cons_fgets(inp, BUFLEN-1, 0, NULL);
-			if (inp[strlen(inp)-2=='\\']) {
-				inp = inp+strlen(inp)-2;
+		ret = cons_fgets(inp, BUFLEN-1, 0, NULL);
+		// XXX control ret value
+#if 1
+		while(ret != -1) {
+			if (inp[strlen(inp)-1]=='\\') {
+				char *oinp = inp;
+				inp = inp+strlen(inp)-1;
 				inp[0]='&';
 				inp[1]='&';
+				inp[2]='\0';
 				inp = inp+2;
-			} else break;
+				inp = oinp;
+			}  else {
+				if (inp != input)
+					strncat(input, inp, sizeof(input));
+				break;
+			}
+
+			if (inp !=  input)
+				strncat(input, inp, sizeof(input));
+			inp = buf;
+			buf[0]='\0';
+			dl_prompt = "> ";
+			ret = cons_fgets(inp, BUFLEN-1, 0, NULL);
 		}
+#endif
 		if (ret == -1)
-			exit(0);
+			return 0;
 		radare_cmd(input, 1);
 #if HAVE_LIB_READLINE
 		dl_disable=0;
