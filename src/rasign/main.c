@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include "sign.h"
 
 int rasign_show_help()
 {
@@ -14,22 +15,24 @@ int rasign_show_help()
 	return 0;
 }
 
-int rasign_load_sig_file(const char *file)
-{
-	/* TODO */
-}
 
 int main(int argc, char **argv)
 {
 	int c;
 	int action = 0;
 	int rad = 0;
+	struct r_sign_t sig;
 
-	while((c=getopt(argc, argv, "hrs:i")) !=-1) {
+	r_sign_init(&sig);
+
+	while((c=getopt(argc, argv, "o:hrs:i")) !=-1) {
 		switch(c) {
+		case 'o':
+			r_sign_option(&sig, optarg);
+			break;
 		case 's':
 			action = c;
-			rasign_load_sig_file(optarg);
+			r_sign_load_file(&sig, optarg);
 			break;
 		case 'r':
 			rad = 1;
@@ -38,14 +41,21 @@ int main(int argc, char **argv)
 			return rasign_show_help();
 		}
 	}
+
+	if (argv[optind]==NULL)
+		return rasign_show_help();
+
+	r_sign_info(&sig);
+
 	switch(action) {
 	case 's':
 		/* check sigfiles in optarg file */
+		r_sign_check(&sig, argv[optind]);
 		break;
 	default:
 		/* generate signature file */
+		r_sign_generate(&sig, argv[optind], stdout);
 		break;
 	}
-	printf("TODO\n");
 	return 0;
 }
