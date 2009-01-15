@@ -1,47 +1,46 @@
 #include "r_types.h"
+#include "r_util.h"
 #include <stdio.h>
 
-#define iswhitespace(x) (x==' '||x=='\t')
-
+/* stable code */
 static const char *nullstr="";
 static const char *nullstr_c="(null)";
 
-char *lstrchr(char *str, char chr)
+int strhash(const char *str)
 {
-        int len = strlen(str);
-        for(;len>=0;len--)
-                if (str[len]==chr)
-                        return str+len;
-        return NULL;
+	int i = 1;
+	int a = 0x31;
+	int b = 0x337;
+	int h = str[0];
+	for(; str[i]; i++) {
+		h+=str[i]*i*a;
+		a*=b;
+	}
+	return h&0x7ffffff;
 }
 
-int _strnstr(char *from, char *to, int size)
+int str_word_set0(char *str)
 {
         int i;
-        for(i=0;i<size;i++)
-                if (from==NULL||to==NULL||from[i]!=to[i])
-                        break;
-        return (size!=i);
+        char *p;
+        if (str[0]=='\0')
+                return 0;
+        for(i=1,p=str;p[0];p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
+        return i;
 }
 
-char *slurp(const char *str)
+const char *str_word_get0(const char *str, int idx)
 {
-        char *ret;
-        long sz;
-        FILE *fd = fopen(str, "r");
-        if (fd == NULL)
-                return NULL;
-        fseek(fd, 0,SEEK_END);
-        sz = ftell(fd);
-        fseek(fd, 0,SEEK_SET);
-        ret = (char *)malloc(sz+1);
-        fread(ret, sz, 1, fd);
-        ret[sz]='\0';
-        fclose(fd);
-        return ret;
+        int i;
+        const char *ptr = str;
+        if (ptr == NULL)
+                return nullstr;
+        for (i=0;*ptr && i != idx;i++)
+                ptr = ptr + strlen(ptr) + 1;
+        return ptr;
 }
 
-int word_count(const char *string)
+int str_word_count(const char *string)
 {
         char *text = (char *)string;
         char *tmp  = (char *)string;
@@ -60,40 +59,42 @@ int word_count(const char *string)
         return word-1;
 }
 
-int set0word(char *str)
+char *str_slurp(const char *str)
+{
+        char *ret;
+        long sz;
+        FILE *fd = fopen(str, "r");
+        if (fd == NULL)
+                return NULL;
+        fseek(fd, 0,SEEK_END);
+        sz = ftell(fd);
+        fseek(fd, 0,SEEK_SET);
+        ret = (char *)malloc(sz+1);
+        fread(ret, sz, 1, fd);
+        ret[sz]='\0';
+        fclose(fd);
+        return ret;
+}
+
+char *str_lchr(char *str, char chr)
+{
+        int len = strlen(str);
+        for(;len>=0;len--)
+                if (str[len]==chr)
+                        return str+len;
+        return NULL;
+}
+
+int str_nstr(char *from, char *to, int size)
 {
         int i;
-        char *p;
-        if (str[0]=='\0')
-                return 0;
-        for(i=1,p=str;p[0];p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
-        return i;
+        for(i=0;i<size;i++)
+                if (from==NULL||to==NULL||from[i]!=to[i])
+                        break;
+        return (size!=i);
 }
 
-const char *get0word(const char *str, int idx)
-{
-        int i;
-        const char *ptr = str;
-        if (ptr == NULL)
-                return nullstr;
-        for (i=0;*ptr && i != idx;i++)
-                ptr = ptr + strlen(ptr) + 1;
-        return ptr;
-}
-
-int iswhitechar(char c)
-{
-        switch(c) {
-        case ' ': 
-        case '\t':
-        case '\n':
-        case '\r':
-                return 1;
-        }       
-        return 0;
-}
-
-char *strclean(char *str)
+char *str_clean(char *str)
 {
         int len;
         char *ptr;
@@ -115,18 +116,83 @@ char *strclean(char *str)
         return str;
 }
 
-int strhash(const char *str)
+/* memccmp("foo.bar", "foo.cow, '.') == 0 */
+int str_ccmp(char *dst, char *orig, int ch)
 {
-        int i = 1;
-        int a = 0x31;
-        int b = 0x337;
-        int h;
-        for(h = str[0] ; str[i]; i++) {
-                h+=str[i]*i*a;
-                 a*=b;
-        }
-        return h&0x7ffffff;
+        int i;
+        for(i=0;orig[i] && orig[i] != ch; i++)
+                if (dst[i] != orig[i])
+                        return 1;
+        return 0;
 }
+
+int str_ccpy(char *dst, char *orig, int ch)
+{
+        int i;
+        for(i=0;orig[i] && orig[i] != ch; i++)
+                dst[i] = orig[i];
+        dst[i] = '\0';
+        return i;
+}
+
+char *str_word_get_first(const char *string)
+{
+        char *text  = (char *)string;
+        char *start = NULL;
+        char *ret   = NULL;
+        int len     = 0;
+
+        for(;*text &&iswhitespace(*text);text = text + 1);
+        start = text;
+        for(;*text &&!iswhitespace(*text);text = text + 1) len++;
+
+        /* strdup */
+        ret = (char *)malloc(len+1);
+        if (ret == 0) {
+                fprintf(stderr, "Cannot allocate %d bytes.\n", len+1);
+                exit(1);
+        }
+        strncpy(ret, start, len);
+        ret[len]='\0';
+
+        return ret;
+}
+
+const char *str_get(const char *str)
+{
+        if (str == NULL)
+                return nullstr_c;
+        return str;
+}
+
+char *str_dup(char *ptr, const char *string)
+{
+        if (ptr)
+                free(ptr);
+        ptr = strdup(string);
+        return ptr;
+}
+
+void *str_free(void *ptr)
+{
+        free (ptr);
+	return NULL;
+}
+
+int str_inject(char *begin, char *end, char *str, int maxlen)
+{
+        int len = strlen(end)+1;
+        char *tmp = alloca(len);
+	if (maxlen > 0 && ((strlen(begin)-(end-begin)+strlen(str)) > maxlen))
+		return 0;
+        memcpy(tmp, end, len);
+        strcpy(begin, str);
+        strcat(begin, tmp);
+        return 1;
+}
+
+/* unstable code */
+/*------------------------------------------------*/
 
 // FROM bash::stringlib
 #define RESIZE_MALLOCED_BUFFER(str,cind,room,csize,sincr) \
@@ -178,69 +244,4 @@ char *strsub (char *string, char *pat, char *rep, int global)
         if (temp != NULL)
                 temp[templen] = 0;
         return (temp);
-}
-
-
-char *str_first_word(const char *string)
-{
-        char *text  = (char *)string;
-        char *start = NULL;
-        char *ret   = NULL;
-        int len     = 0;
-
-        for(;*text &&iswhitespace(*text);text = text + 1);
-        start = text;
-        for(;*text &&!iswhitespace(*text);text = text + 1) len++;
-
-        /* strdup */
-        ret = (char *)malloc(len+1);
-        if (ret == 0) {
-                fprintf(stderr, "Cannot allocate %d bytes.\n", len+1);
-                exit(1);
-        }
-        strncpy(ret, start, len);
-        ret[len]='\0';
-
-        return ret;
-}
-
-/* memccmp("foo.bar", "foo.cow, '.') == 0 */
-int strccmp(char *dst, char *orig, int ch)
-{
-        int i;
-        for(i=0;orig[i] && orig[i] != ch; i++)
-                if (dst[i] != orig[i])
-                        return 1;
-        return 0;
-}
-
-int strccpy(char *dst, char *orig, int ch)
-{
-        int i;
-        for(i=0;orig[i] && orig[i] != ch; i++)
-                dst[i] = orig[i];
-        dst[i] = '\0';
-        return i;
-}
-
-const char *strget(const char *str)
-{
-        if (str == NULL)
-                return nullstr_c;
-        return str;
-}
-
-
-char *estrdup(char *ptr, const char *string)
-{
-        if (ptr)
-                free(ptr);
-        ptr = strdup(string);
-        return ptr;
-}
-
-void efree(void **ptr)
-{
-        free (*ptr);
-        *ptr = NULL;
 }

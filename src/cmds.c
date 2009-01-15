@@ -2093,8 +2093,8 @@ CMD_DECL(search) {
 		" /. [file]      ; search using the token file rules\n"
 		" /-             ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
 		" //             ; repeat last search\n"
-		" /a [opcode]    ; Look for a string in disasembly\n"
-		" /A             ; Find expanded AES keys from current seek(*)\n"
+		" /a [opcode]    ; look for a string in disasembly\n"
+		" /A             ; find expanded AES keys from current seek(*)\n"
 		" /k# keyword    ; keyword # to search\n"
 		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
 		" /n[-]          ; seek to hit index N (/n : next, /n- : prev)\n"
@@ -2102,7 +2102,8 @@ CMD_DECL(search) {
 		" /s [str] [str] ; replace first string with the second one\n"
 		" /S [hex] [hex] ; replace first hexpair string with the second one\n"
 		" /p len         ; search pattern of length = len\n"
-		" /w foobar      ; Search a widechar string (f\\0o\\0o\\0b\\0..)\n"
+		" /v numexpr     ; search a value (32 or 64 bit size) uses cfg.bigendian\n"
+		" /w foobar      ; search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /x A0 B0 43    ; hex byte pair binary search. (space between bytes are optional)\n"
 		" /z [str]       ; find zero terminated strings matching 'str'\n"
 		" /0, /1, /2..   ; launch search using keyword number\n"
@@ -2238,6 +2239,35 @@ CMD_DECL(search) {
 		sprintf(buf, "%d", idx);
 		search_range(buf);
 		} break;
+	case 'v':
+		{
+		char buf[64];
+		u8 *b;
+		u64 n, _n;
+		u32 n32, _n32;
+		radare_cmd("f -hit0*", 0);
+		_n = n = get_math(input+2);
+		if (n & 0xffffffff00000000LL) {
+			endian_memcpy_e(&n, &_n, 8, config_get_i("cfg.bigendian"));
+			b=&n;
+			sprintf(buf,
+			"\\x%02x\\x%02x\\x%02x\\x%02x"
+			"\\x%02x\\x%02x\\x%02x\\x%02x",
+			b[0],b[1],b[2],b[3],
+			b[4],b[5],b[6],b[7]);
+		} else {
+			_n32 = n32=(u32)n;
+			endian_memcpy_e(&n32, &_n32, 4, config_get_i("cfg.bigendian"));
+			b=&n32;
+			sprintf(buf,
+			"\\x%02x\\x%02x\\x%02x\\x%02x",
+			b[0],b[1],b[2],b[3]);
+		}
+		setenv("SEARCH[0]", buf, 1);
+		printf("Searching: '%s' (%s)=0x%llx\n", buf, input2, n);
+		search_range("0");
+		break;
+		}
 	case '-':
 		for(i=0;environ[i];i++) {
 			char *eq = strchr(environ[i], '=');

@@ -1,6 +1,8 @@
 #ifndef _INCLUDE_R_RADARE_
 #define _INCLUDE_R_RADARE_
 
+#include "r_core.h"
+
 struct r_radare_t {
 	struct r_core_t core;
 };
