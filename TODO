@@ -9,16 +9,15 @@
 TheBook
 =======
 
-* /p output should be nicer
+* Show function name at visual status bar all the time
   - support max pattern length as second argument
+* Support to undefine variables
+* mov dword[ebp+0xfff], eax -> this is not mov dword[0xffff] code analysis!
 * udis86 bug:
   --> 8b8308ffffff    mov eax, [ebx+0xffffff08]
   --> should be displayed as negative values
 
 * Screen column grep should skip scape sequences
-* Add 'afu' to undefine a function
-  - Cannot undefine variables
-  - Cannot undefine functions (resized to 1 O_o?)
 * Documentate visual cursor with marks ',' and '.' keys
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
@@ -712,6 +711,6 @@ Split radare into libraries accessible by VAPI interfaces. (no gobject dependenc
 
 plugins
  - small plugin descriptor that loads the real plugin
- - avoi unnecesasry library loading (gtk and so)
+ - avoid unnecesasry library loading (gtk and so)
 
 * total world domination

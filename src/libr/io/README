@@ -1,0 +1,10 @@
+R_IO
+====
+
+IO       - manages basic IO
+DESC     - file descriptor (stores seek, io_handler, ..)
+HANDLE   - determines io backend by io plugins
+SECTION  - allows virtual base addressing over the IO
+MAP      - allows virtual maps at random address
+
+

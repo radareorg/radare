@@ -68,7 +68,9 @@ int var_add_access(u64 addr, int delta, int type, int set)
 {
 	struct list_head *pos;
 	struct var_t *v;
+	int reloop = 0;
 
+	_reloop:
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
 		if (addr >= v->addr) {
@@ -90,14 +92,19 @@ int var_add_access(u64 addr, int delta, int type, int set)
 		u64 from = 0LL, to = 0LL;
 		if ( data_get_fun_for(addr, &from, &to) ) {
 			char varname[32];
-			if (delta > 0) {
-				sprintf(varname, "var_%d", delta);
-			} else {
+			if (delta < 0) {
 				delta = -delta;
 				sprintf(varname, "arg_%d", delta);
-			}
+			} else sprintf(varname, "var_%d", delta);
 			//eprintf("0x%08llx: NEW LOCAL VAR %d\n", from, delta);
 			var_add(from, to, delta, VAR_T_LOCAL, "int32", varname, 1);
+			if (reloop) {
+				#warning THIS IS BUGGY: SHOULD NEVER HAPPEN
+				eprintf("LOOPING AT 0x%08llx NOT ADDING AN ACCESS\n", addr);
+				return 0;
+			}
+			reloop=1;
+			goto _reloop;
 			return var_add_access(addr, delta, type, set);
 		} else eprintf("Cannot find bounding function at 0x%08llx\n", addr);
 	}

@@ -23,7 +23,7 @@
 
 static struct r_io_handle_t *plugin;
 static int cache_fd;
-u64 r_io_seek = 0;
+u64 r_io_seek = 0; // XXX should be store per io_handle
 
 int r_io_init()
 {
