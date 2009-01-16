@@ -238,24 +238,45 @@ void radare_sync()
 
 }
 
-int radare_strsearch(char *str)
+int radare_strsearch(const char *str)
 {
-	u64 i;
+	u64 i, minlen = 0;
 	int j, ret;
 	int range_n=0;
 	u64 seek = config.seek;
 	u64 size = config.size;
 	int min = 3;
+	int max = 0;
 	int enc = resolve_encoding(config_get("cfg.encoding")); // ASCII
 
 	// TODO: Move to stripstr_iterate as args or so
 	//encoding = resolve_encoding(config_get("cfg.encoding"));
 	//min = 5;
 
-	if (str) str=str+1;
 	if (size <=0)
 		size=0xbfffffff;
 
+	if (str) {
+		str=str+1;
+		// TODO: support /z +20 -50  (if strlen(hit)>20 && < 50)
+		switch(str[0]) {
+		case '+':
+			min = atoi(str+1);
+			str = "";
+			break;
+		case '-':
+			max = atoi(str+1);
+			str = "";
+			break;
+		case '?':
+			eprintf("Usage: /z [str|+minlen|-maxlen]\n"
+			"  /z           ; show all strings\n"
+			"  /z Hello     ; grep matching 'Hello'\n"
+			"  /z +5        ; grep strings longer than 5 chars\n"
+			"  /z -30       ; grep strings shorter than 5 chars\n");
+			break;
+		}
+	}
 if (config_get("search.inar")) {
 	if (! ranges_get_n(range_n++, &seek, &size)) {
 		eprintf("No ranges defined\n");
@@ -269,7 +290,7 @@ do {
 		ret = radare_read(1);
 		if (ret == -1) break;
 		for(j=0;j<config.block_size;j++)
-			stripstr_iterate(config.block, j, min, enc, config.seek+j, str);
+			stripstr_iterate(config.block, j, min, max, enc, config.seek+j, str);
 	}
 } while(config_get("search.inar") && ranges_get_n(range_n++, &seek, &size));
 	config.seek = seek;

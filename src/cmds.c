@@ -2089,24 +2089,24 @@ CMD_DECL(search) {
 	case '\0':
 	case '?':
 		eprintf(
-		" / \\x7FELF      ; plain string search (supports \\x).\n"
-		" /. [file]      ; search using the token file rules\n"
-		" /-             ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
-		" //             ; repeat last search\n"
-		" /a [opcode]    ; look for a string in disasembly\n"
-		" /A             ; find expanded AES keys from current seek(*)\n"
-		" /k# keyword    ; keyword # to search\n"
-		" /m# FF 0F      ; Binary mask for search '#' (optional)\n"
-		" /n[-]          ; seek to hit index N (/n : next, /n- : prev)\n"
-		" /r 0,2-10      ; launch range searches 0-10\n"
-		" /s [str] [str] ; replace first string with the second one\n"
-		" /S [hex] [hex] ; replace first hexpair string with the second one\n"
-		" /p len         ; search pattern of length = len\n"
-		" /v numexpr     ; search a value (32 or 64 bit size) uses cfg.bigendian\n"
-		" /w foobar      ; search a widechar string (f\\0o\\0o\\0b\\0..)\n"
-		" /x A0 B0 43    ; hex byte pair binary search. (space between bytes are optional)\n"
-		" /z [str]       ; find zero terminated strings matching 'str'\n"
-		" /0, /1, /2..   ; launch search using keyword number\n"
+		" / \\x7FELF       ; plain string search (supports \\x).\n"
+		" /. [file]       ; search using the token file rules\n"
+		" /-              ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
+		" //              ; repeat last search\n"
+		" /a [opcode]     ; look for a string in disasembly\n"
+		" /A              ; find expanded AES keys from current seek(*)\n"
+		" /k# keyword     ; keyword # to search\n"
+		" /m# FF 0F       ; Binary mask for search '#' (optional)\n"
+		" /n[-]           ; seek to hit index N (/n : next, /n- : prev)\n"
+		" /r 0,2-10       ; launch range searches 0-10\n"
+		" /s [str] [str]  ; replace first string with the second one\n"
+		" /S [hex] [hex]  ; replace first hexpair string with the second one\n"
+		" /p len          ; search pattern of length = len\n"
+		" /v numexpr      ; search a value (32 or 64 bit size) uses cfg.bigendian\n"
+		" /w foobar       ; search a widechar string (f\\0o\\0o\\0b\\0..)\n"
+		" /x A0 B0 43        ; hex byte pair binary search. (space between bytes are optional)\n"
+		" /z [str,-max,+min] ; find ascii/widechar strings matching 'str' (or size limit)\n"
+		" /0, /1, /2..       ; launch search using keyword number\n"
 		"NOTE: This command will run from current seek unless we had previosly defined\n"
 		"      The initial and end offsets in the search.from and search.to eval vars.\n");
 		break;
@@ -2196,7 +2196,7 @@ CMD_DECL(search) {
 		radare_search_replace(text+2, 1);
 		break;
 	case 'z':
-		radare_strsearch(strchr(text,' '));
+		radare_strsearch(strchr(text, ' '));
 		break;
 	case 'r':
 		search_range(text+2);
@@ -2248,7 +2248,7 @@ CMD_DECL(search) {
 		radare_cmd("f -hit0*", 0);
 		_n = n = get_math(input+2);
 		if (n & 0xffffffff00000000LL) {
-			endian_memcpy_e(&n, &_n, 8, config_get_i("cfg.bigendian"));
+			endian_memcpy_e(&n, &_n, 8, !config_get_i("cfg.bigendian"));
 			b=&n;
 			sprintf(buf,
 			"\\x%02x\\x%02x\\x%02x\\x%02x"
@@ -2257,7 +2257,7 @@ CMD_DECL(search) {
 			b[4],b[5],b[6],b[7]);
 		} else {
 			_n32 = n32=(u32)n;
-			endian_memcpy_e(&n32, &_n32, 4, config_get_i("cfg.bigendian"));
+			endian_memcpy_e(&n32, &_n32, 4, !config_get_i("cfg.bigendian"));
 			b=&n32;
 			sprintf(buf,
 			"\\x%02x\\x%02x\\x%02x\\x%02x",

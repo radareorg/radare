@@ -85,7 +85,7 @@ static int is_encoded(int encoding, unsigned char c)
 	return 0;
 }
 
-int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offset, char *match)
+int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, u64 offset, const char *match)
 {
 	flag_t *flag;
 	static int unicode = 0;
@@ -108,7 +108,7 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 			return 1; // unicode
 		}
 		/* check if the length fits on our request */
-		if (matches >= min) {
+		if (matches >= min && (max == 0 || matches <= max)) {
 			str[matches] = '\0';
 			// XXX Support for 32 and 64 bits here
 			if (match && match[0]=='*' && match[1]=='\0') {
@@ -162,7 +162,7 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int enc, u64 offs
 	return 0;
 }
 
-int stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u64 limit)
+int stripstr_from_file(const char *filename, int min, int max, int encoding, u64 seek, u64 limit)
 {
 	int fd = open(filename, O_RDONLY);
 	unsigned char *buf;
@@ -185,13 +185,14 @@ int stripstr_from_file(const char *filename, int min, int encoding, u64 seek, u6
 	}
 	if (min <1)
 		min = 5;
+	max = 0;
 
 	if (limit && limit < len)
 		len = limit;
 
 	radare_controlc();
 	for(i = (size_t)seek; !config.interrupted && i < len; i++)
-		stripstr_iterate(buf+i, i, min, encoding, i, "");
+		stripstr_iterate(buf+i, i, min, max, encoding, i, "");
 	radare_controlc_end();
 	
 	munmap(buf, len); 

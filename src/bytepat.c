@@ -81,6 +81,7 @@ int do_byte_pat(int patlen)
 	static fnditem* root;
 	u64 bproc = 0;
 	int rb, nr;
+	int range_n = 0;
 	int i, moar;
 	int pcnt, cnt=0, k=0;
 	u64 intaddr;
@@ -112,6 +113,14 @@ int do_byte_pat(int patlen)
 	radare_controlc();
 
 	pcnt = -1;
+if (config_get("search.inar")) {
+	if (! ranges_get_n(range_n++, &bact, &bytes)) {
+		eprintf("No ranges defined\n");
+		return 0;
+	}
+	printf("Searching using ranges...\n");
+}
+do {
 	while ( !config.interrupted && bact < bytes ) {
 	//	radare_seek ( bact , SEEK_SET );
 		bproc = bact + patlen ;
@@ -162,6 +171,7 @@ int do_byte_pat(int patlen)
 		} else bact++;
 	}
 	cons_newline();
+} while(config_get("search.inar") && ranges_get_n(range_n++, &bact, &bytes));
 	radare_controlc_end();
 	return 0;
 }
