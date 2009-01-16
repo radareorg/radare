@@ -374,7 +374,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 			char cmd2[1024];
 			FILE *fd = fopen(each+1, "r");
 			if (fd == NULL) {
-				eprintf("Cannot open file '%s'\n", each+1);
+				eprintf("Cannot open file '%s' for reading one offset per line.\n", each+1);
 			} else {
 				macro_counter=0;
 				while(!feof(fd)) {
@@ -698,8 +698,7 @@ int radare_cmd_raw(const char *tmp, int log)
 						radare_cmd(buf, 0);
 				}
 				fclose(filef);
-			} else
-				cons_printf("oops (%s)\n", input+2);
+			} else cons_printf("Cannot open radare script '%s'.\n", input+2);
 			break;
 		default:
 			#if __WINDOWS__

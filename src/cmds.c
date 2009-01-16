@@ -1376,6 +1376,7 @@ CMD_DECL(flag)
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';
 
 	switch(input[0]) {
+	case '*': flag_set("*",0,0); break;
 	case 'o': radare_fortunes(); break;
 	case '?': flag_help(); break;
 	case 'h': cons_printf("%s\n", flag_get_here_filter(config.seek, input+2)); break;
@@ -1402,14 +1403,13 @@ CMD_DECL(flag)
 	case 'u': flag_set_undef(input+2, config.seek, 0); break;
 	case 'm': flag_space_move(text); break;
 	case 'd': print_flag_offset(config.seek); cons_newline(); break;
-	case 'i': {
+	case 'i':
 		text2=strchr(text,' ');
 		if (text2) {
 			text2[0]='\0';
 			text2 = text2+1;
 			flag_interpolation(text, text2); 
 		} else eprintf("Usage: fi hit0_ hit1_\n");
-	}
 		break;
 	default:
 		switch(text[0]) {
