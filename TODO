@@ -9,6 +9,8 @@
 TheBook
 =======
 
+* /z should accept a '+' and '-' and '?' chars as argument
+  - bigger than /z +30 or /z -10 (less than)  /z? for help
 * Show function name at visual status bar all the time
   - support max pattern length as second argument
 * Support to undefine variables
