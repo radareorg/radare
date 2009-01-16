@@ -12,6 +12,7 @@ void r_mem_copyloop (u8 *dest, u8 *orig, int dsize, int osize)
                         dest[i++] = orig[j];
 }
 
+/* TODO check and use system endian */
 void r_mem_copyendian (u8 *dest, u8 *orig, int size, int endian)
 {
         if (endian) {

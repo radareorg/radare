@@ -393,6 +393,7 @@ char *r_line_readline(int argc, const char **argv)
 	int buf[10];
 	int i, len = 0;
 	int opt = 0;
+	int gcomp = 0; /* grep completion */
 	int columns = r_cons_get_real_columns()-2;
 
 	r_line_buffer_idx = r_line_buffer_len = 0;
@@ -411,7 +412,7 @@ char *r_line_readline(int argc, const char **argv)
 	r_cons_set_raw(1);
 
 	if (r_line_echo) {
-		printf("%s", r_line_prompt);
+		puts (r_line_prompt);
 		fflush(stdout);
 	}
 
@@ -446,203 +447,215 @@ char *r_line_readline(int argc, const char **argv)
 		if (r_line_echo)
 		printf("\r%*c\r", columns, ' ');
 
+
 		switch(buf[0]) {
-			case -1:
+		case -1:
+			return NULL;
+		case 0: // control-space
+			/* ignore atm */
+			break;
+		case 1: // ^A
+			r_line_buffer_idx = 0;
+			break;
+		case 5: // ^E
+			r_line_buffer_idx = r_line_buffer_len;
+			break;
+		case 3: // ^C 
+			if (r_line_echo)
+				printf("\n^C\n");
+			r_line_buffer[r_line_buffer_idx = r_line_buffer_len = 0] = '\0';
+			goto _end;
+		case 4: // ^D
+			if (r_line_echo)
+				printf("^D\n");
+			if (!r_line_buffer[0]) { /* eof */
+				r_cons_set_raw(0);
 				return NULL;
-			case 0: // control-space
-				/* ignore atm */
-				break;
-			case 1: // ^A
-				r_line_buffer_idx = 0;
-				break;
-			case 5: // ^E
-				r_line_buffer_idx = r_line_buffer_len;
-				break;
-			case 3: // ^C 
-				if (r_line_echo)
-					printf("\n^C\n");
-				r_line_buffer[r_line_buffer_idx = r_line_buffer_len = 0] = '\0';
-				goto _end;
-			case 4: // ^D
-				if (r_line_echo)
-					printf("^D\n");
-				if (!r_line_buffer[0]) { /* eof */
-					r_cons_set_raw(0);
-					return NULL;
+			}
+			break;
+		case 10: // ^J -- ignore
+			return r_line_buffer;
+		case 11: // ^K -- ignore
+			break;
+		case 12: // ^L -- right
+			r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
+			if (r_line_echo)
+				printf("\x1b[2J\x1b[0;0H");
+			fflush(stdout);
+			break;
+		case 18: // ^R -- autocompletion
+			gcomp = 1;
+			break;
+		case 19: // ^S -- backspace
+			if (gcomp) {
+				gcomp--;
+			} else r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
+			break;
+		case 21: // ^U - cut
+			r_line_clipboard = strdup(r_line_buffer);
+			r_line_buffer[0]='\0';
+			r_line_buffer_len = 0;
+			r_line_buffer_idx = 0;
+			break;
+		case 23: // ^W
+			if (r_line_buffer_idx>0) {
+				for(i=r_line_buffer_idx-1;i&&r_line_buffer[i]==' ';i--);
+				for(;i&&r_line_buffer[i]!=' ';i--);
+				for(;i>0&&r_line_buffer[i]==' ';i--);
+				if (i>1) {
+					if (r_line_buffer[i+1]==' ')
+					i+=2;
+				} else if (i<0) i=0;
+				strcpy(r_line_buffer+i, r_line_buffer+r_line_buffer_idx);
+				r_line_buffer_len = strlen(r_line_buffer);
+				r_line_buffer_idx = i;
+			}
+			break;
+		case 25: // ^Y - paste
+			if (r_line_clipboard != NULL) {
+				r_line_buffer_len += strlen(r_line_clipboard);
+				// TODO: support endless strings
+				if (r_line_buffer_len < R_LINE_BUFSIZE) {
+					r_line_buffer_idx = r_line_buffer_len;
+					strcat(r_line_buffer, r_line_clipboard);
+				} else r_line_buffer_len -= strlen(r_line_clipboard);
+			}
+			break;
+		case 16:
+			r_line_hist_up();
+			break;
+		case 14:
+			r_line_hist_down();
+			break;
+		case 27: //esc-5b-41-00-00
+			buf[0] = r_line_readchar();
+			buf[1] = r_line_readchar();
+			if (buf[0]==0x5b) {
+				switch(buf[1]) {
+				case 0x33: // supr
+					if (r_line_buffer_idx<r_line_buffer_len)
+						strcpy(r_line_buffer, r_line_buffer+1);
+					break;
+				/* arrows */
+				case 0x41:
+					r_line_hist_up();
+					break;
+				case 0x42:
+					r_line_hist_down();
+					break;
+				case 0x43:
+					r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
+					break;
+				case 0x44:
+					r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
+					break;
 				}
-				break;
-			case 10: // ^J -- ignore
-				return r_line_buffer;
-			case 11: // ^K -- ignore
-				break;
-			case 19: // ^S -- backspace
-				r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
-				break;
-			case 12: // ^L -- right
-				r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
-				if (r_line_echo)
-					printf("\x1b[2J\x1b[0;0H");
-				fflush(stdout);
-				break;
-			case 21: // ^U - cut
-				r_line_clipboard = strdup(r_line_buffer);
-				r_line_buffer[0]='\0';
-				r_line_buffer_len = 0;
-				r_line_buffer_idx = 0;
-				break;
-			case 23: // ^W
+			}
+
+			break;
+		case 8:
+		case 127:
+			if (r_line_buffer_idx < r_line_buffer_len) {
 				if (r_line_buffer_idx>0) {
-					for(i=r_line_buffer_idx-1;i&&r_line_buffer[i]==' ';i--);
-					for(;i&&r_line_buffer[i]!=' ';i--);
-					for(;i>0&&r_line_buffer[i]==' ';i--);
-					if (i>1) {
-						if (r_line_buffer[i+1]==' ')
-						i+=2;
-					} else if (i<0) i=0;
-					strcpy(r_line_buffer+i, r_line_buffer+r_line_buffer_idx);
-					r_line_buffer_len = strlen(r_line_buffer);
-					r_line_buffer_idx = i;
+					r_line_buffer_idx--;
+					memcpy(r_line_buffer+r_line_buffer_idx, r_line_buffer+r_line_buffer_idx+1,strlen(r_line_buffer+r_line_buffer_idx));
 				}
-				break;
-			case 25: // ^Y - paste
-				if (r_line_clipboard != NULL) {
-					r_line_buffer_len += strlen(r_line_clipboard);
-					// TODO: support endless strings
-					if (r_line_buffer_len < R_LINE_BUFSIZE) {
-						r_line_buffer_idx = r_line_buffer_len;
-						strcat(r_line_buffer, r_line_clipboard);
-					} else r_line_buffer_len -= strlen(r_line_clipboard);
-				}
-				break;
-			case 16:
-				r_line_hist_up();
-				break;
-			case 14:
-				r_line_hist_down();
-				break;
-			case 27: //esc-5b-41-00-00
-				buf[0] = r_line_readchar();
-				buf[1] = r_line_readchar();
-				if (buf[0]==0x5b) {
-					switch(buf[1]) {
-					case 0x33: // supr
-						if (r_line_buffer_idx<r_line_buffer_len)
-							strcpy(r_line_buffer, r_line_buffer+1);
-						break;
-					/* arrows */
-					case 0x41:
-						r_line_hist_up();
-						break;
-					case 0x42:
-						r_line_hist_down();
-						break;
-					case 0x43:
-						r_line_buffer_idx = r_line_buffer_idx<r_line_buffer_len?r_line_buffer_idx+1:r_line_buffer_len;
-						break;
-					case 0x44:
-						r_line_buffer_idx = r_line_buffer_idx?r_line_buffer_idx-1:0;
-						break;
-					}
-				}
+			} else {
+				r_line_buffer_idx = --r_line_buffer_len;
+				if (r_line_buffer_len<0) r_line_buffer_len=0;
+				r_line_buffer[r_line_buffer_len]='\0';
+			}
+			if (r_line_buffer_idx<0)
+				r_line_buffer_idx = 0;
+			break;
+		case 9:// tab
+			/* autocomplete */
+			// XXX does not autocompletes correctly
+			// XXX needs to check if valid results have the same prefix (from 1 to N)
+			if (r_line_callback != NULL) {
+				//const char *from = strrchr(r_line_buffer, ' ');
+				//char **res = r_line_callback(r_line_buffer, (from==NULL)?r_line_buffer_idx:from-r_line_buffer, r_line_buffer_len);
+				/* TODO: manage res */
+			} else {
+				if (r_line_buffer_idx>0)
+				for(i=1,opt=0;i<argc;i++)
+					if (!strncmp(argv[i], r_line_buffer, r_line_buffer_idx))
+						opt++;
 
-				break;
-			case 8:
-			case 127:
-				if (r_line_buffer_idx < r_line_buffer_len) {
-					if (r_line_buffer_idx>0) {
-						r_line_buffer_idx--;
-						memcpy(r_line_buffer+r_line_buffer_idx, r_line_buffer+r_line_buffer_idx+1,strlen(r_line_buffer+r_line_buffer_idx));
-					}
-				} else {
-					r_line_buffer_idx = --r_line_buffer_len;
-					if (r_line_buffer_len<0) r_line_buffer_len=0;
-					r_line_buffer[r_line_buffer_len]='\0';
-				}
-				if (r_line_buffer_idx<0)
-					r_line_buffer_idx = 0;
-				break;
-			case 9:// tab
-				/* autocomplete */
-				// XXX does not autocompletes correctly
-				// XXX needs to check if valid results have the same prefix (from 1 to N)
-				if (r_line_callback != NULL) {
-					//const char *from = strrchr(r_line_buffer, ' ');
-					//char **res = r_line_callback(r_line_buffer, (from==NULL)?r_line_buffer_idx:from-r_line_buffer, r_line_buffer_len);
-					/* TODO: manage res */
-				} else {
-					if (r_line_buffer_idx>0)
-					for(i=1,opt=0;i<argc;i++)
-						if (!strncmp(argv[i], r_line_buffer, r_line_buffer_idx))
-							opt++;
-
-					if (r_line_buffer_len>0&&opt==1)
-						for(i=1;i<argc;i++) {
-							if (!strncmp(r_line_buffer, argv[i], r_line_buffer_len)) {
-								strcpy(r_line_buffer, argv[i]);
-								r_line_buffer_idx = r_line_buffer_len = strlen(r_line_buffer);
-								// TODO: if only 1 keyword hits:
-								//		if (argv[i][r_line_buffer_len]=='\0') {
-								//			strcat(r_line_buffer, " ");
-								//			r_line_buffer_len++;
-								//		}
-								break;
-							}
+				if (r_line_buffer_len>0&&opt==1)
+					for(i=1;i<argc;i++) {
+						if (!strncmp(r_line_buffer, argv[i], r_line_buffer_len)) {
+							strcpy(r_line_buffer, argv[i]);
+							r_line_buffer_idx = r_line_buffer_len = strlen(r_line_buffer);
+							// TODO: if only 1 keyword hits:
+							//		if (argv[i][r_line_buffer_len]=='\0') {
+							//			strcat(r_line_buffer, " ");
+							//			r_line_buffer_len++;
+							//		}
+							break;
 						}
-
-					/* show options */
-					if (r_line_buffer_idx==0 || opt>1) {
-						if (r_line_echo)
-							printf("%s%s\n",r_line_prompt,r_line_buffer);
-						for(i=1;i<argc;i++) {
-							if (r_line_buffer_len==0||!strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
-								len+=strlen(argv[i]);
-					//			if (len+r_line_buffer_len+4 >= columns) break;
-								if (r_line_echo)
-									printf("%s ", argv[i]);
-							}
-						}
-						if (r_line_echo)
-							printf("\n");
 					}
-					fflush(stdout);
+
+				/* show options */
+				if (r_line_buffer_idx==0 || opt>1) {
+					if (r_line_echo)
+						printf("%s%s\n",r_line_prompt,r_line_buffer);
+					for(i=1;i<argc;i++) {
+						if (r_line_buffer_len==0||!strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
+							len+=strlen(argv[i]);
+				//			if (len+r_line_buffer_len+4 >= columns) break;
+							if (r_line_echo)
+								printf("%s ", argv[i]);
+						}
+					}
+					if (r_line_echo)
+						printf("\n");
 				}
-				break;
-			case 18:
-				// TODO: SUPPORT FOR ^R (search command in history)
-				break;
-			case 13: 
-				goto _end;
+				fflush(stdout);
+			}
+			break;
+		case 13: 
+			goto _end;
 #if 0
-				// force command fit
-				for(i=1;i<argc;i++) {
-					if (r_line_buffer_len==0 || !strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
-						printf("%*c", columns, ' ');
-						printf("\r");
-						printf("\n\n(%s)\n\n", r_line_buffer);
-						r_cons_set_raw(0);
-						return r_line_buffer;
-					}
+			// force command fit
+			for(i=1;i<argc;i++) {
+				if (r_line_buffer_len==0 || !strncmp(argv[i], r_line_buffer, r_line_buffer_len)) {
+					printf("%*c", columns, ' ');
+					printf("\r");
+					printf("\n\n(%s)\n\n", r_line_buffer);
+					r_cons_set_raw(0);
+					return r_line_buffer;
 				}
+			}
 #endif
-			default:
-				/* XXX use ^A & ^E */
-				if (r_line_buffer_idx<r_line_buffer_len) {
-					for(i = ++r_line_buffer_len;i>r_line_buffer_idx;i--)
-						r_line_buffer[i] = r_line_buffer[i-1];
-					r_line_buffer[r_line_buffer_idx] = buf[0];
-				} else {
-					r_line_buffer[r_line_buffer_len]=buf[0];
-					r_line_buffer_len++;
-					if (r_line_buffer_len>1000)
-						r_line_buffer_len--;
-					r_line_buffer[r_line_buffer_len]='\0';
-				}
-				r_line_buffer_idx++;
-				break;
+		default:
+			if (gcomp) {
+				gcomp++;
+			}
+			/* XXX use ^A & ^E */
+			if (r_line_buffer_idx<r_line_buffer_len) {
+				for(i = ++r_line_buffer_len;i>r_line_buffer_idx;i--)
+					r_line_buffer[i] = r_line_buffer[i-1];
+				r_line_buffer[r_line_buffer_idx] = buf[0];
+			} else {
+				r_line_buffer[r_line_buffer_len]=buf[0];
+				r_line_buffer_len++;
+				if (r_line_buffer_len>1000)
+					r_line_buffer_len--;
+				r_line_buffer[r_line_buffer_len]='\0';
+			}
+			r_line_buffer_idx++;
+			break;
 		}
 		if (r_line_echo) {
-			printf("\r%s%s", r_line_prompt, r_line_buffer);
-			printf("\r%s", r_line_prompt);
+			if (gcomp) {
+				if (r_line_buffer_len == 0)
+					gcomp = 0;
+				printf("\r (reverse-i-search): %s\r", r_line_buffer);
+			} else {
+				printf("\r%s%s", r_line_prompt, r_line_buffer);
+				printf("\r%s", r_line_prompt);
+			}
 		
 			for(i=0;i<r_line_buffer_idx;i++)
 				printf("%c", r_line_buffer[i]);
