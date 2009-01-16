@@ -879,10 +879,10 @@ void visual_draw_screen()
 	}
 	switch(config.insert_mode) {
 	case 1:
-		strcpy(buf, "<insert hex pairs> ('q','tab')");
+		strcpy(buf, "<insert hex pairs> ('tab','q' or 'esc')");
 		break;
 	case 2:
-		strcpy(buf, "<insert ascii> ('tab')");
+		strcpy(buf, "<insert ascii> ('tab','esc')");
 		break;
 	case 3:
 		strcpy(buf, "<insert assembly> ('tab')");
@@ -1178,8 +1178,9 @@ CMD_DECL(visual)
 					config.insert_mode = 3;
 				else
 				config.insert_mode = 2;
-				nibble=1;
+				nibble = 1;
 				break;
+			case '\x0':
 			case 'q':
 			case 0x1b: // ESC
 				config.insert_mode = 0;
@@ -1219,9 +1220,7 @@ CMD_DECL(visual)
 				nibble=1;
 				break;
 			default:
-				if ((key>='0'&&key<='9')
-				||  (key>='a'&&key<='f')
-				||  (key>='A'&&key<='F')) {
+				if ((key>='0'&&key<='9') ||  (key>='a'&&key<='f') ||  (key>='A'&&key<='F')) {
 					int lol = 0;
 					unsigned char str[2] = { key, 0};
 					sscanf(str,"%1x", &lol);
@@ -1244,13 +1243,19 @@ CMD_DECL(visual)
 				config.cursor = 0;
 			continue;
 		case 2: // insert scii
-			nibble=1;
+			nibble = 1;
 			switch(key) {
 			case 9:
 				config.insert_mode = 1;
 				break;
 			case 0x1b:
-				cons_readchar();
+				key = cons_readchar();
+				if (key == 0x1b) {
+					config.insert_mode = 0;
+					config.cursor_mode = 0;
+					cons_clear();
+					break;
+				} else
 				switch(cons_readchar()) {
 				case 0x04:
 					config.insert_mode = 0;

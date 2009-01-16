@@ -238,6 +238,7 @@ void radare_sync()
 
 }
 
+int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, u64 offset, const char *match);
 int radare_strsearch(const char *str)
 {
 	u64 i, minlen = 0;
@@ -277,22 +278,29 @@ int radare_strsearch(const char *str)
 			break;
 		}
 	}
-if (config_get("search.inar")) {
-	if (! ranges_get_n(range_n++, &seek, &size)) {
-		eprintf("No ranges defined\n");
-		return 0;
+	if (config_get("search.inar")) {
+		if (! ranges_get_n(range_n++, &seek, &size)) {
+			eprintf("No ranges defined\n");
+			return 0;
+		}
+		printf("Searching using ranges...\n");
 	}
-	printf("Searching using ranges...\n");
-}
-do {
-	radare_controlc();
-	for(i = (size_t)seek; !config.interrupted && config.seek < size; i++) {
-		ret = radare_read(1);
-		if (ret == -1) break;
-		for(j=0;j<config.block_size;j++)
-			stripstr_iterate(config.block, j, min, max, enc, config.seek+j, str);
-	}
-} while(config_get("search.inar") && ranges_get_n(range_n++, &seek, &size));
+	if (str&&str[0]=='\0')
+		str=NULL;
+	D eprintf("Searching from 0x%08llx to 0x%08llx\n", seek, (size==0)?-1:size);
+	do {
+		radare_controlc();
+		radare_seek(seek, SEEK_SET);
+		radare_read(0);
+		for(i = (size_t)seek; !config.interrupted && i < size;) {
+			if (ret == -1) break;
+			for(j=0;j<config.block_size;j++) {
+				stripstr_iterate(config.block+j, j, min, max, enc, i+j, str);
+			}
+			ret = radare_read(1);
+			i+=config.seek;
+		}
+	} while(config_get("search.inar") && ranges_get_n(range_n++, &seek, &size));
 	config.seek = seek;
 	radare_controlc_end();
 

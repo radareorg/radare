@@ -85,27 +85,29 @@ static int is_encoded(int encoding, unsigned char c)
 	return 0;
 }
 
+// XXX last char is lost :(
 int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, u64 offset, const char *match)
 {
 	flag_t *flag;
-	static int unicode = 0;
+	static int widechar = 0;
 	static int matches = 0;
 	char str[4096];
 
-	if (match&&match[0]=='\0')
-		match=NULL;
 
+i=0;
 	if (is_printable(buf[i]) || (is_encoded(enc, buf[i]))) {
+#if 0
 		if (matches == 0)
 			offset += i;
+#endif
 		str[matches] = buf[i];
 		if (matches < sizeof(str))
 			matches++;
 	} else {
 		/* wide char check \x??\x00\x??\x00 */
 		if (matches && buf[i+2]=='\0' && buf[i]=='\0' && buf[i+1]!='\0') {
-			unicode = 1;
-			return 1; // unicode
+			widechar = 1;
+			return 1; // widechar
 		}
 		/* check if the length fits on our request */
 		if (matches >= min && (max == 0 || matches <= max)) {
@@ -140,9 +142,9 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc,
 				// XXX THIS IS UGLY AS SHIT
 				do {
 					flag = flag_get(msg);
-					if (flag && flag->offset != (offset-matches)) {
+					if (flag && flag->offset != (offset-matches))
 						strcat(msg, "0");
-					} else break;
+					else break;
 				} while(1);
 
 				cons_printf("f %s @ 0x%08x\n", msg, (unsigned int)offset-matches);
@@ -150,14 +152,19 @@ int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc,
 			if ((!match) || (match && strstr(str, match)) ){
 				int len = strlen(str);
 				if (len>2) {
-					cons_printf("0x%08llx %3d %c %s\n",
-						(u64)config.vaddr+ offset-matches, len, (unicode)?'U':'A', str);
+					if (widechar) {
+						u64 off = offset-(len*2)+1;
+						cons_printf("0x%08llx %3d W %s\n", off, len, str);
+					} else {
+						cons_printf("0x%08llx %3d A %s\n",
+							(u64)offset-matches, len, str); //-matches, len, str);
+					}
 				}
 				cons_flush();
 			}
 		}
 		matches = 0;
-		unicode = 0;
+		widechar = 0;
 	}
 	return 0;
 }

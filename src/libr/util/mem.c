@@ -1,7 +1,6 @@
 /* radare - LGPL - Copyright 2007-2009 pancake<nopcode.org> */
 
-#include "r_types.h"
-#include "r_util.h"
+#include <r_util.h>
 #include <stdlib.h>
 
 void r_mem_copyloop (u8 *dest, u8 *orig, int dsize, int osize)

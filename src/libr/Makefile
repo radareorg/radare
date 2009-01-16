@@ -35,8 +35,7 @@ install:
 	cp -f util/t/rax2 ${PREFIX}/bin
 	# test programs
 	@mkdir -p ${PREFIX}/bin-test
-	#| perl -ne 's/^[^t]*..//g; print;'`;
-	@for a in `find */t -executable -type f`; \
+	@for a in `find */t -perm /u+x -type f`; \
 	do echo " $$a"; cp $$a ${PREFIX}/bin-test ; done
 	@echo libr aka radare2 has been installed in PREFIX=${PREFIX}
 

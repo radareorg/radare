@@ -1,7 +1,7 @@
-all: calc rax2
+all: test rax2
 
-calc:
-	${CC} -g -I ../../include calc.c ../*.o -o calc
+test:
+	${CC} -g -I ../../include test.c ../*.o -o test
 
 rax2:
 	${CC} -g -I ../../include rax2.c ../*.o -o rax2

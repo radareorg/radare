@@ -22,9 +22,9 @@ int r_num_init(struct r_num_t *num);
 // XXX
 #define iswhitechar(x) (x==' '||x=='\t'||x=='\n'||x=='\r')
 #define iswhitespace(x) (x==' '||x=='\t')
+#define ishexchar(x) ((x>='0'&&x<='9') ||  (x>='a'&&x<='f') ||  (x>='A'&&x<='F')) {
 
 int r_strhash(const char *str);
-
 
 /* stabilized */
 int r_str_word_count(const char *string);
@@ -42,5 +42,9 @@ char *r_str_dup(char *ptr, const char *string);
 void *r_str_free(void *ptr);
 int r_str_inject(char *begin, char *end, char *str, int maxlen);
 int r_str_delta(char *p, char a, char b);
+
+int r_str_re_match(const char *str, const char *reg);
+int r_str_re_replace(const char *str, const char *reg, const char *sub);
+
 
 #endif
