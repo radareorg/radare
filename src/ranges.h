@@ -20,6 +20,7 @@ int ranges_sub(struct list_head *rang, u64 from, u64 to);
 int ranges_list();
 int ranges_boolean(u64 from, u64 to, int flags);
 int ranges_cmd(const char *arg);
+int ranges_get_n(int n, u64 *from, u64 *to);
 
 #define RANGE_TRACES 1
 #define RANGE_GRAPHS 2

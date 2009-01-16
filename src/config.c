@@ -803,6 +803,7 @@ void config_init(int first)
 	config_set("cmd.vprompt3", "");
 	config_set("cmd.bp", "");
 
+	config_set("search.inar", "false");
 	config_set_i("search.from", 0);
 	config_set_i("search.to", 0);
 	config_set_i("search.align", 0);

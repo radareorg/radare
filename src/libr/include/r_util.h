@@ -23,25 +23,24 @@ int r_num_init(struct r_num_t *num);
 #define iswhitechar(x) (x==' '||x=='\t'||x=='\n'||x=='\r')
 #define iswhitespace(x) (x==' '||x=='\t')
 
-int strhash(const char *str);
-char *strclean(char *str);
-char *estrdup(char *ptr, const char *string);
-void efree(void **ptr);
+int r_strhash(const char *str);
+
 
 /* stabilized */
-int str_word_count(const char *string);
-int str_word_set0(char *str);
-const char *str_word_get0(const char *str, int idx);
+int r_str_word_count(const char *string);
+int r_str_word_set0(char *str);
+const char *r_str_word_get0(const char *str, int idx);
 
-char *str_clean(char *str);
-int str_nstr(char *from, char *to, int size);
-char *str_lchr(char *str, char chr);
-int str_ccmp(char *dst, char *orig, int ch);
-int str_ccpy(char *dst, char *orig, int ch);
-char *str_slurp(const char *str);
-const char *str_get(const char *str);
-char *str_dup(char *ptr, const char *string);
-void *str_free(void *ptr);
-int str_inject(char *begin, char *end, char *str, int maxlen);
+char *r_str_clean(char *str);
+int r_str_nstr(char *from, char *to, int size);
+char *r_str_lchr(char *str, char chr);
+int r_str_ccmp(char *dst, char *orig, int ch);
+int r_str_ccpy(char *dst, char *orig, int ch);
+char *r_str_slurp(const char *str);
+const char *r_str_get(const char *str);
+char *r_str_dup(char *ptr, const char *string);
+void *r_str_free(void *ptr);
+int r_str_inject(char *begin, char *end, char *str, int maxlen);
+int r_str_delta(char *p, char a, char b);
 
 #endif

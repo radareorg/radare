@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2007-2009 pancake<nopcode.org> */
+
 #include "r_types.h"
 #include "r_util.h"
 #include <stdio.h>
@@ -6,7 +8,7 @@
 static const char *nullstr="";
 static const char *nullstr_c="(null)";
 
-int strhash(const char *str)
+int r_str_hash(const char *str)
 {
 	int i = 1;
 	int a = 0x31;
@@ -19,7 +21,16 @@ int strhash(const char *str)
 	return h&0x7ffffff;
 }
 
-int str_word_set0(char *str)
+
+int r_str_delta(char *p, char a, char b)
+{
+	char *_a = strchr(p, a);
+	char *_b = strchr(p, b);
+	if (!_a||!_b) return 0;
+	return (_a-_b);
+}
+
+int r_str_word_set0(char *str)
 {
         int i;
         char *p;
@@ -29,7 +40,7 @@ int str_word_set0(char *str)
         return i;
 }
 
-const char *str_word_get0(const char *str, int idx)
+const char *r_str_word_get0(const char *str, int idx)
 {
         int i;
         const char *ptr = str;
@@ -40,7 +51,7 @@ const char *str_word_get0(const char *str, int idx)
         return ptr;
 }
 
-int str_word_count(const char *string)
+int r_str_word_count(const char *string)
 {
         char *text = (char *)string;
         char *tmp  = (char *)string;
@@ -59,7 +70,7 @@ int str_word_count(const char *string)
         return word-1;
 }
 
-char *str_slurp(const char *str)
+char *r_str_slurp(const char *str)
 {
         char *ret;
         long sz;
@@ -76,7 +87,7 @@ char *str_slurp(const char *str)
         return ret;
 }
 
-char *str_lchr(char *str, char chr)
+char *r_str_lchr(char *str, char chr)
 {
         int len = strlen(str);
         for(;len>=0;len--)
@@ -85,7 +96,7 @@ char *str_lchr(char *str, char chr)
         return NULL;
 }
 
-int str_nstr(char *from, char *to, int size)
+int r_str_nstr(char *from, char *to, int size)
 {
         int i;
         for(i=0;i<size;i++)
@@ -94,7 +105,7 @@ int str_nstr(char *from, char *to, int size)
         return (size!=i);
 }
 
-char *str_clean(char *str)
+char *r_str_clean(char *str)
 {
         int len;
         char *ptr;
@@ -117,7 +128,7 @@ char *str_clean(char *str)
 }
 
 /* memccmp("foo.bar", "foo.cow, '.') == 0 */
-int str_ccmp(char *dst, char *orig, int ch)
+int r_str_ccmp(char *dst, char *orig, int ch)
 {
         int i;
         for(i=0;orig[i] && orig[i] != ch; i++)
@@ -126,7 +137,7 @@ int str_ccmp(char *dst, char *orig, int ch)
         return 0;
 }
 
-int str_ccpy(char *dst, char *orig, int ch)
+int r_str_ccpy(char *dst, char *orig, int ch)
 {
         int i;
         for(i=0;orig[i] && orig[i] != ch; i++)
@@ -135,7 +146,7 @@ int str_ccpy(char *dst, char *orig, int ch)
         return i;
 }
 
-char *str_word_get_first(const char *string)
+char *r_str_word_get_first(const char *string)
 {
         char *text  = (char *)string;
         char *start = NULL;
@@ -158,14 +169,14 @@ char *str_word_get_first(const char *string)
         return ret;
 }
 
-const char *str_get(const char *str)
+const char *r_str_get(const char *str)
 {
         if (str == NULL)
                 return nullstr_c;
         return str;
 }
 
-char *str_dup(char *ptr, const char *string)
+char *r_str_dup(char *ptr, const char *string)
 {
         if (ptr)
                 free(ptr);
@@ -173,13 +184,13 @@ char *str_dup(char *ptr, const char *string)
         return ptr;
 }
 
-void *str_free(void *ptr)
+void *r_str_free(void *ptr)
 {
         free (ptr);
 	return NULL;
 }
 
-int str_inject(char *begin, char *end, char *str, int maxlen)
+int r_str_inject(char *begin, char *end, char *str, int maxlen)
 {
         int len = strlen(end)+1;
         char *tmp = alloca(len);

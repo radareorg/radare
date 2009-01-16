@@ -1,3 +1,4 @@
+CFLAGS+=-g
 LIB=libr_util
 OBJ=mem.o num.o str.o
 

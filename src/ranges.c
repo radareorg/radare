@@ -470,6 +470,23 @@ int ranges_list(int rad)
 	return 0;
 }
 
+int ranges_get_n(int n, u64 *from, u64 *to)
+{
+	struct list_head *pos;
+	int count =0;
+	ranges_sort();
+	list_for_each(pos, &ranges) {
+		struct range_t *r = list_entry(pos, struct range_t, list);
+		if (count == n) {
+			*from = r->from;
+			*to = r->to;
+			return 1;
+		}
+		count++;
+	}
+	return 0;
+}
+
 int ranges_boolean(u64 from, u64 to, int flags)
 {
 	u64 total = 0;

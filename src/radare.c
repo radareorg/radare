@@ -242,6 +242,7 @@ int radare_strsearch(char *str)
 {
 	u64 i;
 	int j, ret;
+	int range_n=0;
 	u64 seek = config.seek;
 	u64 size = config.size;
 	int min = 3;
@@ -255,6 +256,14 @@ int radare_strsearch(char *str)
 	if (size <=0)
 		size=0xbfffffff;
 
+if (config_get("search.inar")) {
+	if (! ranges_get_n(range_n++, &seek, &size)) {
+		eprintf("No ranges defined\n");
+		return 0;
+	}
+	printf("Searching using ranges...\n");
+}
+do {
 	radare_controlc();
 	for(i = (size_t)seek; !config.interrupted && config.seek < size; i++) {
 		ret = radare_read(1);
@@ -262,6 +271,7 @@ int radare_strsearch(char *str)
 		for(j=0;j<config.block_size;j++)
 			stripstr_iterate(config.block, j, min, enc, config.seek+j, str);
 	}
+} while(config_get("search.inar") && ranges_get_n(range_n++, &seek, &size));
 	config.seek = seek;
 	radare_controlc_end();
 

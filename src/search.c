@@ -147,7 +147,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		}
 		cons_printf("\n");
 	} 
-	D {	fprintf(stderr, "\r%d", nhit); fflush(stderr); }
+	D { fprintf(stderr, "\r%d", nhit); fflush(stderr); }
 
 	fflush(stdout);
 	config.seek = off;
@@ -200,6 +200,7 @@ int search_range(char *range)
 	u64 search_from;
 	u64 search_to;
 	u64 limit;
+	int range_n = 0;
 	int f0 = 0;
 	u64 s;
 
@@ -216,6 +217,18 @@ int search_range(char *range)
 	search_to = config_get_i("search.to");
 	search_verbose = (int)config_get("search.verbose");
 
+if (config_get("search.inar")) {
+	if (! ranges_get_n(range_n++, &search_from, &search_to)) {
+		eprintf("No ranges defined\n");
+		return 0;
+	}
+	printf("Searching using ranges...\n");
+}
+	// twice
+	radare_cmd("f -hit0_*", 0);
+	radare_cmd("f -hit0_*", 0);
+	radare_cmd("fs search", 0);
+do {
 	nhit = 0;
 	t = binparse_new(0);
 	align = config_get_i("search.align");
@@ -251,10 +264,6 @@ int search_range(char *range)
 		}
 	}
 
-	// twice
-	radare_cmd("f -hit0_*", 0);
-	radare_cmd("f -hit0_*", 0);
-	radare_cmd("fs search", 0);
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
@@ -283,6 +292,7 @@ int search_range(char *range)
 		}
 		config.seek = s;
 	}
+} while(config_get("search.inar") && ranges_get_n(range_n++, &search_from, &search_to));
 	binparser_free(t);
 #if __UNIX__
 	go_alarm(SIG_IGN);
