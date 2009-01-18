@@ -147,7 +147,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		}
 		cons_printf("\n");
 	} 
-	D { fprintf(stderr, "\r%d", nhit); fflush(stderr); }
+	D { fprintf(stderr, "\r%d\n", nhit); fflush(stderr); }
 
 	fflush(stdout);
 	config.seek = off;
@@ -269,8 +269,7 @@ do {
 #endif
 	/* search loop */
 	radare_controlc();
-	if (search_from!=0)
-		config.seek = search_from;
+	config.seek = search_from;
 	limit = config.limit;
 	if (search_to!=0)
 		limit = search_to;
@@ -279,7 +278,7 @@ do {
 	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
 		s = config.seek;
 		if (i==0) {
-			eprintf("read err at 0x%08llx\n", config.seek);
+			//eprintf("read err at 0x%08llx\n", config.seek);
 			break;
 		}
 		if (limit && config.seek >= limit) break;
