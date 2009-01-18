@@ -1,7 +1,7 @@
 /* radare - LGPL - Copyright 2006-2009 pancake<nopcode.org> */
 
 #include "r_config.h"
-#include "r_util.h" // strhash, strclean, ...
+#include "r_util.h" // r_str_hash, r_str_clean, ...
 
 struct r_config_node_t* r_config_node_new(const char *name, const char *value)
 {
@@ -10,7 +10,7 @@ struct r_config_node_t* r_config_node_new(const char *name, const char *value)
 			malloc(sizeof(struct r_config_node_t));
 	INIT_LIST_HEAD(&(node->list));
 	node->name = strdup(name);
-	node->hash = strhash(name);
+	node->hash = r_str_hash(name);
 	node->value = value?strdup(value):strdup("");
 	node->flags = CN_RW | CN_STR;
 	node->i_value = 0;
@@ -24,7 +24,7 @@ void r_config_list(struct r_config_t *cfg, const char *str)
 	int len = 0;
 
 	if (!strnull(str)) {
-		str = strclean(str);
+		str = r_str_clean(str);
 		len = strlen(str);
 	}
 
@@ -43,7 +43,7 @@ struct r_config_node_t *r_config_node_get(struct r_config_t *cfg, const char *na
 	int hash;
 	if (strnull(name))
 		return NULL;
-	hash = strhash(name);
+	hash = r_str_hash(name);
 	list_for_each_prev(i, &(cfg->nodes)) {
 		struct r_config_node_t *bt = list_entry(i, struct r_config_node_t, list);
 		if (bt->hash == hash)
@@ -75,9 +75,17 @@ u64 r_config_get_i(struct r_config_t *cfg, const char *name)
 	if (node) {
 		if (node->i_value != 0)
 			return node->i_value;
-		return (u64)get_math(node->value);
+		return (u64)r_num_math(NULL, node->value);
 	}
 	return (u64)0LL;
+}
+
+struct r_config_node_t *r_config_set_cb(struct r_config_t *cfg, const char *name, const char *value, int (*callback)(void *data))
+{
+	struct r_config_node_t *node;
+	node = r_config_set(cfg, name, value);
+	node->callback = callback;
+	return node;
 }
 
 struct r_config_node_t *r_config_set(struct r_config_t *cfg, const char *name, const char *value)
@@ -107,8 +115,8 @@ struct r_config_node_t *r_config_set(struct r_config_t *cfg, const char *name, c
 			} else {
 				node->value = strdup(value);
 				if (strchr(value, '/'))
-					node->i_value = get_offset(value);
-				else  node->i_value = get_math(value);
+					node->i_value = r_num_get(NULL, value);
+				else  node->i_value = r_num_math(NULL, value);
 				node->flags |= CN_INT;
 			}
 		}
@@ -190,7 +198,7 @@ int r_config_eval(struct r_config_t *cfg, const char *str)
 	len = strlen(str)+1;
 	name = alloca(len);
 	memcpy(name, str, len);
-	str = strclean(name);
+	str = r_str_clean(name);
 
 	if (str == NULL)
 		return 0;
@@ -209,11 +217,11 @@ int r_config_eval(struct r_config_t *cfg, const char *str)
 	if (ptr) {
 		/* set */
 		ptr[0]='\0';
-		a = strclean(name);
-		b = strclean(ptr+1);
+		a = r_str_clean(name);
+		b = r_str_clean(ptr+1);
 		r_config_set(cfg, a, b);
 	} else {
-		char *foo = strclean(name);
+		char *foo = r_str_clean(name);
 		if (foo[strlen(foo)-1]=='.') {
 			/* list */
 			r_config_list(cfg, name);

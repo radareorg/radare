@@ -216,7 +216,7 @@ int r_str_inject(char *begin, char *end, char *str, int maxlen)
    replace all occurrences, otherwise replace only the first.
    This returns a new string; the caller should free it. */
 
-int strsub_memcmp (char *string, char *pat, int len)
+static int strsub_memcmp (char *string, char *pat, int len)
 {
         int res = 0;
         while(len--) {
@@ -228,7 +228,7 @@ int strsub_memcmp (char *string, char *pat, int len)
         return res;
 }
 
-char *strsub (char *string, char *pat, char *rep, int global)
+char *r_str_sub(char *string, char *pat, char *rep, int global)
 {
         int patlen, templen, tempsize, repl, i;
         char *temp, *r;

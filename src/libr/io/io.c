@@ -28,6 +28,7 @@ u64 r_io_seek = 0; // XXX should be store per io_handle
 int r_io_init()
 {
 	r_io_map_init();
+	r_io_section_init();
 	r_io_handle_init();
 	return 0;
 }

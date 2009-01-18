@@ -22,7 +22,7 @@ static int r_config_callback_s(void *data)
 	if (!node->value || node->value[0]=='\0') {
 		free(*node->cb_ptr_s);
 		*node->cb_ptr_s = NULL;
-	} else *node->cb_ptr_s = estrdup(*node->cb_ptr_s, node->value);
+	} else *node->cb_ptr_s = r_str_dup(*node->cb_ptr_s, node->value);
 	return 1;
 }
 

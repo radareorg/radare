@@ -1,5 +1,5 @@
 OBJ=hello.o
 BIN=hello
-LIBS=../*.o
+LIBS=../*.o ../../line/*.a ../../util/*.a
 
 include ../../tests.mk

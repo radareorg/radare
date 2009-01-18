@@ -2,7 +2,7 @@
 PREFIX=/tmp/libr-install
 
 # Libraries
-LIBLIST=io hash line lib syscall socket cons
+LIBLIST=io util hash config cons line lib syscall socket cmd core
 
 
 # Under development

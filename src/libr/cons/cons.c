@@ -18,8 +18,10 @@
  *
  */
 
+#define HAVE_DIETLINE 1
 #include "r_types.h"
 #include "r_cons.h"
+#include "r_line.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -32,6 +34,11 @@
 #endif
 #if __WINDOWS__
 #include <windows.h>
+#endif
+
+#if HAVE_DIETLINE
+#include "r_line.h"
+#include "r_util.h"
 #endif
 
 // WTF //
@@ -727,13 +734,17 @@ int r_cons_fgets(char *buf, int len, int argc, const char **argv)
 	/* TODO: link against dietline if possible for autocompletion */
 	char *ptr;
 	buf[0]='\0';
-	ptr = dl_readline((argv)?argc:CMDS, (argv)?argv:radare_argv);
+	ptr = r_line_readline((argv)?argc:CMDS, (argv)?argv:radare_argv);
 	if (ptr == NULL)
 		return -1;
 	strncpy(buf, ptr, len);
 #else
+	int ret ;
 	buf[0]='\0';
-	fgets(buf, len, r_cons_stdin_fd);
+	ret = fgets(buf, len, r_cons_stdin_fd);
+	if (ret<0)
+		return -1;
+	buf[strlen(buf)-1]='\0';
 #endif
 	return strlen(buf);
 }
@@ -750,15 +761,15 @@ const char *r_cons_get_buffer()
 	return r_cons_buffer;
 }
 
-static inline void palloc(int moar)
+static void palloc(int moar)
 {
 	if (r_cons_buffer == NULL) {
-		r_cons_buffer_sz = moar+128;
+		r_cons_buffer_sz = moar+4096;
 		r_cons_buffer = (char *)malloc(r_cons_buffer_sz);
 		r_cons_buffer[0]='\0';
 	} else
 	if (moar + r_cons_buffer_len > r_cons_buffer_sz) {
-		r_cons_buffer_sz += moar+1024;
+		r_cons_buffer_sz += moar+4096;
 		r_cons_buffer = (char *)realloc(r_cons_buffer, r_cons_buffer_sz);
 	}
 }
@@ -831,7 +842,7 @@ void r_cons_flush()
 						char *ptr = strchr(buf, '\t');;
 						if (ptr) {
 							ptr[0]='\0'; ptr = ptr +1;
-							r_cons_buffer = (char *)strsub(r_cons_buffer, buf, ptr, 1);
+							r_cons_buffer = (char *)r_str_sub(r_cons_buffer, buf, ptr, 1);
 							r_cons_buffer_len = strlen(r_cons_buffer);
 						}
 					}

@@ -212,6 +212,7 @@ int r_io_section_overlaps(struct r_io_section_t *s)
 }
 
 // seek 
+// XXX : sections should be per-file ???
 u64 last_align = 0;
 u64 r_io_section_align(u64 addr, u64 vaddr, u64 paddr)
 {

@@ -412,7 +412,7 @@ char *r_line_readline(int argc, const char **argv)
 	r_cons_set_raw(1);
 
 	if (r_line_echo) {
-		puts (r_line_prompt);
+		printf("%s", r_line_prompt);
 		fflush(stdout);
 	}
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if 0
 /* XXX buggy gnu code */
 
 // FROM bash::stringlib
@@ -28,7 +29,7 @@ static int strsub_memcmp (char *string, char *pat, int len)
 	return res;
 }
 
-char *strsub (char *string, char *pat, char *rep, int global)
+const char *strsub (char *string, char *pat, char *rep, int global)
 {
 	int patlen, templen, tempsize, repl, i;
 	char *temp, *r;
@@ -55,3 +56,4 @@ char *strsub (char *string, char *pat, char *rep, int global)
 		temp[templen] = 0;
 	return (temp);
 }
+#endif

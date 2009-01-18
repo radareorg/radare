@@ -2,19 +2,13 @@
 
 #include <r_cmd.h>
 
-/* binary/byte tree storage for commands */
-#if 0
-  r_cmd_add(cmd, "s/", &seek_search);
-
-#endif
-
 int r_cmd_set_data(struct r_cmd_t *cmd, void *data)
 {
 	cmd->data = data;
 	return 0;
 }
 
-int r_cmd_add(struct r_cmd_t *cmd, const char *command, r_cmd_callback(callback))
+int r_cmd_add(struct r_cmd_t *cmd, const char *command, const char *description, r_cmd_callback(callback))
 {
 	struct r_cmd_item_t *item;
 	int idx = (u8)command[0];
@@ -25,6 +19,7 @@ int r_cmd_add(struct r_cmd_t *cmd, const char *command, r_cmd_callback(callback)
 		cmd->cmds[idx] = item;
 	}
 	strncpy(item->cmd, command, 63);
+	strncpy(item->desc, description, 127);
 	item->callback = callback;
 	return 0;
 }
@@ -49,16 +44,11 @@ int r_cmd_call(struct r_cmd_t *cmd, const char *input)
 
 int r_cmd_init(struct r_cmd_t *cmd)
 {
+	int i;
 	//INIT_LIST_HEAD(&cmd->cmds);
-	memset(&cmd->cmds, '\0', sizeof(struct list_head)*255);
+	for(i=0;i<255;i++) {
+		cmd->cmds[i] = NULL;
+	}
 	cmd->data = NULL;
 	return 0;
 }
-
-#if 0
-struct r_cmd_t cmds;
-
-r_cmd_init(&cmds);
-
-r_cmd_add(&cmds, 
-#endif

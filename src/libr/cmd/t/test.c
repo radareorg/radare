@@ -23,8 +23,8 @@ int main()
 
 	r_cmd_init(&cmd);
 
-	r_cmd_add(&cmd, "e", &cmd_echo);
-	r_cmd_add(&cmd, "q", &cmd_quit);
+	r_cmd_add(&cmd, "e", "echo message", &cmd_echo);
+	r_cmd_add(&cmd, "q", "quit program", &cmd_quit);
 
 	r_cmd_call(&cmd, "echo hello world");
 	r_cmd_call(&cmd, "quit");
