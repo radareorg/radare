@@ -721,7 +721,7 @@ int ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj) *bin, const char *name, u
 			printf("-> elf section (%s)\n", &string[shdrp->sh_name]);
 		}
 
-	/* rewrite program headers here */
+	/* rewrite program headers */
 	for (i = 0, phdrp = phdr; i < ehdr->e_phnum; i++, phdrp++)
 		if (phdrp->p_offset > rsz_offset) {
 			new_offset = (ELF_(Off)) (phdrp->p_offset + delta);
