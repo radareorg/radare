@@ -5,6 +5,8 @@
 int r_core_init(struct r_core_t *core)
 {
 	core->seek = 0;
+	core->blocksize = R_CORE_BLOCKSIZE;
+	core->block = (u8*)malloc(R_CORE_BLOCKSIZE);
 	r_core_config_init(core);
 	return 0;
 }

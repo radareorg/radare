@@ -7,6 +7,8 @@
 #define u32 unsigned long
 #define u16 unsigned short
 #define u8  unsigned char
+#define TRUE 1
+#define FALSE 0
 
 /* types */
 
@@ -17,7 +19,7 @@
 
 /* allocating */
 //#define eprintf(...) fprintf(stderr, ...)
-#define malloc_struct(x) (x*)malloc(sizeof(x))
+#define MALLOC_STRUCT(x) (x*)malloc(sizeof(x))
 
 /* operating system */
 

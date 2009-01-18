@@ -42,7 +42,7 @@ int r_io_handle_add(struct r_io_handle_t *plugin)
 {
 	int i;
 	struct io_list_t *li;
-	li = malloc_struct(struct io_list_t);
+	li = MALLOC_STRUCT(struct io_list_t);
 	if (li == NULL)
 		return -1;
 	li->plugin = plugin;

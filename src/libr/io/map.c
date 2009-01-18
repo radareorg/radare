@@ -82,7 +82,7 @@ int r_io_map(const char *file, u64 offset)
 	int fd = r_io_open(file, R_IO_READ, 0644);
 	if (fd == -1)
 		return -1;
-	im = malloc_struct(struct io_maps_t);
+	im = MALLOC_STRUCT(struct io_maps_t);
 //(struct io_maps_t*)malloc(sizeof(struct io_maps_t));
 	if (im == NULL) {
 		r_io_close(fd);

@@ -9,6 +9,7 @@
 
 #define CONS_BUFSZ 0x4f00
 #define STR_IS_NULL(x) (!x || !x[0])
+#define IS_PRINTABLE(x) (x>=' '&&x<='~')
 
 /* XXX */
 extern FILE *stdin_fd;

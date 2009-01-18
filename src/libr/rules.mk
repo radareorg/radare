@@ -1,6 +1,7 @@
 include ../config.mk
 
 CFLAGS+=-DUSE_RIO=${USE_RIO}
+CFLAGS+=${CFLAGS_APPEND}
 
 # Compiler
 CC?=gcc

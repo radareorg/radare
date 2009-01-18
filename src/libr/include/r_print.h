@@ -8,5 +8,6 @@
 
 void r_print_set_flags(int flags);
 void r_print_addr(u64 addr);
+void r_print_hexdump(u64 addr, u8 *buf, int len, int step, int columns, int header);
 
 #endif

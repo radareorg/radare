@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 /* stable code */
-static const char *nullstr="";
-static const char *nullstr_c="(null)";
+static const char *nullstr = "";
+static const char *nullstr_c = "(null)";
 
 int r_str_hash(const char *str)
 {
@@ -20,7 +20,6 @@ int r_str_hash(const char *str)
 	}
 	return h&0x7ffffff;
 }
-
 
 int r_str_delta(char *p, char a, char b)
 {

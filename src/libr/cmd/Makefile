@@ -1,5 +1,4 @@
 NAME=r_cmd
-
-OBJ=cmd.c
+OBJ=cmd.o
 
 include ../rules.mk

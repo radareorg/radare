@@ -1,5 +1,4 @@
 NAME=r_radare
-
-OBJ=radare.c
+OBJ=radare.o file.o
 
 include ../rules.mk
