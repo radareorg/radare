@@ -47,5 +47,4 @@ int r_str_re_match(const char *str, const char *reg);
 int r_str_re_replace(const char *str, const char *reg, const char *sub);
 char *r_str_sub(char *string, char *pat, char *rep, int global);
 
-
 #endif

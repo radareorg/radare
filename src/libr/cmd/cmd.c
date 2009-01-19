@@ -36,9 +36,14 @@ int r_cmd_call(struct r_cmd_t *cmd, const char *input)
 {
 	struct r_cmd_item_t *c;
 	int ret = -1;
-	c = cmd->cmds[(u8)input[0]];
-	if (c != NULL && c->callback!=NULL)
-		ret = c->callback(cmd->data, input+1);
+	if (input == NULL || input[0] == '\0') {
+		if (cmd->nullcallback != NULL)
+			cmd->nullcallback(cmd->data);
+	} else  {
+		c = cmd->cmds[(u8)input[0]];
+		if (c != NULL && c->callback!=NULL)
+			ret = c->callback(cmd->data, input+1);
+	}
 	return ret;
 }
 

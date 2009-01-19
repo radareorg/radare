@@ -25,7 +25,6 @@ extern int flag_space_idx2;
 #define flag_space_push() flag_space_idx2 = flag_space_idx;
 #define flag_space_pop() flag_space_idx = flag_space_idx2;
 void flag_init();
-void flag_list(char *arg);
 void flag_array_clear(const char *name);
 void flag_clear(const char *name);
 void flag_clear_by_addr(u64 addr);

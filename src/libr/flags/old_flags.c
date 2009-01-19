@@ -49,20 +49,6 @@ void flag_from(const char *str)
 		cons_printf("0x%08llx\n", flag_from_i);
 }
 
-void flag_init()
-{
-	INIT_LIST_HEAD(&flags);
-}
-
-const const char *flag_space_get(int idx)
-{
-	if (idx==-1)
-		return nullstr;
-	if (idx>255||flag_spaces[idx].name[0]=='\0')
-		return nullstr;
-	return flag_spaces[idx].name;
-}
-
 void flag_help()
 {
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
@@ -234,19 +220,6 @@ void flag_grep(const char *grepstr) // TODO: add u64 arg to grep only certain ad
 				flag_show(flag, cmd_flag);
 		}
 	}
-}
-
-flag_t *flag_get(const char *name)
-{
-	struct list_head *pos;
-	if (name==NULL || (name[0]>='0'&& name[0]<='9'))
-		return NULL;
-	list_for_each_prev(pos, &flags) {
-		flag_t *flag = list_entry(pos, flag_t, list);
-		if (!strcmp(name, flag->name))
-			return flag;
-	}
-	return NULL;
 }
 
 u64 flag_get_addr(const char *name)
@@ -708,28 +681,6 @@ int flag_qsort_compare(const void *a, const void *b)
 	return strcmp(b, a);
 }
 
-int flag_is_valid_char(const char ch)
-{
-	switch(ch) {
-	case '*':
-	case '/':
-	case '+':
-	case '-':
-	case ' ':
-	case '\n':
-	case '\t':
-	case '[':
-	case '@':
-		return 0;
-	default:
-		if (((ch >= '0') && (ch <= '9')))
-			return 1;
-		if (!is_printable(ch))
-			return 0;
-	}
-	return 1;
-}
-
 #define MAX_FLAG_LEN 20
 int flag_filter_name(char *name)
 {
@@ -750,16 +701,6 @@ int flag_filter_name(char *name)
 	return flag_is_valid_name(oname);
 }
 
-int flag_is_valid_name(const char *name)
-{
-	if (name[0]=='\0')
-		return 0;
-	for(;*name!='\0'; name = name +1) {
-		if (!flag_is_valid_char(*name))
-			return 0;
-	}
-	return 1;
-}
 
 int flag_set(const char *name, u64 addr, int dup)
 {

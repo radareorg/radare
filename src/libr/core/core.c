@@ -1,18 +1,34 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 #include "r_core.h"
+#include "r_flags.h"
+
+static u64 num_callback(void *userptr, const char *str, int *ok)
+{
+	struct r_core_t *core = userptr;
+	struct r_flag_item_t *flag = r_flag_get(&core->flags, str);
+	if (flag != NULL) {
+		*ok = 1;
+		return flag->offset;
+	}
+	*ok = 0;
+	return 0LL;
+}
 
 int r_core_init(struct r_core_t *core)
 {
+	core->num.callback = &num_callback;
+	core->num.userptr = &core;
+	r_io_init();
+	r_cons_init();
+	core->file = NULL;
+	INIT_LIST_HEAD(&core->files);
 	core->seek = 0LL;
 	core->blocksize = R_CORE_BLOCKSIZE;
-	INIT_LIST_HEAD(&core->files);
-	r_core_cmd_init(core);
-	r_cons_init();
-	r_io_init();
-	core->file = NULL;
 	core->block = (u8*)malloc(R_CORE_BLOCKSIZE);
+	r_core_cmd_init(core);
 	r_core_config_init(core);
+	r_flag_init(&core->flags);
 	return 0;
 }
 

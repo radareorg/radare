@@ -2,6 +2,7 @@
 #include "list.h"
 
 #define r_cmd_callback(x) int (*x)(void *data, const char *input)
+#define r_cmd_nullcallback(x) int (*x)(void *data);
 
 struct r_cmd_item_t {
 	char cmd[64];
@@ -11,9 +12,12 @@ struct r_cmd_item_t {
 
 struct r_cmd_t {
 	void *data;
+	r_cmd_nullcallback(callback);
 	struct r_cmd_item_t *cmds[255];
 };
 
+int r_cmd_init(struct r_cmd_t *cmd);
 int r_cmd_set_data(struct r_cmd_t *cmd, void *data);
 int r_cmd_add(struct r_cmd_t *cmd, const char *command, const char *desc, r_cmd_callback(callback));
 int r_cmd_del(struct r_cmd_t *cmd, const char *command);
+int r_cmd_call(struct r_cmd_t *cmd, const char *command);

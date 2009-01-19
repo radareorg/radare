@@ -1,5 +1,5 @@
 NAME=r_flags
 
-OBJ=flags.o
+OBJ=flags.o name.o
 
 include ../rules.mk

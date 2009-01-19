@@ -90,3 +90,11 @@ void r_print_hexdump(u64 addr, u8 *buf, int len, int step, int columns, int head
 		addr+=inc;
 	}
 }
+
+void r_print_bytes(const u8* buf, int len, const char *fmt)
+{
+	int i;
+	for(i=0;i<len;i++)
+		r_cons_printf(fmt, buf[i]);
+	r_cons_newline();
+}

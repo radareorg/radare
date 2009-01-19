@@ -7,6 +7,7 @@ LIBS=../*.o \
   ../../io/*.a \
   ../../cmd/*.a \
   ../../util/*.a \
-  ../../print/*.a
+  ../../print/*.a \
+  ../../flags/*.a
 
 include ../../tests.mk
