@@ -12,7 +12,7 @@ struct r_cmd_item_t {
 
 struct r_cmd_t {
 	void *data;
-	r_cmd_nullcallback(callback);
+	r_cmd_nullcallback(nullcallback);
 	struct r_cmd_item_t *cmds[255];
 };
 
