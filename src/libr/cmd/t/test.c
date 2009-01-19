@@ -14,7 +14,6 @@ int cmd_echo(void *data, const char *input)
 	if (arg == NULL)
 		arg = input;
 	printf("%s\n", arg+1);
-	exit(1);
 }
 
 int main()
@@ -26,6 +25,11 @@ int main()
 	r_cmd_add(&cmd, "e", "echo message", &cmd_echo);
 	r_cmd_add(&cmd, "q", "quit program", &cmd_quit);
 
-	r_cmd_call(&cmd, "echo hello world");
+	r_cmd_add_long(&cmd, "echo", "e", "echo message");
+	r_cmd_add_long(&cmd, "exit", "q", "quit program");
+
+	r_cmd_call(&cmd, "e hello world short");
+	r_cmd_call_long(&cmd, "echo hello world long");
+	r_cmd_call_long(&cmd, "exit");
 	r_cmd_call(&cmd, "quit");
 }

@@ -32,7 +32,7 @@ ${LIBAR}:
 	${CC_AR} ${OBJ}
 
 clean:
-	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN} *.so a.out
+	-rm -f ${LIBSO} ${LIBAR} ${OBJ} ${BIN} *.so a.out *.a
 	@if [ -e t/Makefile ]; then (cd t && ${MAKE} clean) ; else true ; fi
 
 .PHONY: all clean ${LIBSO} ${LIBAR}

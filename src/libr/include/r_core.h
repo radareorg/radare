@@ -49,4 +49,5 @@ int r_core_visual(struct r_core_t *core);
 
 struct r_core_file_t *r_core_file_open(struct r_core_t *r, const char *file, int mode);
 
+
 #endif

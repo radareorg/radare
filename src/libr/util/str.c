@@ -127,13 +127,24 @@ char *r_str_clean(char *str)
 }
 
 /* memccmp("foo.bar", "foo.cow, '.') == 0 */
-int r_str_ccmp(char *dst, char *orig, int ch)
+int r_str_ccmp(const char *dst, const char *orig, int ch)
 {
         int i;
         for(i=0;orig[i] && orig[i] != ch; i++)
                 if (dst[i] != orig[i])
                         return 1;
         return 0;
+}
+
+int r_str_cmp(const char *a, const char *b, int len)
+{
+	for(;len--;) {
+		if (*a=='\0'||*b=='\0'||*a!=*b)
+			return 1;
+		a=a+1;
+		b=b+1;
+	}
+	return 0;
 }
 
 int r_str_ccpy(char *dst, char *orig, int ch)

@@ -88,6 +88,7 @@ int r_io_write(int fd, const u8 *buf, int len)
 
 u64 r_io_lseek(int fd, u64 offset, int whence)
 {
+	int posix_whence = 0;
 	if (whence == SEEK_SET)
 		offset = r_io_section_align(offset, 0, 0);
 
@@ -95,12 +96,15 @@ u64 r_io_lseek(int fd, u64 offset, int whence)
 	switch(whence) {
 	case R_IO_SEEK_SET:
 		r_io_seek = offset;
+		posix_whence = SEEK_SET;
 		break;
 	case R_IO_SEEK_CUR:
 		r_io_seek += offset;
+		posix_whence = SEEK_CUR;
 		break;
 	case R_IO_SEEK_END:
 		r_io_seek = 0xffffffff;
+		posix_whence = SEEK_END;
 		break;
 	}
 
@@ -111,7 +115,7 @@ u64 r_io_lseek(int fd, u64 offset, int whence)
 		return plugin->lseek(fd, offset, whence);
 	}
 	// XXX can be problematic on w32..so no 64 bit offset?
-	return lseek(fd, offset, whence);
+	return lseek(fd, offset, posix_whence);
 }
 
 u64 r_io_size(int fd)

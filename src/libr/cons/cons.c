@@ -255,7 +255,9 @@ int r_cons_palette_set(const char *key, const char *value)
 int r_cons_init()
 {
 	r_cons_stdin_fd = stdin;
+#if HAVE_DIETLINE
 	r_line_init();
+#endif
 	//r_cons_palette_init(NULL);
 	return 0;
 }

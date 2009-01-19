@@ -60,4 +60,7 @@ int r_io_map_read_at(u64 off, u8 *buf, u64 len);
 int r_io_map_read_rest(u64 off, u8 *buf, u64 len);
 int r_io_map_write_at(u64 off, const u8 *buf, u64 len);
 
+/* io/section.c */
+u64 r_io_section_align(u64 addr, u64 vaddr, u64 paddr);
+
 #endif

@@ -10,9 +10,18 @@ struct r_cmd_item_t {
 	r_cmd_callback(callback);
 };
 
+struct r_cmd_long_item_t {
+	char cmd[64]; /* long command */
+	int cmd_len;
+	char cmd_short[32]; /* short command */
+	char desc[128];
+	struct list_head list;
+};
+
 struct r_cmd_t {
 	void *data;
 	r_cmd_nullcallback(nullcallback);
+	struct list_head lcmds;
 	struct r_cmd_item_t *cmds[255];
 };
 

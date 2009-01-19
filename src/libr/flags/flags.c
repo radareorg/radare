@@ -37,7 +37,7 @@ const const char *r_flag_space_get(struct r_flag_t *f, int idx)
 struct r_flag_item_t *r_flag_get(struct r_flag_t *f, const char *name)
 {
 	struct list_head *pos;
-	if (name==NULL || (name[0]>='0'&& name[0]<='9'))
+	if (name==NULL || name[0]=='\0' || (name[0]>='0'&& name[0]<='9'))
 		return NULL;
 	list_for_each_prev(pos, &f->flags) {
 		struct r_flag_item_t *flag = list_entry(pos, struct r_flag_item_t, list);

@@ -21,10 +21,10 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	{
-		char *str = r_core_cmd_str(&r, "p8 4 @ 0x1");
+	if (0) {
+		const char *str = r_core_cmd_str(&r, "p8 4 @ 0x1");
 		printf("==(%s)==\n", str);
-		free(str);
+		free((void *)str);
 	}
 
 	while(r_core_prompt(&r) != -1);

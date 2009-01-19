@@ -19,8 +19,8 @@ int r_core_init(struct r_core_t *core)
 {
 	core->num.callback = &num_callback;
 	core->num.userptr = &core;
-	r_io_init();
 	r_cons_init();
+	r_io_init();
 	core->file = NULL;
 	INIT_LIST_HEAD(&core->files);
 	core->seek = 0LL;
@@ -64,13 +64,17 @@ int r_core_block_size(struct r_core_t *core, u32 bsize)
 
 int r_core_block_read(struct r_core_t *core, int next)
 {
-	r_io_lseek(core->file->fd, core->seek+(next)?core->blocksize:0, R_IO_SEEK_SET);
+	r_io_lseek(core->file->fd, core->seek+((next)?core->blocksize:0), R_IO_SEEK_SET);
 	return r_io_read(core->file->fd, core->block, core->blocksize);
 }
 
 int r_core_seek(struct r_core_t *core, u64 addr)
 {
+	u64 tmp = core->seek;
+	int ret;
 	core->seek = addr;
-	r_io_lseek(core->file->fd, addr, R_IO_SEEK_SET);
-	return r_core_block_read(core, 0);
+	ret = r_core_block_read(core, 0);
+	if (ret == -1)
+		core->seek = tmp;
+	return ret;
 }
