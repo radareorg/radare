@@ -52,7 +52,7 @@ static int r_bin_init(r_bin_obj *bin)
 	return -1;
 }
 
-int r_bin_open(r_bin_obj *bin, char *file, int rw)
+int r_bin_open(r_bin_obj *bin, const char *file, int rw)
 {
 	int fd;
 

@@ -1,4 +1,4 @@
-all: baddr entry info sections symbols imports scn_resize data_resize
+all: baddr entry info sections symbols imports scn_resize data_resize rabin2
 
 baddr:
 	${CC} -g -I ../../include baddr.c ../*.o -o baddr
@@ -16,6 +16,8 @@ scn_resize:
 	${CC} -g -I ../../include scn_resize.c ../*.o -o scn_resize
 data_resize:
 	${CC} -g -I ../../include data_resize.c ../*.o -o data_resize
+rabin2:
+	${CC} -g -I ../../include rabin2.c ../*.o -o rabin2
 
 clean:
-	rm -f baddr entry info sections symbols imports scn_resize data_resize
+	rm -f baddr entry info sections symbols imports scn_resize data_resize rabin2

@@ -30,7 +30,7 @@ typedef struct {
 		r_bin_pe_obj pe;
 	} object;
 	u32 format;
-	char *file;
+	const char *file;
 	int fd;
 } r_bin_obj;
 
@@ -84,7 +84,7 @@ typedef struct {
 } r_bin_info;
 
 /* bin/r_bin.c */
-int r_bin_open(r_bin_obj *bin, char *file, int rw);
+int r_bin_open(r_bin_obj *bin, const char *file, int rw);
 int r_bin_close(r_bin_obj *bin);
 u64 r_bin_get_baddr(r_bin_obj *bin);
 r_bin_entry* r_bin_get_entry(r_bin_obj *bin);
