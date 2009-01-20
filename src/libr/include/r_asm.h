@@ -48,4 +48,7 @@ u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 
 /* arch/x86/asm.c */
 u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len);
+
+/* arch/arm/asm.c */
+u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 #endif

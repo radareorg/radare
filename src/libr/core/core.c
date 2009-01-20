@@ -2,7 +2,6 @@
 
 #include "r_core.h"
 #include "r_flags.h"
-#include "r_macro.h"
 
 static u64 num_callback(void *userptr, const char *str, int *ok)
 {

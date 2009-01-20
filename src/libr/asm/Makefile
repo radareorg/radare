@@ -1,5 +1,5 @@
 NAME=r_asm
-OBJ=asm.o arch/x86/asm.o
+OBJ=asm.o arch/x86/asm.o arch/arm/asm.o
 
 # udis86
 OBJ+=arch/x86/udis86/syn.o
@@ -16,5 +16,7 @@ OBJ+=arch/x86/ollyasm/disasm.o
 OBJ+=arch/x86/ollyasm/asmserv.o
 OBJ+=arch/x86/ollyasm/assembl.o
 
+# gnu arm-dis
+OBJ+=arch/arm/gnu/arm-dis.o
 
 include ../rules.mk

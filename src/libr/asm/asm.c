@@ -1,4 +1,4 @@
-/* radare - LGPL - Copyright 2007-2009 nibble.ds<gmail> */
+/* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +39,8 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 		a->r_asm_disasm = &r_asm_x86_disasm;
 		break;
 	case R_ASM_ARCH_ARM:
+		a->r_asm_disasm = &r_asm_arm_disasm;
+		break;
 	case R_ASM_ARCH_PPC:
 	case R_ASM_ARCH_M68K:
 	case R_ASM_ARCH_JAVA:

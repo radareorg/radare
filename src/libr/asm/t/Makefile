@@ -1,7 +1,10 @@
-all: test
+all: test_x86 test_arm
 
-test:
-	${CC} -g -I ../../include test.c ../libr_asm.a -o test
+test_x86:
+	${CC} -g -I ../../include test_x86.c ../libr_asm.a -o test_x86
+
+test_arm:
+	${CC} -g -I ../../include test_arm.c ../libr_asm.a -o test_arm
 
 clean:
-	rm -f test
+	rm -f test_x86 test_arm

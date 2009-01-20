@@ -12,12 +12,12 @@
 int main()
 {
 	struct r_asm_t a;
-	u8 *buf = "\x74\x31\x74\x31\x74\x31";
-	u32 idx = 0, ret = 0, len = 6;
+	u8 *buf = "\x7c\x20\xa0\xe3";
+	u32 idx = 0, ret = 0, len = 4;
 
 	r_asm_init(&a);
-	r_asm_set_syntax(&a, R_ASM_SYN_PSEUDO);
-	r_asm_set_pc(&a, 0x8048000);
+	r_asm_set_arch(&a, R_ASM_ARCH_ARM);
+	r_asm_set_pc(&a, 0x000089d8);
 	while (idx < len) {
 		r_asm_set_pc(&a, a.pc + ret);
 		ret = r_asm_disasm(&a, buf+idx, len-idx);
