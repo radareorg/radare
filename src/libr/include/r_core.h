@@ -7,6 +7,7 @@
 #include "r_cons.h"
 #include "r_line.h"
 #include "r_print.h"
+#include "r_macro.h"
 #include "r_flags.h"
 #include "r_config.h"
 
@@ -34,6 +35,7 @@ struct r_core_t {
 	struct r_cmd_t cmd;
 	struct r_flag_t flags;
 	struct r_config_t config;
+	struct r_macro_t macro;
 };
 
 int r_core_init(struct r_core_t *core);

@@ -20,6 +20,7 @@ int r_core_init(struct r_core_t *core)
 	core->num.callback = &num_callback;
 	core->num.userptr = core;
 	r_cons_init();
+	r_macro_init(&core->macro);
 	r_io_init();
 	core->file = NULL;
 	INIT_LIST_HEAD(&core->files);

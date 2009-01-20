@@ -28,6 +28,25 @@ static int cmd_quit(void *data, const char *input)
 	return 0;
 }
 
+static int cmd_interpret(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
+	switch(input[1]) {
+	case ' ':
+		/* interpret file */
+		break;
+	case '!':
+		/* from command */
+		break;
+	case '(':
+		/* macro */
+		break;
+	case '?':
+		break;
+	}
+	return 0;
+}
+
 static int cmd_seek(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
@@ -190,7 +209,7 @@ static int cmd_print(void *data, const char *input)
 			for(idx=ret=0; idx < len; idx+=ret) {
 				r_asm_set_pc(&a, a.pc + ret);
 				ret = r_asm_disasm(&a, buf+idx, len-idx);
-				r_cons_printf("0x%08llx  %12s  %s\n", core->seek+idx, a.buf_hex, a.buf_asm);
+				r_cons_printf("0x%08llx  %14s  %s\n", core->seek+idx, a.buf_hex, a.buf_asm);
 			}
 		}
 		break;
@@ -420,6 +439,8 @@ int r_core_cmd_init(struct r_core_t *core)
 	r_cmd_add(&core->cmd, "!",     "run system command", &cmd_system);
 	r_cmd_add(&core->cmd, "#",     "calculate hash", &cmd_hash);
 	r_cmd_add(&core->cmd, "?",     "help message", &cmd_help);
+	r_cmd_add(&core->cmd, ".",     "interpret", &cmd_interpret);
+	r_cmd_add(&core->cmd, "(",     "macro", &cmd_macro);
 	r_cmd_add(&core->cmd, "quit",  "exit program session", &cmd_quit);
 
 	return 0;
