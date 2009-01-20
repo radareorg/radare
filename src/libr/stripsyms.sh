@@ -2,10 +2,13 @@
 [ -z "$2" ] && exit 0
 FILE=$1
 PFX=$2
-nm --defined-only -B ${FILE} | grep -v ${PFX}_ | awk '{print $3}' > /tmp/list
+LIST=`mktemp /tmp/$FILE.XXXX`
+
+nm --defined-only -B ${FILE} | grep -v ${PFX}_ | awk '{print $3}' > ${LIST}
 #if [ -n "`cat /tmp/list`" ]; then
 echo "=> Stripping unnecessary symbols for ${FILE}..."
-objcopy --strip-symbols /tmp/list ${FILE}
+objcopy --strip-symbols ${LIST} ${FILE}
 strip -s ${FILE}
-rm /tmp/list
 #fi
+
+rm -f ${LIST}

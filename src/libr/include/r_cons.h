@@ -60,7 +60,7 @@ int  r_cons_init();
 void r_cons_reset();
 void r_cons_clear();
 void r_cons_clear00();
-void r_cons_stdout_open(const char *file);
+void r_cons_stdout_open(const char *file, int append);
 int  r_cons_stdout_set_fd(int fd);
 void r_cons_gotoxy(int x, int y);
 void r_cons_set_raw(int b);

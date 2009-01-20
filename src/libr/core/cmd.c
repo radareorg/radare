@@ -34,14 +34,21 @@ static int cmd_interpret(void *data, const char *input)
 	switch(input[1]) {
 	case ' ':
 		/* interpret file */
+		r_core_cmd_file(core, input+1);
 		break;
 	case '!':
 		/* from command */
+		fprintf(stderr, "TODO\n");
 		break;
 	case '(':
-		/* macro */
+		r_macro_call(&core->macro, input+1);
 		break;
 	case '?':
+		fprintf(stderr,
+		"Usage: . [file] | [!command] | [(macro)]\n"
+		" . foo.rs          ; interpret radare script\n"
+		" .!rabin -ri $FILE ; interpret output of command\n"
+		" .(foo 1 2 3)      ; run macro 'foo' with args 1, 2, 3\n");
 		break;
 	}
 	return 0;
@@ -213,6 +220,9 @@ static int cmd_print(void *data, const char *input)
 			}
 		}
 		break;
+	case 'r':
+		r_print_raw(core->block, len);
+		break;
 	case 'x':
         	r_print_hexdump(core->seek, core->block, len, 1, 78, !(input[1]=='-'));
 		break;
@@ -320,7 +330,7 @@ static int cmd_macro(void *data, const char *input)
 	return 0;
 }
 
-int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *times)
+int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd, int *times)
 {
 	char *ptr, *ptr2, *str;
 	int i, len = strlen(cmd);
@@ -343,6 +353,22 @@ int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *times)
 	ptr = strchr(cmd, ';');
 	if (ptr)
 		ptr[0]='\0';
+	ptr = strchr(cmd, '>');
+	if (ptr) {
+		int perm = O_RDWR | O_CREAT;
+		ptr[0] = '\0';
+		if (ptr[1]=='>') perm |= O_APPEND;
+		for(str=ptr+1;str[0]== ' ';str=str+1);
+		// XXX : use r_cons_stdout_open here
+		*rfd = open(str, perm, 0644);
+		if (*rfd == -1) {
+			fprintf(stderr, "Cannot create file '%s'\n", str);
+			return 0;
+		}
+fprintf(stderr, "NEW FD: %d\n", *rfd);
+		dup2(9999, 1);
+		r_cons_stdout_set_fd(*rfd);
+	}
 	ptr = strchr(cmd, '@');
 	if (ptr) {
 		ptr[0]='\0';
@@ -378,6 +404,7 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 	char *cmd;
 	int ret = -1;
 	int times = 1;
+	int newfd = 1;
 	
 	u64 tmpseek = core->seek;
 	int restoreseek = 0;
@@ -389,10 +416,11 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 		cmd = alloca(len)+1024;
 		memcpy(cmd, command, len);
 
-		ret = r_core_cmd_subst(core, cmd, &restoreseek, &times);
+		ret = r_core_cmd_subst(core, cmd, &restoreseek, &newfd, &times);
 		if (ret == -1) {
 			fprintf(stderr, "Invalid conversion: %s\n", command);
-			return -1;
+			ret = -1;
+			goto __end;
 		}
 	}
 	
@@ -407,15 +435,42 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 		ret = 1;
 	} else
 	if (log) r_line_hist_add(command);
-	if (restoreseek)
+	if (restoreseek) {
 		r_core_seek(core, tmpseek);
+	}
+
+	__end:
+	if (newfd != 1) {
+		fprintf(stderr, "restore fd\n");
+		r_cons_stdout_close(newfd);
+		dup2(1, 9999);
+	}
 
 	return ret;
 }
 
+int r_core_cmd_file(struct r_core_t *core, const char *file)
+{
+	char buf[1024];
+	FILE *fd = fopen(file, "r");
+	if (fd == NULL)
+		return -1;
+	while (!feof(fd)) {
+		if (fgets(buf, 1023, fd) != NULL) {
+			buf[strlen(buf)-1]='\0';
+			if (r_core_cmd(core, buf, 0) == -1) {
+				fprintf(stderr, "Error running command '%s'\n", buf);
+				break;
+			}
+		}
+	}
+	fclose(fd);
+	return 0;
+}
+
 int r_core_cmd0(void *user, const char *cmd)
 {
-	r_core_cmd((struct r_core_t *)user, cmd, 0);
+	return r_core_cmd((struct r_core_t *)user, cmd, 0);
 }
 
 const char *r_core_cmd_str(struct r_core_t *core, const char *cmd)

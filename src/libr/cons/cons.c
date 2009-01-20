@@ -59,10 +59,13 @@ static const char *nullstr = "";
 static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;
 
-// XXX rename to r_cons_stdout_open
-void r_cons_stdout_open(const char *file)
+void r_cons_stdout_open(const char *file, int append)
 {
-	int fd = open(file, O_RDONLY);
+	int fd;
+	if (r_cons_stdout_fd != 1) // XXX nested stdout dupping not supported
+		return;
+
+	fd = open(file, O_RDWR | O_CREAT | (append?O_CREAT:0), 0644);
 	if (fd==-1)
 		return;
 	r_cons_stdout_fd = fd;
@@ -76,10 +79,11 @@ int r_cons_eof()
 	return feof(r_cons_stdin_fd);
 }
 
-void stdout_close()
+void r_cons_stdout_close(int fd)
 {
-	dup2(r_cons_stdout_fd, 1);
-	//close(stdout_file);
+	if (fd != -1)
+		close(fd);
+	dup2(fd, 1);
 }
 
 const char *r_cons_palette_default = "7624 6646 2378 6824 3623";
@@ -1051,15 +1055,18 @@ void r_cons_printf(const char *format, ...)
 	va_end(ap);
 }
 
+void r_cons_memcat(const char *str, int len)
+{
+	palloc(len);
+	memcpy(r_cons_buffer+r_cons_buffer_len, str, len+1);
+	r_cons_buffer_len += len;
+}
+
 void r_cons_strcat(const char *str)
 {
 	int len = strlen(str);
-	if (len>0) {
-		palloc(len);
-	//	r_cons_lines += r_cons_lines_count(str);
-		memcpy(r_cons_buffer+r_cons_buffer_len, str, len+1);
-		r_cons_buffer_len += len;
-	}
+	if (len>0)
+		r_cons_memcat(str, len);
 }
 
 void r_cons_newline()
