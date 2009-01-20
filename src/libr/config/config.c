@@ -18,7 +18,7 @@ struct r_config_node_t* r_config_node_new(const char *name, const char *value)
 	return node;
 }
 
-void r_config_list(struct r_config_t *cfg, const char *str)
+void r_config_list(struct r_config_t *cfg, const char *str, int rad)
 {
 	struct list_head *i;
 	int len = 0;
@@ -31,9 +31,14 @@ void r_config_list(struct r_config_t *cfg, const char *str)
 	list_for_each(i, &(cfg->nodes)) {
 		struct r_config_node_t *bt = list_entry(i, struct r_config_node_t, list);
 		if (str) {
-			if (strncmp(str, bt->name,len) == 0)
+			if (strncmp(str, bt->name,len) == 0) {
+				if (rad) cfg->printf("f ");
 				cfg->printf("%s = %s\n", bt->name, bt->value);
-		} else cfg->printf("%s = %s\n", bt->name, bt->value);
+			}
+		} else {
+			if (rad) cfg->printf("f ");
+			cfg->printf("%s = %s\n", bt->name, bt->value);
+		}
 	}
 }
 
@@ -122,7 +127,7 @@ struct r_config_node_t *r_config_set(struct r_config_t *cfg, const char *name, c
 		}
 	} else {
 		if (cfg->lock) {
-			eprintf("(config-locked: '%s' no new keys can be created)\n", name);
+			fprintf(stderr, "config is locked: cannot create '%s'\n", name);
 		} else {
 			node = r_config_node_new(name, value);
 			if (value && (!strcmp(value,"true")||!strcmp(value,"false"))) {
@@ -130,12 +135,12 @@ struct r_config_node_t *r_config_set(struct r_config_t *cfg, const char *name, c
 				node->i_value = (!strcmp(value,"true"))?1:0;
 			}
 			list_add_tail(&(node->list), &(cfg->nodes));
+			cfg->n_nodes++;
 		}
 	}
 
 	if (node && node->callback)
 		node->callback(node);
-
 	return node;
 }
 
@@ -145,6 +150,7 @@ int r_config_rm(struct r_config_t *cfg, const char *name)
 		r_config_node_get(cfg, name);
 	if (node) {
 		list_del(&(node->list));
+		cfg->n_nodes--;
 		return 1;
 	}
 	return 0;
@@ -177,6 +183,7 @@ struct r_config_node_t *r_config_set_i(struct r_config_t *cfg, const char *name,
 			node->flags = CN_RW | CN_OFFT;
 			node->i_value = i;
 			list_add_tail(&(node->list), &(cfg->nodes));
+			cfg->n_nodes++;
 		}
 	}
 
@@ -204,7 +211,7 @@ int r_config_eval(struct r_config_t *cfg, const char *str)
 		return 0;
 
 	if (str[0]=='\0'||!strcmp(str, "help")) {
-		r_config_list(cfg, NULL);
+		r_config_list(cfg, NULL, 0);
 		return 0;
 	}
 
@@ -224,13 +231,13 @@ int r_config_eval(struct r_config_t *cfg, const char *str)
 		char *foo = r_str_clean(name);
 		if (foo[strlen(foo)-1]=='.') {
 			/* list */
-			r_config_list(cfg, name);
+			r_config_list(cfg, name, 0);
 			return 0;
 		} else {
 			/* get */
 			const char * str = r_config_get(cfg, foo);
 			if (cfg->last_notfound)
-				r_config_list(cfg, name);
+				r_config_list(cfg, name, 0);
 			else cfg->printf("%s\n", (((int)str)==1)?"true":(str==0)?"false":str);
 		}
 	}

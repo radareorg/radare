@@ -4,7 +4,8 @@
 
 int r_core_config_init(struct r_core_t *core)
 {
-	r_config_init(&core->config);
+	struct r_config_t *cfg = &core->config;
+	r_config_init(cfg);
 	//r_config_callback_int("");
 	
 #if 0
@@ -74,12 +75,14 @@ int r_core_config_init(struct r_core_t *core)
 	config_set("cmd.hit", "");
 	config_set("cmd.visualbind", "");
 	config_set("cmd.touchtrace", "");
-	config_set("cmd.prompt", "");
-	config_set("cmd.vprompt", "p%");
-	config_set("cmd.vprompt2", "CFV");
-	config_set("cmd.vprompt3", "");
-	config_set("cmd.bp", "");
+#endif
+	r_config_set(cfg, "cmd.prompt", "");
+	r_config_set(cfg, "cmd.vprompt", "p%");
+	r_config_set(cfg, "cmd.vprompt2", "CFV");
+	r_config_set(cfg, "cmd.vprompt3", "");
+	r_config_set(cfg, "cmd.bp", "");
 
+#if 0
 	config_set_i("search.from", 0);
 	config_set_i("search.to", 0);
 	config_set_i("search.align", 0);

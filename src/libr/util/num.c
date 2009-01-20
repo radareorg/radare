@@ -23,19 +23,18 @@ u64 htonq(u64 value) {
         return ret;
 }
 
-int r_num_init(struct r_num_t *num)
+void r_num_init(struct r_num_t *num)
 {
 	num->callback = NULL;
 	num->userptr = NULL;
-	return 0;
+	num->value = 0LL;
 }
 
 struct r_num_t *r_num_new(u64 (*cb)(void*,const char *,int*), void *ptr)
 {
 	struct r_num_t *num;
 	num = (struct r_num_t*) malloc(sizeof(struct r_num_t));
-	num->callback = cb;
-	num->userptr = ptr;
+	r_num_init(num);
 	return num;
 }
 
@@ -46,12 +45,12 @@ u64 r_num_get(struct r_num_t *num, const char *str)
 	char lch;
 	u64 ret = 0LL;
 
-	for(i=0;str[i]==' ';i++);
+	for(;str[0]==' ';) str = str+1;
 
 	/* resolve string with an external callback */
 	if (num && num->callback) {
 		int ok;
-		ret = num->callback(num->userptr, str+i, &ok);
+		ret = num->callback(num->userptr, str, &ok);
 		if (ok) return ret;
 	}
 
@@ -90,6 +89,9 @@ u64 r_num_get(struct r_num_t *num, const char *str)
 			break;
 		}
 	}
+
+	if (num != NULL)
+		num->value = ret;
 
 	return ret;
 }
@@ -178,10 +180,13 @@ u64 r_num_math(struct r_num_t *num, const char *str)
 					ret = r_num_op(op, ret, r_num_math(num, p2+1));
 					p =p2+1; 
 					continue;
-				} else printf("WTF!\n");
+				} else fprintf(stderr, "WTF!\n");
 			} else ret = r_num_op(op, ret, r_num_math_internal(num, p));
 		} else ret = r_num_op(op, ret, r_num_math_internal(num, p));
 	} while(0);
+
+	if (num != NULL)
+		num->value = ret;
 
 	return ret;
 }

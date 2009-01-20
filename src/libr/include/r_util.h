@@ -3,16 +3,27 @@
 
 #include "r_types.h"
 
+/* limits */
+#define U64_MAX 0xFFFFFFFFFFFFFFFFLL
+#define U64_GT0 0x8000000000000000LL
+#define U64_LT0 0x7FFFFFFFFFFFFFFFLL
+#define U64_MIN 0LL
+#define U32_MIN 0
+#define U32_GT0 0x80000000
+#define U32_LT0 0x7FFFFFFF
+#define U32_MAX 0xFFFFFFFF
+
 /* numbers */
 struct r_num_t {
 	u64 (*callback)(void *userptr, const char *str, int *ok);
+	u64 value;
 	void *userptr;
 };
 
 u64 r_num_math(struct r_num_t *num, const char *str);
 u64 r_num_get(struct r_num_t *num, const char *str);
 struct r_num_t *r_num_new(u64 (*cb)(void*,const char *,int*), void *ptr);
-int r_num_init(struct r_num_t *num);
+void r_num_init(struct r_num_t *num);
 
 /* strings */
 

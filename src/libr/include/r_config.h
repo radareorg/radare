@@ -30,6 +30,7 @@ struct r_config_t {
 	int last_notfound;
 	int n_nodes;
 	void (*printf)(const char *str, ...);
+	struct list_head *iter;
 	struct list_head nodes;
 };
 
@@ -45,7 +46,7 @@ int r_config_rm(O, const char *name);
 struct r_config_node_t *r_config_set(O, const char *name, const char *value);
 u64 r_config_get_i(O, const char *name);
 const char *r_config_get(O, const char *name);
-void r_config_list(O, const char *str);
+void r_config_list(O, const char *str, int rad);
 struct r_config_node_t *r_config_node_get(O, const char *name);
 struct r_config_node_t *r_config_node_new(const char *name, const char *value);
 
