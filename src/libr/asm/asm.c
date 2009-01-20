@@ -13,7 +13,7 @@
 int r_asm_init(struct r_asm_t *a)
 {
 	r_asm_set_arch(a, R_ASM_ARCH_X86);
-	r_asm_set_mode(a, R_ASM_MODE_32);
+	r_asm_set_bits(a, 32);
 	r_asm_set_big_endian(a, 0);
 	r_asm_set_syntax(a, R_ASM_SYN_INTEL);
 	r_asm_set_pc(a, 0);
@@ -57,7 +57,7 @@ int r_asm_set_bits(struct r_asm_t *a, u32 bits)
 	case 16:
 	case 32:
 	case 64:
-		a->mode = mode;
+		a->bits = bits;
 		return 1;
 	default:
 		return -1;

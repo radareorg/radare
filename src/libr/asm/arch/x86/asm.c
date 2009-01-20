@@ -28,7 +28,7 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 		ud_init(&disasm_obj.ud);
 		ud_set_syntax(&disasm_obj.ud,
 				a->syntax == R_ASM_SYN_INTEL ? UD_SYN_INTEL : UD_SYN_ATT);
-		ud_set_mode(&disasm_obj.ud, a->mode);
+		ud_set_mode(&disasm_obj.ud, a->bits);
 		ud_set_pc(&disasm_obj.ud, a->pc);
 		ud_set_input_buffer(&disasm_obj.ud, buf, len);
 		ud_disassemble(&disasm_obj.ud);

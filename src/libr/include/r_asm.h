@@ -26,7 +26,7 @@ enum {
 
 struct r_asm_t {
 	u32 arch;
-	u32 mode;
+	u32 bits;
 	u32 big_endian;
 	u32 syntax;
 	u64 pc;
