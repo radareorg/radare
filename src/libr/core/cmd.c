@@ -4,6 +4,8 @@
 #include "r_flags.h"
 #include "r_asm.h"
 
+static int cmd_print(void *data, const char *input);
+
 static int cmd_quit(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
@@ -179,14 +181,15 @@ static int cmd_print(void *data, const char *input)
 	case 'd':
 		{
 			/* XXX hardcoded */
-			int ret, idx = 0; 
+			int ret, idx; 
 			char *buf = core->block;
 			struct r_asm_t a;// TODO: move to core.h
 			r_asm_init(&a);
 			r_asm_set_pc(&a, core->seek);
 			
-			for(idx=0; idx < len; idx+=ret) {
-				ret = r_asm_disasm_buf(&a, buf+idx, len-idx);
+			for(idx=ret=0; idx < len; idx+=ret) {
+				r_asm_set_pc(&a, a.pc + ret);
+				ret = r_asm_disasm(&a, buf+idx, len-idx);
 				r_cons_printf("0x%08llx  %12s  %s\n", core->seek+idx, a.buf_hex, a.buf_asm);
 			}
 		}

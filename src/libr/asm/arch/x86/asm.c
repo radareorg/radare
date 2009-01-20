@@ -14,7 +14,7 @@
 #include "ollyasm/disasm.h"
 
 
-u32 r_asm_x86_disasm_buf(struct r_asm_t *a, u8 *buf, u32 len)
+u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	union {
 		ud_t     ud;
