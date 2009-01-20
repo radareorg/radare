@@ -9,6 +9,7 @@ OBJ+=arch/x86/udis86/decode.o
 OBJ+=arch/x86/udis86/syn-att.o
 OBJ+=arch/x86/udis86/itab.o
 OBJ+=arch/x86/udis86/syn-intel.o
+OBJ+=arch/x86/udis86/syn-pseudo.o
 
 # olly
 OBJ+=arch/x86/ollyasm/disasm.o

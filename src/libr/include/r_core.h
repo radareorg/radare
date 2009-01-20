@@ -42,6 +42,7 @@ int r_core_init(struct r_core_t *core);
 int r_core_config_init(struct r_core_t *core);
 int r_core_prompt(struct r_core_t *r);
 int r_core_cmd(struct r_core_t *r, const char *cmd, int log);
+int r_core_cmd0(void *user, const char *cmd);
 const char *r_core_cmd_str(struct r_core_t *core, const char *cmd);
 int r_core_seek(struct r_core_t *core, u64 addr);
 int r_core_block_read(struct r_core_t *core, int next);

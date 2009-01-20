@@ -25,9 +25,13 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
+	case R_ASM_SYN_PSEUDO:
 		ud_init(&disasm_obj.ud);
-		ud_set_syntax(&disasm_obj.ud,
-				a->syntax == R_ASM_SYN_INTEL ? UD_SYN_INTEL : UD_SYN_ATT);
+		if (a->syntax == R_ASM_SYN_INTEL)
+			ud_set_syntax(&disasm_obj.ud, UD_SYN_INTEL);
+		else if (a->syntax == R_ASM_SYN_ATT)
+			ud_set_syntax(&disasm_obj.ud, UD_SYN_ATT);
+		else ud_set_syntax(&disasm_obj.ud, UD_SYN_PSEUDO);
 		ud_set_mode(&disasm_obj.ud, a->bits);
 		ud_set_pc(&disasm_obj.ud, a->pc);
 		ud_set_input_buffer(&disasm_obj.ud, buf, len);
@@ -37,12 +41,10 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 		ret = ud_insn_len(&disasm_obj.ud);
 		break;
 	case R_ASM_SYN_OLLY:
+		lowercase=1;
 		ret = Disasm(buf, len, a->pc, &disasm_obj.olly, DISASM_FILE);
 		snprintf(a->buf_asm, 255, "%s", disasm_obj.olly.result);
 		snprintf(a->buf_hex, 255, "%s", disasm_obj.olly.dump);
-		break;
-	case R_ASM_SYN_PSEUDO:
-		ret = -1;
 		break;
 	default:
 		ret = -1;

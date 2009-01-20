@@ -9,6 +9,7 @@ LIBS=../*.o \
   ../../util/*.a \
   ../../print/*.a \
   ../../flags/*.a \
-  ../../asm/*.a
+  ../../asm/*.a \
+  ../../macro/*.a
 
 include ../../tests.mk

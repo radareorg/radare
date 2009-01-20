@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include "r_macro.h"
+#include "r_util.h"
+#include "r_core.h"
 
 #if 0
 static u64 _macro_break_value = 0;
@@ -75,7 +77,7 @@ int r_macro_add(struct r_macro_t *mac, const char *oname)
 
 	if (ptr != NULL) {
 		*ptr='\0';
-		macro->nargs = set0word(ptr+1);
+		macro->nargs = r_str_word_set0(ptr+1);
 	}
 
 	if (pbody) {
@@ -177,7 +179,7 @@ int r_macro_cmd_args(struct r_macro_t *mac, const char *ptr, const char *args, i
 	for(i=j=0;ptr[j];i++,j++) {
 		if (ptr[j]=='$') {
 			if (ptr[j+1]>='0' && ptr[j+1]<='9') {
-				const char *word = get0word(args, ptr[j+1]-'0');
+				const char *word = r_str_word_get0(args, ptr[j+1]-'0');
 				strcat(cmd, word);
 				j++;
 				i = strlen(cmd)-1;
@@ -202,7 +204,8 @@ int r_macro_cmd_args(struct r_macro_t *mac, const char *ptr, const char *args, i
 	if (*cmd==')')
 		return 0;
 	//eprintf("cmd(%s)\n", cmd);
-	return radare_cmd(cmd, 0);
+	mac->cmd = &r_core_cmd0;
+	return r_macro_call(mac, cmd);
 }
 
 char *r_macro_label_process(struct r_macro_t *mac, struct r_macro_label_t *labels, int *labels_n, char *ptr)
@@ -291,7 +294,7 @@ int r_macro_call(struct r_macro_t *mac, const char *name)
 	if (args) {
 		*args='\0';
 		args = args +1;
-		nargs = set0word(args);
+		nargs = r_str_word_set0(args);
 	}
 
 	macro_level ++;
@@ -334,7 +337,7 @@ int r_macro_call(struct r_macro_t *mac, const char *name)
 
 				/* Command execution */
 				if (*ptr) {
-					radare_cmd_args(ptr, args, nargs);
+					r_macro_cmd_args(mac, ptr, args, nargs);
 				}
 				if (end) {
 					*end='\n';

@@ -123,5 +123,6 @@ extern const char *r_cons_palette_default;
 const char *r_cons_colors[CONS_COLORS_SIZE+1];
 extern char r_cons_palette[CONS_PALETTE_SIZE][8];
 const char *r_cons_get_buffer();
+void r_cons_grep(const char *str);
 
 #endif

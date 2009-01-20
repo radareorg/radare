@@ -201,7 +201,7 @@ static int cmd_print(void *data, const char *input)
 		{
 			/* XXX hardcoded */
 			int ret, idx; 
-			char *buf = core->block;
+			u8 *buf = core->block;
 			struct r_asm_t a;// TODO: move to core.h
 			r_asm_init(&a);
 			r_asm_set_pc(&a, core->seek);
@@ -314,6 +314,12 @@ static int cmd_system(void *data, const char *input)
 	return r_io_system(core->file->fd, input);
 }
 
+static int cmd_macro(void *data, const char *input)
+{
+	fprintf(stderr, "TODO\n");
+	return 0;
+}
+
 int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *times)
 {
 	char *ptr, *ptr2, *str;
@@ -405,6 +411,11 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 		r_core_seek(core, tmpseek);
 
 	return ret;
+}
+
+int r_core_cmd0(void *user, const char *cmd)
+{
+	r_core_cmd((struct r_core_t *)user, cmd, 0);
 }
 
 const char *r_core_cmd_str(struct r_core_t *core, const char *cmd)
