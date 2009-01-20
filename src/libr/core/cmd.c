@@ -1,6 +1,8 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 #include "r_core.h"
+#include "r_flags.h"
+#include "r_asm.h"
 
 static int cmd_quit(void *data, const char *input)
 {
@@ -17,6 +19,7 @@ static int cmd_quit(void *data, const char *input)
 	case '\0':
 	case ' ':
 	case '!':
+	default:
 		exit(r_num_math(&core->num, input+1));
 		break;
 	}
@@ -139,16 +142,21 @@ static int cmd_bsize(void *data, const char *input)
 
 static int cmd_hexdump(void *data, const char *input)
 {
-	struct r_core_t *core = (struct r_core_t *)data;
-        r_print_hexdump(core->seek, core->block, core->blocksize, 1, 78, 1);
-	return 0;
+	return cmd_print(data, input-1);
 }
 
 static int cmd_info(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
-	r_cons_printf("URI: %s\n", core->file->uri);
-	r_cons_printf("blocksize: 0x%x\n", core->blocksize);
+	switch(input[0]) {
+	case '?':
+		break;
+	case '*':
+		break;
+	default:
+		r_cons_printf("URI: %s\n", core->file->uri);
+		r_cons_printf("blocksize: 0x%x\n", core->blocksize);
+	}
 	return 0;
 }
 
@@ -168,8 +176,23 @@ static int cmd_print(void *data, const char *input)
 	}
 	
 	switch(input[0]) {
+	case 'd':
+		{
+			/* XXX hardcoded */
+			int ret, idx = 0; 
+			char *buf = core->block;
+			struct r_asm_t a;// TODO: move to core.h
+			r_asm_init(&a);
+			r_asm_set_pc(&a, core->seek);
+			
+			for(idx=0; idx < len; idx+=ret) {
+				ret = r_asm_disasm_buf(&a, buf+idx, len-idx);
+				r_cons_printf("0x%08llx  %12s  %s\n", core->seek+idx, a.buf_hex, a.buf_asm);
+			}
+		}
+		break;
 	case 'x':
-        	r_print_hexdump(core->seek, core->block, len, 1, 78, 1);
+        	r_print_hexdump(core->seek, core->block, len, 1, 78, !(input[1]=='-'));
 		break;
 	case '8':
 		r_print_bytes(core->block, len, "%02x");
@@ -177,7 +200,8 @@ static int cmd_print(void *data, const char *input)
 	default:
 		fprintf(stderr, "Usage: p[8] [len]"
 		" p8 [len]    8bit hexpair list of bytes\n"
-		" px [len]    hexdump of N bytes\n");
+		" px [len]    hexdump of N bytes\n"
+		" pd [len]    disassemble N bytes\n");
 		break;
 	}
 	if (tbs != core->blocksize)
@@ -187,15 +211,33 @@ static int cmd_print(void *data, const char *input)
 
 static int cmd_flag(void *data, const char *input)
 {
-	//struct r_core_t *core = (struct r_core_t *)data;
+	struct r_core_t *core = (struct r_core_t *)data;
 	switch(input[0]) {
+	case '+':
+		r_flag_set(&core->flags, input+1, core->seek, core->blocksize, 1);
+		break;
 	case ' ':
-		//r_flag_add(core->flags);
+		r_flag_set(&core->flags, input+1, core->seek, core->blocksize, 0);
 		break;
 	case '-':
+		r_flag_unset(&core->flags, input+1);
+		break;
+	case 's':
+		/* spaces */
+		break;
+	case '*':
+		r_flag_list(&core->flags, 1);
+		break;
+	case '\0':
+		r_flag_list(&core->flags, 0);
 		break;
 	case '?':
-		fprintf(stderr, "Usage: f[ ] [flagname]\n");
+		fprintf(stderr, "Usage: f[ ] [flagname]\n"
+		" f name 12 @ 33   ; set flag 'name' with size 12 at 33\n"
+		" f+name 12 @ 33   ; like above but creates new one if doesnt exist\n"
+		" f-name           ; remove flag 'name'\n"
+		" f                ; list flags\n"
+		" f*               ; list flags in radare commands\n");
 		break;
 	}
 	return 0;
@@ -286,7 +328,7 @@ int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *times)
 	if (ptr) {
 		ptr[0]='\0';
 		r_cons_grep(ptr+1);
-	}
+	} else r_cons_grep(NULL);
 	while(ptr = strchr(cmd, '`')) {
 		ptr2 = strchr(ptr+1, '`');
 		if (ptr2==NULL) {

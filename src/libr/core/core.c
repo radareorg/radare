@@ -6,7 +6,7 @@
 static u64 num_callback(void *userptr, const char *str, int *ok)
 {
 	struct r_core_t *core = userptr;
-	struct r_flag_item_t *flag = r_flag_get(&core->flags, str);
+	struct r_flag_item_t *flag = r_flag_get(&(core->flags), str);
 	if (flag != NULL) {
 		*ok = 1;
 		return flag->offset;
@@ -18,7 +18,7 @@ static u64 num_callback(void *userptr, const char *str, int *ok)
 int r_core_init(struct r_core_t *core)
 {
 	core->num.callback = &num_callback;
-	core->num.userptr = &core;
+	core->num.userptr = core;
 	r_cons_init();
 	r_io_init();
 	core->file = NULL;

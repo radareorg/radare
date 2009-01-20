@@ -11,7 +11,7 @@
 struct r_flag_item_t {
 	char name[R_FLAG_NAME_SIZE];
 	u64 offset;
-	u64 length;
+	u32 size;
 	int format; // ??? 
 	int space;
 	const char *cmd;
@@ -31,6 +31,8 @@ int r_flag_init(struct r_flag_t *f);
 int r_flag_set_base(struct r_flag_t *f, u64 new_base);
 const const char *r_flag_space_get(struct r_flag_t *f, int idx);
 struct r_flag_item_t *r_flag_get(struct r_flag_t *f, const char *name);
-int flag_set(struct r_flag_t *fo, const char *name, u64 addr, int dup);
+int r_flag_set(struct r_flag_t *fo, const char *name, u64 addr, u32 size, int dup);
+int r_flag_name_check(const char *name);
+int r_flag_name_filter(char *name);
 
 #endif

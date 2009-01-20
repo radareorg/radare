@@ -1,6 +1,7 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 #include <r_flags.h>
+#include <r_cons.h> // TODO: drop dependency
 #include <stdio.h>
 
 #define IS_PRINTABLE(x) (x>=' '&&x<='~')
@@ -34,6 +35,19 @@ const const char *r_flag_space_get(struct r_flag_t *f, int idx)
 	return f->space[idx];
 }
 
+struct r_flag_item_t *r_flag_list(struct r_flag_t *f, int rad)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &f->flags) {
+		struct r_flag_item_t *flag = list_entry(pos, struct r_flag_item_t, list);
+		if (rad) r_cons_printf("f %s %d @ 0x%08llx\n", flag->name,
+			flag->size, flag->offset);
+		else r_cons_printf("0x%08llx %d %s\n",
+			flag->offset, flag->size, flag->name);
+	}
+	return NULL;
+}
+
 struct r_flag_item_t *r_flag_get(struct r_flag_t *f, const char *name)
 {
 	struct list_head *pos;
@@ -47,7 +61,16 @@ struct r_flag_item_t *r_flag_get(struct r_flag_t *f, const char *name)
 	return NULL;
 }
 
-int flag_set(struct r_flag_t *fo, const char *name, u64 addr, int dup)
+int r_flag_unset(struct r_flag_t *f, const char *name)
+{
+	struct r_flag_item_t *item;
+	item = r_flag_get(f, name);
+	if (item)
+		list_del(&item->list);
+	return 0;
+}
+
+int r_flag_set(struct r_flag_t *fo, const char *name, u64 addr, u32 size, int dup)
 {
 	const char *ptr;
 	struct r_flag_item_t *flag = NULL;
@@ -79,7 +102,7 @@ int flag_set(struct r_flag_t *fo, const char *name, u64 addr, int dup)
 			} else {
 				flag = f;
 				f->offset = addr + fo->base;
-				f->length = 1; // XXX
+				f->size = 1; // XXX
 				f->format = 0; // XXX
 				return 1;
 			}
@@ -98,7 +121,7 @@ int flag_set(struct r_flag_t *fo, const char *name, u64 addr, int dup)
 	flag->name[R_FLAG_NAME_SIZE-1]='\0';
 	flag->offset = addr + fo->base;
 	flag->space = fo->space_idx;
-	flag->length = 1; // XXX
+	flag->size = 1; // XXX
 	flag->format = 0; // XXX
 	flag->cmd = NULL;
 

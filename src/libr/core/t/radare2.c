@@ -1,30 +1,61 @@
 #include "r_core.h"
 #include "r_io.h"
 #include <stdio.h>
+#include <getopt.h>
 
 struct r_core_t r;
+
+int main_help(int line)
+{
+	if (line) {
+		printf("Usage: radare2 [-w] [file]\n");
+		return 0;
+	}
+	printf("Usage: radare2 [-w] [file]\n"
+	" -w      open file in write mode\n"
+	" -e a=b  evaluate config var\n");
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
 	struct r_core_file_t *fh;
+ 	int c, perms = R_IO_READ;
 
-	if (argc<2) {
-		printf("Usage: radare2 [file]\n");
-		return 1;
-	}
+	if (argc<2)
+		return main_help(1);
+
 	r_core_init(&r);
 
-
-	fh = r_core_file_open(&r, argv[1], R_IO_READ);
-	if (fh == NULL) {
-		fprintf(stderr, "Cannot open file '%s'\n", argv[1]);
-		return 1;
+	while((c = getopt(argc, argv, "hwe"))!=-1) {
+		switch(c) {
+		case 'h':
+			return main_help(0);
+		case 'e':
+			r_config_eval(&r.config, optarg);
+			break;
+		case 'w':
+			perms = R_IO_RDWR;
+			break;
+		default:
+			return 1;
+		}
 	}
 
-	if (0) {
-		const char *str = r_core_cmd_str(&r, "p8 4 @ 0x1");
-		printf("==(%s)==\n", str);
-		free((void *)str);
+	while (optind < argc) {
+		const char *file = argv[optind];
+		fh = r_core_file_open(&r, argv[optind++], perms);
+		if (fh == NULL) {
+			fprintf(stderr,
+			"Cannot open file '%s'\n", argv[1]);
+			return 1;
+		}
+		optind++;
+	}
+
+	if (r.file == NULL) {
+		fprintf(stderr, "Cannot open file\n");
+		return 1;
 	}
 
 	while(r_core_prompt(&r) != -1);

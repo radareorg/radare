@@ -30,7 +30,6 @@ struct r_config_t {
 	int last_notfound;
 	int n_nodes;
 	void (*printf)(const char *str, ...);
-	struct list_head *iter;
 	struct list_head nodes;
 };
 

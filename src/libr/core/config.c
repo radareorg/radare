@@ -8,6 +8,8 @@ int r_core_config_init(struct r_core_t *core)
 	r_config_init(cfg);
 	//r_config_callback_int("");
 	
+	r_config_set(cfg, "asm.arch", "x86");
+	r_config_set(cfg, "asm.syntax", "x86");
 #if 0
 	node = config_set("asm.profile", "default");
 //	node->callback = &config_asm_profile;
