@@ -19,7 +19,7 @@ int r_asm_init(struct r_asm_t *a)
 	return 1;
 }
 
-int r_asm_set_arch(struct r_asm_t *a, int arch)
+int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 {
 	switch (arch) {
 	case R_ASM_ARCH_X86:
@@ -43,7 +43,7 @@ int r_asm_set_arch(struct r_asm_t *a, int arch)
 	return 1;
 }
 
-int r_asm_set_mode(struct r_asm_t *a, int mode)
+int r_asm_set_mode(struct r_asm_t *a, u32 mode)
 {
 	switch (mode) {
 	case R_ASM_MODE_16:
@@ -56,7 +56,7 @@ int r_asm_set_mode(struct r_asm_t *a, int mode)
 	}
 }
 
-int r_asm_set_endianess(struct r_asm_t *a, int endianess)
+int r_asm_set_endianess(struct r_asm_t *a, u32 endianess)
 {
 	switch (endianess) {
 	case R_ASM_BIG_ENDIAN:
@@ -68,7 +68,7 @@ int r_asm_set_endianess(struct r_asm_t *a, int endianess)
 	}
 }
 
-int r_asm_set_syntax(struct r_asm_t *a, int syntax)
+int r_asm_set_syntax(struct r_asm_t *a, u32 syntax)
 {
 	switch (syntax) {
 	case R_ASM_SYN_NULL:
@@ -89,9 +89,9 @@ int r_asm_set_pc(struct r_asm_t *a, u64 pc)
 	return 1;
 }
 
-u32 r_asm_disasm_buf(struct r_asm_t *a, u8 *string, u8 *buf, u32 len)
+u32 r_asm_disasm_buf(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	if (a->r_asm_disasm_buf != NULL)
-		return a->r_asm_disasm_buf(a, string, buf, len);
+		return a->r_asm_disasm_buf(a, buf, len);
 	else return -1;
 }

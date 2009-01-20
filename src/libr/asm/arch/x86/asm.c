@@ -14,7 +14,7 @@
 #include "ollyasm/disasm.h"
 
 
-u32 r_asm_x86_disasm_buf(struct r_asm_t *a, u8 *string, u8 *buf, u32 len)
+u32 r_asm_x86_disasm_buf(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	union {
 		ud_t     ud;
@@ -32,7 +32,8 @@ u32 r_asm_x86_disasm_buf(struct r_asm_t *a, u8 *string, u8 *buf, u32 len)
 		ud_set_pc(&disasm_obj.ud, a->pc);
 		ud_set_input_buffer(&disasm_obj.ud, buf, len);
 		ud_disassemble(&disasm_obj.ud);
-		sprintf(string, "%s", ud_insn_asm(&disasm_obj.ud));
+		snprintf(a->buf_asm, 255, "%s", ud_insn_asm(&disasm_obj.ud));
+		snprintf(a->buf_hex, 255, "%s", ud_insn_hex(&disasm_obj.ud));
 		ret = ud_insn_len(&disasm_obj.ud);
 		break;
 	case R_ASM_SYN_OLLY:
