@@ -38,6 +38,7 @@ struct r_asm_t {
 /* asm.c */
 int r_asm_init(struct r_asm_t *a);
 struct r_asm_t *r_asm_new();
+void r_asm_free(struct r_asm_t *a);
 int r_asm_set_arch(struct r_asm_t *a, u32 arch);
 int r_asm_set_bits(struct r_asm_t *a, u32 bits);
 int r_asm_set_big_endian(struct r_asm_t *a, u32 boolean);

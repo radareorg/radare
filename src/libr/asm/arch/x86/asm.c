@@ -37,10 +37,11 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 		ret = ud_insn_len(&disasm_obj.ud);
 		break;
 	case R_ASM_SYN_OLLY:
-#if 0 
 		ret = Disasm(buf, len, a->pc, &disasm_obj.olly, DISASM_FILE);
-		sprintf(string, "%s", disasm_obj.olly.result);
-#endif 
+		snprintf(a->buf_asm, 255, "%s", disasm_obj.olly.result);
+		snprintf(a->buf_hex, 255, "%s", disasm_obj.olly.dump);
+		break;
+	case R_ASM_SYN_PSEUDO:
 		ret = -1;
 		break;
 	default:

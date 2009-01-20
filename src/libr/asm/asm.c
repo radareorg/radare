@@ -22,9 +22,14 @@ int r_asm_init(struct r_asm_t *a)
 
 struct r_asm_t *r_asm_new()
 {
-	struct r_asm_t *ctx = MALLOC_STRUCT(struct r_asm_t);
-	r_asm_init(ctx);
-	return ctx;
+	struct r_asm_t *a = MALLOC_STRUCT(struct r_asm_t);
+	r_asm_init(a);
+	return a;
+}
+
+void r_asm_free(struct r_asm_t *a)
+{
+	free(a);
 }
 
 int r_asm_set_arch(struct r_asm_t *a, u32 arch)

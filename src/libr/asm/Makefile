@@ -11,7 +11,9 @@ OBJ+=arch/x86/udis86/itab.o
 OBJ+=arch/x86/udis86/syn-intel.o
 
 # olly
-#OBJ+=arch/x86/ollyasm/disasm.o
+OBJ+=arch/x86/ollyasm/disasm.o
+OBJ+=arch/x86/ollyasm/asmserv.o
+OBJ+=arch/x86/ollyasm/assembl.o
 
 
 include ../rules.mk

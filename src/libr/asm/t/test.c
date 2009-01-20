@@ -16,6 +16,7 @@ int main()
 	u32 idx = 0, ret = 0, len = 6;
 
 	r_asm_init(&a);
+	r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
 	r_asm_set_pc(&a, 0x8048000);
 	while (idx < len) {
 		r_asm_set_pc(&a, a.pc + ret);

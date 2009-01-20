@@ -25,7 +25,7 @@
 //#include <dir.h>
 #include <math.h>
 #include <float.h>
-#pragma hdrstop
+//#pragma hdrstop
 
 #include "disasm.h"
 
@@ -80,11 +80,11 @@ static int       nresult;              // Current length of disassembly
 static int       addcomment;           // Comment value of operand
 
 // Copy of input parameters of function Disasm()
-static char      *cmd;                 // Pointer to binary data
-static char      *pfixup;              // Pointer to possible fixups or NULL
-static ulong     size;                 // Remaining size of the command buffer
-static t_disasm  *da;                  // Pointer to disassembly results
-static int       mode;                 // Disassembly mode (DISASM_xxx)
+static unsigned char      *cmd;                 // Pointer to binary data
+static unsigned char      *pfixup;              // Pointer to possible fixups or NULL
+static ulong              size;                 // Remaining size of the command buffer
+static t_disasm           *da;                  // Pointer to disassembly results
+static int                mode;                 // Disassembly mode (DISASM_xxx)
 
 // Disassemble name of 1, 2 or 4-byte general-purpose integer register and, if
 // requested and available, dump its contents. Parameter type changes decoding
@@ -655,7 +655,7 @@ static void DecodeJF(void) {
   if (addr==0 || seg==0) da->zeroconst=1;
   if (mode>=DISASM_FILE) {
     nresult+=sprintf(da->result+nresult,"%s 0x%04X:0x%08X",
-    (lowercase==0?"FAR":"far"),seg,addr);
+    (lowercase==0?"FAR":"far"),(uint)seg,(uint)addr);
   };
 };
 
@@ -773,7 +773,7 @@ int Checkcondition(int code,ulong flags) {
   else return (cond==0);               // Invert condition
 };
 
-ulong Disasm(char *src,ulong srcsize,ulong srcip,
+ulong Disasm(unsigned char *src,ulong srcsize,ulong srcip,
   t_disasm *disasm,int disasmmode) {
   int i,j,isprefix,is3dnow,repeated,operand,mnemosize,arg;
   ulong u,code;

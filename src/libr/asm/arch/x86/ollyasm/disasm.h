@@ -25,11 +25,11 @@
 #define memicmp memcmp
 #define Sleep sleep
 
-#ifndef MAINPROG
-#define unique extern
-#else
+//#ifndef MAINPROG
+//#define unique extern
+//#else
 #define unique
-#endif
+//#endif
 
 // If you prefere Borland, this will force necessary setting (but, as a side
 // effect, may cause plenty of warnings if other include files will be compiled
@@ -347,10 +347,10 @@ int    Assemble(char *cmd,ulong ip,t_asmmodel *model,int attempt,
          int constsize,char *errtext);
 int    Checkcondition(int code,ulong flags);
 int    Decodeaddress(ulong addr,char *symb,int nsymb,char *comment);
-ulong  Disasm(char *src,ulong srcsize,ulong srcip,
+ulong  Disasm(unsigned char *src,ulong srcsize,ulong srcip,
          t_disasm *disasm,int disasmmode);
-ulong  Disassembleback(char *block,ulong base,ulong size,ulong ip,int n);
-ulong  Disassembleforward(char *block,ulong base,ulong size,ulong ip,int n);
+ulong  Disassembleback(unsigned char *block,ulong base,ulong size,ulong ip,int n);
+ulong  Disassembleforward(unsigned char *block,ulong base,ulong size,ulong ip,int n);
 int    Isfilling(ulong addr,char *data,ulong size,ulong align);
 int    Print3dnow(char *s,char *f);
 int    Printfloat10(char *s,long double ext);
