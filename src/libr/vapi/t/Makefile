@@ -1,10 +1,13 @@
-all: hash sc socket
+all: hash sc socket asm
 	@true
 
 sc:
 	valac -C --vapidir=${PWD}/.. sc.vala --pkg r_syscall
 	gcc sc.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_syscall -Wl,-R../../syscall -L../../syscall -o sc
 	
+asm:
+	valac -C --vapidir=${PWD}/.. asm.vala --pkg r_asm
+	gcc asm.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_asm -Wl,-R../../asm -L../../asm -o asm
 
 hash:
 	valac -C --vapidir=${PWD}/.. hash.vala --pkg r_hash
