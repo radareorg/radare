@@ -36,20 +36,24 @@ enum {
 	R_ASM_LIL_ENDIAN = 1
 };
 
-typedef struct {
+struct r_asm_t {
 	int arch;
 	int mode;
 	int endianess;
 	int syntax;
 	u64 pc;
-} r_asm_t;
+	u32 (*r_asm_disasm_buf)(struct r_asm_t *a, u8 *string, u8 *buf, u32 len);
+};
 
-int r_asm_init(r_asm_t *a);
-int r_asm_set_arch(r_asm_t *a, int arch);
-int r_asm_set_mode(r_asm_t *a, int mode);
-int r_asm_set_endianess(r_asm_t *a, int endianess);
-int r_asm_set_syntax(r_asm_t *a, int syntax);
-int r_asm_set_pc(r_asm_t *a, u64 pc);
-int r_asm_disasm_string(r_asm_t *a, char *string, const u8 *buf);
+/* asm.c */
+int r_asm_init(struct r_asm_t *a);
+int r_asm_set_arch(struct r_asm_t *a, int arch);
+int r_asm_set_mode(struct r_asm_t *a, int mode);
+int r_asm_set_endianess(struct r_asm_t *a, int endianess);
+int r_asm_set_syntax(struct r_asm_t *a, int syntax);
+int r_asm_set_pc(struct r_asm_t *a, u64 pc);
+u32 r_asm_disasm_buf(struct r_asm_t *a, u8 *string, u8 *buf, u32 len);
 
+/* arch/x86/asm.c */
+u32 r_asm_x86_disasm_buf(struct r_asm_t *a, u8 *string, u8 *buf, u32 len);
 #endif

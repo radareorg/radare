@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "r_types.h"
-#include "r_bin.h"
+#include <r_types.h>
+#include <r_bin.h>
 
 #define ACTION_UNK       0x0000
 #define ACTION_ENTRY     0x0001 
