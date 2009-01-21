@@ -2,7 +2,7 @@
 [ -z "$2" ] && exit 0
 FILE=$1
 PFX=$2
-LIST=`mktemp /tmp/$FILE.XXXX`
+LIST=$1.list
 
 nm --defined-only -B ${FILE} | grep -v ${PFX}_ | awk '{print $3}' > ${LIST}
 #if [ -n "`cat /tmp/list`" ]; then

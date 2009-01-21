@@ -23,10 +23,10 @@
 #define ACTION_INFO      0x0010
 #define ACTION_OPERATION 0x0020
 
-int verbose = 0;
-int rad = 0;
+static int verbose = 0;
+static int rad = 0;
 
-int rabin_show_help()
+static int rabin_show_help()
 {
 	printf( "rabin2 [options] [file]\n"
 			" -e        Entrypoint\n"
@@ -41,8 +41,7 @@ int rabin_show_help()
 	return 1;
 }
 
-
-int rabin_show_entrypoint(const char *file)
+static int rabin_show_entrypoint(const char *file)
 {
 	r_bin_obj bin;
 	r_bin_entry *entry;
@@ -76,7 +75,7 @@ int rabin_show_entrypoint(const char *file)
 	return 0;
 }
 
-int rabin_show_imports(const char *file)
+static int rabin_show_imports(const char *file)
 {
 	int ctr = 0;
 	r_bin_obj bin;
@@ -119,7 +118,7 @@ int rabin_show_imports(const char *file)
 	return 0;
 }
 
-int rabin_show_symbols(const char *file)
+static int rabin_show_symbols(const char *file)
 {
 	int ctr = 0;
 	r_bin_obj bin;
@@ -135,8 +134,7 @@ int rabin_show_symbols(const char *file)
 
 	symbols = r_bin_get_symbols(&bin);
 
-	if (rad)
-		printf("fs symbols\n");
+	if (rad) printf("fs symbols\n");
 	else printf("[Symbols]\n");
 
 	symbolsp = symbols;
@@ -147,19 +145,22 @@ int rabin_show_symbols(const char *file)
 				if (!strncmp(symbolsp->type,"FUNC", 4))
 					printf("CF %li @ 0x%08llx\n",
 							symbolsp->size, baddr+symbolsp->rva);
-				else if (!strncmp(symbolsp->type,"OBJECT", 6))
+				else
+				if (!strncmp(symbolsp->type,"OBJECT", 6))
 					printf("Cd %li @ 0x%08llx\n",
 							symbolsp->size, baddr+symbolsp->rva);
 				printf("b %li && ", symbolsp->size);
 			}
 			printf("f sym.%s @ 0x%08llx\n",
 					symbolsp->name, baddr+symbolsp->rva);
-		} else printf("address=0x%08llx offset=0x%08llx ordinal=%03i "
-					  "forwarder=%s size=%08i bind=%s type=%s name=%s\n",
-					  baddr+symbolsp->rva, symbolsp->offset,
-					  symbolsp->ordinal, symbolsp->forwarder,
-					  symbolsp->size, symbolsp->bind, symbolsp->type, 
-					  symbolsp->name);
+		} else {
+			printf("address=0x%08llx offset=0x%08llx ordinal=%03i "
+				"forwarder=%s size=%08i bind=%s type=%s name=%s\n",
+				baddr+symbolsp->rva, symbolsp->offset,
+				symbolsp->ordinal, symbolsp->forwarder,
+				symbolsp->size, symbolsp->bind, symbolsp->type, 
+				symbolsp->name);
+		}
 		symbolsp++; ctr++;
 	}
 
@@ -171,7 +172,7 @@ int rabin_show_symbols(const char *file)
 	return 0;
 }
 
-int rabin_show_sections(const char *file)
+static int rabin_show_sections(const char *file)
 {
 	int ctr = 0;
 	r_bin_obj bin;
@@ -187,8 +188,7 @@ int rabin_show_sections(const char *file)
 
 	sections = r_bin_get_sections(&bin);
 	
-	if (rad)
-		printf("fs sections\n");
+	if (rad) printf("fs sections\n");
 	else printf("[Sections]\n");
 
 	sectionsp = sections;
@@ -208,13 +208,13 @@ int rabin_show_sections(const char *file)
 				   R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
 				   sectionsp->name);
 		} else printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08li "
-					  "privileges=%c%c%c%c name=%s\n",
-					  ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
-					  R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
-				   	  R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
-					  R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
-				   	  R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
-				   	  sectionsp->name);
+				  "privileges=%c%c%c%c name=%s\n",
+				  ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
+				  R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
+				  R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
+				  R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
+				  R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
+				  sectionsp->name);
 		sectionsp++; ctr++;
 	}
 
@@ -227,7 +227,7 @@ int rabin_show_sections(const char *file)
 
 }
 
-int rabin_show_info(const char *file)
+static int rabin_show_info(const char *file)
 {
 	u64 baddr;
 	r_bin_obj bin;
@@ -251,25 +251,25 @@ int rabin_show_info(const char *file)
 			   info->rclass, info->big_endian?"True":"False", info->os, info->arch,
 			   R_BIN_DBG_STRIPPED(info->dbg_info)?"False":"True");
 	} else printf("[File info]\n"
-				  "Type=%s\n"
-				  "Class=%s\n"
-				  "Arch=%s\n"
-				  "Machine=%s\n"
-				  "OS=%s\n"
-				  "Subsystem=%s\n"
-				  "Big endian=%s\n"
-				  "Stripped=%s\n"
-				  "Static=%s\n"
-				  "Line_nums=%s\n"
-				  "Local_syms=%s\n"
-				  "Relocs=%s\n",
-				  info->type, info->class, info->arch, info->machine, info->os, 
-				  info->subsystem, info->big_endian?"True":"False",
-				  R_BIN_DBG_STRIPPED(info->dbg_info)?"True":"False",
-				  R_BIN_DBG_STATIC(info->dbg_info)?"True":"False",
-				  R_BIN_DBG_LINENUMS(info->dbg_info)?"True":"False",
-				  R_BIN_DBG_SYMS(info->dbg_info)?"True":"False",
-				  R_BIN_DBG_RELOCS(info->dbg_info)?"True":"False");
+		  "Type=%s\n"
+		  "Class=%s\n"
+		  "Arch=%s\n"
+		  "Machine=%s\n"
+		  "OS=%s\n"
+		  "Subsystem=%s\n"
+		  "Big endian=%s\n"
+		  "Stripped=%s\n"
+		  "Static=%s\n"
+		  "Line_nums=%s\n"
+		  "Local_syms=%s\n"
+		  "Relocs=%s\n",
+		  info->type, info->class, info->arch, info->machine, info->os, 
+		  info->subsystem, info->big_endian?"True":"False",
+		  R_BIN_DBG_STRIPPED(info->dbg_info)?"True":"False",
+		  R_BIN_DBG_STATIC(info->dbg_info)?"True":"False",
+		  R_BIN_DBG_LINENUMS(info->dbg_info)?"True":"False",
+		  R_BIN_DBG_SYMS(info->dbg_info)?"True":"False",
+		  R_BIN_DBG_RELOCS(info->dbg_info)?"True":"False");
 
 	r_bin_close(&bin);
 	free(info);
@@ -277,7 +277,7 @@ int rabin_show_info(const char *file)
 	return 0;
 }
 
-int rabin_do_operation(const char *file, const char *op)
+static int rabin_do_operation(const char *file, const char *op)
 {
 	Elf32_r_bin_elf_obj bin;
 	char *arg, *ptr, *ptr2;
