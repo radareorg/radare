@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2008 nibble<.ds@gmail.com> */
+
 #ifndef _INCLUDE_R_BIN_H_
 #define _INCLUDE_R_BIN_H_
 
@@ -75,6 +77,7 @@ typedef struct {
 typedef struct {
 	char type[R_BIN_SIZEOF_NAMES];
 	char class[R_BIN_SIZEOF_NAMES];
+	char rclass[R_BIN_SIZEOF_NAMES];
 	char arch[R_BIN_SIZEOF_NAMES];
 	char machine[R_BIN_SIZEOF_NAMES];
 	char os[R_BIN_SIZEOF_NAMES];

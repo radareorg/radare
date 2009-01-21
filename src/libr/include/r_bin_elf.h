@@ -1,8 +1,4 @@
-/* Author: nibble 
- * --------------
- * Licensed under GPLv2
- * This file is part of radare
- */
+/* radare - LGPL - Copyright 2008 nibble<.ds@gmail.com> */
 
 #include "r_bin_elf_specs.h"
 

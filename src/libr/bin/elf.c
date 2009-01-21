@@ -1,9 +1,4 @@
-/* Author: nibble 
- * --------------
- * Licensed under GPLv2
- * This file is part of radare
- * 2008-2009
- */
+/* radare - LGPL - Copyright 2008 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
 #include <stdlib.h>

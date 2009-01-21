@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
+
 #ifndef _INCLUDE_R_ASM_H_
 #define _INCLUDE_R_ASM_H_
 

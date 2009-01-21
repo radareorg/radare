@@ -1,7 +1,11 @@
-/* Author: nibble 
- * --------------
- * Licensed under GPLv2
- * This file is part of radare
+/* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
+
+/* TODO:
+ * Linked libraries
+ * dlopen library and show address
+ * Strings
+ * XRefs
+ * Generic resize
  */
 
 #include <stdio.h>
@@ -379,6 +383,7 @@ r_bin_info* r_bin_get_info(r_bin_obj *bin)
 	case R_BIN_FMT_ELF64:
 		strncpy(ret->type, ELF_CALL(r_bin_elf_get_file_type,bin), R_BIN_SIZEOF_NAMES);
 		strncpy(ret->class, ELF_CALL(r_bin_elf_get_elf_class,bin), R_BIN_SIZEOF_NAMES);
+		strncpy(ret->rclass, "elf", R_BIN_SIZEOF_NAMES);
 		strncpy(ret->os, ELF_CALL(r_bin_elf_get_osabi_name,bin), R_BIN_SIZEOF_NAMES);
 		strncpy(ret->subsystem, ELF_CALL(r_bin_elf_get_osabi_name,bin), R_BIN_SIZEOF_NAMES);
 		strncpy(ret->machine, ELF_CALL(r_bin_elf_get_machine_name,bin), R_BIN_SIZEOF_NAMES);
@@ -398,6 +403,7 @@ r_bin_info* r_bin_get_info(r_bin_obj *bin)
 	case R_BIN_FMT_PE:
 		if (r_bin_pe_get_class(&bin->object.pe, pe_class_str))
 			strncpy(ret->class, pe_class_str, R_BIN_SIZEOF_NAMES);
+		strncpy(ret->rclass, "pe", R_BIN_SIZEOF_NAMES);
 		if (r_bin_pe_get_os(&bin->object.pe, pe_os_str))
 			strncpy(ret->os, pe_os_str, R_BIN_SIZEOF_NAMES);
 		if (r_bin_pe_get_arch(&bin->object.pe, pe_arch_str))
