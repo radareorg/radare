@@ -7,22 +7,26 @@
 #include "r_types.h"
 #include "list.h"
 
+/* store list of loaded plugins */
+struct r_lib_plugin_t {
+	int type;
+	char *file;
+	void *data; /* user pointer */
+	struct r_lib_handler_t *handler;
+	void *dl_handler; // DL HANDLER
+	struct list_head list;
+};
+
 /* store list of initialized plugin handlers */
 struct r_lib_handler_t {
 	int type;
 	char desc[128];
 	void *user; /* user pointer */
-	int (*callback)(void *user, void *data);
+	int (*constructor)(struct r_lib_plugin_t *, void *user, void *data);
+	int (*destructor)(struct r_lib_plugin_t *, void *user, void *data);
 	struct list_head list;
 };
 
-/* store list of loaded plugins */
-struct r_lib_plugin_t {
-	int type;
-	char *file;
-	void *libhandler;
-	struct list_head list;
-};
 
 /* this structure should be pointed by the 'radare_plugin' symbol 
    found in the loaded .so */
@@ -49,10 +53,11 @@ int r_lib_dl_check_filename(const char *file);
 /* high level api */
 struct r_lib_t *r_lib_new(const char *symname);
 int r_lib_free(struct r_lib_t *lib);
-int r_lib_run_handler(struct r_lib_t *lib, struct r_lib_struct_t *plugin);
+int r_lib_run_handler(struct r_lib_t *lib, struct r_lib_plugin_t *plugin, struct r_lib_struct_t *symbol);
 int r_lib_open(struct r_lib_t *lib, const char *file);
 int r_lib_opendir(struct r_lib_t *lib, const char *path);
 int r_lib_list(struct r_lib_t *lib);
-int r_lib_add_handler(struct r_lib_t *lib, int type, const char *desc, int (*cb)(void *, void *), void *user );
+int r_lib_add_handler(struct r_lib_t *lib, int type, const char *desc, int (*cb)(struct r_lib_plugin_t *,void *, void *), int (*dt)(struct r_lib_plugin_t *, void *, void *), void *user );
+int r_lib_close(struct r_lib_t *lib, const char *file);
 
 #endif

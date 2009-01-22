@@ -77,6 +77,7 @@ int r_lib_free(struct r_lib_t *lib)
 {
 	/* TODO: iterate over libraries and free them all */
 	/* TODO: iterate over handlers and free them all */
+	r_lib_close(lib, NULL);
 	free (lib);
 	return 0;
 }
@@ -99,21 +100,45 @@ int r_lib_dl_check_filename(const char *file)
 
 /* high level api */
 
-int r_lib_run_handler(struct r_lib_t *lib, struct r_lib_struct_t *plugin)
+int r_lib_run_handler(struct r_lib_t *lib, struct r_lib_plugin_t *plugin, struct r_lib_struct_t *symbol)
+{
+	struct r_lib_handler_t *h = plugin->handler;
+	if (h->constructor != NULL)
+		return h->constructor(NULL, h->user, symbol->data);
+	return -1;
+}
+
+struct r_lib_handler_t *r_lib_get_handler(struct r_lib_t *lib, int type)
 {
 	struct list_head *pos;
-
 	list_for_each_prev(pos, &lib->handlers) {
 		struct r_lib_handler_t *h = list_entry(pos, struct r_lib_handler_t, list);
-		if (h->type == plugin->type)
-			return h->callback(h->user, plugin->data);
+		if (h->type == type) {
+			return h;
+		}
 	}
 	return 0;
 }
 
+int r_lib_close(struct r_lib_t *lib, const char *file)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &lib->plugins) {
+		struct r_lib_plugin_t *h = list_entry(pos, struct r_lib_plugin_t, list);
+		if ((file==NULL || (!strcmp(file, h->file))) && h->handler->destructor != NULL) {
+			int ret = h->handler->destructor(h, h->handler->user, h->data);
+			free(h->file);
+			list_del(&h->list);
+			free(h);
+			return ret;
+		}
+	}
+	return -1;
+}
+
 int r_lib_open(struct r_lib_t *lib, const char *file)
 {
-	struct r_lib_struct_t *plugin;
+	struct r_lib_struct_t *stru;
 	void * handler;
 	int ret;
 
@@ -128,21 +153,27 @@ int r_lib_open(struct r_lib_t *lib, const char *file)
 		fprintf(stderr, "Cannot open library: %s\n", file);
 		return -1;
 	}
-	plugin = (struct r_lib_struct_t *) r_lib_dl_sym(handler, lib->symname);
-	if (plugin == NULL) {
+	stru = (struct r_lib_struct_t *) r_lib_dl_sym(handler, lib->symname);
+	if (stru == NULL) {
 		fprintf(stderr, "No root symbol '%s' found in library '%s'\n", lib->symname, file);
 		return -1;
 	}
-	ret = r_lib_run_handler(lib, plugin);
+	struct r_lib_plugin_t *p = MALLOC_STRUCT(struct r_lib_plugin_t);
+	p->type = stru->type;
+	p->data = stru->data;
+	p->file = strdup(file);
+	p->dl_handler = handler;
+	p->handler = r_lib_get_handler(lib, p->type);
+	
+	ret = r_lib_run_handler(lib, p, stru);
 	if (ret == -1) {
 		fprintf(stderr, "Library handler returned -1 for '%s'\n", file);
+		free(p->file);
+		free(p);
+		r_lib_dl_close(handler);
 	} else {
 		/* append plugin */
-		struct r_lib_plugin_t *p = MALLOC_STRUCT(struct r_lib_plugin_t);
-		p->type = plugin->type;
-		p->file = strdup(file);
-		p->libhandler = handler;
-		list_add(&p->list, &lib->handlers);
+		list_add(&p->list, &lib->plugins);
 	}
 	return ret;
 }
@@ -168,24 +199,29 @@ int r_lib_list(struct r_lib_t *lib)
 	printf("Plugin Handlers:\n");
 	list_for_each_prev(pos, &lib->handlers) {
 		struct r_lib_handler_t *h = list_entry(pos, struct r_lib_handler_t, list);
-		printf(" - %d: %s", h->type, h->desc);
+		printf(" - %d: %s\n", h->type, h->desc);
 	}
 	printf("Loaded plugins:\n");
 	list_for_each_prev(pos, &lib->plugins) {
 		struct r_lib_plugin_t *p = list_entry(pos, struct r_lib_plugin_t, list);
-		printf(" - %d : %s", p->type, p->file);
+		printf(" - %d : %s (%p)\n", p->type, p->file, p->handler->destructor);
 	}
 	return 0;
 }
 
-int r_lib_add_handler(struct r_lib_t *lib, int type, const char *desc, int (*cb)(void *, void *), void *user )
+int r_lib_add_handler(struct r_lib_t *lib,
+	int type, const char *desc,
+	int (*cb)(struct r_lib_plugin_t *, void *, void *),  /* constructor */
+	int (*dt)(struct r_lib_plugin_t *, void *, void *),  /* destructor */
+	void *user )
 {
 	struct list_head *pos;
 	struct r_lib_handler_t *handler = NULL;
+
 	list_for_each_prev(pos, &lib->handlers) {
 		struct r_lib_handler_t *h = list_entry(pos, struct r_lib_handler_t, list);
 		if (type == h->type) {
-			fprintf(stderr, "Redefining library handler callback for %d\n", type);
+			fprintf(stderr, "Redefining library handler constructor for %d\n", type);
 			handler = h;
 			break;
 		}
@@ -197,7 +233,11 @@ int r_lib_add_handler(struct r_lib_t *lib, int type, const char *desc, int (*cb)
 	}
 	strncpy(handler->desc, desc, sizeof(handler->desc));
 	handler->user = user;
-	handler->callback = cb;
+	handler->constructor = cb;
+	handler->destructor = dt;
+
+//printf("constructor: %p\n", dt);
+//printf("destructor : %p\n", dt);
 	return 0;
 }
 
@@ -208,11 +248,6 @@ int r_lib_del_handler(struct r_lib_t *lib)
 {
 	return 0;
 }
-int r_lib_close(struct r_lib_t *lib, const char *file)
-{
-	return 0;
-}
 
-typedef int r_lib_delegate_t (void *user, void *ptr);
 
 #endif
