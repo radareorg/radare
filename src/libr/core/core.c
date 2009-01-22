@@ -6,7 +6,17 @@
 static u64 num_callback(void *userptr, const char *str, int *ok)
 {
 	struct r_core_t *core = userptr;
-	struct r_flag_item_t *flag = r_flag_get(&(core->flags), str);
+	struct r_flag_item_t *flag;
+	
+	if (str[0]=='$') {
+		switch(str[1]) {
+		case '$': return core->seek;
+		case 'b': return core->blocksize;
+		//case '?': return core->blocksize; // HELP
+		}
+	}
+
+	flag = r_flag_get(&(core->flags), str);
 	if (flag != NULL) {
 		*ok = 1;
 		return flag->offset;

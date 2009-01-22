@@ -2,6 +2,7 @@
 
 #include "r_core.h"
 #include "r_flags.h"
+#include "r_hash.h"
 #include "r_asm.h"
 
 static int cmd_print(void *data, const char *input);
@@ -31,7 +32,7 @@ static int cmd_quit(void *data, const char *input)
 static int cmd_interpret(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
-	switch(input[1]) {
+	switch(input[0]) {
 	case ' ':
 		/* interpret file */
 		r_core_cmd_file(core, input+1);
@@ -41,12 +42,13 @@ static int cmd_interpret(void *data, const char *input)
 		fprintf(stderr, "TODO\n");
 		break;
 	case '(':
+		fprintf(stderr, "macro call (%s)\n", input+1);
 		r_macro_call(&core->macro, input+1);
 		break;
 	case '?':
 		fprintf(stderr,
 		"Usage: . [file] | [!command] | [(macro)]\n"
-		" . foo.rs          ; interpret radare script\n"
+		" . foo.rs          ; interpret r script\n"
 		" .!rabin -ri $FILE ; interpret output of command\n"
 		" .(foo 1 2 3)      ; run macro 'foo' with args 1, 2, 3\n");
 		break;
@@ -136,16 +138,17 @@ static int cmd_help(void *data, const char *input)
 	default:
 		fprintf(stderr,
 		"Usage:\n"
-		" b [bsz]   ; get or change block size\n"
-		" e [a[=b]] ; list/get/set config evaluable vars\n"
-		" f [name]  ; set flag at current address\n"
-		" s [addr]  ; seek to address\n"
-		" i [file]  ; get info about opened file\n"
-		" p?[len]   ; print current block with format and length\n"
-		" x [len]   ; alias for 'px' (print hexadecimal\n"
-		" V         ; enter visual mode\n"
-		" ? [expr]  ; evaluate math expression\n"
-		" q [ret]   ; quit radare\n"
+		" b [bsz]          ; get or change block size\n"
+		" e [a[=b]]        ; list/get/set config evaluable vars\n"
+		" f [name][sz][at] ; set flag at current address\n"
+		" s [addr]         ; seek to address\n"
+		" i [file]         ; get info about opened file\n"
+		" p?[len]          ; print current block with format and length\n"
+		" x [len]          ; alias for 'px' (print hexadecimal\n"
+		" V                ; enter visual mode\n"
+		" ? [expr]         ; evaluate math expression\n"
+		" #[algo] [len]    ; evaluate math expression\n"
+		" q [ret]          ; quit r\n"
 		"Append '?' to every char command to get detailed help\n"
 		"");
 		break;
@@ -233,7 +236,8 @@ static int cmd_print(void *data, const char *input)
 		fprintf(stderr, "Usage: p[8] [len]"
 		" p8 [len]    8bit hexpair list of bytes\n"
 		" px [len]    hexdump of N bytes\n"
-		" pd [len]    disassemble N bytes\n");
+		" pd [len]    disassemble N bytes\n"
+		" pr [len]    print N raw bytes\n");
 		break;
 	}
 	if (tbs != core->blocksize)
@@ -269,7 +273,7 @@ static int cmd_flag(void *data, const char *input)
 		" f+name 12 @ 33   ; like above but creates new one if doesnt exist\n"
 		" f-name           ; remove flag 'name'\n"
 		" f                ; list flags\n"
-		" f*               ; list flags in radare commands\n");
+		" f*               ; list flags in r commands\n");
 		break;
 	}
 	return 0;
@@ -293,7 +297,7 @@ static int cmd_eval(void *data, const char *input)
 		"Usage: e[?] [var[=value]]\n"
 		"  e     ; list config vars\n"
 		"  e-    ; reset config vars\n"
-		"  e*    ; dump config vars in radare commands\n"
+		"  e*    ; dump config vars in r commands\n"
 		"  e a   ; get value of var 'a'\n"
 		"  e a=b ; set var 'a' the 'b' value\n");
 		//r_cmd_help(&core->cmd, "e");
@@ -306,8 +310,26 @@ static int cmd_eval(void *data, const char *input)
 
 static int cmd_hash(void *data, const char *input)
 {
+	char algo[32];
 	struct r_core_t *core = (struct r_core_t *)data;
-	fprintf(stderr, "TODO\n");
+	u32 len = core->blocksize;
+	const char *ptr = strchr(input, ' ');
+
+	sscanf(input, "%31s", algo);
+	if (ptr != NULL)
+		len = r_num_math(&core->num, ptr+1);
+
+	if (!r_str_ccmp(input, "crc32", ' ')) {
+		r_cons_printf("%04x\n", r_hash_crc32(core->block, len));
+	} else
+	if (!r_str_ccmp(input, "crc16", ' ')) {
+		r_cons_printf("%02x\n", r_hash_crc16(0, core->block, len));
+	} else {
+		r_cons_printf(
+		"Usage: #algo <size> @ addr\n"
+		" #crc32      ; calculate crc32 of current block\n");
+	}
+
 	return 0;
 }
 
@@ -326,7 +348,37 @@ static int cmd_system(void *data, const char *input)
 
 static int cmd_macro(void *data, const char *input)
 {
-	fprintf(stderr, "TODO\n");
+	struct r_core_t *core = (struct r_core_t *)data;
+	switch(input[0]) {
+	case ')':
+		r_macro_break(&core->macro, input+1);
+		break;
+	case '-':
+		r_macro_rm(&core->macro, input+1);
+		break;
+	case '\0':
+		r_macro_list(&core->macro);
+		break;
+	case '?':
+		eprintf(
+		"Usage: (foo\\n..cmds..\\n)\n"
+		" Record macros grouping commands\n"
+		" (foo args\\n ..)  ; define a macro\n"
+		" (-foo)            ; remove a macro\n"
+		" .(foo)            ; to call it\n"
+		" ()                ; break inside macro\n"
+		"Argument support:\n"
+		" (foo x y\\n$1 @ $2) ; define fun with args\n"
+		" .(foo 128 0x804800) ; call it with args\n"
+		"Iterations:\n"
+		" .(foo\\n() $@)      ; define iterator returning iter index\n"
+		" x @@ .(foo)         ; iterate over them\n"
+		);
+		break;
+	default:
+		r_macro_add(&core->macro, input);
+		break;
+	}
 	return 0;
 }
 
@@ -383,7 +435,7 @@ fprintf(stderr, "NEW FD: %d\n", *rfd);
 		ptr[0]='\0';
 		r_cons_grep(ptr+1);
 	} else r_cons_grep(NULL);
-	while(ptr = strchr(cmd, '`')) {
+	while(((ptr = strchr(cmd, '`')))) {
 		ptr2 = strchr(ptr+1, '`');
 		if (ptr2==NULL) {
 			fprintf(stderr, "parse: Missing '`' in expression.");
@@ -473,18 +525,18 @@ int r_core_cmd0(void *user, const char *cmd)
 	return r_core_cmd((struct r_core_t *)user, cmd, 0);
 }
 
-const char *r_core_cmd_str(struct r_core_t *core, const char *cmd)
+char *r_core_cmd_str(struct r_core_t *core, const char *cmd)
 {
-	const char *retstr;
+	char *retstr;
 	r_cons_reset();
 	if (r_core_cmd(core, cmd, 0) == -1) {
 		fprintf(stderr, "Invalid command: %s\n", cmd);
 		retstr = strdup("");
 	} else {
-		retstr = r_cons_get_buffer();
+		const char *static_str = r_cons_get_buffer();
 		if (retstr==NULL)
 			retstr = strdup("");
-		else retstr = strdup(retstr);
+		else retstr = strdup(static_str);
 		r_cons_reset();
 	}
 	return retstr;

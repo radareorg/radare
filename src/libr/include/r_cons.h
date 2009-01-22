@@ -68,6 +68,7 @@ void r_cons_set_raw(int b);
 /* output */
 void r_cons_printf(const char *format, ...);
 void r_cons_strcat(const char *str);
+void r_cons_memcat(const char *str, int len);
 void r_cons_newline();
 void r_cons_flush();
 

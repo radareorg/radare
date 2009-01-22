@@ -1,4 +1,4 @@
-/* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
+/* radare - LGPL - Copyright 2008-2009 pancake<nopcode.org> */
 
 #include <stdio.h>
 #include "r_macro.h"
@@ -36,6 +36,7 @@ int r_macro_add(struct r_macro_t *mac, const char *oname)
 	int lidx;
 	int macro_update;
 	char *name;
+printf("NEW MACRO ADDED: %s\n", oname);
 
 	if (oname[0]=='\0')
 		return r_macro_list(mac);
@@ -144,13 +145,13 @@ int r_macro_list(struct r_macro_t *mac)
 	struct list_head *pos;
 	list_for_each_prev(pos, &mac->macros) {
 		struct r_macro_item_t *m = list_entry(pos, struct r_macro_item_t, list);
-		mac->printf("%d (%s, ", idx, m->name);
+		/* mac-> */ printf("%d (%s, ", idx, m->name);
 		for(j=0;m->code[j];j++) {
 			if (m->code[j]=='\n')
-				mac->printf(", ");
-			else mac->printf("%c", m->code[j]);
+				/* mac-> */ printf(", ");
+			else /* mac->*/ printf("%c", m->code[j]);
 		}
-		mac->printf(")\n");
+		/* mac->*/ printf(")\n");
 		idx++;
 	}
 	return 0;
@@ -205,6 +206,7 @@ int r_macro_cmd_args(struct r_macro_t *mac, const char *ptr, const char *args, i
 		return 0;
 	//eprintf("cmd(%s)\n", cmd);
 	mac->cmd = &r_core_cmd0;
+	// XXX THIS IS A RADARE_CMD!!!!
 	return r_macro_call(mac, cmd);
 }
 
@@ -285,6 +287,7 @@ int r_macro_call(struct r_macro_t *mac, const char *name)
 	/* labels */
 	int labels_n = 0;
 	struct r_macro_label_t labels[MACRO_LABELS];
+printf("CALLING MACRO: '%s'\n", name);
 
 	str = alloca(strlen(name)+1);
 	strcpy(str, name);
@@ -369,4 +372,5 @@ int r_macro_break(struct r_macro_t *mac, const char *value)
 	mac->_brk_value = (u64)r_num_math(mac->num, value);
 	if (value && *value)
 		mac->brk_value = &mac->_brk_value;
+	return 0;
 }
