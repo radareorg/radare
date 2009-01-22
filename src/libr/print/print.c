@@ -86,3 +86,68 @@ void r_print_raw(const u8* buf, int len)
 	r_cons_memcat(buf, len);
 }
 
+
+#if 0
+/* Process source file with given parameters. Output to stdout */
+// TODO: use buffer instead of FILE*
+
+----------------
+        /* File processing */
+        if (all)
+        {
+                for (i = 0 ; i <= 1 ; i++)
+                {
+                        for (j = 0 ; j <= 1 ; j++)
+                        {
+                                for (offset = 0 ; offset <= 7 ; offset++)
+                                {
+                                        /* Brute-force run */
+                                        process (fd, length, i, j, offset);
+                                }
+                        }
+                }
+        } else
+                /* Customized one pass only run */
+                process (fd, length, forward, downward, offset);
+----------------
+
+
+void lsb_stego_process (FILE *fd, int length, bool forward, bool downward, int offset)
+{
+        int byte;       /* Byte index */
+        int bit;        /* Bit index */
+        int lsb;        /* Least Significant Bit */
+        char sbyte;     /* Source byte (i.e. from src file */
+        char dbyte;     /* Destination byte (decrypted msg) */
+
+
+        for ( byte = offset ; byte < length ; ) 
+        {
+                dbyte = 0;
+
+                for (bit = 0; bit <= 7; bit++, byte++)
+                {
+                        /* Set position at the beginning or eof */
+                        if (forward)
+                                fseek(fd, byte, SEEK_SET);
+                        else
+                                fseek(fd, -(byte+1), SEEK_END);
+
+                        /* Read one byte */
+                        fread(&sbyte, sizeof(sbyte), 1, fd);
+
+                        /* Obtain Least Significant Bit */
+                        lsb = sbyte & 1;
+
+                        /* Add lsb to decrypted message */
+                        if (downward)
+                                dbyte = dbyte | lsb << (7-bit) ;
+                        else
+                                dbyte = dbyte | lsb << bit ;
+                }
+
+                printf ("%c", dbyte);
+        }
+}
+
+#endif

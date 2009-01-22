@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
+
 #include "r_core.h"
 #include "r_io.h"
 #include <stdio.h>
@@ -7,13 +9,10 @@ struct r_core_t r;
 
 int main_help(int line)
 {
-	if (line) {
-		printf("Usage: radare2 [-w] [file]\n");
-		return 0;
-	}
-	printf("Usage: radare2 [-w] [file]\n"
-	" -w      open file in write mode\n"
-	" -e a=b  evaluate config var\n");
+	if (line) printf("Usage: radare2 [-w] [file]\n");
+	else printf("Usage: radare2 [-w] [file]\n"
+		" -w      open file in write mode\n"
+		" -e a=b  evaluate config var\n");
 	return 0;
 }
 

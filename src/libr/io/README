@@ -11,4 +11,6 @@ MAP      - allows virtual maps at random address
 // TODO:
   - Can share storage
 UNDO     - records all write ops allowing undo, redo, reset operations
+  r_io_undo_*
 CACHE    - caches write operations to emulate fake reads
+  r_io_cache_*
