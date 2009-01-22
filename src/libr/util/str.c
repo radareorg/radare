@@ -8,6 +8,20 @@
 static const char *nullstr = "";
 static const char *nullstr_c = "(null)";
 
+/* TODO: port to w32 */
+char *r_str_home(const char *str)
+{
+	const char *home = getenv("HOME");
+	char *dst;
+	if (home == NULL)
+		return NULL;
+	dst = (char *)malloc(strlen(home) + strlen(str)+1);
+	strcpy(dst, home);
+	strcat(dst, "/");
+	strcat(dst, str);
+	return dst;
+}
+
 int r_str_hash(const char *str)
 {
 	int i = 1;

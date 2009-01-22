@@ -21,18 +21,22 @@ int main(int argc, char **argv)
 {
 	struct r_core_file_t *fh;
  	int c, perms = R_IO_READ;
+	int run_rc = 1;
 
 	if (argc<2)
 		return main_help(1);
 
 	r_core_init(&r);
 
-	while((c = getopt(argc, argv, "hwe"))!=-1) {
+	while((c = getopt(argc, argv, "when"))!=-1) {
 		switch(c) {
 		case 'h':
 			return main_help(0);
 		case 'e':
 			r_config_eval(&r.config, optarg);
+			break;
+		case 'n':
+			run_rc = 0;
 			break;
 		case 'w':
 			perms = R_IO_RDWR;
@@ -56,6 +60,14 @@ int main(int argc, char **argv)
 	if (r.file == NULL) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
+	}
+
+	if (run_rc) {
+		char *homerc = r_str_home(".radarerc");
+		if (homerc) {
+			r_core_cmd_file(&r, homerc);
+			free(homerc);
+		}
 	}
 
 	while(r_core_prompt(&r) != -1);

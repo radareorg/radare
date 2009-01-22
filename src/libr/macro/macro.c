@@ -20,6 +20,8 @@ void r_macro_init(struct r_macro_t *mac)
 	mac->brk_value = &mac->_brk_value;
 	mac->printf = printf;
 	mac->num = NULL;
+	mac->user = NULL;
+	mac->cmd = NULL;
 	INIT_LIST_HEAD(&mac->macros);
 }
 
@@ -36,7 +38,6 @@ int r_macro_add(struct r_macro_t *mac, const char *oname)
 	int lidx;
 	int macro_update;
 	char *name;
-printf("NEW MACRO ADDED: %s\n", oname);
 
 	if (oname[0]=='\0')
 		return r_macro_list(mac);
@@ -139,6 +140,7 @@ int r_macro_rm(struct r_macro_t *mac, const char *_name)
 	return 0;
 }
 
+// TODO: use mac->printf which is r_cons_printf at the end
 int r_macro_list(struct r_macro_t *mac)
 {
 	int j, idx = 0;
@@ -204,10 +206,7 @@ int r_macro_cmd_args(struct r_macro_t *mac, const char *ptr, const char *args, i
 		cmd = cmd + 1;
 	if (*cmd==')')
 		return 0;
-	//eprintf("cmd(%s)\n", cmd);
-	mac->cmd = &r_core_cmd0;
-	// XXX THIS IS A RADARE_CMD!!!!
-	return r_macro_call(mac, cmd);
+	return mac->cmd(mac->user, cmd);
 }
 
 char *r_macro_label_process(struct r_macro_t *mac, struct r_macro_label_t *labels, int *labels_n, char *ptr)
@@ -287,11 +286,14 @@ int r_macro_call(struct r_macro_t *mac, const char *name)
 	/* labels */
 	int labels_n = 0;
 	struct r_macro_label_t labels[MACRO_LABELS];
-printf("CALLING MACRO: '%s'\n", name);
 
 	str = alloca(strlen(name)+1);
 	strcpy(str, name);
 	ptr = strchr(str, ')');
+	if (ptr == NULL) {
+		fprintf(stderr, "Missing end ')' parenthesis.\n");
+		*ptr='\0';
+	}
 
 	args = strchr(str, ' ');
 	if (args) {
@@ -302,12 +304,11 @@ printf("CALLING MACRO: '%s'\n", name);
 
 	macro_level ++;
 	if (macro_level > MACRO_LIMIT) {
-		eprintf("Maximum macro recursivity reached.\n");
+		fprintf(stderr, "Maximum macro recursivity reached.\n");
 		macro_level --;
 		return 0;
 	}
 
-	if (ptr != NULL) *ptr='\0';
 	list_for_each_prev(pos, &mac->macros) {
 		struct r_macro_item_t *m = list_entry(pos, struct r_macro_item_t, list);
 

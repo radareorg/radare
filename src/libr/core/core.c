@@ -31,6 +31,9 @@ int r_core_init(struct r_core_t *core)
 	core->num.userptr = core;
 	r_cons_init();
 	r_macro_init(&core->macro);
+	core->macro.num = &core->num;
+	core->macro.user = core;
+	core->macro.cmd = r_core_cmd0;
 	r_io_init();
 	core->file = NULL;
 	INIT_LIST_HEAD(&core->files);

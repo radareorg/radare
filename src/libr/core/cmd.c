@@ -396,15 +396,18 @@ int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd, int *t
 
 	/* quoted / raw command */
 	if (cmd[0]=='"') {
-		if (cmd[len-1]!='"') {
+		if (cmd[len]!='"') {
 			fprintf(stderr, "parse: Missing ending '\"': '%s'\n", cmd);
 			return 0;
 		}
+		cmd[len]='\0';
+		strcpy(cmd, cmd+1);
 		return 0;
 	}
 	ptr = strchr(cmd, ';');
-	if (ptr)
+	if (ptr) {
 		ptr[0]='\0';
+	}
 	ptr = strchr(cmd, '>');
 	if (ptr) {
 		int perm = O_RDWR | O_CREAT;
@@ -438,7 +441,7 @@ fprintf(stderr, "NEW FD: %d\n", *rfd);
 	while(((ptr = strchr(cmd, '`')))) {
 		ptr2 = strchr(ptr+1, '`');
 		if (ptr2==NULL) {
-			fprintf(stderr, "parse: Missing '`' in expression.");
+			fprintf(stderr, "parse: Missing '`' in expression (%s).\n", ptr+1);
 			return 0;
 		}
 		ptr2[0]='\0';
@@ -461,37 +464,36 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 	u64 tmpseek = core->seek;
 	int restoreseek = 0;
 
-	if (command == NULL ) {
-		cmd = (char *)command;
-	} else {
-		len = strlen(command)+1;
-		cmd = alloca(len)+1024;
-		memcpy(cmd, command, len);
+	if (command == NULL )
+		return 0;
+	while(command[0]==' ') // TODO: handle tabs to with iswhitespace()
+		command = command+1;
 
-		ret = r_core_cmd_subst(core, cmd, &restoreseek, &newfd, &times);
-		if (ret == -1) {
-			fprintf(stderr, "Invalid conversion: %s\n", command);
-			ret = -1;
-			goto __end;
+	len = strlen(command)+1;
+	cmd = alloca(len)+1024;
+	memcpy(cmd, command, len);
+
+	ret = r_core_cmd_subst(core, cmd, &restoreseek, &newfd, &times);
+	if (ret == -1) {
+		fprintf(stderr, "Invalid conversion: '%s'\n", command);
+		ret = -1;
+	} else {
+		for(i=0;i<times;i++) {
+			ret = r_cmd_call(&core->cmd, cmd);
+			if (ret == -1) // stop on error?
+				break;
+		}
+		if (ret == -1){
+			if (cmd[0])
+				fprintf(stderr, "Invalid command: '%s'\n", command);
+			ret = 1;
+		} else
+		if (log) r_line_hist_add(command);
+		if (restoreseek) {
+			r_core_seek(core, tmpseek);
 		}
 	}
-	
-	for(i=0;i<times;i++) {
-		ret = r_cmd_call(&core->cmd, cmd);
-		if (ret == -1) // stop on error?
-			break;
-	}
-	if (ret == -1){
-		if (command[0])
-			fprintf(stderr, "Invalid command: %s\n", command);
-		ret = 1;
-	} else
-	if (log) r_line_hist_add(command);
-	if (restoreseek) {
-		r_core_seek(core, tmpseek);
-	}
 
-	__end:
 	if (newfd != 1) {
 		fprintf(stderr, "restore fd\n");
 		r_cons_stdout_close(newfd);
