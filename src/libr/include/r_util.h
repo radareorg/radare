@@ -59,4 +59,9 @@ int r_str_re_match(const char *str, const char *reg);
 int r_str_re_replace(const char *str, const char *reg, const char *sub);
 char *r_str_sub(char *string, char *pat, char *rep, int global);
 
+int r_hex_pair2bin(const char *arg);
+int r_hex_str2bin(const char *in, u8 *out);
+
+int r_hex_to_byte(u8 *val, u8 c);
+
 #endif
