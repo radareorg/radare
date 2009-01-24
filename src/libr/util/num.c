@@ -23,6 +23,15 @@ u64 htonq(u64 value) {
         return ret;
 }
 
+void r_num_minmax_swap(u64 *a, u64 *b)
+{
+	if (*f>*t) {
+		u64 tmp = *f;
+		*f = *t;
+		*t = tmp;
+	}
+}
+
 void r_num_init(struct r_num_t *num)
 {
 	num->callback = NULL;

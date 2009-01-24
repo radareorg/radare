@@ -1190,16 +1190,16 @@ int r_cons_get_arrow(int ch)
 			// TODO: must also work in interactive visual write ascii mode
 			ch = r_cons_readchar();
 			switch(ch) {
-				case 0x35: ch='K'; break; // re.pag
-				case 0x36: ch='J'; break; // av.pag
-				case 0x41: ch='k'; break; // up
-				case 0x42: ch='j'; break; // down
-				case 0x43: ch='l'; break; // right
-				case 0x44: ch='h'; break; // left
-				case 0x3b:
-					   break;
-				default:
-					   ch = 0;
+			case 0x35: ch='K'; break; // re.pag
+			case 0x36: ch='J'; break; // av.pag
+			case 0x41: ch='k'; break; // up
+			case 0x42: ch='j'; break; // down
+			case 0x43: ch='l'; break; // right
+			case 0x44: ch='h'; break; // left
+			case 0x3b:
+				   break;
+			default:
+				   ch = 0;
 			}
 		}
 	}
@@ -1213,3 +1213,17 @@ void r_cons_any_key()
 	r_cons_readchar();
 	r_cons_strcat("\x1b[2J\x1b[0;0H");
 }
+
+/* TODO: handle screen width */
+void r_cons_progressbar(int pc)
+{
+        int tmp, cols = 78;
+        (pc<0)?pc=0:(pc>100)?pc=100:0;
+        fprintf(stderr, "\x1b[K  %3d%% [", pc);
+        cols-=15;
+        for(tmp=cols*pc/100;tmp;tmp--) fprintf(stderr,"#");
+        for(tmp=cols-(cols*pc/100);tmp;tmp--) fprintf(stderr,"-");
+        fprintf(stderr, "]\r");
+        fflush(stderr);
+}
+

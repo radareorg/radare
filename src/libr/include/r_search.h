@@ -54,6 +54,12 @@ struct r_search_hit_t {
 	struct list_head list;
 };
 
+struct r_search_range_t {
+	u64 from;
+	u64 to;
+	struct list_head list;
+};
+
 struct r_search_t {
 #if 0 // TORETHINK
 	int fd;
@@ -64,6 +70,8 @@ struct r_search_t {
 #endif
 	int (*callback)(); // XXX wtf?
 	struct r_search_binparse_t *bp;
+	char rangestr[256];
+	struct list_head ranges;
 	struct list_head kws; //r_search_hw_t kws;
 	struct list_head hits; //r_search_hit_t hits;
 };
@@ -83,13 +91,13 @@ int r_search_kw_add_bin(struct r_search_t *s, const char *kw, int kw_len, const 
 struct r_search_kw_t *r_search_kw_list(struct r_search_t *s);
 int r_search_reset(struct r_search_t *s);
 
-/* configuration */
-int r_search_set_range(struct r_search_t *s, u64 from, u64 to);
-int r_search_set_limit(struct r_search_t *s, int counter);
-int r_search_set_blocksize(struct r_search_t *s, int bsize);
+int r_search_range_add(struct r_search_t *s, u64 from, u64 to);
+int r_search_range_set(struct r_search_t *s, u64 from, u64 to);
+int r_search_range_reset(struct r_search_t *s);
+int r_search_set_blocksize(struct r_search_t *s, u32 bsize);
 
 /* pattern search */
-int r_search_pattern(struct r_search_t *s, int min, int max);
-
+int r_search_pattern(struct r_search_t *s, u32 size);
+int r_search_strings(struct r_search_t *s, u32 min, u32 max);
 
 #endif

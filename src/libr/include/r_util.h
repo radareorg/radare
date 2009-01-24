@@ -20,6 +20,7 @@ struct r_num_t {
 	void *userptr;
 };
 
+void r_num_minmax_swap(u64 *a, u64 *b);
 u64 r_num_math(struct r_num_t *num, const char *str);
 u64 r_num_get(struct r_num_t *num, const char *str);
 struct r_num_t *r_num_new(u64 (*cb)(void*,const char *,int*), void *ptr);
