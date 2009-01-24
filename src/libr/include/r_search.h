@@ -5,6 +5,12 @@
 #include "r_util.h"
 #include "list.h"
 
+enum {
+	R_SEARCH_KEYWORD,
+	R_SEARCH_PATTERN,
+	R_SEARCH_AES
+};
+
 /* binparse api */
 // TODO: Remove typedef!!
 typedef struct r_search_binparse_token {
@@ -63,13 +69,16 @@ struct r_search_range_t {
 
 struct r_search_t {
 	int n_kws;
+	int mode;
 	int (*callback)(); // XXX wtf?
 	struct r_search_binparse_t *bp;
 	struct list_head kws; //r_search_hw_t kws;
 	struct list_head hits; //r_search_hit_t hits;
 };
 
-struct r_search_t *r_search_new();
+struct r_search_t *r_search_new(int mode);
+int r_search_set_mode(struct r_search_t *s, int mode);
+int r_search_init(struct r_search_t *s, int mode);
 struct r_search_t *r_search_free(struct r_search_t *s);
 
 /* keyword management */

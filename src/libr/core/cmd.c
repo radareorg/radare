@@ -279,6 +279,26 @@ static int cmd_flag(void *data, const char *input)
 	return 0;
 }
 
+static int cmd_write(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
+	switch(input[0]) {
+	case ' ':
+		// write string
+		break;
+	case 'x':
+		// write hexpairs
+		break;
+	}
+	return 0;
+}
+
+static int cmd_search(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
+	/* TODO */
+}
+
 static int cmd_eval(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
@@ -555,11 +575,13 @@ int r_core_cmd_init(struct r_core_t *core)
 	r_cmd_add(&core->cmd, "bsize", "change block size", &cmd_bsize);
 	r_cmd_add(&core->cmd, "eval",  "evaluate configuration variable", &cmd_eval);
 	r_cmd_add(&core->cmd, "print", "print current block", &cmd_print);
+	r_cmd_add(&core->cmd, "write", "write bytes", &cmd_write);
 	r_cmd_add(&core->cmd, "Visual","enter visual mode", &cmd_visual);
 	r_cmd_add(&core->cmd, "!",     "run system command", &cmd_system);
 	r_cmd_add(&core->cmd, "#",     "calculate hash", &cmd_hash);
 	r_cmd_add(&core->cmd, "?",     "help message", &cmd_help);
 	r_cmd_add(&core->cmd, ".",     "interpret", &cmd_interpret);
+	r_cmd_add(&core->cmd, "/",     "search kw, pattern aes", &cmd_search);
 	r_cmd_add(&core->cmd, "(",     "macro", &cmd_macro);
 	r_cmd_add(&core->cmd, "quit",  "exit program session", &cmd_quit);
 

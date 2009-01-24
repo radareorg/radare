@@ -4,20 +4,27 @@
 
 /* object life cycle */
 
-int r_search_init(struct r_search_t *s)
+int r_search_init(struct r_search_t *s, int mode)
 {
 	memset(s,'\0', sizeof(struct r_search_t));
 	s->bp = NULL;
+	s->mode = mode;
 	INIT_LIST_HEAD(&(s->kws));
 	INIT_LIST_HEAD(&(s->hits));
 	INIT_LIST_HEAD(&(s->hits));
 	return 0;
 }
 
-struct r_search_t *r_search_new()
+int r_search_set_mode(struct r_search_t *s, int mode)
+{
+	s->mode = mode;
+	return 0;
+}
+
+struct r_search_t *r_search_new(int mode)
 {
 	struct r_search_t *s = MALLOC_STRUCT(struct r_search_t);
-	if (r_search_init(s) == -1) {
+	if (r_search_init(s, mode) == -1) {
 		free(s);
 		s = NULL;
 	}
@@ -87,14 +94,24 @@ int r_search_start(struct r_search_t *s)
 		struct r_search_kw_t *kw = list_entry(pos, struct r_search_kw_t, list);
 		r_search_binparse_add(s->bp, kw->keyword, kw->binmask);
 	}
-	return NULL;
+	return 0;
 }
 
 int r_search_update(struct r_search_t *s, u64 from, const u8 *buf, int len)
 {
 	int i, ret = 0;
-	for(i=0;i<len;i++)
-		ret += r_search_binparse_update(s->bp,buf[i], from+i);
+	switch(s->mode) {
+	case R_SEARCH_KEYWORD:
+		for(i=0;i<len;i++)
+			ret += r_search_binparse_update(s->bp,buf[i], from+i);
+		break;
+	case R_SEARCH_AES:
+		for(i=0;i<len;i++)
+			ret += r_search_binparse_update(s->bp,buf[i], from+i);
+		break;
+	case R_SEARCH_PATTERN:
+		break;
+	}
 	return ret;
 }
 
