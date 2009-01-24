@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include <r_types.h>
 #include <r_asm.h>

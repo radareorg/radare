@@ -19,5 +19,8 @@ int main()
 	r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
 	r_asm_set_pc(&a, 0x08049a4b);
 	ret = r_asm_asm(&a, buf);
-	printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
+	if (!ret)
+		printf("invalid\n");
+	else
+		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
 }

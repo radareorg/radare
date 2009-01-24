@@ -17,6 +17,8 @@ int main()
 
 	r_asm_init(&a);
 	r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
+	//r_asm_set_syntax(&a, R_ASM_SYN_ATT);
+	//r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
 	r_asm_set_pc(&a, 0x8048000);
 	while (idx < len) {
 		r_asm_set_pc(&a, a.pc + ret);

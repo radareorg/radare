@@ -2,9 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include <r_types.h>
 #include <r_util.h>
@@ -104,12 +101,12 @@ u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	if (a->r_asm_disasm != NULL)
 		return a->r_asm_disasm(a, buf, len);
-	else return -1;
+	else return 0;
 }
 
 u32 r_asm_asm(struct r_asm_t *a, char *buf)
 {
 	if (a->r_asm_asm != NULL)
 		return a->r_asm_asm(a, buf);
-	else return -1;
+	else return 0;
 }
