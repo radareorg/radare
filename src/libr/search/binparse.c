@@ -26,6 +26,12 @@ token:  Fruit for the loom
 ------------------------------
 #endif
 
+void r_search_binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
+{	
+	int i;
+	for ( i = 0; i < ntok ; i ++ )
+		tlist[i].mask = maskout[i%masklen];
+}
 
 static u8 get_byte(char *str, int len)
 {
@@ -40,16 +46,35 @@ static u8 get_byte(char *str, int len)
 	return (u8)(value & 0xFF);
 }
 
+#if 0
+static unsigned char get_num(const char * str, int len)
+{
+        u8 * strp;
+        int value;
+
+        strp = alloca(len+1);
+        memset(strp, 0, len);
+        memcpy(strp, str, len );
+
+        if (strp[0] == '\\') {
+                strp[0] = '0';
+                sscanf (strp,"%x",&value );
+        } else  value = strp[0]; //sscanf (strp,"%c",(char *)&value );
+        value = value & 0xFF ;
+
+        return (unsigned char)value ;
+}
+#endif
+
 static int get_range(char *str, int len, unsigned char *cbase)
 {
 	int g;
-	unsigned char min;
-	unsigned char max;
+	u8 min, max;
 	
 	// busca guio
 	for ( g= 0; (g < len ) && ( str[g] != '-' ) ; g++ );
-	min = get_num ( str, g );
-	max = get_num ( str+g+1, len-g-1 );
+	min = get_byte ( str, g );
+	max = get_byte ( str+g+1, len-g-1 );
 
 	*cbase = min;
 
@@ -139,7 +164,29 @@ static int tok_parse (char* str, int len, token * tlist )
 	return tokact;
 }
 
-static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
+static int r_search_binparse_get_mask_list(char* mask, char* maskout)
+{
+	int i,j,k;
+	char num[3];
+
+	num[2] = 0;
+	j = k = 0;
+	for(i=0; mask[i] ; i++) {
+		if (mask[i] != ' ') {
+			num[j] = mask[i];
+			j++;
+		}
+		if (j == 2) {
+			sscanf(num, "%hhx", (unsigned char*)&maskout[k]);
+			k++;
+			j = 0;
+		}
+	}
+
+	return k;
+}
+
+static tokenlist *r_search_binparse_token_mask(char *name, char *token, char *mask)
 {
 	tokenlist *tls;
 	void *tlist = 0;
@@ -163,14 +210,15 @@ static tokenlist *binparse_token_mask(char *name, char *token, char *mask)
 	if ( mask == NULL )
 		mask = "ff";
 
-	masklen = binparse_get_mask_list ( mask , maskout );
-	binparse_apply_mask ( maskout, masklen , tlist , ntok ) ;
+	masklen = r_search_binparse_get_mask_list(mask , maskout);
+	r_search_binparse_apply_mask(maskout, masklen, tlist, ntok);
 
 	//print_tok_list ( tls ) ;
 	return tls;
 }
 
 
+#if 0
 // line , IN rep linia tokens, surt llista token
 static tokenlist* get_tok_list(char* line, int maxlen) 
 {
@@ -208,28 +256,6 @@ static tokenlist* get_tok_list(char* line, int maxlen)
 	return tls;
 }
 
-static int binparse_get_mask_list(char* mask, char* maskout)
-{
-	int i,j,k;
-	char num[3];
-
-	num[2] = 0;
-	j = k = 0;
-	for(i=0; mask[i] ; i++) {
-		if (mask[i] != ' ') {
-			num[j] = mask[i];
-			j++;
-		}
-		if (j == 2) {
-			sscanf(num, "%hhx", (unsigned char*)&maskout[k]);
-			k++;
-			j = 0;
-		}
-	}
-
-	return k;
-}
-
 static const char *str_get_arg(const char *buf)
 {
 	const char *str;
@@ -241,6 +267,7 @@ static const char *str_get_arg(const char *buf)
 	str = strdup(str+1);
 	return str;
 }
+#endif
 
 /* public api */
 
@@ -286,15 +313,15 @@ int r_search_binparse_add(struct r_search_binparse_t *t, const char *string, con
 	//snprintf(name, 31, "SEARCH[%d]", n);
 	snprintf(name, 31, "kw[%d]", n);
 	t->tls    = (tokenlist **) realloc(t->tls, t->nlists*sizeof(tokenlist*));
-	t->tls[n] = binparse_token_mask(name, string, mask);
+	t->tls[n] = r_search_binparse_token_mask(name, string, mask);
 
 	return n;
 }
 
 // XXX name needs to be changed in runtime?
-int r_search_binparse_add_name(struct r_search_binparse_t *t, const char *name, const char *string, const char *mask)
+int r_search_binparse_add_named(struct r_search_binparse_t *t, const char *name, const char *string, const char *mask)
 {
-	int ret = binparse_add(t, string, mask);
+	int ret = r_search_binparse_add(t, string, mask);
 	if (ret != -1)
 		strncpy(t->tls[ret]->name, name, 200);
 	return ret;
@@ -482,15 +509,9 @@ int binparse_add_search(struct r_search_binparse_t *t, int id)
 
 	return binparse_add(t, token, mask);
 }
-
-void binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
-{	
-	int i;
-	for ( i = 0; i < ntok ; i ++ )
-		tlist[i].mask = maskout[i%masklen];
-}
-
 #endif
+
+
 
 #endif
 #endif

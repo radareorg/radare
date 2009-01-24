@@ -21,6 +21,5 @@ int main()
 	ret = r_asm_asm(&a, buf);
 	if (!ret)
 		printf("invalid\n");
-	else
-		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
+	else printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
 }

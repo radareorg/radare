@@ -95,21 +95,21 @@ static int indent_count( int fd )
 }
 #endif
 
-static unsigned char get_num( char * str, int len )
+static unsigned char get_num(const char * str, int len)
 {
-	char* strp;
+	u8 * strp;
 	int value;
 
-	strp = malloc(sizeof(char)*len);
-	memcpy( strp, str, len );
+	strp = alloca(len+1);
+	memset(strp, 0, len);
+	memcpy(strp, str, len );
 	
 	if (strp[0] == '\\') {
 		strp[0] = '0';
 		sscanf (strp,"%x",&value );
-	} else	sscanf (strp,"%c",(char *)&value );
+	} else	value = strp[0]; //sscanf (strp,"%c",(char *)&value );
 	value = value & 0xFF ;
 
-	free(strp);
 	return (unsigned char)value ;
 }
 

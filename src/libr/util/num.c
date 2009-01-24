@@ -25,10 +25,10 @@ u64 htonq(u64 value) {
 
 void r_num_minmax_swap(u64 *a, u64 *b)
 {
-	if (*f>*t) {
-		u64 tmp = *f;
-		*f = *t;
-		*t = tmp;
+	if (*a>*b) {
+		u64 tmp = *a;
+		*a = *b;
+		*b = tmp;
 	}
 }
 

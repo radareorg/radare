@@ -1,33 +1,10 @@
-/*
- * Copyright (C) 2006, 2007, 2008, 2009
- *       esteve <eslack.org>
- *
- * radare is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with radare; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+/* radare - LGPL - Copyright 2006-2009 esteve<eslack.org> */
+
+#include "r_search.h"
+
 #include <stdio.h>
 #include <unistd.h>
-
 #include <stdlib.h>
-
-#include "radare.h"
-#include "config.h"
-#include "main.h"
 
 #define CTXMINB 5
 
@@ -74,6 +51,7 @@ static int is_fi_present(fnditem* n, unsigned char* blk , int patlen)
 	return 0;
 }
 
+// XXX needs to be refactored
 int do_byte_pat(int patlen) 
 {
 	unsigned char block[BSIZE+MAX_PATLEN];
@@ -86,10 +64,15 @@ int do_byte_pat(int patlen)
 	int pcnt, cnt=0, k=0;
 	u64 intaddr;
 	/* end addr */
-	u64 bytes =  (config.limit!=0)?(config.limit-config.seek):config.block_size;
+	//u64 bytes =  (config.limit!=0)?(config.limit-config.seek):config.block_size;
+#warning bytes not defined
+	u64 bytes  = 0;
+	u64 bact = 0;
  	/* start addr */
-	u64 bact = config.seek;
+	//u64 bact = config.seek;
+#warning bact = curseek not defined
 
+#if 0
 	if (patlen < 1 || patlen > MAX_PATLEN) {
 		eprintf("Invalid pattern length (must be > 1 and < %d)\n", MAX_PATLEN);
 		return 0;
@@ -97,12 +80,12 @@ int do_byte_pat(int patlen)
 	str = config_get("search.from");
 	if (str&&str[0]) {
 		bact = config_get_i("search.from");
-		eprintf("Searching from 0x%08llx\n", bact);
+		fprintf(stderr, "Searching from 0x%08llx\n", bact);
 	}
 	str = config_get("search.to");
 	if (str&&str[0]) {
 		bytes = config_get_i("search.to");
-		eprintf("Searching from 0x%08llx\n", bytes);
+		fprintf(stderr, "Searching from 0x%08llx\n", bytes);
 	}
 
 	bytes += bact;
@@ -110,43 +93,48 @@ int do_byte_pat(int patlen)
 	root = init_fi();
 
 	radare_controlc();
+#endif
 
 	pcnt = -1;
-	while ( !config.interrupted && bact < bytes ) {
+	//while ( !config.interrupted && bact < bytes ) {
+	while ( bact < bytes ) {
 	//	radare_seek ( bact , SEEK_SET );
 		bproc = bact + patlen ;
 //		read ( fd, sblk, patlen );
-		radare_read_at(bact, sblk, patlen);
+#warning bytepattern should be used with a read callback
+	//XXX	radare_read_at(bact, sblk, patlen);
 		sblk[patlen]=0;
 
 		intaddr = bact;
 		cnt = 0;
-		while ( !config.interrupted && bproc < bytes ) {
-			radare_controlc();
+		//while ( !config.interrupted && bproc < bytes ) {
+		while ( bproc < bytes ) {
+			//radare_controlc();
 			nr = ((bytes-bproc) < BSIZE)?(bytes-bproc):BSIZE;
 			nr = nr + ( patlen - (nr % patlen) ); // tamany de bloc llegit multiple superior de tamany busqueda
 			//rb = read ( fd, block, nr );
-			rb = radare_read_at(bproc, block, nr);
+			//rb = radare_read_at(bproc, block, nr);
+#warning XXX
 			moar = 0;
 			for(i=0; i<nr; i++){
 				if (!memcmp(&block[i], sblk, patlen) && !is_fi_present(root, sblk, patlen)){
 					if (cnt == 0) {
-						cons_newline();
+						printf("\n");
 						add_fi( root, sblk , patlen);
 						pcnt++;
-						cons_printf("bytes:%d: ", pcnt);
+						printf("bytes:%d: ", pcnt);
 						for(k = 0; k<patlen; k++)
-							cons_printf("%02x", sblk[k]);
-						cons_printf("\nfound:%d: 0x%08llx ", pcnt, intaddr);
+							printf("%02x", sblk[k]);
+						printf("\nfound:%d: 0x%08llx ", pcnt, intaddr);
 					}
 					moar++;
 					cnt++;
-					cons_printf("0x%08llx ", bproc+i );
+					printf("0x%08llx ", bproc+i );
 				}
 			}
 			if (moar>0) {
-				cons_printf("\ncount:%d: %d\n", pcnt, moar+1);
-				cons_flush();
+				printf("\ncount:%d: %d\n", pcnt, moar+1);
+				fflush(stdout);
 			}
 			bproc += rb;
 		}
@@ -155,7 +143,7 @@ int do_byte_pat(int patlen)
 			bact += (u64)patlen;
 		} else bact++;
 	}
-	cons_newline();
-	radare_controlc_end();
+	printf("\n");
+	//radare_controlc_end();
 	return 0;
 }

@@ -1,9 +1,5 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
-/* TODO;
- * -f [file]    compiles assembly file to 'file'.o
- * */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,13 +12,12 @@
 static int rasm_show_help()
 {
 	printf( "rasm2 [-e] [-o offset] [-a arch] [-s syntax] -d \"opcode\"|\"hexpairs\"|-\n"
-			" -d           Disassemble from hexpair bytes\n"
-			" -o [offset]  Offset where this opcode is suposed to be\n"
-			" -a [arch]    Select architecture (x86, arm)\n"
-			" -s [syntax]  Select syntax (intel, att, olly)\n"
-			" -e           Use big endian\n"
-			" If 'opcode' is '-' reads from stdin\n");
-	
+		" -d           Disassemble from hexpair bytes\n"
+		" -o [offset]  Offset where this opcode is suposed to be\n"
+		" -a [arch]    Select architecture (x86, arm)\n"
+		" -s [syntax]  Select syntax (intel, att, olly)\n"
+		" -e           Use big endian\n"
+		" If argument is '-' will read from stdin\n");
 	return 1;
 }
 
@@ -45,15 +40,13 @@ static int rasm_disasm(char *buf, u64 offset, char *arch, char *syntax, int big_
 
 	if (!strcmp(arch, "arm"))
 		r_asm_set_arch(&a, R_ASM_ARCH_ARM);
-	else
-		r_asm_set_arch(&a, R_ASM_ARCH_X86);
+	else r_asm_set_arch(&a, R_ASM_ARCH_X86);
 
 	if (!strcmp(syntax, "att"))
 		r_asm_set_syntax(&a, R_ASM_SYN_ATT);
 	else if (!strcmp(syntax, "olly"))
 		r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
-	else
-		r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
+	else r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
 
 	r_asm_set_big_endian(&a, big_endian);
 	r_asm_set_pc(&a, offset);
@@ -85,8 +78,7 @@ static int rasm_asm(char *buf, u64 offset, char *arch, char *syntax, int big_end
 	ret = r_asm_asm(&a, buf);
 	if (!ret)
 		printf("invalid\n");
-	else
-		printf("%s\n", a.buf_hex);
+	else printf("%s\n", a.buf_hex);
 
 	return (int)ret;
 }
@@ -126,22 +118,20 @@ int main(int argc, char *argv[])
 	if (argv[optind]) {
 		if (!strcmp(argv[optind], "-")) {
 			char buf[1024];
-			while(!feof(stdin)) {
+			for(;;) {
 				fgets(buf, 1024, stdin);
-				if (!feof(stdin)) {
-					buf[strlen(buf)-1]='\0';
-					if (dis)
-						offset += rasm_disasm(buf, offset, arch, syntax, big_endian);
-					else
-						offset += rasm_asm(buf, offset, arch, syntax, big_endian);
-				}
+				if (feof(stdin))
+					break;
+				buf[strlen(buf)-1]='\0';
+				if (dis)
+					offset += rasm_disasm(buf, offset, arch, syntax, big_endian);
+				else offset += rasm_asm(buf, offset, arch, syntax, big_endian);
 			}
 			return 0;
 		}
 		if (dis)
 			return rasm_disasm(argv[optind], offset, arch, syntax, big_endian);
-		else
-			return rasm_asm(argv[optind], offset, arch, syntax, big_endian);
+		else return rasm_asm(argv[optind], offset, arch, syntax, big_endian);
 	}
 
 	return 0;
