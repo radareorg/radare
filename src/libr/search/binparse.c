@@ -29,8 +29,8 @@ token:  Fruit for the loom
 void r_search_binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
 {	
 	int i;
-	for ( i = 0; i < ntok ; i ++ )
-		tlist[i].mask = maskout[i%masklen];
+	for(i=0; i < ntok ; i ++ )
+		tlist[i].mask = maskout[masklen?i%masklen:0];
 }
 
 static u8 get_byte(char *str, int len)
@@ -291,6 +291,8 @@ struct r_search_binparse_t *binparse_new(int kws)
 int r_search_binparse_free(struct r_search_binparse_t *ptokenizer)
 {
 	int i;
+	if (ptokenizer == NULL)
+		return 0;
 	for (i=0; i<ptokenizer->nlists; i++) {
 		free(ptokenizer->tls[i]->tl);
 		free(ptokenizer->tls[i]);
