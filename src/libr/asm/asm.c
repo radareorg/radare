@@ -37,9 +37,11 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 	switch (arch) {
 	case R_ASM_ARCH_X86:
 		a->r_asm_disasm = &r_asm_x86_disasm;
+		a->r_asm_asm = &r_asm_x86_asm;
 		break;
 	case R_ASM_ARCH_ARM:
 		a->r_asm_disasm = &r_asm_arm_disasm;
+		a->r_asm_asm = NULL;
 		break;
 	case R_ASM_ARCH_PPC:
 	case R_ASM_ARCH_M68K:
@@ -102,5 +104,12 @@ u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	if (a->r_asm_disasm != NULL)
 		return a->r_asm_disasm(a, buf, len);
+	else return -1;
+}
+
+u32 r_asm_asm(struct r_asm_t *a, char *buf)
+{
+	if (a->r_asm_asm != NULL)
+		return a->r_asm_asm(a, buf);
 	else return -1;
 }

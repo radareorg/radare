@@ -66,7 +66,7 @@ static int rabin_show_entrypoint(const char *file)
 	} else {
 		printf("[Entrypoint]\n");
 		printf("address=0x%08llx offset=0x%08llx baddr=0x%08llx\n",
-			   baddr+entry->rva, entry->offset, baddr);
+				baddr+entry->rva, entry->offset, baddr);
 	}
 
 	r_bin_close(&bin);
@@ -101,12 +101,12 @@ static int rabin_show_imports(const char *file)
 		if (rad) {
 			r_flag_name_filter(importsp->name);
 			printf("f imp.%s @ 0x%08llx\n",
-				   importsp->name, baddr+importsp->rva);
+					importsp->name, baddr+importsp->rva);
 		} else printf("address=0x%08llx offset=0x%08llx ordinal=%03i "
-					  "hint=%03i bind=%s type=%s name=%s\n",
-					  baddr+importsp->rva, importsp->offset,
-					  importsp->ordinal, importsp->hint,  importsp->bind,
-					  importsp->type, importsp->name);
+				"hint=%03i bind=%s type=%s name=%s\n",
+				baddr+importsp->rva, importsp->offset,
+				importsp->ordinal, importsp->hint,  importsp->bind,
+				importsp->type, importsp->name);
 		importsp++; ctr++;
 	}
 
@@ -153,14 +153,12 @@ static int rabin_show_symbols(const char *file)
 			}
 			printf("f sym.%s @ 0x%08llx\n",
 					symbolsp->name, baddr+symbolsp->rva);
-		} else {
-			printf("address=0x%08llx offset=0x%08llx ordinal=%03i "
+		} else printf("address=0x%08llx offset=0x%08llx ordinal=%03i "
 				"forwarder=%s size=%08i bind=%s type=%s name=%s\n",
 				baddr+symbolsp->rva, symbolsp->offset,
 				symbolsp->ordinal, symbolsp->forwarder,
 				symbolsp->size, symbolsp->bind, symbolsp->type, 
 				symbolsp->name);
-		}
 		symbolsp++; ctr++;
 	}
 
@@ -196,25 +194,25 @@ static int rabin_show_sections(const char *file)
 		if (rad) {
 			r_flag_name_filter(sectionsp->name);
 			printf("f section.%s @ 0x%08llx\n",
-				   sectionsp->name, baddr+sectionsp->rva);
+					sectionsp->name, baddr+sectionsp->rva);
 			printf("f section.%s_end @ 0x%08llx\n",
-				   sectionsp->name, baddr+sectionsp->rva+sectionsp->size);
+					sectionsp->name, baddr+sectionsp->rva+sectionsp->size);
 			printf("[%02i] address=0x%08llx offset=0x%08llx size=%08li "
-				   "privileges=%c%c%c%c name=%s\n",
-				   ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
-				   R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
-				   R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
-				   R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
-				   R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
-				   sectionsp->name);
+					"privileges=%c%c%c%c name=%s\n",
+					ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
+					R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
+					R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
+					R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
+					R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
+					sectionsp->name);
 		} else printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08li "
-				  "privileges=%c%c%c%c name=%s\n",
-				  ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
-				  R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
-				  R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
-				  R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
-				  R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
-				  sectionsp->name);
+				"privileges=%c%c%c%c name=%s\n",
+				ctr, baddr+sectionsp->rva, sectionsp->offset, sectionsp->size,
+				R_BIN_SCN_SHAREABLE(sectionsp->characteristics)?'s':'-',
+				R_BIN_SCN_READABLE(sectionsp->characteristics)?'r':'-',
+				R_BIN_SCN_WRITABLE(sectionsp->characteristics)?'w':'-',
+				R_BIN_SCN_EXECUTABLE(sectionsp->characteristics)?'x':'-',
+				sectionsp->name);
 		sectionsp++; ctr++;
 	}
 
@@ -229,7 +227,6 @@ static int rabin_show_sections(const char *file)
 
 static int rabin_show_info(const char *file)
 {
-	u64 baddr;
 	r_bin_obj bin;
 	r_bin_info *info;
 
@@ -238,38 +235,36 @@ static int rabin_show_info(const char *file)
 		return 1;
 	}
 
-	baddr = r_bin_get_baddr(&bin);
-
 	info = r_bin_get_info(&bin);
 
 	if (rad) {
 		printf("e file.type=%s\n"
-			   "e cfg.bigendian=%s\n"
-			   "e asm.os=%s\n"
-			   "e asm.arch=%s\n"
-			   "e dbg.dwarf=%s\n",
-			   info->rclass, info->big_endian?"True":"False", info->os, info->arch,
-			   R_BIN_DBG_STRIPPED(info->dbg_info)?"False":"True");
+				"e cfg.bigendian=%s\n"
+				"e asm.os=%s\n"
+				"e asm.arch=%s\n"
+				"e dbg.dwarf=%s\n",
+				info->rclass, info->big_endian?"True":"False", info->os, info->arch,
+				R_BIN_DBG_STRIPPED(info->dbg_info)?"False":"True");
 	} else printf("[File info]\n"
-		  "Type=%s\n"
-		  "Class=%s\n"
-		  "Arch=%s\n"
-		  "Machine=%s\n"
-		  "OS=%s\n"
-		  "Subsystem=%s\n"
-		  "Big endian=%s\n"
-		  "Stripped=%s\n"
-		  "Static=%s\n"
-		  "Line_nums=%s\n"
-		  "Local_syms=%s\n"
-		  "Relocs=%s\n",
-		  info->type, info->class, info->arch, info->machine, info->os, 
-		  info->subsystem, info->big_endian?"True":"False",
-		  R_BIN_DBG_STRIPPED(info->dbg_info)?"True":"False",
-		  R_BIN_DBG_STATIC(info->dbg_info)?"True":"False",
-		  R_BIN_DBG_LINENUMS(info->dbg_info)?"True":"False",
-		  R_BIN_DBG_SYMS(info->dbg_info)?"True":"False",
-		  R_BIN_DBG_RELOCS(info->dbg_info)?"True":"False");
+			"Type=%s\n"
+			"Class=%s\n"
+			"Arch=%s\n"
+			"Machine=%s\n"
+			"OS=%s\n"
+			"Subsystem=%s\n"
+			"Big endian=%s\n"
+			"Stripped=%s\n"
+			"Static=%s\n"
+			"Line_nums=%s\n"
+			"Local_syms=%s\n"
+			"Relocs=%s\n",
+			info->type, info->class, info->arch, info->machine, info->os, 
+			info->subsystem, info->big_endian?"True":"False",
+			R_BIN_DBG_STRIPPED(info->dbg_info)?"True":"False",
+			R_BIN_DBG_STATIC(info->dbg_info)?"True":"False",
+			R_BIN_DBG_LINENUMS(info->dbg_info)?"True":"False",
+			R_BIN_DBG_SYMS(info->dbg_info)?"True":"False",
+			R_BIN_DBG_RELOCS(info->dbg_info)?"True":"False");
 
 	r_bin_close(&bin);
 	free(info);
@@ -284,7 +279,7 @@ static int rabin_do_operation(const char *file, const char *op)
 
 	if (!strcmp(op, "help")) {
 		printf("Operation string:\n"
-			"  Resize section: r/.data/1024 (ONLY ELF32)\n");
+				"  Resize section: r/.data/1024 (ONLY ELF32)\n");
 		return 1;
 	}
 	arg = alloca(strlen(op)+1);

@@ -27,14 +27,16 @@ enum {
 };
 
 struct r_asm_t {
-	u32 arch;
-	u32 bits;
-	u32 big_endian;
-	u32 syntax;
-	u64 pc;
-	char buf_asm[255];
-	char buf_hex[255];
-	u32 (*r_asm_disasm)(struct r_asm_t *a, u8 *buf, u32 len);
+	u32  arch;
+	u32  bits;
+	u32  big_endian;
+	u32  syntax;
+	u64  pc;
+	char buf_asm[256];
+	char buf_hex[256];
+	char buf_err[256];
+	u32  (*r_asm_disasm)(struct r_asm_t *a, u8 *buf, u32 len);
+	u32  (*r_asm_asm)(struct r_asm_t *a, char *buf);
 };
 
 /* asm.c */
@@ -47,9 +49,11 @@ int r_asm_set_big_endian(struct r_asm_t *a, u32 boolean);
 int r_asm_set_syntax(struct r_asm_t *a, u32 syntax);
 int r_asm_set_pc(struct r_asm_t *a, u64 pc);
 u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
+u32 r_asm_asm(struct r_asm_t *a, char *buf);
 
 /* arch/x86/asm.c */
 u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len);
+u32 r_asm_x86_asm(struct r_asm_t *a, char *buf);
 
 /* arch/arm/asm.c */
 u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
