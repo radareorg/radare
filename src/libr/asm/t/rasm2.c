@@ -12,12 +12,13 @@
 static int rasm_show_help()
 {
 	printf( "rasm2 [-e] [-o offset] [-a arch] [-s syntax] -d \"opcode\"|\"hexpairs\"|-\n"
-		" -d           Disassemble from hexpair bytes\n"
-		" -o [offset]  Offset where this opcode is suposed to be\n"
-		" -a [arch]    Select architecture (x86, arm)\n"
-		" -s [syntax]  Select syntax (intel, att, olly)\n"
-		" -e           Use big endian\n"
-		" If argument is '-' will read from stdin\n");
+			" -d           Disassemble from hexpair bytes\n"
+			" -o [offset]  Offset where this opcode is suposed to be\n"
+			" -a [arch]    Select architecture (x86, arm)\n"
+			" -s [syntax]  Select syntax (intel, att, olly)\n"
+			" -e           Use big endian\n"
+			" If the last argument is '-' reads from stdin\n");
+	
 	return 1;
 }
 

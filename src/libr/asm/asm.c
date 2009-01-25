@@ -9,10 +9,12 @@
 
 int r_asm_init(struct r_asm_t *a)
 {
+	memset(a, '\0', sizeof(struct r_asm_t));
 	r_asm_set_arch(a, R_ASM_ARCH_X86);
 	r_asm_set_bits(a, 32);
 	r_asm_set_big_endian(a, 0);
 	r_asm_set_syntax(a, R_ASM_SYN_INTEL);
+	r_asm_set_parser(a, R_ASM_PAR_NULL, NULL);
 	r_asm_set_pc(a, 0);
 	return 1;
 }
@@ -40,17 +42,9 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 		a->r_asm_disasm = &r_asm_arm_disasm;
 		a->r_asm_asm = NULL;
 		break;
-	case R_ASM_ARCH_PPC:
-	case R_ASM_ARCH_M68K:
-	case R_ASM_ARCH_JAVA:
-	case R_ASM_ARCH_MIPS:
-	case R_ASM_ARCH_SPARC:
-	case R_ASM_ARCH_CSR:
-	case R_ASM_ARCH_MSIL:
-	case R_ASM_ARCH_OBJD:
-	case R_ASM_ARCH_BF:
-		return -1;
 	default:
+		a->r_asm_disasm = NULL;
+		a->r_asm_asm = NULL;
 		return -1;
 	}
 	a->arch = arch;
@@ -83,12 +77,30 @@ int r_asm_set_syntax(struct r_asm_t *a, u32 syntax)
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
 	case R_ASM_SYN_OLLY:
-	case R_ASM_SYN_PSEUDO:
 		a->syntax = syntax;
 		return 1;
 	default:
 		return -1;
 	}
+}
+
+int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux)
+{
+	switch (parser) {
+	case R_ASM_PAR_PSEUDO:
+		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
+			a->r_asm_parser = &r_asm_x86_pseudo;
+		} else {
+			a->r_asm_parser = NULL;
+		}
+		break;
+	default:
+		a->r_asm_parser = NULL;
+		return -1;
+	}
+	a->parser = parser;
+	a->aux = aux;
+	return 1;
 }
 
 int r_asm_set_pc(struct r_asm_t *a, u64 pc)
@@ -99,9 +111,17 @@ int r_asm_set_pc(struct r_asm_t *a, u64 pc)
 
 u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
+	u32 ret = 0;
+
 	if (a->r_asm_disasm != NULL)
-		return a->r_asm_disasm(a, buf, len);
+		ret = a->r_asm_disasm(a, buf, len);
 	else return 0;
+
+	if (a->r_asm_parser != NULL)
+		a->r_asm_parser(a, a->aux, a->buf_asm);
+	else strncpy(a->buf_par, a->buf_asm, 256);
+
+	return ret;
 }
 
 u32 r_asm_asm(struct r_asm_t *a, char *buf)

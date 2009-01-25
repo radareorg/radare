@@ -1,7 +1,6 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 /* TODO:
- * Use r_bin, r_util...
  * -l        Linked libraries
  * -L [lib]  dlopen library and show address
  * -z        Strings
@@ -15,6 +14,7 @@
 #include <r_types.h>
 #include <r_bin.h>
 #include <r_flags.h>
+#include <r_util.h>
 
 #define ACTION_UNK       0x0000
 #define ACTION_ENTRY     0x0001 
@@ -303,7 +303,7 @@ static int rabin_do_operation(const char *file, const char *op)
 		ptr2 = strchr(ptr, '/');
 		ptr2[0]='\0';
 
-		Elf32_r_bin_elf_resize_section(&bin, ptr, atoi(ptr2+1));
+		Elf32_r_bin_elf_resize_section(&bin, ptr, r_num_math(NULL,ptr2+1));
 	}
 	
 	Elf32_r_bin_elf_close(&bin);

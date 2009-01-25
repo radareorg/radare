@@ -23,13 +23,10 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
-	case R_ASM_SYN_PSEUDO:
 		ud_init(&disasm_obj.ud);
 		if (a->syntax == R_ASM_SYN_INTEL)
 			ud_set_syntax(&disasm_obj.ud, UD_SYN_INTEL);
-		else if (a->syntax == R_ASM_SYN_ATT)
-			ud_set_syntax(&disasm_obj.ud, UD_SYN_ATT);
-		else ud_set_syntax(&disasm_obj.ud, UD_SYN_PSEUDO);
+		else ud_set_syntax(&disasm_obj.ud, UD_SYN_ATT);
 		ud_set_mode(&disasm_obj.ud, a->bits);
 		ud_set_pc(&disasm_obj.ud, a->pc);
 		ud_set_input_buffer(&disasm_obj.ud, buf, len);
@@ -61,7 +58,6 @@ u32 r_asm_x86_asm(struct r_asm_t *a, char *buf)
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
-	case R_ASM_SYN_PSEUDO:
 		/* TODO: Use gas for assembling */
 		ret = 0;
 		break;

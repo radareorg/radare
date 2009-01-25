@@ -22,6 +22,6 @@ int main()
 		r_asm_set_pc(&a, a.pc + ret);
 		ret = r_asm_disasm(&a, buf+idx, len-idx);
 		idx += ret;
-		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
+		printf("DISASM %s HEX %s PAR %s\n", a.buf_asm, a.buf_hex, a.buf_par);
 	}
 }
