@@ -38,7 +38,6 @@ static u8 get_byte(char *str, int len)
 	int value;
 	char* strp = alloca(sizeof(char)*len);
 	memcpy(strp, str, len);
-	
 	if (strp[0] == '\\') {
 		strp[0] = '0';
 		sscanf (strp,"%x",&value );

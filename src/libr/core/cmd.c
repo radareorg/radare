@@ -281,13 +281,93 @@ static int cmd_flag(void *data, const char *input)
 
 static int cmd_write(void *data, const char *input)
 {
+	int i, len = strlen(input);
+	char *tmp, *str = alloca(len)+1;
 	struct r_core_t *core = (struct r_core_t *)data;
+	memcpy(str, input+1, len);
 	switch(input[0]) {
 	case ' ':
-		// write string
+		// write strifng
+		len = r_str_escape(str);
+		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(core->file->fd, str, len);
+		r_core_block_read(core, 0);
+		break;
+	case 'w':
+		str = str+1;
+		len = len-1;
+		len *= 2;
+		tmp = alloca(len);
+		for(i=0;i<len;i++) {
+			if (i%2) tmp[i] = 0;
+			else tmp[i] = str[i>>1];
+		}
+		str = tmp;
+
+		// write strifng
+		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(core->file->fd, str, len);
+		r_core_block_read(core, 0);
 		break;
 	case 'x':
+		{
+		int len = strlen(input);
+		char *buf = alloca(len);
+		len = r_hex_str2bin(input+1, buf);
+		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(core->file->fd, buf, len);
+		r_core_block_read(core, 0);
+		}
 		// write hexpairs
+		break;
+	case 'b':
+		{
+		int len = strlen(input);
+		char *buf = alloca(len);
+		len = r_hex_str2bin(input+1, buf);
+		r_mem_copyloop(core->block, buf, core->blocksize, len);
+		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(core->file->fd, core->block, core->blocksize);
+		r_core_block_read(core, 0);
+		}
+		break;
+	case 'm':
+		{
+		int len = strlen(input+1);
+		len = r_hex_str2bin(input+1, str);
+		switch(input[1]) {
+		case '\0':
+			fprintf(stderr, "Current write mask: TODO\n");
+			// TODO
+			break;
+		case '?':
+			break;
+		case '-':
+			r_io_set_write_mask(-1, 0, 0);
+			fprintf(stderr, "Write mask disabled\n");
+			break;
+		case ' ':
+			if (len == 0) {
+				fprintf(stderr, "Invalid string\n");
+			} else {
+				r_io_set_write_mask(core->file->fd, str, len);
+				fprintf(stderr, "Write mask set to '");
+				for (i=0;i<len;i++)
+					fprintf(stderr, "%02x", str[i]);
+				fprintf(stderr, "'\n");
+			}
+			break;
+		}
+		}
+		break;
+	default:
+	case '?':
+		fprintf(stderr, "Usage: w[x] [str]\n"
+			" w foobar   ; write string 'foobar'\n"
+			" ww foobar  ; write wide string 'f\\x00o\\x00o\\x00b\\x00a\\x00r\\x00'\n"
+			" wb 010203  ; fill current block with cyclic hexpairs\n"
+			" wx 9090    ; write two intel nops\n"
+			" wm f0ff    ; cyclic write mask\n");
 		break;
 	}
 	return 0;

@@ -50,6 +50,7 @@ int r_str_ccmp(const char *dst, const char *orig, int ch);
 int r_str_cmp(const char *dst, const char *orig, int len);
 int r_str_ccpy(char *dst, char *orig, int ch);
 char *r_str_slurp(const char *str);
+char *r_str_slurp_random_line(const char *file);
 const char *r_str_get(const char *str);
 char *r_str_dup(char *ptr, const char *string);
 void *r_str_free(void *ptr);
@@ -60,8 +61,10 @@ int r_str_re_match(const char *str, const char *reg);
 int r_str_re_replace(const char *str, const char *reg, const char *sub);
 char *r_str_sub(char *string, char *pat, char *rep, int global);
 
+int r_str_escape(char *buf);
 int r_hex_pair2bin(const char *arg);
 int r_hex_str2bin(const char *in, u8 *out);
+int r_hex_bin2str(const char *in, int len, u8 *out);
 
 int r_hex_to_byte(u8 *val, u8 c);
 

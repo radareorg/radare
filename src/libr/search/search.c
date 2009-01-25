@@ -109,6 +109,10 @@ int r_search_update(struct r_search_t *s, u64 from, const u8 *buf, int len)
 		for(i=0;i<len;i++)
 			ret += r_search_binparse_update(s->bp,buf[i], from+i);
 		break;
+	case R_SEARCH_STRING:
+		for(i=0;i<len;i++)
+			ret += r_search_strings_update(buf+i, i, 2, 255, 0 /*enc*/, i, "");
+		break;
 	case R_SEARCH_PATTERN:
 		break;
 	}

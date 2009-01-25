@@ -43,6 +43,7 @@ struct r_io_handle_t *r_io_handle_resolve_fd(int fd);
 
 /* io/io.c */
 int r_io_init();
+int r_io_set_write_mask(int fd, const u8 *buf, int len);
 int r_io_open(const char *file, int flags, int mode);
 int r_io_read(int fd, u8 *buf, int len);
 int r_io_write(int fd, const u8 *buf, int len);

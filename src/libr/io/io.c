@@ -73,17 +73,49 @@ int r_io_resize(const char *file, int flags, int mode)
 	return -1;
 }
 
+static int r_io_write_mask_fd = -1;
+static u8 *r_io_write_mask_buf;
+static int r_io_write_mask_len;
+
+int r_io_set_write_mask(int fd, const u8 *buf, int len)
+{
+	if (len) {
+		r_io_write_mask_fd = fd;
+		r_io_write_mask_buf = (u8 *)malloc(len);
+		memcpy(r_io_write_mask_buf, buf, len);
+		r_io_write_mask_len = len;
+	} else r_io_write_mask_fd = -1;
+	return 0;
+}
+
 int r_io_write(int fd, const u8 *buf, int len)
 {
+	int i, ret = -1;
+
+	/* apply write binary mask */
+	if (r_io_write_mask_fd != -1) {
+		u8 *data = alloca(len);
+		r_io_lseek(fd, r_io_seek, R_IO_SEEK_SET);
+		r_io_read(fd, data, len);
+		r_io_lseek(fd, r_io_seek, R_IO_SEEK_SET);
+		for(i=0;i<len;i++) {
+			data[i] = buf[i] & \
+				r_io_write_mask_buf[i%r_io_write_mask_len];
+		}
+		buf = data;
+	}
+
 	if (r_io_map_write_at(r_io_seek, buf, len) != 0)
 		return len;
 	if (fd != cache_fd)
 		plugin = r_io_handle_resolve_fd(fd);
 	if (plugin) {
 		cache_fd = fd;
-		return plugin->write(fd, buf, len);
-	}
-	return write(fd, buf, len);
+		ret = plugin->write(fd, buf, len);
+	} else ret = write(fd, buf, len);
+	if (ret == -1)
+		fprintf(stderr, "io: cannot write\n");
+	return ret;
 }
 
 u64 r_io_lseek(int fd, u64 offset, int whence)

@@ -8,6 +8,16 @@
 static const char *nullstr = "";
 static const char *nullstr_c = "(null)";
 
+/* int c; ret = hex2int(&c, 'c'); */
+static int hex2int (unsigned char *val, unsigned char c)
+{
+	if ('0' <= c && c <= '9')      *val = (unsigned char)(*val) * 16 + ( c - '0');
+	else if (c >= 'A' && c <= 'F') *val = (unsigned char)(*val) * 16 + ( c - 'A' + 10);
+	else if (c >= 'a' && c <= 'f') *val = (unsigned char)(*val) * 16 + ( c - 'a' + 10);
+	else return 1;
+	return 0;
+}
+
 /* TODO: port to w32 */
 char *r_str_home(const char *str)
 {
@@ -98,6 +108,29 @@ char *r_str_slurp(const char *str)
         ret[sz]='\0';
         fclose(fd);
         return ret;
+}
+
+char *r_str_slurp_random_line(const char *file)
+{
+	int i, lines = 0;
+	struct timeval tv;
+	char *ptr, *str = r_str_slurp(file);
+	if (str) {
+		gettimeofday(&tv,NULL);
+		srand(getpid()+tv.tv_usec);
+		for(i=0;str[i];i++)
+			if (str[i]=='\n')
+				lines++;
+		lines = (rand()%lines);
+		for(i=0;str[i]&&lines;i++)
+			if (str[i]=='\n')
+				lines--;
+		ptr = str+i;
+		for(i=0;ptr[i];i++) if (ptr[i]=='\n') { ptr[i]='\0'; break; }
+		ptr = strdup(ptr);
+		free(str);
+	}
+	return ptr;
 }
 
 char *r_str_lchr(char *str, char chr)
@@ -280,3 +313,44 @@ char *r_str_sub(char *string, char *pat, char *rep, int global)
                 temp[templen] = 0;
         return (temp);
 }
+
+int r_str_escape(char *buf)
+{
+	unsigned char ch = 0, ch2 = 0;
+	int err = 0;
+	int i;
+
+	for(i=0;buf[i];i++) {
+		if (buf[i]=='\\') {
+			if (buf[i+1]=='e') {
+				buf[i] = 0x1b;
+				strcpy(buf+i+1, buf+i+2);
+			} else if (buf[i+1]=='r') {
+				buf[i] = 0x0d;
+				strcpy(buf+i+1, buf+i+2);
+			} else if (buf[i+1]=='n') {
+				buf[i] = 0x0a;
+				strcpy(buf+i+1, buf+i+2);
+			} else if (buf[i+1]=='x') {
+				err = ch2 = ch = 0;
+				if (!buf[i+2] || !buf[i+3]) {
+					printf("Unexpected end of string.\n");
+					return 0;
+				}
+				err |= hex2int(&ch,  buf[i+2]);
+				err |= hex2int(&ch2, buf[i+3]);
+				if (err) {
+					printf("Incorrect hexadecimal characters for conversion.\n");
+					return 0;
+				}
+				buf[i] = (ch<<4)+ch2;
+				strcpy(buf+i+1, buf+i+4);
+			} else {
+				printf("'\\x' expected.\n");
+				return 0;
+			}
+		}
+	}
+	return i;
+}
+
