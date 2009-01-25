@@ -47,8 +47,6 @@ extern void ud_translate_intel(struct ud*);
 
 extern void ud_translate_att(struct ud*);
 
-extern void ud_translate_pseudo(struct ud*);
-
 extern char* ud_insn_asm(struct ud* u);
 
 extern uint8_t* ud_insn_ptr(struct ud* u);

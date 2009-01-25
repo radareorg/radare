@@ -23,13 +23,10 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
-	case R_ASM_SYN_PSEUDO:
 		ud_init(&disasm_obj.ud);
 		if (a->syntax == R_ASM_SYN_INTEL)
 			ud_set_syntax(&disasm_obj.ud, UD_SYN_INTEL);
-		else if (a->syntax == R_ASM_SYN_ATT)
-			ud_set_syntax(&disasm_obj.ud, UD_SYN_ATT);
-		else ud_set_syntax(&disasm_obj.ud, UD_SYN_PSEUDO);
+		else ud_set_syntax(&disasm_obj.ud, UD_SYN_ATT);
 		ud_set_mode(&disasm_obj.ud, a->bits);
 		ud_set_pc(&disasm_obj.ud, a->pc);
 		ud_set_input_buffer(&disasm_obj.ud, buf, len);
@@ -61,16 +58,15 @@ u32 r_asm_x86_asm(struct r_asm_t *a, char *buf)
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
-	case R_ASM_SYN_PSEUDO:
 		/* TODO: Use gas for assembling */
 		ret = 0;
 		break;
 	case R_ASM_SYN_OLLY:
-		memset(a->buf_err, '\0', sizeof(a->buf_err));
+		a->buf_err[0] = '\0';
 		/* constsize == 0: Address constants and inmediate data of 16/32b */
 		/* attempt == 0: First attempt */
 		ret = Assemble(buf, a->pc, &asm_obj.olly, 0, 0, a->buf_err);
-		if (*a->buf_err)
+		if (a->buf_err[0])
 			ret = 0;
 		else {
 			snprintf(a->buf_asm, 256, "%s", buf);

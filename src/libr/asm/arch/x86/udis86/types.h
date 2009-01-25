@@ -188,7 +188,6 @@ typedef struct ud_operand 	ud_operand_t;
 
 #define UD_SYN_INTEL		ud_translate_intel
 #define UD_SYN_ATT		ud_translate_att
-#define UD_SYN_PSEUDO		ud_translate_pseudo
 #define UD_EOI			-1
 #define UD_INP_CACHE_SZ		32
 #define UD_VENDOR_AMD		0
