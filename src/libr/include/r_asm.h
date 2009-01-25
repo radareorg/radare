@@ -44,7 +44,7 @@ struct r_asm_t {
 	void *aux;
 	u32  (*r_asm_disasm)(struct r_asm_t *a, u8 *buf, u32 len);
 	u32  (*r_asm_asm)(struct r_asm_t *a, char *buf);
-	u32  (*r_asm_parser)(struct r_asm_t *a, void *aux, char *buf);
+	u32  (*r_asm_parse)(struct r_asm_t *a);
 };
 
 /* asm.c */
@@ -59,12 +59,13 @@ int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux);
 int r_asm_set_pc(struct r_asm_t *a, u64 pc);
 u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 u32 r_asm_asm(struct r_asm_t *a, char *buf);
+u32 r_asm_parse(struct r_asm_t *a);
 
 /* arch/x86/asm.c */
 u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 u32 r_asm_x86_asm(struct r_asm_t *a, char *buf);
 /* arch/x86/pseudo.c */
-u32 r_asm_x86_pseudo(struct r_asm_t *a, void *aux, char *buf);
+u32 r_asm_x86_pseudo(struct r_asm_t *a);
 
 /* arch/arm/asm.c */
 u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len);

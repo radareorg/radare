@@ -65,7 +65,7 @@ static int r_asm_x86_aop(int argc, const char *argv[], char *newstr)
 	return 0;
 }
 
-u32 r_asm_x86_pseudo(struct r_asm_t *a, void *aux, char *buf)
+u32 r_asm_x86_pseudo(struct r_asm_t *a)
 {
 	int i;
 	char w0[32];
@@ -75,7 +75,7 @@ u32 r_asm_x86_pseudo(struct r_asm_t *a, void *aux, char *buf)
 	char w4[32];
 	char *str, *ptr, *optr;
 
-	str = strdup(buf);
+	str = strdup(a->buf_asm);
 
 	if (str[0]!='\0') {
 		w0[0]='\0';

@@ -89,13 +89,13 @@ int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux)
 	switch (parser) {
 	case R_ASM_PAR_PSEUDO:
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
-			a->r_asm_parser = &r_asm_x86_pseudo;
+			a->r_asm_parse = &r_asm_x86_pseudo;
 		} else {
-			a->r_asm_parser = NULL;
+			a->r_asm_parse = NULL;
 		}
 		break;
 	default:
-		a->r_asm_parser = NULL;
+		a->r_asm_parse = NULL;
 		return -1;
 	}
 	a->parser = parser;
@@ -111,22 +111,25 @@ int r_asm_set_pc(struct r_asm_t *a, u64 pc)
 
 u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
-	u32 ret = 0;
-
 	if (a->r_asm_disasm != NULL)
-		ret = a->r_asm_disasm(a, buf, len);
-	else return 0;
-
-	if (a->r_asm_parser != NULL)
-		a->r_asm_parser(a, a->aux, a->buf_asm);
-	else strncpy(a->buf_par, a->buf_asm, 256);
-
-	return ret;
+		return a->r_asm_disasm(a, buf, len);
+	
+	return 0;
 }
 
 u32 r_asm_asm(struct r_asm_t *a, char *buf)
 {
 	if (a->r_asm_asm != NULL)
 		return a->r_asm_asm(a, buf);
-	else return 0;
+	
+	return 0;
+}
+
+u32 r_asm_parse(struct r_asm_t *a)
+{
+	if (a->r_asm_parse != NULL)
+		return a->r_asm_parse(a);
+	
+	strncpy(a->buf_par, a->buf_asm, 256);
+	return 0;
 }

@@ -62,11 +62,11 @@ u32 r_asm_x86_asm(struct r_asm_t *a, char *buf)
 		ret = 0;
 		break;
 	case R_ASM_SYN_OLLY:
-		memset(a->buf_err, '\0', sizeof(a->buf_err));
+		a->buf_err[0] = '\0';
 		/* constsize == 0: Address constants and inmediate data of 16/32b */
 		/* attempt == 0: First attempt */
 		ret = Assemble(buf, a->pc, &asm_obj.olly, 0, 0, a->buf_err);
-		if (*a->buf_err)
+		if (a->buf_err[0])
 			ret = 0;
 		else {
 			snprintf(a->buf_asm, 256, "%s", buf);

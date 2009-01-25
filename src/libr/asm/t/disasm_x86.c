@@ -20,13 +20,17 @@ int main()
 	r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
 	//r_asm_set_syntax(&a, R_ASM_SYN_ATT);
 	//r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
-	r_asm_set_parser(&a, R_ASM_PAR_PSEUDO, NULL);
-	//r_asm_set_parser(&a, R_ASM_PAR_NULL, NULL);
 	r_asm_set_pc(&a, 0x8048000);
 	while (idx < len) {
 		r_asm_set_pc(&a, a.pc + ret);
 		ret = r_asm_disasm(&a, buf+idx, len-idx);
 		idx += ret;
-		printf("DISASM %s HEX %s PAR %s\n", a.buf_asm, a.buf_hex, a.buf_par);
+		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
+		r_asm_set_parser(&a, R_ASM_PAR_NULL, NULL);
+		r_asm_parse(&a);
+		printf("PAR_NULL %s\n", a.buf_par);
+		r_asm_set_parser(&a, R_ASM_PAR_PSEUDO, NULL);
+		r_asm_parse(&a);
+		printf("PAR_PSEUDO %s\n", a.buf_par);
 	}
 }
