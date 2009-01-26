@@ -279,6 +279,7 @@ static int cmd_flag(void *data, const char *input)
 	return 0;
 }
 
+/* TODO: simplify using r_write */
 static int cmd_write(void *data, const char *input)
 {
 	int i, len = strlen(input);
@@ -292,6 +293,10 @@ static int cmd_write(void *data, const char *input)
 		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
 		r_io_write(core->file->fd, str, len);
 		r_core_block_read(core, 0);
+		break;
+	case 't':
+	case 'f':
+		fprintf(stderr, "TODO: wf, wt\n");
 		break;
 	case 'w':
 		str = str+1;
@@ -360,6 +365,69 @@ static int cmd_write(void *data, const char *input)
 		}
 		}
 		break;
+	case 'v':
+		{
+		u64 off = r_num_math(&core->num, input+1);
+		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		if (off&U64_32U) {
+			/* 8 byte addr */
+			u64 addr8;
+			memcpy((u8*)&addr8, (u8*)&off, 8); // XXX needs endian here
+		//	endian_memcpy((u8*)&addr8, (u8*)&off, 8);
+			r_io_write(core->file->fd, &addr8, 8);
+		} else {
+			/* 4 byte addr */
+			u32 addr4, addr4_ = (u32)off;
+			//drop_endian((u8*)&addr4_, (u8*)&addr4, 4); /* addr4_ = addr4 */
+			//endian_memcpy((u8*)&addr4, (u8*)&addr4_, 4); /* addr4 = addr4_ */
+			memcpy((u8*)&addr4, (u8*)&addr4_, 4); // XXX needs endian here too
+			r_io_write(core->file->fd, &addr4, 4);
+		}
+		r_core_block_read(core, 0);
+		}
+		break;
+	case 'o':
+                switch(input[1]) {
+                case 'a':
+                case 's':
+                case 'A':
+                case 'x':
+                case 'r':
+                case 'l':
+                case 'm':
+                case 'd':
+                case 'o':
+                        if (input[2]!=' ') {
+                                fprintf(stderr, "Usage: 'wo%c 00 11 22'\n", input[1]);
+                                return 0;
+                        }
+                case '2':
+                case '4':
+                        r_core_write_op(core, input+3, input[1]);
+                        break;
+                case '\0':
+                case '?':
+                default:
+                        fprintf(stderr, 
+                        "Usage: wo[xrlasmd] [hexpairs]\n"
+                        "Example: wox 90    ; xor cur block with 90\n"
+                        "Example: woa 02 03 ; add 2, 3 to all bytes of cur block\n"
+                        "Supported operations:\n"
+                        "  woa  addition            +=\n"
+                        "  wos  substraction        -=\n"
+                        "  wom  multiply            *=\n"
+                        "  wod  divide              /=\n"
+                        "  wox  xor                 ^=\n"
+                        "  woo  or                  |=\n"
+                        "  woA  and                 &=\n"
+                        "  wor  shift right         >>=\n"
+                        "  wol  shift left          <<=\n"
+                        "  wo2  2 byte endian swap  2=\n"
+                        "  wo4  4 byte endian swap  4=\n"
+                        );
+                        break;
+                }
+                break;
 	default:
 	case '?':
 		fprintf(stderr, "Usage: w[x] [str]\n"
@@ -367,6 +435,8 @@ static int cmd_write(void *data, const char *input)
 			" ww foobar  ; write wide string 'f\\x00o\\x00o\\x00b\\x00a\\x00r\\x00'\n"
 			" wb 010203  ; fill current block with cyclic hexpairs\n"
 			" wx 9090    ; write two intel nops\n"
+			" wv eip+34  ; write 32-64 bit value\n"
+			" wo[] hex   ; write in block with operation. 'wo?' fmi\n"
 			" wm f0ff    ; cyclic write mask\n");
 		break;
 	}
@@ -521,7 +591,8 @@ int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd, int *t
 			return 0;
 		}
 fprintf(stderr, "NEW FD: %d\n", *rfd);
-		dup2(9999, 1);
+		dup2(1, 9999);
+		dup2(*rfd, 1);
 		r_cons_stdout_set_fd(*rfd);
 	}
 	ptr = strchr(cmd, '@');
@@ -589,15 +660,17 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 			ret = 1;
 		} else
 		if (log) r_line_hist_add(command);
-		if (restoreseek) {
+		if (restoreseek)
 			r_core_seek(core, tmpseek);
-		}
 	}
 
 	if (newfd != 1) {
-		fprintf(stderr, "restore fd\n");
+		r_cons_flush();
+		close(newfd);
+		fprintf(stderr, "RESTORE fd\n");
 		r_cons_stdout_close(newfd);
-		dup2(1, 9999);
+		r_cons_stdout_set_fd(1);
+		dup2(9999, 1);
 	}
 
 	return ret;

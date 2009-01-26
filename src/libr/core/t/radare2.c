@@ -9,10 +9,11 @@ struct r_core_t r;
 
 int main_help(int line)
 {
-	if (line) printf("Usage: radare2 [-w] [file]\n");
-	else printf("Usage: radare2 [-w] [file]\n"
+	printf("Usage: radare2 [-wn] [-e k=v] [file]\n");
+	if (!line) printf(
 		" -w      open file in write mode\n"
-		" -e a=b  evaluate config var\n");
+		" -n      do not run ~/.radarerc\n"
+		" -e k=v  evaluate config var\n");
 	return 0;
 }
 
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	while (optind < argc) {
+	while (optind<argc) {
 		const char *file = argv[optind];
 		fh = r_core_file_open(&r, argv[optind++], perms);
 		if (fh == NULL) {
