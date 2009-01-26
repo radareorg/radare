@@ -162,10 +162,10 @@ typedef struct t_addrdec {
 typedef struct t_cmddata {
   ulong          mask;                 // Mask for first 4 bytes of the command
   ulong          code;                 // Compare masked bytes with this
-  char           len;                  // Length of the main command code
-  char           bits;                 // Special bits within the command
-  char           arg1,arg2,arg3;       // Types of possible arguments
-  char           type;                 // C_xxx + additional information
+  unsigned       len;                  // Length of the main command code
+  unsigned char  bits;                 // Special bits within the command
+  unsigned char  arg1,arg2,arg3;       // Types of possible arguments
+  unsigned       type;                 // C_xxx + additional information
   char           *name;                // Symbolic name for this command
 } t_cmddata;
 
@@ -351,7 +351,7 @@ ulong  Disasm(unsigned char *src,ulong srcsize,ulong srcip,
          t_disasm *disasm,int disasmmode);
 ulong  Disassembleback(unsigned char *block,ulong base,ulong size,ulong ip,int n);
 ulong  Disassembleforward(unsigned char *block,ulong base,ulong size,ulong ip,int n);
-int    Isfilling(ulong addr,char *data,ulong size,ulong align);
+int    Isfilling(ulong addr,unsigned char *data,ulong size,ulong align);
 int    Print3dnow(char *s,char *f);
 int    Printfloat10(char *s,long double ext);
 int    Printfloat4(char *s,float f);

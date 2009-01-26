@@ -22,8 +22,8 @@ if [ "$A" = "-h" ]; then
 	exit 1
 fi
 
-[ "`echo $Aseek | grep 0x`" ] && Aseek=`xc $Aseek`
-[ "`echo $Bseek | grep 0x`" ] && Bseek=`xc $Bseek`
+[ "`echo $Aseek | grep 0x`" ] && Aseek=`rax $Aseek`
+[ "`echo $Bseek | grep 0x`" ] && Bseek=`rax $Bseek`
 
 chk() {
 	if [ ! -e "$2" ]; then

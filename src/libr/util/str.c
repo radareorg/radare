@@ -3,6 +3,8 @@
 #include "r_types.h"
 #include "r_util.h"
 #include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
 
 /* stable code */
 static const char *nullstr = "";

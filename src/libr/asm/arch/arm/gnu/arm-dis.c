@@ -40,7 +40,9 @@ extern int arm_mode;
 #ifndef TRUE
 #define TRUE (!FALSE)
 #endif
+#ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__((unused))
+#endif
 #define ISSPACE(x) ((x) == ' ' || (x) == '\t' || (x) == '\n')
 
 #define ARM_EXT_V1	 1

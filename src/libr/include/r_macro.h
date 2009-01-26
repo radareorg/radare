@@ -9,8 +9,8 @@
 #define MACRO_LABELS 20
 
 struct r_macro_label_t {
-  char name[80];
-  char *ptr;
+	char name[80];
+	char *ptr;
 };
 
 struct r_macro_item_t {
@@ -26,7 +26,7 @@ struct r_macro_t {
 	u64 _brk_value;
 	int brk;
 	int (*cmd)(void *user, const char *cmd);
-	void (*printf)(const char str, ...);
+	int (*printf)(const char str, ...);
 	void *user;
 	struct r_num_t *num;
 	int labels_n;

@@ -3,6 +3,8 @@
 #ifndef _INCLUDE_R_ASM_H_
 #define _INCLUDE_R_ASM_H_
 
+#include "r_types.h"
+
 enum {
 	R_ASM_ARCH_NULL  = 0,
 	R_ASM_ARCH_X86   = 1,

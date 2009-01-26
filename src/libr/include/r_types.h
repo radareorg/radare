@@ -7,8 +7,13 @@
 #define u32 unsigned long
 #define u16 unsigned short
 #define u8  unsigned char
+
+#ifndef TRUE
 #define TRUE 1
+#endif
+#ifndef FALSE
 #define FALSE 0
+#endif
 
 /* types */
 

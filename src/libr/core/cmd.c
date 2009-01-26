@@ -145,9 +145,10 @@ static int cmd_help(void *data, const char *input)
 		" i [file]         ; get info about opened file\n"
 		" p?[len]          ; print current block with format and length\n"
 		" x [len]          ; alias for 'px' (print hexadecimal\n"
+		" w[mode] [arg]    ; multiple write operations\n"
 		" V                ; enter visual mode\n"
 		" ? [expr]         ; evaluate math expression\n"
-		" #[algo] [len]    ; evaluate math expression\n"
+		" #[algo] [len]    ; calculate hash checksum of current block\n"
 		" q [ret]          ; quit r\n"
 		"Append '?' to every char command to get detailed help\n"
 		"");

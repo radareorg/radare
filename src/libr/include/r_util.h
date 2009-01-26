@@ -65,7 +65,7 @@ char *r_str_sub(char *string, char *pat, char *rep, int global);
 int r_str_escape(char *buf);
 int r_hex_pair2bin(const char *arg);
 int r_hex_str2bin(const char *in, u8 *out);
-int r_hex_bin2str(const char *in, int len, u8 *out);
+int r_hex_bin2str(const char *in, int len, char *out);
 
 int r_hex_to_byte(u8 *val, u8 c);
 

@@ -7,4 +7,4 @@ if [ -z "$2" ]; then
 	echo "Usage: add [value] [value]"
 	exit 1
 fi
-xc $((`xc $1` + `xc $2`))
+rax $((`rax $1` + `rax $2`))

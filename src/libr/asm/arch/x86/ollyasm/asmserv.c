@@ -841,7 +841,7 @@ ulong Disassembleforward(unsigned char *block,ulong base,ulong size,ulong ip,int
 // filling command (usually some kind of NOP) used to align code to a specified
 // (align=power of 2, 0 means no alignment) border. Returns length of filling
 // command in bytes or 0 if command is not a recognized filling.
-int Isfilling(ulong addr,char *data,ulong size,ulong align) {
+int Isfilling(ulong addr,unsigned char *data,ulong size,ulong align) {
   if (data==NULL) return 0;            // Invalid parameters
   // Convert power of 2 to bitmask.
   align--;

@@ -4,7 +4,6 @@
 #include "r_util.h"
 #include <stdio.h>
 
-
 /* int c; ret = hex_to_byet(&c, 'c'); */
 int r_hex_to_byte(u8 *val, u8 c)
 {
@@ -38,7 +37,7 @@ int r_hex_pair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 	return (int)c;
 }
 
-int r_hex_bin2str(const char *in, int len, u8 *out)
+int r_hex_bin2str(const char *in, int len, char *out)
 {
 	int i;
 	char tmp[5];

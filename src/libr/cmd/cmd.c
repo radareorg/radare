@@ -1,6 +1,7 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 #include <r_cmd.h>
+#include <r_util.h>
 
 int r_cmd_set_data(struct r_cmd_t *cmd, void *data)
 {
@@ -11,7 +12,7 @@ int r_cmd_set_data(struct r_cmd_t *cmd, void *data)
 int r_cmd_add_long(struct r_cmd_t *cmd, const char *longcmd, const char *shortcmd, const char *desc)
 {
 	struct r_cmd_long_item_t *item;
-	item = MALLOC_STRUCT(struct r_cmd_item_t);
+	item = MALLOC_STRUCT(struct r_cmd_long_item_t);
 	if (item == NULL)
 		return -1;
 	strncpy(item->cmd, longcmd, sizeof(item->cmd));
@@ -64,10 +65,8 @@ int r_cmd_call(struct r_cmd_t *cmd, const char *input)
 int r_cmd_call_long(struct r_cmd_t *cmd, const char *input)
 {
 	char *inp;
-	char *inplen;
 	struct list_head *pos;
-
-	inplen = strlen(input)+1;
+	int inplen = strlen(input)+1;
 
 	list_for_each_prev(pos, &cmd->lcmds) {
 		struct r_cmd_long_item_t *c = list_entry(pos, struct r_cmd_long_item_t, list);

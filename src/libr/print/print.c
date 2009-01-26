@@ -83,7 +83,7 @@ void r_print_bytes(const u8* buf, int len, const char *fmt)
 
 void r_print_raw(const u8* buf, int len)
 {
-	r_cons_memcat(buf, len);
+	r_cons_memcat((char *)buf, len);
 }
 
 

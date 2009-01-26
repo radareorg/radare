@@ -8,7 +8,7 @@ while (($str = <STDIN>)) {
 	if ($str=~/0xffff/) {
 		chomp($str);
 		$str=~/(0xffff.*)/;
-		$num=`xc $1`;
+		$num=`rax $1`;
 		$str.="  ; $num";
 	}
 	print "$str";

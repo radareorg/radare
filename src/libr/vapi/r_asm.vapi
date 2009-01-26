@@ -24,16 +24,16 @@ namespace Radare.Asm {
 		SYN_PSEUDO = 4
 	}
 	[Compact]
-	[CCode (cname="struct r_asm_t", free_function="r_asm_free")]
+	[CCode (cname="struct r_asm_t", free_function="r_asm_free", cprefix="r_asm_")]
 	public class State {
 		public unowned string buf_asm;
 		public unowned string buf_hex;
 		public State();
 		public bool set_arch(Arch arch);
-		public bool set_size(int bits);
+		public bool set_bits(int bits);
 		public bool set_syntax(Syntax syntax);
 		public bool set_pc(uint64 addr);
-		public bool set_bigendian(bool big);
-		public bool disasm(u8 *buf, int length);
+		public bool set_big_endian(bool big);
+		public bool disasm(uint8 *buf, int length);
 	}
 }
