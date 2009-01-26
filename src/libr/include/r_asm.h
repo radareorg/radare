@@ -17,7 +17,7 @@ enum {
 	R_ASM_ARCH_CSR   = 8,
 	R_ASM_ARCH_MSIL  = 9,
 	R_ASM_ARCH_OBJD  = 10,
-	R_ASM_ARCH_BF    = 11,
+	R_ASM_ARCH_BF    = 11
 };
 
 enum {

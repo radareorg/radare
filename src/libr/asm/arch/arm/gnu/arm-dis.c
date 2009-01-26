@@ -1558,7 +1558,7 @@ static unsigned int ifthen_state;
 static unsigned int ifthen_next_state;
 /* The address of the insn for which the IT state is valid.  */
 //static bfd_vma ifthen_address;
-#define bfd_vma unsigned long 
+//#define bfd_vma unsigned long 
 static bfd_vma ifthen_address;
 #define IFTHEN_COND ((ifthen_state >> 4) & 0xf)
 

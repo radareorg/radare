@@ -72,7 +72,6 @@ u32 r_asm_x86_pseudo(struct r_asm_t *a)
 	char w1[32];
 	char w2[32];
 	char w3[32];
-	char w4[32];
 	char *str, *ptr, *optr;
 
 	str = strdup(a->buf_asm);
@@ -108,7 +107,7 @@ u32 r_asm_x86_pseudo(struct r_asm_t *a)
 			}
 		}
 		{
-			const char *wa[] = { w0, w1, w2, w3, w4 };
+			const char *wa[] = { w0, w1, w2, w3 };
 			int nw=0;
 
 			for(i=0;i<4;i++) {

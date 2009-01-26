@@ -73,7 +73,6 @@ int r_asm_set_big_endian(struct r_asm_t *a, u32 boolean)
 int r_asm_set_syntax(struct r_asm_t *a, u32 syntax)
 {
 	switch (syntax) {
-	case R_ASM_SYN_NULL:
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
 	case R_ASM_SYN_OLLY:

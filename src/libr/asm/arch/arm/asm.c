@@ -10,7 +10,7 @@
 
 #include "gnu/dis-asm.h"
 
-int print_insn_arm (bfd_vma pc, struct disassemble_info *info);
+
 static int arm_mode = 0;
 static unsigned long Offset = 0;
 static unsigned char bytes[4];
