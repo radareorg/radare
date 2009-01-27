@@ -12,6 +12,7 @@ int hit(struct r_search_kw_t *kw, void *user, u64 addr)
 int main(int argc, char **argv)
 {
 	struct r_search_t *rs;
+
 	rs = r_search_new(R_SEARCH_KEYWORD);
 	r_search_kw_add(rs, "lib", "");
 	r_search_set_callback(rs, &hit, buffer);

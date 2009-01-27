@@ -56,7 +56,7 @@ static int is_encoded(int encoding, unsigned char c)
 }
 
 // XXX last char is lost :(
-int r_search_strings_update(const unsigned char *buf, int min, int max, int enc, u64 offset, const char *match)
+int r_search_strings_update_char(const u8 *buf, int min, int max, int enc, u64 offset, const char *match)
 {
 	int i = 0;
 	static int widechar = 0;
