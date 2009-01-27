@@ -7,18 +7,42 @@
 int r_search_init(struct r_search_t *s, int mode)
 {
 	memset(s,'\0', sizeof(struct r_search_t));
-	s->bp = NULL;
+	if (!r_search_set_mode(s, mode))
+		return 0;
 	s->mode = mode;
+	s->user = NULL;
+	s->callback = NULL;
+	s->pattern_size = 0;
+	s->string_max = 255;
+	s->string_min = 3;
 	INIT_LIST_HEAD(&(s->kws));
 	INIT_LIST_HEAD(&(s->hits));
 	INIT_LIST_HEAD(&(s->hits));
-	return 0;
+	return 1;
+}
+
+int r_search_set_string_limits(struct r_search_t *s, u32 min, u32 max)
+{
+	if (max < min)
+		return 0;
+	s->string_min = min;
+	s->string_max = max;
+	return 1;
 }
 
 int r_search_set_mode(struct r_search_t *s, int mode)
 {
-	s->mode = mode;
-	return 0;
+	int ret = 0;
+	switch(mode) {
+	case R_SEARCH_KEYWORD:
+	case R_SEARCH_REGEXP:
+	case R_SEARCH_PATTERN:
+	case R_SEARCH_STRING:
+	case R_SEARCH_AES:
+		s->mode = mode;
+		ret = 1;
+	}
+	return ret;
 }
 
 struct r_search_t *r_search_new(int mode)
@@ -84,39 +108,90 @@ int r_search_internal(struct r_search_t *s)
 }
 #endif
 
-int r_search_start(struct r_search_t *s)
+int r_search_initialize(struct r_search_t *s)
 {
 	struct list_head *pos;
-	r_search_binparse_free(s->bp);
-	s->bp = binparse_new(s->n_kws);
 
 	list_for_each_prev(pos, &s->kws) {
 		struct r_search_kw_t *kw = list_entry(pos, struct r_search_kw_t, list);
-		r_search_binparse_add(s->bp, kw->keyword, kw->binmask);
+		kw->count = 0;
+		kw->idx = 0;
+	}
+	return 1;
+}
+
+int r_search_mybinparse_update(struct r_search_t *s, u64 from, const u8 *buf, int len)
+{
+	struct list_head *pos;
+	int i, count = 0;
+
+	for(i=0;i<len;i++) {
+		list_for_each_prev(pos, &s->kws) {
+			struct r_search_kw_t *kw = list_entry(pos, struct r_search_kw_t, list);
+			u8 ch = kw->bin_keyword[kw->idx];
+			u8 ch2 = buf[i];
+			if (kw->binmask_length != 0 && kw->idx < kw->binmask_length) {
+				ch &= kw->bin_binmask[kw->idx];
+				ch2 &= kw->bin_binmask[kw->idx];
+			}
+			if (ch == ch2) {
+				kw->idx++;
+				if (kw->idx == kw->keyword_length) {
+					if (s->callback)
+						s->callback(kw, s->user, (u64)from+i-kw->keyword_length+1);
+					else printf("hit%d_%d 0x%08llx ; %s\n",
+						count, kw->count, (u64)from+i+1, buf+i-kw->keyword_length+1);
+					kw->idx = 0;
+					kw->count++;
+				}
+			} else kw->idx = 0;
+			count++;
+		}
+		count = 0;
 	}
 	return 0;
 }
 
-int r_search_update(struct r_search_t *s, u64 from, const u8 *buf, int len)
+int r_search_set_pattern_size(struct r_search_t *s, int size)
 {
-	int i, ret = 0;
+	s->pattern_size = size;
+	return 0;
+}
+
+int r_search_set_callback(struct r_search_t *s, int (*callback)(struct r_search_kw_t *, void *, u64), void *user)
+{
+	s->callback = callback;
+	s->user = user;
+	return 0;
+}
+
+/* TODO: initialize update callback in _init */
+int r_search_update(struct r_search_t *s, u64 *from, const u8 *buf, u32 len)
+{
+	int ret = 0;
 	switch(s->mode) {
 	case R_SEARCH_KEYWORD:
-		for(i=0;i<len;i++)
-			ret += r_search_binparse_update(s->bp,buf[i], from+i);
+		r_search_mybinparse_update(s, *from, buf, len);
+		break;
+	case R_SEARCH_REGEXP:
 		break;
 	case R_SEARCH_AES:
-		for(i=0;i<len;i++)
-			ret += r_search_binparse_update(s->bp,buf[i], from+i);
+		ret += r_search_aes_update(s, *from, buf, len);
+		*from -= R_SEARCH_AES_BOX_SIZE;
 		break;
 	case R_SEARCH_STRING:
-		for(i=0;i<len;i++)
-			ret += r_search_strings_update(buf+i, i, 2, 255, 0 /*enc*/, i, "");
+		ret += r_search_strings_update(buf, s->string_min, s->string_max, 0, *from /*enc*/, "");
 		break;
 	case R_SEARCH_PATTERN:
+		//ret += r_search_pattern_update(buf, s->pattern_size
 		break;
 	}
 	return ret;
+}
+
+int r_search_update_i(struct r_search_t *s, u64 from, const u8 *buf, u32 len)
+{
+	return r_search_update(s, &from, buf, len);
 }
 
 #if 0

@@ -9,9 +9,7 @@
  * This source is public domain. Feel free to use it and distribute it.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <r_search.h>
 
 unsigned char table_sbox[256] = {
 0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -41,4 +39,16 @@ int aes_key_test(unsigned char *buf) {
     ) return 1;
     
     return 0;
+}
+
+int r_search_aes_update(struct r_search_t *s, u64 from, const u8 *buf, int len)
+{
+	int i, last = len-31;
+	if (last < 0)
+		return 0;
+	for(i=0;i<last;i++) {
+		if (aes_key_test(buf))
+			return i;
+	}
+	return 0;
 }

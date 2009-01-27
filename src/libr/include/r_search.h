@@ -7,11 +7,15 @@
 
 enum {
 	R_SEARCH_KEYWORD,
+	R_SEARCH_REGEXP,
 	R_SEARCH_PATTERN,
 	R_SEARCH_STRING,
 	R_SEARCH_AES
 };
 
+#define R_SEARCH_AES_BOX_SIZE 31
+
+#if 0
 /* binparse api */
 // TODO: Remove typedef!!
 typedef struct r_search_binparse_token {
@@ -42,6 +46,7 @@ int r_search_binparse_free(struct r_search_binparse_t *ptokenizer);
 int r_search_binparse_add(struct r_search_binparse_t *t, const char *string, const char *mask);
 int r_search_binparse_add_named(struct r_search_binparse_t *t, const char *name, const char *string, const char *mask);
 int r_search_binparse_update(struct r_search_binparse_t *t, u8 inchar, u64 where);
+#endif
 
 /* search api */
 
@@ -50,8 +55,10 @@ struct r_search_kw_t {
 	char binmask[128];
 	u8 bin_keyword[128];
 	u8 bin_binmask[128];
-	int keyword_length;
-	int binmask_length;
+	u32 keyword_length;
+	u32 binmask_length;
+	u32 idx; // searching purposes
+	u32 count;
 	struct list_head list;
 };
 
@@ -71,8 +78,12 @@ struct r_search_range_t {
 struct r_search_t {
 	int n_kws;
 	int mode;
-	int (*callback)(); // XXX wtf?
-	struct r_search_binparse_t *bp;
+	u32 pattern_size;
+	u32 string_min;
+	u32 string_max;
+	void *user; /* user data */
+	int (*callback)(struct r_search_kw_t *kw, void *user, u64 where);
+	//struct r_search_binparse_t *bp;
 	struct list_head kws; //r_search_hw_t kws;
 	struct list_head hits; //r_search_hit_t hits;
 };
@@ -84,7 +95,8 @@ struct r_search_t *r_search_free(struct r_search_t *s);
 
 /* keyword management */
 int r_search_start(struct r_search_t *s);
-int r_search_update(struct r_search_t *s, u64 from, const u8 *buf, int len);
+int r_search_update(struct r_search_t *s, u64 *from, const u8 *buf, u32 len);
+int r_search_update_i(struct r_search_t *s, u64 from, const u8 *buf, u32 len);
 
 /* */
 int r_search_kw_add(struct r_search_t *s, const char *kw, const char *bm);
@@ -97,6 +109,10 @@ int r_search_range_add(struct r_search_t *s, u64 from, u64 to);
 int r_search_range_set(struct r_search_t *s, u64 from, u64 to);
 int r_search_range_reset(struct r_search_t *s);
 int r_search_set_blocksize(struct r_search_t *s, u32 bsize);
+
+int r_search_mybinparse_update(struct r_search_t *s, u64 from, const u8 *buf, int len);
+int r_search_aes_update(struct r_search_t *s, u64 from, const u8 *buf, int len);
+int r_search_strings_update(const unsigned char *buf, int min, int max, int enc, u64 offset, const char *match);
 
 /* pattern search */
 int r_search_pattern(struct r_search_t *s, u32 size);
