@@ -21,15 +21,16 @@ enum {
 };
 
 enum {
-	R_ASM_SYN_NULL   = 0,
-	R_ASM_SYN_INTEL  = 1,
-	R_ASM_SYN_ATT    = 2,
-	R_ASM_SYN_OLLY   = 3
+	R_ASM_SYN_NULL  = 0,
+	R_ASM_SYN_INTEL = 1,
+	R_ASM_SYN_ATT   = 2,
+	R_ASM_SYN_OLLY  = 3
 };
 
 enum {
-	R_ASM_PAR_NULL   = 0,
-	R_ASM_PAR_PSEUDO = 1
+	R_ASM_PAR_NULL    = 0,
+	R_ASM_PAR_PSEUDO  = 1,
+	R_ASM_PAR_REALLOC = 2
 };
 
 struct r_asm_t {
@@ -68,6 +69,13 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 u32 r_asm_x86_asm(struct r_asm_t *a, char *buf);
 /* arch/x86/pseudo.c */
 u32 r_asm_x86_pseudo(struct r_asm_t *a);
+/* arch/x86/realloc.c */
+struct r_asm_realloc_t {
+	u64 offset;
+	u64 delta;
+};
+
+u32 r_asm_x86_realloc(struct r_asm_t *a);
 
 /* arch/arm/asm.c */
 u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len);

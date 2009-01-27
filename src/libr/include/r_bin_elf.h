@@ -75,4 +75,4 @@ int   ELF_(r_bin_elf_get_symbols)(ELF_(r_bin_elf_obj)*, r_bin_elf_symbol*);
 int   ELF_(r_bin_elf_get_symbols_count)(ELF_(r_bin_elf_obj)*);
 int   ELF_(r_bin_elf_is_big_endian)(ELF_(r_bin_elf_obj)*);
 int   ELF_(r_bin_elf_open)(ELF_(r_bin_elf_obj)*, const char*, int);
-int   ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj)*, const char*, u64);
+u64   ELF_(r_bin_elf_resize_section)(ELF_(r_bin_elf_obj)*, const char*, u64);

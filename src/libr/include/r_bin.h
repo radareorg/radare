@@ -98,5 +98,6 @@ u32 r_bin_get_section_size(r_bin_obj *bin, char *name);
 r_bin_symbol* r_bin_get_symbols(r_bin_obj *bin);
 r_bin_import* r_bin_get_imports(r_bin_obj *bin);
 r_bin_info* r_bin_get_info(r_bin_obj *bin);
+u64 r_bin_resize_section(r_bin_obj *bin, char *name, u64 size);
 
 #endif

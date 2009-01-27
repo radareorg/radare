@@ -89,11 +89,15 @@ int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux)
 	case R_ASM_PAR_PSEUDO:
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
 			a->r_asm_parse = &r_asm_x86_pseudo;
-		} else {
-			a->r_asm_parse = NULL;
-		}
-		break;
+			break;
+		} else goto _parser_error;
+	case R_ASM_PAR_REALLOC:
+		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
+			a->r_asm_parse = &r_asm_x86_realloc;
+			break;
+		} else goto _parser_error;
 	default:
+	_parser_error:
 		a->r_asm_parse = NULL;
 		return -1;
 	}

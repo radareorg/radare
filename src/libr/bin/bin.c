@@ -497,6 +497,19 @@ u32 r_bin_get_section_size(r_bin_obj *bin, char *name)
 	return ret;
 }
 
+u64 r_bin_resize_section(r_bin_obj *bin, char *name, u64 size)
+{
+	switch (bin->format) {
+	case R_BIN_FMT_ELF32:
+	case R_BIN_FMT_ELF64:
+		return ELF_CALL(r_bin_elf_resize_section, bin, name, size);
+	case R_BIN_FMT_PE:
+		return 0;
+	}
+
+	return 0;
+}
+
 #if 0
 int r_bin_get_libs()
 {
