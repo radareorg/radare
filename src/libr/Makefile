@@ -2,14 +2,13 @@
 PREFIX=/tmp/libr-install
 
 # Libraries
-LIBLIST=io util macro hash print config flags cons line lib syscall socket cmd asm core
+LIBLIST=io util bin macro hash print config flags cons line lib syscall range socket cmd asm search core
 
 
 # Under development
 #LIBLIST+=print
 #LIBLIST+=util
 #LIBLIST+=search
-LIBLIST+=bin
 
 # TODO : generate single library linking against the rest
 #LIBSO=libr.so
