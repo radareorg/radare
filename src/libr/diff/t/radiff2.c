@@ -3,8 +3,7 @@
 static int count = 0;
 
 static int cb(struct r_diff_t *d, void *user,
-	u64 from, const u8 *oldbuf, int oldlen,
-	u64 to, const u8 *newbuf, int newlen)
+	struct r_diff_op_t *op)
 {
 	int i;
 
@@ -12,13 +11,13 @@ static int cb(struct r_diff_t *d, void *user,
 		count++;
 		return 1;
 	}
-	printf(" 0x%08llx  ", from);
-	for(i = 0;i<oldlen;i++)
-		printf("%02x", oldbuf[i]);
+	printf("0x%08llx ", op->a_off);
+	for(i = 0;i<op->a_len;i++)
+		printf("%02x", op->a_buf[i]);
 	printf(" => ");
-	for(i = 0;i<newlen;i++)
-		printf("%02x", newbuf[i]);
-	printf("  0x%08llx\n", to);
+	for(i = 0;i<op->b_len;i++)
+		printf("%02x", op->b_buf[i]);
+	printf(" 0x%08llx\n", op->b_off);
 	return 1;
 }
 

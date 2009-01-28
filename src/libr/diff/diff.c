@@ -25,9 +25,7 @@ struct r_diff_t *r_diff_free(struct r_diff_t *d)
 }
 
 int r_diff_set_callback(struct r_diff_t *d,
-	int (*callback)(struct r_diff_t *d, void *user,
-		u64 from, const u8 *oldbuf, int oldlen,
-		u64 to, const u8 *newbuf, int newlen),
+	int (*callback)(struct r_diff_t *d, void *user, struct r_diff_op_t *op),
 	void *user)
 {
 	d->callback = callback;
@@ -58,17 +56,21 @@ int r_diff_buffers_static(struct r_diff_t *d, const u8 *a, int la, const u8 *b, 
 			hit++;
 		} else {
 			if (hit>0) {
-				d->callback(d, d->user,
-					d->off_a+i-hit, a+i-hit, hit,
-					d->off_b+i-hit, b+i-hit, hit);
+				struct r_diff_op_t o = {
+					.a_off = d->off_a+i-hit, .a_buf = a+i-hit, .a_len = hit,
+					.b_off = d->off_b+i-hit, .b_buf = b+i-hit, .b_len = hit 
+				};
+				d->callback(d, d->user, &o);
 				hit = 0;
 			}
 		}
 	}
 	if (hit>0) {
-		d->callback(d, d->user,
-			d->off_a+i-hit, a+i-hit, hit,
-			d->off_b+i-hit, b+i-hit, hit);
+		struct r_diff_op_t o = {
+			.a_off = d->off_a+i-hit, .a_buf = a+i-hit, .a_len = hit,
+			.b_off = d->off_b+i-hit, .b_buf = b+i-hit, .b_len = hit 
+		};
+		d->callback(d, d->user, &o);
 		hit = 0;
 	}
 	return 0;
@@ -161,10 +163,12 @@ int r_diff_buffers_delta(struct r_diff_t *d, const u8 *a, int la, const u8 *b, i
 			hit++;
 		} else {
 			if (hit>0) {
+				struct r_diff_op_t o = {
+					.a_off = ooa, .a_buf = at, .a_len = atl,
+					.b_off = oob, .b_buf = bt, .b_len = btl
+				};
 				/* run callback */
-				d->callback(d, d->user,
-					ooa, at, atl,
-					oob, bt, btl);
+				d->callback(d, d->user, &o);
 				atl = btl = 0;
 				hit = 0;
 			}
@@ -172,10 +176,12 @@ int r_diff_buffers_delta(struct r_diff_t *d, const u8 *a, int la, const u8 *b, i
 		oop = op;
 	}
 	if (hit>0) {
+		struct r_diff_op_t o = {
+			.a_off = ooa, .a_buf = at, .a_len = atl,
+			.b_off = oob, .b_buf = bt, .b_len = btl
+		};
 		/* run callback */
-		d->callback(d, d->user,
-			ooa, at, atl,
-			oob, bt, btl);
+		d->callback(d, d->user, &o);
 		atl = btl = 0;
 		hit = 0;
 	}
