@@ -25,6 +25,20 @@ char *r_file_slurp(const char *str, u32 *usz)
         return ret;
 }
 
+char *r_file_slurp_range(const char *str, u64 off, u64 sz)
+{
+        char *ret;
+        FILE *fd = fopen(str, "r");
+        if (fd == NULL)
+                return NULL;
+        fseek(fd, off,SEEK_SET);
+        ret = (char *)malloc(sz+1);
+        fread(ret, sz, 1, fd);
+        ret[sz]='\0';
+        fclose(fd);
+        return ret;
+}
+
 char *r_file_slurp_random_line(const char *file)
 {
 	int i, lines = 0;

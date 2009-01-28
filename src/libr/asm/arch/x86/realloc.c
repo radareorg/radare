@@ -67,6 +67,7 @@ static int r_asm_x86_deltify(int argc, const char *argv[], char *newstr)
 
 u32 r_asm_x86_realloc(struct r_asm_t *a)
 {
+	struct r_asm_realloc_t *aux = (struct r_asm_realloc_t*)a->aux;
 	int i;
 	char w0[32];
 	char w1[32];
@@ -115,7 +116,7 @@ u32 r_asm_x86_realloc(struct r_asm_t *a)
 				nw++;
 			}
 
-			r_asm_x86_deltify(nw, wa, a->buf_par);
+			r_asm_x86_deltify(nw, wa, aux->str);
 		}
 	}
 

@@ -12,6 +12,7 @@
 int main()
 {
 	struct r_asm_t a;
+	char str[256]; 
 	u8 *buf = "\x74\x31"
 		"\x74\x31"
 		"\x74\x31"
@@ -21,8 +22,9 @@ int main()
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_X86);
 	r_asm_set_bits(&a, 32);
-	r_asm_set_big_endian(&a, FALSE);
+	r_asm_set_big_endian(&a, R_FALSE);
 	r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
+	r_asm_set_parser(&a, R_ASM_PAR_PSEUDO, NULL, str);
 
 	while (idx < len) {
 		r_asm_set_pc(&a, 0x8048000 + idx);
@@ -30,13 +32,8 @@ int main()
 		ret = r_asm_disasm(&a, buf+idx, len-idx);
 		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
 
-		r_asm_set_parser(&a, R_ASM_PAR_NULL, NULL);
 		r_asm_parse(&a);
-		printf("PAR_NULL %s\n", a.buf_par);
-
-		r_asm_set_parser(&a, R_ASM_PAR_PSEUDO, NULL);
-		r_asm_parse(&a);
-		printf("PAR_PSEUDO %s\n\n", a.buf_par);
+		printf("PAR_PSEUDO %s\n\n", str);
 
 		idx += ret;
 	}

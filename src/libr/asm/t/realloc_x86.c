@@ -1,9 +1,17 @@
 #include <stdio.h>
 
-#include "r_types.h"
 #include "r_asm.h"
 #include "r_bin.h"
 #include "r_util.h"
+
+
+static u32 cb(struct r_asm_t *a)
+{
+	struct r_asm_realloc_t *aux = (struct r_asm_realloc_t*)a->aux;
+
+	printf("REALLOC: %s\n", aux->str);
+	return 1;
+}
 
 int main(int argc, char *argv[])
 {
@@ -38,26 +46,21 @@ int main(int argc, char *argv[])
 
 	r.offset = r_bin_get_section_rva(&bin, section) + r_bin_get_baddr(&bin);
 	sections = r_bin_get_sections(&bin);
+	
+	r_bin_close(&bin);
 
 	/* Parse executable sections */
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_X86);
 	r_asm_set_bits(&a, 32);
-	r_asm_set_big_endian(&a, FALSE);
+	r_asm_set_big_endian(&a, R_FALSE);
 	r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
+	r_asm_set_parser(&a, R_ASM_PAR_REALLOC, &cb, &r);
 
 	for (i=0; !sections[i].last; i++)
 		if (R_BIN_SCN_EXECUTABLE(sections[i].characteristics)) {
-			if ((buf = malloc(sections[i].size)) == NULL){
-				fprintf(stderr, "Malloc error\n");
-				return 1;
-			}
-			if (lseek(bin.fd, sections[i].offset, SEEK_SET) < 0) {
-				perror("lseek");
-				return 1;
-			}
-			if (read(bin.fd, buf, sections[i].size) != sections[i].size) {
-				perror("read");
+			if ((buf = buf = r_file_slurp_range(file, sections[i].offset, sections[i].size)) == NULL) {
+				fprintf(stderr, "Error slurping sections\n");
 				return 1;
 			}
 			idx = 0; len = sections[i].size;
@@ -65,16 +68,14 @@ int main(int argc, char *argv[])
 				r_asm_set_pc(&a, sections[i].rva + idx);
 
 				ret = r_asm_disasm(&a, buf+idx, len-idx);
-				r_asm_set_parser(&a, R_ASM_PAR_REALLOC, &r);
 				r_asm_parse(&a);
-				printf("0x%llx... %s -> %s\n", r.offset, a.buf_asm, a.buf_par);
 
 				idx += ret;
 			}
 			free(buf);
 		}
 
-	r_bin_close(&bin);
+	free(sections);
 
 	return 0;
 }

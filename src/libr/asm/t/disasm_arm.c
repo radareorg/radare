@@ -18,14 +18,14 @@ int main()
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_ARM);
 	r_asm_set_bits(&a, 32);
-	r_asm_set_big_endian(&a, FALSE);
+	r_asm_set_big_endian(&a, R_FALSE);
 	r_asm_set_syntax(&a, R_ASM_SYN_INTEL);
 
 	while (idx < len) {
 		r_asm_set_pc(&a, 0x000089d8 + idx);
 
 		ret = r_asm_disasm(&a, buf+idx, len-idx);
-		printf("DISASM %s HEX %s PAR %s\n", a.buf_asm, a.buf_hex, a.buf_par);
+		printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
 
 		idx += ret;
 	}

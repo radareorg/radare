@@ -14,7 +14,7 @@ int r_asm_init(struct r_asm_t *a)
 	r_asm_set_bits(a, 32);
 	r_asm_set_big_endian(a, 0);
 	r_asm_set_syntax(a, R_ASM_SYN_INTEL);
-	r_asm_set_parser(a, R_ASM_PAR_NULL, NULL);
+	r_asm_set_parser(a, R_ASM_PAR_NULL, NULL, NULL);
 	r_asm_set_pc(a, 0);
 	return 1;
 }
@@ -83,25 +83,28 @@ int r_asm_set_syntax(struct r_asm_t *a, u32 syntax)
 	}
 }
 
-int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux)
+int r_asm_set_parser(struct r_asm_t *a,
+		u32 parser, u32 (*cb)(struct r_asm_t *a), void *aux)
 {
 	switch (parser) {
+	case R_ASM_PAR_NULL:
+		a->r_asm_parse = NULL;
+		break;
 	case R_ASM_PAR_PSEUDO:
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
 			a->r_asm_parse = &r_asm_x86_pseudo;
 			break;
-		} else goto _parser_error;
+		} else return -1;
 	case R_ASM_PAR_REALLOC:
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
 			a->r_asm_parse = &r_asm_x86_realloc;
 			break;
-		} else goto _parser_error;
+		} else return -1;
 	default:
-	_parser_error:
-		a->r_asm_parse = NULL;
 		return -1;
 	}
 	a->parser = parser;
+	a->r_asm_parse_cb = cb;
 	a->aux = aux;
 	return 1;
 }
@@ -130,9 +133,13 @@ u32 r_asm_asm(struct r_asm_t *a, char *buf)
 
 u32 r_asm_parse(struct r_asm_t *a)
 {
+	u32 ret = 0;
+
 	if (a->r_asm_parse != NULL)
-		return a->r_asm_parse(a);
+		ret = a->r_asm_parse(a);
 	
-	strncpy(a->buf_par, a->buf_asm, 256);
-	return 0;
+	if (a->r_asm_parse_cb != NULL)
+		a->r_asm_parse_cb(a);
+
+	return ret;
 }

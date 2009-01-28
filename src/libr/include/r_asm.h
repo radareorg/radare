@@ -41,13 +41,13 @@ struct r_asm_t {
 	u32  parser;
 	u64  pc;
 	char buf_asm[256];
-	char buf_par[256];
 	char buf_hex[256];
 	char buf_err[256];
 	void *aux;
 	u32  (*r_asm_disasm)(struct r_asm_t *a, u8 *buf, u32 len);
 	u32  (*r_asm_asm)(struct r_asm_t *a, char *buf);
 	u32  (*r_asm_parse)(struct r_asm_t *a);
+	u32  (*r_asm_parse_cb)(struct r_asm_t *a);
 };
 
 /* asm.c */
@@ -58,7 +58,8 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch);
 int r_asm_set_bits(struct r_asm_t *a, u32 bits);
 int r_asm_set_big_endian(struct r_asm_t *a, u32 boolean);
 int r_asm_set_syntax(struct r_asm_t *a, u32 syntax);
-int r_asm_set_parser(struct r_asm_t *a, u32 parser, void *aux);
+int r_asm_set_parser(struct r_asm_t *a, u32 parser, 
+		u32 (*cb)(struct r_asm_t *a), void *aux);
 int r_asm_set_pc(struct r_asm_t *a, u64 pc);
 u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 u32 r_asm_asm(struct r_asm_t *a, char *buf);
@@ -73,8 +74,8 @@ u32 r_asm_x86_pseudo(struct r_asm_t *a);
 struct r_asm_realloc_t {
 	u64 offset;
 	u64 delta;
+	char str[256];
 };
-
 u32 r_asm_x86_realloc(struct r_asm_t *a);
 
 /* arch/arm/asm.c */

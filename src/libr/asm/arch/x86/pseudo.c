@@ -115,7 +115,7 @@ u32 r_asm_x86_pseudo(struct r_asm_t *a)
 				nw++;
 			}
 
-			r_asm_x86_aop(nw, wa, a->buf_par);
+			r_asm_x86_aop(nw, wa, (char*)a->aux);
 		}
 	}
 
