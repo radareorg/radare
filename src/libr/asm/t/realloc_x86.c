@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
+
 #include <stdio.h>
 
 #include "r_asm.h"

@@ -1,7 +1,6 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 

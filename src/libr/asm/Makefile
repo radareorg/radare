@@ -19,8 +19,16 @@ OBJ+=arch/x86/ollyasm/asmserv.o
 OBJ+=arch/x86/ollyasm/assembl.o
 
 # ARM
-# gnu arm-dis
 OBJ+=arch/arm/asm.o
+# gnu arm-dis
 OBJ+=arch/arm/gnu/arm-dis.o
+
+# MIPS
+OBJ+=arch/mips/asm.o
+# gnu mips-dis
+OBJ+=arch/mips/gnu/mips-dis.o
+OBJ+=arch/mips/gnu/mips16-opc.o
+OBJ+=arch/mips/gnu/mips-opc.o
+
 
 include ../rules.mk

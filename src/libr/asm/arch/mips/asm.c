@@ -9,14 +9,14 @@
 #include <r_asm.h>
 
 #include "gnu/dis-asm.h"
+#include "gnu/opcode/mips.h"
 
-
-static int arm_mode = 0;
+static int mips_mode = 0;
 static unsigned long Offset = 0;
 static char *buf_global = NULL;
 static unsigned char bytes[4];
 
-static int arm_buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
+static int mips_buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length, struct disassemble_info *info)
 {
 	memcpy (myaddr, bytes, length);
 	return 0;
@@ -37,10 +37,9 @@ static void print_address(bfd_vma address, struct disassemble_info *info)
 	char tmp[32];
 	if (buf_global == NULL)
 		return;
-	sprintf(tmp, "0x%08llx", (u64)address);
+	sprintf(tmp, "0x%08llx", (u64)address-8); /* WTF ?!?! why gnu disasm doesnt do this well? */
 	strcat(buf_global, tmp);
 }
-
 static int buf_fprintf(void *stream, const char *format, ...)
 {
 	va_list ap;
@@ -55,7 +54,7 @@ static int buf_fprintf(void *stream, const char *format, ...)
 	return 0;
 }
 
-u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
+u32 r_asm_mips_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 {
 	struct disassemble_info disasm_obj;
 	int ret;
@@ -67,20 +66,24 @@ u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 
 	/* prepare disassembler */
 	memset(&disasm_obj,'\0', sizeof(struct disassemble_info));
-	arm_mode = a->bits;
-	//info.arch = ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
+	mips_mode = a->bits;
+	disasm_obj.arch = CPU_LOONGSON_2F; //ARM_EXT_LOONGSON2F|ARM_EXT_V1|ARM_EXT_V4T|ARM_EXT_V5;
 	disasm_obj.buffer = bytes;
-	disasm_obj.read_memory_func = &arm_buffer_read_memory;
+	disasm_obj.read_memory_func = &mips_buffer_read_memory;
 	disasm_obj.symbol_at_address_func = &symbol_at_address;
 	disasm_obj.memory_error_func = &memory_error_func;
 	disasm_obj.print_address_func = &print_address;
+	disasm_obj.buffer_vma = Offset;
+	disasm_obj.buffer_length = 4;
 	disasm_obj.endian = !a->big_endian;
 	disasm_obj.fprintf_func = &buf_fprintf;
 	disasm_obj.stream = stdout;
 
 	a->buf_asm[0]='\0';
-	ret = print_insn_arm((bfd_vma)Offset, &disasm_obj);
-
+	if (a->big_endian)
+		ret = print_insn_big_mips((bfd_vma)Offset, &disasm_obj);
+	else ret = print_insn_little_mips((bfd_vma)Offset, &disasm_obj);
+			
 	if (ret == -1)
 		strcpy(a->buf_asm, " (data)");
 

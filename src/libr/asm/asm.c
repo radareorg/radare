@@ -42,6 +42,10 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 		a->r_asm_disasm = &r_asm_arm_disasm;
 		a->r_asm_asm = NULL;
 		break;
+	case R_ASM_ARCH_MIPS:
+		a->r_asm_disasm = &r_asm_mips_disasm;
+		a->r_asm_asm = NULL;
+		break;
 	default:
 		a->r_asm_disasm = NULL;
 		a->r_asm_asm = NULL;

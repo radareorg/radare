@@ -80,4 +80,7 @@ u32 r_asm_x86_realloc(struct r_asm_t *a);
 
 /* arch/arm/asm.c */
 u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len);
+
+/* arch/mips/asm.c */
+u32 r_asm_mips_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 #endif

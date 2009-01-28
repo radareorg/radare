@@ -1,10 +1,6 @@
-/* radare - LGPL - Copyright 2007-2009 */
+/* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include <r_types.h>
 #include <r_asm.h>
