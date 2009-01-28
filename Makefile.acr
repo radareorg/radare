@@ -79,6 +79,13 @@ dist: mrproper
 	mv radare-$${DATE} radare && \
 	scp radare-$${DATE}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
 
+release: mrproper
+	FILES=`hg status -mc|cut -c 3-|sed -e s,^,radare-${VERSION}/,`; \
+	cd .. && mv radare radare-${VERSION} && \
+	tar czvf radare-${VERSION}.tar.gz $${FILES} ;\
+	mv radare-${VERSION} radare && \
+	scp radare-${VERSION}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/
+
 install:
 	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
 	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
