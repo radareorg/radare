@@ -1,0 +1,6 @@
+#!/usr/bin/perl
+
+while(<STDIN>) {
+	s/\x1b[^m]*.//g;
+	print;
+}

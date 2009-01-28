@@ -1,0 +1,64 @@
+/* radare - LGPL - Copyright 2007-2009 pancake<nopcode.org> */
+
+#include "r_types.h"
+#include "r_util.h"
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+
+char *r_file_slurp(const char *str)
+{
+        char *ret;
+        long sz;
+        FILE *fd = fopen(str, "r");
+        if (fd == NULL)
+                return NULL;
+        fseek(fd, 0,SEEK_END);
+        sz = ftell(fd);
+        fseek(fd, 0,SEEK_SET);
+        ret = (char *)malloc(sz+1);
+        fread(ret, sz, 1, fd);
+        ret[sz]='\0';
+        fclose(fd);
+        return ret;
+}
+
+char *r_file_slurp_random_line(const char *file)
+{
+	int i, lines = 0;
+	struct timeval tv;
+	char *ptr, *str = r_file_slurp(file);
+	if (str) {
+		gettimeofday(&tv,NULL);
+		srand(getpid()+tv.tv_usec);
+		for(i=0;str[i];i++)
+			if (str[i]=='\n')
+				lines++;
+		lines = (rand()%lines);
+		for(i=0;str[i]&&lines;i++)
+			if (str[i]=='\n')
+				lines--;
+		ptr = str+i;
+		for(i=0;ptr[i];i++) if (ptr[i]=='\n') { ptr[i]='\0'; break; }
+		ptr = strdup(ptr);
+		free(str);
+	}
+	return ptr;
+}
+
+int r_file_dump(const char *file, const u8 *buf, int len)
+{
+	FILE *fd = fopen(file, "wb");
+	if (fd == NULL) {
+		fprintf(stderr, "Cannot open '%s' for writing\n", file);
+		return R_FALSE;
+	}
+	fwrite(buf, len, 1, fd);
+	fclose(fd);
+	return R_TRUE;
+}
+
+int r_file_rm(const char *file)
+{
+	return unlink(file);
+}

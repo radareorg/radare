@@ -6,7 +6,7 @@
 int r_cmd_set_data(struct r_cmd_t *cmd, void *data)
 {
 	cmd->data = data;
-	return 0;
+	return 1;
 }
 
 int r_cmd_add_long(struct r_cmd_t *cmd, const char *longcmd, const char *shortcmd, const char *desc)
@@ -20,7 +20,7 @@ int r_cmd_add_long(struct r_cmd_t *cmd, const char *longcmd, const char *shortcm
 	item->cmd_len = strlen(longcmd);
 	strncpy(item->desc, desc, sizeof(item->desc));
 	list_add(&(item->list), &(cmd->lcmds));
-	return 0;
+	return 1;
 }
 
 int r_cmd_add(struct r_cmd_t *cmd, const char *command, const char *description, r_cmd_callback(callback))
@@ -36,7 +36,7 @@ int r_cmd_add(struct r_cmd_t *cmd, const char *command, const char *description,
 	strncpy(item->cmd, command, 63);
 	strncpy(item->desc, description, 127);
 	item->callback = callback;
-	return 0;
+	return 1;
 }
 
 int r_cmd_del(struct r_cmd_t *cmd, const char *command)

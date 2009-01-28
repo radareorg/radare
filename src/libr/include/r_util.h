@@ -14,6 +14,13 @@
 #define U32_LT0 0x7FFFFFFF
 #define U32_MAX 0xFFFFFFFF
 
+#define R_MAX(x,y) (x>y)?x:y
+#define R_MIN(x,y) (x>y)?y:x
+#define R_ABS(x) ((x<0)?-x:x)
+
+#define R_FALSE 0
+#define R_TRUE 1
+
 /* numbers */
 struct r_num_t {
 	u64 (*callback)(void *userptr, const char *str, int *ok);
@@ -47,11 +54,10 @@ const char *r_str_word_get0(const char *str, int idx);
 char *r_str_clean(char *str);
 int r_str_nstr(char *from, char *to, int size);
 char *r_str_lchr(char *str, char chr);
+char *r_str_ichr(char *str, char chr);
 int r_str_ccmp(const char *dst, const char *orig, int ch);
 int r_str_cmp(const char *dst, const char *orig, int len);
 int r_str_ccpy(char *dst, char *orig, int ch);
-char *r_str_slurp(const char *str);
-char *r_str_slurp_random_line(const char *file);
 const char *r_str_get(const char *str);
 char *r_str_dup(char *ptr, const char *string);
 void *r_str_free(void *ptr);
@@ -61,12 +67,19 @@ int r_str_delta(char *p, char a, char b);
 int r_str_re_match(const char *str, const char *reg);
 int r_str_re_replace(const char *str, const char *reg, const char *sub);
 char *r_str_sub(char *string, char *pat, char *rep, int global);
-
 int r_str_escape(char *buf);
+
+/* hex */
 int r_hex_pair2bin(const char *arg);
 int r_hex_str2bin(const char *in, u8 *out);
 int r_hex_bin2str(const char *in, int len, char *out);
 
 int r_hex_to_byte(u8 *val, u8 c);
+
+/* file */
+char *r_file_slurp(const char *str);
+char *r_file_slurp_random_line(const char *file);
+int r_file_dump(const char *file, const u8 *buf, int len);
+int r_file_rm(const char *file);
 
 #endif
