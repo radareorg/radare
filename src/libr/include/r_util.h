@@ -77,7 +77,7 @@ int r_hex_bin2str(const char *in, int len, char *out);
 int r_hex_to_byte(u8 *val, u8 c);
 
 /* file */
-char *r_file_slurp(const char *str);
+char *r_file_slurp(const char *str, u32 *usz);
 char *r_file_slurp_random_line(const char *file);
 int r_file_dump(const char *file, const u8 *buf, int len);
 int r_file_rm(const char *file);

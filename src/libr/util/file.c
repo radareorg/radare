@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-char *r_file_slurp(const char *str)
+char *r_file_slurp(const char *str, u32 *usz)
 {
         char *ret;
         long sz;
@@ -20,6 +20,8 @@ char *r_file_slurp(const char *str)
         fread(ret, sz, 1, fd);
         ret[sz]='\0';
         fclose(fd);
+	if (usz)
+		*usz = (u32)sz;
         return ret;
 }
 
@@ -27,7 +29,8 @@ char *r_file_slurp_random_line(const char *file)
 {
 	int i, lines = 0;
 	struct timeval tv;
-	char *ptr, *str = r_file_slurp(file);
+	u32 sz;
+	char *ptr, *str = r_file_slurp(file, &sz);
 	if (str) {
 		gettimeofday(&tv,NULL);
 		srand(getpid()+tv.tv_usec);
