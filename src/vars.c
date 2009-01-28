@@ -288,7 +288,7 @@ int var_cmd(const char *str)
 #if 0
  -- function boundaries are used to limit variables life-cycle --
  // global vars are handled as flags??
-  "CV 0x8049200 x global_counter
+ // "CV 0x8049200 x global_counter
  // local vars
  // types: glar: g=global, l=local, a=arg, r=argreg
   Cv l d i @ 0x8048200
