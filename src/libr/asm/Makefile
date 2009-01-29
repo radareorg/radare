@@ -37,4 +37,7 @@ OBJ+=arch/ppc/asm.o
 # ppc-disasm
 OBJ+=arch/ppc/ppc_disasm/ppc_disasm.o
 
+# BF
+OBJ+=arch/bf/asm.o
+
 include ../rules.mk

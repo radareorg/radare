@@ -86,4 +86,7 @@ u32 r_asm_mips_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 
 /* arch/ppc/asm.c */
 u32 r_asm_ppc_disasm(struct r_asm_t *a, u8 *buf, u32 len);
+
+/* arch/bf/asm.c */
+u32 r_asm_bf_disasm(struct r_asm_t *a, u8 *buf, u32 len);
 #endif
