@@ -1,5 +1,7 @@
 NAME=r_asm
 OBJ=asm.o
+# XXX
+CFLAGS+=-DLIL_ENDIAN=1 -D__UNIX__
 
 # X86
 OBJ+=arch/x86/asm.o
@@ -30,5 +32,9 @@ OBJ+=arch/mips/gnu/mips-dis.o
 OBJ+=arch/mips/gnu/mips16-opc.o
 OBJ+=arch/mips/gnu/mips-opc.o
 
+# PPC
+OBJ+=arch/ppc/asm.o
+# ppc-disasm
+OBJ+=arch/ppc/ppc_disasm/ppc_disasm.o
 
 include ../rules.mk

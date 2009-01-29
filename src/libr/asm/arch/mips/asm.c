@@ -1,11 +1,11 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include <r_types.h>
+#include <r_util.h>
 #include <r_asm.h>
 
 #include "gnu/dis-asm.h"
@@ -62,7 +62,7 @@ u32 r_asm_mips_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	buf_global = a->buf_asm;
 	Offset = a->pc;
 	memcpy(bytes, buf, 4); // TODO handle thumb
-	snprintf(a->buf_hex, 255, "%02x %02x %02x %02x", buf[0], buf[1], buf[2], buf[3]);
+	r_hex_bin2str(buf, len, a->buf_hex);
 
 	/* prepare disassembler */
 	memset(&disasm_obj,'\0', sizeof(struct disassemble_info));

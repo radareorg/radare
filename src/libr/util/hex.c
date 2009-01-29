@@ -37,7 +37,7 @@ int r_hex_pair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 	return (int)c;
 }
 
-int r_hex_bin2str(const char *in, int len, char *out)
+int r_hex_bin2str(const u8 *in, int len, char *out)
 {
 	int i;
 	char tmp[5];

@@ -1,7 +1,6 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #include <r_types.h>
 #include <r_util.h>
@@ -44,6 +43,10 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 		break;
 	case R_ASM_ARCH_MIPS:
 		a->r_asm_disasm = &r_asm_mips_disasm;
+		a->r_asm_asm = NULL;
+		break;
+	case R_ASM_ARCH_PPC:
+		a->r_asm_disasm = &r_asm_ppc_disasm;
 		a->r_asm_asm = NULL;
 		break;
 	default:

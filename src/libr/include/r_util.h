@@ -72,7 +72,7 @@ int r_str_escape(char *buf);
 /* hex */
 int r_hex_pair2bin(const char *arg);
 int r_hex_str2bin(const char *in, u8 *out);
-int r_hex_bin2str(const char *in, int len, char *out);
+int r_hex_bin2str(const u8 *in, int len, char *out);
 
 int r_hex_to_byte(u8 *val, u8 c);
 
