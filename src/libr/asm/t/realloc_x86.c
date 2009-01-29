@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	section = argv[2];
 	size = r_num_math(NULL, argv[3]);
 
-	if (r_bin_open(&bin, file, 1) == -1) {
+	if (r_bin_init(&bin, file, 1) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}

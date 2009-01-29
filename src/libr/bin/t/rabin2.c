@@ -49,7 +49,7 @@ static int rabin_show_entrypoint(const char *file)
 	u64 baddr;
 	char *env;
 
-	if (r_bin_open(&bin, file, 0) == -1) {
+	if (r_bin_init(&bin, file, 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}
@@ -84,7 +84,7 @@ static int rabin_show_imports(const char *file)
 	char name[R_BIN_SIZEOF_NAMES];
 	r_bin_import *imports, *importsp;
 
-	if (r_bin_open(&bin, file, 0) == -1) {
+	if (r_bin_init(&bin, file, 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}
@@ -126,7 +126,7 @@ static int rabin_show_symbols(const char *file)
 	u64 baddr;
 	r_bin_symbol *symbols, *symbolsp;
 
-	if (r_bin_open(&bin, file, 0) == -1) {
+	if (r_bin_init(&bin, file, 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}
@@ -178,7 +178,7 @@ static int rabin_show_sections(const char *file)
 	u64 baddr;
 	r_bin_section *sections, *sectionsp;
 
-	if (r_bin_open(&bin, file, 0) == -1) {
+	if (r_bin_init(&bin, file, 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}
@@ -231,7 +231,7 @@ static int rabin_show_info(const char *file)
 	r_bin_obj bin;
 	r_bin_info *info;
 
-	if (r_bin_open(&bin, file, 0) == -1) {
+	if (r_bin_init(&bin, file, 0) == -1) {
 		fprintf(stderr, "Cannot open file\n");
 		return 1;
 	}
@@ -275,7 +275,7 @@ static int rabin_show_info(const char *file)
 
 static int rabin_do_operation(const char *file, const char *op)
 {
-	Elf32_r_bin_elf_obj bin;
+	r_bin_obj bin;
 	char *arg, *ptr, *ptr2;
 
 	if (!strcmp(op, "help")) {
@@ -292,7 +292,7 @@ static int rabin_do_operation(const char *file, const char *op)
 		return 1;
 	}
 
-	if (Elf32_r_bin_elf_open(&bin, file, 1) == -1) {
+	if (r_bin_init(&bin, file, 1) == -1) {
 		fprintf(stderr, "cannot open file\n");
 		return 1;
 	}
@@ -303,10 +303,13 @@ static int rabin_do_operation(const char *file, const char *op)
 		ptr2 = strchr(ptr, '/');
 		ptr2[0]='\0';
 
-		Elf32_r_bin_elf_resize_section(&bin, ptr, r_num_math(NULL,ptr2+1));
+		if (r_bin_resize_section(&bin, ptr, r_num_math(NULL,ptr2+1)) == 0) {
+			fprintf(stderr, "Delta = 0\n");
+			return 1;
+		}
 	}
-	
-	Elf32_r_bin_elf_close(&bin);
+
+	r_bin_close(&bin);
 
 	return 0;
 }

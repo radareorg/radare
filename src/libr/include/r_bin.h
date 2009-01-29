@@ -87,7 +87,9 @@ typedef struct {
 } r_bin_info;
 
 /* bin/r_bin.c */
-int r_bin_open(r_bin_obj *bin, const char *file, int rw);
+r_bin_obj *r_bin_new(char *file, int rw);
+void r_bin_free(r_bin_obj *bin);
+int r_bin_init(r_bin_obj *bin, const char *file, int rw);
 int r_bin_close(r_bin_obj *bin);
 u64 r_bin_get_baddr(r_bin_obj *bin);
 r_bin_entry* r_bin_get_entry(r_bin_obj *bin);

@@ -29,7 +29,7 @@ enum {
 	R_BIN_FMT_PE
 };
 
-int r_bin_init(r_bin_obj *bin)
+static int r_bin_identify(r_bin_obj *bin)
 {
 	int fd;
 	unsigned char buf[1024];
@@ -56,13 +56,25 @@ int r_bin_init(r_bin_obj *bin)
 	return -1;
 }
 
-int r_bin_open(r_bin_obj *bin, const char *file, int rw)
+r_bin_obj *r_bin_new(char *file, int rw)
+{
+	r_bin_obj *bin = MALLOC_STRUCT(r_bin_obj);
+	r_bin_init(bin, file, rw);
+	return bin;
+}
+
+void r_bin_free(r_bin_obj *bin)
+{
+	free(bin);
+}
+
+int r_bin_init(r_bin_obj *bin, const char *file, int rw)
 {
 	int fd;
 
 	bin->file = file;
 
-	if (r_bin_init(bin) == -1)
+	if (r_bin_identify(bin) == -1)
 		return -1;
 
 	switch (bin->format) {
