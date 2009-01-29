@@ -1,5 +1,6 @@
 using GLib;
-using Radare; /* Radare.Hash */
+using Radare;
+/* using Radare.Hash */
 
 public class HashExample
 {

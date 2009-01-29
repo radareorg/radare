@@ -6,10 +6,20 @@ sc:
 	gcc sc.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_syscall -Wl,-R../../syscall -L../../syscall -o sc
 
 core:
-	valac -C --vapidir=${PWD}/.. core.vala --pkg r_core
+	valac -C --vapidir=${PWD}/.. core.vala --pkg r_core --pkg r_cons
 	gcc core.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ \
 		-lr_core -Wl,-R../../core -L../../core \
 		-lr_util -Wl,-R../../util -L../../util \
+		-lr_asm -Wl,-R../../asm -L../../asm \
+		-lr_bin -Wl,-R../../bin -L../../bin \
+		-lr_io -Wl,-R../../io -L../../io \
+		-lr_cons -Wl,-R../../cons -L../../cons \
+		-lr_flags -Wl,-R../../flags -L../../flags \
+		-lr_macro -Wl,-R../../macro -L../../macro \
+		-lr_print -Wl,-R../../print -L../../print \
+		-lr_config -Wl,-R../../config -L../../config \
+		-lr_cmd -Wl,-R../../cmd -L../../cmd \
+		-lr_hash -Wl,-R../../hash -L../../hash \
 		-g -o core
 
 search:
@@ -32,4 +42,4 @@ socket:
 	gcc socket.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_socket -Wl,-R../../socket -L../../socket -o socket
 
 clean:
-	-rm -f *.c hash sc *.o *.h
+	-rm -f *.c hash sc *.o *.h core socket asm search

@@ -6,10 +6,62 @@
 
 ----------------------------------------[ todo 
 
-libr
-====
-r_diff
-r_anal: helper lib "r_jar"
-r_sign
-r_meta
-r_debug
+|| asm || 
+---------
+  - Add support for more architectures
+  - Add brainfuck, java, dalvik
+  - Vala API should not use State
+
+|| anal ||  **MISSING**
+----------
+  - define api, write vapi, integrate in core, etc..
+
+|| bin || 
+---------
+  - No Vala api yet
+  - Add support for mach0 and java class
+  - Add dex format support (android)
+
+|| cmd ||
+---------
+  - long commands not yet tested at all
+
+|| config ||
+------------
+  - missing default callback for int assign
+
+|| cons ||
+----------
+  - major cleanup
+  - split in multiple files
+  - get_real_columns() should be renamed to get_columns()
+
+|| flags ||
+-----------
+  - Define a way to iterate flags from vala
+  - We probably need more methods
+
+|| hash ||
+----------
+  - Drop State() ?
+
+|| diff ||
+----------
+  - Needs to fix the delta diffing algorithm
+  - Reimplement delta diffing in C
+
+|| sign ||
+----------
+  - Define attributes and weights
+  - Decide collissions based on these patterns
+
+|| meta || **MISSING**
+----------
+
+|| lib ||
+---------
+  - Not yet used
+  - Cleanup and test w32/osx support
+
+|| debug || **MISSING**
+-----------

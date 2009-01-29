@@ -92,11 +92,11 @@ u64 r_range_size(struct r_range_t *rgs)
 struct r_range_t *r_range_new_from_string(const char *string)
 {
 	struct r_range_t *rgs = r_range_new();
-	r_range_add_string(rgs, string);
+	r_range_add_from_string(rgs, string);
 	return rgs;
 }
 
-int r_range_add_string(struct r_range_t *rgs, const char *string)
+int r_range_add_from_string(struct r_range_t *rgs, const char *string)
 {
 	u64 addr, addr2;
 	int i, len = strlen(string)+1;
@@ -293,7 +293,7 @@ int r_range_sort(struct r_range_t *rgs)
 	return rgs->changed;
 }
 
-int ranges_percent(struct r_range_t *rgs)
+int r_range_percent(struct r_range_t *rgs)
 {
 	struct list_head *pos;
 	int w, i;

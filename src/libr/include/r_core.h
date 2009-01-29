@@ -39,6 +39,7 @@ struct r_core_t {
 };
 
 int r_core_init(struct r_core_t *core);
+struct r_core_t *r_core_new();
 int r_core_config_init(struct r_core_t *core);
 int r_core_prompt(struct r_core_t *r);
 int r_core_cmd(struct r_core_t *r, const char *cmd, int log);

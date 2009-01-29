@@ -1,23 +1,12 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 [CCode (cheader_filename="r_core.h", cprefix="r_core", lower_case_cprefix="r_core_")]
-namespace Radare.Core {
-	
-	[CCode (cname="struct r_core_file_t", cprefix="r_core_")]
-	public struct File {
-		public string uri;
-		public string filename;
-		public uint64 seek;
-		public uint64 size;
-		public int rwx;
-		public int fd;
-	}
-
+namespace Radare {
 	[Compact]
 	[CCode (cname="struct r_core_t", free_function="r_core_free", cprefix="r_core_")]
-	public class State {
+	public class Core {
 		/* lifecycle */
-		public State();
+		public Core();
 
 		/* commands */
 		public int prompt();
@@ -33,10 +22,22 @@ namespace Radare.Core {
 		public int seek(uint64 addr);
 
 		/* files */
+		public Core.File *file_open(string file, int mode);
+
 		// XXX mode = Radare.Io.Mode
-		public Core.File file_open(string file, int mode);
-		public bool file_set(string file, Core.File file);
-		public bool file_close(string file, Core.File file);
-		public bool file_close_fd(string file, int fd);
+		[Compact]
+		[CCode (cname="struct r_core_file_t", cprefix="r_core_")]
+		public static struct File {
+			//public static bool set(string file, Core.File file);
+			//public static bool close(string file, Core.File file);
+			public static bool close_fd(string file, int fd);
+			/* attributes */
+			public string uri;
+			public string filename;
+			public uint64 seek;
+			public uint64 size;
+			public int rwx;
+			public int fd;
+		}
 	}
 }
