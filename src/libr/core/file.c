@@ -36,7 +36,7 @@ struct r_core_file_t *r_core_file_open(struct r_core_t *r, const char *file, int
 int r_core_file_set(struct r_core_t *r, struct r_core_file_t *fh)
 {
 	r->file = fh;
-	return 0;
+	return R_TRUE;
 }
 
 int r_core_file_close(struct r_core_t *r, struct r_core_file_t *fh)

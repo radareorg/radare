@@ -25,6 +25,13 @@ static u64 num_callback(void *userptr, const char *str, int *ok)
 	return 0LL;
 }
 
+struct r_core_t *r_core_new()
+{
+	struct r_core_t *c = MALLOC_STRUCT(struct r_core_t);
+	r_core_init(c);
+	return c;
+}
+
 int r_core_init(struct r_core_t *core)
 {
 	core->num.callback = &num_callback;
@@ -46,6 +53,12 @@ int r_core_init(struct r_core_t *core)
 	return 0;
 }
 
+struct r_core_t *r_core_free(struct r_core_t *c)
+{
+	free(c);
+	return NULL;
+}
+
 int r_core_prompt(struct r_core_t *r)
 {
 	char prompt[32];
@@ -57,7 +70,7 @@ int r_core_prompt(struct r_core_t *r)
 	ret = r_cons_fgets(line, sizeof(line), 0 , NULL);
 	if (ret<0)
 		return -1;
-	ret = r_core_cmd(r, line, TRUE);
+	ret = r_core_cmd(r, line, R_TRUE);
 	r_cons_flush();
 	return ret;
 }

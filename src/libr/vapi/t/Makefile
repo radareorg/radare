@@ -1,9 +1,16 @@
-all: hash sc socket asm search
+all: core hash sc socket asm search
 	@true
 
 sc:
 	valac -C --vapidir=${PWD}/.. sc.vala --pkg r_syscall
 	gcc sc.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_syscall -Wl,-R../../syscall -L../../syscall -o sc
+
+core:
+	valac -C --vapidir=${PWD}/.. core.vala --pkg r_core
+	gcc core.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ \
+		-lr_core -Wl,-R../../core -L../../core \
+		-lr_util -Wl,-R../../util -L../../util \
+		-g -o core
 
 search:
 	valac -C --vapidir=${PWD}/.. search.vala --pkg r_search

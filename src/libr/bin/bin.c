@@ -29,7 +29,7 @@ enum {
 	R_BIN_FMT_PE
 };
 
-static int r_bin_init(r_bin_obj *bin)
+int r_bin_init(r_bin_obj *bin)
 {
 	int fd;
 	unsigned char buf[1024];

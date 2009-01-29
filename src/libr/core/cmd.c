@@ -448,6 +448,7 @@ static int cmd_search(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
 	/* TODO */
+	return R_TRUE;
 }
 
 static int cmd_eval(void *data, const char *input)
@@ -553,7 +554,7 @@ static int cmd_macro(void *data, const char *input)
 	return 0;
 }
 
-int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd, int *times)
+static int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd, int *times)
 {
 	char *ptr, *ptr2, *str;
 	int i, len = strlen(cmd);
