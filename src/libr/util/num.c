@@ -15,7 +15,7 @@
         (((x) & 0x000000000000ff00LL) << 40)  | \
         (((x) & 0x00000000000000ffLL) << 56))
 
-u64 htonq(u64 value) {
+u64 r_num_htonq(u64 value) {
         u64 ret  = value;
 #if LIL_ENDIAN
         endian_memcpy_e((u8*)&ret, (u8*)&value, 8, 0);

@@ -111,6 +111,17 @@ char *r_str_lchr(char *str, char chr)
         return NULL;
 }
 
+int r_str_nchr(const char *str, char chr)
+{
+	int n = 0;
+	while(str[0]) {
+		if (str[0]==chr)
+			n++;
+		str = str+1;
+	}
+	return n;
+}
+
 int r_str_nstr(char *from, char *to, int size)
 {
         int i;

@@ -21,6 +21,10 @@
 #define R_FALSE 0
 #define R_TRUE 1
 
+/* memory */
+void r_mem_copyloop (u8 *dest, u8 *orig, int dsize, int osize);
+void r_mem_copyendian (u8 *dest, u8 *orig, int size, int endian);
+
 /* numbers */
 struct r_num_t {
 	u64 (*callback)(void *userptr, const char *str, int *ok);
@@ -54,6 +58,7 @@ const char *r_str_word_get0(const char *str, int idx);
 char *r_str_clean(char *str);
 int r_str_nstr(char *from, char *to, int size);
 char *r_str_lchr(char *str, char chr);
+int r_str_nchr(const char *str, char chr);
 char *r_str_ichr(char *str, char chr);
 int r_str_ccmp(const char *dst, const char *orig, int ch);
 int r_str_cmp(const char *dst, const char *orig, int len);

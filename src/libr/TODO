@@ -32,6 +32,7 @@
 
 || cons ||
 ----------
+  - add pipe_to_buffer..not only file descriptors
   - major cleanup
   - split in multiple files
   - get_real_columns() should be renamed to get_columns()

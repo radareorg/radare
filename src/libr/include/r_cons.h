@@ -1,6 +1,8 @@
 #ifndef _INCLUDE_CONS_R_
 #define _INCLUDE_CONS_R_
 
+#define HAVE_DIETLINE 1
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>

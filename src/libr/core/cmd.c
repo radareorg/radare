@@ -249,6 +249,21 @@ static int cmd_print(void *data, const char *input)
 static int cmd_flag(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
+	int len = strlen(input)+1;
+	char *ptr;
+	char *str = alloca(len);
+	u64 seek = core->seek;
+	u64 size = core->blocksize;
+	memcpy(str, input, len);
+	ptr = strchr(str+1, ' ');
+	if (ptr) {
+		*ptr='\0';
+		ptr = strchr(ptr+1, ' ');
+		if (ptr) {
+			*ptr='\0';
+		}
+		// TODO redefine seek and size here
+	}
 	switch(input[0]) {
 	case '+':
 		r_flag_set(&core->flags, input+1, core->seek, core->blocksize, 1);
@@ -271,6 +286,7 @@ static int cmd_flag(void *data, const char *input)
 	case '?':
 		fprintf(stderr, "Usage: f[ ] [flagname]\n"
 		" f name 12 @ 33   ; set flag 'name' with size 12 at 33\n"
+		" f name 12 33     ; same as above\n"
 		" f+name 12 @ 33   ; like above but creates new one if doesnt exist\n"
 		" f-name           ; remove flag 'name'\n"
 		" f                ; list flags\n"
@@ -515,6 +531,33 @@ static int cmd_visual(void *data, const char *input)
 static int cmd_system(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
+	// slurped from teh old radare_system
+#if __FreeBSD__
+	/* freebsd system() is broken */
+	int fds[2];
+	int st,pid;
+	char *argv[] ={ "/bin/sh", "-c", input, NULL};
+	pipe(fds);
+	/* not working ?? */
+	//pid = rfork(RFPROC|RFCFDG);
+	pid = vfork();
+	if (pid == 0) {
+		dup2(1, fds[1]);
+		execv(argv[0], argv);
+		_exit(127); /* error */
+	} else {
+		dup2(1, fds[0]);
+		waitpid(pid, &st, 0);
+	}
+	return WEXITSTATUS(st);
+#else
+	return system(input);
+#endif
+}
+
+static int cmd_io_system(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
 	return r_io_system(core->file->fd, input);
 }
 
@@ -580,22 +623,16 @@ static int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd,
 	if (ptr) {
 		ptr[0]='\0';
 	}
+	ptr = strchr(cmd, '|');
+	if (ptr) {
+		ptr[0] = '\0';
+		fprintf(stderr, "System pipes not yet supported.\n");
+	}
 	ptr = strchr(cmd, '>');
 	if (ptr) {
-		int perm = O_RDWR | O_CREAT;
 		ptr[0] = '\0';
-		if (ptr[1]=='>') perm |= O_APPEND;
 		for(str=ptr+1;str[0]== ' ';str=str+1);
-		// XXX : use r_cons_stdout_open here
-		*rfd = open(str, perm, 0644);
-		if (*rfd == -1) {
-			fprintf(stderr, "Cannot create file '%s'\n", str);
-			return 0;
-		}
-fprintf(stderr, "NEW FD: %d\n", *rfd);
-		dup2(1, 9999);
-		dup2(*rfd, 1);
-		r_cons_stdout_set_fd(*rfd);
+		*rfd = r_cons_pipe_open(str, ptr[1]=='>');
 	}
 	ptr = strchr(cmd, '@');
 	if (ptr) {
@@ -667,12 +704,9 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 	}
 
 	if (newfd != 1) {
-		r_cons_flush();
-		close(newfd);
 		fprintf(stderr, "RESTORE fd\n");
-		r_cons_stdout_close(newfd);
-		r_cons_stdout_set_fd(1);
-		dup2(9999, 1);
+		r_cons_flush();
+		r_cons_pipe_close(newfd);
 	}
 
 	return ret;
@@ -694,6 +728,23 @@ int r_core_cmd_file(struct r_core_t *core, const char *file)
 		}
 	}
 	fclose(fd);
+	return 0;
+}
+
+static int cmd_debug(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
+	switch(input[0]) {
+	case 's':
+		fprintf(stderr, "step\n");
+		break;
+	case 'b':
+		fprintf(stderr, "breakpoint\n");
+		break;
+	case 'c':
+		fprintf(stderr, "continue\n");
+		break;
+	}
 	return 0;
 }
 
@@ -725,6 +776,7 @@ int r_core_cmd_init(struct r_core_t *core)
 	r_cmd_set_data(&core->cmd, core);
 	r_cmd_add(&core->cmd, "x",     "alias for px", &cmd_hexdump);
 	r_cmd_add(&core->cmd, "flag",  "get/set flags", &cmd_flag);
+	r_cmd_add(&core->cmd, "debug", "debugger operations", &cmd_debug);
 	r_cmd_add(&core->cmd, "info",  "get file info", &cmd_info);
 	r_cmd_add(&core->cmd, "seek",  "seek to an offset", &cmd_seek);
 	r_cmd_add(&core->cmd, "bsize", "change block size", &cmd_bsize);
@@ -733,6 +785,7 @@ int r_core_cmd_init(struct r_core_t *core)
 	r_cmd_add(&core->cmd, "write", "write bytes", &cmd_write);
 	r_cmd_add(&core->cmd, "Visual","enter visual mode", &cmd_visual);
 	r_cmd_add(&core->cmd, "!",     "run system command", &cmd_system);
+	r_cmd_add(&core->cmd, "|",     "run io system command", &cmd_io_system);
 	r_cmd_add(&core->cmd, "#",     "calculate hash", &cmd_hash);
 	r_cmd_add(&core->cmd, "?",     "help message", &cmd_help);
 	r_cmd_add(&core->cmd, ".",     "interpret", &cmd_interpret);
