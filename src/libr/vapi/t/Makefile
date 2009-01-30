@@ -1,4 +1,4 @@
-all: core hash sc socket asm search
+all: core hash sc socket asm search bin
 	@true
 
 sc:
@@ -31,7 +31,17 @@ search:
 	
 asm:
 	valac -C --vapidir=${PWD}/.. asm.vala --pkg r_asm
-	gcc asm.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_asm -Wl,-R../../asm -L../../asm -o asm
+	gcc asm.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ \
+		-lr_asm -Wl,-R../../asm -L../../asm \
+		-lr_util -Wl,-R../../util -L../../util \
+		-g -o asm
+
+bin:
+	valac -C --vapidir=${PWD}/.. bin.vala --pkg r_bin
+	gcc bin.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ \
+		-lr_bin -Wl,-R../../bin -L../../bin \
+		-lr_util -Wl,-R../../util -L../../util \
+		-g -o bin
 
 hash:
 	valac -C --vapidir=${PWD}/.. hash.vala --pkg r_hash
@@ -42,4 +52,4 @@ socket:
 	gcc socket.c `pkg-config gobject-2.0 --libs --cflags` -I../../include/ -lr_socket -Wl,-R../../socket -L../../socket -o socket
 
 clean:
-	-rm -f *.c hash sc *.o *.h core socket asm search
+	-rm -f *.c hash sc *.o *.h core socket asm search bin

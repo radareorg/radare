@@ -69,13 +69,16 @@ u32 r_asm_x86_realloc(struct r_asm_t *a)
 {
 	struct r_asm_realloc_t *aux = (struct r_asm_realloc_t*)a->aux;
 	int i;
+	u32 len = strlen(a->buf_asm);
 	char w0[32];
 	char w1[32];
 	char w2[32];
 	char w3[32];
 	char *str, *ptr, *optr;
 
-	str = strdup(a->buf_asm);
+	if ((str = alloca(len+1)) == NULL)
+		return 0;
+	memcpy(str, a->buf_asm, len+1);
 
 	if (str[0]!='\0') {
 		w0[0]='\0';
@@ -118,11 +121,6 @@ u32 r_asm_x86_realloc(struct r_asm_t *a)
 
 			r_asm_x86_deltify(nw, wa, aux->str);
 		}
-	}
-
-	if (str) {
-		free(str);
-		str = NULL;
 	}
 
 	return 1;

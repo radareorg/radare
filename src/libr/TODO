@@ -9,8 +9,10 @@
 || asm || 
 ---------
   - Add support for more architectures
-  - Add brainfuck, java, dalvik
+  - Add java, dalvik
   - Vala API should not use State
+  - Fix cpp issues
+  - Fix endianess issues
 
 || anal ||  **MISSING**
 ----------
@@ -19,7 +21,7 @@
 || bin || 
 ---------
   - No Vala api yet
-  - Add support for mach0 and java class
+  - Add support for PE64, mach0 and java class
   - Add dex format support (android)
 
 || cmd ||

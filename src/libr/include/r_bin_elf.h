@@ -1,6 +1,7 @@
 /* radare - LGPL - Copyright 2008 nibble<.ds@gmail.com> */
 
 #include "r_bin_elf_specs.h"
+#include "r_types.h"
 
 #ifndef _INCLUDE_R_BIN_ELF_H_
 #define _INCLUDE_R_BIN_ELF_H_
