@@ -3,6 +3,8 @@
 #ifndef _INCLUDE_R_BIN_PE_H_
 #define _INCLUDE_R_BIN_PE_H_
 
+#include "r_types.h"
+
 #include "r_bin_pe_specs.h"
 
 #define R_BIN_PE_SCN_IS_SHAREABLE(x)       x & PE_IMAGE_SCN_MEM_SHARED

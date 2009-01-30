@@ -201,6 +201,7 @@ typedef struct disassemble_info {
    target address.  Return number of octets processed.  */
 typedef int (*disassembler_ftype) (bfd_vma, disassemble_info *);
 
+extern int print_insn_arm (bfd_vma pc, disassemble_info *info);
 extern int print_insn_big_mips		(bfd_vma, disassemble_info *);
 extern int print_insn_little_mips	(bfd_vma, disassemble_info *);
 extern int print_insn_i386		(bfd_vma, disassemble_info *);
@@ -269,8 +270,6 @@ extern int print_insn_frv		(bfd_vma, disassemble_info *);
 extern int print_insn_iq2000		(bfd_vma, disassemble_info *);
 extern int print_insn_xc16x		(bfd_vma, disassemble_info *);
 extern int print_insn_m32c	(bfd_vma, disassemble_info *);
-
-int print_insn_arm (bfd_vma pc, struct disassemble_info *info);
 
 extern disassembler_ftype arc_get_disassembler (void *);
 extern disassembler_ftype cris_get_disassembler (bfd *);
