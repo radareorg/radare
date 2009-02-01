@@ -1,6 +1,6 @@
 /* radare - LGPL - Copyright 2009 nibble<.ds@gmail.com> */
 
-[CCode (cheader_filename="r_asm.h", cprefix="r_asm", lower_case_cprefix="r_asm_")]
+[CCode (cheader_filename="r_asm.h", cprefix="r_asm_", lower_case_cprefix="r_asm_")]
 namespace Radare {
 	[Compact]
 	[CCode (cname="struct r_asm_t", free_function="r_asm_free", cprefix="r_asm_")]
@@ -19,13 +19,17 @@ namespace Radare {
 		  	OBJD  = 10,
 		  	BF    = 11
 		}
-		public enum Syn {
+
+		[CCode (cprefix="R_ASM_SYN_")]
+		public enum Syntax {
 			NULL  = 0,
 			INTEL = 1,
 			ATT   = 2,
 			OLLY  = 3
 		}
-		public enum Par {
+		
+		[CCode (cprefix="R_ASM_PAR_")]
+		public enum Parser {
 			NULL    = 0,
 			PSEUDO  = 1,
 			REALLOC = 2
@@ -47,10 +51,10 @@ namespace Radare {
 		public int init();
 		public int set_arch(Arch arch);
 		public int set_bits(int bits);
-		public int set_syntax(Syn syntax);
+		public int set_syntax(Syntax syntax);
 		public int set_pc(uint64 addr);
 		public int set_big_endian(bool big);
-		public int set_parser(Par parser, parse_cb cb, void *aux);
+		public int set_parser(Parser parser, parse_cb cb, void *aux);
 		public uint32 disasm(uint8 *buf, int length);
 		public uint32 asm(string buf);
 		public uint32 parse();

@@ -1,7 +1,8 @@
 NAME=r_asm
 OBJ=asm.o
+CFLAGS+=-Iarch/include
 # XXX
-CFLAGS+=-DLIL_ENDIAN=1 -D__UNIX__
+CFLAGS+=-DLIL_ENDIAN=1
 
 # X86
 OBJ+=arch/x86/asm.o
@@ -31,6 +32,12 @@ OBJ+=arch/mips/asm.o
 OBJ+=arch/mips/gnu/mips-dis.o
 OBJ+=arch/mips/gnu/mips16-opc.o
 OBJ+=arch/mips/gnu/mips-opc.o
+
+# SPARC
+OBJ+=arch/sparc/asm.o
+# gnu sparc-dis
+OBJ+=arch/sparc/gnu/sparc-dis.o
+OBJ+=arch/sparc/gnu/sparc-opc.o
 
 # PPC
 OBJ+=arch/ppc/asm.o

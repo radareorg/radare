@@ -8,7 +8,7 @@ public class BinExample
 	{
 		uint64 baddr;
 
-		Bin bin = new Bin("/bin/ls", 0);
+		Bin bin = new Bin(args[1], 0);
 		stdout.printf("Info\n");
 		baddr = bin.get_baddr();
 		stdout.printf("Base addr: 0x%08llx\n", baddr);

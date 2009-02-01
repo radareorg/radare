@@ -3,6 +3,8 @@
 #ifndef _INCLUDE_R_BIN_H_
 #define _INCLUDE_R_BIN_H_
 
+#include "r_types.h"
+
 #include "r_bin_elf.h"
 #include "r_bin_elf64.h"
 #include "r_bin_pe.h"
