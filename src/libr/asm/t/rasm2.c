@@ -18,7 +18,7 @@ static int rasm_show_help()
 			" -e           Use big endian\n"
 			" If the last argument is '-' reads from stdin\n");
 	
-	return 1;
+	return R_TRUE;
 }
 
 static int rasm_disasm(char *buf, u64 offset, char *arch, char *syntax, int big_endian)
@@ -26,7 +26,8 @@ static int rasm_disasm(char *buf, u64 offset, char *arch, char *syntax, int big_
 	struct r_asm_t a;
 	u8 *data;
 	char *ptr = buf;
-	u32 idx = 0, ret = 0, word = 0, len = 0;
+	int ret = 0;
+	u64 idx = 0, word = 0, len = 0; 
 
 	while(ptr[0]) {
 		if (ptr[0]!= ' ')
@@ -64,7 +65,7 @@ static int rasm_disasm(char *buf, u64 offset, char *arch, char *syntax, int big_
 static int rasm_asm(char *buf, u64 offset, char *arch, char *syntax, int big_endian)
 {
 	struct r_asm_t a;
-	u32 ret;
+	int ret;
 
 	r_asm_init(&a);
 
@@ -80,7 +81,7 @@ static int rasm_asm(char *buf, u64 offset, char *arch, char *syntax, int big_end
 		printf("invalid\n");
 	else printf("%s\n", a.buf_hex);
 
-	return (int)ret;
+	return ret;
 }
 
 int main(int argc, char *argv[])

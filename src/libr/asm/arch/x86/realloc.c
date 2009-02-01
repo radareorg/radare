@@ -50,7 +50,7 @@ static int r_asm_x86_deltify(int argc, const char *argv[], char *newstr)
 				}
 				newstr[k]='\0';
 			}
-			return 1;
+			return R_TRUE;
 		}
 	}
 
@@ -62,14 +62,13 @@ static int r_asm_x86_deltify(int argc, const char *argv[], char *newstr)
 		}
 	}
 
-	return 0;
+	return R_FALSE;
 }
 
-u32 r_asm_x86_realloc(struct r_asm_t *a)
+int r_asm_x86_realloc(struct r_asm_t *a)
 {
 	struct r_asm_realloc_t *aux = (struct r_asm_realloc_t*)a->aux;
-	int i;
-	u32 len = strlen(a->buf_asm);
+	int i, len = strlen(a->buf_asm);
 	char w0[32];
 	char w1[32];
 	char w2[32];
@@ -77,7 +76,7 @@ u32 r_asm_x86_realloc(struct r_asm_t *a)
 	char *str, *ptr, *optr;
 
 	if ((str = alloca(len+1)) == NULL)
-		return 0;
+		return R_FALSE;
 	memcpy(str, a->buf_asm, len+1);
 
 	if (str[0]!='\0') {
@@ -123,6 +122,6 @@ u32 r_asm_x86_realloc(struct r_asm_t *a)
 		}
 	}
 
-	return 1;
+	return R_TRUE;
 }
 

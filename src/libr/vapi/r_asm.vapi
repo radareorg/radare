@@ -35,11 +35,11 @@ namespace Radare {
 			REALLOC = 2
 		}
 
-		public uint32 arch;
-		public uint32 bits;
-		public uint32 big_endian;
-		public uint32 syntax;
-		public uint32 parser;
+		public int arch;
+		public int bits;
+		public bool big_endian;
+		public int syntax;
+		public int parser;
 		public uint64 pc;
 		public string buf_asm;
 		public string buf_hex;
@@ -49,16 +49,16 @@ namespace Radare {
 		public Asm();
 
 		public int init();
-		public int set_arch(Arch arch);
-		public int set_bits(int bits);
-		public int set_syntax(Syntax syntax);
-		public int set_pc(uint64 addr);
-		public int set_big_endian(bool big);
-		public int set_parser(Parser parser, parse_cb cb, void *aux);
-		public uint32 disasm(uint8 *buf, int length);
-		public uint32 asm(string buf);
-		public uint32 parse();
+		public bool set_arch(Arch arch);
+		public bool set_bits(int bits);
+		public bool set_syntax(Syntax syntax);
+		public bool set_pc(uint64 addr);
+		public bool set_big_endian(bool big);
+		public bool set_parser(Parser parser, parse_cb cb, void *aux);
+		public int disasm(uint8 *buf, uint64 length);
+		public int asm(string buf);
+		public int parse();
 	}
 
-	public static delegate uint32 parse_cb(Asm a);
+	public static delegate int parse_cb(Asm a);
 }

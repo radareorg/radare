@@ -11,7 +11,8 @@ int main()
 	u8 *buf = "++++++++++[>+++++++>++++++++++>+++>"
 		"+<<<<-]>++.>+.+++++++..+++.>++.<<++++++++"
 		"+++++++.>.+++.------.--------.>+.>.";
-	u32 idx = 0, ret = 0, len = strlen(buf);
+	int ret = 0;
+	u64 idx = 0, len = strlen(buf);
 
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_BF);
@@ -27,4 +28,6 @@ int main()
 
 		idx += ret;
 	}
+
+	return 0;
 }

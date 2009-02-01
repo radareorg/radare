@@ -15,7 +15,7 @@ int r_asm_init(struct r_asm_t *a)
 	r_asm_set_syntax(a, R_ASM_SYN_INTEL);
 	r_asm_set_parser(a, R_ASM_PAR_NULL, NULL, NULL);
 	r_asm_set_pc(a, 0);
-	return 1;
+	return R_TRUE;
 }
 
 struct r_asm_t *r_asm_new()
@@ -30,7 +30,7 @@ void r_asm_free(struct r_asm_t *a)
 	free(a);
 }
 
-int r_asm_set_arch(struct r_asm_t *a, u32 arch)
+int r_asm_set_arch(struct r_asm_t *a, int arch)
 {
 	switch (arch) {
 	case R_ASM_ARCH_X86:
@@ -60,46 +60,46 @@ int r_asm_set_arch(struct r_asm_t *a, u32 arch)
 	default:
 		a->r_asm_disasm = NULL;
 		a->r_asm_asm = NULL;
-		return -1;
+		return R_FALSE;
 	}
 	a->arch = arch;
-	return 1;
+	return R_TRUE;
 }
 
-int r_asm_set_bits(struct r_asm_t *a, u32 bits)
+int r_asm_set_bits(struct r_asm_t *a, int bits)
 {
 	switch (bits) {
 	case 16:
 	case 32:
 	case 64:
 		a->bits = bits;
-		return 1;
+		return R_TRUE;
 	default:
-		return -1;
+		return R_FALSE;
 	}
 }
 
-int r_asm_set_big_endian(struct r_asm_t *a, u32 boolean)
+int r_asm_set_big_endian(struct r_asm_t *a, int boolean)
 {
 	a->big_endian = boolean;
-	return 1;
+	return R_TRUE;
 }
 
-int r_asm_set_syntax(struct r_asm_t *a, u32 syntax)
+int r_asm_set_syntax(struct r_asm_t *a, int syntax)
 {
 	switch (syntax) {
 	case R_ASM_SYN_INTEL:
 	case R_ASM_SYN_ATT:
 	case R_ASM_SYN_OLLY:
 		a->syntax = syntax;
-		return 1;
+		return R_TRUE;
 	default:
-		return -1;
+		return R_FALSE;
 	}
 }
 
 int r_asm_set_parser(struct r_asm_t *a,
-		u32 parser, u32 (*cb)(struct r_asm_t *a), void *aux)
+		int parser, int (*cb)(struct r_asm_t *a), void *aux)
 {
 	switch (parser) {
 	case R_ASM_PAR_NULL:
@@ -109,28 +109,28 @@ int r_asm_set_parser(struct r_asm_t *a,
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
 			a->r_asm_parse = &r_asm_x86_pseudo;
 			break;
-		} else return -1;
+		} else return R_FALSE;
 	case R_ASM_PAR_REALLOC:
 		if (a->arch == R_ASM_ARCH_X86 && a->syntax == R_ASM_SYN_INTEL) {
 			a->r_asm_parse = &r_asm_x86_realloc;
 			break;
-		} else return -1;
+		} else return R_FALSE;
 	default:
-		return -1;
+		return R_FALSE;
 	}
 	a->parser = parser;
 	a->r_asm_parse_cb = cb;
 	a->aux = aux;
-	return 1;
+	return R_TRUE;
 }
 
 int r_asm_set_pc(struct r_asm_t *a, u64 pc)
 {
 	a->pc = pc;
-	return 1;
+	return R_TRUE;
 }
 
-u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
+int r_asm_disasm(struct r_asm_t *a, u8 *buf, u64 len)
 {
 	if (a->r_asm_disasm != NULL)
 		return a->r_asm_disasm(a, buf, len);
@@ -138,7 +138,7 @@ u32 r_asm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	return 0;
 }
 
-u32 r_asm_asm(struct r_asm_t *a, char *buf)
+int r_asm_asm(struct r_asm_t *a, char *buf)
 {
 	if (a->r_asm_asm != NULL)
 		return a->r_asm_asm(a, buf);
@@ -146,9 +146,9 @@ u32 r_asm_asm(struct r_asm_t *a, char *buf)
 	return 0;
 }
 
-u32 r_asm_parse(struct r_asm_t *a)
+int r_asm_parse(struct r_asm_t *a)
 {
-	u32 ret = 0;
+	int ret = 0;
 
 	if (a->r_asm_parse != NULL)
 		ret = a->r_asm_parse(a);

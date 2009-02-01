@@ -55,7 +55,7 @@ static int buf_fprintf(void *stream, const char *format, ...)
 	return 0;
 }
 
-u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
+int r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u64 len)
 {
 	struct disassemble_info disasm_obj;
 	int ret;
@@ -63,7 +63,7 @@ u32 r_asm_arm_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	buf_global = a->buf_asm;
 	Offset = a->pc;
 	memcpy(bytes, buf, 4); // TODO handle thumb
-	r_hex_bin2str(buf, len, a->buf_hex);
+	r_hex_bin2str(bytes, 4, a->buf_hex);
 
 	/* prepare disassembler */
 	memset(&disasm_obj,'\0', sizeof(struct disassemble_info));

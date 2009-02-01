@@ -10,7 +10,8 @@ int main()
 {
 	struct r_asm_t a;
 	u8 *buf = "\x04\x28\x9c\x27\x21\xe0\x9f\x03";
-	u32 idx = 0, ret = 0, len = 8;
+	int ret = 0;
+	u64 idx = 0, len = 8;
 
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_MIPS);
@@ -26,4 +27,6 @@ int main()
 
 		idx += ret;
 	}
+
+	return 0;
 }

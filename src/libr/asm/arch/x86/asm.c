@@ -11,13 +11,13 @@
 #include "ollyasm/disasm.h"
 
 
-u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
+int r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u64 len)
 {
 	union {
 		ud_t     ud;
 		t_disasm olly;
 	} disasm_obj;
-	u32 ret = 0;
+	int ret = 0;
 
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:
@@ -47,12 +47,12 @@ u32 r_asm_x86_disasm(struct r_asm_t *a, u8 *buf, u32 len)
 	return ret;
 }
 
-u32 r_asm_x86_asm(struct r_asm_t *a, char *buf)
+int r_asm_x86_asm(struct r_asm_t *a, char *buf)
 {
 	union {
 		t_asmmodel olly;
 	} asm_obj;
-	u32 idx, ret = 0;
+	int idx, ret = 0;
 
 	switch (a->syntax) {
 	case R_ASM_SYN_INTEL:

@@ -7,7 +7,7 @@
 #include <r_asm.h>
 
 
-u32 r_asm_bf_disasm(struct r_asm_t *a, u8 *buf, u32 len)
+int r_asm_bf_disasm(struct r_asm_t *a, u8 *buf, u64 len)
 {
 	int i;
 	char *buf_cp, *b;

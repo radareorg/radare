@@ -13,7 +13,8 @@ int main()
 		"\x74\x31"
 		"\x74\x31"
 		"\xc7\xc0\x04\x00\x00\x00";
-	u32 idx = 0, ret = 0, len = 12;
+	int ret = 0;
+	u64 idx = 0, len = 12;
 
 	r_asm_init(&a);
 	r_asm_set_arch(&a, R_ASM_ARCH_X86);
@@ -33,4 +34,6 @@ int main()
 
 		idx += ret;
 	}
+
+	return 0;
 }

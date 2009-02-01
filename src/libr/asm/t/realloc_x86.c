@@ -5,14 +5,15 @@
 #include "r_asm.h"
 #include "r_bin.h"
 #include "r_util.h"
+#include "r_types.h"
 
 
-static u32 cb(struct r_asm_t *a)
+static int cb(struct r_asm_t *a)
 {
 	struct r_asm_realloc_t *aux = (struct r_asm_realloc_t*)a->aux;
 
 	printf("REALLOC: %s\n", aux->str);
-	return 1;
+	return R_TRUE;
 }
 
 int main(int argc, char *argv[])
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
 	char *file, *section;
 	u8 *buf;
 	u64 size = 0, idx = 0, len = 0;
-	u32 ret = 0, i = 0;
+	int ret = 0, i = 0;
 	
 	if (argc != 4) {
 		fprintf(stderr, "Usage: %s elf_file section_name new_size\n", argv[0]);
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 	/* Resize sections */
 	if ((r.delta = r_bin_resize_section(&bin, section, size)) == 0) {
 		fprintf(stderr, "Delta = 0\n");
-		return 1;
+		return R_TRUE;
 	}
 
 	r.offset = r_bin_get_section_rva(&bin, section) + r_bin_get_baddr(&bin);
@@ -79,5 +80,5 @@ int main(int argc, char *argv[])
 
 	free(sections);
 
-	return 0;
+	return R_FALSE;
 }

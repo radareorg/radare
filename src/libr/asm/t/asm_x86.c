@@ -10,7 +10,7 @@ int main()
 {
 	struct r_asm_t a;
 	char *buf = "push 0x8059a00";
-	u32 ret;
+	int ret;
 
 	r_asm_init(&a);
 	r_asm_set_syntax(&a, R_ASM_SYN_OLLY);
@@ -19,4 +19,6 @@ int main()
 	if (!ret)
 		printf("invalid\n");
 	else printf("DISASM %s HEX %s\n", a.buf_asm, a.buf_hex);
+
+	return 0;
 }
