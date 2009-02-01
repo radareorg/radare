@@ -13,23 +13,24 @@ namespace Radare {
 		public int init(string file, int rw);
 		public int close();
 		public uint64 get_baddr();
-		public Entry[] get_entry();
-		public Section[] get_sections();
-		public Symbol[] get_symbols();
-		public Import[] get_imports();
-		public Info[] get_info();
+		public Entry* get_entry();
+		public Section* get_sections();
+		public Symbol* get_symbols();
+		public Import* get_imports();
+		public Info* get_info();
 		public uint64 get_section_offset(string name);
 		public uint64 get_section_rva(string name);
 		public uint32 get_section_size(string name);
 		public uint64 resize_section(string name, uint64 size);
 	}
 	
-	[CCode (cname="r_bin_entry", cprefix="r_bin_entry_")]
+	[CCode (cname="r_bin_entry")]
 	public struct Entry {
 		public uint64 rva;
 		public uint64 offset;
 	}
 
+	[CCode (cname="r_bin_section")]
 	public struct Section{
 		public string name;
 		public int32 size;
@@ -37,9 +38,10 @@ namespace Radare {
 		public int64 rva;
 		public int64 offset;
 		public int32 stringacteristics;
-		public int last;
+		public bool last;
 	}
 
+	[CCode (cname="r_bin_symbol")]
 	public struct Symbol {
 		public string name;
 		public string forwarder;
@@ -49,20 +51,22 @@ namespace Radare {
 		public uint64 offset;
 		public uint32 size;
 		public uint32 ordinal;
-		public int last;
+		public bool last;
 	}
 
+	[CCode (cname="r_bin_import")]
 	public struct Import {
 		public string name;
 		public string bind;
 		public string type;
 		public uint64 rva;
-		///public uint64 offpublic set;
+		public uint64 offset;
 		public uint32 ordinal;
 		public uint32 hint;
-		public int lapublicst;
+		public bool last;
 	}
 
+	[CCode (cname="r_bin_info")]
 	public struct Info {
 		public string type;
 		public string @class;
