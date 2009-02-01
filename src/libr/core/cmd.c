@@ -743,6 +743,24 @@ static int cmd_debug(void *data, const char *input)
 		break;
 	case 'c':
 		fprintf(stderr, "continue\n");
+		r_debug_continue(&core->dbg);
+		break;
+	default:
+		r_cons_printf("Usage: d[sbc] [arg]\n"
+		" ds           ; perform one step\n"
+		" ds 3         ; perform 3 steps\n"
+		" do 3         ; perform 3 steps overs\n"
+		" dc           ; continue execution\n"
+		" dr           ; show registers\n"
+		" dr*          ; show registers in radare commands\n"
+		" dr eax       ; show value of eax register\n"
+		" dr eax = 33  ; set register value. eax = 33\n"
+		" db           ; list breakpoints\n"
+		" db sym.main  ; set breakpoint\n"
+		" db -sym.main ; drop breakpoint\n"
+		" dm           ; show memory maps\n"
+		" dm 4096      ; allocate 4KB in child process\n"
+		" dm rw- esp 9K; set 9KB of the stack as read+write (no exec)\n");
 		break;
 	}
 	return 0;

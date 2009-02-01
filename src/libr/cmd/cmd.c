@@ -89,3 +89,12 @@ int r_cmd_init(struct r_cmd_t *cmd)
 	cmd->data = NULL;
 	return 0;
 }
+
+// XXX: make it work :P
+static char *argv[]= { "foo", "bar", "cow", "muu" };
+char **r_cmd_args(struct r_cmd_t *cmd, int *argc)
+{
+	*argc = 4;
+	//argv = argv_test;
+	return argv;
+}

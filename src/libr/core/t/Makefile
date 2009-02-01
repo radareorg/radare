@@ -11,6 +11,7 @@ LIBS=../*.o \
   ../../flags/*.a \
   ../../asm/*.a \
   ../../macro/*.a \
+  ../../debug/*.a \
   ../../hash/*.a
 
 include ../../tests.mk

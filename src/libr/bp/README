@@ -18,3 +18,4 @@ Breakpoint API
   by other modules. Like changing register values and so on
   - Do we should place some callbacks for this kind of ops?
 - We need to make this work also remotely
+* Watchpoints and its exception should be handled here

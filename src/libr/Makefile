@@ -2,7 +2,7 @@
 PREFIX=/tmp/libr-install
 
 # Libraries
-LIBLIST=io util bin macro hash print config flags cons line lib syscall range socket cmd asm search core diff
+LIBLIST=io util bin macro hash print config flags cons line lib syscall range socket cmd asm search core diff debug reg
 
 
 # Under development

@@ -12,6 +12,10 @@ public class BinExample
 		stdout.printf("Info\n");
 		baddr = bin.get_baddr();
 		stdout.printf("Base addr: 0x%08llx\n", baddr);
+
+		Entry[] e = bin.get_entry();
+		Entry entry = e[0];
+		stdout.printf("Entry point: 0x%08llx\n", entry.offset);
 		bin.close();
 	}
 }

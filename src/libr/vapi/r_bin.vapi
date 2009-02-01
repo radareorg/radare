@@ -24,53 +24,54 @@ namespace Radare {
 		public uint64 resize_section(string name, uint64 size);
 	}
 	
+	[CCode (cname="r_bin_entry", cprefix="r_bin_entry_")]
 	public struct Entry {
-		uint64 rva;
-		uint64 offset;
+		public uint64 rva;
+		public uint64 offset;
 	}
 
 	public struct Section{
-		string name;
-		uint32 size;
-		uint32 vsize;
-		uint64 rva;
-		uint64 offset;
-		uint32 stringacteristics;
-		int last;
+		public string name;
+		public int32 size;
+		public int32 vsize;
+		public int64 rva;
+		public int64 offset;
+		public int32 stringacteristics;
+		public int last;
 	}
 
 	public struct Symbol {
-		string name;
-		string forwarder;
-		string bind;
-		string type;
-		uint64 rva;
-		uint64 offset;
-		uint32 size;
-		uint32 ordinal;
-		int last;
+		public string name;
+		public string forwarder;
+		public string bind;
+		public string type;
+		public uint64 rva;
+		public uint64 offset;
+		public uint32 size;
+		public uint32 ordinal;
+		public int last;
 	}
 
 	public struct Import {
-		string name;
-		string bind;
-		string type;
-		uint64 rva;
-		uint64 offset;
-		uint32 ordinal;
-		uint32 hint;
-		int last;
+		public string name;
+		public string bind;
+		public string type;
+		public uint64 rva;
+		///public uint64 offpublic set;
+		public uint32 ordinal;
+		public uint32 hint;
+		public int lapublicst;
 	}
 
 	public struct Info {
-		string type;
-		string @class;
-		string rclass;
-		string arch;
-		string machine;
-		string os;
-		string subsystem;
-		int bigendian;
-		uint32 dbg_info;
+		public string type;
+		public string @class;
+		public string rclass;
+		public string arch;
+		public string machine;
+		public string os;
+		public string subsystem;
+		public int bigendian;
+		public uint32 dbg_info;
 	}
 }
