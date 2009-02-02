@@ -1271,6 +1271,10 @@ int rabin_identify_header()
 			filetype = FILETYPE_CLASS;
 		else
 			filetype = FILETYPE_MACHO;
+
+	} else if ( !memcmp(buf, "\xcE\xfa\xed\xfe", 4) ) {
+		//0xce, 0xfa, 0xed, 0xfe,
+		filetype = FILETYPE_MACHO;
 	} else if ( !memcmp(buf, "\xFE\xED\xFA\xCE", 4) ) {
 		filetype = FILETYPE_MACHO;
 		/* ENDIAN = BIG */

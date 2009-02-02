@@ -1,5 +1,5 @@
-#ifndef _LIB_R_IO_H_
-#define _LIB_R_IO_H_
+#ifndef _LIB_R_LIB_H_
+#define _LIB_R_LIB_H_
 
 // TODO: rename type from int to 4 byte string
 // TODO: use 4 chars to idnetify plugin type
@@ -33,6 +33,10 @@ struct r_lib_handler_t {
 struct r_lib_struct_t {
 	int type;
 	void *data; /* pointer to data handled by plugin handler */
+};
+
+enum {
+	R_LIB_TYPE_IO,
 };
 
 struct r_lib_t {
