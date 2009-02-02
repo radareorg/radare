@@ -5,11 +5,6 @@
 
 #include "r_types.h"
 
-struct r_reg_t {
-	int nregs;
-	char *regs[];
-};
-
 enum {
 	R_ASM_ARCH_NULL  = 0,
 	R_ASM_ARCH_X86   = 1,

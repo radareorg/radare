@@ -91,7 +91,6 @@ int r_debug_step(struct r_debug_t *dbg, int steps)
 				break;
 			dbg->steps++;
 		}
-		
 	}
 	return ret;
 }

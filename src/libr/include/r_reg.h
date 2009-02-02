@@ -17,4 +17,9 @@ enum {
 	R_REG_X86_EIP,
 };
 
+struct r_reg_t {
+	int nregs;
+	char **regs;
+};
+
 #endif
