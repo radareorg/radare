@@ -3,8 +3,8 @@ all: ptrace.so
 	@true
 
 ptrace.so: ptrace.o
-	${CC} -shared -o ptrace.so ptrace.o
-	strip -s ptrace.so
+	${CC} ${CFLAGS} -fPIC -shared -o ptrace.so ptrace.c
+	#strip -s ptrace.so
 
 clean:
 	-rm -f *.so *.o

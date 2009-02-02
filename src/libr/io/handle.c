@@ -1,22 +1,4 @@
-/*
- * Copyright (C) 2008
- *       pancake <youterm.com>
- *
- * radare is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with radare; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
+/* radare - LGPL - Copyright 2008-2009 pancake<nopcode.org> */
 
 /* TODO: write li->fds setter/getter helpers */
 
@@ -57,9 +39,11 @@ struct r_io_handle_t *r_io_handle_resolve(const char *filename)
 	struct list_head *pos;
 	list_for_each_prev(pos, &io_list) {
 		struct io_list_t *il = list_entry(pos, struct io_list_t, list);
+		printf("resolving (%s)\n", filename);
 		if (il->plugin->handle_open(filename))
 			return il->plugin;
 	}
+		printf("cannot resolve\n");
 	return NULL;
 }
 

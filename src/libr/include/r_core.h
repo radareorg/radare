@@ -3,6 +3,7 @@
 
 #include "r_types.h"
 #include "r_io.h"
+#include "r_lib.h"
 #include <r_cmd.h>
 #include "r_cons.h"
 #include "r_line.h"
@@ -33,6 +34,7 @@ struct r_core_t {
 	struct r_core_file_t *file;
 	struct list_head files;
 	struct r_num_t num;
+	struct r_lib_t lib;
 	struct r_cmd_t cmd;
 	struct r_debug_t dbg;
 	struct r_flag_t flags;

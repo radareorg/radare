@@ -22,7 +22,7 @@ struct r_io_handle_t {
         struct debug_t *debug;
         int (*system)(const char *);
         int (*open)(const char *, int rw, int mode);
-        u32 (*read)(int fd, u8 *buf, u32 count);
+        int (*read)(int fd, u8 *buf, int count);
         u64 (*lseek)(int fildes, u64 offset, int whence);
         u32 (*write)(int fd, const u8 *buf, u32 count);
         int (*close)(int fd);
@@ -38,6 +38,7 @@ int r_io_handle_open(int fd, struct r_io_handle_t *plugin);
 int r_io_handle_close(int fd, struct r_io_handle_t *plugin);
 int r_io_handle_generate();
 int r_io_handle_add(struct r_io_handle_t *plugin);
+// TODO: _del ??
 struct r_io_handle_t *r_io_handle_resolve(const char *filename);
 struct r_io_handle_t *r_io_handle_resolve_fd(int fd);
 

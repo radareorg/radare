@@ -32,16 +32,29 @@ struct r_core_t *r_core_new()
 	return c;
 }
 
+int __lib_io_cb(struct r_lib_plugin_t *pl, void *p, void *u)
+{
+	struct r_io_handle_t *hand = (struct r_io_handle_t *)u;
+	printf("Add io handler\n");
+	r_io_handle_add(hand);
+	return R_TRUE;
+}
+
+int __lib_io_dt(struct r_lib_plugin_t *pl, void *p, void *u)
+{
+	return R_TRUE;
+}
+
 int r_core_init(struct r_core_t *core)
 {
 	core->num.callback = &num_callback;
 	core->num.userptr = core;
 	r_cons_init();
+	r_io_init();
 	r_macro_init(&core->macro);
 	core->macro.num = &core->num;
 	core->macro.user = core;
 	core->macro.cmd = r_core_cmd0;
-	r_io_init();
 	core->file = NULL;
 	INIT_LIST_HEAD(&core->files);
 	core->seek = 0LL;
@@ -50,6 +63,12 @@ int r_core_init(struct r_core_t *core)
 	r_core_cmd_init(core);
 	r_core_config_init(core);
 	r_flag_init(&core->flags);
+
+	r_lib_init(&core->lib, "radare_plugin");
+	r_lib_add_handler(&core->lib, R_LIB_TYPE_IO, "io plugins",
+		&__lib_io_cb, &__lib_io_dt, &core);
+	r_lib_opendir(&core->lib, "/home/pancake/prg/radare/src/libr/io/plugins");
+	// XXX fix path here
 	return 0;
 }
 

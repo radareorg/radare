@@ -55,6 +55,7 @@ int r_io_resize(const char *file, int flags, int mode)
 	return -1;
 }
 
+/* write mask */
 static int r_io_write_mask_fd = -1;
 static u8 *r_io_write_mask_buf;
 static int r_io_write_mask_len;

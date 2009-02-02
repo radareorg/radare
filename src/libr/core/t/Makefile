@@ -10,8 +10,10 @@ LIBS=../*.o \
   ../../print/*.a \
   ../../flags/*.a \
   ../../asm/*.a \
+  ../../lib/*.a \
   ../../macro/*.a \
   ../../debug/*.a \
   ../../hash/*.a
+LIBS+=-ldl
 
 include ../../tests.mk

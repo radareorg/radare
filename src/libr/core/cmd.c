@@ -623,16 +623,18 @@ static int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd,
 	if (ptr) {
 		ptr[0]='\0';
 	}
-	ptr = strchr(cmd, '|');
-	if (ptr) {
-		ptr[0] = '\0';
-		fprintf(stderr, "System pipes not yet supported.\n");
-	}
-	ptr = strchr(cmd, '>');
-	if (ptr) {
-		ptr[0] = '\0';
-		for(str=ptr+1;str[0]== ' ';str=str+1);
-		*rfd = r_cons_pipe_open(str, ptr[1]=='>');
+	if (cmd[0]) {
+		ptr = strchr(cmd+1, '|');
+		if (ptr) {
+			ptr[0] = '\0';
+			fprintf(stderr, "System pipes not yet supported.\n");
+		}
+		ptr = strchr(cmd, '>');
+		if (ptr) {
+			ptr[0] = '\0';
+			for(str=ptr+1;str[0]== ' ';str=str+1);
+			*rfd = r_cons_pipe_open(str, ptr[1]=='>');
+		}
 	}
 	ptr = strchr(cmd, '@');
 	if (ptr) {

@@ -1,22 +1,4 @@
-/*
- * Copyright (C) 2008
- *       pancake <youterm.com>
- *
- * radare is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with radare; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
+/* radare - LGPL - Copyright 2008-2009 pancake<nopcode.org> */
 
 #include "r_types.h"
 #include "r_lib.h"
@@ -43,7 +25,11 @@
 
 void *r_lib_dl_open(const char *libname)
 {
-	return DLOPEN(libname);
+	void *ret = DLOPEN(libname);
+	if (ret == NULL) {
+		fprintf(stderr, "dlerror: %s\n", dlerror());
+	}
+	return ret;
 }
 
 void *r_lib_dl_sym(void *handle, const char *name)
@@ -87,15 +73,16 @@ int r_lib_dl_check_filename(const char *file)
 {
 	/* skip hidden files */
 	if (file[0]=='.')
-		return 0;
+		return R_FALSE;
+	else
 	/* per SO dylib filename extensions */
 	if (strstr(file, ".so"))
-		return 1;
+		return R_TRUE;
 	if (strstr(file, ".dll"))
-		return 1;
+		return R_TRUE;
 	if (strstr(file, ".dylib"))
-		return 1;
-	return 0;
+		return R_TRUE;
+	return R_FALSE;
 }
 
 /* high level api */
@@ -143,14 +130,14 @@ int r_lib_open(struct r_lib_t *lib, const char *file)
 	int ret;
 
 	/* ignored by filename */
-	if (r_lib_dl_check_filename(file)) {
+	if (!r_lib_dl_check_filename(file)) {
 		fprintf(stderr, "Invalid library extension: %s\n", file);
 		return -1;
 	}
 
 	handler = r_lib_dl_open(file);
 	if (handler == NULL) {
-		fprintf(stderr, "Cannot open library: %s\n", file);
+		fprintf(stderr, "Cannot open library: '%s'\n", file);
 		return -1;
 	}
 	stru = (struct r_lib_struct_t *) r_lib_dl_sym(handler, lib->symname);
@@ -180,6 +167,7 @@ int r_lib_open(struct r_lib_t *lib, const char *file)
 
 int r_lib_opendir(struct r_lib_t *lib, const char *path)
 {
+	char file[1024];
 	struct dirent *de;
 	DIR *dh = opendir(path);
 	if (dh == NULL) {
@@ -187,7 +175,8 @@ int r_lib_opendir(struct r_lib_t *lib, const char *path)
 		return -1;
 	}
 	while((de = (struct dirent *)readdir(dh))) {
-		r_lib_open(lib, de->d_name);
+		snprintf(file, 1023, "%s/%s", path, de->d_name);
+		r_lib_open(lib, file);
 	}
 	closedir(dh);
 	return 0;
