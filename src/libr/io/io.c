@@ -6,18 +6,25 @@
 static struct r_io_handle_t *plugin;
 static int cache_fd;
 u64 r_io_seek = 0; // XXX should be store per io_handle
+static int r_io_is_init = 0;
 
 int r_io_init()
 {
 	r_io_map_init();
 	r_io_section_init();
 	r_io_handle_init();
+	r_io_is_init = 1;
 	return 0;
 }
 
 int r_io_open(const char *file, int flags, int mode)
 {
-	struct r_io_handle_t *plugin = r_io_handle_resolve(file);
+	struct r_io_handle_t *plugin;
+	if (!r_io_is_init) {
+		fprintf(stderr, "WARNING: Using r_io without init! (using library code and core)?\n");
+		r_io_init();
+	}
+	plugin = r_io_handle_resolve(file);
 	if (plugin) {
 		int fd = plugin->open(file, flags, mode);
 		if (fd != -1)

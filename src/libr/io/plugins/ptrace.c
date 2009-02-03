@@ -2,6 +2,7 @@
 
 #include <r_io.h>
 #include <r_lib.h>
+#include <errno.h>
 #include <sys/ptrace.h>
 
 static int pid;
@@ -54,13 +55,25 @@ err:
         return ret ;
 }
 
-
 static int __read(int pid, u8 *buf, int len)
 {
 	int ret;
 	addr = r_io_seek;
 	memset(buf, '\xff', len);
 	ret = debug_os_read_at(pid, buf, len, addr);
+//printf("READ(0x%08llx)\n", addr);
+	//if (ret == -1)
+	//	return -1;
+
+	return len;
+}
+
+static int __write(int pid, u8 *buf, int len)
+{
+	int ret;
+	addr = r_io_seek;
+	memset(buf, '\xff', len);
+	//ret = debug_os_write_at(pid, buf, len, addr);
 //printf("READ(0x%08llx)\n", addr);
 	//if (ret == -1)
 	//	return -1;
@@ -75,6 +88,7 @@ static int __handle_open(const char *file)
 	return R_FALSE;
 }
 
+extern int errno;
 static int __open(const char *file, int rw, int mode)
 {
 	int ret = -1;
@@ -82,7 +96,15 @@ static int __open(const char *file, int rw, int mode)
 		pid = atoi(file+9);
 		ret = ptrace(PTRACE_ATTACH, pid, 0, 0);
 		if (ret == -1) {
-			fprintf(stderr, "Cannot attach\n");
+			perror("ptrace: Cannot attach");
+			switch(errno) {
+			case EPERM:
+				fprintf(stderr, "ERRNO: %d (EPERM=%d)\n", errno, errno==EPERM);
+				break;
+			case EINVAL:
+				fprintf(stderr, "ERRNO: %d (EINVAL)\n", errno);
+				break;
+			}
 		} else
 		if (__waitpid(pid)) {
 			ret = pid;
@@ -133,6 +155,7 @@ static struct r_io_handle_t r_io_plugin_ptrace = {
 	.lseek = __lseek,
 	.system = __system,
 	.init = __init,
+	.write = __write,
         //void *widget;
 /*
         struct debug_t *debug;

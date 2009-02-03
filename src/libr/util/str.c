@@ -334,3 +334,38 @@ int r_str_escape(char *buf)
 	return i;
 }
 
+#if 0
+int r_str_argv_parse(const char *str, int argc, char **argv)
+{
+	int n = 0;
+
+	int i = 0;
+	char *tmp, *tmp2;
+	free(ps.args);
+	ps.args = strdup(ps.filename);
+	tmp2 = ps.args;
+	// parse argv
+	//eprintf("commandline=\"%s\"\n", ps.args);
+	for(tmp=ps.args;tmp[0];tmp=tmp+1) {
+		if (tmp[0]==' '&&tmp!=ps.args) {                        if ((tmp[-1]=='\\') || (tmp[-1]=='/'))
+			continue;
+			tmp[0]='\0';
+			ps.argv[i] = tmp2;
+			tmp2 = tmp+1;
+			if (++i>254) {
+				printf("Too many arguments. truncated\n");
+				break;
+			}
+		}
+	}
+	ps.argv[i] = tmp2;
+	ps.argv[i+1] = 0;
+
+	tmp = strchr(config.file, ' ');
+	if (tmp) *tmp = '\0';
+	//config.file = strdup("/bin/ls"); //ps.argv[0];
+	//eprintf("ppa:A0(%s)\n", ps.argv[0]);
+
+	return n;
+}
+#endif
