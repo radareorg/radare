@@ -68,6 +68,11 @@ int r_core_init(struct r_core_t *core)
 	r_lib_add_handler(&core->lib, R_LIB_TYPE_IO, "io plugins",
 		&__lib_io_cb, &__lib_io_dt, &core);
 	r_lib_opendir(&core->lib, "/home/pancake/prg/radare/src/libr/io/plugins");
+	{
+		char *homeplugindir = r_str_home(".radare/plugins");
+		r_lib_opendir(&core->lib, homeplugindir);
+		free(homeplugindir);
+	}
 	// XXX fix path here
 	return 0;
 }

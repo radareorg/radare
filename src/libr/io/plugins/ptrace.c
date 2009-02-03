@@ -4,9 +4,12 @@
 #include <r_lib.h>
 #include <errno.h>
 #include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-static int pid;
-static u64 addr;
+#define R_IO_NFDS 2
+int fds[3];
+int nfds = 0;
 
 static int __waitpid(int pid)
 {
@@ -58,7 +61,8 @@ err:
 static int __read(int pid, u8 *buf, int len)
 {
 	int ret;
-	addr = r_io_seek;
+	u64 addr = r_io_seek;
+printf("READING USING PTRACE\n");
 	memset(buf, '\xff', len);
 	ret = debug_os_read_at(pid, buf, len, addr);
 //printf("READ(0x%08llx)\n", addr);
@@ -68,11 +72,10 @@ static int __read(int pid, u8 *buf, int len)
 	return len;
 }
 
-static int __write(int pid, u8 *buf, int len)
+static int __write(int pid, const u8 *buf, int len)
 {
-	int ret;
-	addr = r_io_seek;
-	memset(buf, '\xff', len);
+	//int ret;
+	//u64 addr = r_io_seek;
 	//ret = debug_os_write_at(pid, buf, len, addr);
 //printf("READ(0x%08llx)\n", addr);
 	//if (ret == -1)
@@ -88,12 +91,13 @@ static int __handle_open(const char *file)
 	return R_FALSE;
 }
 
-extern int errno;
+//extern int errno;
+
 static int __open(const char *file, int rw, int mode)
 {
 	int ret = -1;
 	if (__handle_open(file)) {
-		pid = atoi(file+9);
+		int pid = atoi(file+9);
 		ret = ptrace(PTRACE_ATTACH, pid, 0, 0);
 		if (ret == -1) {
 			perror("ptrace: Cannot attach");
@@ -105,21 +109,22 @@ static int __open(const char *file, int rw, int mode)
 				fprintf(stderr, "ERRNO: %d (EINVAL)\n", errno);
 				break;
 			}
+			ret = pid;
 		} else
 		if (__waitpid(pid)) {
 			ret = pid;
 		} else fprintf(stderr, "Error in waitpid\n");
 	}
+	fds[0] = ret;
 	return ret;
 }
-
 
 static int __handle_fd(int fd)
 {
 	int i;
-	for(i=0;i<R_IO_NFDS;i++) {
-	//	if (fds[i]==fd)
-	////		return R_TRUE;
+	for(i=0;i<nfds;i++) {
+		if (fds[i]==fd)
+			return R_TRUE;
 	}
 	return R_FALSE;
 }
@@ -137,11 +142,13 @@ static int __close(int pid)
 static int __system(const char *cmd)
 {
 	printf("ptrace io command. %s\n", cmd);
+	return R_TRUE;
 }
 
 static int __init()
 {
 	printf("ptrace init\n");
+	return R_TRUE;
 }
 
 static struct r_io_handle_t r_io_plugin_ptrace = {
@@ -149,6 +156,7 @@ static struct r_io_handle_t r_io_plugin_ptrace = {
 	.name = "ptrace",
         .desc = "ptrace io",
         .open = __open,
+        .close = __close,
 	.read = __read,
         .handle_open = __handle_open,
         .handle_fd = __handle_fd,

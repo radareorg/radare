@@ -4,9 +4,8 @@
 #include <r_lib.h>
 #include <signal.h>
 #include <sys/ptrace.h>
-
-static int pid;
-static u64 addr;
+#include <sys/types.h>
+#include <sys/wait.h>
 
 static int __waitpid(int pid)
 {
@@ -30,20 +29,19 @@ static int __waitpid(int pid)
  * TODO: should be pid number?
  * TODO: should accept argv and so as arguments
  */
+#include <linux/user.h>
 #define MAGIC_EXIT 31337
 static int fork_and_attach(const char *cmd)
 {
-	int wait_val;
-	int i,pid = -1;
+	int pid = -1;
 
-fprintf(stderr, "FORK\n");
 	pid = vfork();
 	switch(pid) {
 	case -1:
 		fprintf(stderr, "Cannot fork.\n");
 		break;
 	case 0:
-		if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) {
+		if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != 0) {
 			fprintf(stderr, "ptrace-traceme failed\n");
 			exit(MAGIC_EXIT);
 		}
@@ -64,7 +62,8 @@ fprintf(stderr, "execv: %s\n", cmd);
 		strcpy(buf, cmd);
 	argv[0]= buf;
 	argv[1] = NULL;
-		execv(cmd, argv); //ps.argv[0], ps.argv);
+		//execv(cmd, argv); //ps.argv[0], ps.argv);
+execl("/bin/ls", "ls", NULL);
 }
 		perror("fork_and_attach: execv");
 		//printf(stderr, "[%d] %s execv failed.\n", getpid(), ps.filename);
@@ -86,9 +85,9 @@ fprintf(stderr, "execv: %s\n", cmd);
 
 #endif
 		/* required for some BSDs */
-	//	kill(pid, SIGSTOP);
-		ptrace(PTRACE_ATTACH, pid, 0, 0);
-perror("ptrace:");
+		kill(pid, SIGSTOP);
+//		ptrace(PTRACE_ATTACH, pid, 0, 0);
+//perror("ptrace:");
 		break;
 	}
 	printf("PID = %d\n", pid);
@@ -106,13 +105,14 @@ static int __handle_open(const char *file)
 static int __open(const char *file, int rw, int mode)
 {
 	if (__handle_open(file)) {
-		pid = atoi(file+6);
+		int pid = atoi(file+6);
 		if (pid == 0)
 			pid = fork_and_attach(file+6);
 		if (pid > 0) {
 			char foo[1024];
 			sprintf(foo, "ptrace://%d", pid);
-			return r_io_open(foo, rw, mode);
+			// TODO: We need to implement to io redirect method here
+			//return r_io_redirect(foo, rw, mode);
 		}
 	}
 	return -1;
@@ -126,13 +126,13 @@ static int __handle_fd(int fd)
 static int __init()
 {
 	printf("dbg init\n");
+	return R_TRUE;
 }
 
 static struct r_io_handle_t r_io_plugin_dbg = {
         //void *handle;
 	.name = "dbg",
         .desc = "Debug a program or pid. dbg:///bin/ls, dbg://1388",
-	.read = NULL,
         .open = __open,
         .handle_open = __handle_open,
         .handle_fd = __handle_fd,

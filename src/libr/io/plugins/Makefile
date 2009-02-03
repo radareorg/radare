@@ -1,4 +1,4 @@
-CFLAGS=-I../../include
+CFLAGS=-I../../include -Wall
 
 all: ptrace.so dbg.so
 	@true

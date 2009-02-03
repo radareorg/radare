@@ -17,6 +17,16 @@ int r_io_init()
 	return 0;
 }
 
+#if 0
+// TODO: required to bypass problems with dupped interfaces
+int r_io_set(struct r_io_t *cfg)
+{
+}
+
+// TODO: To support io redirecting
+struct r_plugin_t *r_io_redirect(const char *const struct r_io_plugin_t
+#endif
+
 int r_io_open(const char *file, int flags, int mode)
 {
 	struct r_io_handle_t *plugin;
@@ -29,6 +39,8 @@ int r_io_open(const char *file, int flags, int mode)
 		int fd = plugin->open(file, flags, mode);
 		if (fd != -1)
 			r_io_handle_open(fd, plugin);
+//		if (fd != -1)
+//			cache_fd = fd;
 		return fd;
 	}
 	return open(file, flags, mode);
@@ -42,7 +54,9 @@ int r_io_read(int fd, u8 *buf, int len)
 		plugin = r_io_handle_resolve_fd(fd);
 	if (plugin) {
 		cache_fd = fd;
-		return plugin->read(fd, buf, len);
+		if (plugin->read != NULL)
+			return plugin->read(fd, buf, len);
+		else fprintf(stderr, "IO handler for fd=%d has no read()\n");
 	}
 	return read(fd, buf, len);
 }

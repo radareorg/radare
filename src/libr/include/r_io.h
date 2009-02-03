@@ -24,7 +24,7 @@ struct r_io_handle_t {
         int (*open)(const char *, int rw, int mode);
         int (*read)(int fd, u8 *buf, int count);
         u64 (*lseek)(int fildes, u64 offset, int whence);
-        u32 (*write)(int fd, const u8 *buf, u32 count);
+        int (*write)(int fd, const u8 *buf, int count);
         int (*close)(int fd);
         int (*handle_open)(const char *);
         int (*handle_fd)(int);
