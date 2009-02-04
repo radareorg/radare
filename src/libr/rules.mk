@@ -23,6 +23,7 @@ LIBSO=${LIB}.${EXT_SO}
 # Rules
 all: ${OBJ} ${LIBSO} ${LIBAR}
 	@if [ -e t/Makefile ]; then (cd t && ${MAKE} all) ; else true ; fi
+	@if [ -e plugins/Makefile ]; then (cd plugins && ${MAKE} all) ; else true ; fi
 
 ${LIBSO}:
 	${CC_LIB} ${LDFLAGS} ${LINK} ${OBJ}

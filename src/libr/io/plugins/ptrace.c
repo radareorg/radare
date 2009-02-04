@@ -1,3 +1,5 @@
+/* radare - LGPL - Copyright 2008-2009 pancake<nopcode.org> */
+
 #if __linux__ || __NetBSD__ || __FreeBSD__ || __OpenBSD__
 
 #include <r_io.h>
@@ -143,7 +145,7 @@ static int __close(struct r_io_t *io, int pid)
 	return ptrace(PTRACE_DETACH, pid, 0, 0);
 }
 
-static int __system(struct r_io_t *io, const char *cmd)
+static int __system(struct r_io_t *io, int fd, const char *cmd)
 {
 	printf("ptrace io command. %s\n", cmd);
 	return R_TRUE;

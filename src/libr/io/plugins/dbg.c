@@ -31,7 +31,7 @@ static int __waitpid(int pid)
  */
 //#include <linux/user.h>
 #define MAGIC_EXIT 31337
-static int fork_and_attach(const char *cmd)
+static int fork_and_ptraceme(const char *cmd)
 {
 	int pid = -1;
 
@@ -88,18 +88,23 @@ static int __handle_open(struct r_io_t *io, const char *file)
 
 static int __open(struct r_io_t *io, const char *file, int rw, int mode)
 {
+	char uri[1024];
 	if (__handle_open(io, file)) {
 		int pid = atoi(file+6);
-		if (pid == 0)
-			pid = fork_and_attach(file+6);
-		if (pid > 0) {
+		if (pid == 0) {
+			pid = fork_and_ptraceme(file+6);
+			if (pid > 0) {
+				sprintf(uri, "ptrace://%d", pid);
+				r_io_redirect(io, uri);
+				return -1;
+			}
+		} else {
 			char foo[1024];
-			sprintf(foo, "ptrace://%d", pid);
+			sprintf(uri, "attach://%d", pid);
 			r_io_redirect(io, foo);
 			return -1;
 		}
 	}
-
 	r_io_redirect(io, NULL);
 	return -1;
 }

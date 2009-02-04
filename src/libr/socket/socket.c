@@ -1,22 +1,4 @@
-/*
- * Copyright (C) 2006, 2007, 2008
- *       pancake <youterm.com>
- *
- * radare is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with radare; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
+/* radare - LGPL - Copyright 2006-2009 pancake<nopcode.org> */
 #define USE_SOCKETS
 
 #include "r_types.h"
@@ -63,6 +45,7 @@ int r_socket_write(int fd, unsigned char *buf, int len)
 	return delta;
 }
 
+// XXX: rewrite it to use select //
 /* waits secs until new data is received.     */
 /* returns -1 on error, 0 is false, 1 is true */
 int r_socket_ready(int fd, int secs,int usecs)
