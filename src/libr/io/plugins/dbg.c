@@ -29,7 +29,7 @@ static int __waitpid(int pid)
  * TODO: should be pid number?
  * TODO: should accept argv and so as arguments
  */
-#include <linux/user.h>
+//#include <linux/user.h>
 #define MAGIC_EXIT 31337
 static int fork_and_attach(const char *cmd)
 {
@@ -55,7 +55,6 @@ static int fork_and_attach(const char *cmd)
 		// TODO: USE TM IF POSSIBLE TO ATTACH IT FROM ANOTHER CONSOLE!!!
 		// TODO: 
 		//debug_environment();
-fprintf(stderr, "execv: %s\n", cmd);
 {
 	char buf[128];
 	char *argv[2];
@@ -70,24 +69,9 @@ execl("/bin/ls", "ls", NULL);
 		exit(MAGIC_EXIT); /* error */
 		break;
 	default:
-		fprintf(stderr, "Waitpid\n");
-		__waitpid(pid); //, NULL, WUNTRACED); //, &wait_val);
-		fprintf(stderr, "Waitpid-end\n");
-
-#if 0
-		if (!is_alive(ps.pid)) {
-			fprintf(stderr, "Oops the process is not alive?!?\n");
-			return -1;
-		}
-
-		/* restore breakpoints */
-		debug_bp_reload_all();
-
-#endif
+		__waitpid(pid);
 		/* required for some BSDs */
 		kill(pid, SIGSTOP);
-//		ptrace(PTRACE_ATTACH, pid, 0, 0);
-//perror("ptrace:");
 		break;
 	}
 	printf("PID = %d\n", pid);
@@ -95,35 +79,37 @@ execl("/bin/ls", "ls", NULL);
 	return pid;
 }
 
-static int __handle_open(const char *file)
+static int __handle_open(struct r_io_t *io, const char *file)
 {
 	if (!memcmp(file, "dbg://", 6))
 		return R_TRUE;
 	return R_FALSE;
 }
 
-static int __open(const char *file, int rw, int mode)
+static int __open(struct r_io_t *io, const char *file, int rw, int mode)
 {
-	if (__handle_open(file)) {
+	if (__handle_open(io, file)) {
 		int pid = atoi(file+6);
 		if (pid == 0)
 			pid = fork_and_attach(file+6);
 		if (pid > 0) {
 			char foo[1024];
 			sprintf(foo, "ptrace://%d", pid);
-			// TODO: We need to implement to io redirect method here
-			//return r_io_redirect(foo, rw, mode);
+			r_io_redirect(io, foo);
+			return -1;
 		}
 	}
+
+	r_io_redirect(io, NULL);
 	return -1;
 }
 
-static int __handle_fd(int fd)
+static int __handle_fd(struct r_io_t *io, int fd)
 {
 	return R_FALSE;
 }
 
-static int __init()
+static int __init(struct r_io_t *io)
 {
 	printf("dbg init\n");
 	return R_TRUE;

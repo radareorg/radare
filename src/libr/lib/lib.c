@@ -91,7 +91,7 @@ int r_lib_run_handler(struct r_lib_t *lib, struct r_lib_plugin_t *plugin, struct
 {
 	struct r_lib_handler_t *h = plugin->handler;
 	if (h->constructor != NULL)
-		return h->constructor(NULL, h->user, symbol->data);
+		return h->constructor(plugin, h->user, symbol->data);
 	return -1;
 }
 
@@ -131,7 +131,7 @@ int r_lib_open(struct r_lib_t *lib, const char *file)
 
 	/* ignored by filename */
 	if (!r_lib_dl_check_filename(file)) {
-		fprintf(stderr, "Invalid library extension: %s\n", file);
+		//fprintf(stderr, "Invalid library extension: %s\n", file);
 		return -1;
 	}
 
@@ -171,7 +171,7 @@ int r_lib_opendir(struct r_lib_t *lib, const char *path)
 	struct dirent *de;
 	DIR *dh = opendir(path);
 	if (dh == NULL) {
-		fprintf(stderr, "Cannot open dir: %s\n", path);
+		fprintf(stderr, "Cannot open directory '%s'\n", path);
 		return -1;
 	}
 	while((de = (struct dirent *)readdir(dh))) {
@@ -202,7 +202,7 @@ int r_lib_add_handler(struct r_lib_t *lib,
 	int type, const char *desc,
 	int (*cb)(struct r_lib_plugin_t *, void *, void *),  /* constructor */
 	int (*dt)(struct r_lib_plugin_t *, void *, void *),  /* destructor */
-	void *user )
+	void *user)
 {
 	struct list_head *pos;
 	struct r_lib_handler_t *handler = NULL;

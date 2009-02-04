@@ -48,6 +48,8 @@ struct r_lib_t {
 	struct list_head handlers;
 };
 
+int r_lib_init(struct r_lib_t *lib, const char *symname);
+
 /* low level api */
 void *r_lib_dl_open(const char *libname);
 void *r_lib_dl_sym(void *handle, const char *name);

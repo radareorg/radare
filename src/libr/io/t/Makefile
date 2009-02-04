@@ -7,4 +7,4 @@ read4:
 	${CC} -I ../../include read4.c ../*.o -o read4
 
 clean:
-	rm -f cat
+	rm -f cat read4

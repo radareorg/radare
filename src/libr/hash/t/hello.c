@@ -8,34 +8,35 @@ int main(int argc, char **argv)
 	int fd;
 	u8 *buf;
 	u64 size;
+	struct r_io_t io;
 
 	if (argc<2) {
 		printf("Usage: %s [file]\n", argv[0]);
 		return 1;
 	}
 
-	r_io_init();
+	r_io_init(&io);
 
-	fd = r_io_open(argv[1], R_IO_READ, 0);
+	fd = r_io_open(&io, argv[1], R_IO_READ, 0);
 	if (fd == -1) {
 		printf("Cannot open file\n");
 		return 1;
 	}
 
 	/* get file size */
-	r_io_lseek(fd, 0, R_IO_SEEK_END);
-	size = r_io_lseek(fd, 0, R_IO_SEEK_END);
-	r_io_lseek(fd, 0, R_IO_SEEK_SET);
+	r_io_lseek(&io, fd, 0, R_IO_SEEK_END);
+	size = r_io_lseek(&io, fd, 0, R_IO_SEEK_END);
+	r_io_lseek(&io, fd, 0, R_IO_SEEK_SET);
 
 	/* read bytes */
 	buf = (u8*) malloc(size);
 	if (buf == NULL) {
 		printf("Too big file\n");
 		return 1;
-		r_io_close(fd);
+		r_io_close(&io, fd);
 	}
 
-	r_io_read(fd, buf, size);
+	r_io_read(&io, fd, buf, size);
 	printf("----\n%s\n----\n", buf);
 
 	printf("file size = %lld\n", size);
@@ -62,7 +63,7 @@ int main(int argc, char **argv)
 		printf("\n");
 	}
 
-	r_io_close(fd);
+	r_io_close(&io, fd);
 	free (buf);
 	return 0;
 }

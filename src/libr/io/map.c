@@ -1,22 +1,4 @@
-/*
- * Copyright (C) 2008
- *       pancake <youterm.com>
- *
- * radare is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * radare is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with radare; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
+/* radare - LGPL - Copyright 2008-2009 pancake<nopcode.org> */
 
 #include <stdio.h>
 #include <string.h>
@@ -24,35 +6,26 @@
 #include "r_io.h"
 #include "list.h"
 
-#define IO_MAP_N 10
-struct io_maps_t {
-        int fd;
-        char file[128];
-        u64 from;
-        u64 to;
-        struct list_head list;
-};
 
 #if 0
 static int maps_n = 0;
 static int maps[10];
 #endif
 
-static struct list_head io_maps;
-
-void r_io_map_init()
+void r_io_map_init(struct r_io_t *io)
 {
-	INIT_LIST_HEAD(&io_maps);
+	INIT_LIST_HEAD(&io->maps);
 }
 
-int r_io_map_rm(int fd)
+int r_io_map_rm(struct r_io_t *io, int fd)
 {
 	struct list_head *pos;
-	list_for_each_prev(pos, &io_maps) {
-		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+	list_for_each_prev(pos, &io->maps) {
+		struct r_io_maps_t *im = list_entry(pos, struct r_io_maps_t, list);
 		if (im->fd == fd) {
 			/* FREE THIS */
-			r_io_handle_close(fd, r_io_handle_resolve_fd(fd));
+			r_io_handle_close(io,
+				fd, r_io_handle_resolve_fd(io, fd));
 			fprintf(stderr, "r_io_map_rm: TODO\n");
 			return 0;
 		}
@@ -61,12 +34,12 @@ int r_io_map_rm(int fd)
 	return 0;
 }
 
-int r_io_map_list()
+int r_io_map_list(struct r_io_t *io)
 {
 	int n = 0;
 	struct list_head *pos;
-	list_for_each_prev(pos, &io_maps) {
-		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+	list_for_each_prev(pos, &io->maps) {
+		struct r_io_maps_t *im = list_entry(pos, struct r_io_maps_t, list);
 		if (im->file[0] != '\0') {
 			printf("0x%08llx 0x%08llx %s\n",
 				im->from, im->to, im->file);
@@ -76,60 +49,66 @@ int r_io_map_list()
 	return n;
 }
 
-int r_io_map(const char *file, u64 offset)
+int r_io_map(struct r_io_t *io, const char *file, u64 offset)
 {
-	struct io_maps_t *im;
-	int fd = r_io_open(file, R_IO_READ, 0644);
+	struct r_io_maps_t *im;
+	int fd = r_io_open(io, file, R_IO_READ, 0644);
 	if (fd == -1)
 		return -1;
-	im = MALLOC_STRUCT(struct io_maps_t);
-//(struct io_maps_t*)malloc(sizeof(struct io_maps_t));
+	im = MALLOC_STRUCT(struct r_io_maps_t);
+//(struct r_io_maps_t*)malloc(sizeof(struct r_io_maps_t));
 	if (im == NULL) {
-		r_io_close(fd);
+		r_io_close(io, fd);
 		return -1;
 	}
-	im->fd     = fd;
+	im->fd = fd;
 	strncpy(im->file, file, 127);
 	im->from = offset;
 	im->to   = offset+lseek(fd, 0, SEEK_END);
-	list_add_tail(&(im->list), &(io_maps));
+	list_add_tail(&(im->list), &(io->maps));
 	return fd;
 }
 
-int r_io_map_read_at(u64 off, u8 *buf, u64 len)
+int r_io_map_read_at(struct r_io_t *io, u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
 
-	list_for_each_prev(pos, &io_maps) {
-		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
-		if (im->file[0] != '\0' && off >= im->from && off < im->to) {
-			r_io_lseek(im->fd, off-im->from, SEEK_SET);
-			return r_io_read(im->fd, buf, len);
+	return 0;
+	/* XXX This makes radare segfault ?? */
+	if (io == NULL) {
+		return 0;
+	}
+	list_for_each_prev(pos, &io->maps) {
+		struct r_io_maps_t *im = list_entry(pos, struct r_io_maps_t, list);
+		/* segfaults here coz im is invalid */
+		if (im->file && im->file[0] != '\0' && off >= im->from && off < im->to) {
+			r_io_lseek(io, im->fd, off-im->from, SEEK_SET);
+			return r_io_read(io, im->fd, buf, len);
 		}
 	}
 	return 0;
 }
 
-int r_io_map_write_at(u64 off, const u8 *buf, u64 len)
+int r_io_map_write_at(struct r_io_t *io, u64 off, const u8 *buf, u64 len)
 {
 	struct list_head *pos;
 
-	list_for_each_prev(pos, &io_maps) {
-		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+	list_for_each_prev(pos, &io->maps) {
+		struct r_io_maps_t *im = list_entry(pos, struct r_io_maps_t, list);
 		if (im->file[0] != '\0' && off >= im->from && off < im->to) {
-			r_io_lseek(im->fd, off-im->from, SEEK_SET);
-			return r_io_write(im->fd, buf, len);
+			r_io_lseek(io, im->fd, off-im->from, SEEK_SET);
+			return r_io_write(io, im->fd, buf, len);
 		}
 	}
 	return 0;
 }
 
-int r_io_map_read_rest(u64 off, u8 *buf, u64 len)
+int r_io_map_read_rest(struct r_io_t *io, u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
 
-	list_for_each_prev(pos, &io_maps) {
-		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
+	list_for_each_prev(pos, &io->maps) {
+		struct r_io_maps_t *im = list_entry(pos, struct r_io_maps_t, list);
 		if (im->file[0] != '\0' && off+len >= im->from && off < im->to) {
 			lseek(im->fd, 0, SEEK_SET);
 			return read(im->fd, buf+(im->from-(off+len)), len);

@@ -5,7 +5,24 @@
 #include "r_hash.h"
 #include "r_asm.h"
 
+int r_core_write_op(struct r_core_t *core, const char *arg, char op);
+
 static int cmd_print(void *data, const char *input);
+
+static int cmd_iopipe(void *data, const char *input)
+{
+	struct r_core_t *core = (struct r_core_t *)data;
+	switch(input[0]) {
+	case '\0':
+		r_lib_list(&core->lib);
+		r_io_handle_list(&core->io);
+		break;
+	default:
+		r_io_system(&core->io, core->file->fd, input+1);
+		break;
+	}
+	return R_TRUE;
+}
 
 static int cmd_quit(void *data, const char *input)
 {
@@ -148,6 +165,7 @@ static int cmd_help(void *data, const char *input)
 		" w[mode] [arg]    ; multiple write operations\n"
 		" V                ; enter visual mode\n"
 		" ? [expr]         ; evaluate math expression\n"
+		" |[cmd]           ; run this command thru the io pipe (no args=list)\n"
 		" #[algo] [len]    ; calculate hash checksum of current block\n"
 		" q [ret]          ; quit r\n"
 		"Append '?' to every char command to get detailed help\n"
@@ -252,8 +270,8 @@ static int cmd_flag(void *data, const char *input)
 	int len = strlen(input)+1;
 	char *ptr;
 	char *str = alloca(len);
-	u64 seek = core->seek;
-	u64 size = core->blocksize;
+	//u64 seek = core->seek;
+	//u64 size = core->blocksize;
 	memcpy(str, input, len);
 	ptr = strchr(str+1, ' ');
 	if (ptr) {
@@ -307,8 +325,8 @@ static int cmd_write(void *data, const char *input)
 	case ' ':
 		// write strifng
 		len = r_str_escape(str);
-		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
-		r_io_write(core->file->fd, str, len);
+		r_io_lseek(&core->io, core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(&core->io, core->file->fd, str, len);
 		r_core_block_read(core, 0);
 		break;
 	case 't':
@@ -327,8 +345,8 @@ static int cmd_write(void *data, const char *input)
 		str = tmp;
 
 		// write strifng
-		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
-		r_io_write(core->file->fd, str, len);
+		r_io_lseek(&core->io, core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(&core->io, core->file->fd, str, len);
 		r_core_block_read(core, 0);
 		break;
 	case 'x':
@@ -336,8 +354,8 @@ static int cmd_write(void *data, const char *input)
 		int len = strlen(input);
 		char *buf = alloca(len);
 		len = r_hex_str2bin(input+1, buf);
-		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
-		r_io_write(core->file->fd, buf, len);
+		r_io_lseek(&core->io, core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(&core->io, core->file->fd, buf, len);
 		r_core_block_read(core, 0);
 		}
 		// write hexpairs
@@ -348,8 +366,8 @@ static int cmd_write(void *data, const char *input)
 		char *buf = alloca(len);
 		len = r_hex_str2bin(input+1, buf);
 		r_mem_copyloop(core->block, buf, core->blocksize, len);
-		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
-		r_io_write(core->file->fd, core->block, core->blocksize);
+		r_io_lseek(&core->io, core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_write(&core->io, core->file->fd, core->block, core->blocksize);
 		r_core_block_read(core, 0);
 		}
 		break;
@@ -365,14 +383,14 @@ static int cmd_write(void *data, const char *input)
 		case '?':
 			break;
 		case '-':
-			r_io_set_write_mask(-1, 0, 0);
+			r_io_set_write_mask(&core->io, -1, 0, 0);
 			fprintf(stderr, "Write mask disabled\n");
 			break;
 		case ' ':
 			if (len == 0) {
 				fprintf(stderr, "Invalid string\n");
 			} else {
-				r_io_set_write_mask(core->file->fd, str, len);
+				r_io_set_write_mask(&core->io, core->file->fd, str, len);
 				fprintf(stderr, "Write mask set to '");
 				for (i=0;i<len;i++)
 					fprintf(stderr, "%02x", str[i]);
@@ -385,20 +403,20 @@ static int cmd_write(void *data, const char *input)
 	case 'v':
 		{
 		u64 off = r_num_math(&core->num, input+1);
-		r_io_lseek(core->file->fd, core->seek, R_IO_SEEK_SET);
+		r_io_lseek(&core->io, core->file->fd, core->seek, R_IO_SEEK_SET);
 		if (off&U64_32U) {
 			/* 8 byte addr */
 			u64 addr8;
 			memcpy((u8*)&addr8, (u8*)&off, 8); // XXX needs endian here
 		//	endian_memcpy((u8*)&addr8, (u8*)&off, 8);
-			r_io_write(core->file->fd, &addr8, 8);
+			r_io_write(&core->io, core->file->fd, (const u8 *)&addr8, 8);
 		} else {
 			/* 4 byte addr */
 			u32 addr4, addr4_ = (u32)off;
 			//drop_endian((u8*)&addr4_, (u8*)&addr4, 4); /* addr4_ = addr4 */
 			//endian_memcpy((u8*)&addr4, (u8*)&addr4_, 4); /* addr4 = addr4_ */
 			memcpy((u8*)&addr4, (u8*)&addr4_, 4); // XXX needs endian here too
-			r_io_write(core->file->fd, &addr4, 4);
+			r_io_write(&core->io, core->file->fd, (const u8 *)&addr4, 4);
 		}
 		r_core_block_read(core, 0);
 		}
@@ -462,7 +480,7 @@ static int cmd_write(void *data, const char *input)
 
 static int cmd_search(void *data, const char *input)
 {
-	struct r_core_t *core = (struct r_core_t *)data;
+	//struct r_core_t *core = (struct r_core_t *)data;
 	/* TODO */
 	return R_TRUE;
 }
@@ -530,7 +548,7 @@ static int cmd_visual(void *data, const char *input)
 
 static int cmd_system(void *data, const char *input)
 {
-	struct r_core_t *core = (struct r_core_t *)data;
+	//struct r_core_t *core = (struct r_core_t *)data;
 	// slurped from teh old radare_system
 #if __FreeBSD__
 	/* freebsd system() is broken */
@@ -558,7 +576,7 @@ static int cmd_system(void *data, const char *input)
 static int cmd_io_system(void *data, const char *input)
 {
 	struct r_core_t *core = (struct r_core_t *)data;
-	return r_io_system(core->file->fd, input);
+	return r_io_system(&core->io, core->file->fd, input);
 }
 
 static int cmd_macro(void *data, const char *input)
@@ -706,7 +724,6 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 	}
 
 	if (newfd != 1) {
-		fprintf(stderr, "RESTORE fd\n");
 		r_cons_flush();
 		r_cons_pipe_close(newfd);
 	}
@@ -811,6 +828,7 @@ int r_core_cmd_init(struct r_core_t *core)
 	r_cmd_add(&core->cmd, ".",     "interpret", &cmd_interpret);
 	r_cmd_add(&core->cmd, "/",     "search kw, pattern aes", &cmd_search);
 	r_cmd_add(&core->cmd, "(",     "macro", &cmd_macro);
+	r_cmd_add(&core->cmd, "|",     "io pipe", &cmd_iopipe);
 	r_cmd_add(&core->cmd, "quit",  "exit program session", &cmd_quit);
 
 	return 0;

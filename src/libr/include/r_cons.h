@@ -19,6 +19,10 @@ extern FILE *r_cons_stdin_fd;
 extern int r_cons_stdout_fd;
 extern int r_cons_stdout_file;
 
+/* pipe */
+int r_cons_pipe_open(const char *file, int append);
+void r_cons_pipe_close(int fd);
+
 /* plain colors */
 #define C_BLACK    "\x1b[30m"
 #define C_BGBLACK  "\x1b[40m"

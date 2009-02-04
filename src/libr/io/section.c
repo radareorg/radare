@@ -26,13 +26,12 @@
 // XXX use section->foo
 #define cons_printf printf
 
-static u64 last_align = 0;
-static struct list_head sections;
+//static struct list_head sections;
 
-void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
+void r_io_section_set(struct r_io_t *io, u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct list_head *pos;
-	list_for_each(pos, &sections) {
+	list_for_each(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (s->from == from) {
 			if (to != -1)
@@ -49,7 +48,7 @@ void r_io_section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const cha
 	}
 }
 
-void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
+void r_io_section_add(struct r_io_t *io, u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct r_io_section_t *s = (struct r_io_section_t *)malloc(sizeof(struct r_io_section_t));
 	s->from = from;
@@ -60,14 +59,14 @@ void r_io_section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const cha
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';
-	list_add(&(s->list), &sections);
+	list_add(&(s->list), &io->sections);
 }
 
-struct r_io_section_t *r_io_section_get_i(int idx)
+struct r_io_section_t *r_io_section_get_i(struct r_io_t *io, int idx)
 {
 	int i = 0;
 	struct list_head *pos;
-	list_for_each_prev(pos, &sections) {
+	list_for_each_prev(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (i == idx)
 			return s;
@@ -76,9 +75,9 @@ struct r_io_section_t *r_io_section_get_i(int idx)
 	return NULL;
 }
 
-int r_io_section_rm(int idx)
+int r_io_section_rm(struct r_io_t *io, int idx)
 {
-	struct r_io_section_t *s = r_io_section_get_i(idx);
+	struct r_io_section_t *s = r_io_section_get_i(io, idx);
 	if (s != NULL) {
 		list_del((&s->list));
 		free(s);
@@ -88,12 +87,12 @@ int r_io_section_rm(int idx)
 }
 
 // TODO: implement as callback
-void r_io_section_list(u64 addr, int rad)
+void r_io_section_list(struct r_io_t *io, u64 addr, int rad)
 {
 	int i = 0;
 	//char buf[128];
 	struct list_head *pos;
-	list_for_each_prev(pos, &sections) {
+	list_for_each_prev(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (rad) {
 			cons_printf("S 0x%08llx 0x%08llx %s @ 0x%08llx\n",
@@ -119,7 +118,7 @@ void r_io_section_list(u64 addr, int rad)
 	}
 }
 
-void r_io_section_list_visual(u64 seek, u64 len)
+void r_io_section_list_visual(struct r_io_t *io, u64 seek, u64 len)
 {
 	u64 min = -1;
 	u64 max = -1;
@@ -128,7 +127,7 @@ void r_io_section_list_visual(u64 seek, u64 len)
 	struct list_head *pos;
 	int width = 78; //config.width-30;
 
-	list_for_each(pos, &sections) {
+	list_for_each(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (min == -1 || s->from < min)
 			min = s->from;
@@ -139,7 +138,7 @@ void r_io_section_list_visual(u64 seek, u64 len)
 	mul = (max-min) / width;
 	if (min != -1 && mul != 0) {
 		i = 0;
-		list_for_each_prev(pos, &sections) {
+		list_for_each_prev(pos, &io->sections) {
 			struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 			cons_printf("%02d  0x%08llx |", i, s->from);
 			for(j=0;j<width;j++) {
@@ -165,10 +164,10 @@ void r_io_section_list_visual(u64 seek, u64 len)
 	}
 }
 
-struct r_io_section_t *r_io_section_get(u64 addr)
+struct r_io_section_t *r_io_section_get(struct r_io_t *io, u64 addr)
 {
 	struct list_head *pos;
-	list_for_each(pos, &sections) {
+	list_for_each(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (addr >= s->from && addr <= s->to)
 			return s;
@@ -176,27 +175,27 @@ struct r_io_section_t *r_io_section_get(u64 addr)
 	return NULL;
 }
 
-u64 r_io_section_get_paddr(u64 addr)
+u64 r_io_section_get_paddr(struct r_io_t *io, u64 addr)
 {
-	struct r_io_section_t *s = r_io_section_get(addr);
+	struct r_io_section_t *s = r_io_section_get(io, addr);
 	if (s != NULL)
 		return s->paddr;
 	return -1;
 }
 
-u64 r_io_section_get_vaddr(u64 addr)
+u64 r_io_section_get_vaddr(struct r_io_t *io, u64 addr)
 {
-	struct r_io_section_t *s = r_io_section_get(addr);
+	struct r_io_section_t *s = r_io_section_get(io, addr);
 	if (s != NULL)
 		return s->vaddr;
 	return -1;
 }
 
-int r_io_section_overlaps(struct r_io_section_t *s)
+int r_io_section_overlaps(struct r_io_t *io, struct r_io_section_t *s)
 {
 	int i = 0;
 	struct list_head *pos;
-	list_for_each_prev(pos, &sections) {
+	list_for_each_prev(pos, &io->sections) {
 		struct r_io_section_t *s2 = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (s != s2) {
 			if (s->from >= s2->from) {
@@ -212,14 +211,13 @@ int r_io_section_overlaps(struct r_io_section_t *s)
 	return -1;
 }
 
-
-u64 r_io_section_align(u64 addr, u64 vaddr, u64 paddr)
+u64 r_io_section_align(struct r_io_t *io, u64 addr, u64 vaddr, u64 paddr)
 {
 	struct list_head *pos;
-	if (addr == last_align)
-		return last_align;
+	if (addr == io->last_align)
+		return io->last_align;
 
-	list_for_each_prev(pos, &sections) {
+	list_for_each_prev(pos, &io->sections) {
 		struct r_io_section_t *s = (struct r_io_section_t *)list_entry(pos, struct r_io_section_t, list);
 		if (addr >= s->from && addr <= s->to) {
 #if 0
@@ -230,12 +228,12 @@ u64 r_io_section_align(u64 addr, u64 vaddr, u64 paddr)
 			return ( addr - s->vaddr + s->paddr ); 
 		}
 	}
-	last_align = addr-vaddr+paddr;
+	io->last_align = addr-vaddr+paddr;
 	//printf("? 0x%llx-0x%llx+0x%llx\n", addr, vaddr, paddr);
-	return last_align;
+	return io->last_align;
 }
 
-void r_io_section_init(int foo)
+void r_io_section_init(struct r_io_t *io)
 {
-	INIT_LIST_HEAD(&(sections));
+	INIT_LIST_HEAD(&(io->sections));
 }

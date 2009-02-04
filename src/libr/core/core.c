@@ -1,7 +1,6 @@
 /* radare - LGPL - Copyright 2009 pancake<nopcode.org> */
 
 #include "r_core.h"
-#include "r_flags.h"
 
 static u64 num_callback(void *userptr, const char *str, int *ok)
 {
@@ -32,11 +31,12 @@ struct r_core_t *r_core_new()
 	return c;
 }
 
-int __lib_io_cb(struct r_lib_plugin_t *pl, void *p, void *u)
+int __lib_io_cb(struct r_lib_plugin_t *pl, void *user, void *data)
 {
-	struct r_io_handle_t *hand = (struct r_io_handle_t *)u;
-	printf("Add io handler\n");
-	r_io_handle_add(hand);
+	struct r_io_handle_t *hand = (struct r_io_handle_t *)data;
+	struct r_core_t *core = (struct r_core_t *)user;
+	//printf(" * Added IO handler\n");
+	r_io_handle_add(&core->io, hand);
 	return R_TRUE;
 }
 
@@ -50,7 +50,7 @@ int r_core_init(struct r_core_t *core)
 	core->num.callback = &num_callback;
 	core->num.userptr = core;
 	r_cons_init();
-	r_io_init();
+	r_io_init(&core->io);
 	r_macro_init(&core->macro);
 	core->macro.num = &core->num;
 	core->macro.user = core;
@@ -66,7 +66,7 @@ int r_core_init(struct r_core_t *core)
 
 	r_lib_init(&core->lib, "radare_plugin");
 	r_lib_add_handler(&core->lib, R_LIB_TYPE_IO, "io plugins",
-		&__lib_io_cb, &__lib_io_dt, &core);
+		&__lib_io_cb, &__lib_io_dt, core);
 	r_lib_opendir(&core->lib, "/home/pancake/prg/radare/src/libr/io/plugins");
 	{
 		char *homeplugindir = r_str_home(".radare/plugins");
@@ -115,8 +115,10 @@ int r_core_block_size(struct r_core_t *core, u32 bsize)
 
 int r_core_block_read(struct r_core_t *core, int next)
 {
-	r_io_lseek(core->file->fd, core->seek+((next)?core->blocksize:0), R_IO_SEEK_SET);
-	return r_io_read(core->file->fd, core->block, core->blocksize);
+	if (core->file == NULL)
+		return -1;
+	r_io_lseek(&core->io, core->file->fd, core->seek+((next)?core->blocksize:0), R_IO_SEEK_SET);
+	return r_io_read(&core->io, core->file->fd, core->block, core->blocksize);
 }
 
 int r_core_seek(struct r_core_t *core, u64 addr)

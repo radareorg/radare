@@ -3,6 +3,7 @@
 #include <r_cons.h>
 #include <unistd.h>
 
+//TODO: cons_pipe should be using a stack pipe_push, pipe_pop
 /* this is the base fd.. more than one is supported :) */
 static int backup_fd=999;
 

@@ -35,21 +35,22 @@ LIBS=../*.o \
   -L../ \
   -lr_core -lr_config -lr_cons -lr_line -lr_cmd -lr_util -lr_print -lr_flags -lr_asm -lr_lib -lr_macro -lr_debug -lr_bin -lr_io -lr_hash
 LIBS+=-ldl
-## static
+
+# static
 #LIBS=../*.o \
-#  ../../config/*.a \
-#  ../../cons/*.a \
-#  ../../line/*.a \
-#  ../../io/*.a \
-#  ../../cmd/*.a \
-#  ../../util/*.a \
-#  ../../print/*.a \
-#  ../../flags/*.a \
-#  ../../asm/*.a \
-#  ../../lib/*.a \
-#  ../../macro/*.a \
-#  ../../debug/*.a \
-#  ../../hash/*.a
-#LIBS+=-ldl -static
+  ../../config/*.a \
+  ../../cons/*.a \
+  ../../line/*.a \
+  ../../io/*.a \
+  ../../cmd/*.a \
+  ../../util/*.a \
+  ../../print/*.a \
+  ../../flags/*.a \
+  ../../asm/*.a \
+  ../../lib/*.a \
+  ../../macro/*.a \
+  ../../debug/*.a \
+  ../../hash/*.a
+LIBS+=-ldl
 
 include ../../tests.mk

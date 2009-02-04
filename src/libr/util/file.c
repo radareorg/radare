@@ -5,6 +5,18 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int r_file_exist(const char *str)
+{
+	struct stat buf;
+	int ret = stat(str, &buf);
+	if (ret == -1)
+		return R_FALSE;
+	return R_TRUE;
+}
 
 char *r_file_slurp(const char *str, u32 *usz)
 {

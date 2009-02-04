@@ -31,6 +31,7 @@ struct r_core_t {
 	u32 blocksize;
 	u8 *block;
 	/* files */
+	struct r_io_t io;
 	struct r_core_file_t *file;
 	struct list_head files;
 	struct r_num_t num;
@@ -59,5 +60,6 @@ int r_core_visual(struct r_core_t *core);
 
 struct r_core_file_t *r_core_file_open(struct r_core_t *r, const char *file, int mode);
 
+int r_core_write_at(struct r_core_t *core, u64 addr, const u8 *buf, int size);
 
 #endif

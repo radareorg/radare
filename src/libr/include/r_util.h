@@ -73,6 +73,7 @@ int r_str_re_match(const char *str, const char *reg);
 int r_str_re_replace(const char *str, const char *reg, const char *sub);
 char *r_str_sub(char *string, char *pat, char *rep, int global);
 int r_str_escape(char *buf);
+char *r_str_home(const char *str);
 
 /* hex */
 int r_hex_pair2bin(const char *arg);
@@ -87,5 +88,6 @@ char *r_file_slurp_range(const char *str, u64 off, u64 sz);
 char *r_file_slurp_random_line(const char *file);
 int r_file_dump(const char *file, const u8 *buf, int len);
 int r_file_rm(const char *file);
+int r_file_exist(const char *str);
 
 #endif

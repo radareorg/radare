@@ -2,6 +2,7 @@
 #define _LIB_R_IO_H_
 
 #include "r_types.h"
+#include "list.h"
 
 #define R_IO_READ 0
 #define R_IO_WRITE 1
@@ -13,6 +14,30 @@
 #define R_IO_SEEK_CUR 1
 #define R_IO_SEEK_END 2
 
+#define IO_MAP_N 10
+struct r_io_maps_t {
+        int fd;
+        char file[128];
+        u64 from;
+        u64 to;
+        struct list_head list;
+};
+
+struct r_io_t {
+	int fd;
+	u64 seek;
+	char *redirect;
+	/* write mask */
+	int write_mask_fd;
+	u8 *write_mask_buf;
+	int write_mask_len;
+	struct r_io_handle_t *plugin;
+	struct list_head io_list;
+	u64 last_align;
+	struct list_head sections;
+	struct list_head maps;
+};
+
 struct r_io_handle_t {
         void *handle;
         char *name;
@@ -20,49 +45,53 @@ struct r_io_handle_t {
         void *widget;
         int (*init)();
         struct debug_t *debug;
-        int (*system)(const char *);
-        int (*open)(const char *, int rw, int mode);
-        int (*read)(int fd, u8 *buf, int count);
-        u64 (*lseek)(int fildes, u64 offset, int whence);
-        int (*write)(int fd, const u8 *buf, int count);
-        int (*close)(int fd);
-        int (*handle_open)(const char *);
-        int (*handle_fd)(int);
+        int (*system)(struct r_io_t *io, const char *);
+        int (*open)(struct r_io_t *io, const char *, int rw, int mode);
+        int (*read)(struct r_io_t *io, int fd, u8 *buf, int count);
+        u64 (*lseek)(struct r_io_t *io, int fildes, u64 offset, int whence);
+        int (*write)(struct r_io_t *io, int fd, const u8 *buf, int count);
+        int (*close)(struct r_io_t *io, int fd);
+        int (*handle_open)(struct r_io_t *io, const char *);
+        int (*handle_fd)(struct r_io_t *, int);
 	int fds[R_IO_NFDS];
 };
 
+struct r_io_list_t {
+	struct r_io_handle_t *plugin;
+	struct list_head list;
+};
+
 /* io/handle.c */
-extern u64 r_io_seek;
-int r_io_handle_init();
-int r_io_handle_open(int fd, struct r_io_handle_t *plugin);
-int r_io_handle_close(int fd, struct r_io_handle_t *plugin);
-int r_io_handle_generate();
-int r_io_handle_add(struct r_io_handle_t *plugin);
+int r_io_handle_init(struct r_io_t *io);
+int r_io_handle_open(struct r_io_t *io, int fd, struct r_io_handle_t *plugin);
+int r_io_handle_close(struct r_io_t *io, int fd, struct r_io_handle_t *plugin);
+int r_io_handle_generate(struct r_io_t *io);
+int r_io_handle_add(struct r_io_t *io, struct r_io_handle_t *plugin);
 // TODO: _del ??
-struct r_io_handle_t *r_io_handle_resolve(const char *filename);
-struct r_io_handle_t *r_io_handle_resolve_fd(int fd);
+struct r_io_handle_t *r_io_handle_resolve(struct r_io_t *io, const char *filename);
+struct r_io_handle_t *r_io_handle_resolve_fd(struct r_io_t *io, int fd);
 
 /* io/io.c */
-int r_io_init();
-int r_io_set_write_mask(int fd, const u8 *buf, int len);
-int r_io_open(const char *file, int flags, int mode);
-int r_io_read(int fd, u8 *buf, int len);
-int r_io_write(int fd, const u8 *buf, int len);
-u64 r_io_lseek(int fd, u64 offset, int whence);
-int r_io_system(int fd, const char *cmd);
-int r_io_close(int fd);
-u64 r_io_size(int fd);
+int r_io_init(struct r_io_t *io);
+int r_io_set_write_mask(struct r_io_t *io, int fd, const u8 *buf, int len);
+int r_io_open(struct r_io_t *io, const char *file, int flags, int mode);
+int r_io_redirect(struct r_io_t *io, const char *file);
+int r_io_read(struct r_io_t *io, int fd, u8 *buf, int len);
+int r_io_write(struct r_io_t *io, int fd, const u8 *buf, int len);
+u64 r_io_lseek(struct r_io_t *io, int fd, u64 offset, int whence);
+int r_io_system(struct r_io_t *io, int fd, const char *cmd);
+int r_io_close(struct r_io_t *io, int fd);
+u64 r_io_size(struct r_io_t *io, int fd);
 
 /* io/map.c */
-void r_io_map_init();
-int r_io_map_rm(int fd);
-int r_io_map_list();
-int r_io_map(const char *file, u64 offset);
-int r_io_map_read_at(u64 off, u8 *buf, u64 len);
-int r_io_map_read_rest(u64 off, u8 *buf, u64 len);
-int r_io_map_write_at(u64 off, const u8 *buf, u64 len);
+void r_io_map_init(struct r_io_t *io);
+int r_io_map_rm(struct r_io_t *io, int fd);
+int r_io_map_list(struct r_io_t *io);
+int r_io_map(struct r_io_t *io, const char *file, u64 offset);
+int r_io_map_read_at(struct r_io_t *io, u64 off, u8 *buf, u64 len);
+int r_io_map_read_rest(struct r_io_t *io, u64 off, u8 *buf, u64 len);
+int r_io_map_write_at(struct r_io_t *io, u64 off, const u8 *buf, u64 len);
 
-/* io/section.c */
-u64 r_io_section_align(u64 addr, u64 vaddr, u64 paddr);
+#include "r_io_section.h"
 
 #endif

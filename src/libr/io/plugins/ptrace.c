@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#undef R_IO_NFDS
 #define R_IO_NFDS 2
 int fds[3];
 int nfds = 0;
@@ -58,11 +59,10 @@ err:
         return ret ;
 }
 
-static int __read(int pid, u8 *buf, int len)
+static int __read(struct r_io_t *io, int pid, u8 *buf, int len)
 {
 	int ret;
-	u64 addr = r_io_seek;
-printf("READING USING PTRACE\n");
+	u64 addr = io->seek;
 	memset(buf, '\xff', len);
 	ret = debug_os_read_at(pid, buf, len, addr);
 //printf("READ(0x%08llx)\n", addr);
@@ -72,7 +72,7 @@ printf("READING USING PTRACE\n");
 	return len;
 }
 
-static int __write(int pid, const u8 *buf, int len)
+static int __write(struct r_io_t *io, int pid, const u8 *buf, int len)
 {
 	//int ret;
 	//u64 addr = r_io_seek;
@@ -84,42 +84,46 @@ static int __write(int pid, const u8 *buf, int len)
 	return len;
 }
 
-static int __handle_open(const char *file)
+static int __handle_open(struct r_io_t *io, const char *file)
 {
 	if (!memcmp(file, "ptrace://", 9))
+		return R_TRUE;
+	if (!memcmp(file, "attach://", 9))
 		return R_TRUE;
 	return R_FALSE;
 }
 
 //extern int errno;
 
-static int __open(const char *file, int rw, int mode)
+static int __open(struct r_io_t *io, const char *file, int rw, int mode)
 {
 	int ret = -1;
-	if (__handle_open(file)) {
+	if (__handle_open(io, file)) {
 		int pid = atoi(file+9);
-		ret = ptrace(PTRACE_ATTACH, pid, 0, 0);
-		if (ret == -1) {
-			perror("ptrace: Cannot attach");
-			switch(errno) {
-			case EPERM:
-				fprintf(stderr, "ERRNO: %d (EPERM=%d)\n", errno, errno==EPERM);
-				break;
-			case EINVAL:
-				fprintf(stderr, "ERRNO: %d (EINVAL)\n", errno);
-				break;
-			}
-			ret = pid;
-		} else
-		if (__waitpid(pid)) {
-			ret = pid;
-		} else fprintf(stderr, "Error in waitpid\n");
+		if (file[0]=='a') {
+			ret = ptrace(PTRACE_ATTACH, pid, 0, 0);
+			if (ret == -1) {
+				switch(errno) {
+				case EPERM:
+					ret = pid;
+					fprintf(stderr, "Operation not permitted\n");
+					break;
+				case EINVAL:
+					perror("ptrace: Cannot attach");
+					fprintf(stderr, "ERRNO: %d (EINVAL)\n", errno);
+					break;
+				}
+			} else
+			if (__waitpid(pid)) {
+				ret = pid;
+			} else fprintf(stderr, "Error in waitpid\n");
+		} else ret = pid;
 	}
 	fds[0] = ret;
 	return ret;
 }
 
-static int __handle_fd(int fd)
+static int __handle_fd(struct r_io_t *io, int fd)
 {
 	int i;
 	for(i=0;i<nfds;i++) {
@@ -129,23 +133,23 @@ static int __handle_fd(int fd)
 	return R_FALSE;
 }
 
-static u64 __lseek(int fildes, u64 offset, int whence)
+static u64 __lseek(struct r_io_t *io, int fildes, u64 offset, int whence)
 {
 	return -1;
 }
 
-static int __close(int pid)
+static int __close(struct r_io_t *io, int pid)
 {
 	return ptrace(PTRACE_DETACH, pid, 0, 0);
 }
 
-static int __system(const char *cmd)
+static int __system(struct r_io_t *io, const char *cmd)
 {
 	printf("ptrace io command. %s\n", cmd);
 	return R_TRUE;
 }
 
-static int __init()
+static int __init(struct r_io_t *io)
 {
 	printf("ptrace init\n");
 	return R_TRUE;

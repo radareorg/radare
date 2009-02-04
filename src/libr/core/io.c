@@ -70,8 +70,8 @@ int r_core_write_op(struct r_core_t *core, const char *arg, char op)
 int r_core_write_at(struct r_core_t *core, u64 addr, const u8 *buf, int size)
 {
 	int ret;
-	r_io_lseek(core->file->fd, addr, R_IO_SEEK_SET);
-	ret = r_io_write(core->file->fd, buf, size);
+	r_io_lseek(&core->io, core->file->fd, addr, R_IO_SEEK_SET);
+	ret = r_io_write(&core->io, core->file->fd, buf, size);
 	if (addr >= core->seek && addr <= core->seek+core->blocksize)
 		r_core_block_read(core, 0);
 	return (ret==-1)?R_FALSE:R_TRUE;
@@ -80,8 +80,8 @@ int r_core_write_at(struct r_core_t *core, u64 addr, const u8 *buf, int size)
 int r_core_read_at(struct r_core_t *core, u64 addr, const u8 *buf, int size)
 {
 	int ret;
-	r_io_lseek(core->file->fd, addr, R_IO_SEEK_SET);
-	ret = r_io_read(core->file->fd, buf, size);
+	r_io_lseek(&core->io, core->file->fd, addr, R_IO_SEEK_SET);
+	ret = r_io_read(&core->io, core->file->fd, buf, size);
 	if (addr >= core->seek && addr <= core->seek+core->blocksize)
 		r_core_block_read(core, 0);
 	return (ret==-1)?R_FALSE:R_TRUE;

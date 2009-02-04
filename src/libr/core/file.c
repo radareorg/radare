@@ -15,7 +15,7 @@ struct r_core_file_t *r_core_file_open(struct r_core_t *r, const char *file, int
 	int fd;
 	char *p;
 
-	fd = r_io_open(file, mode, 0644);
+	fd = r_io_open(&r->io, file, mode, 0644);
 	if (fd == -1)
 		return NULL;
 
@@ -41,7 +41,7 @@ int r_core_file_set(struct r_core_t *r, struct r_core_file_t *fh)
 
 int r_core_file_close(struct r_core_t *r, struct r_core_file_t *fh)
 {
-	int ret = r_io_close(fh->fd);
+	int ret = r_io_close(&r->io, fh->fd);
 	list_del(&(fh->list));
 	return ret;
 }
@@ -59,7 +59,7 @@ struct r_core_file_t *r_core_file_get_fd(struct r_core_t *core, int fd)
 
 int r_core_file_close_fd(struct r_core_t *core, int fd)
 {
-	int ret = r_io_close(fd);
+	int ret = r_io_close(&core->io, fd);
 	struct r_core_file_t *fh = r_core_file_get_fd(core, fd);
 	if (fh != NULL)
 		list_del(&(fh->list));
