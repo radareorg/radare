@@ -37,7 +37,11 @@ int debug_close(int fd)
 	eprintf("Do you want to kill the process? (Y/n/c)");
 
 	cons_set_raw(1);
-	while( ret == 1 && read(0,buf,1)>0 ) {
+	while( ret == 1 ) { //&& read(0,buf,1)>0 ) {
+		ret = read (0, buf, 1);
+		if (ret <=0)
+			buf[0]='y';
+		
 		buf[1] = '\n';
 		write(1, buf, 2);
 
@@ -50,6 +54,7 @@ int debug_close(int fd)
 			cons_set_raw(0);
 			ret = -2;
 			break;
+		default:
 		case 'y': case 'Y': case '\n': case '\r':
 			/* TODO: w32 stuff here */
 #if __UNIX__

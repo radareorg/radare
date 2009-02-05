@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# TODO: implement basic mutex
+#
+
+if [ -z "$FIFO" ]; then
+	FIFO="/tmp/radare-daemon.fifo"
+fi
+
+if [ -z "$1" ]; then
+	echo "Usage: rsc daemon-cmd 'command'"
+	echo "Use the FIFO environvar to define the communication channel"
+	exit 1
+fi
+
+:> /tmp/b
+echo "$@ > /tmp/b" > $FIFO
+for a in 1 2 3 4 5 6 7 8 9 10 ;  do
+	if [ -n "`cat /tmp/b`" ]; then
+	  break
+	fi
+	true # dummy fork
+done
+cat /tmp/b ; rm -f /tmp/b

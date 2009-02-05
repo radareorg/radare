@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Run radare instance as a daemon
+#
+
+if [ -z "$FIFO" ]; then
+	FIFO="/tmp/radare-daemon.fifo"
+fi
+
+if [ -z "$1" ]; then
+	echo "Usage: rsc daemon [radare-args]"
+	echo "For example:"
+	echo " $ FIFO=/tmp/a rsc daemon -d ls"
+	echo "Use the 'FIFO' environment var to define the io port"
+	exit 1
+fi
+
+mkfifo $FIFO
+while : ; do
+	cat $FIFO
+done | tee | radare $@
