@@ -764,8 +764,15 @@ static int cmd_debug(void *data, const char *input)
 		fprintf(stderr, "continue\n");
 		r_debug_continue(&core->dbg);
 		break;
+	case 'r':
+		fprintf(stderr, "show registers\n");
+		break;
+	case 'h':
+		r_debug_handle_set(&core->dbg, input+1);
+		break;
 	default:
 		r_cons_printf("Usage: d[sbc] [arg]\n"
+		" dh [handler] ; list or set debugger handler\n"
 		" ds           ; perform one step\n"
 		" ds 3         ; perform 3 steps\n"
 		" do 3         ; perform 3 steps overs\n"

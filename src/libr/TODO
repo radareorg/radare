@@ -9,6 +9,7 @@
 || asm || 
 ---------
   - Add support for more architectures
+  - Add lua disassembler
   - Add java, dalvik, xtensa achiecture (mm cpu)
   - http://git.linux-xtensa.org/cgi-bin/git.cgi?p=buildroot/buildroot-xtensa;a=blob;f=toolchain/binutils/binutils-xtensa_dc232b.tgz;h=214164399158c540a3033e52b3bb9f65c55289af;hb=HEAD
   - Vala API should not use State
@@ -28,6 +29,13 @@
 || cmd ||
 ---------
   - long commands not yet tested at all
+  - added interface to export command list into an autocompletable
+    argc, argv for dietline
+
+|| line ||
+----------
+  - make it work with state like teh rest
+  - add support for readline callbacks
 
 || config ||
 ------------
@@ -64,8 +72,8 @@
 
 || lib ||
 ---------
-  - Not yet used
   - Cleanup and test w32/osx support
 
-|| debug || **MISSING**
+|| debug ||
 -----------
+  - define plugin extensions (use vm from here)

@@ -1,37 +1,11 @@
-/*
- * Copyright (C) 2007, 2008
- *       pancake <youterm.com>
- *
- * dietline is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * dietline is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with dietline; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- */
+/* radare - LGPL - Copyright 2007-2009 pancake<nopcode.org> */
 
 #include "r_types.h"
 #include "r_line.h"
 
-/* dietline is a lighweight and portable library similar to GNU readline */
+#undef RADARE_CORE
 
-#if 0
-#if RADARE_CORE
-#include "main.h"
-#else
-static void r_cons_set_raw(int b);
-static int r_cons_get_real_columns();
-#define __UNIX__ 1
-#endif
-#endif
+/* dietline is a lighweight and portable library similar to GNU readline */
 
 #include <string.h>
 #include <stdlib.h>
@@ -97,6 +71,7 @@ int r_line_readchar()
 
 /* scripting */
 
+#if 0
 #define BLOCK 4096
 static char *labels = NULL;
 static u32 size = 0;
@@ -156,6 +131,7 @@ static int is_label(const char *str)
 	}
 	return 0;
 }
+#endif
 
 /* history stuff */
 
@@ -163,6 +139,7 @@ int r_line_hist_label(const char *label, void (*cb)(const char*))
 {
 	int i;
 
+#if 0
 	if (label[0]=='.') {
 		if (!is_label(label+1))
 			return 0;
@@ -173,6 +150,7 @@ int r_line_hist_label(const char *label, void (*cb)(const char*))
 			return 0;
 		}
 	}
+#endif
 
 #if 0
 	i = label_get(label);
@@ -267,7 +245,7 @@ void r_line_free()
 {
 	printf("Bye!\n");
 	r_line_hist_free();
-	label_reset();
+	//label_reset();
 	free(r_line_history);
 }
 
@@ -333,8 +311,10 @@ int r_line_init()
 #if HAVE_LIB_READLINE
 	rad_readline_init();
 #endif
+#if 0
 	if (labels==NULL)
 		labels = malloc(BLOCK);
+#endif
 	r_line_history = (char **)malloc(r_line_histsize*sizeof(char *));
 	if (r_line_history==NULL)
 		return 0;

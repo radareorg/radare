@@ -176,7 +176,7 @@ int r_io_system(struct r_io_t *io, int fd, const char *cmd)
 		io->plugin = r_io_handle_resolve_fd(io, fd);
 	if (io->plugin && io->plugin->system) {
 		io->fd = fd;
-		return io->plugin->system(io, cmd);
+		return io->plugin->system(io, fd, cmd);
 	}
 	return system(cmd);
 }

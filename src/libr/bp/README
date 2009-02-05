@@ -4,6 +4,7 @@ libr.bp
 Breakpoint API
 
 - Manages list of defined breakpoints
+- Determines if a stop is caused by a breakpoint
 - Owns a database of multiple types of breakpoints
   - arch and os based ones
   - Supports endianness
@@ -19,3 +20,6 @@ Breakpoint API
   - Do we should place some callbacks for this kind of ops?
 - We need to make this work also remotely
 * Watchpoints and its exception should be handled here
+  - watchpoint expressions should be handled by using the r_num stuff
+
+* Do we need the plugin API to define new breakpoints and so on?

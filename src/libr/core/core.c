@@ -31,6 +31,8 @@ struct r_core_t *r_core_new()
 	return c;
 }
 
+/* TODO: move to a separated file */
+/* io callback */
 int __lib_io_cb(struct r_lib_plugin_t *pl, void *user, void *data)
 {
 	struct r_io_handle_t *hand = (struct r_io_handle_t *)data;
@@ -40,10 +42,19 @@ int __lib_io_cb(struct r_lib_plugin_t *pl, void *user, void *data)
 	return R_TRUE;
 }
 
-int __lib_io_dt(struct r_lib_plugin_t *pl, void *p, void *u)
+int __lib_io_dt(struct r_lib_plugin_t *pl, void *p, void *u) { return R_TRUE; }
+
+/* debug callback */
+int __lib_dbg_cb(struct r_lib_plugin_t *pl, void *user, void *data)
 {
+	struct r_debug_handle_t *hand = (struct r_debug_handle_t *)data;
+	struct r_core_t *core = (struct r_core_t *)user;
+	printf(" * Added debugger handler\n");
+	r_debug_handle_add(&core->dbg, hand);
 	return R_TRUE;
 }
+
+int __lib_dbg_dt(struct r_lib_plugin_t *pl, void *p, void *u) { return R_TRUE; }
 
 int r_core_init(struct r_core_t *core)
 {
@@ -63,10 +74,12 @@ int r_core_init(struct r_core_t *core)
 	r_core_cmd_init(core);
 	r_core_config_init(core);
 	r_flag_init(&core->flags);
-
+	r_debug_init(&core->dbg);
 	r_lib_init(&core->lib, "radare_plugin");
 	r_lib_add_handler(&core->lib, R_LIB_TYPE_IO, "io plugins",
 		&__lib_io_cb, &__lib_io_dt, core);
+	r_lib_add_handler(&core->lib, R_LIB_TYPE_DBG, "debug plugins",
+		&__lib_dbg_cb, &__lib_dbg_dt, core);
 	r_lib_opendir(&core->lib, "/home/pancake/prg/radare/src/libr/io/plugins");
 	{
 		char *homeplugindir = r_str_home(".radare/plugins");

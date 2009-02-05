@@ -31,6 +31,13 @@ int r_debug_ptrace_continue(int pid)
 	return ptrace(PTRACE_CONT, pid, addr, data);
 }
 
+struct r_debug_handle_t {
+	.step = &r_debug_ptrace_step,
+	.cont = &r_debug_ptrace_continue,
+	.attach = &r_debug_ptrace_attach,
+	.detach = &r_debug_ptrace_detach,
+};
+#if 0
 int r_debug_ptrace_init(struct r_debug_t *dbg)
 {
 	dbg->step = r_debug_ptrace_step;
@@ -39,3 +46,4 @@ int r_debug_ptrace_init(struct r_debug_t *dbg)
 	dbg->detach = r_debug_ptrace_detach;
 	return R_TRUE;
 }
+#endif
