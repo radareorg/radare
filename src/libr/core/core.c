@@ -56,10 +56,25 @@ int __lib_dbg_cb(struct r_lib_plugin_t *pl, void *user, void *data)
 
 int __lib_dbg_dt(struct r_lib_plugin_t *pl, void *p, void *u) { return R_TRUE; }
 
+/* debug callback */
+int __lib_lng_cb(struct r_lib_plugin_t *pl, void *user, void *data)
+{
+	struct r_debug_handle_t *hand = (struct r_debug_handle_t *)data;
+	struct r_core_t *core = (struct r_core_t *)user;
+	printf(" * Added language handler\n");
+	r_lang_add(&core->lang, hand);
+	return R_TRUE;
+}
+
+int __lib_lng_dt(struct r_lib_plugin_t *pl, void *p, void *u) { return R_TRUE; }
+
 int r_core_init(struct r_core_t *core)
 {
+	core->oobi = NULL;
+	core->oobi_len = 0;
 	core->num.callback = &num_callback;
 	core->num.userptr = core;
+	r_lang_init(&core->lang);
 	r_cons_init();
 	r_io_init(&core->io);
 	r_macro_init(&core->macro);
@@ -80,6 +95,8 @@ int r_core_init(struct r_core_t *core)
 		&__lib_io_cb, &__lib_io_dt, core);
 	r_lib_add_handler(&core->lib, R_LIB_TYPE_DBG, "debug plugins",
 		&__lib_dbg_cb, &__lib_dbg_dt, core);
+	r_lib_add_handler(&core->lib, R_LIB_TYPE_LNG, "language plugins",
+		&__lib_lng_cb, &__lib_lng_dt, core);
 	r_lib_opendir(&core->lib, "/home/pancake/prg/radare/src/libr/io/plugins");
 	{
 		char *homeplugindir = r_str_home(".radare/plugins");

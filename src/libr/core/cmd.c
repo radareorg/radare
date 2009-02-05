@@ -465,7 +465,11 @@ static int cmd_write(void *data, const char *input)
                 break;
 	default:
 	case '?':
-		fprintf(stderr, "Usage: w[x] [str]\n"
+		if (core->oobi) {
+			fprintf(stderr, "Writing oobi buffer!\n");
+			r_io_write(&core->io, core->file->fd, core->oobi, core->oobi_len);
+		} else
+			r_cons_printf("Usage: w[x] [str] [<file] [<<EOF] [@addr]\n"
 			" w foobar   ; write string 'foobar'\n"
 			" ww foobar  ; write wide string 'f\\x00o\\x00o\\x00b\\x00a\\x00r\\x00'\n"
 			" wb 010203  ; fill current block with cyclic hexpairs\n"
@@ -499,7 +503,7 @@ static int cmd_eval(void *data, const char *input)
 		r_config_list(&core->config, NULL, 1);
 		break;
 	case '?':
-		fprintf(stderr,
+		r_cons_printf(
 		"Usage: e[?] [var[=value]]\n"
 		"  e     ; list config vars\n"
 		"  e-    ; reset config vars\n"
@@ -519,8 +523,21 @@ static int cmd_hash(void *data, const char *input)
 	char algo[32];
 	struct r_core_t *core = (struct r_core_t *)data;
 	u32 len = core->blocksize;
-	const char *ptr = strchr(input, ' ');
+	const char *ptr;
 
+	if (input[0]=='!') {
+#if 0
+		#!lua < file
+		#!lua <<EOF
+		#!lua
+		#!lua foo bar
+#endif
+		r_lang_run(&core->lang, core->oobi, core->oobi_len);
+		r_cons_printf("TODO\n");
+		return R_TRUE;
+	}
+
+	ptr = strchr(input, ' ');
 	sscanf(input, "%31s", algo);
 	if (ptr != NULL)
 		len = r_num_math(&core->num, ptr+1);
@@ -533,7 +550,15 @@ static int cmd_hash(void *data, const char *input)
 	} else {
 		r_cons_printf(
 		"Usage: #algo <size> @ addr\n"
-		" #crc32      ; calculate crc32 of current block\n");
+		" #crc32               ; calculate crc32 of current block\n"
+		" #crc32 < /etc/fstab  ; calculate crc32 of this file\n"
+		" #md5 128K @ edi      ; calculate md5 of 128K from 'edi'\n"
+		"Usage #!interpreter [<args>] [<file] [<<eof]\n"
+		" #!                   ; list all available interpreters\n"
+		" #!python             ; run python commandline\n"
+		" #!python < foo.py    ; run foo.py python script\n"
+		" #!python <<EOF       ; get python code until 'EOF' mark\n"
+		" #!python arg0 a1 <<q ; set arg0 and arg1 and read until 'q'\n");
 	}
 
 	return 0;
@@ -626,6 +651,8 @@ static int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd,
 		if (i>0) strcpy(cmd, cmd+i);
 		*times = len;
 	}
+	if (cmd[0]=='\0')
+		return;
 
 	/* quoted / raw command */
 	if (cmd[0]=='"') {
@@ -638,21 +665,61 @@ static int r_core_cmd_subst(struct r_core_t *core, char *cmd, int *rs, int *rfd,
 		return 0;
 	}
 	ptr = strchr(cmd, ';');
-	if (ptr) {
+	if (ptr)
 		ptr[0]='\0';
+	ptr = strchr(cmd+1, '|');
+	if (ptr) {
+		ptr[0] = '\0';
+		fprintf(stderr, "System pipes not yet supported.\n");
 	}
-	if (cmd[0]) {
-		ptr = strchr(cmd+1, '|');
-		if (ptr) {
-			ptr[0] = '\0';
-			fprintf(stderr, "System pipes not yet supported.\n");
-		}
-		ptr = strchr(cmd, '>');
-		if (ptr) {
-			ptr[0] = '\0';
+
+	/* Out Of Band Input */
+	free(core->oobi);
+	core->oobi = NULL;
+	ptr = strchr(cmd, '<');
+	if (ptr) {
+		ptr[0] = '\0';
+		if (ptr[1]=='<') {
+			/* this is a bit mess */
+			char *oprompt = r_line_prompt;
+			oprompt = ">";
+			for(str=ptr+2;str[0]== ' ';str=str+1);
+			fprintf(stderr, "==> Reading from stdin until '%s'\n", str);
+			free(core->oobi);
+			core->oobi = malloc(1);
+			core->oobi[0] = '\0';
+			core->oobi_len = 0;
+			for (;;) {
+				char buf[1024];
+				int ret;
+				printf("> "); fflush(stdout);
+				fgets(buf, 1023, stdin);
+				if (feof(stdin))
+					break;
+				buf[strlen(buf)-1]='\0';
+				ret = strlen(buf);
+				core->oobi_len+=ret;
+				core->oobi = realloc(core->oobi, core->oobi_len+1);
+				if (!strcmp(buf, str))
+					break;
+				strcat(core->oobi, buf);
+			}
+			r_line_prompt = oprompt;
+		} else {
 			for(str=ptr+1;str[0]== ' ';str=str+1);
-			*rfd = r_cons_pipe_open(str, ptr[1]=='>');
+			printf("SLURPING FILE '%s'\n", str);
+			core->oobi = r_file_slurp(str, &core->oobi_len);
+			if (core->oobi == NULL) {
+				printf("Cannot open file\n");
+			}
 		}
+	}
+	/* Pipe console to file */
+	ptr = strchr(cmd, '>');
+	if (ptr) {
+		ptr[0] = '\0';
+		for(str=ptr+1;str[0]== ' ';str=str+1);
+		*rfd = r_cons_pipe_open(str, ptr[1]=='>');
 	}
 	ptr = strchr(cmd, '@');
 	if (ptr) {
@@ -727,6 +794,10 @@ int r_core_cmd(struct r_core_t *core, const char *command, int log)
 		r_cons_flush();
 		r_cons_pipe_close(newfd);
 	}
+
+	free (core->oobi);
+	core->oobi = NULL;
+	core->oobi_len = 0;
 
 	return ret;
 }

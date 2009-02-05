@@ -4,7 +4,8 @@
 #include "r_types.h"
 #include "r_io.h"
 #include "r_lib.h"
-#include <r_cmd.h>
+#include "r_lang.h"
+#include "r_cmd.h"
 #include "r_cons.h"
 #include "r_line.h"
 #include "r_print.h"
@@ -30,6 +31,8 @@ struct r_core_t {
 	u64 seek;
 	u32 blocksize;
 	u8 *block;
+	u8 *oobi;
+	int oobi_len;
 	/* files */
 	struct r_io_t io;
 	struct r_core_file_t *file;
@@ -37,6 +40,7 @@ struct r_core_t {
 	struct r_num_t num;
 	struct r_lib_t lib;
 	struct r_cmd_t cmd;
+	struct r_lang_t lang;
 	struct r_debug_t dbg;
 	struct r_flag_t flags;
 	struct r_config_t config;

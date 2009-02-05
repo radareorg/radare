@@ -38,7 +38,7 @@ int r_io_open(struct r_io_t *io, const char *file, int flags, int mode)
 				int fd = plugin->open(io, uri, flags, mode);
 				if (io->redirect) {
 					printf("REDIRECT FOO => (%s)\n", io->redirect);
-					free(uri);
+					free((void *)uri);
 					uri = strdup(io->redirect);
 					r_io_redirect(io, NULL);
 					continue;
