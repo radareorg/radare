@@ -211,7 +211,7 @@ def configure(conf):
 	print "Use --without-gui : vala-waf support is not yet complete"
 
 def build(bld):
-	shutil.copyfile(srcdir+"/src/utils.c", srcdir+"/src/ut.c")
+	#shutil.copyfile(srcdir+"/src/utils.c", srcdir+"/src/ut.c")
 	if bld.env['GUI']:
 		bld.add_subdirs('vala')
 	bld.add_subdirs('src')
