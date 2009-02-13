@@ -45,7 +45,7 @@ public class Grava.Renderer
 			  //dx = edge.dest.x-edge.orig.x;
 			  dx = edge.dest.x-edge.orig.x-(edge.orig.w/1.3) + edge.dest.w/1.3; //-edge.orig.x;
 			  dy = edge.dest.y-edge.orig.y- oh; // or 80 or so depending if > or < ???
-			double ox = dx;
+			//double ox = dx;
 //			if (ox == 0){ ox = 150; }
 			//arrow
 			if (Graph.selected == edge.orig)

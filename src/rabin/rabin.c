@@ -166,7 +166,7 @@ void rabin_show_info(const char *file)
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
@@ -355,7 +355,7 @@ void rabin_show_strings(const char *file)
 		system(buf);
 #else
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
@@ -742,7 +742,7 @@ void rabin_show_imports(const char *file)
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
@@ -911,7 +911,7 @@ void rabin_show_symbols(char *file)
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
@@ -1057,7 +1057,7 @@ void rabin_show_sections(const char *file)
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 		
@@ -1203,7 +1203,7 @@ void rabin_show_libs(const char *file)
 		break;
 	case FILETYPE_PE:
 		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
@@ -1443,7 +1443,7 @@ int main(int argc, char **argv, char **envp)
 			return rabin_show_help();
 		fd = open(file, O_RDONLY);
 		if (fd == -1) {
-			fprintf(stderr, "Cannot open file\n");
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return 0;
 		}
 	} else return 0;

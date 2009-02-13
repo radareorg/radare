@@ -32,7 +32,7 @@ static int do_save()
 		fwrite(buf, strlen(buf), 1, fd);
 		fclose(fd);
 	} else {
-		printf("ERROR: Cannot save file here\n");
+		printf("ERROR: Cannot save file (%s) here\n", filename);
 		// TODO: show an error dialog here
 		return 0;
 	}

@@ -123,10 +123,8 @@ stdout.printf("NOT TAKEND FOR %s\n", n.get("offset"));
 	{
 		this.graph = graph;
 		double last_y;
-		SList<Node> paint_nodes;
-		int i, inorig, indst ,k;
-		Node n,p, destn;
-		Edge e;
+		int i, k;
+		Node n, p, destn = null;
 		bool found;
 
 		// reset all node positions

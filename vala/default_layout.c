@@ -59,7 +59,7 @@ void grava_default_layout_reset (GravaDefaultLayout* self) {
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
 #line 37 "default_layout.vala"
-			node = ((GravaNode*) (node_it->data));
+			node = (GravaNode*) node_it->data;
 			{
 #line 38 "default_layout.vala"
 				fprintf (stdout, "RESETING LAYOUT+++++\n");
@@ -83,7 +83,7 @@ void grava_default_layout_reset_real (GravaDefaultLayout* self) {
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
 #line 45 "default_layout.vala"
-			node = ((GravaNode*) (node_it->data));
+			node = (GravaNode*) node_it->data;
 			{
 #line 46 "default_layout.vala"
 				self->priv->graph->nodes = g_slist_remove (self->priv->graph->nodes, node);
@@ -94,7 +94,7 @@ void grava_default_layout_reset_real (GravaDefaultLayout* self) {
 
 
 static void _g_slist_free_g_object_unref (GSList* self) {
-	g_slist_foreach (self, ((GFunc) (g_object_unref)), NULL);
+	g_slist_foreach (self, (GFunc) g_object_unref, NULL);
 	g_slist_free (self);
 }
 
@@ -117,10 +117,10 @@ static void grava_default_layout_treenodes (GravaDefaultLayout* self, GravaNode*
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
 #line 54 "default_layout.vala"
-			node = ((GravaNode*) (node_it->data));
+			node = (GravaNode*) node_it->data;
 			{
 #line 55 "default_layout.vala"
-				node->y = n->y + n->h + self->y_offset;
+				node->y = (n->y + n->h) + self->y_offset;
 #line 56 "default_layout.vala"
 				node->x = node->x + (n->w + ox);
 #line 57 "default_layout.vala"
@@ -130,7 +130,7 @@ static void grava_default_layout_treenodes (GravaDefaultLayout* self, GravaNode*
 			}
 		}
 	}
-	(nodes == NULL ? NULL : (nodes = (_g_slist_free_g_object_unref (nodes), NULL)));
+	(nodes == NULL) ? NULL : (nodes = (_g_slist_free_g_object_unref (nodes), NULL));
 }
 
 
@@ -150,7 +150,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 	_tmp0 = NULL;
 #line 64 "default_layout.vala"
 	_tmp2 = NULL;
-	m = (_tmp2 = (_tmp1 = ((GravaNode*) (g_hash_table_lookup (self->data, (_tmp0 = grava_node_get (n, "offset"))))), (_tmp1 == NULL ? NULL : g_object_ref (_tmp1))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp2);
+	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get (n, "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
 #line 65 "default_layout.vala"
 	if (m == NULL) {
 		GravaNode* no;
@@ -160,7 +160,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 #line 61 "node.vala"
 		_tmp3 = NULL;
 #line 67 "default_layout.vala"
-		grava_node_set (no, "offset", (_tmp3 = grava_node_get (n, "offset")));
+		grava_node_set (no, "offset", _tmp3 = grava_node_get (n, "offset"));
 		_tmp3 = (g_free (_tmp3), NULL);
 #line 68 "default_layout.vala"
 		no->x = n->x;
@@ -173,8 +173,8 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 #line 72 "default_layout.vala"
 		_tmp4 = NULL;
 #line 72 "default_layout.vala"
-		g_hash_table_insert (self->data, grava_node_get (n, "offset"), (_tmp4 = no, (_tmp4 == NULL ? NULL : g_object_ref (_tmp4))));
-		(no == NULL ? NULL : (no = (g_object_unref (no), NULL)));
+		g_hash_table_insert (self->data, grava_node_get (n, "offset"), (_tmp4 = no, (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)));
+		(no == NULL) ? NULL : (no = (g_object_unref (no), NULL));
 	} else {
 #line 74 "default_layout.vala"
 		m->x = n->x;
@@ -185,7 +185,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 #line 77 "default_layout.vala"
 		m->h = n->h;
 	}
-	(m == NULL ? NULL : (m = (g_object_unref (m), NULL)));
+	(m == NULL) ? NULL : (m = (g_object_unref (m), NULL));
 }
 
 
@@ -207,7 +207,7 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 	_tmp0 = NULL;
 #line 83 "default_layout.vala"
 	_tmp2 = NULL;
-	m = (_tmp2 = (_tmp1 = ((GravaNode*) (g_hash_table_lookup (self->data, (_tmp0 = grava_node_get ((*n), "offset"))))), (_tmp1 == NULL ? NULL : g_object_ref (_tmp1))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp2);
+	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get ((*n), "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
 #line 84 "default_layout.vala"
 	if (m != NULL) {
 		char* _tmp3;
@@ -223,18 +223,18 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 #line 61 "node.vala"
 		_tmp3 = NULL;
 #line 89 "default_layout.vala"
-		fprintf (stdout, "TAKEND FOR %s\n", (_tmp3 = grava_node_get ((*n), "offset")));
+		fprintf (stdout, "TAKEND FOR %s\n", _tmp3 = grava_node_get ((*n), "offset"));
 		_tmp3 = (g_free (_tmp3), NULL);
 #line 90 "default_layout.vala"
-		return (_tmp4 = TRUE, (m == NULL ? NULL : (m = (g_object_unref (m), NULL))), _tmp4);
+		return (_tmp4 = TRUE, (m == NULL) ? NULL : (m = (g_object_unref (m), NULL)), _tmp4);
 	}
 #line 61 "node.vala"
 	_tmp5 = NULL;
 #line 92 "default_layout.vala"
-	fprintf (stdout, "NOT TAKEND FOR %s\n", (_tmp5 = grava_node_get ((*n), "offset")));
+	fprintf (stdout, "NOT TAKEND FOR %s\n", _tmp5 = grava_node_get ((*n), "offset"));
 	_tmp5 = (g_free (_tmp5), NULL);
 #line 94 "default_layout.vala"
-	return (_tmp6 = FALSE, (m == NULL ? NULL : (m = (g_object_unref (m), NULL))), _tmp6);
+	return (_tmp6 = FALSE, (m == NULL) ? NULL : (m = (g_object_unref (m), NULL)), _tmp6);
 }
 
 
@@ -257,12 +257,12 @@ void grava_default_layout_walkChild (GravaDefaultLayout* self, GravaNode* node, 
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
 #line 100 "default_layout.vala"
-			edge = ((GravaEdge*) (edge_it->data));
+			edge = (GravaEdge*) edge_it->data;
 			{
 #line 101 "default_layout.vala"
 				if (edge->orig == node) {
 #line 102 "default_layout.vala"
-					edge->dest->y = edge->orig->y + edge->orig->h + self->y_offset;
+					edge->dest->y = (edge->orig->y + edge->orig->h) + self->y_offset;
 #line 103 "default_layout.vala"
 					grava_default_layout_walkChild (self, edge->dest, (level = level - 1));
 				}
@@ -286,7 +286,7 @@ GravaNode* grava_default_layout_get_parent (GravaDefaultLayout* self, GravaNode*
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
 #line 110 "default_layout.vala"
-			edge = ((GravaEdge*) (edge_it->data));
+			edge = (GravaEdge*) edge_it->data;
 			{
 #line 111 "default_layout.vala"
 				if (edge->dest == node) {
@@ -304,7 +304,7 @@ GravaNode* grava_default_layout_get_parent (GravaDefaultLayout* self, GravaNode*
 #line 117 "default_layout.vala"
 static void grava_default_layout_real_set_graph (GravaLayout* base, GravaGraph* graph) {
 	GravaDefaultLayout * self;
-	self = ((GravaDefaultLayout*) (base));
+	self = (GravaDefaultLayout*) base;
 #line 117 "default_layout.vala"
 	g_return_if_fail (graph != NULL);
 #line 119 "default_layout.vala"
@@ -316,67 +316,59 @@ static void grava_default_layout_real_set_graph (GravaLayout* base, GravaGraph* 
 static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph) {
 	GravaDefaultLayout * self;
 	double last_y;
-	GSList* paint_nodes;
 	gint i;
-	gint inorig;
-	gint indst;
 	gint k;
 	GravaNode* n;
 	GravaNode* p;
 	GravaNode* destn;
-	GravaEdge* e;
 	gboolean found;
-	self = ((GravaDefaultLayout*) (base));
+	self = (GravaDefaultLayout*) base;
 #line 122 "default_layout.vala"
 	g_return_if_fail (graph != NULL);
 #line 124 "default_layout.vala"
 	self->priv->graph = graph;
 	last_y = 0.0;
-	paint_nodes = NULL;
 	i = 0;
-	inorig = 0;
-	indst = 0;
 	k = 0;
 	n = NULL;
 	p = NULL;
 	destn = NULL;
-	e = NULL;
 	found = FALSE;
 	/* reset all node positions*/
-#line 134 "default_layout.vala"
-	last_y = ((double) (50));
+#line 132 "default_layout.vala"
+	last_y = (double) 50;
 	/* Tots vertical, un sota l'altr ordenats per base addr*/
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 137 "default_layout.vala"
+#line 135 "default_layout.vala"
 		node_collection = graph->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 137 "default_layout.vala"
-			node = ((GravaNode*) (node_it->data));
+#line 135 "default_layout.vala"
+			node = (GravaNode*) node_it->data;
 			{
-#line 138 "default_layout.vala"
+#line 136 "default_layout.vala"
 				if (!node->visible) {
-#line 138 "default_layout.vala"
+#line 136 "default_layout.vala"
 					continue;
 				}
 				/* reset node positions*/
-#line 140 "default_layout.vala"
-				node->x = ((double) (50));
-#line 141 "default_layout.vala"
+#line 138 "default_layout.vala"
+				node->x = (double) 50;
+#line 139 "default_layout.vala"
 				grava_node_fit (node);
-#line 142 "default_layout.vala"
+#line 140 "default_layout.vala"
 				node->y = last_y;
-#line 143 "default_layout.vala"
-				last_y = node->y + node->h + 50;
-#line 144 "default_layout.vala"
+#line 141 "default_layout.vala"
+				last_y = (node->y + node->h) + 50;
+#line 142 "default_layout.vala"
 				if (grava_default_layout_d) {
 					char* _tmp0;
 #line 61 "node.vala"
 					_tmp0 = NULL;
-#line 144 "default_layout.vala"
-					fprintf (stdout, " at %f %s %x\n", node->y, (_tmp0 = grava_node_get (node, "label")), node->baseaddr);
+#line 142 "default_layout.vala"
+					fprintf (stdout, " at %f %s %x\n", node->y, _tmp0 = grava_node_get (node, "label"), node->baseaddr);
 					_tmp0 = (g_free (_tmp0), NULL);
 				}
 			}
@@ -388,7 +380,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 	
 	 Entre el node que miro i el desti vol dir que la x sigui la mateixa.
 	*/
-#line 153 "default_layout.vala"
+#line 151 "default_layout.vala"
 	for (i = 0; i < g_slist_length (graph->nodes); i++) {
 		GravaNode* _tmp2;
 		GravaNode* _tmp1;
@@ -396,71 +388,82 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 		char* _tmp3;
 		GravaNode* _tmp5;
 		GravaNode* m;
+		gboolean _tmp9;
 		_tmp2 = NULL;
-#line 154 "default_layout.vala"
+#line 152 "default_layout.vala"
 		_tmp1 = NULL;
-#line 154 "default_layout.vala"
-		n = (_tmp2 = (_tmp1 = ((GravaNode*) (g_slist_nth_data (graph->nodes, ((guint) (i))))), (_tmp1 == NULL ? NULL : g_object_ref (_tmp1))), (n == NULL ? NULL : (n = (g_object_unref (n), NULL))), _tmp2);
+#line 152 "default_layout.vala"
+		n = (_tmp2 = (_tmp1 = (GravaNode*) g_slist_nth_data (graph->nodes, (guint) i), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), (n == NULL) ? NULL : (n = (g_object_unref (n), NULL)), _tmp2);
 		/*
 		if (getxy(ref n))
 		continue;
 		*/
-#line 159 "default_layout.vala"
+#line 157 "default_layout.vala"
 		_tmp4 = NULL;
 #line 61 "node.vala"
 		_tmp3 = NULL;
-#line 159 "default_layout.vala"
+#line 157 "default_layout.vala"
 		_tmp5 = NULL;
-		m = (_tmp5 = (_tmp4 = ((GravaNode*) (g_hash_table_lookup (self->data, (_tmp3 = grava_node_get (n, "offset"))))), (_tmp4 == NULL ? NULL : g_object_ref (_tmp4))), (_tmp3 = (g_free (_tmp3), NULL)), _tmp5);
-#line 160 "default_layout.vala"
+		m = (_tmp5 = (_tmp4 = (GravaNode*) g_hash_table_lookup (self->data, _tmp3 = grava_node_get (n, "offset")), (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)), _tmp3 = (g_free (_tmp3), NULL), _tmp5);
+#line 158 "default_layout.vala"
 		if (m != NULL) {
-#line 161 "default_layout.vala"
+#line 159 "default_layout.vala"
 			n->x = m->x;
-#line 162 "default_layout.vala"
+#line 160 "default_layout.vala"
 			n->y = m->y;
-#line 163 "default_layout.vala"
+#line 161 "default_layout.vala"
 			n->w = m->w;
-#line 164 "default_layout.vala"
+#line 162 "default_layout.vala"
 			n->h = m->h;
-#line 165 "default_layout.vala"
+#line 163 "default_layout.vala"
 			fprintf (stdout, "FUCKA! %f %f\n", n->x, n->y);
-			(m == NULL ? NULL : (m = (g_object_unref (m), NULL)));
-#line 166 "default_layout.vala"
+			(m == NULL) ? NULL : (m = (g_object_unref (m), NULL));
+#line 164 "default_layout.vala"
 			continue;
 		}
-#line 168 "default_layout.vala"
+#line 166 "default_layout.vala"
 		fprintf (stdout, "---- not ounfd !\n");
 		/*/ busco l'edge verd d'aquest node
 		/*/
-#line 172 "default_layout.vala"
+#line 170 "default_layout.vala"
 		found = FALSE;
 		{
 			GSList* edge_collection;
 			GSList* edge_it;
-#line 173 "default_layout.vala"
+#line 171 "default_layout.vala"
 			edge_collection = graph->edges;
 			for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 				GravaEdge* edge;
-#line 173 "default_layout.vala"
-				edge = ((GravaEdge*) (edge_it->data));
+#line 171 "default_layout.vala"
+				edge = (GravaEdge*) edge_it->data;
 				{
-#line 174 "default_layout.vala"
-					if (edge->orig == n && edge->jmpcnd == TRUE) {
+					gboolean _tmp6;
+					_tmp6 = FALSE;
+#line 172 "default_layout.vala"
+					if (edge->orig == n) {
+#line 172 "default_layout.vala"
+						_tmp6 = edge->jmpcnd == TRUE;
+					} else {
+#line 172 "default_layout.vala"
+						_tmp6 = FALSE;
+					}
+#line 172 "default_layout.vala"
+					if (_tmp6) {
+						GravaNode* _tmp8;
 						GravaNode* _tmp7;
-						GravaNode* _tmp6;
-#line 175 "default_layout.vala"
+#line 173 "default_layout.vala"
 						if (grava_default_layout_d) {
-#line 175 "default_layout.vala"
+#line 173 "default_layout.vala"
 							fprintf (stdout, "0x%x ----> 0x%x\n", edge->orig->baseaddr, edge->dest->baseaddr);
 						}
+						_tmp8 = NULL;
+#line 174 "default_layout.vala"
 						_tmp7 = NULL;
-#line 176 "default_layout.vala"
-						_tmp6 = NULL;
-#line 176 "default_layout.vala"
-						destn = (_tmp7 = (_tmp6 = edge->dest, (_tmp6 == NULL ? NULL : g_object_ref (_tmp6))), (destn == NULL ? NULL : (destn = (g_object_unref (destn), NULL))), _tmp7);
-#line 177 "default_layout.vala"
+#line 174 "default_layout.vala"
+						destn = (_tmp8 = (_tmp7 = edge->dest, (_tmp7 == NULL) ? NULL : g_object_ref (_tmp7)), (destn == NULL) ? NULL : (destn = (g_object_unref (destn), NULL)), _tmp8);
+#line 175 "default_layout.vala"
 						found = TRUE;
-#line 178 "default_layout.vala"
+#line 176 "default_layout.vala"
 						break;
 					}
 				}
@@ -469,81 +472,98 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 		/*/ n es el node origen.
 		/ destn es el node desti
 		/*/
-#line 185 "default_layout.vala"
-		last_y = n->y + n->h + 10;
+#line 183 "default_layout.vala"
+		last_y = (n->y + n->h) + 10;
+		_tmp9 = FALSE;
+#line 188 "default_layout.vala"
+		if ((found == TRUE)) {
+#line 188 "default_layout.vala"
+			_tmp9 = (n->baseaddr < destn->baseaddr);
+		} else {
+#line 188 "default_layout.vala"
+			_tmp9 = FALSE;
+		}
 		/* Si la base del node origen es < que le desti .
 		 sempre anem avall.
 		*/
-#line 190 "default_layout.vala"
-		if ((found == TRUE) && (n->baseaddr < destn->baseaddr)) {
+#line 188 "default_layout.vala"
+		if (_tmp9) {
 			double maxw;
 			/*/ Busco el node mes ample.
 			/*/
-			maxw = ((double) (0));
-#line 194 "default_layout.vala"
+			maxw = (double) 0;
+#line 192 "default_layout.vala"
 			for (k = (i + 1); k < g_slist_length (graph->nodes); k++) {
-				GravaNode* _tmp9;
-				GravaNode* _tmp8;
-				_tmp9 = NULL;
+				GravaNode* _tmp11;
+				GravaNode* _tmp10;
+				gboolean _tmp12;
+				_tmp11 = NULL;
+#line 193 "default_layout.vala"
+				_tmp10 = NULL;
+#line 193 "default_layout.vala"
+				p = (_tmp11 = (_tmp10 = (GravaNode*) g_slist_nth_data (graph->nodes, (guint) k), (_tmp10 == NULL) ? NULL : g_object_ref (_tmp10)), (p == NULL) ? NULL : (p = (g_object_unref (p), NULL)), _tmp11);
+				_tmp12 = FALSE;
+#line 194 "default_layout.vala"
+				if ((p->x == n->x)) {
+#line 194 "default_layout.vala"
+					_tmp12 = (p->w > maxw);
+				} else {
+#line 194 "default_layout.vala"
+					_tmp12 = FALSE;
+				}
+#line 194 "default_layout.vala"
+				if (_tmp12) {
 #line 195 "default_layout.vala"
-				_tmp8 = NULL;
-#line 195 "default_layout.vala"
-				p = (_tmp9 = (_tmp8 = ((GravaNode*) (g_slist_nth_data (graph->nodes, ((guint) (k))))), (_tmp8 == NULL ? NULL : g_object_ref (_tmp8))), (p == NULL ? NULL : (p = (g_object_unref (p), NULL))), _tmp9);
-#line 196 "default_layout.vala"
-				if ((p->x == n->x) && (p->w > maxw)) {
-#line 197 "default_layout.vala"
 					maxw = p->w;
 				}
 			}
 			/*/ DesplaÃ§o
 			/*/
-#line 201 "default_layout.vala"
+#line 199 "default_layout.vala"
 			for (k = (i + 1); k < g_slist_length (graph->nodes); k++) {
-				GravaNode* _tmp11;
-				GravaNode* _tmp10;
-				_tmp11 = NULL;
+				GravaNode* _tmp14;
+				GravaNode* _tmp13;
+				_tmp14 = NULL;
+#line 200 "default_layout.vala"
+				_tmp13 = NULL;
+#line 200 "default_layout.vala"
+				p = (_tmp14 = (_tmp13 = (GravaNode*) g_slist_nth_data (graph->nodes, (guint) k), (_tmp13 == NULL) ? NULL : g_object_ref (_tmp13)), (p == NULL) ? NULL : (p = (g_object_unref (p), NULL)), _tmp14);
 #line 202 "default_layout.vala"
-				_tmp10 = NULL;
-#line 202 "default_layout.vala"
-				p = (_tmp11 = (_tmp10 = ((GravaNode*) (g_slist_nth_data (graph->nodes, ((guint) (k))))), (_tmp10 == NULL ? NULL : g_object_ref (_tmp10))), (p == NULL ? NULL : (p = (g_object_unref (p), NULL))), _tmp11);
-#line 204 "default_layout.vala"
 				if (grava_default_layout_d) {
-#line 204 "default_layout.vala"
+#line 202 "default_layout.vala"
 					fprintf (stdout, "Displacing 0x%x\n", p->baseaddr);
 				}
 				/* El node estava entre el node origen i el desti*/
-#line 207 "default_layout.vala"
+#line 205 "default_layout.vala"
 				if (p->x == n->x) {
-#line 208 "default_layout.vala"
+#line 206 "default_layout.vala"
 					p->x = p->x + ((maxw + 10));
 				}
 				/*/ Es ja el node desti.*/
-#line 211 "default_layout.vala"
+#line 209 "default_layout.vala"
 				if (p == destn) {
-#line 212 "default_layout.vala"
+#line 210 "default_layout.vala"
 					if (grava_default_layout_d) {
-#line 212 "default_layout.vala"
+#line 210 "default_layout.vala"
 						fprintf (stdout, "AT 0x%x\n", p->baseaddr);
 					}
-#line 213 "default_layout.vala"
+#line 211 "default_layout.vala"
 					destn->x = n->x;
-#line 214 "default_layout.vala"
-					destn->y = n->y + n->h + 50;
-#line 215 "default_layout.vala"
+#line 212 "default_layout.vala"
+					destn->y = (n->y + n->h) + 50;
+#line 213 "default_layout.vala"
 					break;
 				}
 			}
 		}
-#line 219 "default_layout.vala"
+#line 217 "default_layout.vala"
 		grava_default_layout_setxy (self, n);
-		(m == NULL ? NULL : (m = (g_object_unref (m), NULL)));
+		(m == NULL) ? NULL : (m = (g_object_unref (m), NULL));
 	}
-	(paint_nodes == NULL ? NULL : (paint_nodes = (_g_slist_free_g_object_unref (paint_nodes), NULL)));
-	(n == NULL ? NULL : (n = (g_object_unref (n), NULL)));
-	(p == NULL ? NULL : (p = (g_object_unref (p), NULL)));
-	(destn == NULL ? NULL : (destn = (g_object_unref (destn), NULL)));
-	(e == NULL ? NULL : (e = (g_object_unref (e), NULL)));
-#line 222 "default_layout.vala"
+	(n == NULL) ? NULL : (n = (g_object_unref (n), NULL));
+	(p == NULL) ? NULL : (p = (g_object_unref (p), NULL));
+	(destn == NULL) ? NULL : (destn = (g_object_unref (destn), NULL));
+#line 220 "default_layout.vala"
 	return;
 }
 
@@ -563,7 +583,7 @@ GravaDefaultLayout* grava_default_layout_new (void) {
 }
 
 
-#line 178 "gobject-2.0.vapi"
+#line 182 "gobject-2.0.vapi"
 static void _g_object_unref_gdestroy_notify (void* data) {
 	g_object_unref (data);
 }
@@ -583,7 +603,7 @@ static GObject * grava_default_layout_constructor (GType type, guint n_construct
 		GHashTable* _tmp0;
 		_tmp0 = NULL;
 #line 31 "default_layout.vala"
-		self->data = (_tmp0 = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, _g_object_unref_gdestroy_notify), (self->data == NULL ? NULL : (self->data = (g_hash_table_unref (self->data), NULL))), _tmp0);
+		self->data = (_tmp0 = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, _g_object_unref_gdestroy_notify), (self->data == NULL) ? NULL : (self->data = (g_hash_table_unref (self->data), NULL)), _tmp0);
 	}
 	return obj;
 }
@@ -601,15 +621,15 @@ static void grava_default_layout_class_init (GravaDefaultLayoutClass * klass) {
 
 static void grava_default_layout_instance_init (GravaDefaultLayout * self) {
 	self->priv = GRAVA_DEFAULT_LAYOUT_GET_PRIVATE (self);
-	self->y_offset = ((double) (100));
-	self->x_offset = ((double) (50));
+	self->y_offset = (double) 100;
+	self->x_offset = (double) 50;
 }
 
 
 static void grava_default_layout_finalize (GObject* obj) {
 	GravaDefaultLayout * self;
 	self = GRAVA_DEFAULT_LAYOUT (obj);
-	(self->data == NULL ? NULL : (self->data = (g_hash_table_unref (self->data), NULL)));
+	(self->data == NULL) ? NULL : (self->data = (g_hash_table_unref (self->data), NULL));
 	G_OBJECT_CLASS (grava_default_layout_parent_class)->finalize (obj);
 }
 

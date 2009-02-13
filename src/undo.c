@@ -135,7 +135,7 @@ int undo_write_size()
 	return i;
 }
 
-void undo_write_list()
+void undo_write_list(int rad)
 {
 #define BW 8 /* byte wrap */
 	struct list_head *p;
@@ -144,14 +144,20 @@ void undo_write_list()
 	if (undo_w_init)
 	list_for_each_prev(p, &(undo_w_list)) {
 		struct undow_t *u = list_entry(p, struct undow_t, list);
-		cons_printf("%02d %c %d %08llx: ", i, u->set?'+':'-', u->len, u->off);
-		len = (u->len>BW)?BW:u->len;
-		for(j=0;j<len;j++) cons_printf("%02x ", u->o[j]);
-		if (len == BW) cons_printf(".. ");
-		cons_printf ("=> ");
-		for(j=0;j<len;j++) cons_printf("%02x ", u->n[j]);
-		if (len == BW) cons_printf(".. ");
-		cons_newline();
+		if (rad) {
+			cons_printf("wx ");
+			for(j=0;j<u->len;j++) cons_printf("%02x ", u->n[j]);
+			cons_printf("@ 0x%08llx\n", u->off);
+		} else {
+			cons_printf("%02d %c %d %08llx: ", i, u->set?'+':'-', u->len, u->off);
+			len = (u->len>BW)?BW:u->len;
+			for(j=0;j<len;j++) cons_printf("%02x ", u->o[j]);
+			if (len == BW) cons_printf(".. ");
+			cons_printf ("=> ");
+			for(j=0;j<len;j++) cons_printf("%02x ", u->n[j]);
+			if (len == BW) cons_printf(".. ");
+			cons_newline();
+		}
 		i++;
 	}
 }

@@ -31,8 +31,10 @@ int project_save(const char *file)
 	char *rdbdir;
 	int i, lfs;
 	
-	if (strnull(file))
+	if (strnull(file)) {
+		fprintf(stderr, "Oops. no project file name given?\n");
 		return 0;
+	}
 
 	rdbdir = config_get("dir.project");
 	if (rdbdir&&rdbdir[0]) {
@@ -92,6 +94,7 @@ int project_save(const char *file)
 
 	config_set("file.project", strdup(file));
 	cons_printf("Project '%s' saved.\n", file);
+	fprintf(stderr, "Check your ~/.radare/rdb. and use 'radare -P [prjname]' next time\n");
 
 	return 1;
 }

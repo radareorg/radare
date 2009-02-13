@@ -30,6 +30,7 @@ enum  {
 static gpointer grava_renderer_parent_class = NULL;
 static void grava_renderer_finalize (GravaRenderer* obj);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
+static gint _vala_array_length (gpointer array);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
 
@@ -43,86 +44,86 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 	g_return_if_fail (ctx != NULL);
 #line 25 "renderer.vala"
 	g_return_if_fail (edge != NULL);
-	dx = ((double) (0));
-	dy = ((double) (0));
+	dx = (double) 0;
+	dy = (double) 0;
 	oh = edge->orig->h;
 #line 31 "renderer.vala"
 	if (edge->orig->has_body == FALSE) {
 #line 32 "renderer.vala"
-		oh = ((double) (16));
+		oh = (double) 16;
 	}
 #line 34 "renderer.vala"
 	cairo_save (ctx);
 #line 37 "renderer.vala"
 	grava_renderer_set_color (ctx, edge->data);
 #line 39 "renderer.vala"
-	cairo_set_line_width (ctx, ((double) (2)));
+	cairo_set_line_width (ctx, (double) 2);
 	/* oxymoroon! */
 #line 41 "renderer.vala"
 	if (edge->orig == edge->dest) {
-		double ox;
 		/* bottom to up */
 #line 43 "renderer.vala"
 		cairo_translate (ctx, edge->orig->x + (edge->orig->w / 2), edge->orig->y + oh);
 #line 44 "renderer.vala"
-		cairo_move_to (ctx, ((double) (0)), ((double) (0)));
+		cairo_move_to (ctx, (double) 0, (double) 0);
 		/*dx = edge.dest.x-edge.orig.x;*/
 #line 46 "renderer.vala"
-		dx = edge->dest->x - edge->orig->x - (edge->orig->w / 1.3) + edge->dest->w / 1.3;
+		dx = ((edge->dest->x - edge->orig->x) - (edge->orig->w / 1.3)) + (edge->dest->w / 1.3);
 		/*-edge.orig.x;*/
 #line 47 "renderer.vala"
-		dy = edge->dest->y - edge->orig->y - oh;
-		/* or 80 or so depending if > or < ???*/
-		ox = dx;
-		/*if (ox == 0){ ox = 150; }
+		dy = (edge->dest->y - edge->orig->y) - oh;
+		/* or 80 or so depending if > or < ???
+		double ox = dx;
+		if (ox == 0){ ox = 150; }
 		arrow*/
 #line 51 "renderer.vala"
 		if (grava_graph_selected == edge->orig) {
 #line 52 "renderer.vala"
-			cairo_set_line_width (ctx, ((double) (6)));
+			cairo_set_line_width (ctx, (double) 6);
 		}
 #line 54 "renderer.vala"
 		dx = edge->dest->w;
 		/*dy += edge.dest.h/2;*/
 #line 56 "renderer.vala"
-		cairo_curve_to (ctx, ((double) (0)), ((double) (0)), ((double) (200)), ((double) (100)), dx - edge->orig->w / 2, dy);
+		cairo_curve_to (ctx, (double) 0, (double) 0, (double) 200, (double) 100, dx - (edge->orig->w / 2), dy);
 	} else {
 #line 75 "renderer.vala"
-		if (edge->orig->y + oh < (edge->dest->y)) {
+		if ((edge->orig->y + oh) < (edge->dest->y)) {
 			/*-edge.dest.h)) {
 			 up to bottom 
 			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);*/
 #line 78 "renderer.vala"
 			cairo_translate (ctx, edge->orig->x + (edge->orig->w / 2), edge->orig->y + oh);
 #line 79 "renderer.vala"
-			cairo_move_to (ctx, ((double) (0)), ((double) (0)));
+			cairo_move_to (ctx, (double) 0, (double) 0);
 #line 80 "renderer.vala"
-			dx = edge->dest->x - edge->orig->x - (edge->orig->w / 1.3) + edge->dest->w / 1.3;
+			dx = ((edge->dest->x - edge->orig->x) - (edge->orig->w / 1.3)) + (edge->dest->w / 1.3);
 			/*-edge.orig.x;*/
 #line 81 "renderer.vala"
-			dy = edge->dest->y - edge->orig->y - oh;
+			dy = (edge->dest->y - edge->orig->y) - oh;
 			/*ctx.move_to(30,30);
 			ctx.set_source_rgb (0.0, 0.0, 0.0);*/
 #line 84 "renderer.vala"
 			if (grava_graph_selected == edge->orig) {
 #line 85 "renderer.vala"
-				cairo_set_line_width (ctx, ((double) (6)));
+				cairo_set_line_width (ctx, (double) 6);
 			}
 #line 86 "renderer.vala"
-			grava_renderer_line (ctx, ((double) (0)), ((double) (0)), dx, dy);
+			grava_renderer_line (ctx, (double) 0, (double) 0, dx, dy);
 		} else {
 			double ox;
+			gint _tmp0;
 			/* bottom to up */
 #line 89 "renderer.vala"
 			cairo_translate (ctx, edge->orig->x + (edge->orig->w / 2), edge->orig->y + oh);
 #line 90 "renderer.vala"
-			cairo_move_to (ctx, ((double) (0)), ((double) (0)));
+			cairo_move_to (ctx, (double) 0, (double) 0);
 			/*dx = edge.dest.x-edge.orig.x;*/
 #line 92 "renderer.vala"
-			dx = edge->dest->x - edge->orig->x - (edge->orig->w / 1.3) + edge->dest->w / 1.3;
+			dx = ((edge->dest->x - edge->orig->x) - (edge->orig->w / 1.3)) + (edge->dest->w / 1.3);
 			/*-edge.orig.x;*/
 #line 93 "renderer.vala"
-			dy = edge->dest->y - edge->orig->y - oh;
+			dy = (edge->dest->y - edge->orig->y) - oh;
 			/* or 80 or so depending if > or < ???*/
 			ox = dx;
 			/*if (ox == 0){ ox = 150; }
@@ -130,10 +131,19 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 #line 97 "renderer.vala"
 			if (grava_graph_selected == edge->orig) {
 #line 98 "renderer.vala"
-				cairo_set_line_width (ctx, ((double) (6)));
+				cairo_set_line_width (ctx, (double) 6);
+			}
+			_tmp0 = 0;
+#line 99 "renderer.vala"
+			if ((ox > 0)) {
+#line 99 "renderer.vala"
+				_tmp0 = 200;
+			} else {
+#line 99 "renderer.vala"
+				_tmp0 = -200;
 			}
 #line 99 "renderer.vala"
-			cairo_curve_to (ctx, dx, ((double) (100)), ox, ((double) (((ox > 0) ? 200 : -200))), dx, dy);
+			cairo_curve_to (ctx, dx, (double) 100, ox, (double) _tmp0, dx, dy);
 		}
 	}
 	/*ctx.stroke();*/
@@ -142,7 +152,7 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 #line 103 "renderer.vala"
 	cairo_restore (ctx);
 #line 104 "renderer.vala"
-	cairo_set_source_rgba (ctx, 0.6, 0.6, 0.6, ((double) (1)));
+	cairo_set_source_rgba (ctx, 0.6, 0.6, 0.6, (double) 1);
 }
 
 
@@ -156,7 +166,7 @@ void grava_renderer_set_color (cairo_t* ctx, GHashTable* ht) {
 	g_return_if_fail (ht != NULL);
 #line 110 "renderer.vala"
 	_tmp0 = NULL;
-	color = (_tmp0 = ((const char*) (g_hash_table_lookup (ht, "color"))), (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
+	color = (_tmp0 = (const char*) g_hash_table_lookup (ht, "color"), (_tmp0 == NULL) ? NULL : g_strdup (_tmp0));
 #line 111 "renderer.vala"
 	grava_renderer_set_color_str (ctx, color);
 	color = (g_free (color), NULL);
@@ -253,7 +263,7 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 159 "renderer.vala"
 	cairo_set_line_join (ctx, CAIRO_LINE_JOIN_ROUND);
 #line 160 "renderer.vala"
-	cairo_set_line_width (ctx, ((double) (1)));
+	cairo_set_line_width (ctx, (double) 1);
 #line 161 "renderer.vala"
 	cairo_translate (ctx, node->x, node->y);
 	/*ctx.set_source_rgb (1, 1, 1);*/
@@ -269,7 +279,7 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 172 "renderer.vala"
 	grava_renderer_set_color (ctx, node->data);
 #line 173 "renderer.vala"
-	grava_renderer_set_color_str (ctx, ((const char*) (g_hash_table_lookup (node->data, "bgcolor"))));
+	grava_renderer_set_color_str (ctx, (const char*) g_hash_table_lookup (node->data, "bgcolor"));
 #line 175 "renderer.vala"
 	if (node->has_body) {
 #line 176 "renderer.vala"
@@ -296,9 +306,9 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 	}
 	/* title rectangle */
 #line 190 "renderer.vala"
-	if (((const char*) (g_hash_table_lookup (node->data, "color"))) != NULL) {
+	if (((const char*) g_hash_table_lookup (node->data, "color")) != NULL) {
 #line 191 "renderer.vala"
-		grava_renderer_set_color_str (ctx, ((const char*) (g_hash_table_lookup (node->data, "color"))));
+		grava_renderer_set_color_str (ctx, (const char*) g_hash_table_lookup (node->data, "color"));
 	} else {
 #line 193 "renderer.vala"
 		if (g_slist_length (node->calls) == 1) {
@@ -308,7 +318,7 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 196 "renderer.vala"
 			if (g_slist_length (node->calls) > 0) {
 #line 197 "renderer.vala"
-				cairo_set_source_rgba (ctx, 0.3, 0.3, ((double) (1)), 0.7);
+				cairo_set_source_rgba (ctx, 0.3, 0.3, (double) 1, 0.7);
 			} else {
 #line 199 "renderer.vala"
 				cairo_set_source_rgba (ctx, 0.8, 0.8, 0.8, 0.8);
@@ -316,11 +326,11 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 		}
 	}
 #line 200 "renderer.vala"
-	grava_renderer_square (ctx, node->w, ((double) (15)));
+	grava_renderer_square (ctx, node->w, (double) 15);
 #line 201 "renderer.vala"
 	cairo_fill (ctx);
 #line 202 "renderer.vala"
-	grava_renderer_line (ctx, ((double) (0)), ((double) (15)), node->w, ((double) (0)));
+	grava_renderer_line (ctx, (double) 0, (double) 15, node->w, (double) 0);
 	/* draw minimize button */
 #line 205 "renderer.vala"
 	cairo_save (ctx);
@@ -328,9 +338,9 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 #line 207 "renderer.vala"
 	cairo_set_source_rgba (ctx, 0.6, 0.6, 0.6, 0.8);
 #line 208 "renderer.vala"
-	cairo_translate (ctx, node->w - 16, ((double) (0)));
+	cairo_translate (ctx, node->w - 16, (double) 0);
 #line 209 "renderer.vala"
-	grava_renderer_square (ctx, ((double) (16)), ((double) (16)));
+	grava_renderer_square (ctx, (double) 16, (double) 16);
 #line 210 "renderer.vala"
 	cairo_fill (ctx);
 #line 211 "renderer.vala"
@@ -339,14 +349,14 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 	cairo_select_font_face (ctx, "Sans Serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	/*Courier", */
 #line 216 "renderer.vala"
-	cairo_set_font_size (ctx, ((double) (10)));
+	cairo_set_font_size (ctx, (double) 10);
 	/* set label */
 #line 219 "renderer.vala"
 	cairo_set_source_rgb (ctx, 0.1, 0.1, 0.1);
 #line 220 "renderer.vala"
-	cairo_move_to (ctx, ((double) (5)), ((double) (10)));
+	cairo_move_to (ctx, (double) 5, (double) 10);
 #line 221 "renderer.vala"
-	cairo_show_text (ctx, ((const char*) (g_hash_table_lookup (node->data, "label"))));
+	cairo_show_text (ctx, (const char*) g_hash_table_lookup (node->data, "label"));
 	/* set body */
 #line 224 "renderer.vala"
 	if (node->has_body) {
@@ -356,29 +366,41 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 		y = 25;
 #line 226 "renderer.vala"
 		_tmp0 = NULL;
-		body = (_tmp0 = ((const char*) (g_hash_table_lookup (node->data, "body"))), (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
+		body = (_tmp0 = (const char*) g_hash_table_lookup (node->data, "body"), (_tmp0 == NULL) ? NULL : g_strdup (_tmp0));
 #line 227 "renderer.vala"
 		if (body != NULL) {
 			{
+				char** _tmp1;
 				char** str_collection;
 				int str_collection_length1;
-				char** str_it;
+				int str_it;
+				_tmp1 = NULL;
 #line 228 "renderer.vala"
-				str_collection = g_strsplit (body, "\n", 0);
-				str_collection_length1 = -1;
-				for (str_it = str_collection; *str_it != NULL; str_it = str_it + 1) {
-					const char* _tmp1;
+				str_collection = _tmp1 = g_strsplit (body, "\n", 0);
+				str_collection_length1 = _vala_array_length (_tmp1);
+				for (str_it = 0; str_it < _vala_array_length (_tmp1); str_it = str_it + 1) {
+					const char* _tmp3;
 					char* str;
-#line 716 "glib-2.0.vapi"
-					_tmp1 = NULL;
-					str = (_tmp1 = *str_it, (_tmp1 == NULL ? NULL : g_strdup (_tmp1)));
+#line 722 "glib-2.0.vapi"
+					_tmp3 = NULL;
+					str = (_tmp3 = str_collection[str_it], (_tmp3 == NULL) ? NULL : g_strdup (_tmp3));
 					{
+						gboolean _tmp2;
 #line 229 "renderer.vala"
 						y = y + (10);
 #line 230 "renderer.vala"
-						cairo_move_to (ctx, ((double) (5)), ((double) (y)));
+						cairo_move_to (ctx, (double) 5, (double) y);
+						_tmp2 = FALSE;
 #line 231 "renderer.vala"
-						if ((strstr (str, "call ") != NULL) || (strstr (str, "bl ") != NULL)) {
+						if ((strstr (str, "call ") != NULL)) {
+#line 231 "renderer.vala"
+							_tmp2 = TRUE;
+						} else {
+#line 232 "renderer.vala"
+							_tmp2 = (strstr (str, "bl ") != NULL);
+						}
+#line 231 "renderer.vala"
+						if (_tmp2) {
 #line 233 "renderer.vala"
 							grava_renderer_set_color_str (ctx, "blue");
 						} else {
@@ -409,7 +431,7 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 					}
 				}
 #line 228 "renderer.vala"
-				str_collection = (_vala_array_free (str_collection, str_collection_length1, ((GDestroyNotify) (g_free))), NULL);
+				str_collection = (_vala_array_free (str_collection, str_collection_length1, (GDestroyNotify) g_free), NULL);
 			}
 		}
 		/*set_color(ctx, node.data);
@@ -418,14 +440,14 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 		if (grava_graph_selected == node) {
 			/*ctx.set_source_rgba (1, 0.8, 0.0, 0.9);*/
 #line 252 "renderer.vala"
-			cairo_set_source_rgba (ctx, ((double) (0)), 0.0, 0.0, 1.0);
+			cairo_set_source_rgba (ctx, (double) 0, 0.0, 0.0, 1.0);
 #line 253 "renderer.vala"
-			cairo_set_line_width (ctx, ((double) (2)));
+			cairo_set_line_width (ctx, (double) 2);
 		} else {
 #line 255 "renderer.vala"
 			cairo_set_source_rgba (ctx, 0.2, 0.2, 0.2, 0.4);
 #line 256 "renderer.vala"
-			cairo_set_line_width (ctx, ((double) (1)));
+			cairo_set_line_width (ctx, (double) 1);
 		}
 #line 259 "renderer.vala"
 		if (node->shape == GRAVA_SHAPE_CIRCLE) {
@@ -446,16 +468,26 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 
 #line 269 "renderer.vala"
 void grava_renderer_circle (cairo_t* ctx, double w, double h) {
+	double _tmp0;
 #line 269 "renderer.vala"
 	g_return_if_fail (ctx != NULL);
 #line 270 "renderer.vala"
 	cairo_save (ctx);
 #line 271 "renderer.vala"
-	cairo_scale (ctx, ((double) (1)), h / w);
+	cairo_scale (ctx, (double) 1, h / w);
 #line 272 "renderer.vala"
 	cairo_move_to (ctx, w, h / 2.5);
+	_tmp0 = 0.0;
 #line 273 "renderer.vala"
-	cairo_arc (ctx, w / 2, h / 2.5, (((w < h) ? h : w)) * 0.7, ((double) (0)), 2 * G_PI);
+	if ((w < h)) {
+#line 273 "renderer.vala"
+		_tmp0 = h;
+	} else {
+#line 273 "renderer.vala"
+		_tmp0 = w;
+	}
+#line 273 "renderer.vala"
+	cairo_arc (ctx, w / 2, h / 2.5, (_tmp0) * 0.7, (double) 0, 2 * G_PI);
 #line 274 "renderer.vala"
 	cairo_restore (ctx);
 	/*ctx.arc(100,250, 50, 0, 2*Math.PI); //w/2, h/2.5, ((w<h)?h:w)*0.7, 0, 2*Math.PI);
@@ -474,13 +506,13 @@ void grava_renderer_square (cairo_t* ctx, double w, double h) {
 #line 284 "renderer.vala"
 	g_return_if_fail (ctx != NULL);
 #line 285 "renderer.vala"
-	cairo_move_to (ctx, ((double) (0)), ((double) (0)));
+	cairo_move_to (ctx, (double) 0, (double) 0);
 #line 286 "renderer.vala"
-	cairo_rel_line_to (ctx, w, ((double) (0)));
+	cairo_rel_line_to (ctx, w, (double) 0);
 #line 287 "renderer.vala"
-	cairo_rel_line_to (ctx, ((double) (0)), h);
+	cairo_rel_line_to (ctx, (double) 0, h);
 #line 288 "renderer.vala"
-	cairo_rel_line_to (ctx, -w, ((double) (0)));
+	cairo_rel_line_to (ctx, -w, (double) 0);
 #line 289 "renderer.vala"
 	cairo_close_path (ctx);
 }
@@ -502,7 +534,7 @@ void grava_renderer_line (cairo_t* ctx, double x, double y, double w, double h) 
 #line 23 "renderer.vala"
 GravaRenderer* grava_renderer_construct (GType object_type) {
 	GravaRenderer* self;
-	self = ((GravaRenderer*) (g_type_create_instance (object_type)));
+	self = (GravaRenderer*) g_type_create_instance (object_type);
 	return self;
 }
 
@@ -543,12 +575,13 @@ static gpointer grava_value_renderer_peek_pointer (const GValue* value) {
 static gchar* grava_value_renderer_collect_value (GValue* value, guint n_collect_values, GTypeCValue* collect_values, guint collect_flags) {
 	if (collect_values[0].v_pointer) {
 		GravaRenderer* object;
-		object = value->data[0].v_pointer;
+		object = collect_values[0].v_pointer;
 		if (object->parent_instance.g_class == NULL) {
 			return g_strconcat ("invalid unclassed object pointer for value type `", G_VALUE_TYPE_NAME (value), "'", NULL);
-		} else if (!g_value_type_compatible (G_OBJECT_TYPE (object), G_VALUE_TYPE (value))) {
-			return g_strconcat ("invalid object type `", G_OBJECT_TYPE (object), "' for value type `", G_VALUE_TYPE_NAME (value), "'", NULL);
+		} else if (!g_value_type_compatible (G_TYPE_FROM_INSTANCE (object), G_VALUE_TYPE (value))) {
+			return g_strconcat ("invalid object type `", g_type_name (G_TYPE_FROM_INSTANCE (object)), "' for value type `", G_VALUE_TYPE_NAME (value), "'", NULL);
 		}
+		value->data[0].v_pointer = grava_renderer_ref (object);
 	} else {
 		value->data[0].v_pointer = NULL;
 	}
@@ -560,6 +593,7 @@ static gchar* grava_value_renderer_lcopy_value (const GValue* value, guint n_col
 	GravaRenderer** object_p;
 	object_p = collect_values[0].v_pointer;
 	if (!object_p) {
+		return g_strdup_printf ("value location for `%s' passed as NULL", G_VALUE_TYPE_NAME (value));
 	}
 	if (!value->data[0].v_pointer) {
 		*object_p = NULL;
@@ -647,25 +681,33 @@ void grava_renderer_unref (gpointer instance) {
 	self = instance;
 	if (g_atomic_int_dec_and_test (&self->ref_count)) {
 		GRAVA_RENDERER_GET_CLASS (self)->finalize (self);
-		g_type_free_instance (((GTypeInstance *) (self)));
+		g_type_free_instance ((GTypeInstance *) self);
 	}
 }
 
 
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func) {
-	if (array != NULL && destroy_func != NULL) {
+	if ((array != NULL) && (destroy_func != NULL)) {
 		int i;
-		if (array_length >= 0)
 		for (i = 0; i < array_length; i = i + 1) {
-			if (((gpointer*) (array))[i] != NULL)
-			destroy_func (((gpointer*) (array))[i]);
-		}
-		else
-		for (i = 0; ((gpointer*) (array))[i] != NULL; i = i + 1) {
-			destroy_func (((gpointer*) (array))[i]);
+			if (((gpointer*) array)[i] != NULL) {
+				destroy_func (((gpointer*) array)[i]);
+			}
 		}
 	}
 	g_free (array);
+}
+
+
+static gint _vala_array_length (gpointer array) {
+	int length;
+	length = 0;
+	if (array) {
+		while (((gpointer*) array)[length]) {
+			length++;
+		}
+	}
+	return length;
 }
 
 
@@ -674,7 +716,7 @@ static int _vala_strcmp0 (const char * str1, const char * str2) {
 		return -(str1 != str2);
 	}
 	if (str2 == NULL) {
-		return (str1 != str2);
+		return str1 != str2;
 	}
 	return strcmp (str1, str2);
 }

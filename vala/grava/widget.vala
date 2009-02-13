@@ -455,12 +455,14 @@ load_graph_at("$$");
 	private double offx = 0;
 	private double offy = 0;
 
+/*
 	private double abs(double x)
 	{
 		if (x>0)
 			return x;
 		return -x;
 	}
+*/
 
 	Node on = null;
 	private bool button_release(Gtk.DrawingArea da, Gdk.EventButton em)
@@ -516,7 +518,6 @@ load_graph_at("$$");
 
 	private bool expose (Gtk.DrawingArea w, Gdk.EventExpose ev)
 	{
-		DrawingArea da = (DrawingArea)w;
 		draw();
 		return true;
 	}

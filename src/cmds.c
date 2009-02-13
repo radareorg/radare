@@ -1437,16 +1437,18 @@ CMD_DECL(undowrite)
 		undo_write_set_all(1);
 		break;
 	case 'w':
-		input = input +1;
+		input = input + 1;
+	case '*':
+		undo_write_list(1);
+		break;
 	case ' ':
 	case '\0':
 		if (input[0] == '\0')
-			undo_write_list();
+			undo_write_list(0);
 		else {
 			if (input[1]=='-')
 				undo_write_set(atoi(input+2), 1);
-			else
-				undo_write_set(atoi(input+1), 0);
+			else undo_write_set(atoi(input+1), 0);
 		}
 		break;
 	case '?':
@@ -1456,6 +1458,7 @@ CMD_DECL(undowrite)
 		" u 3   ; undo write change at index 3\n"
 		" u -3  ; redo write change at index 3\n"
 		" u     ; list all write changes\n"
+		" u*    ; list all write changes (in radare commands)\n"
 		" u-    ; clear write history\n"
 		" ua    ; undo all write changes\n"
 		" ur    ; redo all write changes\n");

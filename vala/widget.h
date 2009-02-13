@@ -52,7 +52,7 @@ struct _GravaWidgetClass {
 };
 
 
-#define GRAVA_WIDGET_S ((double) (96))
+#define GRAVA_WIDGET_S (double) 96
 GtkWidget* grava_widget_get_widget (GravaWidget* self);
 void grava_widget_create_widgets (GravaWidget* self);
 void grava_widget_do_popup_generic (GravaWidget* self);
