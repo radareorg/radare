@@ -32,9 +32,11 @@
 	#endif
 
 #include "plugin.h"
-#include "main.h"
-#include <radare.h>
+#undef _GNU_SOURCE
+//#include "main.h"
 #include <utils.h>
+#undef _GNU_SOURCE
+//#include <radare.h>
 #include <EXTERN.h>
 #include <XSUB.h>
 #include <perl.h>
@@ -126,7 +128,8 @@ void eperl_destroy()
 void perl_hack_cmd(char *input)
 {
 	char str[1025];
-	char *ptr ;
+	char *ptr;
+	char *ptrarr[3];
 	static int perl_is_init=0;
 	rs = radare_plugin.resolve("radare_cmd_str");
 
@@ -135,8 +138,8 @@ void perl_hack_cmd(char *input)
 		return;
 	}
 
-	if (!perl_is_init)
-		eperl_init();
+	// Do not init all the frickin time?
+	eperl_init();
 
 	if (my_perl == NULL) {
 		printf("Cannot init perl module\n");
@@ -144,15 +147,24 @@ void perl_hack_cmd(char *input)
 	}
 	perl_is_init = 1;
 
-	printf("perl> ");
-	fflush(stdout);
-	fgets(str, 1023, stdin);
-	ptr = strdup(str);
-
-	perl_parse(my_perl, xs_init, 1, ptr, (char **)NULL);
-	perl_run(my_perl);
+	/* prepare array */
+	{
+		char *perl_embed[] = { "", "-e", "0" };
+		perl_parse(my_perl, xs_init, 3, perl_embed, (char **)NULL);
+	}
+	while(1) {
+		char *args[]={ NULL };
+		printf("perl> ");
+		fflush(stdout);
+		fgets(str, 1023, stdin);
+		if (feof(stdin))
+			break;
+		str[strlen(str)-1]='\0';
+	 	if (!strcmp(str, "q"))
+			break;
+		eval_pv(str, TRUE);
+	}
 	eperl_destroy();
-	free(str);
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

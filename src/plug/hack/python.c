@@ -116,7 +116,7 @@ static PyObject * Radare_cmd(Radare* self, PyObject *args)
 	return result;
 }
 
-	static int
+static int
 Radare_init(Radare *self, PyObject *args, PyObject *kwds)
 {
 	PyObject *first=NULL, *last=NULL, *tmp;

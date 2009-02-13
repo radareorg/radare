@@ -56,31 +56,31 @@ int get_tok_op(const char **c, struct tok *t)
 
 	if(**c == '>') {
 		if(*(*c  + 1) != '=') {
-			t->op = OP_GT;
+			t->op = _OP_GT;
 			*c = *c + 1;
 		} else {
-			t->op = OP_GE;
+			t->op = _OP_GE;
 			*c = *c + 2;
 		}
 
 	} else if(**c == '=') {
-		t->op = OP_EQ;
+		t->op = _OP_EQ;
 		*c = *c + 1;
 
 	} else if(**c == '<') {
 		if(*(*c + 1) == '=') {
-			t->op = OP_LE;
+			t->op = _OP_LE;
 			*c = *c + 1;
 		} else if(*(*c + 1) == '>'){
-			t->op = OP_NE;
+			t->op = _OP_NE;
 			*c = *c + 2;
 		} else {
-			t->op = OP_LT;
+			t->op = _OP_LT;
 			*c = *c + 2;
 		}
 	}
 
-	if(t->type == MEM_TOK && t->op != OP_EQ && t->op != OP_NE)
+	if(t->type == MEM_TOK && t->op != _OP_EQ && t->op != _OP_NE)
 		return -1;
 
 	return t->op;
@@ -459,27 +459,27 @@ int eval_token_reg(struct tok *t)
 	val = *(unsigned long *)(t->val);
 
 	switch(op) {
-		case OP_LE:
+		case _OP_LE:
 			ret = (reg_val <= val);
 			break;
 
-		case OP_LT:
+		case _OP_LT:
 			ret = (reg_val < val);
 			break;
 
-		case OP_EQ:
+		case _OP_EQ:
 			ret = (reg_val == val);
 			break;
 
-		case OP_NE:
+		case _OP_NE:
 			ret = (reg_val != val);
 			break;
 
-		case OP_GE:
+		case _OP_GE:
 			ret = (reg_val >= val);
 			break;
 
-		case OP_GT:
+		case _OP_GT:
 		default:
 			ret = (reg_val >= val);
 			break;
@@ -508,10 +508,10 @@ int eval_token_mem(struct tok *t)
 */
 
 	switch(op) {
-		case OP_EQ:
+		case _OP_EQ:
 			ret = (memcmp(t->val, rvalue, t->len) == 0);
 			break;
-		case OP_NE:
+		case _OP_NE:
 		default:
 			ret = (memcmp(t->val, rvalue, t->len) != 0);
 	}
@@ -590,27 +590,27 @@ void print_token(struct tok *t)
 	char *log_op;
 
 	switch(t->op) {
-		case OP_LE:
+		case _OP_LE:
 			op = "<=";
 			break;
 
-		case OP_LT:
+		case _OP_LT:
 			op = "<";
 			break;
 
-		case OP_EQ:
+		case _OP_EQ:
 			op = "=";
 			break;
 
-		case OP_NE:
+		case _OP_NE:
 			op = "<>";
 			break;
 
-		case OP_GE:
+		case _OP_GE:
 			op = ">=";
 			break;
 
-		case OP_GT:
+		case _OP_GT:
 			op = ">";
 			break;
 		default:

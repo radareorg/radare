@@ -26,6 +26,7 @@
 #endif
 
 #define _FILE_OFFSET_BITS 64
+#undef _GNU_SOURCE
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>

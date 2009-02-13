@@ -28,12 +28,12 @@ struct tok {
 
 /* arithmetical operations */
 enum {
-	OP_LT = 1,
-	OP_LE,
-	OP_EQ,
-	OP_NE,
-	OP_GE,
-	OP_GT
+	_OP_LT = 1,
+	_OP_LE,
+	_OP_EQ,
+	_OP_NE,
+	_OP_GE,
+	_OP_GT
 };
 
 /* logical operations */
