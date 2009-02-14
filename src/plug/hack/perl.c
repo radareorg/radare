@@ -152,6 +152,14 @@ void perl_hack_cmd(char *input)
 		char *perl_embed[] = { "", "-e", "0" };
 		perl_parse(my_perl, xs_init, 3, perl_embed, (char **)NULL);
 	}
+
+	if (input && input[0]!='\0') {
+		char *perl_embed[] = { "", input, 0 };
+		perl_parse(my_perl, xs_init, 2, perl_embed, (char **)NULL);
+		//call_argv(input, G_DISCARD | G_NOARGS, args);
+		perl_run(my_perl);
+		return;
+	}
 	while(1) {
 		char *args[]={ NULL };
 		printf("perl> ");

@@ -36,14 +36,14 @@ scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
 
 python.${SO}:
-	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO}
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LDFLAGS} -o python.${SO} 2>/dev/null
 
 perl.${SO}:
-	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO}
+	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LDFLAGS} -o perl.${SO} 2>/dev/null
 
 ruby.${SO}:
-	-ruby mkruby.rb
-	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO}
+	-ruby mkruby.rb 2>/dev/null
+	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO} 
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}:
