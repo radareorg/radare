@@ -37,13 +37,13 @@ CFLAGS+=-DSYSPROXY
 #CFLAGS+=-DHAVE_LIB_READLINE=${HAVE_LIB_READLINE} -DLIBEXECDIR=\"${LIBEXECDIR}\"
 #CFLAGS+=-DSIZEOF_OFF_T=${SIZEOF_OFF_T} -DDEBUGGER=${DEBUGGER} -DTARGET=\"${TARGET}\" -DRADARE_CORE -DHAVE_LIB_EWF=${HAVE_LIB_EWF}
 CFLAGS+=-DRADARE_CORE
-LDFLAGS+=${DL_LIBS} ${OSOLIBS}
+LIBS+=${DL_LIBS} ${OSOLIBS}
 
 OBJ+=grava.o
 ##VALA##
 ##HAVE_GUI##
 CFLAGS+=-I../vala/ `pkg-config --cflags gtk+-2.0` -DHAVE_GUI=1
-LDFLAGS+=`pkg-config --libs gtk+-2.0`
+LIBS+=`pkg-config --libs gtk+-2.0`
 OBJ2+=../vala/*.o
 TARGETS+=valagrava
 ##HAVE_GUI##
@@ -94,12 +94,12 @@ udis86:
 
 radare${BINSFX}: ${OBJ} ${OBJ2} main.o
 	${E} 'Linking radare'
-	${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${W32LIBS}
+	${Q}${CC} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS} ${W32LIBS}
 
 gui: ${OBJ}
 	${E} 'Compiling Vala GUI'
 	cd ../vala && ${MAKE} c
-	-${Q}${CC} ${RADARE_LDFLAGS} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${W32LIBS} -lvte
+	-${Q}${CC} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS}  ${W32LIBS} -lvte
 
 lsbstego${BINSFX}: lsbstego.o
 	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}
@@ -127,12 +127,12 @@ _rahash:
 
 rax${BINSFX}: rax.o
 	${E} 'Linking rax'
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o rax${BINSFX} rax.o
+	${Q}${CC} ${CFLAGS} rax.o ${LIBS} -o rax${BINSFX}
 	@#ln -fs radare rax # ???
 
 xrefs${BINSFX}: xrefs.o
 	${E} 'Linking xrefs'
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} -o xrefs${BINSFX} xrefs.o
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} xrefs.o ${LIBS} -o xrefs${BINSFX}
 
 clean:
 	${E} 'Cleaning src'

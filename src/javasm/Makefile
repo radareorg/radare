@@ -7,7 +7,7 @@ all: ${BIN}
 	@echo done
 
 ${BIN}: ${OBJ}
-	${CC} ${OBJ} ${LDFLAGS} -o ${BIN}
+	${CC} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
 
 clean:
 	-rm -f ${BIN} ${OBJ}

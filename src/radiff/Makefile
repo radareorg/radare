@@ -8,13 +8,13 @@ CFLAGS+=-I..
 
 
 all: ${OBJ} _bdiff rdbdiff$(BINSFX)
-	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} -o ${BIN}
+	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
 
 _bdiff:
 	-cd bdiff && ${MAKE} all
 
 rdbdiff${BINSFX}: ${OBJ_RDB}
-	${CC} ${LDFLAGS} -g ${OBJ_RDB} -o rdbdiff${BINSFX}
+	${CC} ${LDFLAGS} -g ${OBJ_RDB} ${LIBS} -o rdbdiff${BINSFX}
 
 clean:
 	cd bdiff && ${MAKE} clean

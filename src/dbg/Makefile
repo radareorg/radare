@@ -7,12 +7,12 @@ LIB=ptrace.${SHARED_EXT}
 #LIBPRE=libps2fd.so
 
 #all: ptrace.o ${OBJ}
-#	${CC} ${LDFLAGS} ptrace.o ${OBJ} -shared -o ${LIB}
+#	${CC} ${LDFLAGS} ptrace.o ${OBJ} ${LIBS} -shared -o ${LIB}
 
 all: ${OBJ}
 	@-${Q}echo [src/dbg] debugger layer build done
 
-#${CC} ${LDFLAGS} ${OBJ} ${SHARED_CFLAGS} -o ${LIB}
+#${CC} ${LDFLAGS} ${OBJ} ${LIBS} ${SHARED_CFLAGS} -o ${LIB}
 
 clean:
 	${E} '[src/dbg] Cleaning ...'

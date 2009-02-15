@@ -27,11 +27,11 @@ IFEQ WINDOWS 1 ; {
 (( Check for the GNU readline library ))
 ARG_WITHOUT READLINE readline disables the readline support ;
 CHKFNC readline rl_completion_matches
-RADARE_LDFLAGS = '' ;
+RADARE_LIBS = '' ;
 HAVE_LIB_READLINE = 0 ;
 IF HAVE_RL_COMPLETION_MATCHES {
 	HAVE_LIB_READLINE = 1 ;
-        RADARE_LDFLAGS = -lreadline ;
+        RADARE_LIBS = -lreadline ;
 }
 IFNOT READLINE { HAVE_LIB_READLINE = 0 ; }
 
