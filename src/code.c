@@ -214,14 +214,17 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 			strcpy(string, "???");
 		break;
 	case ARCH_M68K: {
+		m68k_word bof[4];
+		m68k_word iaddr = (m68k_word)seek;
 		char opcode[128];
 		char operands[128];
-		struct DisasmPara_PPC dp;
+		struct DisasmPara_68k dp;
 		/* initialize DisasmPara */
+		memcpy(bof, b, 4);
 		dp.opcode = opcode;
 		dp.operands = operands;
-		dp.iaddr = seek; //config.vaddr + config.seek + i;
-		dp.instr = b; //config.block + i;
+		dp.iaddr = &iaddr; //config.vaddr + config.seek + i;
+		dp.instr = bof; //config.block + i;
 		// XXX read vda68k: this fun returns something... size of opcode?
 		M68k_Disassemble(&dp);
 		sprintf(string, "%s %s", opcode, operands);
