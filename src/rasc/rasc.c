@@ -194,7 +194,7 @@ int print_shellcode()
 			output[i+A+1] = '\x48'; // dec eax
 		}
 	}
-	for(++E,i=0,j='A';i<E;i++,j++) {
+	for(i=0,j='A';i<E;i++,j++) {
 		if (j=='\n'||j=='\r')
 			j++;
 		output[i*4+A+N] = (unsigned char)(j%256);
