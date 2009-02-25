@@ -17,68 +17,21 @@
  */
 
 #include "chart.h"
-#include <stdlib.h>
-#include <string.h>
 
-
-#define GRAVA_TYPE_CHART (grava_chart_get_type ())
-#define GRAVA_CHART(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GRAVA_TYPE_CHART, GravaChart))
-#define GRAVA_CHART_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GRAVA_TYPE_CHART, GravaChartClass))
-#define GRAVA_IS_CHART(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GRAVA_TYPE_CHART))
-#define GRAVA_IS_CHART_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GRAVA_TYPE_CHART))
-#define GRAVA_CHART_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GRAVA_TYPE_CHART, GravaChartClass))
-
-typedef struct _GravaChart GravaChart;
-typedef struct _GravaChartClass GravaChartClass;
-typedef struct _GravaChartPrivate GravaChartPrivate;
-
-/*
-Charting api for Vala
-=====================
- - integrated with grava
- - support for colors
- - support for:
-   - bars
-   - 2D dot space
-   - 2D lines
- Chart class
-   setColor("#ff0000");
-   setLimits(0,5000);
-   setBar("code", 100);
-   setColumn("food", 30);
-   setPoint(x, y, "#ff0000")
-*/
-struct _GravaChart {
-	GObject parent_instance;
-	GravaChartPrivate * priv;
-};
-
-struct _GravaChartClass {
-	GObjectClass parent_class;
-};
 
 
 
 enum  {
 	GRAVA_CHART_DUMMY_PROPERTY
 };
-static void grava_chart_setColor (GravaChart* self, const char* color);
-static void grava_chart_setLimits (GravaChart* self, gint from, gint to);
-static void grava_chart_setBar (GravaChart* self, const char* name, gint val);
-static void grava_chart_setColumn (GravaChart* self, const char* name, gint val);
-static void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* color);
-static void grava_chart_draw (GravaChart* self);
-static GravaChart* grava_chart_construct (GType object_type);
-static GravaChart* grava_chart_new (void);
 static GObject * grava_chart_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer grava_chart_parent_class = NULL;
-static GType grava_chart_get_type (void);
 
 
 
 /*bars = new SList<Bar>();*/
 #line 48 "chart.vala"
-static void grava_chart_setColor (GravaChart* self, const char* color) {
+void grava_chart_setColor (GravaChart* self, const char* color) {
 #line 48 "chart.vala"
 	g_return_if_fail (self != NULL);
 #line 48 "chart.vala"
@@ -87,14 +40,14 @@ static void grava_chart_setColor (GravaChart* self, const char* color) {
 
 
 #line 52 "chart.vala"
-static void grava_chart_setLimits (GravaChart* self, gint from, gint to) {
+void grava_chart_setLimits (GravaChart* self, gint from, gint to) {
 #line 52 "chart.vala"
 	g_return_if_fail (self != NULL);
 }
 
 
 #line 56 "chart.vala"
-static void grava_chart_setBar (GravaChart* self, const char* name, gint val) {
+void grava_chart_setBar (GravaChart* self, const char* name, gint val) {
 #line 56 "chart.vala"
 	g_return_if_fail (self != NULL);
 #line 56 "chart.vala"
@@ -103,7 +56,7 @@ static void grava_chart_setBar (GravaChart* self, const char* name, gint val) {
 
 
 #line 60 "chart.vala"
-static void grava_chart_setColumn (GravaChart* self, const char* name, gint val) {
+void grava_chart_setColumn (GravaChart* self, const char* name, gint val) {
 #line 60 "chart.vala"
 	g_return_if_fail (self != NULL);
 #line 60 "chart.vala"
@@ -112,7 +65,7 @@ static void grava_chart_setColumn (GravaChart* self, const char* name, gint val)
 
 
 #line 64 "chart.vala"
-static void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* color) {
+void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* color) {
 #line 64 "chart.vala"
 	g_return_if_fail (self != NULL);
 #line 64 "chart.vala"
@@ -121,7 +74,7 @@ static void grava_chart_setPoint (GravaChart* self, gint x, gint y, const char* 
 
 
 #line 68 "chart.vala"
-static void grava_chart_draw (GravaChart* self) {
+void grava_chart_draw (GravaChart* self) {
 #line 68 "chart.vala"
 	g_return_if_fail (self != NULL);
 }
@@ -144,7 +97,7 @@ Charting api for Vala
    setPoint(x, y, "#ff0000")
 */
 #line 39 "chart.vala"
-static GravaChart* grava_chart_construct (GType object_type) {
+GravaChart* grava_chart_construct (GType object_type) {
 	GravaChart * self;
 	self = g_object_newv (object_type, 0, NULL);
 	return self;
@@ -152,7 +105,7 @@ static GravaChart* grava_chart_construct (GType object_type) {
 
 
 #line 39 "chart.vala"
-static GravaChart* grava_chart_new (void) {
+GravaChart* grava_chart_new (void) {
 #line 39 "chart.vala"
 	return grava_chart_construct (GRAVA_TYPE_CHART);
 }
@@ -185,7 +138,7 @@ static void grava_chart_instance_init (GravaChart * self) {
 }
 
 
-static GType grava_chart_get_type (void) {
+GType grava_chart_get_type (void) {
 	static GType grava_chart_type_id = 0;
 	if (grava_chart_type_id == 0) {
 		static const GTypeInfo g_define_type_info = { sizeof (GravaChartClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) grava_chart_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (GravaChart), 0, (GInstanceInitFunc) grava_chart_instance_init, NULL };

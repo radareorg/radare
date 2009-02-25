@@ -117,6 +117,7 @@ command_t commands[] = {
 	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
 	COMMAND('c', "[f file]|[hex]", "cmp      compare block with given data", compare),
 	COMMAND('C', "[op] [arg]",     "Code     Comments, data type conversions, ..", code),
+	COMMAND('d', "[rsc..]",        "debug    Debug command (backport from r2)", dbg),
 	COMMAND('e', "[m?] key=value", "eval     evaluates a configuration expression", config_eval),
 	COMMAND('f', "[crogd|-][name]","flag     flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "Hack     performs a hack", hack),
@@ -651,6 +652,29 @@ CMD_DECL(project)
 		break;
 	}
 
+	return 0;
+}
+
+CMD_DECL(dbg)
+{
+	switch(input[0]) {
+	case 'r':
+		return radare_cmd("!regs", 0);
+	case 's':
+		return radare_cmd("!step", 0);
+	case 'S':
+		return radare_cmd("!stepo", 0);
+	case 'c':
+		return radare_cmd("!cont", 0);
+	default:
+		cons_printf(
+		"Usage: d[rsc] [arg]\n"
+		" dr   ; show registers\n"
+		" dc   ; continue\n"
+		" ds   ; step into\n"
+		" dS   ; step over\n");
+		break;
+	}
 	return 0;
 }
 

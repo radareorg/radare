@@ -91,19 +91,23 @@ create_environ() {
 : ${INFODIR:=${SPREFIX}/info}
 : ${MANDIR:=${SPREFIX}/man}
 : ${LOCALSTATEDIR:=${SPREFIX}/var}
-: ${INSTALL:=/usr/bin/install}
+for A in `echo ${PATH} | sed -e 's,:, ,g'` ; do
+if [ -e $A/install ]; then
+: ${INSTALL:=$A/install}
+fi
+done
 : ${INSTALL_DIR:=${INSTALL} -d}
 : ${INSTALL_DATA:=${INSTALL} -m 644}
 : ${INSTALL_SCRIPT:=${INSTALL} -m 755}
 : ${INSTALL_PROGRAM:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='1.2' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='1.2.2' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-1.2 to adapt to many kinds of systems.
+'configure' configures radare-1.2.2 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -141,8 +145,7 @@ System types:
   --target=TARGET        configure for building compilers for TARGET [HOST]
 EOF2
 
-printf "
-Optional Features:
+printf "\nOptional Features:
   --without-readline     disables the readline support 
   --without-usb-sniffer  disables the build of the libusb sniffer 
   --without-debugger     disables the debugger layer 
@@ -152,10 +155,8 @@ Optional Features:
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
   --with-maemo           build hildon interface 
-  --without-gui          radare without the gtk frontend 
-"
-printf "
-Some influential environment variables:
+  --without-gui          radare without the gtk frontend \n"
+printf "\nSome influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -164,10 +165,8 @@ Some influential environment variables:
               headers in a nonstandard directory <include dir>
   CPP         C preprocessor
   RUBY        Ruby interpreter path or binary name.
-  LUA         path to lua interpreter
-"
-printf "
-Report bugs to: pancake <pancake@youterm.com>"
+  LUA         path to lua interpreter\n"
+printf "\nReport bugs to: pancake <pancake@youterm.com>"
 echo ""
 exit 0
 }
@@ -181,7 +180,7 @@ take_environ() {
 }
 
 show_version() {
-echo "radare-1.2 configuration script done with acr v0.7.
+echo "radare-1.2.2 configuration script done with acr v0.7.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -199,7 +198,7 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   1.2"
+echo "VERSION:   1.2.2"
 echo "LANGS:     c ruby python lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.5.0"
 echo "OPTIONAL:  libewf"
@@ -361,7 +360,7 @@ if [ "$WINDOWS" = "1" ]; then
 export SHARED_EXT="dll"; fi
 printf "checking function rl_completion_matches() in readline... "
 echo "main(){ rl_completion_matches(0); }" > test.c
-${CC} ${CFLAGS} ${LDFLAGS} test.c -lreadline >/dev/null 2>&1
+${CC} ${CFLAGS} ${LDFLAGS} -lreadline test.c >/dev/null 2>&1
 if [ $? = 0 ]; then
 	echo yes ; HAVE_RL_COMPLETION_MATCHES=1
 else

@@ -33,7 +33,11 @@
 
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
+#if __darwin__
+FILE *cons_stdin_fd = (FILE *)stdin;
+#else
 FILE *cons_stdin_fd = (FILE *)&stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
+#endif
 static unsigned int cons_buffer_sz = 0;
 static int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
