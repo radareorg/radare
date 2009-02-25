@@ -248,21 +248,21 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 				case GRAVA_WIDGET_WHEEL_ACTION_PAN:
 				{
 #line 103 "widget.vala"
-					self->graph->pany = self->graph->pany + (64);
+					self->graph->pany = self->graph->pany + ((double) 64);
 #line 104 "widget.vala"
 					break;
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ZOOM:
 				{
 #line 106 "widget.vala"
-					self->graph->zoom = self->graph->zoom + (GRAVA_WIDGET_ZOOM_FACTOR);
+					self->graph->zoom = self->graph->zoom + GRAVA_WIDGET_ZOOM_FACTOR;
 #line 107 "widget.vala"
 					break;
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ROTATE:
 				{
 #line 109 "widget.vala"
-					self->graph->angle = self->graph->angle - (0.04);
+					self->graph->angle = self->graph->angle - 0.04;
 #line 110 "widget.vala"
 					break;
 				}
@@ -277,21 +277,21 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 				case GRAVA_WIDGET_WHEEL_ACTION_PAN:
 				{
 #line 116 "widget.vala"
-					self->graph->pany = self->graph->pany - (64);
+					self->graph->pany = self->graph->pany - ((double) 64);
 #line 117 "widget.vala"
 					break;
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ZOOM:
 				{
 #line 119 "widget.vala"
-					self->graph->zoom = self->graph->zoom - (GRAVA_WIDGET_ZOOM_FACTOR);
+					self->graph->zoom = self->graph->zoom - GRAVA_WIDGET_ZOOM_FACTOR;
 #line 120 "widget.vala"
 					break;
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ROTATE:
 				{
 #line 122 "widget.vala"
-					self->graph->angle = self->graph->angle + (0.04);
+					self->graph->angle = self->graph->angle + 0.04;
 #line 123 "widget.vala"
 					break;
 				}
@@ -370,7 +370,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 		{
 			char* _tmp2;
 			char* _tmp1;
-#line 711 "glib-2.0.vapi"
+#line 811 "glib-2.0.vapi"
 			_tmp2 = NULL;
 #line 61 "node.vala"
 			_tmp1 = NULL;
@@ -606,28 +606,28 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 		case '+':
 		{
 #line 284 "widget.vala"
-			self->graph->zoom = self->graph->zoom + (GRAVA_WIDGET_ZOOM_FACTOR);
+			self->graph->zoom = self->graph->zoom + GRAVA_WIDGET_ZOOM_FACTOR;
 #line 285 "widget.vala"
 			break;
 		}
 		case '-':
 		{
 #line 287 "widget.vala"
-			self->graph->zoom = self->graph->zoom - (GRAVA_WIDGET_ZOOM_FACTOR);
+			self->graph->zoom = self->graph->zoom - GRAVA_WIDGET_ZOOM_FACTOR;
 #line 288 "widget.vala"
 			break;
 		}
 		case '*':
 		{
 #line 290 "widget.vala"
-			self->graph->angle = self->graph->angle + (0.05);
+			self->graph->angle = self->graph->angle + 0.05;
 #line 291 "widget.vala"
 			break;
 		}
 		case '/':
 		{
 #line 293 "widget.vala"
-			self->graph->angle = self->graph->angle - (0.05);
+			self->graph->angle = self->graph->angle - 0.05;
 #line 294 "widget.vala"
 			break;
 		}
@@ -844,7 +844,7 @@ static void __lambda3 (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_return_if_fail (imi != NULL);
 	/*stdout.printf("FUCKME: \n"+imi.submenu_placement());*/
 #line 410 "widget.vala"
-	g_signal_emit_by_name (self, "load-graph-at", gtk_label_get_text ((GTK_LABEL (((GtkBin*) imi)->child))));
+	g_signal_emit_by_name (self, "load-graph-at", gtk_label_get_text (GTK_LABEL (((GtkBin*) imi)->child)));
 }
 
 
@@ -982,9 +982,9 @@ static gboolean grava_widget_button_press (GravaWidget* self, GtkDrawingArea* da
 		gboolean _tmp1;
 		_tmp1 = FALSE;
 #line 435 "widget.vala"
-		if (((((*eb).y - (16 * self->graph->zoom)) - self->graph->pany) < (n->y * self->graph->zoom))) {
+		if ((((*eb).y - (16 * self->graph->zoom)) - self->graph->pany) < (n->y * self->graph->zoom)) {
 #line 436 "widget.vala"
-			_tmp1 = (((*eb).x - self->graph->panx) > (((n->x + n->w) - (16 * self->graph->zoom)) * self->graph->zoom));
+			_tmp1 = ((*eb).x - self->graph->panx) > (((n->x + n->w) - (16 * self->graph->zoom)) * self->graph->zoom);
 		} else {
 #line 435 "widget.vala"
 			_tmp1 = FALSE;
@@ -1050,9 +1050,9 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 			GravaNode* _tmp2;
 			GravaNode* _tmp1;
 #line 483 "widget.vala"
-			self->priv->offx = ((*em).x - n->x);
+			self->priv->offx = (*em).x - n->x;
 #line 484 "widget.vala"
-			self->priv->offy = ((*em).y - n->y);
+			self->priv->offy = (*em).y - n->y;
 			_tmp2 = NULL;
 #line 485 "widget.vala"
 			_tmp1 = NULL;
@@ -1060,13 +1060,13 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 			self->priv->on = (_tmp2 = (_tmp1 = n, (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), (self->priv->on == NULL) ? NULL : (self->priv->on = (g_object_unref (self->priv->on), NULL)), _tmp2);
 		}
 #line 487 "widget.vala"
-		n->x = ((*em).x) - (self->priv->offx);
+		n->x = (*em).x - self->priv->offx;
 #line 488 "widget.vala"
-		n->y = ((*em).y) - (self->priv->offy);
+		n->y = (*em).y - self->priv->offy;
 #line 490 "widget.vala"
-		self->priv->offx = ((*em).x - n->x);
+		self->priv->offx = (*em).x - n->x;
 #line 491 "widget.vala"
-		self->priv->offy = ((*em).y - n->y);
+		self->priv->offy = (*em).y - n->y;
 		/*offx += (offx/graph.zoom);
 		offy += (offy/graph.zoom);
 		n.x += (offx-(offx*graph.zoom));
@@ -1081,9 +1081,9 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 		gboolean _tmp3;
 		_tmp3 = FALSE;
 #line 504 "widget.vala"
-		if ((self->priv->opanx != 0)) {
+		if (self->priv->opanx != 0) {
 #line 504 "widget.vala"
-			_tmp3 = (self->priv->opany != 0);
+			_tmp3 = self->priv->opany != 0;
 		} else {
 #line 504 "widget.vala"
 			_tmp3 = FALSE;
@@ -1096,10 +1096,10 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 			x = (*em).x - self->priv->opanx;
 			y = (*em).y - self->priv->opany;
 #line 507 "widget.vala"
-			self->graph->panx = self->graph->panx + (x);
+			self->graph->panx = self->graph->panx + x;
 			/**0.8;*/
 #line 508 "widget.vala"
-			self->graph->pany = self->graph->pany + (y);
+			self->graph->pany = self->graph->pany + y;
 			/**0.8;
 			graph.draw(Gdk.cairo_create(da.window));*/
 #line 510 "widget.vala"

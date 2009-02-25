@@ -416,7 +416,7 @@ GSList* grava_graph_outer_nodes (GravaGraph* self, GravaNode* n) {
 #line 192 "graph.vala"
 				if (edge->visible) {
 #line 192 "graph.vala"
-					_tmp0 = (edge->orig == n);
+					_tmp0 = edge->orig == n;
 				} else {
 #line 192 "graph.vala"
 					_tmp0 = FALSE;
@@ -460,7 +460,7 @@ GSList* grava_graph_inner_nodes (GravaGraph* self, GravaNode* n) {
 #line 202 "graph.vala"
 				if (edge->visible) {
 #line 202 "graph.vala"
-					_tmp0 = (edge->dest == n);
+					_tmp0 = edge->dest == n;
 				} else {
 #line 202 "graph.vala"
 					_tmp0 = FALSE;
