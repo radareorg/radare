@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  * Copyright (C) 2006 Lluis Vilanova <xscript@gmx.net>
  *
@@ -2400,7 +2400,8 @@ CMD_DECL(help)
 				"Usage: ?[?[?]] <expr>\n"
 				" ? eip             ; get value of eip flag\n"
 				" ?z`str            ; sets false if string is zero length\n"
-				" ?x eip            ; show hex result of math expression\n"
+				" ?x 303132         ; show hexpair as a printable string\n"
+				" ?X eip            ; show hex result of math expression\n"
 				" ? 0x80+44         ; calc math expression\n"
 				" ? eip-23          ; ops with flags and numbers\n"
 				" ? eip==sym.main   ; compare flags\n"
@@ -2450,6 +2451,13 @@ CMD_DECL(help)
 			config.last_cmp = strlen(ptr);
 		} else
 		if (input[0]=='x') {
+			char buf[1024];
+			int len = hexstr2binstr(input+1, buf);
+			if (len==0) {
+				eprintf("Invalid string\n");
+			} else print_data(0, "", buf, len, FMT_ASC);
+		} else
+		if (input[0]=='X') {
 			u64 res = get_math(input+1);
 			if (res > 0xffffffff)
 				cons_printf("0x%llx\n", -res);
@@ -2458,8 +2466,27 @@ CMD_DECL(help)
 			u64 res = get_math(input);
 			config.last_cmp = res;
 		//	if (!strchr(input, '!') && !strchr(input, '=')) {
-			D { cons_printf("0x%llx ; %lldd ; %lloo ; ", res, res, res); 
-				PRINT_BIN(res); cons_newline();
+			D { 
+				char str[64];
+				char ch=' ';
+				double resf = res;
+				cons_printf("0x%llx %lldd %lloo ", res, res, res); 
+				PRINT_BIN(res); 
+				if (res>1024*1024*1024) {
+					resf = res/(1024*1024*1024);
+					ch='G';
+				} else
+				if (res>1024*1024) {
+					resf = res/(1024*1024);
+					ch='M';
+				} else
+				if (res>1024) {
+					resf = res/(1024);
+					ch='K';
+				}
+				sprintf(str, "%.1f%c", resf, ch);
+				cons_printf(" %s", str);
+				cons_newline();
 			}// else cons_printf("0x%llx\n", res);
 			//}
 		}

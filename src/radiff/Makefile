@@ -7,7 +7,9 @@ OBJ_RDB=rdbdiff_main.o rdbdiff.o ../rdb.o ../ut.o ../w32utils.o ../rahash/crc16.
 CFLAGS+=-I..
 
 
-all: ${OBJ} _bdiff rdbdiff$(BINSFX)
+all: ${BIN} _bdiff rdbdiff$(BINSFX)
+	
+${BIN}: ${OBJ}
 	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
 
 _bdiff:

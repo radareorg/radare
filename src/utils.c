@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -314,12 +314,20 @@ u64 get_offset(const char *orig)
 #endif
 	if (orig==NULL||orig[0]=='\0')
 		return 0;
+
 	arg = alloca(strlen(orig)+32);
 	strcpy(arg, orig);
+
+	/* single char 'A' */
+	if (arg[0]=='\'' && arg[0+2]=='\'') {
+		return arg[0+1];
+	}
+
 
 	for(;*arg==' ';arg=arg+1);
 	for(i=0;arg[i]==' ';i++);
 	for(;arg[i]=='\\';i++); i++;
+
 
 #if RADARE_CORE
 	if (!strcmp(orig, "here"))

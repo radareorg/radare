@@ -4,10 +4,13 @@ OBJ=shellcodes.o test.o rasc.o ${SYSPROXY_OBJ}
 # XXX: only for sysproxy example. to be removed
 CFLAGS+=-DMKPFX=\"../\"
 OBJ2=test_sp.o rpc.o syscall-linux.o sysproxy.o
+BIN=rasc${BINSFX}
 
-all: ${OBJ}
+all: ${BIN}
+
+${BIN}: ${OBJ}
 	${E} 'Linking rasc'
-	${Q}${CC} ${LDFLAGS} -o rasc${BINSFX} ${OSOLIBS} ${LIBS} ${OBJ}
+	${Q}${CC} ${LDFLAGS} -o ${BIN} ${OSOLIBS} ${LIBS} ${OBJ}
 
 ${OBJ}: %.o: %.c
 	${E} 'Compiling $<'

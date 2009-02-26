@@ -83,8 +83,8 @@ valagrava:
 	cd ../vala/grava/ && ${MAKE} all
 	#cd ../vala/grava/ && ${MAKE} radare
 
-pre:
-	-rm -f utils.o
+#pre:
+#	-rm -f utils.o
 
 libdbg:
 	cd dbg && ${MAKE} all
@@ -93,7 +93,7 @@ udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
 radare${BINSFX}: ${OBJ} ${OBJ2} main.o
-	${E} 'Linking radare'
+	echo 'Linking radare'
 	${Q}${CC} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS} ${W32LIBS}
 
 gui: ${OBJ}
