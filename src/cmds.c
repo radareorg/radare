@@ -1883,6 +1883,35 @@ CMD_DECL(write)
 		}
 		ret = radare_write(input+2, WMODE_WSTRING);
 		break;
+	case 'T':
+		/* TODO: Use libr_io here */
+		if (input[1]!=' ') {
+			eprintf("Please. use 'wT prefix-file [size]'.\n");
+			return 0;
+		} else {
+			u64 bsize = config.block_size;
+			static counter = 0;
+			char file[1024];
+			char *off = strchr(input+2, ' ');
+			int fd;
+			if (off) {
+				*off = '\0';
+				off = off + 1;
+				radare_set_block_size_i(get_math(off));
+			}
+			sprintf(file, "%s-%d", input+2, counter);
+			fd = open(file, O_RDWR|O_TRUNC|O_CREAT, 0644);
+			if (fd == -1) {
+				eprintf("Cannot open file '%s'\n", input+2);
+			} else {
+				write(fd, config.block, config.block_size);
+				counter++;
+				close(fd);
+			}
+			if (bsize != config.block_size)
+				radare_set_block_size_i(bsize);
+		}
+		break;
 	case 't':
 		/* TODO: Use libr_io here */
 		if (input[1]!=' ') {
@@ -1921,6 +1950,7 @@ CMD_DECL(write)
 		" wv [expr]          ; writes 4-8 byte value of expr (use cfg.bigendian)\n"
 		" ww [string]        ; write wide chars (interlace 00s in string)\n"
 		" wt [file] ([off])  ; write current block to file at offset\n"
+		" wT [pfx] ([size])  ; write current block to file with size\n"
 		" wf [file]          ; write contents of file at current seek\n"
 		" wF [hexfile]       ; write hexpair contents of file\n"
 		" wo[xrlaAsmd] [hex] ; operates with hexpairs xor,shiftright,left,add,sub,mul,div\n"

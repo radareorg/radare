@@ -1936,6 +1936,11 @@ int radare_seek_search(const char *str)
 	int kw_idx = 0;
 	int i, kw_len = 0;
 	u64 oseek = config.seek;
+	u64 eseek = config.size;
+
+	if (config_get_i("search.to")) {
+		eseek = config_get_i("search.to");
+	}
 
 	switch(str[0]) {
 	case ' ': // string search
@@ -1959,10 +1964,11 @@ int radare_seek_search(const char *str)
 		return 1;
 	}
 
+	// XXX : should we reduce the seek search to the current block?
 	config.seek++;
 	radare_read(0);
 	radare_controlc();
-	while(config.seek < config.size && !config.interrupted) {
+	while(config.seek < eseek && !config.interrupted) {
 		for(i=0;i<config.block_size;i++) {
 			if (config.block[i]==kw[kw_idx]) {
 				kw_idx++;
