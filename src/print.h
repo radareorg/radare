@@ -17,7 +17,7 @@ int is_cursor(int from, int len);
 /* inverted print block */
 typedef enum {
 	FMT_ERR   = -1,
-	FMT_BIN,  FMT_FLOAT,  FMT_INT,   FMT_LONG,  FMT_LLONG,     FMT_OCT,
+	FMT_BIN,  FMT_FLOAT,  FMT_INT,   FMT_LONG,  FMT_LLONG,     FMT_OCT, FMT_BARS,
 	FMT_RAW,  FMT_ASC,    FMT_URLE,  FMT_CSTR,  FMT_TIME_UNIX, FMT_TIME_DOS,
 	FMT_TIME_FTIME,       FMT_HEXQ,  FMT_HEXD,  FMT_HEXW,      FMT_HEXB,  FMT_COMMENT,
 	FMT_HEXBS,FMT_REGEXP, FMT_SHORT, FMT_VISUAL,FMT_ASHC,      FMT_DISAS, FMT_UDIS,
@@ -53,5 +53,6 @@ void print_addr(u64 off);
 void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t print_fmt);
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
+void print_zoom(u64 from, u64 to, char *byte, int enable);
 
 #endif

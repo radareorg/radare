@@ -38,6 +38,8 @@ int dec = 16;
 
 format_info_t formats[] = {
 //	{ '8', FMT_87BIT,       "print 8bit block in raw 7bit",         NULL,   "entire block" },
+	{ '%', FMT_PERCENT,    "print scrollbar of seek",NULL,          "entire file" },
+	{ '=', FMT_BARS,       "print line bars for each byte", NULL,   "entire file" },
 	{ 'a', FMT_ASC,        "ascii",                  NULL,          "entire block" },
 	{ 'A', FMT_ASCP,       "ascii printable",        NULL,          "entire block" },
 	{ 'b', FMT_BIN,        "binary",                 "N bytes",     "entire block" },
@@ -46,18 +48,17 @@ format_info_t formats[] = {
 	//{ 'h', FMT_SHORT,      "half word (short)",      "2 bytes",     "(endian)"},
 	{ 'd', FMT_DISAS,      "disassembly N opcodes",  "bsize bytes", "entire block" },
 	{ 'D', FMT_UDIS,       "asm.arch disassembler",  "bsize bytes", "entire block" },
+	{ 'e', FMT_DOUBLE,     "double",                 "8 bytes",     "(endian)"},
 	{ 'F', FMT_TIME_FTIME, "windows filetime",       "8 bytes",     "(endian)"},
 	{ 'f', FMT_FLOAT,      "float",                  "4 bytes",     "(endian)"},
 	{ 'i', FMT_INT,        "integer",                "4 bytes",     "(endian)"},
 	{ 'l', FMT_LONG,       "long",                   "4 bytes",     "(endian)"},
-	{ 'e', FMT_DOUBLE,     "double",                 "8 bytes",     "(endian)"},
-	{ 'L', FMT_LLONG,      "long long",              "8 bytes",     "(endian)"},
+	{ 'L', FMT_LLONG,      "long (ll for long long)","4/8 bytes",   "(endian)"},
 	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
 	{ 'C', FMT_COMMENT,    "comment information",    "string",      "range"},
 	{ 'o', FMT_OCT,        "octal",                  "N bytes",     "entire block" },
 	{ 'O', FMT_ZOOM,       "Overview (zoom.type)",   "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
-	{ '%', FMT_PERCENT,    "print scrollbar of seek",NULL,          "entire file" },
 	{ 'r', FMT_RAW,        "raw ascii",              NULL,          "entire block" },
 	{ 'R', FMT_REF,        "reference",              NULL,          "entire block" },
 	{ 's', FMT_ASHC,       "asm shellcode",          NULL,          "entire block" },
@@ -146,11 +147,9 @@ print_fmt_t format_get (char fmt)
 void format_show_help (print_mode_t mode)
 {
 	format_info_t *fi;
-	
 	cons_printf("Available formats:\n");
-	for (fi = formats; fi->id != 0; fi++) {
-		cons_printf(" %c : %-23s %s\n", fi->id, fi->name, fi->sizeo); // sizeb?
-	}
+	for (fi = formats; fi->id != 0; fi++)
+		cons_printf(" p%c : %-23s %s\n", fi->id, fi->name, fi->sizeo); // sizeb?
 	cons_flush();
 }
 
@@ -188,8 +187,7 @@ void print_color_byte(char *str, int c)
 		strcat(cash, str);
 		strcat(cash, C_RESET);
 		cons_printf(cash, (unsigned char)c);
-	} else
-		cons_printf(str, c);
+	} else cons_printf(str, c);
 }
 
 int is_cursor(int from, int len)
@@ -559,6 +557,17 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	//D {} else cons_newline();
 }
 
+static int zoom = 0;
+
+void print_zoom(u64 from, u64 to, char *byte, int enable)
+{
+	zoom = enable;
+	config_set_i("zoom.from", from);
+	config_set_i("zoom.to", to);
+	config_set("zoom.byte", byte);
+	eprintf("Zoom is %s\n", (zoom)?"enabled":"disabled");
+}
+
 /** Print some data.
  *
  * seek: position of the stream
@@ -571,7 +580,6 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 {
 	int tmp, i, j, k;
-	int zoom    = 0;
 	int lines   = 0;
 	int endian  = (int)config_get("cfg.bigendian");
 	int inverse = (int)config_get("cfg.inverse");
@@ -591,6 +599,68 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		for(i=0;i<len;i++)
 			bufi[i] = buf[len-i-1];
 		buf = bufi;
+	}
+
+	if (zoom) {
+		u64 sz = 4;
+		const char *mode = config_get("zoom.byte");
+		u64 ptr = config_get_i("zoom.from");
+		switch(mode[0]) {
+		case 'e':
+			buf = (u8 *)malloc(config.zoom.piece);
+			sz = (u64)config.zoom.piece;
+			break;
+		default:
+			buf = (u8 *)malloc(len<<1);
+			break;
+		}
+		for(i=0;!config.interrupted && i<len;i++) {
+			io_lseek(config.fd, ptr, SEEK_SET);
+			buf[0]='\xff';
+			io_read(config.fd, buf, sz);
+
+			switch(mode[0]) {
+			case 'F': // 0xFF
+				config.block[i] = 0;
+				for(j=0;j<sz;j++)
+					if (buf[j]==0xff)
+						config.block[i]++;
+				break;
+			case 'c': // code
+				{
+				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
+				config.block[i] = (unsigned char) 0;
+				if (data->type == DATA_CODE)
+					config.block[i] = (unsigned char) data->times;
+				}
+				break;
+			case 's': // strings
+				{
+				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
+				config.block[i] = (unsigned char) 0;
+				if (data->type == DATA_STR)
+					config.block[i] = (unsigned char) data->times;
+				}
+				break;
+			case 't': // traces
+				config.block[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);
+				break;
+			case 'f': // flags
+				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
+				break;
+			case 'p': // % printable chars
+				config.block[i] = (unsigned char)2.55*hash_pcprint(buf, sz);
+				break;
+			case 'e': // entropy
+				config.block[i] = (unsigned char)hash_entropy(buf, sz);
+				break;
+			//case 'h':
+			default:
+				config.block[i] = buf[0];
+				break;
+			}
+			ptr += config.zoom.piece;
+		}
 	}
 
 	if (len <= 0) len = config.block_size;
@@ -624,6 +694,24 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		//data_comment_list();
 		data_xrefs_print(config.seek,-1);
 			//print_datad(0);
+		break;
+	case FMT_BARS:
+		{
+			int i,j,pc,pce;
+			for(i=0;i<len;i++) {
+				if (zoom) print_addr(seek+(config.zoom.piece*i));
+				else print_addr(seek);
+				cons_printf(" %02x |", buf[i]);
+				pc = (buf[i]*100)/255;
+				//pce = 100-pc;
+				pc = pc*config.width/116;
+				pce = (100*config.width/116) - pc;
+				// TODO: adatp pc/pce to screen width
+				for(j=0;j<pc;j++) cons_printf("#");
+				for(j=0;j<pce;j++) cons_printf(".");
+				cons_printf("|\n");
+			}
+		}
 		break;
 	case FMT_PERCENT: {
 			int w = config.width-4;
@@ -717,25 +805,38 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			endian_memcpy((u8*)&f, buf+i, sizeof(float));
 			cons_printf("%f\n", f);
 		} } break;
-	case FMT_INT: {
-		int *iv;
-		for(i=0;!config.interrupted && i<len;i+=sizeof(int)) {
-			endian_memcpy(buffer, buf+i, sizeof(int));
-			iv = (int *)buffer;
-			print_color_byte("%d", iv[0]);
-			cons_newline();
-		} } break;
-	case FMT_LONG: {
-		int i;
-		long *l;
-		for(i=0;!config.interrupted && i<len;i+=sizeof(long)) {
-			endian_memcpy(buffer, config.block+i, sizeof(long));
-			l = (long *)buffer;
-			print_color_byte("%ld", *l);
-			//printf("%ld", *l);
-			D { cons_newline(); } else cons_printf(" ");
-		} }
-		break;
+	case FMT_INT:
+		{
+			int *iv;
+			for(i=0;!config.interrupted && i<len;i+=sizeof(int)) {
+				endian_memcpy(buffer, buf+i, sizeof(int));
+				iv = (int *)buffer;
+				print_color_byte("%d", iv[0]);
+				cons_newline();
+			}
+		} break;
+	case FMT_LONG:
+		{
+			int i;
+			long *l;
+			for(i=0;!config.interrupted && i<len;i+=sizeof(long)) {
+				endian_memcpy(buffer, config.block+i, sizeof(long));
+				l = (long *)buffer;
+				print_color_byte("%ld", *l);
+				//printf("%ld", *l);
+				D { cons_newline(); } else cons_printf(" ");
+			}
+		} break;
+	case FMT_LLONG:
+	       {
+			long long *ll;
+			for(i=0;!config.interrupted && i<len;i+=sizeof(long long)) {
+				endian_memcpy(buffer, config.block+i, sizeof(long long));
+				ll = (long long *)buffer;
+				cons_printf("%lld", *ll);
+				D { cons_newline(); } else cons_strcat(" ");
+			}
+		} break;
 	case FMT_LSB: {
 		int length = len;
 		int bit, byte = 0;
@@ -761,14 +862,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		if (ptr && ptr[0])
 			radare_cmd(ptr, 0);
 		} break;
-	case FMT_LLONG: {
-		long long *ll;
-		for(i=0;!config.interrupted && i<len;i+=sizeof(long long)) {
-			endian_memcpy(buffer, config.block+i, sizeof(long long));
- 			ll = (long long *)buffer;
-			cons_printf("%lld", *ll);
-			D { cons_newline(); } else cons_strcat(" ");
-		} } break;
 	/*   DATES   */
 	case FMT_TIME_DOS: {
 		unsigned char _time[2];
@@ -895,7 +988,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		inc = (int)((config.width)/6);
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
-			cons_printf("  offset   ");
+			cons_printf("   offset   ");
 			for(i=0;i<inc;i++)
 				cons_printf("+%02x ",i);
 			for(i=0;i<inc;i++)
@@ -1021,7 +1114,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 					config.block[i] = (unsigned char) data->times;
 				}
 				break;
-
 			case 's': // strings
 				{
 				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
@@ -1121,6 +1213,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 
 	if (inverse)
 		free(bufi);
+	if (zoom)
+		free(buf);
 
 	//fflush(stdout);
 	//cons_flush(); // UH?!? XXX

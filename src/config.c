@@ -369,14 +369,14 @@ static int config_scr_interactive_callback(void *data)
 
 static int config_scrhtml_callback(void *data)
 {
-	struct config_node_t *node = data;
+	struct config_node_t *node = (struct config_node_t *)data;
 	cons_is_html = node->i_value?1:0;
 	return 1;
 }
 
 static int config_filterfile_callback(void *data)
 {
-	struct config_node_t *node = data;
+	struct config_node_t *node = (struct config_node_t *)data;
 	if (!node->value || node->value[0]=='\0') {
 		efree(&cons_filterline);
 	} else cons_filterline = estrdup(cons_filterline, node->value);
@@ -385,10 +385,22 @@ static int config_filterfile_callback(void *data)
 
 static int config_teefile_callback(void *data)
 {
-	struct config_node_t *node = data;
+	struct config_node_t *node = (struct config_node_t *)data;
 	if (!node->value || node->value[0]=='\0') {
 		efree(&cons_teefile);
 	} else cons_teefile = estrdup(cons_teefile, node->value);
+	return 1;
+}
+
+static int config_zoom_callback(void *data)
+{
+	struct config_node_t *node = (struct config_node_t *)data;
+	print_zoom(
+		config_get_i("zoom.from"),
+		config_get_i("zoom.to"),
+		config_get("zoom.byte"),
+		node->i_value?1:0
+		);
 	return 1;
 }
 
@@ -980,6 +992,8 @@ void config_init(int first)
 	config_set("gui.right", "gtk-hello");  // graphviz
 	config_set("gui.bottom", "gtk-hello");  // graphviz
 
+	node = config_set("zoom.enable", "false");
+	node->callback = &config_zoom_callback;
 	node = config_set_i("zoom.from", 0);
 	node = config_set_i("zoom.to", config.size);
 	node = config_set("zoom.byte", "head");
