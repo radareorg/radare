@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -357,6 +357,13 @@ static int config_bigendian_callback(void *data)
 {
 	struct config_node_t *node = data;
 	config.endian = node->i_value?1:0;
+	return 1;
+}
+
+static int config_scr_interactive_callback(void *data)
+{
+	struct config_node_t *node = data;
+	cons_interactive = node->i_value?1:0;
 	return 1;
 }
 
@@ -981,6 +988,8 @@ void config_init(int first)
 	node = config_set("scr.html", "false");
 	node->callback = &config_scrhtml_callback;
 	config_set_i("scr.accel", 0);
+	node = config_set("scr.interactive", "true");
+	node->callback = &config_scr_interactive_callback;
 
 	node = config_set("scr.palette", cons_palette_default);
 	node->callback = &config_palette_callback;

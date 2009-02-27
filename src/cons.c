@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #include <windows.h>
 #endif
 
+int yesno(int def, const char *fmt, ...);
+#define CONS_MAX_USER 102400
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
 #if __darwin__
@@ -44,6 +46,7 @@ static char *cons_buffer = NULL;
 char *cons_filterline = NULL;
 char *cons_teefile = NULL;
 int cons_is_html = 0;
+int cons_interactive = 1;
 int _print_fd = 1;
 int cons_lines = 0;
 int cons_noflush = 0;
@@ -859,6 +862,14 @@ void cons_flush()
 	if (cons_noflush)
 		return;
 
+	if (cons_interactive) {
+		if (cons_buffer_len > CONS_MAX_USER) {
+			if (yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)== 0) {
+				cons_reset();
+				return;
+			}
+		}
+	}
 	if (grephigh == NULL) {
 		grephigh = config_get("scr.grephigh");
 		if (grephigh &&*grephigh) {
