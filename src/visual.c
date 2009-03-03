@@ -383,13 +383,13 @@ CMD_DECL(add_comment)
 	cons_set_raw(0);
 	n = read(0, buf+2, 256);
 	if (n<2) {
-		sprintf(buf, "CC -0x%llx", config.seek+(config.cursor_mode?config.cursor:0));
+		sprintf(buf, "CC -0x%llx", (config.cursor_mode)?config.seek+config.cursor:config.seek);
 		radare_cmd(buf,0);
 	} else {
 		buf[n+1]='\0';
 		if (config.cursor_mode) {
 			char ptr[128];
-			sprintf(ptr, " @ +0x%x", config.cursor);
+			sprintf(ptr, " @ 0x%x", config.seek + config.cursor);
 			strcat(buf, ptr);
 		}
 		radare_cmd(buf,0);
