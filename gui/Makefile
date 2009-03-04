@@ -15,10 +15,10 @@ LIBS+=`pkg-config --libs hildon-1`
 endif
 
 
-all: ${OBJ} ${BIN}
+all: ${BIN}
 	${E} 'Linking ${BIN}'
 
-${BIN}:
+${BIN}: ${OBJ}
 	${Q}${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
 
 ${OBJ}: %.o: %.c
