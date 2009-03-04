@@ -554,12 +554,21 @@ int radare_cmd_raw(const char *tmp, int log)
 
 	if (!quoted) {
 		/* inline pipe */
-		piped = strchr(input, '`');
-		if (piped) {
+		while (piped = strchr(input, '`')) {
 			int len;
 			char tmp[128];
 			char filebuf[4096];
+			char *ptr;
+			char rest[1024];
 			piped[0]='\0';
+			rest[0]='\0';
+			ptr = strchr(piped+1, '`');
+			if (ptr == NULL) {
+				eprintf("No final '`'\n");
+				return -1;
+			}
+			ptr[0]='\0';
+			strcpy(rest, ptr+1);
 
 			pipe_stdout_to_tmp_file(tmp, piped+1);
 			fdi = open(tmp, O_RDONLY);
@@ -573,11 +582,16 @@ int radare_cmd_raw(const char *tmp, int log)
 			if (len<1) {
 				eprintf("error: (%s)\n", input);
 			//	return 0;
+				goto __end;
 			} else {
 				len += strlen(input) + 5;
 				oinput = alloca(len);
 				strcpy(oinput, input);
-				sprintf(oinput, "%s %s", input, filebuf);
+				for(i=0;filebuf[i];i++) {
+					if (filebuf[i]=='\n')
+						strcpy(filebuf+i, filebuf+i+1);
+				}
+				sprintf(oinput, "%s%s%s", input, filebuf, rest);
 				input = oinput;
 			}
 			for(i=0;input[i];i++) {
