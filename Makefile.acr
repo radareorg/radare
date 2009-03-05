@@ -64,14 +64,14 @@ arm: all
 mrproper: clean
 	-rm -f src/Makefile Makefile
 
-ball:
+dist:
 	FILES=`hg status -mc|cut -c 3-|sed -e s,^,radare-${VERSION}/,`; \
 	cd .. && mv radare radare-${VERSION} && \
 	tar czvf radare-${VERSION}.tar.gz $${FILES} ;\
 	mv radare-${VERSION} radare
 	#scp radare-${VERSION}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
 
-dist: mrproper
+shot:
 	DATE=`date '+%Y%m%d'` ; \
 	FILES=`hg status -mc|cut -c 3-|sed -e s,^,radare-$${DATE}/,`; \
 	cd .. && mv radare radare-$${DATE} && \
