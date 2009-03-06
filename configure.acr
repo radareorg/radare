@@ -80,6 +80,8 @@ SIZEOF off_t ;
 CFLAGS = $_CFLAGS ;
 
 CHKLIB ewf
+ARG_WITHOUT HAVE_EWF ewf disable EWF dependency ;
+IF HAVE_EWF { HAVE_LIB_EWF = 0 ; }
 
 (( PERL 
 LANG_PERL

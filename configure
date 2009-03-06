@@ -24,6 +24,7 @@ WII=0
 W32=0
 SYSPROXY=0
 VALA=1
+HAVE_EWF=1
 MAEMO=0
 HAVE_GUI=1
 split_host() {
@@ -154,6 +155,7 @@ printf "\nOptional Features:
   --enable-w32           enables the build of w32 version using mingw32 
   --with-sysproxy        builds the syscall proxy plugin 
   --without-vala         disables the build of all the vala-dependant parts 
+  --without-ewf          disable EWF dependency 
   --with-maemo           build hildon interface 
   --without-gui          radare without the gtk frontend \n"
 printf "\nSome influential environment variables:
@@ -203,7 +205,7 @@ echo "LANGS:     c ruby python lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.5.0"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
-echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --with-maemo --without-gui"
+echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --without-ewf --with-maemo --without-gui"
 	exit 0
 	;;
 "--cache-file") 
@@ -253,6 +255,7 @@ echo "FLAGS:     --without-readline --without-usb-sniffer --without-debugger --w
 "--enable-w32") W32="1"; ;;
 "--with-sysproxy") SYSPROXY="1"; ;;
 "--without-vala") VALA="0"; ;;
+"--without-ewf") HAVE_EWF="0"; ;;
 "--with-maemo") MAEMO="1"; ;;
 "--without-gui") HAVE_GUI="0"; ;;
 *) if [ "$value" ]; then eval "`echo $flag2=$value`" ; 
@@ -269,7 +272,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF MAEMO HAVE_GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF HAVE_EWF MAEMO HAVE_GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -495,6 +498,8 @@ else
 	eval ${VAR}=0
 	echo no  ; fi }
 check_library HAVE_LIB_EWF ewf 0 
+if [ "$HAVE_EWF" = "1" ]; then
+export HAVE_LIB_EWF="0"; fi
 printf "checking for gtkdialog... "
 if [ -x "${GTKDIALOG}" ]; then
 FIND=${GTKDIALOG}
