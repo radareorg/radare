@@ -156,9 +156,9 @@ def write_history():
 def flag_space_set(name):
 	r.cmd("fs %s"%name)
 
-def flag_list():
+def flag_list(mask):
 	ret = []
-	list = r.cmd("f").split("\n")
+	list = r.cmd("f~%s"%mask).split("\n")
 	for i in range(1, len(list)):
 		w = list[i].split(" ")
 		if len(w) > 3:
@@ -265,6 +265,12 @@ def eval_hash_set(hash):
 		key = list[i]
 		value = hash[key]
 		r.cmd("e %s=%s"%(key,value))
+
+def get_byte(addr):
+	return r.cmd("? [1:%s]~[0]"%addr)
+
+def write_to_files(file, size):
+	r.cmd("wT %s %s", file, size)
 
 def seek(addr):
 	r.cmd("s %s"%addr)

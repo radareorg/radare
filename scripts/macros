@@ -39,16 +39,16 @@
 ; function iterator
 ; x @@ .(for-fun)
 (for-fun
- ()`C*~CF [3]#$@
+ ()`C*~CF [3]#$@`
 )
 
 ; Likely/Unlikely branch commenter
 ; (step-post-anal,?z`ao@oeip~type = cond,??(),?eip==`ao@oeip~jump =[2],??CC likely@oeip,??(),CC unlikely@oeip,)
 
 (step-post-anal
- ?z`ao@oeip~type = cond
+ ?z`ao@oeip~type = cond`
   ??()
- ?eip==`ao@oeip~jump =[2]
+ ?eip==`ao@oeip~jump =[2]`
   ??CC likely@oeip
   ??()
  CC unlikely@oeip
