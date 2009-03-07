@@ -1,3 +1,514 @@
+=== 1.2.2 === 2009-03-07
+
+changeset:   903:c74c378097b7
+tag:         tip
+user:        pancake@localhost.localdomain
+date:        Sat Mar 07 17:32:56 2009 +0000
+files:       scripts/macros src/plug/hack/radare.py
+description:
+* Sync script/macros and python api with last syntax changes
+
+
+changeset:   902:b19239973714
+user:        pancake@localhost.localdomain
+date:        Fri Mar 06 13:18:00 2009 +0000
+files:       configure configure.acr
+description:
+* Add --without-ewf configure flag option
+  - I dunno why ewf is found in ipod touch :)
+
+
+changeset:   901:8fed4139671b
+user:        pancake <@youterm.com>
+date:        Thu Mar 05 13:16:50 2009 +0100
+files:       Makefile.acr
+description:
+* Rename 'dist' as 'shot' make target
+* Rename 'ball' as 'dist' make target
+
+
+changeset:   900:6b1800f334c3
+user:        pancake@localhost.localdomain
+date:        Wed Mar 04 23:53:54 2009 +0000
+files:       AUTHORS gui/Makefile
+description:
+* Fix race condition in gui/ build with make -j>1 (thanks graz!)
+
+
+changeset:   899:11a3668d0e36
+user:        pancake <@youterm.com>
+date:        Wed Mar 04 13:26:58 2009 +0100
+files:       src/radare.c
+description:
+* Add support for multiple `` replaces for oneliners
+  - Final '`' is now obligatory (like in r2)
+
+
+changeset:   898:fa2ed8b3c246
+user:        pancake@localhost.localdomain
+date:        Tue Mar 03 01:15:40 2009 +0000
+files:       src/visual.c
+description:
+* Fix issue when adding comments in visual + cursor mode (';' key)
+
+
+changeset:   897:d9e29e82e2de
+user:        pancake@localhost.localdomain
+date:        Fri Feb 27 10:41:18 2009 +0000
+files:       src/config.c src/print.c src/print.h
+description:
+* Add print_zoom() helper
+  - Enabled with config var: "zoom.enable" key
+* Fix headers of po (octal print)
+* Added p= command to print bars for each byte
+
+
+changeset:   896:3eb0eb8f43b7
+user:        pancake@localhost.localdomain
+date:        Fri Feb 27 00:02:05 2009 +0000
+files:       TODO src/config.c src/cons.c src/cons.h
+description:
+* Add cons_interactive boolean
+* Fixes a limit to print to the screen
+  - Avoids the user to do silly things like dumping 5GB to the console
+  - Queries the user with a yesno() dialog
+
+
+changeset:   895:8cb2169dbfd8
+user:        pancake@localhost.localdomain
+date:        Thu Feb 26 23:44:19 2009 +0000
+files:       config.mk.acr src/Makefile.acr src/cmds.c src/plug/hack/Makefile src/radiff/Makefile src/rasc/Makefile src/utils.c
+description:
+* Fix some makefile bugs (optimize rebuild time)
+* Rename ?x command as ?X
+* New command ?x to print hexpair strings
+  - f.example: ?x 303132 ..will print 0123
+* Show M/K/G size in float when evaluating '?' math expressions
+* Only build lua plugin when system have the .so
+* Add support for 'x' character evaluation
+  - We can evaluate 'A' instead of 0x41 for example.
+
+
+changeset:   894:ac4796fafe48
+user:        pancake <@youterm.com>
+date:        Thu Feb 26 18:51:04 2009 +0100
+files:       TODO configure scripts/recover-pics.rscript src/cmds.c src/radare.c
+description:
+* Add search.to for s/ command
+* Update configure for acr 0.7.1
+* Add recover-pics radare script example
+* Add wT command (dump counted files) size can be specified
+  - Useful for file recovery
+
+
+changeset:   893:fa17cda5b5ed
+user:        nibble
+date:        Wed Feb 25 09:46:41 2009 +0100
+files:       src/rasc/rasc.c
+description:
+* rasm: Fixed initial 0x41 ('A') issue
+
+
+changeset:   892:18dfcac08d92
+user:        pancake@localhost.localdomain
+date:        Wed Feb 25 01:16:24 2009 +0100
+files:       vala/default_layout.c vala/graph.c vala/node.c vala/renderer.c vala/widget.c
+description:
+* Fix vala generated code using valac 0.5.7
+
+
+changeset:   891:15251d9d72b4
+user:        pancake@localhost.localdomain
+date:        Wed Feb 25 01:00:02 2009 +0100
+files:       configure configure.acr src/cmds.c src/cmds.h src/cons.c src/dbg/objects.mk src/rasc/shellcodes.c vala/chart.c vala/chart.h
+description:
+* Fix configure problem with /bin/install path
+  - Up to 1.2.2 (just for development..not released yet)
+* Added initial 'd' command (backport of the r2 command)
+  - dr=!regs, dc=!cont, ds=!step, dS=!stepo
+* Fix cons.c build on osx-arm (iPod touch 2G)
+  - Debugger not yet ported
+* Import javicoder's SPARC linux shellcodes
+  - Needs testing and port for Solaris
+
+
+changeset:   890:38619fc2a4f9
+user:        nibble
+date:        Tue Feb 17 02:42:39 2009 +0100
+files:       src/code.c
+description:
+* Fix m68k disasm
+
+
+changeset:   889:5669dc8e07e1
+user:        pancake@localhost.localdomain
+date:        Sun Feb 15 23:43:07 2009 +0100
+files:       config.mk.acr configure configure.acr gui/Makefile libusbsniff/Makefile src/Makefile.acr src/dbg/Makefile src/javasm/Makefile src/plug/hack/Makefile src/radiff/Makefile src/rahash/Makefile src/rasc/Makefile src/swig/Makefile
+description:
+* Applied gentoo's bug report:
+  - Fixes --as-needed build
+  https://bugs.gentoo.org/attachment.cgi?id=182129
+
+
+changeset:   888:f269031cf7e0
+user:        pancake@localhost.localdomain
+date:        Sat Feb 14 08:55:38 2009 -0800
+files:       wscript
+description:
+* waf is now installing manpages (Thanks sha0 for the tip :)
+
+
+changeset:   887:20049b83aa71
+user:        pancake@localhost.localdomain
+date:        Fri Feb 13 23:25:48 2009 -0800
+files:       scripts/rscript.pl src/plug/hack/Makefile src/plug/hack/perl.c
+description:
+* Do not show stderr when buliding py, rb an pl hack plugins
+* Added rscript.pl perl example
+* Allow to run files from the perl hack plugin
+  > H perl scripts/rscript.pl
+
+
+changeset:   886:f480af2ac1af
+user:        pancake <@youterm.com>
+date:        Fri Feb 13 16:54:56 2009 +0100
+files:       src/dbg/parser.c src/dbg/parser.h src/main.h src/plug/hack/Makefile src/plug/hack/perl.c src/plug/hack/python.c
+description:
+* Fix perl plugin build and execution
+  - Read perlembed.pod for more information
+  - Some enums in parser.h has been redefined to avoid collisions
+  - A bit hacky, but works like python or ruby now :)
+
+
+changeset:   885:83e8102f2ab7
+user:        pancake@localhost.localdomain
+date:        Thu Feb 12 20:45:45 2009 -0800
+files:       src/cmds.c src/plug/hack/scriptedit.c src/project.c src/rabin/rabin.c src/undo.c vala/default_layout.c vala/edge.c vala/graph.c vala/graph.h vala/grava/default_layout.vala vala/grava/renderer.vala vala/grava/widget.vala vala/node.c vala/node.h vala/renderer.c vala/renderer.h vala/widget.c vala/widget.h
+description:
+* Sync vala sources to be working with last vala compiler (0.5.6)
+  - C files updated
+* Added 'u*' command to dump write changes as radare commands (thx robin)
+* 'Ps' command warns when no project name given (Thanks Robin!)
+* rabin shows the filename when an error occurs)
+
+
+changeset:   884:20e3119b8d4e
+user:        pancake@localhost.localdomain
+date:        Thu Feb 12 12:19:42 2009 -0800
+files:       src/radiff/Makefile
+description:
+* Fix build of radiff
+
+
+changeset:   883:a1128644134c
+user:        pancake <@youterm.com>
+date:        Fri Feb 06 15:27:01 2009 +0100
+files:       config.mk.acr src/radiff/Makefile src/ut.c wscript
+description:
+* Added ut.c as a replacement for utils.c copy hack
+  - Should fix the build issues on gentoo sandbox
+* Remove the -Wall gcc flag by default
+  - Ojos que no ven.. patada en los cojones
+
+
+changeset:   882:02502e2bf6b3
+user:        pancake <youterm.com>
+date:        Thu Feb 05 22:06:47 2009 +0100
+files:       src/libr/Makefile src/libr/README src/libr/TODO src/libr/asm/Makefile src/libr/asm/arch/arm/asm.c src/libr/asm/arch/arm/gnu/arm-dis.c src/libr/asm/arch/bf/asm.c src/libr/asm/arch/include/ansidecl.h src/libr/asm/arch/include/bfd.h src/libr/asm/arch/include/bfdlink.h src/libr/asm/arch/include/dis-asm.h src/libr/asm/arch/include/elf-bfd.h src/libr/asm/arch/include/elf/common.h src/libr/asm/arch/include/elf/external.h src/libr/asm/arch/include/elf/internal.h src/libr/asm/arch/include/elf/mips.h src/libr/asm/arch/include/elf/reloc-macros.h src/libr/asm/arch/include/libiberty.h src/libr/asm/arch/include/opcode/mips.h src/libr/asm/arch/include/opcode/sparc.h src/libr/asm/arch/include/opintl.h src/libr/asm/arch/include/symcat.h src/libr/asm/arch/include/sysdep.h src/libr/asm/arch/mips/asm.c src/libr/asm/arch/mips/gnu/mips-dis.c src/libr/asm/arch/mips/gnu/mips-opc.c src/libr/asm/arch/mips/gnu/mips16-opc.c src/libr/asm/arch/ppc/asm.c src/libr/asm/arch/ppc/ppc_disasm/ppc_disasm.c src/libr/asm/arch/ppc/ppc_disasm/ppc_disasm.h src/libr/asm/arch/sparc/asm.c src/libr/asm/arch/sparc/gnu/sparc-dis.c src/libr/asm/arch/sparc/gnu/sparc-opc.c src/libr/asm/arch/x86/asm.c src/libr/asm/arch/x86/ollyasm/asmserv.c src/libr/asm/arch/x86/ollyasm/assembl.c src/libr/asm/arch/x86/ollyasm/disasm.c src/libr/asm/arch/x86/ollyasm/disasm.h src/libr/asm/arch/x86/pseudo.c src/libr/asm/arch/x86/realloc.c src/libr/asm/arch/x86/udis86/LICENSE src/libr/asm/arch/x86/udis86/README src/libr/asm/arch/x86/udis86/decode.c src/libr/asm/arch/x86/udis86/decode.h src/libr/asm/arch/x86/udis86/extern.h src/libr/asm/arch/x86/udis86/input.c src/libr/asm/arch/x86/udis86/input.h src/libr/asm/arch/x86/udis86/itab.c src/libr/asm/arch/x86/udis86/itab.h src/libr/asm/arch/x86/udis86/syn-att.c src/libr/asm/arch/x86/udis86/syn-intel.c src/libr/asm/arch/x86/udis86/syn.c src/libr/asm/arch/x86/udis86/syn.h src/libr/asm/arch/x86/udis86/types.h src/libr/asm/arch/x86/udis86/udis86.c src/libr/asm/asm.c src/libr/asm/t/Makefile src/libr/asm/t/asm_x86.c src/libr/asm/t/disasm_arm.c src/libr/asm/t/disasm_bf.c src/libr/asm/t/disasm_mips.c src/libr/asm/t/disasm_ppc.c src/libr/asm/t/disasm_sparc.c src/libr/asm/t/disasm_x86.c src/libr/asm/t/rasm2.c src/libr/asm/t/realloc_x86.c src/libr/bin/Makefile src/libr/bin/bin.c src/libr/bin/elf.c src/libr/bin/elf64.c src/libr/bin/pe.c src/libr/bin/t/Makefile src/libr/bin/t/baddr.c src/libr/bin/t/data_resize.c src/libr/bin/t/entry.c src/libr/bin/t/imports.c src/libr/bin/t/info.c src/libr/bin/t/rabin2.c src/libr/bin/t/rsz_test.sh src/libr/bin/t/sections.c src/libr/bin/t/symbols.c src/libr/bp/Makefile src/libr/bp/README src/libr/bp/bp.c src/libr/cmd/Makefile src/libr/cmd/TODO src/libr/cmd/cmd.c src/libr/cmd/t/Makefile src/libr/cmd/t/test.c src/libr/config.mk src/libr/config/Makefile src/libr/config/callback.c src/libr/config/config.c src/libr/config/deprecated.c src/libr/config/t/Makefile src/libr/config/t/test.c src/libr/cons/Makefile src/libr/cons/color.c src/libr/cons/cons.c src/libr/cons/input.c src/libr/cons/pipe.c src/libr/cons/print.c src/libr/cons/strsub.c src/libr/cons/t/Makefile src/libr/cons/t/hello.c src/libr/core/Makefile src/libr/core/cmd.c src/libr/core/config.c src/libr/core/core.c src/libr/core/file.c src/libr/core/io.c src/libr/core/t/Makefile src/libr/core/t/radare2.c src/libr/core/visual.c src/libr/debug/Makefile src/libr/debug/debug.c src/libr/debug/handle.c src/libr/debug/p/ptrace.c src/libr/diff/Makefile src/libr/diff/diff.c src/libr/diff/t/Makefile src/libr/diff/t/radiff2.c src/libr/diff/t/test.c src/libr/flags/Makefile src/libr/flags/flags.c src/libr/flags/name.c src/libr/flags/old_flags.c src/libr/flags/old_flags.h src/libr/hash/Makefile src/libr/hash/crc16.c src/libr/hash/crc32.c src/libr/hash/crc32.h src/libr/hash/crca.c src/libr/hash/entropy.c src/libr/hash/hamdist.c src/libr/hash/hash.c src/libr/hash/hash.h src/libr/hash/md4.c src/libr/hash/md5.h src/libr/hash/md5c.c src/libr/hash/sha1.c src/libr/hash/sha1.h src/libr/hash/sha2.c src/libr/hash/sha2.h src/libr/hash/state.c src/libr/hash/t/Makefile src/libr/hash/t/hello.c src/libr/include/list.h src/libr/include/r.h src/libr/include/r_asm.h src/libr/include/r_bin.h src/libr/include/r_bin_elf.h src/libr/include/r_bin_elf64.h src/libr/include/r_bin_elf_specs.h src/libr/include/r_bin_pe.h src/libr/include/r_bin_pe_specs.h src/libr/include/r_cmd.h src/libr/include/r_config.h src/libr/include/r_cons.h src/libr/include/r_core.h src/libr/include/r_debug.h src/libr/include/r_diff.h src/libr/include/r_flags.h src/libr/include/r_hash.h src/libr/include/r_io.h src/libr/include/r_lang.h src/libr/include/r_lib.h src/libr/include/r_line.h src/libr/include/r_macro.h src/libr/include/r_print.h src/libr/include/r_range.h src/libr/include/r_reg.h src/libr/include/r_search.h src/libr/include/r_sign.h src/libr/include/r_socket.h src/libr/include/r_syscall.h src/libr/include/r_types.h src/libr/include/r_util.h src/libr/include/r_vm.h src/libr/io/Makefile src/libr/io/README src/libr/io/desc.c src/libr/io/handle.c src/libr/io/io.c src/libr/io/map.c src/libr/io/plugins/Makefile src/libr/io/plugins/README src/libr/io/plugins/dbg.c src/libr/io/plugins/malloc.c src/libr/io/plugins/ptrace.c src/libr/io/section.c src/libr/io/t/Makefile src/libr/io/t/cat.c src/libr/io/t/read4.c src/libr/io/undo.c src/libr/io/undo.h src/libr/lang/Makefile src/libr/lang/lang.c src/libr/lib/Makefile src/libr/lib/lib.c src/libr/lib/t/Makefile src/libr/lib/t/plugin.c src/libr/lib/t/test-plugin.c src/libr/line/Makefile src/libr/line/TODO src/libr/line/dietline.c src/libr/line/t/Makefile src/libr/line/t/hello.c src/libr/macro/Makefile src/libr/macro/macro.c src/libr/print/Makefile src/libr/print/format.c src/libr/print/print.c src/libr/print/t/Makefile src/libr/print/t/hex.c src/libr/range/Makefile src/libr/range/range.c src/libr/reg/Makefile src/libr/reg/README src/libr/reg/reg.c src/libr/rules.mk src/libr/search/Makefile src/libr/search/aes-find.c src/libr/search/binparse.c src/libr/search/bytepat.c src/libr/search/search.c src/libr/search/stripstr.c src/libr/search/t/Makefile src/libr/search/t/test-str.c src/libr/search/t/test.c src/libr/sign/Makefile src/libr/sign/sign.c src/libr/socket/Makefile src/libr/socket/socket.c src/libr/stripsyms.sh src/libr/syscall/Makefile src/libr/syscall/TODO src/libr/syscall/darwin.c src/libr/syscall/example.syscall-file src/libr/syscall/freebsd.c src/libr/syscall/linux.c src/libr/syscall/netbsd.c src/libr/syscall/syscall.c src/libr/syscall/t/Makefile src/libr/syscall/t/hello.c src/libr/tests.mk src/libr/util/Makefile src/libr/util/alloca.c src/libr/util/alloca.s src/libr/util/file.c src/libr/util/hex.c src/libr/util/mem.c src/libr/util/num.c src/libr/util/re.c src/libr/util/str.c src/libr/util/t/Makefile src/libr/util/t/ralloc.c src/libr/util/t/rax2.c src/libr/util/t/test.c src/libr/vapi/r_asm.vapi src/libr/vapi/r_bin.vapi src/libr/vapi/r_config.vapi src/libr/vapi/r_cons.vapi src/libr/vapi/r_core.vapi src/libr/vapi/r_hash.deps src/libr/vapi/r_hash.vapi src/libr/vapi/r_io.vapi src/libr/vapi/r_range.vapi src/libr/vapi/r_search.vapi src/libr/vapi/r_socket.vapi src/libr/vapi/r_syscall.vapi src/libr/vapi/t/Makefile src/libr/vapi/t/asm.vala src/libr/vapi/t/bin.vala src/libr/vapi/t/core.vala src/libr/vapi/t/hash.vala src/libr/vapi/t/sc.vala src/libr/vapi/t/search.vala src/libr/vapi/t/socket.vala src/libr/vm/Makefile src/libr/vm/extra.c src/libr/vm/mmu.c src/libr/vm/op.c src/libr/vm/reg.c src/libr/vm/setup.c src/libr/vm/stack.c src/libr/vm/vm.c
+description:
+* Remove libr from the radare1 repository
+  - Moved to a new one
+  - Development of radare2 have been moved to another repo
+  - Please visit the homepage to get instructions and fetch
+    the new repository for libr
+
+
+changeset:   881:96ed26ef99e3
+user:        pancake <@youterm.com>
+date:        Thu Feb 05 20:21:10 2009 +0100
+files:       src/dbg/close.c src/rsc/Makefile src/rsc/pool/daemon src/rsc/pool/daemon-cmd
+description:
+* Close process when stdin is eof
+  - Fixes infinite loop+100% cpu in some stupid situations
+* Add daemon and daemon-cmd rsc utilities to use radare
+  in background and launch commands remotely
+  - It is a bit hacky shellscript way..but it works ;)
+
+
+changeset:   880:ed9c8383c7b9
+user:        pancake <youterm.com>
+date:        Thu Feb 05 18:55:15 2009 +0100
+files:       src/libr/core/cmd.c src/libr/core/core.c src/libr/core/t/Makefile src/libr/include/r_core.h src/libr/include/r_lang.h src/libr/include/r_lib.h src/libr/io/io.c src/libr/lang/Makefile src/libr/lang/lang.c
+description:
+* Added 'oobi support' for libr
+  - oobi stands for 'Out Of Band Input'
+  - Enables '<' and '<<' command modifiers
+  - '<' : read from file
+  - '<<' : read until EOF mark
+  - Lot of commands will
+* Added r_lang
+  - Nonworking integration with r_core in the '#!' command
+  - Use: #!perl < file.pl for example
+
+
+changeset:   879:056a0f472dcb
+user:        pancake <youterm.com>
+date:        Thu Feb 05 02:35:14 2009 +0100
+files:       src/libr/TODO src/libr/bp/README src/libr/bp/bp.c src/libr/core/cmd.c src/libr/core/core.c src/libr/debug/Makefile src/libr/debug/debug.c src/libr/debug/handle.c src/libr/debug/p/ptrace.c src/libr/debug/ptrace.c src/libr/include/r.h src/libr/include/r_debug.h src/libr/include/r_lib.h src/libr/io/io.c src/libr/line/dietline.c
+description:
+* Fix build for libr
+* Some refactor for libr_debug
+  - Basic r_debug_handle api
+  - Loaded debugger plugins integrated with core
+* Drop label related code from dietline
+
+
+changeset:   878:7d0081787d00
+user:        pancake <@youterm.com>
+date:        Wed Feb 04 20:11:51 2009 +0100
+files:       src/libr/include/r_io.h src/libr/include/r_io_section.h src/libr/io/plugins/Makefile src/libr/io/plugins/dbg.c src/libr/io/plugins/malloc.c src/libr/io/plugins/ptrace.c src/libr/io/section.c src/libr/rules.mk src/libr/socket/socket.c src/libr/vapi/r_io.vapi
+description:
+* Remove r_io_section.h (merge with r_io.h)
+* Added malloc io plugin for libr
+  - Ported from radare in few mins
+* Fix some issues with the dbg:// io-redirect plugin
+* Add plugins/ as subdir build rule if found
+* Change some old-to-new license lines
+
+
+changeset:   877:46f48b48c5d1
+user:        pancake <youterm.com>
+date:        Wed Feb 04 12:10:59 2009 +0100
+files:       src/libr/cons/pipe.c src/libr/core/cmd.c src/libr/core/core.c src/libr/core/file.c src/libr/core/io.c src/libr/core/t/Makefile src/libr/hash/t/hello.c src/libr/include/r_cons.h src/libr/include/r_core.h src/libr/include/r_io.h src/libr/include/r_io_section.h src/libr/include/r_lib.h src/libr/include/r_util.h src/libr/io/handle.c src/libr/io/io.c src/libr/io/map.c src/libr/io/plugins/dbg.c src/libr/io/plugins/ptrace.c src/libr/io/section.c src/libr/io/t/Makefile src/libr/io/t/cat.c src/libr/io/t/read4.c src/libr/lib/lib.c src/libr/util/file.c
+description:
+* Major refactoring for the r_io
+  - API has changed. Now r_io is OO
+  - Added r_io_redirect()
+  - Makes ptrace() and dbg:// plugins work!
+  - Sync program examples with new api
+* Remove lot of debugging mesages
+  - Fix warnings
+* Added r_file_exist() helper in r_util
+* Added '|' command in the core
+  - list io plugins and send commands thru io_system
+
+
+changeset:   876:6cf4c3d48ae8
+user:        pancake <@youterm.com>
+date:        Tue Feb 03 20:16:11 2009 +0100
+files:       src/dbg/pt-example.c src/libr/core/core.c src/libr/include/r_io.h src/libr/io/io.c src/libr/io/plugins/Makefile src/libr/io/plugins/dbg.c src/libr/io/plugins/ptrace.c
+description:
+* Some more shitty updates for the debug io
+  - Needs full io refactoring to make this io_redirect work
+
+
+changeset:   875:c927fcb736a7
+user:        pancake <youterm.com>
+date:        Tue Feb 03 10:43:59 2009 +0100
+files:       src/libr/core/t/Makefile src/libr/io/io.c src/libr/io/plugins/Makefile src/libr/io/plugins/dbg.c src/libr/io/plugins/ptrace.c src/libr/util/str.c
+description:
+* Initial import of the dbg:// io plugin
+  - Forks a new process and redirects the uri to ptrace:// on *nix
+  - If process name is a number directly pass the control to ptrace as a pid
+  - The resulting process is not attachable :/ will have to fix this :)
+* radare2 is now linked dinamicly against libr
+  - Fixes the problem of dupped r_io while using io plugins
+  - Everything needs to be dynamic if we want to use r_io
+
+
+changeset:   874:7d6363813c0d
+user:        pancake <youterm.com>
+date:        Mon Feb 02 04:28:02 2009 +0100
+files:       src/libr/core/cmd.c src/libr/core/core.c src/libr/core/t/Makefile src/libr/include/r_core.h src/libr/include/r_io.h src/libr/io/handle.c src/libr/io/io.c src/libr/io/plugins/Makefile src/libr/io/plugins/ptrace.c src/libr/lib/lib.c
+description:
+* Initial working implementation of the ptrace io plugin
+  - Now r_core uses r_lib
+  - Plugins are autoloaded at startup time
+  - attach to process and read memory works
+
+
+changeset:   873:55c830447283
+user:        pancake <youterm.com>
+date:        Mon Feb 02 03:25:52 2009 +0100
+files:       src/libr/Makefile src/libr/include/r_lib.h src/libr/io/io.c src/libr/io/plugins/Makefile src/libr/io/plugins/ptrace.c src/rabin/rabin.c
+description:
+* Initial import of the ptrace io plugin
+  - core does not yet uses r_lib to load io/plugins
+  - Added R_LIB_TYPE_IO..more to come
+* Make rabin properly identify the redsn0w mach0 binary header
+
+
+changeset:   872:b24b3e49eb8d
+user:        pancake <youterm.com>
+date:        Mon Feb 02 01:59:44 2009 +0100
+files:       src/libr/bp/bp.c src/libr/debug/debug.c src/libr/include/r_asm.h src/libr/include/r_reg.h src/libr/io/plugins/README src/libr/io_plugins/README src/libr/reg/reg.c
+description:
+* More draft code for r_bp and r_reg
+
+
+changeset:   871:34d24ca37ff9
+user:        nibble
+date:        Mon Feb 02 00:50:19 2009 +0100
+files:       src/libr/asm/arch/arm/asm.c src/libr/asm/arch/bf/asm.c src/libr/asm/arch/mips/asm.c src/libr/asm/arch/ppc/asm.c src/libr/asm/arch/sparc/asm.c src/libr/asm/arch/x86/asm.c src/libr/asm/arch/x86/pseudo.c src/libr/asm/arch/x86/realloc.c src/libr/asm/asm.c src/libr/asm/t/asm_x86.c src/libr/asm/t/disasm_arm.c src/libr/asm/t/disasm_bf.c src/libr/asm/t/disasm_mips.c src/libr/asm/t/disasm_ppc.c src/libr/asm/t/disasm_sparc.c src/libr/asm/t/disasm_x86.c src/libr/asm/t/rasm2.c src/libr/asm/t/realloc_x86.c src/libr/include/r_asm.h src/libr/vapi/r_asm.vapi
+description:
+* Types fixups in r_asm
+
+
+changeset:   870:3e992e014cb6
+user:        nibble
+date:        Sun Feb 01 14:54:33 2009 +0100
+files:       src/libr/vapi/r_bin.vapi src/libr/vapi/t/bin.vala
+description:
+* Fixed r_bin vapi and test program
+
+
+changeset:   869:568b3537dc9c
+parent:      868:aeede8dbbdd7
+parent:      867:b66d5b37d514
+user:        pancake <youterm.com>
+date:        Sun Feb 01 04:50:30 2009 +0100
+files:       src/libr/asm/arch/arm/gnu/ansidecl.h src/libr/asm/arch/arm/gnu/bfd.h src/libr/asm/arch/arm/gnu/dis-asm.h src/libr/asm/arch/arm/gnu/symcat.h src/libr/asm/arch/mips/gnu/ansidecl.h src/libr/asm/arch/mips/gnu/bfd.h src/libr/asm/arch/mips/gnu/bfdlink.h src/libr/asm/arch/mips/gnu/dis-asm.h src/libr/asm/arch/mips/gnu/elf-bfd.h src/libr/asm/arch/mips/gnu/elf/common.h src/libr/asm/arch/mips/gnu/elf/external.h src/libr/asm/arch/mips/gnu/elf/internal.h src/libr/asm/arch/mips/gnu/elf/mips.h src/libr/asm/arch/mips/gnu/elf/reloc-macros.h src/libr/asm/arch/mips/gnu/libiberty.h src/libr/asm/arch/mips/gnu/opcode/mips.h src/libr/asm/arch/mips/gnu/opintl.h src/libr/asm/arch/mips/gnu/symcat.h src/libr/asm/arch/mips/gnu/sysdep.h src/libr/include/r_asm.h src/libr/vapi/r_bin.vapi src/libr/vapi/t/bin.vala
+description:
+* Oops. merge
+
+
+changeset:   868:aeede8dbbdd7
+parent:      866:783ecba9af73
+user:        pancake <youterm.com>
+date:        Sun Feb 01 04:48:03 2009 +0100
+files:       src/libr/Makefile src/libr/bp/README src/libr/cmd/cmd.c src/libr/core/cmd.c src/libr/core/t/Makefile src/libr/debug/Makefile src/libr/debug/debug.c src/libr/debug/ptrace.c src/libr/include/r_asm.h src/libr/include/r_cmd.h src/libr/include/r_core.h src/libr/include/r_debug.h src/libr/include/r_reg.h src/libr/reg/Makefile src/libr/reg/README src/libr/reg/reg.c src/libr/util/Makefile src/libr/util/alloca.c src/libr/util/alloca.s src/libr/util/t/Makefile src/libr/util/t/ralloc.c src/libr/vapi/r_bin.vapi src/libr/vapi/t/bin.vala
+description:
+* Initial nonworking draft for r_debug and r_reg
+  - Basic debugger api defined
+    - Needs implementation for various operating systems
+  - Debugger is now designed to be modular at breakpoint, register,
+    io, and debugging layers based on function pointers.
+  - Lot of things to do here.
+  - r_reg handles lists and definitions for registers of multiple architectures
+* Initial import of ralloc.
+  - A minimalistic and fast stacked heap memory allocation
+  - 40% faster than glibc's malloc and 60% faster than alloca
+    - Exposes a bug in gcc optimizations.
+    fmi: http://news.nopcode.org/gccfail
+    - Added benchmarking test program
+* Some cleanup of the r_bin api. missing "public" attributes
+  - Looks like arrays like Entry[] are not well integrated with vala
+  - Test program now crashes. needs redesign solution
+* Dummy r_cmd_args() to be integrated easily with dietline
+* Added dummy help message for 'd' command in radare2
+
+
+changeset:   867:b66d5b37d514
+user:        nibble
+date:        Fri Jan 30 20:13:46 2009 +0100
+files:       src/libr/TODO src/libr/asm/Makefile src/libr/asm/arch/arm/asm.c src/libr/asm/arch/arm/gnu/ansidecl.h src/libr/asm/arch/arm/gnu/bfd.h src/libr/asm/arch/arm/gnu/dis-asm.h src/libr/asm/arch/arm/gnu/symcat.h src/libr/asm/arch/include/ansidecl.h src/libr/asm/arch/include/bfd.h src/libr/asm/arch/include/bfdlink.h src/libr/asm/arch/include/dis-asm.h src/libr/asm/arch/include/elf-bfd.h src/libr/asm/arch/include/elf/common.h src/libr/asm/arch/include/elf/external.h src/libr/asm/arch/include/elf/internal.h src/libr/asm/arch/include/elf/mips.h src/libr/asm/arch/include/elf/reloc-macros.h src/libr/asm/arch/include/libiberty.h src/libr/asm/arch/include/opcode/mips.h src/libr/asm/arch/include/opcode/sparc.h src/libr/asm/arch/include/opintl.h src/libr/asm/arch/include/symcat.h src/libr/asm/arch/include/sysdep.h src/libr/asm/arch/mips/asm.c src/libr/asm/arch/mips/gnu/ansidecl.h src/libr/asm/arch/mips/gnu/bfd.h src/libr/asm/arch/mips/gnu/bfdlink.h src/libr/asm/arch/mips/gnu/dis-asm.h src/libr/asm/arch/mips/gnu/elf-bfd.h src/libr/asm/arch/mips/gnu/elf/common.h src/libr/asm/arch/mips/gnu/elf/external.h src/libr/asm/arch/mips/gnu/elf/internal.h src/libr/asm/arch/mips/gnu/elf/mips.h src/libr/asm/arch/mips/gnu/elf/reloc-macros.h src/libr/asm/arch/mips/gnu/libiberty.h src/libr/asm/arch/mips/gnu/opcode/mips.h src/libr/asm/arch/mips/gnu/opintl.h src/libr/asm/arch/mips/gnu/symcat.h src/libr/asm/arch/mips/gnu/sysdep.h src/libr/asm/arch/sparc/asm.c src/libr/asm/arch/sparc/gnu/sparc-dis.c src/libr/asm/arch/sparc/gnu/sparc-opc.c src/libr/asm/asm.c src/libr/asm/t/Makefile src/libr/asm/t/disasm_sparc.c src/libr/config.mk src/libr/include/r_asm.h src/libr/include/r_bin.h src/libr/include/r_bin_elf.h src/libr/include/r_bin_pe.h src/libr/vapi/r_asm.vapi src/libr/vapi/r_bin.vapi src/libr/vapi/t/asm.vala src/libr/vapi/t/bin.vala
+description:
+* r_asm
+  - Added sparc support
+  - Added test (disasm_sparc)
+  - Major reorganization of headers
+* Minor fixups in r_asm & r_bin vapis
+
+
+changeset:   866:783ecba9af73
+user:        nibble
+date:        Fri Jan 30 16:08:53 2009 +0100
+files:       src/libr/TODO src/libr/asm/arch/bf/asm.c src/libr/asm/arch/x86/pseudo.c src/libr/asm/arch/x86/realloc.c src/libr/include/r_bin_elf.h src/libr/vapi/r_asm.vapi src/libr/vapi/r_bin.vapi src/libr/vapi/t/Makefile src/libr/vapi/t/asm.vala src/libr/vapi/t/bin.vala
+description:
+* r_asm
+  - More refactoring
+* r_bin
+  - Fixed header issue
+* vapis
+  - Added r_asm and r_bin vapi
+  - Modified t/asm including parsing
+  - Added test (t/bin)
+
+
+changeset:   865:50e3b2e29e41
+user:        pancake <youterm.com>
+date:        Fri Jan 30 12:20:48 2009 +0100
+files:       src/libr/TODO src/libr/bp/Makefile src/libr/bp/README src/libr/cons/Makefile src/libr/cons/TODO src/libr/cons/color.c src/libr/cons/cons.c src/libr/cons/input.c src/libr/cons/pipe.c src/libr/cons/print.c src/libr/core/cmd.c src/libr/include/r_cons.h src/libr/include/r_util.h src/libr/stripsyms.sh src/libr/util/num.c src/libr/util/str.c
+description:
+* Split cons in multiple files
+* Initial README for r_bp breakpoint management library
+* File pipes are now working in radare2 ('>' and '>>')
+* stripsyms.sh only filters symbols in r_util starting with r_
+* Added r_str_nchr in util/str.c - simplifies some cons code
+
+
+changeset:   864:cc8bad644a1d
+user:        nibble
+date:        Thu Jan 29 19:00:38 2009 +0100
+files:       src/libr/asm/t/realloc_x86.c src/libr/bin/bin.c src/libr/bin/t/baddr.c src/libr/bin/t/entry.c src/libr/bin/t/imports.c src/libr/bin/t/info.c src/libr/bin/t/rabin2.c src/libr/bin/t/sections.c src/libr/bin/t/symbols.c src/libr/include/r_bin.h
+description:
+* r_bin
+  - Added r_bin_new and r_bin_free
+  - r_bin_open renamed to r_bin_init
+  - Tests modified accordingly
+
+
+changeset:   863:279b0b1bb362
+user:        nibble
+date:        Thu Jan 29 12:15:18 2009 +0100
+files:       src/libr/asm/Makefile src/libr/asm/arch/bf/asm.c src/libr/asm/asm.c src/libr/asm/t/Makefile src/libr/asm/t/disasm_bf.c src/libr/include/r_asm.h
+description:
+* r_asm
+  - Added bf support ;)
+  - Added test (disasm_bf)
+
+
+changeset:   862:612f9aabcb39
+user:        pancake <youterm.com>
+date:        Thu Jan 29 12:24:47 2009 +0100
+files:       src/libr/TODO src/libr/include/r_core.h src/libr/include/r_range.h src/libr/range/range.c src/libr/vapi/r_cons.vapi src/libr/vapi/r_core.vapi src/libr/vapi/r_range.vapi src/libr/vapi/r_socket.vapi src/libr/vapi/r_syscall.vapi src/libr/vapi/t/Makefile src/libr/vapi/t/core.vala src/libr/vapi/t/hash.vala
+description:
+* Initial import of r_cons, r_range and r_core VAPI files
+* Verboser TODO file
+* Fix out of namespace range function
+* Added Hello world test for vala-core
+
+
+changeset:   861:281224e02f42
+user:        nibble
+date:        Thu Jan 29 10:49:27 2009 +0100
+files:       src/libr/asm/Makefile src/libr/asm/arch/arm/asm.c src/libr/asm/arch/mips/asm.c src/libr/asm/arch/ppc/asm.c src/libr/asm/arch/ppc/ppc_disasm/ppc_disasm.c src/libr/asm/arch/ppc/ppc_disasm/ppc_disasm.h src/libr/asm/arch/x86/asm.c src/libr/asm/asm.c src/libr/asm/t/Makefile src/libr/asm/t/disasm_ppc.c src/libr/bin/Makefile src/libr/include/r_asm.h src/libr/include/r_util.h src/libr/util/hex.c
+description:
+* r_asm
+  - Added ppc support
+  - Added test (disasm_ppc)
+* r_util
+  - Minor fix
+
+
+changeset:   860:996ef907bde5
+user:        nibble
+date:        Thu Jan 29 00:38:47 2009 +0100
+files:       src/libr/asm/Makefile src/libr/asm/arch/arm/asm.c src/libr/asm/arch/mips/asm.c src/libr/asm/arch/mips/gnu/ansidecl.h src/libr/asm/arch/mips/gnu/bfd.h src/libr/asm/arch/mips/gnu/bfdlink.h src/libr/asm/arch/mips/gnu/dis-asm.h src/libr/asm/arch/mips/gnu/elf-bfd.h src/libr/asm/arch/mips/gnu/elf/common.h src/libr/asm/arch/mips/gnu/elf/external.h src/libr/asm/arch/mips/gnu/elf/internal.h src/libr/asm/arch/mips/gnu/elf/mips.h src/libr/asm/arch/mips/gnu/elf/reloc-macros.h src/libr/asm/arch/mips/gnu/libiberty.h src/libr/asm/arch/mips/gnu/mips-dis.c src/libr/asm/arch/mips/gnu/mips-opc.c src/libr/asm/arch/mips/gnu/mips16-opc.c src/libr/asm/arch/mips/gnu/opcode/mips.h src/libr/asm/arch/mips/gnu/opintl.h src/libr/asm/arch/mips/gnu/symcat.h src/libr/asm/arch/mips/gnu/sysdep.h src/libr/asm/asm.c src/libr/asm/t/Makefile src/libr/asm/t/asm_x86.c src/libr/asm/t/disasm_arm.c src/libr/asm/t/disasm_mips.c src/libr/asm/t/disasm_x86.c src/libr/asm/t/rasm2.c src/libr/asm/t/realloc_x86.c src/libr/include/r_asm.h
+description:
+* r_asm
+  - Added mips support
+  - Added new test (disasm_mips)
+  - Minor fixups in arm
+
+
+changeset:   859:01693373b933
+user:        pancake <youterm.com>
+date:        Thu Jan 29 01:25:55 2009 +0100
+files:       src/libr/bin/bin.c src/libr/core/Makefile src/libr/core/cmd.c src/libr/core/core.c src/libr/core/file.c src/libr/core/io.c src/libr/core/write.c src/libr/sign/sign.c src/libr/vapi/r_bin.vapi src/libr/vapi/r_core.vapi src/libr/vapi/r_io.vapi src/libr/vapi/t/Makefile
+description:
+* Initial vapi files for core, io and bin
+* Added simple core vapi test program
+
+
+changeset:   858:00abc72fdb25
+user:        pancake <@youterm.com>
+date:        Wed Jan 28 19:48:38 2009 +0100
+files:       Makefile.acr src/vars.c
+description:
+* Applied build and installation bugfix patch
+  - Thanks Mathias Krause!
+
 === 1.2 ===
 
 changeset:   846:a4d83e09a192
