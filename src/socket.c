@@ -99,6 +99,8 @@ void socket_block(int fd, int block)
 {
 #if _UNIX_
 	fcntl(fd, F_SETFL, O_NONBLOCK, !block);
+#elif _WINDOWS_
+	ioctlsocket(fd, FIONBIO, (u_long FAR*)&block);
 #endif
 }
 

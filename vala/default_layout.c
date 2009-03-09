@@ -124,7 +124,7 @@ static void grava_default_layout_treenodes (GravaDefaultLayout* self, GravaNode*
 #line 56 "default_layout.vala"
 				node->x = node->x + (n->w + ox);
 #line 57 "default_layout.vala"
-				ox = ox + 50;
+				ox = ox + (50);
 #line 58 "default_layout.vala"
 				grava_default_layout_treenodes (self, node);
 			}
@@ -264,7 +264,7 @@ void grava_default_layout_walkChild (GravaDefaultLayout* self, GravaNode* node, 
 #line 102 "default_layout.vala"
 					edge->dest->y = (edge->orig->y + edge->orig->h) + self->y_offset;
 #line 103 "default_layout.vala"
-					grava_default_layout_walkChild (self, edge->dest, level = level - 1);
+					grava_default_layout_walkChild (self, edge->dest, (level = level - 1));
 				}
 			}
 		}
@@ -476,9 +476,9 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 		last_y = (n->y + n->h) + 10;
 		_tmp9 = FALSE;
 #line 188 "default_layout.vala"
-		if (found == TRUE) {
+		if ((found == TRUE)) {
 #line 188 "default_layout.vala"
-			_tmp9 = n->baseaddr < destn->baseaddr;
+			_tmp9 = (n->baseaddr < destn->baseaddr);
 		} else {
 #line 188 "default_layout.vala"
 			_tmp9 = FALSE;
@@ -493,7 +493,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 			/*/
 			maxw = (double) 0;
 #line 192 "default_layout.vala"
-			for (k = i + 1; k < g_slist_length (graph->nodes); k++) {
+			for (k = (i + 1); k < g_slist_length (graph->nodes); k++) {
 				GravaNode* _tmp11;
 				GravaNode* _tmp10;
 				gboolean _tmp12;
@@ -504,9 +504,9 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 				p = (_tmp11 = (_tmp10 = (GravaNode*) g_slist_nth_data (graph->nodes, (guint) k), (_tmp10 == NULL) ? NULL : g_object_ref (_tmp10)), (p == NULL) ? NULL : (p = (g_object_unref (p), NULL)), _tmp11);
 				_tmp12 = FALSE;
 #line 194 "default_layout.vala"
-				if (p->x == n->x) {
+				if ((p->x == n->x)) {
 #line 194 "default_layout.vala"
-					_tmp12 = p->w > maxw;
+					_tmp12 = (p->w > maxw);
 				} else {
 #line 194 "default_layout.vala"
 					_tmp12 = FALSE;
@@ -520,7 +520,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 			/*/ DesplaÃ§o
 			/*/
 #line 199 "default_layout.vala"
-			for (k = i + 1; k < g_slist_length (graph->nodes); k++) {
+			for (k = (i + 1); k < g_slist_length (graph->nodes); k++) {
 				GravaNode* _tmp14;
 				GravaNode* _tmp13;
 				_tmp14 = NULL;
@@ -537,7 +537,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 #line 205 "default_layout.vala"
 				if (p->x == n->x) {
 #line 206 "default_layout.vala"
-					p->x = p->x + (maxw + 10);
+					p->x = p->x + ((maxw + 10));
 				}
 				/*/ Es ja el node desti.*/
 #line 209 "default_layout.vala"

@@ -161,7 +161,7 @@ gboolean grava_node_overlaps (GravaNode* self, GravaNode* n) {
 		_tmp0 = FALSE;
 	}
 #line 80 "node.vala"
-	return _tmp0;
+	return (_tmp0);
 }
 
 
@@ -212,12 +212,12 @@ void grava_node_fit (GravaNode* self) {
 			for (str_it = 0; str_it < _vala_array_length (_tmp3); str_it = str_it + 1) {
 				const char* _tmp4;
 				char* str;
-#line 822 "glib-2.0.vapi"
+#line 722 "glib-2.0.vapi"
 				_tmp4 = NULL;
 				str = (_tmp4 = str_collection[str_it], (_tmp4 == NULL) ? NULL : g_strdup (_tmp4));
 				{
 #line 95 "node.vala"
-					_y = _y + ((double) 10);
+					_y = _y + (10);
 #line 96 "node.vala"
 					if (g_utf8_strlen (str, -1) > ((glong) _w)) {
 #line 97 "node.vala"
@@ -231,9 +231,9 @@ void grava_node_fit (GravaNode* self) {
 		}
 	}
 #line 100 "node.vala"
-	self->w = _w * 7;
+	self->w = (_w * 7);
 #line 101 "node.vala"
-	self->h = _y + 10;
+	self->h = (_y) + 10;
 	label = (g_free (label), NULL);
 	body = (g_free (body), NULL);
 }
