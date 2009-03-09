@@ -1441,8 +1441,28 @@ CMD_DECL(flag)
 		case '*': flag_set("*",0,0); break;
 		case '-': flag_remove(text+1); break;
 		default:
-			ret = flag_set(text, config.seek, input[0]=='n');
-			D { if (!ret) { flags_setenv(); } } }
+			{
+			u64 here = config.seek;
+			u64 size = config.block_size;
+			char *s = strchr(text, ' ');
+			char *s2 = NULL;
+			if (s) {
+				*s='\0';
+				s2 = strchr(s+1, ' ');
+				if (s2) {
+					*s2 = '\0';
+					here = get_math(s2+1);
+				}
+				radare_set_block_size_i(get_math(s+1));
+			}
+			ret = flag_set(text, here, input[0]=='n');
+			D { if (!ret) { flags_setenv(); } }
+			if (s) *s=' ';
+			if (s2) *s2=' ';
+			if (size != config.block_size)
+				radare_set_block_size_i(size);
+			}
+		}
 	}
 
 	return ret;

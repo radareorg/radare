@@ -54,7 +54,7 @@ struct _GravaDefaultLayoutClass {
 };
 
 
-void grava_default_layout_reset (GravaDefaultLayout* self);
+void grava_default_layout_reset_layout (GravaDefaultLayout* self);
 void grava_default_layout_reset_real (GravaDefaultLayout* self);
 void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n);
 gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n);

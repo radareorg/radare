@@ -32,7 +32,7 @@ static void grava_edge_finalize (GObject* obj);
 
 
 #line 35 "edge.vala"
-char* grava_edge_get (GravaEdge* self, const char* val) {
+char* grava_edge_get_s (GravaEdge* self, const char* val) {
 	const char* _tmp0;
 #line 35 "edge.vala"
 	g_return_val_if_fail (self != NULL, NULL);
@@ -46,7 +46,7 @@ char* grava_edge_get (GravaEdge* self, const char* val) {
 
 
 #line 40 "edge.vala"
-void grava_edge_set (GravaEdge* self, const char* val, const char* key) {
+void grava_edge_set_s (GravaEdge* self, const char* val, const char* key) {
 	const char* _tmp1;
 	const char* _tmp0;
 #line 40 "edge.vala"

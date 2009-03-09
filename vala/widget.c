@@ -361,7 +361,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 #line 61 "node.vala"
 			_tmp0 = NULL;
 #line 163 "widget.vala"
-			mygrava_bp_at (NULL, _tmp0 = grava_node_get (grava_graph_selected, "label"));
+			mygrava_bp_at (NULL, _tmp0 = grava_node_get_s (grava_graph_selected, "label"));
 			_tmp0 = (g_free (_tmp0), NULL);
 #line 164 "widget.vala"
 			break;
@@ -375,7 +375,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 #line 61 "node.vala"
 			_tmp1 = NULL;
 #line 167 "widget.vala"
-			mygrava_bp_at (NULL, _tmp2 = g_strdup_printf ("-%s", _tmp1 = grava_node_get (grava_graph_selected, "label")));
+			mygrava_bp_at (NULL, _tmp2 = g_strdup_printf ("-%s", _tmp1 = grava_node_get_s (grava_graph_selected, "label")));
 			_tmp2 = (g_free (_tmp2), NULL);
 			_tmp1 = (g_free (_tmp1), NULL);
 #line 168 "widget.vala"
@@ -547,7 +547,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 #line 61 "node.vala"
 				_tmp3 = NULL;
 #line 259 "widget.vala"
-				g_signal_emit_by_name (self, "load-graph-at", _tmp3 = grava_node_get (grava_graph_selected, "label"));
+				g_signal_emit_by_name (self, "load-graph-at", _tmp3 = grava_node_get_s (grava_graph_selected, "label"));
 				_tmp3 = (g_free (_tmp3), NULL);
 			} else {
 #line 260 "widget.vala"
@@ -797,7 +797,7 @@ static void __lambda0 (GtkImageMenuItem* imi, GravaWidget* self) {
 #line 61 "node.vala"
 	_tmp0 = NULL;
 #line 368 "widget.vala"
-	core_load_graph_at_label (NULL, _tmp0 = grava_node_get (grava_graph_selected, "label"));
+	core_load_graph_at_label (NULL, _tmp0 = grava_node_get_s (grava_graph_selected, "label"));
 	_tmp0 = (g_free (_tmp0), NULL);
 }
 
@@ -814,7 +814,7 @@ static void __lambda1 (GtkImageMenuItem* imi, GravaWidget* self) {
 #line 61 "node.vala"
 	_tmp0 = NULL;
 #line 378 "widget.vala"
-	mygrava_bp_at (NULL, _tmp0 = grava_node_get (grava_graph_selected, "label"));
+	mygrava_bp_at (NULL, _tmp0 = grava_node_get_s (grava_graph_selected, "label"));
 	_tmp0 = (g_free (_tmp0), NULL);
 }
 
@@ -830,7 +830,7 @@ static void __lambda2 (GtkImageMenuItem* imi, GravaWidget* self) {
 #line 61 "node.vala"
 	_tmp0 = NULL;
 #line 384 "widget.vala"
-	mygrava_bp_rm_at (NULL, _tmp0 = grava_node_get (grava_graph_selected, "label"));
+	mygrava_bp_rm_at (NULL, _tmp0 = grava_node_get_s (grava_graph_selected, "label"));
 	_tmp0 = (g_free (_tmp0), NULL);
 }
 

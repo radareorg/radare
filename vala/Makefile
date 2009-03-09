@@ -53,14 +53,23 @@ VALAFLAGS=-g
 VOBJ=config.o core.o debug.o debugger.o info.o io.o line.o list.o logs.o plugin.o project.o radget.o term.o visor.o default_layout.o edge.o graph.o layout.o node.o renderer.o shape.o widget.o
 BIN=a.out
 
+#${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`
 all: all_vala ${VOBJ}
-	@echo done
-	#${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`
 
 all_vala:
-	-valac --help > /dev/null && valac ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 grava/*.vala
-#	${CC} -lewf -g ${OBJ} *.c `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
-	#${CC} -lewf -g ${OBJ} *.o `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
+	@do=0; \
+	for o in ${VOBJ}; do \
+		v=$$(echo grava/$$o|sed -e s,o$$,vala,) ; \
+		c=$$(echo $$o|sed -e s,o$$,c,) ; \
+		if [ $$v -nt $$c ]; then echo "updated $$v"; do=1 ; fi ; \
+	done ; \
+	if [ $${do} = 1 ]; then \
+	echo "Generating C files..." ; \
+	valac --help > /dev/null && valac ${VALAFLAGS} -C -c --pkg vte --pkg gtk+-2.0 grava/*.vala ; \
+	fi
+
+#${CC} -lewf -g ${OBJ} *.c `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
+#${CC} -lewf -g ${OBJ} *.o `pkg-config --cflags --libs gtk+-2.0 vte` -lreadline
 
 allavas: ../src/radare.o
 	#${VALAC} ${VALAFLAGS} -c --pkg vte --pkg gtk+-2.0 *.vala api/*.vala panel/*.vala

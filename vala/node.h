@@ -62,9 +62,9 @@ struct _GravaNodeClass {
 };
 
 
-void grava_node_set (GravaNode* self, const char* key, const char* val);
+void grava_node_set_s (GravaNode* self, const char* key, const char* val);
 void grava_node_set_i (GravaNode* self, const char* key, guint64 val);
-char* grava_node_get (GravaNode* self, const char* key);
+char* grava_node_get_s (GravaNode* self, const char* key);
 void grava_node_add_call (GravaNode* self, guint64 addr);
 void grava_node_add_xref (GravaNode* self, guint64 addr);
 gboolean grava_node_overlaps (GravaNode* self, GravaNode* n);

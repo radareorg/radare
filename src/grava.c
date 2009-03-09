@@ -215,7 +215,7 @@ static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
 //	ptr = config_get("graph.layout");
 //	if (ptr && !strcmp(ptr, "graphviz"))
 //	else
-	grava_default_layout_reset(last_window->grava->graph->layout);
+	grava_default_layout_reset_layout(last_window->grava->graph->layout);
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -498,11 +498,11 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 		struct static_nodes *s0 = list_entry(head, struct static_nodes, list);
 		GravaNode *node = grava_node_new();
 		g_object_ref(node);
-		grava_node_set(node, "label", s0->command);
+		grava_node_set_s(node, "label", s0->command);
 		
 		ptr =  pipe_command_to_string(s0->command);
 		if (ptr)
-			grava_node_set(node, "body", ptr);
+			grava_node_set_s(node, "body", ptr);
 		grava_graph_add_node(win->grava->graph, node);
 		g_object_unref(node);
 	}
@@ -520,17 +520,17 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 		string_flag_offset(cmd, b0->addr);
 		cmd[127]='\0'; // XXX ugly string recycle hack
 		sprintf(cmd+128, "0x%08llx  %s", b0->addr, cmd);
-		grava_node_set(node, "color", "gray");
+		grava_node_set_s(node, "color", "gray");
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
-			grava_node_set(node, "bgcolor", "beige");
-			//grava_node_set(node, "color", "darkgray");
+			grava_node_set_s(node, "bgcolor", "beige");
+			//grava_node_set_s(node, "color", "darkgray");
 
 #if 0
 		// XXX this makes radare segfault with g_object_unref HUH!
 		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
-			grava_node_set(node, "bgcolor", "yellow");
+			grava_node_set_s(node, "bgcolor", "yellow");
 #endif
 
 		/* add call references for this node */
@@ -541,14 +541,14 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 		}
 
 		node->baseaddr = b0->addr;
-		grava_node_set(node, "label", cmd+128);
+		grava_node_set_s(node, "label", cmd+128);
 		grava_node_set_i(node, "offset", b0->addr);
 
 		/* disassemble body */
 		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
 		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
 		ptr =  pipe_command_to_string(cmd);
-		grava_node_set(node, "body", ptr);
+		grava_node_set_s(node, "body", ptr);
 		free(ptr);
 
 		grava_graph_add_node(win->grava->graph, node);
@@ -572,7 +572,7 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 					printf("T %08llx\n", b0->tnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
-					//grava_node_set(node2, "color", "green");
+					//grava_node_set_s(node2, "color", "green");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "green");
 					edge->jmpcnd = 1; // true
@@ -589,7 +589,7 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 					printf("F %08llx\n", b0->fnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
-					//grava_node_set(node2, "color", "red");
+					//grava_node_set_s(node2, "color", "red");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
 					grava_edge_set(edge, "color", "red");
 					edge->jmpcnd = 0; // false
@@ -628,11 +628,11 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		struct static_nodes *s0 = list_entry(head, struct static_nodes, list);
 		GravaNode *node = grava_node_new();
 		g_object_ref(node);
-		grava_node_set(node, "label", s0->command);
+		grava_node_set_s(node, "label", s0->command);
 		
 		ptr =  pipe_command_to_string(s0->command);
 		if (ptr) {
-			grava_node_set(node, "body", ptr);
+			grava_node_set_s(node, "body", ptr);
 		}
 		grava_graph_add_node(win->grava->graph, node);
 		g_object_unref(node);
@@ -656,13 +656,13 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 
 		// traced nodes are turquoise
 		if (trace_times(b0->addr)>0)
-			grava_node_set(node, strdup("bgcolor"), strdup("beige"));
-			//grava_node_set(node, "color", "darkgray");
+			grava_node_set_s(node, strdup("bgcolor"), strdup("beige"));
+			//grava_node_set_s(node, "color", "darkgray");
 
 #if 0
 		// XXX this makes radare segfault with g_object_unref HUH!
 		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
-			grava_node_set(node, "bgcolor", "yellow");
+			grava_node_set_s(node, "bgcolor", "yellow");
 #endif
 
 		/* add call references for this node */
@@ -673,7 +673,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		}
 
 		node->baseaddr = b0->addr;
-		grava_node_set(node, "label", cmd+128);
+		grava_node_set_s(node, "label", cmd+128);
 		grava_node_set_i(node, "offset", b0->addr);
 
 		/* disassemble body */
@@ -682,10 +682,10 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
 		ptr =  pipe_command_to_string(cmd);
 		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
-		grava_node_set(node, "body", ptr);
+		grava_node_set_s(node, "body", ptr);
 		if (strstr(ptr, "eip:"))
-			grava_node_set(node, "color", "red");
-		else grava_node_set(node, strdup("color"), strdup("gray"));
+			grava_node_set_s(node, "color", "red");
+		else grava_node_set_s(node, strdup("color"), strdup("gray"));
 		//printf("cmd_str = %x\n", grava_graph_get(win->grava->graph, "cmd"));
 		//grava_graph_set(win->grava->graph, "cmd", "; XXX LOL!!!");
 		//printf("B (0x%08x) (%d) (\n%s)\n", (unsigned int)b0->addr, (unsigned int)b0->n_bytes-1, ptr);
@@ -712,9 +712,9 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 					printf("T %08llx\n", b0->tnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
-					//grava_node_set(node2, "color", "green");
+					//grava_node_set_s(node2, "color", "green");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
-					grava_edge_set(edge, "color", "green");
+					grava_edge_set_s(edge, "color", "green");
 					edge->jmpcnd = 1; // true
 					grava_graph_add_edge(win->grava->graph, edge);
 					break;
@@ -729,9 +729,9 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 					printf("F %08llx\n", b0->fnext);
 					node2 = b1->data;
 					//if (!gtk_is_init)
-					//grava_node_set(node2, "color", "red");
+					//grava_node_set_s(node2, "color", "red");
 					edge = grava_edge_with(grava_edge_new(), node, node2);
-					grava_edge_set(edge, "color", "red");
+					grava_edge_set_s(edge, "color", "red");
 					edge->jmpcnd = 0; // false
 					grava_graph_add_edge(win->grava->graph, edge);
 					break;

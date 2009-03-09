@@ -80,6 +80,7 @@ void flag_help()
 	" fr old new   ; rename a flag or more with '*'\n"
 	" f sym.main   ; flag current offset as sym.main\n"
 	" f foo @ 0x23 ; flag 0x23 offset as foo\n"
+	" f foo 12 0x23; the same as above, but faster (size=12, off=0x23)\n"
 	" f -sym.main  ; remove sym.main\n"
 	" f -*         ; remove all flags\n"
 	" f -sym.*     ; remove all flags starting with 'sym.'\n");

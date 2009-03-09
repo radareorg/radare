@@ -36,11 +36,12 @@ Charting api for Vala
    setPoint(x, y, "#ff0000")
 */
 
+/*
 class Grava.Chart : GLib.Object
 {
 	//public SList<Bar> bars;
 
-	/* constructor */
+	// constructor
 	construct {
 //		bars = new SList<Bar>();
 	}
@@ -69,3 +70,4 @@ class Grava.Chart : GLib.Object
 	{
 	}
 }
+*/

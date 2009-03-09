@@ -31,7 +31,7 @@ public class Grava.DefaultLayout : Grava.Layout
 		data = new HashTable<string, Node>.full(str_hash, str_equal, g_free, Object.unref);
 	}
 
-	public void reset()
+	public void reset_layout()
 	{
 		stdout.printf("RESETING LAYOUT\n");
 		foreach(weak Node node in graph.nodes) {
@@ -61,15 +61,15 @@ public class Grava.DefaultLayout : Grava.Layout
 
 	public void setxy(Node n)
 	{
-		Node m = data.lookup(n.get("offset"));
+		Node m = data.lookup(n.get_s("offset"));
 		if (m == null) {
 			Node no = new Node();
-			no.set("offset", n.get("offset"));
+			no.set("offset", n.get_s("offset"));
 			no.x = n.x;
 			no.y = n.y;
 			no.w = n.w;
 			no.h = n.h;
-			data.insert(n.get("offset"), no);
+			data.insert(n.get_s("offset"), no);
 		} else {
 			m.x = n.x;
 			m.y = n.y;
@@ -80,16 +80,16 @@ public class Grava.DefaultLayout : Grava.Layout
 
 	public bool getxy(ref Node n)
 	{
-		Node m = data.lookup(n.get("offset"));
+		Node m = data.lookup(n.get_s("offset"));
 		if (m != null) {
 			n.x = m.x;
 			n.y = m.y;
 			n.w = m.w;
 			n.h = m.h;
-stdout.printf("TAKEND FOR %s\n", n.get("offset"));
+stdout.printf("TAKEND FOR %s\n", n.get_s("offset"));
 			return true;
 		}
-stdout.printf("NOT TAKEND FOR %s\n", n.get("offset"));
+stdout.printf("NOT TAKEND FOR %s\n", n.get_s("offset"));
 		
 		return false;
 	}
@@ -139,7 +139,7 @@ stdout.printf("NOT TAKEND FOR %s\n", n.get("offset"));
 			node.fit();
 			node.y = last_y ;
 			last_y = node.y + node.h + 50 ;
-			if (d) stdout.printf(" at %f %s %x\n", node.y, node.get ("label" ) , node.baseaddr );
+			if (d) stdout.printf(" at %f %s %x\n", node.y, node.get_s("label" ) , node.baseaddr );
 		}
 		
 		// Per cada node. Segueixo la condiciÃ³ certa, tots els nodes que estiguin
@@ -154,7 +154,7 @@ stdout.printf("NOT TAKEND FOR %s\n", n.get("offset"));
 			if (getxy(ref n))
 				continue;
 */
-			Node m = data.lookup(n.get("offset"));
+			Node m = data.lookup(n.get_s("offset"));
 			if (m != null) {
 				n.x = m.x;
 				n.y = m.y;

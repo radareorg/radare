@@ -160,11 +160,11 @@ public class Grava.Widget : GLib.Object {
 		switch (ek.keyval) {
 		case 'b':
 		case 65471: // F2 - set breakpoint
-			Widget.set_breakpoint(null, Graph.selected.get("label"));
+			Widget.set_breakpoint(null, Graph.selected.get_s("label"));
 			break;
 		case 'B':
 		//case 65471: // F2 - set breakpoint
-			Widget.set_breakpoint(null, "-%s".printf(Graph.selected.get("label")));
+			Widget.set_breakpoint(null, "-%s".printf(Graph.selected.get_s("label")));
 			break;
 		case 'S':
 			run_cmd("!stepo");
@@ -256,7 +256,7 @@ public class Grava.Widget : GLib.Object {
 			break;
 		case '.':
 			if (Graph.selected != null)
-				load_graph_at(Graph.selected.get("label"));
+				load_graph_at(Graph.selected.get_s("label"));
 			else graph.select_next();
 			break;
 		case ':':
@@ -365,7 +365,7 @@ load_graph_at("$$");
 		imi = new ImageMenuItem.from_stock("gtk-zoom-in", null);
 		imi.activate += imi => {
 	//		stdout.printf("go in!\n");
-			Widget.focus_at_label(null, Graph.selected.get("label"));
+			Widget.focus_at_label(null, Graph.selected.get_s("label"));
 			//MenuItem mi = menu.get_active();
 			//load_graph_at(((Label)imi.child).get_text()); //"0x400");
 			//stdout.printf(" cocococo "+ menu.);
@@ -375,13 +375,13 @@ load_graph_at("$$");
 		imi = new ImageMenuItem.with_label("Breakpoint here");
 		imi.activate += imi => {
 	//		stdout.printf("add bp!\n");
-			Widget.set_breakpoint(null, Graph.selected.get("label"));
+			Widget.set_breakpoint(null, Graph.selected.get_s("label"));
 		};
 		menu.append(imi);
 
 		imi = new ImageMenuItem.with_label("Remove breakpoint");
 		imi.activate += imi => {
-			Widget.unset_breakpoint(null, Graph.selected.get("label"));
+			Widget.unset_breakpoint(null, Graph.selected.get_s("label"));
 		};
 		menu.append(imi);
 

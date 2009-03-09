@@ -43,79 +43,79 @@ static void _g_slist_free_g_object_unref (GSList* self) {
 
 
 /*s = new ImageSurface.from_png("/tmp/file.png");*/
-#line 46 "graph.vala"
+#line 47 "graph.vala"
 void grava_graph_undo_select (GravaGraph* self) {
 	guint length;
-#line 46 "graph.vala"
+#line 47 "graph.vala"
 	g_return_if_fail (self != NULL);
 	length = g_slist_length (self->selhist);
-#line 49 "graph.vala"
-	grava_graph_selected = (GravaNode*) g_slist_nth_data (self->selhist, length - 1);
 #line 50 "graph.vala"
+	grava_graph_selected = (GravaNode*) g_slist_nth_data (self->selhist, length - 1);
+#line 51 "graph.vala"
 	self->selhist = g_slist_remove (self->selhist, grava_graph_selected);
 }
 
 
 /* TODO: Add boolean argument to reset layout too */
-#line 54 "graph.vala"
+#line 55 "graph.vala"
 void grava_graph_reset (GravaGraph* self) {
 	GSList* _tmp0;
 	GSList* _tmp1;
 	GSList* _tmp2;
-#line 54 "graph.vala"
-	g_return_if_fail (self != NULL);
 #line 55 "graph.vala"
+	g_return_if_fail (self != NULL);
+#line 56 "graph.vala"
 	grava_layout_reset (self->layout);
 	_tmp0 = NULL;
-#line 56 "graph.vala"
+#line 57 "graph.vala"
 	self->nodes = (_tmp0 = NULL, (self->nodes == NULL) ? NULL : (self->nodes = (_g_slist_free_g_object_unref (self->nodes), NULL)), _tmp0);
 	_tmp1 = NULL;
-#line 57 "graph.vala"
+#line 58 "graph.vala"
 	self->edges = (_tmp1 = NULL, (self->edges == NULL) ? NULL : (self->edges = (_g_slist_free_g_object_unref (self->edges), NULL)), _tmp1);
 	_tmp2 = NULL;
-#line 58 "graph.vala"
+#line 59 "graph.vala"
 	self->selhist = (_tmp2 = NULL, (self->selhist == NULL) ? NULL : (self->selhist = (_g_slist_free_g_object_unref (self->selhist), NULL)), _tmp2);
 }
 
 
 /*layout = new DefaultLayout();
  add png here */
-#line 63 "graph.vala"
-void grava_graph_set (GravaGraph* self, const char* key, const char* val) {
+#line 64 "graph.vala"
+void grava_graph_set_s (GravaGraph* self, const char* key, const char* val) {
 	const char* _tmp1;
 	const char* _tmp0;
-#line 63 "graph.vala"
+#line 64 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 63 "graph.vala"
+#line 64 "graph.vala"
 	g_return_if_fail (key != NULL);
-#line 63 "graph.vala"
+#line 64 "graph.vala"
 	g_return_if_fail (val != NULL);
-#line 65 "graph.vala"
+#line 66 "graph.vala"
 	_tmp1 = NULL;
-#line 65 "graph.vala"
+#line 66 "graph.vala"
 	_tmp0 = NULL;
-#line 65 "graph.vala"
+#line 66 "graph.vala"
 	g_hash_table_insert (self->data, (_tmp0 = key, (_tmp0 == NULL) ? NULL : g_strdup (_tmp0)), (_tmp1 = val, (_tmp1 == NULL) ? NULL : g_strdup (_tmp1)));
 }
 
 
-#line 68 "graph.vala"
-char* grava_graph_get (GravaGraph* self, const char* key) {
+#line 69 "graph.vala"
+char* grava_graph_get_s (GravaGraph* self, const char* key) {
 	const char* _tmp0;
-#line 68 "graph.vala"
+#line 69 "graph.vala"
 	g_return_val_if_fail (self != NULL, NULL);
-#line 68 "graph.vala"
+#line 69 "graph.vala"
 	g_return_val_if_fail (key != NULL, NULL);
-#line 70 "graph.vala"
+#line 71 "graph.vala"
 	_tmp0 = NULL;
-#line 70 "graph.vala"
+#line 71 "graph.vala"
 	return (_tmp0 = (const char*) g_hash_table_lookup (self->data, key), (_tmp0 == NULL) ? NULL : g_strdup (_tmp0));
 }
 
 
-#line 73 "graph.vala"
+#line 74 "graph.vala"
 void grava_graph_select_next (GravaGraph* self) {
-#line 73 "graph.vala"
+#line 74 "graph.vala"
 	g_return_if_fail (self != NULL);
 	/*
 	foreach(weak Node node in nodes) {
@@ -135,16 +135,16 @@ void grava_graph_select_next (GravaGraph* self) {
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 90 "graph.vala"
+#line 91 "graph.vala"
 		node_collection = self->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 90 "graph.vala"
+#line 91 "graph.vala"
 			node = (GravaNode*) node_it->data;
 			{
-#line 91 "graph.vala"
-				grava_graph_selected = grava_graph_selected = node;
 #line 92 "graph.vala"
+				grava_graph_selected = grava_graph_selected = node;
+#line 93 "graph.vala"
 				break;
 			}
 		}
@@ -152,85 +152,41 @@ void grava_graph_select_next (GravaGraph* self) {
 }
 
 
-#line 96 "graph.vala"
+#line 97 "graph.vala"
 void grava_graph_select_true (GravaGraph* self) {
-#line 96 "graph.vala"
+#line 97 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 98 "graph.vala"
-	if (grava_graph_selected == NULL) {
 #line 99 "graph.vala"
-		return;
-	}
-	{
-		GSList* edge_collection;
-		GSList* edge_it;
-#line 101 "graph.vala"
-		edge_collection = self->edges;
-		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
-			GravaEdge* edge;
-#line 101 "graph.vala"
-			edge = (GravaEdge*) edge_it->data;
-			{
-#line 102 "graph.vala"
-				if (grava_graph_selected == edge->orig) {
-					char* _tmp0;
-					gboolean _tmp1;
-#line 35 "edge.vala"
-					_tmp0 = NULL;
-#line 103 "graph.vala"
-					if ((_tmp1 = _vala_strcmp0 (_tmp0 = grava_edge_get (edge, "color"), "green") == 0, _tmp0 = (g_free (_tmp0), NULL), _tmp1)) {
-						GravaNode* _tmp2;
-#line 104 "graph.vala"
-						grava_graph_selected = edge->dest;
-#line 105 "graph.vala"
-						_tmp2 = NULL;
-#line 105 "graph.vala"
-						self->selhist = g_slist_append (self->selhist, (_tmp2 = grava_graph_selected, (_tmp2 == NULL) ? NULL : g_object_ref (_tmp2)));
-#line 106 "graph.vala"
-						break;
-					}
-				}
-			}
-		}
-	}
-}
-
-
-#line 112 "graph.vala"
-void grava_graph_select_false (GravaGraph* self) {
-#line 112 "graph.vala"
-	g_return_if_fail (self != NULL);
-#line 114 "graph.vala"
 	if (grava_graph_selected == NULL) {
-#line 115 "graph.vala"
+#line 100 "graph.vala"
 		return;
 	}
 	{
 		GSList* edge_collection;
 		GSList* edge_it;
-#line 117 "graph.vala"
+#line 102 "graph.vala"
 		edge_collection = self->edges;
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
-#line 117 "graph.vala"
+#line 102 "graph.vala"
 			edge = (GravaEdge*) edge_it->data;
 			{
-#line 118 "graph.vala"
+#line 103 "graph.vala"
 				if (grava_graph_selected == edge->orig) {
 					char* _tmp0;
 					gboolean _tmp1;
 #line 35 "edge.vala"
 					_tmp0 = NULL;
-#line 119 "graph.vala"
-					if ((_tmp1 = _vala_strcmp0 (_tmp0 = grava_edge_get (edge, "color"), "red") == 0, _tmp0 = (g_free (_tmp0), NULL), _tmp1)) {
+#line 104 "graph.vala"
+					if ((_tmp1 = _vala_strcmp0 (_tmp0 = grava_edge_get_s (edge, "color"), "green") == 0, _tmp0 = (g_free (_tmp0), NULL), _tmp1)) {
 						GravaNode* _tmp2;
-#line 120 "graph.vala"
+#line 105 "graph.vala"
 						grava_graph_selected = edge->dest;
-#line 121 "graph.vala"
+#line 106 "graph.vala"
 						_tmp2 = NULL;
-#line 121 "graph.vala"
+#line 106 "graph.vala"
 						self->selhist = g_slist_append (self->selhist, (_tmp2 = grava_graph_selected, (_tmp2 == NULL) ? NULL : g_object_ref (_tmp2)));
-#line 122 "graph.vala"
+#line 107 "graph.vala"
 						break;
 					}
 				}
@@ -240,109 +196,153 @@ void grava_graph_select_false (GravaGraph* self) {
 }
 
 
-#line 128 "graph.vala"
+#line 113 "graph.vala"
+void grava_graph_select_false (GravaGraph* self) {
+#line 113 "graph.vala"
+	g_return_if_fail (self != NULL);
+#line 115 "graph.vala"
+	if (grava_graph_selected == NULL) {
+#line 116 "graph.vala"
+		return;
+	}
+	{
+		GSList* edge_collection;
+		GSList* edge_it;
+#line 118 "graph.vala"
+		edge_collection = self->edges;
+		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
+			GravaEdge* edge;
+#line 118 "graph.vala"
+			edge = (GravaEdge*) edge_it->data;
+			{
+#line 119 "graph.vala"
+				if (grava_graph_selected == edge->orig) {
+					char* _tmp0;
+					gboolean _tmp1;
+#line 35 "edge.vala"
+					_tmp0 = NULL;
+#line 120 "graph.vala"
+					if ((_tmp1 = _vala_strcmp0 (_tmp0 = grava_edge_get_s (edge, "color"), "red") == 0, _tmp0 = (g_free (_tmp0), NULL), _tmp1)) {
+						GravaNode* _tmp2;
+#line 121 "graph.vala"
+						grava_graph_selected = edge->dest;
+#line 122 "graph.vala"
+						_tmp2 = NULL;
+#line 122 "graph.vala"
+						self->selhist = g_slist_append (self->selhist, (_tmp2 = grava_graph_selected, (_tmp2 == NULL) ? NULL : g_object_ref (_tmp2)));
+#line 123 "graph.vala"
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+#line 129 "graph.vala"
 gboolean grava_graph_is_selected (GravaNode* n) {
-#line 128 "graph.vala"
+#line 129 "graph.vala"
 	g_return_val_if_fail (n != NULL, FALSE);
-#line 130 "graph.vala"
+#line 131 "graph.vala"
 	return n == grava_graph_selected;
 }
 
 
-#line 133 "graph.vala"
+#line 134 "graph.vala"
 void grava_graph_update (GravaGraph* self) {
-#line 133 "graph.vala"
+#line 134 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 135 "graph.vala"
+#line 136 "graph.vala"
 	grava_layout_run (self->layout, self);
 }
 
 
 /* esteve modificat perque insereixi a la llista ordenat per baseaddr.
  volia fer servir node.sort, pero no m'ha sortit...*/
-#line 140 "graph.vala"
+#line 141 "graph.vala"
 void grava_graph_add_node (GravaGraph* self, GravaNode* n) {
 	gint count;
 	GravaNode* p;
 	gboolean ins;
 	guint len;
-#line 140 "graph.vala"
+#line 141 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 140 "graph.vala"
+#line 141 "graph.vala"
 	g_return_if_fail (n != NULL);
 	count = 0;
 	p = NULL;
 	ins = FALSE;
 	len = g_slist_length (self->nodes);
-#line 147 "graph.vala"
-	grava_layout_set_graph (self->layout, self);
 #line 148 "graph.vala"
+	grava_layout_set_graph (self->layout, self);
+#line 149 "graph.vala"
 	grava_node_fit (n);
-#line 150 "graph.vala"
-	ins = FALSE;
 #line 151 "graph.vala"
+	ins = FALSE;
+#line 152 "graph.vala"
 	for (count = 0; count < len; count++) {
 		GravaNode* _tmp1;
 		GravaNode* _tmp0;
 		_tmp1 = NULL;
-#line 152 "graph.vala"
+#line 153 "graph.vala"
 		_tmp0 = NULL;
-#line 152 "graph.vala"
+#line 153 "graph.vala"
 		p = (_tmp1 = (_tmp0 = (GravaNode*) g_slist_nth_data (self->nodes, (guint) count), (_tmp0 == NULL) ? NULL : g_object_ref (_tmp0)), (p == NULL) ? NULL : (p = (g_object_unref (p), NULL)), _tmp1);
 		/*stdout.printf ("adding node base at %x , this is %x\n", p.baseaddr, n.baseaddr );*/
-#line 155 "graph.vala"
+#line 156 "graph.vala"
 		if (p->baseaddr >= n->baseaddr) {
 			GravaNode* _tmp2;
-#line 156 "graph.vala"
+#line 157 "graph.vala"
 			ins = TRUE;
-#line 157 "graph.vala"
-			_tmp2 = NULL;
-#line 157 "graph.vala"
-			self->nodes = g_slist_insert (self->nodes, (_tmp2 = n, (_tmp2 == NULL) ? NULL : g_object_ref (_tmp2)), count);
 #line 158 "graph.vala"
+			_tmp2 = NULL;
+#line 158 "graph.vala"
+			self->nodes = g_slist_insert (self->nodes, (_tmp2 = n, (_tmp2 == NULL) ? NULL : g_object_ref (_tmp2)), count);
+#line 159 "graph.vala"
 			break;
 		}
 	}
-#line 162 "graph.vala"
+#line 163 "graph.vala"
 	if (ins == FALSE) {
 		GravaNode* _tmp3;
-#line 163 "graph.vala"
+#line 164 "graph.vala"
 		_tmp3 = NULL;
-#line 163 "graph.vala"
+#line 164 "graph.vala"
 		self->nodes = g_slist_append (self->nodes, (_tmp3 = n, (_tmp3 == NULL) ? NULL : g_object_ref (_tmp3)));
 	}
 	(p == NULL) ? NULL : (p = (g_object_unref (p), NULL));
 }
 
 
-#line 166 "graph.vala"
+#line 167 "graph.vala"
 void grava_graph_add_edge (GravaGraph* self, GravaEdge* e) {
 	GravaEdge* _tmp0;
-#line 166 "graph.vala"
+#line 167 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 166 "graph.vala"
+#line 167 "graph.vala"
 	g_return_if_fail (e != NULL);
-#line 168 "graph.vala"
+#line 169 "graph.vala"
 	_tmp0 = NULL;
-#line 168 "graph.vala"
+#line 169 "graph.vala"
 	self->edges = g_slist_append (self->edges, (_tmp0 = e, (_tmp0 == NULL) ? NULL : g_object_ref (_tmp0)));
 }
 
 
-#line 171 "graph.vala"
+#line 172 "graph.vala"
 GSList* grava_graph_unlinked_nodes (GravaGraph* self) {
 	GSList* ret;
-#line 171 "graph.vala"
+#line 172 "graph.vala"
 	g_return_val_if_fail (self != NULL, NULL);
 	ret = NULL;
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 174 "graph.vala"
+#line 175 "graph.vala"
 		node_collection = self->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 174 "graph.vala"
+#line 175 "graph.vala"
 			node = (GravaNode*) node_it->data;
 			{
 				gboolean found;
@@ -350,151 +350,151 @@ GSList* grava_graph_unlinked_nodes (GravaGraph* self) {
 				{
 					GSList* edge_collection;
 					GSList* edge_it;
-#line 176 "graph.vala"
+#line 177 "graph.vala"
 					edge_collection = self->edges;
 					for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 						GravaEdge* edge;
-#line 176 "graph.vala"
+#line 177 "graph.vala"
 						edge = (GravaEdge*) edge_it->data;
 						{
 							gboolean _tmp0;
 							_tmp0 = FALSE;
-#line 177 "graph.vala"
+#line 178 "graph.vala"
 							if (node == edge->orig) {
-#line 177 "graph.vala"
+#line 178 "graph.vala"
 								_tmp0 = TRUE;
 							} else {
-#line 177 "graph.vala"
+#line 178 "graph.vala"
 								_tmp0 = node == edge->dest;
 							}
-#line 177 "graph.vala"
-							if (_tmp0) {
 #line 178 "graph.vala"
-								found = TRUE;
+							if (_tmp0) {
 #line 179 "graph.vala"
+								found = TRUE;
+#line 180 "graph.vala"
 								break;
 							}
 						}
 					}
 				}
-#line 182 "graph.vala"
+#line 183 "graph.vala"
 				if (!found) {
 					GravaNode* _tmp1;
-#line 183 "graph.vala"
+#line 184 "graph.vala"
 					_tmp1 = NULL;
-#line 183 "graph.vala"
+#line 184 "graph.vala"
 					ret = g_slist_append (ret, (_tmp1 = node, (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)));
 				}
 			}
 		}
 	}
-#line 185 "graph.vala"
+#line 186 "graph.vala"
 	return ret;
 }
 
 
-#line 188 "graph.vala"
+#line 189 "graph.vala"
 GSList* grava_graph_outer_nodes (GravaGraph* self, GravaNode* n) {
 	GSList* ret;
-#line 188 "graph.vala"
+#line 189 "graph.vala"
 	g_return_val_if_fail (self != NULL, NULL);
-#line 188 "graph.vala"
+#line 189 "graph.vala"
 	g_return_val_if_fail (n != NULL, NULL);
 	ret = NULL;
 	{
 		GSList* edge_collection;
 		GSList* edge_it;
-#line 191 "graph.vala"
+#line 192 "graph.vala"
 		edge_collection = self->edges;
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
-#line 191 "graph.vala"
+#line 192 "graph.vala"
 			edge = (GravaEdge*) edge_it->data;
 			{
 				gboolean _tmp0;
 				_tmp0 = FALSE;
-#line 192 "graph.vala"
+#line 193 "graph.vala"
 				if (edge->visible) {
-#line 192 "graph.vala"
+#line 193 "graph.vala"
 					_tmp0 = edge->orig == n;
 				} else {
-#line 192 "graph.vala"
+#line 193 "graph.vala"
 					_tmp0 = FALSE;
 				}
-#line 192 "graph.vala"
+#line 193 "graph.vala"
 				if (_tmp0) {
 					GravaNode* _tmp1;
-#line 193 "graph.vala"
+#line 194 "graph.vala"
 					_tmp1 = NULL;
-#line 193 "graph.vala"
+#line 194 "graph.vala"
 					ret = g_slist_append (ret, (_tmp1 = edge->dest, (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)));
 				}
 			}
 		}
 	}
-#line 195 "graph.vala"
+#line 196 "graph.vala"
 	return ret;
 }
 
 
-#line 198 "graph.vala"
+#line 199 "graph.vala"
 GSList* grava_graph_inner_nodes (GravaGraph* self, GravaNode* n) {
 	GSList* ret;
-#line 198 "graph.vala"
+#line 199 "graph.vala"
 	g_return_val_if_fail (self != NULL, NULL);
-#line 198 "graph.vala"
+#line 199 "graph.vala"
 	g_return_val_if_fail (n != NULL, NULL);
 	ret = NULL;
 	{
 		GSList* edge_collection;
 		GSList* edge_it;
-#line 201 "graph.vala"
+#line 202 "graph.vala"
 		edge_collection = self->edges;
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
-#line 201 "graph.vala"
+#line 202 "graph.vala"
 			edge = (GravaEdge*) edge_it->data;
 			{
 				gboolean _tmp0;
 				_tmp0 = FALSE;
-#line 202 "graph.vala"
+#line 203 "graph.vala"
 				if (edge->visible) {
-#line 202 "graph.vala"
+#line 203 "graph.vala"
 					_tmp0 = edge->dest == n;
 				} else {
-#line 202 "graph.vala"
+#line 203 "graph.vala"
 					_tmp0 = FALSE;
 				}
-#line 202 "graph.vala"
+#line 203 "graph.vala"
 				if (_tmp0) {
 					GravaNode* _tmp1;
-#line 203 "graph.vala"
+#line 204 "graph.vala"
 					_tmp1 = NULL;
-#line 203 "graph.vala"
+#line 204 "graph.vala"
 					ret = g_slist_append (ret, (_tmp1 = edge->orig, (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)));
 				}
 			}
 		}
 	}
-#line 205 "graph.vala"
+#line 206 "graph.vala"
 	return ret;
 }
 
 
-#line 208 "graph.vala"
+#line 209 "graph.vala"
 GravaNode* grava_graph_click (GravaGraph* self, double x, double y) {
 	double z;
-#line 208 "graph.vala"
+#line 209 "graph.vala"
 	g_return_val_if_fail (self != NULL, NULL);
 	z = self->zoom;
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 211 "graph.vala"
+#line 212 "graph.vala"
 		node_collection = self->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 211 "graph.vala"
+#line 212 "graph.vala"
 			node = (GravaNode*) node_it->data;
 			{
 				gboolean _tmp0;
@@ -503,105 +503,105 @@ GravaNode* grava_graph_click (GravaGraph* self, double x, double y) {
 				_tmp0 = FALSE;
 				_tmp1 = FALSE;
 				_tmp2 = FALSE;
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 				if (x >= (node->x * z)) {
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 					_tmp2 = x <= ((node->x * z) + (node->w * z));
 				} else {
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 					_tmp2 = FALSE;
 				}
-#line 212 "graph.vala"
-				if (_tmp2) {
 #line 213 "graph.vala"
+				if (_tmp2) {
+#line 214 "graph.vala"
 					_tmp1 = y >= (node->y * z);
 				} else {
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 					_tmp1 = FALSE;
 				}
-#line 212 "graph.vala"
-				if (_tmp1) {
 #line 213 "graph.vala"
+				if (_tmp1) {
+#line 214 "graph.vala"
 					_tmp0 = y <= ((node->y * z) + (node->h * z));
 				} else {
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 					_tmp0 = FALSE;
 				}
-#line 212 "graph.vala"
+#line 213 "graph.vala"
 				if (_tmp0) {
-#line 214 "graph.vala"
+#line 215 "graph.vala"
 					return node;
 				}
 			}
 		}
 	}
-#line 216 "graph.vala"
+#line 217 "graph.vala"
 	return NULL;
 }
 
 
-#line 219 "graph.vala"
+#line 220 "graph.vala"
 gboolean grava_graph_overlaps (GravaGraph* self, GravaNode* n) {
-#line 219 "graph.vala"
+#line 220 "graph.vala"
 	g_return_val_if_fail (self != NULL, FALSE);
-#line 219 "graph.vala"
+#line 220 "graph.vala"
 	g_return_val_if_fail (n != NULL, FALSE);
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 221 "graph.vala"
+#line 222 "graph.vala"
 		node_collection = self->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 221 "graph.vala"
+#line 222 "graph.vala"
 			node = (GravaNode*) node_it->data;
 			{
 				gboolean _tmp0;
 				_tmp0 = FALSE;
-#line 222 "graph.vala"
+#line 223 "graph.vala"
 				if (node != n) {
-#line 222 "graph.vala"
+#line 223 "graph.vala"
 					_tmp0 = grava_node_overlaps (node, n);
 				} else {
-#line 222 "graph.vala"
+#line 223 "graph.vala"
 					_tmp0 = FALSE;
 				}
-#line 222 "graph.vala"
-				if (_tmp0) {
 #line 223 "graph.vala"
+				if (_tmp0) {
+#line 224 "graph.vala"
 					return TRUE;
 				}
 			}
 		}
 	}
-#line 225 "graph.vala"
+#line 226 "graph.vala"
 	return FALSE;
 }
 
 
-#line 228 "graph.vala"
+#line 229 "graph.vala"
 void grava_graph_draw (GravaGraph* self, cairo_t* ctx) {
-#line 228 "graph.vala"
+#line 229 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 228 "graph.vala"
+#line 229 "graph.vala"
 	g_return_if_fail (ctx != NULL);
 	/*ctx.set_operator (Cairo.Operator.SOURCE);
 	 XXX THIS FLICKERS! MUST USE DOUBLE BUFFER*/
-#line 232 "graph.vala"
-	if (ctx == NULL) {
 #line 233 "graph.vala"
+	if (ctx == NULL) {
+#line 234 "graph.vala"
 		return;
 	}
-#line 235 "graph.vala"
-	cairo_set_source_rgba (ctx, (double) 1, (double) 1, (double) 1, (double) 1);
 #line 236 "graph.vala"
-	cairo_translate (ctx, self->panx, self->pany);
+	cairo_set_source_rgba (ctx, (double) 1, (double) 1, (double) 1, (double) 1);
 #line 237 "graph.vala"
-	cairo_scale (ctx, self->zoom, self->zoom);
+	cairo_translate (ctx, self->panx, self->pany);
 #line 238 "graph.vala"
+	cairo_scale (ctx, self->zoom, self->zoom);
+#line 239 "graph.vala"
 	cairo_rotate (ctx, self->angle);
 	/* blank screen */
-#line 241 "graph.vala"
+#line 242 "graph.vala"
 	cairo_paint (ctx);
 	/* draw bg picture
 	ctx.save();
@@ -612,16 +612,16 @@ void grava_graph_draw (GravaGraph* self, cairo_t* ctx) {
 	{
 		GSList* edge_collection;
 		GSList* edge_it;
-#line 250 "graph.vala"
+#line 251 "graph.vala"
 		edge_collection = self->edges;
 		for (edge_it = edge_collection; edge_it != NULL; edge_it = edge_it->next) {
 			GravaEdge* edge;
-#line 250 "graph.vala"
+#line 251 "graph.vala"
 			edge = (GravaEdge*) edge_it->data;
 			{
-#line 251 "graph.vala"
-				if (edge->visible) {
 #line 252 "graph.vala"
+				if (edge->visible) {
+#line 253 "graph.vala"
 					grava_renderer_draw_edge (ctx, edge);
 				}
 			}
@@ -630,16 +630,16 @@ void grava_graph_draw (GravaGraph* self, cairo_t* ctx) {
 	{
 		GSList* node_collection;
 		GSList* node_it;
-#line 254 "graph.vala"
+#line 255 "graph.vala"
 		node_collection = self->nodes;
 		for (node_it = node_collection; node_it != NULL; node_it = node_it->next) {
 			GravaNode* node;
-#line 254 "graph.vala"
+#line 255 "graph.vala"
 			node = (GravaNode*) node_it->data;
 			{
-#line 255 "graph.vala"
-				if (node->visible) {
 #line 256 "graph.vala"
+				if (node->visible) {
+#line 257 "graph.vala"
 					grava_renderer_draw_node (ctx, node);
 				}
 			}
@@ -649,37 +649,37 @@ void grava_graph_draw (GravaGraph* self, cairo_t* ctx) {
 
 
 /* TODO: double buffering*/
-#line 262 "graph.vala"
+#line 263 "graph.vala"
 void grava_graph_add (GravaGraph* self, GravaNode* n) {
 	GravaNode* _tmp0;
-#line 262 "graph.vala"
+#line 263 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 262 "graph.vala"
+#line 263 "graph.vala"
 	g_return_if_fail (n != NULL);
-#line 264 "graph.vala"
+#line 265 "graph.vala"
 	_tmp0 = NULL;
-#line 264 "graph.vala"
+#line 265 "graph.vala"
 	self->nodes = g_slist_append (self->nodes, (_tmp0 = n, (_tmp0 == NULL) ? NULL : g_object_ref (_tmp0)));
 }
 
 
-#line 267 "graph.vala"
+#line 268 "graph.vala"
 void grava_graph_link (GravaGraph* self, GravaNode* n, GravaNode* n2) {
 	GravaEdge* _tmp0;
-#line 267 "graph.vala"
+#line 268 "graph.vala"
 	g_return_if_fail (self != NULL);
-#line 267 "graph.vala"
+#line 268 "graph.vala"
 	g_return_if_fail (n != NULL);
-#line 267 "graph.vala"
+#line 268 "graph.vala"
 	g_return_if_fail (n2 != NULL);
 	_tmp0 = NULL;
-#line 269 "graph.vala"
+#line 270 "graph.vala"
 	self->edges = g_slist_append (self->edges, grava_edge_with (_tmp0 = grava_edge_new (), n, n2));
 	(_tmp0 == NULL) ? NULL : (_tmp0 = (g_object_unref (_tmp0), NULL));
 }
 
 
-#line 22 "graph.vala"
+#line 23 "graph.vala"
 GravaGraph* grava_graph_construct (GType object_type) {
 	GravaGraph * self;
 	self = g_object_newv (object_type, 0, NULL);
@@ -687,9 +687,9 @@ GravaGraph* grava_graph_construct (GType object_type) {
 }
 
 
-#line 22 "graph.vala"
+#line 23 "graph.vala"
 GravaGraph* grava_graph_new (void) {
-#line 22 "graph.vala"
+#line 23 "graph.vala"
 	return grava_graph_construct (GRAVA_TYPE_GRAPH);
 }
 
@@ -718,19 +718,19 @@ static GObject * grava_graph_constructor (GType type, guint n_construct_properti
 		GravaLayout* _tmp3;
 		GHashTable* _tmp4;
 		_tmp0 = NULL;
-#line 38 "graph.vala"
+#line 39 "graph.vala"
 		self->nodes = (_tmp0 = NULL, (self->nodes == NULL) ? NULL : (self->nodes = (_g_slist_free_g_object_unref (self->nodes), NULL)), _tmp0);
 		_tmp1 = NULL;
-#line 39 "graph.vala"
+#line 40 "graph.vala"
 		self->edges = (_tmp1 = NULL, (self->edges == NULL) ? NULL : (self->edges = (_g_slist_free_g_object_unref (self->edges), NULL)), _tmp1);
 		_tmp2 = NULL;
-#line 40 "graph.vala"
+#line 41 "graph.vala"
 		self->selhist = (_tmp2 = NULL, (self->selhist == NULL) ? NULL : (self->selhist = (_g_slist_free_g_object_unref (self->selhist), NULL)), _tmp2);
 		_tmp3 = NULL;
-#line 41 "graph.vala"
+#line 42 "graph.vala"
 		self->layout = (_tmp3 = (GravaLayout*) grava_default_layout_new (), (self->layout == NULL) ? NULL : (self->layout = (g_object_unref (self->layout), NULL)), _tmp3);
 		_tmp4 = NULL;
-#line 42 "graph.vala"
+#line 43 "graph.vala"
 		self->data = (_tmp4 = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, _g_object_unref_gdestroy_notify), (self->data == NULL) ? NULL : (self->data = (g_hash_table_unref (self->data), NULL)), _tmp4);
 	}
 	return obj;

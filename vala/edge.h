@@ -56,8 +56,8 @@ struct _GravaEdgeClass {
 };
 
 
-char* grava_edge_get (GravaEdge* self, const char* val);
-void grava_edge_set (GravaEdge* self, const char* val, const char* key);
+char* grava_edge_get_s (GravaEdge* self, const char* val);
+void grava_edge_set_s (GravaEdge* self, const char* val, const char* key);
 GravaEdge* grava_edge_with (GravaEdge* self, GravaNode* a, GravaNode* b);
 double grava_edge_distance (GravaEdge* self);
 GravaEdge* grava_edge_construct (GType object_type);

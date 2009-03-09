@@ -47,7 +47,7 @@ public class Grava.Node : GLib.Object
 		selected = false;
 	}
 
-	public void set (string key, string val)
+	public void set_s (string key, string val)
 	{
 		data.insert (key, val);
 	}
@@ -58,7 +58,7 @@ public class Grava.Node : GLib.Object
 		data.insert (key, str);
 	}
 
-	public string get (string key)
+	public string get_s (string key)
 	{
 		return data.lookup(key);
 	}

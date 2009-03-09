@@ -19,6 +19,7 @@
 using GLib;
 using Cairo;
 
+
 public class Grava.Graph : GLib.Object
 {
 	public Layout layout;
@@ -60,12 +61,12 @@ public class Grava.Graph : GLib.Object
 		/* add png here */
 	}
 
-	public void set(string key, string val)
+	public void set_s(string key, string val)
 	{
 		data.insert(key, val);
 	}
 
-	public string get(string key)
+	public string get_s(string key)
 	{
 		return data.lookup(key);
 	}
@@ -100,7 +101,7 @@ public class Grava.Graph : GLib.Object
 
 		foreach(weak Edge edge in edges) {
 			if (selected == edge.orig) {
-				if (edge.get("color") == "green") {
+				if (edge.get_s("color") == "green") {
 					selected = edge.dest;
 					selhist.append(selected);
 					break;
@@ -116,7 +117,7 @@ public class Grava.Graph : GLib.Object
 
 		foreach(weak Edge edge in edges) {
 			if (selected == edge.orig) {
-				if (edge.get("color") == "red") {
+				if (edge.get_s("color") == "red") {
 					selected = edge.dest;
 					selhist.append(selected);
 					break;

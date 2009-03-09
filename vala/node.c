@@ -42,7 +42,7 @@ static void _g_slist_free_g_free (GSList* self) {
 
 
 #line 50 "node.vala"
-void grava_node_set (GravaNode* self, const char* key, const char* val) {
+void grava_node_set_s (GravaNode* self, const char* key, const char* val) {
 	const char* _tmp1;
 	const char* _tmp0;
 #line 50 "node.vala"
@@ -81,7 +81,7 @@ void grava_node_set_i (GravaNode* self, const char* key, guint64 val) {
 
 
 #line 61 "node.vala"
-char* grava_node_get (GravaNode* self, const char* key) {
+char* grava_node_get_s (GravaNode* self, const char* key) {
 	const char* _tmp0;
 #line 61 "node.vala"
 	g_return_val_if_fail (self != NULL, NULL);

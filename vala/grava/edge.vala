@@ -32,12 +32,12 @@ public class Grava.Edge : GLib.Object
 		visible = true;
 	}
 
-	public string get(string val)
+	public string get_s(string val)
 	{
 		return data.lookup(val);
 	}
 
-	public void set(string val, string key)
+	public void set_s(string val, string key)
 	{
 		data.insert(val, key);
 	}

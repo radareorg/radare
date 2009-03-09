@@ -64,8 +64,8 @@ struct _GravaGraphClass {
 extern GravaNode* grava_graph_selected;
 void grava_graph_undo_select (GravaGraph* self);
 void grava_graph_reset (GravaGraph* self);
-void grava_graph_set (GravaGraph* self, const char* key, const char* val);
-char* grava_graph_get (GravaGraph* self, const char* key);
+void grava_graph_set_s (GravaGraph* self, const char* key, const char* val);
+char* grava_graph_get_s (GravaGraph* self, const char* key);
 void grava_graph_select_next (GravaGraph* self);
 void grava_graph_select_true (GravaGraph* self);
 void grava_graph_select_false (GravaGraph* self);
