@@ -86,7 +86,7 @@ void getHTTPDate(char *DATE)
 	time_t l;
 	char week_day[4], month[4];
 	char *week_str[7]= { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-	char *month_str[7]= { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+	char *month_str[12]= { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 		"Aug", "Sep", "Oct", "Nov", "Dec" };
 
 	l = time(0);
@@ -102,6 +102,8 @@ void getHTTPDate(char *DATE)
 		month_str[curt.tm_mon],
 		curt.tm_year + 1900, curt.tm_hour, 
 		curt.tm_min, curt.tm_sec);
+#else
+#warning getHTTPdate now implemented for this platform
 #endif
 }
 
@@ -876,11 +878,10 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		time_t t;
 		char datestr[256];
 		const char *datefmt;
-		for(i=0;!config.interrupted && i<len;i+=4) {
+		for(i=0;!config.interrupted && i<len;i+=sizeof(time_t)) {
 			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
 			//printf("%s", (char *)ctime((const time_t*)&t));
 			datefmt = config_get("cfg.datefmt");
-
 			if (datefmt&&datefmt[0])
 				tmp = strftime(datestr,256,datefmt,
 					(const struct tm*)gmtime((const time_t*)&t));
