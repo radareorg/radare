@@ -1472,9 +1472,13 @@ CMD_DECL(visual)
 		if (inc<1)inc=1; // XXX dup check?
 		if (repeat==1)repeat=0;
 		//else repeat-=1;
-		repeat=1;
+		repeat = 1;
 		for (i=0;i<repeat;i++)
 		switch(key) {
+		case 12: // ^L
+			/* */
+			cons_get_real_columns();
+			break;
 		case 'r':
 			repeat--;
 			do_repeat =1;
@@ -1787,7 +1791,7 @@ CMD_DECL(visual)
 					visual_convert_bytes(DATA_FOLD_C);
 				}
 			} else {
-				config.seek-= config.block_size;
+				config.seek -= config.block_size;
 				if (config.seek % config.block_size)
 					cmd_next_align("");
 			}

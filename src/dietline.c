@@ -96,8 +96,8 @@ int dl_readchar()
 
 #define BLOCK 4096
 static char *labels = NULL;
-static u32 size = 0;
-static u32 lsize = 0;
+static unsigned int size = 0;
+static unsigned int lsize = 0;
 
 static int label_get(char *name)
 {
@@ -113,10 +113,10 @@ static int label_get(char *name)
 }
 
 static void label_add (const char *str) {
-	u32 size = dl_histidx;
-	u32 len = strlen(str)-1;
+	unsigned int size = dl_histidx;
+	unsigned int len = strlen(str)-1;
 
-	eprintf("New label(%s)\n",str);
+	//eprintf("New label(%s)\n",str);
 	memset(labels+lsize+4, '\0', BLOCK-((lsize+len+4)%BLOCK));
 	memcpy(labels+lsize, &size, 4);
 	memcpy(labels+lsize+4, str, len);
@@ -125,7 +125,7 @@ static void label_add (const char *str) {
 
 void dl_label_show()
 {
-	u32 i, p, n = 0;
+	unsigned int i, p, n = 0;
 	for(i=0;i<lsize;i++,n++) {
 		memcpy(&p, labels+i, 4);
 		printf(" %03d %03d  %s\n", i, p, labels+i+4);

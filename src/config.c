@@ -500,82 +500,78 @@ static int asm_profile(const char *profile)
 		eprintf(" debug\n");
 		eprintf(" full\n");
 		eprintf(" simple\n");
-	} else
-		if (!strcmp(profile, "default")) {
-			config_set("asm.bytes", "true");
-			config_set("asm.lines", "true");
-			config_set("asm.linesout", "false");
-			config_set("asm.lineswide", "false");
+	} else if (!strcmp(profile, "default")) {
+		config_set("asm.bytes", "true");
+		config_set("asm.lines", "true");
+		config_set("asm.linesout", "false");
+		config_set("asm.lineswide", "false");
+		config_set("asm.offset", "true");
+		config_set("asm.comments", "true");
+		config_set("asm.flagsline", "false");
+		config_set("asm.section", "false");
+		config_set("asm.trace", "false");
+		config_set("asm.split", "true");
+		config_set("asm.flags", "true");
+		config_set("asm.size", "false");
+		config_set("asm.xrefs", "true");
+		config_set("scr.color", "true");
+	} else if (!strcmp(profile, "compact")) {
+		asm_profile("simple");
+		config_set("asm.lines", "true");
+	} else if (!strcmp(profile, "gas")) {
+		asm_profile("default");
+		config_set("asm.lines", "false");
+		config_set("asm.comments", "false");
+		config_set("asm.section", "false");
+		config_set("asm.trace", "false");
+		config_set("asm.bytes", "false");
+		config_set("asm.stackptr", "false");
+		config_set("asm.offset", "false");
+		config_set("asm.flags", "true");
+		config_set("asm.flagsline", "true");
+		config_set("asm.jmpflags", "true");
+		config_set("scr.color", "false");
+	} else if (!strcmp(profile, "smart")) {
+		asm_profile("default");
+		config_set("asm.section", "false");
+		config_set("asm.trace", "false");
+		config_set("asm.bytes", "false");
+		config_set("asm.stackptr", "false");
+	} else if (!strcmp(profile, "graph")) {
+		asm_profile("default");
+		config_set("asm.section", "false");
+		config_set("asm.bytes", "false");
+		config_set("asm.trace", "false");
+		config_set("scr.color", "false");
+		config_set("asm.lines", "false");
+		config_set("asm.stackptr", "false");
+		if (config_get("graph.offset"))
 			config_set("asm.offset", "true");
-			config_set("asm.comments", "true");
-			config_set("asm.flagsline", "false");
-			config_set("asm.section", "false");
-			config_set("asm.trace", "false");
-			config_set("asm.split", "true");
-			config_set("asm.flags", "true");
-			config_set("asm.size", "false");
-			config_set("asm.xrefs", "true");
-			config_set("scr.color", "true");
-		} else
-			if (!strcmp(profile, "gas")) {
-				asm_profile("default");
-				config_set("asm.lines", "false");
-				config_set("asm.comments", "false");
-				config_set("asm.section", "false");
-				config_set("asm.trace", "false");
-				config_set("asm.bytes", "false");
-				config_set("asm.stackptr", "false");
-				config_set("asm.offset", "false");
-				config_set("asm.flags", "true");
-				config_set("asm.flagsline", "true");
-				config_set("asm.jmpflags", "true");
-				config_set("scr.color", "false");
-			} else
-				if (!strcmp(profile, "smart")) {
-					asm_profile("default");
-					config_set("asm.section", "false");
-					config_set("asm.trace", "false");
-					config_set("asm.bytes", "false");
-					config_set("asm.stackptr", "false");
-				} else
-					if (!strcmp(profile, "graph")) {
-						asm_profile("default");
-						config_set("asm.section", "false");
-						config_set("asm.bytes", "false");
-						config_set("asm.trace", "false");
-						config_set("scr.color", "false");
-						config_set("asm.lines", "false");
-						config_set("asm.stackptr", "false");
-						if (config_get("graph.offset"))
-							config_set("asm.offset", "true");
-						else   config_set("asm.offset", "false");
-					} else
-						if (!strcmp(profile, "debug")) {
-							asm_profile("default");
-							config_set("asm.trace", "true");
-						} else
-							if (!strcmp(profile, "full")) {
-								asm_profile("default");
-								config_set("asm.bytes", "true");
-								config_set("asm.lines", "true");
-								config_set("asm.linesout", "true");
-								config_set("asm.lineswide", "true");
-								config_set("asm.section", "true");
-								config_set("asm.size", "true");
-							} else
-								if (!strcmp(profile, "simple")) {
-									asm_profile("default");
-									config_set("asm.bytes", "false");
-									config_set("asm.lines", "false");
-									config_set("asm.comments", "false");
-									config_set("asm.split", "false");
-									config_set("asm.flags", "false");
-									config_set("asm.flagsline", "true");
-									config_set("asm.xrefs", "false");
-									config_set("asm.stackptr", "false");
-									config_set("asm.section", "false");
-								}
-							return 0;
+		else   config_set("asm.offset", "false");
+	} else if (!strcmp(profile, "debug")) {
+		asm_profile("default");
+		config_set("asm.trace", "true");
+	} else if (!strcmp(profile, "full")) {
+		asm_profile("default");
+		config_set("asm.bytes", "true");
+		config_set("asm.lines", "true");
+		config_set("asm.linesout", "true");
+		config_set("asm.lineswide", "true");
+		config_set("asm.section", "true");
+		config_set("asm.size", "true");
+	} else if (!strcmp(profile, "simple")) {
+		asm_profile("default");
+		config_set("asm.bytes", "false");
+		config_set("asm.lines", "false");
+		config_set("asm.comments", "false");
+		config_set("asm.split", "false");
+		config_set("asm.flags", "false");
+		config_set("asm.flagsline", "true");
+		config_set("asm.xrefs", "false");
+		config_set("asm.stackptr", "false");
+		config_set("asm.section", "false");
+	}
+	return 0;
 }
 
 static int config_asm_profile(void *data)
