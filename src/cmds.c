@@ -2407,6 +2407,7 @@ CMD_DECL(shell)
 CMD_DECL(help)
 {
 	if (strlen(input)>0) {
+		// XXX switch/case this!
 		if (input[0]=='!') {
 			if (config.last_cmp != 0)
 				radare_cmd(input+1, 0);
@@ -2464,6 +2465,14 @@ CMD_DECL(help)
 				config.last_cmp = 0;
 			} else
 				config.last_cmp = get_math(buf);
+		} else
+		if (input[0]=='t') {
+			struct r_prof_t prof;
+			r_prof_start(&prof);
+			radare_cmd(input+1, 0);
+			r_prof_end(&prof);
+			config.last_cmp = (u64)prof.result;
+			eprintf("%lf\n", prof.result);
 		} else
 		if (input[0]=='z') {
 			char *ptr;

@@ -88,7 +88,7 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 		cairo_curve_to (ctx, (double) 0, (double) 0, (double) 200, (double) 100, dx - (edge->orig->w / 2), dy);
 	} else {
 #line 75 "renderer.vala"
-		if ((edge->orig->y + oh) < edge->dest->y) {
+		if ((edge->orig->y + oh) < (edge->dest->y)) {
 			/*-edge.dest.h)) {
 			 up to bottom 
 			ctx.translate (edge.orig.x+(edge.orig.w/1.3),edge.orig.y+oh);*/
@@ -135,7 +135,7 @@ void grava_renderer_draw_edge (cairo_t* ctx, GravaEdge* edge) {
 			}
 			_tmp0 = 0;
 #line 99 "renderer.vala"
-			if (ox > 0) {
+			if ((ox > 0)) {
 #line 99 "renderer.vala"
 				_tmp0 = 200;
 			} else {
@@ -246,7 +246,7 @@ gboolean grava_renderer_set_color_str (cairo_t* ctx, const char* color) {
 		cairo_set_source_rgba (ctx, 1.0, 1.0, 1.0, 0.8);
 	}
 #line 151 "renderer.vala"
-	return color != NULL;
+	return (color != NULL);
 }
 
 
@@ -381,23 +381,23 @@ void grava_renderer_draw_node (cairo_t* ctx, GravaNode* node) {
 				for (str_it = 0; str_it < _vala_array_length (_tmp1); str_it = str_it + 1) {
 					const char* _tmp3;
 					char* str;
-#line 822 "glib-2.0.vapi"
+#line 722 "glib-2.0.vapi"
 					_tmp3 = NULL;
 					str = (_tmp3 = str_collection[str_it], (_tmp3 == NULL) ? NULL : g_strdup (_tmp3));
 					{
 						gboolean _tmp2;
 #line 229 "renderer.vala"
-						y = y + 10;
+						y = y + (10);
 #line 230 "renderer.vala"
 						cairo_move_to (ctx, (double) 5, (double) y);
 						_tmp2 = FALSE;
 #line 231 "renderer.vala"
-						if (strstr (str, "call ") != NULL) {
+						if ((strstr (str, "call ") != NULL)) {
 #line 231 "renderer.vala"
 							_tmp2 = TRUE;
 						} else {
 #line 232 "renderer.vala"
-							_tmp2 = strstr (str, "bl ") != NULL;
+							_tmp2 = (strstr (str, "bl ") != NULL);
 						}
 #line 231 "renderer.vala"
 						if (_tmp2) {
@@ -479,7 +479,7 @@ void grava_renderer_circle (cairo_t* ctx, double w, double h) {
 	cairo_move_to (ctx, w, h / 2.5);
 	_tmp0 = 0.0;
 #line 273 "renderer.vala"
-	if (w < h) {
+	if ((w < h)) {
 #line 273 "renderer.vala"
 		_tmp0 = h;
 	} else {
@@ -487,7 +487,7 @@ void grava_renderer_circle (cairo_t* ctx, double w, double h) {
 		_tmp0 = w;
 	}
 #line 273 "renderer.vala"
-	cairo_arc (ctx, w / 2, h / 2.5, _tmp0 * 0.7, (double) 0, 2 * G_PI);
+	cairo_arc (ctx, w / 2, h / 2.5, (_tmp0) * 0.7, (double) 0, 2 * G_PI);
 #line 274 "renderer.vala"
 	cairo_restore (ctx);
 	/*ctx.arc(100,250, 50, 0, 2*Math.PI); //w/2, h/2.5, ((w<h)?h:w)*0.7, 0, 2*Math.PI);

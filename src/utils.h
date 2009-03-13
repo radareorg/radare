@@ -120,4 +120,13 @@ int strccpy(char *dst, char *orig, int ch);
 int str_grep(const char *str, const char *needle);
 int file_dump(const char *file, const u8 *buf, int len);
 
+/* profiling shit */
+#include <sys/time.h>
+struct r_prof_t {
+	struct timeval begin;
+	double result;
+};
+void r_prof_start(struct r_prof_t *p);
+double r_prof_end(struct r_prof_t *p);
+
 #endif
