@@ -524,6 +524,7 @@ int ELF_(dietelf_get_sections)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_section
 		sectionp->align = shdrp->sh_addralign;
 		sectionp->flags = shdrp->sh_flags;
 		memcpy(sectionp->name, &string[shdrp->sh_name], ELF_NAME_LENGTH);
+		sectionp->name[ELF_NAME_LENGTH] = '\0';
 	}
 
 	return 0;
@@ -599,6 +600,7 @@ int ELF_(dietelf_get_imports)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_import *
 					continue;
 				if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 					memcpy(importp->name, &string[symp->st_name], ELF_NAME_LENGTH);
+					importp->name[ELF_NAME_LENGTH] = '\0';
 					importp->offset = (symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k)) - bin->base_addr;
 					switch (ELF32_ST_BIND(symp->st_info)) {
 						case STB_LOCAL:  snprintf(importp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
@@ -740,6 +742,7 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
 					symbolp->size = (u64)symp->st_size; 
 					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
+					symbolp->name[ELF_NAME_LENGTH] = '\0';
 					symbolp->offset = (u64)symp->st_value + sym_offset - bin->base_addr;
 					switch (ELF32_ST_BIND(symp->st_info)) {
 						case STB_LOCAL:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOCAL"); break;

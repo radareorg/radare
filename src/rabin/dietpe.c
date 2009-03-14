@@ -111,6 +111,7 @@ static int dietpe_aux_stripstr_from_file(dietpe_bin *bin, int min, int encoding,
 						stringsp->type = (unicode?'U':'A');
 						stringsp->size = string_len;
 						memcpy(stringsp->string, str, PE_STRING_LENGTH);
+						strings->string[PE_STRING_LENGTH] = '\0';
 						ctr++; stringsp++;
 					}
 				}
@@ -234,7 +235,9 @@ int dietpe_get_exports(dietpe_bin *bin, int fd, dietpe_export *export) {
 		exportp->offset = dietpe_aux_rva_to_offset(bin, function_rva);
 		exportp->ordinal = function_ordinal;
 		memcpy(exportp->forwarder, forwarder_name, PE_NAME_LENGTH);
+		exportp->forwarder[PE_NAME_LENGTH] = '\0';
 		memcpy(exportp->name, export_name, PE_NAME_LENGTH);
+		exportp->name[PE_NAME_LENGTH] = '\0';
 	}
 
 	return 0;
@@ -360,6 +363,7 @@ int dietpe_get_libs(dietpe_bin *bin, int fd, int limit, dietpe_string *strings)
 		lseek(fd, dietpe_aux_rva_to_offset(bin, import_dirp->Name), SEEK_SET);
     	read(fd, dll_name, PE_STRING_LENGTH);
 		memcpy(stringsp->string, dll_name, PE_STRING_LENGTH);
+		stringsp->string[PE_STRING_LENGTH] = '\0';
 		stringsp->type = 'A';
 		stringsp->offset = 0;
 		stringsp->size = 0;
@@ -371,6 +375,7 @@ int dietpe_get_libs(dietpe_bin *bin, int fd, int limit, dietpe_string *strings)
 		lseek(fd, dietpe_aux_rva_to_offset(bin, delay_import_dirp->Name), SEEK_SET);
 		read(fd, dll_name, PE_STRING_LENGTH);
 		memcpy(stringsp->string, dll_name, PE_STRING_LENGTH);
+		strings->string[PE_STRING_LENGTH] = '\0';
 		stringsp->type = 'A';
 		stringsp->offset = 0;
 		stringsp->size = 0;
@@ -538,6 +543,7 @@ int dietpe_get_sections(dietpe_bin *bin, dietpe_section *section) {
 	sectionp = section;
 	for (i = 0; i < sections_count; i++, shdrp++, sectionp++) {
 		memcpy(sectionp->name, shdrp->Name, PE_IMAGE_SIZEOF_SHORT_NAME);
+		sectionp->name[PE_IMAGE_SIZEOF_SHORT_NAME] = '\0';
 		sectionp->rva = shdrp->VirtualAddress;
 		sectionp->size = shdrp->SizeOfRawData;
 		sectionp->vsize = shdrp->Misc.VirtualSize;
@@ -744,6 +750,7 @@ static int dietpe_parse_imports(dietpe_bin *bin, int fd, dietpe_import **importp
 		
 		if (import_table) {
 			memcpy((*importp)->name, import_name, PE_NAME_LENGTH);
+			(*importp)->name[PE_NAME_LENGTH] = '\0';
 			(*importp)->rva = FirstThunk + i * sizeof(PE_DWord);
 			(*importp)->offset = dietpe_aux_rva_to_offset(bin, FirstThunk) + i * sizeof(PE_DWord);
 			(*importp)->hint = import_hint;
