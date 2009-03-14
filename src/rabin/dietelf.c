@@ -112,6 +112,7 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 						stringsp->type = (unicode?'U':'A');
 						stringsp->size = string_len;
 						memcpy(stringsp->string, str, ELF_STRING_LENGTH);
+						stringsp->string[ELF_STRING_LENGTH] = '\0';
 						ctr++; stringsp++;
 					}
 				}
