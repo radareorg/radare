@@ -10,7 +10,9 @@ AOBJ=aasm.o utils.o elf.o
 .c.o:
 	-${Q}$(CC) -c $(CFLAGS) -o $@ $<
 
-all: ${AOBJ} armasm
+all: armasm
+
+armasm: ${AOBJ} 
 
 armasm:
 	-${Q}${CC} ${AOBJ} -o armasm
