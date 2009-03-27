@@ -1245,6 +1245,14 @@ CMD_DECL(code)
 			radare_set_block_size_i(tmp);
 		}
 		} break;
+	case 'D':
+		{
+		char buf[1024];
+		snprintf(buf, 1023, "rsc dwarf-at %s 0x%08llx",
+			config.file, config.seek);
+		system(buf);
+		}
+		break;
 	case '*':
 		data_comment_list();
 		data_xrefs_list();
@@ -1255,6 +1263,7 @@ CMD_DECL(code)
 		"Usage: C[op] [arg] <@ offset>\n"
 		" Ci               ; show info about metadata\n"
 		" CC [-][comment] @ here ; add/rm comment\n"
+		" CD                     ; show debug information at $$\n"
 		" CF [-][len]  @ here    ; add/rm linear function\n"
 		" Cx [-][addr] @ here    ; add/rm code xref\n"
 		" CX [-][addr] @ here    ; add/rm data xref\n"
