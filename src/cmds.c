@@ -1245,7 +1245,7 @@ CMD_DECL(code)
 			radare_set_block_size_i(tmp);
 		}
 		} break;
-	case 'D':
+	case 'L':
 		{
 		char buf[1024];
 		snprintf(buf, 1023, "rsc dwarf-at %s 0x%08llx",
@@ -1261,9 +1261,9 @@ CMD_DECL(code)
 	default:
 		cons_printf(
 		"Usage: C[op] [arg] <@ offset>\n"
-		" Ci               ; show info about metadata\n"
+		" Ci                     ; show info about metadata\n"
+		" CL                     ; show debug information at $$\n"
 		" CC [-][comment] @ here ; add/rm comment\n"
-		" CD                     ; show debug information at $$\n"
 		" CF [-][len]  @ here    ; add/rm linear function\n"
 		" Cx [-][addr] @ here    ; add/rm code xref\n"
 		" CX [-][addr] @ here    ; add/rm data xref\n"
