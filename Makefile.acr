@@ -130,6 +130,7 @@ install:
 	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rasm.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radiff.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/gradare.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rahash.1 ${MANDIR}/man1/
@@ -182,6 +183,7 @@ deinstall:
 	-rm -f ${MANDIR}/man1/rabin.1
 	-rm -f ${MANDIR}/man1/rfile.1
 	-rm -f ${MANDIR}/man1/xrefs.1
+	-rm -f ${MANDIR}/man1/gradare.1
 	-rm -f ${MANDIR}/man1/rax.1
 	-rm -f ${MANDIR}/man1/radiff.1
 	-rm -f ${MANDIR}/man1/rasm.1

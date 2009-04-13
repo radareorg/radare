@@ -1,0 +1,39 @@
+.Dd Apr 13, 2009
+.Dt GRADARE 1
+.Os
+.Sh NAME
+.Nm gradare
+.Nd Graphical frontend for radare
+.Sh SYNOPSIS
+.Nm gradare
+.Op -e cmd
+.Op -f font
+.Op -d pid|program
+.Op file
+.Sh DESCRIPTION
+gradare provides a minimal GTK frontend that embeds an VTE terminal and provides a two level depth browsing tree of commands implemented in external shellscripts.
+.Bl -tag -width Fl
+.It Fl e Ar cmd
+Enable debug output
+.It Fl f Ar font
+Select font to be used in the gui
+.It Fl d Ar pid|program
+Run gradare in debug mode to debug the selected process-id or program.
+.El
+.Sh SEE ALSO
+.Pp
+.Xr radiff(1) ,
+.Xr hasher(1) ,
+.Xr radare(1) ,
+.Xr radarerc(5) ,
+.Xr rabin(1) ,
+.Xr rfile(1) ,
+.Xr xc(1) ,
+.Xr rasm(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr xrefs(1)
+.Sh AUTHORS
+.Pp
+pancake <@youterm.com>
+.Pp
