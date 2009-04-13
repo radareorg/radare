@@ -88,7 +88,7 @@ release: mrproper
 
 install:
 	cd src/rsc && ${MAKE} install DESTDIR=${DESTDIR}
-	mkdir -p ${BINDIR} ${MANDIR}/man1 ${SHAREDIR}/radare/ ${SHAREDIR}/doc/radare ${LIBEXECDIR}/radare
+	mkdir -p ${BINDIR} ${MANDIR}/man1 ${MANDIR}/man5 ${SHAREDIR}/radare/ ${SHAREDIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
