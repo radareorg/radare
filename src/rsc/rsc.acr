@@ -27,7 +27,7 @@ fi
 
 if [ -z "${COMMAND}" ]; then
 	show_help
-	echo
+	echo "* Scripts at ${SCRIPTS} and ${HOMESCRIPTS}"
 	echo "* Available scripts:"
 	[ -d ${HOMESCRIPTS} ] && cd ${HOMESCRIPTS} && ls
 	cd ${SCRIPTS} && ls

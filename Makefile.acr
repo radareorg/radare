@@ -93,17 +93,17 @@ install:
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
-	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
-	${INSTALL_PROGRAM} src/lsbstego ${BINDIR}
-	${INSTALL_PROGRAM} src/javasm/javasm ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
-	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${BINDIR}
 	${INSTALL_DATA} src/arch/arm/aasm/mnemonics ${SHAREDIR}/radare/
 	${INSTALL_PROGRAM} src/rasc/rasc ${BINDIR}
 	${INSTALL_PROGRAM} src/rahash/rahash ${BINDIR}
 	${INSTALL_PROGRAM} src/rax ${BINDIR}
 	cd src/rsc && ${MAKE} install
+	${INSTALL_PROGRAM} src/lsbstego ${SHAREDIR}/radare/rsc
+	${INSTALL_PROGRAM} src/javasm/javasm ${SHAREDIR}/radare/rsc
+	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${SHAREDIR}/radare/rsc
+	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
 	mkdir -p ${LIBDIR}
 	# install plugins
 	mkdir -p ${LIBDIR}/radare

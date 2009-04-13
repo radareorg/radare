@@ -25,7 +25,7 @@ fi
 
 # JAVA
 if [ "${ARCH}" = "java" ]; then
-	javasm -a "$CODE"
+	rsc javasm -a "$CODE"
 	exit 0
 fi
 

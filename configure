@@ -103,12 +103,12 @@ done
 : ${INSTALL_PROGRAM:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='1.2.2' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='1.2.3' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-1.2.2 to adapt to many kinds of systems.
+'configure' configures radare-1.2.3 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -182,7 +182,7 @@ take_environ() {
 }
 
 show_version() {
-echo "radare-1.2.2 configuration script done with acr v0.7.1.
+echo "radare-1.2.3 configuration script done with acr v0.7.1.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -200,7 +200,7 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   1.2.2"
+echo "VERSION:   1.2.3"
 echo "LANGS:     c ruby python lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.5.0"
 echo "OPTIONAL:  libewf"
@@ -282,6 +282,7 @@ echo "checking target system type... ${TARGET}"
 [ "${CROSSBUILD}" = 1 ] && echo "using crosscompilation mode."
 
 split_host BUILD HOST TARGET
+[ -n "${prefix}" ] && PREFIX=${prefix}
 echo "checking for working directories... ${WODIS}"
 echo "using prefix '${PREFIX}'"
 ACR_RMFILES=" test.c a.out a.exe"
