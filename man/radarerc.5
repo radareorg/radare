@@ -1,0 +1,33 @@
+.Dd May 30, 2008
+.Dt RADARERC 5
+.Os
+.Sh NAME
+.Nm radarerc
+.Nd Configuration file for radare
+.Sh DESCRIPTION
+radarerc is the file that will be executed by radare(1) at startup if no '-n' flag is used.
+.Pp
+This is a radare script, so you can use any available radare command at every line. Here's a list of the most common configuration commands used at startup:
+.Bl -tag -width Fl
+.It Fl e Ar scr.color=true
+Enable ansi-color in the shell
+.It Fl e Ar file.id=true
+Identify binary file information (architecture, base address, entrypoint, ...)
+.It Fl e Ar file.flag=true
+Flag symbol information in sym flagspace and so on (sym.main, ...)
+.El
+.Sh SEE ALSO
+.Pp
+.Xr rahash(1) ,
+.Xr radare(1) ,
+.Xr rabin(1) ,
+.Xr radiff(1) ,
+.Xr rsc(1) ,
+.Xr rasc(1) ,
+.Xr rasm(1) ,
+.Xr rfile(1) ,
+.Xr xc(1) ,
+.Xr xrefs(1)
+.Sh AUTHORS
+.Pp
+pancake <@youterm.com>

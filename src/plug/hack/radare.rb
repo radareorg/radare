@@ -178,5 +178,3 @@ XXX
  end
 
 end
-
-puts "Load done"
