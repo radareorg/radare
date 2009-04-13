@@ -100,9 +100,7 @@ Change the default value for an eval configuration key variable
 .It V
 (Visual) Enters into the visual mode. Use the 'q' key to exit this mode.
 .It w[aAdfwx] str
-Write a formatted string or an hexadecimal space separated string. 'wf' is for specifying a file as contents for write. 'wa' is for assembly, etc.. See 'w?' for details.
-.It
-f.ex: '$ w foo\\x90' or '$ wx 90 90 90'
+Write a formatted string or an hexadecimal space separated string. 'wf' is for specifying a file as contents for write. 'wa' is for assembly, etc.. See 'w?' for details. f.ex: '$ w foo\\x90' or '$ wx 90 90 90'
 .It x [len]
 (x) eXamine current block. This is an alias for the 'px' command. To be gdb friendly.
 .It . [file]
@@ -136,6 +134,7 @@ Define a binary mask for matching with the keyword number '#'.
 .It /r [range]
 Perform a search using the keywords in the defined range. f.ex: "/r 0-2,4"
 .El
+.Bl -tag -width Fl
 .Pp
 jajaj
 .It ! cmd

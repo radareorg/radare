@@ -113,7 +113,7 @@ int radiff_ng_bindiff(const char *a, const char *b)
 int radiff_ergodiff(const char *a, const char *b)
 {
 	char buf[8096];
-	snprintf(buf, 8095, "bdiff '%s' '%s'", a, b);
+	snprintf(buf, 8095, "rsc bdiff '%s' '%s'", a, b);
 	return system(buf);
 }
 

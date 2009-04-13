@@ -91,7 +91,6 @@ install:
 	mkdir -p ${BINDIR} ${MANDIR}/man1 ${MANDIR}/man5 ${SHAREDIR}/radare/ ${SHAREDIR}/doc/radare ${LIBEXECDIR}/radare
 	${INSTALL_SCRIPT} src/rsc/rsc ${BINDIR}
 	${INSTALL_PROGRAM} src/radare ${BINDIR}
-	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${BINDIR}
 	-${INSTALL_PROGRAM} src/radiff/radiff ${BINDIR}
 	${INSTALL_PROGRAM} src/rabin/rabin ${BINDIR}
 	${INSTALL_PROGRAM} src/rasm/rasm ${BINDIR}
@@ -104,6 +103,7 @@ install:
 	${INSTALL_PROGRAM} src/javasm/javasm ${SHAREDIR}/radare/rsc
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${SHAREDIR}/radare/rsc
 	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
+	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${SHAREDIR}/radare/rsc
 	mkdir -p ${LIBDIR}
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
@@ -113,7 +113,7 @@ install:
 	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
 	-mkdir ${LIBDIR}/python2.5
 	-mkdir ${LIBDIR}/ruby1.8
-	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.5/
+	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.5/site-packages
 	-cp -rf src/plug/hack/radare.rb ${LIBDIR}/ruby1.8/
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
@@ -128,6 +128,8 @@ install:
 	#${INSTALL_SCRIPT} src/rdb/rdbdiff ${BINDIR}
 	${INSTALL_SCRIPT} src/rfile ${BINDIR}
 	${INSTALL_MAN} man/rasc.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rasm.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/radiff.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rahash.1 ${MANDIR}/man1/
@@ -181,8 +183,11 @@ deinstall:
 	-rm -f ${MANDIR}/man1/rfile.1
 	-rm -f ${MANDIR}/man1/xrefs.1
 	-rm -f ${MANDIR}/man1/rax.1
+	-rm -f ${MANDIR}/man1/radiff.1
+	-rm -f ${MANDIR}/man1/rasm.1
 	-rm -f ${MANDIR}/man1/rsc.1
 	-rm -f ${MANDIR}/man1/radare.1
 	-rm -f ${MANDIR}/man1/rahash.1
 	-rm -f ${MANDIR}/man1/rasc.1
+	-rm -f ${MANDIR}/man5/radarerc.5
 
