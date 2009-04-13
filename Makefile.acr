@@ -136,6 +136,7 @@ install:
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rax.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/radarerc.5 ${MANDIR}/man5/
 	${INSTALL_DIR} ${SHAREDIR}/radare/
 	${INSTALL_DIR} ${SHAREDIR}/radare/magic
 	${INSTALL_DATA} magic/* ${SHAREDIR}/radare/magic/
