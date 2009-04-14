@@ -2445,6 +2445,7 @@ CMD_DECL(help)
 				" $$  = current seek\n"
 				" $$$ = size of opcode\n"
 				" $$b = block size\n"
+				" $$s = file size\n"
 				" $$? = last compare (? 1==1) or read (?<) value\n"
 				" $$j = jump branch of opcode\n"
 				" $$f = failover continuation of opcode\n"
