@@ -9,7 +9,7 @@
 #
 # --author pancake
 
-SCRIPTS="@DATADIR@/radare/rsc"
+SCRIPTS="@LIBDIR@/radare/bin"
 HOMESCRIPTS="~/.radare/rsc/"
 COMMAND="$1"
 
@@ -46,4 +46,5 @@ else
 fi
 
 shift
-perl ${DIR}/${COMMAND} "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8"
+${DIR}/${COMMAND} $@
+#perl ${DIR}/${COMMAND} "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8"

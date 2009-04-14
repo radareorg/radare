@@ -99,11 +99,11 @@ install:
 	${INSTALL_PROGRAM} src/rahash/rahash ${BINDIR}
 	${INSTALL_PROGRAM} src/rax ${BINDIR}
 	cd src/rsc && ${MAKE} install
-	${INSTALL_PROGRAM} src/lsbstego ${SHAREDIR}/radare/rsc
-	${INSTALL_PROGRAM} src/javasm/javasm ${SHAREDIR}/radare/rsc
-	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${SHAREDIR}/radare/rsc
-	-${INSTALL_SCRIPT} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
-	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${SHAREDIR}/radare/rsc
+	${INSTALL_PROGRAM} src/lsbstego ${LIBDIR}/radare/bin
+	${INSTALL_PROGRAM} src/javasm/javasm ${LIBDIR}/radare/bin
+	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${LIBDIR}/radare/bin
+	-${INSTALL_SCRIPT} src/radiff/bindiff-ng/bindiff-ng ${LIBDIR}/radare/bin
+	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${LIBDIR}/radare/bin
 	mkdir -p ${LIBDIR}
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
@@ -151,7 +151,7 @@ install:
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##HAVE_GUI##
 
-deinstall:
+uninstall deinstall:
 	-rm -f ${BINDIR}/gradare
 	-rm -f ${BINDIR}/radare
 	-rm -f ${BINDIR}/rahash
@@ -192,4 +192,3 @@ deinstall:
 	-rm -f ${MANDIR}/man1/rahash.1
 	-rm -f ${MANDIR}/man1/rasc.1
 	-rm -f ${MANDIR}/man5/radarerc.5
-
