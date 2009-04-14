@@ -102,7 +102,7 @@ install:
 	${INSTALL_PROGRAM} src/lsbstego ${SHAREDIR}/radare/rsc
 	${INSTALL_PROGRAM} src/javasm/javasm ${SHAREDIR}/radare/rsc
 	${INSTALL_PROGRAM} src/arch/arm/aasm/armasm ${SHAREDIR}/radare/rsc
-	-${INSTALL_PROGRAM} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
+	-${INSTALL_SCRIPT} src/radiff/bindiff-ng/bindiff-ng ${SHAREDIR}/radare/rsc
 	-${INSTALL_PROGRAM} src/radiff/bdiff/bdiff ${SHAREDIR}/radare/rsc
 	mkdir -p ${LIBDIR}
 	# install plugins
