@@ -391,7 +391,7 @@ u64 get_offset(const char *orig)
 			ret = aop.fail;
 			break;
 		case 'r':
-			arch_aop(config.seek, config.block,&aop);
+			arch_aop(config.seek, config.block, &aop);
 			ret = aop.ref;
 			break;
 		case '{':

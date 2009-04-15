@@ -1243,7 +1243,7 @@ int radare_move(char *arg)
 		str[0]=' ';
 	}
 	if ( (str == NULL) || (pos == -1) || (len == 0) ) {
-		printf("Usage: yf [len] [dst-addr]\n");
+		printf("Usage: yt [len] [dst-addr]\n");
 		return 1;
 	}
 
