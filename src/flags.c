@@ -68,6 +68,7 @@ void flag_help()
 	eprintf("Usage: f[?|d|-] [flag-name]\n"
 	" fortune      ; show fortune message! :D\n"
 	" ff [addr]    ; flag from this address\n"
+	" fb [addr]    ; increment flag offset with new base address\n"
 	" fd           ; print flag delta offset\n"
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
@@ -114,6 +115,16 @@ int flag_interpolation(const char *from, const char *to)
 		}
 	}
 	return ret;
+}
+
+flag_t *flag_get_by_addr(u64 addr);
+void flag_rebase(const char *text)
+{
+	flag_t *f = flag_get_by_addr(config.seek);
+	if (f) {
+		u64 base = get_math(text);
+		f->offset += base;
+	}
 }
 
 void flag_cmd(const char *text)

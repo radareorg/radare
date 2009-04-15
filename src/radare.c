@@ -1824,7 +1824,7 @@ int radare_go()
 		if (config_get("file.analyze")) {
 			eprintf("Analyzing program...");
 			radare_cmd(".af* @ entrypoint",0);
-			radare_cmd(".af* @@ sym_",0);
+			radare_cmd(".af* @@ sym.",0);
 			radare_cmd_raw("Ci", 0);
 		}
 	}
@@ -1873,7 +1873,8 @@ int radare_go()
 		radare_cmd(".!info*", 0);
 		radare_cmd(":.!maps*", 0);
 		radare_cmd("s eip", 0);
-	}
+	} else 
+		radare_cmd("fb $${io.vaddr} @@ str. > /dev/null", 0);
 
 	config_set_i("cfg.verbose", t);
 

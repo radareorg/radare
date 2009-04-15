@@ -1429,6 +1429,7 @@ CMD_DECL(flag)
 			break;
 		}
 		break;
+	case 'b': flag_rebase(text); break;
 	case 'c': flag_cmd(text); break;
 	case 'f': flag_from(text); break;
 	case 'r': flag_rename_str(text); break;
