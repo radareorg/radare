@@ -1717,6 +1717,12 @@ int radare_open(int rst)
 	config.zoom.from   = 0;
 	config.zoom.piece  = config.size/config.block_size;
 
+	{
+	char *cmd = config_get("cmd.open");
+	if (cmd)
+		radare_cmd(cmd, 0);
+	}
+
 	return 0;
 }
 
