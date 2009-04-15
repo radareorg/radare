@@ -58,6 +58,7 @@ int debug_system(const char *command);
 int debug_cont(const char *input);
 int debug_ie();
 int debug_contu();
+int debug_contum(const char *input);
 int debug_contuh();
 int debug_contsc();
 int debug_contscp();

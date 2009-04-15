@@ -542,6 +542,31 @@ int is_usercode(addr_t pc)
 	return 0;
 }
 
+char *alloc_usercode(u64 *base, u64 *len)
+{
+	struct list_head *pos;
+	u8 *buf = NULL;
+
+	if (ps.map_regs_sz==0) {
+		eprintf("Cannot determine usercode.\n");
+		return 1;
+	}
+
+	list_for_each_prev(pos, &ps.map_reg) {
+		MAP_REG	*mr = (MAP_REG *)((char *) pos + \
+			sizeof(struct list_head) -  sizeof(MAP_REG));
+		if (mr->flags & FLAG_USERCODE) { // && (pc >= mr->ini && pc <= mr->end)) {
+			*base = mr->ini;
+			*len = mr->end-mr->ini;
+			buf = malloc(mr->end - mr->ini+1);
+			debug_read_at(ps.tid, buf, *len, *base);
+			eprintf("Using usercode range: 0x%08llx - 0x%08llx\n", *base, *base+*len);
+			break;
+		}
+	}
+	return buf;
+}
+
 int debug_stepret()
 {
 	char bytes[4];
@@ -556,6 +581,49 @@ int debug_stepret()
 			break;
 	}
 	radare_controlc_end();
+
+	return 0;
+}
+
+int debug_contum(const char *input)
+{
+	struct aop_t aop;
+	u64 pc;
+	char a[32];
+	int ilen, dotrace = config_get("trace.log");
+	u64 base = 0, len = 0;
+	u8 *buf = alloc_usercode(&base, &len);
+	if (buf == NULL) {
+		eprintf("No user code?\n");
+		return 1;
+	}
+
+	radare_controlc();
+	do {
+		debug_step(1);
+		ps.steps++;
+		pc = arch_pc(ps.tid);
+		if (dotrace)
+			trace_add((addr_t)pc);
+		
+		if (pc >= base && pc <= base+len) {
+			debug_read_at(ps.tid, a, 32, pc);
+			ilen = arch_aop(pc, a, &aop);
+			if (ilen>0) {
+				if (memcmp(buf+(pc-base), a, ilen)) {
+					eprintf("Some opcodes changed here!\n");
+					eprintf("address = 0x%08llx\n", pc);
+					eprintf("old bytes = %02x %02x %02x ...\n",
+						buf[pc-base], buf[pc-base+1], buf[pc-base+2]);
+					eprintf("new bytes = %02x %02x %02x ...\n",
+						a[0], a[1], a[2]);
+					break;
+				}
+			}
+		}
+	} while (!config.interrupted);
+	radare_controlc_end();
+	free(buf);
 
 	return 0;
 }
@@ -840,7 +908,6 @@ int debug_stepu(const char *arg)
 {
 	u64 until = get_math(arg);
 	unsigned long pc = arch_pc(ps.tid); //WS_PC();
-	int i;
 
 	/* step until address */
 	if (arg && arg[0] && until != 0) {
@@ -849,7 +916,6 @@ int debug_stepu(const char *arg)
 			debug_step(1);
 			ps.steps++;
 			pc = arch_pc(ps.tid);
-			i++;
 		} while (!config.interrupted && pc != until);
 
 		return 0;
@@ -862,7 +928,6 @@ int debug_stepu(const char *arg)
 		debug_step(1);
 		ps.steps++;
 		pc = arch_pc(ps.tid);
-		i++;
 	} while (!config.interrupted && !is_usercode(pc) );
 
 	if (config_get("trace.log"))
