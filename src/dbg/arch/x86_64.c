@@ -290,16 +290,25 @@ int arch_dump_registers()
 		fprintf(stderr, "Cannot open\n");
 		return 0;
 	}
-	fprintf(fd, "eax 0x%llx\n", (long long)R_RAX(regs));
-	fprintf(fd, "ebx 0x%llx\n", (long long)R_RBX(regs));
-	fprintf(fd, "ecx 0x%llx\n", (long long)R_RCX(regs));
-	fprintf(fd, "edx 0x%llx\n", (long long)R_RDX(regs));
-	fprintf(fd, "ebp 0x%llx\n", (long long)R_RBP(regs));
-	fprintf(fd, "esi 0x%llx\n", (long long)R_RSI(regs));
-	fprintf(fd, "edi 0x%llx\n", (long long)R_RDI(regs));
+	fprintf(fd, "rax 0x%llx\n", (long long)R_RAX(regs));
+	fprintf(fd, "rbx 0x%llx\n", (long long)R_RBX(regs));
+	fprintf(fd, "rcx 0x%llx\n", (long long)R_RCX(regs));
+	fprintf(fd, "rdx 0x%llx\n", (long long)R_RDX(regs));
+	fprintf(fd, "rbp 0x%llx\n", (long long)R_RBP(regs));
+	fprintf(fd, "rsi 0x%llx\n", (long long)R_RSI(regs));
+	fprintf(fd, "rdi 0x%llx\n", (long long)R_RDI(regs));
 	fprintf(fd, "rip 0x%llx\n", (long long)R_RIP(regs));
-	fprintf(fd, "esp 0x%llx\n", (long long)R_RSP(regs));
-	fprintf(fd, "efl 0x%llx\n", (long long)R_RFLAGS(regs));
+	fprintf(fd, "rsp 0x%llx\n", (long long)R_RSP(regs));
+	fprintf(fd, "eflags 0x%llx\n", (long long)R_RFLAGS(regs));
+	/* r8-r15 */
+	fprintf(fd, "r8 0x%llx\n", (long)R_R8(regs));
+	fprintf(fd, "r9 0x%llx\n", (long)R_R9(regs));
+	fprintf(fd, "r10 0x%llx\n", (long)R_R10(regs));
+	fprintf(fd, "r11 0x%llx\n", (long)R_R11(regs));
+	fprintf(fd, "r12 0x%llx\n", (long)R_R12(regs));
+	fprintf(fd, "r13 0x%llx\n", (long)R_R13(regs));
+	fprintf(fd, "r14 0x%llx\n", (long)R_R14(regs));
+	fprintf(fd, "r15 0x%llx\n", (long)R_R15(regs));
 	fclose(fd);
 
 #if 0
@@ -352,6 +361,7 @@ int arch_restore_registers()
 		case 6906981: R_RDI(regs) = val; break;
 		case 7367013: R_RIP(regs) = val; break;
 		case 7369573: R_RSP(regs) = val; break;
+/* TODO: add R8-R15 registers */
 		case 7104101: R_RFLAGS(regs) = val; break;
 		}
 	}

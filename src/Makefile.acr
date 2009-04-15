@@ -127,12 +127,12 @@ _rahash:
 
 rax${BINSFX}: rax.o
 	${E} 'Linking rax'
-	${Q}${CC} ${CFLAGS} rax.o ${LIBS} -o rax${BINSFX}
+	${Q}${CC} ${CFLAGS} rax.o -o rax${BINSFX}
 	@#ln -fs radare rax # ???
 
 xrefs${BINSFX}: xrefs.o
 	${E} 'Linking xrefs'
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} xrefs.o ${LIBS} -o xrefs${BINSFX}
+	${Q}${CC} ${CFLAGS} ${LDFLAGS} xrefs.o -o xrefs${BINSFX}
 
 clean:
 	${E} 'Cleaning src'
