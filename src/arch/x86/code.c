@@ -153,6 +153,13 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->length = 1;
 		aop->type   = AOP_TYPE_SWI;
 		break;
+	case 0xb8:
+	case 0xb9:
+	case 0xba:
+	case 0xbb:
+	case 0xbc:
+	case 0xbd:
+	case 0xbe:
 	case 0xbf:
 		aop->type = AOP_TYPE_MOV; //  bfdc054000      mov edi, 0x4005dc
 		aop->ref = bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);//((unsigned long)((bytes+2))+6);
@@ -347,6 +354,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		break;
 		
 	// roll to a switch range case
+#if 0
 	case 0xb8: // mov eax, <inmedate>
 		aop->type = AOP_TYPE_MOV;
 		vm_arch_x86_regs[VM_X86_EAX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
@@ -371,6 +379,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->type = AOP_TYPE_MOV;
 		vm_arch_x86_regs[VM_X86_EBP] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
 		break;
+#endif
 #if 0
 	case0xF
 		/* conditional jump */
