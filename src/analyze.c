@@ -779,7 +779,7 @@ int analyze_function(u64 from, int recursive, int report)
 	char tmpstr[16], fszstr[256];
 
 
-	from += config.vaddr-config.paddr;
+	//from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
 		return -1;
