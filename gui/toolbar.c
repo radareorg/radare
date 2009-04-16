@@ -236,7 +236,7 @@ void gradare_shell(const char **cmd)
 void gradare_help()
 {
 	//char cmd[1024];
-	const char *cmd[] ={"man","radare"};
+	const char *cmd[] ={"man","radare",""};
 	// XXX should be a dialog !
 	//sprintf(cmd, "( xterm -bg black -fg gray -fn 10x20 -e 'man radare' & )");
 	//system(cmd);
