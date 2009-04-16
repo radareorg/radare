@@ -83,9 +83,9 @@ int project_save(const char *file)
 	}
 #endif
 	cons_set_fd(fileno(fd));
-		data_comment_list();
-		data_xrefs_list();
-		data_list();
+		data_comment_list(NULL);
+		data_xrefs_list(NULL);
+		data_list(NULL);
 		section_list(config.seek, 1);
 	cons_flush();
 	cons_set_fd(_print_fd);
