@@ -155,7 +155,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		break;
 	case 0xbf:
 		aop->type = AOP_TYPE_MOV; //  bfdc054000      mov edi, 0x4005dc
-		aop->ref = bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);//((unsigned long)((bytes+2))+6);
+		aop->ref = bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);//((unsigned long)((bytes+2))+6);
 		break;
 	case 0xcd:
 		aop->length = 2;
