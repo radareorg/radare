@@ -272,7 +272,8 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
-			eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			eprintf("x");
 			break;
 		}
 #if 1
@@ -823,7 +824,8 @@ int analyze_function(u64 from, int recursive, int report)
 
 	ret = radare_read_at(from, bytes, len);
 	if (ret <0) {
-		eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
+		//eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
+		eprintf("x");
 		return -1;
 	}
 
@@ -857,8 +859,8 @@ int analyze_function(u64 from, int recursive, int report)
 	for(;seek< to; seek+=inc) {
 		u64 delta = seek+config.vaddr-from;
 	//eprintf("0x%08llx\n", seek+config.vaddr);
-		if (delta >= len) {
-			eprintf("analyze_function: oob %lld > %lld\n", delta, len);
+		if (delta > len) {
+			//eprintf("analyze_function: oob %lld > %lld\n", delta, len);
 			break;
 		}
 		inc = arch_aop(seek+config.vaddr, bytes+delta, &aop);

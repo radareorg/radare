@@ -333,6 +333,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 		eprintf(" x @@=`pdf~call[0] ; run 'x' at every call offset of the current function\n");
 		break;
 	case '=':
+eprintf("Iterating over(%s)\n", each+1);
 		/* foreach list of items */
 		each = each+1;
 		do {
@@ -564,7 +565,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			rest[0]='\0';
 			ptr = strchr(piped+1, '`');
 			if (ptr == NULL) {
-				eprintf("No final '`'\n");
+				eprintf("Missing final '`'\n");
 				return -1;
 			}
 			ptr[0]='\0';
@@ -588,8 +589,10 @@ int radare_cmd_raw(const char *tmp, int log)
 				oinput = alloca(len);
 				strcpy(oinput, input);
 				for(i=0;filebuf[i];i++) {
-					if (filebuf[i]=='\n')
-						strcpy(filebuf+i, filebuf+i+1);
+					if (filebuf[i]=='\n') {
+						filebuf[i]=' ';
+						//strcpy(filebuf+i, filebuf+i+1);
+					}
 				}
 				sprintf(oinput, "%s%s%s", input, filebuf, rest);
 				input = oinput;
@@ -1825,6 +1828,7 @@ int radare_go()
 			eprintf("Analyzing program...");
 			radare_cmd(".af* @ entrypoint",0);
 			radare_cmd(".af* @@ sym.",0);
+			eprintf("\n");
 			radare_cmd_raw("Ci", 0);
 		}
 	}

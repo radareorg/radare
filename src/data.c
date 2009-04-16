@@ -384,10 +384,11 @@ int data_list_ranges()
 }
 
 /* TODO: add grep flags argument */
-int data_list()
+int data_list(const char *mask)
 {
+	char pfx[16];
 	char *arg;
-	char label[1024];
+	char label[1024], str[1024];
 	struct data_t *d;
 	struct list_head *pos;
 
@@ -397,14 +398,19 @@ int data_list()
 		string_flag_offset(label, d->from, 0);
 		arg = NULL;
 		switch(d->type) {
-		case DATA_FOLD_O: cons_strcat("Cu "); break;
-		case DATA_FOLD_C: cons_strcat("Cf "); break;
-		case DATA_FUN:    cons_strcat("CF "); break;
-		case DATA_HEX:    cons_strcat("Cd "); break;
-		case DATA_STR:    cons_strcat("Cs "); break;
-		case DATA_STRUCT: cons_strcat("Cm "); arg = d->arg; break;
-		default:          cons_strcat("Cc "); break; }
-		cons_printf("%lld %s@ 0x%08llx ; %s", d->to-d->from, arg?arg:"", d->from, label);
+		case DATA_FOLD_O: strcpy(pfx,"Cu"); break;
+		case DATA_FOLD_C: strcpy(pfx,"Cf"); break;
+		case DATA_FUN:    strcpy(pfx,"CF"); break;
+		case DATA_HEX:    strcpy(pfx,"Cd"); break;
+		case DATA_STR:    strcpy(pfx,"Cs"); break;
+		case DATA_STRUCT: strcpy(pfx,"Cm"); arg = d->arg; break;
+		default:          strcpy(pfx,"Cc"); break; }
+		sprintf(str, "%s %lld %s@ 0x%08llx ; %s", 
+			pfx, d->to-d->from, arg?arg:"", d->from, label);
+		if (!mask || !*mask || str_grep(str, mask)) {
+			cons_strcat(str);
+			cons_newline();
+		}
 #if 0
 		if (verbose)
 		if (d->type == DATA_STR) {
@@ -413,7 +419,6 @@ int data_list()
 			radare_cmd(label, 0);
 		}else
 #endif
-		cons_newline();
 	}
 	return 0;
 }
@@ -558,12 +563,15 @@ void data_comment_add(u64 offset, const char *str)
 	list_add_tail(&(cmt->list), &(comments));
 }
 
-void data_comment_list()
+void data_comment_list(const char *mask)
 {
+	char str[1024];
 	struct list_head *pos;
 	list_for_each(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		cons_printf("CC %s @ 0x%llx\n", cmt->comment, cmt->offset);
+		sprintf(str, "CC %s @ 0x%llx\n", cmt->comment, cmt->offset);
+		if (!mask || !*mask || str_grep(str, mask))
+			cons_strcat(str);
 	}
 }
 
@@ -589,9 +597,9 @@ void data_xrefs_here(u64 addr)
 	}
 }
 
-void data_xrefs_list()
+void data_xrefs_list(const char *mask)
 {
-	char label[1024];
+	char label[512], str[1024];
 	struct xrefs_t *x;
 	struct list_head *pos;
 
@@ -599,7 +607,9 @@ void data_xrefs_list()
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		label[0]='\0';
 		string_flag_offset(label, x->from, 0);
-		cons_printf("C%c 0x%08llx @ 0x%08llx ; %s\n", x->type?'d':'x', x->from, x->addr, label);
+		sprintf(str, "C%c 0x%08llx @ 0x%08llx ; %s\n", x->type?'d':'x', x->from, x->addr, label);
+		if (!mask || !*mask || str_grep(str, mask))
+			cons_printf(str);
 	}
 }
 
@@ -727,14 +737,17 @@ int data_var_type_del(const char *typename)
 	return 0;
 }
 
-int data_var_type_list()
+int data_var_type_list(const char *mask)
 {
+	char str[128];
 	struct list_head *pos;
 	u64 ret = 0;
 
 	list_for_each(pos, &vartypes) {
 		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
-		cons_printf("%s %d %s\n", d->name, d->size, d->fmt);
+		sprintf(str, "%s %d %s\n", d->name, d->size, d->fmt);
+		if (!mask || !*mask || str_grep(str, mask))
+			cons_printf(str);
 	}
 	return ret;
 	
@@ -777,7 +790,7 @@ int data_var_cmd(const char *str)
 		return data_var_help();
 	case '\0':
 		/* list var types */
-		data_var_type_list();
+		data_var_type_list(str+1);
 		break;
 	case '-':
 		data_var_type_del(str+1);

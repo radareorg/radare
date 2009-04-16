@@ -100,7 +100,8 @@ int var_add_access(u64 addr, int delta, int type, int set)
 			var_add(from, to, delta, VAR_T_LOCAL, "int32", varname, 1);
 			if (reloop) {
 				#warning THIS IS BUGGY: SHOULD NEVER HAPPEN
-				eprintf("LOOPING AT 0x%08llx NOT ADDING AN ACCESS\n", addr);
+				//eprintf("LOOPING AT 0x%08llx NOT ADDING AN ACCESS\n", addr);
+				eprintf("v");
 				return 0;
 			}
 			reloop=1;

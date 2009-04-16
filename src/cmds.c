@@ -1165,7 +1165,7 @@ CMD_DECL(code)
 			eprintf("TODO\n");
 			break;
 		case '\0':
-			radare_cmdf("C*~C%c", text[0]);
+			radare_cmdf("C*C%c", text[0]);
 			break;
 		case '*':
 			/* ranges */
@@ -1219,7 +1219,7 @@ CMD_DECL(code)
 
 		for(; *arg==' ';arg=arg+1);
 		if (arg[0]=='\0') {
-			radare_cmdf("C*~C%c", text[0]);
+			radare_cmdf("C*C%c", text[0]);
 		} else
 		if (arg[0]=='*') {
 			/* ranges */
@@ -1254,9 +1254,9 @@ CMD_DECL(code)
 		}
 		break;
 	case '*':
-		data_comment_list();
-		data_xrefs_list();
-		data_list();
+		data_comment_list(input+1);
+		data_xrefs_list(input+1);
+		data_list(input+1);
 		break;
 	default:
 		cons_printf(

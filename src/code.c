@@ -990,8 +990,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 			/* show references */
 			D if (aop.ref) {
-				if (string_flag_offset(buf, aop.ref-config.vaddr, 0));
-					cons_printf(" ; %s",buf);
+				string_flag_offset(buf, aop.ref, 0);
+				cons_printf(" ; %s",buf);
+				if (buf[0]=='\0')
+					cons_printf("(0x%08llx)",aop.ref);
 			}
 
 			/* show comments and jump keys */

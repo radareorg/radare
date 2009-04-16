@@ -122,9 +122,14 @@ void flag_rebase(const char *text)
 {
 	flag_t *f = flag_get_by_addr(config.seek);
 	if (f) {
-		u64 base = get_math(text);
-		f->offset += base;
-	}
+		u64 base;
+		if (text[0]=='-')
+			f->offset -= get_math(text+1);
+		else f->offset += get_math(text);
+//printf("REBASING to 0x%08llx\n", f->offset);
+	} //else {
+	//	eprintf("No flag found at 0x%08llx this address\n", config.seek);
+	//}
 }
 
 void flag_cmd(const char *text)
@@ -526,6 +531,8 @@ void flag_list(char *arg)
 		if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 			continue;
 
+		/* TODO: use grep here */
+		//if (!arg || !*arg || strstr(flag->name, arg)
 		flag_show(flag, 0);
 #if 0
 		cons_printf("%03d 0x%08llx %4lld %s",
