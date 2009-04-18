@@ -437,7 +437,14 @@ int data_xrefs_print(u64 addr, int type)
 			switch(type) {
 			case 0: if (x->type == type) { cons_printf("; 0x%08llx CODE xref 0x%08llx (%s)\n", addr, x->from, str); n++; } break;
 			case 1: if (x->type == type) { cons_printf("; 0x%08llx DATA xref 0x%08llx (%s)\n", addr, x->from), str; n++; } break;
-			default: { cons_printf("; 0x%08llx %s xref from 0x%08llx (%s)\n", addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
+			default: { cons_printf("; 0x%08llx %s xref from 0x%08llx (%s)\n",
+				addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
+			}
+		} else
+		if (x->from == addr) {
+			if (type >1) {
+			cons_printf("; 0x%08llx %s xref to 0x%08llx (%s)\n",
+				addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->addr, str);
 			}
 		}
 	}

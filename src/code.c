@@ -133,6 +133,7 @@ void udis_jump(int n)
 }
 
 /* -- disassemble -- */
+char *disarm (RawInstruction rawinstruction, u64 offset);
 
 int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc)
 {

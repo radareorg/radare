@@ -803,7 +803,7 @@ static CondPosT decode_unknown (Access32 instruction)
 
 
 /* Disassembler entry point */
-char *disarm (RawInstruction rawinstruction, int offset)
+char *disarm (RawInstruction rawinstruction, unsigned long long offset)
 {
 	CondPosT condpos;
 	Access32 instruction;

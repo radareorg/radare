@@ -30,6 +30,6 @@
 typedef unsigned long int RawInstruction;
 
 //char *disarm (RawInstruction rawinstruction, int offset);
-char *disarm (unsigned long int instruction, int offset);
+char *disarm (unsigned long int instruction, unsigned long long offset);
 
 #endif

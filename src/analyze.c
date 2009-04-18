@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#define MAX_FUN_SIZE 3278
+#define MAX_FUN_SIZE 1023
 
 /* code analyzer */
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);

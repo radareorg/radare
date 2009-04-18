@@ -112,17 +112,19 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 	} else
 	if (code[i] & ARM_DTX_LOAD) { //anal_is_load(code[i])) {
 		int ret;
+		u32 oaddr;
 		u32 ptr = 0;
 		u8 *b = &code[i];
-		u32 size = b[0] + (b[1]<<8);
 		aop->type = AOP_TYPE_MOV;
-		//aop->ref = addr+8+size;
-		ret = radare_read_at(addr+8+size, &ptr, 4);
+		oaddr = addr+8+b[0];
+		ret = radare_read_at(oaddr, &ptr, 4);
 		if (ret == 4) {
 			b = &ptr;
 			aop->ref = b[0] + (b[1]<<8) + (b[2]<<16) + (b[3]<<24);
+data_xrefs_add(oaddr, aop->ref, 1);
+//TODO change data type to pointer
 		} else aop->ref = 0;
-	} else
+	} 
 	if (anal_is_exitpoint(code[i])) {
 		branch_dst_addr = disarm_branch_offset(addr, code[i]&0x00FFFFFF );
 
