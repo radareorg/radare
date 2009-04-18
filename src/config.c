@@ -800,7 +800,8 @@ void config_init(int first)
 	config_set("asm.split", "true"); // split code blocks
 	config_set("asm.splitall", "false"); // split code blocks
 	config_set("asm.size", "false"); // opcode size
-	config_set("asm.xrefs", "xrefs");
+	config_set("asm.xrefs", "true");
+	config_set("asm.xrefsto", "false");
 
 	// config_set("asm.follow", "");
 	config_set("cmd.wp", "");

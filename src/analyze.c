@@ -780,7 +780,7 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
-	//from += config.vaddr-config.paddr;
+	from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
 		return -1;
@@ -802,7 +802,7 @@ int analyze_function(u64 from, int recursive, int report)
 	analyze_var_reset(); // ??? control recursivity here ??
 
 	//prg = code_analyze(config.vaddr + config.seek, 1024);
-	prg = code_analyze(from, 1024);
+	prg = code_analyze(seek, 1024);
 	list_add_tail(&prg->list, &config.rdbs);
 
 	list_for_each(head, &(prg->blocks)) {
@@ -815,7 +815,7 @@ int analyze_function(u64 from, int recursive, int report)
 		nblocks++;
 	}
 	to = end;
-	len=1+to-from;
+	len=1+to-seek; //from;
 	if (len<0)
 		return -1;
 
@@ -828,7 +828,7 @@ int analyze_function(u64 from, int recursive, int report)
 		len = MAX_FUN_SIZE;
 	}
 
-	ret = radare_read_at(from, bytes, len);
+	ret = radare_read_at(seek, bytes, len);
 	if (ret <0) {
 		//eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
 		eprintf("x");
@@ -846,7 +846,7 @@ int analyze_function(u64 from, int recursive, int report)
 		string_flag_offset(buf, from, 0);
 		cons_printf("offset = 0x%08llx\n", from);
 		cons_printf("label = %s\n", buf);
-		cons_printf("size = %lld\n", to-from);
+		cons_printf("size = %lld\n", to-seek);
 		cons_printf("blocks = %lld\n", nblocks);
 		cons_printf("bytes = ");
 		for(i=0;i<len;i++) 
@@ -857,7 +857,7 @@ int analyze_function(u64 from, int recursive, int report)
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
 		cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
-		cons_printf("CF %lld @ 0x%08llx\n", to-from+1, from); // XXX can be recursive
+		cons_printf("CF %lld @ 0x%08llx\n", to-seek+1, from); // XXX can be recursive
 	}
 	D eprintf(".");
 
@@ -1020,7 +1020,7 @@ int analyze_function(u64 from, int recursive, int report)
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(seek+config.vaddr, recursive, report);
+				analyze_function(seek-config.vaddr, recursive, report);
 				break;
 			}
 		}

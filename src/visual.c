@@ -143,6 +143,7 @@ void visual_show_help()
 	cons_printf(
 	":<cmd>     radare command (vi like)\n"
 	";          edit or add comment\n"
+	"\"         change metadata of current cursor seek\n"
 	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
 	"m'         m1 -> mark current position as char '1'. '1 will jump to mark 1\n"
 	"g,G        seek to beggining or end of file\n"
@@ -275,23 +276,27 @@ CMD_DECL(zoom_reset)
 	return 0;
 }
 
-static void visual_convert_bytes(int fmt)
+static void visual_convert_bytes(int fmt, int defkey)
 {
 	char argstr[128];
 	int c;
 	u64 off, len;
 	if (fmt == -1) {
-		cons_printf(
-		"c - code\n"
-		"d - data bytes\n"
-		"s - string\n"
-		"f - function\n"
-		"u - undefine function\n"
-		"m - memory format (pm)\n"
-		"< - close folder\n"
-		"> - open folder\n");
-		cons_flush();
-		c = cons_readchar();
+		if (defkey) {
+			c = defkey;
+		} else {
+			cons_printf(
+			"c - code\n"
+			"d - data bytes\n"
+			"s - string\n"
+			"f - function\n"
+			"u - undefine function\n"
+			"m - memory format (pm)\n"
+			"< - close folder\n"
+			"> - open folder\n");
+			cons_flush();
+			c = cons_readchar();
+		}
 		if (c == 'u') {
 			radare_cmd_raw(".afu*", 0);
 			return;
@@ -1001,6 +1006,78 @@ static void check_accel(int foo)
 #endif
 }
 
+static char *visual_prompt_entry(const char *title, char *buf, int len)
+{
+	char *o =dl_prompt;
+	dl_prompt = title;
+	cons_set_raw(1);
+	cons_fgets(buf, len, 0, NULL);
+	cons_set_raw(0);
+	dl_prompt = o;
+	return buf;
+}
+
+void visual_change_metadata(u64 seek)
+{
+	u64 off;
+	char buf[128];
+	char buf2[128];
+	int key;
+	eprintf("\nCurrent seek: 0x%08llx\n\n", seek);
+	eprintf("q quit this menu\n");
+	eprintf("f Analyze code here to define a function\n");
+	eprintf("F Remove function definition\n");
+	eprintf("; Add comment\n");
+	eprintf("- Remove comment\n");
+	eprintf("c Convert to code (remove previous type conversions)\n");
+	eprintf("d Convert type of full block or selected bytes to hex data\n");
+	eprintf("x Add xref\n");
+	eprintf("X Remove xref\n");
+	eprintf("\n=> Press key: \n");
+	key = cons_readchar();
+	switch(key) {
+	case 'q':
+		return;
+	case 'f':
+		visual_convert_bytes(-1, 'f');
+		break;
+	case 'F':
+		visual_convert_bytes(-1, 'u');
+		break;
+	case 'd':
+		visual_convert_bytes(-1, 'd');
+		break;
+	case 'c':
+		visual_convert_bytes(-1, 'c');
+		break;
+	case ';':
+		strcpy(buf, "CC ");
+		visual_prompt_entry("comment: ", buf+3, sizeof(buf2));
+		radare_cmd(buf, 0);
+		break;
+	case '-':
+		strcpy(buf, "CC-");
+		radare_cmd(buf, 0);
+		break;
+	case 'x':
+		{
+		int type = 0;
+		visual_prompt_entry("type (code/data): ", buf2, sizeof(buf2));
+		switch(buf2[0]) {
+		case 'c': type = 0; break;
+		case 'd': type = 1; break;
+		}
+		off = get_math(visual_prompt_entry("xref addr: ", buf, sizeof(buf)));
+		data_xrefs_add(seek, off, type);
+		}
+		break;
+	case 'X':
+		off = get_math(visual_prompt_entry("xref addr: ", buf, sizeof(buf)));
+		data_xrefs_del(seek, off, 0);
+		break;
+	}
+}
+
 void visual_f(int f)
 {
 	u64 addr;
@@ -1533,6 +1610,13 @@ CMD_DECL(visual)
 			cons_gotoxy(0,0);
 			cons_clear();
 			continue;
+		case '"':
+			if (config.cursor_mode) {
+				visual_change_metadata(config.seek + ((config.cursor_mode)?config.cursor:0));
+			} else {
+				visual_change_metadata(config.seek);
+			}
+			break;
 		case ',':
 			if (config.seek != mark)
 				mark = config.seek + ((config.cursor_mode)?config.cursor:0);
@@ -1589,7 +1673,7 @@ CMD_DECL(visual)
 			break;
 #endif
 		case 'd':
-			visual_convert_bytes(-1);
+			visual_convert_bytes(-1, 0);
 			break;
 		case 'C':
 			config.color^=1;
@@ -1788,7 +1872,7 @@ CMD_DECL(visual)
 						cons_clear();
 					}
 				} else {
-					visual_convert_bytes(DATA_FOLD_C);
+					visual_convert_bytes(DATA_FOLD_C, 0);
 				}
 			} else {
 				config.seek -= config.block_size;

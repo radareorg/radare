@@ -415,6 +415,7 @@ void radis(int len, int rows)
 #define RADIS_STACKPTR  0x04000
 #define RADIS_ADDRMOD   0x08000
 #define RADIS_FLAGSALL  0x10000
+#define RADIS_XREFSTO   0x20000
 
 static int stack_ptr = 0;
 static void print_stackptr(struct aop_t *aop, int zero)
@@ -1069,10 +1070,12 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 	int flags;
 	int size, bytes, offset, splits, comments, lines, section,
 	traces, reladdr, flagsline, functions, stackptr, flagsall;
+	// TODO: add xrefsto here
 
 	if (code_flags_cache == -1) {
 		cmd_asm  =       config_get("cmd.asm");
 		size     = (int) config_get_i("asm.size");
+		//xrefsto  = (int) config_get_i("asm.xrefsto");
 		bytes    = (int) config_get_i("asm.bytes");
 		offset   = (int) config_get_i("asm.offset");
 		functions= (int) config_get_i("asm.functions");
@@ -1102,6 +1105,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 		if (flags) flags |= RADIS_FLAGS;
 		if (flagsline) flags |= RADIS_FLAGSLINE;
 		if (flagsall) flags |= RADIS_FLAGSALL;
+		//if (xrefsto) flags |= RADIS_XREFSTO;
 		if (lines) flags |= RADIS_LINES;
 		if (reladdr) flags |= RADIS_RELADDR;
 		if (traces) flags |= RADIS_TRACES;

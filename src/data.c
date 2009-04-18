@@ -429,6 +429,7 @@ int data_xrefs_print(u64 addr, int type)
 	int n = 0;
 	struct xrefs_t *x;
 	struct list_head *pos;
+	int xrefsto = (int)config_get_i("asm.xrefsto"); // XXX pretty slow
 	list_for_each(pos, &xrefs) {
 		x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
 		if (x->addr == addr) {
@@ -441,11 +442,9 @@ int data_xrefs_print(u64 addr, int type)
 				addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->from, str); n++; };
 			}
 		} else
-		if (x->from == addr) {
-			if (type >1) {
+		if (xrefsto && x->from == addr) {
 			cons_printf("; 0x%08llx %s xref to 0x%08llx (%s)\n",
 				addr, (x->type==1)?"DATA":(x->type==0)?"CODE":"UNKNOWN",x->addr, str);
-			}
 		}
 	}
 

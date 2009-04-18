@@ -437,7 +437,23 @@ CMD_DECL(analyze)
 				case AOP_TYPE_PUSH:  cons_printf("push 8\n"); break;
 				case AOP_TYPE_UPUSH:  cons_printf("push 8\n"); break;
 				case AOP_TYPE_POP:  cons_printf("pop 8\n"); break;
-				default: cons_printf("unknown(%d)\n", aop.stackop);
+				default: 
+					switch(aop.stackop) {
+					case AOP_STACK_LOCAL_GET:
+						cons_printf("local-var-get\n");
+						break;
+					case AOP_STACK_LOCAL_SET:
+						cons_printf("local-var-set\n");
+						break;
+					case AOP_STACK_ARG_GET:
+						cons_printf("function-arg-get\n");
+						break;
+					case AOP_STACK_ARG_SET:
+						cons_printf("function-arg-set\n");
+						break;
+					default:
+						cons_printf("unknown(%d)\n", aop.stackop);
+					}
 				}
 			}
 #endif

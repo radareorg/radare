@@ -107,7 +107,7 @@ int var_add_access(u64 addr, int delta, int type, int set)
 			reloop=1;
 			goto _reloop;
 			return var_add_access(addr, delta, type, set);
-		} else eprintf("Cannot find bounding function at 0x%08llx\n", addr);
+		} else eprintf("b"); //eprintf("Cannot find bounding function at 0x%08llx\n", addr);
 	}
 	return 0;
 }

@@ -93,6 +93,7 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 	unsigned int i = 0;
 	unsigned int* code=(unsigned int *)codeA;
 	unsigned int branch_dst_addr;
+	u8 *b = &code[i];
 
 	if (aop == NULL)
 		return (arm_mode==16)?2:4;
@@ -110,24 +111,38 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 		aop->type = AOP_TYPE_RET;
 		aop->eob = 1;
 	} else
-	if (code[i] & ARM_DTX_LOAD) { //anal_is_load(code[i])) {
+	if ((code[i] & ARM_DTX_LOAD)) { //anal_is_load(code[i])) {
 		int ret;
-		u32 oaddr;
 		u32 ptr = 0;
-		u8 *b = &code[i];
 		aop->type = AOP_TYPE_MOV;
-		oaddr = addr+8+b[0];
-		ret = radare_read_at(oaddr, &ptr, 4);
-		if (ret == 4) {
-			b = &ptr;
-			aop->ref = b[0] + (b[1]<<8) + (b[2]<<16) + (b[3]<<24);
-data_xrefs_add(oaddr, aop->ref, 1);
-//TODO change data type to pointer
-		} else aop->ref = 0;
-	} 
+		if (b[2]==0x1b) {
+			/* XXX pretty incomplete */
+			aop->stackop = AOP_STACK_LOCAL_GET;
+			aop->ref = b[0];
+			//var_add_access(addr, -b[0], 1, 0); // TODO: set/get (the last 0)
+		} else {
+			u32 oaddr = addr+8+b[0];
+			ret = radare_read_at(oaddr, &ptr, 4);
+			if (ret == 4) {
+				b = &ptr;
+				aop->ref = b[0] + (b[1]<<8) + (b[2]<<16) + (b[3]<<24);
+				data_xrefs_add(oaddr, aop->ref, 1);
+				//TODO change data type to pointer
+			} else {
+				aop->ref = 0;
+			}
+		}
+	} else
+	if (b[3]==0xe5) {
+		/* STORE */
+		aop->type = AOP_TYPE_STORE;
+		aop->stackop = AOP_STACK_LOCAL_SET;
+		aop->ref = b[0];
+	}
+
 	if (anal_is_exitpoint(code[i])) {
 		branch_dst_addr = disarm_branch_offset(addr, code[i]&0x00FFFFFF );
-
+aop->ref = 0;
 		if (anal_is_BL(code[i])) {
 			if ( anal_is_B ( code[i] ) ) {
 				aop->type = AOP_TYPE_CALL;
