@@ -66,6 +66,9 @@ all: ${TARGETS} armasm _radiff \
 	rax${BINSFX} xrefs${BINSFX} _rasm _rabin _javasm _rasc
 	@true
 
+install:
+	cd .. && ${MAKE} install
+
 ${OBJS}: %.o: %.c
 	${E} 'Compiling $<'
 	${Q}${CC} ${CFLAGS} -c -o $@ $<

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       esteve <youterm.com>
  *       pancake <youterm.com>
  *
@@ -38,29 +38,28 @@ static unsigned int disarm_branch_offset ( unsigned int pc, unsigned int insoff 
 	return add + pc + 8;
 }
 
-static int anal_is_B  ( int inst )
+static inline int anal_is_B  ( int inst )
 {
 	if ((inst&ARM_BRANCH_I_MASK) == ARM_BRANCH_I)
 		return 1;
 	 return 0;
 }
 
-static int anal_is_BL  ( int inst )
+static inline int anal_is_BL  ( int inst )
 {
 	if (anal_is_B(inst) && (inst&ARM_BRANCH_LINK) == ARM_BRANCH_LINK)
 		return 1;
 	return 0;
 }
 
-
-static int anal_is_return ( int inst )
+static inline int anal_is_return ( int inst )
 {
 	if ((inst&(ARM_DTM_I_MASK|ARM_DTM_LOAD|(1<<15))) == (ARM_DTM_I|ARM_DTM_LOAD|(1<<15)))
 		return 1;
 	return 0;
 }
 
-static int anal_is_unkjmp ( int inst )
+static inline int anal_is_unkjmp ( int inst )
 {
 	//if ( (inst & ( ARM_DTX_I_MASK | ARM_DTX_LOAD  | ( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ) )
 	if (( (( ARM_DTX_RD_MASK ) ) ) == ( ARM_DTX_LOAD | ARM_DTX_I | ( ARM_PC << 12 ) ))
@@ -68,7 +67,14 @@ static int anal_is_unkjmp ( int inst )
 	return 0;
 }
 
-static int anal_is_condAL ( int inst )
+static inline int anal_is_load (int inst)
+{
+	if (inst & ARM_DTX_LOAD == (ARM_DTX_LOAD))
+		return 1;
+	return 0;
+}
+
+static inline int anal_is_condAL ( int inst )
 {
 	if ((inst&ARM_COND_MASK)==ARM_COND_AL)
 		return 1;
@@ -98,10 +104,24 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 		codeA[0], codeA[1], codeA[2], codeA[3]);
 #endif
 
+//eprintf("0x%08x\n", code[i] & ARM_DTX_LOAD);
 	// 0x0001B4D8,           1eff2fe1        bx    lr
 	if( (code[i] == 0x1eff2fe1) ||(code[i] == 0xe12fff1e)) { // bx lr
 		aop->type = AOP_TYPE_RET;
 		aop->eob = 1;
+	} else
+	if (code[i] & ARM_DTX_LOAD) { //anal_is_load(code[i])) {
+		int ret;
+		u32 ptr = 0;
+		u8 *b = &code[i];
+		u32 size = b[0] + (b[1]<<8);
+		aop->type = AOP_TYPE_MOV;
+		//aop->ref = addr+8+size;
+		ret = radare_read_at(addr+8+size, &ptr, 4);
+		if (ret == 4) {
+			b = &ptr;
+			aop->ref = b[0] + (b[1]<<8) + (b[2]<<16) + (b[3]<<24);
+		} else aop->ref = 0;
 	} else
 	if (anal_is_exitpoint(code[i])) {
 		branch_dst_addr = disarm_branch_offset(addr, code[i]&0x00FFFFFF );
@@ -116,23 +136,21 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 				aop->type = AOP_TYPE_RET;
 				aop->eob = 1;
 			}
-		} else {
-			if ( anal_is_B ( code[i] ) ) {
-				if ( anal_is_condAL (code[i] )  ) {
-					aop->type = AOP_TYPE_JMP;
-					aop->jump = branch_dst_addr;
-					aop->eob = 1;
-				} else {
-					aop->type = AOP_TYPE_CJMP;
-					aop->jump = branch_dst_addr;
-					aop->fail = addr + 4;
-					aop->eob  = 1;
-				}
-			} else {
-				//unknown jump o return
-				aop->type = AOP_TYPE_UJMP;
+		} else if ( anal_is_B ( code[i] ) ) {
+			if ( anal_is_condAL (code[i] )  ) {
+				aop->type = AOP_TYPE_JMP;
+				aop->jump = branch_dst_addr;
 				aop->eob = 1;
+			} else {
+				aop->type = AOP_TYPE_CJMP;
+				aop->jump = branch_dst_addr;
+				aop->fail = addr + 4;
+				aop->eob  = 1;
 			}
+		} else {
+			//unknown jump o return
+			aop->type = AOP_TYPE_UJMP;
+			aop->eob = 1;
 		}
 	}
 

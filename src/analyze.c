@@ -28,6 +28,8 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#define MAX_FUN_SIZE 3278
+
 /* code analyzer */
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
@@ -778,7 +780,6 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
-
 	//from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)
@@ -821,6 +822,11 @@ int analyze_function(u64 from, int recursive, int report)
 	bytes = (char *)malloc(len);
 	if (bytes == NULL)
 		return -1;
+
+	if (len > MAX_FUN_SIZE) {
+		D eprintf("o");
+		len = MAX_FUN_SIZE;
+	}
 
 	ret = radare_read_at(from, bytes, len);
 	if (ret <0) {
