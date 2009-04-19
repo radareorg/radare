@@ -1,9 +1,10 @@
 /* File to include to use the wrapper. */
 
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include "revm.h"
-
+#include <errno.h>
+#include "libaspect.h"
 
 typedef struct  gdbwrap_gdbreg32
 {
@@ -35,7 +36,23 @@ typedef struct gdbwrap_t
   Bool             is_active;
   Bool             erroroccured;
   Bool             interrupted;
+  Bool             pmode;
 } gdbwrap_t;
+
+typedef struct meminfo_t
+{
+  char             *type;
+  u_int              start;
+  u_int              length;
+  u_int              blocksize;
+} meminfo_t;
+
+typedef struct gdbmemap_t
+{
+  meminfo_t        ram;
+  meminfo_t        rom;
+  meminfo_t        flash;
+} gdbmemap_t;
 
 
 typedef struct
@@ -56,25 +73,21 @@ void             gdbwrap_hello(gdbwrap_t *desc);
 void             gdbwrap_bye(gdbwrap_t *desc);
 void             gdbwrap_reason_halted(gdbwrap_t *desc);
 char             *gdbwrap_own_command(gdbwrap_t *desc, char *command);
-void             gdbwrap_test(gdbwrap_t *desc);
 gdbwrap_gdbreg32 *gdbwrap_readgenreg(gdbwrap_t *desc);
 void             gdbwrap_continue(gdbwrap_t *desc);
 void             gdbwrap_setbp(gdbwrap_t *desc, la32 linaddr, void *datasaved);
 void             gdbwrap_simplesetbp(gdbwrap_t *desc, la32 linaddr);
 void             gdbwrap_delbp(gdbwrap_t *desc, la32 linaddr, void *datasaved);
 void             gdbwrap_simpledelbp(gdbwrap_t *desc, la32 linaddr);
-char             *gdbwrap_readmemory(gdbwrap_t *desc, la32 linaddr, unsigned bytes);
-void             *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr, void *value,
-				      unsigned bytes);
-void             *gdbwrap_writememory2(gdbwrap_t *desc, la32 linaddr, void *value,
-				       unsigned bytes);
-void             gdbwrap_writereg(gdbwrap_t *desc, ureg32 regNum, la32 val);
+char             *gdbwrap_readmem(gdbwrap_t *desc, la32 linaddr, unsigned bytes);
+void             gdbwrap_writemem(gdbwrap_t *desc, la32 linaddr, void *value,
+				  unsigned bytes);
+void             gdbwrap_writereg(gdbwrap_t *desc, ureg32 regnum, la32 val);
 char             *gdbwrap_shipallreg(gdbwrap_t *desc);
 void             gdbwrap_ctrl_c(gdbwrap_t *desc);
 void             gdbwrap_signal(gdbwrap_t *desc, int signal);
 void             gdbwrap_stepi(gdbwrap_t *desc);
-void             gdbwrap_writereg(gdbwrap_t *desc, ureg32 regNum, la32 val);
-void             gdbwrap_writereg2(gdbwrap_t *desc, ureg32 regNum, la32 val);
 char             *gdbwrap_remotecmd(gdbwrap_t *desc, char *cmd);
-
+u_char           gdbwrap_lasterror(gdbwrap_t *desc);
+gdbmemap_t       gdbwrap_memorymap_get();
 

@@ -26,16 +26,17 @@ static u64 off = 0;
 static gdbwrap_t *desc = NULL;
 static int _fd = -1;
 
-ssize_t r_gdbwrap_write(int fd, const void *buf, size_t count)
+ssize_t r_gdbwrap_write(int fd, const u8 *buf, size_t count)
 {
-	return gdbwrap_writememory(desc, (la32)off, buf, count);
+	gdbwrap_writemem(desc, (la32)off, buf, count);
+	return count;
 }
 
 ssize_t r_gdbwrap_read(int fd, unsigned char *buf, size_t count)
 {
 	int i=0;
 	if (r_gdbwrap_handle_fd(fd)) {
-		unsigned char *ptr = gdbwrap_readmemory(desc, (la32)off, count);
+		unsigned char *ptr = gdbwrap_readmem(desc, (la32)off, count);
 		if (ptr == NULL)
 			return -1;
 		memset(buf, '\0', count);

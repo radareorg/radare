@@ -1,10 +1,10 @@
 
-/*  
+/*
  *  See gdb documentation, section D for more information on the
  *  remote serial protocol. To make it short, a packet looks like the following:
  *
  *  $packet-data#checksum  or  $sequence-id:packet-data#checksum.
- * 
+ *
  *  where the checksum is the sum of all the characters modulo 256.
  */
 
@@ -13,9 +13,9 @@
 #include             "gdbwrapper-internals.h"
 #include             "gdbwrapper.h"
 
-
 gdbwrapworld_t       gdbwrapworld;
 
+/******************** Internal functions ********************/
 
 static char          *gdbwrap_lastmsg(gdbwrap_t *desc)
 {
@@ -44,53 +44,31 @@ static Bool          gdbwrap_errorhandler(gdbwrap_t *desc, const char *error)
   if (!strncmp(GDBWRAP_DEAD, error, strlen(GDBWRAP_DEAD)))
     fprintf(stdout, "The server seems to be dead. Message not sent.\n");
 
+#if 0
+  /* noisy error */
   if (error[0] == GDBWRAP_REPLAY_ERROR)
     fprintf(stdout, "Error received from the server: %s\n", error);
-  
+#endif
+
   if (error[0] == GDBWRAP_EXIT_W_STATUS)
     {
       fprintf(stdout, "Exit with status: %s\n", error);
       desc->is_active = FALSE;
     }
-  
+
   if (error[0] == GDBWRAP_EXIT_W_SIGNAL)
     {
       fprintf(stdout, "Exit with signal: %s\n", error);
       desc->is_active = FALSE;
     }
 
-  if (error[0] == GDBWRAP_NULL_CHAR)
-    fprintf(stdout, "Command not supported\n");
-
   desc->erroroccured = TRUE;
+  fflush(stdout);
   return TRUE;
 }
 
 
-unsigned             gdbwrap_lastsignal(gdbwrap_t *desc)
-{
-  unsigned           ret = 0;
-
-  /* When we receive a packet starting with GDBWRAP_SIGNAL_RECV, the
-     next 2 characters reprensent the signal number. */
-  if (desc->packet != NULL && (desc->packet[0] == GDBWRAP_SIGNAL_RECV ||
-			       desc->packet[0] == GDBWRAP_SIGNAL_RECV2))
-    ret = gdbwrap_atoh(desc->packet + 1, 2 * sizeof(char));
-
-  return ret;
-}
-
-
-Bool                 gdbwrap_is_active(gdbwrap_t *desc)
-{
-  if (desc->is_active)
-    return TRUE;
-  else
-    return FALSE;
-}
-
-
-static Bool         gdbwrap_isinterrupted(gdbwrap_t *desc)
+static Bool         gdbwrap_is_interrupted(gdbwrap_t *desc)
 {
   return desc->interrupted;
 }
@@ -134,11 +112,11 @@ static char          *gdbwrap_extract_from_packet(const char *strtoparse,
   else
     {
       charbegin = strstr(strtoparse, begin);
-      strtorem  = strlen(begin); 
+      strtorem  = strlen(begin);
       if (charbegin == NULL)
 	return NULL;
     }
-  
+
   if (end == NULL)
     charend = charbegin + strlen(charbegin);
   else
@@ -171,6 +149,324 @@ static la32          gdbwrap_little_endian(la32 addr)
     }
 
   return addrlittle;
+}
+
+
+static uint8_t       gdbwrap_calc_checksum(gdbwrap_t *desc, const char *str)
+{
+  unsigned           i;
+  uint8_t            sum;
+  char              *result;
+
+  result = gdbwrap_extract_from_packet(str, desc->packet, GDBWRAP_BEGIN_PACKET,
+                                       GDBWRAP_END_PACKET,
+				       desc->max_packet_size);
+
+  /* If result == NULL, it's not a packet. */
+  if (result == NULL)
+    result = gdbwrap_extract_from_packet(str, desc->packet, NULL, NULL,
+					 desc->max_packet_size);
+
+  for (i = 0, sum = 0; i < strlen(result); i++)
+    sum += result[i];
+
+  return  sum;
+}
+
+
+static char          *gdbwrap_make_message(gdbwrap_t *desc, const char *query)
+{
+  uint8_t             checksum       = gdbwrap_calc_checksum(desc, query);
+  unsigned            max_query_size = (desc->max_packet_size -
+					strlen(GDBWRAP_BEGIN_PACKET)
+					- strlen(GDBWRAP_END_PACKET)
+					- sizeof(checksum));
+
+  /* Sometimes C sucks... Basic source and destination checking. We do
+     not check the overlapping tho.*/
+  if (strlen(query) < max_query_size && query != desc->packet)
+    {
+      u_char ret;
+      ret = snprintf(desc->packet, desc->max_packet_size, "%s%s%s%.2x",
+		     GDBWRAP_BEGIN_PACKET, query, GDBWRAP_END_PACKET, checksum);
+      ASSERT(ret > 0);
+    }
+  else
+    {
+      ASSERT(FALSE);
+    }
+
+  return desc->packet;
+}
+
+
+/**
+ * This function performes a run-length decoding and writes back to
+ * *dstpacket*, but no more than *maxsize* bytes.
+ *
+ * @param srcpacket: the encoded packet.
+ * @param maxsize:   the maximal size of the decoded packet.
+ */
+static char          *gdbwrap_run_length_decode(char *dstpacket, const char *srcpacket,
+						unsigned maxsize)
+{
+  /* Protocol specifies to take the following value and substract 29
+     and repeat by this number the previous character.  Note that the
+     compression may be used multiple times in a packet. */
+  char              *encodestr;
+  char               valuetocopy;
+  uint8_t            numberoftimes;
+  unsigned           iter;
+  unsigned           strlenc;
+  unsigned           check;
+
+  ASSERT(dstpacket != NULL && srcpacket != NULL &&
+  	 srcpacket[0] != GDBWRAP_START_ENCODC);
+  if (srcpacket != dstpacket)
+    strncpy(dstpacket, srcpacket, maxsize);
+  encodestr = strstr(dstpacket, GDBWRAP_START_ENCOD);
+  check = strlen(dstpacket);
+  while (encodestr != NULL)
+    {
+      /* This    is    OK   to    take    encodestr[-1],   since    we
+	 assert(srcpacket[0] != GDBWRAP_START_ENCODC). */
+      valuetocopy    = encodestr[-1];
+      numberoftimes  = encodestr[1] - 29;
+      ASSERT((check += numberoftimes) < maxsize);
+      strlenc        = strlen(encodestr);
+      /* We move the string to the right, then set the bytes. We
+	 substract 2, because we have <number>*<char> where * and
+	 <char> are filled with the value of <number> (ie 2 chars). */
+      for (iter = 0; iter < strlenc; iter++)
+	encodestr[strlenc + numberoftimes - iter - 2] = encodestr[strlenc - iter];
+      memset(encodestr, valuetocopy, numberoftimes);
+      encodestr = strstr(NEXT_CHAR(encodestr), GDBWRAP_START_ENCOD);
+    }
+
+  return dstpacket;
+}
+
+
+/**
+ * Populate the gdb registers with the values received in the
+ * packet. A packet has the following form:
+ *
+ * $n:r;[n:r;]#checksum
+ *
+ * where n can be a number (the register), or "thread" and r is the
+ * value of the thread/register.
+ *
+ * @param packet: the packet to parse.
+ * @param reg   : the structure in which we want to write the registers.
+ */
+static void         gdbwrap_populate_reg(gdbwrap_t *desc, char *packet)
+{
+  const char       *nextpacket;
+  char             *nextupacket;
+  char              packetsemicolon[MSG_BUF];
+  char              packetcolon[MSG_BUF];
+  unsigned          packetoffset = 0;
+
+  /* If a signal is received, we populate the registers, starting
+     after the signal number (ie after Tnn, where nn is the
+     number). */
+  if (packet[0] == GDBWRAP_SIGNAL_RECV)
+    packetoffset = 3;
+
+  while ((nextpacket =
+	  gdbwrap_extract_from_packet(packet + packetoffset,
+				      packetsemicolon,
+				      NULL,
+				      GDBWRAP_SEP_SEMICOLON,
+				      sizeof(packetsemicolon))) != NULL)
+    {
+      nextupacket = gdbwrap_extract_from_packet(nextpacket, packetcolon, NULL,
+						GDBWRAP_SEP_COLON,
+						sizeof(packetcolon));
+      ASSERT(nextupacket != NULL);
+      if (strlen(nextupacket) == 2)
+	{
+	  uint8_t regnumber = gdbwrap_atoh(nextupacket, strlen(nextupacket));
+	  ureg32  regvalue;
+
+	  nextupacket = gdbwrap_extract_from_packet(nextpacket, packetcolon,
+						    GDBWRAP_SEP_COLON, NULL,
+						    sizeof(packetcolon));
+	  ASSERT(nextupacket != NULL);
+	  regvalue = gdbwrap_atoh(nextupacket, strlen(nextupacket));
+	  regvalue = gdbwrap_little_endian(regvalue);
+
+	  *(&desc->reg32.eax + regnumber) =  regvalue;
+	}
+      /* We add 1 in order not to take the right limit. In the worst
+	 case, we should get the NULL char. */
+      packetoffset += strlen(nextpacket) + 1;
+    }
+}
+
+
+static void          gdbwrap_send_ack(gdbwrap_t *desc)
+{
+  send(desc->fd, GDBWRAP_COR_CHECKSUM, strlen(GDBWRAP_COR_CHECKSUM), 0x0);
+}
+
+
+static Bool          gdbwrap_check_ack(gdbwrap_t *desc)
+{
+  int                rval;
+
+  rval = recv(desc->fd, desc->packet, 1, 0);
+  /* The result of the previous recv must be a "+". */
+  if (!rval)
+    desc->is_active = FALSE;
+  if (desc->packet[0] == GDBWRAP_COR_CHECKSUMC && rval != -1) 
+    return TRUE;
+  else
+    if (desc->packet[0] != GDBWRAP_BAD_CHECKSUM)
+      return FALSE;
+    else
+      {
+	fprintf(stderr, "The server has NOT sent any ACK."
+		"It probably does not follow exactly the gdb protocol (%s - %d).\n",
+		desc->packet, rval);
+	return FALSE;
+      }
+}
+
+
+static char          *gdbwrap_get_packet(gdbwrap_t *desc)
+{
+  int                 rval;
+  int                 sumrval;
+  char                checksum[3];
+
+  ASSERT(desc != NULL);
+
+  desc->packet[0] = GDBWRAP_NULL_CHAR;
+  rval = -1;
+  sumrval = 0;
+  do
+    {
+      /* In case the packet is splitted into many others. */
+      rval = recv(desc->fd, desc->packet + sumrval, desc->max_packet_size, 0);
+      sumrval += rval;
+      if (errno == EINTR)
+	break;
+    } while (sumrval >= 3 &&
+	     desc->packet[sumrval - 3] != GDBWRAP_END_PACKETC && rval);
+
+  /* if rval == 0, it means the host is disconnected/dead. */
+  if (rval)
+    {
+      desc->packet[sumrval] = GDBWRAP_NULL_CHAR;
+      gdbwrap_extract_from_packet(desc->packet, checksum, GDBWRAP_END_PACKET,
+				  NULL, sizeof(checksum));
+
+      /* If no error, we ack the packet. */
+      if (rval != -1 &&
+	  gdbwrap_atoh(checksum, strlen(checksum)) ==
+	  gdbwrap_calc_checksum(desc, desc->packet))
+	{
+	  gdbwrap_send_ack(desc);
+	  gdbwrap_errorhandler(desc, desc->packet);
+	  return gdbwrap_run_length_decode(desc->packet, desc->packet,
+					   desc->max_packet_size);
+	}
+      else
+	{
+	  if (gdbwrap_is_interrupted(desc))
+	    {
+	      desc->interrupted = FALSE;
+	      gdbwrap_errorhandler(desc, desc->packet);
+	      return gdbwrap_run_length_decode(desc->packet, desc->packet,
+					       desc->max_packet_size);
+	    }
+	  else
+	    {
+	      fprintf(stderr, "Muh ?\n");
+	      return NULL;
+	    }
+	}
+    }
+  else desc->is_active = FALSE;
+
+  return NULL;
+}
+
+
+static char          *gdbwrap_send_data(gdbwrap_t *desc, const char *query)
+{
+  int                 rval = 0;
+  char               *mes;
+
+  ASSERT(desc != NULL && query != NULL);
+
+  DEBUGMSG(printf("Sending: %s\n", query));
+
+  if (gdbwrap_is_active(desc))
+    {
+      do
+	{
+	  mes  = gdbwrap_make_message(desc, query);
+	  rval = send(desc->fd, mes, strlen(mes), 0);
+	} while(gdbwrap_check_ack(desc) != TRUE);
+
+      ASSERT(rval != -1);
+      mes  = gdbwrap_get_packet(desc);
+      DEBUGMSG(printf("Received: %s\n", mes));
+    }
+  else
+    {
+      gdbwrap_errorhandler(desc, GDBWRAP_DEAD);
+      mes = NULL;
+    }
+
+  return mes;
+}
+
+
+/******************** External functions ********************/
+
+
+/**
+ * Returns the last signal. We return the signal number or 0 if no
+ * signal was returned.
+ **/
+unsigned             gdbwrap_lastsignal(gdbwrap_t *desc)
+{
+  unsigned           ret = 0;
+  char               *lastmsg = gdbwrap_lastmsg(desc);
+
+  /* When we receive a packet starting with GDBWRAP_SIGNAL_RECV, the
+     next 2 characters reprensent the signal number. */
+  if (lastmsg != NULL && (lastmsg[0] == GDBWRAP_SIGNAL_RECV ||
+			  lastmsg[0] == GDBWRAP_SIGNAL_RECV2))
+    ret = gdbwrap_atoh(lastmsg + 1, BYTE_IN_CHAR * sizeof(char));
+
+  return ret;
+}
+
+
+u_char               gdbwrap_lasterror(gdbwrap_t *desc)
+{
+  u_char             ret = 0;
+  char               *lastmsg = gdbwrap_lastmsg(desc);
+
+  /* When we receive a packet starting with GDBWRAP_SIGNAL_RECV, the
+     next 2 characters reprensent the signal number. */
+  if (lastmsg != NULL && lastmsg[0] == GDBWRAP_REPLAY_ERROR)
+    ret = gdbwrap_atoh(lastmsg + 1, BYTE_IN_CHAR * sizeof(char));
+
+  return ret;
+}
+
+
+Bool                 gdbwrap_is_active(gdbwrap_t *desc)
+{
+  if (desc->is_active)
+    return TRUE;
+  else
+    return FALSE;
 }
 
 
@@ -208,262 +504,6 @@ unsigned             gdbwrap_atoh(const char * str, unsigned size)
 }
 
 
-static uint8_t       gdbwrap_calc_checksum(gdbwrap_t *desc, const char *str)
-{
-  unsigned           i;
-  uint8_t            sum;
-  char               *result;
-
-  result = gdbwrap_extract_from_packet(str, desc->packet, GDBWRAP_BEGIN_PACKET,
-                                       GDBWRAP_END_PACKET,
-				       desc->max_packet_size);
-
-  /* If result == NULL, it's not a packet. */
-  if (result == NULL)
-    result = gdbwrap_extract_from_packet(str, desc->packet, NULL, NULL,
-					 desc->max_packet_size);
-
-  for (i = 0, sum = 0; i < strlen(result); i++)
-    sum += result[i];
-
-  return  sum;
-}
-
-
-static char          *gdbwrap_make_message(gdbwrap_t *desc, const char *query)
-{
-  uint8_t            checksum       = gdbwrap_calc_checksum(desc, query);
-  unsigned           max_query_size = (desc->max_packet_size -
-				       strlen(GDBWRAP_BEGIN_PACKET)
-				       - strlen(GDBWRAP_END_PACKET)
-				       - sizeof(checksum));
-
-  /* Sometimes C sucks... Basic source and destination checking. We do
-     not check the overlapping tho.*/
-  if (strlen(query) < max_query_size && &*query != &*desc->packet)
-    {
-      u_char ret;
-      ret = snprintf(desc->packet, desc->max_packet_size, "%s%s%s%.2x",
-		     GDBWRAP_BEGIN_PACKET, query, GDBWRAP_END_PACKET, checksum);
-      ASSERT(ret > 0);
-    }
-  else
-    {
-      ASSERT(FALSE);
-    }
-
-  return desc->packet;
-}
-
-
-/**
- * This function performes a run-length decoding and writes back to
- * *dstpacket*, but no more than *maxsize* bytes. 
- *
- * @param srcpacket: the encoded packet.
- * @param maxsize:   the maximal size of the decoded packet.
- */
-static char          *gdbwrap_run_length_decode(char *dstpacket, const char *srcpacket,
-						unsigned maxsize)
-{
-  /* Protocol specifies to take the following value and substract 29
-     and repeat by this number the previous character.  Note that the
-     compression may be used multiple times in a packet. */
-  char               *encodestr;
-  char               valuetocopy;
-  uint8_t            numberoftimes;
-  unsigned           iter;
-  unsigned           strlenc;
-  unsigned           check;
-    
-  ASSERT(dstpacket != NULL && srcpacket != NULL &&
-  	 srcpacket[0] != GDBWRAP_START_ENCODC);
-  if (srcpacket != dstpacket)
-    strncpy(dstpacket, srcpacket, maxsize);
-  encodestr   = strstr(dstpacket, GDBWRAP_START_ENCOD);
-  check = strlen(dstpacket);
-  while (encodestr != NULL)
-    {
-      valuetocopy    = encodestr[-1];
-      numberoftimes  = encodestr[1] - 29;
-      ASSERT((check += numberoftimes) < maxsize);
-      strlenc        = strlen(encodestr);
-      /* We move the string to the right, then set the bytes. We
-	 substract 2, because we have <number>*<char> where * and
-	 <char> are filled with the value of <number> (ie 2 chars). */
-      for (iter = 0; iter < strlenc; iter++)
-	encodestr[strlenc + numberoftimes - iter - 2] = encodestr[strlenc - iter];
-      memset(encodestr, valuetocopy, numberoftimes);
-      encodestr = strstr(NEXT_CHAR(encodestr), GDBWRAP_START_ENCOD);
-    }
-
-  return dstpacket;
-}
-
-
-/**
- * Populate the gdb registers with the values received in the
- * packet. A packet has the following form:
- *
- * $n:r;[n:r;]#checksum
- *
- * where n can be a number (the register), or "thread" and r is the
- * value of the thread/register.
- *
- * @param packet: the packet to parse.
- * @param reg   : the structure in which we want to write the registers.
- */
-static void         gdbwrap_populate_reg(gdbwrap_t *desc, char *packet)
-{
-  const char        *nextpacket;
-  char              *nextupacket;
-  char              packetsemicolon[MSG_BUF];
-  char              packetcolon[MSG_BUF];
-  unsigned          packetoffset = 0;
-
-  /* If a signal is received, we populate the registers, starting
-     after the signal number (ie after Tnn, where nn is the
-     number). */
-  if (packet[0] == GDBWRAP_SIGNAL_RECV)
-    packetoffset = 3;
-  
-  while ((nextpacket =
-	  gdbwrap_extract_from_packet(packet + packetoffset,
-				      packetsemicolon,
-				      NULL,
-				      GDBWRAP_SEP_SEMICOLON,
-				      sizeof(packetsemicolon))) != NULL)
-    {
-      nextupacket = gdbwrap_extract_from_packet(nextpacket, packetcolon, NULL,
-						GDBWRAP_SEP_COLON,
-						sizeof(packetcolon));
-      ASSERT(nextupacket != NULL);
-      if (strlen(nextupacket) == 2)
-	{
-	  uint8_t regnumber = gdbwrap_atoh(nextupacket, strlen(nextupacket));
-	  ureg32  regvalue;
-	  
-	  nextupacket = gdbwrap_extract_from_packet(nextpacket, packetcolon,
-						    GDBWRAP_SEP_COLON, NULL,
-						    sizeof(packetcolon));
-	  ASSERT(nextupacket != NULL);
-	  regvalue = gdbwrap_atoh(nextupacket, strlen(nextupacket));
-	  regvalue = gdbwrap_little_endian(regvalue);
-					   
-	  *(&desc->reg32.eax + regnumber) =  regvalue;
-	}
-      /* We add 1 in order not to take the right limit. In the worst
-	 case, we should get the NULL char. */
-      packetoffset += strlen(nextpacket) + 1;
-    }
-}
-
-
-static void          gdbwrap_send_ack(gdbwrap_t *desc)
-{
-  send(desc->fd, GDBWRAP_COR_CHECKSUM, strlen(GDBWRAP_COR_CHECKSUM), 0x0);
-}
-
-
-static void          gdbwrap_check_ack(gdbwrap_t *desc)
-{
-  int                rval;
-
-  rval = recv(desc->fd, desc->packet, 1, 0);
-  /* The result of the previous recv must be a "+". */
-  if (desc->packet != GDBWRAP_COR_CHECKSUMC)
-    fprintf(stderr, "The server has NOT sent any ACK."
-	    "It probably does not follow exactly the gdb protocol (%s - %d).\n",
-	    desc->packet, rval);
-
-  ASSERT(rval != -1);
-}
-
-
-static char          *gdbwrap_get_packet(gdbwrap_t *desc)
-{
-  int                rval;
-  int                sumrval;
-  char               checksum[3];
-
-  ASSERT(desc != NULL);
-
-  gdbwrap_check_ack(desc);
-  desc->packet[0] = GDBWRAP_NULL_CHAR;
-  rval = -1;
-  sumrval = 0;
-  while (desc->packet[sumrval - 3] != GDBWRAP_END_PACKETC && rval)
-    {
-      /* In case the packet is splitted into many others. */
-      rval = recv(desc->fd, desc->packet + sumrval, desc->max_packet_size, 0);
-      sumrval += rval;
-      if (errno == EINTR)
-	  break;
-    }
-  
-  /* if rval == 0, it means the host is disconnected/dead. */
-  if (rval) {
-    desc->packet[sumrval] = GDBWRAP_NULL_CHAR;
-    gdbwrap_extract_from_packet(desc->packet, checksum, GDBWRAP_END_PACKET,
-				NULL, sizeof(checksum));
-
-    /* If no error, we ack the packet. */
-    if (rval != -1 &&
-	gdbwrap_atoh(checksum, strlen(checksum)) ==
-	gdbwrap_calc_checksum(desc, desc->packet))
-      {
-	gdbwrap_send_ack(desc);
-	gdbwrap_errorhandler(desc, desc->packet);
-	return gdbwrap_run_length_decode(desc->packet, desc->packet,
-					 desc->max_packet_size);
-      }
-    else
-      {
-	if (gdbwrap_isinterrupted(desc))
-	  {
-	    desc->interrupted = FALSE;
-	    gdbwrap_errorhandler(desc, desc->packet);
-	    return gdbwrap_run_length_decode(desc->packet, desc->packet,
-					     desc->max_packet_size);
-	  }
-	else
-	  {
-	    fprintf(stderr, "Muh ?\n");
-	    return NULL;
-	  }
-      }
-  }
-  else desc->is_active = FALSE;
-
-  return NULL;
-}
-
-
-static char          *gdbwrap_send_data(gdbwrap_t *desc, const char *query)
-{
-  int                rval = 0;
-  char               *mes;
-
-  ASSERT(desc != NULL && query != NULL);
-
-  DEBUGMSG(printf("Sending: %s\n", query));
-
-  if (gdbwrap_is_active(desc))
-    {
-      mes  = gdbwrap_make_message(desc, query);
-      rval = send(desc->fd, mes, strlen(mes), 0);
-      ASSERT(rval != -1);
-      mes  = gdbwrap_get_packet(desc);
-      DEBUGMSG(printf("Received: %s\n", mes));
-    }
-  else
-    {
-      gdbwrap_errorhandler(desc, GDBWRAP_DEAD);
-      mes = NULL;
-    }
-  
-  return mes;
-}
 
 
 /**
@@ -473,7 +513,7 @@ static char          *gdbwrap_send_data(gdbwrap_t *desc, const char *query)
 gdbwrapworld_t       gdbwrap_current_set(gdbwrap_t *world)
 {
   gdbwrapworld.gdbwrapptr = world;
-  
+
   return gdbwrapworld;
 }
 
@@ -492,7 +532,7 @@ gdbwrap_t            *gdbwrap_current_get(void)
 gdbwrap_t            *gdbwrap_init(int fd)
 {
   gdbwrap_t          *desc = malloc(sizeof(gdbwrap_t));
-      
+
   ASSERT(fd && desc != NULL);
   desc->max_packet_size   = 2500;
   desc->packet            = malloc((desc->max_packet_size + 1) * sizeof(char));
@@ -537,7 +577,7 @@ void                gdbwrap_hello(gdbwrap_t *desc)
       if (result != NULL)
 	{
 	  char *reallocptr;
-      
+
 	  previousmax = desc->max_packet_size;
 	  desc->max_packet_size = gdbwrap_atoh(desc->packet, strlen(desc->packet));
 	  reallocptr = realloc(desc->packet, desc->max_packet_size + 1);
@@ -589,7 +629,7 @@ gdbwrap_gdbreg32     *gdbwrap_readgenreg(gdbwrap_t *desc)
   char               *rec;
   unsigned           i;
   ureg32             regvalue;
-  
+
   rec = gdbwrap_send_data(desc, GDBWRAP_GENPURPREG);
   if (gdbwrap_is_active(desc))
     {
@@ -602,7 +642,7 @@ gdbwrap_gdbreg32     *gdbwrap_readgenreg(gdbwrap_t *desc)
 	  rec += 2 * DWORD_IN_BYTE;
 	}
 
-      return &desc->reg32; 
+      return &desc->reg32;
     }
   else
     return NULL;
@@ -634,11 +674,11 @@ void                 gdbwrap_setbp(gdbwrap_t *desc, la32 linaddr, void *datasave
   unsigned           atohresult;
 
   ASSERT(desc != NULL && desc != datasaved);
-  ret = gdbwrap_readmemory(desc, linaddr, 1);
+  ret = gdbwrap_readmem(desc, linaddr, 1);
   /* Fix: not clean. ATOH is not clean when returning an unsigned. */
   atohresult = gdbwrap_atoh(ret, 2 * 1);
   memcpy(datasaved, &atohresult, 1);
-  gdbwrap_writememory(desc, linaddr, &bp, sizeof(u_char));
+  gdbwrap_writemem(desc, linaddr, &bp, sizeof(u_char));
 }
 
 
@@ -654,22 +694,22 @@ void                 gdbwrap_simplesetbp(gdbwrap_t *desc, la32 linaddr)
 
 void                 gdbwrap_delbp(gdbwrap_t *desc, la32 linaddr, void *datasaved)
 {
-  gdbwrap_writememory(desc, linaddr, datasaved, sizeof(u_char));
+  gdbwrap_writemem(desc, linaddr, datasaved, sizeof(u_char));
 }
 
 
 void                 gdbwrap_simpledelbp(gdbwrap_t *desc, la32 linaddr)
 {
   char               packet[MSG_BUF];
-  
+
   snprintf(packet, sizeof(packet), "%s%s%x%s%x", GDBWRAP_REMOVEBP,
 	   GDBWRAP_SEP_COMMA, linaddr, GDBWRAP_SEP_COMMA, 0x1);
   gdbwrap_send_data(desc, packet);
 }
 
 
-char                 *gdbwrap_readmemory(gdbwrap_t *desc, la32 linaddr,
-					 unsigned bytes)
+char                 *gdbwrap_readmem(gdbwrap_t *desc, la32 linaddr,
+				      unsigned bytes)
 {
   char               *rec;
   char               packet[MSG_BUF];
@@ -682,7 +722,7 @@ char                 *gdbwrap_readmemory(gdbwrap_t *desc, la32 linaddr,
 }
 
 
-void                 *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr,
+static void          *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr,
 					  void *value, unsigned bytes)
 {
   uint8_t            packetsize;
@@ -704,24 +744,59 @@ void                 *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr,
 }
 
 
-void                 *gdbwrap_writememory2(gdbwrap_t *desc, la32 linaddr,
+static void          *gdbwrap_writememory2(gdbwrap_t *desc, la32 linaddr,
 					   void *value, unsigned bytes)
 {
-  char               *packet = alloca(bytes + MSG_BUF);
-  uint8_t            packetsize;
   char               *rec;
+  char               *packet = alloca(2 * bytes + MSG_BUF);
+  u_char             *val = value;
+  u_short            i;
+  u_int              len;
 
   snprintf(packet, MSG_BUF, "%s%x%s%x%s", GDBWRAP_MEMWRITE2,
 	   linaddr, GDBWRAP_SEP_COMMA, bytes, GDBWRAP_SEP_COLON);
-  packetsize = strlen(packet);
-  ASSERT(packetsize < MSG_BUF);
-  /* GDB protocol expects the value we send to be a "Binary value", ie
-     not converted to a char. */
-  memcpy(packet + packetsize, value, bytes);
-  packet[packetsize + bytes] = GDBWRAP_NULL_CHAR;
+
+  for (i = 0; i < bytes; i++)
+    {
+      len = strlen(packet);
+      ASSERT(len + 1 < 2 * bytes + MSG_BUF);
+      snprintf(packet + len, BYTE_IN_CHAR + 1, "%02x", (unsigned)val[i]);
+    }
   rec = gdbwrap_send_data(desc, packet);
 
   return rec;
+}
+
+
+void                 gdbwrap_writemem(gdbwrap_t *desc, la32 linaddr,
+				       void *value, unsigned bytes)
+{
+  static u_char      choice = 0;
+
+  if (bytes)
+    {
+      do
+	{
+	  switch (choice)
+	    {
+	      case 0:
+		gdbwrap_writememory(desc, linaddr, value, bytes);
+		if (gdbwrap_cmdnotsup(desc))
+		  choice++;
+		break;
+
+	      case 1:
+		gdbwrap_writememory2(desc, linaddr, value, bytes);
+		if (gdbwrap_cmdnotsup(desc))
+		  choice++;
+		break;
+
+	      default:
+		fprintf(stderr, "[W] Write to memory not supported.\n");
+		break;
+	    }
+	} while (gdbwrap_cmdnotsup(desc) && choice < 2);
+    }
 }
 
 
@@ -729,7 +804,8 @@ void                 *gdbwrap_writememory2(gdbwrap_t *desc, la32 linaddr,
  * Write a specific register. This command seems not to be supported
  * by the gdbserver. See gdbwrap_writereg2.
  */
-void                 gdbwrap_writereg(gdbwrap_t *desc, ureg32 regNum, la32 val)
+static void          gdbwrap_writeregister(gdbwrap_t *desc, ureg32 regNum,
+					   la32 val)
 {
   char               regpacket[MSG_BUF];
 
@@ -737,11 +813,11 @@ void                 gdbwrap_writereg(gdbwrap_t *desc, ureg32 regNum, la32 val)
   snprintf(regpacket, sizeof(regpacket), "%s%x=%x",
 	   GDBWRAP_WRITEREG, regNum, val);
   gdbwrap_send_data(desc, regpacket);
- 
 }
 
 
-void                 gdbwrap_writereg2(gdbwrap_t *desc, ureg32 regNum, la32 val)
+static void          gdbwrap_writeregister2(gdbwrap_t *desc, ureg32 regNum,
+					    la32 val)
 {
   char               *ret;
   gdbwrap_gdbreg32   *reg;
@@ -760,6 +836,37 @@ void                 gdbwrap_writereg2(gdbwrap_t *desc, ureg32 regNum, la32 val)
   memcpy(ret + offset, locreg, 2 * sizeof(ureg32));
   snprintf(locreg, sizeof(locreg), "%s%s", GDBWRAP_WGENPURPREG, ret);
   gdbwrap_send_data(desc, locreg);
+}
+
+
+void                 gdbwrap_writereg(gdbwrap_t *desc, ureg32 regnum, la32 val)
+{
+  static u_char choice = 0;
+
+  do
+    {
+      switch (choice)
+	{
+	  case 0:
+	    gdbwrap_writeregister(desc, regnum, val);
+	    if (gdbwrap_cmdnotsup(desc))
+	      choice++;
+	    break;
+
+	  case 1:
+	    gdbwrap_writeregister2(desc, regnum, val);
+	    if (gdbwrap_cmdnotsup(desc))
+	      choice++;
+	    break;
+
+	  default:
+	    fprintf(stderr, "[W] Write to registers not supported.\n");
+	    break;
+	}
+    } while (gdbwrap_cmdnotsup(desc) && choice < 2);
+
+  if (choice < 2)
+    *(&desc->reg32.eax + regnum) = val;
 }
 
 
@@ -870,7 +977,7 @@ char                *gdbwrap_remotecmd(gdbwrap_t *desc, char *cmd)
   /* If we have a new line, it meens the packet is not finished (to
      prove...), we listen to the next incoming packet, which is an
      OK. */
-  if (gdbwrap_atoh(ret + strlen(ret) - 2, BYTE_IN_CHAR) == 0xa)
+  if (ret != NULL && gdbwrap_atoh(ret + strlen(ret) - 2, BYTE_IN_CHAR) == 0xa)
     {
       gdbwrap_send_ack(desc);
       rval = recv(desc->fd, cmdcpy, sizeof(cmdcpy), 0);
@@ -879,4 +986,26 @@ char                *gdbwrap_remotecmd(gdbwrap_t *desc, char *cmd)
   return ret;
 }
 
+/**
+ * Get a memory map from the gdb server and
+ * and return the information parsed on a gdbmemap_t.
+ *
+ */
+gdbmemap_t          gdbwrap_memorymap_get(gdbwrap_t *desc)
+{
+  char              qXfer_msg[30]; //msg size
+  gdbmemap_t        result;
+  char              *received    = NULL;
 
+  snprintf(qXfer_msg, sizeof(qXfer_msg), "%s::%d,%d",
+	    GDBWRAP_MEMORYMAP_READ, 0, 0xfff);
+
+  received = gdbwrap_send_data(desc, qXfer_msg);
+
+  if (received != NULL)
+    {
+      //XXX: parse it and return gdbmemap_t
+    }
+
+  return result;
+}
