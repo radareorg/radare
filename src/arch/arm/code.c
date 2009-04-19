@@ -107,6 +107,30 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 
 //eprintf("0x%08x\n", code[i] & ARM_DTX_LOAD);
 	// 0x0001B4D8,           1eff2fe1        bx    lr
+	if (b[3]==0xe2 && b[2]==0x8d && b[1]==0xd0) {
+		// ADD SP, SP, ...
+		aop->type = AOP_TYPE_ADD;
+		aop->stackop = AOP_STACK_INCSTACK;
+		aop->value = -b[0];
+	}
+	if (b[3]==0xe2 && b[2]==0x4d && b[1]==0xd0) {
+		// SUB SP, SP, ..
+		aop->type = AOP_TYPE_SUB;
+		aop->stackop = AOP_STACK_INCSTACK;
+		aop->value = b[0];
+	} else
+	if (b[3]==0xe2 && b[2]==0x4c && b[1]==0xb0) {
+		// SUB SP, FP, ..
+		aop->type = AOP_TYPE_SUB;
+		aop->stackop = AOP_STACK_INCSTACK;
+		aop->value = -b[0];
+	} else
+	if (b[3]==0xe2 && b[2]==0x4b && b[1]==0xd0) {
+		// SUB SP, IP, ..
+		aop->type = AOP_TYPE_SUB;
+		aop->stackop = AOP_STACK_INCSTACK;
+		aop->value = -b[0];
+	} else
 	if( (code[i] == 0x1eff2fe1) ||(code[i] == 0xe12fff1e)) { // bx lr
 		aop->type = AOP_TYPE_RET;
 		aop->eob = 1;
