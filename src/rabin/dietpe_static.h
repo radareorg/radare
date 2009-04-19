@@ -4,19 +4,15 @@
  * This file is part of radare
  */
 
-#ifndef _INCLUDE_DIETPE_STATIC_H_
-#define _INCLUDE_DIETPE_STATIC_H_
-
+#include "pe.h"
 #include "dietpe_types.h"
 
-static PE_DWord dietpe_aux_rva_to_offset(dietpe_bin*, PE_DWord);
-static PE_DWord dietpe_aux_offset_to_rva(dietpe_bin*, PE_DWord);
-static int dietpe_aux_stripstr_from_file(dietpe_bin*, int, int, PE_DWord, PE_DWord, const char*, int, dietpe_string *strings);
-static int dietpe_get_delay_import_dirs_count(dietpe_bin*);
-static int dietpe_get_import_dirs_count(dietpe_bin*);
-static int dietpe_init(dietpe_bin*, int);
-static int dietpe_init_exports(dietpe_bin*, int);
-static int dietpe_init_imports(dietpe_bin*, int);
-static int dietpe_parse_imports(dietpe_bin*, int, dietpe_import**, char*, PE_DWord, PE_DWord);
-
-#endif
+static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, u64 seek, u64 limit, const char *filter, int str_limit, dietpe_string *strings);
+static PE_DWord PE_(dietpe_aux_rva_to_offset)(PE_(dietpe_obj) *bin, PE_DWord rva);
+static PE_DWord PE_(dietpe_aux_offset_to_rva)(PE_(dietpe_obj) *bin, PE_DWord offset);
+static int PE_(dietpe_do_checks)(PE_(dietpe_obj) *bin);
+static int PE_(dietpe_init)(PE_(dietpe_obj) *bin);
+static int PE_(dietpe_init_exports)(PE_(dietpe_obj) *bin);
+static int PE_(dietpe_init_imports)(PE_(dietpe_obj) *bin);
+static int PE_(dietpe_get_import_dirs_count)(PE_(dietpe_obj) *bin);
+static int PE_(dietpe_parse_imports)(PE_(dietpe_obj) *bin, dietpe_import **importp, char *dll_name, PE_DWord OriginalFirstThunk, PE_DWord FirstThunk);

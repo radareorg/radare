@@ -4,6 +4,7 @@
  * This file is part of radare
  */
 
+#include <stdio.h>
 #include <string.h>
 #include "aux.h"
 

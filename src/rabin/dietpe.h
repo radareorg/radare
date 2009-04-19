@@ -4,41 +4,53 @@
  * This file is part of radare
  */
 
+#include "pe.h"
+#include "dietpe_types.h"
+
 #ifndef _INCLUDE_DIETPE_H_
 #define _INCLUDE_DIETPE_H_
-
-#include "dietpe_types.h"
 
 #define PE_SCN_IS_SHAREABLE(x)       x & PE_IMAGE_SCN_MEM_SHARED
 #define PE_SCN_IS_EXECUTABLE(x)      x & PE_IMAGE_SCN_MEM_EXECUTE
 #define PE_SCN_IS_READABLE(x)        x & PE_IMAGE_SCN_MEM_READ
 #define PE_SCN_IS_WRITABLE(x)        x & PE_IMAGE_SCN_MEM_WRITE
 
-int dietpe_close(int);
-int dietpe_get_arch(dietpe_bin*, char*);
-int dietpe_get_class(dietpe_bin*, char*);
-int dietpe_get_entrypoint(dietpe_bin*, dietpe_entrypoint*);
-int dietpe_get_exports(dietpe_bin*, int, dietpe_export*);
-int dietpe_get_exports_count(dietpe_bin*, int);
-int dietpe_get_file_alignment(dietpe_bin*);
-PE_DWord dietpe_get_image_base(dietpe_bin*);
-int dietpe_get_image_size(dietpe_bin*);
-int dietpe_get_imports(dietpe_bin*, int, dietpe_import*);
-int dietpe_get_imports_count(dietpe_bin*, int);
-int dietpe_get_libs(dietpe_bin*, int, int, dietpe_string*);
-int dietpe_get_machine(dietpe_bin*, char*);
-int dietpe_get_os(dietpe_bin*, char*);
-int dietpe_get_section_alignment(dietpe_bin*);
-int dietpe_get_sections(dietpe_bin*, dietpe_section*);
-int dietpe_get_sections_count(dietpe_bin*);
-int dietpe_get_subsystem(dietpe_bin*, char*);
-int dietpe_is_dll(dietpe_bin*);
-int dietpe_is_big_endian(dietpe_bin*);
-int dietpe_is_stripped_relocs(dietpe_bin*);
-int dietpe_is_stripped_line_nums(dietpe_bin*);
-int dietpe_is_stripped_local_syms(dietpe_bin*);
-int dietpe_is_stripped_debug(dietpe_bin*);
-int dietpe_open(dietpe_bin*, const char*);
-int dietpe_get_strings(dietpe_bin *bin, int fd, int verbose, int str_limit, dietpe_string *strings);
-
 #endif
+
+typedef struct {
+	PE_(image_dos_header)             *dos_header;
+	PE_(image_nt_headers)			  *nt_headers;
+	PE_(image_section_header)         *section_header;
+	PE_(image_export_directory)       *export_directory;
+	PE_(image_import_directory)       *import_directory;
+	PE_(image_delay_import_directory) *delay_import_directory;
+    const char* file;
+	int fd;
+} PE_(dietpe_obj);
+
+int PE_(dietpe_close)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_arch)(PE_(dietpe_obj) *bin, char *str);
+int PE_(dietpe_get_entrypoint)(PE_(dietpe_obj) *bin, dietpe_entrypoint *entrypoint);
+int PE_(dietpe_get_exports)(PE_(dietpe_obj) *bin, dietpe_export *export);
+int PE_(dietpe_get_exports_count)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_file_alignment)(PE_(dietpe_obj) *bin);
+u64 PE_(dietpe_get_image_base)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_imports)(PE_(dietpe_obj) *bin, dietpe_import *import);
+int PE_(dietpe_get_imports_count)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_libs)(PE_(dietpe_obj) *bin, int limit, dietpe_string *strings);
+int PE_(dietpe_get_image_size)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_machine)(PE_(dietpe_obj) *bin, char *str);
+int PE_(dietpe_get_os)(PE_(dietpe_obj) *bin, char *str);
+int PE_(dietpe_get_class)(PE_(dietpe_obj) *bin, char *str);
+int PE_(dietpe_get_section_alignment)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_sections)(PE_(dietpe_obj) *bin, dietpe_section *section);
+int PE_(dietpe_get_sections_count)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_get_strings)(PE_(dietpe_obj) *bin, int verbose, int str_limit, dietpe_string *strings);
+int PE_(dietpe_get_subsystem)(PE_(dietpe_obj) *bin, char *str);
+int PE_(dietpe_is_dll)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_is_big_endian)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_is_stripped_relocs)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_is_stripped_line_nums)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_is_stripped_local_syms)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_is_stripped_debug)(PE_(dietpe_obj) *bin);
+int PE_(dietpe_open)(PE_(dietpe_obj) *bin, const char *file);

@@ -40,15 +40,22 @@
 #include "dietelf64.h"
 #include "dietelf_types.h"
 #include "dietpe.h"
+#include "dietpe64.h"
 #include "dietpe_types.h"
 #include "dietmach0.h"
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
+#define PE_CALL(func, bin, args...) pe64?Pe64_##func(&bin.p64,##args):Pe32_##func(&bin.p32,##args)
 
 typedef union {
     Elf32_dietelf_bin_t e32;
     Elf64_dietelf_bin_t e64;
 } dietelf_bin_t;
+
+typedef union {
+    Pe32_dietpe_obj p32;
+    Pe64_dietpe_obj p64;
+} dietpe_bin_t;
 
 // TODO : move into rabin_t
 char *file = NULL;
@@ -59,7 +66,7 @@ int xrefs    = 0;
 int rad      = 0; //radare output format
 int fd       = -1;
 static int pebase = 0;
-static int elf64 = 0;
+static int elf64 = 0, pe64 = 0;
 
 int rabin_show_help()
 {
@@ -90,7 +97,7 @@ void rabin_show_info(const char *file)
 	u64 baddr;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin pe;
+		dietpe_bin_t pe;
 	} bin;
 	dietpe_entrypoint entrypoint;
 
@@ -165,17 +172,17 @@ void rabin_show_info(const char *file)
 		} else printf("File type: JAVA CLASS\n");
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
-		dietpe_get_entrypoint(&bin.pe, &entrypoint);
-		pe_os = dietpe_get_os(&bin.pe, pe_os_str);
-		pe_arch = dietpe_get_arch(&bin.pe, pe_arch_str);
-		pe_class = dietpe_get_class(&bin.pe, pe_class_str);
-		pe_machine = dietpe_get_machine(&bin.pe, pe_machine_str);
-		pe_subsystem = dietpe_get_subsystem(&bin.pe, pe_subsystem_str);
+		PE_CALL(dietpe_get_entrypoint, bin.pe, &entrypoint);
+		pe_os = PE_CALL(dietpe_get_os, bin.pe, pe_os_str);
+		pe_arch = PE_CALL(dietpe_get_arch, bin.pe, pe_arch_str);
+		pe_class = PE_CALL(dietpe_get_class, bin.pe, pe_class_str);
+		pe_machine = PE_CALL(dietpe_get_machine, bin.pe, pe_machine_str);
+		pe_subsystem = PE_CALL(dietpe_get_subsystem, bin.pe, pe_subsystem_str);
 
 		if (!rad)
 			printf("[Information]\n");
@@ -185,9 +192,9 @@ void rabin_show_info(const char *file)
 			printf("e file.type = pe\n");
 			str = getenv("DEBUG");
 			if (str == NULL || (str && strncmp(str, "1", 1)))
-				printf("e io.vaddr = 0x%08llx\n", (u64) dietpe_get_image_base(&bin.pe));
+				printf("e io.vaddr = 0x%08llx\n", (u64) PE_CALL(dietpe_get_image_base, bin.pe));
 				printf("e cfg.bigendian = %s\n",
-						dietpe_is_big_endian(&bin.pe)?"true":"false");
+						(PE_CALL(dietpe_is_big_endian, bin.pe))?"true":"false");
 				printf("e asm.os = %s\n", pe_os_str);
 				printf("e asm.arch = %s\n", pe_arch_str);
 		} else { 
@@ -207,12 +214,12 @@ void rabin_show_info(const char *file)
 						"section_alignment=%i\n"
 						"file_alignment=%i\n"
 						"image_size=%i\n",
-						pe_class_str, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str,
-						dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str,
-						dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
-						dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
-						dietpe_get_sections_count(&bin.pe), (u64) dietpe_get_image_base(&bin.pe),
-						dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
+						pe_class_str, (PE_CALL(dietpe_is_dll, bin.pe))?"True":"False", pe_machine_str,
+						(PE_CALL(dietpe_is_big_endian, bin.pe))?"True":"False", pe_subsystem_str,
+						(PE_CALL(dietpe_is_stripped_relocs, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_line_nums, bin.pe))?"True":"False",
+						(PE_CALL(dietpe_is_stripped_local_syms, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_debug, bin.pe))?"True":"False",
+						PE_CALL(dietpe_get_sections_count, bin.pe), (u64) PE_CALL(dietpe_get_image_base, bin.pe),
+						PE_CALL(dietpe_get_section_alignment, bin.pe), PE_CALL(dietpe_get_file_alignment, bin.pe), PE_CALL(dietpe_get_image_size, bin.pe));
 					break;
 				default:
 					printf("PE Class: %s (0x%x)\n"
@@ -230,16 +237,16 @@ void rabin_show_info(const char *file)
 						"Section alignment: %i\n"
 						"File alignment: %i\n"
 						"Image size: %i\n",
-						pe_class_str, pe_class, dietpe_is_dll(&bin.pe)?"True":"False", pe_machine_str, pe_machine,
-						dietpe_is_big_endian(&bin.pe)?"True":"False", pe_subsystem_str, pe_subsystem,
-						dietpe_is_stripped_relocs(&bin.pe)?"True":"False", dietpe_is_stripped_line_nums(&bin.pe)?"True":"False",
-						dietpe_is_stripped_local_syms(&bin.pe)?"True":"False", dietpe_is_stripped_debug(&bin.pe)?"True":"False",
-						dietpe_get_sections_count(&bin.pe), dietpe_get_image_base(&bin.pe),
-						dietpe_get_section_alignment(&bin.pe), dietpe_get_file_alignment(&bin.pe), dietpe_get_image_size(&bin.pe));
+						pe_class_str, pe_class, (PE_CALL(dietpe_is_dll, bin.pe))?"True":"False", pe_machine_str, pe_machine,
+						(PE_CALL(dietpe_is_big_endian, bin.pe))?"True":"False", pe_subsystem_str, pe_subsystem,
+						(PE_CALL(dietpe_is_stripped_relocs, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_line_nums, bin.pe))?"True":"False",
+						(PE_CALL(dietpe_is_stripped_local_syms, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_debug, bin.pe))?"True":"False",
+						PE_CALL(dietpe_get_sections_count, bin.pe), PE_CALL(dietpe_get_image_base, bin.pe),
+						PE_CALL(dietpe_get_section_alignment, bin.pe), PE_CALL(dietpe_get_file_alignment, bin.pe), PE_CALL(dietpe_get_image_size, bin.pe));
 			}
 		}
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 	case FILETYPE_MZ:
 		if (rad) printf("e file.type = mz\n");
@@ -282,7 +289,7 @@ void rabin_show_strings(const char *file)
 {
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin pe;
+		dietpe_bin_t pe;
 	} bin;
 	union {
 		dietelf_string* elf;
@@ -354,15 +361,15 @@ void rabin_show_strings(const char *file)
 		snprintf(buf, 1022, "rsc strings-pe-flag %s",file);
 		system(buf);
 #else
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
-		baddr = dietpe_get_image_base(&bin.pe);
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
 
 		strings.pe = malloc(4096 * sizeof(dietpe_string));
-		strings_count = dietpe_get_strings(&bin.pe, fd, verbose, 4096, strings.pe);
+		strings_count = PE_CALL(dietpe_get_strings, bin.pe, verbose, 4096, strings.pe);
 
 		if (rad)
 			printf("fs strings\n");
@@ -402,7 +409,7 @@ void rabin_show_strings(const char *file)
 
 		free(strings.pe);
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 #endif
 		break;
 	case FILETYPE_BF:
@@ -454,7 +461,7 @@ void rabin_show_entrypoint()
 	dietpe_entrypoint entrypoint;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin    pe;
+		dietpe_bin_t    pe;
 	} bin;
 
 
@@ -510,13 +517,13 @@ void rabin_show_entrypoint()
 			} else	printf("0x%08llx\n", base+addr);
 		}
 #endif
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
 
-		baddr = dietpe_get_image_base(&bin.pe);
-		dietpe_get_entrypoint(&bin.pe, &entrypoint);
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
+		PE_CALL(dietpe_get_entrypoint, bin.pe, &entrypoint);
 
 		if (rad) {
 			printf("fs symbols\n");
@@ -541,7 +548,7 @@ void rabin_show_entrypoint()
 		}
 		
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 	case FILETYPE_MACHO:
 		printf("fs symbols\n");
@@ -595,7 +602,7 @@ void rabin_show_arch(char *file)
 {
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin    pe;
+		dietpe_bin_t    pe;
 	} bin;
 	u32 dw;
 	u16 w;
@@ -643,7 +650,7 @@ void rabin_show_imports(const char *file)
 	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin    pe;
+		dietpe_bin_t    pe;
 	} bin;
 	union {
 		dietelf_import* elf;
@@ -741,16 +748,16 @@ void rabin_show_imports(const char *file)
 #endif
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
-		baddr = dietpe_get_image_base(&bin.pe);
-		imports_count = dietpe_get_imports_count(&bin.pe, fd);
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
+		imports_count = PE_CALL(dietpe_get_imports_count, bin.pe);
 
 		import.pe = malloc(imports_count * sizeof(dietpe_import));
-		dietpe_get_imports(&bin.pe, fd, import.pe);
+		PE_CALL(dietpe_get_imports, bin.pe, import.pe);
 
 		if (rad)
 			printf("fs imports\n");
@@ -765,7 +772,7 @@ void rabin_show_imports(const char *file)
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx hint=%04i ordinal=%04i %s\n",
+						printf("address=0x%08llx offset=0x%08llx hint=%04lli ordinal=%04lli %s\n",
 								(u64) (baddr + importp.pe->rva), (u64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 						break;
 					case 1:
@@ -775,7 +782,7 @@ void rabin_show_imports(const char *file)
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tHint\tOrdinal\tName\n");
-						printf("0x%08llx\t0x%08llx\t%04i\t%04i\t%s\n",
+						printf("0x%08llx\t0x%08llx\t%04lli\t%04lli\t%s\n",
 								(u64) (baddr + importp.pe->rva), (u64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 				}
 			}
@@ -789,7 +796,7 @@ void rabin_show_imports(const char *file)
 
 		free(import.pe);
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 	}
 }
@@ -800,7 +807,7 @@ void rabin_show_symbols(char *file)
 	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin    pe;
+		dietpe_bin_t    pe;
 	} bin;
 	union {
 		dietelf_symbol* elf;
@@ -910,16 +917,16 @@ void rabin_show_symbols(char *file)
 		system(buf);
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
-		symbols_count = dietpe_get_exports_count(&bin.pe, fd);
-		baddr = dietpe_get_image_base(&bin.pe);
+		symbols_count = PE_CALL(dietpe_get_exports_count, bin.pe);
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
 
 		symbol.pe = malloc(symbols_count * sizeof(dietpe_export));
-		dietpe_get_exports(&bin.pe, fd, symbol.pe);
+		PE_CALL(dietpe_get_exports, bin.pe, symbol.pe);
 
 		if (rad)
 			printf("fs symbols\n");
@@ -934,7 +941,7 @@ void rabin_show_symbols(char *file)
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx ordinal=%03i forwarder=%s %s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
+						printf("address=0x%08llx offset=0x%08llx ordinal=%03lli forwarder=%s %s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
 						break;
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
@@ -942,7 +949,7 @@ void rabin_show_symbols(char *file)
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tOrdinal\tForwarder\t\tName\n");
-						printf("0x%08llx\t0x%08llx\t%03i\t%-16s\t%s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
+						printf("0x%08llx\t0x%08llx\t%03lli\t%-16s\t%s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
 				}
 			}
 		}
@@ -955,7 +962,7 @@ void rabin_show_symbols(char *file)
 
 		free(symbol.pe);
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 	}
 }
@@ -966,7 +973,7 @@ void rabin_show_sections(const char *file)
 	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin    pe;
+		dietpe_bin_t    pe;
 	} bin;
 	union {
 		dietelf_section* elf;
@@ -1056,16 +1063,16 @@ void rabin_show_sections(const char *file)
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 		
-		sections_count = dietpe_get_sections_count(&bin.pe);
-		baddr = dietpe_get_image_base(&bin.pe);
+		sections_count = PE_CALL(dietpe_get_sections_count, bin.pe);
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
 
 		section.pe = malloc(sections_count * sizeof(dietpe_section));
-		dietpe_get_sections(&bin.pe, section.pe);
+		PE_CALL(dietpe_get_sections, bin.pe, section.pe);
 
 		if (rad)
 			printf("fs sections\n");
@@ -1130,7 +1137,7 @@ void rabin_show_sections(const char *file)
 
 		free(section.pe);
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 #if 0
 	default:
@@ -1148,7 +1155,7 @@ void rabin_show_libs(const char *file)
 	int fd;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin pe;
+		dietpe_bin_t pe;
 	} bin;
 	union {
 		dietelf_string* elf;
@@ -1202,13 +1209,13 @@ void rabin_show_libs(const char *file)
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
-		if ((fd = dietpe_open(&bin.pe, file)) == -1) {
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
 			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
 			return;
 		}
 
 		libs.pe = malloc(128*sizeof(dietpe_string));
-		libs_count = dietpe_get_libs(&bin.pe, fd, 128, libs.pe);
+		libs_count = PE_CALL(dietpe_get_libs, bin.pe, 128, libs.pe);
 
 		if (!rad)
 			printf("[Libraries]\n");
@@ -1224,7 +1231,7 @@ void rabin_show_libs(const char *file)
 
 		free(libs.pe);
 
-		dietpe_close(fd);
+		PE_CALL(dietpe_close, bin.pe);
 		break;
 	case FILETYPE_MACHO:
 		sprintf(buf, "otool -L '%s'", file);
@@ -1295,6 +1302,8 @@ int rabin_identify_header()
 		if (buf[pe]=='P' && buf[pe+1]=='E') {
 			filetype = FILETYPE_PE;
 			pebase = pe;
+			if(!memcmp(buf+(buf[0x3c]|buf[0x3d]<<8)+0x18, "\x0b\x02", 2))
+				pe64 = 1;
 		}
 	} else if (buf[2]==0 && buf[3]==0xea) {
 		filetype = FILETYPE_ARMFW;

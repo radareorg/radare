@@ -9,11 +9,41 @@
 #include "elf.h"
 
 #undef ELF_
+#undef ELF_ST_BIND
+#undef ELF_ST_TYPE
+#undef ELF_ST_INFO
+#undef ELF_ST_VISIBILITY
+#undef ELF_R_SYM
+#undef ELF_R_TYPE
+#undef ELF_R_INFO
+#undef ELF_M_SYM
+#undef ELF_M_SIZE
+#undef ELF_M_INFO
 	
 #ifdef DIETELF64
     #define ELF_(name) Elf64_##name 
+	#define ELF_ST_BIND       ELF64_ST_BIND
+	#define ELF_ST_TYPE       ELF64_ST_TYPE
+	#define ELF_ST_INFO       ELF64_ST_INFO
+	#define ELF_ST_VISIBILITY ELF64_ST_VISIBILITY
+	#define ELF_R_SYM         ELF64_R_SYM
+	#define ELF_R_TYPE        ELF64_R_TYPE
+	#define ELF_R_INFO        ELF64_R_INFO
+	#define ELF_M_SYM         ELF64_M_SYM
+	#define ELF_M_SIZE        ELF64_M_SIZE
+	#define ELF_M_INFO        ELF64_M_INFO
 #else       
     #define ELF_(name) Elf32_##name 
+	#define ELF_ST_BIND       ELF32_ST_BIND
+	#define ELF_ST_TYPE       ELF32_ST_TYPE
+	#define ELF_ST_INFO       ELF32_ST_INFO
+	#define ELF_ST_VISIBILITY ELF32_ST_VISIBILITY
+	#define ELF_R_SYM         ELF32_R_SYM
+	#define ELF_R_TYPE        ELF32_R_TYPE
+	#define ELF_R_INFO        ELF32_R_INFO
+	#define ELF_M_SYM         ELF32_M_SYM
+	#define ELF_M_SIZE        ELF32_M_SIZE
+	#define ELF_M_INFO        ELF32_M_INFO
 #endif      
 
 #define ELF_ADDR_MASK   0xffffffffffff8000LL

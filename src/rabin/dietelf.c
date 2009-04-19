@@ -442,7 +442,6 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
-	ELF_(Rel) *rel, *relp;
 	ELF_(Addr) plt_sym_addr, got_addr = 0;
 	const char *string = bin->string;
 	int i, j;
@@ -450,17 +449,60 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 	
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (!strcmp(&string[shdrp->sh_name], ".got"))
+		if (!strcmp(&string[shdrp->sh_name], ".got.plt"))
 			got_addr = shdrp->sh_offset;
 	}
 	if (got_addr == 0) {
-		/* Unknown GOT address */
+		/* TODO: Unknown GOT address */
 	}
 
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (!strcmp(&string[shdrp->sh_name], ".rel.plt")) {
+			ELF_(Rel) *rel, *relp;
 			rel = (ELF_(Rel) *)malloc(shdrp->sh_size);
+			if (rel == NULL) {
+				perror("malloc");
+				return 0;
+			}
+
+			if (lseek(fd, shdrp->sh_offset, SEEK_SET) != shdrp->sh_offset) {
+				perror("lseek");
+				return 0;
+			}
+
+			if (read(fd, rel, shdrp->sh_size) != shdrp->sh_size) {
+				perror("read");
+				return 0;
+			}
+
+			relp = rel;
+			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
+				ELF_(aux_swap_endian)((u8*)&(relp->r_offset), sizeof(ELF_(Addr)));
+				ELF_(aux_swap_endian)((u8*)&(relp->r_info), sizeof(ELF_(Word)));
+			}
+
+			got_offset = (rel->r_offset - bin->base_addr - got_addr) & ELF_GOTOFF_MASK;
+			relp = rel;
+			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
+				if (ELF_R_SYM(relp->r_info) == sym) {
+					if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET)
+							!= relp->r_offset-bin->base_addr-got_offset) {
+						perror("lseek");
+						return 0;
+					}
+
+					if (read(fd, &plt_sym_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
+						perror("read");
+						return 0;
+					}
+
+					return plt_sym_addr-6;
+				}
+			}
+		} else if (!strcmp(&string[shdrp->sh_name], ".rela.plt")) {
+			ELF_(Rela) *rel, *relp;
+			rel = (ELF_(Rela) *)malloc(shdrp->sh_size);
 			if (rel == NULL) {
 				perror("malloc");
 				return -1;
@@ -477,29 +519,27 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 			}
 
 			relp = rel;
-			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
+			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rela)), relp++) {
 				ELF_(aux_swap_endian)((u8*)&(relp->r_offset), sizeof(ELF_(Addr)));
 				ELF_(aux_swap_endian)((u8*)&(relp->r_info), sizeof(ELF_(Word)));
 			}
 
 			got_offset = (rel->r_offset - bin->base_addr - got_addr) & ELF_GOTOFF_MASK;
-
 			relp = rel;
-			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rel)), relp++) {
-				if (ELF32_R_SYM(relp->r_info) == sym) {
-					if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET) != relp->r_offset-bin->base_addr-got_offset) {
+			for (j = 0; j < shdrp->sh_size; j += sizeof(ELF_(Rela)), relp++) {
+				if (ELF_R_SYM(relp->r_info) == sym) {
+					if (lseek(fd, relp->r_offset-bin->base_addr-got_offset, SEEK_SET)
+							!= relp->r_offset-bin->base_addr-got_offset) {
 						perror("lseek");
-						return -1;
+						return 0;
 					}
 
 					if (read(fd, &plt_sym_addr, sizeof(ELF_(Addr))) != sizeof(ELF_(Addr))) {
 						perror("read");
-						return -1;
+						return 0;
 					}
 
-					plt_sym_addr-=0x6;
-
-					return plt_sym_addr;
+					return plt_sym_addr-6;
 				}
 			}
 		}
@@ -599,34 +639,40 @@ int ELF_(dietelf_get_imports)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_import *
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+				if (symp->st_shndx == STN_UNDEF) {
 					memcpy(importp->name, &string[symp->st_name], ELF_NAME_LENGTH);
 					importp->name[ELF_NAME_LENGTH-1] = '\0';
-					importp->offset = (symp->st_value?symp->st_value:ELF_(get_import_addr)(bin, fd, k)) - bin->base_addr;
-					switch (ELF32_ST_BIND(symp->st_info)) {
-						case STB_LOCAL:  snprintf(importp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
-						case STB_GLOBAL: snprintf(importp->bind, ELF_NAME_LENGTH, "GLOBAL"); break;
-						case STB_NUM:    snprintf(importp->bind, ELF_NAME_LENGTH, "NUM"); break;
-						case STB_LOOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "LOOS"); break;
-						case STB_HIOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "HIOS"); break;
-						case STB_LOPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "LOPROC"); break;
-						case STB_HIPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "HIPROC"); break;
-						default:	     snprintf(importp->bind, ELF_NAME_LENGTH, "UNKNOWN");
+					if (symp->st_value)
+						importp->offset = symp->st_value;
+					else
+						importp->offset = ELF_(get_import_addr)(bin, fd, k);
+					if (importp->offset >= bin->base_addr)
+						importp->offset -= bin->base_addr;
+
+					switch (ELF_ST_BIND(symp->st_info)) {
+					case STB_LOCAL:  snprintf(importp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
+					case STB_GLOBAL: snprintf(importp->bind, ELF_NAME_LENGTH, "GLOBAL"); break;
+					case STB_NUM:    snprintf(importp->bind, ELF_NAME_LENGTH, "NUM"); break;
+					case STB_LOOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "LOOS"); break;
+					case STB_HIOS:   snprintf(importp->bind, ELF_NAME_LENGTH, "HIOS"); break;
+					case STB_LOPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "LOPROC"); break;
+					case STB_HIPROC: snprintf(importp->bind, ELF_NAME_LENGTH, "HIPROC"); break;
+					default:	 snprintf(importp->bind, ELF_NAME_LENGTH, "UNKNOWN");
 					}
-					switch (ELF32_ST_TYPE(symp->st_info)) {
-						case STT_NOTYPE:  snprintf(importp->type, ELF_NAME_LENGTH, "NOTYPE"); break;
-						case STT_OBJECT:  snprintf(importp->type, ELF_NAME_LENGTH, "OBJECT"); break;
-						case STT_FUNC:    snprintf(importp->type, ELF_NAME_LENGTH, "FUNC"); break;
-						case STT_SECTION: snprintf(importp->type, ELF_NAME_LENGTH, "SECTION"); break;
-						case STT_FILE:    snprintf(importp->type, ELF_NAME_LENGTH, "FILE"); break;
-						case STT_COMMON:  snprintf(importp->type, ELF_NAME_LENGTH, "COMMON"); break;
-						case STT_TLS:     snprintf(importp->type, ELF_NAME_LENGTH, "TLS"); break;
-						case STT_NUM:     snprintf(importp->type, ELF_NAME_LENGTH, "NUM"); break;
-						case STT_LOOS:    snprintf(importp->type, ELF_NAME_LENGTH, "LOOS"); break;
-						case STT_HIOS:    snprintf(importp->type, ELF_NAME_LENGTH, "HIOS"); break;
-						case STT_LOPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "LOPROC"); break;
-						case STT_HIPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "HIPROC"); break;
-						default:	      snprintf(importp->type, ELF_NAME_LENGTH, "UNKNOWN");
+					switch (ELF_ST_TYPE(symp->st_info)) {
+					case STT_NOTYPE:  snprintf(importp->type, ELF_NAME_LENGTH, "NOTYPE"); break;
+					case STT_OBJECT:  snprintf(importp->type, ELF_NAME_LENGTH, "OBJECT"); break;
+					case STT_FUNC:    snprintf(importp->type, ELF_NAME_LENGTH, "FUNC"); break;
+					case STT_SECTION: snprintf(importp->type, ELF_NAME_LENGTH, "SECTION"); break;
+					case STT_FILE:    snprintf(importp->type, ELF_NAME_LENGTH, "FILE"); break;
+					case STT_COMMON:  snprintf(importp->type, ELF_NAME_LENGTH, "COMMON"); break;
+					case STT_TLS:     snprintf(importp->type, ELF_NAME_LENGTH, "TLS"); break;
+					case STT_NUM:     snprintf(importp->type, ELF_NAME_LENGTH, "NUM"); break;
+					case STT_LOOS:    snprintf(importp->type, ELF_NAME_LENGTH, "LOOS"); break;
+					case STT_HIOS:    snprintf(importp->type, ELF_NAME_LENGTH, "HIOS"); break;
+					case STT_LOPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "LOPROC"); break;
+					case STT_HIPROC:  snprintf(importp->type, ELF_NAME_LENGTH, "HIPROC"); break;
+					default:	  snprintf(importp->type, ELF_NAME_LENGTH, "UNKNOWN");
 					}
 					importp++;
 				}
@@ -667,7 +713,7 @@ int ELF_(dietelf_get_imports_count)(ELF_(dietelf_bin_t) *bin, int fd)
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_shndx == STN_UNDEF && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+				if (symp->st_shndx == STN_UNDEF) {
 					ctr++;
 				}
 			}
@@ -691,6 +737,10 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 	sym_offset = (bin->ehdr.e_type == ET_REL ? ELF_(dietelf_get_section_offset)(bin, fd, ".text") : 0);
 
 	shdrp = shdr;
+
+	/* No section headers found */
+	if (ehdr->e_shnum == 0) {
+	} else
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
 		if (shdrp->sh_type == (ELF_(dietelf_get_stripped)(bin)?SHT_DYNSYM:SHT_SYMTAB)) {
 			strtabhdr = &shdr[shdrp->sh_link];
@@ -740,42 +790,43 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK) {
+				if (symp->st_shndx != STN_UNDEF && ELF_ST_TYPE(symp->st_info) != STT_SECTION && ELF_ST_TYPE(symp->st_info) != STT_FILE) {
 					symbolp->size = (u64)symp->st_size; 
 					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
 					symbolp->name[ELF_NAME_LENGTH-1] = '\0';
-					symbolp->offset = (u64)symp->st_value + sym_offset - bin->base_addr;
-					switch (ELF32_ST_BIND(symp->st_info)) {
-						case STB_LOCAL:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
-						case STB_GLOBAL:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "GLOBAL"); break;
-						case STB_NUM:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "NUM"); break;
-						case STB_LOOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOOS"); break;
-						case STB_HIOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIOS"); break;
-						case STB_LOPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOPROC"); break;
-						case STB_HIPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIPROC"); break;
-						default:			snprintf(symbolp->bind, ELF_NAME_LENGTH, "UNKNOWN");
+					symbolp->offset = (u64)symp->st_value + sym_offset;
+					if (symbolp->offset >= bin->base_addr)
+						symbolp->offset -= bin->base_addr;
+					switch (ELF_ST_BIND(symp->st_info)) {
+					case STB_LOCAL:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOCAL"); break;
+					case STB_GLOBAL:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "GLOBAL"); break;
+					case STB_NUM:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "NUM"); break;
+					case STB_LOOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOOS"); break;
+					case STB_HIOS:		snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIOS"); break;
+					case STB_LOPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "LOPROC"); break;
+					case STB_HIPROC:	snprintf(symbolp->bind, ELF_NAME_LENGTH, "HIPROC"); break;
+					default:			snprintf(symbolp->bind, ELF_NAME_LENGTH, "UNKNOWN");
 					}
-					switch (ELF32_ST_TYPE(symp->st_info)) {
-						case STT_NOTYPE:	snprintf(symbolp->type, ELF_NAME_LENGTH, "NOTYPE"); break;
-						case STT_OBJECT:	snprintf(symbolp->type, ELF_NAME_LENGTH, "OBJECT"); break;
-						case STT_FUNC:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FUNC"); break;
-						case STT_SECTION:	snprintf(symbolp->type, ELF_NAME_LENGTH, "SECTION"); break;
-						case STT_FILE:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FILE"); break;
-						case STT_COMMON:	snprintf(symbolp->type, ELF_NAME_LENGTH, "COMMON"); break;
-						case STT_TLS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "TLS"); break;
-						case STT_NUM:		snprintf(symbolp->type, ELF_NAME_LENGTH, "NUM"); break;
-						case STT_LOOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "LOOS"); break;
-						case STT_HIOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "HIOS"); break;
-						case STT_LOPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "LOPROC"); break;
-						case STT_HIPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "HIPROC"); break;
-						default:			snprintf(symbolp->type, ELF_NAME_LENGTH, "UNKNOWN");
+					switch (ELF_ST_TYPE(symp->st_info)) {
+					case STT_NOTYPE:	snprintf(symbolp->type, ELF_NAME_LENGTH, "NOTYPE"); break;
+					case STT_OBJECT:	snprintf(symbolp->type, ELF_NAME_LENGTH, "OBJECT"); break;
+					case STT_FUNC:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FUNC"); break;
+					case STT_SECTION:	snprintf(symbolp->type, ELF_NAME_LENGTH, "SECTION"); break;
+					case STT_FILE:		snprintf(symbolp->type, ELF_NAME_LENGTH, "FILE"); break;
+					case STT_COMMON:	snprintf(symbolp->type, ELF_NAME_LENGTH, "COMMON"); break;
+					case STT_TLS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "TLS"); break;
+					case STT_NUM:		snprintf(symbolp->type, ELF_NAME_LENGTH, "NUM"); break;
+					case STT_LOOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "LOOS"); break;
+					case STT_HIOS:		snprintf(symbolp->type, ELF_NAME_LENGTH, "HIOS"); break;
+					case STT_LOPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "LOPROC"); break;
+					case STT_HIPROC:	snprintf(symbolp->type, ELF_NAME_LENGTH, "HIPROC"); break;
+					default:		snprintf(symbolp->type, ELF_NAME_LENGTH, "UNKNOWN");
 					}
 
 					symbolp++;
 				}
 			}
 		}
-
 	}
 
 	return 0;
@@ -811,7 +862,7 @@ int ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t) *bin, int fd)
 			for (j = 0, k = 0; j < shdrp->sh_size; j += sizeof(ELF_(Sym)), k++, symp++) {
 				if (k == 0)
 					continue;
-				if (symp->st_shndx != STN_UNDEF && ELF32_ST_TYPE(symp->st_info) != STT_SECTION && ELF32_ST_BIND(symp->st_info) != STB_WEAK)
+				if (symp->st_shndx != STN_UNDEF && ELF_ST_TYPE(symp->st_info) != STT_SECTION && ELF_ST_TYPE(symp->st_info) != STT_FILE)
 					ctr++;
 			}
 		}
