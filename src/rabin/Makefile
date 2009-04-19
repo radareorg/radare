@@ -1,7 +1,7 @@
 include ../../config.mk
 
 CFLAGS+=-DRADARE_CORE
-OBJ=dietelf.o dietelf64.o rabin.o dietpe.o dietmach0.o dietmach0_utils.o aux.o
+OBJ=dietelf.o dietelf64.o rabin.o dietpe.o dietpe64.o dietmach0.o dietmach0_utils.o aux.o
 
 all: rabin${BINSFX}
 
