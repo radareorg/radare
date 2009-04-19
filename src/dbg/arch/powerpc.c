@@ -262,7 +262,7 @@ u64 arch_pc()
         //ret = ptrace(PTRACE_GETREGS, ps.tid, &buf, 0);
         ret = ptrace(PTRACE_GETEVRREGS, ps.tid, 0, &buf);
         if (ret == -1)  {
-		 fprintf(stderr, "RERORR\n");
+		fprintf(stderr, "arch_pc(): cannot retrieve program counter\n");
                 return -1;
         }
         //addr = regs.gpr[0];
