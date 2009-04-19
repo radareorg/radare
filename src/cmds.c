@@ -1827,18 +1827,28 @@ CMD_DECL(write)
 		radare_cmd(data, 0);
 		} break;
 	case 'a': {
-		unsigned char data[256];
-		char* aux = strdup ( config_get("asm.arch") );
-		u64 seek = config.seek + config.vaddr;
-		int ret = rasm_asm(aux, &seek, input+2, data);
-		free ( aux );
-		if (ret<1)
-			eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
-		else {
-			undo_write_new(config.seek, data, ret);
-			io_write(config.fd, data, ret);
-		}
-		
+			int ret, delta = 0;
+			unsigned char data[256];
+			char *oinput, *ptr, *aux = strdup ( config_get("asm.arch") );
+			u64 seek = config.seek + config.vaddr;
+			oinput= input = strdup(input+2);
+			while(input) {
+				ptr = strchr(input, ';');
+				if (ptr) ptr[0]='\0';
+//eprintf("assembling(%s)\n", input);
+				ret = rasm_asm(aux, &seek, input, data);
+				if (ret<1)
+					eprintf("Invalid opcode for asm.arch. Try 'wa?'\n");
+				else {
+					undo_write_new(config.seek+delta, data, ret);
+					radare_write_at(config.seek+delta, data, ret);
+					delta+=ret;
+				}
+				if (ptr ) input = ptr+1;
+				else input = NULL;
+			}
+			free ( aux );
+			free ( oinput );
 		} break;
 	case 'x':
 		if (input[1]!=' ') {

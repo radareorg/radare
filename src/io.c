@@ -37,13 +37,9 @@ int io_system(const char *command)
 /* io wrappers */
 int io_open(const char *pathname, int flags, mode_t mode)
 {
-	int ret;
 	FIND_OPEN(pathname) {
 		IF_HANDLED(0, open)
-		ret = plugins[i].open(pathname, flags, mode);
-		config.debug = plugins[i].debug;
-		config_set("cfg.debug", plugins[i]?"true":"false");
-		return ret;
+		return plugins[i].open(pathname, flags, mode);
 	}
 	return -1;
 }
