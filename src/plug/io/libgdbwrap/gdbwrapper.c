@@ -25,6 +25,7 @@ static char          *gdbwrap_lastmsg(gdbwrap_t *desc)
 
 static Bool          gdbwrap_errorhandler(gdbwrap_t *desc, const char *error)
 {
+  return 0;
   ASSERT(desc != NULL && error != NULL);
 
   DEBUGMSG(printf("Treating error (encoded): %s\n", error));

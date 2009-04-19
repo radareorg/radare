@@ -780,6 +780,11 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
+	if (config.interrupted) {
+		eprintf("^C\n");
+		return -1;
+	}
+
 	from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
 	if (arch_aop == NULL)

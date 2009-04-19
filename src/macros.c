@@ -60,7 +60,7 @@ int radare_macro_add(const char *oname)
 	}
 
 	if (name[strlen(name)-1]==')') {
-		eprintf("No body?\n");
+		//eprintf("No body?\n");
 		return -1;
 	}
 

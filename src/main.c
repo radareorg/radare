@@ -158,7 +158,9 @@ int main(int argc, char **argv, char **envp)
 						strcat(buf, " ");
 				}
 				ps.args = strdup(buf);
-				sprintf(buf2, "dbg://%s", buf);
+				if (strstr(buf, "://"))
+					strcpy(buf2, buf);
+				else sprintf(buf2, "dbg://%s", buf);
 				config.file = strdup(buf2);
 				ps.filename = strdup(buf2);
 			//ptr = strchr(config.file, ' ');

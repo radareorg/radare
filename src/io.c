@@ -37,9 +37,11 @@ int io_system(const char *command)
 /* io wrappers */
 int io_open(const char *pathname, int flags, mode_t mode)
 {
-	FIND_OPEN(pathname)
+	int ret;
+	FIND_OPEN(pathname) {
 		IF_HANDLED(0, open)
-		return plugins[i].open(pathname, flags, mode);
+		ret = plugins[i].open(pathname, flags, mode);
+	}
 	return -1;
 }
 

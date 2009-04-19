@@ -648,10 +648,9 @@ int radare_cmd_raw(const char *tmp, int log)
 
  	eof = input+strlen(input)-1;
 
-
 	/* interpret stdout of a process executed */
 	if (input[0]=='.') {
-		radare_controlc();
+	//	radare_controlc();
 // SPAGUETI!
 #if 1
 		/* temporally offset */
@@ -1114,7 +1113,6 @@ int radare_cmd(char *input, int log)
 	} else {
 		next = strstr(input, "&&");
 		if (next) next[0]='\0';
-
 	}
 
 #if 0
@@ -1826,10 +1824,13 @@ int radare_go()
 
 		if (config_get("file.analyze")) {
 			eprintf("Analyzing program...");
+			radare_controlc();
 			radare_cmd(".af* @ entrypoint",0);
+			radare_controlc();
 			radare_cmd(".af* @@ sym.",0);
 			eprintf("\n");
 			radare_cmd_raw("Ci", 0);
+			radare_controlc_end();
 		}
 	}
 

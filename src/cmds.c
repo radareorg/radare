@@ -64,13 +64,8 @@ int commands_parse (const char *_cmdline)
 	cmdline=cmdline+1);
 
 	// null string or comment
-	if (cmdline[0]==0||cmdline[0]==';')
+	if (cmdline[0]==0||cmdline[0]=='#'||cmdline[0]==';')
 		return 0;
-
-	if (cmdline[0]=='h') {
-		(void)show_help_message();
-		return 0;
-	}
 
 	for (cmd = commands; cmd->sname != 0; cmd++) {
 		if (cmd->sname == cmdline[0])
@@ -144,7 +139,7 @@ command_t commands[] = {
 	COMMAND('>', "",               "nexta    go next aligned block", next_align),
 	COMMAND('/', "[?] [str]",      "search   find matching strings", search),
 	COMMAND('!', "[[!]command]",   "system   execute a !iosystem or !!shell command", shell), 
-	COMMAND('#', "[hash|!lang]",   "hash     hash current block (#? or #!perl)", hash),
+	COMMAND('h', "[hash|!lang]",   "hash     hash current block (#? or #!perl)", hash),
 	COMMAND('?', "",               "help     show the help message", help),
 	COMMAND( 0, NULL, NULL, default)
 };
@@ -940,39 +935,16 @@ CMD_DECL(hash)
 
 	for(i=0;input[i];i++) if (input[i]==' ') { input[i]='\0'; break; }
 
-	/* #!perl hashbang! */
-	if (input[0]=='!') {
-#if HAVE_PERL
-		if (strstr(input+1, "perl"))
-			config.lang = LANG_PERL;
-		else
-#endif
-#if HAVE_PYTHON
-		if (strstr(input+1, "python"))
-			config.lang = LANG_PYTHON;
-		else
-#endif
-			eprintf("Invalid interpreter. Try (perl or python).\n");
-		// TODO: check perl|python build and show proper msg
-		return 0;
-	}
-
-	// XXX doesnt works with dbg:///
-	// XXX use real temporal file instead of /tmp/xx
 	if (config.debug) {
 		radare_set_block_size_i(bs);
-		radare_cmd("pr > /tmp/xx", 0);
-		snprintf(buf, 1000, "rahash -fa '%s' '/tmp/xx'", input);
+		snprintf(buf, 1000, "!rahash -fa '%s' $BLOCK", input);
+		radare_cmd_raw(buf, 0);
 		radare_set_block_size_i(obs);
-	} else
-	snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s'", // | head -n 1", 
-		input, (u64)config.seek, (u64)bs, config.file);
-
-	io_system(buf);
-
-	if (config.debug)
-		unlink("/tmp/xx");
-
+	} else {
+		snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s'", // | head -n 1", 
+			input, (u64)config.seek, (u64)bs, config.file);
+		io_system(buf);
+	}
 	return 0;
 }
 
@@ -1796,9 +1768,7 @@ CMD_DECL(write)
 						fscanf(fd, "%c", &n);
 						if (feof(fd))
 							break;
-
 						c = n;
-
 						if (c == '#')
 							commented = 1;
 						else if (c == '\n' || c == '\r')
