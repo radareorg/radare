@@ -28,7 +28,7 @@
 #include "../../global.h"
 
 //#define DATADIR "/usr/share/"
-#define RSCDATADIR SHAREDIR"/radare/rsc"
+#define RSCDATADIR LIBDIR"/radare/bin"
 
 static void rsc_help()
 {
@@ -99,7 +99,7 @@ static int rsc_run(int argc, const char **argv)
 	int i;
 
 	if (path == NULL) {
-		fprintf(stderr, "No script found\n");
+		fprintf(stderr, "rsc: Cannot find '%s'\n", argv[1]);
 		return 1;
 	}
 

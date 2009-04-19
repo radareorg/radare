@@ -41,6 +41,9 @@ int io_open(const char *pathname, int flags, mode_t mode)
 	FIND_OPEN(pathname) {
 		IF_HANDLED(0, open)
 		ret = plugins[i].open(pathname, flags, mode);
+		config.debug = plugins[i].debug;
+		config_set("cfg.debug", plugins[i]?"true":"false");
+		return ret;
 	}
 	return -1;
 }

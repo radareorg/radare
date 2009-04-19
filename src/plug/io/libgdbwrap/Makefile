@@ -10,8 +10,8 @@ ${BIN}: ${OBJ}
 
 sync:
 	@if [ -d ${ERESIPATH} ]; then \
-	cp ${ERESIPATH}/libgdbwrap/*.c . ; \
-	cp ${ERESIPATH}/libgdbwrap/include/*.h include ; \
+	cp -v ${ERESIPATH}/libgdbwrap/*.c . ; \
+	cp -v ${ERESIPATH}/libgdbwrap/include/*.h include ; \
 	echo Sync done ; \
 	else \
 	echo Give me ERESIPATH ; \
