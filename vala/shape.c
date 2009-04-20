@@ -1,9 +1,18 @@
 
-#include "shape.h"
+#include <glib.h>
+#include <glib-object.h>
+
+
+#define GRAVA_TYPE_SHAPE (grava_shape_get_type ())
+
+typedef enum  {
+	GRAVA_SHAPE_RECTANGLE = 0,
+	GRAVA_SHAPE_CIRCLE
+} GravaShape;
 
 
 
-
+GType grava_shape_get_type (void);
 
 
 

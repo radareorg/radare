@@ -150,7 +150,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 	_tmp0 = NULL;
 #line 64 "default_layout.vala"
 	_tmp2 = NULL;
-	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get_s (n, "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
+	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get (n, "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
 #line 65 "default_layout.vala"
 	if (m == NULL) {
 		GravaNode* no;
@@ -160,7 +160,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 #line 61 "node.vala"
 		_tmp3 = NULL;
 #line 67 "default_layout.vala"
-		g_object_set ((GObject*) no, "offset", _tmp3 = grava_node_get_s (n, "offset"), NULL);
+		g_object_set ((GObject*) no, "offset", _tmp3 = grava_node_get (n, "offset"), NULL);
 		_tmp3 = (g_free (_tmp3), NULL);
 #line 68 "default_layout.vala"
 		no->x = n->x;
@@ -173,7 +173,7 @@ void grava_default_layout_setxy (GravaDefaultLayout* self, GravaNode* n) {
 #line 72 "default_layout.vala"
 		_tmp4 = NULL;
 #line 72 "default_layout.vala"
-		g_hash_table_insert (self->data, grava_node_get_s (n, "offset"), (_tmp4 = no, (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)));
+		g_hash_table_insert (self->data, grava_node_get (n, "offset"), (_tmp4 = no, (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)));
 		(no == NULL) ? NULL : (no = (g_object_unref (no), NULL));
 	} else {
 #line 74 "default_layout.vala"
@@ -207,7 +207,7 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 	_tmp0 = NULL;
 #line 83 "default_layout.vala"
 	_tmp2 = NULL;
-	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get_s ((*n), "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
+	m = (_tmp2 = (_tmp1 = (GravaNode*) g_hash_table_lookup (self->data, _tmp0 = grava_node_get ((*n), "offset")), (_tmp1 == NULL) ? NULL : g_object_ref (_tmp1)), _tmp0 = (g_free (_tmp0), NULL), _tmp2);
 #line 84 "default_layout.vala"
 	if (m != NULL) {
 		char* _tmp3;
@@ -223,7 +223,7 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 #line 61 "node.vala"
 		_tmp3 = NULL;
 #line 89 "default_layout.vala"
-		fprintf (stdout, "TAKEND FOR %s\n", _tmp3 = grava_node_get_s ((*n), "offset"));
+		fprintf (stdout, "TAKEND FOR %s\n", _tmp3 = grava_node_get ((*n), "offset"));
 		_tmp3 = (g_free (_tmp3), NULL);
 #line 90 "default_layout.vala"
 		return (_tmp4 = TRUE, (m == NULL) ? NULL : (m = (g_object_unref (m), NULL)), _tmp4);
@@ -231,7 +231,7 @@ gboolean grava_default_layout_getxy (GravaDefaultLayout* self, GravaNode** n) {
 #line 61 "node.vala"
 	_tmp5 = NULL;
 #line 92 "default_layout.vala"
-	fprintf (stdout, "NOT TAKEND FOR %s\n", _tmp5 = grava_node_get_s ((*n), "offset"));
+	fprintf (stdout, "NOT TAKEND FOR %s\n", _tmp5 = grava_node_get ((*n), "offset"));
 	_tmp5 = (g_free (_tmp5), NULL);
 #line 94 "default_layout.vala"
 	return (_tmp6 = FALSE, (m == NULL) ? NULL : (m = (g_object_unref (m), NULL)), _tmp6);
@@ -368,7 +368,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 #line 61 "node.vala"
 					_tmp0 = NULL;
 #line 142 "default_layout.vala"
-					fprintf (stdout, " at %f %s %x\n", node->y, _tmp0 = grava_node_get_s (node, "label"), node->baseaddr);
+					fprintf (stdout, " at %f %s %x\n", node->y, _tmp0 = grava_node_get (node, "label"), node->baseaddr);
 					_tmp0 = (g_free (_tmp0), NULL);
 				}
 			}
@@ -404,7 +404,7 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 		_tmp3 = NULL;
 #line 157 "default_layout.vala"
 		_tmp5 = NULL;
-		m = (_tmp5 = (_tmp4 = (GravaNode*) g_hash_table_lookup (self->data, _tmp3 = grava_node_get_s (n, "offset")), (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)), _tmp3 = (g_free (_tmp3), NULL), _tmp5);
+		m = (_tmp5 = (_tmp4 = (GravaNode*) g_hash_table_lookup (self->data, _tmp3 = grava_node_get (n, "offset")), (_tmp4 == NULL) ? NULL : g_object_ref (_tmp4)), _tmp3 = (g_free (_tmp3), NULL), _tmp5);
 #line 158 "default_layout.vala"
 		if (m != NULL) {
 #line 159 "default_layout.vala"

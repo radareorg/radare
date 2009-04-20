@@ -16,17 +16,55 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "layout.h"
-#include "graph.h"
+#include <glib.h>
+#include <glib-object.h>
+
+
+#define GRAVA_TYPE_LAYOUT (grava_layout_get_type ())
+#define GRAVA_LAYOUT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GRAVA_TYPE_LAYOUT, GravaLayout))
+#define GRAVA_LAYOUT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GRAVA_TYPE_LAYOUT, GravaLayoutClass))
+#define GRAVA_IS_LAYOUT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GRAVA_TYPE_LAYOUT))
+#define GRAVA_IS_LAYOUT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GRAVA_TYPE_LAYOUT))
+#define GRAVA_LAYOUT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GRAVA_TYPE_LAYOUT, GravaLayoutClass))
+
+typedef struct _GravaLayout GravaLayout;
+typedef struct _GravaLayoutClass GravaLayoutClass;
+typedef struct _GravaLayoutPrivate GravaLayoutPrivate;
+
+#define GRAVA_TYPE_GRAPH (grava_graph_get_type ())
+#define GRAVA_GRAPH(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GRAVA_TYPE_GRAPH, GravaGraph))
+#define GRAVA_GRAPH_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GRAVA_TYPE_GRAPH, GravaGraphClass))
+#define GRAVA_IS_GRAPH(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GRAVA_TYPE_GRAPH))
+#define GRAVA_IS_GRAPH_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GRAVA_TYPE_GRAPH))
+#define GRAVA_GRAPH_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GRAVA_TYPE_GRAPH, GravaGraphClass))
+
+typedef struct _GravaGraph GravaGraph;
+typedef struct _GravaGraphClass GravaGraphClass;
+
+struct _GravaLayout {
+	GObject parent_instance;
+	GravaLayoutPrivate * priv;
+};
+
+struct _GravaLayoutClass {
+	GObjectClass parent_class;
+	void (*run) (GravaLayout* self, GravaGraph* graph);
+	void (*set_graph) (GravaLayout* self, GravaGraph* graph);
+	void (*reset) (GravaLayout* self);
+};
 
 
 
-
+GType grava_layout_get_type (void);
+GType grava_graph_get_type (void);
 enum  {
 	GRAVA_LAYOUT_DUMMY_PROPERTY
 };
+void grava_layout_run (GravaLayout* self, GravaGraph* graph);
 static void grava_layout_real_run (GravaLayout* self, GravaGraph* graph);
+void grava_layout_set_graph (GravaLayout* self, GravaGraph* graph);
 static void grava_layout_real_set_graph (GravaLayout* self, GravaGraph* graph);
+void grava_layout_reset (GravaLayout* self);
 static void grava_layout_real_reset (GravaLayout* self);
 static gpointer grava_layout_parent_class = NULL;
 
@@ -38,6 +76,7 @@ static void grava_layout_real_run (GravaLayout* self, GravaGraph* graph) {
 	g_return_if_fail (self != NULL);
 #line 23 "layout.vala"
 	g_return_if_fail (graph != NULL);
+#line 80 "layout.c"
 }
 
 
@@ -45,6 +84,7 @@ static void grava_layout_real_run (GravaLayout* self, GravaGraph* graph) {
 void grava_layout_run (GravaLayout* self, GravaGraph* graph) {
 #line 23 "layout.vala"
 	GRAVA_LAYOUT_GET_CLASS (self)->run (self, graph);
+#line 88 "layout.c"
 }
 
 
@@ -54,6 +94,7 @@ static void grava_layout_real_set_graph (GravaLayout* self, GravaGraph* graph) {
 	g_return_if_fail (self != NULL);
 #line 24 "layout.vala"
 	g_return_if_fail (graph != NULL);
+#line 98 "layout.c"
 }
 
 
@@ -61,6 +102,7 @@ static void grava_layout_real_set_graph (GravaLayout* self, GravaGraph* graph) {
 void grava_layout_set_graph (GravaLayout* self, GravaGraph* graph) {
 #line 24 "layout.vala"
 	GRAVA_LAYOUT_GET_CLASS (self)->set_graph (self, graph);
+#line 106 "layout.c"
 }
 
 
@@ -68,6 +110,7 @@ void grava_layout_set_graph (GravaLayout* self, GravaGraph* graph) {
 static void grava_layout_real_reset (GravaLayout* self) {
 #line 25 "layout.vala"
 	g_return_if_fail (self != NULL);
+#line 114 "layout.c"
 }
 
 
@@ -75,6 +118,7 @@ static void grava_layout_real_reset (GravaLayout* self) {
 void grava_layout_reset (GravaLayout* self) {
 #line 25 "layout.vala"
 	GRAVA_LAYOUT_GET_CLASS (self)->reset (self);
+#line 122 "layout.c"
 }
 
 
