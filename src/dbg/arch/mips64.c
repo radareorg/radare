@@ -272,20 +272,24 @@ int arch_set_register(const char *reg, const char *value)
 	int ret;
 	regs_t regs;
 	unsigned long long *llregs = &regs;
-
+ 	u64 v = get_offset(value);
 	if (ps.opened == 0)
 		return 0;
 
 	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
 
-	ret = vm_get_reg(reg);
+	if (!strcmp(reg, "pc")) {
+		arch_jmp(v);
+		return 0;
+	}
+	ret = vm_reg_get(reg);
 	if (ret == -1) {
 		eprintf("Invalid register name '%s'\n", reg);
 		return 1;
 	}
 	printf("reg idx = %d\n", ret);
-	llregs[ret] = (int)get_offset(value);
+	llregs[ret] = (int)v;
 
 	ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 

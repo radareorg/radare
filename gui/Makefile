@@ -28,7 +28,7 @@ ${OBJ}: %.o: %.c
 install:
 	${E} 'Installing gradare'
 	${Q}${INSTALL_DIR} ${DESTDIR}/${PREFIX}/bin
-	${Q}${INSTALL_PROGRAM} ${BIN} ${DESTDIR}/${PREFIX}/bin
+	-${Q}${INSTALL_PROGRAM} ${BIN} ${DESTDIR}/${PREFIX}/bin
 	-${Q}rm -rf ${DESTDIR}/${DATADIR}/radare/gradare/*
 	${Q}mkdir -p ${DESTDIR}/${DATADIR}/radare/gradare/
 	${Q}cp -rf grsc/* ${DESTDIR}/${DATADIR}/radare/gradare/
