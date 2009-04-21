@@ -6,6 +6,10 @@
 #include <string.h>
 #include <errno.h>
 
+#define u_short unsigned short
+#define u_char unsigned char
+#define u_int unsigned int
+
 #define la32 unsigned int
 #define ptrdiff_t int
 #define ureg32 unsigned int
