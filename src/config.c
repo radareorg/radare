@@ -1040,6 +1040,7 @@ void config_init(int first)
 	node->callback = &config_teefile_callback;
 	node = config_set("scr.buf", "false");
 	node->callback = &config_scrbuf_callback;
+	config_set_i("scr.bytewidth", 0);
 	node = config_set_i("scr.width", config.width);
 	node->callback = &config_scrwidth;
 	node = config_set_i("scr.height", config.height);

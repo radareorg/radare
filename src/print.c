@@ -56,7 +56,7 @@ format_info_t formats[] = {
 	{ 'L', FMT_LLONG,      "long (ll for long long)","4/8 bytes",   "(endian)"},
 	{ 'm', FMT_MEMORY,     "print memory structure", "0xHHHH",      "fun args"},
 	{ 'C', FMT_COMMENT,    "comment information",    "string",      "range"},
-	{ 'o', FMT_OCT,        "octal",                  "N bytes",     "entire block" },
+	{ 'o', FMT_OCT,        "octal dump",             "N bytes",     "entire block" },
 	{ 'O', FMT_ZOOM,       "Overview (zoom.type)",   "entire file", "entire block" },
 	{ 'p', FMT_PRINT,      "cmd.prompt",             NULL,          "entire block" },
 	{ 'r', FMT_RAW,        "raw ascii",              NULL,          "entire block" },
@@ -944,7 +944,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
                 cons_printf(".equ %s_len, %d", str, len); cons_newline();
                 break;
 	case FMT_CSTR:
-		inc = config.width/6;
+		inc = config_get_i("scr.bytewidth");
+		if (!inc) inc = config.width/6;
 		cons_printf("#define _BUFFER_SIZE %d", len); cons_newline();
 		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); cons_newline();
 		for(j = i = 0; !config.interrupted && i < len;) {
@@ -960,14 +961,13 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		cons_printf(" };\n");
 		break;
 	case FMT_BIN:
-		if (config.width<30)
-			break;
-		inc = (int)((config.width-17)/11);
+		inc = config_get_i("scr.bytewidth");
+		if (!inc) inc = (int)((config.width-17)/11);
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
-			cons_printf("   offset");
+			cons_printf("   offset ");
 			for(i=0;i<inc;i++)
-				cons_printf("       +0x%x",i);
+				cons_printf("     +0x%02x",i);
 			cons_newline();
 			C cons_strcat(C_RESET);
 		}
@@ -986,7 +986,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		}
 		break;
 	case FMT_OCT:
-		inc = (int)((config.width)/6);
+		inc = config_get_i("scr.bytewidth");
+		if (!inc) inc = (int)((config.width)/6);
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset   ");
@@ -1004,17 +1005,17 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 				print_color_byte_i(i, "%03o", (int)buf[i]);
 				cons_printf(" ");
 			}
-			i = tmp;
+
 			D { 
-			for(j=i+inc;i<j && i<len;i++)
-				if (j >= len)
-					cons_printf("  ");
-				else
-				if ( is_printable(buf[i]) )
-					print_color_byte_i(i, "%c", buf[i]);
-				else	print_color_byte_i(i, ".", buf[i]);
-			i--;
-			cons_newline(); }
+				if (i==len) for(;i<j;i++) cons_printf("    ");
+				i = tmp;
+				for(j=i+inc;i<j && i<len;i++) {
+					if ( is_printable(buf[i]) )
+						print_color_byte_i(i, "%c", buf[i]);
+					else	print_color_byte_i(i, ".", buf[i]);
+				}
+			}
+			cons_newline();
 		}
 		break;
 	case FMT_ASCP:
@@ -1146,8 +1147,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		}
 	case FMT_HEXBS:
 	case FMT_HEXB:
-		D inc = 2+(int)((config.width-14)/4);
-		else inc = 2+(int)((config.width)/4);
+		inc = config_get_i("scr.bytewidth");
+		if (!inc) {
+			D inc = 2+(int)((config.width-14)/4);
+			else inc = 2+(int)((config.width)/4);
+		}
 		if (inc%2) inc++;
 		tmp = config.cursor_mode;
 		D if ( fmt == FMT_HEXB ) {
@@ -1169,11 +1173,9 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 				else print_addr(seek+i+config.vaddr);
 			} }
 
-			if (config.insert_mode==1)
-				config.cursor_mode = 1;
-			else 
-			if (config.insert_mode==2)
-				config.cursor_mode = 0;
+			if (config.insert_mode==1) config.cursor_mode = 1;
+			else if (config.insert_mode==2) config.cursor_mode = 0;
+
 			for(j=i;j<i+inc;j++) {
 				if (fmt==FMT_HEXB) {
 					if (j>=len) {
