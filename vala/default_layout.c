@@ -416,13 +416,13 @@ static void grava_default_layout_real_run (GravaLayout* base, GravaGraph* graph)
 #line 162 "default_layout.vala"
 			n->h = m->h;
 #line 163 "default_layout.vala"
-			fprintf (stdout, "FUCKA! %f %f\n", n->x, n->y);
+		//	fprintf (stdout, "FUCKA! %f %f\n", n->x, n->y);
 			(m == NULL) ? NULL : (m = (g_object_unref (m), NULL));
 #line 164 "default_layout.vala"
 			continue;
 		}
 #line 166 "default_layout.vala"
-		fprintf (stdout, "---- not ounfd !\n");
+		//fprintf (stdout, "---- not ounfd !\n");
 		/*/ busco l'edge verd d'aquest node
 		/*/
 #line 170 "default_layout.vala"

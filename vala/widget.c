@@ -526,7 +526,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 #line 527 "widget.c"
 	/* */
 #line 158 "widget.vala"
-	fprintf (stdout, "Key pressed %d (%c)\n", (gint) (*ek).keyval, (gint) (*ek).keyval);
+	//fprintf (stdout, "Key pressed %d (%c)\n", (gint) (*ek).keyval, (gint) (*ek).keyval);
 #line 161 "widget.vala"
 	switch ((*ek).keyval) {
 #line 533 "widget.c"
