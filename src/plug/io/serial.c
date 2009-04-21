@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -122,6 +122,7 @@ static int opendev(const char *device, int speed)
         if (fd == -1)
 		return -1;
 
+#if 0
         // Get serial device parameters 
         tcgetattr(fd, &tc);
 
@@ -133,16 +134,43 @@ static int opendev(const char *device, int speed)
         tc.c_cflag |= CS8 | CREAD | CLOCAL ;
         tc.c_cc[VMIN] = 1;
         tc.c_cc[VTIME] = 3;
+#endif
+	memset(&tc, 0, sizeof(tc));
+	tc.c_cflag = CS8 | CLOCAL | CREAD;
+	tc.c_iflag = IGNPAR; /* parity */
+	tc.c_oflag = 0;
+	tc.c_lflag = 0;
+        tc.c_cc[VMIN] = 1;
+        tc.c_cc[VTIME] = 0;
 
-        // Set port speed to 9600 baud 
+        /* Set port speed */
 	switch(speed) {
+	case 0:
+		tc.c_cflag |= B0;
+		break;
+	case 1200:
+		tc.c_cflag |= B1200;
+		break;
+	case 4800:
+		tc.c_cflag |= B4800;
+		break;
+	case 9600:
+		tc.c_cflag |= B9600;
+		break;
+	case 19200:
+		tc.c_cflag |= B19200;
+		break;
+	case 38400:
+		tc.c_cflag |= B38400;
+		break;
 	default:
-		cfsetospeed(&tc, B19200);
-		cfsetispeed (&tc, B0);
+		tc.c_cflag |= B19200;
+		break;
 	}
 
         // Set TCSANOW mode of serial device 
         tcsetattr(fd, TCSANOW, &tc);
+	tcflush(fd, TCIOFLUSH);
 	return fd;
 }
 

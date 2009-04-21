@@ -13,6 +13,10 @@
 #include             "gdbwrapper-internals.h"
 #include             "gdbwrapper.h"
 
+#define u_short unsigned short
+#define u_char unsigned char
+#define u_int unsigned int
+
 gdbwrapworld_t       gdbwrapworld;
 
 /******************** Internal functions ********************/
