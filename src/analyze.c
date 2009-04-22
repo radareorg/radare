@@ -698,8 +698,8 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 	/* restore */
 	config.seek = tmp;
 	radare_read(0);
-	if (!rad)
-		cons_strcat("\n");
+	//if (!rad)
+	//D cons_strcat("\n");
 	config.verbose = v;
 
 	return 0;

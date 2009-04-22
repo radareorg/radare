@@ -518,6 +518,7 @@ static int asm_profile(const char *profile)
 	} else if (!strcmp(profile, "compact")) {
 		asm_profile("simple");
 		config_set("asm.lines", "true");
+		config_set("asm.comments", "false");
 	} else if (!strcmp(profile, "gas")) {
 		asm_profile("default");
 		config_set("asm.lines", "false");
@@ -563,7 +564,7 @@ static int asm_profile(const char *profile)
 		asm_profile("default");
 		config_set("asm.bytes", "false");
 		config_set("asm.lines", "false");
-		config_set("asm.comments", "false");
+		config_set("asm.comments", "true");
 		config_set("asm.split", "false");
 		config_set("asm.flags", "false");
 		config_set("asm.flagsline", "true");

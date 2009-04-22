@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 my %vars={};
 my $out="";
 

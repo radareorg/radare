@@ -379,6 +379,9 @@ u64 get_offset(const char *orig)
 		case 'F':
 			ret = data_prev(config.seek, DATA_FUN);
 			break;
+		case 'S':
+			ret = data_prev_size(config.seek, DATA_FUN);
+			break;
 		case 'j':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.jump;

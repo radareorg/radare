@@ -67,6 +67,21 @@ u64 data_prev(u64 off, int type)
 	return ret;
 }
 
+u64 data_prev_size(u64 off, int type)
+{
+	struct list_head *pos;
+	u64 ret = 0;
+
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->type == type) {
+			if (d->from < off && d->to > off)
+				ret = (d->to-d->from) - (off-d->from);;
+		}
+	}
+	return ret;
+}
+
 int data_get_fun_for(u64 addr, u64 *from, u64 *to)
 {
 	struct list_head *pos;

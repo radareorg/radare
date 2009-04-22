@@ -323,6 +323,19 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	str = strdup(each);
 	radare_controlc();
 
+	/* strip ansi codes */
+	{ char *s, *p0, *p1;
+	while(1) {
+		p0 = strchr(str, 0x1b);
+		if (p0) {
+			p1 = strchr(p0+1, 'm');
+			if (p1) strcpy(p0, p1+1);
+			else break;
+		} else break;
+	}
+	}
+	each = str;
+
 	switch(each[0]) {
 	case '?':
 		eprintf("Foreach '@@' iterator command:\n");

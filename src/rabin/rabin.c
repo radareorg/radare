@@ -79,6 +79,7 @@ int rabin_show_help()
 	" -c        header checksum\n"
 	" -S        show sections\n"
 	" -l        linked libraries\n"
+	" -H        header information\n"
 	" -L [lib]  dlopen library and show address\n"
 	" -z        search for strings in elf non-executable sections\n"
 	" -x        show xrefs of symbols (-s/-i/-z required)\n"
@@ -450,6 +451,32 @@ void rabin_show_checksum(const char *file)
 		read(fd, &addr, 4);
 		printf("0x%x checksum file offset\n", pebase+0x18);
 		printf("0x%04x checksum\n", (unsigned int) (unsigned short)addr);
+		break;
+	}
+}
+
+void rabin_show_header()
+{
+	u64 offset = 0;
+	u64 baddr = 0;
+	dietpe_entrypoint entrypoint;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin_t    pe;
+	} bin;
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+		fd = ELF_CALL(dietelf_open,bin.elf, file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		fprintf(stderr, "TODO\n");
+		ELF_(dietelf_close)(fd);
+		break;
+	default:
+		fprintf(stderr, "TODO\n");
 		break;
 	}
 }
@@ -1379,7 +1406,7 @@ int main(int argc, char **argv, char **envp)
 	const char *op = NULL;
 	int c;
 
-	while ((c = getopt(argc, argv, "cerlishL:SIvxzo:")) != -1)
+	while ((c = getopt(argc, argv, "cerlishL:SIvxzo:H")) != -1)
 	{
 		switch( c ) {
 		case 'i':
@@ -1394,6 +1421,9 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'S':
 			action |= ACTION_SECTIONS;
+			break;
+		case 'H':
+			action |= ACTION_HEADER;
 			break;
 		case 'I':
 			action |= ACTION_INFO;
@@ -1462,6 +1492,8 @@ int main(int argc, char **argv, char **envp)
 
 	if (op != NULL && action&ACTION_OPERATE)
 		operation_do( op );
+	if (action&ACTION_HEADER)
+		rabin_show_header(file);
 	if (action&ACTION_ENTRY)
 		rabin_show_entrypoint(file);
 	if (action&ACTION_IMPORTS)

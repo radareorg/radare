@@ -184,6 +184,7 @@ static void __lambda9__grava_widget_load_graph_at (GravaWidget* _sender, const c
 void grava_widget_create_widgets (GravaWidget* self);
 GType grava_layout_get_type (void);
 GType grava_edge_get_type (void);
+void mygrava_bp_at (void* obj, const char* addr);
 extern GravaNode* grava_graph_selected;
 char* grava_node_get (GravaNode* self, const char* key);
 void grava_graph_select_next (GravaGraph* self);
@@ -202,10 +203,12 @@ static void __lambda7__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpoint
 static void _lambda8_ (GtkImageMenuItem* imi, GravaWidget* self);
 static void __lambda8__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpointer self);
 void grava_widget_do_popup_generic (GravaWidget* self);
+void core_load_graph_at_label (void* obj, const char* addr);
 static void _lambda0_ (GtkImageMenuItem* imi, GravaWidget* self);
 static void __lambda0__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpointer self);
 static void _lambda1_ (GtkImageMenuItem* imi, GravaWidget* self);
 static void __lambda1__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpointer self);
+void mygrava_bp_rm_at (void* obj, const char* addr);
 static void _lambda2_ (GtkImageMenuItem* imi, GravaWidget* self);
 static void __lambda2__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpointer self);
 static void _lambda3_ (GtkImageMenuItem* imi, GravaWidget* self);
@@ -228,7 +231,6 @@ static gpointer grava_widget_parent_class = NULL;
 static void grava_widget_finalize (GObject* obj);
 
 
-static void g_cclosure_user_marshal_INT__POINTER_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
 
 static GType grava_widget_wheel_action_get_type (void) {
@@ -243,7 +245,7 @@ static GType grava_widget_wheel_action_get_type (void) {
 
 #line 46 "widget.vala"
 GtkWidget* grava_widget_get_widget (GravaWidget* self) {
-#line 247 "widget.c"
+#line 249 "widget.c"
 	GtkWidget* _tmp0_;
 #line 46 "widget.vala"
 	g_return_val_if_fail (self != NULL, NULL);
@@ -251,55 +253,55 @@ GtkWidget* grava_widget_get_widget (GravaWidget* self) {
 	_tmp0_ = NULL;
 #line 48 "widget.vala"
 	return (_tmp0_ = (GtkWidget*) self->priv->sw, (_tmp0_ == NULL) ? NULL : g_object_ref (_tmp0_));
-#line 255 "widget.c"
+#line 257 "widget.c"
 }
 
 
 #line 520 "widget.vala"
 static gboolean _grava_widget_expose_gtk_widget_expose_event (GtkDrawingArea* _sender, const GdkEventExpose* event, gpointer self) {
-#line 261 "widget.c"
+#line 263 "widget.c"
 	return grava_widget_expose (self, _sender, event);
 }
 
 
 #line 480 "widget.vala"
 static gboolean _grava_widget_motion_gtk_widget_motion_notify_event (GtkDrawingArea* _sender, const GdkEventMotion* event, gpointer self) {
-#line 268 "widget.c"
+#line 270 "widget.c"
 	return grava_widget_motion (self, _sender, event);
 }
 
 
 #line 473 "widget.vala"
 static gboolean _grava_widget_button_release_gtk_widget_button_release_event (GtkDrawingArea* _sender, const GdkEventButton* event, gpointer self) {
-#line 275 "widget.c"
+#line 277 "widget.c"
 	return grava_widget_button_release (self, _sender, event);
 }
 
 
 #line 428 "widget.vala"
 static gboolean _grava_widget_button_press_gtk_widget_button_press_event (GtkDrawingArea* _sender, const GdkEventButton* event, gpointer self) {
-#line 282 "widget.c"
+#line 284 "widget.c"
 	return grava_widget_button_press (self, _sender, event);
 }
 
 
 #line 96 "widget.vala"
 static gboolean _grava_widget_scroll_press_gtk_widget_scroll_event (GtkDrawingArea* _sender, const GdkEventScroll* event, gpointer self) {
-#line 289 "widget.c"
+#line 291 "widget.c"
 	return grava_widget_scroll_press (self, _sender, event);
 }
 
 
 #line 151 "widget.vala"
 static gboolean _grava_widget_key_press_gtk_widget_key_press_event (GtkScrolledWindow* _sender, const GdkEventKey* event, gpointer self) {
-#line 296 "widget.c"
+#line 298 "widget.c"
 	return grava_widget_key_press (self, _sender, event);
 }
 
 
 #line 133 "widget.vala"
 static gboolean _grava_widget_key_release_gtk_widget_key_release_event (GtkScrolledWindow* _sender, const GdkEventKey* event, gpointer self) {
-#line 303 "widget.c"
+#line 305 "widget.c"
 	return grava_widget_key_release (self, _sender, event);
 }
 
@@ -317,7 +319,7 @@ static void __lambda9__grava_widget_load_graph_at (GravaWidget* _sender, const c
 
 #line 57 "widget.vala"
 void grava_widget_create_widgets (GravaWidget* self) {
-#line 321 "widget.c"
+#line 323 "widget.c"
 	GtkDrawingArea* _tmp0_;
 	GtkScrolledWindow* _tmp3_;
 	GtkAdjustment* _tmp2_;
@@ -328,15 +330,15 @@ void grava_widget_create_widgets (GravaWidget* self) {
 	GtkViewport* vp;
 #line 57 "widget.vala"
 	g_return_if_fail (self != NULL);
-#line 332 "widget.c"
+#line 334 "widget.c"
 	_tmp0_ = NULL;
 #line 59 "widget.vala"
 	self->da = (_tmp0_ = g_object_ref_sink ((GtkDrawingArea*) gtk_drawing_area_new ()), (self->da == NULL) ? NULL : (self->da = (g_object_unref (self->da), NULL)), _tmp0_);
-#line 336 "widget.c"
+#line 338 "widget.c"
 	/* add event listeners */
 #line 62 "widget.vala"
 	gtk_widget_add_events ((GtkWidget*) self->da, (gint) (((GDK_BUTTON1_MOTION_MASK | GDK_SCROLL_MASK) | GDK_BUTTON_PRESS_MASK) | GDK_BUTTON_RELEASE_MASK));
-#line 340 "widget.c"
+#line 342 "widget.c"
 	/*da.set_events(  Gdk.EventMask.BUTTON1_MOTION_MASK );
 	 Gdk.EventMask.POINTER_MOTION_MASK );*/
 #line 68 "widget.vala"
@@ -349,23 +351,23 @@ void grava_widget_create_widgets (GravaWidget* self) {
 	g_signal_connect_object ((GtkWidget*) self->da, "button-press-event", (GCallback) _grava_widget_button_press_gtk_widget_button_press_event, self, 0);
 #line 72 "widget.vala"
 	g_signal_connect_object ((GtkWidget*) self->da, "scroll-event", (GCallback) _grava_widget_scroll_press_gtk_widget_scroll_event, self, 0);
-#line 353 "widget.c"
+#line 355 "widget.c"
 	_tmp3_ = NULL;
 	_tmp2_ = NULL;
 	_tmp1_ = NULL;
 #line 74 "widget.vala"
 	self->priv->sw = (_tmp3_ = g_object_ref_sink ((GtkScrolledWindow*) gtk_scrolled_window_new (_tmp1_ = g_object_ref_sink ((GtkAdjustment*) gtk_adjustment_new ((double) 0, (double) 10, (double) 1000, (double) 2, (double) 100, (double) 1000)), _tmp2_ = g_object_ref_sink ((GtkAdjustment*) gtk_adjustment_new ((double) 0, (double) 10, (double) 1000, (double) 2, (double) 100, (double) 1000)))), (self->priv->sw == NULL) ? NULL : (self->priv->sw = (g_object_unref (self->priv->sw), NULL)), _tmp3_);
-#line 359 "widget.c"
+#line 361 "widget.c"
 	(_tmp2_ == NULL) ? NULL : (_tmp2_ = (g_object_unref (_tmp2_), NULL));
 	(_tmp1_ == NULL) ? NULL : (_tmp1_ = (g_object_unref (_tmp1_), NULL));
 #line 77 "widget.vala"
 	gtk_scrolled_window_set_policy (self->priv->sw, GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-#line 364 "widget.c"
+#line 366 "widget.c"
 	_tmp5_ = NULL;
 	_tmp4_ = NULL;
 #line 79 "widget.vala"
 	_tmp6_ = NULL;
-#line 369 "widget.c"
+#line 371 "widget.c"
 	vp = (_tmp6_ = g_object_ref_sink ((GtkViewport*) gtk_viewport_new (_tmp4_ = g_object_ref_sink ((GtkAdjustment*) gtk_adjustment_new ((double) 0, (double) 10, (double) 1000, (double) 2, (double) 100, (double) 1000)), _tmp5_ = g_object_ref_sink ((GtkAdjustment*) gtk_adjustment_new ((double) 0, (double) 10, (double) 1000, (double) 2, (double) 100, (double) 1000)))), (_tmp5_ == NULL) ? NULL : (_tmp5_ = (g_object_unref (_tmp5_), NULL)), (_tmp4_ == NULL) ? NULL : (_tmp4_ = (g_object_unref (_tmp4_), NULL)), _tmp6_);
 #line 82 "widget.vala"
 	gtk_container_add ((GtkContainer*) vp, (GtkWidget*) self->da);
@@ -379,7 +381,7 @@ void grava_widget_create_widgets (GravaWidget* self) {
 	gtk_scrolled_window_add_with_viewport (self->priv->sw, (GtkWidget*) vp);
 #line 90 "widget.vala"
 	g_signal_connect (self, "load-graph-at", (GCallback) __lambda9__grava_widget_load_graph_at, self);
-#line 383 "widget.c"
+#line 385 "widget.c"
 	(vp == NULL) ? NULL : (vp = (g_object_unref (vp), NULL));
 }
 
@@ -396,19 +398,19 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 	gtk_widget_grab_focus ((GtkWidget*) self->priv->sw);
 #line 100 "widget.vala"
 	switch ((*es).direction) {
-#line 400 "widget.c"
+#line 402 "widget.c"
 		case GDK_SCROLL_UP:
 		{
 #line 102 "widget.vala"
 			switch (self->priv->wheel_action) {
-#line 405 "widget.c"
+#line 407 "widget.c"
 				case GRAVA_WIDGET_WHEEL_ACTION_PAN:
 				{
 #line 104 "widget.vala"
 					self->graph->pany = self->graph->pany + ((double) 64);
 #line 105 "widget.vala"
 					break;
-#line 412 "widget.c"
+#line 414 "widget.c"
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ZOOM:
 				{
@@ -416,7 +418,7 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 					self->graph->zoom = self->graph->zoom + GRAVA_WIDGET_ZOOM_FACTOR;
 #line 108 "widget.vala"
 					break;
-#line 420 "widget.c"
+#line 422 "widget.c"
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ROTATE:
 				{
@@ -424,25 +426,25 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 					self->graph->angle = self->graph->angle - 0.04;
 #line 111 "widget.vala"
 					break;
-#line 428 "widget.c"
+#line 430 "widget.c"
 				}
 			}
 #line 113 "widget.vala"
 			break;
-#line 433 "widget.c"
+#line 435 "widget.c"
 		}
 		case GDK_SCROLL_DOWN:
 		{
 #line 115 "widget.vala"
 			switch (self->priv->wheel_action) {
-#line 439 "widget.c"
+#line 441 "widget.c"
 				case GRAVA_WIDGET_WHEEL_ACTION_PAN:
 				{
 #line 117 "widget.vala"
 					self->graph->pany = self->graph->pany - ((double) 64);
 #line 118 "widget.vala"
 					break;
-#line 446 "widget.c"
+#line 448 "widget.c"
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ZOOM:
 				{
@@ -450,7 +452,7 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 					self->graph->zoom = self->graph->zoom - GRAVA_WIDGET_ZOOM_FACTOR;
 #line 121 "widget.vala"
 					break;
-#line 454 "widget.c"
+#line 456 "widget.c"
 				}
 				case GRAVA_WIDGET_WHEEL_ACTION_ROTATE:
 				{
@@ -458,19 +460,19 @@ static gboolean grava_widget_scroll_press (GravaWidget* self, GtkDrawingArea* da
 					self->graph->angle = self->graph->angle + 0.04;
 #line 124 "widget.vala"
 					break;
-#line 462 "widget.c"
+#line 464 "widget.c"
 				}
 			}
 #line 126 "widget.vala"
 			break;
-#line 467 "widget.c"
+#line 469 "widget.c"
 		}
 	}
 #line 129 "widget.vala"
 	gtk_widget_queue_draw_area ((GtkWidget*) da, 0, 0, 5000, 2000);
 #line 130 "widget.vala"
 	return FALSE;
-#line 474 "widget.c"
+#line 476 "widget.c"
 }
 
 
@@ -482,18 +484,18 @@ static gboolean grava_widget_key_release (GravaWidget* self, GtkWidget* w, const
 	g_return_val_if_fail (w != NULL, FALSE);
 #line 135 "widget.vala"
 	gtk_widget_grab_focus ((GtkWidget*) self->priv->sw);
-#line 486 "widget.c"
+#line 488 "widget.c"
 	/*stdout.printf("Key released %d (%c)\n", (int)ek.keyval, (int)ek.keyval);*/
 #line 139 "widget.vala"
 	switch ((*ek).keyval) {
-#line 490 "widget.c"
+#line 492 "widget.c"
 		case 65507:
 		{
 #line 141 "widget.vala"
 			self->priv->wheel_action = GRAVA_WIDGET_WHEEL_ACTION_PAN;
 #line 142 "widget.vala"
 			break;
-#line 497 "widget.c"
+#line 499 "widget.c"
 		}
 		case 65505:
 		{
@@ -501,71 +503,65 @@ static gboolean grava_widget_key_release (GravaWidget* self, GtkWidget* w, const
 			self->priv->wheel_action = GRAVA_WIDGET_WHEEL_ACTION_PAN;
 #line 145 "widget.vala"
 			break;
-#line 505 "widget.c"
+#line 507 "widget.c"
 		}
 	}
 #line 148 "widget.vala"
 	return TRUE;
-#line 510 "widget.c"
+#line 512 "widget.c"
 }
 
 
 #line 151 "widget.vala"
 static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const GdkEventKey* ek) {
-#line 516 "widget.c"
+#line 518 "widget.c"
 	gboolean handled;
 #line 151 "widget.vala"
 	g_return_val_if_fail (self != NULL, FALSE);
 #line 151 "widget.vala"
 	g_return_val_if_fail (w != NULL, FALSE);
-#line 522 "widget.c"
+#line 524 "widget.c"
 	handled = TRUE;
 	/*DrawingArea da = (DrawingArea)w;*/
 #line 155 "widget.vala"
 	gtk_widget_grab_focus ((GtkWidget*) self->priv->sw);
-#line 527 "widget.c"
+#line 529 "widget.c"
 	/* */
 #line 158 "widget.vala"
-	//fprintf (stdout, "Key pressed %d (%c)\n", (gint) (*ek).keyval, (gint) (*ek).keyval);
+	fprintf (stdout, "Key pressed %d (%c)\n", (gint) (*ek).keyval, (gint) (*ek).keyval);
 #line 161 "widget.vala"
 	switch ((*ek).keyval) {
-#line 533 "widget.c"
+#line 535 "widget.c"
 		case 'b':
 		case 65471:
 		{
-			gint _tmp1_;
 			char* _tmp0_;
 #line 61 "node.vala"
 			_tmp0_ = NULL;
 #line 164 "widget.vala"
-			g_signal_emit_by_name (self, "set-breakpoint", NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"), &_tmp1_);
-#line 164 "widget.vala"
-			_tmp1_;
-#line 545 "widget.c"
+			mygrava_bp_at (NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"));
+#line 544 "widget.c"
 			_tmp0_ = (g_free (_tmp0_), NULL);
 #line 165 "widget.vala"
 			break;
-#line 549 "widget.c"
+#line 548 "widget.c"
 		}
 		case 'B':
 		{
-			gint _tmp4_;
-			char* _tmp3_;
 			char* _tmp2_;
+			char* _tmp1_;
 #line 811 "glib-2.0.vapi"
-			_tmp3_ = NULL;
-#line 61 "node.vala"
 			_tmp2_ = NULL;
+#line 61 "node.vala"
+			_tmp1_ = NULL;
 #line 168 "widget.vala"
-			g_signal_emit_by_name (self, "set-breakpoint", NULL, _tmp3_ = g_strdup_printf ("-%s", _tmp2_ = grava_node_get (grava_graph_selected, "label")), &_tmp4_);
-#line 168 "widget.vala"
-			_tmp4_;
-#line 564 "widget.c"
-			_tmp3_ = (g_free (_tmp3_), NULL);
+			mygrava_bp_at (NULL, _tmp2_ = g_strdup_printf ("-%s", _tmp1_ = grava_node_get (grava_graph_selected, "label")));
+#line 560 "widget.c"
 			_tmp2_ = (g_free (_tmp2_), NULL);
+			_tmp1_ = (g_free (_tmp1_), NULL);
 #line 169 "widget.vala"
 			break;
-#line 569 "widget.c"
+#line 565 "widget.c"
 		}
 		case 'S':
 		{
@@ -577,7 +573,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			g_signal_emit_by_name (self, "load-graph-at", "$$");
 #line 174 "widget.vala"
 			break;
-#line 581 "widget.c"
+#line 577 "widget.c"
 		}
 		case 's':
 		case 65476:
@@ -590,7 +586,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			g_signal_emit_by_name (self, "load-graph-at", "$$");
 #line 181 "widget.vala"
 			break;
-#line 594 "widget.c"
+#line 590 "widget.c"
 		}
 		case 65478:
 		{
@@ -602,7 +598,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			g_signal_emit_by_name (self, "load-graph-at", "$$");
 #line 186 "widget.vala"
 			break;
-#line 606 "widget.c"
+#line 602 "widget.c"
 		}
 		case 65507:
 		{
@@ -610,7 +606,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->priv->wheel_action = GRAVA_WIDGET_WHEEL_ACTION_ZOOM;
 #line 189 "widget.vala"
 			break;
-#line 614 "widget.c"
+#line 610 "widget.c"
 		}
 		case 65505:
 		{
@@ -618,13 +614,13 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->priv->wheel_action = GRAVA_WIDGET_WHEEL_ACTION_ROTATE;
 #line 192 "widget.vala"
 			break;
-#line 622 "widget.c"
+#line 618 "widget.c"
 		}
 		case 65056:
 		{
 #line 207 "widget.vala"
 			break;
-#line 628 "widget.c"
+#line 624 "widget.c"
 		}
 		case 65289:
 		{
@@ -634,22 +630,22 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			if (grava_graph_selected == NULL) {
 #line 211 "widget.vala"
 				grava_graph_select_next (self->graph);
-#line 638 "widget.c"
+#line 634 "widget.c"
 			}
 #line 212 "widget.vala"
 			if (grava_graph_selected != NULL) {
-#line 642 "widget.c"
+#line 638 "widget.c"
 				/*sw.get_size(ref w, ref, h);
 				 XXXX get window size*/
 #line 215 "widget.vala"
 				self->graph->panx = (-grava_graph_selected->x) + 350;
 #line 216 "widget.vala"
 				self->graph->pany = (-grava_graph_selected->y) + 350;
-#line 649 "widget.c"
+#line 645 "widget.c"
 			}
 #line 218 "widget.vala"
 			break;
-#line 653 "widget.c"
+#line 649 "widget.c"
 		}
 		case '1':
 		{
@@ -659,7 +655,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->panx = self->graph->pany = (double) 0;
 #line 222 "widget.vala"
 			break;
-#line 663 "widget.c"
+#line 659 "widget.c"
 		}
 		case 65361:
 		case 'h':
@@ -668,7 +664,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->panx = self->graph->panx + (GRAVA_WIDGET_S * self->graph->zoom);
 #line 226 "widget.vala"
 			break;
-#line 672 "widget.c"
+#line 668 "widget.c"
 		}
 		case 65364:
 		case 'j':
@@ -677,7 +673,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->pany = self->graph->pany - (GRAVA_WIDGET_S * self->graph->zoom);
 #line 230 "widget.vala"
 			break;
-#line 681 "widget.c"
+#line 677 "widget.c"
 		}
 		case 65362:
 		case 'k':
@@ -686,7 +682,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->pany = self->graph->pany + (GRAVA_WIDGET_S * self->graph->zoom);
 #line 234 "widget.vala"
 			break;
-#line 690 "widget.c"
+#line 686 "widget.c"
 		}
 		case 65363:
 		case 'l':
@@ -695,7 +691,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->panx = self->graph->panx - (GRAVA_WIDGET_S * self->graph->zoom);
 #line 238 "widget.vala"
 			break;
-#line 699 "widget.c"
+#line 695 "widget.c"
 		}
 		case 'H':
 		{
@@ -705,11 +701,11 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			if (grava_graph_selected != NULL) {
 #line 242 "widget.vala"
 				grava_graph_selected->x = grava_graph_selected->x - (GRAVA_WIDGET_S * self->graph->zoom);
-#line 709 "widget.c"
+#line 705 "widget.c"
 			}
 #line 243 "widget.vala"
 			break;
-#line 713 "widget.c"
+#line 709 "widget.c"
 		}
 		case 'J':
 		{
@@ -719,11 +715,11 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			if (grava_graph_selected != NULL) {
 #line 247 "widget.vala"
 				grava_graph_selected->y = grava_graph_selected->y + (GRAVA_WIDGET_S * self->graph->zoom);
-#line 723 "widget.c"
+#line 719 "widget.c"
 			}
 #line 248 "widget.vala"
 			break;
-#line 727 "widget.c"
+#line 723 "widget.c"
 		}
 		case 'K':
 		{
@@ -733,17 +729,17 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			if (grava_graph_selected != NULL) {
 #line 252 "widget.vala"
 				grava_graph_selected->y = grava_graph_selected->y - (GRAVA_WIDGET_S * self->graph->zoom);
-#line 737 "widget.c"
+#line 733 "widget.c"
 			}
 #line 253 "widget.vala"
 			break;
-#line 741 "widget.c"
+#line 737 "widget.c"
 		}
 		case 'L':
 		{
 #line 255 "widget.vala"
 			if (self->priv->wheel_action == GRAVA_WIDGET_WHEEL_ACTION_ZOOM) {
-#line 747 "widget.c"
+#line 743 "widget.c"
 			} else {
 #line 257 "widget.vala"
 				self->graph->panx = self->graph->panx - (GRAVA_WIDGET_S * self->graph->zoom);
@@ -751,33 +747,33 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 				if (grava_graph_selected != NULL) {
 #line 259 "widget.vala"
 					grava_graph_selected->x = grava_graph_selected->x + (GRAVA_WIDGET_S * self->graph->zoom);
-#line 755 "widget.c"
+#line 751 "widget.c"
 				}
 			}
 #line 261 "widget.vala"
 			break;
-#line 760 "widget.c"
+#line 756 "widget.c"
 		}
 		case '.':
 		{
 #line 263 "widget.vala"
 			if (grava_graph_selected != NULL) {
-#line 766 "widget.c"
-				char* _tmp5_;
+#line 762 "widget.c"
+				char* _tmp3_;
 #line 61 "node.vala"
-				_tmp5_ = NULL;
+				_tmp3_ = NULL;
 #line 264 "widget.vala"
-				g_signal_emit_by_name (self, "load-graph-at", _tmp5_ = grava_node_get (grava_graph_selected, "label"));
-#line 772 "widget.c"
-				_tmp5_ = (g_free (_tmp5_), NULL);
+				g_signal_emit_by_name (self, "load-graph-at", _tmp3_ = grava_node_get (grava_graph_selected, "label"));
+#line 768 "widget.c"
+				_tmp3_ = (g_free (_tmp3_), NULL);
 			} else {
 #line 265 "widget.vala"
 				grava_graph_select_next (self->graph);
-#line 777 "widget.c"
+#line 773 "widget.c"
 			}
 #line 266 "widget.vala"
 			break;
-#line 781 "widget.c"
+#line 777 "widget.c"
 		}
 		case ':':
 		{
@@ -789,7 +785,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_selected = grava_graph_selected = NULL;
 #line 271 "widget.vala"
 			break;
-#line 793 "widget.c"
+#line 789 "widget.c"
 		}
 		case 'u':
 		{
@@ -801,7 +797,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_undo_select (self->graph);
 #line 276 "widget.vala"
 			break;
-#line 805 "widget.c"
+#line 801 "widget.c"
 		}
 		case 'U':
 		{
@@ -813,7 +809,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_undo_select (self->graph);
 #line 281 "widget.vala"
 			break;
-#line 817 "widget.c"
+#line 813 "widget.c"
 		}
 		case 't':
 		{
@@ -821,7 +817,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_select_true (self->graph);
 #line 284 "widget.vala"
 			break;
-#line 825 "widget.c"
+#line 821 "widget.c"
 		}
 		case 'f':
 		{
@@ -829,7 +825,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_select_false (self->graph);
 #line 287 "widget.vala"
 			break;
-#line 833 "widget.c"
+#line 829 "widget.c"
 		}
 		case '+':
 		{
@@ -837,7 +833,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_do_zoom (self->graph, +GRAVA_WIDGET_ZOOM_FACTOR);
 #line 291 "widget.vala"
 			break;
-#line 841 "widget.c"
+#line 837 "widget.c"
 		}
 		case '-':
 		{
@@ -845,7 +841,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			grava_graph_do_zoom (self->graph, -GRAVA_WIDGET_ZOOM_FACTOR);
 #line 295 "widget.vala"
 			break;
-#line 849 "widget.c"
+#line 845 "widget.c"
 		}
 		case '*':
 		{
@@ -853,7 +849,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->angle = self->graph->angle + 0.05;
 #line 298 "widget.vala"
 			break;
-#line 857 "widget.c"
+#line 853 "widget.c"
 		}
 		case '/':
 		{
@@ -861,7 +857,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			self->graph->angle = self->graph->angle - 0.05;
 #line 301 "widget.vala"
 			break;
-#line 865 "widget.c"
+#line 861 "widget.c"
 		}
 		default:
 		{
@@ -869,7 +865,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			handled = FALSE;
 #line 304 "widget.vala"
 			break;
-#line 873 "widget.c"
+#line 869 "widget.c"
 		}
 	}
 	/*expose(da, ev);*/
@@ -877,7 +873,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 	gtk_widget_queue_draw_area ((GtkWidget*) self->da, 0, 0, 5000, 2000);
 #line 310 "widget.vala"
 	return TRUE;
-#line 881 "widget.c"
+#line 877 "widget.c"
 }
 
 
@@ -888,7 +884,7 @@ static void _lambda4_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_signal_emit_by_name (self, "run-cmd", "s-");
 #line 323 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", "$$");
-#line 892 "widget.c"
+#line 888 "widget.c"
 }
 
 
@@ -904,7 +900,7 @@ static void _lambda5_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_signal_emit_by_name (self, "run-cmd", "s+");
 #line 331 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", "$$");
-#line 908 "widget.c"
+#line 904 "widget.c"
 }
 
 
@@ -920,7 +916,7 @@ static void _lambda6_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_signal_emit_by_name (self, "run-cmd", "s eip");
 #line 339 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", "$$");
-#line 924 "widget.c"
+#line 920 "widget.c"
 }
 
 
@@ -938,7 +934,7 @@ static void _lambda7_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_signal_emit_by_name (self, "run-cmd", ".!regs*");
 #line 350 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", "$$");
-#line 942 "widget.c"
+#line 938 "widget.c"
 }
 
 
@@ -956,7 +952,7 @@ static void _lambda8_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	g_signal_emit_by_name (self, "run-cmd", ".!regs*");
 #line 359 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", "$$");
-#line 960 "widget.c"
+#line 956 "widget.c"
 }
 
 
@@ -967,7 +963,7 @@ static void __lambda8__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpoint
 
 #line 313 "widget.vala"
 void grava_widget_do_popup_generic (GravaWidget* self) {
-#line 971 "widget.c"
+#line 967 "widget.c"
 	GtkImageMenuItem* imi;
 	GtkMenu* _tmp0_;
 	GtkImageMenuItem* _tmp1_;
@@ -978,12 +974,12 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	GtkImageMenuItem* _tmp6_;
 #line 313 "widget.vala"
 	g_return_if_fail (self != NULL);
-#line 982 "widget.c"
+#line 978 "widget.c"
 	imi = NULL;
 	_tmp0_ = NULL;
 #line 316 "widget.vala"
 	self->priv->menu = (_tmp0_ = g_object_ref_sink ((GtkMenu*) gtk_menu_new ()), (self->priv->menu == NULL) ? NULL : (self->priv->menu = (g_object_unref (self->priv->menu), NULL)), _tmp0_);
-#line 987 "widget.c"
+#line 983 "widget.c"
 	/* XXX: most of this should be done in a tab panel or so */
 	_tmp1_ = NULL;
 #line 319 "widget.vala"
@@ -992,7 +988,7 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda4__gtk_menu_item_activate, self);
 #line 325 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 996 "widget.c"
+#line 992 "widget.c"
 	_tmp2_ = NULL;
 #line 327 "widget.vala"
 	imi = (_tmp2_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_from_stock ("redo seek", NULL)), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp2_);
@@ -1000,7 +996,7 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda5__gtk_menu_item_activate, self);
 #line 333 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1004 "widget.c"
+#line 1000 "widget.c"
 	_tmp3_ = NULL;
 #line 335 "widget.vala"
 	imi = (_tmp3_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_from_stock ("Seek to eip", NULL)), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp3_);
@@ -1008,11 +1004,11 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda6__gtk_menu_item_activate, self);
 #line 341 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1012 "widget.c"
+#line 1008 "widget.c"
 	_tmp4_ = NULL;
 #line 343 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) (_tmp4_ = g_object_ref_sink ((GtkSeparatorMenuItem*) gtk_separator_menu_item_new ()))));
-#line 1016 "widget.c"
+#line 1012 "widget.c"
 	(_tmp4_ == NULL) ? NULL : (_tmp4_ = (g_object_unref (_tmp4_), NULL));
 	_tmp5_ = NULL;
 #line 345 "widget.vala"
@@ -1021,7 +1017,7 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda7__gtk_menu_item_activate, self);
 #line 352 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1025 "widget.c"
+#line 1021 "widget.c"
 	_tmp6_ = NULL;
 #line 354 "widget.vala"
 	imi = (_tmp6_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_from_stock ("Continue", NULL)), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp6_);
@@ -1033,23 +1029,20 @@ void grava_widget_do_popup_generic (GravaWidget* self) {
 	gtk_widget_show_all ((GtkWidget*) self->priv->menu);
 #line 363 "widget.vala"
 	gtk_menu_popup (self->priv->menu, NULL, NULL, NULL, NULL, (guint) 0, (guint32) 0);
-#line 1037 "widget.c"
+#line 1033 "widget.c"
 	(imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL));
 }
 
 
 static void _lambda0_ (GtkImageMenuItem* imi, GravaWidget* self) {
-	gint _tmp1_;
 	char* _tmp0_;
 	g_return_if_fail (imi != NULL);
 	/*stdout.printf("go in!\n");*/
 #line 61 "node.vala"
 	_tmp0_ = NULL;
 #line 375 "widget.vala"
-	g_signal_emit_by_name (self, "focus-at-label", NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"), &_tmp1_);
-#line 375 "widget.vala"
-	_tmp1_;
-#line 1053 "widget.c"
+	core_load_graph_at_label (NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"));
+#line 1046 "widget.c"
 	_tmp0_ = (g_free (_tmp0_), NULL);
 }
 
@@ -1060,17 +1053,14 @@ static void __lambda0__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpoint
 
 
 static void _lambda1_ (GtkImageMenuItem* imi, GravaWidget* self) {
-	gint _tmp1_;
 	char* _tmp0_;
 	g_return_if_fail (imi != NULL);
 	/*stdout.printf("add bp!\n");*/
 #line 61 "node.vala"
 	_tmp0_ = NULL;
 #line 385 "widget.vala"
-	g_signal_emit_by_name (self, "set-breakpoint", NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"), &_tmp1_);
-#line 385 "widget.vala"
-	_tmp1_;
-#line 1074 "widget.c"
+	mygrava_bp_at (NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"));
+#line 1064 "widget.c"
 	_tmp0_ = (g_free (_tmp0_), NULL);
 }
 
@@ -1081,16 +1071,13 @@ static void __lambda1__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpoint
 
 
 static void _lambda2_ (GtkImageMenuItem* imi, GravaWidget* self) {
-	gint _tmp1_;
 	char* _tmp0_;
 	g_return_if_fail (imi != NULL);
 #line 61 "node.vala"
 	_tmp0_ = NULL;
 #line 391 "widget.vala"
-	g_signal_emit_by_name (self, "unset-breakpoint", NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"), &_tmp1_);
-#line 391 "widget.vala"
-	_tmp1_;
-#line 1094 "widget.c"
+	mygrava_bp_rm_at (NULL, _tmp0_ = grava_node_get (grava_graph_selected, "label"));
+#line 1081 "widget.c"
 	_tmp0_ = (g_free (_tmp0_), NULL);
 }
 
@@ -1105,7 +1092,7 @@ static void _lambda3_ (GtkImageMenuItem* imi, GravaWidget* self) {
 	/*stdout.printf("FUCKME: \n"+imi.submenu_placement());*/
 #line 417 "widget.vala"
 	g_signal_emit_by_name (self, "load-graph-at", gtk_label_get_text (GTK_LABEL (((GtkBin*) imi)->child)));
-#line 1109 "widget.c"
+#line 1096 "widget.c"
 }
 
 
@@ -1116,7 +1103,7 @@ static void __lambda3__gtk_menu_item_activate (GtkImageMenuItem* _sender, gpoint
 
 #line 366 "widget.vala"
 void grava_widget_do_popup_menu (GravaWidget* self) {
-#line 1120 "widget.c"
+#line 1107 "widget.c"
 	GtkImageMenuItem* imi;
 	GtkMenu* _tmp0_;
 	GtkImageMenuItem* _tmp1_;
@@ -1124,25 +1111,25 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 	GtkImageMenuItem* _tmp3_;
 #line 366 "widget.vala"
 	g_return_if_fail (self != NULL);
-#line 1128 "widget.c"
+#line 1115 "widget.c"
 	imi = NULL;
 	_tmp0_ = NULL;
 #line 369 "widget.vala"
 	self->priv->menu = (_tmp0_ = g_object_ref_sink ((GtkMenu*) gtk_menu_new ()), (self->priv->menu == NULL) ? NULL : (self->priv->menu = (g_object_unref (self->priv->menu), NULL)), _tmp0_);
-#line 1133 "widget.c"
+#line 1120 "widget.c"
 	/*imi = new ImageMenuItem.with_label("Focus");*/
 	_tmp1_ = NULL;
 #line 372 "widget.vala"
 	imi = (_tmp1_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_from_stock ("gtk-zoom-in", NULL)), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp1_);
 #line 373 "widget.vala"
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda0__gtk_menu_item_activate, self);
-#line 1140 "widget.c"
+#line 1127 "widget.c"
 	/*MenuItem mi = menu.get_active();
 	load_graph_at(((Label)imi.child).get_text()); //"0x400");
 	stdout.printf(" cocococo "+ menu.);*/
 #line 380 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1146 "widget.c"
+#line 1133 "widget.c"
 	_tmp2_ = NULL;
 #line 382 "widget.vala"
 	imi = (_tmp2_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_with_label ("Breakpoint here")), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp2_);
@@ -1150,7 +1137,7 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda1__gtk_menu_item_activate, self);
 #line 387 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1154 "widget.c"
+#line 1141 "widget.c"
 	_tmp3_ = NULL;
 #line 389 "widget.vala"
 	imi = (_tmp3_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_with_label ("Remove breakpoint")), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp3_);
@@ -1158,7 +1145,7 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 	g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda2__gtk_menu_item_activate, self);
 #line 393 "widget.vala"
 	gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1162 "widget.c"
+#line 1149 "widget.c"
 	/* TODO: add continue until here
 	
 	imi = new ImageMenuItem.with_label("Remove true branch");
@@ -1175,19 +1162,19 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 	*/
 #line 410 "widget.vala"
 	if (grava_graph_selected != NULL) {
-#line 1179 "widget.c"
+#line 1166 "widget.c"
 		GtkSeparatorMenuItem* _tmp4_;
 		_tmp4_ = NULL;
 #line 411 "widget.vala"
 		gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) (_tmp4_ = g_object_ref_sink ((GtkSeparatorMenuItem*) gtk_separator_menu_item_new ()))));
-#line 1184 "widget.c"
+#line 1171 "widget.c"
 		(_tmp4_ == NULL) ? NULL : (_tmp4_ = (g_object_unref (_tmp4_), NULL));
 		{
 			GSList* str_collection;
 			GSList* str_it;
 #line 413 "widget.vala"
 			str_collection = grava_graph_selected->calls;
-#line 1191 "widget.c"
+#line 1178 "widget.c"
 			for (str_it = str_collection; str_it != NULL; str_it = str_it->next) {
 				const char* _tmp6_;
 				char* str;
@@ -1195,7 +1182,7 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 				_tmp6_ = NULL;
 #line 413 "widget.vala"
 				str = (_tmp6_ = (const char*) str_it->data, (_tmp6_ == NULL) ? NULL : g_strdup (_tmp6_));
-#line 1199 "widget.c"
+#line 1186 "widget.c"
 				{
 					GtkImageMenuItem* _tmp5_;
 					_tmp5_ = NULL;
@@ -1203,11 +1190,11 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 					imi = (_tmp5_ = g_object_ref_sink ((GtkImageMenuItem*) gtk_image_menu_item_new_with_label (str)), (imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL)), _tmp5_);
 #line 415 "widget.vala"
 					g_signal_connect ((GtkMenuItem*) imi, "activate", (GCallback) __lambda3__gtk_menu_item_activate, self);
-#line 1207 "widget.c"
+#line 1194 "widget.c"
 					/*"0x400");*/
 #line 419 "widget.vala"
 					gtk_menu_shell_append ((GtkMenuShell*) self->priv->menu, (GtkWidget*) ((GtkMenuItem*) imi));
-#line 1211 "widget.c"
+#line 1198 "widget.c"
 					str = (g_free (str), NULL);
 				}
 			}
@@ -1215,18 +1202,18 @@ void grava_widget_do_popup_menu (GravaWidget* self) {
 	}
 #line 423 "widget.vala"
 	gtk_widget_show_all ((GtkWidget*) self->priv->menu);
-#line 1219 "widget.c"
+#line 1206 "widget.c"
 	/*menu.popup(null, null, null, null, eb.button, 0);*/
 #line 425 "widget.vala"
 	gtk_menu_popup (self->priv->menu, NULL, NULL, NULL, NULL, (guint) 0, (guint32) 0);
-#line 1223 "widget.c"
+#line 1210 "widget.c"
 	(imi == NULL) ? NULL : (imi = (g_object_unref (imi), NULL));
 }
 
 
 #line 428 "widget.vala"
 static gboolean grava_widget_button_press (GravaWidget* self, GtkDrawingArea* da, const GdkEventButton* eb) {
-#line 1230 "widget.c"
+#line 1217 "widget.c"
 	GravaNode* _tmp0_;
 	GravaNode* n;
 	gboolean _tmp2_;
@@ -1234,12 +1221,12 @@ static gboolean grava_widget_button_press (GravaWidget* self, GtkDrawingArea* da
 	g_return_val_if_fail (self != NULL, FALSE);
 #line 428 "widget.vala"
 	g_return_val_if_fail (da != NULL, FALSE);
-#line 1238 "widget.c"
+#line 1225 "widget.c"
 	/*EventButton eb = event.button;
 	EventMotion em = event.motion; */
 #line 432 "widget.vala"
 	_tmp0_ = NULL;
-#line 1243 "widget.c"
+#line 1230 "widget.c"
 	n = (_tmp0_ = grava_graph_click (self->graph, (*eb).x - self->graph->panx, (*eb).y - self->graph->pany), (_tmp0_ == NULL) ? NULL : g_object_ref (_tmp0_));
 #line 434 "widget.vala"
 	gtk_widget_grab_focus ((GtkWidget*) self->priv->sw);
@@ -1251,26 +1238,26 @@ static gboolean grava_widget_button_press (GravaWidget* self, GtkDrawingArea* da
 		if (n != NULL) {
 #line 438 "widget.vala"
 			grava_widget_do_popup_menu (self);
-#line 1255 "widget.c"
+#line 1242 "widget.c"
 		} else {
 #line 439 "widget.vala"
 			grava_widget_do_popup_generic (self);
-#line 1259 "widget.c"
+#line 1246 "widget.c"
 		}
 	}
 #line 441 "widget.vala"
 	if (n != NULL) {
-#line 1264 "widget.c"
+#line 1251 "widget.c"
 		gboolean _tmp1_ = {0};
 #line 442 "widget.vala"
 		if ((((*eb).y - (16 * self->graph->zoom)) - self->graph->pany) < (n->y * self->graph->zoom)) {
 #line 443 "widget.vala"
 			_tmp1_ = ((*eb).x - self->graph->panx) > (((n->x + n->w) - (16 * self->graph->zoom)) * self->graph->zoom);
-#line 1270 "widget.c"
+#line 1257 "widget.c"
 		} else {
 #line 442 "widget.vala"
 			_tmp1_ = FALSE;
-#line 1274 "widget.c"
+#line 1261 "widget.c"
 		}
 #line 442 "widget.vala"
 		if (_tmp1_) {
@@ -1278,21 +1265,21 @@ static gboolean grava_widget_button_press (GravaWidget* self, GtkDrawingArea* da
 			n->has_body = !n->has_body;
 #line 445 "widget.vala"
 			grava_node_fit (n);
-#line 1282 "widget.c"
+#line 1269 "widget.c"
 		}
 #line 448 "widget.vala"
 		self->priv->opanx = (*eb).x;
 #line 449 "widget.vala"
 		self->priv->opany = (*eb).y;
-#line 1288 "widget.c"
+#line 1275 "widget.c"
 		/*graph.draw(Gdk.cairo_create(da.window));*/
 #line 452 "widget.vala"
 		gtk_widget_queue_draw_area ((GtkWidget*) da, 0, 0, 5000, 3000);
-#line 1292 "widget.c"
+#line 1279 "widget.c"
 	}
 #line 455 "widget.vala"
 	return (_tmp2_ = TRUE, (n == NULL) ? NULL : (n = (g_object_unref (n), NULL)), _tmp2_);
-#line 1296 "widget.c"
+#line 1283 "widget.c"
 }
 
 
@@ -1304,23 +1291,23 @@ static double grava_widget_abs (GravaWidget* self, double x) {
 	if (x > 0) {
 #line 468 "widget.vala"
 		return x;
-#line 1308 "widget.c"
+#line 1295 "widget.c"
 	}
 #line 469 "widget.vala"
 	return -x;
-#line 1312 "widget.c"
+#line 1299 "widget.c"
 }
 
 
 #line 473 "widget.vala"
 static gboolean grava_widget_button_release (GravaWidget* self, GtkDrawingArea* da, const GdkEventButton* em) {
-#line 1318 "widget.c"
+#line 1305 "widget.c"
 	GravaNode* _tmp0_;
 #line 473 "widget.vala"
 	g_return_val_if_fail (self != NULL, FALSE);
 #line 473 "widget.vala"
 	g_return_val_if_fail (da != NULL, FALSE);
-#line 1324 "widget.c"
+#line 1311 "widget.c"
 	_tmp0_ = NULL;
 #line 475 "widget.vala"
 	self->priv->on = (_tmp0_ = NULL, (self->priv->on == NULL) ? NULL : (self->priv->on = (g_object_unref (self->priv->on), NULL)), _tmp0_);
@@ -1328,13 +1315,13 @@ static gboolean grava_widget_button_release (GravaWidget* self, GtkDrawingArea* 
 	self->priv->opanx = self->priv->opany = (double) 0;
 #line 477 "widget.vala"
 	return TRUE;
-#line 1332 "widget.c"
+#line 1319 "widget.c"
 }
 
 
 #line 480 "widget.vala"
 static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, const GdkEventMotion* em) {
-#line 1338 "widget.c"
+#line 1325 "widget.c"
 	GravaNode* _tmp0_;
 	GravaNode* n;
 	gboolean _tmp4_;
@@ -1344,14 +1331,14 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 	g_return_val_if_fail (da != NULL, FALSE);
 #line 482 "widget.vala"
 	_tmp0_ = NULL;
-#line 1348 "widget.c"
+#line 1335 "widget.c"
 	n = (_tmp0_ = grava_graph_selected, (_tmp0_ == NULL) ? NULL : g_object_ref (_tmp0_));
 	/*graph.click(em.x-graph.panx, em.y-graph.pany);*/
 #line 483 "widget.vala"
 	gtk_widget_grab_focus ((GtkWidget*) self->priv->sw);
 #line 484 "widget.vala"
 	if (n != NULL) {
-#line 1355 "widget.c"
+#line 1342 "widget.c"
 		double emx;
 		double emy;
 		emx = (*em).x - self->graph->panx;
@@ -1362,7 +1349,7 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 		 TODO: properly handle the graph.zoom */
 #line 489 "widget.vala"
 		if (n != self->priv->on) {
-#line 1366 "widget.c"
+#line 1353 "widget.c"
 			GravaNode* _tmp2_;
 			GravaNode* _tmp1_;
 			/* offx, offy are the delta between click and node x,y 
@@ -1370,18 +1357,18 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 			emy/=graph.zoom;*/
 #line 493 "widget.vala"
 			self->priv->offx = (emx / self->graph->zoom) - n->x;
-#line 1374 "widget.c"
+#line 1361 "widget.c"
 			/*graph.zoom;*/
 #line 494 "widget.vala"
 			self->priv->offy = (emy / self->graph->zoom) - n->y;
-#line 1378 "widget.c"
+#line 1365 "widget.c"
 			/*/graph.zoom;*/
 			_tmp2_ = NULL;
 #line 495 "widget.vala"
 			_tmp1_ = NULL;
 #line 495 "widget.vala"
 			self->priv->on = (_tmp2_ = (_tmp1_ = n, (_tmp1_ == NULL) ? NULL : g_object_ref (_tmp1_)), (self->priv->on == NULL) ? NULL : (self->priv->on = (g_object_unref (self->priv->on), NULL)), _tmp2_);
-#line 1385 "widget.c"
+#line 1372 "widget.c"
 		}
 #line 498 "widget.vala"
 		n->x = (emx - self->priv->offx) / self->graph->zoom;
@@ -1391,50 +1378,50 @@ static gboolean grava_widget_motion (GravaWidget* self, GtkDrawingArea* da, cons
 		gtk_widget_queue_draw_area ((GtkWidget*) da, 0, 0, 5000, 3000);
 #line 502 "widget.vala"
 		grava_graph_selected = n;
-#line 1395 "widget.c"
+#line 1382 "widget.c"
 	} else {
 		gboolean _tmp3_ = {0};
 #line 505 "widget.vala"
 		if (self->priv->opanx != 0) {
 #line 505 "widget.vala"
 			_tmp3_ = self->priv->opany != 0;
-#line 1402 "widget.c"
+#line 1389 "widget.c"
 		} else {
 #line 505 "widget.vala"
 			_tmp3_ = FALSE;
-#line 1406 "widget.c"
+#line 1393 "widget.c"
 		}
 		/* pan view */
 #line 505 "widget.vala"
 		if (_tmp3_) {
-#line 1411 "widget.c"
+#line 1398 "widget.c"
 			double x;
 			double y;
 			x = (*em).x - self->priv->opanx;
 			y = (*em).y - self->priv->opany;
 #line 508 "widget.vala"
 			self->graph->panx = self->graph->panx + x;
-#line 1418 "widget.c"
+#line 1405 "widget.c"
 			/**0.8;*/
 #line 509 "widget.vala"
 			self->graph->pany = self->graph->pany + y;
-#line 1422 "widget.c"
+#line 1409 "widget.c"
 			/**0.8;
 			graph.draw(Gdk.cairo_create(da.window));*/
 #line 511 "widget.vala"
 			gtk_widget_queue_draw_area ((GtkWidget*) da, 0, 0, 5000, 3000);
-#line 1427 "widget.c"
+#line 1414 "widget.c"
 		}
 		/*Graph.selected = null;*/
 #line 514 "widget.vala"
 		self->priv->opanx = (*em).x;
 #line 515 "widget.vala"
 		self->priv->opany = (*em).y;
-#line 1434 "widget.c"
+#line 1421 "widget.c"
 	}
 #line 517 "widget.vala"
 	return (_tmp4_ = TRUE, (n == NULL) ? NULL : (n = (g_object_unref (n), NULL)), _tmp4_);
-#line 1438 "widget.c"
+#line 1425 "widget.c"
 }
 
 
@@ -1444,23 +1431,23 @@ static gboolean grava_widget_expose (GravaWidget* self, GtkDrawingArea* w, const
 	g_return_val_if_fail (self != NULL, FALSE);
 #line 520 "widget.vala"
 	g_return_val_if_fail (w != NULL, FALSE);
-#line 1448 "widget.c"
+#line 1435 "widget.c"
 	/*DrawingArea da = (DrawingArea)w;*/
 #line 523 "widget.vala"
 	grava_widget_draw (self);
 #line 524 "widget.vala"
 	return TRUE;
-#line 1454 "widget.c"
+#line 1441 "widget.c"
 }
 
 
 #line 527 "widget.vala"
 void grava_widget_draw (GravaWidget* self) {
-#line 1460 "widget.c"
+#line 1447 "widget.c"
 	cairo_t* ctx;
 #line 527 "widget.vala"
 	g_return_if_fail (self != NULL);
-#line 1464 "widget.c"
+#line 1451 "widget.c"
 	ctx = gdk_cairo_create ((GdkDrawable*) gtk_widget_get_window ((GtkWidget*) self->da));
 #line 530 "widget.vala"
 	cairo_save (ctx);
@@ -1468,7 +1455,7 @@ void grava_widget_draw (GravaWidget* self) {
 	if (self->graph->zoom < 0.05) {
 #line 532 "widget.vala"
 		self->graph->zoom = 0.05;
-#line 1472 "widget.c"
+#line 1459 "widget.c"
 	}
 #line 533 "widget.vala"
 	grava_graph_draw (self->graph, ctx);
@@ -1484,7 +1471,7 @@ void grava_widget_draw (GravaWidget* self) {
 		grava_renderer_square (ctx, (double) self->separator, (double) 2048);
 #line 539 "widget.vala"
 		cairo_fill (ctx);
-#line 1488 "widget.c"
+#line 1475 "widget.c"
 	}
 	(ctx == NULL) ? NULL : (ctx = (cairo_destroy (ctx), NULL));
 }
@@ -1492,7 +1479,7 @@ void grava_widget_draw (GravaWidget* self) {
 
 #line 25 "widget.vala"
 GravaWidget* grava_widget_construct (GType object_type) {
-#line 1496 "widget.c"
+#line 1483 "widget.c"
 	GravaWidget * self;
 	self = g_object_newv (object_type, 0, NULL);
 	return self;
@@ -1503,7 +1490,7 @@ GravaWidget* grava_widget_construct (GType object_type) {
 GravaWidget* grava_widget_new (void) {
 #line 25 "widget.vala"
 	return grava_widget_construct (GRAVA_TYPE_WIDGET);
-#line 1507 "widget.c"
+#line 1494 "widget.c"
 }
 
 
@@ -1525,7 +1512,7 @@ static GObject * grava_widget_constructor (GType type, guint n_construct_propert
 		grava_graph_update (self->graph);
 #line 54 "widget.vala"
 		grava_widget_create_widgets (self);
-#line 1529 "widget.c"
+#line 1516 "widget.c"
 	}
 	return obj;
 }
@@ -1539,9 +1526,6 @@ static void grava_widget_class_init (GravaWidgetClass * klass) {
 	g_signal_new ("load_graph_at", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
 	g_signal_new ("breakpoint_at", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
 	g_signal_new ("run_cmd", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
-	g_signal_new ("focus_at_label", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_INT__POINTER_STRING, G_TYPE_INT, 2, G_TYPE_POINTER, G_TYPE_STRING);
-	g_signal_new ("set_breakpoint", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_INT__POINTER_STRING, G_TYPE_INT, 2, G_TYPE_POINTER, G_TYPE_STRING);
-	g_signal_new ("unset_breakpoint", GRAVA_TYPE_WIDGET, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_INT__POINTER_STRING, G_TYPE_INT, 2, G_TYPE_POINTER, G_TYPE_STRING);
 }
 
 
@@ -1578,28 +1562,6 @@ GType grava_widget_get_type (void) {
 	return grava_widget_type_id;
 }
 
-
-
-static void g_cclosure_user_marshal_INT__POINTER_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
-	typedef gint (*GMarshalFunc_INT__POINTER_STRING) (gpointer data1, gpointer arg_1, const char* arg_2, gpointer data2);
-	register GMarshalFunc_INT__POINTER_STRING callback;
-	register GCClosure * cc;
-	register gpointer data1, data2;
-	gint v_return;
-	cc = (GCClosure *) closure;
-	g_return_if_fail (return_value != NULL);
-	g_return_if_fail (n_param_values == 3);
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = param_values->data[0].v_pointer;
-	} else {
-		data1 = param_values->data[0].v_pointer;
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_INT__POINTER_STRING) (marshal_data ? marshal_data : cc->callback);
-	v_return = callback (data1, g_value_get_pointer (param_values + 1), g_value_get_string (param_values + 2), data2);
-	g_value_set_int (return_value, v_return);
-}
 
 
 

@@ -89,7 +89,7 @@ int debug_dumpall(const char *ptr)
 			sprintf(file, "0x%08llx.dall", from);
 			printf("\nNew section found at 0x%08llx\n", from);
 			i = 0;
-			fd = fopen(file, "w");
+			fd = fopen(file, "wb");
 			if (fd == NULL) {
 				eprintf("Cannot create '%s'\n", file);
 				break;

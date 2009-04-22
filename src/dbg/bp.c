@@ -66,13 +66,13 @@ int debug_bp(const char *str)
 
 	switch(ptr[0]) {
 	case '-':
-		addr = get_offset(ptr+1);
+		addr = get_math(ptr+1);
 		flag_clear_by_addr(addr);
 		if(debug_bp_rm_addr(addr) == 0)
 			eprintf("breakpoint at 0x%x dropped\n", addr);
 		break;
 	case '+': // relative from eip
-		addr = config.seek + get_offset(ptr+1);
+		addr = config.seek + get_math(ptr+1);
 		flag_set("breakpoint", addr, 3);
 		debug_bp_set(NULL, addr, hwbp);
 		eprintf("new breakpoint at 0x%lx\n", addr);
@@ -81,7 +81,7 @@ int debug_bp(const char *str)
 		eprintf("%i breakpoint(s) removed\n", debug_bp_rms());
 		break;
 	default:
-		addr = get_offset(ptr);
+		addr = get_math(ptr);
 		if (ptr[0]==0 || addr == 0)
 			debug_bp_list();
 		else {

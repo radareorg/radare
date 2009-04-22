@@ -77,6 +77,7 @@ void flag_help()
 	" fn name      ; new flag (ignores dupped names)\n"
 	" fu name      ; new flag if no one exists here (shy)\n"
 	" fm name      ; move flag to another flag space\n"
+	" fN [name]    ; Set a numered flag as name_%%d. No arg resets the counter\n"
 	" fs spacename ; create/list/switch flag spaces\n"
 	" fr old new   ; rename a flag or more with '*'\n"
 	" f sym.main   ; flag current offset as sym.main\n"

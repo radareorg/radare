@@ -1,4 +1,8 @@
 all:
+	cat test.x86.s | perl ira-x86.pl | perl ira-clean.pl | perl ira-pseudo.pl | perl ira-decompile.pl > a.c
+	gcc a.c
+
+pseudo:
 	 cat test.x86.s | perl ira-x86.pl | perl ira-clean.pl | perl ira-pseudo.pl
 
 ira:

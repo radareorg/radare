@@ -230,10 +230,14 @@ def build(bld):
 			print "no ruby?"
 	except:
 		print "WTF with ruby!!"
-	bld.install_files('${PREFIX}/share/radare/rsc', 'src/rsc/pool/*', chmod=0755)
-	bld.install_files('${PREFIX}/share/radare/rsc', 'src/radiff/bindiff-ng/bindiff-ng', chmod=0755)
+	bld.install_files('${PREFIX}/lib/radare/bin', 'src/rsc/pool/*', chmod=0755)
+	bld.install_files('${PREFIX}/lib/radare/bin', 'src/radiff/bindiff-ng/bindiff-ng', chmod=0755)
+	bld.install_files('${PREFIX}/lib/radare/bin', 'src/javasm/javasm', chmod=0755)
+	bld.install_files('${PREFIX}/lib/radare/bin', 'src/arch/arm/armasm', chmod=0755)
+	bld.install_files('${PREFIX}/lib/radare/bin', 'src/lsbstego', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/man/man1', 'man/*.1')
+	bld.install_files('${PREFIX}/share/man/man5', 'man/*.5')
 	bld.install_files('${PREFIX}/share/doc/radare', 'README')
 	bld.install_files('${PREFIX}/share/doc/radare', 'COPYING')
 	bld.install_files('${PREFIX}/share/doc/radare', 'AUTHORS')

@@ -757,6 +757,61 @@ CMD_DECL(graph)
 		return 0;
 	}
 	switch(input[0]) {
+	case 'u':
+		switch(input[1]) {
+		case 'r':
+			ugraph_reset();
+			break;
+		case 'n':
+			{
+			char *p0, *p1, *p2;
+			p0 = input+3;
+			if (!p0) {
+				eprintf("Usage: gun [addr] [size] [rcmd]\n");
+				break;
+			}
+			p1 = strchr(p0, ' ');
+			if (!p1) {
+				eprintf("Usage: gun [addr] [size] [rcmd]\n");
+				break;
+			} *p1 = '\0';
+			p2 = strchr(p1+1, ' ');
+			if (!p2) {
+				eprintf("Usage: gun [addr] [size] [rcmd]\n");
+				break;
+			} *p2 = '\0';
+			ugraph_node(get_math(p0), get_math(p1+1), p2+1);
+			}
+			break;
+		case 'e':
+			{
+			char *p0, *p1;
+			p0 = input+3;
+			if (!p0) {
+				eprintf("Usage: gue [from] [to]\n");
+				break;
+			}
+			p1 = strchr(p0, ' ');
+			if (!p1) {
+				eprintf("Usage: gue [from] [to]\n");
+				break;
+			}
+			ugraph_edge(get_math(p0), get_math(p1+1));
+			}
+			break;
+		case 'v':
+			graph_set_user(1);
+			grava_program_graph(NULL, NULL); //, NULL);
+			graph_set_user(0);
+			break;
+		default:
+			eprintf("Usage: ug[nerv] [args]\n"
+			" gur              user graph reset\n"
+			" gun $$ $$b pd    add node\n"
+			" gue $$F $$t      add edge\n"
+			" guv              visualize user defined graph\n");
+		}
+		break;
 	case ' ': {
 		struct program_t *prg = program_open(input+1); // XXX FIX stripstring and so
 		if (prg != NULL)
@@ -808,7 +863,7 @@ CMD_DECL(graph)
 		list_for_each(pos, &config.rdbs) {
 			struct program_t *mr = list_entry(pos, struct program_t, list);
 			if (i ==  num) {
-				grava_program_graph(mr);
+				grava_program_graph(mr, NULL);
 				return 0;
 			}
 			i++;
@@ -1385,6 +1440,7 @@ CMD_DECL(resize)
 	return 0;
 }
 
+static int flag_ctr = 0;
 CMD_DECL(flag)
 {
 	int ret = 0;
@@ -1433,13 +1489,24 @@ CMD_DECL(flag)
 			flag_interpolation(text, text2); 
 		} else eprintf("Usage: fi hit0_ hit1_\n");
 		break;
-	default:
-		switch(text[0]) {
-		case '\0': flag_list(text); break;
-		case '*': flag_set("*",0,0); break;
-		case '-': flag_remove(text+1); break;
-		default:
-			{
+	case 'N':
+		if (input[1]=='\0') {
+			flag_ctr = 0;
+		} else {
+			char bu[128];
+			snprintf(bu, 127, "%s_%d",text, flag_ctr++); 
+			while(bu[0]==' ')strcpy(bu, bu+1);
+			eprintf("0x%08llx %s\n", config.seek, bu);
+			flag_set(bu, config.seek,0);
+		}
+		break;
+	case '\0': flag_list(text); break;
+	//case '*': flag_set("*",0,0); break;
+	case '-': flag_remove(text+1); break;
+	case ' ':
+		if (input[1]=='-') {
+			flag_remove(text+1);
+		} else {
 			u64 here = config.seek;
 			u64 size = config.block_size;
 			char *s = strchr(text, ' ');
@@ -1459,7 +1526,6 @@ CMD_DECL(flag)
 			if (s2) *s2=' ';
 			if (size != config.block_size)
 				radare_set_block_size_i(size);
-			}
 		}
 	}
 
@@ -1956,6 +2022,7 @@ CMD_DECL(write)
 			} else {
 				if (off)
 					lseek(fd, get_math(off), SEEK_SET);
+radare_read(0);
 				write(fd, config.block, config.block_size);
 				close(fd);
 			}

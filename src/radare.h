@@ -154,4 +154,10 @@ int radare_compare_code(u64 off, const u8 *a, int len);
 //int env_var_required(const char *str, const char *var);
 int radare_search_replace(const char *input, int hex);
 
+/* user graphs */
+void ugraph_reset();
+void ugraph_node(u64 from, u64 size, const char *cmd);
+void ugraph_edge(u64 from, u64 to);
+struct ugraph_node_t *ugraph_get(u64 addr);
+
 #endif
