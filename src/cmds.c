@@ -2537,8 +2537,7 @@ CMD_DECL(help)
 			} else
 			if (!strcmp(buf, "n")) {
 				config.last_cmp = 0;
-			} else
-				config.last_cmp = get_math(buf);
+			} else config.last_cmp = get_math(buf);
 		} else
 		if (input[0]=='t') {
 			struct r_prof_t prof;
@@ -2547,6 +2546,14 @@ CMD_DECL(help)
 			r_prof_end(&prof);
 			config.last_cmp = (u64)prof.result;
 			eprintf("%lf\n", prof.result);
+		} else
+		if (input[0]=='e') {
+			char *str = input+1;
+			if (str[0]==' ') str = str+1;
+			if (str[0]) {
+				cons_strcat(str);
+				cons_newline();
+			}
 		} else
 		if (input[0]=='z') {
 			char *ptr;
