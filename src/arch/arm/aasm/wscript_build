@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+obj = bld.new_task_gen('cc', 'program')
+obj.env.append_value('CCFLAGS','-DSHAREDIR=${SHAREDIR}')
+obj.source='aasm.c utils.c elf.c'
+obj.target = 'armasm'

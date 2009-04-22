@@ -9,6 +9,7 @@ bld.add_subdirs('rsc')
 bld.add_subdirs('rasm')
 bld.add_subdirs('rasc')
 bld.add_subdirs('javasm')
+bld.add_subdirs('arch/arm/aasm')
 
 obj = bld.new_task_gen('cc', 'program')
 obj.target = 'radare'
@@ -86,3 +87,7 @@ xrefs.source = 'xrefs.c'
 rax = bld.new_task_gen('cc', 'program')
 rax.target = 'rax'
 rax.source = 'rax.c'
+
+rax = bld.new_task_gen('cc', 'program')
+rax.target = 'lsbstego'
+rax.source = 'lsbstego.c'
