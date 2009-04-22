@@ -160,4 +160,7 @@ void ugraph_node(u64 from, u64 size, const char *cmd);
 void ugraph_edge(u64 from, u64 to);
 struct ugraph_node_t *ugraph_get(u64 addr);
 
+int radare_seek_search(const char *str);
+int radare_seek_search_backward(const char *str);
+
 #endif

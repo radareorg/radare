@@ -1969,6 +1969,69 @@ char *pipe_command_to_string(char *cmd)
 	return buf;
 }
 
+int radare_seek_search_backward(const char *str)
+{
+	char kw[1024];
+	int kw_idx = 0;
+	int i, j, kw_len = 0;
+	u64 oseek = config.seek;
+	u64 eseek = config_get_i("search.from");
+
+	switch(str[0]) {
+	case ' ': // string search
+		strncpy(kw, str+1, 1023);
+		kw_len = strlen(kw);
+		break;
+	case 'x': // hex search
+		strncpy(kw, str+1, 1023);
+		kw_len = hexstr2binstr(str+1, kw);
+		break;
+	default:
+		eprintf("Usage: s/[x ] [str]\n"
+		" s\\ lib   ; seek to previous occurrence of 'lib' string\n"
+		" s\\x 00   ; seek to previous occurrence of a 0x00 byte\n"
+		"NOTE: This command searches from current seek - 1\n"
+		"NOTE: Last address to be analyzed is search.from.\n");
+		return 1;
+	}
+
+	if (kw_len == 0) {
+		eprintf("Invalid keyword\n");
+		return 1;
+	}
+
+	/* reverse keyword */
+	{
+		char tmpkw[1024];
+		memcpy(tmpkw, kw, kw_len);
+		for(i=0,j=kw_len-1;i<kw_len;i++,j--)
+			kw[i] = tmpkw[j];
+	}
+
+	// XXX : should we reduce the seek search to the current block?
+	config.seek -= config.block_size - 1;
+	radare_read(0);
+	radare_controlc();
+	while(config.seek > eseek && !config.interrupted) {
+		for(i=config.block_size-1;i>=0;i--) {
+			if (config.block[i]==kw[kw_idx]) {
+				kw_idx++;
+				if (kw_idx == kw_len) {
+					radare_seek(config.seek+i, SEEK_SET);
+					printf("HIT FOUND HERE(0x%08llx)\n", config.seek);
+					return 0;
+				}
+			} else kw_idx = 0;
+		}
+		config.seek -= config.block_size - 1;
+		radare_read(0);
+	}
+	radare_controlc_end();
+	radare_seek(oseek, SEEK_SET);
+
+	return 0;
+}
+
 int radare_seek_search(const char *str)
 {
 	char kw[1024];
@@ -1991,10 +2054,10 @@ int radare_seek_search(const char *str)
 		kw_len = hexstr2binstr(str+1, kw);
 		break;
 	default:
-		eprintf("Usage: s/[x ] [str]\n");
-		eprintf(" s/ lib   ; seek to next occurrence of 'lib' string\n");
-		eprintf(" s/x 00   ; seek to next occurrence of a 0x00 byte\n");
-		eprintf("NOTE: This command searches from current seek + 1\n");
+		eprintf("Usage: s/[x ] [str]\n"
+		" s/ lib   ; seek to next occurrence of 'lib' string\n"
+		" s/x 00   ; seek to next occurrence of a 0x00 byte\n"
+		"NOTE: This command searches from current seek + 1\n");
 		return 1;
 	}
 

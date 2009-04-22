@@ -1597,6 +1597,8 @@ CMD_DECL(seek)
 		cons_printf(" s +33   ; relative seek\n");
 		cons_printf(" s/ lib  ; seek to first hit of search\n");
 		cons_printf(" s/x 00  ; seek to first hit of search\n");
+		cons_printf(" s\\ lib  ; backward seek to the previous string hit\n");
+		cons_printf(" s\\x 23  ; backward seek to the previous hex hit\n");
 		cons_printf(" sn      ; seek to next opcode\n");
 		cons_printf(" sb      ; seek to opcode branch\n");
 		cons_printf(" sc      ; seek to call index (pd)\n");
@@ -1624,6 +1626,9 @@ CMD_DECL(seek)
 	for(;text[0]==' ';text = text +1);
 
 	switch(text[0]) {
+	case '\\':
+		radare_seek_search_backward(text+1);
+		return;
 	case '/':
 		radare_seek_search(text+1);
 		return;
