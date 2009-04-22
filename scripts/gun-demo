@@ -1,0 +1,11 @@
+e scr.color=0
+e scr.bytewidth=16
+gur
+gun eip 40 pd
+gun esp 128 px
+gun entrypoint 128 pd
+"gun esp+1 128 ad @ esp"
+gue entrypoint eip
+gue eip esp
+gue esp
+guv

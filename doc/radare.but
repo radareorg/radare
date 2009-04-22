@@ -2411,7 +2411,7 @@ TODO:...
 
 The second scripting language implemented in radare was 'python'. Lot of people ping me for adding support for python scripting. The python interface for C is not as nice as the LUA one, and it is obviously not as optimal as LUA, but it gives a very handy syntax and provides a full-featured list of libraries and modules to extend your script.
 
-Actually in python it is possible to write a radare frontend in GTK+ (for example) just calling this from inside the commandline.
+Actually in python-radare is possible to write a GTK frontend (for example) by just using 'H python "your-script"' and using from the the core radare.py API.
 
 The basics of the scripting for any language is the same. The entrypoint between the language and the core is a 'str=r.cmd(str)' function which accepts a string representing a radare command and returns the output of this command as a string.
 

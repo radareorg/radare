@@ -88,6 +88,7 @@ static void core_load_node_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static struct program_t *prg = NULL; // last program code analysis
 
 static int graphuser = 0;
+static int graphuserinit = 0;
 
 void graph_set_user(int b)
 {
@@ -615,7 +616,7 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 struct ugraph_node_t {
 	u64 from;
 	u64 size;
-	const char cmd[128];
+	char cmd[128];
 	void *ptr;
 	struct list_head list;
 };
@@ -636,8 +637,12 @@ static struct ugraph_t ug;
 /* user graph */
 void ugraph_reset()
 {
+	if (graphuserinit) {
+		/* TODO : memory leak */
+	} 
 	INIT_LIST_HEAD(&ug.nodes);
 	INIT_LIST_HEAD(&ug.edges);
+	graphuserinit = 1;
 }
 
 void ugraph_node(u64 from, u64 size, const char *cmd)
@@ -645,7 +650,12 @@ void ugraph_node(u64 from, u64 size, const char *cmd)
 	struct ugraph_node_t *n = MALLOC_STRUCT(struct ugraph_node_t);
 	n->from = from;
 	n->size = size;
-	strncpy(n->cmd,cmd, sizeof(n->cmd));
+	strncpy(n->cmd, cmd, sizeof(n->cmd));
+	if (n->cmd[strlen(n->cmd)-1]=='"') {
+		n->cmd[strlen(n->cmd)-1]='\0';
+	}
+	if (!graphuserinit)
+		ugraph_reset();
 	list_add_tail(&(n->list), &ug.nodes);
 }
 
@@ -655,12 +665,16 @@ void ugraph_edge(u64 from, u64 to)
 	
 	e->from = from;
 	e->to = to;
+	if (!graphuserinit)
+		ugraph_reset();
 	list_add_tail(&(e->list), &ug.edges);
 }
 
 struct ugraph_node_t *ugraph_get(u64 addr)
 {
 	struct list_head *head;
+	if (!graphuserinit)
+		ugraph_reset();
 	list_for_each_prev(head, &(ug.nodes)) {
 		struct ugraph_node_t *n = list_entry(head, struct ugraph_node_t, list);
 		if (n->from == addr)
@@ -671,6 +685,7 @@ struct ugraph_node_t *ugraph_get(u64 addr)
 
 void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 {
+	u64 oseek = config.seek;
 	int i;
 	char *ptr;
 	char cmd[1024];
@@ -681,21 +696,36 @@ void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 	struct ugraph_node_t *n, *m;
 	asm_state_save();
 
+	if (win == NULL) {
+		eprintf("No window yet\n");
+		return;
+	}
+	if (win->grava == NULL) {
+		eprintf("No window yet\n");
+		return;
+	}
+
 eprintf("Loading user graph...\n");
 	/* add static nodes */
 	i = 0;
 	list_for_each_prev(head, &(ug.nodes)) {
 		struct ugraph_node_t *n = list_entry(head, struct ugraph_node_t, list);
+		char *cmdstr;
 		GravaNode *node = grava_node_new();
 		g_object_ref(node);
 		sprintf(cmd, "0x%08llx", n->from);
 		grava_node_set(node, "label", cmd);
 		// TODO: execute command
+radare_seek(n->from, SEEK_SET);
+radare_set_block_size_i((int)(unsigned int)n->size);
+		cmdstr = radare_cmd_str(n->cmd);
+//eprintf("(%s)=(%s)\n", n->cmd, cmdstr);
 eprintf(" node 0x%08llx\n", n->from);
-		grava_node_set(node, "body", n->cmd);
+		grava_node_set(node, "body", cmdstr);
+		free(cmdstr);
 		grava_graph_add_node(win->grava->graph, node);
 		n->ptr = node;
-		g_object_unref(node);
+	//	g_object_unref(node);
 	}
 
 	/* add edges */
@@ -704,7 +734,7 @@ eprintf(" node 0x%08llx\n", n->from);
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);
 		n = ugraph_get(e->from);
 		m = ugraph_get(e->to);
-eprintf(" edge 0x%08llx 0x%08llx\n", n->from);
+eprintf(" edge 0x%08llx 0x%08llx\n", e->from, e->to);
 		if (!n || !m) {
 			eprintf("Oops. cannot found node 0x%08llx for edge 0x%08llx->0x%08llx\n",
 				e->from, e->from, e->to);
@@ -712,20 +742,13 @@ eprintf(" edge 0x%08llx 0x%08llx\n", n->from);
 		}
 		node = n->ptr;
 		node2 = m->ptr;
-		g_object_ref(node);
-		g_object_ref(node2);
 
 		edge = grava_edge_with(grava_edge_new(), node, node2);
 		grava_edge_set(edge, "color", "green"); // TODO
 		edge->jmpcnd = 1; // true
 		grava_graph_add_edge(win->grava->graph, edge);
-
-		g_object_unref(node);
-		g_object_unref(node2);
 	}
-	program_free(prg);
-
-	grava_graph_update(win->grava->graph);
+	radare_seek(oseek, SEEK_SET);
 }
 
 void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
@@ -889,11 +912,13 @@ void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 		last_window = win;
 	} else {
 		grava_graph_reset(win->grava->graph);
-		if (graphuser) {
-			load_user_graph(prg, win);
-		} else {
+		if (!graphuser)
 			do_grava_analysis(prg, win);
-		}
+	}
+
+	if (graphuser) {
+		grava_graph_reset(win->grava->graph);
+		load_user_graph(prg, win);
 	}
 
 	if (new_window) {

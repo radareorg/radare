@@ -795,7 +795,7 @@ CMD_DECL(graph)
 			if (!p1) {
 				eprintf("Usage: gue [from] [to]\n");
 				break;
-			}
+			} *p1 = '\0';
 			ugraph_edge(get_math(p0), get_math(p1+1));
 			}
 			break;
