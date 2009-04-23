@@ -743,6 +743,8 @@ CMD_DECL(hack)
 	return radare_hack(input);
 }
 
+
+
 CMD_DECL(graph)
 {
 	char *text = input;
@@ -799,6 +801,10 @@ CMD_DECL(graph)
 			ugraph_edge(get_math(p0), get_math(p1+1));
 			}
 			break;
+		case 'k':
+			// TODO
+			//ugraph_key(input[0]
+			break;
 		case 'v':
 			graph_set_user(1);
 			grava_program_graph(NULL, NULL); //, NULL);
@@ -809,6 +815,8 @@ CMD_DECL(graph)
 			" gur              user graph reset\n"
 			" gun $$ $$b pd    add node\n"
 			" gue $$F $$t      add edge\n"
+			//" guk s !step      add keybinding\n"
+			//" gum Step !step   add contextual menu entry\n"
 			" guv              visualize user defined graph\n");
 		}
 		break;
@@ -2001,6 +2009,7 @@ CMD_DECL(write)
 			if (fd == -1) {
 				eprintf("Cannot open file '%s'\n", input+2);
 			} else {
+				radare_read(0);
 				write(fd, config.block, config.block_size);
 				counter++;
 				close(fd);

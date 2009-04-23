@@ -183,7 +183,14 @@ In the visual mode you can insert (alterate bytes) pressing 'i' and then <tab> t
 
 The format of the commands looks something like that:
 
-\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...] [; comment]
+\c [N][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...] [# comment]
+
+'N' must be a numeric value. Commands are named with single chars [a-zA-Z]. So, if we prefix the command with a number. The following command will be executed as many times as we specify.
+
+\c px    # run px
+\c 3px   # run 3 times 'px'
+
+The '!' prefix is used to scape to the shell. If a single exclamation is used then commands will be send to the system() hook defined in the loaded IO plugin. This is used, for example in the ptrace IO plugin which accepts debugger commands from this interface. To run commands to the shell we should type two '!!' exclamations before the command.
 
 Some examples:
 
@@ -2037,7 +2044,7 @@ To solve this problem, radare implements 'project' support which can be specifie
 
 The 'P' command is the one used inside the core to store and load project files. It also can information about the project file.
 
-These files are just radare scripts with some extra metadata as comments ';'.
+These files are just radare scripts with some extra metadata as comments ';' or '#'.
 
 If you want to make a full analysis when opening a file try setting 'e file.analyze=true' in your .radarerc. It will run '.af* @@ sym.' and more..
 
@@ -2209,15 +2216,24 @@ Here is an example that checks if current eip is 0x8048404 and skips this instru
 
 You can check the last comparision result with the '???' command. Which is the substraction of the first part of the expression and the second part of it.
 
-\c > ? 1==1   ; check equality (==)
+\c > ? 1==1   # check equality (==)
 \c > ???
 \c 0x0
-\c > ? 1==2   ; check equality (==)
+\c > ? 2==1   # check equality (==)
 \c > ???
 \c 0x1
-\c > ? 1!=2   ; check difference (!=)
+\c > ? 1!=2   # check difference (!=)
 \c > ???
 \c 0x0
+
+Substraction can be also used as a comparator operation, because it's what the == operator does internally. If the substraction of two elements is 0 means that they are equal. Now we can replace the previous expression into:
+
+\c > ? 2-1
+\c > ???
+\c 0x1       # false
+\c > ? 2-2
+\c > ???
+\c 0x0       # true
 
 The conditional command is given after the '??' command. Which is the help of the '?' command when no arguments given:
 

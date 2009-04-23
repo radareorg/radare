@@ -705,7 +705,10 @@ void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 		return;
 	}
 
-eprintf("Loading user graph...\n");
+	if (!graphuserinit)
+		ugraph_reset();
+
+	eprintf("Loading user graph...\n");
 	/* add static nodes */
 	i = 0;
 	list_for_each_prev(head, &(ug.nodes)) {
