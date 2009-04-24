@@ -359,6 +359,8 @@ eprintf("Iterating over(%s)\n", each+1);
 				addr = get_math(each);
 				str[0]=' ';
 			}
+			if (addr == 0 && each[0]!='0')
+				break;
 			each = str+1;
 			radare_seek(addr, SEEK_SET);
 			eprintf("\n"); //eprintf("===(%s)at(0x%08llx)\n", cmd, addr);
@@ -1971,7 +1973,7 @@ char *pipe_command_to_string(char *cmd)
 
 int radare_seek_search_backward(const char *str)
 {
-	char kw[1024];
+	unsigned char kw[1024];
 	int kw_idx = 0;
 	int i, j, kw_len = 0;
 	u64 oseek = config.seek;
@@ -2014,6 +2016,7 @@ int radare_seek_search_backward(const char *str)
 	radare_controlc();
 	while(config.seek > eseek && !config.interrupted) {
 		for(i=config.block_size-1;i>=0;i--) {
+		//printf("%02x ", config.block[i]);
 			if (config.block[i]==kw[kw_idx]) {
 				kw_idx++;
 				if (kw_idx == kw_len) {
@@ -2034,7 +2037,7 @@ int radare_seek_search_backward(const char *str)
 
 int radare_seek_search(const char *str)
 {
-	char kw[1024];
+	unsigned char kw[1024];
 	int kw_idx = 0;
 	int i, kw_len = 0;
 	u64 oseek = config.seek;

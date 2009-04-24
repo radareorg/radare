@@ -519,6 +519,7 @@ static int asm_profile(const char *profile)
 		asm_profile("simple");
 		config_set("asm.lines", "true");
 		config_set("asm.comments", "false");
+		config_set("scr.color", "false");
 	} else if (!strcmp(profile, "gas")) {
 		asm_profile("default");
 		config_set("asm.lines", "false");
