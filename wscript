@@ -5,7 +5,7 @@ import os.path
 import shutil
 import Options
 
-VERSION='1.1'
+VERSION='1.3'
 APPNAME='radare'
 
 srcdir = '.'
@@ -226,8 +226,6 @@ def build(bld):
 	try:
 		if os.path.exists('src/plug/hack/ruby.so'):
 			bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/ruby.so', chmod=0755)
-		else:
-			print "no ruby?"
 	except:
 		print "WTF with ruby!!"
 	bld.install_files('${PREFIX}/lib/radare/bin', 'src/rsc/pool/*', chmod=0755)
