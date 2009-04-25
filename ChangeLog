@@ -1,3 +1,370 @@
+=== 1.3 === 2009-04-25
+
+changeset:   974:1894d528a6c1
+tag:         tip
+user:        nibble
+date:        Sat Apr 25 12:29:29 2009 +0200
+summary:     * Update radare version in waf
+
+changeset:   973:a087b214de1c
+user:        pancake@localhost.localdomain
+date:        Sat Apr 25 11:25:24 2009 +0000
+summary:     * Bump to 1.3 version for inminent release
+
+changeset:   972:39e5392558a8
+user:        nibble
+date:        Sat Apr 25 12:14:31 2009 +0200
+summary:     * Add get_header_fields backport from r2
+
+changeset:   971:d1f102985fc1
+user:        pancake@localhost.localdomain
+date:        Sat Apr 25 10:45:47 2009 +0000
+summary:     * Fix build for --without-gui for the 'gu' command
+
+changeset:   970:b1477f4244ff
+user:        pancake@localhost.localdomain
+date:        Fri Apr 24 10:54:53 2009 +0000
+summary:     * Fix sign of keyword buffer for s/ and s\
+
+changeset:   969:5e149f96ed91
+user:        pancake@localhost.localdomain
+date:        Thu Apr 23 10:25:25 2009 +0000
+summary:     * Fix 'wT' command (need a block read before writing)
+
+changeset:   968:d1009499e486
+parent:      967:144447b7813a
+parent:      966:2165df1e40fe
+user:        pancake <@youterm.com>
+date:        Wed Apr 22 21:10:52 2009 +0200
+summary:     * Oops merge :X
+
+changeset:   967:144447b7813a
+parent:      965:b09d8a0237b8
+user:        pancake <@youterm.com>
+date:        Wed Apr 22 21:10:14 2009 +0200
+summary:     * Initial implementation of the s\ command
+
+changeset:   966:2165df1e40fe
+user:        nibble
+date:        Wed Apr 22 18:53:19 2009 +0200
+summary:     * Fixed waf build
+
+changeset:   965:b09d8a0237b8
+user:        pancake <@youterm.com>
+date:        Wed Apr 22 18:26:29 2009 +0200
+summary:     * Added ?e command to echo strings
+
+changeset:   964:4eacb651c148
+user:        pancake <@youterm.com>
+date:        Wed Apr 22 18:19:27 2009 +0200
+summary:     * Fix and add support for the 'gu' command
+
+changeset:   963:35fd72ab9a17
+user:        pancake@localhost.localdomain
+date:        Wed Apr 22 11:24:40 2009 +0000
+summary:     * Fix graph callbacks
+
+changeset:   962:32a62e72e7f9
+user:        pancake <@youterm.com>
+date:        Tue Apr 21 19:12:50 2009 +0200
+summary:     * Comment out some noisy printf's in graphs
+
+changeset:   961:cdb825915930
+user:        pancake <@youterm.com>
+date:        Tue Apr 21 16:35:01 2009 +0200
+summary:     * Re-fixup for darwin
+
+changeset:   960:859d349aef92
+user:        pancake <@youterm.com>
+date:        Tue Apr 21 13:43:02 2009 +0200
+summary:     * Fixes for OSX build (thanks Demonic)
+
+changeset:   959:ca505597b340
+user:        pancake <@youterm.com>
+date:        Tue Apr 21 12:35:55 2009 +0200
+summary:     * Added scr.bytewidth and make 'pc', 'pb', 'po' and 'px' happy
+
+changeset:   958:60efd70e50b7
+user:        pancake@localhost.localdomain
+date:        Tue Apr 21 10:08:10 2009 +0000
+summary:     * More fixes for the graphs
+
+changeset:   957:356cf492ee1f
+user:        pancake@localhost.localdomain
+date:        Mon Apr 20 22:56:58 2009 +0000
+summary:     * Sync grava from ragui but layout
+
+changeset:   956:af560dd1dc73
+user:        pancake <@youterm.com>
+date:        Sun Apr 19 22:01:39 2009 +0200
+summary:     * Fix build on BSD
+
+changeset:   955:b624950cbcc3
+user:        pancake <youterm.com>
+date:        Sun Apr 19 23:46:58 2009 -0400
+summary:     * Fix build in mips64
+
+changeset:   954:056c273cf767
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 19:39:41 2009 +0000
+summary:     * Fix build
+
+changeset:   953:4289d51d70e1
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 19:21:56 2009 +0000
+summary:     * Do not build of lua when no liblua found
+
+changeset:   952:39ac53aeda96
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 19:11:05 2009 +0000
+summary:     * Rename '#' command to 'h' (hash)
+
+changeset:   951:6d0ed1ce2865
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 17:20:22 2009 +0000
+summary:     * Sync gdbwrap against eresi's svn
+
+changeset:   950:a2ca690b58ff
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 17:07:59 2009 +0000
+summary:     * Added support to the arm code analysis to manage
+
+changeset:   949:7b6f35ccad4a
+user:        pancake@localhost.localdomain
+date:        Sun Apr 19 13:15:34 2009 +0000
+summary:     * Fix build of rabin O:)
+
+changeset:   948:020377dce49c
+user:        nibble
+date:        Sun Apr 19 03:26:49 2009 +0200
+summary:     * dietelf
+
+changeset:   947:a7683cc859ee
+user:        pancake@localhost.localdomain
+date:        Sat Apr 18 21:47:00 2009 +0000
+summary:     * Added asm.xrefsto
+
+changeset:   946:1febacf43e44
+user:        pancake@localhost.localdomain
+date:        Sat Apr 18 18:19:44 2009 +0000
+summary:     * More fixups for the ARM code analysis
+
+changeset:   945:0736f700d23f
+user:        pancake@localhost.localdomain
+date:        Sat Apr 18 16:54:47 2009 +0000
+summary:     * Fix slowdown bug when doing code analysis for ARM code
+
+changeset:   944:5378e9e5d8e9
+user:        nibble
+date:        Fri Apr 17 01:30:35 2009 +0200
+summary:     * Fixed function boundaries detection
+
+changeset:   943:9b31357bf3e2
+user:        pancake@localhost.localdomain
+date:        Thu Apr 16 23:33:18 2009 +0000
+summary:     * Apply gradare segfault fix from elektranox
+
+changeset:   942:2a171bbfa3f6
+user:        pancake <@youterm.com>
+date:        Thu Apr 16 18:20:36 2009 +0200
+summary:     * Do not LUA_LIBS twice
+
+changeset:   941:98fc953eb5c8
+user:        pancake <@youterm.com>
+date:        Thu Apr 16 16:02:39 2009 +0200
+summary:     * Fix and simplify code analysis for 'mov' on x86
+
+changeset:   940:067a482efd7d
+user:        pancake <@youterm.com>
+date:        Thu Apr 16 12:46:43 2009 +0200
+summary:     * Oops . fix code analysis problem in x86 again
+
+changeset:   939:b984fca7b3bf
+user:        pancake <@youterm.com>
+date:        Thu Apr 16 11:57:15 2009 +0200
+summary:     * Oops fix build
+
+changeset:   938:dff4eb1169cf
+user:        pancake@localhost.localdomain
+date:        Thu Apr 16 10:15:04 2009 +0000
+summary:     * Simplify message information in code analysis using singlechars
+
+changeset:   937:de514cbd2d25
+user:        pancake@localhost.localdomain
+date:        Wed Apr 15 23:36:30 2009 +0000
+summary:     * Added 'fb' command to rebase a flag
+
+changeset:   936:42d5ec042224
+user:        pancake@localhost.localdomain
+date:        Wed Apr 15 23:09:45 2009 +0000
+summary:     * Added cmd.open eval variable
+
+changeset:   935:8575ecf77cc1
+user:        pancake <@youterm.com>
+date:        Wed Apr 15 20:14:03 2009 +0200
+summary:     * Fix help message for 'yt' command
+
+changeset:   934:27eca9d67d09
+user:        pancake <@youterm.com>
+date:        Wed Apr 15 14:04:44 2009 +0200
+summary:     * New debugger command '!contum'
+
+changeset:   933:689d4e9fe149
+user:        pancake@localhost.localdomain
+date:        Wed Apr 15 00:46:56 2009 +0000
+summary:     * Fix manpage 'pG' -> 'ag'
+
+changeset:   932:b9f9c359d212
+user:        pancake@localhost.localdomain
+date:        Wed Apr 15 00:08:50 2009 +0000
+summary:     * Apply elektranox patch fixing ldflags for xrefs and rax
+
+changeset:   931:6d387f01cc12
+user:        pancake@localhost.localdomain
+date:        Tue Apr 14 22:55:08 2009 +0000
+summary:     * Move rsc scripts to $pfx/lib/radare/bin to make lintian happy
+
+changeset:   930:fece4376f8d5
+user:        pancake <@youterm.com>
+date:        Tue Apr 14 18:13:53 2009 +0200
+summary:     * Added $$s variable to get file size
+
+changeset:   929:8c93492bf2d6
+user:        pancake <@youterm.com>
+date:        Tue Apr 14 12:08:31 2009 +0200
+summary:     * bindiff-ng is a script, not a bin
+
+changeset:   928:583c944c8ac0
+user:        pancake <@youterm.com>
+date:        Tue Apr 14 10:05:15 2009 +0200
+summary:     * Create site-packages directory
+
+changeset:   927:b44acb1e5330
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 21:44:56 2009 +0000
+summary:     * Added gradare.1 manpage
+
+changeset:   926:6a8645722856
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 21:33:00 2009 +0000
+summary:     * More lintian fixups (thanks elektranox again :P)
+
+changeset:   925:92b4ef5b1fb0
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 20:01:12 2009 +0000
+summary:     * Oops. missing mkdir man5 (thanks elektranox)
+
+changeset:   924:6cebd6ca3b00
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 17:31:38 2009 +0000
+summary:     * Install radarerc.5 manpage
+
+changeset:   923:15505590bd01
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 13:23:31 2009 +0000
+summary:     * Install javasm, armasm and lsbstego as 'rsc' scripts
+
+changeset:   922:83b28d44faef
+user:        pancake@localhost.localdomain
+date:        Mon Apr 13 11:45:55 2009 +0000
+summary:     * Added radarerc(5) manpage
+
+changeset:   921:4f789d6bb89e
+user:        pancake <@youterm.com>
+date:        Thu Apr 09 15:13:35 2009 +0200
+summary:     * Remove elf-* radare scripts from the rsc directory
+
+changeset:   920:99e8fb623d1f
+user:        pancake <@youterm.com>
+date:        Thu Apr 09 13:55:29 2009 +0200
+summary:     * Fix manpages .El issues (thanks lintian+elektranox)
+
+changeset:   919:6aa02e9f717b
+user:        pancake <@youterm.com>
+date:        Thu Apr 02 20:05:58 2009 +0200
+summary:     * Added 64bit syscall numbers for linux
+
+changeset:   918:3ef8b76eb393
+user:        pancake@localhost.localdomain
+date:        Fri Mar 27 09:47:34 2009 +0000
+summary:     * Rename 'CD' into 'CL'
+
+changeset:   917:92dce3174090
+user:        pancake@localhost.localdomain
+date:        Fri Mar 27 00:18:57 2009 +0000
+summary:     * Add 'CD' command (sync with r2)
+
+changeset:   916:56a978de463d
+user:        pancake <@youterm.com>
+date:        Fri Mar 20 18:11:44 2009 +0100
+summary:     * Apply graz's patch fixing some makefile race conditions for -j4
+
+changeset:   915:ef0f9e1dc86f
+user:        nibble
+date:        Sun Mar 15 02:15:35 2009 +0100
+summary:     * Minor fix in dietelf and dietpe
+
+changeset:   914:9ed827117169
+user:        nibble
+date:        Sat Mar 14 13:32:37 2009 +0100
+summary:     * Fixed rabin -z bug
+
+changeset:   913:8927c9f4ac03
+user:        nibble
+date:        Sat Mar 14 13:09:17 2009 +0100
+summary:     * Fixed symbols name bug
+
+changeset:   912:593570ee5df5
+user:        pancake@localhost.localdomain
+date:        Fri Mar 13 21:09:30 2009 +0000
+summary:     * Remove rasign from radare1 (moved to r2 repo)
+
+changeset:   911:64a91fba3786
+parent:      910:1f9699d46287
+parent:      907:5cf3fa9b0a90
+user:        pancake <@youterm.com>
+date:        Fri Mar 13 17:09:08 2009 +0100
+summary:     * Merge
+
+changeset:   910:1f9699d46287
+parent:      909:6edfa54aef10
+parent:      908:7bd5041767fa
+user:        pancake <@youterm.com>
+date:        Fri Mar 13 17:07:59 2009 +0100
+summary:     * Backport of the '?t' command from radare2
+
+changeset:   909:6edfa54aef10
+parent:      905:cecdeab95eaf
+user:        pancake <@youterm.com>
+date:        Mon Mar 09 16:55:22 2009 +0100
+summary:     * Add nonblocking socket support for Windows(R)
+
+changeset:   908:7bd5041767fa
+parent:      901:8fed4139671b
+user:        pancake <@youterm.com>
+date:        Mon Mar 09 16:43:20 2009 +0100
+summary:     * Fix nonblock socket on w32
+
+changeset:   907:5cf3fa9b0a90
+user:        pancake@localhost.localdomain
+date:        Tue Mar 10 10:59:07 2009 +0000
+summary:     * ^L in visual refreshes screen resolution
+
+changeset:   906:bd6b5269ce57
+user:        pancake@localhost.localdomain
+date:        Tue Mar 10 01:52:47 2009 +0000
+summary:     * Fix nonblock socket issue on w32
+
+changeset:   905:cecdeab95eaf
+user:        pancake@localhost.localdomain
+date:        Mon Mar 09 02:06:25 2009 +0000
+summary:     * Add two optional arguments to 'f' command (like in radare2)
+
+changeset:   904:cc8f60ac63ee
+user:        pancake@localhost.localdomain
+date:        Sat Mar 07 18:01:45 2009 +0000
+summary:     Sync changelog
+
 === 1.2.2 === 2009-03-07
 
 changeset:   903:c74c378097b7
