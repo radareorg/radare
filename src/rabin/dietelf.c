@@ -832,6 +832,41 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 	return 0;
 }
 
+int ELF_(dietelf_get_fields)(ELF_(dietelf_bin_t) *bin, dietelf_field *field)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	ELF_(Phdr) *phdr = bin->phdr;
+	char string[ELF_NAME_LENGTH];
+	int i = 0, j = 0;
+
+	strncpy(field[i].name, "ehdr", ELF_NAME_LENGTH); 
+	field[i++].offset = 0;
+	strncpy(field[i].name, "shoff", ELF_NAME_LENGTH); 
+	field[i++].offset = ehdr->e_shoff;
+	strncpy(field[i].name, "phoff", ELF_NAME_LENGTH); 
+	field[i++].offset = ehdr->e_phoff;
+
+	for (j = 0; j < ehdr->e_phnum; i++, j++) {
+		snprintf(string, ELF_NAME_LENGTH, "phdr_%i", j);
+		strncpy(field[i].name, string, ELF_NAME_LENGTH); 
+		field[i].offset = phdr[i].p_offset;
+	}
+
+	return 0;
+}
+
+int ELF_(dietelf_get_fields_count)(ELF_(dietelf_bin_t) *bin)
+{
+	ELF_(Ehdr) *ehdr = &bin->ehdr;
+	int ctr=0;
+	
+	ctr = 3;
+	ctr += ehdr->e_phnum;
+
+	return ctr;
+}
+
+
 int ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t) *bin, int fd)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;

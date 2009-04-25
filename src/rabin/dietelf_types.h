@@ -40,4 +40,9 @@ typedef struct {
 	char string[ELF_STRING_LENGTH];
 } dietelf_string;
 
+typedef struct {
+	u64 offset;
+	char name[ELF_NAME_LENGTH];
+} dietelf_field;
+
 #endif

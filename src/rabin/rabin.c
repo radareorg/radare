@@ -457,22 +457,62 @@ void rabin_show_checksum(const char *file)
 
 void rabin_show_header()
 {
-	u64 offset = 0;
+	char buf[1024];
+	int i, fields_count;
 	u64 baddr = 0;
-	dietpe_entrypoint entrypoint;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
 	} bin;
+	union {
+		dietelf_field* elf;
+		//dietpe_field*  pe;
+	} field, fieldp;
 
 	switch(filetype) {
 	case FILETYPE_ELF:
-		fd = ELF_CALL(dietelf_open,bin.elf, file);
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
 		if (fd == -1) {
 			fprintf(stderr, "cannot open file\n");
 			return;
 		}
-		fprintf(stderr, "TODO\n");
+		
+		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
+		fields_count = ELF_CALL(dietelf_get_fields_count,bin.elf,fd);
+
+		field.elf = malloc(fields_count * sizeof(dietelf_field));
+		ELF_CALL(dietelf_get_fields,bin.elf,field.elf);
+
+		if (rad)
+			printf("fs fields\n");
+		else printf("[fields]\n");
+
+		fieldp.elf = field.elf;
+		for (i = 0; i < fields_count; i++, fieldp.elf++) {
+			if (rad) {
+				printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), baddr + fieldp.elf->offset);
+			} else {
+				switch (verbose) {
+					case 0:
+						printf("address=0x%08llx offset=0x%08llx name=%s\n",
+								baddr + fieldp.elf->offset, fieldp.elf->offset, fieldp.elf->name);
+						break;
+					default:
+						if (i == 0) printf("Memory address\tFile offset\tName\n");
+						printf("0x%08llx\t0x%08llx\t%s\n", baddr + fieldp.elf->offset, fieldp.elf->offset, fieldp.elf->name);
+						break;
+				}
+			}
+		}
+
+		if (rad) {
+			printf("b 512\n");
+			fprintf(stderr, "%i fields added\n", fields_count);
+		} else if (verbose != 0) 
+			printf("\n%i fields\n", fields_count);
+
+		free(field.elf);
+
 		ELF_(dietelf_close)(fd);
 		break;
 	default:

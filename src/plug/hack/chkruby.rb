@@ -30,7 +30,7 @@ end
 ret = false
 if tobeup then
 	system("echo 'main(){}' > #{rb_c}");
-	$line="#{$cc} -I #{inc} -I#{INCDIR} #{rb_c} -shared #{LIBDIR}" \
+	$line="#{$cc} -I #{inc} -I#{INCDIR} #{rb_c} -fPIC -shared #{LIBDIR}" \
 	" -l#{LIBNAM} #{ENV['CFLAGS']} #{ENV['LDFLAGS']} -o #{rb_so}"
 	ret = system($line)
 	system("rm -f #{rb_so} #{rb_c}");
