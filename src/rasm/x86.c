@@ -89,7 +89,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 		unsigned long addr = dst;
 		unsigned char *ptr = (uchar *)&addr;
 
-		if (dst == 0) {
+		if (dst == 0 && arg[0]!='0') {
 			if (!strcmp(arg, "eax")) data[0]='\x50'; else
 			if (!strcmp(arg, "ebx")) data[0]='\x53'; else
 			if (!strcmp(arg, "ecx")) data[0]='\x51'; else
@@ -98,9 +98,7 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 			if (!strcmp(arg, "edi")) data[0]='\x57'; else
 			if (!strcmp(arg, "ebp")) data[0]='\x55'; else
 			if (!strcmp(arg, "esp")) data[0]='\x54';
-			else
-				return 0; // invalid register name to push
-			
+			else return 0; // invalid register name to push
 			return 1;
 		}
 

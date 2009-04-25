@@ -19,6 +19,27 @@
 
 #include "main.h"
 
+struct ugraph_node_t {
+	u64 from;
+	u64 size;
+	char cmd[128];
+	void *ptr;
+	struct list_head list;
+};
+
+struct ugraph_edge_t {
+	u64 from;
+	u64 to;
+	struct list_head list;
+};
+
+struct ugraph_t {
+	struct list_head nodes;
+	struct list_head edges;
+};
+
+static struct ugraph_t ug;
+
 void graph_viz(struct program_t *prg)
 {
 	struct block_t *b0;
@@ -613,27 +634,6 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 }
 #endif
 
-struct ugraph_node_t {
-	u64 from;
-	u64 size;
-	char cmd[128];
-	void *ptr;
-	struct list_head list;
-};
-
-struct ugraph_edge_t {
-	u64 from;
-	u64 to;
-	struct list_head list;
-};
-
-struct ugraph_t {
-	struct list_head nodes;
-	struct list_head edges;
-};
-
-static struct ugraph_t ug;
-
 /* user graph */
 void ugraph_reset()
 {
@@ -1077,3 +1077,13 @@ void visual_gui()
 	eprintf("Compiled without GUI\n");
 #endif
 }
+
+#if HAVE_GUI
+// hohoh
+#else
+void ugraph_reset() {}
+void graph_set_user(int b) {}
+void ugraph_node(u64 from, u64 size, const char *cmd) {}
+void ugraph_edge(u64 from, u64 to) {}
+struct ugraph_node_t *ugraph_get(u64 addr) { return NULL; }
+#endif
