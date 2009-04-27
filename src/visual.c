@@ -414,7 +414,7 @@ CMD_DECL(seek0)
 
 CMD_DECL(yank)
 {
-	int off = 0;
+	int i, off = 0;
 	char *ptr = strchr(input, ' ');
 	if (ptr == NULL)
 		ptr = input;
@@ -422,18 +422,54 @@ CMD_DECL(yank)
 	case 'y':
 		cmd_yank_paste(input);
 		return 0;
+	case 'f':
+		free(yank_buffer);
+		yank_buffer = slurp(input+2, &yank_buffer_size);
+		eprintf("Yanking %d bytes into the clipboard from '%s'\n",
+			yank_buffer_size, input+2);
+		//radare_cmd("yi", 0);
+		return 0;
+	case 'F':
+		eprintf("TODO\n");
+		return 0;
 	case 't':
-		radare_move(input+1);
+		switch(input[1]) {
+		case 'f':
+			/* ytf -> yank to file */
+			if (input[2]!= ' ') {
+				eprintf("Usage: ytf [file]\n");
+			} else file_dump(input+3, yank_buffer, yank_buffer_size);
+			break;
+		case 'F':
+			/* ytf -> yank to file */
+			eprintf("TODO\n");
+			break;
+		case ' ':
+			radare_move(input+1);
+			break;
+		default:
+			eprintf("Unknown yt subcommand. try y?\n");
+		}
+		return 0;
+	case 'i':
+		cons_printf("buffer=");
+		for(i=0;i<yank_buffer_size;i++) {
+			cons_printf("%02x", yank_buffer[i]);
+		}
+		cons_printf("\nsize=%d\n", yank_buffer_size);
 		return 0;
 	}
 	if (ptr[0]=='?') {
-		eprintf("Usage: y[ft] [length]\n");
-		eprintf(" > y 10 @ eip     ; yanks 10 bytes from eip\n");
-		eprintf(" > yy @ edi       ; write these bytes where edi points\n");
-		eprintf(" > yt [len] dst   ; copy N bytes from here to dst\n");
+		eprintf("Usage: y[ft] [length]\n"
+		" > y 10 @ eip     ; yanks 10 bytes from eip\n"
+		" > yi             ; show information about the yanked data\n"
+		" > yy @ edi       ; write these bytes where edi points\n"
+		" > yt [len] dst   ; copy N bytes from here to dst\n"
+		" > yf file        ; yank file into clipboard\n"
+		" > ytf file       ; paste clipboard buffer to file\n");
+		//" > yF/ytF file    ; yank file hexpairs into clipboard (TODO)\n");
 		return 0;
 	}
-
 	free(yank_buffer);
 	yank_buffer_size = get_math(ptr);
 	if (yank_buffer_size > config.block_size || yank_buffer_size == 0)
@@ -486,7 +522,7 @@ CMD_DECL(yank_paste)
 				off = config.cursor;
 			radare_seek(old+off, SEEK_SET);
 			io_write(config.fd, yank_buffer, sz);
-			eprintf("%d bytes yanked.\n", (int) sz);
+			eprintf("%d bytes written.\n", (int) sz);
 			radare_seek(old, SEEK_SET);
 			radare_read(0);
 		} else {

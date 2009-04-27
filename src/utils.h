@@ -25,7 +25,7 @@ void eprintf(const char *format, ...);
 void cons_printf(const char *format, ...);
 int _strnstr(char *from, char *to, int size);
 char *estrdup(char *ptr, const char *string);
-char *slurp(const char *str);
+char *slurp(const char *str, int *len);
 int word_count(const char *string);
 int util_mkdir(const char *dir);
 

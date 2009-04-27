@@ -483,9 +483,9 @@ eprintf("Iterating over(%s)\n", each+1);
 void radare_fortunes()
 {
 #if __WINDOWS__
-	char *str = slurp("doc/fortunes");
+	char *str = slurp("doc/fortunes", NULL);
 #else
-	char *str = slurp(DOCDIR"/fortunes");
+	char *str = slurp(DOCDIR"/fortunes", NULL);
 #endif
 	int lines = 0;
 	char *ptr;
@@ -1964,7 +1964,7 @@ char *pipe_command_to_string(char *cmd)
 	char tmpfile[1024];
 
 	if (pipe_stdout_to_tmp_file(tmpfile, cmd)) {
-		buf = slurp(tmpfile);
+		buf = slurp(tmpfile, NULL);
 		unlink(tmpfile);
 	}
 

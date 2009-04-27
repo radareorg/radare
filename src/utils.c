@@ -98,17 +98,22 @@ int _strnstr(char *from, char *to, int size)
 	return (size!=i);
 }
 
-char *slurp(const char *str)
+char *slurp(const char *str, int *len)
 {
-	char *ret;	
+	char *ret;
 	long sz;
 	FILE *fd = fopen(str, "r");
 	if (fd == NULL)
 		return NULL;
 	fseek(fd, 0,SEEK_END);
 	sz = ftell(fd);
+	if (len) *len = sz;
 	fseek(fd, 0,SEEK_SET);
 	ret = (char *)malloc(sz+1);
+	if (ret == NULL) {
+		*len = 0;
+		return NULL;
+	}
 	fread(ret, sz, 1, fd);
 	ret[sz]='\0';
 	fclose(fd);
