@@ -4,6 +4,8 @@
 #
 # Dumps binary strings of the symbols of a library.
 #
+# --pancake
+#
 
 $|=1;
 my $file=$ARGV[0];
@@ -12,7 +14,7 @@ my $delta=$ARGV[2];
 my $offset=0;
 my $count=int($limit); # byte counter
 $limit=-1 if ($limit<1);
-print $count;
+#print $count;
 
 if ( $file eq "") {
 	print "Usage: symdump [elf] [limit-bytes] [delta-offset]\n";
@@ -22,12 +24,13 @@ if ( $file eq "") {
 open FD, "objdump -wd $file|" or die "Cannot exec objdump -wd $file\n";
 while(<FD>) {
 	if (/.*\ <(.*)>:/) {
-		$name=$1;
+		$name = $1;
 		print "$name: ";
 		while(<FD>) {
 			chomp($_);
 			last if ((/>:/)||(/section/));
-			$str=substr($_,9,18);
+			last if (/\.\.\./);
+			$str=substr($_,6,18);
 			$str=~s/\t//g;
 			$str=~s/\ \ /\ /g;
 			$str=~s/\n//g;
