@@ -301,7 +301,8 @@ int rasm_x86(u64 offset, const char *str, unsigned char *data)
 	} else {
 		if (op[0]&& op[0]==';')
 			return 0;
-		fprintf(stderr, "unknown opcode (%s)\n",op);
+		return rasm_rsc(offset, str, data);
+		//fprintf(stderr, "unknown opcode (%s)\n",op);
 	}
 
 	return 0;

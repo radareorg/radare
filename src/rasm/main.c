@@ -26,7 +26,8 @@
 
 //#if !RADARE_CORE
 
-char *arch = "x86";
+//char *arch = "x86";
+char *arch = "rsc";
 u64 offset = 0;
 int endian = 0;
 int verbose = 0;

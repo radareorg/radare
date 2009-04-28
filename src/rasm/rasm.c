@@ -188,10 +188,11 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 		ret = rasm_ppc(*offset, str, data);
 	else
 	if (!strcmp(arch, "rsc")) {
-		char buf[1024];
-		snprintf(buf,1020, "SYNTAX=intel rsc asm '%s'", str);
-		system(buf);
-		return -1;
+		ret = rasm_rsc(*offset, str, data);
+		//char buf[1024];
+		//snprintf(buf,1020, "SYNTAX=intel rsc asm '%s'", str);
+		//system(buf);
+		//return -1;
 	}
 
 	if (ret == -1)

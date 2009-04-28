@@ -93,7 +93,8 @@ void undo_list()
 
 void undo_write_new(u64 off, const u8 *data, int len)
 {
-	struct undow_t *uw = (struct undow_t *)malloc(sizeof(struct undow_t));
+	struct undow_t *uw;
+	struct list_head *p;
 
 	if (!config_get_i("file.undowrite"))
 		return;
@@ -106,6 +107,14 @@ void undo_write_new(u64 off, const u8 *data, int len)
 		INIT_LIST_HEAD(&(undo_w_list));
 	}
 
+	/* avoid dupped */
+	list_for_each_prev(p, &(undo_w_list)) {
+		uw = list_entry(p, struct undow_t, list);
+		if (off == uw->off && len == uw->len && !memcmp(data, uw->n, len))
+			return;
+	}
+
+	uw = (struct undow_t *)malloc(sizeof(struct undow_t));
 	/* undo changes */
 	uw->set = UNDO_WRITE_SET;
 	uw->off = off;
@@ -142,7 +151,7 @@ void undo_write_list(int rad)
 	int i = 0, j, len;
 
 	if (undo_w_init)
-	list_for_each_prev(p, &(undo_w_list)) {
+	list_for_each(p, &(undo_w_list)) {
 		struct undow_t *u = list_entry(p, struct undow_t, list);
 		if (rad) {
 			cons_printf("wx ");

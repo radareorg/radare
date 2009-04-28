@@ -13,6 +13,7 @@ int rasm_olly_x86(u64 offset, const char *str, u8 *data);
 int rasm_arm(u64 offset, const char *str, u8 *data);
 int rasm_java(u64 offset, const char *str, u8 *data);
 int rasm_ppc(u64 offset, const char *str, u8 *data);
+int rasm_rsc(u64 offset, const char *str, unsigned char *data);
 
 /* assemble disassemble list .. */
 int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);

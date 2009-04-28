@@ -1658,10 +1658,12 @@ CMD_DECL(seek)
 			udis_jump(sign-1);
 		return 0;
 	case 'n': 
+		radare_read(0);
 		arch_aop(config.seek, config.block, &aop);
 		new_off = config.seek + aop.length;
 		break;
 	case 'b': 
+		radare_read(0);
 		arch_aop(config.seek, config.block, &aop);
 		if (aop.jump != 0)
 			new_off = aop.jump;
