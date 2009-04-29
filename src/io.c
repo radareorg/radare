@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 
 #include "main.h"
 #include <dirent.h>
+
+int io_write_last = 0;
 
 int io_system(const char *command)
 {
@@ -72,6 +74,7 @@ ssize_t io_write(int fd, const void *buf, size_t count)
 		eprintf("Not in write mode\n");
 		return -1;
 	}
+	io_write_last = count;
 	FIND_FD(fd)
 		IF_HANDLED(fd, write)
 		return plugins[i].write(fd, buf, count);

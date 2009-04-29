@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_IO_H_
 #define _INCLUDE_IO_H_
 
+extern int io_write_last;
 int io_system(const char *command);
 int io_open(const char *pathname, int flags, mode_t mode);
 ssize_t io_read(int fd, void *buf, size_t count);

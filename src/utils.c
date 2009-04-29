@@ -364,6 +364,9 @@ u64 get_offset(const char *orig)
 	if (arg[i]=='$') {
 		struct aop_t aop;
 		switch(arg[i+1]) {
+		case 'w':
+			ret = io_write_last;
+			break;
 		case '$':
 			arch_aop(config.seek, config.block,&aop);
 			ret = aop.length;

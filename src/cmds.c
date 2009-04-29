@@ -402,6 +402,19 @@ CMD_DECL(analyze)
 				config.verbose=c;
 		} break;
 	case 'o':
+		if (input[1]=='s') {
+			int i, count = get_math(input+3);
+			sz = 0;
+			if (count<1) count = 1;
+			radare_read(0);
+			for(i=0;i<count;i++) {
+				sz += arch_aop(config.vaddr + config.seek+i,
+					config.block-i, &aop);
+			}
+			cons_printf("%d\n", sz);
+			break;
+		}
+
 		for(depth_i=0;depth_i<depth;depth_i++) {
 			char food[64];
 			food[0] = '\0';
@@ -604,7 +617,8 @@ CMD_DECL(analyze)
 		} break;
 	default:
 		cons_printf("Usage: a[ocdg] [depth]\n");
-		cons_printf(" ao [nops]    analyze N opcodes\n");
+		cons_printf(" ao [num]     analyze N opcodes\n");
+		cons_printf(" aos [num]    show size of N opcodes\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
 		cons_printf(" af [size]    analyze function\n");
 		//cons_printf(" aF [size]    analyze function (recursively)\n");
@@ -2501,6 +2515,11 @@ CMD_DECL(help)
 			if (config.last_cmp != 0)
 				radare_cmd(input+1, 0);
 		} else
+		if (input[0]=='v') {
+			u64 res = get_math(input+1);
+			config.last_cmp = res;
+			cons_printf("0x%08llx\n", res);
+		} else
 		if (input[0]=='?') {
 			if (input[1]=='?') {
 				cons_printf("0x%llx\n", config.last_cmp);
@@ -2508,7 +2527,8 @@ CMD_DECL(help)
 			if (input[1]=='\0') {
 				cons_strcat(
 				"Usage: ?[?[?]] <expr>\n"
-				" ? eip             ; get value of eip flag\n"
+				" ? eip             ; get value of eip flag (or any math expression)\n"
+				" ?v eip+33+[esp]   ; show hex value of math expression\n"
 				" ?z`str            ; sets false if string is zero length\n"
 				" ?x 303132         ; show hexpair as a printable string\n"
 				" ?X eip            ; show hex result of math expression\n"
@@ -2533,6 +2553,7 @@ CMD_DECL(help)
 				" $$e = end of basic block\n"
 				" $$F = beggining of the function\n"
 				" $$l = last seek done\n"
+				" $$w = size of last write operation\n"
 				" $${io.vaddr} = get eval value\n"
 				"Note: Prefix the command with '\"' to skip pipes ('|','>'..)\n"
 				);
