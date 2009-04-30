@@ -49,8 +49,10 @@ int strbin = 0;
 int stdin_bin_to_hex_pairs()
 {
 	unsigned char c;
-	while(read(0, &c, 1) >0)
-		printf("%02x ", c);
+	while(read(0, &c, 1) >0) {
+		printf("%02x", c);
+		fflush(stdout);
+	}
 	printf("\n");
 	return 0;
 }

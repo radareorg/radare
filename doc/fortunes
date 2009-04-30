@@ -107,3 +107,4 @@ A C program is like a fast dance on a newly waxed dance floor by people carrying
 radare2 is like windows 7 but even better
 Enable 'asm.xrefs' and 'asm.xrefsto' to view the two endpoints for every xref
 the miraclelous on-line hard disk repairing software
+Check cmd.vprompt2 to disable the list of variables on top of the disassembly (CFV command)

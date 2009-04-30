@@ -275,7 +275,8 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
 			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
-			eprintf("x");
+			// eprintf("x");
+			D analyze_progress(0,1,0,0);
 			break;
 		}
 #if 1
@@ -589,7 +590,7 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 			str[str_i] = '\0';
 			if (rad) {
 				u64 addr = (u64)(seek+i-str_i);
-				cons_printf("Cs %d @ 0x%08llx\n", strlen(str), addr);
+				cons_printf("Cs %d @ 0x%08llx\n", strlen(str)+1, addr);
 				flag_filter_name(str);
 				cons_printf("f str.%s @ 0x%08llx\n", str, addr);
 				//cons_printf("; TODO (if exists) f str_%s\n", str);
@@ -642,7 +643,7 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 					string_flag_offset(str, (u64)n, 0);
 					if (!strnull(str)) {
 						/* reference by pointer */
-						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)n, (u64)(seek+i-3), str);
+						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)(seek+i-3), (u64)n, str);
 					} else
 					if (n == (u32)seek)
 						cons_printf(" ;  (self pointer)\n");
@@ -757,14 +758,42 @@ int analyze_var_get(int type)
 	return ctr;
 }
 
+int analyze_progress(int _o, int _x, int _p, int _v)
+{
+	static int refresh = 0;
+	static int o=0,x=0,p=0,v=0;
+	static int i, ch = '/';
+	o+=_o; x+=_x; p+=_p; v+=_v;
+	if ((++refresh%20)) return 0;
+	eprintf("                                                              \r"
+		"   [%c] %02x:%02x:%02x:%02x ", ch, o, x, p, v);
+	p = p%25;
+	for(i=0;i<p;i++)
+		eprintf("=");
+	v = v%20;
+	for(i=0;i<v;i++)
+		eprintf("-");
+	eprintf("\r");
+	switch(ch) {
+	case '/': ch = '-'; break;
+	case '-': ch = '\\'; break;
+	case '\\': ch = '|'; break;
+	case '|': ch = '/'; break;
+	}
+}
+
+int analysis_interrupted = 0;
+
 int analyze_function(u64 from, int recursive, int report)
 {
+	static struct r_prof_t p;
 	struct aop_t aop;
 	struct list_head *head;
 	struct block_t *b0;
 	struct program_t *prg;
 	int ret;
 	char buf[1024];
+	static int interrupted = 0;
 	/*--*/
 	u8 *bytes;
 	//u64 from = config.vaddr + config.seek;
@@ -780,8 +809,20 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
+	if (interrupted) {
+		if (r_prof_end(&p) > 200) {
+			eprintf("SKIPPING\n");
+			return -1;
+		}
+		if (r_prof_end(&p) > 800) {
+			eprintf("\nSKIPPING\n");
+			return -1;
+		}
+	}
 	if (config.interrupted) {
-		eprintf("^C\n");
+		r_prof_start(&p);
+		interrupted = 1;
+		eprintf("\n^C\n");
 		return -1;
 	}
 
@@ -829,14 +870,16 @@ int analyze_function(u64 from, int recursive, int report)
 		return -1;
 
 	if (len > MAX_FUN_SIZE) {
-		D eprintf("o");
+		//D eprintf("o");
+		D analyze_progress(1,0,0,0);
 		len = MAX_FUN_SIZE;
 	}
 
 	ret = radare_read_at(seek, bytes, len);
 	if (ret <0) {
 		//eprintf("Invalid read at 0x%08llx len=%lld\n", from,len);
-		eprintf("x");
+		// eprintf("x");
+		D analyze_progress(0,1,0,0);
 		return -1;
 	}
 
@@ -864,7 +907,8 @@ int analyze_function(u64 from, int recursive, int report)
 		cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
 		cons_printf("CF %lld @ 0x%08llx\n", to-seek+1, from); // XXX can be recursive
 	}
-	D eprintf(".");
+	//D eprintf(".");
+	D analyze_progress(0,0,1,0);
 
 //eprintf("LEN=%d\n", len);
 	for(;seek< to; seek+=inc) {
@@ -883,13 +927,13 @@ int analyze_function(u64 from, int recursive, int report)
 		case AOP_TYPE_CALL:
 			switch(report) {
 			case 2:
-				cons_printf("Cx -0x%08llx @ 0x%08llx\n", seek, aop.jump);
+				cons_printf("Cx -0x%08llx @ 0x%08llx\n", aop.jump, seek+config.vaddr);
 				break;
 			case 0:
 				buf[0]='\0';
 				string_flag_offset(buf, aop.jump, 0);
 				// if resolved as sym_ add its call
-				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", seek, aop.jump, buf);
+				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", aop.jump, seek+config.vaddr, buf);
 			}
 			ncalls++;
 			break;
@@ -908,13 +952,15 @@ int analyze_function(u64 from, int recursive, int report)
 			case AOP_TYPE_LOAD:
 				switch(report) {
 				case 2:
-					cons_printf("CX -0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
+					cons_printf("CX -0x%08llx @ 0x%08llx ; %s\n",
+						aop.ref+config.vaddr, seek , buf);
 					break;
 				case 0:
 					buf[0]='\0';
 					string_flag_offset(buf, aop.jump, 0);
 					// if resolved as sym_ add its call
-					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n", seek , aop.ref, buf);
+					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n",
+						seek, (u64)aop.ref, buf);
 				}
 				nrefs++;
 			}

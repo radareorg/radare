@@ -326,7 +326,7 @@ void rabin_show_strings(const char *file)
 			if (rad) {
 				printf("b %lli && f str.%s @ 0x%08llx\n",
 					stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
-				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size, baddr + stringsp.elf->offset);
+				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size+1, baddr + stringsp.elf->offset);
 			} else {
 				switch (verbose) {
 					case 0:

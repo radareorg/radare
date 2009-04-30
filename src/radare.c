@@ -175,7 +175,7 @@ void radare_controlc()
 
 void radare_controlc_end()
 {
-	config.interrupted = 0;
+	//config.interrupted = 0;
 #if __UNIX__
 	signal(SIGINT, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
@@ -365,13 +365,13 @@ eprintf("Iterating over(%s)\n", each+1);
 			radare_seek(addr, SEEK_SET);
 			eprintf("\n"); //eprintf("===(%s)at(0x%08llx)\n", cmd, addr);
 			radare_cmd(cmd, 0);
-		} while(str != NULL);
+		} while(str != NULL && !config.interrupted);
 		break;
 	case '.':
 		if (each[1]=='(') {
 			char cmd2[1024];
 			// TODO: use controlc() here
-			for(macro_counter=0;i<999;macro_counter++) {
+			for(macro_counter=0;i<999&&!config.interrupted;macro_counter++) {
 				radare_macro_call(each+2);
 				if (macro_break_value == NULL) {
 					//eprintf("==>breaks(%s)\n", each);
@@ -393,7 +393,7 @@ eprintf("Iterating over(%s)\n", each+1);
 				eprintf("Cannot open file '%s' for reading one offset per line.\n", each+1);
 			} else {
 				macro_counter=0;
-				while(!feof(fd)) {
+				while(!feof(fd) && !config.interrupted) {
 					buf[0]='\0';
 					fgets(buf, 1024, fd);
 					addr = get_math(buf);
@@ -464,7 +464,7 @@ eprintf("Iterating over(%s)\n", each+1);
 					radare_cmd(cmd,0);
 				}
 	#endif
-			radare_controlc();
+			//radare_controlc();
 
 			macro_counter++ ;
 			free(word);
@@ -1838,12 +1838,18 @@ int radare_go()
 			rabin_flag();
 
 		if (config_get("file.analyze")) {
-			eprintf("Analyzing program...");
+			eprintf("> Analyzing code...\n");
 			radare_controlc();
 			radare_cmd(".af* @ entrypoint",0);
-			radare_controlc();
-			radare_cmd(".af* @@ sym.",0);
+			if (!config.interrupted)
+				radare_cmd(".af* @@ sym.",0);
 			eprintf("\n");
+			if (1||!config.interrupted) {
+				eprintf("> Analyzing data...");
+				radare_cmd("b section._data_end-section._data", 0);
+				radare_cmd(".ad* @ section._data",0);
+				eprintf(" done\n");
+			}
 			radare_cmd_raw("Ci", 0);
 			radare_controlc_end();
 		}
@@ -1919,7 +1925,7 @@ int radare_go()
 }
 
 // TODO: move to cons.c
-// XXX WTF OMFG!!
+/* XXX needs HUGE optimization */
 //static int pipe_fd = -1;
 int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 {
@@ -1950,7 +1956,7 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	fflush(stdout);
 	fflush(stderr);
 	close(fd);
-	if (std!=0) {
+	if (1||std!=0) {
 		dup2(std, 1);
 		close(std);
 	}
@@ -1958,6 +1964,7 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	return 1;
 }
 
+/* XXX needs HUGE optimization */
 char *pipe_command_to_string(char *cmd)
 {
 	char *buf = NULL;

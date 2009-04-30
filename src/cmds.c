@@ -1193,13 +1193,13 @@ CMD_DECL(code)
 		break;
 	case 'x': // code xref
 		if (text[1]=='-')
-			data_xrefs_del(config.seek, get_math(text+2), 0);
-		else	data_xrefs_add(config.seek, get_math(text+1), 0);
+			data_xrefs_del(get_math(text+2)-config.vaddr, config.seek+config.vaddr, 0);
+		else	data_xrefs_add(get_math(text+1)-config.vaddr, config.seek+config.vaddr, 0);
 		break;
 	case 'X': // data xref
 		if (text[1]=='-')
-			data_xrefs_del(config.seek, get_math(text+2), 1);
-		else	data_xrefs_add(config.seek, get_math(text+1), 1);
+			data_xrefs_del(get_math(text+2)-config.vaddr,config.seek+config.vaddr, 1);
+		else	data_xrefs_add(get_math(text+1)-config.vaddr,config.seek+config.vaddr, 1);
 		break;
 	case 'i':
 		data_info();

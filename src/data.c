@@ -113,11 +113,17 @@ void data_info()
 	int n_functions = 0;
 	int n_xrefs = 0;
 	int n_dxrefs = 0;
+	int n_structs = 0;
+	int n_strings = 0;
 
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		if (d->type == DATA_FUN)
 			n_functions++;
+		if (d->type == DATA_STR)
+			n_strings++;
+		if (d->type == DATA_STRUCT)
+			n_structs++;
 	}
 
 	list_for_each(pos, &xrefs) {
@@ -127,7 +133,9 @@ void data_info()
 		else n_xrefs++;
 	}
 	
+	cons_printf("strings: %d\n", n_strings);
 	cons_printf("functions: %d\n", n_functions);
+	cons_printf("structs: %d\n", n_structs);
 	cons_printf("data_xrefs: %d\n", n_dxrefs);
 	cons_printf("code_xrefs: %d\n", n_xrefs);
 }

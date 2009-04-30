@@ -459,6 +459,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 	int delta = (int)config_get_i("cfg.delta");
 	flag_t *ref = NULL;
 	struct list_head *pos;
+	int found = 0;
 
 	buf[0]='\0';
 
@@ -467,6 +468,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == seek) {
 			ref = flag;
+			found = 1;
 			if (idx==-1) {
 				if (buf[0])
 					strcat(buf, ",");
@@ -476,8 +478,10 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 		if (!flag->offset)
 			continue;
 		else
-		if (flag->offset <= seek && (!ref || flag->offset > ref->offset))
-			ref = flag;
+		if (flag->offset <= seek && (!ref || flag->offset > ref->offset)) {
+			if (found)
+				ref = flag;
+		}
 	}
 	if (idx==-1)
 		return 1;
@@ -738,8 +742,18 @@ int flag_is_valid_char(const char ch)
 	case ' ':
 	case '\n':
 	case '\t':
-	case '[':
 	case '@':
+	case '`':
+	case '=':
+	case '>':
+	case '<':
+//	case '(':
+//	case ')':
+	case '[':
+	case ']':
+	case ';':
+	case '!':
+	case '%':
 		return 0;
 	default:
 		if (((ch >= '0') && (ch <= '9')))

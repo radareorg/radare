@@ -24,7 +24,7 @@ int rabin_id()
 {
   char buf[1024];
 
-  fprintf(stderr, "Automagically identifying file...\n");
+  fprintf(stderr, "> Importing file information...\n");
 
   snprintf(buf, 1022, ".!!rabin -rIe '%s'", config.file);
   radare_cmd_raw(buf, 0);
@@ -40,8 +40,8 @@ int rabin_flag()
 {
   char buf[1024];
 
-  D fprintf(stderr, "Automagically flagging file...\n");
-      snprintf(buf, 1022, ".!!rabin -rSisz '%s'", config.file);
+  D fprintf(stderr, "> Importing symbols...\n");
+      snprintf(buf, 1022, ".!!rabin -rSeisz '%s'", config.file);
   radare_cmd_raw(buf, 0);
 
   /* TODO: move into rabin dietjava */
