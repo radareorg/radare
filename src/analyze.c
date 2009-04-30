@@ -764,7 +764,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	static int o=0,x=0,p=0,v=0;
 	static int i, ch = '/';
 	o+=_o; x+=_x; p+=_p; v+=_v;
-	if ((++refresh%20)) return 0;
+	if ((refresh++%12)) return 0;
 	eprintf("                                                              \r"
 		"   [%c] %02x:%02x:%02x:%02x ", ch, o, x, p, v);
 	p = p%25;
@@ -786,7 +786,6 @@ int analysis_interrupted = 0;
 
 int analyze_function(u64 from, int recursive, int report)
 {
-	static struct r_prof_t p;
 	struct aop_t aop;
 	struct list_head *head;
 	struct block_t *b0;
@@ -809,19 +808,7 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
-	if (interrupted) {
-		if (r_prof_end(&p) > 200) {
-			eprintf("SKIPPING\n");
-			return -1;
-		}
-		if (r_prof_end(&p) > 800) {
-			eprintf("\nSKIPPING\n");
-			return -1;
-		}
-	}
 	if (config.interrupted) {
-		r_prof_start(&p);
-		interrupted = 1;
 		eprintf("\n^C\n");
 		return -1;
 	}
