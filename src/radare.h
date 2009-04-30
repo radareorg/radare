@@ -87,7 +87,7 @@ void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsig
 int radare_strsearch(const char *str);
 int radare_cmd(char *command, int log);
 int radare_cmd_raw(const char *tmp, int log);
-char *pipe_command_to_string(char *cmd);
+char *pipe_command_to_string(const char *cmd);
 char *radare_cmd_str(const char *cmd);
 int radare_interpret(const char *file);
 void radare_controlc();

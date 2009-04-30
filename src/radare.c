@@ -1844,6 +1844,12 @@ int radare_go()
 			radare_cmd(".af* @ entrypoint",0);
 			if (!config.interrupted)
 				radare_cmd(".af* @@ sym.",0);
+			/* resolve main pointer on linux/x86 */
+			if (!config.interrupted) {
+				radare_cmd("e asm.profile=simple", 0);
+				radare_cmd(".afr @ `pd 20~dword[3]#2 @ entrypoint`", 0);
+				radare_cmd("e asm.profile=default", 0);
+			}
 			eprintf("\n");
 			if (1||!config.interrupted) {
 				eprintf("> Analyzing data...");
@@ -1969,6 +1975,7 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 }
 
 /* XXX needs HUGE optimization */
+#if 0
 char *pipe_command_to_string(char *cmd)
 {
 	char *buf = NULL;
@@ -1981,6 +1988,48 @@ char *pipe_command_to_string(char *cmd)
 
 	return buf;
 }
+#else
+char *pipe_command_to_string(const char *cmd)
+{
+	char buf[4096]; // XXX we need moar bytes!
+	int fd, fdp[2];
+	int std;
+
+	pipe(fdp);
+	fd = fdp[1];
+eprintf("\nDUMP(%s)\n", cmd);
+	cons_reset();
+	//cons_flush();
+	if (fd == -1) {
+		eprintf("pipe: Cannot open '%s' for writing\n", tmpfile);
+		tmpoff = config.seek;
+		return 0;
+	}
+	std = dup(1); // store stdout
+	dup2(fd, 1);
+
+	if (cmd[0]) {
+		char *ptr = alloca(strlen(cmd)+1);
+		strcpy(ptr, cmd);
+//eprintf("CMD(%s)\n", ptr);
+		radare_cmd_raw(ptr, 0);
+	}
+
+	cons_reset();
+	//cons_flush();
+	fflush(stdout);
+	fflush(stderr);
+	memset(buf,0,sizeof(buf));
+	read(fdp[0], buf, 4095);
+	close(fd);
+	if (1||std!=0) {
+		dup2(std, 1);
+		close(std);
+	}
+
+return strdup(buf);
+}
+#endif
 
 int radare_seek_search_backward(const char *str)
 {

@@ -928,7 +928,7 @@ int analyze_function(u64 from, int recursive, int report)
 				// if resolved as sym_ add its call
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", aop.jump, seek+config.vaddr, buf);
 			}
-			analyze_function(aop.jump, recursive--, report);
+			analyze_function(aop.jump-config.vaddr, --recursive, report);
 			ncalls++;
 			break;
 		case AOP_TYPE_SWI:

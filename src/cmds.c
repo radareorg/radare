@@ -339,7 +339,7 @@ CMD_DECL(analyze)
 			eprintf(" .af*       - import function analysis (same as Vdf)\n");
 			break;
 		case 'r':
-			analyze_function(config.seek, 0,2);
+			analyze_function(config.seek, config_get_i("cfg.analdepth"),0);
 			break;
 		case 'u':
 			analyze_function(config.seek, 0,2);

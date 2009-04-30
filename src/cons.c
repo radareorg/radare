@@ -863,7 +863,7 @@ void cons_flush()
 		return;
 
 	if (cons_interactive) {
-		if (cons_buffer_len > CONS_MAX_USER) {
+		if (cons_buffer && strlen(cons_buffer) > CONS_MAX_USER) {
 			if (yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)== 0) {
 				cons_reset();
 				return;
