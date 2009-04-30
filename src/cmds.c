@@ -609,8 +609,8 @@ CMD_DECL(analyze)
 		{
 		char buf[4096];
 			
-		sprintf(buf,"%s -a %s -b %lld %s %lld",
-			config_get("asm.xrefs"), config_get("asm.arch"), base, file, seek);
+		sprintf(buf,"xrefs -a %s -b %lld %s %lld",
+			config_get("asm.arch"), base, file, seek);
 		radare_system(buf);
 		}
 #if DEBUGGER
