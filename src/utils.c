@@ -245,11 +245,9 @@ int strbcpy(char *dst, char *org)
 {
 	int i = 0;
 	if (org&&*org)
-	do {
-		*dst=*org;
-		dst++; org++;
-		i++;
-	} while (*org);
+	do { *dst++=*org++;
+	} while (*org && ++i);
+	*dst=0;
 	return i;
 }
 
@@ -332,14 +330,13 @@ u64 get_offset(const char *orig)
 	if (orig==NULL||orig[0]=='\0')
 		return 0;
 
+	while(*orig==' '&&*orig) orig++;
 	arg = alloca(strlen(orig)+32);
-	strcpy(arg, orig);
+	strbcpy(arg, orig);
 
 	/* single char 'A' */
-	if (arg[0]=='\'' && arg[0+2]=='\'') {
+	if (arg[0]=='\'' && arg[0+2]=='\'')
 		return arg[0+1];
-	}
-
 
 	for(;*arg==' ';arg=arg+1);
 	for(i=0;arg[i]==' ';i++);

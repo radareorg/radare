@@ -1908,7 +1908,7 @@ int radare_go()
 		radare_cmd(":.!maps*", 0);
 		radare_cmd("s eip", 0);
 	} else {
-		eprintf("> Rebasing strings...\n");
+		//eprintf("> Rebasing strings...\n");
 		radare_cmd("fb $${io.vaddr} @@ str. > /dev/null", 0);
 	}
 

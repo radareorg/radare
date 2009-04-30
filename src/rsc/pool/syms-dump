@@ -25,12 +25,20 @@ open FD, "objdump -wd $file|" or die "Cannot exec objdump -wd $file\n";
 while(<FD>) {
 	if (/.*\ <(.*)>:/) {
 		$name = $1;
+		if ($name=~/-/) {
+			next;
+		}
 		print "$name: ";
 		while(<FD>) {
 			chomp($_);
 			last if ((/>:/)||(/section/));
 			last if (/\.\.\./);
-			$str=substr($_,6,18);
+			# objdump output sucks, and those regexps too :D
+			$str=$_;
+			$str=~s/.*://g; # drop offset
+			$str=~s/^\s*//g; # drop prefix spaces
+			$str=~s/\ \ \s*.*$//g;
+			$str=~s/\t.*$//g;
 			$str=~s/\t//g;
 			$str=~s/\ \ /\ /g;
 			$str=~s/\n//g;
