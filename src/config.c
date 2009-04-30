@@ -831,6 +831,7 @@ void config_init(int first)
 
 	config_set("file.id", "false");
 	config_set("file.analyze", "false");
+	config_set("file.analdata", "false");
 	config_set("file.type", "");
 	config_set("file.flag", "false");
 	config_set("file.trace", "trace.log");

@@ -241,6 +241,18 @@ const char *get_tmp_dir()
 	return (const char *)&tmpdir;
 }
 
+int strbcpy(char *dst, char *org)
+{
+	int i = 0;
+	if (org&&*org)
+	do {
+		*dst=*org;
+		dst++; org++;
+		i++;
+	} while (*org);
+	return i;
+}
+
 int make_tmp_file(char *str)
 {
 	int fd;
@@ -532,14 +544,14 @@ u64 get_math(const char* text)
 	for(tmp = txt = strdup(text); txt && *txt; txt = txt+1) {
 #if 1
 		if ((txt[0]=='!' && txt[1]=='='))
-			strcpy(txt+1, txt+2);
+			strbcpy(txt+1, txt+2);
 		else
 #endif
 		if ((txt[0]=='=' && txt[1]=='='))
 			txt[0]==' ';
 		else
 		if ((txt[0]==' '))
-			strcpy(txt, txt+1);
+			strbcpy(txt, txt+1);
 	}
 	txt = tmp;
 

@@ -777,7 +777,7 @@ int flag_filter_name(char *name)
 			break;
 		}
 		if (!flag_is_valid_char(*name)) {
-			strcpy(name, name+1);
+			strbcpy(name, name+1);
 			name = name -1;
 		}
 	}

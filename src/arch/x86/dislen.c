@@ -53,7 +53,8 @@ retry:
 	if (config.interrupted)
 		return 0;
 
-	disasm_opcode = *opcode++;
+	disasm_opcode = *opcode;
+	opcode++;
 
 	switch (disasm_opcode)
 	{
@@ -224,7 +225,8 @@ retry:
 	{
 		if (limit<4)
 			return 0;
-		disasm_modrm = *opcode++;
+		disasm_modrm = opcode[0];
+		opcode++;
 		BYTE mod = disasm_modrm & 0xC0;
 		BYTE rm  = disasm_modrm & 0x07;
 		if (mod != 0xC0)

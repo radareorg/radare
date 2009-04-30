@@ -316,11 +316,12 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		aop->type =AOP_TYPE_MOV;
 		break;
 	case 0xc7:
-
 		/* mov dword [ebp-0xc], 0x0  ||  c7 45 f4 00000000 */
 		switch(bytes[1]) {
 		case 0x85:
-			aop->ref = (u64)(((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			aop->stackop = AOP_STACK_LOCAL_SET;
+			//aop->ref = (u64)(((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			aop->ref = ((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
 			break;
  			//c785 e4fbffff 00. mov dword [ebp+0xfffffbe4], 0x0
 		case 0x45:

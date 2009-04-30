@@ -515,10 +515,10 @@ struct program_t *code_analyze(u64 seek, int depth)
 	else	code_analyze_r = &code_analyze_r_nosplit;
 
 	/* XXX fix hirroble bug in deep overflow :O */
-	//if (depth>3) depth=3;
 	if (depth>10) depth=10;
+	//if (depth>10) depth=10;
 
-	code_analyze_r(prg, seek, depth);
+	code_analyze_r(prg, seek, --depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
@@ -763,17 +763,24 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	static int refresh = 0;
 	static int o=0,x=0,p=0,v=0;
 	static int i, ch = '/';
+	int tmp;
 	o+=_o; x+=_x; p+=_p; v+=_v;
 	/* TODO: change this value depending on delta times */
 	if ((refresh++%20)) return 0;
 	eprintf("                                                              \r"
 		"   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
+	tmp = p/25;
+	for(i=0;i<tmp;i++)
+		eprintf("|");
 	p = p%25;
 	for(i=0;i<p;i++)
 		eprintf("=");
+	tmp = v/20;
 	v = v%20;
 	for(i=0;i<v;i++)
 		eprintf("-");
+	for(i=0;i<tmp;i++)
+		eprintf(">");
 	eprintf("\r");
 	switch(ch) {
 	case '/': ch = '-'; break;

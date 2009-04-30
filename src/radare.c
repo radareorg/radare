@@ -512,7 +512,7 @@ void radare_fortunes()
 int cmd_level = 0;
 int radare_cmd_raw(const char *tmp, int log)
 {
-	int fd;
+	int fd = -1;
 	int quoted = 0;
 	FILE* filef;
 	int i,f,fdi = 0;
@@ -1851,7 +1851,7 @@ int radare_go()
 				radare_cmd("e asm.profile=default", 0);
 			}
 			eprintf("\n");
-			if (1||!config.interrupted) {
+			if (!config.interrupted && config_get("file.analdata")) {
 				eprintf("> Analyzing data...");
 				radare_cmd("b section._data_end-section._data", 0);
 				radare_cmd(".ad* @ section._data", 0);

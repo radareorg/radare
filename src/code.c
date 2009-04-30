@@ -815,7 +815,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 		switch(arch) {
 		case ARCH_X86:
-			memcpy(b, block+bytes, 32);
+			if (bytes+32 >config.block_size)
+				len = config.block_size-bytes;
+			else len = 32;
+			memcpy(b, block+bytes, 31);
 			break;
 		case ARCH_CSR:
 			memcpy(b, block+bytes, 2);
