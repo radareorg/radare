@@ -243,6 +243,9 @@ static int PE_(dietpe_parse_imports)(PE_(dietpe_obj) *bin, dietpe_import **impor
 			lseek(bin->fd, PE_(dietpe_aux_rva_to_offset)(bin, import_table), SEEK_SET);
 			read(bin->fd, &import_hint, sizeof(PE_Word));
 			read(bin->fd, name, PE_NAME_LENGTH);
+			/* XXX: this is a hack */
+			if (!aux_is_printable(name[0]))
+				sprintf(name, "fun_%i", i);
 			snprintf(import_name, PE_NAME_LENGTH, "%s_%s", dll_name, name);
 		}
 		

@@ -1108,6 +1108,7 @@ int radare_cmd(char *input, int log)
 	int ret = 0;
 	int quoted = 0; /* ignore '>', '|', '@' and '`' */
 
+//eprintf("cmd(%s)\n", input);
 	/* silently skip lines begginging with 0 */
 	if(input==NULL || (log&&input==NULL) || (input&&input[0]=='0'))
 		return 0;
@@ -1847,7 +1848,8 @@ int radare_go()
 			if (1||!config.interrupted) {
 				eprintf("> Analyzing data...");
 				radare_cmd("b section._data_end-section._data", 0);
-				radare_cmd(".ad* @ section._data",0);
+				radare_cmd(".ad* @ section._data", 0);
+				radare_cmd("b 128", 0);
 				eprintf(" done\n");
 			}
 			radare_cmd_raw("Ci", 0);
@@ -1899,8 +1901,10 @@ int radare_go()
 		radare_cmd(".!info*", 0);
 		radare_cmd(":.!maps*", 0);
 		radare_cmd("s eip", 0);
-	} else 
+	} else {
+		eprintf("> Rebasing strings...\n");
 		radare_cmd("fb $${io.vaddr} @@ str. > /dev/null", 0);
+	}
 
 	config_set_i("cfg.verbose", t);
 

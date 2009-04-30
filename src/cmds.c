@@ -334,8 +334,12 @@ CMD_DECL(analyze)
 		case '?':
 			eprintf("Usage: af[*] @ addr\n");
 			eprintf(" af         - show function report (fun metrics)\n");
+			eprintf(" afr @ addr - analyze function recursively at address\n");
 			eprintf(" afu @ addr - undefine function at address\n");
 			eprintf(" .af*       - import function analysis (same as Vdf)\n");
+			break;
+		case 'r':
+			analyze_function(config.seek, 0,2);
 			break;
 		case 'u':
 			analyze_function(config.seek, 0,2);

@@ -764,9 +764,10 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	static int o=0,x=0,p=0,v=0;
 	static int i, ch = '/';
 	o+=_o; x+=_x; p+=_p; v+=_v;
-	if ((refresh++%12)) return 0;
+	/* TODO: change this value depending on delta times */
+	if ((refresh++%20)) return 0;
 	eprintf("                                                              \r"
-		"   [%c] %02x:%02x:%02x:%02x ", ch, o, x, p, v);
+		"   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
 	p = p%25;
 	for(i=0;i<p;i++)
 		eprintf("=");
@@ -800,7 +801,7 @@ int analyze_function(u64 from, int recursive, int report)
 	u64 end  = 0;
 	int i, inc = 0;
 	u64 to;
-	u64 len = 0;
+	u64 funsize, len = 0;
 	int ref;
 	int ncalls = 0;
 	int nrefs = 0;
@@ -808,10 +809,10 @@ int analyze_function(u64 from, int recursive, int report)
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
 
-	if (config.interrupted) {
-		eprintf("\n^C\n");
+	if (recursive <0)
 		return -1;
-	}
+	if (config.interrupted)
+		return -1;
 
 	from += config.vaddr-config.paddr;
 //eprintf("ANAL FROM (%llx)\n", from);
@@ -891,8 +892,13 @@ int analyze_function(u64 from, int recursive, int report)
 		cons_strcat("fs functions\n");
 		cons_printf("; from = 0x%08llx\n", from);
 		cons_printf("; to   = 0x%08llx\n", end);
-		cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
-		cons_printf("CF %lld @ 0x%08llx\n", to-seek+1, from); // XXX can be recursive
+		funsize = to-seek+1;
+		if (funsize > 8096) { /* OOPS TOO BIG FUN */
+			D analyze_progress(0,1,0,0);
+		} else {
+			cons_printf("fu fun.%08llx @ 0x%08llx\n", from, from); // XXX should be fu?!? do not works :(
+			cons_printf("CF %lld @ 0x%08llx\n", to-seek+1, from); // XXX can be recursive
+		}
 	}
 	//D eprintf(".");
 	D analyze_progress(0,0,1,0);
@@ -922,6 +928,7 @@ int analyze_function(u64 from, int recursive, int report)
 				// if resolved as sym_ add its call
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", aop.jump, seek+config.vaddr, buf);
 			}
+			analyze_function(aop.jump, recursive--, report);
 			ncalls++;
 			break;
 		case AOP_TYPE_SWI:
