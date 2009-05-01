@@ -1427,10 +1427,6 @@ int dump_symbols(u32 len)
 		dietelf_symbol* elf;
 		dietpe_export*  pe;
 	} symbol, symbolp;
-	if (len == 0)
-		olen = len = 4096;
-	buf = alloca(len);
-	ret = alloca(len*2+1);
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -1444,11 +1440,18 @@ int dump_symbols(u32 len)
 		ELF_CALL(dietelf_get_symbols, bin.elf, fd, symbol.elf);
 		for (i = 0, symbolp.elf = symbol.elf; i < symbols_count; i++, symbolp.elf++) {
 			if (symbolp.elf->size != 0) {
-				len = (u32)(olen < symbolp.elf->size ? olen : symbolp.elf->size);
+				if (!olen || olen > symbolp.elf->size)
+					len = symbolp.elf->size;
+				else len = olen;
+				if (!(buf = malloc(len)) ||
+					!(ret = malloc(len*2+1)))
+					return 0;
 				lseek(fd, symbolp.elf->offset, SEEK_SET);
 				read(fd, buf, len);
 				aux_bin2str(buf, len, ret);
 				printf("%s %s\n", symbolp.elf->name, ret);
+				free(buf);
+				free(ret);
 			}
 		}
 		free(symbol.elf);
@@ -1463,10 +1466,18 @@ int dump_symbols(u32 len)
 		symbol.pe = malloc(symbols_count * sizeof(dietpe_export));
 		PE_CALL(dietpe_get_exports, bin.pe, symbol.pe);
 		for (i = 0, symbolp.pe = symbol.pe; i < symbols_count; i++, symbolp.pe++) {
+			if (!olen || olen > symbolp.elf->size)
+				len = 32;
+			else len = olen;
+			if (!(buf = malloc(len)) ||
+				!(ret = malloc(len*2+1)))
+				return 0;
 			lseek(fd, symbolp.pe->offset, SEEK_SET);
 			read(fd, buf, len);
 			aux_bin2str(buf, len, ret);
 			printf("%s %s\n", symbolp.pe->name, ret);
+			free(buf);
+			free(ret);
 		}
 		free(symbol.pe);
 		PE_CALL(dietpe_close, bin.pe);
@@ -1498,15 +1509,19 @@ int operation_do(const char *str)
 	switch(arg[0]) {
 	case 'r':
 		ptr2 = strchr(ptr, '/');
-		ptr2[0]='\0';
-		return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
+		if (ptr2) {
+			ptr2[0]='\0';
+			return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
+		} else return 0;
 	case 'd':
 		ptr2 = strchr(ptr, '/');
 		if (ptr2) {
 			ptr2[0]='\0';
 			if (ptr[0]=='s')
 				return dump_symbols(aux_atoi32(ptr2+1)); // use get_offset
-		} else return dump_symbols(0); // use get_offset
+		} else if (ptr[0]=='s') 
+			return dump_symbols(0); // use get_offset
+		else return 0;
 	}
 	return 0;
 }
