@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -271,7 +271,6 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	switch(arch) {
 	case ARCH_X86:
 		/* ultra ugly hack */
-		//ret = udis_arch_string(arch, buf, b, endian, seek-2, bytes, myinc);
 		ret = udis_arch_string(arch, buf, b, endian, seek, bytes, myinc);
 		break;
 	case ARCH_PPC:
@@ -285,9 +284,6 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	case ARCH_SPARC:
 		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
 		break;
-	//	endian_memcpy(&buf, b, 4); //, endian);
-	//	ret = gnu_disarm((u8*)buf, (u64)seek+myinc);
-	//	break;
 	case ARCH_BF:
 		ret = arch_bf_dis(b, seek+myinc, 1024);
 		break;
@@ -306,8 +302,7 @@ extern int color;
 void udis_arch(int arch, int len, int rows)
 {
 	int foo = ud_idx;
-	radis_str_e(arch, config.block, len,rows);
-	//udis_arch_buf(arch, config.block, len, rows);
+	radis_str_e(arch, config.block, len, rows);
 	ud_idx = foo;
 }
 

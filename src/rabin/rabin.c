@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
- *       nibble
+ *       nibble <.ds@gmail.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1415,6 +1415,10 @@ int operation_resize(const char *section, u32 newsize)
 
 int dump_symbols(u32 len)
 {
+	int olen = len;
+	int symbols_count, i;
+	u8 *buf;
+	char *ret;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -1423,9 +1427,10 @@ int dump_symbols(u32 len)
 		dietelf_symbol* elf;
 		dietpe_export*  pe;
 	} symbol, symbolp;
-	int symbols_count, i;
-	u8 *buf = alloca(len);
-	char *ret = alloca(len * 2 + 1);
+	if (len == 0)
+		olen = len = 4096;
+	buf = alloca(len);
+	ret = alloca(len*2+1);
 
 	switch(filetype) {
 	case FILETYPE_ELF:
@@ -1436,10 +1441,10 @@ int dump_symbols(u32 len)
 		}
 		symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd);
 		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
-		ELF_CALL(dietelf_get_symbols,bin.elf,fd,symbol.elf);
+		ELF_CALL(dietelf_get_symbols, bin.elf, fd, symbol.elf);
 		for (i = 0, symbolp.elf = symbol.elf; i < symbols_count; i++, symbolp.elf++) {
-			if (symbol.elf->size != 0) {
-				len = (len < symbol.elf->size ? len : symbol.elf->size);
+			if (symbolp.elf->size != 0) {
+				len = (u32)(olen < symbolp.elf->size ? olen : symbolp.elf->size);
 				lseek(fd, symbolp.elf->offset, SEEK_SET);
 				read(fd, buf, len);
 				aux_bin2str(buf, len, ret);
@@ -1468,17 +1473,18 @@ int dump_symbols(u32 len)
 		break;
 	}
 }
+static int operation_help()
+{
+	printf("Operation string:\n"
+		" -o r/.text/1024\n"
+		" -o d/s/10\n");
+	return 0;
+}
 
 int operation_do(const char *str)
 {
 	char *arg, *ptr, *ptr2;
 
-	if (!strcmp(str, "help")) {
-		printf("Operation string:\n"
-			" -o r/.text/1024\n"
-			" -o d/s/10\n");
-		return 1;
-	}
 	arg = alloca(strlen(str)+1);
 	strcpy(arg, str);
 
@@ -1496,9 +1502,11 @@ int operation_do(const char *str)
 		return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
 	case 'd':
 		ptr2 = strchr(ptr, '/');
-		ptr2[0]='\0';
-		if (ptr[0]=='s')
-			return dump_symbols(aux_atoi32(ptr2+1)); // use get_offset
+		if (ptr2) {
+			ptr2[0]='\0';
+			if (ptr[0]=='s')
+				return dump_symbols(aux_atoi32(ptr2+1)); // use get_offset
+		} else return dump_symbols(0); // use get_offset
 	}
 	return 0;
 }
@@ -1554,6 +1562,8 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'o':
 			op = optarg;
+			if (*op=='h'||*op=='?')
+				return operation_help();
 			action |= ACTION_OPERATE;
 			break;
 		case 'h':
