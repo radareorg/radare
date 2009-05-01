@@ -227,9 +227,11 @@ struct config_node_t *config_set(const char *name, const char *value)
 				node->i_value = 0;
 			} else {
 				node->value = strdup(value);
-				if (strchr(value, '/'))
-					node->i_value = get_offset(value);
-				else  node->i_value = get_math(value);
+				if (!strchr(value, '%')) {
+					if (strchr(value, '/'))
+						node->i_value = get_offset(value);
+					else  node->i_value = get_math(value);
+				} else node->i_value = 0;
 				node->flags |= CN_INT;
 			}
 		}
@@ -822,6 +824,7 @@ void config_init(int first)
 	config_set("cmd.vprompt3", "");
 	config_set("cmd.bp", "");
 
+	config_set("search.flagname", "hit%d_%d");
 	config_set("search.inar", "false");
 	config_set_i("search.from", 0);
 	config_set_i("search.to", 0);

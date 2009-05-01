@@ -50,13 +50,15 @@ void radare_search_seek_hit(int idx)
 	flag_t *flag;
 	char buf[64];
 
-	sprintf(buf, "hit0_%d", hit_idx);
+	//sprintf(buf, "hit0_%d", hit_idx);
+	radare_flag_name (buf, 0, hit_idx);
+
 	flag = flag_get(buf);
 
 	if (flag == NULL) {
 		if (idx>0)
-			hit_idx -=idx;
-		else	hit_idx +=idx*2;
+			hit_idx -= idx;
+		else	hit_idx += idx*2;
 	} else radare_seek(flag->offset, SEEK_SET);
 
 	hit_idx += idx;
@@ -109,6 +111,26 @@ int radare_search_asm(const char *str)
 
 static int align = 0;
 
+int radare_flag_name(char *buf, int kw, int hn)
+{
+	int i;
+	char *a, *f = config_get("search.flagname");
+	if (!f || !f[0])
+		goto beach;
+	a = strstr(f, "%d");
+	if (a) {
+		a = strstr(a+2, "%d");
+		if (!a) goto beach;
+		a = strstr(a+2, "%");
+		if (a) goto beach;
+	} else goto beach;
+	sprintf(buf, f, i, hn);
+	return 1;
+beach:
+	sprintf(buf, "hit%d_%d", i, hn);
+	return 0;
+}
+
 static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 {
 	char flag_name[128];
@@ -120,8 +142,8 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 	if (search_count && nhit >= search_count)
 		return 1;
 
-	sprintf(flag_name, "hit%d_%d", i, nhit++);
-	//config.seek = where;
+	nhit++;
+	radare_flag_name (flag_name, i, nhit);
 
 	radare_seek(where, SEEK_SET);
 	radare_read(0);
@@ -137,7 +159,6 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		radare_controlc();
 	}
 
-
 	if (search_verbose) {
 		u8 *ptr = config.block; //+(where-config.seek)-3;
 		cons_printf("%03d  0x%08llx  %s ", nhit, where, flag_name);
@@ -147,7 +168,7 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 		}
 		cons_printf("\n");
 	} 
-	D { fprintf(stderr, "\r%d\n", nhit); fflush(stderr); }
+	//D { fprintf(stderr, "\r%d\n", nhit); fflush(stderr); }
 
 	fflush(stdout);
 	config.seek = off;
