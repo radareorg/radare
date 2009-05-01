@@ -1484,11 +1484,81 @@ int dump_symbols(u32 len)
 		break;
 	}
 }
+
+int dump_sections(const char *str)
+{
+	int sections_count, i;
+	u8 *buf;
+	char *ret;
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin_t    pe;
+	} bin;
+	union {
+		dietelf_section* elf;
+		dietpe_section*  pe;
+	} section, sectionp;
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return 0;
+		}
+		sections_count = ELF_CALL(dietelf_get_sections_count,bin.elf);
+		section.elf = malloc(sections_count * sizeof(dietelf_section));
+		ELF_CALL(dietelf_get_sections, bin.elf, fd, section.elf);
+		for (i = 0, sectionp.elf = section.elf; i < sections_count; i++, sectionp.elf++) {
+			if (!strcmp(str, sectionp.elf->name) && sectionp.elf->size != 0) {
+				if (!(buf = malloc(sectionp.elf->size)) ||
+					!(ret = malloc(sectionp.elf->size*2+1)))
+					return 0;
+				lseek(fd, sectionp.elf->offset, SEEK_SET);
+				read(fd, buf, sectionp.elf->size);
+				aux_bin2str(buf, sectionp.elf->size, ret);
+				printf("%s %s\n", sectionp.elf->name, ret);
+				free(buf);
+				free(ret);
+			}
+		}
+		free(section.elf);
+		ELF_(dietelf_close)(fd);
+		break;
+	case FILETYPE_PE:
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
+			return 0;
+		}
+		sections_count = PE_CALL(dietpe_get_sections_count, bin.pe);
+		section.pe = malloc(sections_count * sizeof(dietpe_section));
+		PE_CALL(dietpe_get_sections, bin.pe, section.pe);
+		for (i = 0, sectionp.pe = section.pe; i < sections_count; i++, sectionp.pe++) {
+			if (!strcmp(str, sectionp.pe->name) && sectionp.pe->size != 0) {
+				if (!(buf = malloc(sectionp.pe->size)) ||
+					!(ret = malloc(sectionp.pe->size*2+1)))
+					return 0;
+				lseek(fd, sectionp.pe->offset, SEEK_SET);
+				read(fd, buf, sectionp.pe->size);
+				aux_bin2str(buf, sectionp.pe->size, ret);
+				printf("%s %s\n", sectionp.pe->name, ret);
+				free(buf);
+				free(ret);
+			}
+		}
+		free(section.pe);
+		PE_CALL(dietpe_close, bin.pe);
+		break;
+	}
+	return 0;
+}
+
 static int operation_help()
 {
 	printf("Operation string:\n"
 		" -o r/.text/1024\n"
-		" -o d/s/10\n");
+		" -o d/s/10\n"
+		" -o d/S/.text\n");
 	return 0;
 }
 
@@ -1519,6 +1589,8 @@ int operation_do(const char *str)
 			ptr2[0]='\0';
 			if (ptr[0]=='s')
 				return dump_symbols(aux_atoi32(ptr2+1)); // use get_offset
+			if (ptr[0]=='S')
+				return dump_sections(ptr2+1); // use get_offset
 		} else if (ptr[0]=='s') 
 			return dump_symbols(0); // use get_offset
 		else return 0;
