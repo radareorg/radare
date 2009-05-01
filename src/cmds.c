@@ -2274,7 +2274,8 @@ CMD_DECL(search) {
 	case '?':
 		eprintf(
 		" / \\x7FELF       ; plain string search (supports \\x).\n"
-		" /. [file]       ; search using the token file rules\n"
+		" /. [file]       ; search using the token file rules (/.? for help)\n"
+		" /: [file] [...] ; search using the 'keyname keyword' file format\n"
 		" /-              ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
 		" //              ; repeat last search\n"
 		" /a [opcode]     ; look for a string in disasembly\n"
@@ -2462,8 +2463,13 @@ CMD_DECL(search) {
 				unsetenv(environ[i]);
 			else	eq[0]='=';
 		} break;
+	case ':':
+		for(text=text+1;*text==' ';text++);
+		search_from_simple_file(text);
+		break;
 	case '.':
-		search_from_file(text+2);
+		for(text=text+1;*text==' ';text++);
+		search_from_file(text);
 		break;
 	case 'x':
 		free(input2);

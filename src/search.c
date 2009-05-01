@@ -176,12 +176,64 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 	return 0;
 }
 
+int search_from_simple_file(char *file)
+{
+	int i,ret;
+	u64 tmp = config.seek;
+	tokenizer *t;
+
+	if (strchr(file, '?')) {
+		printf("Usage: /: file [file2] [file3] ...\n");
+		printf("File format:\n");
+		printf(" puts 89823993982839\n");
+		printf(" scanf 89844483241839\n");
+		return 0;
+	}
+	t = binparse_new_from_simple_file(file);
+	if (t == NULL)
+		return 0;
+	t->callback = &radare_tsearch_callback;
+	nhit = 0;
+#if __UNIX__
+	D go_alarm(search_alarm);
+#endif
+	radare_controlc();
+	// TODO: do it generic (as for init)
+	radare_cmd("fs search", 0);
+	for(radare_read(0);!config.interrupted&& config.seek < config.size;radare_read(1)) {
+		for(i=0;i<config.block_size;i++) {
+			ret = update_tlist(t, config.block[i], config.seek+i);
+			if (ret == -1)
+				break;
+		}
+	}
+
+	radare_controlc_end();
+#if __UNIX__
+	D go_alarm(SIG_IGN);
+#endif
+	binparser_free(t);
+
+	radare_seek(tmp, SEEK_SET);
+
+	return 1;
+}
+
 int search_from_file(char *file)
 {
 	int i,ret;
 	u64 tmp = config.seek;
-	tokenizer *t = binparse_new_from_file(file);
+	tokenizer *t;
 
+	if (strchr(file, '?')) {
+		printf("Usage: /. file\n");
+		printf("File format:\n");
+		printf(" token: keywordname\n");
+		printf(" string: keyword\n");
+		printf(" mask: binarymask\n");
+		return 0;
+	}
+	t = binparse_new_from_file(file);
 	if (t == NULL)
 		return 0;
 	t->callback = &radare_tsearch_callback;

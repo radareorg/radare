@@ -28,7 +28,7 @@ while(<FD>) {
 		if ($name=~/-/) {
 			next;
 		}
-		print "$name: ";
+		print "$name ";
 		while(<FD>) {
 			chomp($_);
 			last if ((/>:/)||(/section/));

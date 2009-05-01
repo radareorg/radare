@@ -393,6 +393,52 @@ tokenizer* binparse_new_from_file(char *file)
 	return tok;
 }
 
+/* XXX THIS IS WRONG \\x.. is stupid */
+tokenizer* binparse_new_from_simple_file(char *file)
+{
+	int i, j, len;
+	char *ptr, buf[4096];
+	FILE *fd;
+	tokenizer *tok;
+
+	tok = binparse_new(0);
+	fd = fopen(file, "r");
+	if (fd == NULL) {
+		eprintf("Cannot open file '%s'\n", file);
+		return NULL;
+	}
+	while(!feof(fd)) {
+		char *foo;
+		/* read line */
+		buf[0]='\0';
+		fgets(buf, 4095, fd);
+		if (buf[0]=='\0') continue;
+		buf[strlen(buf)-1]='\0';
+
+		ptr = strchr(buf, ' ');
+		if (ptr) {
+			ptr[0]='\0';
+			ptr=ptr+1;
+			len = strlen(ptr);
+			foo = malloc((len*2)+1);
+			foo[0]='\0';
+			for(i=j=0;i<len;i+=2,j+=4) {
+				strcpy(foo+j, "\\x");
+				foo[j+2] = ptr[i];
+				foo[j+3] = ptr[i+1];
+			}
+			foo[j]='\0';
+eprintf("KEY %s\n", foo);
+			binparse_add_name(tok, buf, foo, NULL);
+			free(foo);
+		}
+	}
+
+	printf("TOKEN ELEMENTS: %d\n", tok->nlists);
+
+	return tok;
+}
+
 int binparse_get_mask_list ( char* mask , char* maskout )
 {
 	int i,j,k ;
