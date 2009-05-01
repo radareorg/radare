@@ -1517,7 +1517,7 @@ int dump_sections(const char *str)
 				lseek(fd, sectionp.elf->offset, SEEK_SET);
 				read(fd, buf, sectionp.elf->size);
 				aux_bin2str(buf, sectionp.elf->size, ret);
-				printf("%s %s\n", sectionp.elf->name, ret);
+				printf("%s\n", ret);
 				free(buf);
 				free(ret);
 			}
@@ -1541,7 +1541,7 @@ int dump_sections(const char *str)
 				lseek(fd, sectionp.pe->offset, SEEK_SET);
 				read(fd, buf, sectionp.pe->size);
 				aux_bin2str(buf, sectionp.pe->size, ret);
-				printf("%s %s\n", sectionp.pe->name, ret);
+				printf("%s\n", ret);
 				free(buf);
 				free(ret);
 			}
