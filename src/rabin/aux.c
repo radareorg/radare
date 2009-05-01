@@ -98,3 +98,15 @@ int aux_is_printable(int c)
 	if (c<' '||c>'~') return 0;
 	return 1;
 }
+
+int aux_bin2str(const u8 *in, int len, char *out)
+{
+	int i;
+	char tmp[5];
+	out[0]='\0';
+	for(i=0;i<len;i++)  {
+		sprintf(tmp, "%02x", in[i]);
+		strcat(out, tmp);
+	}
+	return len;
+}

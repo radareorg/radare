@@ -29,6 +29,6 @@ enum {
 #define ACTION_NOP      0x1000
 #define ACTION_INFO     0x2000
 #define ACTION_OPERATE  0x4000
-#define ACTION_HEADER 0x8000
+#define ACTION_HEADER   0x8000
 
 #endif

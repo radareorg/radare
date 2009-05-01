@@ -1413,13 +1413,70 @@ int operation_resize(const char *section, u32 newsize)
 	return 0;
 }
 
+int dump_symbols(u32 len)
+{
+	union {
+		dietelf_bin_t elf;
+		dietpe_bin_t    pe;
+	} bin;
+	union {
+		dietelf_symbol* elf;
+		dietpe_export*  pe;
+	} symbol, symbolp;
+	int symbols_count, i;
+	u8 *buf = alloca(len);
+	char *ret = alloca(len * 2 + 1);
+
+	switch(filetype) {
+	case FILETYPE_ELF:
+		fd = ELF_CALL(dietelf_open,bin.elf,file);
+		if (fd == -1) {
+			fprintf(stderr, "cannot open file\n");
+			return 0;
+		}
+		symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd);
+		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
+		ELF_CALL(dietelf_get_symbols,bin.elf,fd,symbol.elf);
+		for (i = 0, symbolp.elf = symbol.elf; i < symbols_count; i++, symbolp.elf++) {
+			if (symbol.elf->size != 0) {
+				len = (len < symbol.elf->size ? len : symbol.elf->size);
+				lseek(fd, symbolp.elf->offset, SEEK_SET);
+				read(fd, buf, len);
+				aux_bin2str(buf, len, ret);
+				printf("%s %s\n", symbolp.elf->name, ret);
+			}
+		}
+		free(symbol.elf);
+		ELF_(dietelf_close)(fd);
+		break;
+	case FILETYPE_PE:
+		if ((fd = PE_CALL(dietpe_open, bin.pe, file)) == -1) {
+			fprintf(stderr, "rabin: Cannot open file (%s)\n", file);
+			return 0;
+		}
+		symbols_count = PE_CALL(dietpe_get_exports_count, bin.pe);
+		symbol.pe = malloc(symbols_count * sizeof(dietpe_export));
+		PE_CALL(dietpe_get_exports, bin.pe, symbol.pe);
+		for (i = 0, symbolp.pe = symbol.pe; i < symbols_count; i++, symbolp.pe++) {
+			lseek(fd, symbolp.pe->offset, SEEK_SET);
+			read(fd, buf, len);
+			aux_bin2str(buf, len, ret);
+			printf("%s %s\n", symbolp.pe->name, ret);
+		}
+		free(symbol.pe);
+		PE_CALL(dietpe_close, bin.pe);
+		break;
+	}
+}
+
 int operation_do(const char *str)
 {
 	char *arg, *ptr, *ptr2;
 
 	if (!strcmp(str, "help")) {
 		printf("Operation string:\n"
-			" -o r/.text/1024\n");
+			" -o r/.text/1024\n"
+			" -o d/s/10\n");
 		return 1;
 	}
 	arg = alloca(strlen(str)+1);
@@ -1437,6 +1494,11 @@ int operation_do(const char *str)
 		ptr2 = strchr(ptr, '/');
 		ptr2[0]='\0';
 		return operation_resize(ptr, aux_atoi32(ptr2+1)); // use get_offset
+	case 'd':
+		ptr2 = strchr(ptr, '/');
+		ptr2[0]='\0';
+		if (ptr[0]=='s')
+			return dump_symbols(aux_atoi32(ptr2+1)); // use get_offset
 	}
 	return 0;
 }
