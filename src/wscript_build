@@ -9,7 +9,7 @@ bld.add_subdirs('rsc')
 bld.add_subdirs('rasm')
 bld.add_subdirs('rasc')
 bld.add_subdirs('javasm')
-bld.add_subdirs('arch/arm/aasm')
+if bld.env['OS'] == 'Darwin' : bld.add_subdirs('arch/arm/aasm')
 
 obj = bld.new_task_gen('cc', 'program')
 obj.target = 'radare'
@@ -62,6 +62,7 @@ obj.source += ' rasm/olly.c'
 obj.source += ' rasm/ppc.c'
 obj.source += ' rasm/rasm.c'
 obj.source += ' rasm/x86.c'
+obj.source += ' rasm/rsc.c'
 obj.find_sources_in_dirs('arch/x86')
 obj.find_sources_in_dirs('arch/x86/udis86')
 obj.find_sources_in_dirs('arch/msil')

@@ -231,7 +231,7 @@ def build(bld):
 	bld.install_files('${PREFIX}/lib/radare/bin', 'src/rsc/pool/*', chmod=0755)
 	bld.install_files('${PREFIX}/lib/radare/bin', 'src/radiff/bindiff-ng/bindiff-ng', chmod=0755)
 	bld.install_files('${PREFIX}/lib/radare/bin', 'src/javasm/javasm', chmod=0755)
-	bld.install_files('${PREFIX}/lib/radare/bin', 'src/arch/arm/aasm/armasm', chmod=0755)
+	if bld.env['OS'] == 'Darwin' : bld.install_files('${PREFIX}/lib/radare/bin', 'src/arch/arm/aasm/armasm', chmod=0755)
 	bld.install_files('${PREFIX}/lib/radare/bin', 'src/lsbstego', chmod=0755)
 	# Documentation
 	bld.install_files('${PREFIX}/share/man/man1', 'man/*.1')
