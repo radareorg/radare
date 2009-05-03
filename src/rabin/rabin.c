@@ -47,6 +47,7 @@
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
 #define PE_CALL(func, bin, args...) pe64?Pe64_##func(&bin.p64,##args):Pe32_##func(&bin.p32,##args)
 
+char *argv0 = "rabin";
 typedef union {
     Elf32_dietelf_bin_t e32;
     Elf64_dietelf_bin_t e64;
@@ -615,6 +616,12 @@ void rabin_show_entrypoint()
 		PE_CALL(dietpe_close, bin.pe);
 		break;
 	case FILETYPE_MACHO:
+{
+char cmd[256];
+sprintf(cmd, "%s -S '%s' |grep -e entrypoint", argv0, file);
+system(cmd);
+}
+#if 0
 		printf("fs symbols\n");
 #if 0
 		/* TODO: Walk until LOAD COMMAND 9 */
@@ -633,6 +640,7 @@ Load command 9
 		sprintf(buf, "otool -l %s | grep eip | awk '{print $6}'", file);
 		system(buf);
 		}
+#endif
 		break;
 	case FILETYPE_BF:
 		/* skip invalid chars */
@@ -1600,6 +1608,7 @@ int main(int argc, char **argv, char **envp)
 	const char *op = NULL;
 	int c;
 
+	argv0 = argv[0];
 	while ((c = getopt(argc, argv, "cerlishL:SIvxzo:H")) != -1)
 	{
 		switch( c ) {

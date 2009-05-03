@@ -189,46 +189,97 @@ void dm_read_thread (int i)
 			printf("\ncmd \t\t\t: LC_UNIXTHREAD\n");
 		else printf("\ncmd \t\t\t: LC_THREAD\n");
 
-		printf("cmd size \t\t: %d\n",    	thr_command->cmdsize);
+		printf("cmd size \t\t: %d\n", thr_command->cmdsize);
+		printf("cputype: %d\n", m_header.cputype);
+	}
 
-		if (m_header.cputype == CPU_TYPE_I386) {
-			i386_thread_state_t         state;
+	switch(m_header.cputype) {
+	case 12: // ARM
+		{
+		unsigned int state[32];
+		/*
+		 * Pointing to the begin of flavor field
+		 */
+		p = (char *)offset + sizeof(struct thread_command);
 
-			/*
-			 * Pointing to the begin of flavor field
-			 */
-			p = (char *)offset + sizeof(struct thread_command);
+		memcpy(&flavor, p, sizeof(unsigned long));
+		printf("; flavor \t\t\t: %lu\n", flavor);
 
-			memcpy(&flavor, p, sizeof(unsigned long));
-			printf("flavor \t\t\t: %lu\n", flavor);
+		/*
+		 * Pointing to the count field
+		 */
+		p += sizeof(unsigned long);
 
-			/*
-			 * Pointing to the count field
-			 */
-			p += sizeof(unsigned long);
+		memcpy(&count, p, sizeof(unsigned long));
+		printf("; count \t\t\t: %lu\n", count);
 
-			memcpy(&count, p, sizeof(unsigned long));
-			printf("count \t\t\t: %lu\n", count);
+		/*
+		 * Moving on to the beginning of the 
+		 * i386_thread_state structure
+		 */
+		p += sizeof(unsigned long);
 
-			/*
-			 * Moving on to the beginning of the 
-			 * i386_thread_state structure
-			 */
-			p += sizeof(unsigned long);
+		memset(&state, 0x0, sizeof(state));
+		memcpy(&state, (char *)p, sizeof(state));
+		for(i=0;i<32;i++) {
+			printf("f r%d @ 0x%08x\n", i, state[i]);
+		}
+		printf("f entrypoint @ 0x%08x\n", state[15]);
+		printf("e io.paddr = 0x1000\n");
+		}
+		break;
+	case CPU_TYPE_I386:
+		{
+		i386_thread_state_t         state;
 
-			memset(&state, 0x0, sizeof(i386_thread_state_t));
-			memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
+		/*
+		 * Pointing to the begin of flavor field
+		 */
+		p = (char *)offset + sizeof(struct thread_command);
 
-			printf(
-			"State \t\t\t: eax 0x%08x ebx    0x%08x ecx 0x%08x edx 0x%08x\n"
-			"State \t\t\t: edi 0x%08x esi    0x%08x ebp 0x%08x esp 0x%08x\n"
-			"State \t\t\t: ss  0x%08x eflags 0x%08x eip 0x%08x cs  0x%08x\n"
-			"State \t\t\t: ds  0x%08x es     0x%08x fs  0x%08x gs  0x%08x\n",
-			state.eax, state.ebx, state.ecx, state.edx, state.edi, state.esi,
-			state.ebp, state.esp, state.ss, state.eflags, state.eip, state.cs,
-			state.ds, state.es, state.fs, state.gs);
-		} else
-			dm_fatal(ECPU);
+		memcpy(&flavor, p, sizeof(unsigned long));
+		printf("; flavor \t\t\t: %lu\n", flavor);
+
+		/*
+		 * Pointing to the count field
+		 */
+		p += sizeof(unsigned long);
+
+		memcpy(&count, p, sizeof(unsigned long));
+		printf("; count \t\t\t: %lu\n", count);
+
+		/*
+		 * Moving on to the beginning of the 
+		 * i386_thread_state structure
+		 */
+		p += sizeof(unsigned long);
+
+		memset(&state, 0x0, sizeof(i386_thread_state_t));
+		memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
+
+		printf("f entrypoint @ 0x%08x\n", state.eip);
+		printf("f eax @ 0x%08x\n", state.eax);
+		printf("f ebx @ 0x%08x\n", state.ebx);
+		printf("f ecx @ 0x%08x\n", state.ecx);
+		printf("f edx @ 0x%08x\n", state.edx);
+		printf("f esp @ 0x%08x\n", state.esp);
+		printf("f ebp @ 0x%08x\n", state.ebp);
+		printf("f eip @ 0x%08x\n", state.eip);
+		printf("f esi @ 0x%08x\n", state.esi);
+		printf("f edi @ 0x%08x\n", state.edi);
+		printf("f eflags @ 0x%04x\n", state.eflags);
+		printf(
+		"; State \t\t\t: eax 0x%08x ebx    0x%08x ecx 0x%08x edx 0x%08x\n"
+		"; State \t\t\t: edi 0x%08x esi    0x%08x ebp 0x%08x esp 0x%08x\n"
+		"; State \t\t\t: ss  0x%08x eflags 0x%08x eip 0x%08x cs  0x%08x\n"
+		"; State \t\t\t: ds  0x%08x es     0x%08x fs  0x%08x gs  0x%08x\n",
+		state.eax, state.ebx, state.ecx, state.edx, state.edi, state.esi,
+		state.ebp, state.esp, state.ss, state.eflags, state.eip, state.cs,
+		state.ds, state.es, state.fs, state.gs);
+		}
+		break;
+	default:
+		dm_fatal(ECPU);
 	}
 }
     

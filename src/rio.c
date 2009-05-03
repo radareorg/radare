@@ -393,10 +393,12 @@ u64 radare_seek(u64 offset, int whence)
 	u64 preoffset = 0;
 	u64 seek = 0;
 	int bip = 0;
+	int usepaddr = 0;
 
 	if (offset==-1)
 		return (u64)-1;
 
+//eprintf("ALIGNING 0x%08llx\n", config.paddr);
 #if 1
 	if (whence == SEEK_SET && config.vaddr && offset>=config.vaddr)//&& offset >= config.vaddr)
 	{
@@ -453,7 +455,14 @@ u64 radare_seek(u64 offset, int whence)
 		config.seek = 0;
 
 //eprintf("RAL SEEK %llx\n", config.seek);
+	if (config.paddr && config.paddr < config.seek) {
+		usepaddr = 1;
+		config.seek -= config.paddr;
+	}
 	io_lseek(config.fd, config.seek, SEEK_SET);
+
+	if (usepaddr)
+		config.seek += config.paddr;
 
 	//undo_push();
 
