@@ -104,7 +104,7 @@ int do_byte_pat(int patlen)
 		bytes = (config.limit!=0)?(config.limit-config.seek):config.block_size;
 	if (bytes==0)
 		bytes = 0xFFFFFFFF; /* default end */
-	eprintf("Searching from 0x%08llx to 0x%08llx\n", bact, bytes);
+	D eprintf("Searching from 0x%08llx to 0x%08llx\n", bact, bytes);
 
 	bytes += bact;
 

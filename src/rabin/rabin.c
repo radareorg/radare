@@ -187,8 +187,6 @@ void rabin_show_info(const char *file)
 
 		if (!rad)
 			printf("[Information]\n");
-
-
 		if (rad) {
 			printf("e file.type = pe\n");
 			str = getenv("DEBUG");
@@ -329,19 +327,21 @@ void rabin_show_strings(const char *file)
 				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size+1, baddr + stringsp.elf->offset);
 			} else {
 				switch (verbose) {
-					case 0:
-						printf("address=0x%08llx offset=0x%08llx size=%08lli type=%c name=%s\n",
-								baddr + stringsp.elf->offset, stringsp.elf->offset, stringsp.elf->size, stringsp.elf->type, stringsp.elf->string);
-						break;
-					case 1:
-						if (i == 0) printf("Memory address\tFile offset\tName\n");
-						printf("0x%08llx\t0x%08llx\t%s\n",
-								baddr + stringsp.elf->offset, stringsp.elf->offset, stringsp.elf->string);
-						break;
-					default:
-						if (i == 0) printf("Memory address\tFile offset\tSize\t\tType\tName\n");
-						printf("0x%08llx\t0x%08llx\t%08lli\t%c\t%s\n",
-								baddr + stringsp.elf->offset, stringsp.elf->offset, stringsp.elf->size, stringsp.elf->type, stringsp.elf->string);
+				case 0:
+					printf("address=0x%08llx offset=0x%08llx size=%08lli type=%c name=%s\n",
+						baddr + stringsp.elf->offset, stringsp.elf->offset,
+						stringsp.elf->size, stringsp.elf->type, stringsp.elf->string);
+					break;
+				case 1:
+					if (i == 0) printf("Memory address\tFile offset\tName\n");
+					printf("0x%08llx\t0x%08llx\t%s\n",
+						baddr + stringsp.elf->offset, stringsp.elf->offset, stringsp.elf->string);
+					break;
+				default:
+					if (i == 0) printf("Memory address\tFile offset\tSize\t\tType\tName\n");
+					printf("0x%08llx\t0x%08llx\t%08lli\t%c\t%s\n",
+						baddr + stringsp.elf->offset, stringsp.elf->offset,
+						stringsp.elf->size, stringsp.elf->type, stringsp.elf->string);
 				}
 			}
 		}
@@ -401,7 +401,6 @@ void rabin_show_strings(const char *file)
 			}
 		}
 
-
 		if (rad) {
 			printf("b 512\n");
 			fprintf(stderr, "%i strings added\n", strings_count);
@@ -409,7 +408,6 @@ void rabin_show_strings(const char *file)
 			printf("\n%i strings\n", strings_count);
 
 		free(strings.pe);
-
 		PE_CALL(dietpe_close, bin.pe);
 #endif
 		break;
@@ -530,7 +528,6 @@ void rabin_show_entrypoint()
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
 	} bin;
-
 
 	switch(filetype) {
 	case FILETYPE_ELF:

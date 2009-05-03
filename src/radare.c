@@ -244,11 +244,13 @@ int radare_strsearch(const char *str)
 	u64 i, minlen = 0;
 	int j, ret;
 	int range_n=0;
-	u64 seek = config.seek;
+	u64 oseek, seek;
 	u64 size = config.size;
+	int useranges = 0;
 	int min = 3;
 	int max = 0;
 	int enc = resolve_encoding(config_get("cfg.encoding")); // ASCII
+	oseek = seek = config.seek;
 
 	// TODO: Move to stripstr_iterate as args or so
 	//encoding = resolve_encoding(config_get("cfg.encoding"));
@@ -283,6 +285,7 @@ int radare_strsearch(const char *str)
 			eprintf("No ranges defined\n");
 			return 0;
 		}
+		useranges = 1;
 		printf("Searching using ranges...\n");
 	}
 	if (str&&str[0]=='\0')
@@ -300,7 +303,10 @@ int radare_strsearch(const char *str)
 			ret = radare_read(1);
 			i+=config.seek;
 		}
-	} while(config_get("search.inar") && ranges_get_n(range_n++, &seek, &size));
+		if (!useranges)
+			seek+=config.block_size;
+	} while((!useranges && ret) ||
+		(useranges && ranges_get_n(range_n++, &seek, &size)));
 	config.seek = seek;
 	radare_controlc_end();
 
@@ -596,7 +602,7 @@ int radare_cmd_raw(const char *tmp, int log)
 			memset(filebuf, '\0', 2048);
 			len = read(fdi, filebuf, 1024);
 			if (len<1) {
-				eprintf("error: (%s)\n", input);
+			//	eprintf("error: (%s)\n", input);
 			//	return 0;
 				goto __end;
 			} else {

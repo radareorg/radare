@@ -87,8 +87,8 @@ void dm_read_uuid (int i)
 			sizeof(struct uuid_command));
 
 	if (rad) {
-		printf("f section_lc_uuid @ 0x%08x\n", offset);
-		printf("f section_lc_uuid_end @ 0x%08x\n", offset
+		printf("f section.lc_uuid @ 0x%08x\n", offset);
+		printf("f section.lc_uuid_end @ 0x%08x\n", offset
 				+ sizeof(struct uuid_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, uuid->cmdsize);
@@ -120,8 +120,8 @@ void dm_read_routines (int i)
 	memcpy(routines_command, (char *)offset, sizeof(struct routines_command));
 
 	if (rad) {
-		printf("f section_lc_routines @ 0x%08x\n", offset);
-		printf("f section_lc_routines_end @ 0x%08x\n", offset
+		printf("f section.lc_routines @ 0x%08x\n", offset);
+		printf("f section.lc_routines_end @ 0x%08x\n", offset
 				+ sizeof(struct routines_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, routines_command->cmdsize);
@@ -151,8 +151,8 @@ void dm_read_twolevel_hints (int i)
 			sizeof(struct twolevel_hints_command));
 
 	if (rad) {
-		printf("f section_lc_twolevel_hints @ 0x%08x\n", offset);
-		printf("f section_lc_twolevel_hints_end @ 0x%08x\n", offset
+		printf("f section.lc_twolevel_hints @ 0x%08x\n", offset);
+		printf("f section.lc_twolevel_hints_end @ 0x%08x\n", offset
 				+ sizeof(struct twolevel_hints_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, tlh_command->cmdsize);
@@ -177,8 +177,8 @@ void dm_read_thread (int i)
 	memcpy(thr_command, (char *)offset, sizeof(struct thread_command));
 
 	if (rad) {
-		printf("f section_lc_thread @ 0x%08x\n", offset);
-		printf("f section_lc_thread_end @ 0x%08x\n", offset
+		printf("f section.lc_thread @ 0x%08x\n", offset);
+		printf("f section.lc_thread_end @ 0x%08x\n", offset
 				+ sizeof(struct thread_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, thr_command->cmdsize);
@@ -243,8 +243,8 @@ void dm_read_prebound_dylib_command (int i)
 
   if (rad)
     {
-      printf("f section_lc_prebound_dylib @ 0x%08x\n", offset);
-      printf("f section_lc_prebound_dylib_end @ 0x%08x\n", offset
+      printf("f section.lc_prebound_dylib @ 0x%08x\n", offset);
+      printf("f section.lc_prebound_dylib_end @ 0x%08x\n", offset
              + sizeof(struct prebound_dylib_command));
 		  printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
              i, offset, prebound_dy_command->cmdsize);
@@ -282,8 +282,8 @@ void dm_read_sub_client (int i)
 	memcpy(sub_client, (char *)offset, sizeof(struct sub_client_command));
 
 	if (rad) {
-		printf("f section_lc_sub_client @ 0x%08x\n", offset);
-		printf("f section_lc_sub_client_end @ 0x%08x\n", offset
+		printf("f section.lc_sub_client @ 0x%08x\n", offset);
+		printf("f section.lc_sub_client_end @ 0x%08x\n", offset
 				+ sizeof(struct sub_client_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, sub_client->cmdsize);
@@ -308,8 +308,8 @@ void dm_read_sub_library (int i)
 	memcpy(sub_library, (char *)offset, sizeof(struct sub_library_command));
 
 	if (rad) {
-		printf("f section_lc_sub_library @ 0x%08x\n", offset);
-		printf("f section_lc_sub_library_end @ 0x%08x\n", offset
+		printf("f section.lc_sub_library @ 0x%08x\n", offset);
+		printf("f section.lc_sub_library_end @ 0x%08x\n", offset
 				+ sizeof(struct sub_library_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, sub_library->cmdsize);
@@ -334,8 +334,8 @@ void dm_read_sub_umbrella (int i)
 	memcpy(sub_umbrella, (char *)offset, sizeof(struct sub_umbrella_command));
 
 	if (rad) {
-		printf("f section_lc_sub_umbrella @ 0x%08x\n", offset);
-		printf("f section_lc_sub_umbrella_end @ 0x%08x\n", offset
+		printf("f section.lc_sub_umbrella @ 0x%08x\n", offset);
+		printf("f section.lc_sub_umbrella_end @ 0x%08x\n", offset
 				+ sizeof(struct sub_umbrella_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, sub_umbrella->cmdsize);
@@ -359,8 +359,8 @@ void dm_read_sub_framework (int i)
 	memcpy(sub_framework, (char *)offset, sizeof(struct sub_framework_command));
 
 	if (rad) {
-		printf("f section_lc_sub_framework @ 0x%08x\n", offset);
-		printf("f section_lc_sub_framework_end @ 0x%08x\n", offset
+		printf("f section.lc_sub_framework @ 0x%08x\n", offset);
+		printf("f section.lc_sub_framework_end @ 0x%08x\n", offset
 				+ sizeof(struct sub_framework_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, sub_framework->cmdsize);
@@ -382,8 +382,8 @@ void dm_read_dylib (int i)
 	memcpy(dyl_command, (char *)offset, sizeof(struct dylib_command));
 
 	if (rad) {
-		printf("f section_lc_dylib @ 0x%08x\n", offset);
-		printf("f section_lc_dylib_end @ 0x%08x\n", offset
+		printf("f section.lc_dylib @ 0x%08x\n", offset);
+		printf("f section.lc_dylib_end @ 0x%08x\n", offset
 				+ sizeof(struct dylib_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, dyl_command->cmdsize);
@@ -394,26 +394,23 @@ void dm_read_dylib (int i)
 			printf("\ncmd \t\t\t: LC_ID_DYLIB\n");
 		else if ( dyl_command->cmd == LC_LOAD_DYLIB )
 			printf("\ncmd \t\t\t: LC_LOAD_DYLIB\n");
-		else
-			printf("\ncmd \t\t\t: LC_LOAD_WEAK_DYLIB\n");
+		else printf("\ncmd \t\t\t: LC_LOAD_WEAK_DYLIB\n");
 
-		printf("cmd size \t\t: %d\n",               dyl_command->cmdsize);
+		printf("cmd size \t\t: %d\n", dyl_command->cmdsize);
 
 		p = (char *)offset + dyl_command->dylib.name.offset;
 		printf("name \t\t\t: %s (offset %u)\n", p,  dyl_command->dylib.name.offset);
 
-		printf("time stamp \t\t: %u ",              dyl_command->dylib.timestamp);
-		printf("%s", ctime((const long *)&(         dyl_command->dylib.timestamp)));
-
+		printf("time stamp \t\t: %u ", dyl_command->dylib.timestamp);
+		printf("%s", ctime((const long *)&(dyl_command->dylib.timestamp)));
 		printf("current version \t: %u.%u.%u\n",
-				dyl_command->dylib.current_version >> 16,
-				(dyl_command->dylib.current_version >> 8) & 0xff,
-				dyl_command->dylib.current_version & 0xff);
-
+			dyl_command->dylib.current_version >> 16,
+			(dyl_command->dylib.current_version >> 8) & 0xff,
+			dyl_command->dylib.current_version & 0xff);
 		printf("compatibility version \t: %u.%u.%u\n",
-				dyl_command->dylib.compatibility_version >> 16,
-				(dyl_command->dylib.compatibility_version >> 8) & 0xff,
-				dyl_command->dylib.compatibility_version & 0xff);
+			dyl_command->dylib.compatibility_version >> 16,
+			(dyl_command->dylib.compatibility_version >> 8) & 0xff,
+			dyl_command->dylib.compatibility_version & 0xff);
 	}
 }
 
@@ -426,8 +423,8 @@ void dm_read_fvmlib (int i)
 	memcpy(fvm_command, (char *)offset, sizeof(struct fvmlib_command));
 
 	if (rad) {
-		printf("f section_lc_fvmlib @ 0x%08x\n", offset);
-		printf("f section_lc_fvmlib_end @ 0x%08x\n", offset
+		printf("f section.lc_fvmlib @ 0x%08x\n", offset);
+		printf("f section.lc_fvmlib_end @ 0x%08x\n", offset
 				+ sizeof(struct fvmlib_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, fvm_command->cmdsize);
@@ -439,12 +436,12 @@ void dm_read_fvmlib (int i)
 		else
 			printf ("\ncmd \t\t: LC_LOADFVMLIB\n");
 
-		printf ("cmd size \t: %d\n",            fvm_command->cmdsize);
+		printf ("cmd size \t: %d\n", fvm_command->cmdsize);
 
 		p = (char *)offset + fvm_command->fvmlib.name.offset;
-		printf("Path %s (offset %u)\n", 	p,  fvm_command->fvmlib.name.offset);
-		printf("minor version %u\n",            fvm_command->fvmlib.minor_version);
-		printf("header addr 0x%08x\n",          fvm_command->fvmlib.header_addr);
+		printf("Path %s (offset %u)\n", p,  fvm_command->fvmlib.name.offset);
+		printf("minor version %u\n", fvm_command->fvmlib.minor_version);
+		printf("header addr 0x%08x\n", fvm_command->fvmlib.header_addr);
 	}
 }
 
@@ -457,8 +454,8 @@ void dm_read_symseg (int i)
 	memcpy(symseg_command, (char *)offset, sizeof(struct symseg_command));
 
 	if (rad) {
-		printf("f section_lc_symseg @ 0x%08x\n", offset);
-		printf("f section_lc_symseg_end @ 0x%08x\n", offset
+		printf("f section.lc_symseg @ 0x%08x\n", offset);
+		printf("f section.lc_symseg_end @ 0x%08x\n", offset
 				+ sizeof(struct symseg_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, symseg_command->cmdsize);
@@ -480,8 +477,8 @@ void dm_read_dysymtab (int i)
 	memcpy(dysym_command, (char *)offset, sizeof(struct dysymtab_command));
 
 	if (rad) {
-		printf("f section_lc_dysymtab @ 0x%08x\n", offset);
-		printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
+		printf("f section.lc_dysymtab @ 0x%08x\n", offset);
+		printf("f section.lc_dysymtab_end @ 0x%08x\n", offset
 				+ sizeof(struct dysymtab_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, dysym_command->cmdsize);
@@ -518,8 +515,8 @@ void dm_read_symtab (int i)
 	memcpy(sy_command, (char *)offset, sizeof(struct symtab_command));
 
 	if (rad) {
-		printf("f section_lc_dysymtab @ 0x%08x\n", offset);
-		printf("f section_lc_dysymtab_end @ 0x%08x\n", offset
+		printf("f section.lc_dysymtab @ 0x%08x\n", offset);
+		printf("f section.lc_dysymtab_end @ 0x%08x\n", offset
 				+ sizeof(struct dysymtab_command));
 		printf("CC [%02i] 0x%08x cmdsize=%d\n\n",
 				i, offset, sy_command->cmdsize);
@@ -543,8 +540,8 @@ void dm_read_section (int i)
 	memcpy(sect, (char *)toff, sizeof(struct section));
 
 	if (rad) {
-		printf("f section_%s @ 0x%08x\n", sect->sectname, offset);
-		printf("f section_%s_end @ 0x%08x\n", sect->sectname, offset
+		printf("f section.%s @ 0x%08x\n", sect->sectname, offset);
+		printf("f section.%s_end @ 0x%08x\n", sect->sectname, offset
 				+ sizeof(sect));
 		printf("CC [%02i] 0x%08x segname=%s addr=0x%08x\n\n",
 				i, sect, sect->segname, sect->addr);
@@ -574,8 +571,8 @@ void dm_read_dylinker (int i)
 	memcpy(dy_command, offset, sizeof(struct dylinker_command));
 
 	if (rad) {
-		printf("f section_lc_dylinker @ 0x%08x\n", offset);
-		printf("f section_lc_dylinker_end @ 0x%08x\n", offset
+		printf("f section.lc_dylinker @ 0x%08x\n", offset);
+		printf("f section.lc_dylinker_end @ 0x%08x\n", offset
 				+ sizeof(struct dylinker_command));
 		printf("CC [%02i] 0x%08x cmd=%d\n\n",
 				i, dy_command, dy_command->cmd);
@@ -616,8 +613,8 @@ void dm_read_header (int p)
 
 		if (rad) {
 			printf("fs header\n");
-			printf("f header_fat @ 0x%08llx\n", fileaddr);
-			printf("f header_fat_end @ 0x%08x\n",
+			printf("f header.fat @ 0x%08llx\n", fileaddr);
+			printf("f header.fat_end @ 0x%08x\n",
 					fileaddr + sizeof(struct fat_header));
 			printf("CC [] %08x narchs=%d\n\n",
 					fileaddr, fat_header.nfat_arch);
@@ -657,9 +654,9 @@ void dm_read_header (int p)
 				fileaddr += archs[i].offset;
 				i386_found++;
 				if (rad) {
-					printf("f arch_x86 @ 0x%08x\n",
+					printf("f section.arch_x86 @ 0x%08x\n",
 							archp + sizeof(struct fat_arch) * i);
-					printf("f arch_x86_end @ 0x%08x\n", archp
+					printf("f section.arch_x86_end @ 0x%08x\n", archp
 							+ sizeof(struct fat_arch) * i
 							+ sizeof(struct fat_arch));
 					printf("CC [] 0x%08x offset=0x%08x\n\n",
@@ -674,10 +671,10 @@ void dm_read_header (int p)
 					/*
 					 * FIX: Add support for all the other arch name
 					 */
-					printf("f arch_%d @ 0x%08x\n",
+					printf("f section.arch_%d @ 0x%08x\n",
 							archs[i].cputype,
 							archp + sizeof(struct fat_arch) * i);
-					printf("f arch_%d_end @ 0x%08x\n",
+					printf("f section.arch_%d_end @ 0x%08x\n",
 							archs[i].cputype,
 							archp + sizeof(struct fat_arch) * i
 							+ sizeof(struct fat_arch));
@@ -715,8 +712,8 @@ void dm_read_segment (int i)
 	int rc;
 
 	if (rad) {
-		printf("f section_lc_segment @ 0x%08x\n", offset);
-		printf("f section_lc_segment_end @ 0x%08x\n", offset
+		printf("f section.lc_segment @ 0x%08x\n", offset);
+		printf("f section.lc_segment_end @ 0x%08x\n", offset
 				+ sizeof(seg_command));
 		printf("CC [%02i] 0x%08x size=%08i nsects=%03i\n\n",
 				i, seg_command, seg_command->cmdsize, seg_command->nsects);

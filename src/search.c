@@ -178,25 +178,53 @@ static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
 
 int search_from_simple_file(char *file)
 {
+	FILE *fd;
+	char *ptr, buf[4096], cmd[4096];
 	int i,ret;
 	u64 tmp = config.seek;
 	tokenizer *t;
 
 	if (strchr(file, '?')) {
-		printf("Usage: /: file [file2] [file3] ...\n");
-		printf("File format:\n");
-		printf(" puts 89823993982839\n");
-		printf(" scanf 89844483241839\n");
+		cons_printf("Usage: /: file [file2] [file3] ...\n"
+			"File format:\n"
+			" puts 89823993982839\n"
+			" scanf 89844483241839\n");
 		return 0;
 	}
+
+	fd = fopen(file, "r");
+	if (fd == NULL) {
+		eprintf("Cannot open file '%s'\n", file);
+		return 0;
+	}
+	config_set("cfg.verbose", "false");
+	while(!feof(fd) && !config.interrupted) {
+		char *foo;
+		/* read line */
+		buf[0]='\0';
+		fgets(buf, 4095, fd);
+		if (buf[0]=='\0') continue;
+		buf[strlen(buf)-1]='\0';
+		ptr = strchr(buf, ' ');
+		if (ptr) {
+			ptr[0]='\0';
+			
+			sprintf(cmd, "hit.%s_%%d%%d", buf);
+			config_set("search.flagname", cmd);
+			sprintf(cmd, ":/x %s", ptr+1);
+			radare_cmd_raw(cmd, 0);
+			//eprintf("(%s)(%s)\n", buf, ptr+1);
+		}
+	}
+	config_set("cfg.verbose", "true");
+	config_set("search.flagname", "hit%d_%d");
+	fclose(fd);
+#if 0
 	t = binparse_new_from_simple_file(file);
 	if (t == NULL)
 		return 0;
 	t->callback = &radare_tsearch_callback;
 	nhit = 0;
-#if __UNIX__
-	D go_alarm(search_alarm);
-#endif
 	radare_controlc();
 	// TODO: do it generic (as for init)
 	radare_cmd("fs search", 0);
@@ -209,12 +237,10 @@ int search_from_simple_file(char *file)
 	}
 
 	radare_controlc_end();
-#if __UNIX__
-	D go_alarm(SIG_IGN);
-#endif
 	binparser_free(t);
-
+#endif
 	radare_seek(tmp, SEEK_SET);
+	radare_read(0);
 
 	return 1;
 }
@@ -347,7 +373,7 @@ do {
 	if (search_to!=0)
 		limit = search_to;
 
-	D eprintf("Searching from 0x%08llx to 0x%08llx\n", search_from, (search_to==0)?-1:search_to);
+	//D eprintf("Searching from 0x%08llx to 0x%08llx\n", search_from, (search_to==0)?-1:search_to);
 	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
 		s = config.seek;
 		if (i==0) {

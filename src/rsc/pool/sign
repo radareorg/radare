@@ -1,15 +1,14 @@
 #!/bin/sh
-
 if [ -z "$1" ]; then
-	echo "Usage: rsc sign /usr/lib/libc.a > libc.sign"
-	exit 1
+  echo "Usage: rsc sign /usr/lib/libc.a > libc.sign"
+  exit 1
 fi
 
-FILE=`mktemp -d`
-trap 'rm -rf $FILE' INT
-cd $FILE
+DIR=`mktemp -d`
+trap 'rm -rf $DIR' INT
+cd $DIR
 ar x $1
 for a in *.o ; do
-  rabin -o d/s/16 $a
+  rabin -o d/s/20 $a
 done
-rm -rf $FILE
+rm -rf $DIR

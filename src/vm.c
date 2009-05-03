@@ -600,6 +600,7 @@ int vm_eval_single(const char *str)
 	char *ptr, *eq;
 	char buf[128];
 	int i, len;
+	int op;
 
 //	if (log)
 	eprintf("   ; %s\n", str);
@@ -607,11 +608,16 @@ int vm_eval_single(const char *str)
 	len = strlen(str)+1;
 	ptr = alloca(len);
 	memcpy(ptr, str, len);
+	for(i=0;ptr[i];i++) {
+		if (ptr[i]==' ')
+			strbcpy(ptr+i, ptr+i+1);
+	}
 	
 	eq = strchr(ptr, '=');
 	if (eq) {
 		eq[0]='\0';
-		switch(eq[-1]) {
+		op = eq[-1];
+		switch(op) {
 		case '+':
 		case '-':
 		case '*':
@@ -622,9 +628,11 @@ int vm_eval_single(const char *str)
 		case '|':
 		case '<':
 		case '>':
-			snprintf(buf, 127, "%s%c%s", ptr, eq[-1], eq+1);
+			eq[-1]='\0';
+			snprintf(buf, 127, "%s%c%s", ptr, op, eq+1); //eq[-1], eq+1);
+			for(i=0;ptr[i];i++) if (ptr[i]==' '){ptr[i]='\0';break;}
+			printf("BUF(%s)(%s)\n", ptr, buf);
 			vm_eval_eq(ptr, buf);
-			//printf("EQ(%s)(%s)\n", ptr, buf);
 			break;
 		case ' ':
 			i=-1; do { eq[i--]='\0'; } while(eq[i]==' ');
@@ -748,6 +756,7 @@ int vm_emulate(int n)
 	config_set("asm.pseudo", "true");
 	config_set("asm.syntax", "intel");
 	config_set("asm.profile", "simple");
+	vm_reg_set(vm_cpu.pc, config.seek);
 	while(n--) {
 		pc = vm_reg_get(vm_cpu.pc);
 	udis_init();

@@ -2267,8 +2267,8 @@ Let's see how to define a macro:
 The command to manage macros is '('. The first thing we can do is a hello world:
 
 \c [0x465D8810]> (hello
-\c .. !echo Hello World
-\c .. !echo ===========
+\c .. ?e Hello World
+\c .. ?e ===========
 \c .. )
 \c [0x465D8810]> .(hello)
 \c Hello World
@@ -2325,7 +2325,7 @@ Here's an implementation of a generic numeric for loop using an iterator
 
 So now we can write something like this:
 
-\c x @@ .(for 0x300 0x400)
+\c x @@.(for 0x300 0x400)
 \c ...
 
 To execute the 'x' command at every offset from 0x300 to 0x400.
@@ -2419,9 +2419,9 @@ The clearest example about how to implement a language binding for radare is don
 
 The LUA language aims to be small, simple and fast dynamic language with a well designed core. This was the first language binding implemented in radare for this obvious reasons, and there are some scripts and API available in 'scripts/'.
 
-The main problem of LUA is the lack of libraries and community, so.. sadly for those copypasta developers it is not a productive language.
+The main problem of LUA is the lack of libraries and community, so.. sadly for those copypasta developers it is not a productive language like python is, but you have the same control on radare than any other scripting language because they share a common root entrypoint based on r.cmd() that accepts a command string and returns the output of the command in a string.
 
-TODO:...
+Then, if you need to resolve some data from the command result, just parse the resulting string.
 
 \H{python} Python
 

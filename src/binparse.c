@@ -100,7 +100,11 @@ static unsigned char get_num(const char * str, int len)
 	u8 * strp;
 	int value;
 
-	strp = alloca(len+1);
+	if (len <1 || str == NULL)
+		return NULL;
+	strp = malloc(len+1);
+	if (strp == NULL)
+		return NULL;
 	memset(strp, 0, len);
 	memcpy(strp, str, len );
 	
@@ -110,6 +114,7 @@ static unsigned char get_num(const char * str, int len)
 	} else	value = strp[0]; //sscanf (strp,"%c",(char *)&value );
 	value = value & 0xFF ;
 
+	free(strp);
 	return (unsigned char)value ;
 }
 
@@ -311,6 +316,7 @@ int binparse_add(tokenizer *t, char *string, char *mask)
 
 	if (string == NULL)
 		return n;
+//eprintf("KEY (%s)\n", string);
 	t->nlists++;
 	snprintf(name, 31, "SEARCH[%d]", n);
 	t->tls    = (tokenlist **) realloc(t->tls, t->nlists*sizeof(tokenlist*));
@@ -428,7 +434,6 @@ tokenizer* binparse_new_from_simple_file(char *file)
 				foo[j+3] = ptr[i+1];
 			}
 			foo[j]='\0';
-eprintf("KEY %s\n", foo);
 			binparse_add_name(tok, buf, foo, NULL);
 			free(foo);
 		}
@@ -477,7 +482,7 @@ int update_tlist(tokenizer* t, u8 inchar, u64 where )
 	unsigned char cmin;
 	unsigned char cmax;
 	unsigned char cmask;
-	int i;
+	int i, j;
 
 	if (t->nlists == 0) {
 		eprintf("No tokens defined\n");
@@ -487,8 +492,12 @@ int update_tlist(tokenizer* t, u8 inchar, u64 where )
 
 	for (i=0; i<t->nlists; i++ ) {
 		cmin = (t->tls[i]->tl[t->tls[i]->estat]).mintok;
-
-		if (  (t->tls[i]->tl[t->tls[i]->estat]).range > 0 ) {
+j = t->tls[i]->estat;
+if (j>t->tls[i]->numtok)
+	t->tls[i]->estat = 0;
+	
+//printf("%d\n", j);
+		if ( (t->tls[i]->tl[j]).range > 0 ) {
 			// RANGE
 			cmax = cmin + (t->tls[i]->tl[t->tls[i]->estat]).range;
 		

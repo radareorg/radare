@@ -103,12 +103,12 @@ done
 : ${INSTALL_PROGRAM:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -c}
- PKGNAME='radare' ; VERSION='1.3' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
+ PKGNAME='radare' ; VERSION='1.3.1' ; CONTACT_MAIL="pancake@youterm.com" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@youterm.com>" ;
 }
                 
 show_usage() {
 cat <<EOF2
-'configure' configures radare-1.3 to adapt to many kinds of systems.
+'configure' configures radare-1.3.1 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -166,6 +166,8 @@ printf "\nSome influential environment variables:
   CPPFLAGS    C/C++ preprocessor flags, e.g. -I<include dir> if you have
               headers in a nonstandard directory <include dir>
   CPP         C preprocessor
+  CXX         C++ compiler command
+  CXXFLAGS    C++ compiler flags
   RUBY        Ruby interpreter path or binary name.
   LUA         path to lua interpreter\n"
 printf "\nReport bugs to: pancake <pancake@youterm.com>"
@@ -177,12 +179,14 @@ take_environ() {
 : ${SH:=/bin/sh}
 : ${CPP:=cpp}
 : ${CC:=gcc}
+: ${CPP:=cpp}
+: ${CXX:=g++}
 : ${LUA:=lua}
 : ${PREFIX:=/usr/local/}
 }
 
 show_version() {
-echo "radare-1.3 configuration script done with acr v0.7.1.
+echo "radare-1.3.1 configuration script done with acr v0.7.1.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <youterm.com>."
 exit 0
@@ -200,8 +204,8 @@ case $flag in
 	show_version ; ;;
 "-r"|"--r"|"--report")
 echo "PKGNAME:   radare"
-echo "VERSION:   1.3"
-echo "LANGS:     c ruby python lua"
+echo "VERSION:   1.3.1"
+echo "LANGS:     c c++ ruby python lua"
 echo "REQUIRED:  libdl lib>=vala-1.0 libvala-1.0>=0.5.0"
 echo "OPTIONAL:  libewf"
 echo "PKG-CONFIG:  gtk+-2.0 vte"
@@ -272,7 +276,7 @@ parse_options $1
 shift
 done
 
-ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF WANT_EWF MAEMO HAVE_GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR SYSCONFDIR DATADIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU PKGNAME VPATH VERSION CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS LDFLAGS HAVE_LANG_C CXX CXXFLAGS HAVE_LANG_CXX LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF WANT_EWF MAEMO HAVE_GUI HAVE_GTKDIALOG GTKDIALOG GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK_2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -285,7 +289,7 @@ split_host BUILD HOST TARGET
 [ -n "${prefix}" ] && PREFIX=${prefix}
 echo "checking for working directories... ${WODIS}"
 echo "using prefix '${PREFIX}'"
-ACR_RMFILES=" test.c a.out a.exe"
+ACR_RMFILES=" test.c a.out a.exe test.cxx a.out a.exe"
 
 
 
@@ -310,6 +314,19 @@ if [ $? = 0 ]; then echo ${CC}; else
 do_remove
 echo "ERROR: ${CC} cannot create executables" >&2 ;
 exit 1 ; fi
+COMPILER=CXX
+HAVE_LANG_CXX=1
+printf "checking for c++ compiler... "
+if [ "${CROSSBUILD}" = 1 ]; then
+(command -v ${HOST}-${CXX} 2>&1 >/dev/null)
+if [ "$?" = "0" ]; then CXX="${HOST}-${CXX}"; fi
+fi
+echo "#include <iostream>" > test.cxx
+echo "main(){ std::cout << ""; }" >> test.cxx
+(exec ${CXX} ${CXXFLAGS} ${LDFLAGS} test.cxx -lstdc++ >/dev/null 2>&1)
+if [ 0 = 0 ]; then echo ${CXX}; else
+HAVE_LANG_CXX=0
+echo no ; fi
 printf "checking host endianness... "
 echo 'main(){int a=1;char *b=(char*)&a;printf("%d",b[0]);}' > test.c
 ${CC} ${CFLAGS} ${LDFLAGS} -o a.out test.c >/dev/null 2>&1
