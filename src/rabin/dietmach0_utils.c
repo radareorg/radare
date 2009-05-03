@@ -62,8 +62,10 @@ void
 {
   void *pointer;
 
-  if ( !(pointer = malloc(nbytes)) )
-    dm_fatal(EMAPFD);
+  if ( !(pointer = malloc(nbytes)) ) {
+    //dm_fatal(EMAPFD);
+    return NULL;
+  }
 
   memset(pointer, '\0', nbytes);
 
@@ -169,4 +171,13 @@ Debug (const char *fmt, ...)
   va_start(ap, fmt);
   (void) vfprintf(stderr, fmt, ap);
   va_end(ap);
+}
+
+u32 n0(const unsigned char *addr)
+{
+	u32 csz;
+	if (!memcmp("\xfe\xed\xfa\xce", fileaddr, 4)) {
+		csz = htonl(addr);
+	} else csz = addr;
+	return csz;
 }

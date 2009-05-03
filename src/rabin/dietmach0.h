@@ -70,10 +70,10 @@
  * Global Vars
  *
  */
-int swapped, fd, filesize;
-char *filename, output[MAX_F_LENGTH], *field, *out;
+extern int swapped, fd, filesize;
+extern char *filename, output[MAX_F_LENGTH], *field, *out;
 
-char *fileaddr, *startaddr;
+extern char *fileaddr, *startaddr;
 
 /*
  * Prototypes
