@@ -416,13 +416,15 @@ void rabin_show_strings(const char *file)
 		/* do nothing */
 		break;
 	default:
-		snprintf(buf, 1022, "echo /s | radare -nv %s",file);
+		if (rad) {
+			printf("fs strings\n");
+			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4\" @ \"$1}'"
+			"| tr ';<>`$~*\\'#\\\\' \"|%/=)[]!^-' '.........._________________' "
+			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
+		} else snprintf(buf, 1022, "echo /z | radare -nv %s",file);
 		system(buf);
 		break;
 	}
-	
-	//sprintf(buf, "echo /s | radare -e file.id=true -nv %s", file);
-	//system(buf);
 }
 
 void rabin_show_checksum(const char *file)
