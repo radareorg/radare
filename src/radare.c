@@ -305,6 +305,8 @@ int radare_strsearch(const char *str)
 		}
 		if (!useranges)
 			seek+=config.block_size;
+		if (config.interrupted)
+			break;
 	} while((!useranges && ret) ||
 		(useranges && ranges_get_n(range_n++, &seek, &size)));
 	config.seek = seek;

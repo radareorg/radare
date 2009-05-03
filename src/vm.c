@@ -492,6 +492,7 @@ int vm_eval_eq(const char *str, const char *val)
 	for(;*str==' ';str=str+1);
 	for(;*val==' ';val=val+1);
 
+	/* STORE */
 	if (*str=='[') {
 		// USE MMU
 		// [foo] = 33, [reg] = 33
@@ -557,6 +558,7 @@ int vm_eval_eq(const char *str, const char *val)
 			}
 		}
 	} else {
+	/* LOAD */
 		// USE REG
 		// reg = [foo] , reg = 33
 		if (*val=='[') {
@@ -564,6 +566,9 @@ int vm_eval_eq(const char *str, const char *val)
 			u8 data[8];
 			u64 off;
 			u32 _int32 = 0;
+			p = strchr(val+1,']');
+			if (p)
+				*p='\0';
 			p = strchr(val+1,':');
 			if (p) {
 				int size = atoi(val+1);
