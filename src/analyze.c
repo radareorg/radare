@@ -336,7 +336,6 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	config.seek = tmp;
 
 	blk = program_block_get_new(prg, oseek);
-
 	blk->bytes = (unsigned char *)malloc(bsz);
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
@@ -437,6 +436,9 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
         blk = program_block_get_new(prg, oseek);
 
         blk->bytes = (unsigned char *)malloc(bsz+1);
+	if (blk->bytes == NULL) {
+		eprintf("analyze.c: Cannot allocate\n");
+	}
         blk->n_bytes = bsz;
         memcpy(blk->bytes, buf, bsz);
         blk->tnext = aop.jump;
@@ -808,7 +810,8 @@ int analyze_function(u64 from, int recursive, int report)
 	u64 end  = 0;
 	int i, inc = 0;
 	u64 to;
-	u64 funsize, len = 0;
+	u64 funsize;
+	int len =0;
 	int ref;
 	int ncalls = 0;
 	int nrefs = 0;
@@ -856,7 +859,7 @@ int analyze_function(u64 from, int recursive, int report)
 		nblocks++;
 	}
 	to = end;
-	len=1+to-seek; //from;
+	len=(int)(1+to-seek); //from;
 	if (len<0)
 		return -1;
 

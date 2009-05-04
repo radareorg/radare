@@ -264,7 +264,6 @@ void rabin_show_info(const char *file)
 	case FILETYPE_MACHO:
 		if (rad) {
 			printf("e file.type = macho\n");
-			printf("e asm.arch = ppc\n");
 			printf("e cfg.bigendian = false\n");
 		} else printf("File type: MACH-O\n");
 		break;
@@ -419,7 +418,7 @@ void rabin_show_strings(const char *file)
 		if (rad) {
 			printf("fs strings\n");
 			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4\" @ \"$1}'"
-			"| tr ';<>`$~*\\'#\\\\' \"|%/=)[]!^-' '.........._________________' "
+			"| tr ';<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '.........._________________' "
 			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
 		} else snprintf(buf, 1022, "echo /z | radare -nv %s",file);
 		system(buf);
@@ -970,7 +969,7 @@ void rabin_show_symbols(char *file)
 		if (rad) {
 			printf("fs symbols\n");
 			fflush(stdout);
-			system("otool -tv $target | grep -C 1 -e : | grep -v / | awk '{if (/:/){label=$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym\"label\" @ 0x\"$1;label=\"\"}}'");
+			system("otool -tv $target | grep -C 1 -e : | grep -v / | awk '{if (/:/){label=$1;gsub(\":\",\"\",label);next}if (label!=\"\"){print \"f sym.\"label\" @ 0x\"$1;label=\"\"}}'");
 		} else {
 		   #if __DARWIN_BYTE_ORDER
 			sprintf(buf, "nm '%s' | grep ' T ' | sed 's/ T / /' | awk '{print \"0x\"$1\" \"$2}'", file);

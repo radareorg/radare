@@ -226,10 +226,12 @@ void dm_read_thread (int i)
 
 		memset(&state, 0x0, sizeof(state));
 		memcpy(&state, (char *)p, sizeof(state));
+		printf("fs regs\n");
 		for(i=0;i<18;i++) {
 			printf("f r%d @ 0x%08x\n", i, n0(state[i]));
 		}
 		printf("f entrypoint @ 0x%08x\n", n0(state[15]));
+		printf("e asm.arch=ppc\n");
 		}
 		break;
 	case 12: // ARM
@@ -259,11 +261,13 @@ void dm_read_thread (int i)
 
 		memset(&state, 0x0, sizeof(state));
 		memcpy(&state, (char *)p, sizeof(state));
+		printf("fs regs\n");
 		for(i=0;i<32;i++) {
 			printf("f r%d @ 0x%08x\n", i, n0(state[i]));
 		}
 		printf("f entrypoint @ 0x%08x\n", n0(state[15]));
 		printf("e io.paddr = 0x1000\n");
+		printf("e asm.arch=arm\n");
 		}
 		break;
 	case CPU_TYPE_I386:
@@ -295,6 +299,7 @@ void dm_read_thread (int i)
 		memset(&state, 0x0, sizeof(i386_thread_state_t));
 		memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
 
+		printf("fs regs\n");
 		printf("f entrypoint @ 0x%08x\n", n0(state.eip));
 		printf("f eax @ 0x%08x\n", n0(state.eax));
 		printf("f ebx @ 0x%08x\n", n0(state.ebx));
@@ -314,6 +319,7 @@ void dm_read_thread (int i)
 		n0(state.eax), n0(state.ebx), n0(state.ecx), n0(state.edx), n0(state.edi), n0(state.esi),
 		n0(state.ebp), n0(state.esp), n0(state.ss), n0(state.eflags), n0(state.eip), n0(state.cs),
 		n0(state.ds), n0(state.es), n0(state.fs), n0(state.gs));
+		printf("e asm.arch=x86\n");
 		}
 		break;
 	default:
