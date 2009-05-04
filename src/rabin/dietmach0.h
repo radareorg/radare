@@ -30,7 +30,8 @@
  */
 /* @LICENSE_END@ */
 
-#if __APPLE__
+#if 0
+//	__APPLE__
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
 #endif
@@ -106,7 +107,7 @@ void dm_map_file(char *, int);
 #define	MH_MAGIC	0xfeedface	/* the mach magic number */
 #define MH_CIGAM	0xcefaedfe	/* NXSwapInt(MH_MAGIC) */
 
-#ifndef __APPLE__
+#if 1
 /*
  * Identify the byte order
  * of the current host.

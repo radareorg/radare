@@ -30,7 +30,8 @@
  */
 /* @LICENSE_END@ */
 
-#if __APPLE__
+#if 0
+//__APPLE__
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
 #include <mach-o/swap.h>
@@ -105,14 +106,28 @@ dm_map_file (char *filename, int fd)
    */
   //fprintf(stderr, "\nFilename: %s\n", filename);
   filesize = sb.st_size;
-  //fprintf(stderr, "File size: %d\n\n", filesize);
+if (filesize == 0) {
+	filesize = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_SET);
+}
+/* hack and wiki! -- ugly hack but working */
+if (filesize == 0)
+	filesize = 8192;
+  //fprintf(stderr, "File '%s' size: %d\n\n", filename, filesize);
 
-#if __APPLE__ || __WINDOWS__ || __BSD__
+  fileaddr = NULL;
+#if __APPLE__
+  fileaddr = malloc(filesize);
+  lseek(fd, 0, SEEK_SET);
+  read(fd, fileaddr, filesize);
+#elif __WINDOWS__  || __BSD__
   if ( (result = map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
                         (boolean_t)TRUE, 
                         (vm_size_t)filesize)) != KERN_SUCCESS )
-#elif __linux__
-  fileaddr = mmap(0, filesize, PROT_READ, MAP_SHARED, fd, 0);
+#elif __linux__ || __APPLE__
+  fileaddr = mmap(0, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
+perror("mmap");
+printf("FILEADDR=%p\n", fileaddr);
 #else
 #warning MACHO parser not working on this arch
 
@@ -121,7 +136,7 @@ dm_map_file (char *filename, int fd)
 
   //if ( (result = mmap(&fileaddr, (size_t)filesize, PROT_READ|PROT_WRITE,
    //                   MAP_SHARED, (int)fd, 0)) == (int *)MAP_FAILED)
-  if ( fileaddr == -1 )
+  if ( fileaddr == MAP_FAILED )
     {
       dm_fatal("Cannot map file %s\n", filename);
       close(fd);
@@ -178,6 +193,6 @@ u32 n0(const unsigned char *addr)
 	u32 csz;
 	if (!memcmp("\xfe\xed\xfa\xce", fileaddr, 4)) {
 		csz = htonl(addr);
-	} else csz = addr;
+	} else csz = (u32)addr;
 	return csz;
 }

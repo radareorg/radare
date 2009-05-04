@@ -28,7 +28,8 @@
  *
  */
 
-#if __APPLE__
+#if 0
+//__APPLE__
 #include <mach-o/fat.h>
 #include <mach-o/arch.h>
 #include <mach-o/swap.h>
@@ -204,7 +205,6 @@ void dm_read_thread (int i)
 		 */
 		p = (char *)offset + sizeof(struct thread_command);
 
-		printf("e asm.arch=powerpc\n");
 		//memcpy(&flavor, p, sizeof(unsigned long));
 		flavor = n0(p);
 		printf("; flavor \t\t\t: %lu\n", flavor);
@@ -240,7 +240,6 @@ void dm_read_thread (int i)
 		 */
 		p = (char *)offset + sizeof(struct thread_command);
 
-		printf("e asm.arch=arm\n");
 		memcpy(&flavor, p, sizeof(unsigned long));
 		printf("; flavor \t\t\t: %lu\n", flavor);
 
@@ -293,7 +292,6 @@ void dm_read_thread (int i)
 		 */
 		p += sizeof(unsigned long);
 
-		printf("e asm.arch=x86\n");
 		memset(&state, 0x0, sizeof(i386_thread_state_t));
 		memcpy(&state, (char *)p, sizeof(i386_thread_state_t));
 
@@ -689,6 +687,10 @@ void dm_read_header (int p)
 	unsigned int  nfat;
 	char	        *stmt;
 
+	if (fileaddr == NULL) {
+		fprintf(stderr, "file not mmaped in memory.\n");
+		return;
+	}
 	memset(&fat_header, 0x0,        sizeof(struct fat_header));
 	memcpy(&fat_header, fileaddr,   sizeof(struct fat_header));
 
