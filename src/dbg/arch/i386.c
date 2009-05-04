@@ -1440,7 +1440,6 @@ int arch_is_stepoverable(const unsigned char *cmd)
 	return arch_is_soft_stepoverable(cmd);
 }
 
-
 void next_sf(struct list_head *list, unsigned long esp)
 {
 	unsigned long  ret_pos, ret;

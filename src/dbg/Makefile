@@ -1,5 +1,5 @@
 include ../../config.mk
-CFLAGS+=-I ../arch/ -I ../include
+CFLAGS+=-I../arch/ -I ../include -I/usr/local/include
 include objects.mk
 FOO=$(subst dbg/,,${psOBJ})
 OBJ+=${FOO}

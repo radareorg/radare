@@ -132,7 +132,7 @@ enum NXByteOrder {
 
 typedef unsigned int vm_offset_t;
 typedef unsigned int vm_size_t;
-typedef unsigned int boolean_t;
+//typedef unsigned int boolean_t;
 typedef int cpu_type_t;
 typedef int cpu_subtype_t;
 typedef int vm_prot_t;

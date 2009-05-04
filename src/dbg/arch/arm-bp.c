@@ -159,7 +159,13 @@ int arch_restore_bp(struct bp_t *bp)
 
 	arch_bp_soft_disable(bp);
 	debug_getregs(ps.tid, &regs);
+#if __linux__
 	regs[15] -= 4; // pc-=4;
+#elif __APPLE__
+	regs.r15 -=4;
+#else
+#warning TODO arch_restore_bp
+#endif
 
 	debug_setregs(ps.tid, &regs);
 	debug_os_steps();

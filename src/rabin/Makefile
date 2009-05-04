@@ -9,4 +9,4 @@ rabin${BINSFX}: ${OBJ}
 	${CC} ${OBJ} ${DL_LIBS} -o rabin${BINSFX}
 
 clean:
-	-rm -f dietelf.o dietelf64.o rabin.o dietpe.o dietmach0.o dietmach0_utils.o rabin${BINSFX} aux.o
+	-rm -f dietelf.o dietelf64.o dietpe64.o rabin.o dietpe.o dietmach0.o dietmach0_utils.o rabin${BINSFX} aux.o

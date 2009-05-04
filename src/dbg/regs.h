@@ -52,12 +52,17 @@
 #endif
  
 #if __APPLE__
-	#include <sys/ucontext.h>
 #if __POWERPC__
+	#include <sys/ucontext.h>
 	#include <mach/ppc/_types.h>
 	#define regs_t ppc_thread_state_t
 	#define THREAD_STATE PPC_THREAD_STATE
+#elif __arm
+	#include <mach/arm/thread_status.h>
+	#define regs_t arm_thread_state_t
+	#define THREAD_STATE ARM_THREAD_STATE
 #else
+	#include <sys/ucontext.h>
 	#define regs_t _STRUCT_X86_THREAD_STATE32
 	#include <mach/i386/_structs.h>
 	#define THREAD_STATE i386_THREAD_STATE
@@ -196,7 +201,7 @@
 #endif
 
 //#ifndef regs_t
-#if __arm__
+#if __arm__ && __linux__
   #define regs_t elf_gregset_t
 //#else
 //  #define regs_t struct user_regs_struct

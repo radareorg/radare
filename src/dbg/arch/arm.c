@@ -30,11 +30,15 @@
 #include <sys/types.h>
 #include <sys/ptrace.h>
 //#include <asm/ptrace.h>
+#if __linux__
 #include <sys/procfs.h>
 #include <sys/syscall.h>
+#endif
 
-elf_gregset_t cregs; // current registers
-elf_gregset_t oregs; // old registers
+#include "arm.h"
+regs_t cregs, oregs;
+//elf_gregset_t cregs; // current registers
+//elf_gregset_t oregs; // old registers
 
 int arch_is_fork()
 {
@@ -146,16 +150,17 @@ int arch_dump_registers()
 {
 	FILE *fd;
 	int ret;
-	elf_gregset_t regs;
+	regs_t regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
-	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
-
 	fd = fopen("cpustate.dump", "w");
 	if (fd == NULL) {
 		fprintf(stderr, "Cannot open\n");
 		return;
 	}
+#if __linux__
+	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+
 	fprintf(fd, "r00 0x%08x\n", (uint)regs[0]);
 	fprintf(fd, "r01 0x%08x\n", (uint)regs[1]);
 	fprintf(fd, "r02 0x%08x\n", (uint)regs[2]);
@@ -174,6 +179,9 @@ int arch_dump_registers()
 	fprintf(fd, "r15 0x%08x\n", (uint)regs[15]);
 	fprintf(fd, "r16 0x%08x\n", (uint)regs[16]);
 	fprintf(fd, "r17 0x%08x\n", (uint)regs[17]);
+#elif __APPLE__
+#warning TODO	
+#endif
 	fclose(fd);
 }
 
@@ -182,6 +190,8 @@ int arch_stackanal()
 	return 0;
 }
 
+#include <mach/arm/thread_status.h>
+
 int arch_restore_registers()
 {
 	FILE *fd;
@@ -189,10 +199,7 @@ int arch_restore_registers()
 	char reg[10];
 	unsigned int val;
 	int ret;
-	elf_gregset_t regs;
-
-	printf("Dumping CPU to cpustate.dump...\n");
-	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+	regs_t regs;
 
 	// TODO: show file date
 	fd = fopen("cpustate.dump", "r");
@@ -200,6 +207,9 @@ int arch_restore_registers()
 		fprintf(stderr, "Cannot open cpustate.dump\n");
 		return;
 	}
+	printf("Dumping CPU to cpustate.dump...\n");
+#if __linux__
+	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
 
 	while(!feof(fd)) {
 		fgets(buf, 1023, fd);
@@ -227,9 +237,12 @@ int arch_restore_registers()
 		case 3617138: regs[17] = val; break;
 		}
 	}
+	ret = ptrace (PTRACE_SETREGS, ps.tid, 0, &regs);
+#else
+#warning arch-restore not support for this arch
+#endif
 	fclose(fd);
 
-	ret = ptrace (PTRACE_SETREGS, ps.tid, 0, &regs);
 
 	return;
 }
@@ -331,32 +344,44 @@ int arch_call(const char *arg)
 #define ARM_lr 14
 int arch_ret()
 {
+#if __linux__
 #define uregs regs
-	elf_gregset_t regs;
+	regs_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
 	regs[ARM_pc]=regs[ARM_lr];
 	//ARM_pc = ARM_lr;
 	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 	return ARM_lr;
+#else
+#warning arch_ret not implemented for this arch
+#endif
 }
 
 int arch_jmp(u64 ptr)
 {
+#if __linux__
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 	if (ret < 0) return 1;
 	regs[ARM_pc]=ptr;
 	ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
 	return 0;
+#else
+#warning arch_ret not implemented for this arch
+#endif
 }
 
 u64 arch_pc(int tid)
 {
+#if __linux__
 	elf_gregset_t regs;
 	int ret = ptrace(PTRACE_GETREGS, tid, NULL, &regs);
 	if (ret < 0) return 1;
 	return ARM_pc;
+#else
+#warning arch_ret not implemented for this arch
+#endif
 }
 
 int arch_set_register(const char *reg, const char *value)
@@ -382,6 +407,7 @@ int arch_set_register(const char *reg, const char *value)
 		reg = "r12";
 
 	if (*reg=='r') {
+#if __linux__
 		elf_gregset_t regs;
 		ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
 		if (ret < 0) return 1;
@@ -390,8 +416,12 @@ int arch_set_register(const char *reg, const char *value)
 			eprintf("Invalid register\n");
 		} else regs[ret] = (int)get_offset(value);
 		ret = ptrace(PTRACE_SETREGS, ps.tid, NULL, &regs);
+#else
+#warning not implemented here
+#endif
 	} else
 	if (*reg=='f') {
+#if __linux__
 		unsigned long long fregs[8];
 		ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, &fregs);
 		if (ret < 0) return 1;
@@ -400,6 +430,9 @@ int arch_set_register(const char *reg, const char *value)
 			eprintf("Invalid register\n");
 		} else fregs[ret] = get_offset(value);
 		ret = ptrace(PTRACE_SETFPREGS, ps.tid, NULL, &fregs);
+#else
+#warning not implemented for this arch
+#endif
 	} else
 		eprintf("Invalid register name. Try r## or f##\n");
 
@@ -409,6 +442,7 @@ int arch_set_register(const char *reg, const char *value)
 int arch_print_fpregisters(int rad, const char *mask)
 {
 	unsigned long long fregs[8];
+#if __linux__
 	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, NULL, &fregs);
 	if (rad) {
 		for (i=0;i<8;i++)
@@ -417,6 +451,9 @@ int arch_print_fpregisters(int rad, const char *mask)
 		for (i=0;i<8;i++)
 			cons_printf(" f%d @ 0x%08llx\n", fregs[i]);
 	}
+#else
+#warning not implemented here
+#endif
 #if 0
 	/* TODO: fps ? */
 f0             0        (raw 0x000000000000000000000000)
@@ -435,12 +472,15 @@ fps            0x0      0
 int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
-	elf_gregset_t regs;
+	regs_t regs;
 	int color = config_get("scr.color");
 
 	/* Get the thread id for the ptrace call.  */
 	//tid = GET_THREAD_ID (inferior_ptid);
 
+#if __APPLE__
+	printf("TODO: getregs for osx-arm\n");
+#else
 	if (mask && mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 	} else {
@@ -546,11 +586,12 @@ int arch_print_registers(int rad, const char *mask)
 			cons_strcat("  cpsr=r16\n");
 		}
 	}
+#endif
 
-	if (memcmp(&cregs,&regs, sizeof(elf_gregset_t))) {
-		memcpy(&oregs, &cregs, sizeof(elf_gregset_t));
-		memcpy(&cregs, &regs, sizeof(elf_gregset_t));
-	} else memcpy(&cregs, &regs, sizeof(elf_gregset_t));
+	if (memcmp(&cregs,&regs, sizeof(regs_t))) {
+		memcpy(&oregs, &cregs, sizeof(regs_t));
+		memcpy(&cregs, &regs, sizeof(regs_t));
+	} else memcpy(&cregs, &regs, sizeof(regs_t));
 
 	return 0;
 }
@@ -559,8 +600,10 @@ int arch_continue()
 {
 	int ret;
 
+#if __linux__
 	elf_gregset_t regs;
 	ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
+#endif
 	ret = ptrace(PTRACE_CONT, ps.tid, 0, 0); // XXX
 
 	return ret;
@@ -726,6 +769,7 @@ void free_bt(struct list_head *sf)
 
 u64 get_reg(const char *reg)
 {
+#if __linux__
 	elf_gregset_t regs;
 	int ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
 
@@ -740,5 +784,8 @@ u64 get_reg(const char *reg)
 		if (r<0)r = 0;
 		return regs[r];
 	}
+#elif __APPLE__
+#warning get_reg TODO
+#endif
 	return 0LL;
 }

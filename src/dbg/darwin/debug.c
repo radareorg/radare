@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -214,6 +214,12 @@ int debug_contp(int tid)
 	return 0;
 }
 
+#if __arm || __arm__
+void debug_arch_x86_trap_set(int pid, int foo)
+{
+	/* do nothing here */
+}
+#else
 // XXX intel specific
 #define EFLAGS_TRAP_FLAG 0x100
 void debug_arch_x86_trap_set(int pid, int foo)
@@ -225,6 +231,7 @@ void debug_arch_x86_trap_set(int pid, int foo)
 	else regs.__eflags &= ~EFLAGS_TRAP_FLAG;
 	debug_setregs(pid_to_task(pid), &regs);
 }
+#endif
 
 int QMACHINE_THREAD_STATE_COUNT = sizeof(regs_t)/4;
 int debug_os_steps()
@@ -455,7 +462,9 @@ int debug_list_threads(int pid)
 			//fprintf(stderr, "debug_list_threads: %s\n", MACH_ERROR_STRING(err));
 		} else{
 			th->status = 0; // XXX TODO
-#if __POWERPC__
+#if __arm__
+			th->addr = state.r15;
+#elif __POWERPC__
 			th->addr = state.srr0;
 #else
 			th->addr = state.__eip;

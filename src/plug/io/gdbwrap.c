@@ -120,7 +120,7 @@ void r_gdbwrap_system(char *str)
 	} else
 	if (!memcmp(str, "help", 4)) {
 		printf("gdbwrap help:\n"
-		" !vm          ; run vmware initialization stuff (???)\n"
+		" !vm          ; run vmware initialization stuff (uhm?)\n"
 		" !step        ; perform a step into\n"
 		" !cont        ; continue\n"
 		" !stop        ; stop running process\n"
