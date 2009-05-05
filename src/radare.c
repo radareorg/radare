@@ -2005,7 +2005,6 @@ char *pipe_command_to_string(const char *cmd)
 
 	pipe(fdp);
 	fd = fdp[1];
-eprintf("\nDUMP(%s)\n", cmd);
 	cons_reset();
 	//cons_flush();
 	if (fd == -1) {
@@ -2024,16 +2023,18 @@ eprintf("\nDUMP(%s)\n", cmd);
 	}
 
 	cons_reset();
-	//cons_flush();
+	cons_flush();
 	fflush(stdout);
 	fflush(stderr);
 	memset(buf,0,sizeof(buf));
+	fcntl(fdp[0], F_SETFL, O_NONBLOCK, 1);
 	read(fdp[0], buf, 4095);
 	close(fd);
 	if (1||std!=0) {
 		dup2(std, 1);
 		close(std);
 	}
+//eprintf("\nDUMP(%s)\n", buf);
 
 return strdup(buf);
 }

@@ -819,6 +819,9 @@ CMD_DECL(graph)
 			ugraph_edge(get_math(p0), get_math(p1+1));
 			}
 			break;
+		case 'd':
+			ugraph_print_dot();
+			break;
 		case 'k':
 			// TODO
 			//ugraph_key(input[0]
@@ -829,10 +832,11 @@ CMD_DECL(graph)
 			graph_set_user(0);
 			break;
 		default:
-			eprintf("Usage: ug[nerv] [args]\n"
+			eprintf("Usage: gu[dnerv] [args]\n"
 			" gur              user graph reset\n"
 			" gun $$ $$b pd    add node\n"
 			" gue $$F $$t      add edge\n"
+			" gud              display graph in dot format\n"
 			//" guk s !step      add keybinding\n"
 			//" gum Step !step   add contextual menu entry\n"
 			" guv              visualize user defined graph\n");
@@ -2292,8 +2296,12 @@ CMD_DECL(search) {
 		" /x A0 B0 43        ; hex byte pair binary search. (space between bytes are optional)\n"
 		" /z [str,-max,+min] ; find ascii/widechar strings matching 'str' (or size limit)\n"
 		" /0, /1, /2..       ; launch search using keyword number\n"
+		"NOTE: See 'e search.' for extended options for these commands\n"
 		"NOTE: This command will run from current seek unless we had previosly defined\n"
 		"      The initial and end offsets in the search.from and search.to eval vars.\n");
+		break;
+	case 'e':
+		//regexp
 		break;
 	case 'p':
 		do_byte_pat(atoi(text+1));

@@ -683,6 +683,19 @@ struct ugraph_node_t *ugraph_get(u64 addr)
 	return NULL;
 }
 
+void ugraph_print_dot()
+{
+	struct list_head *head, *ehead;
+	if (!graphuserinit)
+		ugraph_reset();
+	cons_printf("digraph {\n");
+	list_for_each_prev(ehead, &(ug.edges)) {
+		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);
+		cons_printf(" 0x%08llx -> 0x%08llx ;\n", e->from, e->to);
+	}
+	cons_printf("}\n");
+}
+
 void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 {
 	u64 oseek = config.seek;

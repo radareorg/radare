@@ -1180,6 +1180,7 @@ int yesno(int def, const char *fmt, ...)
 		fflush(stderr);
 		cons_set_raw(1);
 		read(0, &key, 1); write(2, "\n", 1);
+		if (key == 'Y') key = 'y'; // tolower fix
 		cons_set_raw(0);
 		if (key=='\n'||key=='\r')
 			key = def;

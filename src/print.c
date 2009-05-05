@@ -752,7 +752,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		radare_cmd( config_get("cmd.print"), 0);
 		last_print_format = i;
 		break;
-	case FMT_REF: {
+	case FMT_REF:
+		{
 		char buf[128];
 		char *str = NULL;
 		buf[0]='\0';
@@ -763,6 +764,16 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 			free(str);
 		}
 		} break;
+
+#if 0
+		str = config_get("cmd.asm");
+		str = pipe_command_to_string(str);
+		if (str) {
+			cons_printf(str);
+			free(str);
+		}
+		break;
+#endif
 	case FMT_VISUAL:
 		i = last_print_format;
 		radare_cmd( config_get("cmd.visual"),0);
