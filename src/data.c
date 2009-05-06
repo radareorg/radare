@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -156,7 +156,7 @@ int data_set(u64 off, int type)
 struct data_t *data_add_arg(u64 off, int type, const char *arg)
 {
 	struct data_t *d;
-	if (arg == NULL)
+	if (arg == NULL || arg[0]=='\0')
 		return NULL;
 	d = data_add(off, type);
 	if (d != NULL)

@@ -647,13 +647,21 @@ void ugraph_reset()
 
 void ugraph_node(u64 from, u64 size, const char *cmd)
 {
-	struct ugraph_node_t *n = MALLOC_STRUCT(struct ugraph_node_t);
+	struct list_head *pos;
+	struct ugraph_node_t *n;
+	if (!config_get_i("graph.userdup")) {
+		list_for_each_prev(pos, &(ug.nodes)) {
+			n = list_entry(pos, struct ugraph_node_t, list);
+			if (n->from == from)
+				return;
+		}
+	}
+	n = MALLOC_STRUCT(struct ugraph_node_t);
 	n->from = from;
 	n->size = size;
 	strncpy(n->cmd, cmd, sizeof(n->cmd));
-	if (n->cmd[strlen(n->cmd)-1]=='"') {
+	if (n->cmd[strlen(n->cmd)-1]=='"')
 		n->cmd[strlen(n->cmd)-1]='\0';
-	}
 	if (!graphuserinit)
 		ugraph_reset();
 	list_add_tail(&(n->list), &ug.nodes);
@@ -685,13 +693,13 @@ struct ugraph_node_t *ugraph_get(u64 addr)
 
 void ugraph_print_dot()
 {
-	struct list_head *head, *ehead;
+	struct list_head *head;
 	if (!graphuserinit)
 		ugraph_reset();
 	cons_printf("digraph {\n");
-	list_for_each_prev(ehead, &(ug.edges)) {
+	list_for_each_prev(head, &(ug.edges)) {
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);
-		cons_printf(" 0x%08llx -> 0x%08llx ;\n", e->from, e->to);
+		cons_printf(" _0x%08llx -> _0x%08llx ;\n", e->from, e->to);
 	}
 	cons_printf("}\n");
 }

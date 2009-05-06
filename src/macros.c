@@ -319,7 +319,8 @@ int radare_macro_call(const char *name)
 			char *end = strchr(ptr, '\n');
 
 			if (mac->nargs != 0 && nargs != mac->nargs) {
-				eprintf("Macro '%s' expects %d args\n", mac->name, mac->nargs);
+				eprintf("Macro '%s' expects %d args. (not %d) (%s).\n",
+					mac->name, mac->nargs, nargs, name);
 				macro_level --;
 				return 0;
 			}

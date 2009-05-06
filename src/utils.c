@@ -471,10 +471,14 @@ u32 get_offset32(const char *foo)
 int set0word(char *str)
 {
 	int i;
-	char *p;
+	char *p, *q;
 	if (str[0]=='\0')
 		return 0;
-	for(i=1,p=str;p[0];p=p+1)if(*p==' '){i++;*p='\0';} // s/ /\0/g
+	for(i=1,q=p=str;p[0];p=p+1) {
+		if(*p==' ') *p='\0';
+		else { if (*q==' ') i++; }
+		q = p;
+	}
 	return i;
 }
 

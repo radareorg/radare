@@ -769,16 +769,18 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	o+=_o; x+=_x; p+=_p; v+=_v;
 	/* TODO: change this value depending on delta times */
 	if (refresh++%10) return 0;
-	eprintf("                                                              \r"
-		"   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
 	tmp = p/25;
-	for(i=0;i<tmp;i++)
-		eprintf("|");
 	p = p%25;
-	for(i=0;i<p;i++)
-		eprintf("=");
 	tmp = v/20;
 	v = v%20;
+	for(i=0;i<(p+v);i++)
+		eprintf(" ");
+	eprintf(" \r");
+	eprintf("   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
+	for(i=0;i<tmp;i++)
+		eprintf("|");
+	for(i=0;i<p;i++)
+		eprintf("=");
 	for(i=0;i<v;i++)
 		eprintf("-");
 	for(i=0;i<tmp;i++)
