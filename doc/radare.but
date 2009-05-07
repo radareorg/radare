@@ -6341,6 +6341,510 @@ Thanks to Pancake for this great crackme. Had a lot of fun, eventhough this was 
 
 BTW, Pancake is also the guy who wrote radare and tools. Pretty fine tools for this kind of work :))
 
+\H{forumspcc} Interpreting C structures with spcc
+
+Sometimes you need to interpret a data structure found on a piece
+of a binary file. Radare make use of libmagic to achieve this.
+
+In visual mode you can press the 'm' key to interpret the current
+data block by the 'rfile' wrapper.
+
+How to write a magic database file for mapping binary structures?
+NOTE: Read the file(1) manpage fmi.
+
+The magic file syntax is not very readable and probably ugly to write,
+so, radare provides a user-defined way to create C and perl descriptors
+for data blocks. This is explained later in this paper.
+
+Magic files follow this basic structure:
+
+\c 0         type  match  output
+\c >offset   type  match  output
+\c >>offset  type  match  output
+\c >>offset  type  match  output
+\c (...)
+
+The '>' tree is only followed if the previous '>' level matches. So you
+can provide on a single file a multiple switch/case hirearchy for multiple
+filetypes or data structures.
+
+This format does not support include-like directives, so you must provide
+define all the magic files using the -m flag.
+
+
+Structure parser language wrappers
+==================================
+radare implements some language wrappers to create parsers for binary
+structures using C or perl.
+
+You can create an 'spc' file (structure parser in C language) to create
+a data block parser to be called from radare using the pU mode (user-defined
+print command).
+
+This command is defined by the user with the %PRINTCMD environment
+variable.
+
+\c $ cat test.spc
+\c 
+\c struct foo {
+\c         int id;
+\c         void *next;
+\c         void *prev;
+\c };
+\c 
+\c void parse(struct spcc *spcc, uchar *buffer) {
+\c         struct foo tmp;
+\c         memcpy(&tmp, buffer, sizeof(struct foo));
+\c         printf("id: %d\nnext: %p\nprev: %p\n",
+\c                 tmp.id, tmp.next, tmp.prev);
+\c }
+
+
+This is our structure parser. A simple double-linked list of integers viewer.
+
+\c $ rsc spcc
+\c 
+\c spcc - structure parser c compiler
+\c Usage: spcc [file.spc] ([gcc-flags])
+\c 
+\c $ rsc spcc test.spc -o test
+\c $ ./test
+\c Usage: ./test [file] [offset]
+
+----
+
+Now we can use this structure parser as a user defined print command:
+
+\c $ export PRINTCMD=$PWD/test
+\c $ radare /tmp/target-file
+
+\c > s 0x400
+\c > pU
+\c id: 678326121
+\c next: 0x72616863
+\c prev: 0x74732a20
+
+Playing with the visual mode
+============================
+
+We can use the user-defined print command inside the visual mode and
+walk between the flags interpreting each data block with our own parser.
+
+Use the 'f' and 'F' key to move around the flags in visual mode and
+change the print format using the 'p' key.
+
+\H{forummonitor} rsc monitor usage
+
+Rsc is a wonderful entrypoint for user-defined external programs for radare.
+
+There's a script called 'monitor' which allows to execute a intro-separated list of commands
+and visualize them on an external terminal or window.
+
+Let's start with a simple example. Let's trace the contents of a buffer while we are stepping into a loop.
+
+\c $ radare dbg://<path-to-our-program>
+
+Lets open a new terminal and play with it..
+
+To list all current monitors type 'rsc monitor -l'. Remember that all your radares will share the same monitorpath. Use the MONITORPATH environment variable to change this (eval dir.monitor inside radare if you don't want to restart your radare) smile
+
+\c $ rsc monitor
+\c Usage: rsc monitor [-lr] [name] [command]
+\c   -l        list all running monitors
+\c   -r [name] remove a specific monitor
+\c   -R        removes all monitors
+\c Use MONITORPATH defaults to ~/.radare/monitor/
+
+To setup a new monitor type this:
+
+\c $ rsc monitor xeip x@eip
+
+This will create monitor called "xeip" that willl show N bytes (block size) in hexadecimal starting from eip.
+
+Monitors are executed everytime the prompt is shown (also in visual mode), I plan to add a SIGHUP callback for this in future versions.
+
+Now we can monitor the 'xeip' monitor with:
+
+\c $ rsc monitor xeip
+
+If you want to execute more than one command per monitor. Just edit the script by hand in ~/.radare/monitor/your-script (output of the script is your-script.txt) So. don't use .txt as script name smile
+
+To remove all monitors use -R or -r with the script name to be removed.
+
+\c $ rsc monitor -R
+
+Monitors are integrated with the gui.
+
+I plan to use inotify() on linux to update the contents of the file faster.
+
+NOTES: Only radare commands can be executed. Shell ones will be executed but not shown (because of the console abstraction).
+
+\H{forumlua} forum: Scripting with lua
+
+Radare can be scripted using lua in a very simple way.
+
+You can call the scripts in batch mode using the -i flag of radare or just calling it using the lua 'hack' plugin.
+
+\c $ radare -i myscript.lua /bin/ls
+
+or 
+
+\c radare /bin/ls
+\c > H lua myscript.lua
+
+Take care about having liblua5.1-dev installed in your system and lua.so is properly build and installed.
+
+There's an API provided by LIBDIR/radare/radare.lua where you will easily find the way to call radare commands from lua and viceversa.
+
+There are a lot of tutorials about lua, so I will focus on the use for radare.
+
+I will increase this article while I have some time, ask me your questions and proposals for the scripting on this thread.
+
+Here's a little example searching:
+
+\c -- search lib and show results
+\c Radare.seek(0)
+\c local hits = Radare.Search.string("lib")
+\c for i = 1, #hits do
+\c         print(" => "..hits[i]..": "..Radare.cmd("pz @ "..hits[i]))
+\c done
+
+will show:
+
+\c $ radare -vi search-demo.lua /bin/ls
+\c  => 0x00000135: lib/ld-linux.so.2
+\c  => 0x00000b71: librt.so.1
+\c  => 0x00000f2a: libc_start_main
+
+... more examples will come.. smile
+
+\H{forumlua2} forum: Scripting with lua (2)
+
+Yesterday..well this morning..but before going to sleep Osmile I commited
+into the repository a new namespace for the radare lua api to analyze
+code and data.
+
+Actually this matches with the latest changes in the core while
+deprecating commands like (pA, pC and pG) into a more logical new
+command called 'a' (analyze) to merge all code and data analysis.
+
+So if you want to analyze an opcode you type "ao" and it will show a
+hashtable like this one.
+
+\c [0x00000000]> ao
+\c index = 0
+\c opcode =   jg 0x47
+\c size = 2
+\c type = conditional-jump
+\c bytes = 7f 45 
+\c base = 0x00000000
+\c jump = 0x00000047
+\c fail = 0x00000002
+
+This output can be easily parsed in lua in this way:
+
+Code:
+
+\c function Radare.Analyze.opcode(addr)
+\c   if addr == nil then addr = "" else addr= "@ "..addr end
+\c   local res = split(Radare.cmd("ao "..addr),"\n")
+\c   local ret = {}
+\c   for i = 1, #res do
+\c     local line = split(res[i], "=")
+\c     ret[chop(line[1])] = chop(line[2])
+\c   end
+\c   return ret;
+\c end
+
+So from our scripts we can write something like this:
+
+Code:
+
+\c op = Radare.Analyze.opcode()
+\c 
+\c print("Attributes for this opcode")
+\c for k,v in pairs(op) do
+\c         print (" - "..k.." = "..v)
+\c end
+\c 
+\c print("Opcode size: "..op["size"])
+\c 
+\c -- change EIP instead of perform a call
+\c if op["type"] == "call" then
+\c   Radare.Debugger.set("eip", op["jump"])
+\c fi
+
+Im currently having a look on different APIs like the IDA one to try to
+get a good approach to ease the code analysis from scripts.
+
+But for now, using the "ac" command you can analyze code and get the
+code blocks with a certain depth. Expect a mostly stable api for
+analyzing code blocks, data, opcodes for all the current supported
+architectures of radare before the 0.9.7 release. (~20 of Jun)
+
+
+As you see. using lua as scripting lang for radare is really easy and
+extensible, just adapting output of commands and providing a minimal lua
+layer to handle it.
+
+\H{forumintro} forum: Introduction to radare
+
+radare is not a single binary. It is, in fact a set of programs
+related to the reverse engineering world. That is, a framework.
+
+Here's the list of programs that the current version of radare
+installs in your system (0.9.4):
+
+- gradare
+    gtk+vte interface for radare
+
+- radare
+    commandline hexadecimal editor with pluggable interface
+
+- hasher
+    multiple algorithm block-based checksumming utility
+
+- rasm
+    commandline multi-architecture/endian patch assembler
+
+- rabin
+    gets entrypoint, exports, imports, symbols of ELF/PE/Class/..
+
+- xrefs
+    bruteforces data space finding possible xrefs
+
+- rsc
+    shell interface to a set of scripts and utilities
+
+- bdiff
+    erg0t's implementation of the generic binary diff in C++
+
+Some other tools are also installed but will be probably
+deprecated in the future by using internal radare commands:
+
+- javasm
+    commandline raw java assembler and disassembler
+
+- armasm
+    very basic arm assembler
+
+
+Maybe you'll feel a bit confused about the usage of the programs,
+but don't be afraid, and let's start configuring radare editing
+the ".radarerc" file in our home.
+
+\c $ echo "eval scr.color = true"     >  ~/.radarerc
+\c $ echo "eval file.identify = true" >> ~/.radarerc
+
+The 'eval' command is the standard interface to configure radare,
+if we type it in the radare shell we will get a list of key-value
+pairs of the configuration variables. If you want to list all
+the flags of a certain domain just end it with a dot '.':
+Code:
+
+\c  [0x00000000]> eval cfg.
+\c  cfg.noscript = false
+\c  cfg.encoding = ascii
+\c  cfg.delta = 1024
+\c  cfg.verbose = true
+\c  cfg.endian = false
+\c  cfg.write = false
+\c  cfg.limit = 0
+\c  cfg.rdbdir = TODO
+\c  cfg.datefmt = %d:%m:%Y %H:%M:%S %z
+\c  cfg.count = 0
+\c  cfg.fortunes = true
+\c  cfg.bsize = 512
+
+We can also use pipes in the shell of radare like a plain unix shell:
+Code:
+
+\c  [0x00000000]> eval  | grep trace
+\c  asm.trace = false
+\c  file.trace = trace.log
+\c  trace.bt = false
+\c  trace.sleep = 0
+\c  trace.smart = true
+\c  trace.log = true
+\c  trace.dup = false
+\c  trace.cmtregs = false
+
+The radare shell accepts commands in the following format:
+Code:
+
+\c  <;> [:] [command] [arg] [@ offset] [| shell-command] [` radare-command]
+\c   |   |     |        |        |             |               |
+\c   |   |     x        x        |             |               |
+\c   |   |                   temporal    pipe output to        |
+\c   |   ` drop verbosity     offset      shell command        |
+\c   |                                                         |
+\c   `- comment                   append output of command ----'
+
+You can also use '>' and '>>' at the end of the command to dump
+the output to a file.
+
+
+Here's a basic table of most common operations in radare
+Code:
+
+\c Seek     s    > s 0x33
+\c BlockSz  b    > b 0x400
+\c Print    p    > px 20 @ 0x200
+\c Write    w    > wx 90 90 90 @ +2
+\c Search   /    > / lib
+\c Hash     #    > #md5 20 @ esp
+\c Shell    !!   > !!cat /proc/$DPID/maps
+\c Quit     q    > quit
+
+radare only is able to manage "block size" bytes at a time, so, if you
+want to print data, analyze code, print graphs you will have to setup
+a high value here to avoid invalid results with broken code blocks.
+
+I don't want to explain everything in detail. Most of commands accept
+a '?' appended to the 'char' command to give you a help usage. it's
+mostly self-documented, but there are lot of hidden magic features wink
+
+The most used print modes are:
+Code:
+
+\c Hex      px  - hexadecimal
+\c Disasm   pD  - disasm using asm.arch
+\c Octal    po  - octal base
+\c Analyze  pA  - analyzes memory
+\c String0  pz  - zero terminated string
+\c WideStr  pZ  - zero terminated wide string
+\c C array  pc  - outputs C code
+\c Graph    pG  - only when compiled with vala/gtk/cairo
+
+To change the disassembly architecture use the following command:
+
+\c  [0x0000000]> eval asm.arch = arm
+
+Supported values are: arm, arm16, intel, intel16, intel64, powerpc, java
+
+Let's test all together:
+Code:
+
+\c  $ radare -e file.id=true /bin/ls
+\c  open ro /bin/ls
+\c  [0x08049790]> f
+\c  000 0x00001790 512 entrypoint
+\c  [0x08049790]> pD 20
+\c     0x08049790    895e         ebp ^= ebp
+\c     0x08049792    83           pop esi
+\c     0x08049793    e483         ecx = esp
+\c     0x08049795    50f0e4       esp &= 0xf0  ; 240 ' '
+\c     0x08049798    68           push eax
+\c     0x08049799    d0           push esp
+\c     0x0804979A    7b           push edx
+\c     0x0804979B    057bd06800   push dword 0x8057bd0
+\c     0x080497A0    057c206800   push dword 0x8057c20
+
+Wow, maybe you'll be surpressed for this pseudo-asm syntax. You can change
+it with the asm.syntax variable. Use 'intel', 'att' or 'pseudo'. The last
+one is the default for readibility reasons. Feel free to setup your favorite
+one in ~/.radarerc wink
+
+As we see in the previous shell snippet when setupping 'file.id' to true,
+radare calls rabin internally to determine which kind of file has been opened
+and automatically setups the base address, flags the entrypoint and jumps there.
+
+The cfg.baddr is the variable which defines the virtual base address. This
+is good for mapping on-disk and debugged process information and be able to
+easily apply patches to files.
+
+As a final note, you can use the 'P' command to open and save project files
+to dump/load all your flags, comments, code atributes, .. from/to disk (also
+handled by the -P commandline flag).
+Code:
+
+\c  $ radare -P /bin/ls
+\c  Using project file: '/tmp/ls.project'
+\c  open ro /bin/ls
+\c  [0x00000000]> q
+\c  Do you want to save the '/tmp/ls.project' project? (Y/n)
+\c  Project '/tmp/ls.project' saved.
+\c  $
+
+That's all for a basic introduction wink simple huh?
+
+Have fun!
+
+\H{forumdecompile} forum: Decompiling code with boomerang from radare
+
+0.9.7 adds support for boomerang to be able to decompile specific functions of a binary program from the debugger or the dissassembler.
+
+Here's a little example usage:
+
+Code:
+
+\c $ radare -e dbg.bep=main -d /bin/ls
+\c argv = '/bin/ls', ]
+\c entry at: 0x8049a80
+\c cont: breakpoint stop (0x8049a80)
+\c main at: 0x804e880
+\c cont: breakpoint stop (0x804e880)
+\c Program '/bin/ls' loaded.
+\c Warning: sysctl -w kernel.randomize_va_space=0
+\c open debugger ro /bin/ls
+\c 96 symbols added.
+\c [0x0804E884]> s 0x8059ED0
+
+Let's disassemble the unknown call from the main (the fourth one)
+
+\c[0x08059ED0]> pD 60
+\c              0x08059ED0,           55                push ebp              
+\c              0x08059ED1            31c0              eax ^= eax            
+\c              0x08059ED3            89e5              ebp = esp             
+\c              0x08059ED5            53                push ebx              
+\c              0x08059ED6            e8efffffff      ^ call 0x8059ECA  ;        [1]
+\c              0x08059EDB            81c329420000      ebx += 0x4229         
+\c              0x08059EE1            83ec0c            esp -= 0xc  ; 12 ' ' ; eax+0xb
+\c              0x08059EE4,           8b93fcffffff      edx = [ebx-0x4]       
+\c              0x08059EEA            85d2              test edx, edx         
+\c         .==< 0x08059EEC,           7402            v jz 0x8059EF0   ;         [2]
+\c         |    0x08059EEE            8b02              eax = [edx]           
+\c         `--> 0x08059EF0,           89442408          [esp+0x8] = eax       
+\c              0x08059EF4,           8b4508            eax = [ebp+0x8]       
+\c              0x08059EF7            c7442404000000.   dword [esp+0x4] = 0x0 
+\c              0x08059EFF            890424            [esp] = eax           
+\c              0x08059F02            e819f6feff      ^ call 0x8049520  ; sym___cxa_atexit   [3]
+\c              0x08059F07            83c40c            esp += 0xc  ; 12 ' ' ; eax+0xb
+\c              0x08059F0A            5b                pop ebx               
+\c              0x08059F0B            5d                pop ebp               
+\c              0x08059F0C,           c3               ret ;--                
+\c              0x08059F0C          ; ------------------------------------
+
+And now...time for decompilation! :D
+
+\c [0x08059ED0]> !rsc boomerang $FILE $XOFFSET
+\c decompiling entry point proc1
+\c void proc2();
+\c
+\c // address: 0x8059ed0
+\c void proc1() {
+\c    __size32 eax;               // r24
+\c    __size32 ebp;               // r29
+\c    __size32 ebx;               // r27
+\c    __size32 edx;               // r26
+\c    int esp;            // r28
+\c    unsigned int local0;                // m[esp - 12]
+\c    __size32 local1;            // m[esp - 8]
+\c    __size32 local2;            // m[esp - 4]
+\c
+\c    eax = proc2(pc, ebx, ebp, 0, ebx, esp - 4, LOGICALFLAGS32(0), LOGICALFLAGS32(0), LOGICALFLAGS32(0)); /* Warning: also results in ebx, esp, ebp */
+\c    edx = *(ebx + 0x4225);
+\c    if (edx != 0) {
+\c        eax = *edx;
+\c    }
+\c    local2 = eax;
+\c    eax = *(ebp + 8);
+\c    local1 = 0;
+\c    local0 = eax;
+\c    __cxa_atexit();
+\c    return;
+\c }
+
 \C{conclussions} EOF
 
 This book is a work in progress documentation, so don't take all this information as static and unalterable :)
