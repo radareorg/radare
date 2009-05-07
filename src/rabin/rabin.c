@@ -1421,8 +1421,9 @@ int operation_resize(const char *section, u32 newsize)
 
 int dump_symbols(u32 len)
 {
+	int symlen;
 	int olen = len;
-	int symbols_count, i;
+	int symbols_count, i, j;
 	u8 *buf;
 	char *ret;
 	union {
@@ -1445,9 +1446,25 @@ int dump_symbols(u32 len)
 		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
 		ELF_CALL(dietelf_get_symbols, bin.elf, fd, symbol.elf);
 		for (i = 0, symbolp.elf = symbol.elf; i < symbols_count; i++, symbolp.elf++) {
-			if (symbolp.elf->size != 0) {
-				if (!olen || olen > symbolp.elf->size)
-					len = symbolp.elf->size;
+			symlen = symbolp.elf->size;
+			if (symlen == 0) {
+				/* find the closer symbol */
+				dietelf_symbol *h = NULL;
+				dietelf_symbol *e = symbol.elf;
+				for(j=0;j<symbols_count;j++,e++) {
+					if (e->offset > symbolp.elf->offset) {
+						if (!h || h->offset > e->offset)
+							h = e;
+					}
+				}
+				if (h) {
+					symlen = h->offset - symbolp.elf->offset;
+				}
+				//symlen = (symbolp.elf+1)->offset - (symbolp.elf)->offset;
+			}
+			if (symlen > 0) {
+				if (!olen || olen > symlen)
+					len = symlen;
 				else len = olen;
 				if (!(buf = malloc(len)) ||
 					!(ret = malloc(len*2+1)))
@@ -1472,7 +1489,8 @@ int dump_symbols(u32 len)
 		symbol.pe = malloc(symbols_count * sizeof(dietpe_export));
 		PE_CALL(dietpe_get_exports, bin.pe, symbol.pe);
 		for (i = 0, symbolp.pe = symbol.pe; i < symbols_count; i++, symbolp.pe++) {
-			if (!olen || olen > symbolp.elf->size)
+			/* XXX: implement the automatic symbol size detector here */
+			if (!olen || olen > symbolp.pe->size)
 				len = 32;
 			else len = olen;
 			if (!(buf = malloc(len)) ||

@@ -46,7 +46,7 @@ while(<FD>) {
 			foreach $i (0 .. $#bytes) {
 				$offset++;
 				next if ($offset<=$delta);
-				print $bytes[$i]." ";
+				print $bytes[$i];
 				$count--;
 				last if ($count==0);
 			}

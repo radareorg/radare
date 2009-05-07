@@ -126,8 +126,8 @@ if (filesize == 0)
                         (vm_size_t)filesize)) != KERN_SUCCESS )
 #elif __linux__ || __APPLE__
   fileaddr = mmap(0, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
-perror("mmap");
-printf("FILEADDR=%p\n", fileaddr);
+//perror("mmap");
+//printf("FILEADDR=%p\n", fileaddr);
 #else
 #warning MACHO parser not working on this arch
 

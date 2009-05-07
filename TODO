@@ -11,6 +11,7 @@ TODO 1.3.1
 * fix arm-osx debugger
 * drop sdk dependency
 * regexp search??
+* agd -> graph in dot format
 * make code analysis bar remove only needed chars
 
 TheBook

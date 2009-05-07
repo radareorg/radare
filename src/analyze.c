@@ -765,6 +765,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	static int refresh = 0;
 	static int o=0,x=0,p=0,v=0;
 	static int i, ch = '/';
+	static int lastlen = 0;
 	int tmp;
 	o+=_o; x+=_x; p+=_p; v+=_v;
 	/* TODO: change this value depending on delta times */
@@ -773,7 +774,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	p = p%25;
 	tmp = v/20;
 	v = v%20;
-	for(i=0;i<(p+v);i++)
+	for(i=0;i<(lastlen);i++)
 		eprintf(" ");
 	eprintf(" \r");
 	eprintf("   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
@@ -785,6 +786,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 		eprintf("-");
 	for(i=0;i<tmp;i++)
 		eprintf(">");
+	lastlen = p+v;
 	eprintf("\r");
 	switch(ch) {
 	case '/': ch = '-'; break;
