@@ -2618,9 +2618,8 @@ CMD_DECL(help)
 		if (input[0]=='x') {
 			char buf[1024];
 			int len = hexstr2binstr(input+1, buf);
-			if (len==0) {
-				eprintf("Invalid string\n");
-			} else print_data(0, "", buf, len, FMT_ASC);
+			if (len>0)
+				print_data(0, "", buf, len, FMT_ASC);
 		} else
 		if (input[0]=='X') {
 			u64 res = get_math(input+1);

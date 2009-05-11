@@ -6341,20 +6341,16 @@ Thanks to Pancake for this great crackme. Had a lot of fun, eventhough this was 
 
 BTW, Pancake is also the guy who wrote radare and tools. Pretty fine tools for this kind of work :))
 
-\H{forumspcc} Interpreting C structures with spcc
+\H{forumspcc} forum: Interpreting C structures with spcc
 
-Sometimes you need to interpret a data structure found on a piece
-of a binary file. Radare make use of libmagic to achieve this.
+Sometimes you need to interpret a data structure found on a piece of a binary file. Radare make use of libmagic to achieve this.
 
-In visual mode you can press the 'm' key to interpret the current
-data block by the 'rfile' wrapper.
+In visual mode you can press the 'm' key to interpret the current data block by the 'rfile' wrapper.
 
 How to write a magic database file for mapping binary structures?
 NOTE: Read the file(1) manpage fmi.
 
-The magic file syntax is not very readable and probably ugly to write,
-so, radare provides a user-defined way to create C and perl descriptors
-for data blocks. This is explained later in this paper.
+The magic file syntax is not very readable and probably ugly to write, so, radare provides a user-defined way to create C and perl descriptors for data blocks. This is explained later in this paper.
 
 Magic files follow this basic structure:
 
@@ -6364,12 +6360,9 @@ Magic files follow this basic structure:
 \c >>offset  type  match  output
 \c (...)
 
-The '>' tree is only followed if the previous '>' level matches. So you
-can provide on a single file a multiple switch/case hirearchy for multiple
-filetypes or data structures.
+The '>' tree is only followed if the previous '>' level matches. So you can provide on a single file a multiple switch/case hirearchy for multiple filetypes or data structures.
 
-This format does not support include-like directives, so you must provide
-define all the magic files using the -m flag.
+This format does not support include-like directives, so you must provide define all the magic files using the -m flag.
 
 
 Structure parser language wrappers
@@ -6433,7 +6426,7 @@ walk between the flags interpreting each data block with our own parser.
 Use the 'f' and 'F' key to move around the flags in visual mode and
 change the print format using the 'p' key.
 
-\H{forummonitor} rsc monitor usage
+\H{forummonitor} forum: rsc monitor usage
 
 Rsc is a wonderful entrypoint for user-defined external programs for radare.
 

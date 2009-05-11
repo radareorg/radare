@@ -756,7 +756,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 			continue;
 		}
 		if (hex2int(&c, ptr[0])) {
-			eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
+			// eprintf("binstr: Invalid hexa string at %d ('0x%02x') (%s).\n", (int)(ptr-in), ptr[0], in);
 			return 0;
 		}
 		c |= d;

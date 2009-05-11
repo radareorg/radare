@@ -6,6 +6,8 @@ PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
 PERL_LIBS=`perl -MExtUtils::Embed -e ldopts` -lncurses
 PY_CFLAGS=-I${PREFIX}/include/python2.5/ -I/usr/include/python2.5/
 PY_LIBS=-lpython2.5
+PY26_CFLAGS=-I${PREFIX}/include/python2.6/ -I/usr/include/python2.6/
+PY26_LIBS=-lpython2.6
 LUA_CFLAGS=-I${PREFIX}/include/lua5.1/ -I/usr/include/lua5.1/
 LUA_LIBS=
 RUBY_CFLAGS=-I/usr/lib/ruby/1.8/i386-linux
@@ -15,7 +17,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO}
+all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO} python26.${SO}
 
 hello.${SO}:
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SO}
@@ -37,6 +39,9 @@ scriptedit.${SO}:
 
 python.${SO}:
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python.${SO} 2>/dev/null
+
+python26.${SO}:
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY26_LIBS} -o python26.${SO} 2>/dev/null
 
 perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO} 2>/dev/null

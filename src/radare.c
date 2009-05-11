@@ -998,18 +998,28 @@ char *radare_cmd_str(const char *cmd)
 	char *dcmd;
 	int scrbuf = config_get_i("scr.buf");
 	int cfgver = config_get_i("cfg.verbose");
+	int newlen, fus = cons_flushable;
+	char *grep;
 
 	cons_reset();
 	config_set_i("scr.buf", 1);
 
 	dcmd = strdup ( cmd );
+		grep = strchr(dcmd, '~');
+		if (grep) {
+			grep[0]='\0';
+			cons_grep(grep+1);
+		}
 	cons_noflush=1;
 	radare_cmd( dcmd, 0);
 	cons_noflush=0;
-	free ( dcmd);
+	free (dcmd);
+	/*  XXX internal grep is not working here */
 	buf = cons_get_buffer();
-	if (buf)
+	if (buf) {
 		buf = strdup(buf);
+		newlen = cons_grepbuf(buf, strlen(buf));
+	}
 	config_set_i("scr.buf", scrbuf);
 	config_set_i("cfg.verbose", cfgver);
 	cons_reset();
@@ -1951,8 +1961,8 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	/* WORKS BUT IT IS UGLY */
 	int fd = make_tmp_file(tmpfile);
 	int std;
+int fus = cons_flushable;
 
-//eprintf("DUMP(%s)\n", cmd);
 	cons_reset();
 	//cons_flush();
 	if (fd == -1) {
@@ -1960,6 +1970,8 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 		tmpoff = config.seek;
 		return 0;
 	}
+/* HACKY HACKY! :D */
+cons_flushable = 0;
 	std = dup(1); // store stdout
 	dup2(fd, 1);
 
@@ -1969,6 +1981,7 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 //eprintf("CMD(%s)\n", ptr);
 		radare_cmd_raw(ptr, 0);
 	}
+cons_render();
 
 	cons_reset();
 	//cons_flush();
@@ -1980,6 +1993,7 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 		close(std);
 	}
 
+cons_flushable = fus;
 	return 1;
 }
 
@@ -2003,6 +2017,8 @@ char *pipe_command_to_string(const char *cmd)
 	char buf[4096]; // XXX we need moar bytes!
 	int fd, fdp[2];
 	int std;
+	//int fus = cons_flushable;
+	//cons_flushable = 0;
 
 	pipe(fdp);
 	fd = fdp[1];
@@ -2025,6 +2041,7 @@ char *pipe_command_to_string(const char *cmd)
 
 	cons_reset();
 	cons_flush();
+	//cons_render();
 	fflush(stdout);
 	fflush(stderr);
 	memset(buf,0,sizeof(buf));
@@ -2035,8 +2052,7 @@ char *pipe_command_to_string(const char *cmd)
 		dup2(std, 1);
 		close(std);
 	}
-//eprintf("\nDUMP(%s)\n", buf);
-
+	//cons_flushable = fus;
 return strdup(buf);
 }
 #endif

@@ -1232,6 +1232,7 @@ CMD_DECL(visual)
 
 	cons_clear();
 	cons_set_raw(1);
+	cons_flushable = 1;
 	while(1) {
 		const char *scrseek = config_get("scr.seek");
 		if (inc<1) inc = 1;
@@ -1244,6 +1245,7 @@ CMD_DECL(visual)
 			radare_cmd(".!regs*", 0);
 		radare_prompt_command();
 		visual_draw_screen();
+	cons_flushit();
 
 			// XXX 
 		if (config.debug&&last_print_format == FMT_VISUAL&&scrseek&&scrseek[0]) {
@@ -2032,4 +2034,5 @@ __visual_exit:
 	config.visual = 0;
 	config.cursor_mode = 0;
 	cons_set_raw(0);
+	cons_flushable = 0;
 }

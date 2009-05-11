@@ -42,7 +42,7 @@ FILE *cons_stdin_fd = (FILE *)&stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NO
 FILE *cons_stdin_fd = (FILE *)stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
 #endif
 static unsigned int cons_buffer_sz = 0;
-static int cons_buffer_len = 0;
+int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
 char *cons_filterline = NULL;
 char *cons_teefile = NULL;
@@ -751,6 +751,111 @@ static void palloc(int moar)
 static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;
 static char *grephigh = NULL;
+//static int grepstrings_n = 1;
+static char *cons_lastline =NULL;
+
+int cons_grepbuf(char *buf, int len)
+{
+	int donotline = 0;
+	int i, j, hit = 0;
+	int linelen;
+int lines = 0;
+	int toklen;
+	char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
+	char *n; 
+	char *grepstrings[2];
+	char *obuf = buf;
+	grepstrings[0] = grepstr;
+	grepstrings[1] = NULL;
+int grepstrings_n = 1;
+//eprintf("LEN(%s)\n", grepstr);
+if (grepstr == NULL)
+	return len;
+
+begin:
+	if (buf==NULL || buf[0]=='\0')
+		return len;
+	n = memchr(buf, '\n', len);
+
+	if (cons_lastline==NULL)
+		cons_lastline = buf; //cons_buffer;
+	if (!n) return len;
+
+	n[0]='\0';
+	linelen = (int)(n-buf);
+
+	//for(i=0;i<grepstrings_n;i++) {
+	//	grepstr = grepstrings[i];
+	//	if (grepstr == NULL)
+	//		break;
+	hit=0;
+	if ( (!grepneg && strstr(buf, grepstr))
+	|| (grepneg && !strstr(buf, grepstr))) {
+		hit = 1;
+	}
+	//}
+
+	if (hit) {
+		if (grepline != -1) {
+			if (grepline==lines) {
+				len = strlen(obuf);
+				return len;
+			} else {
+				donotline = 1;
+				lines++;
+			}
+		}
+		n[0]='\n';
+		buf = n+1;
+		//goto begin;
+	} else donotline = 1;
+
+	if (donotline) {
+		/* ok */
+		strbcpy(buf, n+1);
+		len-=linelen;
+		goto begin;
+	} else {
+		/* broken */
+		if (greptoken != -1) {
+			//ptr = alloca(strlen(r_cons_lastline));
+			char *tok = NULL;
+			char *ptr = alloca(1024); // XXX
+			strcpy(ptr, buf);
+			for (i=0; i<len; i++) for (j=0;j<6;j++)
+				if (ptr[i] == delims[j][0])
+					ptr[i] = ' ';
+			tok = ptr;
+			for (i=0;tok != NULL && i<=greptoken;i++) {
+				if (i==0) tok = (char *)strtok(ptr, " ");
+				else tok = (char *)strtok(NULL, " ");
+			}
+			if (tok) {
+				// XXX remove strlen here!
+				len -= linelen;
+				//cons_buffer_len -= strlen(cons_lastline)-len;
+				toklen = strlen(tok);
+				memcpy(buf, tok, toklen);
+				if (buf[len-1]!='\n')
+					memcpy(buf+toklen, "\n", 2);
+				len++;
+				buf = buf+len;//cons_lastline +=len;
+			}
+		} 
+		lines++;
+	}
+	if (n) {
+	n[0]='\n';
+	//eprintf("---> (%d) (%d)\n", len, (n-buf));
+		//len -= linelen;
+	//eprintf("---> (%d)\n", len);
+		if (len>0) {
+			buf = n+1;
+			goto begin;
+		}
+	}
+	return len;
+}
 
 void cons_grep(const char *str)
 {
@@ -853,7 +958,48 @@ char *str_replace(char *str, char *from, char *to, int str_len)
 	return ostr;
 }
 
+static char *cons_buffer2 = NULL;
+static int cons_buffer2_len = 0;
+int cons_flushable = 0;
+
 void cons_flush()
+{
+	if (!cons_flushable) {
+		cons_render();
+		return;
+	}
+	if (cons_buffer2 == NULL) {
+		cons_buffer2 = cons_buffer;
+		cons_buffer2_len = cons_buffer_len;
+		cons_buffer = malloc(cons_buffer_sz);
+		cons_buffer_len = 0;
+	} else {
+		/* concat */
+		int newlen = cons_buffer2_len + cons_buffer_len;
+		cons_buffer2 = realloc(cons_buffer2, newlen+1);
+		memcpy(cons_buffer2+cons_buffer2_len, cons_buffer, cons_buffer_len);
+		cons_buffer2_len = newlen;
+	}
+	cons_buffer[0] = '\0';
+	cons_buffer_len = 0;
+}
+
+void cons_flushit()
+{
+char *ob;
+	cons_flush();
+ob=cons_buffer;
+cons_buffer = cons_buffer2;
+cons_buffer_len = cons_buffer2_len;
+	cons_render();
+cons_buffer = ob;
+cons_buffer_len = 0;
+	free(cons_buffer2);
+	cons_buffer2 = NULL;
+	cons_buffer2_len = 0;
+}
+
+void cons_render()
 {
 	FILE *fd;
 	char buf[1024];

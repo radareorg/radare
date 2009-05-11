@@ -72,6 +72,7 @@ int cons_readchar();
 void cons_flush();
 int cons_fgets(char *buf, int len, int argc, const char **argv);
 int cons_set_fd(int fd);
+void cons_render();
 void cons_strcat(const char *str);
 void cons_newline();
 void cons_set_raw(int b);
@@ -94,6 +95,8 @@ extern int cons_is_html;
 extern int cons_noflush;
 extern char *cons_filterline;
 extern char *cons_teefile;
+extern int cons_flushable;
+extern int cons_buffer_len;
 
 extern int _print_fd;
 extern FILE *stdin_fd;

@@ -1490,9 +1490,7 @@ int dump_symbols(u32 len)
 		PE_CALL(dietpe_get_exports, bin.pe, symbol.pe);
 		for (i = 0, symbolp.pe = symbol.pe; i < symbols_count; i++, symbolp.pe++) {
 			/* XXX: implement the automatic symbol size detector here */
-			if (!olen || olen > symbolp.pe->size)
-				len = 32;
-			else len = olen;
+			len = olen?olen:32;
 			if (!(buf = malloc(len)) ||
 				!(ret = malloc(len*2+1)))
 				return 0;
