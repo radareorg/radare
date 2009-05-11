@@ -1123,7 +1123,7 @@ void config_visual_hit(const char *name)
 		} else {
 			// FGETS AND SO
 			cons_printf("New value (old=%s): ", node->value);
-			cons_flush();
+			cons_flushit();
 			cons_set_raw(0);
 			cons_fgets(buf, 1023, 0, 0);
 			cons_set_raw(1);
@@ -1227,7 +1227,7 @@ void config_visual_menu()
 				if (fs2 != NULL)
 					cons_printf("\n Selected: %s\n\n", fs2);
 		}
-		cons_flush();
+		cons_flushit();
 		ch = cons_readchar();
 		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
 		switch(ch) {
@@ -1280,7 +1280,7 @@ void config_visual_menu()
 				cons_printf(" e/' ' - edit/toggle current variable\n");
 				cons_printf(" +/-   - increase/decrease numeric value\n");
 				cons_printf(" :     - enter command\n");
-				cons_flush();
+				cons_flushit();
 				cons_any_key();
 				break;
 			case ':':

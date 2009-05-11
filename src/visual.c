@@ -195,7 +195,8 @@ void visual_show_help()
 	"F10        continue until user code (!contu)\n"
 	);
 	}
-	cons_flush();
+	//cons_flush();
+	cons_flushit();
 }
 
 CMD_DECL(visual_bind_run)
@@ -253,7 +254,8 @@ CMD_DECL(insert)
 		config.insert_mode = 1;
 		config.cursor_mode = 1;
 		config.ocursor = -1;
-		cons_flush();
+	//	cons_flush();
+	cons_flushit();
 	} else {
 		cons_printf("Not in write mode.\n");
 		cons_any_key();
@@ -294,7 +296,8 @@ static void visual_convert_bytes(int fmt, int defkey)
 			"m - memory format (pm)\n"
 			"< - close folder\n"
 			"> - open folder\n");
-			cons_flush();
+	//		cons_flush();
+	cons_flushit();
 			c = cons_readchar();
 		}
 		if (c == 'u') {
@@ -544,7 +547,8 @@ CMD_DECL(xrefs_here)
 	cons_printf("Select XREF from list:\n");
 	data_xrefs_here(config.seek);
 	cons_printf("==> ");
-	cons_flush();
+	//cons_flush();
+	cons_flushit();
 	foo = cons_readchar() - '0';
 	if (foo<10) {
 		addr = data_seek_to(config.seek, -1, foo);
@@ -860,7 +864,7 @@ static void visual_bind_key()
 	cons_printf("\nradare command: ");
 	fflush(stdin);
 	fflush(stdout);
-	cons_flush();
+	cons_flushit();
 	cons_set_raw(0);
 	buf[0]='\0';
 
@@ -896,7 +900,7 @@ static void visual_bind_key()
 		bds[n].key = key;
 		bds[n].cmd = strdup(buf);
 	} 
-	cons_flush();
+	cons_flushit();
 }
 
 void visual_draw_screen()
@@ -992,7 +996,8 @@ void visual_draw_screen()
 	radare_print("", last_print_format);
 
 	fflush(stdout);
-	cons_flush();
+	//cons_flush();
+	cons_flushit();
 }
 
 // autoadjust height of screen

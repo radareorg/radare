@@ -1060,7 +1060,7 @@ void flags_visual_menu()
 			if (cmd[0])
 				radare_cmd_raw(cmd, 0);
 		}
-		cons_flush();
+		cons_flushit();
 		ch = cons_readchar();
 		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
 		switch(ch) {
@@ -1141,7 +1141,7 @@ void flags_visual_menu()
 			cons_printf(" +/-   - increase/decrease block size\n");
 			cons_printf(" p/P   - rotate print format\n");
 			cons_printf(" :     - enter command\n");
-			cons_flush();
+			cons_flushit();
 			cons_any_key();
 			break;
 		case ':':

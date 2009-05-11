@@ -832,9 +832,15 @@ begin:
 			}
 			if (tok) {
 				// XXX remove strlen here!
+				toklen = strlen(tok);
+				strcpy(buf, tok);
+				memcpy(buf+toklen, "\n", 1);
+				strcpy(buf+toklen+1, n+1);
+				buf = buf+toklen+1;
+				goto begin;
+
 				len -= linelen;
 				//cons_buffer_len -= strlen(cons_lastline)-len;
-				toklen = strlen(tok);
 				memcpy(buf, tok, toklen);
 				if (buf[len-1]!='\n')
 					memcpy(buf+toklen, "\n", 2);
