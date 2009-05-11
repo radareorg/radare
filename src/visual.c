@@ -254,8 +254,7 @@ CMD_DECL(insert)
 		config.insert_mode = 1;
 		config.cursor_mode = 1;
 		config.ocursor = -1;
-	//	cons_flush();
-	cons_flushit();
+		cons_flushit();
 	} else {
 		cons_printf("Not in write mode.\n");
 		cons_any_key();
@@ -1637,6 +1636,7 @@ CMD_DECL(visual)
 			} while(ret);
 			free(optr);
 			radare_cmd(line, 1);
+		cons_flushit();
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
@@ -1644,6 +1644,7 @@ CMD_DECL(visual)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
+		cons_flushit();
 #endif
 			config.visual=1;
 			last_print_format = lpf;
