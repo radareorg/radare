@@ -743,8 +743,8 @@ int debug_until(const char *addr)
 	else	off = get_math(addr);
 
 	if (off != 0) {
-		eprintf("entry at: 0x%x\n", (unsigned int)ps.entrypoint);
-		sprintf(buf, "0x%x\n", (unsigned int)off);
+		eprintf("entry at: 0x%llx\n", (u64) ps.entrypoint);
+		sprintf(buf, "0x%llx\n", (u64) off);
 		debug_cont_until(buf);
 	}
 

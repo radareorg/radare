@@ -119,7 +119,6 @@ int debug_load()
 	setenv("DPID", pids, 1);
 	debug_init_maps(0);
 	events_init();
-	debug_until( config_get("dbg.bep") );
 
 	debug_getregs(ps.pid, &(WS(regs)));
 

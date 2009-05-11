@@ -1914,6 +1914,7 @@ int radare_go()
 		radare_cmd(":.!regs*", 0);
 		radare_cmd(".!info*", 0);
 		radare_cmd(":.!maps*", 0);
+		debug_until( config_get("dbg.bep") );
 		radare_cmd("s eip", 0);
 	} else {
 		//eprintf("> Rebasing strings...\n");
