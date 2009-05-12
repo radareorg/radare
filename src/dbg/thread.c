@@ -28,6 +28,7 @@
 
 void add_th(TH_INFO *th)
 {
+	events_init(th->tid);
 	list_add_tail(&(th->list), &(ps.th_list));
 }
 

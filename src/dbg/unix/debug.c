@@ -439,6 +439,7 @@ int debug_fork_and_attach()
 
 		/* dupped kill check */
 		debug_waitpid(pid, &wait_val);
+//events_init
 		if (WIFEXITED(wait_val)) {
 		//if ((WEXITSTATUS(wait_val)) != 0) {
 			perror("waitpid");
@@ -484,7 +485,11 @@ int debug_attach(int pid)
 		return -1;
 #if __linux__ && !__x86_64__
 	} else {
-		if(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACECLONE) == -1) {
+#define PTRACE_O_ALL PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEFORK \
+| PTRACE_O_TRACEVFORK | PTRACE_O_TRACECLONE | \
+PTRACE_O_TRACEEXEC | PTRACE_O_TRACEVFORKDONE | PTRACE_O_TRACEEXIT
+		//if(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACECLONE) == -1) {
+		if(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_ALL) == -1) {
 			perror("ptrace_setoptions");
 			return -1;
 		}
@@ -730,6 +735,26 @@ int debug_getsignal(siginfo_t *si)
 
 int debug_contp(int pid)
 {
+	if (config_get_i("dbg.contall")) {
+		struct list_head *pos;
+		int n = 0;
+
+		list_for_each_prev(pos, &ps.th_list) {
+			TH_INFO		*th = list_entry(pos, TH_INFO, list);
+			ptrace(PTRACE_CONT, th->tid, (u32)arch_pc(th->tid), 0);
+//eprintf("..thread continue: %d\n", th->tid);
+//			eprintf("cont-> %c %d: 0x%08llx state: 0x%x\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
+			n++;
+		}
+		ptrace(PTRACE_CONT, pid, (u32)arch_pc(pid), 0);
+//eprintf("..continue: %d\n", pid);
+		ptrace(PTRACE_CONT, ps.pid, (u32)arch_pc(ps.pid), 0);
+//eprintf("..continue: %d\n", ps.pid);
+		ptrace(PTRACE_CONT, ps.tid, (u32)arch_pc(ps.tid), 0);
+//eprintf("..continue: %d\n", ps.tid);
+		
+		return 0;
+	}
 	return ptrace(PTRACE_CONT, pid, (u32)arch_pc(pid), 0);
 }
 

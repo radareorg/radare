@@ -118,7 +118,7 @@ int debug_load()
 	sprintf(pids, "%d", ps.tid);
 	setenv("DPID", pids, 1);
 	debug_init_maps(0);
-	events_init();
+	events_init(ps.pid);
 
 	debug_getregs(ps.pid, &(WS(regs)));
 

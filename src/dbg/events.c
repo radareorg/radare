@@ -91,26 +91,34 @@ int event_is_ignored(int id)
 #include "arch/i386.h"
 
 
-int events_init()
+int events_init(int pid)
 {
 	int flags;
-/* THIS IS KILLING THE !cont and !contfork stuff */
-/* XXX: we must rethink this in another way */
-#if 1
 #if __linux__
 	/* 2.4 */
-	flags    = PTRACE_O_TRACESYSGOOD;
+	flags    = PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEEXIT | PTRACE_O_TRACEEXEC;
 	/* 2.6 */
+if (config_get_i("dbg.forks"))
 	flags   |= PTRACE_O_TRACEFORK
 		|  PTRACE_O_TRACEVFORK
-		|  PTRACE_O_TRACECLONE
-		|  PTRACE_O_TRACEEXEC
-		|  PTRACE_O_TRACEVFORKDONE
-		|  PTRACE_O_TRACEEXIT;
+		|  PTRACE_O_TRACEVFORKDONE;
+if (config_get_i("dbg.threads"))
+	flags   |= PTRACE_O_TRACECLONE;
 
-	return ptrace(PTRACE_SETOPTIONS,ps.pid, NULL, flags);
+	return ptrace(PTRACE_SETOPTIONS, pid, NULL, flags);
 #endif
-#endif
+	return 0;
+}
+
+int events_init_all()
+{
+	struct list_head *pos;
+	events_init(ps.pid);
+	events_init(ps.tid);
+	list_for_each_prev(pos, &ps.th_list) {
+		TH_INFO		*th = list_entry(pos, TH_INFO, list);
+		events_init(th->tid);
+	}
 	return 0;
 }
 
@@ -133,9 +141,18 @@ int events_get()
 		cons_printf("event-msg = execve handled %d %d\n", ret, ret2);
 		break;
 	case PTRACE_EVENT_FORK:
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("type = fork\n");
+		cons_printf("event-msg = new pid: %d\n", ret);
+		break;
 	case PTRACE_EVENT_VFORK:
+		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("type = vfork\n");
+		cons_printf("event-msg = new pid: %d\n", ret);
+		break;
 	case PTRACE_EVENT_CLONE:
 		cons_printf("tid = %d\n", ps.tid);
+		cons_printf("type = clone\n");
 		cons_printf("event-msg = new pid: %d\n", ret);
 		break;
 	case PTRACE_EVENT_VFORK_DONE:

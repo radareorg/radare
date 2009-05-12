@@ -315,12 +315,15 @@ int debug_tt(const char *arg)
  * act over a process that have some waitpid events pending */
 int debug_waitpid(int pid, int *status)
 {
+#if 0
 #define CRASH_LINUX_KERNEL 0
 #if CRASH_LINUX_KERNEL
 	if (pid == -1)
 		return -1;
 #endif
+#endif
 
+	return waitpid(-1, status, __WALL | __WCLONE | WUNTRACED);
 #if __WINDOWS__
 	/* not implemented ? */
 #elif __FreeBSD__ || __NetBSD__ || __OpenBSD__
