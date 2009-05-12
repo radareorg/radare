@@ -66,6 +66,7 @@ install:
 	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e python26.${SO} ] && ${INSTALL_LIB} python26.${SO} ${DESTDIR}/${LIBDIR}/radare
 
 clean:
 	-rm -f *.${SO} *.o

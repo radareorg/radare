@@ -759,7 +759,7 @@ int cons_grepbuf(char *buf, int len)
 	int donotline = 0;
 	int i, j, hit = 0;
 	int linelen;
-int lines = 0;
+	int lines = 0;
 	int toklen;
 	char delims[6][2] = {"|", "/", "\\", ",", ";", "\t"};
 	char *n; 
@@ -767,10 +767,9 @@ int lines = 0;
 	char *obuf = buf;
 	grepstrings[0] = grepstr;
 	grepstrings[1] = NULL;
-int grepstrings_n = 1;
-//eprintf("LEN(%s)\n", grepstr);
-if (grepstr == NULL)
-	return len;
+	int grepstrings_n = 1;
+	if (grepstr == NULL)
+		return len;
 
 begin:
 	if (buf==NULL || buf[0]=='\0')
@@ -795,6 +794,7 @@ begin:
 	}
 	//}
 
+donotline = 0;
 	if (hit) {
 		if (grepline != -1) {
 			if (grepline==lines) {
@@ -806,8 +806,6 @@ begin:
 			}
 		}
 		n[0]='\n';
-		buf = n+1;
-		//goto begin;
 	} else donotline = 1;
 
 	if (donotline) {
@@ -818,11 +816,9 @@ begin:
 	} else {
 		/* broken */
 		if (greptoken != -1) {
-			//ptr = alloca(strlen(r_cons_lastline));
 			char *tok = NULL;
-			char *ptr = alloca(1024); // XXX
-			strcpy(ptr, buf);
-			for (i=0; i<len; i++) for (j=0;j<6;j++)
+			char *ptr = buf;
+			for (i=0; i<linelen; i++) for (j=0;j<6;j++)
 				if (ptr[i] == delims[j][0])
 					ptr[i] = ' ';
 			tok = ptr;
@@ -831,31 +827,21 @@ begin:
 				else tok = (char *)strtok(NULL, " ");
 			}
 			if (tok) {
-				// XXX remove strlen here!
 				toklen = strlen(tok);
-				strcpy(buf, tok);
+				len -= (linelen-toklen);
+				strbcpy(buf, tok);
 				memcpy(buf+toklen, "\n", 1);
-				strcpy(buf+toklen+1, n+1);
+				if (!n) return len;
+				strbcpy(buf+toklen+1, buf+linelen); //n+1);
 				buf = buf+toklen+1;
 				goto begin;
-
-				len -= linelen;
-				//cons_buffer_len -= strlen(cons_lastline)-len;
-				memcpy(buf, tok, toklen);
-				if (buf[len-1]!='\n')
-					memcpy(buf+toklen, "\n", 2);
-				len++;
-				buf = buf+len;//cons_lastline +=len;
 			}
 		} 
 		lines++;
 	}
 	if (n) {
 	n[0]='\n';
-	//eprintf("---> (%d) (%d)\n", len, (n-buf));
-		//len -= linelen;
-	//eprintf("---> (%d)\n", len);
-		if (len>0) {
+		if (linelen>0) {
 			buf = n+1;
 			goto begin;
 		}
