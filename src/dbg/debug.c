@@ -323,7 +323,7 @@ int debug_waitpid(int pid, int *status)
 #endif
 #endif
 
-	return waitpid(-1, status, __WALL | __WCLONE | WUNTRACED);
+//	return waitpid(-1, status, __WALL | __WCLONE | WUNTRACED);
 #if __WINDOWS__
 	/* not implemented ? */
 #elif __FreeBSD__ || __NetBSD__ || __OpenBSD__
