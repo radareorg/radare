@@ -60,6 +60,12 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
 
+#if 0
+printf("%d\n", ansistrlen("hello\x1b[32m world\x1b[0m\n"));
+printf("%d\n", ansistrlen("hello world\n"));
+exit(1);
+#endif
+
 	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVnxi:e:p:d")) != -1)
 	{
 		switch( c ) {

@@ -579,7 +579,7 @@ void print_zoom(u64 from, u64 to, char *byte, int enable)
  * mode: print mode
  *
  */
-void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
+void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 {
 	int tmp, i, j, k;
 	int lines   = 0;
@@ -591,6 +591,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	unsigned char buffer[256];
 	unsigned char *bufi = NULL; // inverted buffer
 	unsigned long addr = seek;
+	u64 len = olen;
 
 	last_print_format = fmt;
 	if (buf == NULL)
@@ -939,6 +940,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 		if (!*str) str = "shellcode";
                 cons_printf("%s:", str);
 		inc = config.width/7;
+		if (inc<1)inc = 1;
 		lines = 0;
                 for(i = 0; !config.interrupted && i < len; i++) {
 			V if (lines>config.height-4)
@@ -957,6 +959,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	case FMT_CSTR:
 		inc = config_get_i("scr.bytewidth");
 		if (!inc) inc = config.width/6;
+		if (inc<1)inc = 1;
 		cons_printf("#define _BUFFER_SIZE %d", len); cons_newline();
 		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); cons_newline();
 		for(j = i = 0; !config.interrupted && i < len;) {
@@ -974,6 +977,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	case FMT_BIN:
 		inc = config_get_i("scr.bytewidth");
 		if (!inc) inc = (int)((config.width-17)/11);
+		if (inc<1)inc = 1;
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset ");
@@ -999,6 +1003,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 	case FMT_OCT:
 		inc = config_get_i("scr.bytewidth");
 		if (!inc) inc = (int)((config.width)/6);
+		if (inc<1)inc = 1;
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset   ");
@@ -1177,6 +1182,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t fmt)
 				cons_printf("%c", hex[(i+k)%16]);
 			cons_newline();
 		}
+		if (inc<1) inc = 1;
 		for(i=0; !config.interrupted && i<len; i+=inc) {
 			V if (inc==0 && (i/inc)+4>config.height) break;
 			D { if ( fmt == FMT_HEXB ) {

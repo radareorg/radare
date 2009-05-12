@@ -774,6 +774,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	p = p%25;
 	tmp = v/20;
 	v = v%20;
+	/* TODO: optimize this shit */
 	for(i=0;i<(lastlen);i++)
 		eprintf(" ");
 	eprintf(" \r");

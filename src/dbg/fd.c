@@ -77,11 +77,8 @@ int debug_fd_io_mode(int set, int fd)
 	static u64 oseek = 0;
 	fdio_enabled = set;
 	fdio_fd = fd;
-	if (set) {
-		oseek = config.seek;
-	} else {
-		config.seek = oseek;
-	}
+	if (set) oseek = config.seek;
+	else config.seek = oseek;
 	/* TODO: Autodetect fd type */
 	return 0;
 }
@@ -220,11 +217,8 @@ int debug_fd(char *cmd)
 		if (!ptr||!ptr2) {
 			eprintf("Usage: !fds [fd] [seek] ([whence])\n");
 		} else {
-			if (ptr3)
-				whence = atoi(ptr3+1);
-
-			printf("curseek = %08x\n", 
-			(unsigned int)
+			if (ptr3) whence = atoi(ptr3+1);
+			printf("curseek = %08x\n", (unsigned int)
 			debug_fd_seek(ps.tid, atoi(ptr+1), get_math(ptr2+1), whence));
 		}
 	} else
@@ -237,21 +231,17 @@ int debug_fd(char *cmd)
 		ptr2 = strchr(ptr+1, ' ');
 		if (!ptr||!ptr2)
 			eprintf("Usage: !fdd [oldfd] [newfd]\n");
-		else
-			debug_fd_dup2(ps.tid, atoi(ptr+1), atoi(ptr2+1));
+		else debug_fd_dup2(ps.tid, atoi(ptr+1), atoi(ptr2+1));
 	} else
 	if ((ptr=strchr(cmd, ' '))) {
 		ptr = ptr+1;
-		if (ptr[0]!='\0'&&ptr[0]==' ') {
-			if (ptr)
-				ptr2 = strchr(ptr, ':');
+		if (ptr[0]!='\0') {
+			ptr2 = strchr(ptr, ':');
 			if (ptr2)
-				eprintf("SOCKET NOT YET\n");
+				eprintf("OPEN SOCKET NOT YET IMPLEMENTED\n");
 			else eprintf("new fd = %d\n", debug_fd_open(ps.tid, ptr, 0));
-		} else 
-			debug_fd_list(ps.tid, 0);
-	} else
-		debug_fd_list(ps.tid, 0);
+		} else debug_fd_list(ps.tid, 0);
+	} else debug_fd_list(ps.tid, 0);
 
 	return 0;
 }

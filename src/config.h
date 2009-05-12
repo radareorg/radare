@@ -44,6 +44,7 @@ struct config_t {
 	int visual;
 	int scrdelta;
 	int graph;
+	int scrfit;
 	int cursor_mode; // visual cursor toggle
 	int insert_mode; // visual insert toggle
 	/* ... */

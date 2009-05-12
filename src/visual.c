@@ -1606,6 +1606,7 @@ CMD_DECL(visual)
 			cons_set_raw(0);
 			lpf = last_print_format;
 			config.visual=0;
+		cons_flushable = 0;
 #if HAVE_LIB_READLINE
 			ptr = readline(VISUAL_PROMPT);
 			line[0]='\0';
@@ -1636,7 +1637,6 @@ CMD_DECL(visual)
 			} while(ret);
 			free(optr);
 			radare_cmd(line, 1);
-		cons_flushit();
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
@@ -1644,8 +1644,9 @@ CMD_DECL(visual)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 			radare_cmd(line, 1);
-		cons_flushit();
 #endif
+		cons_flushable = 1;
+		cons_flush();
 			config.visual=1;
 			last_print_format = lpf;
 			cons_set_raw(1);
@@ -1992,7 +1993,6 @@ CMD_DECL(visual)
 				if (config.cursor>=0 && config.cursor< config.block_size) {
 					c = config.cursor;
 					ch = config.block[config.cursor];
-					eprintf("cursor %d\n", config.cursor);
 					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(--ch), config.seek); //+config.cursor);
 					radare_cmd(buf, 0);
 					config.cursor = c;

@@ -1058,8 +1058,8 @@ void radare_nullcmd()
 	if (config_get("dbg.stack")) {
 		int c = config.cursor;
 		config.cursor=-1;
-		C cons_printf(C_RED"Stack: "C_RESET);
-		else cons_printf("Stack: ");
+		//C cons_printf(C_RED"Stack: "C_RESET);
+		//else cons_printf("Stack: ");
 		radare_cmd("?x ebp-esp", 0); //":px 66@esp", 0);
 		sprintf(buf, "%spx %d @ %s",
 			(config_get("dbg.vstack"))?":":"",
@@ -2064,6 +2064,8 @@ int radare_seek_search_backward(const char *str)
 	int i, j, kw_len = 0;
 	u64 oseek = config.seek;
 	u64 eseek = config_get_i("search.from");
+	u64 maxbytes = config_get_i("search.limit");
+	u64 bytes = 0;
 
 	switch(str[0]) {
 	case ' ': // string search
@@ -2114,6 +2116,11 @@ int radare_seek_search_backward(const char *str)
 		}
 		config.seek -= config.block_size - 1;
 		radare_read(0);
+		bytes += config.block_size;
+		if (maxbytes && bytes > maxbytes) {
+			eprintf("search.limit has been reached without results\n");
+			break;
+		}
 	}
 	radare_controlc_end();
 	radare_seek(oseek, SEEK_SET);
@@ -2128,6 +2135,8 @@ int radare_seek_search(const char *str)
 	int i, kw_len = 0;
 	u64 oseek = config.seek;
 	u64 eseek = config.size;
+	u64 maxbytes = config_get_i("search.limit");
+	u64 bytes = 0;
 
 	if (config_get_i("search.to")) {
 		eseek = config_get_i("search.to");
@@ -2170,6 +2179,11 @@ int radare_seek_search(const char *str)
 			} else kw_idx = 0;
 		}
 		radare_read(1);
+		bytes += config.block_size;
+		if (maxbytes && bytes > maxbytes) {
+			eprintf("search.limit has been reached without results\n");
+			break;
+		}
 	}
 	radare_controlc_end();
 	radare_seek(oseek, SEEK_SET);

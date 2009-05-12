@@ -87,6 +87,7 @@ static void config_old_init()
 	config.width       = cons_get_columns();
 	config.last_seek   = 0;
 	config.file        = NULL;
+	config.scrfit      = 1;
 	config.block_size  = DEFAULT_BLOCK_SIZE;
 	config.cursor      = 0;
 	config.acursor     = 0;
@@ -614,6 +615,14 @@ static int config_verbose_callback(void *data)
 	return 0;
 }
 
+static int config_scrfit_callback(void *data)
+{
+	struct config_node_t *node = data;
+	if (node)
+		config.scrfit = node->i_value;
+	return 0;
+}
+
 static int config_wmode_callback(void *data)
 {
 	//struct config_node_t *node = data;
@@ -831,6 +840,7 @@ void config_init(int first)
 	config_set_i("search.align", 0);
 	config_set("search.flag", "true");
 	config_set("search.verbose", "true");
+	config_set_i("search.limit", 0);
 
 	config_set("file.id", "false");
 	config_set("file.analyze", "false");
@@ -1004,6 +1014,8 @@ void config_init(int first)
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 
+	node = config_set("scr.fit", "true");
+	node->callback = &config_scrfit_callback;
 	node = config_set("scr.html", "false");
 	node->callback = &config_scrhtml_callback;
 	config_set_i("scr.accel", 0);

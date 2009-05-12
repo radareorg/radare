@@ -845,11 +845,10 @@ int debug_dispatch_wait()
 						return -1;
 					}
 					add_th(th);
-
 					ps.tid = tid;
 					ret = 1;
 				}
-					debug_msg_set("pid %d New thread created\n", ps.tid);
+				debug_msg_set("pid %d New thread created\n", ps.tid);
 				return ret;
 			}
 		#endif

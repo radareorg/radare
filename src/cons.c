@@ -770,7 +770,6 @@ int cons_grepbuf(char *buf, int len)
 	int grepstrings_n = 1;
 	if (grepstr == NULL)
 		return len;
-
 begin:
 	if (buf==NULL || buf[0]=='\0')
 		return len;
@@ -976,6 +975,65 @@ void cons_flush()
 	cons_buffer_len = 0;
 }
 
+int ansistrlen(const char *str)
+{
+	int i=0, len = 0;
+	while(str[i]) {
+		if (str[i]==0x1b && str[i+1]=='[')
+			for(++i;str[i]&&str[i]!='J'&&str[i]!='m'&&str[i]!='H';i++);
+		else len++;
+		i++;
+	}
+	return len;
+}
+
+char *ansistrchrn(char *str, int n)
+{
+	int i=0, len = 0;
+	while(str[i]) {
+		if (n == len)
+			break;
+		if (str[i]==0x1b && str[i+1]=='[')
+			for(++i;str[i]&&str[i]!='J'&&str[i]!='m'&&str[i]!='H';i++);
+		else len++;
+		i++;
+	}
+	return str+i;
+}
+
+void cons_fitbuf(char *buf, int len)
+{
+	char *ptr = buf;
+	int linelen, i = 0;
+	int rows = config.height;
+	int cols = config.width;
+	buf[len]='\0';
+	do {
+		ptr = memchr(buf, '\n', len);
+		if (ptr) {
+			ptr[0]='\0';
+			i += strlen(buf);
+			/* fit columns */
+			linelen = ansistrlen(buf);
+			if (linelen>cols) {
+				char *next = ansistrchrn(buf,cols);
+				next[0]='\n';
+				//strbcpy(buf+cols+1, ptr+1); // ok for b&w
+				strbcpy(next+1, ptr+1);
+				buf = next+1;
+			} else {
+				ptr[0]='\n';
+				buf = ptr+1;
+			}
+		}
+		rows--;
+		if (rows==0) {
+			buf[0]='\0';
+			break;
+		}
+	} while(i<len && ptr);
+}
+
 void cons_flushit()
 {
 char *ob;
@@ -983,6 +1041,8 @@ char *ob;
 ob=cons_buffer;
 cons_buffer = cons_buffer2;
 cons_buffer_len = cons_buffer2_len;
+if (config.scrfit)
+cons_fitbuf(cons_buffer, cons_buffer_len);
 	cons_render();
 cons_buffer = ob;
 cons_buffer_len = 0;
@@ -1001,8 +1061,9 @@ void cons_render()
 	if (cons_noflush)
 		return;
 
-	if (cons_interactive) {
-		if (cons_buffer && strlen(cons_buffer) > CONS_MAX_USER) {
+	if (cons_interactive && cons_buffer) {
+		cons_buffer_len = strlen(cons_buffer);
+		if (cons_buffer && (cons_buffer_len > CONS_MAX_USER)) {
 			if (yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)== 0) {
 				cons_reset();
 				return;
