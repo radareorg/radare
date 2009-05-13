@@ -1872,10 +1872,8 @@ CMD_DECL(write)
 						if (feof(fd))
 							break;
 						c = n;
-						if (c == '#')
-							commented = 1;
-						else if (c == '\n' || c == '\r')
-							commented = 0;
+						if (c == '#') commented = 1;
+						else if (c == '\n' || c == '\r') commented = 0;
 					}
 				}
 				fclose(fd);

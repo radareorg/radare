@@ -60,21 +60,16 @@ int main(int argc, char **argv, char **envp)
 	environ = envp;
 	radare_init();
 
-#if 0
-printf("%d\n", ansistrlen("hello\x1b[32m world\x1b[0m\n"));
-printf("%d\n", ansistrlen("hello world\n"));
-exit(1);
-#endif
-
-	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVnxi:e:p:d")) != -1)
-	{
+	while ((c = getopt(argc, argv, "l:fs:hb:wLvuVnxi:e:p:d")) != -1) {
 		switch( c ) {
 		case 'd':
 			flag_d = 1;
 			__optind = optind;
 			break;
 		case 'i':
-			config.script = optarg;
+			if (config.script)
+				eprintf("Cannot interpret more than one -i file. Ignoring '%s'\n", optarg);
+			else config.script = optarg;
 			break;
 		case 'f':
 			config.block_size = 0;

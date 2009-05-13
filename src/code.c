@@ -858,7 +858,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			if (inc == 0)
 				inc = myinc;
 		}
-		D { 
+		//D {
+		if (1) {
 			if (flags & RADIS_FLAGS && !(flags&RADIS_FLAGSLINE)) {
 				char buf[1024];
 				char flag[1024];
@@ -884,8 +885,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						cons_printf(buf, flag);
 						cons_newline();
 						CHECK_LINES
-						if (reflines && flags & RADIS_LINES)
-							code_lines_print(reflines, sk, 0);
+							if (reflines && flags & RADIS_LINES)
+								code_lines_print(reflines, sk, 0);
 						if (flags & RADIS_SECTION) {
 							const char * flag = get_section_name_at(seek-config.vaddr);
 							if (flag && *flag)
@@ -899,7 +900,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 							cons_strcat("        ");
 						if (funline[0] != '\0')
 							cons_strcat("|");
-							//cons_strcat(funline);
+						//cons_strcat(funline);
 						sprintf(buf, " %%%ds ", show_nbytes+((funline[0]!='\0')?0:1)); //show_nbytes);
 						cons_printf(buf, "");
 					} else {
@@ -989,7 +990,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			udis_arch_opcode(arch, block+bytes, endian, seek, bytes, myinc); //seek+myinc, bytes, myinc);
 
 			/* show references */
-			D if (aop.ref) {
+			if (aop.ref) {
 				string_flag_offset(buf, aop.ref, 0);
 				cons_printf(" ; %s",buf);
 				if (buf[0]=='\0')
@@ -997,7 +998,8 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			}
 
 			/* show comments and jump keys */
-			D if (flags & RADIS_COMMENTS) {
+			//FIXME D if (flags & RADIS_COMMENTS) {
+			if (flags & RADIS_COMMENTS) {
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -136,8 +136,8 @@ void env_update()
 	char *ptr;
 
 	/* radis_update(); */
-
 	config.verbose = config_get_i("cfg.verbose");
+	config.color = (int)config_get("scr.color");
 
 #if 0
 	ptr = getenv("COLUMNS");
@@ -148,6 +148,4 @@ void env_update()
 	if (config.width<10)config.width=10;
 	config_set_i("scr.width", config.width);
 #endif
-
-	config.color = (int)config_get("scr.color");
 }

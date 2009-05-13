@@ -597,7 +597,7 @@ static int config_debug_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (node && node->i_value)
+	if (node) // && node->i_value)
 		config.debug = node->i_value;
 
 	return 0;
@@ -607,7 +607,7 @@ static int config_verbose_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (node && node->i_value) {
+	if (node) { // && node->i_value) {
 		config.verbose = node->i_value;
 		dl_echo = config.verbose;
 	}
@@ -651,8 +651,7 @@ static int config_palette_callback(void *data)
 static int config_color_callback(void *data)
 {
 	struct config_node_t *node = data;
-
-	if (node && node->i_value)
+	if (node) // && node->i_value)
 		config.color = (int)node->i_value;
 	return 1;
 }
@@ -763,7 +762,6 @@ void config_init(int first)
 		config_new.lock = 0;
 		INIT_LIST_HEAD(&(config_new.nodes));
 	}
-
 
 	/* enter keys */
 	node = config_set("asm.profile", "default");

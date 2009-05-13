@@ -1236,8 +1236,12 @@ int radare_interpret(const char *file)
 	if (strstr(file, ".lua"))
 		snprintf(buf, 1012, "H lua %s", file);
 
-	if (buf[0])
-		return radare_cmd(buf, 0);
+	if (buf[0]) {
+		flag_space_pop();
+		len = radare_cmd(buf, 0);
+		flag_space_push();
+		return len;
+	}
 
 	/* failover to simple radare script */
 	fd = fopen(file, "r");
@@ -1420,7 +1424,6 @@ int radare_prompt()
 	}
 	cons_flush();
 	radare_prompt_command();
-
 #if __UNIX__
 	C	sprintf(prompt, "%s["OFF_FMT"]> "C_RESET,
 			cons_palette[PAL_PROMPT], (offtx)config.seek+config.vaddr); 
@@ -1431,7 +1434,6 @@ int radare_prompt()
 	sprintf(prompt, "["OFF_FMT"]> ",
 			(offtx)config.seek+config.vaddr); 
 #endif
-
 	memset(input, 0, BUFLEN);
 
 	t = (int) config_get_i("cfg.verbose");
@@ -1933,10 +1935,11 @@ int radare_go()
 
 	config_set_i("cfg.verbose", t);
 
-	if (config.script)
+	if (config.script) {
+		env_update();
 		radare_interpret(config.script);
-
-	config_set_i("cfg.verbose", t);
+		config_set_i("cfg.verbose", t);
+	}
 
 	radare_controlc_end();
 
