@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -72,7 +72,7 @@ static PyObject * Radare_eval(Radare* self, PyObject *args)
 	char *cmd = NULL,*cmd2= NULL;
 	char str[1024];
 
-	if (!	PyArg_ParseTuple(args, "s", &cmd))
+	if (!PyArg_ParseTuple(args, "s", &cmd))
 			return NULL;
 	PyArg_ParseTuple(args, "s", &cmd2);
 	//	if (!PyArg_ParseTuple(args, "s:cmd", cmd)) {
@@ -123,9 +123,8 @@ Radare_init(Radare *self, PyObject *args, PyObject *kwds)
 
 	static char *kwlist[] = {"first", "last", "number", NULL};
 
-	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|OOi", kwlist,
-				&first, &last,
-				&self->number))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOi", kwlist,
+		&first, &last, &self->number))
 		return -1;
 
 	if (first) {
@@ -146,12 +145,9 @@ Radare_init(Radare *self, PyObject *args, PyObject *kwds)
 }
 
 static PyMemberDef Radare_members[] = {
-	{"first", T_OBJECT_EX, offsetof(Radare, first), 0,
-		"first name"},
-	{"last", T_OBJECT_EX, offsetof(Radare, last), 0,
-		"last name"},
-	{"number", T_INT, offsetof(Radare, number), 0,
-		"noddy number"},
+	{"first", T_OBJECT_EX, offsetof(Radare, first), 0, "first name"},
+	{"last", T_OBJECT_EX, offsetof(Radare, last), 0, "last name"},
+	{"number", T_INT, offsetof(Radare, number), 0, "noddy number"},
 	{NULL}  /* Sentinel */
 };
 
@@ -259,12 +255,12 @@ void python_hack_cmd(const char *input)
 		return;
 	}
 	epython_init();
+#if 0
 	Py_Initialize();
 	init_radare_module();
 	PyRun_SimpleString("import r");
 	PyRun_SimpleString("import radare");
-
-	PyRun_SimpleString("import IPython;IPython.Shell.start()");
+#endif
 	
 	if (input && input[0]) {
 		FILE *fd  = fopen(input, "r");
@@ -276,18 +272,21 @@ void python_hack_cmd(const char *input)
 			fclose(fd);
 		}
 	} else {
-		char str[1024];
-		while(!feof(stdin)) {
-			printf("python> ");
-			fflush(stdout);
-			str[0]='\0';
-			fgets(str,1000,stdin);
-			if (str[0]=='.'||feof(stdin)||!memcmp(str,"exit",4)||!memcmp(str,"quit",4)||!strcmp(str,"q"))
-				break;
-			str[strlen(str)]='\0';
-			PyRun_SimpleString(str);
+		PyRun_SimpleString("import code");
+		if (PyRun_SimpleString("code.interact()")) {
+			char str[1024];
+			while(!feof(stdin)) {
+				printf("python> ");
+				fflush(stdout);
+				str[0]='\0';
+				fgets(str,1000,stdin);
+				if (str[0]=='.'||feof(stdin)||!memcmp(str,"exit",4)||!memcmp(str,"quit",4)||!strcmp(str,"q"))
+					break;
+				str[strlen(str)]='\0';
+				PyRun_SimpleString(str);
+			} 
+			clearerr(stdin);
 		} 
-		clearerr(stdin);
 	}
 	epython_destroy();
 }
