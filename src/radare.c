@@ -1793,7 +1793,7 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 
 int radare_go()
 {
-	u64 tmp;
+	u64 bsize;
 	int t = (int)config_get("cfg.verbose");
 
 	radare_controlc_end();
@@ -1810,11 +1810,11 @@ int radare_go()
 	}
 
 	/* open file */
-	tmp = config.block_size;
+	bsize = config.block_size;
 	if (radare_open(0))
 		return 1;
-	if (tmp)
-		radare_set_block_size_i(tmp);
+	if (bsize)
+		radare_set_block_size_i(bsize);
 
 	/* hexdump mode (-x) */
 	if (config.mode == MODE_HEXDUMP) {
@@ -1943,6 +1943,8 @@ int radare_go()
 
 	radare_controlc_end();
 
+	if (bsize)
+		radare_set_block_size_i(bsize);
 	do {
 		do {
 			cons_flush();
