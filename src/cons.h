@@ -73,6 +73,7 @@ void cons_flush();
 int cons_fgets(char *buf, int len, int argc, const char **argv);
 int cons_set_fd(int fd);
 void cons_render();
+void cons_skipxy(int x, int y);
 void cons_strcat(const char *str);
 void cons_newline();
 void cons_set_raw(int b);

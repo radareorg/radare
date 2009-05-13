@@ -1001,22 +1001,66 @@ char *ansistrchrn(char *str, int n)
 	return str+i;
 }
 
+static int cons_skipx = 0;
+static int cons_skipy = 0;
+
+void cons_skipxy(int x, int y)
+{
+	if (x==y && x==0) {
+		cons_skipx = 0;
+		cons_skipy = 0;
+	} else {
+		cons_skipx += x;
+		cons_skipy += y;
+		if (cons_skipx<0) cons_skipx = 0;
+		if (cons_skipy<0) cons_skipy = 0;
+	}
+}
+
 void cons_fitbuf(char *buf, int len)
 {
+	char *next;
 	char *ptr = buf;
 	int linelen, i = 0;
+	int lines = 0;
 	int rows = config.height;
-	int cols = config.width;
+	int cols = config.width -cons_skipx;
 	buf[len]='\0';
 	do {
+		if (lines>0 && cons_skipx) {
+			ptr = memchr(buf, '\n', len);
+			if (ptr) linelen = ptr-buf;
+			else linelen = strlen(buf);
+			next = ansistrchrn(buf, cons_skipx);
+			/* too short line */
+			if (next>=buf+linelen) {
+				buf[0]='\n';
+				len -= linelen;
+				if (ptr) strbcpy(buf+1, ptr+1);
+				buf = buf+1;
+			} else {
+				len -= cons_skipx;
+				if (len<=0) break;
+				strbcpy(buf, next);
+				//strbcpy(buf, buf+cons_skipx);
+			}
+		}
 		ptr = memchr(buf, '\n', len);
 		if (ptr) {
+			linelen = (int)(ptr-buf);
+			if (lines>0 && cons_skipy && cons_skipy>=lines) {
+				strbcpy(buf, ptr+1);
+				len -= (ptr-buf);
+				if (len<=0) break;
+				lines++;
+				continue;
+			}
 			ptr[0]='\0';
-			i += strlen(buf);
+			i += linelen;
 			/* fit columns */
 			linelen = ansistrlen(buf);
 			if (linelen>cols) {
-				char *next = ansistrchrn(buf,cols);
+				next = ansistrchrn(buf,cols);
 				next[0]='\n';
 				//strbcpy(buf+cols+1, ptr+1); // ok for b&w
 				strbcpy(next+1, ptr+1);
@@ -1026,11 +1070,11 @@ void cons_fitbuf(char *buf, int len)
 				buf = ptr+1;
 			}
 		}
-		rows--;
-		if (rows==0) {
+		if (lines > rows+cons_skipy) {
 			buf[0]='\0';
 			break;
 		}
+		lines++;
 	} while(i<len && ptr);
 }
 

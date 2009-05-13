@@ -264,6 +264,8 @@ void python_hack_cmd(const char *input)
 	PyRun_SimpleString("import r");
 	PyRun_SimpleString("import radare");
 
+	PyRun_SimpleString("import IPython;IPython.Shell.start()");
+	
 	if (input && input[0]) {
 		FILE *fd  = fopen(input, "r");
 		if (fd == NULL) {

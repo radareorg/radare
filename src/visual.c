@@ -120,7 +120,7 @@ command_t keystrokes[] = {
 	COMMAND('x', 0, "show xrefs of the current offset", xrefs_here),
 	COMMAND('i', 0, "insert mode (tab to change hex,asm,ascii, q to back)", insert),
 	COMMAND('I', 0, "invert current block", invert),
-	COMMAND('_', 0, "set block size", setblocksize),
+	//COMMAND('_', 0, "set block size", setblocksize),
 	COMMAND('z', 0, "zoom full/block with pO", zoom),
 	COMMAND('Z', 0, "resets zoom preferences", zoom_reset),
 	COMMAND('w', 1, "write hex string", insert_hexa_string),
@@ -136,67 +136,69 @@ command_t keystrokes[] = {
 
 void visual_show_help()
 {
+	int fus = cons_flushable;
+	cons_flushable = 0;
 	cons_strcat("\x1b[2J\x1b[0;0H\n");
 	TITLE
 	cons_printf("Visual keybindings:\n");
 	TITLE_END
 	cons_printf(
-	":<cmd>     radare command (vi like)\n"
-	";          edit or add comment\n"
-	"\"         change metadata of current cursor seek\n"
-	",.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
-	"m'         m1 -> mark current position as char '1'. '1 will jump to mark 1\n"
-	"g,G        seek to beggining or end of file\n"
-	"+-*/       +1, -1, +width, -width -> block size\n"
-	"<>         seek block aligned (cursor mode = folder code)\n"
-	"[]         adjust screen width\n"
-	"a,A,=      insert patch assembly, rsc asm or !hack\n"
-	"i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
-	"f,F        seek between flag list (f = forward, F = backward)\n"
-	"n,N        seek between hits of the hit0 search\n"
-	"t          visual track/browse flagspaces and flags\n"
-	"e          visual eval configuration variables\n"
-	"C          toggle scr.color\n"
-	"d          convert cursor selected bytes to ascii, code or hex\n"
-//	"b[k][cmd]  binds key 'k' to the specified command\n"
-	"m          applies rfile magic on this block\n" // ???
-	"I          invert block (same as pIx or so)\n"
-	"y,Y        yank and Yankee aliases for copy and paste\n"
-	"f,F        go next, previous flag (cursor mode to add/remove)\n"
-	"h,j,k,l    scroll view to left, down, up, right.\n"
-	"J,K        up down scroll one block.\n"
-	"H,L        scroll left, right by 2 bytes (16 bits).\n"
-	"p,P        switch between hex, bin and string formats\n"
-	"x          show xrefs of the current offset\n"
-	"w          write hexpair bytes in cursor\n"
-	"q          exits visual mode\n");
+	" :<cmd>     radare command (vi like)\n"
+	" ;          edit or add comment\n"
+	" \"         change metadata of current cursor seek\n"
+	" ,.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
+	" m'         m1 -> mark current position as char '1'. '1 will jump to mark 1\n"
+	" g,G        seek to beggining or end of file\n"
+	" +-*/       +1, -1, +width, -width -> block size\n"
+	" <>         seek block aligned (cursor mode = folder code)\n"
+	" []{}()     adjust screen width, move horitzontally and vertically\n"
+	" a,A,=      insert patch assembly, rsc asm or !hack\n"
+	" i          insert mode (tab to switch btw hex,asm,ascii, 'q' to normal)\n"
+	" f,F        seek between flag list (f = forward, F = backward)\n"
+	" n,N        seek between hits of the hit0 search\n"
+	" t          visual track/browse flagspaces and flags\n"
+	" e          visual eval configuration variables\n"
+	" C          toggle scr.color\n"
+	" d          convert cursor selected bytes to ascii, code or hex\n"
+//	" b[k][cmd]  binds key 'k' to the specified command\n"
+	" m          applies rfile magic on this block\n" // ???
+	" I          invert block (same as pIx or so)\n"
+	" y,Y        yank and Yankee aliases for copy and paste\n"
+	" f,F        go next, previous flag (cursor mode to add/remove)\n"
+	" h,j,k,l    scroll view to left, down, up, right.\n"
+	" J,K        up down scroll one block.\n"
+	" H,L        scroll left, right by 2 bytes (16 bits).\n"
+	" p,P        switch between hex, bin and string formats\n"
+	" x          show xrefs of the current offset\n"
+	" w          write hexpair bytes in cursor\n"
+	" q          exits visual mode\n");
 	TITLE
 	cons_printf("\nCursor mode:\n");
 	TITLE_END
 	cons_printf(
-	"c          toggle cursor mode\n"
-	"hjkl       move cursor (also arrows)\n"
-	"HJKL       select bytes (shift+arrows)\n"
-	"f/F        set/unset flag at cursor\n");
+	" c          toggle cursor mode\n"
+	" hjkl       move cursor (also arrows)\n"
+	" HJKL       select bytes (shift+arrows)\n"
+	" f/F        set/unset flag at cursor\n");
 	if (config.debug) {
 	TITLE
 	cons_printf("\nDebugger keybindings:\n");
 	TITLE_END
 	cons_printf(
-	"!          show debugger commands help\n"
-	"F1         commands help\n"
-	"F2         set breakpoint (execute)\n"
-	"F3         set watchpoint (read)\n"
-	"F4         continue until cursor or here (for loops)\n"
-	"F6         continue until syscall (!contsc)\n"
-	"F7         step in debugger user code (!step)\n"
-	"F8         step over in debugger (!stepo)\n"
-	"F9         continue execution (!cont)\n"
-	"F10        continue until user code (!contu)\n"
+	" !          show debugger commands help\n"
+	" F1         commands help\n"
+	" F2         set breakpoint (execute)\n"
+	" F3         set watchpoint (read)\n"
+	" F4         continue until cursor or here (for loops)\n"
+	" F6         continue until syscall (!contsc)\n"
+	" F7 F8      !step and !stepover\n"
+	" F9         continue execution (!cont)\n"
+	" F10        continue until user code (!contu)\n"
 	);
 	}
-	//cons_flush();
-	cons_flushit();
+	cons_flush();
+cons_flushable = fus;
+	//cons_flushit();
 }
 
 CMD_DECL(visual_bind_run)
@@ -1237,6 +1239,7 @@ CMD_DECL(visual)
 	cons_clear();
 	cons_set_raw(1);
 	cons_flushable = 1;
+	cons_skipxy(0,0);
 	while(1) {
 		const char *scrseek = config_get("scr.seek");
 		if (inc<1) inc = 1;
@@ -1963,6 +1966,14 @@ CMD_DECL(visual)
 			} else
 				config.seek++;
 			break;
+		case '(': cons_skipxy(0,-1); break;
+		case ')': cons_skipxy(0,1); break;
+		case '{': cons_skipxy(-1,0); break;
+		case '}': cons_skipxy(1,0); break;
+#if 0
+		case '-': config.height--; break;
+		case '_': config.height++; break;
+#endif
 		case '*':
 			radare_set_block_size_i(config.block_size+inc);
 			break;
