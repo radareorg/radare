@@ -94,7 +94,6 @@ static PyObject * Radare_eval(Radare* self, PyObject *args)
 	return result;
 }
 
-
 static char *py_nullstr = "";
 static PyObject * Radare_cmd(Radare* self, PyObject *args)
 {
@@ -212,20 +211,10 @@ static PyMethodDef module_methods[] = {
 void init_radare_module(void)
 {
 	PyObject* m;
-
 	if (PyType_Ready(&RadareType) < 0)
 		return;
-
 	m = Py_InitModule3("r", Radare_methods, //module_methods,
 			"Example module that creates an extension type.");
-
-#if 0
-	if (m == NULL)
-		return;
-
-	Py_INCREF(&RadareType);
-	PyModule_AddObject(m, "Radare", (PyObject *)&RadareType);
-#endif
 }
 
 int epython_init()
@@ -273,7 +262,7 @@ void python_hack_cmd(const char *input)
 		}
 	} else {
 		PyRun_SimpleString("import code");
-		if (PyRun_SimpleString("code.interact()")) {
+		if (PyRun_SimpleString("code.interact(local={'r':r,'radare':radare})")) {
 			char str[1024];
 			while(!feof(stdin)) {
 				printf("python> ");
