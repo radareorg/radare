@@ -1024,7 +1024,7 @@ void cons_fitbuf(char *buf, int len)
 	int linelen, i = 0;
 	int lines = 0;
 	int rows = config.height;
-	int cols = config.width -cons_skipx;
+	int cols = config.width;// -cons_skipx;
 	buf[len]='\0';
 	do {
 		if (lines>0 && cons_skipx) {

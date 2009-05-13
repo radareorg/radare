@@ -1448,7 +1448,8 @@ void grava_widget_draw (GravaWidget* self) {
 #line 527 "widget.vala"
 	g_return_if_fail (self != NULL);
 #line 1451 "widget.c"
-	ctx = gdk_cairo_create ((GdkDrawable*) gtk_widget_get_window ((GtkWidget*) self->da));
+#define gtk_widget_get_window(x) x->window
+	ctx = gdk_cairo_create ((GdkDrawable*) gtk_widget_get_window (GTK_WIDGET(self->da)));
 #line 530 "widget.vala"
 	cairo_save (ctx);
 #line 531 "widget.vala"

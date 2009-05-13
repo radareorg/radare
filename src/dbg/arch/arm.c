@@ -190,8 +190,6 @@ int arch_stackanal()
 	return 0;
 }
 
-#include <mach/arm/thread_status.h>
-
 int arch_restore_registers()
 {
 	FILE *fd;

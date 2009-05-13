@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_ARM_H_
-#define _INCLUDE_ARM_H_
+#ifndef _INCLUDE_ARM_LINUX_H_
+#define _INCLUDE_ARM_LINUX_H_
 
 //#define regs_t elf_gregset_t
 /* linux */

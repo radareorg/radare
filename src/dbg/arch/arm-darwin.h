@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_PPC_DARWIN_H_
-#define _INCLUDE_PPC_DARWIN_H_
+#ifndef _INCLUDE_ARM_DARWIN_H_
+#define _INCLUDE_ARM_DARWIN_H_
 
 #include <mach/arm/thread_state.h>
 #include <mach/arm/thread_status.h>
