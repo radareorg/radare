@@ -475,9 +475,6 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 				strcat(buf, ref->name);
 			} else break;
 		} else
-		if (!flag->offset)
-			continue;
-		else
 		if (flag->offset <= seek && (!ref || flag->offset > ref->offset)) {
 			if (found)
 				ref = flag;

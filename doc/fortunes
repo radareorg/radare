@@ -103,9 +103,16 @@ Use rabin -rios to get the import/export/other symbols of any binary
 Remember to maintain your ~/.radare_history
 Microloft Visual Radare.NET 2008. Now OOXML Powered!
 Enjoy the 'two girls one backup' viral video
+Captain! enemies are all around!, Perfect! This way we can attack in any direction!
+In my book, you are my hero.
 A C program is like a fast dance on a newly waxed dance floor by people carrying razors - Waldi Ravens
 radare2 is like windows 7 but even better
 Enable 'asm.xrefs' and 'asm.xrefsto' to view the two endpoints for every xref
-the miraclelous on-line hard disk repairing software
+The miraculous on-line hard disk repairing software
 Check cmd.vprompt2 to disable the list of variables on top of the disassembly (CFV command)
 i love the #radare zombies
+Use .af*@addr to analyze a function and save metadata info
+Use {}()[] keys in Visual mode to adapt the console boundaries
+The '~' char is the internal grep. Use it to filter command results (pd~call)
+'(' command registers macros, here's a hello world: (h,?e Hello World,)&&.(h)
+If the command starts with numbers, following command will be executed N times (f.ex: 3!step)

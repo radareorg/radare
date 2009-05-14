@@ -8,17 +8,13 @@
 
 TODO 1.3.2
 ==========
-* make radare -i and radare < work in the same way (check pingpwn)
+* Added support to load more than one -i script file
 * fix arm-osx debugger
 * drop sdk dependency
 * regexp search??
-* agd -> graph in dot format
-* make code analysis bar remove only needed chars
 
 TheBook
 =======
-
-
 * Show function name at visual status bar all the time
   - support max pattern length as second argument
 * Support to undefine variables

@@ -762,31 +762,27 @@ int analyze_var_get(int type)
 
 int analyze_progress(int _o, int _x, int _p, int _v)
 {
+	char buf[80];
+	int i, j = 0;
 	static int refresh = 0;
 	static int o=0,x=0,p=0,v=0;
-	static int i, ch = '/';
+	static int ch = '/';
 	static int lastlen = 0;
 	int tmp;
 	o+=_o; x+=_x; p+=_p; v+=_v;
 	/* TODO: change this value depending on delta times */
-	if (refresh++%10) return 0;
-	tmp = p/25;
-	p = p%25;
-	tmp = v/20;
-	v = v%20;
-	/* TODO: optimize this shit */
-	for(i=0;i<(lastlen);i++)
-		eprintf(" ");
-	eprintf(" \r");
-	eprintf("   [%c] %02x:%02x:%02x:%02x ",ch, o, x, p, v);
-	for(i=0;i<tmp;i++)
-		eprintf("|");
-	for(i=0;i<p;i++)
-		eprintf("=");
-	for(i=0;i<v;i++)
-		eprintf("-");
-	for(i=0;i<tmp;i++)
-		eprintf(">");
+	if (refresh++%20) return 0;
+	tmp = p/12;
+	p   = p%12;
+	tmp = v/12;
+	v   = v%12;
+	for(i=0;i<tmp;i++) buf[j++]=')';
+	for(i=0;i<p;i++)   buf[j++]='=';
+	for(i=0;i<v;i++)   buf[j++]='-';
+	for(i=0;i<tmp;i++) buf[j++]='>';
+	buf[j]='\0';
+	eprintf("                                             "
+	        "\r  [%c] %02x:%02x:%02x:%02x %s", ch, o, x, p, v, buf);
 	lastlen = p+v;
 	eprintf("\r");
 	switch(ch) {
