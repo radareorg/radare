@@ -999,7 +999,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 			/* show comments and jump keys */
 			//FIXME D if (flags & RADIS_COMMENTS) {
-			if (flags & RADIS_COMMENTS) {
+			//if (flags & RADIS_COMMENTS) {
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
@@ -1014,10 +1014,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
 				}
-			}
+			//}
 
 			/* show splits at end of code blocks */
-			D if (flags & RADIS_SPLITS) {
+		//	D if (flags & RADIS_SPLITS) {
+			if (flags & RADIS_FLAGSALL) {
 				char buf[1024];
 				if (aop.jump||aop.eob) {
 					if (config_get("asm.splitall") || aop.type == AOP_TYPE_RET) {
