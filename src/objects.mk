@@ -56,7 +56,13 @@ crOBJ+=arch/sparc/sparc-opc.o
 crOBJ+=arch/sparc/gnudisparc.o
 
 crOBJ+=arch/ppc/code.o
+ifeq (${NONFREE},1)
 crOBJ+=arch/ppc/ppc_disasm.o
+else
+ifeq (${NONFREE},)
+crOBJ+=arch/ppc/ppc_disasm.o
+endif
+endif
 
 crOBJ+=arch/x86/vm.o
 crOBJ+=arch/x86/code.o

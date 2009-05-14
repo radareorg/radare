@@ -10,6 +10,7 @@
 #define DARWIN @DARWIN@
 
 /* features */
+#define NONFREE @NONFREE@
 #define DEBUGGER @DEBUGGER@
 #define SYSPROXY @SYSPROXY@
 #define HAVE_GUI @HAVE_GUI@

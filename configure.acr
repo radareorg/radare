@@ -42,6 +42,7 @@ ARG_WITHOUT USBSNF usb-sniffer disables the build of the libusb sniffer ;
 IFNOT HAVE_USB_H { USBSNF = 0 ; }
 
 (( acr option flags ))
+ARG_WITHOUT NONFREE nonfree disables the build of non-free sourcefiles ;
 ARG_WITHOUT DEBUGGER debugger disables the debugger layer ;
 ARG_WITH JAVA java builds the java api ;
 ARG_WITH WII wii builds the wii plugin for usbgecko ;

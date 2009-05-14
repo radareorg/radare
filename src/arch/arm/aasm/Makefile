@@ -1,5 +1,5 @@
 include ../../../../config.mk
-CFLAGS+=-DSHAREDIR=\"${SHAREDIR}\"
+CFLAGS+=-DSHAREDIR=\"${DATADIR}\"
 AOBJ=aasm.o utils.o elf.o
 
 ifeq ($(DARWIN),1)

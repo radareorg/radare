@@ -191,6 +191,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	       char bof[1024];
 	       char opcode[128];
 	       char operands[128];
+#if NONFREE
 	       struct DisasmPara_PPC dp;
 	       /* initialize DisasmPara */
 	       dp.opcode = opcode;
@@ -201,7 +202,9 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	       // dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp, endian);
 	       sprintf(string, "%s %s", opcode, operands);
-	       //cons_printf("  %s %s", opcode, operands);
+#else
+	       sprintf(string, "Sorry. ppc disasm is non free");
+#endif
 	       } break;
 	case ARCH_MIPS:
 		gnu_dismips_str(string, (u8*)b, seek+myinc);
