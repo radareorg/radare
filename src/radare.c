@@ -556,7 +556,10 @@ int radare_cmd_raw(const char *tmp, int log)
 
 	if (*input == '"') {
 		quoted = 1;
-		input=input+1;
+		input = input+1;
+		i = strlen(input)-1;
+		if (input[i]=='"')
+			input[i]='\0';
 	}
 
 	if (input[0]=='!'&&input[1]=='!') {

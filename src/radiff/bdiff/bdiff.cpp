@@ -24,6 +24,7 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/user.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "bdiff.h"

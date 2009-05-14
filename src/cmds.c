@@ -1189,10 +1189,12 @@ CMD_DECL(code)
 		while(text[0]==' ')
 			text = text + 1;
 		cons_flush();
-		if (text[0]=='\0'  || text[0]=='?')
+		if (text[0]=='\0') {
+			data_comment_list("");
+		} else if (text[0]=='?') {
 			cons_printf("Usage: CC [-addr|comment] @ address\n"
 				"adds or removes comments for disassembly\n");
-		else
+		} else
 		if (text[0]) {
 			if (text[0]=='-')
 				data_comment_del(config.seek, text+1);
@@ -1200,14 +1202,30 @@ CMD_DECL(code)
 		}
 		break;
 	case 'x': // code xref
-		if (text[1]=='-')
+		switch(text[1]) {
+		case '\0':
+			data_xrefs_list("Cx");
+			break;
+		case '-':
 			data_xrefs_del(get_math(text+2)-config.vaddr, config.seek+config.vaddr, 0);
-		else	data_xrefs_add(get_math(text+1)-config.vaddr, config.seek+config.vaddr, 0);
+			break;
+		default:
+			data_xrefs_add(get_math(text+1)-config.vaddr, config.seek+config.vaddr, 0);
+			break;
+		}
 		break;
 	case 'X': // data xref
-		if (text[1]=='-')
+		switch(text[1]) {
+		case '\0':
+			data_xrefs_list("CX");
+			break;
+		case '-':
 			data_xrefs_del(get_math(text+2)-config.vaddr,config.seek+config.vaddr, 1);
-		else	data_xrefs_add(get_math(text+1)-config.vaddr,config.seek+config.vaddr, 1);
+			break;
+		default:
+			data_xrefs_add(get_math(text+1)-config.vaddr,config.seek+config.vaddr, 1);
+			break;
+		}
 		break;
 	case 'i':
 		data_info();
@@ -2544,6 +2562,7 @@ CMD_DECL(help)
 				cons_strcat(
 				"Usage: ?[?[?]] <expr>\n"
 				" ? eip             ; get value of eip flag (or any math expression)\n"
+				" ?i offset A:      ; user input for u64 numeric values, result in $$?\n"
 				" ?v eip+33+[esp]   ; show hex value of math expression\n"
 				" ?z`str            ; sets false if string is zero length\n"
 				" ?x 303132         ; show hexpair as a printable string\n"
@@ -2607,6 +2626,13 @@ CMD_DECL(help)
 				cons_strcat(str);
 				cons_newline();
 			}
+		} else
+		if (input[0]=='i') {
+			char str[128];
+			eprintf("%s: ", input+2);
+			fflush(stderr);
+			fgets(str, 127, stdin);
+			config.last_cmp = get_math(str);
 		} else
 		if (input[0]=='z') {
 			char *ptr;
