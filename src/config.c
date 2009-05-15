@@ -73,7 +73,7 @@ static void config_old_init()
 	config.mode        = MODE_SHELL;
 	config.endian      = 1;
 	config.noscript    = 0;
-	config.script      = NULL;
+	config.script[0]   = NULL;
 	config.vaddr       = 0;
 	config.paddr       = 0;
 	config.seek        = 0;

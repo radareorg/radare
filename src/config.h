@@ -49,7 +49,7 @@ struct config_t {
 	int insert_mode; // visual insert toggle
 	/* ... */
 	int noscript;
-	char *script;
+	char *script[10];
 	int skip;    // conflict with noscript?? imho no
 	int ene;
 	int interrupted;

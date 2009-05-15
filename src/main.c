@@ -55,6 +55,7 @@ int main(int argc, char **argv, char **envp)
 	char buf2[4096];
 	int flag_d = 0;
 	int __optind = 0;
+	int nscr = 0;
 	char *ptr;
 
 	environ = envp;
@@ -67,9 +68,8 @@ int main(int argc, char **argv, char **envp)
 			__optind = optind;
 			break;
 		case 'i':
-			if (config.script)
-				eprintf("Cannot interpret more than one -i file. Ignoring '%s'\n", optarg);
-			else config.script = optarg;
+			config.script[nscr++] = optarg;
+			config.script[nscr] = NULL;
 			break;
 		case 'f':
 			config.block_size = 0;

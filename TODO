@@ -13,7 +13,6 @@ TODO 1.3.2
 * drop sdk dependency
 * regexp search??
 - fix radare -d ls / => absolute path is required :/
-C-r100-100 # remove ranges
 parrot vm
 
 TheBook

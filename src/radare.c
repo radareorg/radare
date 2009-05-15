@@ -1797,7 +1797,7 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 int radare_go()
 {
 	u64 bsize;
-	int t = (int)config_get("cfg.verbose");
+	int i, t = (int)config_get("cfg.verbose");
 
 	radare_controlc_end();
 
@@ -1938,9 +1938,9 @@ int radare_go()
 
 	config_set_i("cfg.verbose", t);
 
-	if (config.script) {
+	for(i=0;config.script[i];i++) {
 		env_update();
-		radare_interpret(config.script);
+		radare_interpret(config.script[i]);
 		config_set_i("cfg.verbose", t);
 	}
 
