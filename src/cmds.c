@@ -2598,6 +2598,7 @@ CMD_DECL(help)
 				" $$r = pointer reference of opcode\n"
 				" $$e = end of basic block\n"
 				" $$F = beggining of the function\n"
+				" $$S = size of the function\n"
 				" $$l = last seek done\n"
 				" $$w = size of last write operation\n"
 				" $${io.vaddr} = get eval value\n"
