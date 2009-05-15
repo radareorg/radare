@@ -481,7 +481,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 		}
 	}
 	if (idx==-1)
-		return 1;
+		return buf[0]!='\0';
 
 	if (ref) {
 		long ul = (seek-ref->offset);

@@ -1006,13 +1006,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr, 0))
-						|| string_flag_offset(buf, aop.jump, 0))
+						if (string_flag_offset(buf, aop.jump-config.vaddr, -1))
 							cons_printf("  ; %d = %s", jump_n, buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if ((config.vaddr && string_flag_offset(buf, aop.jump-config.vaddr, 0))
-						|| string_flag_offset(buf, aop.jump, 0))
+						if (string_flag_offset(buf, aop.jump-config.vaddr, -1))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}

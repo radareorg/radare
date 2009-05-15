@@ -57,7 +57,7 @@ struct config_t {
 	int unksize;
 	char *file;
 	unsigned char *block; // data block
-	int block_size; // size of the data block
+	int block_size; // size of the data block // why signed ?
 	int cursor; // position of the cursor inside the block XXX THIS IS UNSIGNED :O -1 must be funny
 	u64 cursor_ptr; // where arch_aop makes point with cursor
 	int acursor; // position of the cursor inside the block

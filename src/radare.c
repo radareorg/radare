@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * + 2006-05-12 Lluis Vilanova xscript <gmx.net>
@@ -54,6 +54,7 @@
 #include "dietline.h"
 
 u64 tmpoff = -1;
+int tmpbsz = -1;
 int std = 0;
 
 /* dummy callback for dl_hist_label */
@@ -320,7 +321,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	int i=0,j;
 	char ch;
 	char *word = NULL;
-	char *str;
+	char *str, *p;
 	struct list_head *pos;
 	u64 oseek, addr;
 
@@ -348,22 +349,35 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	case '?':
 		eprintf("Foreach '@@' iterator command:\n");
 		eprintf(" This command is used to repeat a command over a list of offsets.\n");
-		eprintf(" x @@ sym.         ; run 'x' over all flags matching 'sym.'\n");
-		eprintf(" x @@.file         ; \"\" over the offsets specified in the file (one offset per line)\n");
-		eprintf(" x @@=off1 off2 .. ; manual list of offsets\n");
-		eprintf(" x @@=`pdf~call[0] ; run 'x' at every call offset of the current function\n");
+		eprintf(" x @@ sym.                 ; run 'x' over all flags matching 'sym.'\n");
+		eprintf(" x @@.file                 ; \"\" over the offsets specified in the file (one offset per line)\n");
+		eprintf(" x @@=off1 off2 ..         ; manual list of offsets\n");
+		eprintf(" x @@=off1:bs1 off2:bs2 .. ; manual list of offsets\n");
+		eprintf(" x @@=`pdf~call[0]         ; run 'x' at every call offset of the current function\n");
 		break;
 	case '=':
-eprintf("Iterating over(%s)\n", each+1);
+//D eprintf("Iterating over(%s)\n", each+1);
 		/* foreach list of items */
 		each = each+1;
 		do {
 			while(each[0]==' ') each=each+1;
 			str = strchr(each, ' ');
 			if (str == NULL) {
+				p = strchr(each, ':');
+				if (p) {
+					*p='\0';
+					tmpbsz = config.block_size;
+					config.block_size = get_math(p+1);
+				}
 				addr = get_math(each);
 			} else {
 				str[0]='\0';
+				p = strchr(each, ':');
+				if (p) {
+					*p='\0';
+					tmpbsz = config.block_size;
+					config.block_size = get_math(p+1);
+				}
 				addr = get_math(each);
 				str[0]=' ';
 			}
@@ -490,6 +504,7 @@ eprintf("Iterating over(%s)\n", each+1);
 
 void radare_fortunes()
 {
+/* XXX UGLY HACK */
 #if __WINDOWS__
 	char *str = slurp("doc/fortunes", NULL);
 #else
@@ -526,7 +541,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	int i,f,fdi = 0;
 	char *eof;
 	char *eof2;
-	char *piped;
+	char *piped, *p;
 	char file[1024], buf[1024];
 	char *input, *oinput;
 	char *grep = NULL;
@@ -563,7 +578,25 @@ int radare_cmd_raw(const char *tmp, int log)
 	}
 
 	if (input[0]=='!'&&input[1]=='!') {
-		ret = radare_system(input+2);
+		if (input[2]=='?')
+		cons_printf("Usage: !!shell program\n"
+		" DEBUG       cfg.debug value as 0 or 1\n"
+		" EDITOR      cfg.editor (vim or so)\n"
+		" ARCH        asm.arch value\n"
+		" OFFSET      decimal value of current seek\n"
+		" XOFFSET     hexadecimal value of cur seek\n"
+		" CURSOR      cursor position (offset from curseek)\n"
+		" VADDR       io.vaddr\n"
+		" COLOR       scr.color?1:0\n"
+		" VERBOSE     cfg.verbose\n"
+		" FILE        cfg.file\n"
+		" SIZE        file size\n"
+		" BSIZE       block size\n"
+		" ENDIAN      'big' or 'little' depending on cfg.bigendian\n"
+		" BYTES       hexpairs of current block\n"
+		" BLOCK       temporally file with contents of current block\n"
+		);
+		else ret = radare_system(input+2);
 		goto __end;
 	}
 
@@ -692,9 +725,14 @@ int radare_cmd_raw(const char *tmp, int log)
 					radare_cmd_foreach(input ,eof2+2);
 					//config.seek = tmpoff;
 					radare_seek(tmpoff, SEEK_SET);
-					
 					goto __end;
 				} else {
+					p = strchr(eof2+2, ':');
+					if (p) {
+						*p='\0';
+						tmpbsz = config.block_size;
+						config.block_size = get_math(p+1);
+					}
 					tmpoff = config.seek;
 					for(;*ptr==' ';ptr=ptr+1);
 					if (*ptr=='+'||*ptr=='-')
@@ -895,6 +933,12 @@ int radare_cmd_raw(const char *tmp, int log)
 						goto __end;
 						
 					} else {
+						p = strchr(eof2+2, ':');
+						if (p) {
+							*p='\0';
+							tmpbsz = config.block_size;
+							config.block_size = get_math(p+1);
+						}
 						tmpoff = config.seek;
 						for(;*ptr==' ';ptr=ptr+1);
 						if (*ptr=='+'||*ptr=='-')
@@ -938,6 +982,10 @@ int radare_cmd_raw(const char *tmp, int log)
 		if (tmpoff != -1) {
 			config.seek = tmpoff;
 			tmpoff = -1;
+		}
+		if (tmpbsz != -1) {
+			config.block_size = tmpbsz;
+			tmpbsz = -1;
 		}
 	}
 	__end:
@@ -1975,7 +2023,7 @@ int fus = cons_flushable;
 	//cons_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmpfile);
-		tmpoff = config.seek;
+	//	tmpoff = config.seek;
 		return 0;
 	}
 /* HACKY HACKY! :D */
@@ -2034,7 +2082,7 @@ char *pipe_command_to_string(const char *cmd)
 	//cons_flush();
 	if (fd == -1) {
 		eprintf("pipe: Cannot open '%s' for writing\n", tmpfile);
-		tmpoff = config.seek;
+		//tmpoff = config.seek;
 		return 0;
 	}
 	std = dup(1); // store stdout

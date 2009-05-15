@@ -76,7 +76,7 @@ void env_prepare(const char *line)
 		sprintf(offset,  OFF_FMTd, (u64)config.seek+config.cursor);
 	setenv("CURSOR", offset,   1);
 	sprintf(offset,  "%d", (int)config_get_i("io.vaddr")); //(u64)config.vaddr);
-	setenv("BADDR",  offset,   1);
+	setenv("VADDR",  offset,   1);
 	sprintf(offset,  "%d",     config.color);
 	setenv("COLOR",  offset,   1);
 	sprintf(offset,  "%d", config.verbose);
@@ -93,7 +93,7 @@ void env_prepare(const char *line)
 		*offset = '\0';
 		for(i=0;i<config.block_size;i++) {
 			char str[128];
-			sprintf(str, "%02x ", config.block[i]);
+			sprintf(str, "%02x", config.block[i]);
 			strcat(offset, str);
 		}
 		setenv("BYTES",  offset, 1);

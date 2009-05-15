@@ -2543,7 +2543,7 @@ CMD_DECL(search) {
 
 CMD_DECL(shell)
 {
-	int ret;
+	int ret = 0;
 	env_prepare(input);
 	if (input[0]=='!')
 		ret = radare_system(input+1);
