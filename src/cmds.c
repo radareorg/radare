@@ -1163,10 +1163,10 @@ CMD_DECL(blocksize)
 		} else eprintf("Unknown flag '%s'\n", input+2);
 		break;
 	case '?':
-		cons_printf("Usage: b[t,f flag]|[size]  ; Change block size\n");
-		cons_printf(" b 200                ; set block size to 200\n");
-		cons_printf(" bt next @ here       ; block size = next-here\n");
-		cons_printf(" bf sym.main          ; block size = flag size\n");
+		cons_printf("Usage: b[t,f flag]|[size]  ; Change block size\n"
+		" b 200                ; set block size to 200\n"
+		" bt next @ here       ; block size = next-here\n"
+		" bf sym.main          ; block size = flag size\n");
 		break;
 	case '\0':
 		cons_printf("%d\n", config.block_size);
@@ -1183,6 +1183,16 @@ CMD_DECL(code)
 	char *text = input;
 
 	switch(text[0]) {
+	case 'r':
+		switch(text[1]) {
+		case ' ':
+			data_del_range(config.seek, config.seek+get_math(text+2));
+			break;
+		default:
+			cons_printf("Usage: Cr [length] @ addr\n");
+			break;
+		}
+		break;
 	case 'C':
 		/* comment */
 		text = text+1;
@@ -1354,6 +1364,7 @@ CMD_DECL(code)
 		"Usage: C[op] [arg] <@ offset>\n"
 		" Ci                     ; show info about metadata\n"
 		" CL                     ; show debug information at $$\n"
+		" Cr [length] @ addr     ; removes all metadata from here to length\n"
 		" CC [-][comment] @ here ; add/rm comment\n"
 		" CF [-][len]  @ here    ; add/rm linear function\n"
 		" Cx [-][addr] @ here    ; add/rm code xref\n"

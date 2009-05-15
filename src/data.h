@@ -75,5 +75,6 @@ int data_printd(int delta);
 int data_var_type_list(const char *mask);
 const char *data_var_type_format(const char *datatype);
 void data_del(u64 addr, int type,int len/* data or code */);
+void data_del_range(u64 from, u64 to);
 
 #endif

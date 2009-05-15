@@ -529,10 +529,10 @@ void data_xrefs_del(u64 addr, u64 from, int data /* data or code */)
 void data_comment_del(u64 offset, const char *str)
 {
 	struct comment_t *cmt;
-	struct list_head *pos;
+	struct list_head *pos, *n;
 	//u64 off = get_math(str);
 
-	list_for_each(pos, &comments) {
+	list_for_each_safe(pos, n, &comments) {
 		cmt = list_entry(pos, struct comment_t, list);
 #if 0
 		if (!pos)
@@ -554,8 +554,8 @@ void data_comment_del(u64 offset, const char *str)
 #endif
 		    if (offset == cmt->offset) {
 			    if (str[0]=='*') {
-				    free(cmt->comment);
-				    list_del(&(pos));
+				    free((void *)cmt->comment);
+				    list_del(pos);
 				    free(cmt);
 				    pos = comments.next; // list_init
 				    //data_comment_del(offset, str);
@@ -590,6 +590,34 @@ void data_comment_add(u64 offset, const char *str)
 		ptr[strlen(ptr)-1]='\0';
 	cmt->comment = ptr;
 	list_add_tail(&(cmt->list), &(comments));
+}
+
+void data_del_range(u64 from, u64 to)
+{
+	struct list_head *pos, *n;
+
+	list_for_each_safe (pos, n, &comments) {
+		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
+		if (cmt->offset >= from && cmt->offset <= to)
+			list_del(&(cmt->list));
+	}
+
+	list_for_each_safe (pos, n, &xrefs) {
+		struct xrefs_t *x = (struct xrefs_t *)list_entry(pos, struct xrefs_t, list);
+		if (x->addr >= from && x->addr <= to)
+			list_del(&(x->list));
+		if (x->from >= from && x->from <= to)
+			list_del(&(x->list));
+	}
+
+	list_for_each_safe (pos, n, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->from >= from && d->from <= to)
+			list_del(&(d->list));
+		else
+		if (d->to >= from && d->to <= to)
+			list_del(&(d->list));
+	}
 }
 
 void data_comment_list(const char *mask)
