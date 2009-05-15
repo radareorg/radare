@@ -126,7 +126,6 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 #elif __WINDOWS__
 	fprintf(stderr, "Not yet implemented\n");
 #endif
-
 	return ctr;
 }
 

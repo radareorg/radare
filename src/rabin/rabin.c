@@ -43,6 +43,7 @@
 #include "dietpe64.h"
 #include "dietpe_types.h"
 #include "dietmach0.h"
+#include "p9bin.h"
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
 #define PE_CALL(func, bin, args...) pe64?Pe64_##func(&bin.p64,##args):Pe32_##func(&bin.p32,##args)
@@ -104,6 +105,23 @@ void rabin_show_info(const char *file)
 	dietpe_entrypoint entrypoint;
 
 	switch(filetype) {
+	case FILETYPE_P9:
+		{
+		FILE *fd = fopen(file, "r");
+		if (!fd) {
+			fprintf(stderr, "cannot open file\n");
+			return;
+		}
+		if (rad) {
+			printf("e file.type = p9bin\n");
+			printf("e asm.arch = x86\n");
+			printf("e cfg.bigendian = false\n");
+		} else {
+			printf("filetype = p9bin\n");
+		}
+		fclose(fd);
+		}
+		break;
 	case FILETYPE_ELF:
 		fd = ELF_CALL(dietelf_open,bin.elf,file);
 		if (fd == -1) {
@@ -299,7 +317,8 @@ void rabin_show_strings(const char *file)
 	char buf[1024];
 
 	if (xrefs) {
-		snprintf(buf,1023, "printf \"pC @@ str_\\nq\\ny\\n\" | radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
+		snprintf(buf,1023, "printf \"pC @@ str_\\nq\\ny\\n\" |"
+		" radare -n -e file.id=1 -e file.flag=1 -e file.analyze=1 -vd %s", file);
 		system(buf);
 		return;
 	}
@@ -315,8 +334,7 @@ void rabin_show_strings(const char *file)
 		strings.elf = malloc(4096 * sizeof(dietelf_string));
 		strings_count = ELF_CALL(dietelf_get_strings,bin.elf,fd,verbose,4096,strings.elf);
 
-		if (rad)
-			printf("fs strings\n");
+		if (rad) printf("fs strings\n");
 		else printf("[Strings]\n");
 
 		stringsp = strings;
@@ -353,7 +371,6 @@ void rabin_show_strings(const char *file)
 			printf("\n%i strings\n", strings_count);
 
 		free(strings.elf);
-
 		ELF_(dietelf_close)(fd);
 		break;
 	case FILETYPE_PE:
@@ -418,7 +435,7 @@ void rabin_show_strings(const char *file)
 		if (rad) {
 			printf("fs strings\n");
 			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4\" @ \"$1}'"
-			"| tr ';<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '.........._________________' "
+			"| tr '+;<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '_.........._________________' "
 			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
 		} else snprintf(buf, 1022, "echo /z | radare -nv %s",file);
 		system(buf);
@@ -528,10 +545,24 @@ void rabin_show_entrypoint()
 	dietpe_entrypoint entrypoint;
 	union {
 		dietelf_bin_t elf;
-		dietpe_bin_t    pe;
+		dietpe_bin_t pe;
 	} bin;
 
 	switch(filetype) {
+	case FILETYPE_P9:
+		{
+			u8 buf[4];
+			unsigned int entry = 0;
+			FILE * fd = fopen(file, "r");
+			if (!fd) return;
+			fseek(fd, 5*4, SEEK_SET);
+			fread(buf, 1, 4, fd);
+			entry = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
+			fclose(fd);
+			if (rad) printf("f entrypoint @ 0x%08x\n", entry);
+			else printf("0x%08x entrypoint\n", entry);
+		}
+		break;
 	case FILETYPE_ELF:
 		/* pW 4 @ 0x18 */
 		fd = ELF_CALL(dietelf_open,bin.elf, file);
@@ -889,6 +920,9 @@ void rabin_show_symbols(char *file)
 	int symbols_count, i;
 
 	switch(filetype) {
+	case FILETYPE_P9:
+		
+		break;
 	case FILETYPE_ELF:
 #if 0		
 		sprintf(buf, "readelf -s '%s' | grep FUNC | grep GLOBAL | grep DEFAULT  | grep ' 12 ' | awk '{ print \"0x\"$2\" \"$8 }' | sort | uniq" , file);
@@ -1347,11 +1381,8 @@ int rabin_identify_header()
 	read(fd, buf, 1024);
 
 	if ( !memcmp(buf, "\xCA\xFE\xBA\xBE", 4) ) {
-		if (buf[9])
-			filetype = FILETYPE_CLASS;
-		else
-			filetype = FILETYPE_MACHO;
-
+		if (buf[9]) filetype = FILETYPE_CLASS;
+		else filetype = FILETYPE_MACHO;
 	} else if ( !memcmp(buf, "\xcE\xfa\xed\xfe", 4) ) {
 		//0xce, 0xfa, 0xed, 0xfe,
 		filetype = FILETYPE_MACHO;
@@ -1383,8 +1414,12 @@ int rabin_identify_header()
 	} else if (buf_is_bf(buf, 4)) {
 		filetype = FILETYPE_BF;
 	} else {
-		if (!rad)
-			printf("Unknown filetype\n");
+		unsigned int a = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
+		if (a == I_MAGIC) {
+			filetype = FILETYPE_P9;
+		} else {
+			if (!rad) printf("Unknown filetype\n");
+		}
 	}
 	return filetype;
 }
