@@ -38,6 +38,7 @@
 
 extern struct regs_off roff[];
 int regio_enabled = 0;
+u64 regio_addr = 0;
 
 /* reg io mode */
 int debug_reg_read_at(int pid, u8 *data, int length, u64 addr)
@@ -46,10 +47,12 @@ int debug_reg_read_at(int pid, u8 *data, int length, u64 addr)
 	int i, regsz = sizeof(regs_t);
 	u8 *ptr = &regs;
 	debug_getregs(pid, &regs);
-	if (addr>regsz)
+	if (addr<regio_addr)
+		return -1;
+	if (addr>regsz+regio_addr)
 		return -1;
 	for(i=0;i<length;i++) {
-		if (addr+i>regsz)
+		if (addr+i>regsz+regio_addr)
 			data[i] = 0xff;
 		else data[i] = ptr[i];
 	}
@@ -62,11 +65,11 @@ int debug_reg_write_at(int pid, const u8 *data, int length, u64 addr)
 	int i, regsz = sizeof(regs_t);
 	u8 *ptr = &regs;
 	debug_getregs(pid, &regs);
-	if (addr>regsz)
+	if (addr>regsz+regio_addr)
 		return -1;
 	for(i=0;i<length;i++) {
-		if (addr+i<regsz)
-			ptr[addr+i] = data[i];
+		if (addr+i<regsz+regio_addr)
+			ptr[addr-regio_addr+i] = data[i];
 	}
 	debug_setregs(pid, &regs);
 	return length;

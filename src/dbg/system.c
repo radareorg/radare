@@ -213,10 +213,13 @@ int debug_lib(const char *arg)
 int debug_regio(const char *arg)
 {
 	if (strchr(arg,'?')) {
-		eprintf("Usage: !regio[-]\n"
-		" Enables or disables the register IO access at address 0.\n"
+		eprintf("Usage: !regio[-] [addr]\n"
+		" Enables or disables the register IO access at [addr].\n"
 		" !regio enables and !regio- disables.\n");
-	} else regio_enabled = !strchr(arg, '-');
+	} else {
+		regio_addr = get_math(arg+1);
+		regio_enabled = !strchr(arg, '-');
+	}
 	return 0;
 }
 

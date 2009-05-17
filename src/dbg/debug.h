@@ -6,6 +6,7 @@
 #include "arch/arch.h"
 #include "parser.h"
 
+extern u64 regio_addr;
 extern int regio_enabled;
 extern int fdio_type; // stream or file?
 extern int fdio_enabled;
