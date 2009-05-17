@@ -25,7 +25,9 @@
 #include "flags.h"
 #include "arch/csr/dis.h"
 #include "arch/arm/disarm.h"
+#if NONFREE
 #include "arch/ppc/ppc_disasm.h"
+#endif
 #include "arch/m68k/m68k_disasm.h"
 #include "arch/x86/udis86/types.h"
 #include "arch/x86/udis86/extern.h"

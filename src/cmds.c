@@ -296,7 +296,7 @@ CMD_DECL(analyze)
 		break;
 #endif
 	case 'b':
-		prg = code_analyze(config.seek, depth);
+		prg = code_analyze(config.seek, depth+1);
 		if (prg) {
 			//cons_printf("name = %s\n", prg->name);
 			list_for_each_prev(head, &(prg->blocks)) {
@@ -318,11 +318,8 @@ CMD_DECL(analyze)
 				for (i=0;i<b0->n_bytes;i++)
 					cons_printf("%02x", b0->bytes[i]);
 				cons_newline();
-				cons_newline();
 			}
-		} else {
-			eprintf("oops\n");
-		}
+		} else eprintf("oops\n");
 		break;
 #if 0
 	case 'F':
@@ -1651,24 +1648,24 @@ CMD_DECL(seek)
 	for(;*text&&iswhitespace(*text);text=text+1);
 
 	if (strchr(input, '?')) {
-		cons_printf("Usage: s[nbcxXS-+*!] [arg]\n");
-		cons_strcat(" s 0x128 ; absolute seek\n");
-		cons_printf(" s +33   ; relative seek\n");
-		cons_printf(" s/ lib  ; seek to first hit of search\n");
-		cons_printf(" s/x 00  ; seek to first hit of search\n");
-		cons_printf(" s\\ lib  ; backward seek to the previous string hit\n");
-		cons_printf(" s\\x 23  ; backward seek to the previous hex hit\n");
-		cons_printf(" sn      ; seek to next opcode\n");
-		cons_printf(" sb      ; seek to opcode branch\n");
-		cons_printf(" sc      ; seek to call index (pd)\n");
-		cons_printf(" sx N    ; seek to code xref N\n");
-		cons_printf(" sX N    ; seek to data reference N\n");
-		cons_printf(" sS N    ; seek to section N (fmi: 'S?')\n");
-		cons_printf(" s-      ; undo seek\n");
-		cons_printf(" s+      ; redo seek\n");
-		cons_printf(" s*      ; show seek history\n");
-		cons_printf(" .s*     ; flag them all\n");
-		cons_printf(" s!      ; reset seek history\n");
+		cons_strcat("Usage: s[nbcxXS-+*!] [arg]\n"
+		" s 0x128 ; absolute seek\n"
+		" s +33   ; relative seek\n"
+		" s/ lib  ; seek to first hit of search\n"
+		" s/x 00  ; seek to first hit of search\n"
+		" s\\ lib  ; backward seek to the previous string hit\n"
+		" s\\x 23  ; backward seek to the previous hex hit\n"
+		" sn      ; seek to next opcode\n"
+		" sb      ; seek to opcode branch\n"
+		" sc      ; seek to call index (pd)\n"
+		" sx N    ; seek to code xref N\n"
+		" sX N    ; seek to data reference N\n"
+		" sS N    ; seek to section N (fmi: 'S?')\n"
+		" s-      ; undo seek\n"
+		" s+      ; redo seek\n"
+		" s*      ; show seek history\n"
+		" .s*     ; flag them all\n"
+		" s!      ; reset seek history\n");
 		return 0;
 	}
 
@@ -1777,7 +1774,6 @@ CMD_DECL(info)
 		return 0;
 	}
 #endif
-
 	cons_printf(" file    %s",   strget(config.file)); cons_newline();
 	cons_printf(" rdb     %s",   strget(config_get("file.rdb"))); cons_newline();
 	cons_printf(" project %s",   strget(config_get("file.project"))); cons_newline();
@@ -1851,7 +1847,7 @@ CMD_DECL(compare)
 		radare_compare((unsigned char*)input+1,config.block, strlen(input+1)+1);
 		break;
 	case '?':
-		eprintf(
+		cons_strcat(
 		"Usage: c[?cdfx] [argument]\n"
 		" c  [string]   - compares a plain with escaped chars string\n"
 		" cc [offset]   - code bindiff current block against offset\n"

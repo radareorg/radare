@@ -161,7 +161,7 @@ void visual_show_help()
 	" C          toggle scr.color\n"
 	" d          convert cursor selected bytes to ascii, code or hex\n"
 //	" b[k][cmd]  binds key 'k' to the specified command\n"
-	" m          applies rfile magic on this block\n" // ???
+	" m,'        ma, 'a, will mark current seek as 'a' and 'a will jump there\n"
 	" I          invert block (same as pIx or so)\n"
 	" y,Y        yank and Yankee aliases for copy and paste\n"
 	" f,F        go next, previous flag (cursor mode to add/remove)\n"
@@ -1988,7 +1988,8 @@ CMD_DECL(visual)
 				if (config.cursor>=0 && config.cursor< config.block_size) {
 					c = config.cursor;
 					ch = config.block[config.cursor];
-					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(++ch), config.seek); //+config.cursor);
+					sprintf(buf, "wx %02x @ 0x%llx",
+						(u8)(++ch), config.seek); //+config.cursor);
 					radare_cmd(buf, 0);
 					config.cursor = c;
 					config.ocursor = -1;

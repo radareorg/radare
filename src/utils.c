@@ -474,9 +474,11 @@ int set0word(char *str)
 	char *p, *q;
 	if (str[0]=='\0')
 		return 0;
+	//for(i=1,p=str;p[0];p=p+1)if(*p==' '){i++;*p='\0';}
+	//return i;
 	for(i=1,q=p=str;p[0];p=p+1) {
-		if(*p==' ') *p='\0';
-		else { if (*q==' ') i++; }
+		if (*p==' ') { *p='\0'; }
+		else { if (*q=='\0'||*q==' ') i++; }
 		q = p;
 	}
 	return i;

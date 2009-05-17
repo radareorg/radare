@@ -6,6 +6,7 @@
 #include "arch/arch.h"
 #include "parser.h"
 
+extern int regio_enabled;
 extern int fdio_type; // stream or file?
 extern int fdio_enabled;
 extern int fdio_fd;
@@ -14,6 +15,8 @@ int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr);
 int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr);
 int debug_fd_dump();
 int debug_fd_restore();
+int debug_reg_read_at(int pid, u8 *data, int length, u64 addr);
+int debug_reg_write_at(int pid, const u8 *data, int length, u64 addr);
 
 /* lib.c */
 int debug_lib(const char *arg);
@@ -93,6 +96,7 @@ int debug_signal(const char *);
 struct bp_t *debug_get_bp(addr_t addr);
 int debug_pstree();
 int debug_attach();
+int debug_regio();
 int debug_unload();
 int debug_inject();
 int debug_loop(char *addr_str);

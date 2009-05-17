@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -42,6 +42,10 @@
 
 int debug_read_at(pid_t pid, void *data, int length, u64 addr)
 {
+	if (regio_enabled) {
+		int ret = debug_reg_read_at(pid, data, length, addr);
+		if (ret != -1) return ret;
+	}
 	if (fdio_enabled)
 		return debug_fd_read_at(pid, data, length, addr);
 	return debug_os_read_at(ps.tid, data, length, addr);
@@ -56,6 +60,10 @@ int debug_read(pid_t pid, void *data, int length)
 
 int debug_write_at(pid_t pid, void *data, int length, u64 addr)
 {
+	if (regio_enabled) {
+		int ret = debug_reg_write_at(pid, data, length, addr);
+		if (ret != -1) return ret;
+	}
 	if (fdio_enabled)
 		return debug_fd_write_at(pid, data, length, addr);
 	return debug_os_write_at(ps.tid, data, length, addr);

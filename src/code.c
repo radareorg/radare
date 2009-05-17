@@ -761,10 +761,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 						if (inc == 0)
 							inc = (w-40)/6;
 						myrow++;
-						if (reflines && flags & RADIS_LINES)
-							cons_printf("          ");
+						if (reflines && (flags & RADIS_LINES))
+							cons_strcat("          ");
 						if (flags & RADIS_RELADDR)
-							cons_printf("        ");
+							cons_strcat("        ");
 						if (flags & RADIS_SECTION) {
 							const char * flag = get_section_name_at(seek-config.vaddr);
 							if (flag && *flag)

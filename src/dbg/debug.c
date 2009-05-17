@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -74,7 +74,6 @@ void get_cpuid(int op, int *a, int *b, int *c, int *d)
 int debug_syms()
 {
 	char buf[1024];
-	//snprintf(buf, 1022, ".!!rsc syms-dbg-flag '%s'", config.file);
 	snprintf(buf, 1022, ".!!rabin -ris '%s'", ps.argv[0]); //config.file);
 	return radare_cmd_raw(buf, 0);
 }

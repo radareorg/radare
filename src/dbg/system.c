@@ -188,6 +188,7 @@ static struct commads_t {
 	CB_CMD( "cont"     , CB_NORMAL   , debug_cont )         , 
 	CB_CMD( "fork"     , CB_NORMAL   , debug_fork )         , 
 	CB_CMD( "get"      , CB_NORMAL   , debug_get_register ) , 
+	CB_CMD( "regio"    , CB_NORMAL   , debug_regio )          , //debug_registers )    , 
 	CB_CMD( "reg"      , CB_NORMAL   , debug_reg )          , //debug_registers )    , 
 	CB_CMD( "oregs"    , CB_ASTERISK , debug_oregisters )   , 
 	CB_CMD( "dregs"    , CB_ASTERISK , debug_dregisters )   , 
@@ -206,6 +207,16 @@ int debug_lib(const char *arg)
 	if (arg[0]!=' ')
 		cons_printf("Usage: !lib /path/to/lib.so\n");
 	else debug_lib_load(arg+1);
+	return 0;
+}
+
+int debug_regio(const char *arg)
+{
+	if (strchr(arg,'?')) {
+		eprintf("Usage: !regio[-]\n"
+		" Enables or disables the register IO access at address 0.\n"
+		" !regio enables and !regio- disables.\n");
+	} else regio_enabled = !strchr(arg, '-');
 	return 0;
 }
 

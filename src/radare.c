@@ -596,7 +596,11 @@ int radare_cmd_raw(const char *tmp, int log)
 		" BYTES       hexpairs of current block\n"
 		" BLOCK       temporally file with contents of current block\n"
 		);
-		else ret = radare_system(input+2);
+		else {
+			env_prepare(input+2);
+			ret = radare_system(input+2);
+			env_destroy(input+2);
+		}
 		goto __end;
 	}
 

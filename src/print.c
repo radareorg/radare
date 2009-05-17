@@ -349,7 +349,8 @@ void print_mem_help()
 	" s - pointer to string\n"
 	" t - unix timestamp string\n"
 	" * - next char is pointer\n"
-	" . - skip 1 byte\n");
+	" . - skip 1 byte\n"
+	" : - skip 4 bytes\n");
 }
 
 void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
@@ -414,7 +415,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 			/* skip chars */
 			switch(tmp) {
 			case ' ':
-//config.interrupted =1;
+				config.interrupted =1;
 				//i = len; // exit
 				continue;
 			case '*':
@@ -429,6 +430,10 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				continue;
 			case '.': // skip char
 				i++;
+				idx--;
+				continue;
+			case ':': // skip 4 bytes
+				i+=4;
 				idx--;
 				continue;
 			case '?': // help
@@ -448,7 +453,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	#endif
 			case 't':
 				/* unix timestamp */
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				{
 				/* dirty hack */
 				int oldfmt = last_print_format;
@@ -469,12 +474,12 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				}
 				break;
 			case 'q':
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				cons_printf("(qword)");
 				i+=8;
 				break;
 			case 'b':
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				cons_printf("%d ; 0x%02x ; '%c' ", 
 					buf[i], buf[i], is_printable(buf[i])?buf[i]:0);
 				i++;
@@ -482,7 +487,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 			case 'B':
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
 				cons_strcat(" ... (");
 				for(j=0;j<10;j++)
@@ -492,34 +497,34 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				i+=4;
 				break;
 			case 'd':
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				cons_printf("%d", addr);
 				i+=4;
 				break;
 			case 'x':
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				cons_printf("0x%08x ", addr);
 				i+=4;
 				break;
 			case 'X': {
 				u32 addr32 = (u32)addr;
 				char buf[128];
-				D cons_printf("0x%08x = ", config.seek+i);
-				cons_printf("0x%08llx ", addr32);
+				D cons_printf("0x%08llx = ", config.seek+i);
+				cons_printf("0x%08x ", addr32);
 				if (string_flag_offset(buf, (u64)addr32, -1))
 					cons_printf("; %s", buf);
 				i+=4;
 				} break;
 			case 'w':
 			case '1': // word (16 bits)
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				if (endian)
 					 addr = (*(buf+i))<<8  | (*(buf+i+1));
 				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
 				cons_printf("0x%04x ", addr);
 				break;
 			case 'z': // zero terminated string
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				for(;buf[i]&&i<len;i++) {
 					if (is_printable(buf[i]))
 						cons_printf("%c", buf[i]);
@@ -527,7 +532,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				}
 				break;
 			case 'Z': // zero terminated wide string
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				for(;buf[i]&&i<len;i+=2) {
 					if (is_printable(buf[i]))
 						cons_printf("%c", buf[i]);
@@ -536,10 +541,10 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				cons_strcat(" ");
 				break;
 			case 's':
-				D cons_printf("0x%08x = ", config.seek+i);
+				D cons_printf("0x%08llx = ", config.seek+i);
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08x -> 0x%08x ", config.seek+i, addr);
+				D cons_printf("0x%08llx -> 0x%08llx ", config.seek+i, addr);
 				cons_printf("%s ", buffer);
 				i+=4;
 				break;

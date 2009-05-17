@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -37,6 +37,41 @@
 #include "debug.h"
 
 extern struct regs_off roff[];
+int regio_enabled = 0;
+
+/* reg io mode */
+int debug_reg_read_at(int pid, u8 *data, int length, u64 addr)
+{
+	regs_t regs;
+	int i, regsz = sizeof(regs_t);
+	u8 *ptr = &regs;
+	debug_getregs(pid, &regs);
+	if (addr>regsz)
+		return -1;
+	for(i=0;i<length;i++) {
+		if (addr+i>regsz)
+			data[i] = 0xff;
+		else data[i] = ptr[i];
+	}
+	return length;
+}
+
+int debug_reg_write_at(int pid, const u8 *data, int length, u64 addr)
+{
+	regs_t regs;
+	int i, regsz = sizeof(regs_t);
+	u8 *ptr = &regs;
+	debug_getregs(pid, &regs);
+	if (addr>regsz)
+		return -1;
+	for(i=0;i<length;i++) {
+		if (addr+i<regsz)
+			ptr[addr+i] = data[i];
+	}
+	debug_setregs(pid, &regs);
+	return length;
+}
+/* ----------- */
 
 u64 debug_get_regoff(regs_t *regs, int off)
 {
@@ -129,7 +164,6 @@ int debug_dregisters(int rad)
 		eprintf(":regs No program loaded.\n");
 		return 1;
 	}
-
 	return arch_print_registers(rad, "line");
 }
 
@@ -139,7 +173,6 @@ int debug_oregisters(int rad)
 		eprintf(":regs No program loaded.\n");
 		return 1;
 	}
-
 	return arch_print_registers(rad, "orig");
 }
 
