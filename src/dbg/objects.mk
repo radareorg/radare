@@ -14,9 +14,16 @@ endif
 ifeq ($(CPU),armv5tejl)
 CPU=arm
 endif
+ifeq ($(CPU),armv5tel)
+CPU=arm
+endif
 ifeq ($(CPU),iPod2,1)
 CPU=arm
 endif
+ifeq ($(CPU),mipsel)
+CPU=mips
+endif
+
 
 
 ifeq ($(W32),1)
