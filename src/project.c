@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -21,10 +21,12 @@
 #include "main.h"
 #include "code.h"
 #include "flags.h"
+#include "print.h"
 #include "radare.h"
 
 int project_save(const char *file)
 {
+	struct list_head *pos;
 	char buf[128];
 	FILE *fd;
 	flag_t *flag;
@@ -73,6 +75,10 @@ int project_save(const char *file)
 			lfs = flag->space;
 		}
 		fprintf(fd, "f %s @ 0x%llx\n", flag->name, flag->offset);
+	}
+	list_for_each_prev(pos, &print_mems) {
+		print_mem_t *im = list_entry(pos, print_mem_t, list);
+		cons_printf("am %s %s\n", im->name, im->fmt);
 	}
 #if 0
 	fprintf(fd, "# Breakpoints\n");

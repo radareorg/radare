@@ -9,6 +9,9 @@
 TODO 1.4 ???
 ==========
 
+* @@ addr:size // XXX NOPE
+* check for supported debugger archs in configure time
+
 *++++++++++
 * fix arm-osx debugger
 * drop sdk dependency
@@ -22,7 +25,7 @@ binary masks
 RWX,RWX,RWX
 > aBm rwx @ $$:1
 > aB -rwx
-> !cont imp.open && pm xx{rwx}z @ esp
+> !cont imp.open && pm xx(rwx)z @ esp
 
 TheBook
 =======

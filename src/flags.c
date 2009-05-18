@@ -69,7 +69,7 @@ void flag_help()
 	" fortune      ; show fortune message! :D\n"
 	" ff [addr]    ; flag from this address\n"
 	" fb [addr]    ; increment flag offset with new base address\n"
-	" fd           ; print flag delta offset\n"
+	" fd @ addr    ; print flag delta offset\n"
 	" fc cmd       ; set command to be executed on flag at current seek\n"
 	" fi pfx1 pfx2 ; flag interpolation between hit0_ and hit1_ for.example\n"
 	" fg text[*]   ; grep for flag or all flags matching text* (like f | grep foo)\n"
@@ -456,24 +456,40 @@ const char *flag_name_by_offset(u64 offset)
  */
 int string_flag_offset(char *buf, u64 seek, int idx)
 {
-	int delta = (int)config_get_i("cfg.delta");
+	int delta;
 	flag_t *ref = NULL;
 	struct list_head *pos;
 	int found = 0;
+	char buf2[256];
 
+#warning TODO: Implement delta
+#if 0
+		if ((flag->offset >= seek && flag->offset <= seek+128)) {
+		//|| (flag->offset >= seek && flag->offset <= seek+config.vaddr)) {
+			if (idx == -1) {
+				if (buf[0])
+					strcat(buf, ",");
+				strcat(buf, flag->name);
+				snprintf(buf2, 32, "+0x%llx", flag->offset-seek);
+				strcat(buf, buf2);
+			}
+		} else
+#endif
 	buf[0]='\0';
 
 	list_for_each(pos, &flags) {
 		if (config.interrupted) break;
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-		if (flag->offset == seek) {
-			ref = flag;
+		if (flag->offset == seek || flag->offset == seek+config.vaddr) {
 			found = 1;
 			if (idx==-1) {
 				if (buf[0])
 					strcat(buf, ",");
-				strcat(buf, ref->name);
-			} else break;
+				strcat(buf, flag->name);
+			} else {
+				ref = flag;
+				break;
+			}
 		} else
 		if (flag->offset <= seek && (!ref || flag->offset > ref->offset)) {
 			if (found)
@@ -482,7 +498,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 	}
 	if (idx==-1)
 		return buf[0]!='\0';
-
+	delta = (int)config_get_i("cfg.delta");
 	if (ref) {
 		long ul = (seek-ref->offset);
 		if (ul == 0)
@@ -500,7 +516,6 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 void print_flag_offset(u64 seek)
 {
 	char buf[256];
-
 	if ( string_flag_offset(buf, seek, -1) )
 		cons_strcat(buf);
 }

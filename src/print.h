@@ -51,6 +51,7 @@ typedef struct {
 	char *fmt;
 	struct list_head list;
 } print_mem_t;
+extern struct list_head print_mems;
 
 extern format_info_t formats[];
 extern print_fmt_t last_print_format;
