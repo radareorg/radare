@@ -62,34 +62,6 @@ void ps_parse_argv()
 	//eprintf("ppa:A0(%s)\n", ps.argv[0]);
 }
 
-static const char *resolve_path(const char *str)
-{
-	char buf[1024];
-	char *path = getenv("PATH");
-	char *foo;
-	char *bar;
-	if (path != NULL) {
-		bar = alloca(strlen(str)+1);
-		strcpy(bar, str);
-		path = strdup(path);
-		foo = path;
-		while(bar) {
-			bar = strchr(foo, ':');
-			if (bar != NULL)
-				bar[0]='\0';
-			snprintf(buf, 1022, "%s/%s", foo, str);
-			//printf("FINDING(%s)\n", buf);
-			if (!access(buf, X_OK)) {
-				return strdup(buf);
-				free (path);
-			}
-			foo = bar + 1;
-		}
-		free (path);
-	}
-	return strdup(str);
-}
-
 int debug_open(const char *pathname, int flags, mode_t mode)
 {
 	int flag = 0;

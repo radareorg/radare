@@ -402,6 +402,36 @@ CMD_DECL(analyze)
 		}
 				config.verbose=c;
 		} break;
+	case 'm':
+		input = input+1;
+		while(input[0]==' ')input=input+1;
+		if (strchr(input,'-')) {
+			print_mem_del(input+1);
+		} else
+		if (strchr(input,'?')) {
+			cons_printf("Usage: am [-][name] [format]\n"
+			" am          ; list all memory formats registered\n"
+			" am foo xxd  ; add a named memory format\n"
+			" am -foo     ; delete named memory foo\n"
+			" pm x[foo]x  ; use the 'foo' named memory format from 'pm'\n");
+		} else
+		if (input[0]=='\0') {
+			print_mem_list();
+		} else {
+			char *s = strchr(input,' ');
+			if (s) {
+				*s='\0';
+				print_mem_add(input, s+1);
+			} else {
+				const char *fmt = print_mem_get(input);
+				if (fmt) {
+					print_mem(config.seek, config.block, config.block_size, fmt, config.endian);
+				} else {
+					print_mem_add(NULL, NULL);
+				}
+			}
+		}
+		break;
 	case 'o':
 		if (input[1]=='s') {
 			int i, count = get_math(input+3);
@@ -620,6 +650,7 @@ CMD_DECL(analyze)
 		cons_printf("Usage: a[ocdg] [depth]\n");
 		cons_printf(" ao [num]     analyze N opcodes\n");
 		cons_printf(" aos [num]    show size of N opcodes\n");
+		cons_printf(" am [n] [fmt] analyze memory format manager (am? and pm? fmi)\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
 		cons_printf(" af [size]    analyze function\n");
 		//cons_printf(" aF [size]    analyze function (recursively)\n");

@@ -2,6 +2,7 @@
 #define _INCLUDE_PRINT_H_
 
 #include "types.h"
+#include "list.h"
 
 #define PRINT_BIN(x) D cons_printf("%d%d%d%d%d%d%d%d  ",\
 (x&128)?1:0, (x&64)?1:0, (x&32)?1:0, (x&16)?1:0,\
@@ -45,6 +46,12 @@ typedef struct format_info {
 	char *sizeb;
 } format_info_t;
 
+typedef struct {
+	char *name;
+	char *fmt;
+	struct list_head list;
+} print_mem_t;
+
 extern format_info_t formats[];
 extern print_fmt_t last_print_format;
 print_fmt_t format_get (char fmt);
@@ -54,5 +61,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t print_fmt);
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
 void print_zoom(u64 from, u64 to, char *byte, int enable);
+void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian);
 
 #endif

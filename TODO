@@ -6,13 +6,13 @@
 
 ===========================================================
 
-TODO 1.3.2
+TODO 1.4 ???
 ==========
-* Added support to load more than one -i script file
+
+*++++++++++
 * fix arm-osx debugger
 * drop sdk dependency
 * regexp search??
-- fix radare -d ls / => absolute path is required :/
 parrot vm
 * Invert doesnt works for disassembly!!!
 

@@ -97,7 +97,7 @@ static int help_message()
 	cons_printf(" Registers\n");
 	TITLE_END
 	cons_printf("  [o|d|fp]regs[*]    show registers (o=old, d=diff, fp=fpu, *=radare)\n");
-	cons_printf("  reg[s|*] [reg[=v]  show get and set registers\n");
+	cons_printf("  reg[s|io|*] [r[=v] get and set registers (!regio [addr] to map regs on memory)\n");
 	cons_printf("  oregs[*]           show old registers information (* for radare)\n");
 #if __i386__
 	cons_printf("  dr[rwx-]           DR registers control (dr? for help) (x86 only)\n");

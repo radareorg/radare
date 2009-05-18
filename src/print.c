@@ -331,8 +331,9 @@ void print_mem_help()
 {
 	eprintf(
 	"Usage: pm [times][format] [arg0 arg1]\n"
-	"Example: pm 10xiz pointer length string\n"
+	"Example: pm 10xdz pointer length string\n"
 	"Example: pm {array_size}b @ array_base\n"
+	"Example: pm x[foo]b @ esp\n"
 	" e - temporally swap endian\n"
 	//" D - double (8 bytes)\n"
 	" f - float value\n"
@@ -350,9 +351,65 @@ void print_mem_help()
 	" t - unix timestamp string\n"
 	" * - next char is pointer\n"
 	" . - skip 1 byte\n"
-	" : - skip 4 bytes\n");
+	" : - skip 4 bytes\n"
+	" {}- used to eval math expressions to repeat next fmt char\n"
+	" []- used to nest format structures registered with 'am'\n"
+	"NOTE: Use 'am' command to register inner structs\n");
 }
 
+struct list_head print_mems;
+
+void print_mem_add(char *name, char *fmt)
+{
+	print_mem_t *pm = MALLOC_STRUCT(print_mem_t);
+	while(name[0]==' ')name=name+1;
+	while(fmt[0]==' ')fmt=fmt+1;
+	if (!*name || !*fmt) {
+		eprintf("Usage: am foo xxd\n");
+		return;
+	}
+	pm->name = strdup(name);
+	pm->fmt = strdup(fmt);
+	list_add_tail(&(pm->list), &(print_mems));
+}
+
+void print_mem_del(char *name)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &print_mems) {
+		print_mem_t *im = list_entry(pos, print_mem_t, list);
+		if (!strcmp(name, im->name)) {
+			free(im->name);
+			free(im->fmt);
+			list_del(&(im->list));
+			free(im);
+			return;
+		}
+	}
+}
+
+void print_mem_list(char *name, char *fmt)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &print_mems) {
+		print_mem_t *im = list_entry(pos, print_mem_t, list);
+		cons_printf("%s %s\n", im->name, im->fmt);
+	}
+}
+
+const char *print_mem_get(char *name)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &print_mems) {
+		print_mem_t *im = list_entry(pos, print_mem_t, list);
+		if (!strcmp(name, im->name))
+			return im->fmt;
+	}
+	return NULL;
+}
+
+/* TODO: add support for 64bit pointers */
+/* following asm.bits ??? */
 void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
@@ -361,6 +418,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	char tmp, last;
 	char *args, *bracket;
 	int nargs;
+	u64 paddr = 0LL;
 	const char *arg = fmt;
 	i = j = 0;
 
@@ -405,9 +463,8 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 		for(idx=0;!config.interrupted && idx<len;idx++, arg=arg+1) {
 			addr = 0LL;
 			if (endian)
-				 addr = (*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
-			else     addr = (*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
-
+				 addr = (u64)(*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
+			else     addr = (u64)(*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
 			tmp = *arg;
 		feed_me_again:
 			if (tmp == 0 && last != '*')
@@ -440,6 +497,30 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				print_mem_help();
 				idx--;
 				i=len; // exit
+				continue;
+			case '[':
+				{
+					char *fmt, *end = strchr(arg,']');
+					if (!end) {
+						eprintf("Missing '['\n");
+						return;
+					}
+					*end='\0';
+					fmt = print_mem_get(arg+1);
+					if (fmt) {
+						D cons_printf("0x%08llx = ", config.seek+i);
+						paddr = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
+						cons_printf("0x%08llx -> pm %s {\n", addr, fmt);
+						/* XXX: this is 32bit pointer only FUCK! */
+						print_mem(addr, buf+i, config.block_size, fmt, config.endian);
+						cons_printf("}\n");
+					} else {
+						eprintf("Unknown named print format '%s' (Use 'am name format')\n", arg+1);
+					}
+					arg = end;
+					idx--;
+					i+=4;
+				}
 				continue;
 			}
 			if (idx<nargs)
@@ -544,7 +625,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				D cons_printf("0x%08llx = ", config.seek+i);
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
-				D cons_printf("0x%08llx -> 0x%08llx ", config.seek+i, addr);
+				cons_printf("0x%08llx -> 0x%08llx ", (u64)config.seek+i, (u64)addr);
 				cons_printf("%s ", buffer);
 				i+=4;
 				break;
@@ -676,9 +757,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 
 	if (config.visual) {
 		config.height = config_get_i("scr.height");
-		config.height -= 3;
-		config.height -= config.scrdelta;
-
+		config.height -= (config.scrdelta+3);
 	}
 	switch(fmt) {
 	case FMT_7BIT:
@@ -1260,7 +1339,7 @@ void radare_print(char *arg, print_fmt_t fmt)
 		return;
 
 	obs = 0;
-	if ( arg[0] != '\0' ) {
+	if ( fmt!=FMT_MEMORY && arg[0] != '\0' ) {
 		bs = get_math(arg);
 		if (bs > config.block_size) {
 			/* Resize block */

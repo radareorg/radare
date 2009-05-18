@@ -1062,3 +1062,32 @@ double r_prof_end(struct r_prof_t *p)
 	p->result = R_ABS(((double)(diff.tv_sec) + ((double)diff.tv_usec / 1000000.)));
 	return R_ABS(sign);
 }
+
+const char *resolve_path(const char *str)
+{
+	char buf[1024];
+	char *path = getenv("PATH");
+	char *foo;
+	char *bar;
+	if (path != NULL) {
+		bar = alloca(strlen(str)+1);
+		strcpy(bar, str);
+		path = strdup(path);
+		foo = path;
+		while(bar) {
+			bar = strchr(foo, ':');
+			if (bar != NULL)
+				bar[0]='\0';
+			snprintf(buf, 1022, "%s/%s", foo, str);
+			//printf("FINDING(%s)\n", buf);
+			if (!access(buf, X_OK)) {
+				return strdup(buf);
+				free (path);
+			}
+			foo = bar + 1;
+		}
+		free (path);
+	}
+	return strdup(str);
+}
+

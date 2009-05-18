@@ -32,6 +32,8 @@
 
 struct config_t config;
 
+extern struct list_head print_mems;
+
 int rdb_init()
 {
 	const char *rdbdir;
@@ -111,6 +113,7 @@ static void config_old_init()
 	config.lang        = LANG_PYTHON;
 #endif
 	INIT_LIST_HEAD(&config.rdbs);
+	INIT_LIST_HEAD(&print_mems);
 }
 
 /* new stuff : radare config 2.0 */

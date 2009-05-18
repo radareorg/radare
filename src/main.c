@@ -126,7 +126,7 @@ int main(int argc, char **argv, char **envp)
 	if (optind < argc)
 		config.file = argv[optind++];
 
-	if (optind < argc)
+	if (!flag_d && optind < argc)
 		eprintf("warning: Only the first file has been opened.\n");
 
 	/* TODO: we have to recheck this :) */
@@ -153,8 +153,13 @@ int main(int argc, char **argv, char **envp)
 #if DEBUGGER
 				/* by program path */
 				for(c=optind;argv[c];c++) {
-					ps.argv[c-optind] = argv[c];
-					strcat(buf, argv[c]);
+					char *arg = argv[c];
+					if (c == optind) {
+						if (*arg!='/' && *arg!='.')
+							arg = resolve_path(argv[c]);
+					}
+					ps.argv[c-optind] = arg;
+					strcat(buf, arg);
 					if (argv[c+1])
 						strcat(buf, " ");
 				}
