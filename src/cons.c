@@ -1021,7 +1021,7 @@ void cons_fitbuf(char *buf, int len)
 {
 	char *next;
 	char *ptr = buf;
-	int linelen, i = 0;
+	int linelen, i = 0, olen = len;
 	int lines = 0;
 	int rows = config.height;
 	int cols = config.width;// -cons_skipx;
@@ -1040,21 +1040,21 @@ void cons_fitbuf(char *buf, int len)
 				buf = buf+1;
 			} else {
 				len -= cons_skipx;
-				if (len<=0) break;
 				strbcpy(buf, next);
 				//strbcpy(buf, buf+cons_skipx);
 			}
+			if (len<=0) break;
 		}
 		ptr = memchr(buf, '\n', len);
 		if (ptr) {
 			linelen = (int)(ptr-buf);
-			if (lines>0 && cons_skipy && cons_skipy>=lines) {
+			len -= linelen;
+			if (lines>config.scrdelta+3 && cons_skipy && cons_skipy>=lines) {
 				strbcpy(buf, ptr+1);
-				len -= (ptr-buf);
-				if (len<=0) break;
 				lines++;
 				continue;
 			}
+			if (len<=0) break;
 			ptr[0]='\0';
 			i += linelen;
 			/* fit columns */
@@ -1075,7 +1075,7 @@ void cons_fitbuf(char *buf, int len)
 			break;
 		}
 		lines++;
-	} while(i<len && ptr);
+	} while(i<olen && ptr);
 }
 
 void cons_flushit()
