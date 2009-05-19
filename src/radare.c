@@ -1582,11 +1582,10 @@ int radare_prompt()
 void radare_set_block_size_i(int sz)
 {
 	if (sz<1) sz = 1;
-	if (sz<0) sz = 1;
 
 	config.block_size = sz;
 	free(config.block);
-	config.block = (u8*)malloc(config.block_size + 4);
+	config.block = (u8*)malloc(config.block_size + 32);
 	if (config.block == NULL) {
 		if (sz == DEFAULT_BLOCK_SIZE) {
 			eprintf("Oops malloc error\n");

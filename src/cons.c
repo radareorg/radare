@@ -1025,6 +1025,10 @@ void cons_fitbuf(char *buf, int len)
 	int lines = 0;
 	int rows = config.height;
 	int cols = config.width;// -cons_skipx;
+	if (len<1) {
+		buf[0]='\0';
+		return;
+	}
 	buf[len]='\0';
 	do {
 		if (lines>0 && cons_skipx) {
@@ -1080,17 +1084,18 @@ void cons_fitbuf(char *buf, int len)
 
 void cons_flushit()
 {
-char *ob;
+	char *ob;
 	cons_flush();
-ob=cons_buffer;
-cons_buffer = cons_buffer2;
-cons_buffer_len = cons_buffer2_len;
-if (config.scrfit)
-cons_fitbuf(cons_buffer, cons_buffer_len);
+	ob=cons_buffer;
+	cons_buffer = cons_buffer2;
+	cons_buffer_len = cons_buffer2_len;
+	if (config.scrfit)
+	cons_fitbuf(cons_buffer, cons_buffer_len);
 	cons_render();
-cons_buffer = ob;
-cons_buffer_len = 0;
-	free(cons_buffer2);
+	cons_buffer = ob;
+	cons_buffer_len = 0;
+	if (cons_buffer2&&cons_buffer2[0]) /* ugly hack :) */
+		free(cons_buffer2);
 	cons_buffer2 = NULL;
 	cons_buffer2_len = 0;
 }
