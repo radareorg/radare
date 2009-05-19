@@ -837,7 +837,7 @@ void config_init(int first)
 	config_set("cmd.open", "");
 	config_set("cmd.prompt", "");
 	config_set("cmd.vprompt", "p%");
-	config_set("cmd.vprompt2", "CFV");
+	config_set("cmd.vprompt2", "");
 	config_set("cmd.vprompt3", "");
 	config_set("cmd.bp", "");
 
@@ -964,8 +964,9 @@ void config_init(int first)
 	config_set("dbg.regs2", "false");
 	config_set("dbg.stack", "true");
 	config_set("dbg.vstack", "true");
+	config_set("dbg.vars", "true");
 	config_set("dbg.wptrace", "false");
-	config_set_i("dbg.stacksize", 66);
+	config_set_i("dbg.stacksize", 64);
 	config_set("dbg.stackreg", "esp");
 	config_set("dbg.bt", "false");
 	config_set_i("dbg.btlast", 0);

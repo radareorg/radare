@@ -934,7 +934,7 @@ void visual_draw_screen()
 		strcpy(buf, "<insert assembly> ('tab')");
 		break;
 	default:
-		string_flag_offset(buf, config.seek, -1);
+		string_flag_offset(buf, config.seek, -2);
 		if (config.cursor!=-1)
 			string_flag_offset(buf2, config.seek+config.cursor, -1);
 	}

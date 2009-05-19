@@ -1103,8 +1103,11 @@ void radare_nullcmd()
 		free(ptrcmd);
 	}
 	verborig = config_get_i("cfg.verbose");
-	config_set("cfg.verbose", "false");
+	//config_set("cfg.verbose", "false");
 	p = last_print_format;
+
+	if (config_get("dbg.vars"))
+		radare_cmd_raw("CFV", 0);
 
 	/* NOT REQUIRED update flag registers NOT REQUIRED */
 	//radare_cmd(":.!regs*", 0);
@@ -1116,11 +1119,11 @@ void radare_nullcmd()
 		//C cons_printf(C_RED"Stack: "C_RESET);
 		//else cons_printf("Stack: ");
 		radare_cmd("?x ebp-esp", 0); //":px 66@esp", 0);
-		sprintf(buf, "%spx %d @ %s",
-			(config_get("dbg.vstack"))?":":"",
+		sprintf(buf, "px %d @ %s",
+			//(config_get("dbg.vstack"))?":":"",
 			(int)config_get_i("dbg.stacksize"),
 			config_get("dbg.stackreg"));
-		radare_cmd(buf, 0); //":px 66@esp", 0);
+		radare_cmd_raw(buf, 0); //":px 66@esp", 0);
 		config.cursor=c;
 	}
 

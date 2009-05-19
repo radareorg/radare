@@ -2587,6 +2587,9 @@ CMD_DECL(help)
 			if (config.last_cmp != 0)
 				radare_cmd(input+1, 0);
 		} else
+		if (input[0]=='q') {
+			config.last_cmp = get_math(input+1);
+		} else
 		if (input[0]=='v') {
 			u64 res = get_math(input+1);
 			config.last_cmp = res;
@@ -2602,6 +2605,7 @@ CMD_DECL(help)
 				" ? eip             ; get value of eip flag (or any math expression)\n"
 				" ?i offset A:      ; user input for u64 numeric values, result in $$?\n"
 				" ?v eip+33+[esp]   ; show hex value of math expression\n"
+				" ?q eip+33+[esp]   ; quite math expression evaluation (no output) changes $$?\n"
 				" ?z`str            ; sets false if string is zero length\n"
 				" ?x 303132         ; show hexpair as a printable string\n"
 				" ?X eip            ; show hex result of math expression\n"

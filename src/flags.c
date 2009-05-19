@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -449,7 +449,8 @@ const char *flag_name_by_offset(u64 offset)
 	return nullstr;
 }
 
-/* TODO
+/* 
+ * idx = -2 : single ref with delta
  * idx = -1 : return all flags at given seek separated by comma
  * idx =  0 : just return the first one found
  * idx =  1 : continue searching for flag after the first one
@@ -482,7 +483,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == seek || flag->offset == seek+config.vaddr) {
 			found = 1;
-			if (idx==-1) {
+			if (idx<1) {
 				if (buf[0])
 					strcat(buf, ",");
 				strcat(buf, flag->name);
@@ -491,13 +492,22 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 				break;
 			}
 		} else
-		if (flag->offset <= seek && (!ref || flag->offset > ref->offset)) {
-			if (found)
+		if (flag->offset <= seek+config.vaddr && (!ref || flag->offset > ref->offset)) {
+			if (!found)
 				ref = flag;
 		}
 	}
 	if (idx==-1)
 		return buf[0]!='\0';
+	if (idx==-2) {
+		if (buf[0]=='\0') {
+			if (ref) {
+				snprintf(buf2, 32, "%s+0x%llx", ref->name, (seek+config.vaddr)-ref->offset);
+				strcat(buf, buf2);
+			}
+		}
+		return buf[0]!='\0';
+	}
 	delta = (int)config_get_i("cfg.delta");
 	if (ref) {
 		long ul = (seek-ref->offset);
@@ -516,7 +526,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 void print_flag_offset(u64 seek)
 {
 	char buf[256];
-	if ( string_flag_offset(buf, seek, -1) )
+	if ( string_flag_offset(buf, seek, -2) )
 		cons_strcat(buf);
 }
 

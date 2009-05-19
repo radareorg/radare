@@ -46,12 +46,19 @@ struct var_t {
 
 int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize)
 {
-	struct var_t *var = (struct var_t *)malloc(sizeof(struct var_t));
+	struct list_head *pos;
+	struct var_t *var;
 	/* TODO: check of delta inside funframe */
 	if (strchr(name, ' ') || strchr(vartype,' ')) {
 		eprintf("Invalid name/type\n");
 		return 0;
 	}
+	list_for_each(pos, &vars) {
+		struct var_t *v = (struct var_t *)list_entry(pos, struct var_t, list);
+		if (addr == v->addr && type == v->type && !strcmp(name, v->name))
+			return 0;
+	}
+	var = (struct var_t *)malloc(sizeof(struct var_t));
 	strncpy(var->name, name, sizeof(var->name));
 	strncpy(var->vartype, vartype, sizeof(var->vartype));
 	var->delta = delta;
@@ -177,7 +184,7 @@ int var_list_show(u64 addr)
 			var_print_value(v);
 			/* TODO: detect pointer to strings and so on */
 			if (string_flag_offset(buf, value, 0))
-				cons_printf(" ; points to: %s\n", buf);
+				cons_printf(" ; %s\n", buf);
 			else cons_newline();
 		}
 	}

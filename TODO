@@ -9,6 +9,9 @@
 TODO 1.4 ???
 ==========
 
+* do not lost sym.main when !cont sym.main
+* pm 4x8x -> change ptr sizes
+* implement asm.bits
 * @@ addr:size // XXX NOPE
 * check for supported debugger archs in configure time
 

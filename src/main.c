@@ -177,6 +177,7 @@ int main(int argc, char **argv, char **envp)
 #endif
 			}
 		}
+		config_set("cfg.debug", "true");
 	}
 
 	plugin_load();
