@@ -70,8 +70,10 @@ format_info_t formats[] = {
 	{ '1', FMT_HEXBS,      "p1: 1byte,  8 bit hex pair",	 "1 byte",      "entire block" },
 	{ '2', FMT_HEXW,       "p2: 2bytes, 16 bit hex word",   "2 bytes",     "(endian)"},
 	{ '4', FMT_HEXD,       "p4: 4bytes, 32 bit hex dword",  "4 bytes",     "(endian)"},
+	{ '6', FMT_BASE64,     "p6: base64 encode (p9 to decode)",  "entire block",     "(endian)"},
+	{ '7', FMT_7BIT,       "7bit encoding (sms)",    NULL,   "entire block" },
 	{ '8', FMT_HEXQ,       "p8: 8bytes, 64 bit quad-word",  "8 bytes",     "(endian)"},
-	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",          NULL,   "entire block" },
+	{ '9', FMT_EBASE64,    "p9: base64 decode (p6 to encode)",  "entire block",     "(endian)"},
 	{ 'x', FMT_HEXB,       "hexadecimal dump", "N byte",      "entire block" },
 	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
 	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,          "until \\0" },
@@ -334,15 +336,17 @@ void print_mem_help()
 	"Example: pm 10xdz pointer length string\n"
 	"Example: pm {array_size}b @ array_base\n"
 	"Example: pm x[foo]b @ esp\n"
-	" e - temporally swap endian\n"
+	" e - little endian\n"
+	" E - big endian\n"
 	//" D - double (8 bytes)\n"
 	" f - float value\n"
 	" b - one byte \n"
 	" B - show 10 first bytes of buffer\n"
 	" d - %%d integer value (4 bytes)\n"
+	" D - double value (4 bytes)\n"
 	" w - word (16 bit hexa)\n"
 	" q - quadword (8 bytes)\n"
-	" p - pointer reference\n"
+	//" p - pointer reference\n"
 	" x - 0x%%08x hexadecimal value\n"
 	" X - 0x%%08x hexadecimal value and flag (fd @ addr)\n"
 	" z - \\0 terminated string\n"
@@ -354,7 +358,9 @@ void print_mem_help()
 	" : - skip 4 bytes\n"
 	" {}- used to eval math expressions to repeat next fmt char\n"
 	" []- used to nest format structures registered with 'am'\n"
+	" 1,2,4,8 - pointer size (default is asm.size/8)\n"
 	"NOTE: Use 'am' command to register inner structs\n");
+	/* TODO: add 1,2,4,8 pointer sizes support */
 }
 
 struct list_head print_mems;
@@ -420,6 +426,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	int nargs;
 	u64 paddr = 0LL;
 	const char *arg = fmt;
+	int ptrsize = config_get_i("asm.bits");
 	i = j = 0;
 
 	while(*arg && *arg==' ') arg = arg +1;
@@ -471,6 +478,18 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				break;
 			/* skip chars */
 			switch(tmp) {
+			case '1':
+				ptrsize = 8;
+				continue;
+			case '2':
+				ptrsize = 16;
+				continue;
+			case '4':
+				ptrsize = 32;
+				continue;
+			case '8':
+				ptrsize = 64;
+				continue;
 			case ' ':
 				config.interrupted =1;
 				//i = len; // exit
@@ -481,9 +500,13 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				arg = arg - 1;
 				idx--;
 				goto feed_me_again;
-			case 'e': // tmp swap endian
+			case 'e': // little endian
 				idx--;
-				endian ^=1;
+				endian =0;
+				continue;
+			case 'E': // big endian
+				idx--;
+				endian =1;
 				continue;
 			case '.': // skip char
 				i++;
@@ -512,7 +535,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 						paddr = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
 						cons_printf("0x%08llx -> pm %s {\n", addr, fmt);
 						/* XXX: this is 32bit pointer only FUCK! */
-						print_mem(addr, buf+i, config.block_size, fmt, config.endian);
+						print_mem(addr, buf+i, config.block_size, fmt, endian); //config.endian);
 						cons_printf("}\n");
 					} else {
 						eprintf("Unknown named print format '%s' (Use 'am name format')\n", arg+1);
@@ -527,11 +550,6 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				cons_printf("%10s : ", get0word(args, idx));
 			/* cmt chars */
 			switch(tmp) {
-	#if 0
-			case 'n': // enable newline
-				j ^= 1;
-				continue;
-	#endif
 			case 't':
 				/* unix timestamp */
 				D cons_printf("0x%08llx = ", config.seek+i);
@@ -546,7 +564,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				radare_seek(old, SEEK_SET);
 				}
 				break;
-			case 'e': {
+			case 'D': {
 				double doub;
 				memcpy(&doub, buf+i, sizeof(double));
 				D cons_printf("%e = ", doub);
@@ -597,12 +615,12 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				i+=4;
 				} break;
 			case 'w':
-			case '1': // word (16 bits)
 				D cons_printf("0x%08llx = ", config.seek+i);
 				if (endian)
 					 addr = (*(buf+i))<<8  | (*(buf+i+1));
 				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
 				cons_printf("0x%04x ", addr);
+				i+=2;
 				break;
 			case 'z': // zero terminated string
 				D cons_printf("0x%08llx = ", config.seek+i);
@@ -1310,6 +1328,34 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		config.cursor_mode = tmp;
 		if (fmt == FMT_HEXBS)
 			cons_newline();
+		break;
+	case FMT_BASE64:
+		{
+		/* decode base64 */
+		int i,o;
+		char *out = malloc(len*2);
+		memset(out,0,len*2);
+		for(i=o=0;i<len;i+=4,o+=3) {
+			/* XXX: properly control block boundaries */
+			if (base64_decodeblock(buf+i, out+o)<0)
+				break;
+		}
+		cons_strcat(out);
+		}
+		break;
+	case FMT_EBASE64:
+		{
+		/* encode base64 */
+		int i,o;
+		char *out = malloc(len*2);
+		memset(out,0,len*2);
+		for(i=o=0;i<len;i+=3,o+=4) {
+			/* XXX: properly control block boundaries */
+			if (base64_encodeblock(buf+i, out+o, len-i)<0)
+				break;
+		}
+		cons_strcat(out);
+		}
 		break;
 	default:
 		eprintf("Don't know how to print %d\n", fmt);

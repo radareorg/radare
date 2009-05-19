@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -60,6 +60,14 @@ void graph_viz(struct program_t *prg)
 	cons_printf("}\n");
 }
 
+static int graphuser = 0;
+static int graphuserinit = 0;
+
+void graph_set_user(int b)
+{
+	graphuser = b;
+}
+
 #if HAVE_GUI
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -107,14 +115,6 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win);
 static void core_load_graph_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static void core_load_node_entry(void *widget, gpointer obj); //GtkWidget *obj);
 static struct program_t *prg = NULL; // last program code analysis
-
-static int graphuser = 0;
-static int graphuserinit = 0;
-
-void graph_set_user(int b)
-{
-	graphuser = b;
-}
 
 void core_load_graph_at(void *obj, const char *str)
 {
@@ -633,6 +633,7 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 	grava_graph_update(win->grava->graph);
 }
 #endif
+#endif
 
 /* user graph */
 void ugraph_reset()
@@ -703,6 +704,8 @@ void ugraph_print_dot()
 	}
 	cons_printf("}\n");
 }
+
+#if HAVE_GUI
 
 void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 {
@@ -1098,13 +1101,3 @@ void visual_gui()
 	eprintf("Compiled without GUI\n");
 #endif
 }
-
-#if HAVE_GUI
-// hohoh
-#else
-void ugraph_reset() {}
-void graph_set_user(int b) {}
-void ugraph_node(u64 from, u64 size, const char *cmd) {}
-void ugraph_edge(u64 from, u64 to) {}
-struct ugraph_node_t *ugraph_get(u64 addr) { return NULL; }
-#endif

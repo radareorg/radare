@@ -9,6 +9,11 @@
 TODO 1.4 ???
 ==========
 
+* pX alias for p1 ???
+* rax should support base64/7bit/LSBstego/...
+* cfg.vbar = p%
+* remove the ':' command
+* negative block size is used to invert (deprecate invert?)
 * do not lost sym.main when !cont sym.main
 * pm 4x8x -> change ptr sizes
 * implement asm.bits
@@ -78,6 +83,7 @@ Things to be done
 =================
 
 * Add disassembler for
+  - ParrotVM
   - DalvikVM
   - CUDA
   - Flash10
@@ -134,8 +140,6 @@ Things to be done
  - implement continue until cursor
  - implement !bpt properly
 * !fork should be fixed
-* powerpc OSX (also for ARM)
-  - !regs must show and flag proper regs!!
 
 java bug:
   0x000001EE  |           b80007           invokestatic java/lang/Object (null)
@@ -152,8 +156,6 @@ WTFS DONE:
 
 >1.0 STUFF
 
-* integrate ff with rabin and so
-  - refactor baddr
 * Allow to run shellcodes on debugged process.
   (autodetect .s or raw binary)
   - read shellcode from a file 
@@ -163,7 +165,9 @@ WTFS DONE:
   - cut all lines at column scr.width
   - add screen.hshift (horitzontal scrolling)
 * 'x' char should not be accepted as hexpair
-* !lib should be for >1.0
+* !lib /lib/libm.so.1   ; use 'uselib' on linux and dlopen on *bsd MUAHA
+  - implement !call
+  - must allocate strings
 * timezone for timestamps
 
 * support to remove fixed nodes
@@ -171,10 +175,6 @@ WTFS DONE:
 
 * call <flag> arg arg arg
  - done with lua/python
-
-* Add gzip to rdbs
-
-* make gdb connector work happily
 
 * Signal handling should idenitfy backtracing and siginfo and so from here or so
 
@@ -186,21 +186,9 @@ WTFS DONE:
            exit(EXIT_FAILURE);
        }
 
-* search backward (esteve?)
-  - search backward in memory (invert string and add inc as argument for binparse)
-  - useful to static analyze interrupt calls
-
-* add support for strings with "" in CC for.example
-
-* !lib /lib/libm.so.1   ; use 'uselib' on linux and dlopen on *bsd MUAHA
-  - implement !call
-  - must allocate strings
-
 0- store all the stack analysis info in a struct per-function
    and before removing it store a comment or metadata at the
    begginging of it.
-
-* bash autocompletion script for rsc and rfile
 
 * analize previous pushes or stack accesses before a call
   to a function (identify function arguments)
@@ -228,15 +216,11 @@ Rasc:
  	* add selfsigstop/stackperm shellcodes in lua script or rasc
 
 Rasm:
-	* Support for macros? Write my own cpp? Use cpp?
-	* olly assembler segfaults everywhere everytime :OO
-	* rasm : Add .db, .byte, .dw, .dd directives or so, .string
-	  - make them usable from the assembler (labels and so too)
-	  - be like a cmdline gas. use the internal code of gnu (stripped down plz!)
+	* replaced by rasm2
+	* integrate spp with rasm2
 
 Core:
 	* reload project file if changes
-	* do not create trace.log by default
 	* Allow to edit flags in Vt
 
 Rsc:
@@ -258,10 +242,8 @@ Radare:
         - dwarfdump parser???
         - natively use libwarf in rabin
 
-* cfg.inverse must be universal!
 * ease rsc monitor access from the visual (xterm or so) (run inside dvtm?) -- 
 * write shellcode to dump a buffer in hexa (inline jump)
-* use labels in history stuff
 * Allow to draw new lines manually (static defined arch_aop lines_t)
 
 Stack Analysis:
