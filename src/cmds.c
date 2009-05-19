@@ -2587,6 +2587,25 @@ CMD_DECL(help)
 			if (config.last_cmp != 0)
 				radare_cmd(input+1, 0);
 		} else
+		if (input[0]=='s') {
+			u64 from, to, step;
+			char *p, *p2;
+			for(input=input+1;input[0]==' ';input=input+1);
+			p = strchr(input, ' ');
+			if (p) {
+				*p='\0';
+				from = get_math(input);
+				p2 = strchr(p+1, ' ');
+				if (p2) {
+					*p2='\0';
+					step = get_math(p2+1);
+				} else step = 1;
+				to = get_math(p+1);
+				for(;from<=to;from+=step)
+					cons_printf("%lld ", from);
+				cons_newline();
+			}
+		} else
 		if (input[0]=='q') {
 			config.last_cmp = get_math(input+1);
 		} else
@@ -2608,6 +2627,7 @@ CMD_DECL(help)
 				" ?q eip+33+[esp]   ; quite math expression evaluation (no output) changes $$?\n"
 				" ?z`str            ; sets false if string is zero length\n"
 				" ?x 303132         ; show hexpair as a printable string\n"
+				" ?s from to step   ; print numeric sequence for(;from<=to;from+=step)\n"
 				" ?X eip            ; show hex result of math expression\n"
 				" ? 0x80+44         ; calc math expression\n"
 				" ? eip-23          ; ops with flags and numbers\n"

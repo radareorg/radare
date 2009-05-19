@@ -591,8 +591,38 @@ static int config_asm_profile(void *data)
 
 static int config_arch_callback(void *data)
 {
+	struct config_node_t *node = data;
 	radis_update();
+	if (strstr(node->value, "64")) {
+		config_set_i("asm.bits", 64);
+	} else
+	if (strstr(node->value, "16")) {
+		config_set_i("asm.bits", 16);
+	} else
+	if (strstr(node->value, "8")) {
+		config_set_i("asm.bits", 8);
+	} else config_set_i("asm.bits", 32);
+	return 0;
+}
 
+static int config_bits_callback(void *data)
+{
+	char buf[128];
+	struct config_node_t *node = data;
+	char *arch = config_get("asm.arch");
+	if (strstr(arch, "intel")) {
+		if ((node->i_value != 8 && node->i_value != 16)
+		&& (node->i_value != 32 && node->i_value != 64))
+			node->i_value = 32;
+		sprintf(buf, "intel%d", node->i_value);
+		if (strcmp(arch, buf)) config_set("asm.arch", buf);
+	} else
+	if (strstr(arch, "arm")) {
+		if (node->i_value != 16 && node->i_value != 32)
+			node->i_value = 32;
+		sprintf(buf, "arm%d", node->i_value);
+		if (strcmp(arch, buf)) config_set("asm.arch", buf);
+	}
 	return 0;
 }
 
@@ -782,6 +812,8 @@ void config_init(int first)
 	node = config_set("asm.arch", "intel");
 #endif
 	node->callback = &config_arch_callback;
+	node = config_set_i("asm.bits", 32);
+	node->callback = &config_bits_callback;
 	config_set("asm.comments", "true"); // show comments in disassembly
 	config_set_i("asm.cmtmargin", 10); // show comments in disassembly
 	config_set_i("asm.cmtlines", 0); // show comments in disassembly
