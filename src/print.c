@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -67,12 +67,12 @@ format_info_t formats[] = {
 	{ 'u', FMT_URLE,       "URL encoding",           NULL,          "entire block" },
 	{ 'U', FMT_USER,       "executes cmd.user",      NULL,          "entire block" },
 	{ 'v', FMT_VISUAL,     "executes cmd.vprompt",   NULL,          "entire block" },
-	{ '1', FMT_HEXW,       "p16: 16 bit hex word",   "2 bytes",     "(endian)"},
-	{ '3', FMT_HEXD,       "p32: 32 bit hex dword",  "4 bytes",     "(endian)"},
-	{ '6', FMT_HEXQ,       "p64: 64 bit quad-word",  "8 bytes",     "(endian)"},
+	{ '1', FMT_HEXBS,      "p1: 1byte,  8 bit hex pair",	 "1 byte",      "entire block" },
+	{ '2', FMT_HEXW,       "p2: 2bytes, 16 bit hex word",   "2 bytes",     "(endian)"},
+	{ '4', FMT_HEXD,       "p4: 4bytes, 32 bit hex dword",  "4 bytes",     "(endian)"},
+	{ '8', FMT_HEXQ,       "p8: 8bytes, 64 bit quad-word",  "8 bytes",     "(endian)"},
 	{ '7', FMT_7BIT,       "print 7bit block as raw 8bit",          NULL,   "entire block" },
-	{ '8', FMT_HEXBS,      "p8:   8 bit hex pair",	 "N byte",      "entire block" },
-	{ 'x', FMT_HEXB,       "hexadecimal byte pairs", "N byte",      "entire block" },
+	{ 'x', FMT_HEXB,       "hexadecimal dump", "N byte",      "entire block" },
 	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
 	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,          "until \\0" },
 	{ 0, 0, NULL, NULL, NULL }

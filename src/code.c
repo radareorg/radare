@@ -27,7 +27,9 @@
 #include "arch/arm/disarm.h"
 #include "arch/msil/demsil.h"
 /* http://devnull.owl.de/~frank/Disassembler_e.html */
+#if NONFREE
 #include "arch/ppc/ppc_disasm.h"
+#endif
 #include "arch/m68k/m68k_disasm.h"
 #include "arch/x86/udis86/types.h"
 #include "arch/x86/udis86/extern.h"
