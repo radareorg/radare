@@ -16,7 +16,6 @@ TODO 1.4 ???
 * negative block size is used to invert (deprecate invert?)
 * do not lost sym.main when !cont sym.main
 * pm 4x8x -> change ptr sizes
-* implement asm.bits
 * @@ addr:size // XXX NOPE
 * check for supported debugger archs in configure time
 
@@ -24,7 +23,7 @@ TODO 1.4 ???
 * fix arm-osx debugger
 * drop sdk dependency
 * regexp search??
-parrot vm
+* parrot vm
 * Invert doesnt works for disassembly!!!
 
 binary masks

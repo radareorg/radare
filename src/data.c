@@ -62,7 +62,7 @@ u64 data_prev(u64 off, int type)
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		if (d->type == type) {
-			if (d->from < off && d->to > off)
+			if (d->from <= off && d->to >= off)
 				ret = d->from;
 		}
 	}

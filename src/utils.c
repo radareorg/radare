@@ -474,11 +474,13 @@ int set0word(char *str)
 	char *p, *q;
 	if (str[0]=='\0')
 		return 0;
-	//for(i=1,p=str;p[0];p=p+1)if(*p==' '){i++;*p='\0';}
-	//return i;
-	for(i=1,q=p=str;p[0];p=p+1) {
-		if (*p==' ') { *p='\0'; }
-		else { if (*q=='\0'||*q==' ') i++; }
+	/* chop trailing spaces */
+	while(*str==' ') strbcpy(str, str+1);
+	for(i=strlen(str)-1;str[i]==' ';i--) str[i]='\0';
+	/* count words */
+	for(i=1,q=p=str;*p;p+=1) {
+		if (*p!=' '&&(*q=='\0'||*q==' ')) { i++; }
+		else if (*p==' ') { *p='\0'; }
 		q = p;
 	}
 	return i;

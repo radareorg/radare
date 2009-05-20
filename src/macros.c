@@ -295,7 +295,7 @@ int radare_macro_call(const char *name)
 	str = alloca(strlen(name)+1);
 	strcpy(str, name);
 	ptr = strchr(str, ')');
-
+	if (ptr) *ptr='\0';
 	args = strchr(str, ' ');
 	if (args) {
 		*args='\0';
