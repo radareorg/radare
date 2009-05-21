@@ -9,7 +9,11 @@
 TODO 1.4 ???
 ==========
 
-* pX alias for p1 ???
+-------------------------------
+a [label='Foo']
+b [shape=box];
+a -- b -- c [color=blue];
+-------------------------------
 * rax should support base64/7bit/LSBstego/...
 * cfg.vbar = p%
 * remove the ':' command

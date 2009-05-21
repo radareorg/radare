@@ -1,3 +1,4 @@
+e asm.profile=simple
 e scr.color=0
 e scr.bytewidth=16
 gur
@@ -8,4 +9,8 @@ gun entrypoint 128 pd
 gue entrypoint eip
 gue eip esp
 gue esp
+gud > a.dot
+!!dot -Tpng -ograph.png a.dot
+!!rsc view graph.png
 guv
+q

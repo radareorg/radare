@@ -40,14 +40,29 @@ struct ugraph_t {
 
 static struct ugraph_t ug;
 
-void graph_viz(struct program_t *prg)
+char *ugraph_get_str(u64 addr, int size, int dot);
+
+int graph_get_bb_size(struct program_t *prg, u64 addr)
+{
+	struct block_t *b0;
+	struct list_head *head;
+	int size = 32;
+	list_for_each_prev(head, &(prg->blocks)) {
+		b0 = list_entry(head, struct block_t, list);
+		if (addr == b0->addr)
+			return b0->n_bytes;
+	}
+	return size;
+}
+
+void graph_viz(struct program_t *prg, int body)
 {
 	struct block_t *b0;
 	struct list_head *head;
 
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
-	cons_printf("\tnode [color=lightblue2, style=filled];\n");
+	cons_printf("\tnode [color=lightgray, style=filled shape=box];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		if (b0->tnext)
@@ -56,6 +71,35 @@ void graph_viz(struct program_t *prg)
 			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\";\n", b0->addr, b0->fnext);
 		if (!b0->tnext && !b0->fnext)
 			cons_printf("\t\"0x%08llx\";\n", b0->addr);
+		cons_flush();
+		if (body) {
+			char *str = ugraph_get_str(b0->addr, b0->n_bytes, 1);
+			if (str) {
+				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", b0->addr, str);
+				cons_flush(); // we must flush this before radare_cmd_str or we loss the cons_buffer data
+				free(str);
+			}
+			if (b0->fnext) {
+				str = ugraph_get_str(b0->fnext, graph_get_bb_size(prg, b0->fnext), 1);
+				if (str) {
+					cons_printf(" \"0x%08llx\" [fillcolor=\"gray\" color=\"red\" label=\"%s\"]\n", b0->fnext, str); //(unsigned int)(ABS(b0->fnext-b0->addr)), str);
+					cons_flush();
+					free(str);
+				}
+			}
+			if (b0->tnext) {
+				str = ugraph_get_str(b0->tnext, graph_get_bb_size(prg, b0->tnext), 1);
+				if (str) {
+					cons_printf(" \"0x%08llx\" [fillcolor=\"white\" color=\"green\" label=\"%s\"]\n", b0->tnext, str); //((unsigned int)ABS(b0->tnext-b0->addr)), str);
+					cons_flush();
+					free(str);
+				}
+			}
+		}
+#if 0
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
+		ptr =  pipe_command_to_string(cmd);
+#endif
 	}
 	cons_printf("}\n");
 }
@@ -692,15 +736,79 @@ struct ugraph_node_t *ugraph_get(u64 addr)
 	return NULL;
 }
 
-void ugraph_print_dot()
+char *ugraph_get_str(u64 addr, int _size, int dot)
 {
-	struct list_head *head;
+	int i,j;
+	char *cmdstr, *str = NULL;
+	char *cmd = "pd";
+	struct ugraph_node_t *n = ugraph_get(addr);
+	u64 from = addr;
+	int size = _size;
+	if (n) {
+		from = n->from;
+		size = n->size;
+		cmd = n->cmd;
+	}
+	radare_seek(from, SEEK_SET);
+	radare_set_block_size_i(size);
+	cmdstr = radare_cmd_str(cmd);
+	if (!dot) {
+		return cmdstr;
+}
+	if (cmdstr != NULL)
+		str = malloc(strlen(cmdstr)*2);
+	if (str != NULL) {
+		for(i=j=0;cmdstr[i];i++,j++) {
+			switch(cmdstr[i]) {
+			case 0x1b: // hackyansistrip
+				/* skip chars */
+				for(i++;cmdstr[i]&&cmdstr[i]!='m'&&cmdstr[i]!='H'&&cmdstr[i]!='J';i++);
+				j--;
+				break;
+			case '\n':
+			case '\r':
+				str[j]='\\';
+				str[++j]='l';
+				break;
+			default:
+				str[j]=cmdstr[i];
+			}
+		}
+		str[j]='\0';
+		free(cmdstr);
+	}
+	return str;
+}
+
+void ugraph_print_dot(int body)
+{
+	int i,j;
+	struct list_head *head, *pos;
 	if (!graphuserinit)
 		ugraph_reset();
-	cons_printf("digraph {\n");
+
+	cons_strcat("digraph {\n");
+	cons_strcat("  node [color=lightblue2, style=filled shape=box];\n");
+	cons_flush();
+
 	list_for_each_prev(head, &(ug.edges)) {
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);
-		cons_printf(" _0x%08llx -> _0x%08llx ;\n", e->from, e->to);
+		if (body) {
+			char *str = ugraph_get_str(e->from, 32, 1);
+			if (str) {
+				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", e->from, str);
+				cons_flush(); // we must flush this before radare_cmd_str or we loss the cons_buffer data
+				free(str);
+			}
+			str = ugraph_get_str(e->to, 32, 1);
+			if (str) {
+				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", e->to, str);
+				cons_flush();
+				free(str);
+			}
+		}
+		cons_printf(" \"0x%08llx\" -> \"0x%08llx\" ;\n", e->from, e->to);
+		cons_flush();
 	}
 	cons_printf("}\n");
 }
@@ -740,14 +848,19 @@ void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 		char *cmdstr;
 		GravaNode *node = grava_node_new();
 		g_object_ref(node);
+
 		sprintf(cmd, "0x%08llx", n->from);
 		grava_node_set(node, "label", cmd);
+
+cmdstr = ugraph_get_str(n->from, n->size, 0);
+#if 0
 		// TODO: execute command
 radare_seek(n->from, SEEK_SET);
 radare_set_block_size_i((int)(unsigned int)n->size);
 		cmdstr = radare_cmd_str(n->cmd);
 //eprintf("(%s)=(%s)\n", n->cmd, cmdstr);
 eprintf(" node 0x%08llx\n", n->from);
+#endif
 		grava_node_set(node, "body", cmdstr);
 		free(cmdstr);
 		grava_graph_add_node(win->grava->graph, node);
@@ -849,10 +962,13 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 		grava_node_set_i(node, "offset", b0->addr);
 
 		/* disassemble body */
-		//sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes +((b0->n_bytes<3)?1:0), b0->addr);
 
+#if 0
 		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
 		ptr =  pipe_command_to_string(cmd);
+#else
+ptr= ugraph_get_str (b0->addr, b0->n_bytes, 0);
+#endif
 		//ptr =  radare_cmd_str(cmd); //pipe_command_to_string(cmd);
 		grava_node_set(node, "body", ptr);
 		if (strstr(ptr, "eip:"))

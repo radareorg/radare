@@ -1,0 +1,9 @@
+e asm.profile=simple
+e scr.color=false
+!step 4
+s eip
+agd > file.dot
+!!dot -Tpng -o graph.png file.dot
+!!rsc view graph.png
+q!
+y

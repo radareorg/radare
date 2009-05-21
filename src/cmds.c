@@ -353,13 +353,14 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: ag[.]\n");
-			eprintf(" ag - open graph window\n");
-			eprintf(" ag. - outputs dot graph format for code analysis\n");
+			eprintf(" ag  - open graph window\n");
+			eprintf(" agd  - outputs dot graph format for code analysis\n");
+			eprintf(" agd* - like above but only addresses (without body)\n");
 			break;
-		case '.':
+		case 'd':
 			prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
 			list_add_tail(&prg->list, &config.rdbs);
-			graph_viz(prg);
+			graph_viz(prg, input[2]!='*');
 			break;
 		default:
 #if HAVE_GUI
@@ -656,7 +657,7 @@ CMD_DECL(analyze)
 		//cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
-		cons_printf(" ag [depth]   graph analyzed code (ag. = dot format)\n");
+		cons_printf(" ag [depth]   graph analyzed code (agd = dot format) (check 'gu?')\n");
 		cons_printf(" ar [args]    analyze ranges\n");
 		cons_printf(" as [name]    analyze spcc structure (uses dir.spcc)\n");
 		cons_printf(" at [args]    analyze opcode traces\n");
@@ -1472,6 +1473,9 @@ CMD_DECL(print)
 		if (fmt == FMT_ERR)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
 		else	radare_print(input+1, fmt);
+		break;
+	case 'X':
+		radare_print(input+1, FMT_HEXBS);
 		break;
 	default:
 		if (input[1]=='f') {

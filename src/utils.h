@@ -122,6 +122,7 @@ int str_grep(const char *str, const char *needle);
 int file_dump(const char *file, const u8 *buf, int len);
 const char *resolve_path(const char *str);
 
+#define ABS(x) x>0?x:-x
 /* profiling shit */
 #include <sys/time.h>
 struct r_prof_t {
