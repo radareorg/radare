@@ -66,9 +66,9 @@ void graph_viz(struct program_t *prg, int body)
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		if (b0->tnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\";\n", b0->addr, b0->tnext);
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
 		if (b0->fnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\";\n", b0->addr, b0->fnext);
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\"];\n", b0->addr, b0->fnext);
 		if (!b0->tnext && !b0->fnext)
 			cons_printf("\t\"0x%08llx\";\n", b0->addr);
 		cons_flush();

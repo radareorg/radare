@@ -9,18 +9,16 @@
 TODO 1.4 ???
 ==========
 
--------------------------------
-a [label='Foo']
-b [shape=box];
-a -- b -- c [color=blue];
--------------------------------
+* !mmap doesnt works well
+* pm 4x8x -> change ptr sizes
+* fix graphs
+* do not lost sym.main when !cont sym.main
+* @@ addr:size // XXX NOPE
+
 * rax should support base64/7bit/LSBstego/...
 * cfg.vbar = p%
 * remove the ':' command
 * negative block size is used to invert (deprecate invert?)
-* do not lost sym.main when !cont sym.main
-* pm 4x8x -> change ptr sizes
-* @@ addr:size // XXX NOPE
 * check for supported debugger archs in configure time
 
 *++++++++++
@@ -116,7 +114,6 @@ Things to be done
   - 03 e4 f0 = and esp, 0xf0
   but must be= and esp, 0xfffffff0
 * RASM is buggy about relative/absolute offsets
-* Vdf doesnt detect func size properly
 
 ---- debugger
 * !dall should pseudo-initialize the !maps internal structures

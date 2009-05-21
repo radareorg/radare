@@ -356,11 +356,18 @@ CMD_DECL(analyze)
 			eprintf(" ag  - open graph window\n");
 			eprintf(" agd  - outputs dot graph format for code analysis\n");
 			eprintf(" agd* - like above but only addresses (without body)\n");
+			eprintf(" agdv - use agd > file.dot && !!dot -Tpng -ofile.png file.dot && rsc view file.png\n");
 			break;
 		case 'd':
-			prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
-			list_add_tail(&prg->list, &config.rdbs);
-			graph_viz(prg, input[2]!='*');
+			if (input[2]=='v') {
+				radare_cmd_raw("agd > file.dot", 0);
+				radare_cmd_raw("!!dot -Tpng -o file.png file.dot", 0);
+				radare_cmd_raw("!!rsc view file.png", 0);
+			} else {
+				prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
+				list_add_tail(&prg->list, &config.rdbs);
+				graph_viz(prg, input[2]!='*');
+			}
 			break;
 		default:
 #if HAVE_GUI
@@ -849,7 +856,11 @@ CMD_DECL(graph)
 			}
 			break;
 		case 'd':
-			ugraph_print_dot();
+			if (input[2]=='v') {
+				radare_cmd_raw("gud > file.dot", 0);
+				radare_cmd_raw("!!dot -T png -o file.png file.dot ", 0);
+				radare_cmd_raw("!!rsc view file.png", 0);
+			} else ugraph_print_dot();
 			break;
 		case 'k':
 			// TODO
@@ -865,7 +876,8 @@ CMD_DECL(graph)
 			" gur              user graph reset\n"
 			" gun $$ $$b pd    add node\n"
 			" gue $$F $$t      add edge\n"
-			" gud              display graph in dot format\n"
+			" gud              generate graph in dot format\n"
+			" gudv             view graph in dot format (like agdv does)\n"
 			//" guk s !step      add keybinding\n"
 			//" gum Step !step   add contextual menu entry\n"
 			" guv              visualize user defined graph\n");

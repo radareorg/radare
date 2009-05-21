@@ -1,0 +1,40 @@
+#!/bin/sh
+# pancake // radare // nopcode
+# Does Radare Has Native Debugger support for this platform?
+
+ARCHOS="${TARGET_CPU}-${TARGET_OS}"
+SUPLIST=`cat <<EOF
+i386-netbsd
+i386-openbsd
+i386-freebsd
+x86_64-linux
+x86_64-openbsd
+arm-linux
+armel-linux
+powerpc-linux
+mips64-linux
+mips-linux
+i386-linux
+i686-linux
+i586-mingw32
+arm-darwin
+powerpc-darwin
+i386-darwin
+EOF`
+
+printf "checking for native debugger support on '${ARCHOS}'... "
+RET=""
+if [ '-' = "${ARCHOS}" ]; then
+	echo "No ARCH-OS defined"
+	RET=""
+else
+	RET=`echo $SUPLIST|grep $ARCHOS`
+fi
+
+if [ -n "${RET}" ]; then
+	echo yes
+	export DEBUGGER=1
+else
+	export DEBUGGER=0
+	echo no
+fi
