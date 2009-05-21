@@ -34,7 +34,7 @@
 int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
 
 /* code lines */
-struct reflines_t *code_lines_init()
+struct reflines_t *code_lines_init(int linescall)
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 	struct reflines_t *list2;
@@ -79,6 +79,9 @@ struct reflines_t *code_lines_init()
 			/* store data */
 			switch(aop.type) {
 			case AOP_TYPE_CALL:
+				if (!linescall) {
+					goto __next;
+				}
 			case AOP_TYPE_CJMP:
 			case AOP_TYPE_JMP:
 				if (!bar) {

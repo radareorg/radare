@@ -832,10 +832,11 @@ void config_init(int first)
 	config_set("asm.flagsline", "false");
 	config_set("asm.functions", "true");
 	config_set("asm.lines", "true"); // show left ref lines
+	config_set("asm.linescall", "false"); // show left ref lines
 	config_set_i("asm.nlines", 6); // show left ref lines
 	config_set("asm.lineswide", "false"); // show left ref lines
 	config_set("asm.trace", "false"); // trace counter
-	config_set("asm.linesout", "false"); // show left ref lines
+	config_set("asm.linesout", "true"); // show left ref lines
 	config_set("asm.linestyle", "false"); // foreach / prev
 	// asm.os = used for syscall tables and so.. redefined with rabin -rI
 	config_set("asm.pseudo", "false"); 

@@ -98,6 +98,18 @@ int _strnstr(char *from, char *to, int size)
 	return (size!=i);
 }
 
+u64 file_size(const char *str)
+{
+	u64 sz;
+	FILE *fd = fopen(str, "r");
+	if (fd == NULL)
+		return 0;
+	fseek(fd, 0,SEEK_END);
+	sz = ftell(fd);
+	fclose(fd);
+	return sz;
+}
+
 char *slurp(const char *str, int *len)
 {
 	char *ret;
@@ -546,7 +558,7 @@ u64 get_math(const char* text)
 	}
 
 	/* remove whitespaces and dupped '=' */
-	for(tmp = txt = strdup(text); txt && *txt; txt = txt+1) {
+	for(tmp = txt = strdup(text); txt && txt[0] && txt[1]; txt = txt+1) {
 #if 1
 		if ((txt[0]=='!' && txt[1]=='='))
 			strbcpy(txt+1, txt+2);

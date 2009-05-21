@@ -324,6 +324,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	char *str, *p;
 	struct list_head *pos;
 	u64 oseek, addr;
+	u32 tmpbsz = config.block_size;
 
 	for(;*each==' ';each=each+1);
 	for(;*cmd==' ';cmd=cmd+1);
@@ -367,7 +368,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				if (p) {
 					*p='\0';
 					tmpbsz = config.block_size;
-					config.block_size = get_math(p+1);
+					radare_set_block_size_i((int)get_math(p+1));
 				}
 				addr = get_math(each);
 			} else {
@@ -376,7 +377,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				if (p) {
 					*p='\0';
 					tmpbsz = config.block_size;
-					config.block_size = get_math(p+1);
+					radare_set_block_size_i((int)get_math(p+1));
 				}
 				addr = get_math(each);
 				str[0]=' ';
@@ -451,9 +452,12 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	//				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 	//					continue;
 
+	radare_set_block_size_i(tmpbsz);
+	radare_sync(); // XXX MUST BE CALLED 
+
 					config.seek = flag->offset;
-					radare_read(0);
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
+					//radare_read(0);
 					radare_cmd(cmd,0);
 				}
 			} else {
@@ -470,6 +474,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	//eprintf("polla(%s)(%s)\n", flag->name, word);
 					if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
 						config.seek = flag->offset;
+	radare_set_block_size_i(tmpbsz);
+	radare_sync(); // XXX MUST BE CALLED 
 						radare_read(0);
 						cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
 						radare_cmd(cmd,0);
@@ -547,6 +553,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *grep = NULL;
 	char *next = NULL;
 	int ret = 0;
+	u32 tmpbsz = -1;
 
 	if (strnull(tmp))
 		return 0;
@@ -929,19 +936,28 @@ int radare_cmd_raw(const char *tmp, int log)
 					eof2[0] = '\0';
 
 					if (eof2[1]=='@') {
+						p = strchr(eof2+2, ':');
+						if (p) {
+							*p='\0';
+							tmpbsz = config.block_size;
+							radare_set_block_size_i(get_math(p+1));
+							radare_sync(); // XXX MUST BE CALLED 
+						}
 						/* @@ is for foreaching */
 						tmpoff = config.seek;
-						radare_cmd_foreach(input ,eof2+2);
+						radare_cmd_foreach(input, eof2+2);
 						//config.seek = tmpoff;
 						radare_seek(tmpoff, SEEK_SET);
+						//if (tmpbsz != -1)
+						//	radare_set_block_size_i(tmpbsz);
 						goto __end;
-						
 					} else {
 						p = strchr(eof2+2, ':');
 						if (p) {
 							*p='\0';
 							tmpbsz = config.block_size;
-							config.block_size = get_math(p+1);
+							radare_set_block_size_i(get_math(p+1));
+							radare_sync(); // XXX MUST BE CALLED 
 						}
 						tmpoff = config.seek;
 						for(;*ptr==' ';ptr=ptr+1);
@@ -982,17 +998,18 @@ int radare_cmd_raw(const char *tmp, int log)
 		}
 #endif
 
-		/* restore seek */
-		if (tmpoff != -1) {
-			config.seek = tmpoff;
-			tmpoff = -1;
-		}
-		if (tmpbsz != -1) {
-			config.block_size = tmpbsz;
-			tmpbsz = -1;
-		}
 	}
 	__end:
+	/* restore seek */
+	if (tmpoff != -1) {
+		config.seek = tmpoff;
+		tmpoff = -1;
+	}
+	/* restore block size */
+	if (tmpbsz != -1) {
+		radare_set_block_size_i(tmpbsz);
+		tmpbsz = -1;
+	}
 #if 1
 	cons_flush();
 	if (cmd_level==1) {
@@ -1613,9 +1630,10 @@ void radare_set_block_size(char *arg)
 		if (arg[i]=='+') size += config.block_size;
 		else
 		if (arg[i]=='-') size = config.block_size - size;
+	// XXX already claled by the config callback
 		radare_set_block_size_i(size);
+		config_set_i("cfg.bsize", config.block_size);
 	}
-	config_set_i("cfg.bsize", config.block_size);
 	//D printf("bsize = %d\n", config.block_size);
 }
 

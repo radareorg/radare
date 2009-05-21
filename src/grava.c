@@ -63,13 +63,15 @@ void graph_viz(struct program_t *prg, int body)
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
 	cons_printf("\tgraph [bgcolor=%s];\n", config_get("graph.bgcolor"));
-	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\"];\n");
+	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		if (b0->tnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n", b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
+				b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
 		if (b0->fnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n", b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
+				b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
 		if (!b0->tnext && !b0->fnext)
 			cons_printf("\t\"0x%08llx\";\n", b0->addr);
 		if (body) {
@@ -786,7 +788,7 @@ void ugraph_print_dot(int body)
 
 	cons_strcat("digraph {\n");
 	cons_printf("  graph [bgcolor=%s];\n", config_get("graph.bgcolor"));
-	cons_strcat("  node [color=lightgray, style=filled shape=box fontname=\"Courier\"];\n");
+	cons_strcat("  node [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
 
 	list_for_each_prev(head, &(ug.edges)) {
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       th0rpe <nopcode.org>
  *       pancake <youterm.com>
  *
@@ -70,18 +70,18 @@ addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 	int fd;
 
 	// TODO: close fds on close!!!
-	fd = open(file,0);
+//	fd = open(file, 0);
+#include <syscall.h>
+	fd = arch_syscall(ps.pid, SYS_open, file, 0); //O_RDWR);
+eprintf("FILE=(%s)\n", file);
 	if (fd == -1) {
 		fprintf(stderr, "Cannot open %s\n", file);
 		return 0;
 	}
+eprintf("fd=%d\n", fd);
 
-	if (rsize <1) {
-		rsize = lseek(fd, (off_t)0, SEEK_END);
-		lseek(fd, (off_t)0, SEEK_SET);
-	}
-
-	addr = (int)arch_mmap(fd, addr, rsize);
+	addr = arch_mmap(fd, addr, rsize);
+eprintf("new addr = %x\n", addr);
 
 	if(addr == (u64)-1) {
 		fprintf(stderr, "host_mmap:error\n");
@@ -656,10 +656,11 @@ Dump of assembler code for function mmap:
 	if ((arg = strchr(file, ' '))) {
 		arg[0]='\0';
 		addr = get_math(arg+1);
-		size = 0; // TODO: not yet implemented
+		size = file_size(file);
 		if (strchr(arg+1, ' '))
 			eprintf("TODO: optional size not yet implemented\n");
 		//signal_set(signum, address);
+eprintf("mmap_tagged_page(%s,0x%08llx,%08lld)\n", file, addr, size); 
 		mmap_tagged_page(file, addr, size);
 	} else {
 		eprintf("Usage: !mmap [file] [address] ([size])\n");

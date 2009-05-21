@@ -733,12 +733,11 @@ void data_comment_init(int new)
 	var_init();
 }
 
-void data_reflines_init()
+void data_reflines_init(int lines, int linescall)
 {
-	int show_lines    = (int) config_get_i("asm.lines");
 	reflines = NULL;
-	if (show_lines)
-		reflines = code_lines_init();
+	if (lines)
+		reflines = code_lines_init(linescall);
 }
 
 int data_printd(int delta)

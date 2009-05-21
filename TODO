@@ -9,11 +9,11 @@
 TODO 1.4 ???
 ==========
 
-* !mmap doesnt works well
+pancake:
+* !mmap doesnt works well (we need to use mmap2 here)
+
+nibble:
 * pm 4x8x -> change ptr sizes
-* fix graphs
-* do not lost sym.main when !cont sym.main
-* @@ addr:size // XXX NOPE
 
 * rax should support base64/7bit/LSBstego/...
 * cfg.vbar = p%

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -999,6 +999,21 @@ $
         R_EDX(reg) = 0x1;   // options
         R_ESI(reg) = fd;    // fd
         R_EDI(reg) = 0;     // offset
+#if 0
+XXX: we must use mmap2 here
+	push %ebp
+	xor %ebp, %ebp   /* 0 */
+	mov $-1, %edi    /* -1 */
+	mov $0x22, %esi  /* MAP_ANONYMOUS | MAP_PRIVATE */
+	mov $7, %edx     /* PROT_EXEC | PROT_READ | PROT_WRITE */
+	mov $4096, %ecx  /* len = 4096 */
+	xor %ebx, %ebx   /* 0 */
+	mov $192, %eax   /* mmap2 */
+	int $0x80
+	pop %ebp
+
+	mov %eax, %edi       /* dest pointer */
+#endif
 
         /* write syscall interrupt code */
         R_EIP(reg) = R_ESP(reg) - 4;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -67,7 +67,6 @@ int debug_bp(const char *str)
 	switch(ptr[0]) {
 	case '-':
 		addr = get_math(ptr+1);
-		flag_clear_by_addr(addr);
 		if(debug_bp_rm_addr(addr) == 0)
 			eprintf("breakpoint at 0x%x dropped\n", addr);
 		break;
@@ -191,7 +190,12 @@ int debug_bp_rm(u64 addr, int type)
 	if(ret < 0)
 		return ret;
 
-	flag_clear_by_addr((addr_t)addr);
+//	flag_clear_by_addr((addr_t)addr);
+{
+		char tcmd[128];
+		sprintf(tcmd, "f -breakpoint@0x%08llx", addr);
+		radare_cmd(tcmd, 0);
+}
 
 	bp->addr = 0;
 	ps.bps_n--;

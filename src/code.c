@@ -416,6 +416,7 @@ void radis(int len, int rows)
 #define RADIS_ADDRMOD   0x08000
 #define RADIS_FLAGSALL  0x10000
 #define RADIS_XREFSTO   0x20000
+#define RADIS_LINESCALL 0x40000
 
 static int stack_ptr = 0;
 static void print_stackptr(struct aop_t *aop, int zero)
@@ -506,7 +507,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 	}
 #endif
 
-	data_reflines_init();
+	data_reflines_init(flags & RADIS_LINES, flags & RADIS_LINESCALL);
 	radare_controlc();
 
 	config.acursor = 0;
@@ -1071,7 +1072,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
 	const char *cmd_asm;
-	int flags;
+	int flags, linescall;
 	int size, bytes, offset, splits, comments, lines, section,
 	traces, reladdr, flagsline, functions, stackptr, flagsall;
 	// TODO: add xrefsto here
@@ -1092,6 +1093,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 			traces   = (int) config_get_i("asm.trace");
 		}
 		lines    = (int) config_get_i("asm.lines");
+		linescall= (int) config_get_i("asm.linescall");
 		reladdr  = (int) config_get_i("asm.reladdr");
 		stackptr = (int) config_get_i("asm.stackptr");
 		comments = (int) config_get_i("asm.comments");
@@ -1111,6 +1113,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 		if (flagsall) flags |= RADIS_FLAGSALL;
 		//if (xrefsto) flags |= RADIS_XREFSTO;
 		if (lines) flags |= RADIS_LINES;
+		if (linescall) flags |= RADIS_LINESCALL;
 		if (reladdr) flags |= RADIS_RELADDR;
 		if (traces) flags |= RADIS_TRACES;
 		if (comments) flags |= RADIS_COMMENTS;
