@@ -422,22 +422,20 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->jump   = addr+bo+2; //(unsigned long)((bytes+1)+5);
 			aop->fail   = addr+2;
 			aop->eob    = 1;
-			return 2;
 		}
 		break;
 	//default:
 		//aop->type = AOP_TYPE_UNK;
 	}
 		
-	if (config_get_i("asm.bits") == 64) {
-		static ud_t disasm_obj;
-		ud_set_mode(&disasm_obj, 64);
-		ud_set_pc(&disasm_obj, addr);
-		ud_set_input_buffer(&disasm_obj, (unsigned char *)bytes, 64);
-		ud_disassemble(&disasm_obj);
-		aop->length = ud_insn_len(&disasm_obj);
-	} else //if (aop->length == 0)
-		aop->length = dislen((unsigned char *)bytes, 64); //instLength(bytes, 16, 0);
+   	static ud_t disasm_obj;
+   	ud_set_mode(&disasm_obj, config_get_i("asm.bits"));
+   	ud_set_pc(&disasm_obj, addr);
+   	ud_set_input_buffer(&disasm_obj, (unsigned char *)bytes, 64);
+   	ud_disassemble(&disasm_obj);
+	aop->length = ud_insn_len(&disasm_obj);
+	//if (aop->length == 0)
+		//aop->length = dislen((unsigned char *)bytes, 64); //instLength(bytes, 16, 0);
 		//aop->length = instLength(bytes, 16, 0);
 	if (!(aop->jump>>33))
 		aop->jump &= 0xFFFFFFFF; // XXX may break on 64 bits here

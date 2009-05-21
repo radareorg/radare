@@ -234,6 +234,83 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 {
 	struct aop_t aop;
+	u64 oseek = seek;
+	u64 tmp = config.seek;
+	unsigned int sz = 0, ret;
+	int bsz = 0;// block size
+	char buf[4096]; // bytes of the code block
+	unsigned char *ptr = (unsigned char *)&buf;
+	int callblocks =(int) config_get_i("graph.callblocks");
+	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
+    int refblocks = (int) config_get_i("graph.refblocks");
+	struct block_t *blf = NULL;
+	
+	if (arch_aop == NULL)
+		return -1;
+	// too deep! chop branch here!
+	if (depth<=0)
+		return 0;
+
+	radare_seek(tmp, SEEK_SET);
+	bsz = 0;
+	config.seek = seek;
+	radare_read(0);
+	aop.eob = 0;
+
+	ret = radare_read(0);
+
+	/* Walk for all bytes of current block */
+	for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
+		if (config.interrupted)
+			break;
+
+		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
+		if (sz<=0) {
+			break;
+		}
+		blf = program_block_split_new (prg, config.seek+bsz);
+		if ( blf != NULL ) {
+			eprintf("Block splitted at address 0x%08llx\n",config.seek+bsz);
+			
+			bsz = blf->n_bytes;
+			aop.eob = 1;
+			if (blf->tnext)
+				aop.jump = blf->tnext;
+			if (blf->fnext)
+				aop.fail = blf->fnext;
+			break;
+		}		
+		if (aop.type == AOP_TYPE_CALL) {
+			program_block_add_call(prg, oseek, aop.jump);
+			if (callblocks)
+				aop.eob = 1;
+			else aop.eob = 0;
+		} else
+			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
+				/* TODO : add references */
+				if (refblocks) {
+					program_block_add_call(prg, oseek, aop.ref);
+					aop.eob = 1;
+					aop.jump = aop.ref;
+					aop.fail = oseek+bsz+sz;
+				}
+			}
+		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
+	}
+	config.seek = tmp;
+
+	oseek = seek;
+
+	/* walk childs */
+	if (aop.jump && (blf == NULL))
+		code_analyze_r_split(prg, aop.jump, depth-1);
+	if (aop.fail)
+		code_analyze_r_split(prg, aop.fail, depth-1);
+
+	return 0;
+
+#if 0 
+	struct aop_t aop;
 	struct block_t *blk;
 	u64 oseek = seek;
 	u64 tmp = config.seek;
@@ -242,8 +319,8 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	char buf[4096]; // bytes of the code block
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks =(int) config_get_i("graph.callblocks");
-	int jmpblocks = (int) config_get_i("graph.jmpblocks");
-        //int refblocks = (int) config_get_i("graph.refblocks");
+	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
+    int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
 	if (arch_aop == NULL)
@@ -267,16 +344,18 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	ret = radare_read(0);
 
 	/* Walk for all bytes of current block */
-	for(bsz = 0;(!aop.eob) && (bsz <config.block_size); bsz+=sz) {
+	for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
+		if (config.interrupted)
+			break;
 
 		/// Miro si l'adreca on soc es base d'algun bloc
-		blf = program_block_get ( prg , config.seek+bsz );
+		//blf = program_block_get ( prg , config.seek+bsz );
 
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
 			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
 			// eprintf("x");
-			D analyze_progress(0,1,0,0);
+			//D analyze_progress(0,1,0,0);
 			break;
 		}
 #if 1
@@ -293,7 +372,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 #endif
 		blf = program_block_split_new (prg, config.seek+bsz);
 		if ( blf != NULL ) {
-			eprintf("Block splitted at address 0x%08llx\n", config.seek+bsz);
+			eprintf("Block splitted at address 0x%08llx\n", config.vaddr+config.seek+bsz);
 			
 			bsz = blf->n_bytes;
 			aop.eob = 1;
@@ -304,10 +383,9 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 			break;
 		}		
 #endif
-		if (config.interrupted)
-			break;
 
 		/* continue normal analysis */
+#if 0 
 		if (!callblocks && aop.type == AOP_TYPE_CALL) {
 			program_block_add_call(prg, oseek, aop.jump);
                 	if (callblocks)
@@ -332,11 +410,35 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
-	bsz--;
+#else
+		if (aop.type == AOP_TYPE_CALL) {
+			program_block_add_call(prg, oseek, aop.jump);
+			if (callblocks)
+				aop.eob = 1;
+			else aop.eob = 0;
+		} else
+			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
+				/* TODO : add references */
+				if (refblocks) {
+					program_block_add_call(prg, oseek, aop.ref);
+					aop.eob = 1;
+					aop.jump = aop.ref;
+					aop.fail = oseek+bsz+sz;
+				}
+				//block_add_ref(prg, oseek, aop.ref);
+				//block_add_call(prg, oseek, aop.ref);
+			}
+		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
+	}
+#endif
 	config.seek = tmp;
 
 	blk = program_block_get_new(prg, oseek);
-	blk->bytes = (unsigned char *)malloc(bsz);
+
+	blk->bytes = (unsigned char *)malloc(bsz+1);
+	if (blk->bytes == NULL) {
+		eprintf("analyze.c: Cannot allocate\n");
+	}
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
 	blk->tnext = aop.jump;
@@ -361,6 +463,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		code_analyze_r_split(prg, blk->fnext, depth-1);
 
 	return 0;
+#endif 
 }
 
 int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
@@ -444,11 +547,11 @@ int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 	if (aop.jump && !aop.fail)
 		blk->type = BLK_TYPE_BODY;
 	else
-		if (aop.jump && aop.fail)
-			blk->type = BLK_TYPE_BODY;
-		else
-			if (aop.type == AOP_TYPE_RET)
-				blk->type = BLK_TYPE_LAST;
+	if (aop.jump && aop.fail)
+		blk->type = BLK_TYPE_BODY;
+	else
+	if (aop.type == AOP_TYPE_RET)
+		blk->type = BLK_TYPE_LAST;
 
 	/* walk childs */
 	if (blk->tnext)
@@ -504,6 +607,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 
 	radare_controlc();
 
+#if 0 
 	if (config_get("graph.split"))
 		code_analyze_r = &code_analyze_r_split;
 	else	code_analyze_r = &code_analyze_r_nosplit;
@@ -513,6 +617,12 @@ struct program_t *code_analyze(u64 seek, int depth)
 	//if (depth>10) depth=10;
 
 	code_analyze_r(prg, seek, --depth);
+#endif 
+	if (config_get("graph.split")) {
+		code_analyze_r_nosplit(prg, seek, --depth);
+		code_analyze_r_split(prg, seek, --depth);
+	} else
+		code_analyze_r_nosplit(prg, seek, --depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
@@ -848,7 +958,7 @@ int analyze_function(u64 from, int recursive, int report)
 		//if ((b0->type == BLK_TYPE_LAST)
 		//|| (b0->type == BLK_TYPE_FOOT))
 		if ((b0->addr + b0->n_bytes) > end)
-			end = (b0->addr + b0->n_bytes);
+			end = (b0->addr + b0->n_bytes - 1);
 		nblocks++;
 	}
 	to = end;
