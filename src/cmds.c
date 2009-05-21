@@ -360,7 +360,11 @@ CMD_DECL(analyze)
 			break;
 		case 'd':
 			if (input[2]=='v') {
+				char *oprof = strdup(config_get("asm.profile"));
+				config_set("asm.profile", "simple");
 				radare_cmd_raw("agd > .file.dot", 0);
+				config_set("asm.profile", oprof);
+				if (*oprof) free(oprof);
 				radare_cmd_raw("!!dot -Tpng -o .file.png .file.dot", 0);
 				radare_cmd_raw("!!rsc view .file.png", 0);
 				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);

@@ -365,103 +365,98 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
 {
-        struct aop_t aop;
-        struct block_t *blk;
-        u64 oseek = seek;
-        u64 tmp = config.seek;
-        unsigned int sz = 0, ret;
-        int bsz = 0;// block size
-        char buf[4096]; // bytes of the code block
-        unsigned char *ptr = (unsigned char *)&buf;
-        int callblocks = (int)config_get_i("graph.callblocks");
+	struct aop_t aop;
+	struct block_t *blk;
+	u64 oseek = seek;
+	u64 tmp = config.seek;
+	unsigned int sz = 0, ret;
+	int bsz = 0;// block size
+	char buf[4096]; // bytes of the code block
+	unsigned char *ptr = (unsigned char *)&buf;
+	int callblocks = (int)config_get_i("graph.callblocks");
 	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
-        int refblocks = (int)config_get_i("graph.refblocks");
+	int refblocks = (int)config_get_i("graph.refblocks");
 
 	if (arch_aop == NULL)
 		return -1;
-        if (depth<=0)
-                return 0;
-        if (config.interrupted)
-                return 0;
+	if (depth<=0)
+		return 0;
+	if (config.interrupted)
+		return 0;
 
-        /* if already analyzed skip */
-        if (program_block_get(prg,seek))
-                return 0;
+	/* if already analyzed skip */
+	if (program_block_get(prg,seek))
+		return 0;
 
-        radare_seek(tmp, SEEK_SET);
-        bsz = 0;
-        config.seek = seek;
-        radare_read(0);
-        aop.eob = 0;
+	radare_seek(tmp, SEEK_SET);
+	bsz = 0;
+	config.seek = seek;
+	radare_read(0);
+	aop.eob = 0;
 
-        ret = radare_read(0);
+	ret = radare_read(0);
 
 	/* XXX bsz+4 fixes a segfault! (avoid reading outside the block...) */
-        for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
-                if (config.interrupted)
-                        break;
+	for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
+		if (config.interrupted)
+			break;
 
-                sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
-                if (sz<=0) {
-//                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
-                        break;
-                }
+		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
+		if (sz<=0) {
+			//                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			break;
+		}
 
 		if (aop.type == AOP_TYPE_CALL) {
 			program_block_add_call(prg, oseek, aop.jump);
-                	if (callblocks)
+			if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
-                } else
-		if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
-			/* TODO : add references */
-			if (refblocks) {
-				program_block_add_call(prg, oseek, aop.ref);
-				aop.eob = 1;
-				aop.jump = aop.ref;
-				aop.fail = oseek+bsz+sz;
+		} else
+			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
+				/* TODO : add references */
+				if (refblocks) {
+					program_block_add_call(prg, oseek, aop.ref);
+					aop.eob = 1;
+					aop.jump = aop.ref;
+					aop.fail = oseek+bsz+sz;
+				}
+				//block_add_ref(prg, oseek, aop.ref);
+				//block_add_call(prg, oseek, aop.ref);
 			}
-		//block_add_ref(prg, oseek, aop.ref);
-		//block_add_call(prg, oseek, aop.ref);
-		}
-                memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
-        }
-	bsz--;
-        config.seek = tmp;
-
-	if (bsz<0) {
-		bsz = 5;
-		// XXX WTF?!?!
+		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
-        blk = program_block_get_new(prg, oseek);
+	config.seek = tmp;
 
-        blk->bytes = (unsigned char *)malloc(bsz+1);
+	blk = program_block_get_new(prg, oseek);
+
+	blk->bytes = (unsigned char *)malloc(bsz+1);
 	if (blk->bytes == NULL) {
 		eprintf("analyze.c: Cannot allocate\n");
 	}
-        blk->n_bytes = bsz;
-        memcpy(blk->bytes, buf, bsz);
-        blk->tnext = aop.jump;
-        blk->fnext = aop.fail;
-        oseek = seek;
+	blk->n_bytes = bsz;
+	memcpy(blk->bytes, buf, bsz);
+	blk->tnext = aop.jump;
+	blk->fnext = aop.fail;
+	oseek = seek;
 
 	blk->type = BLK_TYPE_HEAD;
 	if (aop.jump && !aop.fail)
 		blk->type = BLK_TYPE_BODY;
 	else
-	if (aop.jump && aop.fail)
-		blk->type = BLK_TYPE_BODY;
-	else
-	if (aop.type == AOP_TYPE_RET)
-		blk->type = BLK_TYPE_LAST;
+		if (aop.jump && aop.fail)
+			blk->type = BLK_TYPE_BODY;
+		else
+			if (aop.type == AOP_TYPE_RET)
+				blk->type = BLK_TYPE_LAST;
 
-        /* walk childs */
-        if (blk->tnext)
-                code_analyze_r_nosplit(prg, blk->tnext, depth-1);
-        if (blk->fnext)
-                code_analyze_r_nosplit(prg, blk->fnext, depth-1);
+	/* walk childs */
+	if (blk->tnext)
+		code_analyze_r_nosplit(prg, blk->tnext, depth-1);
+	if (blk->fnext)
+		code_analyze_r_nosplit(prg, blk->fnext, depth-1);
 
-        return 0;
+	return 0;
 }
 
 void analyze_spcc(const char *name)

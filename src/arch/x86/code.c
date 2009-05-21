@@ -27,6 +27,9 @@
 
 /* arch_aop for x86 */
 
+/* 64b dislen workaround */
+#include "arch/x86/udis86/types.h"
+#include "arch/x86/udis86/extern.h"
 
 // CMP ARG1
 // 837d0801        cmp dword [ebp+0x8], 0x1
@@ -144,7 +147,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->jump   = addr+6+bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24);//((unsigned long)((bytes+2))+6);
 			aop->fail   = addr+6;
 			aop->length = 6;
-			//aop->eob    = 1;
+			aop->eob    = 1;
 		} 
 		break;
 	case 0xcc: // int3
@@ -425,9 +428,16 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	//default:
 		//aop->type = AOP_TYPE_UNK;
 	}
-
-	//if (aop->length == 0)
-	aop->length = dislen((unsigned char *)bytes, 64); //instLength(bytes, 16, 0);
+		
+	if (config_get_i("asm.bits") == 64) {
+		static ud_t disasm_obj;
+		ud_set_mode(&disasm_obj, 64);
+		ud_set_pc(&disasm_obj, addr);
+		ud_set_input_buffer(&disasm_obj, (unsigned char *)bytes, 64);
+		ud_disassemble(&disasm_obj);
+		aop->length = ud_insn_len(&disasm_obj);
+	} else //if (aop->length == 0)
+		aop->length = dislen((unsigned char *)bytes, 64); //instLength(bytes, 16, 0);
 		//aop->length = instLength(bytes, 16, 0);
 	if (!(aop->jump>>33))
 		aop->jump &= 0xFFFFFFFF; // XXX may break on 64 bits here
