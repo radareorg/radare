@@ -618,6 +618,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 
 	code_analyze_r(prg, seek, --depth);
 #endif 
+	if (depth>10) depth=10;
 	if (config_get("graph.split")) {
 		code_analyze_r_nosplit(prg, seek, --depth);
 		code_analyze_r_split(prg, seek, --depth);
