@@ -360,9 +360,10 @@ CMD_DECL(analyze)
 			break;
 		case 'd':
 			if (input[2]=='v') {
-				radare_cmd_raw("agd > file.dot", 0);
-				radare_cmd_raw("!!dot -Tpng -o file.png file.dot", 0);
-				radare_cmd_raw("!!rsc view file.png", 0);
+				radare_cmd_raw("agd > .file.dot", 0);
+				radare_cmd_raw("!!dot -Tpng -o .file.png .file.dot", 0);
+				radare_cmd_raw("!!rsc view .file.png", 0);
+				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);
 			} else {
 				prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
 				list_add_tail(&prg->list, &config.rdbs);
@@ -857,9 +858,10 @@ CMD_DECL(graph)
 			break;
 		case 'd':
 			if (input[2]=='v') {
-				radare_cmd_raw("gud > file.dot", 0);
-				radare_cmd_raw("!!dot -T png -o file.png file.dot ", 0);
-				radare_cmd_raw("!!rsc view file.png", 0);
+				radare_cmd_raw("gud > .file.dot", 0);
+				radare_cmd_raw("!!dot -T png -o .file.png .file.dot ", 0);
+				radare_cmd_raw("!!rsc view .file.png", 0);
+				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);
 			} else ugraph_print_dot();
 			break;
 		case 'k':

@@ -1056,6 +1056,7 @@ char *radare_cmd_str(const char *cmd)
 	int newlen, fus = cons_flushable;
 	char *grep;
 
+	cons_flush();
 	cons_reset();
 	config_set_i("scr.buf", 1);
 

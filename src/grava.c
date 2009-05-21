@@ -62,28 +62,26 @@ void graph_viz(struct program_t *prg, int body)
 
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
-	cons_printf("\tnode [color=lightgray, style=filled shape=box];\n");
+	cons_printf("\tgraph [bgcolor=%s];\n", config_get("graph.bgcolor"));
+	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\"];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		if (b0->tnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n", b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
 		if (b0->fnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\"];\n", b0->addr, b0->fnext);
+			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n", b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
 		if (!b0->tnext && !b0->fnext)
 			cons_printf("\t\"0x%08llx\";\n", b0->addr);
-		cons_flush();
 		if (body) {
 			char *str = ugraph_get_str(b0->addr, b0->n_bytes, 1);
 			if (str) {
 				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", b0->addr, str);
-				cons_flush(); // we must flush this before radare_cmd_str or we loss the cons_buffer data
 				free(str);
 			}
 			if (b0->fnext) {
 				str = ugraph_get_str(b0->fnext, graph_get_bb_size(prg, b0->fnext), 1);
 				if (str) {
 					cons_printf(" \"0x%08llx\" [fillcolor=\"gray\" color=\"red\" label=\"%s\"]\n", b0->fnext, str); //(unsigned int)(ABS(b0->fnext-b0->addr)), str);
-					cons_flush();
 					free(str);
 				}
 			}
@@ -91,7 +89,6 @@ void graph_viz(struct program_t *prg, int body)
 				str = ugraph_get_str(b0->tnext, graph_get_bb_size(prg, b0->tnext), 1);
 				if (str) {
 					cons_printf(" \"0x%08llx\" [fillcolor=\"white\" color=\"green\" label=\"%s\"]\n", b0->tnext, str); //((unsigned int)ABS(b0->tnext-b0->addr)), str);
-					cons_flush();
 					free(str);
 				}
 			}
@@ -788,8 +785,8 @@ void ugraph_print_dot(int body)
 		ugraph_reset();
 
 	cons_strcat("digraph {\n");
-	cons_strcat("  node [color=lightblue2, style=filled shape=box];\n");
-	cons_flush();
+	cons_printf("  graph [bgcolor=%s];\n", config_get("graph.bgcolor"));
+	cons_strcat("  node [color=lightgray, style=filled shape=box fontname=\"Courier\"];\n");
 
 	list_for_each_prev(head, &(ug.edges)) {
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);
@@ -797,18 +794,15 @@ void ugraph_print_dot(int body)
 			char *str = ugraph_get_str(e->from, 32, 1);
 			if (str) {
 				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", e->from, str);
-				cons_flush(); // we must flush this before radare_cmd_str or we loss the cons_buffer data
 				free(str);
 			}
 			str = ugraph_get_str(e->to, 32, 1);
 			if (str) {
 				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", e->to, str);
-				cons_flush();
 				free(str);
 			}
 		}
 		cons_printf(" \"0x%08llx\" -> \"0x%08llx\" ;\n", e->from, e->to);
-		cons_flush();
 	}
 	cons_printf("}\n");
 }

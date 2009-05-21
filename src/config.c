@@ -1032,6 +1032,7 @@ void config_init(int first)
 	snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
 	config_set("dir.project", buf); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());
+	config_set("graph.bgcolor", "white");
 	config_set("graph.userdup", "false");
 	config_set("graph.color", "magic");
 	config_set("graph.split", "false"); // split blocks // SHOULD BE TRUE, but true algo is buggy
