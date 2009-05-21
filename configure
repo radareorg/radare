@@ -289,7 +289,7 @@ echo "checking target system type... ${TARGET}"
 [ "${CROSSBUILD}" = 1 ] && echo "using crosscompilation mode."
 
 split_host BUILD HOST TARGET
-[ -z "$ACRHOOK" ] && ACRHOOK=configure.hook
+[ -z "$ACRHOOK" ] && ACRHOOK=./configure.hook
 [ -e "$ACRHOOK" ] && . ${ACRHOOK}
 [ -n "${prefix}" ] && PREFIX=${prefix}
 echo "checking for working directories... ${WODIS}"
