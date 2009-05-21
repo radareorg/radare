@@ -168,14 +168,20 @@ int events_get()
 
 int events_init()
 {
-	return 0;
 	/* not supported */
+	return 0;
 }
 
 int events_get()
 {
-	return 0;
 	/* not supported */
+	return 0;
+}
+
+int events_init_all()
+{
+	/* not implemented */
+	return 0;
 }
 
 #endif
