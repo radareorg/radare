@@ -1,0 +1,23 @@
+#!/bin/sh
+# XXX ultra ugly script
+if [ -n "$PRGVIEW" ]; then
+  exec $PRGVIEW $@
+fi
+
+if [ -e /usr/bin/gqview ]; then
+  gqview $@
+else
+if [ -e /usr/bin/eog ]; then
+  eog $@
+else
+if [ -e /usr/bin/feh ]; then
+  feh $@
+else
+if [ -e /usr/bin/cacaview ]; then
+  gqview $@
+else
+  echo "No image viewer found"
+fi
+fi
+fi
+fi
