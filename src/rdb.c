@@ -94,11 +94,7 @@ struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 
 	list_for_each_prev(i, &(prg->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);
-		if (( addr >= bt->addr ) && (addr < (bt->addr+(u64)bt->n_bytes) ) ) {
-			#if 1
-			eprintf ("addr: %llx , %llx-%llx\n", addr,bt->addr,(bt->addr+(u64)bt->n_bytes));
-			#endif
-
+		if (( addr > bt->addr ) && (addr < (bt->addr+(u64)bt->n_bytes) ) ) {
 #if 0
 			next = bt->addr; //addr = calc_next_address(bt->addr, addr);
 			ptr = bt->bytes;
@@ -109,8 +105,8 @@ struct block_t *program_block_split_new(struct program_t *prg, u64 addr)
 				//if (aop.tnext != 0 && aop.fnext != 0) {
 				//}
 			}
-#endif
 eprintf("SPLIT NODE E!!!!! next=%08llx\n", next);
+#endif
 
 			bta = program_block_get_new (prg, addr);
 			bta->n_bytes = bt->n_bytes - (addr - bt->addr);
@@ -125,6 +121,12 @@ eprintf("SPLIT NODE E!!!!! next=%08llx\n", next);
 
 			bta->bytes = (u8*) malloc (bta->n_bytes);
 			memcpy(bta->bytes, bt->bytes + bt->n_bytes, bta->n_bytes);
+
+eprintf ("1: %llx-%llx j:%llx f:%llx\n", 
+		bt->addr,(bt->addr+(u64)bt->n_bytes), bt->tnext, bt->fnext);
+eprintf ("2: %llx-%llx j:%llx f:%llx\n", 
+		bta->addr,(bta->addr+(u64)bta->n_bytes), bta->tnext, bta->fnext);
+
 			#if 0
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);
 			printf ("addr: %lx , %lx-%lx, [%d]\n",

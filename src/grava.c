@@ -798,7 +798,7 @@ void ugraph_print_dot(int body)
 
 	cons_strcat("digraph {\n");
 	cons_printf("  graph [bgcolor=%s];\n", config_get("graph.bgcolor"));
-	cons_strcat("  node [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
+	cons_strcat("  node [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"8\"];\n");
 
 	list_for_each_prev(head, &(ug.edges)) {
 		struct ugraph_edge_t *e = list_entry(head, struct ugraph_edge_t, list);

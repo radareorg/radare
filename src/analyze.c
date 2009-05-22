@@ -262,6 +262,16 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 	ret = radare_read(0);
 
+	blf = program_block_split_new (prg, config.seek);
+	if ( blf != NULL ) {
+		eprintf("Block splitted at address 0x%08llx\n",config.seek+bsz);
+
+		bsz = blf->n_bytes;
+		aop.jump = blf->tnext;
+		aop.fail = blf->fnext;
+		aop.eob = 1;
+	}		
+
 	/* Walk for all bytes of current block */
 	for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
 		if (config.interrupted)
@@ -271,18 +281,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 		if (sz<=0) {
 			break;
 		}
-		blf = program_block_split_new (prg, config.seek+bsz);
-		if ( blf != NULL ) {
-			eprintf("Block splitted at address 0x%08llx\n",config.seek+bsz);
-			
-			bsz = blf->n_bytes;
-			aop.eob = 1;
-			if (blf->tnext)
-				aop.jump = blf->tnext;
-			if (blf->fnext)
-				aop.fail = blf->fnext;
-			break;
-		}		
+
 		if (aop.type == AOP_TYPE_CALL) {
 			program_block_add_call(prg, oseek, aop.jump);
 			if (callblocks)
@@ -621,7 +620,7 @@ struct program_t *code_analyze(u64 seek, int depth)
 
 	code_analyze_r(prg, seek, --depth);
 #endif 
-	if (depth>10) depth=10;
+	if (depth>30) depth=30;
 	if (config_get("graph.split")) {
 		code_analyze_r_nosplit(prg, seek, --depth);
 		code_analyze_r_split(prg, seek, --depth);

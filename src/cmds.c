@@ -349,7 +349,7 @@ CMD_DECL(analyze)
 		}
 		break;
 	case 'g':
-		depth = 10;
+		depth = config_get_i("graph.depth");
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: ag[.]\n");
