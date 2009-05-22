@@ -116,6 +116,7 @@ int radare_hack(const char *cmd);
 void rdb_help();
 void radare_fortunes();
 int radare_compare(unsigned char *f, unsigned char *d, int len);
+int radare_compare_hex(u64 addr, unsigned char *f, unsigned char *d, int len);
 int search_range(char *range);
 int search_from_file(char *file);
 int radare_read_at(u64 offset, unsigned char *data, int len);

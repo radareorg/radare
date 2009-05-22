@@ -1899,6 +1899,14 @@ CMD_DECL(compare)
 		radare_compare(buf, config.block, ret);
 		free(buf);
 		break;
+	case 'X':
+		{
+		u8 *buf = malloc(config.block_size);
+		radare_read_at(get_math(input+1), buf, config.block_size);
+		radare_compare_hex(config.seek+config.vaddr, buf, config.block, config.block_size);
+		free(buf);
+		}
+		break;
 	case ' ':
 		radare_compare((unsigned char*)input+1,config.block, strlen(input+1)+1);
 		break;
@@ -1918,6 +1926,7 @@ CMD_DECL(compare)
 		" cc [offset]   - code bindiff current block against offset\n"
 		" cd [value]    - compare a doubleword from a math expression\n"
 		" cx [hexpair]  - compare hexpair string\n"
+		" cX [addr]     - like 'cc' but using hexdiff output\n"
 		" cf [file]     - compare contents of file at current seek\n"
 		" cD [file]     - like above, but using radiff -b\n");
 		break;
@@ -2395,8 +2404,14 @@ CMD_DECL(search) {
 		eprintf("TODO\n");
 		break;
 	case 'P':
-		search_similar_pattern(atoi(text+1));
-		radare_seek(seek, SEEK_SET);
+		if (text[1]=='?') {
+			eprintf("Usage: /P [num]\n"
+			" Searchs for a block of blocksize bytes matching at least"
+			" 'num' bytes of the blocksize bytes\n");
+		} else {
+			search_similar_pattern(atoi(text+1));
+			radare_seek(seek, SEEK_SET);
+		}
 		break;
 	case 'p':
 		do_byte_pat(atoi(text+1));

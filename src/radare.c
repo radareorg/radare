@@ -1867,6 +1867,45 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 	return len-eq;
 }
 
+int radare_compare_hex(u64 addr, unsigned char *f, unsigned char *d, int len)
+{
+	int i, eq = 0;
+	char str0[256], str1[256], tmp[32];
+	int rowlen = 16;
+	int row = 0;
+
+	str0[0]='\0';
+	str1[0]='\0';
+	for(i=0;i<len;i++) {
+		if (i>0 && (i%rowlen)==0) {
+			cons_printf("0x%08llx %s | %s\n", addr+i, str0, str1);
+			str0[0]='\0';
+			str1[0]='\0';
+		}
+		if (f[i]!=d[i]) {
+#if 0
+			D cons_printf("0x%08llx (byte=%.2d)   %02x '%c'  ->  %02x '%c'\n",
+				config.seek+i, i+1,
+				f[i], (is_printable(f[i]))?f[i]:' ',
+				d[i], (is_printable(d[i]))?d[i]:' ');
+#endif
+			sprintf(tmp, "\x1b[7m%02x\x1b[0m", f[i]);
+			strcat(str0, tmp);
+			sprintf(tmp, "\x1b[7m%02x\x1b[0m", d[i]);
+			strcat(str1, tmp);
+		} else {
+			eq++;
+			sprintf(tmp, "%02x", f[i]);
+			strcat(str0, tmp);
+			strcat(str1, tmp);
+		}
+	}
+	cons_printf("0x%08llx %s | %s\n", addr+i, str0, str1);
+
+	eprintf("Compare %d/%d equal bytes\n", eq, len);
+	return len-eq;
+}
+
 int radare_go()
 {
 	u64 bsize;
