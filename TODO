@@ -15,9 +15,6 @@ TODO 1.4 ???
 pancake:
 * !mmap doesnt works well (we need to use mmap2 here)
 
-nibble:
-* pm 4x8x -> change ptr sizes
-
 * rax should support base64/7bit/LSBstego/...
 * cfg.vbar = p%
 * remove the ':' command

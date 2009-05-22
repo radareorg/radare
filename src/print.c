@@ -344,7 +344,6 @@ void print_mem_help()
 	" B - show 10 first bytes of buffer\n"
 	" d - %%d integer value (4 bytes)\n"
 	" D - double value (4 bytes)\n"
-	" w - word (16 bit hexa)\n"
 	" q - quadword (8 bytes)\n"
 	//" p - pointer reference\n"
 	" x - 0x%%08x hexadecimal value\n"
@@ -358,7 +357,7 @@ void print_mem_help()
 	" : - skip 4 bytes\n"
 	" {}- used to eval math expressions to repeat next fmt char\n"
 	" []- used to nest format structures registered with 'am'\n"
-	" 1,2,4,8 - pointer size (default is asm.size/8)\n"
+	" %1,%2,%4,%8 - type size (default is asm.bits/8)\n"
 	"NOTE: Use 'am' command to register inner structs\n");
 	/* TODO: add 1,2,4,8 pointer sizes support */
 }
@@ -426,7 +425,9 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	int nargs;
 	u64 paddr = 0LL;
 	const char *arg = fmt;
-	int ptrsize = config_get_i("asm.bits");
+	char hexfmt[32];
+	int ptrsize = (int)(config_get_i("asm.bits")/8);
+	int optrsize = ptrsize;
 	i = j = 0;
 
 	while(*arg && *arg==' ') arg = arg +1;
@@ -469,27 +470,63 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 		config.interrupted = 0;
 		for(idx=0;!config.interrupted && idx<len;idx++, arg=arg+1) {
 			addr = 0LL;
-			if (endian)
-				 addr = (u64)(*(buf+i))<<24   | (*(buf+i+1))<<16 | *(buf+i+2)<<8 | *(buf+i+3);
-			else     addr = (u64)(*(buf+i+3))<<24 | (*(buf+i+2))<<16 | *(buf+i+1)<<8 | *(buf+i);
+			switch (ptrsize) {
+			case 1:
+				addr =  (u64)(*(buf+i));
+				strcpy(hexfmt, "0x%02llx");
+				break;
+			case 2:
+				if (endian) 
+					addr =  (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
+				else
+					addr =  (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+				strcpy(hexfmt, "0x%04llx");
+				break;
+			case 4:
+				if (endian) 
+					addr =  (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
+							(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
+				else 
+					addr =  (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+				strcpy(hexfmt, "0x%08llx");
+				break;
+			case 8:
+				if (endian) 
+					addr =  (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
+							(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
+							(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
+							(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
+				else 
+					addr =  (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
+							(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
+							(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+				strcpy(hexfmt, "0x%016llx");
+			}
 			tmp = *arg;
 		feed_me_again:
 			if (tmp == 0 && last != '*')
 				break;
 			/* skip chars */
 			switch(tmp) {
-			case '1':
-				ptrsize = 8;
-				continue;
-			case '2':
-				ptrsize = 16;
-				continue;
-			case '4':
-				ptrsize = 32;
-				continue;
-			case '8':
-				ptrsize = 64;
-				continue;
+			case '%':
+				idx--;
+				arg = arg + 1;
+				switch(*arg) {
+				case '1':
+					ptrsize = 1;
+					continue;
+				case '2':
+					ptrsize = 2;
+					continue;
+				case '4':
+					ptrsize = 4;
+					continue;
+				case '8':
+					ptrsize = 8;
+					continue;
+				}
 			case ' ':
 				config.interrupted =1;
 				//i = len; // exit
@@ -531,9 +568,12 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 					*end='\0';
 					fmt = print_mem_get(arg+1);
 					if (fmt) {
+#if 0 
 						D cons_printf("0x%08llx = ", config.seek+i);
 						paddr = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
 						cons_printf("0x%08llx -> pm %s {\n", addr, fmt);
+#endif 
+						cons_printf("pm %s {\n", fmt);
 						/* XXX: this is 32bit pointer only FUCK! */
 						print_mem(addr, buf+i, config.block_size, fmt, endian); //config.endian);
 						cons_printf("}\n");
@@ -542,7 +582,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 					}
 					arg = end;
 					idx--;
-					i+=4;
+					i+=ptrsize;
 				}
 				continue;
 			}
@@ -569,13 +609,7 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				memcpy(&doub, buf+i, sizeof(double));
 				D cons_printf("%e = ", doub);
 				cons_printf("(double)");
-				i+=8;
 				}
-				break;
-			case 'q':
-				D cons_printf("0x%08llx = ", config.seek+i);
-				cons_printf("(qword)");
-				i+=8;
 				break;
 			case 'b':
 				D cons_printf("0x%08llx = ", config.seek+i);
@@ -593,34 +627,30 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 					if (is_printable(buf[j]))
 						cons_printf("%c", buf[j]);
 				cons_strcat(")");
-				i+=4;
+				i+=ptrsize;
+				ptrsize = optrsize;
 				break;
 			case 'd':
 				D cons_printf("0x%08llx = ", config.seek+i);
-				cons_printf("%d", addr);
-				i+=4;
+				cons_printf("%lld", addr);
+				ptrsize = optrsize;
+				i+=ptrsize;
 				break;
 			case 'x':
 				D cons_printf("0x%08llx = ", config.seek+i);
-				cons_printf("0x%08x ", addr);
-				i+=4;
+				cons_printf(hexfmt, addr);
+				i+=ptrsize;
+				ptrsize = optrsize;
 				break;
 			case 'X': {
-				u32 addr32 = (u32)addr;
 				char buf[128];
 				D cons_printf("0x%08llx = ", config.seek+i);
-				cons_printf("0x%08x ", addr32);
-				if (string_flag_offset(buf, (u64)addr32, -1))
-					cons_printf("; %s", buf);
-				i+=4;
-				} break;
-			case 'w':
-				D cons_printf("0x%08llx = ", config.seek+i);
-				if (endian)
-					 addr = (*(buf+i))<<8  | (*(buf+i+1));
-				else     addr = (*(buf+i+1))<<8 | (*(buf+i));
-				cons_printf("0x%04x ", addr);
-				i+=2;
+				cons_printf(hexfmt, addr);
+				if (string_flag_offset(buf, addr, -1))
+					cons_printf(" ; %s", buf);
+				i+=ptrsize;
+				ptrsize = optrsize;
+				} 
 				break;
 			case 'z': // zero terminated string
 				D cons_printf("0x%08llx = ", config.seek+i);
@@ -643,9 +673,11 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 				D cons_printf("0x%08llx = ", config.seek+i);
 				memset(buffer, '\0', 255);
 				radare_read_at((u64)addr, buffer, 248);
-				cons_printf("0x%08llx -> 0x%08llx ", (u64)config.seek+i, (u64)addr);
-				cons_printf("%s ", buffer);
-				i+=4;
+				cons_printf("0x%08llx -> ", (u64)config.seek+i);
+				cons_printf(hexfmt, addr);
+				cons_printf(" %s ", buffer);
+				i+=ptrsize;
+				ptrsize = optrsize;
 				break;
 			default:
 				/* ignore unknown chars */
