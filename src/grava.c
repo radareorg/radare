@@ -59,6 +59,7 @@ void graph_viz(struct program_t *prg, int body)
 {
 	struct block_t *b0;
 	struct list_head *head;
+	int withweight = config_get_i("graph.weight");
 
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
@@ -66,12 +67,19 @@ void graph_viz(struct program_t *prg, int body)
 	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
-		if (b0->tnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
-				b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
-		if (b0->fnext)
-			cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
-				b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
+		if (withweight) {
+			if (b0->tnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
+					b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
+			if (b0->fnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
+					b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
+		} else {
+			if (b0->tnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
+			if (b0->fnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\"];\n", b0->addr, b0->fnext);
+		}
 		if (!b0->tnext && !b0->fnext)
 			cons_printf("\t\"0x%08llx\";\n", b0->addr);
 		if (body) {
@@ -783,6 +791,8 @@ void ugraph_print_dot(int body)
 {
 	int i,j;
 	struct list_head *head, *pos;
+	int withweight = config_get_i("graph.weight");
+
 	if (!graphuserinit)
 		ugraph_reset();
 
@@ -804,7 +814,11 @@ void ugraph_print_dot(int body)
 				free(str);
 			}
 		}
-		cons_printf(" \"0x%08llx\" -> \"0x%08llx\" ;\n", e->from, e->to);
+		if (withweight) {
+			cons_printf(" \"0x%08llx\" -> \"0x%08llx\" ;\n", e->from, e->to);
+		} else {
+			cons_printf(" \"0x%08llx\" -> \"0x%08llx\" [weight=\"%d\"];\n", e->from, e->to, ABS(e->to-e->from));
+		}
 	}
 	cons_printf("}\n");
 }

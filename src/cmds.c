@@ -1916,11 +1916,10 @@ CMD_DECL(compare)
 		"Usage: c[?cdfx] [argument]\n"
 		" c  [string]   - compares a plain with escaped chars string\n"
 		" cc [offset]   - code bindiff current block against offset\n"
-		" cd [offset]   - compare a doubleword from a math expression\n" XXX WRONG
+		" cd [value]    - compare a doubleword from a math expression\n"
 		" cx [hexpair]  - compare hexpair string\n"
 		" cf [file]     - compare contents of file at current seek\n"
 		" cD [file]     - like above, but using radiff -b\n");
-#error TODO: implement compare count against 2 offsets
 		break;
 	default:
 		eprintf("Usage: c[?Ddxf] [argument]\n");
