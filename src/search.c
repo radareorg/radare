@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <@youterm.com>
  *       esteve <@eslack.org>
  *
@@ -63,6 +63,47 @@ void radare_search_seek_hit(int idx)
 
 	hit_idx += idx;
 	if (hit_idx<0) hit_idx=0;
+}
+
+int memcmpdiff(const u8 *a, const u8 *b, int len)
+{
+	int diff = 0;
+	int i;
+	for(i=0;i<len;i++) {
+		if (a[i]==b[i] && a[i]==0x00) {
+			/* ignore nulls */
+		} else if (a[i]!=b[i]) diff++;
+	}
+	return diff;
+}
+
+void search_similar_pattern(int count)
+{
+	u8 *block = malloc (config.block_size);
+	/* backup basic block */
+	radare_read(0);
+	memcpy (block, config.block, config.block_size);
+	radare_controlc ();
+	radare_read (1); // read next block
+	while (!config.interrupted && config.seek<config.size) {
+		int diff = memcmpdiff(config.block, block, config.block_size);
+		int equal = config.block_size-diff;
+// equal sera un numero petit quan diff sigui gran
+// quan equal sigui gran diff sera petit
+		if (equal >= count) { //count > equal) {
+		//if (count > equal) {
+			cons_printf("0x%08llx %d/%d\n", config.seek, equal, config.block_size);
+			cons_flush();
+			radare_read(1);
+		} else {
+			config.seek += 1; // skip diff bytes can be faster ??
+			//config.seek += diff; // skip diff bytes can be faster ??
+			int ret = radare_read(0);
+			if (ret<config.block_size)break;
+		}
+	}
+	radare_controlc_end ();
+	free (block);
 }
 
 // TODO: handle Control-C

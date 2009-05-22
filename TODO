@@ -9,6 +9,9 @@
 TODO 1.4 ???
 ==========
 
+* Implement an hexdump diff print function
+* Better 'cD' command (use gnu diff method, but take as size the smaller file)
+
 pancake:
 * !mmap doesnt works well (we need to use mmap2 here)
 

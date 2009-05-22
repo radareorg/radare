@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -547,17 +547,17 @@ struct program_t *program_open(char *file)
 
 void rdb_help()
 {
-	eprintf("Usage: g[?] [argument] (TODO)\n"
-	"  g?             ; show help\n"
-	"  g              ; list all RDBs loded in memory\n"
-	"  g  [rdb-file]  ; load graph rdb file as graph\n"
-	"  g -[idx]       ; removes an rdb indexed\n"
-	"  ga 0xaddr      ; generate graph at address\n"
-	"  gr[*]          ; show basic block information in raw or ra+\n"
-	"  gs [rdb-file]  ; save graph analysis as rdb\n"
-	"  gc [num]       ; show block disassembles of graph num\n"
-	"  gg [num]       ; graph graph number 'num'\n"
-	"  gm [range]     ; performs a merge between selected rdbs\n"
-	"  gd [a] [b]     ; rdb diff. generates a new rdb\n");
+	eprintf("Usage: g[?] [argument]\n"
+	" g?             ; show help\n"
+	" g              ; list all RDBs loded in memory\n"
+	" g  [rdb-file]  ; load graph rdb file as graph\n"
+	" g -[idx]       ; removes an rdb indexed\n"
+	" ga 0xaddr      ; generate graph at address\n"
+	" gr[*]          ; show basic block information in raw or ra+\n"
+	" gs [rdb-file]  ; save graph analysis as rdb\n"
+	" gc [num]       ; show block disassembles of graph num\n"
+	" gg [num]       ; graph graph number 'num'\n"
+	" gm [range]     ; performs a merge between selected rdbs\n"
+	" gd [a] [b]     ; rdb diff. generates a new rdb\n"
+	"NOTE: See 'gu?' to manage user graphs\n");
 }
-

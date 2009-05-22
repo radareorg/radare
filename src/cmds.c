@@ -1864,7 +1864,7 @@ CMD_DECL(compare)
 	unsigned int off;
 	unsigned char *buf;
 
-	//radare_read(0);
+	radare_read(0);
 	switch (input[0]) {
 	case 'c':
 		radare_compare_code(get_math(input+1), config.block, config.block_size);
@@ -1884,7 +1884,7 @@ CMD_DECL(compare)
 			return 0;
 		}
 		buf = (unsigned char *)malloc(config.block_size);
-		fread(buf, config.block_size, 1, fd);
+		fread(buf, 1, config.block_size, fd);
 		fclose(fd);
 		radare_compare(buf, config.block, config.block_size);
 		free(buf);
@@ -1902,17 +1902,28 @@ CMD_DECL(compare)
 	case ' ':
 		radare_compare((unsigned char*)input+1,config.block, strlen(input+1)+1);
 		break;
+	case 'D':
+		{
+		char cmd[1024];
+		sprintf(cmd, "radiff -b %s %s", ".curblock", input+2);
+		file_dump(".curblock", config.block, config.block_size);
+		radare_system(cmd);
+		unlink(".curblock");
+		}
+		break;
 	case '?':
 		cons_strcat(
 		"Usage: c[?cdfx] [argument]\n"
 		" c  [string]   - compares a plain with escaped chars string\n"
 		" cc [offset]   - code bindiff current block against offset\n"
-		" cd [offset]   - compare a doubleword from a math expression\n"
+		" cd [offset]   - compare a doubleword from a math expression\n" XXX WRONG
 		" cx [hexpair]  - compare hexpair string\n"
-		" cf [file]     - compare contents of file at current seek\n");
+		" cf [file]     - compare contents of file at current seek\n"
+		" cD [file]     - like above, but using radiff -b\n");
+#error TODO: implement compare count against 2 offsets
 		break;
 	default:
-		eprintf("Usage: c[?|d|x|f] [argument]\n");
+		eprintf("Usage: c[?Ddxf] [argument]\n");
 		return 0;
 	}
 
@@ -2370,6 +2381,7 @@ CMD_DECL(search) {
 		" /s [str] [str]  ; replace first string with the second one\n"
 		" /S [hex] [hex]  ; replace first hexpair string with the second one\n"
 		" /p len          ; search pattern of length = len\n"
+		" /P count        ; search patterns of size $$b matching count bytes at least against first block\n"
 		" /v numexpr      ; search a value (32 or 64 bit size) uses cfg.bigendian\n"
 		" /w foobar       ; search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /x A0 B0 43        ; hex byte pair binary search. (space between bytes are optional)\n"
@@ -2381,6 +2393,11 @@ CMD_DECL(search) {
 		break;
 	case 'e':
 		//regexp
+		eprintf("TODO\n");
+		break;
+	case 'P':
+		search_similar_pattern(atoi(text+1));
+		radare_seek(seek, SEEK_SET);
 		break;
 	case 'p':
 		do_byte_pat(atoi(text+1));
