@@ -437,8 +437,8 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	//if (aop->length == 0)
 		//aop->length = dislen((unsigned char *)bytes, 64); //instLength(bytes, 16, 0);
 		//aop->length = instLength(bytes, 16, 0);
-	if (!(aop->jump>>33))
-		aop->jump &= 0xFFFFFFFF; // XXX may break on 64 bits here
+	//if (!(aop->jump>>33))
+	//	aop->jump &= 0xFFFFFFFF; // XXX may break on 64 bits here
 
 	return aop->length;
 }
