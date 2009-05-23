@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007, 2008
  *       pancake <youterm.com>
+ *       nibble <.ds@gmail.com>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -304,7 +305,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 	oseek = seek;
 
 	/* walk childs */
-	if (aop.jump && (blf == NULL))
+	if (aop.jump)
 		code_analyze_r_split(prg, aop.jump, depth-1);
 	if (aop.fail)
 		code_analyze_r_split(prg, aop.fail, depth-1);

@@ -372,7 +372,7 @@ CMD_DECL(analyze)
 				radare_cmd_raw("!!rsc view .file.png", 0);
 				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);
 			} else {
-				prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
+				prg = code_analyze(config.seek, depth ); //config_get_i("graph.depth"));
 				list_add_tail(&prg->list, &config.rdbs);
 				graph_viz(prg, input[2]!='*');
 			}

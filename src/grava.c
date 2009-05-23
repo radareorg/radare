@@ -68,30 +68,27 @@ void graph_viz(struct program_t *prg, int body)
 	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
-		char *str = ugraph_get_str(b0->addr, b0->n_bytes, 1);
-		if (str && !strstr(str, "invalid")) {
-			free(str);
-			if (withweight) {
-				if (b0->tnext)
-					cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
-							b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
-				if (b0->fnext)
-					cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
-							b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
-			} else {
-				if (b0->tnext)
-					cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
-				if (b0->fnext)
-					cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\"];\n", b0->addr, b0->fnext);
-			}
-			if (!b0->tnext && !b0->fnext)
-				cons_printf("\t\"0x%08llx\";\n", b0->addr);
-			if (body) {
-				str = ugraph_get_str(b0->addr, b0->n_bytes, 1);
+		if (withweight) {
+			if (b0->tnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
+						b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
+			if (b0->fnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
+						b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
+		} else {
+			if (b0->tnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
+			if (b0->fnext)
+				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\"];\n", b0->addr, b0->fnext);
+		}
+		if (!b0->tnext && !b0->fnext)
+			cons_printf("\t\"0x%08llx\";\n", b0->addr);
+		if (body) {
+			char *str = ugraph_get_str(b0->addr, b0->n_bytes, 1);
+			if (str) {
 				cons_printf(" \"0x%08llx\" [label=\"%s\"]\n", b0->addr, str);
 				free(str);
 				if (b0->fnext) {
-
 					if ((bs = graph_get_bb_size(prg, b0->fnext))) {
 						str = ugraph_get_str(b0->fnext, bs, 1);
 						if (str) {
@@ -110,11 +107,11 @@ void graph_viz(struct program_t *prg, int body)
 					}
 				}
 			}
-#if 0
-			sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
-			ptr =  pipe_command_to_string(cmd);
-#endif
 		}
+#if 0
+		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
+		ptr =  pipe_command_to_string(cmd);
+#endif
 	}
 	cons_printf("}\n");
 }
