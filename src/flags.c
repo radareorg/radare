@@ -174,7 +174,7 @@ flag_t *flag_get_i(int id)
 void flag_show(flag_t *flag, int cmd_flag)
 {
 	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
-	cons_printf("0x%08llx\t %lld\t %s\n",
+	cons_printf("0x%08llx %lld %s\n",
 		flag->offset, flag->length, flag->name);
 	if (cmd_flag && flag->cmd!=NULL && *flag->cmd) {
 		u64 seek = config.seek;

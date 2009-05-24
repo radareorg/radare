@@ -75,6 +75,7 @@ format_info_t formats[] = {
 	{ '8', FMT_HEXQ,       "p8: 8bytes, 64 bit quad-word",  "8 bytes",     "(endian)"},
 	{ '9', FMT_EBASE64,    "p9: base64 decode (p6 to encode)",  "entire block",     "(endian)"},
 	{ 'x', FMT_HEXB,       "hexadecimal dump", "N byte",      "entire block" },
+	{ 'X', FMT_HEXPAIRS,   "hexpairs", "N byte",      "entire block" },
 	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
 	{ 'Z', FMT_WASC0,      "wide ascii null end",    NULL,          "until \\0" },
 	{ 0, 0, NULL, NULL, NULL }
@@ -1295,6 +1296,12 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		}
 		free(buf);
 		}
+	case FMT_HEXPAIRS:
+		for(i=0;i<len;i++) {
+			cons_printf("%02x", buf[i]);
+		}
+		cons_newline();
+		break;
 	case FMT_HEXBS:
 	case FMT_HEXB:
 		inc = config_get_i("scr.bytewidth");

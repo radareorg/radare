@@ -1270,7 +1270,12 @@ CMD_DECL(code)
 			data_xrefs_del(get_math(text+2)-config.vaddr, config.seek+config.vaddr, 0);
 			break;
 		default:
-			data_xrefs_add(get_math(text+1)-config.vaddr, config.seek+config.vaddr, 0);
+			{
+			u64 from = get_math(text+1);
+			if (from >= config.vaddr*2)
+				from -=config.vaddr;
+			data_xrefs_add(from, config.seek+config.vaddr, 0);
+			}
 			break;
 		}
 		break;
@@ -1495,9 +1500,6 @@ CMD_DECL(print)
 			format_show_help(MD_BLOCK|MD_ALWAYS|MD_EXTRA);
 		else	radare_print(input+1, fmt);
 		break;
-	case 'X':
-		radare_print(input+1, FMT_HEXBS);
-		break;
 	default:
 		if (input[1]=='f') {
 			struct data_t *data = data_get(config.seek); // TODO: use get_math(input+2) ???
@@ -1619,7 +1621,7 @@ CMD_DECL(flag)
 		if (input[1]=='-') {
 			flag_remove(text+1);
 		} else {
-			u64 here = config.seek;
+			u64 here = config.seek;//+config.vaddr;
 			u64 size = config.block_size;
 			char *s = strchr(text, ' ');
 			char *s2 = NULL;

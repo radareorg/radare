@@ -222,6 +222,12 @@ def dis(num, addr=None):
 		return r.cmd("pd %d"%num)
 	return r.cmd("pd %d @ 0x%x"%(num,addr))
 
+def bytes(addr=None):
+	"""
+	Returns a zero-terminated string found in current seek
+	"""
+	return r.cmd("pX")
+
 def str(addr=None):
 	"""
 	Returns a zero-terminated string found in current seek
@@ -233,22 +239,22 @@ def str(addr=None):
 def dword(num, addr=None):
 	if addr == None:
 		return r.cmd("p64 %d"%num).strip()
-	return r.cmd("p64 %d @ 0x%x"%(num,addr)).strip()
+	return r.cmd("p8 %d @ 0x%x"%(num,addr)).strip()
 
 def word(num, addr=None):
 	if addr == None:
 		return r.cmd("p32 %d"%num).strip()
-	return r.cmd("p32 %d @ 0x%x"%(num,addr)).strip()
+	return r.cmd("p4 %d @ 0x%x"%(num,addr)).strip()
 
 def half(num, addr=None):
 	if addr == None:
 		return r.cmd("p16 %d"%num).strip()
-	return r.cmd("p16 %d @ 0x%x"%(num,addr)).strip()
+	return r.cmd("p2 %d @ 0x%x"%(num,addr)).strip()
 
 def hex(num, addr=None):
 	if addr == None:
-		return r.cmd("p8 %d"%num).strip()
-	return r.cmd("p8 %d @ 0x%x"%(num,addr)).strip()
+		return r.cmd("p1 %d"%num).strip()
+	return r.cmd("p1 %d @ 0x%x"%(num,addr)).strip()
 
 def eval_get(key):
 	return r.cmd("eval %s"%key).strip()

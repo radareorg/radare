@@ -609,6 +609,9 @@ int radare_cmd_raw(const char *tmp, int log)
 	if (input[0] == ':') {
 		config.verbose = config_get_i("cfg.verbose")^1;
 		config_set("cfg.verbose", (config.verbose)?"true":"false");
+		// TODO: drop color here?
+		//config.color = 0; //config_get_i("scr.color")^1;
+		//config_set("scr.color", (config.color)?"true":"false");
 		input = input+1;
 	}
 
@@ -1231,13 +1234,6 @@ int radare_cmd(char *input, int log)
 
 
 	if (config.skip) return 0;
-
-	// TODO: move to raw?
-	if (input[0] == ':') {
-		config.verbose = config_get_i("cfg.verbose")^1;
-		config_set("cfg.verbose", (config.verbose)?"true":"false");
-		input = input + 1;
-	}
 
 	/* repeat stuff */
 	repeat = 1;

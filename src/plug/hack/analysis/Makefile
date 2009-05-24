@@ -1,2 +1,3 @@
 all:
-	radare -i test.py /bin/ls
+	gcc h.c
+	radare -i test.py a.out

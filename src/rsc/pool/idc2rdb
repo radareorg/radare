@@ -6,10 +6,11 @@
 #      MakeRptCmt      (0X804C1B6,     "comentari chachi\n");
 #
 
-while(<STDIN>) {
+open FD, "<".$ARGV[0] or die "Cannot open file\n";
+while(<FD>) {
 	$str=$_;
 	if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {
-		print "f idc_$2 @ 0x$1\n";
+		print "f sym.$2 @ 0x$1\n";
 	}
 	elsif ($str=~/MakeRptCmt[^X]*.([^,]*)[^"]*.([^"]*)/) {
 		$cmt = $2;
