@@ -235,5 +235,97 @@ class BasicBlocks():
 	def __init__(self, addr):
 		self.update(addr);
 
+# opcodes
+
+class Opcode():
+	def assemble(addr, op):
+		r.cmd("wa %s@%d"%(op,addr))
+	assemble = staticmethod(assemble)
+
+	def disassemble(addr, n):
+		return r.cmd("pd %s@%d"%(n,addr))
+	disassemble = staticmethod(disassemble)
+
+	def __init__(self):
+		self.opcode = ''
+		self.addr = 0
+		self.size = 0
+		self.stackop = ''
+		self.bytes = ''
+		self.type = ''
+		self.ref = 0
+		self.j_true = 0
+		self.j_false = 0
+
+	def __init__(self, addr):
+		for line in r.cmd("ao@%s"%addr):
+			words = line.split('=')
+			words[0] = words[0][:-1] # strip ' '
+			if words[0] == 'opcode':
+				self.opcode = words[1]
+			elif words[0] == 'size':
+				self.size = eval(words[1])
+			elif words[0] == 'stackop':
+				self.stackop = words[1]
+			elif words[0] == 'type':
+				self.type = words[1]
+			elif words[0] == 'bytes':
+				self.bytes = words[1]
+			elif words[0] == 'offset':
+				self.addr = words[1]
+			elif words[0] == 'ref':
+				self.ref = eval(words[1])
+			elif words[0] == 'jump':
+				self.j_true = eval(words[1])
+			elif words[0] == 'fail':
+				self.j_false = eval(words[1])
+
+class Opcodes():
+	def update(self, addr, endaddr):
+		self.list = []
+		while addr < endaddr:
+			op = Opcode(addr)
+			self.list.append(op)
+			addr = addr + op.size
+
+	def __init__(self, addr, endaddr):
+		self.update(addr, endaddr)
+
+# graph
+class Graph():
+	def make_dot(addr, file):
+		r.cmd("s %s"%addr)
+		r.cmd("agd %s"%file)
+	make_dot = staticmethod(make_dot)
+
+	def make_png(addr, file):
+		r.cmd("s %s"%addr)
+		r.cmd("agdv %s"%file)
+	make_png = staticmethod(make_png)
+
+	def add_node(addr, size, cmd):
+		r.cmd("gun %s %s %s"%(addr, size, cmd))
+
+	def add_edge(addr, endaddr):
+		r.cmd("gue %s %s"%(addr, endaddr))
+
+	def reset():
+		r.cmd("gur")
+
+	def view():
+		r.cmd("guv")
+
+	def dot(file):
+		r.cmd("gud > %s"%file)
+	add_node = staticmethod(add_node)
+	add_edge = staticmethod(add_edge)
+	reset = staticmethod(reset)
+	view = staticmethod(view)
+	
+# vm
+class VM():
+	def __init__(self):
+		print "VM : TODO"
+
 def idc_import(file):
 	r.cmd(".!rsc idc2rdb %s"%file)

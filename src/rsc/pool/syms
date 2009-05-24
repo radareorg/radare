@@ -6,7 +6,7 @@
 TARGET="$1"
 [ -z "$TARGET" ] && TARGET="-h"
 if [ "$TARGET" = "-h" ]; then
-	echo "Usage: rsc syms [file]\n"
+	echo "Usage: rsc syms [file]"
 	exit 1
 fi
 

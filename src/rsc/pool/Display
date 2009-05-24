@@ -73,15 +73,18 @@ fi
 if [ $DFTYPE = "raw" ]
 	then
 	COUNTB=$( echo $IMSIZE | sed -e "s/x/*/" | bc )
-	TMPFF=/tmp/$RANDOM.gray
+	TMPFF=`mktemp` #/tmp/$RANDOM.gray
+	rm -f $TMPFF
+	TMPFF="${TMPFF}.gray"
 	rm -f $TMPFF
 	mkfifo $TMPFF
 	dd if="$FILE" of=$TMPFF count=$COUNTB bs=1 skip=$OFFSET &
 	display -size $IMSIZE -depth $DEPTH $TMPFF
 	rm -f $TMPFF
 else 
-	TMPFF=/tmp/$RANDOM.$DFTYPE
+	TMPFF=`mktemp`.
 	rm -f $TMPFF
+	TMPFF="${TMPFF}.$DFTYPE"
 	mkfifo $TMPFF
 	dd if="$FILE" of=$TMPFF count=$BSIZE bs=1 skip=$OFFSET &
 	display $TMPFF

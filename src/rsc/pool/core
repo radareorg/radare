@@ -12,8 +12,8 @@ else
 		gcore $1
 	else
 		PID=$1
-		CORE="core.$PID.$RANDOM"
-		CMDFILE="/tmp/.core-gen.$RANDOM"
+		CORE="core.$PID"
+		CMDFILE="/tmp/.core-gen"
 		echo "generate-core-file $CORE
 		quit" > $CMDFILE
 		gdb -x $CMDFILE /proc/$PID/exe $PID 2>&1 >/dev/null

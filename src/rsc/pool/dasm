@@ -14,7 +14,7 @@ if [ "$SYNTAX" = "intel" ]; then
 	OBJDUMP="$OBJDUMP -M intel"
 fi
 
-FILE="/tmp/.dasm.$RANDOM"
+FILE=`mktemp`
 [ "$1" = "-h" ] && CODE=""
 if [ "$CODE" = '-' ]; then
 	cat > $FILE

@@ -53,12 +53,14 @@ int cons_lines = 0;
 int cons_noflush = 0;
 #define CONS_BUFSZ 0x4f00
 
-// XXX rename to cons_stdout_open
+// TODO rename to cons_stdout_open
 void stdout_open(char *file)
 {
-	int fd = open(file, O_RDONLY);
-	if (fd==-1)
+	int fd = open(file, O_RDWR|O_CREAT, 0644);
+	if (fd==-1) {
+eprintf("CANNOT OPEN FILE(%s)\n", file);
 		return;
+	}
 	cons_stdout_file = fd;
 	dup2(1, cons_stdout_fd);
 	//close(1);
@@ -67,8 +69,9 @@ void stdout_open(char *file)
 
 void stdout_close()
 {
+	//if (cons_stdout_fd != 1)
+	//	close(cons_stdout_fd);
 	dup2(cons_stdout_fd, 1);
-	//close(stdout_file);
 }
 
 const char *cons_palette_default = "7624 6646 2378 6824 3623";

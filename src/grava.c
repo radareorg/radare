@@ -65,7 +65,7 @@ void graph_viz(struct program_t *prg, int body)
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
 	cons_printf("\tgraph [bgcolor=%s];\n", config_get("graph.bgcolor"));
-	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"10\"];\n");
+	cons_printf("\tnode [color=lightgray, style=filled shape=box fontname=\"Courier\" fontsize=\"8\"];\n");
 	list_for_each_prev(head, &(prg->blocks)) {
 		b0 = list_entry(head, struct block_t, list);
 		if (withweight) {

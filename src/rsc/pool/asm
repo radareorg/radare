@@ -9,7 +9,7 @@ CODE="$1"
 CODE=`echo ${CODE} | sed -e 's,;,\n,g'`
 [ -z "${SYNTAX}" ] && SYNTAX="intel"
 
-FILE="/tmp/.asm.$RANDOM"
+FILE=`mktemp`
 
 [ "$1" = "-h" ] && CODE=""
 if [ -z "${CODE}" ]; then

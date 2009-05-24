@@ -9,6 +9,8 @@
 TODO 1.4 ???
 ==========
 
+* set flags to jumps to the middle of instructions while analyzing code (.af*)
+* There are problems when using '>' from python (cons issue)
 * Implement an hexdump diff print function
 * Better 'cD' command (use gnu diff method, but take as size the smaller file)
 

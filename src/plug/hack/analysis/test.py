@@ -30,6 +30,9 @@ for f in fs.list:
 	print "0x%08x: size=%s name=%s"%(f.addr, f.size, f.name)
 	bb = BasicBlocks(f.addr)
 	print "   ==> Basic blocks: %d"%len(bb.list)
+	print "   ==> Disassembly:"
+	print r.cmd("pd@%d:%d"%(f.addr,f.size))
+	Graph.make_png(f.addr, "%s.png"%f.name)
 
 print "Imports:"
 ss = Imports()

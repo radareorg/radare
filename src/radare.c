@@ -1322,7 +1322,7 @@ int radare_interpret(const char *file)
 		fgets(buf, 1024, fd);
 		if (buf[0]=='\0') break;
 		len = strlen(buf);
-		if (len>0) buf[strlen(buf)-1]='\0';
+		if (len>0) buf[len-1]='\0';
 		radare_cmd(buf, 0);
 		config.verbose = 0;
 		config_set("cfg.verbose", "false");

@@ -16,7 +16,7 @@ fi
 if [ -z "${BREAKPOINT}" ]; then
 	BREAKPOINT=`readelf -h ${PROGRAM} | grep Entry | awk '{print $4}'`
 	if [ -z "${BREAKPOINT}" ]; then
-		echo "ERROR: Cannot determine breakpoint.\n";
+		echo "ERROR: Cannot determine breakpoint.";
 		exit 1
 	fi
 fi

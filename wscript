@@ -219,6 +219,7 @@ def build(bld):
 	#	os.system("echo unknown clean")
 
 	bld.install_files('${PREFIX}/lib/python2.5', 'src/plug/hack/radare.py')
+	bld.install_files('${PREFIX}/lib/python2.6', 'src/plug/hack/radare.py')
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.lua')
 	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.rb')
 	# RSC scripts

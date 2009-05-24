@@ -37,7 +37,7 @@ if [ -n "`echo ${TARGET}| grep -e '^-'`" ]; then
 fi
 [ -z "$TARGET" ] && show_help
 
-OFILE="/tmp/.rfile.$RANDOM"
+OFILE=`mktemp`
 filter="cut -d : -f 2- | sed -e s,.,,"
 if [ -n "${OFFSET}" ]; then
 	out=`dd if=${TARGET} of=$OFILE bs=1 count=4096 skip=${OFFSET} 2>&1`
@@ -45,3 +45,4 @@ if [ -n "${OFFSET}" ]; then
 else
 	file -m ${EME} ${TARGET} | eval $filter
 fi
+rm -f $OFILE

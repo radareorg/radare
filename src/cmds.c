@@ -353,12 +353,13 @@ CMD_DECL(analyze)
 		switch(input[1]) {
 		case '?':
 			eprintf("Usage: ag[.]\n");
-			eprintf(" ag  - open graph window\n");
-			eprintf(" agd  - outputs dot graph format for code analysis\n");
-			eprintf(" agd* - like above but only addresses (without body)\n");
-			eprintf(" agdv - use agd > file.dot && !!dot -Tpng -ofile.png file.dot && rsc view file.png\n");
+			eprintf(" ag          - open graph window\n");
+			eprintf(" agd [file]  - outputs dot graph format for code analysis\n");
+			eprintf(" agd*        - like above but only addresses (without body)\n");
+			eprintf(" agdv [file] - use agd > file.dot && !!dot -Tpng -ofile.png file.dot && rsc view file.png\n");
 			break;
 		case 'd':
+			{ char *file = strchr(input+2, ' ');
 			if (input[2]=='v') {
 				char *oprof = strdup(config_get("asm.profile"));
 				int ocolor = config_get_i("scr.color");
@@ -368,13 +369,35 @@ CMD_DECL(analyze)
 				config_set("asm.profile", oprof);
 				config_set_i("scr.color", ocolor);
 				if (oprof) free(oprof);
-				radare_cmd_raw("!!dot -Tpng -o .file.png .file.dot", 0);
-				radare_cmd_raw("!!rsc view .file.png", 0);
+				if (file && file[1]) {
+					char buf[1024];
+					radare_cmd("agd .file.dot", 0);
+					radare_cmd_raw("!!dot -Tpng -o .file.png .file.dot", 0);
+				} else {
+					radare_cmd_raw("!!dot -Tpng -o .file.png .file.dot", 0);
+					radare_cmd_raw("!!rsc view .file.png", 0);
+				}
 				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);
 			} else {
-				prg = code_analyze(config.seek, depth ); //config_get_i("graph.depth"));
-				list_add_tail(&prg->list, &config.rdbs);
-				graph_viz(prg, input[2]!='*');
+				if (file && file[1]) {
+					int ofd, fd = open(file+1, O_RDWR|O_CREAT, 0644);
+					if (fd!=-1) {
+						ofd = dup(1);
+						dup2(fd, 1);
+						radare_cmd("agd", 0);
+						stdout_close();
+						dup2(ofd, 1);
+						close(fd);
+						close(ofd);
+					} else {
+						eprintf("Cannot open file '%s'\n", file+1);
+					}
+				} else {
+					prg = code_analyze(config.seek, depth ); //config_get_i("graph.depth"));
+					list_add_tail(&prg->list, &config.rdbs);
+					graph_viz(prg, input[2]!='*');
+				}
+			}
 			}
 			break;
 		default:
@@ -470,7 +493,7 @@ CMD_DECL(analyze)
 			pas_aop(config.arch, config.seek, config.block, 16, NULL, food, 0);
 			sz = arch_aop(config.vaddr + config.seek, config.block, &aop);
 
-			cons_printf("pas = %s\n", food);
+			cons_printf("opcode = %s\n", food);
 			cons_printf("index = %d\n", depth_i);
 #if 0
 			cons_printf("opcode = ");

@@ -37,7 +37,7 @@ chk "destination" "$B"
 
 B2="$B"
 if [ "$A" = "$B" ]; then
-	B2=".$B.$RANDOM"
+	B2=`mktemp`
 	cp $B $B2
 fi
 
