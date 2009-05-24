@@ -1521,7 +1521,7 @@ CMD_DECL(quit)
 {
 	switch(input[0]) {
 	case '!':
-		exit(1);
+		exit(atoi(input+1));
 	case '?':
 		cons_strcat(
 		"Usage: q[!]\n"
@@ -1529,7 +1529,7 @@ CMD_DECL(quit)
 		" q!     ; quit radare NOW!\n");
 		break;
 	default:
-		radare_exit();
+		radare_exit(atoi(input+1));
 	}
 	return 0;
 }

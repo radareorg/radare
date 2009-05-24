@@ -367,5 +367,5 @@ def graph(addr=None):
 def cmd(str):
 	return r.cmd(str)
 
-def quit():
-	r.cmd("q!")
+def quit(num):
+	r.cmd("q! %d"%num)

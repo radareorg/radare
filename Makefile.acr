@@ -112,8 +112,10 @@ install:
 	-mkdir ${LIBDIR}/radare
 	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
 	-mkdir -p ${LIBDIR}/python2.5/site-packages
+	-mkdir -p ${LIBDIR}/python2.6/site-packages
 	-mkdir -p ${LIBDIR}/ruby1.8
 	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.5/site-packages
+	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.6/site-packages
 	-cp -rf src/plug/hack/radare.rb ${LIBDIR}/ruby1.8/
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##

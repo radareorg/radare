@@ -112,11 +112,9 @@ void radare_init()
 	plugin_init();
 }
 
-void radare_exit()
+void radare_exit(int res)
 {
-	int ret;
-
-	ret = radare_close();
+	int ret = radare_close();
 
 	if (ret==-2)
 		return;
@@ -144,7 +142,7 @@ void radare_exit()
 		}
 #endif
 	}
-	exit(0);
+	exit(res);
 }
 
 u8 *radare_block()
@@ -223,7 +221,6 @@ void radare_sync()
 	if (config.size!=-1) {
 		if (config.block_size > config.size)
 			radare_set_block_size_i(config.size);
-			//config.block_size = config.size;
 
 		if (config.seek > config.size) {
 			config.seek  = config.size;
@@ -236,7 +233,6 @@ void radare_sync()
 			config.block_size = limit;
 		}
 	}
-
 }
 
 int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, u64 offset, const char *match);
@@ -452,9 +448,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	//				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 	//					continue;
 
-	radare_set_block_size_i(tmpbsz);
-	radare_sync(); // XXX MUST BE CALLED 
-
+					radare_set_block_size_i(tmpbsz);
+					//radare_sync(); // XXX MUST BE CALLED 
 					config.seek = flag->offset;
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
 					//radare_read(0);
@@ -474,8 +469,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	//eprintf("polla(%s)(%s)\n", flag->name, word);
 					if (word[0]=='\0' || strstr(flag->name, word) != NULL) {
 						config.seek = flag->offset;
-	radare_set_block_size_i(tmpbsz);
-	radare_sync(); // XXX MUST BE CALLED 
+					radare_set_block_size_i(tmpbsz);
+					//radare_sync(); // XXX MUST BE CALLED 
 						radare_read(0);
 						cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
 						radare_cmd(cmd,0);
@@ -538,7 +533,7 @@ void radare_fortunes()
 	}
 }
 
-int cmd_level = 0;
+static int cmd_level = 0;
 int radare_cmd_raw(const char *tmp, int log)
 {
 	int fd = -1;
@@ -1077,6 +1072,7 @@ char *radare_cmd_str(const char *cmd)
 	cons_reset();
 	config_set_i("scr.buf", 1);
 
+	cons_grepbuf_end();
 	dcmd = strdup ( cmd );
 		grep = strchr(dcmd, '~');
 		if (grep) {

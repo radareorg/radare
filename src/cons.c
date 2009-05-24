@@ -786,19 +786,40 @@ begin:
 	//	grepstr = grepstrings[i];
 	//	if (grepstr == NULL)
 	//		break;
-	hit=0;
-	if ( (!grepneg && strstr(buf, grepstr))
-	|| (grepneg && !strstr(buf, grepstr))) {
+	if ( (!grepneg && strstr(buf, grepstr)) || (grepneg && !strstr(buf, grepstr)))
 		hit = 1;
-	}
+	else hit = 0;
 	//}
 
-donotline = 0;
+	donotline = 0;
 	if (hit) {
 		if (grepline != -1) {
 			if (grepline==lines) {
+		if (greptoken != -1) {
+			char *tok = NULL;
+			char *ptr = buf;
+			for (i=0; i<linelen; i++) for (j=0;j<6;j++)
+				if (ptr[i] == delims[j][0])
+					ptr[i] = ' ';
+			tok = ptr;
+			for (i=0;tok != NULL && i<=greptoken;i++) {
+				if (i==0) tok = (char *)strtok(ptr, " ");
+				else tok = (char *)strtok(NULL, " ");
+			}
+			if (tok) {
+				toklen = strlen(tok);
+				len -= (linelen-toklen);
+				strbcpy(buf, tok);
+				memcpy(buf+toklen, "\n", 1);
+				if (!n) return len;
+				strbcpy(buf+toklen+1, buf+linelen); //n+1);
+				buf = buf+toklen+1;
+				goto begin;
+			}
+		} else { 
 				len = strlen(obuf);
 				return len;
+		}
 			} else {
 				donotline = 1;
 				lines++;
@@ -845,6 +866,9 @@ donotline = 0;
 			goto begin;
 		}
 	}
+	grepstr = NULL;
+	greptoken = -1;
+	grepline = -1;
 	return len;
 }
 
@@ -901,6 +925,14 @@ void cons_grep(const char *str)
 	if (grephigh == NULL || *grephigh == '\0')
 		grephigh = strdup(config_get("scr.grephigh"));
 #endif
+}
+
+void cons_grepbuf_end()
+{
+	greptoken = -1;
+	grepline = -1;
+	efree(&grepstr);
+	efree(&grephigh);
 }
 
 char *str_replace(char *str, char *from, char *to, int str_len)

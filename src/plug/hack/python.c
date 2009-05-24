@@ -100,7 +100,7 @@ static PyObject * Radare_cmd(Radare* self, PyObject *args)
 	PyObject *result;
 	char *str, *cmd = NULL;
 
-	if (!	PyArg_ParseTuple(args, "s", &cmd))
+	if (!PyArg_ParseTuple(args, "s", &cmd))
 		return NULL;
 
 	if (rs == NULL)
@@ -109,6 +109,10 @@ static PyObject * Radare_cmd(Radare* self, PyObject *args)
 	str = rs(cmd);
 	if (str == NULL)
 		str = py_nullstr;
+	else {
+		int len = strlen(str)-1;
+		if (str[len]=='\n') str[len]='\0';
+	}
 
 	result = PyString_FromString(str);
 
