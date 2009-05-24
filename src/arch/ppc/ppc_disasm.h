@@ -1,15 +1,17 @@
-/* $VER: ppc_disasm.h V1.4 (29.08.2001)
+/* $VER: ppc_disasm.h V1.5 (23.05.2009)
  *
  * Disassembler module for the PowerPC microprocessor family
- * Copyright (c) 1998-2001  Frank Wille
+ * Copyright (c) 1998-2001,2009  Frank Wille
  *
- * ppc_disasm.c is freeware and may be freely redistributed as long as
- * no modifications are made and nothing is charged for it.
- * Non-commercial usage is allowed without any restrictions.
- * EVERY PRODUCT OR PROGRAM DERIVED DIRECTLY FROM MY SOURCE MAY NOT BE
+ * ppc_disasm.h is freeware and may be freely redistributed and modified
+ * for non-commercial usage, as long as the above copyright of the original
+ * author is preserved and appears in the documentation or the program itself.
+ * EVERY PRODUCT OR PROGRAM DERIVED DIRECTLY FROM THIS SOURCE MAY NOT BE
  * SOLD COMMERCIALLY WITHOUT PERMISSION FROM THE AUTHOR.
  *
  *
+ * v1.5  (23.05.2009) phx
+ *       Modified license.
  * v1.4  (29.08.2001) phx
  *       AltiVec support.
  * v0.1  (23.05.1998) phx
@@ -25,7 +27,7 @@
 
 /* version/revision */
 #define PPCDISASM_VER 1
-#define PPCDISASM_REV 4
+#define PPCDISASM_REV 5
 
 
 /* typedefs */
@@ -40,8 +42,14 @@ typedef unsigned int ppc_word;
 #define BIGENDIAN
 #endif
 
-/* XXX FORCED */
-#define BIGENDIAN
+#include "../../../global.h"
+#if LIL_ENDIAN
+#define LITTLEENDIAN 1
+#define BIGENDIAN 0
+#else
+#define BIGENDIAN 1
+#define LITTLEENDIAN 0
+#endif
 
 #if !defined(BIGENDIAN) && !defined(LITTLEENDIAN)
 #error Define either BIGENDIAN or LITTLEENDIAN!

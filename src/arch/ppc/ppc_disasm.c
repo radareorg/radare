@@ -1,15 +1,17 @@
-/* $VER: ppc_disasm.c V1.4 (29.08.2001)
+/* $VER: ppc_disasm.c V1.5 (23.05.2009)
  *
  * Disassembler module for the PowerPC microprocessor family
- * Copyright (c) 1998-2001  Frank Wille
+ * Copyright (c) 1998-2001,2009  Frank Wille
  *
- * ppc_disasm.c is freeware and may be freely redistributed as long as
- * no modifications are made and nothing is charged for it.
- * Non-commercial usage is allowed without any restrictions.
- * EVERY PRODUCT OR PROGRAM DERIVED DIRECTLY FROM MY SOURCE MAY NOT BE
+ * ppc_disasm.c is freeware and may be freely redistributed and modified
+ * for non-commercial usage, as long as the above copyright of the original
+ * author is preserved and appears in the documentation or the program itself.
+ * EVERY PRODUCT OR PROGRAM DERIVED DIRECTLY FROM THIS SOURCE MAY NOT BE
  * SOLD COMMERCIALLY WITHOUT PERMISSION FROM THE AUTHOR.
  *
  *
+ * v1.5  (23.05.2009) phx
+ *       Modified license.
  * v1.4  (29.08.2001) phx
  *       AltiVec support.
  * v1.3  (09.03.2001) phx
@@ -136,6 +138,7 @@ static void imm(struct DisasmPara_PPC *dp,ppc_word in,int uimm,int type)
 /* type 2: S/D register is ignored (trap,cmpi) */
 /* type 3: A register is ignored (li) */
 {
+  char *s;
   int i = (int)(in & 0xffff);
 
   dp->type = PPCINSTR_IMM;
@@ -245,7 +248,7 @@ static void trapi(struct DisasmPara_PPC *dp,ppc_word in,unsigned char dmode)
 {
   char *cnd;
 
-  if ((cnd = trap_condition[PPCGETD(in)])) {
+  if (cnd = trap_condition[PPCGETD(in)]) {
     dp->flags |= dmode;
     sprintf(dp->opcode,"t%c%s",dmode?'d':'w',cnd);
     imm(dp,in,0,2);
@@ -264,7 +267,7 @@ static void cmpi(struct DisasmPara_PPC *dp,ppc_word in,int uimm)
     if (i)
       dp->flags |= PPCF_64;
     sprintf(dp->opcode,"%si",cmpname[uimm*2+i]);
-    if ((i = (int)PPCGETCRD(in))) {
+    if (i = (int)PPCGETCRD(in)) {
       sprintf(oper,"cr%c,",'0'+i);
       dp->operands += 4;
     }
@@ -345,7 +348,7 @@ static void bc(struct DisasmPara_PPC *dp,ppc_word in)
 
   if (d >= 0x8000)
     d -= 0x10000;
-  if ((offs = branch(dp,in,"",(in&2)?1:0,d))) {
+  if (offs = branch(dp,in,"",(in&2)?1:0,d)) {
     oper += offs;
     *oper++ = ',';
   }
@@ -458,7 +461,7 @@ static void cmp(struct DisasmPara_PPC *dp,ppc_word in)
     if (i)
       dp->flags |= PPCF_64;
     strcpy(dp->opcode,cmpname[((in&PPCIDX2MASK)?2:0)+i]);
-    if ((i = (int)PPCGETCRD(in)))
+    if (i = (int)PPCGETCRD(in))
       oper += sprintf(oper,"cr%c,",'0'+i);
     ra_rb(oper,in);
   }
@@ -472,7 +475,7 @@ static void trap(struct DisasmPara_PPC *dp,ppc_word in,unsigned char dmode)
   char *cnd;
   int to = (int)PPCGETD(in);
 
-  if ((cnd = trap_condition[to])) {
+  if (cnd = trap_condition[to]) {
     dp->flags |= dmode;
     sprintf(dp->opcode,"t%c%s",dmode?'d':'w',cnd);
     ra_rb(dp->operands,in);
@@ -881,11 +884,16 @@ ppc_word *PPC_Disassemble(struct DisasmPara_PPC *dp, int endian)
   if (dp->opcode==NULL || dp->operands==NULL)
     return (NULL);  /* no buffers */
 
-#if LIL_ENDIAN
 if (!endian) {
+#ifdef LITTLEENDIAN
+   in = (in & 0xff)<<24 | (in & 0xff00)<<8 | (in & 0xff0000)>>8 |
+        (in & 0xff000000)>>24;
+}
+#endif
+
+#ifdef LITTLEENDIAN
   in = (in & 0xff)<<24 | (in & 0xff00)<<8 | (in & 0xff0000)>>8 |
        (in & 0xff000000)>>24;
-}
 #endif
   dp->type = PPCINSTR_OTHER;
   dp->flags = 0;
