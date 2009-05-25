@@ -1669,6 +1669,7 @@ This powerful command is '/'.
 \c  /w foobar      ; Search a widechar string (f\0o\0o\0b\0..)
 \c  /r 0,2-10      ; launch range searches 0-10
 \c  /p len         ; search pattern of length = len
+\c  /P count       ; search pattern with count bytes equal compared to curblock
 \c  //             ; repeat last search
 
 The search is performed from the current seek until the end of the file or 'cfg.limit' if != 0. So in this way you can perform limited searches between two offsets of a file or the process memory.
@@ -1752,6 +1753,26 @@ Here's an example:
 \c [0x00000000]> /p 10
 
 The output of the command will show the different patterns found and how many times they are repeated.
+
+\H{search-proximity} Pattern search with distance
+
+Since radare 1.4 there's a /P command that implements a search algorithm that tries to find a block of blocksize bytes matching at least N bytes compared against the current block.
+
+This algorithm is useful for finding similar blocks of code (basic blocks), duplicated and similar strings, etc..
+
+Here's an usage example:
+
+\c $ cat file
+\c helloworld
+\c this is new
+\c algorithm for
+\c hellpworld
+\c similar blocks
+\c h3llow0rld
+\c $ radare file
+\c [0x00000000]> /P 8 @ 0:10
+\c 0x00000025 9/10
+\c 0x0000003f 8/10
 
 \H{search-hits} Automatization
 
