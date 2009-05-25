@@ -20,6 +20,9 @@ endif
 ifeq ($(CPU),iPod2,1)
 CPU=arm
 endif
+ifeq ($(CPU),mips)
+CPU=mips64
+endif
 ifeq ($(CPU),mipsel)
 CPU=mips64
 endif
