@@ -35,11 +35,14 @@ int yesno(int def, const char *fmt, ...);
 #define CONS_MAX_USER 102400
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
+FILE *cons_stdin_fd = NULL;
+#if 0
 #if __linux__
 // || __APPLE__
 FILE *cons_stdin_fd = (FILE *)&stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
 #else
 FILE *cons_stdin_fd = (FILE *)stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
+#endif
 #endif
 static unsigned int cons_buffer_sz = 0;
 int cons_buffer_len = 0;
