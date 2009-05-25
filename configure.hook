@@ -11,6 +11,7 @@ x86_64-linux
 x86_64-openbsd
 arm-linux
 armel-linux
+armv5tel-linux
 powerpc-linux
 mips64-linux
 mips-linux
