@@ -7,6 +7,7 @@
 #
 
 open FD, "<".$ARGV[0] or die "Cannot open file\n";
+print "fs symbols\n";
 while(<FD>) {
 	$str=$_;
 	if ($str=~/MakeName[^X]*.([^,]*)[^"]*.([^"]*)/) {

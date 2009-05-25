@@ -17,7 +17,7 @@
 
 A commandline framework for reverse engineering ala *nix-style
 
-\versionid $Id: pvc.but 2008-09-02 pancake $
+\versionid $Id: radare.but 2009-04-25 pancake $
 
 \C{introduction} Introduction
 
@@ -62,9 +62,9 @@ Commandline assembler and disassembler for multiple architectures (intel[32,64],
 
 Small utility to prepare buffers or shellcodes for exploiting vulnerabilities. It has an internal hardcoded database of shellcodes and a syscall-proxy interface with some nice helpers like fill-with nops, breakpoints, series of values to find the landing point, etc..
 
-\c hasher
+\c rahash
 
-Implementation of a block-based hasher for small text strings or large disks, supporting multiple algorithms like md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist or entropy.
+Implementation of a block-based rahash for small text strings or large disks, supporting multiple algorithms like md4, md5, crc16, crc32, sha1, sha256, sha384, sha512, par, xor, xorpair, mod255, hamdist or entropy.
 
 It can be used to check the integrity or track changes between big files, memory dumps or disks.
 
@@ -465,6 +465,10 @@ Setting asm.arch to 'objdump' the disassembly engine will use asm.objdump to dis
 
 This is useful for disassembling files in architectures not supported by radare. You should understand 'objdump' as 'your-own-disassembler'.
 
+\c asm.bits
+
+This variable will change the 'asm.arch' one (in radare1) and viceversa (is determined by asm.arch). It determines the size in bits of the registers for the selected architecture. This is 8, 16, 32, 64.
+
 \c asm.syntax
 
 Defines the syntax flavour to be used while disassembling. This is currently only targeting the udis86 disassembler for the x86 (32/64 bits). The supported values are 'intel' or 'att'.
@@ -808,41 +812,47 @@ The bytes can be represented as integers, shorts, longs, floats, timestamps, hex
 
 This is a list of the available print modes listable with 'p?':
 
-\c [0x08049A80]> p?
+\c [0x08049AD0]> p?
 \c Available formats:
-\c  a : ascii                   (null)
-\c  A : ascii printable         (null)
-\c  b : binary                  N bytes
-\c  B : LSB Stego analysis      N bytes
-\c  c : C format                N bytes
-\c  d : disassembly N opcodes   bsize bytes
-\c  D : asm.arch disassembler   bsize bytes
-\c  f : float                   4 bytes
-\c  F : windows filetime        8 bytes
-\c  i : integer                 4 bytes
-\c  l : long                    4 bytes
-\c  L : long long               8 bytes
-\c  m : print memory structure  0xHHHH
-\c  o : octal                   N bytes
-\c  O : Zoom out view           entire file
-\c  p : cmd.prompt              (null)
-\c  % : print scrollbar of seek (null)
-\c  r : raw ascii               (null)
-\c  R : reference               (null)
-\c  s : asm shellcode           (null)
-\c  t : unix timestamp          4 bytes
-\c  T : dos timestamp           4 bytes
-\c  u : URL encoding            (null)
-\c  U : executes cmd.user       (null)
-\c  v : executes cmd.vprompt    (null)
-\c  1 : p16: 16 bit hex word    2 bytes
-\c  3 : p32: 32 bit hex dword   4 bytes
-\c  6 : p64: 64 bit quad-word   8 bytes
-\c  7 : print 7bit block as raw 8bit (null)
-\c  8 : p8:   8 bit hex pair    N byte
-\c  x : hexadecimal byte pairs  N byte
-\c  z : ascii null terminated   (null)
-\c  Z : wide ascii null end     (null)
+\c  p% : print scrollbar of seek (null)
+\c  p= : print line bars for each byte (null)
+\c  pa : ascii                   (null)
+\c  pA : ascii printable         (null)
+\c  pb : binary                  N bytes
+\c  pB : LSB Stego analysis      N bytes
+\c  pc : C format                N bytes
+\c  pd : disassembly N opcodes   bsize bytes
+\c  pD : asm.arch disassembler   bsize bytes
+\c  pe : double                  8 bytes
+\c  pF : windows filetime        8 bytes
+\c  pf : float                   4 bytes
+\c  pi : integer                 4 bytes
+\c  pl : long                    4 bytes
+\c  pL : long (ll for long long) 4/8 bytes
+\c  pm : print memory structure  0xHHHH
+\c  pC : comment information     string
+\c  po : octal dump              N bytes
+\c  pO : Overview (zoom.type)    entire file
+\c  pp : cmd.prompt              (null)
+\c  pr : raw ascii               (null)
+\c  pR : reference               (null)
+\c  ps : asm shellcode           (null)
+\c  pt : unix timestamp          4 bytes
+\c  pT : dos timestamp           4 bytes
+\c  pu : URL encoding            (null)
+\c  pU : executes cmd.user       (null)
+\c  pv : executes cmd.vprompt    (null)
+\c  p1 : p1: 1byte,  8 bit hex pair 1 byte
+\c  p2 : p2: 2bytes, 16 bit hex word 2 bytes
+\c  p4 : p4: 4bytes, 32 bit hex dword 4 bytes
+\c  p6 : p6: base64 encode (p9 to decode) entire block
+\c  p7 : 7bit encoding (sms)     (null)
+\c  p8 : p8: 8bytes, 64 bit quad-word 8 bytes
+\c  p9 : p9: base64 decode (p6 to encode) entire block
+\c  px : hexadecimal dump        N byte
+\c  pX : hexpairs                N byte
+\c  pz : ascii null terminated   (null)
+\c  pZ : wide ascii null end     (null)
 
 \S{print-hexa} Hexadecimal
 
@@ -855,25 +865,25 @@ User-friendly way:
 
 Hexpairs:
 
-\c [0x4A13B8C0]> p8
+\c [0x4A13B8C0]> p1
 \c 89 e0 e8 39 07 00 00 89 c7 e8 e2 ff ff ff 81 c3 ee a6 01 00 8b 83 08 ff ff ff 5a 8d 24 84 29 c2 
 
 Basic size types governed by endian:
 
 16 bit words
 
-\c [0x4A13B8C0]> p16 4
+\c [0x4A13B8C0]> p2 4
 \c 0xe089 
 \c 0x39e8 
 
 32 bit doublewords
 
-\c [0x4A13B8C0]> p32 4
+\c [0x4A13B8C0]> p4 4
 \c 0x39e8e089 
 \c [0x4A13B8C0]> e cfg.bigendian 
 \c false
 \c [0x4A13B8C0]> e cfg.bigendian = true
-\c [0x4A13B8C0]> p32 4
+\c [0x4A13B8C0]> p4 4
 \c 0x89e0e839 
 \c [0x4A13B8C0]> 
 
@@ -913,7 +923,7 @@ As you can see, the endianness affects to the print formats. Once printing these
 
 The date format printed can be configured with the 'cfg.datefmt' variable following the \c{strftime(3)} format.
 
-Extracted from the manpage:
+Extracted from the strftime(3) manpage:
 
 \c  %a  The abbreviated weekday name according to the current locale.
 \c  %A  The full weekday name according to the current locale.
@@ -1048,22 +1058,30 @@ It is possible to print various packed data types in a single line using the 'pm
 
 \c [0x4A13B8C0]> pm
 \c Usage: pm [times][format] [arg0 arg1]
-\c Example: pm 10xiz pointer length string
-\c  e - temporally swap endian
+\c Example: pm 10xdz pointer length string
+\c Example: pm {array_size}b @ array_base
+\c Example: pm x[foo]b @ esp
+\c  e - little endian
+\c  E - big endian
 \c  f - float value
 \c  b - one byte 
 \c  B - show 10 first bytes of buffer
-\c  i - %d integer value (4 byets)
-\c  w - word (16 bit hexa)
+\c  d - %d integer value (4 bytes)
+\c  D - double value (4 bytes)
 \c  q - quadword (8 bytes)
-\c  p - pointer reference
 \c  x - 0x%08x hexadecimal value
+\c  X - 0x%08x hexadecimal value and flag (fd @ addr)
 \c  z - \0 terminated string
 \c  Z - \0 terminated wide string
 \c  s - pointer to string
 \c  t - unix timestamp string
 \c  * - next char is pointer
 \c  . - skip 1 byte
+\c  : - skip 4 bytes
+\c  {}- used to eval math expressions to repeat next fmt char
+\c  []- used to nest format structures registered with 'am'
+\c  %1,%2,%4,%8 - type size (default is asm.bits/8)
+\c NOTE: Use 'am' command to register inner structs
 
 The simple use would be like this:
 
@@ -1744,19 +1762,19 @@ For example:
 \c [0x08048000]> eval cmd.hit = p8 8
 \c [0x08048000]> / lib
 \c 6c 69 62 2f 6c 64 2d 6c 
-\c 1001  0x00000155  hit0_0 lib/ld-linux
+\c 001  0x00000155  hit0_0 lib/ld-linux
 \c 6c 69 62 72 74 2e 73 6f 
-\c 2002  0x00013a25  hit0_1 librt.so.1c
+\c 002  0x00013a25  hit0_1 librt.so.1c
 \c 6c 69 62 63 2e 73 6f 2e 
-\c 3003  0x00013a61  hit0_2 libc.so.6st
+\c 003  0x00013a61  hit0_2 libc.so.6st
 \c 6c 69 62 63 5f 73 74 61 
-\c 4004  0x00013d6c  hit0_3 libc_start_m
+\c 004  0x00013d6c  hit0_3 libc_start_m
 \c 6c 69 62 70 74 68 72 65 
-\c 5005  0x00013e13  hit0_4 libpthread.s
+\c 005  0x00013e13  hit0_4 libpthread.s
 \c 6c 69 62 2f 6c 64 2d 6c 
-\c 6006  0x00013e24  hit0_5 lib/ld-linux
+\c 006  0x00013e24  hit0_5 lib/ld-linux
 \c 6c 69 62 6c 69 73 74 00 
-\c 7read err at 0x0001542c
+\c read err at 0x0001542c
 \c 007  0x00014f22  hit0_6 liblist.gnu
 
 A simple and practical example for using cmd.hit can be for replacing some bytes for another ones, by setting 'wx ..' in cmd.hit. This example shows how to drop the selinux dependency on binaries compiled on selinux-enabled distributions to make the dynamic elf run on other systems without selinux:
@@ -1837,7 +1855,15 @@ Use the '/n' command to seek between the hits. Or just 'n' and 'N' keys in visua
 
 \H{search-asm} Search in assembly
 
-TODO: pd | grep foo
+If you want to search for a certain type of opcodes, you can choose to grep for a string while disassembling the whole interest area or assemble the opcode and determine a binary mask to search for similar opcodes using the search '/' command.
+
+To grep, the best way to do it is using the internal grep syntax '~'. Here's an example:
+
+\c [0x08049AD0]> pd~call
+\c 0x08049aec, | call 0x804964c  ; 1 = imp.__libc_start_main
+\c 0x08049b38, | call dword near [eax*4+0x8060008]
+\c 0x08049b7f    call eax  ; 7 = 0x100a9b76
+\c 0x08049bb4,   call 0x805b560  ; 8 = 0x0805b560
 
 \H{search-aes-keys} Searching AES keys
 
@@ -2035,6 +2061,8 @@ And the result is:
 \c 0x08048399  \           ret 
 \c 0x08048399           ; ------------------------------------ 
 \c      ; 3        } 
+
+Enable this mode with dbg.dwarf=true
 
 \C{projects} Projects
 
@@ -6594,7 +6622,7 @@ installs in your system (0.9.4):
 - radare
     commandline hexadecimal editor with pluggable interface
 
-- hasher
+- rahash
     multiple algorithm block-based checksumming utility
 
 - rasm

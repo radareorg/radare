@@ -9,12 +9,14 @@
 TODO 1.4 ???
 ==========
 
+* fix arm-osx debugger
+* drop sdk dependency
+---
 * set flags to jumps to the middle of instructions while analyzing code (.af*)
 * There are problems when using '>' from python (cons issue)
 * Implement an hexdump diff print function
 * Better 'cD' command (use gnu diff method, but take as size the smaller file)
-
-pancake:
+* Better integration with -P (projects) (do not analyze twice...)
 * !mmap doesnt works well (we need to use mmap2 here)
 
 * rax should support base64/7bit/LSBstego/...
@@ -23,14 +25,17 @@ pancake:
 * negative block size is used to invert (deprecate invert?)
 * check for supported debugger archs in configure time
 
+* Add disassembler for
+  - ParrotVM
+  - DalvikVM
+  - CUDA
+  - Flash10
+
 *++++++++++
-* fix arm-osx debugger
-* drop sdk dependency
 * regexp search??
-* parrot vm
 * Invert doesnt works for disassembly!!!
 
-binary masks
+binary masks (enums, bitmasks)
 > aB rwx R:4 W:2 X:1
 > aBb rwx 777
 RWX,RWX,RWX
@@ -38,17 +43,13 @@ RWX,RWX,RWX
 > aB -rwx
 > !cont imp.open && pm xx(rwx)z @ esp
 
-TheBook
-=======
-* Show function name at visual status bar all the time
-  - support max pattern length as second argument
 * Support to undefine variables
 * mov dword[ebp+0xfff], eax -> this is not mov dword[0xffff] code analysis!
 * udis86 bug:
   --> 8b8308ffffff    mov eax, [ebx+0xffffff08]
   --> should be displayed as negative values
 
-* Screen column grep should skip scape sequences
+* Screen column grep should skip escaped sequences (ansi*)
 * Documentate visual cursor with marks ',' and '.' keys
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
@@ -62,7 +63,7 @@ TheBook
 * Added at% like ar%
 * fer q libr.syscall suporti lectura dsd fitxers
 
-grep multiple strings:
+grep multiple strings: (only for r2)
   pdf ~call,ebp
 
 OPTIMIZATIONS
@@ -85,20 +86,12 @@ OPTIMIZATIONS
 Things to be done
 =================
 
-* Add disassembler for
-  - ParrotVM
-  - DalvikVM
-  - CUDA
-  - Flash10
 * '<' and '>' commands converted in prefix modifiers
 * Add !log command for serial:// and socket://
 
 * rsc monitor implemented as a gui plugin
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!
 * support string print mode for [len][str] formats
-* Use graphviz for code graphs
-  - export graph information in a parseable format (svg?)
-  - documentate how to use this information (ac*)
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
 
 ---- refactoring
@@ -150,11 +143,6 @@ java bug:
 
 
 ===========
-
-WTFS DONE:
-----------
-* documentate inverse (XXX)
-  - it is not working in all the cases
 
 >1.0 STUFF
 
@@ -228,9 +216,6 @@ Core:
 Rsc:
   	- fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
 	* pcap/radare for fun
-
-Grava:
-	3- global data in graphs - allow to run specific commands in nodes
 
 * autodetect references to flags with aop.ref on
   - aop.ref must get more ref types (write checks)
@@ -372,9 +357,6 @@ Gui
 Open streams
 ============
 * radare pcap://"eth0/port 4000"
-* serial console support
-  - configure bps and so
-  $ radare /dev/ttyS0
 
 /////////////////////////////////////////////////////////////////////////
 /* Fetch the thread-local storage pointer for libthread_db.  */
@@ -688,21 +670,12 @@ mips:
 	syscall
 
 
-
-
  ____  ___ ____  ___ ____  ___  ______   ____
 |  _ \/   \'   \/   \  _ \/ _ \ \__   | /    \
 |    <  V  . T  . V      <   _/ .--'_/ |  ()  |
 |_|\__|_|__|___/|_|_|_|\__\___/ |_____(_)____/
 
 /* ONGOING 2.0 */
-
-Split radare into libraries accessible by VAPI interfaces. (no gobject dependency, but an OO C one).
-
-* make it be an API 
-  radare_t *r = radare_new ("/bin/ls", "ro");
-  radare_seek(r, 0x100);
-  ...
 
 * full charsets support (search strings in utf8, etc) using iconv
 * multithread traces <pid>:<addr>

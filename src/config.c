@@ -1034,6 +1034,7 @@ void config_init(int first)
 	config_set("dir.project", buf); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.bgcolor", "white");
+	config_set("graph.traces", "true"); // colorize nodes if traced
 	config_set("graph.weight", "false");
 	config_set("graph.userdup", "false");
 	config_set("graph.color", "magic");

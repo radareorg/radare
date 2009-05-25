@@ -61,6 +61,7 @@ void graph_viz(struct program_t *prg, int body)
 	struct list_head *head;
 	int bs = 0;
 	int withweight = config_get_i("graph.weight");
+	int withtraces = config_get_i("graph.traces");
 
 	cons_printf("digraph code {\n");
 	//cons_printf("\tsize=\"6,6\";\n");
@@ -92,7 +93,9 @@ void graph_viz(struct program_t *prg, int body)
 					if ((bs = graph_get_bb_size(prg, b0->fnext))) {
 						str = ugraph_get_str(b0->fnext, bs, 1);
 						if (str) {
-							cons_printf(" \"0x%08llx\" [fillcolor=\"gray\" color=\"red\" label=\"%s\"]\n", b0->fnext, str); //(unsigned int)(ABS(b0->fnext-b0->addr)), str);
+							cons_printf(" \"0x%08llx\" [fillcolor=\"%s\" color=\"red\" label=\"%s\"]\n",
+								b0->fnext, (withtraces&&trace_times(b0->fnext))?"yellow":"gray", str);
+								//(unsigned int)(ABS(b0->fnext-b0->addr)), str);
 							free(str);
 						}
 					}
@@ -101,7 +104,8 @@ void graph_viz(struct program_t *prg, int body)
 					if ((bs = graph_get_bb_size(prg, b0->tnext))) {
 						str = ugraph_get_str(b0->tnext, bs, 1);
 						if (str) {
-							cons_printf(" \"0x%08llx\" [fillcolor=\"white\" color=\"green\" label=\"%s\"]\n", b0->tnext, str); //((unsigned int)ABS(b0->tnext-b0->addr)), str);
+							cons_printf(" \"0x%08llx\" [fillcolor=\"%s\" color=\"red\" label=\"%s\"]\n",
+								b0->tnext, (withtraces&&trace_times(b0->fnext))?"yellow":"white", str);
 							free(str);
 						}
 					}
@@ -223,7 +227,6 @@ static void mygrava_close(void *widget, gpointer obj)
 	gtk_widget_destroy(GTK_WIDGET(w->w));
 	if (--n_windows<0)
 		n_windows = 0;
-//printf("N_WINDOWS: %d\n", n_windows);
 	if (n_windows<1)
 		gtk_main_quit();
 }
@@ -247,10 +250,10 @@ static void mygrava_back(void *widget, GtkWidget *obj)
 	radare_cmd("undo", 0);
 	core_load_graph_entry(widget,obj);
 }
-static void mygrava_back2(void *widget, void *foo, void *obj) //GtkWidget *obj)
+static void mygrava_back2(void *widget, void *foo, void *obj)
 { mygrava_back(widget, obj); }
 
-static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
+static void core_load_node_entry(void *widget, void *obj)
 {
 	const char *str;
 	struct static_nodes *snode;
@@ -277,7 +280,7 @@ static void core_load_node_entry(void *widget, void *obj) //GtkWidget *obj)
 	core_load_graph_entry(widget,obj);
 }
 
-static void core_load_graph_entry(void *widget, void *obj) //GtkWidget *obj)
+static void core_load_graph_entry(void *widget, void *obj)
 {
 	const char *str;
 	char *buf, *ptr;
@@ -911,6 +914,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 	int i;
 	char *ptr;
 	char cmd[1024];
+	int withtraces = config_get_i("graph.traces");
 	int graph_flagblocks = (int)config_get("graph.flagblocks");
 	struct list_head *head, *head2;
 	struct block_t *b0, *b1;
@@ -955,7 +959,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 			continue;
 
 		// traced nodes are turquoise
-		if (trace_times(b0->addr)>0)
+		if (withtraces && trace_times(b0->addr)>0)
 			grava_node_set(node, strdup("bgcolor"), strdup("beige"));
 			//grava_node_set(node, "color", "darkgray");
 
@@ -1165,7 +1169,6 @@ void visual_gui()
 		gtk_container_add(GTK_CONTAINER(win->vbox), win->hbox);
 		//
 		
-#if 1
 		{
 		GtkWidget *exp = gtk_expander_new("");
 		GtkWidget *vbx = gtk_vbox_new(FALSE, 3);
@@ -1185,7 +1188,7 @@ void visual_gui()
 		}
 		free((void *)items);
 		}
-#endif
+
 		//
 		items = strdup(config_get("gui.tabs"));
 		w = gtk_notebook_new();
