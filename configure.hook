@@ -34,8 +34,8 @@ fi
 
 if [ -n "${RET}" ]; then
 	echo yes
-	export DEBUGGER=1
+	DEBUGGER=1
 else
-	export DEBUGGER=0
+	DEBUGGER=0
 	echo no
 fi
