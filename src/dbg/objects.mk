@@ -21,10 +21,8 @@ ifeq ($(CPU),iPod2,1)
 CPU=arm
 endif
 ifeq ($(CPU),mipsel)
-CPU=mips
+CPU=mips64
 endif
-
-
 
 ifeq ($(W32),1)
 # Windows 32 bits
