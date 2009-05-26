@@ -1072,6 +1072,10 @@ char *radare_cmd_str(const char *cmd)
 	int newlen, fus = cons_flushable;
 	char *grep;
 
+	if (strchr(cmd, '>') ||strchr(cmd, '`')) {
+		eprintf("Warning: Cannot use '>' or '`' in radare_cmd_str\n");
+		return strdup("");
+	}
 	/* backup cons buffer for nested fun */
 	// TODO: rename to cons_push();
 #if MYFIX
