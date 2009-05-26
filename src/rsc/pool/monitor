@@ -21,6 +21,8 @@ sub slurpit {
 
 my $f=$ARGV[0];
 my $MONITOR_PATH=$ENV{HOME}."/.radare/monitor/";
+my $MONITOR_SESSION=$ENV{MONITOR_SESSION};
+$MONITOR_SESSION="0" if ($MONITOR_SESSION eq "");
 system("mkdir -p $MONITOR_PATH");
 $MONITOR_PATH = $ENV{MONITORPATH}
 	if ($ENV{MONITORPATH} ne "");
@@ -37,8 +39,8 @@ if ($ARGV[0] eq "-l") {
 	exit(0);
 }
 if ($ARGV[0] eq "-r") {
-	unlink("$MONITOR_PATH/".$ARGV[1]);
-	unlink("$MONITOR_PATH/".$ARGV[1].".txt");
+	unlink("$MONITOR_PATH/".$ARGV[1].".$MONITOR_SESSION");
+	unlink("$MONITOR_PATH/".$ARGV[1].".$MONITOR_SESSION.txt");
 	print "Monitor '".$ARGV[1]."' removed\n";
 	exit(0);
 }
@@ -48,7 +50,7 @@ if ($ARGV[0] eq "-R") {
 	exit(0);
 }
 if ($ARGV[0] eq "-e") {
-	system("vim $MONITOR_PATH/".$ARGV[1]);
+	system("vim $MONITOR_PATH/".$ARGV[1].".$MONITOR_SESSION");
 	exit(0);
 }
 
@@ -61,7 +63,7 @@ if ($ARGV[0] eq "") {
 	print "Use MONITORPATH defaults to ~/.radare/monitor/\n";
 	exit(0);
 } elsif ($ARGV[1] ne "") {
-	open FD, ">$MONITOR_PATH/".$ARGV[0] || die "cannot open";
+	open FD, ">$MONITOR_PATH/".$ARGV[0].".$MONITOR_SESSION" || die "cannot open";
 	shift(@ARGV);
 	chomp(my $str = join (' ', @ARGV));
 	print FD "$str\n";
@@ -69,10 +71,14 @@ if ($ARGV[0] eq "") {
 	exit(0);
 }
 
-if ((!($f=~/\.txt/)) && (-f "$MONITOR_PATH/$f")) {
+# TODO: add support for keyboard interaction
+# 'e' key to edit script
+# 'q' to quit
+# TODO: adjust console and add scrolling with hjkl + arrows
+if ((!($f=~/\.txt/)) && (-f "$MONITOR_PATH/$f.$MONITOR_SESSION")) {
 	my $buf2 = "";
 	while(1) {
-		my $buf = slurpit($MONITOR_PATH."/$f.txt");
+		my $buf = slurpit($MONITOR_PATH."/$f.$MONITOR_SESSION.txt");
 		if ($buf ne $buf2) {
 			$buf2 = $buf;
 			print "\x1b[0;0H\x1b[2J$buf\x1b[0m\n";
@@ -80,5 +86,5 @@ if ((!($f=~/\.txt/)) && (-f "$MONITOR_PATH/$f")) {
 		sleep(1);
 	}
 } else {
-	print STDERR "Cannot open $MONITOR_PATH/$f.txt\n";
+	print STDERR "Cannot open $MONITOR_PATH/$f.$MONITOR_SESSION.txt\n";
 }

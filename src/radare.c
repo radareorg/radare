@@ -1443,12 +1443,12 @@ void monitors_run()
 	int tmp;
 	struct dirent *de;
 	DIR *dir;
+	char *session = config_get("cfg.session");
 	u64 oseek = config.seek;
 	u64 obsize= config.block_size;
 	int flush = cons_flushable;
 	cons_flushable = 0;
 
-	cons_flush();
 	/* run the commands found in the monitor path directory */
 	*path='\0';
 	if ( (ptr = config_get("dir.monitor")) ) {
@@ -1465,7 +1465,12 @@ void monitors_run()
 		if (dir) {
 			while((de = (struct dirent *)readdir(dir))) {
 				if (de->d_name[0] != '.' && !strstr(de->d_name, ".txt")) {
+					cons_flush();
 					sprintf(file, "%s/%s", path, de->d_name);
+					if (session) {
+						strcat(file, ".");
+						strcat(file, session);
+					}
 					fd = fopen(file, "r");
 					if (fd) {
 						strcat(file, ".txt");

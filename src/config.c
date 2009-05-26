@@ -1020,6 +1020,7 @@ void config_init(int first)
 		ptr = (const char *)&buf;
 	}
 	config_set("dir.monitor", ptr);
+	config_set("cfg.session", "0");
 
 	/* dir.spcc */
 	ptr = getenv("SPCCPATH");
