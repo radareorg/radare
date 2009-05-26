@@ -125,7 +125,7 @@ struct DisasmPara_PPC {
 
 /* ppc_disasm.o prototypes */
 #ifndef PPC_DISASM_C
-extern ppc_word *PPC_Disassemble(struct DisasmPara_PPC *, int endian);
+extern ppc_word *PPC_Disassemble(struct DisasmPara_PPC *);
 #endif
 
 #endif

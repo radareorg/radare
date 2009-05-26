@@ -875,7 +875,7 @@ static void dstrm(struct DisasmPara_PPC *dp,ppc_word in,char *name)
 
 
 
-ppc_word *PPC_Disassemble(struct DisasmPara_PPC *dp, int endian)
+ppc_word *PPC_Disassemble(struct DisasmPara_PPC *dp)
 /* Disassemble PPC instruction and return a pointer to the next */
 /* instruction, or NULL if an error occured. */
 {
@@ -883,13 +883,6 @@ ppc_word *PPC_Disassemble(struct DisasmPara_PPC *dp, int endian)
 
   if (dp->opcode==NULL || dp->operands==NULL)
     return (NULL);  /* no buffers */
-
-if (!endian) {
-#ifdef LITTLEENDIAN
-   in = (in & 0xff)<<24 | (in & 0xff00)<<8 | (in & 0xff0000)>>8 |
-        (in & 0xff000000)>>24;
-}
-#endif
 
 #ifdef LITTLEENDIAN
   in = (in & 0xff)<<24 | (in & 0xff00)<<8 | (in & 0xff0000)>>8 |

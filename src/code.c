@@ -201,8 +201,9 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	       dp.iaddr = seek; //config.vaddr + config.seek + i;
 	       endian_memcpy(bof, b, 4);
 	       dp.instr = bof;
+	       // memcpy(bof, b, 4);
 	       // dp.instr = b; //config.block + i;
-	       PPC_Disassemble(&dp, endian);
+	       PPC_Disassemble(&dp);
 	       sprintf(string, "%s %s", opcode, operands);
 #else
 	       sprintf(string, "Sorry. ppc disasm is non free");
