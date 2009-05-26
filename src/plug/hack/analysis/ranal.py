@@ -302,7 +302,7 @@ class Graph():
 		r.cmd("s %s"%addr)
 		r.cmd("agd %s.dot"%file)
 		r.cmd("!!dot -Tpng -o %s %s.dot"%(file,file));
-		r.cmd("!!rm %s.dot");
+		r.cmd("!!rm %s.dot"%file);
 	make_png = staticmethod(make_png)
 
 	def add_node(addr, size, cmd):

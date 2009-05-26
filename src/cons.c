@@ -36,14 +36,6 @@ int yesno(int def, const char *fmt, ...);
 int cons_stdout_fd = 6676;
 int cons_stdout_file = -1;
 FILE *cons_stdin_fd = NULL;
-#if 0
-#if __linux__
-// || __APPLE__
-FILE *cons_stdin_fd = (FILE *)&stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
-#else
-FILE *cons_stdin_fd = (FILE *)stdin; // XXX SHOULD BE cons_stdin_fd = stdin, NOT &stdin!!!
-#endif
-#endif
 static unsigned int cons_buffer_sz = 0;
 int cons_buffer_len = 0;
 static char *cons_buffer = NULL;
@@ -728,6 +720,18 @@ int cons_fgets(char *buf, int len, int argc, const char **argv)
 
 	return strlen(buf);
 }
+static void palloc(int moar)
+{
+	if (cons_buffer == NULL) {
+		cons_buffer_sz = moar+4096;
+		cons_buffer = (char *)malloc(cons_buffer_sz);
+		cons_buffer[0]='\0';
+	} else
+	if (moar + cons_buffer_len > cons_buffer_sz) {
+		cons_buffer_sz += moar+4096;
+		cons_buffer = (char *)realloc(cons_buffer, cons_buffer_sz);
+	}
+}
 
 void cons_reset()
 {
@@ -741,18 +745,14 @@ const char *cons_get_buffer()
 	return cons_buffer;
 }
 
-static void palloc(int moar)
+int cons_set_buffer(const char *buf)
 {
-	if (cons_buffer == NULL) {
-		cons_buffer_sz = moar+4096;
-		cons_buffer = (char *)malloc(cons_buffer_sz);
-		cons_buffer[0]='\0';
-	} else
-	if (moar + cons_buffer_len > cons_buffer_sz) {
-		cons_buffer_sz += moar+4096;
-		cons_buffer = (char *)realloc(cons_buffer, cons_buffer_sz);
-	}
+	cons_buffer_len = strlen(buf);
+	palloc(cons_buffer_len);
+	memcpy(cons_buffer, buf, cons_buffer_len+1);
+	return 0;
 }
+
 
 static int grepline = -1, greptoken = -1, grepcounter = 0, grepneg = 0;
 static char *grepstr = NULL;

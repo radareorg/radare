@@ -9,6 +9,7 @@
 TODO 1.4 ???
 ==========
 
+* full support for inner radare_cmd_str (two nested calls breaks the console buffer)
 * fix arm-osx debugger
 * drop sdk dependency
 ---

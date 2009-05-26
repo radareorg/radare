@@ -1059,42 +1059,63 @@ int radare_cmdf(const char *cmd, ...)
 	va_end(ap);
 	return ret;
 }
+#define MYFIX 1
 
 /* XXX this is more portable and faster than the solution pipe_to_tmp_file and so */
 /* but doesnt supports system() stuff. i have to split the use of both functions */
 char *radare_cmd_str(const char *cmd)
 {
 	char *buf;
-	char *dcmd;
+	char *dcmd, *cbuf;
 	int scrbuf = config_get_i("scr.buf");
 	int cfgver = config_get_i("cfg.verbose");
 	int newlen, fus = cons_flushable;
 	char *grep;
 
-	cons_flush();
+	/* backup cons buffer for nested fun */
+	// TODO: rename to cons_push();
+#if MYFIX
+	cbuf = cons_get_buffer();
+//eprintf("%d\n", strlen(cbuf));
+	if (cbuf) cbuf = strdup(cbuf);
+#else
+	cons_render();
+#endif
 	cons_reset();
+
 	config_set_i("scr.buf", 1);
 
 	cons_grepbuf_end();
 	dcmd = strdup ( cmd );
-		grep = strchr(dcmd, '~');
-		if (grep) {
-			grep[0]='\0';
-			cons_grep(grep+1);
-		}
-	cons_noflush=1;
-	radare_cmd( dcmd, 0);
-	cons_noflush=0;
+	grep = strchr(dcmd, '~');
+	if (grep) {
+		grep[0]='\0';
+		cons_grep(grep+1);
+	}
+	cons_noflush = 1;
+	radare_cmd_raw(dcmd, 0);
+	cons_noflush = 0;
 	free (dcmd);
-	/*  XXX internal grep is not working here */
+#if 1
 	buf = cons_get_buffer();
+//eprintf("BUF(%s)\n", buf);
 	if (buf) {
 		buf = strdup(buf);
 		newlen = cons_grepbuf(buf, strlen(buf));
 	}
+#endif
 	config_set_i("scr.buf", scrbuf);
 	config_set_i("cfg.verbose", cfgver);
+
 	cons_reset();
+#if MYFIX
+	// TODO: rename to cons_pop();
+	if (cbuf) {
+		cons_set_buffer(cbuf);
+		free(cbuf);
+	}
+#endif
+//eprintf("RET(%s)\n", buf);
 
 	return buf;
 }

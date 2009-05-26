@@ -112,10 +112,6 @@ void graph_viz(struct program_t *prg, int body)
 				}
 			}
 		}
-#if 0
-		sprintf(cmd, "pD %d @ 0x%08llx", b0->n_bytes, b0->addr);
-		ptr =  pipe_command_to_string(cmd);
-#endif
 	}
 	cons_printf("}\n");
 }
@@ -766,17 +762,18 @@ char *ugraph_get_str(u64 addr, int _size, int dot)
 	}
 	radare_seek(from, SEEK_SET);
 	radare_set_block_size_i(size);
+//eprintf("PRE(%s)\n", cons_get_buffer());
 	cmdstr = radare_cmd_str(cmd);
-	if (!dot) {
+//eprintf("POST(%s)\n", cons_get_buffer());
+	if (!dot)
 		return cmdstr;
-}
 	if (cmdstr != NULL)
 		str = malloc(strlen(cmdstr)*2);
 	if (str != NULL) {
 		for(i=j=0;cmdstr[i];i++,j++) {
 			switch(cmdstr[i]) {
 			case 0x1b: // hackyansistrip
-				/* skip chars */
+				/* skip ansi chars */
 				for(i++;cmdstr[i]&&cmdstr[i]!='m'&&cmdstr[i]!='H'&&cmdstr[i]!='J';i++);
 				j--;
 				break;
@@ -829,6 +826,7 @@ void ugraph_print_dot(int body)
 		}
 	}
 	cons_printf("}\n");
+	cons_flush();
 }
 
 #if HAVE_GUI

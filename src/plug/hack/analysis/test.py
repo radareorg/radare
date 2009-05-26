@@ -7,6 +7,7 @@ from ranal import *
 print "---------------------------------"
 
 print r.cmd("e scr.color=0")
+print r.cmd("e graph.split=0")
 p = Program()
 
 print "File type: %s" % p.type
