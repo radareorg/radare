@@ -11,16 +11,17 @@ sub slurpit {
         my ($file) = @_;
         return undef unless (-f $file);
         open F, "<$file" || return undef;
-        my $ret=""; while(<F>) { $ret.=$_; }
+        my $ret=""; while(<F>) { $ret.="$_"; }
         close F;
-	$ret=~s/\n/, /g;
-	$ret=~s/\r//;
-	$ret=~s/\ \ //g;
+	#$ret=~s/\n/, /g;
+#	$ret=~s/\r//;
+#	$ret=~s/\ \ //g;
         return $ret;
 }
 
 my $f=$ARGV[0];
 my $MONITOR_PATH=$ENV{HOME}."/.radare/monitor/";
+system("mkdir -p $MONITOR_PATH");
 $MONITOR_PATH = $ENV{MONITORPATH}
 	if ($ENV{MONITORPATH} ne "");
 
@@ -46,11 +47,15 @@ if ($ARGV[0] eq "-R") {
 	print "All monitors removed\n";
 	exit(0);
 }
-
+if ($ARGV[0] eq "-e") {
+	system("vim $MONITOR_PATH/".$ARGV[1]);
+	exit(0);
+}
 
 if ($ARGV[0] eq "") {
 	print "Usage: rsc monitor [-lr] [name] [command]\n";
 	print "  -l        list all running monitors\n";
+	print "  -e [name] edit monitor commands\n";
 	print "  -r [name] remove a specific monitor\n";
 	print "  -R        removes all monitors\n";
 	print "Use MONITORPATH defaults to ~/.radare/monitor/\n";
@@ -67,12 +72,12 @@ if ($ARGV[0] eq "") {
 if ((!($f=~/\.txt/)) && (-f "$MONITOR_PATH/$f")) {
 	my $buf2 = "";
 	while(1) {
-		sleep(1);
 		my $buf = slurpit($MONITOR_PATH."/$f.txt");
 		if ($buf ne $buf2) {
 			$buf2 = $buf;
-			print "\e[0;0H\e[2J$buf";
+			print "\x1b[0;0H\x1b[2J$buf\x1b[0m\n";
 		}
+		sleep(1);
 	}
 } else {
 	print STDERR "Cannot open $MONITOR_PATH/$f.txt\n";

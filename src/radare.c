@@ -1443,7 +1443,12 @@ void monitors_run()
 	int tmp;
 	struct dirent *de;
 	DIR *dir;
+	u64 oseek = config.seek;
+	u64 obsize= config.block_size;
+	int flush = cons_flushable;
+	cons_flushable = 0;
 
+	cons_flush();
 	/* run the commands found in the monitor path directory */
 	*path='\0';
 	if ( (ptr = config_get("dir.monitor")) ) {
@@ -1474,27 +1479,33 @@ void monitors_run()
 						while(1) {
 							file[0]='\0';
 							fgets(file, 1023, fd);
-							if (file[0]=='\0') break;
+							if (feof(fd)) break;
 							file[strlen(file)-1]='\0';
-							for(i=strlen(file);i;i--) {
-								if (file[i]==' ')
-									file[i]='\0';
-							}
+							//for(i=strlen(file);i;i--) {
+							//	if (file[i]==' ')
+							//		file[i]='\0';
+							//}
 							radare_cmd(file, 0);
 						}
-		//				cons_flush();
+						cons_flush();
+						cons_render();
 						if (_print_fd != 1) // XXX stdout
 							close(_print_fd);
 						fclose(fd);
 					}
 					_print_fd = 1;
 				}
+				if (oseek != config.seek)
+					radare_seek(oseek, SEEK_SET);
+				if (obsize != config.block_size)
+					radare_set_block_size_i(obsize);
 			}
 			closedir(dir);
 		}
 		last_print_format = tmp;
 		_print_fd = 1;
 	}
+	cons_flushable = flush;
 }
 
 int radare_prompt()
