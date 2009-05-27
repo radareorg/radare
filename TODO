@@ -105,7 +105,6 @@ Things to be done
   - shows return value in eax before restoring regs
 
 ---- bugs
-* Split nodes of the graph code analysis
 * disasm is incorrect. always returns the negative value :OO
   - 03 e4 f0 = and esp, 0xf0
   but must be= and esp, 0xfffffff0

@@ -977,7 +977,7 @@ $
 	regs_t  reg, reg_saved;
 	int     status;
 	char    bak[4];
-	void*   ret = (void *)-1;
+    u64 ret = -1;
 
 	/* save old registers */
 	debug_getregs(ps.tid, &reg_saved);
@@ -987,22 +987,24 @@ $
 
 	/* mmap call */
 
-	R_RAX(reg) = 90;    // SYS_mmap
-	R_RBX(reg) = addr;  // mmap addr
-	R_RCX(reg) = size;  // size
+	//R_RAX(reg) = 90;    // SYS_mmap
+	R_RAX(reg) = 192;    // SYS_mmap2
+	R_RDI(reg) = addr;  // mmap addr
+	R_RSI(reg) = size;  // size
 	R_RDX(reg) = 0x7;   // perm
-	R_RDX(reg) = 0x1;   // options
-	R_RSI(reg) = fd;    // fd
-	R_RDI(reg) = 0;     // offset
+	//R_RDX(reg) = 0x1;   // options
+    R_RCX(reg) = 0x2;   // options
+	R_R8(reg) = fd;    // fd
+	R_R9(reg) = 0;     // offset
 
 	/* write syscall interrupt code */
-	R_RIP(reg) = R_RSP(reg) - 4;
+	//R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
 	debug_read_at(ps.tid, bak, 4, R_RIP(reg));
 
 	/* write SYSCALL OPS */
-	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
+	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS64, 4, R_RIP(reg));
 
 	/* set new registers value */
 	debug_setregs(ps.tid, &reg);
@@ -1018,16 +1020,17 @@ $
 		debug_getregs(ps.tid, &reg);
 
 		/* read allocated address */
-		ret = (void *)R_RAX(reg);
+        ret = (addr_t)(R_RAX(reg));
 
-		if (ret != 0) {
+		if (ret == 0) {
 			eprintf("oops\n");
 			return 0;
 		}
 	}
 
 	/* restore memory */
-	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
+	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
+	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);

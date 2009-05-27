@@ -983,7 +983,7 @@ $
         regs_t   reg, reg_saved;
         int     status;
 	char	bak[4];
-        void*   ret = (void *)-1;
+        addr_t ret = -1;
 
 	/* save old registers */
         debug_getregs(ps.tid, &reg_saved);
@@ -992,13 +992,15 @@ $
 	// XXX: FUCK MMAP GOES TO ESP!
 
 	/* mmap call */
-        R_EAX(reg) = 90;    // SYS_mmap
+        //R_EAX(reg) = 90;    // SYS_mmap
+        R_EAX(reg) = 192;    // SYS_mmap2
         R_EBX(reg) = addr;  // mmap addr
         R_ECX(reg) = size;  // size
         R_EDX(reg) = 0x7;   // perm
-        R_EDX(reg) = 0x1;   // options
-        R_ESI(reg) = fd;    // fd
-        R_EDI(reg) = 0;     // offset
+        //R_ESI(reg) = 0x1;   // options
+        R_ESI(reg) = 0x2;   // options
+        R_EDI(reg) = fd;    // fd
+        R_EBP(reg) = 0;     // offset
 #if 0
 XXX: we must use mmap2 here
 	push %ebp
@@ -1038,8 +1040,8 @@ XXX: we must use mmap2 here
         	debug_getregs(ps.tid, &reg);
 
         	/* read allocated address */
-        	ret = (void *)R_EAX(reg);
-		if (ret != 0) {
+        	ret = (addr_t)(R_EAX(reg) & 0xFFFFFFFF);
+		if (ret == 0) {
 			eprintf("oops\n");
 			return 0;
 		}
@@ -1055,7 +1057,7 @@ XXX: we must use mmap2 here
 	return 0;
 #endif
 
-	return (addr_t)addr;
+	return ret;
 } 
 
 u64 arch_alloc_page(unsigned long size, unsigned long *rsize)

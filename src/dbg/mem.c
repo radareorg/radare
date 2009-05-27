@@ -68,6 +68,7 @@ addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 {
 	int rsize = size;
 	int fd;
+	addr_t retaddr;
 
 	// TODO: close fds on close!!!
 //	fd = open(file, 0);
@@ -80,10 +81,10 @@ eprintf("FILE=(%s)\n", file);
 	}
 eprintf("fd=%d\n", fd);
 
-	addr = arch_mmap(fd, addr, rsize);
-eprintf("new addr = %x\n", addr);
+	retaddr = arch_mmap(fd, addr, rsize);
+eprintf("new addr = 0x%08llx\n", retaddr);
 
-	if(addr == (u64)-1) {
+	if(retaddr == (u64)-1) {
 		fprintf(stderr, "host_mmap:error\n");
 		close(fd);
 		return 0;
@@ -96,7 +97,7 @@ eprintf("new addr = %x\n", addr);
 	}
 
 	// XXX u64 for 64 bits!
-	mm->addr = (addr_t) addr;
+	mm->addr = (addr_t) retaddr;
 	mm->size = rsize;
 
 	/* tag for map region */
