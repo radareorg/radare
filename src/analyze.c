@@ -80,9 +80,8 @@ struct reflines_t *code_lines_init(int linescall)
 			/* store data */
 			switch(aop.type) {
 			case AOP_TYPE_CALL:
-				if (!linescall) {
+				if (!linescall)
 					goto __next;
-				}
 			case AOP_TYPE_CJMP:
 			case AOP_TYPE_JMP:
 				if (!bar) {
@@ -874,7 +873,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 	int tmp;
 	o+=_o; x+=_x; p+=_p; v+=_v;
 	/* TODO: change this value depending on delta times */
-	if (refresh++%20) return 0;
+	//if (refresh++%20) return 0;
 	tmp = p/12;
 	p   = p%12;
 	tmp = v/12;
@@ -950,7 +949,7 @@ int analyze_function(u64 from, int recursive, int report)
 	analyze_var_reset(); // ??? control recursivity here ??
 
 	//prg = code_analyze(config.vaddr + config.seek, 1024);
-	prg = code_analyze(seek, 1024);
+	prg = code_analyze(seek, config_get_i("graph.depth")); //1024);
 	list_add_tail(&prg->list, &config.rdbs);
 
 	list_for_each(head, &(prg->blocks)) {

@@ -82,7 +82,7 @@ static void config_old_init()
 	config.arch        = ARCH_X86;
 	config.lines       = 0;
 	config.debug       = 0;
-	config.color     = 0;
+	config.color       = 0;
 	config.unksize     = 0;
 	config.buf         = 0; // output buffered
 	config.ene         = 10;
@@ -919,6 +919,7 @@ void config_init(int first)
 	node = config_set("cfg.debug", "false");
 	node->callback = &config_debug_callback;
 	config_set("cfg.noscript", "false");
+	config_set_i("cfg.tzdelta", 0);
 	config_set("cfg.sections", "true");
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 4096); // cp850

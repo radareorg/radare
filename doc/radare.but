@@ -183,7 +183,7 @@ In the visual mode you can insert (alterate bytes) pressing 'i' and then <tab> t
 
 The format of the commands looks something like that:
 
-\c [N][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...] [# comment]
+\c [#][!][cmd] [arg] [@ offset:size|@@ flags|@@=off:sz ..] [> file] [| shell-pipe] [~grep#[]] [ && ...]
 
 'N' must be a numeric value. Commands are named with single chars [a-zA-Z]. So, if we prefix the command with a number. The following command will be executed as many times as we specify.
 
@@ -200,6 +200,25 @@ Some examples:
 \c wx 90 @@ sym.*        ; write a nop on every symbol
 \c pd 2000 | grep eax    ; grep opcodes using 'eax' register
 \c x 20 && s +3 && x 40  ; multiple commands in a single line
+
+The '@' character is used to specify a temporary offset where the command at the left will be executed. By using a ':' we can specify a temporaly block size too.
+
+The '~' character enables the internal grep which can be used to filter the output of any command. The usage is quite simple:
+
+\c pd 20~call            ; disassemble 20 instructions and grep for 'call'
+
+We can either grep for columns or rows:
+
+\c pd 20~call#0          ; get first row
+\c pd 20~call#1          ; get second row
+
+Or even combine them:
+
+\c pd 20~call[0]#0       ; grep first column of the first row matching 'call'
+
+The use of internal grep is a key feature for scripting radare, because is used to iterate over list of offsets or data processed from disassembly, ranges, or any other command. Here's an example of usage. See macros section (iterators) for more information.
+
+TODO : add example
 
 \H{expr} Expressions
 
@@ -557,9 +576,9 @@ Enables or disables the 'fortune' message at the begging of the program
 
 The basic set of commands in radare can be mostly grouped by action, and they should be easy to remember and short. This is why they are grouped with a single character, subcommands or related commands are described with a second character. For example '/ foo' for searching plain strings or '/x 90 90' to look for hexpair strings.
 
-The format of the commands looks something like that:
+The format of the commands (as explained in 'Command format' chapter) looks something like that:
 
-\c [#][!][cmd] [arg] [@ offset| @@ flags] [> file] [| shell-pipe] [ && ...]
+\c [#][!][cmd] [arg] [@ offset:size|@@ flags|@@=off:sz ..] [> file] [| shell-pipe] [~grep#[]] [ && ...]
 
 This is: repeat the described command '#' times.
 

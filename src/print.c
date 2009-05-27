@@ -1015,19 +1015,23 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	case FMT_TIME_DOS: {
 		unsigned char _time[2];
 		unsigned char _date[2];
+		int delta = config_get_i("cfg.tzdelta");
 		for(i=0;!config.interrupted && i<len;i+=4) {
 			endian_memcpy(_time, config.block+i, 2);
 			endian_memcpy(_date, config.block+i+2, 2);
 			print_msdos_date(_time, _date);
+			// TODO: add tzdelta support
 			cons_newline();
 		} } break;
 	case FMT_TIME_UNIX: {
+		int delta = config_get_i("cfg.tzdelta");
 		time_t t;
 		char datestr[256];
 		const char *datefmt;
 		for(i=0;!config.interrupted && i<len;i+=sizeof(time_t)) {
 			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
 			//printf("%s", (char *)ctime((const time_t*)&t));
+			t += (delta*3600); // time zone delta
 			datefmt = config_get("cfg.datefmt");
 			if (datefmt&&datefmt[0])
 				tmp = strftime(datestr,256,datefmt,
@@ -1039,6 +1043,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			cons_newline();
 		} } break;
 	case FMT_TIME_FTIME: {
+		int delta = config_get_i("cfg.tzdelta");
 		unsigned long long l, L = 0x2b6109100LL;
 		time_t t;
 		char datestr[256];
@@ -1048,6 +1053,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			l /= 10000000; // 100ns to s
 			l = (l > L ? l-L : 0); // isValidUnixTime?
 			t = (time_t) l; // TODO limit above!
+			t += (delta*3600); // time zone delta
 			datefmt = config_get("cfg.datefmt");
 			if (datefmt&&datefmt[0])
 				tmp = strftime(datestr, 256, datefmt,
@@ -1297,9 +1303,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		free(buf);
 		}
 	case FMT_HEXPAIRS:
-		for(i=0;i<len;i++) {
+		for(i=0;i<len;i++)
 			cons_printf("%02x", buf[i]);
-		}
 		cons_newline();
 		break;
 	case FMT_HEXBS:
@@ -1404,9 +1409,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		free(bufi);
 	if (zoom)
 		free(buf);
-
-	//fflush(stdout);
-	//cons_flush(); // UH?!? XXX
 	radare_controlc_end();
 }
 
@@ -1419,10 +1421,8 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 void radare_print(char *arg, print_fmt_t fmt)
 {
 	int obs, bs;
-
 	if (radare_read(0) < 0)
 		return;
-
 	obs = 0;
 	if ( fmt!=FMT_MEMORY && arg[0] != '\0' ) {
 		bs = get_math(arg);

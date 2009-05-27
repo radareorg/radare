@@ -48,6 +48,7 @@ int io_open(const char *pathname, int flags, mode_t mode)
 
 ssize_t io_read(int fd, void *buf, size_t count)
 {
+//eprintf("io-read 0x%08llx %d\n", config.seek, count);
 	if (io_map_read_at(config.seek, (u8 *)buf, count) != 0)
 		return count;
 	FIND_FD(fd)

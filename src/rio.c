@@ -491,4 +491,3 @@ int radare_read(int next)
 
 	return ret;
 }
-

@@ -103,6 +103,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0xf4: // hlt
 		aop->type   = AOP_TYPE_RET;
 		aop->length = 1;
+		//aop->eob = 1;
 		break;
 	case 0xc3: // ret
 	case 0xc2: // ret + 2 bytes
