@@ -1194,18 +1194,18 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
-	R_RAX(reg) = 0x7d;
-	R_RCX(reg) = size;
+	R_RAX(reg) = 10;
+	R_RSI(reg) = size;
 	R_RDX(reg) = perms;
-	R_RBX(reg) = (long long) addr;
+	R_RDI(reg) = (long long) addr;
 
-	R_RIP(reg) = R_RSP(reg) - 4;
+	//R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
 	debug_read_at(ps.tid, bak, 4, R_RIP(reg));
 
 	/* write syscall interrupt code */
-	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
+	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS64, 4, R_RIP(reg));
 
 	/* set new registers value */
 	debug_setregs(ps.tid, &reg);
@@ -1225,7 +1225,8 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 	}
 
 	/* restore memory */
-	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
+	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
+	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);

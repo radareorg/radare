@@ -12,6 +12,8 @@
 #define CPU_RET(x) R_RAX(x) /* return value */
 #endif
 
+#define SYSCALL_OPS64	"\x0f\x05\xcc\x90"	/* syscall, int $0x3, nop */
+
 int arch_jmp(u64 ptr);
 addr_t arch_mmap(int fd, int size, addr_t addr);
 //long long arch_syscall(int pid, int sc, ...);

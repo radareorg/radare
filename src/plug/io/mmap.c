@@ -103,7 +103,7 @@ static int mmap_open(const char *pathname, int flags, mode_t mode)
 	strncpy(buf, pathname, 1000);
 
 	if (!memcmp(ptr , "mmap://", 7)) {
-		ptr= ptr+6;
+		ptr= ptr+7;
 		// connect
 		mmap_fd = open(ptr,flags,mode);
 
