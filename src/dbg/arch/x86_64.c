@@ -103,7 +103,7 @@ u64 arch_syscall(int pid, int sc, ...)
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
 	/* eip is in the stack now */
-	R_RIP(reg) = R_RSP(reg) - 4;
+	//R_RIP(reg) = R_RSP(reg) - 4;
 
 	/* read stack values */
 	debug_read_at(pid, bak, baksz, R_RIP(reg));
@@ -119,8 +119,8 @@ u64 arch_syscall(int pid, int sc, ...)
 		case SYS_getpid:
 			break;
 		case SYS_tkill:
-			R_RBX(reg) = va_arg(ap, pid_t);
-			R_RCX(reg) = va_arg(ap, int);
+			R_RDI(reg) = va_arg(ap, pid_t);
+			R_RSI(reg) = va_arg(ap, int);
 #if __BSD__
 			R_RSP(reg)+=4;
 			debug_write_at(pid, &(R_RBX(reg)), 4, R_RSP(reg));
@@ -132,20 +132,20 @@ u64 arch_syscall(int pid, int sc, ...)
 			addr = R_RIP(reg)+4;
 			file = va_arg(ap, char *);
 			debug_write_at(pid, (unsigned char*)file, strlen(file)+4, addr);
-			R_RBX(reg) = addr;
-			R_RCX(reg) = va_arg(ap, int);
+			R_RDI(reg) = addr;
+			R_RSI(reg) = va_arg(ap, int);
 			R_RDX(reg) = 0755; // TODO: Support create flags
 			break;
 		case SYS_close:
-			R_RBX(reg) = va_arg(ap, int);
+			R_RDI(reg) = va_arg(ap, int);
 			break;
 		case SYS_dup2:
-			R_RBX(reg) = va_arg(ap, int);
-			R_RCX(reg) = va_arg(ap, int);
+			R_RDI(reg) = va_arg(ap, int);
+			R_RSI(reg) = va_arg(ap, int);
 			break;
 		case SYS_lseek:
-			R_RBX(reg) = va_arg(ap, int);
-			R_RCX(reg) = va_arg(ap, off_t);
+			R_RDI(reg) = va_arg(ap, int);
+			R_RSI(reg) = va_arg(ap, off_t);
 			R_RDX(reg) = va_arg(ap, int);
 			break;
 		default:
@@ -157,7 +157,7 @@ u64 arch_syscall(int pid, int sc, ...)
 	va_end(ap);
 
 	/* write SYSCALL OPS */
-	debug_write_at(pid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
+	debug_write_at(pid, (unsigned char*)SYSCALL_OPS64, 4, R_RIP(reg));
 
 	/* set new registers value */
 	debug_setregs(pid, &reg);
@@ -180,7 +180,8 @@ u64 arch_syscall(int pid, int sc, ...)
 	}
 
 	/* restore memory */
-	debug_write_at(ps.tid, (unsigned char*)bak, baksz, R_RSP(reg_saved) - 4);
+	//debug_write_at(ps.tid, (unsigned char*)bak, baksz, R_RSP(reg_saved) - 4);
+	debug_write_at(ps.tid, (unsigned char*)bak, baksz, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
@@ -988,7 +989,7 @@ $
 	/* mmap call */
 
 	//R_RAX(reg) = 90;    // SYS_mmap
-	R_RAX(reg) = 192;    // SYS_mmap2
+	R_RAX(reg) = 9;    // SYS_mmap
 	R_RDI(reg) = addr;  // mmap addr
 	R_RSI(reg) = size;  // size
 	R_RDX(reg) = 0x7;   // perm
@@ -1030,12 +1031,12 @@ $
 
 	/* restore memory */
 	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
-	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
+	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (u64) addr;
+	return (u64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1117,11 +1118,11 @@ u64 arch_get_sighandler(int signum)
 	debug_getregs(ps.tid, &reg_saved);
 	memcpy(&reg, &reg_saved, sizeof(reg));
 
-	R_RAX(reg) = 0xae;
-	R_RSI(reg) = 8;
+	R_RAX(reg) = 13;
+	R_RCX(reg) = 8;
 	R_RDX(reg) = R_RSP(reg) - 8;
-	R_RCX(reg) = 0;
-	R_RBX(reg) = signum;
+	R_RSI(reg) = 0;
+	R_RDI(reg) = signum;
 
 	/* save memory */
 	debug_read_at(ps.tid, bak, 8, R_RDX(reg));
@@ -1130,8 +1131,8 @@ u64 arch_get_sighandler(int signum)
 	debug_write_at(ps.tid, (unsigned char*)&ret, 4, R_RDX(reg));
 
 	/* write syscall interrupt code */
-	R_RIP(reg) = R_RSP(reg) - 4;
-	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS, 4, R_RIP(reg));
+	//R_RIP(reg) = R_RSP(reg) - 4;
+	debug_write_at(ps.tid, (unsigned char*)SYSCALL_OPS64, 4, R_RIP(reg));
 
 	/* set new registers value */
 	debug_setregs(ps.tid, &reg);
@@ -1144,11 +1145,13 @@ u64 arch_get_sighandler(int signum)
 
 	if(WIFSTOPPED(status)) {
 		/* read sighandler address */
-		debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
+		//debug_read_at(ps.tid, &ret, 4, R_RSP(reg_saved) - 8);
+		debug_read_at(ps.tid, &ret, 8, R_RSP(reg_saved) - 8);
 	}
 
 	/* restore memory */
-	debug_write_at(ps.tid, (unsigned char*)bak, 8, R_RSP(reg_saved) - 8);
+	//debug_write_at(ps.tid, (unsigned char*)bak, 8, R_RSP(reg_saved) - 8);
+	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);

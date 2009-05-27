@@ -206,7 +206,8 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	       PPC_Disassemble(&dp);
 	       sprintf(string, "%s %s", opcode, operands);
 #else
-	       sprintf(string, "Sorry. ppc disasm is non free");
+		   gnu_disppc_str(string, (u8*)b, seek+myinc);
+	       //sprintf(string, "Sorry. ppc disasm is non free");
 #endif
 	       } break;
 	case ARCH_MIPS:
