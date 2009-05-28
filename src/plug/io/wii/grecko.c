@@ -61,7 +61,11 @@ int grecko_open()
          * not in the boot stage any more).
          */
 	while(!dev) {
+#if __WINDOWS__
+		Sleep(0xc350); // 0.5s
+#else
 		usleep(0xc350); // 0.5s
+#endif
                 
                 if(!usb_device_found(&udd, &it_device)) {
 			printf("\rWaiting for device... %c", pbc[++c%4]);

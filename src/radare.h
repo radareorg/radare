@@ -14,6 +14,7 @@
 #define _GNU_SOURCE
 
 #include "main.h"
+#include "print.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>

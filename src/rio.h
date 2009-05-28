@@ -1,6 +1,10 @@
 #ifndef _INCLUDE_IO_H_
 #define _INCLUDE_IO_H_
 
+#include "config.h"
+#include "types.h"
+#include "list.h"
+
 extern int io_write_last;
 int io_system(const char *command);
 int io_open(const char *pathname, int flags, mode_t mode);

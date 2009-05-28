@@ -7,14 +7,13 @@ int             gdbwrap_simpleconnect(char *host, int port)
   struct        sockaddr_in   socketaddr;
   struct        hostent       *hostaddr;
   struct        protoent      *protocol;
-  extern        int           h_errno;
 
   PROFILER_IN(__FILE__, __FUNCTION__, __LINE__);
   
   hostaddr = gethostbyname(host);
   protocol = getprotobyname("tcp");
 
-  if (!hostaddr || h_errno == HOST_NOT_FOUND)
+  if (!hostaddr)
     PROFILER_ERR(__FILE__, __FUNCTION__, __LINE__, "invalid gethostbyname", -1);
 
   if (!port)

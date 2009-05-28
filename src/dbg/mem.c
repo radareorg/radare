@@ -70,6 +70,7 @@ addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 	int fd;
 	addr_t retaddr;
 
+#if __UNIX__
 	// TODO: close fds on close!!!
 //	fd = open(file, 0);
 #include <syscall.h>
@@ -106,6 +107,9 @@ eprintf("new addr = 0x%08llx\n", retaddr);
 	list_add_tail(&(mm->list), &(ps.map_mem));
 
 	ps.mem_sz += rsize;
+#else
+	eprintf("This platform does not supports mmap\n");
+#endif
 
 	// XXX
 	return 0;

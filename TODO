@@ -9,6 +9,8 @@
 TODO 1.4 ???
 ==========
 
+* implement socket pipes
+* implement main prompt
 * Invert doesnt works for disassembly!!!
   - manually done disassembly instruction by instruction!
 * !fork should be fixed

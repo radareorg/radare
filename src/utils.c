@@ -1083,6 +1083,9 @@ const char *resolve_path(const char *str)
 	char *path = getenv("PATH");
 	char *foo;
 	char *bar;
+#if __WINDOWS__
+	return strdup(str);
+#else
 	if (path != NULL) {
 		bar = alloca(strlen(str)+1);
 		strcpy(bar, str);
@@ -1093,15 +1096,17 @@ const char *resolve_path(const char *str)
 			if (bar != NULL)
 				bar[0]='\0';
 			snprintf(buf, 1022, "%s/%s", foo, str);
-			//printf("FINDING(%s)\n", buf);
+			//if (strstr(buf, ".exe") || strstr(buf, ".com")) {
 			if (!access(buf, X_OK)) {
-				return strdup(buf);
+				char *ret = strdup(buf);
 				free (path);
+				return ret;
 			}
 			foo = bar + 1;
 		}
 		free (path);
 	}
 	return strdup(str);
+#endif
 }
 

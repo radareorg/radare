@@ -1677,7 +1677,7 @@ int debug_inject2(char *input)
 	radare_cmd_raw(buf, 0);
 	radare_cmd_raw("!!rm -f .file.hex .file.o", 0);
 	debug_contp(ps.tid);
-	waitpid(ps.tid, &status, 0);
+	debug_waitpid(ps.tid, &status);
 	debug_write_at(ps.tid, (unsigned char*)bak, size, pc);
 	free(bak);
 	arch_jmp(pc);

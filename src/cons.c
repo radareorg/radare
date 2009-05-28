@@ -320,9 +320,9 @@ int cons_set_fd(int fd)
 	return _print_fd = fd;
 }
 
-#if __WINDOWS__
 void cons_gotoxy(int x, int y)
 {
+#if __WINDOWS__
         static HANDLE hStdout = NULL;
         COORD coord;
 
@@ -333,13 +333,10 @@ void cons_gotoxy(int x, int y)
                 hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
         SetConsoleCursorPosition(hStdout,coord);
-}
 #else
-void cons_gotoxy(int x, int y)
-{
 	cons_strcat("\x1b[0;0H");
-}
 #endif
+}
 
 void cons_clear00()
 {
@@ -648,8 +645,8 @@ int cons_w32_print(unsigned char *ptr)
 	write(1, str, ptr-str);
 	return len;
 }
-
 #endif
+
 #define CMDS 54
 static const char *radare_argv[CMDS] ={
 	NULL, // padding

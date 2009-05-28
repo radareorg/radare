@@ -73,6 +73,7 @@ struct config_t {
 	struct list_head rdbs; // linked list with all opened rdbs
 };
 
+
 #define D if (config.verbose)
 #define C if (config.color)
 #define V if (config.visual)

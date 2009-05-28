@@ -2173,8 +2173,12 @@ char *pipe_command_to_string(const char *cmd)
 	//int fus = cons_flushable;
 	//cons_flushable = 0;
 
+#if __UNIX__
 	pipe(fdp);
 	fd = fdp[1];
+#elif __WINDOWS__
+	eprintf("pipe_command_to_string() not ported to windows yet...\n");
+#endif
 	cons_reset();
 	//cons_flush();
 	if (fd == -1) {
@@ -2198,7 +2202,15 @@ char *pipe_command_to_string(const char *cmd)
 	fflush(stdout);
 	fflush(stderr);
 	memset(buf,0,sizeof(buf));
+	/* Already implemented in socket.c */
+#if __WINDOWS__
+{
+	int block = 1;
+	ioctlsocket(fdp[0], FIONBIO, (u_long FAR*)&block);
+}
+#else
 	fcntl(fdp[0], F_SETFL, O_NONBLOCK, 1);
+#endif
 	read(fdp[0], buf, 4095);
 	close(fd);
 	if (1||std!=0) {

@@ -43,7 +43,7 @@
 #include "flags.h"
 #include "utils.h"
 #include "code.h"
-#include "io.h"
+#include "rio.h"
 #include "plugin.h"
 #include "section.h"
 #include "ranges.h"

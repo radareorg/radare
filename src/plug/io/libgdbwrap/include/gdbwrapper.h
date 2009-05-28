@@ -1,8 +1,14 @@
 /* File to include to use the wrapper. */
 
+#include "main.h"
+#if __UNIX__
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#endif
+#if __WINDOWS__
+#include <windows.h>
+#endif
 #include <errno.h>
 #include "libaspect.h"
 

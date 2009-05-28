@@ -47,6 +47,7 @@
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
 
+#include "../main.h"
 #if __WINDOWS__
 #else
 #include <sys/mman.h>
@@ -120,14 +121,25 @@ if (filesize == 0)
   fileaddr = malloc(filesize);
   lseek(fd, 0, SEEK_SET);
   read(fd, fileaddr, filesize);
-#elif __WINDOWS__  || __BSD__
-  if ( (result = map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
-                        (boolean_t)TRUE, 
-                        (vm_size_t)filesize)) != KERN_SUCCESS )
+#elif __WINDOWS__
+  fprintf(stderr, "NO mmap for this platform?!?!\n");
+  return -1;
+#elif __BSD__
+  if ( (map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
+		TRUE, (vm_size_t)filesize)) != KERN_SUCCESS ) {
+	eprintf("Cannot map filedescriptor\n");
+		return -1;
+	}
 #elif __linux__ || __APPLE__
   fileaddr = mmap(0, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
 //perror("mmap");
 //printf("FILEADDR=%p\n", fileaddr);
+  if ( fileaddr == MAP_FAILED )
+    {
+      dm_fatal("Cannot map file %s\n", filename);
+      close(fd);
+      exit(-1);
+    }
 #else
 #warning MACHO parser not working on this arch
 
@@ -136,12 +148,6 @@ if (filesize == 0)
 
   //if ( (result = mmap(&fileaddr, (size_t)filesize, PROT_READ|PROT_WRITE,
    //                   MAP_SHARED, (int)fd, 0)) == (int *)MAP_FAILED)
-  if ( fileaddr == MAP_FAILED )
-    {
-      dm_fatal("Cannot map file %s\n", filename);
-      close(fd);
-      exit(-1);
-    }
 
   //printf(" fileaddr = 0x%08x\n", fileaddr);
   //fread(fileaddr, sizeof(char), filesize, fd);
@@ -191,8 +197,13 @@ Debug (const char *fmt, ...)
 u32 n0(const unsigned char *addr)
 {
 	u32 csz;
-	if (!memcmp("\xfe\xed\xfa\xce", fileaddr, 4)) {
+#if __WINDOWS__
+	/* HTONL IS NOT PORTABLE !!! */
+	return (u32)addr;
+#else
+	if (!memcmp("\xfe\xed\xfa\xce", fileaddr, 4))
 		csz = htonl(addr);
-	} else csz = (u32)addr;
+	else csz = (u32)addr;
+#endif
 	return csz;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is part of the radare project
@@ -29,6 +29,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#if __WINDOWS__
+int debug_pids()
+{
+	eprintf("debug_pids(): Not implement for this platform\n");
+}
+#else
 int pids_sons_of(int pid)
 {
 	char buf[512];
@@ -70,3 +76,4 @@ int debug_pids()
 	return -1;
 #endif
 }
+#endif

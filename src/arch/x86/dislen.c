@@ -1,8 +1,8 @@
 // code from: z0mbie @ 2002
 // http://vx.netlux.org/lib/vzo16.html
 
-#define DWORD unsigned long
-#define BYTE  unsigned char
+#define u32 unsigned long
+#define u8  unsigned char
 
 // disasm_flag values:
 #define C_66           0x00000001       // 66-prefix
@@ -15,30 +15,30 @@
 #define C_SIB          0x00000080       // sib present
 #define C_ANYPREFIX    (C_66|C_67|C_LOCK|C_REP|C_SEG)
 
-DWORD disasm_len;                       // 0 if error
-DWORD disasm_flag;                      // C_xxx
-DWORD disasm_memsize;                   // value = disasm_mem
-DWORD disasm_datasize;                  // value = disasm_data
-DWORD disasm_defdata;                   // == C_66 ? 2 : 4
-DWORD disasm_defmem;                    // == C_67 ? 2 : 4
+u32 disasm_len;                       // 0 if error
+u32 disasm_flag;                      // C_xxx
+u32 disasm_memsize;                   // value = disasm_mem
+u32 disasm_datasize;                  // value = disasm_data
+u32 disasm_defdata;                   // == C_66 ? 2 : 4
+u32 disasm_defmem;                    // == C_67 ? 2 : 4
 
-BYTE  disasm_seg;                       // CS DS ES SS FS GS
-BYTE  disasm_rep;                       // REPZ/REPNZ
-BYTE  disasm_opcode;                    // opcode
-BYTE  disasm_opcode2;                   // used when opcode==0F
-BYTE  disasm_modrm;                     // modxxxrm
-BYTE  disasm_sib;                       // scale-index-base
-BYTE  disasm_mem[8];                    // mem addr value
-BYTE  disasm_data[8];                   // data value
+u8  disasm_seg;                       // CS DS ES SS FS GS
+u8  disasm_rep;                       // REPZ/REPNZ
+u8  disasm_opcode;                    // opcode
+u8  disasm_opcode2;                   // used when opcode==0F
+u8  disasm_modrm;                     // modxxxrm
+u8  disasm_sib;                       // scale-index-base
+u8  disasm_mem[8];                    // mem addr value
+u8  disasm_data[8];                   // data value
 
 // returns: 1 if success
 //          0 if error
 #include "../../config.h"
 
-int dislen(BYTE* opcode0, int limit)
+int dislen(u8* opcode0, int limit)
 {
-	BYTE* opcode = opcode0;
-	DWORD i;
+	u8* opcode = opcode0;
+	u32 i;
 
 	disasm_len = 0;
 	disasm_flag = 0;
@@ -227,8 +227,8 @@ retry:
 			return 0;
 		disasm_modrm = opcode[0];
 		opcode++;
-		BYTE mod = disasm_modrm & 0xC0;
-		BYTE rm  = disasm_modrm & 0x07;
+		u8 mod = disasm_modrm & 0xC0;
+		u8 rm  = disasm_modrm & 0x07;
 		if (mod != 0xC0)
 		{
 			if (mod == 0x40) disasm_memsize++;

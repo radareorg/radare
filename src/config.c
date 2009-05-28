@@ -1031,7 +1031,11 @@ void config_init(int first)
 	}
 	config_set("dir.spcc", ptr);
 
+#if __WINDOWS__
+	config_set("dir.plugins", "");
+#else
 	config_set("dir.plugins", LIBDIR"/radare/");
+#endif
 	snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
 	config_set("dir.project", buf); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());

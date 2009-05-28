@@ -59,7 +59,7 @@ int sleep(int s)
 	Sleep(s*1000);
 }
 
-int usleep(int s)
+int nano_sleep(int s)
 {
 	Sleep(s);
 }

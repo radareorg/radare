@@ -50,6 +50,7 @@
 #include "../parser.h"
 #include "arch.h"
 
+static int bt_level = 64;
 int dislen(unsigned char* opcode0, int limit);
 unsigned long get_ret_sf(unsigned long top, unsigned long *ret_pos);
 static char oregs_timestamp[128];
@@ -519,8 +520,9 @@ int arch_backtrace()
 
  	last = config_get_i("dbg.btlast");
 	// TODO: implement [stack] map uptrace method too
+	radare_controlc();
 	esp = R_ESP(regs);
-	for(i=0;i<1024;i++) {
+	for(i=0;i<1024&&!config.interrupted;i++) {
 		unsigned long addr;
 		debug_read_at(ps.tid, &ebp2, 4, esp);
 		buf[0]=0;
@@ -576,6 +578,7 @@ int arch_backtrace()
 		}
 		esp+=4;
 	}
+	radare_controlc_end();
 	return i;
 }
 
@@ -914,6 +917,7 @@ int arch_continue()
 
 addr_t arch_mmap(int fd, int size, addr_t addr) //int *rsize)
 {
+        addr_t ret = -1;
 /*
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -983,7 +987,6 @@ $
         regs_t   reg, reg_saved;
         int     status;
 	char	bak[4];
-        addr_t ret = -1;
 
 	/* save old registers */
         debug_getregs(ps.tid, &reg_saved);
@@ -1056,9 +1059,8 @@ XXX: we must use mmap2 here
 	eprintf("Not supported on this OS\n");
 	return 0;
 #endif
-
 	return ret;
-} 
+}
 
 u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
@@ -1481,8 +1483,9 @@ void next_sf(struct list_head *list, unsigned long esp)
 	sf->vars_sz = ret_pos - esp;
 	sf->sz =  ret_pos - esp + sizeof(unsigned long);
 
-	/* get next stack frame */
-	next_sf(list, ret_pos + sizeof(unsigned long));
+	/* get next stack frame if bt_level is enought */
+	if (bt_level-->0)
+		next_sf(list, ret_pos + sizeof(unsigned long));
 
 	/* add stack frame */
 	list_add(&sf->next, list);
@@ -1580,8 +1583,12 @@ struct list_head *arch_bt()
 	/* get stack frames */
 #if __linux__
 	// XXX on BSD is broken
+	bt_level = 64;
 	next_sf(bt_list, R_ESP(WS(regs)));
 #endif
+	if (bt_level == 0) {
+		eprintf("There are probably more addresses in the backtrace..\n");
+	}
 
 	return bt_list;
 }

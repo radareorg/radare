@@ -31,7 +31,7 @@ ifeq ($(W32),1)
 # Windows 32 bits
 psOBJ= dbg/win32/utils.o dbg/win32/debug.o
 psOBJ+= dbg/win32/fd.o dbg/win32/signal.o
-psOBJ+=dbg/arch/${CPU}-hack.o
+psOBJ+=dbg/arch/${CPU}-hack.o dbg/procs.o
 psOBJ+=dbg/arch/${CPU}.o dbg/arch/${CPU}-bp.o
 psOBJ+=dbg/close.o dbg/debug.o dbg/lseek.o dbg/open.o
 psOBJ+=dbg/system.o dbg/signal.o

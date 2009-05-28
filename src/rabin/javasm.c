@@ -30,6 +30,19 @@
 #include <getopt.h>
 #include <stdarg.h>
 
+#if __WINDOWS__
+u16 NTOHS(u16 x) {
+	u16 y;
+	u8 *buffer = x;
+	u8 *dest = y;
+	dest[0] = buffer[1];
+	dest[1] = buffer[0];
+	return y;
+}
+#else
+#define NTOHS ntohs
+#endif
+
 /* alphabetically sorted */
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
 // Jazzele: http://people.bath.ac.uk/enpsgp/nokia770/jazelle/test_jazelle5.c
@@ -421,7 +434,7 @@ unsigned short read_short(FILE *fd)
 	unsigned short sh=0;
 
 	fread(&sh, 2,1,fd);//sizeof(unsigned short), 1, fd);
-	return ntohs(sh);
+	return NTOHS(sh);
 }
 
 static int attributes_walk(FILE *fd, int sz2, int fields)
@@ -532,7 +545,7 @@ int java_classdump(const char *file)
 	NR printf("Version: 0x%02x%02x 0x%02x%02x\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
 	else printf("CC Class version: 0x%02x%02x 0x%02x%02x @ 0\n", cf.major[1],cf.major[0], cf.minor[1],cf.minor[0]);
 
-	cf.cp_count = ntohs(cf.cp_count);
+	cf.cp_count = NTOHS(cf.cp_count);
 	if (cf.major[0]==cf.major[1] && cf.major[0]==0) {
 		fprintf(stderr, "Oops. this is a Mach-O\n");
 		return 0;
@@ -613,7 +626,7 @@ int java_classdump(const char *file)
 	fread(&cf2, sizeof(struct classfile2), 1, fd);
 	check_eof(fd);
 	NR printf("Access flags: 0x%04x\n", cf2.access_flags);
-	this_class = ntohs(cf2.this_class);
+	this_class = NTOHS(cf2.this_class);
 	NR printf("This class: %d\n", cf2.this_class);
 	check_eof(fd);
 	//printf("This class: %d (%s)\n", ntohs(cf2.this_class), cp_items[ntohs(cf2.this_class)-1].value); // XXX this is a double pointer !!1

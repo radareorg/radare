@@ -8,7 +8,13 @@
  *  where the checksum is the sum of all the characters modulo 256.
  */
 
+#include "main.h"
+#if __UNIX__
 #include             <netdb.h>
+#endif
+#if __WINDOWS__
+#include <windows.h>
+#endif
 #include             "libaspect.h"
 #include             "gdbwrapper-internals.h"
 #include             "gdbwrapper.h"
@@ -728,7 +734,7 @@ static void          *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr,
 {
   uint8_t            packetsize;
   char               *rec;
-  char               *packet = alloca(bytes + MSG_BUF);
+  char               *packet = malloc(bytes + MSG_BUF);
 
   ASSERT(desc != NULL && value != NULL);
   snprintf(packet, MSG_BUF, "%s%x%s%x%s", GDBWRAP_MEMWRITE,
@@ -740,6 +746,7 @@ static void          *gdbwrap_writememory(gdbwrap_t *desc, la32 linaddr,
   memcpy(packet + packetsize, value, bytes);
   packet[packetsize + bytes] = GDBWRAP_NULL_CHAR;
   rec = gdbwrap_send_data(desc, packet);
+  free(packet);
 
   return rec;
 }
