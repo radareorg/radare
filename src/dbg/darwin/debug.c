@@ -178,6 +178,13 @@ int debug_attach(int pid)
 		return -1;
 	}
 	fprintf(stderr, "Thread count: %d\n", inferior_thread_count);
+#if SUSPEND
+  if ( task_suspend ( this -> port ) != KERN_SUCCESS )
+  {
+    return ( FALSE );
+  }
+#endif
+/* is this required for arm ? */
 #if EXCEPTION_PORT
 	if (mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &exception_port) != KERN_SUCCESS) {
 		fprintf(stderr, "Failed to create exception port.\n");
@@ -354,6 +361,10 @@ int debug_fork_and_attach()
 	pid_t pid;
 	/* TODO */
 	pid = start_inferior(1, &argv);
+	if (pid == -1) {
+		printf("inferior pid is -1??!?!\n");
+		return -1;
+	}
 
 	err = debug_attach(pid);
 	if (err == -1) {
