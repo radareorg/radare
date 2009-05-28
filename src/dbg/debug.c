@@ -1664,7 +1664,7 @@ int debug_inject2(char *input)
 	radare_cmd_raw(buf, 0);
 	snprintf(buf, 1024, "!!rsc syms-dump a.o | grep %s | sed 's/.* //' > .file.hex", sym);
 	radare_cmd_raw(buf, 0);
-	radare_cmd_raw("!!echo 'cd0390' >> .file.hex", 0);
+	radare_cmd_raw("!!echo 'cc90' >> .file.hex", 0);
 	size = file_size(".file.hex");
 	bak = malloc(size);
 	if (!bak) {
@@ -1673,7 +1673,8 @@ int debug_inject2(char *input)
 	}
 	pc = arch_pc(ps.tid);
 	debug_read_at(ps.tid, bak, size, pc);
-	radare_cmd_raw("wF .file.hex", 0);
+	snprintf(buf, 1024, "s 0x%08llx && wF .file.hex", pc);
+	radare_cmd_raw(buf, 0);
 	radare_cmd_raw("!!rm -f .file.hex .file.o", 0);
 	debug_contp(ps.tid);
 	waitpid(ps.tid, &status, 0);
