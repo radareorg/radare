@@ -1032,7 +1032,7 @@ void config_init(int first)
 	config_set("dir.spcc", ptr);
 
 #if __WINDOWS__
-	config_set("dir.plugins", "");
+	config_set("dir.plugins", "plugins\\");
 #else
 	config_set("dir.plugins", LIBDIR"/radare/");
 #endif
