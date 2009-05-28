@@ -1642,4 +1642,3 @@ int debug_loop(char *addr_str)
 
 	return ret;
 }
-

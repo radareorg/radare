@@ -23,6 +23,7 @@ if ( $file eq "") {
 
 open FD, "objdump -wd $file|" or die "Cannot exec objdump -wd $file\n";
 while(<FD>) {
+_sym:
 	if (/.*\ <(.*)>:/) {
 		$name = $1;
 		if ($name=~/-/) {
@@ -31,7 +32,11 @@ while(<FD>) {
 		print "$name ";
 		while(<FD>) {
 			chomp($_);
-			last if ((/>:/)||(/section/));
+			if (/>:/) {
+				print "\n";
+				goto _sym;
+			}
+			last if (/section/);
 			last if (/\.\.\./);
 			# objdump output sucks, and those regexps too :D
 			$str=$_;

@@ -158,7 +158,7 @@ int data_set(u64 off, int type)
 struct data_t *data_add_arg(u64 off, int type, const char *arg)
 {
 	struct data_t *d;
-	if (arg == NULL || arg[0]=='\0')
+	if (arg == NULL)
 		return NULL;
 	d = data_add(off, type);
 	if (d != NULL)

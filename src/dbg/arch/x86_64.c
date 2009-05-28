@@ -975,6 +975,7 @@ void main(void) {
 $
 #endif
 #ifdef __linux__
+//XXX: Not working (mmap2?)
 	regs_t  reg, reg_saved;
 	int     status;
 	char    bak[4];
@@ -988,13 +989,13 @@ $
 
 	/* mmap call */
 
-	//R_RAX(reg) = 90;    // SYS_mmap
+	//R_RAX(reg) = 90;   // SYS_mmap
 	R_RAX(reg) = 9;    // SYS_mmap
-	R_RDI(reg) = addr;  // mmap addr
-	R_RSI(reg) = size;  // size
-	R_RDX(reg) = 0x7;   // perm
-	//R_RDX(reg) = 0x1;   // options
-    R_RCX(reg) = 0x2;   // options
+	R_RDI(reg) = addr; // mmap addr
+	R_RSI(reg) = size; // size
+	R_RDX(reg) = 0x7;  // perm
+	//R_RDX(reg) = 0x1;  // options
+    R_RCX(reg) = 0x2;  // options
 	R_R8(reg) = fd;    // fd
 	R_R9(reg) = 0;     // offset
 
@@ -1031,7 +1032,7 @@ $
 
 	/* restore memory */
 	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RSP(reg_saved) - 4);
-	//debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
+	debug_write_at(ps.tid, (unsigned char*)bak, 4, R_RIP(reg_saved));
 
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
@@ -1128,7 +1129,8 @@ u64 arch_get_sighandler(int signum)
 	debug_read_at(ps.tid, bak, 8, R_RDX(reg));
 
 	/* write -1 */
-	debug_write_at(ps.tid, (unsigned char*)&ret, 4, R_RDX(reg));
+	//debug_write_at(ps.tid, (unsigned char*)&ret, 4, R_RDX(reg));
+	debug_write_at(ps.tid, (unsigned char*)&ret, 8, R_RDX(reg));
 
 	/* write syscall interrupt code */
 	//R_RIP(reg) = R_RSP(reg) - 4;
@@ -1246,6 +1248,7 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 
 u64 arch_set_sighandler(int signum, u64 handler)
 {
+// XXX: NOT WORKING (missing syscall?)
 #ifdef __linux__
 	regs_t  reg, reg_saved;
 	int     status;
