@@ -1662,7 +1662,7 @@ int debug_inject2(char *input)
 	sym = ptr + 1;
 	snprintf(buf, 1024, "!!gcc -c -o .file.o %s", file);
 	radare_cmd_raw(buf, 0);
-	snprintf(buf, 1024, "!!rsc syms-dump a.o | grep %s | sed 's/.* //' > .file.hex", sym);
+	snprintf(buf, 1024, "!!rsc syms-dump .file.o | grep %s | sed 's/.* //' > .file.hex", sym);
 	radare_cmd_raw(buf, 0);
 	radare_cmd_raw("!!echo 'cc90' >> .file.hex", 0);
 	size = file_size(".file.hex");
