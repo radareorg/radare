@@ -1642,3 +1642,44 @@ int debug_loop(char *addr_str)
 
 	return ret;
 }
+
+int debug_inject2(char *input)
+{
+	u64 pc, size;
+	int status;
+	char buf[1024];
+	char *bak;
+	char *file, *sym, *ptr, *ptr2 = input;
+
+	ptr = strchr(ptr2, ' ');
+	if (!ptr)
+		return 0;
+	file = ptr2 = ptr + 1;
+	ptr = strchr(ptr2, ' ');
+	if (!ptr)
+		return 0;
+	ptr[0] = '\0';
+	sym = ptr + 1;
+	snprintf(buf, 1024, "!!gcc -c -o .file.o %s", file);
+	radare_cmd_raw(buf, 0);
+	snprintf(buf, 1024, "!!rsc syms-dump a.o | grep %s | sed 's/.* //' > .file.hex", sym);
+	radare_cmd_raw(buf, 0);
+	radare_cmd_raw("!!echo 'cd0390' >> .file.hex", 0);
+	size = file_size(".file.hex");
+	bak = malloc(size);
+	if (!bak) {
+		radare_cmd_raw("!!rm -f .file.hex .file.o", 0);
+		return 0;
+	}
+	pc = arch_pc(ps.tid);
+	debug_read_at(ps.tid, bak, size, pc);
+	radare_cmd_raw("wF .file.hex", 0);
+	radare_cmd_raw("!!rm -f .file.hex .file.o", 0);
+	debug_contp(ps.tid);
+	waitpid(ps.tid, &status, 0);
+	debug_write_at(ps.tid, (unsigned char*)bak, size, pc);
+	free(bak);
+	arch_jmp(pc);
+
+	return 1;
+}

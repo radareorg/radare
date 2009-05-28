@@ -39,7 +39,6 @@ int arch_hack_help()
 	printf(" 6 - add ret with eax=0 (3 bytes)\n");
 	printf(" 7 - negate zero flag (TODO)\n");
 	printf(" 8 - jmp $$ (infinite loop) (2 bytes)\n");
-	printf(" 9 <file> <sym> - inject & execute code from file\n");
 	return 0;
 }
 
@@ -159,40 +158,6 @@ int arch_hack(const char *cmd)
 		debug_getregs(ps.tid, &reg);
 		debug_write_at(ps.tid,(unsigned char *)"\xeb\xfe", 2, R_EIP(reg));
 		break;
-	case '9':
-		{
-		regs_t reg_saved, reg;
-		int status;
-		char buf[1024];
-		char bak[1024];
-		char *file, *sym, *ptr, *ptr2 = cmd;
-		
-		ptr = strchr(ptr2, ' ');
-		if (!ptr)
-			break;
-		file = ptr2 = ptr + 1;
-		ptr = strchr(ptr2, ' ');
-		if (!ptr)
-			break;
-		ptr[0] = '\0';
-		sym = ptr + 1;
-		debug_getregs(ps.tid, &reg_saved);
-		debug_read_at(ps.tid, bak, 1024, R_EIP(reg_saved));
-		snprintf(buf, 1024, "!!gcc -c -o .file.o %s", file);
-		radare_cmd_raw(buf, 0);
-		snprintf(buf, 1024, "!!rsc syms-dump a.o | grep %s | sed 's/.* //' > .file.hex", sym);
-		radare_cmd_raw(buf, 0);
-		radare_cmd_raw("!!echo 'cd0390' >> .file.hex", 0);
-		radare_cmd_raw("wF .file.hex", 0);
-		radare_cmd_raw("!!rm -f .file.hex .file.o", 0);
-		debug_contp(ps.tid);
-		waitpid(ps.tid, &status, 0);
-		debug_getregs(ps.tid, &reg);
-		R_EIP(reg) = R_EIP(reg_saved);
-		debug_write_at(ps.tid, (unsigned char*)bak, 1024, R_EIP(reg_saved));
-		debug_setregs(ps.tid, &reg);
-		break;
-		}
 	case '?':
 		arch_hack_help();
 		break;

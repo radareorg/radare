@@ -110,6 +110,7 @@ static int help_message()
 	cons_printf("  core               dump core of the process\n");
 	cons_printf("  fork               fork current process\n");
 	cons_printf("  hack [N]           Make a hack.\n");
+	cons_printf("  inject <file> <sym> Inject and execute a symbol from a source code file\n");
 	//cons_printf("  inject [bin]       inject code inside child process (UNSTABLE)\n");
 	cons_printf("Usage: !<cmd>[?] <args> @ <offset>     ; see eval dbg. fmi\n");
 
@@ -173,6 +174,7 @@ static struct commads_t {
 	CB_CMD( "set"      , CB_NORMAL   , debug_set_register ) ,
 	CB_CMD( "wp"       , CB_NORMAL   , debug_wp )           ,
 	CB_CMD( "mp"       , CB_NORMAL   , debug_mp )           ,
+	CB_CMD( "inject"   , CB_NORMAL   , debug_inject2 )       ,
 	//CB_CMD( "inject"   , CB_NORMAL   , debug_inject )       , 
 	//CB_CMD( "lib"      , CB_NORMAL   , debug_lib)           , 
 	CB_CMD( "trace"    , CB_NORMAL   , debug_trace )        ,

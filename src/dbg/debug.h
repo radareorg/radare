@@ -116,6 +116,7 @@ u64 debug_get_regoff(regs_t *reg, int off);
 int debug_set_register(const char *args);
 void debug_set_regoff(regs_t *regs, int off, unsigned long val);
 u64 debug_get_register(const char *reg);
+int debug_inject2(char *input);
 
 int syscall_name_to_int(const char *str);
 void debug_os_syscall_list();
