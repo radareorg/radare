@@ -293,7 +293,7 @@ int remote_close(int fd)
 
 u64 remote_lseek(int fildes, u64 offset, int whence)
 {
-	uchar tmp[1+4+1];
+	uchar tmp[10];
 
 	// query
 	tmp[0] = RMT_SEEK;
