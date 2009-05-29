@@ -17,7 +17,11 @@ quit()
 
 """
 # Already imported from radare's core
-import r
+try:
+	import r
+except:
+	print "Cannot find 'r' import. Importing ramote"
+	global r
 import string
 import binascii
 import array
@@ -95,6 +99,15 @@ def analyze_block(addr=None):
 
 def endian_set(big):
 	r.cmd("eval cfg.bigendian=%d"%big)
+
+def read(addr, len):
+	r.cmd("pX %s@%s"%(len,addr))
+
+def disasm(addr, nbytes):
+	r.cmd("pD %s@%s"%(nbytes,addr))
+
+def disasm_ops(addr, n_ops):
+	r.cmd("pd %s@%s"%(n_ops,addr))
 
 def write(hexpair):
 	r.cmd("wx %s"%hexpair)

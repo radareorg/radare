@@ -811,7 +811,7 @@ int data_var_type_list(const char *mask)
 	
 }
 
-const char *data_var_type_get(const char *datatype)
+struct var_type_t *data_var_type_get(const char *datatype)
 {
 	struct list_head *pos;
 	u64 ret = 0;

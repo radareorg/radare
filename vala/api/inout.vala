@@ -1,6 +1,6 @@
 using GLib;
 
-public class Radare.IO
+public class Radare.InOut
 {
 	public static int open(string file, int flags, int mode)
 	{

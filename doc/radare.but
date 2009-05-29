@@ -127,6 +127,21 @@ The old build system based on ACR/GMAKE stills maintained and usable, but don't 
 \c $ gmake
 \c $ sudo gmake install
 
+\H{compile-w32} Windows compilation
+
+The easy way to compile things for windows is using mingw32. The w32 builds distributed in the radare homepage are generated from a GNU/Linux box using mingw32 and they are tested with wine.
+
+To compile type:
+
+\c $ CC=i486-mingw32-gcc ./configure --enable-w32 --without-gui
+\c $ make
+\c $ make w32dist
+\c $ zip -r w32-build.zip w32-build
+
+The 'i486-mingw32-gcc' compiler is the one I have in my box, you will probably need to change this. Mingw32 will generate a native console application for windows.
+
+Another possible way to compile radare on w32 is using cygwin, which I dont really recommend at all because of the problems related to the cygwin librarires makes the program quite hard to be debugged in case of problems.
+
 \H{cmdflags} Commandline flags
 
 The core accepts multiple flags from the command line to change some configuration or start with different options.

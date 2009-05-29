@@ -27,7 +27,7 @@ OBJ+=../src/rabin/javasm.o
 OBJ+=../src/plug/io/gdb.o
 OBJ+=../src/radare.o
 OBJ+=../src/utils.o
-OBJ+=../src/io.o
+OBJ+=../src/inout.o
 OBJ+=../src/project.o
 OBJ+=../src/config.o
 OBJ+=../src/flags.o
@@ -50,7 +50,7 @@ VALAFLAGS=-g
 
 #shell.o
 
-VOBJ=config.o core.o debug.o debugger.o info.o io.o line.o list.o logs.o plugin.o project.o radget.o term.o visor.o default_layout.o edge.o graph.o layout.o node.o renderer.o shape.o widget.o
+VOBJ=config.o core.o debug.o debugger.o info.o inout.o line.o list.o logs.o plugin.o project.o radget.o term.o visor.o default_layout.o edge.o graph.o layout.o node.o renderer.o shape.o widget.o
 BIN=a.out
 
 #${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`

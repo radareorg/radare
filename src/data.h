@@ -73,6 +73,7 @@ void data_comment_init(int);
 void data_reflines_init(int lines, int linescall);
 int data_printd(int delta);
 int data_var_type_list(const char *mask);
+struct var_type_t *data_var_type_get(const char *datatype);
 const char *data_var_type_format(const char *datatype);
 void data_del(u64 addr, int type,int len/* data or code */);
 void data_del_range(u64 from, u64 to);

@@ -41,7 +41,7 @@ clean:
 	${Q}cd libusbsniff && ${MAKE} clean
 
 w32dist:
-	mkdir w32-build
+	mkdir -p w32-build
 	cp src/radare.exe w32-build
 	cp src/rax.exe w32-build
 	cp src/xrefs.exe w32-build
@@ -52,6 +52,9 @@ w32dist:
 	cp src/radiff/rdbdiff.exe w32-build
 	-cp src/radiff/bdiff/bdiff.exe w32-build
 	cp src/rasm/rasm.exe w32-build
+	mv w32-build radare-${VERSION}-w32
+	zip -r radare-${VERSION}-w32.zip radare-${VERSION}-w32
+	scp radare-${VERSION}-w32.zip news.nopcode.org:/home/www/radarenopcode/get
 
 arm: all
 	mkdir -p pkg
