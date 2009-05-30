@@ -47,6 +47,7 @@
 #include "print.h"
 #include "flags.h"
 #include "undo.h"
+#include "rtr.h"
 
 print_fmt_t last_print_format = FMT_HEXB;
 //int fixed_width = 0;
@@ -88,7 +89,7 @@ void show_help_message()
 		cmdaux = cmdstr;
 		cmdaux[0] = cmd->sname;
 		switch(cmdaux[0]) {
-		case '+': case '-': case '0': case '=': case '?':
+		case '+': case '-': case '0': case '?':
 		    continue;
 		}
 		cmdaux++;
@@ -140,6 +141,7 @@ command_t commands[] = {
 	COMMAND('/', "[?] [str]",      "search   find matching strings", search),
 	COMMAND('!', "[[!]command]",   "system   execute a !iosystem or !!shell command", shell), 
 	COMMAND('h', "[hash|!lang]",   "hash     hash current block (#? or #!perl)", hash),
+	COMMAND('=', "[?] [cmd]",      "remote   send cmd to remote radare", rtr),
 	COMMAND('?', "",               "help     show the help message", help),
 	COMMAND( 0, NULL, NULL, default)
 };
@@ -2658,6 +2660,29 @@ CMD_DECL(shell)
 	else ret = io_system(input);
 	env_destroy(input);
 	return ret;
+}
+
+CMD_DECL(rtr)
+{
+	switch (input[0]) {
+	case '\0':
+		rtr_list();
+		break;
+	case '?':
+		rtr_help();
+		break;
+	case '+':
+		rtr_add(input);
+		break;
+	case '-':
+		rtr_remove(input);
+		break;
+	case '=':
+		rtr_session(input);
+		break;
+	default:
+		rtr_cmd(input);
+	}
 }
 
 CMD_DECL(help)

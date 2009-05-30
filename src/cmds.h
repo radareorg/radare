@@ -87,6 +87,7 @@ CMD_DECL(macro);
 CMD_DECL(macro_break);
 CMD_DECL(hash);
 CMD_DECL(config_eval);
+CMD_DECL(rtr);
 CMD_DECL(default);
 
 #endif

@@ -42,6 +42,7 @@ int remote_fd = 0;
 #define RMT_SEEK   0x04
 #define RMT_CLOSE  0x05
 #define RMT_SYSTEM 0x06
+#define RMT_CMD    0x07
 #define RMT_REPLY  0x80
 
 #define uchar unsigned char
@@ -149,6 +150,39 @@ int remote_handle_client( int fd ){
 				memcpy(ptr+5, config.block, config.block_size);
 				write(c, ptr, i+5);
 				break;
+			case RMT_CMD:
+				{
+				char bufr[8], *bufw = NULL;
+				char *cmd = NULL, *cmd_output = NULL;
+				int i;
+				u64 cmd_len = 0;
+
+				/* read */
+				read(c, &bufr, 4);
+				endian_memcpy((uchar*)&i, bufr, 4);
+				cmd = malloc(i);
+				read(c, cmd, i);
+				printf("len: %d cmd: '%s'\n",
+					i, cmd); fflush(stdout);
+				cmd_output = radare_cmd_str(cmd);
+				if (cmd_output)
+					cmd_len = strlen(cmd_output);
+				free(cmd);
+				/* write */
+				if (cmd_len == 0) {
+					cmd_len = 4;
+					cmd_output = strdup("done");
+				}
+				cmd_len += 1;
+				bufw = malloc(cmd_len + 9);
+				bufw[0] = RMT_CMD | RMT_REPLY;
+				endian_memcpy(bufw+1, (uchar *)&cmd_len, 8);
+				memcpy(bufw+9, cmd_output, cmd_len);
+				write(c, bufw, cmd_len+9);
+				free(bufw);
+				free(cmd_output);
+				break;
+				}
 			case RMT_WRITE:
 				printf("TODO: write\n");
 				break;
