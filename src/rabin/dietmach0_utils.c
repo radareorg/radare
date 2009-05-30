@@ -124,13 +124,15 @@ if (filesize == 0)
 #elif __WINDOWS__
   fprintf(stderr, "NO mmap for this platform?!?!\n");
   return -1;
+#if 0
 #elif __BSD__
   if ( (map_fd((int)fd, (vm_offset_t)0, (vm_offset_t *)&fileaddr,
 		TRUE, (vm_size_t)filesize)) != KERN_SUCCESS ) {
 	eprintf("Cannot map filedescriptor\n");
 		return -1;
 	}
-#elif __linux__ || __APPLE__
+#endif
+#elif __linux__ || __APPLE__ || __BSD__
   fileaddr = mmap(0, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
 //perror("mmap");
 //printf("FILEADDR=%p\n", fileaddr);

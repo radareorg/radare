@@ -73,7 +73,7 @@ addr_t mmap_tagged_page(const char *file, addr_t addr, addr_t size)
 #if __UNIX__
 	// TODO: close fds on close!!!
 //	fd = open(file, 0);
-#include <syscall.h>
+#include <sys/syscall.h>
 	fd = arch_syscall(ps.pid, SYS_open, file, 0); //O_RDWR);
 eprintf("FILE=(%s)\n", file);
 	if (fd == -1) {
