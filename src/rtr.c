@@ -6,12 +6,13 @@ static struct rtr_host_t rtr_host[RTR_MAX_HOSTS];
 
 void rtr_help()
 {
-	eprintf(" =                  ; List hosts\n"
-			" =[fd] cmd          ; Exec cmd in host n\n"
-			" =+ [proto://]host  ; Add host (default protocol is rap://)\n"
-			" =-[fd]             ; Remove all hosts or host 'fd'\n"
-			" ==[fd]             ; Open remote session with host 'fd'\n"
-			"NOTE: Last used host comes to be default\n");
+	cons_printf(" =                  ; List hosts\n"
+				" =[fd] cmd          ; Exec cmd in host n\n"
+				" =+ [proto://]host  ; Add host (default protocol is rap://)\n"
+				" =-[fd]             ; Remove all hosts or host 'fd'\n"
+				" ==[fd]             ; Open remote session with host 'fd'\n"
+				"NOTE: Last used host comes to be default\n"
+				"      Use 'q' to quit session\n");
 }
 
 void rtr_list()
@@ -20,14 +21,14 @@ void rtr_list()
 
 	for (i = 0; i < RTR_MAX_HOSTS; i++)
 		if (rtr_host[i].fd) {
-			eprintf("%i - ", rtr_host[i].fd);
+			cons_printf("%i - ", rtr_host[i].fd);
 			if (rtr_host[i].proto == RTR_PROT_TCP)
-				eprintf("tcp://");
+				cons_printf("tcp://");
 			else if (rtr_host[i].proto == RTR_PROT_TCP)
-				eprintf("udp://");
-			else eprintf("rap://");
-			eprintf("%s:%i/%s\n",
-					rtr_host[i].host, rtr_host[i].port, rtr_host[i].file);
+				cons_printf("udp://");
+			else cons_printf("rap://");
+			cons_printf("%s:%i/%s\n",
+						rtr_host[i].host, rtr_host[i].port, rtr_host[i].file);
 	}
 }
 		
@@ -75,7 +76,7 @@ void rtr_add(char *input)
 	/* send */
 	buf[0] = RTR_RAP_OPEN;
 	buf[1] = 0;
-	buf[2] = (uchar)strlen(file);
+	buf[2] = (uchar)(strlen(file)+1);
 	memcpy(buf+3, file, buf[2]);
 	write(fd, buf, 3+buf[2]);
 	/* read */
@@ -106,8 +107,8 @@ void rtr_remove(char *input)
 {
 	int fd, i;
 
-	if (input[1] >= '0' && input[1] <= '9') {
-		fd = get_math(input+1);
+	if (input[0] >= '0' && input[0] <= '9') {
+		fd = get_math(input);
 		for (i = 0; i < RTR_MAX_HOSTS; i++)
 			if (rtr_host[i].fd == fd) {
 				socket_close(rtr_host[i].fd);
@@ -127,7 +128,25 @@ void rtr_remove(char *input)
 
 void rtr_session(char *input)
 {
-	eprintf("TODO: Start session\n");
+	char prompt[32], aux[4096], buf[4096];
+	int fd;
+
+	if (input[0] >= '0' && input[0] <= '9') {
+		fd = get_math(input);
+		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
+	}
+
+	while (1) {
+		snprintf(prompt, 32, "fd:%i> ", rtr_host[rtr_n].fd);
+		dl_prompt = prompt;
+		if((cons_fgets(aux, 4096, 0, NULL))) {
+			if (aux[0] == 'q')
+				break;
+			snprintf(buf, 4096, " %s", aux);
+			rtr_cmd(buf);
+			cons_flush();
+		}
+	}
 }
 
 void rtr_cmd(char *input)
@@ -149,33 +168,33 @@ void rtr_cmd(char *input)
 
 	cmd = strchr(input, ' ');
 	if (!cmd) {
-		eprintf("error\n");
+		eprintf("Error\n");
 		return;
 	}
 	cmd = cmd + 1;
 
 	/* send */
 	bufw[0] = RTR_RAP_CMD;
-	i = strlen(cmd);
+	i = strlen(cmd) + 1;
 	endian_memcpy(bufw+1, (uchar*)&i, 4);
 	memcpy(bufw+5, cmd, i);
 	write(rtr_host[rtr_n].fd, bufw, 5+i);
 	/* read */
 	read(rtr_host[rtr_n].fd, bufr, 9);
 	if (bufr[0] != (char)(RTR_RAP_CMD|RTR_RAP_REPLY)) {
-		eprintf("error\n");
+		eprintf("Error: Wrong reply\n");
 		return;
 	}
 	endian_memcpy((uchar*)&cmd_len, bufr+1, 8);
 	if (i == 0)
 		return;
 	if (i < 0) {
-		eprintf("error\n");
+		eprintf("Error: cmd length < 0\n");
 		return;
 	}
 	cmd_output = malloc(cmd_len);
 	if (!cmd_output) {
-		eprintf("error\n");
+		eprintf("Error: Allocating cmd output\n");
 		return;
 	}
 	read(rtr_host[rtr_n].fd, cmd_output, cmd_len);

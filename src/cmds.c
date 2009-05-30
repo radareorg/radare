@@ -2672,13 +2672,13 @@ CMD_DECL(rtr)
 		rtr_help();
 		break;
 	case '+':
-		rtr_add(input);
+		rtr_add(input+1);
 		break;
 	case '-':
-		rtr_remove(input);
+		rtr_remove(input+1);
 		break;
 	case '=':
-		rtr_session(input);
+		rtr_session(input+1);
 		break;
 	default:
 		rtr_cmd(input);
