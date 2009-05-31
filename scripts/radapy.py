@@ -27,6 +27,7 @@ class RapServer():
 	def __init__(self):
 		self.offset = 0
 		self.size = 0
+		self.handle_eof = None
 		self.handle_cmd_system = None
 		self.handle_cmd_seek   = None
 		self.handle_cmd_read   = None
@@ -34,26 +35,22 @@ class RapServer():
 		self.handle_cmd_open   = None
 		self.handle_cmd_close  = None
 
-	def __init__(self, port):
-		self.__init__()
-		self.listen_tcp(port)
-
 	def _handle_packet(self, c, key):
 		ret = ""
 		if key == RAP_OPEN:
 			buffer = c.recv(2)
 			(flags, length) = unpack(">BB", buffer)
 			file = c.recv(length)
-			if handle_cmd_open != None:
-				fd = handle_cmd_open(file, flags)
+			if self.handle_cmd_open != None:
+				fd = self.handle_cmd_open(file, flags)
 			else: 	fd = 3434
 			buf = pack(">Bi", key|RAP_REPLY, fd)
 			c.send(buf)
 		elif key == RAP_READ:
 			buffer = c.recv(4)
 			(length,) = unpack(">I", buffer)
-			if handle_cmd_read != None:
-				ret = str(handle_cmd_read(length))
+			if self.handle_cmd_read != None:
+				ret = str(self.handle_cmd_read(length))
 				try:
 					lon = len(ret)
 				except:
@@ -69,15 +66,15 @@ class RapServer():
 			(length,) = unpack(">I", buffer)
 			buffer = c.recv(length)
 			# TODO: get buffer and length
-			if handle_cmd_write != None:
-				length = handle_cmd_write (buffer)
+			if self.handle_cmd_write != None:
+				length = self.handle_cmd_write (buffer)
 			buf = pack(">Bi", key|RAP_REPLY, length)
 			c.send(buf)
 		elif key == RAP_SEEK:
 			buffer = c.recv(9)
 			(type, off) = unpack(">BQ", buffer)
-			if handle_cmd_seek != None:
-				seek = handle_cmd_seek(off, type)
+			if self.handle_cmd_seek != None:
+				seek = self.handle_cmd_seek(off, type)
 			else:
 				if   type == 0: # SET
 					seek = off;
@@ -89,14 +86,14 @@ class RapServer():
 			buf = pack(">BQ", key|RAP_REPLY, seek)
 			c.send(buf)
 		elif key == RAP_CLOSE:
-			if handle_cmd_close != None:
-				length = handle_cmd_close (fd)
+			if self.handle_cmd_close != None:
+				length = self.handle_cmd_close (fd)
 		elif key == RAP_SYSTEM:
 			buf = c.recv(4)
 			(length,) = unpack(">i", buf)
 			ret = c.recv(length)
-			if handle_cmd_system != None:
-				reply = handle_cmd_system(ret)
+			if self.handle_cmd_system != None:
+				reply = self.handle_cmd_system(ret)
 			else:	reply = ""
 			buf = pack(">Bi", key|RAP_REPLY, len(str(reply)))
 			c.send(buf+reply)
@@ -104,14 +101,18 @@ class RapServer():
 			print "Unknown command"
 			c.close()
 
-	def _handle_client(c):
+	def _handle_client(self, c):
 		while True:
 			try:
-				_handle_packet(c, ord(c.recv(1)))
+				buf = c.recv(1)
+				if buf == "":
+					self._handle_eof(c)
+					break
+				self._handle_packet(c, ord(buf))
 			except KeyboardInterrupt:
 				break
 
-	def listen_tcp(port):
+	def listen_tcp(self, port):
 		s = socket();
 		s.bind(("0.0.0.0", port))
 		s.listen(999)
@@ -119,7 +120,7 @@ class RapServer():
 		while True:
 			(c, (addr,port)) = s.accept()
 			print "New client %s:%d"%(addr,port)
-			_handle_client(c)
+			self._handle_client(c)
 
 
 ##===================================================0

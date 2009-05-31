@@ -1,5 +1,8 @@
 # move to rapy api
-import r
+try:
+	import r
+except:
+	pass
 
 class Program():
 	def update(self):

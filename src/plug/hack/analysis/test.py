@@ -1,4 +1,8 @@
-import r
+try:
+	import r
+except:
+	import radapy
+	print "Food"
 import radare
 import sys
 sys.path.append('.')

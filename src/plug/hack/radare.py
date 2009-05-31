@@ -20,7 +20,7 @@ quit()
 try:
 	import r
 except:
-	print "Cannot find 'r' import. Importing ramote"
+	print "Cannot find 'r' import. Importing ramote?"
 	global r
 import string
 import binascii

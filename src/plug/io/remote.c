@@ -169,6 +169,7 @@ int remote_handle_client( int fd ){
 					eprintf("Invalid length '%d'\n", i);
 				} else {
 					read(c, cmd, i);
+					cmd[i]='\0';
 					printf("len: %d cmd: '%s'\n",
 						i, cmd); fflush(stdout);
 					cmd_output = radare_cmd_str(cmd);
@@ -176,10 +177,6 @@ int remote_handle_client( int fd ){
 						cmd_len = strlen(cmd_output);
 					free(cmd);
 					/* write */
-					if (cmd_len == 0) {
-						cmd_len = 4;
-						cmd_output = strdup("done");
-					}
 					cmd_len += 1;
 					bufw = malloc(cmd_len + 5);
 					bufw[0] = RMT_CMD | RMT_REPLY;

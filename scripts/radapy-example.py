@@ -8,7 +8,7 @@
 import radapy
 from string import *
 
-PORT = 9999
+PORT = 8888
 
 def fun_system(str):
 	print "CURRENT SEEK IS %d"%radapy.offset
@@ -25,9 +25,10 @@ def fun_write(buf):
 	return 6
 
 def fun_read(len):
-	print "READ %d bytes from %d\n"% (len, radapy.offset)
+	global rs
+	print "READ %d bytes from %d\n"% (len, rs.offset)
 	str = "patata"
-	str = str[radapy.offset:]
+	str = str[rs.offset:]
 	return str
 
 
