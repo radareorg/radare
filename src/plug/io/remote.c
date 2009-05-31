@@ -117,7 +117,7 @@ int remote_handle_client( int fd ){
 		while(1) {
 			i = read(c, &cmd, 1);
 			if (i==0) {
-				printf("Broken pipe\n");
+				eprintf("Broken pipe\n");
 				return -1;
 			}
 
@@ -127,12 +127,16 @@ int remote_handle_client( int fd ){
 				printf("open (%d): ", cmd); fflush(stdout);
 				read(c, &cmd, 1); // len
 				ptr = malloc(cmd);
+				if (ptr == NULL) {
+					eprintf("Cannot malloc in rmt-open len = %d\n", cmd);
+					return -1;
+				}
 				read(c, ptr, cmd); //filename
-				printf("(flags: %hhd) len: %hhd filename: '%s'\n",
-					flg, cmd, ptr); fflush(stdout);
-				buf[0] = RMT_OPEN | RMT_REPLY;
 				memcpy(config.file, ptr, cmd);
 				config.file[cmd]='\0';
+				eprintf("(flags: %hhd) len: %hhd filename: '%s'\n",
+					flg, cmd, config.file);
+				buf[0] = RMT_OPEN | RMT_REPLY;
 				config.fd = -1;
 				radare_open(0);
 				endian_memcpy(buf+1, (uchar *)&config.fd, 4);
@@ -161,30 +165,39 @@ int remote_handle_client( int fd ){
 				read(c, &bufr, 4);
 				endian_memcpy((uchar*)&i, bufr, 4);
 				cmd = malloc(i);
-				read(c, cmd, i);
-				printf("len: %d cmd: '%s'\n",
-					i, cmd); fflush(stdout);
-				cmd_output = radare_cmd_str(cmd);
-				if (cmd_output)
-					cmd_len = strlen(cmd_output);
-				free(cmd);
-				/* write */
-				if (cmd_len == 0) {
-					cmd_len = 4;
-					cmd_output = strdup("done");
+				if (i <1) {
+					eprintf("Invalid length '%d'\n", i);
+				} else {
+					read(c, cmd, i);
+					printf("len: %d cmd: '%s'\n",
+						i, cmd); fflush(stdout);
+					cmd_output = radare_cmd_str(cmd);
+					if (cmd_output)
+						cmd_len = strlen(cmd_output);
+					free(cmd);
+					/* write */
+					if (cmd_len == 0) {
+						cmd_len = 4;
+						cmd_output = strdup("done");
+					}
+					cmd_len += 1;
+					bufw = malloc(cmd_len + 5);
+					bufw[0] = RMT_CMD | RMT_REPLY;
+					endian_memcpy(bufw+1, (uchar *)&cmd_len, 4);
+					memcpy(bufw+5, cmd_output, cmd_len);
+					write(c, bufw, cmd_len+5);
+					free(bufw);
+					free(cmd_output);
 				}
-				cmd_len += 1;
-				bufw = malloc(cmd_len + 9);
-				bufw[0] = RMT_CMD | RMT_REPLY;
-				endian_memcpy(bufw+1, (uchar *)&cmd_len, 8);
-				memcpy(bufw+9, cmd_output, cmd_len);
-				write(c, bufw, cmd_len+9);
-				free(bufw);
-				free(cmd_output);
 				break;
 				}
 			case RMT_WRITE:
-				printf("TODO: write\n");
+				read(c, buf, 5);
+				endian_memcpy((uchar *)&x, buf+1, 4);
+				ptr = malloc(x);
+				read(c, ptr, x);
+				radare_write_at(config.seek, ptr, x);
+				free(ptr);
 				break;
 			case RMT_SEEK:
 				read(c, buf, 9);
@@ -197,9 +210,14 @@ int remote_handle_client( int fd ){
 				break;
 			case RMT_CLOSE:
 				// XXX : proper shutdown
-				printf("TODO: close\n");
-				//read(fd, &c, 1);
-				close(c);
+				read(c, buf, 4);
+				endian_memcpy((uchar*)&i, buf, 4);
+				{
+				int ret = close(i);
+				endian_memcpy(buf+1, (uchar*)&ret, 4);
+				buf[0] = RMT_CLOSE | RMT_REPLY;
+				write(c, buf, 5);
+				}
 				break;
 			case RMT_SYSTEM:
 				// read

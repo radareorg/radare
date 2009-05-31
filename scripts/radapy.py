@@ -3,6 +3,10 @@
 # Python implementation of the radare remote protocol
 #
 
+##===================================================0
+## server api
+##===================================================0
+
 from socket import *
 from struct import *
 import traceback
@@ -14,6 +18,7 @@ RMT_WRITE  = 3
 RMT_SEEK   = 4
 RMT_CLOSE  = 5
 RMT_SYSTEM = 6
+RMT_CMD    = 7
 RMT_REPLY  = 0x80
 
 handle_cmd_system = None
@@ -77,7 +82,6 @@ def _handle_packet(c, key):
 				seek = seek + off 
 			elif type == 2: # END
 				seek = size;
-		
 		offset = seek
 		#print "SEEK command (type=%d) (seek=%d)"%(type,offset)
 		buf = pack(">BQ", key|RMT_REPLY, seek)
@@ -128,3 +132,97 @@ def listen_tcp(port):
 #				break
 #	except:
 #		print "Cannot listen at port %d (%s)"%(port, "unknown")
+
+
+
+##===================================================0
+## client api
+##===================================================0
+
+class RapClient():
+	def __init__(self, host, port):
+		self.connect_tcp(host, port)
+
+	def connect_tcp(self, host, port):
+		fd = socket();
+		fd.connect((host, port))
+		self.fd = fd
+
+	def disconnect(self):
+		self.fd.close()
+		self.fd = None
+
+	def open(self, file, flags):
+		b = pack(">BBB", RMT_OPEN, flags, len(file))
+		self.fd.send(b)
+		self.fd.send(file)
+		# response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		if c != (RMT_REPLY|RMT_OPEN):
+			print "rmt-open: Invalid response packet 0x%02x"%c
+		return l
+
+	# TODO. not yet implemented
+	def read(self, len):
+		b = pack(">Bi", RMT_READ, len(buf))
+		self.fd.send(b+buf)
+		# response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		buf = self.fd.recv(l)
+		return buf
+
+	# TODO: not tested
+	def write(self, buf):
+		#self.fd.send(buf)
+		b = pack(">Bi", RMT_WRITE, len(buf))
+		self.fd.send(b+buf)
+		# response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		if c != (RMT_REPLY|RMT_WRITE):
+			print "rmt-write: Invalid response packet 0x%02x"%c
+
+	def lseek(self, type, addr):
+		buf = pack(">BBQ", RMT_SEEK, type, addr)
+		self.fd.send(buf)
+		# read response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		#print "Lseek : %d"%l
+		return l
+
+	def close(self, fd):
+		buf = pack(">Bi", RMT_CLOSE, fd)
+		self.fd.send(buf)
+		# read response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		if c != RMT_REPLY | RMT_CLOSE:
+			print "rmt-close: Invalid response packet"
+
+	def cmd(self, cmd):
+		buf = pack(">Bi", RMT_CMD, len(str(cmd)))
+		self.fd.send(buf + cmd)
+		# read response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		if c != RMT_CMD | RMT_REPLY:
+			print "rmt-cmd: Invalid response packet"
+			return ""
+		buf = self.fd.recv(l)
+		return buf
+
+	def system(self, cmd):
+		buf = pack(">Bi", RMT_SYSTEM, len(str(cmd)))
+		self.fd.send(buf)
+		self.fd.send(cmd)
+		# read response
+		buf = self.fd.recv(5)
+		(c,l) = unpack(">Bi", buf)
+		if c != RMT_CMD | RMT_REPLY:
+			print "rmt-cmd: Invalid response packet"
+			return ""
+		buf = self.fd.recv(l)
+		return buf

@@ -8,11 +8,11 @@ void rtr_help()
 {
 	cons_printf(
 	" =                  ; list all open connections\n"
-	" =<[fd] cmd         ; send output of local command to remote fd.\n"
+	" =<[fd] cmd         ; send output of local command to remote fd\n"
 	" =[fd] cmd          ; exec cmd at remote 'fd' (last open is default one)\n"
 	" =+ [proto://]host  ; add host (default=rap://, tcp://, udp://)\n"
 	" =-[fd]             ; remove all hosts or host 'fd'\n"
-	" ==[fd]             ; open remote session with host 'fd', 'q' to quit.\n");
+	" ==[fd]             ; open remote session with host 'fd', 'q' to quit\n");
 }
 
 void rtr_pushout(const char *input)
@@ -25,8 +25,7 @@ void rtr_pushout(const char *input)
 			eprintf("Error\n");
 			return;
 		}
-	} else
-		cmd = input;
+	} else cmd = input;
 
 	if (!rtr_host[rtr_n].fd){
 		eprintf("Error: Unknown host\n");
@@ -98,7 +97,7 @@ void rtr_add(char *input)
 	ptr = ptr+1;
 
 	if (!(file = strchr(ptr, '/'))) {
-		eprintf("Error: File is not specified\n");
+		eprintf("Error: Missing '/'\n");
 		return;
 	}
 	file[0] = '\0';
@@ -242,14 +241,14 @@ void rtr_cmd(char *input)
 	i = strlen(cmd) + 1;
 	endian_memcpy(bufw+1, (uchar*)&i, 4);
 	memcpy(bufw+5, cmd, i);
-	write(rtr_host[rtr_n].fd, bufw, 5+i);
+	socket_write(rtr_host[rtr_n].fd, bufw, 5+i);
 	/* read */
-	read(rtr_host[rtr_n].fd, bufr, 9);
+	socket_read(rtr_host[rtr_n].fd, bufr, 5);
 	if (bufr[0] != (char)(RTR_RAP_CMD|RTR_RAP_REPLY)) {
 		eprintf("Error: Wrong reply\n");
 		return;
 	}
-	endian_memcpy((uchar*)&cmd_len, bufr+1, 8);
+	endian_memcpy((uchar*)&cmd_len, bufr+1, 4);
 	if (i == 0)
 		return;
 	if (i < 0) {
@@ -261,7 +260,7 @@ void rtr_cmd(char *input)
 		eprintf("Error: Allocating cmd output\n");
 		return;
 	}
-	read(rtr_host[rtr_n].fd, cmd_output, cmd_len);
+	socket_read(rtr_host[rtr_n].fd, cmd_output, cmd_len);
 	cons_printf("%s\n", cmd_output);
 	free(cmd_output);
 }
