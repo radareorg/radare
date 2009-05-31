@@ -158,16 +158,15 @@ int remote_handle_client( int fd ){
 				{
 				char bufr[8], *bufw = NULL;
 				char *cmd = NULL, *cmd_output = NULL;
-				int i;
-				u64 cmd_len = 0;
+				int i, cmd_len = 0;
 
 				/* read */
 				read(c, &bufr, 4);
 				endian_memcpy((uchar*)&i, bufr, 4);
-				cmd = malloc(i);
 				if (i <1) {
 					eprintf("Invalid length '%d'\n", i);
 				} else {
+					cmd = malloc(i);
 					read(c, cmd, i);
 					cmd[i]='\0';
 					printf("len: %d cmd: '%s'\n",

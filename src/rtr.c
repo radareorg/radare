@@ -118,10 +118,10 @@ void rtr_add(char *input)
 		buf[1] = 0;
 		buf[2] = (uchar)(strlen(file)+1);
 		memcpy(buf+3, file, buf[2]);
-		write(fd, buf, 3+buf[2]);
+		socket_write(fd, buf, 3+buf[2]);
 		/* read */
 		eprintf("waiting... "); fflush(stdout);
-		read(fd, buf, 5);
+		socket_read(fd, buf, 5);
 		endian_memcpy((uchar *)&i, (uchar*)buf+1, 4);
 		if (buf[0] != (char)(RTR_RAP_OPEN|RTR_RAP_REPLY) || i<= 0) {
 			eprintf("Error: Wrong reply\n");
@@ -212,10 +212,9 @@ void rtr_session(char *input)
 
 void rtr_cmd(char *input)
 {
-	char bufw[1024], bufr[16];
+	char bufw[1024], bufr[8];
 	char *cmd = NULL, *cmd_output = NULL;
-	int i, fd = atoi(input);
-	u64 cmd_len;
+	int i, cmd_len, fd = atoi(input);
 
 	if (fd != 0) {
 		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
