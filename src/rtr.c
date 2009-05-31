@@ -27,6 +27,12 @@ void rtr_pushout(const char *input)
 		}
 	} else
 		cmd = input;
+
+	if (!rtr_host[rtr_n].fd){
+		eprintf("Error: Unknown host\n");
+		return;
+	}
+
 	str = radare_cmd_str(cmd);
 	if (str == NULL) {
 		eprintf("Error: radare_cmd_str returned NULL\n");
@@ -133,8 +139,12 @@ void rtr_add(char *input)
 		eprintf("Connected to: %s at port %d\n", host, port);
 		break;
 	case RTR_PROT_UDP:
-		eprintf("Error: Not supported\n");
-		return;
+		fd = socket_udp_connect(host, port);
+		if (fd == -1) {
+			eprintf("Error: Cannot connect to '%s' (%d)\n", host, port);
+			return;
+		}
+		eprintf("Connected to: %s at port %d\n", host, port);
 		break;
 	}
 
