@@ -2680,6 +2680,9 @@ CMD_DECL(rtr)
 	case '=':
 		rtr_session(input+1);
 		break;
+	case '<':
+		rtr_pushout(input+1);
+		break;
 	default:
 		rtr_cmd(input);
 	}

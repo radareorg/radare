@@ -6,19 +6,45 @@ static struct rtr_host_t rtr_host[RTR_MAX_HOSTS];
 
 void rtr_help()
 {
-	cons_printf(" =                  ; List hosts\n"
-				" =[fd] cmd          ; Exec cmd in host n\n"
-				" =+ [proto://]host  ; Add host (default protocol is rap://)\n"
-				" =-[fd]             ; Remove all hosts or host 'fd'\n"
-				" ==[fd]             ; Open remote session with host 'fd'\n"
-				"NOTE: Last used host comes to be default\n"
-				"      Use 'q' to quit session\n");
+	cons_printf(
+	" =                  ; list all open connections\n"
+	" =<[fd] cmd         ; send output of local command to remote fd.\n"
+	" =[fd] cmd          ; exec cmd at remote 'fd' (last open is default one)\n"
+	" =+ [proto://]host  ; add host (default=rap://, tcp://, udp://)\n"
+	" =-[fd]             ; remove all hosts or host 'fd'\n"
+	" ==[fd]             ; open remote session with host 'fd', 'q' to quit.\n");
+}
+
+void rtr_pushout(const char *input)
+{
+	int proto, i, fd = atoi(input);
+	char *str, *cmd = strchr(input, ' ');
+	if (fd==0)
+		fd = rtr_host[rtr_n].fd;
+	str = radare_cmd_str(input);
+	if (str == NULL) {
+		eprintf("radare_cmd_str: returned NULL\n");
+		return;
+	}
+	for (i = 0; i < RTR_MAX_HOSTS; i++)
+		if (rtr_host[i].fd==fd)
+			proto=i;
+	switch(proto) {
+	case RTR_PROT_RAP:
+		eprintf("Cannot use '=<' to a rap connection.\n");
+		break;
+	case RTR_PROT_TCP:
+	case RTR_PROT_UDP:
+	default:
+		socket_write(fd, str, strlen(str));
+		break;
+	}
+	free(str);
 }
 
 void rtr_list()
 {
 	int i;
-
 	for (i = 0; i < RTR_MAX_HOSTS; i++)
 		if (rtr_host[i].fd) {
 			cons_printf("%i - ", rtr_host[i].fd);
@@ -27,8 +53,8 @@ void rtr_list()
 			else if (rtr_host[i].proto == RTR_PROT_TCP)
 				cons_printf("udp://");
 			else cons_printf("rap://");
-			cons_printf("%s:%i/%s\n",
-						rtr_host[i].host, rtr_host[i].port, rtr_host[i].file);
+			cons_printf("%s:%i/%s\n", rtr_host[i].host,
+				rtr_host[i].port, rtr_host[i].file);
 	}
 }
 		
@@ -141,13 +167,14 @@ void rtr_session(char *input)
 	}
 
 	while (1) {
-		snprintf(prompt, 32, "fd:%i> ", rtr_host[rtr_n].fd);
+		snprintf(prompt, 32, "fd:%d> ", rtr_host[rtr_n].fd);
 		dl_prompt = prompt;
-		if((cons_fgets(aux, 4096, 0, NULL))) {
-			if (aux[0] == 'q')
+		if((cons_fgets(aux, 4095, 0, NULL))) {
+			if (*aux == 'q')
 				break;
-			snprintf(buf, 4096, " %s", aux);
-			rtr_cmd(buf);
+			//snprintf(buf, 4096, " %s", aux);
+			//rtr_cmd(buf);
+			rtr_cmd(aux);
 			cons_flush();
 		}
 	}
@@ -161,7 +188,7 @@ void rtr_cmd(char *input)
 	u64 cmd_len;
 
 	if (input[0] >= '0' && input[0] <= '9') {
-		fd = get_math(input);
+		fd = atoi(input);
 		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
 	}
 
