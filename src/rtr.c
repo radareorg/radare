@@ -34,21 +34,25 @@ void rtr_list()
 		
 void rtr_add(char *input)
 {
-	char *host, *file, *ptr, buf[1024];
+	char *host = NULL, *file = NULL, *ptr = NULL, buf[1024];
 	int proto, port, fd, i;
 
 	/* Parse uri */
-	if ((ptr = strstr(input, "tcp://")))
+	if ((ptr = strstr(input, "tcp://"))) {
 		proto = RTR_PROT_TCP;
-	else if ((ptr = strstr(input, "udp://")))
+		host = ptr+6;
+	} else if ((ptr = strstr(input, "udp://"))) {
 		proto = RTR_PROT_UDP;
-	else if ((ptr = strstr(input, "rap://")))
+		host = ptr+6;
+	} else if ((ptr = strstr(input, "rap://"))) {
 		proto = RTR_PROT_RAP;
-	else {
-		eprintf("Error: Unknown protocol\n");
-		return;
+		host = ptr+6;
+	} else {
+		proto = RTR_PROT_RAP;
+		host = input;
 	}
-	host = ptr+6;
+	while(host[0]&&iswhitechar(host[0]))
+		host = host + 1;
 
 	if (!(ptr = strchr(host, ':'))) {
 		eprintf("Error: Port is not specified\n");
