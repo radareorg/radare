@@ -12,127 +12,114 @@ from struct import *
 import traceback
 import sys
 
-RMT_OPEN   = 1
-RMT_READ   = 2
-RMT_WRITE  = 3
-RMT_SEEK   = 4
-RMT_CLOSE  = 5
-RMT_SYSTEM = 6
-RMT_CMD    = 7
-RMT_REPLY  = 0x80
+RAP_OPEN   = 1
+RAP_READ   = 2
+RAP_WRITE  = 3
+RAP_SEEK   = 4
+RAP_CLOSE  = 5
+RAP_SYSTEM = 6
+RAP_CMD    = 7
+RAP_REPLY  = 0x80
 
-handle_cmd_system = None
-handle_cmd_seek   = None
-handle_cmd_read   = None
-handle_cmd_write  = None
-handle_cmd_open   = None
-handle_cmd_close  = None
+# TODO: Add udp
+# TODO: allow to init funptrs with a tuple
+class RapServer():
+	def __init__(self):
+		self.offset = 0
+		self.size = 0
+		self.handle_cmd_system = None
+		self.handle_cmd_seek   = None
+		self.handle_cmd_read   = None
+		self.handle_cmd_write  = None
+		self.handle_cmd_open   = None
+		self.handle_cmd_close  = None
 
-offset = 0
-size = 0
-buffer = None
+	def __init__(self, port):
+		self.__init__()
+		self.listen_tcp(port)
 
-def _handle_packet(c, key):
-	global offset
-	global size
-	global buffer
-	ret = ""
-	if key == RMT_OPEN:
-		buffer = c.recv(2)
-		(flags, length) = unpack(">BB", buffer)
-		file = c.recv(length)
-		if handle_cmd_open != None:
-			fd = handle_cmd_open(file, flags)
-		else: 	fd = 3434
-		buf = pack(">Bi", key|RMT_REPLY, fd)
-		c.send(buf)
-	elif key == RMT_READ:
-		buffer = c.recv(4)
-		(length,) = unpack(">I", buffer)
-		if handle_cmd_read != None:
-			ret = str(handle_cmd_read(length))
-			try:
-				lon = len(ret)
-			except:
+	def _handle_packet(self, c, key):
+		ret = ""
+		if key == RAP_OPEN:
+			buffer = c.recv(2)
+			(flags, length) = unpack(">BB", buffer)
+			file = c.recv(length)
+			if handle_cmd_open != None:
+				fd = handle_cmd_open(file, flags)
+			else: 	fd = 3434
+			buf = pack(">Bi", key|RAP_REPLY, fd)
+			c.send(buf)
+		elif key == RAP_READ:
+			buffer = c.recv(4)
+			(length,) = unpack(">I", buffer)
+			if handle_cmd_read != None:
+				ret = str(handle_cmd_read(length))
+				try:
+					lon = len(ret)
+				except:
+					ret = ""
+					lon = 0
+			else:
 				ret = ""
-				lon = 0
+				lon = 0;
+			buf = pack(">Bi", key|RAP_REPLY, lon)
+			c.send(buf+ret)
+		elif key == RAP_WRITE:
+			buffer = c.recv(4)
+			(length,) = unpack(">I", buffer)
+			buffer = c.recv(length)
+			# TODO: get buffer and length
+			if handle_cmd_write != None:
+				length = handle_cmd_write (buffer)
+			buf = pack(">Bi", key|RAP_REPLY, length)
+			c.send(buf)
+		elif key == RAP_SEEK:
+			buffer = c.recv(9)
+			(type, off) = unpack(">BQ", buffer)
+			if handle_cmd_seek != None:
+				seek = handle_cmd_seek(off, type)
+			else:
+				if   type == 0: # SET
+					seek = off;
+				elif type == 1: # CUR
+					seek = seek + off 
+				elif type == 2: # END
+					seek = self.size;
+			self.offset = seek
+			buf = pack(">BQ", key|RAP_REPLY, seek)
+			c.send(buf)
+		elif key == RAP_CLOSE:
+			if handle_cmd_close != None:
+				length = handle_cmd_close (fd)
+		elif key == RAP_SYSTEM:
+			buf = c.recv(4)
+			(length,) = unpack(">i", buf)
+			ret = c.recv(length)
+			if handle_cmd_system != None:
+				reply = handle_cmd_system(ret)
+			else:	reply = ""
+			buf = pack(">Bi", key|RAP_REPLY, len(str(reply)))
+			c.send(buf+reply)
 		else:
-			ret = ""
-			lon = 0;
-		buf = pack(">Bi", key|RMT_REPLY, lon)
-		c.send(buf+ret)
-	elif key == RMT_WRITE:
-		buffer = c.recv(4)
-		(length,) = unpack(">I", buffer)
-		buffer = c.recv(length)
-		# TODO: get buffer and length
-		if handle_cmd_write != None:
-			length = handle_cmd_write (buffer)
-		buf = pack(">Bi", key|RMT_REPLY, length)
-		c.send(buf)
-	elif key == RMT_SEEK:
-		buffer = c.recv(9)
-		(type, off) = unpack(">BQ", buffer)
-		if handle_cmd_seek != None:
-			seek = handle_cmd_seek(off, type)
-		else:
-			if   type == 0: # SET
-				seek = off;
-			elif type == 1: # CUR
-				seek = seek + off 
-			elif type == 2: # END
-				seek = size;
-		offset = seek
-		#print "SEEK command (type=%d) (seek=%d)"%(type,offset)
-		buf = pack(">BQ", key|RMT_REPLY, seek)
-		c.send(buf)
-	elif key == RMT_CLOSE:
-		if handle_cmd_close != None:
-			length = handle_cmd_close (fd)
-	elif key == RMT_SYSTEM:
-		buf = c.recv(4)
-		(length,) = unpack(">i", buf)
-		ret = c.recv(length)
-		if handle_cmd_system != None:
-			reply = handle_cmd_system(ret)
-		else:	reply = ""
-		buf = pack(">Bi", key|RMT_REPLY, len(str(reply)))
-		c.send(buf+reply)
-	else:
-		print "Unknown command"
-		c.close()
+			print "Unknown command"
+			c.close()
 
-def _handle_client(c):
-	while True:
-		try:
-			_handle_packet(c, ord(c.recv(1)))
-		except KeyboardInterrupt:
-			break
-		#except TypeError, foo:
-		#	traceback.print_stack()
-		#	break
-#		except:
-#			print "HandleClientErrorOops (%s)"%(sys.exc_info()[0])
-#			break
+	def _handle_client(c):
+		while True:
+			try:
+				_handle_packet(c, ord(c.recv(1)))
+			except KeyboardInterrupt:
+				break
 
-def listen_tcp(port):
-	s = socket();
-	s.bind(("0.0.0.0", port))
-	s.listen(999)
-	print "Listening at port %d"%port
-	while True:
-		(c, (addr,port)) = s.accept()
-		print "New client %s:%d"%(addr,port)
-		_handle_client(c)
-
-#			try:
-#			except:
-#				print "Oops (%s)"%(sys.exc_info()[0])
-#				s.close()
-#				break
-#	except:
-#		print "Cannot listen at port %d (%s)"%(port, "unknown")
-
+	def listen_tcp(port):
+		s = socket();
+		s.bind(("0.0.0.0", port))
+		s.listen(999)
+		print "Listening at port %d"%port
+		while True:
+			(c, (addr,port)) = s.accept()
+			print "New client %s:%d"%(addr,port)
+			_handle_client(c)
 
 
 ##===================================================0
@@ -153,19 +140,18 @@ class RapClient():
 		self.fd = None
 
 	def open(self, file, flags):
-		b = pack(">BBB", RMT_OPEN, flags, len(file))
+		b = pack(">BBB", RAP_OPEN, flags, len(file))
 		self.fd.send(b)
 		self.fd.send(file)
 		# response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != (RMT_REPLY|RMT_OPEN):
+		if c != (RAP_REPLY|RAP_OPEN):
 			print "rmt-open: Invalid response packet 0x%02x"%c
 		return l
 
-	# TODO. not yet implemented
 	def read(self, len):
-		b = pack(">Bi", RMT_READ, len(buf))
+		b = pack(">Bi", RAP_READ, len(buf))
 		self.fd.send(b+buf)
 		# response
 		buf = self.fd.recv(5)
@@ -176,16 +162,16 @@ class RapClient():
 	# TODO: not tested
 	def write(self, buf):
 		#self.fd.send(buf)
-		b = pack(">Bi", RMT_WRITE, len(buf))
+		b = pack(">Bi", RAP_WRITE, len(buf))
 		self.fd.send(b+buf)
 		# response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != (RMT_REPLY|RMT_WRITE):
+		if c != (RAP_REPLY|RAP_WRITE):
 			print "rmt-write: Invalid response packet 0x%02x"%c
 
 	def lseek(self, type, addr):
-		buf = pack(">BBQ", RMT_SEEK, type, addr)
+		buf = pack(">BBQ", RAP_SEEK, type, addr)
 		self.fd.send(buf)
 		# read response
 		buf = self.fd.recv(5)
@@ -194,34 +180,34 @@ class RapClient():
 		return l
 
 	def close(self, fd):
-		buf = pack(">Bi", RMT_CLOSE, fd)
+		buf = pack(">Bi", RAP_CLOSE, fd)
 		self.fd.send(buf)
 		# read response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != RMT_REPLY | RMT_CLOSE:
+		if c != RAP_REPLY | RAP_CLOSE:
 			print "rmt-close: Invalid response packet"
 
 	def cmd(self, cmd):
-		buf = pack(">Bi", RMT_CMD, len(str(cmd)))
+		buf = pack(">Bi", RAP_CMD, len(str(cmd)))
 		self.fd.send(buf + cmd)
 		# read response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != RMT_CMD | RMT_REPLY:
+		if c != RAP_CMD | RAP_REPLY:
 			print "rmt-cmd: Invalid response packet"
 			return ""
 		buf = self.fd.recv(l)
 		return buf
 
 	def system(self, cmd):
-		buf = pack(">Bi", RMT_SYSTEM, len(str(cmd)))
+		buf = pack(">Bi", RAP_SYSTEM, len(str(cmd)))
 		self.fd.send(buf)
 		self.fd.send(cmd)
 		# read response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != RMT_CMD | RMT_REPLY:
+		if c != RAP_CMD | RAP_REPLY:
 			print "rmt-cmd: Invalid response packet"
 			return ""
 		buf = self.fd.recv(l)

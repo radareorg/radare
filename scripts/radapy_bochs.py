@@ -139,9 +139,9 @@ def fun_system(str):
 		str = "Oops"
 	return str
 
-radapy.handle_cmd_system = fun_system
-radapy.handle_cmd_read = fun_read
-radapy.handle_cmd_write = fun_write
-
 print "Listening at port %d\n"%PORT
-radapy.listen_tcp (PORT)
+rs = radapy.RapServer()
+rs.handle_cmd_system = fun_system
+rs.handle_cmd_read = fun_read
+rs.handle_cmd_write = fun_write
+rs.listen_tcp (PORT)

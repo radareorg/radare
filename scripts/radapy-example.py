@@ -35,9 +35,9 @@ def fun_read(len):
 
 #radapy.handle_cmd_open = fun_open
 #radapy.handle_cmd_close = fun_close
-radapy.handle_cmd_system = fun_system
-radapy.handle_cmd_read = fun_read
-radapy.handle_cmd_write = fun_write
-radapy.size = 10
-
-radapy.listen_tcp (PORT)
+rs = radapy.RapServer()
+rs.handle_cmd_system = fun_system
+rs.handle_cmd_read = fun_read
+rs.handle_cmd_write = fun_write
+rs.size = 10
+rs.listen_tcp (PORT)
