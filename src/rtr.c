@@ -17,26 +17,30 @@ void rtr_help()
 
 void rtr_pushout(const char *input)
 {
-	int proto, i, fd = atoi(input);
-	char *str, *cmd = strchr(input, ' ');
-	if (fd==0)
-		fd = rtr_host[rtr_n].fd;
-	str = radare_cmd_str(input);
+	int fd = atoi(input);
+	char *str = NULL, *cmd = NULL;
+	if (fd != 0) {
+		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
+		if (!(cmd = strchr(input, ' '))) {
+			eprintf("Error\n");
+			return;
+		}
+	} else
+		cmd = input;
+	str = radare_cmd_str(cmd);
 	if (str == NULL) {
-		eprintf("radare_cmd_str: returned NULL\n");
+		eprintf("Error: radare_cmd_str returned NULL\n");
 		return;
 	}
-	for (i = 0; i < RTR_MAX_HOSTS; i++)
-		if (rtr_host[i].fd==fd)
-			proto=i;
-	switch(proto) {
+	
+	switch(rtr_host[rtr_n].proto) {
 	case RTR_PROT_RAP:
-		eprintf("Cannot use '=<' to a rap connection.\n");
+		eprintf("Error: Cannot use '=<' to a rap connection.\n");
 		break;
 	case RTR_PROT_TCP:
 	case RTR_PROT_UDP:
 	default:
-		socket_write(fd, str, strlen(str));
+		socket_write(rtr_host[rtr_n].fd, str, strlen(str));
 		break;
 	}
 	free(str);
@@ -50,7 +54,7 @@ void rtr_list()
 			cons_printf("%i - ", rtr_host[i].fd);
 			if (rtr_host[i].proto == RTR_PROT_TCP)
 				cons_printf("tcp://");
-			else if (rtr_host[i].proto == RTR_PROT_TCP)
+			else if (rtr_host[i].proto == RTR_PROT_UDP)
 				cons_printf("udp://");
 			else cons_printf("rap://");
 			cons_printf("%s:%i/%s\n", rtr_host[i].host,
@@ -96,28 +100,43 @@ void rtr_add(char *input)
 
 	port = get_math(ptr);
 
-	fd = socket_connect(host, port);
-	if (fd == -1) {
-		eprintf("Error: Cannot connect to '%s' (%d)\n", host, port);
+	switch (proto) {
+	case RTR_PROT_RAP:
+		fd = socket_connect(host, port);
+		if (fd == -1) {
+			eprintf("Error: Cannot connect to '%s' (%d)\n", host, port);
+			return;
+		}
+		eprintf("Connected to: %s at port %d\n", host, port);
+		/* send */
+		buf[0] = RTR_RAP_OPEN;
+		buf[1] = 0;
+		buf[2] = (uchar)(strlen(file)+1);
+		memcpy(buf+3, file, buf[2]);
+		write(fd, buf, 3+buf[2]);
+		/* read */
+		eprintf("waiting... "); fflush(stdout);
+		read(fd, buf, 5);
+		endian_memcpy((uchar *)&i, (uchar*)buf+1, 4);
+		if (buf[0] != (char)(RTR_RAP_OPEN|RTR_RAP_REPLY) || i<= 0) {
+			eprintf("Error: Wrong reply\n");
+			return;
+		}
+		eprintf("ok\n");
+		break;
+	case RTR_PROT_TCP:
+		fd = socket_connect(host, port);
+		if (fd == -1) {
+			eprintf("Error: Cannot connect to '%s' (%d)\n", host, port);
+			return;
+		}
+		eprintf("Connected to: %s at port %d\n", host, port);
+		break;
+	case RTR_PROT_UDP:
+		eprintf("Error: Not supported\n");
 		return;
+		break;
 	}
-
-	eprintf("Connected to: %s at port %d\n", host, port);
-	/* send */
-	buf[0] = RTR_RAP_OPEN;
-	buf[1] = 0;
-	buf[2] = (uchar)(strlen(file)+1);
-	memcpy(buf+3, file, buf[2]);
-	write(fd, buf, 3+buf[2]);
-	/* read */
-	eprintf("waiting... "); fflush(stdout);
-	read(fd, buf, 5);
-	endian_memcpy((uchar *)&i, (uchar*)buf+1, 4);
-	if (buf[0] != (char)(RTR_RAP_OPEN|RTR_RAP_REPLY) || i<= 0) {
-		eprintf("Error: Wrong reply\n");
-		return;
-	}
-	eprintf("ok\n");
 
 	for (i = 0; i < RTR_MAX_HOSTS; i++)
 		if (!rtr_host[i].fd) {
@@ -158,7 +177,7 @@ void rtr_remove(char *input)
 
 void rtr_session(char *input)
 {
-	char prompt[32], aux[4096], buf[4096];
+	char prompt[32], buf[4096];
 	int fd;
 
 	if (input[0] >= '0' && input[0] <= '9') {
@@ -169,12 +188,14 @@ void rtr_session(char *input)
 	while (1) {
 		snprintf(prompt, 32, "fd:%d> ", rtr_host[rtr_n].fd);
 		dl_prompt = prompt;
-		if((cons_fgets(aux, 4095, 0, NULL))) {
-			if (*aux == 'q')
+		if((cons_fgets(buf, 4095, 0, NULL))) {
+			if (*buf == 'q')
 				break;
-			//snprintf(buf, 4096, " %s", aux);
-			//rtr_cmd(buf);
-			rtr_cmd(aux);
+			else if (*buf == 'V') {
+				eprintf("Visual mode not supported\n");
+				continue;
+			}
+			rtr_cmd(buf);
 			cons_flush();
 		}
 	}
@@ -184,25 +205,27 @@ void rtr_cmd(char *input)
 {
 	char bufw[1024], bufr[16];
 	char *cmd = NULL, *cmd_output = NULL;
-	int i, fd;
+	int i, fd = atoi(input);
 	u64 cmd_len;
 
-	if (input[0] >= '0' && input[0] <= '9') {
-		fd = atoi(input);
+	if (fd != 0) {
 		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
-	}
+		if (!(cmd = strchr(input, ' '))) {
+			eprintf("Error\n");
+			return;
+		}
+	} else
+		cmd = input;
 
 	if (!rtr_host[rtr_n].fd){
 		eprintf("Error: Unknown host\n");
 		return;
 	}
 
-	cmd = strchr(input, ' ');
-	if (!cmd) {
-		eprintf("Error\n");
+	if (!rtr_host[rtr_n].proto == RTR_PROT_RAP){
+		eprintf("Error: Not a rap:// host\n");
 		return;
 	}
-	cmd = cmd + 1;
 
 	/* send */
 	bufw[0] = RTR_RAP_CMD;

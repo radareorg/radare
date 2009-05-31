@@ -25,6 +25,7 @@ void rtr_add(char *input);
 void rtr_remove(char *input);
 void rtr_session(char *input);
 void rtr_cmd(char *input);
+void rtr_pushout(const char *input);
 
 #endif
 
