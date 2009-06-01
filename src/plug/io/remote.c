@@ -168,15 +168,14 @@ int remote_handle_client( int fd ){
 				} else {
 					cmd = malloc(i);
 					read(c, cmd, i);
+					cmd[i-1] = '\0';
 					printf("len: %d cmd: '%s'\n",
 						i, cmd); fflush(stdout);
 					cmd_output = radare_cmd_str(cmd);
-					if (cmd_output)
-						cmd_len = strlen(cmd_output);
-					else cmd_output = strdup("");
+					if (cmd_output) 
+						cmd_len = strlen(cmd_output) + 1;
 					free(cmd);
 					/* write */
-					cmd_len += 1;
 					bufw = malloc(cmd_len + 5);
 					bufw[0] = RMT_CMD | RMT_REPLY;
 					endian_memcpy(bufw+1, (uchar *)&cmd_len, 4);
