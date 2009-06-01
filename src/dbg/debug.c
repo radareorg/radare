@@ -495,9 +495,7 @@ int debug_bt()
 	} else
 	if (!strcmp(type, "st")) {
 		return arch_stackanal();
-	} else {
-		eprintf("Invalid value for dbg.bttype. Use 'standard', 'old' or 'st'\n");
-	}
+	} else eprintf("Invalid value for dbg.bttype. Use 'standard', 'old' or 'st'\n");
 
 	return 0;
 }
@@ -764,7 +762,7 @@ int debug_until(const char *addr)
 			debug_read_at(ps.tid, &ptr, 4, arch_pc(ps.tid)+24);
 			off = (u64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
 			sprintf(buf, "0x%x", (unsigned int)off);
-			printf("== > 1 main at : %s\n", buf);
+			printf("==> 1 main at : %s\n", buf);
 			if (off !=0&&ptr[0]!=0xff)
 				debug_cont_until(buf);
 		} else
@@ -773,7 +771,7 @@ int debug_until(const char *addr)
 			debug_read_at(ps.tid, &addr, 4, arch_pc(ps.tid)+0x16);
 			off = (u64)addr;
 			sprintf(buf, "0x%x", addr);
-			printf("== > 2 main at : %s\n", buf);
+			printf("==> 2 main at : %s\n", buf);
 			if (off !=0&&off!=0xffffffffLL)
 				debug_cont_until(buf);
 		} else

@@ -845,9 +845,9 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 				pc = pc*config.width/116;
 				pce = (100*config.width/116) - pc;
 				// TODO: adatp pc/pce to screen width
-				for(j=0;j<pc;j++) cons_printf("#");
-				for(j=0;j<pce;j++) cons_printf(".");
-				cons_printf("|\n");
+				for(j=0;j<pc;j++) cons_strcat("#");
+				for(j=0;j<pce;j++) cons_strcat(".");
+				cons_strcat("|\n");
 			}
 		}
 		break;
@@ -865,10 +865,10 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 //printf("%lld, %lld (piece =%lld\n", from , from+piece, piece);
 				if (d != NULL)
 					switch(d->type) {
-					case DATA_STR: cons_printf(C_RED); break;
-					case DATA_HEX: cons_printf(C_GREEN); break;
-					case DATA_CODE: cons_printf(C_YELLOW); break;
-					case DATA_FUN: cons_printf(C_MAGENTA); break;
+					case DATA_STR: cons_strcat(C_RED); break;
+					case DATA_HEX: cons_strcat(C_GREEN); break;
+					case DATA_CODE: cons_strcat(C_YELLOW); break;
+					case DATA_FUN: cons_strcat(C_MAGENTA); break;
 				}	}
 				
 				if (config.seek >= piece*i && config.seek < (piece*(i+1)))
@@ -876,8 +876,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 				else
 				if (flags_between(piece*i, piece*(i+1)))
 					cons_strcat(".");
-				else
-					cons_strcat("_");
+				else cons_strcat("_");
 				C { cons_strcat(C_RESET); }
 			}
 			cons_strcat("]\n");

@@ -301,7 +301,7 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int
 	if (buf[0]!='\0')
 		cons_strcat(buf);
 
-	C cons_printf(C_RESET);
+	C cons_strcat(C_RESET);
 	return ret;
 }
 
@@ -657,8 +657,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					strcpy(funline,"|");
 				cons_strcat(funline);
 				foo = NULL;
-			} else
-				cons_strcat(" ");
+			} else cons_strcat(" ");
 		}
 
 		if (foo != NULL) {
@@ -742,7 +741,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				break;
 			case DATA_STRUCT:
 				if (*foo->arg=='\0') {
-					cons_printf("(struct: undefined memory format)\n");
+					cons_strcat("(struct: undefined memory format)\n");
 					myrow++;
 				} else {
 					int ofmt = last_print_format;
@@ -1048,9 +1047,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 					}
 				}
 			}
-		} else {
-			udis_arch_opcode(arch,block+bytes, endian, sk, bytes, myinc);
-		}
+		} else udis_arch_opcode(arch,block+bytes, endian, sk, bytes, myinc);
 
 		cons_newline();
 		if (f && f->cmd != NULL)

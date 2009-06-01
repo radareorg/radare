@@ -972,7 +972,6 @@ void visual_draw_screen()
 		(unsigned int)config.block_size,
 		mark, get_print_format_name(last_print_format),
 		(inv)?"inv ":"", buf);
-
 	/* Spaguetti monster lives here ! */
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {
@@ -1252,7 +1251,7 @@ CMD_DECL(visual)
 			radare_cmd(".!regs*", 0);
 		radare_prompt_command();
 		visual_draw_screen();
-	cons_flushit();
+		cons_flushit();
 
 			// XXX 
 		if (config.debug&&last_print_format == FMT_VISUAL&&scrseek&&scrseek[0]) {

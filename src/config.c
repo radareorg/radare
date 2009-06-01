@@ -759,6 +759,7 @@ static int config_scrbuf_callback(void *data)
 	struct config_node_t *node = data;
 
 	config.buf = node->i_value;
+	cons_flushable = node->i_value;
 	return 1;
 }
 

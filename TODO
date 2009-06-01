@@ -9,9 +9,10 @@
 TODO 1.4 ???
 ==========
 
-* Install radapy!! implement radapy-client
-* implement socket pipes
 * implement main prompt
+  - rarun
+  - listen at a port waiting for commands
+  - can be used to remotely upload files
 * Invert doesnt works for disassembly!!!
   - manually done disassembly instruction by instruction!
 * !fork should be fixed
@@ -57,7 +58,6 @@ RWX,RWX,RWX
 * Documentate visual cursor with marks ',' and '.' keys
 * documentate the change of the execstack protection in program section of ELF
 * doc4 'g' and 'x' in visual
-* Documentation for grep ~#[N]
 
 * Added cached filtered IO layer for r_io ... accelerate debug!
   - we should have a flag to invalidate the cached memory
@@ -67,7 +67,7 @@ RWX,RWX,RWX
 * Added at% like ar%
 * fer q libr.syscall suporti lectura dsd fitxers
 
-grep multiple strings: (only for r2)
+grep multiple strings: (only for r2 or backport?)
   pdf ~call,ebp
 
 OPTIMIZATIONS

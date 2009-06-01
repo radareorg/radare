@@ -1673,7 +1673,7 @@ radare implements many user-friendly features for the visual interface to walk t
 \c       |    0x08048706           push dword 0x18       ; oeax+0xd
 \c       `==< 0x0804870B           jmp 0x80486c0         ; 1 = section._plt
 
-Use the 'sx' and 'sX' command to seek tot he xrefs for code and Xrefs for data indexed by numbers.
+Use the 'sx' and 'sX' command to seek to the xrefs for code and Xrefs for data indexed by numbers.
 
 All the calls and jumps are numbered (1, 2, 3...) these numbers are the keybindings for seeking there from the visual mode.
 
@@ -2199,9 +2199,6 @@ The IO backend is implement as IO plugins. They are selected depending on the ur
 \c # allocate 10MB in a malloc buffer
 \c $ radare malloc://10M
 \c
-\c # allocate 10MB in a malloc buffer
-\c $ radare malloc://10M
-\c 
 \c # connect to remote host
 \c $ radare connect://192.168.3.33:9999
 
@@ -2752,6 +2749,8 @@ Rabin can list the libraries used by a binary with the flag -l.
 \c libselinux.so.1
 \c libacl.so.1
 \c libc.so.6
+
+If you compare the output of 'rabin -l' and 'ldd' you will notice that rabin will list less libraries than 'ldd'. The reason is that rabin will not follow the dependencies of the listed libraries, it will just display the ones listed in the binary itself.
 
 There is another flag related to libraries, -L, it dlopens a library and show us the address where it has been loaded.
 

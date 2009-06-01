@@ -1097,7 +1097,16 @@ char *radare_cmd_str(const char *cmd)
 		cons_grep(grep+1);
 	}
 	cons_noflush = 1;
+#if __WINDOWS__
+cons_flushable = 0;
+#endif
 	radare_cmd_raw(dcmd, 0);
+#if 0
+#if __WINDOWS__
+//eprintf("CMD(%s)(%s)\n", dcmd, cons_get_buffer());
+cons_render();
+#endif
+#endif
 	cons_noflush = 0;
 	free (dcmd);
 #if 1

@@ -606,6 +606,7 @@ int cons_w32_print(unsigned char *ptr)
 				continue;
 			} else
 			if (ptr[0]=='4' && ptr[2]=='m') {
+				/* TODO: must be implemented . actually skipped */
 				/* background color */
 				switch(ptr[1]) {
 				case '0': // BLACK
@@ -638,6 +639,9 @@ int cons_w32_print(unsigned char *ptr)
 				case '9': // ???
 					break;
 				}
+				ptr = ptr + 1;
+				str = ptr + 2;
+				continue;
 			}
 		} 
 		len++;
@@ -1060,6 +1064,8 @@ void cons_fitbuf(char *buf, int len)
 	int lines = 0;
 	int rows = config.height;
 	int cols = config.width;// -cons_skipx;
+	if (buf == NULL)
+		return;
 	if (len<1) {
 		buf[0]='\0';
 		return;
@@ -1381,7 +1387,8 @@ void cons_printf(const char *format, ...)
 
 	len = vsnprintf(buf, CONS_BUFSZ-1, format, ap);
 	if (len>0) {
-		palloc(len);
+		// TODO: use cons_strcat here
+		palloc(len+1024);
 	//	cons_lines += cons_lines_count(buf);
 		memcpy(cons_buffer+cons_buffer_len, buf, len+1);
 		cons_buffer_len += len;
@@ -1430,7 +1437,11 @@ int cons_get_columns()
 
 int cons_get_real_columns()
 {
-#if __UNIX__
+#if __WINDOWS__
+	config.width = 80;
+	config.height = 24;
+	return 80;
+#elif __UNIX__
         struct winsize win;
 
         if (ioctl(1, TIOCGWINSZ, &win)) {

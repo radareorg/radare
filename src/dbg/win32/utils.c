@@ -38,7 +38,7 @@ void eprintf(const char *format, ...)
 }
 */
 
-void print_lasterr(char *str)
+void print_lasterr(const char *str)
 {
     /* code from MSDN, :? */
 
@@ -48,7 +48,6 @@ void print_lasterr(char *str)
          (DWORD_PTR)6, (DWORD_PTR)L"Bill" };                               // %5!*s!
     const DWORD size = 100+1;
     WCHAR buffer[size];
-
 
     if (!FormatMessage( FORMAT_MESSAGE_FROM_STRING |
 		   	FORMAT_MESSAGE_ARGUMENT_ARRAY,
@@ -63,6 +62,6 @@ void print_lasterr(char *str)
         return;
     }
 
-    eprintf("%s ::: %s\n", str, buffer);
+    eprintf("print_lasterr: %s ::: %s\n", str, buffer);
 }
 

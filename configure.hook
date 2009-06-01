@@ -19,6 +19,7 @@ i386-linux
 i686-linux
 i586-mingw32
 arm-darwin
+iPod2,1-darwin
 powerpc-darwin
 i386-darwin
 EOF`

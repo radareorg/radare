@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       th0rpe <nopcode.org>
  *       pancake <youterm.com>
  *
@@ -59,13 +59,13 @@ int debug_fork()
 
 BOOL WINAPI DebugActiveProcessStop(DWORD dwProcessId);
 
-static void (*gmbn)(HANDLE, HMODULE, LPTSTR, int);
-static int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int);
-static BOOL WINAPI (*win32_detach)(DWORD);
-static HANDLE WINAPI (*win32_openthread)(DWORD, BOOL, DWORD);
-static HANDLE WINAPI (*win32_dbgbreak)(HANDLE);
-static DWORD WINAPI (*win32_getthreadid)(HANDLE); // Vista
-static DWORD WINAPI (*win32_getprocessid)(HANDLE); // XP
+static void (*gmbn)(HANDLE, HMODULE, LPTSTR, int) = NULL;
+static int (*gmi)(HANDLE, HMODULE, LPMODULEINFO, int) = NULL;
+static BOOL WINAPI (*win32_detach)(DWORD) = NULL;
+static HANDLE WINAPI (*win32_openthread)(DWORD, BOOL, DWORD) = NULL;
+static HANDLE WINAPI (*win32_dbgbreak)(HANDLE) = NULL;
+static DWORD WINAPI (*win32_getthreadid)(HANDLE) = NULL; // Vista
+static DWORD WINAPI (*win32_getprocessid)(HANDLE) = NULL; // XP
 
 /* mark step flag (DEPRECATED) */
 static int single_step;
@@ -248,10 +248,9 @@ err_load_th:
 int debug_contp(int tid)
 {
 	if(ContinueDebugEvent(ps.pid, tid, DBG_CONTINUE) == 0) {
-		print_lasterr((char *)__FUNCTION__);
+		eprintf("debug_contp: error\n");
 		return -1;
 	}
-
 	return 0;
 }
 
@@ -498,7 +497,6 @@ static int debug_exception_event(unsigned long code)
 	next_event = 0;
 
 	switch(code) {
-
 		/* software breakpoint or int3 */
 		case EXCEPTION_BREAKPOINT:
 
@@ -512,9 +510,7 @@ static int debug_exception_event(unsigned long code)
 				next_event = 1;
 				debug_contp(ps.tid);
 			}
-
 			break;
-
 		/* hardware breakpoint or single step exception */
 		case EXCEPTION_SINGLE_STEP: 
 
@@ -529,9 +525,7 @@ static int debug_exception_event(unsigned long code)
 				next_event = 1;
 				debug_contp(ps.tid);
 			}
-
 			break;
-
 		/* fatal exceptions */
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
@@ -540,7 +534,6 @@ static int debug_exception_event(unsigned long code)
 		case EXCEPTION_STACK_OVERFLOW:
 			WS(event) = FATAL_EVENT;
 			break;
-
 		default:
 			eprintf("exception 0x%x uncatched\n", code);
 
@@ -663,7 +656,6 @@ static inline int CheckValidPE(unsigned char * PeHeader)
 	}
 
 	return 0;
-
 }
 
 
@@ -686,7 +678,6 @@ int debug_init_maps(int rest)
 	if(ps.map_regs_sz > 0) 
 		free_regmaps(rest);
 
-
 	GetSystemInfo(&SysInfo);
 
 	for (CurrentPage = (LPBYTE) SysInfo.lpMinimumApplicationAddress ;
@@ -698,12 +689,10 @@ int debug_init_maps(int rest)
 		}
 
 		if(mbi.Type == MEM_IMAGE) {
-
 			 ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
 					(LPVOID)PeHeader, sizeof(PeHeader), &ret_len);
 
 			if(ret_len == sizeof(PeHeader) && CheckValidPE(PeHeader)) {
-
 				dos_header = (IMAGE_DOS_HEADER *)PeHeader;
 				nt_headers = (IMAGE_NT_HEADERS *)((char *)dos_header
 						+ dos_header->e_lfanew);    	    		    	
@@ -752,10 +741,12 @@ int debug_init_maps(int rest)
 				}    	        	        	        	    
 			}
 
-			if(gmi(WIN32_PI(hProcess), (HMODULE) CurrentPage,
+			if (gmi != NULL)
+			if (gmi(WIN32_PI(hProcess), (HMODULE) CurrentPage,
 					(LPMODULEINFO) &ModInfo, sizeof(MODULEINFO)) == 0)
 				return 0;
-
+/* XXX: THIS PRINTF SAVE ME FROM A SEGFAULT =!=! */
+eprintf("");
 			CurrentPage += ModInfo.SizeOfImage;
 		} else {
 			mr = (MAP_REG *)malloc(sizeof(MAP_REG));
