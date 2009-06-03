@@ -15,6 +15,7 @@ amd64-freebsd
 arm-linux
 armel-linux
 armv5tel-linux
+armv5tejl-linux
 powerpc-linux
 mips64-linux
 mips-linux
