@@ -6,14 +6,10 @@
 
 ===========================================================
 
-TODO 1.4
-========
-
-* Documentate '=' in the book
-
 TODO 1.5
 ========
 
+* implement serial:// for '=' command
 * Implement btree for flags and so on
 * implement main prompt
   - rarun

@@ -2121,9 +2121,66 @@ Enable this mode with dbg.dwarf=true
 
 \C{remote} Remoting capabilities
 
-Radare can work locally or remotelly without hard differences. The reason is that everything remains on the IO subsystem that abstracts the access to system(), cmd() and all basic IO operations, so ...
+Radare can work locally or remotelly without hard differences. The reason is that everything remains on the IO subsystem that abstracts the access to system(), cmd() and all basic IO operations thru the network.
 
-TODO
+Here's the help of the command:
+
+\c [0xB803C7F0]> =?
+\c  =                  ; list all open connections
+\c  =<[fd] cmd         ; send output of local command to remote fd
+\c  =[fd] cmd          ; exec cmd at remote 'fd' (last open is default one)
+\c  =+ [proto://]host  ; add host (default=rap://, tcp://, udp://)
+\c  =-[fd]             ; remove all hosts or host 'fd'
+\c  ==[fd]             ; open remote session with host 'fd', 'q' to quit
+
+lets introduce the command with a little example :) A typical remote session could be:
+
+\c - At remote host1:
+\c $ radare listen://:1234
+\c 
+\c - At remote host2:
+\c $ radare listen://:1234
+\c
+\c - At localhost:
+\c $ radare <bin>
+\c
+\c ; Add hosts
+\c ]> =+ rap://<host1>:1234//bin/ls
+\c Connected to: <host1> at port 1234
+\c waiting... ok
+\c 5 - rap://<host1>:1234//bin/ls
+\c
+\c ; Of course, you can open remote files in debug mode (or using any io
+\c ; plugin) specifying the uri when adding hosts: 
+\c ]> =+ rap://<host2>:1234/dbg:///bin/ls
+\c Connected to: <host2> at port 1234
+\c waiting... ok
+\c 5 - rap://<host1>:1234//bin/ls
+\c 6 - rap://<host2>:1234/dbg:///bin/ls
+\c
+\c ; Exec commands in host1
+\c ]> =5 px
+\c ]> = s 0x666
+\c ...
+\c
+\c ; Open a session with host2
+\c ]> ==6
+\c fd:6> !cont entrypoint
+\c ...
+\c fd:6> q
+\c
+\c ; Remove hosts (and close connections)
+\c ]> =-
+
+So, you can init tcp or udp servers, add them with '=+ tcp://' or  
+'=+ udp://', and then redirect to them the radare output. For instance:
+
+\c ]> =+ tcp://<host>:<port>/
+\c Connected to: <host> at port <port>
+\c 5 - tcp://<host>:<port>/
+\c ]> =<5 cmd...
+
+The '=<' command will send the result of the execution of the command at the right to the remote connection number N (or the last one used if no id specified).
 
 \C{projects} Projects
 
@@ -3969,6 +4026,46 @@ radare offers a graphical interface for browsing the code graphs. It uses an own
 The grava window permits opening new nodes with the content executing a certain command (!regs, x@esp, ..), and offers a simple interface for debugging allowing to browse the code with the mouse and set breakpoints with the contextual menu over the nodes.
 
 TODO: screenshots
+
+\S{graph-viz} Graphing code with graphviz
+
+radare 1.4 adds two new commands (agd and agdv) that stand for 'analyze-graph-dot' and +'view'. The first one will print to stdout a dot format file. Pipe it to a file and then run graphviz on it to get the rendered result.
+
+The second command (agdv) does all this stuff automatically for you. This is:
+
+\c - generate dot file
+\c - graphviz to png
+\c - rsc view png (runs gqview or any other available image viewer of your system)
+
+Let's do it manually:
+
+\c []> agd > file.dot
+\c []> !!dot -Tpng -o file.png file.dot
+\c []> !!rsc view file.png
+
+\S{graph-user} User-defined graphs
+
+TODO: explanation
+
+Example script:
+
+\c $ cat scripts/gun-demo
+\c e asm.profile=simple
+\c e scr.color=0
+\c e scr.bytewidth=16
+\c gur
+\c gun eip 40 pd
+\c gun esp 128 px
+\c gun entrypoint 128 pd
+\c "gun esp+1 128 ad @ esp"
+\c gue entrypoint eip
+\c gue eip esp
+\c gue esp
+\c gud > a.dot
+\c !!dot -Tpng -ograph.png a.dot
+\c !!rsc view graph.png
+\c guv
+\c q
 
 \S{rsc-graph} Graphing code with rsc
 

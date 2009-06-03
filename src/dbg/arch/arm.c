@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@
 #endif
 
 #include "arm.h"
-regs_t cregs, oregs;
+unsigned int cregs[32], oregs[32];
 //elf_gregset_t cregs; // current registers
 //elf_gregset_t oregs; // old registers
 
@@ -470,19 +470,20 @@ fps            0x0      0
 int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
-	regs_t regs;
+        unsigned int regs[32];
 	int color = config_get("scr.color");
 
 	/* Get the thread id for the ptrace call.  */
 	//tid = GET_THREAD_ID (inferior_ptid);
 
-#if __APPLE__
-	printf("TODO: getregs for osx-arm\n");
-#else
 	if (mask && mask[0]=='o') { // orig
 		memcpy(&regs, &oregs, sizeof(regs_t));
 	} else {
+#if __APPLE__
+		debug_getregs(ps.tid, &regs);
+#else
 		ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
+#endif
 		if (ret < 0) {
 			perror("ptrace_getregs");
 			return 1;
@@ -571,7 +572,7 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("  r4 0x%08x   ", regs[4]);
 
 			if (regs[11]!=oregs[11]) cons_strcat("[ fp=r11 ]");
-			else cons_strcat("  fp=r11");
+			else cons_strcat("fp=r11");
 			if (regs[12]!=oregs[12]) cons_strcat("[ ip=r12 ]");
 			else cons_strcat("  ip=r12");
 			if (regs[13]!=oregs[13]) cons_strcat("[ sp=r13 ]");
@@ -584,7 +585,6 @@ int arch_print_registers(int rad, const char *mask)
 			cons_strcat("  cpsr=r16\n");
 		}
 	}
-#endif
 
 	if (memcmp(&cregs,&regs, sizeof(regs_t))) {
 		memcpy(&oregs, &cregs, sizeof(regs_t));
