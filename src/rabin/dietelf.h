@@ -19,6 +19,7 @@
 #undef ELF_M_SYM
 #undef ELF_M_SIZE
 #undef ELF_M_INFO
+#undef ELF_Vword
 	
 #ifdef DIETELF64
     #define ELF_(name) Elf64_##name 
@@ -32,6 +33,7 @@
 	#define ELF_M_SYM         ELF64_M_SYM
 	#define ELF_M_SIZE        ELF64_M_SIZE
 	#define ELF_M_INFO        ELF64_M_INFO
+	#define ELF_Vword         Elf64_Xword
 #else       
     #define ELF_(name) Elf32_##name 
 	#define ELF_ST_BIND       ELF32_ST_BIND
@@ -44,6 +46,7 @@
 	#define ELF_M_SYM         ELF32_M_SYM
 	#define ELF_M_SIZE        ELF32_M_SIZE
 	#define ELF_M_INFO        ELF32_M_INFO
+	#define ELF_Vword         Elf32_Word
 #endif      
 
 #define ELF_ADDR_MASK   0xffffffffffff8000LL
