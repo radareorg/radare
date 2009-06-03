@@ -10,7 +10,7 @@ MANDIR=${DESTDIR}@MANDIR@
 LIBDIR=${DESTDIR}@LIBDIR@
 LIBEXECDIR=${DESTDIR}@LIBEXECDIR@
 
-.PHONY: all clean mrproper install deinstall
+.PHONY: all clean mrproper install deinstall w32dist dist omni arm release uninstall
 
 all:
 ##HAVE_GUI##

@@ -1,3 +1,1420 @@
+=== 1.4 === 2009-06-03
+
+changeset:   1115:674f30c175d6
+tag:         tip
+user:        pancake <@youterm.com>
+date:        Wed Jun 03 19:06:44 2009 +0200
+files:       configure configure.acr configure.hook src/radare.c
+description:
+* Added 'armv5tejl' to the whitelist of supported debuggers
+* Upgrade version to 1.4 (release time!)
+* Fix build for --without-debugger
+
+
+changeset:   1114:1d932c483c28
+user:        pancake <@youterm.com>
+date:        Wed Jun 03 17:29:54 2009 +0200
+files:       TODO configure.hook doc/radare.but src/dbg/arch/arm.c src/radare.xml
+description:
+* Fix register handling for arm-darwin (debugger finally working!)
+* Added radare.xml (ldid -Sradare.xml radare) required to run
+* Added amd64-openbsd into the whitelist of supported debugger platforms
+* Add documentation in the book for the '=' command and for 'agd' graphs
+
+
+changeset:   1113:07f4ca82e294
+user:        pancake <@youterm.com>
+date:        Wed Jun 03 14:30:38 2009 +0200
+files:       doc/radare.but src/plug/io/remote.c
+description:
+* Fix rap:// O:)
+* Added more documentation for radapy and ranal in the book
+
+
+changeset:   1112:f91f0ee71f63
+user:        nibble
+date:        Wed Jun 03 13:18:00 2009 +0200
+files:       src/rabin/dietelf.c src/rabin/dietelf.h
+description:
+* Fixed Elf64_Xword/Elf32_word bug in dietelf
+
+
+changeset:   1111:272d55041b5d
+user:        pancake@localhost.localdomain
+date:        Wed Jun 03 11:31:47 2009 +0000
+files:       TODO doc/radare.but src/dbg/darwin/debug.c src/plug/io/remote.c
+description:
+* Implement rap:// URI handling in remote IO plugin
+* Added python documentation for radapy in the book
+* Fix argv access for darwin debugger
+
+
+changeset:   1110:d72ef39bdf45
+user:        pancake@localhost.localdomain
+date:        Wed Jun 03 09:20:46 2009 +0000
+files:       TODO src/arch/x86/udis86/syn-att.c src/arch/x86/udis86/syn-intel.c src/arch/x86/udis86/syn-pseudo.c src/cons.c src/dbg/win32/debug.c src/flags.c src/rabin/javasm.c src/rabin/rabin.c
+description:
+* Fix negative indexed operands disassembly with udis86
+  - Fixes intel, att and pseudo backends
+* Fix random segfault in w32 debugger
+  - The problem was in !maps code
+* Make .class files be recognized by rabin again
+  - javasm -> rsc javasm
+  - Fix flag names (match sym. and cp.)
+
+
+changeset:   1109:9b4d6b5acd4f
+user:        pancake@localhost.localdomain
+date:        Mon Jun 01 20:00:54 2009 +0000
+files:       TODO configure.hook doc/radare.but src/code.c src/config.c src/cons.c src/dbg/debug.c src/dbg/win32/debug.c src/dbg/win32/utils.c src/print.c src/radare.c src/visual.c
+description:
+* Fix console issues and radare_cmd_str for w32
+  - Not very tested, but debugger is working again
+* Fix a segfault with a printf (uninitialized variable??)
+* Use more cons_strcat instead of cons_printf
+
+
+changeset:   1108:7eb182c831ae
+user:        nibble
+date:        Mon Jun 01 10:04:25 2009 +0200
+files:       src/plug/io/remote.c
+description:
+* More work in rap://
+
+
+changeset:   1107:b8a4913e9c52
+user:        nibble
+date:        Sun May 31 23:37:53 2009 +0200
+files:       src/plug/io/remote.c
+description:
+* Fixed rap:// segfault executing commands with no output
+
+
+changeset:   1106:38dd7c585612
+parent:      1105:62ea4d3c3b1b
+parent:      1104:659a1163152b
+user:        pancake@localhost.localdomain
+date:        Sun May 31 22:19:04 2009 +0000
+files:       src/plug/io/remote.c
+description:
+* Merge heads O:)
+
+
+changeset:   1105:62ea4d3c3b1b
+parent:      1103:f945021c25e7
+user:        pancake@localhost.localdomain
+date:        Sun May 31 22:18:39 2009 +0000
+files:       Makefile.acr scripts/radapy-example.py scripts/radapy.py scripts/standalone.py src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/plug/hack/radare.py src/plug/io/remote.c
+description:
+* Install radapy API
+  - It's a bit hacky, but scripts/standalone shows a way to wrap the
+    use of radare API from the shell connecting to a remote radare.
+  - Added _eof handler in RapServer()
+  - Fix in RAP_CMD command
+
+
+changeset:   1104:659a1163152b
+user:        nibble
+date:        Sun May 31 21:01:30 2009 +0200
+files:       src/plug/io/remote.c src/rtr.c
+description:
+* Minor fixups in rtr and rap
+
+
+changeset:   1103:f945021c25e7
+user:        pancake@localhost.localdomain
+date:        Sun May 31 20:01:59 2009 +0000
+files:       scripts/client.py scripts/radapy-example.py scripts/radapy.py scripts/radapy_bochs.py scripts/radapy_client.py
+description:
+* Refactor server api of radare python
+  - Adapt bochs and test examples
+
+
+changeset:   1102:72cc714f819f
+user:        pancake@localhost.localdomain
+date:        Sun May 31 19:51:16 2009 +0000
+files:       scripts/client.py scripts/radapy.py src/plug/io/remote.c src/rtr.c src/socket.h
+description:
+* Implement remote write command
+* Initial working implementation of the remote protocol python api
+  - Added test program
+  - r_cmd returns 4 byte int instead of 8
+
+
+changeset:   1101:98f615ff9626
+user:        nibble
+date:        Sun May 31 19:46:59 2009 +0200
+files:       src/rtr.c src/socket.c src/socket.h
+description:
+* Added udp:// support to '='
+
+
+changeset:   1100:8ae811b3a63f
+user:        nibble
+date:        Sun May 31 19:28:47 2009 +0200
+files:       src/rtr.c src/rtr.h
+description:
+* More work on '='
+  - Added tcp:// support
+  - Minor fixups in =<
+
+
+changeset:   1099:5461580c0623
+user:        pancake@localhost.localdomain
+date:        Sun May 31 17:44:29 2009 +0000
+files:       src/cmds.c src/rtr.c
+description:
+* Added '=<' command
+  - Simplify =? message
+
+
+changeset:   1098:a9cafb4305eb
+user:        nibble
+date:        Sun May 31 12:44:51 2009 +0200
+files:       src/rtr.c
+description:
+* '=+' now uses rap:// by default
+
+
+changeset:   1097:159ea7093f6e
+user:        nibble
+date:        Sat May 30 23:59:11 2009 +0200
+files:       src/cmds.c src/rtr.c
+description:
+* Command '='
+  - Added ==[fd] for getting "remote prompt"
+  - More verbose errors
+  - Minor fixups
+
+
+changeset:   1096:8142ee02d507
+user:        nibble
+date:        Sat May 30 22:15:05 2009 +0200
+files:       src/cmds.c src/cmds.h src/objects.mk src/plug/io/remote.c src/rtr.c src/rtr.h
+description:
+* Added cmd '=' to send cmd to remote radares
+  - Init a radare server executing 'radare listen://:port'
+  - Add hosts with '=+ rap://host:port/file/'
+  - Use '=[fd] cmd' to send a cmd to the specified host
+
+
+changeset:   1095:a3c53de86e5d
+user:        pancake@localhost.localdomain
+date:        Sat May 30 16:07:50 2009 +0000
+files:       src/dbg/mem.c src/rabin/dietmach0_utils.c
+description:
+* Apply patches reported by Frank Wille to fix build on NetBSD
+
+
+changeset:   1094:468374db8d5b
+user:        nibble
+date:        Fri May 29 17:13:04 2009 +0200
+files:       src/plug/io/remote.c
+description:
+* Fixed remote plugin
+
+
+changeset:   1093:d8f40620a3dc
+user:        pancake@localhost.localdomain
+date:        Fri May 29 12:31:39 2009 +0000
+files:       Makefile.acr TODO doc/radare.but scripts/standalone.py src/data.c src/data.h src/plug/hack/radare.py vala/Makefile vala/api/inout.vala vala/api/io.vala vala/inout.c vala/inout.h vala/io.c vala/io.h
+description:
+* vala/io -> vala/inout to avoid problems with windows io.h
+* Added scp cmd in w32dist make target
+* Add documentation for w32 build in the book
+* Initial test for hijacking python calls to r.cmd()
+  - Will be used to connect to remote radares on standalone python scripts
+* Added read() disasm() and disasm_ops() funcs in python api
+* Fix function signature in data.c
+
+
+changeset:   1092:c98beaa28cca
+user:        pancake@localhost.localdomain
+date:        Thu May 28 23:07:03 2009 +0000
+files:       src/config.c
+description:
+* Change plugins directory for w32
+
+
+changeset:   1091:0e3b0de2783d
+user:        pancake@localhost.localdomain
+date:        Thu May 28 22:59:24 2009 +0000
+files:       TODO src/arch/x86/dislen.c src/config.c src/config.h src/cons.c src/dbg/arch/i386.c src/dbg/debug.c src/dbg/mem.c src/dbg/objects.mk src/dbg/procs.c src/io.h src/main.h src/plug/io/libgdbwrap/gdbwrapper.c src/plug/io/libgdbwrap/include/gdbwrapper.h src/plug/io/libgdbwrap/interface.c src/plug/io/wii/grecko.c src/rabin/dietmach0_utils.c src/rabin/javasm.c src/radare.c src/radare.h src/rio.h src/types.h src/utils.c src/w32utils.c
+description:
+* Fix build for mingw32
+  - Various random dirty fixes to make w32 port work again
+  - Debugger is actually segfaulting under wine
+
+
+changeset:   1090:9e90a436b0c6
+user:        nibble
+date:        Thu May 28 15:32:58 2009 +0200
+files:       src/dbg/debug.c
+description:
+* Another fixup in !inject (I hope it's the last one :)
+
+
+changeset:   1089:fb20691255b8
+user:        nibble
+date:        Thu May 28 15:13:00 2009 +0200
+files:       src/dbg/debug.c
+description:
+* Minor fix in !inject O:)
+
+
+changeset:   1088:c4a5f914a847
+user:        nibble
+date:        Thu May 28 14:57:27 2009 +0200
+files:       src/dbg/arch/i386-hack.c src/dbg/arch/x86_64-hack.c src/dbg/debug.c src/dbg/debug.h src/dbg/system.c
+description:
+* Remove '!hack 9 <file> <sym>'
+* Add '!inject <file> <sym>' and generalize code for 32 and 64 bits
+
+
+changeset:   1087:caa8f6d114cf
+user:        nibble
+date:        Thu May 28 13:43:27 2009 +0200
+files:       src/data.c src/dbg/arch/i386-hack.c src/dbg/arch/x86_64-hack.c src/dbg/arch/x86_64.c src/dbg/debug.c src/rsc/pool/syms-dump
+description:
+* Added dbg hack to inject shellcode from file
+  - Usage: !hack 9 <file> <sym>
+* Fixed rsc syms-dump
+* Fixed Vd
+
+
+changeset:   1086:6f78212aef27
+user:        pancake@localhost.localdomain
+date:        Thu May 28 10:52:53 2009 +0000
+files:       TODO configure src/dbg/darwin/debug.c
+description:
+* Cleanup TODO
+* Sync configure with last acr commits (should work fine on netbsd now)
+* Check if inferior pid is -1 in darwin debugger
+
+
+changeset:   1085:3cf353fa3a24
+user:        nibble
+date:        Wed May 27 20:35:08 2009 +0200
+files:       src/arch/ppc/gnudisppc.c src/arch/ppc/ppc-dis.c src/arch/ppc/ppc-opc.c src/code.c src/dbg/arch/x86_64.c src/include/bfd.h src/include/opcode/ppc.h src/objects.mk
+description:
+* Fixed syscall related stuff for x86_64
+* Added gnu ppc disassembler
+  - It is used when './configure --without-nonfree'
+
+
+changeset:   1084:4ada113b1e98
+user:        pancake@localhost.localdomain
+date:        Wed May 27 11:35:40 2009 +0000
+files:       doc/radare.but src/analyze.c src/arch/x86/code.c src/config.c src/io.c src/print.c src/rio.c
+description:
+* Added cfg.tzdelta to configure the timezone delta
+  - Used from unix timestamp and windows filetime print formats
+* Fix an issue related to locked (slow) code analysis progressbar
+* Added documentation for the internal grep
+  - Also documentate tmp bsize and so
+
+
+changeset:   1083:2786a4950324
+user:        nibble
+date:        Wed May 27 03:36:47 2009 +0200
+files:       TODO src/dbg/arch/i386.c src/dbg/arch/x86_64.c src/dbg/mem.c
+description:
+* Fixed !mmap (mmap shellcode injection)
+
+
+changeset:   1082:8609bdaf0140
+user:        nibble
+date:        Wed May 27 02:05:43 2009 +0200
+files:       libusbsniff/Makefile src/dbg/arch/x86_64.c src/dbg/arch/x86_64.h src/plug/io/mmap.c
+description:
+* Fixed mprotect shellcode injection in x86_64
+* Fixed libusbsniff build
+* Fixed mmap:// io plugin
+
+
+changeset:   1081:af482048e72d
+user:        pancake@localhost.localdomain
+date:        Tue May 26 23:56:41 2009 +0000
+files:       src/config.c src/environ.c src/radare.c src/rsc/pool/monitor
+description:
+* Added cfg.session for rsc monitor
+  - Sync rsc monitor script with new filename settings
+  - export MONITOR_SESSION environvar as cfg.session
+
+
+changeset:   1080:cee6c6cc8126
+user:        pancake@localhost.localdomain
+date:        Tue May 26 23:44:18 2009 +0000
+files:       src/radare.c src/rsc/pool/monitor
+description:
+* Fix rsc monitor
+  - Implement rsc monitor -e to edit scripts
+  - Now are multiline scripts
+  - Fixes related to the cons_flush
+  - Slurp was stripping too many chars
+  - mkdir ~/.radare/monitor at runtime
+
+
+changeset:   1079:fd7c9dad7643
+user:        pancake@localhost.localdomain
+date:        Tue May 26 23:16:12 2009 +0000
+files:       Makefile.acr src/radare.c
+description:
+* Install ranal API
+* Warn about the use of '>' and '`' in cmd_str
+
+
+changeset:   1078:9551e95ece5d
+user:        pancake@localhost.localdomain
+date:        Tue May 26 23:05:22 2009 +0000
+files:       TODO src/cons.c src/grava.c src/main.c src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/radare.c
+description:
+* Keep cons_buffer contents in radare_cmd_str
+  - agd is now working from language bindings
+  - no way to use pipes or escaped commands from lang binds
+* Fix ranal make_png()
+
+
+changeset:   1077:dfb9c8d37359
+user:        pancake <@youterm.com>
+date:        Tue May 26 20:26:39 2009 +0200
+files:       libusbsniff/libusbsniff.c src/arch/ppc/ppc_disasm.c src/arch/ppc/ppc_disasm.h src/code.c
+description:
+* Keep ppc disasm code without the endian argument
+* Fix build of libusbsniff on ubuntu (:?)
+
+
+changeset:   1076:5669c9a95f98
+user:        pancake@localhost.localdomain
+date:        Mon May 25 22:28:08 2009 +0000
+files:       src/dbg/objects.mk
+description:
+* mips->mips64
+
+
+changeset:   1075:6098ed50398b
+user:        pancake@localhost.localdomain
+date:        Mon May 25 22:27:25 2009 +0000
+files:       src/cons.c
+description:
+* Fix FreeBSD build (thanks debian farm!)
+
+
+changeset:   1074:9fdec49d88a6
+user:        a@localhost
+date:        Mon May 25 22:38:05 2009 -0400
+files:       src/dbg/objects.mk
+description:
+* Fix mipsel arch translation for debugger objects
+
+
+changeset:   1073:7fb0d4ac6f91
+user:        pancake <@youterm.com>
+date:        Mon May 25 20:08:08 2009 +0200
+files:       configure configure.hook
+description:
+* Update acr fixing configure.hook order issue
+  --without-debugger flag was ignored
+
+
+changeset:   1072:0992ef40f50c
+user:        pancake <@youterm.com>
+date:        Mon May 25 19:48:35 2009 +0200
+files:       configure.hook
+description:
+* Added armelv5tel-linux archos pair in the whitelist for debugger support
+
+
+changeset:   1071:7f7541d17ce0
+user:        pancake <@youterm.com>
+date:        Mon May 25 11:46:26 2009 +0200
+files:       doc/radare.but
+description:
+* Documentate the /P command in the book
+
+
+changeset:   1070:b2962ab59b35
+user:        pancake@localhost.localdomain
+date:        Mon May 25 10:45:49 2009 +0000
+files:       TODO doc/radare.but src/config.c src/grava.c src/rsc/pool/idc2rdb src/trace.c
+description:
+* Some more random words for the book
+  - Update some commands and help msgs (p, pm..)
+* Added graph.traces to colorize traced nodes in graphviz
+  - Used also for grava graphs (gtk ones)
+
+
+changeset:   1069:7d13ff2f2422
+user:        pancake@localhost.localdomain
+date:        Sun May 24 23:18:09 2009 +0000
+files:       src/arch/ppc/ppc_disasm.c src/arch/ppc/ppc_disasm.h src/plug/hack/analysis/ranal.py
+description:
+* Upgrade to vdappc 1.5 (Thanks Frank Wille!)
+  - Changelog: Modified license for DSFG compliance
+
+
+changeset:   1068:1c5ea38a1e8b
+user:        pancake@localhost.localdomain
+date:        Sun May 24 23:04:06 2009 +0000
+files:       TODO src/cmds.c src/cons.c src/grava.c src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/radare.c src/rsc/pool/Display src/rsc/pool/asm src/rsc/pool/core src/rsc/pool/dasm src/rsc/pool/move src/rsc/pool/rfile src/rsc/pool/syms src/rsc/pool/xtrace src/vm.c wscript
+description:
+* agd and agdv now accepts filename argument (instead of using pipe)
+  - maybe unnecessary :?
+* graphviz fontsize=8
+* More enhacements for the python code analysis api
+  - Added Opcode and Graph classes
+* Fix Debian bug #530178 (unbashism)
+  - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=530178
+* waf install for python2.6 api
+
+
+changeset:   1067:60cc298fd950
+user:        pancake@localhost.localdomain
+date:        Sun May 24 18:51:48 2009 +0000
+files:       src/cmds.c src/flags.c src/plug/hack/analysis/Makefile src/plug/hack/analysis/h.c src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/plug/hack/radare.py src/print.c src/print.h src/radare.c src/rsc/pool/idc2rdb
+description:
+* Fix vaddr issue in code xrefs
+* Fix output of flag list
+* Lot of new stuff for the analysis python api
+  - Functions, BasicBlocks, Comments, CodeXrefs, DataXrefs, Sections
+  - analyze code and add/remove comments
+  - import IDC file with idc_import() method
+    - uses 'rsc idc2rdb'
+* pX is now a new print format (FMT_HEXPAIRS)
+  - show hexpair string with no spaces and no colors
+  - nice for parsing
+
+
+changeset:   1066:4bb64591e065
+user:        pancake@localhost.localdomain
+date:        Sun May 24 14:00:52 2009 +0000
+files:       Makefile.acr src/cmds.c src/cons.c src/plug/hack/analysis/Makefile src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/plug/hack/python.c src/plug/hack/radare.py src/radare.c src/radare.h
+description:
+* Install radare api properly for python 2.6
+* 'q' command accepts a numeric argument (exit value)
+  - Sync python api quit() accepts a number
+  - Backport from r2
+* Fix a radare_cmd_str() problem related to cons_grep
+  - Implement grepcolumns in cons_grepbuf() when grepline is enabled
+* Initial import of the 'ranal' api
+  - Simple, but powerful code analysis API for python
+  - Easy to parse. will be used as a template to generate bindings
+    for perl, lua, ruby, ... and other dynamic languages
+  - Comes with a makefile and a test.py as an example of use
+  - r.cmd() now chops the last \n
+
+
+changeset:   1065:4dc32ef1ad54
+user:        nibble
+date:        Sat May 23 20:24:48 2009 +0200
+files:       src/analyze.c
+description:
+* Another minor fix in analysis O:-)
+
+
+changeset:   1064:ce1fb726c7d3
+user:        nibble
+date:        Sat May 23 19:26:21 2009 +0200
+files:       src/analyze.c src/cmds.c src/grava.c src/rdb.c
+description:
+* Minor fixup in agd
+
+
+changeset:   1063:64cbd70888b0
+user:        nibble
+date:        Sat May 23 15:00:10 2009 +0200
+files:       src/arch/x86/code.c src/grava.c
+description:
+* Fixed graph plotting for graph.depth > 20
+
+
+changeset:   1062:2b4a03af52a3
+user:        nibble
+date:        Fri May 22 18:19:55 2009 +0200
+files:       src/analyze.c src/cmds.c src/grava.c src/rdb.c
+description:
+* More work on 'graph.split = true'
+
+
+changeset:   1061:617f09f94c0a
+user:        pancake <@youterm.com>
+date:        Fri May 22 14:35:23 2009 +0200
+files:       src/cmds.c src/radare.c src/radare.h
+description:
+* Added 'cX' command to compare like 'cc' does but using
+  two side hexdiff dump format
+* Added help for /P command
+
+
+changeset:   1060:bec160844033
+user:        nibble
+date:        Fri May 22 14:04:11 2009 +0200
+files:       TODO src/print.c
+description:
+* Specify pointer & data size in pm with %<size>
+  - eg: pm %2x for 16 bits hex
+
+
+changeset:   1059:f6250c932444
+user:        pancake <@youterm.com>
+date:        Fri May 22 12:57:18 2009 +0200
+files:       src/cmds.c src/config.c src/grava.c
+description:
+* Fix build O:)
+* Add graph.weight (false by default)
+
+
+changeset:   1058:ab7347540e78
+user:        pancake@localhost.localdomain
+date:        Fri May 22 10:32:33 2009 +0000
+files:       TODO src/cmds.c src/rdb.c src/readline.c src/search.c
+description:
+* Fix 'c' command (missing radare_read(0))
+* Added /P search command that searchs for proximity in bytelevel distance
+  - Will search a block of blocksize bytes matching at least 'arg' bytes
+    against the current seek
+* Added more 'ag' and 'gu' commands to readline autocompletion.
+
+
+changeset:   1057:103708800675
+user:        pancake@localhost.localdomain
+date:        Thu May 21 23:21:39 2009 +0000
+files:       TODO src/analyze.c src/code.c src/config.c src/data.c src/data.h src/dbg/arch/i386.c src/dbg/bp.c src/dbg/mem.c src/grava.c src/radare.c src/utils.c src/utils.h
+description:
+* Set font size for graphviz graphs to 10pt
+* Implement the temporally block size for @@ iterator
+* Added 'asm.linescall' option to draw or not lines on call instructions
+  - It's visually cleaner
+  - asm.linesout = true by default now
+* A bit of investigation on !mmap makes me think that we have to inject a mmap2 syscall
+* Fix the lost of flags when unsetting breakpoints
+* Added file_size() helper
+
+
+changeset:   1056:2e6dfff0a57c
+user:        pancake <@youterm.com>
+date:        Thu May 21 20:25:57 2009 +0200
+files:       src/dbg/events.c
+description:
+* Fix build of debugger for non-linux systems
+
+
+changeset:   1055:ba695bb2e0e3
+user:        nibble
+date:        Thu May 21 19:57:58 2009 +0200
+files:       src/analyze.c
+description:
+* Fixed code analysis at startup
+
+
+changeset:   1054:a6bda99514a4
+user:        nibble
+date:        Thu May 21 19:44:00 2009 +0200
+files:       src/analyze.c src/arch/x86/code.c src/cmds.c src/rdb.c
+description:
+* More work in graphs (graph.split = true)
+* Fixups in x86 code analysis
+
+
+changeset:   1053:5c4874e5be74
+user:        pancake@localhost.localdomain
+date:        Thu May 21 15:38:58 2009 +0000
+files:       configure
+description:
+* Sync with acr-0.7.2-hg (fix acrhook issue on BSD)
+
+
+changeset:   1052:623c9c989484
+user:        nibble
+date:        Thu May 21 13:27:50 2009 +0200
+files:       src/analyze.c src/arch/x86/code.c src/cmds.c
+description:
+* Fixed basic block detection
+* agvd uses asm.profile = simple
+
+
+changeset:   1051:f66213dbd390
+user:        pancake <@youterm.com>
+date:        Thu May 21 11:39:12 2009 +0200
+files:       src/cmds.c src/config.c src/grava.c src/radare.c src/utils.h
+description:
+* Remove .file.png and .file.dot in adgv and gudv commands
+  - Added graph.bgcolor (only for graphviz commands: adgv and gudv)
+* Added 'weight' edge property (for testing with graphviz)
+  - Add bounding parentessis around ABS() macro
+* Move cons_flush() inside radare_cmd_str()
+
+
+changeset:   1050:f40aa263a5c0
+user:        pancake@localhost.localdomain
+date:        Thu May 21 10:15:43 2009 +0000
+files:       src/rsc/pool/view
+description:
+* Missing 'rsc view' Oops
+
+
+changeset:   1049:96a2fba4c474
+user:        pancake@localhost.localdomain
+date:        Thu May 21 10:10:46 2009 +0000
+files:       TODO configure configure.acr configure.hook src/cmds.c src/grava.c
+description:
+* Added acr hook (configure.hook) helper to autodetect if the current
+  os/arch pair supports native debugger.
+  - This will be helpful for the Debian build farm
+  - We need more testing and register more pairs
+* Added agdv and gudv commands to display and view a dot graph
+  - Launches dot and rsc view to display the picture with gqview, eog, ...
+* Colorize true/false node edges in the graphviz output for agd
+
+
+changeset:   1048:1db8d544909e
+user:        pancake@localhost.localdomain
+date:        Thu May 21 00:06:21 2009 +0000
+files:       TODO scripts/dotgraph scripts/gun-demo src/cmds.c src/grava.c src/utils.h
+description:
+* Added dotgraph example script
+  $ radare -d ls < scripts/dotgraph
+* Added rsc view to open an image view program
+* New command agd* (like old ag.)
+  - agd fills the nodes with the disassembly
+  - Properly generate the graph in dot format
+  - Same work for 'gud' command
+* pX is an alias for p1
+* Added ABS() macro in utils.h
+
+
+changeset:   1047:09c795474aea
+user:        pancake@localhost.localdomain
+date:        Wed May 20 10:10:57 2009 +0000
+files:       TODO src/data.c src/macros.c src/utils.c tests/chk/armasm.sh
+description:
+* data_prev now works with >= and <=
+* Fix set0word helper and the call from macro (again(R))
+* Added a testcase for the arm assembler
+
+
+changeset:   1046:3daf8d21c094
+user:        pancake@localhost.localdomain
+date:        Tue May 19 23:05:22 2009 +0000
+files:       src/cons.c src/radare.c
+description:
+* Hacky fix for a segfault in cons
+  - Reproduced while scrolling with 'Veljjjjjjjjj'
+
+
+changeset:   1045:ed3ba99d8537
+user:        pancake@localhost.localdomain
+date:        Tue May 19 22:44:20 2009 +0000
+files:       TODO src/b64.c src/config.c src/grava.c src/objects.mk src/print.c src/print.h src/wscript_build
+description:
+* Added base 64 print formats (p6 = encode , p9 = decode)
+* Fix build of ugraph for --without-gui
+  - Thanks sre!
+* Some changes in 'pm'
+  - e = little endian, E = big endian
+  - 1,2,4,8 - change pointer size (not yet implemented, but parsed)
+  - Added D for double
+
+
+changeset:   1044:f00bdd18bde4
+user:        pancake <@youterm.com>
+date:        Tue May 19 19:41:34 2009 +0200
+files:       src/code.c src/print.c
+description:
+* Refactoring of the p1,p2,p4,p8 print commands
+  - p8 is now p1!!!
+* Use NONFREE in code.c
+
+
+changeset:   1043:5ee0ab64b30c
+user:        pancake <@youterm.com>
+date:        Tue May 19 13:37:13 2009 +0200
+files:       src/cmds.c src/config.c
+description:
+* Added ?s sequence command to generate seqences of
+  numbers: ?s 0 10 2 -> 0 2 4 6 8 10
+* Added asm.bits with hacky sync with asm.arch for intel and arm
+  - Hacky backport from r2
+
+
+changeset:   1042:853812a2b207
+user:        pancake@localhost.localdomain
+date:        Tue May 19 11:40:20 2009 +0000
+files:       TODO src/cmds.c src/config.c src/flags.c src/main.c src/radare.c src/vars.c src/visual.c
+description:
+* Added ?q command that acts like ? or ?v but without echo (quite)
+* Added cfg.vars (instead of messing with cmd.vprompt2)
+* Added string_flag with -2 mode (fixes sym+delta)
+  - Used from visual prompt and 'fd'
+* Set cfg.debug when -d is used O_o
+* Avoid dupped vars in code analysis
+
+
+changeset:   1041:217552f790de
+user:        pancake@localhost.localdomain
+date:        Mon May 18 22:03:37 2009 +0000
+files:       TODO src/cmds.c src/flags.c src/print.h src/project.c
+description:
+* Fix 'fd' command. Oops :/
+* Another hacky trick for vaddr
+* Save/restore 'am' data in project files
+
+
+changeset:   1040:06837ed2bfb1
+user:        nibble
+date:        Mon May 18 20:39:11 2009 +0200
+files:       src/cons.c
+description:
+* Fixed cons_fitbuf
+
+
+changeset:   1039:0515fbd7c3f2
+user:        pancake <@youterm.com>
+date:        Mon May 18 18:27:07 2009 +0200
+files:       src/dbg/objects.mk
+description:
+* Added support for mipsel and arm5vtel
+  - Thanks debian build farm :)
+
+
+changeset:   1038:12813030c404
+user:        pancake@localhost.localdomain
+date:        Mon May 18 10:47:11 2009 +0000
+files:       TODO src/cmds.c src/config.c src/dbg/open.c src/dbg/system.c src/main.c src/print.c src/print.h src/utils.c src/utils.h
+description:
+* Added 'am' command to manage a list of print memory formats
+  - Used from pm [name]. This way you can follow pointers with nested
+    structures and visualize them properly
+  - 'am fmt' acts as an alias for 'pm format'
+  - nested named structures are handled with [] chars
+  - Some fixups in the 'pm' command.
+* Documentate !regio in !help
+* Do not change block size in FMT_MEMORY (pm)
+* Resolve argv[0] path and do not warn when using 'radare -d ls /'
+  - resolve_path moved to utils.c
+
+
+changeset:   1037:35057de7b01a
+user:        pancake@localhost.localdomain
+date:        Sun May 17 22:02:35 2009 +0000
+files:       src/dbg/debug.h src/dbg/regs.c src/dbg/system.c
+description:
+* Added !regio [addr] argument to change the base address
+  where registers are virtually mapped on memory
+
+
+changeset:   1036:6368f2dc1d7b
+user:        pancake@localhost.localdomain
+date:        Sun May 17 20:36:20 2009 +0000
+files:       TODO src/analyze.c src/cmds.c src/code.c src/data.c src/dbg/debug.c src/dbg/debug.h src/dbg/io.c src/dbg/regs.c src/dbg/system.c src/print.c src/radare.c src/utils.c src/visual.c
+description:
+* Fix 'as' command. was broken because !! was hooked previously
+  - as lists structures and as? show help
+* Use NONFREE in src/data.c to skip including ppc_disasm.h
+* Added !regio command to abstract 0 address IO as registers read+write
+  - It's cool for things like !contsc open&&pm sxx@0
+* Fix pm command (problem related to set0word)
+  - Added ':' format char to skip 4 bytes
+  - Use %08llx everywhere. oops
+* Fix visual help for 'm' and ''' keys
+
+
+changeset:   1035:d0f5ec9646be
+user:        pancake <@youterm.com>
+date:        Fri May 15 19:49:56 2009 +0200
+files:       src/rabin/dietelf.c src/rabin/p9bin.h src/rabin/rabin.c src/rabin/rabin.h
+description:
+* Very buggy and early implementation for p9bin in rabin
+  - A decent implementation will be done in r_bin for r2
+* strings for unknown binaries strip the '+' char in rabin
+  - fixes a problem with flagnames
+
+
+changeset:   1034:58f9bf734842
+user:        pancake <@youterm.com>
+date:        Fri May 15 12:43:59 2009 +0200
+files:       src/cmds.c
+description:
+* Documentate $$S variable
+
+
+changeset:   1033:2117fb8d7883
+user:        pancake@localhost.localdomain
+date:        Fri May 15 11:26:21 2009 +0000
+files:       TODO src/cmds.c src/code.c src/config.h src/environ.c src/flags.c src/radare.c
+description:
+* Added syntax sugar for temporally block size
+  - Can be used for @ and @@=
+* Added help for !!? command (show environ vars exported to shell)
+* Show *all* flags of a certain offset as comments in branch instructions
+  of the disassembly
+  - Fixes a problem in string_flag
+* BADDR->VADDR for environment
+
+
+changeset:   1032:ee5db357e373
+user:        pancake@localhost.localdomain
+date:        Fri May 15 00:50:33 2009 +0000
+files:       TODO src/config.c src/config.h src/main.c src/radare.c
+description:
+* Added support to interpret more than one script with -i
+
+
+changeset:   1031:9664163db3ec
+user:        pancake@localhost.localdomain
+date:        Fri May 15 00:29:43 2009 +0000
+files:       src/cmds.c src/data.c src/data.h
+description:
+* Added 'Cr' command to remove ranges of Code metadata
+  - Cr 4096 @ eip
+
+
+changeset:   1030:dd7c0e61bd0d
+user:        pancake@localhost.localdomain
+date:        Thu May 14 23:55:39 2009 +0000
+files:       TODO config.mk.acr configure configure.acr global.h.acr src/arch/arm/aasm/Makefile src/code.c src/objects.mk
+description:
+* Added --without-nonfree flag in configure to build radare
+  without nonfree sources. This is the case of the powerpc disassembler
+  which doesnt follows the DFSG because doesnt permits modification.
+  - http://en.wikipedia.org/wiki/Debian_Free_Software_Guidelines
+* Fix SHAREDIR path for aasm (aka armasm)
+
+
+changeset:   1029:c5f97187ad01
+user:        pancake@localhost.localdomain
+date:        Thu May 14 23:36:04 2009 +0000
+files:       src/code.c
+description:
+* Show comments in jumps/calls depending on asm.flagsall
+  - Good for grepping or regenerating xrefs
+
+
+changeset:   1028:533c4bfbaadb
+user:        pancake@localhost.localdomain
+date:        Thu May 14 23:26:17 2009 +0000
+files:       TODO src/cmds.c src/radare.c src/radiff/bdiff/bdiff.cpp
+description:
+* Fix build of bdiff.cpp
+* Make 'CC' list all comments
+  - Cx lists all xrefs, like CX .. no need to C*~Cx now :)
+* Fix '"' for some commands like '!'
+* Added ?i command to query user for u64 input
+  - Result of the evaluation is stored in $$? var
+  - Useful for macros with user-defined configurations
+
+
+changeset:   1027:fc4ae945910a
+user:        pancake@localhost.localdomain
+date:        Thu May 14 12:59:03 2009 +0000
+files:       TODO doc/fortunes src/analyze.c src/code.c src/flags.c
+description:
+* Added some more fortune messages
+* analyze_progress() is now faster and cleaner
+
+
+changeset:   1026:da320ffe877e
+user:        pancake@localhost.localdomain
+date:        Wed May 13 23:25:03 2009 +0000
+files:       src/radare.c
+description:
+* Keep user defined block size in radare_go()
+
+
+changeset:   1025:259dfa6fa24a
+user:        pancake@localhost.localdomain
+date:        Wed May 13 23:16:13 2009 +0000
+files:       TODO src/cmds.c src/code.c src/config.c src/environ.c src/main.c src/radare.c
+description:
+* Fix a problem related to disassembly parsing due the value of cfg.verbose
+* Fix config.debug, config.verbose and config.color values to change properly
+* Warn if trying to use -i twice
+* flagspace push/pop while calling radare_cmd in interpret
+* Call env_update and enclose config.script code better
+
+
+changeset:   1024:65f6fec9d79a
+user:        pancake <@youterm.com>
+date:        Wed May 13 18:02:22 2009 +0200
+files:       src/plug/hack/python.c
+description:
+* Import namespaces 'r' and 'radare' into the locals python shell
+
+
+changeset:   1023:dd02688a7a94
+user:        pancake <@youterm.com>
+date:        Wed May 13 14:44:53 2009 +0200
+files:       src/plug/hack/python.c
+description:
+* Use 'import code;code.interact()' as a default interactive python shell
+* Code cleanup for the python plugin
+
+
+changeset:   1022:00567ca54391
+user:        pancake@flubox
+date:        Wed May 13 13:03:02 2009 +0200
+files:       src/cons.c src/dbg/arch/arm-darwin.h src/dbg/arch/arm-linux.h src/dbg/arch/arm.c vala/widget.c
+description:
+* Fix build for arm-linux
+* Workaround to build the graphs with gtk2.4
+* Do not fit width when panning horitzontally
+
+
+changeset:   1021:9cafb675f261
+user:        pancake@localhost.localdomain
+date:        Wed May 13 11:08:07 2009 +0000
+files:       src/cons.c src/cons.h src/plug/hack/python.c src/visual.c
+description:
+* Added cons_skipxy() function to chop and pan screen boundaries
+  - Small terminals are no longer a restriction :)
+  - scr.fit is now handling the panning (cols and rows)
+  - Configurable with the '(){}' keys (together with [])
+* Show the visual help unbuffered (we want all the help :)
+
+
+changeset:   1020:a361ba6fa0e9
+user:        pancake@localhost.localdomain
+date:        Tue May 12 23:47:08 2009 +0000
+files:       src/dbg/debug.c
+description:
+* Remove unnecessary hack for threads
+* NOTE: previous commit has set contscbt to false by
+  default (cleaner output)
+
+
+changeset:   1019:6e5f45f911be
+user:        pancake@localhost.localdomain
+date:        Tue May 12 23:43:54 2009 +0000
+files:       src/config.c src/dbg/debug.c src/dbg/events.c src/dbg/io.c src/dbg/thread.c src/dbg/unix/debug.c
+description:
+* set OPTIONS at every process and thread while changing
+  - dbg.forks or dbg.threads
+  - change PTRACE_O stuff (only for linux >= 2.5.x
+* Better messages for Linux's ptrace event messages
+* Fixes the problems while debugging applications with  multiple threads
+
+
+changeset:   1018:4190eb8e8197
+user:        pancake@localhost.localdomain
+date:        Tue May 12 22:30:16 2009 +0000
+files:       src/analyze.c src/config.c src/config.h src/cons.c src/dbg/fd.c src/dbg/system.c src/dbg/unix/debug.c src/main.c src/print.c src/radare.c src/visual.c
+description:
+* Added scr.fit config attribute to fit the data in screen in visual
+  - make clean required
+* Fix some zero divisions
+* Implement ansistrlen and ansistrchrn helper functions
+  - Used for scr.fit code to properly count the width of ansi strings
+* Fix !fd <file> format. Oops O:)
+* Added search.limit for s/ and s\ commands. (default=0)
+* Another fix for flushable in visual
+
+
+changeset:   1017:f112f7622321
+user:        pancake@localhost.localdomain
+date:        Tue May 12 08:31:01 2009 +0000
+files:       src/cons.c src/plug/hack/Makefile
+description:
+* Implement internal grepword for cons_grepbuf
+* Install python26.so module
+
+
+changeset:   1016:ee3e93575672
+user:        pancake@localhost.localdomain
+date:        Mon May 11 23:31:26 2009 +0000
+files:       src/visual.c
+description:
+* Fix V: with flushit()
+
+
+changeset:   1015:2978c8b9b91c
+user:        pancake@localhost.localdomain
+date:        Mon May 11 23:25:42 2009 +0000
+files:       src/config.c src/cons.c src/flags.c src/visual.c
+description:
+* Fix visual refreshes using cons_flushit()
+  - Oops O:)
+
+
+changeset:   1014:0555cb5e0695
+user:        pancake@localhost.localdomain
+date:        Mon May 11 23:15:13 2009 +0000
+files:       doc/radare.but src/cmds.c src/cons.c src/cons.h src/plug/hack/Makefile src/rabin/rabin.c src/radare.c src/utils.c src/visual.c
+description:
+* Fixes in the book for the forum appendixes
+* Do not show noisy error messages
+* Added pseudo ultrahacky implementation of doublebuffering in cons.c
+  - Mostly reimplemented fix for grepping buffers
+  - Fixes the bug of r.cmd("f~map") in python (inline grep for language bindings)
+* Add support to build plugin for python 2.6
+* Fix build of dietpe
+
+
+changeset:   1013:f9335a3b7f0a
+user:        nibble
+date:        Tue May 12 00:02:14 2009 +0200
+files:       doc/fortunes src/dbg/debug.c src/dbg/io.c src/radare.c
+description:
+* Fixed 'e dbg.bep = ...' and 'radare -s ...'
+
+
+changeset:   1012:1f60aa357fba
+user:        pancake <@youterm.com>
+date:        Thu May 07 14:42:06 2009 +0200
+files:       doc/radare.but
+description:
+* Import interesting posts from the forum to the book
+
+
+changeset:   1011:7e61e431e2ac
+user:        pancake@localhost.localdomain
+date:        Thu May 07 13:41:30 2009 +0000
+files:       TODO src/analyze.c src/rabin/dietmach0_utils.c src/rabin/rabin.c src/rsc/pool/syms-dump
+description:
+* FIX: Clean lastlen chars in the codeanalysis progressbar
+* Fix rabin -o d/s for 0length symbols
+  - Remove some debug printfs in rabin
+* rsc syms-dump (without spaces between hexpairs)
+
+
+changeset:   1010:10bbd5329546
+user:        pancake@localhost.localdomain
+date:        Wed May 06 11:34:08 2009 +0000
+files:       TODO src/analyze.c src/config.c src/data.c src/grava.c src/macros.c src/utils.c
+description:
+* Fix str0word helper (strings ending with ' ' return one more word)
+* Only cleanup the chars needed in the code analysis progress bar
+* Added graph.userdup config var
+  - 'gu' command do not create dupped nodes by default
+* Fix 'gud' (print in dot format)
+* Verboser macro call errors
+
+
+changeset:   1009:6d849888c816
+user:        pancake@localhost.localdomain
+date:        Tue May 05 23:32:37 2009 +0000
+files:       TODO src/cmds.c src/cons.c src/grava.c src/print.c src/radare.c
+description:
+* Added 'gud' to dump user graph in dot format
+* Fix cons_yesno() for uppercase 'Y' key O:)
+* Fix pipe_command_to_string() for null strings
+  - Fixes a bug introduced after a change in a previous commit
+* Update 'todo' file
+
+
+changeset:   1008:1f89cce50cc1
+user:        pancake@localhost.localdomain
+date:        Mon May 04 22:38:11 2009 +0000
+files:       src/analyze.c src/rabin/Makefile src/rabin/dietmach0.c src/rabin/rabin.c
+description:
+* Fix malloc issue related to arm code analysis loop
+* Set asm.arch from rabin for mach0 binaries
+* Fix %% parsing in rabin -z for mach0
+* Remove dietpe64.o in make clean
+
+
+changeset:   1007:3a8c1c554e81
+user:        pancake@localhost.localdomain
+date:        Mon May 04 21:58:02 2009 +0000
+files:       src/arch/arm/aasm/Makefile
+description:
+* Use -fnested-functions on osx (fix aasm build)
+
+
+changeset:   1006:02fd870dae4b
+user:        pancake@localhost.localdomain
+date:        Mon May 04 21:55:25 2009 +0000
+files:       src/dbg/Makefile src/dbg/arch/arm-bp.c src/dbg/arch/arm-darwin.h src/dbg/arch/arm-linux.h src/dbg/arch/arm.c src/dbg/arch/arm.h src/dbg/arch/i386.c src/dbg/darwin/debug.c src/dbg/regs.h src/plug/io/gdbwrap.c src/rabin/Makefile src/rabin/dietmach0.h
+description:
+* Fix build of osx-arm debugger
+  - Not yet working but all the pieces are matching now :)
+
+
+changeset:   1005:a9aaf3e8d350
+user:        pancake@localhost.localdomain
+date:        Mon May 04 15:12:35 2009 +0000
+files:       src/rabin/dietmach0.c src/rabin/dietmach0.h src/rabin/dietmach0_utils.c
+description:
+* Quick hack in-place (ipod) to make rabin -S work natively
+  - Fixes a strange bug related to the use of lseek/mmap
+
+
+changeset:   1004:2d970eafa285
+user:        pancake@localhost.localdomain
+date:        Sun May 03 23:56:41 2009 +0000
+files:       src/rabin/dietmach0.c src/rabin/rabin.c
+description:
+* Set asm.arch in -r for dietmach0
+* Hacky way to make strings work on not supported binaries (!ELF&&!PE)
+
+
+changeset:   1003:e95b7d962b79
+user:        pancake@localhost.localdomain
+date:        Sun May 03 23:04:24 2009 +0000
+files:       src/rabin/Makefile src/rabin/dietmach0.c src/rabin/dietmach0.h src/rabin/dietmach0_utils.c
+description:
+* Added support for mach0-powerpc binaries
+  - Fix endian issues while reading mach0 headers
+  - Minor protection against some overflow bugs
+
+
+changeset:   1002:116dc25523f7
+user:        pancake@localhost.localdomain
+date:        Sun May 03 18:27:59 2009 +0000
+files:       src/rabin/dietmach0.c src/rabin/rabin.c src/rio.c
+description:
+* Set io.paddr = 0x1000 for mach0-arm binaries
+  - rio layer substracts io.paddr from seekable address
+* Added rabin -e for mach0 binaries
+* Flag registers in mach0 binaries
+  - Added support for ARM (iphone) and I386
+
+
+changeset:   1001:c3126e16fd4b
+user:        pancake@localhost.localdomain
+date:        Sun May 03 17:45:53 2009 +0000
+files:       config.mk.acr src/radare.c src/radiff/bdiff/Makefile src/vm.c
+description:
+* Build bdiff only if c++ compiler is found
+* Fix vm eval strings [foo+var]
+* Allow ^C in /z string search
+
+
+changeset:   1000:52d92956c419
+user:        pancake@localhost.localdomain
+date:        Sun May 03 17:09:12 2009 +0000
+files:       configure configure.acr doc/radare.but src/binparse.c src/bytepat.c src/cons.c src/rabin/dietmach0.c src/rabin/rabin.c src/radare.c src/rsc/pool/sign src/search.c src/vm.c
+description:
+* Some segfault fixups in the search engine
+  - Yeah, ugly patches for ugly bugs
+* Fix build for OSX (at least for ipod touch) with configure
+* rabin with mach0 shows proper flag names for sections.
+* Fix /z (oops with search.inar) O:)
+* Fix /: command (slower than before, but working properly :)
+  - Nice for searching code signatures
+* Fix a syntax issue in vm_eval related to spaces
+  - Use strbcpy
+
+
+changeset:   999:4617c2edf153
+user:        nibble
+date:        Fri May 01 23:32:27 2009 +0200
+files:       src/rabin/rabin.c
+description:
+* Minor fixup in '-o d/S/...' output
+
+
+changeset:   998:8a6fe56c0199
+user:        nibble
+date:        Fri May 01 23:26:23 2009 +0200
+files:       src/rabin/rabin.c
+description:
+* Added '-o d/S/<section_name>' into rabin to dump sections
+
+
+changeset:   997:f319a628a53b
+user:        pancake@localhost.localdomain
+date:        Fri May 01 17:22:04 2009 +0000
+files:       src/binparse.c src/cmds.c src/rsc/pool/sign src/rsc/pool/syms-dump src/search.c
+description:
+* Added /: command to search keyword files like in rabin -o d/s
+  or rsc syms-dump format
+* Added help for /.? and /:?
+
+
+changeset:   996:68b7959dfa97
+user:        pancake@localhost.localdomain
+date:        Fri May 01 16:38:14 2009 +0000
+files:       src/config.c src/rsc/pool/sign src/search.c
+description:
+* Added search.flagname
+
+
+changeset:   995:72131e6141d7
+user:        nibble
+date:        Fri May 01 17:23:49 2009 +0200
+files:       src/rabin/rabin.c
+description:
+* rabin -o d/s uses symbol size as default length
+
+
+changeset:   994:66a338e7019e
+user:        pancake@localhost.localdomain
+date:        Fri May 01 16:09:22 2009 +0000
+files:       src/code.c src/rabin/rabin.c
+description:
+* Fix segfault with -o d/s
+* Fix a bug in length of symbols
+* Remove unused code
+
+
+changeset:   993:003daee90fb0
+user:        nibble
+date:        Fri May 01 15:49:06 2009 +0200
+files:       src/rabin/aux.c src/rabin/aux.h src/rabin/rabin.c src/rabin/rabin.h
+description:
+* Added "-o d/s/<len>" into rabin to dump symbols
+
+
+changeset:   992:7422f0bcd1c4
+user:        nibble
+date:        Fri May 01 02:03:10 2009 +0200
+files:       src/rasm/wscript_build src/wscript_build wscript
+description:
+* Fixed waf build
+
+
+changeset:   991:e74091ec8b0d
+user:        nibble
+date:        Fri May 01 01:36:21 2009 +0200
+files:       src/rabin/dietpe.c
+description:
+* Fixed imports bug in dietpe
+
+
+changeset:   990:e216874bfdf0
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 23:38:30 2009 +0000
+files:       src/analyze.c src/radare.c src/rsc/pool/syms-dump src/utils.c
+description:
+* Fix syms-dump again O:)
+* Fix strbcpy helper and get_offset() issue
+
+
+changeset:   989:8c7fc1e394ac
+parent:      988:996aaeccdd43
+parent:      983:88ec88901097
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 19:09:04 2009 +0000
+description:
+* Merge heads
+
+
+changeset:   988:996aaeccdd43
+user:        pancake <@youterm.com>
+date:        Thu Apr 30 16:24:37 2009 +0200
+files:       src/cmds.c
+description:
+* Fix asm.xrefs related issue (thx graz for the bug report)
+
+
+changeset:   987:e09c1be356e7
+user:        pancake <@youterm.com>
+date:        Thu Apr 30 14:29:32 2009 +0200
+files:       src/analyze.c src/arch/x86/code.c src/arch/x86/dislen.c src/code.c src/config.c src/flags.c src/radare.c src/utils.c
+description:
+* Lot of valgrind warn fixups in code analysis code and related
+  - Implement strbcpy to make a non-optimized string copy
+* Data analysis not enabled by default (sometimes segfaults)
+  - Can be enabled with 'e file.analdata=true'
+* Detect [ebp-num] as local var accesses on x86
+
+
+changeset:   986:4da8e66bd61d
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 10:20:52 2009 +0000
+files:       src/analyze.c src/cmds.c src/cons.c src/radare.c src/radare.h src/utils.c
+description:
+* Fix analyze_function vaddr problem when using recursive analysis
+  - afr fixed
+* Analyze entrypoint looking for the 'main' pointer
+* Hide the 'unbalanced ]' error
+
+
+changeset:   985:6dd70fdcaffc
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 08:30:19 2009 +0000
+files:       src/analyze.c src/cmds.c src/rabin/dietpe.c src/radare.c
+description:
+* Fix recursivity problem with 'afr' command
+  - Code analysis is now much more complete
+  - Ignore ultra-huge function sizes detected (bug in code analysis limits)
+* Fix import symbol names from dietpe
+  - Just a workaround to avoid having silly names
+
+
+changeset:   984:73d877f531e5
+parent:      982:67d21a9adb83
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 01:23:04 2009 +0000
+files:       src/analyze.c
+description:
+* Drop r_prof code and reduce framerate for code analysis pgbar to 10
+
+
+changeset:   983:88ec88901097
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 01:11:20 2009 +0000
+files:       src/analyze.c
+description:
+* Drop profiling code from analyze.c
+  - Show analysis progress at first time
+
+
+changeset:   982:67d21a9adb83
+user:        pancake@localhost.localdomain
+date:        Thu Apr 30 01:02:44 2009 +0000
+files:       doc/fortunes src/analyze.c src/cmds.c src/data.c src/flags.c src/rabin.c src/rabin/rabin.c src/radare.c src/rax.c src/vars.c
+description:
+* Lot of nice enhacements for the code analysis visualization
+  - Console messages are now cleaner when loading the file
+  - Code analysis shows a nice asciiart progressbar
+  - Make ^C work for @@ commands like the one used for code analysis
+* Fix order of arguments for Cx and CX commands
+  - Code analysis and rabin now uses this format properly
+* Added 'data analysis' (.ad*@section._data)in data section by default
+* Fix flag_string name resolution
+* Add some more characters fixups for the flag_string_filter
+  - This function needs more love :)
+* Count strings in Ci
+
+
+changeset:   981:568a3f7ce3d9
+user:        pancake@localhost.localdomain
+date:        Wed Apr 29 00:40:35 2009 +0000
+files:       doc/fortunes src/cmds.c src/io.c src/io.h src/utils.c tests/chk/rax.sh
+description:
+* Added 'aos' command (returns the size of N opcodes from $$)
+* Added ?v to show the hex value of a math expression
+* Added $$w to get the last write size
+* Added test for rax bin2hex/hex2bin conversion
+
+
+changeset:   980:817f9b0599a1
+user:        pancake@localhost.localdomain
+date:        Tue Apr 28 21:54:04 2009 +0000
+files:       src/rsc/pool/syms-dump
+description:
+* Fix rsc syms-dump bug
+
+
+changeset:   979:4a6e89d18b13
+user:        pancake@localhost.localdomain
+date:        Tue Apr 28 10:15:08 2009 +0000
+files:       src/cmds.c src/objects.mk src/rasm/Makefile src/rasm/main.c src/rasm/rasm.c src/rasm/rasm.h src/rasm/rsc.c src/rasm/x86.c src/undo.c
+description:
+* Fix 'sn' and 'sb' commands when current block has changed
+* Added rasm 'rsc' architecture as a separate module that uses
+  'rsc' as backend for generating code.
+  - Used as failback for x86 one
+* Fix order of undo write operation list (u,u*)
+  - Avoid dupped entries in the undo write list
+
+
+changeset:   978:7f76e6d9bd77
+user:        pancake <@youterm.com>
+date:        Mon Apr 27 19:17:26 2009 +0200
+files:       src/radare.c src/utils.c src/utils.h src/visual.c
+description:
+* Added yf and ytf commands to yank from/to files
+
+
+changeset:   977:4b808a0a557b
+user:        pancake@localhost.localdomain
+date:        Mon Apr 27 15:22:02 2009 +0000
+files:       src/arch/arm/aasm/wscript_build
+description:
+* Use -fnested-functions for waf build on armasm (osx fixup)
+
 === 1.3 === 2009-04-25
 
 changeset:   975:5bd2db86a3d2
