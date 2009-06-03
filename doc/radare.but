@@ -2549,6 +2549,8 @@ You can also use radare programatically from the python shell:
 \c python> print(r.cmd("p8 4"))
 \c 89 e0 e8 39 
 
+\S{python-radapy} radapy (remote api)
+
 There are some extension APIs that uses r.cmd() as entrypoint in python radare, these are:
 
 \c radapy   - client/server radare remote protocolo (rap://) implementation in pure python
@@ -2566,6 +2568,37 @@ The radapy API is used to implement radare servers or clients in python scriptin
 \c c = radapy.RapClient('localhost', 9999)
 \c fd = c.open("/bin/ls", 0)
 \c print c.cmd("px")
+\c c.close(fd)
+\c c.disconnect()
+
+Here's another example in python that hijacks the 'r' instance of radare api and proxies all the commands via network to a remote radare:
+
+\c hijack=1
+\c 
+\c import radare
+\c import ranal
+\c import radapy
+\c 
+\c # r.cmd() hijacking
+\c if hijack:
+\c         class Food:
+\c                 def cmd(str):
+\c                         global c
+\c                         print "Command to run is (%s)"%str
+\c                         return c.cmd(str)
+\c                 cmd = staticmethod(cmd)
+\c         global r
+\c         radare.r = Food
+\c 
+\c 
+\c c = radapy.RapClient("localhost", 9999)
+\c 
+\c fd = c.open("/bin/ls", 0)
+\c print c.cmd("px")
+\c print radare.r.cmd("pd 20")
+\c radare.seek(33)
+\c print radare.disasm(0, 10)
+\c 
 \c c.close(fd)
 \c c.disconnect()
 
@@ -2605,6 +2638,74 @@ Using the radapy API you can easily make any python-based application interact w
 The bochs-radare support is actually implement in a script that provides works as a bridge between the ero's python patch for bochs and radare. The details of this are described in the 'Debugging with bochs and python' chapter.
 
 See 'scripts/radapy_bochs.py' for more information.
+
+\S{python-ranal} ranal (code analysis api)
+
+Another interesting API for python distributed with radare is 'ranal'. This module offers a simple class-based cache that mirrors information extracted from the core using r.cmd()
+
+Here's an example about how to use the ranal API:
+
+\c try:
+\c         import r
+\c except:
+\c         import radapy
+\c         # TODO: hijack 'r' instance here
+\c import radare
+\c import sys
+\c sys.path.append('.')
+\c from ranal import *
+\c 
+\c print "---------------------------------"
+\c 
+\c print r.cmd("e scr.color=0")
+\c print r.cmd("e graph.split=0")
+\c p = Program()
+\c 
+\c print "File type: %s" % p.type
+\c print "File size: %d bytes" % p.size
+\c print "Entrypoint: 0x%x" % p.entrypoint
+\c print "Virtual address: 0x%x" % p.vaddr
+\c print "Physical address: 0x%x" % p.paddr
+\c print "OperatingSystem: %s" % p.os
+\c print "Architecture: %s" % p.arch
+\c print "Endian: %s" % p.bigendian
+\c 
+\c print "Symbols:"
+\c ss = Symbols()
+\c for s in ss.list:
+\c         print "0x%08x: size=%s name=%s"%(s.addr, s.size, s.name)
+\c         Function.analyze(s.addr)
+\c 
+\c print "Functions:"
+\c fs = Functions()
+\c for f in fs.list:
+\c         print "0x%08x: size=%s name=%s"%(f.addr, f.size, f.name)
+\c         bb = BasicBlocks(f.addr)
+\c         print "   ==> Basic blocks: %d"%len(bb.list)
+\c         print "   ==> Disassembly:"
+\c         print r.cmd("pd@%d:%d"%(f.addr,f.size))
+\c         Graph.make_png(f.addr, "%s.png"%f.name)
+\c 
+\c print "Imports:"
+\c ss = Imports()
+\c for s in ss.list:
+\c         print "0x%08x: size=%s name=%s"%(s.addr, s.size, s.name)
+\c         for x in CodeXrefs(s.addr).list:
+\c                 print "  -> xref from 0x%08x"%(x.addr)
+\c 
+\c print "Xrefs:"
+\c for x in CodeXrefs().list:
+\c         print "  -> code xref from 0x%08x -> to 0x%08x"%(x.addr, x.endaddr)
+\c for x in DataXrefs().list:
+\c         print "  -> data xref from 0x%08x -> to 0x%08x"%(x.addr, x.endaddr)
+\c 
+\c print "Sections:"
+\c ss = Sections()
+\c for s in ss.list:
+\c         print "0x%08x: size=%d %s"%(s.addr, s.size, s.name)
+\c 
+\c print "---------------------------------"
+\c radare.quit(0)
 
 \H{ruby} Ruby
 

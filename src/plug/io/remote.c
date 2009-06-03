@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -276,7 +276,7 @@ int remote_open(const char *pathname, int flags, mode_t mode)
 		*file='\0';
 		if (buf[6]=='\0')
 			snprintf(buf, 1023, "listen://:%d", atoi(file+1));
-		else snprintf(buf, 1023, "connect://%s:%d", buf+6, atoi(file+1));
+		else snprintf(buf, 1023, "connect://%s:%d", pathname+6, atoi(file+1));
 	}
 
 	if (!memcmp(buf, "connect://", 10)) {
