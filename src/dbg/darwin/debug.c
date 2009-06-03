@@ -350,7 +350,7 @@ static pid_t start_inferior(int argc, char **argv)
 
 	execvp(argv[0], child_args);
 
-	fprintf(stderr, "Failed to start inferior.\n");
+	eprintf("Failed to start inferior.\n");
 	return 0;
 }
 
@@ -360,7 +360,7 @@ int debug_fork_and_attach()
 	int err;
 	pid_t pid;
 	/* TODO */
-	pid = start_inferior(1, &argv);
+	pid = start_inferior(1, &ps.argv); //&argv);
 	if (pid == -1) {
 		printf("inferior pid is -1??!?!\n");
 		return -1;

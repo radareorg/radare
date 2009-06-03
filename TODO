@@ -10,8 +10,6 @@ TODO 1.4
 ========
 
 * Documentate '=' in the book
-* remote plugin must handle rap:// as connect:// ..
-  - rap://:9999 must be an alias for listen://
 
 TODO 1.5
 ========

@@ -2119,6 +2119,12 @@ And the result is:
 
 Enable this mode with dbg.dwarf=true
 
+\C{remote} Remoting capabilities
+
+Radare can work locally or remotelly without hard differences. The reason is that everything remains on the IO subsystem that abstracts the access to system(), cmd() and all basic IO operations, so ...
+
+TODO
+
 \C{projects} Projects
 
 When you are working more than once on the same file you will probably be interested in not losing your comments, flags, xrefs analysis and so.
@@ -2542,6 +2548,63 @@ You can also use radare programatically from the python shell:
 \c ['__doc__', '__name__', 'cmd', 'eval']
 \c python> print(r.cmd("p8 4"))
 \c 89 e0 e8 39 
+
+There are some extension APIs that uses r.cmd() as entrypoint in python radare, these are:
+
+\c radapy   - client/server radare remote protocolo (rap://) implementation in pure python
+\c ranal    - code analysis object-oriented api
+\c radare   - commands aliased with userfriendly function names
+
+As all those apis remains on r.cmd() to work (but radapy), you can use radapy to redefine the 'r' instance and make radare and ranal APIs work remotely or locally seamlessly.
+
+The radapy API is used to implement radare servers or clients in python scripting. Here's a client example:
+
+\c import sys
+\c sys.path.append('.')
+\c import radapy
+\c 
+\c c = radapy.RapClient('localhost', 9999)
+\c fd = c.open("/bin/ls", 0)
+\c print c.cmd("px")
+\c c.close(fd)
+\c c.disconnect()
+
+The program expects to have radare server running at port 9999 in localhost. This is: 'radare rap://:9999' or 'radare listen://:9999'
+
+The server-side is a bit more complicated to manage because it aims to implement a remote-io with support for remote commands and system execution thru the network. The following example shows implements a radare server that ignores any 'open' or 'close' operation but provides access to a local buffer (python string) as the remote file contents.
+
+The seeking can be hooked, but by default radapy API implements a basic failover and tracks the value of current seek on a local variable of the radapy instance.
+
+\c import radapy
+\c from string import *
+\c 
+\c PORT = 8888
+\c 
+\c def fun_write(buf):
+\c 	print "WRITING %d bytes (%s)"%(len(buf),buf)
+\c 	return 6
+\c 
+\c def fun_read(len):
+\c 	global rs
+\c 	print "READ %d bytes from %d\n"% (len, rs.offset)
+\c 	str = "patata"
+\c 	str = str[rs.offset:]
+\c 	return str
+\c 
+\c 
+\c # main
+\c 
+\c rs = radapy.RapServer()
+\c rs.handle_cmd_read = fun_read
+\c rs.handle_cmd_write = fun_write
+\c rs.size = 10
+\c rs.listen_tcp (PORT)
+
+Using the radapy API you can easily make any python-based application interact with radare. This is for example: IDA, Inmunity Debugger, Bochs, etc..
+
+The bochs-radare support is actually implement in a script that provides works as a bridge between the ero's python patch for bochs and radare. The details of this are described in the 'Debugging with bochs and python' chapter.
+
+See 'scripts/radapy_bochs.py' for more information.
 
 \H{ruby} Ruby
 

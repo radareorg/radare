@@ -267,12 +267,23 @@ int remote_open(const char *pathname, int flags, mode_t mode)
 	char buf[1024];
 
 	strncpy(buf, pathname, 1000);
+	if (!memcmp(buf, "rap://", 6)) {
+		file = strchr(buf+6, ':');
+		if (!file) {
+			eprintf("No port defined.\n");
+			return -1;
+		}
+		*file='\0';
+		if (buf[6]=='\0')
+			snprintf(buf, 1023, "listen://:%d", atoi(file+1));
+		else snprintf(buf, 1023, "connect://%s:%d", buf+6, atoi(file+1));
+	}
 
 	if (!memcmp(buf, "connect://", 10)) {
 		// port
 		char *port = strchr(buf+10, ':');
 		if (port == NULL) {
-			printf("No port defined.\n");
+			eprintf("No port defined.\n");
 			return -1;
 		}
 		port[0] = '\0';
@@ -366,6 +377,8 @@ int remote_handle_fd(int fd)
 
 int remote_handle_open(const char *file)
 {
+	if (!memcmp(file, "rap://", 6))
+		return 1;
 	if (!memcmp(file, "connect://", 10))
 		return 1;
 	if (!memcmp(file, "listen://", 9))
