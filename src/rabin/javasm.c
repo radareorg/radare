@@ -594,7 +594,7 @@ int java_classdump(const char *file)
 		memcpy(cp_items[i].bytes, buf, 5);
 
 		R printf("b %d\n", c->len);
-		R printf("f cp%d @ 0x%04llx\n", i+1, cp_items[i].off);
+		R printf("f cp.%d @ 0x%04llx\n", i+1, cp_items[i].off);
 		/* parse value */
 		switch(c->tag) {
 		case 1:
@@ -652,7 +652,7 @@ int java_classdump(const char *file)
 				printf("    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
 			} else {
 				printf("; %2d: Access Flags: %d\n", i, USHORT(buf, 0));
-				printf("f field_%s", get_cp(USHORT(buf,2)-1)->value);
+				printf("f field.%s", get_cp(USHORT(buf,2)-1)->value);
 				//printf(" ;    Descriptor Index: %d\n", USHORT(buf, 4)); //, cp_items[USHORT(buf, 4)-1].value);
 			}
 			sz2 = USHORT(buf, 6);
@@ -679,7 +679,7 @@ int java_classdump(const char *file)
 					if (*p=='<'||*p=='>'||*p=='@'||*p==' ')
 						*p = '_';
 				}
-				printf("f %s ", buf2);
+				printf("f sym.%s ", buf2);
 			}
 			sz2 = USHORT(buf, 6);
 			NR printf("    method Attributes Count: %d\n", sz2);

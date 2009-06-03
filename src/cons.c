@@ -1439,7 +1439,7 @@ int cons_get_real_columns()
 {
 #if __WINDOWS__
 	config.width = 80;
-	config.height = 24;
+	config.height = 23;
 	return 80;
 #elif __UNIX__
         struct winsize win;

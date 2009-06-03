@@ -6,9 +6,17 @@
 
 ===========================================================
 
-TODO 1.4 ???
-==========
+TODO 1.4
+========
 
+* Documentate '=' in the book
+* remote plugin must handle rap:// as connect:// ..
+  - rap://:9999 must be an alias for listen://
+
+TODO 1.5
+========
+
+* Implement btree for flags and so on
 * implement main prompt
   - rarun
   - listen at a port waiting for commands
@@ -24,7 +32,6 @@ TODO 1.4 ???
 ---
 * set flags to jumps to the middle of instructions while analyzing code (.af*)
 * There are problems when using '>' from python (cons issue)
-* Implement an hexdump diff print function
 * Better 'cD' command (use gnu diff method, but take as size the smaller file)
 * Better integration with -P (projects) (do not analyze twice...)
 
@@ -50,9 +57,6 @@ RWX,RWX,RWX
 
 * Support to undefine variables
 * mov dword[ebp+0xfff], eax -> this is not mov dword[0xffff] code analysis!
-* udis86 bug:
-  --> 8b8308ffffff    mov eax, [ebx+0xffffff08]
-  --> should be displayed as negative values
 
 * Screen column grep should skip escaped sequences (ansi*)
 * Documentate visual cursor with marks ',' and '.' keys

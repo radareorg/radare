@@ -84,7 +84,11 @@ static void gen_operand(struct ud* u, struct ud_operand* op, int syn_cast)
 					mkasm(u, "-0x%x", -op->lval.sdword);
 				else	mkasm(u, "%s0x%x", (op_f) ? "+" : "", op->lval.sdword);
 			} 
-			else	mkasm(u, "%s0x%lx", (op_f) ? "+" : "", op->lval.udword);
+			else {
+				if (op->lval.sdword < 0)
+					mkasm(u, "-0x%lx", -op->lval.udword);
+				else	mkasm(u, "%s0x%lx", (op_f) ? "+" : "", op->lval.udword);
+			}
 		}
 		else if (op->offset == 64) 
 			mkasm(u, "%s0x" FMT64 "x", (op_f) ? "+" : "", op->lval.uqword);

@@ -1018,9 +1018,9 @@ void rabin_show_symbols(char *file)
 	case FILETYPE_CLASS:
 		// TODO: native version and support for non -r
 		if (rad)
-			snprintf(buf, 1022, "javasm -rc %s",file);
+			snprintf(buf, 1022, "rsc javasm -rc %s",file);
 		else
-			snprintf(buf, 1022, "javasm -c '%s'", file);
+			snprintf(buf, 1022, "rsc javasm -c '%s'", file);
 		system(buf);
 		break;
 	case FILETYPE_PE:

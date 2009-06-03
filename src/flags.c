@@ -502,7 +502,10 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 	if (idx==-2) {
 		if (buf[0]=='\0') {
 			if (ref) {
-				snprintf(buf2, 32, "%s+0x%llx", ref->name, (seek+config.vaddr)-ref->offset);
+				int delta = (int)((seek+config.vaddr)-ref->offset);
+				if (delta<0)
+					snprintf(buf2, 32, "%s-0x%x", ref->name, -delta);
+				else snprintf(buf2, 32, "%s+0x%x", ref->name, delta);
 				strcat(buf, buf2);
 			}
 		}

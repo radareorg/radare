@@ -654,10 +654,8 @@ static inline int CheckValidPE(unsigned char * PeHeader)
 		if (nt_headers->Signature==IMAGE_NT_SIGNATURE) 
 			return 1;
 	}
-
 	return 0;
 }
-
 
 int debug_init_maps(int rest)
 {
@@ -678,7 +676,16 @@ int debug_init_maps(int rest)
 	if(ps.map_regs_sz > 0) 
 		free_regmaps(rest);
 
-	GetSystemInfo(&SysInfo);
+	memset(&SysInfo, 0, sizeof(SysInfo));
+	GetSystemInfo(&SysInfo); // TODO: check return value
+	if (gmi == NULL) {
+		eprintf("w32dbg: no gmi\n");
+		return 0;
+	}
+	if (gmbn == NULL) {
+		eprintf("w32dbg: no gmn\n");
+		return 0;
+	}
 
 	for (CurrentPage = (LPBYTE) SysInfo.lpMinimumApplicationAddress ;
 		       	CurrentPage < (LPBYTE) SysInfo.lpMaximumApplicationAddress;) {
@@ -689,20 +696,24 @@ int debug_init_maps(int rest)
 		}
 
 		if(mbi.Type == MEM_IMAGE) {
-			 ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
-					(LPVOID)PeHeader, sizeof(PeHeader), &ret_len);
+			ReadProcessMemory(WIN32_PI(hProcess), (const void *)CurrentPage,
+				(LPVOID)PeHeader, sizeof(PeHeader), &ret_len);
 
 			if(ret_len == sizeof(PeHeader) && CheckValidPE(PeHeader)) {
 				dos_header = (IMAGE_DOS_HEADER *)PeHeader;
+				if (dos_header == NULL)
+					break;
 				nt_headers = (IMAGE_NT_HEADERS *)((char *)dos_header
-						+ dos_header->e_lfanew);    	    		    	
+						+ dos_header->e_lfanew);
+				if (nt_headers == NULL) {
+					/* skip before failing */
+					break;
+				}
 				NumSections = nt_headers->FileHeader.NumberOfSections;    	        	        	    
-
 				SectionHeader = (IMAGE_SECTION_HEADER *) ((char *)nt_headers
 					+ sizeof(IMAGE_NT_HEADERS));
 
 				if(NumSections > 0) {
-
 					ModuleName = (char *)malloc(MAX_PATH);
 					if(!ModuleName) {
 						perror(":map_reg alloc");
@@ -712,10 +723,7 @@ int debug_init_maps(int rest)
 					gmbn(WIN32_PI(hProcess), (HMODULE) CurrentPage,
 						(LPTSTR)ModuleName, MAX_PATH);
 
-					i = 0;
-
-					do {
-
+					for(i=0;i<NumSections;i++) {
 						mr = (MAP_REG *)malloc(sizeof(MAP_REG));
 						if(!mr) {
 							perror(":map_reg alloc");
@@ -733,21 +741,30 @@ int debug_init_maps(int rest)
 
 						add_regmap(mr);
 
-
 						SectionHeader++;
-						i++;
-
-					} while(i < NumSections);
-				}    	        	        	        	    
+					}
+				}
+			} else {
+				eprintf("Invalid read\n");
+				return 0;
 			}
 
-			if (gmi != NULL)
 			if (gmi(WIN32_PI(hProcess), (HMODULE) CurrentPage,
 					(LPMODULEINFO) &ModInfo, sizeof(MODULEINFO)) == 0)
 				return 0;
-/* XXX: THIS PRINTF SAVE ME FROM A SEGFAULT =!=! */
-eprintf("");
-			CurrentPage += ModInfo.SizeOfImage;
+
+/* THIS CODE SEGFAULTS WITH NO REASON. BYPASS IT! */
+#if 0
+		eprintf("--> 0x%08x\n", ModInfo.lpBaseOfDll);
+		eprintf("sz> 0x%08x\n", ModInfo.SizeOfImage);
+		eprintf("rs> 0x%08x\n", mbi.RegionSize);
+			/* avoid infinite loops */
+		//	if (ModInfo.SizeOfImage == 0)
+		//		return 0;
+		//	CurrentPage += ModInfo.SizeOfImage;
+#else
+			CurrentPage +=  mbi.RegionSize; 
+#endif
 		} else {
 			mr = (MAP_REG *)malloc(sizeof(MAP_REG));
 			if(!mr) {
@@ -764,7 +781,6 @@ eprintf("");
 			mr->flags = 0;
 
 			add_regmap(mr);
-
 			CurrentPage +=  mbi.RegionSize; 
 		}
 	}

@@ -49,8 +49,20 @@ gen_operand(struct ud* u, struct ud_operand* op)
 		} 
 		else if (op->offset == 16) 
 			mkasm(u, "0x%x", op->lval.uword);
-		else if (op->offset == 32) 
-			mkasm(u, "0x%lx", op->lval.udword);
+		else if (op->offset == 32) {
+			if (u->adr_mode == 64) {
+				if (op->lval.sdword < 0)
+					mkasm(u, "-0x%x", -op->lval.sdword);
+				else	mkasm(u, "0x%x", op->lval.sdword);
+			} 
+			else {
+				if (op->lval.sdword < 0)
+					mkasm(u, "-0x%lx", -op->lval.udword);
+				else	mkasm(u, "0x%lx", op->lval.udword);
+			}
+		}
+		//else if (op->offset == 32) 
+		//	mkasm(u, "0x%lx", op->lval.udword);
 		else if (op->offset == 64) 
 			mkasm(u, "0x" FMT64 "x", op->lval.uqword);
 
