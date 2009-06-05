@@ -1081,30 +1081,37 @@ const char *resolve_path(const char *str)
 {
 	char buf[1024];
 	char *path = getenv("PATH");
+	char *pwd = getenv("PWD");
 	char *foo;
 	char *bar;
 #if __WINDOWS__
 	return strdup(str);
 #else
-	if (path != NULL) {
-		bar = alloca(strlen(str)+1);
-		strcpy(bar, str);
-		path = strdup(path);
-		foo = path;
-		while(bar) {
-			bar = strchr(foo, ':');
-			if (bar != NULL)
-				bar[0]='\0';
-			snprintf(buf, 1022, "%s/%s", foo, str);
-			//if (strstr(buf, ".exe") || strstr(buf, ".com")) {
-			if (!access(buf, X_OK)) {
-				char *ret = strdup(buf);
-				free (path);
-				return ret;
+	if (path != NULL && pwd != NULL) {
+		if (*str == '.') {
+			snprintf(buf, 1022, "%s/%s", pwd, str);
+			char *ret = strdup(buf);
+			return ret;
+		} else if (*str != '/') {
+			bar = alloca(strlen(str)+1);
+			strcpy(bar, str);
+			path = strdup(path);
+			foo = path;
+			while(bar) {
+				bar = strchr(foo, ':');
+				if (bar != NULL)
+					bar[0]='\0';
+				snprintf(buf, 1022, "%s/%s", foo, str);
+				//if (strstr(buf, ".exe") || strstr(buf, ".com")) {
+				if (!access(buf, X_OK)) {
+					char *ret = strdup(buf);
+					free (path);
+					return ret;
+				}
+				foo = bar + 1;
 			}
-			foo = bar + 1;
+			free (path);
 		}
-		free (path);
 	}
 	return strdup(str);
 #endif

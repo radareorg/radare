@@ -41,7 +41,7 @@ int rabin_flag()
   char buf[1024];
 
   D fprintf(stderr, "> Importing symbols...\n");
-      snprintf(buf, 1022, ".!!rabin -rSeisz '%s'", config.file);
+      snprintf(buf, 1022, ".!!rabin -rSHeiszvv '%s'", config.file);
   radare_cmd_raw(buf, 0);
 
   /* TODO: move into rabin dietjava */

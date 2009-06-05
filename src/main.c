@@ -155,8 +155,7 @@ int main(int argc, char **argv, char **envp)
 				for(c=optind;argv[c];c++) {
 					char *arg = argv[c];
 					if (c == optind) {
-						if (*arg!='/' && *arg!='.')
-							arg = resolve_path(argv[c]);
+						arg = resolve_path(argv[c]);
 					}
 					ps.argv[c-optind] = arg;
 					strcat(buf, arg);

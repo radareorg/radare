@@ -46,6 +46,7 @@
 #include "p9bin.h"
 
 #define ELF_CALL(func, bin, args...) elf64?Elf64_##func(&bin.e64,##args):Elf32_##func(&bin.e32,##args)
+#define ELF_BIN(x) (elf64?bin.elf.e64.x:bin.elf.e32.x)
 #define PE_CALL(func, bin, args...) pe64?Pe64_##func(&bin.p64,##args):Pe32_##func(&bin.p32,##args)
 
 char *argv0 = "rabin";
@@ -312,8 +313,8 @@ void rabin_show_strings(const char *file)
 		dietelf_string* elf;
 		dietpe_string* pe;
 	} strings, stringsp;
-	u64 baddr = 0;
-	int strings_count, i;
+	u64 baddr = 0, vaddr, loadoff;
+	int strings_count, i, j;
 	char buf[1024];
 
 	if (xrefs) {
@@ -343,6 +344,19 @@ void rabin_show_strings(const char *file)
 				printf("b %lli && f str.%s @ 0x%08llx\n",
 					stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
 				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size+1, baddr + stringsp.elf->offset);
+				/* Ugly hack for second LOAD segment */
+				for (j = 0; j < ELF_BIN(ehdr.e_phnum); j++)
+					if (ELF_BIN(phdr[j].p_vaddr) != baddr && ELF_BIN(phdr[j].p_type) == PT_LOAD) {
+						loadoff = ((u64)ELF_BIN(phdr[j].p_vaddr) - baddr) & 0xfffffffffffff000LL;
+						if (baddr + stringsp.elf->offset + loadoff > ELF_BIN(phdr[j].p_vaddr) &&
+							baddr + stringsp.elf->offset + loadoff < ELF_BIN(phdr[j].p_vaddr) + ELF_BIN(phdr[j].p_memsz)) {
+							vaddr = stringsp.elf->offset + baddr + loadoff;
+							printf("b %lli && f strw.%s @ 0x%08llx\n",
+									stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), vaddr);
+							printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size+1, vaddr);
+							break;
+						}
+					}
 			} else {
 				switch (verbose) {
 				case 0:
@@ -476,7 +490,6 @@ void rabin_show_header()
 {
 	char buf[1024];
 	int i, fields_count;
-	u64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -494,7 +507,6 @@ void rabin_show_header()
 			return;
 		}
 		
-		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
 		fields_count = ELF_CALL(dietelf_get_fields_count,bin.elf,fd);
 
 		field.elf = malloc(fields_count * sizeof(dietelf_field));
@@ -507,16 +519,17 @@ void rabin_show_header()
 		fieldp.elf = field.elf;
 		for (i = 0; i < fields_count; i++, fieldp.elf++) {
 			if (rad) {
-				printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), baddr + fieldp.elf->offset);
+				if (fieldp.elf->vaddr)
+					printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), fieldp.elf->vaddr);
 			} else {
 				switch (verbose) {
 					case 0:
 						printf("address=0x%08llx offset=0x%08llx name=%s\n",
-								baddr + fieldp.elf->offset, fieldp.elf->offset, fieldp.elf->name);
+								fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name);
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
-						printf("0x%08llx\t0x%08llx\t%s\n", baddr + fieldp.elf->offset, fieldp.elf->offset, fieldp.elf->name);
+						printf("0x%08llx\t0x%08llx\t%s\n", fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name);
 						break;
 				}
 			}
@@ -1107,9 +1120,9 @@ void rabin_show_sections(const char *file)
 		if (rad) {
 			printf("fs elf\n");
 			printf("f elf.program_headers_off @ 0x1c\n");
-			printf("f elf.program_headers @ 0x%x\n", bin.elf.e32.ehdr.e_phoff);
+			printf("f elf.program_headers @ 0x%x\n", ELF_BIN(ehdr.e_phoff));
 			printf("f elf.section_headers_off @ 0x%x\n",0x1c+sizeof(void*)); // XXX 32/64bits
-			printf("f elf.section_headers @ 0x%x\n", bin.elf.e32.ehdr.e_shoff);
+			printf("f elf.section_headers @ 0x%x\n", ELF_BIN(ehdr.e_shoff));
 			printf("fs sections\n");
 			/* XXX: broken for 64 bits */
 		}

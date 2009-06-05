@@ -839,16 +839,20 @@ int ELF_(dietelf_get_fields)(ELF_(dietelf_bin_t) *bin, dietelf_field *field)
 	int i = 0, j = 0;
 
 	strncpy(field[i].name, "ehdr", ELF_NAME_LENGTH); 
-	field[i++].offset = 0;
+	field[i].offset = 0;
+	field[i++].vaddr = 0;
 	strncpy(field[i].name, "shoff", ELF_NAME_LENGTH); 
-	field[i++].offset = ehdr->e_shoff;
+	field[i].offset = ehdr->e_shoff;
+	field[i++].vaddr = ehdr->e_shoff + bin->base_addr;
 	strncpy(field[i].name, "phoff", ELF_NAME_LENGTH); 
-	field[i++].offset = ehdr->e_phoff;
+	field[i].offset = ehdr->e_phoff;
+	field[i++].vaddr = ehdr->e_phoff + bin->base_addr;
 
 	for (j = 0; j < ehdr->e_phnum; i++, j++) {
 		snprintf(string, ELF_NAME_LENGTH, "phdr_%i", j);
 		strncpy(field[i].name, string, ELF_NAME_LENGTH); 
 		field[i].offset = phdr[i].p_offset;
+		field[i].vaddr = phdr[i].p_vaddr;
 	}
 
 	return 0;
