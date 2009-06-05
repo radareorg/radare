@@ -14,6 +14,37 @@ EB 1 JMP
 E8 4 CALL
 C3 1 RETN
 
+64bitFPU
+========
+ cwd; control word
+ swd; status word
+ ftw; tag word
+ fop; operand
+ rip; instruction pointer
+ rdp; data pointer (foo in 32bits)
+
+ fos = copy of the ds (data segment)
+  asm("mov %%ds, %[fos]" : [fos] "=r" (env->fos));
+
+ fcs = copy of the cs (code segment)
+  asm("mov %%cs, %[fcs]" : [fcs] "=r" (env->fcs));
+
+FSAVE layout
+===========
+ 0 cwd
+ 4 swd
+ 8 twd
+ 12 fip
+ 16 fcs
+ 18 fop
+ 20 foo
+ 24 fos
+ 28 ... st/mmx
+
+FXAVE layout
+============
+http://www.rz.uni-karlsruhe.de/rz/docs/VTune/reference/vc129.htm
+
 
 FPU:
 ====

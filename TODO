@@ -9,6 +9,7 @@
 TODO 1.5
 ========
 
+* fix mmx/sse use
 * implement serial:// for '=' command
 * Implement btree for flags and so on
 * implement main prompt
