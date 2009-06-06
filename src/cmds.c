@@ -2225,8 +2225,8 @@ CMD_DECL(sections)
 		eprintf("Usage: S[cbtf=*] len [base [comment]] @ address\n");
 		eprintf(" S                ; list sections\n");
 		eprintf(" S*               ; list sections (in radare commands\n");
-		eprintf(" S=               ; list sections (in visual)\n");
-		eprintf(" S 4096 0x80000 rwx section_text  @ 0x8048000 ; adds new section\n");
+		eprintf(" S=               ; list sections (in nice ascii-art bars)\n");
+		eprintf(" S 4096 0x80000 rwx section_text @ 0x8048000 ; adds new section\n");
 		eprintf(" S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
 		eprintf(" S 10K @ 0x300    ; create 10K section at 0x300\n");
 		eprintf(" S -0x300         ; remove this section definition\n");
@@ -2401,7 +2401,7 @@ CMD_DECL(search) {
 	switch(text[0]) {
 	case '\0':
 	case '?':
-		eprintf(
+		cons_printf(
 		" / \\x7FELF       ; plain string search (supports \\x).\n"
 		" /. [file]       ; search using the token file rules (/.? for help)\n"
 		" /: [file] [...] ; search using the 'keyname keyword' file format\n"
@@ -2416,7 +2416,7 @@ CMD_DECL(search) {
 		" /s [str] [str]  ; replace first string with the second one\n"
 		" /S [hex] [hex]  ; replace first hexpair string with the second one\n"
 		" /p len          ; search pattern of length = len\n"
-		" /P count        ; search patterns of size $$b matching count bytes at least against first block\n"
+		" /P count        ; search patterns of size $$b matching at least N bytes of curblock\n"
 		" /v numexpr      ; search a value (32 or 64 bit size) uses cfg.bigendian\n"
 		" /w foobar       ; search a widechar string (f\\0o\\0o\\0b\\0..)\n"
 		" /x A0 B0 43        ; hex byte pair binary search. (space between bytes are optional)\n"

@@ -38,7 +38,7 @@ DESCRIPTION
     shm         shared memory ( shm://key )
     mmap        memory mapped device ( mmap://file )
     malloc      memory allocation ( malloc://size )
-    remote      TCP IO ( listen://:port or connect://host:port )
+    remote      TCP IO ( listen://:port or connect://host:port and rap:// )
     winedbg     Wine Debugger interface ( winedbg://program.exe )
     socket      socket stream access ( socket://host:port )
     serial      serial port access ( serial:///path/to/dev:speed )

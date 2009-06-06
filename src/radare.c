@@ -2015,6 +2015,8 @@ int radare_go()
 		if (config_get("file.flag"))
 			rabin_flag();
 
+		/* if not unknown file type */
+		if (strcmp(config_get("file.type"), "unk"))
 		if (config_get("file.analyze")) {
 			eprintf("> Analyzing code...\n");
 			radare_controlc();

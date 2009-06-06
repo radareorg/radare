@@ -9,6 +9,9 @@
 TODO 1.5
 ========
 
+* rfile-foreach not working
+* zoom segfaults
+* ff $${io.vaddr} somewhere? or how to make f foo @ 0x8048333 work in static mode
 * fix mmx/sse use
 * implement serial:// for '=' command
 * Implement btree for flags and so on
