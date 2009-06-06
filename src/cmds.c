@@ -830,8 +830,6 @@ CMD_DECL(hack)
 	return radare_hack(input);
 }
 
-
-
 CMD_DECL(graph)
 {
 	char *text = input;
@@ -2736,6 +2734,7 @@ CMD_DECL(help)
 				" ?q eip+33+[esp]   ; quite math expression evaluation (no output) changes $$?\n"
 				" ?z`str            ; sets false if string is zero length\n"
 				" ?x 303132         ; show hexpair as a printable string\n"
+				" ?x 0x804800       ; show hexpair ruled by asm.bits and cfg.bigendian\n"
 				" ?s from to step   ; print numeric sequence for(;from<=to;from+=step)\n"
 				" ?X eip            ; show hex result of math expression\n"
 				" ? 0x80+44         ; calc math expression\n"
@@ -2813,9 +2812,40 @@ CMD_DECL(help)
 		} else
 		if (input[0]=='x') {
 			char buf[1024];
-			int len = hexstr2binstr(input+1, buf);
-			if (len>0)
-				print_data(0, "", buf, len, FMT_ASC);
+			int len;
+			if (input[2]=='0' && input[3]=='x') {
+	// TODO: endian memcpy!!
+				switch(config_get_i("asm.bits")) {
+				case 64:
+					{
+					u64 n = get_math(input+2);
+					u8 np[8];
+					endian_memcpy_e((u8*)&np, (u8*)&n, 8, !config.endian);
+					cons_printf("%02x %02x %02x %02x %02x %02x %02x %02x\n",
+						np[0], np[1], np[2], np[3], np[4], np[5], np[6], np[7]);
+					}
+					break;
+				case 32:
+					{ u32 n = get_math(input+2);
+					u8 np[4];
+					endian_memcpy_e((u8*)&np, (u8*)&n, 4, !config.endian);
+					cons_printf("%02x %02x %02x %02x\n",
+						np[0], np[1], np[2], np[3]);
+					}
+					break;
+				case 16:
+					{ u16 n = get_math(input+2);
+					u8 np[2];
+					endian_memcpy_e((u8*)&np, (u8*)&n, 2, !config.endian);
+					cons_printf("%02x %02x\n", np[0], np[1]);
+					}
+					break;
+				}
+			} else {
+				len = hexstr2binstr(input+1, buf);
+				if (len>0)
+					print_data(0, "", buf, len, FMT_ASC);
+			}
 		} else
 		if (input[0]=='X') {
 			u64 res = get_math(input+1);

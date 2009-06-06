@@ -1097,9 +1097,7 @@ char *radare_cmd_str(const char *cmd)
 		cons_grep(grep+1);
 	}
 	cons_noflush = 1;
-#if __WINDOWS__
 cons_flushable = 0;
-#endif
 	radare_cmd_raw(dcmd, 0);
 #if 0
 #if __WINDOWS__
@@ -1111,7 +1109,7 @@ cons_render();
 	free (dcmd);
 #if 1
 	buf = cons_get_buffer();
-//eprintf("BUF(%s)\n", buf);
+//eprintf("BUF(%s)(%s)\n", dcmd, buf);
 	if (buf) {
 		buf = strdup(buf);
 		newlen = cons_grepbuf(buf, strlen(buf));

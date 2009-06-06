@@ -762,9 +762,7 @@ char *ugraph_get_str(u64 addr, int _size, int dot)
 	}
 	radare_seek(from, SEEK_SET);
 	radare_set_block_size_i(size);
-//eprintf("PRE(%s)\n", cons_get_buffer());
 	cmdstr = radare_cmd_str(cmd);
-//eprintf("POST(%s)\n", cons_get_buffer());
 	if (!dot)
 		return cmdstr;
 	if (cmdstr != NULL)
