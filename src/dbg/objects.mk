@@ -2,6 +2,9 @@
 ifeq ($(CPU),amd64)
 CPU=x86_64
 endif
+ifeq ($(CPU),PowerMacintosh)
+CPU=powerpc
+endif
 ifeq ($(CPU),i686)
 CPU=i386
 endif

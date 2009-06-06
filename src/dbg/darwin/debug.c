@@ -221,12 +221,14 @@ int debug_contp(int tid)
 	return 0;
 }
 
-#if __arm || __arm__
+#if __arm || __arm__ || __POWERPC__
 void debug_arch_x86_trap_set(int pid, int foo)
 {
 	/* do nothing here */
 }
+
 #else
+
 // XXX intel specific
 #define EFLAGS_TRAP_FLAG 0x100
 void debug_arch_x86_trap_set(int pid, int foo)

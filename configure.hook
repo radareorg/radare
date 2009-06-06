@@ -4,6 +4,7 @@
 
 ARCHOS="${TARGET_CPU}-${TARGET_OS}"
 SUPLIST=`cat <<EOF
+PowerMacintosh-darwin
 i386-netbsd
 i386-openbsd
 i386-freebsd

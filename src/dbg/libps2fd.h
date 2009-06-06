@@ -48,7 +48,7 @@
 #include "arch/mips.h"
 #elif __arm__
 #include "arch/arm.h"
-#elif __powerpc__
+#elif __powerpc__ || __POWERPC__
 #include "arch/powerpc.h"
 #else
 #error Unknown cpu?

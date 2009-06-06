@@ -260,11 +260,15 @@ u64 arch_pc()
         u64 addr;
         /* STUPID LINUX REVERSED GETREGS */
         //ret = ptrace(PTRACE_GETREGS, ps.tid, &buf, 0);
+#if __linux__
         ret = ptrace(PTRACE_GETEVRREGS, ps.tid, 0, &buf);
         if (ret == -1)  {
 		fprintf(stderr, "arch_pc(): cannot retrieve program counter\n");
                 return -1;
         }
+#else
+	debug_getregs(ps.tid, &regs);
+#endif
         //addr = regs.gpr[0];
         return buf[244];
         return buf[209];
