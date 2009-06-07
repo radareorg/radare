@@ -145,7 +145,7 @@ int io_map_list()
 	return n;
 }
 
-int io_map(const char *file, u64 offset, u64 delta)
+int io_map(const char *file, u64 offset, u64 delta, u64 size)
 {
 	struct io_maps_t *im;
 	int fd = open(file, O_RDONLY);
@@ -156,7 +156,8 @@ int io_map(const char *file, u64 offset, u64 delta)
 	im->delta = delta;
 	strncpy(im->file, file, 127);
 	im->from = offset;
-	im->to = offset+lseek(fd, 0, SEEK_END);
+	if (size) im->to = offset+size;
+	else im->to = offset+lseek(fd, 0, SEEK_END);
 	list_add(&(im->list), &(io_maps));
 	return fd;
 }

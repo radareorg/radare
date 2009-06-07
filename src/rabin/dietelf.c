@@ -855,6 +855,8 @@ int ELF_(dietelf_get_fields)(ELF_(dietelf_bin_t) *bin, dietelf_field *field)
 		field[i].vaddr = phdr[i].p_vaddr;
 		field[i].type = phdr[i].p_type;
 		field[i].flags = phdr[i].p_flags;
+		field[i].end = phdr[i].p_memsz+(0x1000-(phdr[i].p_memsz%0x1000)); /* filesize or memsize here ?? */
+		field[i].size = phdr[i].p_memsz; /* filesize or memsize here ?? */
 //printf("TYPE=%d\n", phdr[i].p_flags);
 	}
 

@@ -27,7 +27,7 @@ struct io_maps_t {
 void io_map_init();
 int io_map_rm(const char *file);
 int io_map_list();
-int io_map(const char *file, u64 offset, u64 delta);
+int io_map(const char *file, u64 offset, u64 delta, u64 size);
 int io_map_read_at(u64 off, u8 *buf, u64 len);
 int io_map_read_rest(u64 off, u8 *buf, u64 len);
 

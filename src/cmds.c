@@ -1134,23 +1134,31 @@ CMD_DECL(open)
 		io_map_list();
 		break;
 	case '?':
-		cons_printf("Usage: o[-] [file] [offset] [delta]\n");
-		cons_printf(" o /bin/ls                         ; open file\n");
-		cons_printf(" o /lib/libc.so 0xC848000 [delta]  ; map file at offset skiping delta bytes of the file\n");
-		cons_printf(" o- /lib/libc.so                   ; unmap\n");
+		cons_printf("Usage: o[-] [file] [offset] [delta] [size]\n");
+		cons_printf(" o                         ; list opened files\n");
+		cons_printf(" o /bin/ls                 ; open file\n");
+ 		cons_printf("; map file at offset skiping 100 bytes until 200 of the file\n");
+		cons_printf(" o /lib/libc.so 0xC848000 100 200\n");
+		cons_printf(" o- /lib/libc.so           ; unmap\n");
 		break;
 	case ' ':
 		arg = strchr(ptr+1, ' ');
 		if (arg != NULL) {
-			char *arg2;
+			char *arg2, *arg3;
+			u64 size = 0LL;
 			u64 delta = 0LL;
 			arg[0]='\0';
 			arg2 = strchr(arg+1, ' ');
 			if (arg2) {
 				*arg2='\0';
 				delta = get_math(arg2+1);
+				arg3 = strchr(arg2+1, ' ');
+				if (arg3) {
+					*arg3='\0';
+					size = get_math(arg3+1);
+				}
 			}
-			io_map(ptr+1, get_math(arg+1)-config.vaddr, delta);
+			io_map(ptr+1, get_math(arg+1)-config.vaddr, delta, size);
 		} else {
 			/* XXX */
 			config.file = ptr+1;

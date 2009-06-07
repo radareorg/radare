@@ -521,7 +521,8 @@ void rabin_show_header()
 			if (rad) {
 				if (fieldp.elf->type ==2 ) {/* PT_LOAD */
 					printf("e cfg.unksize=true\n");
-					printf("o %s 0x%0llx 0x%0llx\n", file, fieldp.elf->vaddr, fieldp.elf->offset);
+					printf("o %s 0x%0llx 0x%llx 0x%0llx\n", file,
+						fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->size);
 				}
 				if (fieldp.elf->vaddr)
 					printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), fieldp.elf->vaddr);
@@ -531,8 +532,8 @@ void rabin_show_header()
 					if (fieldp.elf->type ==2 ) {/* PT_LOAD */
 						printf("[Load in memory]\n");
 					}
-					printf("address=0x%08llx offset=0x%08llx name=%s flags=0x%x\n",
-							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name, fieldp.elf->flags);
+					printf("address=0x%08llx offset=0x%08llx end=0x%08llx size=0x%llx name=%s flags=0x%x\n",
+							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->end, fieldp.elf->size, fieldp.elf->name, fieldp.elf->flags);
 					break;
 				default:
 					if (i == 0) printf("Memory address\tFile offset\tName\n");
