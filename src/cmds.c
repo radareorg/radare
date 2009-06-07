@@ -1064,7 +1064,6 @@ CMD_DECL(graph)
 		}
 	}
 
-
 	return 0;
 }
 
@@ -1135,16 +1134,23 @@ CMD_DECL(open)
 		io_map_list();
 		break;
 	case '?':
-		cons_printf("Usage: o[-] [file] [offset]\n");
-		cons_printf(" o /bin/ls                  ; open file\n");
-		cons_printf(" o /lib/libc.so 0xC848000   ; map file at offset\n");
-		cons_printf(" o- /lib/libc.so            ; unmap\n");
+		cons_printf("Usage: o[-] [file] [offset] [delta]\n");
+		cons_printf(" o /bin/ls                         ; open file\n");
+		cons_printf(" o /lib/libc.so 0xC848000 [delta]  ; map file at offset skiping delta bytes of the file\n");
+		cons_printf(" o- /lib/libc.so                   ; unmap\n");
 		break;
 	case ' ':
 		arg = strchr(ptr+1, ' ');
 		if (arg != NULL) {
+			char *arg2;
+			u64 delta = 0LL;
 			arg[0]='\0';
-			io_map(ptr+1, get_math(arg+1));
+			arg2 = strchr(arg+1, ' ');
+			if (arg2) {
+				*arg2='\0';
+				delta = get_math(arg2+1);
+			}
+			io_map(ptr+1, get_math(arg+1)-config.vaddr, delta);
 		} else {
 			/* XXX */
 			config.file = ptr+1;

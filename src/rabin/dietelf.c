@@ -351,8 +351,8 @@ char* ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t) *bin)
 		case ELFCLASS32:   return "ELF32";
 		case ELFCLASS64:   return "ELF64";
 		default:
-						   snprintf (buff, sizeof (buff), "<unknown: %x>", elf_class);
-						   return buff;
+			snprintf (buff, sizeof (buff), "<unknown: %x>", elf_class);
+			return buff;
 	}
 }
 
@@ -853,6 +853,9 @@ int ELF_(dietelf_get_fields)(ELF_(dietelf_bin_t) *bin, dietelf_field *field)
 		strncpy(field[i].name, string, ELF_NAME_LENGTH); 
 		field[i].offset = phdr[i].p_offset;
 		field[i].vaddr = phdr[i].p_vaddr;
+		field[i].type = phdr[i].p_type;
+		field[i].flags = phdr[i].p_flags;
+//printf("TYPE=%d\n", phdr[i].p_flags);
 	}
 
 	return 0;

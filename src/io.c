@@ -131,12 +131,13 @@ int io_map_list()
 {
 	int n = 0;
 	struct list_head *pos;
-	list_for_each_prev(pos, &io_maps) {
+	list_for_each(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
-			cons_printf("0x%08llx 0x%08llx %s\n",
+			cons_printf("0x%08llx 0x%08llx delta=0x%llx %s\n",
 					im->from, 
 					im->to,
+					im->delta,
 					im->file);
 			n++;
 		}
@@ -144,18 +145,19 @@ int io_map_list()
 	return n;
 }
 
-int io_map(const char *file, u64 offset)
+int io_map(const char *file, u64 offset, u64 delta)
 {
 	struct io_maps_t *im;
 	int fd = open(file, O_RDONLY);
 	if (fd == -1)
 		return -1;
 	im = (struct io_maps_t*)malloc(sizeof(struct io_maps_t));
-	im->fd     = fd;
+	im->fd = fd;
+	im->delta = delta;
 	strncpy(im->file, file, 127);
 	im->from = offset;
-	im->to   = offset+lseek(fd, 0, SEEK_END);
-	list_add_tail(&(im->list), &(io_maps));
+	im->to = offset+lseek(fd, 0, SEEK_END);
+	list_add(&(im->list), &(io_maps));
 	return fd;
 }
 
@@ -163,11 +165,11 @@ int io_map_read_at(u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
 
-	list_for_each_prev(pos, &io_maps) {
+	list_for_each(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
 			if (off >= im->from && off < im->to) {
-				lseek(im->fd, off-im->from, SEEK_SET);
+				lseek(im->fd, off-im->from+im->delta, SEEK_SET);
 				return read(im->fd, buf, len);
 			}
 		}
@@ -179,11 +181,11 @@ int io_map_read_rest(u64 off, u8 *buf, u64 len)
 {
 	struct list_head *pos;
 
-	list_for_each_prev(pos, &io_maps) {
+	list_for_each(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
 			if (off+len >= im->from && off < im->to) {
-				lseek(im->fd, 0, SEEK_SET);
+				lseek(im->fd, im->delta, SEEK_SET);
 				return read(im->fd, buf+(im->from-(off+len)), len);
 			}
 		}

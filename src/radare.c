@@ -1730,7 +1730,7 @@ void radare_resize(const char *arg)
 		D printf("Truncating...\n");
 		ftruncate(config.fd, (off_t)size);
 		close(config.fd);
-		if (config.limit > size)
+		if (config.limit && config.limit > size)
 			config.limit = size;
 		config.size = size;
 	}

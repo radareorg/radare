@@ -578,8 +578,12 @@ CMD_DECL(stepu_in_dbg)
 CMD_DECL(step_in_dbg)
 {
 	if (!config.debug) {
-		eprintf("not in debugger\n");
-		cons_any_key();
+		char *str = strdup(config_get("asm.profile"));
+		/* this is not working properly yet */
+		radare_cmd("avx 1", 0); // USE THE VM HERE
+		radare_cmd(".av*", 0);
+		radare_cmd("f vm.eip@vm.eip+$$$", 0);
+		config_set("asm.profile", str);
 	} else
 		radare_cmd("!step", 0);
 	radare_sync();

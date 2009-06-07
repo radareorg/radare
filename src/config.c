@@ -689,6 +689,24 @@ static int config_color_callback(void *data)
 	return 1;
 }
 
+static int config_unksize_callback(void *data)
+{
+	static u64 backup = -1LL;
+	struct config_node_t *node = data;
+	if (node)
+		config.unksize = (int)node->i_value;
+	if (config.unksize) {
+		if (config.size != -1)
+			backup = config.size;
+		config.size = -1;
+		config_set_i("cfg.limit", -1);
+	} else {
+		config.size = backup;
+		config_set_i("cfg.limit", 0);
+	}
+	return 1;
+}
+
 #if 0
 int config_asm_dwarf(void *data)
 {
@@ -921,6 +939,8 @@ void config_init(int first)
 	node->callback = &config_debug_callback;
 	config_set("cfg.noscript", "false");
 	config_set_i("cfg.tzdelta", 0);
+	node = config_set("cfg.unksize", config.unksize?"true":"false");
+	node->callback = &config_unksize_callback;
 	config_set("cfg.sections", "true");
 	config_set("cfg.encoding", "ascii"); // cp850
 	config_set_i("cfg.delta", 4096); // cp850

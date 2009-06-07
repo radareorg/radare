@@ -43,6 +43,8 @@ typedef struct {
 typedef struct {
 	u64 offset;
 	u64 vaddr;
+	int type;
+	int flags;
 	char name[ELF_NAME_LENGTH];
 } dietelf_field;
 

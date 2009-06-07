@@ -341,8 +341,8 @@ void rabin_show_strings(const char *file)
 		stringsp = strings;
 		for (i = 0; i < strings_count; i++, stringsp.elf++) {
 			if (rad) {
-				printf("b %lli && f str.%s @ 0x%08llx\n",
-					stringsp.elf->size, aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset);
+				printf("f str.%s @ 0x%08llx:%lli\n",
+					aux_filter_rad_output(stringsp.elf->string), baddr + stringsp.elf->offset, stringsp.elf->size);
 				printf("Cs %lli @ 0x%08llx\n", stringsp.elf->size+1, baddr + stringsp.elf->offset);
 				/* Ugly hack for second LOAD segment */
 				for (j = 0; j < ELF_BIN(ehdr.e_phnum); j++)
@@ -513,24 +513,31 @@ void rabin_show_header()
 		ELF_CALL(dietelf_get_fields,bin.elf,field.elf);
 
 		if (rad)
-			printf("fs fields\n");
-		else printf("[fields]\n");
+			printf("fs header\n");
+		else printf("[header]\n");
 
 		fieldp.elf = field.elf;
 		for (i = 0; i < fields_count; i++, fieldp.elf++) {
 			if (rad) {
+				if (fieldp.elf->type ==2 ) {/* PT_LOAD */
+					printf("e cfg.unksize=true\n");
+					printf("o %s 0x%0llx 0x%0llx\n", file, fieldp.elf->vaddr, fieldp.elf->offset);
+				}
 				if (fieldp.elf->vaddr)
 					printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), fieldp.elf->vaddr);
 			} else {
 				switch (verbose) {
-					case 0:
-						printf("address=0x%08llx offset=0x%08llx name=%s\n",
-								fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name);
-						break;
-					default:
-						if (i == 0) printf("Memory address\tFile offset\tName\n");
-						printf("0x%08llx\t0x%08llx\t%s\n", fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name);
-						break;
+				case 0:
+					if (fieldp.elf->type ==2 ) {/* PT_LOAD */
+						printf("[Load in memory]\n");
+					}
+					printf("address=0x%08llx offset=0x%08llx name=%s flags=0x%x\n",
+							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name, fieldp.elf->flags);
+					break;
+				default:
+					if (i == 0) printf("Memory address\tFile offset\tName\n");
+					printf("0x%08llx\t0x%08llx\t%s\n", fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->name);
+					break;
 				}
 			}
 		}

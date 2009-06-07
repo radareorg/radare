@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -45,11 +45,11 @@ void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *co
 void section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
-	s->from = from;
+	s->from = from+config.vaddr;
 	s->to = to;
 	s->vaddr = vaddr;
 	s->paddr = paddr;
-	s->rwx = SECTION_R | SECTION_W | SECTION_X;
+	s->rwx = rwx; //SECTION_R | SECTION_W | SECTION_X;
 	if (comment)
 		strncpy(s->comment, comment, 254);
 	else s->comment[0]='\0';
