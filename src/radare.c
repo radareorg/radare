@@ -1964,6 +1964,17 @@ int radare_go()
 		}
 	}
 
+	if (config.file == NULL) {
+		help_message(0);
+		return 1;
+	}
+	if (!strcmp(config.file,"-")) {
+		config.file = strdup("malloc://4096");
+		config_set("file.write", "true");
+		config.unksize=1;
+		config.limit=-1;
+	}
+
 	/* open file */
 	bsize = config.block_size;
 	if (radare_open(0))
@@ -2004,17 +2015,18 @@ int radare_go()
 
 	/* load rabin stuff here */
 	//rabin_load();
+	config_set("file.type", "unk");
 	if (config_get("file.id"))
 		rabin_id();
 
 	/* flag all syms and strings */
 	//radare_cmd(".!rsc flag $FILE", 0);
+	if (strcmp(config_get("file.type"), "unk"))
 	if (strnull(config_get("file.project"))) {
 		if (config_get("file.flag"))
 			rabin_flag();
 
 		/* if not unknown file type */
-		if (strcmp(config_get("file.type"), "unk"))
 		if (config_get("file.analyze")) {
 			eprintf("> Analyzing code...\n");
 			radare_controlc();
