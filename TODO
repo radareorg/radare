@@ -9,6 +9,8 @@
 TODO 1.5
 ========
 
+* wa mov edi,1;ret -> doesnt works in batch mode??
+* write ops not working in mapped io files
 * size in open command doesnt works
 * zoom segfaults
 * ff $${io.vaddr} somewhere? or how to make f foo @ 0x8048333 work in static mode

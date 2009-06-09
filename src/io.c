@@ -134,11 +134,8 @@ int io_map_list()
 	list_for_each(pos, &io_maps) {
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
-			cons_printf("0x%08llx 0x%08llx delta=0x%llx %s\n",
-					im->from, 
-					im->to,
-					im->delta,
-					im->file);
+			cons_printf("0x%08llx 0x%08llx start: 0x%llx size: 0x%llx %s\n",
+				im->from, im->to, im->delta, im->size, im->file);
 			n++;
 		}
 	}

@@ -1151,12 +1151,12 @@ CMD_DECL(open)
 			arg2 = strchr(arg+1, ' ');
 			if (arg2) {
 				*arg2='\0';
-				delta = get_math(arg2+1);
 				arg3 = strchr(arg2+1, ' ');
 				if (arg3) {
 					*arg3='\0';
 					size = get_math(arg3+1);
 				}
+				delta = get_math(arg2+1);
 			}
 			io_map(ptr+1, get_math(arg+1)-config.vaddr, delta, size);
 		} else {

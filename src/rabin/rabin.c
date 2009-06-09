@@ -489,7 +489,10 @@ void rabin_show_checksum(const char *file)
 void rabin_show_header()
 {
 	char buf[1024];
+	char *debug = getenv("DEBUG");
 	int i, fields_count;
+	/* TODO: move into libr_bin */
+	const char *typestr[] = { "NULL", "LOAD", "DYNAMIC", "INTERP", "NOTE", "SHLIB", "PHDR", "TLS", "NUM" };
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -519,21 +522,37 @@ void rabin_show_header()
 		fieldp.elf = field.elf;
 		for (i = 0; i < fields_count; i++, fieldp.elf++) {
 			if (rad) {
-				if (fieldp.elf->type ==2 ) {/* PT_LOAD */
-					printf("e cfg.unksize=true\n");
-					printf("o %s 0x%0llx 0x%llx 0x%0llx\n", file,
-						fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->size);
+				if (fieldp.elf->type ==PT_LOAD) {
+					printf("fs segments\n");
+					printf("f segment.%s.%c%c%c.vaddr @ 0x%08llx:%lld\n",
+						fieldp.elf->name,
+						fieldp.elf->flags & 4 ? 'r':'_',
+						fieldp.elf->flags & 2 ? 'w':'_',
+						fieldp.elf->flags & 1 ? 'x':'_',
+						fieldp.elf->vaddr, fieldp.elf->size);
+					printf("f segment.%s.%c%c%c.paddr @ 0x%08llx:%lld\n",
+						fieldp.elf->name,
+						fieldp.elf->flags & 4 ? 'r':'_',
+						fieldp.elf->flags & 2 ? 'w':'_',
+						fieldp.elf->flags & 1 ? 'x':'_',
+						fieldp.elf->offset, fieldp.elf->size);
+					if (!debug||(debug&&*debug=='0')) {
+						printf("e cfg.unksize=true\n");
+						printf("o %s 0x%0llx 0x%llx 0x%0llx\n", file,
+							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->size);
+					}
+					printf("fs header\n");
 				}
 				if (fieldp.elf->vaddr)
 					printf("f header.%s @ 0x%08llx\n", aux_filter_rad_output(fieldp.elf->name), fieldp.elf->vaddr);
 			} else {
 				switch (verbose) {
 				case 0:
-					if (fieldp.elf->type ==2 ) {/* PT_LOAD */
-						printf("[Load in memory]\n");
-					}
-					printf("address=0x%08llx offset=0x%08llx end=0x%08llx size=0x%llx name=%s flags=0x%x\n",
-							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->end, fieldp.elf->size, fieldp.elf->name, fieldp.elf->flags);
+					printf("virtual=0x%08llx physical=0x%08llx asize=0x%04llx size=0x%04llx flags=0x%02x type=%s name=%s\n",
+						fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->end,
+						fieldp.elf->size, fieldp.elf->flags, 
+						(fieldp.elf->type<9&&fieldp.elf->type>=0)?typestr[fieldp.elf->type]:"NULL",
+						fieldp.elf->name);
 					break;
 				default:
 					if (i == 0) printf("Memory address\tFile offset\tName\n");
@@ -982,7 +1001,7 @@ void rabin_show_symbols(char *file)
 						printf("address=0x%08llx offset=0x%08llx size=", 
 								baddr + symbolp.elf->offset, symbolp.elf->offset);
 						if (symbolp.elf->size)
-							printf("%08lli", symbolp.elf->size);
+							printf("0x%04llx", symbolp.elf->size);
 						else
 							printf("unknown");
 						printf(" bind=%s type=%s name=%s\n",
@@ -1152,7 +1171,7 @@ void rabin_show_sections(const char *file)
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx privileges=-%c%c%c name=%s\n",
+						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli align=0x%08llx perm=-%c%c%c name=%s\n",
 								i, baddr + sectionp.elf->offset, sectionp.elf->offset,
 								sectionp.elf->size,	sectionp.elf->align,
 								ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',

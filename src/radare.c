@@ -1988,6 +1988,7 @@ int radare_go()
 		return 0;
 	}
 
+	env_prepare(NULL);
 	radare_controlc();
 
 	if (!config.noscript) {
@@ -2014,13 +2015,11 @@ int radare_go()
 		radare_fortunes();
 
 	/* load rabin stuff here */
-	//rabin_load();
 	config_set("file.type", "unk");
 	if (config_get("file.id"))
 		rabin_id();
 
 	/* flag all syms and strings */
-	//radare_cmd(".!rsc flag $FILE", 0);
 	if (strcmp(config_get("file.type"), "unk"))
 	if (strnull(config_get("file.project"))) {
 		if (config_get("file.flag"))
@@ -2100,7 +2099,7 @@ int radare_go()
 #endif
 		radare_cmd("s eip", 0);
 	} else {
-		//eprintf("> Rebasing strings...\n");
+		eprintf("> Rebasing strings...\n");
 		radare_cmd("fb $${io.vaddr} @@ str. > /dev/null", 0);
 	}
 

@@ -90,6 +90,7 @@ void env_prepare(const char *line)
 	sprintf(offset,  "%d", config.block_size);
 	setenv("BSIZE",  offset, 1);
 
+	if (line)
 	if (env_var_required(line, "BYTES")) {
 		*offset = '\0';
 		for(i=0;i<config.block_size;i++) {
@@ -100,6 +101,7 @@ void env_prepare(const char *line)
 		setenv("BYTES",  offset, 1);
 	}
 
+	if (line)
 	if (env_var_required(line, "BLOCK")) {
 		char file[TMPFILE_MAX];
 		make_tmp_file(file);

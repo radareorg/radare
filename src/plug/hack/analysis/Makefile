@@ -1,3 +1,3 @@
 all:
 	gcc h.c
-	radare -i test.py a.out
+	gdb --args radare -i test.py a.out
