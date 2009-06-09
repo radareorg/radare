@@ -145,7 +145,7 @@ void visual_show_help()
 	cons_printf(
 	" :<cmd>     radare command (vi like)\n"
 	" ;          edit or add comment\n"
-	" \"         change metadata of current cursor seek\n"
+	" \"          change metadata of current cursor seek\n"
 	" ,.         ',' marks an offset, '.' seeks to mark or eip if no mark\n"
 	" m'         m1 -> mark current position as char '1'. '1 will jump to mark 1\n"
 	" g,G        seek to beggining or end of file\n"

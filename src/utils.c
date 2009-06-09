@@ -1117,3 +1117,19 @@ const char *resolve_path(const char *str)
 #endif
 }
 
+char *r_sys_cmd_str(const char *cmd, const char *input, int *len)
+{
+#if __UNIX__
+	char *b = malloc(1024);
+	FILE *fd = popen(cmd, "r");
+	*len = 0;
+	if (fd == NULL)
+		return NULL;
+	*len = fread(b, 1, 1024, fd);
+	pclose(fd);
+	return b;
+#else
+#warning NO r_sys_cmd_str support for this platform
+	return NULL;
+#endif
+}

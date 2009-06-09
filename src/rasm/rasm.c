@@ -172,8 +172,12 @@ int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data
 	if (str[0]=='\0'||str[1]=='\0' || strchr(str,'?')!=NULL)
 		return 0;
 
-	if ((!strcmp(arch, "x86")) ||(!strcmp(arch, "intel")))
+	if ((!strcmp(arch, "x86")) || 
+		(!strcmp(arch, "intel")) || (!strcmp(arch, "intel32")))
 		ret = rasm_x86(*offset, str, data);
+	else
+	if ((!strcmp(arch, "x86_64")) || (!strcmp(arch, "intel64")))
+		ret = rasm_nasm_x86(*offset, str, data);
 	else
 	if (!strcmp(arch, "olly"))
 		ret = rasm_olly_x86(*offset, str, data);

@@ -1,3 +1,5 @@
+/* radare - Copyright 2009 nibble<.ds@gmail.com> */
+
 #include "main.h"
 #include "rtr.h"
 

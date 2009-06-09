@@ -52,7 +52,7 @@ static int show_help()
 	printf("  -d [bytes]   disassemble from hexpair bytes\n");
 	printf("  -f [file]    compiles assembly file to 'file'.o\n");
 	printf("  -s [offset]  offset where this opcode is suposed to be\n");
-	printf("  -a [arch]    selected architecture (x86, olly, ppc, arm, java, rsc)\n");
+	printf("  -a [arch]    selected architecture (x86, x86_64, olly, ppc, arm, java, rsc)\n");
 	printf("  -e           use big endian\n");
 	printf("  -l           list all supported opcodes and architectures\n");
 	printf("  -V           show version information\n");

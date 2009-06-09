@@ -135,7 +135,7 @@ int io_map_list()
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
 			cons_printf("0x%08llx 0x%08llx start: 0x%llx size: 0x%llx %s\n",
-				im->from, im->to, im->delta, im->size, im->file);
+				im->from, im->to, im->delta, im->to - im->from, im->file);
 			n++;
 		}
 	}
@@ -167,6 +167,8 @@ int io_map_read_at(u64 off, u8 *buf, u64 len)
 		struct io_maps_t *im = list_entry(pos, struct io_maps_t, list);
 		if (im->file[0] != '\0') {
 			if (off >= im->from && off < im->to) {
+				if (off + len > im->to)
+					len = im->to - off;
 				lseek(im->fd, off-im->from+im->delta, SEEK_SET);
 				return read(im->fd, buf, len);
 			}
