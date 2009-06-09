@@ -2099,7 +2099,7 @@ int radare_go()
 #endif
 		radare_cmd("s eip", 0);
 	} else {
-		eprintf("> Rebasing strings...\n");
+		/* rebase strings */
 		radare_cmd("fb $${io.vaddr} @@ str. > /dev/null", 0);
 	}
 

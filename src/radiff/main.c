@@ -24,22 +24,26 @@
 #include "radare.h"
 #include "rdb.h"
 
+unsigned int from = 0;
+unsigned int to = 0;
 int radare_fmt = 0;
 int radiff_bytediff(const char *a, const char *b, int count);
 
 void radiff_help()
 {
 	printf("Usage: radiff [-bcdgerpsS] [file-a] [file-b]\n");
-	printf("  -b   bytediff (faster but doesnt support displacements)\n");
-	printf("  -c   code differences (with disassembly and delta support)\n");
-	printf("  -d   use gnu diff as backend (default)\n");
-	printf("  -n   count of bytes changed\n");
-	printf("  -e   use erg0ts bdiff (c++) as backend\n");
-	printf("  -p   use program diff (code analysis diff)\n");
-	printf("  -s   use rsc symdiff\n");
-	printf("  -S   use rsc symbytediff\n");
+	printf("  -b        bytediff (faster but doesnt support displacements)\n");
+	printf("  -c        code differences (with disassembly and delta support)\n");
+	printf("  -d        use gnu diff as backend (default)\n");
+	printf("  -n        count of bytes changed\n");
+	printf("  -e        use erg0ts bdiff (c++) as backend\n");
+	printf("  -p        use program diff (code analysis diff)\n");
+	printf("  -s        use rsc symdiff\n");
+	printf("  -S        use rsc symbytediff\n");
 //	printf("  -i   converts a source idc file to a rdb (radare database)\n");
-	printf("  -r   output radare commands\n");
+	printf("  -r        output radare commands\n");
+	printf("  -f [from] start at this address\n");
+	printf("  -t [to] stop at this address\n");
 	exit(1);
 }
 
@@ -122,7 +126,7 @@ int main(int argc, char **argv)
 	int c;
 	int action = 'd';
 
-	while ((c = getopt(argc, argv, "cbdesSriphn")) != -1)
+	while ((c = getopt(argc, argv, "f:t:cbdesSriphn")) != -1)
 	{
 		switch( c ) {
 		case 'r':
@@ -131,6 +135,12 @@ int main(int argc, char **argv)
 		case 'h':
 			radiff_help();
 			return 0;
+		case 'f':
+			from = atoi(optarg);
+			break;
+		case 't':
+			to = atoi(optarg);
+			break;
 		case 'b':
 		case 'd':
 		case 'c':

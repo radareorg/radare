@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+/* XXX: redefine as u64!! */
+extern unsigned int from;
+extern unsigned int to;
+
 #define u64 unsigned long long
 #define CTXMAXB 3
 
@@ -37,7 +41,7 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 {
 	unsigned char block1[BS];
 	unsigned char block2[BS];
-	u64 rb, bproc = 0;
+	u64 rb, bproc = from;
 	int nr;
 
 	unsigned char bufb[CTXMAXB];
@@ -103,14 +107,20 @@ int radiff_bytediff(const char *a, const char *b, int count)
 		return -1; 
 	}	
 
-	size1 = lseek(fd1 , 0 , SEEK_END);
-	size2 = lseek(fd2 , 0 , SEEK_END);
+	size1 = lseek(fd1 , 0, SEEK_END);
+	size2 = lseek(fd2 , 0, SEEK_END);
 	
-	lseek(fd1 , 0 , SEEK_SET);
-	lseek(fd2 , 0 , SEEK_SET);
+	lseek(fd1 , from, SEEK_SET);
+	lseek(fd2 , from, SEEK_SET);
 
 	if (size1 != size2)
 		fprintf(stderr, "Warning: Files have different size %lld vs %lld\n", size1, size2);
+
+	if (to != 0) {
+		if (size1>size2)
+			size2 = to;
+		else size1 = to;
+	}
 
 	if (count)
 		r = do_byte_diff_count(fd1, fd2, (size1>size2)?size2:size1);
