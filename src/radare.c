@@ -1811,6 +1811,9 @@ int radare_open(int rst)
 		}
 	}
 
+	if ((ptr = strstr(config.file, "://")))
+		config.file = ptr + 3;
+
 	/* handles all registered debugger prefixes */
 	// ugly hack? :) a plugin should have a field specifying
 	// if it's for debug or not
@@ -1830,7 +1833,6 @@ int radare_open(int rst)
 	if (config.debug) {
 		config_set("file.write", "true");
 		rdb_init();
-		config.file = strstr(config.file, "://") + 3;
 	}
 
 	config.size = io_lseek(config.fd, (u64)0, SEEK_END);

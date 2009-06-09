@@ -81,6 +81,8 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 		flag = 2;
 	}
 
+	config.debug = 1;
+
 	// kill previous child here!
 	if (flag && ps.opened>0) {
 		eprintf("Process %d closed.", ps.pid);
