@@ -1266,10 +1266,10 @@ void config_visual_menu()
 					}
 					show = 0;
 					if (old[0]=='\0') {
-						strccpy(old, bt->name, '.');
+						str_ccpy(old, bt->name, '.');
 						show = 1;
 					} else if (strccmp(old, bt->name, '.')) {
-						strccpy(old, bt->name, '.');
+						str_ccpy(old, bt->name, '.');
 						show = 1;
 					}
 

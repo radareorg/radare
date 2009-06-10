@@ -816,10 +816,10 @@ begin:
 			if (tok) {
 				toklen = strlen(tok);
 				len -= (linelen-toklen);
-				strbcpy(buf, tok);
+				str_cpy(buf, tok);
 				memcpy(buf+toklen, "\n", 1);
 				if (!n) return len;
-				strbcpy(buf+toklen+1, buf+linelen); //n+1);
+				str_cpy(buf+toklen+1, buf+linelen); //n+1);
 				buf = buf+toklen+1;
 				goto begin;
 			}
@@ -837,7 +837,7 @@ begin:
 
 	if (donotline) {
 		/* ok */
-		strbcpy(buf, n+1);
+		str_cpy(buf, n+1);
 		len-=linelen;
 		goto begin;
 	} else {
@@ -856,10 +856,10 @@ begin:
 			if (tok) {
 				toklen = strlen(tok);
 				len -= (linelen-toklen);
-				strbcpy(buf, tok);
+				str_cpy(buf, tok);
 				memcpy(buf+toklen, "\n", 1);
 				if (!n) return len;
-				strbcpy(buf+toklen+1, buf+linelen); //n+1);
+				str_cpy(buf+toklen+1, buf+linelen); //n+1);
 				buf = buf+toklen+1;
 				goto begin;
 			}
@@ -1081,12 +1081,12 @@ void cons_fitbuf(char *buf, int len)
 			if (next>=buf+linelen) {
 				buf[0]='\n';
 				len -= linelen;
-				if (ptr) strbcpy(buf+1, ptr+1);
+				if (ptr) str_cpy(buf+1, ptr+1);
 				buf = buf+1;
 			} else {
 				len -= cons_skipx;
-				strbcpy(buf, next);
-				//strbcpy(buf, buf+cons_skipx);
+				str_cpy(buf, next);
+				//str_cpy(buf, buf+cons_skipx);
 			}
 			if (len<=0) break;
 		}
@@ -1095,7 +1095,7 @@ void cons_fitbuf(char *buf, int len)
 			linelen = (int)(ptr-buf);
 			len -= linelen;
 			if (lines>config.scrdelta+3 && cons_skipy && cons_skipy>=lines) {
-				strbcpy(buf, ptr+1);
+				str_cpy(buf, ptr+1);
 				lines++;
 				continue;
 			}
@@ -1107,8 +1107,8 @@ void cons_fitbuf(char *buf, int len)
 			if (linelen>cols) {
 				next = ansistrchrn(buf,cols);
 				next[0]='\n';
-				//strbcpy(buf+cols+1, ptr+1); // ok for b&w
-				strbcpy(next+1, ptr+1);
+				//str_cpy(buf+cols+1, ptr+1); // ok for b&w
+				str_cpy(next+1, ptr+1);
 				buf = next+1;
 			} else {
 				ptr[0]='\n';

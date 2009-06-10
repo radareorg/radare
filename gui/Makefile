@@ -16,24 +16,24 @@ endif
 
 
 all: ${BIN}
-	${E} 'Linking ${BIN}'
+	@echo 'Linking ${BIN}'
 
 ${BIN}: ${OBJ}
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
+	${CC} ${CFLAGS} ${LDFLAGS} ${OBJ} ${LIBS} -o ${BIN}
 
 ${OBJ}: %.o: %.c
-	${E} 'Compiling $<'
-	${Q}${CC} ${CFLAGS} -c -o $@ $<
+	@echo 'Compiling $<'
+	${CC} ${CFLAGS} -c -o $@ $<
 
 install:
-	${E} 'Installing gradare'
-	${Q}${INSTALL_DIR} ${DESTDIR}/${PREFIX}/bin
-	-${Q}${INSTALL_PROGRAM} ${BIN} ${DESTDIR}/${PREFIX}/bin
-	-${Q}rm -rf ${DESTDIR}/${DATADIR}/radare/gradare/*
-	${Q}mkdir -p ${DESTDIR}/${DATADIR}/radare/gradare/
-	${Q}cp -rf grsc/* ${DESTDIR}/${DATADIR}/radare/gradare/
-	-${Q}chmod +x ${DESTDIR}/${DATADIR}/radare/gradare/Shell
+	@echo 'Installing gradare'
+	${INSTALL_DIR} ${DESTDIR}/${PREFIX}/bin
+	-${INSTALL_PROGRAM} ${BIN} ${DESTDIR}/${PREFIX}/bin
+	-rm -rf ${DESTDIR}/${DATADIR}/radare/gradare/*
+	mkdir -p ${DESTDIR}/${DATADIR}/radare/gradare/
+	cp -rf grsc/* ${DESTDIR}/${DATADIR}/radare/gradare/
+	-chmod +x ${DESTDIR}/${DATADIR}/radare/gradare/Shell
 
 clean:
-	${E} 'Cleaning gui'
-	-${Q}rm -f ${OBJ} ${BIN}
+	@echo 'Cleaning gui'
+	-rm -f ${OBJ} ${BIN}

@@ -81,11 +81,3 @@ HAVE_LIB_READLINE=@HAVE_LIB_READLINE@
 HAVE_LIB_EWF=@HAVE_LIB_EWF@
 
 VERBOSE?=1
-
-ifeq ($(VERBOSE),1)
-E=@true
-Q=
-else
-E=@echo
-Q=@
-endif

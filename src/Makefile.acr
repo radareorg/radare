@@ -57,8 +57,8 @@ JAVASM_STUFF=w32utils.o -lwsock32
 
 .SUFFIXES: .c .o
 .c.o:
-	${E} 'Compiling $<'
-	${Q}$(CC) -c $(CFLAGS) -o $@ $<
+	@echo 'Compiling $<'
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 #udis86 
 all: ${TARGETS} armasm _radiff \
@@ -70,8 +70,8 @@ install:
 	cd .. && ${MAKE} install
 
 ${OBJS}: %.o: %.c
-	${E} 'Compiling $<'
-	${Q}${CC} ${CFLAGS} -c -o $@ $<
+	@echo 'Compiling $<'
+	${CC} ${CFLAGS} -c -o $@ $<
 
 rsc_:
 	-cd rsc && ${MAKE} all
@@ -97,15 +97,15 @@ udis86:
 
 radare${BINSFX}: ${OBJ} ${OBJ2} main.o
 	echo 'Linking radare'
-	${Q}${CC} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS} ${W32LIBS}
+	${CC} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS} ${W32LIBS}
 
 gui: ${OBJ}
-	${E} 'Compiling Vala GUI'
+	@echo 'Compiling Vala GUI'
 	cd ../vala && ${MAKE} c
-	-${Q}${CC} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS}  ${W32LIBS} -lvte
+	-${CC} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS}  ${W32LIBS} -lvte
 
 lsbstego${BINSFX}: lsbstego.o
-	${Q}${CC} lsbstego.o -g -o lsbstego${BINSFX}
+	${CC} lsbstego.o -g -o lsbstego${BINSFX}
 
 _rabin:
 	cd rabin && ${MAKE} all
@@ -129,26 +129,26 @@ _rahash:
 	-cd rahash && ${MAKE} all
 
 rax${BINSFX}: rax.o
-	${E} 'Linking rax'
-	${Q}${CC} ${CFLAGS} rax.o -o rax${BINSFX}
+	@echo 'Linking rax'
+	${CC} ${CFLAGS} rax.o -o rax${BINSFX}
 	@#ln -fs radare rax # ???
 
 xrefs${BINSFX}: xrefs.o
-	${E} 'Linking xrefs'
-	${Q}${CC} ${CFLAGS} ${LDFLAGS} xrefs.o -o xrefs${BINSFX}
+	@echo 'Linking xrefs'
+	${CC} ${CFLAGS} ${LDFLAGS} xrefs.o -o xrefs${BINSFX}
 
 clean:
-	${E} 'Cleaning src'
-	-${Q}cd plug/hack && ${MAKE} clean
-	-${Q}rm -f *.o
-	-${Q}cd arch/arm/aasm && ${MAKE} clean
-	-${Q}rm -f dbg/arch/*.o
-	-${Q}${MAKE} -C rahash clean
-	-${Q}${MAKE} -C radiff clean
-	-${Q}${MAKE} -C rabin clean
-	-${Q}${MAKE} -C javasm clean
-	-${Q}${MAKE} -C rsc clean
-	-${Q}${MAKE} -C rasm clean
-	-${Q}${MAKE} -C rasc clean
-	-${Q}${MAKE} -C arch/x86/udis86 clean
-	-${Q}rm -rf lsbstego.o lsbstego${BINSFX} rax.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} rax${BINSFX} a.out a.exe
+	@echo 'Cleaning src'
+	-cd plug/hack && ${MAKE} clean
+	-rm -f *.o
+	-cd arch/arm/aasm && ${MAKE} clean
+	-rm -f dbg/arch/*.o
+	-${MAKE} -C rahash clean
+	-${MAKE} -C radiff clean
+	-${MAKE} -C rabin clean
+	-${MAKE} -C javasm clean
+	-${MAKE} -C rsc clean
+	-${MAKE} -C rasm clean
+	-${MAKE} -C rasc clean
+	-${MAKE} -C arch/x86/udis86 clean
+	-rm -rf lsbstego.o lsbstego${BINSFX} rax.o xrefs.o ${OBJ} radare${BINSFX} xrefs${BINSFX} rax${BINSFX} a.out a.exe

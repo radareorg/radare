@@ -615,7 +615,7 @@ int vm_eval_single(const char *str)
 	memcpy(ptr, str, len);
 	for(i=0;ptr[i];i++) {
 		if (ptr[i]==' ')
-			strbcpy(ptr+i, ptr+i+1);
+			str_cpy(ptr+i, ptr+i+1);
 	}
 	
 	eq = strchr(ptr, '=');

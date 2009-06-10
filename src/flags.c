@@ -802,7 +802,7 @@ int flag_filter_name(char *name)
 			break;
 		}
 		if (!flag_is_valid_char(*name)) {
-			strbcpy(name, name+1);
+			str_cpy(name, name+1);
 			name = name -1;
 		}
 	}

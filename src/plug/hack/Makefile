@@ -52,6 +52,7 @@ ruby.${SO}:
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}:
+	@true
 ifeq ($(HAVE_LANG_LUA),1)
 ifneq ($(LUA_LIBS),)
 	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LIBS} -o lua.so

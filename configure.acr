@@ -54,6 +54,12 @@ LANG_RUBY
 LANG_PYTHON
 
 CHKPRG INSTALL install
+((
+ This is required for Solaris (and maybe other)
+ ==============================================
+ CHKPRG GINSTALL ginstall
+ IFNOTNULL GINSTALL { INSTALL ${GINSTALL} }
+))
 
 ARG_WITHOUT VALA vala disables the build of all the vala-dependant parts ;
 CHKPRG VALAC valac

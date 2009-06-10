@@ -31,14 +31,14 @@ omni:
 	exuberant-ctags **/*.c **/*.h
 
 clean:
-	${Q}cd vala/ && ${MAKE} clean
-	${Q}cd src && ${MAKE} clean
-	${Q}cd src/rabin && ${MAKE} clean
-	${Q}cd gui && ${MAKE} clean
-	${Q}cd src/dbg && ${MAKE} clean
-	${Q}cd java && ${MAKE} clean
-	${Q}cd vala/grava && ${MAKE} clean
-	${Q}cd libusbsniff && ${MAKE} clean
+	cd vala/ && ${MAKE} clean
+	cd src && ${MAKE} clean
+	cd src/rabin && ${MAKE} clean
+	cd gui && ${MAKE} clean
+	cd src/dbg && ${MAKE} clean
+	cd java && ${MAKE} clean
+	cd vala/grava && ${MAKE} clean
+	cd libusbsniff && ${MAKE} clean
 
 w32dist:
 	mkdir -p w32-build

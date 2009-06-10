@@ -245,15 +245,13 @@ const char *get_tmp_dir()
 #else
 	tmp = getenv("TMP");
 #endif
-	if (tmp)
-		strcpy(tmpdir, tmp);
-	else
-		strcpy(tmpdir, "/tmp/");
+	if (tmp) strcpy(tmpdir, tmp);
+	else strcpy(tmpdir, "/tmp/");
 #endif
 	return (const char *)&tmpdir;
 }
 
-int strbcpy(char *dst, char *org)
+int str_cpy(char *dst, char *org)
 {
 	int i = 0;
 	if (org&&*org)
@@ -344,7 +342,7 @@ u64 get_offset(const char *orig)
 
 	while(*orig==' '&&*orig) orig++;
 	arg = alloca(strlen(orig)+32);
-	strbcpy(arg, orig);
+	str_cpy(arg, orig);
 
 	/* single char 'A' */
 	if (arg[0]=='\'' && arg[0+2]=='\'')
@@ -487,7 +485,7 @@ int set0word(char *str)
 	if (str[0]=='\0')
 		return 0;
 	/* chop trailing spaces */
-	while(*str==' ') strbcpy(str, str+1);
+	while(*str==' ') str_cpy(str, str+1);
 	for(i=strlen(str)-1;str[i]==' ';i--) str[i]='\0';
 	/* count words */
 	for(i=1,q=p=str;*p;p+=1) {
@@ -561,14 +559,14 @@ u64 get_math(const char* text)
 	for(tmp = txt = strdup(text); txt && txt[0] && txt[1]; txt = txt+1) {
 #if 1
 		if ((txt[0]=='!' && txt[1]=='='))
-			strbcpy(txt+1, txt+2);
+			str_cpy(txt+1, txt+2);
 		else
 #endif
 		if ((txt[0]=='=' && txt[1]=='='))
 			txt[0]==' ';
 		else
 		if ((txt[0]==' '))
-			strbcpy(txt, txt+1);
+			str_cpy(txt, txt+1);
 	}
 	txt = tmp;
 
@@ -965,7 +963,7 @@ int strccmp(char *dst, char *orig, int ch)
 	return 0;
 }
 
-int strccpy(char *dst, char *orig, int ch)
+int str_ccpy(char *dst, char *orig, int ch)
 {
 	int i;
 	for(i=0;orig[i] && orig[i] != ch; i++)
