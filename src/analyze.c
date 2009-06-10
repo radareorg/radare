@@ -264,7 +264,7 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 
 	blf = program_block_split_new (prg, config.seek);
 	if ( blf != NULL ) {
-		eprintf("Block splitted at address 0x%08llx\n",config.seek+bsz);
+		eprintf("Block split at address 0x%08llx\n",config.seek+bsz);
 		aop.jump = blf->tnext;
 		aop.fail = blf->fnext;
 		aop.eob = 1;
