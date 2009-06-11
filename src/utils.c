@@ -251,7 +251,7 @@ const char *get_tmp_dir()
 	return (const char *)&tmpdir;
 }
 
-int str_cpy(char *dst, char *org)
+int str_cpy(char *dst, const char *org)
 {
 	int i = 0;
 	if (org&&*org)

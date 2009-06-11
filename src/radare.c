@@ -211,7 +211,7 @@ void radare_sync()
 			config_set_i("io.paddr", phys);
 	}
 
-	if (config.debug||config.unksize)
+	if (config.debug||config.unksize||config.limit==-1LL)
 		return;
 
 	/* enlarge your integer overflows */
@@ -1072,8 +1072,15 @@ char *radare_cmd_str(const char *cmd)
 	int newlen, fus = cons_flushable;
 	char *grep;
 
-	if (strchr(cmd, '>') ||strchr(cmd, '`')) {
-		eprintf("Warning: Cannot use '>' or '`' in radare_cmd_str\n");
+	if (strchr(cmd, '>')) {
+		int fd = dup(1); // UGLY FIX
+		radare_cmd(cmd, 0);
+		dup2(fd, 1); // UGLY FIX
+		close(fd);
+		return strdup("");
+	}
+	if (strchr(cmd, '`')) {
+		eprintf("Warning: Cannot use '`' in radare_cmd_str\n");
 		return strdup("");
 	}
 	/* backup cons buffer for nested fun */
@@ -1839,13 +1846,12 @@ int radare_open(int rst)
 	io_lseek(config.fd, (u64)seek_orig, SEEK_SET);
 
 	if (config.size == -1 || config.unksize) {
-		config.size  = -1;
+	//	config.size  = -1;
 		config.limit =  0;
 	} else {
 		if (config.size == -1) {
 			eprintf("warning: unknown file size."
 				" Use 'l'imit to define boundaries.\n");
-			config.size = -1;
 			config.limit = 0;
 		} else
 			config.limit = config.size;
@@ -1973,8 +1979,8 @@ int radare_go()
 	if (!strcmp(config.file,"-")) {
 		config.file = strdup("malloc://4096");
 		config_set("file.write", "true");
-		config.unksize=1;
-		config.limit=-1;
+		config.unksize = 1;
+		config.limit = -1;
 	}
 
 	/* open file */

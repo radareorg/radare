@@ -3,15 +3,10 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "radiff.h"
 
-/* XXX: redefine as u64!! */
-extern unsigned int from;
-extern unsigned int to;
-
-#define u64 unsigned long long
 #define CTXMAXB 3
 
-extern int radare_fmt;
 #define R if (radare_fmt)
 #define NR if (!radare_fmt)
 #define BS 4096

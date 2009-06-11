@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -23,11 +23,21 @@
 #include <getopt.h>
 #include "radare.h"
 #include "rdb.h"
+#include "radiff.h"
 
-unsigned int from = 0;
-unsigned int to = 0;
+u64 from = 0;
+u64 to = 0;
 int radare_fmt = 0;
 int radiff_bytediff(const char *a, const char *b, int count);
+
+u64 get_num64(const char *str)
+{
+	u64 ret = 0LL;
+	if (str[0]=='0'&&str[1]=='x')
+		sscanf(str, "0x%llx", &ret);
+	else sscanf(str, "%lld", &ret);
+	return ret;
+}
 
 void radiff_help()
 {
@@ -136,10 +146,10 @@ int main(int argc, char **argv)
 			radiff_help();
 			return 0;
 		case 'f':
-			from = atoi(optarg);
+			from = get_num64(optarg);
 			break;
 		case 't':
-			to = atoi(optarg);
+			to = get_num64(optarg);
 			break;
 		case 'b':
 		case 'd':

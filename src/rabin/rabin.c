@@ -537,7 +537,7 @@ void rabin_show_header()
 						fieldp.elf->flags & 1 ? 'x':'_',
 						fieldp.elf->offset, fieldp.elf->size);
 					if (!debug||(debug&&*debug=='0')) {
-						printf("e cfg.unksize=true\n");
+						printf("e cfg.limit=-1\n");
 						printf("o %s 0x%0llx 0x%llx 0x%0llx\n", file,
 							fieldp.elf->vaddr, fieldp.elf->offset, fieldp.elf->size);
 					}
