@@ -6,11 +6,15 @@
 
 ===========================================================
 
+TODO 1.4.1
+==========
+
+* Handle ^C in print hexdump ?huh! cannot break huge reads
+* set fpregs, mmregs and xmmregs
+* FULLY implement radiff -f and -t (support atoi and hexa)
+
 TODO 1.5
 ========
-
-* FULLY implement radiff -f and -t (support atoi and hexa)
-* fix mmx/sse use
 * implement serial:// for '=' command
 * Implement btree for flags and so on
 * implement main prompt
@@ -23,7 +27,6 @@ TODO 1.5
 * write shellcode to dump a buffer in hexa (inline jump)
 * regexp search?? (backport from r2)
 * full support for inner radare_cmd_str (two nested calls breaks the console buffer)
-* fix arm-osx debugger (IT IS OK FOR IPHONEOSX 1.x)
 * drop sdk dependency for osx-arm
 ---
 * set flags to jumps to the middle of instructions while analyzing code (.af*)

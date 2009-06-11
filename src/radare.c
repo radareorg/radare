@@ -1644,7 +1644,7 @@ int radare_prompt()
 	return 1;
 }
 
-void radare_set_block_size_i(int sz)
+int radare_set_block_size_i(int sz)
 {
 	if (sz<1) sz = 1;
 
@@ -1660,7 +1660,7 @@ void radare_set_block_size_i(int sz)
 			radare_set_block_size_i(DEFAULT_BLOCK_SIZE);
 		}
 	}
-	radare_read(0);
+	return radare_read(0);
 }
 
 void radare_set_block_size(char *arg)

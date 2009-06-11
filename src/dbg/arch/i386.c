@@ -675,7 +675,7 @@ struct user_fpxregs_struct regs __attribute__((aligned(16)));
 // NO RAD FOR FPREGS (only 32&64 bit vars, TODO: needs bsd port)
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	int ret = 0;
+	int t, ret = 0;
 
 #if __linux__
 	int i;
@@ -688,23 +688,37 @@ int arch_print_fpregisters(int rad, const char *mask)
 	cons_printf(" cwd = 0x%04lx  ; control   ", regs.cwd);
 	cons_printf(" swd = 0x%04lx  ; status\n", regs.swd);
 	cons_printf(" twd = 0x%04lx  ; tag       ", regs.twd);
-	cons_printf(" fip = 0x%04lx  ; eip of fpu opcode\n", regs.fip);
-	cons_printf(" fcs = 0x%04lx              ", regs.fcs);
-	cons_printf(" foo = 0x%04lx  ; stack\n", regs.foo);
-	cons_printf(" fos = 0x%04lx\n", regs.fos);
+	cons_printf(" fip = 0x%04lx  ; code ptr\n", regs.fip);
+	cons_printf(" fcs = 0x%04lx  ; code seg  ", regs.fcs);
+	cons_printf(" foo = 0x%04lx  ; data ptr\n", regs.foo);
+	cons_printf(" fos = 0x%04lx  ; data seg\n", regs.fos);
 
 #if __NetBSD__
 #define FADDR ((double*)&regs.__data[i*4])
+#define MMXREG ((unsigned int*)&regs.__data[i*4])
 #else
 #define FADDR ((double*)&regs.st_space[i*4])
+#define MMXREG ((unsigned int*)&regs.st_space[i*4])
 #endif
 
+	for(t=0;t<2;t++)
 	for(i=0;i<8;i++) {
+		u64 mmx;
+		u16 *mmxword = &mmx;
 		u16 *a = (u16*)&regs.xmm_space;
 		a = a + (i * 4);
+		mmx = *MMXREG;
 
-		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);
-		cons_printf(" st%d = %lg (0x%08llx)\n", i, *FADDR, *FADDR);
+		switch(t) {
+		case 0:
+			cons_printf(" mm%d  %04x %04x %04x %04x  ", i, mmxword[0], mmxword[1], mmxword[2], mmxword[3]);
+			cons_printf(" st%d  %lg 0x%08llx\n", i, *FADDR, *FADDR);
+			break;
+		case 1:
+			cons_printf(" xmm%d %04x %04x %04x %04x %04x %04x %04x %04x\n", i,
+				a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]);
+			break;
+		}
 	}
 #if 0
   /* from ida sdk */

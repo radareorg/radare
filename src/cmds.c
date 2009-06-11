@@ -2744,6 +2744,7 @@ CMD_DECL(help)
 				"Usage: ?[?[?]] <expr>\n"
 				" ? eip             ; get value of eip flag (or any math expression)\n"
 				" ?i offset A:      ; user input for u64 numeric values, result in $$?\n"
+				" ?f 3.4545         ; calculate hex, double and float value for hex or float num\n"
 				" ?v eip+33+[esp]   ; show hex value of math expression\n"
 				" ?q eip+33+[esp]   ; quite math expression evaluation (no output) changes $$?\n"
 				" ?z`str            ; sets false if string is zero length\n"
@@ -2810,6 +2811,21 @@ CMD_DECL(help)
 			if (str[0]) {
 				cons_strcat(str);
 				cons_newline();
+			}
+		} else
+		if (input[0]=='f') {
+			char *str = input+((input[1]==' ')?2:1);
+			u32 _u32;
+			float _f;
+			u8 *p = &_f;
+			if (str[0]=='0'&&str[1]=='x') {
+				sscanf(str, "0x%x", &_u32);
+				memcpy(&_f, &_u32, sizeof(float));
+				cons_printf("%f\n", _f);
+			} else {
+				sscanf(str, "%f", &_f);
+				memcpy(&_u32, &_f, sizeof(u32));
+				cons_printf("0x%x\n", _u32);
 			}
 		} else
 		if (input[0]=='i') {

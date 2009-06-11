@@ -110,7 +110,7 @@ int project_info(const char *file);
 int rabin_load();
 
 void radare_set_block_size(char *arg);
-void radare_set_block_size_i(int sz);
+int radare_set_block_size_i(int sz);
 int radare_hack_help();
 void help_message_short();
 int radare_hack(const char *cmd);
