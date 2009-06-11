@@ -448,7 +448,7 @@ static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 	
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
-		if (!strcmp(&string[shdrp->sh_name], ".got.plt"))
+		if (!strcmp(&string[shdrp->sh_name], ".got"))
 			got_addr = shdrp->sh_offset;
 	}
 	if (got_addr == 0) {

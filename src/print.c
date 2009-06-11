@@ -1256,7 +1256,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			io_lseek(config.fd, ptr, SEEK_SET);
 			buf[0]='\xff';
 			io_read(config.fd, buf, sz);
-
+			
 			switch(mode[0]) {
 			case 'F': // 0xFF
 				config.block[i] = 0;
@@ -1301,11 +1301,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		}
 		free(buf);
 		}
-	case FMT_HEXPAIRS:
-		for(i=0;i<len;i++)
-			cons_printf("%02x", buf[i]);
-		cons_newline();
-		break;
 	case FMT_HEXBS:
 	case FMT_HEXB:
 		inc = config_get_i("scr.bytewidth");
@@ -1371,6 +1366,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		config.cursor_mode = tmp;
 		if (fmt == FMT_HEXBS)
 			cons_newline();
+		break;
+	case FMT_HEXPAIRS:
+		for(i=0;i<len;i++)
+			cons_printf("%02x", buf[i]);
+		cons_newline();
 		break;
 	case FMT_BASE64:
 		{
