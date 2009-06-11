@@ -10,7 +10,6 @@ TODO 1.5
 ========
 
 * FULLY implement radiff -f and -t (support atoi and hexa)
-* zoom segfaults
 * fix mmx/sse use
 * implement serial:// for '=' command
 * Implement btree for flags and so on

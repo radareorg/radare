@@ -726,7 +726,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	// code anal
 	struct program_t *prg;
 	unsigned char buffer[256];
-	unsigned char *bufi = NULL; // inverted buffer
+	unsigned char *bufi = NULL, *bufz = NULL; // inverted buffer
 	unsigned long addr = seek;
 	u64 len = olen;
 
@@ -742,65 +742,67 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	}
 
 	if (zoom) {
-		u64 sz = 4;
+		u64 sz;
+		u8 *bufz2;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
-		switch(mode[0]) {
-		case 'e':
-			buf = (u8 *)malloc(config.zoom.piece);
-			sz = (u64)config.zoom.piece;
-			break;
-		default:
-			buf = (u8 *)malloc(len<<1);
-			break;
-		}
+
+		if (!mode)
+			return;
+
+		bufz = (u8 *)malloc(len);
+		bufz2 = (u8 *)malloc(config.zoom.piece);
+		sz = (u64)config.zoom.piece;
+
 		for(i=0;!config.interrupted && i<len;i++) {
 			io_lseek(config.fd, ptr, SEEK_SET);
-			buf[0]='\xff';
-			io_read(config.fd, buf, sz);
+			bufz2[0]='\xff';
+			io_read(config.fd, bufz2, sz);
 
 			switch(mode[0]) {
 			case 'F': // 0xFF
-				config.block[i] = 0;
+				bufz[i] = 0;
 				for(j=0;j<sz;j++)
-					if (buf[j]==0xff)
-						config.block[i]++;
+					if (bufz2[j]==0xff)
+						bufz[i]++;
 				break;
 			case 'c': // code
 				{
 				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
-				config.block[i] = (unsigned char) 0;
+				bufz[i] = (unsigned char) 0;
 				if (data->type == DATA_CODE)
-					config.block[i] = (unsigned char) data->times;
+					bufz[i] = (unsigned char) data->times;
 				}
 				break;
 			case 's': // strings
 				{
 				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
-				config.block[i] = (unsigned char) 0;
+				bufz[i] = (unsigned char) 0;
 				if (data->type == DATA_STR)
-					config.block[i] = (unsigned char) data->times;
+					bufz[i] = (unsigned char) data->times;
 				}
 				break;
 			case 't': // traces
-				config.block[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);
+				bufz[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);
 				break;
 			case 'f': // flags
-				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
+				bufz[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
 				break;
 			case 'p': // % printable chars
-				config.block[i] = (unsigned char)2.55*hash_pcprint(buf, sz);
+				bufz[i] = (unsigned char)2.55*hash_pcprint(bufz2, sz);
 				break;
 			case 'e': // entropy
-				config.block[i] = (unsigned char)hash_entropy(buf, sz);
+				bufz[i] = (unsigned char)hash_entropy(bufz2, sz);
 				break;
 			//case 'h':
 			default:
-				config.block[i] = buf[0];
+				bufz[i] = bufz2[0];
 				break;
 			}
 			ptr += config.zoom.piece;
 		}
+		buf = bufz;
+		free(bufz2);
 	}
 
 	if (len <= 0) len = config.block_size;
@@ -1223,83 +1225,10 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		}  D{}else cons_newline();
 		} break;
 	case FMT_ZOOM: {
-		u8 *buf = NULL;
-		u64 sz = 4;
-		const char *mode = config_get("zoom.byte");
-		u64 ptr = config_get_i("zoom.from");
-		//u64 to = config_get_i("zoom.to");
-#if 0
-		config.size = to-ptr;
-		if (config.size<0)
-			config.size = -config.size;
-#endif
-	
-		if (!mode)
-			break;
-		zoom = 1;
-		// XXX config.seek = ptr;
-
-		config.zoom.piece = config.size / config.block_size ;
-		fmt = FMT_HEXB;
-		//buf = (char *)malloc(config.zoom.piece+10);
-
-		switch(mode[0]) {
-		case 'e':
-			buf = (u8 *)malloc(config.zoom.piece);
-			sz = (u64)config.zoom.piece;
-			break;
-		default:
-			buf = (u8 *)malloc(len<<1);
-			break;
-		}
-		for(i=0;!config.interrupted && i<len;i++) {
-			io_lseek(config.fd, ptr, SEEK_SET);
-			buf[0]='\xff';
-			io_read(config.fd, buf, sz);
-			
-			switch(mode[0]) {
-			case 'F': // 0xFF
-				config.block[i] = 0;
-				for(j=0;j<sz;j++)
-					if (buf[j]==0xff)
-						config.block[i]++;
-				break;
-			case 'c': // code
-				{
-				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
-				config.block[i] = (unsigned char) 0;
-				if (data->type == DATA_CODE)
-					config.block[i] = (unsigned char) data->times;
-				}
-				break;
-			case 's': // strings
-				{
-				struct data_t *data = data_get_between(ptr, ptr+config.zoom.piece);
-				config.block[i] = (unsigned char) 0;
-				if (data->type == DATA_STR)
-					config.block[i] = (unsigned char) data->times;
-				}
-				break;
-			case 't': // traces
-				config.block[i] = (unsigned char)trace_get_between(ptr, ptr+config.zoom.piece);
-				break;
-			case 'f': // flags
-				config.block[i] = (unsigned char)flags_between(ptr, ptr+config.zoom.piece);
-				break;
-			case 'p': // % printable chars
-				config.block[i] = (unsigned char)2.55*hash_pcprint(buf, sz);
-				break;
-			case 'e': // entropy
-				config.block[i] = (unsigned char)hash_entropy(buf, sz);
-				break;
-			//case 'h':
-			default:
-				config.block[i] = buf[0];
-				break;
-			}
-			ptr += config.zoom.piece;
-		}
-		free(buf);
+		if (!zoom)
+			config_set("zoom.enable", "true");
+		print_data(seek, arg, buf,len, FMT_HEXB);
+		break;
 		}
 	case FMT_HEXBS:
 	case FMT_HEXB:
@@ -1407,7 +1336,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	if (inverse)
 		free(bufi);
 	if (zoom)
-		free(buf);
+		free(bufz);
 	radare_controlc_end();
 }
 
