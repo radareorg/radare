@@ -1874,7 +1874,8 @@ int radare_open(int rst)
 	if (ocfg.fd != -1)
 		io_close(ocfg.fd); // close old filedescriptor
 
-	config.zoom.size   = config.size;
+	config_set_i("zoom.to", config.size);
+	config.zoom.to     = config.size;
 	config.zoom.from   = 0;
 	config.zoom.piece  = config.size/config.block_size;
 

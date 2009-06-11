@@ -102,7 +102,7 @@ static void config_old_init()
 	config.scrdelta    = 0;
 	config.lang        = 0;
 	config.fd          = -1;
-	config.zoom.size   = config.size;
+	config.zoom.to     = config.size;
 	config.zoom.from   = 0;
 	config.zoom.enabled= 0;
 	config.zoom.piece  = config.size/config.block_size;
@@ -408,6 +408,23 @@ static int config_zoom_callback(void *data)
 		node->i_value?1:0
 		);
 	return 1;
+}
+
+static int config_zoomfrom_callback(void *data)
+{
+	struct config_node_t *node = data;
+	if (node->i_value < 0)
+		return 0;
+	config.zoom.from = node->i_value;
+	return 1;
+}
+
+static int config_zoomto_callback(void *data)
+{
+	struct config_node_t *node = data;
+	if (node->i_value < 0)
+		return 0;
+	config.zoom.to = node->i_value;
 }
 
 static int config_zoombyte_callback(void *data)
@@ -1072,7 +1089,9 @@ void config_init(int first)
 	node = config_set("zoom.enable", "false");
 	node->callback = &config_zoom_callback;
 	node = config_set_i("zoom.from", 0);
+	node->callback = &config_zoomfrom_callback;
 	node = config_set_i("zoom.to", config.size);
+	node->callback = &config_zoomto_callback;
 	node = config_set("zoom.byte", "head");
 	node->callback = &config_zoombyte_callback;
 

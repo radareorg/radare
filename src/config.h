@@ -21,7 +21,7 @@ enum mode_t {
 };
 
 struct zoom_t {
-	u64 size; // full file size
+	u64 to; // full file size
 	u64 from; // start (default is 0)
 	u64 piece; // piece size (config.size/block_size)
 	int enabled;

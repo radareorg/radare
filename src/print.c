@@ -701,6 +701,7 @@ static int zoom = 0;
 void print_zoom(u64 from, u64 to, char *byte, int enable)
 {
 	zoom = enable;
+	config.zoom.enabled = enable;
 	config_set_i("zoom.from", from);
 	config_set_i("zoom.to", to);
 	config_set("zoom.byte", byte);
@@ -746,9 +747,14 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		u8 *bufz2;
 		const char *mode = config_get("zoom.byte");
 		u64 ptr = config_get_i("zoom.from");
+		config.zoom.piece  = (config.zoom.to - config.zoom.from)/config.block_size;
+		if (config.zoom.piece < 1)
+			config.zoom.piece = 1;
 
-		if (!mode)
+		if (!mode) {
+			eprintf("Error: Invalid zoom mode");
 			return;
+		}
 
 		bufz = (u8 *)malloc(len);
 		bufz2 = (u8 *)malloc(config.zoom.piece);
@@ -839,7 +845,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		{
 			int i,j,pc,pce;
 			for(i=0;i<len;i++) {
-				if (zoom) print_addr(seek+(config.zoom.piece*i));
+				if (zoom) print_addr(config.zoom.from+(config.zoom.piece*i));
 				else print_addr(seek);
 				cons_printf(" %02x |", buf[i]);
 				pc = (buf[i]*100)/255;
@@ -1255,7 +1261,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		for(i=0; !config.interrupted && i<len; i+=inc) {
 			V if (inc==0 && (i/inc)+4>config.height) break;
 			D { if ( fmt == FMT_HEXB ) {
-				if (zoom) print_addr(seek+(config.zoom.piece*i));
+				if (zoom) print_addr(config.zoom.from+(config.zoom.piece*i));
 				else print_addr(seek+i+config.vaddr);
 			} }
 

@@ -97,7 +97,6 @@ CMD_DECL(zoom);
 //CMD_DECL(trace);
 CMD_DECL(zoom_reset);
 CMD_DECL(edit_screen_filter);
-CMD_DECL(zoom_reset);
 CMD_DECL(setblocksize);
 CMD_DECL(visual_bind_run);
 
@@ -171,7 +170,8 @@ void visual_show_help()
 	" p,P        switch between hex, bin and string formats\n"
 	" x          show xrefs of the current offset\n"
 	" w          write hexpair bytes in cursor\n"
-	" q          exits visual mode\n");
+	" q          exits visual mode\n"
+	" z, Z       zoom full file, reset zoom preferences\n");
 	TITLE
 	cons_printf("\nCursor mode:\n");
 	TITLE_END
@@ -273,9 +273,8 @@ CMD_DECL(invert)
 
 CMD_DECL(zoom_reset)
 {
-	config.zoom.from = 0;
-	config.zoom.size = config.size;
-	config.zoom.piece = config.zoom.size/config.block_size;
+	config_set_i("zoom.from", 0);
+	config_set_i("zoom.to", config.size);
 	return 0;
 }
 
@@ -348,36 +347,35 @@ static void visual_convert_bytes(int fmt, int defkey)
 
 CMD_DECL(zoom)
 {
-	if (config.zoom.size == 0)
-		config.zoom.size = config.size;
-
 	CLRSCR();
-	config.zoom.enabled ^= 1;
-	if (config.zoom.enabled) {
-		config.cursor = config.block_size * config.seek/config.size;
-	//	config.cursor_mode = 1;
-		config.zoom.size = config.block_size;
+	if (config.cursor_mode && config.ocursor == -1) {
+		config_set_i("zoom.from", 
+				config.zoom.from + config.cursor * config.zoom.piece);
+		config_set_i("zoom.to", config.zoom.from + config.zoom.piece); 
+		config.seek = config.zoom.from;
+		radare_cmd("pO", 0);
+	} else if (config.cursor_mode) {
+		int cfrom, cto;
+		if (config.ocursor > config.cursor) {
+			cfrom = config.cursor;
+			cto = config.ocursor;
+		} else {
+			cfrom = config.ocursor;
+			cto = config.cursor;
+		}
+		config_set_i("zoom.from", 
+				config.zoom.from + cfrom * config.zoom.piece);
+		config_set_i("zoom.to",
+				config.zoom.from + (cto - cfrom) * config.zoom.piece);
+		config.seek = config.zoom.from;
 		radare_cmd("pO", 0);
 	} else {
-		if (config.cursor_mode && ( config.ocursor != -1)) {
-			config.zoom.from = config.cursor * config.zoom.piece;
-			config.zoom.size = config.cursor-config.ocursor;
-			if (config.zoom.size<0) config.zoom.size *= -1;
-			config.zoom.size *=config.zoom.piece;
-			config.zoom.piece = (config.zoom.size-config.zoom.from)/config.block_size;
-			config.zoom.enabled = 1;
-			config.seek = config.zoom.from;
-			radare_cmd("pO", 0);
-		} else {
-			if (config.cursor_mode)
-				config.seek = config.zoom.from + config.cursor * config.zoom.piece;
-			radare_cmd("x", 0);
-		}
-		/* reset cursor */
-		config.cursor_mode = 0;
-		config.cursor = 0;
-		config.ocursor = -1;
+		config_set_i("zoom.from", 0);
+		config_set_i("zoom.to", config.size);
+		radare_cmd("pO", 0);
 	}
+	config.cursor = 0;
+	config.ocursor = -1;
 	CLRSCR();
 	return 0;
 }
