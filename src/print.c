@@ -126,7 +126,7 @@ void print_msdos_date(unsigned char _time[2], unsigned char _date[2])
         unsigned int seconds = (t&0x001f)<<1;
 
         /* la data de modificacio del fitxer, no de creacio del zip */
-        printf("%d-%02d-%02d %d:%d:%d",
+        cons_printf("%d-%02d-%02d %d:%d:%d\n",
                 year, month, day, hour, minutes, seconds);
 }
 
@@ -1043,48 +1043,49 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			endian_memcpy(_date, config.block+i+2, 2);
 			print_msdos_date(_time, _date);
 			// TODO: add tzdelta support
-			cons_newline();
 		} } break;
 	case FMT_TIME_UNIX: {
-		int delta = config_get_i("cfg.tzdelta");
-		time_t t;
-		char datestr[256];
-		const char *datefmt;
-		for(i=0;!config.interrupted && i<len;i+=sizeof(time_t)) {
-			endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
-			//printf("%s", (char *)ctime((const time_t*)&t));
-			t += (delta*3600); // time zone delta
-			datefmt = config_get("cfg.datefmt");
-			if (datefmt&&datefmt[0])
-				tmp = strftime(datestr,256,datefmt,
-					(const struct tm*)gmtime((const time_t*)&t));
-			else 	tmp = strftime(datestr,256,"%d:%m:%Y %H:%M:%S %z",
-					(const struct tm*)gmtime((const time_t*)&t));
-			// TODO colorize depending on the distance between dates
-			if (tmp) cons_printf("%s",datestr); else printf("*failed*");
-			cons_newline();
-		} } break;
+	    struct tm * tmptr;
+	    int delta = config_get_i("cfg.tzdelta");
+	    time_t t;
+	    char datestr[256];
+	    const char *datefmt = config_get("cfg.datefmt");
+	    for(i=0;!config.interrupted && i<len;i+=sizeof(time_t)) {
+		    endian_memcpy((unsigned char*)&t, config.block+i, sizeof(time_t));
+		    //printf("%s", (char *)ctime((const time_t*)&t));
+		    t += (delta*3600); // time zone delta
+		    tmptr = gmtime((const time_t*)&t);
+		    if (tmptr == NULL)
+			    tmp = NULL;
+		    else
+			    if (datefmt&&datefmt[0])
+				    tmp = strftime(datestr, 256, datefmt, tmptr);
+			    else    tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z", tmptr);
+		    // TODO colorize depending on the distance between dates
+		    if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (u64)t);
+	    } } break;
 	case FMT_TIME_FTIME: {
-		int delta = config_get_i("cfg.tzdelta");
-		unsigned long long l, L = 0x2b6109100LL;
-		time_t t;
-		char datestr[256];
-		const char *datefmt;
-		for(i=0;!config.interrupted && i<len;i+=8) {
-			endian_memcpy((unsigned char*)&l, config.block+i, sizeof(unsigned long long));
-			l /= 10000000; // 100ns to s
-			l = (l > L ? l-L : 0); // isValidUnixTime?
-			t = (time_t) l; // TODO limit above!
-			t += (delta*3600); // time zone delta
-			datefmt = config_get("cfg.datefmt");
-			if (datefmt&&datefmt[0])
-				tmp = strftime(datestr, 256, datefmt,
-					(const struct tm*)gmtime((const time_t*)&t));
-			else 	tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z",
-					(const struct tm*)gmtime((const time_t*)&t));
-			if (tmp) cons_printf("%s", datestr); else cons_printf("*failed*");
-			cons_newline();
-		} } break;
+	     struct tm * tmptr;
+	     int delta = config_get_i("cfg.tzdelta");
+	     unsigned long long l, L = 0x2b6109100LL;
+	     time_t t;
+	     char datestr[256];
+	     const char *datefmt = config_get("cfg.datefmt");
+	     for(i=0;!config.interrupted && i<len;i+=8) {
+		     endian_memcpy((unsigned char*)&l, config.block+i, sizeof(unsigned long long));
+		     l /= 10000000; // 100ns to s
+		     l = (l > L ? l-L : 0); // isValidUnixTime?
+		     t = (time_t) l; // TODO limit above!
+		     t += (delta*3600); // time zone delta
+		     tmptr = gmtime((const time_t*)&t);
+		     if (tmptr == NULL)
+			     tmp = NULL;
+		     else
+			     if (datefmt&&datefmt[0])
+				     tmp = strftime(datestr, 256, datefmt, tmptr);
+			     else    tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z", tmptr);
+		     if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (u64)t);
+	     } } break;
 	case FMT_RAW:
 		// XXX TODO: measure the string length and make it fit properly
 		V i = config.width*config.height; else i=len;

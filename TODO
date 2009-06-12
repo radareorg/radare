@@ -6,8 +6,9 @@
 
 ===========================================================
 
-TODO 1.4.1
+TODO 1.4.2
 ==========
+* set fpregs
 
 * Handle ^C in print hexdump ?huh! cannot break huge reads
   - We have to split the io_read() calls in blocks of 64k
