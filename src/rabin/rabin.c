@@ -897,16 +897,17 @@ void rabin_show_imports(const char *file)
 			return;
 		}
 
-		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
-		imports_count = PE_CALL(dietpe_get_imports_count, bin.pe);
-
-		import.pe = malloc(imports_count * sizeof(dietpe_import));
-		PE_CALL(dietpe_get_imports, bin.pe, import.pe);
-
 		if (rad)
 			printf("fs imports\n");
 		else printf("[Imports]\n");
 		
+		baddr = PE_CALL(dietpe_get_image_base, bin.pe);
+		if (!(imports_count = PE_CALL(dietpe_get_imports_count, bin.pe)))
+			return;
+
+		import.pe = malloc(imports_count * sizeof(dietpe_import));
+		PE_CALL(dietpe_get_imports, bin.pe, import.pe);
+
 		importp.pe = import.pe;
 		for (i = 0; i < imports_count; i++, importp.pe++) {
 			if (rad) {
@@ -974,15 +975,16 @@ void rabin_show_symbols(char *file)
 			return;
 		}
 
-		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
-		symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd);
-
-		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
-		ELF_CALL(dietelf_get_symbols,bin.elf,fd,symbol.elf);
-
 		if (rad)
 			printf("fs symbols\n");
 		else printf("[Symbols]\n");
+
+		baddr = ELF_CALL(dietelf_get_base_addr,bin.elf);
+		if (!(symbols_count = ELF_CALL(dietelf_get_symbols_count,bin.elf,fd)))
+			return;
+
+		symbol.elf = malloc(symbols_count * sizeof(dietelf_symbol));
+		ELF_CALL(dietelf_get_symbols,bin.elf,fd,symbol.elf);
 
 		symbolp.elf = symbol.elf;
 		for (i = 0; i < symbols_count; i++, symbolp.elf++) {

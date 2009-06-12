@@ -8,14 +8,14 @@ endif
 
 .SUFFIXES: .c .o
 .c.o:
-	-${Q}$(CC) -c $(CFLAGS) -o $@ $<
+	-$(CC) -c $(CFLAGS) -o $@ $<
 
 all: armasm
 
 armasm: ${AOBJ} 
 
 armasm:
-	-${Q}${CC} ${AOBJ} -o armasm
+	-${CC} ${AOBJ} -o armasm
 
 clean:
-	-${Q}rm -f ${AOBJ} armasm
+	-rm -f ${AOBJ} armasm
