@@ -89,6 +89,7 @@ static void config_old_init()
 	config.width       = cons_get_columns();
 	config.last_seek   = 0;
 	config.file        = NULL;
+	config.realfile    = 0;
 	config.scrfit      = 1;
 	config.block_size  = DEFAULT_BLOCK_SIZE;
 	config.cursor      = 0;
@@ -1367,13 +1368,14 @@ void config_visual_menu()
 			break;
 		case '?':
 			cons_clear00();
-			cons_printf("\nVe: Visual Eval help:\n\n");
-			cons_printf(" q     - quit menu\n");
-			cons_printf(" j/k   - down/up keys\n");
-			cons_printf(" h/b   - go back\n");
-			cons_printf(" e/' ' - edit/toggle current variable\n");
-			cons_printf(" +/-   - increase/decrease numeric value\n");
-			cons_printf(" :     - enter command\n");
+			cons_strcat(
+			"\nVe: Visual Eval help:\n\n"
+			" q     - quit menu\n"
+			" j/k   - down/up keys\n"
+			" h/b   - go back\n"
+			" e/' ' - edit/toggle current variable\n"
+			" +/-   - increase/decrease numeric value\n"
+			" :     - enter command\n");
 			cons_flushit();
 			cons_any_key();
 			break;

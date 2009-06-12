@@ -56,6 +56,7 @@ struct config_t {
 	int verbose;
 	int unksize;
 	char *file;
+	int realfile;
 	unsigned char *block; // data block
 	int block_size; // size of the data block // why signed ?
 	int cursor; // position of the cursor inside the block XXX THIS IS UNSIGNED :O -1 must be funny

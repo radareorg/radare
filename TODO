@@ -10,19 +10,44 @@ TODO 1.4.1
 ==========
 
 * Handle ^C in print hexdump ?huh! cannot break huge reads
+  - We have to split the io_read() calls in blocks of 64k
+  - This way the kernel will be locking less and ^C is possible
 * set fpregs, mmregs and xmmregs
-* FULLY implement radiff -f and -t (support atoi and hexa)
+* FULLY implement radiff -f and -t
+* Dworddump print format??? (like gdb one) (pw) (print 32bit words)
 
 TODO 1.5
 ========
+* grep multiple strings: (only for r2 or backport?)
+  pdf ~call,ebp
+* greplace... ~ is grep, but ~~ is greplace! \o/
+  pd~~eax/EAX,ebx/EBX  # example syntax
+* Optimizations everywhere!11cos(0)
+  - config.c, data.c, flags.c
+  - Implement btree for flags and so on
+  OPTIMIZATIONS
+  =============
+  * do not dump on tmp files (use popen or so)
+  * flag_get (23%)
+  * Optimize string_flag_offset (24%)
+    - abuses strstr
+  * config_node_get (1%)
+* LSDJ-like interface
+  Visual mode [x]dkdl  -> Q allows to hjkl on those modes
+            +---+              <- enable cmd.vprompt*
+        +---|---|-----------+
+        | x | d | o | d | l |  <- disabled cmd.vprmpt
+        +-------------------+
+          ^._____________________ hexa, disasm, octal, ...
+
 * implement serial:// for '=' command
-* Implement btree for flags and so on
-* implement main prompt
+* implement main prompt (rash?? rashell??)
   - rarun
   - listen at a port waiting for commands
   - can be used to remotely upload files
 * Invert doesnt works for disassembly!!!
   - manually done disassembly instruction by instruction!
+  - negative block size is used to invert (deprecate invert?)
 * !fork should be fixed
 * write shellcode to dump a buffer in hexa (inline jump)
 * regexp search?? (backport from r2)
@@ -34,10 +59,9 @@ TODO 1.5
 * Better 'cD' command (use gnu diff method, but take as size the smaller file)
 * Better integration with -P (projects) (do not analyze twice...)
 
-* rax should support base64/7bit/LSBstego/...
+* rax should support float/double/base64/7bit/LSBstego/...
 * cfg.vbar = p%
 * remove the ':' command -> use it to drop colors instead of verbose?
-* negative block size is used to invert (deprecate invert?)
 
 * Add disassembler for
   - ParrotVM
@@ -70,16 +94,6 @@ RWX,RWX,RWX
 * Added at% like ar%
 * fer q libr.syscall suporti lectura dsd fitxers
 
-grep multiple strings: (only for r2 or backport?)
-  pdf ~call,ebp
-
-OPTIMIZATIONS
-=============
-* do not dump on tmp files (use popen or so)
-* flag_get (23%)
-* Optimize string_flag_offset (24%)
-  - abuses strstr
-* config_node_get (1%)
 
 ===========================================================
 

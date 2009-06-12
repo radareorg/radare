@@ -1984,6 +1984,8 @@ int radare_go()
 		config.limit = -1;
 	}
 
+	config.realfile = r_file_exist(config.file);
+
 	/* open file */
 	bsize = config.block_size;
 	if (radare_open(0))
@@ -2025,13 +2027,13 @@ int radare_go()
 
 	/* load rabin stuff here */
 	config_set("file.type", "unk");
-	if (config_get("file.id"))
+	if (config.realfile && config_get("file.id"))
 		rabin_id();
 
 	/* flag all syms and strings */
 	if (strcmp(config_get("file.type"), "unk"))
 	if (strnull(config_get("file.project"))) {
-		if (config_get("file.flag"))
+		if (config.realfile && config_get("file.flag"))
 			rabin_flag();
 
 		/* if not unknown file type */
@@ -2076,14 +2078,16 @@ int radare_go()
 			radare_cmd(".!!rsc maps ${DPID}", 0);
 		}
 
-		if (config_get("dbg.sections") && !config_get("file.flag"))
-			//radare_cmd(":.!rsc flag-sections $FILE", 0);
-			radare_cmd(".!!rabin -rS $FILE",0);
+		if (config.realfile) {
+			if (config_get("dbg.sections") && !config_get("file.flag"))
+				//radare_cmd(":.!rsc flag-sections $FILE", 0);
+				radare_cmd(".!!rabin -rS $FILE",0);
 
-		if (config_get("dbg.strings") && !config_get("file.flag")) {
-			//eprintf("Loading strings...press ^C when tired\n");
-			//radare_cmd(".!rsc strings-flag $FILE", 0);
-			radare_cmd(".!!rabin -rz $FILE",0);
+			if (config_get("dbg.strings") && !config_get("file.flag")) {
+				//eprintf("Loading strings...press ^C when tired\n");
+				//radare_cmd(".!rsc strings-flag $FILE", 0);
+				radare_cmd(".!!rabin -rz $FILE",0);
+			}
 		}
 
 		radare_set_block_size_i(100); // 48 bytes only by default in debugger

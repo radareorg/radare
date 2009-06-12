@@ -74,6 +74,7 @@ format_info_t formats[] = {
 	{ '7', FMT_7BIT,       "7bit encoding (sms)",    NULL,   "entire block" },
 	{ '8', FMT_HEXQ,       "p8: 8bytes, 64 bit quad-word",  "8 bytes",     "(endian)"},
 	{ '9', FMT_EBASE64,    "p9: base64 decode (p6 to encode)",  "entire block",     "(endian)"},
+	{ 'w', FMT_DWORDDUMP,  "endian sensitive dword dump", "N byte",      "entire block" },
 	{ 'x', FMT_HEXB,       "hexadecimal dump", "N byte",      "entire block" },
 	{ 'X', FMT_HEXPAIRS,   "hexpairs", "N byte",      "entire block" },
 	{ 'z', FMT_ASC0,       "ascii null terminated",  NULL,          "until \\0" },
@@ -961,6 +962,22 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			endian_memcpy((u8*)&f, buf+i, sizeof(float));
 			cons_printf("%f\n", f);
 		} } break;
+	case FMT_DWORDDUMP:
+		{
+		/* TODO: control width of screen like everybody does */
+:xa
+		for(i=j=0;!config.interrupted && i<len;i+=4,j++) {
+			u32 n;
+			/* TODO: endian here */
+			memcpy(&n, buf+i, sizeof(u32));
+			switch(j%6) {
+			case 0: cons_printf("0x%08llx:  0x%08x  ", config.seek+i, n); break;
+			case 5: cons_printf("\n"); break;
+			default: cons_printf("0x%08x  ", n);
+			}
+		}
+		cons_newline();
+		} break;
 	case FMT_INT:
 		{
 			int *iv;
@@ -973,7 +990,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		} break;
 	case FMT_LONG:
 		{
-			int i;
 			long *l;
 			for(i=0;!config.interrupted && i<len;i+=sizeof(long)) {
 				endian_memcpy(buffer, config.block+i, sizeof(long));
@@ -1108,11 +1124,11 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		inc = config_get_i("scr.bytewidth");
 		if (!inc) inc = config.width/6;
 		if (inc<1)inc = 1;
-		cons_printf("#define _BUFFER_SIZE %d", len); cons_newline();
-		cons_printf("unsigned char buffer[_BUFFER_SIZE] = {"); cons_newline();
+		cons_printf("#define _BUFFER_SIZE %d\n", len);
+		cons_strcat("unsigned char buffer[_BUFFER_SIZE] = {\n");
 		for(j = i = 0; !config.interrupted && i < len;) {
 			print_color_byte_i(i, "0x%02x", config.block[i]);
-			if (++i<len)  cons_printf(", ");
+			if (++i<len) cons_strcat(", ");
 			if (!(i%inc)) {
 				cons_newline(); 
 				V if (++j+5>config.height)
@@ -1120,7 +1136,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 						break;
 			}
 		}
-		cons_printf(" };\n");
+		cons_strcat(" };\n");
 		break;
 	case FMT_BIN:
 		inc = config_get_i("scr.bytewidth");
