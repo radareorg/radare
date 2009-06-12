@@ -9,6 +9,7 @@
 #include "../radare.h"
 
 int rasm_x86(u64 offset, const char *str, u8 *data);
+int rasm_nasm_x86(u64 offset, const char *str,u8 *data);
 int rasm_olly_x86(u64 offset, const char *str, u8 *data);
 int rasm_arm(u64 offset, const char *str, u8 *data);
 int rasm_java(u64 offset, const char *str, u8 *data);

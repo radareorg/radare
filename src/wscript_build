@@ -62,6 +62,7 @@ obj.source += ' rasm/olly.c'
 obj.source += ' rasm/ppc.c'
 obj.source += ' rasm/rasm.c'
 obj.source += ' rasm/x86.c'
+obj.source += ' rasm/nasm.c'
 obj.source += ' rasm/rsc.c'
 obj.find_sources_in_dirs('arch/x86')
 obj.find_sources_in_dirs('arch/x86/udis86')
