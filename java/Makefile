@@ -1,11 +1,11 @@
 include ../config.mk
 
 all:
-	${E} 'Compiling java code'
-	${Q}${JAVAC} org/nopcode/pancake/radare/*.java
-	${Q}${JAVAC} org/nopcode/pancake/radare/data/*.java
-	${Q}${JAVAC} org/nopcode/pancake/radare/demos/*.java
-	${Q}${JAVAC} org/nopcode/pancake/radare/swing/*.java
+	@echo 'Compiling java code'
+	${JAVAC} org/nopcode/pancake/radare/*.java
+	${JAVAC} org/nopcode/pancake/radare/data/*.java
+	${JAVAC} org/nopcode/pancake/radare/demos/*.java
+	${JAVAC} org/nopcode/pancake/radare/swing/*.java
 
 jar:
 	if [ ! -e org/nopcode/pancake/radare/Radare.class ]; then\
@@ -19,8 +19,8 @@ install:
 	${INSTALL_DATA} radare.jar ${DATADIR}/radare/
 
 clean:
-	${E} 'Cleaning java'
-	-${Q}rm -rf `find . | grep class` xxx
+	@echo 'Cleaning java'
+	-rm -rf `find . | grep class` xxx
 
 run:
 	#java org.nopcode.pancake.radare.demos.Disassembler /bin/ls

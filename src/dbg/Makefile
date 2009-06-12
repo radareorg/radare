@@ -10,10 +10,10 @@ LIB=ptrace.${SHARED_EXT}
 #	${CC} ${LDFLAGS} ptrace.o ${OBJ} ${LIBS} -shared -o ${LIB}
 
 all: ${OBJ}
-	@-${Q}echo [src/dbg] debugger layer build done
+	@-echo [src/dbg] debugger layer build done
 
 #${CC} ${LDFLAGS} ${OBJ} ${LIBS} ${SHARED_CFLAGS} -o ${LIB}
 
 clean:
-	${E} '[src/dbg] Cleaning ...'
-	-${Q}rm -f ptrace.o ${OBJ} ${LIB} ${LIBPRE} demo dbg/unix/*.o dbg/win32/*.o
+	@echo '[src/dbg] Cleaning ...'
+	-rm -f ptrace.o ${OBJ} ${LIB} ${LIBPRE} demo dbg/unix/*.o dbg/win32/*.o
