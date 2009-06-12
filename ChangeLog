@@ -1,3 +1,265 @@
+=== 1.4.1 === 2009-06-12
+
+changeset:   1141:69a748463390
+tag:         tip
+user:        nibble
+date:        Fri Jun 12 18:17:04 2009 +0200
+files:       src/arch/arm/aasm/Makefile src/rabin/rabin.c
+description:
+* Remove last ${Q} (i hope)
+* Fixed dietpe segfault with .Net PE
+
+
+changeset:   1140:c13bf7cb6eba
+user:        pancake <@youterm.com>
+date:        Fri Jun 12 17:42:32 2009 +0200
+files:       TODO src/print.c
+description:
+* Fix 64b issues on the null pointer gmtime
+  - Fixes segfaults on pt, pT and pF (Thanks nion for reporting!)
+
+
+changeset:   1139:c670d25801a0
+user:        pancake <@youterm.com>
+date:        Fri Jun 12 13:18:40 2009 +0200
+files:       java/Makefile src/dbg/Makefile
+description:
+* Remove more stupid ${E} and ${Q}
+
+
+changeset:   1138:ffeac92adb6c
+user:        nibble
+date:        Fri Jun 12 13:10:20 2009 +0200
+files:       src/print.c
+description:
+* Fixed bug in print.c
+
+
+changeset:   1137:93b9448a1876
+user:        pancake@localhost.localdomain
+date:        Fri Jun 12 11:46:31 2009 +0000
+files:       TODO src/cmds.c src/config.c src/config.h src/plug/hack/perl/Radare/Remote.pm src/plug/hack/perl/test.pl src/print.c src/print.h src/radare.c src/utils.c
+description:
+* Reorder TODO a bit moar
+* Added 'pw' command to print 32bit words (like x/x in gdb)
+* Show a end comma in ?f if reverse translation of float value
+  is not the same as the direct conversion
+* Added config.realfile fixing rabin calls to unexistent files errors
+* Added initial perl stub code for remote api
+
+
+changeset:   1136:9ab6035fb18a
+user:        nibble
+date:        Thu Jun 11 22:04:12 2009 +0200
+files:       src/config.c src/config.h src/print.c src/radare.c src/visual.c
+description:
+* Fixed zoom in Visual mode
+
+
+changeset:   1135:11e9fac8a057
+user:        pancake@localhost.localdomain
+date:        Thu Jun 11 20:53:49 2009 +0000
+files:       TODO src/cmds.c src/config.c src/dbg/arch/i386.c src/radare.c src/radare.h
+description:
+* Fix output of !fpregs (Fixed support for MMX, XMM and FPU)
+* Some indentation fixes in config.c
+* Added todo for 1.4.1 release (tomorrow?)
+* Added ?f command to convert from float to u32 hex value and reverse
+
+
+changeset:   1134:00c0bcc86d4f
+user:        pancake <@youterm.com>
+date:        Thu Jun 11 18:30:25 2009 +0200
+files:       libusbsniff/Makefile
+description:
+* Fix libusbsniff build (drop $Q and $E)
+
+
+changeset:   1133:ceb51e267b71
+user:        nibble
+date:        Thu Jun 11 18:27:25 2009 +0200
+files:       TODO src/print.c
+description:
+* Fixed zoom segfault
+
+
+changeset:   1132:ec8eb2459233
+user:        nibble
+date:        Thu Jun 11 15:59:48 2009 +0200
+files:       src/print.c src/rabin/dietelf.c src/radiff/radiff.h
+description:
+* Fixed bug in r_bin_elf resolving imports
+* Added missing file radiff.h
+
+
+changeset:   1131:900ecd94e868
+user:        pancake@localhost.localdomain
+date:        Thu Jun 11 12:00:48 2009 +0000
+files:       src/rabin/rabin.c src/radare.c src/radiff/bytediff.c src/radiff/main.c src/utils.c src/utils.h
+description:
+* Fix unksize/limit issue when opening static bins
+* '>' can now be used from radare_cmd_str (python, perl, ..)
+* Radiff now handles 64bit values on hex and dec bases for -f and -t
+* Fix signature of str_cpy function
+
+
+changeset:   1130:2c48f5f60f04
+user:        pancake <@youterm.com>
+date:        Wed Jun 10 19:58:10 2009 +0200
+files:       src/analyze.c src/rasc/Makefile
+description:
+* Fix a build issue (related to ${E} ${Q} droppage)
+* Fix a stupid type notified by lintian
+
+
+changeset:   1129:d909777a7c4e
+user:        pancake@localhost
+date:        Wed Jun 10 05:24:18 2009 -0700
+files:       Makefile.acr config.mk.acr configure.acr configure.hook gui/Makefile src/Makefile.acr src/config.c src/cons.c src/flags.c src/plug/hack/Makefile src/utils.c src/utils.h src/vm.c
+description:
+* Fix build for opensolaris-x86
+  - Added in the whitelist list of supported debugger platforms
+  - Rename strbcpy and strccpy with some underlines (they are solaris macros)
+* Drop ${E} and ${Q} from makefiles
+* make install INSTALL=/usr/bin/ginstall required
+  .. configure script needs re-acr-ization
+
+
+changeset:   1128:56d7f6cc0fa9
+user:        nibble
+date:        Wed Jun 10 01:59:12 2009 +0200
+files:       src/dbg/open.c src/radare.c
+description:
+* Fixed filename bug with uri's
+* Enable config.debug with dbg://
+
+
+changeset:   1127:73f4fa3c5dfb
+user:        nibble
+date:        Tue Jun 09 23:46:16 2009 +0200
+files:       TODO src/io.c src/objects.mk src/rasm/Makefile src/rasm/main.c src/rasm/nasm.c src/rasm/rasm.c src/rtr.c src/utils.c src/utils.h src/visual.c
+description:
+* Fixed open (with size)
+* Fixed wa
+* Added assembly support for x86_64 using nasm
+* Added missing headers
+* Sync TODO
+
+
+changeset:   1126:d9a0f7908acb
+user:        pancake@localhost.localdomain
+date:        Tue Jun 09 15:21:34 2009 +0000
+files:       TODO src/radare.c src/radiff/bytediff.c src/radiff/main.c
+description:
+* Added incomplete -f and -t support for radiff
+  - Allows to specify ranges of offets to bindiff
+  - Needs rewriting to support 64b and the rest of
+    algorithms (not only -b)
+
+
+changeset:   1125:d7fdcc482bc2
+user:        pancake@localhost.localdomain
+date:        Tue Jun 09 01:41:32 2009 +0000
+files:       TODO src/cmds.c src/environ.c src/io.c src/plug/hack/analysis/Makefile src/rabin/rabin.c src/radare.c src/rasc/shellcodes.c
+description:
+* Do not load io mapped files from rabin when radare runs in debugger mode
+* Prepare environment in radare_go()
+* Export segment. flags in the 'segments' flagspace
+* Some visual fixes for the output of rabin -H
+* Change ppc.osx.binsh shellcode (smaller one, and tested)
+
+
+changeset:   1124:a80d6db423bf
+user:        pancake@localhost.localdomain
+date:        Sun Jun 07 02:36:48 2009 +0000
+files:       src/radare.c
+description:
+* Add 'radare -' virtual file that loads a writable malloc://
+  - radare shell :)
+
+
+changeset:   1123:1189e0b5f3fe
+user:        pancake@localhost.localdomain
+date:        Sun Jun 07 02:28:36 2009 +0000
+files:       TODO src/cmds.c src/io.c src/rabin/dietelf.c src/rabin/dietelf_types.h src/rabin/rabin.c src/rio.h
+description:
+* Added 3rd arg to the 'o' command (specify size)
+* Rabin exports size of segments
+
+
+changeset:   1122:2c54c6315f60
+user:        pancake@localhost.localdomain
+date:        Sun Jun 07 02:09:18 2009 +0000
+files:       src/cmds.c src/config.c src/io.c src/rabin/Makefile src/rabin/dietelf.c src/rabin/dietelf_types.h src/rabin/rabin.c src/radare.c src/rio.h src/section.c src/visual.c
+description:
+* Added support for delta argument for 'o' command
+  - Show delta in io_list
+  - Allows to map sections of files in random addresses
+  - Fix sort order of io_maps
+* Store flags and type in ph sections of elf
+  - if type is PT_LOAD (2) opens an iomap on virtual address
+* New cfg.unksize toggles cfg.limit=-1 and file.size=-1
+* 's' in visual on static analysis executes the code in the virtual machine
+  - Just a PoC . it doesnt works at all
+
+
+changeset:   1121:84c3a586c612
+user:        pancake@localhost.localdomain
+date:        Sat Jun 06 23:46:14 2009 +0000
+files:       src/cmds.c src/grava.c src/radare.c src/readline.c
+description:
+* Oops. Fix radare_cmd_str on !w32 - regression!
+* Make ?x 0x... return a hexpair string ruled by asm.bit and cfg.bigendian
+  > ?x 0x44 -> 44 00 00 00
+  > e asm.bits=64 && e.cfg.bigendian=false
+*
+
+
+changeset:   1120:313b9c57d71d
+user:        asdfsafd@localhost
+date:        Sat Jun 06 23:07:24 2009 +0200
+files:       Makefile.acr configure.hook src/dbg/arch/powerpc.c src/dbg/darwin/debug.c src/dbg/libps2fd.h src/dbg/objects.mk
+description:
+* Fix build on powerpc-darwin
+
+
+changeset:   1119:5407523f4a13
+user:        pancake@localhost.localdomain
+date:        Sat Jun 06 21:14:02 2009 +0000
+files:       README TODO man/radare.1 src/cmds.c src/radare.c src/wscript_build
+description:
+* Do not analyze code when file.type == "unk"
+* Fix build with waf
+* Minor random changes
+
+
+changeset:   1118:8fea2dae62b5
+user:        pancake <@youterm.com>
+date:        Fri Jun 05 20:47:37 2009 +0200
+files:       TODO configure configure.acr doc/xtra/fpu
+description:
+* Bump revision to 1.4.1
+* Add some more documentation for the FPU registers
+
+
+changeset:   1117:953ebabdfb48
+user:        nibble
+date:        Fri Jun 05 18:17:45 2009 +0200
+files:       src/main.c src/rabin.c src/rabin/dietelf.c src/rabin/dietelf_types.h src/rabin/rabin.c src/utils.c
+description:
+* Fixed resolve_path
+* Some work on fixing .data flags debugging ELF
+
+
+changeset:   1116:998a6f6adf15
+user:        pancake <@youterm.com>
+date:        Wed Jun 03 20:20:27 2009 +0200
+files:       ChangeLog Makefile.acr
+description:
+* Sync Changelog for 1.4 release
+* Add some more makefile targets in the PHONY list
+
+
 === 1.4 === 2009-06-03
 
 changeset:   1115:674f30c175d6

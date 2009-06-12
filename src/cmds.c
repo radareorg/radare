@@ -2814,6 +2814,7 @@ CMD_DECL(help)
 			}
 		} else
 		if (input[0]=='f') {
+			//double n1, n2;
 			/* TODO: Add support for doubles 'F'? */
 			char *str = input+((input[1]==' ')?2:1);
 			char buf[64];
@@ -2825,17 +2826,20 @@ CMD_DECL(help)
 				memcpy(&_f, &_u32, sizeof(float));
 				sprintf(buf, "%f", _f);
 				/* consistency check */
-				sscanf(buf, "%f", (float *)&__u32);
+				//n1 = (double)_f;
+				//sscanf(buf, "%g", (double *)&n2);
 			} else {
 				sscanf(str, "%f", &_f);
 				memcpy(&_u32, &_f, sizeof(u32));
 				sprintf(buf, "0x%x", _u32);
-				memcpy(&__u32, &_u32, 4); // ignore
+				/* consistency check */
+				//sscanf(str, "%lf", &n1);
+				//n2 = (double)_f;
 			}
+			cons_printf("%s\n", buf);
 			/* it is consistent ? */
-			if (memcmp(&_u32, &__u32, 4))
-				cons_printf("%s,\n", buf);
-			else cons_printf("%s\n", buf);
+			//if (n1 != n2) cons_printf("%s,\n", buf);
+			//else cons_printf("%s\n", buf);
 		} else
 		if (input[0]=='i') {
 			char str[128];
