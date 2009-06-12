@@ -965,7 +965,6 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	case FMT_DWORDDUMP:
 		{
 		/* TODO: control width of screen like everybody does */
-:xa
 		for(i=j=0;!config.interrupted && i<len;i+=4,j++) {
 			u32 n;
 			/* TODO: endian here */
