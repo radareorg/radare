@@ -22,11 +22,13 @@ class Radare
  end
 
  def hex2bin(str)
-   return str.to_i(16).to_s(2)
+   return [str].pack('H*')
+ #  return str.to_i(16).to_s(2)
  end
 
  def bin2hex(binstr)
-   return binstr.to_i(2).to_s(16).upcase
+   return binstr.unpack('C*').collect{|x| x.to_s 16}
+ #  return binstr.to_i(2).to_s(16).upcase
  end
 
  def slurp_hexpair(file)

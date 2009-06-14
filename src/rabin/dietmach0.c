@@ -232,6 +232,8 @@ void dm_read_thread (int i)
 		}
 		printf("f entrypoint @ 0x%08x\n", n0(state[15]));
 		printf("e asm.arch=ppc\n");
+		printf("e cfg.bigendian=true\n");
+		printf("e io.paddr=0x1000\n");
 		}
 		break;
 	case 12: // ARM

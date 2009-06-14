@@ -11,6 +11,7 @@ extern char **environ;
 /* radare flag */
 typedef struct {
 	char name[FLAG_BSIZE];
+	u32 namehash;
 	u64 offset;
 	u64 length;
 	print_fmt_t format;
@@ -63,5 +64,6 @@ void flag_space_move(const char *name);
 const char *flag_get_here_filter(u64 at, const char *str);
 const const char *flag_space_get(int idx);
 u64 flag_delta_between(u64 from, u64 to);
+flag_t *flag_get_by_addr(u64 addr);
 
 #endif

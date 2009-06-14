@@ -1463,8 +1463,7 @@ int cons_get_real_columns()
 int yesno(int def, const char *fmt, ...)
 {
 	va_list ap;
-	int key = def;
-
+	char key = (char)def;
 	if (config.visual)
 		key='y';
 	else D {
@@ -1478,9 +1477,7 @@ int yesno(int def, const char *fmt, ...)
 		cons_set_raw(0);
 		if (key=='\n'||key=='\r')
 			key = def;
-	} else
-		key = 'y';
-
+	} else key = 'y';
 	return key=='y';
 }
 #endif

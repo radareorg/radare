@@ -3,6 +3,8 @@
 
 #include "../global.h"
 
+#define USE_BTREE 0
+
 #undef __BSD__
 #undef __UNIX__
 #undef __WINDOWS__

@@ -28,8 +28,38 @@
 #include <string.h>
 #include <unistd.h>
 
+
 struct list_head flags;
 static int flag_ptr = -1;
+
+#if USE_BTREE
+#include "btree.h"
+struct btree_node *flags_off = NULL;
+struct btree_node *flags_nam = NULL;
+/* compare names */
+static int ncmp(const void *a, const void *b)
+{
+	flag_t *fa = (flag_t *)a;
+	flag_t *fb = (flag_t *)b;
+	int ret = 0;
+	/* we cannot use a simple substraction coz u64 > s32 :) */
+	if (fa->namehash > fb->namehash) ret = 1;
+	else if (fa->namehash < fb->namehash) ret = -1;
+	return ret;
+}
+
+/* compare offsets */
+static int cmp(const void *a, const void *b)
+{
+	flag_t *fa = (flag_t *)a;
+	flag_t *fb = (flag_t *)b;
+	int ret = 0;
+	/* we cannot use a simple substraction coz u64 > s32 :) */
+	if (fa->offset > fb->offset) ret = 1;
+	else if (fa->offset < fb->offset) ret = -1;
+	return ret;
+}
+#endif
 
 #define FLAG_SPACES 32
 // XXX optimize... FLAG SPACES MUST BE A LINKED LIST TOO!
@@ -43,10 +73,9 @@ int flag_space_idx2 = -1;
 
 void flag_from(const char *str)
 {
-	if (str[0]) {
+	if (str[0])
 		flag_from_i = get_math(str);
-	} else
-		cons_printf("0x%08llx\n", flag_from_i);
+	else cons_printf("0x%08llx\n", flag_from_i);
 }
 
 void flag_init()
@@ -108,17 +137,14 @@ int flag_interpolation(const char *from, const char *to)
 					}
 				}
 			}
-
-			if (tmp != 0) {
+			if (tmp != 0)
 				printf("%s (0x%08llx) -> %s (0x%08llx)   ; size = %lld\n",
 					flag->name, flag->offset, str, tmp, tmp-flag->offset);
-			}
 		}
 	}
 	return ret;
 }
 
-flag_t *flag_get_by_addr(u64 addr);
 void flag_rebase(const char *text)
 {
 	flag_t *f = flag_get_by_addr(config.seek);
@@ -127,10 +153,7 @@ void flag_rebase(const char *text)
 		if (text[0]=='-')
 			f->offset -= get_math(text+1);
 		else f->offset += get_math(text);
-//printf("REBASING to 0x%08llx\n", f->offset);
-	} //else {
-	//	eprintf("No flag found at 0x%08llx this address\n", config.seek);
-	//}
+	}
 }
 
 void flag_cmd(const char *text)
@@ -149,12 +172,21 @@ void flag_cmd(const char *text)
 flag_t *flag_get_by_addr(u64 addr)
 {
 	struct list_head *pos;
+#if USE_BTREE
+	flag_t *item;
+	flag_t tmp = { .offset = addr };
+	item = btree_get(flags_off, &tmp, cmp);
+//eprintf("GET_N (0x%08llx) = %p\n", off, i);
+	return item;
+#else
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
 		if (flag->offset == addr)
 			return flag;
 	}
 	return NULL;
+#endif
 }
 
 flag_t *flag_get_i(int id)
@@ -292,6 +324,7 @@ flag_t *flag_get_next(int delta)
 {
 	flag_t *nice = NULL;
 	struct list_head *pos;
+#warning NOT YET BTREEIZED
 
 	if (delta == 1) {
 		list_for_each(pos, &flags) {
@@ -312,9 +345,7 @@ flag_t *flag_get_next(int delta)
 				if (nice) {
 					if (flag->offset > nice->offset)
 						nice = flag;
-				} else {
-					nice = flag;
-				}
+				} else nice = flag;
 			}
 		}
 	}
@@ -419,34 +450,16 @@ void flags_setenv()
 	}
 }
 
+/* XXX DEPRECATED BY by_addr() */
 flag_t *flag_by_offset(u64 offset)
 {
-	struct list_head *pos;
-
-	list_for_each(pos, &flags) {
-		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-		if (flag->offset == offset)
-			return flag;
-		if (config.interrupted) break;
-	}
-
-	return NULL;
+	return flag_get_by_addr(offset);
 }
 
 const char *flag_name_by_offset(u64 offset)
 {
-	struct list_head *pos;
-
-	//if (offset > config.vaddr)
-	offset=offset-config.paddr+config.vaddr;
-	list_for_each(pos, &flags) {
-		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
-		if (flag->offset == offset)
-			return flag->name;
-		if (config.interrupted) break;
-	}
-
-	return nullstr;
+	flag_t *f = flag_get_by_addr(offset);
+	return f?f->name:nullstr;
 }
 
 /* 
@@ -463,19 +476,6 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 	int found = 0;
 	char buf2[256];
 
-#warning TODO: Implement delta
-#if 0
-		if ((flag->offset >= seek && flag->offset <= seek+128)) {
-		//|| (flag->offset >= seek && flag->offset <= seek+config.vaddr)) {
-			if (idx == -1) {
-				if (buf[0])
-					strcat(buf, ",");
-				strcat(buf, flag->name);
-				snprintf(buf2, 32, "+0x%llx", flag->offset-seek);
-				strcat(buf, buf2);
-			}
-		} else
-#endif
 	buf[0]='\0';
 
 	list_for_each(pos, &flags) {
@@ -484,8 +484,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 		if (flag->offset == seek || flag->offset == seek+config.vaddr) {
 			found = 1;
 			if (idx<1) {
-				if (buf[0])
-					strcat(buf, ",");
+				if (buf[0]) strcat(buf, ",");
 				strcat(buf, flag->name);
 			} else {
 				ref = flag;
@@ -493,8 +492,7 @@ int string_flag_offset(char *buf, u64 seek, int idx)
 			}
 		} else
 		if (flag->offset <= seek+config.vaddr && (!ref || flag->offset > ref->offset)) {
-			if (!found)
-				ref = flag;
+			if (!found) ref = flag;
 		}
 	}
 	if (idx==-1)
@@ -537,16 +535,12 @@ void flag_do_empty(flag_t *flag)
 {
 	if (flag == NULL)
 		return;
-
 	flag->name[0]='\0';
 }
 
 int flag_is_empty(flag_t *flag)
 {
-	if (flag == NULL || flag->name[0]=='\0')
-		return 1;
-
-	return 0;
+	return (flag == NULL || flag->name[0]=='\0')?1:0;
 }
 
 void flag_list(char *arg)
@@ -560,15 +554,9 @@ void flag_list(char *arg)
 		/* filter per flag spaces */
 		if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 			continue;
-
 		/* TODO: use grep here */
 		//if (!arg || !*arg || strstr(flag->name, arg)
 		flag_show(flag, 0);
-#if 0
-		cons_printf("%03d 0x%08llx %4lld %s",
-			i++, flag->offset, flag->length, flag->name);
-#endif
-	// TODO: use flags[i]->format over flags[i]->data and flags[i]->length
 	}
 }
 
@@ -581,6 +569,9 @@ void flag_clear_by_addr(u64 seek)
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (config.interrupted) break;
 		if (flag->offset == seek) {
+#if USE_BTREE
+#warning BTREE HERE
+#endif
 			list_del(&flag->list);
 			free(flag);
 			pos = flags.prev;
@@ -591,12 +582,10 @@ void flag_clear_by_addr(u64 seek)
 
 void flag_space_move(const char *name)
 {
-	flag_t *f;
-
 	if (name == NULL || name[0] == '\0' || name[0]=='?') {
 		eprintf("Usage: fm <flag_name>  - moves the selected flag to the current flagspace\n");
 	} else {
-		f = flag_get(name);
+		flag_t *f = flag_get(name);
 		f->space = flag_space_idx;
 	}
 }
@@ -704,7 +693,7 @@ void flag_space(const char *name)
 
 void flag_remove(const char *name)
 {
-	struct list_head *pos;
+	struct list_head *pos, *n;
 	char *str, *mask;
 	int l;
 	int found = 0;
@@ -718,10 +707,14 @@ void flag_remove(const char *name)
 	if (mask) {
 		mask[0]='\0';
 		l = strlen(str);
-		list_for_each(pos, &flags) {
+		list_for_each_safe(pos, n, &flags) {
 			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 			if (config.interrupted) break;
 			if (!memcmp(str, flag->name, l)) {
+#if USE_BTREE
+				btree_del(f->tree, item, cmp, NULL);
+				btree_del(f->ntree, item, ncmp, NULL);
+#endif
 				list_del(&(flag->list));
 				free(flag);
 				pos = flags.next;
@@ -729,15 +722,16 @@ void flag_remove(const char *name)
 			}
 		}
 	} else {
-		__restart2:
-		list_for_each(pos, &flags) {
+		list_for_each_safe(pos, n, &flags) {
 			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 			if (config.interrupted) break;
 			if (!strcmp(name, flag->name)) {
+#if USE_BTREE
+#warning btree here
+#endif
 				list_del(&(flag->list));
 				free(flag);
 				found = 1;
-				goto __restart2;
 			}
 		}
 	}
@@ -750,10 +744,8 @@ void flag_remove(const char *name)
 
 int flag_qsort_compare(const void *a, const void *b)
 {
-	if (a == NULL)
-		return -1;
-	if (b == NULL)
-		return 1;
+	if (a == NULL) return -1;
+	if (b == NULL) return 1;
 	return strcmp(b, a);
 }
 
@@ -790,6 +782,18 @@ int flag_is_valid_char(const char ch)
 }
 
 #define MAX_FLAG_LEN 20
+
+int flag_is_valid_name(const char *name)
+{
+	if (name[0]=='\0')
+		return 0;
+	for(;*name!='\0'; name = name +1) {
+		if (!flag_is_valid_char(*name))
+			return 0;
+	}
+	return 1;
+}
+
 int flag_filter_name(char *name)
 {
 	int i;
@@ -807,17 +811,6 @@ int flag_filter_name(char *name)
 		}
 	}
 	return flag_is_valid_name(oname);
-}
-
-int flag_is_valid_name(const char *name)
-{
-	if (name[0]=='\0')
-		return 0;
-	for(;*name!='\0'; name = name +1) {
-		if (!flag_is_valid_char(*name))
-			return 0;
-	}
-	return 1;
 }
 
 int flag_set(const char *name, u64 addr, int dup)
@@ -877,12 +870,17 @@ int flag_set(const char *name, u64 addr, int dup)
 	if (flag == NULL) {
 		flag = malloc(sizeof(flag_t));
 		memset(flag,'\0', sizeof(flag_t));
+#if USE_BTREE
+		btree_add(&flags_nam, flag, cmp);
+		btree_add(&flags_off, flag, ncmp);
+#endif
 		list_add_tail(&(flag->list), &flags);
 		if (flag==NULL)
 			return 1;
 	}
 
 	strncpy(flag->name, name, FLAG_BSIZE);
+	flag->namehash = strhash(flag->name);
 	flag->name[FLAG_BSIZE-1]='\0';
 	flag->offset = addr + flag_from_i;
 	flag->space = flag_space_idx;
@@ -1006,7 +1004,7 @@ void flags_visual_menu()
 	int hit;
 
 	while(1) {
-		cons_gotoxy(0,0);
+		cons_gotoxy(0, 0);
 		cons_clear();
 		/* Execute visual prompt */
 		ptr = config_get("cmd.vprompt");

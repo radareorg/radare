@@ -9,6 +9,20 @@
 TODO 1.4.2
 ==========
 * set fpregs
+* stack analysis
+  - track esp register
+  - when it changes record an item in a list
+    { old_esp, esp, size, oeip, data }
+  - repeated items are deleted (we can use a linked list here)
+    - overwrites can be notified (useful?)
+  - we can disassemble the instruction at oeip
+* resume functions
+  - show only calls
+  - show size of function
+  - show number of math ops
+  - show stackframe size
+  - number of conditionals
+  - show refs
 
 * Handle ^C in print hexdump ?huh! cannot break huge reads
   - We have to split the io_read() calls in blocks of 64k
