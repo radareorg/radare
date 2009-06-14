@@ -199,6 +199,10 @@ int debug_init_maps(int rest)
 	char  line[1024];
 	char  *pos_c;
 	int   i, unk = 0;
+#if __FreeBSD__
+	int ign;
+	char unkstr[128];
+#endif
 
 #if 0
  /* FOR SUN */

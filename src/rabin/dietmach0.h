@@ -135,7 +135,7 @@ typedef unsigned int vm_size_t;
 //typedef unsigned int boolean_t;
 typedef int cpu_type_t;
 typedef int cpu_subtype_t;
-typedef int vm_prot_t;
+typedef int mach0_vm_prot_t;
 typedef int kern_return_t;
 
 /* Constants for the cmd field of all load commands, the type */
@@ -295,8 +295,8 @@ struct segment_command { /* for 32-bit architectures */
 	u32	vmsize;		/* memory size of this segment */
 	u32	fileoff;	/* file offset of this segment */
 	u32	filesize;	/* amount to map from the file */
-	vm_prot_t	maxprot;	/* maximum VM protection */
-	vm_prot_t	initprot;	/* initial VM protection */
+	mach0_vm_prot_t	maxprot;	/* maximum VM protection */
+	mach0_vm_prot_t	initprot;	/* initial VM protection */
 	u32	nsects;		/* number of sections in segment */
 	u32	flags;		/* flags */
 };
@@ -309,8 +309,8 @@ struct segment_command_64 { /* for 64-bit architectures */
 	u64	vmsize;		/* memory size of this segment */
 	u64	fileoff;	/* file offset of this segment */
 	u64	filesize;	/* amount to map from the file */
-	vm_prot_t	maxprot;	/* maximum VM protection */
-	vm_prot_t	initprot;	/* initial VM protection */
+	mach0_vm_prot_t	maxprot;	/* maximum VM protection */
+	mach0_vm_prot_t	initprot;	/* initial VM protection */
 	u32	nsects;		/* number of sections in segment */
 	u32	flags;		/* flags */
 };
