@@ -557,13 +557,12 @@ void data_comment_del(u64 offset, const char *str)
 		    if (offset == cmt->offset) {
 			    if (str[0]=='*') {
 				    free((void *)cmt->comment);
-				    list_del(pos);
+				    list_del(&(cmt->list));
 				    free(cmt);
 				    pos = comments.next; // list_init
-				    //data_comment_del(offset, str);
 			    } else
 			    if (!strcmp(cmt->comment, str)) {
-				    list_del(&(pos));
+				    list_del(&(cmt->list));
 				    return;
 			    }
 		    }
@@ -583,7 +582,7 @@ void data_comment_add(u64 offset, const char *str)
 		return;
 
 	/* avoid dupped comments */
-	data_comment_del(offset, str);
+	data_comment_del(offset, str); // XXX segfault here with -O2
 
 	cmt = (struct comment_t *) malloc(sizeof(struct comment_t));
 	cmt->offset = offset;
