@@ -1,0 +1,2 @@
+all:
+	ruby test.rb

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -61,9 +61,6 @@ static const struct ppc_reg_offsets ppc32_linux_reg_offsets =
     /* .vrsave_offset = */ 528
   };
 #endif
-#include "../../radare.h"
-#include "../debug.h"
-#include "../libps2fd.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -74,6 +71,9 @@ static const struct ppc_reg_offsets ppc32_linux_reg_offsets =
 #include <sys/ptrace.h>
 //#include <sys/procfs.h>
 #include <sys/syscall.h>
+#include "../../radare.h"
+#include "../debug.h"
+#include "../libps2fd.h"
 #include "powerpc.h"
 
 regs_t cregs; // current registers
