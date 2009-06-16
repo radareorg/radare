@@ -151,8 +151,8 @@ class RapClient():
 			print "rmt-open: Invalid response packet 0x%02x"%c
 		return l
 
-	def read(self, len):
-		b = pack(">Bi", RAP_READ, len(buf))
+	def read(self, count):
+		b = pack(">Bi", RAP_READ, count) #len(buf))
 		self.fd.send(b+buf)
 		# response
 		buf = self.fd.recv(5)

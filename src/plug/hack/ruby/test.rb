@@ -3,7 +3,13 @@ require 'radare/remote'
 
 print "#{bin2hex("\x90\x12\x33")}\n"
 
+
+def hook_system(cmd)
+	print "==> SYSTEM HANDLED\n"
+	0
+end
 rs = RapServer.new()
+#rs.handle_system = hook_system
 rs.listen_tcp(9999)
 
 

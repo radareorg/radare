@@ -9,6 +9,7 @@ RAP_SYSTEM = 6
 RAP_CMD = 7
 RAP_REPLY = 0x80
 
+# TODO: Allow to hook those functions
 class RapServer
 	def initialize()
 		# TODO
@@ -18,6 +19,11 @@ class RapServer
 		print "FILE #{file}\n"
 		print "FLAGS #{flags}\n"
 		return 0 
+	end
+
+	def handle_system(cmd)
+		print "SYSTEM #{cmd}\n"
+		return ""
 	end
 
 	def handle_read(length)
@@ -49,24 +55,24 @@ class RapServer
 		when RAP_READ
 			length = c.read(4).unpack("N")[0]
 			ret = handle_read(length)
-			buf = [RAP_READ|RAP_REPLY, ret.length].pack("CN")
+			buf = [RAP_READ|RAP_REPLY, ret.length].pack("CN").concat(ret)
 			c.write(buf)
-			c.write(ret)
 		when RAP_SEEK
 			type = c.read(1)[0].to_i
 			offset = c.read(8).unpack("Q")[0]
 			seek = handle_seek(offset, type)
 			# seek = seek.to_s.reverse.to_i
 			# TODO: swap seek value (64 bit big endian!)
-			buf = [RAP_SEEK|RAP_REPLY, seek].pack("CQ")
+			sbuf = [seek].pack("Q").reverse
+			#print "SBUF #{sbuf} (#{seek})\n"
+			buf = [RAP_SEEK|RAP_REPLY].pack("C").concat(sbuf)
 			c.write(buf)
 		when RAP_SYSTEM
 			length = c.read(4).unpack("N").to_i
 			buf = c.read(length)
 			str = handle_system(buf)
-			buf = [RAP_SEEK|RAP_REPLY, seek].pack("CQ")
+			buf = [RAP_SEEK|RAP_REPLY, seek].pack("CQ").concat(str)
 			c.write(buf)
-			c.write(str)
 		when RAP_CLOSE
 			fd = c.read(4).unpack("N")
 			handle_close(fd);
@@ -93,13 +99,29 @@ class RapClient
 	def initialize()
 		# TODO
 	end
+
 	def open(file, flags)
 		print "Opening #{file}\n"
 		fd = -1
 		fd
 	end
+
 	def connect_tcp(host, port)
 		print "==> Connecting to #{host}\n"
+		@fd = TCPClient.new(host, port)
+	end
+
+	def disconnect()
+		@fd.close
+	end
+
+	def read(len)
+		@fd.write [RAP_READ|len].pack("CN")
+		# response
+		@fd.read(1) # must be RAP_READ|RAP_REPLY
+		len = @fd.read(4).unpack("N")
+		buf = @fd.read(len[0].to_i)
+		return buf
 	end
 	
 	def close(fd)
