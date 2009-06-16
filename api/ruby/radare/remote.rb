@@ -82,8 +82,8 @@ class RapServer
 	end
 
 	def handle_client(client)
-		while true
-			handle_packet(client, client.read(1))
+		while ((cmd=client.read(1)) != nil)
+			handle_packet(client, cmd)
 		end
 	end
 
@@ -96,19 +96,27 @@ class RapServer
 end
 
 class RapClient
+	fd = -1 # huh?
+
 	def initialize()
 		# TODO
 	end
 
 	def open(file, flags)
 		print "Opening #{file}\n"
-		fd = -1
-		fd
+		buf = [RAP_OPEN, flags, file.length].pack("CCC")
+		buf.concat(file)
+		@fd.write(buf)
+		# parse reply
+		buf = @fd.read(1)
+		fh = @fd.read(4).unpack("N")[0]
+		print "FH=#{fh}\n"
+		fh
 	end
 
 	def connect_tcp(host, port)
-		print "==> Connecting to #{host}\n"
-		@fd = TCPClient.new(host, port)
+		print "==> Connecting to #{host}:#{port}\n"
+		@fd = TCPSocket.new(host, port)
 	end
 
 	def disconnect()
@@ -121,22 +129,40 @@ class RapClient
 		buf.concat(sbuf)
 		@fd.write(buf)
 		# read reply
-		#self.fd.read()
+		buf = @fd.read(1)
+		ret = @fd.read(8).reverse.unpack("Q")[0]
+		print "lseek #{ret}\n"
+		ret
 	end
 
-	def write(buf)
+	def write(buffer)
+		# TODO
+		buf = [RAP_WRITE,buffer.length].pack("CN")
+		buf.concat(buffer)
+		@fd.write(buf)
+		# read reply
+		@fd.read(1) # must be RAP_WRITE|RAP_REPLY
+		ret = @fd.read(4).unpack("N")[0]
+		ret
 	end
 
 	def read(len)
-		@fd.write [RAP_READ|len].pack("CN")
+		buf = [RAP_READ,len].pack("CN")
+		#print @fd.methods.join("\n")
+		@fd.write(buf)
 		# read reply
 		@fd.read(1) # must be RAP_READ|RAP_REPLY
-		len = @fd.read(4).unpack("N")
+		len = @fd.read(4).unpack("N")[0]
 		buf = @fd.read(len[0].to_i)
 		return buf
 	end
 	
-	def close(fd)
+	def close(fh)
 		print "==> Close\n"
+		buf = [RAP_CLOSE, fh].pack("CN")
+		@fd.write(buf)
+		buf = @fd.read(1)
+		ret = @fd.read(4).unpack("N")[0]
+		ret
 	end
 end

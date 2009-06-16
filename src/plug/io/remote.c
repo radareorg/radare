@@ -168,7 +168,7 @@ int remote_handle_client( int fd ){
 				} else {
 					cmd = malloc(i);
 					read(c, cmd, i);
-					cmd[i-1] = '\0';
+					cmd[i] = '\0';
 					printf("len: %d cmd: '%s'\n",
 						i, cmd); fflush(stdout);
 					cmd_output = radare_cmd_str(cmd);

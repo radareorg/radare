@@ -6,7 +6,7 @@ Example radare python script
 
 import string
 
-from radare import *
+from radare.api import *
 
 seek(0x8048000)
 

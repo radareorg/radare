@@ -38,20 +38,25 @@ scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
 
 python.${SO}:
-	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python.${SO} 2>/dev/null
+#ifeq ($(HAVE_LIB_PYTHON25),1)
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python.${SO}
+#endif
 
 python26.${SO}:
-	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY26_LIBS} -o python26.${SO} 2>/dev/null
+#ifeq ($(HAVE_LIB_PYTHON26),1)
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY26_LIBS} -o python26.${SO}
+#endif
 
 perl.${SO}:
-	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO} 2>/dev/null
+	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO}
 
 ruby.${SO}:
-	-ruby mkruby.rb 2>/dev/null
+	-ruby mkruby.rb
 	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO} 
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}:
+	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LIBS} -o lua.so
 	@true
 ifeq ($(HAVE_LANG_LUA),1)
 ifneq ($(LUA_LIBS),)

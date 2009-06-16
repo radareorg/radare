@@ -105,8 +105,11 @@ class RapServer():
 		while True:
 			try:
 				buf = c.recv(1)
-				if buf == "":
-					self._handle_eof(c)
+				if buf == "" and self.handle_eof is not None:
+					self.handle_eof(c)
+					break
+				if len(buf) == 0:
+					print "Connection closed\n"
 					break
 				self._handle_packet(c, ord(buf))
 			except KeyboardInterrupt:
@@ -209,8 +212,8 @@ class RapClient():
 		# read response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
-		if c != RAP_CMD | RAP_REPLY:
-			print "rmt-cmd: Invalid response packet"
+		if c != RAP_SYSTEM | RAP_REPLY:
+			print "rmt-system: Invalid response packet"
 			return ""
 		buf = self.fd.recv(l)
 		return buf
