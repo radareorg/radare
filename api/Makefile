@@ -5,8 +5,8 @@ all:
 
 install:
 	# ruby
-	-mkdir -p ${LIBDIR}/ruby1.8
-	-cp -rf ruby/radare ${LIBDIR}/ruby1.8
+	-mkdir -p ${LIBDIR}/ruby/1.8
+	-cp -rf ruby/radare ${LIBDIR}/ruby/1.8
 	# python
 	-mkdir -p ${LIBDIR}/python2.5/site-packages
 	-mkdir -p ${LIBDIR}/python2.6/site-packages

@@ -111,11 +111,11 @@ class Radare
  end 
 
  def seek_undo()
-	r.cmd("undo")
+	$r.cmd("undo")
  end
 
  def seek_redo()
-	r.cmd("uu")
+	$r.cmd("uu")
  end
 
 =begin
@@ -134,15 +134,15 @@ XXX
 =end
 
  def seek_history_reset()
-	r.cmd("u!")
+	$r.cmd("u!")
  end
 
  def write_undo(num)
-	return r.cmd("uw %d"%num)
+	return $r.cmd("uw %d"%num)
  end
 
  def write_redo(num)
-	return r.cmd("uw -%d"%num)
+	return $r.cmd("uw -%d"%num)
  end
 
 =begin

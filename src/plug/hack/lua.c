@@ -25,7 +25,6 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include "../../main.h"
-#include "../../dbg/debug.h"
 
 /* extern */
 extern int radare_plugin_type;

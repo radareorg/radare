@@ -1240,7 +1240,9 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		cons_newline();
 		break;
 	case FMT_ASC0:
-		cons_printf("%s\n", buf);
+		for(i=0;buf[i]&&i<len;i++)
+			cons_printf("%c", buf[i]);
+		cons_newline();
 		break;
 	case FMT_ASC:
 		for(i=0;!config.interrupted && i<len;i++)
