@@ -78,7 +78,7 @@ int arch_ppc_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 8: // bne i tal
 		// OK
 		aop->type = AOP_TYPE_CJMP;
-		aop->jump = (aa)?(baddr):(addr+baddr);
+		aop->jump = (aa)?(baddr):(addr+baddr+4);
 		aop->fail = addr+4;
 		aop->eob = 1;
 		break;
