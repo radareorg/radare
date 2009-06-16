@@ -1,2 +1,2 @@
-(shell,?<Offset to read,pd 20 @ $$?, .(shell))
+(shell,?i Offset to read,pd 20 @ $$?, .(shell))
 
