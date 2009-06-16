@@ -568,6 +568,36 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 						return;
 					}
 					*end='\0';
+					if (arg[1]=='*') {
+						/* follow pointer */
+						arg = arg+1;
+#warning TODO: implement following pointers in pm [*foo]
+			/* SPAGUETTI */
+			switch (ptrsize) {
+			case 1:
+				addr =  (u64)(*(buf+i));
+				break;
+			case 2:
+				if (endian) addr =  (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
+				else addr =  (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+				break;
+			case 4:
+				if (endian) addr =  (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
+							(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
+				else addr =  (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+				break;
+			case 8:
+				if (endian) addr =  (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
+							(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
+							(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
+							(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
+				else addr =  (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
+							(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
+							(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+			}
+					}
 					fmt = print_mem_get(arg+1);
 					if (fmt) {
 #if 0 

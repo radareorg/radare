@@ -1,0 +1,1 @@
+* Refactor server API like in ruby (to be used by extending a RapServer class)

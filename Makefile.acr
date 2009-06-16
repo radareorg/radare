@@ -111,19 +111,10 @@ install:
 	# install plugins
 	mkdir -p ${LIBDIR}/radare
 	cd src/plug/hack/ && ${MAKE} install
-	#-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
+	# TODO remove?
 	-mkdir ${LIBDIR}/radare
-	-cp -rf src/plug/hack/radare.lua ${LIBDIR}/radare
-	-mkdir -p ${LIBDIR}/python2.5/site-packages
-	-mkdir -p ${LIBDIR}/python2.6/site-packages
-	-mkdir -p ${LIBDIR}/ruby1.8
-	-cp -rf scripts/radapy.py ${LIBDIR}/python2.5/site-packages
-	-cp -rf scripts/radapy.py ${LIBDIR}/python2.6/site-packages
-	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.5/site-packages
-	-cp -rf src/plug/hack/radare.py ${LIBDIR}/python2.6/site-packages
-	-cp -rf src/plug/hack/analysis/ranal.py ${LIBDIR}/python2.5/site-packages
-	-cp -rf src/plug/hack/analysis/ranal.py ${LIBDIR}/python2.6/site-packages
-	-cp -rf src/plug/hack/radare.rb ${LIBDIR}/ruby1.8/
+	cd api && ${MAKE} install
+	#-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
 #	${INSTALL_LIB} src/dbg/libps2fd.so ${LIBDIR}
@@ -183,6 +174,7 @@ uninstall deinstall:
 	-rm -f ${LIBDIR}/libusbsniff.so
 	-rm -f ${LIBDIR}/libfdsniff.so
 	-rm -f ${LIBDIR}/python2.5/radare.py
+	# TODO: remove ruby/lua/perl bindigns here
 	-rm -f ${DESTDIR}/${SHAREDIR}/radare
 	-rm -rf ${LIBDIR}/radare
 	-rm -rf ${SHAREDIR}/radare

@@ -445,7 +445,7 @@ CMD_DECL(analyze)
 		} break;
 	case 'm':
 		input = input+1;
-		while(input[0]==' ')input=input+1;
+		while(input[0]==' ') input=input+1;
 		if (strchr(input,'-')) {
 			print_mem_del(input+1);
 		} else
@@ -454,7 +454,8 @@ CMD_DECL(analyze)
 			" am          ; list all memory formats registered\n"
 			" am foo xxd  ; add a named memory format\n"
 			" am -foo     ; delete named memory foo\n"
-			" pm x[foo]x  ; use the 'foo' named memory format from 'pm'\n");
+			" pm x[foo]x  ; use the 'foo' named memory format from 'pm'\n"
+			" pm x[*foo]x ; use the 'foo' (follow pointer) named memory format from 'pm'\n");
 		} else
 		if (input[0]=='\0') {
 			print_mem_list();
@@ -465,11 +466,9 @@ CMD_DECL(analyze)
 				print_mem_add(input, s+1);
 			} else {
 				const char *fmt = print_mem_get(input);
-				if (fmt) {
-					print_mem(config.seek, config.block, config.block_size, fmt, config.endian);
-				} else {
-					print_mem_add(NULL, NULL);
-				}
+				if (fmt)
+				print_mem(config.seek, config.block,
+					config.block_size, fmt, config.endian);
 			}
 		}
 		break;

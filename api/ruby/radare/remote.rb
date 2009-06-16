@@ -9,8 +9,8 @@ RAP_SYSTEM = 6
 RAP_CMD = 7
 RAP_REPLY = 0x80
 
-# TODO: Allow to hook those functions
 class RapServer
+	# constructor
 	def initialize()
 		# TODO
 	end
@@ -115,9 +115,21 @@ class RapClient
 		@fd.close
 	end
 
+	def lseek(addr, type)
+		buf = [RAP_SEEK, type].pack("CC")
+		sbuf = [addr].pack("Q").reverse # big endian u64
+		buf.concat(sbuf)
+		@fd.write(buf)
+		# read reply
+		#self.fd.read()
+	end
+
+	def write(buf)
+	end
+
 	def read(len)
 		@fd.write [RAP_READ|len].pack("CN")
-		# response
+		# read reply
 		@fd.read(1) # must be RAP_READ|RAP_REPLY
 		len = @fd.read(4).unpack("N")
 		buf = @fd.read(len[0].to_i)

@@ -1,12 +1,12 @@
 try:
 	import r
 except:
-	import radapy
+	import radare.remote
 	print "Food"
-import radare
+import radare.api
 import sys
 sys.path.append('.')
-from ranal import *
+from radare.analysis import *
 
 print "---------------------------------"
 
@@ -58,4 +58,4 @@ for s in ss.list:
 	print "0x%08x: size=%d %s"%(s.addr, s.size, s.name)
 
 print "---------------------------------"
-radare.quit(0)
+radare.api.quit(0)

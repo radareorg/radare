@@ -1,0 +1,34 @@
+ +--------------+
+ | API BINDINGS |
+ +--------------+                                   --pancake
+
+This directory contains subdirectories with the required APIs
+implementing interfaces on top of radare for accessing remote
+radares or implementing radare servers (rap://).
+
+There is also a standard API interface providing simpler APIs
+for managing the debugger, code analysis, and other.
+
+The idea is to keep all this code as similar as possible to
+be able to reconstruct bindings automatically without having
+to implement all them all the time.
+
+Current supported bindings are:
+
+  python
+    - radare/api
+    - radare/remote
+    - radare/analysis
+
+  ruby
+    - radare/api
+    - radare/remote
+    - radare/analysis (TODO)
+
+  perl
+    - radare/api
+    - radare/remote (TODO)
+    - radare/analysis (TODO)
+
+The root directory of every language contain example programs
+testing the APIs.
