@@ -972,8 +972,8 @@ void visual_draw_screen()
 	cons_printf("[ 0x%llx (bs=%d mark=0x%llx) %s %s] %s            \n",
 		(config.seek+config.vaddr),
 		(unsigned int)config.block_size,
-		mark, get_print_format_name(last_print_format),
-		(inv)?"inv ":"", buf);
+		mark, strget(get_print_format_name(last_print_format)),
+		strget(inv), strget(buf));
 	/* Spaguetti monster lives here ! */
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {
