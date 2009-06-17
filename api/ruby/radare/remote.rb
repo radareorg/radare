@@ -26,6 +26,11 @@ class RapServer
 		return ""
 	end
 
+	def handle_cmd(cmd)
+		print "CMD #{cmd}\n"
+		return ""
+	end
+
 	def handle_read(length)
 		print "READ #{length}\n"
 		return "patata"
@@ -80,13 +85,19 @@ class RapServer
 			buf = [RAP_SEEK|RAP_REPLY].pack("C").concat(sbuf)
 			c.write(buf)
 		when RAP_SYSTEM
-			length = c.read(4).unpack("N").to_i
+			length = c.read(4).unpack("N")[0].to_i
 			buf = c.read(length)
 			str = handle_system(buf)
-			buf = [RAP_SEEK|RAP_REPLY, seek].pack("CQ").concat(str)
+			buf = [RAP_SYSTEM|RAP_REPLY, str.length].pack("CN").concat(str)
+			c.write(buf)
+		when RAP_CMD
+			length = c.read(4).unpack("N")[0].to_i
+			buf = c.read(length)
+			str = handle_cmd(buf)
+			buf = [RAP_CMD|RAP_REPLY, str.length].pack("CN").concat(str)
 			c.write(buf)
 		when RAP_CLOSE
-			fd = c.read(4).unpack("N")
+			fd = c.read(4).unpack("N")[0].to_i
 			handle_close(fd);
 			buf = [RAP_SEEK|RAP_REPLY, 0].pack("CC")
 			c.write(buf)
