@@ -1984,12 +1984,11 @@ int radare_go()
 		config.limit = -1;
 	}
 
-	config.realfile = r_file_exist(config.file);
-
 	/* open file */
 	bsize = config.block_size;
 	if (radare_open(0))
 		return 1;
+	config.realfile = r_file_exist(config.file);
 	if (bsize)
 		radare_set_block_size_i(bsize);
 

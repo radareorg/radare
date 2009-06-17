@@ -14,7 +14,7 @@ if [ ! "`echo ${ADDR}| grep 0x`" ]; then
 fi
 
 FL=`rsc dwarf-at $FILE ${ADDR}`
-if [ -z "`echo $FL| grep ??`" ]; then
+if [ -z "`echo $FL| grep '??'`" ]; then
 #	[ -n "`echo $FL` | grep Binary" ] && exit
 	FILE=`echo $FL|cut -d : -f 1`
 	LINE=`echo $FL|cut -d : -f 2`
