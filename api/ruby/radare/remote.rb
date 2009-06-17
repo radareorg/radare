@@ -31,7 +31,7 @@ class RapServer
 		return "patata"
 	end
 
-	def handle_seek(offset, type)
+	def handle_lseek(offset, type)
 		case type
 		when 0
 			return offset
@@ -56,9 +56,10 @@ class RapServer
 			length = c.read(4).unpack("N")[0]
 			ret = handle_read(length)
 			buf = [RAP_READ|RAP_REPLY, ret.length].pack("CN").concat(ret)
+			buf.slice(0, length)
 			c.write(buf)
 		when RAP_SEEK
-			type = c.read(1)[0].to_i
+			type = c.read(1).unpack("C")[0].to_i
 			offset = c.read(8).unpack("Q")[0]
 			seek = handle_seek(offset, type)
 			# seek = seek.to_s.reverse.to_i
@@ -124,6 +125,7 @@ class RapClient
 	end
 
 	def lseek(addr, type)
+		print "lseek #{addr}\n"
 		buf = [RAP_SEEK, type].pack("CC")
 		sbuf = [addr].pack("Q").reverse # big endian u64
 		buf.concat(sbuf)
@@ -137,12 +139,13 @@ class RapClient
 
 	def write(buffer)
 		# TODO
-		buf = [RAP_WRITE,buffer.length].pack("CN")
-		buf.concat(buffer)
+		print "WRITE #{buffer.length}\n"
+		buf = [RAP_WRITE,buffer.length].pack("CN").concat(buffer)
 		@fd.write(buf)
 		# read reply
 		@fd.read(1) # must be RAP_WRITE|RAP_REPLY
 		ret = @fd.read(4).unpack("N")[0]
+		print "WRITE RET IS %d\n"%ret
 		ret
 	end
 

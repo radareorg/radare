@@ -9,18 +9,19 @@
 TODO 1.4.2
 ==========
 
-*) finish ruby and sync with python apis
+* Handle ^C in print hexdump ?huh! cannot break huge reads
+  - We have to split the io_read() calls in blocks of 64k
+  - This way the kernel will be locking less and ^C is possible
 *) function resume
 *) stack anal
 *) follow esp
-*) r.db with delete and update
-*) refactoring r_bin_pe r_bin_elf: remove dupped code
+*) r2's r.db with delete and update (merge here plz)
+*) refactoring r_bin_pe r_bin_elf: remove dupped code (r2)
  realmente tengo ganas de ver como rinde r1 con r.db para flags y demas
 *) add r_bin_msul
 * fix build of plugins when --without-debugger ??? WTF ???
 * do the remote API has something to do with FDs? (only open+close?)
 * Move python, ruby, perl APIs to a single place
-* pm x[*foo]x  <- follow pointer and interpret nested structure with this
 * set fpregs
 * stack analysis
   - track esp register
@@ -37,9 +38,6 @@ TODO 1.4.2
   - number of conditionals
   - show refs
 
-* Handle ^C in print hexdump ?huh! cannot break huge reads
-  - We have to split the io_read() calls in blocks of 64k
-  - This way the kernel will be locking less and ^C is possible
 * set fpregs, mmregs and xmmregs
 * FULLY implement radiff -f and -t
 * Dworddump print format??? (like gdb one) (pw) (print 32bit words)

@@ -366,21 +366,7 @@ void print_mem_help()
 
 struct list_head print_mems;
 
-void print_mem_add(char *name, char *fmt)
-{
-	print_mem_t *pm = MALLOC_STRUCT(print_mem_t);
-	while(name[0]==' ')name=name+1;
-	while(fmt[0]==' ')fmt=fmt+1;
-	if (!*name || !*fmt) {
-		eprintf("Usage: am foo xxd\n");
-		return;
-	}
-	pm->name = strdup(name);
-	pm->fmt = strdup(fmt);
-	list_add_tail(&(pm->list), &(print_mems));
-}
-
-void print_mem_del(char *name)
+int print_mem_del(char *name)
 {
 	struct list_head *pos;
 	list_for_each_prev(pos, &print_mems) {
@@ -390,9 +376,26 @@ void print_mem_del(char *name)
 			free(im->fmt);
 			list_del(&(im->list));
 			free(im);
-			return;
+			return 1;
 		}
 	}
+	return 0;
+}
+
+void print_mem_add(char *name, char *fmt)
+{
+	print_mem_t *pm = MALLOC_STRUCT(print_mem_t);
+	while(name[0]==' ')name=name+1;
+	while(fmt[0]==' ')fmt=fmt+1;
+	if (print_mem_del(name)) /* overwrite */
+		eprintf("am format '%s' redefined.\n", name);
+	if (!*name || !*fmt) {
+		eprintf("Usage: am foo xxd\n");
+		return;
+	}
+	pm->name = strdup(name);
+	pm->fmt = strdup(fmt);
+	list_add_tail(&(pm->list), &(print_mems));
 }
 
 void print_mem_list(char *name, char *fmt)
@@ -421,11 +424,13 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
 	int i,j,idx;
+	char *obuf = buf;
 	int times, otimes;
 	char tmp, last;
 	char *args, *bracket;
 	int nargs;
 	u64 paddr = 0LL;
+	u64 oaddr = 0LL;
 	const char *arg = fmt;
 	char hexfmt[32];
 	int ptrsize = (int)(config_get_i("asm.bits")/8);
@@ -568,39 +573,47 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 						return;
 					}
 					*end='\0';
+					oaddr = addr;
 					if (arg[1]=='*') {
 						/* follow pointer */
 						arg = arg+1;
-#warning TODO: implement following pointers in pm [*foo]
-			/* SPAGUETTI */
-			switch (ptrsize) {
-			case 1:
-				addr =  (u64)(*(buf+i));
-				break;
-			case 2:
-				if (endian) addr =  (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
-				else addr =  (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
-				break;
-			case 4:
-				if (endian) addr =  (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
-							(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
-				else addr =  (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
-				break;
-			case 8:
-				if (endian) addr =  (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
-							(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
-							(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
-							(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
-				else addr =  (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
-							(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
-							(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
-			}
+						/* SPAGUETTI */
+						switch (ptrsize) {
+						case 1:
+							addr =  (u64)(*(buf+i));
+							break;
+						case 2:
+							if (endian) addr = (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
+							else addr = (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+							break;
+						case 4:
+							if (endian) addr = (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
+								(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
+							else addr = (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+								(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+							break;
+						case 8:
+							if (endian) addr = (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
+								(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
+									(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
+									(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
+							else addr = (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
+								(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
+									(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
+									(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+						}
+
+
+						//if (oaddr != addr) {
+addr-=i;
+							buf = malloc(config.block_size);
+							radare_read_at((u64)addr, buf, config.block_size+i);
+radare_seek(addr, SEEK_SET);
+						//}
 					}
 					fmt = print_mem_get(arg+1);
 					if (fmt) {
-#if 0 
+#if 0
 						D cons_printf("0x%08llx = ", config.seek+i);
 						paddr = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
 						cons_printf("0x%08llx -> pm %s {\n", addr, fmt);
@@ -615,6 +628,12 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 					arg = end;
 					idx--;
 					i+=ptrsize;
+					}
+				if (oaddr != addr) {
+					free(buf);
+addr = oaddr;
+radare_seek(oaddr, SEEK_SET);
+					buf = obuf;
 				}
 				continue;
 			}

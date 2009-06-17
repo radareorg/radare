@@ -299,8 +299,10 @@ int remote_open(const char *pathname, int flags, mode_t mode)
 		remote_fd = socket_connect((char*)buf+10, atoi(port+1));
 		if (remote_fd>=0)
 			printf("Connected to: %s at port %d\n", buf+10, atoi(port+1));
-		else
+		else {
 			printf("Cannot coonect to '%s' (%d)\n", buf, atoi(port+1));
+			return -1;
+		}
 		// send
 		buf[0] = RMT_OPEN;
 		buf[1] = flags;
