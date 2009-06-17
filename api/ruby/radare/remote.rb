@@ -31,6 +31,11 @@ class RapServer
 		return "patata"
 	end
 
+	def handle_write(buffer)
+		print "WRITE #{buffer.length}\n"
+		return "patata"
+	end
+
 	def handle_lseek(offset, type)
 		case type
 		when 0
@@ -46,10 +51,10 @@ class RapServer
 	def handle_packet(c, packet)
 		case packet[0]
 		when RAP_OPEN
-			flags = c.read(1)
-			length = c.read(1)
-			file = c.read(length[0].to_i)
-			ret = handle_open(file, flags[0].to_i)
+			flags = c.read(1)[0].to_i
+			length = c.read(1)[0].to_i
+			file = c.read(length)
+			ret = handle_open(file, flags)
 			buf = [RAP_OPEN|RAP_REPLY, ret].pack("CN")
 			c.write(buf)
 		when RAP_READ
@@ -58,10 +63,16 @@ class RapServer
 			buf = [RAP_READ|RAP_REPLY, ret.length].pack("CN").concat(ret)
 			buf.slice(0, length)
 			c.write(buf)
+		when RAP_WRITE
+			length = c.read(4).unpack("N")[0].to_i
+			buf = c.read(length)
+			ret = handle_write(buf)
+			buf = [RAP_WRITE|RAP_REPLY, ret].pack("CN")
+			c.write(buf)
 		when RAP_SEEK
 			type = c.read(1).unpack("C")[0].to_i
 			offset = c.read(8).unpack("Q")[0]
-			seek = handle_seek(offset, type)
+			seek = handle_lseek(offset, type)
 			# seek = seek.to_s.reverse.to_i
 			# TODO: swap seek value (64 bit big endian!)
 			sbuf = [seek].pack("Q").reverse

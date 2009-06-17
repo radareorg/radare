@@ -19,9 +19,7 @@ TODO 1.4.2
 *) refactoring r_bin_pe r_bin_elf: remove dupped code (r2)
  realmente tengo ganas de ver como rinde r1 con r.db para flags y demas
 *) add r_bin_msul
-* fix build of plugins when --without-debugger ??? WTF ???
 * do the remote API has something to do with FDs? (only open+close?)
-* Move python, ruby, perl APIs to a single place
 * set fpregs
 * stack analysis
   - track esp register

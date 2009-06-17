@@ -215,7 +215,7 @@ int print_shellcode()
 		break;
 	case 1: // hexpairs
 		for(i=0;i<SCSIZE;i++)
-			printf("%02x ", output[i]);
+			printf("%02x", output[i]);
 		printf("\n");
 		break;
 	case 2: // C
