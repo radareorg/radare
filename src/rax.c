@@ -178,16 +178,13 @@ void rax(char *arg)
 	} else
 	/* bin -> hex */
 	if (arg[strlen(arg)-1]=='b') {
-		int b = 0;
-		a = 0;
-		for (;arg[0] != 'b'; arg = arg + 1, a++) {
-			if (arg[0]=='1') b|=1<<a; else
-			if (arg[0]=='0') continue; else {
-				fprintf(stderr, "Invalid binary character: %c\n", arg[0]);
-				exit(1);
+		int i,j;
+		unsigned long long b = 0;
+			for(j=0,i=strlen(arg)-2;i>=0;i--,j++) {
+				if (arg[i]=='1') b|=1<<j; else
+				if (arg[i]!='0') break;
 			}
-		}
-		printf("0x%x\n", b);
+		printf("0x%llx\n", b);
 	} else
 	if (arg[strlen(arg)-1]=='f') {
 		unsigned char *p = (unsigned char *)&f;

@@ -9,18 +9,25 @@
 TODO 1.4.2
 ==========
 
+---- bugs
+* disasm is incorrect. always returns the negative value :OO
+  - 03 e4 f0 = and esp, 0xf0
+  but must be= and esp, 0xfffffff0
+* RASM is buggy about relative/absolute offsets
+---- bugs
+
+* Allow to edit flags in Vt
+* grep multiple strings: (only for r2 or backport?)
+  pdf ~call,ebp
 * Handle ^C in print hexdump ?huh! cannot break huge reads
   - We have to split the io_read() calls in blocks of 64k
   - This way the kernel will be locking less and ^C is possible
-*) function resume
-*) stack anal
-*) follow esp
 *) r2's r.db with delete and update (merge here plz)
 *) refactoring r_bin_pe r_bin_elf: remove dupped code (r2)
- realmente tengo ganas de ver como rinde r1 con r.db para flags y demas
-*) add r_bin_msul
+*) add r_bin_msil
 * do the remote API has something to do with FDs? (only open+close?)
-* set fpregs
+* set fpregs (yep, ineedit for process store/restore)
+
 * stack analysis
   - track esp register
   - when it changes record an item in a list
@@ -28,6 +35,16 @@ TODO 1.4.2
   - repeated items are deleted (we can use a linked list here)
     - overwrites can be notified (useful?)
   - we can disassemble the instruction at oeip
+  - store all the stack analysis info in a struct per-function
+    and before removing it store a comment or metadata at the
+    begginging of it.
+  - analize previous pushes or stack accesses before a call
+    to a function (identify function arguments)
+  - not only by the ones accessed in the code)
+  - as IRA module
+  - show pm xxxxxxxx @ esp (show esp-ebp bytes here or so)
+
+
 * resume functions
   - show only calls
   - show size of function
@@ -37,25 +54,44 @@ TODO 1.4.2
   - show refs
 
 * set fpregs, mmregs and xmmregs
-* FULLY implement radiff -f and -t
-* Dworddump print format??? (like gdb one) (pw) (print 32bit words)
+* FULLY implement radiff -f and -t (doesnt takes sense on non-b modes)
 
-TODO 1.5
-========
-* grep multiple strings: (only for r2 or backport?)
-  pdf ~call,ebp
-* greplace... ~ is grep, but ~~ is greplace! \o/
-  pd~~eax/EAX,ebx/EBX  # example syntax
+CALLING CONVENTIONS
+===================
+1) for functions (depends on compiler and arch)
+2) for syscalls (depends on kernel and arch)
+  f.ex: syscall 0,1,2,3,4 args using eax,ebx,ecx,edx on x86-32
+   - generic actions to be done:
+     - set indexed registers
+     - write in memory (restore used memory after usage)
+   - get result of function (return value is in eax most)
+  ---- refactoring
+  * syscall-flag using userdefined table (in file)
+   - must use asm.os to get proper syscall table
+   - must be implemented in code analysis!!
+  * Add !int opcode to call a syscall
+    f.ex: !int eax=30 ebx=0x8048400
+   - store/restore regs
+   - shows return value in eax before restoring regs
+  * call <flag> arg arg arg
+   - done with lua/python
+
+OPTIMIZATIONS
+=============
 * Optimizations everywhere!11cos(0)
   - config.c, data.c, flags.c
   - Implement btree for flags and so on
-  OPTIMIZATIONS
-  =============
   * do not dump on tmp files (use popen or so)
   * flag_get (23%)
   * Optimize string_flag_offset (24%)
     - abuses strstr
   * config_node_get (1%)
+
+
+TODO 1.5
+========
+* greplace... ~ is grep, but ~~ is greplace! \o/
+  pd~~eax/EAX,ebx/EBX  # example syntax
 * LSDJ-like interface
   Visual mode [x]dkdl  -> Q allows to hjkl on those modes
             +---+              <- enable cmd.vprompt*
@@ -69,6 +105,7 @@ TODO 1.5
   - rarun
   - listen at a port waiting for commands
   - can be used to remotely upload files
+* show labels of all jumps/calls (not only bookmarked ones)
 * Invert doesnt works for disassembly!!!
   - manually done disassembly instruction by instruction!
   - negative block size is used to invert (deprecate invert?)
@@ -79,11 +116,10 @@ TODO 1.5
 * drop sdk dependency for osx-arm
 ---
 * set flags to jumps to the middle of instructions while analyzing code (.af*)
-* There are problems when using '>' from python (cons issue)
 * Better 'cD' command (use gnu diff method, but take as size the smaller file)
 * Better integration with -P (projects) (do not analyze twice...)
 
-* rax should support float/double/base64/7bit/LSBstego/...
+* rax should support different sizes double/base64/7bit/LSBstego/...
 * cfg.vbar = p%
 * remove the ':' command -> use it to drop colors instead of verbose?
 
@@ -118,7 +154,6 @@ RWX,RWX,RWX
 * Added at% like ar%
 * fer q libr.syscall suporti lectura dsd fitxers
 
-
 ===========================================================
 
 * !contsc should allow return value not error
@@ -135,21 +170,6 @@ RWX,RWX,RWX
 * .rfile.$FOO and .radare.tmp.$FOO are not removed!!
 * support string print mode for [len][str] formats
 * organize Functions (RDBs) in visual mode ala 't' or 'e'
-
----- refactoring
-* syscall-flag using userdefined table (in file)
-   - must use asm.os to get proper syscall table
-   - must be implemented in code analysis!!
-* Add !int opcode to call a syscall
-  !int eax=30 ebx=0x8048400
-  - store/restore regs
-  - shows return value in eax before restoring regs
-
----- bugs
-* disasm is incorrect. always returns the negative value :OO
-  - 03 e4 f0 = and esp, 0xf0
-  but must be= and esp, 0xfffffff0
-* RASM is buggy about relative/absolute offsets
 
 ---- debugger
 * !dall should pseudo-initialize the !maps internal structures
@@ -184,7 +204,7 @@ java bug:
 
 ===========
 
->1.0 STUFF
+>1.5 STUFF
 
 * Allow to run shellcodes on debugged process.
   (autodetect .s or raw binary)
@@ -202,9 +222,6 @@ java bug:
 * support to remove fixed nodes
   - show comments in a separated toggleable box:
 
-* call <flag> arg arg arg
- - done with lua/python
-
 * Signal handling should idenitfy backtracing and siginfo and so from here or so
 
        static void
@@ -214,15 +231,6 @@ java bug:
                    (long) si->si_addr);
            exit(EXIT_FAILURE);
        }
-
-0- store all the stack analysis info in a struct per-function
-   and before removing it store a comment or metadata at the
-   begginging of it.
-
-* analize previous pushes or stack accesses before a call
-  to a function (identify function arguments)
-  - not only by the ones accessed in the code)
-  - as IRA module
 
 Debugger:
 	* when attaching sets <pid>.rdb ..should be <program.pid>.rdb?
@@ -243,7 +251,6 @@ Rasc:
 
 Core:
 	* reload project file if changes
-	* Allow to edit flags in Vt
 
 Rsc:
   	- fer un binpatch a traves del contexte del asm que sigui muahah (LUA)
@@ -263,65 +270,11 @@ Radare:
 
 * Allow to draw new lines manually (static defined arch_aop lines_t)
 
-Stack Analysis:
-===============
-* show pm xxxxxxxx @ esp (show esp-ebp bytes here or so)
 
 DWARF
 =====
-	/* Merge libdwarf inside rabin */
+	/* Merge libdwarf inside rabin ?? */
 	/* This is dwarfdump -G <file> */
-
-	DwarfDumpOutput:
-	----------------
-
-	/* Enums */
-<2>< 1308>      DW_TAG_enumerator
-                DW_AT_name                  FILETYPE_MACHO
-                DW_AT_const_value           6
-
-<1>< 1155>      DW_TAG_structure_type
-                DW_AT_name                  list_head
-                DW_AT_byte_size             8
-                DW_AT_decl_file             7 ../list.h
-                DW_AT_decl_line             14
-                DW_AT_sibling               <1204>
-
-	/* VarTypes */
-
-<1>< 1122>      DW_TAG_pointer_type
-                DW_AT_byte_size             4
-                DW_AT_type                  <1128>
-
-
-	/* Local Variables */
-
-	info we get:
-		varname,
-		file,
-		file_line,
-		var_type
-
-
-<2>< 2507>      DW_TAG_formal_parameter
-                DW_AT_name                  file
-                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
-                DW_AT_decl_line             80
-                DW_AT_type                  <1122>
-                DW_AT_location              DW_OP_fbreg -60
-<2>< 2521>      DW_TAG_variable
-                DW_AT_name                  buf
-                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
-                DW_AT_decl_line             82
-                DW_AT_type                  <2563>
-                DW_AT_location              DW_OP_fbreg -44
-<2>< 2535>      DW_TAG_variable
-                DW_AT_name                  addr
-                DW_AT_decl_file             1 /home/pancake/prg/radare/src/rabin/rabin.c
-                DW_AT_decl_line             83
-                DW_AT_type                  <173>
-                DW_AT_location              DW_OP_fbreg -48
-
 
 ==============================================================
 
@@ -331,9 +284,6 @@ DWARF
   - Make 'Cs' be more intelligent for multiple strings
   - Support for cursor range split
   - Without argument must find the end of string from curseek
-
-* show labels of all jumps/calls (not only bookmarked ones)
-  - generate sub_XXX when analyzing functions
 
 * function hooker in C (dbg.hooker)
   - some C macros or so to create a .so and LD_PRELOAD't

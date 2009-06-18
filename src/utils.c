@@ -358,10 +358,12 @@ u64 get_offset(const char *orig)
 	for(i=0;arg[i]==' ';i++);
 	for(;arg[i]=='\\';i++); i++;
 
-
 #if RADARE_CORE
+#if 0
+/* DEPRECATED WITH $$ special variable */
 	if (!strcmp(orig, "here"))
 		return config.seek;
+#endif
 
 	if (arg[0]=='.') {
 		u64 real = 0;
@@ -379,8 +381,7 @@ u64 get_offset(const char *orig)
 	}
 
 	ptr = strchr(arg, '[');
-	if (ptr)
-		return get_pointer(get_offset(ptr+1),4);
+	if (ptr) return get_pointer(get_offset(ptr+1),4);
 
 	ret = config_get_i(arg);
 	if (((int)ret) != 0)
@@ -454,6 +455,9 @@ u64 get_offset(const char *orig)
 		sscanf(arg, OFF_FMTd, &ret);
 
 		switch(arg[strlen(arg)-1]) {
+		case 'f': // float
+			sscanf(arg, "%f", &ret);
+			break;
 		case 'o': // octal
 			sscanf(arg, "%llo", &ret);
 			break;

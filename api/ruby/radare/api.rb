@@ -8,6 +8,11 @@ author: pancake <nopcode.org>
 
 # This class is instantiated as $r = Radare.new()
 class Radare
+
+ def initialize()
+   # TODO get 'r' instance here
+ end
+ 
  # helpers
  def str2hash(str)
    t = {}
