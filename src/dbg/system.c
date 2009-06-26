@@ -234,6 +234,9 @@ int debug_reg(const char *arg)
 		if (arg[0]=='2') {
 			debug_registers(2);
 		} else
+		if ((arg[0]=='=') || (arg[0]=='s'&&arg[1]=='=')) {
+			debug_register_list();
+		} else
 		if ((arg[0]=='s' && arg[1]=='*') || arg[0] == '*')
 			debug_registers(1);
 		else {

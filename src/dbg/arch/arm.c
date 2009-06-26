@@ -40,6 +40,14 @@ unsigned int cregs[32], oregs[32];
 //elf_gregset_t cregs; // current registers
 //elf_gregset_t oregs; // old registers
 
+int debug_register_list()
+{
+	int i;
+	for(i=0;i<18;i++)
+		cons_printf("r%02d ", i);
+	cons_printf("\n");
+}
+
 int arch_is_fork()
 {
 	return 0;
@@ -610,6 +618,7 @@ int arch_continue()
 // TODO
 struct bp_t *arch_set_breakpoint(u64 addr)
 {
+	eprintf("TODO: set breakpoint not implemented\n");
 }
 
 int arch_backtrace()

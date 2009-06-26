@@ -51,3 +51,4 @@
 #define R_R13_OFF offsetof(struct reg, r13)
 #define R_R14_OFF offsetof(struct reg, r14)
 #define R_R15_OFF offsetof(struct reg, r15)
+#define R_R15_OFF offsetof(struct reg, r15)

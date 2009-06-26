@@ -57,6 +57,14 @@ int arch_is_fork()
 	return 0;
 }
 
+int debug_register_list()
+{
+	int i;
+	for(i=0;i<18;i++)
+		cons_printf("r%02d ", i);
+	cons_printf("\n");
+}
+
 u64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;

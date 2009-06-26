@@ -80,6 +80,14 @@ struct regs_off roff[] = {
 	{0, 0}
 };
 
+int debug_register_list()
+{
+	int i;
+	for(i=0; roff[i].reg != 0; i++) 
+		cons_printf("%s ", roff[i].reg);
+	cons_printf("\n");
+}
+
 /* return register offset */
 u64 get_reg(const char *reg)
 {

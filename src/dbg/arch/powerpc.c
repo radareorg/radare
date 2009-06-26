@@ -97,6 +97,14 @@ static u64 reg(u64 reg)
 	return reg;
 }
 
+int debug_register_list()
+{
+	int i;
+	for(i=0;i<18;i++)
+		cons_printf("r%02d ", i);
+	cons_printf("\n");
+}
+
 int arch_is_fork()
 {
 	return 0;

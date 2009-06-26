@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
+ *       nibble <ds.gmail.com>
  *
  * libps2fd is part of the radare project
  *
@@ -67,12 +68,27 @@ struct regs_off roff[] = {
 	{"eip", R_RIP_OFF},
 	{"rsp", R_RSP_OFF},
 	{"rbp", R_RBP_OFF},
+	{"r8", R_R8_OFF},
+	{"r9", R_R9_OFF},
+	{"r10", R_R10_OFF},
+	{"r11", R_R11_OFF},
+	{"r12", R_R12_OFF},
+	{"r13", R_R13_OFF},
+	{"r14", R_R14_OFF},
+	{"r15", R_R15_OFF},
 	{"eflags", R_RFLAGS_OFF},
 	{0, 0}
 };
 
-#if 0
+int debug_register_list()
+{
+	int i;
+	for(i=0; roff[i].reg!=0; i++) 
+		cons_printf("%s ", roff[i].reg);
+	cons_printf("\n");
+}
 
+#if 0
      56 #define tR8	4
      57 #define tR9	5
      58 #define tR10	6
