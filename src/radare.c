@@ -317,7 +317,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	int i=0,j;
 	char ch;
 	char *word = NULL;
-	char *str, *p;
+	char *str, *ostr, *p;
 	struct list_head *pos;
 	u64 oseek, addr;
 	u32 tmpbsz = config.block_size;
@@ -326,7 +326,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	for(;*cmd==' ';cmd=cmd+1);
 
 	oseek = config.seek;
-	str = strdup(each);
+	ostr = str = strdup(each);
 	radare_controlc();
 
 	/* strip ansi codes */
@@ -378,8 +378,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 				addr = get_math(each);
 				str[0]=' ';
 			}
-			if (addr == 0 && each[0]!='0')
-				break;
+			//if (addr == 0 && each[0]!='0')
+			//	break;
 			each = str+1;
 			radare_seek(addr, SEEK_SET);
 			eprintf("\n"); //eprintf("===(%s)at(0x%08llx)\n", cmd, addr);
@@ -500,7 +500,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 
 	free(word);
 	word = NULL;
-	free(str);
+	free(ostr);
 }
 
 void radare_fortunes()

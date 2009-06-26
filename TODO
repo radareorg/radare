@@ -9,6 +9,10 @@
 TODO 1.4.2
 ==========
 
+* Allow to easily store the stack contents and get a diff
+* show info where register points to
+  - px 16@@=`!regs*~[1]`
+
 ---- bugs
 * disasm is incorrect. always returns the negative value :OO
   - 03 e4 f0 = and esp, 0xf0
