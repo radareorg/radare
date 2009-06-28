@@ -874,7 +874,22 @@ int arch_set_register(const char *reg, const char *value)
 		R_RDI(regs) = get_value(value);
 	else if (!strcmp(reg, "rip"))
 		R_RIP(regs) = get_value(value);
-#warning TODO: Add !set r8, r9, ....
+	else if (!strcmp(reg, "r8"))
+		R_R8(regs) = get_value(value);
+	else if (!strcmp(reg, "r9"))
+		R_R9(regs) = get_value(value);
+	else if (!strcmp(reg, "r10"))
+		R_R10(regs) = get_value(value);
+	else if (!strcmp(reg, "r11"))
+		R_R11(regs) = get_value(value);
+	else if (!strcmp(reg, "r12"))
+		R_R12(regs) = get_value(value);
+	else if (!strcmp(reg, "r13"))
+		R_R13(regs) = get_value(value);
+	else if (!strcmp(reg, "r14"))
+		R_R14(regs) = get_value(value);
+	else if (!strcmp(reg, "r15"))
+		R_R15(regs) = get_value(value);
 
 #if __linux__
 	else if (!strcmp(reg, "eflags")) {
@@ -898,7 +913,7 @@ int arch_set_register(const char *reg, const char *value)
 	}
 #endif
 	else {
-		eprintf("Valid registers:\n rax, rbx, rcx, rdx, rsi, rdi, rbp, rsp, rflags\n");
+		eprintf("Invalid register\n");
 		return 1;
 	}
 
