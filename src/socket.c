@@ -187,7 +187,6 @@ int socket_connect(char *host, int port)
 		return -1;
 	}
 #endif
-
 #if __UNIX__
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -223,7 +222,6 @@ int socket_udp_connect(char *host, int port)
 		return -1;
 	}
 #endif
-
 #if __UNIX__
 	signal(SIGPIPE, SIG_IGN);
 #endif

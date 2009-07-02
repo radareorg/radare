@@ -1215,8 +1215,10 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		break;
 	case FMT_OCT:
 		inc = config_get_i("scr.bytewidth");
-		if (!inc) inc = (int)((config.width)/6);
-		if (inc<1)inc = 1;
+		if (!inc) inc = (int)((config.width-10)/7);
+		if (inc<1) inc = 1;
+
+		inc++;
 		D {
 			C cons_strcat(cons_palette[PAL_HEADER]);
 			cons_printf("   offset   ");
@@ -1243,6 +1245,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 						print_color_byte_i(i, "%c", buf[i]);
 					else	print_color_byte_i(i, ".", buf[i]);
 				}
+				i--;
 			}
 			cons_newline();
 		}
