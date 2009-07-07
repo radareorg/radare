@@ -253,8 +253,10 @@ const char *get_tmp_dir()
 
 int r_file_exist(const char *str)
 {
-	struct stat buf;
-	return (stat(str, &buf)!=-1)?1:0;
+	int fd = open(str, O_RDONLY);
+	if (fd == -1)
+		return 0;
+	return 1;
 }
 
 int str_cpy(char *dst, const char *org)

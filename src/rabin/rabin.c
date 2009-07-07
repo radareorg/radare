@@ -446,13 +446,16 @@ void rabin_show_strings(const char *file)
 		/* do nothing */
 		break;
 	default:
+#ifndef __darwin__
 		if (rad) {
 			printf("fs strings\n");
 			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4\" @ \"$1}'"
 			"| tr '+;<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '_.........._________________' "
 			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
+
 		} else snprintf(buf, 1022, "echo /z | radare -nv %s",file);
 		system(buf);
+#endif
 		break;
 	}
 }
