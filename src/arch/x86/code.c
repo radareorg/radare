@@ -44,7 +44,7 @@
 
 // NOTE: bytes should be at least 16 bytes!
 // XXX addr should be off_t for 64 love
-int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
+int arch_x86_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	if (aop == NULL)
 		return dislen((unsigned char *)bytes, 64);
@@ -61,19 +61,19 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		case 0x46:
 		case 0x55:
 			/* mov -0xc(%ebp, %eax */
-			aop->ref = (u64)(int)(-((char)bytes[2]));
+			aop->ref = (ut64)(int)(-((char)bytes[2]));
 			aop->stackop = AOP_STACK_LOCAL_GET;
 			break;
 
 		case 0x95:
 			if (bytes[2]==0xe0) { // ebp
-				aop->ref = (u64)(-((int)(bytes[3]+(bytes[4]<<8)+(bytes[5]<<16)+(bytes[6]<<24))));
+				aop->ref = (ut64)(-((int)(bytes[3]+(bytes[4]<<8)+(bytes[5]<<16)+(bytes[6]<<24))));
 				aop->stackop = AOP_STACK_LOCAL_GET;
 			}
 			//aop->ref = -(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
 			break;
 		case 0xbd:
-			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			aop->ref = (ut64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
 			//aop->ref = -(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
 			aop->stackop = AOP_STACK_LOCAL_GET;
 			break;
@@ -86,15 +86,15 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		case 0x4d: //  894de0          mov [ebp-0x20], ecx 
 		case 0x55:
 			aop->stackop = AOP_STACK_LOCAL_SET;
-			aop->ref = (u64)-((char)bytes[2]);
+			aop->ref = (ut64)-((char)bytes[2]);
 			break;
 		case 0x85:
 			aop->stackop = AOP_STACK_LOCAL_SET;
-			aop->ref = (u64)-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
+			aop->ref = (ut64)-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
 			break;
 		case 0x75:
 			aop->stackop = AOP_STACK_LOCAL_GET;
-			aop->ref = (u64)(bytes[2]); //+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
+			aop->ref = (ut64)(bytes[2]); //+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24));
 			break;
 		}
 		aop->type   = AOP_TYPE_MOV;
@@ -116,7 +116,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	//case 0xea: // far jmp
 	// TODO moar
 	case 0x3b: //cmp
-		aop->ref = (u64)(-((char)bytes[2]));
+		aop->ref = (ut64)(-((char)bytes[2]));
 		aop->stackop = AOP_STACK_LOCAL_GET;
 	case 0x39:
 	case 0x3c:
@@ -132,7 +132,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x0f: // 3 byte nop
 		//0fbe55ff        movsx edx, byte [ebp-0x1]
 		if (bytes[1]==0xbe) {
-			aop->ref = (u64)(int)(-((char)bytes[3]));
+			aop->ref = (ut64)(int)(-((char)bytes[3]));
 			aop->stackop = AOP_STACK_LOCAL_GET;
 		} else
 		if (bytes[1]==0x31) {
@@ -208,12 +208,12 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->type = AOP_TYPE_PUSH;
 			aop->stackop = AOP_STACK_ARG_GET;
 			aop->ref = 0LL;
-			aop->ref = (u64)(((char)(bytes[2])));
+			aop->ref = (ut64)(((char)(bytes[2])));
 		} else
 		if (bytes[1]== 0x45) {
 			aop->type = AOP_TYPE_ADD;
 			aop->stackop = AOP_STACK_LOCAL_SET;
-			aop->ref = (u64)(-((char)bytes[2]));
+			aop->ref = (ut64)(-((char)bytes[2]));
 		} else
 		if (bytes[1]>=0x50 && bytes[1]<=0x6f) {
 			aop->type = AOP_TYPE_UJMP;
@@ -272,17 +272,17 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x83:
 		switch(bytes[1]) {
 		case 0xe4: // and
-			aop->value = (u64)(unsigned char)bytes[2];
+			aop->value = (ut64)(unsigned char)bytes[2];
 			aop->type = AOP_TYPE_AND;
 			break;
 		case 0xc4:
 			/* inc $0x????????, $esp*/
-			aop->value = -(u64)(unsigned char)bytes[2];
+			aop->value = -(ut64)(unsigned char)bytes[2];
 			aop->stackop = AOP_STACK_INCSTACK;
 			break;
 		case 0xec:
 			/* sub $0x????????, $esp*/
-			aop->value = (u64)(unsigned char)bytes[2];
+			aop->value = (ut64)(unsigned char)bytes[2];
 			aop->stackop = AOP_STACK_INCSTACK;
 			break;
 		case 0xbd: /* 837dfc02        cmp dword [ebp-0x4], 0x2 */
@@ -302,10 +302,10 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		case 0x7d: /* 837dfc02        cmp dword [ebp-0x4], 0x2 */
 			if ((char)bytes[2]>0) {
 				aop->stackop = AOP_STACK_ARG_GET;
-				aop->value = (u64)(char)bytes[2];
+				aop->value = (ut64)(char)bytes[2];
 			} else {
 				aop->stackop = AOP_STACK_LOCAL_GET;
-				aop->value = (u64)-(char)bytes[2];
+				aop->value = (ut64)-(char)bytes[2];
 			}
 			aop->type = AOP_TYPE_CMP;
 			break;
@@ -314,7 +314,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x8d:
 		/* LEA */
 		if (bytes[1] == 0x85) {
-			aop->ref = (u64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			aop->ref = (ut64)(-((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
 			aop->stackop = AOP_STACK_LOCAL_GET;
 		}
 		aop->type =AOP_TYPE_MOV;
@@ -324,17 +324,17 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 		switch(bytes[1]) {
 		case 0x85:
 			aop->stackop = AOP_STACK_LOCAL_SET;
-			//aop->ref = (u64)(((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
+			//aop->ref = (ut64)(((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24))));
 			aop->ref = ((int)(bytes[2]+(bytes[3]<<8)+(bytes[4]<<16)+(bytes[5]<<24)));
 			break;
  			//c785 e4fbffff 00. mov dword [ebp+0xfffffbe4], 0x0
 		case 0x45:
 			aop->stackop = AOP_STACK_LOCAL_SET;
-			aop->ref = (u64)(-((char)bytes[2]));
+			aop->ref = (ut64)(-((char)bytes[2]));
 			break;
 		case 0x04:
 			// c7042496850408    dword [esp] = 0x8048596 ; LOL
-			aop->ref = (u64)(((int)(bytes[3]+(bytes[4]<<8)+(bytes[5]<<16)+(bytes[6]<<24))));
+			aop->ref = (ut64)(((int)(bytes[3]+(bytes[4]<<8)+(bytes[5]<<16)+(bytes[6]<<24))));
 			break;
 		}
 		aop->type = AOP_TYPE_STORE;
@@ -355,7 +355,7 @@ int arch_x86_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0xa1: // mov eax, [addr]
 		aop->type = AOP_TYPE_MOV;
 		vm_arch_x86_regs[VM_X86_EAX] = addr+bytes[1]+(bytes[2]<<8)+(bytes[3]<<16)+(bytes[4]<<24);
-		radare_read_at((u64)vm_arch_x86_regs[VM_X86_EAX], (unsigned char *)&(vm_arch_x86_regs[VM_X86_EAX]), 4);
+		radare_read_at((ut64)vm_arch_x86_regs[VM_X86_EAX], (unsigned char *)&(vm_arch_x86_regs[VM_X86_EAX]), 4);
 		break;
 		
 	// roll to a switch range case

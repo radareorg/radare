@@ -66,8 +66,8 @@ enum {
 
 int java_disasm(const u8 *bytes, char *output);
 
-void metadata_comment_add(u64 offset, const char *str);
-void metadata_comment_del(u64 offset, const char *str);
+void metadata_comment_add(ut64 offset, const char *str);
+void metadata_comment_del(ut64 offset, const char *str);
 void metadata_comment_list();
 void metadata_comment_init(int new);
 
@@ -82,8 +82,8 @@ void radare_resize(const char *arg);
 void radare_prompt_command();
 void radare_sync();
 int radare_search (const unsigned char *arg, unsigned int slen, print_fmt_t print_fmt);
-int stripstr_from_file(const char *filename, int min, int max, int encoding, u64 seek, u64 limit);
-int stripstr_iterate(const u8 *buf, int i, int min, int max, int enc, u64 offset, const char *match);
+int stripstr_from_file(const char *filename, int min, int max, int encoding, ut64 seek, ut64 limit);
+int stripstr_iterate(const u8 *buf, int i, int min, int max, int enc, ut64 offset, const char *match);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(const char *str);
 int radare_cmd(char *command, int log);
@@ -117,23 +117,23 @@ int radare_hack(const char *cmd);
 void rdb_help();
 void radare_fortunes();
 int radare_compare(unsigned char *f, unsigned char *d, int len);
-int radare_compare_hex(u64 addr, unsigned char *f, unsigned char *d, int len);
+int radare_compare_hex(ut64 addr, unsigned char *f, unsigned char *d, int len);
 int search_range(char *range);
 int search_from_file(char *file);
-int radare_read_at(u64 offset, unsigned char *data, int len);
-int radare_write_at(u64 offset, const u8 *data, int len);
+int radare_read_at(ut64 offset, unsigned char *data, int len);
+int radare_write_at(ut64 offset, const u8 *data, int len);
 int radare_write(const char *arg, int mode);
 int radare_write_xor(const char *arg);
 void radare_poke(const char *arg);
-int radare_get_region(u64 *from, u64 *to);
-int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data);
+int radare_get_region(ut64 *from, ut64 *to);
+int rasm_asm(const char *arch, ut64 *offset, const char *str, unsigned char *data);
 int radare_cmdf(const char *cmd, ...);
 int radare_systemf(const char *format, ...);
 u8 *radare_block();
 
 int resolve_encoding(const char *name);
-int trace_get_between(u64 from, u64 to);
-struct trace_t *trace_get(u64 addr, int tag);
+int trace_get_between(ut64 from, ut64 to);
+struct trace_t *trace_get(ut64 addr, int tag);
 int radare_close();
 
 /* rabin.h */
@@ -152,15 +152,15 @@ void env_init();
 void env_update();
 void env_prepare(const char *line);
 void env_destroy(const char *line);
-int radare_compare_code(u64 off, const u8 *a, int len);
+int radare_compare_code(ut64 off, const u8 *a, int len);
 //int env_var_required(const char *str, const char *var);
 int radare_search_replace(const char *input, int hex);
 
 /* user graphs */
 void ugraph_reset();
-void ugraph_node(u64 from, u64 size, const char *cmd);
-void ugraph_edge(u64 from, u64 to);
-struct ugraph_node_t *ugraph_get(u64 addr);
+void ugraph_node(ut64 from, ut64 size, const char *cmd);
+void ugraph_edge(ut64 from, ut64 to);
+struct ugraph_node_t *ugraph_get(ut64 addr);
 
 int radare_seek_search(const char *str);
 int radare_seek_search_backward(const char *str);

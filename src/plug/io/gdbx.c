@@ -102,7 +102,7 @@ ssize_t gdbx_read(int fd, void *buf, size_t count)
 
 static void gdbx_wait_until_entrypoint()
 {
-	u64 entry=0;
+	ut64 entry=0;
 	unsigned char buf;
 	char entry_str[33];
 	int off = 0;
@@ -321,7 +321,7 @@ int gdbx_close(int fd)
 	return close(fd);
 }
 
-u64 gdbx_lseek(int fildes, u64 offset, int whence)
+ut64 gdbx_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

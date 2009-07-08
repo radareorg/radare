@@ -46,9 +46,9 @@
 
 #include "../debug.h"
 
-u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
+ut64 debug_fd_seek(int pid, int fd, ut64 addr, int whence)
 {
-	u64 ret = 0;
+	ut64 ret = 0;
 #if __UNIX__
 	ret = arch_syscall(pid, SYS_lseek, fd, addr, whence);
 #endif
@@ -56,18 +56,18 @@ u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
 	return ret;
 }
 
-u64 debug_fd_write(int pid, int fd, u64 addr, int len)
+ut64 debug_fd_write(int pid, int fd, ut64 addr, int len)
 {
-	u64 ret = 0;
+	ut64 ret = 0;
 #if __UNIX__
 	ret = arch_syscall(pid, SYS_write, fd, addr, len);
 #endif
 	return ret;
 }
 
-u64 debug_fd_read(int pid, int fd, u64 addr, int len)
+ut64 debug_fd_read(int pid, int fd, ut64 addr, int len)
 {
-	u64 ret = 0;
+	ut64 ret = 0;
 #if __UNIX__
 	ret = arch_syscall(pid, SYS_read, fd, addr, len);
 #endif
@@ -153,7 +153,7 @@ int debug_fd_open(int pid, char *file, int mode)
 #if 0
 #if __i386__
         regs_t   reg, reg_saved;
-	u64	file_addr;
+	ut64	file_addr;
         int     status;
 	char	bak[128];
         void*   ret = (void *)-1;

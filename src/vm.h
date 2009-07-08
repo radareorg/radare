@@ -11,7 +11,7 @@
 
 struct vm_reg_t {
 	char name[16];
-	u64 value;
+	ut64 value;
 	int type;
 	char *get;
 	char *set;
@@ -43,8 +43,8 @@ struct vm_cpu_t {
 };
 
 struct vm_change_t {
-	u64 from;
-	u64 to;
+	ut64 from;
+	ut64 to;
 	u8 *data;
 	struct list_head list;
 };
@@ -53,14 +53,14 @@ struct vm_change_t {
 struct r_vm_t {
 	struct list_head vm_regs;
 	struct vm_cpu_t vm_cpu;
-	u64 vm_stack_base = 0;
+	ut64 vm_stack_base = 0;
 	u8 *vm_stack = NULL;
 	struct list_head vm_mmu_cache;
 	int realio = 0;
 }
 #endif
 
-u64 vm_reg_get(const char *name);
-void vm_stack_push(u64 _val);
+ut64 vm_reg_get(const char *name);
+void vm_stack_push(ut64 _val);
 
 #endif

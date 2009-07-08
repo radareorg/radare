@@ -59,13 +59,13 @@ static void ELF_(aux_swap_endian)(u8 *value, int size)
 	}
 }
 
-static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, u64 seek, u64 limit, const char *filter, int str_limit, dietelf_string *strings)
+static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encoding, ut64 seek, ut64 limit, const char *filter, int str_limit, dietelf_string *strings)
 {
 	int fd = open(filename, O_RDONLY);
 	dietelf_string *stringsp;
 	unsigned char *buf;
-	u64 i = seek;
-	u64 len, string_len;
+	ut64 i = seek;
+	ut64 len, string_len;
 	int unicode = 0, matches = 0;
 	static int ctr = 0;
 	char str[ELF_STRING_LENGTH];
@@ -154,7 +154,7 @@ static int ELF_(do_elf_checks)(ELF_(dietelf_bin_t) *bin)
 
 char* ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
 {
-	u16 machine = bin->ehdr.e_machine;
+	ut16 machine = bin->ehdr.e_machine;
 
 
 	switch (machine) {
@@ -180,12 +180,12 @@ char* ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t) *bin)
 	}
 }
 
-u64 ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
+ut64 ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t) *bin)
 {
 	return bin->phdr->p_vaddr & ELF_ADDR_MASK;
 }
 
-u64 ELF_(dietelf_get_entry_offset)(ELF_(dietelf_bin_t) *bin)
+ut64 ELF_(dietelf_get_entry_offset)(ELF_(dietelf_bin_t) *bin)
 {
 	return bin->ehdr.e_entry - bin->base_addr; 
 }
@@ -370,7 +370,7 @@ char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 		case ELFOSABI_AIX:			return "aix";
 		case ELFOSABI_IRIX:			return "irix";
 		case ELFOSABI_FREEBSD:		return "freebsd";
-		case ELFOSABI_TRU64:		return "tru64";
+		case ELFOSABI_TRU64:		return "trut64";
 		case ELFOSABI_MODESTO:		return "modesto";
 		case ELFOSABI_OPENBSD:		return "openbsd";
 		case ELFOSABI_STANDALONE:	return "standalone";
@@ -381,7 +381,7 @@ char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t) *bin)
 	}
 }
 
-u64
+ut64
 ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
@@ -398,7 +398,7 @@ ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t) *bin, int fd, const char *se
 	return -1;
 }
 
-u64 ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
+ut64 ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t) *bin, int fd, const char *section_name)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
@@ -437,14 +437,14 @@ int ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t) *bin)
 	return (ehdr->e_ident[EI_DATA] == ELFDATA2MSB);
 }
 
-static u64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
+static ut64 ELF_(get_import_addr)(ELF_(dietelf_bin_t) *bin, int fd, int sym)
 {
 	ELF_(Ehdr) *ehdr = &bin->ehdr;
 	ELF_(Shdr) *shdr = bin->shdr, *shdrp;
 	ELF_(Addr) plt_sym_addr, got_addr = 0;
 	const char *string = bin->string;
 	int i, j;
-	u64 got_offset;
+	ut64 got_offset;
 	
 	shdrp = shdr;
 	for (i = 0; i < ehdr->e_shnum; i++, shdrp++) {
@@ -729,7 +729,7 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 	ELF_(Sym) *sym, *symp;
 	ELF_(Shdr) *strtabhdr;
 	dietelf_symbol *symbolp;
-	u64 sym_offset;
+	ut64 sym_offset;
 	char *string;
 	int i, j, k;
 
@@ -790,10 +790,10 @@ int ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t) *bin, int fd, dietelf_symbol *
 				if (k == 0)
 					continue;
 				if (symp->st_shndx != STN_UNDEF && ELF_ST_TYPE(symp->st_info) != STT_SECTION && ELF_ST_TYPE(symp->st_info) != STT_FILE) {
-					symbolp->size = (u64)symp->st_size; 
+					symbolp->size = (ut64)symp->st_size; 
 					memcpy(symbolp->name, &string[symp->st_name], ELF_NAME_LENGTH); 
 					symbolp->name[ELF_NAME_LENGTH-1] = '\0';
-					symbolp->offset = (u64)symp->st_value + sym_offset;
+					symbolp->offset = (ut64)symp->st_value + sym_offset;
 					if (symbolp->offset >= bin->base_addr)
 						symbolp->offset -= bin->base_addr;
 					switch (ELF_ST_BIND(symp->st_info)) {

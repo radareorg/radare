@@ -66,8 +66,8 @@ int debug_dumpall(const char *ptr)
 	FILE *fd = NULL;
 	int ret,i=0;
 	char buf[4096];
-	u64 from=config.seek;
-	u64 to = config.limit;
+	ut64 from=config.seek;
+	ut64 to = config.limit;
 	if (to <= 0)
 		to = 0xffffffff;
 	from &= 0xfffffff0; // align hack

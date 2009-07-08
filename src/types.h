@@ -3,12 +3,12 @@
 
 /* basic data types */
 #define u8 unsigned char
-#define u16 unsigned short
-#ifndef u32
-#define u32 unsigned int
+#define ut16 unsigned short
+#ifndef ut32
+#define ut32 unsigned int
 #endif
-#define u64 unsigned long long
-typedef u64 addr_t;
+#define ut64 unsigned long long
+typedef ut64 addr_t;
 #define uchar unsigned char
 
 #ifndef SIZEOF_OFF_T

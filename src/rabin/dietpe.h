@@ -34,7 +34,7 @@ int PE_(dietpe_get_entrypoint)(PE_(dietpe_obj) *bin, dietpe_entrypoint *entrypoi
 int PE_(dietpe_get_exports)(PE_(dietpe_obj) *bin, dietpe_export *export);
 int PE_(dietpe_get_exports_count)(PE_(dietpe_obj) *bin);
 int PE_(dietpe_get_file_alignment)(PE_(dietpe_obj) *bin);
-u64 PE_(dietpe_get_image_base)(PE_(dietpe_obj) *bin);
+ut64 PE_(dietpe_get_image_base)(PE_(dietpe_obj) *bin);
 int PE_(dietpe_get_imports)(PE_(dietpe_obj) *bin, dietpe_import *import);
 int PE_(dietpe_get_imports_count)(PE_(dietpe_obj) *bin);
 int PE_(dietpe_get_libs)(PE_(dietpe_obj) *bin, int limit, dietpe_string *strings);

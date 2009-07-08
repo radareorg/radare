@@ -21,7 +21,7 @@ typedef struct _tokenlist {
 typedef struct _tokenizer {
 	tokenlist** tls;
 	int nlists;
-	int (*callback)(struct _tokenizer *t, int i, u64 where);
+	int (*callback)(struct _tokenizer *t, int i, ut64 where);
 } tokenizer;
 
 tokenizer* binparse_new();
@@ -29,7 +29,7 @@ tokenizer* binparse_new_from_file(char *file);
 int binparse_get_mask_list ( char* mask , char* maskout );
 int binparse_add_search(tokenizer *t, int id);
 int binparser_free(tokenizer* ptokenizer);
-int update_tlist( tokenizer*  ptok, unsigned char inchar, u64 where);
+int update_tlist( tokenizer*  ptok, unsigned char inchar, ut64 where);
 tokenlist* get_tok_list(  char* line, int maxlen ) ;
 tokenizer* build_tokenizer( char * file ) ;
 void tokenize(int fd, tokenizer* ptok);

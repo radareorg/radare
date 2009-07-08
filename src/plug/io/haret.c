@@ -142,7 +142,7 @@ int haret_close(int fd)
 	return close(fd);
 }
 
-u64 haret_lseek(int fildes, u64 offset, int whence)
+ut64 haret_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

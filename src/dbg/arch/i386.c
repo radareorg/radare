@@ -89,7 +89,7 @@ int debug_register_list()
 }
 
 /* return register offset */
-u64 get_reg(const char *reg)
+ut64 get_reg(const char *reg)
 {
 	int i;
 
@@ -100,9 +100,9 @@ u64 get_reg(const char *reg)
 	return -1;
 }
 
-u64 arch_syscall(int pid, int sc, ...)
+ut64 arch_syscall(int pid, int sc, ...)
 {
-        u64 ret = (addr_t)-1;
+        ut64 ret = (addr_t)-1;
 #if __linux__ || __BSD__
 	va_list ap;
         regs_t   reg, reg_saved;
@@ -414,14 +414,14 @@ int arch_inject(u8 *data, int size)
 	return 0;
 }
 
-u64 arch_pc(int tid)
+ut64 arch_pc(int tid)
 {
 	regs_t regs;
 	debug_getregs(tid, &regs);
 #if __x86_64__
-	return (u64)R_RIP(regs);
+	return (ut64)R_RIP(regs);
 #else
-	return (u64)(R_EIP(regs)&0xffffffff);
+	return (ut64)(R_EIP(regs)&0xffffffff);
 #endif
 }
 
@@ -433,7 +433,7 @@ int arch_stackanal()
 	%ebp+4 points to ret
 	*/
 	int ret, i,j;
-	u64 last;
+	ut64 last;
 	unsigned long long ptr;
 	unsigned long long ebp2;
 	regs_t regs;
@@ -514,7 +514,7 @@ int arch_stackanal()
 int arch_backtrace()
 {
 	int ret, i,j;
-	u64 last;
+	ut64 last;
 	unsigned long esp;
 	unsigned long ebp2;
 	unsigned char buf[4];
@@ -711,9 +711,9 @@ int arch_print_fpregisters(int rad, const char *mask)
 
 	for(t=0;t<2;t++)
 	for(i=0;i<8;i++) {
-		u64 mmx;
-		u16 *mmxword = &mmx;
-		u16 *a = (u16*)&regs.xmm_space;
+		ut64 mmx;
+		ut16 *mmxword = &mmx;
+		ut16 *a = (ut16*)&regs.xmm_space;
 		a = a + (i * 4);
 		mmx = *MMXREG;
 
@@ -795,18 +795,18 @@ int arch_print_registers(int rad, const char *mask)
 	
 	if (rad == 1) {
 		//cons_printf("\n"); // stupid trick
-		cons_printf("f oeax @ 0x%llx\n", (u64)(R_OEAX(regs)&0xffffffff));
-		cons_printf("f eax @ 0x%llx\n", (u64)(R_EAX(regs)&0xffffffff));
-		cons_printf("f ebx @ 0x%llx\n", (u64)(R_EBX(regs)&0xffffffff));
-		cons_printf("f ecx @ 0x%llx\n", (u64)(R_ECX(regs)&0xffffffff));
-		cons_printf("f edx @ 0x%llx\n", (u64)(R_EDX(regs)&0xffffffff));
-		cons_printf("f ebp @ 0x%llx\n", (u64)(R_EBP(regs)&0xffffffff));
-		cons_printf("f esi @ 0x%llx\n", (u64)(R_ESI(regs)&0xffffffff));
-		cons_printf("f edi @ 0x%llx\n", (u64)(R_EDI(regs)&0xffffffff));
-		cons_printf("f oeip @ 0x%llx\n", (u64)(R_EIP(oregs)&0xffffffff));
-		cons_printf("f eip @ 0x%llx\n", (u64)(R_EIP(regs)&0xffffffff));
-		cons_printf("f oesp @ 0x%llx\n", (u64)(R_ESP(oregs)&0xffffffff));
-		cons_printf("f esp @ 0x%llx\n", (u64)(R_ESP(regs)&0xffffffff));
+		cons_printf("f oeax @ 0x%llx\n", (ut64)(R_OEAX(regs)&0xffffffff));
+		cons_printf("f eax @ 0x%llx\n", (ut64)(R_EAX(regs)&0xffffffff));
+		cons_printf("f ebx @ 0x%llx\n", (ut64)(R_EBX(regs)&0xffffffff));
+		cons_printf("f ecx @ 0x%llx\n", (ut64)(R_ECX(regs)&0xffffffff));
+		cons_printf("f edx @ 0x%llx\n", (ut64)(R_EDX(regs)&0xffffffff));
+		cons_printf("f ebp @ 0x%llx\n", (ut64)(R_EBP(regs)&0xffffffff));
+		cons_printf("f esi @ 0x%llx\n", (ut64)(R_ESI(regs)&0xffffffff));
+		cons_printf("f edi @ 0x%llx\n", (ut64)(R_EDI(regs)&0xffffffff));
+		cons_printf("f oeip @ 0x%llx\n", (ut64)(R_EIP(oregs)&0xffffffff));
+		cons_printf("f eip @ 0x%llx\n", (ut64)(R_EIP(regs)&0xffffffff));
+		cons_printf("f oesp @ 0x%llx\n", (ut64)(R_ESP(oregs)&0xffffffff));
+		cons_printf("f esp @ 0x%llx\n", (ut64)(R_ESP(regs)&0xffffffff));
 	} else
 	if (rad == 2) {
 			if (R_EAX(regs)!=R_EAX(oregs)) cons_printf("eax = 0x%08x (0x%08x) ", R_EAX(regs), R_EAX(oregs));
@@ -1084,7 +1084,7 @@ XXX: we must use mmap2 here
 	return ret;
 }
 
-u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
+ut64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
         regs_t   reg, reg_saved;
@@ -1302,7 +1302,7 @@ void signal_set(int signum, addr_t address)
 }
 #endif
 
-int arch_mprotect(u64 addr, unsigned int size, int perms)
+int arch_mprotect(ut64 addr, unsigned int size, int perms)
 {
 #if __APPLE__
 	/* OSX: Apple Darwin */
@@ -1368,7 +1368,7 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 #endif
 }
 
-u64 arch_set_sighandler(int signum, addr_t handler)
+ut64 arch_set_sighandler(int signum, addr_t handler)
 {
 #ifdef __linux__
         regs_t   reg, reg_saved;

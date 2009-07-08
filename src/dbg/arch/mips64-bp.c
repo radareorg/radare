@@ -68,18 +68,18 @@ int arch_bpsize()
 	return 4;
 }
 
-int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
+int arch_set_wp_hw_n(int dr_free, ut64 addr, int type)
 {
 	return -1;
 }
 
-int arch_set_wp_hw(u64 addr, int type)
+int arch_set_wp_hw(ut64 addr, int type)
 {
 	return -1;
 }
 
 /* hook hardware bps to software ones..arm can't :/ */
-int arch_set_bp_hw(struct bp_t *bp, u64 addr)
+int arch_set_bp_hw(struct bp_t *bp, ut64 addr)
 {
 	return arch_set_bp_soft(bp, addr);
 }
@@ -106,7 +106,7 @@ int get_len_ins(char *buf, int len)
 	return 4;
 }
 
-int arch_set_bp_soft(struct bp_t *bp, u64 addr)
+int arch_set_bp_soft(struct bp_t *bp, ut64 addr)
 {
 	int endian = config_get("cfg.bigendian");
 	char *breakpoint = mips_bps[endian&1];
@@ -148,7 +148,7 @@ int arch_bp_soft_disable(struct bp_t *bp)
 int arch_restore_bp(struct bp_t *bp)
 {
 	regs_t	regs;
-	u64 off = arch_pc()-4;
+	ut64 off = arch_pc()-4;
 	arch_jmp(off);
 	debug_getregs(ps.tid, &regs);
 	arch_bp_soft_disable(bp);

@@ -252,12 +252,12 @@ int gdb_seek(int fd, int offset, int whence)
 				gdbps.offset = offset;
 			return gdbps.offset;
 		case SEEK_CUR:
-			gdbps.offset = (u64)((unsigned long long)gdbps.offset+(unsigned long long)offset);
+			gdbps.offset = (ut64)((unsigned long long)gdbps.offset+(unsigned long long)offset);
 			return gdbps.offset;
 		case SEEK_END:
-			return gdbps.offset = (u64)((unsigned long long)(-1));
+			return gdbps.offset = (ut64)((unsigned long long)(-1));
 		default:
-			return (u64)(unsigned long long)-1;
+			return (ut64)(unsigned long long)-1;
 		}
 
 	return -1;

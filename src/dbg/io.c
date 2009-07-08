@@ -40,7 +40,7 @@
 
 #define ALIGN_SIZE 4096
 
-int debug_read_at(pid_t pid, void *data, int length, u64 addr)
+int debug_read_at(pid_t pid, void *data, int length, ut64 addr)
 {
 	if (regio_enabled) {
 		int ret = debug_reg_read_at(pid, data, length, addr);
@@ -58,7 +58,7 @@ int debug_read(pid_t pid, void *data, int length)
 	return debug_read_at(pid, data, length, ps.offset);
 }
 
-int debug_write_at(pid_t pid, void *data, int length, u64 addr)
+int debug_write_at(pid_t pid, void *data, int length, ut64 addr)
 {
 	if (regio_enabled) {
 		int ret = debug_reg_write_at(pid, data, length, addr);

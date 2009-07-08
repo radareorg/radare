@@ -28,7 +28,7 @@ static int is_pr (int c)
 }
 
 /* returns 0-100 */
-int hash_pcprint(unsigned char *buffer, u64 len)
+int hash_pcprint(unsigned char *buffer, ut64 len)
 {
 	unsigned char *end = buffer + len;
 	int n = 0;
@@ -40,7 +40,7 @@ int hash_pcprint(unsigned char *buffer, u64 len)
 	return ((100*n)/len);
 }
 
-int hash_par(unsigned char *buffer, u64 len)
+int hash_par(unsigned char *buffer, ut64 len)
 {
 	unsigned char *end = buffer+len;
 	unsigned int ones = 0;
@@ -54,7 +54,7 @@ int hash_par(unsigned char *buffer, u64 len)
 
 /* These functions comes from 0xFFFF */
 /* fmi: nopcode.org/0xFFFF */
-u16 hash_xorpair(u8 *a, u64 len)
+ut16 hash_xorpair(u8 *a, ut64 len)
 {
 	unsigned short *b = (unsigned short *)a;
 	unsigned short result = 0;
@@ -63,7 +63,7 @@ u16 hash_xorpair(u8 *a, u64 len)
 	return result;
 }
 
-unsigned char hash_xor(unsigned char *b, u64 len)
+unsigned char hash_xor(unsigned char *b, ut64 len)
 {
 	unsigned char res = 0;
 	for(;len--;b=b+1)
@@ -71,7 +71,7 @@ unsigned char hash_xor(unsigned char *b, u64 len)
 	return res;
 }
 
-unsigned char hash_mod255(unsigned char *b, u64 len)
+unsigned char hash_mod255(unsigned char *b, ut64 len)
 {
 	int i, c = 0;
 	/* from gdb */

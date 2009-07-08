@@ -105,7 +105,7 @@ ssize_t pcapio_read(int fd, void *buf, size_t count)
 {
 	u8 data[32000];
 	int sz = 0;
-	u64 s;
+	ut64 s;
 
 	if (config.seek > pcapio_bufsz)
 		config.seek = pcapio_bufsz;
@@ -150,7 +150,7 @@ int pcapio_close(int fd)
 #endif
 }
 
-u64 pcapio_lseek(int fildes, u64 offset, int whence)
+ut64 pcapio_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

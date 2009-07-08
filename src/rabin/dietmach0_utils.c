@@ -196,16 +196,16 @@ Debug (const char *fmt, ...)
   va_end(ap);
 }
 
-u32 n0(const unsigned char *addr)
+ut32 n0(const unsigned char *addr)
 {
-	u32 csz;
+	ut32 csz;
 #if __WINDOWS__
 	/* HTONL IS NOT PORTABLE !!! */
-	return (u32)addr;
+	return (ut32)addr;
 #else
 	if (!memcmp("\xfe\xed\xfa\xce", fileaddr, 4))
 		csz = htonl(addr);
-	else csz = (u32)addr;
+	else csz = (ut32)addr;
 #endif
 	return csz;
 }

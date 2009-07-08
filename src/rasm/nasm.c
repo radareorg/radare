@@ -3,7 +3,7 @@
 #include "rasm.h"
 #include "../radare.h"
 
-int rasm_nasm_x86(u64 offset, const char *str, u8 *data)
+int rasm_nasm_x86(ut64 offset, const char *str, u8 *data)
 {
 	int len;
 	char cmd[1024];

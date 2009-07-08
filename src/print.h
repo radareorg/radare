@@ -57,11 +57,11 @@ extern format_info_t formats[];
 extern print_fmt_t last_print_format;
 print_fmt_t format_get (char fmt);
 void format_show_help (print_mode_t mode);
-void print_addr(u64 off);
-void print_data(u64 seek, char *arg, u8 *buf, int len, print_fmt_t print_fmt);
+void print_addr(ut64 off);
+void print_data(ut64 seek, char *arg, u8 *buf, int len, print_fmt_t print_fmt);
 void print_color_byte_i(int i, char *str, int c);
 void radare_dump_and_process(int type, int size);
-void print_zoom(u64 from, u64 to, char *byte, int enable);
-void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian);
+void print_zoom(ut64 from, ut64 to, char *byte, int enable);
+void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian);
 
 #endif

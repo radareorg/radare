@@ -34,10 +34,10 @@ int fdio_type = 0; // stream or file?
 int fdio_enabled = 0;
 int fdio_fd = 0;
 
-static u64 bufaddr = 0;
+static ut64 bufaddr = 0;
 
 // XXX: fill buffer with 0xff ?
-int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr)
+int debug_fd_read_at(pid_t pid, u8 *buf, int length, ut64 addr)
 {
 	int len;
 	fdio_enabled = 0;
@@ -55,7 +55,7 @@ int debug_fd_read_at(pid_t pid, u8 *buf, int length, u64 addr)
 	return len;
 }
 
-int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr)
+int debug_fd_write_at(pid_t pid, const u8 *buf, int length, ut64 addr)
 {
 	int len;
 	fdio_enabled = 0;
@@ -74,7 +74,7 @@ int debug_fd_write_at(pid_t pid, const u8 *buf, int length, u64 addr)
 
 int debug_fd_io_mode(int set, int fd)
 {
-	static u64 oseek = 0;
+	static ut64 oseek = 0;
 	fdio_enabled = set;
 	fdio_fd = fd;
 	if (set) oseek = config.seek;

@@ -32,7 +32,7 @@ const char *vm_arch_x86_regs_str[VM_X86_N_REGS] = {
 };
 
 int vm_arch_x86_nregs = VM_X86_N_REGS;
-u64 vm_arch_x86_regs[VM_X86_N_REGS];
+ut64 vm_arch_x86_regs[VM_X86_N_REGS];
 
 void vm_arch_x86_init()
 {

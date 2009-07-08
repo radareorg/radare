@@ -18,7 +18,7 @@ static struct state *get_state(void)
 	return &_state;
 }
 
-static uint16_t i2u16(struct instruction *in)
+static uint16_t i2ut16(struct instruction *in)
 {
 	return *((uint16_t*)in);
 }
@@ -41,12 +41,12 @@ static void decode_unknown(struct state *s, struct directive *d)
 	printf("Opcode 0x%x reg %d mode %d operand 0x%x",
 	       in->in_opcode, in->in_reg, in->in_mode, in->in_operand);
 #endif
-	sprintf(d->d_asm, "DC\t0x%4x", i2u16(&d->d_inst));
+	sprintf(d->d_asm, "DC\t0x%4x", i2ut16(&d->d_inst));
 }
 
 static int decode_fixed(struct state *s, struct directive *d)
 {
-	switch (i2u16(&d->d_inst)) {
+	switch (i2ut16(&d->d_inst)) {
 	case INST_NOP:
 		if (s->s_prefix)
 			return 0;
@@ -279,7 +279,7 @@ static int decode_known(struct state *s, struct directive *d)
 			return 1;
 		}
 
-		switch (i2u16(in) & 0xf) {
+		switch (i2ut16(in) & 0xf) {
 		case 1:
 			op	= "st";
 			regn	= "FLAGS";
@@ -833,7 +833,7 @@ static void own(struct state *s)
 		if (s->s_ff_quirk) {
 			strcpy(last->d_asm, "DC\t0x8000");
 
-			sprintf(d->d_asm, "DC\t0x%.4x", i2u16(&d->d_inst));
+			sprintf(d->d_asm, "DC\t0x%.4x", i2ut16(&d->d_inst));
 			s->s_ff_quirk = 0;
 		}
 
@@ -893,7 +893,7 @@ static void own(struct state *s)
 #endif
 
 // XXX lot of memory leaks
-int arch_csr_disasm(char *str, unsigned char *buf, u64 seek)
+int arch_csr_disasm(char *str, unsigned char *buf, ut64 seek)
 {
 	struct state *s = get_state();
 	struct directive *d;
@@ -908,7 +908,7 @@ int arch_csr_disasm(char *str, unsigned char *buf, u64 seek)
 	csr_decode(s, d);
 #if 0
 	if (s->s_ff_quirk) {
-		sprintf(d->d_asm, "DC\t0x%x", i2u16(&d->d_inst));
+		sprintf(d->d_asm, "DC\t0x%x", i2ut16(&d->d_inst));
 		s->s_ff_quirk = 0;
 	}
 #endif
@@ -954,7 +954,7 @@ for(i=0;i<2;i++) {
 	decode(s, d);
 	if (s->s_ff_quirk) {
 		//strcpy(last->d_asm, "DC\tH'8000");
-		sprintf(d->d_asm, "DC\t0x%x", i2u16(&d->d_inst));
+		sprintf(d->d_asm, "DC\t0x%x", i2ut16(&d->d_inst));
 		s->s_ff_quirk = 0;
 	}
 	printf("ASM : %s\n", d->d_asm);

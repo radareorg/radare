@@ -50,7 +50,7 @@ int rasm_show_list()
 	return 0;
 }
 
-int rasm_file(const char *arch, u64 offset, const char *file, const char *ofile)
+int rasm_file(const char *arch, ut64 offset, const char *file, const char *ofile)
 {
 	char buf[1024];
 	unsigned char data[1024];
@@ -99,11 +99,11 @@ int rasm_file(const char *arch, u64 offset, const char *file, const char *ofile)
 	return 1;
 }
 
-int rasm_directive(const char *arch, u64 *offset, const char **str, u8 *data)
+int rasm_directive(const char *arch, ut64 *offset, const char **str, u8 *data)
 {
 	char op[128];
 	char *arg;
-	u64 n;
+	ut64 n;
 
 	strncpy(op, *str, 120);
 
@@ -156,7 +156,7 @@ printf("TODO: (%s)\n", op);
 }
 
 /* assemble */
-int rasm_asm(const char *arch, u64 *offset, const char *str, unsigned char *data)
+int rasm_asm(const char *arch, ut64 *offset, const char *str, unsigned char *data)
 {
 	int ret = -1;
 
@@ -217,7 +217,7 @@ int count_bytes(const char *str)
 	return c;
 }
 
-int rasm_disasm(const char *arch, u64 *offset, const char *str, unsigned char *data)
+int rasm_disasm(const char *arch, ut64 *offset, const char *str, unsigned char *data)
 {
 	char buf[4096];
 	int sz;

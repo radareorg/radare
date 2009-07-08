@@ -73,7 +73,7 @@ int debug_signal(const char *args)
 	int signum;
 	const char *signame;
 	char *arg;
-	u64 address;
+	ut64 address;
 
 	if (!ps.opened) {
 		eprintf(":signal No program loaded.\n");

@@ -83,14 +83,14 @@ regs_t oregs; // old registers
 //#define REG_K0 25 // Stack pointer
 //#define REG_SP 29 // Stack pointer
 
-u64 arch_syscall(int pid, int sc, ...)
+ut64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 	return ret;
 }
 
 /* clear high 64 bits */
-static u64 reg(u64 reg)
+static ut64 reg(ut64 reg)
 {
 	if (reg & 0xFFFFFFFF00000000LL)
 		return reg & 0xFFFFFFFF;
@@ -204,7 +204,7 @@ int arch_restore_registers()
 	return;
 }
 
-int arch_mprotect(u64 addr, int size, int perms)
+int arch_mprotect(ut64 addr, int size, int perms)
 {
 	fprintf(stderr, "TODO: arch_mprotect\n");
 	return 0;
@@ -247,7 +247,7 @@ int arch_ret()
 #endif
 }
 
-int arch_jmp(u64 ptr)
+int arch_jmp(ut64 ptr)
 {
 	//return ptrace(PTRACE_POKEUSER, ps.pid, PTRACE_PC, (unsigned int)ptr);
 	u8 buf[4096];
@@ -258,14 +258,14 @@ int arch_jmp(u64 ptr)
 	return ptrace(PTRACE_SETREGS, ps.tid, 0, &buf);
 }
 
-u64 arch_pc()
+ut64 arch_pc()
 {
 #warning XXX PowerPC arch_pc() is not ok
         regs_t regs;
         int i,ret; 
-        u32 buf[256];
+        ut32 buf[256];
         u8 *b = buf;
-        u64 addr;
+        ut64 addr;
         /* STUPID LINUX REVERSED GETREGS */
         //ret = ptrace(PTRACE_GETREGS, ps.tid, &buf, 0);
 #if __linux__
@@ -307,7 +307,7 @@ int arch_set_register(const char *reg, const char *value)
 
 int arch_print_fpregisters(int rad, const char *mask)
 {
-	u64 ptr[128];
+	ut64 ptr[128];
 	int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
 	if (rad)
 		for(i=0;i<32;i+=2)
@@ -476,7 +476,7 @@ int arch_continue()
 }
 
 // TODO
-struct bp_t *arch_set_breakpoint(u64 addr)
+struct bp_t *arch_set_breakpoint(ut64 addr)
 {
 #warning POWERPC: find a trap instruction
 	//unsigned char bp[4]="\x00\x00\x00\x0d";
@@ -521,26 +521,26 @@ void *arch_alloc_page(int size, int *rsize)
 	return NULL;
 }
 
-u64 arch_mmap(int fd, int size, u64 addr) //int *rsize)
+ut64 arch_mmap(int fd, int size, ut64 addr) //int *rsize)
 {
 	return NULL;
 }
 
-u64 arch_get_sighandler(int signum)
+ut64 arch_get_sighandler(int signum)
 {
 	return NULL;
 }
 
-u64 arch_set_sighandler(int signum, u64 handler)
+ut64 arch_set_sighandler(int signum, ut64 handler)
 {
 	return NULL;
 }
 
-u64 arch_get_entrypoint()
+ut64 arch_get_entrypoint()
 {
 	unsigned long addr;
 	debug_read_at(ps.tid, &addr, 4, 0x00400018);
-	return (u64)addr;
+	return (ut64)addr;
 }
 struct list_head *arch_bt()
 {
@@ -560,10 +560,10 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(const char *reg)
+ut64 get_reg(const char *reg)
 {
 	regs_t regs;
-	u64 *llregs = &regs; // 45 elements of 64 bits here
+	ut64 *llregs = &regs; // 45 elements of 64 bits here
 	int ret ;
 
 #warning POWERPC: get_reg must use the proper register names and structures

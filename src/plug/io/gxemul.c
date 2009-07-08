@@ -77,7 +77,7 @@ ssize_t gxemul_read(int fd, void *buf, size_t count)
 	// XXX memory is algned!!!
 	for(i=0;i<count;i+=4) {
 		unsigned long *dword = (unsigned long*) buf+i;
-		u64 dw, tm;
+		ut64 dw, tm;
 		sprintf(tmp, "dump 0x%08llx 0x%08llx\n",
 			config.seek+i,
 			config.seek+i+4);
@@ -200,7 +200,7 @@ int gxemul_close(int fd)
 	return close(fd);
 }
 
-u64 gxemul_lseek(int fildes, u64 offset, int whence)
+ut64 gxemul_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

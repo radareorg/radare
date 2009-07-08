@@ -47,7 +47,7 @@ ssize_t serial_read(int fd, void *buf, size_t count)
 {
 	u8 data[32000];
 	int sz;
-	u64 s;
+	ut64 s;
 
 	if (config.seek > serial_bufsz)
 		config.seek = serial_bufsz;
@@ -89,7 +89,7 @@ int serial_close(int fd)
 	return close(fd);
 }
 
-u64 serial_lseek(int fildes, u64 offset, int whence)
+ut64 serial_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

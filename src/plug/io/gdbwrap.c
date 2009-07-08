@@ -22,7 +22,7 @@
 #include <socket.h>
 #include "libgdbwrap/include/gdbwrapper.h"
 
-static u64 off = 0;
+static ut64 off = 0;
 static gdbwrap_t *desc = NULL;
 static int _fd = -1;
 static int pid = 0;
@@ -83,16 +83,16 @@ int r_gdbwrap_handle_open(const char *file)
 	return 0;
 }
 
-int r_gdbwrap_seek(int fd, u64 offset, int whence)
+int r_gdbwrap_seek(int fd, ut64 offset, int whence)
 {
 	if (r_gdbwrap_handle_fd(fd)) {
 		switch(whence) {
 		case SEEK_SET:
 			return off = offset;
 		case SEEK_CUR:
-			return off = (u64)((unsigned long long)off+(unsigned long long)offset);
+			return off = (ut64)((unsigned long long)off+(unsigned long long)offset);
 		case SEEK_END:
-			return off = (u64)((unsigned long long)(-1));
+			return off = (ut64)((unsigned long long)(-1));
 		}
 	}
 
@@ -180,11 +180,11 @@ void r_gdbwrap_system(char *str)
 			return;
 		ptr = strstr(str, "=");
 		if (ptr) {
-			u32 value;
+			ut32 value;
 			ptr[0]='\0';
 			memcpy(&desc->reg32, reg, sizeof(reg));
 			reg = &desc->reg32;
-			value = (u32) get_math(ptr+1);
+			value = (ut32) get_math(ptr+1);
 			if (strstr(str, "eax")) reg->eax = value; else
 			if (strstr(str, "ebx")) reg->ebx = value; else
 			if (strstr(str, "ecx")) reg->ecx = value; else

@@ -20,7 +20,7 @@ struct macro_label_t {
 
 
 extern int macro_counter;
-extern u64 *macro_break_value;
+extern ut64 *macro_break_value;
 
 void radare_macro_init();
 int radare_macro_add(const char *name);

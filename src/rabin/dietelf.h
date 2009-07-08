@@ -64,25 +64,25 @@ typedef struct {
     char**      section;
     char*       string;
     int         bss;
-    u64         base_addr;
+    ut64         base_addr;
     const char* file;
 } ELF_(dietelf_bin_t);
 
 
 int   ELF_(dietelf_close)(int);
 char* ELF_(dietelf_get_arch)(ELF_(dietelf_bin_t)*);
-u64   ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t)*);
+ut64   ELF_(dietelf_get_base_addr)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_data_encoding)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_elf_class)(ELF_(dietelf_bin_t)*);
-u64   ELF_(dietelf_get_entry_offset)(ELF_(dietelf_bin_t)*);
+ut64   ELF_(dietelf_get_entry_offset)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_file_type)(ELF_(dietelf_bin_t)*);
 int   ELF_(dietelf_get_imports)(ELF_(dietelf_bin_t)*, int, dietelf_import*);
 int   ELF_(dietelf_get_imports_count)(ELF_(dietelf_bin_t)*, int);
 int   ELF_(dietelf_get_libs)(ELF_(dietelf_bin_t)*, int, int, dietelf_string*);
 char* ELF_(dietelf_get_machine_name)(ELF_(dietelf_bin_t)*);
 char* ELF_(dietelf_get_osabi_name)(ELF_(dietelf_bin_t)*);
-u64   ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t)*, int, const char*);
-u64   ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t)*, int, const char*);
+ut64   ELF_(dietelf_get_section_index)(ELF_(dietelf_bin_t)*, int, const char*);
+ut64   ELF_(dietelf_get_section_offset)(ELF_(dietelf_bin_t)*, int, const char*);
 int   ELF_(dietelf_get_section_size)(ELF_(dietelf_bin_t)*, int, const char*);
 int   ELF_(dietelf_get_sections)(ELF_(dietelf_bin_t)*, int, dietelf_section*);
 int   ELF_(dietelf_get_sections_count)(ELF_(dietelf_bin_t)*);

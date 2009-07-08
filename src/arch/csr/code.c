@@ -88,12 +88,12 @@ static int label_off(struct directive *d)
 	return d->d_off + off;
 }
 
-static uint16_t i2u16(struct instruction *in)
+static uint16_t i2ut16(struct instruction *in)
 {
 	return *((uint16_t*)in);
 }
 // NOTE: bytes should be at least 16 bytes?
-int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_csr_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	uint16_t lol;
 	uint16_t ins;
@@ -121,7 +121,7 @@ int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
 	memcpy(&lol, bytes, sizeof(uint16_t));
 	aop->length = 2;
 
-	switch(i2u16(in)) {
+	switch(i2ut16(in)) {
 	case INST_NOP:
 		aop->type = AOP_TYPE_NOP;
 		break;

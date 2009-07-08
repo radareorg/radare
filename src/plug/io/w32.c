@@ -126,10 +126,10 @@ int w32_close(int fd)
 	return close(fd);
 }
 
-u64 w32_lseek(int fildes, u64 offset, int whence)
+ut64 w32_lseek(int fildes, ut64 offset, int whence)
 {
 	int mode = 0;
-	u64 off;
+	ut64 off;
 
 	if (fildes == w32_fd) {
 		switch(whence) {

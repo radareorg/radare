@@ -24,18 +24,18 @@
 /* VM */
 
 struct bfvm_cpu_t {
-	u64 eip;
-	u64 esp;
+	ut64 eip;
+	ut64 esp;
 	int ptr;
 	int trace;
-	u64 base;
+	ut64 base;
 	u8 *mem;
-	u32 size;
-	u64 screen;
+	ut32 size;
+	ut64 screen;
 	int screen_idx;
 	int screen_size;
 	u8 *screen_buf;
-	u64 input;
+	ut64 input;
 	int input_idx;
 	int input_size;
 	u8 *input_buf;
@@ -60,7 +60,7 @@ static int bfvm_in_trap()
 	return 0;
 }
 
-static int bfvm_init(u32 size, int circular)
+static int bfvm_init(ut32 size, int circular)
 {
 	memset(&bfvm_cpu,'\0', sizeof(struct bfvm_cpu_t));
 
@@ -107,7 +107,7 @@ static struct bfvm_cpu_t *bfvm_destroy(struct bfvm_cpu_t *bfvm)
 	return NULL;
 }
 
-static u8 *bfvm_get_ptr_at(u64 at)
+static u8 *bfvm_get_ptr_at(ut64 at)
 {
 	if (at >= bfvm_cpu.base)
 		at-=bfvm_cpu.base;
@@ -302,7 +302,7 @@ static int bfvm_contsc()
 	return 0;
 }
 
-static int bfvm_cont(u64 until)
+static int bfvm_cont(ut64 until)
 {
 	radare_controlc();
 	while(!config.interrupted && bfvm_cpu.eip != until) {
@@ -316,7 +316,7 @@ static int bfvm_cont(u64 until)
 	return 0;
 }
 
-static int bfvm_trace(u64 until)
+static int bfvm_trace(ut64 until)
 {
 	bfvm_cpu.trace=1;
 	bfvm_cont(until);
@@ -328,16 +328,16 @@ static void bfvm_show_regs(int rad)
 {
 	if (rad) {
 		cons_printf("fs regs\n");
-		cons_printf("f eip @ 0x%08llx\n", (u64)bfvm_cpu.eip);
-		cons_printf("f esp @ 0x%08llx\n", (u64)bfvm_cpu.esp);
-		cons_printf("f ptr @ 0x%08llx\n", (u64)bfvm_cpu.ptr+bfvm_cpu.base);
+		cons_printf("f eip @ 0x%08llx\n", (ut64)bfvm_cpu.eip);
+		cons_printf("f esp @ 0x%08llx\n", (ut64)bfvm_cpu.esp);
+		cons_printf("f ptr @ 0x%08llx\n", (ut64)bfvm_cpu.ptr+bfvm_cpu.base);
 		cons_printf("fs *\n");
 	} else {
 		u8 ch = bfvm_get();
 		cons_printf("  eip  0x%08llx     esp  0x%08llx\n",
-			(u64)bfvm_cpu.eip, (u64)bfvm_cpu.esp);
+			(ut64)bfvm_cpu.eip, (ut64)bfvm_cpu.esp);
 		cons_printf("  ptr  0x%08x     [ptr]  %d = 0x%02x '%c'\n",
-			(u32)bfvm_cpu.ptr, ch, ch, is_printable(ch)?ch:' ');
+			(ut32)bfvm_cpu.ptr, ch, ch, is_printable(ch)?ch:' ');
 	}
 }
 
@@ -346,19 +346,19 @@ static void bfvm_maps(int rad)
 	if (rad) {
 		cons_printf("fs sections\n");
 		cons_printf("e cmd.vprompt=px@screen\n");
-		cons_printf("f section_code @ 0x%08llx\n", (u64)0LL);
-		cons_printf("f section_code_end @ 0x%08llx\n", (u64)config.size);
-		cons_printf("f section_data @ 0x%08llx\n", (u64)bfvm_cpu.base);
-		cons_printf("f section_data_end @ 0x%08llx\n", (u64)bfvm_cpu.base+bfvm_cpu.size);
-		cons_printf("f screen @ 0x%08llx\n", (u64)bfvm_cpu.screen);
-		cons_printf("f section_screen @ 0x%08llx\n", (u64)bfvm_cpu.screen);
-		cons_printf("f section_screen_end @ 0x%08llx\n", (u64)bfvm_cpu.screen+bfvm_cpu.screen_size);
-		cons_printf("f input @ 0x%08llx\n", (u64)bfvm_cpu.input);
-		cons_printf("f section_input @ 0x%08llx\n", (u64)bfvm_cpu.input);
-		cons_printf("f section_input_end @ 0x%08llx\n", (u64)bfvm_cpu.input+bfvm_cpu.input_size);
+		cons_printf("f section_code @ 0x%08llx\n", (ut64)0LL);
+		cons_printf("f section_code_end @ 0x%08llx\n", (ut64)config.size);
+		cons_printf("f section_data @ 0x%08llx\n", (ut64)bfvm_cpu.base);
+		cons_printf("f section_data_end @ 0x%08llx\n", (ut64)bfvm_cpu.base+bfvm_cpu.size);
+		cons_printf("f screen @ 0x%08llx\n", (ut64)bfvm_cpu.screen);
+		cons_printf("f section_screen @ 0x%08llx\n", (ut64)bfvm_cpu.screen);
+		cons_printf("f section_screen_end @ 0x%08llx\n", (ut64)bfvm_cpu.screen+bfvm_cpu.screen_size);
+		cons_printf("f input @ 0x%08llx\n", (ut64)bfvm_cpu.input);
+		cons_printf("f section_input @ 0x%08llx\n", (ut64)bfvm_cpu.input);
+		cons_printf("f section_input_end @ 0x%08llx\n", (ut64)bfvm_cpu.input+bfvm_cpu.input_size);
 		cons_printf("fs *\n");
 	} else {
-		cons_printf("0x%08llx - 0x%08llx rwxu 0x%08llx .code\n", (u64)0, (u64)config.size, config.size);
+		cons_printf("0x%08llx - 0x%08llx rwxu 0x%08llx .code\n", (ut64)0, (ut64)config.size, config.size);
 		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .data\n", bfvm_cpu.base, bfvm_cpu.base+bfvm_cpu.size, bfvm_cpu.size);
 		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .screen\n", bfvm_cpu.screen, bfvm_cpu.screen+bfvm_cpu.screen_size, bfvm_cpu.screen_size);
 		cons_printf("0x%08llx - 0x%08llx rw-- 0x%08llx .input\n", bfvm_cpu.input, bfvm_cpu.input+bfvm_cpu.input_size, bfvm_cpu.input_size);
@@ -367,7 +367,7 @@ static void bfvm_maps(int rad)
 
 /* PLUGIN CODE */
 
-static u64 cur_seek = 0;
+static ut64 cur_seek = 0;
 
 static int bfdbg_fd = -1;
 
@@ -504,7 +504,7 @@ static int bfdbg_close(int fd)
 	return close(fd);
 }
 
-static u64 bfdbg_lseek(int fildes, u64 offset, int whence)
+static ut64 bfdbg_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

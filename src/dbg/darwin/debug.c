@@ -252,7 +252,7 @@ int debug_os_steps()
 
 #define OLD_PANCAKE_CODE 1
 #if OLD_PANCAKE_CODE
-	printf("stepping from pc = %08x\n", (u32)get_offset("eip"));
+	printf("stepping from pc = %08x\n", (ut32)get_offset("eip"));
 	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)get_offset("eip"), SIGSTOP);
 	ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGTRAP); //SIGINT);
 	if (ret != 0) {
@@ -380,7 +380,7 @@ int debug_fork_and_attach()
 }
 
 // XXX This must be implemented on all the os/debug.c instead of arch_mprotect
-int debug_os_mprotect(u64 addr, int len, int perms)
+int debug_os_mprotect(ut64 addr, int len, int perms)
 {
 	return vm_protect(pid_to_task(ps.tid),
 		(vm_address_t)addr,
@@ -425,7 +425,7 @@ http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/vm_map.html
 
 #endif
 
-int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_read_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	unsigned int size= 0;
 	int err = vm_read_overwrite(pid_to_task(tid), (unsigned int)addr, len, (pointer_t)buff, &size);
@@ -436,7 +436,7 @@ int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return size;
 }
 
-int debug_os_write_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_write_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	// XXX SHOULD RESTORE PERMS LATER!!!
 	vm_protect(pid_to_task(tid), addr, len, 0, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
@@ -693,7 +693,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 				fprintf(stderr, "Region ");
 			else	fprintf(stderr, "   ... ");
 			fprintf(stderr, " 0x%08llx - 0x%08llx %s (%s) %s, %s, %s",
-					(u64)prev_address, (u64)(prev_address + prev_size),
+					(ut64)prev_address, (ut64)(prev_address + prev_size),
 					unparse_protection (prev_info.protection),
 					unparse_protection (prev_info.max_protection),
 					unparse_inheritance (prev_info.inheritance),

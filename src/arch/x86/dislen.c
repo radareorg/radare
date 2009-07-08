@@ -1,7 +1,7 @@
 // code from: z0mbie @ 2002
 // http://vx.netlux.org/lib/vzo16.html
 
-#define u32 unsigned long
+#define ut32 unsigned long
 #define u8  unsigned char
 
 // disasm_flag values:
@@ -15,12 +15,12 @@
 #define C_SIB          0x00000080       // sib present
 #define C_ANYPREFIX    (C_66|C_67|C_LOCK|C_REP|C_SEG)
 
-u32 disasm_len;                       // 0 if error
-u32 disasm_flag;                      // C_xxx
-u32 disasm_memsize;                   // value = disasm_mem
-u32 disasm_datasize;                  // value = disasm_data
-u32 disasm_defdata;                   // == C_66 ? 2 : 4
-u32 disasm_defmem;                    // == C_67 ? 2 : 4
+ut32 disasm_len;                       // 0 if error
+ut32 disasm_flag;                      // C_xxx
+ut32 disasm_memsize;                   // value = disasm_mem
+ut32 disasm_datasize;                  // value = disasm_data
+ut32 disasm_defdata;                   // == C_66 ? 2 : 4
+ut32 disasm_defmem;                    // == C_67 ? 2 : 4
 
 u8  disasm_seg;                       // CS DS ES SS FS GS
 u8  disasm_rep;                       // REPZ/REPNZ
@@ -38,7 +38,7 @@ u8  disasm_data[8];                   // data value
 int dislen(u8* opcode0, int limit)
 {
 	u8* opcode = opcode0;
-	u32 i;
+	ut32 i;
 
 	disasm_len = 0;
 	disasm_flag = 0;

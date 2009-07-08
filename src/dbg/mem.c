@@ -85,7 +85,7 @@ eprintf("fd=%d\n", fd);
 	retaddr = arch_mmap(fd, addr, rsize);
 eprintf("new addr = 0x%08llx\n", retaddr);
 
-	if(retaddr == (u64)-1) {
+	if(retaddr == (ut64)-1) {
 		fprintf(stderr, "host_mmap:error\n");
 		close(fd);
 		return 0;
@@ -97,7 +97,7 @@ eprintf("new addr = 0x%08llx\n", retaddr);
 		return 0;
 	}
 
-	// XXX u64 for 64 bits!
+	// XXX ut64 for 64 bits!
 	mm->addr = (addr_t) retaddr;
 	mm->size = rsize;
 
@@ -143,7 +143,7 @@ addr_t alloc_tagged_page(const char *tag, unsigned long size)
 	return addr;
 }
 
-u64 alloc_page(int size) 
+ut64 alloc_page(int size) 
 {
 	return alloc_tagged_page(NULL, size);
 }
@@ -240,7 +240,7 @@ void free_regmaps(int rest)
 	ps.map_regs_sz = 0;
 }
 
-int radare_get_region(u64 *from, u64 *to)
+int radare_get_region(ut64 *from, ut64 *to)
 {
 	struct list_head *pos;
 
@@ -261,7 +261,7 @@ void print_maps_regions(int rad, int two)
 	struct list_head *pos;
 	char name[128];
 	char perms[5];
-	u64 from=0, to=0;
+	ut64 from=0, to=0;
 
 	if (rad)
 		cons_printf("fs maps\n");
@@ -280,8 +280,8 @@ void print_maps_regions(int rad, int two)
 					name[i] = ch;
 				}
 				name[i]='\0';
-				cons_printf("f map.%s @ 0x%08llx\n", name, (u64)mr->ini);
-				cons_printf("f map.%s_end @ 0x%08llx\n", name, (u64)mr->end);
+				cons_printf("f map.%s @ 0x%08llx\n", name, (ut64)mr->ini);
+				cons_printf("f map.%s_end @ 0x%08llx\n", name, (ut64)mr->end);
 				
 				// TODO: control limits..needs >= comparisions
 				//cons_printf("? $zoom.from >= 0x%08llx && ?? e zoom.from = 0x%08llx\n", mr->ini);
@@ -301,10 +301,10 @@ void print_maps_regions(int rad, int two)
 
 			if ((!two) || (two && ((config.seek>mr->ini) && (config.seek < mr->end))))
 			cons_printf("0x%.8llx %c 0x%.8llx %s 0x%.8llx %s\n",
-				(u64) mr->ini, 
+				(ut64) mr->ini, 
 				((config.seek>=mr->ini) && (config.seek <= mr->end))?'*':'-',
-				(u64) mr->end, perms,
-				(u64) mr->size, mr->bin? mr->bin : "");
+				(ut64) mr->end, perms,
+				(ut64) mr->size, mr->bin? mr->bin : "");
 		}
 	}
 
@@ -541,7 +541,7 @@ err_map:
 
 /* memory protection permissions */
 struct mp_t {
-	u64 addr;
+	ut64 addr;
 	unsigned int size;
 	int perms;
 	struct list_head list;
@@ -561,8 +561,8 @@ int debug_mp(char *str)
 	char buf2[128];
 	char buf3[128];
 	char *ptr = buf;
-	u64 addr;
-	u64 size;
+	ut64 addr;
+	ut64 size;
 	int perms = 0;
 
 	// TODO: move this to debug_init .. must be reinit when !load is called
@@ -675,7 +675,7 @@ eprintf("mmap_tagged_page(%s,0x%08llx,%08lld)\n", file, addr, size);
 	return 0;
 }
 
-u64 debug_alloc(char *args)
+ut64 debug_alloc(char *args)
 {
 	int sz;
 	char *param;

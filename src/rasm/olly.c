@@ -32,7 +32,7 @@
 #endif
 #endif
 
-int rasm_olly_x86(u64 offset, const char *str, u8 *data)
+int rasm_olly_x86(ut64 offset, const char *str, u8 *data)
 {
 	char errtext[TEXTLEN];
 	char *opstring;
@@ -42,7 +42,7 @@ int rasm_olly_x86(u64 offset, const char *str, u8 *data)
 	opstring = alloca(len);
 	// am.code = data ?
 	memcpy(opstring, str, len);
-	len = Assemble(opstring, (u32)offset, &am, 0, 4, errtext);
+	len = Assemble(opstring, (ut32)offset, &am, 0, 4, errtext);
 	if (len <1) {
 		fprintf(stderr, "Error assembling\n");
 		return -1;

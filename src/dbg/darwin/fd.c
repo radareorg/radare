@@ -32,17 +32,17 @@
 #include <sys/stat.h>
 #include "../../main.h"
 
-u64 debug_fd_seek(int pid, int fd, u64 addr, int whence)
+ut64 debug_fd_seek(int pid, int fd, ut64 addr, int whence)
 {
 	return 0;
 }
 
-u64 debug_fd_read(int pid, int fd, u64 addr, int len)
+ut64 debug_fd_read(int pid, int fd, ut64 addr, int len)
 {
 	return 0;
 }
 
-u64 debug_fd_write(int pid, int fd, u64 addr, int len)
+ut64 debug_fd_write(int pid, int fd, ut64 addr, int len)
 {
 	return 0;
 }

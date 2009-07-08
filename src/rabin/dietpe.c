@@ -23,13 +23,13 @@
 #include "dietpe_static.h"
 #include "dietpe_types.h"
 
-static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, u64 seek, u64 limit, const char *filter, int str_limit, dietpe_string *strings)
+static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, ut64 seek, ut64 limit, const char *filter, int str_limit, dietpe_string *strings)
 {
 	int fd = open(bin->file, O_RDONLY);
 	dietpe_string *stringsp;
 	unsigned char *buf;
-	u64 i = seek;
-	u64 len, string_len;
+	ut64 i = seek;
+	ut64 len, string_len;
 	int unicode = 0, matches = 0;
 	static int ctr = 0;
 	char str[PE_STRING_LENGTH];
@@ -410,9 +410,9 @@ int PE_(dietpe_get_file_alignment)(PE_(dietpe_obj) *bin)
 	return bin->nt_headers->optional_header.FileAlignment;
 }
 
-u64 PE_(dietpe_get_image_base)(PE_(dietpe_obj) *bin)
+ut64 PE_(dietpe_get_image_base)(PE_(dietpe_obj) *bin)
 {
-	return(u64)bin->nt_headers->optional_header.ImageBase;
+	return(ut64)bin->nt_headers->optional_header.ImageBase;
 }
 
 int PE_(dietpe_get_imports)(PE_(dietpe_obj) *bin, dietpe_import *import)

@@ -3,16 +3,16 @@
 
 #include "main.h"
 
-int trace_count(u64 addr);
-int trace_times(u64 addr);
-u64 data_seek_to(u64 offset, int type, int idx);
-int trace_add(u64 addr);
+int trace_count(ut64 addr);
+int trace_times(ut64 addr);
+ut64 data_seek_to(ut64 offset, int type, int idx);
+int trace_add(ut64 addr);
 void trace_init();
 
 
 struct trace_t {
-	u64 addr;
-	u64 tags;
+	ut64 addr;
+	ut64 tags;
 	int opsize;
 	int times;
 	int count;
@@ -101,70 +101,70 @@ struct aop_t {
 	int stackop; /* operation on stack? */
 	int length; /* length in bytes of opcode */
 	int eob; // end of block (boolean)
-	u64 jump; /* true jmp */
-	u64 fail; /* false jmp */
-	u64 ref; /* referente to memory */
-	u64 value; /* referente to value */
+	ut64 jump; /* true jmp */
+	ut64 fail; /* false jmp */
+	ut64 ref; /* referente to memory */
+	ut64 value; /* referente to value */
 	int r_dst,r_src1,r_src2; // register arguments
-	u64 i_dst,i_src1,i_src2; // inmediate arguments
+	ut64 i_dst,i_src1,i_src2; // inmediate arguments
 };
 
-int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
-int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop);
-int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop);
-int arch_sparc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_arm_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_x86_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_java_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_ppc_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_csr_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_m68k_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
-int arch_msil_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop);
+int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
+int arch_aop_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
+int arch_bf_aop(ut64 addr, const u8 *buf, struct aop_t *aop);
+int arch_sparc_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_arm_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_mips_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_x86_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_java_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_ppc_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_csr_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_m68k_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
+int arch_msil_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
 
-int gnu_dismips_str(char *str, const u8 *inst, u64 offset);
-int gnu_disarm_str(char *str, const u8 *inst, u64 offset);
-int gnu_disparc_str(char *str, const u8 *inst, u64 offset);
+int gnu_dismips_str(char *str, const u8 *inst, ut64 offset);
+int gnu_disarm_str(char *str, const u8 *inst, ut64 offset);
+int gnu_disparc_str(char *str, const u8 *inst, ut64 offset);
 
-struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo);
+struct aop_t *pas_aop(int arch, ut64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo);
 struct reflines_t *code_lines_init();
 void code_lines_free(struct list_head *list);
-void code_lines_print(struct reflines_t *list, u64 addr, int expand);
-void metadata_comment_add(u64 offset, const char *str);
+void code_lines_print(struct reflines_t *list, ut64 addr, int expand);
+void metadata_comment_add(ut64 offset, const char *str);
 
-void code_lines_print2(struct reflines_t *list, u64 addr);
-int metadata_xrefs_print(u64 addr, int type);
-int metadata_xrefs_print(u64 addr, int type);
-int metadata_xrefs_add(u64 addr, u64 from, int type);
-void metadata_xrefs_del(u64 addr, u64 from, int data);
-void metadata_comment_del(u64 offset, const char *str);
-void metadata_comment_add(u64 offset, const char *str);
+void code_lines_print2(struct reflines_t *list, ut64 addr);
+int metadata_xrefs_print(ut64 addr, int type);
+int metadata_xrefs_print(ut64 addr, int type);
+int metadata_xrefs_add(ut64 addr, ut64 from, int type);
+void metadata_xrefs_del(ut64 addr, ut64 from, int data);
+void metadata_comment_del(ut64 offset, const char *str);
+void metadata_comment_add(ut64 offset, const char *str);
 
-struct data_t *data_get_range(u64 offset);
-struct data_t *data_get_between(u64 from, u64 to);
-int data_set_len(u64 off, u64 len);
-int data_set(u64 off, int type);
-struct data_t *data_add_arg(u64 off, int type, const char *arg);
-struct data_t *data_add(u64 off, int type);
-struct data_t *data_get(u64 offset);
-int data_type_range(u64 offset);
-int data_type(u64 offset);
-int data_end(u64 offset);
-int data_size(u64 offset);
+struct data_t *data_get_range(ut64 offset);
+struct data_t *data_get_between(ut64 from, ut64 to);
+int data_set_len(ut64 off, ut64 len);
+int data_set(ut64 off, int type);
+struct data_t *data_add_arg(ut64 off, int type, const char *arg);
+struct data_t *data_add(ut64 off, int type);
+struct data_t *data_get(ut64 offset);
+int data_type_range(ut64 offset);
+int data_type(ut64 offset);
+int data_end(ut64 offset);
+int data_size(ut64 offset);
 int data_list();
 void udis_jump(int n);
-int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int myinc);
+int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, int myinc);
 void udis_arch(int arch, int len, int rows);
 void udis_arch_buf(int arch, const u8 *block, int len, int rows);
 int dislen(u8* opcode0, int limit);
 
-int arch_bf_dis(const u8* buf, u64 addr, int len);
+int arch_bf_dis(const u8* buf, ut64 addr, int len);
 
 /* Virtual Machine */
 int vm_init();
-u64 vm_get(int reg);
+ut64 vm_get(int reg);
 const char *vm_get_name(int reg);
-int vm_set(int reg, u64 value);
+int vm_set(int reg, ut64 value);
 
 
 /* arch/x86/vm.c */
@@ -219,17 +219,17 @@ enum {
 
 extern const char *vm_arch_x86_regs_str[VM_X86_N_REGS];
 extern int vm_arch_x86_nregs;
-extern u64 vm_arch_x86_regs[VM_X86_N_REGS];
+extern ut64 vm_arch_x86_regs[VM_X86_N_REGS];
 void vm_arch_x86_init();
 
 extern const char **vm_arch_mips_regs_str;
 extern int vm_arch_mips_nregs;
-extern u64 vm_arch_mips_regs[VM_MIPS_N_REGS];
+extern ut64 vm_arch_mips_regs[VM_MIPS_N_REGS];
 void vm_arch_mips_init();
-int analyze_function(u64 from, int recursive, int report);
-char *metadata_comment_get(u64 offset, int lines);
-int radare_analyze(u64 seek, int size, int depth, int rad);
+int analyze_function(ut64 from, int recursive, int report);
+char *metadata_comment_get(ut64 offset, int lines);
+int radare_analyze(ut64 seek, int size, int depth, int rad);
 void radis_str_e(int arch, const u8 *block, int len, int rows);
-int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc);
+int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 seek, int bytes, int myinc);
 
 #endif

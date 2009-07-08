@@ -16,7 +16,7 @@ enum {
 
 /* token structure */
 struct tok {
-	u64 off;
+	ut64 off;
 	int type;
 	int op, log_op;
 	char *val;

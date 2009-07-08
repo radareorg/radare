@@ -132,22 +132,22 @@ int quite     = 1;
 #define MAGIC_SZ 4
 struct header_t {
 	char magic[MAGIC_SZ];
-	u64 header_size;
+	ut64 header_size;
 	unsigned char version;
 	unsigned char offsz;
 	unsigned char endian;
-	u64 file_size;
-	u64 from; /* seek */
-	u64 to;
-	u64 length;
+	ut64 file_size;
+	ut64 from; /* seek */
+	ut64 to;
+	ut64 length;
 	unsigned char algorithm;
-	u64 block_size;
+	ut64 block_size;
 	char file_name[128]; // XXX must be variable size
 } header;
 
-u64 get_offset (const char *arg)
+ut64 get_offset (const char *arg)
 {
-	u64 ret = 0;
+	ut64 ret = 0;
 	int i;
 
 	for(i=0;arg[i]==' ';i++);
@@ -175,8 +175,8 @@ u64 get_offset (const char *arg)
 
 void print_header()
 {
-	u64 one = header.file_size / header.block_size;
-	u64 two = ((header.file_size % header.block_size) > 0)?(u64)1:(u64)0;
+	ut64 one = header.file_size / header.block_size;
+	ut64 two = ((header.file_size % header.block_size) > 0)?(ut64)1:(ut64)0;
 
 	if (header.algorithm > ALGO_SUPPORTED) {
 		fprintf(stderr, "Unknown hash algorithm.\n");
@@ -228,8 +228,8 @@ int radare_hash_generate(char *src, char *dst)
 	int sd, dd = -2;
 	unsigned char *buffer;
 	unsigned char *digest;
-	u64 ptr = 0;
-	u64 len, i;
+	ut64 ptr = 0;
+	ut64 len, i;
 	float floah = 0;
 
 	if (!strcmp(src, "-"))
@@ -303,7 +303,7 @@ int radare_hash_generate(char *src, char *dst)
 	print_header();
 
 	if (dst) {
-		u64 size = header.header_size;
+		ut64 size = header.header_size;
 		endian_header();
 		write(dd, &header, size);
 		unendian_header();
@@ -475,10 +475,10 @@ int radare_hash_check(char *src, char *dst)
 {
 	int sd = -1, dd = -2;
 	u8 *buffer = (u8*)malloc(header.block_size); //header.block_size];
-	u64 ptr = 0;
+	ut64 ptr = 0;
 	unsigned int i, hsize;
 	int cmp;
-	u64 len = header.block_size;
+	ut64 len = header.block_size;
 	u8 digest[256];
 	u8 digest_hashed[256];
 
@@ -505,7 +505,7 @@ int radare_hash_check(char *src, char *dst)
 		return 1;
 	}
 	lseek(dd, MAGIC_SZ, SEEK_SET);
-	read(dd, &hsize, sizeof(u64));
+	read(dd, &hsize, sizeof(ut64));
 	hsize = ntohl(hsize);
 	unendian_header();
  	lseek(dd, 0, SEEK_SET);
@@ -561,8 +561,8 @@ int radare_hash_check(char *src, char *dst)
 				break;
 			case ALGO_CRC32:
 				{
-				u32 *p = (u32 *)digest;
-				*p = (u32)htonl(crc32(buffer, len));
+				ut32 *p = (ut32 *)digest;
+				*p = (ut32)htonl(crc32(buffer, len));
 				}
 				break;
 			case ALGO_SHA1:
@@ -578,7 +578,7 @@ int radare_hash_check(char *src, char *dst)
 			cmp = memcmp(digest, digest_hashed, algorithms[header.algorithm].size);
 
 			if (cmp || verbose) {
-				printf(OFF_FMT" ", (u64)ptr);
+				printf(OFF_FMT" ", (ut64)ptr);
 				for (i = 0; i < algorithms[header.algorithm].size; i++)
 					printf ("%02X", digest[i]);
 			}
@@ -640,7 +640,7 @@ int main(int argc, char **argv)
 	header.block_size = 32768;
 	header.algorithm  = ALGO_MD5;
 	header.endian     = !LIL_ENDIAN;
-	header.offsz      = sizeof(u64);
+	header.offsz      = sizeof(ut64);
 	memcpy(header.magic, MAGIC, MAGIC_SZ);
 
 	while ((c = getopt(argc, argv, "Ab:a:ofvgchqs:S:L:E:V")) != -1) {

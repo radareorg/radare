@@ -21,13 +21,13 @@ static int mips_buffer_read_memory (bfd_vma memaddr, bfd_byte *myaddr, unsigned 
 
 static int symbol_at_address(bfd_vma addr, struct disassemble_info * info)
 {
-	eprintf("symataddr%llx\n",(u32)addr);
+	eprintf("symataddr%llx\n",(ut32)addr);
 	return 0;
 }
 
 static void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
 {
-	eprintf("hoho%llx\n",(u32)memaddr);
+	eprintf("hoho%llx\n",(ut32)memaddr);
 }
 
 static char *buf_global = NULL;
@@ -36,7 +36,7 @@ static void print_address(bfd_vma address, struct disassemble_info *info)
 	char tmp[32];
 	if (buf_global == NULL)
 		return;
-	sprintf(tmp, "0x%08llx", (u64)address-8); /* WTF ?!?! why gnu disasm doesnt do this well? */
+	sprintf(tmp, "0x%08llx", (ut64)address-8); /* WTF ?!?! why gnu disasm doesnt do this well? */
 	strcat(buf_global, tmp);
 }
 static void buf_fprintf(FILE *stream, const char *format, ...)
@@ -53,7 +53,7 @@ static void buf_fprintf(FILE *stream, const char *format, ...)
 }
 
 /* Disassembler entry point */
-int gnu_dismips_str(char *str, const u8 *inst, u64 offset)
+int gnu_dismips_str(char *str, const u8 *inst, ut64 offset)
 {
 	struct disassemble_info info;
 #if 0

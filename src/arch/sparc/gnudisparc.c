@@ -37,7 +37,7 @@ static void print_address(bfd_vma address, struct disassemble_info *info)
 	char tmp[32];
 	if (buf_global == NULL)
 		return;
-	sprintf(tmp, "0x%08llx", (u64)address);
+	sprintf(tmp, "0x%08llx", (ut64)address);
 	strcat(buf_global, tmp);
 }
 static void buf_fprintf(FILE *stream, const char *format, ...)
@@ -54,7 +54,7 @@ static void buf_fprintf(FILE *stream, const char *format, ...)
 }
 
 /* Disassembler entry point */
-int gnu_disparc_str(char *str, const u8 *inst, u64 offset)
+int gnu_disparc_str(char *str, const u8 *inst, ut64 offset)
 {
 	struct disassemble_info info;
 

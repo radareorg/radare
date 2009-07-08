@@ -53,7 +53,7 @@ typedef struct plugin_t {
 	int (*system)(const char *);
 	int (*open)(const char *, int, mode_t);
 	ssize_t (*read)(int fd, void *buf, size_t count);
-	u64 (*lseek)(int fildes, u64 offset, int whence);
+	ut64 (*lseek)(int fildes, ut64 offset, int whence);
 	ssize_t (*write)(int fd, const void *buf, size_t count);
 	int (*close)(int fd);
 	int (*handle_open)(const char *);
@@ -105,7 +105,7 @@ int  plugin_list();
 /* io functions */
 int     io_open   (const char *pathname, int flags, mode_t mode);
 ssize_t io_read   (int fd, void *buf, size_t count);
-u64   io_lseek  (int fd, u64 offset, int whence);
+ut64   io_lseek  (int fd, ut64 offset, int whence);
 ssize_t io_write  (int fd, const void *buf, size_t count);
 int     io_isdbg  (int fd);
 int     io_close  (int fd);

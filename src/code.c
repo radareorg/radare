@@ -66,7 +66,7 @@ static int input_hook_x(ud_t* u)
 	return config.block[ud_idx++];
 }
 
-void udis_set_pc(u64 pc)
+void udis_set_pc(ut64 pc)
 {
 //	ud_idx = 0;
 	ud_set_pc(&ud_obj, pc);
@@ -122,7 +122,7 @@ void udis_init()
 }
 
 static int jump_n = 0;
-static u64 jumps[10]; // only 10 jumps allowed
+static ut64 jumps[10]; // only 10 jumps allowed
 
 void udis_jump(int n)
 {
@@ -135,9 +135,9 @@ void udis_jump(int n)
 }
 
 /* -- disassemble -- */
-char *disarm (RawInstruction rawinstruction, u64 offset);
+char *disarm (RawInstruction rawinstruction, ut64 offset);
 
-int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek, int bytes, int myinc)
+int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 seek, int bytes, int myinc)
 {
 	//unsigned char *b = config.block + bytes;
 	const u8 *b = buf; //config.block + bytes;
@@ -166,7 +166,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 		break;
 	case ARCH_CSR:
 		//if (bytes<config.block_size) {
-		arch_csr_disasm(string, (const unsigned char *)b, (u64)seek);
+		arch_csr_disasm(string, (const unsigned char *)b, (ut64)seek);
 		break;
 	case ARCH_X86:
 		if (ollyasm_enable) {
@@ -261,7 +261,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, u64 seek
 	return ret;
 }
 
-int udis_arch_opcode(int arch, const u8 *b, int endian, u64 seek, int bytes, int myinc)
+int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, int myinc)
 {
 	char buf[128];
 	//unsigned char *b = config.block + bytes; //(seek-config.seek); //+ bytes;
@@ -314,7 +314,7 @@ void udis_arch(int arch, int len, int rows)
 }
 
 /* aop disassembler */
-int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
+int arch_aop_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	switch(aop->type) {
 	case AOP_TYPE_NOP:
@@ -339,7 +339,7 @@ int arch_aop_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
 struct radis_arch_t {
 	const char *name;
 	int id;
-	int (*fun)(u64 addr, const u8 *bytes, struct aop_t *aop);
+	int (*fun)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
 	{ "bf"      , ARCH_BF    , &arch_bf_aop  }   ,
 	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
@@ -445,7 +445,7 @@ static void print_stackptr(struct aop_t *aop, int zero)
 	cons_printf("%3d%c", stack_ptr, changed);
 }
 
-const char *get_section_name_at(u64 addr)
+const char *get_section_name_at(ut64 addr)
 {
 	char *str;
 	str = flag_get_here_filter2(addr - config.vaddr, "maps.", "section.");
@@ -456,11 +456,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 {
 	struct aop_t aop;
 	int i,idata,delta;
-	u64 seek = 0;
-	u64 sk = 0;
+	ut64 seek = 0;
+	ut64 sk = 0;
 	int bytes = 0;
 	int myrow = 0;
-	u64 myinc = 0;
+	ut64 myinc = 0;
 	struct data_t *foo;
 	unsigned char b[32];
 	char buf[1024];
@@ -578,7 +578,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)config.block+bytes, &aop);
 				//ud_set_pc(&ud_obj, seek);
 				//arch_x86_aop((unsigned long)ud_insn_off(&ud_obj), (const unsigned char *)b, &aop);
-				arch_x86_aop((u64)seek, (const u8*)block+bytes, &aop);
+				arch_x86_aop((ut64)seek, (const u8*)block+bytes, &aop);
 				myinc += ud_insn_len(&ud_obj);
 				break;
 			case ARCH_ARM16:
@@ -1055,7 +1055,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 		/* */
 		if (flags & RADIS_FLAGSALL) {
-			u64 ptr = flag_delta_between(sk,sk+myinc);
+			ut64 ptr = flag_delta_between(sk,sk+myinc);
 			if (ptr != 0LL) {
 				myinc = ptr;
 				myrow++;

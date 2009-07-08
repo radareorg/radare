@@ -104,7 +104,7 @@ trap 	011010	Trap
 #endif
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_mips_aop(u64 addr, const unsigned char *bytes, struct aop_t *aop)
+int arch_mips_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 {
 	unsigned long op;
 	int reg; 

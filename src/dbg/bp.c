@@ -28,7 +28,7 @@
 
 int debug_bp(const char *str)
 {
-	u64 addr = 0;
+	ut64 addr = 0;
 	const char *ptr = str;
 	const char *type;
 	int hwbp = BP_NONE;
@@ -107,10 +107,10 @@ struct bp_t *debug_bp_get(addr_t addr)
 }
 
 /* HACK: save a hardware/software breakpoint */
-u64 debug_bp_restore_after()
+ut64 debug_bp_restore_after()
 {
 	struct bp_t *bp;
-	u64 addr = arch_pc(ps.tid); // x86
+	ut64 addr = arch_pc(ps.tid); // x86
 	int bpsize = arch_bpsize();
 
 	/* hardware */
@@ -144,7 +144,7 @@ int debug_bp_restore(int pos)
 {
 	int ret =0;
 	struct bp_t *bp;
-	u64 addr = arch_pc(ps.tid); // x86
+	ut64 addr = arch_pc(ps.tid); // x86
 
 	if (pos==-1)
 		bp = debug_bp_get(addr);
@@ -173,7 +173,7 @@ int debug_bp_restore(int pos)
 	return ret;
 }
 
-int debug_bp_rm(u64 addr, int type)
+int debug_bp_rm(ut64 addr, int type)
 {
 	struct bp_t *bp;
 	int ret;
@@ -217,12 +217,12 @@ int debug_bp_rm_num(int num)
 	return 0;
 }
 
-int debug_bp_rm_addr(u64 addr)
+int debug_bp_rm_addr(ut64 addr)
 {
 	return debug_bp_rm(addr, 0);
 }
 
-int debug_bp_set(struct bp_t *bp, u64 addr, int type)
+int debug_bp_set(struct bp_t *bp, ut64 addr, int type)
 {
 	int i, ret, bp_free = -1;
 

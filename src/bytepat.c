@@ -79,16 +79,16 @@ int do_byte_pat(int patlen)
 	unsigned char block[BSIZE+MAX_PATLEN];
 	unsigned char sblk[MAX_PATLEN+1];
 	static fnditem* root;
-	u64 bproc = 0;
+	ut64 bproc = 0;
 	int rb, nr;
 	int range_n = 0;
 	int i, moar;
 	int pcnt, cnt=0, k=0;
-	u64 intaddr;
+	ut64 intaddr;
 	/* end addr */
-	u64 bytes;
+	ut64 bytes;
  	/* start addr */
-	u64 bact = config.seek;
+	ut64 bact = config.seek;
 
 	if (patlen < 1 || patlen > MAX_PATLEN) {
 		eprintf("Invalid pattern length (must be > 1 and < %d)\n", MAX_PATLEN);
@@ -167,7 +167,7 @@ do {
 		}
 
 		if (moar > 0) {
-			bact += (u64)patlen;
+			bact += (ut64)patlen;
 		} else bact++;
 	}
 	cons_newline();

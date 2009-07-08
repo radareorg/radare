@@ -16,7 +16,7 @@ extern const char *block_type_names[4];
 struct block_t {
 	char *name;
 	char *comment;
-	u64 addr;
+	ut64 addr;
 	int type;
 
 	int ignored;
@@ -32,21 +32,21 @@ struct block_t {
 	unsigned int n_xrefs;
 	struct list_head xrefs;
 	struct list_head list;
-	u64 tnext; // true conditional jump
-	u64 fnext; // false conditional jump
+	ut64 tnext; // true conditional jump
+	ut64 fnext; // false conditional jump
 
 	void *data; // user data
 };
 
 struct call_t {
-	u64 from;
-	u64 to;
+	ut64 from;
+	ut64 to;
 	struct list_head list;
 };
 
 struct function_t {
 	char name[256];
-	u64 addr;
+	ut64 addr;
 	int vars;
 	int args;
 	int size;
@@ -64,7 +64,7 @@ struct program_t {
 	int setgid;
 #endif
 
-	u64 entry;
+	ut64 entry;
 
 	int n_blocks;
 	struct list_head blocks;
@@ -77,34 +77,34 @@ struct program_t {
 
 /* functions */
 struct program_t *program_new(char *file);
-int program_block_set_bytes(struct program_t *program, u64 addr, char *hexpairs);
+int program_block_set_bytes(struct program_t *program, ut64 addr, char *hexpairs);
 int program_free(struct program_t *program);
 void program_reset(struct program_t *program);
 int program_serialize(struct program_t *program, char *file);
-struct block_t *block_new(u64 addr);
-struct block_t *program_block_get(struct program_t *program, u64 addr);
-struct block_t *program_block_get_new(struct program_t *program, u64 addr);
-struct block_t *program_block_split_new(struct program_t *program, u64 addr);
-int program_block_set_framesize(struct program_t *program, u64 addr, int size);
-int program_block_set_name(struct program_t *program, u64 addr, char *name);
-int program_block_add_xref(struct program_t *program, u64 addr, u64 from);
-int program_block_set_comment(struct program_t *program, u64 addr, char *comment);
-int program_block_set_bytes(struct program_t *program, u64 addr, char *hexpairs);
-int program_block_add_call(struct program_t *program, u64 addr, u64 dest);
+struct block_t *block_new(ut64 addr);
+struct block_t *program_block_get(struct program_t *program, ut64 addr);
+struct block_t *program_block_get_new(struct program_t *program, ut64 addr);
+struct block_t *program_block_split_new(struct program_t *program, ut64 addr);
+int program_block_set_framesize(struct program_t *program, ut64 addr, int size);
+int program_block_set_name(struct program_t *program, ut64 addr, char *name);
+int program_block_add_xref(struct program_t *program, ut64 addr, ut64 from);
+int program_block_set_comment(struct program_t *program, ut64 addr, char *comment);
+int program_block_set_bytes(struct program_t *program, ut64 addr, char *hexpairs);
+int program_block_add_call(struct program_t *program, ut64 addr, ut64 dest);
 struct program_t *program_open(char *file);
 int program_diff(struct program_t *a, struct program_t *b, int mode);
-struct function_t *program_function_get(struct program_t *program, u64 addr);
-struct function_t *function_new(u64 addr, int size);
-struct function_t *program_add_function(struct program_t *program, u64 addr, int size);
-struct function_t *program_function_get_new(struct program_t *program, u64 addr);
-int program_function_set_vars(struct program_t *program, u64 addr, int vars);
-int program_function_set_args(struct program_t *program, u64 addr, int args);
-int program_function_set_framesize(struct program_t *program, u64 addr, int size);
-struct block_t *program_block_new(struct program_t *program, u64 addr);
+struct function_t *program_function_get(struct program_t *program, ut64 addr);
+struct function_t *function_new(ut64 addr, int size);
+struct function_t *program_add_function(struct program_t *program, ut64 addr, int size);
+struct function_t *program_function_get_new(struct program_t *program, ut64 addr);
+int program_function_set_vars(struct program_t *program, ut64 addr, int vars);
+int program_function_set_args(struct program_t *program, ut64 addr, int args);
+int program_function_set_framesize(struct program_t *program, ut64 addr, int size);
+struct block_t *program_block_new(struct program_t *program, ut64 addr);
 int rdb_diff(struct program_t *a, struct program_t *b, int mode);
 
 
 // XXX
-struct program_t *code_analyze(u64 seek, int depth);
+struct program_t *code_analyze(ut64 seek, int depth);
 
 #endif

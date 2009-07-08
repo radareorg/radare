@@ -351,7 +351,7 @@ err_fork:
 	return -1;
 }
 
-int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_read_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	int ret_len = 0;
 
@@ -361,7 +361,7 @@ int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return ret_len;
 }
 
-int debug_os_write_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_write_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	int ret_len = -1;
 

@@ -99,7 +99,7 @@ int debug_register_list()
      63 #define	tR15	11
 #endif
 
-u64 arch_syscall(int pid, int sc, ...)
+ut64 arch_syscall(int pid, int sc, ...)
 {
 	long long ret = (off_t)-1;
 #if __linux__
@@ -277,14 +277,14 @@ int arch_is_jump(u8 *buf)
 	return 0;
 }
 
-u64 arch_get_entrypoint()
+ut64 arch_get_entrypoint()
 {
-	u64 addr;
+	ut64 addr;
 	debug_read_at(ps.tid, &addr, 4, 0x8048018);
 	return (off_t)addr;
 }
 
-int arch_jmp(u64 ptr)
+int arch_jmp(ut64 ptr)
 {
 	regs_t regs;
 	int ret = ptrace(PTRACE_GETREGS, ps.tid, NULL, &regs);
@@ -399,7 +399,7 @@ int arch_inject(unsigned char *data, int size)
 	return 0;
 }
 
-u64 arch_pc()
+ut64 arch_pc()
 {
 	regs_t regs;
 	debug_getregs(ps.tid, &regs);
@@ -413,8 +413,8 @@ int arch_backtrace()
 	%ebp+4 points to ret
 	*/
 	int ret, i;
-	u64 ptr;
-	u64 ebp2;
+	ut64 ptr;
+	ut64 ebp2;
 	regs_t regs;
 	unsigned char buf[4];
 
@@ -429,7 +429,7 @@ int arch_backtrace()
 	if (!memcmp(buf, "\x55\x89\xe5", 3)
 	||  !memcmp(buf, "\x89\xe5\x57", 3)) { /* push %ebp ; mov %esp, %ebp */
 		debug_read_at(ps.tid, &ptr, 4, R_RSP(regs));
-		cons_printf("#0 0x%08llx %s", (u64)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#0 0x%08llx %s", (ut64)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ptr;
 	}
 
@@ -437,7 +437,7 @@ int arch_backtrace()
 		debug_read_at(ps.tid, &ebp2, 4, R_RBP(regs));
 		debug_read_at(ps.tid, &ptr, 4, R_RBP(regs)+4);
 		if (ptr == 0x0 || R_RBP(regs) == 0x0) break;
-		cons_printf("#%d 0x%08llx %s\n", i, (u64)ptr, flag_name_by_offset((off_t)ptr));
+		cons_printf("#%d 0x%08llx %s\n", i, (ut64)ptr, flag_name_by_offset((off_t)ptr));
 		R_RBP(regs) = ebp2;
 	}
 	return i;
@@ -481,7 +481,7 @@ int arch_call(const char *arg)
 {
 	int ret;
 	regs_t regs;
-	u64 addr;
+	ut64 addr;
 
 	if (ps.opened == 0)
 		return 0;
@@ -533,7 +533,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 #define FADDR ((double*)&regs.st_space[i*4])
 
 	for(i=0;i<8;i++) {
-		u16 *a = (u16*)&regs.xmm_space;
+		ut16 *a = (ut16*)&regs.xmm_space;
 		a = a + (i * 4);
 
 		cons_printf(" mm%d = %04x %04x %04x %04x    ", i, (int)a[0], (int)a[1], (int)a[2], (int)a[3]);
@@ -767,7 +767,7 @@ int arch_print_registers(int rad, const char *mask)
 			if (R_RSI(regs)!=R_RSI(oregs)) cons_printf("\x1b[35m");
 			cons_printf("    rsi  0x%08llx\x1b[0m", (long long)R_RSI(regs));
 			if (R_RIP(regs)!=R_RIP(oregs)) cons_printf("\x1b[35m");
-			cons_printf("    rip    0x%08llx\x1b[0m\n",  (u64) R_RIP(regs));
+			cons_printf("    rip    0x%08llx\x1b[0m\n",  (ut64) R_RIP(regs));
 			if (R_RBX(regs)!=R_RBX(oregs)) cons_printf("\x1b[35m");
 			cons_printf(" rbx  0x%08llx\x1b[0m", (long long)R_RBX(regs));
 			if (R_RDI(regs)!=R_RDI(oregs)) cons_printf("\x1b[35m");
@@ -787,37 +787,37 @@ int arch_print_registers(int rad, const char *mask)
 			cons_printf("    rbp  0x%08llx\x1b[0m    ",(long long) R_RBP(regs));
 			dump_eflags64(R_RFLAGS(regs));
 			if (R_R8(regs)!=R_R8(oregs)) printf("\x1b[35m");
-			cons_printf("  r8 0x%08llx     ",(u64)R_R8(regs)); 
+			cons_printf("  r8 0x%08llx     ",(ut64)R_R8(regs)); 
 			if (R_R11(regs)!=R_R11(oregs)) printf("\x1b[35m");
-			cons_printf("r11 0x%08llx    ",(u64)R_R11(regs)); 
+			cons_printf("r11 0x%08llx    ",(ut64)R_R11(regs)); 
 			if (R_R14(regs)!=R_R14(oregs)) printf("\x1b[35m");
-			cons_printf("r14 0x%08llx\n", (u64)R_R14(regs));
+			cons_printf("r14 0x%08llx\n", (ut64)R_R14(regs));
 			if (R_R9(regs)!=R_R9(oregs)) printf("\x1b[35m");
-			cons_printf("  r9 0x%08llx     ",(u64)R_R9(regs)); 
+			cons_printf("  r9 0x%08llx     ",(ut64)R_R9(regs)); 
 			if (R_R12(regs)!=R_R12(oregs)) printf("\x1b[35m");
-			cons_printf("r12 0x%08llx    ",(u64)R_R12(regs)); 
+			cons_printf("r12 0x%08llx    ",(ut64)R_R12(regs)); 
 			if (R_R15(regs)!=R_R15(oregs)) printf("\x1b[35m");
-			cons_printf("r15 0x%08llx\n", (u64)R_R15(regs));
+			cons_printf("r15 0x%08llx\n", (ut64)R_R15(regs));
 			if (R_R10(regs)!=R_R10(oregs)) printf("\x1b[35m");
-			cons_printf(" r10 0x%08llx     ", (u64)R_R10(regs));
+			cons_printf(" r10 0x%08llx     ", (ut64)R_R10(regs));
 			if (R_R13(regs)!=R_R13(oregs)) printf("\x1b[35m");
-			cons_printf("r13 0x%08llx\n", (u64)R_R13(regs));
+			cons_printf("r13 0x%08llx\n", (ut64)R_R13(regs));
 			
 			fflush(stdout);
 //#if __linux__
 //		printf("  cs: 0x%04x   ds: 0x%04x   fs: 0x%04x   gs: 0x%04x\n", regs.cs, regs.ds, regs.fs, regs.gs);
 //#endif
 		} else {
-			cons_printf(" rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (u64)R_RAX(regs), (u64)R_RSI(regs), (u64)R_RIP(regs));
-			cons_printf(" rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (u64)R_RBX(regs), R_RDI(regs), (u64)R_ORAX(regs));
-			cons_printf(" rcx  0x%08llx    rsp  0x%08llx    rflags 0x%04x\n",   (u64)R_RCX(regs), (u64)R_RSP(regs), (u64)R_RFLAGS(regs));
-			cons_printf(" rdx  0x%08llx    rbp  0x%08llx    ", (u64)R_RDX(regs), (u64)R_RBP(regs));
+			cons_printf(" rax  0x%08llx    rsi  0x%08llx    rip    0x%08llx\n",   (ut64)R_RAX(regs), (ut64)R_RSI(regs), (ut64)R_RIP(regs));
+			cons_printf(" rbx  0x%08llx    rdi  0x%08llx    orax   0x%08llx\n",   (ut64)R_RBX(regs), R_RDI(regs), (ut64)R_ORAX(regs));
+			cons_printf(" rcx  0x%08llx    rsp  0x%08llx    rflags 0x%04x\n",   (ut64)R_RCX(regs), (ut64)R_RSP(regs), (ut64)R_RFLAGS(regs));
+			cons_printf(" rdx  0x%08llx    rbp  0x%08llx    ", (ut64)R_RDX(regs), (ut64)R_RBP(regs));
 			dump_eflags64(R_RFLAGS(regs));
 
 			/* r8-r15 */
-			cons_printf("  r8 0x%08llx     r11 0x%08llx    r14 0x%08llx\n", (u64)R_R8(regs), (u64)R_R11(regs), (u64)R_R14(regs));
-			cons_printf("  r9 0x%08llx     r12 0x%08llx    r15 0x%08llx\n", (u64)R_R9(regs), (u64)R_R12(regs), (u64)R_R15(regs));
-			cons_printf(" r10 0x%08llx     r13 0x%08llx\n", (u64)R_R10(regs), (u64)R_R13(regs));
+			cons_printf("  r8 0x%08llx     r11 0x%08llx    r14 0x%08llx\n", (ut64)R_R8(regs), (ut64)R_R11(regs), (ut64)R_R14(regs));
+			cons_printf("  r9 0x%08llx     r12 0x%08llx    r15 0x%08llx\n", (ut64)R_R9(regs), (ut64)R_R12(regs), (ut64)R_R15(regs));
+			cons_printf(" r10 0x%08llx     r13 0x%08llx\n", (ut64)R_R10(regs), (ut64)R_R13(regs));
 		}
 
 		if (memcmp(&nregs,&regs, sizeof(regs_t))) {
@@ -831,12 +831,12 @@ int arch_print_registers(int rad, const char *mask)
 	return 0;
 }
 
-u64 get_value(const char *str)
+ut64 get_value(const char *str)
 {
 	long long tmp;
 
 	if (str[0]&&str[1]=='x')
-		sscanf(str, "0x%llx",  (u64 *)&tmp);
+		sscanf(str, "0x%llx",  (ut64 *)&tmp);
 	else	tmp = atoll(str);
 	return tmp;
 }
@@ -938,7 +938,7 @@ int arch_continue()
 }
 
 //void *arch_mmap(int fd, int size, off_t addr) //int *rsize)
-u64 arch_mmap(int fd, int size, u64 addr)
+ut64 arch_mmap(int fd, int size, ut64 addr)
 {
 #if 0
 #include <sys/types.h>
@@ -1010,7 +1010,7 @@ $
 	regs_t  reg, reg_saved;
 	int     status;
 	char    bak[4];
-    u64 ret = -1;
+    ut64 ret = -1;
 
 	/* save old registers */
 	debug_getregs(ps.tid, &reg_saved);
@@ -1068,14 +1068,14 @@ $
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (u64) ret;
+	return (ut64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 } 
 
-u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
+ut64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1131,14 +1131,14 @@ u64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (u64) ret;
+	return (ut64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
 #endif
 } 
 
-u64 arch_get_sighandler(int signum)
+ut64 arch_get_sighandler(int signum)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1189,7 +1189,7 @@ u64 arch_get_sighandler(int signum)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (u64) ret;
+	return (ut64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1221,7 +1221,7 @@ void signal_set(int signum, off_t address)
 }
 #endif
 
-int arch_mprotect(u64 addr, unsigned int size, int perms)
+int arch_mprotect(ut64 addr, unsigned int size, int perms)
 {
 #ifdef __linux__
 	regs_t  reg, reg_saved;
@@ -1277,7 +1277,7 @@ int arch_mprotect(u64 addr, unsigned int size, int perms)
 #endif
 }
 
-u64 arch_set_sighandler(int signum, u64 handler)
+ut64 arch_set_sighandler(int signum, ut64 handler)
 {
 // XXX: NOT WORKING (missing syscall?)
 #ifdef __linux__
@@ -1334,7 +1334,7 @@ u64 arch_set_sighandler(int signum, u64 handler)
 	/* restore registers */
 	debug_setregs(ps.tid, &reg_saved);
 
-	return (u64) ret;
+	return (ut64) ret;
 #else
 	eprintf("Not supported by this OS\n");
 	return 0;
@@ -1345,7 +1345,7 @@ u64 arch_set_sighandler(int signum, u64 handler)
 /* I SHOULD USE THE AOP INTERFACE */
 // XXX must handle current seek
 // XXX must say if this is a forced jump or a conditional one
-int arch_is_jmp(const u8 *cmd, u64 *addr)
+int arch_is_jmp(const u8 *cmd, ut64 *addr)
 {
 	switch(cmd[0]) {
 	case 0xe9: // jmp
@@ -1390,10 +1390,10 @@ int arch_is_stepoverable(const unsigned char *cmd)
 }
 
 #warning "FIXME: following code is a party..."
-u64 get_ret_sf(u64 rsp, u64 *ret_pos)
+ut64 get_ret_sf(ut64 rsp, ut64 *ret_pos)
 {
-	u64 pos;
-	u64 val;
+	ut64 pos;
+	ut64 val;
 	unsigned char aux;
 
 	pos = rsp;
@@ -1424,9 +1424,9 @@ u64 get_ret_sf(u64 rsp, u64 *ret_pos)
 	return 0;
 }
 
-void next_sf(struct list_head *list, u64 rsp)
+void next_sf(struct list_head *list, ut64 rsp)
 {
-	u64 ret_pos, ret;
+	ut64 ret_pos, ret;
 	struct sf_t  *sf;
 
 	/* get return address of stack frame and return position */
@@ -1446,10 +1446,10 @@ void next_sf(struct list_head *list, u64 rsp)
 	sf->ret_addr = ret;
 	sf->ebp = 0;
 	sf->vars_sz = ret_pos - rsp;
-	sf->sz =  ret_pos - rsp + sizeof(u64);
+	sf->sz =  ret_pos - rsp + sizeof(ut64);
 
 	/* get next stack frame */
-	next_sf(list, ret_pos + sizeof(u64));
+	next_sf(list, ret_pos + sizeof(ut64));
 
 	/* add stack frame */
 	list_add(&sf->next, list);
@@ -1483,7 +1483,7 @@ int arch_stackanal()
 	return 0;
 }
 
-u64 get_reg(const char *reg)
+ut64 get_reg(const char *reg)
 {
 	int i;
 
@@ -1519,7 +1519,7 @@ void free_bt(struct list_head *sf)
    free(sf);
 }
 
-u64 arch_dealloc_page(u64 addr, unsigned long size)
+ut64 arch_dealloc_page(ut64 addr, unsigned long size)
 {
 	#warning "FIXME: code is missing"
 	return 0;

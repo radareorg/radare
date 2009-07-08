@@ -32,7 +32,7 @@ errors that transformed one string into the other.
 
 #include "../radare.h"
 
-static int hamdist(int x, u64 y)
+static int hamdist(int x, ut64 y)
 {
 	int dist = 0, val = x^y;
 
@@ -44,7 +44,7 @@ static int hamdist(int x, u64 y)
 	return dist;
 }
 
-unsigned char hash_hamdist(char *buf, u64 len)
+unsigned char hash_hamdist(char *buf, ut64 len)
 {
 	int x = 0;
 	int y = 0;

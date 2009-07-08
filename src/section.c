@@ -22,7 +22,7 @@
 
 static struct list_head sections;
 
-void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
+void section_set(ut64 from, ut64 to, ut64 vaddr, ut64 paddr, int rwx, const char *comment)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -42,7 +42,7 @@ void section_set(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *co
 	}
 }
 
-void section_add(u64 from, u64 to, u64 vaddr, u64 paddr, int rwx, const char *comment)
+void section_add(ut64 from, ut64 to, ut64 vaddr, ut64 paddr, int rwx, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
 	s->from = from+config.vaddr;
@@ -80,7 +80,7 @@ int section_rm(int idx)
 	return 0;
 }
 
-void section_list(u64 addr, int rad)
+void section_list(ut64 addr, int rad)
 {
 	int i = 0;
 	char buf[128];
@@ -94,7 +94,7 @@ void section_list(u64 addr, int rad)
 		} else {
 			cons_printf("%02d %c 0x%08llx - 0x%08llx bs=0x%08llx sz=0x%08llx phy=0x%08llx %s",
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
-				s->from, s->to, s->vaddr, (u64)((s->to)-(s->from)), s->paddr, s->comment);
+				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr, s->comment);
 			
 			if (string_flag_offset(buf, s->from, 0))
 				cons_printf(" ; %s", buf);
@@ -109,11 +109,11 @@ void section_list(u64 addr, int rad)
 	}
 }
 
-void section_list_visual(u64 seek, u64 len)
+void section_list_visual(ut64 seek, ut64 len)
 {
-	u64 min = -1;
-	u64 max = -1;
-	u64 mul;
+	ut64 min = -1;
+	ut64 max = -1;
+	ut64 mul;
 	int j, i;
 	struct list_head *pos;
 	int width = config.width-30;
@@ -155,7 +155,7 @@ void section_list_visual(u64 seek, u64 len)
 	}
 }
 
-struct section_t *section_get(u64 addr)
+struct section_t *section_get(ut64 addr)
 {
 	struct list_head *pos;
 	list_for_each(pos, &sections) {
@@ -166,7 +166,7 @@ struct section_t *section_get(u64 addr)
 	return NULL;
 }
 
-u64 section_get_paddr(u64 addr)
+ut64 section_get_paddr(ut64 addr)
 {
 	struct section_t *s = section_get(addr);
 	if (s != NULL)
@@ -174,7 +174,7 @@ u64 section_get_paddr(u64 addr)
 	return -1;
 }
 
-u64 section_get_vaddr(u64 addr)
+ut64 section_get_vaddr(ut64 addr)
 {
 	struct section_t *s = section_get(addr);
 	if (s != NULL)
@@ -203,8 +203,8 @@ int section_overlaps(struct section_t *s)
 }
 
 // seek 
-u64 last_align = 0;
-u64 section_align(u64 addr, u64 vaddr, u64 paddr)
+ut64 last_align = 0;
+ut64 section_align(ut64 addr, ut64 vaddr, ut64 paddr)
 {
 	int i = 0;
 	struct list_head *pos;

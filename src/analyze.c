@@ -32,7 +32,7 @@
 #define MAX_FUN_SIZE 1023
 
 /* code analyzer */
-int (*arch_aop)(u64 addr, const u8 *bytes, struct aop_t *aop);
+int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 
 /* code lines */
 struct reflines_t *code_lines_init(int linescall)
@@ -45,7 +45,7 @@ struct reflines_t *code_lines_init(int linescall)
 	struct aop_t aop;
 	int dt, sz, bsz = 0;
 	int index = 0;
-	u64 seek = 0;
+	ut64 seek = 0;
 	int lines = -1;
 
 	if (config.visual)
@@ -64,7 +64,7 @@ struct reflines_t *code_lines_init(int linescall)
 			break;
 		dt = data_type(config.seek+bsz);
 		if (dt != DATA_FUN && dt != DATA_CODE) {
-			u64 sz = data_size(config.seek+bsz);
+			ut64 sz = data_size(config.seek+bsz);
 			if (sz > 0) {
 				ptr= ptr +sz;
 				bsz=bsz+sz;
@@ -124,7 +124,7 @@ void code_lines_free(struct list_head *list)
 	free(list);
 }
 
-void code_lines_print(struct reflines_t *list, u64 addr, int expand)
+void code_lines_print(struct reflines_t *list, ut64 addr, int expand)
 {
 	struct list_head *pos;
 	int foo = config_get_i("asm.linestyle");
@@ -234,11 +234,11 @@ void code_lines_print(struct reflines_t *list, u64 addr, int expand)
 }
 
 /* XXX not working properly */
-int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
+int code_analyze_r_split(struct program_t *prg, ut64 seek, int depth)
 {
 	struct aop_t aop;
-	u64 oseek = seek;
-	u64 tmp = config.seek;
+	ut64 oseek = seek;
+	ut64 tmp = config.seek;
 	unsigned int sz = 0, ret;
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
@@ -311,8 +311,8 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 #if 0 
 	struct aop_t aop;
 	struct block_t *blk;
-	u64 oseek = seek;
-	u64 tmp = config.seek;
+	ut64 oseek = seek;
+	ut64 tmp = config.seek;
 	unsigned int sz = 0, ret;
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
@@ -465,12 +465,12 @@ int code_analyze_r_split(struct program_t *prg, u64 seek, int depth)
 #endif 
 }
 
-int code_analyze_r_nosplit(struct program_t *prg, u64 seek, int depth)
+int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 {
 	struct aop_t aop;
 	struct block_t *blk;
-	u64 oseek = seek;
-	u64 tmp = config.seek;
+	ut64 oseek = seek;
+	ut64 tmp = config.seek;
 	unsigned int sz = 0, ret;
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
@@ -589,11 +589,11 @@ void analyze_spcc(const char *name)
 }
 
 /* CALLBACK defined with graph.split which is false by default */
-int (*code_analyze_r)(struct program_t *prg, u64 seek, int depth) = &code_analyze_r_nosplit;
+int (*code_analyze_r)(struct program_t *prg, ut64 seek, int depth) = &code_analyze_r_nosplit;
 
-struct program_t *code_analyze(u64 seek, int depth)
+struct program_t *code_analyze(ut64 seek, int depth)
 {
-	u64 bsize = config.block_size;
+	ut64 bsize = config.block_size;
 	struct program_t *prg = program_new(NULL);
 
 	if (prg == NULL)
@@ -650,13 +650,13 @@ TODO: use maps here! must be mixed with flags and so
 
 #endif
 
-int radare_analyze(u64 seek, int size, int depth, int rad)
+int radare_analyze(ut64 seek, int size, int depth, int rad)
 {
 	char cmd[1024];
 	char str[1024];
 	u8 word[128];
-	u64 tmp = config.seek;
-	u32 num, nume; // little endian
+	ut64 tmp = config.seek;
+	ut32 num, nume; // little endian
 	int count=0;
 	int i;
 	int str_i=0;
@@ -693,13 +693,13 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 		if (str_i>2) {
 			str[str_i] = '\0';
 			if (rad) {
-				u64 addr = (u64)(seek+i-str_i);
+				ut64 addr = (ut64)(seek+i-str_i);
 				cons_printf("Cs %d @ 0x%08llx\n", strlen(str)+1, addr);
 				flag_filter_name(str);
 				cons_printf("f str.%s @ 0x%08llx\n", str, addr);
 				//cons_printf("; TODO (if exists) f str_%s\n", str);
 			} else {
-				print_addr((u64)(seek+i-str_i));
+				print_addr((ut64)(seek+i-str_i));
 				cons_strcat("   ");
 				C	cons_printf("string "C_BYELLOW"\"%s\""C_RESET"\n", str);
 				else	cons_printf("string \"%s\"\n", str);
@@ -742,14 +742,14 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 				//cons_printf("0xffffffff (-1)\n");
 			} else {
 				if (rad) {
-					u32 n = (config.endian)?num:nume;
+					ut32 n = (config.endian)?num:nume;
 					str[0]='\0';
-					string_flag_offset(str, (u64)n, 0);
+					string_flag_offset(str, (ut64)n, 0);
 					if (!strnull(str)) {
 						/* reference by pointer */
-						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (u64)(seek+i-3), (u64)n, str);
+						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (ut64)(seek+i-3), (ut64)n, str);
 					} else
-					if (n == (u32)seek)
+					if (n == (ut32)seek)
 						cons_printf(" ;  (self pointer)\n");
 					else radare_analyze(n, size, --depth, rad);
 				} else {
@@ -780,12 +780,12 @@ int radare_analyze(u64 seek, int size, int depth, int rad)
 					if (nume>-0xfffff && nume<0xfffff)
 						cons_printf("(%d)\n", nume);
 					else {
-						u32 n = (config.endian)?num:nume;
+						ut32 n = (config.endian)?num:nume;
 						C cons_printf(C_TURQOISE);
 						sprintf(cmd, ":fd @0x%08x", n);
 						radare_cmd(cmd, 0);
 
-						if (n == (u32)seek)
+						if (n == (ut32)seek)
 							cons_printf("  (self pointer)\n");
 						else radare_analyze(n, size, --depth, rad);
 
@@ -897,7 +897,7 @@ int analyze_progress(int _o, int _x, int _p, int _v)
 
 int analysis_interrupted = 0;
 
-int analyze_function(u64 from, int recursive, int report)
+int analyze_function(ut64 from, int recursive, int report)
 {
 	struct aop_t aop;
 	struct list_head *head;
@@ -908,12 +908,12 @@ int analyze_function(u64 from, int recursive, int report)
 	static int interrupted = 0;
 	/*--*/
 	u8 *bytes;
-	//u64 from = config.vaddr + config.seek;
-	u64 seek = from; // to place comments
-	u64 end  = 0;
+	//ut64 from = config.vaddr + config.seek;
+	ut64 seek = from; // to place comments
+	ut64 end  = 0;
 	int i, inc = 0;
-	u64 to;
-	u64 funsize;
+	ut64 to;
+	ut64 funsize;
 	int len =0;
 	int ref;
 	int ncalls = 0;
@@ -1018,7 +1018,7 @@ int analyze_function(u64 from, int recursive, int report)
 
 //eprintf("LEN=%d\n", len);
 	for(;seek< to; seek+=inc) {
-		u64 delta = seek+config.vaddr-from;
+		ut64 delta = seek+config.vaddr-from;
 	//eprintf("0x%08llx\n", seek+config.vaddr);
 		if (delta > len) {
 			//eprintf("analyze_function: oob %lld > %lld\n", delta, len);
@@ -1067,7 +1067,7 @@ int analyze_function(u64 from, int recursive, int report)
 					string_flag_offset(buf, aop.jump, 0);
 					// if resolved as sym_ add its call
 					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n",
-						seek, (u64)aop.ref, buf);
+						seek, (ut64)aop.ref, buf);
 				}
 				nrefs++;
 			}

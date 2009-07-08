@@ -76,18 +76,18 @@ int arch_bpsize()
 	return 4; // XXX support thumb mode
 }
 
-int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
+int arch_set_wp_hw_n(int dr_free, ut64 addr, int type)
 {
 	return -1;
 }
 
-int arch_set_wp_hw(u64 addr, int type)
+int arch_set_wp_hw(ut64 addr, int type)
 {
 	return -1;
 }
 
 /* hook hardware bps to software ones..arm can't :/ */
-int arch_set_bp_hw(struct bp_t *bp, u64 addr)
+int arch_set_bp_hw(struct bp_t *bp, ut64 addr)
 {
 	return arch_set_bp_soft(bp, addr);
 }
@@ -114,7 +114,7 @@ int get_len_ins(char *buf, int len)
 	return 4;
 }
 
-int arch_set_bp_soft(struct bp_t *bp, u64 addr)
+int arch_set_bp_soft(struct bp_t *bp, ut64 addr)
 {
 	int endian = config_get("cfg.bigendian");
 	char *breakpoint = arm_bps[endian&1];

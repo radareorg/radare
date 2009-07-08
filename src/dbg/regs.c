@@ -38,10 +38,10 @@
 
 extern struct regs_off roff[];
 int regio_enabled = 0;
-u64 regio_addr = 0;
+ut64 regio_addr = 0;
 
 /* reg io mode */
-int debug_reg_read_at(int pid, u8 *data, int length, u64 addr)
+int debug_reg_read_at(int pid, u8 *data, int length, ut64 addr)
 {
 	regs_t regs;
 	int i, regsz = sizeof(regs_t);
@@ -59,7 +59,7 @@ int debug_reg_read_at(int pid, u8 *data, int length, u64 addr)
 	return length;
 }
 
-int debug_reg_write_at(int pid, const u8 *data, int length, u64 addr)
+int debug_reg_write_at(int pid, const u8 *data, int length, ut64 addr)
 {
 	regs_t regs;
 	int i, regsz = sizeof(regs_t);
@@ -76,7 +76,7 @@ int debug_reg_write_at(int pid, const u8 *data, int length, u64 addr)
 }
 /* ----------- */
 
-u64 debug_get_regoff(regs_t *regs, int off)
+ut64 debug_get_regoff(regs_t *regs, int off)
 {
 	char *c = (char *)regs;
 	debug_getregs(ps.tid, regs);
@@ -94,11 +94,11 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 	debug_setregs(ps.tid, regs);
 }
 
-u64 debug_get_register(const char *input)
+ut64 debug_get_register(const char *input)
 {
 	char *reg = input;
 	int off;
-	u64 ret;
+	ut64 ret;
 
 	// TODO: user streclean
 	if(*input == ' ')
@@ -108,7 +108,7 @@ u64 debug_get_register(const char *input)
 		return -1;
 
 	/* TODO: debug_get_regoff must return a value addr_t */
-	ret = (u64)debug_get_regoff(&WS(regs), roff[off].off); 
+	ret = (ut64)debug_get_regoff(&WS(regs), roff[off].off); 
 
 	printf("0x%08llx\n", ret);
 

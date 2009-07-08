@@ -11,40 +11,40 @@
 #include "elf.h"
 
 typedef struct {
-	u64 offset;
-	u64 size;
-	u64 align;
-	u32 flags;
+	ut64 offset;
+	ut64 size;
+	ut64 align;
+	ut32 flags;
 	char name[ELF_NAME_LENGTH];
 } dietelf_section;
 
 typedef struct {
-	u64 offset;
+	ut64 offset;
 	char bind[ELF_NAME_LENGTH];
 	char type[ELF_NAME_LENGTH];
 	char name[ELF_NAME_LENGTH];
 } dietelf_import;
 
 typedef struct {
-	u64 offset;
-	u64 size;
+	ut64 offset;
+	ut64 size;
 	char bind[ELF_NAME_LENGTH];
 	char type[ELF_NAME_LENGTH];
 	char name[ELF_NAME_LENGTH];
 } dietelf_symbol;
 
 typedef struct {
-	u64 offset;
-	u64 size;
+	ut64 offset;
+	ut64 size;
 	char type;
 	char string[ELF_STRING_LENGTH];
 } dietelf_string;
 
 typedef struct {
-	u64 offset;
-	u64 vaddr;
-	u64 size;
-	u64 end;
+	ut64 offset;
+	ut64 vaddr;
+	ut64 size;
+	ut64 end;
 	int type;
 	int flags;
 	char name[ELF_NAME_LENGTH];

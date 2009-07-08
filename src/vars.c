@@ -4,7 +4,7 @@
 #include "main.h"
 #include "list.h"
 
-int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize);
+int var_add(ut64 addr, ut64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize);
 // this can be nested inside the function_t which is not defined..
 
 #if 0
@@ -27,15 +27,15 @@ enum {
 };
 
 struct var_xs_t {
-	u64 addr;
+	ut64 addr;
 	int set;
 	struct list_head list;
 };
 
 struct var_t {
 	int type;      /* global, local... */
-	u64 addr;      /* address where it is used */
-	u64 eaddr;      /* address where it is used */
+	ut64 addr;      /* address where it is used */
+	ut64 eaddr;      /* address where it is used */
 	int delta;     /* */
 	int arraysize; /* size of array var in bytes , 0 is no-array */
 	char name[128];
@@ -44,7 +44,7 @@ struct var_t {
 	struct list_head list;
 };
 
-int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize)
+int var_add(ut64 addr, ut64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize)
 {
 	struct list_head *pos;
 	struct var_t *var;
@@ -71,7 +71,7 @@ int var_add(u64 addr, u64 eaddr, int delta, int type, const char *vartype, const
 	return 1;
 }
 
-int var_add_access(u64 addr, int delta, int type, int set)
+int var_add_access(ut64 addr, int delta, int type, int set)
 {
 	struct list_head *pos;
 	struct var_t *v;
@@ -96,7 +96,7 @@ int var_add_access(u64 addr, int delta, int type, int set)
 	/* automatic init */
 	/* detect function in CF list */
 	{
-		u64 from = 0LL, to = 0LL;
+		ut64 from = 0LL, to = 0LL;
 		if ( data_get_fun_for(addr, &from, &to) ) {
 			char varname[32];
 			if (delta < 0) {
@@ -131,31 +131,31 @@ const char *var_type_str(int fd)
 	return "(?)";
 }
 
-u32 var_dbg_read(int delta)
+ut32 var_dbg_read(int delta)
 {
 	/* XXX: EBP ONLY FOR X86 */
-	u32 ret;
-	u64 foo = get_offset("ebp");
+	ut32 ret;
+	ut64 foo = get_offset("ebp");
 	foo-=delta;
 	radare_read_at(foo, (u8*)&ret, 4);
 	return ret;
 }
 
 
-void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian);
+void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian);
 
 int var_print_value(struct var_t *v)
 {
 	struct var_type_t *t = data_var_type_get(v->vartype);
 	if (t == NULL) {
-		u32 value = var_dbg_read(v->delta);
+		ut32 value = var_dbg_read(v->delta);
 		// TODO: use var type to 
 		cons_printf("%x", value);
 	} else {
 		u8 buf[1024];
 		int verbose = config.verbose;
 		int size = v->arraysize * t->size;
-		u64 foo = get_offset("ebp");
+		ut64 foo = get_offset("ebp");
 		foo -= v->delta;
 		radare_read_at(foo, buf, size);
 		//eprintf("PRINT_MEM(%llx,%d,%s)\n", foo, size, t->fmt);
@@ -167,7 +167,7 @@ int var_print_value(struct var_t *v)
 }
 
 /* CFV */
-int var_list_show(u64 addr)
+int var_list_show(ut64 addr)
 {
 	char buf[256];
 	struct list_head *pos, *pos2;
@@ -177,7 +177,7 @@ int var_list_show(u64 addr)
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
 		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
-			u32 value = var_dbg_read(v->delta);
+			ut32 value = var_dbg_read(v->delta);
 			if (v->arraysize>1)
 				cons_printf("%s %s %s[%d] = ", var_type_str(v->type), v->vartype, v->arraysize, v->name);
 			else cons_printf("%s %s %s = ", var_type_str(v->type), v->vartype, v->name);
@@ -193,7 +193,7 @@ int var_list_show(u64 addr)
 }
 
 /* 0,0 to list all */
-int var_list(u64 addr, int delta)
+int var_list(ut64 addr, int delta)
 {
 	struct list_head *pos, *pos2;
 	struct var_t *v;

@@ -163,7 +163,7 @@ int pas_aop_x86_gas(int argc, const char *argv[], struct aop_t *aop, char *newst
 			if (newstr != NULL) {
 				char *p = strchr(argv[1], ' ');
 				char flagstr[256];
-				u64 val;
+				ut64 val;
 				if (p != NULL) {
 					p = p + 1;
 				} else p = argv[1];
@@ -281,7 +281,7 @@ int pas_aop_aop(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 	return 0;
 }
 
-struct aop_t *pas_aop(int arch, u64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo)
+struct aop_t *pas_aop(int arch, ut64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo)
 {
 	int i;
 	char str[64];

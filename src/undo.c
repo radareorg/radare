@@ -30,11 +30,11 @@ static int undo_w_lock = 0;
 
 /* History for the N last seeks, stack-like access */
 #define UNDOS 64
-static u64 undos[UNDOS];
+static ut64 undos[UNDOS];
 static int undos_idx = 0;
 static int undos_lim = 0;
 
-u64 undo_get_last_seek()
+ut64 undo_get_last_seek()
 {
 	if (undos_idx==0)
 		return config.seek;
@@ -91,7 +91,7 @@ void undo_list()
 	}
 }
 
-void undo_write_new(u64 off, const u8 *data, int len)
+void undo_write_new(ut64 off, const u8 *data, int len)
 {
 	struct undow_t *uw;
 	struct list_head *p;

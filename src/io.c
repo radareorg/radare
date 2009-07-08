@@ -61,7 +61,7 @@ ssize_t io_read(int fd, void *buf, size_t count)
 	return -1;
 }
 
-u64 io_lseek(int fd, u64 offset, int whence)
+ut64 io_lseek(int fd, ut64 offset, int whence)
 {
 	FIND_FD(fd)
 		IF_HANDLED(fd, lseek)
@@ -142,7 +142,7 @@ int io_map_list()
 	return n;
 }
 
-int io_map(const char *file, u64 offset, u64 delta, u64 size)
+int io_map(const char *file, ut64 offset, ut64 delta, ut64 size)
 {
 	struct io_maps_t *im;
 	int fd = open(file, O_RDONLY);
@@ -159,7 +159,7 @@ int io_map(const char *file, u64 offset, u64 delta, u64 size)
 	return fd;
 }
 
-int io_map_read_at(u64 off, u8 *buf, u64 len)
+int io_map_read_at(ut64 off, u8 *buf, ut64 len)
 {
 	struct list_head *pos;
 
@@ -177,7 +177,7 @@ int io_map_read_at(u64 off, u8 *buf, u64 len)
 	return 0;
 }
 
-int io_map_read_rest(u64 off, u8 *buf, u64 len)
+int io_map_read_rest(ut64 off, u8 *buf, ut64 len)
 {
 	struct list_head *pos;
 

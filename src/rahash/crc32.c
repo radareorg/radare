@@ -3,7 +3,7 @@
 static char crc_table_is_init = 0;
 static unsigned int crc_table[256];
 
-unsigned int crc32(char *buf, u64 len)
+unsigned int crc32(char *buf, ut64 len)
 {
 	unsigned int crc = 0;
 

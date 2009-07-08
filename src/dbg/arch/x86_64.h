@@ -14,7 +14,7 @@
 
 #define SYSCALL_OPS64	"\x0f\x05\xcc\x90"	/* syscall, int $0x3, nop */
 
-int arch_jmp(u64 ptr);
+int arch_jmp(ut64 ptr);
 addr_t arch_mmap(int fd, int size, addr_t addr);
 //long long arch_syscall(int pid, int sc, ...);
 int debug_dr(const char *cmd);
@@ -32,33 +32,33 @@ int arch_call(const char *arg);
 int arch_print_fpregisters(int rad, const char *mask);
 int arch_print_syscall();
 int arch_print_registers(int rad, const char *mask);
-u64 get_value(const char *str);
+ut64 get_value(const char *str);
 int arch_set_register(const char *reg, const char *value);
 int arch_continue();
 //void *arch_get_sighandler(int signum);
 //int arch_mprotect(char *addr, unsigned int size, int perms);
 //void *arch_set_sighandler(int signum, off_t handler);
-int arch_is_jmp(const unsigned char *cmd, u64 *addr);
+int arch_is_jmp(const unsigned char *cmd, ut64 *addr);
 int arch_is_call(const char *cmd);
 int arch_is_soft_stepoverable(const unsigned char *opcode);
 
 //x86_64-bp.c
-u64 dr_get (int reg);
-int dr_set (int reg, u64 val);
-void dr_set_control (u32 control);
+ut64 dr_get (int reg);
+int dr_set (int reg, ut64 val);
+void dr_set_control (ut32 control);
 unsigned dr_get_control ();
-void dr_set_addr (int regnum, u64 addr);
+void dr_set_addr (int regnum, ut64 addr);
 void dr_reset_addr (int regnum);
 unsigned long dr_get_status (void);
-int arch_bp_hw_state(u64 addr, int enable);
+int arch_bp_hw_state(ut64 addr, int enable);
 void dr_init();
 void dr_list();
-int arch_set_wp_hw_n(int dr_free, u64 addr, int type);
-int arch_set_wp_hw(u64 addr, int type);
-int arch_set_bp_hw(struct bp_t *bp, u64 addr);
+int arch_set_wp_hw_n(int dr_free, ut64 addr, int type);
+int arch_set_wp_hw(ut64 addr, int type);
+int arch_set_bp_hw(struct bp_t *bp, ut64 addr);
 int arch_rm_bp_hw(struct bp_t *bp);
 int get_len_ins(char *buf, int len);
-int arch_set_bp_soft(struct bp_t *bp, u64 addr);
+int arch_set_bp_soft(struct bp_t *bp, ut64 addr);
 int arch_rm_bp_soft(struct bp_t *bp);
 
 //debug.c

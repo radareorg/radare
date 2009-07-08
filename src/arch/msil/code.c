@@ -27,7 +27,7 @@
 #include "demsil.h"
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_msil_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
+int arch_msil_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	int n;
 

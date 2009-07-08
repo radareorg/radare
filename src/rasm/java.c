@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 #endif
 
-int rasm_java(u64 offset, const char *str, unsigned char *data)
+int rasm_java(ut64 offset, const char *str, unsigned char *data)
 {
 	char op[128];
 	char *arg;

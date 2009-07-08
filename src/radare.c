@@ -53,7 +53,7 @@
 
 #include "dietline.h"
 
-u64 tmpoff = -1;
+ut64 tmpoff = -1;
 int tmpbsz = -1;
 int std = 0;
 
@@ -199,7 +199,7 @@ int radare_close()
 
 void radare_sync()
 {
-	u64 base, phys;
+	ut64 base, phys;
 	int limit = DEFAULT_BLOCK_SIZE;
 
 	if (config_get_i("cfg.sections")) {
@@ -235,14 +235,14 @@ void radare_sync()
 	}
 }
 
-int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, u64 offset, const char *match);
+int stripstr_iterate(const unsigned char *buf, int i, int min, int max, int enc, ut64 offset, const char *match);
 int radare_strsearch(const char *str)
 {
-	u64 i, minlen = 0;
+	ut64 i, minlen = 0;
 	int j, ret;
 	int range_n=0;
-	u64 oseek, seek;
-	u64 size = config.size;
+	ut64 oseek, seek;
+	ut64 size = config.size;
 	int useranges = 0;
 	int min = 3;
 	int max = 0;
@@ -319,8 +319,8 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 	char *word = NULL;
 	char *str, *ostr, *p;
 	struct list_head *pos;
-	u64 oseek, addr;
-	u32 tmpbsz = config.block_size;
+	ut64 oseek, addr;
+	ut32 tmpbsz = config.block_size;
 
 	for(;*each==' ';each=each+1);
 	for(;*cmd==' ';cmd=cmd+1);
@@ -548,7 +548,7 @@ int radare_cmd_raw(const char *tmp, int log)
 	char *grep = NULL;
 	char *next = NULL;
 	int ret = 0;
-	u32 tmpbsz = -1;
+	ut32 tmpbsz = -1;
 
 	if (strnull(tmp))
 		return 0;
@@ -1218,7 +1218,7 @@ void radare_nullcmd()
 #endif
 	if (config_get("dbg.dwarf")) {
 		radare_cmd("pR @ eip",0);
-		u64 pc = flag_get_addr("eip");
+		ut64 pc = flag_get_addr("eip");
 		if (pc<config.seek || pc > config.seek+config.block_size)
 			radare_seek(pc, SEEK_SET);
 	}
@@ -1374,9 +1374,9 @@ int radare_interpret(const char *file)
 
 int radare_move(char *arg)
 {
-	u64 src = config.seek;
-	u64 len =  0;
-	u64 pos = -1;
+	ut64 src = config.seek;
+	ut64 len =  0;
+	ut64 pos = -1;
 	char *str;
 	u8 *buf;
 
@@ -1415,8 +1415,8 @@ void radare_prompt_command()
 
 	if (config_get("cfg.vbsze_enabled")) {
 		struct list_head *pos;
-		u64 uh = config.seek + config_get_i("cfg.vbsize");
-		u64 old = uh;
+		ut64 uh = config.seek + config_get_i("cfg.vbsize");
+		ut64 old = uh;
 		list_for_each(pos, &flags) {
 			flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 			if (flag->offset > config.seek && (flag->offset < old))
@@ -1458,8 +1458,8 @@ void monitors_run()
 	struct dirent *de;
 	DIR *dir;
 	char *session = config_get("cfg.session");
-	u64 oseek = config.seek;
-	u64 obsize= config.block_size;
+	ut64 oseek = config.seek;
+	ut64 obsize= config.block_size;
 	int flush = cons_flushable;
 	cons_flushable = 0;
 
@@ -1687,7 +1687,7 @@ void radare_set_block_size(char *arg)
 void radare_resize(const char *arg)
 {
 	int fd_mode = O_RDONLY;
-	u64 size  = get_math(arg);
+	ut64 size  = get_math(arg);
 
 	// XXX move this check into a only one function for all write-mode functions
 	// or just define them as write-only. and activate/deactivate them from
@@ -1713,7 +1713,7 @@ void radare_resize(const char *arg)
 	}
 
 	if (arg[0]=='-') {
-		u64 rest;
+		ut64 rest;
 		size = -size; // be positive
 		D eprintf("stripping %lld bytes\n", size);
 		rest = config.size - (config.seek -size);
@@ -1766,7 +1766,7 @@ int radare_open(int rst)
 	struct config_t ocfg;
 	int wm = (int)config_get("file.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
-	u64 seek_orig = config.seek;
+	ut64 seek_orig = config.seek;
 
 	if (config.file == NULL)
 		return 0;
@@ -1842,8 +1842,8 @@ int radare_open(int rst)
 		rdb_init();
 	}
 
-	config.size = io_lseek(config.fd, (u64)0, SEEK_END);
-	io_lseek(config.fd, (u64)seek_orig, SEEK_SET);
+	config.size = io_lseek(config.fd, (ut64)0, SEEK_END);
+	io_lseek(config.fd, (ut64)seek_orig, SEEK_SET);
 
 	if (config.size == -1 || config.unksize) {
 	//	config.size  = -1;
@@ -1888,7 +1888,7 @@ int radare_open(int rst)
 	return 0;
 }
 
-int radare_compare_code(u64 off, const u8 *a, int len)
+int radare_compare_code(ut64 off, const u8 *a, int len)
 {
 	u8 *b = alloca(len);
 	radare_read_at(off, b, len);
@@ -1916,7 +1916,7 @@ int radare_compare(unsigned char *f, unsigned char *d, int len)
 	return len-eq;
 }
 
-int radare_compare_hex(u64 addr, unsigned char *f, unsigned char *d, int len)
+int radare_compare_hex(ut64 addr, unsigned char *f, unsigned char *d, int len)
 {
 	int i, eq = 0;
 	char str0[256], str1[256], tmp[32];
@@ -1957,7 +1957,7 @@ int radare_compare_hex(u64 addr, unsigned char *f, unsigned char *d, int len)
 
 int radare_go()
 {
-	u64 bsize;
+	ut64 bsize;
 	int i, t = (int)config_get("cfg.verbose");
 
 	radare_controlc_end();
@@ -2261,10 +2261,10 @@ int radare_seek_search_backward(const char *str)
 	unsigned char kw[1024];
 	int kw_idx = 0;
 	int i, j, kw_len = 0;
-	u64 oseek = config.seek;
-	u64 eseek = config_get_i("search.from");
-	u64 maxbytes = config_get_i("search.limit");
-	u64 bytes = 0;
+	ut64 oseek = config.seek;
+	ut64 eseek = config_get_i("search.from");
+	ut64 maxbytes = config_get_i("search.limit");
+	ut64 bytes = 0;
 
 	switch(str[0]) {
 	case ' ': // string search
@@ -2332,10 +2332,10 @@ int radare_seek_search(const char *str)
 	unsigned char kw[1024];
 	int kw_idx = 0;
 	int i, kw_len = 0;
-	u64 oseek = config.seek;
-	u64 eseek = config.size;
-	u64 maxbytes = config_get_i("search.limit");
-	u64 bytes = 0;
+	ut64 oseek = config.seek;
+	ut64 eseek = config.size;
+	ut64 maxbytes = config_get_i("search.limit");
+	ut64 bytes = 0;
 
 	if (config_get_i("search.to")) {
 		eseek = config_get_i("search.to");

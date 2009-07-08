@@ -36,7 +36,7 @@ ssize_t zocket_read(int fd, void *buf, size_t count)
 {
 	u8 data[32000];
 	int sz;
-	u64 s;
+	ut64 s;
 
 	if (config.seek > socket_bufsz)
 		config.seek = socket_bufsz;
@@ -75,7 +75,7 @@ int zocket_close(int fd)
 	return close(fd);
 }
 
-u64 zocket_lseek(int fildes, u64 offset, int whence)
+ut64 zocket_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

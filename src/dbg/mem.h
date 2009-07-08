@@ -16,16 +16,16 @@
 typedef struct {
 	char *tag;
 	addr_t addr;
-	u64 size;
+	ut64 size;
 	struct list_head list;
 } MAP_MEM;
 
 typedef struct {
-	u64 ini;
-	u64 end;
-	u32 perms, perms_orig;
+	ut64 ini;
+	ut64 end;
+	ut32 perms, perms_orig;
 	char *bin;
-	u64 size;
+	ut64 size;
 	int flags;
 
 	struct list_head list;

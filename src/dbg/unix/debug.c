@@ -525,7 +525,7 @@ int debug_detach()
 /* copied from patan */
 extern int errno;
 
-int debug_os_read_at(int pid, void *buff, int sz, u64 addr)
+int debug_os_read_at(int pid, void *buff, int sz, ut64 addr)
 {
 	unsigned long words = sz / sizeof(long) ;
 	unsigned long last = sz % sizeof(long) ;
@@ -563,7 +563,7 @@ err:
 }
 
 
-int debug_os_write_at(int pid, u8 *buff, int sz, u64 addr)
+int debug_os_write_at(int pid, u8 *buff, int sz, ut64 addr)
 {
         long words = sz / sizeof(long) ;
         long last = (sz % sizeof(long))*8;
@@ -745,27 +745,27 @@ int debug_contp(int pid)
 
 		list_for_each_prev(pos, &ps.th_list) {
 			TH_INFO		*th = list_entry(pos, TH_INFO, list);
-			ptrace(PTRACE_CONT, th->tid, (u32)arch_pc(th->tid), 0);
+			ptrace(PTRACE_CONT, th->tid, (ut32)arch_pc(th->tid), 0);
 //eprintf("..thread continue: %d\n", th->tid);
 //			eprintf("cont-> %c %d: 0x%08llx state: 0x%x\n", (ps.th_active == th)?'*':' ', th->tid, th->addr, th->status);
 			n++;
 		}
-		ptrace(PTRACE_CONT, pid, (u32)arch_pc(pid), 0);
+		ptrace(PTRACE_CONT, pid, (ut32)arch_pc(pid), 0);
 //eprintf("..continue: %d\n", pid);
-		ptrace(PTRACE_CONT, ps.pid, (u32)arch_pc(ps.pid), 0);
+		ptrace(PTRACE_CONT, ps.pid, (ut32)arch_pc(ps.pid), 0);
 //eprintf("..continue: %d\n", ps.pid);
-		ptrace(PTRACE_CONT, ps.tid, (u32)arch_pc(ps.tid), 0);
+		ptrace(PTRACE_CONT, ps.tid, (ut32)arch_pc(ps.tid), 0);
 //eprintf("..continue: %d\n", ps.tid);
 		
 		return 0;
 	}
-	return ptrace(PTRACE_CONT, pid, (u32)arch_pc(pid), 0);
+	return ptrace(PTRACE_CONT, pid, (ut32)arch_pc(pid), 0);
 }
 
 int debug_contscp()
 {
 #if __linux__ || ( __BSD__ && defined(PT_SYSCALL))
-	return ptrace(PTRACE_SYSCALL, ps.tid, (u32)arch_pc(ps.tid), 0);
+	return ptrace(PTRACE_SYSCALL, ps.tid, (ut32)arch_pc(ps.tid), 0);
 #else
 	eprintf("contscp: not implemented for this platform\n");
 	return 0;
@@ -774,7 +774,7 @@ int debug_contscp()
 
 int debug_os_steps()
 {
-	return ptrace(PTRACE_SINGLESTEP, ps.tid, (u32)arch_pc(ps.tid), 0);
+	return ptrace(PTRACE_SINGLESTEP, ps.tid, (ut32)arch_pc(ps.tid), 0);
 }
 
 int debug_dispatch_wait()
@@ -883,14 +883,14 @@ int debug_dispatch_wait()
 		#endif
 			{
 			char buf[128];
-			u64 addr = debug_bp_restore_after();
+			ut64 addr = debug_bp_restore_after();
 			if (addr != 0) {
 				/* we should trace here */
 				debug_step(1);
-				sprintf(buf, "!bp -0x%08llx\n", (u64) addr); //-bpsize);
+				sprintf(buf, "!bp -0x%08llx\n", (ut64) addr); //-bpsize);
 				radare_cmd(buf,0);
 				eprintf("==> Trace address 0x%08llx\n", addr);
-				sprintf(buf,"!bpt 0x%08llx\n",(u64) addr); //-bpsize);
+				sprintf(buf,"!bpt 0x%08llx\n",(ut64) addr); //-bpsize);
 				radare_cmd(buf,0);
 return 1;
 				debug_cont(0);

@@ -54,7 +54,7 @@ static int rshm_close(int fd)
 	return shmdt(shm_buf);
 }
 
-static u64 rshm_lseek(int fildes, u64 offset, int whence)
+static ut64 rshm_lseek(int fildes, ut64 offset, int whence)
 {
 	if (shm_buf == NULL)
 		return -1;

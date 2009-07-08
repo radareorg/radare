@@ -25,7 +25,7 @@
 
 static struct list_head vm_regs;
 static struct vm_cpu_t vm_cpu;
-static u64 vm_stack_base = 0;
+static ut64 vm_stack_base = 0;
 static u8 *vm_stack = NULL;
 static struct list_head vm_ops;
 static struct list_head vm_mmu_cache;
@@ -82,9 +82,9 @@ const int vm_reg_type_i(const char *str)
 	return -1;
 }
 
-static u64 vm_get_value(const char *str)
+static ut64 vm_get_value(const char *str)
 {
-	u64 ret = 0LL;
+	ut64 ret = 0LL;
 	for(;*str&&*str==' ';str=str+1);
 
 	if (str[0]=='$' && str[1]=='$') {
@@ -108,7 +108,7 @@ static u64 vm_get_value(const char *str)
 	return ret;
 }
 
-static u64 vm_get_math(const char *str)
+static ut64 vm_get_math(const char *str)
 {
 	int len;
 	char *p,*a;
@@ -192,7 +192,7 @@ void vm_print(int type)
 	if (type == -2)
 		cons_printf("fs *\n");
 }
-int vm_mmu_cache_write(u64 addr, u8 *buf, int len)
+int vm_mmu_cache_write(ut64 addr, u8 *buf, int len)
 {
 	struct vm_change_t *ch = (struct range_t *)malloc(sizeof(struct range_t));
 	ch->from = addr;
@@ -203,7 +203,7 @@ int vm_mmu_cache_write(u64 addr, u8 *buf, int len)
 	return 0;
 }
 
-int vm_mmu_cache_read(u64 addr, u8 *buf, int len)
+int vm_mmu_cache_read(ut64 addr, u8 *buf, int len)
 {
 	struct vm_change_t *c;
 	struct list_head *pos;
@@ -219,14 +219,14 @@ int vm_mmu_cache_read(u64 addr, u8 *buf, int len)
 	return 0;
 }
 
-int vm_mmu_read(u64 off, u8 *data, int len)
+int vm_mmu_read(ut64 off, u8 *data, int len)
 {
 	if (!realio && vm_mmu_cache_read(off, data, len))
 		return len;
 	return radare_read_at(off, data, len);
 }
 
-int vm_mmu_write(u64 off, u8 *data, int len)
+int vm_mmu_write(ut64 off, u8 *data, int len)
 {
 	if (!realio)
 		return vm_mmu_cache_write(off, data, len);
@@ -234,7 +234,7 @@ int vm_mmu_write(u64 off, u8 *data, int len)
 	return radare_write_at(off, data, len);
 }
 
-int vm_reg_add(const char *name, int type, u64 value)
+int vm_reg_add(const char *name, int type, ut64 value)
 {
 	struct vm_reg_t *r;
 
@@ -252,7 +252,7 @@ int vm_reg_add(const char *name, int type, u64 value)
 
 struct vm_reg_t *rec = NULL;
 
-u64 vm_reg_get(const char *name)
+ut64 vm_reg_get(const char *name)
 {
 	struct list_head *pos;
 	int len = strlen(name);
@@ -263,7 +263,7 @@ u64 vm_reg_get(const char *name)
 		struct vm_reg_t *r = list_entry(pos, struct vm_reg_t, list);
 		if (!strncmp(name, r->name, len)) {
 			if (rec==NULL && r->get != NULL) {
-				u64 val;
+				ut64 val;
 				rec = r;
 				vm_eval(r->get);
 				//vm_op_eval(r->get);
@@ -290,7 +290,7 @@ int vm_reg_del(const char *name)
 	return 1;
 }
 
-int vm_reg_set(const char *name, u64 value)
+int vm_reg_set(const char *name, ut64 value)
 {
 	struct list_head *pos;
 
@@ -352,7 +352,7 @@ void vm_configure_ret(const char *eax)
 	vm_cpu.ret = strdup(eax);
 }
 
-void vm_cpu_call(u64 addr)
+void vm_cpu_call(ut64 addr)
 {
 	/* x86 style */
 	vm_stack_push(vm_reg_get(vm_cpu.pc));
@@ -360,18 +360,18 @@ void vm_cpu_call(u64 addr)
 	// XXX this should be the next instruction after pc (we need insn length here)
 }
 
-void vm_stack_push(u64 _val)
+void vm_stack_push(ut64 _val)
 {
 	// XXX determine size of stack here
 	// XXX do not write while emulating zomfg
-	u32 val = _val;
+	ut32 val = _val;
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)+4);
 	vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
 }
 
 void vm_stack_pop(const char *reg)
 {
-	u32 val = 0;
+	ut32 val = 0;
 	if (vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4))
 		return;
 //printf("POP (%s)\n", reg);
@@ -485,10 +485,10 @@ int vm_eval_eq(const char *str, const char *val)
 {
 	char *p;
 	u8 buf[64];
-	u64 _int8  = 0;
-	u16 _int16 = 0;
-	u32 _int32 = 0;
-	u64 _int64 = 0;
+	ut64 _int8  = 0;
+	ut16 _int16 = 0;
+	ut32 _int32 = 0;
+	ut64 _int64 = 0;
 	for(;*str==' ';str=str+1);
 	for(;*val==' ';val=val+1);
 
@@ -499,7 +499,7 @@ int vm_eval_eq(const char *str, const char *val)
 		if (*val=='[') {
 			// [0x804800] = [0x30480]
 			u8 data[8];
-			u64 off = vm_get_math(val+1);
+			ut64 off = vm_get_math(val+1);
 			p = strchr(val+1,':');
 			// TODO: support for size 8:addr
 			// if (strchr(val, ':')) ..
@@ -532,9 +532,9 @@ int vm_eval_eq(const char *str, const char *val)
 		} else {
 			// [0x804800] = eax
 			// use ssssskcvtgvmu
-			u64 off = vm_get_math(str+1);
+			ut64 off = vm_get_math(str+1);
 			// XXX support 64 bits here
-			u32 v = (u32)vm_get_math(val); // TODO control endian
+			ut32 v = (ut32)vm_get_math(val); // TODO control endian
 			p = strchr(str+1,':');
 			eprintf("   ;==> [0x%08llx] = %x  ((%s))\n", off, v, str+1);
 
@@ -564,8 +564,8 @@ int vm_eval_eq(const char *str, const char *val)
 		if (*val=='[') {
 			// use mmu
 			u8 data[8];
-			u64 off;
-			u32 _int32 = 0;
+			ut64 off;
+			ut32 _int32 = 0;
 			p = strchr(val+1,']');
 			if (p)
 				*p='\0';
@@ -576,24 +576,24 @@ int vm_eval_eq(const char *str, const char *val)
 				switch(size) {
 				case 8:
 					vm_mmu_read(off, (u8*)&_int8, 1);
-					vm_reg_set(str, (u64)_int8);
+					vm_reg_set(str, (ut64)_int8);
 					break;
 				case 16:
 					vm_mmu_read(off, (u8*)&_int16, 2);
-					vm_reg_set(str, (u64)_int16);
+					vm_reg_set(str, (ut64)_int16);
 					break;
 				case 64:
 					vm_mmu_read(off, (u8*)&_int64, 8);
-					vm_reg_set(str, (u64)_int64);
+					vm_reg_set(str, (ut64)_int64);
 					break;
 				default:
 					vm_mmu_read(off, (u8*)&_int32, 4);
-					vm_reg_set(str, (u64)_int32);
+					vm_reg_set(str, (ut64)_int32);
 				}
 			} else {
  				off = vm_get_math(val+1);
 				vm_mmu_read(off, (u8*)&_int32, 4);
-				vm_reg_set(str, (u64)_int32);
+				vm_reg_set(str, (ut64)_int32);
 			}
 		} else vm_reg_set(str, vm_get_math(val));
 	}
@@ -747,7 +747,7 @@ int vm_eval_file(const char *str)
 /* emulate n opcodes */
 int vm_emulate(int n)
 {
-	u64 pc;
+	ut64 pc;
 	char str[128];
 	u8 buf[128];
 	int opsize;

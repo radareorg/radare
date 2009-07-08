@@ -88,7 +88,7 @@ static int anal_is_exitpoint ( int inst )
 
 extern int arm_mode;
 
-int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
+int arch_arm_aop(ut64 addr, const u8 *codeA, struct aop_t *aop)
 {
 	unsigned int i = 0;
 	unsigned int* code=(unsigned int *)codeA;
@@ -137,7 +137,7 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 	} else
 	if ((code[i] & ARM_DTX_LOAD)) { //anal_is_load(code[i])) {
 		int ret;
-		u32 ptr = 0;
+		ut32 ptr = 0;
 		aop->type = AOP_TYPE_MOV;
 		if (b[2]==0x1b) {
 			/* XXX pretty incomplete */
@@ -145,7 +145,7 @@ int arch_arm_aop(u64 addr, const u8 *codeA, struct aop_t *aop)
 			aop->ref = b[0];
 			//var_add_access(addr, -b[0], 1, 0); // TODO: set/get (the last 0)
 		} else {
-			u32 oaddr = addr+8+b[0];
+			ut32 oaddr = addr+8+b[0];
 			ret = radare_read_at(oaddr, &ptr, 4);
 			if (ret == 4) {
 				b = &ptr;

@@ -84,8 +84,8 @@ int main(int argc, char **argv, char **envp)
 			config_set("file.write", "true");
 			break;
 		case 's':
-			config.seek = (u64)get_offset(optarg);
-			if (config.seek < 0) config.seek = (u64)0;
+			config.seek = (ut64)get_offset(optarg);
+			if (config.seek < 0) config.seek = (ut64)0;
 			config_set("dbg.bep", optarg);
 			break;
 		case 'l':
@@ -100,7 +100,7 @@ int main(int argc, char **argv, char **envp)
 			break;
 		case 'V':
 			printf("radare %s %dbit on %s%dbit "TARGET" %s%s\n", VERSION,
-				sizeof(u64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
+				sizeof(ut64)*8, (LIL_ENDIAN)?"le":"be", sizeof(void *)*8, 
 				(DEBUGGER)?   "dbg "   :"", (HAVE_GUI)? "gui"   :"");
 			return 0;
 		case 'u':

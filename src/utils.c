@@ -98,9 +98,9 @@ int _strnstr(char *from, char *to, int size)
 	return (size!=i);
 }
 
-u64 file_size(const char *str)
+ut64 file_size(const char *str)
 {
-	u64 sz;
+	ut64 sz;
 	FILE *fd = fopen(str, "r");
 	if (fd == NULL)
 		return 0;
@@ -300,15 +300,15 @@ void progressbar(int pc)
 }
 
 #if RADARE_CORE
-u64 get_pointer(u64 addr, int size)
+ut64 get_pointer(ut64 addr, int size)
 {
 	int endian = !config_get_i("cfg.bigendian"); // XXX -?
-	u64 ret = 0;
+	ut64 ret = 0;
 	u8 newa8 = 0;
-	u16 newa16 = 0;
-	u32 newa32 = 0;
-	u64 newa64 = 0;
-	u64 sk = config.seek;
+	ut16 newa16 = 0;
+	ut32 newa32 = 0;
+	ut64 newa64 = 0;
+	ut64 sk = config.seek;
 	radare_seek(addr, SEEK_SET);
 	switch(size) {
 	case 1:
@@ -335,11 +335,11 @@ u64 get_pointer(u64 addr, int size)
 }
 #endif
 
-/* Converts a string to u64 type. u64 jmp = get_offset("0x123456"); */
-u64 get_offset(const char *orig)
+/* Converts a string to ut64 type. ut64 jmp = get_offset("0x123456"); */
+ut64 get_offset(const char *orig)
 {
 	char *arg;
-	u64 ret = 0;
+	ut64 ret = 0;
 	int i, j;
 #if RADARE_CORE
 	flag_t *flag;
@@ -368,8 +368,8 @@ u64 get_offset(const char *orig)
 #endif
 
 	if (arg[0]=='.') {
-		u64 real = 0;
-		u64 mask = 0;
+		ut64 real = 0;
+		ut64 mask = 0;
 		for(ptr = arg; ptr[0];ptr = ptr +1) {
 			if (ptr[0]!='.') {
 				mask<<= 4;
@@ -485,9 +485,9 @@ u64 get_offset(const char *orig)
 	return ret;
 }
 
-u32 get_offset32(const char *foo)
+ut32 get_offset32(const char *foo)
 {
-	return (u32) get_offset (foo);
+	return (ut32) get_offset (foo);
 }
 
 int set0word(char *str)
@@ -544,11 +544,11 @@ char *mytok(char *ptr, char *delim, char *backup)
 }
 
 static int level = 0; // recursivity counter
-u64 get_math(const char* text)
+ut64 get_math(const char* text)
 {
-	u64 t;
-	u64 new_off = 0;
-	u64 cmp_off = 0;
+	ut64 t;
+	ut64 new_off = 0;
+	ut64 cmp_off = 0;
 	int is_cmp  = 0;
 	int  sign   = 1;
 	char op     = 0;
@@ -688,7 +688,7 @@ u64 get_math(const char* text)
 /* int byte = hexpair2bin("A0"); */
 int get_cmp(const char *str0, const char *str1)
 {
-	u64 a,b;
+	ut64 a,b;
 	a = get_math(str0);
 	b = get_math(str1);
 	return (int)(a-b);
@@ -763,8 +763,8 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 
 		d = c;
 		if (ptr[0]=='0' && ptr[1]=='x' ){ //&& c==0) {
-			u64 addr   = get_math(ptr);
-			unsigned int addr32 = (u32) addr;
+			ut64 addr   = get_math(ptr);
+			unsigned int addr32 = (ut32) addr;
 			if (addr & ~0xFFFFFFFF) {
 				// 64 bit fun
 			} else {
@@ -994,8 +994,8 @@ int str_ccpy(char *dst, char *orig, int ch)
 	(((x) & 0x000000000000ff00LL) << 40)  | \
 	(((x) & 0x00000000000000ffLL) << 56))
 
-u64 htonq(u64 value) {
-	u64 ret  = value;
+ut64 htonq(ut64 value) {
+	ut64 ret  = value;
 #if LIL_ENDIAN
 	endian_memcpy_e((u8*)&ret, (u8*)&value, 8, 0);
 #endif

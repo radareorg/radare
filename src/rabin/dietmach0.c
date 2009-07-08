@@ -936,8 +936,8 @@ p = offset;
 			break;
 		}
 		{
-			//u32 csz = n0(seg_command->cmdsize);
-			u32 csz = n0(seg_command->cmdsize);
+			//ut32 csz = n0(seg_command->cmdsize);
+			ut32 csz = n0(seg_command->cmdsize);
 			if (csz == 0) /* avoid infinite loops or so? XXX can be tricked */
 				break;
 			offset += csz; //seg_command->cmdsize;

@@ -40,7 +40,7 @@ static struct list_head data;
 static struct list_head comments;
 static struct list_head xrefs;
 
-int data_set_len(u64 off, u64 len)
+int data_set_len(ut64 off, ut64 len)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -54,10 +54,10 @@ int data_set_len(u64 off, u64 len)
 	return -1;
 }
 
-u64 data_prev(u64 off, int type)
+ut64 data_prev(ut64 off, int type)
 {
 	struct list_head *pos;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
@@ -69,10 +69,10 @@ u64 data_prev(u64 off, int type)
 	return ret;
 }
 
-u64 data_prev_size(u64 off, int type)
+ut64 data_prev_size(ut64 off, int type)
 {
 	struct list_head *pos;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
@@ -84,14 +84,14 @@ u64 data_prev_size(u64 off, int type)
 	return ret;
 }
 
-int data_get_fun_for(u64 addr, u64 *from, u64 *to)
+int data_get_fun_for(ut64 addr, ut64 *from, ut64 *to)
 {
 	struct list_head *pos;
 	int n_functions = 0;
 	int n_xrefs = 0;
 	int n_dxrefs = 0;
 	struct data_t *rd = NULL;
-	u64 lastfrom = 0LL;
+	ut64 lastfrom = 0LL;
 
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
@@ -142,7 +142,7 @@ void data_info()
 	cons_printf("code_xrefs: %d\n", n_xrefs);
 }
 
-int data_set(u64 off, int type)
+int data_set(ut64 off, int type)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -155,7 +155,7 @@ int data_set(u64 off, int type)
 	return -1;
 }
 
-struct data_t *data_add_arg(u64 off, int type, const char *arg)
+struct data_t *data_add_arg(ut64 off, int type, const char *arg)
 {
 	struct data_t *d;
 	if (arg == NULL)
@@ -166,7 +166,7 @@ struct data_t *data_add_arg(u64 off, int type, const char *arg)
 	return d;
 }
 
-void data_del(u64 addr, int type,int len/* data or code */)
+void data_del(ut64 addr, int type,int len/* data or code */)
 {
 	struct data_t *d;
 	struct list_head *pos;
@@ -179,9 +179,9 @@ void data_del(u64 addr, int type,int len/* data or code */)
 	}
 }
 
-struct data_t *data_add(u64 off, int type)
+struct data_t *data_add(ut64 off, int type)
 {
-	u64 tmp;
+	ut64 tmp;
 	struct data_t *d = NULL;
 	struct list_head *pos;
 
@@ -228,9 +228,9 @@ struct data_t *data_add(u64 off, int type)
 	return d;
 }
 
-u64 data_seek_to(u64 offset, int type, int idx)
+ut64 data_seek_to(ut64 offset, int type, int idx)
 {
-	u64 ret = 0ULL;
+	ut64 ret = 0ULL;
 	struct list_head *pos;
 	int i = 0;
 	idx--;
@@ -248,7 +248,7 @@ u64 data_seek_to(u64 offset, int type, int idx)
 	return ret;
 }
 
-struct data_t *data_get(u64 offset)
+struct data_t *data_get(ut64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -259,7 +259,7 @@ struct data_t *data_get(u64 offset)
 	return NULL;
 }
 
-struct data_t *data_get_range(u64 offset)
+struct data_t *data_get_range(ut64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -271,7 +271,7 @@ struct data_t *data_get_range(u64 offset)
 }
 
 /* TODO: OPTIMIZE: perform cache here */
-struct data_t *data_get_between(u64 from, u64 to)
+struct data_t *data_get_between(ut64 from, ut64 to)
 {
 	int hex = 0;
 	int str = 0;
@@ -350,7 +350,7 @@ struct data_t *data_get_between(u64 from, u64 to)
 	return &ret;
 }
 
-int data_type_range(u64 offset)
+int data_type_range(ut64 offset)
 {
 	struct data_t *d = data_get_range(offset);
 	if (d != NULL)
@@ -358,7 +358,7 @@ int data_type_range(u64 offset)
 	return -1;
 }
 
-int data_type(u64 offset)
+int data_type(ut64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -369,7 +369,7 @@ int data_type(u64 offset)
 	return -1;
 }
 
-int data_end(u64 offset)
+int data_end(ut64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -380,7 +380,7 @@ int data_end(u64 offset)
 	return -1;
 }
 
-int data_size(u64 offset)
+int data_size(ut64 offset)
 {
 	struct list_head *pos;
 	list_for_each(pos, &data) {
@@ -448,7 +448,7 @@ int data_list(const char *mask)
 	return 0;
 }
 /* -- metadata -- */
-int data_xrefs_print(u64 addr, int type)
+int data_xrefs_print(ut64 addr, int type)
 {
 	char str[1024];
 	int n = 0;
@@ -476,7 +476,7 @@ int data_xrefs_print(u64 addr, int type)
 	return n;
 }
 
-int data_xrefs_add(u64 addr, u64 from, int type)
+int data_xrefs_add(ut64 addr, ut64 from, int type)
 {
 	struct xrefs_t *x;
 	struct list_head *pos;
@@ -499,7 +499,7 @@ int data_xrefs_add(u64 addr, u64 from, int type)
 	return 1;
 }
 
-int data_xrefs_at(u64 addr)
+int data_xrefs_at(ut64 addr)
 {
 	int ctr = 0;
 	struct xrefs_t *x;
@@ -515,7 +515,7 @@ int data_xrefs_at(u64 addr)
 
 }
 
-void data_xrefs_del(u64 addr, u64 from, int data /* data or code */)
+void data_xrefs_del(ut64 addr, ut64 from, int data /* data or code */)
 {
 	struct xrefs_t *x;
 	struct list_head *pos;
@@ -528,11 +528,11 @@ void data_xrefs_del(u64 addr, u64 from, int data /* data or code */)
 	}
 }
 
-void data_comment_del(u64 offset, const char *str)
+void data_comment_del(ut64 offset, const char *str)
 {
 	struct comment_t *cmt;
 	struct list_head *pos, *n;
-	//u64 off = get_math(str);
+	//ut64 off = get_math(str);
 
 	list_for_each_safe(pos, n, &comments) {
 		cmt = list_entry(pos, struct comment_t, list);
@@ -572,7 +572,7 @@ void data_comment_del(u64 offset, const char *str)
 	}
 }
 
-void data_comment_add(u64 offset, const char *str)
+void data_comment_add(ut64 offset, const char *str)
 {
 	struct comment_t *cmt;
 	char *ptr;
@@ -593,7 +593,7 @@ void data_comment_add(u64 offset, const char *str)
 	list_add_tail(&(cmt->list), &(comments));
 }
 
-void data_del_range(u64 from, u64 to)
+void data_del_range(ut64 from, ut64 to)
 {
 	struct list_head *pos, *n;
 
@@ -633,7 +633,7 @@ void data_comment_list(const char *mask)
 	}
 }
 
-void data_xrefs_here(u64 addr)
+void data_xrefs_here(ut64 addr)
 {
 	int count = 0;
 	char label[1024];
@@ -671,7 +671,7 @@ void data_xrefs_list(const char *mask)
 	}
 }
 
-char *data_comment_get(u64 offset, int lines)
+char *data_comment_get(ut64 offset, int lines)
 {
 	struct list_head *pos;
 	char *str = NULL;
@@ -742,7 +742,7 @@ void data_reflines_init(int lines, int linescall)
 int data_printd(int delta)
 {
 	int show_lines = (int)config_get("asm.lines");
-	u64 offset = (u64)config.seek + (u64)delta;// - config.vaddr;
+	ut64 offset = (ut64)config.seek + (ut64)delta;// - config.vaddr;
 	int lines = 0;
 	const char *ptr;
 
@@ -779,7 +779,7 @@ int data_var_type_add(const char *typename, int size, const char *fmt)
 int data_var_type_del(const char *typename)
 {
 	struct list_head *pos;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	if (*typename==' ')typename=typename+1;
 
@@ -798,7 +798,7 @@ int data_var_type_list(const char *mask)
 {
 	char str[128];
 	struct list_head *pos;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	list_for_each(pos, &vartypes) {
 		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
@@ -813,7 +813,7 @@ int data_var_type_list(const char *mask)
 struct var_type_t *data_var_type_get(const char *datatype)
 {
 	struct list_head *pos;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	list_for_each(pos, &vartypes) {
 		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);

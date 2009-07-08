@@ -5,39 +5,39 @@
 #include <stdio.h>
 #include "demsil.h"
 /* typedef */
-#ifndef u64
-#define u64 unsigned long long
+#ifndef ut64
+#define ut64 unsigned long long
 #endif
-#ifndef u32
-#define u32 unsigned int
+#ifndef ut32
+#define ut32 unsigned int
 #endif
 
-static u32 hi_dword(u64 Q)
+static ut32 hi_dword(ut64 Q)
 {
-	u64 qwBuf = Q >> 32;
-	return (u32) qwBuf;
+	ut64 qwBuf = Q >> 32;
+	return (ut32) qwBuf;
 }
 
-static u32 lo_dword(u64 Q)
+static ut32 lo_dword(ut64 Q)
 {
-	return (u32) Q;
+	return (ut32) Q;
 }
 
-int GetSingleMSILInstr(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop)
+int GetSingleMSILInstr(const u8 *pMemory, ut32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *ilop)
 {
 	u8 *pCurInstr = (u8 *) pMemory;
 	DISASMSIL_OFFSET Base = CodeBase;
-	u32 CurInstr;
-	u32 Token;
+	ut32 CurInstr;
+	ut32 Token;
 	u8 bBuf = 0;
-	u16 wBuf = 0;
-	u32 dwBuf = 0;
-	u64 qwBuf = 0;
-	u32 Prefix;
+	ut16 wBuf = 0;
+	ut32 dwBuf = 0;
+	ut64 qwBuf = 0;
+	ut32 Prefix;
 
 /* This macro makes a validity check on the requested space */
 #define VALIDATE(p, size) \
-	if ((MemorySize - (u32 ) (((unsigned long*) p) - ((unsigned long*) pMemory))) < size) \
+	if ((MemorySize - (ut32 ) (((unsigned long*) p) - ((unsigned long*) pMemory))) < size) \
 		return 0;
 
 	// This little macro makes a validity check
@@ -45,8 +45,8 @@ int GetSingleMSILInstr(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeB
 	// when the request can't be satisfied, 
 	// the function returns 0
 #define demsil_get(p, var, type) { \
-	u32 typesize = sizeof (type);	\
-	u32 remsize = MemorySize - (u32) (((unsigned long*) p) - ((unsigned long*) pMemory)); \
+	ut32 typesize = sizeof (type);	\
+	ut32 remsize = MemorySize - (ut32) (((unsigned long*) p) - ((unsigned long*) pMemory)); \
 	if (typesize > remsize) return 0; \
 	var = *((type *) p);	\
 }
@@ -68,33 +68,33 @@ int GetSingleMSILInstr(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeB
 #if 0
 	/* XXX original code -stripped to skip warnings */
 	case NUMBER_TYPE_BRANCH:                                                        \
-		if (((u32) n) <= 0x7FFFFFFF)                                    \
-			snprintf(szNumber, 100, "0x%08X", (u32) (Base + 5) + n);\
-		else snprintf(szNumber, 100, "0x%08X", (u32) (Base + 5) - (0 - (int) n));
+		if (((ut32) n) <= 0x7FFFFFFF)                                    \
+			snprintf(szNumber, 100, "0x%08X", (ut32) (Base + 5) + n);\
+		else snprintf(szNumber, 100, "0x%08X", (ut32) (Base + 5) - (0 - (int) n));
 #endif
 
 #define demsil_add_number(n, nt) {\
 		char szNumber[100];\
 		switch (nt) {	\
-		case NUMBER_TYPE_TOKEN: snprintf(szNumber, 100, "0x%08X", (u32) n); break;	\
+		case NUMBER_TYPE_TOKEN: snprintf(szNumber, 100, "0x%08X", (ut32) n); break;	\
 		case NUMBER_TYPE_SMALL_BRANCH:								\
 			if (((u8) n) <= 127)								\
-				snprintf(szNumber, 100, "0x%08X", (u32) ((Base + 2) + n));	\
+				snprintf(szNumber, 100, "0x%08X", (ut32) ((Base + 2) + n));	\
 			else										\
-				snprintf(szNumber, 100, "0x%08X", (u32) ((Base + 2) - (0 - (char) n)));	\
+				snprintf(szNumber, 100, "0x%08X", (ut32) ((Base + 2) - (0 - (char) n)));	\
 			break;									\
 		case NUMBER_TYPE_BRANCH:							\
-			snprintf(szNumber, 100, "0x%08X", (u32)( (Base + 5) + n));\
+			snprintf(szNumber, 100, "0x%08X", (ut32)( (Base + 5) + n));\
 			break;\
 		case NUMBER_TYPE_U8: snprintf(szNumber, 100, "0x%02X", (u8) n); break;	\
-		case NUMBER_TYPE_WORD: snprintf(szNumber, 100, "0x%04X", (u16) n); break;\
-		case NUMBER_TYPE_DWORD: snprintf(szNumber, 100, "0x%08X", (u32) n); break;\
+		case NUMBER_TYPE_WORD: snprintf(szNumber, 100, "0x%04X", (ut16) n); break;\
+		case NUMBER_TYPE_DWORD: snprintf(szNumber, 100, "0x%08X", (ut32) n); break;\
 		case NUMBER_TYPE_QWORD: snprintf(szNumber, 100, "0x%08X%08X",		\
 			hi_dword(n), lo_dword(n)); break;						\
 		case NUMBER_TYPE_CHAR:	snprintf(szNumber, 100, "%d", (int) (u8) n); break;		\
 		case NUMBER_TYPE_SHORT:	snprintf(szNumber, 100, "%hd", (short) n); break;		\
 		case NUMBER_TYPE_INT: snprintf(szNumber, 100, "%d", (int) n); break;			\
-		case NUMBER_TYPE_INT64: snprintf(szNumber, 100, "%lld", (u64) n); break;\
+		case NUMBER_TYPE_INT64: snprintf(szNumber, 100, "%lld", (ut64) n); break;\
 		case NUMBER_TYPE_UCHAR: snprintf(szNumber, 100, "%hu", (unsigned short) n); break;	\
 		case NUMBER_TYPE_USHORT:	snprintf(szNumber, 100, "%hu", (short) n); break;	\
 		case NUMBER_TYPE_UINT: snprintf(szNumber, 100, "%u", (int) n); break;		\
@@ -133,11 +133,11 @@ int GetSingleMSILInstr(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeB
 	//
 	// check for prefixes
 	//
-	demsil_get(pCurInstr, Prefix, u16);
+	demsil_get(pCurInstr, Prefix, ut16);
 
 	switch (Prefix) {
 	case ILOPCODE_CONSTRAINED_:
-		demsil_get(pCurInstr + 2, Token, u32);
+		demsil_get(pCurInstr + 2, Token, ut32);
 		pCurInstr += 6;
 		demsil_addiT("costrained", Token);
 		break;
@@ -301,7 +301,7 @@ getinstr:
 		case ILOPCODE_LDC_I4:
 			{
 				demsil_addi("ldc.i4");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_INT);
 				break;
@@ -309,19 +309,19 @@ getinstr:
 
 		case ILOPCODE_LDC_I8:
 			demsil_addi("ldc.i8");
-			demsil_get(pCurInstr, qwBuf, u64);
+			demsil_get(pCurInstr, qwBuf, ut64);
 			pCurInstr += 8;
 			demsil_add_number(qwBuf, NUMBER_TYPE_INT64);
 			break;
 		case ILOPCODE_LDC_R4:
 			demsil_addi("ldc.r4");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_FLOAT);
 			break;
 		case ILOPCODE_LDC_R8:
 			demsil_addi("ldc.r8");
-			demsil_get(pCurInstr, qwBuf, u64);
+			demsil_get(pCurInstr, qwBuf, ut64);
 			pCurInstr += 8;
 			demsil_add_number(qwBuf, NUMBER_TYPE_DOUBLE);
 			break;
@@ -332,17 +332,17 @@ getinstr:
 			demsil_addi("pop");
 			break;
 		case ILOPCODE_JMP:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("jmp", dwBuf);
 			break;
 		case ILOPCODE_CALL:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("call", dwBuf);
 			break;
 		case ILOPCODE_CALLI:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("calli", dwBuf);
 			break;
@@ -431,52 +431,52 @@ getinstr:
 			break;
 		case ILOPCODE_BR:
 			demsil_addi("br");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 #if 0
 		case ILOPCODE_BR0:
 			demsil_addi("brfalse");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 		case ILOPCODE_BR1:
 			demsil_addi("brtrue");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 #endif
 		case ILOPCODE_BEQ:
 			demsil_addi("beq");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 		case ILOPCODE_BGE:
 			demsil_addi("bge");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 		case ILOPCODE_BGT:
 			demsil_addi("bgt");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 		case ILOPCODE_BLE:
 			demsil_addi("ble");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
 		case ILOPCODE_BLT:
 			{
 				demsil_addi("blt");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -484,7 +484,7 @@ getinstr:
 		case ILOPCODE_BNE_UN:
 			{
 				demsil_addi("bne.un");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -492,7 +492,7 @@ getinstr:
 		case ILOPCODE_BGE_UN:
 			{
 				demsil_addi("bge.un");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -500,7 +500,7 @@ getinstr:
 		case ILOPCODE_BGT_UN:
 			{
 				demsil_addi("bgt.un");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -508,7 +508,7 @@ getinstr:
 		case ILOPCODE_BLE_UN:
 			{
 				demsil_addi("ble.un");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -516,7 +516,7 @@ getinstr:
 		case ILOPCODE_BLT_UN:
 			{
 				demsil_addi("blt.un");
-				demsil_get(pCurInstr, dwBuf, u32);
+				demsil_get(pCurInstr, dwBuf, ut32);
 				pCurInstr += 4;
 				demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 				break;
@@ -529,10 +529,10 @@ getinstr:
 				// every dword in the array represents an int32 offset
 				//
 
-				demsil_get(pCurInstr, dwBuf, u32);
-				VALIDATE(pCurInstr, (dwBuf + 1) * sizeof (u32));
+				demsil_get(pCurInstr, dwBuf, ut32);
+				VALIDATE(pCurInstr, (dwBuf + 1) * sizeof (ut32));
 				demsil_addi("switch");
-				pCurInstr += ((dwBuf + 1) * sizeof (u32));
+				pCurInstr += ((dwBuf + 1) * sizeof (ut32));
 				break;
 			}
 		case ILOPCODE_LDIND_I1:
@@ -659,37 +659,37 @@ getinstr:
 			demsil_addi("conv.u8");
 			break;
 		case ILOPCODE_CALLVIRT:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("callvirt", dwBuf);
 			break;
 		case ILOPCODE_CPOBJ:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("cpobj", dwBuf);
 			break;
 		case ILOPCODE_LDOBJ:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldobj", dwBuf);
 			break;
 		case ILOPCODE_LDSTR:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldstr", dwBuf);
 			break;
 		case ILOPCODE_NEWOBJ:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("newobj", dwBuf);
 			break;
 		case ILOPCODE_CASTCLASS:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("castclass", dwBuf);
 			break;
 		case ILOPCODE_ISINST:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("isinst", dwBuf);
 			break;
@@ -697,7 +697,7 @@ getinstr:
 			demsil_addi("conv.r.un");
 			break;
 		case ILOPCODE_UNBOX:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("unbox", dwBuf);
 			break;
@@ -705,37 +705,37 @@ getinstr:
 			demsil_addi("throw");
 			break;
 		case ILOPCODE_LDFLD:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldfld", dwBuf);
 			break;
 		case ILOPCODE_LDFLDA:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldflda", dwBuf);
 			break;
 		case ILOPCODE_STFLD:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("stfld", dwBuf);
 			break;
 		case ILOPCODE_LDSFLD:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldsfld", dwBuf);
 			break;
 		case ILOPCODE_LDSFLDA:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldsflda", dwBuf);
 			break;
 		case ILOPCODE_STSFLD:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("stsfld", dwBuf);
 			break;
 		case ILOPCODE_STOBJ:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("stobj", dwBuf);
 			break;
@@ -770,12 +770,12 @@ getinstr:
 			demsil_addi("conv.ovf.u.un");
 			break;
 		case ILOPCODE_BOX:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("box", dwBuf);
 			break;
 		case ILOPCODE_NEWARR:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("newarr", dwBuf);
 			break;
@@ -783,7 +783,7 @@ getinstr:
 			demsil_addi("ldlen");
 			break;
 		case ILOPCODE_LDELEMA:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldelema", dwBuf);
 			break;
@@ -845,17 +845,17 @@ getinstr:
 			demsil_addi("stelem.ref");
 			break;
 		case ILOPCODE_LDELEM:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldelem", dwBuf);
 			break;
 		case ILOPCODE_STELEM:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("stelem", dwBuf);
 			break;
 		case ILOPCODE_UNBOX_ANY:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("unbox.any", dwBuf);
 			break;
@@ -884,7 +884,7 @@ getinstr:
 			demsil_addi("conv.ovf.u8");
 			break;
 		case ILOPCODE_REFANYVAL:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("refanyval", dwBuf);
 			break;
@@ -892,12 +892,12 @@ getinstr:
 			demsil_addi("ckfinite");
 			break;
 		case ILOPCODE_MKREFANY:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("mkrefany", dwBuf);
 			break;
 		case ILOPCODE_LDTOKEN:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldtoken", dwBuf);
 			break;
@@ -939,7 +939,7 @@ getinstr:
 			break;
 		case ILOPCODE_LEAVE:
 			demsil_addi("leave");
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_add_number(dwBuf, NUMBER_TYPE_BRANCH);
 			break;
@@ -962,7 +962,7 @@ getinstr:
 	//
 	// Two bytes instruction
 	//
-		demsil_get(pCurInstr, CurInstr, u16);
+		demsil_get(pCurInstr, CurInstr, ut16);
 
 		pCurInstr += 2;
 
@@ -986,48 +986,48 @@ getinstr:
 			demsil_addi("clt.un");
 			break;
 		case ILOPCODE_LDFTN:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldftn", dwBuf);
 			break;
 		case ILOPCODE_LDVIRTFTN:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("ldvirtftn", dwBuf);
 			break;
 		case ILOPCODE_LDARG:
 			demsil_addi("ldarg");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
 		case ILOPCODE_LDARGA:
 			demsil_addi("ldarga");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
 		case ILOPCODE_STARG:
 			demsil_addi("starg");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
 		case ILOPCODE_LDLOC:
 			demsil_addi("ldloc");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
 		case ILOPCODE_LDLOCA:
 			demsil_addi("ldloca");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
 		case ILOPCODE_STLOC:
 			demsil_addi("stloc");
-			demsil_get(pCurInstr, wBuf, u16);
+			demsil_get(pCurInstr, wBuf, ut16);
 			pCurInstr += 2;
 			demsil_add_number(wBuf, NUMBER_TYPE_USHORT);
 			break;
@@ -1038,7 +1038,7 @@ getinstr:
 			demsil_addi("endfilter");
 			break;
 		case ILOPCODE_INITOBJ:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("initobj", dwBuf);
 			break;
@@ -1052,7 +1052,7 @@ getinstr:
 			demsil_addi("rethrow");
 			break;
 		case ILOPCODE_SIZEOF:
-			demsil_get(pCurInstr, dwBuf, u32);
+			demsil_get(pCurInstr, dwBuf, ut32);
 			pCurInstr += 4;
 			demsil_addiT("sizeof", dwBuf);
 			break;
@@ -1064,15 +1064,15 @@ getinstr:
 		}
 	}
 
-	ilop->Size = (u32) (((unsigned long*) pCurInstr) - ((unsigned long*) pMemory));
+	ilop->Size = (ut32) (((unsigned long*) pCurInstr) - ((unsigned long*) pMemory));
 	
 	return 1;
 }
 
-int DisasMSIL(const u8 *pMemory, u32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, u32 nOpcodeStructs, u32 *nDisassembledInstr)
+int DisasMSIL(const u8 *pMemory, ut32 MemorySize, DISASMSIL_OFFSET CodeBase, ILOPCODE_STRUCT *iloparray, ut32 nOpcodeStructs, ut32 *nDisassembledInstr)
 {
 	const u8 *pCurMem = pMemory;
-	u32 x, RemSize = MemorySize;
+	ut32 x, RemSize = MemorySize;
 	DISASMSIL_OFFSET CurBase = CodeBase;
 
 	if (MemorySize == 0 || nOpcodeStructs == 0 || iloparray == NULL) 

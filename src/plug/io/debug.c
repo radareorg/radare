@@ -25,8 +25,8 @@ struct debug_t ps;
 
 struct debug_t debug_debugt;
 
-static u64 old_lseek = -1;
-u64 dbg_lseek(int fildes, u64 offset, int whence)
+static ut64 old_lseek = -1;
+ut64 dbg_lseek(int fildes, ut64 offset, int whence)
 {
 	if (old_lseek == offset && whence == SEEK_SET)
 		return old_lseek;
@@ -38,16 +38,16 @@ u64 dbg_lseek(int fildes, u64 offset, int whence)
 			ps.offset = offset;
 			return ps.offset;
 		case SEEK_CUR:
-			ps.offset = (u64)((unsigned long long)ps.offset+(unsigned long long)offset);
+			ps.offset = (ut64)((unsigned long long)ps.offset+(unsigned long long)offset);
 			return ps.offset;
 		case SEEK_END:
 #if __x86_64__
-			return ps.offset = (u64)((unsigned long long)(-1));
+			return ps.offset = (ut64)((unsigned long long)(-1));
 #else
 			return ps.offset = 0xffffffff;
 #endif
 		default:
-			return (u64)(unsigned long long)-1;
+			return (ut64)(unsigned long long)-1;
 		}
 
 	return __lseek(fildes, offset, whence);

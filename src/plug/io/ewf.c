@@ -70,7 +70,7 @@ int ewf_open(const char *pathname, int flags, mode_t mode)
 
 	if (!memcmp(pathname, "els://", 6)) {
 		FILE *fd = fopen(pathname+6, "r");
-		u64 len;
+		ut64 len;
 		char *buf;
 
 		if (fd == NULL)
@@ -156,7 +156,7 @@ int ewf_close(int fd)
 	return -1;
 }
 
-u64 ewf_lseek(int fildes, u64 offset, int whence)
+ut64 ewf_lseek(int fildes, ut64 offset, int whence)
 {
 	size64_t media_size;
 

@@ -23,44 +23,44 @@
 /* NOTE: This code makes no attempt to be fast! */
 #include <stdio.h>
 #include <string.h>
-#define __u32 unsigned int
+#define __ut32 unsigned int
 
-static __u32
-F(__u32 X, __u32 Y, __u32 Z)
+static __ut32
+F(__ut32 X, __ut32 Y, __ut32 Z)
 {
 	return (X & Y) | ((~X) & Z);
 }
 
-static __u32
-G(__u32 X, __u32 Y, __u32 Z)
+static __ut32
+G(__ut32 X, __ut32 Y, __ut32 Z)
 {
 	return (X & Y) | (X & Z) | (Y & Z);
 }
 
-static __u32
-H(__u32 X, __u32 Y, __u32 Z)
+static __ut32
+H(__ut32 X, __ut32 Y, __ut32 Z)
 {
 	return X ^ Y ^ Z;
 }
 
-static __u32
-lshift(__u32 x, int s)
+static __ut32
+lshift(__ut32 x, int s)
 {
 	x &= 0xFFFFFFFF;
 	return ((x << s) & 0xFFFFFFFF) | (x >> (32 - s));
 }
 
 #define ROUND1(a,b,c,d,k,s) (*a) = lshift((*a) + F(*b,*c,*d) + X[k], s)
-#define ROUND2(a,b,c,d,k,s) (*a) = lshift((*a) + G(*b,*c,*d) + X[k] + (__u32)0x5A827999,s)
-#define ROUND3(a,b,c,d,k,s) (*a) = lshift((*a) + H(*b,*c,*d) + X[k] + (__u32)0x6ED9EBA1,s)
+#define ROUND2(a,b,c,d,k,s) (*a) = lshift((*a) + G(*b,*c,*d) + X[k] + (__ut32)0x5A827999,s)
+#define ROUND3(a,b,c,d,k,s) (*a) = lshift((*a) + H(*b,*c,*d) + X[k] + (__ut32)0x6ED9EBA1,s)
 
 /* this applies md4 to 64 byte chunks */
 static void
-mdfour64(__u32 * M, __u32 * A, __u32 *B, __u32 * C, __u32 *D)
+mdfour64(__ut32 * M, __ut32 * A, __ut32 *B, __ut32 * C, __ut32 *D)
 {
 	int j;
-	__u32 AA, BB, CC, DD;
-	__u32 X[16];
+	__ut32 AA, BB, CC, DD;
+	__ut32 X[16];
 
 
 	for (j = 0; j < 16; j++)
@@ -137,7 +137,7 @@ mdfour64(__u32 * M, __u32 * A, __u32 *B, __u32 * C, __u32 *D)
 }
 
 static void
-copy64(__u32 * M, unsigned char *in)
+copy64(__ut32 * M, unsigned char *in)
 {
 	int i;
 
@@ -147,7 +147,7 @@ copy64(__u32 * M, unsigned char *in)
 }
 
 static void
-copy4(unsigned char *out, __u32 x)
+copy4(unsigned char *out, __ut32 x)
 {
 	out[0] = x & 0xFF;
 	out[1] = (x >> 8) & 0xFF;
@@ -160,13 +160,13 @@ void
 mdfour(unsigned char *out, unsigned char *in, int n)
 {
 	unsigned char buf[128];
-	__u32 M[16];
-	__u32 b = n * 8;
+	__ut32 M[16];
+	__ut32 b = n * 8;
 	int i;
-	__u32 A = 0x67452301;
-	__u32 B = 0xefcdab89;
-	__u32 C = 0x98badcfe;
-	__u32 D = 0x10325476;
+	__ut32 A = 0x67452301;
+	__ut32 B = 0xefcdab89;
+	__ut32 C = 0x98badcfe;
+	__ut32 D = 0x10325476;
 
 	while (n > 64) {
 		copy64(M, in);

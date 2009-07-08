@@ -47,25 +47,25 @@ int arch_bpsize()
 }
 
 /* hardware breakpoints */
-// TODO: unsigned long -> u64
+// TODO: unsigned long -> ut64
 // XXX: 64 bit hw registers working properly??
 //
 #ifdef __linux__
 
-static u32 dr_get (int reg)
+static ut32 dr_get (int reg)
 {
   	return ptrace (PTRACE_PEEKUSER, ps.tid,
                   offsetof(struct user, u_debugreg[reg]), 0);
 }
 
-static int dr_set (int reg, u32 val)
+static int dr_set (int reg, ut32 val)
 {
   	return ptrace (PTRACE_POKEUSER, ps.tid, offsetof(struct user, u_debugreg[reg]), val);
 }
 
 #elif __FreeBSD__
 
-static u32 dr_get (int reg)
+static ut32 dr_get (int reg)
 {
 	unsigned long val;
 	int ret;
@@ -97,7 +97,7 @@ static int dr_set (int reg, unsigned long val)
 
 #elif __WINDOWS__
 
-static u32 dr_get(int reg)
+static ut32 dr_get(int reg)
 {
 	regs_t regs;
 	unsigned int off;
@@ -134,8 +134,8 @@ static int dr_set(int reg, unsigned long val)
 
 #else
 
-/* NOT YET IMPLEMENTED: USE u64!!! */
-static u32 dr_get(int reg)
+/* NOT YET IMPLEMENTED: USE ut64!!! */
+static ut32 dr_get(int reg)
 {
 	return 0L;
 }
@@ -152,14 +152,14 @@ static void dr_set_control (unsigned long control)
 	dr_set(DR_CONTROL, control);
 }
 
-static u32 dr_get_control ()
+static ut32 dr_get_control ()
 {
 	return dr_get(DR_CONTROL);
 }
 
 #if 0
 /* NOT USED */
-static void dr_set_addr (int regnum, u32 addr)
+static void dr_set_addr (int regnum, ut32 addr)
 {
 	dr_set(regnum, addr);
 }
@@ -169,7 +169,7 @@ static void dr_reset_addr (int regnum)
 	dr_set(regnum, 0L);
 }
 
-static u32 dr_get_status (void)
+static ut32 dr_get_status (void)
 {
 	return dr_get(DR_STATUS);
 }
@@ -182,7 +182,7 @@ void dr_init()
 		dr_set(i, 0);
 }
 
-int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
+int arch_set_wp_hw_n(int dr_free, ut64 addr, int type)
 {
 	int i;
 	unsigned long control = dr_get_control();
@@ -225,12 +225,12 @@ int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
 }
 
 // TODO: Move to macros in .h
-int arch_set_wp_hw(u64 addr, int type)
+int arch_set_wp_hw(ut64 addr, int type)
 {
 	return arch_set_wp_hw_n(-1, addr, type);
 }
 
-int arch_set_bp_hw(struct bp_t *bp, u64 addr)
+int arch_set_bp_hw(struct bp_t *bp, ut64 addr)
 {
 	return arch_set_wp_hw(addr, DR_RW_EXECUTE);
 }
@@ -238,7 +238,7 @@ int arch_set_bp_hw(struct bp_t *bp, u64 addr)
 int arch_bp_rm_hw(struct bp_t *bp)
 {
 	int i; 
-	u64 addr = 0LL;
+	ut64 addr = 0LL;
 
 	addr = bp->addr;
 
@@ -268,7 +268,7 @@ void dr_list()
 	}
 }
 
-int arch_bp_hw_state(u64 addr, int enable)
+int arch_bp_hw_state(ut64 addr, int enable)
 {
 	unsigned long control;
 	int i;
@@ -313,7 +313,7 @@ int get_len_ins(char *buf, int len)
 	return ud_disassemble(&ud_obj);
 }
 
-int arch_set_bp_soft(struct bp_t *bp, u64 addr)
+int arch_set_bp_soft(struct bp_t *bp, ut64 addr)
 {
 	char breakpoint = '\xCC';
 
@@ -361,7 +361,7 @@ int arch_restore_bp(struct bp_t *bp)
 
 printf("arch_restore_bp\n");
 	if (bp == NULL) {
-		eprintf("WARNING: Cannot restore bp at eip = 0x%08llx\n",(u64)arch_pc());
+		eprintf("WARNING: Cannot restore bp at eip = 0x%08llx\n",(ut64)arch_pc());
 		return 0;
 	}
 
@@ -384,7 +384,7 @@ struct bp_t *arch_stopped_bp()
 {
         int i;
 	int bps = ps.bps_n;
-	u64 addr;
+	ut64 addr;
 	struct bp_t *bp_w = 0, *bp_s = 0;
 
 	addr = R_EIP(WS(regs));

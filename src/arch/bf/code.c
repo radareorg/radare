@@ -24,10 +24,10 @@
 #include <stdio.h>
 #include <string.h>
 
-u64 last_loop = 0;
+ut64 last_loop = 0;
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
+int arch_bf_aop(ut64 addr, const u8 *buf, struct aop_t *aop)
 {
 	int len = 256; /* XXX fix limit bytes here */
 	int i;
@@ -80,7 +80,7 @@ int arch_bf_aop(u64 addr, const u8 *buf, struct aop_t *aop)
 	return aop->length;
 }
 
-int arch_bf_dis(const u8* buf, u64 addr, int len)
+int arch_bf_dis(const u8* buf, ut64 addr, int len)
 {
 	int i;
 	const u8 *b = buf;

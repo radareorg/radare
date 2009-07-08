@@ -65,14 +65,14 @@ int debug_register_list()
 	cons_printf("\n");
 }
 
-u64 arch_syscall(int pid, int sc, ...)
+ut64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 	return ret;
 }
 
 /* clear high 64 bits */
-static u64 reg(u64 reg)
+static ut64 reg(ut64 reg)
 {
 	if (reg & 0xFFFFFFFF00000000LL)
 		return reg & 0xFFFFFFFF;
@@ -173,7 +173,7 @@ int arch_restore_registers()
 	return;
 }
 
-int arch_mprotect(u64 addr, unsigned int size, int perms)
+int arch_mprotect(ut64 addr, unsigned int size, int perms)
 {
 	fprintf(stderr, "TODO: arch_mprotect\n");
 	return 0;
@@ -214,7 +214,7 @@ int arch_ret()
 	return arch_jmp(llregs[31]);
 }
 
-int arch_jmp(u64 ptr)
+int arch_jmp(ut64 ptr)
 {
 	//return ptrace(PTRACE_POKEUSER, ps.pid, PTRACE_PC, (unsigned int)ptr);
 	u8 buf[4096];
@@ -224,7 +224,7 @@ int arch_jmp(u64 ptr)
 	return ptrace(PTRACE_SETREGS, ps.tid, 0, &buf);
 }
 
-u64 arch_pc()
+ut64 arch_pc()
 {
 #if 0
 	int ret;
@@ -240,7 +240,7 @@ u64 arch_pc()
 	return llregs[25];
 #endif
 
-	u64 addr;
+	ut64 addr;
 	u8 buf[1024];
 	regs_t regs;
 	int i, ret; 
@@ -271,7 +271,7 @@ u64 arch_pc()
 	}
 #endif
 	addr = 0;
-	memcpy(&addr, buf+272, sizeof(u64));
+	memcpy(&addr, buf+272, sizeof(ut64));
 	return addr;
 }
 
@@ -280,7 +280,7 @@ int arch_set_register(const char *reg, const char *value)
 	int ret;
 	regs_t regs;
 	unsigned long long *llregs = &regs;
- 	u64 v = get_offset(value);
+ 	ut64 v = get_offset(value);
 	if (ps.opened == 0)
 		return 0;
 
@@ -307,7 +307,7 @@ int arch_set_register(const char *reg, const char *value)
 
 int arch_print_fpregisters(int rad, const char *mask)
 {
-        u64 ptr[128];
+        ut64 ptr[128];
         int i, ret = ptrace(PTRACE_GETFPREGS, ps.tid, 0, &ptr);
         if (rad)
                 for(i=0;i<32;i+=2)
@@ -317,9 +317,9 @@ int arch_print_fpregisters(int rad, const char *mask)
                         cons_printf("f%02d: 0x%016llx%c", i<<1, ptr[i*2], (i%2)?'\n':'\t');
                 /* packed autodetect */
                 for(i=0;i<16;i++) {
-                        u64 val = ptr[i*2];
+                        ut64 val = ptr[i*2];
                         if (val != -1 && val != 0 && ((val & 0xf000f000f000f000LL)==0)) {
-                                u16 *val16 = (u16*)&val;
+                                ut16 *val16 = (ut16*)&val;
                                 cons_printf("f%02d: packed (%4d, %4d, %4d, %4d)\n",  i<<1,
                                         val16[0], val16[1], val16[2], val16[3]);
                         }
@@ -495,7 +495,7 @@ int arch_continue()
 }
 
 // TODO
-struct bp_t *arch_set_breakpoint(u64 addr)
+struct bp_t *arch_set_breakpoint(ut64 addr)
 {
 	//unsigned char bp[4]="\x00\x00\x00\x0d";
 	unsigned char bp[4]="\x0d\x00\x00\x00";
@@ -539,7 +539,7 @@ void *arch_alloc_page(int size, int *rsize)
 	return NULL;
 }
 
-addr_t arch_mmap(int fd, int size, u64 addr) //int *rsize)
+addr_t arch_mmap(int fd, int size, ut64 addr) //int *rsize)
 {
 	return NULL;
 }
@@ -549,7 +549,7 @@ addr_t arch_get_sighandler(int signum)
 	return NULL;
 }
 
-addr_t arch_set_sighandler(int signum, u64 handler)
+addr_t arch_set_sighandler(int signum, ut64 handler)
 {
 	return NULL;
 }
@@ -558,7 +558,7 @@ addr_t arch_get_entrypoint()
 {
 	unsigned long addr;
 	debug_read_at(ps.tid, &addr, 4, 0x00400018);
-	return (u64)addr;
+	return (ut64)addr;
 }
 
 struct list_head *arch_bt()
@@ -579,10 +579,10 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(const char *reg)
+ut64 get_reg(const char *reg)
 {
 	regs_t regs;
-	u64 *llregs = &regs; // 45 elements of 64 bits here
+	ut64 *llregs = &regs; // 45 elements of 64 bits here
 	int ret ;
 
 	memset(&regs, '\0', sizeof(regs));

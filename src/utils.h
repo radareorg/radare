@@ -12,11 +12,11 @@
 #define STRALLOC(dst,str,len) len=strlen(str)+1; dst=alloca(len); memcpy(dst,str,len)
 #define MALLOC_STRUCT(x) (x*)malloc(sizeof(x))
 
-extern u64 last_cmp;
+extern ut64 last_cmp;
 extern const char hex[16];
 extern int std;
 extern char **environ;
-extern u64 last_cmp;
+extern ut64 last_cmp;
 extern char *last_tsearch;
 
 extern const char *nullstr;
@@ -68,11 +68,11 @@ int pprint_fd(int fd);
 int make_tmp_file(char *str);
 void progressbar(int pc);
 int radare_read(int next);
-u64 get_offset (const char *arg);
+ut64 get_offset (const char *arg);
 char *lstrchr(char *str, char chr);
-u64 get_math(const char* text);
+ut64 get_math(const char* text);
 void print_msdos_date(unsigned char _time[2], unsigned char _date[2]);
-u64 radare_seek(u64 offset, int whence);
+ut64 radare_seek(ut64 offset, int whence);
 int is_printable (int c);
 void radare_print(char *arg, print_fmt_t print_fmt);
 int hex2int (unsigned char *val, unsigned char c);
@@ -108,10 +108,10 @@ char *str_first_word(const char *string);
 const char *get_tmp_dir();
 const char *strget(const char *str);
 char *strsub (char *string, char *pat, char *rep, int global);
-u32 get_offset32(const char *str);
-//u64 ntohq(u64 x);
+ut32 get_offset32(const char *str);
+//ut64 ntohq(ut64 x);
 #define ntohq htonq
-u64 htonq(u64 x);
+ut64 htonq(ut64 x);
 int set0word(char *str);
 const char *get0word(const char *str, int idx);
 void efree(void **ptr);
@@ -122,7 +122,7 @@ int str_cpy(char *dst, const char *org);
 int str_grep(const char *str, const char *needle);
 int file_dump(const char *file, const u8 *buf, int len);
 const char *resolve_path(const char *str);
-u64 file_size(const char *str);
+ut64 file_size(const char *str);
 
 #define ABS(x) (x>0?x:-x)
 /* profiling shit */

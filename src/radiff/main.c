@@ -25,14 +25,14 @@
 #include "rdb.h"
 #include "radiff.h"
 
-u64 from = 0;
-u64 to = 0;
+ut64 from = 0;
+ut64 to = 0;
 int radare_fmt = 0;
 int radiff_bytediff(const char *a, const char *b, int count);
 
-u64 get_num64(const char *str)
+ut64 get_num64(const char *str)
 {
-	u64 ret = 0LL;
+	ut64 ret = 0LL;
 	if (str[0]=='0'&&str[1]=='x')
 		sscanf(str, "0x%llx", &ret);
 	else sscanf(str, "%lld", &ret);

@@ -109,8 +109,8 @@ void search_similar_pattern(int count)
 // TODO: handle Control-C
 void radare_search_aes()
 {
-	u64 oseek  = config.seek;
-	u64 limit  = config.size;
+	ut64 oseek  = config.seek;
+	ut64 limit  = config.size;
 	size_t bsize = config.block_size;
 	int found = 0;
 	int i;
@@ -144,7 +144,7 @@ int radare_search_asm(const char *str)
 {
 	eprintf("TODO\n");
 #if 0
-	u64 seek = config.seek;
+	ut64 seek = config.seek;
 	radare_seek(seek);
 #endif
 	return 0;
@@ -172,10 +172,10 @@ beach:
 	return 0;
 }
 
-static int radare_tsearch_callback(struct _tokenizer *t, int i, u64 where)
+static int radare_tsearch_callback(struct _tokenizer *t, int i, ut64 where)
 {
 	char flag_name[128];
-	u64 off = config.seek;
+	ut64 off = config.seek;
 
 	if (align != 0 && where%align != 0)
 		return 1;
@@ -222,7 +222,7 @@ int search_from_simple_file(char *file)
 	FILE *fd;
 	char *ptr, buf[4096], cmd[4096];
 	int i,ret;
-	u64 tmp = config.seek;
+	ut64 tmp = config.seek;
 	tokenizer *t;
 
 	if (strchr(file, '?')) {
@@ -289,7 +289,7 @@ int search_from_simple_file(char *file)
 int search_from_file(char *file)
 {
 	int i,ret;
-	u64 tmp = config.seek;
+	ut64 tmp = config.seek;
 	tokenizer *t;
 
 	if (strchr(file, '?')) {
@@ -336,13 +336,13 @@ int search_range(char *range)
 	char str[128];
 	int num = -1, num2 = -1;
 	tokenizer *t;
-	u64 tmp = config.seek;
-	u64 search_from;
-	u64 search_to;
-	u64 limit;
+	ut64 tmp = config.seek;
+	ut64 search_from;
+	ut64 search_to;
+	ut64 limit;
 	int range_n = 0;
 	int f0 = 0;
-	u64 s;
+	ut64 s;
 
 	if (range == NULL)
 		return 0;

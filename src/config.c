@@ -191,7 +191,7 @@ const char *config_get(const char *name)
 	return NULL;
 }
 
-u64 config_get_i(const char *name)
+ut64 config_get_i(const char *name)
 {
 	struct config_node_t *node;
 
@@ -199,10 +199,10 @@ u64 config_get_i(const char *name)
 	if (node) {
 		if (node->i_value != 0)
 			return node->i_value;
-		return (u64)get_math(node->value);
+		return (ut64)get_math(node->value);
 	}
 
-	return (u64)0LL;
+	return (ut64)0LL;
 }
 
 struct config_node_t *config_set(const char *name, const char *value)
@@ -223,7 +223,7 @@ struct config_node_t *config_set(const char *name, const char *value)
 		free(node->value);
 		if (node->flags & CN_BOOL) {
 			int b = (!strcmp(value,"true")||!strcmp(value,"1"));
-			node->i_value = (u64)(b==0)?0:1;
+			node->i_value = (ut64)(b==0)?0:1;
 			//node->value = estrdup(node->value, b?"true":"false");
 			node->value = strdup(b?"true":"false");
 		} else {
@@ -274,7 +274,7 @@ int config_rm(const char *name)
 	return 0;
 }
 
-struct config_node_t *config_set_i(const char *name, const u64 i)
+struct config_node_t *config_set_i(const char *name, const ut64 i)
 {
 	char buf[128];
 	struct config_node_t *node;
@@ -297,7 +297,7 @@ struct config_node_t *config_set_i(const char *name, const u64 i)
 		if (config_new.lock) {
 			eprintf("(locked: no new keys can be created)");
 		} else {
-			sprintf(buf, "%d", (unsigned int)i);//OFF_FMTd, (u64) i);
+			sprintf(buf, "%d", (unsigned int)i);//OFF_FMTd, (ut64) i);
 			node = config_node_new(name, buf);
 			node->flags = CN_RW | CN_OFFT;
 			node->i_value = i;
@@ -696,7 +696,7 @@ static int config_color_callback(void *data)
 
 static int config_unksize_callback(void *data)
 {
-	static u64 backup = -1LL;
+	static ut64 backup = -1LL;
 	struct config_node_t *node = data;
 	if (node)
 		config.unksize = (int)node->i_value;
@@ -729,7 +729,7 @@ static int config_paddr_callback(void *data)
 	struct config_node_t *node = data;
 
 	if (node) {
-		config.paddr = (u64)node->i_value;
+		config.paddr = (ut64)node->i_value;
 		section_set(config.seek, -1, config.paddr, -1, -1, NULL);
 	}
 	return 1;
@@ -740,7 +740,7 @@ static int config_vaddr_callback(void *data)
 	struct config_node_t *node = data;
 
 	if (node) {
-		config.vaddr = (u64)node->i_value;
+		config.vaddr = (ut64)node->i_value;
 		section_set(config.seek, -1, config.vaddr, -1, -1, NULL);
 	}
 	return 1;

@@ -21,9 +21,9 @@ enum mode_t {
 };
 
 struct zoom_t {
-	u64 to; // full file size
-	u64 from; // start (default is 0)
-	u64 piece; // piece size (config.size/block_size)
+	ut64 to; // full file size
+	ut64 from; // start (default is 0)
+	ut64 piece; // piece size (config.size/block_size)
 	int enabled;
 };
 
@@ -60,16 +60,16 @@ struct config_t {
 	unsigned char *block; // data block
 	int block_size; // size of the data block // why signed ?
 	int cursor; // position of the cursor inside the block XXX THIS IS UNSIGNED :O -1 must be funny
-	u64 cursor_ptr; // where arch_aop makes point with cursor
+	ut64 cursor_ptr; // where arch_aop makes point with cursor
 	int acursor; // position of the cursor inside the block
 	int ocursor; // position of the cursor inside the block
-	u64 size;
-	u64 vaddr; // virtual addr
-	u64 paddr; // physical addr
-	u64 seek;
-	u64 last_seek;
-	u64 limit;
-	u64 last_cmp;
+	ut64 size;
+	ut64 vaddr; // virtual addr
+	ut64 paddr; // physical addr
+	ut64 seek;
+	ut64 last_seek;
+	ut64 limit;
+	ut64 last_cmp;
 	struct zoom_t zoom;
 	struct list_head rdbs; // linked list with all opened rdbs
 };
@@ -99,7 +99,7 @@ struct config_node_t {
 	int hash; /* hash of the name - optimized search */
 	int flags;
 	char *value;
-	u64 i_value;
+	ut64 i_value;
 	int (*callback)(void *data);
 	struct list_head list;
 };
@@ -115,10 +115,10 @@ void config_lock(int l);
 //int config_bsize_callback(void *data);
 //int config_zoombyte_callback(void *data);
 void config_eval(char *str);
-struct config_node_t *config_set_i(const char *name, const u64 i);
+struct config_node_t *config_set_i(const char *name, const ut64 i);
 int config_rm(const char *name);
 struct config_node_t *config_set(const char *name, const char *value);
-u64 config_get_i(const char *name);
+ut64 config_get_i(const char *name);
 const char *config_get(const char *name);
 void config_list(const char *str);
 struct config_node_t *config_node_get(const char *name);

@@ -53,7 +53,7 @@ int arch_is_fork()
 	return 0;
 }
 
-u64 arch_syscall(int pid, int sc, ...)
+ut64 arch_syscall(int pid, int sc, ...)
 {
         long long ret = (off_t)-1;
 
@@ -254,7 +254,7 @@ int arch_restore_registers()
 }
 extern unsigned char *arm_bps[];
 
-int arch_mprotect(u64 addr, unsigned int size, int perms)
+int arch_mprotect(ut64 addr, unsigned int size, int perms)
 {
 #if __APPLE__
 	/* OSX: Apple Darwin */
@@ -364,7 +364,7 @@ int arch_ret()
 #endif
 }
 
-int arch_jmp(u64 ptr)
+int arch_jmp(ut64 ptr)
 {
 #if __linux__
 	elf_gregset_t regs;
@@ -378,7 +378,7 @@ int arch_jmp(u64 ptr)
 #endif
 }
 
-u64 arch_pc(int tid)
+ut64 arch_pc(int tid)
 {
 #if __linux__
 	elf_gregset_t regs;
@@ -616,7 +616,7 @@ int arch_continue()
 }
 
 // TODO
-struct bp_t *arch_set_breakpoint(u64 addr)
+struct bp_t *arch_set_breakpoint(ut64 addr)
 {
 	eprintf("TODO: set breakpoint not implemented\n");
 }
@@ -645,32 +645,32 @@ int arch_opcode_size()
 	return 4;
 }
 
-u64 arch_dealloc_page(void *addr, int size)
+ut64 arch_dealloc_page(void *addr, int size)
 {
 }
 
-u64 arch_alloc_page(int size, int *rsize)
+ut64 arch_alloc_page(int size, int *rsize)
 {
 }
 
-u64 arch_mmap(int fd, int size, u64 addr)
+ut64 arch_mmap(int fd, int size, ut64 addr)
 {
 }
 
-u64 arch_get_sighandler(int signum)
+ut64 arch_get_sighandler(int signum)
 {
 }
 
-u64 arch_set_sighandler(int signum, u64 handler)
+ut64 arch_set_sighandler(int signum, ut64 handler)
 {
 }
 
-u64 arch_get_entrypoint()
+ut64 arch_get_entrypoint()
 {
 	unsigned long long addr;
 	// 0x8018 is not portable. make this var definable
 	debug_read_at(ps.tid, &addr, 4, 0x8018);
-	return (u64)addr;
+	return (ut64)addr;
 }
 
 struct syscall_t {
@@ -774,7 +774,7 @@ void free_bt(struct list_head *sf)
 	return;
 }
 
-u64 get_reg(const char *reg)
+ut64 get_reg(const char *reg)
 {
 #if __linux__
 	elf_gregset_t regs;

@@ -85,7 +85,7 @@ int project_save(const char *file)
 	fprintf(fd, "; Comments\n");
 	list_for_each_prev(pos, &comments) {
 		struct comment_t *cmt = list_entry(pos, struct comment_t, list);
-		fprintf(fd, "CC %s @ 0x%08llx\n", cmt->comment, (u64)cmt->offset);
+		fprintf(fd, "CC %s @ 0x%08llx\n", cmt->comment, (ut64)cmt->offset);
 	}
 #endif
 	cons_set_fd(fileno(fd));

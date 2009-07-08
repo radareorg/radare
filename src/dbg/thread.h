@@ -15,7 +15,7 @@ enum {
 typedef struct {
 	int tid;
 	int status;
-	u64 addr;
+	ut64 addr;
 #if __WINDOWS__
 	HANDLE ht;	
 #endif

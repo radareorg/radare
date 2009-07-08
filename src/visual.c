@@ -49,7 +49,7 @@ struct binding {
 	char *cmd;
 };
 
-static u64 visual_seeks[255];
+static ut64 visual_seeks[255];
 static int visual_seeks_init = 0;
 static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */
 static unsigned char *yank_buffer = NULL;
@@ -62,7 +62,7 @@ static int accel=1;
 static int nbds = 0;
 static struct binding *bds = NULL;
 static int inv = 0;
-static u64 mark = 0;
+static ut64 mark = 0;
 #define VMODES 12
 static char modes[VMODES] =
 { FMT_HEXB, FMT_VISUAL, FMT_UDIS, FMT_OCT, FMT_CSTR,
@@ -282,7 +282,7 @@ static void visual_convert_bytes(int fmt, int defkey)
 {
 	char argstr[128];
 	int c;
-	u64 off, len;
+	ut64 off, len;
 	if (fmt == -1) {
 		if (defkey) {
 			c = defkey;
@@ -514,9 +514,9 @@ CMD_DECL(yank_paste)
 	} else {
 		if (config_get("file.write")) {
 			char *ptr = strchr(input, ' ');
-			u64 sz;
+			ut64 sz;
 			int off = 0;
-			u64 old = config.seek;
+			ut64 old = config.seek;
 			sz = get_math(ptr?ptr:input);
 			if (sz == 0)
 				sz = yank_buffer_size;
@@ -541,7 +541,7 @@ CMD_DECL(yank_paste)
 /* deprecated!! */
 CMD_DECL(xrefs_here)
 {
-	u64 addr;
+	ut64 addr;
 	int foo;
 	cons_printf("Select XREF from list:\n");
 	data_xrefs_here(config.seek);
@@ -732,7 +732,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 {
 	char buf[1025];
 	const char *dl_prompt_old = dl_prompt;
-	u64 oseek = config.seek;
+	ut64 oseek = config.seek;
 
 	if (!config_get("file.write")) {
 		eprintf("Not in write mode.\n");
@@ -944,7 +944,7 @@ void visual_draw_screen()
 #if 0
 	ptr = config_get("scr.seek");
 	if (ptr&&ptr[0]&&last_print_format==FMT_REF) {
-		u64 off = get_math(ptr);
+		ut64 off = get_math(ptr);
 		if (off != 0)
 		radare_seek(off, SEEK_SET);
 	}
@@ -1060,9 +1060,9 @@ static char *visual_prompt_entry(const char *title, char *buf, int len)
 	return buf;
 }
 
-void visual_change_metadata(u64 seek)
+void visual_change_metadata(ut64 seek)
 {
-	u64 off;
+	ut64 off;
 	char buf[128];
 	char buf2[128];
 	int key;
@@ -1123,7 +1123,7 @@ void visual_change_metadata(u64 seek)
 
 void visual_f(int f)
 {
-	u64 addr;
+	ut64 addr;
 	struct bp_t *bp;
 	char line[128];
 
@@ -1257,7 +1257,7 @@ CMD_DECL(visual)
 
 			// XXX 
 		if (config.debug&&last_print_format == FMT_VISUAL&&scrseek&&scrseek[0]) {
-			u64 off = get_math(scrseek);
+			ut64 off = get_math(scrseek);
 			if ((off < config.seek) || ((config.seek+config.block_size) < off)) {
 				radare_seek(off, SEEK_SET);
 				continue;
@@ -1679,7 +1679,7 @@ CMD_DECL(visual)
 				config.cursor = 0;
 			} else {
 				if (mark==0) {
-					u64 u = get_offset("eip");	
+					ut64 u = get_offset("eip");	
 					if (u!=0) {
 						undo_push();
 						radare_seek(u, SEEK_SET);
@@ -1917,7 +1917,7 @@ CMD_DECL(visual)
 					// unexpand function or close folder
 					int type = data_type_range(config.seek+config.cursor);
 					if (type == -1 || type == DATA_FOLD_O) {
-						data_set((u64)(config.seek+config.cursor), DATA_FOLD_C);
+						data_set((ut64)(config.seek+config.cursor), DATA_FOLD_C);
 						cons_clear();
 					}
 				} else {

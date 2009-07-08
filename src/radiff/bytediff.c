@@ -11,11 +11,11 @@
 #define NR if (!radare_fmt)
 #define BS 4096
 
-static int do_byte_diff_count (int fd1, int fd2, u64 bytes) 
+static int do_byte_diff_count (int fd1, int fd2, ut64 bytes) 
 {
 	unsigned char block1[BS];
 	unsigned char block2[BS];
-	u64 rb, bproc = 0;
+	ut64 rb, bproc = 0;
 	int i, nr, count = 0;
 
 	while ( bproc < bytes ) {
@@ -32,11 +32,11 @@ static int do_byte_diff_count (int fd1, int fd2, u64 bytes)
 	return count;
 }
 
-static int do_byte_diff (int fd1, int fd2, u64 bytes) 
+static int do_byte_diff (int fd1, int fd2, ut64 bytes) 
 {
 	unsigned char block1[BS];
 	unsigned char block2[BS];
-	u64 rb, bproc = from;
+	ut64 rb, bproc = from;
 	int nr;
 
 	unsigned char bufb[CTXMAXB];
@@ -59,13 +59,13 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 					NR printf ("------\n");
 					l = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
 					for ( k = 0 ; k < CTXMAXB ; k ++ ) {
-						NR printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,bufb[l] );
+						NR printf ( "%8.8llx %2.2x\n", (ut64)bproc+i-CTXMAXB+k,bufb[l] );
 						l  = ( (l+1)>=CTXMAXB)?0:l+1;
 					}
 					inctx=1;
 				}
-				R { printf("wx %02x @ 0x%llx\n", block2[i], (u64) bproc+i);
-				} else { printf ( "%8.8llx %2.2x   |   %2.2x \n", (u64) bproc+i , block1[i], block2[i]); }
+				R { printf("wx %02x @ 0x%llx\n", block2[i], (ut64) bproc+i);
+				} else { printf ( "%8.8llx %2.2x   |   %2.2x \n", (ut64) bproc+i , block1[i], block2[i]); }
 				outctx = CTXMAXB;
 				cf++;
 			} else {
@@ -73,7 +73,7 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 				atbufb = ( (atbufb+1)>=CTXMAXB)?0:atbufb+1;
 
 				if ( outctx > 0 ) {
-					NR printf ( "%8.8llx %2.2x\n", (u64)bproc+i-CTXMAXB+k,block1[i] );
+					NR printf ( "%8.8llx %2.2x\n", (ut64)bproc+i-CTXMAXB+k,block1[i] );
 					outctx--;
 				} else inctx=0;
 			}
@@ -87,7 +87,7 @@ static int do_byte_diff (int fd1, int fd2, u64 bytes)
 int radiff_bytediff(const char *a, const char *b, int count)
 {
 	int fd1,fd2;
-	u64 size1, size2;
+	ut64 size1, size2;
 	int r;
 
 	fd1 = open (a , O_RDONLY);

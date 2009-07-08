@@ -119,12 +119,12 @@ int debug_tt_range(const char *arg)
 {
 	struct aop_t aop;
 	int pid, bpsz;
-	u64 pc, rpc; // program counter
+	ut64 pc, rpc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
-	u64 sz;
+	ut64 sz;
 	char *cmd = NULL;
-	u64 ba = config.seek; // base address
+	ut64 ba = config.seek; // base address
 	struct list_head *rgs, *pos;
 	struct range_t *r;
 	int status;
@@ -212,12 +212,12 @@ int debug_tt(const char *arg)
 {
 	struct aop_t aop;
 	int pid, bpsz;
-	u64 pc; // program counter
+	ut64 pc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
 	const char *cmd = NULL;
-	u64 ba = config.seek; // base address
-	u64 sz = get_math(arg+1); // size
+	ut64 ba = config.seek; // base address
+	ut64 sz = get_math(arg+1); // size
 	int status;
 
 	// XXX
@@ -542,7 +542,7 @@ int is_usercode(addr_t pc)
 	return 0;
 }
 
-char *alloc_usercode(u64 *base, u64 *len)
+char *alloc_usercode(ut64 *base, ut64 *len)
 {
 	struct list_head *pos;
 	u8 *buf = NULL;
@@ -576,7 +576,7 @@ int debug_stepret()
 	radare_controlc();
 	while(!config.interrupted && ps.opened && debug_stepo()) {
 		debug_read_at(ps.tid, bytes, 4, arch_pc(ps.tid));
-		arch_aop((u64)arch_pc(ps.tid), (const u8 *)bytes, &aop);
+		arch_aop((ut64)arch_pc(ps.tid), (const u8 *)bytes, &aop);
 		if (aop.type == AOP_TYPE_RET)
 			break;
 	}
@@ -588,10 +588,10 @@ int debug_stepret()
 int debug_contum(const char *input)
 {
 	struct aop_t aop;
-	u64 pc;
+	ut64 pc;
 	char a[32];
 	int ilen, dotrace = config_get("trace.log");
-	u64 base = 0, len = 0;
+	ut64 base = 0, len = 0;
 	u8 *buf = alloc_usercode(&base, &len);
 	if (buf == NULL) {
 		eprintf("No user code?\n");
@@ -727,7 +727,7 @@ int debug_ie(char *input)
 
 int debug_until(const char *addr)
 {
-	u64 off = 0LL;
+	ut64 off = 0LL;
 	char buf[128];
 	u8 ptr[128];
 
@@ -743,8 +743,8 @@ int debug_until(const char *addr)
 	else	off = get_math(addr);
 
 	if (off != 0) {
-		eprintf("entry at: 0x%llx\n", (u64) ps.entrypoint);
-		sprintf(buf, "0x%llx\n", (u64) off);
+		eprintf("entry at: 0x%llx\n", (ut64) ps.entrypoint);
+		sprintf(buf, "0x%llx\n", (ut64) off);
 		debug_cont_until(buf);
 	}
 
@@ -760,7 +760,7 @@ int debug_until(const char *addr)
 		debug_read_at(ps.tid, buf, 12, arch_pc(ps.tid));
 		if (!memcmp(buf, "\x31\xed\x5e\x89\xe1\x83\xe4\xf0\x50\x54\x52\x68", 12)) {
 			debug_read_at(ps.tid, &ptr, 4, arch_pc(ps.tid)+24);
-			off = (u64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
+			off = (ut64)(unsigned int)(ptr[0]) | (ptr[1]<<8) | (ptr[2] <<16) | (ptr[3]<<24);
 			sprintf(buf, "0x%x", (unsigned int)off);
 			printf("==> 1 main at : %s\n", buf);
 			if (off !=0&&ptr[0]!=0xff)
@@ -769,7 +769,7 @@ int debug_until(const char *addr)
 		if (!memcmp(buf, "^\x89\xe1\x83\xe4\xf0PTRh", 10)) {
 			unsigned int addr;
 			debug_read_at(ps.tid, &addr, 4, arch_pc(ps.tid)+0x16);
-			off = (u64)addr;
+			off = (ut64)addr;
 			sprintf(buf, "0x%x", addr);
 			printf("==> 2 main at : %s\n", buf);
 			if (off !=0&&off!=0xffffffffLL)
@@ -883,7 +883,7 @@ int debug_skip(int times)
 	unsigned char buf[16];
 	struct aop_t aop;
 	int len;
-	u64 pc = arch_pc(ps.tid);
+	ut64 pc = arch_pc(ps.tid);
 
 	if (ps.opened) {
 		debug_read_at(ps.tid, buf, 16, arch_pc(ps.tid));
@@ -906,7 +906,7 @@ int debug_skip(int times)
 
 int debug_stepu(const char *arg)
 {
-	u64 until = get_math(arg);
+	ut64 until = get_math(arg);
 	unsigned long pc = arch_pc(ps.tid); //WS_PC();
 
 	/* step until address */
@@ -1008,7 +1008,7 @@ int debug_stepbp(int times)
 			debug_bp_rm_addr(aop.fail);
 		debug_bp_rm_addr(pc+len);
 	} else {
-		u64 ptr = pc;
+		ut64 ptr = pc;
 		for(i=0;i<times;i++) {
 			debug_read_at(ps.tid, bytes, 32, ptr);
 			len = arch_aop(pc, bytes, &aop);
@@ -1027,8 +1027,8 @@ int debug_stepbp(int times)
 int debug_step(int times)
 {
 	unsigned char opcode[32];
-	u64 pc, off;
-	u64 old_pc = 0;
+	ut64 pc, off;
+	ut64 old_pc = 0;
 	const char *tracefile;
 	const char *flagregs;
 	int ret;
@@ -1186,7 +1186,7 @@ int debug_trace(char *input)
 		/* XXX : if bp in addr stop! */
 		counter++;
 		radare_controlc();
-		u64 pc = arch_pc(ps.tid);
+		ut64 pc = arch_pc(ps.tid);
 		radare_cmd(".!regs*", 0);
 		if (smart) {
 			cons_printf("[-] 0x%08llx\n", arch_pc(ps.tid));
@@ -1199,7 +1199,7 @@ int debug_trace(char *input)
 				char label[128];
 				struct aop_t aop;
 				char buf[32];
-				u64 addr = arch_pc(ps.tid);
+				ut64 addr = arch_pc(ps.tid);
 				radare_read_at(addr, buf, 32);
 				arch_aop(addr, buf, &aop);
 				switch(aop.type) {
@@ -1452,7 +1452,7 @@ int debug_inject_buffer(unsigned char *fil, int sz)
 
 int debug_inject(char *file)
 {
-	u64 sz = 0;
+	ut64 sz = 0;
 	int fd = open(file, O_RDONLY);
 	unsigned char *fil = NULL;
 
@@ -1484,7 +1484,7 @@ int debug_inject(char *file)
 /* XXX : Stops at the following opcode at this address...debug_bp_restore() doesnt works? */
 int debug_cont_until(const char *input)
 {
-	u64 addr = input?get_math(input):0;
+	ut64 addr = input?get_math(input):0;
 
 	/* continue until address */
 	if (addr != 0) {
@@ -1643,7 +1643,7 @@ int debug_loop(char *addr_str)
 
 int debug_inject2(char *input)
 {
-	u64 pc, size;
+	ut64 pc, size;
 	int status;
 	char buf[1024];
 	char *bak;

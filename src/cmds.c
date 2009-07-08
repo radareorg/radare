@@ -217,7 +217,7 @@ CMD_DECL(analyze)
 	int depth_i;
 	int delta = 0;
 	int depth = input[0]?atoi(input+1):0;
-	u64 oseek = config.seek;
+	ut64 oseek = config.seek;
 
 	if (input[0]=='c'&&depth<1) // only for 'ac'
 		depth = config_get_i("graph.depth");
@@ -257,7 +257,7 @@ CMD_DECL(analyze)
 			break;
 		case '+':
 			ptr = input+3;
-			u64 addr = get_offset(input+3);
+			ut64 addr = get_offset(input+3);
 			ptr = strchr(ptr, ' ');
 			if (ptr != NULL) {
 				//eprintf("at(0x%08llx)=%d (%s)\n", addr, atoi(ptr+1), ptr+1);
@@ -269,7 +269,7 @@ CMD_DECL(analyze)
 			trace_reset();
 			break;
 		case ' ': {
-			u64 foo = get_math(input+1);
+			ut64 foo = get_math(input+1);
 			struct trace_t *t = (struct trace_t *)trace_get(foo, trace_tag_get());
 			if (t != NULL) {
 				cons_printf("offset = 0x%llx\n", t->addr);
@@ -662,8 +662,8 @@ CMD_DECL(analyze)
 	case 'x': {
 		char buf[4096];
 		char file[1024];
-		u64 seek = config.seek;
-		u64 base = 0;
+		ut64 seek = config.seek;
+		ut64 base = 0;
 		strcpy(file, config.file);
 #if DEBUGGER
 		if (config.debug) {
@@ -1055,7 +1055,7 @@ CMD_DECL(graph)
 				offstr[0]='\0';
 				string_flag_offset(offstr, mr->entry, 0);
 
-				cons_printf("%02d 0x%08llx %s\n", i, (u64)mr->entry, offstr);
+				cons_printf("%02d 0x%08llx %s\n", i, (ut64)mr->entry, offstr);
 				i++;
 			}
 			return 0;
@@ -1082,8 +1082,8 @@ CMD_DECL(hash)
 	int i;
 	char buf[1024];
 	char *str;
-	u64 bs = config.block_size;
-	u64 obs = config.block_size;
+	ut64 bs = config.block_size;
+	ut64 obs = config.block_size;
 
 	str = strchr(input, ' ');
 	if (str)
@@ -1098,7 +1098,7 @@ CMD_DECL(hash)
 		radare_set_block_size_i(obs);
 	} else {
 		snprintf(buf, 1000, "rahash -a '%s' -S %lld -L %lld '%s'", // | head -n 1", 
-			input, (u64)config.seek, (u64)bs, config.file);
+			input, (ut64)config.seek, (ut64)bs, config.file);
 		io_system(buf);
 	}
 	return 0;
@@ -1144,8 +1144,8 @@ CMD_DECL(open)
 		arg = strchr(ptr+1, ' ');
 		if (arg != NULL) {
 			char *arg2, *arg3;
-			u64 size = 0LL;
-			u64 delta = 0LL;
+			ut64 size = 0LL;
+			ut64 delta = 0LL;
 			arg[0]='\0';
 			arg2 = strchr(arg+1, ' ');
 			if (arg2) {
@@ -1307,7 +1307,7 @@ CMD_DECL(code)
 			break;
 		default:
 			{
-			u64 from = get_math(text+1);
+			ut64 from = get_math(text+1);
 			if (from >= config.vaddr*2)
 				from -=config.vaddr;
 			data_xrefs_add(from, config.seek+config.vaddr, 0);
@@ -1367,7 +1367,7 @@ CMD_DECL(code)
 			if (text[2]=='\0') {
 				eprintf("Oops. missing argument?\n");
 			} else {
-				u64 len, tmp = config.block_size;
+				ut64 len, tmp = config.block_size;
 				len = get_math(text+2);
 				radare_set_block_size_i(len);
 				data_add_arg(config.seek+(config.cursor_mode?config.cursor:0), DATA_FUN, text+2);
@@ -1407,7 +1407,7 @@ CMD_DECL(code)
 		struct data_t *d;
 		int fmt, len;
 		char *arg = text + 1;
-		u64 tmp = config.block_size;
+		ut64 tmp = config.block_size;
 
 		for(; *arg==' ';arg=arg+1);
 		if (arg[0]=='\0') {
@@ -1657,8 +1657,8 @@ CMD_DECL(flag)
 		if (input[1]=='-') {
 			flag_remove(text+1);
 		} else {
-			u64 here = config.seek;//+config.vaddr;
-			u64 size = config.block_size;
+			ut64 here = config.seek;//+config.vaddr;
+			ut64 size = config.block_size;
 			char *s = strchr(text, ' ');
 			char *s2 = NULL;
 			if (s) {
@@ -1728,7 +1728,7 @@ CMD_DECL(undowrite)
 
 CMD_DECL(seek)
 {
-	u64 new_off = 0;
+	ut64 new_off = 0;
 	struct aop_t aop;
 	char *input2, *text;
 	int whence    = SEEK_SET;
@@ -1770,7 +1770,7 @@ CMD_DECL(seek)
 #endif
 
 	if (text[0] == '\0') {
-		D printf(OFF_FMT"\n", (u64)config.seek);
+		D printf(OFF_FMT"\n", (ut64)config.seek);
 		return 0;
 	}
 	for(;text[0]==' ';text = text +1);
@@ -1877,15 +1877,15 @@ CMD_DECL(info)
 	cons_printf(" vaddr   "OFF_FMTd"  ( 0x"OFF_FMTx" )", config.vaddr, config.vaddr); cons_newline();
 	cons_printf(" bsize   %d  ( 0x%x )", config.block_size, config.block_size); cons_newline();
 	cons_printf(" seek    "OFF_FMTd" 0x"OFF_FMTx,
-		(u64)config.seek, (u64)config.seek); cons_newline();
+		(ut64)config.seek, (ut64)config.seek); cons_newline();
 	cons_printf(" delta   %lld\n", config_get_i("cfg.delta")); 
 	cons_printf(" count   %lld\n", config_get_i("cfg.count")); 
 	//fflush(stdout);
 	//print_flag_offset(config.seek);
 	cons_printf(" size    "OFF_FMTd" \t 0x"OFF_FMTx,
-		(u64)config.size, (u64)config.size); cons_newline();
+		(ut64)config.size, (ut64)config.size); cons_newline();
 	cons_printf(" limit   "OFF_FMTd" \t 0x"OFF_FMTx,
-		(u64)config.limit, (u64)config.limit); cons_newline();
+		(ut64)config.limit, (ut64)config.limit); cons_newline();
 
 	if (config.debug) {
 		cons_printf("Debugger:\n");
@@ -1979,10 +1979,10 @@ CMD_DECL(compare)
 CMD_DECL(write)
 {
 	int ret;
-	u64 delta = 0;
-	u64 off;
-	u64 here = config.seek + (config.cursor_mode?config.cursor:0);
-	u64 back = config.seek;
+	ut64 delta = 0;
+	ut64 off;
+	ut64 here = config.seek + (config.cursor_mode?config.cursor:0);
+	ut64 back = config.seek;
 
 	radare_seek(here, SEEK_SET);
 	switch (input[0]) {
@@ -2069,7 +2069,7 @@ CMD_DECL(write)
 			int ret, delta = 0;
 			unsigned char data[256];
 			char *oinput, *ptr, *aux = strdup ( config_get("asm.arch") );
-			u64 seek = config.seek + config.vaddr;
+			ut64 seek = config.seek + config.vaddr;
 			oinput= input = strdup(input+2);
 			while(input) {
 				ptr = strchr(input, ';');
@@ -2154,7 +2154,7 @@ CMD_DECL(write)
 			eprintf("Please. use 'wT prefix-file [size]'.\n");
 			return 0;
 		} else {
-			u64 bsize = config.block_size;
+			ut64 bsize = config.block_size;
 			static counter = 0;
 			char file[1024];
 			char *off = strchr(input+2, ' ');
@@ -2258,10 +2258,10 @@ CMD_DECL(sections)
 			int i;
 			char *ptr = strdup(input+1);
 			const char *comment = NULL;
-			u64 from = config.seek;
-			u64 to   = config.seek + config.block_size;
-			u64 base = config.vaddr; //config_get_i("io.vaddr");
-			u64 ondisk = config.paddr;
+			ut64 from = config.seek;
+			ut64 to   = config.seek + config.block_size;
+			ut64 base = config.vaddr; //config_get_i("io.vaddr");
+			ut64 ondisk = config.paddr;
 			
 			i = set0word(ptr);
 			switch(i) {
@@ -2328,7 +2328,7 @@ CMD_DECL(examine)
 
 CMD_DECL(prev)
 {
-	u64 off;
+	ut64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
 	else	off = get_math(input);
@@ -2348,7 +2348,7 @@ CMD_DECL(prev)
 
 CMD_DECL(next)
 {
-	u64 off;
+	ut64 off;
 	if (input[0] == '\0')
 		off = config.block_size;
 	else	off = get_math(input);
@@ -2406,7 +2406,7 @@ CMD_DECL(search) {
 	char *input2 = (char *)strdup(input);
 	char *text   = input2;
 	int  len,i = 0,j = 0;
-	u64 seek = config.seek;
+	ut64 seek = config.seek;
 	char *ptr;
 
 	switch(text[0]) {
@@ -2584,8 +2584,8 @@ CMD_DECL(search) {
 		{
 		char buf[64];
 		u8 *b;
-		u64 n, _n;
-		u32 n32, _n32;
+		ut64 n, _n;
+		ut32 n32, _n32;
 		radare_cmd("f -hit0*", 0);
 		_n = n = get_math(input+2);
 		if (n & 0xffffffff00000000LL) {
@@ -2597,7 +2597,7 @@ CMD_DECL(search) {
 			b[0],b[1],b[2],b[3],
 			b[4],b[5],b[6],b[7]);
 		} else {
-			_n32 = n32=(u32)n;
+			_n32 = n32=(ut32)n;
 			endian_memcpy_e(&n32, &_n32, 4, !config_get_i("cfg.bigendian"));
 			b=&n32;
 			sprintf(buf,
@@ -2708,7 +2708,7 @@ CMD_DECL(help)
 				radare_cmd(input+1, 0);
 		} else
 		if (input[0]=='s') {
-			u64 from, to, step;
+			ut64 from, to, step;
 			char *p, *p2;
 			for(input=input+1;input[0]==' ';input=input+1);
 			p = strchr(input, ' ');
@@ -2730,7 +2730,7 @@ CMD_DECL(help)
 			config.last_cmp = get_math(input+1);
 		} else
 		if (input[0]=='v') {
-			u64 res = get_math(input+1);
+			ut64 res = get_math(input+1);
 			config.last_cmp = res;
 			cons_printf("0x%08llx\n", res);
 		} else
@@ -2742,7 +2742,7 @@ CMD_DECL(help)
 				cons_strcat(
 				"Usage: ?[?[?]] <expr>\n"
 				" ? eip             ; get value of eip flag (or any math expression)\n"
-				" ?i offset A:      ; user input for u64 numeric values, result in $$?\n"
+				" ?i offset A:      ; user input for ut64 numeric values, result in $$?\n"
 				" ?f 3.4545         ; calculate hex, double and float value for hex or float num\n"
 				" ?v eip+33+[esp]   ; show hex value of math expression\n"
 				" ?q eip+33+[esp]   ; quite math expression evaluation (no output) changes $$?\n"
@@ -2801,7 +2801,7 @@ CMD_DECL(help)
 			r_prof_start(&prof);
 			radare_cmd(input+1, 0);
 			r_prof_end(&prof);
-			config.last_cmp = (u64)prof.result;
+			config.last_cmp = (ut64)prof.result;
 			eprintf("%lf\n", prof.result);
 		} else
 		if (input[0]=='e') {
@@ -2817,20 +2817,20 @@ CMD_DECL(help)
 			/* TODO: Add support for doubles 'F'? */
 			char *str = input+((input[1]==' ')?2:1);
 			char buf[64];
-			u32 _u32, __u32;
+			ut32 _ut32, __ut32;
 			float _f;
 			u8 *p = &_f;
 			if (str[0]=='0'&&str[1]=='x') {
-				sscanf(str, "0x%x", &_u32);
-				memcpy(&_f, &_u32, sizeof(float));
+				sscanf(str, "0x%x", &_ut32);
+				memcpy(&_f, &_ut32, sizeof(float));
 				sprintf(buf, "%f", _f);
 				/* consistency check */
 				//n1 = (double)_f;
 				//sscanf(buf, "%g", (double *)&n2);
 			} else {
 				sscanf(str, "%f", &_f);
-				memcpy(&_u32, &_f, sizeof(u32));
-				sprintf(buf, "0x%x", _u32);
+				memcpy(&_ut32, &_f, sizeof(ut32));
+				sprintf(buf, "0x%x", _ut32);
 				/* consistency check */
 				//sscanf(str, "%lf", &n1);
 				//n2 = (double)_f;
@@ -2860,7 +2860,7 @@ CMD_DECL(help)
 				switch(config_get_i("asm.bits")) {
 				case 64:
 					{
-					u64 n = get_math(input+2);
+					ut64 n = get_math(input+2);
 					u8 np[8];
 					endian_memcpy_e((u8*)&np, (u8*)&n, 8, !config.endian);
 					cons_printf("%02x %02x %02x %02x %02x %02x %02x %02x\n",
@@ -2868,7 +2868,7 @@ CMD_DECL(help)
 					}
 					break;
 				case 32:
-					{ u32 n = get_math(input+2);
+					{ ut32 n = get_math(input+2);
 					u8 np[4];
 					endian_memcpy_e((u8*)&np, (u8*)&n, 4, !config.endian);
 					cons_printf("%02x %02x %02x %02x\n",
@@ -2876,7 +2876,7 @@ CMD_DECL(help)
 					}
 					break;
 				case 16:
-					{ u16 n = get_math(input+2);
+					{ ut16 n = get_math(input+2);
 					u8 np[2];
 					endian_memcpy_e((u8*)&np, (u8*)&n, 2, !config.endian);
 					cons_printf("%02x %02x\n", np[0], np[1]);
@@ -2890,12 +2890,12 @@ CMD_DECL(help)
 			}
 		} else
 		if (input[0]=='X') {
-			u64 res = get_math(input+1);
+			ut64 res = get_math(input+1);
 			if (res > 0xffffffff)
 				cons_printf("0x%llx\n", -res);
 			else cons_printf("0x%llx\n", res);
 		} else {
-			u64 res = get_math(input);
+			ut64 res = get_math(input);
 			config.last_cmp = res;
 		//	if (!strchr(input, '!') && !strchr(input, '=')) {
 			D { 

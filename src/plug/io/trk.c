@@ -53,11 +53,11 @@ read(trk_fd, buf, 7); // < 7E 80 01 00 7D 5E 7E
 
 #endif
 
-int trk_read(int fd, u64 addr, u8 *buf, int len)
+int trk_read(int fd, ut64 addr, u8 *buf, int len)
 {
 	u8 reply[4096];
-	u32 addr32 = (u32)addr;
-	u32 len32 = (u32)len;
+	ut32 addr32 = (ut32)addr;
+	ut32 len32 = (ut32)len;
 	u8 cmd[1024];
 
 	cmd[0]=0x7e;
@@ -124,7 +124,7 @@ ssize_t trk_write_raw(int fd, u8 *b, size_t count)
         return write(fd, (u8 *)buf, count);
 }
 
-ssize_t trk_write_at(int fd, u32 addr, const void *buf, u32 count)
+ssize_t trk_write_at(int fd, ut32 addr, const void *buf, ut32 count)
 {
 	u8 b[4096];
 	/* TODO */
@@ -147,7 +147,7 @@ ssize_t trk_read(int fd, void *buf, size_t count)
 {
 	u8 data[32000];
 	int sz;
-	u64 s;
+	ut64 s;
 
 	if (config.seek > trk_bufsz)
 		config.seek = trk_bufsz;
@@ -189,7 +189,7 @@ int trk_close(int fd)
 	return close(fd);
 }
 
-u64 trk_lseek(int fildes, u64 offset, int whence)
+ut64 trk_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

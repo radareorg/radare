@@ -477,7 +477,7 @@ void binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
 }
 
 /* -1 = error, 0 = skip, 1 = hit found */
-int update_tlist(tokenizer* t, u8 inchar, u64 where )
+int update_tlist(tokenizer* t, u8 inchar, ut64 where )
 {
 	unsigned char cmin;
 	unsigned char cmax;
@@ -516,7 +516,7 @@ if (j>t->tls[i]->numtok)
 			t->tls[i]->actp[t->tls[i]->estat+1] = 0 ;
 			t->tls[i]->actp[0] = 0 ; //rststr
 			if (t->callback != NULL)
-				if (!t->callback(t, i, (u64)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
+				if (!t->callback(t, i, (ut64)(where-(t->tls[i]->numtok-1)))) // t->tls[i] is the hit
 					return 1;
 			t->tls[i]->estat = 0 ;
 		}

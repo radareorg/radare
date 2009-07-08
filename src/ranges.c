@@ -57,16 +57,16 @@ static int ranges_get_flags()
 	return flags;
 }
 
-static void ranges_abs(u64 *f, u64 *t)
+static void ranges_abs(ut64 *f, ut64 *t)
 {
 	if (*f>*t) {
-		u64 tmp = *f;
+		ut64 tmp = *f;
 		*f = *t;
 		*t = tmp;
 	}
 }
 
-struct range_t *ranges_get(struct list_head *rang, u64 addr)
+struct range_t *ranges_get(struct list_head *rang, ut64 addr)
 {
 	struct range_t *r;
 	struct list_head *pos;
@@ -83,11 +83,11 @@ struct range_t *ranges_get(struct list_head *rang, u64 addr)
 	return NULL;
 }
 
-u64 ranges_size(struct list_head *rang)
+ut64 ranges_size(struct list_head *rang)
 {
 	struct list_head *pos;
 	struct range_t *r;
-	u64 sum = 0;
+	ut64 sum = 0;
 
 	if (rang == NULL)
 		rang = &ranges;
@@ -105,7 +105,7 @@ void (*ranges_new_callback)(struct range_t *r) = NULL;
 /* TODO: merge with ranges_init */
 struct list_head *ranges_new(const char *string)
 {
-	u64 addr, addr2;
+	ut64 addr, addr2;
 	struct list_head *rgs;
 	int i, len = strlen(string)+1;
 	char *str = alloca(len);
@@ -175,7 +175,7 @@ struct list_head *ranges_new(const char *string)
 =  |_________|   = |___||__|   = |_______|  = |_________|   |_______|  result
 #endif
 
-struct range_t *ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
+struct range_t *ranges_add(struct list_head *rang, ut64 from, ut64 to, int rw)
 {
 	struct list_head *pos;
 	struct range_t *r;
@@ -236,7 +236,7 @@ struct range_t *ranges_add(struct list_head *rang, u64 from, u64 to, int rw)
 =  |__|          =             =     |___|  =                |__|  |__|   result
 #endif
 
-int ranges_sub(struct list_head *rang, u64 from, u64 to)
+int ranges_sub(struct list_head *rang, ut64 from, ut64 to)
 {
 	struct range_t *r;
 	struct list_head *pos;
@@ -289,7 +289,7 @@ int ranges_merge(struct list_head *rang)
 	return 0;
 }
 
-int ranges_is_used(u64 addr)
+int ranges_is_used(ut64 addr)
 {
 	struct list_head *pos;
 	list_for_each(pos, &ranges) {
@@ -326,8 +326,8 @@ int ranges_percent()
 {
 	struct list_head *pos;
 	int w, i;
-	u64 seek, step;
-	u64 dif, from = -1, to = -1;
+	ut64 seek, step;
+	ut64 dif, from = -1, to = -1;
 
 	list_for_each(pos, &ranges) {
 		struct range_t *r = list_entry(pos, struct range_t, list);
@@ -365,7 +365,7 @@ int ranges_percent()
 int ranges_cmd(const char *arg)
 {
 	int flags;
-	u64 from, to;
+	ut64 from, to;
 	char *ptr;
 	char *a = alloca(strlen(arg));
 
@@ -457,7 +457,7 @@ int ranges_cmd(const char *arg)
 
 int ranges_list(int rad)
 {
-	u64 total = 0;
+	ut64 total = 0;
 	struct list_head *pos;
 	ranges_sort();
 	list_for_each(pos, &ranges) {
@@ -470,7 +470,7 @@ int ranges_list(int rad)
 	return 0;
 }
 
-int ranges_get_n(int n, u64 *from, u64 *to)
+int ranges_get_n(int n, ut64 *from, ut64 *to)
 {
 	struct list_head *pos;
 	int count =0;
@@ -487,11 +487,11 @@ int ranges_get_n(int n, u64 *from, u64 *to)
 	return 0;
 }
 
-int ranges_boolean(u64 from, u64 to, int flags)
+int ranges_boolean(ut64 from, ut64 to, int flags)
 {
-	u64 total = 0;
-	u64 min = to;
-	u64 max = from;
+	ut64 total = 0;
+	ut64 min = to;
+	ut64 max = from;
 	struct list_head *pos;
 	struct range_t *r = NULL;
 

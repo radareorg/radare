@@ -22,8 +22,8 @@
 #include "main.h"
 #include "macros.h"
 
-static u64 _macro_break_value = 0;
-u64 *macro_break_value = NULL;
+static ut64 _macro_break_value = 0;
+ut64 *macro_break_value = NULL;
 static int macro_break;
 int macro_counter = 0;
 static struct list_head macros;
@@ -374,7 +374,7 @@ int radare_macro_break(const char *value)
 	macro_break = 1;
 	macro_break_value = NULL;
 	_macro_break_value = 0LL;
-	_macro_break_value = (u64)get_math(value);
+	_macro_break_value = (ut64)get_math(value);
 	if (value && *value) {
 		macro_break_value = &_macro_break_value;
 	} 

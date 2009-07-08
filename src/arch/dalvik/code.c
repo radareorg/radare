@@ -30,7 +30,7 @@ extern struct dalvik_op {
 } dalvik_ops[];
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_dalvik_aop(u64 addr, const u8 *bytes, struct aop_t *aop)
+int arch_dalvik_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 {
 	unsigned int i;
 	int sz = 1;

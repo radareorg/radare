@@ -69,7 +69,7 @@ int trace_sort()
 	return trace_changed = ch;
 }
 
-struct trace_t *trace_get(u64 addr, int tag)
+struct trace_t *trace_get(ut64 addr, int tag)
 {
 	struct list_head *pos;
 	list_for_each(pos, &traces) {
@@ -83,19 +83,19 @@ struct trace_t *trace_get(u64 addr, int tag)
 }
 
 // num of traces for an address
-int trace_times(u64 addr)
+int trace_times(ut64 addr)
 {
 	struct trace_t *t = trace_get(addr, trace_tag);
 	return t?t->times:0;
 }
 
-int trace_count(u64 addr)
+int trace_count(ut64 addr)
 {
 	struct trace_t *t = trace_get(addr, trace_tag);
 	return t?t->count:0;
 }
 
-int trace_index(u64 addr)
+int trace_index(ut64 addr)
 {
 	int idx = -1;
 	struct list_head *pos;
@@ -108,7 +108,7 @@ int trace_index(u64 addr)
 	return idx;
 }
 
-int trace_set_times(u64 addr, int times)
+int trace_set_times(ut64 addr, int times)
 {
 	char bytes[16];
 	struct trace_t *t;
@@ -127,7 +127,7 @@ int trace_set_times(u64 addr, int times)
 	return 0;
 }
 
-int trace_add(u64 addr)
+int trace_add(ut64 addr)
 {
 	char bytes[16];
 	struct trace_t *t;
@@ -176,11 +176,11 @@ int trace_add(u64 addr)
 	return t->times;
 }
 
-u64 trace_range(u64 from, int tag)
+ut64 trace_range(ut64 from, int tag)
 {
 	struct trace_t *h;
-	u64 last = from;
-	u64 last2 = 0LL;
+	ut64 last = from;
+	ut64 last2 = 0LL;
 	
 	while(last != last2) {
 		last2 = last;
@@ -196,9 +196,9 @@ u64 trace_range(u64 from, int tag)
 }
 
 #if 1
-u64 trace_next(u64 from, int tag)
+ut64 trace_next(ut64 from, int tag)
 {
-        u64 next = 0xFFFFFFFFFFFFFFFFLL;
+        ut64 next = 0xFFFFFFFFFFFFFFFFLL;
         struct list_head *pos;
         struct trace_t *h;
 
@@ -218,9 +218,9 @@ u64 trace_next(u64 from, int tag)
 
 #if 0
 /* buggy version */
-u64 trace_next(u64 from)
+ut64 trace_next(ut64 from)
 {
-	u64 next;
+	ut64 next;
 	int next_init = 0;
 	struct list_head *pos;
 	struct trace_t *h;
@@ -247,8 +247,8 @@ u64 trace_next(u64 from)
 
 void trace_show(int plain, int tag)
 {
-	u64 from = 0LL;
-	u64 last;
+	ut64 from = 0LL;
+	ut64 last;
 	char bytes[32];
 	char opcode[64];
 	struct list_head *pos;
@@ -315,7 +315,7 @@ void trace_reset()
 	INIT_LIST_HEAD(&traces);
 }
 
-int trace_get_between(u64 from, u64 to)
+int trace_get_between(ut64 from, ut64 to)
 {
 	int ctr = 0;
 	struct list_head *pos;

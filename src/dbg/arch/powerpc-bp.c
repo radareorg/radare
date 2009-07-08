@@ -70,12 +70,12 @@ inline static void dr_set_addr (int regnum, unsigned long addr)
 inline static void dr_set_control (unsigned long control)
 inline static void dr_set_addr (int regnum, unsigned long addr)
 */
-int arch_set_wp_hw_n(int dr_free, u64 addr, int type)
+int arch_set_wp_hw_n(int dr_free, ut64 addr, int type)
 {
 	return -1;
 }
 
-int arch_set_wp_hw(u64 addr, int type)
+int arch_set_wp_hw(ut64 addr, int type)
 {
 	return -1;
 }
@@ -92,7 +92,7 @@ int arch_bp_rm_hw(struct bp_t *bp)
 
 
 /* hook hardware bps to software ones..arm can't :/ */
-int arch_set_bp_hw(struct bp_t *bp, u64 addr)
+int arch_set_bp_hw(struct bp_t *bp, ut64 addr)
 {
 	return arch_set_bp_soft(bp, addr);
 }
@@ -119,7 +119,7 @@ int get_len_ins(char *buf, int len)
 	return 4;
 }
 
-int arch_set_bp_soft(struct bp_t *bp, u64 addr)
+int arch_set_bp_soft(struct bp_t *bp, ut64 addr)
 {
 	int endian = config_get("cfg.bigendian");
 	char *breakpoint = powerpc_bps[endian&1];
@@ -183,7 +183,7 @@ struct bp_t *arch_stopped_bp()
 {
         int i;
 	int bps = ps.bps_n;
-	u64 addr;
+	ut64 addr;
 	struct bpt_t *bp_w = 0, *bp_s = 0;
 
 	addr = arch_pc();

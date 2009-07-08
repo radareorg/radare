@@ -98,7 +98,7 @@ int remote_handle_client( int fd ){
 	uchar flg;
 	uchar *ptr;
 	int i, c;
-	u64 x;
+	ut64 x;
 
 	if (fd == -1) {
 		printf("Cannot listen.\n");
@@ -351,7 +351,7 @@ int remote_close(int fd)
 	return close(remote_fd);
 }
 
-u64 remote_lseek(int fildes, u64 offset, int whence)
+ut64 remote_lseek(int fildes, ut64 offset, int whence)
 {
 	uchar tmp[10];
 

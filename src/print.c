@@ -161,7 +161,7 @@ void format_show_help (print_mode_t mode)
 
 /* helpers */
 
-void print_addr(u64 off)
+void print_addr(ut64 off)
 {
 	int mod = config_get_i("cfg.addrmod");
 	char ch = (0==(off%(mod?mod:1)))?',':' ';
@@ -420,7 +420,7 @@ const char *print_mem_get(char *name)
 
 /* TODO: add support for 64bit pointers */
 /* following asm.bits ??? */
-void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
+void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
 	int i,j,idx;
@@ -429,8 +429,8 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 	char tmp, last;
 	char *args, *bracket;
 	int nargs;
-	u64 paddr = 0LL;
-	u64 oaddr = 0LL;
+	ut64 paddr = 0LL;
+	ut64 oaddr = 0LL;
 	const char *arg = fmt;
 	char hexfmt[32];
 	int ptrsize = (int)(config_get_i("asm.bits")/8);
@@ -479,36 +479,36 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 			addr = 0LL;
 			switch (ptrsize) {
 			case 1:
-				addr =  (u64)(*(buf+i));
+				addr =  (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%02llx");
 				break;
 			case 2:
 				if (endian) 
-					addr =  (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
+					addr =  (ut64)(*(buf+i))<<8 | (ut64)(*(buf+i+1));
 				else
-					addr =  (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+					addr =  (ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%04llx");
 				break;
 			case 4:
 				if (endian) 
-					addr =  (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
-							(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
+					addr =  (ut64)(*(buf+i))<<24 | (ut64)(*(buf+i+1))<<16 | 
+							(ut64)(*(buf+i+2))<<8 | (ut64)(*(buf+i+3));
 				else 
-					addr =  (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+					addr =  (ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
+							(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%08llx");
 				break;
 			case 8:
 				if (endian) 
-					addr =  (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
-							(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
-							(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
-							(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
+					addr =  (ut64)(*(buf+i))<<56 | (ut64)(*(buf+i+1))<<48 | 
+							(ut64)(*(buf+i+2))<<40 | (ut64)(*(buf+i+3))<<32 | 
+							(ut64)(*(buf+i+4))<<24 | (ut64)(*(buf+i+5))<<16 | 
+							(ut64)(*(buf+i+6))<<8 | (ut64)(*(buf+i+7));
 				else 
-					addr =  (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
-							(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
-							(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-							(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+					addr =  (ut64)(*(buf+i+7))<<56 | (ut64)(*(buf+i+6))<<48 | 
+							(ut64)(*(buf+i+5))<<40 | (ut64)(*(buf+i+4))<<32 | 
+							(ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
+							(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%016llx");
 			}
 			tmp = *arg;
@@ -580,34 +580,34 @@ void print_mem(u64 addr, const u8 *buf, u64 len, const char *fmt, int endian)
 						/* SPAGUETTI */
 						switch (ptrsize) {
 						case 1:
-							addr =  (u64)(*(buf+i));
+							addr =  (ut64)(*(buf+i));
 							break;
 						case 2:
-							if (endian) addr = (u64)(*(buf+i))<<8 | (u64)(*(buf+i+1));
-							else addr = (u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+							if (endian) addr = (ut64)(*(buf+i))<<8 | (ut64)(*(buf+i+1));
+							else addr = (ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 							break;
 						case 4:
-							if (endian) addr = (u64)(*(buf+i))<<24 | (u64)(*(buf+i+1))<<16 | 
-								(u64)(*(buf+i+2))<<8 | (u64)(*(buf+i+3));
-							else addr = (u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-								(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+							if (endian) addr = (ut64)(*(buf+i))<<24 | (ut64)(*(buf+i+1))<<16 | 
+								(ut64)(*(buf+i+2))<<8 | (ut64)(*(buf+i+3));
+							else addr = (ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
+								(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 							break;
 						case 8:
-							if (endian) addr = (u64)(*(buf+i))<<56 | (u64)(*(buf+i+1))<<48 | 
-								(u64)(*(buf+i+2))<<40 | (u64)(*(buf+i+3))<<32 | 
-									(u64)(*(buf+i+4))<<24 | (u64)(*(buf+i+5))<<16 | 
-									(u64)(*(buf+i+6))<<8 | (u64)(*(buf+i+7));
-							else addr = (u64)(*(buf+i+7))<<56 | (u64)(*(buf+i+6))<<48 | 
-								(u64)(*(buf+i+5))<<40 | (u64)(*(buf+i+4))<<32 | 
-									(u64)(*(buf+i+3))<<24 | (u64)(*(buf+i+2))<<16 | 
-									(u64)(*(buf+i+1))<<8 | (u64)(*(buf+i));
+							if (endian) addr = (ut64)(*(buf+i))<<56 | (ut64)(*(buf+i+1))<<48 | 
+								(ut64)(*(buf+i+2))<<40 | (ut64)(*(buf+i+3))<<32 | 
+									(ut64)(*(buf+i+4))<<24 | (ut64)(*(buf+i+5))<<16 | 
+									(ut64)(*(buf+i+6))<<8 | (ut64)(*(buf+i+7));
+							else addr = (ut64)(*(buf+i+7))<<56 | (ut64)(*(buf+i+6))<<48 | 
+								(ut64)(*(buf+i+5))<<40 | (ut64)(*(buf+i+4))<<32 | 
+									(ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
+									(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 						}
 
 
 						//if (oaddr != addr) {
 addr-=i;
 							buf = malloc(config.block_size);
-							radare_read_at((u64)addr, buf, config.block_size+i);
+							radare_read_at((ut64)addr, buf, config.block_size+i);
 radare_seek(addr, SEEK_SET);
 						//}
 					}
@@ -647,7 +647,7 @@ radare_seek(oaddr, SEEK_SET);
 				{
 				/* dirty hack */
 				int oldfmt = last_print_format;
-				u64 old = config.seek;
+				ut64 old = config.seek;
 				radare_seek(config.seek+i, SEEK_SET);
 				radare_read(0);
 				print_data(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
@@ -670,7 +670,7 @@ radare_seek(oaddr, SEEK_SET);
 				break;
 			case 'B':
 				memset(buffer, '\0', 255);
-				radare_read_at((u64)addr, buffer, 248);
+				radare_read_at((ut64)addr, buffer, 248);
 				D cons_printf("0x%08llx = ", config.seek+i);
 				for(j=0;j<10;j++) cons_printf("%02x ", buf[j]);
 				cons_strcat(" ... (");
@@ -723,8 +723,8 @@ radare_seek(oaddr, SEEK_SET);
 			case 's':
 				D cons_printf("0x%08llx = ", config.seek+i);
 				memset(buffer, '\0', 255);
-				radare_read_at((u64)addr, buffer, 248);
-				cons_printf("0x%08llx -> ", (u64)config.seek+i);
+				radare_read_at((ut64)addr, buffer, 248);
+				cons_printf("0x%08llx -> ", (ut64)config.seek+i);
 				cons_printf(hexfmt, addr);
 				cons_printf(" %s ", buffer);
 				i+=ptrsize;
@@ -748,7 +748,7 @@ radare_seek(oaddr, SEEK_SET);
 
 static int zoom = 0;
 
-void print_zoom(u64 from, u64 to, char *byte, int enable)
+void print_zoom(ut64 from, ut64 to, char *byte, int enable)
 {
 	zoom = enable;
 	config.zoom.enabled = enable;
@@ -767,7 +767,7 @@ void print_zoom(u64 from, u64 to, char *byte, int enable)
  * mode: print mode
  *
  */
-void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
+void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 {
 	int tmp, i, j, k;
 	int lines   = 0;
@@ -779,7 +779,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	unsigned char buffer[256];
 	unsigned char *bufi = NULL, *bufz = NULL; // inverted buffer
 	unsigned long addr = seek;
-	u64 len = olen;
+	ut64 len = olen;
 
 	last_print_format = fmt;
 	if (buf == NULL)
@@ -793,10 +793,10 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	}
 
 	if (zoom) {
-		u64 sz;
+		ut64 sz;
 		u8 *bufz2;
 		const char *mode = config_get("zoom.byte");
-		u64 ptr = config_get_i("zoom.from");
+		ut64 ptr = config_get_i("zoom.from");
 		config.zoom.piece  = (config.zoom.to - config.zoom.from)/config.block_size;
 		if (config.zoom.piece < 1)
 			config.zoom.piece = 1;
@@ -808,7 +808,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 
 		bufz = (u8 *)malloc(len);
 		bufz2 = (u8 *)malloc(config.zoom.piece);
-		sz = (u64)config.zoom.piece;
+		sz = (ut64)config.zoom.piece;
 
 		for(i=0;!config.interrupted && i<len;i++) {
 			io_lseek(config.fd, ptr, SEEK_SET);
@@ -911,14 +911,14 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		break;
 	case FMT_PERCENT: {
 			int w = config.width-4;
-			u64 s = config.size;
-			u64 piece = 0;
+			ut64 s = config.size;
+			ut64 piece = 0;
 			if (s==-1)
 				s = 0x100000000LL; // XXX WTF
 			piece = s/w;
 			cons_printf("[");
 			for(i=0;i<w;i++) {
-				u64 from = (piece*i);
+				ut64 from = (piece*i);
 				C { struct data_t *d = data_get_between(from, from+piece);
 //printf("%lld, %lld (piece =%lld\n", from , from+piece, piece);
 				if (d != NULL)
@@ -973,7 +973,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		last_print_format = i;
 		break;
 	case FMT_MEMORY:
-		print_mem((u64)addr, (const u8*)buf, (u64)len, (char *)arg, (int)endian);
+		print_mem((ut64)addr, (const u8*)buf, (ut64)len, (char *)arg, (int)endian);
 		break;
 	case FMT_DISAS:
 		radis(config.block_size, len);
@@ -1015,9 +1015,9 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		{
 		/* TODO: control width of screen like everybody does */
 		for(i=j=0;!config.interrupted && i<len;i+=4,j++) {
-			u32 n;
+			ut32 n;
 			/* TODO: endian here */
-			memcpy(&n, buf+i, sizeof(u32));
+			memcpy(&n, buf+i, sizeof(ut32));
 			switch(j%6) {
 			case 0: cons_printf("0x%08llx:  0x%08x  ", config.seek+i, n); break;
 			case 5: cons_printf("\n"); break;
@@ -1111,7 +1111,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 				    tmp = strftime(datestr, 256, datefmt, tmptr);
 			    else    tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z", tmptr);
 		    // TODO colorize depending on the distance between dates
-		    if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (u64)t);
+		    if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (ut64)t);
 	    } } break;
 	case FMT_TIME_FTIME: {
 	     struct tm * tmptr;
@@ -1133,7 +1133,7 @@ void print_data(u64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 			     if (datefmt&&datefmt[0])
 				     tmp = strftime(datestr, 256, datefmt, tmptr);
 			     else    tmp = strftime(datestr, 256, "%d:%m:%Y %H:%M:%S %z", tmptr);
-		     if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (u64)t);
+		     if (tmp) cons_printf("%s\n", datestr); else cons_printf("(fail: 0x%16llx)\n", (ut64)t);
 	     } } break;
 	case FMT_RAW:
 		// XXX TODO: measure the string length and make it fit properly

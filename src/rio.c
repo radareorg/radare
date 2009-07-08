@@ -23,7 +23,7 @@
 #if DEBUGGER
 int radare_dump_section(char *tmpfile)
 {
-	u64 f, t, s;
+	ut64 f, t, s;
 	int ret = radare_get_region(&f, &t);
 	s = t-f;
 
@@ -39,10 +39,10 @@ int radare_dump_section(char *tmpfile)
 }
 #endif
 
-int radare_read_at(u64 offset, u8 *data, int len)
+int radare_read_at(ut64 offset, u8 *data, int len)
 {
 	int ret;
-	u64 cur = config.seek;
+	ut64 cur = config.seek;
 	radare_seek(offset,SEEK_SET);
 	ret = io_read(config.fd, data, len);
 	radare_seek(cur, SEEK_SET);
@@ -91,10 +91,10 @@ int radare_write_mask_str(const char *str)
 	return radare_write_mask(mask, len);
 }
 
-int radare_write_at(u64 offset, const u8 *data, int len)
+int radare_write_at(ut64 offset, const u8 *data, int len)
 {
 	int i;
-	u64 cur = config.seek;
+	ut64 cur = config.seek;
 	struct section_t *s;
 	radare_seek(offset,SEEK_SET);
 	s = section_get(offset);
@@ -185,8 +185,8 @@ int radare_write_op(const char *arg, char op)
 int radare_write(const char *argro, int mode)
 {
 	int fmt = last_print_format;
-	u64 oseek = config.seek;
-	u64 seek = config.seek;
+	ut64 oseek = config.seek;
+	ut64 seek = config.seek;
 	int times = config_get_i("cfg.count");
 	int i, bytes = 0;
 	int len   = 0;
@@ -235,7 +235,7 @@ int radare_write(const char *argro, int mode)
 	radare_seek(seek, SEEK_SET);
 
 	if (config_get("file.insert")) {
-		u64 rest;
+		ut64 rest;
 		/* resize file here */
 		if (config.size == -1) {
 			eprintf("Cannot use file.insert: unknown file size\n");
@@ -296,7 +296,7 @@ void radare_poke(const char *arg)
 	char key;
 	int otimes, times = config_get_i("cfg.count");
 	char *buf = NULL;
-	u64 ret = 0;
+	ut64 ret = 0;
 
 	if (times<1)
 		times = 1;
@@ -361,7 +361,7 @@ void radare_poke(const char *arg)
 int radare_dump(const char *arg, int size)
 {
 	int fd;
-	u64 ret = 0;
+	ut64 ret = 0;
 	int bs = config.block_size;
 
 	if (arg[0]=='\0') {
@@ -388,15 +388,15 @@ int radare_dump(const char *arg, int size)
 	return 1;
 }
 
-u64 radare_seek(u64 offset, int whence)
+ut64 radare_seek(ut64 offset, int whence)
 {
-	u64 preoffset = 0;
-	u64 seek = 0;
+	ut64 preoffset = 0;
+	ut64 seek = 0;
 	int bip = 0;
 	int usepaddr = 0;
 
 	if (offset==-1)
-		return (u64)-1;
+		return (ut64)-1;
 
 //eprintf("ALIGNING 0x%08llx\n", config.paddr);
 #if 1

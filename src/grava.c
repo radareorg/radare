@@ -20,16 +20,16 @@
 #include "main.h"
 
 struct ugraph_node_t {
-	u64 from;
-	u64 size;
+	ut64 from;
+	ut64 size;
 	char cmd[128];
 	void *ptr;
 	struct list_head list;
 };
 
 struct ugraph_edge_t {
-	u64 from;
-	u64 to;
+	ut64 from;
+	ut64 to;
 	struct list_head list;
 };
 
@@ -40,9 +40,9 @@ struct ugraph_t {
 
 static struct ugraph_t ug;
 
-char *ugraph_get_str(u64 addr, int size, int dot);
+char *ugraph_get_str(ut64 addr, int size, int dot);
 
-int graph_get_bb_size(struct program_t *prg, u64 addr)
+int graph_get_bb_size(struct program_t *prg, ut64 addr)
 {
 	struct block_t *b0;
 	struct list_head *head;
@@ -175,7 +175,7 @@ static struct program_t *prg = NULL; // last program code analysis
 void core_load_graph_at(void *obj, const char *str)
 {
 	//GravaWidget *widget = obj;
-	u64 off;
+	ut64 off;
 
 	monitors_run();
 	if (graphuser) {
@@ -200,7 +200,7 @@ void core_load_graph_at(void *obj, const char *str)
 void mygrava_bp_at(void *unk, const char *str)
 {
 	char buf[1024];
-	u64 off = get_offset(str);
+	ut64 off = get_offset(str);
 	sprintf(buf, "!bp %s", str);
 	radare_cmd(buf, 0);
 	eprintf("Breakpoint at (%08llx) (%s) added.\n", off, str);
@@ -210,7 +210,7 @@ void mygrava_bp_at(void *unk, const char *str)
 void mygrava_bp_rm_at(void *unk, const char *str)
 {
 	char buf[1024];
-	u64 off = get_offset(str);
+	ut64 off = get_offset(str);
 	sprintf(buf, "!bp -%s", str);
 	radare_cmd(buf, 0);
 	eprintf("Breakpoint at (%08llx) (%s) removed.\n", off, str);
@@ -282,7 +282,7 @@ static void core_load_graph_entry(void *widget, void *obj)
 	char *buf, *ptr;
 	struct program_t *prg;
 	struct mygrava_window *w = obj;
-	u64 off;
+	ut64 off;
 
 	if (w) {
 		str = gtk_entry_get_text(GTK_ENTRY(w->entry));
@@ -310,7 +310,7 @@ static void core_load_graph_entry(void *widget, void *obj)
 		radare_cmd_raw(str, 0);
 		ptr = (char *)config_get("scr.seek");
 		if (ptr&&ptr[0]) {
-			u64 off = get_math(ptr);
+			ut64 off = get_math(ptr);
 			if (off != 0)
 				radare_seek(off, SEEK_SET);
 		} 
@@ -612,7 +612,7 @@ void do_grava_analysis_callgraph(struct program_t *prg, struct mygrava_window *w
 
 #if 0
 		// XXX this makes radare segfault with g_object_unref HUH!
-		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
+		if (flags_between((ut64)b0->addr,(ut64)(b0->addr + b0->n_bytes))>0)
 			grava_node_set(node, "bgcolor", "yellow");
 #endif
 
@@ -701,7 +701,7 @@ void ugraph_reset()
 	graphuserinit = 1;
 }
 
-void ugraph_node(u64 from, u64 size, const char *cmd)
+void ugraph_node(ut64 from, ut64 size, const char *cmd)
 {
 	struct list_head *pos;
 	struct ugraph_node_t *n;
@@ -723,7 +723,7 @@ void ugraph_node(u64 from, u64 size, const char *cmd)
 	list_add_tail(&(n->list), &ug.nodes);
 }
 
-void ugraph_edge(u64 from, u64 to)
+void ugraph_edge(ut64 from, ut64 to)
 {
 	struct ugraph_edge_t *e = MALLOC_STRUCT(struct ugraph_edge_t);
 	
@@ -734,7 +734,7 @@ void ugraph_edge(u64 from, u64 to)
 	list_add_tail(&(e->list), &ug.edges);
 }
 
-struct ugraph_node_t *ugraph_get(u64 addr)
+struct ugraph_node_t *ugraph_get(ut64 addr)
 {
 	struct list_head *head;
 	if (!graphuserinit)
@@ -747,13 +747,13 @@ struct ugraph_node_t *ugraph_get(u64 addr)
 	return NULL;
 }
 
-char *ugraph_get_str(u64 addr, int _size, int dot)
+char *ugraph_get_str(ut64 addr, int _size, int dot)
 {
 	int i,j;
 	char *cmdstr, *str = NULL;
 	char *cmd = "pd";
 	struct ugraph_node_t *n = ugraph_get(addr);
-	u64 from = addr;
+	ut64 from = addr;
 	int size = _size;
 	if (n) {
 		from = n->from;
@@ -831,7 +831,7 @@ void ugraph_print_dot(int body)
 
 void load_user_graph(struct program_t *prg, struct mygrava_window *win)
 {
-	u64 oseek = config.seek;
+	ut64 oseek = config.seek;
 	int i;
 	char *ptr;
 	char cmd[1024];
@@ -961,7 +961,7 @@ void do_grava_analysis(struct program_t *prg, struct mygrava_window *win)
 
 #if 0
 		// XXX this makes radare segfault with g_object_unref HUH!
-		if (flags_between((u64)b0->addr,(u64)(b0->addr + b0->n_bytes))>0)
+		if (flags_between((ut64)b0->addr,(ut64)(b0->addr + b0->n_bytes))>0)
 			grava_node_set(node, "bgcolor", "yellow");
 #endif
 
@@ -1051,7 +1051,7 @@ ptr= ugraph_get_str (b0->addr, b0->n_bytes, 0);
 #if HAVE_GUI
 void grava_program_graph(struct program_t *prg, struct mygrava_window *win)
 {
-	u64 here = config.seek;
+	ut64 here = config.seek;
 	//int graph_flagblocks = (int)config_get("graph.flagblocks");
 
 	/* create widget */

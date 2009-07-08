@@ -4,9 +4,9 @@
 // One-byte opcodes
 //
 #define u8 unsigned char
-#define u16 unsigned short
-#define u32 unsigned int
-#define u64 unsigned long long
+#define ut16 unsigned short
+#define ut32 unsigned int
+#define ut64 unsigned long long
 
 /* TODO: use enum ! */
 #define ILOPCODE_NOP		0x00

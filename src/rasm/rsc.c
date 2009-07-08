@@ -20,7 +20,7 @@
 
 #include "rasm.h"
 
-int rasm_rsc(u64 offset, const char *str, unsigned char *data)
+int rasm_rsc(ut64 offset, const char *str, unsigned char *data)
 {
 	int i;
 	FILE *fd;

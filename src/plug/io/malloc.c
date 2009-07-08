@@ -61,8 +61,8 @@ static int malloc_close(int fd)
 	return 0;
 }
 
-extern u64 posix_lseek(int fildes, u64 offset, int whence);
-static u64 malloc_lseek(int fildes, u64 offset, int whence)
+extern ut64 posix_lseek(int fildes, ut64 offset, int whence);
+static ut64 malloc_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:

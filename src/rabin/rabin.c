@@ -98,7 +98,7 @@ void rabin_show_info(const char *file)
 	char *str, pe_os_str[PE_NAME_LENGTH], pe_arch_str[PE_NAME_LENGTH];
 	char pe_class_str[PE_NAME_LENGTH], pe_subsystem_str[PE_NAME_LENGTH], pe_machine_str[PE_NAME_LENGTH];
 	int pe_os, pe_arch, pe_class, pe_subsystem, pe_machine;
-	u64 baddr;
+	ut64 baddr;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t pe;
@@ -211,7 +211,7 @@ void rabin_show_info(const char *file)
 			printf("e file.type = pe\n");
 			str = getenv("DEBUG");
 			if (str == NULL || (str && strncmp(str, "1", 1)))
-				printf("e io.vaddr = 0x%08llx\n", (u64) PE_CALL(dietpe_get_image_base, bin.pe));
+				printf("e io.vaddr = 0x%08llx\n", (ut64) PE_CALL(dietpe_get_image_base, bin.pe));
 				printf("e cfg.bigendian = %s\n",
 						(PE_CALL(dietpe_is_big_endian, bin.pe))?"true":"false");
 				printf("e asm.os = %s\n", pe_os_str);
@@ -237,7 +237,7 @@ void rabin_show_info(const char *file)
 						(PE_CALL(dietpe_is_big_endian, bin.pe))?"True":"False", pe_subsystem_str,
 						(PE_CALL(dietpe_is_stripped_relocs, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_line_nums, bin.pe))?"True":"False",
 						(PE_CALL(dietpe_is_stripped_local_syms, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_debug, bin.pe))?"True":"False",
-						PE_CALL(dietpe_get_sections_count, bin.pe), (u64) PE_CALL(dietpe_get_image_base, bin.pe),
+						PE_CALL(dietpe_get_sections_count, bin.pe), (ut64) PE_CALL(dietpe_get_image_base, bin.pe),
 						PE_CALL(dietpe_get_section_alignment, bin.pe), PE_CALL(dietpe_get_file_alignment, bin.pe), PE_CALL(dietpe_get_image_size, bin.pe));
 					break;
 				default:
@@ -313,7 +313,7 @@ void rabin_show_strings(const char *file)
 		dietelf_string* elf;
 		dietpe_string* pe;
 	} strings, stringsp;
-	u64 baddr = 0, vaddr, loadoff;
+	ut64 baddr = 0, vaddr, loadoff;
 	int strings_count, i, j;
 	char buf[1024];
 
@@ -347,7 +347,7 @@ void rabin_show_strings(const char *file)
 				/* Ugly hack for second LOAD segment */
 				for (j = 0; j < ELF_BIN(ehdr.e_phnum); j++)
 					if (ELF_BIN(phdr[j].p_vaddr) != baddr && ELF_BIN(phdr[j].p_type) == PT_LOAD) {
-						loadoff = ((u64)ELF_BIN(phdr[j].p_vaddr) - baddr) & 0xfffffffffffff000LL;
+						loadoff = ((ut64)ELF_BIN(phdr[j].p_vaddr) - baddr) & 0xfffffffffffff000LL;
 						if (baddr + stringsp.elf->offset + loadoff > ELF_BIN(phdr[j].p_vaddr) &&
 							baddr + stringsp.elf->offset + loadoff < ELF_BIN(phdr[j].p_vaddr) + ELF_BIN(phdr[j].p_memsz)) {
 							vaddr = stringsp.elf->offset + baddr + loadoff;
@@ -411,23 +411,23 @@ void rabin_show_strings(const char *file)
 		for (i = 0; i < strings_count; i++, stringsp.pe++) {
 			if (rad) {
 				printf("b %lli && f str.%s @ 0x%08llx\n",
-						(u64) stringsp.pe->size, aux_filter_rad_output(stringsp.pe->string), (u64) (baddr + stringsp.pe->rva));
-				printf("Cs %lli @ 0x%08llx\n", (u64) stringsp.pe->size, (u64) (baddr + stringsp.pe->rva));
+						(ut64) stringsp.pe->size, aux_filter_rad_output(stringsp.pe->string), (ut64) (baddr + stringsp.pe->rva));
+				printf("Cs %lli @ 0x%08llx\n", (ut64) stringsp.pe->size, (ut64) (baddr + stringsp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
 						printf("address=0x%08llx offset=0x%08llx size=%08lli type=%c name=%s\n",
-								(u64) (baddr + stringsp.pe->rva), (u64) stringsp.pe->offset, (u64) stringsp.pe->size, stringsp.pe->type, stringsp.pe->string);
+								(ut64) (baddr + stringsp.pe->rva), (ut64) stringsp.pe->offset, (ut64) stringsp.pe->size, stringsp.pe->type, stringsp.pe->string);
 						break;
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
 						printf("0x%08llx\t0x%08llx\t%s\n",
-								(u64) (baddr + stringsp.pe->rva), (u64) stringsp.pe->offset, stringsp.pe->string);
+								(ut64) (baddr + stringsp.pe->rva), (ut64) stringsp.pe->offset, stringsp.pe->string);
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tSize\t\tType\tName\n");
 						printf("0x%08llx\t0x%08llx\t%08lli\t%c\t%s\n",
-								(u64) (baddr + stringsp.pe->rva), (u64) stringsp.pe->offset, (u64) stringsp.pe->size, stringsp.pe->type, stringsp.pe->string);
+								(ut64) (baddr + stringsp.pe->rva), (ut64) stringsp.pe->offset, (ut64) stringsp.pe->size, stringsp.pe->type, stringsp.pe->string);
 				}
 			}
 		}
@@ -583,8 +583,8 @@ void rabin_show_header()
 
 void rabin_show_entrypoint()
 {
-	u64 offset = 0;
-	u64 baddr = 0;
+	ut64 offset = 0;
+	ut64 baddr = 0;
 	dietpe_entrypoint entrypoint;
 	union {
 		dietelf_bin_t elf;
@@ -671,19 +671,19 @@ void rabin_show_entrypoint()
 			printf("[Entrypoint]\n");
 
 		if (rad) {
-			printf("f entrypoint @ 0x%08llx\n", (u64) (baddr + entrypoint.rva));
+			printf("f entrypoint @ 0x%08llx\n", (ut64) (baddr + entrypoint.rva));
 			printf("s entrypoint\n");
 		} else {
 			switch (verbose) {
 				case 0:
-					printf("0x%08llx\n", (u64) (baddr + entrypoint.rva));
+					printf("0x%08llx\n", (ut64) (baddr + entrypoint.rva));
 					break;
 				case 1:
-					printf("Memory address:\t0x%08llx\n", (u64) (baddr + entrypoint.rva));
+					printf("Memory address:\t0x%08llx\n", (ut64) (baddr + entrypoint.rva));
 					break;
 				default:
-					printf("Memory address:\t0x%08llx\n", (u64) (baddr + entrypoint.rva));
-					printf("File offset:\t0x%08llx\n", (u64) (entrypoint.offset));
+					printf("Memory address:\t0x%08llx\n", (ut64) (baddr + entrypoint.rva));
+					printf("File offset:\t0x%08llx\n", (ut64) (entrypoint.offset));
 			}
 		}
 		
@@ -728,14 +728,14 @@ Load command 9
 	}
 }
 
-u64 addr_for_lib(char *name)
+ut64 addr_for_lib(char *name)
 {
 #if __UNIX__
 	void *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
-		u64 foo = (u64)(u32)addr; /* 32 bit only here */
+		ut64 foo = (ut64)(ut32)addr; /* 32 bit only here */
 		dlclose(addr);
-		return (u64)((addr!=NULL)?foo:0LL);
+		return (ut64)((addr!=NULL)?foo:0LL);
 	} else {
 		printf("cannot open '%s' library\n", name);
 		return 0LL;
@@ -751,8 +751,8 @@ void rabin_show_arch(char *file)
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
 	} bin;
-	u32 dw;
-	u16 w;
+	ut32 dw;
+	ut16 w;
 
 	switch(filetype) {
 	case FILETYPE_MACHO:
@@ -794,7 +794,7 @@ void rabin_show_imports(const char *file)
 {
 	char buf[1024];
 	int i, imports_count;
-	u64 baddr = 0;
+	ut64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -916,22 +916,22 @@ void rabin_show_imports(const char *file)
 			if (rad) {
 				printf("f imp.%s @ 0x%08llx\n",
 					aux_filter_rad_output((const char *)importp.pe->name),
-					(u64) (baddr + importp.pe->rva));
+					(ut64) (baddr + importp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
 						printf("address=0x%08llx offset=0x%08llx hint=%04lli ordinal=%04lli %s\n",
-								(u64) (baddr + importp.pe->rva), (u64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
+								(ut64) (baddr + importp.pe->rva), (ut64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 						break;
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
 						printf("0x%08llx\t0x%08llx\t%s\n",
-								(u64) (baddr + importp.pe->rva), (u64) importp.pe->offset, importp.pe->name);
+								(ut64) (baddr + importp.pe->rva), (ut64) importp.pe->offset, importp.pe->name);
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tHint\tOrdinal\tName\n");
 						printf("0x%08llx\t0x%08llx\t%04lli\t%04lli\t%s\n",
-								(u64) (baddr + importp.pe->rva), (u64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
+								(ut64) (baddr + importp.pe->rva), (ut64) importp.pe->offset, importp.pe->hint, importp.pe->ordinal, importp.pe->name);
 				}
 			}
 		}
@@ -952,7 +952,7 @@ void rabin_show_imports(const char *file)
 void rabin_show_symbols(char *file)
 {
 	char buf[1024];
-	u64 baddr = 0;
+	ut64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -1089,19 +1089,19 @@ void rabin_show_symbols(char *file)
 			if (rad) {
 				printf("f sym.%s @ 0x%08llx\n",
 					aux_filter_rad_output((const char *)symbolp.pe->name),
-					(u64) (baddr + symbolp.pe->rva));
+					(ut64) (baddr + symbolp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
-						printf("address=0x%08llx offset=0x%08llx ordinal=%03lli forwarder=%s %s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
+						printf("address=0x%08llx offset=0x%08llx ordinal=%03lli forwarder=%s %s\n", (ut64) (baddr + symbolp.pe->rva), (ut64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
 						break;
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
-						printf("0x%08llx\t%08llx\t%s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->name);
+						printf("0x%08llx\t%08llx\t%s\n", (ut64) (baddr + symbolp.pe->rva), (ut64) symbolp.pe->offset, symbolp.pe->name);
 						break;
 					default:
 						if (i == 0) printf("Memory address\tFile offset\tOrdinal\tForwarder\t\tName\n");
-						printf("0x%08llx\t0x%08llx\t%03lli\t%-16s\t%s\n", (u64) (baddr + symbolp.pe->rva), (u64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
+						printf("0x%08llx\t0x%08llx\t%03lli\t%-16s\t%s\n", (ut64) (baddr + symbolp.pe->rva), (ut64) symbolp.pe->offset, symbolp.pe->ordinal, symbolp.pe->forwarder, symbolp.pe->name);
 				}
 			}
 		}
@@ -1122,7 +1122,7 @@ void rabin_show_symbols(char *file)
 void rabin_show_sections(const char *file)
 {
 	int fd, i, sections_count;
-	u64 baddr = 0;
+	ut64 baddr = 0;
 	union {
 		dietelf_bin_t elf;
 		dietpe_bin_t    pe;
@@ -1163,8 +1163,8 @@ void rabin_show_sections(const char *file)
 		sectionp.elf = section.elf;
 		for (i = 0; i < sections_count; i++, sectionp.elf++) {
 			if (rad) {
-				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset));
-				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (u64)(baddr + sectionp.elf->offset + sectionp.elf->size));
+				printf("f section.%s @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (ut64)(baddr + sectionp.elf->offset));
+				printf("f section.%s_end @ 0x%08llx\n", aux_filter_rad_output(sectionp.elf->name), (ut64)(baddr + sectionp.elf->offset + sectionp.elf->size));
 
 				printf("CC [%02i] 0x%08llx size=%08lli align=0x%08llx -%c%c%c %s @ 0x%08llx\n",
 						i, baddr + sectionp.elf->offset, sectionp.elf->size,
@@ -1172,7 +1172,7 @@ void rabin_show_sections(const char *file)
 						ELF_SCN_IS_READABLE(sectionp.elf->flags)?'r':'-',
 						ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
 						ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
-						sectionp.elf->name, (u64)(baddr + sectionp.elf->offset));
+						sectionp.elf->name, (ut64)(baddr + sectionp.elf->offset));
 			} else {
 				switch (verbose) {
 					case 0:
@@ -1236,24 +1236,24 @@ void rabin_show_sections(const char *file)
 				char *name = aux_filter_rad_output((const char *)sectionp.pe->name);
 				if (strstr(name, "text")) {
 					printf("e io.vaddr=0x%08llx\n",(baddr+section.pe->rva));
-					printf("e io.paddr=0x%08llx\n",(u64)(section.pe->offset));
+					printf("e io.paddr=0x%08llx\n",(ut64)(section.pe->offset));
 				} // XXX should be output in sections
-				printf("f section.%s @ 0x%08llx\n", name, (u64) (baddr + sectionp.pe->rva));
-				printf("f section.%s_end @ 0x%08llx\n", name, (u64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
+				printf("f section.%s @ 0x%08llx\n", name, (ut64) (baddr + sectionp.pe->rva));
+				printf("f section.%s_end @ 0x%08llx\n", name, (ut64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
 
 				printf("CC [%02i] 0x%08llx size=%08lli %c%c%c%c %s @ 0x%08llx\n",
-					i, (u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->size),
+					i, (ut64) (baddr + sectionp.pe->rva), (ut64) (sectionp.pe->size),
 					PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
 					PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
 					PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
 					PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
-					sectionp.pe->name, (u64) (baddr + sectionp.pe->rva));
+					sectionp.pe->name, (ut64) (baddr + sectionp.pe->rva));
 			} else {
 				switch (verbose) {
 					case 0:
 						printf("idx=%02i address=0x%08llx offset=0x%08llx size=%08lli privileges=%c%c%c%c name=%s\n",
-							i, (u64) (baddr + sectionp.pe->rva),
-							(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
+							i, (ut64) (baddr + sectionp.pe->rva),
+							(ut64) (sectionp.pe->offset), (ut64) (sectionp.pe->size),
 							PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
 							PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
 							PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
@@ -1263,14 +1263,14 @@ void rabin_show_sections(const char *file)
 					case 1:
 						if (i == 0) printf("Memory address\tFile offset\tName\n");
 						printf("0x%08llx\t0x%08llx\t%s\n",
-								(u64) (baddr + sectionp.pe->rva), (u64) (sectionp.pe->offset),
+								(ut64) (baddr + sectionp.pe->rva), (ut64) (sectionp.pe->offset),
 								sectionp.pe->name);
 						break;
 					default:
 						if (i == 0) printf("Section index\tMemory address\tFile offset\tSize\t\tPrivileges\tName\n");
 						printf("%02i\t\t0x%08llx\t0x%08llx\t%08lli\t%c%c%c%c\t\t%s\n",
-								i, (u64) (baddr + sectionp.pe->rva),
-								(u64) (sectionp.pe->offset), (u64) (sectionp.pe->size),
+								i, (ut64) (baddr + sectionp.pe->rva),
+								(ut64) (sectionp.pe->offset), (ut64) (sectionp.pe->size),
 								PE_SCN_IS_SHAREABLE(sectionp.pe->characteristics)?'s':'-',
 								PE_SCN_IS_READABLE(sectionp.pe->characteristics)?'r':'-',
 								PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
@@ -1313,7 +1313,7 @@ void rabin_show_libs(const char *file)
 		dietelf_string* elf;
 		dietpe_string* pe;
 	} libs, libsp;
-	u64 baddr = 0;
+	ut64 baddr = 0;
 	int i, libs_count;
 
 
@@ -1469,11 +1469,11 @@ int rabin_identify_header()
 	return filetype;
 }
 
-int operation_resize(const char *section, u32 newsize)
+int operation_resize(const char *section, ut32 newsize)
 {
 	dietelf_bin_t elf;
 	int delta, fd;
-	u32 size;
+	ut32 size;
 	printf("Resizing section '%s' '%d'\n", section, newsize);
 
 	switch(filetype){
@@ -1499,7 +1499,7 @@ int operation_resize(const char *section, u32 newsize)
 	return 0;
 }
 
-int dump_symbols(u32 len)
+int dump_symbols(ut32 len)
 {
 	int symlen;
 	int olen = len;
@@ -1735,7 +1735,7 @@ int main(int argc, char **argv, char **envp)
 			action |= ACTION_LIBS;
 			break;
 		case 'L':
-			printf("0x%08llx %s\n", (u64) addr_for_lib(optarg), optarg);
+			printf("0x%08llx %s\n", (ut64) addr_for_lib(optarg), optarg);
 			action |= ACTION_NOP;
 			break;
 		case 'r':

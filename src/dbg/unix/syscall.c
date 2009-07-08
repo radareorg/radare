@@ -312,17 +312,17 @@ int arch_print_syscall()
 		return -1;
 	}
 #if __x86_64__
-	cons_printf("0x%08llx syscall(%d) ", (u64)R_RIP(regs), (int)R_ORAX(regs));
+	cons_printf("0x%08llx syscall(%d) ", (ut64)R_RIP(regs), (int)R_ORAX(regs));
 	
 	for(i=0;sysptr[i].num;i++) {
 		if(R_ORAX(regs) == sysptr[i].num) {
 			cons_printf("%s ( ", sysptr[i].name);
 			j = sysptr[i].args;
-			if (j>0) cons_printf("0x%08llx ", (u64) R_RBX(regs));
-			if (j>1) cons_printf("0x%08llx ", (u64) R_RCX(regs));
-			if (j>2) cons_printf("0x%08llx ", (u64) R_RDX(regs));
-			if (j>3) cons_printf("0x%08llx ", (u64) R_RSI(regs));
-			if (j>4) cons_printf("0x%08llx ", (u64) R_RDI(regs));
+			if (j>0) cons_printf("0x%08llx ", (ut64) R_RBX(regs));
+			if (j>1) cons_printf("0x%08llx ", (ut64) R_RCX(regs));
+			if (j>2) cons_printf("0x%08llx ", (ut64) R_RDX(regs));
+			if (j>3) cons_printf("0x%08llx ", (ut64) R_RSI(regs));
+			if (j>4) cons_printf("0x%08llx ", (ut64) R_RDI(regs));
 			break;
 		}
 	}

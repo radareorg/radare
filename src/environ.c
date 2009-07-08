@@ -67,16 +67,16 @@ void env_prepare(const char *line)
 	setenv("ARCH",   config_get("asm.arch"), 1);
 	setenv("NASM",   "1",      1);
 
-	sprintf(offset,  OFF_FMTd, (u64)config.seek);
+	sprintf(offset,  OFF_FMTd, (ut64)config.seek);
 	setenv("OFFSET", offset,   1);
 
-	sprintf(offset,  "0x"OFF_FMTx, (u64)config.seek);
+	sprintf(offset,  "0x"OFF_FMTx, (ut64)config.seek);
 	setenv("XOFFSET", offset,   1);
 
 	if (config.cursor_mode)
-		sprintf(offset,  OFF_FMTd, (u64)config.seek+config.cursor);
+		sprintf(offset,  OFF_FMTd, (ut64)config.seek+config.cursor);
 	setenv("CURSOR", offset,   1);
-	sprintf(offset,  "%d", (int)config_get_i("io.vaddr")); //(u64)config.vaddr);
+	sprintf(offset,  "%d", (int)config_get_i("io.vaddr")); //(ut64)config.vaddr);
 	setenv("VADDR",  offset,   1);
 	sprintf(offset,  "%d",     config.color);
 	setenv("COLOR",  offset,   1);
