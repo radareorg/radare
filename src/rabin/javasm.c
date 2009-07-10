@@ -553,7 +553,7 @@ int java_classdump(const char *file)
 	
 	cf.cp_count--;
 	NR printf("ConstantPoolCount %d\n", cf.cp_count);
-	else printf("fs symbols\n");
+	else printf("fs header\n");
 	cp_items = malloc(sizeof(struct cp_item)*(cf.cp_count+1));
 	for(i=0;i<cf.cp_count;i++) {
 		struct constant_t *c;
@@ -594,8 +594,7 @@ int java_classdump(const char *file)
 
 		memcpy(cp_items[i].bytes, buf, 5);
 
-		R printf("b %d\n", c->len);
-		R printf("f cp.%d @ 0x%04llx\n", i+1, cp_items[i].off);
+		R printf("b %d && f cp.%d @ 0x%04llx\n", c->len, i+1, cp_items[i].off);
 		/* parse value */
 		switch(c->tag) {
 		case 1:
