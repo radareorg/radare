@@ -594,7 +594,7 @@ int java_classdump(const char *file)
 
 		memcpy(cp_items[i].bytes, buf, 5);
 
-		R printf("b %d && f cp.%d @ 0x%04llx\n", c->len, i+1, cp_items[i].off);
+		R printf("f cp.%d %d @ 0x%04llx\n", i+1, c->len, cp_items[i].off);
 		/* parse value */
 		switch(c->tag) {
 		case 1:

@@ -188,6 +188,7 @@ void rabin_show_info(const char *file)
 		break;
 	case FILETYPE_CLASS:
 		if (rad) {
+			printf("e file.type = class\n");
 			printf("e asm.arch = java\n");
 			printf("e cfg.bigendian = true\n");
 		} else printf("File type: JAVA CLASS\n");
