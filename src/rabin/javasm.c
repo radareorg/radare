@@ -553,6 +553,7 @@ int java_classdump(const char *file)
 	
 	cf.cp_count--;
 	NR printf("ConstantPoolCount %d\n", cf.cp_count);
+	else printf("fs symbols\n");
 	cp_items = malloc(sizeof(struct cp_item)*(cf.cp_count+1));
 	for(i=0;i<cf.cp_count;i++) {
 		struct constant_t *c;
@@ -643,6 +644,7 @@ int java_classdump(const char *file)
 
 	sz = read_short(fd);
 	NR printf("Fields count: %d\n", sz);
+	else printf("fs header\n");
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);
@@ -663,6 +665,7 @@ int java_classdump(const char *file)
 
 	sz = read_short(fd);
 	NR printf("Methods count: %d\n", sz);
+	else printf("fs symbols\n");
 	if (sz>0) {
 		for (i=0;i<sz;i++) {
 			fread(buf, 8, 1, fd);

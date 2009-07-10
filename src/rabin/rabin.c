@@ -449,7 +449,7 @@ void rabin_show_strings(const char *file)
 #ifndef __darwin__
 		if (rad) {
 			printf("fs strings\n");
-			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4\" @ \"$1}'"
+			snprintf(buf, 1022, "echo /z | radare -nv %s | sed -r 's/(\\w+).*[AW] (.*)/f str.\\2 @ \\1/'"
 			"| tr '+;<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '_.........._________________' "
 			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
 
