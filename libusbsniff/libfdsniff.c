@@ -26,7 +26,6 @@
 
 #define _GNU_SOURCE
 #define _FILE_OFFSET_BITS 64
-#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

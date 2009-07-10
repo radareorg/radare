@@ -156,7 +156,7 @@ class RapClient():
 
 	def read(self, count):
 		b = pack(">Bi", RAP_READ, count) #len(buf))
-		self.fd.send(b+buf)
+		self.fd.send(b)
 		# response
 		buf = self.fd.recv(5)
 		(c,l) = unpack(">Bi", buf)
@@ -215,5 +215,6 @@ class RapClient():
 		if c != RAP_SYSTEM | RAP_REPLY:
 			print "rmt-system: Invalid response packet"
 			return ""
-		buf = self.fd.recv(l)
+		if l>0:
+			buf = self.fd.recv(l)
 		return buf

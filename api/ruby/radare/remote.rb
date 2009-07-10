@@ -26,6 +26,11 @@ class RapServer
 		return ""
 	end
 
+	def handle_close(fd)
+		print "Connection closed\n"
+		return ""
+	end
+
 	def handle_cmd(cmd)
 		print "CMD #{cmd}\n"
 		return ""
