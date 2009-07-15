@@ -458,7 +458,11 @@ ut64 get_offset(const char *orig)
 
 		switch(arg[strlen(arg)-1]) {
 		case 'f': // float
-			sscanf(arg, "%f", &ret);
+			{
+			float f;
+			sscanf(arg, "%f", &f);
+			memcpy(&ret, &f, sizeof(f));
+			}
 			break;
 		case 'o': // octal
 			sscanf(arg, "%llo", &ret);

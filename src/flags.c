@@ -324,8 +324,7 @@ flag_t *flag_get_next(int delta)
 {
 	flag_t *nice = NULL;
 	struct list_head *pos;
-#warning NOT YET BTREEIZED
-
+//TODO: NOT YET BTREEIZED
 	if (delta == 1) {
 		list_for_each(pos, &flags) {
 			flag_t *flag = list_entry(pos, flag_t, list);

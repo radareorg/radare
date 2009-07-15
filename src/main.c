@@ -23,10 +23,8 @@
 
 int help_message(int line)
 {
-	if (line) 
-		eprintf("radare [-dfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
-	else
-	printf(
+	if (line) printf("radare [-dfhnuLvVwx] [-s #] [-b #] [-i f] [-P f] [-e k=v] [file]\n");
+	else printf(
 	"radare [options] [file]\n"
 	"  -s [offset]      seek to the desired offset (cfg.seek)\n"
 	"  -b [blocksize]   change the block size (512) (cfg.bsize)\n"
@@ -154,9 +152,8 @@ int main(int argc, char **argv, char **envp)
 				/* by program path */
 				for(c=optind;argv[c];c++) {
 					char *arg = argv[c];
-					if (c == optind) {
-						arg = resolve_path(argv[c]);
-					}
+					if (c == optind)
+						arg = (char *)resolve_path(argv[c]);
 					ps.argv[c-optind] = arg;
 					strcat(buf, arg);
 					if (argv[c+1])

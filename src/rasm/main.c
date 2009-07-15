@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -24,10 +24,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-//#if !RADARE_CORE
-
-//char *arch = "x86";
-char *arch = "rsc";
+char *arch = "x86";
+//char *arch = "rsc";
 ut64 offset = 0;
 int endian = 0;
 int verbose = 0;
@@ -81,16 +79,12 @@ int rasm_assemble(char *str)
 				data[2] = tmp;
 			}
 		}
-		if (ret<1) {
-			fprintf(stderr, "Invalid shit\n");
-		} else {
-			for(i=0;i<ret;i++) {
+		if (ret>0) {
+			for(i=0;i<ret;i++)
 				printf("%02x ", data[i]);
-			}
 			printf("\n");
-		}
+		} else fprintf(stderr, "Invalid shit\n");
 	}
-
 	return ret;
 }
 
@@ -102,8 +96,7 @@ int main(int argc, char **argv)
 	if (argc<2)
 		return show_helpline();
 
-	while ((c = getopt(argc, argv, "d:a:Vs:lhef:v")) != -1)
-	{
+	while ((c = getopt(argc, argv, "d:a:Vs:lhef:v")) != -1) {
 		switch( c ) {
 		case 'a':
 			arch = optarg;
@@ -161,5 +154,3 @@ int main(int argc, char **argv)
 	}
 	return 0;
 }
-
-//#endif
