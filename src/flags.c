@@ -593,6 +593,8 @@ void flag_space_move(const char *name)
 void flag_space_set(const char *name)
 {
 	int i;
+	if (name==NULL)
+		return;
 	for(i=0;i<FLAG_SPACES;i++) {
 		if (flag_spaces[i].name != NULL)
 		if (!strcmp(name, flag_spaces[i].name)) {
