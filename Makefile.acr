@@ -113,7 +113,7 @@ install:
 	cd src/plug/hack/ && ${MAKE} install
 	# TODO remove?
 	-mkdir ${LIBDIR}/radare
-	cd api && ${MAKE} install
+	cd api && ${MAKE} install DESTDIR=${DESTDIR}
 	#-cp -rf src/plug/hack/*.${SHARED_EXT} ${LIBDIR}/radare
 	if [ -e libaff2fd/libaff2fd.so ]; then ${INSTALL_LIB} libaff2fd/libaff2fd.so ${LIBDIR} ; fi
 ##DEBUGGER##
