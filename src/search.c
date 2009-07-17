@@ -37,7 +37,7 @@ static int nhit = 0;
 
 static void search_alarm()
 {
-	progressbar((int)(config.seek/config.size*100));  // slowdowns 170%
+	progressbar(nhit, config.seek, config.size);
 #if __UNIX__
 	go_alarm(search_alarm);
 #endif
@@ -288,7 +288,7 @@ int search_from_simple_file(char *file)
 
 int search_from_file(char *file)
 {
-	int i,ret;
+	int i, ret;
 	ut64 tmp = config.seek;
 	tokenizer *t;
 
@@ -357,81 +357,80 @@ int search_range(char *range)
 	search_to = config_get_i("search.to");
 	search_verbose = (int)config_get("search.verbose");
 
-if (config_get("search.inar")) {
-	if (! ranges_get_n(range_n++, &search_from, &search_to)) {
-		eprintf("No ranges defined\n");
-		return 0;
+	if (config_get("search.inar")) {
+		if (! ranges_get_n(range_n++, &search_from, &search_to)) {
+			eprintf("No ranges defined\n");
+			return 0;
+		}
+		printf("Searching using ranges...\n");
 	}
-	printf("Searching using ranges...\n");
-}
 	// twice
 	radare_cmd("f -hit0_*", 0);
 	radare_cmd("f -hit0_*", 0);
 	radare_cmd("fs search", 0);
-do {
-	nhit = 0;
-	t = binparse_new(0);
-	align = config_get_i("search.align");
-	t->callback = &radare_tsearch_callback;
-	len = strlen(range);
-	// foreach token in range
-	for(j=i=0;i<len;i++,j++) {
-		str[j] = range[i];
-		str[j+1] = '\0';
-		switch(range[i+1]) {
-		case '-':
-			num = atoi(str);
-			i++; j=-1;
-			f0=1;
-			break;
-		case '\0':
-		case ',':
-			if (str[0]=='\0') break;
-			num2 = atoi(str);
-			if (f0) {
-				f0=0;
-				if (num == -1) {
-					printf("syntax error\n");
+	do {
+		nhit = 0;
+		t = binparse_new(0);
+		align = config_get_i("search.align");
+		t->callback = &radare_tsearch_callback;
+		len = strlen(range);
+		// foreach token in range
+		for(j=i=0;i<len;i++,j++) {
+			str[j] = range[i];
+			str[j+1] = '\0';
+			switch(range[i+1]) {
+				case '-':
+					num = atoi(str);
+					i++; j=-1;
+					f0=1;
 					break;
-				}
-				for(j = num;j<=num2;j++)
-					binparse_add_search(t, j);
-			} else	binparse_add_search(t, num2);
-			j=-1;
-			str[0]='\0';
-			i++;
-			break;
-		}
-	}
-
-#if __UNIX__
-	go_alarm(search_alarm);
-#endif
-	/* search loop */
-	radare_controlc();
-	config.seek = search_from;
-	limit = config.limit;
-	if (search_to!=0)
-		limit = search_to;
-
-	//D eprintf("Searching from 0x%08llx to 0x%08llx\n", search_from, (search_to==0)?-1:search_to);
-	for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
-		s = config.seek;
-		if (i==0) {
-			//eprintf("read err at 0x%08llx\n", config.seek);
-			break;
-		}
-		if (limit && config.seek >= limit) break;
-		if (config.debug && config.seek == 0xFFFFFFFF) break;
-		for(i=0;!config.interrupted && i<config.block_size;i++) {
-			if (update_tlist(t, config.block[i], config.seek+i)) {
-				config.seek = s;
-				radare_read(0);
+				case '\0':
+				case ',':
+					if (str[0]=='\0') break;
+					num2 = atoi(str);
+					if (f0) {
+						f0=0;
+						if (num == -1) {
+							printf("syntax error\n");
+							break;
+						}
+						for(j = num;j<=num2;j++)
+							binparse_add_search(t, j);
+					} else	binparse_add_search(t, num2);
+					j=-1;
+					str[0]='\0';
+					i++;
+					break;
 			}
 		}
-		config.seek = s;
-	}
-} while(config_get("search.inar") && ranges_get_n(range_n++, &search_from, &search_to));
+#if __UNIX__
+		go_alarm(search_alarm);
+#endif
+		/* search loop */
+		radare_controlc();
+		config.seek = search_from;
+		limit = config.limit;
+		if (search_to!=0)
+			limit = search_to;
+
+		//D eprintf("Searching from 0x%08llx to 0x%08llx\n", search_from, (search_to==0)?-1:search_to);
+		for(i=1, radare_read(0); !config.interrupted; i = radare_read(1)) {
+			s = config.seek;
+			if (i==0) {
+				//eprintf("read err at 0x%08llx\n", config.seek);
+				break;
+			}
+			if (limit && config.seek >= limit) break;
+			if (config.debug && config.seek == 0xFFFFFFFF) break;
+			for(i=0;!config.interrupted && i<config.block_size;i++) {
+				if (update_tlist(t, config.block[i], config.seek+i)) {
+					config.seek = s;
+					radare_read(0);
+				}
+			}
+			config.seek = s;
+		}
+	} while(config_get("search.inar") && ranges_get_n(range_n++, &search_from, &search_to));
 	binparser_free(t);
 #if __UNIX__
 	go_alarm(SIG_IGN);

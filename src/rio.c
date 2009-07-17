@@ -408,10 +408,14 @@ ut64 radare_seek(ut64 offset, int whence)
 		//offset-=config.vaddr;
 	}
 #endif
-	
+
+#if 0
+eprintf("SEEK(%llx)\n", offset);
 	seek = io_lseek(config.fd, offset, whence);
-	if (seek==-1)
-		return -1;
+eprintf("SEEK(%llx)\n", seek);
+//	if (seek==-1)
+//		return -1;
+#endif
 
 	switch(whence) {
 	case SEEK_SET:

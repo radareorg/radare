@@ -1844,8 +1844,8 @@ CMD_DECL(seek)
 		whence   = SEEK_SET; // stupid twice
 	}
 
-	if (new_off<0) new_off = 0;
-	if (text[0]=='0' && new_off==0 || new_off != 0) {
+	//if (new_off<0) new_off = 0;
+	if (1 || (text[0]=='0'&&new_off==0) || new_off!=0) {
 		if (radare_seek(new_off, whence) < 0)
 			eprintf("Couldn't seek: %s\n", strerror(errno));
 	}

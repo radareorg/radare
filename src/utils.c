@@ -282,20 +282,22 @@ int make_tmp_file(char *str)
 	return fd;
 }
 
-void progressbar(int pc)
+void progressbar(int nhit, ut64 addr, ut64 size)
 {
 #if RADARE_CORE
 	int tmp, cols = config_get_i("scr.width");
 #else
 	int tmp, cols = 78;
 #endif
+	int pc = (int)((100*addr)/size);
+	cols-=20;
 
 	(pc<0)?pc=0:(pc>100)?pc=100:0;
-	fprintf(stderr, "\x1b[K  %3d%% [", pc);
+	fprintf(stderr, "\x1b[K 0x%08llx %2d%% [", addr, pc);
 	cols-=15;
 	for(tmp=cols*pc/100;tmp;tmp--) fprintf(stderr,"#");
 	for(tmp=cols-(cols*pc/100);tmp;tmp--) fprintf(stderr,"-");
-	fprintf(stderr, "]\r");
+	fprintf(stderr, "] %d\r", nhit);
 	fflush(stderr);
 }
 
