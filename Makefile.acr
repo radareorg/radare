@@ -151,6 +151,18 @@ install:
 	cd gui && ${MAKE} install DESTDIR=${DESTDIR}
 ##HAVE_GUI##
 
+install-strip: install
+	-strip -s ${BINDIR}/gradare
+	-strip -s ${BINDIR}/radare
+	-strip -s ${BINDIR}/rahash
+	-strip -s ${BINDIR}/radiff
+	-strip -s ${BINDIR}/rabin
+	-strip -s ${BINDIR}/xrefs
+	-strip -s ${BINDIR}/rasm
+	-strip -s ${BINDIR}/rasc
+	-strip -s ${BINDIR}/rax
+	
+
 uninstall deinstall:
 	-rm -f ${BINDIR}/gradare
 	-rm -f ${BINDIR}/radare
