@@ -38,7 +38,7 @@ public class Grava.Graph : GLib.Object
 	construct {
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
-		selhist= new SList<int>();
+		selhist= new SList<Node>();
 		layout = new DefaultLayout();
 		data   = new HashTable<string, string>.full(str_hash, str_equal, g_free, Object.unref);
 	//	s = new ImageSurface.from_png("/tmp/file.png");
@@ -56,7 +56,7 @@ public class Grava.Graph : GLib.Object
 		layout.reset();
 		nodes  = new SList<Node>();
 		edges  = new SList<Edge>();
-		selhist= new SList<int>();
+		selhist= new SList<Node>();
 		//layout = new DefaultLayout();
 		/* add png here */
 	}
