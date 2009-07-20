@@ -125,7 +125,7 @@ int events_init_all()
 int events_get()
 {
 	int ret;
-	unsigned int ret2;
+	unsigned long ret2;
 
 #if __linux__
 	ret = ptrace(PTRACE_GETEVENTMSG, ps.tid, NULL, &ret2);
