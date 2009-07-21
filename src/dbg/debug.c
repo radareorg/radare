@@ -415,10 +415,40 @@ void debug_environment()
 {
 	const char *ptr;
 
-	// TODO proper environment handle
-	if (getv()) {} //eprintf("TODO: load environment from environ.txt or so.\n");
+	// Load environment from file
+	ptr = config_get("file.dbg_env");
+	if (ptr && *ptr) {
+		char buf[4096], *eq;
+		FILE *fd;
+		eprintf("Loading file.dbg_env from '%s'\n", ptr);
+		clearenv();
+		// hack '_' to emulate the real one of the process
+		setenv("_", ps.filename, 1);
+		fd = fopen(ptr, "r");
+		if (fd != NULL) {
+			/* expected format is: [#comment][export ][VAR]="[VALUE]" */
+			while(!feof(fd)) {
+				fgets(buf, 4095, fd);
+				if (feof(fd))
+					break;
+				if (!buf[0]) continue;
+				buf[strlen(buf)-2]=0;
+				if (!memcmp(buf, "export ", 7))
+					memcpy(buf, buf+7, strlen(buf+7)+1);
+				eq = strchr(buf, '=');
+				if (eq) {
+					*eq = 0;
+					setenv(buf, eq+2, 1);
+				}
+			}
+		} else eprintf("Cannot open '%s'\n", ptr);
+	} else {
+		// hack '_' to emulate the real one of the process
+		setenv("_", ps.filename, 1);
+	}
 
-	/* LD.SO */
+	if (config_get_i("dbg.env_ldso")) {
+		/* LD.SO */
 #if 0
 Valid options for the LD_DEBUG environment variable are:
 
@@ -436,17 +466,18 @@ Valid options for the LD_DEBUG environment variable are:
 To direct the debugging output into a file instead of standard output
 a filename can be specified using the LD_DEBUG_OUTPUT environment variable.
 #endif
-	// LD_PRELOAD
-	// LD_BIND_NOW : resolve all symbols at startup
-	setenv("LD_BIND_NOW", "true", 1);
-	//setenv("LD_TRACE_LOADED_OBJECTS", "true", 1);
+		// LD_PRELOAD
+		// LD_BIND_NOW : resolve all symbols at startup
+		setenv("LD_BIND_NOW", "true", 1);
+		//setenv("LD_TRACE_LOADED_OBJECTS", "true", 1);
 
-	setenv("LD_WARN", "true", 1);
-	setenv("LD_DEBUG", "", 1);
-	setenv("LD_VERBOSE", "", 1);
-	setenv("CK_FORK","no",1); // to debug gstreamer check test programs
-	//setenv("LD_SHOW_AUXV", "true", 1);
-	//setenv("LD_PROFILE", "/lib/libc.so.6", 1);
+		setenv("LD_WARN", "true", 1);
+		setenv("LD_DEBUG", "", 1);
+		setenv("LD_VERBOSE", "", 1);
+		setenv("CK_FORK","no",1); // to debug gstreamer check test programs
+		//setenv("LD_SHOW_AUXV", "true", 1);
+		//setenv("LD_PROFILE", "/lib/libc.so.6", 1);
+	}
 
 	// TODO: Set resources limits (setrlimit)
 #if __linux__

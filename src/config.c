@@ -907,6 +907,10 @@ void config_init(int first)
 	config_set("search.verbose", "true");
 	config_set_i("search.limit", 0);
 
+	config_set("dbg.env_ldso", "false");
+	config_set("file.dbg_env", "");
+	//config_set("file.dbg_arg", ""); // TODO
+
 	config_set("file.id", "false");
 	config_set("file.analyze", "false");
 	config_set("file.analdata", "false");

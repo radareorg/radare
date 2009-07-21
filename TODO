@@ -9,6 +9,7 @@
 TODO 1.4.2
 ==========
 
+* TODO: implement file.dbg_arg
 * Allow to easily store the stack contents and get a diff
 * show info where register points to
   - px 16@@=`!regs*~[1]`
