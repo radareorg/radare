@@ -123,7 +123,7 @@ char *slurp(const char *str, int *len)
 	fseek(fd, 0,SEEK_SET);
 	ret = (char *)malloc(sz+1);
 	if (ret == NULL) {
-		*len = 0;
+		if (len) *len = 0;
 		return NULL;
 	}
 	fread(ret, sz, 1, fd);

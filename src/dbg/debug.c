@@ -438,7 +438,11 @@ void debug_environment()
 				eq = strchr(buf, '=');
 				if (eq) {
 					*eq = 0;
-					setenv(buf, eq+2, 1);
+					if (eq[1]=='@') {
+						char *contents = slurp(eq+2, NULL);
+						setenv(buf, contents, 1);
+						free(contents);
+					} else setenv(buf, eq+2, 1);
 				}
 			}
 		} else eprintf("Cannot open '%s'\n", ptr);
