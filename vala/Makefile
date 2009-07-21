@@ -54,7 +54,8 @@ VOBJ=config.o core.o debug.o debugger.o info.o inout.o line.o list.o logs.o plug
 BIN=a.out
 
 #${CC} -lewf -g ${OBJ} ${VOBJ} -o ${BIN} `pkg-config gtk+-2.0 vte --libs`
-all: all_vala ${VOBJ}
+#all: all_vala ${VOBJ}
+all: ${VOBJ}
 
 all_vala:
 	@do=0; \
