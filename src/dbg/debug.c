@@ -411,6 +411,16 @@ void debug_msg_set(const char *format, ...)
 	va_end(ap);
 }
 
+static void debug_environment_()
+{
+	// hack '_' to emulate the real one of the process
+	if (ps.filename[0]!='/') {
+		char str[1024];
+		snprintf(str, 1023, "./%s", ps.filename);
+		setenv("_", str, 1);
+	} else setenv("_", ps.filename, 1);
+}
+
 void debug_environment()
 {
 	const char *ptr;
@@ -426,7 +436,7 @@ void debug_environment()
 		eprintf("Loading file.dbg_env from '%s'\n", ptr);
 		clearenv();
 		// hack '_' to emulate the real one of the process
-		setenv("_", ps.filename, 1);
+		debug_environment_();
 		fd = fopen(ptr, "r");
 		if (fd != NULL) {
 			/* expected format is: [#comment][export ][VAR]="[VALUE]" */
@@ -451,14 +461,7 @@ void debug_environment()
 				}
 			}
 		} else eprintf("Cannot open '%s'\n", ptr);
-	} else {
-		// hack '_' to emulate the real one of the process
-		if (ps.filename[0]=='/') {
-			char str[1024];
-			snprintf(str, 1023, "./%s", ps.filename);
-			setenv("_", str, 1);
-		} else setenv("_", ps.filename, 1);
-	}
+	} else debug_environment_();
 
 	if (config_get_i("dbg.env_ldso")) {
 		/* LD.SO */
