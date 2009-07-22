@@ -415,11 +415,14 @@ void debug_environment()
 {
 	const char *ptr;
 
+	unsetenv("COLUMNS");
+	unsetenv("LINES");
 	// Load environment from file
 	ptr = config_get("file.dbg_env");
 	if (ptr && *ptr) {
 		char buf[4096], *eq;
 		FILE *fd;
+		int quoted, len;
 		eprintf("Loading file.dbg_env from '%s'\n", ptr);
 		clearenv();
 		// hack '_' to emulate the real one of the process
@@ -432,23 +435,29 @@ void debug_environment()
 				if (feof(fd))
 					break;
 				if (!buf[0]) continue;
-				buf[strlen(buf)-2]=0;
+				len = strlen(buf);
+				quoted = (buf[len-2]=='"')?2:1;
+				buf[len-quoted]=0; // chop '\n'
 				if (!memcmp(buf, "export ", 7))
 					memcpy(buf, buf+7, strlen(buf+7)+1);
 				eq = strchr(buf, '=');
 				if (eq) {
 					*eq = 0;
 					if (eq[1]=='@') {
-						char *contents = slurp(eq+2, NULL);
+						char *contents = slurp(eq+quoted, NULL);
 						setenv(buf, contents, 1);
 						free(contents);
-					} else setenv(buf, eq+2, 1);
+					} else setenv(buf, eq+quoted, 1);
 				}
 			}
 		} else eprintf("Cannot open '%s'\n", ptr);
 	} else {
 		// hack '_' to emulate the real one of the process
-		setenv("_", ps.filename, 1);
+		if (ps.filename[0]=='/') {
+			char str[1024];
+			snprintf(str, 1023, "./%s", ps.filename);
+			setenv("_", str, 1);
+		} else setenv("_", ps.filename, 1);
 	}
 
 	if (config_get_i("dbg.env_ldso")) {

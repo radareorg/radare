@@ -4950,6 +4950,46 @@ To use this command just give an argument with the size of the tracing area to b
 \c 0xb7f75b95 - 0xb7f75b9f
 \c ...
 
+\H{dbgenv} Debugger environment
+
+By default radare setups a clean environment for the child process to avoid antidebugging tricks like checking for '_' or 'LD_' and to avoid interferencing the stack address space compared to a real process execution.
+
+The environment setup can be redefined using the 'file.dbg_env' eval variable pointing to a file with contents like:
+
+\c [#comment][export ][variable]=["[value]"|@file]
+
+The format is similar to the shell 'export' command, but more flexible, because it supports loading variable contents from external files. Here's an example:
+
+\c # This is a sample file for file.dbg_env
+\c PATH="/bin:/usr/bin"
+\c HISTFILE=@/bin/ls
+
+The HISTFILE environment will be filled with the contents of the file '/bin/ls'.
+
+Then run radare with these arguments:
+
+\c $ radare -e file.dbg_env=env.txt -d ls
+
+\H{dbgarg} Program arguments
+
+The program arguments of a debugger session can be defined from a file with a format similar to the one explained in the 'debugger environment' chapter.
+
+The format is:
+
+\c [#comment][arg[N]]=[@file|string]
+
+Quotes ('"') are not supported here, the N is the number of argument to be redefined. Arguments can also be filled with the contents of files, that's important for exploiting while testing the limits of buffers when reading from arguments.
+
+Here's an example file and session:
+
+\c $ cat arg.txt
+\c arg0=/bin/ls
+\c arg1=@/bin/true
+
+As you see, the above example is overriding the first argument of the program (which stands for the program path). This way you can reset the path to it, so radare will load that file instead of the one you specify in the prompt. The program will run with a single argument containing all the bytes of the /bin/true file.
+
+\c $ radare -e file.dbg_arg=arg.txt ls
+
 \H{bps} Breakpoints
 
 The breakpoints in radare are managed by the '!bp' command which is able to handle software and hardware breakpoints for different architectures. On intel there's a specific command called '!dr' to manage the DRX registers and be able to define 4 hardware breakpoints manually for read, write or exec.
