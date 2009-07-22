@@ -909,7 +909,7 @@ void config_init(int first)
 
 	config_set("dbg.env_ldso", "false");
 	config_set("file.dbg_env", "");
-	//config_set("file.dbg_arg", ""); // TODO
+	config_set("file.dbg_arg", "");
 
 	config_set("file.id", "false");
 	config_set("file.analyze", "false");

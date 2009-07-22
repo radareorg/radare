@@ -306,7 +306,6 @@ int debug_ktrace()
 	/* TODO ? */
 }
 
-
 int debug_pstree(char *input)
 { 
 	int tid = atoi(input);
@@ -350,6 +349,7 @@ static pid_t start_inferior(int argc, char **argv)
 	signal(SIGTRAP, SIG_IGN); // SINO NO FUNCIONA EL STEP
 	signal(SIGABRT, inferior_abort_handler);
 
+	debug_environment();
 	execvp(argv[0], child_args);
 
 	eprintf("Failed to start inferior.\n");

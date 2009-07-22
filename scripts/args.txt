@@ -1,0 +1,4 @@
+# Usage:
+# radare -e file.dbg_arg=args.txt -d ls
+arg0=/bin/ls
+arg1=/usr

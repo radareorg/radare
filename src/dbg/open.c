@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007-2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -31,13 +31,53 @@
 #include "debug.h"
 #include "../main.h"
 
-void ps_parse_argv()
+void ps_construct_argv()
 {
-	int i = 0;
-	char *tmp, *tmp2;
+	int i = 0, idx, lidx=0;
+	char *tmp, *tmp2, *eq;
+	char buf[4096];
+
 	free(ps.args);
-	ps.args = strdup(ps.filename);
-	tmp2 = ps.args;
+	tmp2 = ps.args = strdup(ps.filename);
+
+	/* XXX memory leaks everywhere!!1 */
+	tmp = config_get("file.dbg_arg");
+	if (tmp&&*tmp) {
+		/* load program arguments from file */
+		FILE *fd = fopen(tmp, "r");
+		while(!feof(fd)) {
+			fgets(buf, 4095, fd);
+			if (feof(fd))
+				break;
+			if (!buf[0]) continue;
+			/* chop tail \n */
+			buf[strlen(buf)-1]=0;
+			/* ignore lines not starting with 'arg' */
+			if (memcmp(buf, "arg", 3))
+				continue;
+			idx = atoi(buf+3);
+			if (idx<0 || idx>254) {
+				eprintf("arg%d: out of range\n", idx);
+				continue;
+			}
+			eq = strchr(buf, '=');
+			if (eq) {
+				*eq = 0;
+				if (eq[1]=='@') {
+					char *contents = slurp(eq+2, NULL);
+					ps.argv[idx] = contents;
+				} else ps.argv[idx] = strdup(eq+1);
+				if (idx == 0)
+					ps.args = ps.argv[0];
+			}
+			if (idx>lidx)
+				lidx = idx;
+			ps.argv[lidx+1] = 0;
+		}
+		fclose(fd);
+		return;
+	}
+
 	// parse argv
 	//eprintf("commandline=\"%s\"\n", ps.args);
 	for(tmp=ps.args;tmp[0];tmp=tmp+1) {
@@ -47,7 +87,7 @@ void ps_parse_argv()
 			tmp[0]='\0';
 			ps.argv[i] = tmp2;
 			tmp2 = tmp+1;
-			if (++i>254) {
+			if (++i>253) {
 				printf("Too many arguments. truncated\n");
 				break;
 			}
@@ -93,7 +133,7 @@ int debug_open(const char *pathname, int flags, mode_t mode)
 	config.file = (char *)malloc(strlen(ps.filename)+8);
 	sprintf(config.file, "dbg://%s", ps.filename);
 
-	ps_parse_argv();
+	ps_construct_argv();
 	ps.is_file  = (atoi(ps.filename)?0:1);
 	ps.opened = 1;
 

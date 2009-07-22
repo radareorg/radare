@@ -108,17 +108,15 @@ int debug_load()
 	WS(event)   = UNKNOWN_EVENT;
 	ps.bin_usrcode = NULL;
 
-	ps_parse_argv();
+	ps_construct_argv();
 
 	if (ps.argv[0]== NULL) {
 		eprintf("No argv[0] available\n");
 		return 1;
 	}
 	ps.is_file = !atoi(ps.filename);
-	if (ps.is_file) 
-		ret = debug_fork_and_attach();
-	else
-		ret = debug_attach(atoi(ps.filename));
+	if (ps.is_file) ret = debug_fork_and_attach();
+	else ret = debug_attach(atoi(ps.filename));
 
 	ps.entrypoint = arch_get_entrypoint();
 	ps.th_active = 0;

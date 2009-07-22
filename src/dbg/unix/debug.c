@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -430,7 +430,6 @@ int debug_fork_and_attach()
 			eprintf("]\n");
 		}
 
-		// TODO: USE TM IF POSSIBLE TO ATTACH IT FROM ANOTHER CONSOLE!!!
 		debug_environment();
 		execv(ps.argv[0], ps.argv);
 		perror("fork_and_attach: execv");
@@ -821,11 +820,9 @@ int debug_dispatch_wait()
 			th->addr = arch_pc(ps.tid);
 			add_th(th);
 			ps.th_active = th;
-
 			ret = 1;
 		}
-	} else
-		ps.th_active = 0;
+	} else ps.th_active = 0;
 
 	if(WIFEXITED(status)) {
 		debug_msg_set("process %d finished\n", ps.tid);
@@ -892,8 +889,8 @@ int debug_dispatch_wait()
 				eprintf("==> Trace address 0x%08llx\n", addr);
 				sprintf(buf,"!bpt 0x%08llx\n",(ut64) addr); //-bpsize);
 				radare_cmd(buf,0);
-return 1;
-				debug_cont(0);
+				return 1;
+				debug_cont(0); // ???
 			}
 			}
 #if 0
