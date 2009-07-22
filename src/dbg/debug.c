@@ -413,12 +413,17 @@ void debug_msg_set(const char *format, ...)
 
 static void debug_environment_()
 {
+#if __UNIX__
+	char str[1024];
+	int length;
 	// hack '_' to emulate the real one of the process
 	if (ps.filename[0]!='/') {
-		char str[1024];
-		snprintf(str, 1023, "./%s", ps.filename);
+		getcwd(str, 1023);
+		length=strlen(str);
+		snprintf(str+length, 1023-length, "/%s", ps.filename);
 		setenv("_", str, 1);
 	} else setenv("_", ps.filename, 1);
+#endif
 }
 
 void debug_environment()
