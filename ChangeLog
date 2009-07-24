@@ -1,3 +1,428 @@
+=== 1.4.2 === 2009-07-24
+
+changeset:   1186:e1e2c70177f2
+tag:         tip
+user:        pancake <@youterm.com>
+date:        Wed Jul 22 17:52:16 2009 +0200
+files:       src/dbg/debug.c
+description:
+* Apply sre patch (with few minor modifications) fixing an issue on '_'
+
+
+changeset:   1185:9b7c3a7149f9
+user:        pancake <@youterm.com>
+date:        Wed Jul 22 17:17:41 2009 +0200
+files:       src/dbg/debug.c
+description:
+* Oops, inverse conditional O:)
+
+
+changeset:   1184:4699ddfe4551
+user:        pancake <@youterm.com>
+date:        Wed Jul 22 16:42:14 2009 +0200
+files:       doc/radare.but src/dbg/debug.c
+description:
+* Added documentation for file.dbg_env and file.dbg_arg in the book
+* Some fixups in the dbg_env code (thanks sre! :D)
+
+
+changeset:   1183:05d4cee22982
+user:        pancake@localhost.localdomain
+date:        Wed Jul 22 11:14:11 2009 +0000
+files:       doc/radare.but
+description:
+* Add documentation for rasm -s
+  - Rename 'R' command to 'g' in documentation
+  - Documentation about hw/sw breakpoints
+
+
+changeset:   1182:101eac538654
+user:        pancake@localhost.localdomain
+date:        Wed Jul 22 09:48:04 2009 +0000
+files:       scripts/args.txt src/config.c src/dbg/darwin/debug.c src/dbg/io.c src/dbg/open.c src/dbg/unix/debug.c
+description:
+* Initial implementation of 'file.dbg_arg' eval variable
+  - Allows to manually configure the arguments of the
+    program to be debugged using a file
+* Construct debug environment also on Darwin (OSX)
+* Minor random code cleanup
+
+
+changeset:   1181:fbe6f239e3d8
+user:        pancake@localhost.localdomain
+date:        Tue Jul 21 23:08:22 2009 +0000
+files:       TODO src/dbg/debug.c src/utils.c
+description:
+* Allow to load the environment var contents slurping files
+
+
+changeset:   1180:7c5725f1621c
+user:        pancake@localhost.localdomain
+date:        Tue Jul 21 22:54:45 2009 +0000
+files:       TODO src/config.c src/dbg/debug.c
+description:
+* Added new eval variables:
+  dbg.env_ldso : setup or not the ld.so environment (false by default)
+  file.dbg_env : file to define the environment for the child process
+
+
+changeset:   1179:cffaf082eefd
+user:        pancake@localhost.localdomain
+date:        Tue Jul 21 19:44:01 2009 +0000
+files:       vala/Makefile
+description:
+* Do not update C files from Vala by default
+  - Only for maintainance (faster build)
+
+
+changeset:   1178:03464ce31398
+user:        pancake <@youterm.com>
+date:        Mon Jul 20 16:56:54 2009 +0200
+files:       vala/grava/graph.vala
+description:
+* Fix build of vala code
+
+
+changeset:   1177:11c1fc2cde2c
+user:        pancake <@youterm.com>
+date:        Mon Jul 20 16:31:27 2009 +0200
+files:       src/dbg/events.c
+description:
+* Fix no-sense segfault related to x86-64 with gcc -O2
+
+
+changeset:   1176:70a9d0f54322
+user:        pancake <@youterm.com>
+date:        Fri Jul 17 16:50:52 2009 +0200
+files:       Makefile.acr config.mk.acr
+description:
+* Do not strip binaries on install
+  - New 'install-strip' target to strip binaries after install
+  - Fixes gentoo bug (thanks ioanis)
+
+
+changeset:   1175:002974a68fec
+user:        pancake <@youterm.com>
+date:        Fri Jul 17 11:36:13 2009 +0200
+files:       src/cmds.c src/rio.c src/search.c src/utils.c src/utils.h
+description:
+* Fix search progressbar percentatge
+  - the % is properly calculated now
+  - The number of hits are displayed at the right
+  - Current search offset is also displayed
+* Fix seek/relseek for >32bit offsets
+
+
+changeset:   1174:14e7fa471bd4
+user:        pancake <@youterm.com>
+date:        Thu Jul 16 11:05:20 2009 +0200
+files:       Makefile.acr api/Makefile
+description:
+* Apply DESTDIR fixes patch from 'sre'. Thanks!
+
+
+changeset:   1173:448e7628ec23
+user:        pancake <@youterm.com>
+date:        Wed Jul 15 18:55:54 2009 +0200
+files:       src/flags.c src/main.c src/rasm/main.c src/utils.c
+description:
+* Use 'x86' arch as default one for 'rasm' (rsc is broken?)
+* Some warnings cleaned up
+
+
+changeset:   1172:6edffc21605d
+user:        pancake <@youterm.com>
+date:        Wed Jul 15 17:23:32 2009 +0200
+files:       src/flags.c
+description:
+* Fix segfault on null pointer in flag_space_set (thanks graz)
+
+
+changeset:   1171:10f5d242dce9
+user:        nibble
+date:        Fri Jul 10 17:54:51 2009 +0200
+files:       src/rabin/javasm.c src/rabin/rabin.c
+description:
+* Fix class files autodetection
+
+
+changeset:   1170:6a610e36284b
+user:        nibble
+date:        Fri Jul 10 17:04:34 2009 +0200
+files:       src/rabin/javasm.c
+description:
+* Minor fixup in javasm
+
+
+changeset:   1169:f7cccecf5ded
+user:        nibble
+date:        Fri Jul 10 16:56:02 2009 +0200
+files:       src/rabin/javasm.c src/rabin/rabin.c
+description:
+* Fix 'rabin -zr' for class files
+
+
+changeset:   1168:4a06611a6e70
+user:        pancake@localhost.localdomain
+date:        Fri Jul 10 13:01:16 2009 +0000
+files:       api/python/radare/remote.py api/ruby/radare/remote.rb libusbsniff/libfdsniff.c
+description:
+* Some minor random fixups in the python and ruby RAP APIs
+
+
+changeset:   1167:d1f03a639ba4
+user:        pancake <@youterm.com>
+date:        Thu Jul 09 11:03:07 2009 +0200
+files:       src/rfile.acr
+description:
+* Fix bashism
+
+
+changeset:   1166:b1df8cd002b8
+user:        pancake <@youterm.com>
+date:        Wed Jul 08 17:43:17 2009 +0200
+files:       src/analyze.c src/arch/arm/code.c src/arch/arm/gnudisarm.c src/arch/bf/code.c src/arch/csr/code.c src/arch/csr/dis.c src/arch/csr/dis.h src/arch/dalvik/code.c src/arch/java/code.c src/arch/m68k/code.c src/arch/mips/code.c src/arch/mips/gnudismips.c src/arch/mips/vm.c src/arch/msil/code.c src/arch/msil/demsil.c src/arch/msil/demsil.h src/arch/ppc/code.c src/arch/ppc/gnudisppc.c src/arch/sparc/code.c src/arch/sparc/gnudisparc.c src/arch/x86/code.c src/arch/x86/dislen.c src/arch/x86/vm.c src/binparse.c src/binparse.h src/bytepat.c src/cmds.c src/code.c src/code.h src/code/syscall.c src/config.c src/config.h src/data.c src/data.h src/dbg/arch/arch.h src/dbg/arch/arm-bp.c src/dbg/arch/arm.c src/dbg/arch/i386-bp.c src/dbg/arch/i386.c src/dbg/arch/mips64-bp.c src/dbg/arch/mips64.c src/dbg/arch/powerpc-bp.c src/dbg/arch/powerpc.c src/dbg/arch/x86_64-bp.c src/dbg/arch/x86_64.c src/dbg/arch/x86_64.h src/dbg/bp.c src/dbg/darwin/debug.c src/dbg/darwin/fd.c src/dbg/debug.c src/dbg/debug.h src/dbg/dump.c src/dbg/fd.c src/dbg/io.c src/dbg/lib.c src/dbg/libps2fd.h src/dbg/mem.c src/dbg/mem.h src/dbg/os.h src/dbg/parser.h src/dbg/regs.c src/dbg/signal.c src/dbg/thread.h src/dbg/unix/debug.c src/dbg/unix/fd.c src/dbg/unix/syscall.c src/dbg/win32/debug.c src/dbg/win32/fd.c src/environ.c src/flags.c src/flags.h src/grava.c src/include/bfd.h src/io.c src/macros.c src/macros.h src/main.c src/pas.c src/plug/io/bfdbg.c src/plug/io/debug.c src/plug/io/ewf.c src/plug/io/gdb.c src/plug/io/gdbwrap.c src/plug/io/gdbx.c src/plug/io/gxemul.c src/plug/io/haret.c src/plug/io/malloc.c src/plug/io/mmap.c src/plug/io/pcap.c src/plug/io/posix.c src/plug/io/remote.c src/plug/io/serial.c src/plug/io/shm.c src/plug/io/socket.c src/plug/io/trk.c src/plug/io/w32.c src/plug/io/winedbg.c src/plugin.h src/print.c src/print.h src/project.c src/rabin/dietelf.c src/rabin/dietelf.h src/rabin/dietelf_static.h src/rabin/dietelf_types.h src/rabin/dietmach0.c src/rabin/dietmach0.h src/rabin/dietmach0_utils.c src/rabin/dietpe.c src/rabin/dietpe.h src/rabin/dietpe_static.h src/rabin/dietpe_types.h src/rabin/javasm.c src/rabin/pe.h src/rabin/rabin.c src/radare.c src/radare.h src/radiff/bytediff.c src/radiff/main.c src/radiff/radiff.h src/rahash/crc16.c src/rahash/crc32.c src/rahash/entropy.c src/rahash/hamdist.c src/rahash/hash.c src/rahash/hash.h src/rahash/md4.c src/rahash/rahash.c src/rahash/sha2.h src/ranges.c src/ranges.h src/rasm/arm.c src/rasm/java.c src/rasm/main.c src/rasm/nasm.c src/rasm/olly.c src/rasm/ppc.c src/rasm/rasm.c src/rasm/rasm.h src/rasm/rsc.c src/rasm/x86.c src/rdb.c src/rdb.h src/rio.c src/rio.h src/search.c src/section.c src/section.h src/stripstr.c src/trace.c src/types.h src/undo.c src/undo.h src/utils.c src/utils.h src/vars.c src/visual.c src/vm.c src/vm.h src/xrefs.c
+description:
+* Major basic type renaming
+  - u16->ut16, u32->ut32, u64->ut64
+  - Avoid some build problems on powerpc-OSX
+
+
+changeset:   1165:dbd25ff5d942
+user:        root@iPod-touch
+date:        Tue Jul 07 12:08:34 2009 +0200
+files:       src/rabin/rabin.c src/utils.c
+description:
+* Disable rabin -z strings on osx
+* Do not use 'fstat' to avoid problems on broken iphone SDK
+
+
+changeset:   1164:cefbc5e33b01
+user:        pancake@localhost.localdomain
+date:        Thu Jul 02 23:10:49 2009 +0000
+files:       src/print.c src/socket.c
+description:
+* Fix octal dump 'po' command
+
+
+changeset:   1163:98edc54e5788
+user:        nibble
+date:        Sun Jun 28 12:45:02 2009 +0200
+files:       src/dbg/arch/i386-linux64.h src/dbg/arch/x86_64.c
+description:
+* Fixed !reg for x86_64
+
+
+changeset:   1162:3a05081e0546
+user:        pancake@localhost.localdomain
+date:        Fri Jun 26 11:08:24 2009 +0000
+files:       src/dbg/arch/arm.c src/dbg/arch/i386-linux64.h src/dbg/arch/i386.c src/dbg/arch/mips64.c src/dbg/arch/powerpc.c src/dbg/arch/x86_64.c src/dbg/system.c
+description:
+* Added support to change the r8-r15 regs in x86-64
+* Added new !reg= command to get a list of registers
+  - Implement it on every debugger backend
+
+
+changeset:   1161:848269cd432e
+user:        pancake@localhost.localdomain
+date:        Fri Jun 26 00:36:45 2009 +0000
+files:       TODO src/print.c src/radare.c
+description:
+* Fix segfault in @@= iterator
+  - Do not stop when offset of flag is 0
+* Fix format string bug in pR command
+
+
+changeset:   1160:7fd40e0c28c4
+user:        pancake@localhost.localdomain
+date:        Thu Jun 18 10:54:20 2009 +0000
+files:       TODO api/ruby/radare/api.rb src/rax.c src/utils.c
+description:
+* Fix rax bin2hex conversion
+* Reorganization of the TODO points
+* Add support for floating values in get_offset
+  ? 33.4f is the same as ?f 33.4
+
+
+changeset:   1159:a825abc80930
+user:        pancake@localhost.localdomain
+date:        Wed Jun 17 19:03:57 2009 +0000
+files:       api/ruby/radare/remote.rb
+description:
+* Some fixups in the remote ruby api for cmd and system
+
+
+changeset:   1158:273d24bca572
+user:        pancake@localhost
+date:        Wed Jun 17 10:25:44 2009 -0700
+files:       src/visual.c
+description:
+* Fix segfault related to the solaris libc's printf in visual
+
+
+changeset:   1157:356ec74753d1
+user:        pancake@localhost.localdomain
+date:        Wed Jun 17 01:23:46 2009 +0000
+files:       TODO api/ruby/radare/remote.rb src/rasc/rasc.c
+description:
+* rasc -x doesnt shows spaces
+* Implement RAP_WRITE in rap server for ruby api
+
+
+changeset:   1156:7b2b7b965aaf
+parent:      1155:a8945592538e
+parent:      1154:2401fedf09b2
+user:        pancake@localhost.localdomain
+date:        Wed Jun 17 00:53:36 2009 +0000
+description:
+* Merge heads
+
+
+changeset:   1155:a8945592538e
+parent:      1152:9717a7c8d630
+user:        pancake@localhost.localdomain
+date:        Wed Jun 17 00:53:11 2009 +0000
+files:       TODO api/ruby/radare/remote.rb src/plug/io/remote.c src/print.c
+description:
+* Minor fixups in the ruby remote api
+* Return -1 directly when cannot connect on rap:// listen in core
+* Redefine 'am' format strings instead of appending them
+* Add support for following pointers for following nested structures
+  - am stack zx shell hex
+  - pm x[*stack] @ esp  # note the 'asterisk' :)
+
+
+changeset:   1154:2401fedf09b2
+parent:      1153:3f6fe24baebf
+parent:      1152:9717a7c8d630
+user:        nibble
+date:        Wed Jun 17 01:30:05 2009 +0200
+description:
+* Merge
+
+
+changeset:   1153:3f6fe24baebf
+parent:      1151:16e5be3ba863
+user:        nibble
+date:        Wed Jun 17 01:24:01 2009 +0200
+files:       src/radare.c src/rsc/pool/dwarf-addr src/rsc/pool/dwarf-addrs
+description:
+* Fix bug regarding config.realfile
+* Fix dwarf rsc scripts
+
+
+changeset:   1152:9717a7c8d630
+user:        pancake@localhost.localdomain
+date:        Tue Jun 16 23:56:28 2009 +0000
+files:       api/Makefile api/python/client.py api/python/example.py api/python/radare/remote.py api/ruby/client.rb api/ruby/radare/api.rb api/ruby/radare/remote.rb api/ruby/server.rb src/plug/hack/Makefile src/plug/hack/lua.c src/plug/hack/ruby.c src/plug/io/gdb.c src/plug/io/remote.c src/print.c
+description:
+* Fix install of new ruby api
+* Initial working implementation of the ruby remote api
+  - For server and client
+  - Added examples
+* Fix cmd and system for python remote bindings
+* Properly close the connections and start listening again
+  on the ruby and python bindings for the remote server
+* Drop '2>/dev/null' when building python and perl plugins
+* Fix 'pz' command when block doesnt ends with '\0' (only happens
+  when block > filesize. Current implementation is slower but more secure
+
+
+changeset:   1151:16e5be3ba863
+user:        pancake <@youterm.com>
+date:        Tue Jun 16 17:18:42 2009 +0200
+files:       api/lua/anal.lua api/lua/fuzzer-loop.lua api/lua/fuzzer-target.c api/lua/opcleaner.lua api/lua/posix/Makefile api/lua/posix/modemuncher.c api/lua/posix/posix.c api/lua/pushpop.lua api/lua/search-demo.lua api/lua/vozme.lua api/perl/rscript.pl api/python/bochs.py api/python/client.py api/python/example.py api/python/standalone.py scripts/anal.lua scripts/example.py scripts/example.rb scripts/fuzzer-loop.lua scripts/fuzzer-target.c scripts/lua/posix/Makefile scripts/lua/posix/modemuncher.c scripts/lua/posix/posix.c scripts/opcleaner.lua scripts/pushpop.lua scripts/radapy-example.py scripts/radapy.py scripts/radapy_bochs.py scripts/radapy_client.py scripts/rscript.pl scripts/search-demo.lua scripts/shell.ra scripts/standalone.py scripts/vozme.lua
+description:
+* Some more scripting examples reorganization
+
+
+changeset:   1150:e2b27646947b
+user:        pancake <@youterm.com>
+date:        Tue Jun 16 16:48:04 2009 +0200
+files:       Makefile.acr TODO api/Makefile api/README api/TODO api/lua/radare/api.lua api/perl/Radare/Remote.pm api/perl/test.pl api/python/anal.py api/python/radare/__init__.py api/python/radare/analysis.py api/python/radare/api.py api/python/radare/remote.py api/python/server.py api/ruby/Makefile api/ruby/client.rb api/ruby/radare/api.rb api/ruby/radare/remote.rb api/ruby/server.rb scripts/radapy-example.py scripts/radapy.py src/cmds.c src/plug/hack/analysis/Makefile src/plug/hack/analysis/h.c src/plug/hack/analysis/ranal.py src/plug/hack/analysis/test.py src/plug/hack/perl/Radare/Remote.pm src/plug/hack/perl/test.pl src/plug/hack/radare.lua src/plug/hack/radare.py src/plug/hack/radare.rb src/plug/hack/ruby/Makefile src/plug/hack/ruby/radare/api.rb src/plug/hack/ruby/radare/remote.rb src/plug/hack/ruby/test.rb src/print.c
+description:
+* Added api/ directory as the root entrypoint for
+  language binding APIs (python/ruby/perl/...)
+* Update TODO file
+
+
+changeset:   1149:8b52a7244060
+user:        nibble
+date:        Tue Jun 16 13:27:10 2009 +0200
+files:       src/arch/ppc/code.c
+description:
+* Fix bug in ppc code analysis
+
+
+changeset:   1148:db22f44f4fb6
+user:        pancake@localhost.localdomain
+date:        Tue Jun 16 12:28:04 2009 +0000
+files:       scripts/radapy.py src/plug/hack/ruby/radare/remote.rb src/plug/hack/ruby/test.rb
+description:
+* Some more random work for the ruby remote api
+
+
+changeset:   1147:5c3403d523cb
+user:        pancake@localhost.localdomain
+date:        Mon Jun 15 23:09:53 2009 +0000
+files:       configure configure.acr src/dbg/arch/powerpc.c src/plug/hack/ruby/Makefile src/plug/hack/ruby/radare/api.rb src/plug/hack/ruby/radare/remote.rb src/plug/hack/ruby/test.rb
+description:
+* Initial import of the ruby remote api
+  - Added semi-working version of RapServer
+  - RapClient is still to be implemented
+  - Includes a simple test program
+* Bump version to 1.4.2b
+* Fix dbg/arch/powerpc.c build on javi's osx-ppc :?
+
+
+changeset:   1146:700fb4cb81ca
+user:        pancake <@youterm.com>
+date:        Mon Jun 15 18:17:17 2009 +0200
+files:       src/data.c
+description:
+* Fix segfault only appearing when compiling with -O2
+
+
+changeset:   1145:cc737f36b162
+user:        pancake@localhost.localdomain
+date:        Sun Jun 14 12:42:52 2009 +0000
+files:       HISTORY TODO src/btree.c src/btree.h src/cons.c src/flags.c src/flags.h src/main.h src/objects.mk src/plug/hack/radare.rb src/rabin/dietmach0.c
+description:
+* Fix endian bug in yesno() function
+* Complete the HISTORY file until 1.4.1
+* Added some stuff in the TODO
+* Initial import of btree.c
+  - USE_BTREE (=0)
+  - Some integration into flags.c (disabled atm)
+* Fix ruby's bin2hex and hex2bin
+* Fix load of mach0-ppc bins (endian+paddr)
+
+
+changeset:   1144:262fe74eb556
+user:        pancake@
+date:        Sun Jun 14 04:44:11 2009 +0000
+files:       src/dbg/unix/debug.c src/rabin/dietmach0.h
+description:
+* Fix freebsd build
+
+
+changeset:   1143:184968db9c8d
+user:        nibble
+date:        Fri Jun 12 19:53:45 2009 +0200
+files:       src/rasm/Makefile src/rasm/rasm.h src/rasm/wscript_build src/wscript_build
+description:
+* Applied dsoftware patch, thanks! :)
+
+
+changeset:   1142:e3a85684680f
+user:        pancake <@youterm.com>
+date:        Fri Jun 12 19:31:29 2009 +0200
+files:       ChangeLog src/cmds.c
+description:
+* Release 1.4.1
+* Drop unnecessary code in ?f
+
+
 === 1.4.1 === 2009-06-12
 
 changeset:   1141:69a748463390
