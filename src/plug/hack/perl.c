@@ -127,6 +127,7 @@ void eperl_destroy()
 /* TODO: handle multi-line */
 void perl_hack_cmd(char *input)
 {
+	STRLEN n_a;
 	char str[1025];
 	char *ptr;
 	char *ptrarr[3];
@@ -153,24 +154,29 @@ void perl_hack_cmd(char *input)
 		perl_parse(my_perl, xs_init, 3, perl_embed, (char **)NULL);
 	}
 
+		eval_pv("$|=1;", TRUE);
 	if (input && input[0]!='\0') {
 		char *perl_embed[] = { "", input, 0 };
 		perl_parse(my_perl, xs_init, 2, perl_embed, (char **)NULL);
 		//call_argv(input, G_DISCARD | G_NOARGS, args);
 		perl_run(my_perl);
+		//printf("RET=%d\n", eval_pv(input, TRUE));
+
 		return;
 	}
 	while(1) {
-		char *args[]={ NULL };
+		char *args[] = { NULL };
 		printf("perl> ");
 		fflush(stdout);
 		fgets(str, 1023, stdin);
 		if (feof(stdin))
 			break;
 		str[strlen(str)-1]='\0';
-	 	if (!strcmp(str, "q"))
+		if (!strcmp(str, "q"))
 			break;
-		eval_pv(str, TRUE);
+		eval_pv(str, FALSE);
+		if(SvTRUE(ERRSV))
+			fprintf(stderr, "perl eval error: %s\n", SvPV(ERRSV,n_a));
 	}
 	eperl_destroy();
 }
