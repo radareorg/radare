@@ -9,8 +9,8 @@
 # license: gpl (>=2)
 #
 
-my $a=$ARGV[0];
-my $b=$ARGV[1];
+my $a = $ARGV[0];
+my $b = $ARGV[1];
 
 die "Usage: bindiff [a-file] [b-file]\n".
     "f.e.:  bindiff a.out b.out | rsc bdcolor 3\n"
@@ -26,21 +26,23 @@ $SIG{INT}=\&domybest;
 
 sub bin_to_hex_column {
 	my($filename, $column) = @_;
-	open LOG, "$column";
-	open A, "<$filename" || die "cannot open $filename";
-	while(1) {
-		last if 0 == read(A,$buf,1);
+	open LOG, '>', $column || die "Cannot open $column";
+	open FD, '<', $filename || die "Cannot open $filename";
+  	for(;;) {
+		last if 0 == read(FD, $buf, 1);
 		$str = sprintf("%02x\n", ord($buf));
 		print LOG $str;
 	}
 	close LOG;
-	close A;
+	close FD;
 }
 
+die "Cannot read any of these files.\n" if (-r $a or -r $b);
+
 $tmpa="/tmp/.a.$$.".int rand(0xfef);
-bin_to_hex_column($a, ">$tmpa");
+bin_to_hex_column($a, $tmpa);
 $tmpb="/tmp/.b.$$.".int rand(0xefe);
-bin_to_hex_column($b, ">$tmpb");
+bin_to_hex_column($b, $tmpb);
 
 system("diff -yW 15 $tmpa $tmpb"); # | rsc bdcolor 3
 

@@ -285,12 +285,11 @@ int make_tmp_file(char *str)
 void progressbar(int nhit, ut64 addr, ut64 size)
 {
 #if RADARE_CORE
-	int tmp, cols = config_get_i("scr.width");
+	int tmp, cols = config_get_i("scr.width")-20;
 #else
-	int tmp, cols = 78;
+	int tmp, cols = 58;
 #endif
 	int pc = (int)((100*addr)/size);
-	cols-=20;
 
 	(pc<0)?pc=0:(pc>100)?pc=100:0;
 	fprintf(stderr, "\x1b[K 0x%08llx %2d%% [", addr, pc);
@@ -311,6 +310,7 @@ ut64 get_pointer(ut64 addr, int size)
 	ut32 newa32 = 0;
 	ut64 newa64 = 0;
 	ut64 sk = config.seek;
+
 	radare_seek(addr, SEEK_SET);
 	switch(size) {
 	case 1:
