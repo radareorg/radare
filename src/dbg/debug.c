@@ -439,7 +439,7 @@ void debug_environment()
 		FILE *fd;
 		int quoted, len;
 		eprintf("Loading file.dbg_env from '%s'\n", ptr);
-		clearenv();
+		environ = NULL;
 		// hack '_' to emulate the real one of the process
 		debug_environment_();
 		fd = fopen(ptr, "r");

@@ -552,7 +552,10 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				}
 			}
 			if (flags & RADIS_COMMENTS)
-				myrow+=data_printd(bytes);
+				myrow += data_printd(bytes);
+			if ((reflines) &&  (flags & RADIS_LINES))
+				code_lines_print(reflines, sk, 0);
+			if (data_xrefs_print(seek, -1))
 			if ((reflines) &&  (flags & RADIS_LINES))
 				code_lines_print(reflines, sk, 0);
 		}
@@ -1110,7 +1113,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 		if (flags) flags |= RADIS_FLAGS;
 		if (flagsline) flags |= RADIS_FLAGSLINE;
 		if (flagsall) flags |= RADIS_FLAGSALL;
-		//if (xrefsto) flags |= RADIS_XREFSTO;
+//		if (xrefsto) flags |= RADIS_XREFSTO;
 		if (lines) flags |= RADIS_LINES;
 		if (linescall) flags |= RADIS_LINESCALL;
 		if (reladdr) flags |= RADIS_RELADDR;

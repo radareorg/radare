@@ -5,6 +5,7 @@
 
 my %ops=(
 # intel
+	"movzx" => "move dst register size padding with zeroes",
 	"sar" => "arithmetic right shift",
 	"sal" => "arithmetic left shift",
 	"shl" => "logic left shift (0 padding)",

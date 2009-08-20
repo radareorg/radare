@@ -9,6 +9,7 @@
 TODO 1.4.2
 ==========
 
+* BUG: write on virtualized addresses (like the LOAD ELF regions) is not ok
 * TODO: implement file.dbg_arg
 * TODO: add documentation for file.dbg_env and dbg.env_ldso
 

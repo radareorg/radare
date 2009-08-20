@@ -5,7 +5,7 @@ import os.path
 import shutil
 import Options
 
-VERSION='1.3'
+VERSION='1.4.3-hg'
 APPNAME='radare'
 
 srcdir = '.'
@@ -218,10 +218,13 @@ def build(bld):
 	#if Params.g_commands['clean']:
 	#	os.system("echo unknown clean")
 
-	bld.install_files('${PREFIX}/lib/python2.5', 'src/plug/hack/radare.py')
-	bld.install_files('${PREFIX}/lib/python2.6', 'src/plug/hack/radare.py')
-	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.lua')
-	bld.install_files('${PREFIX}/lib/radare', 'src/plug/hack/radare.rb')
+	bld.install_files('${PREFIX}/lib/python2.5/site-packages/radare',
+		'api/python/radare/*')
+	bld.install_files('${PREFIX}/lib/python2.6/site-packages/radare',
+		'api/python/radare/*')
+	bld.install_files('${PREFIX}/lib/radare/lua', 'api/lua/radare/*')
+	bld.install_files('${PREFIX}/lib/ruby/1.8/radare',
+		'api/ruby/radare/*')
 	# RSC scripts
 	#if bld.env['HAVE_RUBY'] == 1:
 	try:
