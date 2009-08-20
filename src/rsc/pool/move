@@ -5,13 +5,15 @@
 # Thanks esteve! ;)
 #
 # TODO: Create destination file if it does not exists
+# TODO: Truncate file if already exists?
+# TODO: Do not use bs=1 (too slooow)
 #
 # --pancake
 #
 
-A=$1
+A="$1"
 Aseek=$2
-B=$3
+B="$3"
 Bseek=$4
 Len=$5
 
@@ -42,6 +44,6 @@ if [ "$A" = "$B" ]; then
 fi
 
 Count=""; [ -n "$Len" ] && Count="count=${Len}"
-dd if=${A} of=${B2} bs=1 skip=${Aseek} seek=${Bseek} ${Count} conv=notrunc
+dd "if=${A}" "of=${B2}" bs=1 skip=${Aseek} seek=${Bseek} ${Count} conv=notrunc
 
 [ "$A" = "$B" ] && mv $B2 $B

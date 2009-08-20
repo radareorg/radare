@@ -781,6 +781,11 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	unsigned long addr = seek;
 	ut64 len = olen;
 
+	if (olen<0) {
+		eprintf("Too many length\n");
+		return;
+	}
+
 	last_print_format = fmt;
 	if (buf == NULL)
 		return;
