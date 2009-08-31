@@ -1014,6 +1014,7 @@ void config_init(int first)
 	config_set("dbg.stepo", "false"); // step over for !contu (debug_step())
 	config_set("dbg.dwarf", "false");
 	config_set("dbg.maps", "true");
+	config_set("dbg.framereg", "ebp");
 	config_set("dbg.contall", "true");
 	config_set("dbg.sections", "true");
 	config_set("dbg.strings", "false");

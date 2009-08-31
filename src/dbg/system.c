@@ -229,7 +229,13 @@ int debug_reg(const char *arg)
 {
 	if (arg[0]) {
 		if (arg[0]=='?') {
-			eprintf("Usage: !reg[2][*] [reg [=value]]\n");
+			eprintf("Usage: !reg[io][2][*] [reg [=value]]\n");
+			eprintf("  !regio      : see !regio?\n");
+			eprintf("  !reg        : list registers\n");
+			eprintf("  !reg*       : list registers as radare commands\n");
+			eprintf("  !reg2       : list extra registers\n");
+			eprintf("  !reg2 eax   : get register value\n");
+			eprintf("  !reg2 eax=3 : set register value\n");
 		} else
 		if (arg[0]=='2') {
 			debug_registers(2);

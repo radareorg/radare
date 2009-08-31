@@ -1598,6 +1598,7 @@ CMD_DECL(flag)
 	char *text2;
 	char *eof = input + strlen(input)-1;
 
+	if (input[0]!='-')
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
 	for(;iswhitespace(eof[0]);eof=eof-1) eof[0]='\0';

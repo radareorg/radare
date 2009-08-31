@@ -692,6 +692,24 @@ void flag_space(const char *name)
 	}
 }
 
+void flag_remove_at(ut64 addr)
+{
+	struct list_head *pos, *n;
+	
+	list_for_each(pos, &flags) {
+		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (flag->offset == addr) {
+#if USE_BTREE
+			btree_del(f->tree, item, cmp, NULL);
+			btree_del(f->ntree, item, ncmp, NULL);
+#endif
+			list_del(&(flag->list));
+			break;
+		}
+			
+	}
+}
+
 void flag_remove(const char *name)
 {
 	struct list_head *pos, *n;

@@ -40,6 +40,40 @@ static struct list_head data;
 static struct list_head comments;
 static struct list_head xrefs;
 
+ut64 var_functions_show(int idx)
+{
+	const char *mark = nullstr;
+	int i = 0;
+	struct list_head *pos;
+	ut64 seek = config.seek;
+	ut64 addr = config.seek;
+	int window = 15;
+	int wdelta = (idx>5)?idx-5:0;
+
+	list_for_each(pos, &data) {
+		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
+		if (d->type == DATA_FUN) {
+			if (i>=wdelta) {
+				if (i> window+wdelta) {
+					cons_printf("   ...\n");
+					break;
+				}
+				if (seek > d->from+config.vaddr && seek < d->to+config.vaddr)
+					mark = "<SEEK IS HERE>";
+				else mark = nullstr;
+				if (idx == i) {
+					addr = d->from;
+					cons_printf(" * ");
+				} else cons_printf("   ");
+				cons_printf("0x%08llx (%s) %s\n", d->from+config.vaddr,
+					flag_name_by_offset(d->from), mark);
+			}
+			i++;
+		}
+	}
+	return addr;
+}
+
 int data_set_len(ut64 off, ut64 len)
 {
 	struct list_head *pos;
@@ -96,7 +130,8 @@ int data_get_fun_for(ut64 addr, ut64 *from, ut64 *to)
 	list_for_each(pos, &data) {
 		struct data_t *d = (struct data_t *)list_entry(pos, struct data_t, list);
 		if (d->type == DATA_FUN) {
-			if (d->from < addr && d->from > lastfrom) {
+			//if (d->from < addr && d->from > lastfrom) {
+			if (d->from < addr && addr < d->to ) { //&& d->from > lastfrom) {
 				rd = d;
 			}
 		}
@@ -166,7 +201,7 @@ struct data_t *data_add_arg(ut64 off, int type, const char *arg)
 	return d;
 }
 
-void data_del(ut64 addr, int type,int len/* data or code */)
+void data_del(ut64 addr, int type, int len/* data or code */)
 {
 	struct data_t *d;
 	struct list_head *pos;

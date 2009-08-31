@@ -77,5 +77,6 @@ struct var_type_t *data_var_type_get(const char *datatype);
 const char *data_var_type_format(const char *datatype);
 void data_del(ut64 addr, int type,int len/* data or code */);
 void data_del_range(ut64 from, ut64 to);
+ut64 var_functions_show(int idx);
 
 #endif

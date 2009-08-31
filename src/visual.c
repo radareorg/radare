@@ -169,6 +169,7 @@ void visual_show_help()
 	" H,L        scroll left, right by 2 bytes (16 bits).\n"
 	" p,P        switch between hex, bin and string formats\n"
 	" x          show xrefs of the current offset\n"
+	" v          visual code analysis mode (edit/view functions, variables, ...)\n"
 	" w          write hexpair bytes in cursor\n"
 	" q          exits visual mode\n"
 	" z, Z       zoom full file, reset zoom preferences\n");
@@ -1266,7 +1267,10 @@ CMD_DECL(visual)
 
 	__go_read_a_key:
 		/* user input */
-		key = cons_readchar();
+		if (input[0]) {
+			key = input[0];
+			strcpy(input, input+1);
+		} else key = cons_readchar();
 
 		/* insert mode . 'i' key */
 		switch(config.insert_mode) {
@@ -1907,6 +1911,9 @@ CMD_DECL(visual)
 			config.scrdelta += 20;
 			flags_visual_menu();
 			config.scrdelta -= 20;
+			break;
+		case 'v':
+			var_visual_menu();
 			break;
 		case '<':
 			// fold

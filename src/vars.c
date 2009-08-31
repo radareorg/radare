@@ -2,6 +2,7 @@
 
 
 #include "main.h"
+#include "data.h"
 #include "list.h"
 
 int var_add(ut64 addr, ut64 eaddr, int delta, int type, const char *vartype, const char *name, int arraysize);
@@ -80,7 +81,7 @@ int var_add_access(ut64 addr, int delta, int type, int set)
 	_reloop:
 	list_for_each(pos, &vars) {
 		v = (struct var_t *)list_entry(pos, struct var_t, list);
-		if (addr >= v->addr) {
+		if (addr >= v->addr && addr <= v->eaddr ) {
 			//if (!strcmp(name, v->name)) {
 			if (delta == v->delta && type == v->type) {
 				struct var_xs_t *xs = (struct var_xs_t *)malloc(sizeof(struct var_xs_t));
@@ -103,7 +104,7 @@ int var_add_access(ut64 addr, int delta, int type, int set)
 				delta = -delta;
 				sprintf(varname, "arg_%d", delta);
 			} else sprintf(varname, "var_%d", delta);
-			//eprintf("0x%08llx: NEW LOCAL VAR %d\n", from, delta);
+			//eprintf("0x%08llx: NEW LOCAL VAR %d at %08llx\n", from, delta, addr);
 			var_add(from, to, delta, VAR_T_LOCAL, "int32", varname, 1);
 			if (reloop) {
 				#warning THIS IS BUGGY: SHOULD NEVER HAPPEN
@@ -150,17 +151,18 @@ int var_print_value(struct var_t *v)
 	if (t == NULL) {
 		ut32 value = var_dbg_read(v->delta);
 		// TODO: use var type to 
-		cons_printf("%x", value);
+		cons_printf("0x%x", value);
 	} else {
 		u8 buf[1024];
 		int verbose = config.verbose;
 		int size = v->arraysize * t->size;
-		ut64 foo = get_offset("ebp");
+		ut64 foo = get_offset(config_get("dbg.framereg")); //"ebp");
 		foo -= v->delta;
 		radare_read_at(foo, buf, size);
 		//eprintf("PRINT_MEM(%llx,%d,%s)\n", foo, size, t->fmt);
 		config.verbose = 0;
 		print_mem(foo, buf, size, t->fmt, config.endian);
+		print_mem(foo, buf, size, "x", config.endian);
 		config.verbose = verbose;
 	}
 	return 0;
@@ -179,8 +181,11 @@ int var_list_show(ut64 addr)
 		if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
 			ut32 value = var_dbg_read(v->delta);
 			if (v->arraysize>1)
-				cons_printf("%s %s %s[%d] = ", var_type_str(v->type), v->vartype, v->arraysize, v->name);
-			else cons_printf("%s %s %s = ", var_type_str(v->type), v->vartype, v->name);
+				cons_printf("%s %s %s[%d] = ",
+					var_type_str(v->type), v->vartype,
+					v->arraysize, v->name);
+			else cons_printf("%s %s %s = ", var_type_str(v->type),
+				v->vartype, v->name);
 			var_print_value(v);
 			/* TODO: detect pointer to strings and so on */
 			if (string_flag_offset(buf, value, 0))
@@ -266,8 +271,14 @@ int var_cmd(const char *str)
 		switch(str[1]) {
 		case '\0': return var_list(0, 0);
 		case '.':  return var_list(config.seek, 0);
-		case 's':  return var_add_access(config.seek, atoi(str+2), type, 1);
-		case 'g':  return var_add_access(config.seek, atoi(str+2), type, 0);
+		case 's':  
+			if (str[2]!='\0')
+				return var_add_access(config.seek, atoi(str+2), type, 1);
+			break;
+		case 'g':
+			if (str[2]!='\0')
+				return var_add_access(config.seek, atoi(str+2), type, 0);
+			break;
 		}
 		str = str+1;
 		if (str[0]==' ')str=str+1;
@@ -318,3 +329,173 @@ int var_cmd(const char *str)
 // how to track a variable 
 
 #endif
+
+////// VISUAL /////////
+
+void var_index_show(ut64 addr, int idx)
+{
+	int i = 0;
+	struct list_head *pos, *pos2;
+	struct var_t *v;
+	struct var_xs_t *x;
+int window = 15;
+int wdelta = (idx>5)?idx-5:0;
+
+	list_for_each(pos, &vars) {
+		v = (struct var_t *)list_entry(pos, struct var_t, list);
+	if (addr == 0 || (addr >= v->addr && addr <= v->eaddr)) {
+		if (i>=wdelta) {
+			if (i> window+wdelta) {
+				cons_printf("...\n");
+				break;
+			}
+			if (idx == i) printf(" * ");
+			else printf("   ");
+			cons_printf("0x%08llx - 0x%08llx type=%s type=%s name=%s delta=%d array=%d\n",
+				v->addr, v->eaddr, var_type_str(v->type),
+				v->vartype, v->name, v->delta, v->arraysize);
+			list_for_each_prev(pos2, &v->access) {
+				x = (struct var_xs_t *)list_entry(pos2, struct var_xs_t, list);
+				cons_printf("  0x%08llx %s\n", x->addr, x->set?"set":"get");
+			}
+		}
+		i++;
+	}
+		//}
+	}
+}
+
+/* Like emenu but for real */
+void var_visual_menu()
+{
+	struct list_head *pos;
+#define MAX_FORMAT 2
+	const char *ptr;
+	char *fs = NULL;
+	char *fs2 = NULL;
+	int option = 0;
+	int _option = 0;
+	int delta = 9;
+	int menu = 0;
+	int i,j, ch;
+	int hit;
+	int level = 0;
+	int show;
+	char old[1024];
+	char cmd[1024];
+	ut64 size, addr = config.seek;
+	old[0]='\0';
+
+	while(1) {
+		cons_gotoxy(0,0);
+		cons_clear();
+		cons_printf("Visual code analysis manipulation\n");
+		switch(level) {
+		case 0:
+			cons_printf("-[ functions ]------------------- \n");
+			cons_printf("(a) add       (x)xrefs       (q)quit\n");
+			cons_printf("(m) modify    (c)calls       (g)go\n");
+			cons_printf("(d) delete    (v)variables\n");
+			addr = var_functions_show(option);
+			break;
+		case 1:
+			cons_printf("-[ variables ]------------------- 0x%08llx\n", addr);
+			cons_printf("(a) add       (x)xrefs       (q)quit\n");
+			cons_printf("(m) modify    (c)calls       (g)go\n");
+			cons_printf("(d) delete    (v)variables\n");
+			var_index_show(addr, option);
+			break;
+		case 2:
+			cons_printf("-[ calls ]----------------------- 0x%08llx\n", addr);
+			sprintf(old, "pdf@0x%08llx~call", addr);
+			cons_flush();
+			radare_cmd(old, 0);
+			//cons_printf("\n");
+			break;
+		case 3:
+			cons_printf("-[ xrefs ]----------------------- 0x%08llx\n", addr);
+			sprintf(old, "Cx~0x%08llx", addr);
+			radare_cmd(old, 0);
+			//cons_printf("\n");
+			break;
+		}
+		cons_flushit();
+// show indexable vars
+		ch = cons_readchar();
+		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
+		switch(ch) {
+		case 'a':
+			switch(level) {
+			case 0:
+				cons_set_raw(0);
+				printf("Address: ");
+				fflush(stdout);
+				if (!fgets(old, sizeof(old), stdin)) break;
+				old[strlen(old)-1] = 0;
+				if (!old[0]) break;
+				addr = get_math(old);
+				printf("Size: ");
+				fflush(stdout);
+				if (!fgets(old, sizeof(old), stdin)) break;
+				old[strlen(old)-1] = 0;
+				if (!old[0]) break;
+				size = get_math(old);
+				printf("Name: ");
+				fflush(stdout);
+				if (!fgets(old, sizeof(old), stdin)) break;
+				old[strlen(old)-1] = 0;
+				flag_set(old, addr, 0);
+				sprintf(cmd, "CF %lld @ 0x%08llx", size, addr);
+				radare_cmd(cmd, 0);
+				cons_set_raw(1);
+				break;
+			case 1:
+				break;
+			}
+			break;
+		case 'd':
+			switch(level) {
+			case 0:
+				data_del(addr, DATA_FUN, 0);
+				// XXX correcly remove all the data contained inside the size of the function
+				flag_remove_at(addr);
+				break;
+			}
+			break;
+		case 'x':
+			level = 3;
+			break;
+		case 'c':
+			level = 2;
+			break;
+		case 'v':
+			level = 1;
+			break;
+		case 'j':
+			option++;
+			break;
+		case 'k':
+			if (--option<0)
+				option = 0;
+			break;
+		case 'g': // go!
+			radare_seek(addr, SEEK_SET);
+			return;
+		case ' ':
+		case 'l':
+			level = 1;
+			_option = option;
+			break;
+		case 'h':
+		case 'b': // back
+			level = 0;
+			option = _option;
+			break;
+		case 'q':
+			if (level==0)
+				return;
+			level = 0;
+			break;
+		}
+	}
+}

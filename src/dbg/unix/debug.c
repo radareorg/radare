@@ -174,6 +174,7 @@ int debug_print_wait(char *act)
 		debug_bp_restore(-1);
 		break;
 	default:
+		//eprintf("=== exit value: %d\n", WEXITSTATUS(ps.ws));
 		if(WS(event) != EXIT_EVENT ) {
 			/* XXX: update thread list information here !!! */
 			eprintf("=== %s: tid: %d event: %d, signal: %d (%s). stop at 0x%08llx\n", 
