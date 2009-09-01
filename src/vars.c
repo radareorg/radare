@@ -407,7 +407,7 @@ void var_visual_menu()
 			break;
 		case 2:
 			cons_printf("-[ calls ]----------------------- 0x%08llx\n", addr);
-			sprintf(old, "pdf@0x%08llx~call", addr);
+			sprintf(old, "aCf@0x%08llx", addr);
 			cons_flush();
 			radare_cmd(old, 0);
 			//cons_printf("\n");

@@ -2,8 +2,9 @@
 #
 # Binary diff utility for radare
 #
-# TODO
-#  -  allow to handle big files with low memory footprint
+# NOTES
+#  - allow to handle big files with low memory footprint. ha ha ha
+#  - we have to do an adaptative diff method using bytediff+bindiff
 #
 # author:  pancake <pancake@youterm.com>
 # license: gpl (>=2)
@@ -11,6 +12,7 @@
 
 my $a = $ARGV[0];
 my $b = $ARGV[1];
+my $ws = 1024*1024*5; # warning size (5M)
 
 die "Usage: bindiff [a-file] [b-file]\n".
     "f.e.:  bindiff a.out b.out | rsc bdcolor 3\n"
@@ -37,7 +39,10 @@ sub bin_to_hex_column {
 	close FD;
 }
 
-die "Cannot read any of these files.\n" if (-r $a or -r $b);
+die "Cannot read any of these files.\n" unless (-r $a and -r $b);
+
+print STDERR "Warning: Probably so big files to handle with gnu diff, try radiff -b\n"
+	if (-s $a > $ws or -s $b > $ws);
 
 $tmpa="/tmp/.a.$$.".int rand(0xfef);
 bin_to_hex_column($a, $tmpa);

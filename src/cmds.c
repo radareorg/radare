@@ -415,6 +415,37 @@ CMD_DECL(analyze)
 #endif
 		}
 		break;
+	case 'C':
+		{
+			char *b, *str;
+			ut64 seek = config.seek;
+			ut32 len, i = 0;
+			if (input[1]=='f'){
+				struct data_t *data = data_get(config.seek); // TODO: use get_math(input+2) ???
+				if (data) {
+				//	bs = config.block_size;
+				//	radare_set_block_size_i(data->size);
+					len = data->size;
+				}
+				//len = data_size(seek);
+			} else len = (ut32)get_math(input+1);
+			if (len<1) len = config.block_size;
+			b = malloc(len);
+			radare_read_at(seek, b, len);
+			while (i<len) {
+				if (arch_aop(seek+i, b+i, &aop)<1)
+					break;
+				if (aop.type == AOP_TYPE_CALL) {
+					cons_printf("call 0x%08llx", aop.jump);
+					str = flag_name_by_offset(aop.jump);
+					if (str&&*str) cons_printf(" ; %s\n", str);
+					cons_printf("\n");
+				}
+				i += aop.length;
+			}
+			free(b);
+		}
+		break;
 	case 'c': {
 		int c = config.verbose;
 		char cmd[1024];
@@ -695,6 +726,7 @@ CMD_DECL(analyze)
 		cons_printf(" af [size]    analyze function\n");
 		//cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");
+		cons_printf(" aC[f] [num]  analyze calls of N bytes or 'f'unction size\n");
 		cons_printf(" ad [num]     analyze N data blocks \n");
 		cons_printf(" ag [depth]   graph analyzed code (agd = dot format) (check 'gu?')\n");
 		cons_printf(" ar [args]    analyze ranges\n");

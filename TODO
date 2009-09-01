@@ -20,7 +20,7 @@ TODO 1.4.2
 
 * Allow to easily store the stack contents and get a diff
 * show info where register points to
-  - px 16@@=`!regs*~[1]`
+  - px 16@@=`!reg*~[1]`
 
 ---- bugs
 * disasm is incorrect. always returns the negative value :OO
