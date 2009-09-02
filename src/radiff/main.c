@@ -131,12 +131,26 @@ int radiff_ergodiff(const char *a, const char *b)
 	return system(buf);
 }
 
+int radiff_hexdump(const char *a, const char *b)
+{
+	char cmd[1024];
+	snprintf(cmd, 1023, "cat '%s' | ired - > a.hex", a);
+	system(cmd);
+	snprintf(cmd, 1023, "cat '%s' | ired - > b.hex", b);
+	system(cmd);
+	snprintf(cmd, 1023, "diff -u a.hex b.hex");
+	system(cmd);
+	unlink("a.hex");
+	unlink("b.hex");
+	
+}
+
 int main(int argc, char **argv)
 {
 	int c;
 	int action = 'd';
 
-	while ((c = getopt(argc, argv, "f:t:cbdesSriphn")) != -1)
+	while ((c = getopt(argc, argv, "f:t:cbdesSriphnx")) != -1)
 	{
 		switch( c ) {
 		case 'r':
@@ -159,6 +173,7 @@ int main(int argc, char **argv)
 		case 's':
 		case 'S':
 		case 'n':
+		case 'x':
 			action = c;
 			break;
 		default:
@@ -185,6 +200,8 @@ int main(int argc, char **argv)
 		return radiff_symdiff(argv[optind], argv[optind+1]);
 	case 'S':
 		return radiff_symbytediff(argv[optind], argv[optind+1]);
+	case 'x':
+		return radiff_hexdump(argv[optind], argv[optind+1]);
 	}
 
 	radiff_help();

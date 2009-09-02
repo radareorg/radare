@@ -367,10 +367,10 @@ static int config_bigendian_callback(void *data)
 	return 1;
 }
 
-static int config_scr_interactive_callback(void *data)
+static int config_scr_floodprot_callback(void *data)
 {
 	struct config_node_t *node = data;
-	cons_interactive = node->i_value?1:0;
+	cons_floodprot = node->i_value?1:0;
 	return 1;
 }
 
@@ -1106,8 +1106,8 @@ void config_init(int first)
 	node = config_set("scr.html", "false");
 	node->callback = &config_scrhtml_callback;
 	config_set_i("scr.accel", 0);
-	node = config_set("scr.interactive", "true");
-	node->callback = &config_scr_interactive_callback;
+	node = config_set("scr.floodprot", "true");
+	node->callback = &config_scr_floodprot_callback;
 
 	node = config_set("scr.palette", cons_palette_default);
 	node->callback = &config_palette_callback;

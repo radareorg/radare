@@ -42,7 +42,7 @@ static char *cons_buffer = NULL;
 char *cons_filterline = NULL;
 char *cons_teefile = NULL;
 int cons_is_html = 0;
-int cons_interactive = 1;
+int cons_floodprot = 1;
 int _print_fd = 1;
 int cons_lines = 0;
 int cons_noflush = 0;
@@ -1151,9 +1151,10 @@ void cons_render()
 	if (cons_noflush)
 		return;
 
-	if (cons_interactive && cons_buffer) {
+	if (cons_floodprot && cons_buffer) {
 		cons_buffer_len = strlen(cons_buffer);
 		if (cons_buffer && (cons_buffer_len > CONS_MAX_USER)) {
+			eprintf("NOTE: Use 'e scr.floodprot=false' to disable this message\n");
 			if (yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)== 0) {
 				cons_reset();
 				return;

@@ -65,7 +65,7 @@ extern const char *cons_palette_default;
 const char *cons_colors[CONS_COLORS_SIZE+1];
 extern char cons_palette[CONS_PALETTE_SIZE][8];
 const char *cons_get_buffer();
-extern int cons_interactive;
+extern int cons_floodprot;
 void cons_reset();
 void cons_clear();
 int cons_readchar();
