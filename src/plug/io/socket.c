@@ -103,14 +103,28 @@ int zocket_handle_open(const char *pathname)
 int zocket_open(const char *pathname, int flags, mode_t mode)
 {
 	char buf[1024];
-	char *ptr = buf;
+	char *port = "0", *ptr = buf;
 
 	strncpy(buf, pathname, 1000);
 
 	if (!memcmp(ptr , "socket://", 9)) {
-		ptr= ptr+9;
-		// port
-		char *port = strchr(ptr, ':');
+		ptr = ptr+9; // skip uri prefix
+
+/* EXPERIMENTAL : UNIX SOCKET SUPPORT FOR LINUX */
+#if __linux__
+{
+		struct stat st;
+		/* TODO: add support for listen */
+		if (stat(ptr, &st) == 0) {
+			if ((st.st_mode & S_IFMT) == S_IFSOCK) {
+				/* is a socket file */
+				socket_fd = socket_unix_connect(ptr);
+			} else socket_fd = -1;
+			goto beach;
+		}
+}
+#endif
+		port = strchr(ptr, ':');
 		if (port == NULL) {
 			printf("No port defined.\n");
 			return -1;
@@ -120,29 +134,24 @@ int zocket_open(const char *pathname, int flags, mode_t mode)
 			// LISTEN HERE
 			return -1;
 		}
-#if 0
-		file   = strchr(pathname+12,'/');
-		if (file == NULL) {
-			printf("No remote file specified.\n");
-			return -1;
-		}
-#endif
 		// connect
 		socket_fd = socket_connect((char*)ptr, atoi(port+1));
-		if (socket_fd>=0)
+beach:
+		if (socket_fd>=0) {
 			printf("Connected to: %s at port %d\n", ptr, atoi(port+1));
-		else	printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
+		} else	printf("Cannot connect to '%s' (%d)\n", ptr, atoi(port+1));
+
 		socket_buf = (unsigned char *)malloc(1);
 		socket_bufsz = 0;
 		config_set("file.write", "true");
-		buf[0]='\0';
+		buf[0] = '\0';
 	}
 	return socket_fd;
 }
 
 plugin_t socket_plugin = {
 	.name        = "socket",
-	.desc        = "socket stream access ( socket://host:port )",
+	.desc        = "socket stream access ( socket://host:port or socket://./socket.file )",
 	.init        = NULL,
 	.debug       = NULL,
 	.system      = NULL,

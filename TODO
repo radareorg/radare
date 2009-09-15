@@ -6,6 +6,10 @@
 
 ===========================================================
 
+* DEPRECATE !set dbg system command (!reg xx=yy works beter)
+* BUG: ? eip > aa -> fails, but !reg eip > aa works
+* Add 'e scr.xy' as a replacment for the old 'g' command // XXX
+
 TODO 1.4.2
 ==========
 * IO tracer (logs all access to memory (address+content)) f.ex:
