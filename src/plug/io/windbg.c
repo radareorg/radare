@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007, 2008
- *       pancake <youterm.com>
+ * Copyright (C) 2009
+ *       pancake <nopcode.org>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,121 +22,65 @@
 #include <radare.h>
 #include <socket.h>
 
-static int winedbg_fd = -1;
+// TODO: see socket.c and io/serial.c to see how to do async reads
 
-int winedbg_handle_fd(int fd)
+static int windbg_fd = -1;
+
+int windbg_handle_fd(int fd)
 {
-	return fd == winedbg_fd;
+	return fd == windbg_fd;
 }
 
-int winedbg_handle_open(const char *file)
+int windbg_handle_open(const char *file)
 {
-	if (!memcmp(file, "winedbg://", 10))
-		return 1;
-	return 0;
+	return (!memcmp(file, "windbg://", 10))?1:0;
 }
 
-
-static void winedbg_wait_until_prompt(int o)
+ssize_t windbg_write(int fd, const void *buf, size_t count)
 {
-	unsigned char buf;
-	int off = 0;
-
-	while(1) {
-		read(config.fd, &buf, 1);
-		if (o) write(2, &buf, 1);
-		switch(off) {
-		case 0: if (buf == '-') off =1; break;
-		case 1: if (buf == 'd') off =2; break;
-		case 2: if (buf == 'b') off =3; break;
-		case 3: if (buf == 'g') off =4; break;
-		case 4: if (buf == '>') return; else off = 0; break;
-		}
-	}
-}
-
-ssize_t winedbg_write(int fd, const void *buf, size_t count)
-{
-	// TODO: not yet implemented (pfd command ?)
-	return 0;
-	socket_printf(config.fd, "set *%08llx = <expr>\n", config.seek);
-	winedbg_wait_until_prompt(0);
+	// TODO: implement write op
         return 0;
 }
 
-ssize_t winedbg_read(int fd, void *buf, size_t count)
+ssize_t windbg_read(int fd, void *buf, size_t count)
 {
-	char tmp[1024];
-	int i;
-	int size = count;
-	int delta = config.seek%4;
-
-	if (size%16)
-		size+=(size-(size%16));
-
-	// XXX memory is algned!!!
-	for(i=0;i<count+delta;i+=4) {
-		//unsigned long *dword = (unsigned long*)buf+i;
-		unsigned int dw;
-		sprintf(tmp,"x 0x"OFF_FMTx"\n", config.seek-delta+i);
-		socket_printf(config.fd, tmp);
-		tmp[0]='\0';
-		socket_fgets(fd, tmp, 1024);
-		sscanf(tmp, "%08x", &dw);
-		endian_memcpy_e(buf+i, (u8*)&dw, 4, 1);
-		winedbg_wait_until_prompt(0);
-	}
-	memcpy(buf, buf+delta, count);
-
+	// TODO: implement read operation
+	printf("read at 0x%08llx\n", config.seek);
+	memset(buf, 0, count);
         return count;
 }
 
-int winedbg_open(const char *pathname, int flags, mode_t mode)
+int windbg_open(const char *pathname, int flags, mode_t mode)
 {
 	int fd;
 	char tmp[4096];
-	int port;
 
-	srand(getpid());
-	port = 9000+rand()%555;
-
-	config.debug = 1;
-	if (!fork()) {
-		system("pkill winedbg"); // XXX
-		system("pkill tm"); // XXX
-		sprintf(tmp, "tm -N 10 -w -n -p %d winedbg %s", port, pathname+10);
-		system(tmp);
-		printf("(%s) has exited!\n", tmp);
-		exit(1);
-	}
-	sleep(2);
-	
+	// TODO: detect if pathname is socket file or serial port
+	// TODO: atm only socket file is supported
 	// waitpid and return -1 if not exist
-	fd = socket_connect("localhost", port);
+	fd = socket_unix_connect(pathname);
 	if (fd == -1) {
 		fprintf(stderr, "Cannot connect to remote host.\n");
 		return -1;
 	}
 	config.fd = fd;
-	winedbg_fd = fd;
-	//winedbg_wait_until_prompt();
+	windbg_fd = fd;
+	config.debug = 1;
+	
 	//free(config.file);
 	config.file = strdup(pathname);
-	//strcpy(config.file, pathname); //+10);
-	socket_printf(config.fd, "\n");
-	winedbg_wait_until_prompt(0);
+	/* TODO: implement handshake with windbg */
 
 	return fd;
 }
 
-int winedbg_system(const char *cmd)
+int windbg_system(const char *cmd)
 {
 	char tmp[130];
 	if (cmd[0]=='!') {
 		socket_printf(config.fd, cmd+1);
 		socket_printf(config.fd, "\n");
 		// TODO: print out data
-		winedbg_wait_until_prompt(1);
 	} else
 	if (!strcmp(cmd, "help")) {
 		cons_printf("WineDbg help\n"
@@ -149,15 +93,14 @@ int winedbg_system(const char *cmd)
 		" !cont            continue program execution\n"
 		" !bp <addr>       set breakpoint at address\n"
 		" !reg[*]          show or flag registers\n"
-		" !!cmd            execute a winedbg command\n"
-		" !!help           winedbg help\n");
+		" !!cmd            execute a windbg command\n"
+		" !!help           windbg help\n");
 	} else
-	if (!memcmp(cmd, "bp ",3 )) {
+	if (!memcmp(cmd, "bp ", 3)) {
 		char buf[1024];
 		// TODO: Support for removal in a radare-like way
 		sprintf(buf, "break %08llx\n", get_offset(cmd+3));
 		socket_printf(config.fd, buf);
-		winedbg_wait_until_prompt(0);
 	} else
 	if (!memcmp(cmd, "set ", 4)) {
 		char *ptr = strchr(cmd+4,' ');
@@ -166,37 +109,35 @@ int winedbg_system(const char *cmd)
 		if (ptr == NULL) {
 			printf("Usage: !set [reg] [value]\n");
 		} else {
+			// TODO
+#if 0
 			ptr[0]='\0';
 			sprintf(buf, "set $%s = %s\n", cmd+4, ptr+1);
 			socket_printf(config.fd, buf);
-			winedbg_wait_until_prompt(1);
+#endif
 		}
 	} else
 	if (!strcmp(cmd, "cont")) {
-		socket_printf(config.fd, "cont\n");
-		winedbg_wait_until_prompt(1);
+		// TODO 
 	} else
 	if (!strcmp(cmd, "bt")) {
-		socket_printf(config.fd, "bt\n");
-		winedbg_wait_until_prompt(1);
+		// TODO
 	} else
 	if (!strcmp(cmd, "pids")) {
-		socket_printf(config.fd, "info process\n");
-		winedbg_wait_until_prompt(1);
+		// TODO
 	} else
 	if (!strcmp(cmd, "th")) {
-		socket_printf(config.fd, "into thread\n");
-		winedbg_wait_until_prompt(1);
+		// TODO: show threads
 	} else
 	if (!strcmp(cmd, "maps")) {
-		socket_printf(config.fd, "info maps\n");
-		winedbg_wait_until_prompt(1);
+		// TODO
 	} else
 	if (!strcmp(cmd, "step")) {
-		socket_printf(config.fd, "stepi\n");
-		winedbg_wait_until_prompt(0);
+		// TODO
 	} else
 	if (!memcmp(cmd, "reg",3)) {
+		// TODO
+#if 0
 		unsigned int eip, esp,ebp,eflags,eax,ebx,ecx,edx,esi,edi;
 		socket_printf(config.fd, "info regs\n");
 		
@@ -234,17 +175,17 @@ int winedbg_system(const char *cmd)
 			cons_printf(" ebp = 0x%08x  ecx = 0x%08x  edi = 0x%08x  efl = %x\n",
 				ebp, ecx, edi, eflags);
 		}
-		winedbg_wait_until_prompt(0);
+#endif
 	}
 	return 0;
 }
 
-int winedbg_close(int fd)
+int windbg_close(int fd)
 {
 	return close(fd);
 }
 
-ut64 winedbg_lseek(int fildes, ut64 offset, int whence)
+ut64 windbg_lseek(int fildes, ut64 offset, int whence)
 {
 	switch(whence) {
 	case SEEK_SET:
@@ -257,19 +198,19 @@ ut64 winedbg_lseek(int fildes, ut64 offset, int whence)
 	return offset;
 }
 
-// TODO: add field .is_debugger
+// TODO: add field .is_debugger?
 
-plugin_t winedbg_plugin = {
-	.name = "winedbg",
-	.desc = "Wine Debugger interface ( winedbg://program.exe )",
+plugin_t windbg_plugin = {
+	.name = "windbg",
+	.desc = "Windbg serial port debugger ( windbg:///path/to/socket )",
 	.init = NULL,
 	.debug = NULL, // XXX
-	.system = winedbg_system,
-	.handle_fd = winedbg_handle_fd,
-	.handle_open = winedbg_handle_open,
-	.open = winedbg_open,
-	.read = winedbg_read,
-	.write = winedbg_write,
-	.lseek = winedbg_lseek,
-	.close = winedbg_close
+	.system = windbg_system,
+	.handle_fd = windbg_handle_fd,
+	.handle_open = windbg_handle_open,
+	.open = windbg_open,
+	.read = windbg_read,
+	.write = windbg_write,
+	.lseek = windbg_lseek,
+	.close = windbg_close
 };

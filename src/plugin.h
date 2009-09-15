@@ -77,6 +77,7 @@ extern plugin_t debug_plugin;
 extern plugin_t gdb_plugin;
 extern plugin_t gdbwrap_plugin;
 extern plugin_t bfdbg_plugin;
+extern plugin_t windbg_plugin;
 
 #if __linux__
 extern plugin_t sysproxy_plugin;

@@ -286,6 +286,7 @@ void plugin_init()
 	plugins[last++] = malloc_plugin;
 	plugins[last++] = remote_plugin;
 	plugins[last++] = winedbg_plugin;
+	plugins[last++] = windbg_plugin;
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
 	plugins[last++] = bfdbg_plugin;
