@@ -24,26 +24,27 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#if __WIN32__
+char *arch = "olly";
+#else
 char *arch = "x86";
+#endif
 //char *arch = "rsc";
 ut64 offset = 0;
 int endian = 0;
 int verbose = 0;
 
-static int show_version()
-{
+static int show_version() {
 	printf(VERSION"\n");
 	return 0;
 }
 
-static int show_helpline()
-{
+static int show_helpline() {
 	printf( "Usage: rasm [-elvV] [-f file] [-s offset] [-a arch] [-d bytes] \"opcode\"|-\n");
 	return 0;
 }
 
-static int show_help()
-{
+static int show_help() {
 	show_helpline();
 	printf(" if 'opcode' is '-' reads from stdin\n");
 	printf("  -v           enables debug\n");
@@ -55,7 +56,6 @@ static int show_help()
 	printf("  -l           list all supported opcodes and architectures\n");
 	printf("  -V           show version information\n");
 	return 0;
-
 }
 
 /* assemble */
@@ -92,9 +92,13 @@ int rasm_assemble(char *str)
 int main(int argc, char **argv)
 {
 	int c;
+	char *env = getenv("RASM_ARCH");
 
 	if (argc<2)
 		return show_helpline();
+
+	if (e)
+		arch = env;
 
 	while ((c = getopt(argc, argv, "d:a:Vs:lhef:v")) != -1) {
 		switch( c ) {

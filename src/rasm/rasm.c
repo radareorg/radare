@@ -120,18 +120,18 @@ int rasm_directive(const char *arch, ut64 *offset, const char **str, u8 *data)
 
 	if (!strcmp(op, ".equ")) {
 		n = get_offset(arg);
-printf("TODO: (%s)\n", op);
+fprintf(stderr, "TODO: (%s)\n", op);
 		memset(data, '\0', n);
 		return n;
 	}
 	if (!strcmp(op, ".arch")) {
 		//*arch = strdup(op+6);
-printf("DEFINE CPU: (%s)\n", op+6);
+fprintf(stderr, "DEFINE CPU: (%s)\n", op+6);
 		return 0;
 	}
 
 	if (!strcmp(op, ".global")) {
-printf("TODO: (%s)\n", op);
+fprintf(stderr, "TODO: (%s)\n", op);
 		return 0; //*offset;
 	}
 
