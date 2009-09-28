@@ -21,6 +21,7 @@
 #include <sys/time.h>
 #include <fcntl.h>
 
+extern int search_nocase;
 extern struct list_head hacks;
 #undef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 8

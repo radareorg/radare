@@ -2447,6 +2447,7 @@ CMD_DECL(search) {
 	case '?':
 		cons_printf(
 		" / \\x7FELF       ; plain string search (supports \\x).\n"
+		" /i str-no-case  ; case insensitive text search\n"
 		" /. [file]       ; search using the token file rules (/.? for help)\n"
 		" /: [file] [...] ; search using the 'keyname keyword' file format\n"
 		" /-              ; unsetenv SEARCH[N] and MASK[N] environ vars( deprecated )\n"
@@ -2591,6 +2592,7 @@ CMD_DECL(search) {
 	case '/':
 		search_range("0");
 		break;
+	case 'i':
 	case '0':
 	case '1':
 	case '2':
@@ -2611,6 +2613,9 @@ CMD_DECL(search) {
 		else ptr = ptr +1;
 		setenv(buf, ptr, 1);
 		sprintf(buf, "%d", idx);
+		if (text[0]=='i')
+			search_nocase = 1;
+		else search_nocase = 0;
 		search_range(buf);
 		} break;
 	case 'v':

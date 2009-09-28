@@ -95,6 +95,8 @@ static int indent_count( int fd )
 }
 #endif
 
+int search_nocase = 0;
+
 static unsigned char get_num(const char * str, int len)
 {
 	u8 * strp;
@@ -165,7 +167,9 @@ static int tok_parse (char* str, int len, token * tlist )
 		}
 
 		if ( estat == 0 ) {
-			tlist[tokact].mintok =  str[i];
+			if (search_nocase)
+				tlist[tokact].mintok = tolower(str[i]);
+			else tlist[tokact].mintok = str[i];
                         tlist[tokact].range = 0;
 			tokact++;
 		} else
@@ -174,7 +178,9 @@ static int tok_parse (char* str, int len, token * tlist )
 				//estat = 3;
 			} else {
 				//Caracter escapat
-				tlist[tokact].mintok =  str[i];
+				if (search_nocase)
+					tlist[tokact].mintok = tolower(str[i]);
+				else tlist[tokact].mintok = str[i];
                 	        tlist[tokact].range = 0;
 				tokact++;
 				estat = 0;
@@ -489,13 +495,14 @@ int update_tlist(tokenizer* t, u8 inchar, ut64 where )
 		config.interrupted = 1;
 		return -1;
 	}
+	if (search_nocase)
+		inchar = tolower(inchar);
 
 	for (i=0; i<t->nlists; i++ ) {
 		cmin = (t->tls[i]->tl[t->tls[i]->estat]).mintok;
-j = t->tls[i]->estat;
-if (j>t->tls[i]->numtok)
-	t->tls[i]->estat = 0;
-	
+		j = t->tls[i]->estat;
+		if (j>t->tls[i]->numtok)
+			t->tls[i]->estat = 0;
 //printf("%d\n", j);
 		if ( (t->tls[i]->tl[j]).range > 0 ) {
 			// RANGE

@@ -97,8 +97,7 @@ int main(int argc, char **argv)
 	if (argc<2)
 		return show_helpline();
 
-	if (e)
-		arch = env;
+	if (env) arch = env;
 
 	while ((c = getopt(argc, argv, "d:a:Vs:lhef:v")) != -1) {
 		switch( c ) {

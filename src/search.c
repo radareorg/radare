@@ -35,8 +35,7 @@ char *search_last_keyword = NULL;
 
 static int nhit = 0;
 
-static void search_alarm()
-{
+static void search_alarm() {
 	progressbar(nhit, config.seek, config.size);
 #if __UNIX__
 	go_alarm(search_alarm);
