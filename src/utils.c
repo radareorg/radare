@@ -1156,7 +1156,7 @@ char *r_sys_cmd_str(const char *cmd, const char *input, int *len)
 #endif
 }
 
-static char *home = NULL;
+static const char *home = NULL;
 const char *get_home_directory()
 {
 	if (home == NULL) {
@@ -1166,5 +1166,5 @@ const char *get_home_directory()
 		home = getenv("HOME");
 #endif
 	}
-	return strget(home);
+	return strdup(strget(home));
 }
