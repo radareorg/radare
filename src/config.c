@@ -1043,12 +1043,12 @@ void config_init(int first)
 	config_set("dbg.hwbp", "true"); // hardware breakpoints by default // ALSO BSD
 #endif
 	config_set("dbg.bep", "loader"); // loader, main
-	config_set("dir.home", getenv("HOME"));
+	config_set("dir.home", get_home_directory());
 
 	/* dir.monitor */
 	ptr = getenv("MONITORPATH");
 	if (ptr == NULL) {
-		sprintf(buf, "%s/.radare/monitor/", getenv("HOME"));
+		sprintf(buf, "%s/.radare/monitor/", get_home_directory());
 		ptr = (const char *)&buf;
 	}
 	config_set("dir.monitor", ptr);
@@ -1057,7 +1057,7 @@ void config_init(int first)
 	/* dir.spcc */
 	ptr = getenv("SPCCPATH");
 	if (ptr == NULL) {
-		sprintf(buf, "%s/.radare/spcc/", getenv("HOME"));
+		sprintf(buf, "%s/.radare/spcc/", get_home_directory());
 		ptr = buf;
 	}
 	config_set("dir.spcc", ptr);
@@ -1067,7 +1067,7 @@ void config_init(int first)
 #else
 	config_set("dir.plugins", LIBDIR"/radare/");
 #endif
-	snprintf(buf, 1023, "%s/.radare/rdb/", getenv("HOME"));
+	snprintf(buf, 1023, "%s/.radare/rdb/", get_home_directory());
 	config_set("dir.project", buf); // ~/.radare/rdb/
 	config_set("dir.tmp", get_tmp_dir());
 	config_set("graph.bgcolor", "white");

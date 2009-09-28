@@ -1155,3 +1155,16 @@ char *r_sys_cmd_str(const char *cmd, const char *input, int *len)
 	return NULL;
 #endif
 }
+
+static char *home = NULL;
+const char *get_home_directory()
+{
+	if (home == NULL) {
+#if __WIN32__
+		home = getenv("HOMEPATH");
+#else
+		home = getenv("HOME");
+#endif
+	}
+	return strget(home);
+}

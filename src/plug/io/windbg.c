@@ -55,6 +55,7 @@ int windbg_open(const char *pathname, int flags, mode_t mode)
 	int fd;
 	char tmp[4096];
 
+#if __UNIX__
 	// TODO: detect if pathname is socket file or serial port
 	// TODO: atm only socket file is supported
 	// waitpid and return -1 if not exist
@@ -63,6 +64,7 @@ int windbg_open(const char *pathname, int flags, mode_t mode)
 		fprintf(stderr, "Cannot connect to remote host.\n");
 		return -1;
 	}
+#endif
 	config.fd = fd;
 	windbg_fd = fd;
 	config.debug = 1;

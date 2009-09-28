@@ -558,7 +558,7 @@ void rad_readline_init()
 	rl_redisplay();
 	rl_attempted_completion_function = rad_autocompletion;
 
-	snprintf(history_file, 1000, "%s/.radare_history", getenv("HOME"));
+	snprintf(history_file, 1000, "%s/.radare_history", get_home_directory());
 	read_history(history_file);
 //	rl_completion_entry_function = NULL;
 	rad_rl_init = 1;

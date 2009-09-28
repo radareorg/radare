@@ -215,7 +215,7 @@ CMD_DECL(edit_screen_filter)
 	const char *ed = config_get("cfg.editor");
 	if (!strnull(ed)) {
 		/* TODO: Handle errors, put a different file name for */
-		snprintf(buf, 1023, "%s/.radare/screen-filter.txt", getenv("HOME"));
+		snprintf(buf, 1023, "%s/.radare/screen-filter.txt", get_home_directory());
 		config_set("file.scrfilter", buf);
 		eprintf(":!!%s '%s'\n", ed, buf);
 		{

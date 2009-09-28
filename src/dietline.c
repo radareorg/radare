@@ -282,7 +282,7 @@ int dl_hist_load(const char *file)
 	char buf[1024];
 	FILE *fd;
 
-	snprintf(buf, 1023, "%s/%s", getenv("HOME"), file);
+	snprintf(buf, 1023, "%s/%s", get_home_directory(), file);
 	fd = fopen(buf, "r");
 	if (fd == NULL)
 		return 0;
@@ -308,7 +308,7 @@ int dl_hist_save(const char *file)
 	FILE *fd;
 	int i;
 
-	snprintf(buf, 1023, "%s/%s", getenv("HOME"), file);
+	snprintf(buf, 1023, "%s/%s", get_home_directory(), file);
 	fd = fopen(buf, "w");
 	if (fd == NULL)
 		return 0;
