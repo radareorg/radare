@@ -158,18 +158,15 @@ void code_lines_print(struct reflines_t *list, ut64 addr, int expand)
 			if (!expand) {
 				if (ref->from > ref->to)
 					cons_strcat(".");
-				else
-					cons_strcat("`");
+				else cons_strcat("`");
 				ch = '-';
-			} else
-				ch = '.';
+			} else ch = '.';
 		} else
 		if (addr == ref->from) {
 			if (!expand) {
 				if (ref->from > ref->to)
 					cons_strcat("`");
-				else
-					cons_strcat(".");
+				else cons_strcat(".");
 				ch = '=';
 			}
 		} else {
@@ -179,8 +176,7 @@ void code_lines_print(struct reflines_t *list, ut64 addr, int expand)
 				if (addr > ref->from && addr < ref->to) {
 					if (ch=='-'||ch=='=')
 						cons_printf("%c",ch);
-					else
-						cons_strcat("|");
+					else cons_strcat("|");
 				} else
 				if (!expand) {
 					C {
@@ -199,9 +195,7 @@ void code_lines_print(struct reflines_t *list, ut64 addr, int expand)
 						cons_printf("%c", ch);
 					else // ^
 						cons_strcat("|");
-				} else {
-					cons_printf("%c",ch);
-				}
+				} else cons_printf("%c",ch);
 			}
 		}
 		if (config_get("asm.lineswide")) { // TODO: convert to integer ?

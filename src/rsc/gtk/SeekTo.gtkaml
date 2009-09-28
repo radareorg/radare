@@ -1,0 +1,79 @@
+<!--
+ * GTK UI to seek to a variable
+ * license: GPLv2+
+ * (c) 2009 Sebastian Reichel <sre@ring0.de>
+-->
+<Dialog xmlns:g="http://gtkaml.org/0.2" xmlns="Gtk" xmlns:glib="GLib"
+	g:name="SeekTo" title="Seek to Variable" has-separator="false"
+	border-width="5" default-width="300" default-height="80"
+	response="{on_response}" destroy="{Gtk.main_quit}">
+
+	<VBox spacing="10" g:existing="vbox" g:standalone="true">
+		<Label with-mnemonic="true" label="Seek to the following variable:" mnemonic-widget="{cbe}" expand="false"/>
+		<ComboBoxEntry g:private="cbe" changed="on_combobox_changed()" text="true" expand="false" />
+	</VBox>
+
+<![CDATA[
+	string selected;
+	List<string> variables;
+
+	public SeekTo() {
+		add_button(STOCK_CANCEL, ResponseType.CANCEL);
+		add_button(STOCK_OK, ResponseType.OK);
+		selected = "";
+		init_variables();
+		fill_comboboxentry();
+	}
+
+	private void init_variables() {
+		variables = new List<string>();
+		try {
+			var file = File.new_for_path("/tmp/.radare_flags");
+			var in_stream = new DataInputStream(file.read (null));
+			string line;
+			while ((line = in_stream.read_line (null, null)) != null) {
+				var arr = Regex.split_simple(" ", line);
+				variables.append(arr[2]);
+			}
+		} catch(Error e) {
+			stderr.printf("Error: %s\n", e.message);
+			stderr.printf("File: '/tmp/.radare_flags'!\n");
+		}
+
+		variables.sort(GLib.strcmp);
+	}
+
+	private void fill_comboboxentry() {
+		foreach(string x in variables)
+			cbe.append_text(x);
+	}
+
+	private void on_combobox_changed() {
+		this.selected = this.cbe.get_active_text();
+	}
+
+	private void on_response(Dialog source, int response_id) {
+		switch (response_id) {
+			case ResponseType.CANCEL:
+				destroy();
+				break;
+			case ResponseType.OK:
+				ok_clicked();
+				destroy();
+				break;
+		}
+	}
+
+	private void ok_clicked() {
+		stdout.printf(":s %s\n", selected);
+	}
+
+	static int main (string[] args) {
+		Gtk.init(ref args);
+		var dialog = new SeekTo();
+		dialog.show_all();
+		Gtk.main();
+		return 0;
+	}
+]]>
+</Dialog>

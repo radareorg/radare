@@ -1,27 +1,2 @@
-#!/bin/sh
-echo ":f > /tmp/.axa"
-FILES=`column -t /tmp/.axa | awk '{print "<item>"$4"</item>"}'`
-export MAIN_DIALOG="<vbox>
-<text>
-  <label>Seek to offset</label>
-</text>
-<hbox>
-  <text>
-    <label>Label</label>
-  </text>
-  <combobox>
-    <variable>LABEL</variable>
-    $FILES
-  </combobox>
-<button ok></button>
-<button cancel></button>
-</hbox>
-</vbox>"
-
-LABEL=""
-FOO=`rsc gtkdialog`
-eval $FOO
-echo
-echo ":s $LABEL"
-echo
-rm -f /tmp/.axa
+echo ":f > /tmp/.radare_flags"
+echo ".!rsc SeekTo"

@@ -1,0 +1,119 @@
+<!--
+ * GTK UI for data block visualization
+ * license: GPLv2+
+ * (c) 2009 Sebastian Reichel <sre@ring0.de>
+-->
+<Dialog xmlns:g="http://gtkaml.org/0.2" xmlns="Gtk" xmlns:glib="GLib" xmlns:posix="Posix"
+	g:name="Display" title="Display data blocks" has-separator="false"
+	border-width="5" default-width="300" default-height="80"
+	response="{on_response}" destroy="{Gtk.main_quit}">
+
+	<VBox spacing="10" g:existing="vbox" g:standalone="true">
+		<Label with-mnemonic="true" label="Display data blocks as images using imagemagick" mnemonic-widget="{cb}" expand="false"/>
+		<ComboBox g:private="cb" changed="on_combobox_changed()" text="true" expand="false" />
+		<HBox spacing="10">
+			<Label with-mnemonic="true" label="Width:" mnemonic-widget="{width}" expand="false"/>
+			<SpinButton g:private="width" with-range="true" min="50" max="5000" step="2" value="320"/>
+			<Label with-mnemonic="true" label="Height:" mnemonic-widget="{height}" expand="false"/>
+			<SpinButton g:private="height" with-range="true" min="50" max="5000" step="2" value="240"/>
+			<Label with-mnemonic="true" label="Depth:" mnemonic-widget="{depth}" expand="false"/>
+			<SpinButton g:private="depth" with-range="true" min="1" max="32" step="1" value="8"/>
+		</HBox>
+	</VBox>
+
+<![CDATA[
+	string selected;
+	string filename;
+	int tmp_file;
+
+	public Display() {
+		add_button(STOCK_CANCEL, ResponseType.CANCEL);
+		add_button(STOCK_OK, ResponseType.OK);
+		fill_combobox();
+		cb.set_active(0);
+
+		if(Environment.get_variable("FILE") == null || Environment.get_variable("OFFSET") == null)
+			error("radare did not export FILE and OFFSET environment variables!\n");
+	}
+
+	private void fill_combobox() {
+		cb.append_text("raw");
+		cb.append_text("jpeg");
+		cb.append_text("png");
+		cb.append_text("bmp");
+		cb.append_text("gif");
+		cb.append_text("tga");
+		cb.append_text("tif");
+	}
+
+	private void on_combobox_changed() {
+		this.selected = this.cb.get_active_text();
+
+		if(selected == "raw") {
+			width.set_sensitive(true);
+			height.set_sensitive(true);
+			depth.set_sensitive(true);
+		} else {
+			width.set_sensitive(false);
+			height.set_sensitive(false);
+			depth.set_sensitive(false);
+		}
+	}
+
+	private void on_response(Dialog source, int response_id) {
+		switch(response_id) {
+			case ResponseType.CANCEL:
+				destroy();
+				break;
+			case ResponseType.OK:
+				ok_clicked();
+				destroy();
+				break;
+		}
+	}
+
+	private void ok_clicked() {
+		string tmpname = "radare_XXXXXX.";
+		string bytes;
+		string cmd;
+
+		if(selected == "raw")
+			tmpname += "gray";
+		else
+			tmpname += selected;
+
+		try {
+			tmp_file = FileUtils.open_tmp(tmpname, out filename);
+		} catch(FileError e) {
+			error("%s\n", e.message);
+		}
+
+		if(selected == "raw")
+			bytes= "%d".printf((int) width.get_value() * (int) height.get_value());
+		else
+			bytes = Environment.get_variable("BSIZE");
+
+		if(bytes == null)
+			error("bytes is null, if you did not select raw, BSIZE needs to be exported!\n");
+
+		cmd = "dd if=\"" + Environment.get_variable("FILE") + "\" of=\"" + filename + "\" count=" + bytes + " bs=1 skip=" + Environment.get_variable("OFFSET") + " & ";
+
+		system(cmd);
+
+		if(selected == "raw")
+			system("display -size " + "%d".printf((int)width.get_value()) + "x" + "%d".printf((int)height.get_value()) + " -depth " + "%d".printf((int)depth.get_value()) + " " + filename);
+		else
+			system("display " + filename);
+
+		unlink(filename);
+	}
+
+	static int main (string[] args) {
+		Gtk.init(ref args);
+		var dialog = new Display();
+		dialog.show_all();
+		Gtk.main();
+		return 0;
+	}
+]]>
+</Dialog>

@@ -1,21 +1,5 @@
-#!/bin/sh
-export MAIN_DIALOG='<vbox>
-<text>
-  <label>Search string hex-pair formatted</label>
-</text>
+eval `rsc EntryDialog "Search hex-pair" "Search string hex-pair formatted"`
 
-<hbox>
-  <entry>
-    <variable>STRING</variable>
-  </entry>
-<button ok></button>
-<button cancel></button>
-</hbox>
-</vbox>'
-
-eval `gtkdialog --program MAIN_DIALOG`
-if [ -n "$STRING" ]; then
-	echo ":/x $STRING"
-else
-	echo "search-string: Nothing to search" >/dev/stderr
+if [ -n "$VARIABLE" ]; then
+	echo ":/x $VARIABLE"
 fi

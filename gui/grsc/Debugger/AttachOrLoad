@@ -1,24 +1,7 @@
-#!/bin/sh
-#
-#
-# pancake <pancake@youterm.com>
-#
-export MAIN_DIALOG='<vbox>
-<text>
-  <label>Target PID or file to debug?</label>
-</text>
-<hbox>
-  <entry>
-    <variable>PID</variable>
-  </entry>
-<button ok></button>
-<button cancel></button>
-</hbox>
-</vbox>'
+eval `rsc EntryDialog "Attach or Load Program" "Target PID or file to debug?"`
 
-eval `gtkdialog --program MAIN_DIALOG`
-if [ -n "$PID" ]; then
-	echo ":!rsc radaredbg $PID"
+if [ -n "$VARIABLE" ]; then
+	echo ":!rsc radaredbg $VARIABLE"
 	echo ":s 0x8048000"
 	exit
 fi

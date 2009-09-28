@@ -1,0 +1,56 @@
+<!--
+ * String Entry Dialog
+ * license: GPLv2+
+ * (c) 2009 Sebastian Reichel <sre@ring0.de>
+-->
+<Dialog xmlns:g="http://gtkaml.org/0.2" xmlns="Gtk" xmlns:glib="GLib"
+  g:name="EntryDialog" title="gradare dialog" has-separator="false"
+  border-width="5" default-width="300" default-height="80"
+  response="{on_response}" destroy="{Gtk.main_quit}">
+
+  <VBox spacing="10" g:existing="vbox" g:standalone="true">
+    <HBox homogeneous="false" spacing="10" expand="false">
+      <Label g:private="label" with-mnemonic="true" label="Input:" mnemonic-widget="{entry}" expand="false"/>
+      <Entry g:private="entry" />
+    </HBox>
+  </VBox>
+
+<![CDATA[
+  public EntryDialog() {
+    add_button(STOCK_CANCEL, ResponseType.CANCEL);
+    add_button(STOCK_OK, ResponseType.OK);
+  }
+
+  public void set_label(string text) {
+    label.set_text(text);
+  }
+
+  private void on_response(Dialog source, int response_id) {
+    switch (response_id) {
+      case ResponseType.CANCEL:
+        destroy();
+        break;
+      case ResponseType.OK:
+        ok_clicked();
+		destroy();
+        break;
+	}
+  }
+
+  private void ok_clicked() {
+	stdout.printf("VAR = %s\n", this.entry.text);
+  }
+
+  static int main (string[] args) {
+    Gtk.init (ref args);
+    var dialog = new EntryDialog ();
+	if(args.length > 1)
+		dialog.set_title(args[1]);
+	if(args.length > 2)
+		dialog.set_label(args[2]);
+    dialog.show_all ();
+    Gtk.main ();
+    return 0;
+  }
+]]>
+</Dialog>
