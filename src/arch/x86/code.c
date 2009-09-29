@@ -226,11 +226,28 @@ int arch_x86_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xd0];
 			aop->fail   = addr+2;
 		} else
+		if (bytes[1]>=0xd8 && bytes[1]<=0xdf) {
+			aop->type = AOP_TYPE_CALL;
+			aop->length = 2;
+			aop->eob    = 1;
+			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xd8];
+			aop->fail   = addr+2;
+		} else
 		if (bytes[1]>=0xe0 && bytes[1]<=0xe7) {
 			aop->type = AOP_TYPE_UJMP;
 			aop->length = 2;
-			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xd0];
+			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xe0];
 			aop->eob    = 1;
+		} else
+		if (bytes[1]>=0xe8 && bytes[1]<=0xef) {
+			aop->type = AOP_TYPE_UJMP;
+			aop->length = 2;
+			aop->jump   = vm_arch_x86_regs[VM_X86_EAX+bytes[1]-0xe8];
+			aop->eob    = 1;
+		} else
+		if (bytes[1]>=0xf0 && bytes[1]<=0xf7) {
+			aop->type = AOP_TYPE_UPUSH;
+			aop->ref = bytes[0]-0xf0; // TODO value of register here! get_offset
 		}
 		break;
 	case 0x50:
@@ -244,7 +261,7 @@ int arch_x86_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
 	case 0x58:
 	case 0x59:
 		aop->type = AOP_TYPE_UPUSH;
-		aop->ref = 0; // TODO value of register here! get_offset
+		aop->ref = bytes[0]-0x50; //0; // TODO value of register here! get_offset
 		break;
 	case 0x5a:
 	case 0x5b:
