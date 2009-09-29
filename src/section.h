@@ -27,5 +27,6 @@ ut64 section_get_vaddr(ut64 addr);
 struct section_t *section_get_i(int idx);
 void section_init(int foo);
 int section_overlaps(struct section_t *s);
+ut64 section_align(ut64 addr, ut64 vaddr, ut64 paddr);
 
 #endif

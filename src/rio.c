@@ -397,7 +397,6 @@ ut64 radare_seek(ut64 offset, int whence)
 
 	if (offset==-1)
 		return (ut64)-1;
-
 //eprintf("ALIGNING 0x%08llx\n", config.paddr);
 #if 1
 	if (whence == SEEK_SET && config.vaddr && offset>=config.vaddr)//&& offset >= config.vaddr)
