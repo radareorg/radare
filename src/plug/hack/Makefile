@@ -22,6 +22,13 @@ all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${
 hello.${SO}:
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SO}
 
+ifeq ($(HAVE_GUI),0)
+gtk-hello.${SO}:
+gtk-actions.${SO}:
+gtk-prefs.${SO}:
+gtk-topbar.${SO}:
+scriptedit.${SO}:
+else
 gtk-hello.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` gtk-hello.c -I ../.. -fPIC -shared -g -o gtk-hello.${SO}
 
@@ -36,6 +43,7 @@ gtk-topbar.${SO}:
 
 scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
+endif
 
 python.${SO}:
 #ifeq ($(HAVE_LIB_PYTHON25),1)
@@ -68,6 +76,9 @@ install:
 	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e hello.${SO} ] && ${INSTALL_LIB} hello.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e gtk-hello.${SO} ] && ${INSTALL_LIB} gtk-hello.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e gtk-actions.${SO} ] && ${INSTALL_LIB} gtk-actions.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e gtk-prefs.${SO} ] && ${INSTALL_LIB} gtk-prefs.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e gtk-topbar.${SO} ] && ${INSTALL_LIB} gtk-topbar.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${DESTDIR}/${LIBDIR}/radare

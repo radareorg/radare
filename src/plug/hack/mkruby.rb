@@ -31,8 +31,11 @@ rescue
 	tobeup=true
 end
 
+incflags=Config::CONFIG['rubyhdrdir']
+incflags2=incflags + "/" + Config::CONFIG['arch']
+
 if tobeup then
-	$line="#{$cc} -I #{inc} -I#{INCDIR} #{rb_c} -fPIC -shared #{LIBDIR}" \
+	$line="#{$cc} -I#{incflags} -I#{incflags2} -I#{inc} -I#{INCDIR} #{rb_c} -fPIC -shared #{LIBDIR}" \
 	" -l#{LIBNAM} #{ENV['CFLAGS']} #{ENV['LDFLAGS']} -o #{rb_so}"
 	puts $line
 	system($line)

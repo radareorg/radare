@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ static VALUE radare_ruby_cmd(VALUE self, VALUE string)
 
 	Check_Type(string, T_STRING);
 
-	retstr = rs_cmdstr ( RSTRING(string)->ptr );
+	retstr = rs_cmdstr ( RSTRING_PTR(RSTRING(string)) );
 	if (retstr == NULL || retstr[0]=='\0')
 		return rb_str_new2("");
 	return rb_str_new2(retstr);//"Hello message\n");
