@@ -7,10 +7,13 @@ LIBS+=${DL_LIBS}
 	$(CC) -c $(CFLAGS) ${SHARED_CFLAGS} -o $@ $<
 
 
-all: hexdump.o libfdsniff.${SHARED_EXT} libusbsniff.${SHARED_EXT}
+all: hexdump.o libfdsniff.${SHARED_EXT} libusbsniff.${SHARED_EXT} libioctlsniff.${SHARED_EXT}
 
 libfdsniff.${SHARED_EXT}: hexdump.o libfdsniff.o
 	-${CC} ${CFLAGS} ${LDFLAGS} ${SHARED_CFLAGS} hexdump.o libfdsniff.o ${LIBS} -o libfdsniff.${SHARED_EXT} 2>/dev/null
+
+libioctlsniff.${SHARED_EXT}: hexdump.o libioctlsniff.o
+	-${CC} ${CFLAGS} ${LDFLAGS} ${SHARED_CFLAGS} hexdump.o libioctlsniff.o ${LIBS} -o libioctlsniff.${SHARED_EXT} 2>/dev/null
 
 libusbsniff.${SHARED_EXT}: hexdump.o libusbsniff.o
 ##USBSNF##

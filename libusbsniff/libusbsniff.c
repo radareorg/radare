@@ -30,10 +30,49 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <string.h>
-#include <usb.h>
+//#include <usb.h>
 #include <stdlib.h>
 #include "hexdump.h"
 #include <unistd.h>
+#include <limits.h>
+
+#if 1
+struct usb_device_descriptor {
+	u_int8_t  bLength;
+	u_int8_t  bDescriptorType;
+	u_int16_t bcdUSB;
+	u_int8_t  bDeviceClass;
+	u_int8_t  bDeviceSubClass;
+	u_int8_t  bDeviceProtocol;
+	u_int8_t  bMaxPacketSize0;
+	u_int16_t idVendor;
+	u_int16_t idProduct;
+	u_int16_t bcdDevice;
+	u_int8_t  iManufacturer;
+	u_int8_t  iProduct;
+	u_int8_t  iSerialNumber;
+	u_int8_t  bNumConfigurations;
+};
+struct usb_device {
+  struct usb_device *next, *prev;
+
+  char filename[PATH_MAX + 1];
+
+  struct usb_bus *bus;
+
+  struct usb_device_descriptor descriptor;
+  struct usb_config_descriptor *config;
+
+  void *dev;		/* Darwin support */
+
+  u_int8_t devnum;
+
+  unsigned char num_children;
+  struct usb_device **children;
+};
+struct usb_dev_handle;
+typedef struct usb_dev_handle usb_dev_handle;
+#endif
 
 /* symbol descriptors */
 usb_dev_handle * (*__usb_open)(struct usb_device *dev);
@@ -42,7 +81,7 @@ int (*__usb_find_busses)();
 int (*__usb_claim_interface)(usb_dev_handle *dev, int interface);
 int (*__usb_set_altinterface)(usb_dev_handle *dev, int alternate);
 int (*__usb_control_msg)(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
-int (*__usb_bulk_write)(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout);
+int (*__usb_bulk_write)(usb_dev_handle *dev, int ep, const char *bytes, int size, int timeout);
 int (*__usb_bulk_read)(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout);
 
 /*
