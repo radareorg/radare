@@ -27,27 +27,27 @@
 
   private void on_response(Dialog source, int response_id) {
     switch (response_id) {
-      case ResponseType.CANCEL:
-        destroy ();
-        break;
-      case ResponseType.OK:
-        ok_clicked ();
-	destroy ();
-        break;
-	}
+    case ResponseType.CANCEL:
+      destroy ();
+      break;
+    case ResponseType.OK:
+      ok_clicked ();
+      destroy ();
+      break;
+    }
   }
 
   private void ok_clicked() {
-	print ("VARIABLE = %s\n", this.entry.text);
+    print ("VARIABLE=%s\n", this.entry.text);
   }
 
   static int main (string[] args) {
     Gtk.init (ref args);
     var dialog = new EntryDialog ();
-	if(args.length > 1)
-		dialog.set_title(args[1]);
-	if(args.length > 2)
-		dialog.set_label(args[2]);
+    if (args.length > 1)
+      dialog.set_title(args[1]);
+    if (args.length > 2)
+      dialog.set_label(args[2]);
     dialog.show_all ();
     Gtk.main ();
     return 0;

@@ -98,7 +98,7 @@ static void entry_dialog_on_response (EntryDialog* self, GtkDialog* source, gint
 
 static void entry_dialog_ok_clicked (EntryDialog* self) {
 	g_return_if_fail (self != NULL);
-	g_print ("VARIABLE = %s\n", gtk_entry_get_text (self->priv->entry));
+	g_print ("VARIABLE=%s\n", gtk_entry_get_text (self->priv->entry));
 }
 
 
