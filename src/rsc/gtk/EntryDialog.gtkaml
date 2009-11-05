@@ -17,28 +17,28 @@
 
 <![CDATA[
   public EntryDialog() {
-    add_button(STOCK_CANCEL, ResponseType.CANCEL);
-    add_button(STOCK_OK, ResponseType.OK);
+    add_button (STOCK_CANCEL, ResponseType.CANCEL);
+    add_button (STOCK_OK, ResponseType.OK);
   }
 
   public void set_label(string text) {
-    label.set_text(text);
+    label.set_text (text);
   }
 
   private void on_response(Dialog source, int response_id) {
     switch (response_id) {
       case ResponseType.CANCEL:
-        destroy();
+        destroy ();
         break;
       case ResponseType.OK:
-        ok_clicked();
-		destroy();
+        ok_clicked ();
+	destroy ();
         break;
 	}
   }
 
   private void ok_clicked() {
-	stdout.printf("VAR = %s\n", this.entry.text);
+	print ("VARIABLE = %s\n", this.entry.text);
   }
 
   static int main (string[] args) {
