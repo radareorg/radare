@@ -6,6 +6,8 @@
 
 ===========================================================
 
+* Cannot debug signal handlers???
+
 * DEPRECATE !set dbg system command (!reg xx=yy works beter)
 * BUG: ? eip > aa -> fails, but !reg eip > aa works
 * Add 'e scr.xy' as a replacment for the old 'g' command // XXX

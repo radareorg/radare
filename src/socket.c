@@ -117,7 +117,7 @@ void socket_printf(int fd, const char *fmt, ...)
 #if __linux__
 	dprintf(fd, fmt, ap); 
 #else
-	snprintf(buf,BUFFER_SIZE,fmt,ap); 
+	vsnprintf(buf,BUFFER_SIZE,fmt,ap); 
 	socket_write(fd, buf, strlen(buf));
 #endif
 	
