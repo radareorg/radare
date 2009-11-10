@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * canoe is free software; you can redistribute it and/or modify
@@ -44,6 +44,17 @@ void gradare_edit_script() //GtkAction *action, CanoeWindow *w)
 {
 	char *cmd = ":H scriptedit\n\n";
 	vte_terminal_feed_child(VTE_TERMINAL(term), cmd, strlen(cmd));
+}
+
+extern int fontsize;
+int console_font_size(int newsize);
+
+void font_increase () {
+	fontsize = console_font_size(++fontsize);
+}
+
+void font_decrease () {
+	fontsize = console_font_size(--fontsize);
 }
 
 void gradare_run_script() //GtkAction *action, CanoeWindow *w)
@@ -134,6 +145,9 @@ static const gchar *ui_info =
 "      <menuitem action='New monitor'/>"
 "      <separator />"
 "      <menuitem action='Code graph'/>"
+"      <separator />"
+"      <menuitem action='Increase font size'/>"
+"      <menuitem action='Decrease font size'/>"
 "    </menu>"
 "    <menu action='HelpMenu'>"
 "      <menuitem action='Manual'/>"
@@ -206,6 +220,15 @@ static GtkActionEntry entries[] = {
     "_Redo seek","<control>Y",
     "",
     G_CALLBACK (gradare_undo) },
+// TODO: keybindings for font size does not work
+  { "Increase font size", NULL,
+    "Increase font size", "<control>_",
+    "",
+    G_CALLBACK (font_increase) },
+  { "Decrease font size", NULL,
+    "Decrease font size", "<control>_",
+    "",
+    G_CALLBACK (font_decrease) },
   { "Focus terminal", NULL,
     "Focus terminal","<control>J",
     "",

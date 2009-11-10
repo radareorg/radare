@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ char *command = NULL;
 int is_debugger = 0;
 char *font = FONT;
 
+GtkWidget *tool;
 #if _MAEMO_
 HildonWindow *w = NULL;
 HildonProgram *p = NULL;
@@ -54,8 +55,6 @@ void show_help_message()
 	printf("Usage: gradare [-h] [-e command] [-f font] [[-d pid|prg] | file]\n");
 	exit(1);
 }
-
-GtkWidget *tool;
 
 void init_home_directory()
 {
@@ -205,25 +204,21 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 	struct gradare_mon_t *mon = user_data;
 	char miau[16];
 	char buf[1024];
-	char *cmd[4]={"/usr/bin/rsc","monitor", &miau, 0};
-	sprintf(miau, "mon%d", mon->id);
+	char *cmd[4] = { PREFIX"/bin/rsc", "monitor", &miau, 0};
 
-	snprintf(buf, 1023, "/usr/bin/rsc monitor %s \"%s\"", miau, gtk_entry_get_text(mon->entry));
+	sprintf(miau, "mon%d", mon->id);
+	snprintf(buf, 1023, "rsc monitor %s \"%s\"", miau, gtk_entry_get_text(mon->entry));
 	system(buf);
 
-	vte_terminal_fork_command(
-			VTE_TERMINAL(mon->term),
-			cmd[0], cmd, NULL, ".",
-			FALSE, FALSE, FALSE);
+	vte_terminal_fork_command ( VTE_TERMINAL(mon->term), cmd[0], cmd, NULL, ".",
+		FALSE, FALSE, FALSE);
 
-	return 0;
+	return FALSE;
 }
 
 void gradare_save_project_as()
 {
-        GtkWidget *fcd;
-
-        fcd = gtk_file_chooser_dialog_new (
+        GtkWidget *fcd = gtk_file_chooser_dialog_new (
                 "Save project as...", NULL, // parent
                 GTK_FILE_CHOOSER_ACTION_SAVE,
                 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -254,10 +249,8 @@ void gradare_save_project()
 
 void gradare_open_project()
 {
-	char buf[1024];
-        GtkWidget *fcd;
-
-        fcd = gtk_file_chooser_dialog_new (
+	char *filename, buf[1024];
+        GtkWidget *fcd = gtk_file_chooser_dialog_new (
                 "Open project file...", NULL, // parent
                 GTK_FILE_CHOOSER_ACTION_OPEN,
                 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -266,7 +259,7 @@ void gradare_open_project()
 
         gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
         if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
-                const char *filename = (const char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+                filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
 		sprintf(buf, ":Po %s\n\n", filename);
 		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
 	}
@@ -276,27 +269,27 @@ void gradare_open_project()
 
 void gradare_new_graph()
 {
-	vte_terminal_feed_child(VTE_TERMINAL(term), ":ag\n\n", 5);
+	vte_terminal_feed_child(VTE_TERMINAL(term), ":ag\n", 5);
 }
 
 void gradare_new_monitor()
 {
-	GtkWindow *w;
-	GtkWidget *vbox;
-	GtkWidget *hbox;
 	struct gradare_mon_t *mon;
-	mon = (struct gradare_mon_t *)malloc(sizeof(struct gradare_mon_t));
+	GtkWidget *vbox, *hbox;
+	GtkWindow *w;
+
+	mon = (struct gradare_mon_t *)malloc (sizeof (struct gradare_mon_t));
 	mon->id = mon_id++;
 
-	w = GTK_WINDOW( gtk_window_new(GTK_WINDOW_TOPLEVEL) );
-	w->allow_shrink=TRUE;
+	w = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+	w->allow_shrink = TRUE;
 #if _MAEMO_
 	hildon_program_add_window(p, w);
 #endif
-	gtk_window_resize(GTK_WINDOW(w), 600,400);
-	gtk_window_set_title(GTK_WINDOW(w), "gradare monitor");
+	gtk_window_resize (GTK_WINDOW(w), 600, 400);
+	gtk_window_set_title (GTK_WINDOW(w), "gradare monitor");
 	// XXX memleak !!! should be passed to a destroyer function for 'mon'
-	g_signal_connect(w, "destroy", G_CALLBACK(gtk_widget_hide), mon);
+	g_signal_connect (w, "destroy", G_CALLBACK(gtk_widget_hide), mon);
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(w), vbox);
@@ -332,14 +325,14 @@ void gradare_new_monitor()
 	   FALSE, FALSE, FALSE);
 	*/
 
-	gtk_container_add(GTK_CONTAINER(vbox), mon->term);
-	gtk_widget_show_all(GTK_WIDGET(w));
+	gtk_container_add (GTK_CONTAINER(vbox), mon->term);
+	gtk_widget_show_all (GTK_WIDGET(w));
 }
 
-static int fontsize=8;
+int fontsize=8;
 static int fontalias=1;
 static int fontbold=0;
-static int console_font_size(int newsize)
+int console_font_size(int newsize)
 {
 	char buf[128];
 	if (newsize<4)
@@ -403,12 +396,14 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event, GtkWindow * windo
 			return TRUE;
 		case KEY_INCFONT:
 			fontsize = console_font_size(++fontsize);
+			// XXX: add support for non-maemo
 			return TRUE;
 		case GDK_F5:
 			gradare_refresh();
 			return TRUE;
 		case KEY_DECFONT:
 			fontsize = console_font_size(--fontsize);
+			// XXX: add support for non-maemo
 			return TRUE;
 		case GDK_Escape:
 			//hildon_banner_show_information(GTK_WIDGET(window), NULL, "Cancel/Close");
@@ -574,7 +569,11 @@ int main(int argc, char **argv, char **envp)
 
 	if (filename && (strstr(filename, "dbg://") || strstr(filename, "pid://"))) {
 		is_debugger = 1;
-		gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 2);
+	} else {
+		core_cmd ("V\n");
+		gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 2);
+		core_cmd_end ();
 	}
 
 	gtk_widget_show_all(GTK_WIDGET(w));

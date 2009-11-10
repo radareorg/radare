@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007
- *       pancake <pancake@phreaker.net>
+ * Copyright (C) 2007, 2009
+ *       pancake <pancake@nopcode.org>
  *
  * radare is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,14 +32,16 @@ int execute_command(char *cmd)
 
 	fd = popen(cmd, "r");
 	if (!fd) {
-	perror("popen");
-		fprintf(stderr, "Cannot execute %s\n", cmd);
+		perror ("popen");
+		fprintf (stderr, "Cannot execute %s\n", cmd);
 		return 0;
 	}
-	while(!feof(fd)) {
-		fgets(buffer, 1024, fd);
+	while (!feof (fd)) {
+		memset (buffer, 0, sizeof(buffer));
+		fgets (buffer, sizeof(buffer)-1, fd);
 		if (feof(fd)) break;
-		vte_terminal_feed_child(VTE_TERMINAL(term), buffer, strlen(buffer));
+		printf("FEED(%s)\n", buffer);
+		vte_terminal_feed_child (VTE_TERMINAL (term), buffer, strlen (buffer));
 	}
 
 	fclose(fd);

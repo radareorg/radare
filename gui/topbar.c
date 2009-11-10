@@ -134,7 +134,20 @@ GtkWidget *gradare_topbar_new()
 #if _MAEMO_
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 3);
 #else
+ #if __i386__
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 1);
+ #elif __x86_x64__
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 2);
+ #elif __arm__
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 3);
+ #elif __powerpc__ || __POWERPC__
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 4);
+ #elif __mips__
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 7);
+ #else
+	/* default is x86-32 */
+	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 1);
+ #endif
 #endif
 	g_signal_connect(GTK_COMBO_BOX(arch), "changed", GTK_SIGNAL_FUNC(arch_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), arch, FALSE, FALSE, 0);
