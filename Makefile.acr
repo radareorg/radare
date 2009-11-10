@@ -54,7 +54,7 @@ w32dist:
 	cp src/rasm/rasm.exe w32-build
 	mv w32-build radare-${VERSION}-w32
 	zip -r radare-${VERSION}-w32.zip radare-${VERSION}-w32
-	scp radare-${VERSION}-w32.zip news.nopcode.org:/home/www/radarenopcode/get
+	scp radare-${VERSION}-w32.zip radare.org:/srv/http/radareorg/get
 
 arm: all
 	mkdir -p pkg
@@ -72,7 +72,7 @@ dist:
 	cd .. && mv radare radare-${VERSION} && \
 	tar czvf radare-${VERSION}.tar.gz $${FILES} ;\
 	mv radare-${VERSION} radare
-	#scp radare-${VERSION}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
+	#scp radare-${VERSION}.tar.gz radare.org:/srv/http/radareorg/get/shot
 
 shot:
 	DATE=`date '+%Y%m%d'` ; \
@@ -80,7 +80,7 @@ shot:
 	cd .. && mv radare radare-$${DATE} && \
 	tar czvf radare-$${DATE}.tar.gz $${FILES} ;\
 	mv radare-$${DATE} radare && \
-	scp radare-$${DATE}.tar.gz news.nopcode.org:/home/www/radarenopcode/get/shot
+	scp radare-$${DATE}.tar.gz radare.org:/srv/http/radareorg/get/shot
 
 release: mrproper
 	FILES=`hg status -mc|cut -c 3-|sed -e s,^,radare-${VERSION}/,`; \
