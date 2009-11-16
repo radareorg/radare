@@ -478,7 +478,7 @@ int PE_(dietpe_get_imports_count)(PE_(dietpe_obj) *bin)
 			read(bin->fd, name, PE_NAME_LENGTH);
 			if (aux_is_printable(name[0]))
 				off = PE_(dietpe_aux_rva_to_offset)(bin, import_dirp->FirstThunk);
-			else return 0;
+			else continue;
 		}
 
 		j = 0;
