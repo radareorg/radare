@@ -153,7 +153,6 @@ static int align = 0;
 
 int radare_flag_name(char *buf, int kw, int hn)
 {
-	int i;
 	char *a, *f = config_get("search.flagname");
 	if (!f || !f[0])
 		goto beach;
@@ -164,10 +163,10 @@ int radare_flag_name(char *buf, int kw, int hn)
 		a = strstr(a+2, "%");
 		if (a) goto beach;
 	} else goto beach;
-	sprintf(buf, f, i, hn);
+	sprintf(buf, f, kw, hn);
 	return 1;
 beach:
-	sprintf(buf, "hit%d_%d", i, hn);
+	sprintf(buf, "hit%d_%d", kw, hn);
 	return 0;
 }
 
