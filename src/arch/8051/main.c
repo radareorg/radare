@@ -1,3 +1,4 @@
+#ifdef C_MAIN
 #include <stdio.h>
 #include <string.h>
 
@@ -29,3 +30,4 @@ int main () {
 		ptr = next;
 	}
 }
+#endif

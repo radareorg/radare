@@ -1650,10 +1650,9 @@ CMD_DECL(visual)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 #endif
-			if (strchr(line, '>')) {
+			if (strchr(line, '>') || strchr(line, '|')) {
 				eprintf("Cannot execute pipes in visual mode\n");
 			} else {
-XXX
 				radare_cmd(line, 1);
 			}
 		cons_flushable = 1;
@@ -1663,7 +1662,7 @@ XXX
 			cons_set_raw(1);
 			if (line[0])
 				cons_any_key();
-			cons_gotoxy(0,0);
+			cons_gotoxy(0, 0);
 			cons_clear();
 			continue;
 		case '"':
