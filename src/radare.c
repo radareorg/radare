@@ -1447,6 +1447,13 @@ void radare_prompt_command()
 	monitors_run();
 }
 
+static int check_session (const char *file, char *session) {
+	char *ptr = strchr (file, '.');
+	if (ptr)
+		return !memcmp(ptr+1, session, strlen(session));
+	return 0;
+}
+
 void monitors_run()
 {
 	char file[1024];
@@ -1481,10 +1488,8 @@ void monitors_run()
 				if (de->d_name[0] != '.' && !strstr(de->d_name, ".txt")) {
 					cons_flush();
 					sprintf(file, "%s/%s", path, de->d_name);
-					if (session) {
-						strcat(file, ".");
-						strcat(file, session);
-					}
+					if (check_session (file, session))
+						continue;
 					fd = fopen(file, "r");
 					if (fd) {
 						strcat(file, ".txt");
@@ -1511,6 +1516,8 @@ void monitors_run()
 						if (_print_fd != 1) // XXX stdout
 							close(_print_fd);
 						fclose(fd);
+					} else {
+						fprintf(stderr, "rsc monitor (cannot open '%s')\n", file);
 					}
 					_print_fd = 1;
 				}

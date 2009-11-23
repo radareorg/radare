@@ -61,6 +61,7 @@ if ($ARGV[0] eq "") {
 	print "  -r [name] remove a specific monitor\n";
 	print "  -R        removes all monitors\n";
 	print "Use MONITORPATH defaults to ~/.radare/monitor/\n";
+	print "Use MONITORSESSION defaults to 0\n";
 	exit(0);
 } elsif ($ARGV[1] ne "") {
 	open FD, ">$MONITOR_PATH/".$ARGV[0].".$MONITOR_SESSION" || die "cannot open";
