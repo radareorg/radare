@@ -1,0 +1,109 @@
+ Dis51 8051 Hex-file Disassembler
+
+
+ Description
+ 
+  Dis51 is a simple 8051 disassembler for Unix-like systems.  It may even
+  compile under Microsoft Windows, but that has never been tested.  It takes
+  an object file in Intel Hex format as input, and outputs an assembly
+  language file.  This disassembler assumes by default that everything in
+  memory is data, and nothing is code.  It starts at any number of entry
+  points you give it on the command line, then follows the code through all
+  branches until no branches are left.  It then outputs an assembly language
+  file which should assemble under any standard 8051 assembler.  All data
+  memory is declared using "DB" directives.
+ 
+  Dis51 uses symbolic names for SFRs it knows about.  To be compatible with
+  as many assemblers as possible, I only defined SFRs that I thought were
+  common to "standard" 8051s.  If you need to add other SFRs (or special
+  function bits) then the source file to modify is global.c.  It should be
+  self-explanatory how to modify it, I hope.
+ 
+  I wrote Dis51 mostly for fun.  It was Labor Day weekend and I felt like
+  taking a break from studies, so I started sketching out how I would design
+  a disassembler.  I probably spent no more than two weeks from preliminary
+  design to completion of testing.  I have been using the disassembler for a
+  few months now with no problems.  Another reason I created it was because
+  I spent one afternoon downloading every free 8051 disassembler I could
+  find on the web, and couldn't find a single one that compiled under
+  Solaris and successfully disassembled a HEX file.  I sincerely believe
+  that such a program exists, I just couldn't find it.  Thus, Dis51.
+ 
+ 
+ How to get it
+ 
+  Dis51 is free to download.  Get it from
+  http://home.earthlink.net/~davesullins/software/dis51-0.5.tar.gz.  It's
+  released under the GNU Public License (GPL), which means you can download
+  the program for free, you get the source code with it, you can change the
+  source code to suit your needs, and you can redistribute the program with
+  or without modifications as long as the person you distribute the program
+  to gets the same rights you were given.  If you use some of the code in
+  your own program, then your own program should also be released under the
+  GPL.
+ 
+
+ Compiling Dis51
+ 
+  Dis51 should compile without changes on any Unix-like machine.  It
+  probably even works under Microsoft Windows, but I don't have a compiler
+  to try it out.  Let me know what results you get if you try this.
+ 
+  First you need to download the source code.  If you have GNU tar, extract
+  the file using one of the following commands, depending on what GNU tar is
+  called on your system:
+   gtar xvfz dis51-0.5.tar.gz
+   tar xvfz dis51-0.5.tar.gz
+ 
+  If you do not have GNU tar, you can use the following command to extract
+  the source code:
+   cat dis51-0.5.tar.gz | gunzip -c - | tar -xvf -
+ 
+  Now change to the dis51-0.5 directory.  Edit the Makefile if necessary. 
+  If you do not have gcc on your system, change the first line from "CC=gcc"
+  to "CC=cc" or whatever your C compiler is called.  Type "make" when you
+  are done and dis51 will be created.
+  
+  Alternatively, you can use the libhexfile shared library.  Just type "make
+  shared" instead of "make" to link with libhexfile.  If you don't know
+  whether you have the libhexfile shared library installed then you probably
+  don't.
+  
+  That's it!  I apologize for the lack of a man page, but luckily it's a
+  pretty simple program.  Copy the executable (called dis51) to a bin
+  directory and you're ready to go.
+ 
+
+ How to use it
+ 
+  Dis51 takes a Hex file as stdin and outputs an assembly file to stdout.
+  In its simplest form, you can use the following command line:
+   dis51 < file.hex > file.a51
+ 
+  Without any command line options, Dis51 uses the entry point 0.  If you
+  want to use other entry points, list them on the command line.  For
+  example, to disassemble a program starting at address 0 which also uses
+  the serial port interrupt vector at address 35:
+   dis51 0 35 < file.hex > file.a51
+  
+  Optionally, you can give the first command line argument "-l" to output in
+  list format.  To repeat the previous example in list format:
+   dis51 -l 0 35 < file.hex > file.a51
+ 
+  One problem with Dis51 is that it is unable to determine the target
+  address of an indirect jump (JMP @A+DPTR).  Thus if your program contains
+  indirect jumps certain parts of code will not be disassembled.  The
+  solution is to search through the disassembled output of dis51 for the JMP
+  @A+DPTR instruction.  If you find this instruction, look for large chunks
+  of DB directives elsewhere in the program.  If you find some DB directives
+  that you suspect are code and not data, then manually add the addresses of
+  these directives to the command line of dis51 and run it again.  Hint: 80h
+  is the SJMP command.  Lots of DB 80h directives alternated with other data
+  bytes is likely to be a jump table.
+ 
+
+ Bugs
+ 
+  Please send me a message at davesullins@earthlink.net if you think you
+  have found a bug.
+

@@ -33,7 +33,7 @@ extern struct java_op {
 } java_ops[];
 
 // NOTE: bytes should be at least 16 bytes?
-int arch_java_aop(ut64 addr, const u8 *bytes, struct aop_t *aop)
+int arch_java_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 {
 	unsigned int i;
 	int sz = 1;

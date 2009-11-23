@@ -154,6 +154,9 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 	//b = config.block + bytes;
 	string[0]='\0';
 	switch(arch) {
+	case ARCH_8051:
+		dis51_udis (string, buf, bytes, seek);
+		break;
 	case ARCH_ARM:
 		arm_mode = 32;
 		force_thumb = 0;
@@ -289,6 +292,7 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, in
 	case ARCH_ARM:
 	case ARCH_MIPS:
 	case ARCH_SPARC:
+	case ARCH_8051:
 		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
 		break;
 	case ARCH_BF:
@@ -342,6 +346,7 @@ struct radis_arch_t {
 	int (*fun)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
 	{ "bf"      , ARCH_BF    , &arch_bf_aop  }   ,
+	{ "8051"    , ARCH_8051  , &arch_8051_aop }   , 
 	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel16" , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel32" , ARCH_X86   , &arch_x86_aop }   , 

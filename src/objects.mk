@@ -43,6 +43,11 @@ crOBJ+=arch/arm/gnu/arm-dis.o
 
 crOBJ+=arch/bf/code.o
 
+crOBJ+=arch/8051/code.o
+crOBJ+=arch/8051/global.o
+crOBJ+=arch/8051/pass1.o
+crOBJ+=arch/8051/pass2.o
+
 crOBJ+=arch/mips/vm.o
 crOBJ+=arch/mips/code.o
 crOBJ+=arch/mips/mips-dis.o
