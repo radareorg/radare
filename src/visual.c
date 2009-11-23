@@ -1650,7 +1650,7 @@ CMD_DECL(visual)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 #endif
-			if (strchr(line, '>') || strchr(line, '|')) {
+			if (strchr(line, '>') || strchr(line, '|') || strchr(line,'`')) {
 				eprintf("Cannot execute pipes in visual mode\n");
 			} else {
 				radare_cmd(line, 1);

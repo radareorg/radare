@@ -216,6 +216,6 @@ struct debug_t {
 extern struct event_t events[];
 int is_code(ut64 pc);
 int pids_cmdline(int pid, char *cmdline);
-int pids_sons_of_r(int pid, int recursive, int limit);
+int pids_sons_of_r(int pid, int recursive, int limit, int rad);
 
 #endif

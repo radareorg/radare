@@ -90,7 +90,7 @@ int pids_ptrace_all(int pid)
 	return n;
 }
 
-int pids_sons_of_r(int pid, int recursive, int limit)
+int pids_sons_of_r(int pid, int recursive, int limit, int rad)
 {
 	int p;
 	int n = 0;
@@ -119,10 +119,15 @@ int pids_sons_of_r(int pid, int recursive, int limit)
 					pids_cmdline(p, tmp2);
 					//for(i=0; i<recursive*2;i++)
 					//	printf(" ");
-					cons_printf(" `- %d : %s (%s)\n", p, tmp2, (tmp3[0]=='S')?"sleeping":(tmp3[0]=='T')?"stopped":"running");
+					if (rad)
+						cons_printf("%d ", p);
+					else cons_printf(" `- %d : %s (%s)\n",
+						p, tmp2,
+						(tmp3[0]=='S')?"sleeping":
+						(tmp3[0]=='T')?"stopped":"running");
 					n++;
 					if (recursive<limit)
-						n+=pids_sons_of_r(p, recursive+1, limit);
+						n+=pids_sons_of_r(p, recursive+1, limit, rad);
 				}
 			}
 			fclose(fd);
@@ -196,9 +201,21 @@ const char *debug_unix_pid_status(int pid)
 int debug_pstree(const char *input)
 {
 	int foo, tid = 0;
-
-	if (input)
+	int rad = 0;
+	if (input) { 
 		tid = atoi(input);
+		switch(input[-1]) {
+		case '*':
+			rad = 1;
+			break;
+		case '?':
+			eprintf("Usage: !pid[*] [pid]\n");
+			eprintf(" !pid    : list all processes in a human way\n");
+			eprintf(" !pid*   : list all processes as a pid list oneliner\n");
+			eprintf(" !pid 29 : select the process 29 (change thread)\n");
+			break;
+		}
+	}
 
 	if (tid != 0) {
 		if (strstr(input, "stop")) {
@@ -228,13 +245,21 @@ int debug_pstree(const char *input)
 	}
 
 	foo = ps.pid;
-	eprintf(" tid : %d\n", ps.tid);
-	eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
-	pids_sons_of_r(foo, 0, 0);
-	if (ps.pid != ps.tid) {
-		foo = ps.tid;
+	if (rad) {
+		cons_printf ("%d ", ps.tid);
+		pids_sons_of_r (foo, 0, 0, 1);
+		if (ps.pid != ps.tid) // sure?
+			cons_printf ("%d", ps.pid);
+		cons_newline ();
+	} else {
+		eprintf(" tid : %d\n", ps.tid);
 		eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
-		pids_sons_of_r(foo, 0, 0);
+		pids_sons_of_r(foo, 0, 0, 0);
+		if (ps.pid != ps.tid) {
+			foo = ps.tid;
+			eprintf(" pid : %d 0x%08llx (%s)\n", foo, arch_pc(foo), debug_unix_pid_status(foo));
+			pids_sons_of_r(foo, 0, 0, 0);
+		}
 	}
 
 	return 0;

@@ -1575,6 +1575,12 @@ CMD_DECL(print)
 				bs = config.block_size;
 				radare_set_block_size_i(data->size);
 			}
+		} else {
+			if (strchr(input, ' ')) {
+				ut64 num = get_math (input+1);
+				bs = config.block_size;
+				radare_set_block_size_i(num);
+			}
 		}
 		fmt = format_get(input[0]); //, fmt);
 		if (fmt == FMT_ERR)

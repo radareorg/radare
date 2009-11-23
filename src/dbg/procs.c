@@ -40,7 +40,7 @@ int pids_sons_of(int pid)
 	char buf[512];
 	pids_cmdline(pid, buf); /* this is OS specific */
 	printf("-+- %d : %s\n",pid, buf);
-	return pids_sons_of_r(pid,0,999);
+	return pids_sons_of_r(pid,0,999,0);
 }
 
 int debug_pids()

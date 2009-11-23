@@ -39,7 +39,7 @@ static int help_message()
 	TITLE_END
 	cons_printf("  info               show debugger and process status\n");
 	cons_printf("  msg                show last debugger status message\n");
-	cons_printf("  pid [tid] [action] show pid of the debug process, current tid and childs, or set tid.\n");
+	cons_printf("  pid[*] [tid] [op]  show pid of the debug process, current tid and childs, or set tid.\n");
 	//cons_printf("  pids            show the pids of all the attachable processes\n"); // ??!?
 	cons_printf("  status             show the contents of /proc/pid/status\n");
 	cons_printf("  signal             show signals handler\n");
@@ -159,6 +159,8 @@ static struct commads_t {
 	CB_CMD( "dump"     , CB_SPACE    , process_dump )       ,
 	CB_CMD( "restore"  , CB_SPACE    , process_restore )    ,
 	CB_CMD( "pids"     , CB_NOARGS   , debug_pids )         ,
+	CB_CMD( "pid?"     , CB_NORMAL   , debug_pstree )       ,
+	CB_CMD( "pid*"     , CB_NORMAL   , debug_pstree )       ,
 	CB_CMD( "pid"      , CB_SPACE    , debug_pstree )       ,
 	CB_CMD( "attach"   , CB_INT      , debug_attach)        ,
 	CB_CMD( "detach"   , CB_NOARGS   , debug_detach )       ,

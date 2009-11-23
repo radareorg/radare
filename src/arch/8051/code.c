@@ -39,9 +39,10 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 
 	ptr = dis51_inst1 (bytes, 0, &type);
 	if (ptr == -1) {
-		printf ("Invalid instruction %02x %02x\n",
+		eprintf ("Invalid instruction %02x %02x\n",
 			bytes[0], bytes[1]);
-		return -1;
+		aop->type = AOP_TYPE_TRAP;
+		return 1; // skip instruction..
 	}
 	ilen = dis51_inst2 (str, bytes, 0);
 

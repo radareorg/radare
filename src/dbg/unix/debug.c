@@ -52,7 +52,6 @@
 #include <sys/stat.h>
 #include "../events.h"
 #include "../debug.h"
-#include "procs.h"
 
 #if __FreeBSD__
 int th_init_freebsd(int pid)
