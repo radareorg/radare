@@ -2,7 +2,7 @@
 .Dt BINDIFF 1
 .Os
 .Sh NAME
-.Nm bindiff
+.Nm rsc bindiff
 .Nd Binary diff utility
 .Sh SYNOPSIS
 .Nm bindiff
@@ -16,7 +16,7 @@ This command allows you to view the differences between two binary files.
 .Pp
 Default output is probably not human readable, but is fine for scripting. For a colorized and verbose output you can use the 'bdcolor' radare script via rsc(1).
 .Pp
-$ bindiff /bin/ls /bin/ls.orig | rsc bdcolor 3
+$ rsc bindiff /bin/ls /bin/ls.orig | rsc bdcolor 3
 .Pp
 The bdcolor output shows a 4-5 column output showing the a-file and b-file offsets. The byte contained in the afile and bfile offsets and an optional column containing a pipe character that determines the difference.
 .Pp

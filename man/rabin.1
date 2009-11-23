@@ -1,4 +1,4 @@
-.Dd July 16, 2008
+.Dd October 22, 2009
 .Dt RABIN 1
 .Os
 .Sh NAME
@@ -17,24 +17,34 @@ This program allows you to get information about ELF/PE/MZ and CLASS files in a 
 Show entrypoints for disk and on-memory
 .It Fl i
 Show imports (symbols imported from libraries
+.It Fl I
+Display general binary information
 .It Fl c
 Show header checksum (if exist)
 .It Fl s
 Show exported symbols
-.It Fl o
-Show other symbols (not import/export)
 .It Fl S
 Show sections
+.It Fl o
+Execute a specific Operation on the binary.
+ Use -o help for more information:
+  -o r/.text/1024   : resize section
+  -o d/s/10         : dump symbols
+  -o d/S/.text      : dump sections
 .It Fl l
 List linked libraries to the binary
 .It Fl L Ar library
 Show the base address of a library loaded in memory
+.It Fl H
+Display header information
 .It Fl r
-Show output in radare format
+Show output in radare commands
+.It Fl x
+Find xrefs for symbols (-s, -i, -z required)
 .It Fl z
 Show strings inside .data section (like gnu strings does)
 .It Fl v
-Enable verbosity
+Enable verbosity (use -vv or -vvv for more verbose levels)
 .It Fl h
 Show usage help message.
 .El

@@ -134,7 +134,7 @@ install:
 	${INSTALL_MAN} man/rabin.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/radare.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rahash.1 ${MANDIR}/man1/
-	#${INSTALL_MAN} man/bindiff.1 ${MANDIR}/man1/
+	${INSTALL_MAN} man/rsc-bindiff.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/xrefs.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rsc.1 ${MANDIR}/man1/
 	${INSTALL_MAN} man/rfile.1 ${MANDIR}/man1/
@@ -170,9 +170,7 @@ uninstall deinstall:
 	-rm -f ${BINDIR}/rasm
 	-rm -f ${BINDIR}/rasc
 	-rm -f ${BINDIR}/rax
-	-rm -f ${BINDIR}/xc # old
 	-rm -f ${BINDIR}/xrefs
-	-rm -f ${BINDIR}/bindiff
 	-rm -f ${BINDIR}/rsc
 	-rm -f ${BINDIR}/rfile
 	-rm -f ${BINDIR}/rabin
@@ -202,6 +200,7 @@ uninstall deinstall:
 	-rm -f ${MANDIR}/man1/rasm.1
 	-rm -f ${MANDIR}/man1/rsc.1
 	-rm -f ${MANDIR}/man1/radare.1
+	-rm -f ${MANDIR}/man1/rsc-bindiff.1
 	-rm -f ${MANDIR}/man1/rahash.1
 	-rm -f ${MANDIR}/man1/rasc.1
 	-rm -f ${MANDIR}/man5/radarerc.5

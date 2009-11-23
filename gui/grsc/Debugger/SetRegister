@@ -1,3 +1,4 @@
 #!/bin/sh
-echo ":!reg* > /tmp/.regs"
+echo "q!reg* > /tmp/.regs"
 echo ".!rsc SetRegister"
+echo "V"

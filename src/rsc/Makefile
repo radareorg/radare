@@ -22,7 +22,7 @@ gtk-stuff:
 	@echo No gtk is found..so no gtk rsc is built
 else
 FILES+= Display EntryDialog SeekTo SetRegister
-gtk-stuff: 
+gtk-stuff:
 	cd gtk && ${MAKE}
 	cp -f gtk/Display gtk/EntryDialog gtk/SeekTo gtk/SetRegister pool
 endif

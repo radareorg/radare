@@ -1,4 +1,4 @@
-.Dd July 17, 2008
+.Dd November 22, 2009
 .Dt RADIFF 1
 .Os
 .Sh NAME
@@ -7,6 +7,8 @@
 .Sh SYNOPSIS
 .Nm radiff
 .Op -cbgeirp
+.Op -f [from]
+.Op -t [to]
 .Op file.a
 .Op file.b
 .Sh DESCRIPTION
@@ -15,14 +17,31 @@ radiff implements some binary diffing algorithms.
 .Bl -tag -width Fl
 .It Fl b
 Use bytediff (byte-per-byte binary diffing between two target files), this is the faster way to do it, but it will not handle byte insertion or offset displacements.
+.It Fl c
+Show output in disassembly format with delta offset support.
 .It Fl d
 Use the GNU diff as backend (slow, but really good output)
 .It Fl e
-Use the erg0ts generic c++ implementation of bindiff
+Use the erg0ts generic c++ implementation of bindiff.
+.It Fl n
+Display only the number of differences found.
 .It Fl r
+Display results as radare commands (used to generate binary patch files)
+.It Fl s
+Use rsc symdiff to find differences at symbol level (support delta diffing)
+.It Fl S
+Use rsc symbytediff to find differences at symbol level using a byte-per-byte binary comparision algorithm.
+.It Fl p
 Perform a diff between two RDB files (radare databases) these files can be generated from radare using the code analysis commands, or from IDA using the ida2rdb.idc script)
+.It Fl f [from]
+Define from address (start looking for differences at offset 'from'
+.It Fl t [to]
+Define end address (stop binary diffing at offset 'to'
 .It Fl h
 Show usage help message.
+.Sh NOTES
+.Pp
+Check 'man rsc-bindiff'
 .El
 .Sh SEE ALSO
 .Pp
@@ -34,6 +53,7 @@ Show usage help message.
 .Xr rfile(1) ,
 .Xr xc(1) ,
 .Xr rsc(1) ,
+.Xr rsc-bindiff(1) ,
 .Xr rasc(1) ,
 .Xr rasm(1) ,
 .Xr xrefs(1)

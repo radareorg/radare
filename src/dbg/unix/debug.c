@@ -937,6 +937,9 @@ int debug_dispatch_wait()
 					debug_msg_set("pid %d clone()\n", ps.tid);
 					eprintf("CLONE HAS BEEN INVOKED\n");
 					break;
+				case 28:
+					eprintf("Child has generated a Segmentation fault.\n");
+					break;
 				default:
 					debug_msg_set("pid %d unknown signal received (%d)\n", ps.tid, WS_SI(si_signo));
 					eprintf("Unknown signal %d received\n", WS_SI(si_signo));

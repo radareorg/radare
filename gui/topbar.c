@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@ void arch_mode_changed(GtkComboBox *widget, gpointer user_data)
 	case 7: core_cmd(":eval asm.arch = mips\n\n"); break;
 	case 8: core_cmd(":eval asm.arch = csr\n\n"); break;
 	case 9: core_cmd(":eval asm.arch = sparc\n\n"); break;
+	case 10: core_cmd(":eval asm.arch = 8051\n\n"); break;
 	}
 
 	core_cmd_end();
@@ -131,6 +132,7 @@ GtkWidget *gradare_topbar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 7, "mips");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 8, "csr");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 9, "sparc");
+	gtk_combo_box_insert_text(GTK_COMBO_BOX(arch), 10, "8051");
 #if _MAEMO_
 	gtk_combo_box_set_active(GTK_COMBO_BOX(arch), 3);
 #else

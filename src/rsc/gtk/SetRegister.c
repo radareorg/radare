@@ -154,6 +154,10 @@ static void set_register_init_regs (SetRegister* self) {
 				break;
 			}
 			arr = (_tmp9_ = (_tmp8_ = _tmp7_ = g_regex_split_simple (" @ ", _tmp6_ = string_substring (line, (glong) 2, (glong) (-1)), 0, 0), _g_free0 (_tmp6_), _tmp8_), arr_length1 = _vala_array_length (_tmp7_), arr_size = arr_length1, _tmp9_);
+			if (arr_length1 < 2) {
+				arr = (_vala_array_free (arr, arr_length1, (GDestroyNotify) g_free), NULL);
+				break;
+			}
 			g_hash_table_insert (self->priv->regs, g_strdup (arr[0]), g_strdup (arr[1]));
 			arr = (_vala_array_free (arr, arr_length1, (GDestroyNotify) g_free), NULL);
 		}

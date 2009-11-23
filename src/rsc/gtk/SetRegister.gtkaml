@@ -37,6 +37,8 @@
 			string line;
 			while ((line = in_stream.read_line (null, null)) != null) {
 				var arr = Regex.split_simple(" @ ", line.substring(2,-1));
+				if (arr.length<2)
+					break;
 				regs.insert(arr[0], arr[1]);
 			}
 		} catch(Error e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008
+ * Copyright (C) 2006, 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -1623,7 +1623,6 @@ CMD_DECL(visual)
 			//strcpy(line, ptr);
 			//ptr = line;
 			optr = ptr;
-			
 			tmpbuf[0]='\0';
 			do {
 				if (ptr[strlen(ptr)-1]=='\\') {
@@ -1644,15 +1643,19 @@ CMD_DECL(visual)
 				ret = cons_fgets(ptr, 128, 0, NULL);
 			} while(ret);
 			free(optr);
-			radare_cmd(line, 1);
 #else
 			line[0]='\0';
 			dl_prompt = ":> ";
 			if (cons_fgets(line, 1000, 0, NULL) <0)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
-			radare_cmd(line, 1);
 #endif
+			if (strchr(line, '>')) {
+				eprintf("Cannot execute pipes in visual mode\n");
+			} else {
+XXX
+				radare_cmd(line, 1);
+			}
 		cons_flushable = 1;
 		cons_flush();
 			config.visual=1;

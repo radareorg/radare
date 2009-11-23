@@ -1667,9 +1667,9 @@ int dump_sections(const char *str)
 static int operation_help()
 {
 	printf("Operation string:\n"
-		" -o r/.text/1024\n"
-		" -o d/s/10\n"
-		" -o d/S/.text\n");
+		" -o r/.text/1024    # resize text section\n"
+		" -o d/s/10          # dump symbols\n"
+		" -o d/S/.text       # dump sections\n");
 	return 0;
 }
 
