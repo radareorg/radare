@@ -155,7 +155,7 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 	string[0]='\0';
 	switch(arch) {
 	case ARCH_8051:
-		dis51_udis (string, buf, bytes, seek);
+		ret = dis51_udis (string, buf, bytes, seek);
 		break;
 	case ARCH_ARM:
 		arm_mode = 32;
@@ -597,6 +597,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case ARCH_ARM:
 				// endian stuff here
 				myinc += arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
+				break;
+			case ARCH_8051:
+				myinc += arch_8051_aop(seek, (const u8 *)block+bytes, &aop);
 				break;
 			case ARCH_MIPS:
 				arch_mips_aop(seek, (const u8 *)block+bytes, &aop);

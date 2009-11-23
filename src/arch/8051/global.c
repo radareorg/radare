@@ -30,8 +30,8 @@ int Lst;
 const char mnemonic[256][20] = {
 /* 0 */
 	"nop",
-	"ajmp %s\n",
-	"ljmp %s\n",
+	"ajmp %s",
+	"ljmp %s",
 	"rr A",
 	"inc A",
 	"inc %s",
@@ -64,8 +64,8 @@ const char mnemonic[256][20] = {
 	"dec R7",
 /* 2 */
 	"jb %s, %s",
-	"ajmp %s\n",
-	"ret\n",
+	"ajmp %s",
+	"ret",
 	"rl A",
 	"add A, #%s",
 	"add A, %s",
@@ -98,7 +98,7 @@ const char mnemonic[256][20] = {
 	"addc A, R7",
 /* 4 */
 	"jc %s",
-	"ajmp %s\n",
+	"ajmp %s",
 	"orl %s, A",
 	"orl %s, #%s",
 	"orl A, #%s",
@@ -132,7 +132,7 @@ const char mnemonic[256][20] = {
 	"anl A, R7",
 /* 6 */
 	"jz %s",
-	"ajmp %s\n",
+	"ajmp %s",
 	"xrl %s, A",
 	"xrl %s, #%s",
 	"xrl A, #%s",
@@ -151,7 +151,7 @@ const char mnemonic[256][20] = {
 	"jnz %s",
 	"acall %s",
 	"orl C, %s",
-	"jmp @A+dptr\n",
+	"jmp @A+dptr",
 	"mov A, #%s",
 	"mov %s, #%s",
 	"mov @R0, #%s",
@@ -165,8 +165,8 @@ const char mnemonic[256][20] = {
 	"mov R6, #%s",
 	"mov R7, #%s",
 /* 8 */
-	"sjmp %s\n",
-	"ajmp %s\n",
+	"sjmp %s",
+	"ajmp %s",
 	"anl C, %s",
 	"movc A, @A+PC",
 	"div AB",
@@ -200,7 +200,7 @@ const char mnemonic[256][20] = {
 	"subb A, R7",
 /* A */
 	"orl C, /%s",
-	"ajmp %s\n",
+	"ajmp %s",
 	"mov C, %s",
 	"inc dptr",
 	"mul AB",
@@ -234,7 +234,7 @@ const char mnemonic[256][20] = {
 	"cjne R7, #%s, %s",
 /* C */
 	"push %s",
-	"ajmp %s\n",
+	"ajmp %s",
 	"clr %s",
 	"clr C",
 	"swap A",
@@ -268,7 +268,7 @@ const char mnemonic[256][20] = {
 	"djnz R7, %s",
 /* E */
 	"movx A, @dptr",
-	"ajmp %s\n",
+	"ajmp %s",
 	"movx A, @R0",
 	"movx A, @R1",
 	"clr A",

@@ -44,7 +44,6 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 		return -1;
 	}
 	ilen = dis51_inst2 (str, bytes, 0);
-printf("LEN =%d\n", ilen);
 
 	switch (type) {
 	case 'j':
