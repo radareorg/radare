@@ -140,7 +140,7 @@ static int tok_parse (char* str, int len, token * tlist )
 {
 	int i;
 	int estat;
-	unsigned char tokaux;
+	int tokaux;
 	int tokact=0;
 	char straux[5];
 	int rangemin = 0; // XXX BUGGY ???
