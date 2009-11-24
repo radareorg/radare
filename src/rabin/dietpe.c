@@ -125,8 +125,25 @@ static PE_DWord PE_(dietpe_aux_offset_to_rva)(PE_(dietpe_obj) *bin, PE_DWord off
 	return 0;
 }
 
-static int PE_(dietpe_do_checks)(PE_(dietpe_obj) *bin)
+static int PE_(dietpe_init)(PE_(dietpe_obj) *bin)
 {
+	int sections_size, len;
+
+	len = lseek(bin->fd, 0, SEEK_END);
+
+	lseek(bin->fd, 0, SEEK_SET);
+	bin->dos_header = malloc(sizeof(PE_(image_dos_header)));
+	read(bin->fd, bin->dos_header, sizeof(PE_(image_dos_header)));
+
+	if (bin->dos_header->e_lfanew > len) {
+		fprintf(stderr, "Invalid e_lfanew field\n");
+		return -1;
+	}
+
+	lseek(bin->fd, bin->dos_header->e_lfanew, SEEK_SET);
+	bin->nt_headers = malloc(sizeof(PE_(image_nt_headers)));
+	read(bin->fd, bin->nt_headers, sizeof(PE_(image_nt_headers)));
+
 	if (strncmp((char*)&bin->dos_header->e_magic, "MZ", 2)) {
 		fprintf(stderr, "File not PE\n");
 		return -1;
@@ -137,25 +154,13 @@ static int PE_(dietpe_do_checks)(PE_(dietpe_obj) *bin)
 		return -1;
 	}
 
-	return 0;
-}
-
-static int PE_(dietpe_init)(PE_(dietpe_obj) *bin)
-{
-	int sections_size;
-
-	lseek(bin->fd, 0, SEEK_SET);
-	bin->dos_header = malloc(sizeof(PE_(image_dos_header)));
-	read(bin->fd, bin->dos_header, sizeof(PE_(image_dos_header)));
-
-	lseek(bin->fd, bin->dos_header->e_lfanew, SEEK_SET);
-	bin->nt_headers = malloc(sizeof(PE_(image_nt_headers)));
-	read(bin->fd, bin->nt_headers, sizeof(PE_(image_nt_headers)));
-
-	if (PE_(dietpe_do_checks)(bin) == -1)
-		return -1;
-
 	sections_size = sizeof(PE_(image_section_header)) * bin->nt_headers->file_header.NumberOfSections;
+
+	if (sections_size > len) {
+		fprintf(stderr, "Invalid NumberOfSections value\n");
+		return -1;
+	}
+
 	lseek(bin->fd, bin->dos_header->e_lfanew + sizeof(PE_(image_nt_headers)), SEEK_SET);
 	bin->section_header = malloc(sections_size);
 	read(bin->fd, bin->section_header, sections_size);
