@@ -1090,7 +1090,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 void radis_str_e(int arch, const u8 *block, int len, int rows)
 {
 	const char *cmd_asm;
-	int flags, linescall;
+	int flags, linescall, asmflags;
 	int size, bytes, offset, splits, comments, lines, section,
 	traces, reladdr, flagsline, functions, stackptr, flagsall;
 	// TODO: add xrefsto here
@@ -1102,11 +1102,11 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 		bytes    = (int) config_get_i("asm.bytes");
 		offset   = (int) config_get_i("asm.offset");
 		functions= (int) config_get_i("asm.functions");
+		asmflags = (int) config_get_i("asm.flags");
 		flagsall = (int) config_get_i("asm.flagsall");
 		if (config.verbose) {
 			section  = (int) config_get_i("asm.section");
 			splits   = (int) config_get_i("asm.split");
-			flags    = (int) config_get_i("asm.flags");
 			flagsline= (int) config_get_i("asm.flagsline");
 			traces   = (int) config_get_i("asm.trace");
 		}
@@ -1126,7 +1126,7 @@ void radis_str_e(int arch, const u8 *block, int len, int rows)
 		if (section) flags |= RADIS_SECTION;
 		if (splits) flags |= RADIS_SPLITS;
 		if (stackptr) flags |= RADIS_STACKPTR;
-		if (flags) flags |= RADIS_FLAGS;
+		if (asmflags) flags |= RADIS_FLAGS;
 		if (flagsline) flags |= RADIS_FLAGSLINE;
 		if (flagsall) flags |= RADIS_FLAGSALL;
 //		if (xrefsto) flags |= RADIS_XREFSTO;
