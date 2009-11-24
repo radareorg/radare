@@ -154,6 +154,9 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 	//b = config.block + bytes;
 	string[0]='\0';
 	switch(arch) {
+	case ARCH_Z80:
+		ret = z80_udis (string, buf, bytes, seek);
+		break;
 	case ARCH_8051:
 		ret = dis51_udis (string, buf, bytes, seek);
 		break;
@@ -283,6 +286,9 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, in
 		/* ultra ugly hack */
 		ret = udis_arch_string(arch, buf, b, endian, seek, bytes, myinc);
 		break;
+	case ARCH_BF:
+		ret = arch_bf_dis(b, seek+myinc, 1024);
+		break;
 	case ARCH_PPC:
 	case ARCH_JAVA:
 	case ARCH_M68K:
@@ -293,10 +299,8 @@ int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, in
 	case ARCH_MIPS:
 	case ARCH_SPARC:
 	case ARCH_8051:
+	case ARCH_Z80:
 		ret = udis_arch_string(arch, buf, b, endian, seek+myinc, bytes, myinc);
-		break;
-	case ARCH_BF:
-		ret = arch_bf_dis(b, seek+myinc, 1024);
 		break;
 	default:
 		strcpy(buf, "Unknown architecture");
@@ -346,6 +350,7 @@ struct radis_arch_t {
 	int (*fun)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 } radis_arches [] = {
 	{ "bf"      , ARCH_BF    , &arch_bf_aop  }   ,
+	{ "z80"     , ARCH_Z80   , &arch_z80_aop }   , 
 	{ "8051"    , ARCH_8051  , &arch_8051_aop }   , 
 	{ "intel"   , ARCH_X86   , &arch_x86_aop }   , 
 	{ "intel16" , ARCH_X86   , &arch_x86_aop }   , 
@@ -597,6 +602,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			case ARCH_ARM:
 				// endian stuff here
 				myinc += arch_arm_aop(seek, (const u8 *)block+bytes, &aop);
+				break;
+			case ARCH_Z80:
+				myinc += arch_z80_aop(seek, (const u8 *)block+bytes, &aop);
 				break;
 			case ARCH_8051:
 				myinc += arch_8051_aop(seek, (const u8 *)block+bytes, &aop);

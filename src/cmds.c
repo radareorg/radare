@@ -2756,11 +2756,13 @@ CMD_DECL(help)
 {
 	if (strlen(input)>0) {
 		// XXX switch/case this!
-		if (input[0]=='!') {
+		switch(input[0]) {
+		case '!':
 			if (config.last_cmp != 0)
 				radare_cmd(input+1, 0);
-		} else
-		if (input[0]=='s') {
+			break;
+		case 's':
+			{
 			ut64 from, to, step;
 			char *p, *p2;
 			for(input=input+1;input[0]==' ';input=input+1);
@@ -2778,16 +2780,19 @@ CMD_DECL(help)
 					cons_printf("%lld ", from);
 				cons_newline();
 			}
-		} else
-		if (input[0]=='q') {
+			}
+			break;
+		case 'q':
 			config.last_cmp = get_math(input+1);
-		} else
-		if (input[0]=='v') {
+			break;
+		case 'v':
+			{
 			ut64 res = get_math(input+1);
 			config.last_cmp = res;
 			cons_printf("0x%08llx\n", res);
-		} else
-		if (input[0]=='?') {
+			}
+			break;
+		case '?':
 			if (input[1]=='?') {
 				cons_printf("0x%llx\n", config.last_cmp);
 			} else
@@ -2833,8 +2838,9 @@ CMD_DECL(help)
 			} else
 			if (config.last_cmp == 0)
 				radare_cmd(input+1, 0);
-		} else
-		if (input[0]=='<') {
+			break;
+		case '<':
+			{
 			char buf[1024];
 			cons_printf("%s?\n", input+1);
 			cons_flush();
@@ -2848,24 +2854,30 @@ CMD_DECL(help)
 			if (!strcmp(buf, "n")) {
 				config.last_cmp = 0;
 			} else config.last_cmp = get_math(buf);
-		} else
-		if (input[0]=='t') {
+			}
+			break;
+		case 't':
+			{
 			struct r_prof_t prof;
 			r_prof_start(&prof);
 			radare_cmd(input+1, 0);
 			r_prof_end(&prof);
 			config.last_cmp = (ut64)prof.result;
 			eprintf("%lf\n", prof.result);
-		} else
-		if (input[0]=='e') {
+			}
+			break;
+		case 'e':
+			{
 			char *str = input+1;
-			if (str[0]==' ') str = str+1;
+			if (str[0]==' ')
+				str = str+1;
 			if (str[0]) {
 				cons_strcat(str);
 				cons_newline();
-			}
-		} else
-		if (input[0]=='f') {
+			} }
+			break;
+		case 'f':
+			{
 			//double n1, n2;
 			/* TODO: Add support for doubles 'F'? */
 			char *str = input+((input[1]==' ')?2:1);
@@ -2892,20 +2904,26 @@ CMD_DECL(help)
 			/* it is consistent ? */
 			//if (n1 != n2) cons_printf("%s,\n", buf);
 			//else cons_printf("%s\n", buf);
-		} else
-		if (input[0]=='i') {
+			}
+			break;
+		case 'i':
+			{
 			char str[128];
 			eprintf("%s: ", input+2);
 			fflush(stderr);
 			fgets(str, 127, stdin);
 			config.last_cmp = get_math(str);
-		} else
-		if (input[0]=='z') {
+			}
+			break;
+		case 'z':
+			{
 			char *ptr;
 			for(ptr=input+1;*ptr==' ';ptr=ptr+1);
 			config.last_cmp = strlen(ptr);
-		} else
-		if (input[0]=='x') {
+			}
+			break;
+		case 'x':
+			{
 			char buf[1024];
 			int len;
 			if (input[2]=='0' && input[3]=='x') {
@@ -2941,13 +2959,18 @@ CMD_DECL(help)
 				if (len>0)
 					print_data(0, "", buf, len, FMT_ASC);
 			}
-		} else
-		if (input[0]=='X') {
+			}
+			break;
+		case 'X':
+			{
 			ut64 res = get_math(input+1);
 			if (res > 0xffffffff)
 				cons_printf("0x%llx\n", -res);
 			else cons_printf("0x%llx\n", res);
-		} else {
+			}
+			break;
+		default:
+			{
 			ut64 res = get_math(input);
 			config.last_cmp = res;
 		//	if (!strchr(input, '!') && !strchr(input, '=')) {
@@ -2974,6 +2997,7 @@ CMD_DECL(help)
 				cons_newline();
 			}// else cons_printf("0x%llx\n", res);
 			//}
+			}
 		}
 	} else show_help_message();
 

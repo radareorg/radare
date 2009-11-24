@@ -43,6 +43,9 @@ crOBJ+=arch/arm/gnu/arm-dis.o
 
 crOBJ+=arch/bf/code.o
 
+crOBJ+=arch/z80/code.o
+crOBJ+=arch/z80/z80_disassembler.o
+
 crOBJ+=arch/8051/code.o
 crOBJ+=arch/8051/global.o
 crOBJ+=arch/8051/pass1.o

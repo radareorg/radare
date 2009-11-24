@@ -48,6 +48,7 @@ enum {
 	ARCH_OBJD  = 11,
 	ARCH_BF    = 12,
 	ARCH_8051  = 13,
+	ARCH_Z80   = 14,
 	ARCH_AOP   = 0x10000
 };
 
@@ -115,6 +116,7 @@ struct aop_t {
 int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_aop_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_8051_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
+int arch_z80_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_bf_aop(ut64 addr, const u8 *buf, struct aop_t *aop);
 int arch_sparc_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
 int arch_arm_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
