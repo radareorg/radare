@@ -188,7 +188,7 @@ int var_list_show(ut64 addr)
 				v->vartype, v->name);
 			var_print_value(v);
 			/* TODO: detect pointer to strings and so on */
-			if (string_flag_offset(buf, value, 0))
+			if (string_flag_offset(NULL, buf, value, 0))
 				cons_printf(" ; %s\n", buf);
 			else cons_newline();
 		}

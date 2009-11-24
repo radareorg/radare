@@ -467,7 +467,7 @@ const char *flag_name_by_offset(ut64 offset)
  * idx =  0 : just return the first one found
  * idx =  1 : continue searching for flag after the first one
  */
-int string_flag_offset(char *buf, ut64 seek, int idx)
+int string_flag_offset(char *match, char *buf, ut64 seek, int idx)
 {
 	int delta;
 	flag_t *ref = NULL;
@@ -478,27 +478,40 @@ int string_flag_offset(char *buf, ut64 seek, int idx)
 	buf[0]='\0';
 
 	list_for_each(pos, &flags) {
-		if (config.interrupted) break;
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+		if (config.interrupted) break;
 		if (flag->offset == seek || flag->offset == seek+config.vaddr) {
 			found = 1;
-			if (idx<1) {
-				if (buf[0]) strcat(buf, ",");
+			if (idx != -2 && idx<1) {
+				if (buf[0])
+					strcat(buf, ",");
 				strcat(buf, flag->name);
 			} else {
-				ref = flag;
-				break;
+				if (match && *match) {
+					if (strstr(flag->name, match))
+						ref = flag;
+				} else {
+					ref = flag;
+					break;
+				}
 			}
 		} else
 		if (flag->offset <= seek+config.vaddr && (!ref || flag->offset > ref->offset)) {
-			if (!found) ref = flag;
+			if (!found) {
+				if (match && *match) {
+					if (strstr(flag->name, match))
+						ref = flag;
+				} else ref = flag;
+			}
 		}
 	}
 	if (idx==-1)
 		return buf[0]!='\0';
 	if (idx==-2) {
-		if (buf[0]=='\0') {
-			if (ref) {
+		if (buf[0]=='\0' && ref) {
+			if (match && *match) {
+				strcpy(buf, ref->name);
+			} else {
 				int delta = (int)((seek+config.vaddr)-ref->offset);
 				if (delta<0)
 					snprintf(buf2, 32, "%s-0x%x", ref->name, -delta);
@@ -523,10 +536,10 @@ int string_flag_offset(char *buf, ut64 seek, int idx)
 	return 0;
 }
 
-void print_flag_offset(ut64 seek)
+void print_flag_offset(const char *match, ut64 seek)
 {
-	char buf[256];
-	if ( string_flag_offset(buf, seek, -2) )
+	char buf[512];
+	if ( string_flag_offset(match, buf, seek, -2) )
 		cons_strcat(buf);
 }
 

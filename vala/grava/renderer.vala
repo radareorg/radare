@@ -102,7 +102,6 @@ public class Grava.Renderer
 		ctx.stroke();
 		ctx.restore();
 		ctx.set_source_rgba (0.6, 0.6, 0.6,1);
-
 	}
 
 	public static void set_color(Context ctx, HashTable<string,string> ht)

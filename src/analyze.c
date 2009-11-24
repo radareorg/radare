@@ -738,7 +738,7 @@ int radare_analyze(ut64 seek, int size, int depth, int rad)
 				if (rad) {
 					ut32 n = (config.endian)?num:nume;
 					str[0]='\0';
-					string_flag_offset(str, (ut64)n, 0);
+					string_flag_offset(NULL, str, (ut64)n, 0);
 					if (!strnull(str)) {
 						/* reference by pointer */
 						cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", (ut64)(seek+i-3), (ut64)n, str);
@@ -986,7 +986,7 @@ int analyze_function(ut64 from, int recursive, int report)
 		break;
 	case 1:
 		buf[0]='\0';
-		string_flag_offset(buf, from, 0);
+		string_flag_offset(NULL, buf, from, 0);
 		cons_printf("offset = 0x%08llx\n", from);
 		cons_printf("label = %s\n", buf);
 		cons_printf("size = %lld\n", to-seek);
@@ -1031,7 +1031,7 @@ int analyze_function(ut64 from, int recursive, int report)
 				break;
 			case 0:
 				buf[0]='\0';
-				string_flag_offset(buf, aop.jump, 0);
+				string_flag_offset(NULL, buf, aop.jump, 0);
 				// if resolved as sym_ add its call
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", aop.jump, seek+config.vaddr, buf);
 			}
@@ -1058,7 +1058,7 @@ int analyze_function(ut64 from, int recursive, int report)
 					break;
 				case 0:
 					buf[0]='\0';
-					string_flag_offset(buf, aop.jump, 0);
+					string_flag_offset(NULL, buf, aop.jump, 0);
 					// if resolved as sym_ add its call
 					cons_printf("CX 0x%08llx @ 0x%08llx ; %s\n",
 						seek, (ut64)aop.ref, buf);

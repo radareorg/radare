@@ -286,10 +286,10 @@ load_graph_at("$$");
 		case '-':
 			graph.zoom-=ZOOM_FACTOR;
 			break;
-		case '*':
+		case ']':
 			graph.angle+=0.05;
 			break;
-		case '/':
+		case '[':
 			graph.angle-=0.05;
 			break;
 		default:

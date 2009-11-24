@@ -24,7 +24,7 @@ public class Grava.Edge : GLib.Object
 	public Node orig;
 	public Node dest;
 	public bool visible;
-	public bool jmpcnd; // verd == true , vermell == false
+	public bool jmpcnd; // green == true , red == false
 
 	construct {
 		data = new HashTable<string,string>.full(str_hash, str_equal, g_free, Object.unref);

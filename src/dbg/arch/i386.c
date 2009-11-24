@@ -572,7 +572,7 @@ int arch_backtrace()
 			}
 
 			/* find flag name + offset */
-			string_flag_offset(flagname, addr, 0);
+			string_flag_offset(NULL, flagname, addr, 0);
 
 			/* print out */
 			D {
@@ -1625,7 +1625,7 @@ void arch_view_bt(struct list_head *sf)
 	list_for_each(pos, sf) {
                 sf_e = list_entry(pos, struct sf_t, next);
 		label[0] = '\0';
-		string_flag_offset((char *)&label, sf_e->ret_addr, 0);
+		string_flag_offset(NULL, (char *)&label, sf_e->ret_addr, 0);
 		cons_printf("%02d 0x%08x (framesz=%03d varsz=%d) %s\n",
 			i++, (uint)sf_e->ret_addr,
 			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);

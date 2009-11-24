@@ -1028,14 +1028,13 @@ int ansistrlen(const char *str)
 
 char *ansistrchrn(char *str, int n)
 {
-	int i=0, len = 0;
-	while(str[i]) {
+	int i, len = 0;
+	for (i=0;str[i];i++) {
 		if (n == len)
 			break;
 		if (str[i]==0x1b && str[i+1]=='[')
 			for(++i;str[i]&&str[i]!='J'&&str[i]!='m'&&str[i]!='H';i++);
 		else len++;
-		i++;
 	}
 	return str+i;
 }

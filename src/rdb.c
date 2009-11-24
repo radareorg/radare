@@ -123,10 +123,12 @@ eprintf("SPLIT NODE E!!!!! next=%08llx\n", next);
 			bta->bytes = (u8*) malloc (bta->n_bytes);
 			memcpy(bta->bytes, bt->bytes + bt->n_bytes, bta->n_bytes);
 
+#if 0
 eprintf ("1: %llx-%llx j:%llx f:%llx\n", 
 		bt->addr,(bt->addr+(ut64)bt->n_bytes), bt->tnext, bt->fnext);
 eprintf ("2: %llx-%llx j:%llx f:%llx\n", 
 		bta->addr,(bta->addr+(ut64)bta->n_bytes), bta->tnext, bta->fnext);
+#endif
 
 			#if 0
 			printf ("OLD %d , new %d\n", bt->n_bytes, bta->n_bytes);

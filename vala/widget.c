@@ -843,7 +843,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			break;
 #line 845 "widget.c"
 		}
-		case '*':
+		case ']':
 		{
 #line 297 "widget.vala"
 			self->graph->angle = self->graph->angle + 0.05;
@@ -851,7 +851,7 @@ static gboolean grava_widget_key_press (GravaWidget* self, GtkWidget* w, const G
 			break;
 #line 853 "widget.c"
 		}
-		case '/':
+		case '[':
 		{
 #line 300 "widget.vala"
 			self->graph->angle = self->graph->angle - 0.05;

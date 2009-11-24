@@ -96,7 +96,7 @@ void section_list(ut64 addr, int rad)
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
 				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr, s->comment);
 			
-			if (string_flag_offset(buf, s->from, 0))
+			if (string_flag_offset(NULL, buf, s->from, 0))
 				cons_printf(" ; %s", buf);
 #if 0
 			ol = section_overlaps(s);

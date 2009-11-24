@@ -583,7 +583,7 @@ static CondPosT decode_branch (Branch branch)
 	addr+=8;
 
 	label[0]='\0';
-	string_flag_offset(label, current_offset+addr, 0);
+	string_flag_offset(NULL, label, current_offset+addr, 0);
 	sprintf(disasmstr, "%sb%s  0x%x ; %s%s",
 			(color)?"\x1b[32m":"",
 			condtext[(bytes->byte3&0xf0)>>4][0],

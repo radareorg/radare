@@ -697,7 +697,7 @@ radare_seek(oaddr, SEEK_SET);
 				char buf[128];
 				D cons_printf("0x%08llx = ", config.seek+i);
 				cons_printf(hexfmt, addr);
-				if (string_flag_offset(buf, addr, -1))
+				if (string_flag_offset(NULL, buf, addr, -1))
 					cons_printf(" ; %s", buf);
 				i+=ptrsize;
 				ptrsize = optrsize;

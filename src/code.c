@@ -538,7 +538,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				char *ptr = buf;
 				//char *ptr = flag_name_by_offset( sk );
 				buf[0]='\0';
-				string_flag_offset(buf, seek, -1);
+				string_flag_offset(NULL, buf, seek, -1);
 				if (ptr == NULL && config.vaddr)
 					ptr = flag_name_by_offset( seek );
 				if (ptr && ptr[0]) {
@@ -883,9 +883,9 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				char flag[1024];
 				//const char *flag = nullstr;
 
-				string_flag_offset(flag, seek, -1);
 				if (flag[0]=='\0')
-					string_flag_offset(flag, seek-config.vaddr, -1);
+					string_flag_offset(NULL, flag, seek-config.vaddr, -1);
+				else string_flag_offset(NULL, flag, seek, -1);
 #if 0
 				f = flag_by_offset( seek );
 				if (f != NULL)
@@ -1009,7 +1009,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 			/* show references */
 			if (aop.ref) {
-				string_flag_offset(buf, aop.ref, 0);
+				string_flag_offset(NULL, buf, aop.ref, 0);
 				cons_printf(" ; %s",buf);
 				if (buf[0]=='\0')
 					cons_printf("(0x%08llx)",aop.ref);
@@ -1021,11 +1021,11 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				if (aop.jump) {
 					if (++jump_n<10) {
 						jumps[jump_n-1] = aop.jump;
-						if (string_flag_offset(buf, aop.jump-config.vaddr, -1))
+						if (string_flag_offset(NULL, buf, aop.jump-config.vaddr, -1))
 							cons_printf("  ; %d = %s", jump_n, buf);
 						else cons_printf("  ; %d = 0x%08llx", jump_n, aop.jump);
 					} else {
-						if (string_flag_offset(buf, aop.jump-config.vaddr, -1))
+						if (string_flag_offset(NULL, buf, aop.jump-config.vaddr, -1))
 							cons_printf("  ; %s", buf);
 						else cons_printf("  ; 0x%08llx", aop.jump);
 					}
