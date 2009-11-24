@@ -730,6 +730,12 @@ int hexpair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 	unsigned char c = '\0';
 	unsigned char d = '\0';
 	unsigned int  j = 0;
+	int len = 0;
+
+	if (arg && (!arg[0] || !arg[1])) {
+		eprintf("Too short\n");
+		return -1;
+	}
 
 	for (ptr = (unsigned char *)arg; ;ptr = ptr + 1) {
 		if (ptr[0]=='\0'||ptr[0]==' ' || j==2)
@@ -740,7 +746,9 @@ int hexpair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 			return -1;
 		}
 		c |= d;
-		if (j++ == 0) c <<= 4;
+		if (j++ == 0)
+			c <<= 4;
+		len++;
 	}
 
 	return (int)c;

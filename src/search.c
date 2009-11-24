@@ -141,7 +141,7 @@ void radare_search_aes()
 
 int radare_search_asm(const char *str)
 {
-	eprintf("TODO\n");
+	eprintf("TODO: radare_search_asm\n");
 #if 0
 	ut64 seek = config.seek;
 	radare_seek(seek);
@@ -247,7 +247,6 @@ int search_from_simple_file(char *file)
 		ptr = strchr(buf, ' ');
 		if (ptr) {
 			ptr[0]='\0';
-			
 			sprintf(cmd, "hit.%s_%%d%%d", buf);
 			config_set("search.flagname", cmd);
 			sprintf(cmd, ":/x %s", ptr+1);
@@ -377,28 +376,28 @@ int search_range(char *range)
 			str[j] = range[i];
 			str[j+1] = '\0';
 			switch(range[i+1]) {
-				case '-':
-					num = atoi(str);
-					i++; j=-1;
-					f0=1;
-					break;
-				case '\0':
-				case ',':
-					if (str[0]=='\0') break;
-					num2 = atoi(str);
-					if (f0) {
-						f0=0;
-						if (num == -1) {
-							printf("syntax error\n");
-							break;
-						}
-						for(j = num;j<=num2;j++)
-							binparse_add_search(t, j);
-					} else	binparse_add_search(t, num2);
-					j=-1;
-					str[0]='\0';
-					i++;
-					break;
+			case '-':
+				num = atoi(str);
+				i++; j=-1;
+				f0=1;
+				break;
+			case '\0':
+			case ',':
+				if (str[0]=='\0') break;
+				num2 = atoi(str);
+				if (f0) {
+					f0=0;
+					if (num == -1) {
+						printf("syntax error\n");
+						break;
+					}
+					for(j = num;j<=num2;j++)
+						binparse_add_search(t, j);
+				} else	binparse_add_search(t, num2);
+				j=-1;
+				str[0]='\0';
+				i++;
+				break;
 			}
 		}
 #if __UNIX__

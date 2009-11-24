@@ -478,6 +478,7 @@ int binparse_get_mask_list ( char* mask , char* maskout )
 void binparse_apply_mask (char * maskout, int masklen , token* tlist , int ntok)
 {	
 	int i;
+	if (masklen>0)
 	for ( i = 0; i < ntok ; i ++ )
 		tlist[i].mask = maskout[i%masklen];
 }

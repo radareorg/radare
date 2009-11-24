@@ -2674,15 +2674,23 @@ CMD_DECL(search) {
 	case 'x':
 		free(input2);
 		len = strlen(input+2);
+		if (len<2) {
+			eprintf("Too short len\n");
+			return;
+		}
 		input2 = (char *)malloc((len<<1)+10);
 		input2[0] = '\0';
 		for(i=0;i<len;i+=j) {
 			char buf[10];
-			int ch = hexpair2bin(input+2+i);
+			int ch;
+			ch = hexpair2bin(input+2+i);
 			if (i+4<len && input[2+i+2]==' ')
 				j = 3;
 			else j = 2;
-			if (ch == -1) break;
+			if (ch == -1) {
+				eprintf ("Invalid hexadecimal string\n");
+				goto __beach;
+			}
 			if (is_printable(ch)) {
 				buf[0] = ch;
 				buf[1] = '\0';
@@ -2701,6 +2709,7 @@ CMD_DECL(search) {
 		search_range("0");
 		break;
 	}
+__beach:
 	free(input2);
 
 	return 0;
