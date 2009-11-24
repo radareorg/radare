@@ -156,9 +156,9 @@ int debug_bp_restore(int pos)
 	//	eprintf("CaNnot restore no bp found here :/ %08llx\n", addr);
 			return 0;
 		}
-		printf("pre-Breakpoint -1 %08llx\n", addr);
+		//eprintf("pre-Breakpoint -1 0x%08llx\n", addr);
 	} else {
-		printf("pre-Breakpoint restored %08llx\n", addr);
+		//eprintf("pre-Breakpoint restored 0x%08llx\n", addr);
 		ret = 1;
 	}
 	if (bp == NULL || WS(bp)==NULL)
@@ -326,7 +326,7 @@ void debug_bp_list()
 		bps = ps.bps_n;
 		for(i = 0; i < MAX_BPS && bps > 0; i++) {
 			if(ps.bps[i].addr > 0) { 
-				string_flag_offset(str, ps.bps[i].addr, -1);
+				string_flag_offset(NULL, str, ps.bps[i].addr, -1);
 				eprintf(" 0x%08llx %s %s (hits=%d)%s\n",
 					ps.bps[i].addr, (ps.bps[i].hw)?"HARD":"SOFT",
 					str, ps.bps[i].count, (ps.bps[i].trace)?" (trace)":""); 

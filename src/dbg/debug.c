@@ -1111,9 +1111,8 @@ int debug_step(int times)
 				return 0;
 			}
 			ret = debug_dispatch_wait();
-			printf("DISPATH WAIT: %d\n", ret);
-	trace_add((addr_t)pc);
-	ps.steps++;
+			trace_add((addr_t)pc);
+			ps.steps++;
 		}
 		debug_print_wait("step");
 	} else {
@@ -1258,7 +1257,7 @@ int debug_trace(char *input)
 				case AOP_TYPE_CALL:
 				case AOP_TYPE_RCALL:
 					label[0] = '\0';
-					string_flag_offset(label, aop.jump, 0);
+					string_flag_offset(NULL, label, aop.jump, 0);
 					cons_printf("[>] call 0x%08llx ; %s\n", aop.jump, label);
 					show = 1;
 					break;
@@ -1541,7 +1540,7 @@ int debug_cont_until(const char *input)
 	/* continue until address */
 	if (addr != 0) {
 		int bp;
-		eprintf("Continue until (%s) = 0x%08llx\n", input, addr);
+		eprintf("=== Continue until '%s' 0x%08llx\n", input+1, addr);
 		bp = debug_bp_set(NULL, addr,config_get_i("dbg.hwbp"));
 		debug_cont(NULL);
 		debug_bp_restore(bp);
@@ -1587,7 +1586,7 @@ int debug_cont(const char *input)
 		ret = debug_dispatch_wait();
 		//debug_msg_set("debug_dispatch_wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
 	//		ret, WS(event), INT3_EVENT, INT_EVENT, CLONE_EVENT);
-		printf("debug_dispatch_wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
+		printf("=== wait: RET = %d WS(event)=%d INT3_EVENT=%d INT_EVENT=%d CLONE_EVENT=%d\n", 
 			ret, WS(event), INT3_EVENT, INT_EVENT, CLONE_EVENT);
 	#warning TODO: add in debug_print_foo() disassembly of eip here and change process id or so
 		if (SKIP_USER_CONTROLC()) {
