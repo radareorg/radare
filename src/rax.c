@@ -78,8 +78,7 @@ void rax(char *arg)
 		if (strbin) {
 			unsigned int ci;
 			unsigned char c;
-			while(!feof(stdin)) {
-				fscanf(stdin, "%02x", &ci);
+			while(!feof(stdin) && fscanf(stdin, "%02x", &ci)) {
 				if (feof(stdin)) break;
 				c = (int)ci;
 				write(1,&c, 1);
