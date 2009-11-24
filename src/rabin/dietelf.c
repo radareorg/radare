@@ -77,14 +77,14 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 
 	len = lseek(fd, 0, SEEK_END);
 
-	// TODO: use read here ?!?
-	/* TODO: do not use mmap */
-#if __UNIX__
-	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
-	if (((int)buf) == -1 ) {
-		perror("mmap");
+	buf = malloc(len);
+	if (buf == NULL) {
+		perror("malloc");
 		return 1;
 	}
+	lseek(fd, 0, SEEK_SET);
+	read(fd, buf, len);
+
 	if (min <1)
 		min = 5;
 
@@ -122,10 +122,8 @@ static int ELF_(aux_stripstr_from_file)(const char *filename, int min, int encod
 		}
 	}
 
-	munmap(buf, len); 
-#elif __WINDOWS__
-	fprintf(stderr, "Not yet implemented\n");
-#endif
+	free(buf);
+
 	return ctr;
 }
 
