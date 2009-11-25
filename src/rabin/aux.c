@@ -110,3 +110,71 @@ int aux_bin2str(const u8 *in, int len, char *out)
 	}
 	return len;
 }
+
+int str_cpy(char *dst, const char *org)
+{
+	int i = 0;
+	if (org&&*org)
+	do { *dst++=*org++;
+	} while (*org && ++i);
+	*dst=0;
+	return i;
+}
+
+ut64 get_offset(const char *orig)
+{
+	char *arg;
+	ut64 ret = 0;
+	int i, j;
+	if (orig==NULL||orig[0]=='\0')
+		return 0;
+
+	while(*orig==' '&&*orig) orig++;
+	arg = alloca(strlen(orig)+32);
+	str_cpy(arg, orig);
+
+	/* single char 'A' */
+	if (arg[0]=='\'' && arg[0+2]=='\'')
+		return arg[0+1];
+
+	for(;*arg==' ';arg=arg+1);
+	for(i=0;arg[i]==' ';i++);
+	for(;arg[i]=='\\';i++); i++;
+
+	if (arg[i] == 'x' && i>0 && arg[i-1]=='0') {
+		sscanf(arg, "0x"OFF_FMTx, &ret);
+	} else {
+		sscanf(arg, OFF_FMTd, &ret);
+
+		switch(arg[strlen(arg)-1]) {
+		case 'f': // float
+			{
+			float f;
+			sscanf(arg, "%f", &f);
+			memcpy(&ret, &f, sizeof(f));
+			}
+			break;
+		case 'o': // octal
+			sscanf(arg, "%llo", &ret);
+			break;
+		case 'b': // binary
+			ret = 0;
+			for(j=0,i=strlen(arg)-2;i>=0;i--,j++) {
+				if (arg[i]=='1') ret|=1<<j; else
+				if (arg[i]!='0') break;
+			}
+			break;
+		case 'K': case 'k':
+			ret*=1024;
+			break;
+		case 'M': case 'm':
+			ret*=1024*1024;
+			break;
+		case 'G': case 'g':
+			ret*=1024*1024*1024;
+			break;
+		}
+	}
+
+	return ret;
+}

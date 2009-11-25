@@ -7,7 +7,7 @@
 #include "pe.h"
 #include "dietpe_types.h"
 
-static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, ut64 seek, ut64 limit, const char *filter, int str_limit, dietpe_string *strings);
+static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, ut64 seek, ut64 limit, const char *filter, const char *section, int str_limit, dietpe_string *strings);
 static PE_DWord PE_(dietpe_aux_rva_to_offset)(PE_(dietpe_obj) *bin, PE_DWord rva);
 static PE_DWord PE_(dietpe_aux_offset_to_rva)(PE_(dietpe_obj) *bin, PE_DWord offset);
 static int PE_(dietpe_do_checks)(PE_(dietpe_obj) *bin);

@@ -23,7 +23,7 @@
 #include "dietpe_static.h"
 #include "dietpe_types.h"
 
-static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, ut64 seek, ut64 limit, const char *filter, int str_limit, dietpe_string *strings)
+static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int encoding, ut64 seek, ut64 limit, const char *filter, const char *section, int str_limit, dietpe_string *strings)
 {
 	int fd = open(bin->file, O_RDONLY);
 	dietpe_string *stringsp;
@@ -72,6 +72,7 @@ static int PE_(dietpe_aux_stripstr_from_file)(PE_(dietpe_obj) *bin, int min, int
 				string_len = strlen(str);
 				if (string_len>2) {
 					if (!filter || strstr(str, filter)) {
+						strncpy(stringsp->section, section, PE_STRING_LENGTH);
 						stringsp->offset = i-matches;
 						stringsp->rva = PE_(dietpe_aux_offset_to_rva)(bin, i-matches);
 						stringsp->type = (unicode?'U':'A');
@@ -738,7 +739,7 @@ int PE_(dietpe_get_strings)(PE_(dietpe_obj) *bin, int verbose, int str_limit, di
 	for (i = 0; i < sections_count; i++, shdrp++) {
 		ctr = PE_(dietpe_aux_stripstr_from_file)(
 				bin, 5, ENCODING_ASCII, shdrp->PointerToRawData,
-				shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL,
+				shdrp->PointerToRawData+shdrp->SizeOfRawData, NULL, shdrp->Name,
 				str_limit, strings+ctr);
 	}
 

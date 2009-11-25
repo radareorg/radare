@@ -16,3 +16,5 @@ int   aux_is_encoded(int, unsigned char);
 int   aux_is_printable(int);
 int aux_atoi32(const char *str);
 int aux_bin2str(const u8 *in, int len, char *out);
+int str_cpy(char *dst, const char *org);
+ut64 get_offset(const char *orig);

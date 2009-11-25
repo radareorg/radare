@@ -37,6 +37,7 @@ typedef struct {
 	ut64 offset;
 	ut64 size;
 	char type;
+	char section[ELF_NAME_LENGTH];
 	char string[ELF_STRING_LENGTH];
 } dietelf_string;
 

@@ -45,6 +45,7 @@ typedef struct {
 	ut64 offset;
 	ut64 size;
 	char type;
+	char section[PE_STRING_LENGTH];
 	char string[PE_STRING_LENGTH];
 } dietpe_string;
 
