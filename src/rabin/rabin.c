@@ -1290,10 +1290,6 @@ void rabin_show_sections(const char *file, ut64 at)
 			for (i = 0; i < sections_count; i++, sectionp.pe++) {
 				if (rad) {
 					char *name = aux_filter_rad_output((const char *)sectionp.pe->name);
-					if (strstr(name, "text")) {
-						printf("e io.vaddr=0x%08llx\n",(baddr+section.pe->rva));
-						printf("e io.paddr=0x%08llx\n",(ut64)(section.pe->offset));
-					} // XXX should be output in sections
 					printf("f section.%s @ 0x%08llx\n", name, (ut64) (baddr + sectionp.pe->rva));
 					printf("f section.%s_end @ 0x%08llx\n", name, (ut64)(baddr + sectionp.pe->rva + sectionp.pe->vsize));
 
