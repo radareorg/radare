@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       nibble <.ds@gmail.com>
  *
@@ -33,6 +33,15 @@
 
 /* code analyzer */
 int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
+
+int section_is_x (ut64 addr)
+{
+	struct section_t *sec = section_get (addr);
+	// XXX: rabin -rS is necesary here
+	// We need to load the section information!!1
+//	return 1;
+	return (sec && sec->rwx & SECTION_X);
+}
 
 /* code lines */
 struct reflines_t *code_lines_init(int linescall)
@@ -239,7 +248,7 @@ int code_analyze_r_split(struct program_t *prg, ut64 seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	int callblocks =(int) config_get_i("graph.callblocks");
 	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
-    int refblocks = (int) config_get_i("graph.refblocks");
+    	int refblocks = (int) config_get_i("graph.refblocks");
 	struct block_t *blf = NULL;
 	
 	if (arch_aop == NULL)
@@ -274,12 +283,18 @@ int code_analyze_r_split(struct program_t *prg, ut64 seek, int depth)
 			break;
 		}
 
+		if ((aop.type == AOP_TYPE_JMP)
+		|| (aop.type == AOP_TYPE_TRAP)
+		|| (aop.type == AOP_TYPE_RET)) {
+			//eprintf("GO DIE at 0x%08llx\n", seek);
+			aop.eob = 1;
+		} else
 		if (aop.type == AOP_TYPE_CALL) {
 			if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
 		} else
-			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
+			if (aop.type == AOP_TYPE_PUSH && aop.ref != 0) {
 				/* TODO : add references */
 				if (refblocks) {
 					program_block_add_call(prg, oseek, aop.ref);
@@ -301,162 +316,6 @@ int code_analyze_r_split(struct program_t *prg, ut64 seek, int depth)
 		code_analyze_r_split(prg, aop.fail, depth-1);
 
 	return 0;
-
-#if 0 
-	struct aop_t aop;
-	struct block_t *blk;
-	ut64 oseek = seek;
-	ut64 tmp = config.seek;
-	unsigned int sz = 0, ret;
-	int bsz = 0;// block size
-	char buf[4096]; // bytes of the code block
-	unsigned char *ptr = (unsigned char *)&buf;
-	int callblocks =(int) config_get_i("graph.callblocks");
-	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
-    int refblocks = (int) config_get_i("graph.refblocks");
-	struct block_t *blf = NULL;
-	
-	if (arch_aop == NULL)
-		return -1;
-	// too deep! chop branch here!
-	if (depth<=0)
-		return 0;
-	if (config.interrupted)
-		return 0;
-
-	/* if already analyzed skip */
-	if (program_block_get(prg,seek))
-		return 0;
-
-	radare_seek(tmp, SEEK_SET);
-	bsz = 0;
-	config.seek = seek;
-	radare_read(0);
-	aop.eob = 0;
-
-	ret = radare_read(0);
-
-	/* Walk for all bytes of current block */
-	for(bsz = 0;(!aop.eob) && (bsz+4 <config.block_size); bsz+=sz) {
-		if (config.interrupted)
-			break;
-
-		/// Miro si l'adreca on soc es base d'algun bloc
-		//blf = program_block_get ( prg , config.seek+bsz );
-
-		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
-		if (sz<=0) {
-			//eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
-			// eprintf("x");
-			//D analyze_progress(0,1,0,0);
-			break;
-		}
-#if 1
-#if 0
-		/* splitting code lives here */
-		if ( blf != NULL ) {	
-			//printf ("Address %llx already analed\n", config.seek+bsz );
-			aop.eob = 1;
-			aop.jump = blf->tnext; //config.seek+bsz;
-			aop.fail = blf->fnext;
-//printf("POLLA EN VINAGRE RULES\n");
-			break;
-		}
-#endif
-		blf = program_block_split_new (prg, config.seek+bsz);
-		if ( blf != NULL ) {
-			eprintf("Block splitted at address 0x%08llx\n", config.vaddr+config.seek+bsz);
-			
-			bsz = blf->n_bytes;
-			aop.eob = 1;
-			if (blf->tnext)
-				aop.jump = blf->tnext;
-			if (blf->fnext)
-				aop.fail = blf->fnext;
-			break;
-		}		
-#endif
-
-		/* continue normal analysis */
-#if 0 
-		if (!callblocks && aop.type == AOP_TYPE_CALL) {
-			program_block_add_call(prg, oseek, aop.jump);
-                	if (callblocks)
-				aop.eob = 1;
-			else aop.eob = 0;
-		}
-		if (!jmpblocks && (aop.type == AOP_TYPE_JMP || aop.type == AOP_TYPE_CJMP))
-			aop.eob = 0;
-
-		switch(aop.type) {
-		case AOP_TYPE_JMP:
-		case AOP_TYPE_CJMP:
-		case AOP_TYPE_CALL:
-			program_block_add_call(prg, oseek, aop.jump);
-			break;
-		case AOP_TYPE_PUSH:
-			/* TODO : add references */
-			if (config_get("graph.refblocks"))
-				program_block_add_call(prg, oseek, aop.ref);
-			break;
-		}
-
-		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
-	}
-#else
-		if (aop.type == AOP_TYPE_CALL) {
-			program_block_add_call(prg, oseek, aop.jump);
-			if (callblocks)
-				aop.eob = 1;
-			else aop.eob = 0;
-		} else
-			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
-				/* TODO : add references */
-				if (refblocks) {
-					program_block_add_call(prg, oseek, aop.ref);
-					aop.eob = 1;
-					aop.jump = aop.ref;
-					aop.fail = oseek+bsz+sz;
-				}
-				//block_add_ref(prg, oseek, aop.ref);
-				//block_add_call(prg, oseek, aop.ref);
-			}
-		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
-	}
-#endif
-	config.seek = tmp;
-
-	blk = program_block_get_new(prg, oseek);
-
-	blk->bytes = (unsigned char *)malloc(bsz+1);
-	if (blk->bytes == NULL) {
-		eprintf("analyze.c: Cannot allocate\n");
-	}
-	blk->n_bytes = bsz;
-	memcpy(blk->bytes, buf, bsz);
-	blk->tnext = aop.jump;
-	blk->fnext = aop.fail;
-	
-	blk->type = BLK_TYPE_HEAD;
-	if (aop.jump && !aop.fail)
-		blk->type = BLK_TYPE_BODY;
-	else
-	if (aop.jump && aop.fail)
-		blk->type = BLK_TYPE_BODY;
-	else
-	if (aop.type == AOP_TYPE_RET)
-		blk->type = BLK_TYPE_LAST;
-
-	oseek = seek;
-
-	/* walk childs */
-	if (blk->tnext && (blf == NULL) )
-		code_analyze_r_split(prg, blk->tnext, depth-1);
-	if (blk->fnext  )
-		code_analyze_r_split(prg, blk->fnext, depth-1);
-
-	return 0;
-#endif 
 }
 
 int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
@@ -469,7 +328,9 @@ int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 	int bsz = 0;// block size
 	char buf[4096]; // bytes of the code block
 	unsigned char *ptr = (unsigned char *)&buf;
+	// TODO: make those vars global.. its slow to have config_* functions in a recursive fun
 	int callblocks = (int)config_get_i("graph.callblocks");
+	int pushblocks = (int)config_get_i("anal.push");
 	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
 	int refblocks = (int)config_get_i("graph.refblocks");
 
@@ -499,27 +360,32 @@ int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 
 		sz = arch_aop(config.seek+bsz, config.block+bsz, &aop);
 		if (sz<=0) {
-			//                        eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
+			// eprintf("Invalid opcode (%02x %02x)\n", config.block[0], config.block[1]);
 			break;
 		}
 
+		if (aop.type == AOP_TYPE_JMP) {
+			//eprintf("GO DIE at 0x%08llx\n", seek);
+			aop.eob = 1;
+		} else
 		if (aop.type == AOP_TYPE_CALL) {
 			program_block_add_call(prg, oseek, aop.jump);
+
 			if (callblocks)
 				aop.eob = 1;
 			else aop.eob = 0;
 		} else
-			if (aop.type == AOP_TYPE_PUSH && aop.ref !=0) {
-				/* TODO : add references */
-				if (refblocks) {
-					program_block_add_call(prg, oseek, aop.ref);
-					aop.eob = 1;
-					aop.jump = aop.ref;
-					aop.fail = oseek+bsz+sz;
-				}
-				//block_add_ref(prg, oseek, aop.ref);
-				//block_add_call(prg, oseek, aop.ref);
+		if (aop.type == AOP_TYPE_PUSH && aop.ref != 0) {
+			/* TODO : add references */
+			if (refblocks) {
+				program_block_add_call(prg, oseek, aop.ref);
+				aop.eob = 1;
+				aop.jump = aop.ref;
+				aop.fail = oseek+bsz+sz;
 			}
+			//block_add_ref(prg, oseek, aop.ref);
+			//block_add_call(prg, oseek, aop.ref);
+		}
 		memcpy(ptr+bsz, config.block+bsz, sz); // append bytes
 	}
 	config.seek = tmp;
@@ -529,6 +395,7 @@ int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 	blk->bytes = (unsigned char *)malloc(bsz+1);
 	if (blk->bytes == NULL) {
 		eprintf("analyze.c: Cannot allocate\n");
+		return 0;
 	}
 	blk->n_bytes = bsz;
 	memcpy(blk->bytes, buf, bsz);
@@ -551,7 +418,6 @@ int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 		code_analyze_r_nosplit(prg, blk->tnext, depth-1);
 	if (blk->fnext)
 		code_analyze_r_nosplit(prg, blk->fnext, depth-1);
-
 	return 0;
 }
 
@@ -600,23 +466,11 @@ struct program_t *code_analyze(ut64 seek, int depth)
 
 	radare_controlc();
 
-#if 0 
-	if (config_get("graph.split"))
-		code_analyze_r = &code_analyze_r_split;
-	else	code_analyze_r = &code_analyze_r_nosplit;
-
-	/* XXX fix hirroble bug in deep overflow :O */
-	if (depth>10) depth=10;
-	//if (depth>10) depth=10;
-
-	code_analyze_r(prg, seek, --depth);
-#endif 
 	if (depth>30) depth=30;
 	if (config_get("graph.split")) {
 		code_analyze_r_nosplit(prg, seek, --depth);
 		code_analyze_r_split(prg, seek, --depth);
-	} else
-		code_analyze_r_nosplit(prg, seek, --depth);
+	} else code_analyze_r_nosplit(prg, seek, --depth);
 
 	// TODO: construct xrefs from tnext/fnext info
 	radare_controlc_end();
@@ -750,19 +604,18 @@ int radare_analyze(ut64 seek, int size, int depth, int rad)
 					if (lastnull>1)
 						cons_printf("(last null repeated %d times)\n", lastnull);
 					lastnull = 0;
-				//	for(j=config_get_i("cfg.analdepth"); j>depth;j--)
+				//	for(j=config_get_i("anal.depth"); j>depth;j--)
 				//		cons_strcat("   ");
 					print_addr(seek+i-3);
 					C {
-					C cons_printf(C_TURQOISE);
+						cons_printf(C_TURQOISE);
 						if (config.endian)
 						cons_printf("int be="C_YELLOW"0x%08x"C_RESET" le=0x%08x ",
 							num, nume);
 						else
 						cons_printf("int be=0x%08x le="C_YELLOW"0x%08x"C_RESET" ",
 							num, nume);
-					} else
-						cons_printf("int be=0x%08x le=0x%08x ",
+					} else cons_printf("int be=0x%08x le=0x%08x ",
 							num, nume);
 					if (num<0xffff)
 						cons_printf("(be= %d )", num);
@@ -797,8 +650,6 @@ int radare_analyze(ut64 seek, int size, int depth, int rad)
 	/* restore */
 	config.seek = tmp;
 	radare_read(0);
-	//if (!rad)
-	//D cons_strcat("\n");
 	config.verbose = v;
 
 	return 0;
@@ -909,7 +760,7 @@ int analyze_function(ut64 from, int recursive, int report)
 	ut64 to;
 	ut64 funsize;
 	int len =0;
-	int ref;
+	int ref, count;
 	int ncalls = 0;
 	int nrefs = 0;
 	int framesize = 0;
@@ -922,7 +773,7 @@ int analyze_function(ut64 from, int recursive, int report)
 		return -1;
 
 	from += config.vaddr-config.paddr;
-//eprintf("ANAL FROM (%llx)\n", from);
+
 	if (arch_aop == NULL)
 		return -1;
 	fszstr[0]='\0';
@@ -956,7 +807,7 @@ int analyze_function(ut64 from, int recursive, int report)
 		nblocks++;
 	}
 	to = end;
-	len=(int)(1+to-seek); //from;
+	len = (int)(1+to-seek); //from;
 	if (len<0)
 		return -1;
 
@@ -1010,10 +861,8 @@ int analyze_function(ut64 from, int recursive, int report)
 	//D eprintf(".");
 	D analyze_progress(0,0,1,0);
 
-//eprintf("LEN=%d\n", len);
-	for(;seek< to; seek+=inc) {
+	for(;seek < to; seek+=inc) {
 		ut64 delta = seek+config.vaddr-from;
-	//eprintf("0x%08llx\n", seek+config.vaddr);
 		if (delta > len) {
 			//eprintf("analyze_function: oob %lld > %lld\n", delta, len);
 			break;
@@ -1024,6 +873,9 @@ int analyze_function(ut64 from, int recursive, int report)
 			break;
 		}
 		switch(aop.type) {
+		case AOP_TYPE_PUSH:
+			analyze_function(aop.ref-config.vaddr, --recursive, report);
+			break;
 		case AOP_TYPE_CALL:
 			switch(report) {
 			case 2:
@@ -1043,6 +895,7 @@ int analyze_function(ut64 from, int recursive, int report)
 			case 2: cons_printf("CC -syscall %s @ 0x%08llx\n", "(todo)", seek);
 				break;
 			case 0: cons_printf("CC syscall %s @ 0x%08llx\n", "(todo)", seek);
+				break;
 			}
 			break;
 		default:
@@ -1162,17 +1015,21 @@ int analyze_function(ut64 from, int recursive, int report)
 
 		/* recursivity */
 		if (recursive) {
-			recursive--;
 			switch(aop.type) {
-	#if 0
+			case AOP_TYPE_RET:
+			case AOP_TYPE_TRAP:
+				seek = to;
+				break;
+	#if 1
 			case AOP_TYPE_JMP: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(1);
+				//analyze_function(1);
+				analyze_function(seek-config.vaddr, --recursive, report);
 				break;
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(seek-config.vaddr, recursive, report);
+				analyze_function(seek-config.vaddr, --recursive, report);
 				break;
 			}
 		}
@@ -1182,10 +1039,12 @@ int analyze_function(ut64 from, int recursive, int report)
 	switch(report) {
 	case 0:
 		if (fszstr[0])
-			cons_printf("CC framesize =%s @ 0x%08llx\n", fszstr, from);
-		cons_printf("CC args = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_ARG), from);
-		cons_printf("CC vars = %d @ 0x%08llx\n", analyze_var_get(VAR_TYPE_LOCAL), from);
-		cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
+			cons_printf("CC framesize = %s @ 0x%08llx\n", fszstr, from);
+		count = analyze_var_get(VAR_TYPE_ARG);
+		if (count>0) cons_printf("CC args = %d @ 0x%08llx\n", count, from);
+		count = analyze_var_get(VAR_TYPE_LOCAL);
+		if (count>0) cons_printf("CC vars = %d @ 0x%08llx\n", count, from);
+		if (nrefs>0) cons_printf("CC drefs = %d @ 0x%08llx\n", nrefs);
 		cons_printf("fs *\n");
 		break;
 	case 1:
@@ -1205,4 +1064,44 @@ int analyze_function(ut64 from, int recursive, int report)
 	}
 
 	return 0;
+}
+
+void analyze_preludes (char *input) {
+	char cmd[1024];
+	char *prelude;
+	long len;
+	char *sfrom, *sto, *cmdhit;
+
+	switch(config.arch) {
+	case ARCH_X86: // X86-64 is implicit here
+		prelude = "5589e5";
+		break;
+	default:
+		eprintf ("Analyze preludes (ap) not supported for this architecture\n");
+		return;
+	}
+	sfrom = config_get("search.from");
+	sto   = config_get("search.to");
+	cmdhit= config_get("cmd.hit");
+
+	len = get_math (input);
+	if (len <1) {
+		len = config.size;
+		if (len <0) {
+			eprintf ("Dunno filesize..gimme some ranges\n");
+			return;
+		}
+	}
+	/* go search */
+	config_set_i("search.from", config.seek);
+	config_set_i("search.to", config.seek+ len);
+	config_set("cmd.hit", ".af*");
+	sprintf(cmd, "/x %s", prelude);
+	radare_cmd(cmd, 0);
+
+	/* restore */
+	config_set("search.from", sfrom);
+	config_set("search.to", sto);
+	config_set("cmd.hit", cmdhit);
+	radare_cmd("f-hit*", 0);
 }

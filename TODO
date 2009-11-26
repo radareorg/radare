@@ -6,6 +6,8 @@
 
 ===========================================================
 
+* 'ag' window does not works to get command output :???
+
 * Cannot debug signal handlers???
 
 * DEPRECATE !set dbg system command (!reg xx=yy works beter)

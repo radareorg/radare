@@ -2056,12 +2056,19 @@ int radare_go()
 				radare_cmd("e asm.profile=default", 0);
 			}
 			eprintf("\n");
-			if (!config.interrupted && config_get("file.analdata")) {
+			if (!config.interrupted && config_get("anal.data")) {
 				eprintf("> Analyzing data...");
 				radare_cmd("b section._data_end-section._data", 0);
 				radare_cmd(".ad* @ section._data", 0);
 				radare_cmd("b 128", 0);
 				eprintf(" done\n");
+			}
+			if (!config.interrupted && config_get("anal.funhdr")) {
+				eprintf("> Analyzing function preludes...\n");
+				radare_cmd("s entrypoint", 0);
+				if (config.debug)
+					radare_cmd("ap 0xffff", 0);
+				else radare_cmd("ap", 0);
 			}
 			radare_cmd_raw("Ci", 0);
 			radare_controlc_end();

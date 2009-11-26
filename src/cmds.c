@@ -290,7 +290,7 @@ CMD_DECL(analyze)
 		break;
 	case 'd':
 		// XXX do not uses depth...ignore analdepth?
-		radare_analyze(config.seek, config.block_size, config_get_i("cfg.analdepth"), input[1]=='*');
+		radare_analyze(config.seek, config.block_size, config_get_i("anal.depth"), input[1]=='*');
 		break;
 #if 0
 	/* TODO: reset analyze engine ? - remove rdbs, xrefs, etc...  reset level as argument? maybe cool 0 for just vm, 1 for rdbs, 2 for xrefs */
@@ -323,11 +323,6 @@ CMD_DECL(analyze)
 			}
 		} else eprintf("oops\n");
 		break;
-#if 0
-	case 'F':
-		analyze_function(config.seek, (int)config_get_i("cfg.analdepth"), 0); // XXX move to afr ?!?
-		break;
-#endif
 	case 'f':
 		switch(input[1]) {
 		case '?':
@@ -338,16 +333,16 @@ CMD_DECL(analyze)
 			eprintf(" .af*       - import function analysis (same as Vdf)\n");
 			break;
 		case 'r':
-			analyze_function(config.seek, config_get_i("cfg.analdepth"),0);
+			analyze_function(config.seek, config_get_i("anal.depth"), 0);
 			break;
 		case 'u':
-			analyze_function(config.seek, 0,2);
+			analyze_function(config.seek, config_get_i("anal.depth"), 2);
 			break;
 		case '*':
-			analyze_function(config.seek, 0,0);
+			analyze_function(config.seek, config_get_i("anal.depth"), 0);
 			break;
 		default:
-			analyze_function(config.seek, 0,1);
+			analyze_function(config.seek, 0, 1);
 		}
 		break;
 	case 'g':
@@ -608,6 +603,9 @@ CMD_DECL(analyze)
 			config.seek += sz;
 		}
 		break;
+	case 'p':
+		analyze_preludes(input+1);
+		break;
 	case 'v':
 		switch(input[1]) {
 		case 'e':
@@ -723,6 +721,7 @@ CMD_DECL(analyze)
 		cons_printf(" aos [num]    show size of N opcodes\n");
 		cons_printf(" am [n] [fmt] analyze memory format manager (am? and pm? fmi)\n");
 		cons_printf(" ab [num]     analyze N code blocks\n");
+		cons_printf(" ap [size]    analyze function preludes from here to <size> (default filesize)\n");
 		cons_printf(" af [size]    analyze function\n");
 		//cons_printf(" aF [size]    analyze function (recursively)\n");
 		cons_printf(" ac [num]     disasm and analyze N code blocks\n");

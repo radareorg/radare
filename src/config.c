@@ -912,8 +912,17 @@ void config_init(int first)
 	config_set("file.dbg_arg", "");
 
 	config_set("file.id", "false");
+
+	// TODO: file.analyze -> anal.enable ?
 	config_set("file.analyze", "false");
-	config_set("file.analdata", "false");
+//	config_set("anal.enable", "false");
+
+	config_set_i("anal.depth", 3); // dunno why >4 causes bad code analysis :??
+	config_set("anal.data", "false");
+	config_set("anal.funhdr", "false");
+	config_set("anal.push", "false");
+	config_set("anal.calls", "false");
+
 	config_set("file.type", "");
 	config_set("file.flag", "false");
 	config_set("file.trace", "");//trace.log");
@@ -964,7 +973,6 @@ void config_init(int first)
 
 	config.endian = config_get_i("cfg.bigendian");
 	config_set("cfg.inverse", "false");
-	config_set_i("cfg.analdepth", 6);
 	config_set("file.insert", "false");
 	config_set("file.insertblock", "false");
 	config_set("file.undowrite", "true");
