@@ -16,9 +16,9 @@ sub radare_cmd {
 	my $radare_cmd_true = "";
 	my $radare_cmd_false = "";
 
-	$radare_cmd = "echo \'".$cmd."\' | radare -nv -e \'asm.arch = $arch\'";
+	$radare_cmd = "echo \'".$cmd."\' | radare -nv -e \'scr.floodprot=false\' -e \'asm.arch = $arch\'";
 	$radare_cmd .= " -f" if ($cmd !~ /@/);
-	$radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin > $dump";
+	$radare_cmd_true = $radare_cmd." -e \'asm.offset = false\' $bin | awk \'{print \$1}\' > $dump";
 	$radare_cmd_false = $radare_cmd." -e \'asm.offset = true\' $bin > $dump_off";
 	system $radare_cmd_true;
 	system $radare_cmd_false;
