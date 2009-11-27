@@ -45,8 +45,8 @@ void section_set(ut64 from, ut64 to, ut64 vaddr, ut64 paddr, int rwx, const char
 void section_add(ut64 from, ut64 to, ut64 vaddr, ut64 paddr, int rwx, const char *comment)
 {
 	struct section_t *s = (struct section_t *)malloc(sizeof(struct section_t));
-	s->from = from+config.vaddr;
-	s->to = to;
+	s->from = from+vaddr;
+	s->to = to+vaddr;
 	s->vaddr = vaddr;
 	s->paddr = paddr;
 	s->rwx = rwx; //SECTION_R | SECTION_W | SECTION_X;
@@ -89,12 +89,12 @@ void section_list(ut64 addr, int rad)
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
 		if (rad) {
 			cons_printf("S 0x%08llx 0x%08llx %s @ 0x%08llx\n",
-				s->to-s->from, s->vaddr, s->comment, s->from);
+				s->to-s->from, s->vaddr, s->comment[0]?s->comment:"", s->from);
 			cons_printf("Sd 0x%08llx @ 0x%08llx\n", s->paddr, s->from);
 		} else {
 			cons_printf("%02d %c 0x%08llx - 0x%08llx bs=0x%08llx sz=0x%08llx phy=0x%08llx %s",
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
-				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr, s->comment);
+				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr, s->comment[0]?s->comment:"");
 			
 			if (string_flag_offset(NULL, buf, s->from, 0))
 				cons_printf(" ; %s", buf);
@@ -213,14 +213,8 @@ ut64 section_align(ut64 addr, ut64 vaddr, ut64 paddr)
 
 	list_for_each_prev(pos, &sections) {
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
-		if (addr >= s->from && addr <= s->to) {
-#if 0
-			saltem a 0x24324
-			comença a 0x11000; (adreça vaddr)
-			equival a la 0x400 (real de disc)
-#endif
-			return ( addr - s->vaddr + s->paddr ); 
-		}
+		if (addr >= s->from && addr <= s->to)
+			return ( s->paddr + addr - s->from ); 
 	}
 	last_align = addr-vaddr+paddr;
 	//printf("? 0x%llx-0x%llx+0x%llx\n", addr, vaddr, paddr);

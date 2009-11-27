@@ -1010,8 +1010,8 @@ void rabin_show_symbols(char *file, ut64 at)
 		if (at) {
 			symbolp.elf = symbol.elf;
 			for (i = 0; i < symbols_count; i++, symbolp.elf++)
-				if ((baddr + symbolp.elf->offset) == at ||
-					symbolp.elf->offset == at)
+				if (((baddr + symbolp.elf->offset) <= at && (baddr + symbolp.elf->offset + symbolp.elf->size) > at) ||
+					((symbolp.elf->offset) <= at && (symbolp.elf->offset + symbolp.elf->size) > at))
 					printf("%s\n", symbolp.elf->name);
 		} else {
 			if (rad)
@@ -1220,6 +1220,8 @@ void rabin_show_sections(const char *file, ut64 at)
 							ELF_SCN_IS_WRITABLE(sectionp.elf->flags)?'w':'-',
 							ELF_SCN_IS_EXECUTABLE(sectionp.elf->flags)?'x':'-',
 							sectionp.elf->name, (ut64)(baddr + sectionp.elf->offset));
+					printf( "S %lli 0x%08llx %s @ 0x%08llx\n",
+							(ut64)(sectionp.elf->size), (ut64)sectionp.elf->offset, sectionp.elf->name, (ut64)(baddr + sectionp.elf->offset));
 				} else {
 					switch (verbose) {
 					case 0:
@@ -1300,10 +1302,8 @@ void rabin_show_sections(const char *file, ut64 at)
 						PE_SCN_IS_WRITABLE(sectionp.pe->characteristics)?'w':'-',
 						PE_SCN_IS_EXECUTABLE(sectionp.pe->characteristics)?'x':'-',
 						sectionp.pe->name, (ut64) (baddr + sectionp.pe->rva));
-#if 0
-					printf( "S %lli @ 0x%llx\n",
-							(ut64)(sectionp.pe->size), (ut64)sectionp.pe->offset);
-#endif 
+					printf( "S %lli 0x%08llx %s @ 0x%08llx\n",
+							(ut64)(sectionp.pe->vsize), (ut64)sectionp.pe->offset, sectionp.pe->name, (ut64)(baddr + sectionp.pe->rva));
 				} else {
 					switch (verbose) {
 					case 0:
@@ -1856,6 +1856,8 @@ int main(int argc, char **argv, char **envp)
 
 	if (op != NULL && action&ACTION_OPERATE)
 		operation_do( op );
+	if (action&ACTION_INFO)
+		rabin_show_info(file);
 	if (action&ACTION_HEADER)
 		rabin_show_header(file);
 	if (action&ACTION_ENTRY)
@@ -1866,8 +1868,6 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_symbols(file, at);
 	if (action&ACTION_SECTIONS)
 		rabin_show_sections(file, at);
-	if (action&ACTION_INFO)
-		rabin_show_info(file);
 	if (action&ACTION_LIBS)
 		rabin_show_libs(file);
 	if (action&ACTION_CHECKSUM)
