@@ -393,7 +393,6 @@ ut64 radare_seek(ut64 offset, int whence)
 	ut64 preoffset = offset;
 	ut64 seek = 0;
 	int bip = 0;
-	int usepaddr = 0;
 
 	if (offset==-1)
 		return (ut64)-1;
@@ -426,14 +425,14 @@ ut64 radare_seek(ut64 offset, int whence)
 	}
 	
 	if (whence == SEEK_SET)
-		config.seek = offset;
-	else config.seek+= offset;
-	seek = io_lseek(config.fd, config.seek, SEEK_SET);
+		seek = offset;
+	else seek = config.seek + offset;
+	io_lseek(config.fd, seek, SEEK_SET);
 	if (bip) {
 		if (whence == SEEK_SET)
 			config.seek = preoffset;
 		else config.seek = config.seek - offset + preoffset;
-	}
+	} else config.seek = seek;
 
 	return config.seek;
 #if 0 

@@ -116,7 +116,7 @@ void section_list_visual(ut64 seek, ut64 len)
 	ut64 mul;
 	int j, i;
 	struct list_head *pos;
-	int width = config.width-30;
+	int width = config.width-50;
 
 	list_for_each(pos, &sections) {
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
@@ -138,19 +138,19 @@ void section_list_visual(ut64 seek, ut64 len)
 				else
 					cons_printf("-");
 			}
-			cons_printf("| 0x%08llx\n", s->to);
+			cons_printf("| 0x%08llx %s\n", s->to, s->comment[0]?s->comment:"");
 			i++;
 		}
 		/* current seek */
 		if (i>0 && len != 0) {
-			cons_printf("=>  0x%08llx |", seek);
+			cons_printf("=>  0x%08llx |", seek+config.vaddr);
 			for(j=0;j<width;j++) {
-				if ((j*mul)+min >= seek && (j*mul)+min <= seek+len)
+				if ((j*mul)+min >= seek+config.vaddr && (j*mul)+min <= seek+config.vaddr+len)
 					cons_printf("#");
 				else
 					cons_printf("-");
 			}
-			cons_printf("| 0x%08llx\n", seek+len);
+			cons_printf("| 0x%08llx\n", seek+config.vaddr+len);
 		}
 	}
 }

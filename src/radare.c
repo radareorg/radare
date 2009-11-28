@@ -202,6 +202,7 @@ void radare_sync()
 	ut64 base, phys;
 	int limit = DEFAULT_BLOCK_SIZE;
 
+#if 0
 	if (config_get_i("cfg.sections")) {
 		base = section_get_vaddr(config.seek);
 		if (base != -1)
@@ -210,6 +211,7 @@ void radare_sync()
 		if (phys != -1)
 			config_set_i("io.paddr", phys);
 	}
+#endif
 
 	if (config.debug||config.unksize||config.limit==-1LL)
 		return;
