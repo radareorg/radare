@@ -1695,7 +1695,7 @@ CMD_DECL(flag)
 		if (input[1]=='-') {
 			flag_remove(text+1);
 		} else {
-			ut64 here = section_align(config.seek+config.vaddr, config.vaddr, config.paddr);//+config.vaddr;
+			ut64 here = config.seek;//+config.vaddr;
 			ut64 size = config.block_size;
 			char *s = strchr(text, ' ');
 			char *s2 = NULL;
@@ -1704,7 +1704,7 @@ CMD_DECL(flag)
 				s2 = strchr(s+1, ' ');
 				if (s2) {
 					*s2 = '\0';
-					here = section_align(get_math(s2+1), config.vaddr, config.paddr);
+					here = get_math(s2+1);
 				}
 				radare_set_block_size_i(get_math(s+1));
 			}
@@ -2306,9 +2306,9 @@ CMD_DECL(sections)
 			case 3: // get comment
 				comment = get0word(ptr, 2);
 			case 2: // get base address
-				ondisk = get_offset(get0word(ptr, 1));
+				ondisk = get_math(get0word(ptr, 1));
 			case 1: // get length
-				to = from + get_offset(get0word(ptr,0));
+				to = from + get_math(get0word(ptr,0));
 			}
 			section_add(from, to, base, ondisk, 7, comment);
 			free(ptr);
@@ -2326,16 +2326,16 @@ CMD_DECL(sections)
 		section_list(config.seek, 1);
 		break;
 	case 'd':
-		section_set(config.seek, -1, -1, get_offset(input+1), -1, NULL);
+		section_set(config.seek, -1, -1, get_math(input+1), -1, NULL);
 		break;
 	case 'c':
 		section_set(config.seek, -1, -1, -1, -1, input+(input[1]==' '?2:1));
 		break;
 	case 'b':
-		section_set(config.seek, -1, get_offset(input+1), -1, -1, NULL);
+		section_set(config.seek, -1, get_math(input+1), -1, -1, NULL);
 		break;
 	case 't':
-		section_set(config.seek, get_offset(input+1), -1, -1,-1, NULL);
+		section_set(config.seek, get_math(input+1), -1, -1,-1, NULL);
 		break;
 	case 'p':
 		section_set(config.seek, -1, -1, -1, atoi(input+1), NULL);

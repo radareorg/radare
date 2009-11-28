@@ -390,6 +390,53 @@ int radare_dump(const char *arg, int size)
 
 ut64 radare_seek(ut64 offset, int whence)
 {
+	ut64 preoffset = offset;
+	ut64 seek = 0;
+	int bip = 0;
+	int usepaddr = 0;
+
+	if (offset==-1)
+		return (ut64)-1;
+
+	switch(whence) {
+	case SEEK_SET:
+		if (offset < 0)
+			seek = 0;
+		break;
+	case SEEK_CUR:
+		if ((config.seek + offset) < 0)
+			offset = config.seek = 0;
+		break;
+	case SEEK_END:
+		if (config.size == -1) {
+			D printf("Warning: file size is unknown\n");
+			return -1;
+		} else config.seek = config.size;
+	}
+
+	// rva handling
+	if (config.vaddr) {
+		if (offset < config.vaddr) {
+			offset += config.vaddr;
+			preoffset = offset;
+		}
+		offset = section_align(offset, config.vaddr, config.paddr);
+		preoffset -= config.vaddr;
+		bip = 1;
+	}
+	
+	if (whence == SEEK_SET)
+		config.seek = offset;
+	else config.seek+= offset;
+	seek = io_lseek(config.fd, config.seek, SEEK_SET);
+	if (bip) {
+		if (whence == SEEK_SET)
+			config.seek = preoffset;
+		else config.seek = config.seek - offset + preoffset;
+	}
+
+	return config.seek;
+#if 0 
 	ut64 preoffset = 0;
 	ut64 seek = 0;
 	int bip = 0;
@@ -470,6 +517,7 @@ eprintf("SEEK(%llx)\n", seek);
 	//undo_push();
 
 	return seek;
+#endif 
 }
 
 /* read a block from current or next seek */

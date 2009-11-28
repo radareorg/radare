@@ -1856,6 +1856,8 @@ int main(int argc, char **argv, char **envp)
 
 	if (op != NULL && action&ACTION_OPERATE)
 		operation_do( op );
+	if (action&ACTION_SECTIONS)
+		rabin_show_sections(file, at);
 	if (action&ACTION_INFO)
 		rabin_show_info(file);
 	if (action&ACTION_HEADER)
@@ -1866,8 +1868,6 @@ int main(int argc, char **argv, char **envp)
 		rabin_show_imports(file, at);
 	if (action&ACTION_SYMBOLS)
 		rabin_show_symbols(file, at);
-	if (action&ACTION_SECTIONS)
-		rabin_show_sections(file, at);
 	if (action&ACTION_LIBS)
 		rabin_show_libs(file);
 	if (action&ACTION_CHECKSUM)
