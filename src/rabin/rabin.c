@@ -232,7 +232,7 @@ void rabin_show_info(const char *file)
 					"  - Local symbols: %s\n"
 					"  - Debug: %s\n"
 					"Number of sections: %i\n"
-					"Image base: 0x%08x\n"
+					"Image base: 0x%08llx\n"
 					"Section alignment: %i\n"
 					"File alignment: %i\n"
 					"Image size: %i\n",
@@ -240,7 +240,7 @@ void rabin_show_info(const char *file)
 					(PE_CALL(dietpe_is_big_endian, bin.pe))?"True":"False", pe_subsystem_str, pe_subsystem,
 					(PE_CALL(dietpe_is_stripped_relocs, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_line_nums, bin.pe))?"True":"False",
 					(PE_CALL(dietpe_is_stripped_local_syms, bin.pe))?"True":"False", (PE_CALL(dietpe_is_stripped_debug, bin.pe))?"True":"False",
-					PE_CALL(dietpe_get_sections_count, bin.pe), PE_CALL(dietpe_get_image_base, bin.pe),
+					PE_CALL(dietpe_get_sections_count, bin.pe), (ut64)PE_CALL(dietpe_get_image_base, bin.pe),
 					PE_CALL(dietpe_get_section_alignment, bin.pe), PE_CALL(dietpe_get_file_alignment, bin.pe), PE_CALL(dietpe_get_image_size, bin.pe));
 				break;
 			default:
@@ -451,16 +451,14 @@ void rabin_show_strings(const char *file)
 		/* do nothing */
 		break;
 	default:
-#ifndef __darwin__
 		if (rad) {
 			printf("fs strings\n");
-			snprintf(buf, 1022, "echo /z | radare -nv %s | sed -r 's/(\\w+).*[AW] (.*)/f str.\\2 @ \\1/'"
+			snprintf(buf, 1022, "echo /z | radare -nv %s | awk '{print \"f str.\"$4$5$6$7\" @ \"$1}'"
+			//sed -r 's/(\\w+).*[AW] (.*)/f str.\\2 @ \\1/'"
 			"| tr '+;<>`$~*\\'#\\\\' \"|%%/=)[]!^-' '_.........._________________' "
 			"| sed -e 's,.@., @ ,' -e 's,f.,f ,'", file);
-
 		} else snprintf(buf, 1022, "echo /z | radare -nv %s",file);
 		system(buf);
-#endif
 		break;
 	}
 }
@@ -738,7 +736,7 @@ ut64 addr_for_lib(char *name)
 #if __UNIX__
 	void *addr = dlopen(name, RTLD_LAZY);
 	if (addr) {
-		ut64 foo = (ut64)addr; /* 32 bit only here */
+		ut64 foo = (ut64)(size_t)addr; /* 32 bit only here */
 		dlclose(addr);
 		return (ut64)((addr!=NULL)?foo:0LL);
 	} else {
@@ -1199,9 +1197,9 @@ void rabin_show_sections(const char *file, ut64 at)
 			if (rad) {
 				printf("fs elf\n");
 				printf("f elf.program_headers_off @ 0x1c\n");
-				printf("f elf.program_headers @ 0x%x\n", ELF_BIN(ehdr.e_phoff));
+				printf("f elf.program_headers @ 0x%08llx\n", (ut64)ELF_BIN(ehdr.e_phoff));
 				printf("f elf.section_headers_off @ 0x%x\n",0x1c+sizeof(void*)); // XXX 32/64bits
-				printf("f elf.section_headers @ 0x%x\n", ELF_BIN(ehdr.e_shoff));
+				printf("f elf.section_headers @ 0x%08llx\n", (ut64)ELF_BIN(ehdr.e_shoff));
 				printf("fs sections\n");
 				/* XXX: broken for 64 bits */
 			}

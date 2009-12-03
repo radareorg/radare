@@ -52,6 +52,7 @@ char *filename, output[MAX_F_LENGTH], *field, *out;
 
 char *fileaddr, *startaddr;
 
+// XXX This must be ut64 !!!!
 static void *offset, *toff, *init_offset;
 static unsigned int ncmds;
 
