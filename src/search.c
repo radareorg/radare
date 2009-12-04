@@ -42,14 +42,13 @@ static void search_alarm() {
 #endif
 }
 
-static int hit_idx = 0;
+static int hit_idx = 1;
 
 void radare_search_seek_hit(int idx)
 {
 	flag_t *flag;
 	char buf[64];
 
-	//sprintf(buf, "hit0_%d", hit_idx);
 	radare_flag_name (buf, 0, hit_idx);
 
 	flag = flag_get(buf);
@@ -57,11 +56,10 @@ void radare_search_seek_hit(int idx)
 	if (flag == NULL) {
 		if (idx>0)
 			hit_idx -= idx;
-		else	hit_idx += idx*2;
 	} else radare_seek(flag->offset, SEEK_SET);
 
 	hit_idx += idx;
-	if (hit_idx<0) hit_idx=0;
+	if (hit_idx<1) hit_idx=1;
 }
 
 int memcmpdiff(const u8 *a, const u8 *b, int len)
