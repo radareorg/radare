@@ -769,8 +769,8 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 {
 	int tmp, i, j, k;
 	int lines   = 0;
-	int endian  = (int)config_get("cfg.bigendian");
-	int inverse = (int)config_get("cfg.inverse");
+	int endian  = PTRCAST (config_get("cfg.bigendian"));
+	int inverse = PTRCAST (config_get("cfg.inverse"));
 	const char *cstr;
 	char *str;
 	// code anal

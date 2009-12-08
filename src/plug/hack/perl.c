@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -39,6 +39,8 @@
 //#include <radare.h>
 #include <EXTERN.h>
 #include <XSUB.h>
+#undef PL_madskills
+#undef PL_xmlfp
 #include <perl.h>
 
 extern PerlInterpreter *my_perl;
@@ -188,5 +190,3 @@ struct plugin_hack_t radare_plugin = {
 	.desc = "perl plugin",
 	.callback = &perl_hack_cmd
 };
-
-//main() { printf("i'm a plugin!\n"); }

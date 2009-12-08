@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_CONFIG_H_
 #define _INCLUDE_CONFIG_H_
 
+#define PTRCAST(x) ((int)(size_t)x)
 #include "radare.h"
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
@@ -13,6 +14,7 @@
 
 #define VISUAL_PROMPT ":> "
 #define DEFAULT_BLOCK_SIZE 512
+
 
 enum mode_t {
 	MODE_SHELL   = 0,

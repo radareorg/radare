@@ -111,7 +111,7 @@ usb_dev_handle *usb_open(struct usb_device *dev)
 	usb_dev_handle *ret;
 	fprintf(stderr, "USBSNF: usb_open(%s, %d);\n", dev->filename, dev->devnum);
 	ret = __usb_open(dev);
-	fprintf(stderr, "USBSNF:   return       = %x\n", (int)ret);
+	fprintf(stderr, "USBSNF:   return       = %p\n", ret);
 	return ret;
 }
 
@@ -128,7 +128,7 @@ int usb_close(struct usb_dev_handle *dev)
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_close()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	ret = __usb_close(dev);
 	fprintf(stderr, "USBSNF:   return       = %d\n", ret);
 	return ret;
@@ -138,7 +138,7 @@ int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size, int
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_bulk_write()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	fprintf(stderr, "USBSNF:   ep           = %d\n", ep);
 	fprintf(stderr, "USBSNF:   size         = %d\n", size);
 	fprintf(stderr, "USBSNF:   timeout      = %d\n", timeout);
@@ -152,7 +152,7 @@ int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size, int timeou
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_bulk_read()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	fprintf(stderr, "USBSNF:   ep           = %d\n", ep);
 	fprintf(stderr, "USBSNF:   size         = %d\n", size);
 	fprintf(stderr, "USBSNF:   timeout      = %d\n", timeout);
@@ -167,7 +167,7 @@ int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_control_msg()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	fprintf(stderr, "USBSNF:   request_type = %d (%s)\n", requesttype, (requesttype==64)?"read":"write");
 	fprintf(stderr, "USBSNF:   request      = %d\n", request);
 	fprintf(stderr, "USBSNF:   value        = %d\n", value);
@@ -191,7 +191,7 @@ int usb_claim_interface(usb_dev_handle *dev, int interface)
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_claim_interface()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	fprintf(stderr, "USBSNF:   interface    = %d\n", interface);
 
 	ret = __usb_claim_interface(dev, interface);
@@ -203,7 +203,7 @@ int usb_set_altinterface(usb_dev_handle *dev, int alternate)
 {
 	int ret;
 	fprintf(stderr, "USBSNF: usb_set_altinterface()\n");
-	fprintf(stderr, "USBSNF:   handle       = %x\n", (unsigned int)dev);
+	fprintf(stderr, "USBSNF:   handle       = %p\n", dev);
 	fprintf(stderr, "USBSNF:   alternate    = %d\n", alternate);
 
 	ret = __usb_set_altinterface(dev, alternate);

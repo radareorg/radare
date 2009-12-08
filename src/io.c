@@ -78,7 +78,7 @@ ssize_t io_write(int fd, const void *buf, size_t count)
 	io_write_last = count;
 	FIND_FD(fd)
 		IF_HANDLED(fd, write)
-		return plugins[i].write(fd, buf, count);
+			return plugins[i].write(fd, buf, count);
 	return -1;
 }
 
@@ -86,7 +86,7 @@ int io_close(int fd)
 {
 	FIND_FD(fd)
 		IF_HANDLED(fd, close)
-		return plugins[i].close(fd);
+			return plugins[i].close(fd);
 	return -1;
 }
 
@@ -94,7 +94,7 @@ int io_isdbg(int fd)
 {
 	FIND_FD(fd)
 		IF_HANDLED(fd, open)
-		return (int)(plugins[i].debug);
+			return (int)(size_t)(plugins[i].debug);
 	return 0;
 }
 

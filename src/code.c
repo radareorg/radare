@@ -482,7 +482,7 @@ void radis_str(int arch, const u8 *block, int len, int rows, const char *cmd_asm
 	int folder = 0; // folder level
 
 	// XXX
-	endian        = (int) config_get("cfg.bigendian");
+	endian        = (int)(size_t) config_get("cfg.bigendian");
 	show_nbytes   = (int) config_get_i("asm.nbytes");
 	if (show_nbytes>16 ||show_nbytes<0)
 		show_nbytes = 16;

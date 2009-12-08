@@ -81,7 +81,7 @@ int debug_syms()
 // TODO : stupid helper
 int getv()
 {
-	return (int)config_get("cfg.verbose");
+	return PTRCAST (config_get("cfg.verbose"));
 #if 0
 	char *ptr = config_get("cfg.verbose");
 	if (ptr&&ptr[0]=='1')
@@ -392,10 +392,9 @@ int debug_init()
 int debug_print_maps(char *arg)
 {
 	if(debug_init_maps(1) == 0) {
-		print_maps_regions((int)strchr(arg, '*'), arg[0]=='?');
+		print_maps_regions(PTRCAST (strchr(arg, '*')), arg[0]=='?');
 		return 0;
 	}
-
 	return -1;
 }
 
@@ -639,11 +638,11 @@ int debug_contum(const char *input)
 	struct aop_t aop;
 	ut64 pc;
 	char a[32];
-	int ilen, dotrace = (int)config_get("trace.log");
-	ut64 base = 0, len = 0;
-	u8 *buf = alloc_usercode(&base, &len);
+	int ilen, dotrace = PTRCAST (config_get ("trace.log"));
+	ut64 base = 0LL, len = 0LL;
+	u8 *buf = alloc_usercode (&base, &len);
 	if (buf == NULL) {
-		eprintf("No user code?\n");
+		eprintf ("No user code?\n");
 		return 1;
 	}
 
@@ -1192,12 +1191,12 @@ int debug_trace(char *input)
 	// TODO: file.trace ???
 	// TODO: show stack and backtrace only when is different
 	int counter = 0;
-	int tbt = (int)config_get("trace.bt");
-	long slip = (int)config_get_i("trace.sleep");
-	int smart = (int)config_get("trace.smart");
-	int tracebps = (int)config_get("trace.bps");
-	int tracelibs = (int)config_get("trace.libs");
-	int tracecalls = (int)config_get("trace.calls");
+	int tbt = PTRCAST (config_get("trace.bt"));
+	long slip = PTRCAST (config_get_i("trace.sleep"));
+	int smart = PTRCAST (config_get("trace.smart"));
+	int tracebps = PTRCAST (config_get("trace.bps"));
+	int tracelibs = PTRCAST (config_get("trace.libs"));
+	int tracecalls = PTRCAST (config_get("trace.calls"));
 	const char *cmdtrace = config_get("cmd.trace");
 	int level = atoi(input+1);
 	unsigned long pc;

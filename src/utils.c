@@ -225,7 +225,7 @@ void drop_endian(u8 *dest, u8 *orig, unsigned int size)
 void endian_memcpy(u8 *dest, const u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
-	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.bigendian"));
+	endian_memcpy_e(dest, orig, size, PTRCAST (config_get("cfg.bigendian")));
 #else
 	endian_memcpy_e(dest, orig, size, 0); // lilendian by default
 #endif

@@ -113,7 +113,7 @@ int arch_mips_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 	if (aop == NULL)
 		return (mips_mode==16)?2:4;
 
-	endian_memcpy_e((ut8*)&op, bytes, 4, (int)config_get("cfg.bigendian"));
+	endian_memcpy_e((ut8*)&op, bytes, 4, PTRCAST (config_get("cfg.bigendian")));
 	memset(aop, '\0', sizeof(struct aop_t));
 	//of &=0x3f;
 

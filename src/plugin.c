@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -52,9 +52,9 @@ static struct core_t core[]={
 	{ NULL, NULL, NULL }
 };
 
-static void *plugin_resolve(char *name)
+static void *plugin_resolve(const char *name)
 {
-	int i,j = (int)name;
+	int i,j = (int)(size_t)name;
 	if (j>0 && j<255) {
 		// get by index
 		for(i=0;core[i].ptr&&i<j;i++)
@@ -192,7 +192,7 @@ plugin_t *plugin_registry(const char *file)
 
 		list_add_tail(&(hack->list), &(hacks));
 
-		pl->resolve = (void *)&plugin_resolve;
+		pl->resolve = plugin_resolve;
 		pl->config = &config;
 #if DEBUGGER
 		pl->ps = &ps;
@@ -201,7 +201,7 @@ plugin_t *plugin_registry(const char *file)
 		} break;
 	default:
 		//eprintf("Unknown plugin type '%d'\n", (int)p);
-		if (((int)p) == PLUGIN_TYPE_GUI)
+		if (((int)(size_t)p) == PLUGIN_TYPE_GUI)
 			eprintf("You need GUI to run this plugin. Sorry\n");
 		return NULL;
 	}

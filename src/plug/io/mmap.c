@@ -33,7 +33,7 @@ static ssize_t mmap_write(int fd, const void *buf, size_t count)
 {
 	if (mmap_buf != NULL) {
 		mmap_buf = mmap(NULL, 4096,  PROT_WRITE, MAP_SHARED, fd, (off_t)config.seek-config.seek%4096);
-		if (((int)mmap_buf)==-1) {
+		if (((int)(size_t)mmap_buf)==-1) {
 			perror("mmap");
 			return -1;
 		}
@@ -55,7 +55,7 @@ static ssize_t mmap_read(int fd, void *buf, size_t count)
 		config.seek = config.size;
 
 	mmap_buf = mmap(NULL, count*2,  PROT_READ, MAP_SHARED, fd, (off_t)config.seek-config.seek%4096);
-	if (((int)mmap_buf)==-1) {
+	if (((int)(size_t)mmap_buf)==-1) {
 		perror("mmap");
 		return -1;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -93,9 +93,9 @@ static int rshm_open(const char *pathname, int flags, mode_t mode)
 		// connect
 		shm_buf= shmat(atoi(ptr), 0, 0);
 
-		if (((int)(shm_buf)) != -1) {
+		if (((int)(size_t)(shm_buf)) != -1) {
 			printf("Connected to shared memory 0x%08x\n", atoi(ptr));
-			shm_fd = (int)&shm_buf;
+			shm_fd = (int)(size_t)&shm_buf;
 		} else	{
 			printf("Cannot connect to shared memory (%d)\n", atoi(ptr));
 			shm_buf = NULL;

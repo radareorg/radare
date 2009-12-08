@@ -267,7 +267,7 @@ CMD_DECL(insert)
 
 CMD_DECL(invert)
 {
-	int inv = config_get_i("cfg.inverse")^1;
+	int inv = (int)config_get_i("cfg.inverse")^1;
 	config_set("cfg.inverse", inv?"true":"false");
 	return 0;
 }
@@ -974,7 +974,8 @@ void visual_draw_screen()
 		(config.seek+config.vaddr),
 		(unsigned int)config.block_size,
 		mark, strget(get_print_format_name(last_print_format)),
-		strget((char *)inv), strget(buf));
+		strget((char *)(size_t)inv),
+		strget(buf));
 	/* Spaguetti monster lives here ! */
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {

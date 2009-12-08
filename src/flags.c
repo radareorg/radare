@@ -28,6 +28,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#if HAVE_LIB_READLINE
+#include <readline/readline.h>
+#endif
 
 struct list_head flags;
 static int flag_ptr = -1;
@@ -1202,13 +1205,15 @@ void flags_visual_menu()
 		case ':':
 			cons_set_raw(0);
 #if HAVE_LIB_READLINE
-			char *ptr = (char *)readline(VISUAL_PROMPT);
+{
+			char *ptr = readline(VISUAL_PROMPT);
 			if (ptr) {
 				strncpy(cmd, ptr, sizeof(cmd));
 				radare_cmd(cmd, 1);
 				//commands_parse(line);
 				free(ptr);
 			}
+}
 #else
 			cmd[0]='\0';
 			dl_prompt = ":> ";

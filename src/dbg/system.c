@@ -277,7 +277,7 @@ int debug_system(const char *command)
 			case CB_SPACE:
 				return commands[i].callback(strchr(command+len,' '));
 			case CB_INT:
-				return commands[i].callback((char *)atoi(command+len));
+				return commands[i].callback((char *)(size_t)atoi(command+len));
 			}
 		}
 	}

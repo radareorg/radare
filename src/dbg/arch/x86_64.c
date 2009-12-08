@@ -101,15 +101,14 @@ int debug_register_list()
 
 ut64 arch_syscall(int pid, int sc, ...)
 {
-	long long ret = (off_t)-1;
 #if __linux__
 	va_list ap;
+	long long ret = (off_t)-1;
 	regs_t reg, reg_saved;
 	int baksz = 128;
 	int status;
 	char bak[128];
 	long long addr;
-	char *arg;
 	char *file;
 
 	//printf("Seek pid=%d, fd=%d, addr=%08llx, whence=%d\n", pid,fd, addr, whence);
@@ -127,8 +126,7 @@ ut64 arch_syscall(int pid, int sc, ...)
 	/* set syscall */
 	R_RAX(reg) = sc;
 
-	arg = (char*) &sc;
-	va_start(ap, arg);
+	va_start(ap, sc);
 	switch(sc) {
 		case SYS_gettid:
 			break;
@@ -205,7 +203,6 @@ ut64 arch_syscall(int pid, int sc, ...)
 #else
 	eprintf("not yet for this platform\n");
 #endif
-
 	return ret;
 }
 
@@ -1496,7 +1493,20 @@ ut64 get_reg(const char *reg)
 
 void arch_view_bt(struct list_head *sf)
 {
-	#warning "FIXME: code is missing"
+	//#warning "FIXME: code is missing"
+	char label[256];
+	struct list_head *pos;
+	struct sf_t *sf_e;
+	int i = 0;
+
+	list_for_each(pos, sf) {
+                sf_e = list_entry(pos, struct sf_t, next);
+		label[0] = '\0';
+		string_flag_offset(NULL, (char *)&label, sf_e->ret_addr, 0);
+		cons_printf("%02d 0x%08llx (framesz=%03d varsz=%d) %s\n",
+			i++, (ut64)sf_e->ret_addr,
+			(uint)sf_e->sz, (uint)sf_e->vars_sz, label);
+	}
 }
 
 void free_bt(struct list_head *sf)

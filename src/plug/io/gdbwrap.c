@@ -226,11 +226,12 @@ int r_gdbwrap_system(const char *str)
 
 int r_gdbwrap_init()
 {
+	return 0;
 }
 
-void r_gdbwrap_close()
+int r_gdbwrap_close()
 {
-	close(config.fd);
+	return close(config.fd);
 }
 
 static struct debug_t im_debug;

@@ -186,7 +186,7 @@ int stripstr_from_file(const char *filename, int min, int max, int encoding, ut6
 	/* TODO: do not use mmap */
 #if __UNIX__
 	buf = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, (off_t)0);
-	if (((int)buf) == -1 ) {
+	if (((int)(size_t)buf) == -1 ) {
 		perror("mmap");
 		return 1;
 	}

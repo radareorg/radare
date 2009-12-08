@@ -107,10 +107,10 @@ int debug_dumpall(const char *ptr)
 
 int process_dump(const char *dir)
 {
-	int regs = (int)config_get("dump.regs");
-  	int user = (int)config_get("dump.user");
-  	int libs = (int)config_get("dump.libs");
-  	int fds  = (int)config_get("dump.fds");
+	int regs = PTRCAST (config_get("dump.regs"));
+  	int user = PTRCAST (config_get("dump.user"));
+  	int libs = PTRCAST (config_get("dump.libs"));
+  	int fds  = PTRCAST (config_get("dump.fds"));
 
 	if (strnull(dir)) {
 		sprintf(dumpdir, "dump%d", dump_num);
@@ -152,10 +152,10 @@ int process_dump(const char *dir)
 
 int process_restore(const char *dir)
 {
-	int regs = (int)config_get("dump.regs");
-  	int user = (int)config_get("dump.user");
-  	int libs = (int)config_get("dump.libs");
-  	int fds  = (int)config_get("dump.fds");
+	int regs = PTRCAST (config_get("dump.regs"));
+  	int user = PTRCAST (config_get("dump.user"));
+  	int libs = PTRCAST (config_get("dump.libs"));
+  	int fds  = PTRCAST (config_get("dump.fds"));
 
 	if (strnull(dir)) {
 		dump_num--;

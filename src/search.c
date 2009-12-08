@@ -347,11 +347,11 @@ int search_range(char *range)
 
 	// init stuff
 	search_cmdhit = config_get("cmd.hit");
-	search_count = (int)config_get_i("cfg.count");
-	search_flag = (int)config_get("search.flag");
+	search_count = (int)(size_t)config_get_i("cfg.count");
+	search_flag = (int)(size_t)config_get("search.flag");
 	search_from = config_get_i("search.from");
 	search_to = config_get_i("search.to");
-	search_verbose = (int)config_get("search.verbose");
+	search_verbose = (int)(size_t)config_get("search.verbose");
 
 	if (config_get("search.inar")) {
 		if (! ranges_get_n(range_n++, &search_from, &search_to)) {

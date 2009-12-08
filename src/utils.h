@@ -136,5 +136,6 @@ struct r_prof_t {
 void r_prof_start(struct r_prof_t *p);
 double r_prof_end(struct r_prof_t *p);
 char *r_sys_cmd_str(const char *cmd, const char *input, int *len);
+const char *get_home_directory();
 
 #endif

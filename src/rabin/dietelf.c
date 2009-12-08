@@ -1035,14 +1035,14 @@ static int ELF_(dietelf_init)(ELF_(dietelf_bin_t) *bin, int fd)
 		perror("lseek");
 		ehdr->e_shnum=0;
 		fprintf(stderr, "Warning: Cannot read %d section headers (0x%08x->0x%08x)\n",
-			ehdr->e_shnum, ehdr->e_shoff, (unsigned int)&ehdr->e_shoff-(unsigned int)&ehdr->e_ident);
+			ehdr->e_shnum, ehdr->e_shoff, (unsigned int)(size_t)&ehdr->e_shoff-(unsigned int)(size_t)&ehdr->e_ident);
 	//	return -1;
 	}
 
 	if (read(fd, bin->shdr, slen) != slen) {
 		perror("read");
 		fprintf(stderr, "Warning: Cannot read %d section headers (0x%08x->0x%08x)\n",
-			ehdr->e_shnum, ehdr->e_shoff, (unsigned int)&ehdr->e_shoff-(unsigned int)&ehdr->e_ident);
+			ehdr->e_shnum, ehdr->e_shoff, (unsigned int)(size_t)&ehdr->e_shoff-(unsigned int)(size_t)&ehdr->e_ident);
 		ehdr->e_shnum=0;
 		//return -1;
 	}

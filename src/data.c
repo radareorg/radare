@@ -789,7 +789,7 @@ void data_reflines_init(int lines, int linescall)
 
 int data_printd(int delta)
 {
-	int show_lines = (int)config_get("asm.lines");
+	int show_lines = PTRCAST (config_get("asm.lines"));
 	ut64 offset = (ut64)config.seek + (ut64)delta;// - config.vaddr;
 	int lines = 0;
 	const char *ptr;

@@ -18,6 +18,7 @@
  *
  */
 
+#include "config.h"
 #include "main.h"
 #include "utils.h"
 #if DEBUGGER
@@ -139,7 +140,7 @@ void env_update()
 
 	/* radis_update(); */
 	config.verbose = config_get_i("cfg.verbose");
-	config.color = (int)config_get("scr.color");
+	config.color = PTRCAST (config_get("scr.color"));
 
 #if 0
 	ptr = getenv("COLUMNS");

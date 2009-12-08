@@ -354,7 +354,7 @@ void config_eval(char *str)
 			const char * str = config_get(foo);
 			if (config_get_notfound)
 				config_list(name);
-			else cons_printf("%s\n", (((int)str)==1)?"true":(str==0)?"false":str);
+			else cons_printf("%s\n", ((PTRCAST (str))==1)?"true":(str==0)?"false":str);
 		}
 	}
 }
@@ -1050,7 +1050,7 @@ void config_init(int first)
 	config_set("dbg.hwbp", "true"); // hardware breakpoints by default // ALSO BSD
 #endif
 	config_set("dbg.bep", "loader"); // loader, main
-	config_set("dir.home", (const char *)get_home_directory());
+	config_set("dir.home", get_home_directory());
 
 	/* dir.monitor */
 	ptr = getenv("MONITORPATH");

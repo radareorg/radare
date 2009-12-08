@@ -64,13 +64,14 @@ ruby.${SO}:
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}:
-	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LIBS} -o lua.so
-	@true
 ifeq ($(HAVE_LANG_LUA),1)
+ifeq ($(HAVE_LIB_PYTHON2_5),1)
 ifneq ($(LUA_LIBS),)
 	-${CC} lua.c ${SHARED_CFLAGS} ${CFLAGS} ${LUA_CFLAGS} ${LUA_LIBS} -o lua.so
 endif
 endif
+endif
+	@true
 
 install:
 	-[ -e lua.${SO} ] && ${INSTALL_LIB} lua.${SO} ${DESTDIR}/${LIBDIR}/radare

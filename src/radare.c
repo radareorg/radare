@@ -1773,7 +1773,7 @@ int radare_open(int rst)
 	const char *cptr;
 	char buf[4096];
 	struct config_t ocfg;
-	int wm = (int)config_get("file.write");
+	int wm = (int)(size_t)config_get("file.write");
 	int fd_mode = wm?O_RDWR:O_RDONLY;
 	ut64 seek_orig = config.seek;
 
@@ -1967,7 +1967,7 @@ int radare_compare_hex(ut64 addr, unsigned char *f, unsigned char *d, int len)
 int radare_go()
 {
 	ut64 bsize;
-	int i, t = (int)config_get("cfg.verbose");
+	int i, t = (int)(size_t)config_get("cfg.verbose");
 
 	radare_controlc_end();
 

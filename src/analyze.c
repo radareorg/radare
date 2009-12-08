@@ -48,7 +48,7 @@ struct reflines_t *code_lines_init(int linescall)
 {
 	struct reflines_t *list = (struct reflines_t*)malloc(sizeof(struct reflines_t));
 	struct reflines_t *list2;
-	int bar = (int)config_get("asm.linesout");
+	int bar = PTRCAST (config_get("asm.linesout"));
 	unsigned char *ptr = config.block;
 	unsigned char *end = config.block + config.block_size;
 	struct aop_t aop;

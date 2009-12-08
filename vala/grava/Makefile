@@ -27,5 +27,5 @@ novala:
 
 clean:
 	-mv cmain.c ___
-	-rm *.c *.h *.o a.out
+	-rm -f *.c *.h *.o a.out
 	-mv ___ cmain.c
