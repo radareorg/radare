@@ -192,9 +192,9 @@ void vm_print(int type)
 	if (type == -2)
 		cons_printf("fs *\n");
 }
-int vm_mmu_cache_write(ut64 addr, u8 *buf, int len)
+int vm_mmu_cache_write(ut64 addr, const u8 *buf, int len)
 {
-	struct vm_change_t *ch = (struct range_t *)malloc(sizeof(struct range_t));
+	struct vm_change_t *ch = (struct vm_change_t *)malloc(sizeof(struct vm_change_t));
 	ch->from = addr;
 	ch->to = addr + len;
 	ch->data = (u8*)malloc(len);
@@ -226,7 +226,7 @@ int vm_mmu_read(ut64 off, u8 *data, int len)
 	return radare_read_at(off, data, len);
 }
 
-int vm_mmu_write(ut64 off, u8 *data, int len)
+int vm_mmu_write(ut64 off, const u8 *data, int len)
 {
 	if (!realio)
 		return vm_mmu_cache_write(off, data, len);
@@ -366,16 +366,16 @@ void vm_stack_push(ut64 _val)
 	// XXX do not write while emulating zomfg
 	ut32 val = _val;
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)+4);
-	vm_mmu_write(vm_reg_get(vm_cpu.sp), &val, 4);
+	vm_mmu_write(vm_reg_get(vm_cpu.sp), (u8*)&val, 4);
 }
 
 void vm_stack_pop(const char *reg)
 {
 	ut32 val = 0;
-	if (vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4))
+	if (vm_mmu_read(vm_reg_get(vm_cpu.sp), (ut8*)&val, 4))
 		return;
 //printf("POP (%s)\n", reg);
-	vm_mmu_read(vm_reg_get(vm_cpu.sp), &val, 4);
+	vm_mmu_read(vm_reg_get(vm_cpu.sp), (ut8*)&val, 4);
 	vm_reg_set(reg, val);
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)-4);
 }
@@ -527,7 +527,7 @@ int vm_eval_eq(const char *str, const char *val)
 			} else {
 				vm_mmu_read(off, (u8*)&_int32, 4);
 				//off = vm_get_math(val);
-				vm_mmu_write(off, (const u8*)&_int32, 4);
+				vm_mmu_write(off, (const ut8*)&_int32, 4);
 			}
 		} else {
 			// [0x804800] = eax
@@ -667,7 +667,7 @@ int vm_eval_single(const char *str)
 		if((!memcmp(ptr, "call ", 4))
 		|| (!memcmp(ptr, "jmp ", 4))){
 			if (ptr[0]=='c')
-				vm_stack_push(vm_cpu.pc);
+				vm_stack_push(vm_get_value(vm_cpu.pc));
 			printf("CALL(%s)\n", ptr+4);
 			vm_reg_set(vm_cpu.pc, vm_get_value(ptr+4));
 		} else
@@ -680,7 +680,7 @@ int vm_eval_single(const char *str)
 				vm_reg_set(vm_cpu.pc, vm_get_value(ptr+4));
 		} else
 		if (!memcmp(ptr, "push ", 5)) {
-			vm_stack_push(str+5);
+			vm_stack_push(vm_get_value (str+5));
 		} else
 		if (!memcmp(str, "pop ", 4)) {
 			vm_stack_pop(str+5);
@@ -928,7 +928,7 @@ int vm_op_eval(const char *str)
 	char *p,*s;
 	int i,j,k,len = strlen(str)+256;
 	int nargs = 0;
-	char *arg0;
+	const char *arg0;
 
 //	eprintf("vmopeval(%s)\n", str);
 	p = alloca(len);

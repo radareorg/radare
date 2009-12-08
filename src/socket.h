@@ -5,9 +5,13 @@ int socket_ready(int fd, int secs, int usecs);
 int socket_read(int fd, unsigned char *read, int len);
 int socket_write(int fd, unsigned char *buf, int len);
 int socket_udp_connect(char *host, int port);
-int socket_connect(char *host, int port);
+int socket_connect(const char *host, int port);
 int socket_listen(int port);
 int socket_fgets(int fd, char *buf, int size);
 void socket_printf(int fd, const char *fmt, ...);
+#if __UNIX__
+int socket_unix_connect(const char *file);
+int socket_unix_listen(const char *file);
+#endif
 
 #endif

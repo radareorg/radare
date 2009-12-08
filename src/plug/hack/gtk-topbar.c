@@ -100,8 +100,7 @@ static GtkWidget *gradare_topbar_new()
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 6, "string");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 7, "hex pairs");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), 8, "raw");
-
-	gtk_combo_box_set_active(GTK_COMBO(combo), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
 
 	g_signal_connect(GTK_COMBO_BOX(combo), "changed", GTK_SIGNAL_FUNC(print_mode_changed), 0);
 	gtk_box_pack_end(GTK_BOX(hbox), combo, FALSE, FALSE, 0);
@@ -132,7 +131,7 @@ static GtkWidget *gradare_topbar_new()
 }
 
 /* STUB */
-static int my_hack(char *input)
+static int my_hack(const char *input)
 {
 	static int dry = 0;
 	if (dry) return 0; dry=1;

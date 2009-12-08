@@ -122,9 +122,8 @@ int debug_tt_range(const char *arg)
 	ut64 pc, rpc; // program counter
 	u8 *sa; // swap area
 	u8 *cc; // breakpoint area
-	ut64 sz;
-	char *cmd = NULL;
-	ut64 ba = config.seek; // base address
+	const char *cmd = NULL;
+	ut64 sz, ba = config.seek; // base address
 	struct list_head *rgs, *pos;
 	struct range_t *r;
 	int status;
@@ -601,9 +600,7 @@ char *alloc_usercode(ut64 *base, ut64 *len)
 
 	if (ps.map_regs_sz==0) {
 		eprintf("Cannot determine usercode.\n");
-		return 1;
-	}
-
+	} else
 	list_for_each_prev(pos, &ps.map_reg) {
 		MAP_REG	*mr = (MAP_REG *)((char *) pos + \
 			sizeof(struct list_head) -  sizeof(MAP_REG));
@@ -642,7 +639,7 @@ int debug_contum(const char *input)
 	struct aop_t aop;
 	ut64 pc;
 	char a[32];
-	int ilen, dotrace = config_get("trace.log");
+	int ilen, dotrace = (int)config_get("trace.log");
 	ut64 base = 0, len = 0;
 	u8 *buf = alloc_usercode(&base, &len);
 	if (buf == NULL) {
@@ -1158,7 +1155,7 @@ int debug_step(int times)
 			//	radare_cmd("!dregs", 0);
 			//	config_set("scr.buf", "true");
 				arch_print_registers(0, "line");
-				ptr = cons_get_buffer();
+				ptr = (char *)cons_get_buffer();
 				if(ptr[0])ptr[strlen(ptr)-1]='\0';
 				sprintf(buf, "CC %d %s @ 0x%08llx", ps.steps, strget(ptr), pc);
 			//	config_set("scr.buf", "false"); // XXX
@@ -1201,7 +1198,7 @@ int debug_trace(char *input)
 	int tracebps = (int)config_get("trace.bps");
 	int tracelibs = (int)config_get("trace.libs");
 	int tracecalls = (int)config_get("trace.calls");
-	char *cmdtrace = config_get("cmd.trace");
+	const char *cmdtrace = config_get("cmd.trace");
 	int level = atoi(input+1);
 	unsigned long pc;
 

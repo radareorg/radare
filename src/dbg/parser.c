@@ -89,7 +89,7 @@ int get_tok_op(const char **c, struct tok *t)
 int get_tok_value(const char **c, struct tok *t)
 {
 	char aux[512];
-	char *val = *c;
+	const char *val = *c;
 	int len;
 
 	t->val = 0;
@@ -359,7 +359,7 @@ struct tok* process_cond(const char **c, int top)
 {
 	struct tok *t = NULL;
 	struct tok *group;
-	char *val;
+	const char *val;
 	int f = 0;
 
 	val = *c;

@@ -27,7 +27,7 @@ int debug_single_setregs(pid_t tid, regs_t *regs);
 int debug_print_wait(char *act);
 int debug_dispatch_wait();
 
-void debug_print_sigh(char *signame, unsigned long handler);
+void debug_print_sigh(const char *signame, unsigned long handler);
 
 /* basic io */
 int debug_read_at(pid_t tid, void *buff, int len, ut64 addr);

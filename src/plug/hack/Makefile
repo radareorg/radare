@@ -46,14 +46,14 @@ scriptedit.${SO}:
 endif
 
 python.${SO}:
-#ifeq ($(HAVE_LIB_PYTHON25),1)
+ifeq ($(HAVE_LIB_PYTHON2_5),1)
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python.${SO}
-#endif
+endif
 
 python26.${SO}:
-#ifeq ($(HAVE_LIB_PYTHON26),1)
+ifeq ($(HAVE_LIB_PYTHON2_6),1)
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY26_LIBS} -o python26.${SO}
-#endif
+endif
 
 perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO}

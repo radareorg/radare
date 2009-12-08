@@ -66,7 +66,7 @@ int gnu_dismips_str(char *str, const u8 *inst, ut64 offset)
 	buf_global = str;
 
 	Offset = (unsigned long)offset;
-	endian_memcpy(bytes, inst, 4); // TODO handle thumb
+	endian_memcpy((u8*)bytes, inst, 4); // TODO handle thumb
 
 	//set_default_mips_dis_options(&info);
 	/* prepare disassembler */

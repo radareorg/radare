@@ -76,7 +76,7 @@ struct sig {
 };
 
 void print_sigah();
-int name_to_sig(char *signame);
+int name_to_sig(const char *signame);
 const char *sig_to_name(int sig);
 
 

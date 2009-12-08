@@ -431,9 +431,10 @@ CMD_DECL(analyze)
 				if (arch_aop(seek+i, b+i, &aop)<1)
 					break;
 				if (aop.type == AOP_TYPE_CALL) {
+					const char *str = flag_name_by_offset(aop.jump);
 					cons_printf("call 0x%08llx", aop.jump);
-					str = flag_name_by_offset(aop.jump);
-					if (str&&*str) cons_printf(" ; %s\n", str);
+					if (str&&*str)
+						cons_printf(" ; %s\n", str);
 					cons_printf("\n");
 				}
 				i += aop.length;
@@ -492,8 +493,7 @@ CMD_DECL(analyze)
 				print_mem_add(input, s+1);
 			} else {
 				const char *fmt = print_mem_get(input);
-				if (fmt)
-				print_mem(config.seek, config.block,
+				if (fmt) print_mem(config.seek, config.block,
 					config.block_size, fmt, config.endian);
 			}
 		}
@@ -2626,14 +2626,14 @@ CMD_DECL(search) {
 	case 'v':
 		{
 		char buf[64];
-		u8 *b;
+		ut8 *b;
 		ut64 n, _n;
 		ut32 n32, _n32;
 		radare_cmd("f -hit0*", 0);
 		_n = n = get_math(input+2);
 		if (n & 0xffffffff00000000LL) {
-			endian_memcpy_e(&n, &_n, 8, !config_get_i("cfg.bigendian"));
-			b=&n;
+			endian_memcpy_e((ut8*)&n, (const ut8*)&_n, 8, !config_get_i("cfg.bigendian"));
+			b=(ut8*)&n;
 			sprintf(buf,
 			"\\x%02x\\x%02x\\x%02x\\x%02x"
 			"\\x%02x\\x%02x\\x%02x\\x%02x",
@@ -2641,8 +2641,8 @@ CMD_DECL(search) {
 			b[4],b[5],b[6],b[7]);
 		} else {
 			_n32 = n32=(ut32)n;
-			endian_memcpy_e(&n32, &_n32, 4, !config_get_i("cfg.bigendian"));
-			b=&n32;
+			endian_memcpy_e((ut8*)&n32, (const ut8*)&_n32, 4, !config_get_i("cfg.bigendian"));
+			b=(ut8*)&n32;
 			sprintf(buf,
 			"\\x%02x\\x%02x\\x%02x\\x%02x",
 			b[0],b[1],b[2],b[3]);
@@ -2883,7 +2883,7 @@ CMD_DECL(help)
 			char buf[64];
 			ut32 _ut32, __ut32;
 			float _f;
-			u8 *p = &_f;
+			ut8 *p = (ut8*) &_f;
 			if (str[0]=='0'&&str[1]=='x') {
 				sscanf(str, "0x%x", &_ut32);
 				memcpy(&_f, &_ut32, sizeof(float));

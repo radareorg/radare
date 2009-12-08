@@ -24,11 +24,15 @@ int rasm_rsc(ut64 offset, const char *str, unsigned char *data)
 {
 	int i;
 	FILE *fd;
+	char path[128];
 	char buf[1024];
+
+	strcpy (path, "/tmp/.rscasm");
 	// XXX hacky solution
-	sprintf(buf, "SYNTAX=intel rsc asm '%s' > /tmp/.rscasm", str);
+	sprintf(buf, "SYNTAX=intel rsc asm '%s' > %s", str, path);
 	system(buf);
-	fd = fopen("/tmp/.rscasm", "r");
+
+	fd = fopen(path, "r");
 	for(i=0;1;i++) {
 		int b;
 		fscanf(fd, "%02x", &b);
@@ -36,6 +40,6 @@ int rasm_rsc(ut64 offset, const char *str, unsigned char *data)
 		data[i]=(unsigned char)b;
 	}
 	fclose(fd);
-	unlink(fd);
+	unlink(path);
 	return i;
 }

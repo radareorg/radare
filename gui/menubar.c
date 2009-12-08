@@ -85,6 +85,10 @@ void gradare_run_script() //GtkAction *action, CanoeWindow *w)
 	gtk_widget_destroy(fcd);
 }
 
+void do_exit () {
+	exit (0);
+}
+
 void gradare_about() //GtkAction *action, CanoeWindow *w)
 {
         GtkAboutDialog *gad;
@@ -303,7 +307,7 @@ GtkMenu *gradare_menubar_hildon_new(GtkWindow *w)
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
 	mi = (GtkMenuItem *) gtk_image_menu_item_new_with_label("Quit");
-	g_signal_connect_object (mi, "activate", exit, w, 0);
+	g_signal_connect_object (mi, "activate", do_exit, w, 0);
 	gtk_menu_append (GTK_MENU_SHELL (menu), GTK_WIDGET (mi));
 
 	return menu;

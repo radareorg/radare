@@ -27,8 +27,7 @@
 /* spaghetti implementation */
 static int env_var_required(const char *str, const char *var)
 {
-	char *a = str, *b;
-
+	const char *a = str, *b;
 	while(*a) {
 		if (*a == '$') {
 			a = a + 1;

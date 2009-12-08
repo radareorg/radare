@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -213,7 +213,7 @@ int gdb_handle_fd(int fd)
 	return (gdbps.opened && gdbps.fd == fd);
 }
 
-int gdb_open(char *file, int mode, int flags)
+int gdb_open(const char *file, int mode, mode_t flags)
 {
 	char *port;
 	if (!gdb_handle_open(file)) {
@@ -243,7 +243,7 @@ int gdb_handle_open(const char *file)
 	return 0;
 }
 
-int gdb_seek(int fd, int offset, int whence)
+ut64 gdb_seek(int fd, ut64 offset, int whence)
 {
 	if (gdbps.opened && gdbps.fd == fd)
 		switch(whence) {
@@ -257,27 +257,29 @@ int gdb_seek(int fd, int offset, int whence)
 		case SEEK_END:
 			return gdbps.offset = (ut64)((unsigned long long)(-1));
 		default:
-			return (ut64)(unsigned long long)-1;
+			return U64_MAX; //(long long)-1;
 		}
 
 	return -1;
 }
 
-void gdb_system(char *str)
+int gdb_system(const char *str)
 {
 	if (!strstr(str, "regs")
 	&&  !strstr(str, "info")
 	&&  !strstr(str, "maps"))
-		gdb_send(str);
+		gdb_send((char *)str);
+	return 0;
 }
 
-void gdb_init()
+int gdb_init()
 {
+	return 0;
 }
 
-void gdb_close()
+int gdb_close()
 {
-	close(config.fd);
+	return close(config.fd);
 }
 
 plugin_t gdb_plugin = {

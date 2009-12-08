@@ -47,7 +47,7 @@ void flags_setenv();
 void flag_list(char *arg);
 void flag_help();
 int flag_rename_str(char *text);
-int string_flag_offset(char *match, char *buf, ut64 seek, int idx);
+int string_flag_offset(const char *match, char *buf, ut64 seek, int idx);
 int flag_interpolation(const char *from, const char *to);
 struct list_head flags;
 void flag_grep(const char *grep);
@@ -65,5 +65,6 @@ const char *flag_get_here_filter(ut64 at, const char *str);
 const const char *flag_space_get(int idx);
 ut64 flag_delta_between(ut64 from, ut64 to);
 flag_t *flag_get_by_addr(ut64 addr);
+const char *flag_get_here_filter2(ut64 at, const char *str, const char *str2);
 
 #endif

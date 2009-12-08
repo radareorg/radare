@@ -467,7 +467,7 @@ const char *flag_name_by_offset(ut64 offset)
  * idx =  0 : just return the first one found
  * idx =  1 : continue searching for flag after the first one
  */
-int string_flag_offset(char *match, char *buf, ut64 seek, int idx)
+int string_flag_offset(const char *match, char *buf, ut64 seek, int idx)
 {
 	int delta;
 	flag_t *ref = NULL;
@@ -539,7 +539,7 @@ int string_flag_offset(char *match, char *buf, ut64 seek, int idx)
 void print_flag_offset(const char *match, ut64 seek)
 {
 	char buf[512];
-	if ( string_flag_offset(match, buf, seek, -2) )
+	if (string_flag_offset(match, buf, seek, -2))
 		cons_strcat(buf);
 }
 
@@ -947,7 +947,7 @@ const char *flag_get_here_filter(ut64 at, const char *str)
 	static char sec_str[64];
 	struct list_head *pos;
 	ut64 ret = 0;
-	ut64 nextflag = 0xFFFFFFFFFFFFFFFFFFLL;
+	ut64 nextflag = U64_MAX;
 	flag_t *f = NULL;
 
 	if (at >=sec_start && at <sec_end) {
@@ -984,9 +984,9 @@ const char *flag_get_here_filter2(ut64 at, const char *str, const char *str2)
 	static char sec_str[64];
 	struct list_head *pos;
 	ut64 ret = 0;
-	ut64 nextflag = 0xFFFFFFFFFFFFFFFFFFLL;
+	ut64 nextflag = U64_MAX;
 	flag_t *f = NULL;
-	char *s1,*s2,*s=NULL;
+	const char *s1,*s2,*s=NULL;
 
 	if (at >=sec_start && at <sec_end) {
 		/* ADDED CACHE PAWAH */

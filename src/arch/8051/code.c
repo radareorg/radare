@@ -69,7 +69,7 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 	return ilen;
 }
 
-int dis51_udis (char *str, ut8 *bytes, int len, ut64 seek) {
+int dis51_udis (char *str, const ut8 *bytes, int len, ut64 seek) {
 	int ptr, type;
 
 	// TODO: add += seek somewhere :)

@@ -712,7 +712,7 @@ int arch_print_fpregisters(int rad, const char *mask)
 	for(t=0;t<2;t++)
 	for(i=0;i<8;i++) {
 		ut64 mmx;
-		ut16 *mmxword = &mmx;
+		ut16 *mmxword = (ut16*) &mmx;
 		ut16 *a = (ut16*)&regs.xmm_space;
 		a = a + (i * 4);
 		mmx = *MMXREG;

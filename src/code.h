@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-int dis51_udis (char *str, ut8 *bytes, int len, ut64 seek);
+int dis51_udis (char *str, const ut8 *bytes, int len, ut64 seek);
 
 int trace_count(ut64 addr);
 int trace_times(ut64 addr);

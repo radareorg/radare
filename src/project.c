@@ -30,7 +30,7 @@ int project_save(const char *file)
 	char buf[128];
 	FILE *fd;
 	flag_t *flag;
-	char *rdbdir;
+	const char *rdbdir;
 	int i, lfs;
 	
 	if (strnull(file)) {
@@ -149,7 +149,7 @@ FILE *project_open_fd(const char *file, const char *mode)
 	return fopen(file, mode);
 }
 
-static const char tmp_buf[128];
+static char tmp_buf[128];
 const char *project_get_file(const char *file)
 {
 	int len;
@@ -166,7 +166,7 @@ const char *project_get_file(const char *file)
 		if (buf[len] == '\n' || buf[len] == '\r')
 			buf[len]='\0';
 		if (!memcmp(buf, "; file = ", 9)) {
-			strncpy(tmp_buf,buf+9, 1023);
+			strncpy (tmp_buf, buf+9, sizeof(tmp_buf));
 			break;
 		}
 	}
@@ -223,7 +223,7 @@ int project_open(const char *file)
 
 int project_info(const char *file)
 {
-	char *targetfile;
+	const char *targetfile;
 
 	if (file == NULL || file[0]=='\0')
 		file = config_get("file.project");

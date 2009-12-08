@@ -75,7 +75,6 @@ void metadata_comment_init(int new);
 extern int fixed_width;
 extern int inc;
 void monitors_run();
-void endian_memcpy(unsigned char *dest, unsigned char *orig, unsigned int size);
 void radare_init();
 int radare_go();
 void radare_exit(int ret);
@@ -87,7 +86,7 @@ int stripstr_from_file(const char *filename, int min, int max, int encoding, ut6
 int stripstr_iterate(const u8 *buf, int i, int min, int max, int enc, ut64 offset, const char *match);
 void radare_search_set_mask (const unsigned char *arg, unsigned int slen , unsigned char op);
 int radare_strsearch(const char *str);
-int radare_cmd(char *command, int log);
+int radare_cmd(const char *command, int log);
 int radare_cmd_raw(const char *tmp, int log);
 char *pipe_command_to_string(const char *cmd);
 char *radare_cmd_str(const char *cmd);

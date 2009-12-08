@@ -31,7 +31,7 @@
 
 
 /* typedefs */
-typedef unsigned int ppc_word;
+typedef unsigned long long ppc_word;
 #ifndef NULL
 #define NULL (0L)
 #endif

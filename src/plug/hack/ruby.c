@@ -38,7 +38,7 @@ extern struct plugin_hack_t radare_plugin;
 static char *(*rs_cmdstr)(const char *cmd) = NULL;
 static int (*rs_cmd)(char *cmd, int log) = NULL;
 
-static int slurp_ruby(char *file)
+static int slurp_ruby(const char *file)
 {
 	rb_load_file(file);
 	ruby_exec();
@@ -85,7 +85,7 @@ static int ruby_hack_cya()
 	return 0;
 }
 
-int ruby_hack_cmd(char *input)
+int ruby_hack_cmd(const char *input)
 {
 	int err, rb_state = 0;
 	char str[1024];

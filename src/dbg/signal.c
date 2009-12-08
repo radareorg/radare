@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *       th0rpe <nopcode.org>
  *
@@ -37,7 +37,7 @@ void print_sigah()
 			   (unsigned long)arch_get_sighandler(signals[i].sig));
 }
 
-int name_to_sig(char *signame)
+int name_to_sig(const char *signame)
 {
 	int i;
 	for(i=0;signals[i].name;i++)

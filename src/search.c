@@ -151,7 +151,8 @@ static int align = 0;
 
 int radare_flag_name(char *buf, int kw, int hn)
 {
-	char *a, *f = config_get("search.flagname");
+	const char *f = config_get("search.flagname");
+	char *a;
 	if (!f || !f[0])
 		goto beach;
 	a = strstr(f, "%d");

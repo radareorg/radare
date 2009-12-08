@@ -12,9 +12,11 @@ FILES+=strings-pe-flag syscall-flag dwarf-lines dwarf-addr list syms-extract
 FILES+=boomerang flag-sections elf-prg-maps flag-kallsyms spcc-fe asmcolor
 FILES+=signsrch fds symdiff idc2rdb dwarf-addrs dwarf-at daemon daemon-cmd
 
-BIN=rsc
+BIN=rsc${BINSFX}
 
-all: main.o gtk-stuff
+all: main.o gtk-stuff ${BIN}
+
+${BIN}:
 	${CC} -o ${BIN} main.o
 
 ifeq ($(HAVE_GUI),0)

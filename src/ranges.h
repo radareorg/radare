@@ -14,6 +14,7 @@ extern void (*ranges_new_callback)(struct range_t *r);
 int ranges_init();
 void ranges_free();
 ut64 ranges_size(struct list_head *rang);
+struct list_head *ranges_new(const char *string);
 struct range_t *ranges_get(struct list_head *rang, ut64 addr);
 struct range_t *ranges_add(struct list_head *rang, ut64 from, ut64 to, int rw);
 int ranges_sub(struct list_head *rang, ut64 from, ut64 to);

@@ -125,7 +125,7 @@ void socket_printf(int fd, const char *fmt, ...)
 }
 
 #if __UNIX__
-int socket_unix_connect(char *file)
+int socket_unix_connect(const char *file)
 {
 	struct sockaddr_un addr;
 	int sock;
@@ -174,7 +174,7 @@ int socket_unix_listen(const char *file)
 }
 #endif
 
-int socket_connect(char *host, int port)
+int socket_connect(const char *host, int port)
 {
 	struct sockaddr_in sa;
 	struct hostent *he;

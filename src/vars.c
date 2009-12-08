@@ -110,7 +110,7 @@ int var_add_access(ut64 addr, int delta, int type, int set)
 				#warning THIS IS BUGGY: SHOULD NEVER HAPPEN
 				//eprintf("LOOPING AT 0x%08llx NOT ADDING AN ACCESS\n", addr);
 				//eprintf("v");
-				D analyze_progress(0,0,0,1);
+				D analyze_progress (0, 0, 0, 1);
 				return 0;
 			}
 			reloop=1;

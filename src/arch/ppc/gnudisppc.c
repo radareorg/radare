@@ -71,7 +71,7 @@ int gnu_disppc_str(char *str, const u8 *inst, ut64 offset)
 	info.buffer_vma = Offset;
 	info.buffer_length = 4;
 	info.endian = 0;//config_get_i("cfg.bigendian");
-	info.fprintf_func = &buf_fprintf;
+	info.fprintf_func = buf_fprintf;
 	//info.fprintf_func = &cons_fprintf;
 	info.stream = stdout;
 

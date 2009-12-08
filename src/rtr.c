@@ -20,7 +20,8 @@ void rtr_help()
 void rtr_pushout(const char *input)
 {
 	int fd = atoi(input);
-	char *str = NULL, *cmd = NULL;
+	const char *cmd = NULL;
+	char *str = NULL;
 	if (fd != 0) {
 		for (rtr_n = 0; rtr_host[rtr_n].fd != fd && rtr_n < RTR_MAX_HOSTS; rtr_n++);
 		if (!(cmd = strchr(input, ' '))) {

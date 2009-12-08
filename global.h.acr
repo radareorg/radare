@@ -4,6 +4,7 @@
 /* platform */
 #define CPU "@TARGET_CPU@"
 #define TARGET "@TARGET@"
+#undef SIZEOF_OFF_T
 #define SIZEOF_OFF_T @SIZEOF_OFF_T
 #define _MAEMO_ @MAEMO@
 #define W32 @W32@

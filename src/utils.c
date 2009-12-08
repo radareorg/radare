@@ -175,7 +175,7 @@ int file_dump(const char *file, const u8 *buf, int len)
 	return 0;
 }
 
-void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian)
+void endian_memcpy_e(u8 *dest, const u8 *orig, int size, int endian)
 {
 	if (endian) {
 		memcpy(dest, orig, size);
@@ -222,7 +222,7 @@ void drop_endian(u8 *dest, u8 *orig, unsigned int size)
 }
 
 
-void endian_memcpy(u8 *dest, u8 *orig, unsigned int size)
+void endian_memcpy(u8 *dest, const u8 *orig, unsigned int size)
 {
 #if RADARE_CORE
 	endian_memcpy_e(dest, orig, size, (int)config_get("cfg.bigendian"));
@@ -1064,7 +1064,6 @@ int str_grep(const char *str, const char *needle)
 }
 
 /* Profiling utilities */
-#define R_ABS(x) ((x<0)?-x:x)
 static int timeval_subtract(struct timeval *result, struct timeval *end, struct timeval *begin)
 {
 	// Perform the carry for the later subtraction by updating Y

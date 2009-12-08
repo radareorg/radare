@@ -48,4 +48,6 @@ extern HildonProgram *p;
 extern GtkWindow *w;
 #endif
 
+GtkWidget *gradare_topbar_new();
+
 #endif

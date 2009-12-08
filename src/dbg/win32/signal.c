@@ -35,7 +35,7 @@ struct {
   {0, NULL, "Unknown signal"}
 };
 
-void debug_print_sigh(char *signame, unsigned long handler)
+void debug_print_sigh(const char *signame, unsigned long handler)
 {
         switch (handler) {
         case (long)SIG_DFL:

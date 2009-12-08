@@ -19,8 +19,8 @@ struct vm_reg_t {
 };
 
 struct vm_op_t {
-	const char opcode[32];
-	const char code[1024];
+	char opcode[32];
+	char code[1024];
 	struct list_head list;
 };
 

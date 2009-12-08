@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * dietline is free software; you can redistribute it and/or modify
@@ -99,7 +99,7 @@ static char *labels = NULL;
 static unsigned int size = 0;
 static unsigned int lsize = 0;
 
-static int label_get(char *name)
+static int label_get(const char *name)
 {
 	int i, n;
 	for(i=0;i<size;i++) {
@@ -162,7 +162,6 @@ static int is_label(const char *str)
 int dl_hist_label(const char *label, void (*cb)(const char*))
 {
 	int i;
-
 #if 1
 	/* labelling stuff */
 	if (label[0]=='.') {
@@ -182,9 +181,8 @@ int dl_hist_label(const char *label, void (*cb)(const char*))
 		return 1;
 	}
 #endif
-
 	if (dl_history != NULL)
-	for(i=0;i<dl_histsize; i++) {
+	for(i=0; i<dl_histsize; i++) {
 		if (dl_history[i] == NULL)
 			break;
 		fprintf(stderr, "%s\n", dl_history[i]);

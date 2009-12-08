@@ -18,11 +18,11 @@
  *
  */
 
+#undef _GNU_SOURCE
+#include <Python.h>
 #define RADARE_MODULE
 #include <plugin.h>
 #include <main.h>
-#undef _GNU_SOURCE
-#include <Python.h>
 #include <structmember.h>
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
@@ -238,7 +238,7 @@ int epython_destroy()
 	return 0;
 }
 
-void python_hack_cmd(const char *input)
+int python_hack_cmd(const char *input)
 {
 	if (rs == NULL)
 		rs = radare_plugin.resolve("radare_cmd_str");
@@ -282,6 +282,7 @@ void python_hack_cmd(const char *input)
 		} 
 	}
 	epython_destroy();
+	return 0;
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

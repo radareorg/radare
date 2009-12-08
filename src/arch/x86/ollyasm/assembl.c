@@ -331,28 +331,28 @@ static void Scanasm(int mode) {
   else {                               // Any other character or combination
     idata=sdata[0]=*asmcmd++; sdata[1]=sdata[2]='\0';
     if (idata=='|' && *asmcmd=='|') {
-      idata='||'; prio=10;             // '||'
+      idata='|' | '|'<<8; prio=10;             // '||'
       sdata[1]=*asmcmd++; }
     else if (idata=='&' && *asmcmd=='&') {
-      idata='&&'; prio=9;              // '&&'
+      idata='&' | '&'<<8; prio=9;              // '&&'
       sdata[1]=*asmcmd++; }
     else if (idata=='=' && *asmcmd=='=') {
-      idata='=='; prio=5;              // '=='
+      idata='=' | '='<<8; prio=5;              // '=='
       sdata[1]=*asmcmd++; }
     else if (idata=='!' && *asmcmd=='=') {
-      idata='!='; prio=5;              // '!='
+      idata='!'<<8 | '='; prio=5;              // '!='
       sdata[1]=*asmcmd++; }
     else if (idata=='<' && *asmcmd=='=') {
-      idata='<='; prio=4;              // '<='
+      idata='<'<<8 | '='; prio=4;              // '<='
       sdata[1]=*asmcmd++; }
     else if (idata=='>' && *asmcmd=='=') {
-      idata='>='; prio=4;              // '>='
+      idata='>'<<8 | '='; prio=4;              // '>='
       sdata[1]=*asmcmd++; }
     else if (idata=='<' && *asmcmd=='<') {
-      idata='<<'; prio=3;              // '<<'
+      idata='<'<<8 | '<'; prio=3;              // '<<'
       sdata[1]=*asmcmd++; }
     else if (idata=='>' && *asmcmd=='>') {
-      idata='>>'; prio=3;              // '>>'
+      idata='>'<<8 | '>'; prio=3;              // '>>'
       sdata[1]=*asmcmd++; }
     else if (idata=='|') prio=8;       // '|'
     else if (idata=='^') prio=7;       // '^'

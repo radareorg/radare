@@ -26,9 +26,9 @@ static int symbol_at_address(bfd_vma addr, struct disassemble_info * info)
 	return 0;
 }
 
-static int hoho(int a, int b, int c)
+void hoho(int a, bfd_vma b, struct disassemble_info *c)
 {
-	return 0;
+	/* do nothing */
 }
 
 static char *buf_global = NULL;
@@ -41,17 +41,19 @@ static void print_address(bfd_vma address, struct disassemble_info *info)
 	strcat(buf_global, tmp);
 }
 
-static void buf_fprintf(FILE *stream, const char *format, ...)
+static int buf_fprintf(void *stream, const char *format, ...)
 {
+	int ret = 0;
 	va_list ap;
 	char *tmp;
-	if (buf_global == NULL)
-		return;
-	va_start(ap, format);
- 	tmp = alloca(strlen(format)+strlen(buf_global)+2);
-	sprintf(tmp, "%s%s", buf_global, format);
-	vsprintf(buf_global, tmp, ap);
-	va_end(ap);
+	if (buf_global != NULL) {
+		va_start(ap, format);
+		tmp = alloca(strlen(format)+strlen(buf_global)+2);
+		sprintf(tmp, "%s%s", buf_global, format);
+		ret = vsprintf(buf_global, tmp, ap);
+		va_end(ap);
+	}
+	return ret;
 }
 
 /* Disassembler entry point */
@@ -74,10 +76,10 @@ int gnu_disarm_str(char *str, const u8 *inst, ut64 offset)
 	info.buffer = bytes; //bytes; //&bytes;
 	info.read_memory_func = &arm_buffer_read_memory;
 	info.symbol_at_address_func = &symbol_at_address;
-	info.memory_error_func = &hoho;
-	info.print_address_func = &print_address;
+	info.memory_error_func = hoho; //
+	info.print_address_func = print_address; //
 	info.endian = config_get_i("cfg.bigendian")?0:1;
-	info.fprintf_func = &buf_fprintf;
+	info.fprintf_func = &buf_fprintf; //
 	info.stream = stdout;
 
 	//if (print_insn_arm((unsigned long)offset, &info) == -1)

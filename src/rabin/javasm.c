@@ -343,7 +343,7 @@ static int java_resolve(int idx, char *str)
 	return 0;
 }
 
-int java_print_opcode(int idx, unsigned char *bytes, char *output)
+int java_print_opcode(int idx, const unsigned char *bytes, char *output)
 {
 	char arg[1024];
 

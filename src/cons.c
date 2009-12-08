@@ -887,8 +887,8 @@ void cons_grep(const char *str)
 	/* set grep string */
 	greptoken = -1;
 	grepline = -1;
-	efree(&grepstr);
-	efree(&grephigh);
+	efree((void **)&grepstr);
+	efree((void **)&grephigh);
 
 	if (str != NULL && *str) {
 		if (*str == '!') {
@@ -925,8 +925,8 @@ void cons_grep(const char *str)
 	} else {
 		greptoken = -1;
 		grepline = -1;
-		efree(&grepstr);
-		efree(&grephigh);
+		efree((void **)&grepstr);
+		efree((void **)&grephigh);
 	}
 #if 0
 	if (grephigh == NULL || *grephigh == '\0')
@@ -938,8 +938,8 @@ void cons_grepbuf_end()
 {
 	greptoken = -1;
 	grepline = -1;
-	efree(&grepstr);
-	efree(&grephigh);
+	efree((void **)&grepstr);
+	efree((void **)&grephigh);
 }
 
 char *str_replace(char *str, char *from, char *to, int str_len)
@@ -1161,7 +1161,7 @@ void cons_render()
 		}
 	}
 	if (grephigh == NULL) {
-		grephigh = config_get("scr.grephigh");
+		grephigh = (char *)config_get("scr.grephigh");
 		if (grephigh &&*grephigh) {
 			char *new, *old;
 			char bat[64];

@@ -45,7 +45,7 @@ int debug_reg_read_at(int pid, u8 *data, int length, ut64 addr)
 {
 	regs_t regs;
 	int i, regsz = sizeof(regs_t);
-	u8 *ptr = &regs;
+	u8 *ptr = (u8*) &regs;
 	debug_getregs(pid, &regs);
 	if (addr<regio_addr)
 		return -1;
@@ -63,7 +63,7 @@ int debug_reg_write_at(int pid, const u8 *data, int length, ut64 addr)
 {
 	regs_t regs;
 	int i, regsz = sizeof(regs_t);
-	u8 *ptr = &regs;
+	u8 *ptr = (u8*)&regs;
 	debug_getregs(pid, &regs);
 	if (addr>regsz+regio_addr)
 		return -1;
@@ -96,7 +96,7 @@ void debug_set_regoff(regs_t *regs, int off, unsigned long val)
 
 ut64 debug_get_register(const char *input)
 {
-	char *reg = input;
+	const char *reg = input;
 	int off;
 	ut64 ret;
 

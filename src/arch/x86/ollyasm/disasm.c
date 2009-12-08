@@ -80,7 +80,7 @@ static int       nresult;              // Current length of disassembly
 static int       addcomment;           // Comment value of operand
 
 // Copy of input parameters of function Disasm()
-static char      *cmd;                 // Pointer to binary data
+static unsigned char      *cmd;                 // Pointer to binary data
 static char      *pfixup;              // Pointer to possible fixups or NULL
 static ulong     size;                 // Remaining size of the command buffer
 static t_disasm  *da;                  // Pointer to disassembly results

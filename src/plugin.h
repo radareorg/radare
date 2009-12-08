@@ -19,9 +19,9 @@ struct plugin_hack_t {
 	const char *name;
 	const char *desc;
 	void *widget;
-	int (*callback)(char *str);
+	int (*callback)(const char *str);
 	int (*init)();
-	void *(*resolve)(char *);
+	void *(*resolve)(const char *);
 	struct config_t *config;
 #if DEBUGGER
 	struct debug_t *ps;
@@ -33,7 +33,7 @@ struct hack_t {
 	const char *desc;
 	void **widget;
 	int type;
-	int (*callback)(char *input);
+	int (*callback)(const char *input);
 	struct list_head list;
 };
 
@@ -97,7 +97,7 @@ extern plugin_t w32_plugin;
 
 /* functions */
 plugin_t *plugin_registry(const char *file);
-struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)());
+struct hack_t *radare_hack_new(const char *name, const char *desc, int (*callback)());
 int radare_hack_init();
 void *plugin_get_widget(const char *name);
 void plugin_init();

@@ -54,7 +54,7 @@ extern int arm_mode;
 extern int mips_mode;
 int ollyasm_enable = 0;
 
-static char *udis_mem = NULL;
+static const ut8 *udis_mem = NULL;
 static int udis_mem_ptr = 0;
 static int input_hook_x(ud_t* u)
 {
@@ -140,7 +140,7 @@ char *disarm (RawInstruction rawinstruction, ut64 offset);
 int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 seek, int bytes, int myinc)
 {
 	//unsigned char *b = config.block + bytes;
-	const u8 *b = buf; //config.block + bytes;
+	const ut8 *b = buf; //config.block + bytes;
 	int ret = 0;
 
 	//ud_idx = bytes;
@@ -172,17 +172,18 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 		break;
 	case ARCH_CSR:
 		//if (bytes<config.block_size) {
-		arch_csr_disasm(string, (const unsigned char *)b, (ut64)seek);
+		arch_csr_disasm(string, (const ut8 *)b, (ut64)seek);
 		break;
 	case ARCH_X86:
 		if (ollyasm_enable) {
 			t_disasm da;
-			ud_disassemble(&ud_obj);
-			lowercase=1;
-			ret = Disasm(b, MAXCMDSIZE, seek, &da, DISASM_FILE);
-			sprintf(string, "%s", da.result);
+			ud_disassemble (&ud_obj);
+			lowercase = 1;
+			ret = Disasm ((char*)b, MAXCMDSIZE, seek, &da, DISASM_FILE);
+			sprintf (string, "%s", da.result);
 			if (da.error)
-				sprintf(string, "%i -- %s - %02x %02x %02x (error)",ret,da.dump,b[0],b[1],b[2]);
+				sprintf (string, "%i -- %s - %02x %02x %02x (error)",
+					ret, da.dump, b[0], b[1], b[2]);
 		} else {
 //			udis_init();
 			//ud_obj.insn_offset = seek+myinc; //+bytes;
@@ -204,9 +205,9 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 	       /* initialize DisasmPara */
 	       dp.opcode = opcode;
 	       dp.operands = operands;
-	       dp.iaddr = seek; //config.vaddr + config.seek + i;
+	       dp.iaddr = (ppc_word*) (size_t)seek; //config.vaddr + config.seek + i;
 	       endian_memcpy(bof, b, 4);
-	       dp.instr = bof;
+	       dp.instr = (ppc_word*) bof;
 	       // memcpy(bof, b, 4);
 	       // dp.instr = b; //config.block + i;
 	       PPC_Disassemble(&dp);
@@ -387,7 +388,7 @@ void radis_update_i(int id)
 void radis_update()
 {
 	int i;
-	char *arch = config_get("asm.arch");
+	const char *arch = config_get("asm.arch");
 	for(i=0;radis_arches[i].name;i++) {
 		if (!strcmp(arch, radis_arches[i].name)) {
 			config.arch = radis_arches[i].id;
@@ -457,12 +458,10 @@ static void print_stackptr(struct aop_t *aop, int zero)
 
 const char *get_section_name_at(ut64 addr)
 {
-	char *str;
-	str = flag_get_here_filter2(addr - config.vaddr, "maps.", "section.");
-	return str;
+	return flag_get_here_filter2 (addr - config.vaddr, "maps.", "section.");
 }
 
-void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int flags)
+void radis_str(int arch, const u8 *block, int len, int rows, const char *cmd_asm, int flags)
 {
 	struct aop_t aop;
 	int i,idata,delta;
@@ -540,7 +539,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 		D {
 			if (flags & RADIS_FLAGSLINE) {
 				char buf[1024];
-				char *ptr = buf;
+				const char *ptr = buf;
 				//char *ptr = flag_name_by_offset( sk );
 				buf[0]='\0';
 				string_flag_offset(NULL, buf, seek, -1);
@@ -570,8 +569,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 				code_lines_print(reflines, sk, 0);
 		}
 		if (flags & RADIS_SECTION) {
-			char *str;
-			str = get_section_name_at(seek-config.vaddr);
+			const char *str = get_section_name_at(seek-config.vaddr);
 			if (*str)
 				cons_printf("%s:", str);
 		}
@@ -862,7 +860,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 			char buf[128];
 			sprintf(buf, "%lld", seek);
 			setenv("HERE", buf, 1);
-			radare_cmd(cmd_asm, 0);
+			radare_cmd_raw (cmd_asm, 0);
 		}
 		if (myinc<1)
 			myinc = 1;
@@ -1070,8 +1068,7 @@ void radis_str(int arch, const u8 *block, int len, int rows,char *cmd_asm, int f
 
 		cons_newline();
 		if (f && f->cmd != NULL)
-			radare_cmd(f->cmd, 0);
-
+			radare_cmd_raw (f->cmd, 0);
 		/* */
 		if (flags & RADIS_FLAGSALL) {
 			ut64 ptr = flag_delta_between(sk,sk+myinc);

@@ -142,8 +142,9 @@ void config_list(const char *str)
 	struct list_head *i;
 	int len = 0;
 
-	if (str&&str[0]) {
-		str = strclean(str);
+	if (str && str[0]) {
+		while(str[0]&&iswhitechar(str[0]))
+			str = str + 1;
 		len = strlen(str);
 	}
 
@@ -152,9 +153,7 @@ void config_list(const char *str)
 		if (str) {
 			if (strncmp(str, bt->name,len) == 0)
 				cons_printf("%s = %s\n", bt->name, bt->value);
-		} else {
-			cons_printf("%s = %s\n", bt->name, bt->value);
-		}
+		} else cons_printf("%s = %s\n", bt->name, bt->value);
 	}
 }
 
@@ -385,7 +384,7 @@ static int config_filterfile_callback(void *data)
 {
 	struct config_node_t *node = (struct config_node_t *)data;
 	if (!node->value || node->value[0]=='\0') {
-		efree(&cons_filterline);
+		efree((void **)&cons_filterline);
 	} else cons_filterline = estrdup(cons_filterline, node->value);
 	return 1;
 }
@@ -394,7 +393,7 @@ static int config_teefile_callback(void *data)
 {
 	struct config_node_t *node = (struct config_node_t *)data;
 	if (!node->value || node->value[0]=='\0') {
-		efree(&cons_teefile);
+		efree((void **)&cons_teefile);
 	} else cons_teefile = estrdup(cons_teefile, node->value);
 	return 1;
 }
@@ -614,7 +613,7 @@ static int config_bits_callback(void *data)
 {
 	char buf[128];
 	struct config_node_t *node = data;
-	char *arch = config_get("asm.arch");
+	const char *arch = config_get("asm.arch");
 	if (strstr(arch, "intel")) {
 		if ((node->i_value != 8 && node->i_value != 16)
 		&& (node->i_value != 32 && node->i_value != 64))
@@ -1051,7 +1050,7 @@ void config_init(int first)
 	config_set("dbg.hwbp", "true"); // hardware breakpoints by default // ALSO BSD
 #endif
 	config_set("dbg.bep", "loader"); // loader, main
-	config_set("dir.home", get_home_directory());
+	config_set("dir.home", (const char *)get_home_directory());
 
 	/* dir.monitor */
 	ptr = getenv("MONITORPATH");

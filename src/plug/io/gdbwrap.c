@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -27,13 +27,13 @@ static gdbwrap_t *desc = NULL;
 static int _fd = -1;
 static int pid = 0;
 
-ssize_t r_gdbwrap_write(int fd, const u8 *buf, size_t count)
+ssize_t r_gdbwrap_write(int fd, const void *buf, size_t count)
 {
-	gdbwrap_writemem(desc, (la32)off, buf, count);
+	gdbwrap_writemem(desc, (la32)off, (void *)buf, count);
 	return count;
 }
 
-ssize_t r_gdbwrap_read(int fd, unsigned char *buf, size_t count)
+ssize_t r_gdbwrap_read(int fd, void *buf, size_t count)
 {
 	int i=0;
 	if (r_gdbwrap_handle_fd(fd)) {
@@ -53,7 +53,7 @@ int r_gdbwrap_handle_fd(int fd)
 	return (_fd == fd);
 }
 
-int r_gdbwrap_open(char *file, int mode, int flags)
+int r_gdbwrap_open(const char *file, int mode, mode_t flags)
 {
 	char *port;
 	if (!r_gdbwrap_handle_open(file)) {
@@ -83,7 +83,7 @@ int r_gdbwrap_handle_open(const char *file)
 	return 0;
 }
 
-int r_gdbwrap_seek(int fd, ut64 offset, int whence)
+ut64 r_gdbwrap_seek(int fd, ut64 offset, int whence)
 {
 	if (r_gdbwrap_handle_fd(fd)) {
 		switch(whence) {
@@ -99,7 +99,7 @@ int r_gdbwrap_seek(int fd, ut64 offset, int whence)
 	return -1;
 }
 
-void r_gdbwrap_system(char *str)
+int r_gdbwrap_system(const char *str)
 {
 	char *ptr;
 #if 0
@@ -224,7 +224,7 @@ void r_gdbwrap_system(char *str)
 	}
 }
 
-void r_gdbwrap_init()
+int r_gdbwrap_init()
 {
 }
 
@@ -233,11 +233,13 @@ void r_gdbwrap_close()
 	close(config.fd);
 }
 
+static struct debug_t im_debug;
+
 plugin_t gdbwrap_plugin = {
 	.name = "gdbwrap",
 	.desc = "Connect to remote GDB using eresi's gdbwrap (gdbwrap://host:port)",
 	.init = r_gdbwrap_init,
-	.debug = 1,
+	.debug = &im_debug,
 	.system = r_gdbwrap_system,
 	.handle_fd = r_gdbwrap_handle_fd,
 	.handle_open = r_gdbwrap_handle_open,

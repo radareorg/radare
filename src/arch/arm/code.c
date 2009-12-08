@@ -93,7 +93,7 @@ int arch_arm_aop(ut64 addr, const u8 *codeA, struct aop_t *aop)
 	unsigned int i = 0;
 	unsigned int* code=(unsigned int *)codeA;
 	unsigned int branch_dst_addr;
-	u8 *b = &code[i];
+	ut8 *b = (ut8*)&code[i];
 
 	if (aop == NULL)
 		return (arm_mode==16)?2:4;
@@ -146,9 +146,9 @@ int arch_arm_aop(ut64 addr, const u8 *codeA, struct aop_t *aop)
 			//var_add_access(addr, -b[0], 1, 0); // TODO: set/get (the last 0)
 		} else {
 			ut32 oaddr = addr+8+b[0];
-			ret = radare_read_at(oaddr, &ptr, 4);
+			ret = radare_read_at(oaddr, (ut8*)&ptr, 4);
 			if (ret == 4) {
-				b = &ptr;
+				b = (ut8*)&ptr;
 				aop->ref = b[0] + (b[1]<<8) + (b[2]<<16) + (b[3]<<24);
 				data_xrefs_add(oaddr, aop->ref, 1);
 				//TODO change data type to pointer

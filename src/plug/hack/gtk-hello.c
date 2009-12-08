@@ -7,7 +7,7 @@ extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
 static GtkWidget *my_widget = NULL;
 
-int my_hack(char *input)
+int my_hack(const char *input)
 {
 	static int dry = 0;
 	int (*r)(char *cmd, int log);

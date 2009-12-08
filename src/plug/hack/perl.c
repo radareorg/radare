@@ -46,7 +46,7 @@ extern void xs_init (pTHX);
 static char *(*rs)(const char *cmd);
 extern int radare_plugin_type;
 extern struct plugin_hack_t radare_plugin;
-void perl_hack_cmd(char *input);
+int perl_hack_cmd(const char *input);
 void eperl_init();
 void eperl_destroy();
 
@@ -125,7 +125,7 @@ void eperl_destroy()
 }
 
 /* TODO: handle multi-line */
-void perl_hack_cmd(char *input)
+int perl_hack_cmd(const char *input)
 {
 	STRLEN n_a;
 	char str[1025];
@@ -156,7 +156,7 @@ void perl_hack_cmd(char *input)
 
 		eval_pv("$|=1;", TRUE);
 	if (input && input[0]!='\0') {
-		char *perl_embed[] = { "", input, 0 };
+		char *perl_embed[3] = { "", (char *)input, NULL };
 		perl_parse(my_perl, xs_init, 2, perl_embed, (char **)NULL);
 		//call_argv(input, G_DISCARD | G_NOARGS, args);
 		perl_run(my_perl);
@@ -179,6 +179,7 @@ void perl_hack_cmd(char *input)
 			fprintf(stderr, "perl eval error: %s\n", SvPV(ERRSV,n_a));
 	}
 	eperl_destroy();
+	return 0;
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

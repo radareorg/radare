@@ -164,9 +164,8 @@ int pas_aop_x86_gas(int argc, const char *argv[], struct aop_t *aop, char *newst
 				char *p = strchr(argv[1], ' ');
 				char flagstr[256];
 				ut64 val;
-				if (p != NULL) {
-					p = p + 1;
-				} else p = argv[1];
+				if (p != NULL) p = p + 1;
+				else p = (char *)argv[1];
 				val = get_offset(p);
 				flagstr[0]='\0';
 				string_flag_offset(NULL, flagstr, val, 0);
@@ -326,8 +325,14 @@ struct aop_t *pas_aop(int arch, ut64 seek, const u8 *bytes, int len, struct aop_
 			}
 		}
 		{
-			const char *wa[] = { &w0, &w1, &w2, &w3, &w4 };
-			int nw=0;
+			int nw = 0;
+			const char *wa[] = {
+				(const char*) &w0,
+				(const char *) &w1,
+				(const char *) &w2,
+				(const char *) &w3,
+				(const char *) &w4
+			};
 
 			for(i=0;i<4;i++) {
 				if (wa[i][0] != '\0')

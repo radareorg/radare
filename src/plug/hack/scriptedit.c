@@ -78,7 +78,7 @@ static void scriptedit_execute()
 		if (! scriptedit_save() )
 			return;
 	} else do_save();
-	switch(gtk_combo_box_get_active(lang_w)) {
+	switch(gtk_combo_box_get_active(GTK_COMBO_BOX(lang_w))) {
 	case 0: lang = "lua"; break;
 	case 1: lang = "python"; break;
 	case 2: lang = "perl"; break;
@@ -92,7 +92,7 @@ static void scriptedit_execute()
 	r(buf, 0);
 }
 
-static void scriptedit_open()
+static int scriptedit_open()
 {
 	long sz;
 	char *buf;
@@ -108,7 +108,7 @@ static void scriptedit_open()
 	gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
 	if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
 		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
-		free(filename);
+		free((void *)filename);
 		filename = strdup(file);
 		fd = fopen(filename,"r");
 		if (fd != NULL) {
@@ -133,7 +133,7 @@ static void scriptedit_open()
 	return 1;
 }
 
-static int my_hack(char *input)
+static int my_hack(const char *input)
 {
 	static int dry = 0;
 	if (dry) return 0; dry=1;
@@ -146,18 +146,18 @@ static int my_hack(char *input)
 	if (r == NULL)
 		r = radare_plugin.resolve("radare_cmd");
 
-	filename_w = gtk_label_new("");
-	gtk_box_pack_start(my_widget, filename_w, FALSE, FALSE, 0);
+	filename_w = (GtkLabel *)gtk_label_new("");
+	gtk_box_pack_start(GTK_BOX(my_widget), GTK_WIDGET(filename_w), FALSE, FALSE, 0);
 
 	text = gtk_text_view_new();
-	gtk_text_view_set_border_window_size(text,GTK_TEXT_WINDOW_TEXT, 2);
+	gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (text), GTK_TEXT_WINDOW_TEXT, 2);
 	swin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(swin),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
-	gtk_container_add(swin, text);
-	gtk_container_add(my_widget, swin);
+	gtk_container_add (GTK_CONTAINER (swin), text);
+	gtk_container_add (GTK_CONTAINER (my_widget), swin);
 
-	hbb = gtk_hbutton_box_new();
+	hbb = (GtkHButtonBox*) tgtk_hbutton_box_new();
 	gtk_container_set_border_width(GTK_CONTAINER(hbb), 5);
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbb), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbb), 5);
@@ -168,25 +168,25 @@ static int my_hack(char *input)
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 2, "perl");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 3, "ruby");
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(lang_w), 4, "radare");
-	gtk_combo_box_set_active(lang_w, 0);
-	gtk_box_pack_end(GTK_CONTAINER(hbb), lang_w, FALSE, FALSE, 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lang_w), 0);
+	gtk_box_pack_end(GTK_BOX(hbb), GTK_WIDGET(lang_w), FALSE, FALSE, 0);
 
-	but = gtk_button_new_from_stock("gtk-open");
+	but = GTK_BUTTON (gtk_button_new_from_stock("gtk-open"));
 	g_signal_connect(but, "released", G_CALLBACK(scriptedit_open), NULL);
 	g_signal_connect(but, "activate", G_CALLBACK(scriptedit_open), NULL);
-	gtk_box_pack_end(GTK_CONTAINER(hbb), but, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(hbb), GTK_WIDGET(but), FALSE, FALSE, 0);
 
-	but = gtk_button_new_from_stock("gtk-save");
+	but = GTK_BUTTON (gtk_button_new_from_stock("gtk-save"));
 	g_signal_connect(but, "released", G_CALLBACK(scriptedit_save), NULL);
 	g_signal_connect(but, "activate", G_CALLBACK(scriptedit_save), NULL);
-	gtk_box_pack_end(GTK_CONTAINER(hbb), but, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(hbb), GTK_WIDGET(but), FALSE, FALSE, 0);
 
-	but = gtk_button_new_from_stock("gtk-execute");
+	but = GTK_BUTTON (gtk_button_new_from_stock("gtk-execute"));
 	g_signal_connect(but, "released", G_CALLBACK(scriptedit_execute), NULL);
 	g_signal_connect(but, "activate", G_CALLBACK(scriptedit_execute), NULL);
-	gtk_box_pack_end(GTK_CONTAINER(hbb), but, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(hbb), GTK_WIDGET(but), FALSE, FALSE, 0);
 
-	gtk_box_pack_end(GTK_CONTAINER(my_widget), hbb, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(my_widget), GTK_WIDGET(hbb), FALSE, FALSE, 0);
 
 	return 0;
 }

@@ -206,7 +206,7 @@ CMD_DECL(visual_bind_run)
 {
 	const char *cmd = config_get("cmd.visualbind");
 	if (cmd && cmd[0])
-		radare_cmd_raw(cmd, 0);
+		radare_cmd (cmd, 0);
 }
 
 CMD_DECL(edit_screen_filter)
@@ -974,7 +974,7 @@ void visual_draw_screen()
 		(config.seek+config.vaddr),
 		(unsigned int)config.block_size,
 		mark, strget(get_print_format_name(last_print_format)),
-		strget(inv), strget(buf));
+		strget((char *)inv), strget(buf));
 	/* Spaguetti monster lives here ! */
 	ptr = config_get("cmd.vprompt");
 	if (ptr&&ptr[0]) {
@@ -1052,7 +1052,7 @@ static void check_accel(int foo)
 
 static char *visual_prompt_entry(const char *title, char *buf, int len)
 {
-	char *o =dl_prompt;
+	const char *o = dl_prompt;
 	dl_prompt = title;
 	cons_set_raw(1);
 	cons_fgets(buf, len, 0, NULL);

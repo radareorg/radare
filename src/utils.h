@@ -12,6 +12,8 @@
 #define STRALLOC(dst,str,len) len=strlen(str)+1; dst=alloca(len); memcpy(dst,str,len)
 #define MALLOC_STRUCT(x) (x*)malloc(sizeof(x))
 
+#define U64_MAX ((ut64)0xFFFFFFFFFFFFFFFFLL);
+
 extern ut64 last_cmp;
 extern const char hex[16];
 extern int std;
@@ -94,8 +96,8 @@ int escape_buffer(char *buf);
 int radare_tsearch(char *range);
 int radare_tsearch_file(char *file);
 int hexpair2bin(const char *arg);
-void endian_memcpy(u8 *dest, u8 *orig, unsigned int size);
-void endian_memcpy_e(u8 *dest, u8 *orig, int size, int endian);
+void endian_memcpy(u8 *dest, const u8 *orig, unsigned int size);
+void endian_memcpy_e(u8 *dest, const u8 *orig, int size, int endian);
 void drop_endian(u8 *dest, u8 *orig, unsigned int size);
 int iswhitechar(char c);
 char *strclean(char *str);
@@ -124,7 +126,7 @@ int file_dump(const char *file, const u8 *buf, int len);
 const char *resolve_path(const char *str);
 ut64 file_size(const char *str);
 
-#define ABS(x) (x>0?x:-x)
+#define R_ABS(x) (x>0?x:-x)
 /* profiling shit */
 #include <sys/time.h>
 struct r_prof_t {

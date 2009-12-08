@@ -103,10 +103,10 @@ static unsigned char get_num(const char * str, int len)
 	int value;
 
 	if (len <1 || str == NULL)
-		return NULL;
+		return 0;
 	strp = malloc(len+1);
 	if (strp == NULL)
-		return NULL;
+		return 0;
 	memset(strp, 0, len);
 	memcpy(strp, str, len );
 	
@@ -338,16 +338,14 @@ int binparse_add_name(tokenizer *t, char *name, char *string, char *mask)
 	return ret;
 }
 
-const char *str_get_arg(const char *buf)
+char *str_get_arg(const char *buf)
 {
-	const char *str;
-	str = strchr(buf, ':');
+	const char *str = strchr(buf, ':');
 	if (str != NULL)
 		str = strchr(str+1, '\t');
 	if (str == NULL)
 		return NULL;
-	str = strdup(str+1);
-	return str;
+	return strdup(str+1);
 }
 
 tokenizer* binparse_new_from_file(char *file)
@@ -382,7 +380,7 @@ tokenizer* binparse_new_from_file(char *file)
 				free(mask); mask = NULL;
 			}
 			free(name);
-			name = (const char *)str_get_arg(buf);
+			name = str_get_arg(buf);
 		} else
 		if (!memcmp(buf, "\tstring:", 8)) {
 			str = str_get_arg(buf);

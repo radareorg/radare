@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -108,7 +108,7 @@ int arch_csr_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 	memcpy(&ins, bytes, sizeof(uint16_t));
 	s->s_buf = bytes;
 	s->s_off = addr;
-	s->s_out = -1;
+	s->s_out = NULL;
 	memset(&d, '\0', sizeof(struct directive));
 	memcpy(&d.d_inst, s->s_buf, sizeof(d.d_inst));
 	d.d_off = (s->s_off+=2);

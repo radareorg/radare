@@ -254,16 +254,16 @@ struct syscall_t *syscall_by_os(const char *os)
 {
 	struct syscall_t *sysptr;
 	if (!strcmp(os, "linux"))
-		sysptr = &syscalls_linux_x86;
+		sysptr = syscalls_linux_x86;
 	else
 	if (!strcmp(os, "netbsd"))
-		sysptr = &syscalls_netbsd_x86;
+		sysptr = syscalls_netbsd_x86;
 	else
 	if (!strcmp(os, "openbsd"))
-		sysptr = &syscalls_netbsd_x86; // XXX
+		sysptr = syscalls_netbsd_x86; // XXX
 	else
 	if (!strcmp(os, "freebsd"))
-		sysptr = &syscalls_freebsd_x86;
+		sysptr = syscalls_freebsd_x86;
 	else {
 		eprintf("Unknown/unhandled OS in asm.os for arch_print_syscall()\n");
 		return NULL;

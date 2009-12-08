@@ -385,7 +385,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 			each = str+1;
 			radare_seek(addr, SEEK_SET);
 			eprintf("\n"); //eprintf("===(%s)at(0x%08llx)\n", cmd, addr);
-			radare_cmd(cmd, 0);
+			radare_cmd_raw(cmd, 0);
 		} while(str != NULL && !config.interrupted);
 		break;
 	case '.':
@@ -420,7 +420,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					addr = get_math(buf);
 					eprintf("0x%08llx\n", addr, cmd);
 					sprintf(cmd2, "%s @ 0x%08llx", cmd, addr);
-					radare_seek(buf, SEEK_SET);
+					radare_seek(addr, SEEK_SET);
 					radare_cmd(cmd2, 0);
 					macro_counter++;
 				}
@@ -455,7 +455,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					config.seek = flag->offset;
 					cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
 					//radare_read(0);
-					radare_cmd(cmd,0);
+					radare_cmd_raw(cmd, 0);
 				}
 			} else {
 				/* for all flags in current flagspace */
@@ -475,7 +475,7 @@ void radare_cmd_foreach(const char *cmd, const char *each)
 					//radare_sync(); // XXX MUST BE CALLED 
 						radare_read(0);
 						cons_printf("; @@ 0x%08llx (%s)\n", config.seek, flag->name);
-						radare_cmd(cmd,0);
+						radare_cmd_raw(cmd,0);
 					}
 				}
 	#if 0
@@ -1076,7 +1076,7 @@ char *radare_cmd_str(const char *cmd)
 
 	if (strchr(cmd, '>')) {
 		int fd = dup(1); // UGLY FIX
-		radare_cmd(cmd, 0);
+		radare_cmd_raw(cmd, 0);
 		dup2(fd, 1); // UGLY FIX
 		close(fd);
 		return strdup("");
@@ -1088,7 +1088,7 @@ char *radare_cmd_str(const char *cmd)
 	/* backup cons buffer for nested fun */
 	// TODO: rename to cons_push();
 #if MYFIX
-	cbuf = cons_get_buffer();
+	cbuf = (char *)cons_get_buffer();
 //eprintf("%d\n", strlen(cbuf));
 	if (cbuf) cbuf = strdup(cbuf);
 #else
@@ -1117,7 +1117,7 @@ cons_render();
 	cons_noflush = 0;
 	free (dcmd);
 #if 1
-	buf = cons_get_buffer();
+	buf = (char *)cons_get_buffer();
 //eprintf("BUF(%s)(%s)\n", dcmd, buf);
 	if (buf) {
 		buf = strdup(buf);
@@ -1234,7 +1234,7 @@ void radare_nullcmd()
 }
 
 
-int radare_cmd(char *input, int log)
+int radare_cmd(const char *input, int log)
 {
 	int repeat;
 	int i;
@@ -1449,7 +1449,7 @@ void radare_prompt_command()
 	monitors_run();
 }
 
-static int check_session (const char *file, char *session) {
+static int check_session (const char *file, const char *session) {
 	char *ptr = strchr (file, '.');
 	if (ptr)
 		return !memcmp(ptr+1, session, strlen(session));
@@ -1466,7 +1466,7 @@ void monitors_run()
 	int tmp;
 	struct dirent *de;
 	DIR *dir;
-	char *session = config_get("cfg.session");
+	const char *session = config_get("cfg.session");
 	ut64 oseek = config.seek;
 	ut64 obsize= config.block_size;
 	int flush = cons_flushable;
@@ -1889,9 +1889,9 @@ int radare_open(int rst)
 	config.zoom.piece  = config.size/config.block_size;
 
 	{
-	char *cmd = config_get("cmd.open");
+	const char *cmd = config_get("cmd.open");
 	if (cmd)
-		radare_cmd(cmd, 0);
+		radare_cmd_raw (cmd, 0);
 	}
 
 	return 0;

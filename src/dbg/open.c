@@ -34,6 +34,7 @@
 void ps_construct_argv()
 {
 	int i = 0, idx, lidx=0;
+	const char *ctmp;
 	char *tmp, *tmp2, *eq;
 	char buf[4096];
 
@@ -41,10 +42,10 @@ void ps_construct_argv()
 	tmp2 = ps.args = strdup(ps.filename);
 
 	/* XXX memory leaks everywhere!!1 */
-	tmp = config_get("file.dbg_arg");
-	if (tmp&&*tmp) {
+	ctmp = config_get("file.dbg_arg");
+	if (ctmp && *ctmp) {
 		/* load program arguments from file */
-		FILE *fd = fopen(tmp, "r");
+		FILE *fd = fopen(ctmp, "r");
 		while(!feof(fd)) {
 			fgets(buf, 4095, fd);
 			if (feof(fd))

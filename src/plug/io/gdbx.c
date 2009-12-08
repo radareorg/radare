@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -35,7 +35,6 @@ int gdbx_handle_open(const char *file)
 		return 1;
 	return 0;
 }
-
 
 static void gdbx_wait_until_prompt(int o)
 {
@@ -79,21 +78,16 @@ ssize_t gdbx_read(int fd, void *buf, size_t count)
 		unsigned long *dword = buf+i;
 		unsigned long dw;
 		sprintf(tmp,"x/x 0x"OFF_FMTx"\n", config.seek+i);
-//eprintf(">> %s\n", tmp);
 		socket_printf(config.fd, tmp);
 		tmp[0]='\0';
 		socket_fgets(gdbx_fd, tmp, 1024);
-//eprintf("<< %s\n", tmp);
 		if (strstr(tmp, "Cannot"))
 			return ((i==0)?0:i); // do not use -1:i
 		ptr = strchr(tmp, ':');
 		if (ptr) {
 			sscanf(ptr+2, "0x%x", &dw);
-			//printf(">> value >> (%s) 0x%08x\n", ptr+2, dw);
-			endian_memcpy_e(dword, &dw, 4, 1);
-		} else {
-			memcpy(dword, "\x01\x02\x03\x04", 4);
-		}
+			endian_memcpy_e((ut8 *)dword, (const ut8*)&dw, 4, 1);
+		} else memcpy(dword, "\x01\x02\x03\x04", 4);
 		gdbx_wait_until_prompt(0);
 	}
 

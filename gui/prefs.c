@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -32,31 +32,31 @@ static struct {
 	const char *name;
 	int value;
 } toggles[22] = {
-	{ 0 , "Show bytes"                , "asm.bytes"        , 1 } , 
-	{ 0 , "Show offset"               , "asm.offset"       , 1 } , 
-	{ 0 , "Show lines"                , "asm.lines"        , 1 } , 
-	{ 0 , "Split by rets"             , "asm.split"        , 1 } , 
-	{ 0 , "Split all blocks"          , "asm.splitall"     , 0 } , 
-	{ 0 , "Show relative address"     , "asm.reladdr"      , 1 } , 
-	{ 0 , "Lines out of block"        , "asm.linesout"     , 0 } , 
-	{ 0 , "Show comments"             , "asm.comments"     , 1 } , 
+	{ 0, "Show bytes"                , "asm.bytes"        , 1 } , 
+	{ 0, "Show offset"               , "asm.offset"       , 1 } , 
+	{ 0, "Show lines"                , "asm.lines"        , 1 } , 
+	{ 0, "Split by rets"             , "asm.split"        , 1 } , 
+	{ 0, "Split all blocks"          , "asm.splitall"     , 0 } , 
+	{ 0, "Show relative address"     , "asm.reladdr"      , 1 } , 
+	{ 0, "Lines out of block"        , "asm.linesout"     , 0 } , 
+	{ 0, "Show comments"             , "asm.comments"     , 1 } , 
 
-	{ 1 , "Endian (set=big,unset little)" , "cfg.bigendian", 0 } , 
-	{ 1 , "Color"                     , "scr.color"        , 1 } , 
-	{ 1 , "Buffered output"           , "scr.buf"          , 0 } , 
-	{ 1 , "Inverse block"             , "cfg.inverse"      , 0 } , 
+	{ 1, "Endian (set=big,unset little)" , "cfg.bigendian", 0 } , 
+	{ 1, "Color"                     , "scr.color"        , 1 } , 
+	{ 1, "Buffered output"           , "scr.buf"          , 0 } , 
+	{ 1, "Inverse block"             , "cfg.inverse"      , 0 } , 
 
-	{ 2 , "Split code blocks"         , "graph.split"      , 0 } , 
-	{ 2 , "Split blocks by calls"     , "graph.callblocks" , 0 } , 
-	{ 2 , "Split blocks by jumps"     , "graph.jmpblocks"  , 1 } , 
-	{ 2 , "Show code offsets"         , "graph.offset"     , 0 } , 
+	{ 2, "Split code blocks"         , "graph.split"      , 0 } , 
+	{ 2, "Split blocks by calls"     , "graph.callblocks" , 0 } , 
+	{ 2, "Split blocks by jumps"     , "graph.jmpblocks"  , 1 } , 
+	{ 2, "Show code offsets"         , "graph.offset"     , 0 } , 
 
-	{ 3 , "Load symbols"              , "dbg.syms"         , 1 } , 
-	{ 3 , "Use DWARF"                 , "dbg.dwarf"        , 1 } , 
-	{ 3 , "Handle memory maps"        , "dbg.maps"         , 1 } , 
-	{ 3 , "Show backtrace in !contsc" , "dbg.contscbt"     , 1 } , 
-	{ 3 , "Show complete backtrace"   , "dbg.fullbt"       , 0 } , 
-	NULL
+	{ 3, "Load symbols"              , "dbg.syms"         , 1 } , 
+	{ 3, "Use DWARF"                 , "dbg.dwarf"        , 1 } , 
+	{ 3, "Handle memory maps"        , "dbg.maps"         , 1 } , 
+	{ 3, "Show backtrace in !contsc" , "dbg.contscbt"     , 1 } , 
+	{ 3, "Show complete backtrace"   , "dbg.fullbt"       , 0 } , 
+	{ 0, NULL                        , NULL               , 0 }
 };
 
 static gint prefs_close(void *item, GdkEvent *event, gpointer data)

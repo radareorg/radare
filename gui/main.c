@@ -31,14 +31,18 @@
 //#define FONT "-adobe-courier-bold-o-normal--18-180-75-75-m-110-iso8859-15"
 #define FONT "Sans Bold 8"
 
-int mon_id = 0;
+int fontsize=8;
+static char *font = FONT;
+static int fontalias=1;
+static int fontbold=0;
+static int fs = 0;
+static int mon_id = 0;
 static char *project_file = NULL;
 
 GtkWidget *term = NULL;
 char *filename = NULL;
-char *command = NULL;
+static char *command = NULL;
 int is_debugger = 0;
-char *font = FONT;
 
 GtkWidget *tool;
 #if _MAEMO_
@@ -161,32 +165,32 @@ gboolean popup_context_menu(GtkWidget *tv, GdkEventButton *event, gpointer user_
 
 		gtk_container_set_border_width(GTK_CONTAINER(menu), 2);
 
-		menu_item = gtk_image_menu_item_new_from_stock("Seek to...", "gtk-find");
+		menu_item = gtk_image_menu_item_new_from_stock("Seek to...", NULL); //"gtk-find");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(seek_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-		menu_item = gtk_image_menu_item_new_from_stock("Copy to clipboard", "gtk-copy");
+		menu_item = gtk_image_menu_item_new_from_stock("Copy to clipboard", NULL); //"gtk-copy");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(copy_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
 		/* TODO: make these menus optional depending on the mode */
-		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", "gtk-add");
+		menu_item = gtk_image_menu_item_new_from_stock("Add breakpoint", NULL); //"gtk-add");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_to), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-		menu_item = gtk_image_menu_item_new_from_stock("Remove breakpoint", "gtk-remove");
+		menu_item = gtk_image_menu_item_new_from_stock("Remove breakpoint", NULL); //"gtk-remove");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(breakpoint_drop), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
-		menu_item = gtk_image_menu_item_new_from_stock("Continue until here", "gtk-next");
+		menu_item = gtk_image_menu_item_new_from_stock("Continue until here", NULL); //"gtk-next");
 		g_signal_connect(menu_item, "button-release-event", G_CALLBACK(continue_until_here), NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
 		gtk_widget_show_all(menu);
-		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, NULL);
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, 0);
 	}
 
 	return ret;
@@ -204,14 +208,15 @@ gboolean monitor_button_clicked(GtkWidget *but, gpointer user_data)
 	struct gradare_mon_t *mon = user_data;
 	char miau[16];
 	char buf[1024];
-	char *cmd[4] = { PREFIX"/bin/rsc", "monitor", &miau, 0};
+	const char *cmd[4] = { PREFIX"/bin/rsc", "monitor", (const char *)&miau, 0};
 
 	sprintf(miau, "mon%d", mon->id);
-	snprintf(buf, 1023, "rsc monitor %s \"%s\"", miau, gtk_entry_get_text(mon->entry));
+	snprintf(buf, 1023, "rsc monitor %s \"%s\"", miau,
+		gtk_entry_get_text((GtkEntry*)mon->entry));
 	system(buf);
 
-	vte_terminal_fork_command ( VTE_TERMINAL(mon->term), cmd[0], cmd, NULL, ".",
-		FALSE, FALSE, FALSE);
+	vte_terminal_fork_command (VTE_TERMINAL(mon->term), cmd[0],
+		(char **)cmd, NULL, ".", FALSE, FALSE, FALSE);
 
 	return FALSE;
 }
@@ -227,7 +232,8 @@ void gradare_save_project_as()
 
         gtk_window_set_position( GTK_WINDOW(fcd), GTK_WIN_POS_CENTER);
         if ( gtk_dialog_run(GTK_DIALOG(fcd)) == GTK_RESPONSE_ACCEPT ) {
-                const char *filename = (char *)gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
+                const char *filename = (char *)
+			gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fcd));
 		free(project_file);
 		project_file = strdup(filename);
 		gradare_save_project();
@@ -272,6 +278,25 @@ void gradare_new_graph()
 	vte_terminal_feed_child(VTE_TERMINAL(term), ":ag\n", 5);
 }
 
+GtkWidget *term_new ()
+{
+	VteTerminal *term = VTE_TERMINAL (vte_terminal_new());
+	vte_terminal_set_cursor_blink_mode(VTE_TERMINAL(term), VTE_CURSOR_BLINK_OFF);
+	//vte_terminal_set_mouse_autohide((VteTerminal*)term, TRUE);
+	vte_terminal_set_scrollback_lines((VteTerminal*)term, 3000);
+	vte_terminal_set_font_from_string_full((VteTerminal*)term,
+		font, VTE_ANTI_ALIAS_FORCE_DISABLE);
+	g_signal_connect (term, "button-press-event",
+		G_CALLBACK (popup_context_menu), NULL);
+
+	//vte_terminal_set_background_transparent(term, TRUE);
+	//vte_terminal_set_opacity(term, 10);
+	//vte_terminal_set_color_background(term, (GdkColor));
+	//vte_terminal_set_color_foreground(term, (GdkColor));
+	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
+	return (GtkWidget*)term;
+}
+
 void gradare_new_monitor()
 {
 	struct gradare_mon_t *mon;
@@ -281,7 +306,7 @@ void gradare_new_monitor()
 	mon = (struct gradare_mon_t *)malloc (sizeof (struct gradare_mon_t));
 	mon->id = mon_id++;
 
-	w = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+	w = (GtkWindow *)GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
 	w->allow_shrink = TRUE;
 #if _MAEMO_
 	hildon_program_add_window(p, w);
@@ -306,52 +331,27 @@ void gradare_new_monitor()
 	gtk_box_pack_start(GTK_BOX(hbox), mon->but, FALSE, FALSE, 5);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 5);
 
-	mon->term = vte_terminal_new();
-	//vte_terminal_set_background_transparent(term, TRUE);
-	//vte_terminal_set_opacity(term, 10);
-	//vte_terminal_set_color_background(term, (GdkColor));
-	//vte_terminal_set_color_foreground(term, (GdkColor));
-	vte_terminal_set_cursor_blinks(VTE_TERMINAL(mon->term), TRUE);
-	vte_terminal_set_mouse_autohide(VTE_TERMINAL(mon->term), TRUE);
-	vte_terminal_set_scrollback_lines(VTE_TERMINAL(mon->term), 3000);
-	vte_terminal_set_font_from_string_full(VTE_TERMINAL(mon->term), font, VTE_ANTI_ALIAS_FORCE_DISABLE);
-	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
-	g_signal_connect (mon->term, "button-press-event", G_CALLBACK (popup_context_menu), NULL);
-
-	/*
-	   vte_terminal_fork_command(
-	   VTE_TERMINAL(term),
-	   cmd[0], cmd, NULL, ".",
-	   FALSE, FALSE, FALSE);
-	*/
-
+	mon->term = term_new ();
 	gtk_container_add (GTK_CONTAINER(vbox), mon->term);
 	gtk_widget_show_all (GTK_WIDGET(w));
 }
 
-int fontsize=8;
-static int fontalias=1;
-static int fontbold=0;
 int console_font_size(int newsize)
 {
 	char buf[128];
-	if (newsize<4)
-		newsize = 4;
-	if (newsize>72)
-		newsize = 72;
-
+	if (newsize<4) newsize = 4;
+	if (newsize>72) newsize = 72;
 	sprintf(buf, "Sans %s%d", fontbold?"bold ":"", fontsize);
-	vte_terminal_set_font_from_string_full(VTE_TERMINAL(term), buf, fontalias?VTE_ANTI_ALIAS_FORCE_DISABLE:0);
+	vte_terminal_set_font_from_string_full(VTE_TERMINAL(term),
+		buf, fontalias?VTE_ANTI_ALIAS_FORCE_DISABLE:0);
 	return newsize;
 }
 
-
-static int fs = 0;
 void toggle_fullscreen()
 {
 	if (fs) gtk_window_unfullscreen(w);
 	else gtk_window_fullscreen(w);
-	fs^=1;
+	fs = !fs;
 }
 
 #if _MAEMO_
@@ -417,7 +417,9 @@ gboolean key_press_cb(GtkWidget * widget, GdkEventKey * event, GtkWindow * windo
 
 int main(int argc, char **argv, char **envp)
 {
-	int c;
+	int c, pid;
+	char buf[4096];
+	char buf2[4096];
 	char str[1024];
 	GtkWidget *chos;
 	GtkWidget *vbox;
@@ -425,56 +427,54 @@ int main(int argc, char **argv, char **envp)
 
 	while ((c = getopt(argc, argv, "e:hf:d")) != -1) {
 		switch( c ) {
-			case 'd': {
-				  // XXX : overflowable, must use strcatdup or stgh like that
-				  int pid = atoi(argv[optind]);
-				  char buf[4096];
-				  char buf2[4096];
-				  buf[0]='\0';
+		case 'd':
+			// XXX : overflowable, must use strcatdup or stgh like that
+			pid = atoi(argv[optind]);
+			buf[0]='\0';
 
-				  /* by process-id */
-				  if (pid > 0) {
-					  sprintf(buf2, "pid://%d", pid);
-					  //plugin_load();
-					  //return radare_go();
-					  filename = strdup(buf2);
-				  } else {
-					  /* by program path */
-					  for(c=optind;argv[c];c++) {
-						  strcat(buf, argv[c]);
-						  if (argv[c+1])
-							  strcat(buf, " ");
-					  }
-					  sprintf(buf2, "dbg://%s", buf);
-					  filename = strdup(buf2);
-				  }}
-				  break;
-			case 'h':
-				  show_help_message();
-				  break;
-			case 'e':
-				  command = optarg;
-				  break;
-			case 'f':
-				  font = optarg;
-				  break;
+			/* by process-id */
+			if (pid > 0) {
+			        sprintf(buf2, "pid://%d", pid);
+			        //plugin_load();
+			        //return radare_go();
+			        filename = strdup(buf2);
+			} else {
+			        /* by program path */
+			        for(c=optind;argv[c];c++) {
+			      	  strcat(buf, argv[c]);
+			      	  if (argv[c+1])
+			      		  strcat(buf, " ");
+			        }
+			        sprintf(buf2, "dbg://%s", buf);
+			        filename = strdup(buf2);
+			}
+			break;
+		case 'h':
+			  show_help_message();
+			  break;
+		case 'e':
+			  command = optarg;
+			  break;
+		case 'f':
+			  font = optarg;
+			  break;
 		}
 	}
 
 	if (filename == NULL && optind<argc)
 		filename = argv[optind];
 
-	gtk_init(&argc, &argv);
-	init_home_directory();
+	gtk_init (&argc, &argv);
+	init_home_directory ();
 
-	g_set_application_name("gradare");
+	g_set_application_name ("gradare");
 #if _MAEMO_
-	p = HILDON_PROGRAM(hildon_program_get_instance());
-	w = HILDON_WINDOW(hildon_window_new());
-	hildon_program_add_window(p, w);
+	p = HILDON_PROGRAM (hildon_program_get_instance ());
+	w = HILDON_WINDOW (hildon_window_new ());
+	hildon_program_add_window (p, w);
 #else
-	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	w->allow_shrink=TRUE;
+	w = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+	w->allow_shrink = TRUE;
 #endif
 	g_signal_connect(G_OBJECT(w), "key_press_event", G_CALLBACK(key_press_cb), w);
 
@@ -505,31 +505,15 @@ int main(int argc, char **argv, char **envp)
 	chos = gradare_topbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), chos, FALSE, FALSE, 0);
 
-	//hpan = gtk_hpaned_new();
 	hpan = gtk_hbox_new(FALSE, 3);
 	gtk_container_add(GTK_CONTAINER(vbox), hpan);
 
 	acti = gradare_actions_new();
-	//gtk_paned_pack1(GTK_PANED(hpan), acti, TRUE, TRUE);
-	gtk_box_pack_start(GTK_BOX(hpan), acti, TRUE, TRUE,0);
+	gtk_box_pack_start(GTK_BOX(hpan), acti, TRUE, TRUE, 0);
 
-	term = vte_terminal_new();
-	//vte_terminal_set_background_transparent(term, TRUE);
-	//vte_terminal_set_opacity(term, 10);
-	//vte_terminal_set_color_background(term, (GdkColor));
-	//vte_terminal_set_color_foreground(term, (GdkColor));
-	vte_terminal_set_cursor_blinks((VteTerminal*)term, TRUE);
-	vte_terminal_set_mouse_autohide((VteTerminal*)term, TRUE);
-	vte_terminal_set_scrollback_lines((VteTerminal*)term, 3000);
-	vte_terminal_set_font_from_string_full((VteTerminal*)term, font, VTE_ANTI_ALIAS_FORCE_DISABLE);
-	//(VTE_TERMINAL_CLASS(term))->increase_font_size(term);
-	g_signal_connect (term, "button-press-event",
-			G_CALLBACK (popup_context_menu), NULL);
-
-
-	//gtk_paned_pack2(GTK_PANED(hpan), term, TRUE, TRUE);
-	gtk_container_add(GTK_CONTAINER(hpan),term); //, term, TRUE, TRUE);
-	gtk_widget_show_all(GTK_WIDGET(w));
+	term = term_new ();
+	gtk_container_add (GTK_CONTAINER(hpan), term);
+	gtk_widget_show_all (GTK_WIDGET(w));
 
 	setenv("BEP", "entry", 1); // force debugger to stop at entry point
 	if (command) {
@@ -555,7 +539,7 @@ int main(int argc, char **argv, char **envp)
 			gtk_window_set_title(GTK_WINDOW(w), str);
 			vte_terminal_fork_command(
 					VTE_TERMINAL(term),
-					GRSCDIR"/Shell", arg, envp, ".",
+					GRSCDIR"/Shell", (char **)arg, envp, ".",
 					FALSE, FALSE, FALSE);
 		} else {
 			sprintf(str, "gradare: (no file)");

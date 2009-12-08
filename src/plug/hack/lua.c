@@ -63,7 +63,7 @@ static int lua_cmd (lua_State *L) {
 }
 
 
-static int slurp_lua(char *file)
+static int slurp_lua(const char *file)
 {
 	int status = luaL_loadfile(L, file);
 	if (status)
@@ -117,7 +117,7 @@ static int lua_hack_cya()
 	return 0;
 }
 
-void lua_hack_cmd(char *input)
+int lua_hack_cmd(const char *input)
 {
 	if (rs == NULL)
 		rs = radare_plugin.resolve("radare_cmd_str");
@@ -160,6 +160,7 @@ void lua_hack_cmd(char *input)
 		clearerr(stdin);
 	}
 	lua_hack_cya();
+	return 0;
 }
 
 int radare_plugin_type = PLUGIN_TYPE_HACK;

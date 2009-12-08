@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -113,12 +113,12 @@ int arch_mips_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 	if (aop == NULL)
 		return (mips_mode==16)?2:4;
 
-	endian_memcpy_e(&op, bytes, 4, config_get("cfg.bigendian"));
+	endian_memcpy_e((ut8*)&op, bytes, 4, (int)config_get("cfg.bigendian"));
 	memset(aop, '\0', sizeof(struct aop_t));
 	//of &=0x3f;
 
 	//memcpy(&op, bytes, 4);
-	endian_memcpy_e(&op, bytes, 4, config.endian);
+	endian_memcpy_e((ut8*)&op, bytes, 4, (int)config.endian);
 	aop->type = AOP_TYPE_UNK;
 
 	//eprintf("\n--%08llx : %d\n", addr, op&0x3f);

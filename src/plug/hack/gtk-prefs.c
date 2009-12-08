@@ -64,7 +64,7 @@ static struct {
 	{ 3, "Handle memory maps",  "dbg.maps",  1 },
 	{ 3, "Show backtrace in !contsc",  "dbg.contscbt",  1 },
 	{ 3, "Show complete backtrace",  "dbg.fullbt",  0 },
-	NULL
+	{ 0, NULL, NULL, 0}
 };
 
 //void prefs_close(void *widget, void *data, void *user)
@@ -96,8 +96,7 @@ static void toggle_changed(void *foo, void *data)
 
 static GtkWidget *draw_toggles_for(int panel_id)
 {
-	GtkWidget *bytes;
-	GtkWidget *hbbox;
+	GtkWidget *bytes, *hbbox;
 	GtkWidget *vbox = GTK_WIDGET( gtk_vbox_new(FALSE, 5) );
 	int i;
 	
@@ -106,8 +105,8 @@ static GtkWidget *draw_toggles_for(int panel_id)
 			continue;
 		bytes = gtk_check_button_new_with_label(toggles[i].label);
 		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bytes), FALSE, FALSE, 2); 
-		gtk_toggle_button_set_active(bytes, toggles[i].value);
-		g_signal_connect(GTK_COMBO_BOX(bytes), "clicked", GTK_SIGNAL_FUNC(toggle_changed), i);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bytes), toggles[i].value);
+		g_signal_connect(GTK_COMBO_BOX(bytes), "clicked", GTK_SIGNAL_FUNC(toggle_changed), (void *)i);
 	}
 
 	return vbox;
@@ -115,10 +114,7 @@ static GtkWidget *draw_toggles_for(int panel_id)
 
 static GtkWidget *prefs_open()
 {
-	GtkWidget *vbox;
-	GtkWidget *hbbox;
-	GtkWidget *ok, *cancel;
-	GtkWidget *nb;
+	GtkWidget *vbox, *hbbox, *nb, *ok, *cancel;
 
 	if (pw_opened) {
 		puts("dry!");
@@ -168,7 +164,7 @@ static GtkWidget *prefs_open()
 }
 /*---*/
 
-static int my_hack(char *input)
+static int my_hack(const char *input)
 {
 	static int dry = 0;
 

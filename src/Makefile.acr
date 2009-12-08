@@ -96,11 +96,9 @@ udis86:
 	cd arch/x86/udis86 && ${MAKE} all
 
 radare${BINSFX}: ${OBJ} ${OBJ2} main.o
-	echo 'Linking radare'
 	${CC} ${LDFLAGS} -o radare${BINSFX} main.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS} ${W32LIBS}
 
 gui: ${OBJ}
-	@echo 'Compiling Vala GUI'
 	cd ../vala && ${MAKE} c
 	-${CC} ${LDFLAGS} -o ravalagui${BINSFX} ../vala/*.o ${OBJ} ${OBJ2} ${RADARE_LIBS} ${LIBS}  ${W32LIBS} -lvte
 

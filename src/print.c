@@ -111,6 +111,16 @@ void getHTTPDate(char *DATE)
 #endif
 }
 
+const char* print_mem_get(const char *name)
+{
+	struct list_head *pos;
+	list_for_each_prev(pos, &print_mems) {
+		print_mem_t *im = list_entry(pos, print_mem_t, list);
+		if (!strcmp(name, im->name))
+			return im->fmt;
+	}
+	return NULL;
+}
 
 /* msdos date format */
 // From freebsd kernel msdosfs/direntry.h
@@ -407,30 +417,20 @@ void print_mem_list(char *name, char *fmt)
 	}
 }
 
-const char *print_mem_get(char *name)
-{
-	struct list_head *pos;
-	list_for_each_prev(pos, &print_mems) {
-		print_mem_t *im = list_entry(pos, print_mem_t, list);
-		if (!strcmp(name, im->name))
-			return im->fmt;
-	}
-	return NULL;
-}
-
 /* TODO: add support for 64bit pointers */
 /* following asm.bits ??? */
 void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 {
 	unsigned char buffer[256];
-	int i,j,idx;
-	char *obuf = buf;
+	int i, j, idx;
+	char *rbuf = NULL;
 	int times, otimes;
 	char tmp, last;
 	char *args, *bracket;
 	int nargs;
 	ut64 paddr = 0LL;
 	ut64 oaddr = 0LL;
+	const char *cfmt = fmt;
 	const char *arg = fmt;
 	char hexfmt[32];
 	int ptrsize = (int)(config_get_i("asm.bits")/8);
@@ -484,31 +484,30 @@ void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 				break;
 			case 2:
 				if (endian) 
-					addr =  (ut64)(*(buf+i))<<8 | (ut64)(*(buf+i+1));
-				else
-					addr =  (ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
+					addr = (ut64)(*(buf+i))<<8 | (ut64)(*(buf+i+1));
+				else addr = (ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%04llx");
 				break;
 			case 4:
 				if (endian) 
 					addr =  (ut64)(*(buf+i))<<24 | (ut64)(*(buf+i+1))<<16 | 
-							(ut64)(*(buf+i+2))<<8 | (ut64)(*(buf+i+3));
+						(ut64)(*(buf+i+2))<<8 | (ut64)(*(buf+i+3));
 				else 
 					addr =  (ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
-							(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
+						(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%08llx");
 				break;
 			case 8:
 				if (endian) 
 					addr =  (ut64)(*(buf+i))<<56 | (ut64)(*(buf+i+1))<<48 | 
-							(ut64)(*(buf+i+2))<<40 | (ut64)(*(buf+i+3))<<32 | 
-							(ut64)(*(buf+i+4))<<24 | (ut64)(*(buf+i+5))<<16 | 
-							(ut64)(*(buf+i+6))<<8 | (ut64)(*(buf+i+7));
+						(ut64)(*(buf+i+2))<<40 | (ut64)(*(buf+i+3))<<32 | 
+						(ut64)(*(buf+i+4))<<24 | (ut64)(*(buf+i+5))<<16 | 
+						(ut64)(*(buf+i+6))<<8 | (ut64)(*(buf+i+7));
 				else 
 					addr =  (ut64)(*(buf+i+7))<<56 | (ut64)(*(buf+i+6))<<48 | 
-							(ut64)(*(buf+i+5))<<40 | (ut64)(*(buf+i+4))<<32 | 
-							(ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
-							(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
+						(ut64)(*(buf+i+5))<<40 | (ut64)(*(buf+i+4))<<32 | 
+						(ut64)(*(buf+i+3))<<24 | (ut64)(*(buf+i+2))<<16 | 
+						(ut64)(*(buf+i+1))<<8 | (ut64)(*(buf+i));
 				strcpy(hexfmt, "0x%016llx");
 			}
 			tmp = *arg;
@@ -563,7 +562,7 @@ void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 			case '?': // help
 				print_mem_help();
 				idx--;
-				i=len; // exit
+				i = len; // force while break
 				continue;
 			case '[':
 				{
@@ -577,7 +576,7 @@ void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 					if (arg[1]=='*') {
 						/* follow pointer */
 						arg = arg+1;
-						/* SPAGUETTI */
+						/* SPAGUETTI FTW */
 						switch (ptrsize) {
 						case 1:
 							addr =  (ut64)(*(buf+i));
@@ -606,21 +605,21 @@ void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian)
 
 						//if (oaddr != addr) {
 addr-=i;
-							buf = malloc(config.block_size);
-							radare_read_at((ut64)addr, buf, config.block_size+i);
-radare_seek(addr, SEEK_SET);
+							rbuf = malloc(config.block_size);
+							radare_read_at((ut64)addr, rbuf, config.block_size+i);
+							radare_seek(addr, SEEK_SET);
 						//}
 					}
-					fmt = print_mem_get(arg+1);
-					if (fmt) {
+					cfmt = print_mem_get(arg+1);
+					if (cfmt) {
 #if 0
 						D cons_printf("0x%08llx = ", config.seek+i);
 						paddr = buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3];
 						cons_printf("0x%08llx -> pm %s {\n", addr, fmt);
 #endif 
-						cons_printf("pm %s {\n", fmt);
+						cons_printf("pm %s {\n", cfmt);
 						/* XXX: this is 32bit pointer only FUCK! */
-						print_mem(addr, buf+i, config.block_size, fmt, endian); //config.endian);
+						print_mem(addr, buf+i, config.block_size, cfmt, endian); //config.endian);
 						cons_printf("}\n");
 					} else {
 						eprintf("Unknown named print format '%s' (Use 'am name format')\n", arg+1);
@@ -630,10 +629,9 @@ radare_seek(addr, SEEK_SET);
 					i+=ptrsize;
 					}
 				if (oaddr != addr) {
-					free(buf);
-addr = oaddr;
-radare_seek(oaddr, SEEK_SET);
-					buf = obuf;
+					free((void *)rbuf);
+					addr = oaddr;
+					radare_seek(oaddr, SEEK_SET);
 				}
 				continue;
 			}
@@ -650,8 +648,8 @@ radare_seek(oaddr, SEEK_SET);
 				ut64 old = config.seek;
 				radare_seek(config.seek+i, SEEK_SET);
 				radare_read(0);
-				print_data(config.seek+i, "8", buf+i, 4, FMT_TIME_UNIX);
-				last_print_format=oldfmt;
+				print_data(config.seek+i, "8", (ut8*)buf+i, 4, FMT_TIME_UNIX);
+				last_print_format = oldfmt;
 				radare_seek(old, SEEK_SET);
 				}
 				break;
@@ -748,7 +746,7 @@ radare_seek(oaddr, SEEK_SET);
 
 static int zoom = 0;
 
-void print_zoom(ut64 from, ut64 to, char *byte, int enable)
+void print_zoom(ut64 from, ut64 to, const char *byte, int enable)
 {
 	zoom = enable;
 	config.zoom.enabled = enable;
@@ -773,6 +771,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	int lines   = 0;
 	int endian  = (int)config_get("cfg.bigendian");
 	int inverse = (int)config_get("cfg.inverse");
+	const char *cstr;
 	char *str;
 	// code anal
 	struct program_t *prg;
@@ -947,13 +946,12 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		break;
 	case FMT_PRINT:
 		i = last_print_format;
-		radare_cmd( config_get("cmd.print"), 0);
+		radare_cmd_raw (config_get ("cmd.print"), 0);
 		last_print_format = i;
 		break;
 	case FMT_REF:
 		{
 		char buf[128];
-		char *str = NULL;
 		buf[0]='\0';
 		sprintf(buf, "!!rsc dwarf-addrs '$FILE' 0x%llx", config.seek);
 		str = pipe_command_to_string(buf);
@@ -974,7 +972,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 #endif
 	case FMT_VISUAL:
 		i = last_print_format;
-		radare_cmd( config_get("cmd.visual"),0);
+		radare_cmd_raw (config_get("cmd.visual"), 0);
 		last_print_format = i;
 		break;
 	case FMT_MEMORY:
@@ -1085,7 +1083,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 	case FMT_USER: {
 		const char *ptr = config_get("cmd.user");
 		if (ptr && ptr[0])
-			radare_cmd(ptr, 0);
+			radare_cmd_raw (ptr, 0);
 		} break;
 	/*   DATES   */
 	case FMT_TIME_DOS: {
@@ -1110,7 +1108,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		    t += (delta*3600); // time zone delta
 		    tmptr = gmtime((const time_t*)&t);
 		    if (tmptr == NULL)
-			    tmp = NULL;
+			    tmp = 0;
 		    else
 			    if (datefmt&&datefmt[0])
 				    tmp = strftime(datestr, 256, datefmt, tmptr);
@@ -1133,7 +1131,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		     t += (delta*3600); // time zone delta
 		     tmptr = gmtime((const time_t*)&t);
 		     if (tmptr == NULL)
-			     tmp = NULL;
+			     tmp = 0;
 		     else
 			     if (datefmt&&datefmt[0])
 				     tmp = strftime(datestr, 256, datefmt, tmptr);
@@ -1154,9 +1152,9 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		cons_newline();
 		break;
 	case FMT_ASHC:
-		str = flag_name_by_offset(seek);
-		if (!*str) str = "shellcode";
-                cons_printf("%s:", str);
+		cstr = flag_name_by_offset(seek);
+		if (!*cstr) cstr = "shellcode";
+                cons_printf("%s:", cstr);
 		inc = config.width/7;
 		if (inc<1)inc = 1;
 		lines = 0;

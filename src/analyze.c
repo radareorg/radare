@@ -1070,7 +1070,7 @@ void analyze_preludes (char *input) {
 	char cmd[1024];
 	char *prelude;
 	long len;
-	char *sfrom, *sto, *cmdhit;
+	const char *sfrom, *sto, *cmdhit;
 
 	switch(config.arch) {
 	case ARCH_X86: // X86-64 is implicit here

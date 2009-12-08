@@ -116,7 +116,7 @@ static int hack_nop(char *lold)
 	return 0;
 }
 
-struct hack_t *radare_hack_new(char *name, char *desc, int (*callback)())
+struct hack_t *radare_hack_new(const char *name, const char *desc, int (*callback)())
 {
 	struct hack_t *hack = (struct hack_t *)malloc(sizeof(struct hack_t));
 	hack->name = name?strdup(name):NULL;

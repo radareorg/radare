@@ -72,10 +72,10 @@ void graph_viz(struct program_t *prg, int body)
 		if (withweight) {
 			if (b0->tnext)
 				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\" weight=\"%d\"];\n",
-						b0->addr, b0->tnext, (int)ABS(b0->tnext-b0->addr));
+						b0->addr, b0->tnext, (int)R_ABS(b0->tnext-b0->addr));
 			if (b0->fnext)
 				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"red\" weight=\"%d\"];\n",
-						b0->addr, b0->fnext, (int)ABS(b0->fnext-b0->addr));
+						b0->addr, b0->fnext, (int)R_ABS(b0->fnext-b0->addr));
 		} else {
 			if (b0->tnext)
 				cons_printf("\t\"0x%08llx\" -> \"0x%08llx\" [color=\"green\"];\n", b0->addr, b0->tnext);
@@ -297,7 +297,8 @@ static void core_load_graph_entry(void *widget, void *obj)
 //	ptr = config_get("graph.layout");
 //	if (ptr && !strcmp(ptr, "graphviz"))
 //	else
-	grava_default_layout_reset_layout(last_window->grava->graph->layout);
+	grava_default_layout_reset_layout((struct GravaDefaultLayout *)
+		(last_window->grava->graph->layout));
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
@@ -314,7 +315,7 @@ static void core_load_graph_entry(void *widget, void *obj)
 			if (off != 0)
 				radare_seek(off, SEEK_SET);
 		} 
-		buf = cons_get_buffer();
+		buf = (char *)cons_get_buffer();
 		if (buf && buf[0]) {
 			printf("BUFFER(%s->%s)\n", str, buf);
 			gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(w->text)), buf, -1);
@@ -817,11 +818,10 @@ void ugraph_print_dot(int body)
 				free(str);
 			}
 		}
-		if (withweight) {
+		if (withweight)
 			cons_printf(" \"0x%08llx\" -> \"0x%08llx\" ;\n", e->from, e->to);
-		} else {
-			cons_printf(" \"0x%08llx\" -> \"0x%08llx\" [weight=\"%d\"];\n", e->from, e->to, ABS(e->to-e->from));
-		}
+		else cons_printf(" \"0x%08llx\" -> \"0x%08llx\" [weight=\"%d\"];\n",
+				e->from, e->to, R_ABS(e->to-e->from));
 	}
 	cons_printf("}\n");
 	cons_flush();
