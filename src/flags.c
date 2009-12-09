@@ -1045,7 +1045,7 @@ void flags_visual_menu()
 		ptr = config_get("cmd.vprompt");
 		if (ptr&&ptr[0]) {
 			int tmp = last_print_format;
-			radare_cmd_raw(ptr, 0);
+			radare_cmd_raw (ptr, 0);
 			last_print_format = tmp;
 		}
 
@@ -1076,7 +1076,7 @@ void flags_visual_menu()
 			hit = 0;
 			i = j = 0;
 			list_for_each(pos, &flags) {
-				flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
+				flag_t *flag = (flag_t *)list_entry (pos, flag_t, list);
 				/* filter per flag spaces */
 				if ((flag_space_idx != -1) && (flag->space != flag_space_idx))
 					continue;
@@ -1124,9 +1124,13 @@ void flags_visual_menu()
 		switch(ch) {
 		case 'J':
 			option+=10;
+			if (option>=i)
+				option = i-1;
 			break;
 		case 'j':
 			option++;
+			if (option>=i)
+				option = i-1;
 			break;
 		case 'k':
 			if (--option<0)

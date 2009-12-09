@@ -53,7 +53,7 @@ void stdout_open(char *file)
 {
 	int fd = open(file, O_RDWR|O_CREAT, 0644);
 	if (fd==-1) {
-eprintf("CANNOT OPEN FILE(%s)\n", file);
+		eprintf("stdout_open: Cannot open '%s'\n", file);
 		return;
 	}
 	cons_stdout_file = fd;
@@ -124,10 +124,8 @@ const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 
 void cons_invert(int set)
 {
-  if (set)
-    cons_strcat("\x1b[7m");
-  else
-    cons_strcat("\x1b[0m");
+	if (set) cons_strcat("\x1b[7m");
+	else cons_strcat("\x1b[0m");
 }
 
 const char *cons_colors[CONS_COLORS_SIZE+1] = {

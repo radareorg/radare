@@ -1262,7 +1262,7 @@ void config_visual_menu()
 	char old[1024];
 	old[0]='\0';
 
-	while(1) {
+	while (1) {
 		cons_gotoxy(0,0);
 		cons_clear();
 
@@ -1274,10 +1274,7 @@ void config_visual_menu()
 			last_print_format = tmp;
 		}
 
-		if (fs&&!memcmp(fs, "asm.", 4))
-			radare_cmd_raw("pd 5", 0);
-
-		switch(menu) {
+		switch (menu) {
 		case 0: // flag space
 			cons_printf("\n Eval spaces:\n\n");
 			hit = 0;
@@ -1338,12 +1335,26 @@ void config_visual_menu()
 			if (fs2 != NULL)
 				cons_printf("\n Selected: %s\n\n", fs2);
 		}
+
+		if (fs&&!memcmp(fs, "asm.", 4))
+			radare_cmd_raw("pd 5", 0);
 		cons_flushit();
-		ch = cons_readchar();
-		ch = cons_get_arrow(ch); // get ESC+char, return 'hjkl' char
+ 		// get ESC+char, return 'hjkl' char
+		ch = cons_get_arrow (cons_readchar ());
 		switch(ch) {
+		case 'J':
+			option+=5;
+			if (option>=i)
+				option = i-1;
+			break;
+		case 'K':
+			option-=5;
+			if (--option<0)
+				option = 0;
+			break;
 		case 'j':
-			option++;
+			if (++option>=i)
+				option = i-1;
 			break;
 		case 'k':
 			if (--option<0)
@@ -1355,7 +1366,9 @@ void config_visual_menu()
 			option = _option;
 			break;
 		case 'q':
-			if (menu<=0) return; menu--;
+			if (menu<=0)
+				return;
+			menu--;
 			break;
 		case '*':
 		case '+':
@@ -1374,49 +1387,51 @@ void config_visual_menu()
 		case '\n': // never happens
 			if (menu == 1) {
 				if (fs2 != NULL)
-					config_visual_hit(fs2);
+					config_visual_hit (fs2);
 			} else {
-				flag_space_set(fs);
+				flag_space_set (fs);
 				menu = 1;
 				_option = option;
 				option = 0;
 			}
 			break;
 		case '?':
-			cons_clear00();
-			cons_strcat(
+			cons_clear00 ();
+			cons_strcat (
 			"\nVe: Visual Eval help:\n\n"
 			" q     - quit menu\n"
+			" ?     - show this help\n"
 			" j/k   - down/up keys\n"
+			" J/K   - down/up fast keys (same as re/av.page)\n"
 			" h/b   - go back\n"
 			" e/' ' - edit/toggle current variable\n"
 			" +/-   - increase/decrease numeric value\n"
 			" :     - enter command\n");
-			cons_flushit();
-			cons_any_key();
+			cons_flushit ();
+			cons_any_key ();
 			break;
 		case ':':
 			cons_set_raw(0);
 #if HAVE_LIB_READLINE
-			char *ptr = readline(VISUAL_PROMPT);
+			char *ptr = readline (VISUAL_PROMPT);
 			if (ptr) {
-				strncpy(cmd, ptr, sizeof(cmd));
-				radare_cmd(cmd, 1);
-				free(ptr);
+				strncpy (cmd, ptr, sizeof(cmd));
+				radare_cmd (cmd, 1);
+				free (ptr);
 			}
 #else
-			cmd[0]='\0';
+			cmd[0] = '\0';
 			dl_prompt = ":> ";
-			if (cons_fgets(cmd, 1000, 0, NULL) <0)
+			if (cons_fgets (cmd, 1000, 0, NULL) <0)
 				cmd[0]='\0';
 			//line[strlen(line)-1]='\0';
-			radare_cmd(cmd, 1);
+			radare_cmd (cmd, 1);
 #endif
-			cons_set_raw(1);
+			cons_set_raw (1);
 			if (cmd[0])
-				cons_any_key();
-			cons_gotoxy(0,0);
-			cons_clear();
+				cons_any_key ();
+			cons_gotoxy (0,0);
+			cons_clear ();
 			continue;
 		}
 	}
