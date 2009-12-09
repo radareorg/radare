@@ -33,8 +33,8 @@
 #if __WINDOWS__
 ut16 NTOHS(ut16 x) {
 	ut16 y;
-	u8 *buffer = x;
-	u8 *dest = y;
+	u8 *buffer = (u8*)&x;
+	u8 *dest = (u8*)&y;
 	dest[0] = buffer[1];
 	dest[1] = buffer[0];
 	return y;

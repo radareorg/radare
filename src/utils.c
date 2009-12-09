@@ -237,7 +237,7 @@ const char *get_tmp_dir()
 	// TODO: Do not enter this function twice!
 #if __WINDOWS__
 	// http://msdn.microsoft.com/en-us/library/aa364992(VS.85).aspx
-	GetTempPath(1023, &tmpdir);
+	GetTempPath(1023, tmpdir);
 #else
 	const char *tmp;
 #if RADARE_CORE

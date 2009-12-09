@@ -255,12 +255,12 @@ ut64 gdb_seek(int fd, ut64 offset, int whence)
 			gdbps.offset = (ut64)((unsigned long long)gdbps.offset+(unsigned long long)offset);
 			return gdbps.offset;
 		case SEEK_END:
-			return gdbps.offset = (ut64)((unsigned long long)(-1));
+			return gdbps.offset = U64_MAX;
 		default:
 			return U64_MAX; //(long long)-1;
 		}
 
-	return -1;
+	return U64_MAX;
 }
 
 int gdb_system(const char *str)

@@ -71,7 +71,7 @@ int dl_readchar()
 #if __WINDOWS__
 	LPDWORD out;
 	BOOL ret;
-	LPDWORD mode;
+	DWORD mode;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
 
 	GetConsoleMode(h, &mode);

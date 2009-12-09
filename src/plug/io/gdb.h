@@ -15,7 +15,7 @@ struct gdbps {
 	int verbose;
 	pid_t pid;
 	char *filename;
-	off_t offset;
+	unsigned long long offset;
 	off_t ldentry;
 	off_t entrypoint;
 	off_t pc;       /*/ program counter */

@@ -1087,10 +1087,10 @@ XXX: we must use mmap2 here
 ut64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 {
 #ifdef __linux__
-        regs_t   reg, reg_saved;
-        int     status;
-	char	bak[4];
-        addr_t  ret = (addr_t)-1;
+        regs_t reg, reg_saved;
+        int status;
+	char bak[4];
+        ut64 ret = U64_MAX;
 
 	/* save old registers */
         debug_getregs(ps.tid, &reg_saved);
@@ -1142,20 +1142,17 @@ ut64 arch_alloc_page(unsigned long size, unsigned long *rsize)
 
 	return ret;
 #elif __WINDOWS__
-	addr_t ret;
+	ut64 ret;
 
 	*rsize = size;
 
-	ret = (addr_t)(LONG)VirtualAllocEx(WIN32_PI(hProcess), (LPVOID)NULL,
-		       		size, MEM_COMMIT,
-				PAGE_NOCACHE | PAGE_EXECUTE_READWRITE);
+	ret = (ut64)(size_t)VirtualAllocEx(WIN32_PI(hProcess), (LPVOID)NULL,
+		size, MEM_COMMIT, PAGE_NOCACHE | PAGE_EXECUTE_READWRITE);
 
-	return (ret != (addr_t)NULL)? ret : -1; 
-
-
+	return (ret != 0LL)? ret : U64_MAX;
 #else
 	eprintf("Not supported on this OS\n");
-	return 0;
+	return 0LL;
 #endif
 } 
 

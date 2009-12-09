@@ -131,7 +131,7 @@ plugin_t *plugin_registry(const char *file)
 		return NULL;
 	}
 
-	p = GetProcAddress(h, "radare_plugin_type");
+	p = (plugin_t *)GetProcAddress(h, "radare_plugin_type");
 	if (p == NULL) {
 		eprintf("cannot find 'radare_plugin_type' symbol.\n");
 		return NULL;
@@ -160,9 +160,9 @@ plugin_t *plugin_registry(const char *file)
 	case PLUGIN_TYPE_IO:
 		p = (plugin_t *)malloc(sizeof(plugin_t));
 		#if __WINDOWS__ && !__CYGWIN__
-		p = GetProcAddress(h, "radare_plugin");
+		p = (plugin_t *)GetProcAddress(h, "radare_plugin");
 		#else
-		p = dlsym(hd, "radare_plugin");
+		p = (plugin_t *)dlsym(hd, "radare_plugin");
 		#endif
 #if HAVE_GUI
 	case PLUGIN_TYPE_GUI:
@@ -177,7 +177,7 @@ plugin_t *plugin_registry(const char *file)
 #endif
 	case PLUGIN_TYPE_HACK: {
 		#if __WINDOWS__ && !__CYGWIN__
-		struct plugin_hack_t *pl = GetProcAddress(h, "radare_plugin");
+		struct plugin_hack_t *pl = (struct plugin_hack_t *)GetProcAddress(h, "radare_plugin");
 		#else
 		struct plugin_hack_t *pl = dlsym(hd, "radare_plugin");
 		#endif

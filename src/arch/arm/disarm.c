@@ -56,7 +56,9 @@
 static int current_offset = 0;
 int color;
 
+#undef TRUE
 #define TRUE (0==0)
+#undef FALSE
 #define FALSE (0==1)
 
 #define DISARM_COMMENTPOS 32

@@ -43,6 +43,8 @@ typedef unsigned long long ppc_word;
 #endif
 
 #include "../../../global.h"
+#undef BIGENDIAN
+#undef LITTLEENDIAN
 #if LIL_ENDIAN
 #define LITTLEENDIAN 1
 #define BIGENDIAN 0

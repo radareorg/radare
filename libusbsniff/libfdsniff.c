@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007
+ * Copyright (C) 2007, 2009
  *       pancake <pancake@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 /*
  * LIBFDSNF : Sniffer wrapper library for open/close/read/write
  * TODO: implement ioctl() -- need to handle varargs
- *
- * @author: pancake <pancake@youterm.com>
  */
 
 #define _GNU_SOURCE
@@ -57,7 +55,6 @@ static void _libwrap_init()
   	fprintf(stderr, "FDSNIFF environment not defined.\n");
   	exit(1);
   }
-
   __open    = dlsym(RTLD_NEXT, "open");
   __close   = dlsym(RTLD_NEXT, "close");
   __read    = dlsym(RTLD_NEXT, "read");
@@ -99,7 +96,6 @@ int close(int fd)
 ssize_t write(int fd, const void *buf, size_t count)
 {
 	ssize_t ret = __write(fd, buf, count);
-
 	if (fd == __fdsniff) {
 		fprintf(stderr, "FDSNF: write()\n");
 		fprintf(stderr, "FDSNF:   handler      = %x\n", fd);
@@ -107,14 +103,12 @@ ssize_t write(int fd, const void *buf, size_t count)
 		fprintf(stderr, "FDSNF:   size         = %d\n", count);
 	//	dump_bytes((unsigned char *)buf, count);
 	}
-
 	return ret;
 }
 
 ssize_t read(int fd, void *buf, size_t count)
 {
 	ssize_t ret;
-
 	ret = __read(fd, buf, count);
 	if (fd == __fdsniff) {
 		fprintf(stderr, "FDSNF: read()\n");
@@ -129,7 +123,6 @@ ssize_t read(int fd, void *buf, size_t count)
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	size_t ret = __fwrite(ptr, size, nmemb, stream);
-
 #if __GLIBC__
 	if ( stream->_fileno == __fdsniff) {
 		fprintf(stderr, "FDSNF: fread()\n");
@@ -146,7 +139,6 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	size_t ret = __fwrite(ptr, size, nmemb, stream);
-
 #if __GLIBC__
 	if ( stream->_fileno == __fdsniff) {
 		fprintf(stderr, "FDSNF: fwrite()\n");
