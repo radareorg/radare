@@ -1502,7 +1502,6 @@ CMD_DECL(code)
 		" CF*                    ; list function ranges as ar cmds\n"
 		" C*                     ; list metadata database\n");
 	}
-
 	return 0;
 }
 

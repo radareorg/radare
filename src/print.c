@@ -972,7 +972,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 #endif
 	case FMT_VISUAL:
 		i = last_print_format;
-		radare_cmd_raw (config_get("cmd.visual"), 0);
+		radare_cmd (config_get("cmd.visual"), 0);
 		last_print_format = i;
 		break;
 	case FMT_MEMORY:
