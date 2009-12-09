@@ -1,19 +1,13 @@
 #ifndef _INCLUDE_RADARE_H_
 #define _INCLUDE_RADARE_H_
 
-#define _FILE_OFFSET_BITS 64
-#define _GNU_SOURCE
-
 #define __addr_t_defined
+#include "main.h"
 
 #include "../global.h"
 #include "types.h"
 #include "cmds.h"
 
-#define _FILE_OFFSET_BITS 64
-#define _GNU_SOURCE
-
-#include "main.h"
 #include "print.h"
 #include <stdio.h>
 #include <stdlib.h>

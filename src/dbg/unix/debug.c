@@ -53,6 +53,8 @@
 #include "../events.h"
 #include "../debug.h"
 
+#define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
+
 #if __FreeBSD__
 int th_init_freebsd(int pid)
 {
@@ -138,7 +140,7 @@ int debug_ktrace()
 	}
 
 	ret = arch_continue();
-	ret = read(pd[0],buf,1);
+	ret = read (pd[0], buf, 1);
 	if (ret>0) {
 		kill(ps.tid, SIGSTOP);
 		printf("Have sweet dreamz my lil pon1e!!1!\n");
@@ -410,7 +412,7 @@ static int is_alive(int pid)
 int debug_fork_and_attach()
 {
 	int wait_val;
-	int i,pid;
+	int i, pid;
 
 	pid = vfork();
 	switch(pid) {
@@ -519,24 +521,24 @@ int debug_detach()
 
 	return 0;
 }
-#define debug_read_raw(x,y) ptrace(PTRACE_PEEKTEXT, x, y, 0)
 
-/* copied from patan */
+/* copied from patan .. slow and buggy on solaris */
 extern int errno;
 
 int debug_os_read_at(int pid, void *buff, int sz, ut64 addr)
 {
-	unsigned long words = sz / sizeof(long) ;
-	unsigned long last = sz % sizeof(long) ;
-	long x, lr ;
-	int ret ;
+	#define RDX sizeof(long);
+	unsigned long words = sz / RDX;
+	unsigned long last = sz % RDX;
+	long x, lr;
+	int ret = 1;
 
 	if (sz<0)
 		return -1;
 
 	if (addr==-1)
 		return 0;
-
+retry:
 	for(x=0;x<words;x++) {
 		((long *)buff)[x] = debug_read_raw(pid, (void *)(&((long*)(long )addr)[x]));
 
@@ -551,13 +553,20 @@ int debug_os_read_at(int pid, void *buff, int sz, ut64 addr)
 		if (lr == -1 && errno)
 			goto err;
 
-		memcpy(&((long *)buff)[x],&lr,last) ;
+		memcpy(&((long *)buff)[x], &lr, last);
 	}
 
+//long *buf =buff;
+//fprintf(stderr, "ROK 0x%08llx %08x\n", addr, *buf);
 	return sz;
 err:
+#if __sun
+	ret = 0;
+#else
 	ret = --x * sizeof(long);
+#endif
 
+//fprintf(stderr, "ERR 0x%08llx\n", addr);
 	return ret ;
 }
 
@@ -585,15 +594,12 @@ int debug_os_write_at(int pid, u8 *buff, int sz, ut64 addr)
 	return sz;
 #endif
 //eprintf("%d ->%d (0x%x)\n",pid, (int)sz, (long)addr);
-
-
 	for(x=0;x<words;x++)
 		if (ptrace(PTRACE_POKEDATA,pid,&((long *)(long)addr)[x],((long *)buff)[x]))
 			goto err ;
 
 	if (last) {
-		lr = ptrace(PTRACE_PEEKTEXT,pid,&((long *)(long)addr)[x], 0) ;
-
+		lr = ptrace(PTRACE_PEEKTEXT,pid, &((long *)(long)addr)[x], 0) ;
 		/* Y despues me quejo que lisp tiene muchos parentesis... */
 		if ((lr == -1 && errno) ||
 		    (
@@ -603,13 +609,9 @@ int debug_os_write_at(int pid, u8 *buff, int sz, ut64 addr)
 		   )
                 goto err;
 	}
-
 	return sz ;
-
         err:
-                return --x * sizeof(long) ;
-
-        //return ret ;
+	return --x * sizeof(long) ;
 }
 
 
@@ -673,7 +675,7 @@ int debug_getregs(pid_t pid, regs_t *reg)
 	return ptrace(PTRACE_GETREGS, pid, NULL, reg);
     #endif
 #else
-	memset(reg,  0 ,sizeof(regs_t));
+	memset(reg, 0 ,sizeof(regs_t));
 	return ptrace(PTRACE_GETREGS, pid, reg, sizeof(regs_t));
 #endif
 }

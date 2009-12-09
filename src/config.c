@@ -873,6 +873,10 @@ void config_init(int first)
 	config_set("asm.os", "openbsd");
 #elif __Windows__
 	config_set("asm.os", "linux");
+#elif __sun
+	config_set("asm.os", "solaris");
+#else
+	config_set("asm.os", "unknown");
 #endif
 	config_set("asm.split", "true"); // split code blocks
 	config_set("asm.splitall", "false"); // split code blocks

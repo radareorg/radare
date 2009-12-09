@@ -20,22 +20,32 @@ GNU/Linux, NetBSD, OpenBSD, FreeBSD on 32/64 bits.
 If you experience any problem building radare. Please ping me to pancake<nopcode.org>
 
 
-BUILD USING WAF:
+HOW TO COMPILE:
+
+Standard way:
+
+  $ ./configure --prefix=/usr
+  $ make
+  $ sudo make install
+
+Alternative (going to be deprecated, and probably buggy)
 
   $ ./waf configure
   $ ./waf
-
   to clean the build, update waf or cleaning the db:
-
   $ ./waf distclean
 
 
-BUILD USING ACR:
+COMPILATION TIPS:
+
+ OpenSolaris (SunOS):
+
+  $ ./configure --prefix=/usr
+  $ make && make install INSTALL=ginstall
 
  Mingw32:
 
   $ CC=mingw32-gcc ./configure --enable-w32 --prefix=/usr/ --without-vala --without-gui
-  $ make
 
  Desktop GNU/Linux:
 

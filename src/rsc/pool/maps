@@ -63,11 +63,17 @@ parse2() {
 
 echo "fs maps"
 
+echo|column >/dev/null 2>&1
+if [ $? = 0 ]; then
+	CAT="column -t"
+else
+	CAT="cat"
+fi
 if [ -e "/proc/$P/maps" ] ; then
-	column -t /proc/$P/maps | parse 
+	$CAT /proc/$P/maps | parse 
 else
 	if [ -e "/proc/$P/map" ] ; then
-		column -t /proc/$P/map | parse2
+		$CAT /proc/$P/map | parse2
 	#	cut -d ' ' -f 1,13 /proc/$P/map
 	else
 		# do not print anything
