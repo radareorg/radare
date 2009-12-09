@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ int radare_output = 0;
 #define R if (radare_output)
 #define NR if (!radare_output)
 
-#define USHORT(x,y) (unsigned short)(x[y+1]|(x[y]<<8))
+#define USHORT(x,y) (unsigned short)((x[y+1]|(x[y]<<8)) & 0xffff)
 #define UINT(x,y) (unsigned int) ((x[y]<<24)|(x[y+1]<<16)|(x[y+2]<<8)|x[y+3])
 
 struct classfile {
@@ -338,8 +338,7 @@ static int java_resolve(int idx, char *str)
 	} else
 	if (!strcmp(cp_items[idx].name, "Utf8")) {
 		sprintf(str, "\"%s\"", get_cp(idx)->value);
-	} else
-		sprintf(str, "0x%04x", USHORT(get_cp(idx)->bytes,0));
+	} else sprintf(str, "0x%04x", USHORT(get_cp(idx)->bytes,0));
 	return 0;
 }
 
@@ -525,7 +524,7 @@ int java_classdump(const char *file)
 	struct classfile2 cf2;
 	unsigned short sz, sz2;
 	int this_class;
-	char buf[0x9999];
+	unsigned char buf[0xffff+1];
 	int i,j;
 	FILE *fd = fopen(file, "rb");
 
@@ -558,7 +557,11 @@ int java_classdump(const char *file)
 	for(i=0;i<cf.cp_count;i++) {
 		struct constant_t *c;
 
-		fread(buf, 1, 1, fd);
+		//printf("off 0x%08llx : ", (ut64)ftell(fd));
+		if (fread(buf, 1, 1, fd) != 1) {
+			fprintf (stderr, "Unexpected eof\n");
+			break;
+		}
 
 		c = NULL;
 		for(j=0;constants[j].name;j++) {
@@ -568,7 +571,8 @@ int java_classdump(const char *file)
 			}
 		}
 		if (c == NULL) {
-			fprintf(stderr, "Invalid tag '%d'\n", buf[0]);
+			fprintf(stderr, "Invalid tag '%d' at offset 0x%08llx\n",
+				buf[0], (ut64)(ftell (fd)-1));
 			return 0;
 		}
 		NR printf(" %3d %s: ", i+1, c->name);
@@ -581,11 +585,11 @@ int java_classdump(const char *file)
 
 		/* read bytes */
 		switch(c->tag) {
-		case 1: // utf 8 string
+		case 1: // Utf8 string
 			fread(buf, 2, 1, fd);
-			sz = USHORT(buf,0); //(buf[0]<<8)|buf[1];
-			//cp_items[i].len = sz;
-			fread(buf, sz, 1, fd);
+			sz = USHORT(buf, 0);
+			if (sz>0)
+				fread(buf, sz, 1, fd);
 			buf[sz] = '\0';
 			break;
 		default:
@@ -598,8 +602,14 @@ int java_classdump(const char *file)
 		/* parse value */
 		switch(c->tag) {
 		case 1:
-			NR printf("%s\n", buf);
+			NR printf("%s (length=%d)\n", buf, sz);
+			//else printf("fs strings && f str.%d @ 0x%08llx\n",
+			//	i+1, (ut64)(cp_items[i].off+3));
 			cp_items[i].value = strdup(buf);
+			break;
+		case 5: // Long
+		case 6: // Double
+			i+=2;
 			break;
 		case 7:
 			NR printf("%d\n", USHORT(buf,0));
@@ -739,8 +749,8 @@ int hexpair2bin(const char *arg) // (0A) => 10 || -1 (on error)
 int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 {
 	const char *ptr;
-	unsigned char  c = '\0';
-	unsigned char  d = '\0';
+	unsigned char c = '\0';
+	unsigned char d = '\0';
 	unsigned int len = 0, j = 0;
 
 	for (ptr = in; ;ptr = ptr + 1) {
@@ -783,9 +793,8 @@ int main(int argc, char **argv)
 	unsigned char buf[1024];
 	char output[128];
 	
-	while ((c = getopt(argc, argv, "ra:d:c:hV")) != -1)
-	{
-		switch( c ) {
+	while ((c = getopt(argc, argv, "ra:d:c:hV")) != -1) {
+		switch (c) {
 		case 'r':
 			radare_output = 1;
 			break;

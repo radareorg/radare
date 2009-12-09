@@ -41,7 +41,7 @@ COMPILATION TIPS:
  OpenSolaris (SunOS):
 
   $ ./configure --prefix=/usr
-  $ make && make install INSTALL=ginstall
+  $ gmake && gmake install INSTALL=ginstall
 
  Mingw32:
 

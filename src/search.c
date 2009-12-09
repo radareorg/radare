@@ -361,6 +361,7 @@ int search_range(char *range)
 		printf("Searching using ranges...\n");
 	}
 	// twice
+	hit_idx = 1; // reset hit index
 	radare_cmd("f -hit0_*", 0);
 	radare_cmd("f -hit0_*", 0);
 	radare_cmd("fs search", 0);
