@@ -30,7 +30,7 @@ OBJ+=plug/io/wii/wii.o
 
 ##SYSPROXY##
 OBJ2+=plug/io/sysproxy.o rasc/syscall-linux.o rasc/rpc.o
-CFLAGS+=-DSYSPROXY
+#CFLAGS+=-DSYSPROXY
 ##SYSPROXY##
 
 #CFLAGS+=-DLIBDIR=\"${LIBDIR}\" -DDOCDIR=\"${DATADIR}/doc/radare/\"

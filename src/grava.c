@@ -297,8 +297,8 @@ static void core_load_graph_entry(void *widget, void *obj)
 //	ptr = config_get("graph.layout");
 //	if (ptr && !strcmp(ptr, "graphviz"))
 //	else
-	grava_default_layout_reset_layout((struct GravaDefaultLayout *)
-		(last_window->grava->graph->layout));
+	grava_default_layout_reset_layout(GRAVA_DEFAULT_LAYOUT(
+		(last_window->grava->graph->layout)));
 
 	eprintf("Loading graph... (%s) 0x%llx\n", str, off);
 	if (off == 0 && str[0]!='0') {
