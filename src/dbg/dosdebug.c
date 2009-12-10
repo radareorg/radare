@@ -51,7 +51,8 @@ int fdout, fdin;
 
 static int check_pid(int pid);
 
-#define GETCOLOR int color = getv("COLOR");
+//#define GETCOLOR int color = getv("COLOR");
+#define GETCOLOR int color = config.color;
 #define TITLE if (color) cons_printf("\x1b[36m");
 #define TITLE_END if (color) cons_printf("\x1b[0m");
 

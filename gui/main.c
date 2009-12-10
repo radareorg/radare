@@ -281,8 +281,11 @@ void gradare_new_graph()
 GtkWidget *term_new ()
 {
 	VteTerminal *term = VTE_TERMINAL (vte_terminal_new());
+#if VTE_MINOR_VERSION >= 22
 	vte_terminal_set_cursor_blink_mode(VTE_TERMINAL(term), VTE_CURSOR_BLINK_OFF);
-	//vte_terminal_set_mouse_autohide((VteTerminal*)term, TRUE);
+#else
+	vte_terminal_set_mouse_autohide((VteTerminal*)term, TRUE);
+#endif
 	vte_terminal_set_scrollback_lines((VteTerminal*)term, 3000);
 	vte_terminal_set_font_from_string_full((VteTerminal*)term,
 		font, VTE_ANTI_ALIAS_FORCE_DISABLE);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008
+ * Copyright (C) 2008, 2009
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ int arch_dump_registers()
 	FILE *fd;
 	int ret;
 	regs_t regs;
-	unsigned long long *llregs = &regs;
+	unsigned long long *llregs = (unsigned long long *)&regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
 	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
@@ -128,7 +128,7 @@ int arch_restore_registers()
 	unsigned int val;
 	int ret;
 	regs_t regs;
-	unsigned long *llregs = &regs;
+	unsigned long long *llregs = (unsigned long long *)&regs;
 
 	printf("Dumping CPU to cpustate.dump...\n");
 	ret = ptrace (PTRACE_GETREGS, ps.tid, 0, &regs);
@@ -198,18 +198,16 @@ int arch_call(const char *arg)
 	return 0;
 }
 #if 0
-   >  * `gregset' for the general-purpose registers.
-   > 
-   >  * `fpregset' for the floating-point registers.
-   > 
-   >  * `xregset' for any "extra" registers.
+   >  * gregset: for the general-purpose registers.
+   >  * fpregset: for the floating-point registers.
+   >  * xregset: for any "extra" registers.
 #endif
 
 int arch_ret()
 {
 	/* branch to %ra */
 	regs_t regs;
-	unsigned long long *llregs = &regs;
+	unsigned long long *llregs = (unsigned long long *) &regs;
 	debug_getregs(ps.tid, &regs);
 	return arch_jmp(llregs[31]);
 }
@@ -244,7 +242,7 @@ ut64 arch_pc()
 	u8 buf[1024];
 	regs_t regs;
 	int i, ret; 
-	unsigned long long *llregs = &regs;
+	unsigned long long *llregs = (unsigned long long *) &regs;
 		
 //	memset(buf, '\0', 100);
 	//ret = ptrace (PTRACE_PEEKUSER, ps.tid, 64, &buf);
@@ -279,7 +277,7 @@ int arch_set_register(const char *reg, const char *value)
 {
 	int ret;
 	regs_t regs;
-	unsigned long long *llregs = &regs;
+	unsigned long long *llregs = (unsigned long long *)&regs;
  	ut64 v = get_offset(value);
 	if (ps.opened == 0)
 		return 0;
@@ -352,10 +350,10 @@ int arch_print_registers(int rad, const char *mask)
 {
 	int ret;
 	regs_t regs;
-	unsigned long long *llregs = &regs;
-	unsigned long long *ollregs = &oregs;
-	unsigned char *qregs = &regs;
-	int color = config_get("scr.color");
+	ut64 *llregs = (ut64 *)&regs;
+	ut64 *ollregs = (ut64 *)&oregs;
+	ut8 *qregs = (ut8 *)&regs;
+	//color = config.color;
 
 	if (ps.opened == 0)
 		return 0;
@@ -429,7 +427,7 @@ int arch_print_registers(int rad, const char *mask)
 		// 37 == cause
 	} else {
 		#define PRINT_REG(name, tail, idx) \
-			if (!color) cons_printf("  %4s  0x%08llx"tail, name, reg(llregs[idx])); \
+			if (!config.color) cons_printf("  %4s  0x%08llx"tail, name, reg(llregs[idx])); \
 			else { if (llregs[idx] != ollregs[idx]) cons_strcat("\x1b[35m"); \
 			cons_printf("  %4s  0x%08llx\x1b[0m"tail, name, reg(llregs[idx])); }
 		cons_printf("    pc  0x%08llx\x1b[0m", arch_pc());
@@ -539,22 +537,22 @@ void *arch_alloc_page(int size, int *rsize)
 	return NULL;
 }
 
-addr_t arch_mmap(int fd, int size, ut64 addr) //int *rsize)
+ut64 arch_mmap(int fd, int size, ut64 addr) //int *rsize)
 {
-	return NULL;
+	return 0;
 }
 
-addr_t arch_get_sighandler(int signum)
+ut64 arch_get_sighandler(int signum)
 {
-	return NULL;
+	return 0;
 }
 
-addr_t arch_set_sighandler(int signum, ut64 handler)
+ut64 arch_set_sighandler(int signum, ut64 handler)
 {
-	return NULL;
+	return 0;
 }
 
-addr_t arch_get_entrypoint()
+ut64 arch_get_entrypoint()
 {
 	unsigned long addr;
 	debug_read_at(ps.tid, &addr, 4, 0x00400018);
@@ -582,7 +580,7 @@ void free_bt(struct list_head *sf)
 ut64 get_reg(const char *reg)
 {
 	regs_t regs;
-	ut64 *llregs = &regs; // 45 elements of 64 bits here
+	ut64 *llregs = (ut64 *)&regs; // 45 elements of 64 bits here
 	int ret ;
 
 	memset(&regs, '\0', sizeof(regs));
