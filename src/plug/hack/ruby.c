@@ -41,7 +41,8 @@ static int (*rs_cmd)(char *cmd, int log) = NULL;
 static int slurp_ruby(const char *file)
 {
 	rb_load_file(file);
-	ruby_exec();
+	//ruby_exec();
+	rb_exec();
 	return 0;
 }
 

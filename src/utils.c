@@ -454,6 +454,8 @@ ut64 get_offset(const char *orig)
 		}
 		return ret;
 	} else {
+		char *ch = strchr (arg, ' ');
+		if (ch) *ch='\0';
 		flag = flag_get(arg);
 		if (flag)
 			return flag->offset; // - config.vaddr;
@@ -693,7 +695,6 @@ ut64 get_math(const char* text)
 	else
 	if (is_cmp<0)
 		return ((new_off - cmp_off)==0)?1:0;
-
 	return new_off;
 }
 

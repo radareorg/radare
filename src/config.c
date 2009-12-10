@@ -955,7 +955,7 @@ void config_init(int first)
 	config_set("trace.dup", "false");
 	config_set("trace.cmtregs", "false");
 
-	config_set("cfg.editor", "vi");
+	config_set("cfg.editor", "vim");
 	node = config_set("cfg.debug", "false");
 	node->callback = &config_debug_callback;
 	config_set("cfg.noscript", "false");

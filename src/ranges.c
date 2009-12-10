@@ -46,8 +46,6 @@ void ranges_free()
 	INIT_LIST_HEAD(&ranges);
 }
 
-// static int rflags;
-// int ranges_set_flags()
 static int ranges_get_flags()
 {
 	int flags = 0;

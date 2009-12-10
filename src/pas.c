@@ -40,8 +40,7 @@ int pas_emul(const char *str)
 	if (ptr == str)
 		return -1;
 	if (ptr != NULL) {
-		
-		
+		/* huh */
 	}
 	return 0;
 }

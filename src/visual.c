@@ -156,7 +156,7 @@ void visual_show_help()
 	" f,F        seek between flag list (f = forward, F = backward)\n"
 	" n,N        seek between hits of the hit0 search\n"
 	" t          visual track/browse flagspaces and flags\n"
-	" e          visual eval configuration variables\n"
+	" e,E        visual eval configuration variables, Edit notes file\n"
 	" C          toggle scr.color\n"
 	" d          convert cursor selected bytes to ascii, code or hex\n"
 //	" b[k][cmd]  binds key 'k' to the specified command\n"
@@ -267,16 +267,31 @@ CMD_DECL(insert)
 
 CMD_DECL(invert)
 {
-	int inv = (int)config_get_i("cfg.inverse")^1;
-	config_set("cfg.inverse", inv?"true":"false");
+	int inv = (int) config_get_i ("cfg.inverse")^1;
+	config_set ("cfg.inverse", inv?"true":"false");
 	return 0;
 }
 
 CMD_DECL(zoom_reset)
 {
-	config_set_i("zoom.from", 0);
-	config_set_i("zoom.to", config.size);
+	config_set_i ("zoom.from", 0);
+	config_set_i ("zoom.to", config.size);
 	return 0;
+}
+
+static void visual_edit ()
+{
+	int ret;
+	char file[1024];
+	char cmd[1024];
+
+	snprintf (file, sizeof (file), "%s.txt", config_get("file.project"));
+	// TODO: append screen dump to file
+	snprintf (cmd, sizeof (cmd), "%s '%s'", config_get("cfg.editor"), file);
+	if (system (cmd)) {
+		eprintf ("command error (%s)\n", cmd);
+		sleep (2);
+	}
 }
 
 static void visual_convert_bytes(int fmt, int defkey)
@@ -578,13 +593,13 @@ CMD_DECL(step_in_dbg)
 {
 	if (!config.debug) {
 		char *str = strdup(config_get("asm.profile"));
+#warning non-debugger code emulation is not integrated correctly
 		/* this is not working properly yet */
 		radare_cmd("avx 1", 0); // USE THE VM HERE
 		radare_cmd(".av*", 0);
 		radare_cmd("f vm.eip@vm.eip+$$$", 0);
 		config_set("asm.profile", str);
-	} else
-		radare_cmd("!step", 0);
+	} else radare_cmd("!step", 0);
 	radare_sync();
 	//trace_add(get_offset("eip"));
 	return 0;
@@ -604,11 +619,10 @@ CMD_DECL(stepo_in_dbg)
 CMD_DECL(seek_to_flag)
 {
 	flag_t *flg;
-	unsigned char key;
+	ut8 key;
 
-	flag_list("");
-	key = cons_readchar();
-
+	flag_list ("");
+	key = cons_readchar ();
 	if (key>='0' && key<='9') {
 		flg = flag_get_i(key-'0');
 		if (flg) {
@@ -623,7 +637,7 @@ CMD_DECL(seek_to_end)
 {
 	if (config.cursor_mode)
 		config.cursor = config.block_size - 1;
-	else	config.seek = config.size - config.block_size;
+	else config.seek = config.size - config.block_size;
 	return 0;
 }
 
@@ -634,7 +648,6 @@ CMD_DECL(insert_assembly_rsc)
 		cons_any_key();
 		return 1;
 	}
-
 	printf("write assembly (end with ^d):\n");
 	fflush(stdout);
 	cons_set_raw(0);
@@ -683,22 +696,22 @@ CMD_DECL(insert_assembly_hack)
 #if DEBUGGER
 	char buf[16];
 	if (config.debug) {
-		radare_cmd("!hack", 0);
+		radare_cmd ("!hack", 0);
 	} else {
 		/* for non debugger -- all of them must be available !! */
-		printf(" 0 - nop one opcode\n");
-		printf(" 1 - negate jump (jz->jnz , ja->jbe, ..)\n");
-		printf(" 2 - force jmp (only for { 0f, 0x80-0x8f })\n");
-		printf(" 5 - add ret\n");
-		printf(" 6 - add ret with eax=0\n");
-		printf(" 7 - negate zero flag (TODO)\n");
+		printf (" 0 - nop one opcode\n");
+		printf (" 1 - negate jump (jz->jnz , ja->jbe, ..)\n");
+		printf (" 2 - force jmp (only for { 0f, 0x80-0x8f })\n");
+		printf (" 5 - add ret\n");
+		printf (" 6 - add ret with eax=0\n");
+		printf (" 7 - negate zero flag (TODO)\n");
 	}
 	
-	buf[0]='\0';
-	buf[0]=cons_readchar();
-	buf[1]='\0';
-	arch_hack(buf);
-	CLRSCR();
+	buf[0] = '\0';
+	buf[0] = cons_readchar();
+	buf[1] = '\0';
+	arch_hack (buf);
+	CLRSCR ();
 #endif
 	return 0;
 }
@@ -762,9 +775,7 @@ CMD_DECL(insert_hexa_string) // TODO: control file has growed here too!! maybe i
 			io_write(config.fd, tmp, size);
 			free(tmp);
 			radare_seek(oseek, SEEK_SET);
-		} else {
-			radare_cmd(buf, 0);
-		}
+		} else radare_cmd(buf, 0);
 	}
 	
 	cons_set_raw(1);
@@ -790,7 +801,6 @@ char *get_print_format_name(int j)
 	int i;
 	if (last_print_format == FMT_ZOOM)
 		return zoom_string;
-
 	for(i=0;i<VMODES;i++)
 		if (modes[i] == j)
 			return modestr[i];
@@ -811,15 +821,13 @@ CMD_DECL(rotate_print_format_prev)
 static int keystroke_run(unsigned char key) {
 	command_t cmd;
 	int i = 0;
-
 	for (cmd = keystrokes[0]; cmd.sname ; cmd = keystrokes[i++])
 		if (cmd.sname == key) {
-			(void)cmd.hook(""); // no args
+			cmd.hook (""); // no args
 			if (cmd.options)
-				cons_any_key();
+				cons_any_key ();
 			return 1;
 		}
-
 	return 0;
 }
 
@@ -829,8 +837,7 @@ static void visual_bind_key()
 #if HAVE_LIB_READLINE
 	char *ptr;
 #endif
-	char key;
-	char buf[1024];
+	char key, buf[1024];
 	int i, n;
 
 	printf("Press a key to bind (? for listing): ");
@@ -851,16 +858,12 @@ static void visual_bind_key()
 		}
 	}
 	if (key=='?') {
-		if (nbds == 0) {
-			cons_printf("No user keybindings defined.\n");
-		} else {
+		if (nbds != 0) {
 			cons_printf("Keybindings:");
 			cons_newline();
-			for(i=0;i<nbds;i++) {
-				cons_printf(" key '%c' = \"%s\"", bds[i].key, bds[i].cmd);
-				cons_newline();
-			}
-		}
+			for(i=0;i<nbds;i++)
+				cons_printf(" key '%c' = \"%s\"\n", bds[i].key, bds[i].cmd);
+		} else cons_printf("No user keybindings defined.\n");
 		cons_any_key();
 		return;
 	}
@@ -953,9 +956,7 @@ void visual_draw_screen()
 
 	monitors_run();
 
-	/* HUH */
 	cons_clear00();
-	//V cons_printf("\x1b[0m");
 
 	if (inc >config.block_size)
 		inc = config.block_size;
@@ -1069,16 +1070,16 @@ void visual_change_metadata(ut64 seek)
 	char buf2[128];
 	int key;
 	eprintf("\nCurrent seek: 0x%08llx\n\n", seek);
-	eprintf("q quit this menu\n");
-	eprintf("f Analyze code here to define a function\n");
-	eprintf("F Remove function definition\n");
-	eprintf("; Add comment\n");
-	eprintf("- Remove comment\n");
-	eprintf("c Convert to code (remove previous type conversions)\n");
-	eprintf("d Convert type of full block or selected bytes to hex data\n");
-	eprintf("x Add xref\n");
-	eprintf("X Remove xref\n");
-	eprintf("\n=> Press key: \n");
+	eprintf("q quit this menu\n"
+		"f Analyze code here to define a function\n"
+		"F Remove function definition\n"
+		"; Add comment\n"
+		"- Remove comment\n"
+		"c Convert to code (remove previous type conversions)\n"
+		"d Convert type of full block or selected bytes to hex data\n"
+		"x Add xref\n"
+		"X Remove xref\n"
+		"\n=> Press key: \n");
 	key = cons_readchar();
 	switch(key) {
 	case 'q':
@@ -1105,16 +1106,10 @@ void visual_change_metadata(ut64 seek)
 		radare_cmd(buf, 0);
 		break;
 	case 'x':
-		{
-		int type = 0;
 		visual_prompt_entry("type (code/data): ", buf2, sizeof(buf2));
-		switch(buf2[0]) {
-		case 'c': type = 0; break;
-		case 'd': type = 1; break;
-		}
+		if (buf2[0] == 'd') key = 1; else key = 0;
 		off = get_math(visual_prompt_entry("xref addr: ", buf, sizeof(buf)));
-		data_xrefs_add(seek, off, type);
-		}
+		data_xrefs_add(seek, off, key);
 		break;
 	case 'X':
 		off = get_math(visual_prompt_entry("xref addr: ", buf, sizeof(buf)));
@@ -1129,71 +1124,71 @@ void visual_f(int f)
 	struct bp_t *bp;
 	char line[128];
 
-	switch(f) {
-		case 1:
-			cons_clear();
-			radare_cmd("!help", 0);
-			cons_any_key();
-			cons_clear();
-			break;
+	switch (f) {
+	case 1:
+		cons_clear();
+		radare_cmd("!help", 0);
+		cons_any_key();
+		cons_clear();
+		break;
 #if DEBUGGER
-		case 2:
-			addr = config.seek + (config.cursor_mode?config.acursor:0);
-			bp = debug_bp_get(addr);
-			if (bp) {
-				sprintf(line, "!bp -0x%08x", (unsigned int)addr);
-				radare_cmd(line,0);
-				//debug_rm_bp(addr, 0);
-			} else {
-				sprintf(line, "!bp 0x%08x", (unsigned int)addr);
-				radare_cmd(line,0);
-			}
-			if (!debug_bp_get(addr))
-				flag_clear_by_addr(addr);
-			cons_clear();
-			break;
-		case 3:
-			cons_set_raw(0);
-			printf("Watchpoint at: ");
-			strcpy(line, "!drw ");
-			fgets(line+5, sizeof(line), stdin);
-			line[strlen(line)-1]='\0';
+	case 2:
+		addr = config.seek + (config.cursor_mode?config.acursor:0);
+		bp = debug_bp_get(addr);
+		if (bp) {
+			sprintf(line, "!bp -0x%08x", (unsigned int)addr);
 			radare_cmd(line,0);
-			cons_set_raw(1);
-			cons_any_key();
+			//debug_rm_bp(addr, 0);
+		} else {
+			sprintf(line, "!bp 0x%08x", (unsigned int)addr);
+			radare_cmd(line,0);
+		}
+		if (!debug_bp_get(addr))
+			flag_clear_by_addr(addr);
+		cons_clear();
+		break;
+	case 3:
+		cons_set_raw(0);
+		printf("Watchpoint at: ");
+		strcpy(line, "!drw ");
+		fgets(line+5, sizeof(line), stdin);
+		line[strlen(line)-1]='\0';
+		radare_cmd(line,0);
+		cons_set_raw(1);
+		cons_any_key();
+		cons_clear();
+		break;
+	case 4:
+		if (config.cursor_mode) {
+			sprintf(line, "!bp 0x%08llx", config.seek+config.cursor);
+			radare_cmd_raw(line, 0);
+			radare_cmd_raw("!cont", 0);
+			sprintf(line, "!bp -0x%08llx", config.seek+config.cursor);
+			radare_cmd_raw(line, 0);
+		} else {
+			radare_cmd("!contuh", 0);
 			cons_clear();
-			break;
-		case 4:
-			if (config.cursor_mode) {
-				sprintf(line, "!bp 0x%08llx", config.seek+config.cursor);
-				radare_cmd_raw(line, 0);
-				radare_cmd_raw("!cont", 0);
-				sprintf(line, "!bp -0x%08llx", config.seek+config.cursor);
-				radare_cmd_raw(line, 0);
-			} else {
-				radare_cmd("!contuh", 0);
-				cons_clear();
-			}
-			break;
-		case 5:
-			arch_jmp(config.seek + (config.cursor_mode?config.acursor:0));
-			break;
+		}
+		break;
+	case 5:
+		arch_jmp(config.seek + (config.cursor_mode?config.acursor:0));
+		break;
 #endif
-		case 6:
-			radare_cmd("!contsc", 0);
-			break;
-		case 7:
-			if (config_get("trace.libs")) {
-				//CMD_NAME(step)(NULL);
-				debug_step(1);
-			} else {
-				CMD_NAME(stepu_in_dbg)(NULL);
-			}
-			break;
-		case 8:
-			if (config.debug)
-				CMD_NAME(stepo_in_dbg)(NULL);
-			break;
+	case 6:
+		radare_cmd("!contsc", 0);
+		break;
+	case 7:
+		if (config_get("trace.libs")) {
+			//CMD_NAME(step)(NULL);
+			debug_step(1);
+		} else {
+			CMD_NAME(stepu_in_dbg)(NULL);
+		}
+		break;
+	case 8:
+		if (config.debug)
+			CMD_NAME(stepo_in_dbg)(NULL);
+		break;
 	}
 }
 
@@ -1202,12 +1197,12 @@ CMD_DECL(visual)
 	unsigned char key;
 	int i, lpf, ret;
 	int nibble;
+	u8 byte;
 	char line[1024];
 	char tmpbuf[512];
 #if HAVE_LIB_READLINE
 	char *ptr, *optr;
 #endif
-
 	switch(input[0]) {
 	case 'g':
 	case 'G':
@@ -1219,16 +1214,8 @@ CMD_DECL(visual)
 	cons_get_real_columns();
 	config_set_i("scr.width", config.width);
 	config_set_i("scr.height", config.height);
-
 	nibble = 1; // high first
-
 	undo_push();
-
-#if 0
-	config.height = config_get_i("scr.height");
-	if (config.height<1)
-		config_set_i("scr.height", 24);
-#endif
 
 	if (bds == NULL)
 		bds = (struct binding *)malloc(sizeof(struct binding));
@@ -1243,7 +1230,7 @@ CMD_DECL(visual)
 	cons_set_raw(1);
 	cons_flushable = 1;
 	cons_skipxy(0,0);
-	while(1) {
+	while (1) {
 		const char *scrseek = config_get("scr.seek");
 		if (inc<1) inc = 1;
 		dec = inc;
@@ -1257,8 +1244,8 @@ CMD_DECL(visual)
 		visual_draw_screen();
 		cons_flushit();
 
-			// XXX 
-		if (config.debug&&last_print_format == FMT_VISUAL&&scrseek&&scrseek[0]) {
+		// XXX 
+		if (config.debug&&last_print_format==FMT_VISUAL&&scrseek&&scrseek[0]) {
 			ut64 off = get_math(scrseek);
 			if ((off < config.seek) || ((config.seek+config.block_size) < off)) {
 				radare_seek(off, SEEK_SET);
@@ -1274,30 +1261,9 @@ CMD_DECL(visual)
 		} else key = cons_readchar();
 
 		/* insert mode . 'i' key */
-		switch(config.insert_mode) {
+		switch (config.insert_mode) {
 		case 1:
 			key = cons_get_arrow(key); // get ESC+char, return 'hjkl' char
-#if 0
-			if (key==0x1b) {
-				key = cons_readchar();
-				if (key==0x5b) {
-					// TODO: must also work in interactive visual write ascii mode
-					key = cons_readchar();
-					switch(key) {
-					case 0x35: key='K'; break; // re.pag
-					case 0x36: key='J'; break; // av.pag
-					case 0x41: key='k'; break; // up
-					case 0x42: key='j'; break; // down
-					case 0x43: key='l'; break; // right
-					case 0x44: key='h'; break; // left
-					case 0x3b:
-						break;
-					default:
-						key = 0;
-					}
-				}
-			}
-#endif
 			switch(key) {
 			case 9: // TAB
 				if (last_print_format == FMT_DISAS
@@ -1597,8 +1563,8 @@ CMD_DECL(visual)
 			}
 		}
 
-		if (inc<1)inc=1; // XXX dup check?
-		if (repeat==1)repeat=0;
+		if (inc<1) inc=1; // XXX dupped check?
+		if (repeat==1) repeat=0;
 		//else repeat-=1;
 		repeat = 1;
 		for (i=0;i<repeat;i++)
@@ -1615,7 +1581,7 @@ CMD_DECL(visual)
 			cons_set_raw(0);
 			lpf = last_print_format;
 			config.visual=0;
-		cons_flushable = 0;
+			cons_flushable = 0;
 #if HAVE_LIB_READLINE
 			ptr = readline(VISUAL_PROMPT);
 			line[0]='\0';
@@ -1651,13 +1617,11 @@ CMD_DECL(visual)
 				line[0]='\0';
 			//line[strlen(line)-1]='\0';
 #endif
-			if (strchr(line, '>') || strchr(line, '|') || strchr(line,'`')) {
+			if (strchr(line, '>') || strchr(line, '|') || strchr(line,'`'))
 				eprintf("Cannot execute pipes in visual mode\n");
-			} else {
-				radare_cmd(line, 1);
-			}
-		cons_flushable = 1;
-		cons_flush();
+			else radare_cmd(line, 1);
+			cons_flushable = 1;
+			cons_flush();
 			config.visual=1;
 			last_print_format = lpf;
 			cons_set_raw(1);
@@ -1703,31 +1667,22 @@ CMD_DECL(visual)
 			break;
 #endif
 		case '\'':
-			{
-			u8 buf = (u8)cons_readchar();
-			if (visual_seeks_init && visual_seeks[buf] != 0xFFFFFFFF)
+			byte = (u8)cons_readchar();
+			if (visual_seeks_init && visual_seeks[byte] != U64_MAX) {
 				undo_push();
-				radare_seek(visual_seeks[buf], SEEK_SET);
+				radare_seek(visual_seeks[byte], SEEK_SET);
 			}
 			break;
 		case 'm':
-			{
-			u8 buf = (u8)cons_readchar();
+			byte = (u8)cons_readchar();
 			if (visual_seeks_init == 0) {
 				int i;
 				for (i=0;i<255;i++)
-					visual_seeks[i] = 0xFFFFFFFF;
+					visual_seeks[i] = U64_MAX;
 				visual_seeks_init = 1;
 			}
-			visual_seeks[buf] = config.seek;
-			}
+			visual_seeks[byte] = config.seek;
 			break;
-#if 0
-			printf("\nrfile magic:\n\n");
-			radare_dump_and_process( DUMP_MAGIC, config.block_size);
-			cons_any_key();
-			break;
-#endif
 		case 'd':
 			visual_convert_bytes(-1, 0);
 			break;
@@ -1781,8 +1736,7 @@ CMD_DECL(visual)
 				}
 				if (config.cursor >= config.block_size)
 					config.cursor = config.block_size - 1;
-			} else
-				config.seek += 2;
+			} else config.seek += 2;
 			break;
 		case 0xd:
 			if (config.cursor_mode) {
@@ -1907,16 +1861,19 @@ CMD_DECL(visual)
 					cons_clear(); }
 			}
 			break;
+		case 'E':
+			visual_edit ();
+			break;
 		case 'e':
 			config_visual_menu();
 			break;
 		case 't':
 			config.scrdelta += 20;
-			flags_visual_menu();
+			flags_visual_menu ();
 			config.scrdelta -= 20;
 			break;
 		case 'v':
-			var_visual_menu();
+			var_visual_menu ();
 			break;
 		case '<':
 			// fold
@@ -1930,9 +1887,7 @@ CMD_DECL(visual)
 						data_set((ut64)(config.seek+config.cursor), DATA_FOLD_C);
 						cons_clear();
 					}
-				} else {
-					visual_convert_bytes(DATA_FOLD_C, 0);
-				}
+				} else visual_convert_bytes(DATA_FOLD_C, 0);
 			} else {
 				config.seek -= config.block_size;
 				if (config.seek % config.block_size)
@@ -1942,17 +1897,13 @@ CMD_DECL(visual)
 		case '>':
 			if (config.cursor_mode) {
 				int type = data_type_range(config.seek+config.cursor);
-				if (type == DATA_FOLD_C) {
+				if (type == DATA_FOLD_C)
 					data_set(config.seek+config.cursor, DATA_FOLD_O);
-				}
 				cons_clear();
-				
 				// unfold or expand
 				// check if current cursor position is jump -> open it
 				// check if current cursor position is a folder -> open it
-			} else {
-				config.seek += config.block_size - (config.seek % config.block_size);
-			}
+			} else config.seek += config.block_size - (config.seek % config.block_size);
 			break;
 		case 'H':
 			if (config.cursor_mode) {
@@ -1966,16 +1917,14 @@ CMD_DECL(visual)
 					config.ocursor = config.cursor+1;
 				if (IS_LTZ(config.cursor))
 					config.cursor =0;
-			} else
-				config.seek -= 2;
+			} else config.seek -= 2;
 			break;
 		case 'l':
 			if (config.cursor_mode) {
 				if (++config.cursor>=config.block_size)
 					config.cursor = config.block_size - 1;
 				config.ocursor = -1;
-			} else
-				config.seek++;
+			} else config.seek++;
 			break;
 		case '(': cons_skipxy(0,-1); break;
 		case ')': cons_skipxy(0,1); break;
@@ -2016,12 +1965,12 @@ CMD_DECL(visual)
 				if (config.cursor>=0 && config.cursor< config.block_size) {
 					c = config.cursor;
 					ch = config.block[config.cursor];
-					sprintf(buf, "wx %02x @ 0x%llx", (unsigned char)(--ch), config.seek); //+config.cursor);
+					sprintf(buf, "wx %02x @ 0x%llx", (ut8)(--ch), config.seek);
 					radare_cmd(buf, 0);
 					config.cursor = c;
 					config.ocursor = -1;
 				}
-			} else radare_set_block_size_i(config.block_size-1);
+			} else radare_set_block_size_i (config.block_size-1);
 			cons_clear();
 			break;
 		case '!':
@@ -2044,14 +1993,12 @@ CMD_DECL(visual)
 			goto __visual_exit;
 		default:
 			if (!keystroke_run(key)) {
-				int i;
 				for(i=0;i<nbds;i++)
 					if (bds[i].key == key)
 						radare_cmd(bds[i].cmd, 0);
 				goto __go_read_a_key;
 			}
 		}
-
 		if (config.seek<0)
 			config.seek = 0;
 		do_repeat = 0;

@@ -69,7 +69,6 @@ install:
 	cd .. && ${MAKE} install
 
 ${OBJS}: %.o: %.c
-	@echo 'Compiling $<'
 	${CC} ${CFLAGS} -c -o $@ $<
 
 rsc_:
@@ -126,16 +125,12 @@ _rahash:
 	-cd rahash && ${MAKE} all
 
 rax${BINSFX}: rax.o
-	@echo 'Linking rax'
 	${CC} ${CFLAGS} rax.o -o rax${BINSFX}
-	@#ln -fs radare rax # ???
 
 xrefs${BINSFX}: xrefs.o
-	@echo 'Linking xrefs'
 	${CC} ${CFLAGS} ${LDFLAGS} xrefs.o -o xrefs${BINSFX}
 
 clean:
-	@echo 'Cleaning src'
 	-cd plug/hack && ${MAKE} clean
 	-rm -f *.o
 	-cd arch/arm/aasm && ${MAKE} clean

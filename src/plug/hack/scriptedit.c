@@ -157,7 +157,7 @@ static int my_hack(const char *input)
 	gtk_container_add (GTK_CONTAINER (swin), text);
 	gtk_container_add (GTK_CONTAINER (my_widget), swin);
 
-	hbb = (GtkHButtonBox*) tgtk_hbutton_box_new();
+	hbb = (GtkHButtonBox*) gtk_hbutton_box_new();
 	gtk_container_set_border_width(GTK_CONTAINER(hbb), 5);
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbb), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbb), 5);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -212,11 +212,8 @@ int undo_write_set(int n, int set)
 				break;
 			}
 		}
-
 		if (u) undo_write_set_t(u, set);
 		else eprintf("invalid undo-write index\n");
-	} else
-		eprintf("no writes done\n");
-
+	} else eprintf("no writes done\n");
 	return 0;
 }

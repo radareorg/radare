@@ -12,7 +12,8 @@
 #define STRALLOC(dst,str,len) len=strlen(str)+1; dst=alloca(len); memcpy(dst,str,len)
 #define MALLOC_STRUCT(x) (x*)malloc(sizeof(x))
 
-#define U64_MAX ((ut64)0xFFFFFFFFFFFFFFFFLL);
+#define U64_MAX ((ut64)0xFFFFFFFFFFFFFFFFLL)
+#define U32_MAX ((ut32)0xFFFFFFFF)
 
 extern ut64 last_cmp;
 extern const char hex[16];

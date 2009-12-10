@@ -58,11 +58,11 @@ extern void show_help_message();
 /* Call a command from the command table */
 int commands_parse (const char *_cmdline)
 {
+	// XXX making non-const a const ptr??
 	char *cmdline = (char *)_cmdline;
 	command_t *cmd = NULL;
 
-	for(;cmdline[0]&&(cmdline[0]=='\x1b'||cmdline[0]==' ');
-	cmdline=cmdline+1);
+	for(;cmdline[0]&&(cmdline[0]=='\x1b'||cmdline[0]==' ');cmdline=cmdline+1);
 
 	// null string or comment
 	if (cmdline[0]==0||cmdline[0]=='#'||cmdline[0]==';')
@@ -72,11 +72,7 @@ int commands_parse (const char *_cmdline)
 		if (cmd->sname == cmdline[0])
 		    return cmd->hook(cmdline+1);
 	}
-
-	/* default hook */
-	if (cmd)
-		return cmd->hook(cmdline);
-	return -1;
+	return cmd?cmd->hook(cmdline):-1;
 }
 
 void show_help_message()
@@ -100,14 +96,6 @@ void show_help_message()
 	cons_printf(" ?[?]<expr>        calc     evaluate math expression\n");
 }
 
-	//COMMAND('c', " [times]",       "count   limit of search hits and 'w'rite loops", count),
-	//COMMAND('e', " [0|1]",       "endian  change endian mode (0=little, 1=big)", endianess),
-	//COMMAND('g', " [x,y]",         "gotoxy  move screen cursor to x,y", gotoxy),
-	//COMMAND('l', " [offset]",      "limit   set the top limit for searches", limit),
-	//COMMAND('Y', " [length]",      "Ypaste  copy n bytes from clipboard to cursor", yank_paste),
-	//COMMAND('_', " [oneliner]",    "perl/py interpret a perl/python script (use #!perl)", interpret_perl),
-	//COMMAND('%', "ENVVAR [value]", "setenv  gets or sets a environment variable", envvar),
-
 command_t commands[] = {
 	COMMAND('a', "[ocdgv?]",       "analyze  perform code/data analysis", analyze),
 	COMMAND('b', " [blocksize]",   "bsize    change the block size", blocksize),
@@ -118,7 +106,6 @@ command_t commands[] = {
 	COMMAND('f', "[crogd|-][name]","flag     flag the current offset (f? for help)", flag),
 	COMMAND('H', " [cmd]",         "Hack     performs a hack", hack),
 	COMMAND('i', "",               "info     prints status information", info),
-	//COMMAND('m', " [size] [dst]",  "move     copy size bytes from here to dst", move),
 	COMMAND('o', " [file]",        "open     open file", open),
 	COMMAND('p', "[fmt] [len]",    "print    print data block", print),
 	COMMAND('q', "[!]",            "quit     close radare shell", quit),
@@ -148,7 +135,7 @@ command_t commands[] = {
 
 CMD_DECL(macro)
 {
-	switch(input[0]) {
+	switch (input[0]) {
 	case ')':
 		radare_macro_break(input+1);
 		break;
@@ -200,7 +187,6 @@ CMD_DECL(config_eval)
 	default:
 		config_eval(input+i);
 	}
-
 	return 0;
 }
 
@@ -212,6 +198,7 @@ CMD_DECL(analyze)
 	struct list_head *head;
 	struct list_head *head2;
 	struct xrefs_t *c0;
+	char *file;
 	const char *ptr;
 	int i, sz, n_calls=0;
 	int depth_i;
@@ -245,9 +232,8 @@ CMD_DECL(analyze)
 			break;
 		case 't':
 			sz = atoi(input+2);
-			if (sz>0) {
-				trace_tag_set(sz-1);
-			} else trace_tag_set(-1);
+			if (sz>0) trace_tag_set(sz-1);
+			else trace_tag_set(-1);
 			break;
 		case 'd':
 			trace_show(2, trace_tag_get());
@@ -269,15 +255,15 @@ CMD_DECL(analyze)
 			trace_reset();
 			break;
 		case ' ': {
-			ut64 foo = get_math(input+1);
-			struct trace_t *t = (struct trace_t *)trace_get(foo, trace_tag_get());
+			struct trace_t *t = (struct trace_t *)trace_get(get_math (input+1), trace_tag_get());
 			if (t != NULL) {
 				cons_printf("offset = 0x%llx\n", t->addr);
 				cons_printf("opsize = %d\n", t->opsize);
 				cons_printf("times = %d\n", t->times);
 				cons_printf("count = %d\n", t->count);
 				//TODO cons_printf("time = %d\n", t->tm);
-			} } break;
+			} }
+			break;
 		case '*':
 			trace_show(1, trace_tag_get());
 			break;
@@ -356,7 +342,7 @@ CMD_DECL(analyze)
 			eprintf(" agdv [file] - use agd > file.dot && !!dot -Tpng -ofile.png file.dot && rsc view file.png\n");
 			break;
 		case 'd':
-			{ char *file = strchr(input+2, ' ');
+			file = strchr(input+2, ' ');
 			if (input[2]=='v') {
 				char *oprof = strdup(config_get("asm.profile"));
 				int ocolor = config_get_i("scr.color");
@@ -395,18 +381,17 @@ CMD_DECL(analyze)
 					graph_viz(prg, input[2]!='*');
 				}
 			}
-			}
 			break;
 		default:
 #if HAVE_GUI
-		// use graph.depth by default if not set
-		config.graph = 1;
-		prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
-		list_add_tail(&prg->list, &config.rdbs);
-		grava_program_graph(prg, NULL);
-		config.graph = 0;
+			// use graph.depth by default if not set
+			config.graph = 1;
+			prg = code_analyze(config.vaddr + config.seek, depth ); //config_get_i("graph.depth"));
+			list_add_tail(&prg->list, &config.rdbs);
+			grava_program_graph(prg, NULL);
+			config.graph = 0;
 #else
-		eprintf("Compiled without gui. Try with ag*\n");
+			eprintf("Compiled without gui. Try with ag*\n");
 #endif
 		}
 		break;
@@ -416,13 +401,10 @@ CMD_DECL(analyze)
 			ut64 seek = config.seek;
 			ut32 len, i = 0;
 			if (input[1]=='f'){
-				struct data_t *data = data_get(config.seek); // TODO: use get_math(input+2) ???
-				if (data) {
-				//	bs = config.block_size;
-				//	radare_set_block_size_i(data->size);
-					len = data->size;
-				}
-				//len = data_size(seek);
+ 				// TODO: use get_math(input+2) ???
+				struct data_t *data = data_get(config.seek);
+				if (data) len = data->size;
+				else len = 0;
 			} else len = (ut32)get_math(input+1);
 			if (len<1) len = config.block_size;
 			b = malloc(len);
@@ -468,7 +450,7 @@ CMD_DECL(analyze)
 			}
 			i++;
 		}
-				config.verbose=c;
+		config.verbose=c;
 		} break;
 	case 'm':
 		input = input+1;
@@ -704,15 +686,13 @@ CMD_DECL(analyze)
 #endif
 		{
 		char buf[4096];
-			
 		sprintf(buf,"xrefs -a %s -b %lld %s %lld",
 			config_get("asm.arch"), base, file, seek);
 		radare_system(buf);
 		}
 #if DEBUGGER
-		if (config.debug) {
+		if (config.debug)
 			unlink(file);
-		}
 #endif
 		} break;
 	default:
@@ -743,11 +723,11 @@ CMD_DECL(project)
 {
 	char *arg = input + 2;
 	char* str;
-	switch(input[0]) {
+	switch (input[0]) {
 	case 'o':
 		if (input[1])
 			project_open(arg);
-		else{
+		else {
 			str = strdup ( config_get("file.project") );
 			project_open(str);
 			free ( str );
@@ -779,7 +759,6 @@ CMD_DECL(project)
 		" Pi [file]  info\n");
 		break;
 	}
-
 	return 0;
 }
 
@@ -839,16 +818,13 @@ CMD_DECL(menu)
 			sprintf(buf2, "e %s.%s", pfx, buf);
 			radare_cmd(buf2, 0);
 		} else
-		if (!pfx[0]) {
-			strcpy(pfx, buf);
-		} else {
+		if (pfx[0]) {
 			cons_printf("%s.%s = ", pfx, buf);
 			sprintf(buf2, "e %s.%s", pfx, buf);
 			radare_cmd(buf2, 0);
 			goto noprint;
-		}
+		} else strcpy(pfx, buf);
 	}
-
 	return 0;
 }
 #endif
@@ -1116,9 +1092,9 @@ CMD_DECL(hash)
 	ut64 bs = config.block_size;
 	ut64 obs = config.block_size;
 
-	str = strchr(input, ' ');
+	str = strchr (input, ' ');
 	if (str)
-		bs = get_math(str+1);
+		bs = get_math (str+1);
 
 	for(i=0;input[i];i++) if (input[i]==' ') { input[i]='\0'; break; }
 
@@ -1196,7 +1172,6 @@ CMD_DECL(open)
 		}
 	}
 	free(ptr);
-
 	return 0;
 }
 
@@ -1244,17 +1219,10 @@ CMD_DECL(envvar)
 	ptr[0]='\0';
 	for(;*text&&iswhitespace(*text);text=text+1);
 	for(ptr=ptr+1;*ptr&&iswhitespace(*ptr);ptr=ptr+1);
-
-	if ((!memcmp(ptr,"-", 2))
-	|| (!memcmp(ptr,"(null)", 5))) {
+	if ((!memcmp(ptr,"-", 2)) || (!memcmp(ptr,"(null)", 5)))
 		unsetenv(text2);
-		//D cons_printf("%%%s=(null)\n", text2);
-	} else {
-		setenv(text2, ptr, 1);
-		//D cons_printf("%%%s='%s'\n", text2, ptr);
-	}
+	else setenv(text2, ptr, 1);
 	ptro[0]=' ';
-
 	env_update();
 	free(text2);
 
@@ -1291,7 +1259,6 @@ CMD_DECL(blocksize)
 	default:
 		radare_set_block_size(input);
 	}
-
 	return 0;
 }
 
@@ -1340,7 +1307,7 @@ CMD_DECL(code)
 			{
 			ut64 from = get_math(text+1);
 			if (from >= config.vaddr*2)
-				from -=config.vaddr;
+				from -= config.vaddr;
 			data_xrefs_add(from, config.seek+config.vaddr, 0);
 			}
 			break;
@@ -1616,7 +1583,6 @@ CMD_DECL(resize)
 		printf("0x"OFF_FMTx"\n", config.size);
 		return 0;
 	}
-
 	/* XXX not needed ? */
 	for(;*text&&!iswhitespace(*text);text=text+1);
 	for(;*text&&iswhitespace(*text);text=text+1);
@@ -1677,23 +1643,19 @@ CMD_DECL(flag)
 		} else eprintf("Usage: fi hit0_ hit1_\n");
 		break;
 	case 'N':
-		if (input[1]=='\0') {
-			flag_ctr = 0;
-		} else {
+		if (input[1]!='\0') {
 			char bu[128];
 			snprintf(bu, 127, "%s_%d",text, flag_ctr++); 
 			while(bu[0]==' ')strcpy(bu, bu+1);
 			eprintf("0x%08llx %s\n", config.seek, bu);
 			flag_set(bu, config.seek,0);
-		}
+		} else flag_ctr = 0;
 		break;
 	case '\0': flag_list(text); break;
 	//case '*': flag_set("*",0,0); break;
 	case '-': flag_remove(text+1); break;
 	case ' ':
-		if (input[1]=='-') {
-			flag_remove(text+1);
-		} else {
+		if (input[1]!='-') {
 			ut64 here = config.seek;//+config.vaddr;
 			ut64 size = config.block_size;
 			char *s = strchr(text, ' ');
@@ -1713,9 +1675,8 @@ CMD_DECL(flag)
 			if (s2) *s2=' ';
 			if (size != config.block_size)
 				radare_set_block_size_i(size);
-		}
+		} else flag_remove(text+1);
 	}
-
 	return ret;
 }
 
@@ -1738,13 +1699,11 @@ CMD_DECL(undowrite)
 		break;
 	case ' ':
 	case '\0':
-		if (input[0] == '\0')
-			undo_write_list(0);
-		else {
+		if (input[0] != '\0') {
 			if (input[1]=='-')
 				undo_write_set(atoi(input+2), 1);
 			else undo_write_set(atoi(input+1), 0);
-		}
+		} else undo_write_list(0);
 		break;
 	case '?':
 	default:
@@ -1887,7 +1846,6 @@ CMD_DECL(seek)
 			eprintf("Couldn't seek: %s\n", strerror(errno));
 	}
 	undo_push();
-
 	radare_read(0);
 
 	return 0;
@@ -2921,9 +2879,6 @@ CMD_DECL(help)
 			}
 			break;
 		case 'x':
-			{
-			char buf[1024];
-			int len;
 			if (input[2]=='0' && input[3]=='x') {
 	// TODO: endian memcpy!!
 				switch(config_get_i("asm.bits")) {
@@ -2953,10 +2908,11 @@ CMD_DECL(help)
 					break;
 				}
 			} else {
+				char buf[1024];
+				int len;
 				len = hexstr2binstr(input+1, buf);
 				if (len>0)
 					print_data(0, "", buf, len, FMT_ASC);
-			}
 			}
 			break;
 		case 'X':
@@ -2998,7 +2954,6 @@ CMD_DECL(help)
 			}
 		}
 	} else show_help_message();
-
 	return 0;
 }
 
