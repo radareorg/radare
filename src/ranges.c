@@ -358,6 +358,7 @@ int ranges_percent()
 		seek += step;
 	}
 	cons_printf("] 0x%08llx\n", to);
+	return 0;
 }
 
 int ranges_cmd(const char *arg)
@@ -451,6 +452,7 @@ int ranges_cmd(const char *arg)
 		ranges_list(0);
 		break;
 	}
+	return 0;
 }
 
 int ranges_list(int rad)
@@ -488,8 +490,6 @@ int ranges_get_n(int n, ut64 *from, ut64 *to)
 int ranges_boolean(ut64 from, ut64 to, int flags)
 {
 	ut64 total = 0;
-	ut64 min = to;
-	ut64 max = from;
 	struct list_head *pos;
 	struct range_t *r = NULL;
 

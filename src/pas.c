@@ -134,7 +134,7 @@ int pas_aop_mips(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 /* beutify assembly to be compilable by gas :) */
 int pas_aop_x86_gas(int argc, const char *argv[], struct aop_t *aop, char *newstr)
 {
-	int i,j,k;
+	int i;
 	struct {
 		char *op;
 		char *str;

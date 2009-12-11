@@ -127,6 +127,7 @@ static void sfbitdecode(uchar sfbit, char *name)
  *
  * Contributed by Peter Peres.
  */
+#if 0
 #define listhex(len,addr,ofile) { if(Lst) _listhex(ofile,mem,addr,len); }
 static void _listhex(char *file, const unsigned char *mem, int addr, int len)
 {
@@ -143,6 +144,7 @@ static void _listhex(char *file, const unsigned char *mem, int addr, int len)
 	    sprintf( file, "    ");
 	}
 }
+#endif
 
 /* dis_inst2: Disassemble one instruction to ofile
  * 

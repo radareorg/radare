@@ -88,10 +88,12 @@ struct block_t *program_block_split_new(struct program_t *prg, ut64 addr)
 {
 	struct list_head *i;
 	struct block_t *bta;
+#if 0
 	struct aop_t aop;
 	int sz;
 	u8 *ptr;
 	ut64 next;
+#endif
 
 	list_for_each_prev(i, &(prg->blocks)) {
 		struct block_t *bt = list_entry(i, struct block_t, list);

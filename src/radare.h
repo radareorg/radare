@@ -159,4 +159,8 @@ struct ugraph_node_t *ugraph_get(ut64 addr);
 int radare_seek_search(const char *str);
 int radare_seek_search_backward(const char *str);
 
+/* search */
+int radare_flag_name(char *buf, int kw, int hn);
+void radare_search_seek_hit(int idx);
+
 #endif

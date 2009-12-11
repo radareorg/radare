@@ -292,7 +292,6 @@ int dl_hist_load(const char *file)
 		fgets(buf, 1023, fd);
 	}
 	fclose(fd);
-
 	return 1;
 #endif
 }
@@ -300,7 +299,7 @@ int dl_hist_load(const char *file)
 int dl_hist_save(const char *file)
 {
 #if HAVE_LIB_READLINE
-	rad_readline_finish();
+	return rad_readline_finish();
 #else
 	char buf[1024];
 	FILE *fd;

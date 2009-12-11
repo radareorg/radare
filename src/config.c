@@ -634,8 +634,12 @@ static int config_debug_callback(void *data)
 {
 	struct config_node_t *node = data;
 
-	if (node) // && node->i_value)
+	if (node) { // && node->i_value)
 		config.debug = node->i_value;
+	}
+	if (!config.debug) {
+#warning TODO import register values from debugger into the vm
+	}
 
 	return 0;
 }
@@ -1248,7 +1252,6 @@ void config_visual_menu()
 {
 	char cmd[1024];
 	struct list_head *pos;
-#define MAX_FORMAT 2
 	const char *ptr;
 	char *fs = NULL;
 	char *fs2 = NULL;

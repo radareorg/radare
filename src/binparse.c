@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008
+ * Copyright (C) 2007, 2008, 2009
  *       esteve <@eslack.org>
  *
  * Contributions:
@@ -22,6 +22,7 @@
  */
 
 #include "main.h"
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -112,7 +113,7 @@ static unsigned char get_num(const char * str, int len)
 	
 	if (strp[0] == '\\') {
 		strp[0] = '0';
-		sscanf (strp,"%x",&value );
+		sscanf ((char*)strp, "%x", &value);
 	} else	value = strp[0]; //sscanf (strp,"%c",(char *)&value );
 	value = value & 0xFF ;
 
@@ -197,7 +198,7 @@ static int tok_parse (char* str, int len, token * tlist )
 			straux[3]=str[i];		
 			straux[4]=0;		
 			
-			sscanf ( straux ,"%hhx",&tokaux);
+			sscanf (straux ,"%x", &tokaux);
 			//tokaux = 0xFF&((straux[0]-'0')*16 + (straux[1]-'0'));
 			tlist[tokact].mintok =  tokaux;
 			tlist[tokact].range = 0;

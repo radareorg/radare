@@ -129,7 +129,6 @@ command_t keystrokes[] = {
 	COMMAND('\0',0, NULL, seek_to_flag)
 };
 
-
 #define TITLE if (config.color) cons_printf("\x1b[36m");
 #define TITLE_END if (config.color) cons_printf("\x1b[0m");
 
@@ -592,15 +591,15 @@ CMD_DECL(stepu_in_dbg)
 CMD_DECL(step_in_dbg)
 {
 	if (!config.debug) {
-		char *str = strdup(config_get("asm.profile"));
+		char *str = strdup (config_get("asm.profile"));
 #warning non-debugger code emulation is not integrated correctly
 		/* this is not working properly yet */
-		radare_cmd("avx 1", 0); // USE THE VM HERE
-		radare_cmd(".av*", 0);
+		radare_cmd ("avx 1", 0); // USE THE VM HERE
+		radare_cmd (".av*", 0);
 		radare_cmd("f vm.eip@vm.eip+$$$", 0);
-		config_set("asm.profile", str);
-	} else radare_cmd("!step", 0);
-	radare_sync();
+		config_set ("asm.profile", str);
+	} else radare_cmd ("!step", 0);
+	radare_sync ();
 	//trace_add(get_offset("eip"));
 	return 0;
 }
@@ -610,8 +609,7 @@ CMD_DECL(stepo_in_dbg)
 	if (!config.debug) {
 		eprintf("not in debugger\n");
 		cons_any_key();
-	} else
-		radare_cmd("!stepo", 0);
+	} else radare_cmd("!stepo", 0);
 	radare_sync();
 	return 0;
 }

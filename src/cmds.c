@@ -165,6 +165,7 @@ CMD_DECL(macro)
 		radare_macro_add(input);
 		break;
 	}
+	return 0;
 }
 
 CMD_DECL(config_eval)
@@ -2300,8 +2301,8 @@ CMD_DECL(sections)
 	case 'f':
 		eprintf("TODO\n");
 		break;
-
 	}
+	return 0;
 }
 
 CMD_DECL(examine)
@@ -2706,6 +2707,7 @@ CMD_DECL(rtr)
 	default:
 		rtr_cmd(input);
 	}
+	return 0;
 }
 
 CMD_DECL(help)

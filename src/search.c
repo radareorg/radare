@@ -218,9 +218,9 @@ int search_from_simple_file(char *file)
 {
 	FILE *fd;
 	char *ptr, buf[4096], cmd[4096];
-	int i,ret;
+	//int i,ret;
 	ut64 tmp = config.seek;
-	tokenizer *t;
+	//tokenizer *t;
 
 	if (strchr(file, '?')) {
 		cons_printf("Usage: /: file [file2] [file3] ...\n"
@@ -237,7 +237,6 @@ int search_from_simple_file(char *file)
 	}
 	config_set("cfg.verbose", "false");
 	while(!feof(fd) && !config.interrupted) {
-		char *foo;
 		/* read line */
 		buf[0]='\0';
 		fgets(buf, 4095, fd);

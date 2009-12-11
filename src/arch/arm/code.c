@@ -69,7 +69,7 @@ static inline int anal_is_unkjmp ( int inst )
 
 static inline int anal_is_load (int inst)
 {
-	if (inst & ARM_DTX_LOAD == (ARM_DTX_LOAD))
+	if ((inst & ARM_DTX_LOAD) == (ARM_DTX_LOAD))
 		return 1;
 	return 0;
 }

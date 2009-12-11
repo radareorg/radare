@@ -25,7 +25,6 @@
 //#include <dir.h>
 #include <math.h>
 #include <float.h>
-#pragma hdrstop
 
 #include "disasm.h"
 
@@ -655,7 +654,7 @@ static void DecodeJF(void) {
   if (addr==0 || seg==0) da->zeroconst=1;
   if (mode>=DISASM_FILE) {
     nresult+=sprintf(da->result+nresult,"%s 0x%04X:0x%08X",
-    (lowercase==0?"FAR":"far"),seg,addr);
+    (lowercase==0?"FAR":"far"), (unsigned int)seg, (unsigned int)addr);
   };
 };
 

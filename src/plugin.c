@@ -229,7 +229,7 @@ void plugin_load()
 			eprintf("Cannot open dir.plugins '%s'\n", str);
 			return;
 		}
-		while(de = (struct dirent *)readdir(fd)) {
+		while((de = (struct dirent *)readdir(fd))) {
 			if (de->d_name[0] && de->d_name[0]!='.' && is_plugin(de->d_name)) {
 				plugin_registry(de->d_name);
 			}

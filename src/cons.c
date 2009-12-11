@@ -1161,7 +1161,6 @@ void cons_render()
 	if (grephigh == NULL) {
 		grephigh = (char *)config_get("scr.grephigh");
 		if (grephigh &&*grephigh) {
-			char *new, *old;
 			char bat[64];
 			sprintf(bat, "\x1b[7m%s\x1b[0m", grephigh);
 			cons_buffer = str_replace(cons_buffer, grephigh, bat, cons_buffer_sz);
@@ -1169,7 +1168,6 @@ void cons_render()
 		grephigh = NULL;
 	} else {
 		if (grephigh &&*grephigh) {
-			char *new, *old;
 			char bat[64];
 			sprintf(bat, "\x1b[7m%s\x1b[0m", grephigh);
 			cons_buffer = str_replace(cons_buffer, grephigh, bat, cons_buffer_sz);

@@ -53,7 +53,6 @@ ssize_t windbg_read(int fd, void *buf, size_t count)
 int windbg_open(const char *pathname, int flags, mode_t mode)
 {
 	int fd;
-	char tmp[4096];
 
 #if __UNIX__
 	// TODO: detect if pathname is socket file or serial port
@@ -78,7 +77,6 @@ int windbg_open(const char *pathname, int flags, mode_t mode)
 
 int windbg_system(const char *cmd)
 {
-	char tmp[130];
 	if (cmd[0]=='!') {
 		socket_printf(config.fd, cmd+1);
 		socket_printf(config.fd, "\n");
@@ -106,7 +104,6 @@ int windbg_system(const char *cmd)
 	} else
 	if (!memcmp(cmd, "set ", 4)) {
 		char *ptr = strchr(cmd+4,' ');
-		char buf[1024];
 
 		if (ptr == NULL) {
 			printf("Usage: !set [reg] [value]\n");

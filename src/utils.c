@@ -404,7 +404,7 @@ ut64 get_offset(const char *orig)
 			ret = io_write_last;
 			break;
 		case '$':
-			arch_aop(config.seek, config.block,&aop);
+			arch_aop (config.seek, config.block, &aop);
 			ret = aop.length;
 			break;
 		case '?':
@@ -589,7 +589,7 @@ ut64 get_math(const char* text)
 		else
 #endif
 		if ((txt[0]=='=' && txt[1]=='='))
-			txt[0]==' ';
+			txt[0]=' ';
 		else
 		if ((txt[0]==' '))
 			str_cpy(txt, txt+1);

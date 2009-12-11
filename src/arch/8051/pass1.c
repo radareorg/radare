@@ -31,7 +31,7 @@
 /* newlbl is used by longaddr, absaddr, and reladdr 
  * Keep track of next available label
  */
-static unsigned short newlbl = 0;
+//static unsigned short newlbl = 0;
 
 /* nextbyte: read a byte from memory
  *

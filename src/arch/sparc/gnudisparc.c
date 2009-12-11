@@ -33,7 +33,6 @@ static void hoho  (int status, bfd_vma memaddr, struct disassemble_info *info)
 static char *buf_global = NULL;
 static void print_address(bfd_vma address, struct disassemble_info *info)
 {
-	va_list ap;
 	char tmp[32];
 	if (buf_global == NULL)
 		return;
@@ -44,12 +43,12 @@ static int buf_fprintf(void *stream, const char *format, ...)
 {
 	int ret = 0;
 	va_list ap;
-	char *tmp , *tmp2;
+	char *tmp;
 	if (buf_global != NULL) {
 		va_start(ap, format);
-		tmp2 = alloca(strlen(format)+strlen(buf_global)+2);
-		sprintf(tmp2, "%s%s", buf_global, format);
-		ret = vsprintf(buf_global, tmp2, ap);
+		tmp = alloca(strlen(format)+strlen(buf_global)+2);
+		sprintf(tmp, "%s%s", buf_global, format);
+		ret = vsprintf(buf_global, tmp, ap);
 		va_end(ap);
 	}
 	return ret;

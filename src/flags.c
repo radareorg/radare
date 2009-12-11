@@ -152,7 +152,6 @@ void flag_rebase(const char *text)
 {
 	flag_t *f = flag_get_by_addr(config.seek);
 	if (f) {
-		ut64 base;
 		if (text[0]=='-')
 			f->offset -= get_math(text+1);
 		else f->offset += get_math(text);
@@ -710,8 +709,7 @@ void flag_space(const char *name)
 
 void flag_remove_at(ut64 addr)
 {
-	struct list_head *pos, *n;
-	
+	struct list_head *pos;
 	list_for_each(pos, &flags) {
 		flag_t *flag = (flag_t *)list_entry(pos, flag_t, list);
 		if (flag->offset == addr) {
@@ -722,7 +720,6 @@ void flag_remove_at(ut64 addr)
 			list_del(&(flag->list));
 			break;
 		}
-			
 	}
 }
 
@@ -1026,7 +1023,6 @@ void flags_visual_menu()
 {
 	char cmd[1024];
 	struct list_head *pos;
-#define MAX_FORMAT 2
 	int format = 0;
 	const char *ptr;
 	const char *fs = NULL;

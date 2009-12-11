@@ -398,7 +398,7 @@ int debug_status()
 
 static int is_alive(int pid)
 {
-	return kill(pid, 0)==0;
+	return kill (pid, 0)==0;
 }
 
 #define MAGIC_EXIT 0x33
@@ -908,7 +908,6 @@ int debug_dispatch_wait()
 				/* search if changed permissions at region */
 				//printf("CHANGE REGIONS: 0x%x\n", WS_SI(si_addr));
 				/* TODO: manage access to protected pages */
-				;
 				debug_msg_set("pid %d Segmentation fault!\n", ps.tid);
 				eprintf("Segmentation fault!\n");
 			} else {
@@ -939,7 +938,8 @@ int debug_dispatch_wait()
 					eprintf("CLONE HAS BEEN INVOKED\n");
 					break;
 				case 28:
-					eprintf("Child has generated a Segmentation fault.\n");
+					//eprintf("Child has generated a Segmentation fault.\n");
+					eprintf("=== Last debug op not performed because of event (console resize?)\n");
 					break;
 				default:
 					debug_msg_set("pid %d unknown signal received (%d)\n", ps.tid, WS_SI(si_signo));
@@ -947,8 +947,7 @@ int debug_dispatch_wait()
 				}
 			}
 		}
-	} else
-		eprintf("What?\n");
+	} else eprintf("What?\n");
 
 	return 0; /* XXX: should stop */
 }

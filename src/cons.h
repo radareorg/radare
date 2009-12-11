@@ -82,10 +82,15 @@ int cons_get_columns();
 int cons_palette_init(const unsigned char *pal);
 void cons_printf(const char *format, ...);
 void cons_gotoxy(int x, int y);
+void cons_grep(const char *str);
+int cons_grepbuf(char *buf, int len);
+void cons_grepbuf_end();
+int cons_set_buffer(const char *buf);
 extern const char *dl_prompt;
 int cons_get_arrow(int ch);
 void cons_clear00();
 void cons_any_key();
+void cons_flushit();
 int cons_html_print(const char *ptr);
 
 extern FILE *cons_stdin_fd;

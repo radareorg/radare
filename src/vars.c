@@ -369,7 +369,6 @@ int wdelta = (idx>5)?idx-5:0;
 void var_visual_menu()
 {
 	struct list_head *pos;
-#define MAX_FORMAT 2
 	const char *ptr;
 	char *fs = NULL;
 	char *fs2 = NULL;

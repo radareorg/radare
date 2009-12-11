@@ -131,6 +131,7 @@ int arch_msil_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop);
 int gnu_dismips_str(char *str, const u8 *inst, ut64 offset);
 int gnu_disarm_str(char *str, const u8 *inst, ut64 offset);
 int gnu_disparc_str(char *str, const u8 *inst, ut64 offset);
+int z80_udis (char *str, ut8 *bytes, int len, ut64 seek);
 
 struct aop_t *pas_aop(int arch, ut64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo);
 struct reflines_t *code_lines_init();

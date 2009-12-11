@@ -206,7 +206,6 @@ int section_overlaps(struct section_t *s)
 ut64 last_align = 0;
 ut64 section_align(ut64 addr, ut64 vaddr, ut64 paddr)
 {
-	int i = 0;
 	struct list_head *pos;
 	if (addr == last_align)
 		return last_align;

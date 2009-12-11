@@ -199,7 +199,7 @@ int radare_close()
 
 void radare_sync()
 {
-	ut64 base, phys;
+	ut64 base;
 	int limit = DEFAULT_BLOCK_SIZE;
 
 #if 0
@@ -1460,7 +1460,6 @@ void monitors_run()
 {
 	char file[1024];
 	char path[1024];
-	int i;
 	FILE *fd;
 	const char *ptr;
 	int tmp;
@@ -1930,7 +1929,6 @@ int radare_compare_hex(ut64 addr, unsigned char *f, unsigned char *d, int len)
 	int i, eq = 0;
 	char str0[256], str1[256], tmp[32];
 	int rowlen = 16;
-	int row = 0;
 
 	str0[0]='\0';
 	str1[0]='\0';
@@ -1941,12 +1939,6 @@ int radare_compare_hex(ut64 addr, unsigned char *f, unsigned char *d, int len)
 			str1[0]='\0';
 		}
 		if (f[i]!=d[i]) {
-#if 0
-			D cons_printf("0x%08llx (byte=%.2d)   %02x '%c'  ->  %02x '%c'\n",
-				config.seek+i, i+1,
-				f[i], (is_printable(f[i]))?f[i]:' ',
-				d[i], (is_printable(d[i]))?d[i]:' ');
-#endif
 			sprintf(tmp, "\x1b[7m%02x\x1b[0m", f[i]);
 			strcat(str0, tmp);
 			sprintf(tmp, "\x1b[7m%02x\x1b[0m", d[i]);

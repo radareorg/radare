@@ -96,5 +96,6 @@ crOBJ+=arch/m68k/code.o
 crOBJ+=arch/m68k/m68k_disasm.o
 
 # plugins and so
+CFLAGS+=-Wall
 
 crOBJ+=${RADARE_OBJ}

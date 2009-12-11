@@ -375,7 +375,7 @@ int radare_macro_break(const char *value)
 	macro_break_value = NULL;
 	_macro_break_value = 0LL;
 	_macro_break_value = (ut64)get_math(value);
-	if (value && *value) {
+	if (value && *value)
 		macro_break_value = &_macro_break_value;
-	} 
+	return 0;
 }

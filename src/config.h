@@ -12,6 +12,7 @@
 #include "rdb.h"
 #include "list.h"
 
+#define MAX_FORMAT 2
 #define VISUAL_PROMPT ":> "
 #define DEFAULT_BLOCK_SIZE 512
 
