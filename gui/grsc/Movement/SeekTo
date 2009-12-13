@@ -1,3 +1,4 @@
+#!/bin/sh
 eval `rsc EntryDialog "Seek to Offset" "Seek to Offset"`
 
 if [ -n "$VARIABLE" ]; then

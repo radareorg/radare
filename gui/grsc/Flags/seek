@@ -1,2 +1,3 @@
+#!/bin/sh
 echo ":f > /tmp/.radare_flags"
 echo ".!rsc SeekTo"

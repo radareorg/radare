@@ -1,5 +1,4 @@
+#!/bin/sh
 eval `rsc EntryDialog "Add Flag" "Give me a name for the new flag"`
 
-if [ -n "$VARIABLE" ]; then
-	echo ":f $VARIABLE"
-fi
+[ -n "$VARIABLE" ] && echo ":f $VARIABLE"

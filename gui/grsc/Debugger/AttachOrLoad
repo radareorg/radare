@@ -1,3 +1,4 @@
+#!/bin/sh
 eval `rsc EntryDialog "Attach or Load Program" "Target PID or file to debug?"`
 
 if [ -n "$VARIABLE" ]; then

@@ -1,5 +1,4 @@
+#!/bin/sh
 eval `rsc EntryDialog "Search string" "Search string"`
 
-if [ -n "$VARIABLE" ]; then
-	echo ":/ $VARIABLE"
-fi
+[ -n "$VARIABLE" ] && echo ":/ $VARIABLE"

@@ -1,5 +1,4 @@
+#!/bin/sh
 eval `rsc EntryDialog \"Add Breakpoint\" \"Breakpoint Adress\""`
 
-if [ -n "$VARIABLE" ] ; then
-	echo ":!break $VARIABLE"
-fi
+[ -n "$VARIABLE" ] && echo ":!break $VARIABLE"
