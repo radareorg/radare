@@ -5,7 +5,7 @@ import os.path
 import shutil
 import Options
 
-VERSION='1.4.3-hg'
+VERSION='1.5'
 APPNAME='radare'
 
 srcdir = '.'

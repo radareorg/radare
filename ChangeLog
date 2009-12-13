@@ -1,3 +1,659 @@
+=== 1.5 === 2009-12-13
+
+changeset:   1253:536e163ca733
+tag:         tip
+user:        pancake
+date:        Sun Dec 13 17:33:47 2009 +0100
+files:       gui/grsc/Debugger/AttachOrLoad gui/grsc/Debugger/Breakpoint gui/grsc/Flags/seek gui/grsc/Flags/set gui/grsc/Movement/SeekTo gui/grsc/Search/hex-pairs gui/grsc/Search/string
+description:
+* Shebang all grsc scripts as lintian says
+
+
+changeset:   1252:59fa18b1068f
+user:        pancake
+date:        Fri Dec 11 18:47:03 2009 +0100
+files:       src/arch/8051/pass1.c src/arch/8051/pass2.c src/arch/arm/code.c src/arch/ppc/gnudisppc.c src/arch/ppc/ppc_disasm.c src/arch/sparc/gnudisparc.c src/arch/x86/ollyasm/disasm.c src/binparse.c src/cmds.c src/code.h src/config.c src/config.h src/cons.c src/cons.h src/dbg/unix/debug.c src/dietline.c src/flags.c src/flags.h src/macros.c src/objects.mk src/pas.c src/plug/io/windbg.c src/plugin.c src/radare.c src/radare.h src/ranges.c src/rdb.c src/rtr.c src/search.c src/section.c src/utils.c src/utils.h src/vars.c src/visual.c
+description:
+* Some more random code cleanup with -Wall
+
+
+changeset:   1251:87579f8c5087
+user:        pancake
+date:        Thu Dec 10 11:06:39 2009 +0100
+files:       TODO src/Makefile.acr src/cmds.c src/config.c src/pas.c src/plug/hack/ruby.c src/plug/hack/scriptedit.c src/ranges.c src/undo.c src/utils.c src/utils.h src/visual.c
+description:
+* Fix '? eip > a' bug (drop spaces in flag checks)
+* Some code cleanup (-100LOC)
+* Fixes in scriptedit and ruby plugins
+* FIx declaration of UXX_MAX
+* Added VE command to edit notes on current binary
+
+
+changeset:   1250:8dbdd2cb5c7a
+user:        pancake
+date:        Wed Dec 09 23:35:05 2009 +0100
+files:       src/config.c src/cons.c src/flags.c
+description:
+* Add re/avpage to Ve menu
+  - Fix scrolling to bottom and display of disasm
+* Fix scrolling boundaries in Vt
+* Random code cleanup
+
+
+changeset:   1249:cfcd8cd6de22
+user:        a@localhost
+date:        Thu Dec 10 01:33:14 2009 -0500
+files:       gui/main.c src/dbg/arch/mips64.c src/dbg/dosdebug.c src/dbg/system.c
+description:
+* Fix warnings on linux/mips64
+* Fix build for 'old' vte
+
+
+changeset:   1248:a0d418ac7a65
+user:        pancake@flubox
+date:        Wed Dec 09 18:35:35 2009 +0100
+files:       INSTALL src/javasm/Makefile src/javasm/main.c src/rabin/javasm.c src/search.c
+description:
+* Reset hit_idx counter when launching new searchs (V[nN] working again)
+* Fix instructions for install in solaris
+* Fix parsing of CLASS files (long & double skip 2 items of the cp_idx)
+* Fix overflow for strings of 0xffff length
+
+
+changeset:   1247:70eb669e5cb3
+user:        pancake
+date:        Wed Dec 09 02:53:27 2009 +0100
+files:       src/cmds.c src/print.c
+description:
+* Oops. bring back the visual debugger (nullcmd)
+
+
+changeset:   1246:edac1d0d7cd6
+user:        pancake@aiserver
+date:        Tue Dec 08 17:38:17 2009 -0800
+files:       INSTALL src/arch/m68k/m68k_disasm.h src/config.c src/dbg/regs.h src/dbg/unix/debug.c src/radare.h src/rsc/pool/maps src/stripstr.c
+description:
+* Fix warnings from OpenSolaris
+  - Build instructions in INSTALL file
+* rsc maps does not uses 'column' if no such program exist
+* setup asm.os on sunos
+
+
+changeset:   1245:563178270848
+user:        pancake
+date:        Wed Dec 09 01:27:56 2009 +0100
+files:       libusbsniff/libfdsniff.c src/arch/arm/disarm.c src/arch/ppc/ppc_disasm.h src/cons.c src/dbg/arch/i386.c src/dietline.c src/plug/io/gdb.c src/plug/io/gdb.h src/plug/io/libgdbwrap/include/revm.h src/plugin.c src/rabin/javasm.c src/utils.c
+description:
+* Dewarnification for mingw32
+
+
+changeset:   1244:02105248d557
+user:        pancake
+date:        Wed Dec 09 01:00:15 2009 +0100
+files:       autogen.sh configure configure.acr src/Makefile.acr src/grava.c
+description:
+* Upgrade to acr 0.8
+* Bump revision to 1.5-hg
+* Fix a warning in grava.c
+
+
+changeset:   1243:49d4168729b6
+user:        pancake@localhost.localdomain
+date:        Tue Dec 08 17:47:00 2009 -0500
+files:       autogen.sh config.mk.acr configure configure.acr libusbsniff/libusbsniff.c src/Makefile.acr src/analyze.c src/arch/m68k/m68k_disasm.c src/arch/mips/code.c src/arch/mips/gnudismips.c src/arch/ppc/gnudisppc.c src/arch/sparc/gnudisparc.c src/code.c src/config.c src/config.h src/data.c src/dbg/arch/x86_64.c src/dbg/debug.c src/dbg/dump.c src/dbg/system.c src/environ.c src/flags.c src/io.c src/plug/hack/Makefile src/plug/hack/perl.c src/plug/io/gdbwrap.c src/plug/io/mmap.c src/plug/io/shm.c src/plugin.c src/print.c src/rabin/dietelf.c src/radare.c src/search.c src/stripstr.c src/utils.c src/utils.h src/visual.c vala/grava/Makefile
+description:
+* Huge dewarnification on x86-64 archlinux
+* Build lua only when lua.h and liblua is found
+
+
+changeset:   1242:b55faadb4a4a
+user:        pancake
+date:        Tue Dec 08 20:22:45 2009 +0100
+files:       config.mk.acr configure configure.acr global.h.acr gui/main.c gui/main.h gui/menubar.c gui/prefs.c src/Makefile.acr src/analyze.c src/arch/8051/code.c src/arch/arm/code.c src/arch/arm/gnu/arm-dis.c src/arch/arm/gnudisarm.c src/arch/csr/code.c src/arch/csr/dis.c src/arch/csr/dis.h src/arch/mips/code.c src/arch/mips/gnudismips.c src/arch/ppc/gnudisppc.c src/arch/ppc/ppc_disasm.h src/arch/x86/ollyasm/assembl.c src/arch/x86/ollyasm/disasm.c src/binparse.c src/cmds.c src/code.c src/code.h src/config.c src/cons.c src/dbg/arch/i386.c src/dbg/darwin/signal.c src/dbg/debug.c src/dbg/dump.c src/dbg/open.c src/dbg/os.h src/dbg/parser.c src/dbg/regs.c src/dbg/signal.c src/dbg/signals.h src/dbg/unix/signal.c src/dbg/unix/syscall.c src/dbg/win32/signal.c src/dietline.c src/environ.c src/flags.c src/flags.h src/grava.c src/hack.c src/pas.c src/plug/hack/Makefile src/plug/hack/gtk-hello.c src/plug/hack/gtk-prefs.c src/plug/hack/gtk-topbar.c src/plug/hack/lua.c src/plug/hack/perl.c src/plug/hack/python.c src/plug/hack/ruby.c src/plug/hack/scriptedit.c src/plug/io/gdb.c src/plug/io/gdb.h src/plug/io/gdbwrap.c src/plug/io/gdbx.c src/plugin.h src/print.c src/print.h src/project.c src/rabin/javasm.c src/radare.c src/radare.h src/ranges.c src/ranges.h src/rasm/rsc.c src/rsc/Makefile src/rtr.c src/search.c src/socket.c src/socket.h src/utils.c src/utils.h src/vars.c src/visual.c src/vm.c src/vm.h
+description:
+* Huge dewarnification.. some segfaults fixed
+
+
+changeset:   1241:68611cb47b3d
+user:        pancake@flubox
+date:        Fri Dec 04 17:10:04 2009 +0100
+files:       src/search.c
+description:
+* Fix /n and /n- commands (Nn keys in visual) Thanks jep!
+
+
+changeset:   1240:d762bacb4031
+user:        pancake@flubox
+date:        Thu Dec 03 13:39:06 2009 +0100
+files:       src/rabin/dietelf.c src/rabin/dietmach0.c src/rabin/rabin.c
+description:
+* Use awk instead of sed -r (do not use GNU extensions)
+* Clean up some warnings in rabin
+
+
+changeset:   1239:b6559ceac7df
+user:        nibble
+date:        Sat Nov 28 19:29:29 2009 +0100
+files:       src/radare.c src/rio.c src/section.c
+description:
+* Fix debugger
+* S= prints section name
+
+
+changeset:   1238:3d7e614016b1
+user:        nibble
+date:        Sat Nov 28 16:07:10 2009 +0100
+files:       src/cmds.c src/rabin/rabin.c src/rio.c
+description:
+* More work fixing rva&offset support
+* replace get_offset with get_math in S* (cmds.c)
+* Minor fixups in rabin
+
+
+changeset:   1237:389156a5bcc1
+user:        nibble
+date:        Fri Nov 27 19:42:01 2009 +0100
+files:       src/cmds.c src/rabin.c src/rabin/rabin.c src/section.c
+description:
+* pe rva is almost working
+* fixed flags to work with the rva patch
+* rabin
+  - same behaviour for symbols and sections with -@
+  - output S cmds with -Sr
+
+
+changeset:   1236:e15dc1942930
+user:        nibble
+date:        Thu Nov 26 18:41:29 2009 +0100
+files:       src/radiff/bindiff-ng/bindiff-ng
+description:
+* bindiff-ng
+  - Added -e 'scr.floodprot=false'
+  - Removed some false positives from output
+    (comparing opcodes instead of asm)
+
+
+changeset:   1235:6ade8932924b
+user:        pancake@localhost.localdomain
+date:        Thu Nov 26 17:12:13 2009 +0100
+files:       TODO src/analyze.c src/arch/x86/code.c src/cmds.c src/config.c src/radare.c src/socket.c
+description:
+* Some new code analysis algorithms
+  - Analysis options moved to the 'anal.' eval namespace
+  - anal.depth instead of cfg.analdepth
+    - Depth is now limitted to '3' (analysis/performance)
+  - anal.push is used to analyze PUSH opcodes referencing code
+    (depends on S command to have the correct information)
+    - This needs to be implemented in rabin and debugger backend
+  - anal.funhdr will search for function preludes (5589e5 on x86)
+    - and start analyzing code at every search match
+    - It's implemented inside the 'ap' command (analyze preludes)
+  - All those options are disabled by default. Feel free to setup
+    your ~/.radarerc
+
+
+changeset:   1234:662ebde48a59
+user:        nibble
+date:        Wed Nov 25 20:08:35 2009 +0100
+files:       src/rabin/rabin.c
+description:
+* Fixed bug related to padding in pe files
+
+
+changeset:   1233:8c91d8ac0ae0
+user:        nibble
+date:        Wed Nov 25 19:25:33 2009 +0100
+files:       src/rabin/aux.c src/rabin/aux.h src/rabin/dietelf.c src/rabin/dietelf_static.h src/rabin/dietelf_types.h src/rabin/dietpe.c src/rabin/dietpe_static.h src/rabin/dietpe_types.h src/rabin/rabin.c
+description:
+* Added -@ to rabin
+  Use rabin -{S,i,s}@<offset> to get the {section, import, symbol}
+  at the specified offset
+* Added section field to rabin -z
+
+
+changeset:   1232:f2059002541e
+parent:      1231:c5a39071fbc8
+parent:      1229:892efeb57e2a
+user:        pancake@flubox
+date:        Tue Nov 24 19:02:25 2009 +0100
+description:
+* Ugly merge
+
+
+changeset:   1231:c5a39071fbc8
+user:        pancake@flubox
+date:        Tue Nov 24 19:01:42 2009 +0100
+files:       src/code.c
+description:
+* Honour asm.flags. rasm -d is now happy
+
+
+changeset:   1230:43fdcdef927c
+parent:      1228:e3d44b8033d0
+user:        pancake@flubox
+date:        Tue Nov 24 18:54:22 2009 +0100
+files:       doc/xtra/c64cpu src/arch/z80/Makefile src/arch/z80/README src/arch/z80/code.c src/arch/z80/portab.h src/arch/z80/z80_disassembler.c src/cmds.c src/code.c src/code.h src/objects.mk
+description:
+* Added support for z80 disassembler
+
+
+changeset:   1229:892efeb57e2a
+user:        pancake@flubox
+date:        Tue Nov 24 17:08:37 2009 +0100
+files:       src/rabin/dietpe.c
+description:
+* Apply Nibble patch fixing PE issues reported by matalaz
+
+
+changeset:   1228:e3d44b8033d0
+user:        pancake@flubox
+date:        Tue Nov 24 16:14:20 2009 +0100
+files:       src/rabin/dietelf.c src/rabin/dietpe.c
+description:
+* Apply Nibble patch adding support for rabin -z on w32
+  - No mmap limitations
+
+
+changeset:   1227:005d99f8724e
+user:        pancake@flubox
+date:        Tue Nov 24 14:34:03 2009 +0100
+files:       src/rax.c
+description:
+* Fix invalid hexpair strings in rax
+
+
+changeset:   1226:f05f3bae3e36
+user:        pancake@flubox
+date:        Tue Nov 24 14:22:25 2009 +0100
+files:       src/binparse.c src/cmds.c src/search.c src/utils.c
+description:
+* Fix division by zero bug in w32
+* Do not allow 1 nibble hexpair strings
+
+
+changeset:   1225:3edadf916c9a
+user:        pancake@flubox
+date:        Tue Nov 24 12:27:48 2009 +0100
+files:       src/dbg/bp.c src/dbg/debug.c
+description:
+* Cleaner output for some debugger command output
+* Fix build
+
+
+changeset:   1224:d3ed7de2a5db
+user:        pancake@localhost.localdomain
+date:        Tue Nov 24 11:22:30 2009 +0100
+files:       src/analyze.c src/arch/arm/disarm.c src/cmds.c src/code.c src/cons.c src/data.c src/dbg/arch/i386.c src/flags.c src/flags.h src/grava.c src/pas.c src/print.c src/rdb.c src/section.c src/vars.c src/visual.c vala/grava/edge.vala vala/grava/renderer.vala vala/grava/widget.vala vala/widget.c
+description:
+* Make string_flag_offset be grep-friendly
+  - fd section gives the name of the flag matching 'section'
+    before the current seek
+* Use keys '[' and ']' to rotate in graphs
+
+
+changeset:   1223:d75d6cd8ace7
+user:        pancake@localhost.localdomain
+date:        Tue Nov 24 00:03:56 2009 +0100
+files:       src/arch/8051/code.c src/cmds.c src/dbg/debug.h src/dbg/procs.c src/dbg/system.c src/dbg/unix/debug.c src/dbg/unix/procs.c src/dbg/unix/procs.h src/visual.c
+description:
+* Fix 8051 disassembly when an instruction is invalid
+* Correctly define the block size for the 'p' command
+  - Now the disassembly lines are ok for pd 20 @ $$:1024
+* Add !pid* and !pid? debugger commands
+  - Show pids as a single line. useful for:
+    (backtrace !pid $$&&!bt)
+    .(backtrace $$) @@= `!pid*`
+* Remove unnecessary procs.h
+* Disable '`' pipes in visual mode
+
+
+changeset:   1222:d716916026a7
+user:        pancake@localhost.localdomain
+date:        Mon Nov 23 22:44:21 2009 +0100
+files:       src/arch/8051/Makefile src/arch/8051/main.c src/visual.c src/wscript_build
+description:
+* Fix 8051 build for waf
+* Do not allow to use pipes (>|) in visual mode
+  - Fixes interface deadlock
+
+
+changeset:   1221:061145d2fadb
+user:        pancake@localhost.localdomain
+date:        Mon Nov 23 22:31:06 2009 +0100
+files:       Makefile.acr gui/grsc/Debugger/SetRegister gui/topbar.c man/bindiff.1 man/rabin.1 man/radiff.1 man/rsc-bindiff.1 man/rsc.1 src/dbg/unix/debug.c src/rabin/rabin.c src/rsc/Makefile src/rsc/gtk/SetRegister.c src/rsc/gtk/SetRegister.gtkaml src/visual.c
+description:
+* Fix SetRegister grsc script and program
+* Update various manpages (radiff, rabin ...)
+* Add rsc-bindiff manpage
+* Add 8051 as supported arch in gradare
+
+
+changeset:   1220:ea6bd537678b
+user:        pancake@flubox
+date:        Mon Nov 23 18:59:57 2009 +0100
+files:       src/binparse.c
+description:
+* Fix segfault of search in w32
+
+
+changeset:   1219:218d8882070b
+user:        pancake@flubox
+date:        Mon Nov 23 14:54:24 2009 +0100
+files:       src/radare.c src/rsc/pool/monitor
+description:
+* Fix 'rsc monitor' from core
+* Show MONITORSESSION in rsc monitor help
+
+
+changeset:   1218:6d9812271a77
+user:        pancake@flubox
+date:        Mon Nov 23 14:25:21 2009 +0100
+files:       src/arch/8051/code.c src/arch/8051/global.c src/code.c
+description:
+* Fix the 8051 disassembler
+  - length of instruction is now ok
+  - do not emit newlines on some opcodes
+
+
+changeset:   1217:b7094806d690
+user:        pancake@localhost.localdomain
+date:        Mon Nov 23 14:00:16 2009 +0100
+files:       src/arch/8051/Makefile src/arch/8051/README src/arch/8051/code.c src/arch/8051/distypes.h src/arch/8051/global.c src/arch/8051/global.h src/arch/8051/main.c src/arch/8051/pass1.c src/arch/8051/pass2.c src/arch/java/code.c src/code.c src/code.h src/objects.mk src/types.h
+description:
+* Initial import of the 8051 code analyzer and disassembler
+
+
+changeset:   1216:b574a5b53fec
+user:        nibble
+date:        Tue Nov 17 13:50:43 2009 +0100
+files:       src/search.c
+description:
+* Fixed bug related to search flag names
+
+
+changeset:   1215:baae58cbd722
+user:        nibble
+date:        Mon Nov 16 14:08:16 2009 +0100
+files:       src/rabin/dietpe.c
+description:
+* Fixed bug resolving imports with PE bins
+
+
+changeset:   1214:0290ff471134
+user:        pancake@localhost.localdomain
+date:        Tue Nov 10 11:26:31 2009 +0100
+files:       Makefile.acr
+description:
+* Fix upload URIs
+
+
+changeset:   1213:0d303baf09d4
+user:        pancake@localhost.localdomain
+date:        Tue Nov 10 11:23:17 2009 +0100
+files:       gui/execute.c gui/main.c gui/menubar.c gui/topbar.c
+description:
+* Use PREFIX instead of harcoded /usr/bin/rsc path in gui/main
+  - Various syntax fixes in gui/
+  - Add menu entries to change font size
+  - Automatically setup the arch combobox depending on host arch
+  - Always run in Visual mode (not only debugger)
+  - Start the view in disassembly mode.
+
+
+changeset:   1212:4dab8dc644ad
+user:        pancake@localhost.localdomain
+date:        Fri Nov 06 19:30:46 2009 +0100
+files:       TODO src/socket.c
+description:
+* Fix socket_printf ()
+
+
+changeset:   1211:b7c28c3b162c
+user:        pancake@flubox
+date:        Thu Nov 05 13:10:01 2009 +0100
+files:       src/rsc/gtk/EntryDialog.c src/rsc/gtk/EntryDialog.gtkaml
+description:
+* Oops. Missing whitepsaces
+
+
+changeset:   1210:24a1412f8b5d
+user:        pancake@flubox
+date:        Thu Nov 05 12:36:21 2009 +0100
+files:       src/rsc/gtk/EntryDialog.c src/rsc/gtk/EntryDialog.gtkaml
+description:
+* Apply a fix in EntryDialog from sre
+
+
+changeset:   1209:8acf25c8b155
+user:        pancake@localhost.localdomain
+date:        Thu Oct 08 21:49:59 2009 +0200
+files:       libusbsniff/Makefile libusbsniff/libioctlsniff.c libusbsniff/libusbsniff.c
+description:
+* Embed the libusb necessary structs to build libusbsniff
+  without libusb. Fixes warnings on some libusb variants (debian?)
+* Added libioctlsniff .. actually only to capture raw cgc cdrom
+  packets on linux
+
+
+changeset:   1208:7bf0afb01231
+user:        pancake@localhost.localdomain
+date:        Tue Sep 29 11:51:06 2009 +0200
+files:       src/arch/x86/code.c
+description:
+* More on 0xff byte code analysis for x86
+
+
+changeset:   1207:ba57664a7990
+user:        pancake@localhost.localdomain
+date:        Tue Sep 29 10:21:51 2009 +0200
+files:       src/plug/hack/Makefile src/plug/hack/mkruby.rb src/plug/hack/ruby.c
+description:
+* Fix build of ruby lang plugin on ruby 1.9.x
+* Do not build gtk+ plugins when HAVE_GUI=0
+
+
+changeset:   1206:ffe1ca5d78fd
+user:        pancake@localhost.localdomain
+date:        Tue Sep 29 02:44:12 2009 -0400
+files:       src/rio.c src/section.h
+description:
+* Fix sign bit expansion in section_align because of a
+  missing signature which was problematic for 64bit seeks
+
+
+changeset:   1205:565d8525269c
+user:        pancake@localhost.localdomain
+date:        Mon Sep 28 17:45:11 2009 -0400
+files:       src/utils.c
+description:
+* Fix segfault on initialization
+
+
+changeset:   1204:b09f40e912d7
+user:        pancake@localhost.localdomain
+date:        Mon Sep 28 21:55:31 2009 +0200
+files:       configure configure.acr gui/grsc/Debugger/AttachOrLoad gui/grsc/Debugger/Breakpoint gui/grsc/Debugger/SetRegister gui/grsc/Flags/seek gui/grsc/Flags/set gui/grsc/Movement/SeekTo gui/grsc/Search/hex-pairs gui/grsc/Search/string src/analyze.c src/dbg/darwin/debug.c src/ira/ira-decompile.pl src/rsc/Makefile src/rsc/gtk/Display.c src/rsc/gtk/Display.gtkaml src/rsc/gtk/EntryDialog.c src/rsc/gtk/EntryDialog.gtkaml src/rsc/gtk/Makefile src/rsc/gtk/SeekTo.c src/rsc/gtk/SeekTo.gtkaml src/rsc/gtk/SetRegister.c src/rsc/gtk/SetRegister.gtkaml src/rsc/pool/Display
+description:
+* Initial import of the Sebastian Reichel (sre)
+  reimplementation of the gtkdialog dependency
+  in gtkaml for rsc and grsc -- Thanks!
+  - Do not check for gtkdialog in configure
+* Needs some testing. gradare seems a broken
+* Add missing ira-decompile.pl
+
+
+changeset:   1203:3febf01ccf76
+user:        pancake@flubox
+date:        Mon Sep 28 13:43:48 2009 +0200
+files:       src/binparse.c src/cmds.c src/radare.h src/rasm/main.c src/search.c
+description:
+* Implement case insensitive search with /i command
+  - Thanks sha0 for the idea :)
+* Fix rasm build O:)
+
+
+changeset:   1202:b154f1719ebf
+user:        pancake@flubox
+date:        Mon Sep 28 13:28:59 2009 +0200
+files:       src/dbg/darwin/debug.c src/rasm/main.c src/rasm/rasm.c
+description:
+* Fix page mapping lists on osx-32 bits
+  - Test(1) to fix the write err in arm-osx
+* Use 'olly' on rasm-w32 by default
+  - Added RASM_ARCH environment to rasm to choose default arch
+
+
+changeset:   1201:f605a3a8796c
+user:        pancake@flubox
+date:        Mon Sep 28 13:16:06 2009 +0200
+files:       src/config.c src/dietline.c src/plug/io/libgdbwrap/include/revm.h src/plug/io/windbg.c src/readline.c src/utils.c src/visual.c
+description:
+* Fix w32 build
+
+
+changeset:   1200:c42069730bd4
+user:        pancake@flubox
+date:        Tue Sep 22 17:11:43 2009 +0200
+files:       src/plug/io/wscript_build
+description:
+* Fix waf build
+
+
+changeset:   1199:2d7da03f340a
+user:        pancake@localhost.localdomain
+date:        Wed Sep 16 00:44:46 2009 +0200
+files:       src/objects.mk src/plug/io/windbg.c src/plug/io/winedbg.c src/plugin.c src/plugin.h
+description:
+* Initial draft implementation of windbg:// IO plugin
+  - Windbg kernel serial debugger
+
+
+changeset:   1198:c2053c21f152
+user:        pancake@localhost.localdomain
+date:        Tue Sep 15 21:32:15 2009 +0200
+files:       TODO src/plug/io/socket.c src/rsc/pool/mmx2ls2f.pl src/utils.c
+description:
+* Added mmx2ls2f rsc script to convert MMX code into Loongson2F one
+* Use stat in r_file_exists() instead of buggy open (portability problems?)
+* Added support for unix socket files to io/socket.c plugin
+  - radare socket://./socket.file
+
+
+changeset:   1197:c35dd1cf9b93
+user:        pancake@localhost.localdomain
+date:        Wed Sep 02 08:56:09 2009 +0000
+files:       src/config.c src/cons.c src/cons.h src/radiff/main.c
+description:
+* Rename scr.interactive into scr.floodprot
+  - Show proper warning when screen is being flooded
+* Added radiff -x using ired + gnu diff for diffing
+
+
+changeset:   1196:77b8d9817351
+user:        pancake@localhost.localdomain
+date:        Tue Sep 01 23:48:54 2009 +0000
+files:       src/rabin/rabin.c
+description:
+* Add -vv in the help message of rabin
+* Nice output by default (-v is a bit verboser
+  -vv is the nice for parsing)
+  - The order has been shifted to be cleaner
+
+
+changeset:   1195:67d495567575
+user:        pancake@localhost.localdomain
+date:        Tue Sep 01 10:01:44 2009 +0000
+files:       TODO src/cmds.c src/rsc/pool/bindiff src/vars.c
+description:
+* Added aC and aCf commands to list calls using code analysis
+* Some fixups and add warning for size in the bindiff (gnudiff)
+
+
+changeset:   1194:d64806dd5a53
+user:        pancake@localhost.localdomain
+date:        Mon Aug 31 23:33:23 2009 +0000
+files:       TODO src/cmds.c src/config.c src/data.c src/data.h src/dbg/system.c src/dbg/unix/debug.c src/flags.c src/vars.c src/visual.c
+description:
+* Valid command: 'f-flag' (previously a space was mandatory)
+* Added 'dbg.framereg' to specify the arch-specific stack frame register (EBP on x86)
+* Visual command (V) now accepts extra chars to be executed as input keys
+  - Vv is the visual mode for code analysis
+  - Implements a very basic interface for managing functions, xrefs, variables
+  - Under development, ideas are welcome
+  - Very ugly and spaguetti code :)
+* Documentate !regio and get better help for !reg command
+* Fix the function boundary identification, used to identify the owner function
+  for a variable registration
+* Show variable value also in hexadecimal (not only dec)
+
+
+changeset:   1193:a132b62ef254
+parent:      1192:e7c613d9509a
+parent:      1191:0aaadd42bff7
+user:        pancake <@youterm.com>
+date:        Thu Aug 20 12:35:49 2009 +0200
+description:
+* Oops merge
+
+
+changeset:   1192:e7c613d9509a
+parent:      1187:c24150ccc941
+user:        pancake <@youterm.com>
+date:        Thu Aug 20 12:34:59 2009 +0200
+files:       src/print.c src/rsc/pool/move
+description:
+* Apply graz's patch for negative olen in data_print()
+* Fix bug reported by hex in 'rsc move'
+  - Now its working on filenames with spaces
+
+
+changeset:   1191:0aaadd42bff7
+user:        pancake@localhost.localdomain
+date:        Sat Aug 01 20:59:17 2009 +0000
+files:       TODO src/dbg/debug.c src/rsc/pool/adict src/rsc/pool/bindiff src/utils.c
+description:
+* Fix build of clearenv() on BSD systems
+* Documentate 'movzx' into rsc adict
+* Fail rsc bindiff if cannot read any of the target files
+
+
+changeset:   1190:8a6831c3ae0c
+user:        pancake@localhost.localdomain
+date:        Wed Jul 29 12:14:07 2009 +0000
+files:       src/arch/x86/udis86/syn-att.c src/arch/x86/udis86/syn-intel.c src/arch/x86/udis86/syn-pseudo.c
+description:
+* Quick and dirty hack to fix >32bit jimm addresses on 32 bit x86 disasm
+  - Needs a better fix for udis86 to not extend the sign bit
+
+
+changeset:   1189:570e083d8821
+user:        pancake@localhost.localdomain
+date:        Wed Jul 29 11:58:06 2009 +0000
+files:       src/code.c
+description:
+* Display code xrefs in disassembly as well
+  - asm.xrefsto is not handled (regression?) it needs a review
+
+
+changeset:   1188:83768dd5a020
+user:        pancake@localhost.localdomain
+date:        Tue Jul 28 19:23:55 2009 +0000
+files:       configure configure.acr src/plug/hack/perl.c wscript
+description:
+* Bump revision number to 1.4.3-hg
+* Fix waf install (ruby, lua, perl, python APIs has been moved)
+* Avoid perl plugin exits when failing
+  - Display human friendly error message when typing wrong perl expressions
+
+
+changeset:   1187:c24150ccc941
+user:        pancake <@youterm.com>
+date:        Fri Jul 24 15:59:37 2009 +0200
+files:       ChangeLog configure configure.acr
+description:
+* Release 1.4.2
+  - Update changelog and bump revision
+
 === 1.4.2 === 2009-07-24
 
 changeset:   1186:e1e2c70177f2
