@@ -6,6 +6,7 @@
 
 ===========================================================
 
+* python.so -> python26.so ...
 * mark jumps that evaluate to true
 * 'ag' window does not works to get command output :???
 * vm.eip (vm in static doesnt works well.. check and fix :)

@@ -39,19 +39,20 @@ int winedbg_handle_open(const char *file)
 
 static void winedbg_wait_until_prompt(int o)
 {
-	unsigned char buf;
-	int off = 0;
-
-	while(1) {
-		read(config.fd, &buf, 1);
-		if (o) write(2, &buf, 1);
-		switch(off) {
-		case 0: if (buf == '-') off =1; break;
-		case 1: if (buf == 'd') off =2; break;
-		case 2: if (buf == 'b') off =3; break;
-		case 3: if (buf == 'g') off =4; break;
-		case 4: if (buf == '>') return; else off = 0; break;
+	unsigned i=0,j=0,m=0;
+	char pattern[]="Wine-dbg>";
+	const size_t psize=sizeof(pattern)-1;
+	char buff[psize];
+	while(i!=psize){
+		if(j==m){
+			unsigned count=psize-i;
+			j=0;
+			m=(count<psize)?count:psize;
+			read(config.fd, buff, m);
+			if (o) write(2, &buff, m);
 		}
+		j%=psize;
+		i=(pattern[i]!=buff[j++])?0:i+1;
 	}
 }
 
