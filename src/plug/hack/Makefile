@@ -45,9 +45,9 @@ scriptedit.${SO}:
 	-${CC} `pkg-config gtk+-2.0 --cflags --libs` scriptedit.c -I ../.. -fPIC -shared -g -o scriptedit.${SO}
 endif
 
-python.${SO}:
+python25.${SO}:
 ifeq ($(HAVE_LIB_PYTHON2_5),1)
-	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python.${SO}
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY_CFLAGS} ${PY_LIBS} -o python25.${SO}
 endif
 
 python26.${SO}:
