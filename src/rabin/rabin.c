@@ -1489,6 +1489,7 @@ int rabin_identify_header()
 		filetype = FILETYPE_MACHO;
 	} else if ( !memcmp(buf, "\xFE\xED\xFA\xCE", 4) ) {
 		filetype = FILETYPE_MACHO;
+		dm_map_file(file, fd);
 		/* ENDIAN = BIG */
 		if (rad)
 			printf("e cfg.bigendian = big\n");
@@ -1849,7 +1850,6 @@ int main(int argc, char **argv, char **envp)
 		}
 	} else return 0;
 
-	dm_map_file(file, fd);
 	rabin_identify_header();
 
 	if (op != NULL && action&ACTION_OPERATE)
@@ -1884,7 +1884,6 @@ int main(int argc, char **argv, char **envp)
 	if (action&ACTION_OTHERS)
 		rabin_show_others(file);
 #endif
-
 	close(fd);
 
 	return 0;
