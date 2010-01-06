@@ -1170,7 +1170,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
                         if (((i+1)%inc) && i+1<len) cons_printf(", ");
                 }
 		cons_newline();
-                cons_printf(".equ %s_len, %d", str, len); cons_newline();
+                cons_printf(".equ %s_len, %d", cstr, len); cons_newline();
                 break;
 	case FMT_CSTR:
 		inc = config_get_i("scr.bytewidth");
