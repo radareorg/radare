@@ -39,20 +39,19 @@ int winedbg_handle_open(const char *file)
 
 static void winedbg_wait_until_prompt(int o)
 {
-	unsigned i=0,j=0,m=0;
-	char pattern[]="Wine-dbg>";
-	const size_t psize=sizeof(pattern)-1;
-	char buff[psize];
-	while(i!=psize){
-		if(j==m){
-			unsigned count=psize-i;
-			j=0;
-			m=(count<psize)?count:psize;
-			read(config.fd, buff, m);
-			if (o) write(2, &buff, m);
+	unsigned char buf;
+	int off = 0;
+
+	while(1) {
+		read(config.fd, &buf, 1);
+		if (o) write(2, &buf, 1);
+		switch(off) {
+		case 0: if (buf == '-') off =1; break;
+		case 1: if (buf == 'd') off =2; break;
+		case 2: if (buf == 'b') off =3; break;
+		case 3: if (buf == 'g') off =4; break;
+		case 4: if (buf == '>') return; else off = 0; break;
 		}
-		j%=psize;
-		i=(pattern[i]!=buff[j++])?0:i+1;
 	}
 }
 
@@ -101,6 +100,8 @@ int winedbg_open(const char *pathname, int flags, mode_t mode)
 	srand(getpid());
 	port = 9000+rand()%555;
 
+	// XXX hack..to avoid slow open
+	config_set("file.analyze", "false");
 	config.debug = 1;
 	if (!fork()) {
 		system("pkill winedbg"); // XXX
@@ -150,8 +151,8 @@ int winedbg_system(const char *cmd)
 		" !cont            continue program execution\n"
 		" !bp <addr>       set breakpoint at address\n"
 		" !reg[*]          show or flag registers\n"
-		" !!cmd            execute a winedbg command\n"
-		" !!help           winedbg help\n");
+		" !=cmd            execute a winedbg command\n"
+		" !=help           winedbg help\n");
 	} else
 	if (!memcmp(cmd, "bp ",3 )) {
 		char buf[1024];
@@ -218,7 +219,7 @@ int winedbg_system(const char *cmd)
 		tmp[0]='\0';
 		socket_fgets(config.fd, tmp, 128);
 		sscanf(tmp, " ESI:%08x EDI:%08x", &esi, &edi);
-		if (cmd[3]=='*') {
+		if (strchr (cmd, '*')) {
 			cons_printf("f eip @ 0x%08x\n", eip);
 			cons_printf("f esp @ 0x%08x\n", esp);
 			cons_printf("f ebp @ 0x%08x\n", ebp);

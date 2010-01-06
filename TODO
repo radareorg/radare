@@ -6,6 +6,9 @@
 
 ===========================================================
 
+* Remove tm dependency for winedbg backend
+  - or just check it and warn the user
+  - implement .!reg* and so
 * mark jumps that evaluate to true
 * 'ag' window does not works to get command output :???
 * vm.eip (vm in static doesnt works well.. check and fix :)
