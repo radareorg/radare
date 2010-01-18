@@ -23,6 +23,7 @@
 #include "../../code.h"
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 {
@@ -30,6 +31,7 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 	int ilen, i;
 	int type;
 	char str[128];
+//	assert(bytes);
 
 	if (aop == NULL)
 		return -1;
@@ -38,7 +40,7 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 	aop->type = AOP_TYPE_UNK;
 
 	ptr = dis51_inst1 (bytes, 0, &type);
-	if (ptr == -1) {
+	if ((ptr == -1)&&(bytes[0]!=0x73)&&((bytes[0] & 0xef)!=0x22)) {
 		eprintf ("Invalid instruction %02x %02x\n",
 			bytes[0], bytes[1]);
 		aop->type = AOP_TYPE_TRAP;
@@ -49,7 +51,7 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 	switch (type) {
 	case 'j':
 		aop->type = AOP_TYPE_JMP;
-		aop->jump = ptr;
+		aop->jump = ilen + addr + ptr;
 		aop->eob = 1;
 		break;
 	case 'c':
@@ -58,7 +60,7 @@ int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 		break;
 	case 'b':
 		aop->type = AOP_TYPE_CJMP;
-		aop->jump = ptr;
+		aop->jump = ilen + addr + ptr;
 		aop->fail = ilen + addr;
 		aop->eob = 1;
 		break;
