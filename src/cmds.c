@@ -2111,6 +2111,9 @@ CMD_DECL(write)
 		case '4':
 			ret = radare_write_op(input+3, input[1]);
 			break;
+		case 'n':
+			ret = radare_write_op ("ff", 'x');
+			break;
 		case '\0':
 		case '?':
 		default:
@@ -2122,6 +2125,7 @@ CMD_DECL(write)
 			"  woa  addition            +=\n"
 			"  wos  substraction        -=\n"
 			"  wom  multiply            *=\n"
+			"  won  negate all bits (same as wox ff)\n"
 			"  wod  divide              /=\n"
 			"  wox  xor                 ^=\n"
 			"  woo  or                  |=\n"
