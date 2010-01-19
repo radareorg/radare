@@ -860,10 +860,13 @@ int debug_info(char *arg)
 	int fd;
 	char buf[4096];
 
+#if 0
 	if (strchr(arg,'*')) {
 		cons_printf("f entry @ 0x%08x\n", ps.entrypoint);
 		//cons_printf("f bep @ %s\n", config_get("dbg.bep"));
 	} else {
+#endif 
+	if (!strchr(arg, '*')) {
 		cons_printf(" filename    %s\n", strget(ps.filename));
 
 		cons_printf(" pid         %d\n", ps.pid);
