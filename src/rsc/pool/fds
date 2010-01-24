@@ -5,13 +5,18 @@ PID=$1
 if [ -z "${PID}" ]; then
 	echo "Usage: rsc fds [pid]"
 	echo " list filedescriptors of a pid"
+	exit 1
 fi
 
 lsof -h > /dev/null 2>&1
 if [ $? = 0 ]; then
 	lsof -p $PID
 else
-	fstat -h > /dev/null 2>&1
+	if [ "`uname`" = "FreeBSD" ]; then
+		fstat > /dev/null 2>&1
+	else
+		fstat -h > /dev/null 2>&1
+	fi
 	if [ $? = 0 ]; then
 		fstat -p $PID
 	else
