@@ -4,18 +4,19 @@ Installation notes
 
 radare supports two kind of build systems: ACR and WAF
 
-The WAF build system is supossed to replace the ACR one. But currently both
-systems are supported.
-
 ACR is basically a minimalistic replacement of autotools written in shellscript.
 You can get more information about it in:
 
     http://nopcode.org/wk.php/Acr
+  or:
+    hg clone http://hg.youterm.com/acr
 
 WAF is a modern work-in-progress python-based build system. Currently both systems are
 known to work on most systems, but there are some issues for ACR on Windows, OpenSolaris,
 and other proprietary systems. But it should properly work on all Free *nix systems like
 GNU/Linux, NetBSD, OpenBSD, FreeBSD on 32/64 bits.
+
+I recommend
 
 If you experience any problem building radare. Please ping me to pancake<nopcode.org>
 
