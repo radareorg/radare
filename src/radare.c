@@ -2156,7 +2156,9 @@ int pipe_stdout_to_tmp_file(char *tmpfile, const char *cmd)
 	/* WORKS BUT IT IS UGLY */
 	int fd = make_tmp_file(tmpfile);
 	int std;
+int flood = cons_floodprot;
 int fus = cons_flushable;
+cons_floodprot = 0;
 
 	cons_reset();
 	//cons_flush();
@@ -2189,6 +2191,7 @@ cons_render();
 	}
 
 cons_flushable = fus;
+cons_floodprot = flood;
 	return 1;
 }
 

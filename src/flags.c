@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -469,12 +469,15 @@ const char *flag_name_by_offset(ut64 offset)
  * idx =  0 : just return the first one found
  * idx =  1 : continue searching for flag after the first one
  */
+// XXX: *buf can be easily overflowed
+#define FLAG_MAXCOUNT 10
 int string_flag_offset(const char *match, char *buf, ut64 seek, int idx)
 {
 	int delta;
 	flag_t *ref = NULL;
 	struct list_head *pos;
 	int found = 0;
+	int count = 0;
 	char buf2[256];
 
 	buf[0]='\0';
@@ -484,10 +487,12 @@ int string_flag_offset(const char *match, char *buf, ut64 seek, int idx)
 		if (config.interrupted) break;
 		if (flag->offset == seek || flag->offset == seek+config.vaddr) {
 			found = 1;
+			if (++count > FLAG_MAXCOUNT)
+				break;
 			if (idx != -2 && idx<1) {
 				if (buf[0])
 					strcat(buf, ",");
-				strcat(buf, flag->name);
+				strcat(buf, flag->name); // slow as shit
 			} else {
 				if (match && *match) {
 					if (strstr(flag->name, match))

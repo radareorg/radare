@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009
+ * Copyright (C) 2008, 2009, 2010
  *       pancake <@youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -1142,8 +1142,7 @@ void cons_render()
 {
 	FILE *fd;
 	char buf[1024];
-	int i,j;
-	int lines_counter = 0;
+	int i, j, lines_counter = 0;
 
 	if (cons_noflush)
 		return;
@@ -1152,7 +1151,7 @@ void cons_render()
 		cons_buffer_len = strlen(cons_buffer);
 		if (cons_buffer && (cons_buffer_len > CONS_MAX_USER)) {
 			eprintf("NOTE: Use 'e scr.floodprot=false' to disable this message\n");
-			if (yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)== 0) {
+			if (!yesno('n', "Do you want to print %d bytes? (y/N)", cons_buffer_len)) {
 				cons_reset();
 				return;
 			}

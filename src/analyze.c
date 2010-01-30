@@ -330,7 +330,7 @@ int code_analyze_r_nosplit(struct program_t *prg, ut64 seek, int depth)
 	unsigned char *ptr = (unsigned char *)&buf;
 	// TODO: make those vars global.. its slow to have config_* functions in a recursive fun
 	int callblocks = (int)config_get_i("graph.callblocks");
-	int pushblocks = (int)config_get_i("anal.push");
+	//int pushblocks = (int)config_get_i("anal.push");
 	//int jmpblocks = (int) config_get_i("graph.jmpblocks");
 	int refblocks = (int)config_get_i("graph.refblocks");
 
@@ -707,11 +707,11 @@ int analyze_var_get(int type)
 	return ctr;
 }
 
-int analyze_progress(int _o, int _x, int _p, int _v)
+void analyze_progress(int _o, int _x, int _p, int _v)
 {
 	char buf[80];
 	int i, j = 0;
-	static int refresh = 0;
+	//static int refresh = 0;
 	static int o=0,x=0,p=0,v=0;
 	static int ch = '/';
 	static int lastlen = 0;
@@ -749,10 +749,10 @@ int analyze_function(ut64 from, int recursive, int report)
 	struct block_t *b0;
 	struct program_t *prg;
 	int ret;
-	char buf[1024];
-	static int interrupted = 0;
+	char buf[4096];
+	//static int interrupted = 0;
 	/*--*/
-	u8 *bytes;
+	ut8 *bytes;
 	//ut64 from = config.vaddr + config.seek;
 	ut64 seek = from; // to place comments
 	ut64 end  = 0;
@@ -766,6 +766,7 @@ int analyze_function(ut64 from, int recursive, int report)
 	int framesize = 0;
 	int nblocks = 0;
 	char tmpstr[16], fszstr[256];
+ut64 addr= seek;
 
 	if (recursive <0)
 		return -1;
@@ -863,7 +864,7 @@ int analyze_function(ut64 from, int recursive, int report)
 
 	for(;seek < to; seek+=inc) {
 		ut64 delta = seek+config.vaddr-from;
-		if (delta > len) {
+		if (delta >= len) {
 			//eprintf("analyze_function: oob %lld > %lld\n", delta, len);
 			break;
 		}
@@ -874,7 +875,7 @@ int analyze_function(ut64 from, int recursive, int report)
 		}
 		switch(aop.type) {
 		case AOP_TYPE_PUSH:
-			analyze_function(aop.ref-config.vaddr, --recursive, report);
+			analyze_function(aop.ref-config.vaddr, recursive-1, report);
 			break;
 		case AOP_TYPE_CALL:
 			switch(report) {
@@ -887,7 +888,7 @@ int analyze_function(ut64 from, int recursive, int report)
 				// if resolved as sym_ add its call
 				cons_printf("Cx 0x%08llx @ 0x%08llx ; %s\n", aop.jump, seek+config.vaddr, buf);
 			}
-			analyze_function(aop.jump-config.vaddr, --recursive, report);
+			analyze_function(aop.jump-config.vaddr, recursive-1, report);
 			ncalls++;
 			break;
 		case AOP_TYPE_SWI:
@@ -925,7 +926,7 @@ int analyze_function(ut64 from, int recursive, int report)
 		switch(aop.stackop) {
 		case AOP_STACK_LOCAL_SET:
 			if (report == 2) {
-				sprintf(buf, "CC -* @ 0x%08llx\n", ref, seek);
+				sprintf(buf, "CC -* @ 0x%08llx\n", seek);
 				cons_strcat(buf);
 			} else
 			if (!report) {
@@ -1024,12 +1025,12 @@ int analyze_function(ut64 from, int recursive, int report)
 			case AOP_TYPE_JMP: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
 				//analyze_function(1);
-				analyze_function(seek-config.vaddr, --recursive, report);
+				analyze_function(seek-config.vaddr, recursive-1, report);
 				break;
 	#endif
 			case AOP_TYPE_CALL: // considered as new function
 				radare_seek(aop.jump, SEEK_SET);
-				analyze_function(seek-config.vaddr, --recursive, report);
+				analyze_function(seek-config.vaddr, recursive-1, report);
 				break;
 			}
 		}
