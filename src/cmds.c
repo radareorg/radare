@@ -225,7 +225,7 @@ CMD_DECL(analyze)
 			" at+ [addr] [times] ; add trace for address N times\n"
 			" at [addr]          ; show trace info at address\n"
 			" att [tag]          ; select trace tag (no arg unsets)\n"
-			" at%%                ; TODO\n"
+			" at%                ; TODO\n"
 			" atr                ; show traces as range commands (ar+)\n"
 			" atd                ; show disassembly trace\n"
 			" atD                ; show dwarf trace (at*|rsc dwarf-traces $FILE)\n");
