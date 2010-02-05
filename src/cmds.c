@@ -1909,7 +1909,7 @@ CMD_DECL(compare)
 		break;
 	case 'f':
 		if (input[1]!=' ') {
-			eprintf("Please. use 'wf [file]'\n");
+			eprintf ("Please. use 'cf [file]'\n");
 			return 0;
 		}
 		fd = fopen(input+2, "r");
@@ -1925,7 +1925,7 @@ CMD_DECL(compare)
 		break;
 	case 'x':
 		if (input[1]!=' ') {
-			eprintf("Please. use 'wx 00 11 22'\n");
+			eprintf("Please. use 'cx 00 11 22'\n");
 			return 0;
 		}
 		buf = (unsigned char *)malloc(strlen(input+2));
