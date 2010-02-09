@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include "rdb.h"
 #include "list.h"
@@ -55,7 +56,7 @@ struct config_t {
 	char *script[10];
 	int skip;    // conflict with noscript?? imho no
 	int ene;
-	int interrupted;
+	volatile sig_atomic_t interrupted;
 	int verbose;
 	int unksize;
 	char *file;
