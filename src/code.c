@@ -527,8 +527,11 @@ void radis_str(int arch, const u8 *block, int len, int rows, const char *cmd_asm
 	if (rrows>0) rrows ++;
 	/* DISASSEMBLY LOOP */
 	while (!config.interrupted) {
-		if (bytes >= length ) break;
-		if (rrows>0 && --rrows == 0) break;
+		if (rrows>0) {
+			--rrows;
+  			if (rrows == 0)
+				break;
+		} else if (bytes >= length ) break;
 		if (bytes>=config.block_size)
 			break;
 		seek = config.seek+bytes + config.vaddr;

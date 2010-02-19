@@ -1545,7 +1545,8 @@ CMD_DECL(print)
 			if (strchr(input, ' ')) {
 				ut64 num = get_math (input+1);
 				bs = config.block_size;
-				radare_set_block_size_i(num);
+				if (input[0]!='d')
+					radare_set_block_size_i(num);
 			}
 		}
 		fmt = format_get(input[0]); //, fmt);
@@ -2233,20 +2234,21 @@ CMD_DECL(sections)
 {
 	switch(input[0]) {
 	case '?':
-		eprintf("Usage: S[cbtf=*] len [base [comment]] @ address\n");
-		eprintf(" S                ; list sections\n");
-		eprintf(" S*               ; list sections (in radare commands\n");
-		eprintf(" S=               ; list sections (in nice ascii-art bars)\n");
-		eprintf(" S 4096 0x80000 rwx section_text @ 0x8048000 ; adds new section\n");
-		eprintf(" S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n");
-		eprintf(" S 10K @ 0x300    ; create 10K section at 0x300\n");
-		eprintf(" S -0x300         ; remove this section definition\n");
-		eprintf(" Sd 0x400 @ here  ; set ondisk start address for current section\n");
-		eprintf(" Sc rwx _text     ; add comment to the current section\n");
-		eprintf(" Sb 0x100000      ; change base address\n");
-		eprintf(" St 0x500         ; set end of section at this address\n");
-		eprintf(" Sf 0x100         ; set from address of the current section\n");
-		eprintf(" Sp 7             ; set rwx (r=4 + w=2 + x=1)\n");
+		eprintf("Usage: S[cbtf=*] len [base [comment]] @ address\n"
+		" S                ; list sections\n"
+		" S*               ; list sections (in radare commands)\n"
+		" S=               ; list sections (in nice ascii-art bars)\n"
+		" Sa @ 0x804840    ; show section at address\n"
+		" S 4096 0x80000 rwx section_text @ 0x8048000 ; adds new section\n"
+		" S 4096 0x80000   ; 4KB of section at current seek with base 0x.\n"
+		" S 10K @ 0x300    ; create 10K section at 0x300\n"
+		" S -0x300         ; remove this section definition\n"
+		" Sd 0x400 @ here  ; set ondisk start address for current section\n"
+		" Sc rwx _text     ; add comment to the current section\n"
+		" Sb 0x100000      ; change base address\n"
+		" St 0x500         ; set end of section at this address\n"
+		" Sf 0x100         ; set from address of the current section\n"
+		" Sp 7             ; set rwx (r=4 + w=2 + x=1)\n");
 		break;
 	case ' ':
 		switch(input[1]) {
@@ -2280,6 +2282,9 @@ CMD_DECL(sections)
 		break;
 	case '=':
 		section_list_visual(config.seek, config.block_size);
+		break;
+	case 'a':
+		section_list(config.seek, 2);
 		break;
 	case '\0':
 		section_list(config.seek, 0);

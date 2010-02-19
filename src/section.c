@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009
+ * Copyright (C) 2008, 2009, 2010
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -87,14 +87,24 @@ void section_list(ut64 addr, int rad)
 	struct list_head *pos;
 	list_for_each_prev(pos, &sections) {
 		struct section_t *s = (struct section_t *)list_entry(pos, struct section_t, list);
-		if (rad) {
+		switch (rad) {
+		case 2:
+			if (addr >=s->from && addr <=s->to)
+			cons_printf("%02d %c 0x%08llx - 0x%08llx bs=0x%08llx sz=0x%08llx phy=0x%08llx %s\n",
+				i, (addr>=s->from && addr <=s->to)?'*':'.',
+				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr,
+				s->comment[0]?s->comment:"");
+			break;
+		case 1:
 			cons_printf("S 0x%08llx 0x%08llx %s @ 0x%08llx\n",
 				s->to-s->from, s->vaddr, s->comment[0]?s->comment:"", s->from);
 			cons_printf("Sd 0x%08llx @ 0x%08llx\n", s->paddr, s->from);
-		} else {
+			break;
+		case 0:
 			cons_printf("%02d %c 0x%08llx - 0x%08llx bs=0x%08llx sz=0x%08llx phy=0x%08llx %s",
 				i, (addr>=s->from && addr <=s->to)?'*':'.',
-				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr, s->comment[0]?s->comment:"");
+				s->from, s->to, s->vaddr, (ut64)((s->to)-(s->from)), s->paddr,
+				s->comment[0]?s->comment:"");
 			
 			if (string_flag_offset(NULL, buf, s->from, 0))
 				cons_printf(" ; %s", buf);
@@ -104,6 +114,7 @@ void section_list(ut64 addr, int rad)
 				cons_printf(" ; Overlaps with %d", ol);
 #endif
 			cons_printf("\n");
+			break;
 		}
 		i++;
 	}

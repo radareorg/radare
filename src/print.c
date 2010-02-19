@@ -953,7 +953,7 @@ void print_data(ut64 seek, char *arg, u8 *buf, int olen, print_fmt_t fmt)
 		{
 		char buf[128];
 		buf[0]='\0';
-		sprintf(buf, "!!rsc dwarf-addrs '$FILE' 0x%llx", config.seek);
+		sprintf(buf, "!!rsc dwarf-addrs \"$FILE\" 0x%llx", config.seek);
 		str = pipe_command_to_string(buf);
 		if (str) {
 			cons_strcat(str);
