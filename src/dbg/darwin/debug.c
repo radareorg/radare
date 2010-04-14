@@ -252,7 +252,7 @@ int debug_os_steps()
 
 #define OLD_PANCAKE_CODE 1
 #if OLD_PANCAKE_CODE
-	printf("stepping from pc = %08x\n", (u32)get_offset("eip"));
+	printf("stepping from pc = %08x\n", (ut32)get_offset("eip"));
 	//ret = ptrace(PT_STEP, ps.tid, (caddr_t)get_offset("eip"), SIGSTOP);
 	ret = ptrace(PT_STEP, ps.tid, (caddr_t)1, SIGTRAP); //SIGINT);
 	if (ret != 0) {
@@ -380,7 +380,7 @@ int debug_fork_and_attach()
 }
 
 // XXX This must be implemented on all the os/debug.c instead of arch_mprotect
-int debug_os_mprotect(u64 addr, int len, int perms)
+int debug_os_mprotect(ut64 addr, int len, int perms)
 {
 	int ret = vm_protect(pid_to_task(ps.tid),
 		(vm_address_t)addr,
@@ -428,7 +428,7 @@ http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/vm_map.html
 
 #endif
 
-int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_read_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	unsigned int size= 0;
 	int err = vm_read_overwrite(pid_to_task(tid), (unsigned int)addr, len, (pointer_t)buff, &size);
@@ -439,7 +439,7 @@ int debug_os_read_at(pid_t tid, void *buff, int len, u64 addr)
 	return size;
 }
 
-int debug_os_write_at(pid_t tid, void *buff, int len, u64 addr)
+int debug_os_write_at(pid_t tid, void *buff, int len, ut64 addr)
 {
 	kern_return_t err;
 
@@ -636,7 +636,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 	mach_vm_size_t size, prev_size;
 	mach_port_t object_name;
 	mach_msg_type_number_t count;
-	u64 addr;
+	ut64 addr;
 	int nsubregions = 0;
 	int num_printed = 0;
 	MAP_REG *mr;
@@ -687,9 +687,9 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 			print = 1;
 
 		mr = malloc(sizeof(MAP_REG));
-		mr->ini = (u32) prev_address;
-		mr->end = (u32) (prev_address+ prev_size);
-		mr->size = (u32) prev_size;
+		mr->ini = (ut32) prev_address;
+		mr->end = (ut32) (prev_address+ prev_size);
+		mr->size = (ut32) prev_size;
 		
 		sprintf(buf, "unk%d-%s-%s-%s", i,
 			   unparse_inheritance (prev_info.inheritance),
@@ -705,7 +705,7 @@ void macosx_debug_regions (task_t task, mach_vm_address_t address, int max, int 
 #if 0
 		if (1==0 && rest) { /* XXX never pritn this info here */
 			addr = 0LL;
-			addr = (u64) (u32) prev_address;
+			addr = (ut64) (ut32) prev_address;
 			if (num_printed == 0)
 				fprintf(stderr, "Region ");
 			else	fprintf(stderr, "   ... ");
