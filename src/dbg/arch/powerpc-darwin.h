@@ -95,11 +95,11 @@
 #define R_R29_OFF offsetof(regs_t, r29)
 #define R_R30_OFF offsetof(regs_t, r30)
 #define R_R31_OFF offsetof(regs_t, r31)
-#define R_CR_OFF offsetof(regs_t, cr /* condition registers */
-#define R_XER_OFF offsetof(regs_t, xer /* User integer exception register */
-#define X_LR_OFF offsetof(regs_t, lr /* link register */
-#define X_CTR_OFF offsetof(regs_t, ctr /* count register */
-#define X_MQ_OFF offsetof(regs_t, mq /* 601 only */
+#define R_CR_OFF offsetof(regs_t, cr) /* condition registers */
+#define R_XER_OFF offsetof(regs_t, xer) /* User integer exception register */
+#define X_LR_OFF offsetof(regs_t, lr) /* link register */
+#define X_CTR_OFF offsetof(regs_t, ctr) /* count register */
+#define X_MQ_OFF offsetof(regs_t, mq) /* 601 only */
 #define X_VRSAVE_OFF offsetof(regs_t, vrsave)
 
 #endif

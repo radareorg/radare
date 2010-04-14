@@ -298,14 +298,14 @@ int cons_readchar()
 	BOOL ret;
 	DWORD mode;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	GetConsoleMode(h, &mode);
-	SetConsoleMode(h, 0); // RAW
+	GetConsoleMode (h, &mode);
+	SetConsoleMode (h, 0); // RAW
 	ret = ReadConsole(h, buf,1, &out, NULL);
 	if (!ret)
 		return -1;
-	SetConsoleMode(h, mode);
+	SetConsoleMode (h, mode);
 #else
-	if (read(0, buf, 1)==-1)
+	if (read (0, buf, 1)==-1)
 		return -1;
 #endif
 	return buf[0];
