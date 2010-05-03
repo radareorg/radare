@@ -98,9 +98,7 @@ int th_info_bsd(int pid)
 }
 #endif
 
-int debug_os_kill(int pid, int sig)
-{
-	//return 0;
+int debug_os_kill(int pid, int sig) {
 	/* prevent killall selfdestruction */
 	if (pid < 1)
 		return -1;
@@ -115,8 +113,7 @@ int debug_os_kill(int pid, int sig)
 #include <sys/uio.h>
 #include <sys/ktrace.h>
 
-int debug_ktrace()
-{
+int debug_ktrace() {
 #if __OpenBSD__ || __FreeBSD__
 	eprintf("No fktrace for OpenBSD. Needs to be implemented with ktrace(2)\n");
 #else
@@ -142,14 +139,14 @@ int debug_ktrace()
 	ret = arch_continue();
 	ret = read (pd[0], buf, 1);
 	if (ret>0) {
-		kill(ps.tid, SIGSTOP);
+		debug_os_kill(ps.tid, SIGSTOP);
 		printf("Have sweet dreamz my lil pon1e!!1!\n");
 
 		ret = fktrace(pd[1], KTROP_CLEAR, trp, ps.tid);
 		ret |= fktrace(pd[1], KTROP_CLEARFILE, trp, ps.tid);
 		printf("<fktrace> %d\n", ret);
 
-		ret = kill(ps.tid, 0);
+		ret = debug_os_kill(ps.tid, 0);
 		printf("<kill0> %d (alive)\n", ret);
 
 		ret = wait(&sta);
@@ -398,6 +395,8 @@ int debug_status()
 
 static int is_alive(int pid)
 {
+	if (pid<1)
+		return 0;
 	return kill (pid, 0)==0;
 }
 
@@ -460,9 +459,8 @@ int debug_fork_and_attach()
 		/* restore breakpoints */
 		debug_bp_reload_all();
 
-		if (config_get("dbg.stop")) 
-			kill(ps.pid, SIGSTOP);
-
+		if (config_get("dbg.stop"))
+			debug_os_kill (ps.pid, SIGSTOP);
 		ps.steps  = 1;
 	}
 
@@ -830,7 +828,7 @@ int debug_dispatch_wait()
 		debug_msg_set("process %d finished\n", ps.tid);
 		eprintf("\n\n______________[ process finished ]_______________\n\n");
 		//ps.opened = 0;
-		kill(ps.tid, SIGKILL);
+		debug_os_kill (ps.tid, SIGKILL);
 		sleep(1);
 		eprintf("Use !load or ^C to reload\n");
 		config.interrupted=1;
