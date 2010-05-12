@@ -522,6 +522,8 @@ int debug_detach()
 
 /* copied from patan .. slow and buggy on solaris */
 extern int errno;
+int debug_procpidmem;
+static int ppm_fd = -1;
 
 int debug_os_read_at(int pid, void *buff, int sz, ut64 addr)
 {
@@ -530,6 +532,24 @@ int debug_os_read_at(int pid, void *buff, int sz, ut64 addr)
 	unsigned long last = sz % RDX;
 	long x, lr;
 	int ret = 1;
+#if __linux__
+	// TODO: port to other architectures?
+	if (debug_procpidmem) {
+		if (ppm_fd == -1) {
+			char file[128];
+			snprintf(file, sizeof (file), "/proc/%d/mem", pid);
+			ppm_fd = open (file, O_RDONLY|O_LARGEFILE);
+			if (ppm_fd == -1) {
+				printf("Cannot open proc/pid/mem\n");
+				return -1;
+			}
+		}
+		lseek (ppm_fd, (off_t)addr, SEEK_SET);
+		ret = read (ppm_fd, buff, sz);
+		//close (fd);
+		return ret;
+	}
+#endif
 
 	if (sz<0)
 		return -1;

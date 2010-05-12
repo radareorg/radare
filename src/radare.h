@@ -163,4 +163,8 @@ int radare_seek_search_backward(const char *str);
 int radare_flag_name(char *buf, int kw, int hn);
 void radare_search_seek_hit(int idx);
 
+#if DEBUGGER
+extern int debug_procpidmem;
+#endif
+
 #endif

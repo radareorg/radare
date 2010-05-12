@@ -398,6 +398,14 @@ static int config_teefile_callback(void *data)
 	return 1;
 }
 
+static int config_ppm_callback(void *data)
+{
+	struct config_node_t *node = (struct config_node_t *)data;
+#if DEBUGGER
+	debug_procpidmem = node->i_value;
+#endif
+}
+
 static int config_zoom_callback(void *data)
 {
 	struct config_node_t *node = (struct config_node_t *)data;
@@ -913,6 +921,9 @@ void config_init(int first)
 	config_set("search.flag", "true");
 	config_set("search.verbose", "true");
 	config_set_i("search.limit", 0);
+
+	node = config_set("dbg.procpidmem", "false");
+	node->callback = &config_ppm_callback;
 
 	config_set("dbg.env_ldso", "false");
 	config_set("file.dbg_env", "");

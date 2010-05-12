@@ -35,7 +35,6 @@ ssize_t ptrace_read(int fd, void *buf, size_t count)
 {
 	if (ps.opened && ps.fd == fd)
 		return debug_read(ps.tid, buf, count);
-
         return debug_read(fd, buf, count);
 }
 
