@@ -4636,6 +4636,40 @@ We can locate the current seek in the maps by typing '!maps?':
 \c [0x4A13B8C0]> !maps?
 \c 0x4a13b000 * 0x4a155000 r-x- 0x0001a000 /lib/ld-2.5.so
 
+\S{dbg-stdio} Redirecting process IO
+
+\c > hi.
+\c > 
+\c > I have combed the docs and online videos, but I can not find the
+\c > answer to my question anywhere.  How do I provide user input (e.g.
+\c > stdin) to a program being debugged with radare?
+
+In one terminal type: 'tty'. you will get something like this:
+
+\c $ tty
+\c /dev/pts/6
+\c $ while : ; do sleep 2 ; done
+
+The nop loop while fix the handling of stdin/stdout by the shell, so only
+the debugged program will use this pts.
+
+Then in another terminal run this command:
+
+\c $ radare -e child.stdio=/dev/pts/6 -d cat
+\c [0x8048003]> !cont
+
+You will see the command running in the other shell:
+
+\c hello
+\c hello
+\c foo
+\c foo
+\c ...
+\c ...
+
+You can also redirect the stdin/stdout/stderr file descriptors to files.
+
+
 \S{mem-dump} Dumping memory
 
 There are different commands to dump these sections to disk. The '!dump' and '!restore' are used to create a directory called 'dump#' where '#' is a number starting from 0 and is incremented while called multiple times. So you can use '!dump' and '!restore' to go 'forward' and 'backward' of the process status. Because it is also dumping and restoring the register values.
