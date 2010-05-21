@@ -1,3 +1,239 @@
+=== 1.5.2 === 2010-05-21
+
+changeset:   1279:b18e2c480bfa
+tag:         tip
+user:        pancake
+date:        Wed May 19 12:25:55 2010 +0200
+files:       doc/radare.but
+description:
+* Documentate how to redirect stdio of debugged process
+
+
+changeset:   1278:6e17735ccfaa
+user:        pancake
+date:        Wed May 12 23:35:53 2010 +0200
+files:       src/config.c src/dbg/ptrace.c src/dbg/unix/debug.c src/radare.h
+description:
+* Implement 'dbg.procpidmem' eval variable
+  > e dbg.procpidmem=true # to test
+  - as false by default
+  - Uses /proc/${pid}/mem instead of ptrace() to read memory
+  - it's 25% faster. Thanks erg0t and mobi
+
+
+changeset:   1277:97791ca60311
+user:        pancake
+date:        Mon May 03 21:28:24 2010 +0200
+files:       src/dbg/unix/debug.c
+description:
+* Fix kill(-1) Thanks astralia for reporting!
+
+
+changeset:   1276:a0e68135e78b
+parent:      1274:94d3d9398035
+parent:      1275:3f5940a514e5
+user:        pancake
+date:        Wed Apr 14 15:57:57 2010 +0200
+description:
+* merge
+
+
+changeset:   1275:3f5940a514e5
+parent:      1273:2507b4862e5e
+user:        pancake@localhost.localdomain
+date:        Wed Mar 10 11:46:40 2010 -0500
+files:       src/dbg/darwin/debug.c
+description:
+* Fix darwin build issue noticed by NIX hydra build farm
+
+
+changeset:   1274:94d3d9398035
+user:        pancake
+date:        Wed Apr 14 15:57:36 2010 +0200
+files:       src/cons.c src/dbg/arch/powerpc-darwin.h src/dbg/win32/debug.c src/rsc/pool/adict
+description:
+* Add rsc adict documentation from x86ref
+* Minor fixes for w32
+
+
+changeset:   1273:2507b4862e5e
+user:        pancake
+date:        Fri Feb 19 01:27:55 2010 +0100
+files:       src/cmds.c src/code.c src/print.c src/section.c
+description:
+* Fix 'pd' - show N rows, not N bytes
+* Add 'Sa' command to display only the current section
+  - Sa @ 0x0848040
+* Fix dwarf-addrs system() call
+
+
+changeset:   1272:e524fa3280c1
+user:        pancake@flubox2
+date:        Tue Feb 09 17:23:36 2010 +0100
+files:       src/config.h
+description:
+* config.interrupted is not volatile sig_atomic_t
+  - The C standard says that all variables accessed from a
+    signal must be volatile and sig_atomic_t.
+
+
+changeset:   1271:71a9306847d6
+user:        pancake
+date:        Fri Feb 05 11:28:25 2010 +0100
+files:       src/cmds.c
+description:
+* Fix help message in cx and cf commands
+
+
+changeset:   1270:97fb046977c8
+user:        pancake
+date:        Tue Feb 02 11:04:02 2010 +0100
+files:       src/cmds.c
+description:
+* Remove useless '%' in at? help message
+
+
+changeset:   1269:93c8b9e9638c
+user:        pancake
+date:        Sat Jan 30 16:40:38 2010 +0100
+files:       src/analyze.c src/cons.c src/flags.c src/main.c src/radare.c
+description:
+* Fix segmentation fault related to analyze + flags
+  - Do not use console flood protection when code analyzing
+  - Clean up some warnings in analyze.c
+
+
+changeset:   1268:364a8d142d77
+user:        pancake@flubox
+date:        Mon Jan 25 18:51:36 2010 +0100
+files:       INSTALL
+description:
+* Remove message about 'waf will replace acr'..
+  - And thats not going to happen :)
+
+
+changeset:   1267:435051e24c17
+user:        nibble
+date:        Mon Jan 25 17:46:07 2010 +0100
+files:       src/rabin/dietpe.c
+description:
+* Fix imports resolution in dietpe
+
+
+changeset:   1266:d2075439747a
+user:        pancake
+date:        Sun Jan 24 23:53:32 2010 +0100
+files:       src/rsc/pool/fds
+description:
+* Apply patch from Stefan Kuttler fixing 'rsc fds' in FreeBSD
+
+
+changeset:   1265:6a9392655828
+user:        pancake@flubox
+date:        Tue Jan 19 19:59:04 2010 +0100
+files:       src/cmds.c
+description:
+* Added 'won' operation to negate all bits of current block (same as wox ff)
+
+
+changeset:   1264:ae036154891a
+parent:      1263:1d3af4b8d3cc
+parent:      1262:288c834186b7
+user:        nibble
+date:        Tue Jan 19 16:19:02 2010 +0100
+description:
+* Merge
+
+
+changeset:   1263:1d3af4b8d3cc
+parent:      1261:85b931489723
+user:        nibble
+date:        Tue Jan 19 16:18:05 2010 +0100
+files:       src/dbg/debug.c
+description:
+* Remove wrong flag "entry"
+
+
+changeset:   1262:288c834186b7
+user:        pancake
+date:        Mon Jan 18 22:18:24 2010 +0100
+files:       src/arch/8051/code.c
+description:
+* Apply skurz0's patch fixing relative branches in 8051 CPU
+
+
+changeset:   1261:85b931489723
+user:        pancake
+date:        Wed Jan 06 13:54:32 2010 +0100
+files:       TODO src/plug/io/winedbg.c
+description:
+* Fix winedbg plugin
+  - Revert last patch
+  - Accept !regs* and not only !reg*
+  - Disable file analysis on open
+  - Raw commands are sent via != instead of !!
+
+
+changeset:   1260:2df7bc044768
+user:        nibble
+date:        Wed Jan 06 13:31:24 2010 +0100
+files:       src/print.c
+description:
+* Fix segfault in Visual mode
+
+
+changeset:   1259:a7833ac43c68
+user:        pancake@flubox
+date:        Mon Dec 21 19:18:23 2009 +0100
+files:       src/rabin/rabin.c
+description:
+* Only dm_map_file in mach0
+
+
+changeset:   1258:9d7dd3a0bf47
+user:        pancake
+date:        Thu Dec 17 11:57:00 2009 +0100
+files:       src/plug/io/windbg-api.c src/plug/io/windbg-api.h
+description:
+* Initial import of the windbg api
+  - Does not yet compiles or works, but it's just a draft :)
+
+
+changeset:   1257:bc8fdcbf271f
+user:        pancake
+date:        Thu Dec 17 10:16:52 2009 +0100
+files:       TODO src/plug/hack/Makefile
+description:
+* use python25 instead of python as plugin name for 2.5
+
+
+changeset:   1256:688e46c1fb6e
+user:        pancake
+date:        Thu Dec 17 10:15:56 2009 +0100
+files:       TODO src/plug/io/winedbg.c
+description:
+* Apply skurz0's patch enhacing winedbg until-prompt reads
+
+
+changeset:   1255:1679d86c4e31
+user:        nibble
+date:        Tue Dec 15 19:11:36 2009 +0100
+files:       .hgtags
+description:
+Added tag 1.5 for changeset 93efad3495a1
+
+
+changeset:   1254:93efad3495a1
+tag:         1.5
+user:        pancake
+date:        Sun Dec 13 19:11:52 2009 +0100
+files:       ChangeLog configure configure.acr wscript
+description:
+* Release 1.5
+  - Sync changelog
+  - Sync version in wscript
+
+
 === 1.5 === 2009-12-13
 
 changeset:   1253:536e163ca733

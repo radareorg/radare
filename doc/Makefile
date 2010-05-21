@@ -5,5 +5,5 @@ all:
 	mkdir -p html && cd html && halibut --html ../radare.but
 
 push:
-	scp radare.pdf radare.pdf.html news.nopcode.org:/home/www/radarenopcode/get
-	rsync -avz html/* news.nopcode.org:/home/www/radarenopcode/doc/html
+	scp radare.pdf radare.pdf.html radare.org:/srv/http/radareorg/get
+	rsync -avz html/* radare.org:/srv/http//radareorg/doc/html
