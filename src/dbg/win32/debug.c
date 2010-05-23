@@ -29,6 +29,8 @@
 #include <winbase.h>
 #include <psapi.h>
 
+
+int debug_procpidmem = 0;
 #if __CYGWIN__
 
 /* CYGWIN declare only GetProcessID() 

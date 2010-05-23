@@ -22,6 +22,8 @@
 #define USE_PTRACE 0
 #define EXCEPTION_PORT 0
 
+int debug_procpidmem = 0;
+
 #define __addr_t_defined
 
 #include "../mem.h"
@@ -171,6 +173,7 @@ int debug_attach(int pid)
 
 	task = inferior_task; // ugly global asignation
 	fprintf(stderr, "; pid = %d\ntask= %d\n", pid, inferior_task);
+ps.pid = pid;
 	//ps.pid = ps.tid = task; // XXX HACK
 
 	if (task_threads(task, &inferior_threads, &inferior_thread_count) != KERN_SUCCESS) {
