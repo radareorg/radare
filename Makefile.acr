@@ -10,7 +10,7 @@ MANDIR=${DESTDIR}@MANDIR@
 LIBDIR=${DESTDIR}@LIBDIR@
 LIBEXECDIR=${DESTDIR}@LIBEXECDIR@
 
-.PHONY: all clean mrproper install deinstall w32dist dist omni arm release uninstall
+.PHONY: all clean mrproper install deinstall w32dist dist distfree omni arm release uninstall
 
 all:
 ##HAVE_GUI##
@@ -73,6 +73,12 @@ dist:
 	tar czvf radare-${VERSION}.tar.gz $${FILES} ;\
 	mv radare-${VERSION} radare
 	#scp radare-${VERSION}.tar.gz radare.org:/srv/http/radareorg/get/shot
+
+distfree:
+	FILES=`hg status -mc|grep -v ppc_disasm|cut -c 3-|sed -e s,^,radare-${VERSION}-free/,`; \
+	cd .. && mv radare radare-${VERSION}-free && \
+	tar czvf radare-${VERSION}-free.tar.gz $${FILES} ;\
+	mv radare-${VERSION}-free radare
 
 shot:
 	DATE=`date '+%Y%m%d'` ; \
