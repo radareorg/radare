@@ -17,7 +17,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO} python26.${SO}
+all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python25.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO} python26.${SO}
 
 hello.${SO}:
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SO}
@@ -83,7 +83,7 @@ install:
 	-[ -e scriptedit.${SO} ] && ${INSTALL_LIB} scriptedit.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e perl.${SO} ] && ${INSTALL_LIB} perl.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${DESTDIR}/${LIBDIR}/radare
-	-[ -e python.${SO} ] && ${INSTALL_LIB} python.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e python25.${SO} ] && ${INSTALL_LIB} python25.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e python26.${SO} ] && ${INSTALL_LIB} python26.${SO} ${DESTDIR}/${LIBDIR}/radare
 
 clean:
