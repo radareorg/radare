@@ -101,9 +101,9 @@ int debug_register_list()
 
 ut64 arch_syscall(int pid, int sc, ...)
 {
+	ut64 ret = (ut64)-1;
 #if __linux__
 	va_list ap;
-	long long ret = (off_t)-1;
 	regs_t reg, reg_saved;
 	int baksz = 128;
 	int status;
