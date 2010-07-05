@@ -22,6 +22,9 @@ include dbg/objects.mk
 OBJ+=plug/io/debug.o
 OBJ2+=${psOBJ} 
 TARGETS+=libdbg 
+#GDBWRAP
+CFLAGS+=-Iplug/io/libgdbwrap/include
+crOBJ+=plug/io/gdbwrap.o plug/io/libgdbwrap/interface.o plug/io/libgdbwrap/gdbwrapper.o
 ##DEBUGGER##
 
 ##WII##

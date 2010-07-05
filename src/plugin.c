@@ -290,7 +290,9 @@ void plugin_init()
 	plugins[last++] = socket_plugin;
 	plugins[last++] = gxemul_plugin;
 	plugins[last++] = bfdbg_plugin;
+#if DEBUGGER
 	plugins[last++] = gdbwrap_plugin;
+#endif
 	plugins[last++] = gdb_plugin;
 	plugins[last++] = gdbx_plugin;
 
