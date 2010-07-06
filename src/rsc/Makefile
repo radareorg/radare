@@ -31,6 +31,8 @@ endif
 
 clean:
 	-rm -f main.o
+	-rm -f pool/Display pool/EntryDialog pool/SeekTo pool/SetRegister
+	cd gtk && ${MAKE} clean
 
 list:
 	@for a in pool/${FILES}; do echo $$a; done
