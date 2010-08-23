@@ -146,7 +146,7 @@ int remote_handle_client( int fd ){
 			case RMT_READ:
 				read(c, &buf, 4);
 				endian_memcpy((uchar*)&i, buf, 4);
-				ptr = (uchar *)malloc(i+5);
+				ptr = (uchar *)malloc(config.block_size+i+5);
 				radare_read(0);
 				ptr[0] = RMT_READ|RMT_REPLY;
 				if (i>config.block_size) i = config.block_size;

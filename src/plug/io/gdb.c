@@ -1,5 +1,6 @@
+/* XXX: this is incomplete..we are actually using gdbwrap:// */
 /*
- * Copyright (C) 2007, 2009
+ * Copyright (C) 2007, 2009, 2010
  *       pancake <youterm.com>
  *
  * radare is free software; you can redistribute it and/or modify
@@ -74,7 +75,7 @@ int gdb_read_bytes(char *buf, int bytes)
 	n = 0;
 	
 	while(1) {
-		ret = read(gdbps.fd, tmp+i, 1);
+		ret = read (gdbps.fd, tmp+i, 1);
 		write(1,tmp+i,1);
 		
 		switch(tmp[i]) {
@@ -89,14 +90,14 @@ int gdb_read_bytes(char *buf, int bytes)
 			default:
 				if (n>=bytes)
 					return bytes;
-				write(1,"byte++\n",7);
+				//write(1,"byte++\n",7);
 				buf[n++] = tmp[i++]; // XXX
 				break;
 		}
 	}
 
 	return n;
-
+#if 0
 	if (tmp[0]!='+') {
 		ret = read(gdbps.fd, tmp,1);
 		// should be '$'
@@ -176,8 +177,9 @@ int gdb_read_bytes(char *buf, int bytes)
 		}
 	}
 
-	printf("RETURN READ %d\n", i);
+	//printf("RETURN READ %d\n", i);
 	return i;
+#endif
 }
 
 ssize_t gdb_write(int fd, const void *buf, size_t count)
@@ -199,11 +201,14 @@ ssize_t gdb_read(int fd, void *buf, size_t count)
 		gdb_send(buf);
 		memset(buf,'\0',count);
 		ret = gdb_read_bytes(buf, count);
+#if 0
 if (ret!=-1)
 write(1,buf,ret);
 printf("RET: %d\n", ret);
+#endif
 		return ret;
 	}
+eprintf ("RETFAIL\n");
 
         return -1;
 }
@@ -220,6 +225,7 @@ int gdb_open(const char *file, int mode, mode_t flags)
 		fprintf(stderr, "Invalid uri\n");
 		return -1;
 	}
+	eprintf ("WARNING: gdb:// is incomplete. Please use gdbwrap:// instead\n");
 	file = file + 6;
 	port = strchr(file,':');
 	if (port) {

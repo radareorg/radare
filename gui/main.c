@@ -243,7 +243,7 @@ void gradare_save_project_as()
 
 void gradare_save_project()
 {
-	char buf[1024];
+	char buf[4096];
 	if (project_file) {
 		snprintf(buf, 4095, ":Ps %s\n\n", project_file);
 		vte_terminal_feed_child(VTE_TERMINAL(term), buf, strlen(buf));
