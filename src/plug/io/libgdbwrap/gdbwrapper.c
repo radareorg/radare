@@ -19,6 +19,9 @@
 #include             "gdbwrapper-internals.h"
 #include             "gdbwrapper.h"
 
+#undef eprintf
+#define eprintf //
+
 gdbwrapworld_t       gdbwrapworld;
 
 /******************** Internal functions ********************/
@@ -77,7 +80,7 @@ static Bool          gdbwrap_errorhandler(gdbwrap_t *desc, const char *error)
 
 static Bool         gdbwrap_is_interrupted(gdbwrap_t *desc)
 {
-  return desc->interrupted;
+  return (desc && desc->interrupted);
 }
 
 
@@ -227,6 +230,8 @@ static char          *gdbwrap_run_length_decode(char *dstpacket, const char *src
   unsigned           strlenc;
   unsigned           check;
 
+if (!srcpacket || !dstpacket)
+return NULL;
   ASSERT(dstpacket != NULL && srcpacket != NULL &&
   	 srcpacket[0] != GDBWRAP_START_ENCODC);
   if (srcpacket != dstpacket)
@@ -274,6 +279,8 @@ static void         gdbwrap_populate_reg(gdbwrap_t *desc, char *packet)
   char              packetcolon[MSG_BUF];
   unsigned          packetoffset = 0;
 
+  if (!packet)
+	return;
   /* If a signal is received, we populate the registers, starting
      after the signal number (ie after Tnn, where nn is the
      number). */
@@ -362,12 +369,15 @@ static char          *gdbwrap_get_packet(gdbwrap_t *desc)
     } while (sumrval >= 3 &&
 	     desc->packet[sumrval - 3] != GDBWRAP_END_PACKETC && rval);
 
+eprintf ("000 XFPKT\n");
   /* if rval == 0, it means the host is disconnected/dead. */
   if (rval)
     {
       desc->packet[sumrval] = GDBWRAP_NULL_CHAR;
+eprintf ("XFPKT\n");
       gdbwrap_extract_from_packet(desc->packet, checksum, GDBWRAP_END_PACKET,
 				  NULL, sizeof(checksum));
+eprintf ("POST XFPKT\n");
 
       /* If no error, we ack the packet. */
       if (rval != -1 &&
@@ -381,10 +391,13 @@ static char          *gdbwrap_get_packet(gdbwrap_t *desc)
 	}
       else
 	{
+eprintf ("PUSHA \n");
 	  if (gdbwrap_is_interrupted(desc))
 	    {
+eprintf ("ONE\n");
 	      desc->interrupted = FALSE;
 	      gdbwrap_errorhandler(desc, desc->packet);
+eprintf ("ONE --\n");
 	      return gdbwrap_run_length_decode(desc->packet, desc->packet,
 					       desc->max_packet_size);
 	    }
@@ -397,6 +410,7 @@ static char          *gdbwrap_get_packet(gdbwrap_t *desc)
     }
   else desc->is_active = FALSE;
 
+eprintf ("rePETA\n");
   return NULL;
 }
 
@@ -406,7 +420,8 @@ static char          *gdbwrap_send_data(gdbwrap_t *desc, const char *query)
   int                 rval = 0;
   char               *mes;
 
-  ASSERT(desc != NULL && query != NULL);
+  if (desc == NULL || query == NULL)
+    return NULL;
 
   DEBUGMSG(printf("Sending: %s\n", query));
 
@@ -419,7 +434,12 @@ static char          *gdbwrap_send_data(gdbwrap_t *desc, const char *query)
 	} while(gdbwrap_check_ack(desc) != TRUE);
 
       ASSERT(rval != -1);
+eprintf ("GETPKT\n");
       mes  = gdbwrap_get_packet(desc);
+if (mes == NULL)
+return NULL;
+
+eprintf ("AFTER\n");
       DEBUGMSG(printf("Received: %s\n", mes));
     }
   else
@@ -542,7 +562,7 @@ gdbwrap_t            *gdbwrap_init(int fd)
 
   ASSERT(fd && desc != NULL);
   desc->max_packet_size   = 2500;
-  desc->packet            = malloc((desc->max_packet_size + 1) * sizeof(char));
+  desc->packet            = malloc(1+((desc->max_packet_size + 1) * sizeof(char)));
   desc->fd                = fd;
   desc->is_active         = TRUE;
   desc->interrupted       = FALSE;
@@ -638,7 +658,7 @@ gdbwrap_gdbreg32     *gdbwrap_readgenreg(gdbwrap_t *desc)
   ureg32             regvalue;
 
   rec = gdbwrap_send_data(desc, GDBWRAP_GENPURPREG);
-  if (gdbwrap_is_active(desc))
+  if (rec && gdbwrap_is_active(desc))
     {
       for (i = 0; i < sizeof(gdbwrap_gdbreg32) / sizeof(ureg32); i++)
 	{
@@ -843,7 +863,9 @@ static void          gdbwrap_writeregister2(gdbwrap_t *desc, ureg32 regNum,
   snprintf(locreg, sizeof(locreg), "%08x", gdbwrap_little_endian(val));
   memcpy(ret + offset, locreg, 2 * sizeof(ureg32));
   snprintf(locreg, sizeof(locreg), "%s%s", GDBWRAP_WGENPURPREG, ret);
+eprintf ("PRETFUCK\n");
   gdbwrap_send_data(desc, locreg);
+eprintf ("POSTFUCK\n");
 }
 
 
@@ -941,7 +963,9 @@ void                 gdbwrap_signal(gdbwrap_t *desc, int signal)
    ASSERT(desc != NULL);
    snprintf(signalpacket, sizeof(signalpacket), "%s;C%.2x",
 	    GDBWRAP_CONTINUEWITH, signal);
+eprintf ("PRE SIG\n");
    rec = gdbwrap_send_data(desc, signalpacket);
+eprintf ("SIG SIG\n");
  }
 
 
@@ -950,8 +974,9 @@ void                 gdbwrap_stepi(gdbwrap_t *desc)
   char               *rec;
 
   ASSERT(desc != NULL);
+eprintf ("preFUCK\n");
   rec = gdbwrap_send_data(desc, GDBWRAP_STEPI);
-
+eprintf ("FUCK\n");
   if (gdbwrap_is_active(desc))
     gdbwrap_populate_reg(desc, rec);
   else
@@ -1009,7 +1034,7 @@ gdbmemap_t          gdbwrap_memorymap_get(gdbwrap_t *desc)
 	    GDBWRAP_MEMORYMAP_READ, 0, 0xfff);
 
   received = gdbwrap_send_data(desc, qXfer_msg);
-
+eprintf ("GETMEM\n");
   if (received != NULL)
     {
       //XXX: parse it and return gdbmemap_t
