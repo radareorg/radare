@@ -8,6 +8,8 @@ PY_CFLAGS=-I${PREFIX}/include/python2.5/ -I/usr/include/python2.5/
 PY_LIBS=-lpython2.5
 PY26_CFLAGS=-I${PREFIX}/include/python2.6/ -I/usr/include/python2.6/
 PY26_LIBS=-lpython2.6
+PY27_CFLAGS=-I${PREFIX}/include/python2.7/ -I/usr/include/python2.7/
+PY27_LIBS=-lpython2.7
 LUA_CFLAGS=-I${PREFIX}/include/lua5.1/ -I/usr/include/lua5.1/
 LUA_LIBS=
 RUBY_CFLAGS=-I/usr/lib/ruby/1.8/i386-linux
@@ -17,7 +19,7 @@ CFLAGS+=${LUA_CFLAGS} ${PY_CFLAGS}
 
 CFLAGS+=-I../.. -g
 
-all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python25.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO} python26.${SO}
+all: hello.${SO} lua.${SO} gtk-hello.${SO} scriptedit.${SO} python25.${SO} ruby.${SO} gtk-prefs.${SO} gtk-topbar.${SO} perl.${SO} python26.${SO} python27.${SO}
 
 hello.${SO}:
 	${CC} ${CFLAGS} ${SHARED_CFLAGS} hello.c -o hello.${SO}
@@ -55,6 +57,11 @@ ifeq ($(HAVE_LIB_PYTHON2_6),1)
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY26_LIBS} -o python26.${SO}
 endif
 
+python27.${SO}:
+ifeq ($(HAVE_LIB_PYTHON2_7),1)
+	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY27_LIBS} -o python27.${SO}
+endif
+
 perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO}
 
@@ -86,6 +93,7 @@ install:
 	-[ -e ruby.${SO} ] && ${INSTALL_LIB} ruby.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e python25.${SO} ] && ${INSTALL_LIB} python25.${SO} ${DESTDIR}/${LIBDIR}/radare
 	-[ -e python26.${SO} ] && ${INSTALL_LIB} python26.${SO} ${DESTDIR}/${LIBDIR}/radare
+	-[ -e python27.${SO} ] && ${INSTALL_LIB} python27.${SO} ${DESTDIR}/${LIBDIR}/radare
 
 clean:
 	-rm -f *.${SO} *.o

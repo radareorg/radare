@@ -104,6 +104,7 @@ ARG_WITH HAVE_PYTHON python build with embedded python extension ;
 
 CHKLIB python2.5
 CHKLIB python2.6
+CHKLIB python2.7
 
 ARG_WITH MAEMO maemo build hildon interface ;
 
