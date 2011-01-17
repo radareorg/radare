@@ -1722,7 +1722,7 @@ void radare_resize(const char *arg)
 
 	if (arg[0]=='-') {
 		ut64 rest;
-		size = -size; // be positive
+		size = get_math(arg+1);
 		D eprintf("stripping %lld bytes\n", size);
 		rest = config.size - (config.seek -size);
 		if (rest > 0) {
