@@ -110,7 +110,7 @@ command_t commands[] = {
 	COMMAND('p', "[fmt] [len]",    "print    print data block", print),
 	COMMAND('q', "[!]",            "quit     close radare shell", quit),
 	COMMAND('P', "[so][i [file]]", "Project  project Open, Save, Info", project),
-	COMMAND('r', " [size|-strip]", "resize   resize or query the file size", resize),
+	COMMAND('r', " [[+,-]size]",   "resize   resize or query the file size", resize),
 	COMMAND('g', "[act] ([arg])",  "graph    graph analysis operations", graph),
 	COMMAND('s', " [[+,-]pos]",    "seek     seek to absolute/relative expression", seek),
 	COMMAND('S', "[len] [vaddr]",  "Section  manage io.vaddr sections", sections),

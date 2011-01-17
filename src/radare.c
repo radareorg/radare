@@ -1702,9 +1702,10 @@ void radare_resize(const char *arg)
 	// the readline layer.
 
 	if ( arg[0] == '\0' || arg[0] == '?') {
-		D cons_printf("Usage: r[?] [#|-#]\n");
-		D cons_printf("  positive value means resize\n");
+		D cons_printf("Usage: r[?] [#|-#|+#]\n");
+		D cons_printf("  no sign means resize\n");
 		D cons_printf("  negative value is used to remove N bytes from the current seek\n");
+		D cons_printf("  positive value is used to insert N bytes at the current seek\n");
 		D cons_printf("size:  %lld\n", config.size);
 		D cons_printf("limit: %lld\n", config.limit);
 		return;
@@ -1720,22 +1721,29 @@ void radare_resize(const char *arg)
 		return;
 	}
 
-	if (arg[0]=='-') {
+	if (arg[0]=='-' || arg[0]=='+') {
 		ut64 rest;
-		size = get_math(arg+1);
-		D eprintf("stripping %lld bytes\n", size);
-		rest = config.size - (config.seek -size);
+		int sign=(arg[0]=='-'); /* 0 when inserting, 1 when removing */
+		size  = get_math(arg+1);
+		if (sign && size > config.size - config.seek) {
+			eprintf("Only %lld bytes between seek and end of file\n",
+					config.size - config.seek);
+			return;
+		}
+		D eprintf("%sing %lld bytes\n", sign?"stripp":"insert", size);
+		rest = config.size - config.seek - (sign?size:0);
 		if (rest > 0) {
 			char *str = malloc(rest);
-			io_lseek(config.fd, config.seek+size, SEEK_SET);
+			io_lseek(config.fd, config.seek + (sign?size:0), SEEK_SET);
 			io_read(config.fd, str, rest);
-			io_lseek(config.fd, config.seek, SEEK_SET);
+			io_lseek(config.fd, config.seek + (sign?0:size), SEEK_SET);
 			io_write(config.fd, str, rest);
 			free(str);
 			io_lseek(config.fd, config.seek, SEEK_SET);
-			config.size -= size;
-			ftruncate(config.fd, (off_t)config.size);
 		}
+		config.size += sign?-size:size;
+		ftruncate(config.fd, (off_t)config.size);
+		config.limit=config.size;
 		return;
 	}
 	if (arg[1]=='x') sscanf(arg, OFF_FMTx, &size);
