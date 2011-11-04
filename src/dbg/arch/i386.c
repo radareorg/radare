@@ -40,6 +40,10 @@
 //#include <sys/ptrace.h>
 #endif
 
+#if __APPLE__
+#define R_RIP R_EIP
+#endif
+
 #if __linux__
 #include <sys/procfs.h>
 #endif

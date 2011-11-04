@@ -80,7 +80,7 @@ Entrypoint for calling multiple small scripts and utilities that can be used fro
 
 You can get radare from the website http://radare.nopcode.org/
 
-There are binary packages for multiple operating systems and GNU/Linux distributions (ubuntu, maemo, gentoo, windows, iphone, etc..) But I hardly encourage you to get the sources and compile them yourself to better understand the dependencies and have the source code and examples more accessible.
+There are binary packages for multiple operating systems and GNU/Linux distributions (ubuntu, maemo, gentoo, windows, iphone, etc..) But I highly encourage you to get the sources and compile them yourself to better understand the dependencies and have the source code and examples more accessible.
 
 I try to publish a new stable release every month and sometimes publish nightly tarballs.
 
@@ -171,7 +171,7 @@ Here's the help message:
 
 Lot of people ping me some times for a sample usage session of radare to help to understand how the shell works and how to perform the most common tasks like disassembling, seeking, binary patching or debugging.
 
-I hardly encourage you to read the rest of this book to help you understand better how everything works and enhace your skills, the learning curve of radare is usually a bit harder at the beggining, but after an hour of using it you will easily understand how most of the things work and how to get them cooperate together :)
+I highly encourage you to read the rest of this book to help you understand better how everything works and enhace your skills, the learning curve of radare is usually a bit harder at the beggining, but after an hour of using it you will easily understand how most of the things work and how to get them cooperate together :)
 
 For walking thru the binary file you will use three different kind of basic actions: seek, print and alterate.
 

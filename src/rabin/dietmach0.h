@@ -130,8 +130,10 @@ enum NXByteOrder {
 #define u8 unsigned char
 #endif
 
-typedef unsigned int vm_offset_t;
-typedef unsigned int vm_size_t;
+//typedef unsigned int vm_offset_t;
+//typedef unsigned int vm_size_t;
+#define vm_offset_t unsigned int
+#define vm_size_t unsigned int
 //typedef unsigned int boolean_t;
 typedef int cpu_type_t;
 typedef int cpu_subtype_t;
