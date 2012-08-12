@@ -132,8 +132,10 @@ enum NXByteOrder {
 
 //typedef unsigned int vm_offset_t;
 //typedef unsigned int vm_size_t;
+#ifndef __APPLE__
 #define vm_offset_t unsigned int
 #define vm_size_t unsigned int
+#endif
 //typedef unsigned int boolean_t;
 typedef int cpu_type_t;
 typedef int cpu_subtype_t;
