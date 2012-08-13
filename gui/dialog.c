@@ -21,8 +21,7 @@
 #include "main.h"
 #include <string.h>
 #include <gtk/gtk.h>
-#include <glib/glist.h>
-#include <glib/glist.h>
+#include <glib.h>
 
 int dialog_yes_no(const char *question, int two)
 {

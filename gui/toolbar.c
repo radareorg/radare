@@ -24,8 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
-#include <glib/glist.h>
-#include <glib/glist.h>
+#include <glib.h>
 #include <vte/vte.h>
 #include <sys/types.h>
 #include <fcntl.h>
