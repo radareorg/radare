@@ -112,7 +112,7 @@ int r_mod=0,r_new=0,r_lost=0;
 	for (std::list<BDiff::Edit>::iterator b = test.diff.begin(); b != test.diff.end(); ++b)
 	{
 		//std::cout << "@offset: " << (void *)(*b).offset ;
-		printf("%08p ",(void *)(*b).offset);
+		printf("%p ",(void *)(*b).offset);
 
 		switch ((*b).act)
 		{

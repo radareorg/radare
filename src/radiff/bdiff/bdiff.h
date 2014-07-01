@@ -24,7 +24,7 @@
 #include <utility>
 #ifndef H_BDIFF
 #define H_BDIFF
-#define W_BIT (sizeof(ulong)*CHAR_BIT)
+#define W_BIT (sizeof(unsigned long)*CHAR_BIT)
 
 class BDiff
 {
@@ -84,13 +84,13 @@ public:
 class BDiff::BitVec
 {
 	size_t *use, bsz, size ;
-	ulong *bits ;
+	unsigned long *bits ;
 public:
 	BitVec(size_t b) :
-		bsz(b), size(b/W_BIT+1), bits(new ulong [size]), use(new size_t(1)) {}
+		bsz(b), size(b/W_BIT+1), bits(new unsigned long [size]), use(new size_t(1)) {}
 
 	BitVec(size_t b, size_t c) :
-		bsz(b), size(b/W_BIT+1), bits(new ulong [size]), use(new size_t(1))
+		bsz(b), size(b/W_BIT+1), bits(new unsigned long [size]), use(new size_t(1))
 	{
 		size_t x ;
 

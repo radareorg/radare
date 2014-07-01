@@ -62,7 +62,7 @@ int flag_filter_name(char *name);
 void flag_from(const char *str);
 void flag_space_move(const char *name); 
 const char *flag_get_here_filter(ut64 at, const char *str);
-const const char *flag_space_get(int idx);
+const char *flag_space_get(int idx);
 ut64 flag_delta_between(ut64 from, ut64 to);
 flag_t *flag_get_by_addr(ut64 addr);
 const char *flag_get_here_filter2(ut64 at, const char *str, const char *str2);

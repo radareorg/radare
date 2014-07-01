@@ -1776,10 +1776,10 @@ CMD_DECL(seek)
 	switch(text[0]) {
 	case '\\':
 		radare_seek_search_backward(text+1);
-		return;
+		return 0;
 	case '/':
 		radare_seek_search(text+1);
-		return;
+		return 0;
 	case 'x': 
 		new_off = data_seek_to(config.seek, 0, atoi(text+1));
 		break;
@@ -2642,7 +2642,7 @@ CMD_DECL(search) {
 		len = strlen(input+2);
 		if (len<2) {
 			eprintf("Too short len\n");
-			return;
+			return 0;
 		}
 		input2 = (char *)malloc((len<<1)+10);
 		input2[0] = '\0';
@@ -2923,7 +2923,7 @@ CMD_DECL(help)
 				int len;
 				len = hexstr2binstr(input+1, buf);
 				if (len>0)
-					print_data(0, "", buf, len, FMT_ASC);
+					print_data(0, "", (u8*)buf, len, FMT_ASC);
 			}
 			break;
 		case 'X':

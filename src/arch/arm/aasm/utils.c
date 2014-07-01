@@ -89,10 +89,7 @@ boolean alphabetic(char c)                                          /* Crude! */
 /* Read number of specified radix into variable indicated by *value           */
 /* Return flag to say number read (value at pointer).                         */
 
-int get_num(char *line, unsigned int *position, unsigned int *value, unsigned int radix)
-{
-
-	int num_char(char *line, int *pos, unsigned int radix)
+	static int num_char(char *line, int *pos, unsigned int radix)
 	{                          /* Return value(c) if in radix  else return -1 */
 		char c;
 
@@ -105,6 +102,9 @@ int get_num(char *line, unsigned int *position, unsigned int *value, unsigned in
 			else if (c < 'A' + radix - 10) return c - 'A' + 10;
 			else                      return -1; }
 	}
+int get_num(char *line, unsigned int *position, unsigned int *value, unsigned int radix)
+{
+
 
 	int i, new_digit;
 	boolean found;

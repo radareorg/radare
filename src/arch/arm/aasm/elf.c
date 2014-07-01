@@ -49,17 +49,13 @@ void elf_new_section_maybe(void)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-void elf_dump_out(FILE *fElf, sym_table *table)
-{
-
-	void elf_dump_word(FILE *fElf, unsigned int word)
+	static void elf_dump_word(FILE *fElf, unsigned int word)
 	{
 		fprintf(fElf, "%c%c%c%c", word & 0xFF, (word>>8) & 0xFF,
 				(word>>16) & 0xFF, (word>>24) & 0xFF);
 		return;
 	}
-
-	void elf_dump_SH(FILE *fElf, unsigned int name, unsigned int type,
+	static void elf_dump_SH(FILE *fElf, unsigned int name, unsigned int type,
 			unsigned int flags, unsigned int addr, unsigned int pos, unsigned int size,
 			unsigned int link, unsigned int info, unsigned int align, unsigned int size2)
 	{
@@ -70,6 +66,10 @@ void elf_dump_out(FILE *fElf, sym_table *table)
 		elf_dump_word(fElf, align);  elf_dump_word(fElf, size2);
 		return;
 	}
+void elf_dump_out(FILE *fElf, sym_table *table)
+{
+
+
 
 
 	elf_temp *pTemp, *pTemp_old;

@@ -42,7 +42,7 @@ static int slurp_ruby(const char *file)
 {
 	rb_load_file(file);
 	//ruby_exec();
-	rb_exec();
+	rb_exec(NULL);
 	return 0;
 }
 

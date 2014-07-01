@@ -3754,13 +3754,13 @@ int get_shift(char *line, unsigned int *pos)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /* Change a 32-bit value into a 4-bit ROR + 8-bit immediate form; -1 if can't */
 
+	static unsigned int rol32(unsigned int x, unsigned int j)
+	{ return (((x & 0xFFFFFFFF) >> (32 - j)) | (x << j)) & 0xFFFFFFFF; }
 int data_op_imm(unsigned int value)             /* Not particularly efficient */
 {
 	unsigned int i;
 	boolean found;
 
-	unsigned int rol32(unsigned int x, unsigned int j)
-	{ return (((x & 0xFFFFFFFF) >> (32 - j)) | (x << j)) & 0xFFFFFFFF; }
 
 
 	found = FALSE;
@@ -4533,12 +4533,7 @@ unsigned int sym_count_symbols(sym_table *table, label_category what)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /* Returns a newly created (allocated) linked list of symbol records copied   */
 /* from the designated table and sorted as specified.                         */
-
-sym_record *sym_sort_symbols(sym_table *table, label_category what,
-		label_sort how)
-{
-
-	void sym_dup_record(sym_record *old_record, sym_record *new_record)
+	static void sym_dup_record(sym_record *old_record, sym_record *new_record)
 	{
 		int i;
 
@@ -4553,6 +4548,11 @@ sym_record *sym_sort_symbols(sym_table *table, label_category what,
 
 		return;
 	}
+
+sym_record *sym_sort_symbols(sym_table *table, label_category what,
+		label_sort how)
+{
+
 
 
 	sym_record *temp_record, *sorted_list, *ptr1, *ptr2, **pptr;
@@ -4774,13 +4774,9 @@ void lit_print_table(literal_record *pTemp, FILE *handle)
 /*           the value at *value contains the result, assuming no error       */
 /*           the return value is the error status                             */
 
-unsigned int evaluate(char *string, unsigned int *pos, int *value,
-		sym_table *symbol_table)
-{
-	int math_stack[mathstack_size];
-	unsigned int math_SP, error, first_error;
-
-	void Eval_inner(int priority, int *value)
+static 	int math_stack[mathstack_size];
+static	unsigned int math_SP, error, first_error;
+	static void Eval_inner(char *string, unsigned int *pos, sym_table *symbol_table, int priority, int *value)
 	{                                        /* Main function shares stack etc. */
 		boolean done, bracket;
 		int operator, operand, unary;
@@ -4802,7 +4798,7 @@ unsigned int evaluate(char *string, unsigned int *pos, int *value,
 
 			if (error == eval_okay) {
 				/* May return error */
-				if (bracket) Eval_inner(1, &operand);
+				if (bracket) Eval_inner(string, pos, symbol_table, 1, &operand);
 				if (error == eval_okay) {
 					/* Can now apply unary to returned value */
 					switch (unary) {
@@ -4900,11 +4896,13 @@ unsigned int evaluate(char *string, unsigned int *pos, int *value,
 
 		return;
 	}
-
+unsigned int evaluate(char *string, unsigned int *pos, int *value,
+		sym_table *symbol_table)
+{
 	error       = eval_okay;       /* "Evaluate" initialised and called from here */
 	first_error = eval_okay;            /* Used to note if labels undefined, etc. */
 	math_SP     = 0;
-	Eval_inner(0, value);                /* Potentially recursive evaluation code */
+	Eval_inner(string, pos, symbol_table, 0, value);                /* Potentially recursive evaluation code */
 
 	/* Signal any problems held over */
 	if (error == eval_okay)

@@ -1206,7 +1206,7 @@ CMD_DECL(visual)
 	case 'G':
 		eprintf("Visual GUI\n");
 		visual_gui();
-		return;
+		return 0;
 	}
 
 	cons_get_real_columns();

@@ -131,7 +131,7 @@ do {
 		intaddr = bact;
 		cnt = 0;
 		while ( !config.interrupted && bproc < bytes ) {
-			radare_controlc();
+			radare_controlc ();
 			nr = ((bytes-bproc) < BSIZE)?(bytes-bproc):BSIZE;
 			nr = nr + ( patlen - (nr % patlen) ); // tamany de bloc llegit multiple superior de tamany busqueda
 			//rb = read ( fd, block, nr );

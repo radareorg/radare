@@ -138,7 +138,7 @@ int perl_hack_cmd(const char *input)
 
 	if (rs==NULL) {
 		printf("Cannot resolve radare_cmd_str symbol\n");
-		return;
+		return 0;
 	}
 
 	// Do not init all the frickin time?
@@ -146,7 +146,7 @@ int perl_hack_cmd(const char *input)
 
 	if (my_perl == NULL) {
 		printf("Cannot init perl module\n");
-		return;
+		return 0;
 	}
 	perl_is_init = 1;
 
@@ -163,8 +163,7 @@ int perl_hack_cmd(const char *input)
 		//call_argv(input, G_DISCARD | G_NOARGS, args);
 		perl_run(my_perl);
 		//printf("RET=%d\n", eval_pv(input, TRUE));
-
-		return;
+		return 0;
 	}
 	while(1) {
 		char *args[] = { NULL };
