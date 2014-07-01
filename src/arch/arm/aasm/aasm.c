@@ -119,19 +119,24 @@ sym_table       *shift_table;
 
 /*----------------------------------------------------------------------------*/
 /* Entry point */
+	/* Create and initialise a symbol table */
+static 	sym_table *build_table(char *table_name, unsigned int flags,
+			char **sym_names, int *values)
+	{
+		sym_table *table;
+		int i;
+		sym_record *dummy;                         /* Don't want returned pointer */
 
-int main(int argc, char *argv[])
-{
-	FILE *fMnemonics, *fSource = NULL;
-	char line[LINE_LENGTH];
+		table = sym_create_table(table_name, flags);
 
-	sym_table *arm_mnemonic_table, *thumb_mnemonic_table, *directive_table;
-	sym_table *symbol_table;
-	sym_table_item *arm_mnemonic_list, *thumb_mnemonic_list;        /* Real lists */
-	boolean finished, last_pass;
-	unsigned int error_code;
+		for (i = 0; *(sym_names[i]) != '\0'; i++)        /* repeat until "" found */
+			sym_define_label(sym_names[i], values[i], 0, table, &dummy);
 
-	void code_pass(FILE *fHandle, char *filename)/* Recursion for INCLUDE files */
+		return table;
+	}
+	static FILE *fMnemonics, *fSource = NULL;
+	static char line[LINE_LENGTH];
+	static void code_pass(FILE *fHandle, char *filename)/* Recursion for INCLUDE files */
 	{
 		unsigned int line_number;
 		char *include_file_path;        /* Path as far as directory of "filename" */
@@ -189,21 +194,16 @@ int main(int argc, char *argv[])
 		return;
 	}
 
-	/* Create and initialise a symbol table */
-	sym_table *build_table(char *table_name, unsigned int flags,
-			char **sym_names, int *values)
-	{
-		sym_table *table;
-		int i;
-		sym_record *dummy;                         /* Don't want returned pointer */
+int main(int argc, char *argv[])
+{
 
-		table = sym_create_table(table_name, flags);
+	sym_table *arm_mnemonic_table, *thumb_mnemonic_table, *directive_table;
+	sym_table *symbol_table;
+	sym_table_item *arm_mnemonic_list, *thumb_mnemonic_list;        /* Real lists */
+	boolean finished, last_pass;
+	unsigned int error_code;
 
-		for (i = 0; *(sym_names[i]) != '\0'; i++)        /* repeat until "" found */
-			sym_define_label(sym_names[i], values[i], 0, table, &dummy);
 
-		return table;
-	}
 
 
 	arm_mnemonic_list   = NULL;
@@ -553,12 +553,7 @@ int main(int argc, char *argv[])
 /*----------------------------------------------------------------------------*/
 /*					// Allow omission of spaces? @@@@
 // Allow filename first ?    @@@@*/
-boolean set_options(int argc, char *argv[])
-{
-	boolean okay = FALSE;
-	char c;
-
-	void file_option(int *std_out, char **filename, char *err_mss) {
+	static void file_option(int *std_out, char **filename, char *err_mss) {
 		if (argc > 2) {
 			if ((argv[1])[0] == '-') *std_out = TRUE;
 			else { *filename = &(*argv[1]); argc --; argv++; }
@@ -566,6 +561,11 @@ boolean set_options(int argc, char *argv[])
 		else printf("%s filename omitted\n", err_mss);
 		return;
 	}
+boolean set_options(int argc, char *argv[])
+{
+	boolean okay = FALSE;
+	char c;
+
 
 	if (argc == 1) {
 		printf("ARM assembler v0.26 (9/7/07)\n"
