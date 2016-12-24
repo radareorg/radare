@@ -15,6 +15,6 @@
 
 # Entry point
 >>0x18 lelong !0 (entry %x)
-
+2
 # ELF header size
 #>>>0x22 short !0 (ehsize %p)
