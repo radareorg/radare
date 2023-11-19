@@ -78,5 +78,7 @@ const char *data_var_type_format(const char *datatype);
 void data_del(ut64 addr, int type,int len/* data or code */);
 void data_del_range(ut64 from, ut64 to);
 ut64 var_functions_show(int idx);
+int data_get_fun_for(ut64 addr, ut64 *from, ut64 *to);
+int data_var_type_add(const char *typename, int size, const char *fmt);
 
 #endif

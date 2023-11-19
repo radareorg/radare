@@ -93,3 +93,5 @@ int   ELF_(dietelf_get_symbols)(ELF_(dietelf_bin_t)*, int, dietelf_symbol*);
 int   ELF_(dietelf_get_symbols_count)(ELF_(dietelf_bin_t)*, int);
 int   ELF_(dietelf_is_big_endian)(ELF_(dietelf_bin_t)*);
 int   ELF_(dietelf_open)(ELF_(dietelf_bin_t)*, const char*);
+int ELF_(dietelf_get_fields_count)(ELF_(dietelf_bin_t) *bin);
+int ELF_(dietelf_get_fields)(ELF_(dietelf_bin_t) *bin, dietelf_field *field);

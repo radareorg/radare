@@ -3919,8 +3919,7 @@ find_ifthen_state (bfd_vma pc, struct disassemble_info *info,
 /* NOTE: There are no checks in these routines that
    the relevant number of data bytes exist.  */
 
-int
-print_insn_arm (bfd_vma pc, struct disassemble_info *info)
+int print_insn_arm (bfd_vma pc, struct disassemble_info *info)
 {
   unsigned char b[4];
   long		given;

@@ -139,5 +139,8 @@ double r_prof_end(struct r_prof_t *p);
 char *r_sys_cmd_str(const char *cmd, const char *input, int *len);
 const char *get_home_directory();
 int r_file_exist(const char *str);
+int base64_encodeblock(unsigned char in[3], unsigned char out[4], int len);
+int base64_decodeblock(unsigned char in[4], unsigned char out[3]);
+int socket_close(int fd);
 
 #endif

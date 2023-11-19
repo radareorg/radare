@@ -25,6 +25,9 @@
 #include <string.h>
 #include <assert.h>
 
+int dis51_inst1(unsigned char *mem, int memPtr, int *type);
+int dis51_inst2(unsigned char *mem, int memPtr, int *type);
+
 int arch_8051_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 {
 	int ptr = 0;

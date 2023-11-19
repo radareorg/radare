@@ -49,6 +49,12 @@ struct binding {
 	char *cmd;
 };
 
+void print_mem_help();
+int debug_step();
+void visual_gui();
+void config_visual_menu();
+void var_visual_menu();
+void flags_visual_menu();
 static ut64 visual_seeks[255];
 static int visual_seeks_init = 0;
 static int cursorseek=1; /* MUST BE IN SCR.CURSORSEEK */

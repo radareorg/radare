@@ -9,6 +9,7 @@
 int arm_mode = 32;
 
 static char str[128];
+extern int print_insn_arm (bfd_vma pc, struct disassemble_info *info);
 extern void cons_fprintf(FILE *stream, const char *format, ...);
 static unsigned long Offset = 0;
 //unsigned char *bytes = "\xe1\x2f\xff\x32";

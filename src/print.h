@@ -64,5 +64,6 @@ void radare_dump_and_process(int type, int size);
 void print_zoom(ut64 from, ut64 to, const char *byte, int enable);
 void print_mem(ut64 addr, const u8 *buf, ut64 len, const char *fmt, int endian);
 const char *print_mem_get(const char *name);
+void print_mem_list(char *name, char *fmt);
 
 #endif

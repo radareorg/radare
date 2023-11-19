@@ -516,7 +516,7 @@ void rabin_show_header()
 			return;
 		}
 		
-		fields_count = ELF_CALL(dietelf_get_fields_count,bin.elf,fd);
+		fields_count = ELF_CALL(dietelf_get_fields_count,bin.elf); // .elf,fd);
 
 		field.elf = malloc(fields_count * sizeof(dietelf_field));
 		ELF_CALL(dietelf_get_fields,bin.elf,field.elf);

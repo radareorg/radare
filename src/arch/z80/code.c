@@ -21,6 +21,9 @@
 #include "../../code.h"
 #include <stdio.h>
 #include <string.h>
+#include "portab.h"
+extern UBYTE z80_OpcodeLen(UBYTE* Opcodes, ULONG p, int *type);
+extern VOID z80_Disassemble(UBYTE *Opcodes, UWORD adr,STR s);
 
 int arch_z80_aop(ut64 addr, const ut8 *bytes, struct aop_t *aop)
 {

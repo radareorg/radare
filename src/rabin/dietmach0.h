@@ -738,3 +738,5 @@ struct twolevel_hints_command   *tlh_command;
 struct routines_command         *routines_command;
 struct uuid_command             *uuid;
 struct linkedit_data_command    *ld;
+
+ut32 n0(const unsigned char *addr);

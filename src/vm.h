@@ -62,5 +62,31 @@ struct r_vm_t {
 
 ut64 vm_reg_get(const char *name);
 void vm_stack_push(ut64 _val);
+void trace_reset();
+void trace_init();
+int trace_sort();
+struct trace_t *trace_get(ut64 addr, int tag);
+int trace_tag_get();
+int trace_tag_set(int id);
+void flag_rebase(const char *text);
+int program_save(const char *file);
+void undo_write_clear();
+void flag_grep_help();
+int data_list_ranges();
+int vm_cmd_op(const char *op);
+void print_mem_add(char *name, char *fmt);
+void trace_show(int, int);
+int trace_set_times(ut64,int);
+void graph_viz(struct program_t *, int);
+int radare_macro_break(const char *v);
+int data_var_cmd(const char *);
+void analyze_preludes(char *);
+// void grava_program_graph(struct program_t , struct mygrava_window *);
+int var_cmd(const char *);
+void ugraph_print_dot(int);
+int radare_write_op(const char *, char op);
+int radare_write_mask_str(const char*);
+void grava_program_graph(struct program_t *, struct mygrava_window *);
+void stdout_close();
 
 #endif

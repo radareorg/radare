@@ -46,6 +46,7 @@
 #include "utils.h"
 #include "code.h"
 #include "rio.h"
+#include "undo.h"
 #include "plugin.h"
 #include "section.h"
 #include "ranges.h"

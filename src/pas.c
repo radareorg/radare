@@ -29,7 +29,7 @@ BUGS:
 /* TODO: Use vm.c from here */
 int pas_emul_init()
 {
-	vm_init();
+	vm_init(0);
 	return 0;
 }
 

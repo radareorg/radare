@@ -92,6 +92,7 @@ void cons_clear00();
 void cons_any_key();
 void cons_flushit();
 int cons_html_print(const char *ptr);
+void cons_invert();
 
 extern FILE *cons_stdin_fd;
 extern int cons_stdout_fd;

@@ -59,6 +59,8 @@ int std = 0;
 
 /* dummy callback for dl_hist_label */
 static int cb(const char *str) { radare_cmd_raw(str, 0); return 0;}
+extern void help_message(int rc);
+extern void radare_changes_close(void);
 
 #if !DEBUGGER
 int debug_step(int x) { return 0; }

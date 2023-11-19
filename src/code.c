@@ -19,6 +19,7 @@
  */
 
 #include "main.h"
+#include <ctype.h>
 #include "code.h"
 #include "data.h"
 #include "undo.h"
@@ -259,9 +260,11 @@ int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 see
 	/* XXX add cache to avoid looking for asm.case all the time */
 	if (config_get("asm.case")) {
 		while(*string) {
-			if (string[0]=='0'&&string[1]=='x')
+			if (string[0]=='0'&&string[1]=='x') {
 				string = string + 1;
-			else *string = toupper( *string );
+			}else {
+				*string = toupper( *string );
+			}
 			string = string + 1;
 		}
 	}

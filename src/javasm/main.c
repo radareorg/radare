@@ -32,6 +32,7 @@
 
 //int radare_output = 0;
 extern int radare_output;
+int java_assemble(unsigned char *bytes, char *string);
 
 void eprintf(const char *format, ...)
 {

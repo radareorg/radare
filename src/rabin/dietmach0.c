@@ -706,7 +706,7 @@ void dm_read_header (int p)
 	// TODO: use switch case?
 	if (fat_header.magic == FAT_CIGAM) {
 #if __APPLE__
-		swap_fat_header(&fat_header, LITTLE_ENDIAN);
+		// swap_fat_header(&fat_header, LITTLE_ENDIAN);
 #elif __linux__
 		fat_header.magic = SWAP_LONG(fat_header.magic);
 		fat_header.nfat_arch = SWAP_LONG(fat_header.nfat_arch);
@@ -735,7 +735,7 @@ void dm_read_header (int p)
 
 		memcpy(archs, archp, sizeof(struct fat_arch) * nfat);
 #if __APPLE__
-		swap_fat_arch(archs, nfat, LITTLE_ENDIAN);
+		// XXX swap_fat_arch(archs, nfat, LITTLE_ENDIAN);
 #endif
 
 		if (rad)

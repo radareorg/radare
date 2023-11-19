@@ -29,6 +29,7 @@ static ut64 vm_stack_base = 0;
 static u8 *vm_stack = NULL;
 static struct list_head vm_ops;
 static struct list_head vm_mmu_cache;
+extern void udis_set_pc(ut64 pc);
 
 static int realio = 1;
 
@@ -378,6 +379,16 @@ void vm_stack_pop(const char *reg)
 	vm_mmu_read(vm_reg_get(vm_cpu.sp), (ut8*)&val, 4);
 	vm_reg_set(reg, val);
 	vm_reg_set(vm_cpu.sp, vm_reg_get(vm_cpu.sp)-4);
+}
+
+int vm_op_add(const char *op, const char *str)
+{
+	struct vm_op_t *o;
+	o = (struct vm_op_t *)malloc(sizeof(struct vm_op_t));
+	strncpy(o->opcode, op, sizeof(o->opcode));
+	strncpy(o->code, str, sizeof(o->code));
+	list_add_tail(&(o->list), &vm_ops);
+	return 0;
 }
 
 int vm_arch = -1;
@@ -910,16 +921,6 @@ int vm_cmd_reg(const char *_str)
 			}
 		}
 	}
-	return 0;
-}
-
-int vm_op_add(const char *op, const char *str)
-{
-	struct vm_op_t *o;
-	o = (struct vm_op_t *)malloc(sizeof(struct vm_op_t));
-	strncpy(o->opcode, op, sizeof(o->opcode));
-	strncpy(o->code, str, sizeof(o->code));
-	list_add_tail(&(o->list), &vm_ops);
 	return 0;
 }
 

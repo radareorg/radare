@@ -21,6 +21,7 @@
 
 #include "main.h"
 #include "code.h"
+#include "vm.h"
 #include "data.h"
 #include "radare.h"
 #include "rdb.h"
@@ -468,7 +469,7 @@ CMD_DECL(analyze)
 			" pm x[*foo]x ; use the 'foo' (follow pointer) named memory format from 'pm'\n");
 		} else
 		if (input[0]=='\0') {
-			print_mem_list();
+			print_mem_list(NULL, NULL);
 		} else {
 			char *s = strchr(input,' ');
 			if (s) {
@@ -899,7 +900,9 @@ CMD_DECL(graph)
 				radare_cmd_raw("!!dot -T png -o .file.png .file.dot ", 0);
 				radare_cmd_raw("!!rsc view .file.png", 0);
 				radare_cmd_raw("!!rm -f .file.png .file.dot", 0);
-			} else ugraph_print_dot();
+			} else {
+				ugraph_print_dot(0);
+			}
 			break;
 		case 'k':
 			// TODO

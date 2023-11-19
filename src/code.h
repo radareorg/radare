@@ -158,7 +158,7 @@ int data_type_range(ut64 offset);
 int data_type(ut64 offset);
 int data_end(ut64 offset);
 int data_size(ut64 offset);
-int data_list();
+// int data_list();
 void udis_jump(int n);
 int udis_arch_opcode(int arch, const u8 *b, int endian, ut64 seek, int bytes, int myinc);
 void udis_arch(int arch, int len, int rows);
@@ -168,8 +168,26 @@ int dislen(u8* opcode0, int limit);
 int arch_bf_dis(const u8* buf, ut64 addr, int len);
 
 /* Virtual Machine */
-int vm_init();
+int vm_init(int);
+int vm_import(int vm);
 ut64 vm_get(int reg);
+int vm_eval(const char *str);
+int vm_op_eval(const char *str);
+int vm_reg_alias(const char *name, const char *get, const char *set);
+void udis_init();
+int var_init();
+void radis_update();
+int vm_emulate(int n);
+int print_mem_del(char *name);
+void analyze_spcc(const char *name);
+void graph_set_user(int b);
+int vm_cmd_reg(const char*);
+void vm_print(int type);
+int vm_eval_file(const char *str);
+int vm_cmd_op_help();
+int vm_op_list();
+int cons_palette_set(const char *key, const u8 *value);
+ut64 undo_get_last_seek();
 const char *vm_get_name(int reg);
 int vm_set(int reg, ut64 value);
 
@@ -238,5 +256,10 @@ char *metadata_comment_get(ut64 offset, int lines);
 int radare_analyze(ut64 seek, int size, int depth, int rad);
 void radis_str_e(int arch, const u8 *block, int len, int rows);
 int udis_arch_string(int arch, char *string, const u8 *buf, int endian, ut64 seek, int bytes, int myinc);
+int search_from_simple_file(char *file);
+int radare_search_asm(const char *str);
+int do_byte_pat(int);
+void search_similar_pattern(int);
+void analyze_progress(int _o, int _x, int _p, int _v);
 
 #endif

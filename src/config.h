@@ -114,7 +114,6 @@ struct config_new_t {
 	struct list_head nodes;
 };
 
-void config_init();
 void config_lock(int l);
 //int config_bsize_callback(void *data);
 //int config_zoombyte_callback(void *data);

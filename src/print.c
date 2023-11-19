@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <time.h>
 
+extern void radis(int len, int rows);
 void udis_arch(int arch, int len, int rows);
 int inc = 16;
 int dec = 16;

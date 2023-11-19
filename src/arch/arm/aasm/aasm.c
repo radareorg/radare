@@ -30,6 +30,8 @@
 #include <stdlib.h>                                     /* For {malloc, exit} */
 #include "aasm.h"
 
+int print_insn_arm (bfd_vma pc, struct disassemble_info *info);
+
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
