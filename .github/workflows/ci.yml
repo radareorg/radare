@@ -15,7 +15,6 @@ jobs:
       uses: actions/checkout@v3
     - name: Configure, build and install
       run: |
-          pwd ; ls -l
           ./configure --prefix=/usr
           make -j
           sudo make install
@@ -56,8 +55,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Configure, build and install
       run: |
-          pwd ; ls -l
-          ./configure --prefix=/usr
+          ./configure
           make -j
           sudo make install
     - name: Test

@@ -134,7 +134,7 @@ int gnu_disparc_str(char *str, const u8 *inst, ut64 offset);
 int z80_udis (char *str, ut8 *bytes, int len, ut64 seek);
 
 struct aop_t *pas_aop(int arch, ut64 seek, const u8 *bytes, int len, struct aop_t *aop, char *newstr, int pseudo);
-struct reflines_t *code_lines_init();
+struct reflines_t *code_lines_init(int );
 void code_lines_free(struct list_head *list);
 void code_lines_print(struct reflines_t *list, ut64 addr, int expand);
 void metadata_comment_add(ut64 offset, const char *str);

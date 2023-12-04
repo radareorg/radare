@@ -97,7 +97,7 @@ char cons_palette[CONS_PALETTE_SIZE][8] = {
 	/* FF */
 };
 
-const char *cons_color_names[CONS_COLORS_SIZE+1] = {
+static const char *cons_color_names[CONS_COLORS_SIZE+1] = {
 	"black",
 	"gray",
 	"white",
@@ -128,7 +128,7 @@ void cons_invert(int set)
 	else cons_strcat("\x1b[0m");
 }
 
-const char *cons_colors[CONS_COLORS_SIZE+1] = {
+static const char *cons_colors[CONS_COLORS_SIZE+1] = {
 	C_BLACK,      // 0
 	C_GRAY,       // 1
 	C_WHITE,      // 2

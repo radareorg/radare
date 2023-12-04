@@ -364,9 +364,10 @@ ut64 get_offset(const char *orig)
 	if (arg[0]=='\'' && arg[0+2]=='\'')
 		return arg[0+1];
 
-	for(;*arg==' ';arg=arg+1);
-	for(i=0;arg[i]==' ';i++);
-	for(;arg[i]=='\\';i++); i++;
+	for (;*arg==' ';arg=arg+1) {}
+	for (i=0;arg[i]==' ';i++) {}
+	for (;arg[i]=='\\';i++) {}
+	i++;
 
 #if RADARE_CORE
 #if 0
@@ -584,14 +585,14 @@ ut64 get_math(const char* text)
 	/* remove whitespaces and dupped '=' */
 	for(tmp = txt = strdup(text); txt && txt[0] && txt[1]; txt = txt+1) {
 #if 1
-		if ((txt[0]=='!' && txt[1]=='='))
+		if (txt[0] == '!' && txt[1]=='=')
 			str_cpy(txt+1, txt+2);
 		else
 #endif
-		if ((txt[0]=='=' && txt[1]=='='))
+		if (txt[0] == '=' && txt[1]=='=')
 			txt[0]=' ';
 		else
-		if ((txt[0]==' '))
+		if (txt[0] == ' ')
 			str_cpy(txt, txt+1);
 	}
 	txt = tmp;

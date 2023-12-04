@@ -1,7 +1,8 @@
 include ../../config.mk
 
-OBJ=../rabin/javasm.o main.o
+OBJ=main.o
 BIN=javasm${BINSFX}
+CFLAGS+=-DHAVE_MAIN=1
 
 all: ${BIN}
 

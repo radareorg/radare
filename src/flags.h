@@ -49,7 +49,7 @@ void flag_help();
 int flag_rename_str(char *text);
 int string_flag_offset(const char *match, char *buf, ut64 seek, int idx);
 int flag_interpolation(const char *from, const char *to);
-struct list_head flags;
+extern struct list_head flags;
 void flag_grep(const char *grep);
 void flag_cmd(const char *text);
 void flag_space_set(const char *name);

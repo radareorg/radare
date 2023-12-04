@@ -139,10 +139,10 @@ int radiff_hexdump(const char *a, const char *b)
 	snprintf(cmd, 1023, "cat '%s' | ired - > b.hex", b);
 	system(cmd);
 	snprintf(cmd, 1023, "diff -u a.hex b.hex");
-	system(cmd);
+	int rc = system(cmd);
 	unlink("a.hex");
 	unlink("b.hex");
-	
+	return rc;
 }
 
 int main(int argc, char **argv)

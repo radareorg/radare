@@ -474,7 +474,7 @@ static void trap(struct DisasmPara_PPC *dp,ppc_word in,unsigned char dmode)
   char *cnd;
   int to = (int)PPCGETD(in);
 
-  if (cnd = trap_condition[to]) {
+  if ((cnd = trap_condition[to])) {
     dp->flags |= dmode;
     sprintf(dp->opcode,"t%c%s",dmode?'d':'w',cnd);
     ra_rb(dp->operands,in);

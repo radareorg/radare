@@ -205,9 +205,10 @@ int arch_csr_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 			aop->type = AOP_TYPE_XOR;
 			break;
 		case 0xe:
-			if (in->in_mode == ADDR_MODE_RELATIVE)
+			if (in->in_mode == ADDR_MODE_RELATIVE) {
 				rel = 1;
-			switch(in->in_reg) {
+			}
+			switch (in->in_reg) {
 			case 0: // BRA
 				aop->type = AOP_TYPE_JMP;
 				aop->jump = label_off(&d)+4;
@@ -249,7 +250,7 @@ int arch_csr_aop(ut64 addr, const unsigned char *bytes, struct aop_t *aop)
 				aop->type = AOP_TYPE_CJMP;
 				rel = 0;
 				aop->jump = label_off(&d);
-if (aop->jump&1)aop->jump+=3;
+				if (aop->jump&1) aop->jump+=3;
 				aop->fail = addr+2;
 				break;
 			}

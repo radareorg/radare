@@ -32,7 +32,8 @@
 
 //int radare_output = 0;
 extern int radare_output;
-int java_assemble(unsigned char *bytes, char *string);
+// int java_assemble(unsigned char *bytes, char *string);
+#include "../rabin/javasm.c"
 
 void eprintf(const char *format, ...)
 {

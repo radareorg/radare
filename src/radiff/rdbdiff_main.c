@@ -25,7 +25,7 @@
 
 int udis86_color = 1;
 
-void show_help_message(int v)
+static void helpmsg(int v)
 {
 	printf("Usage: rdbdiff [-hV] [-i fmt] [-o fmt] [file_0] [file_1]\n");
 	if (v) {
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 	{
 		switch( c ) {
 		case 'h':
-			show_help_message(1);
+			helpmsg(1);
 		case 'V':
 			show_version();
 			break;
@@ -98,12 +98,12 @@ int main(int argc, char **argv)
 		case 'o':
 			break;
 		default:
-			show_help_message(0);
+			helpmsg(0);
 		}
 	}
 
 	if ((argc-optind) != 2)
-		show_help_message(0);
+		helpmsg(0);
 
 	return main_rdb_diff(argv[optind], argv[optind+1]);
 }

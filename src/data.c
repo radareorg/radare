@@ -827,7 +827,6 @@ int data_var_type_add(const char *typename, int size, const char *fmt)
 int data_var_type_del(const char *typename)
 {
 	struct list_head *pos;
-	ut64 ret = 0;
 
 	if (*typename==' ')typename=typename+1;
 
@@ -861,8 +860,6 @@ int data_var_type_list(const char *mask)
 struct var_type_t *data_var_type_get(const char *datatype)
 {
 	struct list_head *pos;
-	ut64 ret = 0;
-
 	list_for_each(pos, &vartypes) {
 		struct var_type_t *d = (struct var_type_t *)list_entry(pos, struct var_type_t, list);
 		//eprintf("---(%s)(%s)\n", d->name, datatype);

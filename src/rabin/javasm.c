@@ -780,7 +780,7 @@ int hexstr2binstr(const char *in, unsigned char *out) // 0A 3B 4E A0
 
 	return (int)len;
 }
-
+#if HAVE_MAIN
 static int show_help()
 {
 	printf("Usage: javasm [-hV] [-a 'opcode'] [-d 'hexpairstring'] [-r][-c 'classfile']\n");
@@ -830,4 +830,6 @@ int main(int argc, char **argv)
 	show_help();
 	return 0;
 }
+#endif
+
 #endif

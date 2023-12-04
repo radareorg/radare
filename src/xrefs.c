@@ -78,6 +78,7 @@ match value ffffffad (ffffad) at offset 0x454
 /* setup 64 bit environment! */
 #include "radare.h"
 
+#undef __UNIX__
 #if __FreeBSD__ || __linux__ || __NetBSD__ || __OpenBSD__
 #define __UNIX__ 1
 #else

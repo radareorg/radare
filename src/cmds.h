@@ -34,7 +34,7 @@ typedef struct command {
 #define COMMAND(sn,opt,help,hook) {sn, (char*)opt, help, cmd_ ## hook}
 
 int commands_parse(const char *cmdline);
-void show_help_message();
+void show_help_message(void);
 
 CMD_DECL(gotoxy);
 CMD_DECL(menu);

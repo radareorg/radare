@@ -137,9 +137,10 @@ ut64 get_offset(const char *orig)
 	if (arg[0]=='\'' && arg[0+2]=='\'')
 		return arg[0+1];
 
-	for(;*arg==' ';arg=arg+1);
-	for(i=0;arg[i]==' ';i++);
-	for(;arg[i]=='\\';i++); i++;
+	for(;*arg==' ';arg=arg+1) {}
+	for(i=0;arg[i]==' ';i++) {}
+	for(;arg[i]=='\\';i++) {}
+	i++;
 
 	if (arg[i] == 'x' && i>0 && arg[i-1]=='0') {
 		sscanf(arg, "0x"OFF_FMTx, &ret);

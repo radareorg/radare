@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_CPU_H_
 #define _INCLUDE_CPU_H_
 
-struct {
+typedef struct {
 	char *name;
 } cpu_struct;
 

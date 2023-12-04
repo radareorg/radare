@@ -9,7 +9,7 @@ struct arch_bp_t {
 	int length;
 };
 
-struct arch_bp_t **arch_bps;
+extern struct arch_bp_t **arch_bps;
 
 int arch_bp_rm_soft(struct bp_t *bp);
 void debug_bp_reload_all();

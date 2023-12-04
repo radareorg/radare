@@ -383,7 +383,7 @@ int program_serialize(struct program_t *program, char *file)
 int program_free(struct program_t *prg)
 {
 	//printf("program_free: MEMORY LEAK!\n");
-#warning program_free: must be implemented
+// #warning program_free: not implemented
 	return 0;
 }
 

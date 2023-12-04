@@ -86,7 +86,7 @@ int do_byte_pat(int patlen)
 	int pcnt, cnt=0, k=0;
 	ut64 intaddr;
 	/* end addr */
-	ut64 bytes;
+	ut64 bytes = 0;
  	/* start addr */
 	ut64 bact = config.seek;
 

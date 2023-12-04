@@ -2924,7 +2924,7 @@ CMD_DECL(help)
 			} else {
 				char buf[1024];
 				int len;
-				len = hexstr2binstr(input+1, buf);
+				len = hexstr2binstr(input+1, (u8*)buf);
 				if (len>0)
 					print_data(0, "", (u8*)buf, len, FMT_ASC);
 			}

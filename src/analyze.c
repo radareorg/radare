@@ -32,7 +32,7 @@
 #define MAX_FUN_SIZE 1023
 
 /* code analyzer */
-int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
+// int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 
 int section_is_x (ut64 addr)
 {

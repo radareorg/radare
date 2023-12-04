@@ -1,4 +1,10 @@
-**Note**: this version is deprecated in favor of radare2: https://github.com/radareorg/radare2
+[![ci](https://github.com/radareorg/radare/actions/workflows/ci.yml/badge.svg)](https://github.com/radareorg/radare/actions/workflows/ci.yml)
+
+# WARNING
+
+This version is the original code being refactored into [radare2](https://github.com/radareorg/radare2)
+
+```
 
                   __--~.
                .-'_ ,' |
@@ -9,13 +15,14 @@
          \/   -| '. ' | | |_/ | | | \ \_
 
                             pwn them all
+```
 
-SHORT
+## SHORT
 
   radare is a commandline hexadecimal editor.
 
 
-DESCRIPTION
+## DESCRIPTION
 
   Radare is a toolkit framework for working with binary files having the
   unix philosphy in mind.

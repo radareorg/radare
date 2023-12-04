@@ -57,17 +57,17 @@
 // XXX?
 //#include "os.h"
 
-int       (*__open)   (const char *pathname, int flags, mode_t mode);
-int       (*__open64) (const char *pathname, int flags, mode_t mode);
-int       (*__close)  (int fd);
-ssize_t   (*__read)   (int fd, void *buf, size_t count);
-ssize_t   (*__read64) (int fd, void *buf, size_t count);
-ssize_t   (*__write)  (int fd, const void *buf, size_t count);
-ssize_t   (*__write64)(int fd, const void *buf, size_t count);
-ut64     (*__lseek)  (int fildes, ut64 offset, int whence);
-ut64     (*__lseek64)(int fildes, ut64 offset, int whence);
-ut64     (*___llseek)(int fildes, ut64 offset, int whence);
-int *     (*__system) (const char *command);
+extern int       (*__open)   (const char *pathname, int flags, mode_t mode);
+extern int       (*__open64) (const char *pathname, int flags, mode_t mode);
+extern int       (*__close)  (int fd);
+extern ssize_t   (*__read)   (int fd, void *buf, size_t count);
+extern ssize_t   (*__read64) (int fd, void *buf, size_t count);
+extern ssize_t   (*__write)  (int fd, const void *buf, size_t count);
+extern ssize_t   (*__write64)(int fd, const void *buf, size_t count);
+extern ut64      (*__lseek)  (int fildes, ut64 offset, int whence);
+extern ut64      (*__lseek64)(int fildes, ut64 offset, int whence);
+extern ut64      (*___llseek)(int fildes, ut64 offset, int whence);
+extern int *     (*__system) (const char *command);
 extern struct debug_t ps;
 void ps_parse_argv();
 #include "os.h"
