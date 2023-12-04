@@ -62,12 +62,19 @@ ifeq ($(HAVE_LIB_PYTHON2_7),1)
 	-${CC} python.c ${SHARED_CFLAGS} ${LDFLAGS} ${CFLAGS} ${PY26_CFLAGS} ${PY27_LIBS} -o python27.${SO}
 endif
 
+ifeq ($(HAVE_LANG_LUA),1)
 perl.${SO}:
 	-${CC} perl.c ${SHARED_CFLAGS} ${CFLAGS} ${PERL_CFLAGS} ${PERL_LIBS} -o perl.${SO}
+perl.${SO}:
+endif
 
+ifeq ($(HAVE_LANG_RUBY),1)
 ruby.${SO}:
 	-ruby mkruby.rb
 	#-${CC} ruby.c ${SHARED_CFLAGS} ${CFLAGS} ${RUBY_CFLAGS} ${RUBY_LDFLAGS} -o ruby.${SO} 
+
+ruby.$(SO):
+endif
 
 # Try with -llua and -llua5.1 (stupid ubuntu)
 lua.${SO}:

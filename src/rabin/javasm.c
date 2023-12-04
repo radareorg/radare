@@ -30,6 +30,7 @@
 #include <getopt.h>
 #include <stdarg.h>
 
+#undef NTOHS
 #if __WINDOWS__
 ut16 NTOHS(ut16 x) {
 	ut16 y;
@@ -43,6 +44,13 @@ ut16 NTOHS(ut16 x) {
 #define NTOHS ntohs
 #endif
 
+struct classfile {
+	unsigned char cafebabe[4];
+	unsigned char minor[2];
+	unsigned char major[2];
+	unsigned short cp_count;
+};
+
 /* alphabetically sorted */
 // FMI: http://en.wikipedia.org/wiki/Java_bytecode
 // Jazzele: http://people.bath.ac.uk/enpsgp/nokia770/jazelle/test_jazelle5.c
@@ -54,13 +62,6 @@ int radare_output = 0;
 
 #define USHORT(x,y) (unsigned short)((x[y+1]|(x[y]<<8)) & 0xffff)
 #define UINT(x,y) (unsigned int) ((x[y]<<24)|(x[y+1]<<16)|(x[y+2]<<8)|x[y+3])
-
-struct classfile {
-	unsigned char cafebabe[4];
-	unsigned char minor[2];
-	unsigned char major[2];
-	unsigned short cp_count;
-};
 
 struct constant_t {
 	char *name;
@@ -605,11 +606,11 @@ int java_classdump(const char *file)
 			NR printf("%s (length=%d)\n", buf, sz);
 			//else printf("fs strings && f str.%d @ 0x%08llx\n",
 			//	i+1, (ut64)(cp_items[i].off+3));
-			cp_items[i].value = strdup(buf);
+			cp_items[i].value = strdup ((const char *)buf);
 			break;
 		case 5: // Long
 		case 6: // Double
-			i+=2;
+			i += 2;
 			break;
 		case 7:
 			NR printf("%d\n", USHORT(buf,0));

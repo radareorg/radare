@@ -5,6 +5,11 @@ CONTACT pancake ; pancake@youterm.com
 LANG_C!
 LANG_CXX
 
+
+(( optional plugins ))
+LANG_RUBY
+ARG_WITH HAVE_RUBY ruby build with embedded ruby extension ;
+
 CHECK_ENDIAN
 USE_DL
 USE_PKGCONFIG
@@ -51,9 +56,6 @@ ARG_ENABLE W32 w32 enables the build of w32 version using mingw32 ;
 
 ARG_WITH SYSPROXY sysproxy builds the syscall proxy plugin ;
 
-LANG_RUBY
-LANG_PYTHON
-
 CHKPRG INSTALL install
 ((
  This is required for Solaris (and maybe other)
@@ -92,16 +94,15 @@ CHKLIB ewf
 ARG_WITHOUT WANT_EWF ewf disable EWF dependency ;
 IFNOT WANT_EWF { HAVE_LIB_EWF = 0 ; }
 
-(( PERL 
+(( PERL  ))
 LANG_PERL
 CHECK_PERL_MODULE ExtUtils::Embed
 ARG_WITH HAVE_PERL perl build with embedded perl extension ;
 IFNOT HAVE_PM_EXTUTILSEMBED { HAVE_PERL = 0 ; }
 
-PYTHON
+(( PYTHON ))
 LANG_PYTHON
 ARG_WITH HAVE_PYTHON python build with embedded python extension ;
-))
 
 CHKLIB python2.5
 CHKLIB python2.6

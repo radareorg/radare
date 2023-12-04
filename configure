@@ -18,6 +18,7 @@ control_c() {
   exit 1
 }
 trap control_c 2
+HAVE_RUBY=0
 READLINE=1
 USBSNF=1
 NONFREE=1
@@ -28,6 +29,8 @@ W32=0
 SYSPROXY=0
 VALA=1
 WANT_EWF=1
+HAVE_PERL=0
+HAVE_PYTHON=0
 MAEMO=0
 HAVE_GUI=1
 split_host() {
@@ -173,6 +176,7 @@ EOF2
 
 printf "
 Optional Features:
+  --with-ruby            build with embedded ruby extension
   --without-readline     disables the readline support
   --without-usb-sniffer  disables the build of the libusb sniffer
   --without-nonfree      disables the build of non-free sourcefiles
@@ -183,6 +187,8 @@ Optional Features:
   --with-sysproxy        builds the syscall proxy plugin
   --without-vala         disables the build of all the vala-dependant parts
   --without-ewf          disable EWF dependency
+  --with-perl            build with embedded perl extension
+  --with-python          build with embedded python extension
   --with-maemo           build hildon interface
   --without-gui          radare without the gtk frontend
 "
@@ -212,6 +218,7 @@ take_environ() {
 : ${CC:=gcc}
 : ${CPP:=cpp}
 : ${CXX:=c++}
+: ${PERL:=perl}
 : ${LUA:=lua}
 : ${PREFIX:=/usr/local/}
 }
@@ -263,11 +270,11 @@ echo "PKGNAME:     radare"
 echo "VERSION:     1.5.2"
 echo "AUTHOR:      pancake"
 echo "EMAIL:       pancake@youterm.com"
-echo "LANGS:       c c++ ruby python lua"
+echo "LANGS:       c c++ ruby perl python lua"
 echo "REQUIRED:    libdl"
 echo "OPTIONAL:    libvala-1.0>=0.5.0 libewf libpython2.5 libpython2.6 libpython2.7 liblua liblua5.1"
 echo "PKGCONFIG:   gtk+-2.0 vte"
-echo "FLAGS:       --without-readline --without-usb-sniffer --without-nonfree --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --without-ewf --with-maemo --without-gui"
+echo "FLAGS:       --with-ruby --without-readline --without-usb-sniffer --without-nonfree --without-debugger --with-java --with-wii --enable-w32 --with-sysproxy --without-vala --without-ewf --with-perl --with-python --with-maemo --without-gui"
 	exit 0
 	;;
 --cache-file)
@@ -319,6 +326,7 @@ echo "FLAGS:       --without-readline --without-usb-sniffer --without-nonfree --
 --mandir)
 	MANDIR="$value"; ;;
 
+"--with-ruby") HAVE_RUBY="1"; ;;
 "--without-readline") READLINE="0"; ;;
 "--without-usb-sniffer") USBSNF="0"; ;;
 "--without-nonfree") NONFREE="0"; ;;
@@ -329,6 +337,8 @@ echo "FLAGS:       --without-readline --without-usb-sniffer --without-nonfree --
 "--with-sysproxy") SYSPROXY="1"; ;;
 "--without-vala") VALA="0"; ;;
 "--without-ewf") WANT_EWF="0"; ;;
+"--with-perl") HAVE_PERL="1"; ;;
+"--with-python") HAVE_PYTHON="1"; ;;
 "--with-maemo") MAEMO="1"; ;;
 "--without-gui") HAVE_GUI="0"; ;;
 *) if [ "$value" ]; then eval "`echo $flag2=$value`" ;
@@ -348,7 +358,7 @@ parse_options "$1"
 shift
 done
 
-ENVWORDS="MANDIR DESCRIPTION INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR ETCDIR SYSCONFDIR DATADIR DOCDIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_PROGRAM_STRIP INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_NUMBER PKGCFG_LIBDIR PKGCFG_INCDIR PKGNAME VPATH CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS CPPFLAGS LDFLAGS HAVE_LANG_C CXX CXXFLAGS HAVE_LANG_CXX LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS PKGCONFIG SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF NONFREE DEBUGGER JAVA WII W32 SYSPROXY RUBY RUBY_VERSION PYTHON HAVE_LANG_PYTHON HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF WANT_EWF HAVE_LIB_PYTHON2_5 HAVE_LIB_PYTHON2_6 HAVE_LIB_PYTHON2_7 MAEMO HAVE_GUI GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK__2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA HAVE_LUA_H LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
+ENVWORDS="MANDIR DESCRIPTION INFODIR LIBDIR INCLUDEDIR LOCALSTATEDIR ETCDIR SYSCONFDIR DATADIR DOCDIR LIBEXECDIR SBINDIR BINDIR EPREFIX PREFIX SPREFIX TARGET HOST BUILD INSTALL INSTALL_LIB INSTALL_MAN INSTALL_PROGRAM INSTALL_PROGRAM_STRIP INSTALL_DIR INSTALL_SCRIPT INSTALL_DATA HOST_OS HOST_CPU BUILD_OS BUILD_CPU TARGET_OS TARGET_CPU VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_NUMBER PKGCFG_LIBDIR PKGCFG_INCDIR PKGNAME VPATH CONTACT CONTACT_NAME CONTACT_MAIL CC CFLAGS CPPFLAGS LDFLAGS HAVE_LANG_C CXX CXXFLAGS HAVE_LANG_CXX RUBY RUBY_VERSION HAVE_LANG_RUBY HAVE_RUBY LIL_ENDIAN BIG_ENDIAN BYTEORDER HAVE_LIB_DL DL_LIBS PKGCONFIG SOLARIS DARWIN SHARED_EXT SHARED_CFLAGS WINDOWS READLINE HAVE_RL_COMPLETION_MATCHES RADARE_LIBS HAVE_LIB_READLINE HAVE_USB_H USBSNF NONFREE DEBUGGER JAVA WII W32 SYSPROXY HAVE_INSTALL VALA HAVE_VALAC VALAC HAVE_VALA_1_0_VERSION_0_5_0 _CFLAGS SIZEOF_OFF_T HAVE_LIB_EWF WANT_EWF PERL HAVE_LANG_PERL HAVE_PM_EXTUTILSEMBED HAVE_PERL PYTHON HAVE_LANG_PYTHON HAVE_PYTHON HAVE_LIB_PYTHON2_5 HAVE_LIB_PYTHON2_6 HAVE_LIB_PYTHON2_7 MAEMO HAVE_GUI GTK_FLAGS GTK_LIBS HAVE_PKGCFG_GTK__2_0 VTE_FLAGS VTE_LIBS HAVE_PKGCFG_VTE HAVE_VALA HAVE_LUA_H LUA HAVE_LANG_LUA LUA_LIBS HAVE_LIB_LUA HAVE_LIB_LUA5_1"
 
 create_environ
 
@@ -361,7 +371,7 @@ ocho "checking target system type... ${TARGET}"
 [ -n "${prefix}" ] && PREFIX="${prefix}"
 ocho "checking for working directories... ${WODIS}"
 ocho "using prefix '${PREFIX}'"
-ACR_RMFILES=" test.c a.out a.exe test.c test.cxx a.out a.exe"
+ACR_RMFILES=" test.c a.out a.exe test.c test.cxx a.out a.exe test.pl"
 
 COMPILER=CC
 ochof "checking for c compiler... "
@@ -391,6 +401,18 @@ if [ $? = 0 ]; then echo ${CXX}; else
 HAVE_LANG_CXX=0
 echo no
  fi
+ochof "checking for ruby... "
+HAVE_LANG_RUBY=0
+for A in `echo ${PATH} | sed -e 's,:, ,g'`; do
+RUBY=`ls ${A}/ruby* 2>/dev/null`
+ if [ "${RUBY}" ]; then
+   RUBY=`echo ${RUBY} | cut -d\  -f 1`
+   RUBY_VERSION=`echo ${RUBY} ${A} | awk '{ print substr($1,length($2)+6) }'`
+   echo ${RUBY} ; HAVE_LANG_RUBY=1 ; break
+ fi
+done
+if [ -z "${RUBY}" ]; then
+echo no ; fi
 printf "checking host endianness... "
 LIL_ENDIAN=$(printf I|od|${AWK}'{print substr($2,6,1);exit}')
 if [ 0 != 0 -o "${LIL_ENDIAN}" = 1 ]; then
@@ -504,28 +526,6 @@ check_include HAVE_USB_H usb.h 0
 
 if [ "$HAVE_USB_H" = "0" ]; then
 USBSNF="0"; fi
-ochof "checking for ruby... "
-HAVE_LANG_RUBY=0
-for A in `echo ${PATH} | sed -e 's,:, ,g'`; do
-RUBY=`ls ${A}/ruby* 2>/dev/null`
- if [ "${RUBY}" ]; then
-   RUBY=`echo ${RUBY} | cut -d\  -f 1`
-   RUBY_VERSION=`echo ${RUBY} ${A} | awk '{ print substr($1,length($2)+6) }'`
-   echo ${RUBY} ; HAVE_LANG_RUBY=1 ; break
- fi
-done
-if [ -z "${RUBY}" ]; then
-echo no ; fi
-ochof "checking for python... "
-HAVE_LANG_PYTHON=0
-for A in `echo ${PATH} | sed -e 's,:, ,g'` ; do
-PYTHON=`ls ${A}/python* 2>/dev/null`
-if [ "${PYTHON}" ]; then
- PYTHON=`echo ${PYTHON} | awk '{print $1; }'`
- echo ${PYTHON} ; HAVE_LANG_PYTHON=1 ; break ; fi
-done
-if [ -z "${PYTHON}" ]; then
-echo no ; fi
 ochof "checking for install... "
 if [ -x "${INSTALL}" ]; then
 	FIND=${INSTALL}
@@ -631,6 +631,33 @@ fi
 check_library HAVE_LIB_EWF ewf 0
 if [ "$WANT_EWF" = "0" ]; then
 HAVE_LIB_EWF="0"; fi
+ochof "checking for perl... "
+HAVE_LANG_PERL=0
+${PERL} -e '' 2>&1 > /dev/null
+if [ $? = 0 ]; then
+  ocho ok ; HAVE_LANG_PERL=1 ; else
+  ocho no  ; fi
+ochof "checking for 'ExtUtils::Embed' perl module ... "
+perl -mExtUtils::Embed -e '' 2>/dev/null
+if [ $? = 0 ]; then
+	HAVE_PM_EXTUTILSEMBED=1
+	ocho ok
+else
+	HAVE_PM_EXTUTILSEMBED=0
+	ocho no
+ fi
+if [ "$HAVE_PM_EXTUTILSEMBED" = "0" ]; then
+HAVE_PERL="0"; fi
+ochof "checking for python... "
+HAVE_LANG_PYTHON=0
+for A in `echo ${PATH} | sed -e 's,:, ,g'` ; do
+PYTHON=`ls ${A}/python* 2>/dev/null`
+if [ "${PYTHON}" ]; then
+ PYTHON=`echo ${PYTHON} | awk '{print $1; }'`
+ echo ${PYTHON} ; HAVE_LANG_PYTHON=1 ; break ; fi
+done
+if [ -z "${PYTHON}" ]; then
+echo no ; fi
 check_library HAVE_LIB_PYTHON2_5 python2.5 0
 check_library HAVE_LIB_PYTHON2_6 python2.6 0
 check_library HAVE_LIB_PYTHON2_7 python2.7 0
