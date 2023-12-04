@@ -113,7 +113,7 @@ struct aop_t {
 	ut64 i_dst,i_src1,i_src2; // inmediate arguments
 };
 
-int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
+extern int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_aop_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_8051_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);
 int arch_z80_aop(ut64 addr, const u8 *bytes, struct aop_t *aop);

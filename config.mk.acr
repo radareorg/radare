@@ -21,6 +21,7 @@ NONFREE=@NONFREE@
 DEBUGGER=@DEBUGGER@
 SYSPROXY=@SYSPROXY@
 
+CFLAGS+=-fPIC
 #CFLAGS+=-Wall
 # TODO move these stuff to config.h.acr
 #CFLAGS+=-DVERSION=\"@VERSION@\"

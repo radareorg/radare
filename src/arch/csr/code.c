@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 
+struct state _state;
+
 static int get_num(int num, int shift)
 {
 	int tmp;

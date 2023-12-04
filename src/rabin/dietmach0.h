@@ -71,10 +71,12 @@
  * Global Vars
  *
  */
+#if 0
 extern int swapped, fd, filesize;
 extern char *filename, output[MAX_F_LENGTH], *field, *out;
 
 extern char *fileaddr, *startaddr;
+#endif
 
 /*
  * Prototypes
@@ -716,27 +718,27 @@ struct fvmfile_command {
 /*
  * Struct definitions
  */
-struct fat_header               fat_header;
-struct mach_header              m_header;
-struct fat_arch                 *archs;
-struct load_command             *l_command;
-struct segment_command          *seg_command;
-struct dylinker_command         *dy_command;
-struct section                  *sect;
-struct symtab_command           *sy_command;
-struct dysymtab_command         *dysym_command;
-struct symseg_command           *symseg_command;
-struct fvmlib_command           *fvm_command;
-struct dylib_command            *dyl_command;
-struct sub_framework_command    *sub_framework;
-struct sub_umbrella_command     *sub_umbrella;
-struct sub_library_command      *sub_library;
-struct sub_client_command       *sub_client;
-struct prebound_dylib_command   *prebound_dy_command;
-struct thread_command           *thr_command;
-struct twolevel_hints_command   *tlh_command;
-struct routines_command         *routines_command;
-struct uuid_command             *uuid;
-struct linkedit_data_command    *ld;
+extern struct fat_header               fat_header;
+extern struct mach_header              m_header;
+extern struct fat_arch                 *archs;
+extern struct load_command             *l_command;
+extern struct segment_command          *seg_command;
+extern struct dylinker_command         *dy_command;
+extern struct section                  *sect;
+extern struct symtab_command           *sy_command;
+extern struct dysymtab_command         *dysym_command;
+extern struct symseg_command           *symseg_command;
+extern struct fvmlib_command           *fvm_command;
+extern struct dylib_command            *dyl_command;
+extern struct sub_framework_command    *sub_framework;
+extern struct sub_umbrella_command     *sub_umbrella;
+extern struct sub_library_command      *sub_library;
+extern struct sub_client_command       *sub_client;
+extern struct prebound_dylib_command   *prebound_dy_command;
+extern struct thread_command           *thr_command;
+extern struct twolevel_hints_command   *tlh_command;
+extern struct routines_command         *routines_command;
+extern struct uuid_command             *uuid;
+extern struct linkedit_data_command    *ld;
 
 ut32 n0(const unsigned char *addr);

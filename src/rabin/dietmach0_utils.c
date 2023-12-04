@@ -56,8 +56,8 @@
 /*
  * Gloabal Variables
  */
-int fd, fdout;
-struct stat sb;
+static int fd, fdout;
+static struct stat sb;
 
 void
 *dm_allocate (size_t nbytes)
@@ -89,6 +89,9 @@ dm_fatal (const char *fmt, ...)
   exit(1);
 }
 
+int filesize;
+char *fileaddr;
+char *startaddr;
 void
 dm_map_file (char *filename, int fd)
 {

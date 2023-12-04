@@ -55,6 +55,8 @@ extern int arm_mode;
 extern int mips_mode;
 int ollyasm_enable = 0;
 
+int (*arch_aop)(ut64 addr, const u8 *bytes, struct aop_t *aop);
+
 static const ut8 *udis_mem = NULL;
 static int udis_mem_ptr = 0;
 static int input_hook_x(ud_t* u)

@@ -47,16 +47,38 @@
 
 #include "dietmach0_errors.h"
 #include "dietmach0.h"
-int swapped, fd, filesize;
-char *filename, output[MAX_F_LENGTH], *field, *out;
+static int swapped, fd, filesize;
+static char *filename, output[MAX_F_LENGTH], *field, *out;
 
-char *fileaddr, *startaddr;
+static char *fileaddr, *startaddr;
 
 // XXX This must be ut64 !!!!
 static void *offset, *toff, *init_offset;
 static unsigned int ncmds;
 
 extern int rad;
+struct fat_header               fat_header;
+struct mach_header              m_header;
+struct fat_arch                 *archs;
+struct load_command             *l_command;
+struct segment_command          *seg_command;
+struct dylinker_command         *dy_command;
+struct section                  *sect;
+struct symtab_command           *sy_command;
+struct dysymtab_command         *dysym_command;
+struct symseg_command           *symseg_command;
+struct fvmlib_command           *fvm_command;
+struct dylib_command            *dyl_command;
+struct sub_framework_command    *sub_framework;
+struct sub_umbrella_command     *sub_umbrella;
+struct sub_library_command      *sub_library;
+struct sub_client_command       *sub_client;
+struct prebound_dylib_command   *prebound_dy_command;
+struct thread_command           *thr_command;
+struct twolevel_hints_command   *tlh_command;
+struct routines_command         *routines_command;
+struct uuid_command             *uuid;
+struct linkedit_data_command    *ld;
 
 void dm_read_codesign (int i)
 {  
