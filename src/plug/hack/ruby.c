@@ -41,8 +41,15 @@ static int (*rs_cmd)(char *cmd, int log) = NULL;
 static int slurp_ruby(const char *file)
 {
 	rb_load_file(file);
-	//ruby_exec();
-	rb_exec(NULL);
+	int state = 0;
+	rb_protect ((VALUE (*)(VALUE))rb_eval_string, (VALUE)"main", &state);
+	if (state) {
+		// Handle any exceptions here
+		// rb_errinfo() returns the last exception raised
+		VALUE rbException = rb_errinfo();
+		// Do something with the exception...
+	}
+	// rb_exec(NULL);
 	return 0;
 }
 

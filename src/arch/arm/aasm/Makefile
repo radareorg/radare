@@ -10,7 +10,7 @@ endif
 .c.o:
 	-$(CC) -c $(CFLAGS) -o $@ $<
 
-all: armasm
+all:
 
 armasm: ${AOBJ} 
 

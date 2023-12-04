@@ -1,10 +1,10 @@
 # setup with ruby!
 
 require 'mkmf'
-INCDIR = Config::CONFIG['rubylibdir'] + "/"+Config::CONFIG['arch']
-LIBDIR = Config::CONFIG['LIBRUBY_ARG_SHARED']
+INCDIR = RbConfig::CONFIG['rubylibdir'] + "/" + RbConfig::CONFIG['arch']
+LIBDIR = RbConfig::CONFIG['LIBRUBY_ARG_SHARED']
 #LIBS   = Config::CONFIG['LIBS'] -lpthread...
-LIBNAM = Config::CONFIG['RUBY_INSTALL_NAME']
+LIBNAM = RbConfig::CONFIG['RUBY_INSTALL_NAME']
 #LDSHARED=compilername -shared..."
 
 rb_so = 'ruby.so'
@@ -31,8 +31,8 @@ rescue
 	tobeup=true
 end
 
-incflags=Config::CONFIG['rubyhdrdir']
-incflags2=incflags + "/" + Config::CONFIG['arch']
+incflags=RbConfig::CONFIG['rubyhdrdir']
+incflags2=incflags + "/" + RbConfig::CONFIG['arch']
 
 if tobeup then
 	$line="#{$cc} -I#{incflags} -I#{incflags2} -I#{inc} -I#{INCDIR} #{rb_c} -fPIC -shared #{LIBDIR}" \

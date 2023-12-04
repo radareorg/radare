@@ -41,6 +41,8 @@
 #include <XSUB.h>
 #undef PL_madskills
 #undef PL_xmlfp
+#undef U32_MAX
+#undef u8
 #include <perl.h>
 
 extern PerlInterpreter *my_perl;
