@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build-gcc:
+    name: ubuntu-gcc
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure, build and install
+      run: |
+          pwd ; ls -l
+          ./configure --prefix=/usr
+          make -j
+          sudo make install
+    - name: Test
+      run: radare -h 
+  build-tcc:
+    name: ubuntu-tcc
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout TinyCC repository
+      run: |
+          git clone https://github.com/mirror/tinycc.git
+          cd tinycc
+          git checkout mob
+          git reset --hard 560526a49dfffef118bcb7fba83c727639ec0a1d
+    - name: Compiling and installing TinyCC
+      working-directory: tinycc
+      run: |
+          sh ./configure --prefix=/usr
+          make -j
+          sudo make install
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure, build and install
+      env:
+          CC: tcc
+      run: |
+          ./configure --prefix=/usr --with-compiler=tcc
+          make -j
+          sudo make install
+    - name: Test
+      run: radare -h 
